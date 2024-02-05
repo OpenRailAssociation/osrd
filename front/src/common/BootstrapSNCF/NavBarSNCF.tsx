@@ -45,7 +45,8 @@ export default function LegacyNavBarSNCF({ appName, logo = logoOSRD }: Props) {
               type="button"
               className="btn btn-only-icon btn-link btn-notif toolbar-item-spacing text-success"
               onClick={() => openModal(<UserSettings />)}
-              title={t('safeWordActivated')}
+              aria-label={t('userSettings')}
+              title={t('userSettings')}
             >
               <AiFillSafetyCertificate />
             </button>

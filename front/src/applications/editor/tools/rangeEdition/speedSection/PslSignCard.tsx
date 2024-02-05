@@ -145,6 +145,7 @@ const PslSignCard = ({
           <button
             type="button"
             className="btn btn-sm px-2 ml-2"
+            aria-label={t('Editor.tools.speed-edition.sign-select')}
             onClick={() => selectSign(signInfo)}
           >
             <RiDragMoveLine />
@@ -156,6 +157,7 @@ const PslSignCard = ({
             <button
               type="button"
               className="btn btn-danger btn-sm px-2 ml-2"
+              aria-label={t('Editor.tools.speed-edition.sign-remove')}
               onClick={() =>
                 removeSign(signInfo as Exclude<PslSignInformation, { signType: PSL_SIGN_TYPES.Z }>)
               }

@@ -59,7 +59,13 @@ const ImportTrainScheduleStationSelector = ({
       {stationsList.length > 0 && (
         <div className="results-stations">
           {stationsList.map((station) => (
-            <div role="button" tabIndex={0} onClick={() => onSelect(station)} key={nextId()}>
+            <div
+              role="button"
+              aria-label={t('selectStation')}
+              tabIndex={0}
+              onClick={() => onSelect(station)}
+              key={nextId()}
+            >
               <StationCard station={station} fixedHeight />
             </div>
           ))}

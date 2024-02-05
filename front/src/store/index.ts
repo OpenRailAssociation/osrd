@@ -1,7 +1,7 @@
-import { legacy_createStore as createStore, combineReducers } from 'redux';
 import { configureStore, Middleware } from '@reduxjs/toolkit';
 import { persistStore, getStoredState } from 'redux-persist';
 import { Config } from '@redux-devtools/extension';
+import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { osrdGatewayApi } from 'common/api/osrdGatewayApi';
@@ -9,7 +9,7 @@ import { osrdGatewayApi } from 'common/api/osrdGatewayApi';
 import persistedReducer, {
   rootReducer,
   rootInitialState,
-  RootState,
+  type RootState,
   persistConfig,
 } from 'reducers';
 import { ChartSynchronizer } from 'modules/simulationResult/components/ChartHelpers/ChartSynchronizer';
@@ -56,6 +56,9 @@ export type AppDispatch = typeof store.dispatch;
 export type GetState = typeof store.getState;
 export type Store = typeof store;
 
+export const useAppDispatch: () => AppDispatch = useDispatch;
+export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
+
 const persistor = persistStore(store);
 
 // Retrieve the persisted state from storage and purge if new front version
@@ -79,9 +82,12 @@ getStoredState(persistConfig)
   });
 
 const createStoreWithoutMiddleware = (initialStateExtra: Partial<RootState>) =>
-  createStore(combineReducers<RootState>(rootReducer), {
-    ...rootInitialState,
-    ...initialStateExtra,
+  configureStore({
+    reducer: rootReducer,
+    preloadedState: {
+      ...rootInitialState,
+      ...initialStateExtra,
+    },
   });
 
 export { store, persistor, createStoreWithoutMiddleware };

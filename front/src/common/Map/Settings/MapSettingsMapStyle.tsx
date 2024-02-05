@@ -1,19 +1,20 @@
 import cx from 'classnames';
 import React, { FC } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 
 import picBlueprint from 'assets/pictures/mapbuttons/mapstyle-blueprint.jpg';
 import picDarkMode from 'assets/pictures/mapbuttons/mapstyle-dark.jpg';
 import picMinimalMode from 'assets/pictures/mapbuttons/mapstyle-minimal.jpg';
 import picNormalMode from 'assets/pictures/mapbuttons/mapstyle-normal.jpg';
+import { useAppDispatch } from 'store';
 import { updateMapStyle } from 'reducers/map';
 import { getMap } from 'reducers/map/selectors';
 
 const MapSettingsMapStyle: FC<unknown> = () => {
   const { t } = useTranslation(['map-settings']);
   const { mapStyle } = useSelector(getMap);
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   return (
     <div className="row ml-1 mapstyle">

@@ -12,7 +12,7 @@ const ButtonZoomIn = ({ zoomIn }: ButtonZoomInProps) => {
   return (
     <Tipped mode="left">
       <button type="button" className="btn-rounded btn-rounded-white" onClick={() => zoomIn()}>
-        <span className="sr-only">Zoom in</span>
+        <span className="sr-only">{t('common.zoom-in')}</span>
         <GoZoomIn />
       </button>
       <span>{t('common.zoom-in')}</span>

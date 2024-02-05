@@ -1,7 +1,8 @@
 import { FaBackward, FaPause, FaPlay, FaStop } from 'react-icons/fa';
+import { useTranslation } from 'react-i18next';
 import React, { useState } from 'react';
 import { datetime2time, sec2datetime, time2datetime } from 'utils/timeManipulation';
-import { useDispatch } from 'react-redux';
+import { useAppDispatch } from 'store';
 import { updateIsPlaying } from 'reducers/osrdsimulation/actions';
 
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
@@ -20,7 +21,8 @@ type TimeButtonsProps = {
 };
 
 const TimeButtons = ({ selectedTrain }: TimeButtonsProps) => {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
+  const { t } = useTranslation('simulation');
 
   const [playInterval, setPlayInterval] = useState<NodeJS.Timeout | undefined>(undefined);
   const [playReverse, setPlayReverse] = useState(false);
@@ -113,24 +115,40 @@ const TimeButtons = ({ selectedTrain }: TimeButtonsProps) => {
           sm
         />
       </span>
-      <button type="button" className="btn btn-sm btn-only-icon mr-2 btn-danger" onClick={stop}>
+      <button
+        type="button"
+        className="btn btn-sm btn-only-icon mr-2 btn-danger"
+        aria-label={t('resetTimer')}
+        title={t('resetTimer')}
+        onClick={stop}
+      >
         <FaStop />
       </button>
       <button
         type="button"
         className={`btn btn-sm btn-only-icon mr-2 ${playReverse ? 'btn-primary' : 'btn-white'}`}
+        aria-label={t('toggleRewind')}
+        title={t('toggleRewind')}
         onClick={changeReverse}
       >
         <FaBackward />
       </button>
       {playInterval ? (
-        <button type="button" className="btn btn-sm btn-only-icon btn-warning mr-2" onClick={pause}>
+        <button
+          type="button"
+          className="btn btn-sm btn-only-icon btn-warning mr-2"
+          aria-label={t('playSimulation')}
+          title={t('playSimulation')}
+          onClick={pause}
+        >
           <FaPause />
         </button>
       ) : (
         <button
           type="button"
           className="btn btn-sm btn-only-icon btn-success mr-2"
+          aria-label={t('pauseSimulation')}
+          title={t('pauseSimulation')}
           onClick={() => play(playReverse)}
         >
           <FaPlay />

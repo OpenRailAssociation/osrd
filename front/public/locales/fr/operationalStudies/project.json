@@ -43,6 +43,7 @@
   "projectTags": "Étiquettes",
   "projectUpdated": "Mise à jour réussie !",
   "projectUpdatedDetails": "Le projet {{ name }} a bien été mis à jour.",
+  "removeImage": "Supprimer l'image",
   "scenariosCount_one": "1 scénario",
   "scenariosCount_other": "{{count}} scénarios",
   "scenariosCount_zero": "Aucun scénario",
@@ -55,5 +56,6 @@
   "studiesCount_one": "1 étude",
   "studiesCount_other": "{{count}} études",
   "studiesCount_zero": "Aucune étude",
-  "totalBudget": "Budget total"
+  "totalBudget": "Budget total",
+  "uploadImage": "Importer une image"
 }

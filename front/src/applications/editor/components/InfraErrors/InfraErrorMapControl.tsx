@@ -1,10 +1,11 @@
 import React, { FC, useCallback, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import type { MapRef } from 'react-map-gl/maplibre';
 import { BsExclamationOctagon } from 'react-icons/bs';
 import { useTranslation } from 'react-i18next';
 
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
+import { useAppDispatch } from 'store';
 import { getEditorState } from 'reducers/editor/selectors';
 import useKeyboardShortcuts from 'utils/hooks/useKeyboardShortcuts';
 
@@ -18,7 +19,7 @@ const InfraErrorMapControl: FC<{
   mapRef: MapRef;
   switchTool: EditorContextType['switchTool'];
 }> = ({ mapRef, switchTool }) => {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const { t } = useTranslation();
   const { register } = useKeyboardShortcuts();
   const { openModal, closeModal } = useModal();

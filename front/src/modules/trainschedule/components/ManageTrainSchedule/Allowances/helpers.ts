@@ -177,33 +177,36 @@ export const getFirstEmptyRange = (
     return { beginPosition: 0, endPosition: Math.round(pathLength) };
   }
 
-  return allowances.reduce((result, allowance, index) => {
-    if (result) return result;
-    // default range element
-    if (allowance.isDefault) {
-      return { beginPosition: allowance.begin_position, endPosition: allowance.end_position };
-    }
-    // first element
-    if (index === 0 && allowance.begin_position > startPosition) {
-      return { beginPosition: startPosition, endPosition: allowance.begin_position - 1 };
-    }
-    // last element
-    if (index === allowances.length - 1) {
-      if (allowance.end_position < pathLength) {
-        return { beginPosition: allowance.end_position + 1, endPosition: Math.round(pathLength) };
+  return allowances.reduce(
+    (result, allowance, index) => {
+      if (result) return result;
+      // default range element
+      if (allowance.isDefault) {
+        return { beginPosition: allowance.begin_position, endPosition: allowance.end_position };
+      }
+      // first element
+      if (index === 0 && allowance.begin_position > startPosition) {
+        return { beginPosition: startPosition, endPosition: allowance.begin_position - 1 };
+      }
+      // last element
+      if (index === allowances.length - 1) {
+        if (allowance.end_position < pathLength) {
+          return { beginPosition: allowance.end_position + 1, endPosition: Math.round(pathLength) };
+        }
+        return null;
+      }
+      // get next element and check if there is an empty range before current and next element
+      const nextAllowance = allowances[index + 1];
+      if (allowance.end_position + 1 !== nextAllowance.begin_position) {
+        return {
+          beginPosition: allowance.end_position + 1,
+          endPosition: nextAllowance.begin_position - 1,
+        };
       }
       return null;
-    }
-    // get next element and check if there is an empty range before current and next element
-    const nextAllowance = allowances[index + 1];
-    if (allowance.end_position + 1 !== nextAllowance.begin_position) {
-      return {
-        beginPosition: allowance.end_position + 1,
-        endPosition: nextAllowance.begin_position - 1,
-      };
-    }
-    return null;
-  }, null as null | { beginPosition: number; endPosition: number });
+    },
+    null as null | { beginPosition: number; endPosition: number }
+  );
 };
 
 export const getFirstEmptyRangeFromPosition = (

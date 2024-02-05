@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { MdArrowRight } from 'react-icons/md';
 import { useTranslation } from 'react-i18next';
-import { useDispatch } from 'react-redux';
 
 import projectsLogo from 'assets/pictures/views/projects.svg';
 import scenarioExploratorLogo from 'assets/pictures/views/scenarioExplorator.svg';
@@ -15,6 +14,7 @@ import {
   StudyWithScenarios,
   osrdEditoastApi,
 } from 'common/api/osrdEditoastApi';
+import { useAppDispatch } from 'store';
 import { setFailure } from 'reducers/main';
 
 import { ProjectMiniCard, StudyMiniCard, ScenarioMiniCard } from './MiniCards';
@@ -31,7 +31,7 @@ const ScenarioExplorerModal = ({
   globalScenarioId,
 }: ScenarioExplorerProps) => {
   const { t } = useTranslation('common/scenarioExplorer');
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   const [projectID, setProjectID] = useState<number | undefined>(globalProjectId);
   const [studyID, setStudyID] = useState<number | undefined>(globalStudyId);

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MdTrain } from 'react-icons/md';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 
 import studyIcon from 'assets/pictures/views/study.svg';
 import projectIcon from 'assets/pictures/views/projects.svg';
@@ -14,6 +14,7 @@ import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
 import type { TrainScheduleSummary } from 'common/api/osrdEditoastApi';
 
+import { useAppDispatch } from 'store';
 import ScenarioExplorerModal, { type ScenarioExplorerProps } from './ScenarioExplorerModal';
 
 const ScenarioExplorer = ({
@@ -22,7 +23,7 @@ const ScenarioExplorer = ({
   globalScenarioId,
 }: ScenarioExplorerProps) => {
   const { t } = useTranslation('common/scenarioExplorer');
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const { openModal } = useModal();
   const { getTimetableID } = useOsrdConfSelectors();
   const timetableID = useSelector(getTimetableID);

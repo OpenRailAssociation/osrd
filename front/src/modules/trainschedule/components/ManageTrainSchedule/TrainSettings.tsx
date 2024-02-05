@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { AiOutlineTags } from 'react-icons/ai';
 import { SlSpeedometer } from 'react-icons/sl';
 import { MdOutlineAccessTime, MdOutlineDriveFileRenameOutline } from 'react-icons/md';
@@ -10,6 +10,7 @@ import { useDebounce } from 'utils/helpers';
 import ChipsSNCF from 'common/BootstrapSNCF/ChipsSNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
+import { useAppDispatch } from 'store';
 
 export default function TrainSettings() {
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
@@ -26,7 +27,7 @@ export default function TrainSettings() {
   const [name, setName] = useState<string>(nameFromStore);
   const [departureTime, setDepartureTime] = useState<string>(departureTimeFromStore);
   const [initialSpeed, setInitialSpeed] = useState<number | undefined>(initialSpeedFromStore);
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   const debouncedName = useDebounce(name, 500);
   const debouncedInitialSpeed = useDebounce(initialSpeed!, 500);

@@ -11,6 +11,7 @@
     "description": "Description",
     "download": "Download",
     "dsc": "Descending",
+    "duplicate": "Duplicate",
     "edit": "Edit",
     "erase": "Erase",
     "error": "An error has occurred",
@@ -31,6 +32,7 @@
     "selected": "already selected",
     "settings": "Settings",
     "sort": "Sort",
+    "toggleInfraErrors": "Toggler infra errors layer",
     "train(s)": "train(s)",
     "yes": "Yes",
     "zoom-in": "Zoom in",
@@ -43,7 +45,7 @@
       }
     },
     "failure": {
-      "save":{
+      "save": {
         "title": "Failed to save modifications",
         "text": "Failed to publish your modifications"
       }
@@ -297,7 +299,7 @@
       "routes-edition": {
         "actions": {
           "save-route": "Save the route",
-          "reset-route":"Reset the route",
+          "reset-route": "Reset the route",
           "delete-route": "Delete the route",
           "new-route": "Create a new route",
           "pick-entry_point": "Starting point selection tool",

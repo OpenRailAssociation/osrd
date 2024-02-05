@@ -5,7 +5,7 @@ import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { updateLineSearchCode, updateMapSearchMarker } from 'reducers/map';
 import { useDebounce } from 'utils/helpers';
 import { useInfraID } from 'common/osrdContext';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { zoomToFeature } from 'common/Map/WarpedMap/core/helpers';
 import bbox from '@turf/bbox';
@@ -13,6 +13,7 @@ import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import LineCard from 'common/Map/Search/LineCard';
 import nextId from 'react-id-generator';
 
+import { useAppDispatch } from 'store';
 import type { Viewport } from 'reducers/map';
 import type { Zone, SearchResultItemTrack, SearchPayload } from 'common/api/osrdEditoastApi';
 
@@ -25,7 +26,7 @@ const MapSearchLine = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchLine
   const infraID = useInfraID();
   const map = useSelector(getMap);
   const { t } = useTranslation(['map-search']);
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const [postSearch] = osrdEditoastApi.usePostSearchMutation();
   const [searchState, setSearchState] = useState<string>('');
   const [searchResults, setSearchResults] = useState<SearchResultItemTrack[] | undefined>(

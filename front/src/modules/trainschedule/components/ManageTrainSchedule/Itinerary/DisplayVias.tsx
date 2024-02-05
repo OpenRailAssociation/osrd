@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import type { Action } from '@reduxjs/toolkit';
 import cx from 'classnames';
@@ -10,6 +10,7 @@ import { useDebounce } from 'utils/helpers';
 
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
+import { useAppDispatch } from 'store';
 
 type InputStopTimeProps = {
   index: number;
@@ -57,7 +58,7 @@ type DisplayViasProps = {
 export default function DisplayVias({ zoomToFeaturePoint }: DisplayViasProps) {
   const { getConf, getVias } = useOsrdConfSelectors();
   const osrdconf = useSelector(getConf);
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const vias = useSelector(getVias);
   const [indexSelected, setIndexSelected] = useState<number | undefined>(undefined);
   const { permuteVias, updateViaStopTime, deleteVias } = useOsrdConfActions();

@@ -1,5 +1,4 @@
 import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import { FaPlus, FaTasks } from 'react-icons/fa';
@@ -27,6 +26,7 @@ import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import type { StudyCreateForm } from 'common/api/osrdEditoastApi';
 
+import { useAppDispatch } from 'store';
 import { setFailure, setSuccess } from 'reducers/main';
 import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
 import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
@@ -67,7 +67,7 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
   const [displayErrors, setDisplayErrors] = useState(false);
   const { projectId } = useParams() as StudyParams;
   const { updateStudyID } = useOsrdConfActions();
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
   const [createStudies, { isError: isCreateStudyError }] =

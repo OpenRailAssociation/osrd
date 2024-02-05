@@ -1,6 +1,7 @@
 import React, { FC, useCallback, useState, useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import ToastSNCF from 'common/BootstrapSNCF/ToastSNCF';
+import { useAppDispatch } from 'store';
 import { MainState, deleteNotification } from 'reducers/main';
 import { Notification } from 'types';
 import './Notifications.scss';
@@ -9,7 +10,7 @@ const TIMEOUT_MS = 5000;
 
 const NotificationWrapper: FC<Notification> = (notif) => {
   const [timeoutId, setTimeoutId] = useState<number | null>(null);
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   const startTimer = useCallback(() => {
     const id = window.setTimeout(() => {

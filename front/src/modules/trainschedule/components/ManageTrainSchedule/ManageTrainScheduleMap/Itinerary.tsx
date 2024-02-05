@@ -1,6 +1,5 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { GeoJSONFeature } from 'maplibre-gl';
 import { Source } from 'react-map-gl/maplibre';
 
 import { useOsrdConfSelectors } from 'common/osrdContext';
@@ -17,8 +16,7 @@ export default function Itinerary({ layerOrder }: ItineraryProps) {
   const destination = useSelector(getDestination);
   if (geojson && geojson.geographic && origin !== undefined && destination !== undefined) {
     return (
-      // TODO: clarify geojson[mapTrackSources] type
-      <Source type="geojson" data={geojson.geographic as unknown as GeoJSONFeature}>
+      <Source type="geojson" data={geojson.geographic}>
         <OrderedLayer
           type="line"
           paint={{

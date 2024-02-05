@@ -1,5 +1,4 @@
 import React from 'react';
-import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import nextId from 'react-id-generator';
@@ -14,6 +13,7 @@ import { dateTimeFormatting } from 'utils/date';
 
 import type { StudyWithScenarios } from 'common/api/osrdEditoastApi';
 import { useOsrdConfActions } from 'common/osrdContext';
+import { useAppDispatch } from 'store';
 
 type StudyCardProps = {
   setFilterChips: (filterChips: string) => void;
@@ -23,7 +23,7 @@ type StudyCardProps = {
 export default function StudyCard({ setFilterChips, study }: StudyCardProps) {
   const { t } = useTranslation(['operationalStudies/project', 'operationalStudies/study']);
   const navigate = useNavigate();
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const { updateScenarioID, updateStudyID } = useOsrdConfActions();
 
   const handleClick = () => {

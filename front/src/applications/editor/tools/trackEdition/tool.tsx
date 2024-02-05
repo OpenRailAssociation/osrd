@@ -12,7 +12,7 @@ import nearestPointOnLine, { NearestPointOnLine } from '@turf/nearest-point-on-l
 
 import { entityDoUpdate, getLineStringDistance } from 'common/IntervalsDataViz/data';
 import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
-import { save } from 'reducers/editor';
+import { save } from 'reducers/editor/thunkActions';
 import { getMapMouseEventNearestFeature } from 'utils/mapHelper';
 
 import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
@@ -183,7 +183,7 @@ const TrackEditionTool: Tool<TrackEditionState> = {
             <ConfirmModal
               title={t('Editor.tools.track-edition.actions.delete-line')}
               onConfirm={async () => {
-                await dispatch<ReturnType<typeof save>>(
+                await dispatch(
                   // We have to put state.initialTrack in array because delete initially works with selection which can get multiple elements
                   save(infraID, { delete: [state.initialTrack] })
                 );

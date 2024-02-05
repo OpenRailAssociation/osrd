@@ -13,7 +13,6 @@ import {
   rollingStockEditorQueryArg,
 } from 'modules/rollingStock/helpers/utils';
 import { isElectric } from 'modules/rollingStock/helpers/electric';
-import { useDispatch } from 'react-redux';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { usePrevious } from 'utils/hooks/state';
 import { useTranslation } from 'react-i18next';
@@ -29,6 +28,7 @@ import type {
   RollingStockWithLiveries,
 } from 'common/api/osrdEditoastApi';
 import type { TabProps } from 'common/Tabs';
+import { useAppDispatch } from 'store';
 
 type RollingStockParametersProps = {
   rollingStockData?: RollingStockWithLiveries;
@@ -58,7 +58,7 @@ const RollingStockEditorForm = ({
   setOpenedRollingStockCardId,
   isAdding,
 }: RollingStockParametersProps) => {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const { t } = useTranslation([
     'rollingstock',
     'translation',

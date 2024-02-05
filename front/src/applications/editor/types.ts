@@ -1,12 +1,12 @@
-import { Dispatch } from 'redux';
 import { TFunction } from 'i18next';
 import { ComponentType } from 'react';
-import { IconType } from 'react-icons/lib/esm/iconBase';
 import { ViewState } from 'react-map-gl/maplibre';
 import { Map, MapLayerMouseEvent } from 'maplibre-gl';
+import { IconType } from 'react-icons/lib/iconBase';
 
 import type { SwitchType } from 'applications/editor/tools/switchEdition/types';
 import { ModalContextType } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
+import { AppDispatch } from 'store';
 import type { EditorState } from 'reducers/editor';
 
 import type { Layer } from './consts';
@@ -43,8 +43,7 @@ export type EditorContextType<S = any> = {
 } & Pick<ModalContextType, 'openModal' | 'closeModal'>;
 
 export type ExtendedEditorContextType<S> = EditorContextType<S> & {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  dispatch: Dispatch<any>;
+  dispatch: AppDispatch;
   editorState: EditorState;
   mapState: MapState;
   infraID: number | undefined;

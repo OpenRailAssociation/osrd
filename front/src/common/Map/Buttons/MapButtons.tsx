@@ -19,7 +19,6 @@ import ButtonMapInfras from 'common/Map/Buttons/ButtonMapInfras';
 import MapKey from 'common/Map/MapKey';
 import MapSearch from 'common/Map/Search/MapSearch';
 import MapSettings from 'common/Map/Settings/MapSettings';
-import { useDispatch } from 'react-redux';
 
 import useOutsideClick from 'utils/hooks/useOutsideClick';
 
@@ -29,6 +28,7 @@ import { EDITOAST_TO_LAYER_DICT, type EditoastType } from 'applications/editor/c
 import LayersModal from 'applications/editor/components/LayersModal';
 import type { SelectionState } from 'applications/editor/tools/selection/types';
 import type { CommonToolState } from 'applications/editor/tools/types';
+import { useAppDispatch } from 'store';
 import type { EditorState } from 'reducers/editor';
 import ButtonMapInfraErrors from './ButtonMapInfraErrors';
 
@@ -67,7 +67,7 @@ export default function MapButtons({
   bearing,
   editorProps,
 }: MapButtonsProps) {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const { isOpen, openModal } = useContext(ModalContext);
 
   const [openedPopover, setOpenedPopover] = useState<string | undefined>(undefined);

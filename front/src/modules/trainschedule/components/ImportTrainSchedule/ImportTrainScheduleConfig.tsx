@@ -1,11 +1,11 @@
 import { isEmpty } from 'lodash';
 import React, { useState, useContext } from 'react';
-import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 
 import { RollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import StationSelector from 'modules/trainschedule/components/ImportTrainSchedule/ImportTrainScheduleStationSelector';
+import { useAppDispatch } from 'store';
 import { setFailure } from 'reducers/main';
 import StationCard, { ImportStation } from 'common/StationCard';
 import { formatIsoDate } from 'utils/date';
@@ -46,7 +46,7 @@ export default function ImportTrainScheduleConfig({
   const [date, setDate] = useState(formatIsoDate(new Date()));
   const [startTime, setStartTime] = useState('00:00');
   const [endTime, setEndTime] = useState('23:59');
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const { openModal, closeModal } = useContext(ModalContext);
   const { rollingStockComfort, rollingStock } = useStoreDataForRollingStockSelector();
 
@@ -220,6 +220,7 @@ export default function ImportTrainScheduleConfig({
               {from ? (
                 <div
                   className="result-station-selected"
+                  aria-label={t('from')}
                   onClick={() => setFrom(undefined)}
                   role="button"
                   tabIndex={0}
@@ -244,6 +245,7 @@ export default function ImportTrainScheduleConfig({
               {to ? (
                 <div
                   className="result-station-selected"
+                  aria-label={t('to')}
                   onClick={() => setTo(undefined)}
                   role="button"
                   tabIndex={0}
@@ -323,6 +325,8 @@ export default function ImportTrainScheduleConfig({
           <button
             type="button"
             className="btn btn-sm btn-primary btn-block h-100"
+            aria-label={t('searchTimetable')}
+            title={t('searchTimetable')}
             onClick={defineConfig}
           >
             <i className="icons-search" />
@@ -330,6 +334,8 @@ export default function ImportTrainScheduleConfig({
           <button
             type="button"
             className="btn btn-sm btn-secondary btn-block h-100"
+            aria-label={t('importTimetable')}
+            title={t('importTimetable')}
             onClick={() => openModal(<UploadFileModal handleSubmit={importFile} />)}
           >
             <i className="icons-download" />

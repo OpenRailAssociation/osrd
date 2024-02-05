@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { GoPencil } from 'react-icons/go';
 import { GiElectric } from 'react-icons/gi';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
@@ -36,6 +36,7 @@ import {
   getSelectedProjection,
   getSelectedTrainId,
 } from 'reducers/osrdsimulation/selectors';
+import { useAppDispatch } from 'store';
 
 type SimulationParams = {
   projectId: string;
@@ -44,7 +45,7 @@ type SimulationParams = {
 };
 
 export default function Scenario() {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const { t } = useTranslation('operationalStudies/scenario');
   const [displayTrainScheduleManagement, setDisplayTrainScheduleManagement] = useState<string>(
     MANAGE_TRAIN_SCHEDULE_TYPES.none
@@ -235,6 +236,7 @@ export default function Scenario() {
                         data-testid="editScenario"
                         className="scenario-details-modify-button"
                         type="button"
+                        aria-label={t('editScenario')}
                         onClick={() =>
                           openModal(
                             <AddAndEditScenarioModal editionMode scenario={scenario} />,
@@ -257,6 +259,7 @@ export default function Scenario() {
                       <button
                         type="button"
                         className="scenario-details-modify-button"
+                        aria-label={t('toggleTimetable')}
                         onClick={() => setCollapsedTimetable(true)}
                       >
                         <i className="icons-arrow-prev" />
@@ -349,6 +352,7 @@ export default function Scenario() {
                     <button
                       className="timetable-collapse-button"
                       type="button"
+                      aria-label={t('toggleTimetable')}
                       onClick={() => setCollapsedTimetable(false)}
                     >
                       <i className="icons-arrow-next" />

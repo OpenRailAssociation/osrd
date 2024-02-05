@@ -6,7 +6,7 @@ import type {
 } from 'common/api/osrdEditoastApi';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { GoAlert, GoTriangleRight } from 'react-icons/go';
 import bbox from '@turf/bbox';
 import type { Position } from 'geojson';
@@ -19,6 +19,7 @@ import { loadPathFinding } from 'modules/trainschedule/components/ManageTrainSch
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useInfraID, useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
 
+import { useAppDispatch } from 'store';
 import { setFailure } from 'reducers/main';
 
 type SearchConstraintType = (string | number | string[])[];
@@ -56,7 +57,7 @@ function OpTooltips({ opList }: { opList: SearchResultItemOperationalPoint[] }) 
 }
 
 export default function TypeAndPath({ zoomToFeature }: PathfindingProps) {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const [inputText, setInputText] = useState('');
   const [opList, setOpList] = useState<SearchResultItemOperationalPoint[]>([]);
   const { getRollingStockID } = useOsrdConfSelectors();
@@ -176,6 +177,8 @@ export default function TypeAndPath({ zoomToFeature }: PathfindingProps) {
         <button
           className="btn btn-sm btn-success"
           type="button"
+          aria-label={t('launchPathFinding')}
+          title={t('launchPathFinding')}
           onClick={launchPathFinding}
           disabled={isInvalid || opList.length < 2}
         >

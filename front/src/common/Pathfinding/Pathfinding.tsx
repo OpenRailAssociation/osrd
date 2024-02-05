@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useReducer } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import type { Position } from 'geojson';
 import bbox from '@turf/bbox';
 import { useTranslation } from 'react-i18next';
@@ -19,6 +19,7 @@ import { Spinner } from 'common/Loaders';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
 
+import { useAppDispatch } from 'store';
 import { setFailure } from 'reducers/main';
 
 interface PathfindingState {
@@ -250,7 +251,7 @@ function Pathfinding({ zoomToFeature, path }: PathfindingProps) {
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
   const [pathfindingRequest, setPathfindingRequest] =
     useState<ReturnType<typeof postPathfinding>>();
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const {
     getInfraID,
     getOrigin,

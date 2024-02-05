@@ -1,5 +1,5 @@
 import React, { FC, useCallback, useEffect, useMemo, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import type { MapLayerMouseEvent } from 'maplibre-gl';
 import type { MapRef } from 'react-map-gl/maplibre';
@@ -13,6 +13,7 @@ import { keyBy } from 'lodash';
 
 import type { TrainPosition } from 'modules/simulationResult/components/SimulationResultsMap/types';
 
+import { useAppDispatch } from 'store';
 import type { RootState } from 'reducers';
 import type { Viewport } from 'reducers/map';
 import { updateMapSearchMarker, updateViewport } from 'reducers/map';
@@ -91,7 +92,7 @@ const Map: FC<MapProps> = () => {
   const [otherTrainsHoverPosition, setOtherTrainsHoverPosition] = useState<TrainPosition[]>([]);
   const { urlLat = '', urlLon = '', urlZoom = '', urlBearing = '', urlPitch = '' } = useParams();
   const [getPath] = osrdEditoastApi.useLazyGetPathfindingByPathfindingIdQuery();
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   const { updateTimePosition } = useChartSynchronizer(
     (timePosition, positionValues) => {

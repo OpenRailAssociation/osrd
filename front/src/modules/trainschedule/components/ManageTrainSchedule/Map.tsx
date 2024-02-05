@@ -3,7 +3,7 @@ import type { MapRef } from 'react-map-gl/maplibre';
 import ReactMapGL, { AttributionControl, ScaleControl } from 'react-map-gl/maplibre';
 import type { Viewport } from 'reducers/map';
 import { updateMapSearchMarker, updateViewport } from 'reducers/map';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
 import type { MapLayerMouseEvent } from 'maplibre-gl';
@@ -52,6 +52,7 @@ import TracksGeographic from 'common/Map/Layers/TracksGeographic';
 import { useInfraID, useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
 import Itinerary from 'modules/trainschedule/components/ManageTrainSchedule/ManageTrainScheduleMap/Itinerary';
 import ItineraryMarkers from 'modules/trainschedule/components/ManageTrainSchedule/ManageTrainScheduleMap/ItineraryMarkers';
+import { useAppDispatch } from 'store';
 
 const Map = () => {
   const mapBlankStyle = useMapBlankStyle();
@@ -63,7 +64,7 @@ const Map = () => {
   const [mapIsLoaded, setMapIsLoaded] = useState(false);
   const [snappedPoint, setSnappedPoint] = useState<NearestPointOnLine>();
   const { urlLat = '', urlLon = '', urlZoom = '', urlBearing = '', urlPitch = '' } = useParams();
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const updateViewportChange = useCallback(
     (value: Partial<Viewport>) => dispatch(updateViewport(value, undefined)),
     [dispatch]

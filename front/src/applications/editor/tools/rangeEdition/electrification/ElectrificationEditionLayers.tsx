@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { featureCollection } from '@turf/helpers';
 import { mapValues } from 'lodash';
 import { Layer, Popup, Source } from 'react-map-gl/maplibre';
@@ -23,10 +23,11 @@ import colors from 'common/Map/Consts/colors';
 import { useInfraID } from 'common/osrdContext';
 import GeoJSONs, { SourcesDefinitionsIndex } from 'common/Map/Layers/GeoJSONs';
 
+import { useAppDispatch } from 'store';
 import { getMap } from 'reducers/map/selectors';
 
 export const ElectrificationEditionLayers = () => {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const { t } = useTranslation();
   const {
     editorState: { editorLayers },
@@ -103,7 +104,7 @@ export const ElectrificationEditionLayers = () => {
           ...s,
           trackSectionsCache: {
             ...s.trackSectionsCache,
-            ...mapValues(res, (track) => ({ type: 'success', track } as TrackState)),
+            ...mapValues(res, (track) => ({ type: 'success', track }) as TrackState),
           },
         }));
       });

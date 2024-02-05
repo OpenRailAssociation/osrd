@@ -1,7 +1,7 @@
 import turfCenter from '@turf/center';
+import { AppDispatch } from 'store';
 import { updateMapSearchMarker } from 'reducers/map/index';
 import type { AllGeoJSON } from '@turf/helpers';
-import type { AnyAction, Dispatch } from 'redux';
 import type { MapState, Viewport } from 'reducers/map/index';
 import type {
   SearchQuery,
@@ -16,7 +16,7 @@ type OnResultSearchClickType = {
   result: SearchResultItemSignal | SearchResultItemOperationalPoint;
   map: MapState;
   updateExtViewport: (viewport: Partial<Viewport>) => void;
-  dispatch: Dispatch<AnyAction>;
+  dispatch: AppDispatch;
   setSearch?: React.Dispatch<React.SetStateAction<string>>;
   title: string;
 };

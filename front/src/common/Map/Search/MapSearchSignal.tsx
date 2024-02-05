@@ -5,7 +5,7 @@ import { getMap } from 'reducers/map/selectors';
 import { setFailure } from 'reducers/main';
 import { sortBy } from 'lodash';
 import { useDebounce } from 'utils/helpers';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { createMapSearchQuery, onResultSearchClick } from 'common/Map/utils';
@@ -16,6 +16,7 @@ import SelectImproved from 'common/BootstrapSNCF/SelectImprovedSNCF';
 import SignalCard from 'common/Map/Search/SignalCard';
 
 import type { SearchResultItemSignal, SearchPayload } from 'common/api/osrdEditoastApi';
+import { useAppDispatch } from 'store';
 import type { Viewport } from 'reducers/map';
 import { useInfraID } from 'common/osrdContext';
 
@@ -69,10 +70,13 @@ const MapSearchSignal = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchSi
 
   const REVERSED_SIGNAL_SETTINGS_DISPLAY = useMemo(
     () =>
-      Object.entries(SIGNAL_SETTINGS_DISPLAY).reduce((acc, [key, value]) => {
-        acc[value] = key;
-        return acc;
-      }, {} as { [key: string]: string }),
+      Object.entries(SIGNAL_SETTINGS_DISPLAY).reduce(
+        (acc, [key, value]) => {
+          acc[value] = key;
+          return acc;
+        },
+        {} as { [key: string]: string }
+      ),
     [SIGNAL_SETTINGS_DISPLAY]
   );
 
@@ -88,7 +92,7 @@ const MapSearchSignal = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchSi
     name: 'label',
     asc: true,
   });
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const [postSearch] = osrdEditoastApi.usePostSearchMutation();
 
   const getPayload = (

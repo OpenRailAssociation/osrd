@@ -1,4 +1,5 @@
-import Form, { Field, UiSchema } from '@rjsf/core';
+import Form from '@rjsf/core';
+import { Field, UiSchema } from '@rjsf/utils';
 import { GeoJsonProperties } from 'geojson';
 import i18n from 'i18n';
 import { JSONSchema7 } from 'json-schema';
@@ -6,6 +7,7 @@ import { isNil, omitBy } from 'lodash';
 import React, { useState, useEffect, useMemo, PropsWithChildren } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
+import validator from '@rjsf/validator-ajv8';
 
 import {
   getLayerForObjectType,
@@ -96,6 +98,7 @@ function EditorForm<T extends Omit<EditorEntity, 'objType'> & { objType: string 
         liveValidate={submited}
         action={undefined}
         noHtml5Validate
+        validator={validator}
         method={undefined}
         schema={isFrench ? translatedSchema : schema}
         uiSchema={{

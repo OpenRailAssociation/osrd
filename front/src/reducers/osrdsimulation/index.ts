@@ -1,5 +1,4 @@
-import produce from 'immer';
-import { noop } from 'lodash';
+import { produce } from 'immer';
 import { AnyAction } from 'redux';
 
 import { SIGNAL_BASE_DEFAULT, CHART_AXES } from 'modules/simulationResult/consts';
@@ -88,10 +87,8 @@ export default function reducer(inputState: OsrdSimulationState | undefined, act
         // get only the present, thanks
         draft.simulation = undoableSimulation(state.simulation, action);
         draft.consolidatedSimulation = createTrain(
-          noop,
           CHART_AXES.SPACE_TIME,
-          draft.simulation.present.trains as Train[], // TODO: remove Train interface
-          noop
+          draft.simulation.present.trains as Train[] // TODO: remove Train interface
         );
 
         break;

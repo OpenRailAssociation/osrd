@@ -1,13 +1,13 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { FaPlus } from 'react-icons/fa';
 import { BiTargetLock } from 'react-icons/bi';
 import { GoPencil, GoTrash } from 'react-icons/go';
 import { RiMoneyEuroCircleLine } from 'react-icons/ri';
 import { MdBusinessCenter, MdDescription, MdTitle } from 'react-icons/md';
-import { ReactMarkdown } from 'react-markdown/lib/react-markdown';
+import ReactMarkdown from 'react-markdown';
 import { SerializedError } from '@reduxjs/toolkit';
 import remarkGfm from 'remark-gfm';
 
@@ -28,6 +28,7 @@ import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import type { ProjectWithStudies, ProjectCreateForm } from 'common/api/osrdEditoastApi';
 
+import { useAppDispatch } from 'store';
 import { setFailure, setSuccess } from 'reducers/main';
 import { getUserSafeWord } from 'reducers/user/userSelectors';
 import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
@@ -66,7 +67,7 @@ export default function AddOrEditProjectModal({
   const [tempProjectImage, setTempProjectImage] = useState<Blob | null | undefined>();
 
   const [displayErrors, setDisplayErrors] = useState(false);
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const safeWord = useSelector(getUserSafeWord);
 

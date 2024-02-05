@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { FaPlus } from 'react-icons/fa';
 
 import { time2sec, sec2time } from 'utils/timeManipulation';
@@ -13,6 +13,7 @@ import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { Infra, TrainScheduleBatchItem } from 'common/api/osrdEditoastApi';
 
 import { setFailure, setSuccess } from 'reducers/main';
+import { useAppDispatch } from 'store';
 
 type SubmitConfAddTrainScheduleProps = {
   infraState?: Infra['state'];
@@ -42,7 +43,7 @@ export default function SubmitConfAddTrainSchedule({
 }: SubmitConfAddTrainScheduleProps) {
   const [postTrainSchedule] =
     osrdEditoastApi.endpoints.postTrainScheduleStandaloneSimulation.useMutation();
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
 
   const { getConf } = useOsrdConfSelectors();

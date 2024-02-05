@@ -1,5 +1,5 @@
 import React, { FC, ReactNode, useCallback } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { updateLayersSettings } from 'reducers/map';
 import { GiElectric, GiUnplugged } from 'react-icons/gi';
@@ -12,6 +12,7 @@ import SwitchesSVGFile from 'assets/pictures/layersicons/switches.svg';
 import DetectorsSVGFile from 'assets/pictures/layersicons/detectors.svg';
 import SwitchSNCF, { SWITCH_TYPES } from 'common/BootstrapSNCF/SwitchSNCF/SwitchSNCF';
 import { RootState } from 'reducers';
+import { useAppDispatch } from 'store';
 import { getMap } from 'reducers/map/selectors';
 
 type LayerSettings = RootState['map']['layersSettings'];
@@ -23,7 +24,7 @@ interface FormatSwitchProps {
   disabled?: boolean;
 }
 export const FormatSwitch: FC<FormatSwitchProps> = ({ name, icon, color, disabled }) => {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const { t } = useTranslation(['map-settings']);
   const { layersSettings } = useSelector(getMap);
 

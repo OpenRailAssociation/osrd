@@ -3,11 +3,12 @@ import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useOsrdConfSelectors, useOsrdConfActions, useInfraID } from 'common/osrdContext';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
+import { useAppDispatch } from 'store';
 import { setFailure } from 'reducers/main';
 
 export const useStoreDataForSpeedLimitByTagSelector = () => {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
 
   const { getSpeedLimitByTag } = useOsrdConfSelectors();

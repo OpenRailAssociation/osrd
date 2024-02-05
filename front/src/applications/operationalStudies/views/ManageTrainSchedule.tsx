@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 
 import rollingStockPic from 'assets/pictures/components/train.svg';
 import pahtFindingPic from 'assets/pictures/components/pathfinding.svg';
@@ -26,9 +26,10 @@ import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
 import SpeedLimitByTagSelector from 'common/SpeedLimitByTagSelector/SpeedLimitByTagSelector';
 import { useStoreDataForSpeedLimitByTagSelector } from 'common/SpeedLimitByTagSelector/useStoreDataForSpeedLimitByTagSelector';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
+import { useAppDispatch } from 'store';
 
 export default function ManageTrainSchedule() {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
   const { getPathfindingID, getTrainScheduleIDsToModify, getUsingElectricalProfiles } =
     useOsrdConfSelectors();

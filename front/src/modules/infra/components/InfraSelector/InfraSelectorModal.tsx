@@ -8,7 +8,7 @@ import { useDebounce } from 'utils/helpers';
 import { Loader } from 'common/Loaders';
 import { MdEditNote, MdList } from 'react-icons/md';
 import { Infra, osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import { useDispatch } from 'react-redux';
+import { useAppDispatch } from 'store';
 import { setFailure } from 'reducers/main';
 import { ApiError } from 'common/api/baseGeneratedApis';
 import { SerializedError } from '@reduxjs/toolkit';
@@ -22,7 +22,7 @@ type InfraSelectorModalProps = {
 
 const InfraSelectorModal = ({ onlySelectionMode = false, isInEditor }: InfraSelectorModalProps) => {
   const { t } = useTranslation(['translation', 'infraManagement']);
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const [filter, setFilter] = useState('');
   const [filteredInfrasList, setFilteredInfrasList] = useState<Infra[]>([]);
   const [editionMode, setEditionMode] = useState(false);

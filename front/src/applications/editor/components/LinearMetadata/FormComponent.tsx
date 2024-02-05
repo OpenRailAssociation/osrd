@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import Form, { FieldProps, utils } from '@rjsf/core';
+import Form, { getDefaultRegistry } from '@rjsf/core';
+import { FieldProps } from '@rjsf/utils';
 import { JSONSchema7 } from 'json-schema';
 import { omit, head, max as fnMax, min as fnMin, isNil } from 'lodash';
 import { TbZoomIn, TbZoomOut, TbZoomCancel } from 'react-icons/tb';
@@ -7,6 +8,7 @@ import { BsBoxArrowInLeft, BsBoxArrowInRight, BsChevronLeft, BsChevronRight } fr
 import { IoIosCut } from 'react-icons/io';
 import { MdOutlineHelpOutline } from 'react-icons/md';
 import { useTranslation } from 'react-i18next';
+import validator from '@rjsf/validator-ajv8';
 
 import {
   getZoomedViewBox,
@@ -70,33 +72,10 @@ const IntervalEditorComponent: React.FC<FieldProps> = (props) => {
   const requiredFilter = (requireds: string[]) =>
     requireds.filter((r) => ['end', 'begin'].includes(r));
 
-  // Compute the JSON schema of the linear metadata item
-  const jsonSchema = useMemo(
-    () =>
-      getFieldJsonSchema(
-        schema,
-        registry.rootSchema,
-        requiredFilter,
-        distance
-          ? {
-              begin: {
-                minimum: 0,
-                maximum: distance,
-              },
-              end: {
-                minimum: 0,
-                maximum: distance,
-              },
-            }
-          : {}
-      ),
-    [schema, registry.rootSchema, distance]
-  );
-
   // Guess the value field of the linear metadata item
   const valueField = useMemo(() => {
-    const itemProperties = (jsonSchema?.items
-      ? (jsonSchema.items as JSONSchema7).properties || {}
+    const itemProperties = (schema?.items
+      ? (schema.items as JSONSchema7).properties || {}
       : {}) as unknown as { [key: string]: JSONSchema7 };
     const field = head(
       Object.keys(itemProperties)
@@ -109,7 +88,7 @@ const IntervalEditorComponent: React.FC<FieldProps> = (props) => {
         .map((e) => e.name)
     );
     return field;
-  }, [jsonSchema]);
+  }, [schema]);
 
   const customOnChange = useCallback(
     (newData: Array<LinearMetadataItem>) => {
@@ -151,6 +130,7 @@ const IntervalEditorComponent: React.FC<FieldProps> = (props) => {
         <button
           type="button"
           className="btn btn-unstyled p-1 ml-1"
+          aria-label={t('common.help-display')}
           title={t('common.help-display')}
           onClick={() => openModal(<HelpModal />, 'lg')}
         >
@@ -224,6 +204,7 @@ const IntervalEditorComponent: React.FC<FieldProps> = (props) => {
           />
           <div className="btn-group-vertical zoom">
             <button
+              aria-label={t('common.zoom-in')}
               title={t('common.zoom-in')}
               type="button"
               className="btn btn-sm btn-outline-secondary"
@@ -232,6 +213,7 @@ const IntervalEditorComponent: React.FC<FieldProps> = (props) => {
               <TbZoomIn />
             </button>
             <button
+              aria-label={t('common.zoom-reset')}
               title={t('common.zoom-reset')}
               type="button"
               disabled={viewBox === null}
@@ -241,6 +223,7 @@ const IntervalEditorComponent: React.FC<FieldProps> = (props) => {
               <TbZoomCancel />
             </button>
             <button
+              aria-label={t('common.zoom-out')}
               title={t('common.zoom-out')}
               type="button"
               disabled={viewBox === null}
@@ -258,7 +241,7 @@ const IntervalEditorComponent: React.FC<FieldProps> = (props) => {
             <LinearMetadataTooltip
               item={data[hovered.index]}
               point={!mode ? hovered.point : undefined}
-              schema={jsonSchema.items as JSONSchema7}
+              schema={schema.items as JSONSchema7}
             />
           </div>
         )}
@@ -271,6 +254,7 @@ const IntervalEditorComponent: React.FC<FieldProps> = (props) => {
                 <button
                   className="btn btn-sm btn-secondary"
                   type="button"
+                  aria-label={t('common.previous')}
                   title={t('common.previous')}
                   disabled={selected === 0}
                   onClick={() => {
@@ -285,6 +269,7 @@ const IntervalEditorComponent: React.FC<FieldProps> = (props) => {
                   <button
                     className="btn btn-sm btn-secondary"
                     type="button"
+                    aria-label={t('Editor.linear-metadata.merge-with-left')}
                     title={t('Editor.linear-metadata.merge-with-left')}
                     disabled={selected === 0}
                     onClick={() => {
@@ -297,6 +282,7 @@ const IntervalEditorComponent: React.FC<FieldProps> = (props) => {
                   <button
                     className="btn btn-sm btn-secondary"
                     type="button"
+                    aria-label={t('Editor.linear-metadata.split')}
                     title={t('Editor.linear-metadata.split')}
                     onClick={() => {
                       const splitPosition =
@@ -310,6 +296,7 @@ const IntervalEditorComponent: React.FC<FieldProps> = (props) => {
                   <button
                     className="btn btn-sm btn-secondary"
                     type="button"
+                    aria-label={t('Editor.linear-metadata.merge-with-right')}
                     title={t('Editor.linear-metadata.merge-with-right')}
                     disabled={selected === data.length - 1}
                     onClick={() => customOnChange(mergeIn(data, selected, 'right'))}
@@ -320,6 +307,7 @@ const IntervalEditorComponent: React.FC<FieldProps> = (props) => {
                 <button
                   className="btn btn-sm btn-secondary"
                   type="button"
+                  aria-label={t('common.next')}
                   title={t('common.next')}
                   disabled={selected === data.length - 1}
                   onClick={() => {
@@ -338,6 +326,7 @@ const IntervalEditorComponent: React.FC<FieldProps> = (props) => {
                 name="selected"
                 liveValidate
                 noHtml5Validate
+                validator={validator}
                 tagName="div"
                 schema={
                   (getFieldJsonSchema(schema, registry.rootSchema, requiredFilter, {
@@ -425,7 +414,7 @@ const IntervalEditorComponent: React.FC<FieldProps> = (props) => {
 
 export const FormComponent: React.FC<FieldProps> = (props) => {
   const { name, formContext, schema, registry } = props;
-  const Fields = utils.getDefaultRegistry().fields;
+  const Fields = getDefaultRegistry().fields;
 
   // Get the distance of the geometry
   const distance = useMemo(() => {

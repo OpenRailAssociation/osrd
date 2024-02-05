@@ -3,7 +3,6 @@ import { Feature, LineString, Position } from 'geojson';
 import { lineString, point } from '@turf/helpers';
 import lineSlice from '@turf/line-slice';
 
-import { Dispatch } from 'redux';
 import { osrdEditoastApi, type Identifier } from 'common/api/osrdEditoastApi';
 import { getEntities, getEntity, getMixedEntities } from 'applications/editor/data/api';
 import { DEFAULT_COMMON_TOOL_STATE } from 'applications/editor/tools/consts';
@@ -18,6 +17,7 @@ import type {
 import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
 import type { TrackRange, TrackSectionEntity } from 'applications/editor/tools/trackEdition/types';
 import { NULL_GEOMETRY, type PartialButFor } from 'types';
+import { AppDispatch } from 'store';
 
 /**
  * Check if a route is valid or not.
@@ -148,7 +148,7 @@ export async function getRouteGeometry(
   entryPoint: WayPointEntity,
   exitPoint: WayPointEntity,
   trackRanges: TrackRange[],
-  dispatch: Dispatch
+  dispatch: AppDispatch
 ): Promise<Feature<LineString, { id: string }>> {
   if (!trackRanges.length) return lineString([]);
 
@@ -165,7 +165,7 @@ export async function getRouteGeometry(
 async function getRouteGeometryByRoute(
   infra: number,
   route: RouteEntity,
-  dispatch: Dispatch
+  dispatch: AppDispatch
 ): Promise<Feature<LineString, { id: string }>> {
   const trackRangesResp = dispatch(
     osrdEditoastApi.endpoints.getInfraByInfraIdRoutesTrackRanges.initiate({
@@ -203,7 +203,7 @@ async function getRouteGeometryByRoute(
 export async function getRouteGeometryByRouteId(
   infra: number,
   routeId: string,
-  dispatch: Dispatch
+  dispatch: AppDispatch
 ): Promise<Feature<LineString, { id: string }>> {
   const route = await getEntity<RouteEntity>(infra, routeId, 'Route', dispatch);
 
@@ -215,7 +215,7 @@ export async function getRouteGeometries(
   entryPoint: WayPoint,
   exitPoint: WayPoint,
   candidates: RouteCandidate[],
-  dispatch: Dispatch
+  dispatch: AppDispatch
 ): Promise<Feature<LineString, { id: string }>[]> {
   const extremities = await getMixedEntities<WayPointEntity>(
     infra,
@@ -246,7 +246,7 @@ export async function getCompatibleRoutesPayload(
   infra: number,
   entryPoint: WayPoint,
   exitPoint: WayPoint,
-  dispatch: Dispatch
+  dispatch: AppDispatch
 ) {
   const extremities = await getMixedEntities<WayPointEntity>(
     infra,

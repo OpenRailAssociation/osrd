@@ -9,9 +9,9 @@ import { Feature, LineString, Point } from 'geojson';
 import nearestPointOnLine from '@turf/nearest-point-on-line';
 
 import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
-import { save } from 'reducers/editor';
 import { NULL_GEOMETRY } from 'types';
 import { getNearestPoint } from 'utils/mapHelper';
+import { save } from 'reducers/editor/thunkActions';
 
 import { LAYER_TO_EDITOAST_DICT, Layer } from 'applications/editor/consts';
 import type { Tool } from 'applications/editor/types';
@@ -131,7 +131,7 @@ function getPointEditionTool<T extends EditorPoint>({
               <ConfirmModal
                 title={t(`Editor.tools.${id}-edition.actions.delete-entity`)}
                 onConfirm={async () => {
-                  await dispatch<ReturnType<typeof save>>(
+                  await dispatch(
                     // We have to put state.initialEntity in array because delete initially works with selection which can get multiple elements
                     save(infraID, { delete: [state.initialEntity] })
                   );

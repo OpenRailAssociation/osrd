@@ -3,21 +3,24 @@ import cx from 'classnames';
 import { isNil, toInteger } from 'lodash';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { MapRef } from 'react-map-gl/maplibre';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 import { ApiError } from 'common/api/baseGeneratedApis';
 import type { ObjectType } from 'common/api/osrdEditoastApi';
 import { useInfraID, useOsrdActions } from 'common/osrdContext';
+
+import type { EditorSliceActions } from 'reducers/editor';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import MapButtons from 'common/Map/Buttons/MapButtons';
 import { LoaderState } from 'common/Loaders';
 import MapSearch from 'common/Map/Search/MapSearch';
 import Tipped from 'common/Tipped';
+import { useAppDispatch } from 'store';
 import { getIsLoading } from 'reducers/main/mainSelector';
-import { loadDataModel, updateTotalsIssue, type EditorSliceActions } from 'reducers/editor';
 import { getEditorState, getInfraLockStatus } from 'reducers/editor/selectors';
+import { loadDataModel, updateTotalsIssue } from 'reducers/editor/thunkActions';
 import { updateViewport, type Viewport } from 'reducers/map';
 import { setFailure } from 'reducers/main';
 import { extractMessageFromError } from 'utils/error';
@@ -41,7 +44,7 @@ import type { EditorEntity } from './typesEditorEntity';
 
 const Editor = () => {
   const { t } = useTranslation();
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { openModal, closeModal } = useModal();
   const { updateInfraID, selectLayers } = useOsrdActions() as EditorSliceActions;

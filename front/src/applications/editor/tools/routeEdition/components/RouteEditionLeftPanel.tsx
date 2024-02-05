@@ -1,5 +1,4 @@
 import React, { FC, useCallback, useContext, useEffect, useMemo } from 'react';
-import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import chroma from 'chroma-js';
 import { isNil } from 'lodash';
@@ -9,7 +8,6 @@ import EntityError from 'applications/editor/components/EntityError';
 import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useInfraID } from 'common/osrdContext';
-import { save } from 'reducers/editor';
 
 import type { ExtendedEditorContextType } from 'applications/editor/types';
 import { EndPointKeys } from 'applications/editor/tools/routeEdition/types';
@@ -18,6 +16,8 @@ import type {
   RouteEditionState,
   RouteEntity,
 } from 'applications/editor/tools/routeEdition/types';
+import { useAppDispatch } from 'store';
+import { save } from 'reducers/editor/thunkActions';
 import {
   getCompatibleRoutesPayload,
   getRouteEditionState,
@@ -32,7 +32,7 @@ import { RouteMetadata } from './RouteMetadata';
 const RouteEditionPanel: FC = () => {
   const { t } = useTranslation();
   const infraID = useInfraID();
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const [postPathfinding] = osrdEditoastApi.endpoints.postInfraByInfraIdPathfinding.useMutation();
   const { state, setState, isFormSubmited, setIsFormSubmited } = useContext(
     EditorContext
@@ -88,9 +88,7 @@ const RouteEditionPanel: FC = () => {
             create: [entity],
           };
 
-      const result = (await dispatch<unknown>(save(infraID, payload))) as Array<{
-        railjson: RouteEntity['properties'];
-      }>;
+      const result = await dispatch(save(infraID, payload));
       setState((prev) => ({
         ...getRouteEditionState({
           ...entity,

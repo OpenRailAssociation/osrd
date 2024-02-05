@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { BsExclamationOctagon } from 'react-icons/bs';
-import { useDispatch } from 'react-redux';
+import { useTranslation } from 'react-i18next';
+import { useAppDispatch } from 'store';
 import { type EditorState, editorSliceActions } from 'reducers/editor';
 import type { Layer } from 'applications/editor/consts';
 import cx from 'classnames';
@@ -10,7 +11,8 @@ interface ButtonMapInfraErrorsProps {
 }
 
 const ButtonMapInfraErrors: React.FC<ButtonMapInfraErrorsProps> = ({ editorState }) => {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
+  const { t } = useTranslation('translation');
   const [isActive, setIsActive] = useState(true);
 
   const toggleInfraErrors = () => {
@@ -23,11 +25,13 @@ const ButtonMapInfraErrors: React.FC<ButtonMapInfraErrorsProps> = ({ editorState
 
   return (
     <button
-      onClick={toggleInfraErrors}
       type="button"
       className={cx('editor-btn btn-rounded', {
         active: isActive,
       })}
+      aria-label={t('common.toggleInfraErrors')}
+      title={t('common.toggleInfraErrors')}
+      onClick={toggleInfraErrors}
     >
       <BsExclamationOctagon />
     </button>

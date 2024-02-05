@@ -19,8 +19,6 @@ import type { OsrdSimulationState } from 'reducers/osrdsimulation/types';
 import mapViewerReducer, { mapViewerInitialState, mapViewerSlice } from 'reducers/mapViewer';
 import type { MapViewerState, MapViewerSlice } from 'reducers/mapViewer';
 import editorReducer, { editorInitialState, editorSlice } from 'reducers/editor';
-// Dependency cycle will be removed during the refactoring of store
-// eslint-disable-next-line import/no-cycle
 import osrdsimulationReducer, {
   initialState as osrdSimulationInitialState,
 } from 'reducers/osrdsimulation';

@@ -10,7 +10,7 @@ export default function SelectNewItemButton<
     | {
         id: T;
         label: string;
-      }
+      },
 >({
   options,
   disabled,
@@ -35,6 +35,7 @@ export default function SelectNewItemButton<
         className={cx('select-new-item-button', 'mb-2', {
           disabled: disabled || options.length === 0,
         })}
+        aria-label="add new item"
         onClick={() => (customOnClick ? customOnClick() : setIsSelectVisible(true))}
       >
         <RiAddFill />

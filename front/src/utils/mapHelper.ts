@@ -121,7 +121,7 @@ export function intersectPolygonLine(
 
     const splitters = chunk(intersections, 2).filter((pair) => pair.length === 2) as [
       Point,
-      Point
+      Point,
     ][];
 
     splitters.forEach(([start, end]) => {

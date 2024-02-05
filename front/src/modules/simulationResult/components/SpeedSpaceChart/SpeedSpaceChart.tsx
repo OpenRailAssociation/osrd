@@ -1,8 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { CgLoadbar } from 'react-icons/cg';
 import { GiResize } from 'react-icons/gi';
 import { Rnd } from 'react-rnd';
+import { useTranslation } from 'react-i18next';
 
 import { LightRollingStock, SimulationReport } from 'common/api/osrdEditoastApi';
 import { CHART_AXES, type ChartAxes } from 'modules/simulationResult/consts';
@@ -17,6 +18,7 @@ import {
   createChart,
   drawTrain,
 } from 'modules/simulationResult/components/SpeedSpaceChart/d3Helpers';
+import { useAppDispatch } from 'store';
 import type { SpeedSpaceChart, SpeedSpaceSettingsType, Train } from 'reducers/osrdsimulation/types';
 import { getIsPlaying, getSpeedSpaceSettings } from 'reducers/osrdsimulation/selectors';
 import { updateSpeedSpaceSettings } from 'reducers/osrdsimulation/actions';
@@ -73,7 +75,8 @@ export default function SpeedSpaceChart({
 
   const ref = useRef<HTMLDivElement>(null);
 
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
+  const { t } = useTranslation('simulation');
 
   const toggleSetting = (settings: SpeedSpaceSettingsType) => {
     dispatch(updateSpeedSpaceSettings(settings));
@@ -262,6 +265,8 @@ export default function SpeedSpaceChart({
         <button
           type="button"
           className="showSettingsButton"
+          aria-label={t('toggleSpeedSpaceSettings')}
+          title={t('toggleSpeedSpaceSettings')}
           onClick={() => setShowSettings(!showSettings)}
         >
           <i className={showSettings ? 'icons-arrow-prev' : 'icons-arrow-next'} />
@@ -280,6 +285,8 @@ export default function SpeedSpaceChart({
           <button
             type="button"
             className="btn-rounded btn-rounded-white box-shadow btn-rotate mt-5"
+            aria-label={t('toggleElectricalProfileLegend')}
+            title={t('toggleElectricalProfileLegend')}
             onClick={() => {
               setIsActive(!isActive);
             }}
@@ -290,6 +297,8 @@ export default function SpeedSpaceChart({
         <button
           type="button"
           className="btn-rounded btn-rounded-white box-shadow btn-rotate"
+          aria-label={t('reset')}
+          title={t('reset')}
           onClick={() => setResetChart(true)}
         >
           <GiResize />

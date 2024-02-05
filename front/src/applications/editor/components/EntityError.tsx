@@ -35,9 +35,7 @@ const EntityError: FC<{ entity: EditorEntity; className?: string }> = ({ entity,
         {t('Editor.entities.errors-linked')}
       </h4>
       <div className="small">
-        {data?.results?.map((e) => (
-          <InfraErrorLine key={uniqueId()} error={e.information} />
-        ))}
+        {data?.results?.map((e) => <InfraErrorLine key={uniqueId()} error={e.information} />)}
       </div>
     </div>
   );

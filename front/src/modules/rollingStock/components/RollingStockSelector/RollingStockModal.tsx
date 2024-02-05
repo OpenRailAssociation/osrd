@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useContext, useMemo, type MutableRefObject } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { enhancedEditoastApi } from 'common/api/enhancedEditoastApi';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
+import { useAppDispatch } from 'store';
 import { setFailure } from 'reducers/main';
 import { useOsrdConfSelectors } from 'common/osrdContext';
 
@@ -18,7 +19,7 @@ interface RollingStockModal {
 }
 
 function RollingStockModal({ ref2scroll }: RollingStockModal) {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const { getRollingStockID } = useOsrdConfSelectors();
   const rollingStockID = useSelector(getRollingStockID);
   const { t } = useTranslation(['translation', 'rollingstock']);

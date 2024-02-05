@@ -1,5 +1,4 @@
 import React from 'react';
-import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { MdTrain } from 'react-icons/md';
 import { FcCalendar } from 'react-icons/fc';
@@ -15,6 +14,7 @@ import infraLogo from 'assets/pictures/components/tracks.svg';
 import { useOsrdConfActions } from 'common/osrdContext';
 import type { ScenarioWithCountTrains } from 'common/api/osrdEditoastApi';
 
+import { useAppDispatch } from 'store';
 import { updateSelectedProjection } from 'reducers/osrdsimulation/actions';
 
 type StudyCardProps = {
@@ -25,7 +25,7 @@ type StudyCardProps = {
 export default function StudyCard({ setFilterChips, scenario }: StudyCardProps) {
   const { t } = useTranslation('operationalStudies/study');
   const navigate = useNavigate();
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const { updateScenarioID } = useOsrdConfActions();
 
   const handleClick = () => {

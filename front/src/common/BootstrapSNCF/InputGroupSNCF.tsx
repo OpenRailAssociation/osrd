@@ -15,7 +15,7 @@ export type InputGroupSNCFValue = { type?: string; value?: string | number };
 
 type Props = {
   id: string;
-  label?: React.ReactElement;
+  label?: React.ReactElement | string;
   options: Option[];
   handleType: (type: InputGroupSNCFValue) => void;
   orientation?: string;
@@ -206,6 +206,7 @@ export default function InputGroupSNCF({
         </div>
         {orientation === 'left' && inputField}
         {isDropdownShown && (
+          // eslint-disable-next-line jsx-a11y/control-has-associated-label
           <div
             style={{
               position: 'fixed',

@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 import React, { useEffect, useMemo, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { clamp, first, isEmpty, isNil, keyBy, last, mapValues, omitBy, debounce } from 'lodash';
 import { PiLinkBold, PiLinkBreakBold } from 'react-icons/pi';
 
@@ -29,6 +29,7 @@ import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { WarpingFunction } from 'common/Map/WarpedMap/getWarping';
 import { getImprovedOSRDData } from 'common/Map/WarpedMap/core/helpers';
 
+import { useAppDispatch } from 'store';
 import type { PositionsSpeedTimes, Train } from 'reducers/osrdsimulation/types';
 import {
   getOsrdSimulation,
@@ -69,7 +70,7 @@ function transformDataStatePayload(
  * then mounts a WarpedMap with all that data:
  */
 const SimulationWarpedMap = ({ collapsed }: { collapsed?: boolean }) => {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const infraID = useInfraID();
   const [state, setState] = useState<
     | { type: 'idle' }

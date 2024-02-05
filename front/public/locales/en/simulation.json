@@ -1,6 +1,17 @@
 {
   "allowances": "Allowances",
   "departureTime": "Departure",
+  "electricalProfiles": {
+    "thermal": "Combustion engine",
+    "used": "used",
+    "unused": "unused",
+    "incompatible": "incompatible",
+    "incompatibleMode": "Incompatible mode",
+    "incompatibleProfile": "incompatible profile",
+    "missingProfile": "Missing profile",
+    "legend": "Legend",
+    "notElectrified": "Non-electrified"
+  },
   "errorMessages": {
     "unableToRetrieveTrainSchedule": "Impossible to compute running time",
     "errorLoadingInfra": "Infrastructure loading error"
@@ -15,7 +26,16 @@
   "name": "Name",
   "noData": "No available data",
   "null": "Location not specified",
+  "pauseSimulation": "Pause simulation",
   "placeholderlabel": "Tag filtering",
+  "playSimulation": "Play simulation",
+  "powerRestriction": {
+    "used": "used",
+    "incompatible": "Incompatible power restriction "
+  },
+  "reset": "Reset the chart",
+  "resetTimer": "Reset timer",
+  "rotate": "Rotate the chart",
   "simplify": "Data simplification",
   "speedSpaceSettings": {
     "display": "Display",
@@ -25,21 +45,6 @@
     "slopes": "Slopes",
     "electricalProfiles": "Electric traction",
     "powerRestriction": "Power restriction"
-  },
-  "powerRestriction": {
-    "used": "used",
-    "incompatible": "Incompatible power restriction "
-  },
-  "electricalProfiles": {
-    "thermal": "Combustion engine",
-    "used": "used",
-    "unused": "unused",
-    "incompatible": "incompatible",
-    "incompatibleMode": "Incompatible mode",
-    "incompatibleProfile": "incompatible profile",
-    "missingProfile": "Missing profile",
-    "legend": "Legend",
-    "notElectrified": "Non-electrified"
   },
   "start": "Departure",
   "stop": "Arrival",
@@ -58,6 +63,10 @@
     "speed": "Speed"
   },
   "trainList": "Train list",
+  "toggleElectricalProfileLegend": "Toggle electrical profiles legend",
+  "toggleRewind": "Toggle simulation rewind",
+  "toggleSpeedSpaceSettings": "Toggle chart settings",
+  "toggleWarpedMap": "Toggle the warped map",
   "speedLimitComposition": "Composition",
   "waiting": "Loading...",
   "map": "Map"

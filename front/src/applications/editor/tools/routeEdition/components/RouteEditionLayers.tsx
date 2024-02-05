@@ -1,6 +1,6 @@
 import { Feature, LineString } from 'geojson';
 import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { Layer, Popup, Source, LineLayer } from 'react-map-gl/maplibre';
 import { featureCollection } from '@turf/helpers';
 import { FaFlagCheckered } from 'react-icons/fa';
@@ -16,6 +16,7 @@ import {
 import colors from 'common/Map/Consts/colors';
 import GeoJSONs from 'common/Map/Layers/GeoJSONs';
 import { useInfraID } from 'common/osrdContext';
+import { useAppDispatch } from 'store';
 import { getMap } from 'reducers/map/selectors';
 import { NULL_GEOMETRY, type OmitLayer, type NullGeometry } from 'types';
 
@@ -62,7 +63,7 @@ const RouteEditionLayers = () => {
   ]).concat(selectedRouteDetectors, selectedRouteSwitches);
 
   const { t } = useTranslation();
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const [entityGeo, setEntityGeo] = useState<null | Feature<LineString> | Feature<NullGeometry>>(
     null
   );

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { AiOutlineNumber } from 'react-icons/ai';
 import { IoFootstepsSharp } from 'react-icons/io5';
 import { RxSpaceEvenlyHorizontally } from 'react-icons/rx';
@@ -9,6 +9,7 @@ import { useDebounce } from 'utils/helpers';
 
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
+import { useAppDispatch } from 'store';
 
 export default function TrainAddingSettings() {
   const { getTrainStep, getTrainCount, getTrainDelta } = useOsrdConfSelectors();
@@ -17,7 +18,7 @@ export default function TrainAddingSettings() {
   const [trainCount, setTrainCount] = useState(useSelector(getTrainCount));
   const [trainDelta, setTrainDelta] = useState(useSelector(getTrainDelta));
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const debouncedTrainStep = useDebounce(trainStep, 500);
   const debouncedTrainCount = useDebounce(trainCount, 500);
   const debouncedTrainDelta = useDebounce(trainDelta, 500);

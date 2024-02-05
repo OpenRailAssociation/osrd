@@ -43,6 +43,7 @@
   "projectTags": "Tags",
   "projectUpdated": "Successful update!",
   "projectUpdatedDetails": "{{ name }} project has been updated.",
+  "removeImage": "Remove image",
   "scenariosCount_one": "1 scenario",
   "scenariosCount_other": "{{count}} scenarios",
   "scenariosCount_zero": "No scenario",
@@ -55,5 +56,6 @@
   "studiesCount_one": "1 study",
   "studiesCount_other": "{{count}} studies",
   "studiesCount_zero": "No study",
-  "totalBudget": "Total budget"
+  "totalBudget": "Total budget",
+  "uploadImage": "Upload an image"
 }

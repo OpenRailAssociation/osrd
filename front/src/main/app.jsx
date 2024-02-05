@@ -1,5 +1,4 @@
 import React, { Suspense, useEffect } from 'react';
-import { useDispatch } from 'react-redux';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import 'i18n';
 
@@ -20,6 +19,7 @@ import Scenario from 'applications/operationalStudies/views/Scenario';
 import HomeOperationalStudies from 'applications/operationalStudies/Home';
 import HomeRollingStockEditor from 'applications/rollingStockEditor/Home';
 
+import { useAppDispatch } from 'store';
 import { editorSlice } from 'reducers/editor';
 import { mapViewerSlice } from 'reducers/mapViewer';
 import editorSelectors from 'reducers/editor/selectors';
@@ -112,7 +112,7 @@ const router = createBrowserRouter([
 ]);
 
 export default function App() {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   useEffect(() => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     // Blindly dispatch current front version for storage

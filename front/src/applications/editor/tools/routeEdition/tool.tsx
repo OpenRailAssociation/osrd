@@ -5,7 +5,7 @@ import { AiFillSave } from 'react-icons/ai';
 import { GoPlusCircle, GoTrash } from 'react-icons/go';
 import { BiReset } from 'react-icons/bi';
 
-import { save } from 'reducers/editor';
+import { save } from 'reducers/editor/thunkActions';
 import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
 import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF/ConfirmModal';
 import type { Tool } from 'applications/editor/types';
@@ -71,9 +71,7 @@ const RouteEditionTool: Tool<RouteEditionState> = {
               title={t('Editor.tools.routes-edition.delete-route')}
               onConfirm={async () => {
                 if (state.entity) {
-                  await dispatch<ReturnType<typeof save>>(
-                    save(infraID, { delete: [state.entity] })
-                  );
+                  await dispatch(save(infraID, { delete: [state.entity] }));
                   setState(getRouteEditionState());
                   closeModal();
                   forceRender();

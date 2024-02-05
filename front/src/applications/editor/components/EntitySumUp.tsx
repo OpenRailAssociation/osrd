@@ -1,8 +1,6 @@
 import React, { FC, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { flatMap, forEach, isNumber, uniq } from 'lodash';
-import { useDispatch } from 'react-redux';
-import { Dispatch } from 'redux';
 import { TFunction } from 'i18next';
 import cx from 'classnames';
 
@@ -22,6 +20,7 @@ import type {
   ElectrificationEntity,
   SpeedSectionEntity,
 } from 'applications/editor/tools/rangeEdition/types';
+import { AppDispatch, useAppDispatch } from 'store';
 import { type InfraError, InfraErrorIcon, InfraErrorTypeLabel } from './InfraErrors';
 
 function prettifyStringsArray(strings: string[], finalSeparator: string): string {
@@ -49,7 +48,7 @@ const DEFAULT_CLASSES = {
 async function getAdditionalEntities(
   infra: number,
   entity: EditorEntity,
-  dispatch: Dispatch
+  dispatch: AppDispatch
 ): Promise<Record<string, EditorEntity>> {
   switch (entity.objType) {
     case 'Signal':
@@ -294,7 +293,7 @@ const EntitySumUp: FC<
     | { id: string; objType: EditoastType; entity?: undefined }
   )
 > = ({ entity, id, objType, classes, status, error }) => {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const { t } = useTranslation();
   const infraID = useInfraID();
   const [state, setState] = useState<

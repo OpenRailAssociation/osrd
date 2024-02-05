@@ -74,6 +74,7 @@ const SelectorItem = <T extends string | null>({
           tabIndex={0}
           onClick={() => onItemRemoved(item.id)}
           className="selector-trash-icon"
+          aria-label="Delete item"
         >
           <GoTrash />
         </button>
@@ -113,7 +114,7 @@ const Selector = <
     | {
         id: NonNullable<T>;
         label: string;
-      }
+      },
   // All of these 3 properties have to be defined for the extra column to work so we pass them in an object
 >(
   props: PropsWithChildren<{

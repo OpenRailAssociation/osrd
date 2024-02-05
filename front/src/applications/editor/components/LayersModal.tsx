@@ -1,5 +1,5 @@
 import React, { FC, useEffect, useMemo, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { groupBy, mapKeys, mapValues, sum, isString, isArray, uniq } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { MdSpeed } from 'react-icons/md';
@@ -24,6 +24,7 @@ import SwitchSNCF from 'common/BootstrapSNCF/SwitchSNCF/SwitchSNCF';
 import MapSettingsMapStyle from 'common/Map/Settings/MapSettingsMapStyle';
 import MapSettingsBackgroundSwitches from 'common/Map/Settings/MapSettingsBackgroundSwitches';
 
+import { useAppDispatch } from 'store';
 import { getMap } from 'reducers/map/selectors';
 import { updateLayersSettings } from 'reducers/map';
 import { editorSliceActions } from 'reducers/editor';
@@ -55,7 +56,7 @@ const LayersModal: FC<LayersModalProps> = ({
   frozenLayers,
   onChange,
 }) => {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const { t } = useTranslation();
   const { layersSettings } = useSelector(getMap);
   const [selectedLayers, setSelectedLayers] = useState<Set<Layer>>(initialLayers);

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { GoArrowSwitch, GoPlus, GoRocket, GoTrash } from 'react-icons/go';
 import type { Position } from 'geojson';
 
@@ -15,6 +15,7 @@ import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
 import { zoomToFeature } from 'common/Map/WarpedMap/core/helpers';
 import Tipped from 'common/Tipped';
 
+import { useAppDispatch } from 'store';
 import type { Viewport } from 'reducers/map';
 import { getMap } from 'reducers/map/selectors';
 import { updateViewport } from 'reducers/map';
@@ -34,7 +35,7 @@ function Itinerary({ path }: ItineraryProps) {
 
   const [extViewport, setExtViewport] = useState<Viewport>();
   const [displayTypeAndPath, setDisplayTypeAndPath] = useState(false);
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const map = useSelector(getMap);
   const { t } = useTranslation('operationalStudies/manageTrainSchedule');
   const { openModal } = useModal();
@@ -97,6 +98,8 @@ function Itinerary({ path }: ItineraryProps) {
         <button
           type="button"
           className="btn btn-sm btn-only-icon btn-white px-3 ml-2"
+          aria-label={t('toggleTrigramSearch')}
+          title={t('toggleTrigramSearch')}
           onClick={() => setDisplayTypeAndPath(!displayTypeAndPath)}
         >
           <GoRocket />
@@ -125,8 +128,9 @@ function Itinerary({ path }: ItineraryProps) {
           </button>
           <Tipped mode="right">
             <button
-              className="ml-1 mt-1 btn-danger btn btn-sm"
               type="button"
+              className="ml-1 mt-1 btn-danger btn btn-sm"
+              aria-label={t('deleteRoute')}
               onClick={resetPathfinding}
             >
               <GoTrash />

@@ -1,5 +1,5 @@
 import React from 'react';
-import { WidgetProps } from '@rjsf/core';
+import { WidgetProps } from '@rjsf/utils';
 
 export const FormBeginEndWidget: React.FC<WidgetProps> = (props) => {
   const { id, value, required, readonly, onChange, options, schema } = props;

@@ -41,6 +41,7 @@ export default function ChipsSNCF({
           <button
             type="button"
             className={`chips chips-btn chips-only-icon ${chipColor}`}
+            aria-label="remove tag"
             onClick={() => removeTag(idx)}
           >
             <i className="icons-close" aria-hidden="true" />

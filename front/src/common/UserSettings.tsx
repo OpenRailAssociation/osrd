@@ -2,18 +2,19 @@ import React, { useEffect, useState } from 'react';
 import { ModalBodySNCF, ModalHeaderSNCF } from 'common/BootstrapSNCF/ModalSNCF';
 import { FaCog } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { updateUserPreferences } from 'reducers/user';
 import { AiFillSafetyCertificate } from 'react-icons/ai';
 import cx from 'classnames';
 import { useDebounce } from 'utils/helpers';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
+import { useAppDispatch } from 'store';
 import { getUserPreferences } from 'reducers/user/userSelectors';
 
 export default function UserSettings() {
   const userPreferences = useSelector(getUserPreferences);
   const [safeWordText, setSafeWordText] = useState(userPreferences.safeWord);
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   const debouncedSafeWord = useDebounce(safeWordText, 500);
 

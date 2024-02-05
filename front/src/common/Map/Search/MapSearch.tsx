@@ -1,16 +1,18 @@
 import React, { useCallback } from 'react';
-import { getMap } from 'reducers/map/selectors';
-import { useDispatch, useSelector } from 'react-redux';
-import { updateViewport, updateLineSearchCode, updateMapSearchMarker } from 'reducers/map';
+import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
+import type { MapRef } from 'react-map-gl/maplibre';
+
 import MapSearchStation from 'common/Map/Search/MapSearchStation';
 import Tabs from 'common/Tabs';
 import HearderPopUp from 'common/Map/HeaderPopUp';
 import MapSearchLine from 'common/Map/Search/MapSearchLine';
 import MapSearchSignal from 'common/Map/Search/MapSearchSignal';
 
-import type { MapRef } from 'react-map-gl/maplibre';
+import { useAppDispatch } from 'store';
 import type { Viewport } from 'reducers/map';
+import { getMap } from 'reducers/map/selectors';
+import { updateViewport, updateLineSearchCode, updateMapSearchMarker } from 'reducers/map';
 
 type MapSearchProps = {
   map?: MapRef;
@@ -18,7 +20,7 @@ type MapSearchProps = {
 };
 
 const MapSearch = ({ map, closeMapSearchPopUp }: MapSearchProps) => {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const { smoothTravel } = useSelector(getMap);
 
   const updateViewportChange = useCallback(

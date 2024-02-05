@@ -148,6 +148,7 @@ function SelectImproved<T extends string | SelectOptionObject>({
                 <button
                   className="btn btn-primary btn-only-icon"
                   style={sm ? { minHeight: '1.813rem' } : undefined}
+                  aria-label="toggle selection display"
                   type="button"
                   aria-expanded="false"
                   aria-controls="selecttoggle"
@@ -211,6 +212,7 @@ function SelectImproved<T extends string | SelectOptionObject>({
             zIndex: 2,
           }}
           role="button"
+          aria-label="close selection display"
           tabIndex={0}
           onClick={() => {
             setIsOpen(false);

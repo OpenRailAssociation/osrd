@@ -11,6 +11,7 @@
     "description": "Description",
     "download": "Télécharger",
     "dsc": "Descendant",
+    "duplicate": "Dupliquer",
     "edit": "Éditer",
     "erase": "Effacer",
     "error": "Une erreur est survenue",
@@ -31,6 +32,7 @@
     "selected": "déjà sélectionné",
     "settings": "Paramètres",
     "sort": "Tri",
+    "toggleInfraErrors": "Basculer l'affichage des erreurs d'infrastructure",
     "train(s)": "train(s)",
     "yes": "Oui",
     "zoom-in": "Zoomer",
@@ -43,7 +45,7 @@
       }
     },
     "failure": {
-      "save":{
+      "save": {
         "title": "Echec de l'enregistrement des modifications",
         "text": "Vos modifications n'ont pas été publiées"
       }
@@ -297,7 +299,7 @@
       "routes-edition": {
         "actions": {
           "save-route": "Sauvegarder l'itinéraire",
-          "reset-route":"Réinitialiser l'itinéraire",
+          "reset-route": "Réinitialiser l'itinéraire",
           "delete-route": "Supprimer l'itinéraire",
           "new-route": "Créer un nouvel itinéraire",
           "pick-entry_point": "Outil de sélection du point de départ",

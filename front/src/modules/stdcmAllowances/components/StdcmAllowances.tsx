@@ -1,5 +1,5 @@
 import React from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 
 import { convertInputStringToNumber } from 'utils/strings';
@@ -12,13 +12,14 @@ import type { AllowanceValue } from 'common/api/osrdEditoastApi';
 import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
 import type { InputGroupSNCFValue } from 'common/BootstrapSNCF/InputGroupSNCF';
 
+import { useAppDispatch } from 'store';
 import type { StdcmConfSliceActions } from 'reducers/osrdconf/stdcmConf';
 import type { StdcmConfSelectors } from 'reducers/osrdconf/stdcmConf/selectors';
 import type { StandardAllowance } from 'reducers/osrdconf/consts';
 
 const StdcmAllowances = () => {
   const { t } = useTranslation('allowances');
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const { getGridMarginBefore, getGridMarginAfter, getStandardStdcmAllowance } =
     useOsrdConfSelectors() as StdcmConfSelectors;
   const { updateGridMarginAfter, updateGridMarginBefore, updateStdcmStandardAllowance } =

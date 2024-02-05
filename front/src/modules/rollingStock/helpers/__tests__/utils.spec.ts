@@ -10,7 +10,7 @@ function setupEffortCurve(tractionMode: string, max_efforts: number[], speeds: n
   curves.curves[0].curve.speeds = speeds;
   return curves;
 }
-const tMock: TFunction = (key: string) => key;
+const tMock = (key: string) => key;
 
 describe('checkRollingStockFormValidity', () => {
   describe('Non electric stock', () => {
@@ -50,7 +50,7 @@ describe('checkRollingStockFormValidity', () => {
         },
         invalidEffortCurves: [],
       };
-      const result = checkRollingStockFormValidity(rsForm, effortCurves, tMock);
+      const result = checkRollingStockFormValidity(rsForm, effortCurves, tMock as TFunction);
       expect(result).toEqual(expected);
     });
   });
@@ -101,7 +101,7 @@ describe('checkRollingStockFormValidity', () => {
         },
         invalidEffortCurves: ['comfortTypes.STANDARD > 15000 > unspecified > unspecified'],
       };
-      const result = checkRollingStockFormValidity(rsForm, effortCurves, tMock);
+      const result = checkRollingStockFormValidity(rsForm, effortCurves, tMock as TFunction);
       expect(result).toEqual(expected);
     });
   });
@@ -153,7 +153,7 @@ describe('checkRollingStockFormValidity', () => {
         '1000': setupEffortCurve('1000', [3, 4, 3], [30, 40, 50]),
       };
 
-      const result = checkRollingStockFormValidity(rsForm, effortCurves, tMock);
+      const result = checkRollingStockFormValidity(rsForm, effortCurves, tMock as TFunction);
       expect(result).toEqual({
         ...expected,
         invalidEffortCurves: ['comfortTypes.STANDARD > 15000 > unspecified > unspecified'],
@@ -166,7 +166,7 @@ describe('checkRollingStockFormValidity', () => {
         '1000': setupEffortCurve('1000', [3, 4, 3], [30, 40, 30]),
       };
 
-      const result = checkRollingStockFormValidity(rsForm, effortCurves, tMock);
+      const result = checkRollingStockFormValidity(rsForm, effortCurves, tMock as TFunction);
       expect(result).toEqual({
         ...expected,
         invalidEffortCurves: [
@@ -182,7 +182,7 @@ describe('checkRollingStockFormValidity', () => {
         '1000': setupEffortCurve('1000', [3, 4, 3], [30, 40, 50]),
       };
 
-      const result = checkRollingStockFormValidity(rsForm, effortCurves, tMock);
+      const result = checkRollingStockFormValidity(rsForm, effortCurves, tMock as TFunction);
       expect(result).toEqual(expected);
     });
   });

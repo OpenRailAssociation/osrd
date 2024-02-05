@@ -1,7 +1,6 @@
 import cx from 'classnames';
 import React, { useCallback, useContext } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useDispatch } from 'react-redux';
 import nextId from 'react-id-generator';
 import { GoLock } from 'react-icons/go';
 import { useNavigate } from 'react-router-dom';
@@ -16,6 +15,7 @@ import {
   useOsrdContext,
 } from 'common/osrdContext';
 import { MODES } from 'main/consts';
+import { useAppDispatch } from 'store';
 
 type InfraSelectorModalBodyStandardProps = {
   filter: string;
@@ -45,7 +45,7 @@ export default function InfraSelectorModalBodyStandard({
   isInEditor,
 }: InfraSelectorModalBodyStandardProps) {
   const { t } = useTranslation(['translation', 'infraManagement']);
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const { mode } = useOsrdContext();
   const { updateInfraID } = useInfraActions();
   const infraID = useInfraID();

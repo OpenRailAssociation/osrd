@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { CgLoadbar } from 'react-icons/cg';
 import { GiResize } from 'react-icons/gi';
 import { Rnd } from 'react-rnd';
+import { useTranslation } from 'react-i18next';
 
 import { CHART_AXES } from 'modules/simulationResult/consts';
 import type { TimeScaleDomain } from 'modules/simulationResult/types';
@@ -64,6 +65,7 @@ export type SpaceTimeChartProps = {
 export default function SpaceTimeChart(props: SpaceTimeChartProps) {
   const ref = useRef<HTMLDivElement>(null);
   const rndContainerRef = useRef<Rnd>(null);
+  const { t } = useTranslation('simulation');
 
   const {
     allowancesSettings,
@@ -309,6 +311,8 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
         <button
           type="button"
           className="btn-rounded btn-rounded-white box-shadow btn-rotate"
+          aria-label={t('rotate')}
+          title={t('rotate')}
           onClick={() => toggleRotation()}
         >
           <i className="icons-refresh" />
@@ -316,6 +320,8 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
         <button
           type="button"
           className="btn-rounded btn-rounded-white box-shadow btn-rotate mr-5"
+          aria-label={t('reset')}
+          title={t('reset')}
           onClick={() => {
             setRotate(false);
             setResetChart(true);

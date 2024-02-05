@@ -3,12 +3,13 @@ import { useTranslation } from 'react-i18next';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import { isNil, sortBy, uniqueId } from 'lodash';
 import { FaDiamondTurnRight } from 'react-icons/fa6';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 import { LoaderFill, Spinner } from 'common/Loaders';
-import { updateFiltersIssue } from 'reducers/editor';
+import { useAppDispatch } from 'store';
+import { updateFiltersIssue } from 'reducers/editor/thunkActions';
 import { getEditorIssues } from 'reducers/editor/selectors';
 
 import { EDITOAST_TYPES } from 'applications/editor/consts';
@@ -25,7 +26,7 @@ interface InfraErrorsListProps {
 
 const InfraErrorsList: React.FC<InfraErrorsListProps> = ({ infraID, onErrorClick }) => {
   const { t } = useTranslation();
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const [total, setTotal] = useState<number | null>(null);
   const [next, setNext] = useState<number | null>(null);
   const { filterLevel, filterType } = useSelector(getEditorIssues);
@@ -153,6 +154,7 @@ const InfraErrorsList: React.FC<InfraErrorsListProps> = ({ infraID, onErrorClick
                       <button
                         className="dropdown-item"
                         type="button"
+                        aria-label={t('Editor.infra-errors.list.goto-error')}
                         title={t('Editor.infra-errors.list.goto-error')}
                         onClick={() => {
                           onErrorClick(infraID, item);
