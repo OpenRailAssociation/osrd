@@ -44,6 +44,7 @@ function OpTooltips({ opList }: { opList: SearchResultItemOperationalPoint[] }) 
               className={cx('op', { wrong: !op.name })}
               key={`typeandpath-op-${idx}-${op.trigram}`}
               style={{ left: `${leftMargin}rem` }}
+              title={op.name}
             >
               {op.name ? op.name : <GoAlert />}
             </div>
