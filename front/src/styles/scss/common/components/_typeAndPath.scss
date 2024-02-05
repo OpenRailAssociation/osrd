@@ -29,7 +29,10 @@
       transform: rotate(-40deg);
       transform-origin: left;
       border-radius: var(--border-radius);
+      max-width: 7rem;
       white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
       font-size: 0.7rem;
       &.wrong {
         position: absolute;
