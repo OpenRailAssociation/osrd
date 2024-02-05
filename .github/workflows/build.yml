@@ -382,6 +382,10 @@ jobs:
           report_paths: "./core/build/test-results/test/TEST-*.xml"
           require_tests: true
 
+      - name: Install reviewdog
+        if: failure()
+        uses: reviewdog/action-setup@v1
+
       - name: Report checkstyle lints
         if: failure()
         env:
