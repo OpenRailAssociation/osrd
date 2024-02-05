@@ -41,7 +41,7 @@ actix-web-opentelemetry = { version = "0.16.0", features = ["awc", "metrics"] }
 ipnet = "2.9"
 awc = { version = "3.2.0", features = ["rustls"] }  # the http / ws client
 actix = "0.13.2"
-actix-web-actors = "4.2.0"
+actix-web-actors = "4.3.0"
 bytestring = "1.3.1"
 phf = "0.11.2"
 percent-encoding = "2.3.1"
