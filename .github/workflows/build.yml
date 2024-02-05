@@ -396,7 +396,7 @@ jobs:
               sourceset_name="${report%.xml}"
               report_name="Checkstyle ${sourceset_name}"
               echo "Uploading ${report_name}"
-              reviewdog -name "${report_name}" -reporter=github-pr-check -f=checkstyle < "${report_path}"
+              reviewdog -name "${report_name}" -filter-mode=nofilter -reporter=github-pr-check -f=checkstyle < "${report_path}"
           done
 
       - name: Report spotbugs lints
