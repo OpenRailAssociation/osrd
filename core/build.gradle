@@ -71,6 +71,14 @@ dependencies {
     // Sentry
     implementation libs.sentry
 
+    // OpenTelemetry
+    implementation libs.opentelemetry.api
+    implementation libs.opentelemetry.instrumentation.annotations
+
+    // DataDog
+    implementation 'io.opentracing:opentracing-util:0.33.0'
+    implementation 'com.datadoghq:dd-trace-api:1.28.0'
+
     // Geographic computations
     implementation libs.geodesy
 

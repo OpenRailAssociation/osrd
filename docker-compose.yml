@@ -121,6 +121,7 @@ services:
     restart: unless-stopped
     ports:
       - "4317:4317"
+      - "4318:4318"
       - "16686:16686"
 
   wait-healthy:
