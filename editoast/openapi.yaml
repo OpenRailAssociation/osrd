@@ -664,6 +664,17 @@ components:
     Identifier:
       description: A wrapper around a String that ensures that the string is not empty and not longer than 255 characters.
       type: string
+    ImportTimings:
+      properties:
+        pathfinding:
+          format: double
+          nullable: true
+          type: number
+        simulation:
+          format: double
+          nullable: true
+          type: number
+      type: object
     Infra:
       properties:
         created:
@@ -3447,15 +3458,6 @@ components:
       required:
       - location
       type: object
-    TimetableImportReport:
-      properties:
-        errors:
-          additionalProperties:
-            $ref: '#/components/schemas/TimetableImportError'
-          type: object
-      required:
-      - errors
-      type: object
     TimetableImportTrain:
       properties:
         departure_time:
@@ -3509,6 +3511,17 @@ components:
       - track
       - begin
       - end
+      type: object
+    TrainImportReport:
+      properties:
+        error:
+          allOf:
+          - $ref: '#/components/schemas/TimetableImportError'
+          nullable: true
+        timings:
+          $ref: '#/components/schemas/ImportTimings'
+      required:
+      - timings
       type: object
     TrainSchedule:
       properties:
@@ -6072,7 +6085,9 @@ paths:
       tags:
       - timetable
     post:
-      description: Import a timetable
+      description: |-
+        Import a timetable
+        Returns data about the import for each train imported
       parameters:
       - description: Timetable id
         in: path
@@ -6096,7 +6111,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TimetableImportReport'
+                additionalProperties:
+                  $ref: '#/components/schemas/TrainImportReport'
+                type: object
           description: Import report
       summary: Import a timetable
       tags:

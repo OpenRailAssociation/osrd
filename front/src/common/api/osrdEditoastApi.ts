@@ -1253,7 +1253,9 @@ export type GetTimetableByIdApiArg = {
   /** Timetable id */
   id: number;
 };
-export type PostTimetableByIdApiResponse = /** status 200 Import report */ TimetableImportReport;
+export type PostTimetableByIdApiResponse = /** status 200 Import report */ {
+  [key: string]: TrainImportReport;
+};
 export type PostTimetableByIdApiArg = {
   /** Timetable id */
   id: number;
@@ -2319,10 +2321,13 @@ export type TimetableImportError =
         cause: InternalError;
       };
     };
-export type TimetableImportReport = {
-  errors: {
-    [key: string]: TimetableImportError;
-  };
+export type ImportTimings = {
+  pathfinding?: number | null;
+  simulation?: number | null;
+};
+export type TrainImportReport = {
+  error?: TimetableImportError | null;
+  timings: ImportTimings;
 };
 export type TimetableImportPathLocation =
   | {
