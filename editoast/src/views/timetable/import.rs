@@ -48,6 +48,18 @@ pub struct TimetableImportItem {
     pathfinding_timeout: Option<f64>,
 }
 
+impl TimetableImportItem {
+    pub fn report_error(
+        &self,
+        error: TimetableImportError,
+    ) -> HashMap<String, TimetableImportError> {
+        self.trains
+            .iter()
+            .map(|train| (train.name.clone(), TrainImportReport::new(error.clone())))
+            .collect()
+    }
+}
+
 #[derive(Debug, Clone, Deserialize, ToSchema)]
 pub struct TimetableImportPathStep {
     location: TimetableImportPathLocation,
@@ -79,7 +91,7 @@ struct TimetableImportReport {
 }
 
 #[derive(Debug, Clone, Serialize, ToSchema)]
-enum TimetableImportError {
+pub enum TimetableImportError {
     RollingStockNotFound {
         name: String,
     },
@@ -179,18 +191,11 @@ async fn import_item(
     let Some(rolling_stock_model) =
         RollingStockModel::retrieve_by_name(conn, import_item.rolling_stock.clone()).await?
     else {
-        return Ok(import_item
-            .trains
-            .into_iter()
-            .map(|train| {
-                (
-                    train.name,
-                    TimetableImportError::RollingStockNotFound {
-                        name: import_item.rolling_stock.clone(),
-                    },
-                )
-            })
-            .collect());
+        return Ok(
+            import_item.report_error(TimetableImportError::RollingStockNotFound {
+                name: import_item.rolling_stock.clone(),
+            }),
+        );
     };
     let rolling_stock_id = rolling_stock_model.id.unwrap();
     let rollingstock_version = rolling_stock_model.version;
@@ -209,11 +214,7 @@ async fn import_item(
     let op_to_parts = match find_operation_points(&ops_uic, &ops_id, infra_id, conn).await? {
         Ok(op_to_parts) => op_to_parts,
         Err(err) => {
-            return Ok(import_item
-                .trains
-                .into_iter()
-                .map(|train: TimetableImportTrain| (train.name, err.clone()))
-                .collect());
+            return Ok(import_item.report_error(err.clone()));
         }
     };
     // Create waypoints
@@ -235,18 +236,11 @@ async fn import_item(
     {
         Ok(path_response) => path_response,
         Err(error) => {
-            return Ok(import_item
-                .trains
-                .into_iter()
-                .map(|train: TimetableImportTrain| {
-                    (
-                        train.name,
-                        TimetableImportError::PathfindingError {
-                            cause: error.clone(),
-                        },
-                    )
-                })
-                .collect());
+            return Ok(
+                import_item.report_error(TimetableImportError::PathfindingError {
+                    cause: error.clone(),
+                }),
+            );
         }
     };
     let path_id = path_response.id;
@@ -286,18 +280,11 @@ async fn import_item(
     let response_payload = match request.fetch(core_client).await {
         Ok(response_payload) => response_payload,
         Err(error) => {
-            return Ok(import_item
-                .trains
-                .into_iter()
-                .map(|train: TimetableImportTrain| {
-                    (
-                        train.name,
-                        TimetableImportError::SimulationError {
-                            cause: error.clone(),
-                        },
-                    )
-                })
-                .collect());
+            return Ok(
+                import_item.report_error(TimetableImportError::SimulationError {
+                    cause: error.clone(),
+                }),
+            );
         }
     };
 
