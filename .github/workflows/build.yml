@@ -197,25 +197,8 @@ jobs:
           git log --format=%s origin/"$BASE"..HEAD --skip=1
         }
 
-        if commit_titles | grep -i '^fixup'; then
-          echo "Found a fixup commit"
-          exit 1
-        fi
+        commit_titles | TERM=xterm-color .github/scripts/check-commit-titles.sh
 
-        if commit_titles | grep -P -v '^[\x00-\x7F]*$'; then
-          echo "Commit titles must be ascii only"
-          exit 1
-        fi
-
-        # Check that commit contains ':' (and no autosquashable commit using '!')
-        if commit_titles | grep -E -v '^([-_.a-z]+[,:] )*[-_.a-z]+: [a-z][^#:]*$'; then
-          echo "All commit messages must use the following format:"
-          echo "  core: add fancy margin support"
-          echo
-          echo "When a commit changes multiple modules, separate module names with ', ':"
-          echo "  core, editoast: fix curve simplification"
-          exit 1
-        fi
 
   final_newline_lint:
     runs-on: ubuntu-latest
