@@ -12,6 +12,8 @@ RUN gradle shadowJar --no-daemon && \
 FROM eclipse-temurin:17 AS running_env
 
 COPY --from=build_env /home/gradle/src/build/libs/osrd-all.jar /app/osrd_core.jar
+ADD 'https://dtdg.co/latest-java-tracer' /app/dd-java-agent.jar
+ADD 'https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/latest/download/opentelemetry-javaagent.jar' /app/opentelemetry-javaagent.jar
 
 ARG OSRD_GIT_DESCRIBE
 ENV OSRD_GIT_DESCRIBE=${OSRD_GIT_DESCRIBE}

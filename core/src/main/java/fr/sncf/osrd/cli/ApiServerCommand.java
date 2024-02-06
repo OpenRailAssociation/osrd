@@ -12,6 +12,7 @@ import okhttp3.OkHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.takes.Response;
+import org.takes.Take;
 import org.takes.facets.fallback.*;
 import org.takes.facets.fork.FkRegex;
 import org.takes.facets.fork.TkFork;
@@ -90,13 +91,23 @@ public final class ApiServerCommand implements CliCommand {
                     new FkRegex("/version", new VersionEndpoint()),
                     new FkRegex("/stdcm", new STDCMEndpoint(infraManager)),
                     new FkRegex("/infra_load", new InfraLoadEndpoint(infraManager)));
+            var monitoringType = System.getenv("CORE_MONITOR_TYPE");
+            Take monitoredRoutes = routes;
+            if ("opentelemetry".equals(monitoringType)) {
+                logger.info("wrapping endpoints in opentelemetry");
+                monitoredRoutes = new TkOpenTelemetry(routes);
+            }
+            if ("datadog".equals(monitoringType)) {
+                logger.info("wrapping endpoints in datadog");
+                monitoredRoutes = new TkDataDog(routes);
+            }
 
             // the list of pages which should be displayed on error
             var fallbacks = new FbChain(
                     // if a page isn't found, just return a 404
                     new FbStatus(404, new RsWithStatus(new RsText("Not found"), 404)), new FbSentry());
 
-            var serverConfig = new TkSlf4j(new TkFallback(routes, fallbacks));
+            var serverConfig = new TkSlf4j(new TkFallback(monitoredRoutes, fallbacks));
             var serverBack = new BkParallel(new BkSafe(new BkBasic(serverConfig)), threads);
             var serverFront = new FtBasic(serverBack, port);
             serverFront.start(Exit.NEVER);
