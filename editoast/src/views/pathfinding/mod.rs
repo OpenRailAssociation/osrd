@@ -434,34 +434,24 @@ async fn call_core_pf_and_save_result(
         .with_waypoints(&mut waypoints)
         .with_rolling_stocks(&mut rolling_stocks);
     let steps_duration = payload.steps.iter().map(|step| step.duration).collect();
-    run_pathfinding(
-        &path_request,
-        core.as_ref(),
-        conn,
-        infra_id,
-        update_id,
-        steps_duration,
-    )
-    .await
+    let path_response = path_request.fetch(&core).await?;
+    save_core_pathfinding(path_response, conn, infra_id, update_id, steps_duration).await
 }
 
-/// Run a pathfinding request and store the result in the DB
+/// Turn a core pathfinding response into a [Pathfinding] model and store it in the DB
 /// If `update_id` is provided then update the corresponding path instead of creating a new one
-pub async fn run_pathfinding(
-    path_request: &CorePathfindingRequest,
-    core: &CoreClient,
+pub async fn save_core_pathfinding(
+    core_response: PathfindingResponse,
     conn: &mut PgConnection,
     infra_id: i64,
     update_id: Option<i64>,
     steps_duration: Vec<f64>,
 ) -> Result<Pathfinding> {
-    assert_eq!(steps_duration.len(), path_request.nb_waypoints());
-    let response = path_request.fetch(core).await?;
-    let response_track_map = response.fetch_track_map(infra_id, conn).await?;
-    let response_op_map = response.fetch_op_map(infra_id, conn).await?;
+    let response_track_map = core_response.fetch_track_map(infra_id, conn).await?;
+    let response_op_map = core_response.fetch_op_map(infra_id, conn).await?;
     let pathfinding = Pathfinding::from_core_response(
         steps_duration,
-        response,
+        core_response,
         &response_track_map,
         &response_op_map,
     )?;

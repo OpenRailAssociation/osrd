@@ -19,7 +19,7 @@ use crate::models::{
 };
 use crate::schema::rolling_stock::{RollingStock, RollingStockComfortType};
 use crate::views::infra::{call_core_infra_state, InfraState};
-use crate::views::pathfinding::run_pathfinding;
+use crate::views::pathfinding::save_core_pathfinding;
 use crate::views::train_schedule::process_simulation_response;
 use actix_web::web::Json;
 use chrono::Timelike;
@@ -36,7 +36,8 @@ crate::schemas! {
     TimetableImportPathSchedule,
     TimetableImportPathLocation,
     TimetableImportTrain,
-    TimetableImportReport,
+    TrainImportReport,
+    ImportTimings,
     TimetableImportError,
 }
 #[derive(Debug, Clone, Deserialize, ToSchema)]
@@ -52,10 +53,34 @@ impl TimetableImportItem {
     pub fn report_error(
         &self,
         error: TimetableImportError,
-    ) -> HashMap<String, TimetableImportError> {
+        timings: ImportTimings,
+    ) -> HashMap<String, TrainImportReport> {
         self.trains
             .iter()
-            .map(|train| (train.name.clone(), TrainImportReport::new(error.clone())))
+            .map(|train| {
+                (
+                    train.name.clone(),
+                    TrainImportReport {
+                        error: Some(error.clone()),
+                        timings: timings.clone(),
+                    },
+                )
+            })
+            .collect()
+    }
+
+    pub fn report_success(&self, timings: ImportTimings) -> HashMap<String, TrainImportReport> {
+        self.trains
+            .iter()
+            .map(|train| {
+                (
+                    train.name.clone(),
+                    TrainImportReport {
+                        error: None,
+                        timings: timings.clone(),
+                    },
+                )
+            })
             .collect()
     }
 }
@@ -86,8 +111,15 @@ pub enum TimetableImportPathLocation {
 }
 
 #[derive(Debug, Serialize, ToSchema)]
-struct TimetableImportReport {
-    errors: HashMap<String, TimetableImportError>,
+pub struct TrainImportReport {
+    error: Option<TimetableImportError>,
+    timings: ImportTimings,
+}
+
+#[derive(Debug, Serialize, ToSchema, Default, Clone)]
+pub struct ImportTimings {
+    pub pathfinding: Option<f64>,
+    pub simulation: Option<f64>,
 }
 
 #[derive(Debug, Clone, Serialize, ToSchema)]
@@ -121,13 +153,14 @@ struct OperationalPointsToParts {
 }
 
 /// Import a timetable
+/// Returns data about the import for each train imported
 #[utoipa::path(
     tag = "timetable",
     params(
         ("id" = u64, Path, description = "Timetable id"),
     ),
     responses(
-        (status = 200, description = "Import report", body = TimetableImportReport),
+        (status = 200, description = "Import report", body = HashMap<String, TrainImportReport>),
     ),
 )]
 #[post("")]
@@ -136,7 +169,7 @@ pub async fn post_timetable(
     timetable_id: Path<i64>,
     core_client: Data<CoreClient>,
     data: Json<Vec<TimetableImportItem>>,
-) -> Result<Json<TimetableImportReport>> {
+) -> Result<Json<HashMap<String, TrainImportReport>>> {
     let timetable_id = timetable_id.into_inner();
     let mut conn = db_pool.get().await?;
 
@@ -161,10 +194,10 @@ pub async fn post_timetable(
         return Err(TimetableError::InfraNotLoaded { infra_id }.into());
     }
 
-    let mut errors = HashMap::new();
+    let mut reports = HashMap::new();
 
     for item in data.into_inner() {
-        errors.extend(
+        reports.extend(
             import_item(
                 infra_id,
                 &infra_version,
@@ -177,7 +210,15 @@ pub async fn post_timetable(
         );
     }
 
-    Ok(Json(TimetableImportReport { errors }))
+    Ok(Json(reports))
+}
+
+macro_rules! time_execution {
+    ($s:expr) => {{
+        let timer = std::time::Instant::now();
+        let res = $s;
+        (res, timer.elapsed().as_secs_f64())
+    }};
 }
 
 async fn import_item(
@@ -187,15 +228,17 @@ async fn import_item(
     import_item: TimetableImportItem,
     timetable_id: i64,
     core_client: &CoreClient,
-) -> Result<HashMap<String, TimetableImportError>> {
+) -> Result<HashMap<String, TrainImportReport>> {
+    let mut timings = ImportTimings::default();
     let Some(rolling_stock_model) =
         RollingStockModel::retrieve_by_name(conn, import_item.rolling_stock.clone()).await?
     else {
-        return Ok(
-            import_item.report_error(TimetableImportError::RollingStockNotFound {
+        return Ok(import_item.report_error(
+            TimetableImportError::RollingStockNotFound {
                 name: import_item.rolling_stock.clone(),
-            }),
-        );
+            },
+            timings.clone(),
+        ));
     };
     let rolling_stock_id = rolling_stock_model.id.unwrap();
     let rollingstock_version = rolling_stock_model.version;
@@ -214,7 +257,7 @@ async fn import_item(
     let op_to_parts = match find_operation_points(&ops_uic, &ops_id, infra_id, conn).await? {
         Ok(op_to_parts) => op_to_parts,
         Err(err) => {
-            return Ok(import_item.report_error(err.clone()));
+            return Ok(import_item.report_error(err.clone(), timings.clone()));
         }
     };
     // Create waypoints
@@ -224,28 +267,24 @@ async fn import_item(
     // Run pathfinding
     // TODO: Stops duration should be associated to trains not path
     let steps_duration = vec![0.; pf_request.nb_waypoints()];
-    let path_response = match run_pathfinding(
-        &pf_request,
-        core_client,
-        conn,
-        infra_id,
-        None,
-        steps_duration,
-    )
-    .await
-    {
-        Ok(path_response) => path_response,
+    let (raw_path_response, elapsed) = time_execution!(pf_request.fetch(core_client).await);
+    timings.pathfinding = Some(elapsed);
+    let pathfinding_result = match raw_path_response {
         Err(error) => {
-            return Ok(
-                import_item.report_error(TimetableImportError::PathfindingError {
+            return Ok(import_item.report_error(
+                TimetableImportError::PathfindingError {
                     cause: error.clone(),
-                }),
-            );
+                },
+                timings.clone(),
+            ));
+        }
+        Ok(raw_path_response) => {
+            save_core_pathfinding(raw_path_response, conn, infra_id, None, steps_duration).await?
         }
     };
-    let path_id = path_response.id;
+    let path_id = pathfinding_result.id;
 
-    let waypoint_offsets: Vec<_> = path_response
+    let waypoint_offsets: Vec<_> = pathfinding_result
         .payload
         .path_waypoints
         .iter()
@@ -253,7 +292,7 @@ async fn import_item(
         .map(|pw| pw.path_offset)
         .collect();
 
-    let mut fake_stops: Vec<_> = path_response
+    let mut fake_stops: Vec<_> = pathfinding_result
         .payload
         .path_waypoints
         .clone()
@@ -274,17 +313,20 @@ async fn import_item(
         &mut fake_stops,
         &rolling_stock,
         infra_id,
-        path_response,
+        pathfinding_result,
     );
     // Run the simulation
-    let response_payload = match request.fetch(core_client).await {
+    let (response_payload, elapsed) = time_execution!(request.fetch(core_client).await);
+    timings.simulation = Some(elapsed);
+    let response_payload = match response_payload {
         Ok(response_payload) => response_payload,
         Err(error) => {
-            return Ok(
-                import_item.report_error(TimetableImportError::SimulationError {
+            return Ok(import_item.report_error(
+                TimetableImportError::SimulationError {
                     cause: error.clone(),
-                }),
-            );
+                },
+                timings.clone(),
+            ));
         }
     };
 
@@ -313,7 +355,7 @@ async fn import_item(
         sim_output.create_conn(conn).await?;
     }
 
-    Ok(HashMap::new())
+    Ok(import_item.report_success(timings))
 }
 
 async fn find_operation_points(

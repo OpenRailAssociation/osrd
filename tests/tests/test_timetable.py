@@ -245,10 +245,10 @@ def test_timetable_import(small_scenario: Scenario, fast_rolling_stock: int):
         json=payload,
     )
     r.raise_for_status()
-    errors = r.json()["errors"]
+    results = r.json()
 
-    assert "PathfindingError" in errors["TRAIN1"]
-    assert "RollingStockNotFound" in errors["TRAIN2"]
-    assert "OperationalPointNotFound" in errors["TRAIN3"]
-    assert errors["TRAIN3"]["OperationalPointNotFound"]["missing_uics"] == [32867]
-    assert "TRAIN4" not in errors
+    assert "PathfindingError" in results["TRAIN1"]["error"]
+    assert "RollingStockNotFound" in results["TRAIN2"]["error"]
+    assert "OperationalPointNotFound" in results["TRAIN3"]["error"]
+    assert results["TRAIN3"]["error"]["OperationalPointNotFound"]["missing_uics"] == [32867]
+    assert results["TRAIN4"]["error"] is None
