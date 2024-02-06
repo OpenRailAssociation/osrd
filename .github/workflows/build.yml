@@ -72,7 +72,7 @@ jobs:
 
           for i in $(seq 1 3); do
             echo "::group::Try $i"
-            if docker buildx bake $BAKEFILE $METADATA --push | tee docker-build.log; then
+            if docker buildx bake $BAKEFILE $METADATA --push 2>&1 | tee docker-build.log; then
               echo "::endgroup::"
               exit 0
             fi
