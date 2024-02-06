@@ -1,5 +1,6 @@
 import { CircleLayer, SymbolLayer } from 'react-map-gl/maplibre';
 import { Theme, OmitLayer } from 'types';
+import holyLand from 'common/MotriceRelated/holyLand';
 
 const signalTextOffsetX = 5;
 const signalTextOffsetY = -1;
@@ -91,6 +92,8 @@ export function getSignalLayerProps(context: SignalContext): OmitLayer<SymbolLay
       'icon-offset': iconOffset,
       'icon-image': [
         'case',
+        ['within', holyLand],
+        'UNKNOWN2',
         ['==', ['get', 'signaling_system'], ['literal', null]],
         'UNKNOWN',
         ['concat', ['get', 'signaling_system'], ':', ['get', 'sprite']],
