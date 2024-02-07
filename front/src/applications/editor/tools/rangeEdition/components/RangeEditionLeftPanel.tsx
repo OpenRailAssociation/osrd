@@ -86,8 +86,7 @@ const RangeEditionLeftPanel = () => {
                         announcement: [],
                         r: [],
                         z: {
-                          angle_sch: 0,
-                          angle_geo: 0,
+                          angle: 0,
                           position: firstRange.begin,
                           side: 'LEFT',
                           track: firstRange.track,

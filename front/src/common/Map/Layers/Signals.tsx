@@ -8,12 +8,9 @@ import { MAP_URL } from 'common/Map/const';
 
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 import { getLayersSettings, getMapStyle } from 'reducers/map/selectors';
-import {
-  getPointLayerProps,
-  getSignalLayerProps,
-  getSignalMatLayerProps,
-  SignalContext,
-} from './geoSignalsLayers';
+import getMastLayerProps from 'common/Map/Layers/mastLayerProps';
+import { SignalContext } from 'common/Map/Layers/types';
+import { getPointLayerProps, getSignalLayerProps } from './geoSignalsLayers';
 import getKPLabelLayerProps from './KPLabel';
 
 interface PlatformProps {
@@ -35,6 +32,8 @@ const Signals = ({ colors, sourceTable, layerOrder, infraID }: PlatformProps) =>
     prefix,
     colors,
     sourceTable,
+    sidePropertyName: 'extensions_sncf_side',
+    minzoom: 12,
   };
 
   if (!layersSettings.signals) return null;
@@ -44,16 +43,8 @@ const Signals = ({ colors, sourceTable, layerOrder, infraID }: PlatformProps) =>
       type="vector"
       url={`${MAP_URL}/layer/${sourceTable}/mvt/geo/?infra=${infraID}`}
     >
-      <OrderedLayer
-        {...getSignalMatLayerProps(context)}
-        id="chartis/signal/mast"
-        layerOrder={layerOrder}
-      />
-      <OrderedLayer
-        {...getPointLayerProps(context)}
-        id="chartis/signal/point"
-        layerOrder={layerOrder}
-      />
+      <OrderedLayer {...getMastLayerProps(context)} layerOrder={layerOrder} />
+      <OrderedLayer {...getPointLayerProps(context)} layerOrder={layerOrder} />
       <OrderedLayer
         {...getKPLabelLayerProps({
           bottomOffset: 6.5,
@@ -63,14 +54,9 @@ const Signals = ({ colors, sourceTable, layerOrder, infraID }: PlatformProps) =>
           isSignalisation: true,
           sourceTable,
         })}
-        id="chartis/signal/kp"
         layerOrder={layerOrder}
       />
-      <OrderedLayer
-        {...getSignalLayerProps(context)}
-        id="chartis/signal/signals"
-        layerOrder={layerOrder}
-      />
+      <OrderedLayer {...getSignalLayerProps(context)} layerOrder={layerOrder} />
     </Source>
   );
 };

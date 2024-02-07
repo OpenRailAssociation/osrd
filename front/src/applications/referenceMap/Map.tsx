@@ -1,12 +1,11 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import type { MapRef } from 'react-map-gl/maplibre';
 import ReactMapGL, { AttributionControl, ScaleControl } from 'react-map-gl/maplibre';
 import { isNil } from 'lodash';
+import type { Viewport } from 'reducers/map';
 import { updateMapSearchMarker, updateViewport } from 'reducers/map';
 import { useDispatch, useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
-
-import type { MapRef } from 'react-map-gl/maplibre';
-import type { Viewport } from 'reducers/map';
 
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
 import { getMap, getTerrain3DExaggeration } from 'reducers/map/selectors';
@@ -24,7 +23,7 @@ import IGN_BD_ORTHO from 'common/Map/Layers/IGN_BD_ORTHO';
 import IGN_SCAN25 from 'common/Map/Layers/IGN_SCAN25';
 import IGN_CADASTRE from 'common/Map/Layers/IGN_CADASTRE';
 import MapButtons from 'common/Map/Buttons/MapButtons';
-import NeutralSections from 'common/Map/Layers/NeutralSections';
+import NeutralSections from 'common/Map/Layers/extensions/SNCF/NeutralSections';
 import OSM from 'common/Map/Layers/OSM';
 /* Objects & various */
 import colors from 'common/Map/Consts/colors';
@@ -200,6 +199,7 @@ function Map() {
           infraID={infraID}
         />
         <NeutralSections
+          colors={colors[mapStyle]}
           layerOrder={LAYER_GROUPS_ORDER[LAYERS.DEAD_SECTIONS.GROUP]}
           infraID={infraID}
         />

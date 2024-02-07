@@ -1,5 +1,5 @@
 import React, { FC, ReactNode, useCallback } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { updateLayersSettings } from 'reducers/map';
 import { GiElectric, GiUnplugged } from 'react-icons/gi';

@@ -2,8 +2,8 @@ import React, { FC, useCallback, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import type { MapLayerMouseEvent } from 'maplibre-gl';
-import ReactMapGL, { AttributionControl, ScaleControl } from 'react-map-gl/maplibre';
 import type { MapRef } from 'react-map-gl/maplibre';
+import ReactMapGL, { AttributionControl, ScaleControl } from 'react-map-gl/maplibre';
 import type { Feature, LineString } from 'geojson';
 import { lineString, point } from '@turf/helpers';
 import bbox from '@turf/bbox';
@@ -15,7 +15,7 @@ import type { TrainPosition } from 'modules/simulationResult/components/Simulati
 
 import type { RootState } from 'reducers';
 import type { Viewport } from 'reducers/map';
-import { updateViewport, updateMapSearchMarker } from 'reducers/map';
+import { updateMapSearchMarker, updateViewport } from 'reducers/map';
 import type { Train } from 'reducers/osrdsimulation/types';
 import { getPresentSimulation, getSelectedTrain } from 'reducers/osrdsimulation/selectors';
 
@@ -38,7 +38,7 @@ import MapButtons from 'common/Map/Buttons/MapButtons';
 import SpeedLimits from 'common/Map/Layers/SpeedLimits';
 import PlatformsLayer from 'common/Map/Layers/Platforms';
 import SearchMarker from 'common/Map/Layers/SearchMarker';
-import NeutralSections from 'common/Map/Layers/NeutralSections';
+import NeutralSections from 'common/Map/Layers/extensions/SNCF/NeutralSections';
 import OperationalPoints from 'common/Map/Layers/OperationalPoints';
 
 /* Objects & various */
@@ -65,9 +65,9 @@ import IGN_SCAN25 from 'common/Map/Layers/IGN_SCAN25';
 import IGN_CADASTRE from 'common/Map/Layers/IGN_CADASTRE';
 import IGN_BD_ORTHO from 'common/Map/Layers/IGN_BD_ORTHO';
 import SNCF_PSL from 'common/Map/Layers/extensions/SNCF/PSL';
+import type { SimulationReport } from 'common/api/osrdEditoastApi';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { getTerrain3DExaggeration } from 'reducers/map/selectors';
-import type { SimulationReport } from 'common/api/osrdEditoastApi';
 import { getRegimeKey, getSimulationHoverPositions } from './SimulationResultsMap/helpers';
 import { useChartSynchronizer } from './ChartHelpers/ChartSynchronizer';
 
@@ -316,6 +316,7 @@ const Map: FC<MapProps> = () => {
           infraID={infraID}
         />
         <NeutralSections
+          colors={colors[mapStyle]}
           layerOrder={LAYER_GROUPS_ORDER[LAYERS.DEAD_SECTIONS.GROUP]}
           infraID={infraID}
         />
