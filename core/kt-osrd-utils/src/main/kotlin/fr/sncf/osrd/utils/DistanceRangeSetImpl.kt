@@ -3,7 +3,7 @@ package fr.sncf.osrd.utils
 import com.google.common.collect.RangeSet
 import fr.sncf.osrd.utils.units.Distance
 
-class DistanceRangeSetImpl: DistanceRangeSet {
+class DistanceRangeSetImpl : DistanceRangeSet {
 
     val map = distanceRangeMapOf<Boolean>()
 
@@ -16,8 +16,7 @@ class DistanceRangeSetImpl: DistanceRangeSet {
     }
 
     override fun asList(): List<DistanceRangeSet.RangeSetEntry> {
-        return map
-            .filter { entry -> entry.value }
+        return map.filter { entry -> entry.value }
             .map { entry -> DistanceRangeSet.RangeSetEntry(entry.lower, entry.upper) }
     }
 
@@ -44,11 +43,10 @@ class DistanceRangeSetImpl: DistanceRangeSet {
     companion object {
         fun from(set: RangeSet<Double>): DistanceRangeSet {
             val res = distanceRangeSetOf()
-            for (entry in set.asRanges())
-                res.put(
-                    Distance.fromMeters(entry.lowerEndpoint()),
-                    Distance.fromMeters(entry.upperEndpoint()),
-                )
+            for (entry in set.asRanges()) res.put(
+                Distance.fromMeters(entry.lowerEndpoint()),
+                Distance.fromMeters(entry.upperEndpoint()),
+            )
             return res
         }
     }

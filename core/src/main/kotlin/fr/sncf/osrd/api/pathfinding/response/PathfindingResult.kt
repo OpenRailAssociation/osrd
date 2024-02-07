@@ -10,12 +10,9 @@ import fr.sncf.osrd.railjson.schema.infra.RJSRoutePath
 import fr.sncf.osrd.reporting.warnings.Warning
 
 class PathfindingResult(@JvmField val length: Double) {
-    @JvmField
-    @Json(name = "route_paths")
-    var routePaths: List<RJSRoutePath> = ArrayList()
+    @JvmField @Json(name = "route_paths") var routePaths: List<RJSRoutePath> = ArrayList()
 
-    @Json(name = "path_waypoints")
-    var pathWaypoints: List<PathWaypointResult> = ArrayList()
+    @Json(name = "path_waypoints") var pathWaypoints: List<PathWaypointResult> = ArrayList()
 
     var geographic: RJSLineString? = null
 
@@ -28,11 +25,12 @@ class PathfindingResult(@JvmField val length: Double) {
     var warnings: List<Warning>? = null
 
     companion object {
-        val adapterResult: JsonAdapter<PathfindingResult> = Moshi.Builder()
-            .add(KotlinJsonAdapterFactory())
-            .add(ID.Adapter.FACTORY)
-            .build()
-            .adapter(PathfindingResult::class.java)
-            .failOnUnknown()
+        val adapterResult: JsonAdapter<PathfindingResult> =
+            Moshi.Builder()
+                .add(KotlinJsonAdapterFactory())
+                .add(ID.Adapter.FACTORY)
+                .build()
+                .adapter(PathfindingResult::class.java)
+                .failOnUnknown()
     }
 }

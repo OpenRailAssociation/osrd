@@ -3,8 +3,8 @@ package fr.sncf.osrd.utils
 import com.google.common.collect.RangeMap
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.MutableDistanceArrayList
-import java.util.function.BiFunction
 import java.util.PriorityQueue
+import java.util.function.BiFunction
 import kotlin.math.min
 
 data class DistanceRangeMapImpl<T>(
@@ -12,9 +12,10 @@ data class DistanceRangeMapImpl<T>(
     private val values: MutableList<T?>,
 ) : DistanceRangeMap<T> {
 
-    constructor(entries: List<DistanceRangeMap.RangeMapEntry<T>> = emptyList())
-      : this(MutableDistanceArrayList(), ArrayList()) {
-            putMany(entries)
+    constructor(
+        entries: List<DistanceRangeMap.RangeMapEntry<T>> = emptyList()
+    ) : this(MutableDistanceArrayList(), ArrayList()) {
+        putMany(entries)
     }
 
     /** Sets the value between the lower and upper distances */
@@ -23,12 +24,14 @@ data class DistanceRangeMapImpl<T>(
     }
 
     /**
-    Sets many values more efficiently than many calls to `put`
-
-    The idea here is to build the map from scratch, by iterating over sorted bounds and maintaining entries priority.
-
-    Another idea would be to use a temporary (so we can free the memory later) tree-like structure (RangeMaps lib).
-    */
+     * Sets many values more efficiently than many calls to `put`
+     *
+     * The idea here is to build the map from scratch, by iterating over sorted bounds and
+     * maintaining entries priority.
+     *
+     * Another idea would be to use a temporary (so we can free the memory later) tree-like
+     * structure (RangeMaps lib).
+     */
     override fun putMany(entries: List<DistanceRangeMap.RangeMapEntry<T>>) {
         // Order matters and existing entries should come first.
         val allEntries = asList() + entries
@@ -44,22 +47,22 @@ data class DistanceRangeMapImpl<T>(
             boundEntries.add(Pair(entry.upper, index))
         }
         boundEntries.sortWith(
-            Comparator<Pair<Distance, Int>>{
-                a, b -> a.first.compareTo(b.first)
-            }.thenBy{it.second}
+            Comparator<Pair<Distance, Int>> { a, b -> a.first.compareTo(b.first) }
+                .thenBy { it.second }
         )
 
         // Relevant entries for the interval we're building. Early entries have low priority.
-        val entryQueue = PriorityQueue<Int>{i, j -> j-i}
+        val entryQueue = PriorityQueue<Int> { i, j -> j - i }
         // Value over the interval we're building.
         var value: T? = null
         // Start of the interval we're building.
         var start: Distance? = null
         for ((bound, index) in boundEntries) {
-            // Update relevant entries. PriorityQueue only guarantees linear time for contains and remove, an
+            // Update relevant entries. PriorityQueue only guarantees linear time for contains and
+            // remove,
+            // an
             // optimized heap could be helpful.
-            if (entryQueue.contains(index)) entryQueue.remove(index)
-            else entryQueue.add(index)
+            if (entryQueue.contains(index)) entryQueue.remove(index) else entryQueue.add(index)
 
             // Get the latest relevant entry.
             val entryIndex = entryQueue.peek()
@@ -92,13 +95,7 @@ data class DistanceRangeMapImpl<T>(
         val res = ArrayList<DistanceRangeMap.RangeMapEntry<T>>()
         for (i in 0 until values.size) {
             if (values[i] != null)
-                res.add(
-                    DistanceRangeMap.RangeMapEntry(
-                        bounds[i],
-                        bounds[i + 1],
-                        values[i]!!
-                    )
-                )
+                res.add(DistanceRangeMap.RangeMapEntry(bounds[i], bounds[i + 1], values[i]!!))
         }
         return res
     }
@@ -128,15 +125,13 @@ data class DistanceRangeMapImpl<T>(
     }
 
     override fun shiftPositions(offset: Distance) {
-        for (i in 0 until bounds.size)
-            bounds[i] = bounds[i] + offset
+        for (i in 0 until bounds.size) bounds[i] = bounds[i] + offset
     }
 
     override fun get(offset: Distance): T? {
         // TODO: use a binary search
         for (entry in this.reversed()) {
-            if (entry.lower <= offset && offset <= entry.upper)
-                return entry.value
+            if (entry.lower <= offset && offset <= entry.upper) return entry.value
         }
         return null
     }
@@ -159,10 +154,7 @@ data class DistanceRangeMapImpl<T>(
     override fun <U> updateMap(update: DistanceRangeMap<U>, updateFunction: BiFunction<T, U, T>) {
         for ((updateLower, updateUpper, updateValue) in update) {
             for ((subMapLower, subMapUpper, subMapValue) in this.subMap(updateLower, updateUpper)) {
-                this.put(
-                    subMapLower, subMapUpper,
-                    updateFunction.apply(subMapValue, updateValue)
-                )
+                this.put(subMapLower, subMapUpper, updateFunction.apply(subMapValue, updateValue))
             }
         }
     }
@@ -176,45 +168,42 @@ data class DistanceRangeMapImpl<T>(
         // Merge 0 length ranges
         var i = 0
         while (i < bounds.size - 1) {
-            if (bounds[i] == bounds[i + 1])
-                remove(i)
-            else
-                i++
+            if (bounds[i] == bounds[i + 1]) remove(i) else i++
         }
         // Merge identical ranges
         i = 0
         while (i < values.size - 1) {
-            if (values[i] == values[i + 1])
-                remove(i)
-            else
-                i++
+            if (values[i] == values[i + 1]) remove(i) else i++
         }
-        if (values.isEmpty() && bounds.size > 0)
-            bounds.remove(0)
+        if (values.isEmpty() && bounds.size > 0) bounds.remove(0)
     }
 
-    /** Put a new bound and a matching value at the given offset,
-     * before the existing transition at that index if there is one */
+    /**
+     * Put a new bound and a matching value at the given offset, before the existing transition at
+     * that index if there is one
+     */
     private fun putTransitionBefore(offset: Distance, newValue: T?) {
         var i = 0
-        while (i < bounds.size && bounds[i] < offset)
-            i++
+        while (i < bounds.size && bounds[i] < offset) i++
         bounds.insert(i, offset)
         values.add(min(i, values.size), newValue)
     }
 
-    /** Put a new bound and a matching value at the given offset,
-     * after the existing transition at that index if there is one */
+    /**
+     * Put a new bound and a matching value at the given offset, after the existing transition at
+     * that index if there is one
+     */
     private fun putTransitionAfter(offset: Distance, newValue: T?) {
         var i = 0
-        while (i < bounds.size && bounds[i] <= offset)
-            i++
+        while (i < bounds.size && bounds[i] <= offset) i++
         bounds.insert(i, offset)
         values.add(min(i, values.size), newValue)
     }
 
-    /** Sets the value between the lower and upper distances.
-     * This private method can put null values, used to delete ranges */
+    /**
+     * Sets the value between the lower and upper distances. This private method can put null
+     * values, used to delete ranges
+     */
     private fun putOptional(lower: Distance, upper: Distance, value: T?) {
         if (bounds.size == 0) {
             bounds.add(lower)
@@ -237,8 +226,7 @@ data class DistanceRangeMapImpl<T>(
                 if (lower < bounds[i] && bounds[i] < upper) {
                     bounds.remove(i)
                     values.removeAt(i)
-                } else
-                    i++
+                } else i++
             }
         }
         mergeAdjacent()
@@ -251,14 +239,13 @@ data class DistanceRangeMapImpl<T>(
     }
 
     companion object {
-        fun <T>from(map: RangeMap<Double, T>): DistanceRangeMap<T> {
+        fun <T> from(map: RangeMap<Double, T>): DistanceRangeMap<T> {
             val res = distanceRangeMapOf<T>()
-            for (entry in map.asMapOfRanges())
-                res.put(
-                    Distance.fromMeters(entry.key.lowerEndpoint()),
-                    Distance.fromMeters(entry.key.upperEndpoint()),
-                    entry.value
-                )
+            for (entry in map.asMapOfRanges()) res.put(
+                Distance.fromMeters(entry.key.lowerEndpoint()),
+                Distance.fromMeters(entry.key.upperEndpoint()),
+                entry.value
+            )
             return res
         }
     }

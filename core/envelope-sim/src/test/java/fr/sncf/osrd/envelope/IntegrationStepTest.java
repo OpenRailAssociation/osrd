@@ -14,13 +14,12 @@ public class IntegrationStepTest {
         var acceleration = -2;
         var directionSign = 1;
         var endSpeed = startSpeed + initialTimeDelta * acceleration * directionSign;
-        var initialPositionDelta = directionSign * (startSpeed * initialTimeDelta
-                + 0.5 * acceleration * initialTimeDelta * initialTimeDelta);
-        var step = IntegrationStep.fromNaiveStep(initialTimeDelta, initialPositionDelta, startSpeed,
-                endSpeed, acceleration, directionSign);
+        var initialPositionDelta = directionSign
+                * (startSpeed * initialTimeDelta + 0.5 * acceleration * initialTimeDelta * initialTimeDelta);
+        var step = IntegrationStep.fromNaiveStep(
+                initialTimeDelta, initialPositionDelta, startSpeed, endSpeed, acceleration, directionSign);
         assertEquals(0, step.endSpeed);
-        var expectedEndSpeed =
-                step.startSpeed + step.timeDelta * step.acceleration * step.directionSign;
+        var expectedEndSpeed = step.startSpeed + step.timeDelta * step.acceleration * step.directionSign;
         assertEquals(step.endSpeed, expectedEndSpeed);
         assertTrue(step.timeDelta < initialTimeDelta);
         assertTrue(directionSign * step.positionDelta > 0);
@@ -33,13 +32,12 @@ public class IntegrationStepTest {
         var acceleration = 2;
         var directionSign = -1;
         var endSpeed = startSpeed + initialTimeDelta * acceleration * directionSign;
-        var initialPositionDelta = directionSign * (startSpeed * initialTimeDelta
-                + 0.5 * acceleration * initialTimeDelta * initialTimeDelta);
-        var step = IntegrationStep.fromNaiveStep(initialTimeDelta, initialPositionDelta, startSpeed,
-                endSpeed, acceleration, directionSign);
+        var initialPositionDelta = directionSign
+                * (startSpeed * initialTimeDelta + 0.5 * acceleration * initialTimeDelta * initialTimeDelta);
+        var step = IntegrationStep.fromNaiveStep(
+                initialTimeDelta, initialPositionDelta, startSpeed, endSpeed, acceleration, directionSign);
         assertEquals(0, step.endSpeed);
-        var expectedEndSpeed =
-                step.startSpeed + step.timeDelta * step.acceleration * step.directionSign;
+        var expectedEndSpeed = step.startSpeed + step.timeDelta * step.acceleration * step.directionSign;
         assertEquals(step.endSpeed, expectedEndSpeed);
         assertTrue(step.timeDelta < initialTimeDelta);
         assertTrue(directionSign * step.positionDelta > 0);

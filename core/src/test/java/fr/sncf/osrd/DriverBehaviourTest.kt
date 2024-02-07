@@ -14,11 +14,12 @@ class DriverBehaviourTest {
     @Test
     fun mrspWithDriverBehaviour() {
         val infra = DummyInfra()
-        val blocks = listOf(
-            infra.addBlock("a", "b", 100.meters, 20.0),
-            infra.addBlock("b", "c", 100.meters, 10.0),
-            infra.addBlock("c", "d", 100.meters, 20.0)
-        )
+        val blocks =
+            listOf(
+                infra.addBlock("a", "b", 100.meters, 20.0),
+                infra.addBlock("b", "c", 100.meters, 10.0),
+                infra.addBlock("c", "d", 100.meters, 20.0)
+            )
         val path: PathProperties = makePathProps(infra, infra, blocks, Length(0.meters))
         val testRollingStock = TestTrains.VERY_SHORT_FAST_TRAIN
         val driverBehaviour = DriverBehaviour(2.0, 3.0)
@@ -26,6 +27,9 @@ class DriverBehaviourTest {
         mrsp = driverBehaviour.applyToMRSP(mrsp)
         Assertions.assertEquals(20.0, mrsp.interpolateSpeedRightDir(0.0, 1.0))
         Assertions.assertEquals(10.0, mrsp.interpolateSpeedRightDir((100 - 3).toDouble(), 1.0))
-        Assertions.assertEquals(20.0, mrsp.interpolateSpeedRightDir(200 + 2 + testRollingStock.length, 1.0))
+        Assertions.assertEquals(
+            20.0,
+            mrsp.interpolateSpeedRightDir(200 + 2 + testRollingStock.length, 1.0)
+        )
     }
 }

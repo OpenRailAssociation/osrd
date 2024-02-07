@@ -5,8 +5,10 @@ import com.squareup.moshi.Json;
 /** A fixed time waypoint on the train path */
 public class RJSSchedulePoint {
 
-    /** Fixed point location, as a distance from the start of the path.
-     * When negative, the fixed point is inferred to be at the end of the path. */
+    /**
+     * Fixed point location, as a distance from the start of the path. When negative, the fixed
+     * point is inferred to be at the end of the path.
+     */
     @Json(name = "path_offset")
     public double pathOffset;
 

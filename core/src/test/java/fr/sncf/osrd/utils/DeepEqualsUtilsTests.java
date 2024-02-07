@@ -1,8 +1,8 @@
 package fr.sncf.osrd.utils;
 
-import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.List;
+import org.junit.jupiter.api.Test;
 
 public class DeepEqualsUtilsTests {
     private static class PlaceholderComparable implements DeepComparable<PlaceholderComparable> {
@@ -35,18 +35,14 @@ public class DeepEqualsUtilsTests {
 
     @Test
     public void testEqualListOfArray() {
-        var l1 = List.of(new PlaceholderComparable[]{
-                makeVal(0), makeVal(1)
+        var l1 = List.of(new PlaceholderComparable[] {makeVal(0), makeVal(1)});
+        var l2 = List.of(new PlaceholderComparable[] {makeVal(0), makeVal(1)});
+        var l3 = List.of(new PlaceholderComparable[] {
+            makeVal(0), makeVal(1),
+            makeVal(0), makeVal(1)
         });
-        var l2 = List.of(new PlaceholderComparable[]{
-                makeVal(0), makeVal(1)
-        });
-        var l3 = List.of(new PlaceholderComparable[]{
-                makeVal(0), makeVal(1),
-                makeVal(0), makeVal(1)
-        });
-        var l4 = List.of(new PlaceholderComparable[]{
-                makeVal(0), makeVal(-1),
+        var l4 = List.of(new PlaceholderComparable[] {
+            makeVal(0), makeVal(-1),
         });
         assert DeepEqualsUtils.deepEquals(l1, l2);
         assert !DeepEqualsUtils.deepEquals(l1, l3);

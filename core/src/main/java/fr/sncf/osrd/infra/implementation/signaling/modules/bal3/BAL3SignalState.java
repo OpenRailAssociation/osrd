@@ -50,15 +50,12 @@ public class BAL3SignalState implements SignalState {
     @Override
     @ExcludeFromGeneratedCodeCoverage
     public String toString() {
-        return MoreObjects.toStringHelper(this)
-                .add("aspect", aspect)
-                .toString();
+        return MoreObjects.toStringHelper(this).add("aspect", aspect).toString();
     }
 
     @Override
     public boolean equals(Object o) {
-        if (o instanceof BAL3SignalState other)
-            return other.aspect == aspect;
+        if (o instanceof BAL3SignalState other) return other.aspect == aspect;
         return false;
     }
 

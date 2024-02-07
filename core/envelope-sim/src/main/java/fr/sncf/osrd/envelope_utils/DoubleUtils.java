@@ -4,8 +4,7 @@ public class DoubleUtils {
     /** Clamp a value between a given range */
     public static double clamp(double val, double min, double max) {
         assert min <= max;
-        if (val < min)
-            return min;
+        if (val < min) return min;
         return Math.min(val, max);
     }
 
@@ -13,7 +12,8 @@ public class DoubleUtils {
     public static double conditionalNegate(double value, double flip) {
         final var rawValue = Double.doubleToRawLongBits(value);
         final var rawFlip = Double.doubleToRawLongBits(flip);
-        // the last bit of a float encodes its sign. take the sign bit from flip and xor it with value
+        // the last bit of a float encodes its sign. take the sign bit from flip and xor it with
+        // value
         return Double.longBitsToDouble(rawValue ^ (rawFlip & 0x8000000000000000L));
     }
 

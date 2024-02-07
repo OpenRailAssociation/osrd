@@ -1,8 +1,8 @@
 package fr.sncf.osrd.fast_collections.generator.collections
 
-import fr.sncf.osrd.fast_collections.generator.*
 import com.google.devtools.ksp.processing.Dependencies
 import com.google.devtools.ksp.symbol.KSFile
+import fr.sncf.osrd.fast_collections.generator.*
 import java.util.*
 
 private fun CollectionItemType.generateArray(context: GeneratorContext, currentFile: KSFile) {
@@ -13,8 +13,14 @@ private fun CollectionItemType.generateArray(context: GeneratorContext, currentF
     val fileName = "${simpleName}Array"
     val storageType = storageType!!
     val bufferType = storageType.primitiveArray
-    val file = context.codeGenerator.createNewFile(Dependencies(true, currentFile), generatedPackage, fileName)
-    file.appendText("""
+    val file =
+        context.codeGenerator.createNewFile(
+            Dependencies(true, currentFile),
+            generatedPackage,
+            fileName
+        )
+    file.appendText(
+        """
             @file:OptIn(ExperimentalUnsignedTypes::class)
 
             /** GENERATED CODE */
@@ -170,17 +176,22 @@ private fun CollectionItemType.generateArray(context: GeneratorContext, currentF
                 data[2] = ${storageType.toPrimitive("c")}
                 return ${simpleName}Array(data)
             }
-        """.trimIndent())
+        """
+            .trimIndent()
+    )
     file.close()
 }
-
 
 class ArrayGenerator {
     companion object : CollectionGenerator {
         override val generatorId = "Array"
         override val dependencies = arrayOf("Interfaces")
 
-        override fun generate(context: GeneratorContext, currentFile: KSFile, itemType: CollectionItemType) {
+        override fun generate(
+            context: GeneratorContext,
+            currentFile: KSFile,
+            itemType: CollectionItemType
+        ) {
             itemType.generateArray(context, currentFile)
         }
     }

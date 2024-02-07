@@ -35,19 +35,14 @@ public class DetectionSectionBuilder {
     private final DiTrackInfra infra;
 
     /** Constructor */
-    public DetectionSectionBuilder(
-            DiTrackInfra infra
-    ) {
+    public DetectionSectionBuilder(DiTrackInfra infra) {
         this.infra = infra;
     }
 
-    /**
-     * Build all detection sections and link them to waypoints
-     */
+    /** Build all detection sections and link them to waypoints */
     public static ArrayList<DetectionSection> build(DiTrackInfra infra) {
         return new DetectionSectionBuilder(infra).build();
     }
-
 
     /** Builds all the results */
     private ArrayList<DetectionSection> build() {
@@ -64,10 +59,8 @@ public class DetectionSectionBuilder {
             for (int i = 1; i < waypoints.size(); i++) {
                 var prev = waypoints.get(i - 1);
                 var cur = waypoints.get(i);
-                var detectionSection = new DetectionSectionImpl(ImmutableSet.of(), ImmutableSet.of(
-                        prev.getDiDetector(FORWARD),
-                        cur.getDiDetector(BACKWARD)
-                ));
+                var detectionSection = new DetectionSectionImpl(
+                        ImmutableSet.of(), ImmutableSet.of(prev.getDiDetector(FORWARD), cur.getDiDetector(BACKWARD)));
                 detectionSections.add(detectionSection);
             }
         }
@@ -82,8 +75,7 @@ public class DetectionSectionBuilder {
         for (var track : infra.getTrackGraph().edges()) {
             var beginIndex = getEndpointIndex(track, EdgeEndpoint.BEGIN);
             var endIndex = getEndpointIndex(track, EdgeEndpoint.END);
-            if (track.getDetectors().size() == 0)
-                uf.union(beginIndex, endIndex);
+            if (track.getDetectors().size() == 0) uf.union(beginIndex, endIndex);
 
             for (var neighbor : infra.getTrackGraph().adjacentEdges(track)) {
                 assert neighbor != track;
@@ -102,18 +94,16 @@ public class DetectionSectionBuilder {
         var detectionSectionsMap = new HashMap<Integer, SectionBuilder>();
         for (var track : infra.getTrackGraph().edges()) {
             var waypoints = track.getDetectors();
-            if (waypoints.size() == 0)
-                continue;
+            if (waypoints.size() == 0) continue;
 
             var beginGroupIndex = uf.findRoot(getEndpointIndex(track, EdgeEndpoint.BEGIN));
-            var startDetectionSection = detectionSectionsMap.computeIfAbsent(beginGroupIndex,
-                    (x) -> new SectionBuilder());
+            var startDetectionSection =
+                    detectionSectionsMap.computeIfAbsent(beginGroupIndex, (x) -> new SectionBuilder());
 
             var firstWaypoint = waypoints.get(0);
 
             var endGroupIndex = uf.findRoot(getEndpointIndex(track, EdgeEndpoint.END));
-            var endDetectionSection = detectionSectionsMap.computeIfAbsent(endGroupIndex,
-                    (x) -> new SectionBuilder());
+            var endDetectionSection = detectionSectionsMap.computeIfAbsent(endGroupIndex, (x) -> new SectionBuilder());
             var lastWaypoint = waypoints.get(waypoints.size() - 1);
 
             startDetectionSection.detectors.add(firstWaypoint.getDiDetector(BACKWARD));
@@ -146,8 +136,7 @@ public class DetectionSectionBuilder {
         var res = new ArrayList<DetectionSection>();
         for (var section : detectionSections) {
             assert section.getDetectors().size() != 0;
-            if (section.getDetectors().size() > 1)
-                res.add(section);
+            if (section.getDetectors().size() > 1) res.add(section);
         }
         setNextSections(res);
         return res;

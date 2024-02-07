@@ -12,17 +12,18 @@ import fr.sncf.osrd.fast_collections.PrimitiveWrapperCollections
 import fr.sncf.osrd.utils.Direction
 import fr.sncf.osrd.utils.Endpoint
 
-/** The type-safe index. The index type can be an abstract token,
- * such as an empty sealed interface. */
-@JvmInline
-value class StaticIdx<T>(override val index: UInt) : NumIdx
+/**
+ * The type-safe index. The index type can be an abstract token, such as an empty sealed interface.
+ */
+@JvmInline value class StaticIdx<T>(override val index: UInt) : NumIdx
 
 @JvmInline
 value class OptStaticIdx<T>(private val data: UInt) {
 
     constructor() : this(UInt.MAX_VALUE)
 
-    val isNone: Boolean get () = data == UInt.MAX_VALUE
+    val isNone: Boolean
+        get() = data == UInt.MAX_VALUE
 
     fun asIndex(): StaticIdx<T> {
         assert(!isNone)
@@ -40,29 +41,42 @@ value class OptStaticIdx<T>(private val data: UInt) {
 
 @JvmInline
 value class EndpointStaticIdx<T>(val data: UInt) : NumIdx {
-    public constructor(value: StaticIdx<T>, endpoint: Endpoint) : this(
-        (value.index shl 1) or when (endpoint) {
-            Endpoint.START -> 0u
-            Endpoint.END -> 1u
-        })
+    public constructor(
+        value: StaticIdx<T>,
+        endpoint: Endpoint
+    ) : this(
+        (value.index shl 1) or
+            when (endpoint) {
+                Endpoint.START -> 0u
+                Endpoint.END -> 1u
+            }
+    )
 
-    val value: StaticIdx<T> get() = StaticIdx(data shr 1)
+    val value: StaticIdx<T>
+        get() = StaticIdx(data shr 1)
+
     val endpoint: Endpoint
-        get() = when ((data and 1u) != 0u) {
-            false -> Endpoint.START
-            true -> Endpoint.END
-        }
+        get() =
+            when ((data and 1u) != 0u) {
+                false -> Endpoint.START
+                true -> Endpoint.END
+            }
 
-    val opposite: DirStaticIdx<T> get() = DirStaticIdx(data xor 1u)
-    override val index get() = data
+    val opposite: DirStaticIdx<T>
+        get() = DirStaticIdx(data xor 1u)
+
+    override val index
+        get() = data
 }
-
 
 @JvmInline
 value class OptDirStaticIdx<T>(private val data: UInt) {
     constructor() : this(UInt.MAX_VALUE)
+
     constructor(value: StaticIdx<T>, dir: Direction) : this(DirStaticIdx(value, dir).data)
-    val isNone: Boolean get () = data == UInt.MAX_VALUE
+
+    val isNone: Boolean
+        get() = data == UInt.MAX_VALUE
 
     fun asIndex(): DirStaticIdx<T> {
         assert(!isNone)
@@ -78,13 +92,13 @@ value class OptDirStaticIdx<T>(private val data: UInt) {
     }
 }
 
-
 @JvmInline
 value class OptEndpointStaticIdx<T>(private val data: UInt) {
 
     constructor() : this(UInt.MAX_VALUE)
 
-    val isNone: Boolean get () = data == UInt.MAX_VALUE
+    val isNone: Boolean
+        get() = data == UInt.MAX_VALUE
 
     private fun asIndex(): EndpointStaticIdx<T> {
         assert(!isNone)
@@ -101,10 +115,12 @@ value class OptEndpointStaticIdx<T>(private val data: UInt) {
 }
 
 @JvmInline
-value class StaticPool<IndexT, ValueT>(private val items: MutableList<ValueT>) : StaticIdxIterable<IndexT> {
+value class StaticPool<IndexT, ValueT>(private val items: MutableList<ValueT>) :
+    StaticIdxIterable<IndexT> {
     constructor() : this(mutableListOf())
 
-    val size: UInt get() = items.size.toUInt()
+    val size: UInt
+        get() = items.size.toUInt()
 
     operator fun get(i: StaticIdx<IndexT>): ValueT {
         return items[i.index]
@@ -129,7 +145,6 @@ value class StaticPool<IndexT, ValueT>(private val items: MutableList<ValueT>) :
     }
 }
 
-
 @JvmInline
 value class StaticPoolView<IndexT, ValueT> internal constructor(private val items: List<ValueT>) {
     operator fun get(i: StaticIdx<IndexT>): ValueT {
@@ -139,6 +154,7 @@ value class StaticPoolView<IndexT, ValueT> internal constructor(private val item
 
 interface StaticIdxIterator<IndexT> : Iterator<StaticIdx<IndexT>> {
     override operator fun hasNext(): Boolean
+
     override operator fun next(): StaticIdx<IndexT>
 }
 
@@ -146,17 +162,19 @@ interface StaticIdxIterable<IndexT> : Iterable<StaticIdx<IndexT>> {
     override operator fun iterator(): StaticIdxIterator<IndexT>
 }
 
-class StaticIdxSpaceIterator<IndexT>(val size: UInt) : StaticIdxIterator<IndexT>{
+class StaticIdxSpaceIterator<IndexT>(val size: UInt) : StaticIdxIterator<IndexT> {
     var i = 0u
+
     override fun hasNext(): Boolean {
         return i < size
     }
 
-    override fun next(): StaticIdx<IndexT> = if (i < size) {
-        StaticIdx(i++)
-    } else {
-        throw NoSuchElementException(i.toString())
-    }
+    override fun next(): StaticIdx<IndexT> =
+        if (i < size) {
+            StaticIdx(i++)
+        } else {
+            throw NoSuchElementException(i.toString())
+        }
 }
 
 @JvmInline
@@ -174,7 +192,8 @@ value class StaticIdxSpace<IndexT>(val size: UInt) : StaticIdxIterable<IndexT> {
 class VirtualStaticPool<IndexT>(private var _size: UInt) : StaticIdxIterable<IndexT> {
     constructor() : this(0u)
 
-    val size: UInt get() = _size
+    val size: UInt
+        get() = _size
 
     fun next(): StaticIdx<IndexT> {
         return StaticIdx(_size++)

@@ -10,14 +10,13 @@ class LoadedSignalingInfraImpl(
     val signalingSystemMap: IdxMap<LogicalSignalId, SignalingSystemId>,
     val driverMap: IdxMap<LogicalSignalId, StaticIdxList<SignalDriver>>,
     val blockDelimiterMap: IdxMap<LogicalSignalId, Boolean>,
-) : LoadedSignalInfra{
+) : LoadedSignalInfra {
     private val parentSignalMap: IdxMap<LogicalSignalId, PhysicalSignalId> = IdxMap()
 
     init {
         // initialize the physical signal to logical signal map
-        for (physicalSignal in physicalSignalPool)
-            for (child in physicalSignalPool[physicalSignal])
-                parentSignalMap[child] = physicalSignal
+        for (physicalSignal in physicalSignalPool) for (child in
+            physicalSignalPool[physicalSignal]) parentSignalMap[child] = physicalSignal
     }
 
     override val physicalSignals: StaticIdxSpace<PhysicalSignal>

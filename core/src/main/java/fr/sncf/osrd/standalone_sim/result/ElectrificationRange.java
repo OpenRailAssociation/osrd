@@ -24,18 +24,21 @@ public class ElectrificationRange {
 
     public final ElectrificationUsage electrificationUsage;
 
-    public static final PolymorphicJsonAdapterFactory<ElectrificationUsage> adapter =
-            (PolymorphicJsonAdapterFactory.of(ElectrificationUsage.class, "object_type")
-                    .withSubtype(ElectrificationUsage.ElectrifiedUsage.class, "Electrified")
-                    .withSubtype(ElectrificationUsage.NeutralUsage.class, "Neutral")
-                    .withSubtype(ElectrificationUsage.NonElectrifiedUsage.class, "NonElectrified"));
+    public static final PolymorphicJsonAdapterFactory<ElectrificationUsage> adapter = (PolymorphicJsonAdapterFactory.of(
+                    ElectrificationUsage.class, "object_type")
+            .withSubtype(ElectrificationUsage.ElectrifiedUsage.class, "Electrified")
+            .withSubtype(ElectrificationUsage.NeutralUsage.class, "Neutral")
+            .withSubtype(ElectrificationUsage.NonElectrifiedUsage.class, "NonElectrified"));
 
     public static class ElectrificationUsage {
         public static class ElectrifiedUsage extends ElectrificationUsage {
             public final String mode;
+
             @Json(name = "mode_handled")
             public final boolean modeHandled;
+
             public final String profile;
+
             @Json(name = "profile_handled")
             public final boolean profileHandled;
 
@@ -49,8 +52,10 @@ public class ElectrificationRange {
             /** Returns true if the two electrification usages share the same values */
             public boolean equals(Object other) {
                 if (!(other instanceof ElectrifiedUsage o)) return false;
-                return Objects.equals(this.mode, o.mode) && this.modeHandled == o.modeHandled
-                        && Objects.equals(this.profile, o.profile) && this.profileHandled == o.profileHandled;
+                return Objects.equals(this.mode, o.mode)
+                        && this.modeHandled == o.modeHandled
+                        && Objects.equals(this.profile, o.profile)
+                        && this.profileHandled == o.profileHandled;
             }
 
             public int hashCode() {
@@ -67,7 +72,6 @@ public class ElectrificationRange {
                         .add("profileHandled", profileHandled)
                         .toString();
             }
-
         }
 
         public static class NeutralUsage extends ElectrificationUsage {
@@ -109,7 +113,10 @@ public class ElectrificationRange {
         private static ElectrificationUsage from(RollingStock.InfraConditions usedCond, Electrification seenCond) {
             if (seenCond instanceof NonElectrified) return new NonElectrifiedUsage();
             if (seenCond instanceof Electrified e) {
-                return new ElectrifiedUsage(e.mode, Objects.equals(usedCond.mode(), e.mode), e.profile,
+                return new ElectrifiedUsage(
+                        e.mode,
+                        Objects.equals(usedCond.mode(), e.mode),
+                        e.profile,
                         Objects.equals(usedCond.electricalProfile(), e.profile));
             }
             if (seenCond instanceof Neutral n) {
@@ -123,49 +130,43 @@ public class ElectrificationRange {
         }
     }
 
-    /**
-     * ElectrificationRange constructor
-     */
-    public ElectrificationRange(double start, double stop, RollingStock.InfraConditions usedCond,
-                                Electrification seenCond) {
+    /** ElectrificationRange constructor */
+    public ElectrificationRange(
+            double start, double stop, RollingStock.InfraConditions usedCond, Electrification seenCond) {
         this.start = start;
         this.stop = stop;
         this.electrificationUsage = ElectrificationUsage.from(usedCond, seenCond);
     }
 
-    /**
-     * Returns true if the two ranges share the same values
-     */
+    /** Returns true if the two ranges share the same values */
     public boolean shouldBeMergedWith(ElectrificationRange other) {
         var valueMerge = this.electrificationUsage != null // if null, don't merge
                 && (this.electrificationUsage.equals(other.electrificationUsage)
-                    || other.electrificationUsage == null); // if not null and other is equal or null, merge
+                        || other.electrificationUsage == null); // if not null and other is equal or null, merge
         var rangeMerge = (this.stop <= other.start);
         return valueMerge && rangeMerge;
     }
 
     /**
-     * Builds a list of ElectrificationRanges from two range maps while ensuring
-     * to return the smallest number of ranges
+     * Builds a list of ElectrificationRanges from two range maps while ensuring to return the
+     * smallest number of ranges
      */
     public static List<ElectrificationRange> from(
-            RangeMap<Double, RollingStock.InfraConditions> condsUsed,
-            RangeMap<Double, Electrification> condsSeen) {
+            RangeMap<Double, RollingStock.InfraConditions> condsUsed, RangeMap<Double, Electrification> condsSeen) {
         var res = new ArrayList<ElectrificationRange>();
         var elecCondsSeenMap = condsSeen.asMapOfRanges();
         for (var entry : condsUsed.asMapOfRanges().entrySet()) {
             var range = entry.getKey();
-            if (!range.hasLowerBound() || !range.hasUpperBound() || range.upperEndpoint().equals(range.lowerEndpoint()))
-                continue;
-            assert elecCondsSeenMap.containsKey(range) || condsSeen.subRangeMap(range).asMapOfRanges().isEmpty();
+            if (!range.hasLowerBound()
+                    || !range.hasUpperBound()
+                    || range.upperEndpoint().equals(range.lowerEndpoint())) continue;
+            assert elecCondsSeenMap.containsKey(range)
+                    || condsSeen.subRangeMap(range).asMapOfRanges().isEmpty();
             var usedCond = entry.getValue();
             var seenCond = elecCondsSeenMap.get(range);
-            var newRange = new ElectrificationRange(range.lowerEndpoint(), range.upperEndpoint(), usedCond,
-                    seenCond);
-            if (res.isEmpty() || !res.get(res.size() - 1).shouldBeMergedWith(newRange))
-                res.add(newRange);
-            else
-                res.get(res.size() - 1).stop = newRange.stop;
+            var newRange = new ElectrificationRange(range.lowerEndpoint(), range.upperEndpoint(), usedCond, seenCond);
+            if (res.isEmpty() || !res.get(res.size() - 1).shouldBeMergedWith(newRange)) res.add(newRange);
+            else res.get(res.size() - 1).stop = newRange.stop;
         }
         return res;
     }

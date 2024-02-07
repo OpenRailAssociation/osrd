@@ -2,30 +2,24 @@ package fr.sncf.osrd.pathfinding.constraints
 
 import fr.sncf.osrd.api.pathfinding.constraints.LoadingGaugeConstraints
 import fr.sncf.osrd.graph.Pathfinding
-import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection
-import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSLoadingGaugeLimit
-import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.sim_infra.api.TrackChunk
-import fr.sncf.osrd.sim_infra.api.TrackChunkId
 import fr.sncf.osrd.train.TestTrains
 import fr.sncf.osrd.utils.Direction
 import fr.sncf.osrd.utils.Helpers
-import fr.sncf.osrd.utils.indexing.MutableStaticIdxArraySet
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
+import java.io.IOException
+import java.net.URISyntaxException
+import java.util.stream.Stream
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
-import java.io.IOException
-import java.net.URISyntaxException
-import java.util.function.Consumer
-import java.util.stream.Stream
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class LoadingGaugeConstraintsTest {
@@ -38,32 +32,43 @@ class LoadingGaugeConstraintsTest {
     @BeforeAll
     @Throws(IOException::class, URISyntaxException::class)
     fun setUp() {
-        val rjsInfra = Helpers.getExampleInfra("small_infra/infra.json") // TA0 has gauge constraints
+        val rjsInfra =
+            Helpers.getExampleInfra("small_infra/infra.json") // TA0 has gauge constraints
         val infra = Helpers.fullInfraFromRJS(rjsInfra)
-        loadingGaugeConstraints = LoadingGaugeConstraints(
-            infra.blockInfra, infra.rawInfra,
-            listOf(TestTrains.FAST_TRAIN_LARGE_GAUGE)
-        )
+        loadingGaugeConstraints =
+            LoadingGaugeConstraints(
+                infra.blockInfra,
+                infra.rawInfra,
+                listOf(TestTrains.FAST_TRAIN_LARGE_GAUGE)
+            )
         val ta0 = infra.rawInfra.getTrackSectionFromName("TA0")!!
         val ta0Chunks = infra.rawInfra.getTrackSectionChunks(ta0)
         assert(ta0Chunks.size == 2)
         val ta0Chunk0 =
-            if (infra.rawInfra.getTrackChunkOffset(ta0Chunks[0]) <= Offset(0.meters)) ta0Chunks[0] else ta0Chunks[1]
+            if (infra.rawInfra.getTrackChunkOffset(ta0Chunks[0]) <= Offset(0.meters)) ta0Chunks[0]
+            else ta0Chunks[1]
         val ta0Chunk1 =
-            if (infra.rawInfra.getTrackChunkOffset(ta0Chunks[0]) <= Offset(0.meters)) ta0Chunks[1] else ta0Chunks[0]
+            if (infra.rawInfra.getTrackChunkOffset(ta0Chunks[0]) <= Offset(0.meters)) ta0Chunks[1]
+            else ta0Chunks[0]
         ta0Chunk0Length = infra.rawInfra.getTrackChunkLength(ta0Chunk0)
-        ta0Chunk0block = infra.blockInfra.getBlocksFromTrackChunk(ta0Chunk0, Direction.INCREASING).getAtIndex(0)
-        ta0Chunk1block = infra.blockInfra.getBlocksFromTrackChunk(ta0Chunk1, Direction.INCREASING).getAtIndex(0)
+        ta0Chunk0block =
+            infra.blockInfra.getBlocksFromTrackChunk(ta0Chunk0, Direction.INCREASING).getAtIndex(0)
+        ta0Chunk1block =
+            infra.blockInfra.getBlocksFromTrackChunk(ta0Chunk1, Direction.INCREASING).getAtIndex(0)
         val ta1 = infra.rawInfra.getTrackSectionFromName("TA1")!!
         val ta1Chunks = infra.rawInfra.getTrackSectionChunks(ta1)
         assert(ta1Chunks.size > 0)
         val ta1Chunk0 = ta1Chunks[0]
-        ta1Chunk0block = infra.blockInfra.getBlocksFromTrackChunk(ta1Chunk0, Direction.INCREASING).getAtIndex(0)
+        ta1Chunk0block =
+            infra.blockInfra.getBlocksFromTrackChunk(ta1Chunk0, Direction.INCREASING).getAtIndex(0)
     }
 
     @ParameterizedTest
     @MethodSource("testLoadingGaugeArgs")
-    fun testLoadingGaugeBlockedRanges(blockId: BlockId, expectedBlockedRanges: Collection<Pathfinding.Range<Block>>) {
+    fun testLoadingGaugeBlockedRanges(
+        blockId: BlockId,
+        expectedBlockedRanges: Collection<Pathfinding.Range<Block>>
+    ) {
         val blockedRanges = loadingGaugeConstraints!!.apply(blockId)
         Assertions.assertThat(blockedRanges).isEqualTo(expectedBlockedRanges)
     }
@@ -85,12 +90,15 @@ class LoadingGaugeConstraintsTest {
                     Pathfinding.Range(Length(200.meters), Length(1500.meters)),
                     Pathfinding.Range(Length(1500.meters), ta0Chunk0Length)
                 )
-            ),  // Different loading gauge constraints applied to all block
+            ), // Different loading gauge constraints applied to all block
             Arguments.of(
                 ta0Chunk1block!!.index.toInt(),
                 setOf(Pathfinding.Range(Length<TrackChunk>(0.meters), Length(80.meters)))
-            ),  // Loading gauge constraints partially applied to block
-            Arguments.of(ta1Chunk0block!!.index.toInt(), HashSet<Any>())  // No loading gauge constraints on TA1
+            ), // Loading gauge constraints partially applied to block
+            Arguments.of(
+                ta1Chunk0block!!.index.toInt(),
+                HashSet<Any>()
+            ) // No loading gauge constraints on TA1
         )
     }
 }

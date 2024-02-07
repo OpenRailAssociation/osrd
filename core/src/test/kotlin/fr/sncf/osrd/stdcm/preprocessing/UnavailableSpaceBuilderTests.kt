@@ -1,11 +1,11 @@
 package fr.sncf.osrd.stdcm.preprocessing
 
-import fr.sncf.osrd.utils.Helpers
 import fr.sncf.osrd.standalone_sim.result.ResultTrain.SpacingRequirement
 import fr.sncf.osrd.stdcm.OccupancySegment
 import fr.sncf.osrd.stdcm.preprocessing.implementation.computeUnavailableSpace
 import fr.sncf.osrd.train.TestTrains
 import fr.sncf.osrd.utils.DummyInfra
+import fr.sncf.osrd.utils.Helpers
 import fr.sncf.osrd.utils.units.meters
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -33,14 +33,15 @@ class UnavailableSpaceBuilderTests {
         val infra = DummyInfra()
         val firstBlock = infra.addBlock("a", "b", 1000.meters)
         val secondBlock = infra.addBlock("b", "c", 1000.meters)
-        val res = computeUnavailableSpace(
-            infra,
-            infra,
-            setOf(SpacingRequirement("a->b", 0.0, 100.0)),
-            TestTrains.REALISTIC_FAST_TRAIN,
-            0.0,
-            0.0
-        )
+        val res =
+            computeUnavailableSpace(
+                infra,
+                infra,
+                setOf(SpacingRequirement("a->b", 0.0, 100.0)),
+                TestTrains.REALISTIC_FAST_TRAIN,
+                0.0,
+                0.0
+            )
         assertEquals(
             setOf(
                 OccupancySegment(0.0, 100.0, 0.meters, 1000.meters) // base occupancy
@@ -50,7 +51,12 @@ class UnavailableSpaceBuilderTests {
         assertEquals(
             setOf( // The train needs to have fully cleared the first block,
                 // its head can't be in the beginning of the second block
-                OccupancySegment(0.0, 100.0, 0.meters, TestTrains.REALISTIC_FAST_TRAIN.getLength().meters)
+                OccupancySegment(
+                    0.0,
+                    100.0,
+                    0.meters,
+                    TestTrains.REALISTIC_FAST_TRAIN.getLength().meters
+                )
             ),
             res.get(secondBlock)
         )
@@ -61,14 +67,15 @@ class UnavailableSpaceBuilderTests {
         val infra = DummyInfra()
         val firstBlock = infra.addBlock("a", "b", 1000.meters)
         val secondBlock = infra.addBlock("b", "c", 1000.meters)
-        val res = computeUnavailableSpace(
-            infra,
-            infra,
-            setOf(SpacingRequirement("b->c", 0.0, 100.0)),
-            TestTrains.REALISTIC_FAST_TRAIN,
-            0.0,
-            0.0
-        )
+        val res =
+            computeUnavailableSpace(
+                infra,
+                infra,
+                setOf(SpacingRequirement("b->c", 0.0, 100.0)),
+                TestTrains.REALISTIC_FAST_TRAIN,
+                0.0,
+                0.0
+            )
         assertEquals(
             setOf( // This block would display a warning and wouldn't be available
                 OccupancySegment(0.0, 100.0, 0.meters, 1000.meters)
@@ -99,24 +106,22 @@ class UnavailableSpaceBuilderTests {
         val a2 = infra.addBlock("a2", "center", 1000.meters)
         val b1 = infra.addBlock("center", "b1", 1000.meters)
         val b2 = infra.addBlock("center", "b2", 1000.meters)
-        val res = computeUnavailableSpace(
-            infra,
-            infra,
-            setOf(SpacingRequirement("center->b1", 0.0, 100.0)),
-            TestTrains.REALISTIC_FAST_TRAIN,
-            0.0,
-            0.0
-        )
+        val res =
+            computeUnavailableSpace(
+                infra,
+                infra,
+                setOf(SpacingRequirement("center->b1", 0.0, 100.0)),
+                TestTrains.REALISTIC_FAST_TRAIN,
+                0.0,
+                0.0
+            )
         assertEquals(
             setOf(
                 OccupancySegment(0.0, 100.0, 0.meters, 1000.meters) // base occupancy
             ),
             res.get(b1)
         )
-        assertEquals(
-            setOf<OccupancySegment>(),
-            res.get(b2)
-        )
+        assertEquals(setOf<OccupancySegment>(), res.get(b2))
         assertEquals(
             setOf( // The previous block would display a warning
                 OccupancySegment(0.0, 100.0, 0.meters, 1000.meters)
@@ -132,14 +137,15 @@ class UnavailableSpaceBuilderTests {
         val firstBlock = infra.addBlock("a", "b", 1000.meters)
         infra.addBlock("b", "c", 1000.meters)
         infra.addBlock("c", "d", 1000.meters)
-        val res = computeUnavailableSpace(
-            infra,
-            infra,
-            setOf(SpacingRequirement("c->d", 0.0, 100.0)),
-            TestTrains.REALISTIC_FAST_TRAIN,
-            0.0,
-            0.0
-        )
+        val res =
+            computeUnavailableSpace(
+                infra,
+                infra,
+                setOf(SpacingRequirement("c->d", 0.0, 100.0)),
+                TestTrains.REALISTIC_FAST_TRAIN,
+                0.0,
+                0.0
+            )
         assertEquals(
             setOf( // Second block displays a warning, first block can't be used in the area where
                 // the signal of the second block is visible
@@ -154,26 +160,23 @@ class UnavailableSpaceBuilderTests {
         val infra = DummyInfra()
         val firstBlock = infra.addBlock("a", "b", 1000.meters)
         val secondBlock = infra.addBlock("b", "c", 1000.meters)
-        val res = computeUnavailableSpace(
-            infra,
-            infra,
-            setOf(SpacingRequirement("b->c", 100.0, 200.0)),
-            TestTrains.REALISTIC_FAST_TRAIN,
-            20.0,
-            60.0
-        )
+        val res =
+            computeUnavailableSpace(
+                infra,
+                infra,
+                setOf(SpacingRequirement("b->c", 100.0, 200.0)),
+                TestTrains.REALISTIC_FAST_TRAIN,
+                20.0,
+                60.0
+            )
         // TimeStart and TimeEnd should be adjusted because of the margins
         // (20s before and 60s after)
         assertEquals(
-            setOf(
-                OccupancySegment(80.0, 260.0, 0.meters, 1000.meters)
-            ),
+            setOf(OccupancySegment(80.0, 260.0, 0.meters, 1000.meters)),
             res.get(firstBlock)
         )
         assertEquals(
-            setOf(
-                OccupancySegment(80.0, 260.0, 0.meters, 1000.meters)
-            ),
+            setOf(OccupancySegment(80.0, 260.0, 0.meters, 1000.meters)),
             res.get(secondBlock)
         )
     }

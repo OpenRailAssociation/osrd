@@ -5,17 +5,14 @@ typealias StaticIdxMap<IndexT, ValueT> = IdxMap<StaticIdx<IndexT>, ValueT>
 class IdxMap<IndexT : NumIdx, DataT>(@PublishedApi internal val data: ArrayList<DataT?>) {
     constructor() : this(ArrayList())
 
-
     operator fun get(index: IndexT): DataT? {
-        if (index.index >= data.size.toUInt())
-            return null
+        if (index.index >= data.size.toUInt()) return null
         return data[index.index]
     }
 
     inline fun getOrPut(index: IndexT, crossinline create: (IndexT) -> DataT): DataT {
         val res = get(index)
-        if (res != null)
-            return res
+        if (res != null) return res
         set(index, create(index))
         return get(index)!!
     }
@@ -23,8 +20,7 @@ class IdxMap<IndexT : NumIdx, DataT>(@PublishedApi internal val data: ArrayList<
     operator fun set(index: IndexT, value: DataT) {
         if (index.index >= data.size.toUInt()) {
             data.ensureCapacity(index.index.toInt() + 1)
-            while (index.index >= data.size.toUInt())
-                data.add(null)
+            while (index.index >= data.size.toUInt()) data.add(null)
         }
         data[index.index] = value
     }
@@ -33,12 +29,7 @@ class IdxMap<IndexT : NumIdx, DataT>(@PublishedApi internal val data: ArrayList<
         val res = ArrayList<NewDataT?>()
         for (i in 0 until data.size) {
             val curData = data[i]
-            res.add(
-                if (curData == null)
-                    null
-                else
-                    valueMap(curData)
-            )
+            res.add(if (curData == null) null else valueMap(curData))
         }
         return IdxMap(res)
     }
@@ -52,8 +43,7 @@ class IdxMap<IndexT : NumIdx, DataT>(@PublishedApi internal val data: ArrayList<
                     fun seekToNext(startIndex: Int): Int {
                         var curIndex = startIndex
                         while (curIndex < data.size) {
-                            if (data[curIndex] != null)
-                                return curIndex
+                            if (data[curIndex] != null) return curIndex
                             curIndex++
                         }
                         return -1
@@ -64,8 +54,7 @@ class IdxMap<IndexT : NumIdx, DataT>(@PublishedApi internal val data: ArrayList<
                     }
 
                     override fun next(): DataT {
-                        if (i == -1)
-                            throw RuntimeException("called next after hasNext")
+                        if (i == -1) throw RuntimeException("called next after hasNext")
                         val cur = data[i]!!
                         i = seekToNext(i + 1)
                         return cur

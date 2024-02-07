@@ -28,60 +28,46 @@ import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
 import fr.sncf.osrd.reporting.exceptions.ErrorCause;
 import fr.sncf.osrd.reporting.exceptions.ErrorType;
 import fr.sncf.osrd.reporting.exceptions.OSRDError;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import java.util.List;
 
 public class AllowanceTests {
-    /**
-     * test allowance data
-     */
+    /** test allowance data */
     public static MarecoAllowance makeStandardMarecoAllowance(
-            double beginPos, double endPos,
-            double capacitySpeedLimit,
-            AllowanceValue value
-    ) {
+            double beginPos, double endPos, double capacitySpeedLimit, AllowanceValue value) {
         var defaultRange = List.of(new AllowanceRange(beginPos, endPos, value));
         return new MarecoAllowance(beginPos, endPos, capacitySpeedLimit, defaultRange);
     }
 
     private static LinearAllowance makeStandardLinearAllowance(
-            double beginPos, double endPos,
-            double capacitySpeedLimit,
-            AllowanceValue value
-    ) {
+            double beginPos, double endPos, double capacitySpeedLimit, AllowanceValue value) {
         var defaultRange = List.of(new AllowanceRange(beginPos, endPos, value));
         return new LinearAllowance(beginPos, endPos, capacitySpeedLimit, defaultRange);
     }
 
-    /**
-     * build test allowance data
-     */
+    /** build test allowance data */
     public static Envelope makeSimpleAllowanceEnvelope(
-            EnvelopeSimContext context,
-            Allowance allowance,
-            double speed,
-            boolean stop
-    ) {
+            EnvelopeSimContext context, Allowance allowance, double speed, boolean stop) {
         var path = context.path;
         double[] stops;
-        if (stop)
-            stops = new double[] { 6000, path.getLength() };
-        else
-            stops = new double[] { path.getLength() };
+        if (stop) stops = new double[] {6000, path.getLength()};
+        else stops = new double[] {path.getLength()};
         var maxEffortEnvelope = makeSimpleMaxEffortEnvelope(context, speed, stops);
         return allowance.apply(maxEffortEnvelope, context);
     }
 
     /** Test the continuity of the binary search */
     @SuppressFBWarnings("FL_FLOATS_AS_LOOP_COUNTERS")
-    private void testBinarySearchContinuity(Envelope maxEffortEnvelope,
-                                            AbstractAllowanceWithRanges allowance,
-                                            EnvelopeSimContext context,
-                                            double lowSpeed,
-                                            double highSpeed) {
-        // We check that when the speed parameter goes up, the speed goes up at every point of the envelope
+    private void testBinarySearchContinuity(
+            Envelope maxEffortEnvelope,
+            AbstractAllowanceWithRanges allowance,
+            EnvelopeSimContext context,
+            double lowSpeed,
+            double highSpeed) {
+        // We check that when the speed parameter goes up, the speed goes up at every point of the
+        // envelope
         var previousEnvelope = allowance.computeIteration(maxEffortEnvelope, context, lowSpeed);
         var speedFactor = 1.001;
         for (double speed = lowSpeed; speed < highSpeed; speed *= speedFactor) {
@@ -101,7 +87,7 @@ public class AllowanceTests {
     public void testBinarySearchContinuity() {
         var length = 100_000;
         var testContext = makeSimpleContext(length, 0);
-        var stops = new double[] { 0.5 * length, length };
+        var stops = new double[] {0.5 * length, length};
         var maxEffortEnvelope = makeComplexMaxEffortEnvelope(testContext, stops);
         var allowanceValue = new AllowanceValue.Percentage(10);
 
@@ -117,9 +103,9 @@ public class AllowanceTests {
     @Test
     public void complexTestBinarySearchContinuity() {
         var length = 50_000;
-        var trainPath = buildNonElectrified(length, new double[]{0, 800, 35_000, length}, new double[]{0, 50, -10});
-        var testContext = new EnvelopeSimContext(SimpleRollingStock.STANDARD_TRAIN, trainPath,
-                2., SimpleRollingStock.LINEAR_EFFORT_CURVE_MAP);
+        var trainPath = buildNonElectrified(length, new double[] {0, 800, 35_000, length}, new double[] {0, 50, -10});
+        var testContext = new EnvelopeSimContext(
+                SimpleRollingStock.STANDARD_TRAIN, trainPath, 2., SimpleRollingStock.LINEAR_EFFORT_CURVE_MAP);
         var stops = new double[] {};
         var maxEffortEnvelope = makeSimpleMaxEffortEnvelope(testContext, 44, stops);
         var allowanceValue = new AllowanceValue.Percentage(50);
@@ -130,11 +116,11 @@ public class AllowanceTests {
     }
 
     private void testAllowanceShapeFlat(EnvelopeSimContext context, Allowance allowance) {
-        var allowanceEnvelope = makeSimpleAllowanceEnvelope(
-                context, allowance, 44.4, true);
+        var allowanceEnvelope = makeSimpleAllowanceEnvelope(context, allowance, 44.4, true);
         check(allowanceEnvelope, INCREASING, DECREASING, DECREASING, INCREASING, DECREASING, DECREASING);
         var delta = 2 * allowanceEnvelope.getMaxSpeed() * TIME_STEP;
-        // don't modify these values, they have been calculated with a 0.1s time step, so they can be considered as
+        // don't modify these values, they have been calculated with a 0.1s time step, so they can
+        // be considered as
         // reference, the delta is supposed to absorb the difference for higher time steps
         EnvelopeTransitions.checkPositions(allowanceEnvelope, delta, 1411, 5094, 6000, 6931, 9339);
         assertTrue(allowanceEnvelope.continuous);
@@ -150,12 +136,20 @@ public class AllowanceTests {
     }
 
     private void testAllowanceShapeSteep(EnvelopeSimContext context, Allowance allowance) {
-        var allowanceEnvelope = makeSimpleAllowanceEnvelope(
-                context, allowance, 44.4, true);
-        check(allowanceEnvelope,
-                INCREASING, CONSTANT, DECREASING, DECREASING, INCREASING, CONSTANT, DECREASING, DECREASING);
+        var allowanceEnvelope = makeSimpleAllowanceEnvelope(context, allowance, 44.4, true);
+        check(
+                allowanceEnvelope,
+                INCREASING,
+                CONSTANT,
+                DECREASING,
+                DECREASING,
+                INCREASING,
+                CONSTANT,
+                DECREASING,
+                DECREASING);
         var delta = 2 * allowanceEnvelope.getMaxSpeed() * TIME_STEP;
-        // don't modify these values, they have been calculated with a 0.1s time step, so they can be considered as
+        // don't modify these values, they have been calculated with a 0.1s time step, so they can
+        // be considered as
         // reference, the delta is supposed to absorb the difference for higher time steps
         EnvelopeTransitions.checkPositions(allowanceEnvelope, delta, 1839, 4351, 5747, 6000, 7259, 8764, 9830);
         assertTrue(allowanceEnvelope.continuous);
@@ -170,7 +164,10 @@ public class AllowanceTests {
         testAllowanceShapeSteep(testContext, allowance);
     }
 
-    /** Make sure that applying the given allowance to the given base will result in the correct total time*/
+    /**
+     * Make sure that applying the given allowance to the given base will result in the correct
+     * total time
+     */
     private void testAllowanceTime(Envelope base, EnvelopeSimContext context, AbstractAllowanceWithRanges allowance) {
         var allowanceEnvelope = allowance.apply(base, context);
         var marginTime = allowanceEnvelope.getTotalTime();
@@ -179,10 +176,7 @@ public class AllowanceTests {
     }
 
     private void testTransitionPoints(
-            Envelope base,
-            EnvelopeSimContext context,
-            AbstractAllowanceWithRanges allowance
-    ) {
+            Envelope base, EnvelopeSimContext context, AbstractAllowanceWithRanges allowance) {
 
         final double tolerance = 0.02; // percentage
         var beginPos = allowance.beginPos;
@@ -196,7 +190,8 @@ public class AllowanceTests {
         var timeEndPoint = allowanceEnvelope.interpolateTotalTime(endPos);
         var expectedTimeEndPoint = timeEndPointBase + allowance.getAddedTime(base);
 
-        // make sure begin has the same time before and after margin, and that end is offset by the proper value
+        // make sure begin has the same time before and after margin, and that end is offset by the
+        // proper value
         assertEquals(timeBeginPointBase, timeBeginPoint, context.timeStep);
         assertEquals(expectedTimeEndPoint, timeEndPoint, context.timeStep);
 
@@ -218,7 +213,7 @@ public class AllowanceTests {
         var length = 100_000;
         var testContext = makeSimpleContext(length, 0);
 
-        var stops = new double[] { 50_000, testContext.path.getLength() };
+        var stops = new double[] {50_000, testContext.path.getLength()};
         var maxEffortEnvelope = makeComplexMaxEffortEnvelope(testContext, stops);
 
         var allowanceValue = new AllowanceValue.Percentage(value);
@@ -239,7 +234,7 @@ public class AllowanceTests {
 
         var length = 100_000;
         var testContext = makeSimpleContext(length, 0);
-        var stops = new double[] { 50_000, testContext.path.getLength() };
+        var stops = new double[] {50_000, testContext.path.getLength()};
         var maxEffortEnvelope = makeComplexMaxEffortEnvelope(testContext, stops);
 
         var allowanceValue = new AllowanceValue.TimePerDistance(value);
@@ -253,8 +248,8 @@ public class AllowanceTests {
         testAllowanceTime(maxEffortEnvelope, testContext, linearAllowance);
     }
 
-    private void testEngineeringAllowance(Envelope base, EnvelopeSimContext context,
-                                          AbstractAllowanceWithRanges allowance) {
+    private void testEngineeringAllowance(
+            Envelope base, EnvelopeSimContext context, AbstractAllowanceWithRanges allowance) {
         testAllowanceTime(base, context, allowance);
         testTransitionPoints(base, context, allowance);
     }
@@ -264,7 +259,7 @@ public class AllowanceTests {
     public void testEngineeringAllowancesFlat(double value) {
         var length = 100_000;
         var testContext = makeSimpleContext(length, 0);
-        var stops = new double[] { 50_000, length };
+        var stops = new double[] {50_000, length};
         var maxEffortEnvelope = makeComplexMaxEffortEnvelope(testContext, stops);
         var allowanceValue = new AllowanceValue.FixedTime(value);
 
@@ -282,7 +277,7 @@ public class AllowanceTests {
     public void testEngineeringAllowancesSteep(double value) {
         var length = 100_000;
         var testContext = makeSimpleContext(length, 20);
-        var stops = new double[] { 50000, length };
+        var stops = new double[] {50000, length};
         var maxEffortEnvelope = makeComplexMaxEffortEnvelope(testContext, stops);
         var allowanceValue = new AllowanceValue.FixedTime(value);
 
@@ -302,7 +297,7 @@ public class AllowanceTests {
 
         var length = 100_000;
         var testContext = makeSimpleContext(length, 0);
-        var stops = new double[] { 2_000, 50_000, length };
+        var stops = new double[] {2_000, 50_000, length};
         var maxEffortEnvelope = makeComplexMaxEffortEnvelope(testContext, stops);
         var allowanceValue = new AllowanceValue.FixedTime(value);
         double begin = 20_000;
@@ -317,12 +312,15 @@ public class AllowanceTests {
         testEngineeringAllowance(maxEffortEnvelope, testContext, linearAllowance);
     }
 
-    /** Test the engineering allowance with a high value on a short segment, expecting to get an error */
+    /**
+     * Test the engineering allowance with a high value on a short segment, expecting to get an
+     * error
+     */
     @Test
     public void testImpossibleEngineeringAllowances() {
         var length = 100_000;
         var testContext = makeSimpleContext(length, 0);
-        var stops = new double[] { 50_000, length };
+        var stops = new double[] {50_000, length};
         var maxEffortEnvelope = makeComplexMaxEffortEnvelope(testContext, stops);
         var allowanceValue = new AllowanceValue.FixedTime(20_000);
         double begin = 20_000;
@@ -330,27 +328,24 @@ public class AllowanceTests {
 
         // test mareco distribution
         var marecoAllowance = makeStandardMarecoAllowance(begin, end, 8.33, allowanceValue);
-        var marecoThrown = assertThrows(
-                OSRDError.class,
-                () -> marecoAllowance.apply(maxEffortEnvelope, testContext)
-            );
+        var marecoThrown = assertThrows(OSRDError.class, () -> marecoAllowance.apply(maxEffortEnvelope, testContext));
         assertEquals(marecoThrown.osrdErrorType, ErrorType.AllowanceConvergenceTooMuchTime);
 
         // test linear distribution
         var linearAllowance = makeStandardLinearAllowance(begin, end, 8.33, allowanceValue);
-        var linearThrown = assertThrows(
-                OSRDError.class,
-                () -> linearAllowance.apply(maxEffortEnvelope, testContext)
-            );
+        var linearThrown = assertThrows(OSRDError.class, () -> linearAllowance.apply(maxEffortEnvelope, testContext));
         assertEquals(linearThrown.osrdErrorType, ErrorType.AllowanceConvergenceTooMuchTime);
     }
 
-    /** Test the engineering allowance with a very short segment, to trigger intersectLeftRightParts method */
+    /**
+     * Test the engineering allowance with a very short segment, to trigger intersectLeftRightParts
+     * method
+     */
     @Test
     public void testIntersectLeftRightParts() {
         var length = 100_000;
         var testContext = makeSimpleContext(length, 0);
-        var stops = new double[] { 50_000, length };
+        var stops = new double[] {50_000, length};
         var maxEffortEnvelope = makeComplexMaxEffortEnvelope(testContext, stops);
         var allowanceValue = new AllowanceValue.FixedTime(20);
         double begin = 20_000;
@@ -358,24 +353,20 @@ public class AllowanceTests {
 
         // test mareco distribution
         var marecoAllowance = makeStandardMarecoAllowance(begin, end, 8.33, allowanceValue);
-        var marecoThrown = assertThrows(
-                OSRDError.class,
-                () -> marecoAllowance.apply(maxEffortEnvelope, testContext)
-            );
+        var marecoThrown = assertThrows(OSRDError.class, () -> marecoAllowance.apply(maxEffortEnvelope, testContext));
         assertEquals(marecoThrown.osrdErrorType, ErrorType.AllowanceConvergenceTooMuchTime);
 
         // test linear distribution
         var linearAllowance = makeStandardLinearAllowance(begin, end, 8.33, allowanceValue);
-        var linearThrown =
-                assertThrows(OSRDError.class,
-                        () -> linearAllowance.apply(maxEffortEnvelope, testContext));
+        var linearThrown = assertThrows(OSRDError.class, () -> linearAllowance.apply(maxEffortEnvelope, testContext));
         assertEquals(linearThrown.osrdErrorType, ErrorType.AllowanceConvergenceTooMuchTime);
     }
 
-    private void testEngineeringOnStandardAllowance(Envelope maxEffortEnvelope,
-                                                     EnvelopeSimContext context,
-                                                     AbstractAllowanceWithRanges standardAllowance,
-                                                     AbstractAllowanceWithRanges engineeringAllowance) {
+    private void testEngineeringOnStandardAllowance(
+            Envelope maxEffortEnvelope,
+            EnvelopeSimContext context,
+            AbstractAllowanceWithRanges standardAllowance,
+            AbstractAllowanceWithRanges engineeringAllowance) {
         var standardEnvelope = standardAllowance.apply(maxEffortEnvelope, context);
         var engineeringEnvelope = engineeringAllowance.apply(standardEnvelope, context);
 
@@ -388,14 +379,13 @@ public class AllowanceTests {
 
         var engineeringAllowanceTargetTime = engineeringAllowance.getTargetTime(standardEnvelope);
         assertEquals(marginTime, engineeringAllowanceTargetTime, context.timeStep);
-
     }
 
     @Test
     public void testEngineeringOnStandardAllowances() {
         var length = 100_000;
         var testContext = makeSimpleContext(length, 0);
-        var stops = new double[] { 50_000, length };
+        var stops = new double[] {50_000, length};
         var maxEffortEnvelope = makeComplexMaxEffortEnvelope(testContext, stops);
         double begin = 30_000;
         double end = 50_000;
@@ -406,26 +396,26 @@ public class AllowanceTests {
         // test mareco distribution
         var standardMarecoAllowance = makeStandardMarecoAllowance(0, length, 8.33, standardAllowanceValue);
         var engineeringMarecoAllowance = makeStandardMarecoAllowance(begin, end, 8.33, engineeringAllowanceValue);
-        testEngineeringOnStandardAllowance(maxEffortEnvelope, testContext, standardMarecoAllowance,
-                engineeringMarecoAllowance);
+        testEngineeringOnStandardAllowance(
+                maxEffortEnvelope, testContext, standardMarecoAllowance, engineeringMarecoAllowance);
 
         // test linear distribution
         var standardLinearAllowance = makeStandardLinearAllowance(0, length, 8.33, standardAllowanceValue);
         var engineeringLinearAllowance = makeStandardLinearAllowance(begin, end, 8.33, engineeringAllowanceValue);
-        testEngineeringOnStandardAllowance(maxEffortEnvelope, testContext, standardLinearAllowance,
-                engineeringLinearAllowance);
+        testEngineeringOnStandardAllowance(
+                maxEffortEnvelope, testContext, standardLinearAllowance, engineeringLinearAllowance);
     }
 
-    private void testSeveralEngineeringAllowances(Envelope maxEffortEnvelope,
-                                                   EnvelopeSimContext testContext,
-                                                   AbstractAllowanceWithRanges allowanceA,
-                                                   AbstractAllowanceWithRanges allowanceB) {
+    private void testSeveralEngineeringAllowances(
+            Envelope maxEffortEnvelope,
+            EnvelopeSimContext testContext,
+            AbstractAllowanceWithRanges allowanceA,
+            AbstractAllowanceWithRanges allowanceB) {
         var engineeringEnvelopeA = allowanceA.apply(maxEffortEnvelope, testContext);
         var engineeringEnvelopeB = allowanceB.apply(engineeringEnvelopeA, testContext);
         var baseTime = maxEffortEnvelope.getTotalTime();
-        var targetTime = baseTime
-                + allowanceA.getAddedTime(maxEffortEnvelope)
-                + allowanceB.getAddedTime(maxEffortEnvelope);
+        var targetTime =
+                baseTime + allowanceA.getAddedTime(maxEffortEnvelope) + allowanceB.getAddedTime(maxEffortEnvelope);
         var marginTime = engineeringEnvelopeB.getTotalTime();
         assertEquals(marginTime, targetTime, 2 * testContext.timeStep);
     }
@@ -437,7 +427,7 @@ public class AllowanceTests {
 
         var length = 100_000;
         var testContext = makeSimpleContext(length, 0);
-        var stops = new double[] { 50_000, length };
+        var stops = new double[] {50_000, length};
         var maxEffortEnvelope = makeComplexMaxEffortEnvelope(testContext, stops);
         var allowanceValueA = new AllowanceValue.FixedTime(15);
         var allowanceValueB = new AllowanceValue.FixedTime(30);
@@ -453,7 +443,7 @@ public class AllowanceTests {
         testSeveralEngineeringAllowances(maxEffortEnvelope, testContext, linearAllowanceA, linearAllowanceB);
     }
 
-    /** Test standard mareco allowance with different slopes*/
+    /** Test standard mareco allowance with different slopes */
     @ParameterizedTest
     @ValueSource(ints = {0, 1, 2, 3, 4, 5, 6, 7})
     public void testDifferentSlopes(int slopeProfile) {
@@ -462,36 +452,36 @@ public class AllowanceTests {
         double[] gradePositions;
         switch (slopeProfile) {
             case 0 -> { // no slope / ramp
-                gradePositions = new double[]{0, 100000};
-                gradeValues = new double[]{0};
+                gradePositions = new double[] {0, 100000};
+                gradeValues = new double[] {0};
             }
             case 1 -> { // ramp
-                gradePositions = new double[]{0, 100000};
-                gradeValues = new double[]{10};
+                gradePositions = new double[] {0, 100000};
+                gradeValues = new double[] {10};
             }
             case 2 -> { // low slope
-                gradePositions = new double[]{0, 100000};
-                gradeValues = new double[]{-2};
+                gradePositions = new double[] {0, 100000};
+                gradeValues = new double[] {-2};
             }
             case 3 -> { // high slope
-                gradePositions = new double[]{0, 100000};
-                gradeValues = new double[]{-10};
+                gradePositions = new double[] {0, 100000};
+                gradeValues = new double[] {-10};
             }
             case 4 -> { // high slope on a short segment
-                gradePositions = new double[]{0, 50000, 60000, 100000};
-                gradeValues = new double[]{0, -10, 0};
+                gradePositions = new double[] {0, 50000, 60000, 100000};
+                gradeValues = new double[] {0, -10, 0};
             }
             case 5 -> { // high slope on half
-                gradePositions = new double[]{0, 50000, 100000};
-                gradeValues = new double[]{0, -10};
+                gradePositions = new double[] {0, 50000, 100000};
+                gradeValues = new double[] {0, -10};
             }
             case 6 -> { // high slope on acceleration
-                gradePositions = new double[]{0, 10000, 100000};
-                gradeValues = new double[]{-10, 0};
+                gradePositions = new double[] {0, 10000, 100000};
+                gradeValues = new double[] {-10, 0};
             }
             case 7 -> { // plenty of different slopes
-                gradePositions = new double[]{0, 30000, 31000, 32000, 35000, 40000, 50000, 70000, 75000, 100000};
-                gradeValues = new double[]{0, -20, 10, -15, 5, -2, 0, -10, 10};
+                gradePositions = new double[] {0, 30000, 31000, 32000, 35000, 40000, 50000, 70000, 75000, 100000};
+                gradeValues = new double[] {0, -20, 10, -15, 5, -2, 0, -10, 10};
             }
             default -> throw new RuntimeException("Unable to handle this parameter in testDifferentSlopes");
         }
@@ -499,9 +489,9 @@ public class AllowanceTests {
         var testRollingStock = SimpleRollingStock.STANDARD_TRAIN;
         var length = 100_000;
         var testPath = buildNonElectrified(length, gradePositions, gradeValues);
-        var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP,
-                SimpleRollingStock.LINEAR_EFFORT_CURVE_MAP);
-        var stops = new double[] { 50_000, testContext.path.getLength() };
+        var testContext = new EnvelopeSimContext(
+                testRollingStock, testPath, TIME_STEP, SimpleRollingStock.LINEAR_EFFORT_CURVE_MAP);
+        var stops = new double[] {50_000, testContext.path.getLength()};
         var maxEffortEnvelope = makeComplexMaxEffortEnvelope(testContext, stops);
 
         var allowanceValue = new AllowanceValue.Percentage(40);
@@ -515,7 +505,7 @@ public class AllowanceTests {
         testAllowanceTime(maxEffortEnvelope, testContext, linearAllowance);
     }
 
-    /** Test standard mareco allowance with different accelerating slopes*/
+    /** Test standard mareco allowance with different accelerating slopes */
     @Test
     @SuppressFBWarnings("FL_FLOATS_AS_LOOP_COUNTERS")
     public void testMarecoAcceleratingSlopes() {
@@ -537,9 +527,9 @@ public class AllowanceTests {
 
         var testRollingStock = SimpleRollingStock.STANDARD_TRAIN;
         var testPath = buildNonElectrified(length, gradePositions.toArray(), gradeValues.toArray());
-        var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP,
-                SimpleRollingStock.LINEAR_EFFORT_CURVE_MAP);
-        var stops = new double[]{ 50_000, length };
+        var testContext = new EnvelopeSimContext(
+                testRollingStock, testPath, TIME_STEP, SimpleRollingStock.LINEAR_EFFORT_CURVE_MAP);
+        var stops = new double[] {50_000, length};
         var maxEffortEnvelope = makeComplexMaxEffortEnvelope(testContext, stops);
         var allowanceValue = new AllowanceValue.Percentage(10);
         var allowance = makeStandardMarecoAllowance(0, testPath.getLength(), 1, allowanceValue);
@@ -548,24 +538,47 @@ public class AllowanceTests {
         var marginTime = marecoEnvelope.getTotalTime();
         assertEquals(marginTime, targetTime, testContext.timeStep);
 
-        // The train space-speed curve is supposed to follow this complicated shape because of the multiple
+        // The train space-speed curve is supposed to follow this complicated shape because of the
+        // multiple
         // accelerating slopes.
-        // If the test fails here, plot the curves to check if the curve makes sense and adapt the shape.
-        // It is not supposed to be an absolute shape, but at least to be triggered if MARECO doesn't take into
+        // If the test fails here, plot the curves to check if the curve makes sense and adapt the
+        // shape.
+        // It is not supposed to be an absolute shape, but at least to be triggered if MARECO
+        // doesn't take into
         // account the accelerating slopes
-        check(marecoEnvelope, new EnvelopeShape[][]{
-                {INCREASING}, {CONSTANT}, {DECREASING, INCREASING}, {CONSTANT}, {INCREASING}, {CONSTANT},
-                {DECREASING, INCREASING}, {CONSTANT}, {DECREASING, INCREASING}, {CONSTANT},
-                {DECREASING, INCREASING, DECREASING, INCREASING, DECREASING, INCREASING},
-                {DECREASING}, {INCREASING}, {CONSTANT}, {INCREASING}, {INCREASING}, {CONSTANT},
-                {DECREASING, INCREASING}, {CONSTANT}, {DECREASING, INCREASING, DECREASING},
-                {CONSTANT}, {DECREASING, INCREASING}, {CONSTANT}, {DECREASING, INCREASING, DECREASING}, {DECREASING}
-        }
-        );
+        check(marecoEnvelope, new EnvelopeShape[][] {
+            {INCREASING},
+            {CONSTANT},
+            {DECREASING, INCREASING},
+            {CONSTANT},
+            {INCREASING},
+            {CONSTANT},
+            {DECREASING, INCREASING},
+            {CONSTANT},
+            {DECREASING, INCREASING},
+            {CONSTANT},
+            {DECREASING, INCREASING, DECREASING, INCREASING, DECREASING, INCREASING},
+            {DECREASING},
+            {INCREASING},
+            {CONSTANT},
+            {INCREASING},
+            {INCREASING},
+            {CONSTANT},
+            {DECREASING, INCREASING},
+            {CONSTANT},
+            {DECREASING, INCREASING, DECREASING},
+            {CONSTANT},
+            {DECREASING, INCREASING},
+            {CONSTANT},
+            {DECREASING, INCREASING, DECREASING},
+            {DECREASING}
+        });
     }
 
-    /** Tests allowances on a short path where we can't reach max speed,
-     * we only check internal asserts (convergence, envelope asserts) */
+    /**
+     * Tests allowances on a short path where we can't reach max speed, we only check internal
+     * asserts (convergence, envelope asserts)
+     */
     @Test
     public void testShortAllowances() {
         var length = 100;
@@ -586,7 +599,7 @@ public class AllowanceTests {
     public void testAllowancesStartDeceleration() {
         var length = 100_000;
         var testContext = makeSimpleContext(length, 0);
-        var stops = new double[] { 6000, length };
+        var stops = new double[] {6000, length};
 
         var maxEffortEnvelope = makeComplexMaxEffortEnvelope(testContext, stops);
         double start = 0;
@@ -613,7 +626,7 @@ public class AllowanceTests {
     public void testAllowancesEndAcceleration() {
         var length = 100_000;
         var testContext = makeSimpleContext(length, 0);
-        var stops = new double[] { 6000, length };
+        var stops = new double[] {6000, length};
 
         var maxEffortEnvelope = makeComplexMaxEffortEnvelope(testContext, stops);
         double end = 0;
@@ -639,12 +652,12 @@ public class AllowanceTests {
         var testRollingStock = SimpleRollingStock.SHORT_TRAIN;
 
         var length = 15000;
-        var gradePositions = new double[] { 0, 7000, 8100, length };
-        var gradeValues = new double[] { 0, 40, 0 };
+        var gradePositions = new double[] {0, 7000, 8100, length};
+        var gradeValues = new double[] {0, 40, 0};
         var testPath = buildNonElectrified(length, gradePositions, gradeValues);
-        var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP,
-                SimpleRollingStock.LINEAR_EFFORT_CURVE_MAP);
-        var stops = new double[] { length };
+        var testContext = new EnvelopeSimContext(
+                testRollingStock, testPath, TIME_STEP, SimpleRollingStock.LINEAR_EFFORT_CURVE_MAP);
+        var stops = new double[] {length};
         var begin = 3000;
         var end = 8000;
 
@@ -664,7 +677,7 @@ public class AllowanceTests {
     public void testAllowancesDiscontinuity() {
         var length = 10000;
         var testContext = makeSimpleContext(length, 0);
-        var stops = new double[] { length };
+        var stops = new double[] {length};
         var begin = 2000;
 
         var maxEffortEnvelope = makeSimpleMaxEffortEnvelope(testContext, 30, stops);
@@ -688,16 +701,13 @@ public class AllowanceTests {
         // test mareco distribution
         var marecoAllowance = makeStandardMarecoAllowance(0, length, 1, allowanceValue);
         var marecoException = assertThrows(
-                OSRDError.class, 
-                () -> makeSimpleAllowanceEnvelope(testContext, marecoAllowance, 44.4, true)
-            );
+                OSRDError.class, () -> makeSimpleAllowanceEnvelope(testContext, marecoAllowance, 44.4, true));
         assertEquals(marecoException.osrdErrorType, ErrorType.AllowanceConvergenceTooMuchTime);
 
         // test linear distribution
         var linearAllowance = makeStandardLinearAllowance(0, length, 1, allowanceValue);
-        var linearException = assertThrows(OSRDError.class, () ->
-                makeSimpleAllowanceEnvelope(testContext, linearAllowance, 44.4, true)
-        );
+        var linearException = assertThrows(
+                OSRDError.class, () -> makeSimpleAllowanceEnvelope(testContext, linearAllowance, 44.4, true));
         assertEquals(linearException.osrdErrorType, ErrorType.AllowanceConvergenceTooMuchTime);
         assert linearException.cause == ErrorCause.USER;
     }
@@ -706,18 +716,12 @@ public class AllowanceTests {
     public void testShortLinear() {
         var length = 1000;
         var testContext = makeSimpleContext(length, 0, 2.0);
-        var stops = new double[] { length };
+        var stops = new double[] {length};
 
         var maxEffortEnvelope = makeSimpleMaxEffortEnvelope(testContext, 100, stops);
 
         var allowance = new LinearAllowance(
-                800,
-                810,
-                10,
-                List.of(
-                        new AllowanceRange(800, 810, new AllowanceValue.Percentage(10))
-                )
-        );
+                800, 810, 10, List.of(new AllowanceRange(800, 810, new AllowanceValue.Percentage(10))));
         var thrown = assertThrows(OSRDError.class, () -> allowance.apply(maxEffortEnvelope, testContext));
         assertEquals(thrown.osrdErrorType, ErrorType.AllowanceConvergenceTooMuchTime);
     }
@@ -726,27 +730,15 @@ public class AllowanceTests {
     public void testMarecoAfterLinear() {
         var length = 2524;
         var testContext = makeSimpleContext(length, 0, 2.0);
-        var stops = new double[] { length };
+        var stops = new double[] {length};
 
         var maxEffortEnvelope = makeSimpleMaxEffortEnvelope(testContext, 100, stops);
 
         var firstAllowance = new LinearAllowance(
-                655,
-                2258,
-                9.1,
-                List.of(
-                        new AllowanceRange(655, 2258, new AllowanceValue.Percentage(8.1))
-                )
-        );
+                655, 2258, 9.1, List.of(new AllowanceRange(655, 2258, new AllowanceValue.Percentage(8.1))));
 
         var secondAllowance = new MarecoAllowance(
-                485,
-                2286,
-                3.44,
-                List.of(
-                        new AllowanceRange(485, 2286, new AllowanceValue.Percentage(13))
-                )
-        );
+                485, 2286, 3.44, List.of(new AllowanceRange(485, 2286, new AllowanceValue.Percentage(13))));
         secondAllowance.apply(firstAllowance.apply(maxEffortEnvelope, testContext), testContext);
     }
 
@@ -754,7 +746,7 @@ public class AllowanceTests {
     public void testPercentageAfterTimePerDistance() {
         var length = 10_000;
         var testContext = makeSimpleContext(length, 0, 2.0);
-        var stops = new double[] { 10_000 };
+        var stops = new double[] {10_000};
 
         var maxEffortEnvelope = makeSimpleMaxEffortEnvelope(testContext, 40, stops);
 
@@ -764,9 +756,7 @@ public class AllowanceTests {
                 1,
                 List.of(
                         new AllowanceRange(0, 8_000, new AllowanceValue.TimePerDistance(1_000)),
-                        new AllowanceRange(8_000, 10_000, new AllowanceValue.Percentage(10))
-                )
-        );
+                        new AllowanceRange(8_000, 10_000, new AllowanceValue.Percentage(10))));
         allowance.apply(maxEffortEnvelope, testContext);
     }
 }

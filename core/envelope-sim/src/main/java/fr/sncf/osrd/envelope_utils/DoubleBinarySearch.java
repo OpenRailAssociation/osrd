@@ -1,7 +1,8 @@
 package fr.sncf.osrd.envelope_utils;
 
-
-/** <p>This class is used as follows:</p>
+/**
+ * This class is used as follows:
+ *
  * <pre>
  *     var search = new DoubleBinarySearch(0, 10, 4, 0.001);
  *     while (!search.complete()) {
@@ -14,25 +15,36 @@ package fr.sncf.osrd.envelope_utils;
 public final class DoubleBinarySearch {
     /** The current low bound estimate */
     private double lowBound;
+
     /** The current high bound estimate */
     private double highBound;
-    /** The current input, which is kept in sync to the middle point between lowBound and highBound */
+
+    /**
+     * The current input, which is kept in sync to the middle point between lowBound and highBound
+     */
     private double input;
+
     /** The target output value */
     public final double target;
+
     /** The acceptable distance to the target */
     public final double targetErrorMargin;
+
     /** Positive if increasing, negative if decreasing */
     private final double direction;
+
     /** Whether the search is complete */
     private boolean isComplete;
+
     /** Whether we have lowered the high bound at least once */
     private boolean hasLoweredHighBound;
+
     /** Whether we have raised the low bound at least once */
     private boolean hasRaisedLowBound;
 
     /**
      * Returns a binary search helper.
+     *
      * @param lowBound The low initial estimate
      * @param highBound The high initial estimate
      * @param target The target output value
@@ -40,12 +52,7 @@ public final class DoubleBinarySearch {
      * @param decreasing Whether the output decreases when the input increases
      */
     public DoubleBinarySearch(
-            double lowBound,
-            double highBound,
-            double target,
-            double targetErrorMargin,
-            boolean decreasing
-    ) {
+            double lowBound, double highBound, double target, double targetErrorMargin, boolean decreasing) {
         this.lowBound = lowBound;
         this.highBound = highBound;
         this.target = target;

@@ -9,7 +9,6 @@ import fr.sncf.osrd.utils.indexing.StaticIdx
 import fr.sncf.osrd.utils.indexing.StaticIdxList
 import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
 import fr.sncf.osrd.utils.units.*
-import fr.sncf.osrd.utils.units.mutableDistanceArrayListOf
 import kotlin.test.Test
 import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.milliseconds
@@ -30,10 +29,11 @@ class BlockBuilderTest {
         // region build the test infrastructure
         val builder = RawInfraBuilder()
         // region switches
-        val switch = builder.movableElement("S", delay = 10L.milliseconds) {
-            config("xy", Pair(TrackNodePortId(0u), TrackNodePortId(1u)))
-            config("vy", Pair(TrackNodePortId(0u), TrackNodePortId(2u)))
-        }
+        val switch =
+            builder.movableElement("S", delay = 10L.milliseconds) {
+                config("xy", Pair(TrackNodePortId(0u), TrackNodePortId(1u)))
+                config("vy", Pair(TrackNodePortId(0u), TrackNodePortId(2u)))
+            }
         // endregion
 
         // region zones
@@ -60,28 +60,35 @@ class BlockBuilderTest {
         // endregion
 
         // region signals
-        val signalX = builder.physicalSignal("X", 300.meters) {
-            logicalSignal("BAL", listOf("BAL"), mapOf(Pair("Nf", "true")))
-        }
-        val signalV = builder.physicalSignal("Y", 300.meters) {
-            logicalSignal("BAL", listOf("BAL"), mapOf(Pair("Nf", "true")))
-        }
+        val signalX =
+            builder.physicalSignal("X", 300.meters) {
+                logicalSignal("BAL", listOf("BAL"), mapOf(Pair("Nf", "true")))
+            }
+        val signalV =
+            builder.physicalSignal("Y", 300.meters) {
+                logicalSignal("BAL", listOf("BAL"), mapOf(Pair("Nf", "true")))
+            }
         // endregion
 
         // region zone paths
-        val zonePathWX = builder.zonePath(detectorW.increasing, detectorX.increasing, Length(10.meters)) {
-            signal(signalX, Offset(8.meters))
-        }
-        val zonePathXY = builder.zonePath(detectorX.increasing, detectorY.increasing, Length(10.meters)) {
-            movableElement(switch, StaticIdx(0u), Offset(5.meters))
-        }
-        val zonePathYZ = builder.zonePath(detectorY.increasing, detectorZ.increasing, Length(10.meters))
-        val zonePathUV = builder.zonePath(detectorU.increasing, detectorV.increasing, Length(10.meters)) {
-            signal(signalV, Offset(8.meters))
-        }
-        val zonePathVY = builder.zonePath(detectorV.increasing, detectorY.increasing, Length(10.meters)) {
-            movableElement(switch, StaticIdx(1u), Offset(5.meters))
-        }
+        val zonePathWX =
+            builder.zonePath(detectorW.increasing, detectorX.increasing, Length(10.meters)) {
+                signal(signalX, Offset(8.meters))
+            }
+        val zonePathXY =
+            builder.zonePath(detectorX.increasing, detectorY.increasing, Length(10.meters)) {
+                movableElement(switch, StaticIdx(0u), Offset(5.meters))
+            }
+        val zonePathYZ =
+            builder.zonePath(detectorY.increasing, detectorZ.increasing, Length(10.meters))
+        val zonePathUV =
+            builder.zonePath(detectorU.increasing, detectorV.increasing, Length(10.meters)) {
+                signal(signalV, Offset(8.meters))
+            }
+        val zonePathVY =
+            builder.zonePath(detectorV.increasing, detectorY.increasing, Length(10.meters)) {
+                movableElement(switch, StaticIdx(1u), Offset(5.meters))
+            }
         // endregion
 
         // region routes
@@ -106,22 +113,51 @@ class BlockBuilderTest {
         val infra = builder.build()
         // endregion
 
-        val simulator = SignalingSimulatorImpl(MockSigSystemManager("BAL", SigSettingsSchema { flag("Nf") }))
+        val simulator =
+            SignalingSimulatorImpl(MockSigSystemManager("BAL", SigSettingsSchema { flag("Nf") }))
         val loadedSignalInfra = simulator.loadSignals(infra)
         val blockInfra = simulator.buildBlocks(infra, loadedSignalInfra)
 
-        val testResultBlockInfra = blockInfraBuilder(loadedSignalInfra, infra) {
-            // TODO: check the distances are correct too
-            block(true, false, mutableStaticIdxArrayListOf(zonePathUV), infra.getLogicalSignals(signalV), mutableOffsetArrayListOf())
-            block(false, true, mutableStaticIdxArrayListOf(zonePathVY, zonePathYZ), infra.getLogicalSignals(signalV), mutableOffsetArrayListOf())
-            block(true, false, mutableStaticIdxArrayListOf(zonePathWX), infra.getLogicalSignals(signalX), mutableOffsetArrayListOf())
-            block(false, true, mutableStaticIdxArrayListOf(zonePathXY, zonePathYZ), infra.getLogicalSignals(signalX), mutableOffsetArrayListOf())
-        }
+        val testResultBlockInfra =
+            blockInfraBuilder(loadedSignalInfra, infra) {
+                // TODO: check the distances are correct too
+                block(
+                    true,
+                    false,
+                    mutableStaticIdxArrayListOf(zonePathUV),
+                    infra.getLogicalSignals(signalV),
+                    mutableOffsetArrayListOf()
+                )
+                block(
+                    false,
+                    true,
+                    mutableStaticIdxArrayListOf(zonePathVY, zonePathYZ),
+                    infra.getLogicalSignals(signalV),
+                    mutableOffsetArrayListOf()
+                )
+                block(
+                    true,
+                    false,
+                    mutableStaticIdxArrayListOf(zonePathWX),
+                    infra.getLogicalSignals(signalX),
+                    mutableOffsetArrayListOf()
+                )
+                block(
+                    false,
+                    true,
+                    mutableStaticIdxArrayListOf(zonePathXY, zonePathYZ),
+                    infra.getLogicalSignals(signalX),
+                    mutableOffsetArrayListOf()
+                )
+            }
 
         assertTrue(blockInfraEquals(blockInfra, testResultBlockInfra))
     }
 
-    data class BlockDescriptor(val path: StaticIdxList<ZonePath>, val signals: StaticIdxList<LogicalSignal>)
+    data class BlockDescriptor(
+        val path: StaticIdxList<ZonePath>,
+        val signals: StaticIdxList<LogicalSignal>
+    )
 
     private fun blockInfraToSet(infra: BlockInfra): MutableSet<BlockDescriptor> {
         val res: MutableSet<BlockDescriptor> = mutableSetOf()

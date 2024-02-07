@@ -1,6 +1,5 @@
 package fr.sncf.osrd.reporting.warnings;
 
-import fr.sncf.osrd.reporting.exceptions.ErrorType;
 import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -19,15 +18,13 @@ public class DiagnosticRecorderImpl implements DiagnosticRecorder {
     @Override
     public void register(Warning warning) {
         warnings.add(warning);
-        if (strict)
-            throw OSRDError.newStrictWarningError(warning);
+        if (strict) throw OSRDError.newStrictWarningError(warning);
     }
 
     @Override
     public void register(OSRDError error) {
         errors.add(error);
-        if (strict)
-            throw error;
+        if (strict) throw error;
     }
 
     @Override
@@ -40,20 +37,20 @@ public class DiagnosticRecorderImpl implements DiagnosticRecorder {
         return errors;
     }
 
-    /** Verify that the diagnostic doesn't contain error. If so an error is thrown with the whole diagnostic message */
+    /**
+     * Verify that the diagnostic doesn't contain error. If so an error is thrown with the whole
+     * diagnostic message
+     */
     @Override
     public void verify() {
-        if (errors.isEmpty())
-            return;
+        if (errors.isEmpty()) return;
         throw OSRDError.newDiagnosticError(this);
     }
 
     /** Prints the warnings on the given stream */
     public void report(PrintStream stream) {
-        for (var warning : warnings)
-            stream.printf("WARNING: %s%n", warning.message);
-        for (var error : errors)
-            stream.printf("ERROR: %s%n", error.getMessage());
+        for (var warning : warnings) stream.printf("WARNING: %s%n", warning.message);
+        for (var error : errors) stream.printf("ERROR: %s%n", error.getMessage());
     }
 
     /** Prints the warnings on stderr */

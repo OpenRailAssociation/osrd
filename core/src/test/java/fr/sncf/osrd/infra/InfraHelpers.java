@@ -14,15 +14,6 @@ import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.infra.api.tracks.undirected.*;
 import fr.sncf.osrd.infra.implementation.tracks.undirected.*;
-import fr.sncf.osrd.railjson.schema.common.RJSWaypointRef;
-import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection;
-import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
-import fr.sncf.osrd.railjson.schema.infra.RJSRoute;
-import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection;
-import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSBufferStop;
-import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSSignal;
-import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSTrainDetector;
-import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Set;
@@ -38,11 +29,9 @@ public class InfraHelpers {
 
     /** Returns the same graph as g, but undirected */
     public static Network<TrackNode, TrackEdge> toUndirected(Network<TrackNode, TrackEdge> g) {
-        ImmutableNetwork.Builder<TrackNode, TrackEdge> builder = NetworkBuilder
-                .undirected()
-                .immutable();
-        for (var n : g.nodes())
-            builder.addNode(n);
+        ImmutableNetwork.Builder<TrackNode, TrackEdge> builder =
+                NetworkBuilder.undirected().immutable();
+        for (var n : g.nodes()) builder.addNode(n);
         for (var e : g.edges()) {
             var pair = g.incidentNodes(e);
             builder.addEdge(EndpointPair.unordered(pair.nodeU(), pair.nodeV()), e);
@@ -50,28 +39,19 @@ public class InfraHelpers {
         return builder.build();
     }
 
-    /** Asserts that `values` contains every element from `included` and none from `excluded`.
-     * Values that don't appear in either of those are ignored. */
+    /**
+     * Asserts that `values` contains every element from `included` and none from `excluded`. Values
+     * that don't appear in either of those are ignored.
+     */
     public static <T> void assertSetMatch(Iterable<T> values, Set<T> included, Set<T> excluded) {
         var valuesSet = StreamSupport.stream(values.spliterator(), false).collect(Collectors.toSet());
-        for (var x : included)
-            assertTrue(valuesSet.contains(x));
-        for (var x : excluded)
-            assertFalse(valuesSet.contains(x));
+        for (var x : included) assertTrue(valuesSet.contains(x));
+        for (var x : excluded) assertFalse(valuesSet.contains(x));
     }
 
-    /** Make a switch infra with the following configuration:
-    *      Out1
-    *       ^
-    *       |
-    *      In1
-    *      /  ^
-    *     /    \
-    *    v      \
-    *   In2     In3
-    *    |       |
-    *    v       v
-    *    3       3
+    /**
+     * Make a switch infra with the following configuration: Out1 ^ | In1 / ^ / \ v \ In2 In3 | | v
+     * v 3 3
      */
     public static TrackInfra makeSwitchInfra() {
         final var nodeIn1 = new SwitchPortImpl("1", "switchID");
@@ -83,9 +63,7 @@ public class InfraHelpers {
         final var nodeOut2 = new TrackNodeImpl.Joint("2-out");
         final var nodeOut3 = new TrackNodeImpl.Joint("3-out");
 
-        final var switchNet = NetworkBuilder
-                .directed()
-                .<SwitchPort, SwitchBranch>immutable();
+        final var switchNet = NetworkBuilder.directed().<SwitchPort, SwitchBranch>immutable();
         switchNet.addEdge(nodeIn1, nodeIn2, branch12);
         switchNet.addEdge(nodeIn3, nodeIn1, branch31);
         final var switchGroups = ImmutableMultimap.<String, SwitchBranch>builder();
@@ -97,9 +75,7 @@ public class InfraHelpers {
         ports.put(nodeIn3.getID(), nodeIn3);
         final var switchA = new SwitchImpl("a", switchNet.build(), switchGroups.build(), 42, ports.build());
 
-        var trackNet = NetworkBuilder
-                .directed()
-                .<TrackNode, TrackEdge>immutable();
+        var trackNet = NetworkBuilder.directed().<TrackNode, TrackEdge>immutable();
         trackNet.addEdge(nodeIn1, nodeOut1, new TrackSectionImpl(0, "1"));
         trackNet.addEdge(nodeIn2, nodeOut2, new TrackSectionImpl(0, "2"));
         trackNet.addEdge(nodeIn3, nodeOut3, new TrackSectionImpl(0, "3"));
@@ -113,25 +89,20 @@ public class InfraHelpers {
     /** Get the value in the map, throw if absent */
     public static <T, U> T safeGet(ImmutableMap<U, T> m, U x) {
         var res = m.get(x);
-        if (res == null)
-            throw new RuntimeException("Unexpected null value");
+        if (res == null) throw new RuntimeException("Unexpected null value");
         return res;
     }
 
-    private static DiDetector getDetector(
-            ImmutableMap<String, Detector> detectors,
-            Direction dir,
-            String id
-    ) {
+    private static DiDetector getDetector(ImmutableMap<String, Detector> detectors, Direction dir, String id) {
         return safeGet(detectors, id).getDiDetector(dir);
     }
 
-    /** Tests that the right DiDetectors can be reached in an oriented graph based on tiny infra.
-     * Can be used for different route types */
+    /**
+     * Tests that the right DiDetectors can be reached in an oriented graph based on tiny infra. Can
+     * be used for different route types
+     */
     public static <T> void testTinyInfraDiDetectorGraph(
-            ImmutableNetwork<DiDetector, T> graph,
-            ImmutableMap<String, Detector> detectors
-    ) {
+            ImmutableNetwork<DiDetector, T> graph, ImmutableMap<String, Detector> detectors) {
         var bufferStopA = getDetector(detectors, FORWARD, "buffer_stop_a");
         var bufferStopB = getDetector(detectors, FORWARD, "buffer_stop_b");
         var bufferStopC = getDetector(detectors, FORWARD, "buffer_stop_c");
@@ -139,42 +110,23 @@ public class InfraHelpers {
         var bufferStopBBackward = getDetector(detectors, BACKWARD, "buffer_stop_b");
         var bufferStopCBackward = getDetector(detectors, BACKWARD, "buffer_stop_c");
         var allDirectedBufferStops = Set.of(
-                bufferStopA,
-                bufferStopB,
-                bufferStopC,
-                bufferStopABackward,
-                bufferStopBBackward,
-                bufferStopCBackward
-        );
-        var reachableFromA = Set.of(
-                bufferStopA,
-                bufferStopC
-        );
-        var reachableFromB = Set.of(
-                bufferStopB,
-                bufferStopC
-        );
-        var reachableFromC = Set.of(
-                bufferStopABackward,
-                bufferStopBBackward,
-                bufferStopCBackward
-        );
+                bufferStopA, bufferStopB, bufferStopC, bufferStopABackward, bufferStopBBackward, bufferStopCBackward);
+        var reachableFromA = Set.of(bufferStopA, bufferStopC);
+        var reachableFromB = Set.of(bufferStopB, bufferStopC);
+        var reachableFromC = Set.of(bufferStopABackward, bufferStopBBackward, bufferStopCBackward);
         final var traverser = Traverser.forGraph(graph);
         assertSetMatch(
                 traverser.breadthFirst(bufferStopA),
                 reachableFromA,
-                Sets.difference(allDirectedBufferStops, reachableFromA)
-        );
+                Sets.difference(allDirectedBufferStops, reachableFromA));
         assertSetMatch(
                 traverser.breadthFirst(bufferStopB),
                 reachableFromB,
-                Sets.difference(allDirectedBufferStops, reachableFromB)
-        );
+                Sets.difference(allDirectedBufferStops, reachableFromB));
         assertSetMatch(
                 traverser.breadthFirst(bufferStopCBackward),
                 reachableFromC,
-                Sets.difference(allDirectedBufferStops, reachableFromC)
-        );
+                Sets.difference(allDirectedBufferStops, reachableFromC));
     }
 
     /** Sets the detectors on the track, bypassing visibility */
@@ -183,8 +135,8 @@ public class InfraHelpers {
     }
 
     /** Sets the speed sections on the track, bypassing visibility */
-    public static void setTrackSpeedSections(TrackSection track,
-                                             EnumMap<Direction, RangeMap<Double, SpeedLimits>> speedSections) {
+    public static void setTrackSpeedSections(
+            TrackSection track, EnumMap<Direction, RangeMap<Double, SpeedLimits>> speedSections) {
         setPrivateField(track, "speedSections", speedSections);
     }
 
@@ -211,7 +163,6 @@ public class InfraHelpers {
     public static SignalingRoute getSignalingRoute(SignalingInfra infra, String id) {
         var reservationRoute = infra.getReservationRouteMap().get(id);
         assert reservationRoute != null;
-        return infra.getRouteMap().get(reservationRoute).stream()
-                .findFirst().orElseThrow();
+        return infra.getRouteMap().get(reservationRoute).stream().findFirst().orElseThrow();
     }
 }

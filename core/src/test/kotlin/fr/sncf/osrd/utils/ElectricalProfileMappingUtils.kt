@@ -7,25 +7,29 @@ fun getRjsElectricalProfileMapping_1(): RJSElectricalProfileSet {
     return RJSElectricalProfileSet(
         listOf(
             RJSElectricalProfileSet.RJSElectricalProfile(
-                "A", "1",
+                "A",
+                "1",
                 listOf(
                     RJSTrackRange("TA0", 0.0, 1_600.0),
                     RJSTrackRange("TA0", 1_800.0, 2_000.0),
                 )
             ),
             RJSElectricalProfileSet.RJSElectricalProfile(
-                "B", "1",
+                "B",
+                "1",
                 listOf(
                     RJSTrackRange("TA0", 1_600.0, 1_800.0),
                     RJSTrackRange("TA1", 0.0, 1_950.0),
                 )
             ),
             RJSElectricalProfileSet.RJSElectricalProfile(
-                "C", "2",
+                "C",
+                "2",
                 listOf(RJSTrackRange("TA0", 0.0, 2_000.0))
             ),
             RJSElectricalProfileSet.RJSElectricalProfile(
-                "D", "2",
+                "D",
+                "2",
                 listOf(
                     RJSTrackRange("TA1", 0.0, 1_950.0),
                 )
@@ -38,7 +42,8 @@ fun getRjsElectricalProfileMapping_2(): RJSElectricalProfileSet {
     return RJSElectricalProfileSet(
         listOf(
             RJSElectricalProfileSet.RJSElectricalProfile(
-                "A", "1",
+                "A",
+                "1",
                 listOf(
                     RJSTrackRange("TA0", 0.0, 1_600.0),
                     RJSTrackRange("TA1", 300.0, 1_950.0),
@@ -46,7 +51,8 @@ fun getRjsElectricalProfileMapping_2(): RJSElectricalProfileSet {
                 )
             ),
             RJSElectricalProfileSet.RJSElectricalProfile(
-                "B", "1",
+                "B",
+                "1",
                 listOf(
                     RJSTrackRange("TA0", 1_600.0, 2_000.0),
                     RJSTrackRange("TA1", 0.0, 300.0),
@@ -54,7 +60,8 @@ fun getRjsElectricalProfileMapping_2(): RJSElectricalProfileSet {
                 )
             ),
             RJSElectricalProfileSet.RJSElectricalProfile(
-                "C", "2",
+                "C",
+                "2",
                 listOf(
                     RJSTrackRange("TA0", 1_900.0, 2_000.0),
                     RJSTrackRange("TA1", 0.0, 200.0),
@@ -62,7 +69,8 @@ fun getRjsElectricalProfileMapping_2(): RJSElectricalProfileSet {
                 )
             ),
             RJSElectricalProfileSet.RJSElectricalProfile(
-                "D", "2",
+                "D",
+                "2",
                 listOf(
                     RJSTrackRange("TA0", 0.0, 1_900.0),
                     RJSTrackRange("TA1", 200.0, 1_950.0),

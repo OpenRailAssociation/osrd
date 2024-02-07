@@ -8,6 +8,5 @@ public sealed interface TrackNode permits SwitchPort, TrackNode.End, TrackNode.J
     }
 
     /** Terminates an unconnected end of a track section */
-    non-sealed interface End extends TrackNode {
-    }
+    non-sealed interface End extends TrackNode {}
 }

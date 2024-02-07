@@ -37,8 +37,8 @@ import java.util.Optional;
 
 public class StandaloneSim {
     /**
-     * Runs a batch of standalone simulations for multiple trains.
-     * Interactions between trains are ignored.
+     * Runs a batch of standalone simulations for multiple trains. Interactions between trains are
+     * ignored.
      */
     public static StandaloneSimResult run(
             FullInfra infra,
@@ -47,8 +47,7 @@ public class StandaloneSim {
             EnvelopeSimPath envelopeSimPath,
             List<StandaloneTrainSchedule> schedules,
             double timeStep,
-            DriverBehaviour driverBehaviour
-    ) {
+            DriverBehaviour driverBehaviour) {
         // Compute envelopes
         var result = new StandaloneSimResult();
         var cacheSpeedLimits = new HashMap<StandaloneTrainSchedule, List<ResultEnvelopePoint>>();
@@ -67,37 +66,36 @@ public class StandaloneSim {
                 cacheSpeedLimits.put(trainSchedule, ResultEnvelopePoint.from(speedLimits));
 
                 // Context
-                var electrificationMap = envelopeSimPath.getElectrificationMap(rollingStock.basePowerClass,
-                        trainSchedule.powerRestrictionMap, rollingStock.powerRestrictions,
+                var electrificationMap = envelopeSimPath.getElectrificationMap(
+                        rollingStock.basePowerClass,
+                        trainSchedule.powerRestrictionMap,
+                        rollingStock.powerRestrictions,
                         trainSchedule.options.ignoreElectricalProfiles);
 
                 var curvesAndConditions =
                         rollingStock.mapTractiveEffortCurves(electrificationMap, trainSchedule.comfort);
-                var context = new EnvelopeSimContext(rollingStock, envelopeSimPath, timeStep,
-                        curvesAndConditions.curves());
-                cacheElectrificationRanges.put(trainSchedule, ElectrificationRange.from(
-                        curvesAndConditions.conditions(), electrificationMap));
-                cachePowerRestrictionRanges.put(trainSchedule, PowerRestrictionRange.from(
-                        curvesAndConditions.conditions(), trainSchedule.powerRestrictionMap));
+                var context =
+                        new EnvelopeSimContext(rollingStock, envelopeSimPath, timeStep, curvesAndConditions.curves());
+                cacheElectrificationRanges.put(
+                        trainSchedule, ElectrificationRange.from(curvesAndConditions.conditions(), electrificationMap));
+                cachePowerRestrictionRanges.put(
+                        trainSchedule,
+                        PowerRestrictionRange.from(
+                                curvesAndConditions.conditions(), trainSchedule.powerRestrictionMap));
 
                 // MaxSpeedEnvelope
                 var maxSpeedEnvelope = MaxSpeedEnvelope.from(context, trainSchedule.getStopsPositions(), mrsp);
 
                 // MaxEffortEnvelope
-                // need to compute a new effort curve mapping with the maxSpeedEnvelope in order to extend the
+                // need to compute a new effort curve mapping with the maxSpeedEnvelope in order to
+                // extend the
                 // neutral sections (with time to lower/raise pantograph...)
-                context = context.updateCurves(
-                        rollingStock.addNeutralSystemTimes(electrificationMap, trainSchedule.comfort, maxSpeedEnvelope,
-                                context.tractiveEffortCurveMap));
+                context = context.updateCurves(rollingStock.addNeutralSystemTimes(
+                        electrificationMap, trainSchedule.comfort, maxSpeedEnvelope, context.tractiveEffortCurveMap));
                 var envelope = MaxEffortEnvelope.from(context, trainSchedule.initialSpeed, maxSpeedEnvelope);
 
-                var simResultTrain = ScheduleMetadataExtractor.run(
-                        envelope,
-                        trainPath,
-                        chunkPath,
-                        trainSchedule,
-                        infra
-                );
+                var simResultTrain =
+                        ScheduleMetadataExtractor.run(envelope, trainPath, chunkPath, trainSchedule, infra);
                 cacheMaxEffort.put(trainSchedule, simResultTrain);
 
                 // Eco: Integrate allowances and scheduled points
@@ -105,12 +103,8 @@ public class StandaloneSim {
                     var ecoEnvelope = applyAllowances(context, envelope, trainSchedule.allowances);
                     ecoEnvelope = applyScheduledPoints(
                             context, ecoEnvelope, trainSchedule.stops, trainSchedule.scheduledPoints);
-                    var simEcoResultTrain = ScheduleMetadataExtractor.run(
-                            ecoEnvelope,
-                            trainPath,
-                            chunkPath,
-                            trainSchedule,
-                            infra);
+                    var simEcoResultTrain =
+                            ScheduleMetadataExtractor.run(ecoEnvelope, trainPath, chunkPath, trainSchedule, infra);
                     cacheEco.put(trainSchedule, simEcoResultTrain);
                 }
             }
@@ -131,8 +125,7 @@ public class StandaloneSim {
             RJSTrainPath rjsTrainPath,
             HashMap<String, RollingStock> rollingStocks,
             List<RJSStandaloneTrainSchedule> rjsSchedules,
-            double timeStep
-    ) {
+            double timeStep) {
         // Parse trainPath
         var chunkPath = makeChunkPath(infra.rawInfra(), rjsTrainPath);
         var trainPath = makePathProperties(infra.rawInfra(), chunkPath);
@@ -146,24 +139,12 @@ public class StandaloneSim {
 
         // Compute envelopes and extract metadata
         return StandaloneSim.run(
-                infra,
-                trainPath,
-                chunkPath,
-                envelopePath,
-                trainSchedules,
-                timeStep,
-                new DriverBehaviour()
-        );
+                infra, trainPath, chunkPath, envelopePath, trainSchedules, timeStep, new DriverBehaviour());
     }
 
-    /**
-     * Apply a list of allowances, in order
-     */
+    /** Apply a list of allowances, in order */
     public static Envelope applyAllowances(
-            EnvelopeSimContext context,
-            Envelope maxEffortEnvelope,
-            List<? extends Allowance> allowances
-    ) {
+            EnvelopeSimContext context, Envelope maxEffortEnvelope, List<? extends Allowance> allowances) {
         var result = maxEffortEnvelope;
         for (int i = 0; i < allowances.size(); i++) {
             try {
@@ -175,14 +156,12 @@ public class StandaloneSim {
         return result;
     }
 
-    /**  Generate a mareco Allowance given a list of scheduled points.
-     *   Return an empty value:
-     *   - if no scheduled point is given
-     *   - if we cannot respect any scheduled points. */
+    /**
+     * Generate a mareco Allowance given a list of scheduled points. Return an empty value: - if no
+     * scheduled point is given - if we cannot respect any scheduled points.
+     */
     public static Optional<MarecoAllowance> generateAllowanceFromScheduledPoints(
-            EnvelopeStopWrapper maxEffortEnvelope,
-            List<ScheduledPoint> scheduledPoints
-    ) {
+            EnvelopeStopWrapper maxEffortEnvelope, List<ScheduledPoint> scheduledPoints) {
         scheduledPoints.sort(Comparator.comparingDouble(sp -> sp.pathOffset));
         var ranges = new ArrayList<AllowanceRange>();
         double rangeBeginPos = 0.;
@@ -200,25 +179,22 @@ public class StandaloneSim {
         }
 
         // If no ranges
-        if (ranges.isEmpty())
-            return Optional.empty();
+        if (ranges.isEmpty()) return Optional.empty();
 
         // Set minimum capacity limit
         double capacityLimit = 1.0;
         return Optional.of(new MarecoAllowance(0., rangeBeginPos, capacityLimit, ranges));
     }
 
-    /**  Apply a list of scheduled points */
+    /** Apply a list of scheduled points */
     public static Envelope applyScheduledPoints(
             EnvelopeSimContext context,
             Envelope maxEffortEnvelope,
             List<TrainStop> stops,
-            List<ScheduledPoint> scheduledPoints
-    ) {
+            List<ScheduledPoint> scheduledPoints) {
         var envelopeStopWrapper = new EnvelopeStopWrapper(maxEffortEnvelope, stops);
         var allowance = generateAllowanceFromScheduledPoints(envelopeStopWrapper, scheduledPoints);
-        if (allowance.isEmpty())
-            return maxEffortEnvelope;
+        if (allowance.isEmpty()) return maxEffortEnvelope;
         return applyAllowances(context, maxEffortEnvelope, List.of(allowance.get()));
     }
 }

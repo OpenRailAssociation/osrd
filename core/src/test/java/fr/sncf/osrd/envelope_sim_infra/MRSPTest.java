@@ -1,13 +1,13 @@
 package fr.sncf.osrd.envelope_sim_infra;
 
 import static fr.sncf.osrd.api.pathfinding.PathPropUtilsKt.makePathProps;
-import static fr.sncf.osrd.utils.Helpers.fullInfraFromRJS;
-import static fr.sncf.osrd.utils.Helpers.getExampleInfra;
 import static fr.sncf.osrd.envelope.EnvelopeTestUtils.makeFlatPart;
 import static fr.sncf.osrd.envelope.MRSPEnvelopeBuilder.LimitKind.SPEED_LIMIT;
 import static fr.sncf.osrd.envelope.MRSPEnvelopeBuilder.LimitKind.TRAIN_LIMIT;
 import static fr.sncf.osrd.train.TestTrains.MAX_SPEED;
 import static fr.sncf.osrd.train.TestTrains.REALISTIC_FAST_TRAIN;
+import static fr.sncf.osrd.utils.Helpers.fullInfraFromRJS;
+import static fr.sncf.osrd.utils.Helpers.getExampleInfra;
 import static fr.sncf.osrd.utils.units.Distance.toMeters;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -18,17 +18,17 @@ import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSApplicableDirectionsTra
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSSpeedSection;
 import fr.sncf.osrd.sim_infra.api.PathProperties;
 import fr.sncf.osrd.train.RollingStock;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.TestInstance;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class MRSPTest {
@@ -47,22 +47,31 @@ public class MRSPTest {
     @BeforeAll
     public void setUp() throws IOException, URISyntaxException {
         var rjsInfra = getExampleInfra("small_infra/infra.json");
-        var speedSection1 = new RJSSpeedSection(NAME, SPEED1, Map.of(TRAIN_TAG1, SPEED2),
-                List.of(new RJSApplicableDirectionsTrackRange("TA0", ApplicableDirection.BOTH,
-                        POSITION1, POSITION2)));
-        var speedSection2 = new RJSSpeedSection(NAME, null, Map.of(TRAIN_TAG2, SPEED3),
-                List.of(new RJSApplicableDirectionsTrackRange("TA0", ApplicableDirection.BOTH,
-                        POSITION2, POSITION3)));
+        var speedSection1 = new RJSSpeedSection(
+                NAME,
+                SPEED1,
+                Map.of(TRAIN_TAG1, SPEED2),
+                List.of(new RJSApplicableDirectionsTrackRange("TA0", ApplicableDirection.BOTH, POSITION1, POSITION2)));
+        var speedSection2 = new RJSSpeedSection(
+                NAME,
+                null,
+                Map.of(TRAIN_TAG2, SPEED3),
+                List.of(new RJSApplicableDirectionsTrackRange("TA0", ApplicableDirection.BOTH, POSITION2, POSITION3)));
         rjsInfra.speedSections = new ArrayList<>();
         rjsInfra.speedSections.addAll(List.of(speedSection1, speedSection2));
         var infra = fullInfraFromRJS(rjsInfra);
-        path = makePathProps(infra.blockInfra(), infra.rawInfra(), 0, 0, infra.blockInfra().getBlockLength(0));
+        path = makePathProps(
+                infra.blockInfra(), infra.rawInfra(), 0, 0, infra.blockInfra().getBlockLength(0));
     }
 
     @ParameterizedTest
     @MethodSource("testComputeMRSPArgs")
-    public void testComputeMRSP(PathProperties path, RollingStock rollingStock, boolean addRollingStockLength,
-                                String trainTag, Envelope expectedEnvelope) {
+    public void testComputeMRSP(
+            PathProperties path,
+            RollingStock rollingStock,
+            boolean addRollingStockLength,
+            String trainTag,
+            Envelope expectedEnvelope) {
         var mrsp = MRSP.computeMRSP(path, rollingStock, addRollingStockLength, trainTag);
         EnvelopeTestUtils.assertEquals(expectedEnvelope, mrsp, 0.001);
     }
@@ -71,8 +80,13 @@ public class MRSPTest {
     private Stream<Arguments> testComputeMRSPArgs() {
         var pathLength = toMeters(path.getLength());
         return Stream.of(
-                // Multiple speed sections with correct/incorrect train tag and no rolling stock length
-                Arguments.of(path, REALISTIC_FAST_TRAIN, false, TRAIN_TAG2,
+                // Multiple speed sections with correct/incorrect train tag and no rolling stock
+                // length
+                Arguments.of(
+                        path,
+                        REALISTIC_FAST_TRAIN,
+                        false,
+                        TRAIN_TAG2,
                         Envelope.make(
                                 // No speed section at first => train speed limit
                                 makeFlatPart(TRAIN_LIMIT, 0, POSITION1, MAX_SPEED),
@@ -84,20 +98,29 @@ public class MRSPTest {
                                 makeFlatPart(TRAIN_LIMIT, POSITION3, pathLength, MAX_SPEED))),
 
                 // Multiple speed sections with rolling stock length
-                Arguments.of(path, REALISTIC_FAST_TRAIN, true, null,
+                Arguments.of(
+                        path,
+                        REALISTIC_FAST_TRAIN,
+                        true,
+                        null,
                         Envelope.make(
                                 // No speed section at first => train speed limit
                                 makeFlatPart(TRAIN_LIMIT, 0, POSITION1, MAX_SPEED),
                                 // Speed section with incorrect train tag: speed 1
-                                makeFlatPart(SPEED_LIMIT, POSITION1, POSITION2 + REALISTIC_FAST_TRAIN.length,
-                                        SPEED1),
-                                // Rolling stock length > speedSection2 length => speedSection2 not taken into account
+                                makeFlatPart(SPEED_LIMIT, POSITION1, POSITION2 + REALISTIC_FAST_TRAIN.length, SPEED1),
+                                // Rolling stock length > speedSection2 length => speedSection2 not
+                                // taken into account
                                 // No speed section at end => train speed limit
-                                makeFlatPart(TRAIN_LIMIT, POSITION2 + REALISTIC_FAST_TRAIN.length, pathLength,
-                                        MAX_SPEED))),
+                                makeFlatPart(
+                                        TRAIN_LIMIT, POSITION2 + REALISTIC_FAST_TRAIN.length, pathLength, MAX_SPEED))),
 
-                // No speed sections taken into account: speedSection1 speed2 > train maxSpeed, speedSection2 speed 0m/s
-                Arguments.of(path, REALISTIC_FAST_TRAIN, false, TRAIN_TAG1,
+                // No speed sections taken into account: speedSection1 speed2 > train maxSpeed,
+                // speedSection2 speed 0m/s
+                Arguments.of(
+                        path,
+                        REALISTIC_FAST_TRAIN,
+                        false,
+                        TRAIN_TAG1,
                         Envelope.make(makeFlatPart(TRAIN_LIMIT, 0, pathLength, MAX_SPEED))));
     }
 }

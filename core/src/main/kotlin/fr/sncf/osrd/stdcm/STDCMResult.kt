@@ -8,9 +8,10 @@ import fr.sncf.osrd.sim_infra.api.PathProperties
 import fr.sncf.osrd.sim_infra.impl.ChunkPath
 import fr.sncf.osrd.train.TrainStop
 
-/** This is the result of the STDCM computation.
- * It is made of a physical path part and envelope, as well as different representations
- * of the same data that can be reused in later steps.  */
+/**
+ * This is the result of the STDCM computation. It is made of a physical path part and envelope, as
+ * well as different representations of the same data that can be reused in later steps.
+ */
 data class STDCMResult(
     val blocks: PathfindingResultId<Block>,
     val envelope: Envelope,

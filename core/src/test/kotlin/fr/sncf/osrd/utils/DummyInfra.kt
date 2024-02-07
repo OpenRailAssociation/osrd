@@ -12,34 +12,33 @@ import fr.sncf.osrd.utils.indexing.*
 import fr.sncf.osrd.utils.units.*
 import kotlin.time.Duration
 
-/** This class is used to create a minimal infra to be used on unit tests, with a simple block graph.
- * Ids are all interchangeable:
- * there's one zone, one chunk, one track, one route, one signal per block,
- * each having the same id as the block.
- * Block descriptor can be edited when we need to set data that isn't included in the method parameters.
- * Not all methods are implemented, but it can be added when relevant. */
+/**
+ * This class is used to create a minimal infra to be used on unit tests, with a simple block graph.
+ * Ids are all interchangeable: there's one zone, one chunk, one track, one route, one signal per
+ * block, each having the same id as the block. Block descriptor can be edited when we need to set
+ * data that isn't included in the method parameters. Not all methods are implemented, but it can be
+ * added when relevant.
+ */
 class DummyInfra : RawInfra, BlockInfra {
 
-    val blockPool = mutableListOf<DummyBlockDescriptor>() // A StaticPool (somehow) fails to link with java here
+    val blockPool =
+        mutableListOf<DummyBlockDescriptor>() // A StaticPool (somehow) fails to link with java here
     val detectorGeoPoint = HashMap<String, Point>()
     private val detectorMap = HashBiMap.create<String, DirDetectorId>()
     private val entryMap = HashMultimap.create<DirDetectorId, BlockId>()
     private val exitMap = HashMultimap.create<DirDetectorId, BlockId>()
     private val signalingSimulator = makeSignalingSimulator()
 
-    /** get the FullInfra  */
+    /** get the FullInfra */
     fun fullInfra(): FullInfra {
-        return FullInfra(
-            this,
-            signalingSimulator.loadSignals(this),
-            this,
-            signalingSimulator
-        )
+        return FullInfra(this, signalingSimulator.loadSignals(this), this, signalingSimulator)
     }
 
-    /** Creates a block going from nodes `entry` to `exit` of length `length`, named $entry->$exit,
-     * with the given maximum speed and signaling system.
-     * If the nodes do not exist they are created. */
+    /**
+     * Creates a block going from nodes `entry` to `exit` of length `length`, named $entry->$exit,
+     * with the given maximum speed and signaling system. If the nodes do not exist they are
+     * created.
+     */
     fun addBlock(
         entry: String,
         exit: String,
@@ -48,10 +47,12 @@ class DummyInfra : RawInfra, BlockInfra {
         signalingSystemName: String = "BAL"
     ): BlockId {
         val name = String.format("%s->%s", entry, exit)
-        val entryId = detectorMap.computeIfAbsent(entry) { DirDetectorId(detectorMap.size.toUInt() * 2u) }
-        val exitId = detectorMap.computeIfAbsent(exit) { DirDetectorId(detectorMap.size.toUInt() * 2u) }
+        val entryId =
+            detectorMap.computeIfAbsent(entry) { DirDetectorId(detectorMap.size.toUInt() * 2u) }
+        val exitId =
+            detectorMap.computeIfAbsent(exit) { DirDetectorId(detectorMap.size.toUInt() * 2u) }
         val id = BlockId(blockPool.size.toUInt())
-        val signalingSystemId =  getSignalingSystemIdfromName(signalingSystemName)
+        val signalingSystemId = getSignalingSystemIdfromName(signalingSystemName)
         blockPool.add(
             DummyBlockDescriptor(
                 length,
@@ -107,6 +108,7 @@ class DummyInfra : RawInfra, BlockInfra {
 
     override val physicalSignals: StaticIdxSpace<PhysicalSignal>
         get() = StaticIdxSpace(blockPool.size.toUInt())
+
     override val logicalSignals: StaticIdxSpace<LogicalSignal>
         get() = StaticIdxSpace(blockPool.size.toUInt())
 
@@ -160,8 +162,7 @@ class DummyInfra : RawInfra, BlockInfra {
 
     override fun getRouteFromName(name: String): RouteId {
         for (i in 0 until blockPool.size) {
-            if (blockPool[i].name == name)
-                return RouteId(i.toUInt())
+            if (blockPool[i].name == name) return RouteId(i.toUInt())
         }
         return RouteId((-1).toUInt())
     }
@@ -180,15 +181,13 @@ class DummyInfra : RawInfra, BlockInfra {
 
     override fun getRoutesStartingAtDet(dirDetector: DirDetectorId): StaticIdxList<Route> {
         val res = mutableStaticIdxArrayListOf<Route>()
-        for (x in entryMap.get(dirDetector))
-            res.add(StaticIdx(x.index))
+        for (x in entryMap.get(dirDetector)) res.add(StaticIdx(x.index))
         return res
     }
 
     override fun getRoutesEndingAtDet(dirDetector: DirDetectorId): StaticIdxList<Route> {
         val res = mutableStaticIdxArrayListOf<Route>()
-        for (x in exitMap.get(dirDetector))
-            res.add(StaticIdx(x.index))
+        for (x in exitMap.get(dirDetector)) res.add(StaticIdx(x.index))
         return res
     }
 
@@ -220,7 +219,9 @@ class DummyInfra : RawInfra, BlockInfra {
         TODO("Not yet implemented")
     }
 
-    override fun getZonePathMovableElementsConfigs(zonePath: ZonePathId): StaticIdxList<TrackNodeConfig> {
+    override fun getZonePathMovableElementsConfigs(
+        zonePath: ZonePathId
+    ): StaticIdxList<TrackNodeConfig> {
         TODO("Not yet implemented")
     }
 
@@ -266,7 +267,10 @@ class DummyInfra : RawInfra, BlockInfra {
         return detectorMap.inverse()[DirDetectorId(det, Direction.INCREASING)]
     }
 
-    override fun getNextTrackSection(currentTrack: DirTrackSectionId, config: TrackNodeConfigId): OptDirTrackSectionId {
+    override fun getNextTrackSection(
+        currentTrack: DirTrackSectionId,
+        config: TrackNodeConfigId
+    ): OptDirTrackSectionId {
         TODO("Not yet implemented")
     }
 
@@ -274,11 +278,16 @@ class DummyInfra : RawInfra, BlockInfra {
         TODO("Not yet implemented")
     }
 
-    override fun getNextTrackNodePort(trackSection: DirTrackSectionId): OptStaticIdx<TrackNodePort> {
+    override fun getNextTrackNodePort(
+        trackSection: DirTrackSectionId
+    ): OptStaticIdx<TrackNodePort> {
         TODO("Not yet implemented")
     }
 
-    override fun getPortConnection(trackNode: TrackNodeId, port: TrackNodePortId): EndpointTrackSectionId {
+    override fun getPortConnection(
+        trackNode: TrackNodeId,
+        port: TrackNodePortId
+    ): EndpointTrackSectionId {
         TODO("Not yet implemented")
     }
 
@@ -312,6 +321,7 @@ class DummyInfra : RawInfra, BlockInfra {
 
     override val trackNodes: StaticIdxSpace<TrackNode>
         get() = TODO("Not yet implemented")
+
     override val trackSections: StaticIdxSpace<TrackSection>
         get() = TODO("Not yet implemented")
 
@@ -324,9 +334,7 @@ class DummyInfra : RawInfra, BlockInfra {
     }
 
     override fun getTrackSectionChunks(trackSection: TrackSectionId): StaticIdxList<TrackChunk> {
-        return mutableStaticIdxArrayListOf(
-            StaticIdx(trackSection.index)
-        )
+        return mutableStaticIdxArrayListOf(StaticIdx(trackSection.index))
     }
 
     override fun getTrackSectionLength(trackSection: TrackSectionId): Length<TrackSection> {
@@ -358,27 +366,33 @@ class DummyInfra : RawInfra, BlockInfra {
         return makeRangeMap(desc.length, desc.gradient)
     }
 
-    override fun getTrackChunkLoadingGaugeConstraints(trackChunk: TrackChunkId): DistanceRangeMap<LoadingGaugeConstraint> {
+    override fun getTrackChunkLoadingGaugeConstraints(
+        trackChunk: TrackChunkId
+    ): DistanceRangeMap<LoadingGaugeConstraint> {
         return DistanceRangeMapImpl()
     }
 
-    override fun getTrackChunkElectrificationVoltage(trackChunk: TrackChunkId): DistanceRangeMap<String> {
+    override fun getTrackChunkElectrificationVoltage(
+        trackChunk: TrackChunkId
+    ): DistanceRangeMap<String> {
         return makeRangeMap(blockPool[trackChunk.index].length, blockPool[trackChunk.index].voltage)
     }
 
-    override fun getTrackChunkNeutralSections(trackChunk: DirTrackChunkId): DistanceRangeMap<NeutralSection> {
+    override fun getTrackChunkNeutralSections(
+        trackChunk: DirTrackChunkId
+    ): DistanceRangeMap<NeutralSection> {
         val desc = blockPool[trackChunk.value.index]
-        val neutralSection = if (trackChunk.direction == Direction.INCREASING)
-            desc.neutralSectionForward
-        else
-            desc.neutralSectionBackward
-        return if (neutralSection == null)
-            DistanceRangeMapImpl()
-        else
-            makeRangeMap(desc.length, neutralSection)
+        val neutralSection =
+            if (trackChunk.direction == Direction.INCREASING) desc.neutralSectionForward
+            else desc.neutralSectionBackward
+        return if (neutralSection == null) DistanceRangeMapImpl()
+        else makeRangeMap(desc.length, neutralSection)
     }
 
-    override fun getTrackChunkSpeedSections(trackChunk: DirTrackChunkId, trainTag: String?): DistanceRangeMap<Speed> {
+    override fun getTrackChunkSpeedSections(
+        trackChunk: DirTrackChunkId,
+        trainTag: String?
+    ): DistanceRangeMap<Speed> {
         val desc = blockPool[trackChunk.value.index]
         return makeRangeMap(desc.length, Speed.fromMetersPerSecond(desc.allowedSpeed))
     }
@@ -391,15 +405,21 @@ class DummyInfra : RawInfra, BlockInfra {
         return LineString.make(entry, exit)
     }
 
-    override fun getTrackChunkOperationalPointParts(trackChunk: TrackChunkId): StaticIdxList<OperationalPointPart> {
+    override fun getTrackChunkOperationalPointParts(
+        trackChunk: TrackChunkId
+    ): StaticIdxList<OperationalPointPart> {
         return mutableStaticIdxArrayListOf()
     }
 
-    override fun getOperationalPointPartChunk(operationalPoint: OperationalPointPartId): TrackChunkId {
+    override fun getOperationalPointPartChunk(
+        operationalPoint: OperationalPointPartId
+    ): TrackChunkId {
         TODO("Not yet implemented")
     }
 
-    override fun getOperationalPointPartChunkOffset(operationalPoint: OperationalPointPartId): Offset<TrackChunk> {
+    override fun getOperationalPointPartChunkOffset(
+        operationalPoint: OperationalPointPartId
+    ): Offset<TrackChunk> {
         TODO("Not yet implemented")
     }
 
@@ -436,15 +456,13 @@ class DummyInfra : RawInfra, BlockInfra {
 
     override fun getBlocksStartingAtDetector(detector: DirDetectorId): StaticIdxList<Block> {
         val res = mutableStaticIdxArrayListOf<Block>()
-        for (x in entryMap.get(detector))
-            res.add(x)
+        for (x in entryMap.get(detector)) res.add(x)
         return res
     }
 
     override fun getBlocksEndingAtDetector(detector: DirDetectorId): StaticIdxList<Block> {
         val res = mutableStaticIdxArrayListOf<Block>()
-        for (id in getRoutesEndingAtDet(detector))
-            res.add(BlockId(id.index))
+        for (id in getRoutesEndingAtDet(detector)) res.add(BlockId(id.index))
         return res
     }
 
@@ -460,9 +478,7 @@ class DummyInfra : RawInfra, BlockInfra {
         trackChunk: TrackChunkId,
         direction: Direction
     ): MutableStaticIdxArraySet<Block> {
-        return mutableStaticIdxArraySetOf(
-            StaticIdx(trackChunk.index)
-        )
+        return mutableStaticIdxArraySetOf(StaticIdx(trackChunk.index))
     }
 
     override fun getTrackChunksFromBlock(block: BlockId): DirStaticIdxList<TrackChunk> {

@@ -2,14 +2,15 @@ package fr.sncf.osrd.railjson.schema.infra;
 
 import com.squareup.moshi.Json;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSDirectionalTrackRange;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 public class RJSRoutePath {
     public final String route;
+
     @Json(name = "track_sections")
     public final List<RJSDirectionalTrackRange> trackSections;
+
     @Json(name = "signaling_type")
     public final String signalingType;
 

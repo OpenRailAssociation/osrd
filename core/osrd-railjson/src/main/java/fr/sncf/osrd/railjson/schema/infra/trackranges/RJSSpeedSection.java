@@ -9,8 +9,10 @@ import java.util.Map;
 @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
 public class RJSSpeedSection implements Identified {
     public String id;
+
     @Json(name = "speed_limit")
     private Double speedLimit = null;
+
     @Json(name = "speed_limit_by_tag")
     public Map<String, Double> speedLimitByTag;
 
@@ -22,8 +24,7 @@ public class RJSSpeedSection implements Identified {
             String id,
             Double speedLimit,
             Map<String, Double> speedLimitByTag,
-            List<RJSApplicableDirectionsTrackRange> trackRanges
-    ) {
+            List<RJSApplicableDirectionsTrackRange> trackRanges) {
         this.id = id;
         this.speedLimit = speedLimit;
         this.speedLimitByTag = speedLimitByTag;
@@ -31,13 +32,11 @@ public class RJSSpeedSection implements Identified {
     }
 
     /** Create an uninitialized speed section (used by the deserializer). */
-    public RJSSpeedSection() {
-    }
+    public RJSSpeedSection() {}
 
-    /** Retrieve default speed limit*/
+    /** Retrieve default speed limit */
     public double getSpeedLimit() {
-        if (speedLimit == null)
-            return Double.POSITIVE_INFINITY;
+        if (speedLimit == null) return Double.POSITIVE_INFINITY;
         return speedLimit;
     }
 

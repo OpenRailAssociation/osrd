@@ -18,16 +18,22 @@ public class DetectorImpl implements fr.sncf.osrd.infra.api.tracks.undirected.De
 
     /** Track section the object is placed on */
     public final TrackSection trackSection;
+
     /** Offset on the track section */
     public final double offset;
+
     /** Is the object a buffer stop */
     public final boolean isBufferStop;
+
     /** ID of the object */
     public final String id;
+
     /** Next detection section (not initialized in the first stages of the infra import) */
     private DetectionSection nextSection = null;
+
     /** Previous detection section (not initialized in the first stages of the infra import) */
     private DetectionSection prevSection = null;
+
     /** DiDetector instances linked to this detector */
     private final ImmutableMap<Direction, DiDetector> diDetectors;
 
@@ -50,8 +56,7 @@ public class DetectorImpl implements fr.sncf.osrd.infra.api.tracks.undirected.De
         this.id = id;
         diDetectors = immutableEnumMap(new EnumMap<>(Map.of(
                 FORWARD, new DiDetector(this, FORWARD),
-                BACKWARD, new DiDetector(this, BACKWARD)
-        )));
+                BACKWARD, new DiDetector(this, BACKWARD))));
     }
 
     @Override
@@ -76,8 +81,7 @@ public class DetectorImpl implements fr.sncf.osrd.infra.api.tracks.undirected.De
 
     @Override
     public DetectionSection getNextDetectionSection(Direction direction) {
-        if (direction == FORWARD)
-            return nextSection;
+        if (direction == FORWARD) return nextSection;
         return prevSection;
     }
 
@@ -86,13 +90,9 @@ public class DetectorImpl implements fr.sncf.osrd.infra.api.tracks.undirected.De
         return diDetectors.get(direction);
     }
 
-    /**
-     * Sets the next detection section toward the given direction
-     */
+    /** Sets the next detection section toward the given direction */
     public void setDetectionSection(Direction direction, DetectionSection section) {
-        if (direction == FORWARD)
-            nextSection = section;
-        else
-            prevSection = section;
+        if (direction == FORWARD) nextSection = section;
+        else prevSection = section;
     }
 }

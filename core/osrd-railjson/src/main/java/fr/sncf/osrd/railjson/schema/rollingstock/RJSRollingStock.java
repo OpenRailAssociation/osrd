@@ -8,12 +8,8 @@ import fr.sncf.osrd.railjson.schema.common.Identified;
 import java.util.Map;
 
 public class RJSRollingStock implements Identified {
-    public static final JsonAdapter<RJSRollingStock> adapter = new Moshi
-            .Builder()
-            .add(RJSRollingResistance.adapter)
-            .build()
-            .adapter(RJSRollingStock.class);
-
+    public static final JsonAdapter<RJSRollingStock> adapter =
+            new Moshi.Builder().add(RJSRollingResistance.adapter).build().adapter(RJSRollingStock.class);
 
     public static final transient String CURRENT_VERSION = "3.2";
 
@@ -25,11 +21,10 @@ public class RJSRollingStock implements Identified {
     public String name = null;
 
     /**
-     * <p>Engineers measured a number of effort curves for each rolling stock.
-     * These are referenced from effort curve profiles.
-     * Effort curves associate a speed to a traction force.
-     * https://en.wikipedia.org/wiki/Tractive_force#Tractive_effort_curves</p>
-     * This match the default effort curve to take
+     * Engineers measured a number of effort curves for each rolling stock. These are referenced
+     * from effort curve profiles. Effort curves associate a speed to a traction force.
+     * https://en.wikipedia.org/wiki/Tractive_force#Tractive_effort_curves This match the default
+     * effort curve to take
      */
     @Json(name = "effort_curves")
     public RJSEffortCurves effortCurves;
@@ -49,8 +44,8 @@ public class RJSRollingStock implements Identified {
     public double maxSpeed = Double.NaN;
 
     /**
-     * The time the train takes to start up, in seconds.
-     * During this time, the train's maximum acceleration is limited.
+     * The time the train takes to start up, in seconds. During this time, the train's maximum
+     * acceleration is limited.
      */
     @Json(name = "startup_time")
     public double startUpTime = Double.NaN;
@@ -66,12 +61,10 @@ public class RJSRollingStock implements Identified {
     /** The braking deceleration coefficient can be the max or constant (depends on type field). */
     public RJSGamma gamma = null;
 
-
     /**
-     * Inertia coefficient.
-     * The mass alone isn't sufficient to compute accelerations, as the wheels and internals
-     * also need force to get spinning. This coefficient can be used to account for the difference.
-     * It's without unit: effective mass = mass * inertia coefficient
+     * Inertia coefficient. The mass alone isn't sufficient to compute accelerations, as the wheels
+     * and internals also need force to get spinning. This coefficient can be used to account for
+     * the difference. It's without unit: effective mass = mass * inertia coefficient
      */
     @Json(name = "inertia_coefficient")
     public double inertiaCoefficient = Double.NaN;
@@ -93,7 +86,7 @@ public class RJSRollingStock implements Identified {
 
     @Json(name = "supported_signaling_systems")
     public String[] supportedSignalingSystems = new String[0];
-    
+
     public enum GammaType {
         CONST,
         MAX

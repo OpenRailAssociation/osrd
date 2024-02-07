@@ -10,8 +10,7 @@ public class SpeedConstraint implements EnvelopePartConstraint {
     public final double speedConstraint;
     private final EnvelopePartConstraintType type;
 
-    public SpeedConstraint(double speedConstraint,
-                           EnvelopePartConstraintType type) {
+    public SpeedConstraint(double speedConstraint, EnvelopePartConstraintType type) {
         this.speedConstraint = speedConstraint;
         this.type = type;
     }
@@ -29,16 +28,13 @@ public class SpeedConstraint implements EnvelopePartConstraint {
     public EnvelopePoint stepCheck(double startPos, double startSpeed, double endPos, double endSpeed) {
         switch (type) {
             case CEILING:
-                if (endSpeed < speedConstraint)
-                    return null;
+                if (endSpeed < speedConstraint) return null;
                 break;
             case FLOOR:
-                if (endSpeed > speedConstraint)
-                    return null;
+                if (endSpeed > speedConstraint) return null;
                 break;
             case EQUAL:
-                if (endSpeed == speedConstraint)
-                    return null;
+                if (endSpeed == speedConstraint) return null;
                 break;
         }
         var interPosition = intersectStepWithSpeed(startPos, startSpeed, endPos, endSpeed, speedConstraint);

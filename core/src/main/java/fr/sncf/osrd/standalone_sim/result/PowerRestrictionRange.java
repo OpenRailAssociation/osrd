@@ -12,8 +12,7 @@ public class PowerRestrictionRange {
     public final String code;
     public final boolean handled;
 
-    public PowerRestrictionRange(double start, double stop, RollingStock.InfraConditions usedCond,
-                                 String seenCode) {
+    public PowerRestrictionRange(double start, double stop, RollingStock.InfraConditions usedCond, String seenCode) {
         this.start = start;
         this.stop = stop;
         this.code = seenCode;
@@ -25,29 +24,25 @@ public class PowerRestrictionRange {
     }
 
     /**
-     * Builds a list of PowerRestrictionRange from two range maps while ensuring
-     * to return the smallest number of ranges
+     * Builds a list of PowerRestrictionRange from two range maps while ensuring to return the
+     * smallest number of ranges
      */
     public static List<PowerRestrictionRange> from(
-            RangeMap<Double, RollingStock.InfraConditions> condsUsed,
-            RangeMap<Double, String> powerRestrictionMap) {
+            RangeMap<Double, RollingStock.InfraConditions> condsUsed, RangeMap<Double, String> powerRestrictionMap) {
         var res = new ArrayList<PowerRestrictionRange>();
         for (var entry : condsUsed.asMapOfRanges().entrySet()) {
             var range = entry.getKey();
-            if (!range.hasLowerBound() || !range.hasUpperBound() || range.upperEndpoint().equals(range.lowerEndpoint()))
-                continue;
+            if (!range.hasLowerBound()
+                    || !range.hasUpperBound()
+                    || range.upperEndpoint().equals(range.lowerEndpoint())) continue;
             var subPowerRestrictionMap = powerRestrictionMap.subRangeMap(range).asMapOfRanges();
-            if (subPowerRestrictionMap.isEmpty())
-                continue;
+            if (subPowerRestrictionMap.isEmpty()) continue;
             assert subPowerRestrictionMap.size() == 1;
             var usedCond = entry.getValue();
             var seenCond = subPowerRestrictionMap.values().iterator().next();
-            var newRange = new PowerRestrictionRange(range.lowerEndpoint(), range.upperEndpoint(), usedCond,
-                    seenCond);
-            if (res.isEmpty() || !res.get(res.size() - 1).shouldBeMergedWith(newRange))
-                res.add(newRange);
-            else
-                res.get(res.size() - 1).stop = newRange.stop;
+            var newRange = new PowerRestrictionRange(range.lowerEndpoint(), range.upperEndpoint(), usedCond, seenCond);
+            if (res.isEmpty() || !res.get(res.size() - 1).shouldBeMergedWith(newRange)) res.add(newRange);
+            else res.get(res.size() - 1).stop = newRange.stop;
         }
         return res;
     }

@@ -10,8 +10,10 @@ public interface EnvelopeTimeInterpolate {
     /** Computes the time required to get to a given point of the envelope in ms */
     long interpolateTotalTimeMS(double position);
 
-    /** Computes the time required to get to a given point of the envelope,
-     * clamping the position to [0, envelope length] first */
+    /**
+     * Computes the time required to get to a given point of the envelope, clamping the position to
+     * [0, envelope length] first
+     */
     double interpolateTotalTimeClamp(double position);
 
     /** Returns the start position of the envelope */
@@ -23,7 +25,7 @@ public interface EnvelopeTimeInterpolate {
     /** Returns the total time of the envelope */
     double getTotalTime();
 
-    record EnvelopePoint(double time, double speed, double position){}
+    record EnvelopePoint(double time, double speed, double position) {}
 
     List<EnvelopePoint> iteratePoints();
 }

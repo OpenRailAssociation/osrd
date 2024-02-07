@@ -11,16 +11,16 @@ import com.google.common.collect.TreeRangeMap;
 import fr.sncf.osrd.envelope_sim.electrification.Electrification;
 import fr.sncf.osrd.envelope_sim.electrification.Electrified;
 import fr.sncf.osrd.envelope_sim.electrification.NonElectrified;
+import java.util.HashMap;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import java.util.HashMap;
-import java.util.Map;
 
 public class EnvelopeSimPathTest {
     @Test
     void testAverageGrade() {
-        var path = buildNonElectrified(10, new double[]{0, 3, 6, 9, 10}, new double[]{0, 2, -2, 0});
+        var path = buildNonElectrified(10, new double[] {0, 3, 6, 9, 10}, new double[] {0, 2, -2, 0});
         assertEquals(10, path.getLength());
         assertEquals(0, path.getAverageGrade(0, 3));
         assertEquals(0, path.getAverageGrade(0, 10));
@@ -31,7 +31,7 @@ public class EnvelopeSimPathTest {
 
     @Test
     void findHighGradePosition() {
-        var path = buildNonElectrified(10, new double[]{0, 3, 6, 9, 10}, new double[]{0, 2, -2, 0});
+        var path = buildNonElectrified(10, new double[] {0, 3, 6, 9, 10}, new double[] {0, 2, -2, 0});
         assertEquals(0, path.getAverageGrade(0, 3));
         assertEquals(0, path.getAverageGrade(0, 10));
         assertEquals(0, path.getAverageGrade(9, 10));
@@ -45,8 +45,8 @@ public class EnvelopeSimPathTest {
         modes.put(Range.closed(0.0, 10.0), new NonElectrified());
         modes.put(Range.closed(3.0, 7.0), new Electrified("1500V"));
         modes.put(Range.closed(7.1, 10.0), new Electrified("25000V"));
-        var path = new EnvelopeSimPath(10, new double[] { 0, 10 }, new double[] { 0 }, ImmutableRangeMap.copyOf(modes),
-                new HashMap<>());
+        var path = new EnvelopeSimPath(
+                10, new double[] {0, 10}, new double[] {0}, ImmutableRangeMap.copyOf(modes), new HashMap<>());
         var modeAndProfileMap = path.getElectrificationMap(null, null, null, true);
 
         assertTrue(fullyCovers(modeAndProfileMap, 10));
@@ -65,8 +65,7 @@ public class EnvelopeSimPathTest {
         RangeMap<Double, Electrification> modeAndProfileMap;
         if (withEmptyPowerRestrictionMap)
             modeAndProfileMap = path.getElectrificationMap("2", ImmutableRangeMap.of(), Map.of("Restrict1", "1"));
-        else
-            modeAndProfileMap = path.getElectrificationMap("2", null, Map.of("Restrict1", "1"));
+        else modeAndProfileMap = path.getElectrificationMap("2", null, Map.of("Restrict1", "1"));
 
         assertTrue(fullyCovers(modeAndProfileMap, path.length));
 
@@ -112,8 +111,7 @@ public class EnvelopeSimPathTest {
         assertEquals(6, modeAndProfileMap.asMapOfRanges().size());
 
         assertEquals(modeAndProfileMap.get(2.0), new Electrified("1500V", null, null));
-        assertEquals(modeAndProfileMap.get(4.5),
-                new Electrified("1500V", null, "Restrict2"));
+        assertEquals(modeAndProfileMap.get(4.5), new Electrified("1500V", null, "Restrict2"));
         assertSame(modeAndProfileMap.get(4.5), modeAndProfileMap.get(5.5));
         assertSame(modeAndProfileMap.get(5.5), modeAndProfileMap.get(6.25));
         assertEquals(modeAndProfileMap.get(6.75), new Electrified("1500V", null, null));

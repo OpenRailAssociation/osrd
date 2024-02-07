@@ -7,11 +7,11 @@ import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingStock;
 import fr.sncf.osrd.reporting.exceptions.ErrorType;
 import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import fr.sncf.osrd.train.RollingStock;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Objects;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class RJSRollingStockParser {
     static final Logger logger = LoggerFactory.getLogger(RJSRollingStockParser.class);
@@ -32,17 +32,17 @@ public class RJSRollingStockParser {
         var currentMajor = RJSRollingStock.CURRENT_VERSION.split("\\.")[0];
         if (!Objects.equals(inputMajor, currentMajor))
             throw OSRDError.newInvalidRollingStockError(
-                ErrorType.InvalidRollingStockMajorVersionMismatch,
-                RJSRollingStock.CURRENT_VERSION,
-                rjsRollingStock.railjsonVersion
-            );
+                    ErrorType.InvalidRollingStockMajorVersionMismatch,
+                    RJSRollingStock.CURRENT_VERSION,
+                    rjsRollingStock.railjsonVersion);
         else if (!rjsRollingStock.railjsonVersion.equals(RJSRollingStock.CURRENT_VERSION))
-            logger.warn("Rolling stock version mismatch, expected {}, got {}", RJSRollingStock.CURRENT_VERSION,
+            logger.warn(
+                    "Rolling stock version mismatch, expected {}, got {}",
+                    RJSRollingStock.CURRENT_VERSION,
                     rjsRollingStock.railjsonVersion);
 
         // Parse effort_curves
-        if (rjsRollingStock.effortCurves == null)
-            throw OSRDError.newMissingRollingStockFieldError("effort_curves");
+        if (rjsRollingStock.effortCurves == null) throw OSRDError.newMissingRollingStockFieldError("effort_curves");
         final var rjsModes = rjsRollingStock.effortCurves.modes;
 
         if (rjsRollingStock.effortCurves.defaultMode == null)
@@ -53,27 +53,21 @@ public class RJSRollingStockParser {
 
         if (!rjsModes.containsKey(rjsRollingStock.effortCurves.defaultMode))
             throw OSRDError.newInvalidRollingStockError(
-                ErrorType.InvalidRollingStockDefaultModeNotFound,
-                rjsRollingStock.effortCurves.defaultMode
-            );
+                    ErrorType.InvalidRollingStockDefaultModeNotFound, rjsRollingStock.effortCurves.defaultMode);
 
         // Parse tractive effort curves modes
         var modes = new HashMap<String, RollingStock.ModeEffortCurves>();
-        for (var mode: rjsModes.entrySet()) {
+        for (var mode : rjsModes.entrySet()) {
             modes.put(mode.getKey(), parseModeEffortCurves(mode.getValue(), "effort_curves.modes." + mode.getKey()));
         }
 
-        if (rjsRollingStock.name == null)
-            throw OSRDError.newMissingRollingStockFieldError("name");
+        if (rjsRollingStock.name == null) throw OSRDError.newMissingRollingStockFieldError("name");
 
-        if (Double.isNaN(rjsRollingStock.length))
-            throw OSRDError.newMissingRollingStockFieldError("length");
+        if (Double.isNaN(rjsRollingStock.length)) throw OSRDError.newMissingRollingStockFieldError("length");
 
-        if (Double.isNaN(rjsRollingStock.maxSpeed))
-            throw OSRDError.newMissingRollingStockFieldError("max_speed");
+        if (Double.isNaN(rjsRollingStock.maxSpeed)) throw OSRDError.newMissingRollingStockFieldError("max_speed");
 
-        if (Double.isNaN(rjsRollingStock.startUpTime))
-            throw OSRDError.newMissingRollingStockFieldError("startup_time");
+        if (Double.isNaN(rjsRollingStock.startUpTime)) throw OSRDError.newMissingRollingStockFieldError("startup_time");
 
         if (Double.isNaN(rjsRollingStock.startUpAcceleration))
             throw OSRDError.newMissingRollingStockFieldError("startup_acceleration");
@@ -81,24 +75,22 @@ public class RJSRollingStockParser {
         if (Double.isNaN(rjsRollingStock.comfortAcceleration))
             throw OSRDError.newMissingRollingStockFieldError("comfort_acceleration");
 
-        if (rjsRollingStock.gamma == null)
-            throw OSRDError.newMissingRollingStockFieldError("gamma");
+        if (rjsRollingStock.gamma == null) throw OSRDError.newMissingRollingStockFieldError("gamma");
 
         if (Double.isNaN(rjsRollingStock.inertiaCoefficient))
             throw OSRDError.newMissingRollingStockFieldError("inertia_coefficient");
 
-        if (rjsRollingStock.loadingGauge == null)
-            throw OSRDError.newMissingRollingStockFieldError("loading_gauge");
+        if (rjsRollingStock.loadingGauge == null) throw OSRDError.newMissingRollingStockFieldError("loading_gauge");
 
-        if (Double.isNaN(rjsRollingStock.mass))
-            throw OSRDError.newMissingRollingStockFieldError("mass");
+        if (Double.isNaN(rjsRollingStock.mass)) throw OSRDError.newMissingRollingStockFieldError("mass");
 
         var rollingResistance = parseRollingResistance(rjsRollingStock.rollingResistance);
 
-        var gammaType = switch (rjsRollingStock.gamma.type) {
-            case MAX -> RollingStock.GammaType.MAX;
-            case CONST -> RollingStock.GammaType.CONST;
-        };
+        var gammaType =
+                switch (rjsRollingStock.gamma.type) {
+                    case MAX -> RollingStock.GammaType.MAX;
+                    case CONST -> RollingStock.GammaType.CONST;
+                };
 
         return new RollingStock(
                 rjsRollingStock.getID(),
@@ -121,50 +113,37 @@ public class RJSRollingStockParser {
                 rjsRollingStock.powerRestrictions,
                 rjsRollingStock.electricalPowerStartUpTime,
                 rjsRollingStock.raisePantographTime,
-                rjsRollingStock.supportedSignalingSystems
-        );
+                rjsRollingStock.supportedSignalingSystems);
     }
 
-    private static RJSRollingResistance.Davis parseRollingResistance(
-            RJSRollingResistance rjsRollingResistance
-    ) throws OSRDError {
-        if (rjsRollingResistance == null)
-            throw OSRDError.newMissingRollingStockFieldError("rolling_resistance");
+    private static RJSRollingResistance.Davis parseRollingResistance(RJSRollingResistance rjsRollingResistance)
+            throws OSRDError {
+        if (rjsRollingResistance == null) throw OSRDError.newMissingRollingStockFieldError("rolling_resistance");
         if (rjsRollingResistance.getClass() != RJSRollingResistance.Davis.class)
             throw OSRDError.newInvalidRollingStockFieldError(
-                "rolling_resistance",
-                "unsupported rolling resistance type"
-            );
+                    "rolling_resistance", "unsupported rolling resistance type");
         return (RJSRollingResistance.Davis) rjsRollingResistance;
     }
 
     /** Parse an RJSEffortCurveConditions into a EffortCurveConditions */
     private static RollingStock.EffortCurveConditions parseEffortCurveConditions(
-            RJSEffortCurves.RJSEffortCurveConditions rjsCond,
-            String fieldKey
-    ) {
-        if (rjsCond == null)
-            throw OSRDError.newMissingRollingStockFieldError(fieldKey);
-        return new RollingStock.EffortCurveConditions(parseComfort(rjsCond.comfort), rjsCond.electricalProfileLevel,
-                rjsCond.powerRestrictionCode);
+            RJSEffortCurves.RJSEffortCurveConditions rjsCond, String fieldKey) {
+        if (rjsCond == null) throw OSRDError.newMissingRollingStockFieldError(fieldKey);
+        return new RollingStock.EffortCurveConditions(
+                parseComfort(rjsCond.comfort), rjsCond.electricalProfileLevel, rjsCond.powerRestrictionCode);
     }
 
     /** Parse rjsComfort into a RollingStock comfort */
     public static RollingStock.Comfort parseComfort(RJSComfortType rjsComfort) {
-        if (rjsComfort == null)
-            return null;
-        if (rjsComfort == RJSComfortType.AC)
-            return RollingStock.Comfort.AC;
-        if (rjsComfort == RJSComfortType.HEATING)
-            return RollingStock.Comfort.HEATING;
+        if (rjsComfort == null) return null;
+        if (rjsComfort == RJSComfortType.AC) return RollingStock.Comfort.AC;
+        if (rjsComfort == RJSComfortType.HEATING) return RollingStock.Comfort.HEATING;
         return RollingStock.Comfort.STANDARD;
     }
 
     /** Parse RJSModeEffortCurve into a ModeEffortCurve */
     private static RollingStock.ModeEffortCurves parseModeEffortCurves(
-            RJSEffortCurves.RJSModeEffortCurve rjsMode,
-            String fieldKey
-    ) {
+            RJSEffortCurves.RJSModeEffortCurve rjsMode, String fieldKey) {
         var defaultCurve = parseEffortCurve(rjsMode.defaultCurve, fieldKey + ".default_curve");
         var curves = new RollingStock.ConditionalEffortCurve[rjsMode.curves.size()];
         for (int i = 0; i < rjsMode.curves.size(); i++) {
@@ -177,11 +156,8 @@ public class RJSRollingStockParser {
     }
 
     private static RollingStock.TractiveEffortPoint[] parseEffortCurve(
-            RJSEffortCurves.RJSEffortCurve rjsEffortCurve,
-            String fieldKey
-    ) throws OSRDError {
-        if (rjsEffortCurve.speeds == null)
-            throw OSRDError.newMissingRollingStockFieldError(fieldKey + ".speeds");
+            RJSEffortCurves.RJSEffortCurve rjsEffortCurve, String fieldKey) throws OSRDError {
+        if (rjsEffortCurve.speeds == null) throw OSRDError.newMissingRollingStockFieldError(fieldKey + ".speeds");
         if (rjsEffortCurve.maxEfforts == null)
             throw OSRDError.newMissingRollingStockFieldError(fieldKey + ".max_efforts");
         if (rjsEffortCurve.speeds.length != rjsEffortCurve.maxEfforts.length)
@@ -190,11 +166,9 @@ public class RJSRollingStockParser {
         var tractiveEffortCurve = new RollingStock.TractiveEffortPoint[rjsEffortCurve.speeds.length];
         for (int i = 0; i < rjsEffortCurve.speeds.length; i++) {
             var speed = rjsEffortCurve.speeds[i];
-            if (speed < 0)
-                throw OSRDError.newInvalidRollingStockFieldError(fieldKey, "negative speed");
+            if (speed < 0) throw OSRDError.newInvalidRollingStockFieldError(fieldKey, "negative speed");
             var maxEffort = rjsEffortCurve.maxEfforts[i];
-            if (maxEffort < 0)
-                throw OSRDError.newInvalidRollingStockFieldError(fieldKey, "negative max effort");
+            if (maxEffort < 0) throw OSRDError.newInvalidRollingStockFieldError(fieldKey, "negative max effort");
             tractiveEffortCurve[i] = new RollingStock.TractiveEffortPoint(speed, maxEffort);
             assert i == 0 || tractiveEffortCurve[i - 1].speed() < speed;
         }

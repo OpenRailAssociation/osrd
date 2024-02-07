@@ -6,37 +6,28 @@ import static org.junit.jupiter.api.Assertions.*;
 import fr.sncf.osrd.envelope.part.EnvelopePart;
 import fr.sncf.osrd.envelope_sim.*;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
+import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import java.util.List;
 
 class EnvelopePartTest {
     @Test
     void toStringTest() {
         var part = EnvelopePart.generateTimes(
-                List.of(EnvelopeProfile.ACCELERATING),
-                new double[]{1.5, 5},
-                new double[]{3, 4}
-        );
+                List.of(EnvelopeProfile.ACCELERATING), new double[] {1.5, 5}, new double[] {3, 4});
         assertEquals("EnvelopePart { EnvelopeProfile=ACCELERATING }", part.toString());
     }
 
     @Test
     void getAttrTest() {
         var part = EnvelopePart.generateTimes(
-                List.of(EnvelopeProfile.ACCELERATING),
-                new double[]{1.5, 5},
-                new double[]{3, 4}
-        );
+                List.of(EnvelopeProfile.ACCELERATING), new double[] {1.5, 5}, new double[] {3, 4});
         assertEquals(EnvelopeProfile.ACCELERATING, part.getAttr(EnvelopeProfile.class));
     }
 
     @Test
     void interpolateSpeedTest() {
-        var ep = EnvelopeTestUtils.generateTimes(
-                new double[]{1.5, 5},
-                new double[]{3, 4}
-        );
+        var ep = EnvelopeTestUtils.generateTimes(new double[] {1.5, 5}, new double[] {3, 4});
         var interpolatedSpeed = ep.interpolateSpeed(2.75);
         // the delta here is pretty high, as we allow both approximate and exact methods
         assertEquals(3.36, interpolatedSpeed, 0.04);
@@ -44,10 +35,7 @@ class EnvelopePartTest {
 
     @Test
     void findStep() {
-        var ep = EnvelopeTestUtils.generateTimes(
-                new double[]{1.5, 3, 5},
-                new double[]{3, 4, 4}
-        );
+        var ep = EnvelopeTestUtils.generateTimes(new double[] {1.5, 3, 5}, new double[] {3, 4, 4});
 
         assertEquals(0, ep.findLeft(1.5));
         assertEquals(0, ep.findRight(1.5));
@@ -70,20 +58,11 @@ class EnvelopePartTest {
     @Test
     void testEquals() {
         var ep1 = EnvelopePart.generateTimes(
-                List.of(EnvelopeProfile.ACCELERATING),
-                new double[]{1.5, 3, 5},
-                new double[]{3, 4, 4}
-        );
+                List.of(EnvelopeProfile.ACCELERATING), new double[] {1.5, 3, 5}, new double[] {3, 4, 4});
         var ep2 = EnvelopePart.generateTimes(
-                List.of(EnvelopeProfile.ACCELERATING),
-                new double[]{1.5, 3, 5},
-                new double[]{3, 4, 4}
-        );
+                List.of(EnvelopeProfile.ACCELERATING), new double[] {1.5, 3, 5}, new double[] {3, 4, 4});
         var ep3 = EnvelopePart.generateTimes(
-                List.of(EnvelopeProfile.COASTING),
-                new double[]{1.5, 3, 5},
-                new double[]{3, 4, 4}
-        );
+                List.of(EnvelopeProfile.COASTING), new double[] {1.5, 3, 5}, new double[] {3, 4, 4});
         assertEquals(ep1, ep2);
         assertEquals(ep1.hashCode(), ep2.hashCode());
         assertNotEquals(ep1, ep3);
@@ -104,22 +83,19 @@ class EnvelopePartTest {
 
         for (var i = 0; i < envelopeAllowance.size(); i++) {
             var envelopePart = envelopeAllowance.get(i);
-            var envelopePartEnergy = getPartMechanicalEnergyConsumed(
-                    envelopePart,
-                    testContext.path,
-                    testContext.rollingStock
-            );
+            var envelopePartEnergy =
+                    getPartMechanicalEnergyConsumed(envelopePart, testContext.path, testContext.rollingStock);
             double expectedEnvelopePartEnergy;
             switch (i) {
                 case 0:
-                    expectedEnvelopePartEnergy =
-                            PhysicsRollingStock.getMaxEffort(1, testEffortCurveMap.get(0.))
-                            * envelopePart.getTotalTimeMS() / 1000;
+                    expectedEnvelopePartEnergy = PhysicsRollingStock.getMaxEffort(1, testEffortCurveMap.get(0.))
+                            * envelopePart.getTotalTimeMS()
+                            / 1000;
                     break;
                 case 1:
                     Assertions.assertEquals(envelopePart.getMinSpeed(), envelopePart.getMaxSpeed());
-                    expectedEnvelopePartEnergy = testRollingStock
-                            .getRollingResistance(envelopePart.getBeginSpeed()) * envelopePart.getTotalDistance();
+                    expectedEnvelopePartEnergy = testRollingStock.getRollingResistance(envelopePart.getBeginSpeed())
+                            * envelopePart.getTotalDistance();
                     break;
                 case 2:
                     expectedEnvelopePartEnergy = 0;
@@ -130,11 +106,7 @@ class EnvelopePartTest {
                 default:
                     expectedEnvelopePartEnergy = 0;
             }
-            assertEquals(
-                    expectedEnvelopePartEnergy,
-                    envelopePartEnergy,
-                    0.1 * expectedEnvelopePartEnergy + 1000
-            );
+            assertEquals(expectedEnvelopePartEnergy, envelopePartEnergy, 0.1 * expectedEnvelopePartEnergy + 1000);
         }
     }
 }

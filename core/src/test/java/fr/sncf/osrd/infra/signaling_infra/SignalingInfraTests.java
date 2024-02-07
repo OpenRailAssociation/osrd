@@ -1,12 +1,11 @@
 package fr.sncf.osrd.infra.signaling_infra;
 
-import static fr.sncf.osrd.utils.Helpers.infraFromRJS;
 import static fr.sncf.osrd.infra.InfraHelpers.testTinyInfraDiDetectorGraph;
+import static fr.sncf.osrd.utils.Helpers.infraFromRJS;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
-import fr.sncf.osrd.utils.Helpers;
 import fr.sncf.osrd.infra.api.reservation.ReservationInfra;
 import fr.sncf.osrd.infra.api.reservation.ReservationRoute;
 import fr.sncf.osrd.infra.api.signaling.Signal;
@@ -15,14 +14,15 @@ import fr.sncf.osrd.infra.api.signaling.SignalingModule;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.infra.implementation.signaling.SignalingInfraBuilder;
 import fr.sncf.osrd.infra.implementation.signaling.modules.bal3.BAL3;
+import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
+import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSSignal;
 import fr.sncf.osrd.reporting.exceptions.ErrorType;
 import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl;
-import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
-import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSSignal;
-import org.junit.jupiter.api.Test;
+import fr.sncf.osrd.utils.Helpers;
 import java.util.HashSet;
 import java.util.Set;
+import org.junit.jupiter.api.Test;
 
 public class SignalingInfraTests {
     @Test
@@ -41,7 +41,8 @@ public class SignalingInfraTests {
         }
 
         for (var route : bal3Routes) {
-            // Checks that the entry / exit signal is empty if the route starts / ends with a buffer stop
+            // Checks that the entry / exit signal is empty if the route starts / ends with a buffer
+            // stop
             var splitName = route.getInfraRoute().getID().split("->");
             var startBufferStop = splitName[0].contains("buffer_stop");
             var endBufferStop = splitName[1].contains("buffer_stop");
@@ -62,8 +63,7 @@ public class SignalingInfraTests {
         var rjsInfra = Helpers.getExampleInfra("tiny_infra/infra.json");
         var thrown = assertThrows(
                 OSRDError.class,
-                () -> SignalingInfraBuilder.fromRJSInfra(rjsInfra, Set.of(), new DiagnosticRecorderImpl(true))
-        );
+                () -> SignalingInfraBuilder.fromRJSInfra(rjsInfra, Set.of(), new DiagnosticRecorderImpl(true)));
         assertEquals(thrown.osrdErrorType, ErrorType.StrictWarningError);
     }
 
@@ -71,19 +71,14 @@ public class SignalingInfraTests {
     public void findRoutesTests() throws Exception {
         var rjsInfra = Helpers.getExampleInfra("tiny_infra/infra.json");
         var wr = new DiagnosticRecorderImpl(true);
-        var infra = SignalingInfraBuilder.fromRJSInfra(
-                rjsInfra,
-                Set.of(new BAL3(wr), new DummySignalingModule()),
-                wr
-        );
+        var infra = SignalingInfraBuilder.fromRJSInfra(rjsInfra, Set.of(new BAL3(wr), new DummySignalingModule()), wr);
         assertNull(infra.findSignalingRoute("nope", "BAL3"));
         assertNull(infra.findSignalingRoute("rt.tde.foo_a-switch_foo->buffer_stop_c", "nope"));
-        assertTrue(infra.findSignalingRoute(
-                "rt.tde.foo_a-switch_foo->buffer_stop_c", "BAL3") instanceof BAL3.BAL3Route
-        );
-        assertTrue(infra.findSignalingRoute(
-                "rt.tde.foo_a-switch_foo->buffer_stop_c", "Dummy") instanceof DummySignalingModule.DummyRoute
-        );
+        assertTrue(
+                infra.findSignalingRoute("rt.tde.foo_a-switch_foo->buffer_stop_c", "BAL3") instanceof BAL3.BAL3Route);
+        assertTrue(
+                infra.findSignalingRoute("rt.tde.foo_a-switch_foo->buffer_stop_c", "Dummy")
+                        instanceof DummySignalingModule.DummyRoute);
     }
 
     private static class DummySignalingModule implements SignalingModule {
@@ -113,20 +108,15 @@ public class SignalingInfraTests {
 
         @Override
         public ImmutableMap<RJSSignal, Signal<? extends SignalState>> createSignals(
-                ReservationInfra infra,
-                RJSInfra rjsInfra
-        ) {
+                ReservationInfra infra, RJSInfra rjsInfra) {
             return ImmutableMap.of();
         }
 
         @Override
         public ImmutableMap<ReservationRoute, SignalingRoute> createRoutes(
-                ReservationInfra infra,
-                ImmutableMultimap<RJSSignal, Signal<? extends SignalState>> signalMap
-        ) {
+                ReservationInfra infra, ImmutableMultimap<RJSSignal, Signal<? extends SignalState>> signalMap) {
             var builder = ImmutableMap.<ReservationRoute, SignalingRoute>builder();
-            for (var route : infra.getReservationRouteMap().values())
-                builder.put(route, new DummyRoute());
+            for (var route : infra.getReservationRouteMap().values()) builder.put(route, new DummyRoute());
             return builder.build();
         }
     }

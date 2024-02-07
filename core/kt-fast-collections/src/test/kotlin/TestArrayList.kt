@@ -2,9 +2,9 @@ package fr.sncf.osrd.fast_collections
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
-import kotlin.test.assertFalse
 
 class ArrayListTest {
     @Test

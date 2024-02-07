@@ -8,24 +8,16 @@ import fr.sncf.osrd.sim_infra.api.PathProperties
 import fr.sncf.osrd.sim_infra.impl.NeutralSection
 import fr.sncf.osrd.utils.units.Distance
 
-
-/**
- * Builds the ElectrificationMap
- */
+/** Builds the ElectrificationMap */
 fun buildElectrificationMap(path: PathProperties): DistanceRangeMap<Electrification> {
     val res: DistanceRangeMap<Electrification> = DistanceRangeMapImpl()
     res.put(Distance.ZERO, path.getLength().distance, NonElectrified())
-    res.updateMap(
-        path.getElectrification()
-    ) { _: Electrification?, electrificationMode: String ->
-        if (electrificationMode == "")
-            NonElectrified()
-        else
-            Electrified(electrificationMode)
+    res.updateMap(path.getElectrification()) { _: Electrification?, electrificationMode: String ->
+        if (electrificationMode == "") NonElectrified() else Electrified(electrificationMode)
     }
-    res.updateMap(
-        path.getNeutralSections()
-    ) { electrification: Electrification?, neutralSection: NeutralSection ->
+    res.updateMap(path.getNeutralSections()) {
+        electrification: Electrification?,
+        neutralSection: NeutralSection ->
         Neutral(neutralSection.lowerPantograph, electrification, neutralSection.isAnnouncement)
     }
     return res

@@ -60,9 +60,9 @@ import fr.sncf.osrd.utils.units.mutableOffsetArrayListOf
 import kotlin.collections.set
 import kotlin.time.Duration
 
-
 interface MovableElementDescriptorBuilder {
     fun port(endpoint: EndpointTrackSectionId): TrackNodePortId
+
     fun config(name: String, portLink: Pair<TrackNodePortId, TrackNodePortId>): TrackNodeConfigId
 }
 
@@ -76,7 +76,10 @@ class MovableElementDescriptorBuilderImpl(
         return ports.add(endpoint)
     }
 
-    override fun config(name: String, portLink: Pair<TrackNodePortId, TrackNodePortId>): TrackNodeConfigId {
+    override fun config(
+        name: String,
+        portLink: Pair<TrackNodePortId, TrackNodePortId>
+    ): TrackNodeConfigId {
         return configs.add(TrackNodeConfigDescriptor(name, portLink))
     }
 
@@ -105,7 +108,8 @@ class PhysicalSignalBuilderImpl(
         nextSignalingSystems: List<String>,
         settings: Map<String, String>
     ): LogicalSignalId {
-        val logicalSignalId = globalPool.add(LogicalSignalDescriptor(signalingSystem, nextSignalingSystems, settings))
+        val logicalSignalId =
+            globalPool.add(LogicalSignalDescriptor(signalingSystem, nextSignalingSystems, settings))
         children.add(logicalSignalId)
         return logicalSignalId
     }
@@ -115,19 +119,26 @@ class PhysicalSignalBuilderImpl(
     }
 }
 
-
 interface ZonePathBuilder {
-    fun movableElement(movableElement: TrackNodeId, config: TrackNodeConfigId, zonePathOffset: Offset<ZonePath>)
+    fun movableElement(
+        movableElement: TrackNodeId,
+        config: TrackNodeConfigId,
+        zonePathOffset: Offset<ZonePath>
+    )
+
     fun signal(signal: PhysicalSignalId, zonePathOffset: Offset<ZonePath>)
 }
 
-class ZonePathBuilderImpl(val entry: DirDetectorId, val exit: DirDetectorId, val length: Length<ZonePath>) : ZonePathBuilder {
+class ZonePathBuilderImpl(
+    val entry: DirDetectorId,
+    val exit: DirDetectorId,
+    val length: Length<ZonePath>
+) : ZonePathBuilder {
     private val movableElements = MutableStaticIdxArrayList<TrackNode>()
     private val movableElementsConfigs = MutableStaticIdxArrayList<TrackNodeConfig>()
     private val movableElementsDistances = MutableOffsetArrayList<ZonePath>()
     private val signals = MutableStaticIdxArrayList<PhysicalSignal>()
     private val signalPositions = MutableOffsetArrayList<ZonePath>()
-
 
     override fun movableElement(
         movableElement: TrackNodeId,
@@ -146,7 +157,9 @@ class ZonePathBuilderImpl(val entry: DirDetectorId, val exit: DirDetectorId, val
 
     fun build(): ZonePathDescriptor {
         return ZonePathDescriptor(
-            entry, exit, length,
+            entry,
+            exit,
+            length,
             movableElements,
             movableElementsConfigs,
             movableElementsDistances,
@@ -159,8 +172,11 @@ class ZonePathBuilderImpl(val entry: DirDetectorId, val exit: DirDetectorId, val
 
 interface RouteBuilder {
     fun zonePath(zonePath: StaticIdx<ZonePath>)
+
     fun releaseZone(index: Int)
+
     fun speedLimit(limit: SpeedLimitId, start: Offset<Route>, end: Offset<Route>)
+
     fun trackChunk(chunkId: DirTrackChunkId)
 }
 
@@ -217,19 +233,39 @@ class RouteDescriptorImpl(
 ) : RouteDescriptor
 
 interface RestrictedRawInfraBuilder {
-    fun movableElement(name: String, delay: Duration, init: MovableElementDescriptorBuilder.() -> Unit): TrackNodeId
+    fun movableElement(
+        name: String,
+        delay: Duration,
+        init: MovableElementDescriptorBuilder.() -> Unit
+    ): TrackNodeId
+
     fun detector(name: String?): DetectorId
+
     fun linkZones(zoneA: ZoneId, zoneB: ZoneId): DetectorId
+
     fun linkZones(detector: DetectorId, zoneA: ZoneId, zoneB: ZoneId)
+
     fun setNextZone(detector: DirDetectorId, zone: ZoneId)
-    // The 3 "zone" methods are outdated because we can compute zones using track topology. They should be removed once
-    // the rjs parsing has been migrated and the legacy infra isn't used as an intermediate step anymore
+    // The 3 "zone" methods are outdated because we can compute zones using track topology. They
+    // should be removed once
+    // the rjs parsing has been migrated and the legacy infra isn't used as an intermediate step
+    // anymore
     fun zone(movableElements: StaticIdxSortedSet<TrackNode>): ZoneId
+
     fun zone(movableElements: List<TrackNodeId>): ZoneId
+
     fun zone(movableElements: StaticIdxSortedSet<TrackNode>, bounds: List<DirDetectorId>): ZoneId
-    fun zonePath(entry: DirDetectorId, exit: DirDetectorId, length: Length<ZonePath>, init: ZonePathBuilder.() -> Unit): ZonePathId
+
     fun zonePath(
-        entry: DirDetectorId, exit: DirDetectorId,
+        entry: DirDetectorId,
+        exit: DirDetectorId,
+        length: Length<ZonePath>,
+        init: ZonePathBuilder.() -> Unit
+    ): ZonePathId
+
+    fun zonePath(
+        entry: DirDetectorId,
+        exit: DirDetectorId,
         length: Length<ZonePath>,
         movableElements: StaticIdxList<TrackNode>,
         movableElementsConfigs: StaticIdxList<TrackNodeConfig>,
@@ -238,10 +274,19 @@ interface RestrictedRawInfraBuilder {
         signalPositions: OffsetList<ZonePath>,
         chunks: DirStaticIdxList<TrackChunk>,
     ): ZonePathId
+
     fun zonePath(entry: DirDetectorId, exit: DirDetectorId, length: Length<ZonePath>): ZonePathId
+
     fun route(name: String?, init: RouteBuilder.() -> Unit): RouteId
-    fun physicalSignal(name: String?, sightDistance: Distance, init: PhysicalSignalBuilder.() -> Unit): PhysicalSignalId
+
+    fun physicalSignal(
+        name: String?,
+        sightDistance: Distance,
+        init: PhysicalSignalBuilder.() -> Unit
+    ): PhysicalSignalId
+
     fun trackSection(name: String?, init: TrackSectionBuilder.() -> Unit): TrackSectionId
+
     fun trackChunk(
         geo: LineString,
         slopes: DirectionalMap<DistanceRangeMap<Double>>,
@@ -254,13 +299,20 @@ interface RestrictedRawInfraBuilder {
         neutralSections: DirectionalMap<DistanceRangeMap<NeutralSection>>,
         speedSections: DirectionalMap<DistanceRangeMap<SpeedSection>>
     ): TrackChunkId
-    fun operationalPointPart(name: String, chunkOffset: Offset<TrackChunk>, chunk: TrackChunkId): OperationalPointPartId
+
+    fun operationalPointPart(
+        name: String,
+        chunkOffset: Offset<TrackChunk>,
+        chunk: TrackChunkId
+    ): OperationalPointPartId
 }
 
 interface TrackSectionBuilder {
     fun detector(detector: StaticIdx<Detector>)
+
     fun chunk(chunk: StaticIdx<TrackChunk>)
 }
+
 class TrackSectionBuilderImpl(private val name: String?) : TrackSectionBuilder {
     private val detectors: MutableStaticIdxList<Detector> = mutableStaticIdxArrayListOf()
     private val chunks: MutableStaticIdxList<TrackChunk> = mutableStaticIdxArrayListOf()
@@ -274,10 +326,7 @@ class TrackSectionBuilderImpl(private val name: String?) : TrackSectionBuilder {
     }
 
     fun build(): TrackSectionDescriptor {
-        return TrackSectionDescriptor(
-            name!!,
-            chunks
-        )
+        return TrackSectionDescriptor(name!!, chunks)
     }
 }
 
@@ -298,10 +347,16 @@ class RawInfraBuilderImpl : RawInfraBuilder {
     private val physicalSignalPool = StaticPool<PhysicalSignal, PhysicalSignalDescriptor>()
     private val zonePathPool = StaticPool<ZonePath, ZonePathDescriptor>()
     private val zonePathMap = mutableMapOf<ZonePathSpec, ZonePathId>()
-    private val operationalPointPartPool = StaticPool<OperationalPointPart, OperationalPointPartDescriptor>()
+    private val operationalPointPartPool =
+        StaticPool<OperationalPointPart, OperationalPointPartDescriptor>()
 
-    override fun movableElement(name: String, delay: Duration, init: MovableElementDescriptorBuilder.() -> Unit): TrackNodeId {
-        val movableElementBuilder = MovableElementDescriptorBuilderImpl(name, delay, StaticPool(), StaticPool())
+    override fun movableElement(
+        name: String,
+        delay: Duration,
+        init: MovableElementDescriptorBuilder.() -> Unit
+    ): TrackNodeId {
+        val movableElementBuilder =
+            MovableElementDescriptorBuilderImpl(name, delay, StaticPool(), StaticPool())
         movableElementBuilder.init()
         val movableElement = movableElementBuilder.build()
         return trackNodePool.add(movableElement)
@@ -332,19 +387,25 @@ class RawInfraBuilderImpl : RawInfraBuilder {
 
     override fun zone(movableElements: List<TrackNodeId>): ZoneId {
         val set = MutableStaticIdxArraySet<TrackNode>()
-        for (item in movableElements)
-            set.add(item)
+        for (item in movableElements) set.add(item)
         return zonePool.add(ZoneDescriptor(set))
     }
 
-    override fun zone(movableElements: StaticIdxSortedSet<TrackNode>, bounds: List<DirDetectorId>): ZoneId {
+    override fun zone(
+        movableElements: StaticIdxSortedSet<TrackNode>,
+        bounds: List<DirDetectorId>
+    ): ZoneId {
         val zone = zonePool.add(ZoneDescriptor(movableElements))
-        for (detectorDir in bounds)
-            setNextZone(detectorDir, zone)
+        for (detectorDir in bounds) setNextZone(detectorDir, zone)
         return zone
     }
 
-    override fun zonePath(entry: DirDetectorId, exit: DirDetectorId, length: Length<ZonePath>, init: ZonePathBuilder.() -> Unit): ZonePathId {
+    override fun zonePath(
+        entry: DirDetectorId,
+        exit: DirDetectorId,
+        length: Length<ZonePath>,
+        init: ZonePathBuilder.() -> Unit
+    ): ZonePathId {
         val builder = ZonePathBuilderImpl(entry, exit, length)
         builder.init()
         val zonePathDesc = builder.build()
@@ -362,15 +423,26 @@ class RawInfraBuilderImpl : RawInfraBuilder {
         signalPositions: OffsetList<ZonePath>,
         chunks: DirStaticIdxList<TrackChunk>,
     ): ZonePathId {
-        val zonePathDesc = ZonePathDescriptor(
-            entry, exit, length,
-            movableElements, movableElementsConfigs, movableElementsDistances,
-            signals, signalPositions, chunks
-        )
+        val zonePathDesc =
+            ZonePathDescriptor(
+                entry,
+                exit,
+                length,
+                movableElements,
+                movableElementsConfigs,
+                movableElementsDistances,
+                signals,
+                signalPositions,
+                chunks
+            )
         return zonePathMap.getOrPut(zonePathDesc) { zonePathPool.add(zonePathDesc) }
     }
 
-    override fun zonePath(entry: DirDetectorId, exit: DirDetectorId, length: Length<ZonePath>): ZonePathId {
+    override fun zonePath(
+        entry: DirDetectorId,
+        exit: DirDetectorId,
+        length: Length<ZonePath>
+    ): ZonePathId {
         val builder = ZonePathBuilderImpl(entry, exit, length)
         val zonePathDesc = builder.build()
         return zonePathMap.getOrPut(zonePathDesc) { zonePathPool.add(zonePathDesc) }
@@ -382,7 +454,11 @@ class RawInfraBuilderImpl : RawInfraBuilder {
         return routePool.add(builder.build())
     }
 
-    override fun physicalSignal(name: String?, sightDistance: Distance, init: PhysicalSignalBuilder.() -> Unit): PhysicalSignalId {
+    override fun physicalSignal(
+        name: String?,
+        sightDistance: Distance,
+        init: PhysicalSignalBuilder.() -> Unit
+    ): PhysicalSignalId {
         val builder = PhysicalSignalBuilderImpl(name, sightDistance, logicalSignalPool)
         builder.init()
         return physicalSignalPool.add(builder.build())
@@ -406,26 +482,36 @@ class RawInfraBuilderImpl : RawInfraBuilder {
         neutralSections: DirectionalMap<DistanceRangeMap<NeutralSection>>,
         speedSections: DirectionalMap<DistanceRangeMap<SpeedSection>>
     ): TrackChunkId {
-        return trackChunkPool.add(TrackChunkDescriptor(
-            geo,
-            slopes,
-            curves,
-            gradients,
-            length,
-            // Route IDs will be filled later on, the routes are not initialized and don't have IDs yet
-            DirectionalMap(MutableStaticIdxArrayList(), MutableStaticIdxArrayList()),
-            StaticIdx(0u), // The track ID will be filled later on for the same reason as routes
-            offset,
-            MutableStaticIdxArrayList(), // Same
-            loadingGaugeConstraints,
-            electrificationVoltage,
-            neutralSections,
-            speedSections
-        ))
+        return trackChunkPool.add(
+            TrackChunkDescriptor(
+                geo,
+                slopes,
+                curves,
+                gradients,
+                length,
+                // Route IDs will be filled later on, the routes are not initialized and don't have
+                // IDs
+                // yet
+                DirectionalMap(MutableStaticIdxArrayList(), MutableStaticIdxArrayList()),
+                StaticIdx(0u), // The track ID will be filled later on for the same reason as routes
+                offset,
+                MutableStaticIdxArrayList(), // Same
+                loadingGaugeConstraints,
+                electrificationVoltage,
+                neutralSections,
+                speedSections
+            )
+        )
     }
 
-    override fun operationalPointPart(name: String, chunkOffset: Offset<TrackChunk>, chunk: TrackChunkId): OperationalPointPartId {
-        return operationalPointPartPool.add(OperationalPointPartDescriptor(name, chunkOffset, chunk))
+    override fun operationalPointPart(
+        name: String,
+        chunkOffset: Offset<TrackChunk>,
+        chunk: TrackChunkId
+    ): OperationalPointPartId {
+        return operationalPointPartPool.add(
+            OperationalPointPartDescriptor(name, chunkOffset, chunk)
+        )
     }
 
     override fun build(): RawInfra {
@@ -457,8 +543,7 @@ class RawInfraBuilderImpl : RawInfraBuilder {
         for (routeId in routePool) {
             val firstZonePath = routePool[routeId].path.first()
             val entry = zonePathPool[firstZonePath].entry
-            res.computeIfAbsent(entry) { mutableStaticIdxArrayListOf() }
-                .add(routeId)
+            res.computeIfAbsent(entry) { mutableStaticIdxArrayListOf() }.add(routeId)
         }
         return res
     }
@@ -469,8 +554,7 @@ class RawInfraBuilderImpl : RawInfraBuilder {
         for (routeId in routePool) {
             val lastZonePath = routePool[routeId].path.last()
             val exit = zonePathPool[lastZonePath].exit
-            res.computeIfAbsent(exit) { mutableStaticIdxArrayListOf() }
-                .add(routeId)
+            res.computeIfAbsent(exit) { mutableStaticIdxArrayListOf() }.add(routeId)
         }
         return res
     }
@@ -478,8 +562,7 @@ class RawInfraBuilderImpl : RawInfraBuilder {
     /** Create the mapping from track name to id */
     private fun makeTrackNameMap(): Map<String, TrackSectionId> {
         val res = HashMap<String, TrackSectionId>()
-        for (trackId in trackSectionPool)
-            res[trackSectionPool[trackId].name] = trackId
+        for (trackId in trackSectionPool) res[trackSectionPool[trackId].name] = trackId
         return res
     }
 
@@ -490,14 +573,16 @@ class RawInfraBuilderImpl : RawInfraBuilder {
             val routeName = routePool[routeId].name
             if (res[routePool[routeId].name!!] != null)
                 throw OSRDError.newDuplicateRouteError(routeName)
-            else if (routeName != null)
-                res[routePool[routeId].name!!] = routeId
+            else if (routeName != null) res[routePool[routeId].name!!] = routeId
         }
         return res
     }
 
-    /** Some objects have cross-reference (such as routes and chunks, or track sections and chunks).
-     * This method needs to be called to set the references that couldn't be set during initialization. */
+    /**
+     * Some objects have cross-reference (such as routes and chunks, or track sections and chunks).
+     * This method needs to be called to set the references that couldn't be set during
+     * initialization.
+     */
     private fun resolveReferences() {
         // Resolve route references
         for (route in routePool) {
@@ -508,7 +593,8 @@ class RawInfraBuilderImpl : RawInfraBuilder {
                 for (dirChunk in zonePathPool[zonePath].chunks) {
                     val chunk = dirChunk.value
                     val dir = dirChunk.direction
-                    val routeList = trackChunkPool[chunk].routes.get(dir) as MutableStaticIdxArrayList
+                    val routeList =
+                        trackChunkPool[chunk].routes.get(dir) as MutableStaticIdxArrayList
                     routeList.add(route)
                     chunkListOnRoute.add(dirChunk)
                 }
@@ -517,9 +603,8 @@ class RawInfraBuilderImpl : RawInfraBuilder {
         }
 
         // Resolve track references
-        for (track in trackSectionPool)
-            for (chunk in trackSectionPool[track].chunks)
-                trackChunkPool[chunk].track = track
+        for (track in trackSectionPool) for (chunk in
+            trackSectionPool[track].chunks) trackChunkPool[chunk].track = track
 
         // Resolve operational points
         for (op in operationalPointPartPool) {

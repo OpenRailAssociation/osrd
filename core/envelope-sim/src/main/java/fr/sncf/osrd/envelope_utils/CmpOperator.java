@@ -21,8 +21,7 @@ public enum CmpOperator {
     @SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY"})
     public static boolean compare(double valueA, CmpOperator operator, double valueB) {
         var resSign = Math.signum(valueA - valueB);
-        if (resSign == 0.0)
-            return !operator.isStrict;
+        if (resSign == 0.0) return !operator.isStrict;
         return resSign == operator.expectedSign;
     }
 }

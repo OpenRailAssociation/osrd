@@ -27,8 +27,7 @@ public class ReservationInfraImpl extends DiTrackInfraImpl implements Reservatio
             ImmutableNetwork<DiDetector, ReservationRoute> infraRouteGraph,
             ImmutableMap<String, ReservationRoute> reservationRouteMap,
             ImmutableMultimap<DiTrackEdge, RouteEntry> routesOnEdges,
-            ImmutableList<DetectionSection> detectionSections
-    ) {
+            ImmutableList<DetectionSection> detectionSections) {
         super(infra, infra.getDiTrackGraph());
         this.sectionMap = sectionMap;
         this.infraRouteGraph = infraRouteGraph;

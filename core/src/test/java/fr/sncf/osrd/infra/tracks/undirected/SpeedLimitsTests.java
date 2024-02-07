@@ -5,18 +5,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import com.google.common.collect.ImmutableMap;
 import fr.sncf.osrd.infra.api.tracks.undirected.SpeedLimits;
 import org.junit.jupiter.api.Test;
-import java.util.List;
-import java.util.Set;
 
 public class SpeedLimitsTests {
     @Test
     public void testInfiniteLimit() {
-        var infiniteLimit = new SpeedLimits(
-                Double.POSITIVE_INFINITY,
-                ImmutableMap.of("a", 42.));
-        var otherLimit = new SpeedLimits(
-                10.,
-                ImmutableMap.of("a", 30.));
+        var infiniteLimit = new SpeedLimits(Double.POSITIVE_INFINITY, ImmutableMap.of("a", 42.));
+        var otherLimit = new SpeedLimits(10., ImmutableMap.of("a", 30.));
         var selfMerge = SpeedLimits.merge(infiniteLimit, infiniteLimit);
         var otherMerge = SpeedLimits.merge(otherLimit, infiniteLimit);
         assertEquals(Double.POSITIVE_INFINITY, selfMerge.getSpeedLimit(null));

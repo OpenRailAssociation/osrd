@@ -62,8 +62,7 @@ public final class MRSPEnvelopeBuilder {
         @Override
         public int compareTo(EnvelopeChange o) {
             var offDelta = Double.compare(position, o.position);
-            if (offDelta != 0)
-                return offDelta;
+            if (offDelta != 0) return offDelta;
 
             return Integer.compare(type.priority, o.type.priority);
         }
@@ -79,10 +78,8 @@ public final class MRSPEnvelopeBuilder {
     }
 
     private void flushResultPart() {
-        if (currentPartBuilder == null)
-            return;
-        if (currentPartBuilder.isEmpty())
-            return;
+        if (currentPartBuilder == null) return;
+        if (currentPartBuilder.isEmpty()) return;
         buildResult.add(currentPartBuilder.build());
         currentPartBuilder = null;
     }
@@ -124,23 +121,20 @@ public final class MRSPEnvelopeBuilder {
         currentMinSpeed = Double.POSITIVE_INFINITY;
         for (var env : activeParts) {
             var envSpeed = env.getMinSpeed();
-            if (envSpeed >= currentMinSpeed)
-                continue;
+            if (envSpeed >= currentMinSpeed) continue;
 
             currentMinSpeed = envSpeed;
             currentMinPart = env;
         }
 
-        if (oldMinPart == currentMinPart)
-            return;
+        if (oldMinPart == currentMinPart) return;
 
         /* Terminate the old min part if a new one starts below it
          *  A ---------- B
          *        C ---------- D
          *        ^
          */
-        if (oldMinPart != null)
-            currentPartBuilder.addStep(currentPosition, oldMinSpeed);
+        if (oldMinPart != null) currentPartBuilder.addStep(currentPosition, oldMinSpeed);
         assert currentMinPart != null;
         newResultPart(currentMinPart, currentPosition, currentMinSpeed);
     }
@@ -148,8 +142,7 @@ public final class MRSPEnvelopeBuilder {
     private void processCurveStarts(double currentPosition) {
         while (changeIndex < changes.size()) {
             var change = changes.get(changeIndex);
-            if (change.type != BEGIN || change.position > currentPosition)
-                return;
+            if (change.type != BEGIN || change.position > currentPosition) return;
             activeParts.add(change.part);
             changeIndex++;
         }
@@ -158,8 +151,7 @@ public final class MRSPEnvelopeBuilder {
     private void processCurveEnds(double currentPosition) {
         while (changeIndex < changes.size()) {
             var change = changes.get(changeIndex);
-            if (change.type != END || change.position > currentPosition)
-                return;
+            if (change.type != END || change.position > currentPosition) return;
             activeParts.remove(change.part);
 
             // if the current min part ends, finalize it in the output as well

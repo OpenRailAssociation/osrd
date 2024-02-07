@@ -14,10 +14,8 @@ public class ExceptionHandler {
     public static Response handle(Throwable ex) {
         ex.printStackTrace();
         Sentry.captureException(ex);
-        if (ex instanceof OSRDError)
-            return toResponse((OSRDError) ex);
-        else if (ex instanceof AssertionError)
-            return toResponse(OSRDError.newAssertionWrapper((AssertionError) ex));
+        if (ex instanceof OSRDError) return toResponse((OSRDError) ex);
+        else if (ex instanceof AssertionError) return toResponse(OSRDError.newAssertionWrapper((AssertionError) ex));
         else {
             return toResponse(OSRDError.newUnknownError(ex));
         }
@@ -26,11 +24,6 @@ public class ExceptionHandler {
     /** Converts an OSRD error to a server response */
     public static Response toResponse(OSRDError ex) {
         int code = ex.cause == ErrorCause.USER ? 400 : 500;
-        return new RsWithStatus(
-                new RsJson(
-                        new RsWithBody(OSRDError.adapter.toJson(ex))
-                ),
-                code
-        );
+        return new RsWithStatus(new RsJson(new RsWithBody(OSRDError.adapter.toJson(ex))), code);
     }
 }

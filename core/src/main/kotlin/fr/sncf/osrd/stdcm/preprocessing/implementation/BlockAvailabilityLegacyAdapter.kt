@@ -14,16 +14,20 @@ import fr.sncf.osrd.utils.units.Distance.Companion.min
 import fr.sncf.osrd.utils.units.meters
 import java.lang.Double.isFinite
 
-/** This class implements the BlockAvailabilityInterface using the legacy block occupancy data.
- * It's meant to be removed once STDCM is plugged to the conflict detection module.  */
+/**
+ * This class implements the BlockAvailabilityInterface using the legacy block occupancy data. It's
+ * meant to be removed once STDCM is plugged to the conflict detection module.
+ */
 class BlockAvailabilityLegacyAdapter
-/** Constructor  */(
+/** Constructor */
+(
     private val blockInfra: BlockInfra,
     private val unavailableSpace: Multimap<BlockId, OccupancySegment>
 ) : BlockAvailabilityInterface {
-    /** Simple record used to group together a block and the offset of its start on the given path  */
-    @JvmRecord
-    private data class BlockWithOffset(val blockId: BlockId, val pathOffset: Distance)
+    /**
+     * Simple record used to group together a block and the offset of its start on the given path
+     */
+    @JvmRecord private data class BlockWithOffset(val blockId: BlockId, val pathOffset: Distance)
 
     override fun getAvailability(
         blocks: List<BlockId>,
@@ -32,20 +36,20 @@ class BlockAvailabilityLegacyAdapter
         envelope: EnvelopeTimeInterpolate,
         startTime: Double
     ): Availability {
-        assert(TrainPhysicsIntegrator.arePositionsEqual((endOffset - startOffset).meters, envelope.endPos))
-        val blocksWithOffsets = makeBlocksWithOffsets(blocks)
-        val unavailability = findMinimumDelay(blocksWithOffsets, startOffset, endOffset, envelope, startTime)
-        return unavailability
-            ?: findMaximumDelay(
-                blocksWithOffsets,
-                startOffset,
-                endOffset,
-                envelope,
-                startTime
+        assert(
+            TrainPhysicsIntegrator.arePositionsEqual(
+                (endOffset - startOffset).meters,
+                envelope.endPos
             )
+        )
+        val blocksWithOffsets = makeBlocksWithOffsets(blocks)
+        val unavailability =
+            findMinimumDelay(blocksWithOffsets, startOffset, endOffset, envelope, startTime)
+        return unavailability
+            ?: findMaximumDelay(blocksWithOffsets, startOffset, endOffset, envelope, startTime)
     }
 
-    /** Create pairs of (block, offset)  */
+    /** Create pairs of (block, offset) */
     private fun makeBlocksWithOffsets(blocks: List<BlockId>): List<BlockWithOffset> {
         var offset = 0.meters
         val res = ArrayList<BlockWithOffset>()
@@ -57,8 +61,10 @@ class BlockAvailabilityLegacyAdapter
         return res
     }
 
-    /** Find the minimum delay needed to avoid any conflict.
-     * Returns 0 if the train isn't currently causing any conflict.  */
+    /**
+     * Find the minimum delay needed to avoid any conflict. Returns 0 if the train isn't currently
+     * causing any conflict.
+     */
     private fun findMinimumDelay(
         blocks: List<BlockWithOffset>,
         startOffset: Distance,
@@ -70,48 +76,65 @@ class BlockAvailabilityLegacyAdapter
         var conflictOffset = 0.meters
         for (blockWithOffset in getBlocksInRange(blocks, startOffset, endOffset)) {
             for (unavailableSegment in unavailableSpace[blockWithOffset.blockId]) {
-                val trainInBlock = getTimeTrainInBlock(
-                    unavailableSegment,
-                    blockWithOffset,
-                    startOffset,
-                    envelope,
-                    startTime
-                ) ?: continue
-                if (trainInBlock.start < unavailableSegment.timeEnd
-                    && trainInBlock.end > unavailableSegment.timeStart
+                val trainInBlock =
+                    getTimeTrainInBlock(
+                        unavailableSegment,
+                        blockWithOffset,
+                        startOffset,
+                        envelope,
+                        startTime
+                    ) ?: continue
+                if (
+                    trainInBlock.start < unavailableSegment.timeEnd &&
+                        trainInBlock.end > unavailableSegment.timeStart
                 ) {
                     val blockMinimumDelay = unavailableSegment.timeEnd - trainInBlock.start
                     if (blockMinimumDelay > minimumDelay) {
                         minimumDelay = blockMinimumDelay
-                        conflictOffset = if (trainInBlock.start <= unavailableSegment.timeStart) {
-                            // The train enters the block before it's unavailable: conflict at end location
-                            blockWithOffset.pathOffset + unavailableSegment.distanceEnd
-                        } else {
-                            // The train enters the block when it's already unavailable: conflict at start location
-                            blockWithOffset.pathOffset + unavailableSegment.distanceStart
-                        }
+                        conflictOffset =
+                            if (trainInBlock.start <= unavailableSegment.timeStart) {
+                                // The train enters the block before it's unavailable: conflict at
+                                // end location
+                                blockWithOffset.pathOffset + unavailableSegment.distanceEnd
+                            } else {
+                                // The train enters the block when it's already unavailable:
+                                // conflict at start
+                                // location
+                                blockWithOffset.pathOffset + unavailableSegment.distanceStart
+                            }
                     }
                 }
             }
         }
-        if (minimumDelay == 0.0)
-            return null
+        if (minimumDelay == 0.0) return null
         if (isFinite(minimumDelay)) {
             // We need to add delay, a recursive call is needed to detect new conflicts
             // that may appear with the added delay
-            val recursiveDelay = findMinimumDelay(blocks, startOffset, endOffset, envelope, startTime + minimumDelay)
-            if (recursiveDelay != null) // The recursive call returns null if there is no new conflict
-                minimumDelay += recursiveDelay.duration
+            val recursiveDelay =
+                findMinimumDelay(blocks, startOffset, endOffset, envelope, startTime + minimumDelay)
+            if (
+                recursiveDelay != null
+            ) // The recursive call returns null if there is no new conflict
+             minimumDelay += recursiveDelay.duration
         }
-        val pathLength = Distance(millimeters = blocks.stream()
-            .mapToLong { (blockId): BlockWithOffset -> blockInfra.getBlockLength(blockId).distance.millimeters }
-            .sum())
+        val pathLength =
+            Distance(
+                millimeters =
+                    blocks
+                        .stream()
+                        .mapToLong { (blockId): BlockWithOffset ->
+                            blockInfra.getBlockLength(blockId).distance.millimeters
+                        }
+                        .sum()
+            )
         conflictOffset = max(0.meters, min(pathLength, conflictOffset))
         return BlockAvailabilityInterface.Unavailable(minimumDelay, conflictOffset)
     }
 
-    /** Find the maximum amount of delay that can be added to the train without causing conflict.
-     * Cannot be called if the train is currently causing a conflict.  */
+    /**
+     * Find the maximum amount of delay that can be added to the train without causing conflict.
+     * Cannot be called if the train is currently causing a conflict.
+     */
     private fun findMaximumDelay(
         blocks: List<BlockWithOffset>,
         startOffset: Distance,
@@ -123,13 +146,8 @@ class BlockAvailabilityLegacyAdapter
         var timeOfNextOccupancy = Double.POSITIVE_INFINITY
         for (blockWithOffset in getBlocksInRange(blocks, startOffset, endOffset)) {
             for (block in unavailableSpace[blockWithOffset.blockId]) {
-                val timeTrainInBlock = getTimeTrainInBlock(
-                    block,
-                    blockWithOffset,
-                    startOffset,
-                    envelope,
-                    startTime
-                )
+                val timeTrainInBlock =
+                    getTimeTrainInBlock(block, blockWithOffset, startOffset, envelope, startTime)
                 if (timeTrainInBlock == null || timeTrainInBlock.start >= block.timeEnd)
                     continue // The block is occupied before we enter it
                 assert(timeTrainInBlock.start <= block.timeStart)
@@ -143,13 +161,14 @@ class BlockAvailabilityLegacyAdapter
         return BlockAvailabilityInterface.Available(maximumDelay, timeOfNextOccupancy)
     }
 
-    /** Returns the list of blocks in the given interval on the path  */
+    /** Returns the list of blocks in the given interval on the path */
     private fun getBlocksInRange(
         blocks: List<BlockWithOffset>,
         start: Distance,
         end: Distance
     ): List<BlockWithOffset> {
-        return blocks.stream()
+        return blocks
+            .stream()
             .filter { (_, pathOffset): BlockWithOffset -> pathOffset < end }
             .filter { (blockId, pathOffset): BlockWithOffset ->
                 pathOffset + blockInfra.getBlockLength(blockId).distance > start
@@ -168,7 +187,7 @@ class BlockAvailabilityLegacyAdapter
     }
 
     companion object {
-        /** Returns the time interval during which the train is on the given blocK.  */
+        /** Returns the time interval during which the train is on the given blocK. */
         private fun getTimeTrainInBlock(
             unavailableSegment: OccupancySegment,
             block: BlockWithOffset,
@@ -178,10 +197,11 @@ class BlockAvailabilityLegacyAdapter
         ): TimeInterval? {
             val startBlockOffsetOnEnvelope = block.pathOffset - startOffset
             // Offsets on the envelope
-            val blockEnterOffset = (startBlockOffsetOnEnvelope + unavailableSegment.distanceStart).meters
-            val blockExitOffset = (startBlockOffsetOnEnvelope + unavailableSegment.distanceEnd).meters
-            if (blockEnterOffset > envelope.endPos || blockExitOffset < 0)
-                return null
+            val blockEnterOffset =
+                (startBlockOffsetOnEnvelope + unavailableSegment.distanceStart).meters
+            val blockExitOffset =
+                (startBlockOffsetOnEnvelope + unavailableSegment.distanceEnd).meters
+            if (blockEnterOffset > envelope.endPos || blockExitOffset < 0) return null
             val enterTime = startTime + envelope.interpolateTotalTimeClamp(blockEnterOffset)
             val exitTime = startTime + envelope.interpolateTotalTimeClamp(blockExitOffset)
             return TimeInterval(enterTime, exitTime)

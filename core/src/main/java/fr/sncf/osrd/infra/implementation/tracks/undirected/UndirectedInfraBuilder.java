@@ -1,5 +1,6 @@
 package fr.sncf.osrd.infra.implementation.tracks.undirected;
 
+import static fr.sncf.osrd.railjson.schema.infra.RJSSwitchType.BUILTIN_NODE_TYPES_LIST;
 import static fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType.FR3_3;
 import static fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType.FR3_3_GB_G2;
 import static fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType.G1;
@@ -9,7 +10,6 @@ import static fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType.GB;
 import static fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType.GB1;
 import static fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType.GC;
 import static fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType.GLOTT;
-import static fr.sncf.osrd.railjson.schema.infra.RJSSwitchType.BUILTIN_NODE_TYPES_LIST;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
@@ -78,16 +78,14 @@ public class UndirectedInfraBuilder {
     /** Constructor */
     private UndirectedInfraBuilder(DiagnosticRecorder diagnosticRecorder) {
         this.diagnosticRecorder = diagnosticRecorder;
-        builder = NetworkBuilder
-                .directed()
-                .immutable();
+        builder = NetworkBuilder.directed().immutable();
     }
 
     /**
      * Creates a new OSRDError for an invalid infrastructure error.
      *
      * @param errorType the error type
-     * @param id        the ID associated with the error
+     * @param id the ID associated with the error
      * @return a new OSRDError instance
      */
     public static OSRDError newInvalidRangeError(ErrorType errorType, String id) {
@@ -97,20 +95,17 @@ public class UndirectedInfraBuilder {
     }
 
     /**
-     * Creates a new OSRDError for an invalid infrastructure error with an RJS switch ID, switch type, and switch ports.
+     * Creates a new OSRDError for an invalid infrastructure error with an RJS switch ID, switch
+     * type, and switch ports.
      *
-     * @param rjsSwitchID         the RJS switch ID associated with the error
-     * @param switchType          the switch type
-     * @param switchTypePorts     the expected switch ports
-     * @param switchPorts         the received switch ports
+     * @param rjsSwitchID the RJS switch ID associated with the error
+     * @param switchType the switch type
+     * @param switchTypePorts the expected switch ports
+     * @param switchPorts the received switch ports
      * @return a new OSRDError instance
      */
     public static OSRDError newWrongSwitchPortsError(
-            String rjsSwitchID,
-            String switchType,
-            Object switchTypePorts,
-            Object switchPorts
-    ) {
+            String rjsSwitchID, String switchType, Object switchTypePorts, Object switchPorts) {
         var error = new OSRDError(ErrorType.InvalidInfraWrongSwitchPorts);
         error.context.put("rjs_switch_id", rjsSwitchID);
         error.context.put("switch_type", switchType);
@@ -147,8 +142,7 @@ public class UndirectedInfraBuilder {
 
         // Creates switches
         var switchTypeMap = new HashMap<String, RJSSwitchType>();
-        for (var rjsSwitchType : getswitchTypes(infra.switchTypes))
-            switchTypeMap.put(rjsSwitchType.id, rjsSwitchType);
+        for (var rjsSwitchType : getswitchTypes(infra.switchTypes)) switchTypeMap.put(rjsSwitchType.id, rjsSwitchType);
         var switches = new ImmutableMap.Builder<String, Switch>();
         for (var s : infra.switches) {
             switches.put(s.id, parseSwitch(s, switchTypeMap));
@@ -183,8 +177,8 @@ public class UndirectedInfraBuilder {
         return TrackInfraImpl.from(switches.build(), builder.build());
     }
 
-    private void loadElectrifications(List<RJSElectrification> electrifications, 
-                                      HashMap<String, TrackSectionImpl> trackSectionsByID) {
+    private void loadElectrifications(
+            List<RJSElectrification> electrifications, HashMap<String, TrackSectionImpl> trackSectionsByID) {
         for (var electrification : electrifications) {
             for (var trackRange : electrification.trackRanges) {
                 var track = trackSectionsByID.get(trackRange.trackSectionID);
@@ -194,41 +188,40 @@ public class UndirectedInfraBuilder {
         }
     }
 
-    private void loadNeutralSections(List<RJSNeutralSection> neutralSections,
-                                  HashMap<String, TrackSectionImpl> trackSectionsByID) {
-        if (neutralSections == null)
-            return;
+    private void loadNeutralSections(
+            List<RJSNeutralSection> neutralSections, HashMap<String, TrackSectionImpl> trackSectionsByID) {
+        if (neutralSections == null) return;
         for (var neutralSection : neutralSections) {
             loadNeutralRanges(false, neutralSection, trackSectionsByID);
             loadNeutralRanges(true, neutralSection, trackSectionsByID);
         }
     }
 
-    private void loadNeutralRanges(boolean announcement, RJSNeutralSection neutralSection,
-                                   HashMap<String, TrackSectionImpl> trackSectionsByID) {
+    private void loadNeutralRanges(
+            boolean announcement,
+            RJSNeutralSection neutralSection,
+            HashMap<String, TrackSectionImpl> trackSectionsByID) {
         var trackRanges = announcement ? neutralSection.announcementTrackRanges : neutralSection.trackRanges;
         for (var trackRange : trackRanges) {
             var track = trackSectionsByID.get(trackRange.trackSectionID);
             assert track != null;
             var dir = Direction.fromEdgeDir(trackRange.direction);
             var range = Range.open(trackRange.begin, trackRange.end);
-            var destMap =
-                    announcement ? track.getNeutralSectionAnnouncements(dir) : track.getNeutralSections(dir);
+            var destMap = announcement ? track.getNeutralSectionAnnouncements(dir) : track.getNeutralSections(dir);
             destMap.put(range, new NeutralSection(neutralSection.lowerPantograph));
         }
     }
 
     /** Adds all the speed sections to track attributes */
     private void addSpeedSections(
-            List<RJSSpeedSection> speedSections,
-            HashMap<String, TrackSectionImpl> trackSectionsByID
-    ) {
+            List<RJSSpeedSection> speedSections, HashMap<String, TrackSectionImpl> trackSectionsByID) {
         // Creates the maps and fills them with 0
         for (var track : trackSectionsByID.values()) {
             var trackSpeedSections = new EnumMap<Direction, RangeMap<Double, SpeedLimits>>(Direction.class);
             for (var dir : Direction.values()) {
                 var newMap = TreeRangeMap.<Double, SpeedLimits>create();
-                newMap.put(Range.closed(0., track.getLength()),
+                newMap.put(
+                        Range.closed(0., track.getLength()),
                         new SpeedLimits(Double.POSITIVE_INFINITY, ImmutableMap.of()));
                 trackSpeedSections.put(dir, newMap);
             }
@@ -242,18 +235,14 @@ public class UndirectedInfraBuilder {
                 var track = trackSectionsByID.get(trackRange.trackSectionID);
                 var speedSectionMaps = track.getSpeedSections();
                 if (trackRange.applicableDirections.appliesToNormal()) {
-                    speedSectionMaps.get(Direction.FORWARD).merge(
-                            Range.closed(trackRange.begin, trackRange.end),
-                            value,
-                            SpeedLimits::merge
-                    );
+                    speedSectionMaps
+                            .get(Direction.FORWARD)
+                            .merge(Range.closed(trackRange.begin, trackRange.end), value, SpeedLimits::merge);
                 }
                 if (trackRange.applicableDirections.appliesToReverse()) {
-                    speedSectionMaps.get(Direction.BACKWARD).merge(
-                            Range.closed(trackRange.begin, trackRange.end),
-                            value,
-                            SpeedLimits::merge
-                    );
+                    speedSectionMaps
+                            .get(Direction.BACKWARD)
+                            .merge(Range.closed(trackRange.begin, trackRange.end), value, SpeedLimits::merge);
                 }
             }
         }
@@ -261,14 +250,12 @@ public class UndirectedInfraBuilder {
 
     /** Creates a waypoint and add it to the corresponding track */
     @SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY"}) // This case only causes issues with strict equalities
-    private void makeWaypoint(HashMap<String, TrackSectionImpl> trackSectionsByID,
-                            RJSRouteWaypoint waypoint, boolean isBufferStop) {
+    private void makeWaypoint(
+            HashMap<String, TrackSectionImpl> trackSectionsByID, RJSRouteWaypoint waypoint, boolean isBufferStop) {
         var track = trackSectionsByID.get(waypoint.track);
         if (track == null) {
-            diagnosticRecorder.register(new Warning(String.format(
-                    "Waypoint %s references unknown track %s",
-                    waypoint.id, waypoint.track
-            )));
+            diagnosticRecorder.register(
+                    new Warning(String.format("Waypoint %s references unknown track %s", waypoint.id, waypoint.track)));
             return;
         }
         var newWaypoint = new DetectorImpl(track, waypoint.position, isBufferStop, waypoint.id);
@@ -276,9 +263,7 @@ public class UndirectedInfraBuilder {
         for (var detector : detectors)
             if (detector.getOffset() == newWaypoint.offset) {
                 diagnosticRecorder.register(new Warning(String.format(
-                        "Duplicate waypoint (dropping new) : old = %s, new = %s",
-                        detector, newWaypoint
-                )));
+                        "Duplicate waypoint (dropping new) : old = %s, new = %s", detector, newWaypoint)));
                 return;
             }
         detectors.add(newWaypoint);
@@ -294,8 +279,7 @@ public class UndirectedInfraBuilder {
                 ImmutableSet.copyOf(operationalPointsPerTrack.get(track.id)),
                 parseLineString(track.geo),
                 parseLineString(track.sch),
-                buildLoadingGaugeLimits(track.loadingGaugeLimits)
-        );
+                buildLoadingGaugeLimits(track.loadingGaugeLimits));
         builder.addEdge(begin, end, edge);
         edge.curves = makeCurves(track);
         edge.slopes = makeSlopes(track);
@@ -303,8 +287,7 @@ public class UndirectedInfraBuilder {
     }
 
     private LineString parseLineString(RJSLineString rjs) {
-        if (rjs == null)
-            return null;
+        if (rjs == null) return null;
         var xs = new ArrayList<Double>();
         var ys = new ArrayList<Double>();
         for (var p : rjs.coordinates) {
@@ -317,14 +300,12 @@ public class UndirectedInfraBuilder {
 
     /** Builds the ranges of blocked loading gauge types on the track */
     private ImmutableRangeMap<Double, LoadingGaugeConstraint> buildLoadingGaugeLimits(
-            List<RJSLoadingGaugeLimit> limits
-    ) {
+            List<RJSLoadingGaugeLimit> limits) {
         // This method has a bad complexity compared to more advanced solutions,
         // but we don't expect more than a few ranges per section.
         // TODO: use an interval tree
 
-        if (limits == null)
-            return ImmutableRangeMap.of();
+        if (limits == null) return ImmutableRangeMap.of();
         var builder = new ImmutableRangeMap.Builder<Double, LoadingGaugeConstraint>();
 
         // Sorts and removes duplicates
@@ -342,10 +323,7 @@ public class UndirectedInfraBuilder {
             for (var range : limits)
                 if (range.begin <= begin && range.end >= end)
                     allowedTypes.addAll(getCompatibleGaugeTypes(range.category));
-            var blockedTypes = Sets.difference(
-                    Sets.newHashSet(RJSLoadingGaugeType.values()),
-                    allowedTypes
-            );
+            var blockedTypes = Sets.difference(Sets.newHashSet(RJSLoadingGaugeType.values()), allowedTypes);
             builder.put(Range.open(begin, end), new LoadingGaugeConstraintImpl(ImmutableSet.copyOf(blockedTypes)));
         }
         return builder.build();
@@ -382,16 +360,11 @@ public class UndirectedInfraBuilder {
             for (var rjsCurve : track.curves) {
                 rjsCurve.simplify();
                 if (rjsCurve.begin < 0 || rjsCurve.end > track.length)
-                    throw newInvalidRangeError(
-                            ErrorType.InvalidInfraTrackCurveWithInvalidRange,
-                            track.id
-                    );
+                    throw newInvalidRangeError(ErrorType.InvalidInfraTrackCurveWithInvalidRange, track.id);
                 if (rjsCurve.radius != 0.) {
                     for (var dir : Direction.values())
-                        curves.get(dir).putCoalescing(
-                                Range.closed(rjsCurve.begin, rjsCurve.end),
-                                rjsCurve.radius * dir.sign
-                        );
+                        curves.get(dir)
+                                .putCoalescing(Range.closed(rjsCurve.begin, rjsCurve.end), rjsCurve.radius * dir.sign);
                 }
             }
         }
@@ -412,16 +385,12 @@ public class UndirectedInfraBuilder {
             for (var rjsSlope : track.slopes) {
                 rjsSlope.simplify();
                 if (rjsSlope.begin < 0 || rjsSlope.end > track.length)
-                    throw newInvalidRangeError(
-                        ErrorType.InvalidInfraTrackSlopeWithInvalidRange,
-                        track.id
-                    );
+                    throw newInvalidRangeError(ErrorType.InvalidInfraTrackSlopeWithInvalidRange, track.id);
                 if (rjsSlope.gradient != 0.) {
                     for (var dir : Direction.values())
-                        slopes.get(dir).putCoalescing(
-                                Range.closed(rjsSlope.begin, rjsSlope.end),
-                                rjsSlope.gradient * dir.sign
-                        );
+                        slopes.get(dir)
+                                .putCoalescing(
+                                        Range.closed(rjsSlope.begin, rjsSlope.end), rjsSlope.gradient * dir.sign);
                 }
             }
         }
@@ -432,13 +401,11 @@ public class UndirectedInfraBuilder {
     /** Creates a node and registers it in the graph */
     private void addNode(String trackId, EdgeEndpoint endpoint, TrackNode node) {
         var map = beginEndpoints;
-        if (endpoint == EdgeEndpoint.END)
-            map = endEndpoints;
+        if (endpoint == EdgeEndpoint.END) map = endEndpoints;
         if (map.containsKey(trackId))
             diagnosticRecorder.register(new Warning(String.format(
                     "Duplicated track link on endpoint (%s - %s) : (old=%s, new=%s). This may cause issues later on",
-                    trackId, endpoint, map.get(trackId), node
-            )));
+                    trackId, endpoint, map.get(trackId), node)));
         map.put(trackId, node);
         builder.addNode(node);
     }
@@ -446,28 +413,22 @@ public class UndirectedInfraBuilder {
     /** Returns the node at the given end of the track, returns null if absent */
     private TrackNode getNode(String trackId, EdgeEndpoint endpoint) {
         var map = beginEndpoints;
-        if (endpoint == EdgeEndpoint.END)
-            map = endEndpoints;
+        if (endpoint == EdgeEndpoint.END) map = endEndpoints;
         return map.getOrDefault(trackId, null);
     }
 
     /** Returns the node at the given end of the track, create a TrackNode.End if absent */
     private TrackNode getOrCreateNode(String trackId, EdgeEndpoint endpoint) {
         var res = getNode(trackId, endpoint);
-        if (res != null)
-            return res;
+        if (res != null) return res;
         res = new TrackNodeImpl.End();
         addNode(trackId, endpoint, res);
         return res;
     }
 
     /** Parse a given RJS switch */
-    private Switch parseSwitch(
-            RJSSwitch rjsSwitch,
-            HashMap<String, RJSSwitchType> switchTypeMap
-    ) {
-        var networkBuilder = NetworkBuilder.directed()
-                .<SwitchPort, SwitchBranch>immutable();
+    private Switch parseSwitch(RJSSwitch rjsSwitch, HashMap<String, RJSSwitchType> switchTypeMap) {
+        var networkBuilder = NetworkBuilder.directed().<SwitchPort, SwitchBranch>immutable();
         var portMap = ImmutableMap.<String, SwitchPort>builder();
         var allPorts = new HashSet<SwitchPortImpl>();
         for (var entry : rjsSwitch.ports.entrySet()) {
@@ -499,22 +460,14 @@ public class UndirectedInfraBuilder {
         var switchTypePorts = new HashSet<>(switchType.ports);
         var switchPorts = rjsSwitch.ports.keySet();
         if (!switchTypePorts.equals(switchPorts))
-            throw newWrongSwitchPortsError(
-                rjsSwitch.id,
-                switchType.id,
-                switchTypePorts,
-                switchPorts
-            );
+            throw newWrongSwitchPortsError(rjsSwitch.id, switchType.id, switchTypePorts, switchPorts);
 
         var groupChangeDelay = rjsSwitch.groupChangeDelay;
-        if (Double.isNaN(groupChangeDelay))
-            groupChangeDelay = 0.0;
+        if (Double.isNaN(groupChangeDelay)) groupChangeDelay = 0.0;
 
         var res = new SwitchImpl(rjsSwitch.id, networkBuilder.build(), groups.build(), groupChangeDelay, finalPortMap);
-        for (var branch : allBranches)
-            branch.switchRef = res;
-        for (var port : allPorts)
-            port.switchRef = res;
+        for (var branch : allBranches) branch.switchRef = res;
+        for (var port : allPorts) port.switchRef = res;
         return res;
     }
 }

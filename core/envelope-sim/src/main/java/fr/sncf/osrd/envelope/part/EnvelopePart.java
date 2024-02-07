@@ -16,11 +16,12 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * <p>Envelope parts are polylines over speed and space, defined as a sequence of points.</p>
+ * Envelope parts are polylines over speed and space, defined as a sequence of points.
+ *
  * <ul>
- *  <li>single and zero point polylines are not valid</li>
- *  <li>the position of line points must be strictly increasing</li>
- *  <li>each segment of the line is thus a step over space, which is indexed from 0 to stepCount()</li>
+ *   <li>single and zero point polylines are not valid
+ *   <li>the position of line points must be strictly increasing
+ *   <li>each segment of the line is thus a step over space, which is indexed from 0 to stepCount()
  * </ul>
  */
 public final class EnvelopePart implements SearchableEnvelope {
@@ -33,6 +34,7 @@ public final class EnvelopePart implements SearchableEnvelope {
 
     /** A list of N spacial offsets */
     private final double[] positions;
+
     /** A list of N speeds, one per position */
     private final double[] speeds;
 
@@ -43,17 +45,19 @@ public final class EnvelopePart implements SearchableEnvelope {
 
     // region CACHE FIELDS
 
-    /** This property is required for inverse lookups on speeds
+    /**
+     * This property is required for inverse lookups on speeds
      * https://en.wikipedia.org/wiki/Monotonic_function#Inverse_of_function
      */
     private final boolean strictlyMonotonicSpeeds;
 
     /* Cache fields must not be public, and must also be lazily computed.
-       This ensures intrinsic data fields can be modified while constructing
-       the envelope part. */
+    This ensures intrinsic data fields can be modified while constructing
+    the envelope part. */
 
     /** The highest speed */
     private double maxSpeedCache = Double.NaN;
+
     /** The smallest speed */
     private double minSpeedCache = Double.NaN;
 
@@ -71,8 +75,7 @@ public final class EnvelopePart implements SearchableEnvelope {
             Map<Class<? extends EnvelopeAttr>, EnvelopeAttr> attrs,
             double[] positions,
             double[] speeds,
-            double[] timeDeltas
-    ) {
+            double[] timeDeltas) {
         this.attrs = attrs;
         this.positions = positions;
         this.speeds = speeds;
@@ -84,27 +87,13 @@ public final class EnvelopePart implements SearchableEnvelope {
     /** Creates an EnvelopePart */
     @SuppressFBWarnings({"EI_EXPOSE_REP2"})
     @ExcludeFromGeneratedCodeCoverage
-    public EnvelopePart(
-            Iterable<EnvelopeAttr> attrs,
-            double[] positions,
-            double[] speeds,
-            double[] timeDeltas
-    ) {
+    public EnvelopePart(Iterable<EnvelopeAttr> attrs, double[] positions, double[] speeds, double[] timeDeltas) {
         this(makeAttrs(attrs), positions, speeds, timeDeltas);
     }
 
     /** Creates an envelope part by generating step times from speeds and positions */
-    public static EnvelopePart generateTimes(
-            Iterable<EnvelopeAttr> attrs,
-            double[] positions,
-            double[] speeds
-    ) {
-        return new EnvelopePart(
-                attrs,
-                positions,
-                speeds,
-                computeTimes(positions, speeds)
-        );
+    public static EnvelopePart generateTimes(Iterable<EnvelopeAttr> attrs, double[] positions, double[] speeds) {
+        return new EnvelopePart(attrs, positions, speeds, computeTimes(positions, speeds));
     }
 
     // endregion
@@ -114,8 +103,7 @@ public final class EnvelopePart implements SearchableEnvelope {
     /** Create an attribute map from the given attributes */
     public static Map<Class<? extends EnvelopeAttr>, EnvelopeAttr> makeAttrs(Iterable<EnvelopeAttr> attrs) {
         var res = new HashMap<Class<? extends EnvelopeAttr>, EnvelopeAttr>();
-        for (var attr : attrs)
-            res.put(attr.getAttrType(), attr);
+        for (var attr : attrs) res.put(attr.getAttrType(), attr);
         return res;
     }
 
@@ -131,8 +119,8 @@ public final class EnvelopePart implements SearchableEnvelope {
     }
 
     /**
-     * Returns whether the envelope has the given attribute value. Usually, we can't deduce the attribute type
-     * from the attribute value, but we can for enums.
+     * Returns whether the envelope has the given attribute value. Usually, we can't deduce the
+     * attribute type from the attribute value, but we can for enums.
      */
     public <T extends EnvelopeAttr> boolean hasAttr(T attr) {
         return attrs.get(attr.getAttrType()) == attr;
@@ -147,10 +135,11 @@ public final class EnvelopePart implements SearchableEnvelope {
 
     // region SANITY_CHECKS
 
-    /** Runs every assertion on the envelope part values.
-     * <br/>
-     * To be called in the constructor and after the values have been edited
-     * (which should be avoided when possible) */
+    /**
+     * Runs every assertion on the envelope part values. <br>
+     * To be called in the constructor and after the values have been edited (which should be
+     * avoided when possible)
+     */
     private void runSanityChecks() {
         assert attrs != null : "missing attributes";
         assert hasAttr(EnvelopeProfile.class) : "missing EnvelopeProfile attribute";
@@ -166,30 +155,22 @@ public final class EnvelopePart implements SearchableEnvelope {
     }
 
     private static boolean checkNaNFree(double[] values) {
-        for (var val : values)
-            if (Double.isNaN(val))
-                return false;
+        for (var val : values) if (Double.isNaN(val)) return false;
         return true;
     }
 
     private static boolean checkPositive(double[] values) {
-        for (var val : values)
-            if (val < 0)
-                return false;
+        for (var val : values) if (val < 0) return false;
         return true;
     }
 
     private static boolean checkStrictlyMonotonicIncreasing(double[] values) {
-        for (int i = 0; i < values.length - 1; i++)
-            if (values[i] >= values[i + 1])
-                return false;
+        for (int i = 0; i < values.length - 1; i++) if (values[i] >= values[i + 1]) return false;
         return true;
     }
 
     private static boolean checkStrictlyMonotonicDecreasing(double[] values) {
-        for (int i = 0; i < values.length - 1; i++)
-            if (values[i] <= values[i + 1])
-                return false;
+        for (int i = 0; i < values.length - 1; i++) if (values[i] <= values[i + 1]) return false;
         return true;
     }
 
@@ -217,26 +198,20 @@ public final class EnvelopePart implements SearchableEnvelope {
 
     /** Returns the maximum speed of the envelope part */
     public double getMaxSpeed() {
-        if (!Double.isNaN(maxSpeedCache))
-            return maxSpeedCache;
+        if (!Double.isNaN(maxSpeedCache)) return maxSpeedCache;
 
         var maxSpeed = Double.NEGATIVE_INFINITY;
-        for (var speed : speeds)
-            if (speed > maxSpeed)
-                maxSpeed = speed;
+        for (var speed : speeds) if (speed > maxSpeed) maxSpeed = speed;
         this.maxSpeedCache = maxSpeed;
         return maxSpeed;
     }
 
     /** Returns the minimum speed of the envelope part */
     public double getMinSpeed() {
-        if (!Double.isNaN(minSpeedCache))
-            return minSpeedCache;
+        if (!Double.isNaN(minSpeedCache)) return minSpeedCache;
 
         var minSpeed = Double.POSITIVE_INFINITY;
-        for (var speed : speeds)
-            if (speed < minSpeed)
-                minSpeed = speed;
+        for (var speed : speeds) if (speed < minSpeed) minSpeed = speed;
         this.minSpeedCache = minSpeed;
         return minSpeed;
     }
@@ -293,13 +268,13 @@ public final class EnvelopePart implements SearchableEnvelope {
 
     // region CACHING
 
-    /** This method must be private as it returns an array (thus mutable cache).
-     * It computes and caches the time in milliseconds the any point of the envelope part,
-     * from the start of the envelope part.
+    /**
+     * This method must be private as it returns an array (thus mutable cache). It computes and
+     * caches the time in milliseconds the any point of the envelope part, from the start of the
+     * envelope part.
      */
     private long[] getTotalTimesMS() {
-        if (cumulativeMSTimesCache != null)
-            return cumulativeMSTimesCache;
+        if (cumulativeMSTimesCache != null) return cumulativeMSTimesCache;
 
         var totalTimes = new long[positions.length];
         totalTimes[0] = 0;
@@ -319,9 +294,9 @@ public final class EnvelopePart implements SearchableEnvelope {
         return totalTimes[totalTimes.length - 1];
     }
 
-
-    /** Returns the total time required to get from the start of the envelope part to a given
-     * point of the envelope part, in milliseconds
+    /**
+     * Returns the total time required to get from the start of the envelope part to a given point
+     * of the envelope part, in milliseconds
      */
     public long getTotalTimeMS(int pointIndex) {
         return getTotalTimesMS()[pointIndex];
@@ -366,58 +341,56 @@ public final class EnvelopePart implements SearchableEnvelope {
         assert position >= getBeginPos() && position <= getEndPos();
         var pointIndex = Arrays.binarySearch(positions, position);
         // if the position matches one of the data points
-        if (pointIndex >= 0)
-            return speeds[pointIndex];
+        if (pointIndex >= 0) return speeds[pointIndex];
 
         // when the position isn't found, binarySearch returns -(insertion point) - 1
         var insertionPoint = -(pointIndex + 1);
         // the index of the step is the index of the point which starts the range
         var stepIndex = insertionPoint - 1;
         return EnvelopePhysics.interpolateStepSpeed(
-                positions[stepIndex], positions[stepIndex + 1],
-                speeds[stepIndex], speeds[stepIndex + 1],
-                position - positions[stepIndex]
-        );
+                positions[stepIndex],
+                positions[stepIndex + 1],
+                speeds[stepIndex],
+                speeds[stepIndex + 1],
+                position - positions[stepIndex]);
     }
 
     /** Given a position return the interpolated speed. */
     public double interpolateSpeed(int stepIndex, double position) {
         assert checkPosition(stepIndex, position);
-        if (position == positions[stepIndex])
-            return speeds[stepIndex];
-        if (position == positions[stepIndex + 1])
-            return speeds[stepIndex + 1];
+        if (position == positions[stepIndex]) return speeds[stepIndex];
+        if (position == positions[stepIndex + 1]) return speeds[stepIndex + 1];
         return EnvelopePhysics.interpolateStepSpeed(
-                positions[stepIndex], positions[stepIndex + 1],
-                speeds[stepIndex], speeds[stepIndex + 1],
-                position - positions[stepIndex]
-        );
+                positions[stepIndex],
+                positions[stepIndex + 1],
+                speeds[stepIndex],
+                speeds[stepIndex + 1],
+                position - positions[stepIndex]);
     }
 
     /** Given a position return the interpolated deltaTime */
     public double interpolateTimeDelta(int stepIndex, double position) {
         assert checkPosition(stepIndex, position);
-        if (position == positions[stepIndex])
-            return 0.0;
-        if (position == positions[stepIndex + 1])
-            return timeDeltas[stepIndex];
+        if (position == positions[stepIndex]) return 0.0;
+        if (position == positions[stepIndex + 1]) return timeDeltas[stepIndex];
         return EnvelopePhysics.interpolateStepTime(
-                positions[stepIndex], positions[stepIndex + 1],
-                speeds[stepIndex], speeds[stepIndex + 1],
-                position - positions[stepIndex]
-        );
+                positions[stepIndex],
+                positions[stepIndex + 1],
+                speeds[stepIndex],
+                speeds[stepIndex + 1],
+                position - positions[stepIndex]);
     }
 
-    /** Returns the time required to get from the start of the envelope part
-     * to the given position, in milliseconds.
+    /**
+     * Returns the time required to get from the start of the envelope part to the given position,
+     * in milliseconds.
      */
     public long interpolateTotalTimeMS(double position) {
         assert position >= getBeginPos();
         assert position <= getEndPos();
         var pointIndex = Arrays.binarySearch(positions, position);
         // if the position matches one of the data points
-        if (pointIndex >= 0)
-            return getTotalTimeMS(pointIndex);
+        if (pointIndex >= 0) return getTotalTimeMS(pointIndex);
 
         // when the position isn't found, binarySearch returns -(insertion point) - 1
         var insertionPoint = -(pointIndex + 1);
@@ -428,8 +401,9 @@ public final class EnvelopePart implements SearchableEnvelope {
         return timeToStepStart + (long) (interpolatedTime * 1000);
     }
 
-    /** Returns the time required to get from the start of the envelope part
-     * to the given position, in seconds
+    /**
+     * Returns the time required to get from the start of the envelope part to the given position,
+     * in seconds
      */
     public double interpolateTotalTime(double position) {
         return ((double) interpolateTotalTimeMS(position)) / 1000;
@@ -441,15 +415,15 @@ public final class EnvelopePart implements SearchableEnvelope {
         for (int i = 0; i < positions.length - 1; i++) {
             var posDelta = positions[i + 1] - positions[i];
             timeDeltas[i] = EnvelopePhysics.interpolateStepTime(
-                    positions[i], positions[i + 1],
-                    speeds[i], speeds[i + 1],
-                    posDelta
-            );
+                    positions[i], positions[i + 1], speeds[i], speeds[i + 1], posDelta);
         }
         return timeDeltas;
     }
 
-    /** Given a speed return a position. The envelopePart must be bijective in order for this method to work*/
+    /**
+     * Given a speed return a position. The envelopePart must be bijective in order for this method
+     * to work
+     */
     public Double interpolatePosition(int startIndex, double speed) {
         assert strictlyMonotonicSpeeds;
         assert isBetween(speed, getMinSpeed(), getMaxSpeed());
@@ -466,13 +440,15 @@ public final class EnvelopePart implements SearchableEnvelope {
         return null;
     }
 
-    /** Given a speed return a position. The envelopePart must be bijective in order for this method to work*/
+    /**
+     * Given a speed return a position. The envelopePart must be bijective in order for this method
+     * to work
+     */
     public Double interpolatePosition(double speed) {
         return interpolatePosition(0, speed);
     }
 
-
-    /** Check if a is in the interval [b, c] or [c, b]*/
+    /** Check if a is in the interval [b, c] or [c, b] */
     private static boolean isBetween(double a, double b, double c) {
         var min = Math.min(b, c);
         var max = Math.max(b, c);
@@ -483,25 +459,21 @@ public final class EnvelopePart implements SearchableEnvelope {
 
     // region SLICING
 
-    /** Makes a copy of this EnvelopePart from beginStepIndex (included) to endStepIndex (excluded) */
+    /**
+     * Makes a copy of this EnvelopePart from beginStepIndex (included) to endStepIndex (excluded)
+     */
     public EnvelopePart sliceIndex(int beginStepIndex, int endStepIndex) {
         assert endStepIndex >= 0 && endStepIndex <= stepCount();
         assert beginStepIndex >= 0 && beginStepIndex <= stepCount();
         assert beginStepIndex <= endStepIndex;
 
         var resultSize = endStepIndex - beginStepIndex;
-        if (resultSize <= 0)
-            return null;
+        if (resultSize <= 0) return null;
 
         var slicePos = Arrays.copyOfRange(positions, beginStepIndex, endStepIndex + 1);
         var sliceSpeeds = Arrays.copyOfRange(speeds, beginStepIndex, endStepIndex + 1);
         var sliceTimes = Arrays.copyOfRange(timeDeltas, beginStepIndex, endStepIndex);
-        return new EnvelopePart(
-                attrs,
-                slicePos,
-                sliceSpeeds,
-                sliceTimes
-        );
+        return new EnvelopePart(attrs, slicePos, sliceSpeeds, sliceTimes);
     }
 
     public EnvelopePart sliceBeginning(int endIndex, double endPosition, double endSpeed) {
@@ -512,57 +484,52 @@ public final class EnvelopePart implements SearchableEnvelope {
         return slice(beginIndex, beginPosition, beginSpeed, stepCount() - 1, Double.POSITIVE_INFINITY, Double.NaN);
     }
 
-    /** Cuts an envelope part with imposed speeds on the edges
+    /**
+     * Cuts an envelope part with imposed speeds on the edges
+     *
      * @return an EnvelopePart spanning from beginPosition to endPosition
      */
-    public EnvelopePart sliceWithSpeeds(
-            double beginPosition, double beginSpeed,
-            double endPosition, double endSpeed) {
+    public EnvelopePart sliceWithSpeeds(double beginPosition, double beginSpeed, double endPosition, double endSpeed) {
         int beginIndex = 0;
-        if (beginPosition <= getBeginPos())
-            beginPosition = Double.NEGATIVE_INFINITY;
-        if (beginPosition != Double.NEGATIVE_INFINITY)
-            beginIndex = findRight(beginPosition);
+        if (beginPosition <= getBeginPos()) beginPosition = Double.NEGATIVE_INFINITY;
+        if (beginPosition != Double.NEGATIVE_INFINITY) beginIndex = findRight(beginPosition);
         int endIndex = stepCount() - 1;
-        if (endPosition >= getEndPos())
-            endPosition = Double.POSITIVE_INFINITY;
-        if (endPosition != Double.POSITIVE_INFINITY)
-            endIndex = findLeft(endPosition);
+        if (endPosition >= getEndPos()) endPosition = Double.POSITIVE_INFINITY;
+        if (endPosition != Double.POSITIVE_INFINITY) endIndex = findLeft(endPosition);
         return slice(beginIndex, beginPosition, beginSpeed, endIndex, endPosition, endSpeed);
     }
 
-    /** Cuts an envelope part, interpolating new points if required.
+    /**
+     * Cuts an envelope part, interpolating new points if required.
+     *
      * @return an EnvelopePart spanning from beginPosition to endPosition
      */
     public EnvelopePart slice(double beginPosition, double endPosition) {
         int beginIndex = 0;
-        if (beginPosition <= getBeginPos())
-            beginPosition = Double.NEGATIVE_INFINITY;
-        if (beginPosition != Double.NEGATIVE_INFINITY)
-            beginIndex = findRight(beginPosition);
+        if (beginPosition <= getBeginPos()) beginPosition = Double.NEGATIVE_INFINITY;
+        if (beginPosition != Double.NEGATIVE_INFINITY) beginIndex = findRight(beginPosition);
         int endIndex = stepCount() - 1;
-        if (endPosition >= getEndPos())
-            endPosition = Double.POSITIVE_INFINITY;
-        if (endPosition != Double.POSITIVE_INFINITY)
-            endIndex = findLeft(endPosition);
+        if (endPosition >= getEndPos()) endPosition = Double.POSITIVE_INFINITY;
+        if (endPosition != Double.POSITIVE_INFINITY) endIndex = findLeft(endPosition);
         return slice(beginIndex, beginPosition, endIndex, endPosition);
     }
 
-    /** Cuts an envelope part, interpolating new points if required.
+    /**
+     * Cuts an envelope part, interpolating new points if required.
+     *
      * @param beginStepIndex the index of a step beginPosition belongs to
      * @param beginPosition must belong to the step at beginStepIndex
      * @param endStepIndex the index of a step endPosition belongs to
      * @param endPosition must belong to the step at beginStepIndex
      * @return an EnvelopePart spanning from beginPosition to endPosition
      */
-    public EnvelopePart slice(
-            int beginStepIndex, double beginPosition,
-            int endStepIndex, double endPosition
-    ) {
+    public EnvelopePart slice(int beginStepIndex, double beginPosition, int endStepIndex, double endPosition) {
         return slice(beginStepIndex, beginPosition, Double.NaN, endStepIndex, endPosition, Double.NaN);
     }
 
-    /** Cuts an envelope part, interpolating new points if required.
+    /**
+     * Cuts an envelope part, interpolating new points if required.
+     *
      * @param beginStepIndex the index of a step beginPosition belongs to
      * @param beginPosition must belong to the step at beginStepIndex
      * @param beginSpeed the forced start speed of the envelope slice
@@ -572,9 +539,12 @@ public final class EnvelopePart implements SearchableEnvelope {
      * @return an EnvelopePart spanning from beginPosition to endPosition
      */
     public EnvelopePart slice(
-            int beginStepIndex, double beginPosition, double beginSpeed,
-            int endStepIndex, double endPosition, double endSpeed
-    ) {
+            int beginStepIndex,
+            double beginPosition,
+            double beginSpeed,
+            int endStepIndex,
+            double endPosition,
+            double endSpeed) {
         assert endStepIndex >= 0 && endStepIndex < stepCount();
         assert beginStepIndex >= 0 && beginStepIndex < stepCount();
 
@@ -582,52 +552,47 @@ public final class EnvelopePart implements SearchableEnvelope {
         if (endPosition == getBeginPos(endStepIndex)) {
             endPosition = Double.POSITIVE_INFINITY;
             endStepIndex -= 1;
-        } else if (endPosition == getEndPos(endStepIndex))
-            endPosition = Double.POSITIVE_INFINITY;
+        } else if (endPosition == getEndPos(endStepIndex)) endPosition = Double.POSITIVE_INFINITY;
         if (beginPosition == getEndPos(beginStepIndex)) {
             beginPosition = Double.NEGATIVE_INFINITY;
             beginStepIndex += 1;
-        } else if (beginPosition == getBeginPos(beginStepIndex))
-            beginPosition = Double.NEGATIVE_INFINITY;
+        } else if (beginPosition == getBeginPos(beginStepIndex)) beginPosition = Double.NEGATIVE_INFINITY;
 
         // if the slice spans all the envelope part, don't make a copy
-        if (beginStepIndex == 0 && endStepIndex == stepCount() - 1
+        if (beginStepIndex == 0
+                && endStepIndex == stepCount() - 1
                 && beginPosition == Double.NEGATIVE_INFINITY
                 && endPosition == Double.POSITIVE_INFINITY
                 && Double.isNaN(beginSpeed)
-                && Double.isNaN(endSpeed))
-            return this;
+                && Double.isNaN(endSpeed)) return this;
 
         // copy affected steps
         var sliced = sliceIndex(beginStepIndex, endStepIndex + 1);
-        if (sliced == null)
-            return null;
+        if (sliced == null) return null;
 
         // interpolate if necessary
         if (endPosition != Double.POSITIVE_INFINITY) {
-            if (Double.isNaN(endSpeed))
-                endSpeed = interpolateSpeed(endStepIndex, endPosition);
+            if (Double.isNaN(endSpeed)) endSpeed = interpolateSpeed(endStepIndex, endPosition);
             double interpolatedTimeDelta = interpolateTimeDelta(endStepIndex, endPosition);
             sliced.positions[sliced.pointCount() - 1] = endPosition;
             sliced.timeDeltas[sliced.stepCount() - 1] = interpolatedTimeDelta;
         }
         if (beginPosition != Double.NEGATIVE_INFINITY) {
-            if (Double.isNaN(beginSpeed))
-                beginSpeed = interpolateSpeed(beginStepIndex, beginPosition);
+            if (Double.isNaN(beginSpeed)) beginSpeed = interpolateSpeed(beginStepIndex, beginPosition);
             double interpolatedTimeDelta = interpolateTimeDelta(beginStepIndex, beginPosition);
             sliced.positions[0] = beginPosition;
             sliced.timeDeltas[0] -= interpolatedTimeDelta; // notice the -= here
         }
-        if (!Double.isNaN(beginSpeed))
-            sliced.speeds[0] = beginSpeed;
-        if (!Double.isNaN(endSpeed))
-            sliced.speeds[sliced.pointCount() - 1] = endSpeed;
+        if (!Double.isNaN(beginSpeed)) sliced.speeds[0] = beginSpeed;
+        if (!Double.isNaN(endSpeed)) sliced.speeds[sliced.pointCount() - 1] = endSpeed;
         sliced.runSanityChecks();
         return sliced;
     }
 
-    /** Returns a new EnvelopePart, where all positions are shifted by positionDelta.
-     * Resulting positions are clipped to [minPosition; maxPosition]. */
+    /**
+     * Returns a new EnvelopePart, where all positions are shifted by positionDelta. Resulting
+     * positions are clipped to [minPosition; maxPosition].
+     */
     public EnvelopePart copyAndShift(double positionDelta, double minPosition, double maxPosition) {
         var newPositions = new DoubleArrayList();
         var newSpeeds = new DoubleArrayList();
@@ -637,18 +602,15 @@ public final class EnvelopePart implements SearchableEnvelope {
         for (int i = 1; i < positions.length; i++) {
             var p = Math.max(minPosition, Math.min(maxPosition, positions[i] + positionDelta));
             if (newPositions.get(newPositions.size() - 1) != p) {
-                // Positions that are an epsilon away may be overlapping after the shift, we only add the distinct ones
+                // Positions that are an epsilon away may be overlapping after the shift, we only
+                // add the distinct ones
                 newPositions.add(p);
                 newSpeeds.add(speeds[i]);
                 newTimeDeltas.add(timeDeltas[i - 1]);
             }
         }
         return new EnvelopePart(
-                new HashMap<>(attrs),
-                newPositions.toArray(),
-                newSpeeds.toArray(),
-                newTimeDeltas.toArray()
-        );
+                new HashMap<>(attrs), newPositions.toArray(), newSpeeds.toArray(), newTimeDeltas.toArray());
     }
 
     // endregion

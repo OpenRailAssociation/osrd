@@ -20,23 +20,18 @@ import fr.sncf.osrd.utils.units.meters
 import java.util.*
 import kotlin.math.min
 
-/** Combines all the envelopes in the given edge ranges  */
-fun mergeEnvelopeRanges(
-    edges: List<EdgeRange<STDCMEdge, STDCMEdge>>,
-    path: PhysicsPath
-): Envelope {
+/** Combines all the envelopes in the given edge ranges */
+fun mergeEnvelopeRanges(edges: List<EdgeRange<STDCMEdge, STDCMEdge>>, path: PhysicsPath): Envelope {
     val parts = ArrayList<EnvelopePart>()
     var offset = 0.0
     for (edge in edges) {
         val envelope = edge.edge.envelope
         var sliceUntil = min(envelope.endPos, (edge.end - edge.start).absoluteValue.meters)
-        if (sliceUntil == 0.0)
-            continue
+        if (sliceUntil == 0.0) continue
         if (TrainPhysicsIntegrator.arePositionsEqual(sliceUntil, envelope.endPos))
             sliceUntil = envelope.endPos // The diff between longs and floats can break things here
         val slicedEnvelope = Envelope.make(*envelope.slice(0.0, sliceUntil))
-        for (part in slicedEnvelope)
-            parts.add(part.copyAndShift(offset, 0.0, path.length))
+        for (part in slicedEnvelope) parts.add(part.copyAndShift(offset, 0.0, path.length))
         offset = parts[parts.size - 1].endPos
     }
     val newEnvelope = Envelope.make(*parts.toTypedArray<EnvelopePart>())
@@ -44,16 +39,14 @@ fun mergeEnvelopeRanges(
     return newEnvelope
 }
 
-/** Combines all the envelopes in the given edges  */
+/** Combines all the envelopes in the given edges */
 fun mergeEnvelopes(
     graph: STDCMGraph,
     edges: List<STDCMEdge>,
     context: EnvelopeSimContext
 ): Envelope {
     return mergeEnvelopeRanges(
-        edges.stream()
-            .map { e: STDCMEdge -> EdgeRange(e, Offset(0.meters), e.length) }
-            .toList(),
+        edges.stream().map { e: STDCMEdge -> EdgeRange(e, Offset(0.meters), e.length) }.toList(),
         context.path
     )
 }
@@ -67,50 +60,59 @@ fun getStopOnBlock(
 ): Offset<Block>? {
     var mutWaypointIndex = waypointIndex
     val res = ArrayList<Offset<Block>>()
-    while (mutWaypointIndex + 1 < graph.steps.size && !graph.steps[mutWaypointIndex + 1].stop)
-        mutWaypointIndex++ // Only the next point where we actually stop matters here
-    if (mutWaypointIndex + 1 >= graph.steps.size)
-        return null
+    while (
+        mutWaypointIndex + 1 < graph.steps.size && !graph.steps[mutWaypointIndex + 1].stop
+    ) mutWaypointIndex++ // Only the next point where we actually stop matters here
+    if (mutWaypointIndex + 1 >= graph.steps.size) return null
     val nextStep = graph.steps[mutWaypointIndex + 1]
-    if (!nextStep.stop)
-        return null
+    if (!nextStep.stop) return null
     for (endLocation in nextStep.locations) {
         if (endLocation.edge == block) {
             val offset = endLocation.offset - startOffset.distance
-            if (offset >= Offset(0.meters))
-                res.add(offset)
+            if (offset >= Offset(0.meters)) res.add(offset)
         }
     }
-    return if (res.isEmpty())
-        null
-    else
-        Collections.min(res)
+    return if (res.isEmpty()) null else Collections.min(res)
 }
 
-/** Create a TrainPath instance from a list of edge ranges  */
-fun makeChunkPathFromRanges(graph: STDCMGraph, ranges: List<EdgeRange<STDCMEdge, STDCMEdge>>): ChunkPath {
-    val blocks = ranges.stream()
-        .map { range -> range.edge.block }
-        .distinct()
-        .toList()
-    val totalPathLength = Length<Path>(Distance(millimeters = ranges.stream()
-        .mapToLong { range -> (range.end - range.start).millimeters }
-        .sum()))
-    val firstOffset = Offset<Path>(ranges[0].edge.envelopeStartOffset.distance + ranges[0].start.distance)
+/** Create a TrainPath instance from a list of edge ranges */
+fun makeChunkPathFromRanges(
+    graph: STDCMGraph,
+    ranges: List<EdgeRange<STDCMEdge, STDCMEdge>>
+): ChunkPath {
+    val blocks = ranges.stream().map { range -> range.edge.block }.distinct().toList()
+    val totalPathLength =
+        Length<Path>(
+            Distance(
+                millimeters =
+                    ranges
+                        .stream()
+                        .mapToLong { range -> (range.end - range.start).millimeters }
+                        .sum()
+            )
+        )
+    val firstOffset =
+        Offset<Path>(ranges[0].edge.envelopeStartOffset.distance + ranges[0].start.distance)
     val lastOffset = totalPathLength + firstOffset.distance
     val chunks = MutableDirStaticIdxArrayList<TrackChunk>()
-    for (block in blocks)
-        for (chunk in graph.blockInfra.getTrackChunksFromBlock(block))
-            chunks.add(chunk)
+    for (block in blocks) for (chunk in graph.blockInfra.getTrackChunksFromBlock(block)) chunks.add(
+        chunk
+    )
     return buildChunkPath(graph.rawInfra, chunks, firstOffset, lastOffset)
 }
 
 /** Converts an offset on an STDCM edge into an offset on its underlying block */
-fun convertOffsetToBlock(edgeOffset: Offset<STDCMEdge>, envelopeStartOffset: Offset<Block>): Offset<Block> {
+fun convertOffsetToBlock(
+    edgeOffset: Offset<STDCMEdge>,
+    envelopeStartOffset: Offset<Block>
+): Offset<Block> {
     return Offset(edgeOffset.distance + envelopeStartOffset.distance)
 }
 
 /** Converts an offset on a block into an offset on its STDCM edge */
-fun convertOffsetToEdge(blockOffset: Offset<Block>, envelopeStartOffset: Offset<Block>): Offset<STDCMEdge> {
+fun convertOffsetToEdge(
+    blockOffset: Offset<Block>,
+    envelopeStartOffset: Offset<Block>
+): Offset<STDCMEdge> {
     return Offset(blockOffset.distance - envelopeStartOffset.distance)
 }

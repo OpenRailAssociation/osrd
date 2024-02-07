@@ -10,6 +10,8 @@ import fr.sncf.osrd.conflicts.TrainRequirements;
 import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl;
 import fr.sncf.osrd.reporting.warnings.Warning;
+import java.util.ArrayList;
+import java.util.List;
 import org.takes.Request;
 import org.takes.Response;
 import org.takes.Take;
@@ -18,21 +20,17 @@ import org.takes.rs.RsJson;
 import org.takes.rs.RsText;
 import org.takes.rs.RsWithBody;
 import org.takes.rs.RsWithStatus;
-import java.util.ArrayList;
-import java.util.List;
 
 public class ConflictDetectionEndpoint implements Take {
 
-    public ConflictDetectionEndpoint() {
-    }
+    public ConflictDetectionEndpoint() {}
 
-    public static final JsonAdapter<ConflictDetectionEndpoint.ConflictDetectionRequest> adapterRequest = new Moshi
-            .Builder()
-            .add(ID.Adapter.FACTORY)
-            .addLast(new KotlinJsonAdapterFactory())
-            .build()
-            .adapter(ConflictDetectionEndpoint.ConflictDetectionRequest.class);
-
+    public static final JsonAdapter<ConflictDetectionEndpoint.ConflictDetectionRequest> adapterRequest =
+            new Moshi.Builder()
+                    .add(ID.Adapter.FACTORY)
+                    .addLast(new KotlinJsonAdapterFactory())
+                    .build()
+                    .adapter(ConflictDetectionEndpoint.ConflictDetectionRequest.class);
 
     @Override
     public Response act(Request req) throws Exception {
@@ -41,8 +39,7 @@ public class ConflictDetectionEndpoint implements Take {
             // Parse request input
             var body = new RqPrint(req).printBody();
             var request = adapterRequest.fromJson(body);
-            if (request == null)
-                return new RsWithStatus(new RsText("missing request body"), 400);
+            if (request == null) return new RsWithStatus(new RsText("missing request body"), 400);
 
             var conflicts = ConflictsKt.detectConflicts(request.trainsRequirements);
             var result = new ConflictDetectionResult(conflicts);
@@ -53,7 +50,6 @@ public class ConflictDetectionEndpoint implements Take {
             // TODO: include warnings in the response
             return ExceptionHandler.handle(ex);
         }
-
     }
 
     public static class ConflictDetectionRequest {
@@ -67,10 +63,8 @@ public class ConflictDetectionEndpoint implements Take {
 
     @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
     public static class ConflictDetectionResult {
-        public static final JsonAdapter<ConflictDetectionResult> adapter = new Moshi
-                .Builder()
-                .build()
-                .adapter(ConflictDetectionResult.class);
+        public static final JsonAdapter<ConflictDetectionResult> adapter =
+                new Moshi.Builder().build().adapter(ConflictDetectionResult.class);
 
         public List<Warning> warnings = new ArrayList<>();
 

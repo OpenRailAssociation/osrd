@@ -16,21 +16,14 @@ import fr.sncf.osrd.utils.DistanceRangeMap;
 import java.util.HashMap;
 
 public class EnvelopeTrainPath {
-    /**
-     * Create EnvelopePath from a path, with no electrical profile
-     */
+    /** Create EnvelopePath from a path, with no electrical profile */
     public static EnvelopeSimPath from(RawSignalingInfra infra, PathProperties path) {
         return from(infra, path, null);
     }
 
-    /**
-     * Create EnvelopePath from a path and a ElectricalProfileMapping
-     */
+    /** Create EnvelopePath from a path and a ElectricalProfileMapping */
     public static EnvelopeSimPath from(
-            RawSignalingInfra infra,
-            PathProperties path,
-            ElectricalProfileMapping electricalProfileMapping
-    ) {
+            RawSignalingInfra infra, PathProperties path, ElectricalProfileMapping electricalProfileMapping) {
         var gradePositions = new DoubleArrayList();
         gradePositions.add(0);
         var gradeValues = new DoubleArrayList();
@@ -43,17 +36,20 @@ public class EnvelopeTrainPath {
         var distanceElectrificationMapByPowerClass = new HashMap<String, DistanceRangeMap<Electrification>>();
         if (electricalProfileMapping != null) {
             var profileMap = electricalProfileMapping.getProfilesOnPath(infra, path);
-            distanceElectrificationMapByPowerClass = buildElectrificationMapByPowerClass(
-                    distanceElectrificationMap,
-                    profileMap);
+            distanceElectrificationMapByPowerClass =
+                    buildElectrificationMapByPowerClass(distanceElectrificationMap, profileMap);
         }
 
-        //Convert the maps to fit the needs of EnvelopeSimPath
+        // Convert the maps to fit the needs of EnvelopeSimPath
         var electrificationMap = convertElectrificationMap(distanceElectrificationMap);
-        var electrificationMapByPowerClass = convertElectrificationMapByPowerClass(
-                distanceElectrificationMapByPowerClass);
-        return new EnvelopeSimPath(toMeters(path.getLength()), gradePositions.toArray(), gradeValues.toArray(),
-                electrificationMap, electrificationMapByPowerClass);
+        var electrificationMapByPowerClass =
+                convertElectrificationMapByPowerClass(distanceElectrificationMapByPowerClass);
+        return new EnvelopeSimPath(
+                toMeters(path.getLength()),
+                gradePositions.toArray(),
+                gradeValues.toArray(),
+                electrificationMap,
+                electrificationMapByPowerClass);
     }
 
     private static HashMap<String, DistanceRangeMap<Electrification>> buildElectrificationMapByPowerClass(
@@ -62,16 +58,13 @@ public class EnvelopeTrainPath {
         var res = new HashMap<String, DistanceRangeMap<Electrification>>();
         for (var entry : profileMap.entrySet()) {
             var electrificationMapWithProfiles = electrificationMap.clone();
-            electrificationMapWithProfiles.updateMap(
-                    entry.getValue(),
-                    Electrification::withElectricalProfile
-            );
+            electrificationMapWithProfiles.updateMap(entry.getValue(), Electrification::withElectricalProfile);
             res.put(entry.getKey(), electrificationMapWithProfiles);
         }
         return res;
     }
 
-    /** Converts an ElectrificationMap as a DistanceRangeMap into a RangeMap*/
+    /** Converts an ElectrificationMap as a DistanceRangeMap into a RangeMap */
     private static ImmutableRangeMap<Double, Electrification> convertElectrificationMap(
             DistanceRangeMap<Electrification> map) {
         TreeRangeMap<Double, Electrification> res = TreeRangeMap.create();
@@ -81,7 +74,7 @@ public class EnvelopeTrainPath {
         return ImmutableRangeMap.copyOf(res);
     }
 
-    /** Converts an ElectrificationMapByPowerClass as a DistanceRangeMap into a RangeMap*/
+    /** Converts an ElectrificationMapByPowerClass as a DistanceRangeMap into a RangeMap */
     private static HashMap<String, ImmutableRangeMap<Double, Electrification>> convertElectrificationMapByPowerClass(
             HashMap<String, DistanceRangeMap<Electrification>> electrificationMapByPowerClass) {
         var res = new HashMap<String, ImmutableRangeMap<Double, Electrification>>();

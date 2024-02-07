@@ -11,17 +11,16 @@ import fr.sncf.osrd.railjson.parser.RJSParser;
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl;
 import fr.sncf.osrd.signaling.SignalingSimulator;
 import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.util.Set;
 
 @Parameters(commandDescription = "Try to load an infra")
 public class ValidateInfra implements CliCommand {
 
     @Parameter(
-            names = {"--path" },
-            description = "Path to the railjson file to load"
-    )
+            names = {"--path"},
+            description = "Path to the railjson file to load")
     private String infraPath;
 
     static final Logger logger = LoggerFactory.getLogger(ValidateInfra.class);
@@ -34,11 +33,7 @@ public class ValidateInfra implements CliCommand {
             logger.info("parsing json");
             var rjs = RJSParser.parseRailJSONFromFile(infraPath);
             logger.info("loading legacy infra");
-            var infra = SignalingInfraBuilder.fromRJSInfra(
-                    rjs,
-                    Set.of(new BAL3(recorder)),
-                    recorder
-            );
+            var infra = SignalingInfraBuilder.fromRJSInfra(rjs, Set.of(new BAL3(recorder)), recorder);
             logger.info("adapting raw infra");
             var rawInfra = adaptRawInfra(infra);
             logger.info("loading signals");

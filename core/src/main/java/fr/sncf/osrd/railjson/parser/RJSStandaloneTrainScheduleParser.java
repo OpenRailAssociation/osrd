@@ -38,12 +38,11 @@ public class RJSStandaloneTrainScheduleParser {
             Function<String, RollingStock> rollingStockGetter,
             RJSStandaloneTrainSchedule rjsTrainSchedule,
             PathProperties trainPath,
-            EnvelopeSimPath envelopeSimPath
-    ) throws OSRDError {
+            EnvelopeSimPath envelopeSimPath)
+            throws OSRDError {
         var rollingStockID = rjsTrainSchedule.rollingStock;
         var rollingStock = rollingStockGetter.apply(rollingStockID);
-        if (rollingStock == null)
-            throw OSRDError.newUnknownRollingStockError(rollingStockID);
+        if (rollingStock == null) throw OSRDError.newUnknownRollingStockError(rollingStockID);
 
         var initialSpeed = rjsTrainSchedule.initialSpeed;
         if (Double.isNaN(initialSpeed) || initialSpeed < 0)
@@ -71,32 +70,36 @@ public class RJSStandaloneTrainScheduleParser {
         if (rjsTrainSchedule.scheduledPoints != null) {
             for (var rjsSchedulePoints : rjsTrainSchedule.scheduledPoints) {
                 if (rjsSchedulePoints.pathOffset < 0)
-                    scheduledPoints.add(new ScheduledPoint(Distance.toMeters(trainPath.getLength()),
-                            rjsSchedulePoints.time));
+                    scheduledPoints.add(
+                            new ScheduledPoint(Distance.toMeters(trainPath.getLength()), rjsSchedulePoints.time));
                 else if (rjsSchedulePoints.pathOffset > Distance.toMeters(trainPath.getLength()))
                     throw new OSRDError(ErrorType.InvalidSchedulePoint);
-                else
-                    scheduledPoints.add(new ScheduledPoint(rjsSchedulePoints.pathOffset, rjsSchedulePoints.time));
+                else scheduledPoints.add(new ScheduledPoint(rjsSchedulePoints.pathOffset, rjsSchedulePoints.time));
             }
         }
 
         var tag = rjsTrainSchedule.tag;
         var stops = RJSStopsParser.parse(rjsTrainSchedule.stops, infra.rawInfra(), trainPath);
-        return new StandaloneTrainSchedule(rollingStock, initialSpeed, scheduledPoints, stops, allowances, tag, comfort,
-                powerRestrictionMap, options);
+        return new StandaloneTrainSchedule(
+                rollingStock,
+                initialSpeed,
+                scheduledPoints,
+                stops,
+                allowances,
+                tag,
+                comfort,
+                powerRestrictionMap,
+                options);
     }
 
     private static double getPositiveDoubleOrDefault(double rjsInput, double defaultValue) {
-        if (Double.isNaN(rjsInput) || rjsInput < 0)
-            return defaultValue;
+        if (Double.isNaN(rjsInput) || rjsInput < 0) return defaultValue;
         return rjsInput;
     }
 
     @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
-    private static Allowance parseAllowance(
-            EnvelopeSimPath envelopeSimPath,
-            RJSAllowance rjsAllowance
-    ) throws OSRDError {
+    private static Allowance parseAllowance(EnvelopeSimPath envelopeSimPath, RJSAllowance rjsAllowance)
+            throws OSRDError {
 
         var allowanceDistribution = rjsAllowance.distribution;
         double beginPos;
@@ -117,25 +120,15 @@ public class RJSStandaloneTrainScheduleParser {
         // parse allowance distribution
         return switch (allowanceDistribution) {
             case MARECO -> new MarecoAllowance(
-                    beginPos,
-                    endPos,
-                    getPositiveDoubleOrDefault(rjsAllowance.capacitySpeedLimit, 30 / 3.6),
-                    ranges
-            );
+                    beginPos, endPos, getPositiveDoubleOrDefault(rjsAllowance.capacitySpeedLimit, 30 / 3.6), ranges);
             case LINEAR -> new LinearAllowance(
-                    beginPos,
-                    endPos,
-                    getPositiveDoubleOrDefault(rjsAllowance.capacitySpeedLimit, 30 / 3.6),
-                    ranges
-            );
+                    beginPos, endPos, getPositiveDoubleOrDefault(rjsAllowance.capacitySpeedLimit, 30 / 3.6), ranges);
         };
     }
 
     private static List<AllowanceRange> parseAllowanceRanges(
-            EnvelopeSimPath envelopeSimPath,
-            RJSAllowanceValue defaultValue,
-            RJSAllowanceRange[] ranges
-    ) throws OSRDError {
+            EnvelopeSimPath envelopeSimPath, RJSAllowanceValue defaultValue, RJSAllowanceRange[] ranges)
+            throws OSRDError {
         var value = parseAllowanceValue(defaultValue);
         // if no ranges have been defined, just return the default value
         if (ranges == null || ranges.length == 0) {
@@ -150,8 +143,7 @@ public class RJSStandaloneTrainScheduleParser {
         var lastEndPos = 0.0;
         for (var range : sortedRanges) {
             // if some ranges are overlapping, return an error
-            if (range.beginPos < lastEndPos)
-                throw new OSRDError(ErrorType.InvalidScheduleOverlappingAllowanceRanges);
+            if (range.beginPos < lastEndPos) throw new OSRDError(ErrorType.InvalidScheduleOverlappingAllowanceRanges);
             // if there is a gap between two ranges, fill it with default value
             if (range.beginPos > lastEndPos) {
                 res.add(new AllowanceRange(lastEndPos, range.beginPos, value));
@@ -173,20 +165,17 @@ public class RJSStandaloneTrainScheduleParser {
     public static AllowanceValue parseAllowanceValue(RJSAllowanceValue rjsValue) throws OSRDError {
         if (rjsValue.getClass() == RJSAllowanceValue.TimePerDistance.class) {
             var rjsTimePerDist = (RJSAllowanceValue.TimePerDistance) rjsValue;
-            if (Double.isNaN(rjsTimePerDist.minutes))
-                throw new OSRDError(ErrorType.InvalidScheduleMissingMinute);
+            if (Double.isNaN(rjsTimePerDist.minutes)) throw new OSRDError(ErrorType.InvalidScheduleMissingMinute);
             return new AllowanceValue.TimePerDistance(rjsTimePerDist.minutes);
         }
         if (rjsValue.getClass() == RJSAllowanceValue.Time.class) {
             var rjsFixedTime = (RJSAllowanceValue.Time) rjsValue;
-            if (Double.isNaN(rjsFixedTime.seconds))
-                throw new OSRDError(ErrorType.InvalidScheduleMissingSeconds);
+            if (Double.isNaN(rjsFixedTime.seconds)) throw new OSRDError(ErrorType.InvalidScheduleMissingSeconds);
             return new AllowanceValue.FixedTime(rjsFixedTime.seconds);
         }
         if (rjsValue.getClass() == RJSAllowanceValue.Percent.class) {
             var rjsPercentage = (RJSAllowanceValue.Percent) rjsValue;
-            if (Double.isNaN(rjsPercentage.percentage))
-                throw new OSRDError(ErrorType.InvalidScheduleMissingPercentage);
+            if (Double.isNaN(rjsPercentage.percentage)) throw new OSRDError(ErrorType.InvalidScheduleMissingPercentage);
             return new AllowanceValue.Percentage(rjsPercentage.percentage);
         }
 
@@ -195,8 +184,7 @@ public class RJSStandaloneTrainScheduleParser {
 
     private static ImmutableRangeMap<Double, String> parsePowerRestrictionRanges(RJSPowerRestrictionRange[] ranges) {
         var builder = ImmutableRangeMap.<Double, String>builder();
-        if (ranges == null)
-            return builder.build();
+        if (ranges == null) return builder.build();
         for (var range : ranges) {
             builder.put(Range.openClosed(range.beginPosition, range.endPosition), range.powerRestrictionCode);
         }

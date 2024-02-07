@@ -17,32 +17,34 @@ import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeDeceleration;
 import fr.sncf.osrd.reporting.exceptions.ErrorType;
 import fr.sncf.osrd.reporting.exceptions.OSRDError;
-import org.junit.jupiter.api.Test;
 import java.util.List;
+import org.junit.jupiter.api.Test;
 
 public class MarecoDecelerationTests {
 
-    /** Try to apply a mareco allowance from start to end offset, on a path mostly made of braking curves.
-     * Most of the time it fails to converge because we can't add time, we just check for other errors.
-     * This triggers many edge cases. */
+    /**
+     * Try to apply a mareco allowance from start to end offset, on a path mostly made of braking
+     * curves. Most of the time it fails to converge because we can't add time, we just check for
+     * other errors. This triggers many edge cases.
+     */
     public static void testDecelerationSection(double startOffset, double endOffset) {
         var testRollingStock = SimpleRollingStock.STANDARD_TRAIN;
         var testPath = new FlatPath(100_000, 0);
-        var context = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP,
-                SimpleRollingStock.LINEAR_EFFORT_CURVE_MAP);
+        var context = new EnvelopeSimContext(
+                testRollingStock, testPath, TIME_STEP, SimpleRollingStock.LINEAR_EFFORT_CURVE_MAP);
         var mrsp = MaxEffortEnvelopeBuilder.makeSimpleMaxEffortEnvelope(context, 1000);
         var builder = OverlayEnvelopeBuilder.backward(mrsp);
         var partBuilder = new EnvelopePartBuilder();
         partBuilder.setAttr(EnvelopeProfile.BRAKING);
         var overlayBuilder = new ConstrainedEnvelopePartBuilder(
-                partBuilder,
-                new SpeedConstraint(0, FLOOR),
-                new EnvelopeConstraint(mrsp, CEILING)
-        );
+                partBuilder, new SpeedConstraint(0, FLOOR), new EnvelopeConstraint(mrsp, CEILING));
         EnvelopeDeceleration.decelerate(context, 100_000, 0, overlayBuilder, -1);
         var envelope = builder.build();
 
-        var allowance = new MarecoAllowance(startOffset, endOffset, 1,
+        var allowance = new MarecoAllowance(
+                startOffset,
+                endOffset,
+                1,
                 List.of(new AllowanceRange(startOffset, endOffset, new AllowanceValue.Percentage(50))));
         try {
             allowance.apply(envelope, context);
@@ -57,8 +59,10 @@ public class MarecoDecelerationTests {
         testDecelerationSection(99980, 100_000);
     }
 
-    /** Reproduces a bug where the time added is exactly one timestep away from the target time.
-     * We exit the loop when the error is <= timestep, we assert that the error is < timestep. */
+    /**
+     * Reproduces a bug where the time added is exactly one timestep away from the target time. We
+     * exit the loop when the error is <= timestep, we assert that the error is < timestep.
+     */
     @Test
     public void regressionTestWrongToleranceInAssertion() {
         testDecelerationSection(99984, 100_000);
@@ -70,8 +74,10 @@ public class MarecoDecelerationTests {
         testDecelerationSection(99961.59999999782, 99997.59999999986);
     }
 
-    /** Iterates over several values. It doesn't loop too many times to avoid it taking too long in the test suite,
-     * but it can be tweaked to test more cases. */
+    /**
+     * Iterates over several values. It doesn't loop too many times to avoid it taking too long in
+     * the test suite, but it can be tweaked to test more cases.
+     */
     @Test
     @SuppressFBWarnings("FL_FLOATS_AS_LOOP_COUNTERS")
     public void testIteratively() {

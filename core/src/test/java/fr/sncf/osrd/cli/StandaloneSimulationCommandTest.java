@@ -8,13 +8,12 @@ import fr.sncf.osrd.api.pathfinding.request.PathfindingWaypoint;
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection;
 import fr.sncf.osrd.railjson.schema.schedule.RJSStandaloneTrainSchedule;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop;
-import okio.FileSystem;
-import okio.Okio;
-import org.junit.jupiter.api.Test;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-
+import okio.FileSystem;
+import okio.Okio;
+import org.junit.jupiter.api.Test;
 
 public class StandaloneSimulationCommandTest {
     @Test
@@ -24,19 +23,18 @@ public class StandaloneSimulationCommandTest {
         simulationInput.rollingStocks = List.of(getExampleRollingStock("fast_rolling_stock.json"));
         var scheduleGroup = new StandaloneSimulationCommand.TrainScheduleGroup();
         scheduleGroup.id = "test";
-        var stops = new RJSTrainStop[]{ new RJSTrainStop(1., -1.) };
-        scheduleGroup.schedules = List.of(new RJSStandaloneTrainSchedule(
-                "Test.", "fast_rolling_stock", 0., null, stops
-        ));
+        var stops = new RJSTrainStop[] {new RJSTrainStop(1., -1.)};
+        scheduleGroup.schedules =
+                List.of(new RJSStandaloneTrainSchedule("Test.", "fast_rolling_stock", 0., null, stops));
         scheduleGroup.waypoints = new PathfindingWaypoint[][] {
-                {
-                        new PathfindingWaypoint("ne.micro.foo_b", 100., EdgeDirection.START_TO_STOP),
-                        new PathfindingWaypoint("ne.micro.foo_b", 100., EdgeDirection.STOP_TO_START),
-                },
-                {
-                        new PathfindingWaypoint("ne.micro.bar_a", 100., EdgeDirection.START_TO_STOP),
-                        new PathfindingWaypoint("ne.micro.bar_a", 100., EdgeDirection.STOP_TO_START),
-                },
+            {
+                new PathfindingWaypoint("ne.micro.foo_b", 100., EdgeDirection.START_TO_STOP),
+                new PathfindingWaypoint("ne.micro.foo_b", 100., EdgeDirection.STOP_TO_START),
+            },
+            {
+                new PathfindingWaypoint("ne.micro.bar_a", 100., EdgeDirection.START_TO_STOP),
+                new PathfindingWaypoint("ne.micro.bar_a", 100., EdgeDirection.STOP_TO_START),
+            },
         };
         simulationInput.trainScheduleGroups = List.of(scheduleGroup);
 

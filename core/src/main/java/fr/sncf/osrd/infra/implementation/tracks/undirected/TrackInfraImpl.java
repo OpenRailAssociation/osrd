@@ -17,8 +17,7 @@ public class TrackInfraImpl implements TrackInfra {
             ImmutableMap<String, Switch> switches,
             ImmutableNetwork<TrackNode, TrackEdge> trackGraph,
             Map<String, TrackSection> trackSections,
-            ImmutableMap<String, Detector> detectorMap
-    ) {
+            ImmutableMap<String, Detector> detectorMap) {
         this.switches = switches;
         this.trackGraph = trackGraph;
         this.trackSections = trackSections;
@@ -38,18 +37,14 @@ public class TrackInfraImpl implements TrackInfra {
 
     /** Instantiates a TrackInfra */
     public static TrackInfra from(
-            ImmutableMap<String, Switch> switches,
-            ImmutableNetwork<TrackNode, TrackEdge> trackGraph) {
+            ImmutableMap<String, Switch> switches, ImmutableNetwork<TrackNode, TrackEdge> trackGraph) {
         return new TrackInfraImpl(switches, trackGraph, makeTrackSections(trackGraph), makeDetectorMap(trackGraph));
     }
 
-    private static ImmutableMap<String, Detector> makeDetectorMap(
-            ImmutableNetwork<TrackNode, TrackEdge> trackGraph
-    ) {
+    private static ImmutableMap<String, Detector> makeDetectorMap(ImmutableNetwork<TrackNode, TrackEdge> trackGraph) {
         var res = ImmutableMap.<String, Detector>builder();
         for (var track : trackGraph.edges()) {
-            for (var detector : track.getDetectors())
-                res.put(detector.getID(), detector);
+            for (var detector : track.getDetectors()) res.put(detector.getID(), detector);
         }
         return res.build();
     }
@@ -58,10 +53,8 @@ public class TrackInfraImpl implements TrackInfra {
     private static void setIndexToEdges(ImmutableNetwork<TrackNode, TrackEdge> trackGraph) {
         var trackID = 0;
         for (var edge : trackGraph.edges()) {
-            if (edge instanceof SwitchBranchImpl branch)
-                branch.index = trackID++;
-            else if (edge instanceof TrackSectionImpl track)
-                track.index = trackID++;
+            if (edge instanceof SwitchBranchImpl branch) branch.index = trackID++;
+            else if (edge instanceof TrackSectionImpl track) track.index = trackID++;
         }
     }
 

@@ -45,21 +45,16 @@ public final class SpeedLimits {
         var min = Double.POSITIVE_INFINITY;
 
         var value = speedLimitByTag.getOrDefault(tag, Double.POSITIVE_INFINITY);
-        if (value != null)
-            min = Double.min(min, value);
+        if (value != null) min = Double.min(min, value);
 
-        if (Double.isFinite(min))
-            return min;
+        if (Double.isFinite(min)) return min;
         return defaultSpeedLimit;
     }
 
-
     /** Merges two overlapping speed limits, picking the most restrictive speed for each category */
     public static SpeedLimits merge(SpeedLimits a, SpeedLimits b) {
-        if (a == null)
-            return b;
-        if (b == null)
-            return a;
+        if (a == null) return b;
+        if (b == null) return a;
         var defaultSpeed = Double.min(a.defaultSpeedLimit, b.defaultSpeedLimit);
         var categories = Sets.union(a.speedLimitByTag.keySet(), b.speedLimitByTag.keySet());
         var builder = ImmutableMap.<String, Double>builder();

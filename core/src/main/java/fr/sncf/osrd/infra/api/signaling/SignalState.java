@@ -7,11 +7,12 @@ public interface SignalState {
     /** Returns the RGB Color for this signal state, as encoded by {@link java.awt.Color#getRGB}. */
     int getRGBColor();
 
-    /** Returns the string representing the signal aspect.
+    /**
+     * Returns the string representing the signal aspect.
      *
-     * @see <a href="https://github.com/osrd-project/osrd/blob/dev/front/src/common/Map/Consts/SignalsNames.ts">
-     *     signal names
-     *     </a>
+     * @see <a
+     *     href="https://github.com/osrd-project/osrd/blob/dev/front/src/common/Map/Consts/SignalsNames.ts">
+     *     signal names </a>
      */
     String getAspectLabel();
 

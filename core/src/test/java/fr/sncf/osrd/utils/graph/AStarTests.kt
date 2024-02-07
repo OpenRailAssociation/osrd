@@ -16,7 +16,8 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
 class AStarTests {
-    /** We try to find a path from a point on the center-west of the infra to the east most point.
+    /**
+     * We try to find a path from a point on the center-west of the infra to the east most point.
      * The path is almost a geographic line, so a good heuristic should help. We run the pathfinding
      * with and without a heuristic and ensure that we visit more blocks without heuristic.
      */
@@ -25,39 +26,32 @@ class AStarTests {
     fun lessBlocksVisitedWithHeuristic() {
         val infra = fullInfraFromRJS(getExampleInfra("small_infra/infra.json"))
         val origin = mutableSetOf(convertRouteLocation(infra, "rt.DA2->DA5", Offset(0.meters)))
-        val destination = mutableSetOf(convertRouteLocation(infra, "rt.DH2->buffer_stop.7", Offset(0.meters)))
-        val remainingDistanceEstimator = RemainingDistanceEstimator(
-            infra.blockInfra, infra.rawInfra,
-            destination, 0.0
-        )
+        val destination =
+            mutableSetOf(convertRouteLocation(infra, "rt.DH2->buffer_stop.7", Offset(0.meters)))
+        val remainingDistanceEstimator =
+            RemainingDistanceEstimator(infra.blockInfra, infra.rawInfra, destination, 0.0)
         val seenWithHeuristic = HashSet<BlockId>()
         val seenWithoutHeuristic = HashSet<BlockId>()
         Pathfinding(GraphAdapter(infra.blockInfra, infra.rawInfra))
-            .setEdgeToLength { blockId ->
-                infra.blockInfra.getBlockLength(
-                    blockId
-                )
-            }
+            .setEdgeToLength { blockId -> infra.blockInfra.getBlockLength(blockId) }
             .setRemainingDistanceEstimator(
                 listOf(
                     AStarHeuristic { block, offset ->
                         seenWithHeuristic.add(block)
                         remainingDistanceEstimator.apply(block, offset)
-                    })
+                    }
+                )
             )
             .runPathfinding(listOf<Set<PathfindingEdgeLocationId<Block>>>(origin, destination))
         Pathfinding(GraphAdapter(infra.blockInfra, infra.rawInfra))
-            .setEdgeToLength { blockId ->
-                infra.blockInfra.getBlockLength(
-                    blockId
-                )
-            }
+            .setEdgeToLength { blockId -> infra.blockInfra.getBlockLength(blockId) }
             .setRemainingDistanceEstimator(
                 listOf(
                     AStarHeuristic { block, _ ->
                         seenWithoutHeuristic.add(block)
                         0.0
-                    })
+                    }
+                )
             )
             .runPathfinding(listOf<Set<PathfindingEdgeLocationId<Block>>>(origin, destination))
         Assertions.assertTrue(seenWithHeuristic.size < seenWithoutHeuristic.size)

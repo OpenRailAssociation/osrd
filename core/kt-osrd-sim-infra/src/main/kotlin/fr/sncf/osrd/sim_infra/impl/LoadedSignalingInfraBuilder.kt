@@ -3,7 +3,10 @@ package fr.sncf.osrd.sim_infra.impl
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.utils.indexing.*
 
-inline fun loadedSignalInfra(sigSystemManager: InfraSigSystemManager, init: LoadedSignalingInfraBuilder.() -> Unit): LoadedSignalInfra {
+inline fun loadedSignalInfra(
+    sigSystemManager: InfraSigSystemManager,
+    init: LoadedSignalingInfraBuilder.() -> Unit
+): LoadedSignalInfra {
     val infraBuilder = LoadedSignalingInfraBuilderImpl(sigSystemManager)
     infraBuilder.init()
     return infraBuilder.build()
@@ -19,12 +22,17 @@ interface LoadedPhysicalSignalBuilder {
 
 interface LoadedLogicalSignalBuilder {
     fun driver(driver: SignalDriverId)
+
     fun sigSettings(sigSettings: SigSettings)
+
     fun signalingSystemId(signalingSystemId: SignalingSystemId)
 }
 
-private class LoadedPhysicalSignalBuilderImpl(private val infraBuilderImpl: LoadedSignalingInfraBuilderImpl) : LoadedPhysicalSignalBuilder {
+private class LoadedPhysicalSignalBuilderImpl(
+    private val infraBuilderImpl: LoadedSignalingInfraBuilderImpl
+) : LoadedPhysicalSignalBuilder {
     private val children: MutableStaticIdxArrayList<LogicalSignal> = MutableStaticIdxArrayList()
+
     override fun logicalSignal(init: LoadedLogicalSignalBuilder.() -> Unit): LogicalSignalId {
         val builder = LoadedLogicalSignalBuilderImpl(infraBuilderImpl)
         builder.init()
@@ -38,16 +46,15 @@ private class LoadedPhysicalSignalBuilderImpl(private val infraBuilderImpl: Load
     }
 }
 
-private class LoadedLogicalSignalBuilderImpl(var sigSettings: SigSettings?,
-                                     var signalingSystemId: SignalingSystemId?,
-                                     val drivers: MutableStaticIdxArrayList<SignalDriver>,
-                                     private val infraBuilderImpl: LoadedSignalingInfraBuilderImpl)
-    : LoadedLogicalSignalBuilder {
-        constructor(infraBuilderImpl: LoadedSignalingInfraBuilderImpl) : this(
-            null,
-            null,
-            mutableStaticIdxArrayListOf(),
-            infraBuilderImpl)
+private class LoadedLogicalSignalBuilderImpl(
+    var sigSettings: SigSettings?,
+    var signalingSystemId: SignalingSystemId?,
+    val drivers: MutableStaticIdxArrayList<SignalDriver>,
+    private val infraBuilderImpl: LoadedSignalingInfraBuilderImpl
+) : LoadedLogicalSignalBuilder {
+    constructor(
+        infraBuilderImpl: LoadedSignalingInfraBuilderImpl
+    ) : this(null, null, mutableStaticIdxArrayListOf(), infraBuilderImpl)
 
     override fun driver(driver: SignalDriverId) {
         drivers.add(driver)
@@ -70,7 +77,8 @@ private class LoadedLogicalSignalBuilderImpl(var sigSettings: SigSettings?,
     }
 }
 
-class LoadedSignalingInfraBuilderImpl internal constructor(
+class LoadedSignalingInfraBuilderImpl
+internal constructor(
     val sigSystemManager: InfraSigSystemManager,
     var logicalSignalSpace: UInt,
     val physicalSignalPool: StaticPool<PhysicalSignal, StaticIdxList<LogicalSignal>>,
@@ -78,7 +86,9 @@ class LoadedSignalingInfraBuilderImpl internal constructor(
     val signalingSystemMap: IdxMap<LogicalSignalId, SignalingSystemId>,
     val driverMap: IdxMap<LogicalSignalId, StaticIdxList<SignalDriver>>
 ) : LoadedSignalingInfraBuilder {
-    constructor(sigSystemManager: InfraSigSystemManager) : this(
+    constructor(
+        sigSystemManager: InfraSigSystemManager
+    ) : this(
         sigSystemManager,
         0u,
         StaticPool(),

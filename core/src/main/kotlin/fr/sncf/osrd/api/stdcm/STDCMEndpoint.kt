@@ -56,35 +56,38 @@ class STDCMEndpoint(private val infraManager: InfraManager) : Take {
             val tag = request.speedLimitComposition
             var standardAllowance: AllowanceValue? = null
             if (request.standardAllowance != null)
-                standardAllowance = RJSStandaloneTrainScheduleParser.parseAllowanceValue(request.standardAllowance)
+                standardAllowance =
+                    RJSStandaloneTrainScheduleParser.parseAllowanceValue(request.standardAllowance)
             assert(java.lang.Double.isFinite(startTime))
 
             // Build the unavailable space
             // temporary workaround, to remove with new signaling
-            val unavailableSpace = computeUnavailableSpace(
-                infra.rawInfra,
-                infra.blockInfra,
-                request.spacingRequirements,
-                rollingStock,
-                request.gridMarginAfterSTDCM,
-                request.gridMarginBeforeSTDCM
-            )
+            val unavailableSpace =
+                computeUnavailableSpace(
+                    infra.rawInfra,
+                    infra.blockInfra,
+                    request.spacingRequirements,
+                    rollingStock,
+                    request.gridMarginAfterSTDCM,
+                    request.gridMarginBeforeSTDCM
+                )
 
             // Run the STDCM pathfinding
-            val res = findPath(
-                infra,
-                rollingStock,
-                comfort,
-                startTime,
-                steps,
-                BlockAvailabilityLegacyAdapter(infra.blockInfra, unavailableSpace),
-                request.timeStep,
-                request.maximumDepartureDelay,
-                request.maximumRunTime,
-                tag,
-                standardAllowance,
-                Pathfinding.TIMEOUT
-            )
+            val res =
+                findPath(
+                    infra,
+                    rollingStock,
+                    comfort,
+                    startTime,
+                    steps,
+                    BlockAvailabilityLegacyAdapter(infra.blockInfra, unavailableSpace),
+                    request.timeStep,
+                    request.maximumDepartureDelay,
+                    request.maximumRunTime,
+                    tag,
+                    standardAllowance,
+                    Pathfinding.TIMEOUT
+                )
             if (res == null) {
                 val error = OSRDError(ErrorType.PathfindingGenericError)
                 return ExceptionHandler.toResponse(error)
@@ -93,9 +96,7 @@ class STDCMEndpoint(private val infraManager: InfraManager) : Take {
             // Build the response
             val simResult = StandaloneSimResult()
             simResult.speedLimits.add(
-                ResultEnvelopePoint.from(
-                    MRSP.computeMRSP(res.trainPath, rollingStock, false, tag)
-                )
+                ResultEnvelopePoint.from(MRSP.computeMRSP(res.trainPath, rollingStock, false, tag))
             )
             simResult.baseSimulations.add(
                 run(
@@ -107,10 +108,8 @@ class STDCMEndpoint(private val infraManager: InfraManager) : Take {
                 )
             )
             simResult.ecoSimulations.add(null)
-            val pathfindingRes = convertPathfindingResult(
-                infra.blockInfra, infra.rawInfra,
-                res.blocks, recorder
-            )
+            val pathfindingRes =
+                convertPathfindingResult(infra.blockInfra, infra.rawInfra, res.blocks, recorder)
             val response = STDCMResponse(simResult, pathfindingRes, res.departureTime)
             RsJson(RsWithBody(STDCMResponse.adapter.toJson(response)))
         } catch (ex: Throwable) {
@@ -120,17 +119,15 @@ class STDCMEndpoint(private val infraManager: InfraManager) : Take {
 }
 
 private fun parseSteps(infra: FullInfra, steps: List<STDCMRequest.STDCMStep>): List<STDCMStep> {
-    return steps.stream()
+    return steps
+        .stream()
         .map { step: STDCMRequest.STDCMStep ->
-            STDCMStep(
-                findWaypointBlocks(infra, step.waypoints),
-                step.stopDuration, step.stop
-            )
+            STDCMStep(findWaypointBlocks(infra, step.waypoints), step.stopDuration, step.stop)
         }
         .toList()
 }
 
-/** Generate a train schedule matching the envelope and rolling stock, with one stop at the end  */
+/** Generate a train schedule matching the envelope and rolling stock, with one stop at the end */
 fun makeTrainSchedule(
     endPos: Double,
     rollingStock: RollingStock?,

@@ -8,12 +8,8 @@ import fr.sncf.osrd.sim_infra.api.SigStateSchema
 
 object BAL : SignalingSystemDriver {
     override val id = "BAL"
-    override val stateSchema = SigStateSchema {
-        enum("aspect", listOf("VL", "A", "S", "C"))
-    }
-    override val settingsSchema = SigSettingsSchema {
-        flag("Nf")
-    }
+    override val stateSchema = SigStateSchema { enum("aspect", listOf("VL", "A", "S", "C")) }
+    override val settingsSchema = SigSettingsSchema { flag("Nf") }
     override val isBlockDelimiterExpr = "true"
 
     override fun checkBlock(reporter: BlockDiagReporter, block: SigBlock) {

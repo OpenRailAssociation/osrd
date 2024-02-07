@@ -57,7 +57,6 @@ import fr.sncf.osrd.utils.units.OffsetList
 import fr.sncf.osrd.utils.units.Speed
 import kotlin.time.Duration
 
-
 class TrackNodeConfigDescriptor(
     val name: String,
     val portLink: Pair<TrackNodePortId, TrackNodePortId>,
@@ -170,7 +169,6 @@ class NeutralSection(
     val isAnnouncement: Boolean,
 )
 
-
 class RawInfraImpl(
     val trackNodePool: StaticPool<TrackNode, TrackNodeDescriptor>,
     val trackSectionPool: StaticPool<TrackSection, TrackSectionDescriptor>,
@@ -193,6 +191,7 @@ class RawInfraImpl(
 ) : RawInfra {
     override val trackNodes: StaticIdxSpace<TrackNode>
         get() = trackNodePool.space()
+
     override val trackSections: StaticIdxSpace<TrackSection>
         get() = trackSectionPool.space()
 
@@ -228,15 +227,21 @@ class RawInfraImpl(
         return trackChunkPool[trackChunk].track
     }
 
-    override fun getTrackChunkOperationalPointParts(trackChunk: TrackChunkId): StaticIdxList<OperationalPointPart> {
+    override fun getTrackChunkOperationalPointParts(
+        trackChunk: TrackChunkId
+    ): StaticIdxList<OperationalPointPart> {
         return trackChunkPool[trackChunk].operationalPointParts
     }
 
-    override fun getOperationalPointPartChunk(operationalPoint: OperationalPointPartId): TrackChunkId {
+    override fun getOperationalPointPartChunk(
+        operationalPoint: OperationalPointPartId
+    ): TrackChunkId {
         return operationalPointPartPool[operationalPoint].chunk
     }
 
-    override fun getOperationalPointPartChunkOffset(operationalPoint: OperationalPointPartId): Offset<TrackChunk> {
+    override fun getOperationalPointPartChunkOffset(
+        operationalPoint: OperationalPointPartId
+    ): Offset<TrackChunk> {
         return operationalPointPartPool[operationalPoint].chunkOffset
     }
 
@@ -260,23 +265,33 @@ class RawInfraImpl(
         return trackChunkPool[trackChunk.value].gradients.get(trackChunk.direction)
     }
 
-    override fun getTrackChunkLoadingGaugeConstraints(trackChunk: TrackChunkId): DistanceRangeMap<LoadingGaugeConstraint> {
+    override fun getTrackChunkLoadingGaugeConstraints(
+        trackChunk: TrackChunkId
+    ): DistanceRangeMap<LoadingGaugeConstraint> {
         return trackChunkPool[trackChunk].loadingGaugeConstraints
     }
 
-    override fun getTrackChunkElectrificationVoltage(trackChunk: TrackChunkId): DistanceRangeMap<String> {
+    override fun getTrackChunkElectrificationVoltage(
+        trackChunk: TrackChunkId
+    ): DistanceRangeMap<String> {
         return trackChunkPool[trackChunk].electrificationVoltage
     }
 
-    override fun getTrackChunkNeutralSections(trackChunk: DirTrackChunkId): DistanceRangeMap<NeutralSection> {
+    override fun getTrackChunkNeutralSections(
+        trackChunk: DirTrackChunkId
+    ): DistanceRangeMap<NeutralSection> {
         return trackChunkPool[trackChunk.value].neutralSections.get(trackChunk.direction)
     }
 
-    override fun getTrackChunkSpeedSections(trackChunk: DirTrackChunkId, trainTag: String?): DistanceRangeMap<Speed> {
+    override fun getTrackChunkSpeedSections(
+        trackChunk: DirTrackChunkId,
+        trainTag: String?
+    ): DistanceRangeMap<Speed> {
         val res = distanceRangeMapOf<Speed>()
         for (entry in trackChunkPool[trackChunk.value].speedSections.get(trackChunk.direction)) {
             val speedSection = entry.value
-            val allowedSpeed = speedSection.speedByTrainTag.getOrDefault(trainTag, speedSection.default)
+            val allowedSpeed =
+                speedSection.speedByTrainTag.getOrDefault(trainTag, speedSection.default)
             res.put(entry.lower, entry.upper, allowedSpeed)
         }
         return res
@@ -299,30 +314,28 @@ class RawInfraImpl(
 
     init {
         // initialize the zone detector map
-        for (zone in zonePool)
-            zoneDetectors[zone] = mutableListOf()
+        for (zone in zonePool) zoneDetectors[zone] = mutableListOf()
         for (detector in detectorPool) {
             val nextZone = getNextZone(detector.increasing)
-            if (nextZone != null)
-                zoneDetectors[nextZone]!!.add(detector.increasing)
+            if (nextZone != null) zoneDetectors[nextZone]!!.add(detector.increasing)
             val prevZone = getNextZone(detector.decreasing)
-            if (prevZone != null)
-                zoneDetectors[prevZone]!!.add(detector.decreasing)
+            if (prevZone != null) zoneDetectors[prevZone]!!.add(detector.decreasing)
         }
 
         // initialize zone names
         for (zone in zonePool) {
-            val name = getZoneBounds(zone)
-                .sortedBy { id -> id.index }
-                .map { "${getDetectorName(it.value)}:${it.direction}" }
+            val name =
+                getZoneBounds(zone)
+                    .sortedBy { id -> id.index }
+                    .map { "${getDetectorName(it.value)}:${it.direction}" }
             zonePool[zone].name = "zone.${name}"
             zoneNameMap[zonePool[zone].name] = zone
         }
 
         // initialize the physical signal to logical signal map
-        for (physicalSignal in physicalSignalPool)
-            for (child in physicalSignalPool[physicalSignal].logicalSignals)
-                parentSignalMap[child] = physicalSignal
+        for (physicalSignal in physicalSignalPool) for (child in
+            physicalSignalPool[physicalSignal].logicalSignals) parentSignalMap[child] =
+            physicalSignal
     }
 
     override fun getTrackNodeConfigs(trackNode: TrackNodeId): StaticIdxSpace<TrackNodeConfig> {
@@ -339,10 +352,8 @@ class RawInfraImpl(
         entryPort: TrackNodePortId
     ): OptStaticIdx<TrackNodePort> {
         val ports = trackNodePool[trackNode].configs[config].portLink
-        if (ports.first == entryPort)
-            return OptStaticIdx(ports.second.index)
-        if (ports.second == entryPort)
-            return OptStaticIdx(ports.first.index)
+        if (ports.first == entryPort) return OptStaticIdx(ports.second.index)
+        if (ports.second == entryPort) return OptStaticIdx(ports.first.index)
         return OptStaticIdx()
     }
 
@@ -350,10 +361,7 @@ class RawInfraImpl(
         return trackNodePool[trackNode].delay
     }
 
-    override fun getTrackNodeConfigName(
-        trackNode: TrackNodeId,
-        config: TrackNodeConfigId
-    ): String {
+    override fun getTrackNodeConfigName(trackNode: TrackNodeId, config: TrackNodeConfigId): String {
         return trackNodePool[trackNode].configs[config].name
     }
 
@@ -395,20 +403,19 @@ class RawInfraImpl(
         return detectorPool[det]
     }
 
-    override fun getNextTrackSection(currentTrack: DirTrackSectionId, config: TrackNodeConfigId): OptDirTrackSectionId {
+    override fun getNextTrackSection(
+        currentTrack: DirTrackSectionId,
+        config: TrackNodeConfigId
+    ): OptDirTrackSectionId {
         val currentPort = getNextTrackNodePort(currentTrack)
-        if (currentPort.isNone)
-            return OptDirTrackSectionId()
+        if (currentPort.isNone) return OptDirTrackSectionId()
         val optTrackNode = getNextTrackNode(currentTrack)
         assert(!optTrackNode.isNone)
         val trackNode = optTrackNode.asIndex()
         val nextPort = getTrackNodeExitPort(trackNode, config, currentPort.asIndex())
-        if (nextPort.isNone)
-            return OptDirTrackSectionId()
+        if (nextPort.isNone) return OptDirTrackSectionId()
         val nextEndpoint = trackNodePool[trackNode].ports[nextPort.asIndex()]
-        return OptDirTrackSectionId(
-            nextEndpoint.value, nextEndpoint.endpoint.directionAway
-        )
+        return OptDirTrackSectionId(nextEndpoint.value, nextEndpoint.endpoint.directionAway)
     }
 
     override fun getNextTrackNode(trackSection: DirTrackSectionId): OptStaticIdx<TrackNode> {
@@ -416,21 +423,24 @@ class RawInfraImpl(
         return OptStaticIdx(res.index)
     }
 
-    override fun getNextTrackNodePort(trackSection: DirTrackSectionId): OptStaticIdx<TrackNodePort> {
+    override fun getNextTrackNodePort(
+        trackSection: DirTrackSectionId
+    ): OptStaticIdx<TrackNodePort> {
         val node = getNextTrackNode(trackSection)
-        if (node.isNone)
-            return OptStaticIdx()
+        if (node.isNone) return OptStaticIdx()
         val nodeDescriptor = trackNodePool[node.asIndex()]
         val trackEndpoint = trackSection.toEndpoint
         for (i in 0u until nodeDescriptor.ports.size) {
             val id = StaticIdx<TrackNodePort>(i)
-            if (nodeDescriptor.ports[id] == trackEndpoint)
-                return OptStaticIdx(id.index)
+            if (nodeDescriptor.ports[id] == trackEndpoint) return OptStaticIdx(id.index)
         }
         return OptStaticIdx()
     }
 
-    override fun getPortConnection(trackNode: TrackNodeId, port: TrackNodePortId): EndpointTrackSectionId {
+    override fun getPortConnection(
+        trackNode: TrackNodeId,
+        port: TrackNodePortId
+    ): EndpointTrackSectionId {
         return trackNodePool[trackNode].ports[port]
     }
 
@@ -456,6 +466,7 @@ class RawInfraImpl(
 
     override val physicalSignals: StaticIdxSpace<PhysicalSignal>
         get() = physicalSignalPool.space()
+
     override val logicalSignals: StaticIdxSpace<LogicalSignal>
         get() = logicalSignalPool.space()
 
@@ -515,7 +526,9 @@ class RawInfraImpl(
         return zonePathPool[zonePath].movableElements
     }
 
-    override fun getZonePathMovableElementsConfigs(zonePath: ZonePathId): StaticIdxList<TrackNodeConfig> {
+    override fun getZonePathMovableElementsConfigs(
+        zonePath: ZonePathId
+    ): StaticIdxList<TrackNodeConfig> {
         return zonePathPool[zonePath].movableElementsConfigs
     }
 
@@ -529,7 +542,6 @@ class RawInfraImpl(
 
     override val routes: StaticIdxSpace<Route>
         get() = routeDescriptors.space()
-
 
     override fun getRoutePath(route: RouteId): StaticIdxList<ZonePath> {
         return routeDescriptors[route].path

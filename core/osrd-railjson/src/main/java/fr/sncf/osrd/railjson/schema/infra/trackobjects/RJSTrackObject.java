@@ -7,5 +7,6 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 public abstract class RJSTrackObject {
     /** Position from the beginning of the RJSTrackSection */
     public double position;
+
     public String track;
 }

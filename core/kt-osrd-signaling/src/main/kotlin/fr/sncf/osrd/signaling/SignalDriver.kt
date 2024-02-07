@@ -2,13 +2,14 @@ package fr.sncf.osrd.signaling
 
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.utils.units.Distance
-import fr.sncf.osrd.utils.units.DistanceList
 import fr.sncf.osrd.utils.units.OffsetList
 import fr.sncf.osrd.utils.units.Speed
 
-
 enum class ProtectionStatus {
-    /** The signal does not directly protect zones. Only used for distant signals in some signaling systems */
+    /**
+     * The signal does not directly protect zones. Only used for distant signals in some signaling
+     * systems
+     */
     NO_PROTECTED_ZONES,
 
     /** The zones protected by the signal are ready to be used */
@@ -20,7 +21,6 @@ enum class ProtectionStatus {
     /** The zones protected by the signal are incompatible, and could also be occupied. */
     INCOMPATIBLE,
 }
-
 
 interface MovementAuthorityView {
     /** Combined status of the zones protected by the current signal */
@@ -66,6 +66,7 @@ interface SignalDriver {
     val name: String
     val inputSignalingSystem: String
     val outputSignalingSystem: String
+
     fun evalSignal(
         signal: SigSettings,
         stateSchema: SigStateSchema,
@@ -79,6 +80,7 @@ interface SignalDriver {
 
 interface BlockDiagReporter {
     fun reportBlock(errorType: String)
+
     fun reportSignal(sigIndex: Int, errorType: String)
 }
 

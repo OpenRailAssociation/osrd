@@ -3,7 +3,6 @@ package fr.sncf.osrd.infra.reservation;
 import static fr.sncf.osrd.infra.InfraHelpers.testTinyInfraDiDetectorGraph;
 import static org.junit.jupiter.api.Assertions.*;
 
-import fr.sncf.osrd.utils.Helpers;
 import fr.sncf.osrd.infra.api.Direction;
 import fr.sncf.osrd.infra.api.reservation.ReservationInfra;
 import fr.sncf.osrd.infra.api.tracks.undirected.SwitchBranch;
@@ -12,6 +11,7 @@ import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection;
 import fr.sncf.osrd.reporting.exceptions.ErrorType;
 import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl;
+import fr.sncf.osrd.utils.Helpers;
 import org.junit.jupiter.api.Test;
 
 public class ReservationInfraTests {
@@ -39,13 +39,10 @@ public class ReservationInfraTests {
                     continue;
                 }
                 double trackOffset;
-                if (offset > 0)
-                    trackOffset = -offset;
+                if (offset > 0) trackOffset = -offset;
                 else {
-                    if (range.track.getDirection().equals(Direction.FORWARD))
-                        trackOffset = range.begin;
-                    else
-                        trackOffset = range.track.getEdge().getLength() - range.end;
+                    if (range.track.getDirection().equals(Direction.FORWARD)) trackOffset = range.begin;
+                    else trackOffset = range.track.getEdge().getLength() - range.end;
                 }
                 var set = map.get(range.track);
                 assertTrue(set.contains(new ReservationInfra.RouteEntry(route, trackOffset)));
@@ -61,10 +58,7 @@ public class ReservationInfraTests {
             if (route.getID().equals("rt.tde.foo_b-switch_foo->buffer_stop_c"))
                 route.switchesDirections.remove("il.switch_foo");
         var wr = new DiagnosticRecorderImpl(false);
-        var thrown = assertThrows(
-                OSRDError.class,
-                () -> ReservationInfraBuilder.fromRJS(rjsInfra, wr)
-        );
+        var thrown = assertThrows(OSRDError.class, () -> ReservationInfraBuilder.fromRJS(rjsInfra, wr));
         assertEquals(thrown.osrdErrorType, ErrorType.InvalidInfraDiscontinuousRoute);
         assertTrue(wr.warnings.isEmpty());
     }
@@ -76,10 +70,7 @@ public class ReservationInfraTests {
             if (route.getID().equals("rt.tde.foo_b-switch_foo->buffer_stop_c"))
                 route.entryPointDirection = EdgeDirection.STOP_TO_START;
         var wr = new DiagnosticRecorderImpl(false);
-        var thrown = assertThrows(
-                OSRDError.class,
-                () -> ReservationInfraBuilder.fromRJS(rjsInfra, wr)
-        );
+        var thrown = assertThrows(OSRDError.class, () -> ReservationInfraBuilder.fromRJS(rjsInfra, wr));
         assertEquals(thrown.osrdErrorType, ErrorType.InvalidInfraDiscontinuousRoute);
 
         assertTrue(wr.warnings.isEmpty());

@@ -1,18 +1,23 @@
 package fr.sncf.osrd.fast_collections.generator.collections
 
-import fr.sncf.osrd.fast_collections.generator.*
 import com.google.devtools.ksp.processing.Dependencies
 import com.google.devtools.ksp.symbol.KSFile
+import fr.sncf.osrd.fast_collections.generator.*
 import java.util.*
-
 
 private fun CollectionItemType.generateInterfaces(context: GeneratorContext, currentFile: KSFile) {
     val simpleName = type.simpleName
     val paramsDecl = type.paramsDecl
     val paramsUse = type.paramsUse
     val fileName = "${simpleName}CollectionInterfaces"
-    val file = context.codeGenerator.createNewFile(Dependencies(true, currentFile), generatedPackage, fileName)
-    file.appendText("""
+    val file =
+        context.codeGenerator.createNewFile(
+            Dependencies(true, currentFile),
+            generatedPackage,
+            fileName
+        )
+    file.appendText(
+        """
             @file:OptIn(ExperimentalUnsignedTypes::class)
 
             /** GENERATED CODE */
@@ -67,7 +72,9 @@ private fun CollectionItemType.generateInterfaces(context: GeneratorContext, cur
                 fun addAll(iterable: Iterable<${type}>): Boolean
                 fun remove(value: ${type}): Boolean
             }
-        """.trimIndent())
+        """
+            .trimIndent()
+    )
     file.close()
 }
 
@@ -76,7 +83,12 @@ class InterfacesGenerator {
         override val generatorId = "Interfaces"
         /// A list of generators that should also run
         override val dependencies: Array<String> = arrayOf()
-        override fun generate(context: GeneratorContext, currentFile: KSFile, itemType: CollectionItemType) {
+
+        override fun generate(
+            context: GeneratorContext,
+            currentFile: KSFile,
+            itemType: CollectionItemType
+        ) {
             itemType.generateInterfaces(context, currentFile)
         }
     }

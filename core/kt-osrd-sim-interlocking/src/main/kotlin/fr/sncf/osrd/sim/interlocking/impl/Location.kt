@@ -14,27 +14,18 @@ fun locationSim(infra: LocationInfra): LocationSim {
 }
 
 internal class LocationSimImpl(infra: LocationInfra) : LocationSim {
-    private val states = infra.zones.map {
-        MutableStateFlow(MutableDynIdxArraySet<Train>().readOnlyClone())
-    }
+    private val states =
+        infra.zones.map { MutableStateFlow(MutableDynIdxArraySet<Train>().readOnlyClone()) }
 
     override fun watchZoneOccupation(zone: StaticIdx<Zone>): StateFlow<ZoneOccupation> {
         return states[zone.index]
     }
 
     override suspend fun enterZone(zone: StaticIdx<Zone>, train: DynIdx<Train>) {
-        states[zone.index].update { lastState ->
-            lastState.update {
-                add(train)
-            }
-        }
+        states[zone.index].update { lastState -> lastState.update { add(train) } }
     }
 
     override suspend fun leaveZone(zone: StaticIdx<Zone>, train: DynIdx<Train>) {
-        states[zone.index].update { lastState ->
-            lastState.update {
-                remove(train)
-            }
-        }
+        states[zone.index].update { lastState -> lastState.update { remove(train) } }
     }
 }

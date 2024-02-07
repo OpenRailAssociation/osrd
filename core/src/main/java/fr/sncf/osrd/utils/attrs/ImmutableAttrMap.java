@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-
 public class ImmutableAttrMap<B> extends BaseAttrMap<B> {
     private ImmutableAttrMap(ImmutableMap<Attr<? extends B>, B> map) {
         super(map);
@@ -50,8 +49,7 @@ public class ImmutableAttrMap<B> extends BaseAttrMap<B> {
         /** Creates an immutable attribute map */
         public ImmutableAttrMap<B> build() {
             var map = mapBuilder.buildOrThrow();
-            if (map.isEmpty())
-                return of();
+            if (map.isEmpty()) return of();
             return new ImmutableAttrMap<B>(map);
         }
     }

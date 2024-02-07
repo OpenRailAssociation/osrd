@@ -5,7 +5,6 @@
     toPrimitive = "%s.millimeters",
     collections = ["Array", "ArrayList", "RingBuffer"],
 )
-
 @file:PrimitiveWrapperCollections(
     wrapper = Offset::class,
     primitive = Long::class,
@@ -21,8 +20,12 @@ import kotlin.math.absoluteValue
 
 @JvmInline
 value class Distance(val millimeters: Long) : Comparable<Distance> {
-    val absoluteValue get() = Distance(millimeters.absoluteValue)
-    val meters get() = millimeters / 1000.0
+    val absoluteValue
+        get() = Distance(millimeters.absoluteValue)
+
+    val meters
+        get() = millimeters / 1000.0
+
     operator fun plus(value: Distance): Distance {
         return Distance(millimeters + value.millimeters)
     }
@@ -32,17 +35,22 @@ value class Distance(val millimeters: Long) : Comparable<Distance> {
     }
 
     companion object {
-        @JvmStatic
-        val ZERO = Distance(millimeters = 0L)
+        @JvmStatic val ZERO = Distance(millimeters = 0L)
+
         @JvmStatic
         @JvmName("fromMeters")
         fun fromMeters(meters: Double) = Distance(millimeters = (Math.round(meters * 1_000.0)))
+
         @JvmStatic
         @JvmName("toMeters")
-        fun toMeters(distance: Distance) = distance.meters // Only meant to be used in java, for compatibility
+        fun toMeters(distance: Distance) =
+            distance.meters // Only meant to be used in java, for compatibility
 
-        fun min(a: Distance, b: Distance) = Distance(millimeters = a.millimeters.coerceAtMost(b.millimeters))
-        fun max(a: Distance, b: Distance) = Distance(millimeters = a.millimeters.coerceAtLeast(b.millimeters))
+        fun min(a: Distance, b: Distance) =
+            Distance(millimeters = a.millimeters.coerceAtMost(b.millimeters))
+
+        fun max(a: Distance, b: Distance) =
+            Distance(millimeters = a.millimeters.coerceAtLeast(b.millimeters))
     }
 
     override fun compareTo(other: Distance): Int {
@@ -57,16 +65,15 @@ value class Distance(val millimeters: Long) : Comparable<Distance> {
     override fun toString(): String {
         val meters = millimeters / 1000
         val decimal = (millimeters % 1000).absoluteValue
-        if (decimal == 0L)
-            return String.format("%sm", meters)
-        else
-            return String.format("%s.%sm", meters, decimal)
+        if (decimal == 0L) return String.format("%sm", meters)
+        else return String.format("%s.%sm", meters, decimal)
     }
 }
 
-val Double.meters: Distance get() = Distance.fromMeters(this)
-val Int.meters: Distance get() = Distance(this.toLong() * 1000)
-
+val Double.meters: Distance
+    get() = Distance.fromMeters(this)
+val Int.meters: Distance
+    get() = Distance(this.toLong() * 1000)
 
 @JvmInline
 value class Offset<T>(val distance: Distance) : Comparable<Offset<T>> {
@@ -90,12 +97,15 @@ value class Offset<T>(val distance: Distance) : Comparable<Offset<T>> {
         return distance.toString()
     }
 
-    /** Utility function to convert an offset type to another.
-     * It still needs to be called explicitly, but avoids verbose syntaxes on conversions */
+    /**
+     * Utility function to convert an offset type to another. It still needs to be called
+     * explicitly, but avoids verbose syntaxes on conversions
+     */
     fun <U> cast(): Offset<U> = Offset(distance)
 
     companion object {
         fun <T> min(a: Offset<T>, b: Offset<T>) = Offset<T>(Distance.min(a.distance, b.distance))
+
         fun <T> max(a: Offset<T>, b: Offset<T>) = Offset<T>(Distance.max(a.distance, b.distance))
     }
 }

@@ -20,8 +20,10 @@ public class BrakingPhaseCoast implements CoastingOpportunity {
 
     @Override
     public EnvelopePart compute(Envelope base, EnvelopeSimContext context, double v1, double vf) {
-        // coast backwards from the last point of braking phases above vf. forbid going below vf, continue until
-        // an intersection with the base is found. if vf was reached or no intersection was found until the starting
+        // coast backwards from the last point of braking phases above vf. forbid going below vf,
+        // continue until
+        // an intersection with the base is found. if vf was reached or no intersection was found
+        // until the starting
         // point, coast forwards from the intersection / starting point.
         return CoastingGenerator.coastFromEnd(base, context, endPos, vf);
     }
@@ -30,20 +32,18 @@ public class BrakingPhaseCoast implements CoastingOpportunity {
     public static ArrayList<BrakingPhaseCoast> findAll(Envelope envelope, double v1, double vf) {
         var res = new ArrayList<BrakingPhaseCoast>();
         for (var part : envelope) {
-            if (!part.hasAttr(EnvelopeProfile.BRAKING))
-                continue;
+            if (!part.hasAttr(EnvelopeProfile.BRAKING)) continue;
             double targetSpeed = part.getEndSpeed();
-            // if that LimitAnnounceSpeedController is above v1 that means it will not have an impact here
-            if (targetSpeed > v1)
-                continue;
+            // if that LimitAnnounceSpeedController is above v1 that means it will not have an
+            // impact here
+            if (targetSpeed > v1) continue;
             // deceleration phases that are entirely above vf
             if (targetSpeed > vf) {
                 res.add(new BrakingPhaseCoast(part.getEndPos()));
                 continue;
             }
             // deceleration phases that cross vf
-            if (part.getMaxSpeed() > vf)
-                res.add(new BrakingPhaseCoast(part.interpolatePosition(vf)));
+            if (part.getMaxSpeed() > vf) res.add(new BrakingPhaseCoast(part.interpolatePosition(vf)));
         }
         return res;
     }

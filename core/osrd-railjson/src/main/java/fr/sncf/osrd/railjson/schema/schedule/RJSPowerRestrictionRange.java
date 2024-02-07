@@ -12,11 +12,7 @@ public class RJSPowerRestrictionRange {
     @Json(name = "power_restriction_code")
     public String powerRestrictionCode;
 
-    public RJSPowerRestrictionRange(
-            double beginPosition,
-            double endPosition,
-            String powerRestrictionCode
-    ) {
+    public RJSPowerRestrictionRange(double beginPosition, double endPosition, String powerRestrictionCode) {
         this.beginPosition = beginPosition;
         this.endPosition = endPosition;
         this.powerRestrictionCode = powerRestrictionCode;

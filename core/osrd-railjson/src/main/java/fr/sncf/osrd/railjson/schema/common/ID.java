@@ -26,11 +26,9 @@ public final class ID<T extends Identified> {
     @Override
     @ExcludeFromGeneratedCodeCoverage
     public boolean equals(Object obj) {
-        if (obj == null)
-            return false;
+        if (obj == null) return false;
 
-        if (obj.getClass() != ID.class)
-            return false;
+        if (obj.getClass() != ID.class) return false;
 
         var o = (ID<?>) obj;
         return id.equals(o.id);
@@ -44,13 +42,12 @@ public final class ID<T extends Identified> {
         private JsonAdapter<?> factory(Type type, Set<? extends Annotation> annotations, Moshi moshi) {
             // the raw type is the one without a type parameter
             Class<?> rawType = Types.getRawType(type);
-            if (!annotations.isEmpty())
-                return null;
+            if (!annotations.isEmpty()) return null;
 
-            // if the type of the objects to adapt isn't something the factory can produce adapters for,
+            // if the type of the objects to adapt isn't something the factory can produce adapters
+            // for,
             // return null to tell the frame
-            if (rawType != ID.class)
-                return null;
+            if (rawType != ID.class) return null;
 
             return this;
         }
@@ -62,10 +59,8 @@ public final class ID<T extends Identified> {
 
         @Override
         public void toJson(@NonNull JsonWriter writer, ID<T> value) throws IOException {
-            if (value != null)
-                writer.value(value.id);
-            else
-                writer.nullValue();
+            if (value != null) writer.value(value.id);
+            else writer.nullValue();
         }
     }
 }

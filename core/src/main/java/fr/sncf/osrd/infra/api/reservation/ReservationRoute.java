@@ -12,7 +12,10 @@ public interface ReservationRoute {
     /** Returns the path the route takes in the detector graph */
     ImmutableList<DiDetector> getDetectorPath();
 
-    /** Returns the points of the detector path at which the previous detection sections shall be released */
+    /**
+     * Returns the points of the detector path at which the previous detection sections shall be
+     * released
+     */
     ImmutableList<Detector> getReleasePoints();
 
     /** Returns the list of conflicting routes */
@@ -21,8 +24,10 @@ public interface ReservationRoute {
     /** Returns the list of track ranges on the route */
     ImmutableList<TrackRangeView> getTrackRanges();
 
-    /** Returns the list of track ranges on the route from begin offset to end offset
-     * (relative to the start of the route) */
+    /**
+     * Returns the list of track ranges on the route from begin offset to end offset (relative to
+     * the start of the route)
+     */
     ImmutableList<TrackRangeView> getTrackRanges(double beginOffset, double endOffset);
 
     /** Returns the route length (m) */

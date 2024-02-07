@@ -2,7 +2,6 @@ package fr.sncf.osrd.envelope;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-
 public class EnvelopeTransitions {
     /** Validates the position and space continuity of envelope part transitions */
     public static void checkPositions(Envelope envelope, double delta, double... expectedTransitions) {

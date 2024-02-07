@@ -1,10 +1,10 @@
 package fr.sncf.osrd.envelope;
 
-import fr.sncf.osrd.envelope_utils.SwingUtils;
 import fr.sncf.osrd.envelope_utils.ExcludeFromGeneratedCodeCoverage;
-import org.math.plot.Plot2DPanel;
-import javax.swing.*;
+import fr.sncf.osrd.envelope_utils.SwingUtils;
 import java.util.ArrayList;
+import javax.swing.*;
+import org.math.plot.Plot2DPanel;
 
 @ExcludeFromGeneratedCodeCoverage
 public class EnvelopeDebug {
@@ -19,11 +19,7 @@ public class EnvelopeDebug {
     }
 
     private static void plotEnvelopeSpaceTime(
-            Plot2DPanel plot,
-            Envelope envelope,
-            String envelopeName,
-            double startTime
-    ) {
+            Plot2DPanel plot, Envelope envelope, String envelopeName, double startTime) {
         for (int i = 0; i < envelope.size(); i++) {
             var lineName = String.format("%s.parts[%d]", envelopeName, i);
             var part = envelope.get(i);
@@ -40,8 +36,8 @@ public class EnvelopeDebug {
         // workaround https://github.com/yannrichet/jmathplot/issues/5
         assert xs.length == ys.length;
         if (xs.length == 2) {
-            var newXs = new double[] { xs[0], ys[0] };
-            var newYs = new double[] { xs[1], ys[1] };
+            var newXs = new double[] {xs[0], ys[0]};
+            var newYs = new double[] {xs[1], ys[1]};
             xs = newXs;
             ys = newYs;
         }
@@ -64,7 +60,9 @@ public class EnvelopeDebug {
         SwingUtils.debugPanel("Envelope", () -> plotPanel(envelope));
     }
 
-    /** Enables showing multiple envelopes on the same graph:
+    /**
+     * Enables showing multiple envelopes on the same graph:
+     *
      * <pre>
      *   EnvelopeDebug.plotBuilder()
      *           .add(doubleCappedEnvelope, "double_capped")
@@ -100,13 +98,15 @@ public class EnvelopeDebug {
         public void plot() {
             SwingUtils.debugPanel("Envelope", () -> {
                 var plot = new Plot2DPanel();
-                for (int i = 0; i < envelopes.size(); i++)
-                    plotEnvelope(plot, envelopes.get(i), names.get(i));
+                for (int i = 0; i < envelopes.size(); i++) plotEnvelope(plot, envelopes.get(i), names.get(i));
                 return plot;
             });
         }
 
-        /** Build and show the plot, showing time on the horizontal axis and position on the vertical axis */
+        /**
+         * Build and show the plot, showing time on the horizontal axis and position on the vertical
+         * axis
+         */
         public void plotSpaceTime() {
             SwingUtils.debugPanel("Envelope", () -> {
                 var plot = new Plot2DPanel();

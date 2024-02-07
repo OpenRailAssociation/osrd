@@ -6,25 +6,22 @@ import fr.sncf.osrd.external_generated_inputs.ElectricalProfileMapping;
 import fr.sncf.osrd.railjson.schema.external_generated_inputs.RJSElectricalProfileSet;
 import fr.sncf.osrd.reporting.exceptions.ErrorType;
 import fr.sncf.osrd.reporting.exceptions.OSRDError;
+import java.io.IOException;
+import java.util.concurrent.ConcurrentHashMap;
 import okhttp3.OkHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.io.IOException;
-import java.util.concurrent.ConcurrentHashMap;
 
 /** Manager that fetches and stores the different electrical profile sets used. */
 public class ElectricalProfileSetManager extends APIClient {
-    protected final ConcurrentHashMap<String, CacheEntry> cache =
-            new ConcurrentHashMap<>();
+    protected final ConcurrentHashMap<String, CacheEntry> cache = new ConcurrentHashMap<>();
     private static final Logger logger = LoggerFactory.getLogger(ElectricalProfileSetManager.class);
 
     public ElectricalProfileSetManager(String baseUrl, String authorizationToken, OkHttpClient client) {
         super(baseUrl, authorizationToken, client);
     }
 
-    /**
-     * Get the electrical profile set with the given ID and store it in the cacheEntry.
-     */
+    /** Get the electrical profile set with the given ID and store it in the cacheEntry. */
     private void downloadSet(CacheEntry cacheEntry, String profileSetId) {
         try {
             logger.info("Electrical profile set {} is not cached", profileSetId);
@@ -35,17 +32,14 @@ public class ElectricalProfileSetManager extends APIClient {
             cacheEntry.setStatus(CacheStatus.DOWNLOADING);
             RJSElectricalProfileSet rjsProfileSet;
             try (var response = httpClient.newCall(request).execute()) {
-                if (!response.isSuccessful())
-                    throw new UnexpectedHttpResponse(response);
+                if (!response.isSuccessful()) throw new UnexpectedHttpResponse(response);
                 var body = response.body();
-                if (body == null)
-                    throw new JsonDataException("empty response body");
+                if (body == null) throw new JsonDataException("empty response body");
                 logger.info("Electrical profile set {} fetched, parsing it to json", profileSetId);
                 cacheEntry.setStatus(CacheStatus.PARSING_JSON);
                 rjsProfileSet = RJSElectricalProfileSet.adapter.fromJson(body.source());
             }
-            if (rjsProfileSet == null)
-                throw new JsonDataException("Empty electrical profile set JSON");
+            if (rjsProfileSet == null) throw new JsonDataException("Empty electrical profile set JSON");
 
             logger.info("Parsing electrical profile set {} into model", profileSetId);
             cacheEntry.setStatus(CacheStatus.PARSING_MODEL);
@@ -77,20 +71,19 @@ public class ElectricalProfileSetManager extends APIClient {
         var cacheEntry = cache.get(profileSetId);
 
         synchronized (cacheEntry) {
-            if (cacheEntry.status == CacheStatus.CACHED)
-                return cacheEntry.mapping;
+            if (cacheEntry.status == CacheStatus.CACHED) return cacheEntry.mapping;
             else if (cacheEntry.status == CacheStatus.ERROR)
                 throw OSRDError.newEPSetLoadingError(ErrorType.EPSetLoadingCacheException, null, profileSetId);
             else {
                 downloadSet(cacheEntry, profileSetId);
                 if (cacheEntry.status != CacheStatus.CACHED)
-                    // We should have raised exceptions before this point if the status is not CACHED
+                    // We should have raised exceptions before this point if the status is not
+                    // CACHED
                     throw OSRDError.newEPSetLoadingError(ErrorType.EPSetInvalidStatusAfterLoading, null, profileSetId);
                 return cacheEntry.mapping;
             }
         }
     }
-
 
     @SuppressFBWarnings("UWF_FIELD_NOT_INITIALIZED_IN_CONSTRUCTOR")
     protected static class CacheEntry {
@@ -122,19 +115,17 @@ public class ElectricalProfileSetManager extends APIClient {
         private CacheStatus[] transitions;
 
         boolean canTransitionTo(CacheStatus newStatus) {
-            for (var status : transitions)
-                if (status == newStatus)
-                    return true;
+            for (var status : transitions) if (status == newStatus) return true;
             return false;
         }
 
         static {
-            INITIALIZING.transitions = new CacheStatus[] { DOWNLOADING };
-            DOWNLOADING.transitions = new CacheStatus[] { PARSING_JSON, ERROR, TRANSIENT_ERROR };
-            PARSING_JSON.transitions = new CacheStatus[] { PARSING_MODEL, ERROR, TRANSIENT_ERROR };
-            PARSING_MODEL.transitions = new CacheStatus[] { CACHED, ERROR, TRANSIENT_ERROR };
+            INITIALIZING.transitions = new CacheStatus[] {DOWNLOADING};
+            DOWNLOADING.transitions = new CacheStatus[] {PARSING_JSON, ERROR, TRANSIENT_ERROR};
+            PARSING_JSON.transitions = new CacheStatus[] {PARSING_MODEL, ERROR, TRANSIENT_ERROR};
+            PARSING_MODEL.transitions = new CacheStatus[] {CACHED, ERROR, TRANSIENT_ERROR};
             // at the next try
-            TRANSIENT_ERROR.transitions = new CacheStatus[] { DOWNLOADING };
+            TRANSIENT_ERROR.transitions = new CacheStatus[] {DOWNLOADING};
         }
     }
 }

@@ -4,15 +4,14 @@ private const val multiplier = 1000.0
 
 @JvmInline
 value class Speed(val millimetersPerSecond: ULong) {
-    val metersPerSecond get() = millimetersPerSecond.toDouble() / multiplier
+    val metersPerSecond
+        get() = millimetersPerSecond.toDouble() / multiplier
 
     override fun toString(): String {
         val metersPerSecond = millimetersPerSecond / multiplier.toUInt()
         val decimal = metersPerSecond % multiplier.toUInt()
-        if (decimal == 0UL)
-            return String.format("%sm/s", metersPerSecond)
-        else
-            return String.format("%s.%sm/s", metersPerSecond, decimal)
+        if (decimal == 0UL) return String.format("%sm/s", metersPerSecond)
+        else return String.format("%s.%sm/s", metersPerSecond, decimal)
     }
 
     companion object {
@@ -29,4 +28,5 @@ value class Speed(val millimetersPerSecond: ULong) {
     }
 }
 
-val Double.metersPerSecond: Distance get() = Distance(Math.round(this * multiplier))
+val Double.metersPerSecond: Distance
+    get() = Distance(Math.round(this * multiplier))

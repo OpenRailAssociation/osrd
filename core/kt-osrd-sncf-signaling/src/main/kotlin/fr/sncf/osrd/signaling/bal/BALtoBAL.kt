@@ -1,13 +1,12 @@
 package fr.sncf.osrd.signaling.bal
 
-import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.reporting.exceptions.ErrorType
+import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.signaling.*
 import fr.sncf.osrd.signaling.ProtectionStatus.*
 import fr.sncf.osrd.sim_infra.api.SigSettings
 import fr.sncf.osrd.sim_infra.api.SigState
 import fr.sncf.osrd.sim_infra.api.SigStateSchema
-
 
 object BALtoBAL : SignalDriver {
     override val name = "BAL-BAL"
@@ -34,17 +33,15 @@ object BALtoBAL : SignalDriver {
             when (maView!!.protectionStatus) {
                 NO_PROTECTED_ZONES -> throw OSRDError(ErrorType.BALUnprotectedZones)
                 INCOMPATIBLE -> {
-                    if (!signal.getFlag("Nf"))  // This can happen when doing partial simulation.
-                        value("aspect", "S") // We take the most restrictive available aspect
-                    else
-                        value("aspect", "C")
+                    if (!signal.getFlag("Nf")) // This can happen when doing partial simulation.
+                     value("aspect", "S") // We take the most restrictive available aspect
+                    else value("aspect", "C")
                 }
                 OCCUPIED -> value("aspect", "S")
                 CLEAR -> {
                     if (!maView.hasNextSignal) {
                         value("aspect", "A")
-                    }
-                    else {
+                    } else {
                         val nextSignalState = maView.nextSignalState
                         val nextAspect = nextSignalState.getEnum("aspect")
                         value("aspect", cascadePrimaryAspect(nextAspect))
@@ -54,6 +51,5 @@ object BALtoBAL : SignalDriver {
         }
     }
 
-    override fun checkSignal(reporter: SignalDiagReporter, signal: SigSettings, block: SigBlock) {
-    }
+    override fun checkSignal(reporter: SignalDiagReporter, signal: SigSettings, block: SigBlock) {}
 }

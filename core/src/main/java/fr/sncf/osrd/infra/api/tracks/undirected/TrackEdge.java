@@ -9,9 +9,7 @@ import fr.sncf.osrd.infra.api.Direction;
 import fr.sncf.osrd.sim_infra.api.LoadingGaugeConstraint;
 import java.util.EnumMap;
 
-/**
- * An undirected track edge, which can either be a branch of a switch, or a track section
- */
+/** An undirected track edge, which can either be a branch of a switch, or a track section */
 public sealed interface TrackEdge permits SwitchBranch, TrackSection {
     /** The physical length of the edge, in meters */
     double getLength();

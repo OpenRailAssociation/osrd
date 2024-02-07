@@ -1,7 +1,6 @@
 package fr.sncf.osrd.pathfinding
 
 import fr.sncf.osrd.api.ApiTest
-import fr.sncf.osrd.api.pathfinding.PathfindingBlocksEndpoint
 import fr.sncf.osrd.api.pathfinding.request.PathfindingWaypoint
 import fr.sncf.osrd.api.pathfinding.runPathfinding
 import fr.sncf.osrd.infra.api.Direction
@@ -12,6 +11,7 @@ import fr.sncf.osrd.sim_infra.api.RouteId
 import fr.sncf.osrd.sim_infra.impl.NeutralSection
 import fr.sncf.osrd.train.TestTrains
 import fr.sncf.osrd.utils.DummyInfra
+import java.util.stream.Stream
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Test
@@ -19,7 +19,6 @@ import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
-import java.util.stream.Stream
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class PathfindingElectrificationTest : ApiTest() {
@@ -40,27 +39,17 @@ class PathfindingElectrificationTest : ApiTest() {
         infra.addBlock("c1", "d")
         infra.addBlock("c2", "d")
         infra.addBlock("d", "e")
-        val waypointStart = PathfindingWaypoint(
-            "a->b",
-            0.0,
-            EdgeDirection.START_TO_STOP
-        )
-        val waypointEnd = PathfindingWaypoint(
-            "d->e",
-            100.0,
-            EdgeDirection.START_TO_STOP
-        )
+        val waypointStart = PathfindingWaypoint("a->b", 0.0, EdgeDirection.START_TO_STOP)
+        val waypointEnd = PathfindingWaypoint("d->e", 100.0, EdgeDirection.START_TO_STOP)
         val waypoints = Array(2) { Array(1) { waypointStart } }
         waypoints[1][0] = waypointEnd
 
         // Run a pathfinding with a non-electric train
-        val normalPath = runPathfinding(
-            infra.fullInfra(), waypoints, listOf(TestTrains.REALISTIC_FAST_TRAIN)
-        )
+        val normalPath =
+            runPathfinding(infra.fullInfra(), waypoints, listOf(TestTrains.REALISTIC_FAST_TRAIN))
         Assertions.assertNotNull(normalPath)
         assert(TestTrains.FAST_ELECTRIC_TRAIN.modeNames.contains("25000V"))
-        for (block in infra.blockPool)
-            block.voltage = "25000V"
+        for (block in infra.blockPool) block.voltage = "25000V"
 
         // Removes electrification in the section used by the normal train
         for (range in normalPath.ranges) {
@@ -70,34 +59,29 @@ class PathfindingElectrificationTest : ApiTest() {
         }
 
         // Run another pathfinding with an electric train
-        val electricPath = runPathfinding(
-            infra.fullInfra(),
-            waypoints,
-            listOf(TestTrains.FAST_ELECTRIC_TRAIN)
-        )
+        val electricPath =
+            runPathfinding(infra.fullInfra(), waypoints, listOf(TestTrains.FAST_ELECTRIC_TRAIN))
         Assertions.assertNotNull(electricPath)
 
         // We check that the path is different, we need to avoid the non-electrified track
-        val normalRoutes = normalPath.ranges.stream()
-            .map { range -> infra.getRouteName(RouteId(range.edge.index)) }
-            .toList()
-        val electrifiedRoutes = electricPath.ranges.stream()
-            .map { range -> infra.getRouteName(RouteId(range.edge.index)) }
-            .toList()
+        val normalRoutes =
+            normalPath.ranges
+                .stream()
+                .map { range -> infra.getRouteName(RouteId(range.edge.index)) }
+                .toList()
+        val electrifiedRoutes =
+            electricPath.ranges
+                .stream()
+                .map { range -> infra.getRouteName(RouteId(range.edge.index)) }
+                .toList()
         assertNotEquals(normalRoutes, electrifiedRoutes)
 
         // Remove all electrification
-        for (block in infra.blockPool)
-            block.voltage = ""
-        val exception = Assertions.assertThrows(
-            OSRDError::class.java
-        ) {
-            runPathfinding(
-                infra.fullInfra(),
-                waypoints,
-                listOf(TestTrains.FAST_ELECTRIC_TRAIN)
-            )
-        }
+        for (block in infra.blockPool) block.voltage = ""
+        val exception =
+            Assertions.assertThrows(OSRDError::class.java) {
+                runPathfinding(infra.fullInfra(), waypoints, listOf(TestTrains.FAST_ELECTRIC_TRAIN))
+            }
         Assertions.assertEquals(exception.osrdErrorType, ErrorType.PathfindingElectrificationError)
     }
 
@@ -112,27 +96,17 @@ class PathfindingElectrificationTest : ApiTest() {
         infra.addBlock("a", "b")
         val secondBlock = infra.addBlock("b", "c")
         infra.addBlock("c", "d")
-        val waypointStart = PathfindingWaypoint(
-            "a->b",
-            0.0,
-            EdgeDirection.START_TO_STOP
-        )
-        val waypointEnd = PathfindingWaypoint(
-            "c->d",
-            100.0,
-            EdgeDirection.START_TO_STOP
-        )
+        val waypointStart = PathfindingWaypoint("a->b", 0.0, EdgeDirection.START_TO_STOP)
+        val waypointEnd = PathfindingWaypoint("c->d", 100.0, EdgeDirection.START_TO_STOP)
         val waypoints = Array(2) { Array(1) { waypointStart } }
         waypoints[1][0] = waypointEnd
 
         // Run a pathfinding with a non-electric train
-        val normalPath = runPathfinding(
-            infra.fullInfra(), waypoints, listOf(TestTrains.REALISTIC_FAST_TRAIN)
-        )
+        val normalPath =
+            runPathfinding(infra.fullInfra(), waypoints, listOf(TestTrains.REALISTIC_FAST_TRAIN))
         Assertions.assertNotNull(normalPath)
         assert(TestTrains.FAST_ELECTRIC_TRAIN.modeNames.contains("25000V"))
-        for (block in infra.blockPool)
-            block.voltage = "25000V"
+        for (block in infra.blockPool) block.voltage = "25000V"
         if (!withElectrification) {
             // Remove electrification in the middle of the path
             infra.blockPool[secondBlock.index.toInt()].voltage = ""
@@ -146,39 +120,42 @@ class PathfindingElectrificationTest : ApiTest() {
                 infra.blockPool[secondBlock.index.toInt()].neutralSectionBackward =
                     NeutralSection(lowerPantograph = false, isAnnouncement = false)
         }
-        if (withElectrification || withNeutralSection && neutralSectionDirection == Direction.FORWARD) {
+        if (
+            withElectrification ||
+                withNeutralSection && neutralSectionDirection == Direction.FORWARD
+        ) {
             // Run another pathfinding with an electric train
-            val electricPath = runPathfinding(
-                infra.fullInfra(),
-                waypoints,
-                listOf(TestTrains.FAST_ELECTRIC_TRAIN)
-            )
+            val electricPath =
+                runPathfinding(infra.fullInfra(), waypoints, listOf(TestTrains.FAST_ELECTRIC_TRAIN))
             Assertions.assertNotNull(electricPath)
         } else {
-            val exception = Assertions.assertThrows(
-                OSRDError::class.java
-            ) {
-                runPathfinding(
-                    infra.fullInfra(),
-                    waypoints,
-                    listOf(TestTrains.FAST_ELECTRIC_TRAIN)
-                )
-            }
-            Assertions.assertEquals(exception.osrdErrorType, ErrorType.PathfindingElectrificationError)
+            val exception =
+                Assertions.assertThrows(OSRDError::class.java) {
+                    runPathfinding(
+                        infra.fullInfra(),
+                        waypoints,
+                        listOf(TestTrains.FAST_ELECTRIC_TRAIN)
+                    )
+                }
+            Assertions.assertEquals(
+                exception.osrdErrorType,
+                ErrorType.PathfindingElectrificationError
+            )
         }
     }
 
     companion object {
         @JvmStatic
         fun testNeutralSectionArgs(): Stream<Arguments> {
-            return Stream.of( // With electrification, with neutral section, neutral section direction
-                Arguments.of(true, true, Direction.FORWARD),
-                Arguments.of(true, true, Direction.BACKWARD),
-                Arguments.of(true, false, null),
-                Arguments.of(false, true, Direction.FORWARD),
-                Arguments.of(false, true, Direction.BACKWARD),
-                Arguments.of(false, false, null)
-            )
+            return Stream
+                .of( // With electrification, with neutral section, neutral section direction
+                    Arguments.of(true, true, Direction.FORWARD),
+                    Arguments.of(true, true, Direction.BACKWARD),
+                    Arguments.of(true, false, null),
+                    Arguments.of(false, true, Direction.FORWARD),
+                    Arguments.of(false, true, Direction.BACKWARD),
+                    Arguments.of(false, false, null)
+                )
         }
     }
 }

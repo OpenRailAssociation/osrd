@@ -7,24 +7,21 @@ import com.squareup.moshi.Types;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.api.InfraManager.InfraCacheEntry;
 import fr.sncf.osrd.api.InfraManager.InfraStatus;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import org.takes.Request;
 import org.takes.Response;
 import org.takes.Take;
 import org.takes.rq.RqPrint;
 import org.takes.rs.RsJson;
 import org.takes.rs.RsWithBody;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 public final class InfraCacheStatusEndpoint implements Take {
     private final InfraManager infraManager;
 
-    public static final JsonAdapter<InfraCacheRequest> adapterRequest = new Moshi
-            .Builder()
-            .build()
-            .adapter(InfraCacheRequest.class);
-
+    public static final JsonAdapter<InfraCacheRequest> adapterRequest =
+            new Moshi.Builder().build().adapter(InfraCacheRequest.class);
 
     public static final JsonAdapter<Map<String, SerializedInfraCache>> adapter;
 
@@ -52,8 +49,7 @@ public final class InfraCacheStatusEndpoint implements Take {
             if (infra != null) {
                 var request = adapterRequest.fromJson(body);
                 var infraCacheEntry = infraManager.getInfraCache(request.infra);
-                if (infraCacheEntry != null)
-                    res.put(request.infra, SerializedInfraCache.from(infraCacheEntry));
+                if (infraCacheEntry != null) res.put(request.infra, SerializedInfraCache.from(infraCacheEntry));
             } else {
                 infraManager.forEach((infraId, infraCacheEntry) -> {
                     res.put(infraId, SerializedInfraCache.from(infraCacheEntry));
@@ -79,21 +75,15 @@ public final class InfraCacheStatusEndpoint implements Take {
         }
 
         static SerializedInfraCache from(InfraCacheEntry entry) {
-            return new SerializedInfraCache(
-                    entry.status,
-                    entry.lastStatus);
+            return new SerializedInfraCache(entry.status, entry.lastStatus);
         }
     }
 
     public static final class InfraCacheRequest {
-        /**
-         * Infra id
-         */
+        /** Infra id */
         public String infra;
 
-        public InfraCacheRequest(
-                String infra
-        ) {
+        public InfraCacheRequest(String infra) {
             this.infra = infra;
         }
     }

@@ -2,24 +2,28 @@ package fr.sncf.osrd.utils.indexing
 
 interface ArenaMap<IndexT, ValueT> : BaseArena<IndexT> {
     operator fun get(id: DynIdx<IndexT>): ValueT
+
     fun update(updater: (MutableArenaMap<IndexT, ValueT>) -> Unit): ArenaMap<IndexT, ValueT>
+
     fun update(id: DynIdx<IndexT>, updater: (ValueT) -> ValueT): ArenaMap<IndexT, ValueT>
 }
 
 interface MutableArenaMap<IndexT, ValueT> : ArenaMap<IndexT, ValueT> {
     operator fun set(id: DynIdx<IndexT>, value: ValueT)
+
     fun allocate(value: ValueT): DynIdx<IndexT>
+
     fun release(id: DynIdx<IndexT>)
+
     fun clone(): MutableArenaMap<IndexT, ValueT>
 }
-
 
 fun <IndexT, ValueT> mutableArenaMap(): MutableArenaMap<IndexT, ValueT> {
     return MutableArenaMapImpl()
 }
 
-
-class MutableArenaMapImpl<IndexT, ValueT> : MutableBaseArenaImpl<IndexT>, MutableArenaMap<IndexT, ValueT> {
+class MutableArenaMapImpl<IndexT, ValueT> :
+    MutableBaseArenaImpl<IndexT>, MutableArenaMap<IndexT, ValueT> {
     var values: MutableList<ValueT?>
 
     private constructor(
@@ -47,8 +51,7 @@ class MutableArenaMapImpl<IndexT, ValueT> : MutableBaseArenaImpl<IndexT>, Mutabl
 
     constructor(initSize: Int) : super(initSize) {
         values = mutableListOf()
-        for (i in 0 until initSize)
-            values.add(null)
+        for (i in 0 until initSize) values.add(null)
     }
 
     constructor() : this(10)
@@ -69,8 +72,7 @@ class MutableArenaMapImpl<IndexT, ValueT> : MutableBaseArenaImpl<IndexT>, Mutabl
 
     override fun onGrow(oldCapacity: Int, newCapacity: Int) {
         val newItems = newCapacity - oldCapacity
-        for (i in 0 until newItems)
-            values.add(null)
+        for (i in 0 until newItems) values.add(null)
     }
 
     override fun onRelease(id: DynIdx<IndexT>) {
@@ -95,7 +97,9 @@ class MutableArenaMapImpl<IndexT, ValueT> : MutableBaseArenaImpl<IndexT>, Mutabl
         return cloneWithValues(values.toMutableList())
     }
 
-    override fun update(updater: (MutableArenaMap<IndexT, ValueT>) -> Unit): ArenaMap<IndexT, ValueT> {
+    override fun update(
+        updater: (MutableArenaMap<IndexT, ValueT>) -> Unit
+    ): ArenaMap<IndexT, ValueT> {
         val newArena = clone()
         updater(newArena)
         return newArena
@@ -139,11 +143,11 @@ class MutableArenaMapImpl<IndexT, ValueT> : MutableBaseArenaImpl<IndexT>, Mutabl
     override fun hashCode(): Int {
         return slotGenerations.hashCode()
     }
+
     private sealed interface Workaround
 
     override fun equals(other: Any?): Boolean {
-        if (other !is ArenaMap<*, *>)
-            return false
+        if (other !is ArenaMap<*, *>) return false
         // the kotlin compiler brain farts without this hint
         @Suppress("UNCHECKED_CAST")
         other as ArenaMap<Workaround, *>
@@ -151,14 +155,11 @@ class MutableArenaMapImpl<IndexT, ValueT> : MutableBaseArenaImpl<IndexT>, Mutabl
         val thisIt = iterator()
         val otherIt = other.iterator()
         while (thisIt.hasNext()) {
-            if (!otherIt.hasNext())
-                return false
+            if (!otherIt.hasNext()) return false
             val thisVal = thisIt.next()
             val otherVal = otherIt.next()
-            if (thisVal != otherVal)
-                return false
-            if (this[thisVal] != other[otherVal])
-                return false
+            if (thisVal != otherVal) return false
+            if (this[thisVal] != other[otherVal]) return false
         }
         return !otherIt.hasNext()
     }

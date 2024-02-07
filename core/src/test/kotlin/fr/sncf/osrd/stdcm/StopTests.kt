@@ -3,10 +3,10 @@ package fr.sncf.osrd.stdcm
 import com.google.common.collect.ImmutableMultimap
 import fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue
+import fr.sncf.osrd.graph.Pathfinding.EdgeLocation
 import fr.sncf.osrd.stdcm.StandardAllowanceTests.Companion.checkAllowanceResult
 import fr.sncf.osrd.stdcm.StandardAllowanceTests.Companion.runWithAndWithoutAllowance
 import fr.sncf.osrd.train.TrainStop
-import fr.sncf.osrd.graph.Pathfinding.EdgeLocation
 import fr.sncf.osrd.utils.DummyInfra
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
@@ -17,7 +17,7 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
 
 class StopTests {
-    /** Look for a path in an empty timetable, with a stop in the middle of a block  */
+    /** Look for a path in an empty timetable, with a stop in the middle of a block */
     @Test
     fun emptyTimetableWithStop() {
         /*
@@ -26,12 +26,15 @@ class StopTests {
         val infra = DummyInfra()
         val firstBlock = infra.addBlock("a", "b")
         val secondBlock = infra.addBlock("b", "c")
-        val res = STDCMPathfindingBuilder()
-            .setInfra(infra.fullInfra())
-            .addStep(STDCMStep(setOf(EdgeLocation(firstBlock, Offset(0.meters))), 0.0, true))
-            .addStep(STDCMStep(setOf(EdgeLocation(secondBlock, Offset(50.meters))), 10000.0, true))
-            .addStep(STDCMStep(setOf(EdgeLocation(secondBlock, Offset(100.meters))), 0.0, true))
-            .run()!!
+        val res =
+            STDCMPathfindingBuilder()
+                .setInfra(infra.fullInfra())
+                .addStep(STDCMStep(setOf(EdgeLocation(firstBlock, Offset(0.meters))), 0.0, true))
+                .addStep(
+                    STDCMStep(setOf(EdgeLocation(secondBlock, Offset(50.meters))), 10000.0, true)
+                )
+                .addStep(STDCMStep(setOf(EdgeLocation(secondBlock, Offset(100.meters))), 0.0, true))
+                .run()!!
         val expectedOffset = 150.0
 
         // Check that we stop
@@ -43,15 +46,10 @@ class StopTests {
         )
 
         // Check that the stop is properly returned
-        Assertions.assertEquals(
-            listOf(
-                TrainStop(expectedOffset, 10000.0)
-            ),
-            res.stopResults
-        )
+        Assertions.assertEquals(listOf(TrainStop(expectedOffset, 10000.0)), res.stopResults)
     }
 
-    /** Look for a path in an empty timetable, with a stop at the start of a block  */
+    /** Look for a path in an empty timetable, with a stop at the start of a block */
     @Test
     fun emptyTimetableWithStopBlockStart() {
         /*
@@ -60,20 +58,19 @@ class StopTests {
         val infra = DummyInfra()
         val firstBlock = infra.addBlock("a", "b")
         val secondBlock = infra.addBlock("b", "c")
-        val res = STDCMPathfindingBuilder()
-            .setInfra(infra.fullInfra())
-            .addStep(STDCMStep(setOf(EdgeLocation(firstBlock, Offset(0.meters))), 0.0, true))
-            .addStep(STDCMStep(setOf(EdgeLocation(secondBlock, Offset(0.meters))), 10000.0, true))
-            .addStep(STDCMStep(setOf(EdgeLocation(secondBlock, Offset(100.meters))), 0.0, true))
-            .run()!!
-        checkStop(
-            res, listOf(
-                TrainStop(100.0, 10000.0)
-            )
-        )
+        val res =
+            STDCMPathfindingBuilder()
+                .setInfra(infra.fullInfra())
+                .addStep(STDCMStep(setOf(EdgeLocation(firstBlock, Offset(0.meters))), 0.0, true))
+                .addStep(
+                    STDCMStep(setOf(EdgeLocation(secondBlock, Offset(0.meters))), 10000.0, true)
+                )
+                .addStep(STDCMStep(setOf(EdgeLocation(secondBlock, Offset(100.meters))), 0.0, true))
+                .run()!!
+        checkStop(res, listOf(TrainStop(100.0, 10000.0)))
     }
 
-    /** Look for a path in an empty timetable, with a stop at the end of a block  */
+    /** Look for a path in an empty timetable, with a stop at the end of a block */
     @Test
     fun emptyTimetableWithStopBlockEnd() {
         /*
@@ -82,20 +79,19 @@ class StopTests {
         val infra = DummyInfra()
         val firstBlock = infra.addBlock("a", "b")
         val secondBlock = infra.addBlock("b", "c")
-        val res = STDCMPathfindingBuilder()
-            .setInfra(infra.fullInfra())
-            .addStep(STDCMStep(setOf(EdgeLocation(firstBlock, Offset(0.meters))), 0.0, true))
-            .addStep(STDCMStep(setOf(EdgeLocation(firstBlock, Offset(100.meters))), 10000.0, true))
-            .addStep(STDCMStep(setOf(EdgeLocation(secondBlock, Offset(100.meters))), 0.0, true))
-            .run()!!
-        checkStop(
-            res, listOf(
-                TrainStop(100.0, 10000.0)
-            )
-        )
+        val res =
+            STDCMPathfindingBuilder()
+                .setInfra(infra.fullInfra())
+                .addStep(STDCMStep(setOf(EdgeLocation(firstBlock, Offset(0.meters))), 0.0, true))
+                .addStep(
+                    STDCMStep(setOf(EdgeLocation(firstBlock, Offset(100.meters))), 10000.0, true)
+                )
+                .addStep(STDCMStep(setOf(EdgeLocation(secondBlock, Offset(100.meters))), 0.0, true))
+                .run()!!
+        checkStop(res, listOf(TrainStop(100.0, 10000.0)))
     }
 
-    /** Checks that we can make a detour to pass by an intermediate step  */
+    /** Checks that we can make a detour to pass by an intermediate step */
     @ParameterizedTest
     @ValueSource(booleans = [true, false])
     fun detourForStep(stop: Boolean) {
@@ -109,39 +105,45 @@ class StopTests {
                     x
          */
         val infra = DummyInfra()
-        val blocksDirectPath = listOf(
-            infra.addBlock("a", "b"),
-            infra.addBlock("b", "c"),
-            infra.addBlock("c", "d"),
-            infra.addBlock("d", "e")
-        )
-        val detour = listOf(
-            infra.addBlock("b", "x", 100000.meters),
-            infra.addBlock("x", "d", 100000.meters)
-        )
-        val res = STDCMPathfindingBuilder()
-            .setInfra(infra.fullInfra())
-            .setStartTime(100.0)
-            .addStep(STDCMStep(setOf(EdgeLocation(blocksDirectPath[0], Offset(0.meters))), 0.0, false))
-            .addStep(STDCMStep(setOf(EdgeLocation(detour[1], Offset(1000.meters))), 0.0, stop))
-            .addStep(STDCMStep(setOf(EdgeLocation(blocksDirectPath[3], Offset(0.meters))), 0.0, true))
-            .run()!!
-        val blocks = res.blocks.ranges.stream()
-            .map { edgeRange -> infra.blockPool[edgeRange.edge.index.toInt()].name }
-            .toList()
-        Assertions.assertEquals(
+        val blocksDirectPath =
             listOf(
-                "a->b",
-                "b->x",
-                "x->d",
-                "d->e"
-            ), blocks
-        )
+                infra.addBlock("a", "b"),
+                infra.addBlock("b", "c"),
+                infra.addBlock("c", "d"),
+                infra.addBlock("d", "e")
+            )
+        val detour =
+            listOf(infra.addBlock("b", "x", 100000.meters), infra.addBlock("x", "d", 100000.meters))
+        val res =
+            STDCMPathfindingBuilder()
+                .setInfra(infra.fullInfra())
+                .setStartTime(100.0)
+                .addStep(
+                    STDCMStep(
+                        setOf(EdgeLocation(blocksDirectPath[0], Offset(0.meters))),
+                        0.0,
+                        false
+                    )
+                )
+                .addStep(STDCMStep(setOf(EdgeLocation(detour[1], Offset(1000.meters))), 0.0, stop))
+                .addStep(
+                    STDCMStep(setOf(EdgeLocation(blocksDirectPath[3], Offset(0.meters))), 0.0, true)
+                )
+                .run()!!
+        val blocks =
+            res.blocks.ranges
+                .stream()
+                .map { edgeRange -> infra.blockPool[edgeRange.edge.index.toInt()].name }
+                .toList()
+        Assertions.assertEquals(listOf("a->b", "b->x", "x->d", "d->e"), blocks)
         Assertions.assertNotEquals(stop, res.stopResults.isEmpty())
         Assertions.assertEquals(stop, res.envelope.interpolateSpeed(101100.0) == 0.0)
     }
 
-    /** Test that the stop time is properly accounted for, by making the train stop for too long to find a solution  */
+    /**
+     * Test that the stop time is properly accounted for, by making the train stop for too long to
+     * find a solution
+     */
     @Test
     fun testImpossibleSolutionBecauseOfStop() {
         /*
@@ -150,51 +152,59 @@ class StopTests {
         val infra = DummyInfra()
         val firstBlock = infra.addBlock("a", "b")
         val secondBlock = infra.addBlock("b", "c")
-        val unavailableTimes = ImmutableMultimap.of(
-            secondBlock, OccupancySegment(100000.0, Double.POSITIVE_INFINITY, 0.meters, 100.meters)
-        )
-        val res = STDCMPathfindingBuilder()
-            .setInfra(infra.fullInfra())
-            .addStep(STDCMStep(setOf(EdgeLocation(firstBlock, Offset(0.meters))), 0.0, true))
-            .addStep(STDCMStep(setOf(EdgeLocation(firstBlock, Offset(10.meters))), 100000.0, true))
-            .addStep(STDCMStep(setOf(EdgeLocation(secondBlock, Offset(100.meters))), 0.0, true))
-            .setUnavailableTimes(unavailableTimes)
-            .run()
+        val unavailableTimes =
+            ImmutableMultimap.of(
+                secondBlock,
+                OccupancySegment(100000.0, Double.POSITIVE_INFINITY, 0.meters, 100.meters)
+            )
+        val res =
+            STDCMPathfindingBuilder()
+                .setInfra(infra.fullInfra())
+                .addStep(STDCMStep(setOf(EdgeLocation(firstBlock, Offset(0.meters))), 0.0, true))
+                .addStep(
+                    STDCMStep(setOf(EdgeLocation(firstBlock, Offset(10.meters))), 100000.0, true)
+                )
+                .addStep(STDCMStep(setOf(EdgeLocation(secondBlock, Offset(100.meters))), 0.0, true))
+                .setUnavailableTimes(unavailableTimes)
+                .run()
         Assertions.assertNull(res)
     }
 
-    /** Checks that we add the right amount of delay with a stop  */
+    /** Checks that we add the right amount of delay with a stop */
     @Test
     fun delayWithStop() {
         /*
         a --> b --> c -> d
          */
         val infra = DummyInfra()
-        val blocks = listOf(
-            infra.addBlock("a", "b"),
-            infra.addBlock("b", "c"),
-            infra.addBlock("c", "d", 1.meters)
-        )
-        val occupancy = ImmutableMultimap.of(
-            blocks[2], OccupancySegment(0.0, 12000.0, 0.meters, 1.meters),
-            blocks[2], OccupancySegment(12010.0, Double.POSITIVE_INFINITY, 0.meters, 1.meters)
-        )
-        val res = STDCMPathfindingBuilder()
-            .setInfra(infra.fullInfra())
-            .addStep(STDCMStep(setOf(EdgeLocation(blocks[0], Offset(0.meters))), 0.0, true))
-            .addStep(STDCMStep(setOf(EdgeLocation(blocks[0], Offset(50.meters))), 10000.0, true))
-            .addStep(STDCMStep(setOf(EdgeLocation(blocks[2], Offset(1.meters))), 0.0, true))
-            .setUnavailableTimes(occupancy)
-            .run()!!
-        checkStop(
-            res, listOf(
-                TrainStop(50.0, 10000.0)
+        val blocks =
+            listOf(
+                infra.addBlock("a", "b"),
+                infra.addBlock("b", "c"),
+                infra.addBlock("c", "d", 1.meters)
             )
-        )
+        val occupancy =
+            ImmutableMultimap.of(
+                blocks[2],
+                OccupancySegment(0.0, 12000.0, 0.meters, 1.meters),
+                blocks[2],
+                OccupancySegment(12010.0, Double.POSITIVE_INFINITY, 0.meters, 1.meters)
+            )
+        val res =
+            STDCMPathfindingBuilder()
+                .setInfra(infra.fullInfra())
+                .addStep(STDCMStep(setOf(EdgeLocation(blocks[0], Offset(0.meters))), 0.0, true))
+                .addStep(
+                    STDCMStep(setOf(EdgeLocation(blocks[0], Offset(50.meters))), 10000.0, true)
+                )
+                .addStep(STDCMStep(setOf(EdgeLocation(blocks[2], Offset(1.meters))), 0.0, true))
+                .setUnavailableTimes(occupancy)
+                .run()!!
+        checkStop(res, listOf(TrainStop(50.0, 10000.0)))
         occupancyTest(res, occupancy)
     }
 
-    /** Checks that we can handle engineering allowance with a stop  */
+    /** Checks that we can handle engineering allowance with a stop */
     @Test
     fun engineeringAllowanceWithStops() {
         /*
@@ -216,35 +226,37 @@ class StopTests {
 
         // Note: this test will need to be updated once we can add delay by making stops longer
         val infra = DummyInfra()
-        val blocks = listOf(
-            infra.addBlock("a", "b", 1.meters, 20.0),
-            infra.addBlock("b", "c", 1000.meters, 20.0),
-            infra.addBlock("c", "d", 100.meters, 20.0),
-            infra.addBlock("d", "e", 1.meters, 20.0)
-        )
-        val occupancy = ImmutableMultimap.of(
-            blocks[0], OccupancySegment(10.0, Double.POSITIVE_INFINITY, 0.meters, 1.meters),
-            blocks[3], OccupancySegment(0.0, 1200.0, 0.meters, 1.meters),
-            blocks[3], OccupancySegment(1220.0, Double.POSITIVE_INFINITY, 0.meters, 1.meters)
-        )
-        val timeStep = 2.0
-        val res = STDCMPathfindingBuilder()
-            .setInfra(infra.fullInfra())
-            .setUnavailableTimes(occupancy)
-            .setTimeStep(timeStep)
-            .addStep(STDCMStep(setOf(EdgeLocation(blocks[0], Offset(0.meters))), 0.0, true))
-            .addStep(STDCMStep(setOf(EdgeLocation(blocks[1], Offset(50.meters))), 1000.0, true))
-            .addStep(STDCMStep(setOf(EdgeLocation(blocks[3], Offset(1.meters))), 0.0, true))
-            .run()!!
-        checkStop(
-            res, listOf(
-                TrainStop(51.0, 1000.0)
+        val blocks =
+            listOf(
+                infra.addBlock("a", "b", 1.meters, 20.0),
+                infra.addBlock("b", "c", 1000.meters, 20.0),
+                infra.addBlock("c", "d", 100.meters, 20.0),
+                infra.addBlock("d", "e", 1.meters, 20.0)
             )
-        )
+        val occupancy =
+            ImmutableMultimap.of(
+                blocks[0],
+                OccupancySegment(10.0, Double.POSITIVE_INFINITY, 0.meters, 1.meters),
+                blocks[3],
+                OccupancySegment(0.0, 1200.0, 0.meters, 1.meters),
+                blocks[3],
+                OccupancySegment(1220.0, Double.POSITIVE_INFINITY, 0.meters, 1.meters)
+            )
+        val timeStep = 2.0
+        val res =
+            STDCMPathfindingBuilder()
+                .setInfra(infra.fullInfra())
+                .setUnavailableTimes(occupancy)
+                .setTimeStep(timeStep)
+                .addStep(STDCMStep(setOf(EdgeLocation(blocks[0], Offset(0.meters))), 0.0, true))
+                .addStep(STDCMStep(setOf(EdgeLocation(blocks[1], Offset(50.meters))), 1000.0, true))
+                .addStep(STDCMStep(setOf(EdgeLocation(blocks[3], Offset(1.meters))), 0.0, true))
+                .run()!!
+        checkStop(res, listOf(TrainStop(51.0, 1000.0)))
         occupancyTest(res, occupancy, 2 * timeStep)
     }
 
-    /** Checks that we can handle a standard allowance with a stop  */
+    /** Checks that we can handle a standard allowance with a stop */
     @Test
     fun standardAllowanceWithStops() {
         /*
@@ -264,31 +276,36 @@ class StopTests {
 
          */
         val infra = DummyInfra()
-        val blocks = listOf(
-            infra.addBlock("a", "b", 1.meters, 20.0),
-            infra.addBlock("b", "c", 1000.meters, 20.0),
-            infra.addBlock("c", "d", 100.meters, 20.0),
-            infra.addBlock("d", "e", 1.meters, 20.0)
-        )
-        val occupancy = ImmutableMultimap.of(
-            blocks[3], OccupancySegment(0.0, 1200.0, 0.meters, 1.meters),
-            blocks[3], OccupancySegment(1220.0, Double.POSITIVE_INFINITY, 0.meters, 1.meters)
-        )
+        val blocks =
+            listOf(
+                infra.addBlock("a", "b", 1.meters, 20.0),
+                infra.addBlock("b", "c", 1000.meters, 20.0),
+                infra.addBlock("c", "d", 100.meters, 20.0),
+                infra.addBlock("d", "e", 1.meters, 20.0)
+            )
+        val occupancy =
+            ImmutableMultimap.of(
+                blocks[3],
+                OccupancySegment(0.0, 1200.0, 0.meters, 1.meters),
+                blocks[3],
+                OccupancySegment(1220.0, Double.POSITIVE_INFINITY, 0.meters, 1.meters)
+            )
         val timeStep = 2.0
         val allowance = AllowanceValue.Percentage(20.0)
-        val res = runWithAndWithoutAllowance(
-            STDCMPathfindingBuilder()
-                .setInfra(infra.fullInfra())
-                .setUnavailableTimes(occupancy)
-                .setTimeStep(timeStep)
-                .setStandardAllowance(allowance)
-                .addStep(STDCMStep(setOf(EdgeLocation(blocks[0], Offset(0.meters))), 0.0, true))
-                .addStep(STDCMStep(setOf(EdgeLocation(blocks[1], Offset(50.meters))), 1000.0, true))
-                .addStep(STDCMStep(setOf(EdgeLocation(blocks[3], Offset(1.meters))), 0.0, true))
-        )
-        val expectedStops = listOf(
-            TrainStop(51.0, 1000.0)
-        )
+        val res =
+            runWithAndWithoutAllowance(
+                STDCMPathfindingBuilder()
+                    .setInfra(infra.fullInfra())
+                    .setUnavailableTimes(occupancy)
+                    .setTimeStep(timeStep)
+                    .setStandardAllowance(allowance)
+                    .addStep(STDCMStep(setOf(EdgeLocation(blocks[0], Offset(0.meters))), 0.0, true))
+                    .addStep(
+                        STDCMStep(setOf(EdgeLocation(blocks[1], Offset(50.meters))), 1000.0, true)
+                    )
+                    .addStep(STDCMStep(setOf(EdgeLocation(blocks[3], Offset(1.meters))), 0.0, true))
+            )
+        val expectedStops = listOf(TrainStop(51.0, 1000.0))
         checkStop(res.withAllowance!!, expectedStops)
         checkStop(res.withoutAllowance!!, expectedStops)
         occupancyTest(res.withAllowance, occupancy, 2 * timeStep)
@@ -296,7 +313,7 @@ class StopTests {
         checkAllowanceResult(res, allowance, 4 * timeStep)
     }
 
-    /** Checks that we can handle both a standard and engineering allowance with a stop  */
+    /** Checks that we can handle both a standard and engineering allowance with a stop */
     @Test
     fun standardAndEngineeringAllowanceWithStops() {
         /*
@@ -318,39 +335,45 @@ class StopTests {
 
         // Note: this test will need to be updated once we can add delay by making stops longer
         val infra = DummyInfra()
-        val blocks = listOf(
-            infra.addBlock("a", "b", 1.meters, 20.0),
-            infra.addBlock("b", "c", 1000.meters, 20.0),
-            infra.addBlock("c", "d", 100.meters, 20.0),
-            infra.addBlock("d", "e", 1.meters, 20.0)
-        )
-        val occupancy = ImmutableMultimap.of(
-            blocks[0], OccupancySegment(10.0, Double.POSITIVE_INFINITY, 0.meters, 1.meters),
-            blocks[3], OccupancySegment(0.0, 1200.0, 0.meters, 1.meters),
-            blocks[3], OccupancySegment(1300.0, Double.POSITIVE_INFINITY, 0.meters, 1.meters)
-        )
+        val blocks =
+            listOf(
+                infra.addBlock("a", "b", 1.meters, 20.0),
+                infra.addBlock("b", "c", 1000.meters, 20.0),
+                infra.addBlock("c", "d", 100.meters, 20.0),
+                infra.addBlock("d", "e", 1.meters, 20.0)
+            )
+        val occupancy =
+            ImmutableMultimap.of(
+                blocks[0],
+                OccupancySegment(10.0, Double.POSITIVE_INFINITY, 0.meters, 1.meters),
+                blocks[3],
+                OccupancySegment(0.0, 1200.0, 0.meters, 1.meters),
+                blocks[3],
+                OccupancySegment(1300.0, Double.POSITIVE_INFINITY, 0.meters, 1.meters)
+            )
         val timeStep = 2.0
         val allowance = AllowanceValue.Percentage(20.0)
-        val res = runWithAndWithoutAllowance(
-            STDCMPathfindingBuilder()
-                .setInfra(infra.fullInfra())
-                .setUnavailableTimes(occupancy)
-                .setTimeStep(timeStep)
-                .setStandardAllowance(allowance)
-                .addStep(STDCMStep(setOf(EdgeLocation(blocks[0], Offset(0.meters))), 0.0, true))
-                .addStep(STDCMStep(setOf(EdgeLocation(blocks[1], Offset(50.meters))), 1000.0, true))
-                .addStep(STDCMStep(setOf(EdgeLocation(blocks[3], Offset(1.meters))), 0.0, true))
-        )
-        val expectedStops = listOf(
-            TrainStop(51.0, 1000.0)
-        )
+        val res =
+            runWithAndWithoutAllowance(
+                STDCMPathfindingBuilder()
+                    .setInfra(infra.fullInfra())
+                    .setUnavailableTimes(occupancy)
+                    .setTimeStep(timeStep)
+                    .setStandardAllowance(allowance)
+                    .addStep(STDCMStep(setOf(EdgeLocation(blocks[0], Offset(0.meters))), 0.0, true))
+                    .addStep(
+                        STDCMStep(setOf(EdgeLocation(blocks[1], Offset(50.meters))), 1000.0, true)
+                    )
+                    .addStep(STDCMStep(setOf(EdgeLocation(blocks[3], Offset(1.meters))), 0.0, true))
+            )
+        val expectedStops = listOf(TrainStop(51.0, 1000.0))
         checkStop(res.withAllowance!!, expectedStops)
         checkStop(res.withoutAllowance!!, expectedStops)
         occupancyTest(res.withAllowance, occupancy, 2 * timeStep)
         occupancyTest(res.withoutAllowance, occupancy, 2 * timeStep)
     }
 
-    /** Checks that the stop itself is accounted for when detecting conflicts  */
+    /** Checks that the stop itself is accounted for when detecting conflicts */
     @Test
     fun conflictDuringStop() {
         /*
@@ -371,33 +394,36 @@ class StopTests {
 
          */
         val infra = DummyInfra()
-        val blocks = listOf(
-            infra.addBlock("a", "b"),
-            infra.addBlock("b", "c"),
-            infra.addBlock("c", "d", 1.meters)
-        )
-        val occupancy = ImmutableMultimap.of(
-            blocks[1], OccupancySegment(300.0, 600.0, 0.meters, 100.meters),
-        )
-        val res = STDCMPathfindingBuilder()
-            .setInfra(infra.fullInfra())
-            .addStep(STDCMStep(setOf(EdgeLocation(blocks[0], Offset(0.meters))), 0.0, true))
-            .addStep(STDCMStep(setOf(EdgeLocation(blocks[1], Offset(50.meters))), 10_000.0, true))
-            .addStep(STDCMStep(setOf(EdgeLocation(blocks[2], Offset(1.meters))), 0.0, true))
-            .setUnavailableTimes(occupancy)
-            .setMaxDepartureDelay(0.0) // Prevents the train from starting after the conflict
-            .run()
+        val blocks =
+            listOf(
+                infra.addBlock("a", "b"),
+                infra.addBlock("b", "c"),
+                infra.addBlock("c", "d", 1.meters)
+            )
+        val occupancy =
+            ImmutableMultimap.of(
+                blocks[1],
+                OccupancySegment(300.0, 600.0, 0.meters, 100.meters),
+            )
+        val res =
+            STDCMPathfindingBuilder()
+                .setInfra(infra.fullInfra())
+                .addStep(STDCMStep(setOf(EdgeLocation(blocks[0], Offset(0.meters))), 0.0, true))
+                .addStep(
+                    STDCMStep(setOf(EdgeLocation(blocks[1], Offset(50.meters))), 10_000.0, true)
+                )
+                .addStep(STDCMStep(setOf(EdgeLocation(blocks[2], Offset(1.meters))), 0.0, true))
+                .setUnavailableTimes(occupancy)
+                .setMaxDepartureDelay(0.0) // Prevents the train from starting after the conflict
+                .run()
         assertNull(res)
     }
 
     companion object {
-        /** Check that the train actually stops at the expected times and positions  */
+        /** Check that the train actually stops at the expected times and positions */
         private fun checkStop(res: STDCMResult, expectedStops: List<TrainStop>) {
             // Check that the stops are properly returned
-            Assertions.assertEquals(
-                expectedStops,
-                res.stopResults
-            )
+            Assertions.assertEquals(expectedStops, res.stopResults)
 
             // Check that we stop
             for (stop in expectedStops) Assertions.assertTrue(

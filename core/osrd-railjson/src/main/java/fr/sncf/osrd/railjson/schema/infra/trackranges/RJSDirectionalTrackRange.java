@@ -25,22 +25,20 @@ public class RJSDirectionalTrackRange extends RJSTrackRange {
     }
 
     /**
-     * Return the begin offset of the track range
-     * This function takes into account the direction so the value can be greater than getEnd()
+     * Return the begin offset of the track range This function takes into account the direction so
+     * the value can be greater than getEnd()
      */
     public double getBegin() {
-        if (direction == EdgeDirection.START_TO_STOP)
-            return begin;
+        if (direction == EdgeDirection.START_TO_STOP) return begin;
         return end;
     }
 
     /**
-     * Return the end offset of the track range
-     * This function takes into account the direction so the value can be smaller than getBegin()
+     * Return the end offset of the track range This function takes into account the direction so
+     * the value can be smaller than getBegin()
      */
     public double getEnd() {
-        if (direction == EdgeDirection.START_TO_STOP)
-            return end;
+        if (direction == EdgeDirection.START_TO_STOP) return end;
         return begin;
     }
 

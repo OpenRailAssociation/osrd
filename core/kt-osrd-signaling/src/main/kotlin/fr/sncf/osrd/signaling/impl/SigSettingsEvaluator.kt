@@ -2,7 +2,6 @@ package fr.sncf.osrd.signaling.impl
 
 import fr.sncf.osrd.sim_infra.api.SigSettings
 
-
 fun evalSigSettings(expr: String, settings: SigSettings): Boolean {
     val tokens = tokenize(expr)
     return eval(PeekableIterator(tokens.iterator()), settings)
@@ -17,8 +16,7 @@ private class PeekableIterator<T>(val it: Iterator<T>) : Iterator<T> {
 
     override fun next(): T {
         val res = _next
-        if (it.hasNext()) _next = it.next()
-        else _next = null
+        if (it.hasNext()) _next = it.next() else _next = null
 
         return res!!
     }
@@ -33,7 +31,10 @@ private class PeekableIterator<T>(val it: Iterator<T>) : Iterator<T> {
 }
 
 private enum class TokenType {
-    ID, OR, AND, NOT,
+    ID,
+    OR,
+    AND,
+    NOT,
 }
 
 private class Token(val type: TokenType, val str: String)
@@ -50,7 +51,6 @@ private fun recognizeToken(stream: PeekableIterator<Char>): Token {
                 stream.eat('|')
                 return Token(TokenType.OR, "||")
             }
-
             '&' -> {
                 stream.eat('|')
                 return Token(TokenType.OR, "||")
@@ -108,10 +108,8 @@ private fun evalNot(expr: PeekableIterator<Token>, settings: SigSettings): Boole
 private fun evalID(expr: PeekableIterator<Token>, settings: SigSettings): Boolean {
     assert(expr.peek()?.type == TokenType.ID)
     val id = expr.next().str
-    if (id == "true")
-        return true
-    if (id == "false")
-        return false
+    if (id == "true") return true
+    if (id == "false") return false
 
     return settings.getFlag(id)
 }

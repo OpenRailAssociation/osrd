@@ -10,24 +10,28 @@ import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
+import java.util.stream.Collectors
 import org.assertj.core.api.AssertionsForClassTypes
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
-import java.util.stream.Collectors
 
 class PathfindingTests {
     class SimpleGraphBuilder {
-        data class Edge(val length: Length<Edge>, val label: String, val blockedRanges: Set<Pathfinding.Range<Edge>>)
+        data class Edge(
+            val length: Length<Edge>,
+            val label: String,
+            val blockedRanges: Set<Pathfinding.Range<Edge>>
+        )
+
         class Node
 
-        private val builder = NetworkBuilder
-            .directed()
-            .allowsParallelEdges(true)
-            .immutable<Node, Edge>()
+        private val builder =
+            NetworkBuilder.directed().allowsParallelEdges(true).immutable<Node, Edge>()
         private val edges: MutableMap<String, Edge> = HashMap()
         private val nodes: MutableList<Node> = ArrayList()
+
         private fun makeNode() {
             val res = Node()
             builder.addNode(res)
@@ -38,7 +42,12 @@ class PathfindingTests {
             for (i in 0 until n) makeNode()
         }
 
-        fun makeEdge(n1: Int, n2: Int, length: Distance, blockedRanges: Set<Pathfinding.Range<Edge>> = setOf()) {
+        fun makeEdge(
+            n1: Int,
+            n2: Int,
+            length: Distance,
+            blockedRanges: Set<Pathfinding.Range<Edge>> = setOf()
+        ) {
             val label = String.format("%d-%s", n1, n2)
             val res = Edge(Length(length), label, blockedRanges)
             builder.addEdge(nodes[n1], nodes[n2], res)
@@ -58,7 +67,7 @@ class PathfindingTests {
         }
     }
 
-    /** A range where the edge is only referenced by its ID (for easier equality check)  */
+    /** A range where the edge is only referenced by its ID (for easier equality check) */
     data class SimpleRange(val id: String, val begin: Offset<Edge>, val end: Offset<Edge>)
 
     @Test
@@ -77,25 +86,17 @@ class PathfindingTests {
         builder.makeEdge(1, 3, 21.meters)
         builder.makeEdge(3, 4, 0.meters)
         val g = builder.build()
-        val res = Pathfinding(g)
-            .setEdgeToLength { edge -> edge.length }
-            .runPathfindingEdgesOnly(
-                listOf(
-                    listOf(builder.getEdgeLocation("0-1")),
-                    listOf(builder.getEdgeLocation("3-4"))
+        val res =
+            Pathfinding(g)
+                .setEdgeToLength { edge -> edge.length }
+                .runPathfindingEdgesOnly(
+                    listOf(
+                        listOf(builder.getEdgeLocation("0-1")),
+                        listOf(builder.getEdgeLocation("3-4"))
+                    )
                 )
-            )
-        val resIDs = res!!.stream().map { x -> x!!.label }
-            .toList()
-        Assertions.assertEquals(
-            listOf(
-                "0-1",
-                "1-2",
-                "2-3",
-                "3-4"
-            ),
-            resIDs
-        )
+        val resIDs = res!!.stream().map { x -> x!!.label }.toList()
+        Assertions.assertEquals(listOf("0-1", "1-2", "2-3", "3-4"), resIDs)
     }
 
     @Test
@@ -114,24 +115,17 @@ class PathfindingTests {
         builder.makeEdge(1, 3, 19.meters)
         builder.makeEdge(3, 4, 0.meters)
         val g = builder.build()
-        val res = Pathfinding(g)
-            .setEdgeToLength { edge -> edge.length }
-            .runPathfindingEdgesOnly(
-                listOf(
-                    listOf(builder.getEdgeLocation("0-1")),
-                    listOf(builder.getEdgeLocation("3-4"))
+        val res =
+            Pathfinding(g)
+                .setEdgeToLength { edge -> edge.length }
+                .runPathfindingEdgesOnly(
+                    listOf(
+                        listOf(builder.getEdgeLocation("0-1")),
+                        listOf(builder.getEdgeLocation("3-4"))
+                    )
                 )
-            )
-        val resIDs = res!!.stream().map { x -> x!!.label }
-            .toList()
-        Assertions.assertEquals(
-            listOf(
-                "0-1",
-                "1-3",
-                "3-4"
-            ),
-            resIDs
-        )
+        val resIDs = res!!.stream().map { x -> x!!.label }.toList()
+        Assertions.assertEquals(listOf("0-1", "1-3", "3-4"), resIDs)
     }
 
     @Test
@@ -153,28 +147,17 @@ class PathfindingTests {
         builder.makeEdge(4, 5, 4.meters)
         builder.makeEdge(5, 6, 0.meters)
         val g = builder.build()
-        val res = Pathfinding(g)
-            .setEdgeToLength { edge -> edge.length }
-            .runPathfindingEdgesOnly(
-                listOf(
+        val res =
+            Pathfinding(g)
+                .setEdgeToLength { edge -> edge.length }
+                .runPathfindingEdgesOnly(
                     listOf(
-                        builder.getEdgeLocation("0-1"),
-                        builder.getEdgeLocation("2-3")
-                    ),
-                    listOf(builder.getEdgeLocation("5-6"))
+                        listOf(builder.getEdgeLocation("0-1"), builder.getEdgeLocation("2-3")),
+                        listOf(builder.getEdgeLocation("5-6"))
+                    )
                 )
-            )
-        val resIDs = res!!.stream().map { x -> x!!.label }
-            .toList()
-        Assertions.assertEquals(
-            listOf(
-                "2-3",
-                "3-4",
-                "4-5",
-                "5-6"
-            ),
-            resIDs
-        )
+        val resIDs = res!!.stream().map { x -> x!!.label }.toList()
+        Assertions.assertEquals(listOf("2-3", "3-4", "4-5", "5-6"), resIDs)
     }
 
     @Test
@@ -195,28 +178,17 @@ class PathfindingTests {
         builder.makeEdge(4, 5, 5.meters)
         builder.makeEdge(5, 6, 0.meters)
         val g = builder.build()
-        val res = Pathfinding(g)
-            .setEdgeToLength { edge -> edge.length }
-            .runPathfindingEdgesOnly(
-                listOf(
-                    listOf(builder.getEdgeLocation("0-1")),
+        val res =
+            Pathfinding(g)
+                .setEdgeToLength { edge -> edge.length }
+                .runPathfindingEdgesOnly(
                     listOf(
-                        builder.getEdgeLocation("2-3"),
-                        builder.getEdgeLocation("5-6")
+                        listOf(builder.getEdgeLocation("0-1")),
+                        listOf(builder.getEdgeLocation("2-3"), builder.getEdgeLocation("5-6"))
                     )
                 )
-            )
-        val resIDs = res!!.stream().map { x -> x!!.label }
-            .toList()
-        Assertions.assertEquals(
-            listOf(
-                "0-1",
-                "1-4",
-                "4-5",
-                "5-6"
-            ),
-            resIDs
-        )
+        val resIDs = res!!.stream().map { x -> x!!.label }.toList()
+        Assertions.assertEquals(listOf("0-1", "1-4", "4-5", "5-6"), resIDs)
     }
 
     @Test
@@ -234,23 +206,17 @@ class PathfindingTests {
         builder.makeEdge(1, 2, 100.meters)
         builder.makeEdge(1, 0, (-100).meters)
         val g = builder.build()
-        val res = Pathfinding(g)
-            .setEdgeToLength { edge -> edge.length }
-            .runPathfindingEdgesOnly(
-                listOf(
-                    listOf(builder.getEdgeLocation("0-1")),
-                    listOf(builder.getEdgeLocation("1-2", 50.meters))
+        val res =
+            Pathfinding(g)
+                .setEdgeToLength { edge -> edge.length }
+                .runPathfindingEdgesOnly(
+                    listOf(
+                        listOf(builder.getEdgeLocation("0-1")),
+                        listOf(builder.getEdgeLocation("1-2", 50.meters))
+                    )
                 )
-            )
-        val resIDs = res!!.stream().map { x -> x!!.label }
-            .toList()
-        Assertions.assertEquals(
-            listOf(
-                "0-1",
-                "1-2"
-            ),
-            resIDs
-        )
+        val resIDs = res!!.stream().map { x -> x!!.label }.toList()
+        Assertions.assertEquals(listOf("0-1", "1-2"), resIDs)
     }
 
     @Test
@@ -265,14 +231,15 @@ class PathfindingTests {
         builder.makeEdge(1, 2, 100.meters)
         builder.makeEdge(2, 3, 100.meters)
         val g = builder.build()
-        val res = Pathfinding(g)
-            .setEdgeToLength { edge -> edge.length }
-            .runPathfindingEdgesOnly(
-                listOf(
-                    listOf(builder.getEdgeLocation("2-3")),
-                    listOf(builder.getEdgeLocation("0-1"))
+        val res =
+            Pathfinding(g)
+                .setEdgeToLength { edge -> edge.length }
+                .runPathfindingEdgesOnly(
+                    listOf(
+                        listOf(builder.getEdgeLocation("2-3")),
+                        listOf(builder.getEdgeLocation("0-1"))
+                    )
                 )
-            )
         Assertions.assertNull(res)
     }
 
@@ -288,15 +255,16 @@ class PathfindingTests {
         builder.makeEdge(1, 2, 100.meters)
         builder.makeEdge(2, 3, 100.meters)
         val g = builder.build()
-        val res = Pathfinding(g)
-            .setEdgeToLength { edge -> edge.length }
-            .runPathfindingEdgesOnly(
-                listOf(
-                    listOf(builder.getEdgeLocation("0-1")),
-                    listOf(builder.getEdgeLocation("2-3", 20.meters)),
-                    listOf(builder.getEdgeLocation("2-3", 10.meters))
+        val res =
+            Pathfinding(g)
+                .setEdgeToLength { edge -> edge.length }
+                .runPathfindingEdgesOnly(
+                    listOf(
+                        listOf(builder.getEdgeLocation("0-1")),
+                        listOf(builder.getEdgeLocation("2-3", 20.meters)),
+                        listOf(builder.getEdgeLocation("2-3", 10.meters))
+                    )
                 )
-            )
         Assertions.assertNull(res)
     }
 
@@ -310,14 +278,15 @@ class PathfindingTests {
         builder.makeNodes(2)
         builder.makeEdge(0, 1, 100.meters)
         val g = builder.build()
-        val res = Pathfinding(g)
-            .setEdgeToLength { edge -> edge.length }
-            .runPathfindingEdgesOnly(
-                listOf(
-                    listOf(builder.getEdgeLocation("0-1", 60.meters)),
-                    listOf(builder.getEdgeLocation("0-1", 30.meters))
+        val res =
+            Pathfinding(g)
+                .setEdgeToLength { edge -> edge.length }
+                .runPathfindingEdgesOnly(
+                    listOf(
+                        listOf(builder.getEdgeLocation("0-1", 60.meters)),
+                        listOf(builder.getEdgeLocation("0-1", 30.meters))
+                    )
                 )
-            )
         Assertions.assertNull(res)
     }
 
@@ -336,25 +305,17 @@ class PathfindingTests {
         builder.makeEdge(1, 2, 100.meters)
         builder.makeEdge(2, 0, 100.meters)
         val g = builder.build()
-        val res = Pathfinding(g)
-            .setEdgeToLength { edge -> edge.length }
-            .runPathfindingEdgesOnly(
-                listOf(
-                    listOf(builder.getEdgeLocation("0-1", 60.meters)),
-                    listOf(builder.getEdgeLocation("0-1", 30.meters))
+        val res =
+            Pathfinding(g)
+                .setEdgeToLength { edge -> edge.length }
+                .runPathfindingEdgesOnly(
+                    listOf(
+                        listOf(builder.getEdgeLocation("0-1", 60.meters)),
+                        listOf(builder.getEdgeLocation("0-1", 30.meters))
+                    )
                 )
-            )
-        val resIDs = res!!.stream().map { x -> x!!.label }
-            .toList()
-        Assertions.assertEquals(
-            listOf(
-                "0-1",
-                "1-2",
-                "2-0",
-                "0-1"
-            ),
-            resIDs
-        )
+        val resIDs = res!!.stream().map { x -> x!!.label }.toList()
+        Assertions.assertEquals(listOf("0-1", "1-2", "2-0", "0-1"), resIDs)
     }
 
     @Test
@@ -374,17 +335,18 @@ class PathfindingTests {
         builder.makeEdge(1, 4, 100.meters)
         builder.makeEdge(4, 5, 1000.meters)
         val g = builder.build()
-        val res = Pathfinding(g)
-            .setEdgeToLength { edge -> edge.length }
-            .runPathfinding(
-                listOf(
-                    listOf(builder.getEdgeLocation("0-1")),
+        val res =
+            Pathfinding(g)
+                .setEdgeToLength { edge -> edge.length }
+                .runPathfinding(
                     listOf(
-                        builder.getEdgeLocation("2-3", 500.meters),
-                        builder.getEdgeLocation("4-5", 10.meters)
+                        listOf(builder.getEdgeLocation("0-1")),
+                        listOf(
+                            builder.getEdgeLocation("2-3", 500.meters),
+                            builder.getEdgeLocation("4-5", 10.meters)
+                        )
                     )
-                )
-            )!!
+                )!!
         Assertions.assertEquals(
             listOf(
                 SimpleRange("0-1", Offset(0.meters), Offset(0.meters)),
@@ -413,15 +375,16 @@ class PathfindingTests {
         builder.makeEdge(4, 5, 10.meters)
         builder.makeEdge(5, 2, 1000.meters)
         val g = builder.build()
-        val res = Pathfinding(g)
-            .setEdgeToLength { edge -> edge.length }
-            .runPathfinding(
-                listOf(
-                    listOf(builder.getEdgeLocation("0-1", 5.meters)),
-                    listOf(builder.getEdgeLocation("4-5", 5.meters)),
-                    listOf(builder.getEdgeLocation("2-3", 5.meters))
-                )
-            )!!
+        val res =
+            Pathfinding(g)
+                .setEdgeToLength { edge -> edge.length }
+                .runPathfinding(
+                    listOf(
+                        listOf(builder.getEdgeLocation("0-1", 5.meters)),
+                        listOf(builder.getEdgeLocation("4-5", 5.meters)),
+                        listOf(builder.getEdgeLocation("2-3", 5.meters))
+                    )
+                )!!
         Assertions.assertEquals(
             listOf(
                 SimpleRange("0-1", Offset(5.meters), Offset(10.meters)),
@@ -447,35 +410,29 @@ class PathfindingTests {
          */
         val builder = SimpleGraphBuilder()
         builder.makeNodes(7)
-        builder.makeEdge(0, 1, 100.meters,
-            setOf(Pathfinding.Range(Offset(50.meters), Offset(50.meters))))
+        builder.makeEdge(
+            0,
+            1,
+            100.meters,
+            setOf(Pathfinding.Range(Offset(50.meters), Offset(50.meters)))
+        )
         builder.makeEdge(1, 4, 100.meters)
         builder.makeEdge(2, 3, 100.meters)
         builder.makeEdge(3, 4, 100000.meters)
         builder.makeEdge(4, 5, 0.meters)
         val g = builder.build()
-        val res = Pathfinding(g)
-            .setEdgeToLength { edge -> edge.length }
-            .addBlockedRangeOnEdges { edge -> edge.blockedRanges }
-            .runPathfindingEdgesOnly(
-                listOf(
+        val res =
+            Pathfinding(g)
+                .setEdgeToLength { edge -> edge.length }
+                .addBlockedRangeOnEdges { edge -> edge.blockedRanges }
+                .runPathfindingEdgesOnly(
                     listOf(
-                        builder.getEdgeLocation("0-1"),
-                        builder.getEdgeLocation("2-3")
-                    ),
-                    listOf(builder.getEdgeLocation("4-5"))
+                        listOf(builder.getEdgeLocation("0-1"), builder.getEdgeLocation("2-3")),
+                        listOf(builder.getEdgeLocation("4-5"))
+                    )
                 )
-            )
-        val resIDs = res!!.stream().map { x -> x!!.label }
-            .toList()
-        Assertions.assertEquals(
-            listOf(
-                "2-3",
-                "3-4",
-                "4-5"
-            ),
-            resIDs
-        )
+        val resIDs = res!!.stream().map { x -> x!!.label }.toList()
+        Assertions.assertEquals(listOf("2-3", "3-4", "4-5"), resIDs)
     }
 
     @Test
@@ -486,18 +443,23 @@ class PathfindingTests {
          */
         val builder = SimpleGraphBuilder()
         builder.makeNodes(2)
-        builder.makeEdge(0, 1, 100.meters,
-            setOf(Pathfinding.Range(Offset(0.meters), Offset(10.meters))))
+        builder.makeEdge(
+            0,
+            1,
+            100.meters,
+            setOf(Pathfinding.Range(Offset(0.meters), Offset(10.meters)))
+        )
         val g = builder.build()
-        val res = Pathfinding(g)
-            .setEdgeToLength { edge -> edge.length }
-            .addBlockedRangeOnEdges { edge -> edge.blockedRanges }
-            .runPathfindingEdgesOnly(
-                listOf(
-                    listOf(builder.getEdgeLocation("0-1", 5.meters)),
-                    listOf(builder.getEdgeLocation("0-1", 7.meters))
+        val res =
+            Pathfinding(g)
+                .setEdgeToLength { edge -> edge.length }
+                .addBlockedRangeOnEdges { edge -> edge.blockedRanges }
+                .runPathfindingEdgesOnly(
+                    listOf(
+                        listOf(builder.getEdgeLocation("0-1", 5.meters)),
+                        listOf(builder.getEdgeLocation("0-1", 7.meters))
+                    )
                 )
-            )
         Assertions.assertNull(res)
     }
 
@@ -510,21 +472,25 @@ class PathfindingTests {
         val builder = SimpleGraphBuilder()
         builder.makeNodes(2)
         builder.makeEdge(
-            0, 1, 100.meters, setOf(
+            0,
+            1,
+            100.meters,
+            setOf(
                 Pathfinding.Range(Offset(0.meters), Offset(30.meters)),
                 Pathfinding.Range(Offset(70.meters), Offset(100.meters))
             )
         )
         val g = builder.build()
-        val res = Pathfinding(g)
-            .setEdgeToLength { edge -> edge.length }
-            .addBlockedRangeOnEdges { edge -> edge.blockedRanges }
-            .runPathfindingEdgesOnly(
-                listOf(
-                    listOf(builder.getEdgeLocation("0-1", 40.meters)),
-                    listOf(builder.getEdgeLocation("0-1", 50.meters))
+        val res =
+            Pathfinding(g)
+                .setEdgeToLength { edge -> edge.length }
+                .addBlockedRangeOnEdges { edge -> edge.blockedRanges }
+                .runPathfindingEdgesOnly(
+                    listOf(
+                        listOf(builder.getEdgeLocation("0-1", 40.meters)),
+                        listOf(builder.getEdgeLocation("0-1", 50.meters))
+                    )
                 )
-            )
         Assertions.assertNotNull(res)
     }
 
@@ -537,18 +503,23 @@ class PathfindingTests {
         val builder = SimpleGraphBuilder()
         builder.makeNodes(3)
         builder.makeEdge(0, 1, 100.meters)
-        builder.makeEdge(1, 2, 100.meters,
-            setOf(Pathfinding.Range(Offset(70.meters), Offset(100.meters))))
+        builder.makeEdge(
+            1,
+            2,
+            100.meters,
+            setOf(Pathfinding.Range(Offset(70.meters), Offset(100.meters)))
+        )
         val g = builder.build()
-        val res = Pathfinding(g)
-            .setEdgeToLength { edge -> edge.length }
-            .addBlockedRangeOnEdges { edge -> edge.blockedRanges }
-            .runPathfindingEdgesOnly(
-                listOf(
-                    listOf(builder.getEdgeLocation("0-1")),
-                    listOf(builder.getEdgeLocation("1-2", 50.meters))
+        val res =
+            Pathfinding(g)
+                .setEdgeToLength { edge -> edge.length }
+                .addBlockedRangeOnEdges { edge -> edge.blockedRanges }
+                .runPathfindingEdgesOnly(
+                    listOf(
+                        listOf(builder.getEdgeLocation("0-1")),
+                        listOf(builder.getEdgeLocation("1-2", 50.meters))
+                    )
                 )
-            )
         Assertions.assertNotNull(res)
     }
 
@@ -561,18 +532,23 @@ class PathfindingTests {
         val builder = SimpleGraphBuilder()
         builder.makeNodes(3)
         builder.makeEdge(0, 1, 100.meters)
-        builder.makeEdge(1, 2, 100.meters,
-            setOf(Pathfinding.Range(Offset(10.meters), Offset(20.meters))))
+        builder.makeEdge(
+            1,
+            2,
+            100.meters,
+            setOf(Pathfinding.Range(Offset(10.meters), Offset(20.meters)))
+        )
         val g = builder.build()
-        val res = Pathfinding(g)
-            .setEdgeToLength { edge -> edge.length }
-            .addBlockedRangeOnEdges { edge -> edge.blockedRanges }
-            .runPathfindingEdgesOnly(
-                listOf(
-                    listOf(builder.getEdgeLocation("0-1")),
-                    listOf(builder.getEdgeLocation("1-2", 50.meters))
+        val res =
+            Pathfinding(g)
+                .setEdgeToLength { edge -> edge.length }
+                .addBlockedRangeOnEdges { edge -> edge.blockedRanges }
+                .runPathfindingEdgesOnly(
+                    listOf(
+                        listOf(builder.getEdgeLocation("0-1")),
+                        listOf(builder.getEdgeLocation("1-2", 50.meters))
+                    )
                 )
-            )
         Assertions.assertNull(res)
     }
 
@@ -584,21 +560,26 @@ class PathfindingTests {
          */
         val builder = SimpleGraphBuilder()
         builder.makeNodes(2)
-        builder.makeEdge(0, 1, 100.meters,
-            setOf(Pathfinding.Range(Offset(10.meters), Offset(20.meters))))
+        builder.makeEdge(
+            0,
+            1,
+            100.meters,
+            setOf(Pathfinding.Range(Offset(10.meters), Offset(20.meters)))
+        )
         val g = builder.build()
-        val res = Pathfinding(g)
-            .setEdgeToLength { edge -> edge.length }
-            .addBlockedRangeOnEdges { edge -> edge.blockedRanges }
-            .runPathfindingEdgesOnly(
-                listOf(
+        val res =
+            Pathfinding(g)
+                .setEdgeToLength { edge -> edge.length }
+                .addBlockedRangeOnEdges { edge -> edge.blockedRanges }
+                .runPathfindingEdgesOnly(
                     listOf(
-                        builder.getEdgeLocation("0-1", 10.meters),
-                        builder.getEdgeLocation("0-1", 40.meters)
-                    ),
-                    listOf(builder.getEdgeLocation("0-1", 50.meters))
+                        listOf(
+                            builder.getEdgeLocation("0-1", 10.meters),
+                            builder.getEdgeLocation("0-1", 40.meters)
+                        ),
+                        listOf(builder.getEdgeLocation("0-1", 50.meters))
+                    )
                 )
-            )
         Assertions.assertNotNull(res)
     }
 
@@ -613,21 +594,25 @@ class PathfindingTests {
         val builder = SimpleGraphBuilder()
         builder.makeNodes(2)
         builder.makeEdge(
-            0, 1, 100.meters, setOf(
+            0,
+            1,
+            100.meters,
+            setOf(
                 Pathfinding.Range(Offset(10.meters), Offset(50.meters)),
                 Pathfinding.Range(Offset(30.meters), Offset(80.meters))
             )
         )
         val g = builder.build()
-        val res = Pathfinding(g)
-            .setEdgeToLength { edge -> edge.length }
-            .addBlockedRangeOnEdges { edge -> edge.blockedRanges }
-            .runPathfindingEdgesOnly(
-                listOf(
-                    listOf(builder.getEdgeLocation("0-1", 55.meters)),
-                    listOf(builder.getEdgeLocation("0-1", 60.meters))
+        val res =
+            Pathfinding(g)
+                .setEdgeToLength { edge -> edge.length }
+                .addBlockedRangeOnEdges { edge -> edge.blockedRanges }
+                .runPathfindingEdgesOnly(
+                    listOf(
+                        listOf(builder.getEdgeLocation("0-1", 55.meters)),
+                        listOf(builder.getEdgeLocation("0-1", 60.meters))
+                    )
                 )
-            )
         Assertions.assertNull(res)
     }
 
@@ -645,28 +630,23 @@ class PathfindingTests {
         builder.makeEdge(3, 4, 1000.meters)
         builder.makeEdge(4, 5, 1000.meters)
         val g = builder.build()
-        val res = Pathfinding(g)
-            .setEdgeToLength { edge -> edge.length }
-            .runPathfindingEdgesOnly(
-                listOf(
+        val res =
+            Pathfinding(g)
+                .setEdgeToLength { edge -> edge.length }
+                .runPathfindingEdgesOnly(
                     listOf(
-                        builder.getEdgeLocation("0-1", 5000.meters),
-                        builder.getEdgeLocation("2-3")
-                    ),
-                    listOf(
-                        builder.getEdgeLocation("0-1", 6999.meters),
-                        builder.getEdgeLocation("4-5", 1000.meters)
+                        listOf(
+                            builder.getEdgeLocation("0-1", 5000.meters),
+                            builder.getEdgeLocation("2-3")
+                        ),
+                        listOf(
+                            builder.getEdgeLocation("0-1", 6999.meters),
+                            builder.getEdgeLocation("4-5", 1000.meters)
+                        )
                     )
                 )
-            )
-        val resIDs = res!!.stream().map { x -> x!!.label }
-            .toList()
-        Assertions.assertEquals(
-            listOf(
-                "0-1"
-            ),
-            resIDs
-        )
+        val resIDs = res!!.stream().map { x -> x!!.label }.toList()
+        Assertions.assertEquals(listOf("0-1"), resIDs)
     }
 
     @ParameterizedTest
@@ -676,28 +656,23 @@ class PathfindingTests {
         builder.makeNodes(2)
         builder.makeEdge(0, 1, 100.meters)
         val g = builder.build()
-        val pathfinding = Pathfinding(g)
-            .setEdgeToLength { edge -> edge.length }
-            .setTimeout(timeout.toDouble())
+        val pathfinding =
+            Pathfinding(g).setEdgeToLength { edge -> edge.length }.setTimeout(timeout.toDouble())
         if (!timesOut) {
             val res =
                 pathfinding.runPathfindingEdgesOnly(listOf(listOf(builder.getEdgeLocation("0-1"))))
             Assertions.assertNotNull(res)
         } else {
             AssertionsForClassTypes.assertThatThrownBy {
-                pathfinding.runPathfindingEdgesOnly(
-                    listOf(
-                        listOf(
-                            builder.getEdgeLocation("0-1")
-                        )
+                    pathfinding.runPathfindingEdgesOnly(
+                        listOf(listOf(builder.getEdgeLocation("0-1")))
                     )
-                )
-            }
+                }
                 .isExactlyInstanceOf(OSRDError::class.java)
                 .satisfies({ exception: Throwable? ->
                     org.assertj.core.api.Assertions.assertThat(
-                        (exception as OSRDError?)!!.osrdErrorType
-                    )
+                            (exception as OSRDError?)!!.osrdErrorType
+                        )
                         .isEqualTo(ErrorType.PathfindingTimeoutError)
                 })
         }
@@ -705,7 +680,8 @@ class PathfindingTests {
 
     companion object {
         private fun convertRes(res: Pathfinding.Result<Edge, Edge>): List<SimpleRange> {
-            return res.ranges.stream()
+            return res.ranges
+                .stream()
                 .map { x -> SimpleRange(x.edge.label, x.start, x.end) }
                 .collect(Collectors.toList())
         }

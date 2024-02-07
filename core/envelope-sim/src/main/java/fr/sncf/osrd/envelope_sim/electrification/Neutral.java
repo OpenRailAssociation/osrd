@@ -2,9 +2,7 @@ package fr.sncf.osrd.envelope_sim.electrification;
 
 import java.util.Objects;
 
-/**
- * Neutral electrification conditions at a point in the path
- */
+/** Neutral electrification conditions at a point in the path */
 public final class Neutral implements Electrification {
     /** Whether the pantograph should be lowered */
     public boolean lowerPantograph;
@@ -29,14 +27,13 @@ public final class Neutral implements Electrification {
 
     @Override
     public Electrification withPowerRestriction(String powerRestriction) {
-        return new Neutral(lowerPantograph, overlappedElectrification.withPowerRestriction(powerRestriction),
-                isAnnouncement);
+        return new Neutral(
+                lowerPantograph, overlappedElectrification.withPowerRestriction(powerRestriction), isAnnouncement);
     }
 
     @Override
     public boolean equals(Object o) {
-        if (!(o instanceof Neutral other))
-            return false;
+        if (!(o instanceof Neutral other)) return false;
         return lowerPantograph == other.lowerPantograph
                 && isAnnouncement == other.isAnnouncement
                 && overlappedElectrification.equals(other.overlappedElectrification);

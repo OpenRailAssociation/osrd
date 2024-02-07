@@ -5,7 +5,6 @@ import fr.sncf.osrd.utils.indexing.StaticIdxList
 import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
 import java.util.*
 
-
 data class BlockPathElement(
     val prev: BlockPathElement?,
     val block: BlockId,
@@ -19,7 +18,7 @@ data class BlockPathElement(
     val routeEndZoneOffset: Int,
 )
 
-fun BlockPathElement.toList() : List<BlockPathElement> {
+fun BlockPathElement.toList(): List<BlockPathElement> {
     val res = mutableListOf(this)
     var cur = this.prev
     while (cur != null) {
@@ -29,7 +28,7 @@ fun BlockPathElement.toList() : List<BlockPathElement> {
     return res.reversed()
 }
 
-fun BlockPathElement.toBlockList() : StaticIdxList<Block> {
+fun BlockPathElement.toBlockList(): StaticIdxList<Block> {
     val res = mutableStaticIdxArrayListOf(this.block)
     var cur = this.prev
     while (cur != null) {
@@ -38,7 +37,6 @@ fun BlockPathElement.toBlockList() : StaticIdxList<Block> {
     }
     return res.reversed()
 }
-
 
 private fun filterBlocks(
     allowedSignalingSystems: StaticIdxList<SignalingSystem>?,
@@ -50,20 +48,19 @@ private fun filterBlocks(
     val remainingZonePaths = routePath.size - routeOffset
     val res = mutableStaticIdxArrayListOf<Block>()
     blockLoop@ for (block in blocks) {
-        if (allowedSignalingSystems != null
-            && !allowedSignalingSystems.contains(blockInfra.getBlockSignalingSystem(block)))
+        if (
+            allowedSignalingSystems != null &&
+                !allowedSignalingSystems.contains(blockInfra.getBlockSignalingSystem(block))
+        )
             continue
         val blockPath = blockInfra.getBlockPath(block)
-        if (blockPath.size > remainingZonePaths)
-            continue
-        for (i in 0 until blockPath.size)
-            if (routePath[routeOffset + i] != blockPath[i])
-                continue@blockLoop
+        if (blockPath.size > remainingZonePaths) continue
+        for (i in 0 until blockPath.size) if (routePath[routeOffset + i] != blockPath[i])
+            continue@blockLoop
         res.add(block)
     }
     return res
 }
-
 
 private fun findRouteBlocks(
     signalingInfra: RawSignalingInfra,
@@ -75,7 +72,8 @@ private fun findRouteBlocks(
 ): List<BlockPathElement> {
     val routePath = signalingInfra.getRoutePath(route)
     var maxRouteEndOffset = 0
-    val incompletePaths = PriorityQueue<BlockPathElement>(Comparator.comparing { it.routeEndZoneOffset })
+    val incompletePaths =
+        PriorityQueue<BlockPathElement>(Comparator.comparing { it.routeEndZoneOffset })
     val completePaths = mutableListOf<BlockPathElement>()
 
     fun addPath(path: BlockPathElement) {
@@ -83,27 +81,30 @@ private fun findRouteBlocks(
             completePaths.add(path)
             return
         }
-        if (path.routeEndZoneOffset > maxRouteEndOffset)
-            maxRouteEndOffset = path.routeEndZoneOffset
+        if (path.routeEndZoneOffset > maxRouteEndOffset) maxRouteEndOffset = path.routeEndZoneOffset
         incompletePaths.add(path)
     }
 
     fun findNextBlocks(prevPath: BlockPathElement, routeOffset: Int) {
         val lastBlock = prevPath.block
-        if (blockInfra.blockStopAtBufferStop(lastBlock))
-            return
+        if (blockInfra.blockStopAtBufferStop(lastBlock)) return
         val blockSignals = blockInfra.getBlockSignals(lastBlock)
         val curSignal = blockSignals[blockSignals.size - 1]
         val blocks = blockInfra.getBlocksAtSignal(curSignal)
-        val blocksOnRoute = filterBlocks(allowedSignalingSystems, blockInfra, blocks, routePath, routeOffset)
+        val blocksOnRoute =
+            filterBlocks(allowedSignalingSystems, blockInfra, blocks, routePath, routeOffset)
         for (block in blocksOnRoute) {
             val blockSize = blockInfra.getBlockPath(block).size
-            addPath(BlockPathElement(
-                prevPath,
-                block, routeIndex,
-                prevPath.blockRouteOffset + 1,
-                routeOffset, routeOffset + blockSize
-            ))
+            addPath(
+                BlockPathElement(
+                    prevPath,
+                    block,
+                    routeIndex,
+                    prevPath.blockRouteOffset + 1,
+                    routeOffset,
+                    routeOffset + blockSize
+                )
+            )
         }
     }
 
@@ -117,8 +118,7 @@ private fun findRouteBlocks(
             addPath(BlockPathElement(null, block, routeIndex, 0, 0, blockPath.size))
         }
     } else {
-        for (prevPath in previousPaths)
-            findNextBlocks(prevPath, 0)
+        for (prevPath in previousPaths) findNextBlocks(prevPath, 0)
     }
 
     // for each block until the end of the route path,
@@ -142,7 +142,8 @@ fun recoverBlocks(
 
     for (routeIndex in 0 until routes.size) {
         val route = routes[routeIndex]
-        val newCandidates = findRouteBlocks(sigInfra, blockInfra, allowedSigSystems, candidates, route, routeIndex)
+        val newCandidates =
+            findRouteBlocks(sigInfra, blockInfra, allowedSigSystems, candidates, route, routeIndex)
         candidates = newCandidates
     }
     return candidates!!

@@ -4,19 +4,16 @@ import fr.sncf.osrd.utils.units.*
 import java.util.function.BiFunction
 
 /**
-DistanceRangeMap allows to store values over intervals (e.g. elevation on sections of a track) and query them.
-The default value is null.
-*/
+ * DistanceRangeMap allows to store values over intervals (e.g. elevation on sections of a track)
+ * and query them. The default value is null.
+ */
 interface DistanceRangeMap<T> : Iterable<DistanceRangeMap.RangeMapEntry<T>> {
 
     /** When iterating over the values of the map, this represents one range of constant value */
     data class RangeMapEntry<T>(
-        @get:JvmName("getLower")
-        val lower: Distance,
-        @get:JvmName("getUpper")
-        val upper: Distance,
-        @get:JvmName("getValue")
-        val value: T,
+        @get:JvmName("getLower") val lower: Distance,
+        @get:JvmName("getUpper") val upper: Distance,
+        @get:JvmName("getValue") val value: T,
     )
 
     /** Sets the value between the lower and upper distances */
@@ -40,8 +37,10 @@ interface DistanceRangeMap<T> : Iterable<DistanceRangeMap.RangeMapEntry<T>> {
     /** Shifts the positions by adding the given value */
     fun shiftPositions(offset: Distance)
 
-    /** Get the value at the given offset, if there is any.
-     * On exact transition offsets, the value for the higher offset is used. */
+    /**
+     * Get the value at the given offset, if there is any. On exact transition offsets, the value
+     * for the higher offset is used.
+     */
     fun get(offset: Distance): T?
 
     /** Returns a deep copy of the map */
@@ -50,21 +49,27 @@ interface DistanceRangeMap<T> : Iterable<DistanceRangeMap.RangeMapEntry<T>> {
     /** Returns a new DistanceRangeMap of the ranges between lower and upper */
     fun subMap(lower: Distance, upper: Distance): DistanceRangeMap<T>
 
-    /** Updates the map with another one, using a merge function to fuse the values of intersecting ranges*/
-    fun <U> updateMap(
-        update: DistanceRangeMap<U>,
-        updateFunction: BiFunction<T, U, T>
-    )
+    /**
+     * Updates the map with another one, using a merge function to fuse the values of intersecting
+     * ranges
+     */
+    fun <U> updateMap(update: DistanceRangeMap<U>, updateFunction: BiFunction<T, U, T>)
 }
 
-fun <T> distanceRangeMapOf(entries: List<DistanceRangeMap.RangeMapEntry<T>> = emptyList())
-  : DistanceRangeMap<T> {
+fun <T> distanceRangeMapOf(
+    entries: List<DistanceRangeMap.RangeMapEntry<T>> = emptyList()
+): DistanceRangeMap<T> {
     return DistanceRangeMapImpl(entries)
 }
 
-/** Merges all the given range maps, offsetting them by the given distances.
- * The lists must be empty or `maps` must be larger by one. */
-fun <T> mergeDistanceRangeMaps(maps: List<DistanceRangeMap<T>>, distances: List<Distance>): DistanceRangeMap<T> {
+/**
+ * Merges all the given range maps, offsetting them by the given distances. The lists must be empty
+ * or `maps` must be larger by one.
+ */
+fun <T> mergeDistanceRangeMaps(
+    maps: List<DistanceRangeMap<T>>,
+    distances: List<Distance>
+): DistanceRangeMap<T> {
     assert((maps.size - 1 == distances.size) || (maps.isEmpty() && distances.isEmpty()))
 
     val resEntries = ArrayList<DistanceRangeMap.RangeMapEntry<T>>()
@@ -73,7 +78,13 @@ fun <T> mergeDistanceRangeMaps(maps: List<DistanceRangeMap<T>>, distances: List<
     // Adding a last distance for convenience, it's not used.
     for ((map, distance) in maps zip distances + 0.meters) {
         for (entry in map) {
-            resEntries.add(DistanceRangeMap.RangeMapEntry(entry.lower + previousDistance, entry.upper + previousDistance, entry.value))
+            resEntries.add(
+                DistanceRangeMap.RangeMapEntry(
+                    entry.lower + previousDistance,
+                    entry.upper + previousDistance,
+                    entry.value
+                )
+            )
         }
         previousDistance += distance
     }

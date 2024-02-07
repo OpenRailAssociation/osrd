@@ -12,18 +12,15 @@ public class EnvelopeDeceleration {
             double startPosition,
             double startSpeed,
             InteractiveEnvelopePartConsumer consumer,
-            double direction
-    ) {
-        if (!consumer.initEnvelopePart(startPosition, startSpeed, direction))
-            return;
+            double direction) {
+        if (!consumer.initEnvelopePart(startPosition, startSpeed, direction)) return;
         double position = startPosition;
         double speed = startSpeed;
         while (true) {
             var step = TrainPhysicsIntegrator.step(context, position, speed, Action.BRAKE, direction);
             position += step.positionDelta;
             speed = step.endSpeed;
-            if (!consumer.addStep(position, speed, step.timeDelta))
-                break;
+            if (!consumer.addStep(position, speed, step.timeDelta)) break;
         }
     }
 }

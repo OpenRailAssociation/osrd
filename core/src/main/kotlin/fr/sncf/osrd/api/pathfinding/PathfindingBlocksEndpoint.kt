@@ -28,6 +28,9 @@ import fr.sncf.osrd.utils.indexing.*
 import fr.sncf.osrd.utils.units.Distance.Companion.fromMeters
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
+import java.util.*
+import java.util.stream.Collectors
+import kotlin.math.abs
 import org.takes.Request
 import org.takes.Response
 import org.takes.Take
@@ -36,12 +39,8 @@ import org.takes.rs.RsJson
 import org.takes.rs.RsText
 import org.takes.rs.RsWithBody
 import org.takes.rs.RsWithStatus
-import java.util.*
-import java.util.stream.Collectors
-import kotlin.math.abs
 
-class PathfindingBlocksEndpoint
-    (private val infraManager: InfraManager) : Take {
+class PathfindingBlocksEndpoint(private val infraManager: InfraManager) : Take {
     override fun act(req: Request): Response {
         val recorder = DiagnosticRecorderImpl(false)
         return try {
@@ -55,14 +54,15 @@ class PathfindingBlocksEndpoint
             val infra = infraManager.getInfra(request.infra, request.expectedVersion, recorder)
 
             // Load rolling stocks
-            val rollingStocks = request.rollingStocks.stream()
-                .map { rjsRollingStock: RJSRollingStock? -> RJSRollingStockParser.parse(rjsRollingStock) }
-                .toList()
+            val rollingStocks =
+                request.rollingStocks
+                    .stream()
+                    .map { rjsRollingStock: RJSRollingStock? ->
+                        RJSRollingStockParser.parse(rjsRollingStock)
+                    }
+                    .toList()
             val path = runPathfinding(infra, reqWaypoints, rollingStocks)
-            val res = convertPathfindingResult(
-                infra.blockInfra, infra.rawInfra,
-                path, recorder
-            )
+            val res = convertPathfindingResult(infra.blockInfra, infra.rawInfra, path, recorder)
             validatePathfindingResult(res, reqWaypoints, infra.rawInfra)
             RsJson(RsWithBody(PathfindingResult.adapterResult.toJson(res)))
         } catch (ex: Throwable) {
@@ -75,8 +75,7 @@ class PathfindingBlocksEndpoint
         val constraintErrors = HashMap<Class<*>, ErrorType>()
 
         init {
-            constraintErrors[LoadingGaugeConstraints::class.java] =
-                ErrorType.PathfindingGaugeError
+            constraintErrors[LoadingGaugeConstraints::class.java] = ErrorType.PathfindingGaugeError
             constraintErrors[ElectrificationConstraints::class.java] =
                 ErrorType.PathfindingElectrificationError
             constraintErrors[SignalingSystemConstraints::class.java] =
@@ -85,58 +84,72 @@ class PathfindingBlocksEndpoint
     }
 }
 
-/** Returns the list of dir track id on the route. Can contain duplicates.  */
-private fun getRouteDirTracks(rawInfra: RawSignalingInfra, routeId: RouteId): DirStaticIdxList<TrackSection> {
+/** Returns the list of dir track id on the route. Can contain duplicates. */
+private fun getRouteDirTracks(
+    rawInfra: RawSignalingInfra,
+    routeId: RouteId
+): DirStaticIdxList<TrackSection> {
     val res = MutableDirStaticIdxArrayList<TrackSection>()
     for (dirChunk in rawInfra.getChunksOnRoute(routeId)) {
-        val currentTrack = DirStaticIdx(
-            rawInfra.getTrackFromChunk(dirChunk.value),
-            dirChunk.direction
-        )
+        val currentTrack =
+            DirStaticIdx(rawInfra.getTrackFromChunk(dirChunk.value), dirChunk.direction)
         res.add(currentTrack)
     }
     return res
 }
 
 fun validatePathfindingResult(
-    res: PathfindingResult, reqWaypoints: Array<Array<PathfindingWaypoint>>,
+    res: PathfindingResult,
+    reqWaypoints: Array<Array<PathfindingWaypoint>>,
     rawInfra: RawSignalingInfra
 ) {
     val routeTracks = MutableDirStaticIdxArrayList<TrackSection>()
-    for (routePath in res.routePaths)
-        for (dirTrack in getRouteDirTracks(rawInfra, rawInfra.getRouteFromName(routePath.route)))
-            if (routeTracks.isEmpty() || routeTracks[routeTracks.size - 1] != dirTrack)
-                routeTracks.add(dirTrack)
+    for (routePath in res.routePaths) for (dirTrack in
+        getRouteDirTracks(rawInfra, rawInfra.getRouteFromName(routePath.route))) if (
+        routeTracks.isEmpty() || routeTracks[routeTracks.size - 1] != dirTrack
+    )
+        routeTracks.add(dirTrack)
     if (routeTracks.toSet().size < routeTracks.size)
         throw OSRDError(ErrorType.PathWithRepeatedTracks)
     assertPathRoutesAreAdjacent(routeTracks, rawInfra)
-    val tracksOnPath = res.routePaths.stream()
-        .flatMap { route: RJSRoutePath? -> route!!.trackSections.stream() }
-        .toList()
+    val tracksOnPath =
+        res.routePaths
+            .stream()
+            .flatMap { route: RJSRoutePath? -> route!!.trackSections.stream() }
+            .toList()
     assertPathTracksAreComplete(tracksOnPath, rawInfra)
 }
 
-private fun assertPathRoutesAreAdjacent(routeTracks: DirStaticIdxList<TrackSection>, rawInfra: RawSignalingInfra) {
+private fun assertPathRoutesAreAdjacent(
+    routeTracks: DirStaticIdxList<TrackSection>,
+    rawInfra: RawSignalingInfra
+) {
     for (i in 0 until routeTracks.size - 1) {
         val nextTrackSections = rawInfra.getNextTrackSections(routeTracks[i])
-        assert(nextTrackSections.contains(routeTracks[i + 1]))
-        { "The path goes over consecutive tracks that are not adjacent" }
+        assert(nextTrackSections.contains(routeTracks[i + 1])) {
+            "The path goes over consecutive tracks that are not adjacent"
+        }
     }
 }
 
-private fun assertPathTracksAreComplete(tracksOnPath: List<RJSDirectionalTrackRange>, rawInfra: RawSignalingInfra) {
+private fun assertPathTracksAreComplete(
+    tracksOnPath: List<RJSDirectionalTrackRange>,
+    rawInfra: RawSignalingInfra
+) {
     var i = 0
     while (i < tracksOnPath.size) {
         val track = tracksOnPath[i]
         val trackName = track.trackSectionID
         val fullTrack = ArrayList<RJSDirectionalTrackRange?>()
         for (j in i until tracksOnPath.size) {
-            if (trackName != tracksOnPath[j].trackSectionID)
-                break
+            if (trackName != tracksOnPath[j].trackSectionID) break
             fullTrack.add(tracksOnPath[j])
         }
         val fullTrackLength =
-            rawInfra.getTrackSectionLength(getTrackSectionFromNameOrThrow(trackName, rawInfra)).distance.meters
+            rawInfra
+                .getTrackSectionLength(getTrackSectionFromNameOrThrow(trackName, rawInfra))
+                .distance
+                .meters
         var beginEndpoint = fullTrack[0]!!.begin
         var endEndpoint = fullTrack[fullTrack.size - 1]!!.end
         var trackBegin = 0.0
@@ -165,24 +178,23 @@ private fun assertPathTracksAreComplete(tracksOnPath: List<RJSDirectionalTrackRa
         // The track should be whole
         for (j in 0 until fullTrack.size - 1) {
             assert(abs(fullTrack[j]!!.end - fullTrack[j + 1]!!.begin) < 1e-3) {
-                String.format(
-                    "The path goes through a partially incomplete track %s",
-                    trackName
-                )
+                String.format("The path goes through a partially incomplete track %s", trackName)
             }
         }
     }
 }
 
-private fun isWaypointOnTrack(waypoint: PathfindingWaypoint, track: RJSDirectionalTrackRange): Boolean {
-    return (track.trackSectionID == waypoint.trackSection && track.direction == waypoint.direction
-            && (track.begin <= waypoint.offset || abs(track.begin - waypoint.offset) < 1e-3)
-            && (track.end >= waypoint.offset || abs(track.end - waypoint.offset) < 1e-3))
+private fun isWaypointOnTrack(
+    waypoint: PathfindingWaypoint,
+    track: RJSDirectionalTrackRange
+): Boolean {
+    return (track.trackSectionID == waypoint.trackSection &&
+        track.direction == waypoint.direction &&
+        (track.begin <= waypoint.offset || abs(track.begin - waypoint.offset) < 1e-3) &&
+        (track.end >= waypoint.offset || abs(track.end - waypoint.offset) < 1e-3))
 }
 
-/**
- * Runs the pathfinding with the infra and rolling stocks already parsed
- */
+/** Runs the pathfinding with the infra and rolling stocks already parsed */
 @JvmName("runPathfinding")
 @Throws(OSRDError::class)
 fun runPathfinding(
@@ -194,32 +206,26 @@ fun runPathfinding(
     val waypoints = ArrayList<Collection<PathfindingEdgeLocationId<Block>>>()
     for (step in reqWaypoints) {
         val allStarts = HashSet<PathfindingEdgeLocationId<Block>>()
-        for (waypoint in step)
-            allStarts.addAll(findWaypointBlocks(infra, waypoint))
+        for (waypoint in step) allStarts.addAll(findWaypointBlocks(infra, waypoint))
         waypoints.add(allStarts)
     }
 
     // Initializes the constraints
-    val loadingGaugeConstraints = LoadingGaugeConstraints(infra.blockInfra, infra.rawInfra, rollingStocks!!)
-    val electrificationConstraints = ElectrificationConstraints(
-        infra.blockInfra, infra.rawInfra,
-        rollingStocks
-    )
-    val signalisationSystemConstraints = makeSignalingSystemConstraints(
-        infra.blockInfra,
-        infra.signalingSimulator,
-        rollingStocks
-    )
-    val constraints = listOf(
-        loadingGaugeConstraints, electrificationConstraints, signalisationSystemConstraints
-    )
+    val loadingGaugeConstraints =
+        LoadingGaugeConstraints(infra.blockInfra, infra.rawInfra, rollingStocks!!)
+    val electrificationConstraints =
+        ElectrificationConstraints(infra.blockInfra, infra.rawInfra, rollingStocks)
+    val signalisationSystemConstraints =
+        makeSignalingSystemConstraints(infra.blockInfra, infra.signalingSimulator, rollingStocks)
+    val constraints =
+        listOf(loadingGaugeConstraints, electrificationConstraints, signalisationSystemConstraints)
     val remainingDistanceEstimators = makeHeuristics(infra, waypoints)
 
     // Compute the paths from the entry waypoint to the exit waypoint
     return computePaths(infra, waypoints, constraints, remainingDistanceEstimators)
 }
 
-/** Initialize the heuristics  */
+/** Initialize the heuristics */
 fun makeHeuristics(
     infra: FullInfra,
     waypoints: List<Collection<PathfindingEdgeLocationId<Block>>>
@@ -227,10 +233,13 @@ fun makeHeuristics(
     // Compute the minimum distance between steps
     val stepMinDistance = DoubleArray(waypoints.size - 1)
     for (i in 0 until waypoints.size - 2) {
-        stepMinDistance[i] = RemainingDistanceEstimator.minDistanceBetweenSteps(
-            infra.blockInfra, infra.rawInfra, waypoints[i + 1],
-            waypoints[i + 2]
-        )
+        stepMinDistance[i] =
+            RemainingDistanceEstimator.minDistanceBetweenSteps(
+                infra.blockInfra,
+                infra.rawInfra,
+                waypoints[i + 1],
+                waypoints[i + 2]
+            )
     }
 
     // Reversed cumulative sum
@@ -260,23 +269,23 @@ private fun computePaths(
     constraints: List<EdgeToRangesId<Block>>,
     remainingDistanceEstimators: List<AStarHeuristicId<Block>>
 ): PathfindingResultId<Block> {
-    val pathFound = Pathfinding(GraphAdapter(infra.blockInfra, infra.rawInfra))
-        .setEdgeToLength { block: BlockId -> infra.blockInfra.getBlockLength(block) }
-        .setRemainingDistanceEstimator(remainingDistanceEstimators)
-        .addBlockedRangeOnEdges(constraints)
-        .runPathfinding(waypoints)
+    val pathFound =
+        Pathfinding(GraphAdapter(infra.blockInfra, infra.rawInfra))
+            .setEdgeToLength { block: BlockId -> infra.blockInfra.getBlockLength(block) }
+            .setRemainingDistanceEstimator(remainingDistanceEstimators)
+            .addBlockedRangeOnEdges(constraints)
+            .runPathfinding(waypoints)
     if (pathFound != null) {
         return pathFound
     }
 
     // Handling errors
     // Check if pathfinding failed due to constraints
-    val possiblePathWithoutErrorNoConstraints = Pathfinding<DirDetectorId, BlockId, Block>(
-        GraphAdapter(infra.blockInfra, infra.rawInfra)
-    )
-        .setEdgeToLength { block -> infra.blockInfra.getBlockLength(block) }
-        .setRemainingDistanceEstimator(remainingDistanceEstimators)
-        .runPathfinding(waypoints)
+    val possiblePathWithoutErrorNoConstraints =
+        Pathfinding<DirDetectorId, BlockId, Block>(GraphAdapter(infra.blockInfra, infra.rawInfra))
+            .setEdgeToLength { block -> infra.blockInfra.getBlockLength(block) }
+            .setRemainingDistanceEstimator(remainingDistanceEstimators)
+            .runPathfinding(waypoints)
     if (possiblePathWithoutErrorNoConstraints != null) {
         for (currentConstraint in constraints) {
             Pathfinding(GraphAdapter(infra.blockInfra, infra.rawInfra))
@@ -284,7 +293,9 @@ private fun computePaths(
                 .addBlockedRangeOnEdges(currentConstraint)
                 .setRemainingDistanceEstimator(remainingDistanceEstimators)
                 .runPathfinding(waypoints)
-                ?: throw OSRDError(PathfindingBlocksEndpoint.constraintErrors[currentConstraint.javaClass])
+                ?: throw OSRDError(
+                    PathfindingBlocksEndpoint.constraintErrors[currentConstraint.javaClass]
+                )
         }
     }
     // It didn’t fail due to a constraint, no path exists
@@ -293,6 +304,7 @@ private fun computePaths(
 
 /**
  * Returns all the EdgeLocations of a waypoint list.
+ *
  * @param infra full infra.
  * @param waypoints corresponding waypoints.
  * @return corresponding edge locations.
@@ -301,13 +313,15 @@ fun findWaypointBlocks(
     infra: FullInfra,
     waypoints: Collection<PathfindingWaypoint>
 ): Set<PathfindingEdgeLocationId<Block>> {
-    return waypoints.stream()
+    return waypoints
+        .stream()
         .flatMap { waypoint: PathfindingWaypoint -> findWaypointBlocks(infra, waypoint).stream() }
         .collect(Collectors.toSet())
 }
 
 /**
  * Returns all the EdgeLocations of a waypoint.
+ *
  * @param infra full infra.
  * @param waypoint corresponding waypoint.
  * @return corresponding edge location, containing a block id and its offset from the waypoint.
@@ -317,20 +331,24 @@ fun findWaypointBlocks(
     waypoint: PathfindingWaypoint
 ): Set<PathfindingEdgeLocationId<Block>> {
     val res = HashSet<PathfindingEdgeLocationId<Block>>()
-    val trackSectionId = infra.rawInfra.getTrackSectionFromName(waypoint.trackSection)
-        ?: throw OSRDError.newUnknownTrackSectionError(waypoint.trackSection)
-    val trackChunkOnWaypoint = getTrackSectionChunkOnWaypoint(trackSectionId, waypoint.offset, infra.rawInfra)
+    val trackSectionId =
+        infra.rawInfra.getTrackSectionFromName(waypoint.trackSection)
+            ?: throw OSRDError.newUnknownTrackSectionError(waypoint.trackSection)
+    val trackChunkOnWaypoint =
+        getTrackSectionChunkOnWaypoint(trackSectionId, waypoint.offset, infra.rawInfra)
     val waypointDirection = Direction.fromEdgeDir(waypoint.direction).toKtDirection()
     val blocksOnWaypoint =
-        infra.blockInfra.getBlocksFromTrackChunk(
-            trackChunkOnWaypoint,
-            waypointDirection
-        ).toSet()
+        infra.blockInfra.getBlocksFromTrackChunk(trackChunkOnWaypoint, waypointDirection).toSet()
     for (block in blocksOnWaypoint) {
-        val offset = getBlockOffset(
-            block, trackChunkOnWaypoint, trackSectionId, waypoint.offset,
-            waypoint.direction, infra
-        )
+        val offset =
+            getBlockOffset(
+                block,
+                trackChunkOnWaypoint,
+                trackSectionId,
+                waypoint.offset,
+                waypoint.direction,
+                infra
+            )
         assert(offset <= infra.blockInfra.getBlockLength(block))
         res.add(EdgeLocation(block, offset))
     }
@@ -338,7 +356,8 @@ fun findWaypointBlocks(
 }
 
 private fun getTrackSectionChunkOnWaypoint(
-    trackSectionId: TrackSectionId, waypointOffsetMeters: Double,
+    trackSectionId: TrackSectionId,
+    waypointOffsetMeters: Double,
     rawInfra: RawSignalingInfra
 ): TrackChunkId {
     val waypointOffset = fromMeters(waypointOffsetMeters)
@@ -347,40 +366,45 @@ private fun getTrackSectionChunkOnWaypoint(
         val startChunk = rawInfra.getTrackChunkOffset(chunk)
         val endChunk = startChunk + rawInfra.getTrackChunkLength(chunk).distance
         waypointOffset >= startChunk.distance && waypointOffset <= endChunk.distance
-    } ?: throw RuntimeException(
-        String.format(
-            "The waypoint is not located on the track section %s",
-            rawInfra.getTrackSectionName(trackSectionId)
+    }
+        ?: throw RuntimeException(
+            String.format(
+                "The waypoint is not located on the track section %s",
+                rawInfra.getTrackSectionName(trackSectionId)
+            )
         )
-    )
 }
 
 private fun getBlockOffset(
-    blockId: BlockId, trackChunkId: TrackChunkId, trackSectionId: TrackSectionId, waypointOffsetMeters: Double,
-    direction: EdgeDirection, infra: FullInfra
+    blockId: BlockId,
+    trackChunkId: TrackChunkId,
+    trackSectionId: TrackSectionId,
+    waypointOffsetMeters: Double,
+    direction: EdgeDirection,
+    infra: FullInfra
 ): Offset<Block> {
     val waypointOffset = fromMeters(waypointOffsetMeters)
     val trackSectionLength = infra.rawInfra.getTrackSectionLength(trackSectionId)
     val trackChunkOffset = infra.rawInfra.getTrackChunkOffset(trackChunkId)
     val trackChunkLength = infra.rawInfra.getTrackChunkLength(trackChunkId)
     val dirTrackChunkOffset =
-        if (direction == EdgeDirection.START_TO_STOP)
-            trackChunkOffset.distance
-        else
-            trackSectionLength.distance - trackChunkOffset.distance - trackChunkLength.distance
+        if (direction == EdgeDirection.START_TO_STOP) trackChunkOffset.distance
+        else trackSectionLength.distance - trackChunkOffset.distance - trackChunkLength.distance
     val dirWaypointOffset =
-        if (direction == EdgeDirection.START_TO_STOP)
-            waypointOffset
-        else
-            trackSectionLength.distance - waypointOffset
+        if (direction == EdgeDirection.START_TO_STOP) waypointOffset
+        else trackSectionLength.distance - waypointOffset
     var startBlockToStartChunk = 0.meters
     val blockTrackChunks = infra.blockInfra.getTrackChunksFromBlock(blockId)
     for (blockTrackChunkDirId in blockTrackChunks) {
         val blockTrackChunkId = blockTrackChunkDirId.value
         if (blockTrackChunkId == trackChunkId) {
-            return Offset((startBlockToStartChunk + dirWaypointOffset - dirTrackChunkOffset).absoluteValue)
+            return Offset(
+                (startBlockToStartChunk + dirWaypointOffset - dirTrackChunkOffset).absoluteValue
+            )
         }
         startBlockToStartChunk += infra.rawInfra.getTrackChunkLength(blockTrackChunkId).distance
     }
-    throw AssertionError(String.format("getBlockOffset: Track chunk %s not in block %s", trackChunkId, blockId))
+    throw AssertionError(
+        String.format("getBlockOffset: Track chunk %s not in block %s", trackChunkId, blockId)
+    )
 }

@@ -1,18 +1,18 @@
 package fr.sncf.osrd.utils
 
-import kotlinx.coroutines.*
+import fr.sncf.osrd.reporting.exceptions.ErrorType
+import fr.sncf.osrd.reporting.exceptions.OSRDError
 import java.util.*
 import kotlin.collections.ArrayDeque
 import kotlin.coroutines.ContinuationInterceptor
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
-import fr.sncf.osrd.reporting.exceptions.OSRDError
-import fr.sncf.osrd.reporting.exceptions.ErrorType 
+import kotlinx.coroutines.*
 
 private class TimedRunnable(
     @JvmField val time: Long,
     private val continuation: CancellableContinuation<Unit>
-): Comparable<TimedRunnable> {
+) : Comparable<TimedRunnable> {
     fun run(dispatcher: CoroutineDispatcher) {
         with(continuation) { dispatcher.resumeUndispatched(Unit) }
     }
@@ -22,11 +22,11 @@ private class TimedRunnable(
     }
 }
 
-val CoroutineScope.currentTimeMillis: Long get() =
-    (coroutineContext[ContinuationInterceptor] as DiscreteEventSimulation).currentTime
+val CoroutineScope.currentTimeMillis: Long
+    get() = (coroutineContext[ContinuationInterceptor] as DiscreteEventSimulation).currentTime
 
 @OptIn(InternalCoroutinesApi::class)
-private class DiscreteEventSimulation(initialTime: Long): CoroutineDispatcher(), Delay {
+private class DiscreteEventSimulation(initialTime: Long) : CoroutineDispatcher(), Delay {
     var currentTime: Long = initialTime
         private set
 
@@ -37,7 +37,10 @@ private class DiscreteEventSimulation(initialTime: Long): CoroutineDispatcher(),
         readyTasks.addLast(block)
     }
 
-    override fun scheduleResumeAfterDelay(timeMillis: Long, continuation: CancellableContinuation<Unit>) {
+    override fun scheduleResumeAfterDelay(
+        timeMillis: Long,
+        continuation: CancellableContinuation<Unit>
+    ) {
         val eventTime = currentTime + timeMillis
         val waitingTask = TimedRunnable(eventTime, continuation)
         waitingTasks.add(waitingTask)
@@ -68,7 +71,6 @@ private class DiscreteEventSimulation(initialTime: Long): CoroutineDispatcher(),
 
 class BlockedSimulationException(message: String) : Exception(message)
 
-
 fun <T> runSimulation(
     initialTime: Long = 0,
     parentContext: CoroutineContext = EmptyCoroutineContext,
@@ -79,10 +81,8 @@ fun <T> runSimulation(
     val deferred = scope.async { block() }
 
     // loop until there are no more tasks
-    while (des.step())
-        continue
+    while (des.step()) continue
 
-    if (deferred.isCompleted)
-        return deferred.getCompleted()
+    if (deferred.isCompleted) return deferred.getCompleted()
     throw OSRDError(ErrorType.BlockedSimulationException)
 }

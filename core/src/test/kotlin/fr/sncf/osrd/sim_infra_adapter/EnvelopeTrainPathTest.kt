@@ -14,13 +14,13 @@ import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSElectrification
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSSlope
 import fr.sncf.osrd.utils.*
 import fr.sncf.osrd.utils.units.meters
+import java.util.stream.Stream
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
-import java.util.stream.Stream
 
 class EnvelopeTrainPathTest {
 
@@ -29,21 +29,30 @@ class EnvelopeTrainPathTest {
         val rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")
         for (track in rjsInfra.trackSections) {
             if (track.id.equals("TA0")) {
-                track.slopes = listOf(
-                    RJSSlope(0.0, 1_000.0, 5.0),
-                    RJSSlope(1_000.0, 2_000.0, 15.0),
-                )
+                track.slopes =
+                    listOf(
+                        RJSSlope(0.0, 1_000.0, 5.0),
+                        RJSSlope(1_000.0, 2_000.0, 15.0),
+                    )
             }
             if (track.id.equals("TA1")) {
-                track.slopes = listOf(
-                    RJSSlope(0.0, 1_000.0, 10.0),
-                    RJSSlope(1_000.0, 1_950.0, 25.0),
-                )
+                track.slopes =
+                    listOf(
+                        RJSSlope(0.0, 1_000.0, 10.0),
+                        RJSSlope(1_000.0, 1_950.0, 25.0),
+                    )
             }
         }
 
         val infra = Helpers.fullInfraFromRJS(rjsInfra)
-        val path = pathFromTracks(infra.rawInfra, listOf("TA0", "TA1"), Direction.INCREASING, 500.meters, 3_500.meters)
+        val path =
+            pathFromTracks(
+                infra.rawInfra,
+                listOf("TA0", "TA1"),
+                Direction.INCREASING,
+                500.meters,
+                3_500.meters
+            )
         val envelopeSimPath = EnvelopeTrainPath.from(infra.rawInfra, path)
         Assertions.assertEquals(5.0, envelopeSimPath.getAverageGrade(0.0, 500.0))
         Assertions.assertEquals(15.0, envelopeSimPath.getAverageGrade(500.0, 1500.0))
@@ -61,101 +70,177 @@ class EnvelopeTrainPathTest {
         expectedMap: ImmutableRangeMap<Double, Electrification>
     ) {
         val rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")
-        rjsInfra.electrifications = listOf(
-            RJSElectrification(
-                "", listOf(
-                    RJSApplicableDirectionsTrackRange("TA0", ApplicableDirection.BOTH, 0.0, 800.0),
+        rjsInfra.electrifications =
+            listOf(
+                RJSElectrification(
+                    "",
+                    listOf(
+                        RJSApplicableDirectionsTrackRange(
+                            "TA0",
+                            ApplicableDirection.BOTH,
+                            0.0,
+                            800.0
+                        ),
+                    )
+                ),
+                RJSElectrification(
+                    "1500V",
+                    listOf(
+                        RJSApplicableDirectionsTrackRange(
+                            "TA0",
+                            ApplicableDirection.BOTH,
+                            800.0,
+                            2_000.0
+                        ),
+                        RJSApplicableDirectionsTrackRange(
+                            "TA1",
+                            ApplicableDirection.BOTH,
+                            0.0,
+                            1_000.0
+                        )
+                    )
+                ),
+                RJSElectrification(
+                    "25000V",
+                    listOf(
+                        RJSApplicableDirectionsTrackRange(
+                            "TA1",
+                            ApplicableDirection.BOTH,
+                            1_100.0,
+                            1_950.0
+                        )
+                    )
                 )
-            ),
-            RJSElectrification(
-                "1500V", listOf(
-                    RJSApplicableDirectionsTrackRange("TA0", ApplicableDirection.BOTH, 800.0, 2_000.0),
-                    RJSApplicableDirectionsTrackRange("TA1", ApplicableDirection.BOTH, 0.0, 1_000.0)
-                )
-            ),
-            RJSElectrification(
-                "25000V", listOf(
-                    RJSApplicableDirectionsTrackRange("TA1", ApplicableDirection.BOTH, 1_100.0, 1_950.0)
-                )
+                // and there is already a deadSection on TA0 from 1900 to 1950 in the
+                // Direction.INCREASING
             )
-            //and there is already a deadSection on TA0 from 1900 to 1950 in the Direction.INCREASING
-        )
         val infra = Helpers.fullInfraFromRJS(rjsInfra)
         val path = pathFromTracks(infra.rawInfra, tracks, direction, 500.meters, 3_600.meters)
         val envelopeSimPath = EnvelopeTrainPath.from(infra.rawInfra, path)
 
-        assertThat(envelopeSimPath.getElectrificationMap(null, null, null))
-            .isEqualTo(expectedMap)
+        assertThat(envelopeSimPath.getElectrificationMap(null, null, null)).isEqualTo(expectedMap)
     }
 
     @Test
     fun envelopeFromPathTestElectrificationMapByPowerClassIncreasingDirection() {
         val rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")
-        rjsInfra.electrifications = listOf(
-            RJSElectrification(
-                "", listOf(
-                    RJSApplicableDirectionsTrackRange("TA0", ApplicableDirection.BOTH, 0.0, 1500.0),
+        rjsInfra.electrifications =
+            listOf(
+                RJSElectrification(
+                    "",
+                    listOf(
+                        RJSApplicableDirectionsTrackRange(
+                            "TA0",
+                            ApplicableDirection.BOTH,
+                            0.0,
+                            1500.0
+                        ),
+                    )
+                ),
+                RJSElectrification(
+                    "1500V",
+                    listOf(
+                        RJSApplicableDirectionsTrackRange(
+                            "TA0",
+                            ApplicableDirection.BOTH,
+                            1500.0,
+                            2_000.0
+                        ),
+                        RJSApplicableDirectionsTrackRange(
+                            "TA1",
+                            ApplicableDirection.BOTH,
+                            0.0,
+                            500.0
+                        )
+                    )
+                ),
+                RJSElectrification(
+                    "25000V",
+                    listOf(
+                        RJSApplicableDirectionsTrackRange(
+                            "TA1",
+                            ApplicableDirection.BOTH,
+                            500.0,
+                            1_950.0
+                        )
+                    )
                 )
-            ),
-            RJSElectrification(
-                "1500V", listOf(
-                    RJSApplicableDirectionsTrackRange("TA0", ApplicableDirection.BOTH, 1500.0, 2_000.0),
-                    RJSApplicableDirectionsTrackRange("TA1", ApplicableDirection.BOTH, 0.0, 500.0)
-                )
-            ),
-            RJSElectrification(
-                "25000V", listOf(
-                    RJSApplicableDirectionsTrackRange("TA1", ApplicableDirection.BOTH, 500.0, 1_950.0)
-                )
+                // and there is already a deadSection on TA0 from 1900 to 1950 in the
+                // Direction.INCREASING
             )
-            //and there is already a deadSection on TA0 from 1900 to 1950 in the Direction.INCREASING
-        )
 
         val infra = Helpers.fullInfraFromRJS(rjsInfra)
         val rjsElectricalProfiles = getRjsElectricalProfileMapping_1()
         val profileMap = ElectricalProfileMapping()
         profileMap.parseRJS(rjsElectricalProfiles)
         val path =
-            pathFromTracks(infra.rawInfra, listOf("TA0", "TA1"), Direction.INCREASING, 1_000.meters, 3_500.meters)
+            pathFromTracks(
+                infra.rawInfra,
+                listOf("TA0", "TA1"),
+                Direction.INCREASING,
+                1_000.meters,
+                3_500.meters
+            )
         val envelopeSimPath = EnvelopeTrainPath.from(infra.rawInfra, path, profileMap)
-        val electrificationByPowerClass = envelopeSimPath.getElectrificationMap(
-            "1",
-            null,
-            null
-        )
+        val electrificationByPowerClass = envelopeSimPath.getElectrificationMap("1", null, null)
         val expected = ImmutableRangeMap.Builder<Double, Electrification>()
 
+        putInElectrificationMapByPowerClass(expected, 0.0, 500.0, NonElectrified(), "A", false)
         putInElectrificationMapByPowerClass(
             expected,
-            0.0, 500.0, NonElectrified(), "A", false
+            500.0,
+            600.0,
+            Electrified("1500V"),
+            "A",
+            false
         )
         putInElectrificationMapByPowerClass(
             expected,
-            500.0, 600.0, Electrified("1500V"), "A", false
+            600.0,
+            800.0,
+            Electrified("1500V"),
+            "B",
+            false
         )
         putInElectrificationMapByPowerClass(
             expected,
-            600.0, 800.0, Electrified("1500V"), "B", false
+            800.0,
+            850.0,
+            Electrified("1500V"),
+            "A",
+            false
         )
         putInElectrificationMapByPowerClass(
             expected,
-            800.0, 850.0, Electrified("1500V"), "A", false
+            850.0,
+            960.0,
+            Neutral(true, Electrified("1500V"), true),
+            "A",
+            false
         )
         putInElectrificationMapByPowerClass(
             expected,
-            850.0, 960.0, Neutral(true, Electrified("1500V"), true), "A", false
+            960.0,
+            1000.0,
+            Neutral(true, Electrified("1500V"), false),
+            "A",
+            false
         )
         putInElectrificationMapByPowerClass(
             expected,
-            960.0, 1000.0, Neutral(true, Electrified("1500V"), false), "A", false
+            1_000.0,
+            1_500.0,
+            Electrified("1500V"),
+            "B",
+            false
         )
         putInElectrificationMapByPowerClass(
             expected,
-            1_000.0, 1_500.0, Electrified("1500V"), "B", false
-        )
-        putInElectrificationMapByPowerClass(
-            expected,
-            1_500.0, 2_500.0, Electrified("25000V"), "B", true
+            1_500.0,
+            2_500.0,
+            Electrified("25000V"),
+            "B",
+            true
         )
         assertThat(electrificationByPowerClass).isEqualTo(expected.build())
     }
@@ -163,71 +248,118 @@ class EnvelopeTrainPathTest {
     @Test
     fun envelopeFromPathTestElectrificationMapByPowerClassDecreasingDirection() {
         val rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")
-        rjsInfra.electrifications = listOf(
-            RJSElectrification(
-                "1500V",
-                listOf(
-                    RJSApplicableDirectionsTrackRange("TA0", ApplicableDirection.BOTH, 0.0, 2_000.0),
-                    RJSApplicableDirectionsTrackRange("TA1", ApplicableDirection.BOTH, 0.0, 1_950.0),
-                    RJSApplicableDirectionsTrackRange("TA2", ApplicableDirection.BOTH, 0.0, 1_950.0),
+        rjsInfra.electrifications =
+            listOf(
+                RJSElectrification(
+                    "1500V",
+                    listOf(
+                        RJSApplicableDirectionsTrackRange(
+                            "TA0",
+                            ApplicableDirection.BOTH,
+                            0.0,
+                            2_000.0
+                        ),
+                        RJSApplicableDirectionsTrackRange(
+                            "TA1",
+                            ApplicableDirection.BOTH,
+                            0.0,
+                            1_950.0
+                        ),
+                        RJSApplicableDirectionsTrackRange(
+                            "TA2",
+                            ApplicableDirection.BOTH,
+                            0.0,
+                            1_950.0
+                        ),
+                    ),
                 ),
-            ),
-        )
+            )
 
         val infra = Helpers.fullInfraFromRJS(rjsInfra)
         val rjsElectricalProfiles = getRjsElectricalProfileMapping_2()
         val profileMap = ElectricalProfileMapping()
         profileMap.parseRJS(rjsElectricalProfiles)
-        val path = pathFromTracks(
-            infra.rawInfra,
-            listOf("TA2", "TA1", "TA0"),
-            Direction.DECREASING,
-            1_000.meters,
-            5_000.meters
-        )
+        val path =
+            pathFromTracks(
+                infra.rawInfra,
+                listOf("TA2", "TA1", "TA0"),
+                Direction.DECREASING,
+                1_000.meters,
+                5_000.meters
+            )
         val envelopeSimPath = EnvelopeTrainPath.from(infra.rawInfra, path, profileMap)
-        val electrificationPowerClass1 = envelopeSimPath.getElectrificationMap(
-            "1", null, null
-        )
-        val expectedElectrificationPowerClass1 = ImmutableRangeMap.Builder<Double, Electrification>()
+        val electrificationPowerClass1 = envelopeSimPath.getElectrificationMap("1", null, null)
+        val expectedElectrificationPowerClass1 =
+            ImmutableRangeMap.Builder<Double, Electrification>()
         putInElectrificationMapByPowerClass(
             expectedElectrificationPowerClass1,
-            0.0, 700.0, Electrified("1500V"), "B", false
-        )
-        putInElectrificationMapByPowerClass(
-            expectedElectrificationPowerClass1,
-            700.0, 2_600.0, Electrified("1500V"), "A", false
-        )
-        putInElectrificationMapByPowerClass(
-            expectedElectrificationPowerClass1,
-            2_600.0, 3_300.0, Electrified("1500V"), "B", false
+            0.0,
+            700.0,
+            Electrified("1500V"),
+            "B",
+            false
         )
         putInElectrificationMapByPowerClass(
             expectedElectrificationPowerClass1,
-            3_300.0, 4_000.0, Electrified("1500V"), "A", true
+            700.0,
+            2_600.0,
+            Electrified("1500V"),
+            "A",
+            false
+        )
+        putInElectrificationMapByPowerClass(
+            expectedElectrificationPowerClass1,
+            2_600.0,
+            3_300.0,
+            Electrified("1500V"),
+            "B",
+            false
+        )
+        putInElectrificationMapByPowerClass(
+            expectedElectrificationPowerClass1,
+            3_300.0,
+            4_000.0,
+            Electrified("1500V"),
+            "A",
+            true
         )
 
         assertThat(electrificationPowerClass1).isEqualTo(expectedElectrificationPowerClass1.build())
 
-        val electrificationPowerClass2 = envelopeSimPath.getElectrificationMap(
-            "2", null, null
-        )
-        val expectedElectrificationPowerClass2 = ImmutableRangeMap.Builder<Double, Electrification>()
+        val electrificationPowerClass2 = envelopeSimPath.getElectrificationMap("2", null, null)
+        val expectedElectrificationPowerClass2 =
+            ImmutableRangeMap.Builder<Double, Electrification>()
         putInElectrificationMapByPowerClass(
             expectedElectrificationPowerClass2,
-            0.0, 950.0, Electrified("1500V"), "C", false
-        )
-        putInElectrificationMapByPowerClass(
-            expectedElectrificationPowerClass2,
-            950.0, 2_700.0, Electrified("1500V"), "D", false
-        )
-        putInElectrificationMapByPowerClass(
-            expectedElectrificationPowerClass2,
-            2_700.0, 3_000.0, Electrified("1500V"), "C", false
+            0.0,
+            950.0,
+            Electrified("1500V"),
+            "C",
+            false
         )
         putInElectrificationMapByPowerClass(
             expectedElectrificationPowerClass2,
-            3_000.0, 4_000.0, Electrified("1500V"), "D", true
+            950.0,
+            2_700.0,
+            Electrified("1500V"),
+            "D",
+            false
+        )
+        putInElectrificationMapByPowerClass(
+            expectedElectrificationPowerClass2,
+            2_700.0,
+            3_000.0,
+            Electrified("1500V"),
+            "C",
+            false
+        )
+        putInElectrificationMapByPowerClass(
+            expectedElectrificationPowerClass2,
+            3_000.0,
+            4_000.0,
+            Electrified("1500V"),
+            "D",
+            true
         )
 
         assertThat(electrificationPowerClass2).isEqualTo(expectedElectrificationPowerClass2.build())
@@ -243,8 +375,14 @@ class EnvelopeTrainPathTest {
                     ImmutableRangeMap.Builder<Double, Electrification>()
                         .put(Range.closedOpen(0.0, 300.0), NonElectrified())
                         .put(Range.closedOpen(300.0, 1350.0), Electrified("1500V"))
-                        .put(Range.closedOpen(1350.0, 1460.0), Neutral(true, Electrified("1500V"), true))
-                        .put(Range.closedOpen(1460.0, 1500.0), Neutral(true, Electrified("1500V"), false))
+                        .put(
+                            Range.closedOpen(1350.0, 1460.0),
+                            Neutral(true, Electrified("1500V"), true)
+                        )
+                        .put(
+                            Range.closedOpen(1460.0, 1500.0),
+                            Neutral(true, Electrified("1500V"), false)
+                        )
                         .put(Range.closedOpen(1500.0, 2500.0), Electrified("1500V"))
                         .put(Range.closedOpen(2500.0, 2600.0), NonElectrified())
                         .put(Range.closed(2600.0, 3100.0), Electrified("25000V"))
@@ -274,10 +412,8 @@ private fun putInElectrificationMapByPowerClass(
     electricalProfile: String,
     includeUpperBound: Boolean
 ) {
-    val range = if (includeUpperBound)
-        Range.closed(lower, upper)
-    else
-        Range.closedOpen(lower, upper)
+    val range =
+        if (includeUpperBound) Range.closed(lower, upper) else Range.closedOpen(lower, upper)
     val elecWithProfile = electrification.withElectricalProfile(electricalProfile)
     expectedElectrificationMapByPowerClass.put(range, elecWithProfile)
 }

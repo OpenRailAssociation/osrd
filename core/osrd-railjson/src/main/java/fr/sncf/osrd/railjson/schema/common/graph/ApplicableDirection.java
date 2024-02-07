@@ -1,9 +1,9 @@
 package fr.sncf.osrd.railjson.schema.common.graph;
 
 public enum ApplicableDirection {
-    START_TO_STOP(new EdgeDirection[]{EdgeDirection.START_TO_STOP}),
-    STOP_TO_START(new EdgeDirection[]{EdgeDirection.STOP_TO_START}),
-    BOTH(new EdgeDirection[]{EdgeDirection.START_TO_STOP, EdgeDirection.STOP_TO_START});
+    START_TO_STOP(new EdgeDirection[] {EdgeDirection.START_TO_STOP}),
+    STOP_TO_START(new EdgeDirection[] {EdgeDirection.STOP_TO_START}),
+    BOTH(new EdgeDirection[] {EdgeDirection.START_TO_STOP, EdgeDirection.STOP_TO_START});
 
     public final EdgeDirection[] directionSet;
 
@@ -13,6 +13,7 @@ public enum ApplicableDirection {
 
     /**
      * Returns the opposite applicable directions
+     *
      * @return The opposite applicable directions
      */
     public ApplicableDirection opposite() {

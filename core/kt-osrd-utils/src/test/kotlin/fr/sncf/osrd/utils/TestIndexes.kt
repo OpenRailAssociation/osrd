@@ -9,10 +9,7 @@ class TestIndexes {
 
     @Test
     fun testIndexList() {
-        val mutList = MutableStaticIdxArray<O>(3) {
-            i ->
-            StaticIdx(i.toUInt() + 1u)
-        }
+        val mutList = MutableStaticIdxArray<O>(3) { i -> StaticIdx(i.toUInt() + 1u) }
 
         val iterationRes = MutableList<StaticIdx<O>>(0) { StaticIdx(0U) }
         mutList.iterator().forEach { i -> iterationRes.add(i) }
@@ -37,13 +34,8 @@ class TestIndexes {
         set.add(StaticIdx(43U))
         set.add(StaticIdx(44U))
 
-
         val values = mutableSetOf<UInt>()
-        for (v in set)
-            values.add(v.index)
-        assertEquals(
-            setOf(42U, 43U, 44U, 45U, 46U),
-            values
-        )
+        for (v in set) values.add(v.index)
+        assertEquals(setOf(42U, 43U, 44U, 45U, 46U), values)
     }
 }

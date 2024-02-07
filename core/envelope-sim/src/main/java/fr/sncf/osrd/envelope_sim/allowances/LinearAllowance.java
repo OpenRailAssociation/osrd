@@ -11,12 +11,7 @@ import java.util.*;
 public class LinearAllowance extends AbstractAllowanceWithRanges {
 
     /** Constructor */
-    public LinearAllowance(
-            double beginPos,
-            double endPos,
-            double capacitySpeedLimit,
-            List<AllowanceRange> ranges
-    ) {
+    public LinearAllowance(double beginPos, double endPos, double capacitySpeedLimit, List<AllowanceRange> ranges) {
         super(beginPos, endPos, capacitySpeedLimit, ranges);
     }
 
@@ -32,8 +27,10 @@ public class LinearAllowance extends AbstractAllowanceWithRanges {
         return envelopeSection.getMaxSpeed();
     }
 
-    /** Compute the core of linear allowance algorithm.
-     *  This algorithm consists of a ratio that scales speeds */
+    /**
+     * Compute the core of linear allowance algorithm. This algorithm consists of a ratio that
+     * scales speeds
+     */
     @Override
     protected Envelope computeCore(Envelope coreBase, EnvelopeSimContext context, double maxSpeed) {
         var ratio = maxSpeed / coreBase.getMaxSpeed();
@@ -43,8 +40,7 @@ public class LinearAllowance extends AbstractAllowanceWithRanges {
     /** Scale an envelope, new speed = old speed * ratio */
     public static Envelope scaleEnvelope(Envelope envelope, double ratio) {
         var builder = new EnvelopeBuilder();
-        for (var part : envelope)
-            builder.addPart(scalePart(part, ratio));
+        for (var part : envelope) builder.addPart(scalePart(part, ratio));
         return builder.build();
     }
 
@@ -52,17 +48,10 @@ public class LinearAllowance extends AbstractAllowanceWithRanges {
     private static EnvelopePart scalePart(EnvelopePart part, double ratio) {
         var positions = part.clonePositions();
         var speeds = part.cloneSpeeds();
-        var scaledSpeeds = Arrays.stream(speeds)
-                .map(x -> x * ratio)
-                .toArray();
+        var scaledSpeeds = Arrays.stream(speeds).map(x -> x * ratio).toArray();
         var attr = part.getAttr(EnvelopeProfile.class);
         var attrs = List.<EnvelopeAttr>of();
-        if (attr != null)
-            attrs = List.of(attr);
-        return EnvelopePart.generateTimes(
-                attrs,
-                positions,
-                scaledSpeeds
-        );
+        if (attr != null) attrs = List.of(attr);
+        return EnvelopePart.generateTimes(attrs, positions, scaledSpeeds);
     }
 }

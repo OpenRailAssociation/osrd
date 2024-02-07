@@ -6,7 +6,6 @@ import fr.sncf.osrd.sim_infra.api.SigSettings
 import fr.sncf.osrd.sim_infra.api.SigState
 import fr.sncf.osrd.sim_infra.api.SigStateSchema
 
-
 object BAPRtoBAL : SignalDriver {
     override val name = "BAPR-BAL"
     override val inputSignalingSystem = "BAL"
@@ -23,7 +22,10 @@ object BAPRtoBAL : SignalDriver {
     }
 
     override fun evalSignal(
-        signal: SigSettings, stateSchema: SigStateSchema, maView: MovementAuthorityView?, limitView: SpeedLimitView?
+        signal: SigSettings,
+        stateSchema: SigStateSchema,
+        maView: MovementAuthorityView?,
+        limitView: SpeedLimitView?
     ): SigState {
         return stateSchema {
             assert(maView!!.hasNextSignal)

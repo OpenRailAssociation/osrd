@@ -7,11 +7,9 @@ import fr.sncf.osrd.utils.indexing.MutableStaticIdxRingBuffer
 import fr.sncf.osrd.utils.indexing.StaticIdxList
 import fr.sncf.osrd.utils.units.*
 
-
 class PathFragment(
     val routes: StaticIdxList<Route>,
     val blocks: StaticIdxList<Block>,
-
     val containsStart: Boolean,
     val containsEnd: Boolean,
 
@@ -49,7 +47,9 @@ interface IncrementalPath {
 
     // TODO: implement trimming
     fun setLastRequiredBlock(blockIndex: Int)
+
     fun setLastRequiredRoute(routeIndex: Int)
+
     fun trim()
 
     val beginZonePathIndex: Int
@@ -61,24 +61,35 @@ interface IncrementalPath {
     val endRouteIndex: Int
 
     fun getBlock(blockIndex: Int): BlockId
+
     fun getRoute(routeIndex: Int): RouteId
+
     fun getZonePath(zonePathIndex: Int): ZonePathId
 
     fun getZonePathStartOffset(zonePathIndex: Int): Offset<Path>
+
     fun getBlockStartOffset(blockIndex: Int): Offset<Path>
+
     fun getRouteStartOffset(routeIndex: Int): Offset<Path>
 
     fun getZonePathEndOffset(zonePathIndex: Int): Offset<Path>
+
     fun getBlockEndOffset(blockIndex: Int): Offset<Path>
+
     fun getRouteEndOffset(routeIndex: Int): Offset<Path>
 
     fun convertZonePathOffset(zonePathIndex: Int, offset: Offset<ZonePath>): Offset<Path>
+
     fun convertBlockOffset(blockIndex: Int, offset: Offset<Block>): Offset<Path>
+
     fun convertRouteOffset(routeIndex: Int, offset: Offset<Route>): Offset<Path>
 
     fun getRouteStartZone(routeIndex: Int): Int
+
     fun getRouteEndZone(routeIndex: Int): Int
+
     fun getBlockStartZone(blockIndex: Int): Int
+
     fun getBlockEndZone(blockIndex: Int): Int
 
     val pathStarted: Boolean
@@ -96,7 +107,10 @@ fun incrementalPathOf(rawInfra: RawInfra, blockInfra: BlockInfra): IncrementalPa
     return IncrementalPathImpl(rawInfra, blockInfra)
 }
 
-private class IncrementalPathImpl(private val rawInfra: RawInfra, private val blockInfra: BlockInfra) : IncrementalPath {
+private class IncrementalPathImpl(
+    private val rawInfra: RawInfra,
+    private val blockInfra: BlockInfra
+) : IncrementalPath {
     // objects
     private var zonePaths = MutableStaticIdxRingBuffer<ZonePath>()
     private var routes = MutableStaticIdxRingBuffer<Route>()
@@ -112,8 +126,11 @@ private class IncrementalPathImpl(private val rawInfra: RawInfra, private val bl
     override var travelledPathBegin = Offset<Path>((-1).meters)
     override var travelledPathEnd = Offset<Path>((-1).meters)
 
-    override val pathStarted get() = travelledPathBegin != Offset<Path>((-1).meters)
-    override val pathComplete get() = travelledPathEnd != Offset<Path>((-1).meters)
+    override val pathStarted
+        get() = travelledPathBegin != Offset<Path>((-1).meters)
+
+    override val pathComplete
+        get() = travelledPathEnd != Offset<Path>((-1).meters)
 
     override fun extend(fragment: PathFragment) {
         assert(!pathComplete) { "extending a complete path" }
@@ -140,7 +157,8 @@ private class IncrementalPathImpl(private val rawInfra: RawInfra, private val bl
             return
         }
 
-        // if we're starting the path, locate the start of the first block relative to the first route
+        // if we're starting the path, locate the start of the first block relative to the first
+        // route
         if (blockZoneBounds.isEmpty()) {
             val firstBlock = fragment.blocks[0]
             val firstBlockZonePath = blockInfra.getBlockPath(firstBlock)[0]
@@ -152,7 +170,9 @@ private class IncrementalPathImpl(private val rawInfra: RawInfra, private val bl
                     break
                 }
             }
-            assert(firstBlockZonePathIndex != -1) { "block does not have any common points with routes" }
+            assert(firstBlockZonePathIndex != -1) {
+                "block does not have any common points with routes"
+            }
 
             // initialize block zone bounds
             blockZoneBounds.addBack(firstBlockZonePathIndex)
@@ -195,13 +215,23 @@ private class IncrementalPathImpl(private val rawInfra: RawInfra, private val bl
         TODO("Not yet implemented")
     }
 
-    override val beginZonePathIndex get() = zonePaths.beginIndex
-    override val beginBlockIndex get() = blocks.beginIndex
-    override val beginRouteIndex get() = routes.beginIndex
+    override val beginZonePathIndex
+        get() = zonePaths.beginIndex
 
-    override val endZonePathIndex get() = zonePaths.endIndex
-    override val endBlockIndex get() = blocks.endIndex
-    override val endRouteIndex get() = routes.endIndex
+    override val beginBlockIndex
+        get() = blocks.beginIndex
+
+    override val beginRouteIndex
+        get() = routes.beginIndex
+
+    override val endZonePathIndex
+        get() = zonePaths.endIndex
+
+    override val endBlockIndex
+        get() = blocks.endIndex
+
+    override val endRouteIndex
+        get() = routes.endIndex
 
     override fun getBlock(blockIndex: Int): BlockId {
         return blocks[blockIndex]

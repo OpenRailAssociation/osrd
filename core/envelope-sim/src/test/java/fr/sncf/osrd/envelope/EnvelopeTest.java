@@ -3,8 +3,8 @@ package fr.sncf.osrd.envelope;
 import static org.junit.jupiter.api.Assertions.*;
 
 import fr.sncf.osrd.envelope.part.EnvelopePart;
-import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
+import org.junit.jupiter.api.Test;
 
 public class EnvelopeTest {
     @Test
@@ -20,7 +20,7 @@ public class EnvelopeTest {
 
     @Test
     void testIterator() {
-        var a = EnvelopeTestUtils.generateTimes(new double[] { 0, 2 }, new double[] { 2, 2 });
+        var a = EnvelopeTestUtils.generateTimes(new double[] {0, 2}, new double[] {2, 2});
         var envelope = Envelope.make(a);
         var res = new ArrayList<EnvelopePart>();
         envelope.iterator().forEachRemaining(res::add);
@@ -30,8 +30,8 @@ public class EnvelopeTest {
 
     @Test
     void testMinMaxSpeed() {
-        final var partA = EnvelopeTestUtils.generateTimes(new double[] { 0, 2 }, new double[] { 1, 2 });
-        final var partB = EnvelopeTestUtils.generateTimes(new double[] { 2, 4 }, new double[] { 4, 3 });
+        final var partA = EnvelopeTestUtils.generateTimes(new double[] {0, 2}, new double[] {1, 2});
+        final var partB = EnvelopeTestUtils.generateTimes(new double[] {2, 4}, new double[] {4, 3});
         final var envelope = Envelope.make(partA, partB);
 
         assertEquals(1, partA.getMinSpeed());
@@ -45,8 +45,8 @@ public class EnvelopeTest {
 
     @Test
     void testInterpolateSpeed() {
-        var partA = EnvelopeTestUtils.generateTimes(new double[] { 0, 2 }, new double[] { 1, 2 });
-        var partB = EnvelopeTestUtils.generateTimes(new double[] { 2, 3 }, new double[] { 2, 4 });
+        var partA = EnvelopeTestUtils.generateTimes(new double[] {0, 2}, new double[] {1, 2});
+        var partB = EnvelopeTestUtils.generateTimes(new double[] {2, 3}, new double[] {2, 4});
         var envelope = Envelope.make(partA, partB);
 
         assertEquals(1, envelope.interpolateSpeed(0));
@@ -56,8 +56,8 @@ public class EnvelopeTest {
 
     @Test
     void testInterpolateTime() {
-        var partA = EnvelopeTestUtils.generateTimes(new double[] { 0, 2 }, new double[] { 1, 1 });
-        var partB = EnvelopeTestUtils.generateTimes(new double[] { 2, 4 }, new double[] { 1, 1 });
+        var partA = EnvelopeTestUtils.generateTimes(new double[] {0, 2}, new double[] {1, 1});
+        var partB = EnvelopeTestUtils.generateTimes(new double[] {2, 4}, new double[] {1, 1});
         var envelope = Envelope.make(partA, partB);
 
         assertEquals(1, partA.interpolateTotalTime(1));

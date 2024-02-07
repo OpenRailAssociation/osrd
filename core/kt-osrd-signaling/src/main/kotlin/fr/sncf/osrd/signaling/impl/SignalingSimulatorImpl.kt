@@ -7,15 +7,12 @@ import fr.sncf.osrd.utils.indexing.*
 import fr.sncf.osrd.utils.units.Distance
 import mu.KotlinLogging
 
-
 private val logger = KotlinLogging.logger {}
-
 
 fun ZoneStatus.reduce(other: ZoneStatus): ZoneStatus {
     if (this == ZoneStatus.INCOMPATIBLE || other == ZoneStatus.INCOMPATIBLE)
         return ZoneStatus.INCOMPATIBLE
-    if (this == ZoneStatus.OCCUPIED || other == ZoneStatus.OCCUPIED)
-        return ZoneStatus.OCCUPIED
+    if (this == ZoneStatus.OCCUPIED || other == ZoneStatus.OCCUPIED) return ZoneStatus.OCCUPIED
     return ZoneStatus.CLEAR
 }
 
@@ -28,7 +25,10 @@ fun ZoneStatus.toProtectionStatus(): ProtectionStatus {
 }
 
 class SignalingSimulatorImpl(override val sigModuleManager: SigSystemManager) : SignalingSimulator {
-    private fun loadSignalSetting(rawSettings: Map<String, String>, schema: SigSettingsSchema): SigSettings {
+    private fun loadSignalSetting(
+        rawSettings: Map<String, String>,
+        schema: SigSettingsSchema
+    ): SigSettings {
         return schema(rawSettings)
     }
 
@@ -36,17 +36,22 @@ class SignalingSimulatorImpl(override val sigModuleManager: SigSystemManager) : 
         return loadedSignalInfra(sigModuleManager) {
             for (oldPhysicalSignal in unloadedSignalInfra.physicalSignals) {
                 physicalSignal {
-                    for (oldLogicalSignal in unloadedSignalInfra.getLogicalSignals(oldPhysicalSignal)) {
+                    for (oldLogicalSignal in
+                        unloadedSignalInfra.getLogicalSignals(oldPhysicalSignal)) {
                         logicalSignal {
-                            val oldSignalingSystemId = unloadedSignalInfra.getSignalingSystemId(oldLogicalSignal)
-                            val signalingSystemId = sigModuleManager.findSignalingSystem(oldSignalingSystemId)
+                            val oldSignalingSystemId =
+                                unloadedSignalInfra.getSignalingSystemId(oldLogicalSignal)
+                            val signalingSystemId =
+                                sigModuleManager.findSignalingSystem(oldSignalingSystemId)
                             signalingSystemId(signalingSystemId)
 
-                            val settingsSchema = sigModuleManager.getSettingsSchema(signalingSystemId)
+                            val settingsSchema =
+                                sigModuleManager.getSettingsSchema(signalingSystemId)
                             val rawSettings = unloadedSignalInfra.getRawSettings(oldLogicalSignal)
                             sigSettings(loadSignalSetting(rawSettings, settingsSchema))
 
-                            for (oldNextSS in unloadedSignalInfra.getNextSignalingSystemIds(oldLogicalSignal)) {
+                            for (oldNextSS in
+                                unloadedSignalInfra.getNextSignalingSystemIds(oldLogicalSignal)) {
                                 val oldNextSSId = sigModuleManager.findSignalingSystem(oldNextSS)
                                 driver(sigModuleManager.findDriver(signalingSystemId, oldNextSSId))
                             }
@@ -65,30 +70,45 @@ class SignalingSimulatorImpl(override val sigModuleManager: SigSystemManager) : 
         for (block in blockInfra.blocks) {
             val sigSystem = blockInfra.getBlockSignalingSystem(block)
             val path = blockInfra.getBlockPath(block)
-            val length = Distance(path.map { rawSignalingInfra.getZonePathLength(it) }.sumOf { it.distance.millimeters })
+            val length =
+                Distance(
+                    path
+                        .map { rawSignalingInfra.getZonePathLength(it) }
+                        .sumOf { it.distance.millimeters }
+                )
             val startAtBufferStop = blockInfra.blockStartAtBufferStop(block)
             val stopAtBufferStop = blockInfra.blockStopAtBufferStop(block)
             val signals = blockInfra.getBlockSignals(block)
             val signalTypes = signals.map { rawSignalingInfra.getSignalingSystemId(it) }
             val signalSettings = signals.map { loadedSignalInfra.getSettings(it) }
             val signalsPositions = blockInfra.getSignalsPositions(block)
-            val sigBlock = SigBlock(startAtBufferStop, stopAtBufferStop, signalTypes, signalSettings, signalsPositions, length)
-            val reporter = object : BlockDiagReporter {
-                override fun reportBlock(errorType: String) {
-                    logger.debug {
-                        val entrySignal = rawSignalingInfra.getLogicalSignalName(signals[0])
-                        val exitSignal = rawSignalingInfra.getLogicalSignalName(signals[signals.size - 1])
-                        "error in block from $entrySignal to $exitSignal: $errorType"
+            val sigBlock =
+                SigBlock(
+                    startAtBufferStop,
+                    stopAtBufferStop,
+                    signalTypes,
+                    signalSettings,
+                    signalsPositions,
+                    length
+                )
+            val reporter =
+                object : BlockDiagReporter {
+                    override fun reportBlock(errorType: String) {
+                        logger.debug {
+                            val entrySignal = rawSignalingInfra.getLogicalSignalName(signals[0])
+                            val exitSignal =
+                                rawSignalingInfra.getLogicalSignalName(signals[signals.size - 1])
+                            "error in block from $entrySignal to $exitSignal: $errorType"
+                        }
                     }
-                }
 
-                override fun reportSignal(sigIndex: Int, errorType: String) {
-                    logger.debug {
-                        val signal = rawSignalingInfra.getLogicalSignalName(signals[sigIndex])
-                        "error at signal $signal: $errorType"
+                    override fun reportSignal(sigIndex: Int, errorType: String) {
+                        logger.debug {
+                            val signal = rawSignalingInfra.getLogicalSignalName(signals[sigIndex])
+                            "error at signal $signal: $errorType"
+                        }
                     }
                 }
-            }
             sigModuleManager.checkSignalingSystemBlock(reporter, sigSystem, sigBlock)
         }
         return blockInfra
@@ -107,9 +127,10 @@ class SignalingSimulatorImpl(override val sigModuleManager: SigSystemManager) : 
         assert(evaluatedPathBegin >= 0)
         assert(evaluatedPathEnd > evaluatedPathBegin)
         assert(evaluatedPathEnd <= fullPath.size)
-        val evaluatedPath = MutableStaticIdxArray(evaluatedPathEnd - evaluatedPathBegin) {
-            fullPath[evaluatedPathBegin + it]
-        }
+        val evaluatedPath =
+            MutableStaticIdxArray(evaluatedPathEnd - evaluatedPathBegin) {
+                fullPath[evaluatedPathBegin + it]
+            }
 
         // compute the offset of each block's first zone inside the partial path
         val blockZoneMap = IntArray(evaluatedPath.size + 1)
@@ -121,7 +142,8 @@ class SignalingSimulatorImpl(override val sigModuleManager: SigSystemManager) : 
         blockZoneMap[evaluatedPath.size] = blockZoneOffset
 
         // region compute each signal's protection status
-        // first, find all the signals we need to evaluate in this call, and which block they belong to
+        // first, find all the signals we need to evaluate in this call, and which block they belong
+        // to
         data class SignalEvalTask(
             val signal: LogicalSignalId,
             val protectionStatus: ProtectionStatus,
@@ -133,7 +155,9 @@ class SignalingSimulatorImpl(override val sigModuleManager: SigSystemManager) : 
         if (!lastBlockEndsAtBufferStop) {
             val blockSignals = blocks.getBlockSignals(lastBlock)
             val lastSignal = blockSignals[blockSignals.size - 1]
-            signalEvalSequence.add(SignalEvalTask(lastSignal, followingZoneState.toProtectionStatus()))
+            signalEvalSequence.add(
+                SignalEvalTask(lastSignal, followingZoneState.toProtectionStatus())
+            )
         }
 
         for (blockIndex in (0 until evaluatedPath.size).reversed()) {
@@ -147,8 +171,8 @@ class SignalingSimulatorImpl(override val sigModuleManager: SigSystemManager) : 
             // intermediary signals
             val interRangeStart = if (startAtBufferStop) 0 else 1
             val interRangeEnd = if (endsAtBufferStop) blockSignals.size else blockSignals.size - 1
-            for (signalIndex in (interRangeStart until interRangeEnd).reversed())
-                signalEvalSequence.add(SignalEvalTask(blockSignals[signalIndex], ProtectionStatus.NO_PROTECTED_ZONES))
+            for (signalIndex in (interRangeStart until interRangeEnd).reversed()) signalEvalSequence
+                .add(SignalEvalTask(blockSignals[signalIndex], ProtectionStatus.NO_PROTECTED_ZONES))
 
             // entry signal
             if (!startAtBufferStop) {
@@ -156,8 +180,8 @@ class SignalingSimulatorImpl(override val sigModuleManager: SigSystemManager) : 
                 val protectedZonesStart = blockZoneMap[blockIndex]
                 val protectedZonesEnd = blockZoneMap[blockIndex + 1]
                 var zoneStatus = zoneStates[protectedZonesStart]
-                for (i in protectedZonesStart + 1 until protectedZonesEnd)
-                    zoneStatus = zoneStatus.reduce(zoneStates[i])
+                for (i in protectedZonesStart + 1 until protectedZonesEnd) zoneStatus =
+                    zoneStatus.reduce(zoneStates[i])
                 signalEvalSequence.add(SignalEvalTask(entrySignal, zoneStatus.toProtectionStatus()))
             }
         }
@@ -172,9 +196,15 @@ class SignalingSimulatorImpl(override val sigModuleManager: SigSystemManager) : 
             init {
                 assert((_nextSignalState == null) == (_nextSignalSettings == null))
             }
-            override val hasNextSignal get() = _nextSignalState != null
-            override val nextSignalState get() = _nextSignalState!!
-            override val nextSignalSettings get() = _nextSignalSettings!!
+
+            override val hasNextSignal
+                get() = _nextSignalState != null
+
+            override val nextSignalState
+                get() = _nextSignalState!!
+
+            override val nextSignalSettings
+                get() = _nextSignalSettings!!
         }
 
         val res = IdxMap<LogicalSignalId, SigState>()
@@ -184,18 +214,20 @@ class SignalingSimulatorImpl(override val sigModuleManager: SigSystemManager) : 
         for (task in signalEvalSequence) {
             val signal = task.signal
             val protectionStatus = task.protectionStatus
-            val mav = MovementAuthorityViewImpl(protectionStatus, lastSignalState, lastSignalSettings)
+            val mav =
+                MovementAuthorityViewImpl(protectionStatus, lastSignalState, lastSignalSettings)
             val currentSSId = loadedSignalInfra.getSignalingSystem(signal)
             val currentSignalSettings = loadedSignalInfra.getSettings(signal)
             val driver = sigModuleManager.findDriver(currentSSId, lastSignalSSId ?: currentSSId)
             val schema = sigModuleManager.getStateSchema(currentSSId)
-            val state = sigModuleManager.evalSignal(
-                driver,
-                currentSignalSettings,
-                schema,
-                mav,
-                null // TODO: Handle speed limits
-            )
+            val state =
+                sigModuleManager.evalSignal(
+                    driver,
+                    currentSignalSettings,
+                    schema,
+                    mav,
+                    null // TODO: Handle speed limits
+                )
 
             res[signal] = state
             lastSignalState = state

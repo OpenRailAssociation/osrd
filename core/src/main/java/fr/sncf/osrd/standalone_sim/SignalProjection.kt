@@ -42,12 +42,15 @@ fun project(
     val routePath = toRouteIdList(routePathIds)
     val detailedBlockPath = recoverBlockPath(simulator, fullInfra, routePath)
     val blockPath = mutableStaticIdxArrayListOf<Block>()
-    for (block in detailedBlockPath)
-        blockPath.add(block.block)
+    for (block in detailedBlockPath) blockPath.add(block.block)
 
-    val blockPaths = recoverBlocks(
-        rawInfra, blockInfra, routePath, mutableStaticIdxArrayListOf(bal, bapr, tvm300, tvm430)
-    )
+    val blockPaths =
+        recoverBlocks(
+            rawInfra,
+            blockInfra,
+            routePath,
+            mutableStaticIdxArrayListOf(bal, bapr, tvm300, tvm430)
+        )
     assert(blockPaths.isNotEmpty())
 
     val zoneMap = mutableMapOf<String, Int>()
@@ -62,16 +65,31 @@ fun project(
     }
 
     // Compute signal updates
-    val startOffset = trainPathBlockOffset(fullInfra.rawInfra, fullInfra.blockInfra, blockPath, chunkPath)
+    val startOffset =
+        trainPathBlockOffset(fullInfra.rawInfra, fullInfra.blockInfra, blockPath, chunkPath)
     val pathSignals = pathSignals(startOffset, blockPath, blockInfra)
 
-    val signalAspectChangeEvents = computeSignalAspectChangeEvents(
-        blockPath, zoneMap, blockInfra, pathSignals, zoneUpdates, simulator, rawInfra, loadedSignalInfra
-    )
-    val signalUpdates = signalUpdates(pathSignals, signalAspectChangeEvents, loadedSignalInfra, rawInfra, signalSightings)
+    val signalAspectChangeEvents =
+        computeSignalAspectChangeEvents(
+            blockPath,
+            zoneMap,
+            blockInfra,
+            pathSignals,
+            zoneUpdates,
+            simulator,
+            rawInfra,
+            loadedSignalInfra
+        )
+    val signalUpdates =
+        signalUpdates(
+            pathSignals,
+            signalAspectChangeEvents,
+            loadedSignalInfra,
+            rawInfra,
+            signalSightings
+        )
     return SignalProjectionResult(signalUpdates)
 }
-
 
 private fun computeSignalAspectChangeEvents(
     blockPath: StaticIdxList<Block>,
@@ -87,29 +105,37 @@ private fun computeSignalAspectChangeEvents(
     val zoneStates = ArrayList<ZoneStatus>(zoneCount)
     for (i in 0 until zoneCount) zoneStates.add(ZoneStatus.CLEAR)
 
-    val signalAspects = pathSignals.associateBy({ it.signal }, { "VL" })
-        .toMutableMap() // TODO: Have a better way to get the least restrictive aspect
+    val signalAspects =
+        pathSignals
+            .associateBy({ it.signal }, { "VL" })
+            .toMutableMap() // TODO: Have a better way to get the least restrictive aspect
 
-    val signalAspectChangeEvents = pathSignals.associateBy({ it }, { mutableListOf<SignalAspectChangeEvent>() })
+    val signalAspectChangeEvents =
+        pathSignals.associateBy({ it }, { mutableListOf<SignalAspectChangeEvent>() })
     for (event in zoneUpdates) {
-        if (!zoneToPathIndexMap.containsKey(event.zone))
-            continue
-        if (event.isEntry)
-            zoneStates[zoneToPathIndexMap[event.zone]!!] = ZoneStatus.OCCUPIED
-        else
-            zoneStates[zoneToPathIndexMap[event.zone]!!] = ZoneStatus.CLEAR
+        if (!zoneToPathIndexMap.containsKey(event.zone)) continue
+        if (event.isEntry) zoneStates[zoneToPathIndexMap[event.zone]!!] = ZoneStatus.OCCUPIED
+        else zoneStates[zoneToPathIndexMap[event.zone]!!] = ZoneStatus.CLEAR
 
-        val simulatedSignalStates = simulator.evaluate(
-            rawInfra, loadedSignalInfra, blockInfra,
-            blockPath, 0, blockPath.size,
-            zoneStates, ZoneStatus.CLEAR
-        )
+        val simulatedSignalStates =
+            simulator.evaluate(
+                rawInfra,
+                loadedSignalInfra,
+                blockInfra,
+                blockPath,
+                0,
+                blockPath.size,
+                zoneStates,
+                ZoneStatus.CLEAR
+            )
         val simulatedAspects = simulatedSignalStates.map { it.getEnum("aspect") }
         for (pathSignal in pathSignals) {
             val signal = pathSignal.signal
             val aspect = simulatedAspects[signal] ?: continue
             if (signalAspects[signal]!! == aspect) continue
-            signalAspectChangeEvents[pathSignal]!!.add(SignalAspectChangeEvent(aspect, Math.round(event.time * 1000)))
+            signalAspectChangeEvents[pathSignal]!!.add(
+                SignalAspectChangeEvent(aspect, Math.round(event.time * 1000))
+            )
             signalAspects[signal] = aspect
         }
     }
@@ -122,7 +148,7 @@ private fun signalUpdates(
     loadedSignalInfra: LoadedSignalInfra,
     rawInfra: SimInfraAdapter,
     signalSightings: List<SignalSighting>,
-    ): MutableList<SignalUpdate> {
+): MutableList<SignalUpdate> {
     val signalUpdates = mutableListOf<SignalUpdate>()
 
     // Let's generate signal updates for the SNCF GET
@@ -148,7 +174,8 @@ private fun signalUpdates(
     val signalSightingMap = signalSightings.associateBy { it.signal }
 
     val nextSignal = mutableMapOf<LogicalSignalId, PathSignal>()
-    for (i in 0 until signalsOnPath.size - 1) nextSignal[signalsOnPath[i].signal] = signalsOnPath[i + 1]
+    for (i in 0 until signalsOnPath.size - 1) nextSignal[signalsOnPath[i].signal] =
+        signalsOnPath[i + 1]
 
     for ((pathSignal, events) in signalAspectChangeEvents) {
         val signal = pathSignal.signal
@@ -159,8 +186,7 @@ private fun signalUpdates(
         val track = rjsSignal.track
         val trackOffset = rjsSignal.position
         val positionStart = pathSignal.pathOffset
-        val positionEnd = if (nextSignal.contains(signal)) nextSignal[signal]!!.pathOffset
-        else null
+        val positionEnd = if (nextSignal.contains(signal)) nextSignal[signal]!!.pathOffset else null
 
         if (events.isEmpty()) continue
 
@@ -184,7 +210,6 @@ private fun signalUpdates(
                     trackOffset
                 )
             )
-
         }
 
         for (i in 0 until events.size - 1) {

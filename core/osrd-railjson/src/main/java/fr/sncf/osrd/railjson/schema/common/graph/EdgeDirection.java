@@ -13,11 +13,11 @@ public enum EdgeDirection {
 
     /**
      * Gets the opposite of this direction
+     *
      * @return this opposite of this direction
      */
     public EdgeDirection opposite() {
-        if (this == START_TO_STOP)
-            return STOP_TO_START;
+        if (this == START_TO_STOP) return STOP_TO_START;
         return START_TO_STOP;
     }
 }

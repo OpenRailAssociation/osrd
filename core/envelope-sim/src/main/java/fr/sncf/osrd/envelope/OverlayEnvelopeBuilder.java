@@ -4,7 +4,9 @@ import fr.sncf.osrd.envelope.part.EnvelopePart;
 import java.util.ArrayDeque;
 
 /**
- * <p>Creates an overlay over an envelope by combining slices of the base envelope and overlay envelope parts</p>
+ * Creates an overlay over an envelope by combining slices of the base envelope and overlay envelope
+ * parts
+ *
  * <pre>
  *     Envelope testEnvelope = ...;
  *     var cursor = EnvelopeCursor.forward(testEnvelope);
@@ -41,12 +43,14 @@ public final class OverlayEnvelopeBuilder {
     public static OverlayEnvelopeBuilder backward(Envelope base) {
         return new OverlayEnvelopeBuilder(base, true);
     }
+
     // endregion
 
     /** Adds an overlay envelope part to the builder */
     public void addPart(EnvelopePart part) {
         if (reverse) {
-            assert overlayParts.isEmpty() || part.getEndPos() <= overlayParts.getFirst().getBeginPos();
+            assert overlayParts.isEmpty()
+                    || part.getEndPos() <= overlayParts.getFirst().getBeginPos();
             overlayParts.addFirst(part);
         } else {
             assert overlayParts.isEmpty() || overlayParts.getLast().getEndPos() <= part.getBeginPos();
@@ -54,11 +58,11 @@ public final class OverlayEnvelopeBuilder {
         }
     }
 
-    /** Slice the base curve between the end of the previous overlay and the beginning of the current one. */
-    private EnvelopePart[] sliceBase(
-            EnvelopePart previousOverlay,
-            EnvelopePart currentOverlay
-    ) {
+    /**
+     * Slice the base curve between the end of the previous overlay and the beginning of the current
+     * one.
+     */
+    private EnvelopePart[] sliceBase(EnvelopePart previousOverlay, EnvelopePart currentOverlay) {
         double sliceBeginPos = Double.NEGATIVE_INFINITY;
         double sliceBeginSpeed = Double.NaN;
         if (previousOverlay != null) {
@@ -77,8 +81,7 @@ public final class OverlayEnvelopeBuilder {
             if (Math.abs(baseSpeed - currentOverlay.getBeginSpeed()) < 1e-6)
                 sliceEndSpeed = currentOverlay.getBeginSpeed();
         }
-        if (sliceBeginPos == sliceEndPos)
-            return new EnvelopePart[0]; // Prevents 0-length parts
+        if (sliceBeginPos == sliceEndPos) return new EnvelopePart[0]; // Prevents 0-length parts
         return base.slice(sliceBeginPos, sliceBeginSpeed, sliceEndPos, sliceEndSpeed);
     }
 

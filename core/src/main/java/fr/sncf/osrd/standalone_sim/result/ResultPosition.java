@@ -12,9 +12,12 @@ import java.util.ArrayList;
 @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
 public class ResultPosition {
     public final double time;
+
     @Json(name = "track_section")
     public final String trackSection;
+
     public final double offset;
+
     @Json(name = "path_offset")
     public final double pathOffset;
 
@@ -32,12 +35,13 @@ public class ResultPosition {
                 time,
                 pathOffset,
                 rawInfra.getTrackSectionName(location.getTrackId()),
-                Distance.toMeters(location.getOffset())
-        );
+                Distance.toMeters(location.getOffset()));
     }
 
-    /** Interpolate in a list of positions the time associated to a given position.
-     * Note: Using envelope is not possible since the stop duration is not taken into account in envelopes.
+    /**
+     * Interpolate in a list of positions the time associated to a given position. Note: Using
+     * envelope is not possible since the stop duration is not taken into account in envelopes.
+     *
      * @param position between 0 and last position
      * @param headPositions list of positions
      */
@@ -49,10 +53,8 @@ public class ResultPosition {
         // Binary search to find the interval to use for interpolation
         while (rightIndex - leftIndex > 1) {
             int median = (rightIndex + leftIndex) / 2;
-            if (position > headPositions.get(median).pathOffset)
-                leftIndex = median;
-            else
-                rightIndex = median;
+            if (position > headPositions.get(median).pathOffset) leftIndex = median;
+            else rightIndex = median;
         }
 
         var a = headPositions.get(leftIndex);

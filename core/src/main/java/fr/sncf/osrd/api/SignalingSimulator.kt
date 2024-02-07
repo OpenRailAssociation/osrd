@@ -11,10 +11,10 @@ import fr.sncf.osrd.signaling.tvm300.*
 import fr.sncf.osrd.signaling.tvm430.*
 
 /**
- * Configure the signaling simulator for all the supported signaling systems
- * Mainly useful because we can't do it directly from java due to compiler issues
- * */
-fun makeSignalingSimulator() : SignalingSimulator {
+ * Configure the signaling simulator for all the supported signaling systems Mainly useful because
+ * we can't do it directly from java due to compiler issues
+ */
+fun makeSignalingSimulator(): SignalingSimulator {
     val sigSystemManager = SigSystemManagerImpl()
     sigSystemManager.addSignalingSystem(BAL)
     sigSystemManager.addSignalingSystem(BAPR)

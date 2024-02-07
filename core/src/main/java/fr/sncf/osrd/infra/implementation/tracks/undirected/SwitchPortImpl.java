@@ -8,7 +8,8 @@ import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
 @ExcludeFromGeneratedCodeCoverage
 public class SwitchPortImpl implements SwitchPort {
     private final String id;
-    private final String switchID; // This is a separate variable to report errors before the switch is instantiated
+    private final String switchID; // This is a separate variable to report errors before the switch is
+    // instantiated
     public Switch switchRef;
 
     public SwitchPortImpl(String id, String switchID) {

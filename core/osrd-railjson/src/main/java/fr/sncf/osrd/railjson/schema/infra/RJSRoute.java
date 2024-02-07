@@ -28,14 +28,15 @@ public class RJSRoute implements Identified {
     @Json(name = "switches_directions")
     public Map<String, String> switchesDirections;
 
-
-    /** Routes are described as a list of TVD Sections, Switches in specific positions, and an entry point */
+    /**
+     * Routes are described as a list of TVD Sections, Switches in specific positions, and an entry
+     * point
+     */
     public RJSRoute(
             String id,
             RJSWaypointRef<RJSTrainDetector> entryPoint,
             EdgeDirection entryPointDirection,
-            RJSWaypointRef<RJSTrainDetector> exitPoint
-    ) {
+            RJSWaypointRef<RJSTrainDetector> exitPoint) {
         this.id = id;
         this.entryPoint = entryPoint;
         this.exitPoint = exitPoint;

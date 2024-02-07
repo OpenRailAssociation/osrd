@@ -9,13 +9,13 @@ interface IncrementalRequirementCallbacks {
     fun arrivalTimeInRange(pathBeginOff: Offset<Path>, pathEndOff: Offset<Path>): Double
 
     // the departure time from a given location, which has to take into account train length.
-    // this is used to compute zone occupancy. if the train never leaves a location, +inf is returned
+    // this is used to compute zone occupancy. if the train never leaves a location, +inf is
+    // returned
     fun departureTimeFromRange(pathBeginOff: Offset<Path>, pathEndOff: Offset<Path>): Double
 
     // the end time of the train
     fun endTime(): Double
 }
-
 
 data class PathSignal(
     val signal: LogicalSignalId,

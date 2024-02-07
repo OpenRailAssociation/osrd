@@ -1,9 +1,8 @@
 package fr.sncf.osrd.fast_collections.generator.collections
 
-import fr.sncf.osrd.fast_collections.generator.*
 import com.google.devtools.ksp.processing.Dependencies
 import com.google.devtools.ksp.symbol.KSFile
-
+import fr.sncf.osrd.fast_collections.generator.*
 
 const val DEFAULT_CAPACITY = 4
 
@@ -19,8 +18,14 @@ private fun CollectionItemType.generateArrayList(context: GeneratorContext, curr
     val primitiveZero = storageType.primitiveZero()
     val toPrimitive = storageType.toPrimitive
     val wrapperZero = storageType.fromPrimitive(primitiveZero)
-    val file = context.codeGenerator.createNewFile(Dependencies(true, currentFile), generatedPackage, fileName)
-    file.appendText("""
+    val file =
+        context.codeGenerator.createNewFile(
+            Dependencies(true, currentFile),
+            generatedPackage,
+            fileName
+        )
+    file.appendText(
+        """
             @file:OptIn(ExperimentalUnsignedTypes::class)
 
             /** GENERATED CODE */
@@ -260,7 +265,9 @@ private fun CollectionItemType.generateArrayList(context: GeneratorContext, curr
                 res.add(d)
                 return res
             }
-        """.trimIndent())
+        """
+            .trimIndent()
+    )
     file.close()
 }
 
@@ -269,7 +276,11 @@ class ArrayListGenerator {
         override val generatorId = "ArrayList"
         override val dependencies = arrayOf("Interfaces")
 
-        override fun generate(context: GeneratorContext, currentFile: KSFile, itemType: CollectionItemType) {
+        override fun generate(
+            context: GeneratorContext,
+            currentFile: KSFile,
+            itemType: CollectionItemType
+        ) {
             itemType.generateArrayList(context, currentFile)
         }
     }

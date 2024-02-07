@@ -16,13 +16,13 @@ import fr.sncf.osrd.utils.units.meters
 
 private val SIGHT_DISTANCE = 400.meters
 
-/** Computes the unavailable space for each block, i.e.
- * the times and positions where the *head* of the train cannot be.
- * This considers existing occupancy segments, the length of the train,
- * and the blocks that must be left available behind the train
- * <br></br>
- * This is the first step to compute STDCM, the goal is to get rid of railway rules and extra complexity
- * as soon as possible. After this step we can look for a single curve that avoids unavailable segment.  */
+/**
+ * Computes the unavailable space for each block, i.e. the times and positions where the *head* of
+ * the train cannot be. This considers existing occupancy segments, the length of the train, and the
+ * blocks that must be left available behind the train <br></br> This is the first step to compute
+ * STDCM, the goal is to get rid of railway rules and extra complexity as soon as possible. After
+ * this step we can look for a single curve that avoids unavailable segment.
+ */
 fun computeUnavailableSpace(
     infra: RawSignalingInfra,
     blockInfra: BlockInfra,
@@ -32,18 +32,26 @@ fun computeUnavailableSpace(
     marginToAddAfterEachBlock: Double
 ): Multimap<BlockId, OccupancySegment> {
     val unavailableSpace: Multimap<BlockId, OccupancySegment> = HashMultimap.create()
-    val blockUse = buildBlockUse(
-        infra, blockInfra, spacingRequirements,
-        marginToAddBeforeEachBlock, marginToAddAfterEachBlock
-    )
+    val blockUse =
+        buildBlockUse(
+            infra,
+            blockInfra,
+            spacingRequirements,
+            marginToAddBeforeEachBlock,
+            marginToAddAfterEachBlock
+        )
     for ((blockId, useTimes) in blockUse) {
         val blockLength = blockInfra.getBlockLength(blockId)
         for (timeRange in useTimes.asRanges()) {
 
             // Generate current block occupancy
             unavailableSpace.put(
-                blockId, OccupancySegment(
-                    timeRange.lowerEndpoint(), timeRange.upperEndpoint(), 0.meters, blockLength.distance
+                blockId,
+                OccupancySegment(
+                    timeRange.lowerEndpoint(),
+                    timeRange.upperEndpoint(),
+                    0.meters,
+                    blockLength.distance
                 )
             )
 
@@ -52,18 +60,26 @@ fun computeUnavailableSpace(
             for (predecessorBlock in predecessorBlocks) {
                 val preBlockLength = blockInfra.getBlockLength(predecessorBlock)
                 unavailableSpace.put(
-                    predecessorBlock, OccupancySegment(
-                        timeRange.lowerEndpoint(), timeRange.upperEndpoint(), 0.meters, preBlockLength.distance
+                    predecessorBlock,
+                    OccupancySegment(
+                        timeRange.lowerEndpoint(),
+                        timeRange.upperEndpoint(),
+                        0.meters,
+                        preBlockLength.distance
                     )
                 )
 
                 // Generate the sight distance requirements in the blocks before that
-                for (secondPredecessorBlock in getPreviousBlocks(infra, blockInfra, predecessorBlock)) {
+                for (secondPredecessorBlock in
+                    getPreviousBlocks(infra, blockInfra, predecessorBlock)) {
                     val secPreBlockLength = blockInfra.getBlockLength(secondPredecessorBlock)
                     unavailableSpace.put(
-                        secondPredecessorBlock, OccupancySegment(
-                            timeRange.lowerEndpoint(), timeRange.upperEndpoint(),
-                            max(0.meters, secPreBlockLength.distance - SIGHT_DISTANCE), secPreBlockLength.distance
+                        secondPredecessorBlock,
+                        OccupancySegment(
+                            timeRange.lowerEndpoint(),
+                            timeRange.upperEndpoint(),
+                            max(0.meters, secPreBlockLength.distance - SIGHT_DISTANCE),
+                            secPreBlockLength.distance
                         )
                     )
                 }
@@ -74,9 +90,12 @@ fun computeUnavailableSpace(
             for (successorBlock in successorBlocks) {
                 val nextBlockLength = blockInfra.getBlockLength(successorBlock)
                 unavailableSpace.put(
-                    successorBlock, OccupancySegment(
-                        timeRange.lowerEndpoint(), timeRange.upperEndpoint(),
-                        0.meters, min(nextBlockLength.distance, fromMeters(rollingStock.length))
+                    successorBlock,
+                    OccupancySegment(
+                        timeRange.lowerEndpoint(),
+                        timeRange.upperEndpoint(),
+                        0.meters,
+                        min(nextBlockLength.distance, fromMeters(rollingStock.length))
                     )
                 )
             }
@@ -93,9 +112,11 @@ fun computeUnavailableSpace(
     return unavailableSpace
 }
 
-/** Builds the time during which the blocks are used by another train (including a forward signal cascade)
- * This step is also used to merge together the small overlapping time intervals
- * across different zones or trains.  */
+/**
+ * Builds the time during which the blocks are used by another train (including a forward signal
+ * cascade) This step is also used to merge together the small overlapping time intervals across
+ * different zones or trains.
+ */
 private fun buildBlockUse(
     infra: RawSignalingInfra,
     blockInfra: BlockInfra,
@@ -106,10 +127,11 @@ private fun buildBlockUse(
     val res = HashMap<BlockId, RangeSet<Double>>()
     for (requirement in requirements) {
         val zoneId = infra.getZoneFromName(requirement.zone)
-        val timeRange = Range.closed(
-            requirement.beginTime - marginToAddBeforeEachBlock,
-            requirement.endTime + marginToAddAfterEachBlock
-        )
+        val timeRange =
+            Range.closed(
+                requirement.beginTime - marginToAddBeforeEachBlock,
+                requirement.endTime + marginToAddAfterEachBlock
+            )
         for (blockId in blockInfra.getBlocksInZone(zoneId)) {
             res.putIfAbsent(blockId, TreeRangeSet.create())
             res[blockId]!!.add(timeRange)
@@ -118,14 +140,22 @@ private fun buildBlockUse(
     return res
 }
 
-/** Returns the blocks that lead into the given one  */
-private fun getPreviousBlocks(infra: RawSignalingInfra, blockInfra: BlockInfra, blockId: BlockId): Set<BlockId> {
+/** Returns the blocks that lead into the given one */
+private fun getPreviousBlocks(
+    infra: RawSignalingInfra,
+    blockInfra: BlockInfra,
+    blockId: BlockId
+): Set<BlockId> {
     val entry = blockInfra.getBlockEntry(infra, blockId)
     return blockInfra.getBlocksEndingAtDetector(entry).toSet()
 }
 
-/** Returns the blocks that follow the given one  */
-private fun getNextBlocks(infra: RawSignalingInfra, blockInfra: BlockInfra, blockId: BlockId): Set<BlockId> {
+/** Returns the blocks that follow the given one */
+private fun getNextBlocks(
+    infra: RawSignalingInfra,
+    blockInfra: BlockInfra,
+    blockId: BlockId
+): Set<BlockId> {
     val entry = blockInfra.getBlockExit(infra, blockId)
     return blockInfra.getBlocksStartingAtDetector(entry).toSet()
 }

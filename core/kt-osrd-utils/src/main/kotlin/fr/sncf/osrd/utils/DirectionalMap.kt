@@ -1,7 +1,7 @@
 package fr.sncf.osrd.utils
 
 /** Simple utility class to store a pair of values, each linked to a direction */
-class DirectionalMap<T> (
+class DirectionalMap<T>(
     private val forwards: T,
     private val backwards: T,
 ) {

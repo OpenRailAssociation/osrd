@@ -19,8 +19,7 @@ private class PrimitiveSymbolProcessor(val context: GeneratorContext) : SymbolPr
             }
             val file = symbol as KSFile
             for (annotation in file.annotations) {
-                if (annotation.shortName.getShortName() != ANNOTATION_SIMPLE_NAME)
-                    continue
+                if (annotation.shortName.getShortName() != ANNOTATION_SIMPLE_NAME) continue
 
                 val primitiveType = (annotation.arguments[0].value as KSType).declaration
 
@@ -28,8 +27,17 @@ private class PrimitiveSymbolProcessor(val context: GeneratorContext) : SymbolPr
                 val toPrimitive = "(%s)"
                 val toPrimitiveFun: (String) -> String = { toPrimitive.format(it) }
                 val fromPrimitiveFun: (String) -> String = { fromPrimitive.format(it) }
-                val collections = (annotation.arguments[1].value as List<*>).map { it as String }.toList()
-                generateCollections(context, file, primitiveType, primitiveType, toPrimitiveFun, fromPrimitiveFun, collections)
+                val collections =
+                    (annotation.arguments[1].value as List<*>).map { it as String }.toList()
+                generateCollections(
+                    context,
+                    file,
+                    primitiveType,
+                    primitiveType,
+                    toPrimitiveFun,
+                    fromPrimitiveFun,
+                    collections
+                )
             }
         }
         return invalidSymbols
@@ -37,9 +45,7 @@ private class PrimitiveSymbolProcessor(val context: GeneratorContext) : SymbolPr
 }
 
 class PrimitiveCollectionsProcessorProvider : SymbolProcessorProvider {
-    override fun create(
-        environment: SymbolProcessorEnvironment
-    ): SymbolProcessor {
+    override fun create(environment: SymbolProcessorEnvironment): SymbolProcessor {
         val context = GeneratorContext(environment.codeGenerator, environment.logger)
         return PrimitiveSymbolProcessor(context)
     }
