@@ -69,7 +69,7 @@ osrd_containers = { path = "./osrd_containers" }
 mvt = "0.9.0"
 futures = "0.3.30"
 postgis_diesel = { version = "2.3.0", features = ["serde"] }
-geos = { version = "8.3.0", features = ["json"] }
+geos = { version = "8.3.1", features = ["json"] }
 rangemap.workspace = true
 actix-multipart = "0.6.1"
 reqwest = { version = "0.11.23", features = ["json"] }
