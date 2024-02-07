@@ -1,4 +1,4 @@
-use super::{OSRDIdentified, OSRDTyped, ObjectType};
+use super::{OSRDIdentified, OSRDTyped, ObjectType, Sign};
 
 use super::utils::Identifier;
 use super::DirectionalTrackRange;
@@ -19,6 +19,23 @@ pub struct NeutralSection {
     pub announcement_track_ranges: Vec<DirectionalTrackRange>,
     pub track_ranges: Vec<DirectionalTrackRange>,
     pub lower_pantograph: bool, // Whether the trains need to lower their pantograph to cross this section
+    #[serde(default)]
+    pub extensions: NeutralSectionExtensions,
+}
+
+#[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct NeutralSectionExtensions {
+    pub neutral_sncf: Option<NeutralSectionNeutralSncfExtension>,
+}
+
+#[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct NeutralSectionNeutralSncfExtension {
+    announcement: Vec<Sign>,
+    exe: Sign,
+    end: Vec<Sign>,
+    rev: Vec<Sign>,
 }
 
 impl OSRDTyped for NeutralSection {

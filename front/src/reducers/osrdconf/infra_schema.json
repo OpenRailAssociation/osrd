@@ -641,6 +641,14 @@
                     "title": "Announcement Track Ranges",
                     "type": "array"
                 },
+                "extensions": {
+                    "allOf": [
+                        {
+                            "$ref": "#/$defs/NeutralSectionExtensions"
+                        }
+                    ],
+                    "default": null
+                },
                 "id": {
                     "description": "Unique identifier of the object",
                     "maxLength": 255,
@@ -669,6 +677,64 @@
                 "lower_pantograph"
             ],
             "title": "NeutralSection",
+            "type": "object"
+        },
+        "NeutralSectionExtensions": {
+            "properties": {
+                "neutral_sncf": {
+                    "allOf": [
+                        {
+                            "$ref": "#/$defs/NeutralSectionNeutralSncfExtension"
+                        }
+                    ],
+                    "default": null
+                }
+            },
+            "title": "NeutralSectionExtensions",
+            "type": "object"
+        },
+        "NeutralSectionNeutralSncfExtension": {
+            "properties": {
+                "announcement": {
+                    "description": "Precise that there is bp/cc neutral section",
+                    "items": {
+                        "$ref": "#/$defs/Sign"
+                    },
+                    "title": "Announcement",
+                    "type": "array"
+                },
+                "end": {
+                    "description": "End of the bp/cc neutral section",
+                    "items": {
+                        "$ref": "#/$defs/Sign"
+                    },
+                    "title": "End",
+                    "type": "array"
+                },
+                "exe": {
+                    "allOf": [
+                        {
+                            "$ref": "#/$defs/Sign"
+                        }
+                    ],
+                    "description": "Beginning of the bp/cc neutral section"
+                },
+                "rev": {
+                    "description": "REV of the bp/cc neutral section",
+                    "items": {
+                        "$ref": "#/$defs/Sign"
+                    },
+                    "title": "Rev",
+                    "type": "array"
+                }
+            },
+            "required": [
+                "announcement",
+                "exe",
+                "end",
+                "rev"
+            ],
+            "title": "NeutralSectionNeutralSncfExtension",
             "type": "object"
         },
         "OperationalPoint": {
@@ -950,17 +1016,14 @@
         "Sign": {
             "description": "This class is used to define signs.\n    This is a physical, punctual, cosmetic object.\n    ",
             "properties": {
-                "angle_geo": {
-                    "default": 0,
-                    "description": "Geographic angle in degrees",
-                    "title": "Angle Geo",
-                    "type": "number"
-                },
-                "angle_sch": {
-                    "default": 0,
-                    "description": "Schematic angle in degrees",
-                    "title": "Angle Sch",
-                    "type": "number"
+                "direction": {
+                    "allOf": [
+                        {
+                            "$ref": "#/$defs/Direction"
+                        }
+                    ],
+                    "default": "START_TO_STOP",
+                    "description": "Direction of the sign on the track"
                 },
                 "kp": {
                     "default": "",
@@ -1787,8 +1850,8 @@
             "type": "array"
         },
         "version": {
-            "const": "3.4.8",
-            "default": "3.4.8",
+            "const": "3.4.9",
+            "default": "3.4.9",
             "description": "Version of the schema",
             "title": "Version"
         }

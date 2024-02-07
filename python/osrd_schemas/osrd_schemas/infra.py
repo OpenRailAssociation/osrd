@@ -8,7 +8,7 @@ from pydantic.fields import FieldInfo
 
 ALL_OBJECT_TYPES = []
 
-RAILJSON_INFRA_VERSION_TYPE = Literal["3.4.8"]
+RAILJSON_INFRA_VERSION_TYPE = Literal["3.4.9"]
 RAILJSON_INFRA_VERSION = get_args(RAILJSON_INFRA_VERSION_TYPE)[0]
 
 # Traits
@@ -436,9 +436,8 @@ class Sign(TrackLocationTrait):
     This is a physical, punctual, cosmetic object.
     """
 
-    angle_geo: float = Field(0, description="Geographic angle in degrees")
-    angle_sch: float = Field(0, description="Schematic angle in degrees")
     side: Side = Field(Side.CENTER, description="Side of the sign on the track")
+    direction: Direction = Field(Direction.START_TO_STOP, description="Direction of the sign on the track")
     type: NonBlankStr = Field(description="Precise the type of the sign")
     value: str = Field(description="If the sign is an announcement, precise the value(s)", default="")
     kp: str = Field(description="Kilometric point of the sign", default="")
@@ -581,6 +580,14 @@ class SpeedSectionPslSncfExtension(BaseModel):
     announcement: List[Sign] = Field(description="Precise the value(s) of the speed")
     z: Sign = Field(description="Beginning of the psl speed section")
     r: List[Sign] = Field(description="End of the psl speed section")
+
+
+@register_extension(object=NeutralSection, name="neutral_sncf")
+class NeutralSectionNeutralSncfExtension(BaseModel):
+    announcement: List[Sign] = Field(description="Precise that there is bp/cc neutral section")
+    exe: Sign = Field(description="Beginning of the bp/cc neutral section")
+    end: List[Sign] = Field(description="End of the bp/cc neutral section")
+    rev: List[Sign] = Field(description="REV of the bp/cc neutral section")
 
 
 @register_extension(object=BufferStop, name="sncf")

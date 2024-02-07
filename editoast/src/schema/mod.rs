@@ -367,9 +367,9 @@ pub struct Sign {
     #[derivative(Default(value = r#""InvalidRef".into()"#))]
     pub track: Identifier,
     pub position: f64,
-    pub angle_geo: f64,
-    pub angle_sch: f64,
     pub side: Side,
+    #[derivative(Default(value = r#"Direction::StartToStop"#))]
+    pub direction: Direction,
     #[serde(rename = "type")]
     pub sign_type: NonBlankString,
     pub value: String,

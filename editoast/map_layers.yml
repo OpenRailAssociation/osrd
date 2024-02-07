@@ -169,11 +169,24 @@ layers:
       geo:
         on_field: geographic
         cache_duration: 3600
-        data_expr: layer.data
+        data_expr: layer.data || jsonb_build_object('angle', layer.angle_geo)
       sch:
         on_field: schematic
         cache_duration: 3600
-        data_expr: layer.data
+        data_expr: layer.data || jsonb_build_object('angle', layer.angle_geo)
+
+  neutral_signs:
+    table_name: infra_layer_neutral_sign
+    id_field: id
+    views:
+      geo:
+        on_field: geographic
+        cache_duration: 3600
+        data_expr: layer.data - 'value' || jsonb_build_object('angle', layer.angle_geo)
+      sch:
+        on_field: schematic
+        cache_duration: 3600
+        data_expr: layer.data - 'value' || jsonb_build_object('angle', layer.angle_sch)
 
   neutral_sections:
     table_name: infra_layer_neutral_section
