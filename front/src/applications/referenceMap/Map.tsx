@@ -83,6 +83,9 @@ function Map() {
     return interactiveLayersLocal;
   };
 
+  const backgroundPositionX = Math.round(((viewport.bearing + 180) * 100) / 360);
+  console.log(viewport.bearing, backgroundPositionX);
+
   /**
    * When the component mount
    * => we check if url has viewport and set it in store
@@ -113,7 +116,7 @@ function Map() {
         {...viewport}
         ref={mapRef}
         cursor="normal"
-        style={{ width: '100%', height: '100%' }}
+        style={{ width: '100%', height: '100%', backgroundPositionX: `${backgroundPositionX}%` }}
         mapStyle={mapBlankStyle}
         onMove={(e) => updateViewportChange(e.viewState)}
         onMoveEnd={(e) => updateViewportChange(e.viewState, true)}
