@@ -98,7 +98,6 @@
       "value": 0.5
     },
     "inertia_coefficient": 1.2,
-    "features": [],
     "mass": 132000,
     "rolling_resistance": {
       "type": "davis",

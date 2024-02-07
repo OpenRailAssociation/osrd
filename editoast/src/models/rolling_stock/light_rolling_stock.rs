@@ -1,11 +1,9 @@
 use crate::error::Result;
-use crate::models::rolling_stock::rolling_stock_livery::RollingStockLiveryMetadata;
+use crate::models::{rolling_stock::rolling_stock_livery::RollingStockLiveryMetadata, TextArray};
 use crate::schema::rolling_stock::light_rolling_stock::{
     LightEffortCurves, LightRollingStock, LightRollingStockWithLiveries,
 };
-use crate::schema::rolling_stock::{
-    EnergySource, Gamma, RollingResistance, RollingStockMetadata, SignalingSystem,
-};
+use crate::schema::rolling_stock::{EnergySource, Gamma, RollingResistance, RollingStockMetadata};
 use crate::tables::rolling_stock;
 use crate::views::pagination::{Paginate, PaginatedResponse};
 use crate::DbPool;
@@ -39,7 +37,6 @@ pub struct LightRollingStockModel {
     gamma: DieselJson<Gamma>,
     inertia_coefficient: f64,
     pub base_power_class: Option<String>,
-    features: Vec<Option<String>>,
     mass: f64,
     #[schema(value_type = RollingResistance)]
     rolling_resistance: DieselJson<RollingResistance>,
@@ -53,8 +50,8 @@ pub struct LightRollingStockModel {
     electrical_power_startup_time: Option<f64>,
     raise_pantograph_time: Option<f64>,
     pub version: i64,
-    #[schema(value_type = Vec<SignalingSystem>)]
-    supported_signaling_systems: DieselJson<Vec<SignalingSystem>>,
+    #[diesel(deserialize_as = TextArray)]
+    supported_signaling_systems: Vec<String>,
 }
 
 impl LightRollingStockModel {
@@ -114,7 +111,6 @@ impl From<LightRollingStockModel> for LightRollingStock {
             comfort_acceleration: rolling_stock_model.comfort_acceleration,
             gamma: rolling_stock_model.gamma,
             inertia_coefficient: rolling_stock_model.inertia_coefficient,
-            features: rolling_stock_model.features.into_iter().flatten().collect(),
             mass: rolling_stock_model.mass,
             rolling_resistance: rolling_stock_model.rolling_resistance,
             loading_gauge: rolling_stock_model.loading_gauge,

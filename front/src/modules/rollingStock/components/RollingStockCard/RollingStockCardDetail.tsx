@@ -122,12 +122,6 @@ export default function RollingStockCardDetail({
           </table>
         </div>
         <div className="col-sm-6">
-          {rollingStock.features && rollingStock.features.length > 0 && (
-            <div className="pb-1">
-              {t('features')}
-              <span className="ml-1">{rollingStock.features.join(', ')}</span>
-            </div>
-          )}
           {rollingStock.power_restrictions &&
             Object.keys(rollingStock.power_restrictions).length !== 0 && (
               <table className="rollingstock-details-table mb-1">

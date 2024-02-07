@@ -137,7 +137,6 @@ impl From<RollingStockForm> for RollingStockModel {
             comfort_acceleration: Some(rolling_stock.common.comfort_acceleration),
             gamma: Some(DieselJson(rolling_stock.common.gamma)),
             inertia_coefficient: Some(rolling_stock.common.inertia_coefficient),
-            features: Some(rolling_stock.common.features),
             mass: Some(rolling_stock.common.mass),
             rolling_resistance: Some(DieselJson(rolling_stock.common.rolling_resistance)),
             loading_gauge: Some(rolling_stock.common.loading_gauge),
@@ -145,9 +144,7 @@ impl From<RollingStockForm> for RollingStockModel {
             energy_sources: Some(DieselJson(rolling_stock.common.energy_sources)),
             electrical_power_startup_time: Some(rolling_stock.common.electrical_power_startup_time),
             raise_pantograph_time: Some(rolling_stock.common.raise_pantograph_time),
-            supported_signaling_systems: Some(DieselJson(
-                rolling_stock.common.supported_signaling_systems,
-            )),
+            supported_signaling_systems: Some(rolling_stock.common.supported_signaling_systems),
             ..Default::default()
         }
     }

@@ -87,9 +87,6 @@ public class RJSRollingStockParser {
         if (Double.isNaN(rjsRollingStock.inertiaCoefficient))
             throw OSRDError.newMissingRollingStockFieldError("inertia_coefficient");
 
-        if (rjsRollingStock.features == null)
-            throw OSRDError.newMissingRollingStockFieldError("features");
-
         if (rjsRollingStock.loadingGauge == null)
             throw OSRDError.newMissingRollingStockFieldError("loading_gauge");
 

@@ -13,7 +13,7 @@ use crate::models::rolling_stock::rolling_stock_livery::RollingStockLiveryMetada
 use crate::models::{Create, Identifiable, TextArray, Update};
 use crate::schema::rolling_stock::{
     EffortCurves, EnergySource, Gamma, RollingResistance, RollingStock, RollingStockCommon,
-    RollingStockMetadata, RollingStockWithLiveries, SignalingSystem,
+    RollingStockMetadata, RollingStockWithLiveries,
 };
 use crate::schema::track_section::LoadingGaugeType;
 use crate::tables::rolling_stock;
@@ -97,9 +97,6 @@ pub struct RollingStockModel {
     #[diesel(deserialize_as = Option<String>)]
     #[schema(value_type = Option<String>)]
     pub base_power_class: Option<Option<String>>,
-    #[diesel(deserialize_as = TextArray)]
-    #[schema(value_type = Vec<String>)]
-    pub features: Option<Vec<String>>,
     #[diesel(deserialize_as = f64)]
     #[schema(value_type = f64)]
     pub mass: Option<f64>,
@@ -130,9 +127,9 @@ pub struct RollingStockModel {
     #[diesel(deserialize_as = i64)]
     #[schema(value_type = i64)]
     pub version: Option<i64>,
-    #[diesel(deserialize_as = DieselJson<Vec<SignalingSystem>>)]
-    #[schema(value_type = Vec<SignalingSystem>)]
-    pub supported_signaling_systems: Option<DieselJson<Vec<SignalingSystem>>>,
+    #[diesel(deserialize_as = TextArray)]
+    #[schema(value_type = Vec<String>)]
+    pub supported_signaling_systems: Option<Vec<String>>,
 }
 
 fn validate_rolling_stock(
@@ -288,7 +285,6 @@ impl From<RollingStockModel> for RollingStockCommon {
             comfort_acceleration: rolling_stock_model.comfort_acceleration.unwrap(),
             gamma: rolling_stock_model.gamma.unwrap().0,
             inertia_coefficient: rolling_stock_model.inertia_coefficient.unwrap(),
-            features: rolling_stock_model.features.unwrap(),
             mass: rolling_stock_model.mass.unwrap(),
             rolling_resistance: rolling_stock_model.rolling_resistance.unwrap().0,
             loading_gauge: rolling_stock_model.loading_gauge.unwrap(),
@@ -298,7 +294,7 @@ impl From<RollingStockModel> for RollingStockCommon {
                 .electrical_power_startup_time
                 .unwrap(),
             raise_pantograph_time: rolling_stock_model.raise_pantograph_time.unwrap(),
-            supported_signaling_systems: rolling_stock_model.supported_signaling_systems.unwrap().0,
+            supported_signaling_systems: rolling_stock_model.supported_signaling_systems.unwrap(),
         }
     }
 }
