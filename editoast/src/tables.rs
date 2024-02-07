@@ -120,6 +120,23 @@ diesel::table! {
     use diesel::sql_types::*;
     use postgis_diesel::sql_types::*;
 
+    infra_layer_neutral_sign (id) {
+        id -> Int8,
+        #[max_length = 255]
+        obj_id -> Varchar,
+        geographic -> Geometry,
+        schematic -> Geometry,
+        angle_geo -> Float8,
+        angle_sch -> Float8,
+        data -> Jsonb,
+        infra_id -> Int8,
+    }
+}
+
+diesel::table! {
+    use diesel::sql_types::*;
+    use postgis_diesel::sql_types::*;
+
     infra_layer_operational_point (id) {
         id -> Int8,
         #[max_length = 255]
@@ -143,6 +160,8 @@ diesel::table! {
         schematic -> Geometry,
         data -> Jsonb,
         infra_id -> Int8,
+        angle_geo -> Nullable<Float8>,
+        angle_sch -> Nullable<Float8>,
     }
 }
 
@@ -648,6 +667,7 @@ diesel::joinable!(infra_layer_detector -> infra (infra_id));
 diesel::joinable!(infra_layer_electrification -> infra (infra_id));
 diesel::joinable!(infra_layer_error -> infra (infra_id));
 diesel::joinable!(infra_layer_neutral_section -> infra (infra_id));
+diesel::joinable!(infra_layer_neutral_sign -> infra (infra_id));
 diesel::joinable!(infra_layer_operational_point -> infra (infra_id));
 diesel::joinable!(infra_layer_psl_sign -> infra (infra_id));
 diesel::joinable!(infra_layer_signal -> infra (infra_id));
@@ -695,6 +715,7 @@ diesel::allow_tables_to_appear_in_same_query!(
     infra_layer_electrification,
     infra_layer_error,
     infra_layer_neutral_section,
+    infra_layer_neutral_sign,
     infra_layer_operational_point,
     infra_layer_psl_sign,
     infra_layer_signal,

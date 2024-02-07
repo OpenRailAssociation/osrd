@@ -5,6 +5,7 @@ mod detector;
 mod electrification;
 mod error;
 mod neutral_section;
+mod neutral_sign;
 mod operational_point;
 mod psl_sign;
 mod signal;
@@ -20,6 +21,7 @@ use detector::DetectorLayer;
 use electrification::ElectrificationLayer;
 use error::ErrorLayer;
 use neutral_section::NeutralSectionLayer;
+use neutral_sign::NeutralSignLayer;
 use operational_point::OperationalPointLayer;
 use psl_sign::PSLSignLayer;
 use signal::SignalLayer;
@@ -101,6 +103,7 @@ pub async fn refresh_all(
         OperationalPointLayer::refresh_pool(db_pool.clone(), infra, infra_cache),
         PSLSignLayer::refresh_pool(db_pool.clone(), infra, infra_cache),
         NeutralSectionLayer::refresh_pool(db_pool.clone(), infra, infra_cache),
+        NeutralSignLayer::refresh_pool(db_pool.clone(), infra, infra_cache),
     )?;
     log::debug!("⚙️ Infra {infra}: object layers is generated");
     // The error layer depends on the other layers and must be executed at the end.
@@ -122,6 +125,7 @@ pub async fn clear_all(conn: &mut PgConnection, infra: i64) -> Result<()> {
     PSLSignLayer::clear(conn, infra).await?;
     ErrorLayer::clear(conn, infra).await?;
     NeutralSectionLayer::clear(conn, infra).await?;
+    NeutralSignLayer::clear(conn, infra).await?;
     Ok(())
 }
 
@@ -143,6 +147,7 @@ pub async fn update_all(
     PSLSignLayer::update(conn, infra, operations, infra_cache).await?;
     ErrorLayer::update(conn, infra, operations, infra_cache).await?;
     NeutralSectionLayer::update(conn, infra, operations, infra_cache).await?;
+    NeutralSignLayer::update(conn, infra, operations, infra_cache).await?;
     Ok(())
 }
 
