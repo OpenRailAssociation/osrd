@@ -29,7 +29,6 @@ crate::schemas! {
     EnergyStorage,
     RefillLaw,
     RollingStockLivery,
-    SignalingSystem,
     light_rolling_stock::schemas(),
 }
 
@@ -48,7 +47,6 @@ pub struct RollingStockCommon {
     pub comfort_acceleration: f64,
     pub gamma: Gamma,
     pub inertia_coefficient: f64,
-    pub features: Vec<String>,
     pub mass: f64,
     pub rolling_resistance: RollingResistance,
     #[schema(value_type = LoadingGaugeType)]
@@ -64,8 +62,7 @@ pub struct RollingStockCommon {
     /// The time it takes to raise this train's pantograph in seconds. Is null if the train is not electric.
     #[schema(example = 15.0)]
     pub raise_pantograph_time: Option<f64>,
-    #[serde(default)]
-    pub supported_signaling_systems: Vec<SignalingSystem>,
+    pub supported_signaling_systems: Vec<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize, ToSchema)]
@@ -287,17 +284,6 @@ pub enum EnergySource {
         #[schema(minimum = 0, maximum = 1)]
         efficiency: f64,
     },
-}
-
-#[derive(Clone, Debug, PartialEq, EnumString, Deserialize, Serialize, ToSchema)]
-#[strum(serialize_all = "UPPERCASE")]
-#[serde(rename_all = "UPPERCASE")]
-#[serde(deny_unknown_fields)]
-pub enum SignalingSystem {
-    Bal,
-    Bapr,
-    Tvm300,
-    Tvm430,
 }
 
 #[cfg(test)]

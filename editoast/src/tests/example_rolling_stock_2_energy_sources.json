@@ -8,7 +8,6 @@
     "startup_acceleration": 0.25,
     "comfort_acceleration": 0.12,
     "inertia_coefficient": 1.02,
-    "features": [],
     "name": "other_rolling_stock",
     "mass": 50000.0,
     "loading_gauge": "G2",

@@ -431,7 +431,6 @@ diesel::table! {
         inertia_coefficient -> Float8,
         #[max_length = 255]
         base_power_class -> Nullable<Varchar>,
-        features -> Array<Nullable<Text>>,
         mass -> Float8,
         rolling_resistance -> Jsonb,
         #[max_length = 16]
@@ -442,7 +441,7 @@ diesel::table! {
         electrical_power_startup_time -> Nullable<Float8>,
         raise_pantograph_time -> Nullable<Float8>,
         version -> Int8,
-        supported_signaling_systems -> Jsonb,
+        supported_signaling_systems -> Array<Nullable<Text>>,
     }
 }
 

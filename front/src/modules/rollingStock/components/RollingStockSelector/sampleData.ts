@@ -53,7 +53,6 @@ const ROLLING_STOCK_SAMPLE_DATA: RollingStockWithLiveries = {
     value: 0.5,
   },
   inertia_coefficient: 1.2,
-  features: [],
   mass: 132000,
   rolling_resistance: {
     type: 'davis',
@@ -86,6 +85,7 @@ const ROLLING_STOCK_SAMPLE_DATA: RollingStockWithLiveries = {
       compound_image_id: 1908,
     },
   ],
+  supported_signaling_systems: [],
 };
 
 export default ROLLING_STOCK_SAMPLE_DATA;

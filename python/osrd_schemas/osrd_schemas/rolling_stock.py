@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Annotated, List, Literal, Mapping, Optional, Union, get_args
+from typing import List, Literal, Mapping, Optional, Union, get_args
 
 from pydantic import (
     BaseModel,
@@ -7,12 +7,10 @@ from pydantic import (
     NonNegativeFloat,
     PositiveFloat,
     RootModel,
-    StringConstraints,
     model_validator,
 )
 
 from .infra import LoadingGaugeType
-from .infra_editor import SignalingSystem
 
 RAILJSON_ROLLING_STOCK_VERSION_TYPE = Literal["3.2"]
 RAILJSON_ROLLING_STOCK_VERSION = get_args(RAILJSON_ROLLING_STOCK_VERSION_TYPE)[0]
@@ -211,9 +209,6 @@ class RollingStock(BaseModel, extra="forbid"):
     comfort_acceleration: PositiveFloat = Field(description="The maximum operational acceleration in m/s^2")
     gamma: Gamma = Field(description="The max or const braking coefficient in m/s^2")
     inertia_coefficient: float = Field(gt=0)
-    features: List[Annotated[str, StringConstraints(max_length=255)]] = Field(
-        description="A list of features the train exhibits"
-    )
     mass: PositiveFloat = Field(description="The mass of the train, in kg")
     rolling_resistance: RollingResistance = Field(description="The formula to use to compute rolling resistance")
     loading_gauge: LoadingGaugeType
@@ -230,7 +225,7 @@ class RollingStock(BaseModel, extra="forbid"):
         default=None,
         ge=0,
     )
-    supported_signaling_systems: List[SignalingSystem] = Field(default_factory=list)
+    supported_signaling_systems: List[str] = Field(default_factory=list)
 
 
 if __name__ == "__main__":

@@ -841,10 +841,6 @@ components:
           items:
             $ref: '#/components/schemas/EnergySource'
           type: array
-        features:
-          items:
-            type: string
-          type: array
         gamma:
           $ref: '#/components/schemas/Gamma'
         id:
@@ -886,7 +882,7 @@ components:
           type: number
         supported_signaling_systems:
           items:
-            $ref: '#/components/schemas/SignalingSystem'
+            type: string
           type: array
       required:
       - id
@@ -901,7 +897,6 @@ components:
       - comfort_acceleration
       - gamma
       - inertia_coefficient
-      - features
       - mass
       - rolling_resistance
       - loading_gauge
@@ -1925,10 +1920,6 @@ components:
           items:
             $ref: '#/components/schemas/EnergySource'
           type: array
-        features:
-          items:
-            type: string
-          type: array
         gamma:
           $ref: '#/components/schemas/Gamma'
         inertia_coefficient:
@@ -1968,7 +1959,7 @@ components:
           type: number
         supported_signaling_systems:
           items:
-            $ref: '#/components/schemas/SignalingSystem'
+            type: string
           type: array
       required:
       - name
@@ -1981,11 +1972,11 @@ components:
       - comfort_acceleration
       - gamma
       - inertia_coefficient
-      - features
       - mass
       - rolling_resistance
       - loading_gauge
       - power_restrictions
+      - supported_signaling_systems
       type: object
     RollingStockError:
       oneOf:
@@ -2721,13 +2712,6 @@ components:
       - aspect_label
       - track
       type: object
-    SignalingSystem:
-      enum:
-      - BAL
-      - BAPR
-      - TVM300
-      - TVM430
-      type: string
     SimulationPowerRestrictionRange:
       properties:
         code:

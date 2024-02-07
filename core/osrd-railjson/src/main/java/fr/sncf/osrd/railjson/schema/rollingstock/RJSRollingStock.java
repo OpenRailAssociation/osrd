@@ -76,9 +76,6 @@ public class RJSRollingStock implements Identified {
     @Json(name = "inertia_coefficient")
     public double inertiaCoefficient = Double.NaN;
 
-    /** The list of equipments (protection systems, signaling equipment) the train is able to deal with */
-    public String[] features = new String[0];
-
     /** The mass of the train */
     public double mass = Double.NaN;
 
@@ -95,7 +92,7 @@ public class RJSRollingStock implements Identified {
     public Double raisePantographTime = null;
 
     @Json(name = "supported_signaling_systems")
-    public String[] supportedSignalingSystems = null;
+    public String[] supportedSignalingSystems = new String[0];
     
     public enum GammaType {
         CONST,

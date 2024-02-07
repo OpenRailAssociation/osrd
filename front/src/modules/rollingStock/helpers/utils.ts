@@ -140,7 +140,6 @@ export const rollingStockEditorQueryArg = (
       value: data.gammaValue,
     },
     inertia_coefficient: data.inertiaCoefficient,
-    features: [],
     mass: data.mass * 1000, // Here we receive a value in ton which will be interpreted in kg by the server.
     rolling_resistance: {
       A: data.rollingResistanceA,
@@ -169,6 +168,7 @@ export const rollingStockEditorQueryArg = (
       modes: validCurves,
     },
     base_power_class: data.basePowerClass,
+    supported_signaling_systems: [],
   };
 };
 
