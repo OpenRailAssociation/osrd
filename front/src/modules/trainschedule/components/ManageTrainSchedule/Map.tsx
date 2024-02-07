@@ -1,13 +1,13 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type { MapRef } from 'react-map-gl/maplibre';
 import ReactMapGL, { AttributionControl, ScaleControl } from 'react-map-gl/maplibre';
+import type { Viewport } from 'reducers/map';
 import { updateMapSearchMarker, updateViewport } from 'reducers/map';
 import { useDispatch, useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
 import type { MapLayerMouseEvent } from 'maplibre-gl';
-import type { MapRef } from 'react-map-gl/maplibre';
 import type { NearestPointOnLine } from '@turf/nearest-point-on-line';
-import type { Viewport } from 'reducers/map';
 
 /* Main data & layers */
 import VirtualLayers from 'modules/simulationResult/components/SimulationResultsMap/VirtualLayers';
@@ -19,7 +19,7 @@ import Hillshade from 'common/Map/Layers/Hillshade';
 import Electrifications from 'common/Map/Layers/Electrifications';
 import MapButtons from 'common/Map/Buttons/MapButtons';
 import PlatformsLayer from 'common/Map/Layers/Platforms';
-import NeutralSections from 'common/Map/Layers/NeutralSections';
+import NeutralSections from 'common/Map/Layers/extensions/SNCF/NeutralSections';
 import OperationalPoints from 'common/Map/Layers/OperationalPoints';
 
 /* Interactions */
@@ -272,6 +272,7 @@ const Map = () => {
           infraID={infraID}
         />
         <NeutralSections
+          colors={colors[mapStyle]}
           layerOrder={LAYER_GROUPS_ORDER[LAYERS.DEAD_SECTIONS.GROUP]}
           infraID={infraID}
         />

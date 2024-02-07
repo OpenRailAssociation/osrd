@@ -9,14 +9,12 @@ export default function getKPLabelLayerProps(params: {
   bottomOffset?: number;
   PKFieldName?: string;
   colors: Theme;
-  maxzoom?: number;
   minzoom?: number;
 }): OmitLayer<SymbolLayer> {
   const {
     bottomOffset = 2.5,
     colors,
     PKFieldName = 'kp',
-    maxzoom = 24,
     minzoom = 7,
     isSignalisation = false,
     sourceTable,
@@ -62,7 +60,6 @@ export default function getKPLabelLayerProps(params: {
       ['!=', ['literal', null], ['get', PKFieldName]],
       ['!=', '', ['get', PKFieldName]],
     ],
-    maxzoom,
     minzoom,
     layout: {
       'text-field': ['get', PKFieldName],

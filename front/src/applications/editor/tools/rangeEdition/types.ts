@@ -24,8 +24,7 @@ export type TrackRangeExtremityFeature = Feature<
 export type PslSignFeature = Feature<
   Point,
   {
-    angle_sch: number;
-    angle_geo: number;
+    angle: number;
     position: number;
     side: 'LEFT' | 'CENTER' | 'RIGHT';
     track: string;

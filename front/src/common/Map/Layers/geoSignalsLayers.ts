@@ -1,16 +1,11 @@
 import { CircleLayer, SymbolLayer } from 'react-map-gl/maplibre';
-import { Theme, OmitLayer } from 'types';
+import { OmitLayer } from 'types';
 import holyLand from 'common/MotriceRelated/holyLand';
+import { SignalContext } from 'common/Map/Layers/types';
 
 const signalTextOffsetX = 5;
 const signalTextOffsetY = -1;
 const signalCenteredTextOffset = [0, 6];
-
-export interface SignalContext {
-  prefix: string;
-  sourceTable?: string;
-  colors: Theme;
-}
 
 export function getPointLayerProps({ sourceTable, colors }: SignalContext): OmitLayer<CircleLayer> {
   const props: OmitLayer<CircleLayer> = {
@@ -19,39 +14,6 @@ export function getPointLayerProps({ sourceTable, colors }: SignalContext): Omit
     paint: {
       'circle-color': colors.signal.point,
       'circle-radius': 3,
-    },
-  };
-
-  if (typeof sourceTable === 'string') props['source-layer'] = sourceTable;
-
-  return props;
-}
-
-export function getSignalMatLayerProps({ sourceTable }: SignalContext): OmitLayer<SymbolLayer> {
-  const props: OmitLayer<SymbolLayer> = {
-    type: 'symbol',
-    minzoom: 12,
-    paint: {},
-    layout: {
-      'text-field': '', // '{extensions_sncf_installation_type} / {extensions_sncf_value} / {extensions_sncf_label}',
-      'text-font': ['Roboto Condensed'],
-      'text-size': 9,
-      'icon-image': [
-        'case',
-        ['==', ['get', 'extensions_sncf_side'], 'RIGHT'],
-        'MATD',
-        ['==', ['get', 'extensions_sncf_side'], 'LEFT'],
-        'MATG',
-        '',
-      ],
-      'icon-size': 0.7,
-      'icon-rotation-alignment': 'map',
-      'icon-pitch-alignment': 'map',
-      'icon-rotate': ['get', 'angle'],
-      'icon-allow-overlap': true,
-      'icon-ignore-placement': true,
-      'text-allow-overlap': true,
-      'text-ignore-placement': true,
     },
   };
 

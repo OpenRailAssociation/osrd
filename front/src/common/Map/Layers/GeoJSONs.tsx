@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { Layer, Source } from 'react-map-gl/maplibre';
 import type { AnyLayer, LayerProps } from 'react-map-gl/maplibre';
+import { Layer, Source } from 'react-map-gl/maplibre';
 import type { FilterSpecification } from 'maplibre-gl';
 import chroma from 'chroma-js';
 import type { Feature, FeatureCollection } from 'geojson';
@@ -9,16 +9,12 @@ import { isPlainObject, mapValues, omit } from 'lodash';
 
 import type { Theme } from 'types';
 
-import { LAYERS, LAYER_ENTITIES_ORDERS, LAYER_GROUPS_ORDER } from 'config/layerOrder';
+import { LAYER_ENTITIES_ORDERS, LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
 
 import type { LayerType } from 'applications/editor/tools/types';
 
 import geoMainLayer from 'common/Map/Layers/geographiclayers';
-import {
-  getPointLayerProps,
-  getSignalLayerProps,
-  getSignalMatLayerProps,
-} from 'common/Map/Layers/geoSignalsLayers';
+import { getPointLayerProps, getSignalLayerProps } from 'common/Map/Layers/geoSignalsLayers';
 import type { LayerContext } from 'common/Map/Layers/types';
 import { Platforms } from 'common/Map/Layers/Platforms';
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
@@ -32,10 +28,7 @@ import {
   getElectrificationsProps,
   getElectrificationsTextParams,
 } from 'common/Map/Layers/Electrifications';
-import {
-  getPSLSignsLayerProps,
-  getPSLSignsMastLayerProps,
-} from 'common/Map/Layers/extensions/SNCF/PSLSigns';
+import { getPSLSignsLayerProps } from 'common/Map/Layers/extensions/SNCF/PSLSigns';
 import {
   getLineErrorsLayerProps,
   getLineTextErrorsLayerProps,
@@ -57,6 +50,7 @@ import {
 
 import type { RootState } from 'reducers';
 import type { MapState } from 'reducers/map';
+import getMastLayerProps from './mastLayerProps';
 
 const POINT_ENTITIES_MIN_ZOOM = 12;
 
@@ -209,7 +203,11 @@ function getSignalLayers(context: LayerContext, prefix: string): LayerProps[] {
   const { paint } = signalProps;
   const opacity = paint && typeof paint['icon-opacity'] === 'number' ? paint['icon-opacity'] : 1;
   return [
-    { ...getSignalMatLayerProps(context), id: `${prefix}geo/signal-mat` },
+    {
+      ...getMastLayerProps({ ...context, sidePropertyName: 'extensions_sncf_side' }),
+      id: `${prefix}geo/signal-mat`,
+      minzoom: POINT_ENTITIES_MIN_ZOOM,
+    },
     { ...getPointLayerProps(context), id: `${prefix}geo/signal-point` },
     {
       ...getKPLabelLayerProps({
@@ -274,13 +272,13 @@ function getPSLSignsLayers(context: LayerContext, prefix: string): LayerProps[] 
       minzoom: POINT_ENTITIES_MIN_ZOOM,
     },
     {
-      ...getPSLSignsMastLayerProps(context),
+      ...getMastLayerProps(context),
       id: `${prefix}geo/psl-signs-mast`,
-      minzoom: POINT_ENTITIES_MIN_ZOOM,
+      minzoom: 13,
     },
     {
       ...getKPLabelLayerProps({
-        colors: context.colors,
+        ...context,
         minzoom: 9.5,
         isSignalisation: true,
       }),
@@ -433,7 +431,7 @@ interface GeoJSONsProps {
   fingerprint?: string | number;
   isEmphasized?: boolean;
   beforeId?: string;
-  // When true, all layers are rendered (ie "minZoom" restrictions are ignored)
+  // When true, all layers are rendered (ie "minzoom" restrictions are ignored)
   renderAll?: boolean;
   infraID: number | undefined;
 }

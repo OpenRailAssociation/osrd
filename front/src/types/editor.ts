@@ -47,8 +47,7 @@ export interface TrackSectionEntity
 export const APPLICABLE_DIRECTIONS = ['BOTH', 'START_TO_STOP', 'STOP_TO_START'] as const;
 export type ApplicableDirection = (typeof APPLICABLE_DIRECTIONS)[number];
 export interface PSLSign {
-  angle_sch: number;
-  angle_geo: number;
+  angle: number;
   position: number;
   side: 'LEFT' | 'RIGHT' | 'CENTER';
   track: string;

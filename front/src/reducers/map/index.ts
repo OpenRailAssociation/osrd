@@ -1,7 +1,7 @@
 import type { ViewState } from 'react-map-gl/maplibre';
 import type { Position } from '@turf/helpers';
-import { createSlice } from '@reduxjs/toolkit';
 import type { Dispatch, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice } from '@reduxjs/toolkit';
 
 import history from 'main/history';
 

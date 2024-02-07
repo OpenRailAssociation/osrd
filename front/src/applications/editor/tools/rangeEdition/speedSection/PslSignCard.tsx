@@ -39,11 +39,11 @@ const PslSignCard = ({
           type="number"
           id="psl-angle-geo"
           label={t('Editor.tools.speed-edition.sign-angle-geo')}
-          value={!isNil(sign.angle_geo) ? sign.angle_geo : 0}
+          value={!isNil(sign.angle) ? sign.angle : 0}
           onChange={(e) =>
             updateSign(signInfo, {
               ...sign,
-              angle_geo: Number(e.target.value),
+              angle: Number(e.target.value),
             })
           }
           sm
@@ -53,11 +53,11 @@ const PslSignCard = ({
             type="number"
             id="psl-angle-sch"
             label={t('Editor.tools.speed-edition.sign-angle-sch')}
-            value={!isNil(sign.angle_sch) ? sign.angle_sch : 0}
+            value={!isNil(sign.angle) ? sign.angle : 0}
             onChange={(e) =>
               updateSign(signInfo, {
                 ...sign,
-                angle_sch: Number(e.target.value),
+                angle: Number(e.target.value),
               })
             }
             sm
