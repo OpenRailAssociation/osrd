@@ -3,7 +3,6 @@ package fr.sncf.osrd.utils.attrs;
 import java.util.HashMap;
 import java.util.Map;
 
-
 public class MutableAttrMap<B> extends BaseAttrMap<B> {
     private MutableAttrMap(Map<Attr<? extends B>, B> map) {
         super(map);

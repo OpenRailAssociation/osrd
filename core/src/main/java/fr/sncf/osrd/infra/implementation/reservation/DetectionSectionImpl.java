@@ -42,8 +42,6 @@ public class DetectionSectionImpl implements DetectionSection {
     @Override
     @ExcludeFromGeneratedCodeCoverage
     public String toString() {
-        return MoreObjects.toStringHelper(this)
-                .add("detectors", detectors)
-                .toString();
+        return MoreObjects.toStringHelper(this).add("detectors", detectors).toString();
     }
 }

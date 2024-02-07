@@ -10,5 +10,4 @@ import java.lang.annotation.Target;
 @Documented
 @Retention(RUNTIME)
 @Target({CONSTRUCTOR, TYPE, METHOD})
-public @interface ExcludeFromGeneratedCodeCoverage {
-}
+public @interface ExcludeFromGeneratedCodeCoverage {}

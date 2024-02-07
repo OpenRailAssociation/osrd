@@ -37,8 +37,7 @@ public class ReservationRouteImpl implements ReservationRoute {
             ImmutableList<TrackRangeView> trackRanges,
             boolean isControlled,
             double length,
-            ImmutableList<DetectionSection> sections
-    ) {
+            ImmutableList<DetectionSection> sections) {
         this.detectorPath = detectorPath;
         this.releasePoints = releasePoints;
         this.trackRanges = trackRanges;
@@ -66,8 +65,7 @@ public class ReservationRouteImpl implements ReservationRoute {
     @Override
     public ImmutableSet<ReservationRoute> getConflictingRoutes() {
         // Lazy evaluation
-        if (conflictingRoutes == null)
-            conflictingRoutes = buildConflictingRoutes();
+        if (conflictingRoutes == null) conflictingRoutes = buildConflictingRoutes();
         return conflictingRoutes;
     }
 
@@ -85,10 +83,8 @@ public class ReservationRouteImpl implements ReservationRoute {
             offset += trackRange.getLength(); // We update the offset before truncating the track range
             if (endOffset < oldOffset + trackRange.getLength())
                 trackRange = trackRange.truncateEndByLength(trackRange.getLength() + oldOffset - endOffset);
-            if (beginOffset > oldOffset)
-                trackRange = trackRange.truncateBeginByLength(beginOffset - oldOffset);
-            if (trackRange.getLength() > 0)
-                res.add(trackRange);
+            if (beginOffset > oldOffset) trackRange = trackRange.truncateBeginByLength(beginOffset - oldOffset);
+            if (trackRange.getLength() > 0) res.add(trackRange);
         }
         return res.build();
     }
@@ -106,9 +102,7 @@ public class ReservationRouteImpl implements ReservationRoute {
     private ImmutableSet<ReservationRoute> buildConflictingRoutes() {
         var builder = ImmutableSet.<ReservationRoute>builder();
         for (var section : detectionSections) {
-            for (var route : section.getRoutes())
-                if (route != this)
-                    builder.add(route);
+            for (var route : section.getRoutes()) if (route != this) builder.add(route);
         }
         return builder.build();
     }

@@ -27,6 +27,14 @@ import fr.sncf.osrd.train.TestTrains
 import fr.sncf.osrd.utils.Helpers
 import fr.sncf.osrd.utils.moshi.MoshiUtils
 import fr.sncf.osrd.utils.takes.TakesUtils
+import java.io.IOException
+import java.net.URISyntaxException
+import java.util.*
+import java.util.stream.Collectors
+import java.util.stream.Stream
+import kotlin.math.max
+import kotlin.math.min
+import kotlin.test.assertEquals
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.AssertionsForClassTypes
 import org.junit.jupiter.api.Assertions
@@ -37,14 +45,6 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import org.takes.rq.RqFake
-import java.io.IOException
-import java.net.URISyntaxException
-import java.util.*
-import java.util.stream.Collectors
-import java.util.stream.Stream
-import kotlin.math.max
-import kotlin.math.min
-import kotlin.test.assertEquals
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class PathfindingTest : ApiTest() {
@@ -56,142 +56,187 @@ class PathfindingTest : ApiTest() {
         val waypointsEnd = makeBidirectionalEndPoint(waypointEnd)
         val waypoints: Array<Array<PathfindingWaypoint>> = Array(2) { waypointsStart }
         waypoints[1] = waypointsEnd
-        val requestBody = PathfindingRequest.adapter.toJson(
-            PathfindingRequest(waypoints, "tiny_infra/infra.json", "1", listOf())
-        )
-        val result = TakesUtils.readBodyResponse(
-            PathfindingBlocksEndpoint(infraManager).act(
-                RqFake("POST", "/pathfinding/routes", requestBody)
+        val requestBody =
+            PathfindingRequest.adapter.toJson(
+                PathfindingRequest(waypoints, "tiny_infra/infra.json", "1", listOf())
             )
-        )
+        val result =
+            TakesUtils.readBodyResponse(
+                PathfindingBlocksEndpoint(infraManager)
+                    .act(RqFake("POST", "/pathfinding/routes", requestBody))
+            )
         val response = PathfindingResult.adapterResult.fromJson(result)!!
         AssertionsForClassTypes.assertThat(response.length).isEqualTo(10250.0)
-        val expectedRoutePaths = listOf(
-            RJSRoutePath(
-                "rt.buffer_stop_b->tde.foo_b-switch_foo",
-                listOf(RJSDirectionalTrackRange("ne.micro.foo_b", 50.0, 175.0, EdgeDirection.START_TO_STOP)),
-                SIGNALING_TYPE
-            ),
-            RJSRoutePath(
-                "rt.tde.foo_b-switch_foo->buffer_stop_c",
-                listOf(
-                    RJSDirectionalTrackRange("ne.micro.foo_b", 175.0, 200.0, EdgeDirection.START_TO_STOP),
-                    RJSDirectionalTrackRange("ne.micro.foo_to_bar", 0.0, 10000.0, EdgeDirection.START_TO_STOP),
-                    RJSDirectionalTrackRange("ne.micro.bar_a", 0.0, 100.0, EdgeDirection.START_TO_STOP)
+        val expectedRoutePaths =
+            listOf(
+                RJSRoutePath(
+                    "rt.buffer_stop_b->tde.foo_b-switch_foo",
+                    listOf(
+                        RJSDirectionalTrackRange(
+                            "ne.micro.foo_b",
+                            50.0,
+                            175.0,
+                            EdgeDirection.START_TO_STOP
+                        )
+                    ),
+                    SIGNALING_TYPE
                 ),
-                SIGNALING_TYPE
+                RJSRoutePath(
+                    "rt.tde.foo_b-switch_foo->buffer_stop_c",
+                    listOf(
+                        RJSDirectionalTrackRange(
+                            "ne.micro.foo_b",
+                            175.0,
+                            200.0,
+                            EdgeDirection.START_TO_STOP
+                        ),
+                        RJSDirectionalTrackRange(
+                            "ne.micro.foo_to_bar",
+                            0.0,
+                            10000.0,
+                            EdgeDirection.START_TO_STOP
+                        ),
+                        RJSDirectionalTrackRange(
+                            "ne.micro.bar_a",
+                            0.0,
+                            100.0,
+                            EdgeDirection.START_TO_STOP
+                        )
+                    ),
+                    SIGNALING_TYPE
+                )
             )
-        )
         AssertionsForClassTypes.assertThat(response.routePaths).isEqualTo(expectedRoutePaths)
-        val expectedPathWaypoints = listOf(
-            PathWaypointResult(
-                PathWaypointLocation("ne.micro.foo_b", 50.0),
-                0.0, false, null
-            ),
-            PathWaypointResult(
-                PathWaypointLocation("ne.micro.foo_b", 100.0),
-                50.0, true, "op.station_foo"
-            ),
-            PathWaypointResult(
-                PathWaypointLocation("ne.micro.bar_a", 100.0),
-                10250.0, false, "op.station_bar"
+        val expectedPathWaypoints =
+            listOf(
+                PathWaypointResult(PathWaypointLocation("ne.micro.foo_b", 50.0), 0.0, false, null),
+                PathWaypointResult(
+                    PathWaypointLocation("ne.micro.foo_b", 100.0),
+                    50.0,
+                    true,
+                    "op.station_foo"
+                ),
+                PathWaypointResult(
+                    PathWaypointLocation("ne.micro.bar_a", 100.0),
+                    10250.0,
+                    false,
+                    "op.station_bar"
+                )
             )
-        )
         AssertionsForClassTypes.assertThat(response.pathWaypoints).isEqualTo(expectedPathWaypoints)
     }
 
     @Test
     @Throws(Exception::class)
     fun testMiddleStop() {
-        val waypointStart = PathfindingWaypoint("ne.micro.foo_b", 100.0, EdgeDirection.START_TO_STOP)
-        val waypointMid = PathfindingWaypoint("ne.micro.foo_to_bar", 5000.0, EdgeDirection.START_TO_STOP)
+        val waypointStart =
+            PathfindingWaypoint("ne.micro.foo_b", 100.0, EdgeDirection.START_TO_STOP)
+        val waypointMid =
+            PathfindingWaypoint("ne.micro.foo_to_bar", 5000.0, EdgeDirection.START_TO_STOP)
         val waypointEnd = PathfindingWaypoint("ne.micro.bar_a", 100.0, EdgeDirection.START_TO_STOP)
-        val waypoints: Array<Array<PathfindingWaypoint>> = Array(3) { makeBidirectionalEndPoint(waypointStart) }
+        val waypoints: Array<Array<PathfindingWaypoint>> =
+            Array(3) { makeBidirectionalEndPoint(waypointStart) }
         waypoints[1] = makeBidirectionalEndPoint(waypointMid)
         waypoints[2] = makeBidirectionalEndPoint(waypointEnd)
-        val requestBody = PathfindingRequest.adapter.toJson(
-            PathfindingRequest(waypoints, "tiny_infra/infra.json", "1", listOf())
-        )
-        val result = TakesUtils.readBodyResponse(
-            PathfindingBlocksEndpoint(infraManager).act(
-                RqFake("POST", "/pathfinding/routes", requestBody)
+        val requestBody =
+            PathfindingRequest.adapter.toJson(
+                PathfindingRequest(waypoints, "tiny_infra/infra.json", "1", listOf())
             )
-        )
+        val result =
+            TakesUtils.readBodyResponse(
+                PathfindingBlocksEndpoint(infraManager)
+                    .act(RqFake("POST", "/pathfinding/routes", requestBody))
+            )
         val response = PathfindingResult.adapterResult.fromJson(result)!!
         AssertionsForClassTypes.assertThat(response.length).isEqualTo(10200.0)
-        val expectedRoutePaths = listOf(
-            RJSRoutePath(
-                "rt.buffer_stop_b->tde.foo_b-switch_foo",
-                listOf(
-                    RJSDirectionalTrackRange(
-                        "ne.micro.foo_b",
-                        100.0,
-                        175.0,
-                        EdgeDirection.START_TO_STOP
-                    )
+        val expectedRoutePaths =
+            listOf(
+                RJSRoutePath(
+                    "rt.buffer_stop_b->tde.foo_b-switch_foo",
+                    listOf(
+                        RJSDirectionalTrackRange(
+                            "ne.micro.foo_b",
+                            100.0,
+                            175.0,
+                            EdgeDirection.START_TO_STOP
+                        )
+                    ),
+                    SIGNALING_TYPE
                 ),
-                SIGNALING_TYPE
-            ),
-            RJSRoutePath(
-                "rt.tde.foo_b-switch_foo->buffer_stop_c",
-                listOf(
-                    RJSDirectionalTrackRange("ne.micro.foo_b", 175.0, 200.0, EdgeDirection.START_TO_STOP),
-                    RJSDirectionalTrackRange("ne.micro.foo_to_bar", 0.0, 10000.0, EdgeDirection.START_TO_STOP),
-                    RJSDirectionalTrackRange("ne.micro.bar_a", 0.0, 100.0, EdgeDirection.START_TO_STOP)
-                ),
-                SIGNALING_TYPE
+                RJSRoutePath(
+                    "rt.tde.foo_b-switch_foo->buffer_stop_c",
+                    listOf(
+                        RJSDirectionalTrackRange(
+                            "ne.micro.foo_b",
+                            175.0,
+                            200.0,
+                            EdgeDirection.START_TO_STOP
+                        ),
+                        RJSDirectionalTrackRange(
+                            "ne.micro.foo_to_bar",
+                            0.0,
+                            10000.0,
+                            EdgeDirection.START_TO_STOP
+                        ),
+                        RJSDirectionalTrackRange(
+                            "ne.micro.bar_a",
+                            0.0,
+                            100.0,
+                            EdgeDirection.START_TO_STOP
+                        )
+                    ),
+                    SIGNALING_TYPE
+                )
             )
-        )
         AssertionsForClassTypes.assertThat(response.routePaths).isEqualTo(expectedRoutePaths)
-        val expectedPathWaypoints = listOf(
-            PathWaypointResult(
-                PathWaypointLocation("ne.micro.foo_b", 100.0),
-                0.0, false, "op.station_foo"
-            ),
-            PathWaypointResult(
-                PathWaypointLocation("ne.micro.foo_to_bar", 5000.0),
-                5100.0, false, null
-            ),
-            PathWaypointResult(
-                PathWaypointLocation("ne.micro.bar_a", 100.0),
-                10200.0, false, "op.station_bar"
+        val expectedPathWaypoints =
+            listOf(
+                PathWaypointResult(
+                    PathWaypointLocation("ne.micro.foo_b", 100.0),
+                    0.0,
+                    false,
+                    "op.station_foo"
+                ),
+                PathWaypointResult(
+                    PathWaypointLocation("ne.micro.foo_to_bar", 5000.0),
+                    5100.0,
+                    false,
+                    null
+                ),
+                PathWaypointResult(
+                    PathWaypointLocation("ne.micro.bar_a", 100.0),
+                    10200.0,
+                    false,
+                    "op.station_bar"
+                )
             )
-        )
         AssertionsForClassTypes.assertThat(response.pathWaypoints).isEqualTo(expectedPathWaypoints)
     }
 
     @Test
     @DisplayName("If no path exists, throws a generic error message")
-    @Throws(
-        Exception::class
-    )
+    @Throws(Exception::class)
     fun noPathTest() {
         val waypointStart = PathfindingWaypoint("ne.micro.foo_b", 12.0, EdgeDirection.STOP_TO_START)
         val waypointEnd = PathfindingWaypoint("ne.micro.foo_b", 13.0, EdgeDirection.STOP_TO_START)
         val waypoints = Array(2) { Array(1) { waypointStart } }
         waypoints[1][0] = waypointEnd
-        val requestBody = PathfindingRequest.adapter.toJson(
-            PathfindingRequest(waypoints, "tiny_infra/infra.json", "1", listOf())
-        )
-        val res = TakesUtils.readHeadResponse(
-            PathfindingBlocksEndpoint(infraManager).act(
-                RqFake("POST", "/pathfinding/routes", requestBody)
+        val requestBody =
+            PathfindingRequest.adapter.toJson(
+                PathfindingRequest(waypoints, "tiny_infra/infra.json", "1", listOf())
             )
-        )
+        val res =
+            TakesUtils.readHeadResponse(
+                PathfindingBlocksEndpoint(infraManager)
+                    .act(RqFake("POST", "/pathfinding/routes", requestBody))
+            )
         AssertionsForClassTypes.assertThat(res[0]).contains("400")
         val infra = Helpers.tinyInfra
-        AssertionsForClassTypes.assertThatThrownBy {
-            runPathfinding(
-                infra,
-                waypoints,
-                listOf()
-            )
-        }
+        AssertionsForClassTypes.assertThatThrownBy { runPathfinding(infra, waypoints, listOf()) }
             .isExactlyInstanceOf(OSRDError::class.java)
             .satisfies({ exception ->
-                AssertionsForClassTypes.assertThat((exception as OSRDError?)!!.osrdErrorType).isEqualTo(
-                    ErrorType.PathfindingGenericError
-                )
+                AssertionsForClassTypes.assertThat((exception as OSRDError?)!!.osrdErrorType)
+                    .isEqualTo(ErrorType.PathfindingGenericError)
                 AssertionsForClassTypes.assertThat(exception.context).isEqualTo(HashMap<Any, Any>())
             })
     }
@@ -199,29 +244,24 @@ class PathfindingTest : ApiTest() {
     @Test
     @Throws(IOException::class)
     fun missingTrackTest() {
-        val waypoint = PathfindingWaypoint("this_track_does_not_exist", 0.0, EdgeDirection.STOP_TO_START)
+        val waypoint =
+            PathfindingWaypoint("this_track_does_not_exist", 0.0, EdgeDirection.STOP_TO_START)
         val waypoints = Array(2) { Array(1) { waypoint } }
-        val requestBody = PathfindingRequest.adapter.toJson(
-            PathfindingRequest(waypoints, "tiny_infra/infra.json", "1", listOf())
-        )
-        val response = PathfindingBlocksEndpoint(infraManager).act(
-            RqFake("POST", "/pathfinding/routes", requestBody)
-        )
+        val requestBody =
+            PathfindingRequest.adapter.toJson(
+                PathfindingRequest(waypoints, "tiny_infra/infra.json", "1", listOf())
+            )
+        val response =
+            PathfindingBlocksEndpoint(infraManager)
+                .act(RqFake("POST", "/pathfinding/routes", requestBody))
         val res = TakesUtils.readHeadResponse(response)
         AssertionsForClassTypes.assertThat(res[0]).contains("400")
         val infra = Helpers.tinyInfra
-        AssertionsForClassTypes.assertThatThrownBy {
-            runPathfinding(
-                infra,
-                waypoints,
-                listOf()
-            )
-        }
+        AssertionsForClassTypes.assertThatThrownBy { runPathfinding(infra, waypoints, listOf()) }
             .isExactlyInstanceOf(OSRDError::class.java)
             .satisfies({ exception ->
-                AssertionsForClassTypes.assertThat((exception as OSRDError?)!!.osrdErrorType).isEqualTo(
-                    ErrorType.UnknownTrackSection
-                )
+                AssertionsForClassTypes.assertThat((exception as OSRDError?)!!.osrdErrorType)
+                    .isEqualTo(ErrorType.UnknownTrackSection)
                 AssertionsForClassTypes.assertThat(exception.context)
                     .isEqualTo(mapOf(Pair("track_section_id", "this_track_does_not_exist")))
             })
@@ -230,52 +270,37 @@ class PathfindingTest : ApiTest() {
     @Test
     @Throws(Exception::class)
     fun incompatibleLoadingGaugeTest() {
-        val waypointStart = PathfindingWaypoint("ne.micro.foo_b", 100.0, EdgeDirection.START_TO_STOP)
+        val waypointStart =
+            PathfindingWaypoint("ne.micro.foo_b", 100.0, EdgeDirection.START_TO_STOP)
         val waypointEnd = PathfindingWaypoint("ne.micro.bar_a", 100.0, EdgeDirection.START_TO_STOP)
         val waypoints = Array(2) { Array(1) { waypointStart } }
         waypoints[1][0] = waypointEnd
         val rjsInfra = Helpers.getExampleInfra("tiny_infra/infra.json")
-        for (track in rjsInfra.trackSections)
-            if (track.getID() == "ne.micro.foo_to_bar")
-                track.loadingGaugeLimits = listOf(
-                    RJSLoadingGaugeLimit(1000.0, 2000.0, RJSLoadingGaugeType.G1)
-                )
+        for (track in rjsInfra.trackSections) if (track.getID() == "ne.micro.foo_to_bar")
+            track.loadingGaugeLimits =
+                listOf(RJSLoadingGaugeLimit(1000.0, 2000.0, RJSLoadingGaugeType.G1))
         val infra = Helpers.fullInfraFromRJS(rjsInfra)
 
         // Check that we can go through the infra with a small train
-        assertThat(
-            runPathfinding(
-                infra,
-                waypoints,
-                listOf(TestTrains.REALISTIC_FAST_TRAIN)
-            )
-        )
+        assertThat(runPathfinding(infra, waypoints, listOf(TestTrains.REALISTIC_FAST_TRAIN)))
             .isNotNull()
 
         // Check that we can't go through the infra with a large train
         AssertionsForClassTypes.assertThatThrownBy {
-            runPathfinding(
-                infra,
-                waypoints,
-                listOf(TestTrains.FAST_TRAIN_LARGE_GAUGE)
-            )
-        }
+                runPathfinding(infra, waypoints, listOf(TestTrains.FAST_TRAIN_LARGE_GAUGE))
+            }
             .isExactlyInstanceOf(OSRDError::class.java)
             .satisfies({ exception ->
-                AssertionsForClassTypes.assertThat((exception as OSRDError?)!!.osrdErrorType).isEqualTo(
-                    ErrorType.PathfindingGaugeError
-                )
-                AssertionsForClassTypes.assertThat(exception.context).isEqualTo(mapOf<String, Any>())
+                AssertionsForClassTypes.assertThat((exception as OSRDError?)!!.osrdErrorType)
+                    .isEqualTo(ErrorType.PathfindingGaugeError)
+                AssertionsForClassTypes.assertThat(exception.context)
+                    .isEqualTo(mapOf<String, Any>())
             })
 
         // Check that we can go until right before the blocked section with a large train
-        waypoints[1][0] = PathfindingWaypoint("ne.micro.foo_to_bar", 999.0, EdgeDirection.START_TO_STOP)
-        assertThat(
-            runPathfinding(
-                infra, waypoints,
-                listOf(TestTrains.FAST_TRAIN_LARGE_GAUGE)
-            )
-        )
+        waypoints[1][0] =
+            PathfindingWaypoint("ne.micro.foo_to_bar", 999.0, EdgeDirection.START_TO_STOP)
+        assertThat(runPathfinding(infra, waypoints, listOf(TestTrains.FAST_TRAIN_LARGE_GAUGE)))
             .isNotNull()
     }
 
@@ -290,46 +315,67 @@ class PathfindingTest : ApiTest() {
 
         // Run a pathfinding with a non-electric train
         val infra = Helpers.fullInfraFromRJS(rjsInfra)
-        val normalPath = runPathfinding(
-            infra, waypoints, listOf(TestTrains.REALISTIC_FAST_TRAIN)
-        )
+        val normalPath = runPathfinding(infra, waypoints, listOf(TestTrains.REALISTIC_FAST_TRAIN))
 
         // Replace with custom electrifications
         // Set voltage to 25000V everywhere except for trackSectionToBlock
-        val trackSectionToBlock = normalPath.ranges
-            .map { range -> range.edge }
-            .flatMap { block ->
-                infra.blockInfra.getTrackChunksFromBlock(block)
-                    .map { dirChunk ->
+        val trackSectionToBlock =
+            normalPath.ranges
+                .map { range -> range.edge }
+                .flatMap { block ->
+                    infra.blockInfra.getTrackChunksFromBlock(block).map { dirChunk ->
                         infra.rawInfra.getTrackSectionName(
                             infra.rawInfra.getTrackFromChunk(dirChunk.value)
                         )
                     }
-            }.first { trackName -> trackName.startsWith("TD") }
-        val voltageTrackRanges = rjsInfra.trackSections.stream()
-            .filter { rjsTrackSection: RJSTrackSection -> rjsTrackSection.id != trackSectionToBlock }
-            .map { rjsTrackSection: RJSTrackSection ->
-                RJSApplicableDirectionsTrackRange(
-                    rjsTrackSection.id,
-                    ApplicableDirection.BOTH, 0.0, rjsTrackSection.length
-                )
-            }
-            .collect(Collectors.toList())
+                }
+                .first { trackName -> trackName.startsWith("TD") }
+        val voltageTrackRanges =
+            rjsInfra.trackSections
+                .stream()
+                .filter { rjsTrackSection: RJSTrackSection ->
+                    rjsTrackSection.id != trackSectionToBlock
+                }
+                .map { rjsTrackSection: RJSTrackSection ->
+                    RJSApplicableDirectionsTrackRange(
+                        rjsTrackSection.id,
+                        ApplicableDirection.BOTH,
+                        0.0,
+                        rjsTrackSection.length
+                    )
+                }
+                .collect(Collectors.toList())
         val voltageElectrification = RJSElectrification("25000V", voltageTrackRanges)
-        val noVoltageElectrification = RJSElectrification("",
-            listOf(RJSApplicableDirectionsTrackRange(trackSectionToBlock, ApplicableDirection.BOTH, 0.0,
-                rjsInfra.trackSections.stream()
-                    .filter { rjsTrackSection: RJSTrackSection -> rjsTrackSection.id == trackSectionToBlock }
-                    .findFirst().get().length)))
-        rjsInfra.electrifications = ArrayList(listOf(voltageElectrification, noVoltageElectrification))
+        val noVoltageElectrification =
+            RJSElectrification(
+                "",
+                listOf(
+                    RJSApplicableDirectionsTrackRange(
+                        trackSectionToBlock,
+                        ApplicableDirection.BOTH,
+                        0.0,
+                        rjsInfra.trackSections
+                            .stream()
+                            .filter { rjsTrackSection: RJSTrackSection ->
+                                rjsTrackSection.id == trackSectionToBlock
+                            }
+                            .findFirst()
+                            .get()
+                            .length
+                    )
+                )
+            )
+        rjsInfra.electrifications =
+            ArrayList(listOf(voltageElectrification, noVoltageElectrification))
         val infraWithNonElectrifiedTrack = Helpers.fullInfraFromRJS(rjsInfra)
 
         // Run another pathfinding with an electric train
-        val electricPath = runPathfinding(
-            infraWithNonElectrifiedTrack,
-            waypoints,
-            listOf(TestTrains.FAST_ELECTRIC_TRAIN)
-        )
+        val electricPath =
+            runPathfinding(
+                infraWithNonElectrifiedTrack,
+                waypoints,
+                listOf(TestTrains.FAST_ELECTRIC_TRAIN)
+            )
 
         // Check that the paths are different, we need to avoid the non-electrified track
         assertThat(normalPath).isNotNull()
@@ -347,78 +393,114 @@ class PathfindingTest : ApiTest() {
         val rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")
         rjsInfra.electrifications = ArrayList()
         AssertionsForClassTypes.assertThatThrownBy {
-            runPathfinding(
-                Helpers.fullInfraFromRJS(rjsInfra),
-                waypoints,
-                listOf(TestTrains.FAST_ELECTRIC_TRAIN)
-            )
-        }
+                runPathfinding(
+                    Helpers.fullInfraFromRJS(rjsInfra),
+                    waypoints,
+                    listOf(TestTrains.FAST_ELECTRIC_TRAIN)
+                )
+            }
             .isExactlyInstanceOf(OSRDError::class.java)
             .satisfies({ exception ->
                 AssertionsForClassTypes.assertThat((exception as OSRDError?)!!.osrdErrorType)
                     .isEqualTo(ErrorType.PathfindingElectrificationError)
-                AssertionsForClassTypes.assertThat(exception.context).isEqualTo(mapOf<String, Any>())
+                AssertionsForClassTypes.assertThat(exception.context)
+                    .isEqualTo(mapOf<String, Any>())
             })
     }
 
     @Test
     @Throws(Exception::class)
     fun simpleRoutesInverted() {
-        val waypointStart = PathfindingWaypoint("ne.micro.bar_a", 100.0, EdgeDirection.START_TO_STOP)
+        val waypointStart =
+            PathfindingWaypoint("ne.micro.bar_a", 100.0, EdgeDirection.START_TO_STOP)
         val waypointEnd = PathfindingWaypoint("ne.micro.foo_b", 100.0, EdgeDirection.START_TO_STOP)
         val waypointsStart = makeBidirectionalEndPoint(waypointStart)
         val waypointsEnd = makeBidirectionalEndPoint(waypointEnd)
         val waypoints: Array<Array<PathfindingWaypoint>> = Array(2) { waypointsStart }
         waypoints[1] = waypointsEnd
-        val requestBody = PathfindingRequest.adapter.toJson(
-            PathfindingRequest(waypoints, "tiny_infra/infra.json", "", listOf())
-        )
-        val result = TakesUtils.readBodyResponse(
-            PathfindingBlocksEndpoint(infraManager).act(
-                RqFake("POST", "/pathfinding/routes", requestBody)
+        val requestBody =
+            PathfindingRequest.adapter.toJson(
+                PathfindingRequest(waypoints, "tiny_infra/infra.json", "", listOf())
             )
-        )
+        val result =
+            TakesUtils.readBodyResponse(
+                PathfindingBlocksEndpoint(infraManager)
+                    .act(RqFake("POST", "/pathfinding/routes", requestBody))
+            )
         val response = PathfindingResult.adapterResult.fromJson(result)!!
-        val expectedRoutePaths = listOf(
-            RJSRoutePath(
-                "rt.buffer_stop_c->tde.track-bar",
-                listOf(RJSDirectionalTrackRange("ne.micro.bar_a", 25.0, 100.0, EdgeDirection.STOP_TO_START)),
-                SIGNALING_TYPE
-            ),
-            RJSRoutePath(
-                "rt.tde.track-bar->tde.switch_foo-track",
-                listOf(
-                    RJSDirectionalTrackRange("ne.micro.bar_a", 0.0, 25.0, EdgeDirection.STOP_TO_START),
-                    RJSDirectionalTrackRange("ne.micro.foo_to_bar", 25.0, 10000.0, EdgeDirection.STOP_TO_START)
+        val expectedRoutePaths =
+            listOf(
+                RJSRoutePath(
+                    "rt.buffer_stop_c->tde.track-bar",
+                    listOf(
+                        RJSDirectionalTrackRange(
+                            "ne.micro.bar_a",
+                            25.0,
+                            100.0,
+                            EdgeDirection.STOP_TO_START
+                        )
+                    ),
+                    SIGNALING_TYPE
                 ),
-                SIGNALING_TYPE
-            ),
-            RJSRoutePath(
-                "rt.tde.switch_foo-track->buffer_stop_b",
-                listOf(
-                    RJSDirectionalTrackRange("ne.micro.foo_to_bar", 0.0, 25.0, EdgeDirection.STOP_TO_START),
-                    RJSDirectionalTrackRange("ne.micro.foo_b", 100.0, 200.0, EdgeDirection.STOP_TO_START)
+                RJSRoutePath(
+                    "rt.tde.track-bar->tde.switch_foo-track",
+                    listOf(
+                        RJSDirectionalTrackRange(
+                            "ne.micro.bar_a",
+                            0.0,
+                            25.0,
+                            EdgeDirection.STOP_TO_START
+                        ),
+                        RJSDirectionalTrackRange(
+                            "ne.micro.foo_to_bar",
+                            25.0,
+                            10000.0,
+                            EdgeDirection.STOP_TO_START
+                        )
+                    ),
+                    SIGNALING_TYPE
                 ),
-                SIGNALING_TYPE
+                RJSRoutePath(
+                    "rt.tde.switch_foo-track->buffer_stop_b",
+                    listOf(
+                        RJSDirectionalTrackRange(
+                            "ne.micro.foo_to_bar",
+                            0.0,
+                            25.0,
+                            EdgeDirection.STOP_TO_START
+                        ),
+                        RJSDirectionalTrackRange(
+                            "ne.micro.foo_b",
+                            100.0,
+                            200.0,
+                            EdgeDirection.STOP_TO_START
+                        )
+                    ),
+                    SIGNALING_TYPE
+                )
             )
-        )
         AssertionsForClassTypes.assertThat(response.routePaths).isEqualTo(expectedRoutePaths)
-        val expectedPathWaypoints = listOf(
-            PathWaypointResult(
-                PathWaypointLocation("ne.micro.bar_a", 100.0),
-                0.0, false, "op.station_bar"
-            ),
-            PathWaypointResult(
-                PathWaypointLocation("ne.micro.foo_b", 100.0),
-                10200.0, false, "op.station_foo"
+        val expectedPathWaypoints =
+            listOf(
+                PathWaypointResult(
+                    PathWaypointLocation("ne.micro.bar_a", 100.0),
+                    0.0,
+                    false,
+                    "op.station_bar"
+                ),
+                PathWaypointResult(
+                    PathWaypointLocation("ne.micro.foo_b", 100.0),
+                    10200.0,
+                    false,
+                    "op.station_foo"
+                )
             )
-        )
         AssertionsForClassTypes.assertThat(response.pathWaypoints).isEqualTo(expectedPathWaypoints)
         expectWaypointInPathResult(response, waypointStart)
         expectWaypointInPathResult(response, waypointEnd)
     }
 
-    /** Tests that we find a route path between two points on the same edge  */
+    /** Tests that we find a route path between two points on the same edge */
     @ParameterizedTest
     @MethodSource("simpleRoutesSameEdgeArgs")
     @Throws(Exception::class)
@@ -427,7 +509,8 @@ class PathfindingTest : ApiTest() {
         expectedRoutePaths: List<RJSRoutePath?>?,
         expectedPathWaypoints: List<PathWaypointResult?>?
     ) {
-        var waypointStart = PathfindingWaypoint("ne.micro.bar_a", 100.0, EdgeDirection.START_TO_STOP)
+        var waypointStart =
+            PathfindingWaypoint("ne.micro.bar_a", 100.0, EdgeDirection.START_TO_STOP)
         var waypointEnd = PathfindingWaypoint("ne.micro.bar_a", 110.0, EdgeDirection.START_TO_STOP)
         if (inverted) {
             val tmp = waypointEnd
@@ -438,14 +521,15 @@ class PathfindingTest : ApiTest() {
         val waypointsEnd = makeBidirectionalEndPoint(waypointEnd)
         val waypoints: Array<Array<PathfindingWaypoint>> = Array(2) { waypointsStart }
         waypoints[1] = waypointsEnd
-        val requestBody = PathfindingRequest.adapter.toJson(
-            PathfindingRequest(waypoints, "tiny_infra/infra.json", "", listOf())
-        )
-        val result = TakesUtils.readBodyResponse(
-            PathfindingBlocksEndpoint(infraManager).act(
-                RqFake("POST", "/pathfinding/routes", requestBody)
+        val requestBody =
+            PathfindingRequest.adapter.toJson(
+                PathfindingRequest(waypoints, "tiny_infra/infra.json", "", listOf())
             )
-        )
+        val result =
+            TakesUtils.readBodyResponse(
+                PathfindingBlocksEndpoint(infraManager)
+                    .act(RqFake("POST", "/pathfinding/routes", requestBody))
+            )
         val response = PathfindingResult.adapterResult.fromJson(result)!!
         AssertionsForClassTypes.assertThat(response.routePaths).isEqualTo(expectedRoutePaths)
         AssertionsForClassTypes.assertThat(response.pathWaypoints).isEqualTo(expectedPathWaypoints)
@@ -462,14 +546,15 @@ class PathfindingTest : ApiTest() {
         val waypointsEnd = makeBidirectionalEndPoint(waypointEnd)
         val waypoints: Array<Array<PathfindingWaypoint>> = Array(2) { waypointsStart }
         waypoints[1] = waypointsEnd
-        val requestBody = PathfindingRequest.adapter.toJson(
-            PathfindingRequest(waypoints, "small_infra/infra.json", "1", listOf())
-        )
-        val result = TakesUtils.readBodyResponse(
-            PathfindingBlocksEndpoint(infraManager).act(
-                RqFake("POST", "/pathfinding/routes", requestBody)
+        val requestBody =
+            PathfindingRequest.adapter.toJson(
+                PathfindingRequest(waypoints, "small_infra/infra.json", "1", listOf())
             )
-        )
+        val result =
+            TakesUtils.readBodyResponse(
+                PathfindingBlocksEndpoint(infraManager)
+                    .act(RqFake("POST", "/pathfinding/routes", requestBody))
+            )
         val response = PathfindingResult.adapterResult.fromJson(result)!!
         Assertions.assertIterableEquals(
             listOf(
@@ -493,14 +578,15 @@ class PathfindingTest : ApiTest() {
         val waypointsEnd = makeBidirectionalEndPoint(waypointEnd)
         val waypoints: Array<Array<PathfindingWaypoint>> = Array(2) { waypointsStart }
         waypoints[1] = waypointsEnd
-        val requestBody = PathfindingRequest.adapter.toJson(
-            PathfindingRequest(waypoints, "small_infra/infra.json", "1", listOf())
-        )
-        val result = TakesUtils.readBodyResponse(
-            PathfindingBlocksEndpoint(infraManager).act(
-                RqFake("POST", "/pathfinding/routes", requestBody)
+        val requestBody =
+            PathfindingRequest.adapter.toJson(
+                PathfindingRequest(waypoints, "small_infra/infra.json", "1", listOf())
             )
-        )
+        val result =
+            TakesUtils.readBodyResponse(
+                PathfindingBlocksEndpoint(infraManager)
+                    .act(RqFake("POST", "/pathfinding/routes", requestBody))
+            )
         val response = PathfindingResult.adapterResult.fromJson(result)!!
         Assertions.assertIterableEquals(
             listOf(
@@ -524,14 +610,15 @@ class PathfindingTest : ApiTest() {
         val waypointsEnd = makeBidirectionalEndPoint(waypointEnd)
         val waypoints: Array<Array<PathfindingWaypoint>> = Array(2) { waypointsStart }
         waypoints[1] = waypointsEnd
-        val requestBody = PathfindingRequest.adapter.toJson(
-            PathfindingRequest(waypoints, "small_infra/infra.json", "1", listOf())
-        )
-        val result = TakesUtils.readBodyResponse(
-            PathfindingBlocksEndpoint(infraManager).act(
-                RqFake("POST", "/pathfinding/routes", requestBody)
+        val requestBody =
+            PathfindingRequest.adapter.toJson(
+                PathfindingRequest(waypoints, "small_infra/infra.json", "1", listOf())
             )
-        )
+        val result =
+            TakesUtils.readBodyResponse(
+                PathfindingBlocksEndpoint(infraManager)
+                    .act(RqFake("POST", "/pathfinding/routes", requestBody))
+            )
         val response = PathfindingResult.adapterResult.fromJson(result)!!
         Assertions.assertIterableEquals(
             listOf(
@@ -567,14 +654,15 @@ class PathfindingTest : ApiTest() {
         val waypointsEnd = makeBidirectionalEndPoint(waypointEnd)
         val waypoints: Array<Array<PathfindingWaypoint>> = Array(2) { waypointsStart }
         waypoints[1] = waypointsEnd
-        val requestBody = PathfindingRequest.adapter.toJson(
-            PathfindingRequest(waypoints, "small_infra/infra.json", "1", listOf())
-        )
-        val result = TakesUtils.readBodyResponse(
-            PathfindingBlocksEndpoint(infraManager).act(
-                RqFake("POST", "/pathfinding/routes", requestBody)
+        val requestBody =
+            PathfindingRequest.adapter.toJson(
+                PathfindingRequest(waypoints, "small_infra/infra.json", "1", listOf())
             )
-        )
+        val result =
+            TakesUtils.readBodyResponse(
+                PathfindingBlocksEndpoint(infraManager)
+                    .act(RqFake("POST", "/pathfinding/routes", requestBody))
+            )
         val response = PathfindingResult.adapterResult.fromJson(result)!!
         Assertions.assertIterableEquals(
             listOf(
@@ -609,46 +697,45 @@ class PathfindingTest : ApiTest() {
               ^             ^
            new_op_1      new_op_2
          */
-        val waypointStart = PathfindingWaypoint("ne.micro.foo_a", 200.0, EdgeDirection.START_TO_STOP)
+        val waypointStart =
+            PathfindingWaypoint("ne.micro.foo_a", 200.0, EdgeDirection.START_TO_STOP)
         val waypointEnd = PathfindingWaypoint("ne.micro.bar_a", 0.0, EdgeDirection.START_TO_STOP)
         val waypoints = Array(2) { Array(1) { waypointStart } }
         waypoints[1][0] = waypointEnd
         val rjsInfra = Helpers.getExampleInfra("tiny_infra/infra.json")
         rjsInfra.operationalPoints.add(
             RJSOperationalPoint(
-                "new_op_1", listOf(
-                    RJSOperationalPointPart("ne.micro.foo_a", 200.0)
-                )
+                "new_op_1",
+                listOf(RJSOperationalPointPart("ne.micro.foo_a", 200.0))
             )
         )
         rjsInfra.operationalPoints.add(
-            RJSOperationalPoint(
-                "new_op_2", listOf(
-                    RJSOperationalPointPart("ne.micro.bar_a", 0.0)
-                )
-            )
+            RJSOperationalPoint("new_op_2", listOf(RJSOperationalPointPart("ne.micro.bar_a", 0.0)))
         )
         val infra = Helpers.fullInfraFromRJS(rjsInfra)
 
-        val path = runPathfinding(
-            infra,
-            waypoints,
-            listOf(TestTrains.REALISTIC_FAST_TRAIN)
-        )
-        val res = convertPathfindingResult(
-            infra.blockInfra, infra.rawInfra,
-            path, DiagnosticRecorderImpl(true)
-        )
+        val path = runPathfinding(infra, waypoints, listOf(TestTrains.REALISTIC_FAST_TRAIN))
+        val res =
+            convertPathfindingResult(
+                infra.blockInfra,
+                infra.rawInfra,
+                path,
+                DiagnosticRecorderImpl(true)
+            )
         validatePathfindingResult(res, waypoints, infra.rawInfra)
         assertEquals(
             listOf(
                 PathWaypointResult(
                     PathWaypointLocation("ne.micro.foo_a", 200.0),
-                    0.0, false, "new_op_1"
+                    0.0,
+                    false,
+                    "new_op_1"
                 ),
                 PathWaypointResult(
                     PathWaypointLocation("ne.micro.bar_a", 0.0),
-                    10_000.0, false, "new_op_2"
+                    10_000.0,
+                    false,
+                    "new_op_2"
                 ),
             ),
             res.pathWaypoints
@@ -657,12 +744,12 @@ class PathfindingTest : ApiTest() {
 
     companion object {
         private const val SIGNALING_TYPE = "BAL3"
-        private fun makeBidirectionalEndPoint(point: PathfindingWaypoint): Array<PathfindingWaypoint> {
-            val waypointInverted = PathfindingWaypoint(
-                point.trackSection,
-                point.offset,
-                point.direction.opposite()
-            )
+
+        private fun makeBidirectionalEndPoint(
+            point: PathfindingWaypoint
+        ): Array<PathfindingWaypoint> {
+            val waypointInverted =
+                PathfindingWaypoint(point.trackSection, point.offset, point.direction.opposite())
             return arrayOf(point, waypointInverted)
         }
 
@@ -672,12 +759,10 @@ class PathfindingTest : ApiTest() {
         ) {
             for (route in result!!.routePaths) {
                 for (track in route.trackSections) {
-                    if (track.trackSectionID != waypoint.trackSection)
-                        continue
+                    if (track.trackSectionID != waypoint.trackSection) continue
                     val begin = min(track.getBegin(), track.getEnd())
                     val end = max(track.getBegin(), track.getEnd())
-                    if (waypoint.offset in begin..end)
-                        return
+                    if (waypoint.offset in begin..end) return
                 }
             }
             Assertions.fail<Any>("Expected path result to contain a location but not found")
@@ -705,11 +790,15 @@ class PathfindingTest : ApiTest() {
                     listOf(
                         PathWaypointResult(
                             PathWaypointLocation("ne.micro.bar_a", 110.0),
-                            0.0, false, null
+                            0.0,
+                            false,
+                            null
                         ),
                         PathWaypointResult(
                             PathWaypointLocation("ne.micro.bar_a", 100.0),
-                            10.0, false, "op.station_bar"
+                            10.0,
+                            false,
+                            "op.station_bar"
                         )
                     )
                 ),
@@ -732,11 +821,15 @@ class PathfindingTest : ApiTest() {
                     listOf(
                         PathWaypointResult(
                             PathWaypointLocation("ne.micro.bar_a", 100.0),
-                            0.0, false, "op.station_bar"
+                            0.0,
+                            false,
+                            "op.station_bar"
                         ),
                         PathWaypointResult(
                             PathWaypointLocation("ne.micro.bar_a", 110.0),
-                            10.0, false, null
+                            10.0,
+                            false,
+                            null
                         )
                     )
                 )
@@ -746,33 +839,31 @@ class PathfindingTest : ApiTest() {
         @JvmStatic
         fun provideInfraParameters(): Stream<Arguments> {
             val res = HashSet<Arguments>()
-            val infraPaths = ArrayList(
-                listOf(
-                    "tiny_infra",
-                    "one_line",
-                    "three_trains"
-                )
+            val infraPaths = ArrayList(listOf("tiny_infra", "one_line", "three_trains"))
+            for (inverted in booleanArrayOf(true, false)) for (path in infraPaths) res.add(
+                Arguments.of(path, inverted)
             )
-            for (inverted in booleanArrayOf(true, false))
-                for (path in infraPaths)
-                    res.add(Arguments.of(path, inverted))
             return res.stream()
         }
 
-        /** Generates a pathfinding request from infra + simulation files.
-         * The requested path follows the path of a train.  */
+        /**
+         * Generates a pathfinding request from infra + simulation files. The requested path follows
+         * the path of a train.
+         */
         @Throws(Exception::class)
         private fun requestFromExampleInfra(
             infraPath: String,
             simPath: String,
             inverted: Boolean
         ): PathfindingRequest {
-            val simulation = MoshiUtils.deserialize(
-                StandaloneSimulationCommand.Input.adapter,
-                Helpers.getResourcePath("infras/" + simPath)
-            )
+            val simulation =
+                MoshiUtils.deserialize(
+                    StandaloneSimulationCommand.Input.adapter,
+                    Helpers.getResourcePath("infras/" + simPath)
+                )
             val scheduleGroup = simulation.trainScheduleGroups[0]
-            val waypoints: Array<Array<PathfindingWaypoint>> = Array(2) { Array(2) { scheduleGroup.waypoints[0][0] } }
+            val waypoints: Array<Array<PathfindingWaypoint>> =
+                Array(2) { Array(2) { scheduleGroup.waypoints[0][0] } }
             val startIndex = if (inverted) 1 else 0
             val endIndex = if (inverted) 0 else 1
             waypoints[startIndex] = scheduleGroup.waypoints[0]

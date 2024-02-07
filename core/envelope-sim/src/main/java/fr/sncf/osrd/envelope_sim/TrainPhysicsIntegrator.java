@@ -3,10 +3,10 @@ package fr.sncf.osrd.envelope_sim;
 import com.google.common.collect.RangeMap;
 
 /**
- * An utility class to help simulate the train, using numerical integration.
- * It's used when simulating the train, and it is passed to speed controllers so they can take decisions
- * about what action to make. Once speed controllers took a decision, this same class is used to compute
- * the next position and speed of the train.
+ * An utility class to help simulate the train, using numerical integration. It's used when
+ * simulating the train, and it is passed to speed controllers so they can take decisions about what
+ * action to make. Once speed controllers took a decision, this same class is used to compute the
+ * next position and speed of the train.
  */
 public final class TrainPhysicsIntegrator {
     // A position delta lower than this value will be considered zero
@@ -31,8 +31,7 @@ public final class TrainPhysicsIntegrator {
             PhysicsPath path,
             Action action,
             double directionSign,
-            RangeMap<Double, PhysicsRollingStock.TractiveEffortPoint[]> tractiveEffortCurveMap
-    ) {
+            RangeMap<Double, PhysicsRollingStock.TractiveEffortPoint[]> tractiveEffortCurveMap) {
         this.rollingStock = rollingStock;
         this.path = path;
         this.action = action;
@@ -46,35 +45,24 @@ public final class TrainPhysicsIntegrator {
             double initialLocation,
             double initialSpeed,
             Action action,
-            double directionSign
-    ) {
-        var integrator = new TrainPhysicsIntegrator(context.rollingStock, context.path, action, directionSign,
-                context.tractiveEffortCurveMap);
+            double directionSign) {
+        var integrator = new TrainPhysicsIntegrator(
+                context.rollingStock, context.path, action, directionSign, context.tractiveEffortCurveMap);
         return integrator.step(context.timeStep, initialLocation, initialSpeed, directionSign);
     }
 
     /** Simulates train movement */
-    private IntegrationStep step(
-            double timeStep,
-            double initialLocation,
-            double initialSpeed,
-            double directionSign
-    ) {
+    private IntegrationStep step(double timeStep, double initialLocation, double initialSpeed, double directionSign) {
         var halfStep = timeStep / 2;
         var step1 = step(halfStep, initialLocation, initialSpeed);
         var step2 = step(halfStep, initialLocation + step1.positionDelta, step1.endSpeed);
         var step3 = step(timeStep, initialLocation + step2.positionDelta, step2.endSpeed);
         var step4 = step(timeStep, initialLocation + step3.positionDelta, step3.endSpeed);
 
-        var meanAcceleration = (
-                step1.acceleration
-                + 2 * step2.acceleration
-                + 2 * step3.acceleration
-                + step4.acceleration
-        ) / 6.;
+        var meanAcceleration =
+                (step1.acceleration + 2 * step2.acceleration + 2 * step3.acceleration + step4.acceleration) / 6.;
         return newtonStep(timeStep, initialSpeed, meanAcceleration, directionSign);
     }
-
 
     private IntegrationStep step(double timeStep, double position, double speed) {
         double tractionForce = 0;
@@ -85,21 +73,18 @@ public final class TrainPhysicsIntegrator {
         double rollingResistance = rollingStock.getRollingResistance(speed);
         double weightForce = getWeightForce(rollingStock, path, position);
 
-        if (action == Action.ACCELERATE)
-            tractionForce = maxTractionForce;
+        if (action == Action.ACCELERATE) tractionForce = maxTractionForce;
 
-        if (action == Action.BRAKE)
-            brakingForce = rollingStock.getMaxBrakingForce(speed);
+        if (action == Action.BRAKE) brakingForce = rollingStock.getMaxBrakingForce(speed);
 
         if (action == Action.MAINTAIN) {
             tractionForce = rollingResistance - weightForce;
-            if (tractionForce <= maxTractionForce)
-                return newtonStep(timeStep, speed, 0, directionSign);
+            if (tractionForce <= maxTractionForce) return newtonStep(timeStep, speed, 0, directionSign);
             else tractionForce = maxTractionForce;
         }
 
-        double acceleration = computeAcceleration(rollingStock, rollingResistance,
-                weightForce, speed, tractionForce, brakingForce, directionSign);
+        double acceleration = computeAcceleration(
+                rollingStock, rollingResistance, weightForce, speed, tractionForce, brakingForce, directionSign);
         return newtonStep(timeStep, speed, acceleration, directionSign);
     }
 
@@ -110,11 +95,13 @@ public final class TrainPhysicsIntegrator {
         var averageGrade = path.getAverageGrade(tailPosition, headPosition);
         // get an angle from a meter per km elevation difference
         // the curve's radius is taken into account in meanTrainGrade
-        var angle = Math.atan(averageGrade / 1000.0);  // from m/km to m/m
+        var angle = Math.atan(averageGrade / 1000.0); // from m/km to m/m
         return -rollingStock.getMass() * 9.81 * Math.sin(angle);
     }
 
-    /** Compute the acceleration given a rolling stock, different forces, a speed, and a direction */
+    /**
+     * Compute the acceleration given a rolling stock, different forces, a speed, and a direction
+     */
     public static double computeAcceleration(
             PhysicsRollingStock rollingStock,
             double rollingResistance,
@@ -137,11 +124,11 @@ public final class TrainPhysicsIntegrator {
             // the rolling resistance and braking force don't apply and the speed stays at 0
             // Unless we integrate backwards, then we need the speed to increase
             var totalOtherForce = tractionForce + weightForce;
-            if (Math.abs(totalOtherForce) < oppositeForce)
-                return 0.0;
+            if (Math.abs(totalOtherForce) < oppositeForce) return 0.0;
         }
 
-        // as the oppositeForces are reaction forces, they need to be adjusted to be opposed to the other forces
+        // as the oppositeForces are reaction forces, they need to be adjusted to be opposed to the
+        // other forces
         if (currentSpeed >= 0.0) {
             // if the train is moving forward or still, the opposite forces are negative
             return (tractionForce + weightForce - oppositeForce) / rollingStock.getInertia();
@@ -151,28 +138,21 @@ public final class TrainPhysicsIntegrator {
         }
     }
 
-    /** Integrate the Newton movement equations*/
+    /** Integrate the Newton movement equations */
     public static IntegrationStep newtonStep(
-            double timeStep,
-            double currentSpeed,
-            double acceleration,
-            double directionSign
-    ) {
+            double timeStep, double currentSpeed, double acceleration, double directionSign) {
         var signedTimeStep = Math.copySign(timeStep, directionSign);
         var newSpeed = currentSpeed + acceleration * signedTimeStep;
-        if (Math.abs(newSpeed) < SPEED_EPSILON)
-            newSpeed = 0;
+        if (Math.abs(newSpeed) < SPEED_EPSILON) newSpeed = 0;
 
         // dx = currentSpeed * dt + 1/2 * acceleration * dt * dt
         var positionDelta = currentSpeed * signedTimeStep + 0.5 * acceleration * signedTimeStep * signedTimeStep;
 
-        if (Math.abs(positionDelta) < POSITION_EPSILON)
-            positionDelta = 0;
+        if (Math.abs(positionDelta) < POSITION_EPSILON) positionDelta = 0;
         return IntegrationStep.fromNaiveStep(
                 timeStep, positionDelta,
                 currentSpeed, newSpeed,
-                acceleration, directionSign
-        );
+                acceleration, directionSign);
     }
 
     /** Returns true if the positions' difference is lower than epsilon */

@@ -35,8 +35,7 @@ public class SwitchImpl implements Switch {
             ImmutableNetwork<SwitchPort, SwitchBranch> graph,
             ImmutableMultimap<String, SwitchBranch> groups,
             double groupChangeDelay,
-            ImmutableMap<String, SwitchPort> ports
-    ) {
+            ImmutableMap<String, SwitchPort> ports) {
         this.id = id;
         this.graph = graph;
         this.groups = groups;
@@ -68,8 +67,7 @@ public class SwitchImpl implements Switch {
     public String findBranchGroup(SwitchBranch branch) {
         for (var group : groups.asMap().entrySet()) {
             for (var groupBranch : group.getValue()) {
-                if (groupBranch == branch)
-                    return group.getKey();
+                if (groupBranch == branch) return group.getKey();
             }
         }
         return null;

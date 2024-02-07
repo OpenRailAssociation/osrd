@@ -1,6 +1,5 @@
 package fr.sncf.osrd.envelope_sim;
 
-
 public interface PhysicsRollingStock {
     /** The mass of the train, in kilograms */
     double getMass();
@@ -61,8 +60,7 @@ public interface PhysicsRollingStock {
     double getMaxBrakingForce(double speed);
 
     /** The maximum acceleration, in m/s^2, which can be applied at a given speed, in m/s */
-    record TractiveEffortPoint(double speed, double maxEffort) {
-    }
+    record TractiveEffortPoint(double speed, double maxEffort) {}
 
     enum GammaType {
         CONST,

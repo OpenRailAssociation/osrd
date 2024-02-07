@@ -1,12 +1,14 @@
 package fr.sncf.osrd.fast_collections.generator.collections
 
-import fr.sncf.osrd.fast_collections.generator.*
 import com.google.devtools.ksp.processing.Dependencies
 import com.google.devtools.ksp.symbol.KSFile
+import fr.sncf.osrd.fast_collections.generator.*
 import java.util.*
 
-
-private fun CollectionItemType.generateArraySortedSet(context: GeneratorContext, currentFile: KSFile) {
+private fun CollectionItemType.generateArraySortedSet(
+    context: GeneratorContext,
+    currentFile: KSFile
+) {
     val simpleName = type.simpleName
     val decSimpleName = simpleName.replaceFirstChar { it.lowercase(Locale.getDefault()) }
     val paramsDecl = type.paramsDecl
@@ -18,8 +20,14 @@ private fun CollectionItemType.generateArraySortedSet(context: GeneratorContext,
     val primitiveZero = storageType.primitiveZero()
     val toPrimitive = storageType.toPrimitive
     val wrapperZero = storageType.fromPrimitive(primitiveZero)
-    val file = context.codeGenerator.createNewFile(Dependencies(true, currentFile), generatedPackage, fileName)
-    file.appendText("""
+    val file =
+        context.codeGenerator.createNewFile(
+            Dependencies(true, currentFile),
+            generatedPackage,
+            fileName
+        )
+    file.appendText(
+        """
             @file:OptIn(ExperimentalUnsignedTypes::class)
 
             /** GENERATED CODE */
@@ -390,7 +398,9 @@ private fun CollectionItemType.generateArraySortedSet(context: GeneratorContext,
                 res.add(c)
                 return res.readOnlyClone()
             }
-        """.trimIndent())
+        """
+            .trimIndent()
+    )
     file.close()
 }
 
@@ -399,7 +409,11 @@ class ArraySortedSetGenerator {
         override val generatorId = "ArraySortedSet"
         override val dependencies = arrayOf("Interfaces")
 
-        override fun generate(context: GeneratorContext, currentFile: KSFile, itemType: CollectionItemType) {
+        override fun generate(
+            context: GeneratorContext,
+            currentFile: KSFile,
+            itemType: CollectionItemType
+        ) {
             itemType.generateArraySortedSet(context, currentFile)
         }
     }

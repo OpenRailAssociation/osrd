@@ -18,8 +18,7 @@ public class TrainStop {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         TrainStop trainStop = (TrainStop) o;
-        return Double.compare(trainStop.position, position) == 0
-                && Double.compare(trainStop.duration, duration) == 0;
+        return Double.compare(trainStop.position, position) == 0 && Double.compare(trainStop.duration, duration) == 0;
     }
 
     @Override

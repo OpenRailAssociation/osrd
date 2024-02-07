@@ -5,7 +5,6 @@
     toPrimitive = "%s.data",
     collections = ["Array", "ArrayList", "ArraySortedSet", "RingBuffer"],
 )
-
 @file:PrimitiveWrapperCollections(
     wrapper = TestGenericIndex::class,
     primitive = UInt::class,
@@ -32,7 +31,6 @@ value class TestGenericIndex<T>(val data: UInt) : Comparable<TestGenericIndex<T>
         return this.data.compareTo(other.data)
     }
 }
-
 
 class TestIndexes {
     @Test

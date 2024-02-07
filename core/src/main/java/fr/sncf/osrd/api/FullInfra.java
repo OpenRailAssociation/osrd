@@ -10,27 +10,25 @@ import fr.sncf.osrd.signaling.SignalingSimulator;
 import fr.sncf.osrd.sim_infra.api.BlockInfra;
 import fr.sncf.osrd.sim_infra.api.LoadedSignalInfra;
 import fr.sncf.osrd.sim_infra.api.RawSignalingInfra;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.util.Set;
 
-public record FullInfra(RawSignalingInfra rawInfra,
-                        LoadedSignalInfra loadedSignalInfra,
-                        BlockInfra blockInfra,
-                        SignalingSimulator signalingSimulator) {
+public record FullInfra(
+        RawSignalingInfra rawInfra,
+        LoadedSignalInfra loadedSignalInfra,
+        BlockInfra blockInfra,
+        SignalingSimulator signalingSimulator) {
 
     static final Logger logger = LoggerFactory.getLogger(FullInfra.class);
 
     /** Builds a full infra from a railjson infra */
-    public static FullInfra fromRJSInfra(RJSInfra rjsInfra, DiagnosticRecorder diagnosticRecorder,
-                                          SignalingSimulator signalingSimulator) {
+    public static FullInfra fromRJSInfra(
+            RJSInfra rjsInfra, DiagnosticRecorder diagnosticRecorder, SignalingSimulator signalingSimulator) {
         // Parse railjson into a proper infra
         logger.info("parsing infra");
-        var infra = SignalingInfraBuilder.fromRJSInfra(
-                rjsInfra,
-                Set.of(new BAL3(diagnosticRecorder)),
-                diagnosticRecorder
-        );
+        var infra =
+                SignalingInfraBuilder.fromRJSInfra(rjsInfra, Set.of(new BAL3(diagnosticRecorder)), diagnosticRecorder);
 
         logger.info("adaptation to kotlin");
         var rawInfra = adaptRawInfra(infra);

@@ -49,31 +49,50 @@ class TestBAPRtoBAL {
         // endregion
 
         // region signals
-        val signalm = builder.physicalSignal("m", 300.meters) {
-            logicalSignal("BAPR", listOf("BAPR"), mapOf(Pair("distant", "true"),Pair("Nf", "false")))
-        }
-        val signalM = builder.physicalSignal("M", 300.meters) {
-            logicalSignal("BAPR", listOf("BAPR"), mapOf(Pair("distant", "false"),Pair("Nf", "true")))
-        }
-        val signaln = builder.physicalSignal("n", 300.meters) {
-            logicalSignal("BAPR", listOf("BAL"), mapOf(Pair("distant", "true"),Pair("Nf", "false")))
-        }
-        val signalN = builder.physicalSignal("N", 300.meters) {
-            logicalSignal("BAL", listOf("BAL"), mapOf(Pair("Nf", "true")))
-        }
+        val signalm =
+            builder.physicalSignal("m", 300.meters) {
+                logicalSignal(
+                    "BAPR",
+                    listOf("BAPR"),
+                    mapOf(Pair("distant", "true"), Pair("Nf", "false"))
+                )
+            }
+        val signalM =
+            builder.physicalSignal("M", 300.meters) {
+                logicalSignal(
+                    "BAPR",
+                    listOf("BAPR"),
+                    mapOf(Pair("distant", "false"), Pair("Nf", "true"))
+                )
+            }
+        val signaln =
+            builder.physicalSignal("n", 300.meters) {
+                logicalSignal(
+                    "BAPR",
+                    listOf("BAL"),
+                    mapOf(Pair("distant", "true"), Pair("Nf", "false"))
+                )
+            }
+        val signalN =
+            builder.physicalSignal("N", 300.meters) {
+                logicalSignal("BAL", listOf("BAL"), mapOf(Pair("Nf", "true")))
+            }
 
         // endregion
 
         // region zone paths
-        val zonePathWX = builder.zonePath(detectorW.increasing, detectorX.increasing, Length(10.meters)) {
-            signal(signalm, Offset(6.meters))
-            signal(signalM, Offset(8.meters))
-        }
-        val zonePathXY = builder.zonePath(detectorX.increasing, detectorY.increasing, Length(10.meters)) {
-            signal(signaln, Offset(6.meters))
-            signal(signalN, Offset(8.meters))
-        }
-        val zonePathYZ = builder.zonePath(detectorY.increasing, detectorZ.increasing, Length(10.meters))
+        val zonePathWX =
+            builder.zonePath(detectorW.increasing, detectorX.increasing, Length(10.meters)) {
+                signal(signalm, Offset(6.meters))
+                signal(signalM, Offset(8.meters))
+            }
+        val zonePathXY =
+            builder.zonePath(detectorX.increasing, detectorY.increasing, Length(10.meters)) {
+                signal(signaln, Offset(6.meters))
+                signal(signalN, Offset(8.meters))
+            }
+        val zonePathYZ =
+            builder.zonePath(detectorY.increasing, detectorZ.increasing, Length(10.meters))
 
         // endregion
 
@@ -102,13 +121,30 @@ class TestBAPRtoBAL {
         fullPath.add(blockInfra.getBlocksStartingAtDetector(detectorX.increasing).first())
         fullPath.add(blockInfra.getBlocksStartingAtDetector(detectorY.increasing).first())
         val zoneStates = mutableListOf(ZoneStatus.CLEAR, ZoneStatus.CLEAR, ZoneStatus.INCOMPATIBLE)
-        val res = simulator.evaluate(infra, loadedSignalInfra, blockInfra, fullPath, 0, fullPath.size, zoneStates, ZoneStatus.INCOMPATIBLE)
-        val logicalSignals = listOf(signalm, signalM, signaln, signalN).map{loadedSignalInfra.getLogicalSignals(it).first()}
+        val res =
+            simulator.evaluate(
+                infra,
+                loadedSignalInfra,
+                blockInfra,
+                fullPath,
+                0,
+                fullPath.size,
+                zoneStates,
+                ZoneStatus.INCOMPATIBLE
+            )
+        val logicalSignals =
+            listOf(signalm, signalM, signaln, signalN).map {
+                loadedSignalInfra.getLogicalSignals(it).first()
+            }
         val expectedAspects = listOf("VL", "VL", "A", "C")
         asserSignalListAspectEquals(expectedAspects, res, logicalSignals)
     }
 
-    private fun asserSignalListAspectEquals(expectedAspects: List<String>, actualAspects: IdxMap<LogicalSignalId, SigState>, signals: List<LogicalSignalId>) {
+    private fun asserSignalListAspectEquals(
+        expectedAspects: List<String>,
+        actualAspects: IdxMap<LogicalSignalId, SigState>,
+        signals: List<LogicalSignalId>
+    ) {
         for ((aspect, signal) in expectedAspects.zip(signals)) {
             assertEquals(aspect, actualAspects[signal]!!.getEnum("aspect"))
         }

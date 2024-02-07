@@ -18,10 +18,12 @@ public abstract class APIClient {
     }
 
     Request buildRequest(String endpointPath, String queryParameters) {
-        var url = baseUrl.newBuilder().addPathSegments(endpointPath).encodedQuery(queryParameters).build();
+        var url = baseUrl.newBuilder()
+                .addPathSegments(endpointPath)
+                .encodedQuery(queryParameters)
+                .build();
         var builder = new Request.Builder().url(url);
-        if (authorizationToken != null)
-            builder = builder.header("Authorization", authorizationToken);
+        if (authorizationToken != null) builder = builder.header("Authorization", authorizationToken);
         return builder.build();
     }
 

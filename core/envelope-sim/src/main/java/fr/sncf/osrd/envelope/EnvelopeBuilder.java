@@ -10,8 +10,7 @@ public final class EnvelopeBuilder {
     /** Concatenates multiple envelopes together */
     public static Envelope concatenate(Envelope... envelopes) {
         var res = new EnvelopeBuilder();
-        for (var envelope : envelopes)
-            res.addEnvelope(envelope);
+        for (var envelope : envelopes) res.addEnvelope(envelope);
         return res.build();
     }
 
@@ -23,14 +22,12 @@ public final class EnvelopeBuilder {
 
     /** Adds a list of parts */
     public void addParts(EnvelopePart[] parts) {
-        for (var part : parts)
-            addPart(part);
+        for (var part : parts) addPart(part);
     }
 
     /** Adds all parts of an envelope */
     public void addEnvelope(Envelope envelope) {
-        for (var part : envelope)
-            addPart(part);
+        for (var part : envelope) addPart(part);
     }
 
     /** Reverses the order of the parts */
@@ -46,7 +43,7 @@ public final class EnvelopeBuilder {
     /** Creates a new Envelope */
     public Envelope build() {
         assert parts != null : "build() was already called";
-        var envelope =  Envelope.make(parts.toArray(new EnvelopePart[0]));
+        var envelope = Envelope.make(parts.toArray(new EnvelopePart[0]));
         parts = null;
         return envelope;
     }

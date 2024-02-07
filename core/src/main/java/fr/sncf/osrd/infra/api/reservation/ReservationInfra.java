@@ -24,10 +24,11 @@ public interface ReservationInfra extends TrackInfra, DiTrackInfra {
     /** Returns a mapping from route ID to route */
     ImmutableMap<String, ReservationRoute> getReservationRouteMap();
 
-
-    /** Returns the map of all routes passing by any given directed edge.
-     * If the route starts before the track, the offset is the length of the route before the track (negative).
-     * Otherwise, the offset is the start of the route on the directed edge. */
+    /**
+     * Returns the map of all routes passing by any given directed edge. If the route starts before
+     * the track, the offset is the length of the route before the track (negative). Otherwise, the
+     * offset is the start of the route on the directed edge.
+     */
     ImmutableMultimap<DiTrackEdge, RouteEntry> getRoutesOnEdges();
 
     /** A pair of route + offset of the start */

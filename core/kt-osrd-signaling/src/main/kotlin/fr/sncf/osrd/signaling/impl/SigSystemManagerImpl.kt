@@ -9,7 +9,8 @@ import fr.sncf.osrd.utils.indexing.StaticPool
 class SigSystemManagerImpl : SigSystemManager {
     private val sigSystemMap = mutableMapOf<String, SignalingSystemId>()
     private val sigSystemPool = StaticPool<SignalingSystem, SignalingSystemDriver>()
-    private val driverMap = mutableMapOf<Pair<SignalingSystemId, SignalingSystemId>, SignalDriverId>()
+    private val driverMap =
+        mutableMapOf<Pair<SignalingSystemId, SignalingSystemId>, SignalDriverId>()
     private val driverPool = StaticPool<SignalDriver, fr.sncf.osrd.signaling.SignalDriver>()
 
     fun addSignalingSystem(sigSystem: SignalingSystemDriver): SignalingSystemId {
@@ -20,10 +21,11 @@ class SigSystemManagerImpl : SigSystemManager {
 
     fun addSignalDriver(sigDriver: fr.sncf.osrd.signaling.SignalDriver): SignalDriverId {
         val res = driverPool.add(sigDriver)
-        driverMap[Pair(
-            findSignalingSystem(sigDriver.outputSignalingSystem),
-            findSignalingSystem(sigDriver.inputSignalingSystem)
-        )] = res
+        driverMap[
+            Pair(
+                findSignalingSystem(sigDriver.outputSignalingSystem),
+                findSignalingSystem(sigDriver.inputSignalingSystem)
+            )] = res
         return res
     }
 
@@ -53,9 +55,13 @@ class SigSystemManagerImpl : SigSystemManager {
         return sigSystemPool[sigSystem].settingsSchema
     }
 
-    override val drivers get() = driverPool.space()
+    override val drivers
+        get() = driverPool.space()
 
-    override fun findDriver(outputSig: SignalingSystemId, inputSig: SignalingSystemId): SignalDriverId {
+    override fun findDriver(
+        outputSig: SignalingSystemId,
+        inputSig: SignalingSystemId
+    ): SignalDriverId {
         return driverMap[Pair(outputSig, inputSig)]!!
     }
 
@@ -71,7 +77,11 @@ class SigSystemManagerImpl : SigSystemManager {
         return evalSigSettings(sigSystemPool[sigSystem].isBlockDelimiterExpr, settings)
     }
 
-    override fun checkSignalingSystemBlock(reporter: BlockDiagReporter, sigSystem: SignalingSystemId, block: SigBlock) {
+    override fun checkSignalingSystemBlock(
+        reporter: BlockDiagReporter,
+        sigSystem: SignalingSystemId,
+        block: SigBlock
+    ) {
         sigSystemPool[sigSystem].checkBlock(reporter, block)
     }
 }

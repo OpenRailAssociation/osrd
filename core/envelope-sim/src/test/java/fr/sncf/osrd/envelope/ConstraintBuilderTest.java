@@ -11,8 +11,8 @@ import fr.sncf.osrd.envelope.part.constraints.EnvelopeConstraint;
 import fr.sncf.osrd.envelope.part.constraints.PositionConstraint;
 import fr.sncf.osrd.envelope.part.constraints.SpeedConstraint;
 import fr.sncf.osrd.envelope_sim.EnvelopeProfile;
-import org.junit.jupiter.api.Test;
 import java.util.List;
+import org.junit.jupiter.api.Test;
 
 public class ConstraintBuilderTest {
 
@@ -28,21 +28,16 @@ public class ConstraintBuilderTest {
 
     private ConstrainedEnvelopePartBuilder wrap(EnvelopePartConsumer sink) {
         var envelopeFloor = Envelope.make(EnvelopeTestUtils.generateTimes(
-                new double[] {0, 3, 4, 5, 6, 7, 10},
-                new double[] {0, 0, 1, 2, 1, 0, 0}
-        ));
+                new double[] {0, 3, 4, 5, 6, 7, 10}, new double[] {0, 0, 1, 2, 1, 0, 0}));
         var envelopeCeiling = Envelope.make(EnvelopeTestUtils.generateTimes(
-                new double[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
-                new double[] {2, 3, 4, 5, 6, 7, 6, 5, 4, 3, 2}
-        ));
+                new double[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10}, new double[] {2, 3, 4, 5, 6, 7, 6, 5, 4, 3, 2}));
         return new ConstrainedEnvelopePartBuilder(
                 sink,
                 new SpeedConstraint(0, FLOOR),
                 new SpeedConstraint(5, CEILING),
                 new EnvelopeConstraint(envelopeFloor, FLOOR),
                 new EnvelopeConstraint(envelopeCeiling, CEILING),
-                new PositionConstraint(1, 9)
-        );
+                new PositionConstraint(1, 9));
     }
 
     @Test
@@ -80,10 +75,7 @@ public class ConstraintBuilderTest {
     void testSpeedMaintainConstraint() {
         var partBuilder = new EnvelopePartBuilder();
         var constraint = new SpeedConstraint(2, EQUAL);
-        var builder = new ConstrainedEnvelopePartBuilder(
-                partBuilder,
-                constraint
-        );
+        var builder = new ConstrainedEnvelopePartBuilder(partBuilder, constraint);
         assertTrue(builder.initEnvelopePart(2, 2, 1));
         assertTrue(builder.addStep(2.5, 2));
         assertFalse(builder.addStep(3, 1));
@@ -95,9 +87,7 @@ public class ConstraintBuilderTest {
     @Test
     void testNoConstraint() {
         var partBuilder = new EnvelopePartBuilder();
-        var builder = new ConstrainedEnvelopePartBuilder(
-                partBuilder
-        );
+        var builder = new ConstrainedEnvelopePartBuilder(partBuilder);
         assertTrue(builder.initEnvelopePart(2, 2, 1));
         assertTrue(builder.addStep(2.5, 2));
     }

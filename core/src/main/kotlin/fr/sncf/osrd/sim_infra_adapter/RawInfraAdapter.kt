@@ -18,11 +18,9 @@ import fr.sncf.osrd.infra.api.tracks.undirected.TrackSection
 import fr.sncf.osrd.infra.implementation.tracks.directed.DiTrackEdgeImpl
 import fr.sncf.osrd.infra.implementation.tracks.directed.TrackRangeView
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSSignal
-import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType
 import fr.sncf.osrd.sim_infra.api.DetectorId
 import fr.sncf.osrd.sim_infra.api.DirDetectorId
 import fr.sncf.osrd.sim_infra.api.EndpointTrackSectionId
-import fr.sncf.osrd.sim_infra.api.LoadingGaugeTypeId
 import fr.sncf.osrd.sim_infra.api.PhysicalSignal
 import fr.sncf.osrd.sim_infra.api.PhysicalSignalId
 import fr.sncf.osrd.sim_infra.api.RawInfra
@@ -40,6 +38,7 @@ import fr.sncf.osrd.sim_infra.api.ZonePath
 import fr.sncf.osrd.sim_infra.api.ZonePathId
 import fr.sncf.osrd.sim_infra.api.decreasing
 import fr.sncf.osrd.sim_infra.api.increasing
+import fr.sncf.osrd.sim_infra.impl.NeutralSection as SimNeutralSection
 import fr.sncf.osrd.sim_infra.impl.RawInfraBuilder
 import fr.sncf.osrd.sim_infra.impl.SpeedSection
 import fr.sncf.osrd.sim_infra.impl.TrackSectionBuilder
@@ -62,8 +61,6 @@ import fr.sncf.osrd.utils.units.meters
 import kotlin.collections.set
 import kotlin.time.Duration.Companion.ZERO
 import kotlin.time.Duration.Companion.seconds
-import fr.sncf.osrd.sim_infra.impl.NeutralSection as SimNeutralSection
-
 
 class SimInfraAdapter(
     val simInfra: RawInfra,
@@ -76,18 +73,21 @@ class SimInfraAdapter(
     val rjsSignalMap: BiMap<String, RJSSignal>
 ) : RawInfra by simInfra
 
-
 class TrackRangeViewIterator(private val views: ImmutableList<TrackRangeView>) {
     private var index: Int = 0
-    val view: TrackRangeView get() = views[index]
+    val view: TrackRangeView
+        get() = views[index]
 
     fun next() {
         index++
     }
 }
 
-data class TrackSignal(val position: Distance, val direction: Direction, val signal: PhysicalSignalId)
-
+data class TrackSignal(
+    val position: Distance,
+    val direction: Direction,
+    val signal: PhysicalSignalId
+)
 
 fun adaptRawInfra(infra: SignalingInfra): SimInfraAdapter {
     val builder = RawInfraBuilder()
@@ -108,59 +108,67 @@ fun adaptRawInfra(infra: SignalingInfra): SimInfraAdapter {
         if (track != null) {
             val trackLength = Distance.fromMeters(track.length)
             var lastOffset = 0.meters
-            trackSectionMap[track] = builder.trackSection(track.id) {
-                val chunkMap = mutableMapOf<Distance, TrackChunkId>()
-                for (d in track.detectors) {
-                    val detectorId = builder.detector(d.id)
-                    detectorMap[d] = detectorId
-                    val endOffset = Distance.fromMeters(d.offset)
-                    makeChunk(builder, track, lastOffset, endOffset, this@trackSection, chunkMap)
-                    lastOffset = endOffset
+            trackSectionMap[track] =
+                builder.trackSection(track.id) {
+                    val chunkMap = mutableMapOf<Distance, TrackChunkId>()
+                    for (d in track.detectors) {
+                        val detectorId = builder.detector(d.id)
+                        detectorMap[d] = detectorId
+                        val endOffset = Distance.fromMeters(d.offset)
+                        makeChunk(
+                            builder,
+                            track,
+                            lastOffset,
+                            endOffset,
+                            this@trackSection,
+                            chunkMap
+                        )
+                        lastOffset = endOffset
+                    }
+                    makeChunk(builder, track, lastOffset, trackLength, this@trackSection, chunkMap)
+                    trackChunkMap[track] = chunkMap
                 }
-                makeChunk(builder, track, lastOffset, trackLength, this@trackSection, chunkMap)
-                trackChunkMap[track] = chunkMap
-            }
         }
     }
 
     // parse operational points
-    for (track in infra.trackGraph.edges())
-        for (op in track.operationalPoints) {
-            val (chunkId, offset) = getChunkLocation(track, Distance.fromMeters(op.offset), trackChunkMap)
-            builder.operationalPointPart(op.id, offset, chunkId)
-        }
+    for (track in infra.trackGraph.edges()) for (op in track.operationalPoints) {
+        val (chunkId, offset) =
+            getChunkLocation(track, Distance.fromMeters(op.offset), trackChunkMap)
+        builder.operationalPointPart(op.id, offset, chunkId)
+    }
 
     // parse switches
     for (switchEntry in infra.switches) {
         val oldSwitch = switchEntry.value!!
         val nodeGraph = oldSwitch.graph!!
         val infraGraph = infra.trackGraph!!
-        trackNodeMap[oldSwitch] = builder.movableElement(oldSwitch.id, oldSwitch.groupChangeDelay.seconds) {
-            val nodeMap: MutableMap<SwitchPort, TrackNodePortId> = mutableMapOf()
-            for (node in nodeGraph.nodes()) {
-                var track: TrackEdge? = null
-                for (edge in infraGraph.incidentEdges(node)) {
-                    if (edge is TrackSection) {
-                        track = edge
-                        break
+        trackNodeMap[oldSwitch] =
+            builder.movableElement(oldSwitch.id, oldSwitch.groupChangeDelay.seconds) {
+                val nodeMap: MutableMap<SwitchPort, TrackNodePortId> = mutableMapOf()
+                for (node in nodeGraph.nodes()) {
+                    var track: TrackEdge? = null
+                    for (edge in infraGraph.incidentEdges(node)) {
+                        if (edge is TrackSection) {
+                            track = edge
+                            break
+                        }
                     }
+                    track!!
+                    val endpoint =
+                        if (infraGraph.incidentNodes(track).nodeU() == node) Endpoint.START
+                        else Endpoint.END
+                    nodeMap[node] = port(EndpointTrackSectionId(trackSectionMap[track]!!, endpoint))
                 }
-                track!!
-                val endpoint = if (infraGraph.incidentNodes(track).nodeU() == node)
-                    Endpoint.START
-                else
-                    Endpoint.END
-                nodeMap[node] = port(EndpointTrackSectionId(trackSectionMap[track]!!, endpoint))
+                val switchGroups = mutableMapOf<String, TrackNodeConfigId>()
+                for (group in oldSwitch.groups.entries()) {
+                    val groupName = group.key!!
+                    val nodes = nodeGraph.incidentNodes(group.value!!)
+                    val portPair = Pair(nodeMap[nodes.nodeU()]!!, nodeMap[nodes.nodeV()]!!)
+                    switchGroups[groupName] = config(groupName, portPair)
+                }
+                trackNodeGroupsMap[oldSwitch] = switchGroups
             }
-            val switchGroups = mutableMapOf<String, TrackNodeConfigId>()
-            for (group in oldSwitch.groups.entries()) {
-                val groupName = group.key!!
-                val nodes = nodeGraph.incidentNodes(group.value!!)
-                val portPair = Pair(nodeMap[nodes.nodeU()]!!, nodeMap[nodes.nodeV()]!!)
-                switchGroups[groupName] = config(groupName, portPair)
-            }
-            trackNodeGroupsMap[oldSwitch] = switchGroups
-        }
     }
 
     // parse track links
@@ -171,10 +179,9 @@ fun adaptRawInfra(infra: SignalingInfra): SimInfraAdapter {
             builder.movableElement(node.id, ZERO) {
                 val ports = ArrayList<TrackNodePortId>()
                 for (edge in edges) {
-                    val endpoint = if (infra.trackGraph.incidentNodes(edge).nodeU() == node)
-                        Endpoint.START
-                    else
-                        Endpoint.END
+                    val endpoint =
+                        if (infra.trackGraph.incidentNodes(edge).nodeU() == node) Endpoint.START
+                        else Endpoint.END
                     ports.add(port(EndpointTrackSectionId(trackSectionMap[edge]!!, endpoint)))
                 }
                 config("default", Pair(ports[0], ports[1]))
@@ -206,14 +213,11 @@ fun adaptRawInfra(infra: SignalingInfra): SimInfraAdapter {
         val oldSwitches = detectionSection!!.switches!!
         val oldDiDetectors = detectionSection.detectors!!
         val switches = mutableStaticIdxArraySetOf<TrackNode>()
-        for (oldSwitch in oldSwitches)
-            switches.add(trackNodeMap[oldSwitch]!!)
+        for (oldSwitch in oldSwitches) switches.add(trackNodeMap[oldSwitch]!!)
         val detectors = mutableListOf<DirDetectorId>()
-        for (oldDiDetector in oldDiDetectors)
-            detectors.add(getOrCreateDet(oldDiDetector!!))
+        for (oldDiDetector in oldDiDetectors) detectors.add(getOrCreateDet(oldDiDetector!!))
         val zoneId = builder.zone(switches, detectors)
-        for (oldSwitch in oldSwitches)
-            switchToZone[oldSwitch] = zoneId
+        for (oldSwitch in oldSwitches) switchToZone[oldSwitch] = zoneId
         zoneMap[detectionSection] = zoneId
     }
 
@@ -221,22 +225,26 @@ fun adaptRawInfra(infra: SignalingInfra): SimInfraAdapter {
     for (rjsSignal in infra.signalMap.keys()) {
         rjsSignalMap[rjsSignal.id] = rjsSignal
         val trackSignals = signalsPerTrack.getOrPut(rjsSignal.track!!) { mutableListOf() }
-        val signalId = builder.physicalSignal(rjsSignal.id, rjsSignal.sightDistance.meters) {
-            if (rjsSignal.logicalSignals == null)
-                return@physicalSignal
-            for (rjsLogicalSignal in rjsSignal.logicalSignals) {
-                assert(rjsLogicalSignal.signalingSystem != null && rjsLogicalSignal.signalingSystem.isNotEmpty())
-                assert(rjsLogicalSignal.nextSignalingSystems != null)
-                assert(rjsLogicalSignal.settings != null)
-                for (sigSystem in rjsLogicalSignal.nextSignalingSystems)
-                    assert(sigSystem.isNotEmpty())
-                logicalSignal(
-                    rjsLogicalSignal.signalingSystem,
-                    rjsLogicalSignal.nextSignalingSystems,
-                    rjsLogicalSignal.settings
-                )
+        val signalId =
+            builder.physicalSignal(rjsSignal.id, rjsSignal.sightDistance.meters) {
+                if (rjsSignal.logicalSignals == null) return@physicalSignal
+                for (rjsLogicalSignal in rjsSignal.logicalSignals) {
+                    assert(
+                        rjsLogicalSignal.signalingSystem != null &&
+                            rjsLogicalSignal.signalingSystem.isNotEmpty()
+                    )
+                    assert(rjsLogicalSignal.nextSignalingSystems != null)
+                    assert(rjsLogicalSignal.settings != null)
+                    for (sigSystem in rjsLogicalSignal.nextSignalingSystems) assert(
+                        sigSystem.isNotEmpty()
+                    )
+                    logicalSignal(
+                        rjsLogicalSignal.signalingSystem,
+                        rjsLogicalSignal.nextSignalingSystems,
+                        rjsLogicalSignal.settings
+                    )
+                }
             }
-        }
         signalMap[rjsSignal.id] = signalId
         trackSignals.add(
             TrackSignal(
@@ -248,49 +256,60 @@ fun adaptRawInfra(infra: SignalingInfra): SimInfraAdapter {
     }
 
     // sort signals by tracks
-    for (trackSignals in signalsPerTrack.values)
-        trackSignals.sortBy { it.position }
+    for (trackSignals in signalsPerTrack.values) trackSignals.sortBy { it.position }
 
     // translate routes
     for (route in infra.reservationRouteMap.values) {
-        routeMap[route] = builder.route(route.id) {
-            val oldPath = route.detectorPath!!
-            val oldReleasePoints = route.releasePoints!!
-            val viewIterator = TrackRangeViewIterator(route!!.trackRanges)
+        routeMap[route] =
+            builder.route(route.id) {
+                val oldPath = route.detectorPath!!
+                val oldReleasePoints = route.releasePoints!!
+                val viewIterator = TrackRangeViewIterator(route!!.trackRanges)
 
-            // as we iterate over the detection sections, we need to compute the length of each
-            // detection section path as well as the position of switches contained within.
-            // sadly, these two iteration processes were combined by the idiot behind this code: myself
-            // parse the zone path and switch positions for this route
-            var releaseIndex = 0
-            for (startDetIndex in 0 until oldPath.size - 1) {
-                val oldStartDet = oldPath[startDetIndex]
-                val oldEndDet = oldPath[startDetIndex + 1]
-                val entry = getDet(oldStartDet)
-                val exit = getDet(oldEndDet)
-                val zonePathId = buildZonePath(
-                    viewIterator,
-                    oldStartDet, oldEndDet,
-                    entry, exit,
-                    trackNodeMap, trackNodeGroupsMap, trackChunkMap,
-                    signalsPerTrack,
-                    builder
-                )
+                // as we iterate over the detection sections, we need to compute the length of each
+                // detection section path as well as the position of switches contained within.
+                // sadly, these two iteration processes were combined by the idiot behind this code:
+                // myself
+                // parse the zone path and switch positions for this route
+                var releaseIndex = 0
+                for (startDetIndex in 0 until oldPath.size - 1) {
+                    val oldStartDet = oldPath[startDetIndex]
+                    val oldEndDet = oldPath[startDetIndex + 1]
+                    val entry = getDet(oldStartDet)
+                    val exit = getDet(oldEndDet)
+                    val zonePathId =
+                        buildZonePath(
+                            viewIterator,
+                            oldStartDet,
+                            oldEndDet,
+                            entry,
+                            exit,
+                            trackNodeMap,
+                            trackNodeGroupsMap,
+                            trackChunkMap,
+                            signalsPerTrack,
+                            builder
+                        )
 
-                // check if the zone is a release zone
-                if (releaseIndex < oldReleasePoints.size && oldEndDet.detector!! == oldReleasePoints[releaseIndex]) {
-                    releaseZone(startDetIndex)
-                    releaseIndex++
+                    // check if the zone is a release zone
+                    if (
+                        releaseIndex < oldReleasePoints.size &&
+                            oldEndDet.detector!! == oldReleasePoints[releaseIndex]
+                    ) {
+                        releaseZone(startDetIndex)
+                        releaseIndex++
+                    }
+                    this@route.zonePath(zonePathId)
                 }
-                this@route.zonePath(zonePathId)
-            }
 
-            // if the old route did not have a release point at its last detector,
-            // add the missing implicit end release point
-            if (oldReleasePoints.isEmpty() || oldReleasePoints.last() != oldPath.last().detector) {
-                releaseZone(oldPath.size - 2)
+                // if the old route did not have a release point at its last detector,
+                // add the missing implicit end release point
+                if (
+                    oldReleasePoints.isEmpty() || oldReleasePoints.last() != oldPath.last().detector
+                ) {
+                    releaseZone(oldPath.size - 2)
+                }
             }
-        }
     }
 
     // TODO: check the length of built routes is the same as on the base infra
@@ -316,16 +335,19 @@ private fun makeChunk(
     trackSectionBuilder: TrackSectionBuilder,
     chunkMap: MutableMap<Distance, TrackChunkId>
 ) {
-    if (startOffset == endOffset)
-        return
-    val rangeViewForward = TrackRangeView(
-        startOffset.meters, endOffset.meters,
-        DiTrackEdgeImpl(track, Direction.FORWARD)
-    )
-    val rangeViewBackward = TrackRangeView(
-        startOffset.meters, endOffset.meters,
-        DiTrackEdgeImpl(track, Direction.BACKWARD)
-    )
+    if (startOffset == endOffset) return
+    val rangeViewForward =
+        TrackRangeView(
+            startOffset.meters,
+            endOffset.meters,
+            DiTrackEdgeImpl(track, Direction.FORWARD)
+        )
+    val rangeViewBackward =
+        TrackRangeView(
+            startOffset.meters,
+            endOffset.meters,
+            DiTrackEdgeImpl(track, Direction.BACKWARD)
+        )
 
     fun <T> makeDirectionalMap(f: (range: TrackRangeView) -> T): DirectionalMap<T> {
         return DirectionalMap(f.invoke(rangeViewForward), f.invoke(rangeViewBackward))
@@ -335,8 +357,10 @@ private fun makeChunk(
         val res = distanceRangeMapOf<SpeedSection>()
         for (entry in range.speedSections.asMapOfRanges()) {
             val legacySpeedLimit = entry.value
-            val map = legacySpeedLimit.speedLimitByTag
-                .mapValues { mapEntry -> Speed.fromMetersPerSecond(mapEntry.value!!) }
+            val map =
+                legacySpeedLimit.speedLimitByTag.mapValues { mapEntry ->
+                    Speed.fromMetersPerSecond(mapEntry.value!!)
+                }
             res.put(
                 Distance.fromMeters(entry.key.lowerEndpoint()),
                 Distance.fromMeters(entry.key.upperEndpoint()),
@@ -348,10 +372,11 @@ private fun makeChunk(
 
     fun makeNeutralSection(range: TrackRangeView): DistanceRangeMap<SimNeutralSection> {
         val res = distanceRangeMapOf<SimNeutralSection>()
-        for ((rangeMap, isAnnouncement) in listOf(
-            Pair(range.neutralSections, false),
-            Pair(range.neutralSectionAnnouncements, true),
-        )) {
+        for ((rangeMap, isAnnouncement) in
+            listOf(
+                Pair(range.neutralSections, false),
+                Pair(range.neutralSectionAnnouncements, true),
+            )) {
             for (entry in rangeMap.asMapOfRanges()) {
                 val legacyNeutralSection = entry.value
                 res.put(
@@ -364,18 +389,19 @@ private fun makeChunk(
         return res
     }
 
-    val chunkId = builder.trackChunk(
-        rangeViewForward.geo,
-        makeDirectionalMap { range -> DistanceRangeMapImpl.from(range.slopes) },
-        Length(endOffset - startOffset),
-        Offset(startOffset),
-        makeDirectionalMap { range -> DistanceRangeMapImpl.from(range.curves) },
-        makeDirectionalMap { range -> DistanceRangeMapImpl.from(range.gradients) },
-        DistanceRangeMapImpl.from(rangeViewForward.blockedGaugeTypes),
-        DistanceRangeMapImpl.from(rangeViewForward.electrificationVoltages),
-        makeDirectionalMap { range -> makeNeutralSection(range) },
-        makeDirectionalMap { range -> makeSpeedSections(range) },
-    )
+    val chunkId =
+        builder.trackChunk(
+            rangeViewForward.geo,
+            makeDirectionalMap { range -> DistanceRangeMapImpl.from(range.slopes) },
+            Length(endOffset - startOffset),
+            Offset(startOffset),
+            makeDirectionalMap { range -> DistanceRangeMapImpl.from(range.curves) },
+            makeDirectionalMap { range -> DistanceRangeMapImpl.from(range.gradients) },
+            DistanceRangeMapImpl.from(rangeViewForward.blockedGaugeTypes),
+            DistanceRangeMapImpl.from(rangeViewForward.electrificationVoltages),
+            makeDirectionalMap { range -> makeNeutralSection(range) },
+            makeDirectionalMap { range -> makeSpeedSections(range) },
+        )
     trackSectionBuilder.chunk(chunkId)
     chunkMap[startOffset] = chunkId
 }
@@ -392,8 +418,10 @@ private fun buildZonePath(
     signalsPerTrack: Map<String, MutableList<TrackSignal>>,
     builder: RawInfraBuilder
 ): ZonePathId {
-    // at this point, we have trackRangeIndex pointing to the track range which contains the entry detector
-    // we need iterate on track range until we reach the track range which contains the end detector.
+    // at this point, we have trackRangeIndex pointing to the track range which contains the entry
+    // detector
+    // we need iterate on track range until we reach the track range which contains the end
+    // detector.
     // meanwhile, we also need to:
     // 1) locate switches inside the zone path
     // 2) compute the length of each zone path
@@ -412,10 +440,10 @@ private fun buildZonePath(
         assert(viewIterator.view.track.edge == track)
         val startOffset = oldStartDet.detector.offset.meters
         val endOffset = oldEndDet.detector.offset.meters
-        val span = if (startOffset < endOffset)
-            ZonePathTrackSpan(track, startOffset, endOffset, Direction.FORWARD)
-        else
-            ZonePathTrackSpan(track, endOffset, startOffset, Direction.BACKWARD)
+        val span =
+            if (startOffset < endOffset)
+                ZonePathTrackSpan(track, startOffset, endOffset, Direction.FORWARD)
+            else ZonePathTrackSpan(track, endOffset, startOffset, Direction.BACKWARD)
         zoneTrackPath.add(span)
         zonePathLength += span.length
     } else {
@@ -467,20 +495,16 @@ private fun buildZonePath(
 
         for (trackSignal in trackSignals) {
             // if the signal is not visible along the route's path, ignore it
-            if (trackSignal.direction != range.direction)
-                continue
-            if (trackSignal.position < rangeBegin || trackSignal.position > rangeEnd)
-                continue
+            if (trackSignal.direction != range.direction) continue
+            if (trackSignal.position < rangeBegin || trackSignal.position > rangeEnd) continue
 
             // compute the signal's position relative to the start of the zone path range
-            val sigRangeStartDistance = if (trackSignal.direction == Direction.FORWARD)
-                trackSignal.position - rangeBegin
-            else
-                rangeEnd - trackSignal.position
+            val sigRangeStartDistance =
+                if (trackSignal.direction == Direction.FORWARD) trackSignal.position - rangeBegin
+                else rangeEnd - trackSignal.position
 
             val position = zonePathPosition + sigRangeStartDistance
-            if (position.distance == Distance.ZERO)
-                continue
+            if (position.distance == Distance.ZERO) continue
 
             zonePathSignals.add(ZonePathSignal(position, trackSignal.signal))
         }
@@ -504,7 +528,8 @@ private fun buildZonePath(
     for (range in zoneTrackPath) {
         if (range.begin == range.end) {
             // 0-length ranges can happen at track transition.
-            // They can and should be ignored, adding the chunk starting there would add an extra chunk.
+            // They can and should be ignored, adding the chunk starting there would add an extra
+            // chunk.
             // We assert that we are at a track transition, and move on
             assert(range.end == Distance.fromMeters(range.track.length) || range.end == 0.meters)
         } else {
@@ -514,12 +539,17 @@ private fun buildZonePath(
     }
 
     return builder.zonePath(
-        entry, exit, Length(zonePathLength.distance),
-        movableElements, movableElementsConfigs, movableElementsDistances,
-        signals, signalPositions, chunks
+        entry,
+        exit,
+        Length(zonePathLength.distance),
+        movableElements,
+        movableElementsConfigs,
+        movableElementsDistances,
+        signals,
+        signalPositions,
+        chunks
     )
 }
-
 
 /** begin < end */
 data class ZonePathTrackSpan(
@@ -528,12 +558,13 @@ data class ZonePathTrackSpan(
     val end: Distance,
     val direction: Direction
 ) {
-    val length get() = (begin - end).absoluteValue
+    val length
+        get() = (begin - end).absoluteValue
 }
 
 /**
- * Compute the length of the part of a zone path segments which spans a given track.
- * Only works for zone paths which span multiple tracks.
+ * Compute the length of the part of a zone path segments which spans a given track. Only works for
+ * zone paths which span multiple tracks.
  */
 private fun zonePathTrackSpan(
     track: TrackSection,
@@ -550,31 +581,30 @@ private fun zonePathTrackSpan(
         assert(direction == oldStartDiDet.direction)
         if (direction == Direction.FORWARD)
             ZonePathTrackSpan(track, oldStartDet.offset.meters, trackLen, Direction.FORWARD)
-        else
-            ZonePathTrackSpan(track, 0.meters, oldStartDet.offset.meters, Direction.BACKWARD)
+        else ZonePathTrackSpan(track, 0.meters, oldStartDet.offset.meters, Direction.BACKWARD)
     } else if (track == oldEndDet.trackSection) {
         assert(direction == oldEndDiDet.direction)
         if (direction == Direction.FORWARD)
             ZonePathTrackSpan(track, 0.meters, oldEndDet.offset.meters, Direction.FORWARD)
-        else
-            ZonePathTrackSpan(track, oldEndDet.offset.meters, trackLen, Direction.BACKWARD)
+        else ZonePathTrackSpan(track, oldEndDet.offset.meters, trackLen, Direction.BACKWARD)
     } else {
         ZonePathTrackSpan(track, 0.meters, trackLen, direction)
     }
 }
 
-/** From a track and an offset, returns the chunk ID and the offset compared to the start of the chunk */
+/**
+ * From a track and an offset, returns the chunk ID and the offset compared to the start of the
+ * chunk
+ */
 fun getChunkLocation(
     track: TrackEdge,
     offset: Distance,
     trackChunkMap: Map<TrackSection, Map<Distance, StaticIdx<TrackChunk>>>
 ): Pair<TrackChunkId, Offset<TrackChunk>> {
-    val entries = trackChunkMap[track]!!.entries
-        .sortedBy { entry -> entry.key }
+    val entries = trackChunkMap[track]!!.entries.sortedBy { entry -> entry.key }
     var i = 0
     while (i < entries.size - 1) {
-        if (entries[i + 1].key > offset)
-            break
+        if (entries[i + 1].key > offset) break
         i++
     }
     return Pair(entries[i].value, Offset(offset - entries[i].key))

@@ -1,6 +1,8 @@
 /**
- * <p>An undirected graph of tracks.</p>
- * <p>Not all edge paths are allowed: using two consecutive switch branches from the same switch is forbidden.</p>
+ * An undirected graph of tracks.
+ *
+ * <p>Not all edge paths are allowed: using two consecutive switch branches from the same switch is
+ * forbidden.
  *
  * <pre>
  *                     x========+

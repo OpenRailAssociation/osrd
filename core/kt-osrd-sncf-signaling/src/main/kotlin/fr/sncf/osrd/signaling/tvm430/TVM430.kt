@@ -6,15 +6,10 @@ import fr.sncf.osrd.signaling.SignalingSystemDriver
 import fr.sncf.osrd.sim_infra.api.SigSettingsSchema
 import fr.sncf.osrd.sim_infra.api.SigStateSchema
 
-
 object TVM430 : SignalingSystemDriver {
     override val id = "TVM430"
-    override val stateSchema = SigStateSchema {
-        enum("aspect", listOf("VL", "A", "S", "C"))
-    }
-    override val settingsSchema = SigSettingsSchema {
-        flag("Nf")
-    }
+    override val stateSchema = SigStateSchema { enum("aspect", listOf("VL", "A", "S", "C")) }
+    override val settingsSchema = SigSettingsSchema { flag("Nf") }
     override val isBlockDelimiterExpr = "true"
 
     override fun checkBlock(reporter: BlockDiagReporter, block: SigBlock) {

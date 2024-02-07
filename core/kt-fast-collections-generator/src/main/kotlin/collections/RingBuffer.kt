@@ -7,7 +7,6 @@ import fr.sncf.osrd.fast_collections.generator.CollectionItemType
 import fr.sncf.osrd.fast_collections.generator.GeneratorContext
 import fr.sncf.osrd.fast_collections.generator.appendText
 
-
 private fun CollectionItemType.generateRingBuffer(context: GeneratorContext, currentFile: KSFile) {
     val simpleName = type.simpleName
     val paramsDecl = type.paramsDecl
@@ -17,8 +16,14 @@ private fun CollectionItemType.generateRingBuffer(context: GeneratorContext, cur
     val storageType = storageType!!
     val primitiveZero = storageType.primitiveZero()
     val wrapperZero = storageType.fromPrimitive(primitiveZero)
-    val file = context.codeGenerator.createNewFile(Dependencies(true, currentFile), generatedPackage, fileName)
-    file.appendText("""
+    val file =
+        context.codeGenerator.createNewFile(
+            Dependencies(true, currentFile),
+            generatedPackage,
+            fileName
+        )
+    file.appendText(
+        """
             @file:OptIn(ExperimentalUnsignedTypes::class)
 
             /** GENERATED CODE */
@@ -221,7 +226,9 @@ private fun CollectionItemType.generateRingBuffer(context: GeneratorContext, cur
                 res.addBack(c)
                 return res
             }
-        """.trimIndent())
+        """
+            .trimIndent()
+    )
     file.close()
 }
 
@@ -230,7 +237,11 @@ class RingBufferGenerator {
         override val generatorId = "RingBuffer"
         override val dependencies = arrayOf("Interfaces")
 
-        override fun generate(context: GeneratorContext, currentFile: KSFile, itemType: CollectionItemType) {
+        override fun generate(
+            context: GeneratorContext,
+            currentFile: KSFile,
+            itemType: CollectionItemType
+        ) {
             itemType.generateRingBuffer(context, currentFile)
         }
     }

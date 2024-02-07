@@ -15,10 +15,8 @@ public enum EnvelopeShape {
     public static EnvelopeShape fromStep(EnvelopePart part, int stepIndex) {
         var beginSpeed = part.getBeginSpeed(stepIndex);
         var endSpeed = part.getEndSpeed(stepIndex);
-        if (areSpeedsEqual(beginSpeed, endSpeed))
-            return CONSTANT;
-        else if (beginSpeed < endSpeed)
-            return INCREASING;
+        if (areSpeedsEqual(beginSpeed, endSpeed)) return CONSTANT;
+        else if (beginSpeed < endSpeed) return INCREASING;
         return DECREASING;
     }
 
@@ -28,8 +26,7 @@ public enum EnvelopeShape {
         EnvelopeShape prevShape = null;
         for (int i = 0; i < part.stepCount(); i++) {
             var stepShape = fromStep(part, i);
-            if (stepShape == prevShape)
-                continue;
+            if (stepShape == prevShape) continue;
             phases.add(stepShape);
             prevShape = stepShape;
         }
@@ -42,8 +39,7 @@ public enum EnvelopeShape {
         assertEquals(expectedPhases.length, partPhases.length);
         for (int i = 0; i < expectedPhases.length; i++) {
             var expectedPhase = expectedPhases[i];
-            if (expectedPhase == null)
-                continue;
+            if (expectedPhase == null) continue;
             assertEquals(expectedPhase, partPhases[i]);
         }
     }
@@ -55,17 +51,21 @@ public enum EnvelopeShape {
         assertEquals(expectedPhase, partPhases[0]);
     }
 
-    /** Checks whether an envelope follows a given shape, where envelope parts can have internal shape changes */
+    /**
+     * Checks whether an envelope follows a given shape, where envelope parts can have internal
+     * shape changes
+     */
     public static void check(Envelope envelope, EnvelopeShape[][] expectedPhases) {
         assertEquals(expectedPhases.length, envelope.size());
-        for (int i = 0; i < expectedPhases.length; i++)
-            check(envelope.get(i), expectedPhases[i]);
+        for (int i = 0; i < expectedPhases.length; i++) check(envelope.get(i), expectedPhases[i]);
     }
 
-    /** Checks whether an envelope follows a given shape, where envelope parts cannot have internal shape changes */
+    /**
+     * Checks whether an envelope follows a given shape, where envelope parts cannot have internal
+     * shape changes
+     */
     public static void check(Envelope envelope, EnvelopeShape... expectedPhases) {
         assertEquals(expectedPhases.length, envelope.size());
-        for (int i = 0; i < expectedPhases.length; i++)
-            check(envelope.get(i), expectedPhases[i]);
+        for (int i = 0; i < expectedPhases.length; i++) check(envelope.get(i), expectedPhases[i]);
     }
 }

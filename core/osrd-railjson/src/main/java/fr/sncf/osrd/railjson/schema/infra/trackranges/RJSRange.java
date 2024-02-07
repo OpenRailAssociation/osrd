@@ -7,6 +7,7 @@ import java.util.Objects;
 public class RJSRange {
     /** Positions from the beginning of the RJSTrackSection */
     public double begin;
+
     public double end;
 
     public RJSRange(double begin, double end) {

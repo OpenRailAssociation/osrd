@@ -32,10 +32,8 @@ public final class RJSWaypointRef<T extends Identified> {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null)
-            return false;
-        if (obj.getClass() != RJSWaypointRef.class)
-            return false;
+        if (obj == null) return false;
+        if (obj.getClass() != RJSWaypointRef.class) return false;
         var o = (RJSWaypointRef<?>) obj;
         return id.equals(o.id) && type.equals(o.type);
     }

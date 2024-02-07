@@ -13,8 +13,7 @@ public class EnvProvider implements IDefaultProvider {
     @Override
     public String getDefaultValueFor(String optionName) {
         // ignore short arguments
-        if (!optionName.startsWith("--"))
-            return null;
+        if (!optionName.startsWith("--")) return null;
 
         var kebabName = optionName.substring(2);
         var screamingSnakeName = kebabName.replace('-', '_').toUpperCase(Locale.ENGLISH);

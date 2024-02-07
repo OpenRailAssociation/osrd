@@ -3,7 +3,6 @@ package fr.sncf.osrd.conflicts
 import fr.sncf.osrd.standalone_sim.EnvelopeStopWrapper
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.utils.units.Offset
-import kotlin.math.absoluteValue
 import kotlin.math.max
 import kotlin.math.min
 
@@ -11,7 +10,7 @@ class IncrementalRequirementEnvelopeAdapter(
     private val incrementalPath: IncrementalPath,
     private val rollingStock: RollingStock,
     private val envelopeWithStops: EnvelopeStopWrapper
-)  : IncrementalRequirementCallbacks {
+) : IncrementalRequirementCallbacks {
     override fun arrivalTimeInRange(pathBeginOff: Offset<Path>, pathEndOff: Offset<Path>): Double {
         // if the head of the train enters the zone at some point, use that
         val travelledPathBegin = incrementalPath.toTravelledPath(pathBeginOff)
@@ -25,13 +24,15 @@ class IncrementalRequirementEnvelopeAdapter(
         val trainBegin = -rollingStock.length
         val trainEnd = 0.0
 
-        if (max(trainBegin, begin) < min(trainEnd, end))
-            return 0.0
+        if (max(trainBegin, begin) < min(trainEnd, end)) return 0.0
 
         return Double.POSITIVE_INFINITY
     }
 
-    override fun departureTimeFromRange(pathBeginOff: Offset<Path>, pathEndOff: Offset<Path>): Double {
+    override fun departureTimeFromRange(
+        pathBeginOff: Offset<Path>,
+        pathEndOff: Offset<Path>
+    ): Double {
         val travelledPathEnd = incrementalPath.toTravelledPath(pathEndOff)
         val end = travelledPathEnd.distance.meters
 

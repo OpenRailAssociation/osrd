@@ -6,8 +6,8 @@ import fr.sncf.osrd.infra_state.api.SignalizationStateView;
 import java.util.Set;
 
 /**
- * The stateless, static and immutable infrastructure signal.
- * It has an associated SignalState per simulation
+ * The stateless, static and immutable infrastructure signal. It has an associated SignalState per
+ * simulation
  */
 public interface Signal<StateT extends SignalState> {
     /** Returns the initial state of the signal */
@@ -25,7 +25,10 @@ public interface Signal<StateT extends SignalState> {
     /** Returns the signal ID */
     String getID();
 
-    /** Returns a set of routes protected by this signal. May be empty if the signal isn't linked to a detector */
+    /**
+     * Returns a set of routes protected by this signal. May be empty if the signal isn't linked to
+     * a detector
+     */
     Set<ReservationRoute> getProtectedRoutes();
 
     /** Returns the distance at which the signal can be seen */

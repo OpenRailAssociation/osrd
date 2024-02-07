@@ -70,5 +70,6 @@ kotlin-jvm = { id = 'org.jetbrains.kotlin.jvm', version.ref = 'kotlin' }
 
 # java
 spotbugs = { id = 'com.github.spotbugs', version = '6.0.+' }
+spotless = { id = 'com.diffplug.spotless', version = '6.25.0' }
 shadow = { id = 'com.github.johnrengelman.shadow', version = '8.1.1' }
 versions = { id = 'com.github.ben-manes.versions', version = '0.50.0' }

@@ -13,13 +13,13 @@ import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorder;
 import fr.sncf.osrd.signaling.SignalingSimulator;
 import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
-import okhttp3.OkHttpClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
+import okhttp3.OkHttpClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class InfraManager extends APIClient {
     static final Logger logger = LoggerFactory.getLogger(InfraManager.class);
@@ -46,19 +46,19 @@ public class InfraManager extends APIClient {
         ERROR(true);
 
         static {
-            INITIALIZING.transitions = new InfraStatus[]{DOWNLOADING};
-            DOWNLOADING.transitions = new InfraStatus[]{PARSING_JSON, ERROR, TRANSIENT_ERROR};
-            PARSING_JSON.transitions = new InfraStatus[]{PARSING_INFRA, ERROR, TRANSIENT_ERROR};
-            PARSING_INFRA.transitions = new InfraStatus[]{ADAPTING_KOTLIN, ERROR, TRANSIENT_ERROR};
-            ADAPTING_KOTLIN.transitions = new InfraStatus[]{LOADING_SIGNALS, ERROR, TRANSIENT_ERROR};
-            LOADING_SIGNALS.transitions = new InfraStatus[]{BUILDING_BLOCKS, ERROR, TRANSIENT_ERROR};
-            BUILDING_BLOCKS.transitions = new InfraStatus[]{CACHED, ERROR, TRANSIENT_ERROR};
+            INITIALIZING.transitions = new InfraStatus[] {DOWNLOADING};
+            DOWNLOADING.transitions = new InfraStatus[] {PARSING_JSON, ERROR, TRANSIENT_ERROR};
+            PARSING_JSON.transitions = new InfraStatus[] {PARSING_INFRA, ERROR, TRANSIENT_ERROR};
+            PARSING_INFRA.transitions = new InfraStatus[] {ADAPTING_KOTLIN, ERROR, TRANSIENT_ERROR};
+            ADAPTING_KOTLIN.transitions = new InfraStatus[] {LOADING_SIGNALS, ERROR, TRANSIENT_ERROR};
+            LOADING_SIGNALS.transitions = new InfraStatus[] {BUILDING_BLOCKS, ERROR, TRANSIENT_ERROR};
+            BUILDING_BLOCKS.transitions = new InfraStatus[] {CACHED, ERROR, TRANSIENT_ERROR};
             // if a new version appears
-            CACHED.transitions = new InfraStatus[]{DOWNLOADING};
+            CACHED.transitions = new InfraStatus[] {DOWNLOADING};
             // at the next try
-            TRANSIENT_ERROR.transitions = new InfraStatus[]{DOWNLOADING};
+            TRANSIENT_ERROR.transitions = new InfraStatus[] {DOWNLOADING};
             // if a new version appears
-            ERROR.transitions = new InfraStatus[]{DOWNLOADING};
+            ERROR.transitions = new InfraStatus[] {DOWNLOADING};
         }
 
         InfraStatus(boolean isStable) {
@@ -66,16 +66,13 @@ public class InfraManager extends APIClient {
         }
 
         public final boolean isStable;
-        private InfraStatus[] transitions = new InfraStatus[]{};
+        private InfraStatus[] transitions = new InfraStatus[] {};
 
         boolean canTransitionTo(InfraStatus newStatus) {
-            for (var status : transitions)
-                if (status == newStatus)
-                    return true;
+            for (var status : transitions) if (status == newStatus) return true;
             return false;
         }
     }
-
 
     public static final class InfraCacheEntry {
         public InfraStatus status = InfraStatus.INITIALIZING;
@@ -96,7 +93,6 @@ public class InfraManager extends APIClient {
         }
     }
 
-
     public InfraManager(String baseUrl, String authorizationToken, OkHttpClient httpClient, boolean loadIfMissing) {
         super(baseUrl, authorizationToken, httpClient);
         this.loadIfMissing = loadIfMissing;
@@ -104,15 +100,12 @@ public class InfraManager extends APIClient {
 
     @ExcludeFromGeneratedCodeCoverage
     @SuppressFBWarnings({
-            "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
-            "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE",
-            "DM_GC"
+        "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
+        "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE",
+        "DM_GC"
     })
-    private FullInfra downloadInfra(
-            InfraCacheEntry cacheEntry,
-            String infraId,
-            DiagnosticRecorder diagnosticRecorder
-    ) throws OSRDError {
+    private FullInfra downloadInfra(InfraCacheEntry cacheEntry, String infraId, DiagnosticRecorder diagnosticRecorder)
+            throws OSRDError {
         // create a request
         var endpointPath = String.format("infra/%s/railjson/", infraId);
         var request = buildRequest(endpointPath);
@@ -125,8 +118,7 @@ public class InfraManager extends APIClient {
             RJSInfra rjsInfra;
             String version;
             try (var response = httpClient.newCall(request).execute()) {
-                if (!response.isSuccessful())
-                    throw new UnexpectedHttpResponse(response);
+                if (!response.isSuccessful()) throw new UnexpectedHttpResponse(response);
 
                 // Parse the response
                 logger.info("parsing the JSON of {}", request.url());
@@ -136,17 +128,13 @@ public class InfraManager extends APIClient {
                 rjsInfra = RJSInfra.adapter.fromJson(response.body().source());
             }
 
-            if (rjsInfra == null)
-                throw new JsonDataException("RJSInfra is null");
+            if (rjsInfra == null) throw new JsonDataException("RJSInfra is null");
 
             // Parse railjson into a proper infra
             logger.info("parsing the infra of {}", request.url());
             cacheEntry.transitionTo(InfraStatus.PARSING_INFRA);
             final var infra = SignalingInfraBuilder.fromRJSInfra(
-                    rjsInfra,
-                    Set.of(new BAL3(diagnosticRecorder)),
-                    diagnosticRecorder
-            );
+                    rjsInfra, Set.of(new BAL3(diagnosticRecorder)), diagnosticRecorder);
 
             // Attempt to ease memory pressure by making the RailJSON deserialized copy
             // orphan, and calling the garbage collector.
@@ -171,24 +159,14 @@ public class InfraManager extends APIClient {
             return cacheEntry.infra;
         } catch (IOException | UnexpectedHttpResponse | VirtualMachineError e) {
             cacheEntry.transitionTo(InfraStatus.TRANSIENT_ERROR, e);
-            throw OSRDError.newInfraLoadingError(
-                ErrorType.InfraSoftLoadingError, 
-                cacheEntry.lastStatus.name(), 
-                e
-            );
+            throw OSRDError.newInfraLoadingError(ErrorType.InfraSoftLoadingError, cacheEntry.lastStatus.name(), e);
         } catch (Throwable e) {
             cacheEntry.transitionTo(InfraStatus.ERROR, e);
-            throw OSRDError.newInfraLoadingError(
-                ErrorType.InfraHardLoadingError, 
-                cacheEntry.lastStatus.name(), 
-                e
-            );
+            throw OSRDError.newInfraLoadingError(ErrorType.InfraHardLoadingError, cacheEntry.lastStatus.name(), e);
         }
     }
 
-    /**
-     * Load an infra given an id. Cache infra for optimized future call
-     */
+    /** Load an infra given an id. Cache infra for optimized future call */
     @ExcludeFromGeneratedCodeCoverage
     @SuppressFBWarnings({"REC_CATCH_EXCEPTION"})
     public FullInfra load(String infraId, String expectedVersion, DiagnosticRecorder diagnosticRecorder)
@@ -207,18 +185,12 @@ public class InfraManager extends APIClient {
                     return downloadInfra(cacheEntry, infraId, diagnosticRecorder);
 
                 // otherwise, wait for the infra to reach a stable state
-                if (cacheEntry.status == InfraStatus.CACHED)
-                    return cacheEntry.infra;
+                if (cacheEntry.status == InfraStatus.CACHED) return cacheEntry.infra;
                 if (cacheEntry.status == InfraStatus.ERROR)
                     throw OSRDError.newInfraLoadingError(
-                        ErrorType.InfraLoadingCacheException, 
-                        cacheEntry.lastStatus.name(), 
-                        cacheEntry.lastError
-                    );
+                            ErrorType.InfraLoadingCacheException, cacheEntry.lastStatus.name(), cacheEntry.lastError);
                 throw OSRDError.newInfraLoadingError(
-                    ErrorType.InfraInvalidStatusWhileWaitingStable, 
-                    cacheEntry.status.name()
-                );
+                        ErrorType.InfraInvalidStatusWhileWaitingStable, cacheEntry.status.name());
             }
         } catch (Exception e) {
             logger.error("exception while loading infra", e);
@@ -234,9 +206,7 @@ public class InfraManager extends APIClient {
         return infraCache.remove(infraId);
     }
 
-    /**
-     * Get an infra given an id
-     */
+    /** Get an infra given an id */
     public FullInfra getInfra(String infraId, String expectedVersion, DiagnosticRecorder diagnosticRecorder)
             throws OSRDError, InterruptedException {
         try {
@@ -245,16 +215,14 @@ public class InfraManager extends APIClient {
                 if (loadIfMissing) {
                     // download the infra for tests
                     return load(infraId, expectedVersion, diagnosticRecorder);
-                } else
-                    throw new OSRDError(ErrorType.InfraNotLoadedException);
+                } else throw new OSRDError(ErrorType.InfraNotLoadedException);
             }
             var obsoleteVersion = expectedVersion != null && !expectedVersion.equals(cacheEntry.version);
             if (obsoleteVersion) {
                 deleteFromInfraCache(infraId);
                 throw new OSRDError(ErrorType.InfraInvalidVersionException);
             }
-            if (cacheEntry.status == InfraStatus.CACHED)
-                return cacheEntry.infra;
+            if (cacheEntry.status == InfraStatus.CACHED) return cacheEntry.infra;
             throw OSRDError.newInfraLoadingError(ErrorType.InfraLoadingInvalidStatusException, cacheEntry.status);
         } catch (RuntimeException e) {
             throw e;

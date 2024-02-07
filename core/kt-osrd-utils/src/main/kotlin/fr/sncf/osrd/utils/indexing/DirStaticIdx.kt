@@ -13,22 +13,32 @@ import fr.sncf.osrd.utils.Direction
 
 @JvmInline
 value class DirStaticIdx<T>(val data: UInt) : NumIdx {
-    public constructor(id: StaticIdx<T>, direction: Direction) : this(
-        (id.index shl 1) or when (direction) {
-            Direction.INCREASING -> 0u
-            Direction.DECREASING -> 1u
-        }
+    public constructor(
+        id: StaticIdx<T>,
+        direction: Direction
+    ) : this(
+        (id.index shl 1) or
+            when (direction) {
+                Direction.INCREASING -> 0u
+                Direction.DECREASING -> 1u
+            }
     )
 
-    val value: StaticIdx<T> get() = StaticIdx(data shr 1)
-    val direction: Direction
-        get() = when ((data and 1u) != 0u) {
-            false -> Direction.INCREASING
-            true -> Direction.DECREASING
-        }
+    val value: StaticIdx<T>
+        get() = StaticIdx(data shr 1)
 
-    val opposite: DirStaticIdx<T> get() = DirStaticIdx(data xor 1u)
-    override val index get() = data
+    val direction: Direction
+        get() =
+            when ((data and 1u) != 0u) {
+                false -> Direction.INCREASING
+                true -> Direction.DECREASING
+            }
+
+    val opposite: DirStaticIdx<T>
+        get() = DirStaticIdx(data xor 1u)
+
+    override val index
+        get() = data
 
     override fun toString(): String {
         return String.format("(id=%s, dir=%s)", value.index, direction)

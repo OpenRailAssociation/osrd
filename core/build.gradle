@@ -3,12 +3,12 @@ plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.ksp) apply false
     id 'application'
-    id 'checkstyle'
     alias(libs.plugins.spotbugs)
     alias(libs.plugins.shadow)
     id 'jacoco'
     id 'jacoco-report-aggregation'
     alias(libs.plugins.versions)
+    alias(libs.plugins.spotless)
 }
 
 // region DEPENDENCIES
@@ -143,20 +143,19 @@ import com.github.spotbugs.snom.Confidence
 import com.github.spotbugs.snom.Effort
 
 allprojects {
-
-    apply plugin: 'checkstyle'
     apply plugin: 'com.github.spotbugs'
-    checkstyle {
-        toolVersion '9.2'
-        configFile rootProject.file('config/checkstyle/checkstyle.xml')
-        ignoreFailures false
-        maxWarnings 0
-        showViolations true
-    }
+    apply plugin: 'com.diffplug.spotless'
 
-    tasks.withType(Checkstyle).configureEach {
-        reports {
-            xml.required = true
+    spotless {
+        java {
+            targetExclude('**/generated/**/*.*')
+            // 4 space indentation style formatter
+            palantirJavaFormat()
+        }
+        kotlin {
+            targetExclude('**/generated/**/*.*')
+            // 4 space indentation style formatter
+            ktfmt().kotlinlangStyle()
         }
     }
 

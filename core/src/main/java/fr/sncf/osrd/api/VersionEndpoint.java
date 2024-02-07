@@ -3,13 +3,13 @@ package fr.sncf.osrd.api;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import com.squareup.moshi.Types;
+import java.util.HashMap;
+import java.util.Map;
 import org.takes.Request;
 import org.takes.Response;
 import org.takes.Take;
 import org.takes.rs.RsJson;
 import org.takes.rs.RsWithBody;
-import java.util.HashMap;
-import java.util.Map;
 
 public final class VersionEndpoint implements Take {
 

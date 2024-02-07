@@ -7,6 +7,7 @@ import java.util.Collection;
 @SuppressFBWarnings("UWF_UNWRITTEN_PUBLIC_OR_PROTECTED_FIELD")
 public class RJSElectrification {
     public String voltage;
+
     @Json(name = "track_ranges")
     public Collection<RJSApplicableDirectionsTrackRange> trackRanges; // the direction is ignored, deprecated
 

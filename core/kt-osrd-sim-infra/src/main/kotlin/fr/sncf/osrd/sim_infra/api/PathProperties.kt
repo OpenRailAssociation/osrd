@@ -17,13 +17,12 @@ data class IdxWithOffset<T, U>(
     val value: StaticIdx<T>,
     val offset: Offset<U>,
 )
+
 typealias IdxWithPathOffset<T> = IdxWithOffset<T, Path>
 
 data class TrackLocation(
-    @get:JvmName("getTrackId")
-    val trackId: TrackSectionId,
-    @get:JvmName("getOffset")
-    val offset: Offset<TrackSection>
+    @get:JvmName("getTrackId") val trackId: TrackSectionId,
+    @get:JvmName("getOffset") val offset: Offset<TrackSection>
 )
 
 sealed interface Path // Used for typing Length and Offset
@@ -31,22 +30,34 @@ sealed interface Path // Used for typing Length and Offset
 @Suppress("INAPPLICABLE_JVM_NAME")
 interface PathProperties {
     fun getSlopes(): DistanceRangeMap<Double>
+
     fun getOperationalPointParts(): List<IdxWithPathOffset<OperationalPointPart>>
+
     fun getGradients(): DistanceRangeMap<Double>
+
     fun getCurves(): DistanceRangeMap<Double>
+
     fun getGeo(): LineString
+
     fun getLoadingGauge(): DistanceRangeMap<LoadingGaugeConstraint>
+
     fun getElectrification(): DistanceRangeMap<String>
+
     fun getNeutralSections(): DistanceRangeMap<NeutralSection>
-    @JvmName("getSpeedLimits")
-    fun getSpeedLimits(trainTag: String?): DistanceRangeMap<Speed>
-    @JvmName("getLength")
-    fun getLength(): Length<Path>
+
+    @JvmName("getSpeedLimits") fun getSpeedLimits(trainTag: String?): DistanceRangeMap<Speed>
+
+    @JvmName("getLength") fun getLength(): Length<Path>
+
     @JvmName("getTrackLocationAtOffset")
     fun getTrackLocationAtOffset(pathOffset: Offset<Path>): TrackLocation
+
     @JvmName("getTrackLocationOffset")
     fun getTrackLocationOffset(location: TrackLocation): Offset<Path>?
-    fun <T> getRangeMapFromUndirected(getData: (chunkId: TrackChunkId) -> DistanceRangeMap<T>): DistanceRangeMap<T>
+
+    fun <T> getRangeMapFromUndirected(
+        getData: (chunkId: TrackChunkId) -> DistanceRangeMap<T>
+    ): DistanceRangeMap<T>
 }
 
 /** Build a Path from chunks and offsets, filtering the chunks outside the offsets */
@@ -71,12 +82,12 @@ fun makeTrackLocation(track: TrackSectionId, offset: Offset<TrackSection>): Trac
     return TrackLocation(track, offset)
 }
 
-/** For java interoperability purpose.
- * An optional inline return type can't be handled by java when it's generic. */
+/**
+ * For java interoperability purpose. An optional inline return type can't be handled by java when
+ * it's generic.
+ */
 @JvmName("getTrackLocationOffsetOrThrow")
-fun getTrackLocationOffsetOrThrow(
-    path: PathProperties,
-    location: TrackLocation
-): Offset<Path> {
-    return path.getTrackLocationOffset(location) ?: throw RuntimeException("Can't find location on path")
+fun getTrackLocationOffsetOrThrow(path: PathProperties, location: TrackLocation): Offset<Path> {
+    return path.getTrackLocationOffset(location)
+        ?: throw RuntimeException("Can't find location on path")
 }

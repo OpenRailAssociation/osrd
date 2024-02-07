@@ -1,7 +1,7 @@
 package fr.sncf.osrd.reporting.exceptions;
 
-import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.*;
+import com.squareup.moshi.JsonAdapter;
 import fr.sncf.osrd.reporting.ErrorContext;
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorder;
 import fr.sncf.osrd.reporting.warnings.Warning;
@@ -14,17 +14,16 @@ import java.util.stream.Collectors;
 /**
  * Base exception class for the OSRD project.
  *
- * <p>When an exception is caught, context can be added to it. A context stack will be included in the error report.
- * Example:
- * <pre>
- * {@code
+ * <p>When an exception is caught, context can be added to it. A context stack will be included in
+ * the error report. Example:
+ *
+ * <pre>{@code
  * try {
  *     train.thingThatMayThrow();
  * } catch (OSRDError e) {
  *     throw e.withStackTrace(new ErrorContext.Train(train.id));
  * }
- * }
- * </pre>
+ * }</pre>
  */
 public final class OSRDError extends RuntimeException {
 
@@ -54,7 +53,7 @@ public final class OSRDError extends RuntimeException {
      * Constructs a new OSRDError with the specified error type and underlying cause.
      *
      * @param errorType the error type
-     * @param e         the underlying cause of the error
+     * @param e the underlying cause of the error
      */
     public OSRDError(ErrorType errorType, Throwable e) {
         super(e);
@@ -119,7 +118,7 @@ public final class OSRDError extends RuntimeException {
     /**
      * Creates a new OSRDError for an infrastructure loading error.
      *
-     * @param errorType       the error type
+     * @param errorType the error type
      * @param sourceOperation the source operation
      * @return a new OSRDError instance
      */
@@ -132,9 +131,9 @@ public final class OSRDError extends RuntimeException {
     /**
      * Creates a new OSRDError for an infrastructure loading error with an underlying cause.
      *
-     * @param errorType       the error type
+     * @param errorType the error type
      * @param sourceOperation the source operation
-     * @param e               the underlying cause of the error
+     * @param e the underlying cause of the error
      * @return a new OSRDError instance
      */
     public static OSRDError newInfraLoadingError(ErrorType errorType, Object sourceOperation, Throwable e) {
@@ -144,18 +143,16 @@ public final class OSRDError extends RuntimeException {
     }
 
     /**
-     * Creates a new OSRDError for an invalid rolling stock error with expected and actual rolling stock versions.
+     * Creates a new OSRDError for an invalid rolling stock error with expected and actual rolling
+     * stock versions.
      *
-     * @param errorType                  the error type
+     * @param errorType the error type
      * @param expectedRollingStockVersion the expected rolling stock version
-     * @param actualRollingStockVersion   the actual rolling stock version
+     * @param actualRollingStockVersion the actual rolling stock version
      * @return a new OSRDError instance
      */
     public static OSRDError newInvalidRollingStockError(
-            ErrorType errorType,
-            String expectedRollingStockVersion,
-            String actualRollingStockVersion
-    ) {
+            ErrorType errorType, String expectedRollingStockVersion, String actualRollingStockVersion) {
         var error = new OSRDError(errorType);
         error.context.put("expected_rolling_stock_version", expectedRollingStockVersion);
         error.context.put("got_rolling_stock_version", actualRollingStockVersion);
@@ -165,14 +162,11 @@ public final class OSRDError extends RuntimeException {
     /**
      * Creates a new OSRDError for an invalid rolling stock error with a default mode.
      *
-     * @param errorType   the error type
+     * @param errorType the error type
      * @param defaultMode the default mode
      * @return a new OSRDError instance
      */
-    public static OSRDError newInvalidRollingStockError(
-            ErrorType errorType,
-            String defaultMode
-    ) {
+    public static OSRDError newInvalidRollingStockError(ErrorType errorType, String defaultMode) {
         var error = new OSRDError(errorType);
         error.context.put("default_mode", defaultMode);
         return error;
@@ -181,14 +175,11 @@ public final class OSRDError extends RuntimeException {
     /**
      * Creates a new OSRDError for an invalid rolling stock field error.
      *
-     * @param fieldKey          the field key
-     * @param fieldDescription  the field description
+     * @param fieldKey the field key
+     * @param fieldDescription the field description
      * @return a new OSRDError instance
      */
-    public static OSRDError newInvalidRollingStockFieldError(
-            String fieldKey,
-            String fieldDescription
-    ) {
+    public static OSRDError newInvalidRollingStockFieldError(String fieldKey, String fieldDescription) {
         var error = new OSRDError(ErrorType.InvalidRollingStockField);
         error.context.put("field_key", fieldKey);
         error.context.put("field_description", fieldDescription);
@@ -201,9 +192,7 @@ public final class OSRDError extends RuntimeException {
      * @param fieldKey the field key
      * @return a new OSRDError instance
      */
-    public static OSRDError newMissingRollingStockFieldError(
-            String fieldKey
-    ) {
+    public static OSRDError newMissingRollingStockFieldError(String fieldKey) {
         var error = new OSRDError(ErrorType.MissingRollingStockField);
         error.context.put("field_key", fieldKey);
         return error;
@@ -215,9 +204,7 @@ public final class OSRDError extends RuntimeException {
      * @param offset the track section offset associated with the error
      * @return a new OSRDError instance
      */
-    public static OSRDError newInvalidTrackRangeError(
-            double offset
-    ) {
+    public static OSRDError newInvalidTrackRangeError(double offset) {
         var error = new OSRDError(ErrorType.InvalidTrackRangeInvalidTrackSectionOffset);
         error.context.put("offset", offset);
         return error;
@@ -229,9 +216,7 @@ public final class OSRDError extends RuntimeException {
      * @param rollingStockID the rolling stock ID associated with the error
      * @return a new OSRDError instance
      */
-    public static OSRDError newUnknownRollingStockError(
-            String rollingStockID
-    ) {
+    public static OSRDError newUnknownRollingStockError(String rollingStockID) {
         var error = new OSRDError(ErrorType.UnknownRollingStock);
         error.context.put("rolling_stock_id", rollingStockID);
         return error;
@@ -243,9 +228,7 @@ public final class OSRDError extends RuntimeException {
      * @param trackSectionID the track section ID associated with the error
      * @return a new OSRDError instance
      */
-    public static OSRDError newUnknownTrackSectionError(
-            String trackSectionID
-    ) {
+    public static OSRDError newUnknownTrackSectionError(String trackSectionID) {
         var error = new OSRDError(ErrorType.UnknownTrackSection);
         error.context.put("track_section_id", trackSectionID);
         return error;
@@ -257,9 +240,7 @@ public final class OSRDError extends RuntimeException {
      * @param aspect the aspect value associated with the error
      * @return a new OSRDError instance
      */
-    public static OSRDError newAspectError(
-            String aspect
-    ) {
+    public static OSRDError newAspectError(String aspect) {
         var error = new OSRDError(ErrorType.UnknownAspect);
         error.context.put("aspect", aspect);
         return error;
@@ -268,16 +249,12 @@ public final class OSRDError extends RuntimeException {
     /**
      * Creates a new OSRDError for an envelope error with an index, stop position, and path length.
      *
-     * @param index        the envelope stop index associated with the error
+     * @param index the envelope stop index associated with the error
      * @param stopPosition the stop position associated with the error
-     * @param pathLength   the path length associated with the error
+     * @param pathLength the path length associated with the error
      * @return a new OSRDError instance
      */
-    public static OSRDError newEnvelopeError(
-            int index,
-            double stopPosition,
-            double pathLength
-    ) {
+    public static OSRDError newEnvelopeError(int index, double stopPosition, double pathLength) {
         var error = new OSRDError(ErrorType.EnvelopeStopIndexOutOfBounds);
         error.context.put("index", index);
         error.context.put("stop_position", stopPosition);
@@ -291,25 +268,21 @@ public final class OSRDError extends RuntimeException {
      * @param sigSystem the signaling system value associated with the error
      * @return a new OSRDError instance
      */
-    public static OSRDError newSignalingError(
-            String sigSystem
-    ) {
+    public static OSRDError newSignalingError(String sigSystem) {
         var error = new OSRDError(ErrorType.SignalingError);
         error.context.put("sigSystem", sigSystem);
         return error;
     }
 
     /**
-     * Creates a new OSRDError for a signaling schema invalid field error with a field value and detail.
+     * Creates a new OSRDError for a signaling schema invalid field error with a field value and
+     * detail.
      *
      * @param fieldValue the field value associated with the error
-     * @param detail     the error detail
+     * @param detail the error detail
      * @return a new OSRDError instance
      */
-    public static OSRDError newSigSchemaInvalidFieldError(
-            Object fieldValue,
-            String detail
-    ) {
+    public static OSRDError newSigSchemaInvalidFieldError(Object fieldValue, String detail) {
         var error = new OSRDError(ErrorType.SigSchemaInvalidFieldError);
         error.context.put("field_value", fieldValue);
         error.context.put("detail", detail);
@@ -317,16 +290,14 @@ public final class OSRDError extends RuntimeException {
     }
 
     /**
-     * Creates a new OSRDError for a signaling schema invalid field error with a field name and detail.
+     * Creates a new OSRDError for a signaling schema invalid field error with a field name and
+     * detail.
      *
      * @param fieldName the field name associated with the error
-     * @param detail    the error detail
+     * @param detail the error detail
      * @return a new OSRDError instance
      */
-    public static OSRDError newSigSchemaInvalidFieldError(
-            String fieldName,
-            String detail
-    ) {
+    public static OSRDError newSigSchemaInvalidFieldError(String fieldName, String detail) {
         var error = new OSRDError(ErrorType.SigSchemaInvalidFieldError);
         error.context.put("field_name", fieldName);
         error.context.put("detail", detail);
@@ -339,9 +310,7 @@ public final class OSRDError extends RuntimeException {
      * @param fieldName the field name associated with the error
      * @return a new OSRDError instance
      */
-    public static OSRDError newSigSchemaUnknownFieldError(
-            String fieldName
-    ) {
+    public static OSRDError newSigSchemaUnknownFieldError(String fieldName) {
         var error = new OSRDError(ErrorType.SigSchemaUnknownFieldError);
         error.context.put("field_name", fieldName);
         return error;
@@ -353,25 +322,21 @@ public final class OSRDError extends RuntimeException {
      * @param when the time description associated with the error
      * @return a new OSRDError instance
      */
-    public static OSRDError newUnexpectedReservationStatusError(
-            String when
-    ) {
+    public static OSRDError newUnexpectedReservationStatusError(String when) {
         var error = new OSRDError(ErrorType.UnexpectedReservationStatus);
         error.context.put("when", when);
         return error;
     }
 
     /**
-     * Creates a new OSRDError for an unexpected reservation status error with expected and received values.
+     * Creates a new OSRDError for an unexpected reservation status error with expected and received
+     * values.
      *
      * @param expected the expected value associated with the error
-     * @param got      the received value associated with the error
+     * @param got the received value associated with the error
      * @return a new OSRDError instance
      */
-    public static OSRDError newUnexpectedReservationStatusError(
-            Object expected,
-            Object got
-    ) {
+    public static OSRDError newUnexpectedReservationStatusError(Object expected, Object got) {
         var error = new OSRDError(ErrorType.UnexpectedReservationStatus);
         error.context.put("expected", expected);
         error.context.put("got", got);
@@ -379,16 +344,14 @@ public final class OSRDError extends RuntimeException {
     }
 
     /**
-     * Creates a new OSRDError for an incompatible zone requirements error with current and new requirements.
+     * Creates a new OSRDError for an incompatible zone requirements error with current and new
+     * requirements.
      *
      * @param currentRequirements the current requirements associated with the error
-     * @param newRequirements     the new requirements associated with the error
+     * @param newRequirements the new requirements associated with the error
      * @return a new OSRDError instance
      */
-    public static OSRDError newIncompatibleZoneRequirementsError(
-            Object currentRequirements,
-            Object newRequirements
-    ) {
+    public static OSRDError newIncompatibleZoneRequirementsError(Object currentRequirements, Object newRequirements) {
         var error = new OSRDError(ErrorType.IncompatibleZoneRequirements);
         error.context.put("current_requirement", currentRequirements);
         error.context.put("new_requirement", newRequirements);
@@ -398,8 +361,8 @@ public final class OSRDError extends RuntimeException {
     /**
      * Creates a new OSRDError for an electrical profile set loading error.
      *
-     * @param errorType       the error type
-     * @param e               the underlying cause of the error
+     * @param errorType the error type
+     * @param e the underlying cause of the error
      * @return a new OSRDError instance
      */
     public static OSRDError newEPSetLoadingError(ErrorType errorType, Throwable e, String epSetId) {
@@ -410,6 +373,7 @@ public final class OSRDError extends RuntimeException {
 
     /**
      * Creates an OSRDError in case two routes have the same name.
+     *
      * @param route route name.
      * @return corresponding OSRDError.
      */
@@ -421,6 +385,7 @@ public final class OSRDError extends RuntimeException {
 
     /**
      * Creates a new OSRDError for invalid speed limit value
+     *
      * @param speedLimit speed limit
      * @return a new OSRDError instance
      */
@@ -440,9 +405,7 @@ public final class OSRDError extends RuntimeException {
         return message;
     }
 
-    /**
-     * The JSON adapter for serializing and deserializing OSRDError instances.
-     */
+    /** The JSON adapter for serializing and deserializing OSRDError instances. */
     public static final JsonAdapter<OSRDError> adapter;
 
     static {
@@ -451,8 +414,8 @@ public final class OSRDError extends RuntimeException {
     }
 
     /**
-     * `OSRDError`s are to be Serialized, but never deserialized, as it’s only used in api responses.
-     * The deserialization should not be used.
+     * `OSRDError`s are to be Serialized, but never deserialized, as it’s only used in api
+     * responses. The deserialization should not be used.
      */
     @Serial
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {

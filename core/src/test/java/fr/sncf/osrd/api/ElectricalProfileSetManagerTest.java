@@ -4,21 +4,19 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
-import fr.sncf.osrd.utils.Helpers;
 import fr.sncf.osrd.external_generated_inputs.ElectricalProfileMapping;
 import fr.sncf.osrd.reporting.exceptions.ErrorType;
 import fr.sncf.osrd.reporting.exceptions.OSRDError;
-import org.junit.jupiter.api.Test;
+import fr.sncf.osrd.utils.Helpers;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
-
+import org.junit.jupiter.api.Test;
 
 public class ElectricalProfileSetManagerTest extends ApiTest {
     @Test
     public void testGetProfileMap() {
-        var profileMap =
-                electricalProfileSetManager.getProfileMap("small_infra/external_generated_inputs.json");
+        var profileMap = electricalProfileSetManager.getProfileMap("small_infra/external_generated_inputs.json");
 
         verifyProfileMap(profileMap);
     }
@@ -57,9 +55,7 @@ public class ElectricalProfileSetManagerTest extends ApiTest {
         verifyProfileMap(profileMap);
     }
 
-    /**
-     * Check that a profile map is coherent
-     */
+    /** Check that a profile map is coherent */
     public static void verifyProfileMap(ElectricalProfileMapping profileMap) {
         assert profileMap != null;
         assertNotEquals(0, profileMap.getMapping().size());

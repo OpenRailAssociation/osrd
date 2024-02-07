@@ -6,9 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class RJSTrainPath {
-    /**
-     * Full train path as a list of routes
-     */
+    /** Full train path as a list of routes */
     @Json(name = "route_paths")
     public final List<RJSRoutePath> routePath;
 

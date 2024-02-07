@@ -1,9 +1,9 @@
 package fr.sncf.osrd.fast_collections.generator
 
-import fr.sncf.osrd.fast_collections.generator.collections.*
 import com.google.devtools.ksp.processing.CodeGenerator
 import com.google.devtools.ksp.processing.KSPLogger
 import com.google.devtools.ksp.symbol.KSFile
+import fr.sncf.osrd.fast_collections.generator.collections.*
 import java.io.OutputStream
 
 class GeneratorContext(
@@ -22,7 +22,8 @@ class GeneratorType(
     val parameters: List<TypeParameter>,
 ) {
     // "org.test.package.UIntWrapper"
-    val qualifiedName get() = "${packagePath}.${simpleName}"
+    val qualifiedName
+        get() = "${packagePath}.${simpleName}"
 
     // "<T>" if parameters, "" otherwise
     val paramsUse: String
@@ -38,10 +39,12 @@ class GeneratorType(
 
     init {
         if (parameters.isNotEmpty()) {
-            paramsUse = parameters.joinToString(prefix = "<", separator = ", ", postfix = ">") { it.name }
+            paramsUse =
+                parameters.joinToString(prefix = "<", separator = ", ", postfix = ">") { it.name }
             // TODO: support type bounds
             paramsDecl = paramsUse
-            paramsStar = parameters.joinToString(prefix = "<", separator = ", ", postfix = ">") { "*" }
+            paramsStar =
+                parameters.joinToString(prefix = "<", separator = ", ", postfix = ">") { "*" }
         } else {
             paramsUse = ""
             paramsDecl = ""
@@ -91,11 +94,9 @@ class CollectionItemType(
     val storageType: StorageType?
 )
 
-
 fun OutputStream.appendText(str: String) {
     this.write(str.toByteArray())
 }
-
 
 interface CollectionGenerator {
     // name of the collection generator
@@ -110,10 +111,11 @@ interface CollectionGenerator {
     )
 }
 
-val GENERATORS = mapOf<String, CollectionGenerator>(
-    Pair("Interfaces", InterfacesGenerator),
-    Pair("Array", ArrayGenerator),
-    Pair("ArrayList", ArrayListGenerator),
-    Pair("ArraySortedSet", ArraySortedSetGenerator),
-    Pair("RingBuffer", RingBufferGenerator),
-)
+val GENERATORS =
+    mapOf<String, CollectionGenerator>(
+        Pair("Interfaces", InterfacesGenerator),
+        Pair("Array", ArrayGenerator),
+        Pair("ArrayList", ArrayListGenerator),
+        Pair("ArraySortedSet", ArraySortedSetGenerator),
+        Pair("RingBuffer", RingBufferGenerator),
+    )

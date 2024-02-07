@@ -5,14 +5,14 @@ import static org.mockito.Mockito.mock;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.utils.Helpers;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.util.regex.Pattern;
 import okhttp3.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.junit.jupiter.MockitoExtension;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.util.regex.Pattern;
 
 @ExtendWith(MockitoExtension.class)
 public class ApiTest {
@@ -26,12 +26,15 @@ public class ApiTest {
 
         ArgumentCaptor<Request> argument = ArgumentCaptor.forClass(Request.class);
         lenient().when(okHttpClient.newCall(argument.capture())).thenReturn(remoteCall);
-        lenient().when(remoteCall.execute()).thenAnswer(
-                invocation -> new Response.Builder().protocol(Protocol.HTTP_1_1).request(argument.getValue())
-                        .code(200).message("OK")
-                        .addHeader("x-infra-version", "1")
-                        .body(ResponseBody.create(parseMockRequest(argument.getValue(), regex),
-                                MediaType.get("application/json; charset=utf-8"))).build());
+        lenient().when(remoteCall.execute()).thenAnswer(invocation -> new Response.Builder()
+                .protocol(Protocol.HTTP_1_1)
+                .request(argument.getValue())
+                .code(200)
+                .message("OK")
+                .addHeader("x-infra-version", "1")
+                .body(ResponseBody.create(
+                        parseMockRequest(argument.getValue(), regex), MediaType.get("application/json; charset=utf-8")))
+                .build());
 
         return okHttpClient;
     }
@@ -53,14 +56,11 @@ public class ApiTest {
         throw new RuntimeException("Could not parse the given url");
     }
 
-    /**
-     * Setup infra handler mock
-     */
+    /** Setup infra handler mock */
     @BeforeEach
     public void setUp() throws IOException {
         infraManager = new InfraManager("http://test.com/", "", mockHttpClient(".*/infra/(.*)/railjson.*"), true);
-        electricalProfileSetManager = new ElectricalProfileSetManager("http://test.com/", "",
-                mockHttpClient(".*/electrical_profile_set/(.*)/"));
-
+        electricalProfileSetManager = new ElectricalProfileSetManager(
+                "http://test.com/", "", mockHttpClient(".*/electrical_profile_set/(.*)/"));
     }
 }

@@ -5,11 +5,13 @@ import fr.sncf.osrd.utils.indexing.mutableDirStaticIdxArrayListOf
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Length
 
-
 /** Build a path from track ids */
 fun pathFromTracks(
-    infra: LocationInfra, trackIds: List<String>,
-    dir: Direction, start: Distance, end: Distance
+    infra: LocationInfra,
+    trackIds: List<String>,
+    dir: Direction,
+    start: Distance,
+    end: Distance
 ): PathProperties {
     val chunkList = mutableDirStaticIdxArrayListOf<TrackChunk>()
     trackIds

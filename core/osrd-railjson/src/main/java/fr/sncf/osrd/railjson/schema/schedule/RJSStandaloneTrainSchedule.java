@@ -4,7 +4,6 @@ import com.squareup.moshi.Json;
 import fr.sncf.osrd.railjson.schema.common.Identified;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSComfortType;
 
-
 public class RJSStandaloneTrainSchedule implements Identified {
     /** The identifier of this train */
     public String id;
@@ -17,7 +16,9 @@ public class RJSStandaloneTrainSchedule implements Identified {
     @Json(name = "initial_speed")
     public double initialSpeed;
 
-    /** The time at which the train should start, in seconds. Ignored in the endpoint, used in cli */
+    /**
+     * The time at which the train should start, in seconds. Ignored in the endpoint, used in cli
+     */
     @Json(name = "departure_time")
     public double departureTime;
 
@@ -53,8 +54,7 @@ public class RJSStandaloneTrainSchedule implements Identified {
             String tag,
             RJSComfortType comfort,
             RJSTrainScheduleOptions options,
-            RJSPowerRestrictionRange[] powerRestrictionRanges
-    ) {
+            RJSPowerRestrictionRange[] powerRestrictionRanges) {
         this.id = id;
         this.rollingStock = rollingStock;
         this.initialSpeed = initialSpeed;
@@ -72,8 +72,7 @@ public class RJSStandaloneTrainSchedule implements Identified {
             double initialSpeed,
             RJSAllowance[] allowances,
             RJSTrainStop[] stops,
-            String tag
-    ) {
+            String tag) {
         this(id, rollingStock, initialSpeed, allowances, stops, tag, RJSComfortType.STANDARD, null, null);
     }
 
@@ -82,8 +81,7 @@ public class RJSStandaloneTrainSchedule implements Identified {
             String rollingStock,
             double initialSpeed,
             RJSSchedulePoint[] scheduledPoints,
-            RJSTrainStop[] stops
-    ) {
+            RJSTrainStop[] stops) {
         this.id = id;
         this.rollingStock = rollingStock;
         this.initialSpeed = initialSpeed;

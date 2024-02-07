@@ -7,15 +7,20 @@ enum class Endpoint {
     /** The point at the end of the oriented segment */
     END;
 
-    val opposite: Endpoint get() = when (this) {
-        START -> END
-        END -> START
-    }
+    val opposite: Endpoint
+        get() =
+            when (this) {
+                START -> END
+                END -> START
+            }
 
-    val directionAway: Direction get() = when (this) {
-        START -> Direction.INCREASING
-        END -> Direction.DECREASING
-    }
+    val directionAway: Direction
+        get() =
+            when (this) {
+                START -> Direction.INCREASING
+                END -> Direction.DECREASING
+            }
 
-    val directionFrom: Direction get() = directionAway.opposite
+    val directionFrom: Direction
+        get() = directionAway.opposite
 }

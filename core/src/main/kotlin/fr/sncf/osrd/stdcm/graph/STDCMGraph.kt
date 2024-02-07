@@ -12,12 +12,13 @@ import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.RollingStock.Comfort
 
-/** This is the class that encodes the STDCM problem as a graph on which we can run our pathfinding implementation.
- * Most of the logic has been delegated to helper classes in this module:
- * AllowanceManager handles adding delays using allowances,
- * BacktrackingManager handles backtracking to fix speed discontinuities,
- * DelayManager handles how much delay we can and need to add to avoid conflicts,
- * STDCMEdgeBuilder handles the creation of new STDCMEdge instances  */
+/**
+ * This is the class that encodes the STDCM problem as a graph on which we can run our pathfinding
+ * implementation. Most of the logic has been delegated to helper classes in this module:
+ * AllowanceManager handles adding delays using allowances, BacktrackingManager handles backtracking
+ * to fix speed discontinuities, DelayManager handles how much delay we can and need to add to avoid
+ * conflicts, STDCMEdgeBuilder handles the creation of new STDCMEdge instances
+ */
 @SuppressFBWarnings("FE_FLOATING_POINT_EQUALITY")
 class STDCMGraph(
     val rawInfra: RawSignalingInfra,
@@ -40,23 +41,26 @@ class STDCMGraph(
     val tag: String?
     val standardAllowance: AllowanceValue?
 
-    /** Constructor  */
+    /** Constructor */
     init {
         this.steps = steps
-        delayManager = DelayManager(minScheduleTimeStart, maxRunTime, blockAvailability, this, timeStep)
+        delayManager =
+            DelayManager(minScheduleTimeStart, maxRunTime, blockAvailability, this, timeStep)
         allowanceManager = AllowanceManager(this)
         backtrackingManager = BacktrackingManager(this)
         this.tag = tag
         this.standardAllowance = standardAllowance
-        assert(standardAllowance !is FixedTime) { "Standard allowance cannot be a flat time for STDCM trains" }
+        assert(standardAllowance !is FixedTime) {
+            "Standard allowance cannot be a flat time for STDCM trains"
+        }
     }
 
-    /** Returns the speed ratio we need to apply to the envelope to follow the given standard allowance.  */
-    fun getStandardAllowanceSpeedRatio(
-        envelope: Envelope
-    ): Double {
-        if (standardAllowance == null)
-            return 1.0
+    /**
+     * Returns the speed ratio we need to apply to the envelope to follow the given standard
+     * allowance.
+     */
+    fun getStandardAllowanceSpeedRatio(envelope: Envelope): Double {
+        if (standardAllowance == null) return 1.0
         val runTime = envelope.totalTime
         val distance = envelope.totalDistance
         val allowanceRatio = standardAllowance.getAllowanceRatio(runTime, distance)
@@ -74,10 +78,7 @@ class STDCMGraph(
             val res = ArrayList<STDCMEdge>()
             val neighbors = blockInfra.getBlocksStartingAtDetector(node.detector)
             for (neighbor in neighbors) {
-                res.addAll(
-                    STDCMEdgeBuilder.fromNode(this, node, neighbor)
-                        .makeAllEdges()
-                )
+                res.addAll(STDCMEdgeBuilder.fromNode(this, node, neighbor).makeAllEdges())
             }
             res
         }

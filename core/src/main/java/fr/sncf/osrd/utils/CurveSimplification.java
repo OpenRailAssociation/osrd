@@ -19,19 +19,18 @@ public class CurveSimplification {
     }
 
     /**
-     * Simplifies a curve, given a distance function and a maximum error.
-     * This function is an iterative implementation of the Ramer-Douglas-Peucker algorithm.
+     * Simplifies a curve, given a distance function and a maximum error. This function is an
+     * iterative implementation of the Ramer-Douglas-Peucker algorithm.
+     *
      * @param <PointT> the types of the curve's points
      * @param points the list of points
      * @param epsilon the max error
-     * @param distFunction the distance function, which is given two reference points and a deviating one
+     * @param distFunction the distance function, which is given two reference points and a
+     *     deviating one
      * @return a simplified curve
      */
     public static <PointT> ArrayList<PointT> rdp(
-            ArrayList<PointT> points,
-            double epsilon,
-            RDPDist<PointT> distFunction
-    ) {
+            ArrayList<PointT> points, double epsilon, RDPDist<PointT> distFunction) {
         var deleted = new boolean[points.size()];
 
         var stack = new ArrayDeque<PendingRange>();
@@ -43,11 +42,9 @@ public class CurveSimplification {
             var index = cur.start;
 
             for (int i = index + 1; i < cur.end; i++) {
-                if (deleted[i])
-                    continue;
+                if (deleted[i]) continue;
                 var d = distFunction.dist(points.get(i), points.get(cur.start), points.get(cur.end));
-                if (d <= maxDist)
-                    continue;
+                if (d <= maxDist) continue;
                 index = i;
                 maxDist = d;
             }
@@ -56,15 +53,12 @@ public class CurveSimplification {
                 stack.add(new PendingRange(cur.start, index));
                 stack.add(new PendingRange(index, cur.end));
             } else {
-                for (int i = cur.start + 1; i < cur.end; i++)
-                    deleted[i] = true;
+                for (int i = cur.start + 1; i < cur.end; i++) deleted[i] = true;
             }
         }
 
         var res = new ArrayList<PointT>();
-        for (int i = 0; i < points.size(); i++)
-            if (!deleted[i])
-                res.add(points.get(i));
+        for (int i = 0; i < points.size(); i++) if (!deleted[i]) res.add(points.get(i));
         return res;
     }
 }

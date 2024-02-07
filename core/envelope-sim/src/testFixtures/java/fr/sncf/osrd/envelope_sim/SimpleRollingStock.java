@@ -1,11 +1,11 @@
 package fr.sncf.osrd.envelope_sim;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import com.google.common.collect.ImmutableRangeMap;
 import com.google.common.collect.Range;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.ArrayList;
 
-@SuppressFBWarnings({ "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD" })
+@SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
 public class SimpleRollingStock implements PhysicsRollingStock {
 
     public final double A; // in newtons
@@ -13,42 +13,30 @@ public class SimpleRollingStock implements PhysicsRollingStock {
     public final double C; // in newtons / (m/s^2)
 
     /**
-     * the kind of deceleration input of the train. It can be:
-     * a constant value
-     * the maximum possible deceleration value
+     * the kind of deceleration input of the train. It can be: a constant value the maximum possible
+     * deceleration value
      */
     public final GammaType gammaType;
 
-    /**
-     * the deceleration of the train, in m/s^2
-     */
+    /** the deceleration of the train, in m/s^2 */
     public final double gamma;
 
-    /**
-     * the length of the train, in meters.
-     */
+    /** the length of the train, in meters. */
     public final double length;
 
-    /**
-     * The max speed of the train, in meters per seconds.
-     */
+    /** The max speed of the train, in meters per seconds. */
     public final double maxSpeed;
 
-    /**
-     * The mass of the train, in kilograms.
-     */
+    /** The mass of the train, in kilograms. */
     public final double mass;
 
-    /**
-     * Defined as mass * inertiaCoefficient
-     */
+    /** Defined as mass * inertiaCoefficient */
     public final double inertia;
 
     /**
-     * Inertia coefficient.
-     * The mass alone isn't sufficient to compute accelerations, as the wheels and internals
-     * also need force to get spinning. This coefficient can be used to account for the difference.
-     * It's without unit.
+     * Inertia coefficient. The mass alone isn't sufficient to compute accelerations, as the wheels
+     * and internals also need force to get spinning. This coefficient can be used to account for
+     * the difference. It's without unit.
      */
     public final double inertiaCoefficient;
 
@@ -63,8 +51,7 @@ public class SimpleRollingStock implements PhysicsRollingStock {
             double c,
             double maxSpeed,
             double gamma,
-            GammaType gammaType
-    ) {
+            GammaType gammaType) {
         this.length = length;
         this.mass = mass;
         this.inertiaCoefficient = inertiaCoefficient;
@@ -127,8 +114,8 @@ public class SimpleRollingStock implements PhysicsRollingStock {
     }
 
     /**
-     * The tractive effort curve shape. It can be either linear (effort proportional to speed), or hyperbolic (effort
-     * inversely proportional to speed -> constant power)
+     * The tractive effort curve shape. It can be either linear (effort proportional to speed), or
+     * hyperbolic (effort inversely proportional to speed -> constant power)
      */
     public enum CurveShape {
         LINEAR,
@@ -159,35 +146,29 @@ public class SimpleRollingStock implements PhysicsRollingStock {
     }
 
     /** Creates a range of effort points, from a given max speed and curve shape */
-    public static ImmutableRangeMap<Double, TractiveEffortPoint[]> createEffortCurveMap(double maxSpeed,
-                                                                                        CurveShape curveShape) {
+    public static ImmutableRangeMap<Double, TractiveEffortPoint[]> createEffortCurveMap(
+            double maxSpeed, CurveShape curveShape) {
         var builder = ImmutableRangeMap.<Double, TractiveEffortPoint[]>builder();
         builder.put(Range.all(), createEffortSpeedCurve(maxSpeed, curveShape));
         return builder.build();
     }
 
     /**
-     * ========================================================
-     * Constant rolling stocks and curves
+     * ======================================================== Constant rolling stocks and curves
      * ===========================================================
      */
-
-    public static SimpleRollingStock build(
-            double length,
-            double gamma,
-            GammaType gammaType
-    ) {
+    public static SimpleRollingStock build(double length, double gamma, GammaType gammaType) {
         double trainMass = 850000; // in kilos
         return new SimpleRollingStock(
                 length,
-                trainMass, 1.05,
+                trainMass,
+                1.05,
                 (0.65 * trainMass) / 100,
                 ((0.008 * trainMass) / 100) * 3.6,
                 (((0.00012 * trainMass) / 100) * 3.6) * 3.6,
                 MAX_SPEED,
                 gamma,
-                gammaType
-        );
+                gammaType);
     }
 
     public static final ImmutableRangeMap<Double, TractiveEffortPoint[]> LINEAR_EFFORT_CURVE_MAP =

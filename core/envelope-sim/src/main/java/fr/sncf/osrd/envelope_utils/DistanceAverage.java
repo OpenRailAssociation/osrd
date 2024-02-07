@@ -1,7 +1,6 @@
 package fr.sncf.osrd.envelope_utils;
 
-/** This class can be used to compute average values over distances,
- * adding segments iteratively. */
+/** This class can be used to compute average values over distances, adding segments iteratively. */
 public class DistanceAverage {
     private double totalWeightedValue = 0;
     private double totalLength = 0;

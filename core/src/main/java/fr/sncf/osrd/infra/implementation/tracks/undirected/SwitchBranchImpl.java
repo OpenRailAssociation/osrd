@@ -5,8 +5,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableRangeMap;
 import com.google.common.collect.RangeMap;
 import fr.sncf.osrd.infra.api.Direction;
-import fr.sncf.osrd.infra.api.tracks.undirected.NeutralSection;
 import fr.sncf.osrd.infra.api.tracks.undirected.Detector;
+import fr.sncf.osrd.infra.api.tracks.undirected.NeutralSection;
 import fr.sncf.osrd.infra.api.tracks.undirected.SpeedLimits;
 import fr.sncf.osrd.infra.api.tracks.undirected.Switch;
 import fr.sncf.osrd.infra.api.tracks.undirected.SwitchBranch;
@@ -25,8 +25,7 @@ public class SwitchBranchImpl implements SwitchBranch {
     /** static mapping from direction to empty map. Avoids unnecessary object instantiations */
     private static final EnumMap<Direction, RangeMap<Double, Double>> emptyMap = new EnumMap<>(Map.of(
             Direction.FORWARD, ImmutableRangeMap.of(),
-            Direction.BACKWARD, ImmutableRangeMap.of()
-    ));
+            Direction.BACKWARD, ImmutableRangeMap.of()));
 
     /** Constructor */
     public SwitchBranchImpl(String srcPort, String dstPort) {
@@ -63,8 +62,7 @@ public class SwitchBranchImpl implements SwitchBranch {
     public EnumMap<Direction, RangeMap<Double, SpeedLimits>> getSpeedSections() {
         return new EnumMap<>(Map.of(
                 Direction.FORWARD, ImmutableRangeMap.of(),
-                Direction.BACKWARD, ImmutableRangeMap.of()
-        ));
+                Direction.BACKWARD, ImmutableRangeMap.of()));
     }
 
     @Override

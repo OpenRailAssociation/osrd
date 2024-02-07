@@ -1,6 +1,5 @@
 package fr.sncf.osrd.standalone_sim.result;
 
-import com.squareup.moshi.Json;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 @SuppressFBWarnings("URF_UNREAD_FIELD")

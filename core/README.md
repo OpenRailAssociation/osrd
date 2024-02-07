@@ -82,3 +82,9 @@ To launch tests only, run:
 ```sh
 ./gradlew test
 ```
+
+To auto-format all source code, run:
+
+```sh
+./gradlew spotlessApply
+```

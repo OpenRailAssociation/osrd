@@ -6,10 +6,7 @@ public class RJSSlope extends RJSRange {
     // Gradient (m)
     public double gradient;
 
-    public RJSSlope(double begin,
-            double end,
-            double gradient
-    ) {
+    public RJSSlope(double begin, double end, double gradient) {
         super(begin, end);
         this.gradient = gradient;
     }

@@ -8,5 +8,6 @@ import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection;
 public final class RJSTrackLocation {
     @Json(name = "track_section")
     public ID<RJSTrackSection> trackSection;
+
     public double offset;
 }

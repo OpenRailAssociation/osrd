@@ -15,15 +15,15 @@ import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType;
 import java.util.Map;
 import java.util.Set;
 
-
 /**
- * The immutable characteristics of a specific train.
- * There must be a RollingStock instance per train on the network.
+ * The immutable characteristics of a specific train. There must be a RollingStock instance per
+ * train on the network.
  */
-@SuppressFBWarnings({ "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD" })
+@SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
 public final class RollingStock implements PhysicsRollingStock {
-    private static final TractiveEffortPoint[] COASTING_CURVE =
-            { new TractiveEffortPoint(0, 0), new TractiveEffortPoint(1, 0) };
+    private static final TractiveEffortPoint[] COASTING_CURVE = {
+        new TractiveEffortPoint(0, 0), new TractiveEffortPoint(1, 0)
+    };
 
     public final String id;
 
@@ -32,58 +32,42 @@ public final class RollingStock implements PhysicsRollingStock {
     public final double C; // in newtons / (m/s^2)
 
     /**
-     * the kind of deceleration input of the train. It can be:
-     * a constant value
-     * the maximum possible deceleration value
+     * the kind of deceleration input of the train. It can be: a constant value the maximum possible
+     * deceleration value
      */
     public final GammaType gammaType;
 
-    /**
-     * the deceleration of the train, in m/s^2
-     */
+    /** the deceleration of the train, in m/s^2 */
     public final double gamma;
 
-    /**
-     * the length of the train, in meters.
-     */
+    /** the length of the train, in meters. */
     public final double length;
 
-    /**
-     * The max speed of the train, in meters per seconds.
-     */
+    /** The max speed of the train, in meters per seconds. */
     public final double maxSpeed;
 
     /**
-     * The time the train takes to start up, in seconds.
-     * During this time, the train's maximum acceleration is limited.
+     * The time the train takes to start up, in seconds. During this time, the train's maximum
+     * acceleration is limited.
      */
     public final double startUpTime;
 
-    /**
-     * The acceleration to apply during the startup state.
-     */
+    /** The acceleration to apply during the startup state. */
     public final double startUpAcceleration;
 
-    /**
-     * The maximum acceleration when the train is in its regular operating mode.
-     */
+    /** The maximum acceleration when the train is in its regular operating mode. */
     public final double comfortAcceleration;
 
-    /**
-     * The mass of the train, in kilograms.
-     */
+    /** The mass of the train, in kilograms. */
     public final double mass;
 
-    /**
-     * Defined as mass * inertiaCoefficient
-     */
+    /** Defined as mass * inertiaCoefficient */
     public final double inertia;
 
     /**
-     * Inertia coefficient.
-     * The mass alone isn't sufficient to compute accelerations, as the wheels and internals
-     * also need force to get spinning. This coefficient can be used to account for the difference.
-     * It's without unit.
+     * Inertia coefficient. The mass alone isn't sufficient to compute accelerations, as the wheels
+     * and internals also need force to get spinning. This coefficient can be used to account for
+     * the difference. It's without unit.
      */
     public final double inertiaCoefficient;
 
@@ -124,8 +108,8 @@ public final class RollingStock implements PhysicsRollingStock {
     }
 
     /**
-     * Gets the rolling resistance at a given speed, which is a force that always goes
-     * opposite to the train's movement direction
+     * Gets the rolling resistance at a given speed, which is a force that always goes opposite to
+     * the train's movement direction
      */
     @Override
     public double getRollingResistance(double speed) {
@@ -151,17 +135,15 @@ public final class RollingStock implements PhysicsRollingStock {
         return gammaType;
     }
 
-    public record ModeEffortCurves(boolean isElectric, TractiveEffortPoint[] defaultCurve,
-                                   ConditionalEffortCurve[] curves) {
-    }
+    public record ModeEffortCurves(
+            boolean isElectric, TractiveEffortPoint[] defaultCurve, ConditionalEffortCurve[] curves) {}
 
-    public record ConditionalEffortCurve(EffortCurveConditions cond, TractiveEffortPoint[] curve) {
-    }
+    public record ConditionalEffortCurve(EffortCurveConditions cond, TractiveEffortPoint[] curve) {}
 
     public record EffortCurveConditions(Comfort comfort, String electricalProfile, String powerRestriction) {
         /**
-         * Returns true if the conditions are met
-         * If comfort condition is null then it matches any comfort, same for electrical profile
+         * Returns true if the conditions are met If comfort condition is null then it matches any
+         * comfort, same for electrical profile
          */
         public boolean match(EffortCurveConditions other) {
             return (this.comfort == null || other.comfort == this.comfort)
@@ -170,8 +152,7 @@ public final class RollingStock implements PhysicsRollingStock {
         }
     }
 
-    public record InfraConditions(String mode, String electricalProfile, String powerRestriction) {
-    }
+    public record InfraConditions(String mode, String electricalProfile, String powerRestriction) {}
 
     public enum Comfort {
         STANDARD,
@@ -179,22 +160,19 @@ public final class RollingStock implements PhysicsRollingStock {
         AC,
     }
 
-    protected record CurveAndCondition(TractiveEffortPoint[] curve, InfraConditions cond) {
-    }
+    protected record CurveAndCondition(TractiveEffortPoint[] curve, InfraConditions cond) {}
 
-    public record CurvesAndConditions(RangeMap<Double, TractiveEffortPoint[]> curves,
-                                      RangeMap<Double, InfraConditions> conditions) {
-    }
+    public record CurvesAndConditions(
+            RangeMap<Double, TractiveEffortPoint[]> curves, RangeMap<Double, InfraConditions> conditions) {}
 
-    /**
-     * Returns Gamma
-     */
+    /** Returns Gamma */
     public double getDeceleration() {
         return -gamma;
     }
 
     /**
-     * Returns whether the train should coast while crossing this neutral section or use its (thermal) traction
+     * Returns whether the train should coast while crossing this neutral section or use its
+     * (thermal) traction
      */
     private boolean shouldCoast(Neutral n, Comfort comfort) {
         var overlappedCurve = findTractiveEffortCurve(comfort, n.overlappedElectrification);
@@ -202,7 +180,8 @@ public final class RollingStock implements PhysicsRollingStock {
     }
 
     /**
-     * Returns the tractive effort curve that matches best, along with the electrification conditions that matched
+     * Returns the tractive effort curve that matches best, along with the electrification
+     * conditions that matched
      */
     protected CurveAndCondition findTractiveEffortCurve(Comfort comfort, Electrification electrification) {
         if (electrification instanceof Neutral n) {
@@ -213,8 +192,8 @@ public final class RollingStock implements PhysicsRollingStock {
             }
         }
         if (electrification instanceof NonElectrified) {
-            return new CurveAndCondition(modes.get(defaultMode).defaultCurve,
-                    new InfraConditions(defaultMode, null, null));
+            return new CurveAndCondition(
+                    modes.get(defaultMode).defaultCurve, new InfraConditions(defaultMode, null, null));
         }
 
         var electrified = (Electrified) electrification;
@@ -225,23 +204,24 @@ public final class RollingStock implements PhysicsRollingStock {
         // Get first matching curve
         for (var condCurve : mode.curves) {
             if (condCurve.cond.match(chosenCond)) {
-                return new CurveAndCondition(condCurve.curve,
-                        new InfraConditions(usedMode, condCurve.cond.electricalProfile,
-                                condCurve.cond.powerRestriction));
+                return new CurveAndCondition(
+                        condCurve.curve,
+                        new InfraConditions(
+                                usedMode, condCurve.cond.electricalProfile, condCurve.cond.powerRestriction));
             }
         }
         return new CurveAndCondition(mode.defaultCurve, new InfraConditions(usedMode, null, null));
     }
 
     /**
-     * Returns the tractive effort curves corresponding to the electrical conditions map
-     * The neutral sections are not extended in this function.
+     * Returns the tractive effort curves corresponding to the electrical conditions map The neutral
+     * sections are not extended in this function.
      *
      * @param electrificationMap The map of electrification conditions to use
-     * @param comfort            The comfort level to get the curves for
+     * @param comfort The comfort level to get the curves for
      */
-    public CurvesAndConditions mapTractiveEffortCurves(RangeMap<Double, Electrification> electrificationMap,
-                                                       Comfort comfort) {
+    public CurvesAndConditions mapTractiveEffortCurves(
+            RangeMap<Double, Electrification> electrificationMap, Comfort comfort) {
         TreeRangeMap<Double, InfraConditions> conditionsUsed = TreeRangeMap.create();
         TreeRangeMap<Double, TractiveEffortPoint[]> res = TreeRangeMap.create();
 
@@ -252,7 +232,6 @@ public final class RollingStock implements PhysicsRollingStock {
         }
         return new CurvesAndConditions(ImmutableRangeMap.copyOf(res), ImmutableRangeMap.copyOf(conditionsUsed));
     }
-
 
     protected Range<Double> computeDeadSectionRange(Range<Double> neutralRange, Neutral n, Envelope maxEffortEnvelope) {
         var endRange = neutralRange.upperEndpoint();
@@ -265,14 +244,17 @@ public final class RollingStock implements PhysicsRollingStock {
     }
 
     /**
-     * Returns the tractive effort curves corresponding to the electrical conditions map with neutral sections
+     * Returns the tractive effort curves corresponding to the electrical conditions map with
+     * neutral sections
      *
      * @param electrificationMap The map of electrification conditions to use
-     * @param comfort            The comfort level to get the curves for
-     * @param maxSpeedEnvelope   The maxSpeedEnvelope used to extend the neutral sections
+     * @param comfort The comfort level to get the curves for
+     * @param maxSpeedEnvelope The maxSpeedEnvelope used to extend the neutral sections
      */
     public RangeMap<Double, TractiveEffortPoint[]> addNeutralSystemTimes(
-            RangeMap<Double, Electrification> electrificationMap, Comfort comfort, Envelope maxSpeedEnvelope,
+            RangeMap<Double, Electrification> electrificationMap,
+            Comfort comfort,
+            Envelope maxSpeedEnvelope,
             RangeMap<Double, TractiveEffortPoint[]> curvesUsed) {
 
         TreeRangeMap<Double, TractiveEffortPoint[]> newCurves = TreeRangeMap.create();
@@ -283,7 +265,8 @@ public final class RollingStock implements PhysicsRollingStock {
                 if (!shouldCoast(n, comfort)) {
                     continue;
                 }
-                // estimate the distance during which the train will be coasting, due to having respected the
+                // estimate the distance during which the train will be coasting, due to having
+                // respected the
                 // neutral section
                 var deadSectionRange = computeDeadSectionRange(elecCondEntry.getKey(), n, maxSpeedEnvelope);
                 var curveAndCondition = findTractiveEffortCurve(comfort, n);
@@ -299,23 +282,17 @@ public final class RollingStock implements PhysicsRollingStock {
         return modes.keySet();
     }
 
-    /**
-     * Return whether this rolling stock's default mode is thermal
-     */
+    /** Return whether this rolling stock's default mode is thermal */
     public boolean isThermal() {
         return !modes.get(defaultMode).isElectric();
     }
 
-    /**
-     * Return whether this rolling stock's has an electric mode
-     */
+    /** Return whether this rolling stock's has an electric mode */
     public final boolean isElectric() {
         return modes.values().stream().anyMatch(ModeEffortCurves::isElectric);
     }
 
-    /**
-     * Creates a new rolling stock (a physical train inventory item).
-     */
+    /** Creates a new rolling stock (a physical train inventory item). */
     public RollingStock(
             String id,
             double length,
@@ -334,16 +311,32 @@ public final class RollingStock implements PhysicsRollingStock {
             Map<String, ModeEffortCurves> modes,
             String defaultMode,
             String basePowerclass,
-            String[] supportedSignalingSystems
-    ) {
-        this(id, length, mass, inertiaCoefficient, a, b, c, maxSpeed, startUpTime, startUpAcceleration,
-                comfortAcceleration, gamma, gammaType, loadingGaugeType, modes, defaultMode, basePowerclass, Map.of(),
-                0., 0., supportedSignalingSystems);
+            String[] supportedSignalingSystems) {
+        this(
+                id,
+                length,
+                mass,
+                inertiaCoefficient,
+                a,
+                b,
+                c,
+                maxSpeed,
+                startUpTime,
+                startUpAcceleration,
+                comfortAcceleration,
+                gamma,
+                gammaType,
+                loadingGaugeType,
+                modes,
+                defaultMode,
+                basePowerclass,
+                Map.of(),
+                0.,
+                0.,
+                supportedSignalingSystems);
     }
 
-    /**
-     * Creates a new rolling stock (a physical train inventory item).
-     */
+    /** Creates a new rolling stock (a physical train inventory item). */
     public RollingStock(
             String id,
             double length,
@@ -365,8 +358,7 @@ public final class RollingStock implements PhysicsRollingStock {
             Map<String, String> powerRestrictions,
             Double electricalPowerStartUpTime,
             Double raisePantographTime,
-            String[] supportedSignalingSystems
-    ) {
+            String[] supportedSignalingSystems) {
         this.id = id;
         this.A = a;
         this.B = b;
@@ -390,7 +382,7 @@ public final class RollingStock implements PhysicsRollingStock {
         this.raisePantographTime = raisePantographTime;
         this.supportedSignalingSystems = supportedSignalingSystems;
 
-        assert !isElectric() || (this.electricalPowerStartUpTime != null && this.raisePantographTime != null) :
-                "Electrical power start up time and Raise pantograph time must be defined for an electric train";
+        assert !isElectric() || (this.electricalPowerStartUpTime != null && this.raisePantographTime != null)
+                : "Electrical power start up time and Raise pantograph time must be defined for an electric train";
     }
 }

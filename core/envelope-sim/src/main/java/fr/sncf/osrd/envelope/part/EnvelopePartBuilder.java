@@ -79,8 +79,7 @@ public class EnvelopePartBuilder implements EnvelopePartConsumer {
 
     @Override
     public void setAttrs(Iterable<EnvelopeAttr> newAttrs) {
-        for (var attr : newAttrs)
-            attrs.put(attr.getAttrType(), attr);
+        for (var attr : newAttrs) attrs.put(attr.getAttrType(), attr);
     }
 
     private static void reverse(double[] arr) {
@@ -104,7 +103,7 @@ public class EnvelopePartBuilder implements EnvelopePartConsumer {
         return new EnvelopePart(attrs, positions, speeds, times);
     }
 
-    /** Return the number of steps currently in the envelope part builder*/
+    /** Return the number of steps currently in the envelope part builder */
     public int stepCount() {
         return times.size();
     }

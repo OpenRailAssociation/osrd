@@ -9,8 +9,10 @@ public final class LineString {
 
     /** A list of N coordinates (X component, longitude) */
     private final double[] bufferX;
+
     /** A list of N coordinates (Y component, latitude) */
     private final double[] bufferY;
+
     /** A cumulative list of N-1 distances between coordinates */
     private final double[] cumulativeLengths;
 
@@ -23,9 +25,7 @@ public final class LineString {
         this.cumulativeLengths = cumulativeLengths;
     }
 
-    /**
-     * Compute the distance between two points
-     */
+    /** Compute the distance between two points */
     static double computeDistance(double x1, double y1, double x2, double y2) {
         var dx2 = (x1 - x2) * (x1 - x2);
         var dy2 = (y1 - y2) * (y1 - y2);
@@ -33,7 +33,9 @@ public final class LineString {
     }
 
     /**
-     * Create a LineString from the coordinates buffers (no need to give lengths and cumulativeLength)
+     * Create a LineString from the coordinates buffers (no need to give lengths and
+     * cumulativeLength)
+     *
      * @param bufferX a double array with x coordinates
      * @param bufferY a double array with y coordinates
      * @return a new LineString
@@ -48,11 +50,9 @@ public final class LineString {
         return new LineString(bufferX, bufferY, cumulativeLengths);
     }
 
-    /**
-     * Create a LineString from two points
-     */
+    /** Create a LineString from two points */
     public static LineString make(Point start, Point end) {
-        return make(new double[]{start.x(), end.x()}, new double[]{start.y(), end.y()});
+        return make(new double[] {start.x(), end.x()}, new double[] {start.y(), end.y()});
     }
 
     public double getLength() {
@@ -61,6 +61,7 @@ public final class LineString {
 
     /**
      * Create a list of points from the buffers of a LineString
+     *
      * @return a list of points
      */
     public ArrayList<Point> getPoints() {
@@ -73,6 +74,7 @@ public final class LineString {
 
     /**
      * Reverse a LineString
+     *
      * @return a new reverse LineString
      */
     public LineString reverse() {
@@ -99,9 +101,9 @@ public final class LineString {
     }
 
     /**
-     * Concatenate many LineStrings and Compute the new cumulativeLength
-     * remove useless values (if 2 values are the same)
-     * and compute the new length to fill the gap between two LineStrings
+     * Concatenate many LineStrings and Compute the new cumulativeLength remove useless values (if 2
+     * values are the same) and compute the new length to fill the gap between two LineStrings
+     *
      * @param lineStringList is a list that contains LineStrings
      * @return a new LineString
      */
@@ -129,18 +131,19 @@ public final class LineString {
             newBufferX.add(lineString.bufferX);
             newBufferY.add(lineString.bufferY);
             double lastCumulativeLength = 0;
-            // used to add the length of the previous Linestring to make the lengths of the next one cumulatives
+            // used to add the length of the previous Linestring to make the lengths of the next one
+            // cumulatives
             if (!newCumulativeLengths.isEmpty())
                 lastCumulativeLength = newCumulativeLengths.get(newCumulativeLengths.size() - 1);
             for (var cumLength : lineString.cumulativeLengths)
                 newCumulativeLengths.add(cumLength + lastCumulativeLength);
-
         }
         return new LineString(newBufferX.toArray(), newBufferY.toArray(), newCumulativeLengths.toArray());
     }
 
     /**
      * Interpolate a LineString
+     *
      * @param distance a distance between 0 and cumulativeLength
      * @return the point within the geometry at the given distance
      */
@@ -149,17 +152,15 @@ public final class LineString {
         assert distance <= cumulativeLengths[cumulativeLengths.length - 1];
 
         // if we're at the first point
-        if (distance == 0.)
-            return new Point(bufferX[0], bufferY[0]);
+        if (distance == 0.) return new Point(bufferX[0], bufferY[0]);
 
         var intervalIndex = Arrays.binarySearch(cumulativeLengths, distance);
 
         // if we're exactly on any other point
-        if (intervalIndex >= 0)
-            return new Point(bufferX[intervalIndex + 1], bufferY[intervalIndex + 1]);
+        if (intervalIndex >= 0) return new Point(bufferX[intervalIndex + 1], bufferY[intervalIndex + 1]);
 
         // if we're in-between points
-        intervalIndex = - intervalIndex - 1;
+        intervalIndex = -intervalIndex - 1;
 
         // A -- P ---- B
         double startToA = intervalIndex > 0 ? cumulativeLengths[intervalIndex - 1] : 0;
@@ -173,14 +174,11 @@ public final class LineString {
         var aY = bufferY[intervalIndex];
 
         // if ratio is undefined, A and B are the same point
-        if (Double.isNaN(ratio))
-            return new Point(aX, aY);
+        if (Double.isNaN(ratio)) return new Point(aX, aY);
 
         // clamp the linear interpolation ratio
-        if (ratio < 0.)
-            ratio = 0.;
-        if (ratio > 1.)
-            ratio = 1.;
+        if (ratio < 0.) ratio = 0.;
+        if (ratio > 1.) ratio = 1.;
 
         var bX = bufferX[intervalIndex + 1];
         var bY = bufferY[intervalIndex + 1];
@@ -189,6 +187,7 @@ public final class LineString {
 
     /**
      * Interpolate a LineString
+     *
      * @param distance normalize distance between 0 (origin) and 1 (endpoint)
      * @return the point within the geometry at the given distance
      */
@@ -199,19 +198,16 @@ public final class LineString {
     }
 
     /**
-     * Truncate a LineString from the provided begin and end offsets
-     * begin and end are distance on the LineString
-     * begin and end are between 0.0 and 1.0
+     * Truncate a LineString from the provided begin and end offsets begin and end are distance on
+     * the LineString begin and end are between 0.0 and 1.0
      */
     public LineString slice(double begin, double end) {
         assert begin >= 0 && begin <= 1;
         assert end >= 0 && end <= 1;
 
-        if (begin > end)
-            return slice(end, begin).reverse();
+        if (begin > end) return slice(end, begin).reverse();
 
-        if (Double.compare(begin, 0) == 0 && Double.compare(end, 1) == 0)
-            return this;
+        if (Double.compare(begin, 0) == 0 && Double.compare(end, 1) == 0) return this;
 
         var newBufferX = new DoubleArrayList();
         var newBufferY = new DoubleArrayList();
@@ -220,25 +216,19 @@ public final class LineString {
         newBufferX.add(firstPoint.x());
         newBufferY.add(firstPoint.y());
 
-        var intervalBegin = Arrays.binarySearch(
-                cumulativeLengths,
-                begin * cumulativeLengths[cumulativeLengths.length - 1]
-        );
+        var intervalBegin =
+                Arrays.binarySearch(cumulativeLengths, begin * cumulativeLengths[cumulativeLengths.length - 1]);
 
-        // binarySearch returns a negative position if it doesn't find the element, else it returns a positive index
-        // interval + 1 gives us the index of the first element we wanted to add in our slicedLinestring
+        // binarySearch returns a negative position if it doesn't find the element, else it returns
+        // a positive index
+        // interval + 1 gives us the index of the first element we wanted to add in our
+        // slicedLinestring
         // But we already add the firstPoint above, so we go for the second element
-        if (intervalBegin >= 0)
-            intervalBegin += 2;
-        else
-            intervalBegin = - intervalBegin;
+        if (intervalBegin >= 0) intervalBegin += 2;
+        else intervalBegin = -intervalBegin;
 
-        var intervalEnd = Arrays.binarySearch(
-                cumulativeLengths,
-                end * cumulativeLengths[cumulativeLengths.length - 1]
-        );
-        if (intervalEnd < 0)
-            intervalEnd = - intervalEnd - 1;
+        var intervalEnd = Arrays.binarySearch(cumulativeLengths, end * cumulativeLengths[cumulativeLengths.length - 1]);
+        if (intervalEnd < 0) intervalEnd = -intervalEnd - 1;
 
         // add intermediate points
         for (int i = intervalBegin; i <= intervalEnd; i++) {

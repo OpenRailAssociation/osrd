@@ -17,25 +17,24 @@ data class LoadingGaugeConstraints(
     override fun apply(edge: BlockId): Collection<Pathfinding.Range<Block>> {
         val res = HashSet<Pathfinding.Range<Block>>()
         val path = makePathProps(blockInfra, infra, edge)
-        for (stock in rollingStocks)
-            res.addAll(getBlockedRanges(stock, path))
+        for (stock in rollingStocks) res.addAll(getBlockedRanges(stock, path))
         return res
     }
 
-    /**
-     * Returns the sections of the given block that can't be used by the given rolling stock
-     */
-    private fun getBlockedRanges(stock: RollingStock, path: PathProperties): Collection<Pathfinding.Range<Block>> {
-        return path.getLoadingGauge().asList().stream()
+    /** Returns the sections of the given block that can't be used by the given rolling stock */
+    private fun getBlockedRanges(
+        stock: RollingStock,
+        path: PathProperties
+    ): Collection<Pathfinding.Range<Block>> {
+        return path
+            .getLoadingGauge()
+            .asList()
+            .stream()
             .filter { (_, _, value): DistanceRangeMap.RangeMapEntry<LoadingGaugeConstraint> ->
-                !value.isCompatibleWith(
-                    LoadingGaugeTypeId(stock.loadingGaugeType.ordinal.toUInt())
-                )
+                !value.isCompatibleWith(LoadingGaugeTypeId(stock.loadingGaugeType.ordinal.toUInt()))
             }
             .map { (lower, upper): DistanceRangeMap.RangeMapEntry<LoadingGaugeConstraint> ->
-                Pathfinding.Range(
-                    Offset<Block>(lower), Offset<Block>(upper)
-                )
+                Pathfinding.Range(Offset<Block>(lower), Offset<Block>(upper))
             }
             .collect(Collectors.toSet())
     }

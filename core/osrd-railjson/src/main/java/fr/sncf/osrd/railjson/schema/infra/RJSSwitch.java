@@ -21,17 +21,13 @@ public class RJSSwitch implements Identified {
 
     /**
      * Create a new serialized switch
+     *
      * @param id the switch ID
      * @param switchType the type of the switch
      * @param ports the track sections connected to the ports
      * @param groupChangeDelay the delay when changing the position in seconds
      */
-    public RJSSwitch(
-            String id,
-            String switchType,
-            Map<String, RJSTrackEndpoint> ports,
-            double groupChangeDelay
-    ) {
+    public RJSSwitch(String id, String switchType, Map<String, RJSTrackEndpoint> ports, double groupChangeDelay) {
         this.id = id;
         this.switchType = switchType;
         this.ports = ports;

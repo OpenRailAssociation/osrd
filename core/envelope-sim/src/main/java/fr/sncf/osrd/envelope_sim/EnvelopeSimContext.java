@@ -13,8 +13,7 @@ public final class EnvelopeSimContext {
             PhysicsRollingStock rollingStock,
             PhysicsPath path,
             double timeStep,
-            RangeMap<Double, PhysicsRollingStock.TractiveEffortPoint[]> tractiveEffortCurveMap
-    ) {
+            RangeMap<Double, PhysicsRollingStock.TractiveEffortPoint[]> tractiveEffortCurveMap) {
         this.rollingStock = rollingStock;
         this.path = path;
         this.timeStep = timeStep;

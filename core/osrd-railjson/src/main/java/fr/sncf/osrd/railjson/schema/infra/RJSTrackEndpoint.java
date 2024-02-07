@@ -1,6 +1,5 @@
 package fr.sncf.osrd.railjson.schema.infra;
 
-import fr.sncf.osrd.railjson.schema.common.RJSWaypointRef;
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeEndpoint;
 import java.util.Objects;
 
@@ -21,19 +20,14 @@ public final class RJSTrackEndpoint {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null)
-            return false;
-        if (obj.getClass() != RJSTrackEndpoint.class)
-            return false;
+        if (obj == null) return false;
+        if (obj.getClass() != RJSTrackEndpoint.class) return false;
         var o = (RJSTrackEndpoint) obj;
         return track.equals(o.track) && endpoint.equals(o.endpoint);
     }
 
     @Override
     public String toString() {
-        return String.format(
-                "RJSTrackEndpoint { section=%s, endpoint=%s }",
-                track, endpoint.toString()
-        );
+        return String.format("RJSTrackEndpoint { section=%s, endpoint=%s }", track, endpoint.toString());
     }
 }

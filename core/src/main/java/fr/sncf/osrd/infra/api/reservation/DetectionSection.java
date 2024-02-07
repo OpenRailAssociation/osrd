@@ -8,7 +8,10 @@ public interface DetectionSection {
     /** Returns all the switches contained in the track section */
     ImmutableSet<Switch> getSwitches();
 
-    /** Returns all the detectors bordering the section. The direction points toward the inside of the section */
+    /**
+     * Returns all the detectors bordering the section. The direction points toward the inside of
+     * the section
+     */
     ImmutableSet<DiDetector> getDetectors();
 
     /** Returns all the routes crossing over this section */

@@ -17,15 +17,13 @@ public enum Direction {
 
     /** Converts an EdgeDirection into a Direction (START_TO_STOP -> FORWARD) */
     public static Direction fromEdgeDir(EdgeDirection direction) {
-        if (direction == EdgeDirection.START_TO_STOP)
-            return FORWARD;
+        if (direction == EdgeDirection.START_TO_STOP) return FORWARD;
         return BACKWARD;
     }
 
     /** Return the first met endpoint along the edge in the given direction */
     public static EdgeEndpoint startEndpoint(Direction dir) {
-        if (dir == FORWARD)
-            return EdgeEndpoint.BEGIN;
+        if (dir == FORWARD) return EdgeEndpoint.BEGIN;
         return EdgeEndpoint.END;
     }
 
@@ -36,16 +34,14 @@ public enum Direction {
 
     /** Returns the opposite direction */
     public Direction opposite() {
-        if (this == FORWARD)
-            return BACKWARD;
+        if (this == FORWARD) return BACKWARD;
         return FORWARD;
     }
 
     /** Converts a legacy Direction into the new class related to the kt infra */
     @NotNull
     public fr.sncf.osrd.utils.Direction toKtDirection() {
-        if (this == FORWARD)
-            return fr.sncf.osrd.utils.Direction.INCREASING;
+        if (this == FORWARD) return fr.sncf.osrd.utils.Direction.INCREASING;
         return fr.sncf.osrd.utils.Direction.DECREASING;
     }
 }

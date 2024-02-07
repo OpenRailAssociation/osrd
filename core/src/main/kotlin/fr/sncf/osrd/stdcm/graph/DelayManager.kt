@@ -14,18 +14,23 @@ import fr.sncf.osrd.utils.units.Distance.Companion.fromMeters
 import fr.sncf.osrd.utils.units.Offset
 import java.util.*
 
-/** This class contains all the methods used to handle delays
- * (how much we can add, how much we need to add, and such)
+/**
+ * This class contains all the methods used to handle delays (how much we can add, how much we need
+ * to add, and such)
  */
-class DelayManager internal constructor(
+class DelayManager
+internal constructor(
     private val minScheduleTimeStart: Double,
     private val maxRunTime: Double,
     private val blockAvailability: BlockAvailabilityInterface,
     private val graph: STDCMGraph,
-    private val internalMargin: Double // Margin added to every occupancy, to account for binary search tolerance
+    private val internalMargin:
+        Double // Margin added to every occupancy, to account for binary search tolerance
 ) {
-    /** Returns one value per "opening" (interval between two unavailable times).
-     * Always returns the shortest delay to add to enter this opening.  */
+    /**
+     * Returns one value per "opening" (interval between two unavailable times). Always returns the
+     * shortest delay to add to enter this opening.
+     */
     fun minimumDelaysPerOpening(
         blockId: BlockId,
         startTime: Double,
@@ -37,30 +42,31 @@ class DelayManager internal constructor(
         val endOffset = startOffset + fromMeters(envelope.endPos)
         var time = startTime
         while (java.lang.Double.isFinite(time)) {
-            val availability = getScaledAvailability(
-                blockId,
-                startOffset,
-                endOffset,
-                envelope,
-                time,
-                stopDurationAtEnd
-            )
-            time += when (availability) {
-                is BlockAvailabilityInterface.Available -> {
-                    if (availability.maximumDelay >= internalMargin)
-                        res.add(time - startTime)
-                    availability.maximumDelay + internalMargin
+            val availability =
+                getScaledAvailability(
+                    blockId,
+                    startOffset,
+                    endOffset,
+                    envelope,
+                    time,
+                    stopDurationAtEnd
+                )
+            time +=
+                when (availability) {
+                    is BlockAvailabilityInterface.Available -> {
+                        if (availability.maximumDelay >= internalMargin) res.add(time - startTime)
+                        availability.maximumDelay + internalMargin
+                    }
+                    is BlockAvailabilityInterface.Unavailable -> {
+                        availability.duration + internalMargin * 2
+                    }
+                    else -> throw OSRDError(ErrorType.InvalidSTDCMDelayError)
                 }
-                is BlockAvailabilityInterface.Unavailable -> {
-                    availability.duration + internalMargin * 2
-                }
-                else -> throw OSRDError(ErrorType.InvalidSTDCMDelayError)
-            }
         }
         return res
     }
 
-    /** Returns the start time of the next occupancy for the block  */
+    /** Returns the start time of the next occupancy for the block */
     fun findNextOccupancy(
         blockId: BlockId,
         time: Double,
@@ -69,19 +75,22 @@ class DelayManager internal constructor(
         stopDurationAtEnd: Double?
     ): Double {
         val endOffset = startOffset + fromMeters(envelope.endPos)
-        val availability = getScaledAvailability(
-            blockId,
-            startOffset,
-            endOffset,
-            envelope,
-            time,
-            stopDurationAtEnd
-        )
+        val availability =
+            getScaledAvailability(
+                blockId,
+                startOffset,
+                endOffset,
+                envelope,
+                time,
+                stopDurationAtEnd
+            )
         assert(availability.javaClass == BlockAvailabilityInterface.Available::class.java)
         return (availability as BlockAvailabilityInterface.Available).timeOfNextConflict
     }
 
-    /** Returns true if the total run time at the start of the edge is above the specified threshold  */
+    /**
+     * Returns true if the total run time at the start of the edge is above the specified threshold
+     */
     fun isRunTimeTooLong(edge: STDCMEdge): Boolean {
         val totalRunTime = edge.timeStart - edge.totalDepartureTimeShift - minScheduleTimeStart
         // We could use the A* heuristic here, but it would break STDCM on any infra where the
@@ -90,10 +99,12 @@ class DelayManager internal constructor(
         return totalRunTime > maxRunTime
     }
 
-    /** Returns by how much we can shift this envelope (in time) before causing a conflict.
+    /**
+     * Returns by how much we can shift this envelope (in time) before causing a conflict.
      *
-     * e.g. if the train takes 42s to go through the block, enters the block at t=10s,
-     * and we need to leave the block at t=60s, this will return 8s.  */
+     * e.g. if the train takes 42s to go through the block, enters the block at t=10s, and we need
+     * to leave the block at t=60s, this will return 8s.
+     */
     fun findMaximumAddedDelay(
         blockId: BlockId,
         startTime: Double,
@@ -102,14 +113,23 @@ class DelayManager internal constructor(
         stopDurationAtEnd: Double?
     ): Double {
         val endOffset = startOffset + fromMeters(envelope.endPos)
-        val availability = getScaledAvailability(
-            blockId, startOffset, endOffset, envelope, startTime, stopDurationAtEnd
-        )
+        val availability =
+            getScaledAvailability(
+                blockId,
+                startOffset,
+                endOffset,
+                envelope,
+                startTime,
+                stopDurationAtEnd
+            )
         assert(availability is BlockAvailabilityInterface.Available)
         return (availability as BlockAvailabilityInterface.Available).maximumDelay - internalMargin
     }
 
-    /** Calls `blockAvailability.getAvailability`, on an envelope scaled to account for the standard allowance.  */
+    /**
+     * Calls `blockAvailability.getAvailability`, on an envelope scaled to account for the standard
+     * allowance.
+     */
     private fun getScaledAvailability(
         blockId: BlockId,
         startOffset: Offset<Block>,
@@ -120,14 +140,15 @@ class DelayManager internal constructor(
     ): Availability {
         val speedRatio = graph.getStandardAllowanceSpeedRatio(envelope)
         val scaledEnvelope =
-            if (envelope.endPos == 0.0)
-                envelope
+            if (envelope.endPos == 0.0) envelope
+            else LinearAllowance.scaleEnvelope(envelope, speedRatio)
+        val envelopeWithStop =
+            if (stopDurationAtEnd == null) scaledEnvelope
             else
-                LinearAllowance.scaleEnvelope(envelope, speedRatio)
-        val envelopeWithStop = if (stopDurationAtEnd == null)
-            scaledEnvelope
-        else
-            EnvelopeStopWrapper(scaledEnvelope, listOf(TrainStop(envelope.endPos, stopDurationAtEnd)))
+                EnvelopeStopWrapper(
+                    scaledEnvelope,
+                    listOf(TrainStop(envelope.endPos, stopDurationAtEnd))
+                )
         return blockAvailability.getAvailability(
             listOf(blockId),
             startOffset.distance,

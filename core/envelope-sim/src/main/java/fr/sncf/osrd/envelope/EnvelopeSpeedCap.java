@@ -8,11 +8,7 @@ import java.util.HashSet;
 
 public class EnvelopeSpeedCap {
     /** Adds a global speed limit to an envelope */
-    public static Envelope from(
-            Envelope base,
-            Collection<EnvelopeAttr> attrs,
-            double speedLimit
-    ) {
+    public static Envelope from(Envelope base, Collection<EnvelopeAttr> attrs, double speedLimit) {
         var cursor = new EnvelopeCursor(base, false);
         var builder = OverlayEnvelopeBuilder.forward(base);
         var envelopeAttrs = new HashSet<>(attrs);
@@ -27,10 +23,8 @@ public class EnvelopeSpeedCap {
             var hasNotReachedEnd = cursor.findSpeed(speedLimit, CmpOperator.STRICTLY_LOWER);
             assert hasNotReachedEnd != cursor.hasReachedEnd();
             double endPosition;
-            if (hasNotReachedEnd)
-                endPosition = cursor.getPosition();
-            else
-                endPosition = cursor.getEnvelopeEndPos();
+            if (hasNotReachedEnd) endPosition = cursor.getPosition();
+            else endPosition = cursor.getEnvelopeEndPos();
 
             var plateauLength = Math.abs(endPosition - startPos);
             var plateauDuration = plateauLength / speedLimit;

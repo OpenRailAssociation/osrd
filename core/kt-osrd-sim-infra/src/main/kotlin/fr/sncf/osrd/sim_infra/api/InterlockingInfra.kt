@@ -9,25 +9,32 @@ import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.OffsetList
 
-
 /* /!\ All these sealed interfaces are not meant to be implemented:
-* these are used to implement type-safe numerical identifiers /!\
-*/
+ * these are used to implement type-safe numerical identifiers /!\
+ */
 
 /** A track vacancy detection section. These rely on detectors to operate. */
 sealed interface Zone
+
 typealias ZoneId = StaticIdx<Zone>
 
 interface LocationInfra : TrackNetworkInfra, TrackInfra, TrackProperties {
     val zones: StaticIdxSpace<Zone>
+
     fun getMovableElements(zone: ZoneId): StaticIdxSortedSet<TrackNode>
+
     fun getZoneBounds(zone: ZoneId): List<DirDetectorId>
+
     fun getZoneName(zone: ZoneId): String
+
     fun getZoneFromName(name: String): ZoneId
 
     val detectors: StaticIdxSpace<Detector>
+
     fun getNextZone(dirDet: DirDetectorId): ZoneId?
+
     fun getPreviousZone(dirDet: DirDetectorId): ZoneId?
+
     fun getDetectorName(det: DetectorId): String?
 }
 
@@ -35,14 +42,20 @@ fun LocationInfra.isBufferStop(detector: StaticIdx<Detector>): Boolean {
     return getNextZone(detector.increasing) == null || getNextZone(detector.decreasing) == null
 }
 
-
 interface ReservationInfra : LocationInfra {
     val zonePaths: StaticIdxSpace<ZonePath>
-    fun findZonePath(entry: DirDetectorId, exit: DirDetectorId,
-                     movableElements: StaticIdxList<TrackNode>,
-                     trackNodeConfigs: StaticIdxList<TrackNodeConfig>): ZonePathId?
+
+    fun findZonePath(
+        entry: DirDetectorId,
+        exit: DirDetectorId,
+        movableElements: StaticIdxList<TrackNode>,
+        trackNodeConfigs: StaticIdxList<TrackNodeConfig>
+    ): ZonePathId?
+
     fun getZonePathEntry(zonePath: ZonePathId): DirDetectorId
+
     fun getZonePathExit(zonePath: ZonePathId): DirDetectorId
+
     fun getZonePathLength(zonePath: ZonePathId): Length<ZonePath>
     /** The movable elements in the order encountered when traversing the zone from entry to exit */
     fun getZonePathMovableElements(zonePath: ZonePathId): StaticIdxList<TrackNode>
@@ -60,28 +73,38 @@ fun ReservationInfra.getZonePathZone(zonePath: ZonePathId): ZoneId {
 
 /** A zone path is a path inside a zone */
 sealed interface ZonePath
-typealias ZonePathId = StaticIdx<ZonePath>
 
+typealias ZonePathId = StaticIdx<ZonePath>
 
 /** A route is a path from detector to detector */
 sealed interface Route
-typealias RouteId = StaticIdx<Route>
 
+typealias RouteId = StaticIdx<Route>
 
 @Suppress("INAPPLICABLE_JVM_NAME")
 interface RoutingInfra : ReservationInfra {
     val routes: StaticIdxSpace<Route>
-    fun getRoutePath(route: RouteId): StaticIdxList<ZonePath>
-    fun getRouteName(route: RouteId): String?
-    fun getRouteLength(route: RouteId): Length<Route>
-    @JvmName("getRouteFromName")
-    fun getRouteFromName(name: String): RouteId
 
-    /** Returns a list of indices of zones in the train path at which the reservations shall be released. */
+    fun getRoutePath(route: RouteId): StaticIdxList<ZonePath>
+
+    fun getRouteName(route: RouteId): String?
+
+    fun getRouteLength(route: RouteId): Length<Route>
+
+    @JvmName("getRouteFromName") fun getRouteFromName(name: String): RouteId
+
+    /**
+     * Returns a list of indices of zones in the train path at which the reservations shall be
+     * released.
+     */
     fun getRouteReleaseZones(route: RouteId): IntArray
+
     fun getChunksOnRoute(route: RouteId): DirStaticIdxList<TrackChunk>
+
     fun getRoutesOnTrackChunk(trackChunk: DirTrackChunkId): StaticIdxList<Route>
+
     fun getRoutesStartingAtDet(dirDetector: DirDetectorId): StaticIdxList<Route>
+
     fun getRoutesEndingAtDet(dirDetector: DirDetectorId): StaticIdxList<Route>
 }
 

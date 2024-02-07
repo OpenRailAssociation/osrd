@@ -6,7 +6,6 @@ import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.utils.indexing.*
 import fr.sncf.osrd.utils.units.*
 
-
 interface BlockInfraBuilder {
     fun block(
         startAtBufferStop: Boolean,
@@ -17,10 +16,11 @@ interface BlockInfraBuilder {
     ): BlockId
 }
 
-
-class BlockInfraBuilderImpl(val loadedSignalInfra: LoadedSignalInfra, val rawInfra: RawInfra) : BlockInfraBuilder {
+class BlockInfraBuilderImpl(val loadedSignalInfra: LoadedSignalInfra, val rawInfra: RawInfra) :
+    BlockInfraBuilder {
     private val blockSet = mutableMapOf<BlockDescriptor, BlockId>()
     private val blockPool = StaticPool<Block, BlockDescriptor>()
+
     override fun block(
         startAtBufferStop: Boolean,
         stopsAtBufferStop: Boolean,
@@ -39,10 +39,17 @@ class BlockInfraBuilderImpl(val loadedSignalInfra: LoadedSignalInfra, val rawInf
         }
 
         var length = Length<Block>(0.meters)
-        for (zonePath in path)
-            length += rawInfra.getZonePathLength(zonePath).distance
+        for (zonePath in path) length += rawInfra.getZonePathLength(zonePath).distance
 
-        val newBlock = BlockDescriptor(length, startAtBufferStop, stopsAtBufferStop, path, signals, signalsDistances)
+        val newBlock =
+            BlockDescriptor(
+                length,
+                startAtBufferStop,
+                stopsAtBufferStop,
+                path,
+                signals,
+                signalsDistances
+            )
         return blockSet.getOrPut(newBlock) { blockPool.add(newBlock) }
     }
 
@@ -50,7 +57,6 @@ class BlockInfraBuilderImpl(val loadedSignalInfra: LoadedSignalInfra, val rawInf
         return BlockInfraImpl(blockPool, loadedSignalInfra, rawInfra)
     }
 }
-
 
 fun blockInfraBuilder(
     loadedSignalInfra: LoadedSignalInfra,

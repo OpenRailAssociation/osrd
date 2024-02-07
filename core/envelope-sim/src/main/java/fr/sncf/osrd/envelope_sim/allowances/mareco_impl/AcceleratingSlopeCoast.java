@@ -23,8 +23,10 @@ public class AcceleratingSlopeCoast implements CoastingOpportunity {
     /** Average acceleration of the train during the slope */
     private double slopeAverageAcceleration = NaN;
 
-    /** An estimate of the average acceleration of the train
-     * from the start of coasting to the beginning of the accelerating slope */
+    /**
+     * An estimate of the average acceleration of the train from the start of coasting to the
+     * beginning of the accelerating slope
+     */
     private double previousAccelerationEstimate = NaN;
 
     /** Position where the train starts accelerating again until it reaches the max speed */
@@ -36,10 +38,7 @@ public class AcceleratingSlopeCoast implements CoastingOpportunity {
     /** Used to compute the mean acceleration over the accelerating slope */
     private final DistanceAverage meanAccelerationBuilder = new DistanceAverage();
 
-    private AcceleratingSlopeCoast(
-            double accelerationStartPosition,
-            double speedLimit
-    ) {
+    private AcceleratingSlopeCoast(double accelerationStartPosition, double speedLimit) {
         this.accelerationStartPosition = accelerationStartPosition;
         this.speedLimit = speedLimit;
     }
@@ -69,7 +68,9 @@ public class AcceleratingSlopeCoast implements CoastingOpportunity {
         return Math.min(0, getNaturalAcceleration(context, estimatePosition, speedLimit));
     }
 
-    /** Returns the exact position where the natural acceleration sign goes from negative to positive */
+    /**
+     * Returns the exact position where the natural acceleration sign goes from negative to positive
+     */
     private double findExactStartAcceleratingSlope(EnvelopeSimContext context) {
         // We do this by starting from the first position with a positive acceleration,
         // and we go back until it's negative. We may go back for more than one step if the part
@@ -77,18 +78,14 @@ public class AcceleratingSlopeCoast implements CoastingOpportunity {
 
         double positionStep = 10; // Because we interpolate, there's no need for a small step
         var position = accelerationStartPosition;
-        while (position > 0 && getNaturalAcceleration(context, position, speedLimit) > 0)
-            position -= positionStep;
-        if (position <= 0)
-            return 0; // The path is on a negative slope from its start
-        var accelerationPrevStep =  getNaturalAcceleration(context, position, speedLimit);
+        while (position > 0 && getNaturalAcceleration(context, position, speedLimit) > 0) position -= positionStep;
+        if (position <= 0) return 0; // The path is on a negative slope from its start
+        var accelerationPrevStep = getNaturalAcceleration(context, position, speedLimit);
         var accelerationNextStep = getNaturalAcceleration(context, position + positionStep, speedLimit);
         assert accelerationPrevStep <= 0;
         assert accelerationNextStep >= 0;
         return interpolateAccelerationSignChange(
-                accelerationNextStep, accelerationPrevStep,
-                position + positionStep, position
-        );
+                accelerationNextStep, accelerationPrevStep, position + positionStep, position);
     }
 
     @Override
@@ -99,7 +96,8 @@ public class AcceleratingSlopeCoast implements CoastingOpportunity {
     private double computeV(PhysicsRollingStock rollingStock, double v1, double vf) {
         // formulas given my MARECO
         // giving the optimized speed v the train should have when entering the accelerating slope
-        // this speed v might not be reached if the slope is not long enough, then we just enter the slope with
+        // this speed v might not be reached if the slope is not long enough, then we just enter the
+        // slope with
         // the lowest possible speed that will catch up with target speed at the end
         double wle = rollingStock.getRollingResistance(v1) * v1 * vf / (v1 - vf);
         double accelRatio = previousAccelerationEstimate / slopeAverageAcceleration;
@@ -108,16 +106,14 @@ public class AcceleratingSlopeCoast implements CoastingOpportunity {
     }
 
     @Override
-    public EnvelopePart compute(
-            Envelope base,
-            EnvelopeSimContext context,
-            double v1,
-            double vf
-    ) {
-        // for constant speed limit accelerating slopes, compute the minimum speed v for this coasting opportunity,
-        // coast backwards from the end of accelerating slope, limiting the minimum speed to v. Then coasting forward
+    public EnvelopePart compute(Envelope base, EnvelopeSimContext context, double v1, double vf) {
+        // for constant speed limit accelerating slopes, compute the minimum speed v for this
+        // coasting opportunity,
+        // coast backwards from the end of accelerating slope, limiting the minimum speed to v. Then
+        // coasting forward
         // from the point reached by the backward coasting
-        // TODO: it turns out that v depends on the average acceleration of the deceleration part of the coasting
+        // TODO: it turns out that v depends on the average acceleration of the deceleration part of
+        // the coasting
         //       result. it should be probably be iteratively computed.
 
         double v = computeV(context.rollingStock, v1, vf);
@@ -126,11 +122,7 @@ public class AcceleratingSlopeCoast implements CoastingOpportunity {
 
     // TODO: rewrite as a method of the physics path
     /** Finds all the opportunities for coasting on accelerating slopes */
-    public static ArrayList<AcceleratingSlopeCoast> findAll(
-            Envelope envelope,
-            EnvelopeSimContext context,
-            double vf
-    ) {
+    public static ArrayList<AcceleratingSlopeCoast> findAll(Envelope envelope, EnvelopeSimContext context, double vf) {
         var res = new ArrayList<AcceleratingSlopeCoast>();
         var cursor = EnvelopeCursor.forward(envelope);
         // scan until maintain speed envelope parts
@@ -163,8 +155,7 @@ public class AcceleratingSlopeCoast implements CoastingOpportunity {
                     // end the accelerating slope
                     var endPos = interpolateAccelerationSignChange(
                             naturalAcceleration, previousAcceleration,
-                            position, previousPosition
-                    );
+                            position, previousPosition);
                     res.add(currentAcceleratingSlope.build(endPos, context));
                     currentAcceleratingSlope = null; // reset the accelerating slope
                 }
@@ -173,8 +164,7 @@ public class AcceleratingSlopeCoast implements CoastingOpportunity {
                 cursor.findPosition(position + positionStep);
             }
             // if the end of the plateau is an accelerating slope
-            if (currentAcceleratingSlope != null)
-                res.add(currentAcceleratingSlope.build(previousPosition, context));
+            if (currentAcceleratingSlope != null) res.add(currentAcceleratingSlope.build(previousPosition, context));
         }
         return res;
     }
@@ -186,16 +176,10 @@ public class AcceleratingSlopeCoast implements CoastingOpportunity {
 
     /** Interpolate the exact position where the natural acceleration is 0 */
     private static double interpolateAccelerationSignChange(
-            double currentAcceleration,
-            double previousAcceleration,
-            double currentPosition,
-            double previousPosition
-    ) {
+            double currentAcceleration, double previousAcceleration, double currentPosition, double previousPosition) {
         assert !Double.isNaN(previousAcceleration);
-        if (arePositionsEqual(currentPosition, previousPosition))
-            return currentPosition;
-        if (areSpeedsEqual(currentAcceleration, previousAcceleration))
-            return currentPosition;
+        if (arePositionsEqual(currentPosition, previousPosition)) return currentPosition;
+        if (areSpeedsEqual(currentAcceleration, previousAcceleration)) return currentPosition;
         double factor = (previousAcceleration - currentAcceleration) / (previousPosition - currentPosition);
         double y0 = previousAcceleration - factor * previousPosition;
         var res = -y0 / factor;

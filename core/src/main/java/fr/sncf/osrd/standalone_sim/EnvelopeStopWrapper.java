@@ -1,7 +1,5 @@
 package fr.sncf.osrd.standalone_sim;
 
-import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.arePositionsEqual;
-
 import fr.sncf.osrd.envelope.EnvelopeTimeInterpolate;
 import fr.sncf.osrd.train.TrainStop;
 import java.util.ArrayList;
@@ -20,8 +18,7 @@ public class EnvelopeStopWrapper implements EnvelopeTimeInterpolate {
     public double interpolateTotalTime(double position) {
         double stopTime = 0;
         for (var stop : stops) {
-            if (stop.position > position)
-                break;
+            if (stop.position > position) break;
             stopTime += stop.duration;
         }
         return stopTime + envelope.interpolateTotalTime(position);
@@ -49,7 +46,8 @@ public class EnvelopeStopWrapper implements EnvelopeTimeInterpolate {
 
     @Override
     public double getTotalTime() {
-        return envelope.getTotalTime() + stops.stream().mapToDouble(stop -> stop.duration).sum();
+        return envelope.getTotalTime()
+                + stops.stream().mapToDouble(stop -> stop.duration).sum();
     }
 
     /** Returns all the points as (time, speed, position), with time adjusted for stop duration */
@@ -59,10 +57,8 @@ public class EnvelopeStopWrapper implements EnvelopeTimeInterpolate {
         double sumPreviousStopDuration = 0;
         int stopIndex = 0;
         for (var point : envelope.iteratePoints()) {
-            var shiftedPoint = new EnvelopePoint(
-                    point.time() + sumPreviousStopDuration,
-                    point.speed(), point.position()
-            );
+            var shiftedPoint =
+                    new EnvelopePoint(point.time() + sumPreviousStopDuration, point.speed(), point.position());
             res.add(shiftedPoint);
             if (stopIndex < stops.size() && point.position() >= stops.get(stopIndex).position) {
                 var stopDuration = stops.get(stopIndex).duration;

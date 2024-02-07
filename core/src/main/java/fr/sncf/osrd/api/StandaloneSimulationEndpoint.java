@@ -16,6 +16,7 @@ import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl;
 import fr.sncf.osrd.standalone_sim.StandaloneSim;
 import fr.sncf.osrd.standalone_sim.result.StandaloneSimResult;
+import java.util.List;
 import org.takes.Request;
 import org.takes.Response;
 import org.takes.Take;
@@ -24,16 +25,13 @@ import org.takes.rs.RsJson;
 import org.takes.rs.RsText;
 import org.takes.rs.RsWithBody;
 import org.takes.rs.RsWithStatus;
-import java.util.List;
-
 
 public class StandaloneSimulationEndpoint implements Take {
     private final InfraManager infraManager;
 
     private final ElectricalProfileSetManager electricalProfileSetManager;
 
-    public static final JsonAdapter<StandaloneSimulationRequest> adapterRequest = new Moshi
-            .Builder()
+    public static final JsonAdapter<StandaloneSimulationRequest> adapterRequest = new Moshi.Builder()
             .add(ID.Adapter.FACTORY)
             .add(RJSRollingResistance.adapter)
             .add(RJSAllowance.adapter)
@@ -41,8 +39,8 @@ public class StandaloneSimulationEndpoint implements Take {
             .build()
             .adapter(StandaloneSimulationRequest.class);
 
-    public StandaloneSimulationEndpoint(InfraManager infraManager,
-                                        ElectricalProfileSetManager electricalProfileSetManager) {
+    public StandaloneSimulationEndpoint(
+            InfraManager infraManager, ElectricalProfileSetManager electricalProfileSetManager) {
         this.infraManager = infraManager;
         this.electricalProfileSetManager = electricalProfileSetManager;
     }
@@ -54,8 +52,7 @@ public class StandaloneSimulationEndpoint implements Take {
             // Parse request input
             var body = new RqPrint(req).printBody();
             var request = adapterRequest.fromJson(body);
-            if (request == null)
-                return new RsWithStatus(new RsText("missing request body"), 400);
+            if (request == null) return new RsWithStatus(new RsText("missing request body"), 400);
 
             // load infra
             var infra = infraManager.getInfra(request.infra, request.expectedVersion, recorder);
@@ -72,8 +69,7 @@ public class StandaloneSimulationEndpoint implements Take {
                     request.trainsPath,
                     rollingStocks,
                     request.trainSchedules,
-                    request.timeStep
-            );
+                    request.timeStep);
             result.warnings = recorder.warnings;
 
             return new RsJson(new RsWithBody(StandaloneSimResult.adapter.toJson(result)));
@@ -85,50 +81,34 @@ public class StandaloneSimulationEndpoint implements Take {
 
     @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
     public static final class StandaloneSimulationRequest {
-        /**
-         * Infra id
-         */
+        /** Infra id */
         public String infra;
 
-        /**
-         * Electrical profile set id
-         */
+        /** Electrical profile set id */
         @Json(name = "electrical_profile_set")
         public String electricalProfileSet;
 
-        /**
-         * Infra version
-         */
+        /** Infra version */
         @Json(name = "expected_version")
         public String expectedVersion;
 
-        /**
-         * The time step which shall be used for all simulations
-         */
+        /** The time step which shall be used for all simulations */
         @Json(name = "time_step")
         public double timeStep;
 
-        /**
-         * A list of rolling stocks involved in this simulation
-         */
+        /** A list of rolling stocks involved in this simulation */
         @Json(name = "rolling_stocks")
         public List<RJSRollingStock> rollingStocks;
 
-        /**
-         * A list of trains plannings
-         */
+        /** A list of trains plannings */
         @Json(name = "train_schedules")
         public List<RJSStandaloneTrainSchedule> trainSchedules;
 
-        /**
-         * The path used by trains
-         */
+        /** The path used by trains */
         @Json(name = "trains_path")
         public RJSTrainPath trainsPath;
 
-        /**
-         * Create a default SimulationRequest
-         */
+        /** Create a default SimulationRequest */
         public StandaloneSimulationRequest() {
             infra = null;
             electricalProfileSet = null;
@@ -139,17 +119,14 @@ public class StandaloneSimulationEndpoint implements Take {
             trainsPath = null;
         }
 
-        /**
-         * Create SimulationRequest without  an electrical profile set selected
-         */
+        /** Create SimulationRequest without an electrical profile set selected */
         public StandaloneSimulationRequest(
                 String infra,
                 String expectedVersion,
                 double timeStep,
                 List<RJSRollingStock> rollingStocks,
                 List<RJSStandaloneTrainSchedule> trainSchedules,
-                RJSTrainPath trainsPath
-        ) {
+                RJSTrainPath trainsPath) {
             this.infra = infra;
             this.electricalProfileSet = null;
             this.expectedVersion = expectedVersion;
@@ -159,9 +136,7 @@ public class StandaloneSimulationEndpoint implements Take {
             this.trainsPath = trainsPath;
         }
 
-        /**
-         * Create SimulationRequest with an electrical profile set selected
-         */
+        /** Create SimulationRequest with an electrical profile set selected */
         public StandaloneSimulationRequest(
                 String infra,
                 String electricalProfileSet,
@@ -169,8 +144,7 @@ public class StandaloneSimulationEndpoint implements Take {
                 double timeStep,
                 List<RJSRollingStock> rollingStocks,
                 List<RJSStandaloneTrainSchedule> trainSchedules,
-                RJSTrainPath trainsPath
-        ) {
+                RJSTrainPath trainsPath) {
             this.infra = infra;
             this.electricalProfileSet = electricalProfileSet;
             this.expectedVersion = expectedVersion;

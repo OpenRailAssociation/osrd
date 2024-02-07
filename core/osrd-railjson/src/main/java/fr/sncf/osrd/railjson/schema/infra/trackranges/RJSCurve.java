@@ -7,10 +7,7 @@ public class RJSCurve extends RJSRange {
     // Radius (m).
     public double radius;
 
-    public RJSCurve(double begin,
-            double end,
-            double radius
-    ) {
+    public RJSCurve(double begin, double end, double radius) {
         super(begin, end);
         this.radius = radius;
     }

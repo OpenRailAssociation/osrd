@@ -8,6 +8,7 @@ import java.util.HashMap;
 public class App {
     /**
      * The main entry point for OSRD.
+     *
      * @param args the command line arguments
      */
     public static void main(String[] args) {
@@ -19,8 +20,7 @@ public class App {
         // prepare the command line parser
         var argsParserBuilder = JCommander.newBuilder();
         argsParserBuilder.defaultProvider(new EnvProvider("CORE_"));
-        for (var command : commands.entrySet())
-            argsParserBuilder.addCommand(command.getKey(), command.getValue());
+        for (var command : commands.entrySet()) argsParserBuilder.addCommand(command.getKey(), command.getValue());
         var argsParser = argsParserBuilder.build();
 
         // parse the command line arguments

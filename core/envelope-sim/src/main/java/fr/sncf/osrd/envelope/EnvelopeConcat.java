@@ -6,8 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * This class is used to concatenate envelopes without a deep copy of all the underlying data.
- * All envelopes are expected to start at position 0.
+ * This class is used to concatenate envelopes without a deep copy of all the underlying data. All
+ * envelopes are expected to start at position 0.
  */
 public class EnvelopeConcat implements EnvelopeTimeInterpolate {
 
@@ -19,9 +19,7 @@ public class EnvelopeConcat implements EnvelopeTimeInterpolate {
         this.endPos = endPos;
     }
 
-    /**
-     * Creates an instance from a list of envelopes
-     */
+    /** Creates an instance from a list of envelopes */
     public static EnvelopeConcat from(List<? extends EnvelopeTimeInterpolate> envelopes) {
         runSanityChecks(envelopes);
         var locatedEnvelopes = initLocatedEnvelopes(envelopes);
@@ -30,18 +28,14 @@ public class EnvelopeConcat implements EnvelopeTimeInterpolate {
         return new EnvelopeConcat(locatedEnvelopes, endPos);
     }
 
-    /**
-     * Run some checks to ensure that the inputs match the assumptions made by this class
-     */
+    /** Run some checks to ensure that the inputs match the assumptions made by this class */
     private static void runSanityChecks(List<? extends EnvelopeTimeInterpolate> envelopes) {
         assert !envelopes.isEmpty() : "concatenating no envelope";
         for (var envelope : envelopes)
             assert arePositionsEqual(0, envelope.getBeginPos()) : "concatenated envelope doesn't start at 0";
     }
 
-    /**
-     * Place all envelopes in a record containing the offset on which they start
-     */
+    /** Place all envelopes in a record containing the offset on which they start */
     private static List<LocatedEnvelope> initLocatedEnvelopes(List<? extends EnvelopeTimeInterpolate> envelopes) {
         double currentOffset = 0.0;
         double currentTime = 0.0;
@@ -90,26 +84,22 @@ public class EnvelopeConcat implements EnvelopeTimeInterpolate {
     @Override
     public List<EnvelopePoint> iteratePoints() {
         return envelopes.stream()
-                .flatMap(locatedEnvelope ->
-                        locatedEnvelope.envelope.iteratePoints()
-                                .stream()
-                                .map(p -> new EnvelopePoint(
-                                        p.time() + locatedEnvelope.startTime,
-                                        p.speed(),
-                                        p.position() + locatedEnvelope.startOffset
-                                ))
-                ).toList();
+                .flatMap(locatedEnvelope -> locatedEnvelope.envelope.iteratePoints().stream()
+                        .map(p -> new EnvelopePoint(
+                                p.time() + locatedEnvelope.startTime,
+                                p.speed(),
+                                p.position() + locatedEnvelope.startOffset)))
+                .toList();
     }
 
     /**
-     * Returns the envelope at the given position. On transitions, the rightmost envelope is returned.
+     * Returns the envelope at the given position. On transitions, the rightmost envelope is
+     * returned.
      */
     private LocatedEnvelope findEnvelopeAt(double position) {
-        if (position < 0)
-            return null;
+        if (position < 0) return null;
         for (var envelope : envelopes) {
-            if (position < envelope.startOffset + envelope.envelope.getEndPos())
-                return envelope;
+            if (position < envelope.startOffset + envelope.envelope.getEndPos()) return envelope;
         }
         var lastEnvelope = envelopes.get(envelopes.size() - 1);
         if (arePositionsEqual(position, lastEnvelope.startOffset + lastEnvelope.envelope.getEndPos()))
@@ -117,10 +107,5 @@ public class EnvelopeConcat implements EnvelopeTimeInterpolate {
         return null;
     }
 
-    private record LocatedEnvelope(
-            EnvelopeTimeInterpolate envelope,
-            double startOffset,
-            double startTime
-    ) {
-    }
+    private record LocatedEnvelope(EnvelopeTimeInterpolate envelope, double startOffset, double startTime) {}
 }

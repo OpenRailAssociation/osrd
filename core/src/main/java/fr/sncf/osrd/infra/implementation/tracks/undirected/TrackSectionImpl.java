@@ -51,8 +51,7 @@ public class TrackSectionImpl implements TrackSection {
             ImmutableSet<OperationalPoint> operationalPoints,
             LineString geo,
             LineString sch,
-            ImmutableRangeMap<Double, LoadingGaugeConstraint> loadingGaugeConstraints
-    ) {
+            ImmutableRangeMap<Double, LoadingGaugeConstraint> loadingGaugeConstraints) {
         this.length = length;
         this.id = id;
         this.operationalPoints = operationalPoints;
@@ -69,10 +68,7 @@ public class TrackSectionImpl implements TrackSection {
     }
 
     /** Constructor with empty operational points, geometry, line code and track number */
-    public TrackSectionImpl(
-            double length,
-            String id
-    ) {
+    public TrackSectionImpl(double length, String id) {
         this(length, id, ImmutableSet.of(), null, null, ImmutableRangeMap.of());
         speedSections = new EnumMap<>(Direction.class);
         curves = new EnumMap<>(Direction.class);
@@ -105,8 +101,7 @@ public class TrackSectionImpl implements TrackSection {
 
             for (var curveEntry : getCurves().get(dir).asMapOfRanges().entrySet()) {
                 var curve = curveEntry.getValue();
-                if (curve == 0.)
-                    continue;
+                if (curve == 0.) continue;
                 // for all slopes that overlap with a curve, adjust the gradient value
                 var subMap = gmap.subRangeMap(curveEntry.getKey());
                 var entries = new HashMap<>(subMap.asMapOfRanges());

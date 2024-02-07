@@ -48,10 +48,13 @@ public class SignalUpdate {
             String signalID,
             double timeStart,
             Double timeEnd,
-            double positionStart, Double positionEnd, int color,
+            double positionStart,
+            Double positionEnd,
+            int color,
             boolean blinking,
             String aspectLabel,
-            String track, Double trackOffset) {
+            String track,
+            Double trackOffset) {
         this.signalID = signalID;
         this.timeStart = timeStart;
         this.timeEnd = timeEnd;

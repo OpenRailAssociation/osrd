@@ -8,6 +8,7 @@ public interface EnvelopePartConsumer {
 
     /**
      * Adds an integration step to the result, computing the time delta using the previous step.
+     *
      * @see #addStep(double, double, double)
      */
     void addStep(double position, double speed);

@@ -8,14 +8,8 @@ public class EnvelopeBuilderTest {
     @Test
     public void testEnvelopeBuilder() {
         var builder = new EnvelopeBuilder();
-        builder.addPart(EnvelopeTestUtils.generateTimes(
-                new double[]{0, 1},
-                new double[]{10, 20}
-        ));
-        builder.addPart(EnvelopeTestUtils.generateTimes(
-                new double[]{1, 2},
-                new double[]{20, 30}
-        ));
+        builder.addPart(EnvelopeTestUtils.generateTimes(new double[] {0, 1}, new double[] {10, 20}));
+        builder.addPart(EnvelopeTestUtils.generateTimes(new double[] {1, 2}, new double[] {20, 30}));
         var env = builder.build();
         assertTrue(env.continuous);
     }
@@ -23,14 +17,8 @@ public class EnvelopeBuilderTest {
     @Test
     public void testEnvelopeBuilderReversed() {
         var builder = new EnvelopeBuilder();
-        builder.addPart(EnvelopeTestUtils.generateTimes(
-                new double[]{1, 2},
-                new double[]{20, 30}
-        ));
-        builder.addPart(EnvelopeTestUtils.generateTimes(
-                new double[]{0, 1},
-                new double[]{10, 20}
-        ));
+        builder.addPart(EnvelopeTestUtils.generateTimes(new double[] {1, 2}, new double[] {20, 30}));
+        builder.addPart(EnvelopeTestUtils.generateTimes(new double[] {0, 1}, new double[] {10, 20}));
         builder.reverse();
         var env = builder.build();
         assertTrue(env.continuous);

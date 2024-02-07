@@ -11,8 +11,8 @@ import fr.sncf.osrd.infra.api.signaling.*;
 import fr.sncf.osrd.infra.implementation.reservation.ReservationInfraBuilder;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSSignal;
-import fr.sncf.osrd.reporting.warnings.Warning;
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorder;
+import fr.sncf.osrd.reporting.warnings.Warning;
 import java.util.Collection;
 import java.util.Set;
 import java.util.function.Function;
@@ -31,8 +31,7 @@ public class SignalingInfraBuilder {
             RJSInfra rjsInfra,
             ReservationInfra reservationInfra,
             Set<SignalingModule> signalingModules,
-            DiagnosticRecorder diagnosticRecorder
-    ) {
+            DiagnosticRecorder diagnosticRecorder) {
         this.rjsInfra = rjsInfra;
         this.reservationInfra = reservationInfra;
         this.signalingModules = signalingModules;
@@ -44,23 +43,18 @@ public class SignalingInfraBuilder {
             RJSInfra rjsInfra,
             ReservationInfra reservationInfra,
             Set<SignalingModule> signalingModules,
-            DiagnosticRecorder diagnosticRecorder
-    ) {
+            DiagnosticRecorder diagnosticRecorder) {
         return new SignalingInfraBuilder(rjsInfra, reservationInfra, signalingModules, diagnosticRecorder).build();
     }
 
     /** Creates a signaling infra from a railjson infra */
     public static SignalingInfra fromRJSInfra(
-            RJSInfra rjsInfra,
-            Set<SignalingModule> signalingModules,
-            DiagnosticRecorder diagnosticRecorder
-    ) {
+            RJSInfra rjsInfra, Set<SignalingModule> signalingModules, DiagnosticRecorder diagnosticRecorder) {
         return fromReservationInfra(
                 rjsInfra,
                 ReservationInfraBuilder.fromRJS(rjsInfra, diagnosticRecorder),
                 signalingModules,
-                diagnosticRecorder
-        );
+                diagnosticRecorder);
     }
 
     /** Builds the signaling infra */
@@ -73,13 +67,10 @@ public class SignalingInfraBuilder {
 
     /** Creates the signaling route graph */
     private ImmutableNetwork<DiDetector, SignalingRoute> makeSignalingRouteGraph() {
-        var networkBuilder = NetworkBuilder
-                .directed()
-                .allowsParallelEdges(true)
-                .<DiDetector, SignalingRoute>immutable();
+        var networkBuilder =
+                NetworkBuilder.directed().allowsParallelEdges(true).<DiDetector, SignalingRoute>immutable();
         var reservationGraph = reservationInfra.getInfraRouteGraph();
-        for (var node : reservationGraph.nodes())
-            networkBuilder.addNode(node);
+        for (var node : reservationGraph.nodes()) networkBuilder.addNode(node);
         for (var entry : routeMap.entries()) {
             var nodes = reservationGraph.incidentNodes(entry.getKey());
             networkBuilder.addEdge(nodes, entry.getValue());
@@ -116,8 +107,7 @@ public class SignalingInfraBuilder {
         var res = ImmutableMultimap.<T, U>builder();
         for (var m : signalingModules) {
             var moduleResults = f.apply(m);
-            for (var entry : moduleResults.entrySet())
-                res.put(entry.getKey(), entry.getValue());
+            for (var entry : moduleResults.entrySet()) res.put(entry.getKey(), entry.getValue());
         }
         return res.build();
     }

@@ -10,17 +10,14 @@ object TVM430toTVM300 : SignalDriver {
     override val inputSignalingSystem = "TVM430"
     override val outputSignalingSystem = "TVM300"
 
-
     override fun evalSignal(
-            signal: SigSettings, stateSchema: SigStateSchema, maView: MovementAuthorityView?, limitView: SpeedLimitView?
+        signal: SigSettings,
+        stateSchema: SigStateSchema,
+        maView: MovementAuthorityView?,
+        limitView: SpeedLimitView?
     ): SigState {
-        return stateSchema {
-            value("aspect", "VL")
-        }
-
+        return stateSchema { value("aspect", "VL") }
     }
 
-
-    override fun checkSignal(reporter: SignalDiagReporter, signal: SigSettings, block: SigBlock) {
-    }
+    override fun checkSignal(reporter: SignalDiagReporter, signal: SigSettings, block: SigBlock) {}
 }

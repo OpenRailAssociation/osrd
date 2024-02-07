@@ -1,9 +1,7 @@
 package fr.sncf.osrd.fast_collections
 
-
 import kotlin.test.Test
 import kotlin.test.assertEquals
-
 
 class RingBufferTest {
     @Test
@@ -21,7 +19,7 @@ class RingBufferTest {
     fun `adding elements to the back of the deque should make them accessible at the back`() {
         val deque = MutableIntRingBuffer()
         assertEquals(0, deque.addBack(1))
-        assertEquals(1,deque.addBack(2))
+        assertEquals(1, deque.addBack(2))
         assertEquals(2, deque.addBack(3))
         assertEquals(1, deque[0])
         assertEquals(2, deque[1])
@@ -45,8 +43,8 @@ class RingBufferTest {
     fun `removing elements from the front of the deque should make the next element accessible at the front`() {
         val deque = MutableIntRingBuffer()
         assertEquals(0, deque.addFront(1))
-        assertEquals(-1,deque.addFront(2))
-        assertEquals(-2,deque.addFront(3))
+        assertEquals(-1, deque.addFront(2))
+        assertEquals(-2, deque.addFront(3))
         deque.removeFront()
         assertEquals(-2, deque.addFront(4))
         deque.removeFront()

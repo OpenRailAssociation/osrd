@@ -1,6 +1,5 @@
 package fr.sncf.osrd.sim
 
-
 import fr.sncf.osrd.sim.interlocking.api.Train
 import fr.sncf.osrd.sim.interlocking.api.ZoneOccupation
 import fr.sncf.osrd.sim.interlocking.impl.locationSim
@@ -8,10 +7,10 @@ import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.impl.rawInfra
 import fr.sncf.osrd.utils.indexing.MutableArena
 import fr.sncf.osrd.utils.indexing.dynIdxArraySetOf
-import kotlinx.coroutines.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.time.Duration.Companion.milliseconds
+import kotlinx.coroutines.*
 
 class TestLocation {
     @Test
@@ -19,10 +18,11 @@ class TestLocation {
         // setup test data
         val infra = rawInfra {
             // create a test switch
-            val switchA = movableElement("A", delay = 42L.milliseconds) {
-                config("a", Pair(TrackNodePortId(0u), TrackNodePortId(1u)))
-                config("b", Pair(TrackNodePortId(0u), TrackNodePortId(2u)))
-            }
+            val switchA =
+                movableElement("A", delay = 42L.milliseconds) {
+                    config("a", Pair(TrackNodePortId(0u), TrackNodePortId(1u)))
+                    config("b", Pair(TrackNodePortId(0u), TrackNodePortId(2u)))
+                }
 
             val zoneA = zone(listOf(switchA))
 
@@ -40,24 +40,24 @@ class TestLocation {
 
         val occupationHistory: MutableList<ZoneOccupation> = mutableListOf()
 
-        val watchJob = launch(Dispatchers.Unconfined) {
-            sim.watchZoneOccupation(zone).collect {
-                occupationHistory.add(it)
+        val watchJob =
+            launch(Dispatchers.Unconfined) {
+                sim.watchZoneOccupation(zone).collect { occupationHistory.add(it) }
             }
-        }
 
         sim.enterZone(zone, trainB)
         sim.enterZone(zone, trainA)
         sim.leaveZone(zone, trainB)
         sim.leaveZone(zone, trainA)
 
-        val reference: List<ZoneOccupation> = listOf(
-            dynIdxArraySetOf(),
-            dynIdxArraySetOf(trainB),
-            dynIdxArraySetOf(trainB, trainA),
-            dynIdxArraySetOf(trainA),
-            dynIdxArraySetOf()
-        )
+        val reference: List<ZoneOccupation> =
+            listOf(
+                dynIdxArraySetOf(),
+                dynIdxArraySetOf(trainB),
+                dynIdxArraySetOf(trainB, trainA),
+                dynIdxArraySetOf(trainA),
+                dynIdxArraySetOf()
+            )
 
         assertEquals(reference, occupationHistory)
         watchJob.cancelAndJoin()

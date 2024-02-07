@@ -30,25 +30,19 @@ public class BAL3Signal implements Signal<BAL3SignalState> {
     @Override
     @ExcludeFromGeneratedCodeCoverage
     public String toString() {
-        return MoreObjects.toStringHelper(this)
-                .add("id", id)
-                .toString();
+        return MoreObjects.toStringHelper(this).add("id", id).toString();
     }
 
     @Override
     public BAL3SignalState getLeastRestrictiveState() {
         assert canDisplayGreen != null : "signal.setup() has not been called";
-        if (canDisplayGreen)
-            return makeSignalState(BAL3.Aspect.GREEN);
-        else
-            return makeSignalState(BAL3.Aspect.YELLOW);
+        if (canDisplayGreen) return makeSignalState(BAL3.Aspect.GREEN);
+        else return makeSignalState(BAL3.Aspect.YELLOW);
     }
-
 
     @Override
     public BAL3SignalState getInitialState() {
-        if (cachedInitialState == null)
-            cachedInitialState = computeInitialState();
+        if (cachedInitialState == null) cachedInitialState = computeInitialState();
         return cachedInitialState;
     }
 
@@ -56,10 +50,9 @@ public class BAL3Signal implements Signal<BAL3SignalState> {
         assert cachedInitialState == null;
         cachedInitialState = makeSignalState(BAL3.Aspect.GREEN); // Avoids infinite recursions caused by loops
 
-        var isControlled = protectedRoutes.stream()
-                .anyMatch(route -> route.getInfraRoute().isControlled());
-        if (isControlled)
-            return makeSignalState(BAL3.Aspect.RED);
+        var isControlled =
+                protectedRoutes.stream().anyMatch(route -> route.getInfraRoute().isControlled());
+        if (isControlled) return makeSignalState(BAL3.Aspect.RED);
 
         for (var route : protectedRoutes) {
             if (route.exitSignal() instanceof BAL3Signal bal3Signal
@@ -72,22 +65,19 @@ public class BAL3Signal implements Signal<BAL3SignalState> {
 
     @Override
     public BAL3SignalState processDependencyUpdate(InfraStateView state, SignalizationStateView signalization) {
-        var openRouteStates = Set.of(
-                FREE,
-                RESERVED
-        );
+        var openRouteStates = Set.of(FREE, RESERVED);
         // Finds any free route starting from this signal
         Set<BAL3.BAL3Route> reservedRoutes = new HashSet<>();
         for (var route : protectedRoutes)
-            if (openRouteStates.contains(state.getState(route.infraRoute()).summarize()))
-                reservedRoutes.add(route);
+            if (openRouteStates.contains(state.getState(route.infraRoute()).summarize())) reservedRoutes.add(route);
         if (reservedRoutes.isEmpty())
             // All routes starting from this signal are blocked -> red
             return makeSignalState(BAL3.Aspect.RED);
 
         if (reservedRoutes.stream().anyMatch(r -> r.infraRoute().isControlled())) {
             // At lease one route needs to be reserved
-            if (reservedRoutes.stream().noneMatch(r -> state.getState(r.infraRoute()).summarize().equals(RESERVED))) {
+            if (reservedRoutes.stream()
+                    .noneMatch(r -> state.getState(r.infraRoute()).summarize().equals(RESERVED))) {
                 // No route is reserved -> red
                 return makeSignalState(BAL3.Aspect.RED);
             }
@@ -96,10 +86,10 @@ public class BAL3Signal implements Signal<BAL3SignalState> {
         // Checks if the next signal is red: we look for reserved routes first
         for (var route : reservedRoutes) {
             if (state.getState(route.getInfraRoute()).summarize().equals(RESERVED)) {
-                if (isNextRouteBlocked(route, signalization))
-                    return makeSignalState(BAL3.Aspect.YELLOW);
+                if (isNextRouteBlocked(route, signalization)) return makeSignalState(BAL3.Aspect.YELLOW);
                 else {
-                    // A route is reserved and lead to a signal that isn't red, we don't need to check the rest
+                    // A route is reserved and lead to a signal that isn't red, we don't need to
+                    // check the rest
                     return getLeastRestrictiveState();
                 }
             }
@@ -107,8 +97,7 @@ public class BAL3Signal implements Signal<BAL3SignalState> {
 
         // If no reserved route, we check all free routes starting from this signal
         for (var route : reservedRoutes) {
-            if (isNextRouteBlocked(route, signalization))
-                return makeSignalState(BAL3.Aspect.YELLOW);
+            if (isNextRouteBlocked(route, signalization)) return makeSignalState(BAL3.Aspect.YELLOW);
         }
         return getLeastRestrictiveState();
     }
@@ -116,7 +105,8 @@ public class BAL3Signal implements Signal<BAL3SignalState> {
     /** Returns true if the signal at the end of this route is red */
     private boolean isNextRouteBlocked(BAL3.BAL3Route route, SignalizationStateView signalization) {
         if (route.exitSignal() == null) {
-            // No exit signal -> this route ends with a buffer stop (equivalent to an always red signal)
+            // No exit signal -> this route ends with a buffer stop (equivalent to an always red
+            // signal)
             return true;
         }
         var nextSignal = signalization.getSignalState(route.exitSignal());
@@ -133,8 +123,7 @@ public class BAL3Signal implements Signal<BAL3SignalState> {
     @Override
     public Set<ReservationRoute> getRouteDependencies() {
         var res = new HashSet<ReservationRoute>();
-        for (var route : protectedRoutes)
-            res.add(route.infraRoute());
+        for (var route : protectedRoutes) res.add(route.infraRoute());
         return res;
     }
 
@@ -145,9 +134,7 @@ public class BAL3Signal implements Signal<BAL3SignalState> {
 
     @Override
     public Set<ReservationRoute> getProtectedRoutes() {
-        return protectedRoutes.stream()
-                .map(BAL3.BAL3Route::getInfraRoute)
-                .collect(Collectors.toSet());
+        return protectedRoutes.stream().map(BAL3.BAL3Route::getInfraRoute).collect(Collectors.toSet());
     }
 
     @Override

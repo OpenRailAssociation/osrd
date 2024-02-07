@@ -8,13 +8,8 @@ import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSSignal;
 
 public interface SignalingModule {
-    ImmutableMap<RJSSignal, Signal<? extends SignalState>> createSignals(
-            ReservationInfra infra,
-            RJSInfra rjsInfra
-    );
+    ImmutableMap<RJSSignal, Signal<? extends SignalState>> createSignals(ReservationInfra infra, RJSInfra rjsInfra);
 
     ImmutableMap<ReservationRoute, SignalingRoute> createRoutes(
-            ReservationInfra infra,
-            ImmutableMultimap<RJSSignal, Signal<? extends SignalState>> signalMap
-    );
+            ReservationInfra infra, ImmutableMultimap<RJSSignal, Signal<? extends SignalState>> signalMap);
 }

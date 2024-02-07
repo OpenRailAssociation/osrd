@@ -3,12 +3,11 @@ package fr.sncf.osrd.railjson.schema.schedule;
 import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory;
 
 public class RJSAllowanceValue {
-    public static final PolymorphicJsonAdapterFactory<RJSAllowanceValue> adapter = (
-            PolymorphicJsonAdapterFactory.of(RJSAllowanceValue.class, "value_type")
-                    .withSubtype(TimePerDistance.class, "time_per_distance")
-                    .withSubtype(Time.class, "time")
-                    .withSubtype(Percent.class, "percentage")
-    );
+    public static final PolymorphicJsonAdapterFactory<RJSAllowanceValue> adapter = (PolymorphicJsonAdapterFactory.of(
+                    RJSAllowanceValue.class, "value_type")
+            .withSubtype(TimePerDistance.class, "time_per_distance")
+            .withSubtype(Time.class, "time")
+            .withSubtype(Percent.class, "percentage"));
 
     public static final class TimePerDistance extends RJSAllowanceValue {
         public double minutes;

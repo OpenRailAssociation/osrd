@@ -9,10 +9,10 @@ private const val ANNOTATION_SIMPLE_NAME = "PrimitiveWrapperCollections"
 private const val ANNOTATION_QUALIFIED_NAME = "${ANNOTATION_PACKAGE}.${ANNOTATION_SIMPLE_NAME}"
 
 fun addGenerator(generators: MutableSet<CollectionGenerator>, generatorId: String) {
-    val generator = GENERATORS[generatorId] ?: throw RuntimeException("unknown generator: $generatorId")
+    val generator =
+        GENERATORS[generatorId] ?: throw RuntimeException("unknown generator: $generatorId")
     if (generators.add(generator)) {
-        for (dependency in generator.dependencies)
-            addGenerator(generators, dependency)
+        for (dependency in generator.dependencies) addGenerator(generators, dependency)
     }
 }
 
@@ -31,7 +31,6 @@ fun getArrayType(primitive: KSDeclaration): String {
     throw NotImplementedError("unsupported primitive type: $primitiveQName")
 }
 
-
 fun generateCollections(
     context: GeneratorContext,
     currentFile: KSFile,
@@ -45,38 +44,42 @@ fun generateCollections(
 ) {
 
     val generators: MutableSet<CollectionGenerator> = hashSetOf()
-    for (collection in collections)
-        addGenerator(generators, collection)
+    for (collection in collections) addGenerator(generators, collection)
 
     // parse the type of the wrapper class to generate collections for
-    val wrapperType = GeneratorType(
-        wrapperTypeDecl.packageName.asString(),
-        wrapperTypeDecl.simpleName.getShortName(),
-        wrapperTypeDecl.typeParameters.map {
-            // TODO: implement type bounds
-            TypeParameter(it.name.getShortName(), listOf())
-        }.toList()
-    )
+    val wrapperType =
+        GeneratorType(
+            wrapperTypeDecl.packageName.asString(),
+            wrapperTypeDecl.simpleName.getShortName(),
+            wrapperTypeDecl.typeParameters
+                .map {
+                    // TODO: implement type bounds
+                    TypeParameter(it.name.getShortName(), listOf())
+                }
+                .toList()
+        )
 
     // parse the type of the underlying storage array
-    val storageType = StorageType(
-        primitive = primitiveTypeDecl.simpleName.asString(),
-        primitiveArray = getArrayType(primitiveTypeDecl),
-        toPrimitive = toPrimitive,
-        fromPrimitive = fromPrimitive,
-    )
+    val storageType =
+        StorageType(
+            primitive = primitiveTypeDecl.simpleName.asString(),
+            primitiveArray = getArrayType(primitiveTypeDecl),
+            toPrimitive = toPrimitive,
+            fromPrimitive = fromPrimitive,
+        )
 
     val generatedPackage = currentFile.packageName.asString()
-    val itemType = CollectionItemType(
-        wrapperType,
-        generatedPackage,
-        storageType,
-    )
+    val itemType =
+        CollectionItemType(
+            wrapperType,
+            generatedPackage,
+            storageType,
+        )
 
-    for (generator in generators)
-        generator.generate(context, currentFile, itemType)
+    for (generator in generators) generator.generate(context, currentFile, itemType)
 
-    // context.generateArrayWrapper(currentFile, primitiveType, wrapperType, toPrimitive, fromPrimitive)
+    // context.generateArrayWrapper(currentFile, primitiveType, wrapperType, toPrimitive,
+    // fromPrimitive)
 }
 
 private class WrapperSymbolProcessor(val context: GeneratorContext) : SymbolProcessor {
@@ -90,8 +93,7 @@ private class WrapperSymbolProcessor(val context: GeneratorContext) : SymbolProc
             }
             val file = symbol as KSFile
             for (annotation in file.annotations) {
-                if (annotation.shortName.getShortName() != ANNOTATION_SIMPLE_NAME)
-                    continue
+                if (annotation.shortName.getShortName() != ANNOTATION_SIMPLE_NAME) continue
 
                 val wrapperType = (annotation.arguments[0].value as KSType).declaration
                 val primitiveType = (annotation.arguments[1].value as KSType).declaration
@@ -102,8 +104,17 @@ private class WrapperSymbolProcessor(val context: GeneratorContext) : SymbolProc
                 val toPrimitive = rawToPrimitive.value as String
                 val toPrimitiveFun: (String) -> String = { toPrimitive.format(it) }
                 val fromPrimitiveFun: (String) -> String = { fromPrimitive.format(it) }
-                val collections = (annotation.arguments[4].value as List<*>).map { it as String }.toList()
-                generateCollections(context, file, primitiveType, wrapperType, toPrimitiveFun, fromPrimitiveFun, collections)
+                val collections =
+                    (annotation.arguments[4].value as List<*>).map { it as String }.toList()
+                generateCollections(
+                    context,
+                    file,
+                    primitiveType,
+                    wrapperType,
+                    toPrimitiveFun,
+                    fromPrimitiveFun,
+                    collections
+                )
             }
         }
         return invalidSymbols
@@ -111,9 +122,7 @@ private class WrapperSymbolProcessor(val context: GeneratorContext) : SymbolProc
 }
 
 class PrimitiveWrapperCollectionsProcessorProvider : SymbolProcessorProvider {
-    override fun create(
-        environment: SymbolProcessorEnvironment
-    ): SymbolProcessor {
+    override fun create(environment: SymbolProcessorEnvironment): SymbolProcessor {
         val context = GeneratorContext(environment.codeGenerator, environment.logger)
         return WrapperSymbolProcessor(context)
     }

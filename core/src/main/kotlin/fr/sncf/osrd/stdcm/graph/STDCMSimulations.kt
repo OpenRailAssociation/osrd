@@ -32,12 +32,14 @@ import fr.sncf.osrd.utils.units.Distance.Companion.fromMeters
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 
-/** This class contains all the methods used to simulate the train behavior.  */
+/** This class contains all the methods used to simulate the train behavior. */
 class STDCMSimulations {
     private var simulatedEnvelopes: HashMap<BlockSimulationParameters, Envelope?> = HashMap()
 
-    /** Returns the corresponding envelope if the block's envelope has already been computed in simulatedEnvelopes,
-     * otherwise computes the matching envelope and adds it to the STDCMGraph.  */
+    /**
+     * Returns the corresponding envelope if the block's envelope has already been computed in
+     * simulatedEnvelopes, otherwise computes the matching envelope and adds it to the STDCMGraph.
+     */
     fun simulateBlock(
         rawInfra: RawSignalingInfra,
         blockInfra: BlockInfra,
@@ -50,27 +52,29 @@ class STDCMSimulations {
         return if (simulatedEnvelopes.containsKey(blockParams)) {
             simulatedEnvelopes[blockParams]
         } else {
-            val simulatedEnvelope = simulateBlock(
-                rawInfra,
-                blockInfra,
-                blockParams.blockId,
-                blockParams.initialSpeed,
-                blockParams.start,
-                rollingStock,
-                comfort,
-                timeStep,
-                blockParams.stop,
-                trainTag
-            )
+            val simulatedEnvelope =
+                simulateBlock(
+                    rawInfra,
+                    blockInfra,
+                    blockParams.blockId,
+                    blockParams.initialSpeed,
+                    blockParams.start,
+                    rollingStock,
+                    comfort,
+                    timeStep,
+                    blockParams.stop,
+                    trainTag
+                )
             simulatedEnvelopes[blockParams] = simulatedEnvelope
             simulatedEnvelope
         }
     }
-
 }
 
-/** Create an EnvelopeSimContext instance from the blocks and extra parameters.
- * offsetFirstBlock is in millimeters.  */
+/**
+ * Create an EnvelopeSimContext instance from the blocks and extra parameters. offsetFirstBlock is
+ * in millimeters.
+ */
 fun makeSimContext(
     rawInfra: RawSignalingInfra,
     blockInfra: BlockInfra,
@@ -86,14 +90,12 @@ fun makeSimContext(
 }
 
 /**
- * Returns an envelope matching the given block. The envelope time starts when the train enters the block.
- * stopPosition specifies the position at which the train should stop, may be null (no stop)
+ * Returns an envelope matching the given block. The envelope time starts when the train enters the
+ * block. stopPosition specifies the position at which the train should stop, may be null (no stop)
  * start is in millimeters
  *
- *
- * Note: there are some approximations made here as we only "see" the tracks on the given blocks.
- * We are missing slopes and speed limits from earlier in the path.
- *
+ * Note: there are some approximations made here as we only "see" the tracks on the given blocks. We
+ * are missing slopes and speed limits from earlier in the path.
  */
 fun simulateBlock(
     rawInfra: RawSignalingInfra,
@@ -110,12 +112,19 @@ fun simulateBlock(
     if (stopPosition != null && stopPosition == Offset<Block>(0.meters))
         return makeSinglePointEnvelope(0.0)
     val blockLength = blockInfra.getBlockLength(blockId)
-    if (start >= blockLength)
-        return makeSinglePointEnvelope(initialSpeed)
+    if (start >= blockLength) return makeSinglePointEnvelope(initialSpeed)
     val context =
-        makeSimContext(rawInfra, blockInfra, listOf(blockId), start, rollingStock, comfort, timeStep)
+        makeSimContext(
+            rawInfra,
+            blockInfra,
+            listOf(blockId),
+            start,
+            rollingStock,
+            comfort,
+            timeStep
+        )
     var stops = doubleArrayOf()
-    var simLength : Offset<Block> = Offset(blockLength - start)
+    var simLength: Offset<Block> = Offset(blockLength - start)
     if (stopPosition != null) {
         stops = doubleArrayOf(stopPosition.distance.meters)
         simLength = Offset.min(simLength, stopPosition)
@@ -131,22 +140,21 @@ fun simulateBlock(
     }
 }
 
-/**
- * Make an envelope with a single point of the given speed
- */
+/** Make an envelope with a single point of the given speed */
 private fun makeSinglePointEnvelope(speed: Double): Envelope {
     return Envelope.make(
         EnvelopePart(
             mapOf<Class<out EnvelopeAttr>, EnvelopeAttr>(
                 Pair(EnvelopeProfile::class.java, EnvelopeProfile.CONSTANT_SPEED)
-            ), doubleArrayOf(0.0), doubleArrayOf(speed), doubleArrayOf()
+            ),
+            doubleArrayOf(0.0),
+            doubleArrayOf(speed),
+            doubleArrayOf()
         )
     )
 }
 
-/**
- * Returns the time at which the offset on the given edge is reached
- */
+/** Returns the time at which the offset on the given edge is reached */
 fun interpolateTime(
     envelope: Envelope,
     edgeOffset: Offset<STDCMEdge>,
@@ -158,9 +166,7 @@ fun interpolateTime(
     return startTime + envelope.interpolateTotalTime(edgeOffset.distance.meters) / speedRatio
 }
 
-/**
- * Try to apply an allowance on the given envelope to add the given delay
- */
+/** Try to apply an allowance on the given envelope to add the given delay */
 fun findEngineeringAllowance(
     context: EnvelopeSimContext,
     oldEnvelope: Envelope,
@@ -168,10 +174,9 @@ fun findEngineeringAllowance(
 ): Envelope? {
     var mutNeededDelay = neededDelay
     mutNeededDelay += context.timeStep // error margin for the dichotomy
-    val ranges = listOf(
-        AllowanceRange(0.0, oldEnvelope.endPos, FixedTime(mutNeededDelay))
-    )
-    val capacitySpeedLimit = 1 // We set a minimum because generating curves at very low speed can cause issues
+    val ranges = listOf(AllowanceRange(0.0, oldEnvelope.endPos, FixedTime(mutNeededDelay)))
+    val capacitySpeedLimit =
+        1 // We set a minimum because generating curves at very low speed can cause issues
     // TODO: add a parameter and set a higher default value once we can handle proper stops
     val allowance = LinearAllowance(0.0, oldEnvelope.endPos, capacitySpeedLimit.toDouble(), ranges)
     return try {
@@ -181,9 +186,7 @@ fun findEngineeringAllowance(
     }
 }
 
-/**
- * returns an envelope for a block that already has an envelope, but with a different end speed
- */
+/** returns an envelope for a block that already has an envelope, but with a different end speed */
 fun simulateBackwards(
     rawInfra: RawSignalingInfra,
     blockInfra: BlockInfra,
@@ -193,30 +196,26 @@ fun simulateBackwards(
     oldEnvelope: Envelope,
     graph: STDCMGraph
 ): Envelope {
-    val context = makeSimContext(
-        rawInfra,
-        blockInfra,
-        listOf(blockId),
-        start,
-        graph.rollingStock,
-        graph.comfort,
-        graph.timeStep
-    )
+    val context =
+        makeSimContext(
+            rawInfra,
+            blockInfra,
+            listOf(blockId),
+            start,
+            graph.rollingStock,
+            graph.comfort,
+            graph.timeStep
+        )
     val partBuilder = EnvelopePartBuilder()
     partBuilder.setAttr(EnvelopeProfile.BRAKING)
     partBuilder.setAttr(BacktrackingEnvelopeAttr())
-    val overlayBuilder = ConstrainedEnvelopePartBuilder(
-        partBuilder,
-        SpeedConstraint(0.0, EnvelopePartConstraintType.FLOOR),
-        EnvelopeConstraint(oldEnvelope, EnvelopePartConstraintType.CEILING)
-    )
-    EnvelopeDeceleration.decelerate(
-        context,
-        oldEnvelope.endPos,
-        endSpeed,
-        overlayBuilder,
-        -1.0
-    )
+    val overlayBuilder =
+        ConstrainedEnvelopePartBuilder(
+            partBuilder,
+            SpeedConstraint(0.0, EnvelopePartConstraintType.FLOOR),
+            EnvelopeConstraint(oldEnvelope, EnvelopePartConstraintType.CEILING)
+        )
+    EnvelopeDeceleration.decelerate(context, oldEnvelope.endPos, endSpeed, overlayBuilder, -1.0)
     val builder = OverlayEnvelopeBuilder.backward(oldEnvelope)
     builder.addPart(partBuilder.build())
     return builder.build()

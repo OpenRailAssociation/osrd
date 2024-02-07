@@ -23,26 +23,35 @@ import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl;
 import fr.sncf.osrd.signaling.SignalingSimulator;
 import fr.sncf.osrd.standalone_sim.StandaloneSim;
 import fr.sncf.osrd.standalone_sim.result.StandaloneSimResult;
-import okio.FileSystem;
-import okio.Okio;
-import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import okio.FileSystem;
+import okio.Okio;
+import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class StandaloneSimulationCommand implements CliCommand {
 
-    @Parameter(names = { "--infra_path" }, description = "Path to the infra railjson file to load", required = true)
+    @Parameter(
+            names = {"--infra_path"},
+            description = "Path to the infra railjson file to load",
+            required = true)
     private String infraFilePath;
 
-    @Parameter(names = { "--sim_path" }, description = "Path to the sim railjson file to load", required = true)
+    @Parameter(
+            names = {"--sim_path"},
+            description = "Path to the sim railjson file to load",
+            required = true)
     private String simFilePath;
 
-    @Parameter(names = { "--res_path" }, description = "Path to the result file to save", required = true)
+    @Parameter(
+            names = {"--res_path"},
+            description = "Path to the result file to save",
+            required = true)
     private String resultFilePath;
 
     private final DiagnosticRecorderImpl diagnosticRecorder = new DiagnosticRecorderImpl(false);
@@ -51,9 +60,9 @@ public class StandaloneSimulationCommand implements CliCommand {
 
     static final Logger logger = LoggerFactory.getLogger(StandaloneSimulationCommand.class);
 
-    public static final JsonAdapter<Map<String, StandaloneSimResult>> simulationResultAdapter =
-            new Moshi.Builder().build()
-                    .adapter(Types.newParameterizedType(Map.class, String.class, StandaloneSimResult.class));
+    public static final JsonAdapter<Map<String, StandaloneSimResult>> simulationResultAdapter = new Moshi.Builder()
+            .build()
+            .adapter(Types.newParameterizedType(Map.class, String.class, StandaloneSimResult.class));
 
     StandaloneSimulationCommand(String infraFilePath, String simFilePath, String resultFilePath) {
         this.infraFilePath = infraFilePath;
@@ -61,8 +70,7 @@ public class StandaloneSimulationCommand implements CliCommand {
         this.resultFilePath = resultFilePath;
     }
 
-    public StandaloneSimulationCommand() {
-    }
+    public StandaloneSimulationCommand() {}
 
     @Override
     public int run() {
@@ -93,17 +101,23 @@ public class StandaloneSimulationCommand implements CliCommand {
         var results = new HashMap<String, StandaloneSimResult>();
         for (var trainScheduleGroup : input.trainScheduleGroups) {
             logger.info("Running simulation for schedule group: {}", trainScheduleGroup.id);
-            var rawPathfindingResult = runPathfinding(
-                    infra, trainScheduleGroup.waypoints, rollingStocks.values());
+            var rawPathfindingResult = runPathfinding(infra, trainScheduleGroup.waypoints, rollingStocks.values());
             var pathfindingResult = convertPathfindingResult(
                     infra.blockInfra(), infra.rawInfra(), rawPathfindingResult, diagnosticRecorder);
             var routePath = pathfindingResult.routePaths.stream()
-                    .map(x -> (RJSRoutePath) x) // Converts the list from '? extends RJSRoutePath' to 'RJSRoutePath'
+                    .map(x -> (RJSRoutePath) x) // Converts the list from '? extends
+                    // RJSRoutePath' to 'RJSRoutePath'
                     .toList();
             var res = StandaloneSim.runFromRJS(
-                    infra, null, new RJSTrainPath(routePath), rollingStocks,
-                    trainScheduleGroup.schedules, input.timeStep);
-            res.addDepartureTimes(trainScheduleGroup.schedules.stream().map(s -> s.departureTime).toList());
+                    infra,
+                    null,
+                    new RJSTrainPath(routePath),
+                    rollingStocks,
+                    trainScheduleGroup.schedules,
+                    input.timeStep);
+            res.addDepartureTimes(trainScheduleGroup.schedules.stream()
+                    .map(s -> s.departureTime)
+                    .toList());
             results.put(trainScheduleGroup.id, res);
         }
         logger.info("All simulations completed");
@@ -163,10 +177,14 @@ public class StandaloneSimulationCommand implements CliCommand {
     }
 
     public static class Input {
-        public static final JsonAdapter<Input> adapter =
-                new Moshi.Builder().add(ID.Adapter.FACTORY).add(RJSRollingResistance.adapter).add(RJSAllowance.adapter)
-                        .add(new KotlinJsonAdapterFactory())
-                        .add(RJSAllowanceValue.adapter).build().adapter(Input.class);
+        public static final JsonAdapter<Input> adapter = new Moshi.Builder()
+                .add(ID.Adapter.FACTORY)
+                .add(RJSRollingResistance.adapter)
+                .add(RJSAllowance.adapter)
+                .add(new KotlinJsonAdapterFactory())
+                .add(RJSAllowanceValue.adapter)
+                .build()
+                .adapter(Input.class);
 
         /** The time step which shall be used for all simulations */
         @Json(name = "time_step")

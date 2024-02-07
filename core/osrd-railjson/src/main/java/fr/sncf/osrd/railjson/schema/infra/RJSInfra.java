@@ -10,17 +10,13 @@ import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSTrainDetector;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSElectrification;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSNeutralSection;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSSpeedSection;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 public class RJSInfra {
     /** Moshi adapter used to serialize and deserialize RJSInfra */
-    public static final JsonAdapter<RJSInfra> adapter = new Moshi
-            .Builder()
-            .add(ID.Adapter.FACTORY)
-            .build()
-            .adapter(RJSInfra.class);
+    public static final JsonAdapter<RJSInfra> adapter =
+            new Moshi.Builder().add(ID.Adapter.FACTORY).build().adapter(RJSInfra.class);
 
     public static final transient String CURRENT_VERSION = "3.4.9";
 
@@ -34,10 +30,7 @@ public class RJSInfra {
     /** Switches are at the ends of track sections, and link those together. */
     public Collection<RJSSwitch> switches;
 
-    /**
-     * The list of all operational points.
-     * Finding reverse dependencies is up to the user.
-     */
+    /** The list of all operational points. Finding reverse dependencies is up to the user. */
     @Json(name = "operational_points")
     public Collection<RJSOperationalPoint> operationalPoints;
 

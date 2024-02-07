@@ -1,11 +1,11 @@
 package fr.sncf.osrd.utils.takes;
 
-import org.takes.Response;
-import org.takes.rs.RsPrint;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import org.takes.Response;
+import org.takes.rs.RsPrint;
 
 public class TakesUtils {
     /** Read a `takes` body response and returns it as a String */

@@ -5,13 +5,15 @@ import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType
 import fr.sncf.osrd.sim_infra.api.LoadingGaugeConstraint
 import fr.sncf.osrd.sim_infra.api.LoadingGaugeTypeId
 
-class LoadingGaugeConstraintImpl(blockedTypes: ImmutableSet<RJSLoadingGaugeType>) : LoadingGaugeConstraint {
+class LoadingGaugeConstraintImpl(blockedTypes: ImmutableSet<RJSLoadingGaugeType>) :
+    LoadingGaugeConstraint {
     private val blockedTypes: ImmutableSet<LoadingGaugeTypeId>
 
     init {
         val builder = ImmutableSet.builder<LoadingGaugeTypeId>()
-        for (blockedType in blockedTypes)
-            builder.add(LoadingGaugeTypeId(blockedType.ordinal.toUInt()))
+        for (blockedType in blockedTypes) builder.add(
+            LoadingGaugeTypeId(blockedType.ordinal.toUInt())
+        )
         this.blockedTypes = builder.build()
     }
 

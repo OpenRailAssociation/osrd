@@ -14,7 +14,6 @@ import fr.sncf.osrd.envelope.part.constraints.SpeedConstraint;
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeDeceleration;
 import org.junit.jupiter.api.Test;
 
-
 public class TrainPhysicsIntegratorTest {
     private static final double TIME_STEP = 1.0;
 
@@ -92,8 +91,8 @@ public class TrainPhysicsIntegratorTest {
         // make a huge traction effort
         double rollingResistance = testRollingStock.getRollingResistance(speed);
         double weightForce = getWeightForce(testRollingStock, testPath, position);
-        var acceleration = TrainPhysicsIntegrator.computeAcceleration(testRollingStock,
-                rollingResistance, weightForce, speed, 500000.0, 0, +1);
+        var acceleration = TrainPhysicsIntegrator.computeAcceleration(
+                testRollingStock, rollingResistance, weightForce, speed, 500000.0, 0, +1);
         var step = newtonStep(TIME_STEP, speed, acceleration, +1);
         position += step.positionDelta;
         speed = step.endSpeed;
@@ -122,10 +121,8 @@ public class TrainPhysicsIntegratorTest {
     public void testEmptyCoastFromBeginning() {
         var context = makeSimpleContext(100000, 0, TIME_STEP);
         var builder = new EnvelopePartBuilder();
-        var constrainedBuilder = new ConstrainedEnvelopePartBuilder(
-                builder,
-                new SpeedConstraint(0, EnvelopePartConstraintType.FLOOR)
-        );
+        var constrainedBuilder =
+                new ConstrainedEnvelopePartBuilder(builder, new SpeedConstraint(0, EnvelopePartConstraintType.FLOOR));
         EnvelopeDeceleration.decelerate(context, 0, 10, constrainedBuilder, 1);
         builder.setAttr(EnvelopeProfile.BRAKING);
         var acceleration = Envelope.make(builder.build());

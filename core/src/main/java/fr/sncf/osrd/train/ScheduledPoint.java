@@ -7,7 +7,6 @@ public class ScheduledPoint {
     public double pathOffset;
     public double time;
 
-
     public ScheduledPoint(double pathOffset, double time) {
         this.pathOffset = pathOffset;
         this.time = time;
@@ -19,8 +18,7 @@ public class ScheduledPoint {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ScheduledPoint trainStop = (ScheduledPoint) o;
-        return Double.compare(trainStop.pathOffset, pathOffset) == 0
-                && Double.compare(trainStop.time, time) == 0;
+        return Double.compare(trainStop.pathOffset, pathOffset) == 0 && Double.compare(trainStop.time, time) == 0;
     }
 
     @Override

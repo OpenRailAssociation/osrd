@@ -4,22 +4,11 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
 
-
 public class EnvelopeCursorTest {
     public static final Envelope FLAT_ENVELOPE = Envelope.make(
-            EnvelopeTestUtils.generateTimes(
-                    new double[]{1, 3, 4},
-                    new double[]{4, 4, 4}
-            ),
-            EnvelopeTestUtils.generateTimes(
-                    new double[]{4, 6},
-                    new double[]{4, 4}
-            ),
-            EnvelopeTestUtils.generateTimes(
-                    new double[]{6, 8, 10},
-                    new double[]{4, 4, 4}
-            )
-    );
+            EnvelopeTestUtils.generateTimes(new double[] {1, 3, 4}, new double[] {4, 4, 4}),
+            EnvelopeTestUtils.generateTimes(new double[] {4, 6}, new double[] {4, 4}),
+            EnvelopeTestUtils.generateTimes(new double[] {6, 8, 10}, new double[] {4, 4, 4}));
 
     @Test
     void forwardTest() {

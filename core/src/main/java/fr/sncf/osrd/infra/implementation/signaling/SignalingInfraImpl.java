@@ -1,9 +1,7 @@
 package fr.sncf.osrd.infra.implementation.signaling;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.graph.ImmutableNetwork;
-import fr.sncf.osrd.infra.api.reservation.DetectionSection;
 import fr.sncf.osrd.infra.api.reservation.DiDetector;
 import fr.sncf.osrd.infra.api.reservation.ReservationInfra;
 import fr.sncf.osrd.infra.api.reservation.ReservationRoute;
@@ -25,8 +23,7 @@ public class SignalingInfraImpl extends ReservationInfraImpl implements Signalin
             ReservationInfra reservationInfra,
             ImmutableMultimap<RJSSignal, Signal<? extends SignalState>> signalMap,
             ImmutableMultimap<ReservationRoute, SignalingRoute> routeMap,
-            ImmutableNetwork<DiDetector, SignalingRoute> signalingRouteGraph
-    ) {
+            ImmutableNetwork<DiDetector, SignalingRoute> signalingRouteGraph) {
         super(
                 reservationInfra,
                 reservationInfra.getSectionMap(),
@@ -57,11 +54,9 @@ public class SignalingInfraImpl extends ReservationInfraImpl implements Signalin
     @Override
     public SignalingRoute findSignalingRoute(String id, String signalingType) {
         var reservationRoute = getReservationRouteMap().getOrDefault(id, null);
-        if (reservationRoute == null)
-            return null;
+        if (reservationRoute == null) return null;
         for (SignalingRoute route : routeMap.get(reservationRoute))
-            if (route.getSignalingType().equals(signalingType))
-                return route;
+            if (route.getSignalingType().equals(signalingType)) return route;
         return null;
     }
 }

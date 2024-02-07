@@ -1,11 +1,10 @@
 package fr.sncf.osrd.sim.interlocking.api
 
-import fr.sncf.osrd.utils.indexing.*
 import fr.sncf.osrd.sim_infra.api.*
-import kotlinx.coroutines.flow.StateFlow
+import fr.sncf.osrd.utils.indexing.*
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
-
+import kotlinx.coroutines.flow.StateFlow
 
 // region MOVABLE ELEMENTS
 
@@ -17,15 +16,16 @@ enum class MovableElementInitPolicy {
 
 interface MovableElementSim {
     fun watchMovableElement(movable: TrackNodeId): StateFlow<TrackNodeConfigId?>
+
     suspend fun move(movable: TrackNodeId, config: TrackNodeConfigId)
+
     suspend fun lockMovableElement(movable: TrackNodeId)
+
     suspend fun unlockMovableElement(movable: TrackNodeId)
 }
 
 suspend inline fun <T> MovableElementSim.withLock(movable: TrackNodeId, action: () -> T): T {
-    contract {
-        callsInPlace(action, InvocationKind.EXACTLY_ONCE)
-    }
+    contract { callsInPlace(action, InvocationKind.EXACTLY_ONCE) }
 
     lockMovableElement(movable)
     try {
@@ -47,7 +47,9 @@ typealias ZoneOccupation = DynIdxSortedSet<Train>
 
 interface LocationSim {
     fun watchZoneOccupation(zone: ZoneId): StateFlow<ZoneOccupation>
+
     suspend fun enterZone(zone: ZoneId, train: TrainId)
+
     suspend fun leaveZone(zone: ZoneId, train: TrainId)
 }
 
@@ -56,13 +58,12 @@ interface LocationSim {
 // region RESERVATION
 
 /**
- * The reservation state of a zone.
- * At any given time, multiple actors (trains) can hold reservations for this zone.
+ * The reservation state of a zone. At any given time, multiple actors (trains) can hold
+ * reservations for this zone.
  */
 interface ZoneState {
     val reservations: ArenaMap<ZoneReservation, ZoneReservation>
 }
-
 
 /** A zone reservation by some actor */
 interface ZoneReservation {
@@ -73,8 +74,6 @@ interface ZoneReservation {
 
 typealias ZoneReservationId = DynIdx<ZoneReservation>
 
-
-
 /** Zone requirements are constraints on what the reservation state of a zone can be */
 interface ZoneRequirements {
     val entry: DirDetectorId
@@ -83,17 +82,14 @@ interface ZoneRequirements {
 }
 
 fun ZoneRequirements.compatibleWith(other: ZoneRequirements): Boolean {
-    if (entry != other.entry)
-        return false
-    if (exit != other.exit)
-        return false
+    if (entry != other.entry) return false
+    if (exit != other.exit) return false
     // this test may be too restrictive, but that's ok:
     // in the worst case, it restricts configurations that might be otherwise allowed,
     // such as having multiple compatible overlapping routes which actuate different
     // movable elements in the same zone
     return movableElements == other.movableElements
 }
-
 
 enum class ZoneReservationStatus {
     /** In the process of being reserved, but not yet ready */
@@ -120,16 +116,18 @@ interface ReservationSim {
 
     /** Release the action lock */
     suspend fun unlockZone(zone: ZoneId)
+
     fun preReserve(zone: ZoneId, zonePath: ZonePathId, train: TrainId): ZoneReservationId
+
     fun confirm(zone: ZoneId, reservation: ZoneReservationId)
+
     suspend fun awaitPendingRelease(zone: ZoneId, reservation: ZoneReservationId)
+
     fun release(zone: ZoneId, reservation: ZoneReservationId)
 }
 
 suspend inline fun <T> ReservationSim.withLock(zone: ZoneId, action: () -> T): T {
-    contract {
-        callsInPlace(action, InvocationKind.EXACTLY_ONCE)
-    }
+    contract { callsInPlace(action, InvocationKind.EXACTLY_ONCE) }
 
     lockZone(zone)
     try {
@@ -147,9 +145,10 @@ interface RouteCallHandle
 
 interface RoutingSim {
     /**
-     * Returns when the route is established.
-     * When the route is established, a background destruction process starts.
-     * This process releases zone reservations at the train stops occupying zones.
+     * Returns when the route is established. When the route is established, a background
+     * destruction process starts. This process releases zone reservations at the train stops
+     * occupying zones.
+     *
      * @return a handle which can be used to wait for the destruction process to complete
      */
     suspend fun call(route: RouteId, train: TrainId): DynIdx<RouteCallHandle>

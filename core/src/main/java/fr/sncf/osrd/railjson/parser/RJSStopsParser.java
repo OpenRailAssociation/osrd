@@ -25,21 +25,17 @@ public class RJSStopsParser {
             if ((stop.position == null) == (stop.location == null))
                 throw new OSRDError(ErrorType.InvalidScheduleMissingTrainStopLocation);
             long positionMM;
-            if (stop.position != null)
-                positionMM = Distance.fromMeters(stop.position);
+            if (stop.position != null) positionMM = Distance.fromMeters(stop.position);
             else {
-                positionMM = PathPropertiesKt.getTrackLocationOffsetOrThrow(path,
-                        RJSTrackLocationParser.parse(infra, stop.location));
+                positionMM = PathPropertiesKt.getTrackLocationOffsetOrThrow(
+                        path, RJSTrackLocationParser.parse(infra, stop.location));
             }
 
-            if (positionMM > path.getLength())
-                throw new OSRDError(ErrorType.InvalidScheduleOutsideTrainStopPosition);
+            if (positionMM > path.getLength()) throw new OSRDError(ErrorType.InvalidScheduleOutsideTrainStopPosition);
 
             res.add(new TrainStop(Distance.toMeters(positionMM), stop.duration));
         }
-        for (var stop : res)
-            if (stop.position < 0)
-                stop.position = Distance.toMeters(path.getLength());
+        for (var stop : res) if (stop.position < 0) stop.position = Distance.toMeters(path.getLength());
         res.sort(Comparator.comparingDouble(stop -> stop.position));
         return res;
     }

@@ -16,6 +16,8 @@ import fr.sncf.osrd.reporting.warnings.Warning;
 import fr.sncf.osrd.standalone_sim.SignalProjectionKt;
 import fr.sncf.osrd.standalone_sim.result.ResultTrain;
 import fr.sncf.osrd.standalone_sim.result.SignalUpdate;
+import java.util.ArrayList;
+import java.util.List;
 import org.takes.Request;
 import org.takes.Response;
 import org.takes.Take;
@@ -24,8 +26,6 @@ import org.takes.rs.RsJson;
 import org.takes.rs.RsText;
 import org.takes.rs.RsWithBody;
 import org.takes.rs.RsWithStatus;
-import java.util.ArrayList;
-import java.util.List;
 
 public class SignalProjectionEndpoint implements Take {
 
@@ -35,15 +35,14 @@ public class SignalProjectionEndpoint implements Take {
         this.infraManager = infraManager;
     }
 
-    public static final JsonAdapter<SignalProjectionEndpoint.SignalProjectionRequest> adapterRequest = new Moshi
-            .Builder()
-            .add(ID.Adapter.FACTORY)
-            .add(RJSRollingResistance.adapter)
-            .add(RJSAllowance.adapter)
-            .add(RJSAllowanceValue.adapter)
-            .build()
-            .adapter(SignalProjectionEndpoint.SignalProjectionRequest.class);
-
+    public static final JsonAdapter<SignalProjectionEndpoint.SignalProjectionRequest> adapterRequest =
+            new Moshi.Builder()
+                    .add(ID.Adapter.FACTORY)
+                    .add(RJSRollingResistance.adapter)
+                    .add(RJSAllowance.adapter)
+                    .add(RJSAllowanceValue.adapter)
+                    .build()
+                    .adapter(SignalProjectionEndpoint.SignalProjectionRequest.class);
 
     @Override
     public Response act(Request req) throws Exception {
@@ -52,8 +51,7 @@ public class SignalProjectionEndpoint implements Take {
             // Parse request input
             var body = new RqPrint(req).printBody();
             var request = adapterRequest.fromJson(body);
-            if (request == null)
-                return new RsWithStatus(new RsText("missing request body"), 400);
+            if (request == null) return new RsWithStatus(new RsText("missing request body"), 400);
 
             // get infra
             var infra = infraManager.getInfra(request.infra, request.expectedVersion, recorder);
@@ -63,8 +61,8 @@ public class SignalProjectionEndpoint implements Take {
             var routePath = request.trainPath.routePath.stream()
                     .map(rjsRoutePath -> infra.rawInfra().getRouteFromName(rjsRoutePath.route))
                     .toList();
-            var result = SignalProjectionKt.project(infra, chunkPath, routePath, request.signalSightings,
-                    request.zoneUpdates);
+            var result = SignalProjectionKt.project(
+                    infra, chunkPath, routePath, request.signalSightings, request.zoneUpdates);
 
             result.warnings = recorder.warnings;
 
@@ -73,25 +71,18 @@ public class SignalProjectionEndpoint implements Take {
             // TODO: include warnings in the response
             return ExceptionHandler.handle(ex);
         }
-
     }
 
     @SuppressFBWarnings("UWF_UNWRITTEN_PUBLIC_OR_PROTECTED_FIELD")
     public static class SignalProjectionRequest {
-        /**
-         * Infra id
-         */
+        /** Infra id */
         public String infra;
 
-        /**
-         * Infra version
-         */
+        /** Infra version */
         @Json(name = "expected_version")
         public String expectedVersion;
 
-        /**
-         * The path used by trains
-         */
+        /** The path used by trains */
         @Json(name = "train_path")
         public RJSTrainPath trainPath;
 
@@ -104,10 +95,8 @@ public class SignalProjectionEndpoint implements Take {
 
     @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
     public static class SignalProjectionResult {
-        public static final JsonAdapter<SignalProjectionResult> adapter = new Moshi
-                .Builder()
-                .build()
-                .adapter(SignalProjectionResult.class);
+        public static final JsonAdapter<SignalProjectionResult> adapter =
+                new Moshi.Builder().build().adapter(SignalProjectionResult.class);
 
         @Json(name = "signal_updates")
         public final List<SignalUpdate> signalUpdates;

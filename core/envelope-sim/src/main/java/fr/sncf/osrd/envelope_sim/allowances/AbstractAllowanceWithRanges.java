@@ -28,12 +28,12 @@ import fr.sncf.osrd.envelope_sim.overlays.EnvelopeDeceleration;
 import fr.sncf.osrd.envelope_utils.DoubleBinarySearch;
 import fr.sncf.osrd.reporting.exceptions.ErrorType;
 import fr.sncf.osrd.reporting.exceptions.OSRDError;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SuppressFBWarnings("CT_CONSTRUCTOR_THROW")
 public abstract class AbstractAllowanceWithRanges implements Allowance {
@@ -48,11 +48,7 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
     public final double capacitySpeedLimit;
 
     protected AbstractAllowanceWithRanges(
-            double beginPos,
-            double endPos,
-            double capacitySpeedLimit,
-            List<AllowanceRange> ranges
-    ) {
+            double beginPos, double endPos, double capacitySpeedLimit, List<AllowanceRange> ranges) {
         this.beginPos = beginPos;
         this.endPos = endPos;
         this.capacitySpeedLimit = capacitySpeedLimit;
@@ -71,8 +67,7 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
     protected abstract double computeInitialLowBound(Envelope envelopeSection);
 
     public static final class CapacitySpeedLimit implements EnvelopeAttr {
-        private CapacitySpeedLimit() {
-        }
+        private CapacitySpeedLimit() {}
 
         @Override
         public Class<? extends EnvelopeAttr> getAttrType() {
@@ -105,20 +100,16 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
         var res = new DoubleArrayList();
         for (var envelopePart : base) {
             // skips envelope parts which aren't stops
-            if (envelopePart.getEndSpeed() != 0)
-                continue;
+            if (envelopePart.getEndSpeed() != 0) continue;
             res.add(envelopePart.getEndPos());
         }
         return res;
     }
 
     private static RuntimeException makeError(DoubleBinarySearch search) {
-        if (!search.hasRaisedLowBound())
-            throw new OSRDError(ErrorType.AllowanceConvergenceTooMuchTime);
-        else if (!search.hasLoweredHighBound())
-            throw new OSRDError(ErrorType.AllowanceConvergenceNotEnoughTime);
-        else
-            throw new OSRDError(ErrorType.AllowanceConvergenceDiscontinuity);
+        if (!search.hasRaisedLowBound()) throw new OSRDError(ErrorType.AllowanceConvergenceTooMuchTime);
+        else if (!search.hasLoweredHighBound()) throw new OSRDError(ErrorType.AllowanceConvergenceNotEnoughTime);
+        else throw new OSRDError(ErrorType.AllowanceConvergenceDiscontinuity);
     }
 
     /** Apply the allowance to a given envelope. */
@@ -137,24 +128,21 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
         var builder = new EnvelopeBuilder();
         builder.addParts(base.slice(Double.NEGATIVE_INFINITY, beginPos));
         var allowanceRegion = computeAllowanceRegion(region, context);
-        for (var envelope : allowanceRegion)
-            builder.addEnvelope(envelope);
+        for (var envelope : allowanceRegion) builder.addEnvelope(envelope);
         builder.addParts(base.slice(endPos, Double.POSITIVE_INFINITY));
         var res = builder.build();
         assert res.continuous : "Discontinuity on the edges of the allowance region";
         return res;
     }
 
-    private record RangeBaseTime(AllowanceRange range, double baseTime) {
-    }
+    private record RangeBaseTime(AllowanceRange range, double baseTime) {}
 
     /**
-     * Apply the allowance to the region affected by the allowance.
-     * The region is split in ranges asked by the user and independently computed.
-     * Ranges are computed in a specific order : from the lowest to the highest allowance value.
-     * Once a range is computed, its beginning and end speeds are memorized
-     * and imposed to the left and right side ranges respectively.
-     * This process ensures the continuity of the final envelope.
+     * Apply the allowance to the region affected by the allowance. The region is split in ranges
+     * asked by the user and independently computed. Ranges are computed in a specific order : from
+     * the lowest to the highest allowance value. Once a range is computed, its beginning and end
+     * speeds are memorized and imposed to the left and right side ranges respectively. This process
+     * ensures the continuity of the final envelope.
      */
     private Envelope[] computeAllowanceRegion(Envelope envelopeRegion, EnvelopeSimContext context) {
 
@@ -162,11 +150,11 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
         // every time a range is computed, the imposed left and right speeds are memorized
         var imposedTransitionSpeeds = new double[ranges.size() + 1];
         imposedTransitionSpeeds[0] = envelopeRegion.getBeginSpeed();
-        for (int i = 1; i < ranges.size(); i++)
-            imposedTransitionSpeeds[i] = NaN;
+        for (int i = 1; i < ranges.size(); i++) imposedTransitionSpeeds[i] = NaN;
         imposedTransitionSpeeds[ranges.size()] = envelopeRegion.getEndSpeed();
 
-        // build an array of (range, baseTime) in order to sort the array rangeOrder by ascending base time
+        // build an array of (range, baseTime) in order to sort the array rangeOrder by ascending
+        // base time
         var baseTimes = new RangeBaseTime[ranges.size()];
         for (var i = 0; i < ranges.size(); i++) {
             var range = ranges.get(i);
@@ -177,8 +165,7 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
         // the order in which the ranges should be computed
         // ranges are computed with increasing baseTime values
         var rangeOrder = new Integer[ranges.size()];
-        for (var i = 0; i < ranges.size(); i++)
-            rangeOrder[i] = i;
+        for (var i = 0; i < ranges.size(); i++) rangeOrder[i] = i;
         Arrays.sort(rangeOrder, Comparator.comparingDouble(rangeIndex -> baseTimes[rangeIndex].baseTime));
 
         var res = new Envelope[ranges.size()];
@@ -192,9 +179,8 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
             var imposedEndSpeed = imposedTransitionSpeeds[rangeIndex + 1];
             var rangeRatio = envelopeRange.getTotalTime() / envelopeRegion.getTotalTime();
             var tolerance = context.timeStep * rangeRatio;
-            var allowanceRange =
-                    computeAllowanceRange(envelopeRange, context, range.value, imposedBeginSpeed, imposedEndSpeed,
-                            tolerance);
+            var allowanceRange = computeAllowanceRange(
+                    envelopeRange, context, range.value, imposedBeginSpeed, imposedEndSpeed, tolerance);
             // memorize the beginning and end speeds
             imposedTransitionSpeeds[rangeIndex] = allowanceRange.getBeginSpeed();
             imposedTransitionSpeeds[rangeIndex + 1] = allowanceRange.getEndSpeed();
@@ -205,15 +191,16 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
     }
 
     /**
-     * Apply the allowance to the given range.
-     * Split the range into sections, separated by stops, which are independently computed.
+     * Apply the allowance to the given range. Split the range into sections, separated by stops,
+     * which are independently computed.
      */
-    private Envelope computeAllowanceRange(Envelope envelopeRange,
-                                           EnvelopeSimContext context,
-                                           AllowanceValue value,
-                                           double imposedRangeBeginSpeed,
-                                           double imposedRangeEndSpeed,
-                                           double tolerance) {
+    private Envelope computeAllowanceRange(
+            Envelope envelopeRange,
+            EnvelopeSimContext context,
+            AllowanceValue value,
+            double imposedRangeBeginSpeed,
+            double imposedRangeEndSpeed,
+            double tolerance) {
         // compute the added time for all the allowance range
         var baseTime = envelopeRange.getTotalTime();
         var baseDistance = envelopeRange.getTotalDistance();
@@ -234,8 +221,7 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
             slowestRunningTime = slowestEnvelope.getTotalTime();
         }
         // if the total target time isn't actually reachable, throw error
-        if (totalTargetTime > slowestRunningTime)
-            throw new OSRDError(ErrorType.AllowanceConvergenceTooMuchTime);
+        if (totalTargetTime > slowestRunningTime) throw new OSRDError(ErrorType.AllowanceConvergenceTooMuchTime);
 
         var rangeBeginPos = envelopeRange.getBeginPos();
         var rangeEndPos = envelopeRange.getEndPos();
@@ -245,8 +231,7 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
         var splitPoints = new DoubleArrayList();
         splitPoints.add(rangeBeginPos);
         splitPoints.addAll(findStops(envelopeRange));
-        if (splitPoints.get(splitPoints.size() - 1) != rangeEndPos)
-            splitPoints.add(rangeEndPos);
+        if (splitPoints.get(splitPoints.size() - 1) != rangeEndPos) splitPoints.add(rangeEndPos);
 
         var builder = new EnvelopeBuilder();
         // apply the allowance on each section of the allowance range
@@ -259,15 +244,15 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
             var sectionRatio = value.getSectionRatio(sectionTime, baseTime, sectionDistance, baseDistance);
             var targetTime = sectionTime + addedTime * sectionRatio;
 
-            // the imposed begin and end speeds only apply to the first and last section of the range respectively
+            // the imposed begin and end speeds only apply to the first and last section of the
+            // range respectively
             var imposedBeginSpeed = sectionBeginPos == rangeBeginPos ? imposedRangeBeginSpeed : NaN;
             var imposedEndSpeed = sectionEndPos == rangeEndPos ? imposedRangeEndSpeed : NaN;
 
             logger.debug("  computing section n°{}", i + 1);
             var distributedTolerance = tolerance * sectionRatio;
-            var allowanceSection =
-                    computeAllowanceSection(section, context, targetTime, imposedBeginSpeed, imposedEndSpeed,
-                            distributedTolerance);
+            var allowanceSection = computeAllowanceSection(
+                    section, context, targetTime, imposedBeginSpeed, imposedEndSpeed, distributedTolerance);
             assert abs(allowanceSection.getTotalTime() - targetTime) <= context.timeStep;
             builder.addEnvelope(allowanceSection);
         }
@@ -275,29 +260,25 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
     }
 
     /** Iteratively apply the allowance on the given section, until the target time is reached */
-    private Envelope computeAllowanceSection(Envelope envelopeSection,
-                                             EnvelopeSimContext context,
-                                             double targetTime,
-                                             double imposedBeginSpeed,
-                                             double imposedEndSpeed,
-                                             double tolerance) {
+    private Envelope computeAllowanceSection(
+            Envelope envelopeSection,
+            EnvelopeSimContext context,
+            double targetTime,
+            double imposedBeginSpeed,
+            double imposedEndSpeed,
+            double tolerance) {
         // perform a binary search
         var initialLowBound = computeInitialLowBound(envelopeSection);
         var initialHighBound = computeInitialHighBound(envelopeSection, context.rollingStock);
         if (initialLowBound > initialHighBound) {
-            // This can happen when capacity speed limit > max speed. We know in advance no solution can be found.
+            // This can happen when capacity speed limit > max speed. We know in advance no solution
+            // can be found.
             throw new OSRDError(ErrorType.AllowanceConvergenceTooMuchTime);
         }
 
         Envelope res = null;
         OSRDError lastError = null;
-        var search = new DoubleBinarySearch(
-                initialLowBound,
-                initialHighBound,
-                targetTime,
-                tolerance,
-                true
-        );
+        var search = new DoubleBinarySearch(initialLowBound, initialHighBound, targetTime, tolerance, true);
         logger.debug("  target time = {}", targetTime);
         for (int i = 1; i < 21 && !search.complete(); i++) {
             var input = search.getInput();
@@ -323,8 +304,8 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
         }
 
         if (!search.complete()) {
-            if (lastError != null)
-                throw lastError; // If we couldn't converge and an error happened, it has more info than a generic error
+            if (lastError != null) throw lastError; // If we couldn't converge and an error happened, it has more info
+            // than a generic error
             throw makeError(search);
         }
         return res;
@@ -336,11 +317,8 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
     }
 
     /** Compute one iteration of the binary search, with specified speeds on the edges */
-    public Envelope computeIteration(Envelope base,
-                                     EnvelopeSimContext context,
-                                     double input,
-                                     double imposedBeginSpeed,
-                                     double imposedEndSpeed) {
+    public Envelope computeIteration(
+            Envelope base, EnvelopeSimContext context, double input, double imposedBeginSpeed, double imposedEndSpeed) {
 
         // The part of the envelope on which the margin is applied is split in 3:
         // left junction, then core phase, then right junction.
@@ -379,13 +357,12 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
 
         // We force the left part end speed and right part begin speed, to avoid epsilon differences
         // that would cause errors later on.
-        // The previous asserts are here to ensure we don't force speed values that are too different
+        // The previous asserts are here to ensure we don't force speed values that are too
+        // different
         builder.addParts(coreEnvelope.slice(
                 leftPartEndPos, leftPartEndSpeed,
-                rightPartBeginPos, rightPartBeginSpeed
-        ));
-        if (rightPart != null)
-            builder.addPart(rightPart);
+                rightPartBeginPos, rightPartBeginSpeed));
+        if (rightPart != null) builder.addPart(rightPart);
         var result = builder.build();
 
         // 3) check for continuity of the section
@@ -393,16 +370,15 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
         return result;
     }
 
-    /** Compute the left junction of the section if a beginning speed is imposed.
-     *  This junction can be a slow-down or a speed-up phase,
-     *  depending on the imposed begin speed and the target envelope */
-    private EnvelopePart computeLeftJunction(Envelope envelopeSection,
-                                             Envelope envelopeTarget,
-                                             EnvelopeSimContext context,
-                                             double imposedBeginSpeed) {
+    /**
+     * Compute the left junction of the section if a beginning speed is imposed. This junction can
+     * be a slow-down or a speed-up phase, depending on the imposed begin speed and the target
+     * envelope
+     */
+    private EnvelopePart computeLeftJunction(
+            Envelope envelopeSection, Envelope envelopeTarget, EnvelopeSimContext context, double imposedBeginSpeed) {
         // if there is no imposed begin speed, no junction needs to be computed
-        if (Double.isNaN(imposedBeginSpeed))
-            return null;
+        if (Double.isNaN(imposedBeginSpeed)) return null;
 
         var constraints = new ArrayList<EnvelopePartConstraint>();
         constraints.add(new PositionConstraint(envelopeSection.getBeginPos(), envelopeSection.getEndPos()));
@@ -412,47 +388,39 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
         // if the imposed speed is above the target, compute slowdown, else, compute speedup
         if (imposedBeginSpeed > envelopeTarget.getBeginSpeed()) {
             constraints.add(new EnvelopeConstraint(envelopeTarget, FLOOR));
-            var constrainedBuilder = new ConstrainedEnvelopePartBuilder(
-                    partBuilder,
-                    constraints.toArray(new EnvelopePartConstraint[0])
-            );
+            var constrainedBuilder =
+                    new ConstrainedEnvelopePartBuilder(partBuilder, constraints.toArray(new EnvelopePartConstraint[0]));
             EnvelopeDeceleration.decelerate(
-                    context, envelopeSection.getBeginPos(), imposedBeginSpeed, constrainedBuilder, 1
-            );
+                    context, envelopeSection.getBeginPos(), imposedBeginSpeed, constrainedBuilder, 1);
             partBuilder.setAttr(EnvelopeProfile.BRAKING);
             lastIntersection = constrainedBuilder.lastIntersection;
         } else if (imposedBeginSpeed < envelopeSection.getBeginSpeed()) {
             constraints.add(new EnvelopeConstraint(envelopeTarget, CEILING));
             constraints.add(new EnvelopeConstraint(envelopeSection, CEILING));
-            var constrainedBuilder = new ConstrainedEnvelopePartBuilder(
-                    partBuilder,
-                    constraints.toArray(new EnvelopePartConstraint[0])
-            );
+            var constrainedBuilder =
+                    new ConstrainedEnvelopePartBuilder(partBuilder, constraints.toArray(new EnvelopePartConstraint[0]));
             EnvelopeAcceleration.accelerate(
-                    context, envelopeSection.getBeginPos(), imposedBeginSpeed, constrainedBuilder, 1
-            );
+                    context, envelopeSection.getBeginPos(), imposedBeginSpeed, constrainedBuilder, 1);
             partBuilder.setAttr(EnvelopeProfile.ACCELERATING);
             lastIntersection = constrainedBuilder.lastIntersection;
         }
         if (lastIntersection == 0) {
             // The end of the part has been reached without crossing the target envelope
-            // The resulting envelope won't be continuous in this case, the allowance is too restrictive
+            // The resulting envelope won't be continuous in this case, the allowance is too
+            // restrictive
             throw new OSRDError(ErrorType.AllowanceConvergenceTooMuchTime);
         }
-        if (partBuilder.isEmpty())
-            return null;
+        if (partBuilder.isEmpty()) return null;
         return partBuilder.build();
     }
 
-    /** Compute the right junction of the section if an end speed is imposed.
-     *  This junction can be a speed-up or a slow-down phase,
-     *  depending on the imposed end speed and the target envelope */
-    private EnvelopePart computeRightJunction(Envelope envelopeSection,
-                                              Envelope envelopeTarget,
-                                              EnvelopeSimContext context,
-                                              double imposedEndSpeed) {
-        if (Double.isNaN(imposedEndSpeed))
-            return null;
+    /**
+     * Compute the right junction of the section if an end speed is imposed. This junction can be a
+     * speed-up or a slow-down phase, depending on the imposed end speed and the target envelope
+     */
+    private EnvelopePart computeRightJunction(
+            Envelope envelopeSection, Envelope envelopeTarget, EnvelopeSimContext context, double imposedEndSpeed) {
+        if (Double.isNaN(imposedEndSpeed)) return null;
 
         var constraints = new ArrayList<EnvelopePartConstraint>();
         constraints.add(new PositionConstraint(envelopeSection.getBeginPos(), envelopeSection.getEndPos()));
@@ -462,45 +430,39 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
         // if the imposed speed is above the target compute speed-up, else, compute slow-down
         if (imposedEndSpeed > envelopeTarget.getEndSpeed()) {
             constraints.add(new EnvelopeConstraint(envelopeTarget, FLOOR));
-            var constrainedBuilder = new ConstrainedEnvelopePartBuilder(
-                    partBuilder,
-                    constraints.toArray(new EnvelopePartConstraint[0])
-            );
+            var constrainedBuilder =
+                    new ConstrainedEnvelopePartBuilder(partBuilder, constraints.toArray(new EnvelopePartConstraint[0]));
             EnvelopeAcceleration.accelerate(
-                    context, envelopeSection.getEndPos(), imposedEndSpeed, constrainedBuilder, -1
-            );
+                    context, envelopeSection.getEndPos(), imposedEndSpeed, constrainedBuilder, -1);
             partBuilder.setAttr(EnvelopeProfile.ACCELERATING);
             lastIntersection = constrainedBuilder.lastIntersection;
         } else if (imposedEndSpeed < envelopeSection.getEndSpeed()) {
             constraints.add(new EnvelopeConstraint(envelopeTarget, CEILING));
-            var constrainedBuilder = new ConstrainedEnvelopePartBuilder(
-                    partBuilder,
-                    constraints.toArray(new EnvelopePartConstraint[0])
-            );
+            var constrainedBuilder =
+                    new ConstrainedEnvelopePartBuilder(partBuilder, constraints.toArray(new EnvelopePartConstraint[0]));
             EnvelopeDeceleration.decelerate(
-                    context, envelopeSection.getEndPos(), imposedEndSpeed, constrainedBuilder, -1
-            );
+                    context, envelopeSection.getEndPos(), imposedEndSpeed, constrainedBuilder, -1);
             partBuilder.setAttr(EnvelopeProfile.BRAKING);
             lastIntersection = constrainedBuilder.lastIntersection;
         }
         if (lastIntersection == 0) {
             // The end of the part has been reached without crossing the target envelope
-            // The resulting envelope won't be continuous in this case, the allowance is too restrictive
+            // The resulting envelope won't be continuous in this case, the allowance is too
+            // restrictive
             throw new OSRDError(ErrorType.AllowanceConvergenceTooMuchTime);
         }
-        if (partBuilder.isEmpty())
-            return null;
+        if (partBuilder.isEmpty()) return null;
         return partBuilder.build();
     }
 
-    /** Transform leftJunction into an envelope that spans from the beginning to the end of envelopeSection,
-     * filling the gap with the core envelope */
-    private Envelope computeEnvelopeWithLeftJunction(Envelope envelopeSection,
-                                                     Envelope coreEnvelope,
-                                                     EnvelopePart leftJunction) {
+    /**
+     * Transform leftJunction into an envelope that spans from the beginning to the end of
+     * envelopeSection, filling the gap with the core envelope
+     */
+    private Envelope computeEnvelopeWithLeftJunction(
+            Envelope envelopeSection, Envelope coreEnvelope, EnvelopePart leftJunction) {
         var builder = new EnvelopeBuilder();
-        if (leftJunction == null)
-            return coreEnvelope;
+        if (leftJunction == null) return coreEnvelope;
         builder.addPart(leftJunction);
         if (leftJunction.getEndPos() < envelopeSection.getEndPos())
             builder.addParts(coreEnvelope.slice(leftJunction.getEndPos(), Double.POSITIVE_INFINITY));
@@ -509,16 +471,14 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
 
     /** If the left and right part intersect, build an envelope with the intersection */
     private Envelope intersectLeftRightParts(EnvelopePart leftPart, EnvelopePart rightPart) {
-        if (rightPart == null || leftPart == null)
-            throw new OSRDError(ErrorType.AllowanceConvergenceTooMuchTime);
+        if (rightPart == null || leftPart == null) throw new OSRDError(ErrorType.AllowanceConvergenceTooMuchTime);
         var slicedLeftPart = leftPart.sliceWithSpeeds(
-                Double.NEGATIVE_INFINITY, NaN,
-                rightPart.getBeginPos(), rightPart.getBeginSpeed()
-        );
+                Double.NEGATIVE_INFINITY, NaN, rightPart.getBeginPos(), rightPart.getBeginSpeed());
         if (slicedLeftPart == null || slicedLeftPart.getEndPos() != rightPart.getBeginPos()) {
             // The curves don't intersect at all
             // This sometimes happens when one part is very short compared to the time step
-            // When it happens we have very little margin to add time, so we throw a `tooMuchTime` error
+            // When it happens we have very little margin to add time, so we throw a `tooMuchTime`
+            // error
             throw new OSRDError(ErrorType.AllowanceConvergenceTooMuchTime);
         }
         return Envelope.make(slicedLeftPart, rightPart);

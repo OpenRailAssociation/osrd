@@ -9,18 +9,18 @@ import fr.sncf.osrd.railjson.schema.common.ID
 import fr.sncf.osrd.standalone_sim.result.StandaloneSimResult
 
 class STDCMResponse
-/** Constructor  */(
+/** Constructor */
+(
     var simulation: StandaloneSimResult,
     var path: PathfindingResult,
-    @Json(
-        name = "departure_time"
-    ) var departureTime: Double
+    @Json(name = "departure_time") var departureTime: Double
 ) {
     companion object {
-        val adapter: JsonAdapter<STDCMResponse> = Moshi.Builder()
-            .add(KotlinJsonAdapterFactory())
-            .add(ID.Adapter.FACTORY)
-            .build()
-            .adapter(STDCMResponse::class.java)
+        val adapter: JsonAdapter<STDCMResponse> =
+            Moshi.Builder()
+                .add(KotlinJsonAdapterFactory())
+                .add(ID.Adapter.FACTORY)
+                .build()
+                .adapter(STDCMResponse::class.java)
     }
 }

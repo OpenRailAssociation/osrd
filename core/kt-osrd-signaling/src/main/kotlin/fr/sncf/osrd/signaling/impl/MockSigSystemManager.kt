@@ -1,14 +1,18 @@
-package fr.sncf.osrd.signaling.impl;
+package fr.sncf.osrd.signaling.impl
 
+import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.signaling.*
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.api.SignalDriver
 import fr.sncf.osrd.utils.indexing.StaticIdxSpace
-import fr.sncf.osrd.reporting.exceptions.OSRDError
 
-class MockSigSystemManager(val sigSystem: String, val settingsSchema: SigSettingsSchema) : SigSystemManager {
-    override fun checkSignalingSystemBlock(reporter: BlockDiagReporter, sigSystem: SignalingSystemId, block: SigBlock) {
-    }
+class MockSigSystemManager(val sigSystem: String, val settingsSchema: SigSettingsSchema) :
+    SigSystemManager {
+    override fun checkSignalingSystemBlock(
+        reporter: BlockDiagReporter,
+        sigSystem: SignalingSystemId,
+        block: SigBlock
+    ) {}
 
     override fun evalSignal(
         driverId: SignalDriverId,
@@ -24,8 +28,7 @@ class MockSigSystemManager(val sigSystem: String, val settingsSchema: SigSetting
         get() = StaticIdxSpace(1u)
 
     override fun findSignalingSystem(sigSystem: String): SignalingSystemId {
-        if (sigSystem != this.sigSystem)
-            throw OSRDError.newSignalingError(sigSystem)
+        if (sigSystem != this.sigSystem) throw OSRDError.newSignalingError(sigSystem)
         return SignalingSystemId(0u)
     }
 
@@ -40,7 +43,10 @@ class MockSigSystemManager(val sigSystem: String, val settingsSchema: SigSetting
     override val drivers: StaticIdxSpace<SignalDriver>
         get() = StaticIdxSpace(1u)
 
-    override fun findDriver(outputSig: SignalingSystemId, inputSig: SignalingSystemId): SignalDriverId {
+    override fun findDriver(
+        outputSig: SignalingSystemId,
+        inputSig: SignalingSystemId
+    ): SignalDriverId {
         assert(outputSig == SignalingSystemId(0u) && inputSig == SignalingSystemId(0u))
         return SignalDriverId(0u)
     }

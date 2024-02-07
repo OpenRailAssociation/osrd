@@ -21,33 +21,37 @@ data class ElectrificationConstraints(
     override fun apply(edge: BlockId): MutableCollection<Pathfinding.Range<Block>> {
         val res = HashSet<Pathfinding.Range<Block>>()
         val path = makePathProps(blockInfra, rawInfra, edge)
-        for (stock in rollingStocks)
-            res.addAll(getBlockedRanges(stock, path))
+        for (stock in rollingStocks) res.addAll(getBlockedRanges(stock, path))
         return res
     }
 
     companion object {
         /**
          * Returns the sections of the given block that can't be used by the given rolling stock
-         * because it needs electrified tracks and isn't compatible with the electrifications in some range
+         * because it needs electrified tracks and isn't compatible with the electrifications in
+         * some range
          */
-        private fun getBlockedRanges(stock: RollingStock, path: PathProperties): Set<Pathfinding.Range<Block>> {
-            if (stock.isThermal)
-                return setOf()
+        private fun getBlockedRanges(
+            stock: RollingStock,
+            path: PathProperties
+        ): Set<Pathfinding.Range<Block>> {
+            if (stock.isThermal) return setOf()
             val res = HashSet<Pathfinding.Range<Block>>()
             val voltages = path.getElectrification()
             val neutralSections = rangeSetFromMap(path.getNeutralSections())
             for ((lower, upper, value) in voltages) {
-                if (lower == upper)
-                    continue
+                if (lower == upper) continue
                 if (!stock.modeNames.contains(value)) {
                     val voltageInterval = Range.open(lower, upper)
-                    val blockingRanges = neutralSections.complement().subRangeSet(voltageInterval).asRanges()
+                    val blockingRanges =
+                        neutralSections.complement().subRangeSet(voltageInterval).asRanges()
                     for (blockingRange in blockingRanges) {
                         assert(blockingRange.lowerEndpoint() < blockingRange.upperEndpoint())
-                        res.add(Pathfinding.Range(
-                            Offset(blockingRange.lowerEndpoint()),
-                            Offset(blockingRange.upperEndpoint()))
+                        res.add(
+                            Pathfinding.Range(
+                                Offset(blockingRange.lowerEndpoint()),
+                                Offset(blockingRange.upperEndpoint())
+                            )
                         )
                     }
                 }
@@ -57,11 +61,11 @@ data class ElectrificationConstraints(
 
         private fun <T> rangeSetFromMap(rangeMap: DistanceRangeMap<T>): RangeSet<Distance> {
             return TreeRangeSet.create(
-                rangeMap.asList().stream()
+                rangeMap
+                    .asList()
+                    .stream()
                     .map { (lower, upper): DistanceRangeMap.RangeMapEntry<T> ->
-                        Range.closed(
-                            lower, upper
-                        )
+                        Range.closed(lower, upper)
                     }
                     .collect(Collectors.toSet())
             )

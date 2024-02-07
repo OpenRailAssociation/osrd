@@ -8,8 +8,7 @@ public class RangeMapUtils {
 
     /** Compares two RangeMap. Assumes that open and closed intervals are equal */
     public static <K extends Comparable<K>, V> boolean equalsIgnoringTransitions(
-            RangeMap<K, V> map1, RangeMap<K, V> map2
-    ) {
+            RangeMap<K, V> map1, RangeMap<K, V> map2) {
         return asMapOfClosedRanges(map1).equals(asMapOfClosedRanges(map2));
     }
 
@@ -18,7 +17,6 @@ public class RangeMapUtils {
         return map.asMapOfRanges().entrySet().stream()
                 .collect(Collectors.toMap(
                         e -> Range.closed(e.getKey().lowerEndpoint(), e.getKey().upperEndpoint()),
-                        Map.Entry::getValue
-                ));
+                        Map.Entry::getValue));
     }
 }

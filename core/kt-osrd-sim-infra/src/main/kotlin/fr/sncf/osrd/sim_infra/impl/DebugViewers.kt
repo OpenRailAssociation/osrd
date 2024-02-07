@@ -7,13 +7,13 @@ import fr.sncf.osrd.utils.Direction
 import fr.sncf.osrd.utils.indexing.DirStaticIdx
 import fr.sncf.osrd.utils.indexing.MutableStaticIdxArrayList
 import fr.sncf.osrd.utils.indexing.StaticIdx
-import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
 
-/** These classes shouldn't be generally used, it's only here to make it easier to track objects
- * when using a debugger. They can be used to create watches containing the object properties. */
-
+/**
+ * These classes shouldn't be generally used, it's only here to make it easier to track objects when
+ * using a debugger. They can be used to create watches containing the object properties.
+ */
 data class DirectedViewer<T>(
     val rawId: UInt,
     val direction: Direction,
@@ -69,8 +69,9 @@ fun makeDirChunk(infra: RawInfra, id: DirStaticIdx<TrackChunk>): DirectedViewer<
 @JvmName("makeZonePath")
 fun makeZonePath(infra: RawInfra, id: StaticIdx<ZonePath>): ZonePathViewer {
     return ZonePathViewer(
-        infra.getZonePathChunks(id)
-            .map { dirChunk -> makeDirViewer(dirChunk, makeChunk(infra, dirChunk.value)) },
+        infra.getZonePathChunks(id).map { dirChunk ->
+            makeDirViewer(dirChunk, makeChunk(infra, dirChunk.value))
+        },
         id,
         infra.getZonePathLength(id),
     )
@@ -81,8 +82,7 @@ fun makeBlock(rawInfra: RawInfra, blockInfra: BlockInfra, id: StaticIdx<Block>):
     val entry = rawInfra.getZonePathEntry(blockInfra.getBlockPath(id)[0])
     val exit = rawInfra.getZonePathExit(blockInfra.getBlockPath(id).last())
     return BlockViewer(
-        blockInfra.getBlockPath(id)
-            .map { path -> makeZonePath(rawInfra, path) },
+        blockInfra.getBlockPath(id).map { path -> makeZonePath(rawInfra, path) },
         id,
         makeDirViewer(entry, rawInfra.getDetectorName(entry.value)!!),
         makeDirViewer(exit, rawInfra.getDetectorName(exit.value)!!),

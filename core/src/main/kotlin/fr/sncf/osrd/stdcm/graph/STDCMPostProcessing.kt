@@ -19,11 +19,15 @@ import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import java.util.*
 
-/** This class contains all the static methods used to turn the raw pathfinding result into a full response.
- * This includes creating the final envelope (merging the parts + applying the allowances)  */
+/**
+ * This class contains all the static methods used to turn the raw pathfinding result into a full
+ * response. This includes creating the final envelope (merging the parts + applying the allowances)
+ */
 class STDCMPostProcessing(private val graph: STDCMGraph) {
-    /** Builds the STDCM result object from the raw pathfinding result.
-     * This is the only non-private method of this class, the rest is implementation detail.  */
+    /**
+     * Builds the STDCM result object from the raw pathfinding result. This is the only non-private
+     * method of this class, the rest is implementation detail.
+     */
     fun makeResult(
         infra: RawSignalingInfra?,
         path: Pathfinding.Result<STDCMEdge, STDCMEdge>,
@@ -44,40 +48,41 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
         val mergedEnvelopes = mergeEnvelopeRanges(ranges, physicsPath)
         val departureTime = computeDepartureTime(ranges, startTime)
         val stops = makeStops(ranges)
-        val withAllowance = applyAllowance(
-            mergedEnvelopes,
-            ranges,
-            standardAllowance,
-            physicsPath,
-            rollingStock,
-            timeStep,
-            comfort,
-            blockAvailability,
-            departureTime,
-            stops
-        )
-        val res = STDCMResult(
-            Pathfinding.Result(blockRanges, blockWaypoints),
-            withAllowance,
-            trainPath,
-            chunkPath,
-            physicsPath,
-            departureTime,
+        val withAllowance =
+            applyAllowance(
+                mergedEnvelopes,
+                ranges,
+                standardAllowance,
+                physicsPath,
+                rollingStock,
+                timeStep,
+                comfort,
+                blockAvailability,
+                departureTime,
+                stops
+            )
+        val res =
+            STDCMResult(
+                Pathfinding.Result(blockRanges, blockWaypoints),
+                withAllowance,
+                trainPath,
+                chunkPath,
+                physicsPath,
+                departureTime,
 
-            // Allow us to display OP, a hack that will be fixed
-            // after the redesign of simulation data models
-            makePathStops(stops, infra, trainPath)
-        )
+                // Allow us to display OP, a hack that will be fixed
+                // after the redesign of simulation data models
+                makePathStops(stops, infra, trainPath)
+            )
         return if (res.envelope.totalTime > maxRunTime) {
             // This can happen if the destination is one edge away from being reachable in time,
             // as we only check the time at the start of an edge when exploring the graph
             null
-        } else
-            res
+        } else res
     }
 }
 
-/** Creates the list of waypoints on the path  */
+/** Creates the list of waypoints on the path */
 private fun makeBlockWaypoints(
     path: Pathfinding.Result<STDCMEdge, STDCMEdge>
 ): List<PathfindingEdgeLocationId<Block>> {
@@ -89,9 +94,10 @@ private fun makeBlockWaypoints(
     return res
 }
 
-/** Builds the actual list of EdgeRange given the raw result of the pathfinding.
- * We can't use the pathfinding result directly because we use our own method
- * to keep track of previous nodes/edges.  */
+/**
+ * Builds the actual list of EdgeRange given the raw result of the pathfinding. We can't use the
+ * pathfinding result directly because we use our own method to keep track of previous nodes/edges.
+ */
 private fun makeEdgeRange(
     raw: Pathfinding.Result<STDCMEdge, STDCMEdge>
 ): List<EdgeRange<STDCMEdge, STDCMEdge>> {
@@ -101,8 +107,7 @@ private fun makeEdgeRange(
     var current = lastRange.edge
     while (true) {
         orderedEdges.addFirst(current)
-        if (current.previousNode == null)
-            break
+        if (current.previousNode == null) break
         current = current.previousNode!!.previousEdge
     }
     firstRange = EdgeRange(orderedEdges.removeFirst(), firstRange.start, firstRange.end)
@@ -110,35 +115,36 @@ private fun makeEdgeRange(
         lastRange = EdgeRange(orderedEdges.removeLast(), lastRange.start, lastRange.end)
     val res = ArrayList<EdgeRange<STDCMEdge, STDCMEdge>>()
     res.add(firstRange)
-    for (edge in orderedEdges)
-        res.add(EdgeRange(edge, Offset(0.meters), edge.length))
-    if (firstRange.edge !== lastRange.edge)
-        res.add(lastRange)
+    for (edge in orderedEdges) res.add(EdgeRange(edge, Offset(0.meters), edge.length))
+    if (firstRange.edge !== lastRange.edge) res.add(lastRange)
     return res
 }
 
-/** Computes the departure time, made of the sum of all delays added over the path  */
+/** Computes the departure time, made of the sum of all delays added over the path */
 fun computeDepartureTime(ranges: List<EdgeRange<STDCMEdge, STDCMEdge>>, startTime: Double): Double {
     var mutStartTime = startTime
-    for (range in ranges)
-        mutStartTime += range.edge.addedDelay
+    for (range in ranges) mutStartTime += range.edge.addedDelay
     return mutStartTime
 }
 
-/** Builds the list of stops from the ranges  */
+/** Builds the list of stops from the ranges */
 private fun makeStops(ranges: List<EdgeRange<STDCMEdge, STDCMEdge>>): List<TrainStop> {
     val res = ArrayList<TrainStop>()
     var offset = 0.meters
     for (range in ranges) {
         val prevNode = range.edge.previousNode
-        if ((prevNode != null) && (prevNode.stopDuration!! >= 0) && (range.start == Offset<STDCMEdge>(0.meters)))
+        if (
+            (prevNode != null) &&
+                (prevNode.stopDuration!! >= 0) &&
+                (range.start == Offset<STDCMEdge>(0.meters))
+        )
             res.add(TrainStop(offset.meters, prevNode.stopDuration))
         offset += range.end - range.start
     }
     return res
 }
 
-/** Builds the list of block ranges, merging the ranges on the same block  */
+/** Builds the list of block ranges, merging the ranges on the same block */
 private fun makeBlockRanges(
     ranges: List<EdgeRange<STDCMEdge, STDCMEdge>>
 ): List<PathfindingEdgeRangeId<Block>> {
@@ -150,8 +156,7 @@ private fun makeBlockRanges(
         var length = range.end - range.start
         while (i + 1 < ranges.size) {
             val nextRange = ranges[i + 1]
-            if (range.edge.block != nextRange.edge.block)
-                break
+            if (range.edge.block != nextRange.edge.block) break
             length += nextRange.end - nextRange.start
             i++
         }
@@ -162,7 +167,7 @@ private fun makeBlockRanges(
     return res
 }
 
-/** Builds the list of stops from OP  */
+/** Builds the list of stops from OP */
 private fun makeOpStops(infra: RawSignalingInfra, trainPath: PathProperties): List<TrainStop> {
     val operationalPoints = makeOperationalPoints(infra, trainPath)
     val res = ArrayList<TrainStop>()
@@ -172,7 +177,7 @@ private fun makeOpStops(infra: RawSignalingInfra, trainPath: PathProperties): Li
     return res
 }
 
-/** Sorts the stops on the path. When stops overlap, the user-defined one is kept.  */
+/** Sorts the stops on the path. When stops overlap, the user-defined one is kept. */
 private fun sortAndMergeStopsDuplicates(stops: List<TrainStop>): List<TrainStop> {
     val sorted = stops.sortedBy { st: TrainStop -> st.position }
     val res = ArrayList<TrainStop>()
@@ -188,7 +193,9 @@ private fun sortAndMergeStopsDuplicates(stops: List<TrainStop>): List<TrainStop>
     return res
 }
 
-/** Make the path's ordered list of stops, in order. Both user-defined stops and operational points.  */
+/**
+ * Make the path's ordered list of stops, in order. Both user-defined stops and operational points.
+ */
 private fun makePathStops(
     stops: List<TrainStop>,
     infra: RawSignalingInfra,

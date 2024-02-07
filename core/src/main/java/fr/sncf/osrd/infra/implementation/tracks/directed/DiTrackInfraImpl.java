@@ -21,12 +21,10 @@ public class DiTrackInfraImpl extends TrackInfraImpl implements DiTrackInfra {
                 trackInfra.getSwitches(),
                 trackInfra.getTrackGraph(),
                 makeTrackSections(trackInfra.getTrackGraph()),
-                trackInfra.getDetectorMap()
-        );
+                trackInfra.getDetectorMap());
         this.graph = graph;
         var builder = ImmutableListMultimap.<TrackEdge, DiTrackEdge>builder();
-        for (var edge : graph.edges())
-            builder.put(edge.getEdge(), edge);
+        for (var edge : graph.edges()) builder.put(edge.getEdge(), edge);
         trackEdgesToDiTrackEdges = builder.build();
     }
 
@@ -42,9 +40,7 @@ public class DiTrackInfraImpl extends TrackInfraImpl implements DiTrackInfra {
 
     @Override
     public DiTrackEdge getEdge(TrackEdge edge, Direction direction) {
-        for (var diEdge : trackEdgesToDiTrackEdges.get(edge))
-            if (diEdge.getDirection() == direction)
-                return diEdge;
+        for (var diEdge : trackEdgesToDiTrackEdges.get(edge)) if (diEdge.getDirection() == direction) return diEdge;
         return null;
     }
 }

@@ -4,18 +4,20 @@ interface Arena<IndexT> : BaseArena<IndexT>
 
 interface MutableArena<IndexT> : MutableBaseArena<IndexT> {
     fun allocate(): DynIdx<IndexT>
+
     fun toArena(): Arena<IndexT>
 }
 
-class ArenaImpl<IndexT> internal constructor(
+class ArenaImpl<IndexT>
+internal constructor(
     slotGenerations: UIntArray,
     useMap: BooleanArray,
     slotForwardLinks: IntArray,
     usedHead: Int
-) : BaseArenaImpl<IndexT>(slotGenerations, useMap, slotForwardLinks, usedHead), Arena<IndexT> {
-}
+) : BaseArenaImpl<IndexT>(slotGenerations, useMap, slotForwardLinks, usedHead), Arena<IndexT> {}
 
-class MutableArenaImpl<IndexT>(initSize: Int) : MutableBaseArenaImpl<IndexT>(initSize), MutableArena<IndexT> {
+class MutableArenaImpl<IndexT>(initSize: Int) :
+    MutableBaseArenaImpl<IndexT>(initSize), MutableArena<IndexT> {
     override fun allocate(): DynIdx<IndexT> {
         return allocateIndex()
     }

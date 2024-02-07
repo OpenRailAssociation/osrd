@@ -4,14 +4,11 @@ public abstract class AllowanceValue {
 
     /** Returns the allowance for a section of a trip, divided over time */
     public final double getSectionAllowanceTime(
-            double sectionTime, double totalTime,
-            double sectionDistance, double totalDistance
-    ) {
+            double sectionTime, double totalTime, double sectionDistance, double totalDistance) {
         var ratio = getSectionRatio(sectionTime, totalTime, sectionDistance, totalDistance);
         var totalAllowance = getAllowanceTime(totalTime, totalDistance);
         return ratio * totalAllowance;
     }
-
 
     /** Returns the allowance, given the total time and distance of the trip */
     public abstract double getAllowanceTime(double baseTime, double distance);
@@ -20,11 +17,8 @@ public abstract class AllowanceValue {
     public abstract double getAllowanceRatio(double baseTime, double distance);
 
     /** Returns the share of the total allowance a given section gets */
-    public abstract double getSectionRatio(double sectionTime,
-                                           double totalTime,
-                                           double sectionDistance,
-                                           double totalDistance);
-
+    public abstract double getSectionRatio(
+            double sectionTime, double totalTime, double sectionDistance, double totalDistance);
 
     /** A fixed time allowance */
     public static class FixedTime extends AllowanceValue {
@@ -46,11 +40,7 @@ public abstract class AllowanceValue {
 
         @Override
         public double getSectionRatio(
-                double sectionTime,
-                double totalTime,
-                double sectionDistance,
-                double totalDistance
-        ) {
+                double sectionTime, double totalTime, double sectionDistance, double totalDistance) {
             return sectionTime / totalTime;
         }
     }
@@ -76,11 +66,7 @@ public abstract class AllowanceValue {
 
         @Override
         public double getSectionRatio(
-                double sectionTime,
-                double totalTime,
-                double sectionDistance,
-                double totalDistance
-        ) {
+                double sectionTime, double totalTime, double sectionDistance, double totalDistance) {
             return sectionTime / totalTime;
         }
     }
@@ -106,11 +92,7 @@ public abstract class AllowanceValue {
 
         @Override
         public double getSectionRatio(
-                double sectionTime,
-                double totalTime,
-                double sectionDistance,
-                double totalDistance
-        ) {
+                double sectionTime, double totalTime, double sectionDistance, double totalDistance) {
             return sectionDistance / totalDistance;
         }
     }

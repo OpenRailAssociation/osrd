@@ -17,8 +17,9 @@ import fr.sncf.osrd.envelope_sim.StopMeta;
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeDeceleration;
 import fr.sncf.osrd.reporting.exceptions.OSRDError;
 
-/** Max speed envelope = MRSP + braking curves
- * It is the max speed allowed at any given point, ignoring allowances
+/**
+ * Max speed envelope = MRSP + braking curves It is the max speed allowed at any given point,
+ * ignoring allowances
  */
 public class MaxSpeedEnvelope {
     static boolean increase(double prevPos, double prevSpeed, double nextPos, double nextSpeed) {
@@ -26,7 +27,10 @@ public class MaxSpeedEnvelope {
         return prevSpeed < nextSpeed;
     }
 
-    /** Generate braking curves overlay everywhere the mrsp decrease (increase backwards) with a discontinuity */
+    /**
+     * Generate braking curves overlay everywhere the mrsp decrease (increase backwards) with a
+     * discontinuity
+     */
     private static Envelope addBrakingCurves(EnvelopeSimContext context, Envelope mrsp) {
         var builder = OverlayEnvelopeBuilder.backward(mrsp);
         var cursor = EnvelopeCursor.backward(mrsp);
@@ -40,10 +44,7 @@ public class MaxSpeedEnvelope {
             var partBuilder = new EnvelopePartBuilder();
             partBuilder.setAttr(EnvelopeProfile.BRAKING);
             var overlayBuilder = new ConstrainedEnvelopePartBuilder(
-                    partBuilder,
-                    new SpeedConstraint(0, FLOOR),
-                    new EnvelopeConstraint(mrsp, CEILING)
-            );
+                    partBuilder, new SpeedConstraint(0, FLOOR), new EnvelopeConstraint(mrsp, CEILING));
             var startSpeed = cursor.getSpeed();
             var startPosition = cursor.getPosition();
             // TODO: link directionSign to cursor boolean reverse
@@ -57,20 +58,15 @@ public class MaxSpeedEnvelope {
 
     /** Generate braking curves overlay at every stop position */
     private static Envelope addStopBrakingCurves(
-            EnvelopeSimContext context,
-            double[] stopPositions,
-            Envelope curveWithDecelerations
-    ) {
+            EnvelopeSimContext context, double[] stopPositions, Envelope curveWithDecelerations) {
         for (int i = 0; i < stopPositions.length; i++) {
             var stopPosition = stopPositions[i];
             // if the stopPosition is zero, no need to build a deceleration curve
-            if (stopPosition == 0.0)
-                continue;
+            if (stopPosition == 0.0) continue;
             if (stopPosition > curveWithDecelerations.getEndPos()) {
                 if (arePositionsEqual(stopPosition, curveWithDecelerations.getEndPos()))
                     stopPosition = curveWithDecelerations.getEndPos();
-                else
-                    throw OSRDError.newEnvelopeError(i, stopPosition, curveWithDecelerations.getEndPos());
+                else throw OSRDError.newEnvelopeError(i, stopPosition, curveWithDecelerations.getEndPos());
             }
             var partBuilder = new EnvelopePartBuilder();
             partBuilder.setAttr(EnvelopeProfile.BRAKING);
@@ -78,8 +74,7 @@ public class MaxSpeedEnvelope {
             var overlayBuilder = new ConstrainedEnvelopePartBuilder(
                     partBuilder,
                     new SpeedConstraint(0, FLOOR),
-                    new EnvelopeConstraint(curveWithDecelerations, CEILING)
-            );
+                    new EnvelopeConstraint(curveWithDecelerations, CEILING));
             EnvelopeDeceleration.decelerate(context, stopPosition, 0, overlayBuilder, -1);
 
             var builder = OverlayEnvelopeBuilder.backward(curveWithDecelerations);

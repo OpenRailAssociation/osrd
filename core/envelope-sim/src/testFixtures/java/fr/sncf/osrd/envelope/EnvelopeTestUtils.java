@@ -10,9 +10,9 @@ import fr.sncf.osrd.envelope.part.EnvelopePartBuilder;
 import fr.sncf.osrd.envelope.part.constraints.EnvelopeConstraint;
 import fr.sncf.osrd.envelope.part.constraints.SpeedConstraint;
 import fr.sncf.osrd.envelope_sim.EnvelopeProfile;
-import org.junit.jupiter.api.Assertions;
 import java.util.Collections;
 import java.util.List;
+import org.junit.jupiter.api.Assertions;
 
 public class EnvelopeTestUtils {
     public enum TestAttr implements EnvelopeAttr {
@@ -28,9 +28,11 @@ public class EnvelopeTestUtils {
     }
 
     static EnvelopePart buildContinuous(
-            EnvelopeCursor cursor, Iterable<EnvelopeAttr> attrs,
-            double[] positions, double[] speeds, boolean isBackward
-    ) {
+            EnvelopeCursor cursor,
+            Iterable<EnvelopeAttr> attrs,
+            double[] positions,
+            double[] speeds,
+            boolean isBackward) {
         var lastIndex = positions.length - 1;
         double direction = isBackward ? -1 : 1;
         var partBuilder = new EnvelopePartBuilder();
@@ -39,8 +41,7 @@ public class EnvelopeTestUtils {
             cursor.findPosition(positions[0]);
 
             var overlayBuilder = new ConstrainedEnvelopePartBuilder(
-                    partBuilder, new SpeedConstraint(0, FLOOR), new EnvelopeConstraint(cursor.envelope, CEILING)
-            );
+                    partBuilder, new SpeedConstraint(0, FLOOR), new EnvelopeConstraint(cursor.envelope, CEILING));
             Assertions.assertTrue(overlayBuilder.initEnvelopePart(cursor.getPosition(), cursor.getSpeed(), direction));
 
             for (int i = 1; i < positions.length - 1; i++)
@@ -50,8 +51,7 @@ public class EnvelopeTestUtils {
         } else {
             cursor.findPosition(positions[lastIndex]);
             var overlayBuilder = new ConstrainedEnvelopePartBuilder(
-                    partBuilder, new SpeedConstraint(0, FLOOR), new EnvelopeConstraint(cursor.envelope, CEILING)
-            );
+                    partBuilder, new SpeedConstraint(0, FLOOR), new EnvelopeConstraint(cursor.envelope, CEILING));
             Assertions.assertTrue(overlayBuilder.initEnvelopePart(cursor.getPosition(), cursor.getSpeed(), direction));
 
             for (int i = lastIndex - 1; i > 0; i--)
@@ -82,8 +82,7 @@ public class EnvelopeTestUtils {
         Assertions.assertEquals(expected.continuous, actual.continuous);
         Assertions.assertEquals(expected.getMaxSpeed(), actual.getMaxSpeed(), delta);
         Assertions.assertEquals(expected.getMinSpeed(), actual.getMinSpeed(), delta);
-        for (int i = 0; i < expected.size(); i++)
-            assertEquals(expected.get(i), actual.get(i), delta);
+        for (int i = 0; i < expected.size(); i++) assertEquals(expected.get(i), actual.get(i), delta);
     }
 
     /** Asserts that the envelopes are equals, with a 0.01 tolerance when comparing speeds */
@@ -97,29 +96,22 @@ public class EnvelopeTestUtils {
     }
 
     /** Creates a flat envelope part */
-    public static EnvelopePart makeFlatPart(Iterable<EnvelopeAttr> attrs,
-                                            double beginPos, double endPos, double speed) {
-        return EnvelopePart.generateTimes(
-                attrs,
-                new double[]{beginPos, endPos},
-                new double[]{speed, speed}
-        );
+    public static EnvelopePart makeFlatPart(
+            Iterable<EnvelopeAttr> attrs, double beginPos, double endPos, double speed) {
+        return EnvelopePart.generateTimes(attrs, new double[] {beginPos, endPos}, new double[] {speed, speed});
     }
 
     /** Creates an envelope part by generating step times from speeds and positions */
     public static EnvelopePart generateTimes(double[] positions, double[] speeds) {
-        //Input a default compulsory EnvelopeProfile attribute. This is not physically correct in some cases. If so,
-        //use generateTimes with attributes argument.
+        // Input a default compulsory EnvelopeProfile attribute. This is not physically correct in
+        // some cases. If so,
+        // use generateTimes with attributes argument.
         var envelopeProfile = EnvelopeProfile.BRAKING;
         if (areSpeedsEqual(speeds[0], speeds[speeds.length - 1])) {
             envelopeProfile = EnvelopeProfile.CONSTANT_SPEED;
         } else if (speeds[0] < speeds[speeds.length - 1]) {
             envelopeProfile = EnvelopeProfile.ACCELERATING;
         }
-        return EnvelopePart.generateTimes(
-                Collections.singleton(envelopeProfile),
-                positions,
-                speeds
-        );
+        return EnvelopePart.generateTimes(Collections.singleton(envelopeProfile), positions, speeds);
     }
 }

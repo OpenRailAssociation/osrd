@@ -38,8 +38,7 @@ public final class ConstrainedEnvelopePartBuilder implements InteractiveEnvelope
             var constraint = constraints[i];
             var curInter = constraint.stepCheck(lastPos, lastSpeed, position, speed);
             // if this constraint does not intersect, skip it
-            if (curInter == null)
-                continue;
+            if (curInter == null) continue;
             // if this is the first intersection, or it is closer than the previous one, keep it
             if (nextInter != null && DoubleUtils.dirCompare(direction, curInter.position, nextInter.position) >= 0)
                 continue;
@@ -52,9 +51,7 @@ public final class ConstrainedEnvelopePartBuilder implements InteractiveEnvelope
 
     @Override
     public boolean initEnvelopePart(double position, double speed, double direction) {
-        for (var constraint : constraints)
-            if (!constraint.initCheck(position, speed, direction))
-                return false;
+        for (var constraint : constraints) if (!constraint.initCheck(position, speed, direction)) return false;
         this.lastPos = position;
         this.lastSpeed = speed;
         this.direction = direction;
@@ -107,8 +104,7 @@ public final class ConstrainedEnvelopePartBuilder implements InteractiveEnvelope
                 assert areSpeedsEqual(speed, lastSpeed);
                 speed = lastSpeed;
                 timeDelta = 0;
-            } else
-                timeDelta = EnvelopePhysics.interpolateStepTime(lastPos, position, lastSpeed, speed);
+            } else timeDelta = EnvelopePhysics.interpolateStepTime(lastPos, position, lastSpeed, speed);
         }
 
         lastPos = position;

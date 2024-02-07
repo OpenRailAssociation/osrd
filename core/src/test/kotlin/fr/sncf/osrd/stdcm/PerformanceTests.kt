@@ -14,7 +14,9 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
-@Disabled("to be enabled when running profilers or benchmarks, not part of the tests to run by default")
+@Disabled(
+    "to be enabled when running profilers or benchmarks, not part of the tests to run by default"
+)
 class PerformanceTests {
     @Test
     fun testManyOpenings() {
@@ -30,15 +32,9 @@ class PerformanceTests {
          */
         val infra = DummyInfra()
         val blocks = ArrayList<BlockId>()
-        for (i in 0..999)
-            blocks.add(
-                infra.addBlock(
-                    i.toString(),
-                    (i + 1).toString(),
-                    1000.meters,
-                    30.0
-                )
-            )
+        for (i in 0..999) blocks.add(
+            infra.addBlock(i.toString(), (i + 1).toString(), 1000.meters, 30.0)
+        )
         val occupancyGraphBuilder = ImmutableMultimap.builder<BlockId, OccupancySegment>()
         for (i in 0..19) {
             val startTime = 600 * i
@@ -53,13 +49,16 @@ class PerformanceTests {
         }
         val occupancyGraph = occupancyGraphBuilder.build()
         val timeStep = 2.0
-        val res = STDCMPathfindingBuilder()
-            .setInfra(infra.fullInfra())
-            .setStartLocations(setOf(EdgeLocation(blocks[0], Offset<Block>(0.meters))))
-            .setEndLocations(setOf(EdgeLocation(Iterables.getLast(blocks), Offset<Block>(0.meters))))
-            .setUnavailableTimes(occupancyGraph)
-            .setTimeStep(timeStep)
-            .run()!!
+        val res =
+            STDCMPathfindingBuilder()
+                .setInfra(infra.fullInfra())
+                .setStartLocations(setOf(EdgeLocation(blocks[0], Offset<Block>(0.meters))))
+                .setEndLocations(
+                    setOf(EdgeLocation(Iterables.getLast(blocks), Offset<Block>(0.meters)))
+                )
+                .setUnavailableTimes(occupancyGraph)
+                .setTimeStep(timeStep)
+                .run()!!
         occupancyTest(res, occupancyGraph, 2 * timeStep)
     }
 
@@ -78,15 +77,9 @@ class PerformanceTests {
          */
         val infra = DummyInfra()
         val blocks = ArrayList<BlockId>()
-        for (i in 0..999)
-            blocks.add(
-                infra.addBlock(
-                    i.toString(),
-                    (i + 1).toString(),
-                    1000.meters,
-                    30.0
-                )
-            )
+        for (i in 0..999) blocks.add(
+            infra.addBlock(i.toString(), (i + 1).toString(), 1000.meters, 30.0)
+        )
         val unreachable = infra.addBlock("unreachable", "unreachable2")
         val occupancyGraphBuilder = ImmutableMultimap.builder<BlockId, OccupancySegment>()
         for (i in 0..19) {
@@ -102,13 +95,14 @@ class PerformanceTests {
         }
         val occupancyGraph = occupancyGraphBuilder.build()
         val timeStep = 2.0
-        val res = STDCMPathfindingBuilder()
-            .setInfra(infra.fullInfra())
-            .setStartLocations(setOf(EdgeLocation(blocks[0], Offset<Block>(0.meters))))
-            .setEndLocations(setOf(EdgeLocation(unreachable, Offset<Block>(0.meters))))
-            .setUnavailableTimes(occupancyGraph)
-            .setTimeStep(timeStep)
-            .run()
+        val res =
+            STDCMPathfindingBuilder()
+                .setInfra(infra.fullInfra())
+                .setStartLocations(setOf(EdgeLocation(blocks[0], Offset<Block>(0.meters))))
+                .setEndLocations(setOf(EdgeLocation(unreachable, Offset<Block>(0.meters))))
+                .setUnavailableTimes(occupancyGraph)
+                .setTimeStep(timeStep)
+                .run()
         Assertions.assertNull(res)
     }
 
@@ -156,14 +150,19 @@ class PerformanceTests {
         }
         val occupancyGraph = occupancyGraphBuilder.build()
         val timeStep = 2.0
-        val res = STDCMPathfindingBuilder()
-            .setInfra(infra.fullInfra())
-            .setStartLocations(setOf(EdgeLocation(blocks[0], Offset<Block>(0.meters))))
-            .setEndLocations(setOf(EdgeLocation(Iterables.getLast(blocks), Offset<Block>(0.meters))))
-            .setUnavailableTimes(occupancyGraph)
-            .setTimeStep(timeStep) //TODO: remove this once the test runs in less than Pathfinding.TIMEOUT
-            .setPathfindingTimeout(Double.POSITIVE_INFINITY)
-            .run()!!
+        val res =
+            STDCMPathfindingBuilder()
+                .setInfra(infra.fullInfra())
+                .setStartLocations(setOf(EdgeLocation(blocks[0], Offset<Block>(0.meters))))
+                .setEndLocations(
+                    setOf(EdgeLocation(Iterables.getLast(blocks), Offset<Block>(0.meters)))
+                )
+                .setUnavailableTimes(occupancyGraph)
+                .setTimeStep(
+                    timeStep
+                ) // TODO: remove this once the test runs in less than Pathfinding.TIMEOUT
+                .setPathfindingTimeout(Double.POSITIVE_INFINITY)
+                .run()!!
         occupancyTest(res, occupancyGraph, 2 * timeStep)
     }
 
@@ -207,7 +206,9 @@ class PerformanceTests {
                 for (offsetI in -1..1) {
                     for (offsetJ in -1..1) {
                         if (offsetI == 0 == (offsetJ == 0))
-                            continue  // we want exactly one of the offsets to be == 0 (avoids self links and diagonals)
+                            continue // we want exactly one of the offsets to be == 0 (avoids self
+                        // links and
+                        // diagonals)
                         val otherI = i + offsetI
                         val otherJ = j + offsetJ
                         if (otherI < 0 || otherI >= height || otherJ < 0 || otherJ >= width)

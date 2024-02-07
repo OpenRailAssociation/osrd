@@ -27,14 +27,19 @@ import java.util.HashMap;
 public class DirectedInfraBuilder {
     /** Map from undirected node to directed node (forward) */
     private final HashMap<TrackNode, DiTrackNode> forwardNodeMap = new HashMap<>();
+
     /** Map from undirected node to directed node (backward) */
     private final HashMap<TrackNode, DiTrackNode> backwardNodeMap = new HashMap<>();
-    /** Reference undirected graph*/
+
+    /** Reference undirected graph */
     private final ImmutableNetwork<TrackNode, TrackEdge> undirectedGraph;
+
     /** Reference undirected infra */
     private final TrackInfra trackInfra;
-    /** Union find used to link directed nodes together*/
+
+    /** Union find used to link directed nodes together */
     private final UnionFind uf;
+
     /** Output graph builder */
     private final ImmutableNetwork.Builder<DiTrackNode, DiTrackEdge> graph;
 
@@ -75,15 +80,18 @@ public class DirectedInfraBuilder {
                 for (var adjacent : adjacentEdges(undirectedGraph, edge, endEndpoint(direction))) {
                     if (canGoFromAToB(edge, adjacent)) {
                         linkEdges(
-                                edge, adjacent,
+                                edge,
+                                adjacent,
                                 nodeFromEdgeEndpoint(undirectedGraph, edge, endEndpoint(direction)),
                                 false);
                     }
                     if (!isNotSwitchBranch(edge) && !isNotSwitchBranch(adjacent)) {
-                        // This prevents a crash if we have a switch where the base isn't linked to anything.
+                        // This prevents a crash if we have a switch where the base isn't linked to
+                        // anything.
                         // It shouldn't happen, but we should be able to handle it with no crash
                         linkEdges(
-                                edge, adjacent,
+                                edge,
+                                adjacent,
                                 nodeFromEdgeEndpoint(undirectedGraph, edge, endEndpoint(direction)),
                                 true);
                     }
@@ -113,18 +121,17 @@ public class DirectedInfraBuilder {
         graph.addEdge(begin, end, newEdge);
     }
 
-    /** Finds the node matching the edge / endpoint / direction.
-     * If one matching the union is already picked, returns the same.
-     * Otherwise, picks any unused direction for the node */
-    private DiTrackNode findNode(HashBiMap<Integer, DiTrackNode> nodes, TrackEdge edge,
-                                 Direction dir, EdgeEndpoint endpoint) {
+    /**
+     * Finds the node matching the edge / endpoint / direction. If one matching the union is already
+     * picked, returns the same. Otherwise, picks any unused direction for the node
+     */
+    private DiTrackNode findNode(
+            HashBiMap<Integer, DiTrackNode> nodes, TrackEdge edge, Direction dir, EdgeEndpoint endpoint) {
         var group = uf.findRoot(getEndpointGroup(edge, dir, endpoint));
-        if (nodes.containsKey(group))
-            return nodes.get(group);
+        if (nodes.containsKey(group)) return nodes.get(group);
         var node = nodeFromEdgeEndpoint(undirectedGraph, edge, endpoint);
         var diNode = getMap(Side.A).get(node);
-        if (nodes.containsValue(diNode))
-            diNode = getMap(Side.B).get(node);
+        if (nodes.containsValue(diNode)) diNode = getMap(Side.B).get(node);
         assert !nodes.containsValue(diNode);
         nodes.put(group, diNode);
         return diNode;
@@ -135,22 +142,16 @@ public class DirectedInfraBuilder {
         var endpointA = endpointOfNode(undirectedGraph, a, node);
         var endpointB = endpointOfNode(undirectedGraph, b, node);
         var invertedDirection = endpointA == endpointB;
-        if (commonSwitchPort)
-            invertedDirection = !invertedDirection;
+        if (commonSwitchPort) invertedDirection = !invertedDirection;
         for (var direction : Direction.values()) {
             var otherDirection = invertedDirection ? direction.opposite() : direction;
-            uf.union(
-                    getEndpointGroup(a, direction, endpointA),
-                    getEndpointGroup(b, otherDirection, endpointB)
-            );
+            uf.union(getEndpointGroup(a, direction, endpointA), getEndpointGroup(b, otherDirection, endpointB));
         }
     }
 
     /** Returns the union find ID for the given (edge, direction, endpoint) */
     private int getEndpointGroup(TrackEdge edge, Direction direction, EdgeEndpoint endpoint) {
-        return edge.getIndex() * 4
-                + (direction == Direction.FORWARD ? 2 : 0)
-                + (endpoint == EdgeEndpoint.END ? 1 : 0);
+        return edge.getIndex() * 4 + (direction == Direction.FORWARD ? 2 : 0) + (endpoint == EdgeEndpoint.END ? 1 : 0);
     }
 
     /** Returns whether we can link the two edges together */
@@ -165,9 +166,7 @@ public class DirectedInfraBuilder {
 
     /** Returns either (node -> directed node) map matching the given side */
     private HashMap<TrackNode, DiTrackNode> getMap(Side side) {
-        if (side == Side.A)
-            return forwardNodeMap;
-        else
-            return backwardNodeMap;
+        if (side == Side.A) return forwardNodeMap;
+        else return backwardNodeMap;
     }
 }

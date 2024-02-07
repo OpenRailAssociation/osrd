@@ -12,14 +12,11 @@ public class RJSSwitchType implements Identified {
 
     /**
      * Create a new switch type
+     *
      * @param ports the names of the ports of the switch
      * @param groups the groups of simultaneously activable edges between ports
      */
-    public RJSSwitchType(
-            String id,
-            List<String> ports,
-            Map<String, List<SwitchPortConnection>> groups
-    ) {
+    public RJSSwitchType(String id, List<String> ports, Map<String, List<SwitchPortConnection>> groups) {
         this.id = id;
         this.ports = ports;
         this.groups = groups;
@@ -37,6 +34,7 @@ public class RJSSwitchType implements Identified {
 
         /**
          * creates a railjson new port edge (arc between port)
+         *
          * @param src the name of the source port
          * @param dst the name of the destination port
          */
@@ -50,45 +48,38 @@ public class RJSSwitchType implements Identified {
             "point_switch",
             List.of("A", "B1", "B2"),
             Map.of(
-                "A_B1", List.of(new SwitchPortConnection("A", "B1")),
-                "A_B2", List.of(new SwitchPortConnection("A", "B2"))
-            )
-        );
-    
-    public static final RJSSwitchType LINK = new RJSSwitchType("link",
-            List.of("A", "B"),
-            Map.of("STATIC", List.of(new SwitchPortConnection("A", "B"))
-            )
-        );
-    
-    public static final RJSSwitchType CROSSING = new RJSSwitchType("crossing",
-            List.of("A1", "B1", "A2", "B2"),
-            Map.of("STATIC", List.of(
-                            new SwitchPortConnection("A1", "B1"),
-                            new SwitchPortConnection("A2", "B2")
-                        )
-            )
-        );
-    public static final RJSSwitchType SINGLE_SLIP_SWITCH = new RJSSwitchType("single_slip_switch",
-            List.of("A1", "B1", "A2", "B2"),
-            Map.of("STATIC", List.of(
-                            new SwitchPortConnection("A1", "B1"),
-                            new SwitchPortConnection("A2", "B2")
-                        ),
-                    "A1_B2", List.of(new SwitchPortConnection("A1", "B2"))
-            )
-        );
+                    "A_B1", List.of(new SwitchPortConnection("A", "B1")),
+                    "A_B2", List.of(new SwitchPortConnection("A", "B2"))));
 
-    public static final RJSSwitchType DOUBLE_SLIP_SWITCH = new RJSSwitchType("double_slip_switch",
+    public static final RJSSwitchType LINK =
+            new RJSSwitchType("link", List.of("A", "B"), Map.of("STATIC", List.of(new SwitchPortConnection("A", "B"))));
+
+    public static final RJSSwitchType CROSSING = new RJSSwitchType(
+            "crossing",
             List.of("A1", "B1", "A2", "B2"),
-            Map.of("A1_B1", List.of(new SwitchPortConnection("A1", "B1")),
-                    "A1_B2", List.of(new SwitchPortConnection("A1", "B2")),
-                    "A2_B1", List.of(new SwitchPortConnection("A2", "B1")),
-                    "A2_B2", List.of(new SwitchPortConnection("A2", "B2"))
-            )
-        );
-    
-    public static final List<RJSSwitchType> BUILTIN_NODE_TYPES_LIST = List.of(
-            CLASSIC_TYPE, LINK, CROSSING, SINGLE_SLIP_SWITCH, DOUBLE_SLIP_SWITCH
-        );
+            Map.of("STATIC", List.of(new SwitchPortConnection("A1", "B1"), new SwitchPortConnection("A2", "B2"))));
+    public static final RJSSwitchType SINGLE_SLIP_SWITCH = new RJSSwitchType(
+            "single_slip_switch",
+            List.of("A1", "B1", "A2", "B2"),
+            Map.of(
+                    "STATIC",
+                    List.of(new SwitchPortConnection("A1", "B1"), new SwitchPortConnection("A2", "B2")),
+                    "A1_B2",
+                    List.of(new SwitchPortConnection("A1", "B2"))));
+
+    public static final RJSSwitchType DOUBLE_SLIP_SWITCH = new RJSSwitchType(
+            "double_slip_switch",
+            List.of("A1", "B1", "A2", "B2"),
+            Map.of(
+                    "A1_B1",
+                    List.of(new SwitchPortConnection("A1", "B1")),
+                    "A1_B2",
+                    List.of(new SwitchPortConnection("A1", "B2")),
+                    "A2_B1",
+                    List.of(new SwitchPortConnection("A2", "B1")),
+                    "A2_B2",
+                    List.of(new SwitchPortConnection("A2", "B2"))));
+
+    public static final List<RJSSwitchType> BUILTIN_NODE_TYPES_LIST =
+            List.of(CLASSIC_TYPE, LINK, CROSSING, SINGLE_SLIP_SWITCH, DOUBLE_SLIP_SWITCH);
 }

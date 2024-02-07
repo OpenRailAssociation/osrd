@@ -18,15 +18,15 @@ data class SignalingSystemConstraints(
             val edgeBlockedRanges = getBlockedRanges(edge, blockInfra, rollingStocksigSystems)
             if (edgeBlockedRanges.isNotEmpty()) {
                 res.addAll(edgeBlockedRanges)
-                break // if this edge is blocked for 2 RS, we will have the same exact range (the full edge range) twice
+                break // if this edge is blocked for 2 RS, we will have the same exact range (the
+                // full edge
+                // range) twice
             }
         }
         return res
     }
 
-        /**
-         * Returns the sections of the given block that can't be used by the given rolling stock
-         */
+    /** Returns the sections of the given block that can't be used by the given rolling stock */
     private fun getBlockedRanges(
         edge: BlockId,
         blockInfra: BlockInfra,
@@ -37,10 +37,7 @@ data class SignalingSystemConstraints(
         if (isRSCompatibleWithBlock) {
             return setOf()
         }
-        return setOf(Pathfinding.Range(
-            Offset(0.meters),
-            blockInfra.getBlockLength(edge))
-        )
+        return setOf(Pathfinding.Range(Offset(0.meters), blockInfra.getBlockLength(edge)))
     }
 }
 
@@ -49,15 +46,15 @@ fun makeSignalingSystemConstraints(
     signalingSimulator: SignalingSimulator,
     rollingStocks: Collection<RollingStock>,
 ): SignalingSystemConstraints {
-    val rsSupportedSigSystems = rollingStocks.map { stock ->
-        stock.supportedSignalingSystems.mapNotNull { s -> try {
-            signalingSimulator.sigModuleManager.findSignalingSystem(s)
-        } catch (e: Exception) {
-            null
-        } }
-    }
-    return SignalingSystemConstraints(
-        blockInfra,
-        rsSupportedSigSystems
-    )
+    val rsSupportedSigSystems =
+        rollingStocks.map { stock ->
+            stock.supportedSignalingSystems.mapNotNull { s ->
+                try {
+                    signalingSimulator.sigModuleManager.findSignalingSystem(s)
+                } catch (e: Exception) {
+                    null
+                }
+            }
+        }
+    return SignalingSystemConstraints(blockInfra, rsSupportedSigSystems)
 }

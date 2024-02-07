@@ -12,16 +12,14 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import mu.KotlinLogging
 
-
 private val logger = KotlinLogging.logger {}
-
 
 fun <InfraT> routingSim(
     infra: InfraT,
     movableElementSim: MovableElementSim,
     reservationSim: ReservationSim,
     scope: CoroutineScope,
-): RoutingSim where InfraT: LocationInfra, InfraT: RoutingInfra {
+): RoutingSim where InfraT : LocationInfra, InfraT : RoutingInfra {
     return RoutingSimImpl(infra, movableElementSim, reservationSim, scope)
 }
 
@@ -30,64 +28,76 @@ internal class RoutingSimImpl<InfraT>(
     private val movableElementSim: MovableElementSim,
     private val reservationSim: ReservationSim,
     private val scope: CoroutineScope,
-    ) : RoutingSim where InfraT: LocationInfra, InfraT: RoutingInfra {
+) : RoutingSim where InfraT : LocationInfra, InfraT : RoutingInfra {
     private val destructionProcesses = mutableArenaMap<RouteCallHandle, Job>()
 
-    private fun destructionJob(route: RouteId, pathZones: Array<ZoneId>, handles: List<ZoneReservationId>): Job = scope.launch {
-        val releaseZones = infra.getRouteReleaseZones(route)
-        var lastReleasedZone = -1
-        for (zoneIndex in releaseZones) {
-            // wait for the release zone to be pending release
-            reservationSim.awaitPendingRelease(pathZones[zoneIndex], handles[zoneIndex])
+    private fun destructionJob(
+        route: RouteId,
+        pathZones: Array<ZoneId>,
+        handles: List<ZoneReservationId>
+    ): Job =
+        scope.launch {
+            val releaseZones = infra.getRouteReleaseZones(route)
+            var lastReleasedZone = -1
+            for (zoneIndex in releaseZones) {
+                // wait for the release zone to be pending release
+                reservationSim.awaitPendingRelease(pathZones[zoneIndex], handles[zoneIndex])
 
-            // release all zones before and including this one
-            for (releasedZone in lastReleasedZone + 1 until zoneIndex + 1)
-                reservationSim.release(pathZones[releasedZone], handles[releasedZone])
-            lastReleasedZone = zoneIndex
+                // release all zones before and including this one
+                for (releasedZone in lastReleasedZone + 1 until zoneIndex + 1) reservationSim
+                    .release(pathZones[releasedZone], handles[releasedZone])
+                lastReleasedZone = zoneIndex
+            }
         }
-    }
 
     override suspend fun call(route: RouteId, train: TrainId): DynIdx<RouteCallHandle> {
         val path = infra.getRoutePath(route)
         // the zones as encountered by the route
-        val pathZones = Array(path.size) { i -> infra.getNextZone(infra.getZonePathEntry(path[i]))!! }
+        val pathZones =
+            Array(path.size) { i -> infra.getNextZone(infra.getZonePathEntry(path[i]))!! }
         // a lookup table sorted by zone lock order
         val zoneLockOrder = IntArray(path.size) { it }.sortedBy { pathZones[it].index }
 
         // lock zones in order
         logger.debug { "locking zones of route $route for train $train" }
-        for (zoneIndex in zoneLockOrder)
-            reservationSim.lockZone(pathZones[zoneIndex])
+        for (zoneIndex in zoneLockOrder) reservationSim.lockZone(pathZones[zoneIndex])
 
         // for each zone, start a pre-reservation process
-        val reservationHandles =  pathZones.indices.map { zoneIndex ->
-            scope.async {
-                val zone = pathZones[zoneIndex]
-                val zonePath = path[zoneIndex]
-                val movableElements = infra.getZonePathMovableElements(zonePath)
-                val movableElementsConfigs = infra.getZonePathMovableElementsConfigs(zonePath)
-                // wait for the current reservations to be compatible
-                logger.debug { "waiting for zone $zone to be compatible with route $route" }
-                val newRequirements = infra.getRequirements(zonePath)
-                reservationSim.watchZoneConfig(zone).filter {
-                    // this function returns whether we found a compatible configuration
-                    it.requirements()?.compatibleWith(newRequirements) ?: true
-                }.first()
+        val reservationHandles =
+            pathZones.indices
+                .map { zoneIndex ->
+                    scope.async {
+                        val zone = pathZones[zoneIndex]
+                        val zonePath = path[zoneIndex]
+                        val movableElements = infra.getZonePathMovableElements(zonePath)
+                        val movableElementsConfigs =
+                            infra.getZonePathMovableElementsConfigs(zonePath)
+                        // wait for the current reservations to be compatible
+                        logger.debug { "waiting for zone $zone to be compatible with route $route" }
+                        val newRequirements = infra.getRequirements(zonePath)
+                        reservationSim
+                            .watchZoneConfig(zone)
+                            .filter {
+                                // this function returns whether we found a compatible configuration
+                                it.requirements()?.compatibleWith(newRequirements) ?: true
+                            }
+                            .first()
 
-                for (i in 0 until movableElements.size) {
-                    val movableElement = movableElements[i]
-                    val movableElementConfig = movableElementsConfigs[i]
-                    movableElementSim.withLock(movableElement) {
-                        movableElementSim.move(movableElement, movableElementConfig)
+                        for (i in 0 until movableElements.size) {
+                            val movableElement = movableElements[i]
+                            val movableElementConfig = movableElementsConfigs[i]
+                            movableElementSim.withLock(movableElement) {
+                                movableElementSim.move(movableElement, movableElementConfig)
+                            }
+                        }
+
+                        val handle = reservationSim.preReserve(zone, path[zoneIndex], train)
+                        logger.debug { "unlocking zone $zone" }
+                        reservationSim.unlockZone(zone)
+                        handle
                     }
                 }
-
-                val handle = reservationSim.preReserve(zone, path[zoneIndex], train)
-                logger.debug { "unlocking zone $zone" }
-                reservationSim.unlockZone(zone)
-                handle
-            }
-        }.awaitAll()
+                .awaitAll()
 
         logger.debug { "confirming reservations of route $route for train $train" }
         for (zoneIndex in pathZones.indices.reversed()) {

@@ -12,21 +12,17 @@ public class EnvelopeMaintain {
             double startPosition,
             double startSpeed,
             InteractiveEnvelopePartConsumer consumer,
-            double direction
-    ) {
-        if (!consumer.initEnvelopePart(startPosition, startSpeed, direction))
-            return;
+            double direction) {
+        if (!consumer.initEnvelopePart(startPosition, startSpeed, direction)) return;
         double position = startPosition;
         double speed = startSpeed;
         while (true) {
             var action = Action.MAINTAIN;
-            if (speed < startSpeed)
-                action = Action.ACCELERATE;
+            if (speed < startSpeed) action = Action.ACCELERATE;
             var step = TrainPhysicsIntegrator.step(context, position, speed, action, direction);
             position += step.positionDelta;
             speed = step.endSpeed;
-            if (!consumer.addStep(position, speed, step.timeDelta))
-                break;
+            if (!consumer.addStep(position, speed, step.timeDelta)) break;
         }
     }
 }

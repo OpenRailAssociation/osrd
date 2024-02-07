@@ -6,6 +6,8 @@ import fr.sncf.osrd.api.*;
 import fr.sncf.osrd.api.pathfinding.PathfindingBlocksEndpoint;
 import fr.sncf.osrd.api.stdcm.STDCMEndpoint;
 import io.sentry.Sentry;
+import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 import okhttp3.OkHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,26 +20,34 @@ import org.takes.misc.Opt;
 import org.takes.rs.RsText;
 import org.takes.rs.RsWithStatus;
 import org.takes.tk.TkSlf4j;
-import java.io.IOException;
-import java.util.concurrent.TimeUnit;
 
 @Parameters(commandDescription = "HTTP API server mode")
 public final class ApiServerCommand implements CliCommand {
     static final Logger logger = LoggerFactory.getLogger(ApiServerCommand.class);
 
-    @Parameter(names = {"-p", "--port"}, description = "The TCP port to listen on")
+    @Parameter(
+            names = {"-p", "--port"},
+            description = "The TCP port to listen on")
     private int port = 8000;
 
-    @Parameter(names = {"--editoast-url"}, description = "The base URL of editoast (used to query infrastructures)")
+    @Parameter(
+            names = {"--editoast-url"},
+            description = "The base URL of editoast (used to query infrastructures)")
     private String editoastUrl;
 
-    @Parameter(names = {"--editoast-authorization"}, description = "The HTTP Authorization header sent to editoast")
+    @Parameter(
+            names = {"--editoast-authorization"},
+            description = "The HTTP Authorization header sent to editoast")
     private String editoastAuthorization;
 
-    @Parameter(names = {"--sentry-dsn"}, description = "The sentry DSN")
+    @Parameter(
+            names = {"--sentry-dsn"},
+            description = "The sentry DSN")
     private String sentryDsn;
 
-    @Parameter(names = {"-j", "--threads"}, description = "The number of threads to serve requests from")
+    @Parameter(
+            names = {"-j", "--threads"},
+            description = "The number of threads to serve requests from")
     private int threads = 4;
 
     private String getEditoastUrl() {
@@ -47,24 +57,19 @@ public final class ApiServerCommand implements CliCommand {
         }
 
         if (editoastUrl == null)
-            throw new RuntimeException(
-                "No editoast base url specified. "
-                + "Use '--editoast-url' option or the 'CORE_EDITOAST_URL' environment variable"
-            );
+            throw new RuntimeException("No editoast base url specified. "
+                    + "Use '--editoast-url' option or the 'CORE_EDITOAST_URL' environment variable");
 
-        if (!editoastUrl.endsWith("/"))
-            return editoastUrl + "/";
+        if (!editoastUrl.endsWith("/")) return editoastUrl + "/";
         return editoastUrl;
     }
 
-
-    /**
-     * Run the Api Server
-     */
+    /** Run the Api Server */
     public int run() {
         FbSentry.init(sentryDsn);
         var editoastUrl = getEditoastUrl();
-        var httpClient = new OkHttpClient.Builder().readTimeout(120, TimeUnit.SECONDS).build();
+        var httpClient =
+                new OkHttpClient.Builder().readTimeout(120, TimeUnit.SECONDS).build();
         var infraManager = new InfraManager(editoastUrl, editoastAuthorization, httpClient, false);
         var electricalProfileSetManager =
                 new ElectricalProfileSetManager(editoastUrl, editoastAuthorization, httpClient);
@@ -76,22 +81,20 @@ public final class ApiServerCommand implements CliCommand {
             var routes = new TkFork(
                     new FkRegex("/health", ""),
                     new FkRegex("/pathfinding/routes", new PathfindingBlocksEndpoint(infraManager)),
-                    new FkRegex("/standalone_simulation",
+                    new FkRegex(
+                            "/standalone_simulation",
                             new StandaloneSimulationEndpoint(infraManager, electricalProfileSetManager)),
                     new FkRegex("/project_signals", new SignalProjectionEndpoint(infraManager)),
                     new FkRegex("/detect_conflicts", new ConflictDetectionEndpoint()),
                     new FkRegex("/cache_status", new InfraCacheStatusEndpoint(infraManager)),
                     new FkRegex("/version", new VersionEndpoint()),
                     new FkRegex("/stdcm", new STDCMEndpoint(infraManager)),
-                    new FkRegex("/infra_load", new InfraLoadEndpoint(infraManager))
-            );
+                    new FkRegex("/infra_load", new InfraLoadEndpoint(infraManager)));
 
             // the list of pages which should be displayed on error
             var fallbacks = new FbChain(
                     // if a page isn't found, just return a 404
-                    new FbStatus(404, new RsWithStatus(new RsText("Not found"), 404)),
-                    new FbSentry()
-            );
+                    new FbStatus(404, new RsWithStatus(new RsText("Not found"), 404)), new FbSentry());
 
             var serverConfig = new TkSlf4j(new TkFallback(routes, fallbacks));
             var serverBack = new BkParallel(new BkSafe(new BkBasic(serverConfig)), threads);
@@ -106,8 +109,7 @@ public final class ApiServerCommand implements CliCommand {
 
     private static final class FbSentry implements Fallback {
         public static void init(String sentryDsn) {
-            if (sentryDsn != null)
-                Sentry.init(options -> options.setDsn(sentryDsn));
+            if (sentryDsn != null) Sentry.init(options -> options.setDsn(sentryDsn));
         }
 
         @Override

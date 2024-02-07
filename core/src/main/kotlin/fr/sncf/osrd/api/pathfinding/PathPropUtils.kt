@@ -16,7 +16,7 @@ import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 
-/** Creates the path from a given block id  */
+/** Creates the path from a given block id */
 @JvmName("makePathProps")
 fun makePathProps(
     blockInfra: BlockInfra,
@@ -26,13 +26,16 @@ fun makePathProps(
     endOffset: Offset<Block> = blockInfra.getBlockLength(blockIdx)
 ): PathProperties {
     return buildPathPropertiesFrom(
-        rawInfra, blockInfra.getTrackChunksFromBlock(blockIdx),
-        beginOffset.cast(), endOffset.cast()
+        rawInfra,
+        blockInfra.getTrackChunksFromBlock(blockIdx),
+        beginOffset.cast(),
+        endOffset.cast()
     )
 }
 
 /**
  * Creates the path from given blocks.
+ *
  * @param rawInfra RawSignalingInfra
  * @param blockInfra BlockInfra
  * @param blockIds the blocks in the order they are encountered
@@ -40,8 +43,10 @@ fun makePathProps(
  * @return corresponding path
  */
 fun makePathProps(
-    rawInfra: RawSignalingInfra, blockInfra: BlockInfra,
-    blockIds: List<BlockId>, offsetFirstBlock: Length<Path>
+    rawInfra: RawSignalingInfra,
+    blockInfra: BlockInfra,
+    blockIds: List<BlockId>,
+    offsetFirstBlock: Length<Path>
 ): PathProperties {
     val chunks = MutableDirStaticIdxArrayList<TrackChunk>()
     var totalLength: Length<Path> = Length(0.meters)
@@ -54,24 +59,26 @@ fun makePathProps(
     return buildPathPropertiesFrom(rawInfra, chunks, offsetFirstBlock, totalLength)
 }
 
-/** Creates a `Path` instance from a list of block ranges  */
+/** Creates a `Path` instance from a list of block ranges */
 fun makePathProps(
-    rawInfra: RawSignalingInfra, blockInfra: BlockInfra,
+    rawInfra: RawSignalingInfra,
+    blockInfra: BlockInfra,
     blockRanges: List<PathfindingEdgeRangeId<Block>>
 ): PathProperties {
     val chunkPath = makeChunkPath(rawInfra, blockInfra, blockRanges)
     return makePathProperties(rawInfra, chunkPath)
 }
 
-/** Builds a PathProperties from an RJSTrainPath  */
+/** Builds a PathProperties from an RJSTrainPath */
 fun makePathProps(rawInfra: RawSignalingInfra, rjsPath: RJSTrainPath): PathProperties {
     val chunkPath = makeChunkPath(rawInfra, rjsPath)
     return makePathProperties(rawInfra, chunkPath)
 }
 
-/** Creates a ChunkPath from a list of block ranges  */
+/** Creates a ChunkPath from a list of block ranges */
 fun makeChunkPath(
-    rawInfra: RawSignalingInfra, blockInfra: BlockInfra,
+    rawInfra: RawSignalingInfra,
+    blockInfra: BlockInfra,
     blockRanges: List<PathfindingEdgeRangeId<Block>>
 ): ChunkPath {
     assert(blockRanges.isNotEmpty())
@@ -92,17 +99,20 @@ fun makeChunkPath(
     return buildChunkPath(rawInfra, chunks, startOffset, endOffset)
 }
 
-/** Builds a ChunkPath from an RJSTrainPath  */
+/** Builds a ChunkPath from an RJSTrainPath */
 fun makeChunkPath(rawInfra: RawSignalingInfra, rjsPath: RJSTrainPath): ChunkPath {
     val trackRanges = ArrayList<RJSDirectionalTrackRange?>()
     for (routePath in rjsPath.routePath) {
         for (trackRange in routePath.trackSections) {
             val lastTrackRange = Iterables.getLast(trackRanges, null)
-            if (lastTrackRange != null && lastTrackRange.trackSectionID == trackRange.trackSectionID) {
+            if (
+                lastTrackRange != null && lastTrackRange.trackSectionID == trackRange.trackSectionID
+            ) {
                 assert(lastTrackRange.getEnd() == trackRange.getBegin())
                 assert(lastTrackRange.direction == trackRange.direction)
-                if (trackRange.direction == EdgeDirection.START_TO_STOP) lastTrackRange.end =
-                    trackRange.end else lastTrackRange.begin = trackRange.begin
+                if (trackRange.direction == EdgeDirection.START_TO_STOP)
+                    lastTrackRange.end = trackRange.end
+                else lastTrackRange.begin = trackRange.begin
             } else {
                 trackRanges.add(trackRange)
             }
@@ -112,29 +122,27 @@ fun makeChunkPath(rawInfra: RawSignalingInfra, rjsPath: RJSTrainPath): ChunkPath
     for (trackRange in trackRanges) {
         val trackId = getTrackSectionFromNameOrThrow(trackRange!!.trackSectionID, rawInfra)
         val dir =
-            if (trackRange.direction == EdgeDirection.START_TO_STOP)
-                Direction.INCREASING
-            else
-                Direction.DECREASING
-        val chunksOnTrack = if (dir == Direction.INCREASING)
-            rawInfra.getTrackSectionChunks(trackId)
-        else
-            rawInfra.getTrackSectionChunks(trackId).reversed()
-        for (chunk in chunksOnTrack)
-            chunks.add(DirStaticIdx(chunk, dir))
+            if (trackRange.direction == EdgeDirection.START_TO_STOP) Direction.INCREASING
+            else Direction.DECREASING
+        val chunksOnTrack =
+            if (dir == Direction.INCREASING) rawInfra.getTrackSectionChunks(trackId)
+            else rawInfra.getTrackSectionChunks(trackId).reversed()
+        for (chunk in chunksOnTrack) chunks.add(DirStaticIdx(chunk, dir))
     }
     val firstRange = trackRanges[0]
     var startOffset = fromMeters(firstRange!!.begin)
     if (firstRange.direction == EdgeDirection.STOP_TO_START) {
         val firstTrackId = getTrackSectionFromNameOrThrow(trackRanges[0]!!.trackSectionID, rawInfra)
-        startOffset = rawInfra.getTrackSectionLength(firstTrackId).distance - fromMeters(
-            firstRange.end
-        )
+        startOffset =
+            rawInfra.getTrackSectionLength(firstTrackId).distance - fromMeters(firstRange.end)
     }
-    val endOffset = startOffset + fromMeters(
-        trackRanges.stream()
-            .mapToDouble { r: RJSDirectionalTrackRange? -> r!!.end - r.begin }
-            .sum()
-    )
+    val endOffset =
+        startOffset +
+            fromMeters(
+                trackRanges
+                    .stream()
+                    .mapToDouble { r: RJSDirectionalTrackRange? -> r!!.end - r.begin }
+                    .sum()
+            )
     return buildChunkPath(rawInfra, chunks, Length(startOffset), Length(endOffset))
 }
