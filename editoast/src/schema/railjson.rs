@@ -6,7 +6,7 @@ use super::{
 use derivative::Derivative;
 use serde::{Deserialize, Serialize};
 
-pub const RAILJSON_VERSION: &str = "3.4.9";
+pub const RAILJSON_VERSION: &str = "3.4.10";
 
 #[derive(Deserialize, Derivative, Serialize, Clone, Debug)]
 #[derivative(Default)]

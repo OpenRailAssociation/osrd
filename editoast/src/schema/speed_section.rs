@@ -20,6 +20,8 @@ pub struct SpeedSection {
     pub speed_limit: Option<Speed>,
     pub speed_limit_by_tag: HashMap<NonBlankString, Speed>,
     pub track_ranges: Vec<ApplicableDirectionsTrackRange>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub on_routes: Option<Vec<Identifier>>,
     #[serde(default)]
     pub extensions: SpeedSectionExtensions,
 }
