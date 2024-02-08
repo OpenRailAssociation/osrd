@@ -20,7 +20,8 @@ class PathfindingRequest
     /** expectedVersion The expected infrastructure version */
     @Json(name = "expected_version") var expectedVersion: String,
     /** List of rolling stocks that must be able to use this path */
-    @Json(name = "rolling_stocks") var rollingStocks: List<RJSRollingStock>
+    @Json(name = "rolling_stocks") var rollingStocks: List<RJSRollingStock>,
+    var timeout: Double?
 ) {
 
     companion object {

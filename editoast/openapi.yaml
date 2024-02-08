@@ -3368,6 +3368,10 @@ components:
           items:
             $ref: '#/components/schemas/TimetableImportPathStep'
           type: array
+        pathfinding_timeout:
+          format: double
+          nullable: true
+          type: number
         rolling_stock:
           example: 2TGV2N2
           type: string

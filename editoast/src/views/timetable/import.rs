@@ -45,6 +45,7 @@ pub struct TimetableImportItem {
     rolling_stock: String,
     path: Vec<TimetableImportPathStep>,
     trains: Vec<TimetableImportTrain>,
+    pathfinding_timeout: Option<f64>,
 }
 
 #[derive(Debug, Clone, Deserialize, ToSchema)]
@@ -196,7 +197,11 @@ async fn import_item(
     let rolling_stock: RollingStock = rolling_stock_model.into();
 
     // PATHFINDING
-    let mut pf_request = PathfindingRequest::new(infra_id, infra_version.to_owned());
+    let mut pf_request = PathfindingRequest::new(
+        infra_id,
+        infra_version.to_owned(),
+        import_item.pathfinding_timeout,
+    );
     pf_request.with_rolling_stocks(&mut vec![rolling_stock.clone()]);
     let ops_uic = ops_uic_from_path(&import_item.path);
     let ops_id = ops_id_from_path(&import_item.path);

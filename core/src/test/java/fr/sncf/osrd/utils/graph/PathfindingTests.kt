@@ -650,14 +650,14 @@ class PathfindingTests {
     }
 
     @ParameterizedTest
-    @CsvSource("0, true", "10, false")
-    fun pathfindingTimesOut(timeout: Long, timesOut: Boolean) {
+    @CsvSource("0, true", "10, false", ", false")
+    fun pathfindingTimesOut(timeout: Long?, timesOut: Boolean) {
         val builder = SimpleGraphBuilder()
         builder.makeNodes(2)
         builder.makeEdge(0, 1, 100.meters)
         val g = builder.build()
         val pathfinding =
-            Pathfinding(g).setEdgeToLength { edge -> edge.length }.setTimeout(timeout.toDouble())
+            Pathfinding(g).setEdgeToLength { edge -> edge.length }.setTimeout(timeout?.toDouble())
         if (!timesOut) {
             val res =
                 pathfinding.runPathfindingEdgesOnly(listOf(listOf(builder.getEdgeLocation("0-1"))))

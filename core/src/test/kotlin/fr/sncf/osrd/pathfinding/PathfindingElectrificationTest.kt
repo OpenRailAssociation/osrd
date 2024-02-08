@@ -46,7 +46,12 @@ class PathfindingElectrificationTest : ApiTest() {
 
         // Run a pathfinding with a non-electric train
         val normalPath =
-            runPathfinding(infra.fullInfra(), waypoints, listOf(TestTrains.REALISTIC_FAST_TRAIN))
+            runPathfinding(
+                infra.fullInfra(),
+                waypoints,
+                listOf(TestTrains.REALISTIC_FAST_TRAIN),
+                null
+            )
         Assertions.assertNotNull(normalPath)
         assert(TestTrains.FAST_ELECTRIC_TRAIN.modeNames.contains("25000V"))
         for (block in infra.blockPool) block.voltage = "25000V"
@@ -60,7 +65,12 @@ class PathfindingElectrificationTest : ApiTest() {
 
         // Run another pathfinding with an electric train
         val electricPath =
-            runPathfinding(infra.fullInfra(), waypoints, listOf(TestTrains.FAST_ELECTRIC_TRAIN))
+            runPathfinding(
+                infra.fullInfra(),
+                waypoints,
+                listOf(TestTrains.FAST_ELECTRIC_TRAIN),
+                null
+            )
         Assertions.assertNotNull(electricPath)
 
         // We check that the path is different, we need to avoid the non-electrified track
@@ -80,7 +90,12 @@ class PathfindingElectrificationTest : ApiTest() {
         for (block in infra.blockPool) block.voltage = ""
         val exception =
             Assertions.assertThrows(OSRDError::class.java) {
-                runPathfinding(infra.fullInfra(), waypoints, listOf(TestTrains.FAST_ELECTRIC_TRAIN))
+                runPathfinding(
+                    infra.fullInfra(),
+                    waypoints,
+                    listOf(TestTrains.FAST_ELECTRIC_TRAIN),
+                    null
+                )
             }
         Assertions.assertEquals(exception.osrdErrorType, ErrorType.PathfindingElectrificationError)
     }
@@ -103,7 +118,12 @@ class PathfindingElectrificationTest : ApiTest() {
 
         // Run a pathfinding with a non-electric train
         val normalPath =
-            runPathfinding(infra.fullInfra(), waypoints, listOf(TestTrains.REALISTIC_FAST_TRAIN))
+            runPathfinding(
+                infra.fullInfra(),
+                waypoints,
+                listOf(TestTrains.REALISTIC_FAST_TRAIN),
+                null
+            )
         Assertions.assertNotNull(normalPath)
         assert(TestTrains.FAST_ELECTRIC_TRAIN.modeNames.contains("25000V"))
         for (block in infra.blockPool) block.voltage = "25000V"
@@ -126,7 +146,12 @@ class PathfindingElectrificationTest : ApiTest() {
         ) {
             // Run another pathfinding with an electric train
             val electricPath =
-                runPathfinding(infra.fullInfra(), waypoints, listOf(TestTrains.FAST_ELECTRIC_TRAIN))
+                runPathfinding(
+                    infra.fullInfra(),
+                    waypoints,
+                    listOf(TestTrains.FAST_ELECTRIC_TRAIN),
+                    null
+                )
             Assertions.assertNotNull(electricPath)
         } else {
             val exception =
@@ -134,7 +159,8 @@ class PathfindingElectrificationTest : ApiTest() {
                     runPathfinding(
                         infra.fullInfra(),
                         waypoints,
-                        listOf(TestTrains.FAST_ELECTRIC_TRAIN)
+                        listOf(TestTrains.FAST_ELECTRIC_TRAIN),
+                        null
                     )
                 }
             Assertions.assertEquals(

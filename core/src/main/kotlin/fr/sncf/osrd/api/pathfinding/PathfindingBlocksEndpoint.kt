@@ -61,7 +61,8 @@ class PathfindingBlocksEndpoint(private val infraManager: InfraManager) : Take {
                         RJSRollingStockParser.parse(rjsRollingStock)
                     }
                     .toList()
-            val path = runPathfinding(infra, reqWaypoints, rollingStocks)
+            val timeout = request.timeout
+            val path = runPathfinding(infra, reqWaypoints, rollingStocks, timeout)
             val res = convertPathfindingResult(infra.blockInfra, infra.rawInfra, path, recorder)
             validatePathfindingResult(res, reqWaypoints, infra.rawInfra)
             RsJson(RsWithBody(PathfindingResult.adapterResult.toJson(res)))
@@ -200,7 +201,8 @@ private fun isWaypointOnTrack(
 fun runPathfinding(
     infra: FullInfra,
     reqWaypoints: Array<Array<PathfindingWaypoint>>,
-    rollingStocks: Collection<RollingStock>?
+    rollingStocks: Collection<RollingStock>?,
+    timeout: Double?
 ): PathfindingResultId<Block> {
     // Parse the waypoints
     val waypoints = ArrayList<Collection<PathfindingEdgeLocationId<Block>>>()
@@ -222,7 +224,7 @@ fun runPathfinding(
     val remainingDistanceEstimators = makeHeuristics(infra, waypoints)
 
     // Compute the paths from the entry waypoint to the exit waypoint
-    return computePaths(infra, waypoints, constraints, remainingDistanceEstimators)
+    return computePaths(infra, waypoints, constraints, remainingDistanceEstimators, timeout)
 }
 
 /** Initialize the heuristics */
@@ -267,10 +269,12 @@ private fun computePaths(
     infra: FullInfra,
     waypoints: ArrayList<Collection<PathfindingEdgeLocationId<Block>>>,
     constraints: List<EdgeToRangesId<Block>>,
-    remainingDistanceEstimators: List<AStarHeuristicId<Block>>
+    remainingDistanceEstimators: List<AStarHeuristicId<Block>>,
+    timeout: Double?
 ): PathfindingResultId<Block> {
     val pathFound =
         Pathfinding(GraphAdapter(infra.blockInfra, infra.rawInfra))
+            .setTimeout(timeout)
             .setEdgeToLength { block: BlockId -> infra.blockInfra.getBlockLength(block) }
             .setRemainingDistanceEstimator(remainingDistanceEstimators)
             .addBlockedRangeOnEdges(constraints)
@@ -289,6 +293,7 @@ private fun computePaths(
     if (possiblePathWithoutErrorNoConstraints != null) {
         for (currentConstraint in constraints) {
             Pathfinding(GraphAdapter(infra.blockInfra, infra.rawInfra))
+                .setTimeout(timeout)
                 .setEdgeToLength { block: BlockId -> infra.blockInfra.getBlockLength(block) }
                 .addBlockedRangeOnEdges(currentConstraint)
                 .setRemainingDistanceEstimator(remainingDistanceEstimators)

@@ -747,6 +747,10 @@ components:
                 offset: 138.32
         rolling_stocks:
           $ref: "#/components/schemas/RollingStock"
+        timeout:
+          type: number
+          nullable: true
+          format: double
     STDCMRequest:
       properties:
         infra:

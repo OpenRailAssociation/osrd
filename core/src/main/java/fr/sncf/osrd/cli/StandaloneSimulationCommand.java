@@ -101,7 +101,8 @@ public class StandaloneSimulationCommand implements CliCommand {
         var results = new HashMap<String, StandaloneSimResult>();
         for (var trainScheduleGroup : input.trainScheduleGroups) {
             logger.info("Running simulation for schedule group: {}", trainScheduleGroup.id);
-            var rawPathfindingResult = runPathfinding(infra, trainScheduleGroup.waypoints, rollingStocks.values());
+            var rawPathfindingResult =
+                    runPathfinding(infra, trainScheduleGroup.waypoints, rollingStocks.values(), null);
             var pathfindingResult = convertPathfindingResult(
                     infra.blockInfra(), infra.rawInfra(), rawPathfindingResult, diagnosticRecorder);
             var routePath = pathfindingResult.routePaths.stream()
