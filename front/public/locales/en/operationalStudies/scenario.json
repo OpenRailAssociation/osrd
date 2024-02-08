@@ -50,9 +50,15 @@
     "trainsSelectionDeletedCount_one": "The train has been deleted.",
     "trainsSelectionDeletedCount_other": "The {{count}} trains have been deleted.",
     "noSpeedLimitTags": "Without code",
-    "showValidTrains": "Valid trains",
-    "showInvalidTrains": "Invalid trains",
-    "compositionCodes": "Composition codes"
+    "showValidTrains": "Valid",
+    "showInvalidTrains": "Invalid",
+    "showAllTrains": "All",
+    "compositionCodes": "Composition codes",
+    "filterLabel": "Name, label",
+    "advancedFilterLabel": "Rollingstock",
+    "rollingStockFilterPlaceholder": "Family, detail, serie",
+    "validityFilter": "Trains validity",
+    "toggleFilters": "Toggle filters display"
   },
   "toggleTimetable": "Toggle the timetable",
   "trainCount_one": "1 train",

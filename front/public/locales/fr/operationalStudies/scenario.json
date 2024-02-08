@@ -13,7 +13,6 @@
     "unableToDuplicateATrain": "Impossible de dupliquer le train"
   },
   "filterPlaceholder": "Filtre, étiquettes",
-  "advancedFiltersPlaceholder": "Filtre par type, série, détail",
   "infraLoadingState": "{{step}}/8",
   "modifyScenario": "Modifier le scénario",
   "noElectricalProfileSet": "Pas de profils électriques",
@@ -50,9 +49,15 @@
     "trainsSelectionDeletedCount_one": "Le train a bien été supprimé.",
     "trainsSelectionDeletedCount_other": "Les {{count}} trains ont bien été supprimés.",
     "noSpeedLimitTags": "Sans code",
-    "showValidTrains": "Trains valides",
-    "showInvalidTrains": "Trains invalides",
-    "compositionCodes": "Codes de composition"
+    "showValidTrains": "Valides",
+    "showInvalidTrains": "Invalides",
+    "showAllTrains": "Tous",
+    "compositionCodes": "Codes de composition",
+    "filterLabel": "Nom, étiquette",
+    "advancedFilterLabel": "Engin moteur",
+    "rollingStockFilterPlaceholder": "Famille, détail, série",
+    "validityFilter": "Validité des trains",
+    "toggleFilters": "Afficher ou masquer les filtres"
   },
   "toggleTimetable": "Basculer l'affichage de la grille horaires",
   "trainCount_one": "1 train",
