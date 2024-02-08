@@ -2354,6 +2354,7 @@ export type TimetableImportTrain = {
 };
 export type TimetableImportItem = {
   path: TimetableImportPathStep[];
+  pathfinding_timeout?: number | null;
   rolling_stock: string;
   trains: TimetableImportTrain[];
 };

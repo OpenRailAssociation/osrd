@@ -143,8 +143,8 @@ class Pathfinding<NodeT : Any, EdgeT : Any, OffsetType>(
     }
 
     /** Sets the pathfinding's timeout */
-    fun setTimeout(timeout: Double): Pathfinding<NodeT, EdgeT, OffsetType> {
-        this.timeout = timeout
+    fun setTimeout(timeout: Double?): Pathfinding<NodeT, EdgeT, OffsetType> {
+        if (timeout != null) this.timeout = timeout
         return this
     }
 

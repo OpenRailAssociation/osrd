@@ -61,7 +61,12 @@ class PathfindingSignalingTest {
 
         // Run a pathfinding with a non TVM train, expecting not to find any path
         AssertionsForClassTypes.assertThatThrownBy {
-                runPathfinding(infra.fullInfra(), waypoints, listOf(TestTrains.TRAIN_WITHOUT_TVM))
+                runPathfinding(
+                    infra.fullInfra(),
+                    waypoints,
+                    listOf(TestTrains.TRAIN_WITHOUT_TVM),
+                    null
+                )
             }
             .isExactlyInstanceOf(OSRDError::class.java)
             .satisfies({ exception: Throwable? ->
@@ -80,7 +85,7 @@ class PathfindingSignalingTest {
         waypoints[1][0] = waypointEnd
 
         val pathfindingResult =
-            runPathfinding(infra.fullInfra(), waypoints, listOf(TestTrains.TRAIN_WITHOUT_TVM))
+            runPathfinding(infra.fullInfra(), waypoints, listOf(TestTrains.TRAIN_WITHOUT_TVM), null)
 
         AssertionsForClassTypes.assertThat(pathfindingResult.ranges)
             .isEqualTo(
@@ -102,7 +107,7 @@ class PathfindingSignalingTest {
         waypoints[1][0] = waypointEnd
 
         val pathfindingResult =
-            runPathfinding(infra.fullInfra(), waypoints, listOf(TestTrains.TRAIN_WITHOUT_TVM))
+            runPathfinding(infra.fullInfra(), waypoints, listOf(TestTrains.TRAIN_WITHOUT_TVM), null)
 
         AssertionsForClassTypes.assertThat(pathfindingResult.ranges)
             .isEqualTo(

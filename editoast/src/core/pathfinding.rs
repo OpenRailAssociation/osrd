@@ -18,6 +18,7 @@ pub struct PathfindingRequest {
     expected_version: String,
     waypoints: PathfindingWaypoints,
     rolling_stocks: Vec<RollingStock>,
+    timeout: Option<f64>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -81,12 +82,13 @@ impl Waypoint {
 }
 
 impl PathfindingRequest {
-    pub fn new(infra: i64, expected_version: String) -> Self {
+    pub fn new(infra: i64, expected_version: String, timeout: Option<f64>) -> Self {
         Self {
             infra,
             expected_version,
             waypoints: Default::default(),
             rolling_stocks: Default::default(),
+            timeout,
         }
     }
 

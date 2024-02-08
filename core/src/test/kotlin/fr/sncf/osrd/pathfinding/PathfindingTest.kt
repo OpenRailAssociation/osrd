@@ -58,7 +58,7 @@ class PathfindingTest : ApiTest() {
         waypoints[1] = waypointsEnd
         val requestBody =
             PathfindingRequest.adapter.toJson(
-                PathfindingRequest(waypoints, "tiny_infra/infra.json", "1", listOf())
+                PathfindingRequest(waypoints, "tiny_infra/infra.json", "1", listOf(), null)
             )
         val result =
             TakesUtils.readBodyResponse(
@@ -140,7 +140,7 @@ class PathfindingTest : ApiTest() {
         waypoints[2] = makeBidirectionalEndPoint(waypointEnd)
         val requestBody =
             PathfindingRequest.adapter.toJson(
-                PathfindingRequest(waypoints, "tiny_infra/infra.json", "1", listOf())
+                PathfindingRequest(waypoints, "tiny_infra/infra.json", "1", listOf(), null)
             )
         val result =
             TakesUtils.readBodyResponse(
@@ -223,7 +223,7 @@ class PathfindingTest : ApiTest() {
         waypoints[1][0] = waypointEnd
         val requestBody =
             PathfindingRequest.adapter.toJson(
-                PathfindingRequest(waypoints, "tiny_infra/infra.json", "1", listOf())
+                PathfindingRequest(waypoints, "tiny_infra/infra.json", "1", listOf(), null)
             )
         val res =
             TakesUtils.readHeadResponse(
@@ -232,7 +232,9 @@ class PathfindingTest : ApiTest() {
             )
         AssertionsForClassTypes.assertThat(res[0]).contains("400")
         val infra = Helpers.tinyInfra
-        AssertionsForClassTypes.assertThatThrownBy { runPathfinding(infra, waypoints, listOf()) }
+        AssertionsForClassTypes.assertThatThrownBy {
+                runPathfinding(infra, waypoints, listOf(), null)
+            }
             .isExactlyInstanceOf(OSRDError::class.java)
             .satisfies({ exception ->
                 AssertionsForClassTypes.assertThat((exception as OSRDError?)!!.osrdErrorType)
@@ -249,7 +251,7 @@ class PathfindingTest : ApiTest() {
         val waypoints = Array(2) { Array(1) { waypoint } }
         val requestBody =
             PathfindingRequest.adapter.toJson(
-                PathfindingRequest(waypoints, "tiny_infra/infra.json", "1", listOf())
+                PathfindingRequest(waypoints, "tiny_infra/infra.json", "1", listOf(), null)
             )
         val response =
             PathfindingBlocksEndpoint(infraManager)
@@ -257,7 +259,9 @@ class PathfindingTest : ApiTest() {
         val res = TakesUtils.readHeadResponse(response)
         AssertionsForClassTypes.assertThat(res[0]).contains("400")
         val infra = Helpers.tinyInfra
-        AssertionsForClassTypes.assertThatThrownBy { runPathfinding(infra, waypoints, listOf()) }
+        AssertionsForClassTypes.assertThatThrownBy {
+                runPathfinding(infra, waypoints, listOf(), null)
+            }
             .isExactlyInstanceOf(OSRDError::class.java)
             .satisfies({ exception ->
                 AssertionsForClassTypes.assertThat((exception as OSRDError?)!!.osrdErrorType)
@@ -282,12 +286,12 @@ class PathfindingTest : ApiTest() {
         val infra = Helpers.fullInfraFromRJS(rjsInfra)
 
         // Check that we can go through the infra with a small train
-        assertThat(runPathfinding(infra, waypoints, listOf(TestTrains.REALISTIC_FAST_TRAIN)))
+        assertThat(runPathfinding(infra, waypoints, listOf(TestTrains.REALISTIC_FAST_TRAIN), null))
             .isNotNull()
 
         // Check that we can't go through the infra with a large train
         AssertionsForClassTypes.assertThatThrownBy {
-                runPathfinding(infra, waypoints, listOf(TestTrains.FAST_TRAIN_LARGE_GAUGE))
+                runPathfinding(infra, waypoints, listOf(TestTrains.FAST_TRAIN_LARGE_GAUGE), null)
             }
             .isExactlyInstanceOf(OSRDError::class.java)
             .satisfies({ exception ->
@@ -300,7 +304,9 @@ class PathfindingTest : ApiTest() {
         // Check that we can go until right before the blocked section with a large train
         waypoints[1][0] =
             PathfindingWaypoint("ne.micro.foo_to_bar", 999.0, EdgeDirection.START_TO_STOP)
-        assertThat(runPathfinding(infra, waypoints, listOf(TestTrains.FAST_TRAIN_LARGE_GAUGE)))
+        assertThat(
+                runPathfinding(infra, waypoints, listOf(TestTrains.FAST_TRAIN_LARGE_GAUGE), null)
+            )
             .isNotNull()
     }
 
@@ -315,7 +321,8 @@ class PathfindingTest : ApiTest() {
 
         // Run a pathfinding with a non-electric train
         val infra = Helpers.fullInfraFromRJS(rjsInfra)
-        val normalPath = runPathfinding(infra, waypoints, listOf(TestTrains.REALISTIC_FAST_TRAIN))
+        val normalPath =
+            runPathfinding(infra, waypoints, listOf(TestTrains.REALISTIC_FAST_TRAIN), null)
 
         // Replace with custom electrifications
         // Set voltage to 25000V everywhere except for trackSectionToBlock
@@ -374,7 +381,8 @@ class PathfindingTest : ApiTest() {
             runPathfinding(
                 infraWithNonElectrifiedTrack,
                 waypoints,
-                listOf(TestTrains.FAST_ELECTRIC_TRAIN)
+                listOf(TestTrains.FAST_ELECTRIC_TRAIN),
+                null
             )
 
         // Check that the paths are different, we need to avoid the non-electrified track
@@ -396,7 +404,8 @@ class PathfindingTest : ApiTest() {
                 runPathfinding(
                     Helpers.fullInfraFromRJS(rjsInfra),
                     waypoints,
-                    listOf(TestTrains.FAST_ELECTRIC_TRAIN)
+                    listOf(TestTrains.FAST_ELECTRIC_TRAIN),
+                    null
                 )
             }
             .isExactlyInstanceOf(OSRDError::class.java)
@@ -420,7 +429,7 @@ class PathfindingTest : ApiTest() {
         waypoints[1] = waypointsEnd
         val requestBody =
             PathfindingRequest.adapter.toJson(
-                PathfindingRequest(waypoints, "tiny_infra/infra.json", "", listOf())
+                PathfindingRequest(waypoints, "tiny_infra/infra.json", "", listOf(), null)
             )
         val result =
             TakesUtils.readBodyResponse(
@@ -523,7 +532,7 @@ class PathfindingTest : ApiTest() {
         waypoints[1] = waypointsEnd
         val requestBody =
             PathfindingRequest.adapter.toJson(
-                PathfindingRequest(waypoints, "tiny_infra/infra.json", "", listOf())
+                PathfindingRequest(waypoints, "tiny_infra/infra.json", "", listOf(), null)
             )
         val result =
             TakesUtils.readBodyResponse(
@@ -548,7 +557,7 @@ class PathfindingTest : ApiTest() {
         waypoints[1] = waypointsEnd
         val requestBody =
             PathfindingRequest.adapter.toJson(
-                PathfindingRequest(waypoints, "small_infra/infra.json", "1", listOf())
+                PathfindingRequest(waypoints, "small_infra/infra.json", "1", listOf(), null)
             )
         val result =
             TakesUtils.readBodyResponse(
@@ -580,7 +589,7 @@ class PathfindingTest : ApiTest() {
         waypoints[1] = waypointsEnd
         val requestBody =
             PathfindingRequest.adapter.toJson(
-                PathfindingRequest(waypoints, "small_infra/infra.json", "1", listOf())
+                PathfindingRequest(waypoints, "small_infra/infra.json", "1", listOf(), null)
             )
         val result =
             TakesUtils.readBodyResponse(
@@ -612,7 +621,7 @@ class PathfindingTest : ApiTest() {
         waypoints[1] = waypointsEnd
         val requestBody =
             PathfindingRequest.adapter.toJson(
-                PathfindingRequest(waypoints, "small_infra/infra.json", "1", listOf())
+                PathfindingRequest(waypoints, "small_infra/infra.json", "1", listOf(), null)
             )
         val result =
             TakesUtils.readBodyResponse(
@@ -656,7 +665,7 @@ class PathfindingTest : ApiTest() {
         waypoints[1] = waypointsEnd
         val requestBody =
             PathfindingRequest.adapter.toJson(
-                PathfindingRequest(waypoints, "small_infra/infra.json", "1", listOf())
+                PathfindingRequest(waypoints, "small_infra/infra.json", "1", listOf(), null)
             )
         val result =
             TakesUtils.readBodyResponse(
@@ -714,7 +723,7 @@ class PathfindingTest : ApiTest() {
         )
         val infra = Helpers.fullInfraFromRJS(rjsInfra)
 
-        val path = runPathfinding(infra, waypoints, listOf(TestTrains.REALISTIC_FAST_TRAIN))
+        val path = runPathfinding(infra, waypoints, listOf(TestTrains.REALISTIC_FAST_TRAIN), null)
         val res =
             convertPathfindingResult(
                 infra.blockInfra,
@@ -868,7 +877,7 @@ class PathfindingTest : ApiTest() {
             val endIndex = if (inverted) 0 else 1
             waypoints[startIndex] = scheduleGroup.waypoints[0]
             waypoints[endIndex] = scheduleGroup.waypoints[scheduleGroup.waypoints.size - 1]
-            return PathfindingRequest(waypoints, infraPath, "", listOf())
+            return PathfindingRequest(waypoints, infraPath, "", listOf(), null)
         }
     }
 }
