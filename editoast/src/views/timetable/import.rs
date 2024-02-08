@@ -6,6 +6,7 @@ use actix_web::{post, web::Data};
 use chrono::{DateTime, Utc};
 use diesel_async::AsyncPgConnection;
 use serde::{Deserialize, Serialize};
+use std::cmp::Ordering;
 use std::collections::HashMap;
 
 use crate::core::pathfinding::{PathfindingRequest, PathfindingWaypoints, Waypoint};
@@ -253,11 +254,25 @@ async fn import_item(
         .map(|pw| pw.path_offset)
         .collect();
 
+    let mut fake_stops: Vec<_> = path_response
+        .payload
+        .path_waypoints
+        .clone()
+        .iter()
+        .filter(|pw| pw.suggestion)
+        .map(|pw| TrainStop {
+            position: Some(pw.path_offset),
+            location: None,
+            duration: 0.,
+        })
+        .collect();
+
     // TRAIN SCHEDULES
 
     let request = build_simulation_request(
         &import_item,
         &waypoint_offsets,
+        &mut fake_stops,
         &rolling_stock,
         infra_id,
         path_response,
@@ -421,6 +436,7 @@ fn waypoints_from_steps(
 fn build_simulation_request(
     import_item: &TimetableImportItem,
     waypoint_offsets: &[f64],
+    fake_stops: &mut Vec<TrainStop>,
     rolling_stock: &RollingStock,
     infra_id: i64,
     path_response: Pathfinding,
@@ -443,6 +459,14 @@ fn build_simulation_request(
                 }
             })
             .collect();
+
+        stops.append(fake_stops);
+        stops.sort_by(|a, b| {
+            a.position
+                .unwrap()
+                .partial_cmp(&b.position.unwrap())
+                .unwrap_or(Ordering::Equal)
+        });
 
         // Force the last stop to be at least 1s long.
         // This is to avoid the train to stop with a non-zero speed.
