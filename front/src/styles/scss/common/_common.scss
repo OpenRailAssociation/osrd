@@ -148,11 +148,14 @@
       }
     }
     .second-line {
-      color: var(--white);
       font-weight: lighter;
       font-size: 0.6rem;
       white-space: normal;
       min-width: 7rem;
+
+      &:not(.via) {
+        color: var(--white);
+      }
     }
   }
 }
