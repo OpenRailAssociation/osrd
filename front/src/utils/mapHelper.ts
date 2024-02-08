@@ -424,14 +424,9 @@ export function getNearestTrack(
   coordinates: number[] | Position,
   map: Map
 ): { track: Feature<LineString>; nearest: number[]; distance: number } | null {
-  const tolerance = 50;
-  const tracks = map.queryRenderedFeatures(
-    [
-      [coordinates[0] - tolerance / 2, coordinates[1] - tolerance / 2],
-      [coordinates[0] + tolerance / 2, coordinates[1] + tolerance / 2],
-    ],
-    { layers: ['chartis/tracks-geo/main'] }
-  ) as Feature<LineString>[];
+  const tracks = map.queryRenderedFeatures(undefined, {
+    layers: ['chartis/tracks-geo/main'],
+  }) as Feature<LineString>[];
   const result = head(
     sortBy(
       tracks.map((track) => {

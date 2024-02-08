@@ -1,14 +1,17 @@
-import React, { useMemo } from 'react';
+import { Position } from '@turf/helpers';
+import cx from 'classnames';
+import React, { useCallback, useMemo } from 'react';
 import { Map } from 'maplibre-gl';
 import { useSelector } from 'react-redux';
 import { Marker } from 'react-map-gl/maplibre';
+
 import originSVG from 'assets/pictures/origin.svg';
 import destinationSVG from 'assets/pictures/destination.svg';
 import viaSVG from 'assets/pictures/via.svg';
-import { getNearestTrack } from 'utils/mapHelper';
+
 import { PointOnMap } from 'applications/operationalStudies/consts';
-import { Position } from '@turf/helpers';
 import { useOsrdConfSelectors } from 'common/osrdContext';
+import { getNearestTrack } from 'utils/mapHelper';
 
 enum MARKER_TYPE {
   ORIGIN = 'origin',
@@ -17,8 +20,8 @@ enum MARKER_TYPE {
 }
 
 type MarkerInformation = {
+  marker: PointOnMap;
   coordinates: number[] | Position;
-  name: string | null | JSX.Element;
   imageSource: string;
 } & (
   | {
@@ -30,40 +33,54 @@ type MarkerInformation = {
     }
 );
 
-const formatPointWithNoName = (lineCode: number, lineName: string, trackName: string) => (
+const formatPointWithNoName = (
+  lineCode: number,
+  lineName: string,
+  trackName: string,
+  markerType: MarkerInformation['type']
+) => (
   <>
     <div className="main-line">
       <div className="track-name">{trackName}</div>
       <div className="line-code">{lineCode}</div>
     </div>
-    <div className="second-line">{lineName}</div>
+    <div className={cx('second-line', { via: markerType === MARKER_TYPE.VIA })}>{lineName}</div>
   </>
 );
 
-const getMarkerName = (marker: PointOnMap, coordinates: number[] | Position, map: Map) => {
-  if (marker.name) return marker.name;
-  let {
-    extensions_sncf_line_code: lineCode,
-    extensions_sncf_line_name: lineName,
-    extensions_sncf_track_name: trackName,
-  } = marker;
-  if (!lineCode || !lineName || !trackName) {
-    const trackResult = getNearestTrack(coordinates, map);
-    if (trackResult) {
-      const { track } = trackResult;
-      if (track && track.properties) {
-        if (track.properties.extensions_sncf_line_code)
-          lineCode = track.properties.extensions_sncf_line_code;
-        if (track.properties.extensions_sncf_line_name)
-          lineName = track.properties.extensions_sncf_line_name;
-        if (track.properties.extensions_sncf_track_name)
-          trackName = track.properties.extensions_sncf_track_name;
-      }
-    }
+const extractMarkerInformation = (
+  origin: PointOnMap | undefined,
+  vias: PointOnMap[],
+  destination: PointOnMap | undefined
+) => {
+  const result = [] as MarkerInformation[];
+  if (origin && origin.coordinates) {
+    result.push({
+      coordinates: origin.coordinates,
+      type: MARKER_TYPE.ORIGIN,
+      marker: origin,
+      imageSource: originSVG,
+    });
   }
-  if (lineCode && lineName && trackName)
-    return formatPointWithNoName(lineCode, lineName, trackName);
-  return null;
+  vias.forEach((via, index) => {
+    if (via.coordinates)
+      result.push({
+        coordinates: via.coordinates,
+        type: MARKER_TYPE.VIA,
+        marker: via,
+        imageSource: viaSVG,
+        index,
+      });
+  });
+  if (destination && destination.coordinates) {
+    result.push({
+      coordinates: destination.coordinates,
+      type: MARKER_TYPE.DESTINATION,
+      marker: destination,
+      imageSource: destinationSVG,
+    });
+  }
+  return result;
 };
 
 const ItineraryMarkers = ({ map }: { map: Map }) => {
@@ -72,58 +89,77 @@ const ItineraryMarkers = ({ map }: { map: Map }) => {
   const origin = useSelector(getOrigin);
   const destination = useSelector(getDestination);
 
-  const markersInformation = useMemo(() => {
-    const result = [] as MarkerInformation[];
-    if (origin && origin.coordinates) {
-      result.push({
-        coordinates: origin.coordinates,
-        type: MARKER_TYPE.ORIGIN,
-        name: getMarkerName(origin, origin.coordinates, map),
-        imageSource: originSVG,
-      });
-    }
-    vias.forEach((via, index) => {
-      if (via.coordinates)
-        result.push({
-          coordinates: via.coordinates,
-          type: MARKER_TYPE.VIA,
-          name: getMarkerName(via, via.coordinates, map),
-          imageSource: viaSVG,
-          index,
-        });
-    });
-    if (destination && destination.coordinates) {
-      result.push({
-        coordinates: destination.coordinates,
-        type: MARKER_TYPE.DESTINATION,
-        name: getMarkerName(destination, destination.coordinates, map),
-        imageSource: destinationSVG,
-      });
-    }
-    return result;
-  }, [origin, vias, destination, map]);
+  const markersInformation = useMemo(
+    () => extractMarkerInformation(origin, vias, destination),
+    [origin, vias, destination]
+  );
+
+  const getMarkerDisplayInformation = useCallback(
+    (markerInfo: MarkerInformation) => {
+      const {
+        marker: {
+          coordinates: markerCoordinates,
+          extensions_sncf_line_code: markerLineCode,
+          extensions_sncf_line_name: markerLineName,
+          extensions_sncf_track_name: markerTrackName,
+        },
+        type: markerType,
+      } = markerInfo;
+      if (markerLineCode && markerLineName && markerTrackName)
+        return formatPointWithNoName(markerLineCode, markerLineName, markerTrackName, markerType);
+
+      if (markerCoordinates) {
+        const trackResult = getNearestTrack(markerCoordinates, map);
+        if (trackResult) {
+          const {
+            track: { properties: trackProperties },
+          } = trackResult;
+          if (trackProperties) {
+            const {
+              extensions_sncf_line_code: lineCode,
+              extensions_sncf_line_name: lineName,
+              extensions_sncf_track_name: trackName,
+            } = trackProperties;
+            if (lineCode && lineName && trackName)
+              return formatPointWithNoName(lineCode, lineName, trackName, markerType);
+          }
+        }
+      }
+
+      return null;
+    },
+    [map]
+  );
 
   const Markers = useMemo(
     () =>
-      markersInformation.map((marker) => {
-        const isDestination = marker.type === MARKER_TYPE.DESTINATION;
-        const isVia = marker.type === MARKER_TYPE.VIA;
+      markersInformation.map((markerInfo) => {
+        const isDestination = markerInfo.type === MARKER_TYPE.DESTINATION;
+        const isVia = markerInfo.type === MARKER_TYPE.VIA;
+
+        const markerName = (
+          <div className={`map-pathfinding-marker ${markerInfo.type}-name`}>
+            {markerInfo.marker.name
+              ? markerInfo.marker.name
+              : getMarkerDisplayInformation(markerInfo)}
+          </div>
+        );
         return (
           <Marker
-            longitude={marker.coordinates[0]}
-            latitude={marker.coordinates[1]}
+            longitude={markerInfo.coordinates[0]}
+            latitude={markerInfo.coordinates[1]}
             offset={isDestination ? [0, -24] : [0, -12]}
-            key={isVia ? `via-${marker.index}` : marker.type}
+            key={isVia ? `via-${markerInfo.index}` : markerInfo.type}
           >
             <img
-              src={marker.imageSource}
-              alt={marker.type}
+              src={markerInfo.imageSource}
+              alt={markerInfo.type}
               style={{ height: isDestination ? '3rem' : '1.5rem' }}
             />
-            {isVia && <span className="map-pathfinding-marker via-number">{marker.index + 1}</span>}
-            {marker.name && (
-              <div className={`map-pathfinding-marker ${marker.type}-name`}>{marker.name}</div>
+            {isVia && (
+              <span className="map-pathfinding-marker via-number">{markerInfo.index + 1}</span>
             )}
+            {markerName}
           </Marker>
         );
       }),

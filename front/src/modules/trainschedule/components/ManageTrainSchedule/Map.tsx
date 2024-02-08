@@ -226,7 +226,7 @@ const Map = () => {
         <IGN_SCAN25 layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]} />
         <IGN_CADASTRE layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]} />
 
-        {!showOSM ? null : (
+        {mapIsLoaded && showOSM && (
           <>
             <OSM
               mapStyle={mapStyle}
