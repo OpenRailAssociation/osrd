@@ -21,10 +21,6 @@ type Props = {
   title?: JSX.Element | string;
   removeTag: (tagIdx: number) => void;
   color?: string;
-  chipInputValue?: string;
-  setChipInputValue?: (value: string) => void;
-  placeholder?: string;
-  containerColorClass?: keyof typeof colorClasses;
 };
 
 export default function ChipsSNCF({
@@ -33,15 +29,8 @@ export default function ChipsSNCF({
   title,
   removeTag,
   color = 'primary',
-  chipInputValue: externalChipInputValue,
-  setChipInputValue: externalSetChipInputValue,
-  placeholder,
-  containerColorClass,
 }: Props) {
-  const [internalChipInputValue, internalSetChipInputValue] = useState('');
-  const chipInputValue = externalChipInputValue ?? internalChipInputValue;
-  const setChipInputValue = externalSetChipInputValue ?? internalSetChipInputValue;
-  const containerClass = containerColorClass ? colorClasses[containerColorClass] : '';
+  const [chipInputValue, setChipInputValue] = useState('');
 
   const chip = (label: string, idx: number) => {
     const chipColor = colorClasses[color as keyof typeof colorClasses];
@@ -73,7 +62,7 @@ export default function ChipsSNCF({
 
   const chipsID = `chipsSNCF${nextId()}`;
   return (
-    <div className={`chips-container ${containerClass}`}>
+    <div className="chips-container">
       {title && (
         <label className="font-weight-medium mb-2" htmlFor={chipsID}>
           {title}
@@ -90,7 +79,6 @@ export default function ChipsSNCF({
           onKeyDown={validateInput}
           value={chipInputValue}
           onChange={(e) => setChipInputValue(e.target.value)}
-          placeholder={placeholder}
         />
       </div>
     </div>
