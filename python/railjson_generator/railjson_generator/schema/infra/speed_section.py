@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import List, Mapping
+from typing import List, Mapping, Optional
 
 from osrd_schemas import infra
 
@@ -22,6 +22,7 @@ class SpeedSection:
     speed_limit_by_tag: Mapping[str, float] = field(default_factory=dict)
     track_ranges: List[ApplicableDirectionsTrackRange] = field(default_factory=list)
     label: str = field(default_factory=_speed_section_id)
+    on_routes: Optional[List[str]] = None
 
     _INDEX = 0
 
