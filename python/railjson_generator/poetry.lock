@@ -450,7 +450,7 @@ test = ["codecov (>=2.0.5)", "coverage (>=4.2)", "flake8 (>=3.0.4)", "pytest (>=
 
 [[package]]
 name = "osrd-schemas"
-version = "0.8.6"
+version = "0.8.7"
 description = ""
 optional = false
 python-versions = ">=3.9,<3.12"

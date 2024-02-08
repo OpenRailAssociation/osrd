@@ -1237,6 +1237,24 @@
                     "title": "Id",
                     "type": "string"
                 },
+                "on_routes": {
+                    "anyOf": [
+                        {
+                            "items": {
+                                "maxLength": 255,
+                                "minLength": 1,
+                                "type": "string"
+                            },
+                            "type": "array"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "A list of routes the speed limit is enforced on.\nWhen empty or None, the speed limit is enforced regardless of the route.",
+                    "title": "On Routes"
+                },
                 "speed_limit": {
                     "anyOf": [
                         {
@@ -1850,8 +1868,8 @@
             "type": "array"
         },
         "version": {
-            "const": "3.4.9",
-            "default": "3.4.9",
+            "const": "3.4.10",
+            "default": "3.4.10",
             "description": "Version of the schema",
             "title": "Version"
         }

@@ -8,7 +8,7 @@ from pydantic.fields import FieldInfo
 
 ALL_OBJECT_TYPES = []
 
-RAILJSON_INFRA_VERSION_TYPE = Literal["3.4.9"]
+RAILJSON_INFRA_VERSION_TYPE = Literal["3.4.10"]
 RAILJSON_INFRA_VERSION = get_args(RAILJSON_INFRA_VERSION_TYPE)[0]
 
 # Traits
@@ -300,6 +300,11 @@ class SpeedSection(BaseObjectTrait):
     )
     track_ranges: List[ApplicableDirectionsTrackRange] = Field(
         description="List of locations where speed section is applied"
+    )
+    on_routes: Optional[List[Identifier]] = Field(
+        description="""A list of routes the speed limit is enforced on.
+When empty or None, the speed limit is enforced regardless of the route.""",
+        default=None,
     )
 
 
