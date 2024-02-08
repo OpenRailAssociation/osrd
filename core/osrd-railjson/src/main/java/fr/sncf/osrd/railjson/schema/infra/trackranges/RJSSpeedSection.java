@@ -19,16 +19,21 @@ public class RJSSpeedSection implements Identified {
     @Json(name = "track_ranges")
     public List<RJSApplicableDirectionsTrackRange> trackRanges;
 
+    @Json(name = "on_routes")
+    public List<String> onRoutes = null;
+
     /** Constructor */
     public RJSSpeedSection(
             String id,
             Double speedLimit,
             Map<String, Double> speedLimitByTag,
-            List<RJSApplicableDirectionsTrackRange> trackRanges) {
+            List<RJSApplicableDirectionsTrackRange> trackRanges,
+            List<String> onRoutes) {
         this.id = id;
         this.speedLimit = speedLimit;
         this.speedLimitByTag = speedLimitByTag;
         this.trackRanges = trackRanges;
+        this.onRoutes = onRoutes;
     }
 
     /** Create an uninitialized speed section (used by the deserializer). */

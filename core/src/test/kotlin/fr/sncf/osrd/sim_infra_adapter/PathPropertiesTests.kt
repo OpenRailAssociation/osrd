@@ -438,7 +438,8 @@ class PathPropertiesTests {
                 mapOf(Pair("trainTag", 42.42)),
                 listOf(
                     RJSApplicableDirectionsTrackRange("TA0", ApplicableDirection.BOTH, 0.0, 400.0)
-                )
+                ),
+                null
             )
         rjsInfra.speedSections.add(speedSection)
         val infra = Helpers.fullInfraFromRJS(rjsInfra)

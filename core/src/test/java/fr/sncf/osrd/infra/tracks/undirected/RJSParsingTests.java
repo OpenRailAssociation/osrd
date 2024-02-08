@@ -73,7 +73,8 @@ public class RJSParsingTests {
                                 "category1", 10.,
                                 "category2", 20.),
                         List.of(new RJSApplicableDirectionsTrackRange(
-                                track.id, ApplicableDirection.START_TO_STOP, 0, 10))),
+                                track.id, ApplicableDirection.START_TO_STOP, 0, 10)),
+                        null),
                 new RJSSpeedSection(
                         "id",
                         45.,
@@ -81,7 +82,8 @@ public class RJSParsingTests {
                                 "category2", 12.,
                                 "category3", 30.),
                         List.of(new RJSApplicableDirectionsTrackRange(
-                                track.id, ApplicableDirection.START_TO_STOP, 5, 15))));
+                                track.id, ApplicableDirection.START_TO_STOP, 5, 15)),
+                        null));
         var parsedInfra = UndirectedInfraBuilder.parseInfra(rjsInfra, new DiagnosticRecorderImpl(true));
         var expected = TreeRangeMap.<Double, SpeedLimits>create();
         expected.put(

@@ -51,12 +51,14 @@ public class MRSPTest {
                 NAME,
                 SPEED1,
                 Map.of(TRAIN_TAG1, SPEED2),
-                List.of(new RJSApplicableDirectionsTrackRange("TA0", ApplicableDirection.BOTH, POSITION1, POSITION2)));
+                List.of(new RJSApplicableDirectionsTrackRange("TA0", ApplicableDirection.BOTH, POSITION1, POSITION2)),
+                null);
         var speedSection2 = new RJSSpeedSection(
                 NAME,
                 null,
                 Map.of(TRAIN_TAG2, SPEED3),
-                List.of(new RJSApplicableDirectionsTrackRange("TA0", ApplicableDirection.BOTH, POSITION2, POSITION3)));
+                List.of(new RJSApplicableDirectionsTrackRange("TA0", ApplicableDirection.BOTH, POSITION2, POSITION3)),
+                null);
         rjsInfra.speedSections = new ArrayList<>();
         rjsInfra.speedSections.addAll(List.of(speedSection1, speedSection2));
         var infra = fullInfraFromRJS(rjsInfra);
