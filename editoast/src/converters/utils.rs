@@ -296,7 +296,7 @@ pub fn speed_sections(edge: &Edge) -> Vec<SpeedSection> {
 fn speed_section(edge: &Edge, limit: &String, dir: ApplicableDirections) -> SpeedSection {
     // We convert from km/h to m/s
     let speed_limit = f64::from_str(limit).map(|speed| Speed(speed / 3.6)).ok();
-    if speed_limit.is_none() {
+    if speed_limit.is_none() || speed_limit.unwrap().0 <= 0. {
         warn!("Invalid speed limit '{limit}' for way {}", edge.osm_id.0);
     }
 
