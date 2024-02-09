@@ -8,9 +8,9 @@ import { APPLICABLE_DIRECTIONS } from './consts';
 
 export type ApplicableDirection = (typeof APPLICABLE_DIRECTIONS)[number];
 export type PSLSign = {
-  angle: number;
   position: number;
   side: 'LEFT' | 'RIGHT' | 'CENTER';
+  direction: 'START_TO_STOP' | 'STOP_TO_START';
   track: string;
   type: string;
   value: string;
@@ -79,7 +79,6 @@ export type TrackRangeExtremityFeature = Feature<
 export type PslSignFeature = Feature<
   Point,
   {
-    angle: number;
     position: number;
     side: 'LEFT' | 'CENTER' | 'RIGHT';
     track: string;

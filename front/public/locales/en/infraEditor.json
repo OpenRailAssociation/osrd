@@ -328,13 +328,9 @@
   "Sign": {
     "description": "Un panneau est un objet physique, ponctuel, et cosmétique.",
     "properties": {
-      "angle_geo": {
-        "description": "Angle géographique (en degrés)",
-        "title": "Angle Géo"
-      },
-      "angle_sch": {
-        "description": "Angle schématique (en degrés)",
-        "title": "Angle Sch"
+      "angle": {
+        "description": "Angle (en degrés)",
+        "title": "Angle"
       },
       "kp": {
         "description": "Point kilométrique du panneau",

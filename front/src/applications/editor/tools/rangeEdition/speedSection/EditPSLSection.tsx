@@ -29,7 +29,7 @@ const getNewAnnouncementSign = (
   const speedInKmH = msToKmh(speedLimit);
   const speedMultipleOfFive = Math.ceil(speedInKmH / 5) * 5;
   return {
-    angle: 0,
+    direction: 'START_TO_STOP',
     position: firstRange.begin,
     side: 'LEFT',
     track: firstRange.track,
@@ -44,7 +44,7 @@ const getNewRSign = (
 ) => {
   const lastRange = trackRanges[trackRanges.length - 1];
   return {
-    angle: 0,
+    direction: 'START_TO_STOP',
     position: lastRange.end,
     side: 'LEFT',
     track: lastRange.track,

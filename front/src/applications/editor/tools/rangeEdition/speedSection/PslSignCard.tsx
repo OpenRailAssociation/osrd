@@ -39,34 +39,6 @@ const PslSignCard = ({
         </h4>
       )}
       <div className="my-4 py-2 px-2" style={{ backgroundColor: 'white' }}>
-        <InputSNCF
-          type="number"
-          id="psl-angle-geo"
-          label={t('Editor.tools.speed-edition.sign-angle-geo')}
-          value={!isNil(sign.angle) ? sign.angle : 0}
-          onChange={(e) =>
-            updateSign(signInfo, {
-              ...sign,
-              angle: Number(e.target.value),
-            })
-          }
-          sm
-        />
-        <div className="my-2">
-          <InputSNCF
-            type="number"
-            id="psl-angle-sch"
-            label={t('Editor.tools.speed-edition.sign-angle-sch')}
-            value={!isNil(sign.angle) ? sign.angle : 0}
-            onChange={(e) =>
-              updateSign(signInfo, {
-                ...sign,
-                angle: Number(e.target.value),
-              })
-            }
-            sm
-          />
-        </div>
         <div className="my-2">
           <InputSNCF
             type="text"
@@ -95,6 +67,17 @@ const PslSignCard = ({
               });
             }}
             sm
+          />
+        </div>
+        <div className="my-2">
+          <SelectImprovedSNCF
+            label={t('Editor.tools.speed-edition.sign-direction').toString()}
+            sm
+            options={['START_TO_STOP', 'STOP_TO_START']}
+            onChange={(selectedValue) => {
+              if (selectedValue) updateSign(signInfo, { ...sign, direction: selectedValue });
+            }}
+            value={sign.direction}
           />
         </div>
         <div className="my-2">
