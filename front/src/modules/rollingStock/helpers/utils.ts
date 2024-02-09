@@ -168,7 +168,7 @@ export const rollingStockEditorQueryArg = (
       modes: validCurves,
     },
     base_power_class: data.basePowerClass,
-    supported_signaling_systems: [],
+    supported_signaling_systems: ['BAL', 'BAPR'],
   };
 };
 
