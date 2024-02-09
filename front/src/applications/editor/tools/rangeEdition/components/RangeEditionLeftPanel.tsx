@@ -90,7 +90,7 @@ const RangeEditionLeftPanel = () => {
                         announcement: [],
                         r: [],
                         z: {
-                          angle: 0,
+                          direction: 'START_TO_STOP',
                           position: firstRange.begin,
                           side: 'LEFT',
                           track: firstRange.track,

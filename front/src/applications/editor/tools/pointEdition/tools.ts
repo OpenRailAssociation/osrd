@@ -12,7 +12,6 @@ export const SignalEditionTool = getPointEditionTool<SignalEntity>({
   icon: FaMapSigns,
   getNewEntity: getNewSignal,
   layersComponent: SignalEditionLayers,
-  requiresAngle: true,
 });
 
 export const DetectorEditionTool = getPointEditionTool<DetectorEntity>({
