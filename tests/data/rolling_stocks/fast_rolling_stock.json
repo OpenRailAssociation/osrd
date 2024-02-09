@@ -6,13 +6,6 @@
   "startup_acceleration": 0.05,
   "comfort_acceleration": 0.25,
   "inertia_coefficient": 1.05,
-  "features": [
-    "TVM300",
-    "TVM430",
-    "ETCS1",
-    "ETCS2",
-    "KVB"
-  ],
   "name": "fast_rolling_stock",
   "mass": 900000,
   "loading_gauge": "G1",
@@ -89,5 +82,10 @@
   },
   "power_restrictions": {},
   "energy_sources": [],
-  "supported_signaling_systems": ["BAL", "BAPR", "TVM300", "TVM430"]
+  "supported_signaling_systems": [
+    "BAL",
+    "BAPR",
+    "TVM300",
+    "TVM430"
+  ]
 }
