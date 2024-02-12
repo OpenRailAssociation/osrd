@@ -86,8 +86,16 @@ const CurveSpreadsheet = ({
     updateRollingStockCurve(orderedValuesByVelocity);
   };
 
+  const handleEmptyValuePaste = (e: React.ClipboardEvent<HTMLDivElement>) => {
+    const { clipboardData } = e;
+    const pastedData = clipboardData.getData('text');
+    if (!pastedData.trim()) {
+      e.stopPropagation();
+    }
+  };
+
   return (
-    <div className="rollingstock-editor-spreadsheet">
+    <div className="rollingstock-editor-spreadsheet" onPaste={handleEmptyValuePaste}>
       <Spreadsheet
         data={spreadsheetCurve}
         onChange={(e) => {
