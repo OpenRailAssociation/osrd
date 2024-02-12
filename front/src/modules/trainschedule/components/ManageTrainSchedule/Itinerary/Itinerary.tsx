@@ -110,10 +110,11 @@ function Itinerary({ path }: ItineraryProps) {
         </div>
       )}
       {origin && destination && (
-        <div className="d-flex flex-row flex-wrap">
+
+        <div className="d-flex flex-column flex-sm-row flex-wrap"style={{ gap: '0.5rem' }}>
           {geojson && (
             <button
-              className="col my-1 text-white btn bg-info btn-sm"
+              className="col text-white btn bg-info btn-sm"
               type="button"
               onClick={() => openModal(viaModalContent)}
             >
@@ -121,23 +122,23 @@ function Itinerary({ path }: ItineraryProps) {
               <GoPlus />
             </button>
           )}
-          <button className="col ml-1 my-1 btn bg-warning btn-sm" type="button" onClick={inverseOD}>
+          <button className="col btn bg-warning btn-sm" type="button" onClick={inverseOD}>
             <span className="mr-1">{t('inverseOD')}</span>
             <GoArrowSwitch />
           </button>
-          <Tipped mode="right">
+          
             <button
-              className="ml-1 mt-1 btn-danger btn btn-sm mb-1"
+              className="col btn-danger btn btn-sm"
               type="button"
               onClick={resetPathfinding}
             >
+              <span className="mr-1 d-lg-none">{t('deleteRoute')}</span>
               <GoTrash />
             </button>
-            <span>{t('deleteRoute')}</span>
-          </Tipped>
+                      
         </div>
       )}
-      <div className="osrd-config-item-container pathfinding-details" data-testid="itinerary">
+      <div className="osrd-config-item-container pathfinding-details mt-2" data-testid="itinerary">
         <DisplayItinerary zoomToFeaturePoint={zoomToFeaturePoint} />
       </div>
     </div>
