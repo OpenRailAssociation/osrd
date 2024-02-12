@@ -79,9 +79,9 @@ const RollingStockEditorCurves = ({
     }
   };
 
-  const { selectedCurveIndex, selectedCurve } = useMemo(() => {
+  const { selectedCurveIndex, selectedCurve, selectedTractionModeCurves } = useMemo(() => {
     if (!selectedTractionMode || !effortCurves || !effortCurves[selectedTractionMode])
-      return { selectedCurveIndex: null, selectedCurve: null };
+      return { selectedCurveIndex: null, selectedCurve: null, selectedTractionModeCurves: null };
 
     const isElectric = selectedTractionMode !== THERMAL_TRACTION_IDENTIFIER;
     const modeCurves = effortCurves[selectedTractionMode].curves.filter(
@@ -94,10 +94,18 @@ const RollingStockEditorCurves = ({
           curve.cond.electrical_profile_level === selectedParams.electricalProfile &&
           curve.cond.power_restriction_code === selectedParams.powerRestriction
       );
-      return { selectedCurveIndex: index, selectedCurve: modeCurves[index] };
+      return {
+        selectedCurveIndex: index,
+        selectedCurve: modeCurves[index],
+        selectedTractionModeCurves: modeCurves,
+      };
     }
 
-    return { selectedCurveIndex: 0, selectedCurve: modeCurves[0] };
+    return {
+      selectedCurveIndex: 0,
+      selectedCurve: modeCurves[0],
+      selectedTractionModeCurves: modeCurves,
+    };
   }, [effortCurves, selectedTractionMode, selectedParams]);
 
   const [hoveredRollingstockParam, setHoveredRollingstockParam] = useState<string | null>();
@@ -200,39 +208,43 @@ const RollingStockEditorCurves = ({
         }}
         selectedParamsSetter={updateSelectedParams}
       />
-      {selectedTractionMode && selectedCurve && selectedCurveIndex !== null && (
-        <div className="rollingstock-editor-curves d-flex p-3">
-          <CurveSpreadsheet
-            selectedCurve={selectedCurve}
-            selectedCurveIndex={selectedCurveIndex}
-            effortCurves={effortCurves}
-            selectedTractionMode={selectedTractionMode}
-            setEffortCurves={setEffortCurves}
-            isDefaultCurve={
-              selectedParams.comfortLevel === STANDARD_COMFORT_LEVEL &&
-              selectedParams.electricalProfile === null &&
-              selectedParams.powerRestriction === null
-            }
-          />
-          <div className="rollingstock-card-body">
-            {!isEmpty(curvesToDisplay[selectedTractionMode]?.curves) && (
-              <RollingStockCurve
-                curvesComfortList={[selectedParams.comfortLevel]}
-                data={curvesToDisplay}
-                isOnEditionMode
-                showPowerRestriction={showPowerRestriction}
-                hoveredElectricalParam={hoveredRollingstockParam}
-                selectedElectricalParam={
-                  showPowerRestriction
-                    ? selectedParams.powerRestriction
-                    : selectedParams.electricalProfile
-                }
-              />
-            )}
-            {children}
+      {selectedTractionMode &&
+        selectedCurve &&
+        selectedCurveIndex !== null &&
+        selectedTractionModeCurves && (
+          <div className="rollingstock-editor-curves d-flex p-3">
+            <CurveSpreadsheet
+              selectedCurve={selectedCurve}
+              selectedCurveIndex={selectedCurveIndex}
+              selectedTractionModeCurves={selectedTractionModeCurves}
+              effortCurves={effortCurves}
+              selectedTractionMode={selectedTractionMode}
+              setEffortCurves={setEffortCurves}
+              isDefaultCurve={
+                selectedParams.comfortLevel === STANDARD_COMFORT_LEVEL &&
+                selectedParams.electricalProfile === null &&
+                selectedParams.powerRestriction === null
+              }
+            />
+            <div className="rollingstock-card-body">
+              {!isEmpty(curvesToDisplay[selectedTractionMode]?.curves) && (
+                <RollingStockCurve
+                  curvesComfortList={[selectedParams.comfortLevel]}
+                  data={curvesToDisplay}
+                  isOnEditionMode
+                  showPowerRestriction={showPowerRestriction}
+                  hoveredElectricalParam={hoveredRollingstockParam}
+                  selectedElectricalParam={
+                    showPowerRestriction
+                      ? selectedParams.powerRestriction
+                      : selectedParams.electricalProfile
+                  }
+                />
+              )}
+              {children}
+            </div>
           </div>
-        </div>
-      )}
+        )}
     </>
   );
 };

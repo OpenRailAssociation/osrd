@@ -11,6 +11,7 @@ import formatCurve from './formatSpreadSheetCurve';
 type CurveSpreadsheetProps = {
   selectedCurve: ConditionalEffortCurveForm;
   selectedCurveIndex: number;
+  selectedTractionModeCurves: ConditionalEffortCurveForm[];
   effortCurves: EffortCurveForms | null;
   setEffortCurves: Dispatch<SetStateAction<EffortCurveForms | null>>;
   selectedTractionMode: string | null;
@@ -20,6 +21,7 @@ type CurveSpreadsheetProps = {
 const CurveSpreadsheet = ({
   selectedCurve,
   selectedCurveIndex,
+  selectedTractionModeCurves,
   effortCurves,
   setEffortCurves,
   selectedTractionMode,
@@ -51,7 +53,6 @@ const CurveSpreadsheet = ({
   const updateRollingStockCurve = (e: Matrix<{ value: string }>) => {
     if (!selectedTractionMode || !effortCurves) return;
     const formattedCurve = formatCurve(e);
-    const selectedTractionModeCurves = effortCurves[selectedTractionMode].curves;
 
     const updatedSelectedCurve = {
       ...selectedCurve,
