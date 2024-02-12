@@ -31,13 +31,11 @@ import getScaleDomainFromValues from 'modules/simulationResult/components/ChartH
 const MAP_MIN_HEIGHT = 450;
 
 type SimulationResultsProps = {
-  isDisplayed: boolean;
   collapsedTimetable: boolean;
   setTrainResultsToFetch: (trainSchedulesIDs?: number[]) => void;
 };
 
 export default function SimulationResults({
-  isDisplayed,
   collapsedTimetable,
   setTrainResultsToFetch,
 }: SimulationResultsProps) {
@@ -188,7 +186,6 @@ export default function SimulationResults({
                 simulationIsPlaying={simulationIsPlaying}
                 initialHeight={heightOfSpaceTimeChart}
                 onSetBaseHeight={setHeightOfSpaceTimeChart}
-                isDisplayed={isDisplayed}
                 dispatchUpdateSelectedTrainId={dispatchUpdateSelectedTrainId}
                 dispatchPersistentUpdateSimulation={dispatchPersistentUpdateSimulation}
                 setTrainResultsToFetch={setTrainResultsToFetch}

@@ -54,7 +54,6 @@ export type SpaceTimeChartProps = {
   simulation?: SimulationSnapshot;
   simulationIsPlaying?: boolean;
   timeScaleDomain?: TimeScaleDomain;
-  isDisplayed?: boolean;
   onSetBaseHeight?: (newHeight: number) => void;
   dispatchUpdateSelectedTrainId: DispatchUpdateSelectedTrainId;
   dispatchPersistentUpdateSimulation: DispatchPersistentUpdateSimulation;
@@ -74,7 +73,6 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
     simulation,
     simulationIsPlaying = false,
     timeScaleDomain,
-    isDisplayed = true,
     onSetBaseHeight = noop,
     dispatchUpdateSelectedTrainId,
     dispatchPersistentUpdateSimulation,
@@ -253,12 +251,6 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
     }
   }, [chart]);
 
-  const handleKey = ({ key }: KeyboardEvent) => {
-    if (isDisplayed && ['+', '-'].includes(key)) {
-      setShowModal(key as '+' | '-');
-    }
-  };
-
   const debounceResize = () => {
     let debounceTimeoutId;
     clearTimeout(debounceTimeoutId);
@@ -269,14 +261,11 @@ export default function SpaceTimeChart(props: SpaceTimeChartProps) {
 
   /* add behaviours:
    * - redraw the graph when resized horizontally (window resized)
-   * - type " + " or " - " to update departure time by second
    */
   useEffect(() => {
     window.addEventListener('resize', debounceResize);
-    window.addEventListener('keydown', handleKey);
     return () => {
       window.removeEventListener('resize', debounceResize);
-      window.removeEventListener('keydown', handleKey);
     };
   }, [chart]);
 

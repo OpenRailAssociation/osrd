@@ -370,9 +370,6 @@ export default function Scenario() {
                 )}
                 {isInfraLoaded && infra && (
                   <SimulationResults
-                    isDisplayed={
-                      displayTrainScheduleManagement !== MANAGE_TRAIN_SCHEDULE_TYPES.import
-                    }
                     collapsedTimetable={collapsedTimetable}
                     setTrainResultsToFetch={setTrainResultsToFetch}
                   />
