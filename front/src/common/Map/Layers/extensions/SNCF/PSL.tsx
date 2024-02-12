@@ -6,14 +6,13 @@ import type { LineLayer, SymbolLayer } from 'react-map-gl/maplibre';
 import { isNil } from 'lodash';
 import type { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
-import type { FilterSpecification } from 'maplibre-gl';
 
 import type { Theme, OmitLayer } from 'types';
 
 import { MAP_URL } from 'common/Map/const';
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 import SNCF_PSL_Signs from 'common/Map/Layers/extensions/SNCF/PSLSigns';
-import { getSpeedSectionsTag, getSpeedSectionsName } from 'common/Map/Layers/SpeedLimits';
+import { getSpeedSectionsName, getFilterBySpeedSectionsTag } from 'common/Map/Layers/SpeedLimits';
 
 import type { RootState } from 'reducers';
 import type { MapState } from 'reducers/map';
@@ -22,10 +21,6 @@ interface SNCF_PSLProps {
   colors: Theme;
   layerOrder?: number;
   infraID?: number | undefined;
-}
-
-export function getPSLFilter(layersSettings: MapState['layersSettings']): FilterSpecification {
-  return ['any', ['has', 'speed_limit'], ['has', getSpeedSectionsTag(layersSettings)]];
 }
 
 export function getPSLSpeedValueLayerProps({
@@ -161,7 +156,7 @@ const SNCF_PSL = ({ colors, layerOrder, infraID }: SNCF_PSLProps) => {
   const { t } = useTranslation('map-settings');
   const { layersSettings } = useSelector((state: RootState) => state.map);
 
-  const speedSectionFilter = getPSLFilter(layersSettings);
+  const speedSectionFilter = getFilterBySpeedSectionsTag(layersSettings);
 
   const speedValueParams = {
     ...getPSLSpeedValueLayerProps({

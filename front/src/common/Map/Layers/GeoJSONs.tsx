@@ -36,13 +36,12 @@ import {
   getPointTextErrorsLayerProps,
 } from 'common/Map/Layers/Errors';
 import {
-  getSpeedSectionsFilter,
+  getFilterBySpeedSectionsTag,
   getSpeedSectionsLineLayerProps,
   getSpeedSectionsPointLayerProps,
   getSpeedSectionsTextLayerProps,
 } from 'common/Map/Layers/SpeedLimits';
 import {
-  getPSLFilter,
   getPSLSpeedLineBGLayerProps,
   getPSLSpeedLineLayerProps,
   getPSLSpeedValueLayerProps,
@@ -288,7 +287,7 @@ function getPSLSignsLayers(context: LayerContext, prefix: string): LayerProps[] 
 }
 
 function getPSLLayers(context: LayerContext, prefix: string): LayerProps[] {
-  const filter = getPSLFilter(context.layersSettings);
+  const filter = getFilterBySpeedSectionsTag(context.layersSettings);
   const bgProps = getPSLSpeedLineBGLayerProps(context);
   const layerProps = getPSLSpeedLineLayerProps(context);
 
@@ -331,7 +330,7 @@ function getSwitchesLayers(context: LayerContext, prefix: string): LayerProps[] 
 }
 
 function getSpeedSectionLayers(context: LayerContext, prefix: string): LayerProps[] {
-  const filter = getSpeedSectionsFilter(context.layersSettings);
+  const filter = getFilterBySpeedSectionsTag(context.layersSettings);
   return [
     {
       ...getSpeedSectionsLineLayerProps(context),
