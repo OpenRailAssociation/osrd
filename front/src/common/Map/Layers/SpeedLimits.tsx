@@ -35,7 +35,7 @@ export function getSpeedSectionsName(
   return ['round', ['*', 3.6, ['case', ['!=', tag, 'null'], ['get', tag], ['get', 'speed_limit']]]];
 }
 
-export function getSpeedSectionsFilter(
+export function getFilterBySpeedSectionsTag(
   layersSettings: MapState['layersSettings']
 ): FilterSpecification {
   return isNil(layersSettings.speedlimittag)
@@ -173,7 +173,7 @@ export function getSpeedSectionsTextLayerProps({
 export default function SpeedLimits({ colors, layerOrder, infraID }: SpeedLimitsProps) {
   const { layersSettings } = useSelector((state: RootState) => state.map);
 
-  const filter = getSpeedSectionsFilter(layersSettings);
+  const filter = getFilterBySpeedSectionsTag(layersSettings);
   const lineProps = {
     ...getSpeedSectionsLineLayerProps({
       colors,
