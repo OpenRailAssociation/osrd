@@ -3,6 +3,7 @@ package fr.sncf.osrd.stdcm.infra_exploration
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.conflicts.IncrementalRequirementEnvelopeAdapter
 import fr.sncf.osrd.conflicts.SpacingRequirementAutomaton
+import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope.EnvelopeConcat
 import fr.sncf.osrd.envelope.EnvelopeTimeInterpolate
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock
@@ -10,6 +11,7 @@ import fr.sncf.osrd.graph.PathfindingEdgeLocationId
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.sim_infra.api.Path
+import fr.sncf.osrd.standalone_sim.result.ResultTrain
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
@@ -37,7 +39,7 @@ interface InfraExplorerWithEnvelope : InfraExplorer {
     fun interpolateTimeClamp(pathOffset: Offset<Path>): Double
 
     /** Returns the underlying spacing requirement automaton */
-    fun getSpacingRequirementAutomaton(): SpacingRequirementAutomaton
+    fun getSpacingRequirements(): List<ResultTrain.SpacingRequirement>
 
     /** Returns the length of the simulated section of the path */
     fun getSimulatedLength(): Length<Path>
@@ -72,7 +74,7 @@ fun initInfraExplorerWithEnvelope(
                     fullInfra.loadedSignalInfra,
                     fullInfra.blockInfra,
                     fullInfra.signalingSimulator,
-                    IncrementalRequirementEnvelopeAdapter(rollingStock, null, false),
+                    IncrementalRequirementEnvelopeAdapter(rollingStock, Envelope.make(), false),
                     explorer.getIncrementalPath(),
                 )
             )

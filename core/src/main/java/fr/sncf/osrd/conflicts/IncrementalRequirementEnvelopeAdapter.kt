@@ -55,7 +55,7 @@ class IncrementalRequirementEnvelopeAdapter(
     override fun clone(): IncrementalRequirementCallbacks {
         return IncrementalRequirementEnvelopeAdapter(
             rollingStock,
-            envelopeWithStops,
+            envelopeWithStops?.clone(),
             simulationComplete,
         )
     }

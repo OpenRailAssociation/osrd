@@ -1,57 +1,67 @@
 package fr.sncf.osrd.stdcm.preprocessing.implementation
 
+import fr.sncf.osrd.api.ConflictDetectionEndpoint
 import fr.sncf.osrd.api.FullInfra
+import fr.sncf.osrd.conflicts.IncrementalConflictDetector
 import fr.sncf.osrd.envelope_utils.DoubleBinarySearch
 import fr.sncf.osrd.sim_infra.api.Path
-import fr.sncf.osrd.sim_infra.api.ZoneId
 import fr.sncf.osrd.standalone_sim.result.ResultTrain.SpacingRequirement
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
+import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Offset
+import java.util.Collections.max
 
 data class BlockAvailability(
     val fullInfra: FullInfra,
-    val requirements: Map<ZoneId, List<SpacingRequirement>>
-) : GenericBlockAvailability() {
+    val incrementalConflictDetector: IncrementalConflictDetector
+) : BlockAvailabilityInterface {
 
-    private data class ZoneResourceUse(
-        override val startOffset: Offset<Path>,
-        override val endOffset: Offset<Path>,
-        override val startTime: Double,
-        override val endTime: Double,
-        val zoneId: ZoneId,
-    ) : ResourceUse
-
-    override fun generateResourcesForPath(
+    override fun getAvailability(
         infraExplorer: InfraExplorerWithEnvelope,
         startOffset: Offset<Path>,
-        endOffset: Offset<Path>
-    ): List<ResourceUse> {
-        TODO("a pain for the rebase, to be deleted anyway")
+        endOffset: Offset<Path>,
+        startTime: Double
+    ): BlockAvailabilityInterface.Availability {
+        val spacingRequirements = infraExplorer.getSpacingRequirements()
+        val pathStartTime = startTime - infraExplorer.interpolateTimeClamp(startOffset)
+        val shiftedSpacingRequirements =
+            shiftSpacingRequirements(spacingRequirements, pathStartTime)
+        val conflicts =
+            incrementalConflictDetector.checkConflicts(shiftedSpacingRequirements, listOf())
+        if (conflicts.isEmpty()) {
+            val maximumDelay =
+                incrementalConflictDetector.maxDelayWithoutConflicts(
+                    shiftedSpacingRequirements,
+                    listOf()
+                )
+            val timeOfNextConflict =
+                incrementalConflictDetector.timeOfNextConflict(shiftedSpacingRequirements, listOf())
+            return BlockAvailabilityInterface.Available(maximumDelay, timeOfNextConflict)
+        } else {
+            val minimumDelay = findMinimumDelay(conflicts, shiftedSpacingRequirements)
+            val firstConflictOffset =
+                getEnvelopeOffsetFromTime(infraExplorer, conflicts.first().startTime)
+            return BlockAvailabilityInterface.Unavailable(minimumDelay, firstConflictOffset)
+        }
     }
 
-    override fun getScheduledResources(
-        infraExplorer: InfraExplorerWithEnvelope,
-        resource: ResourceUse
-    ): List<ResourceUse> {
-        val res = mutableListOf<ResourceUse>()
-        val zoneResourceUse = resource as ZoneResourceUse
-        for (scheduledRequirement in requirements[zoneResourceUse.zoneId] ?: listOf()) {
-            val resourceStartOffset =
-                getEnvelopeOffsetFromTime(infraExplorer, scheduledRequirement.beginTime)
-            val resourceEndOffset =
-                getEnvelopeOffsetFromTime(infraExplorer, scheduledRequirement.endTime)
-            res.add(
-                ZoneResourceUse(
-                    resourceStartOffset,
-                    resourceEndOffset,
-                    scheduledRequirement.beginTime,
-                    scheduledRequirement.endTime,
-                    zoneResourceUse.zoneId
-                )
-            )
+    /** Find the minimum delay needed to avoid any conflict. */
+    private fun findMinimumDelay(
+        conflicts: List<ConflictDetectionEndpoint.ConflictDetectionResult.Conflict>,
+        spacingRequirements: List<SpacingRequirement>
+    ): Double {
+        var minimumDelay = 0.0
+        var recConflicts = conflicts.toMutableList()
+        while (recConflicts.isNotEmpty() && minimumDelay.isFinite()) {
+            minimumDelay += max(conflicts.map { it.endTime - it.startTime })
+            val recSpacingRequirements = shiftSpacingRequirements(spacingRequirements, minimumDelay)
+            recConflicts =
+                incrementalConflictDetector
+                    .checkConflicts(recSpacingRequirements, listOf())
+                    .toMutableList()
         }
-        return res
+        return minimumDelay
     }
 
     /**
@@ -67,5 +77,16 @@ data class BlockAvailability(
         return explorer
             .getIncrementalPath()
             .fromTravelledPath(Offset(Distance.fromMeters(search.result)))
+    }
+
+    /** Clone and add time to spacing requirements. */
+    private fun shiftSpacingRequirements(
+        spacingRequirements: List<SpacingRequirement>,
+        time: Double
+    ): List<SpacingRequirement> {
+        return spacingRequirements.toMutableList().onEach {
+            it.beginTime += time
+            it.endTime += time
+        }
     }
 }

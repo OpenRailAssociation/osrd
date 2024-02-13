@@ -1,9 +1,12 @@
 package fr.sncf.osrd.stdcm.infra_exploration
 
 import fr.sncf.osrd.conflicts.SpacingRequirementAutomaton
+import fr.sncf.osrd.conflicts.SpacingRequirements
 import fr.sncf.osrd.envelope.EnvelopeConcat
 import fr.sncf.osrd.envelope.EnvelopeTimeInterpolate
 import fr.sncf.osrd.sim_infra.api.Path
+import fr.sncf.osrd.standalone_sim.result.ResultTrain.SpacingRequirement
+import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
@@ -12,6 +15,7 @@ data class InfraExplorerWithEnvelopeImpl(
     private val infraExplorer: InfraExplorer,
     private val envelopes: MutableList<EnvelopeTimeInterpolate>,
     private val spacingRequirementAutomaton: SpacingRequirementAutomaton,
+    private var spacingRequirements: List<SpacingRequirement>? = null
 ) : InfraExplorer by infraExplorer, InfraExplorerWithEnvelope {
 
     override fun cloneAndExtendLookahead(): Collection<InfraExplorerWithEnvelope> {
@@ -19,7 +23,8 @@ data class InfraExplorerWithEnvelopeImpl(
             InfraExplorerWithEnvelopeImpl(
                 explorer,
                 ArrayList(envelopes),
-                spacingRequirementAutomaton.clone()
+                spacingRequirementAutomaton.clone(),
+                spacingRequirements?.toList()
             )
         }
     }
@@ -44,9 +49,20 @@ data class InfraExplorerWithEnvelopeImpl(
             )
     }
 
-    override fun getSpacingRequirementAutomaton(): SpacingRequirementAutomaton {
-        spacingRequirementAutomaton.incrementalPath = getIncrementalPath()
-        return spacingRequirementAutomaton
+    override fun getSpacingRequirements(): List<SpacingRequirement> {
+        if (spacingRequirements == null) {
+            spacingRequirementAutomaton.incrementalPath = getIncrementalPath()
+            val updatedRequirements =
+                spacingRequirementAutomaton.processPathUpdate() as? SpacingRequirements
+                    ?: throw BlockAvailabilityInterface.NotEnoughLookaheadError()
+            spacingRequirements = updatedRequirements.requirements
+        }
+        return spacingRequirements!!
+    }
+
+    override fun moveForward() {
+        infraExplorer.moveForward()
+        spacingRequirements = null
     }
 
     override fun getSimulatedLength(): Length<Path> {
@@ -56,8 +72,9 @@ data class InfraExplorerWithEnvelopeImpl(
     override fun clone(): InfraExplorerWithEnvelope {
         return InfraExplorerWithEnvelopeImpl(
             infraExplorer.clone(),
-            ArrayList(envelopes),
-            spacingRequirementAutomaton.clone()
+            envelopes.toMutableList(),
+            spacingRequirementAutomaton.clone(),
+            spacingRequirements?.toList()
         )
     }
 }

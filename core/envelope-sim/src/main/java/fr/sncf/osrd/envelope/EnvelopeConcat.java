@@ -92,6 +92,11 @@ public class EnvelopeConcat implements EnvelopeTimeInterpolate {
                 .toList();
     }
 
+    @Override
+    public EnvelopeTimeInterpolate clone() {
+        return this;
+    }
+
     /**
      * Returns the envelope at the given position. On transitions, the rightmost envelope is
      * returned.

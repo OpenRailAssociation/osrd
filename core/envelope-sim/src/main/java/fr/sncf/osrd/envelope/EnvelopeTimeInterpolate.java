@@ -2,7 +2,7 @@ package fr.sncf.osrd.envelope;
 
 import java.util.List;
 
-public interface EnvelopeTimeInterpolate {
+public interface EnvelopeTimeInterpolate extends Cloneable {
 
     /** Computes the time required to get to a given point of the envelope */
     double interpolateTotalTime(double position);
@@ -28,4 +28,6 @@ public interface EnvelopeTimeInterpolate {
     record EnvelopePoint(double time, double speed, double position) {}
 
     List<EnvelopePoint> iteratePoints();
+
+    EnvelopeTimeInterpolate clone();
 }

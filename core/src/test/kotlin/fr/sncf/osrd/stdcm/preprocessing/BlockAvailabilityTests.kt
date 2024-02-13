@@ -1,10 +1,14 @@
 package fr.sncf.osrd.stdcm.preprocessing
 
+import fr.sncf.osrd.conflicts.TrainRequirements
+import fr.sncf.osrd.conflicts.incrementalConflictDetector
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope.part.EnvelopePart
 import fr.sncf.osrd.envelope_sim.EnvelopeProfile
 import fr.sncf.osrd.graph.PathfindingEdgeLocationId
-import fr.sncf.osrd.sim_infra.api.*
+import fr.sncf.osrd.sim_infra.api.Block
+import fr.sncf.osrd.sim_infra.api.BlockId
+import fr.sncf.osrd.sim_infra.api.DirDetectorId
 import fr.sncf.osrd.standalone_sim.result.ResultTrain.SpacingRequirement
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
 import fr.sncf.osrd.stdcm.infra_exploration.initInfraExplorerWithEnvelope
@@ -17,11 +21,11 @@ import fr.sncf.osrd.utils.Direction
 import fr.sncf.osrd.utils.Helpers
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
+import org.junit.jupiter.api.*
 import kotlin.Double.Companion.POSITIVE_INFINITY
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
-import org.junit.jupiter.api.*
 
 class BlockAvailabilityTests {
     // See overlapping_routes.py for a detailed infrastructure description
@@ -361,12 +365,8 @@ class BlockAvailabilityTests {
     private fun makeAvailability(
         requirements: List<SpacingRequirement>
     ): BlockAvailabilityInterface {
-        val map = mutableMapOf<ZoneId, MutableList<SpacingRequirement>>()
-        for (requirement in requirements) {
-            val zoneId = infra.rawInfra.getZoneFromName(requirement.zone)
-            map.putIfAbsent(zoneId, mutableListOf())
-            map[zoneId]!!.add(requirement)
-        }
-        return BlockAvailability(infra, map)
+        val trainRequirements = listOf(TrainRequirements(0L, requirements, listOf()))
+        val incrementalConflictDetector = incrementalConflictDetector(trainRequirements)
+        return BlockAvailability(infra, incrementalConflictDetector)
     }
 }
