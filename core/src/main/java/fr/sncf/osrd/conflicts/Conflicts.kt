@@ -6,6 +6,8 @@ import fr.sncf.osrd.api.ConflictDetectionEndpoint.ConflictDetectionResult.Confli
 import fr.sncf.osrd.api.ConflictDetectionEndpoint.ConflictDetectionResult.Conflict.ConflictType
 import fr.sncf.osrd.standalone_sim.result.ResultTrain.RoutingRequirement
 import fr.sncf.osrd.standalone_sim.result.ResultTrain.SpacingRequirement
+import kotlin.math.max
+import kotlin.math.min
 
 interface SpacingTrainRequirement {
     val trainId: Long
@@ -29,6 +31,17 @@ class TrainRequirements(
     @Json(name = "routing_requirements") override val routingRequirements: List<RoutingRequirement>,
 ) : SpacingTrainRequirement, RoutingTrainRequirement
 
+data class ConflictProperties(
+    // If there are conflicts, minimum delay that should be added to the train so that there are no
+    // conflicts anymore
+    val minDelayWithoutConflicts: Double,
+    // If there are no conflicts, maximum delay that can be added to the train without creating any
+    // conflict
+    val maxDelayWithoutConflicts: Double,
+    // If there are no conflicts, minimum begin time of the next requirement that could conflict
+    val timeOfNextConflict: Double
+)
+
 fun detectConflicts(trainRequirements: List<TrainRequirements>): List<Conflict> {
     val res = incrementalConflictDetector(trainRequirements).checkConflicts()
     return mergeConflicts(res)
@@ -37,9 +50,34 @@ fun detectConflicts(trainRequirements: List<TrainRequirements>): List<Conflict> 
 interface IncrementalConflictDetector {
     fun checkConflicts(): List<Conflict>
 
+    fun checkConflicts(
+        spacingRequirements: List<SpacingRequirement>,
+        routingRequirements: List<RoutingRequirement>
+    ): List<Conflict>
+
     fun checkSpacingRequirement(req: SpacingRequirement): List<Conflict>
 
     fun checkRoutingRequirement(req: RoutingRequirement): List<Conflict>
+
+    fun minDelayWithoutConflicts(
+        spacingRequirements: List<SpacingRequirement>,
+        routingRequirements: List<RoutingRequirement>
+    ): Double
+
+    fun maxDelayWithoutConflicts(
+        spacingRequirements: List<SpacingRequirement>,
+        routingRequirements: List<RoutingRequirement>
+    ): Double
+
+    fun timeOfNextConflict(
+        spacingRequirements: List<SpacingRequirement>,
+        routingRequirements: List<RoutingRequirement>
+    ): Double
+
+    fun analyseConflicts(
+        spacingRequirements: List<SpacingRequirement>,
+        routingRequirements: List<RoutingRequirement>
+    ): ConflictProperties
 }
 
 fun incrementalConflictDetector(
@@ -129,7 +167,7 @@ class IncrementalConflictDetectorImpl(trainRequirements: List<TrainRequirements>
         // look for requirement times overlaps.
         // as spacing requirements are exclusive, any overlap is a conflict
         val res = mutableListOf<Conflict>()
-        for ((_, requirements) in spacingZoneRequirements.entries) {
+        for (requirements in spacingZoneRequirements.values) {
             for (conflictGroup in detectRequirementConflicts(requirements) { _, _ -> true }) {
                 val trains = conflictGroup.map { it.trainId }
                 val beginTime = conflictGroup.minBy { it.beginTime }.beginTime
@@ -143,7 +181,7 @@ class IncrementalConflictDetectorImpl(trainRequirements: List<TrainRequirements>
     private fun detectRoutingConflicts(): List<Conflict> {
         // for each zone, check compatibility of overlapping requirements
         val res = mutableListOf<Conflict>()
-        for ((_, requirements) in routingZoneRequirements.entries) {
+        for (requirements in routingZoneRequirements.values) {
             for (conflictGroup in
                 detectRequirementConflicts(requirements) { a, b -> a.config != b.config }) {
                 val trains = conflictGroup.map { it.trainId }
@@ -151,6 +189,20 @@ class IncrementalConflictDetectorImpl(trainRequirements: List<TrainRequirements>
                 val endTime = conflictGroup.maxBy { it.endTime }.endTime
                 res.add(Conflict(trains, beginTime, endTime, ConflictType.ROUTING))
             }
+        }
+        return res
+    }
+
+    override fun checkConflicts(
+        spacingRequirements: List<SpacingRequirement>,
+        routingRequirements: List<RoutingRequirement>
+    ): List<Conflict> {
+        val res = mutableListOf<Conflict>()
+        for (spacingRequirement in spacingRequirements) {
+            res.addAll(checkSpacingRequirement(spacingRequirement))
+        }
+        for (routingRequirement in routingRequirements) {
+            res.addAll(checkRoutingRequirement(routingRequirement))
         }
         return res
     }
@@ -203,6 +255,123 @@ class IncrementalConflictDetectorImpl(trainRequirements: List<TrainRequirements>
             }
         }
         return res
+    }
+
+    override fun analyseConflicts(
+        spacingRequirements: List<SpacingRequirement>,
+        routingRequirements: List<RoutingRequirement>
+    ): ConflictProperties {
+        val minDelayWithoutConflicts =
+            minDelayWithoutConflicts(spacingRequirements, routingRequirements)
+        if (minDelayWithoutConflicts != 0.0) { // There are initial conflicts
+            return ConflictProperties(minDelayWithoutConflicts, 0.0, 0.0)
+        } else { // There are no initial conflicts
+            var maxDelay = Double.POSITIVE_INFINITY
+            var timeOfNextConflict = Double.POSITIVE_INFINITY
+            for (spacingRequirement in spacingRequirements) {
+                if (spacingZoneRequirements[spacingRequirement.zone!!] != null) {
+                    val endTime = spacingRequirement.endTime
+                    for (requirement in spacingZoneRequirements[spacingRequirement.zone!!]!!) {
+                        if (endTime <= requirement.beginTime) {
+                            maxDelay = min(maxDelay, requirement.beginTime - endTime)
+                            timeOfNextConflict = min(timeOfNextConflict, requirement.beginTime)
+                        }
+                    }
+                }
+            }
+            for (routingRequirement in routingRequirements) {
+                for (zoneReq in routingRequirement.zones) {
+                    if (routingZoneRequirements[zoneReq.zone!!] != null) {
+                        val endTime = zoneReq.endTime
+                        val config =
+                            RoutingZoneConfig(
+                                zoneReq.entryDetector,
+                                zoneReq.exitDetector,
+                                zoneReq.switches!!
+                            )
+                        for (requirement in routingZoneRequirements[zoneReq.zone!!]!!) {
+                            if (endTime <= requirement.beginTime && config != requirement.config) {
+                                maxDelay = min(maxDelay, requirement.beginTime - endTime)
+                                timeOfNextConflict = min(timeOfNextConflict, requirement.beginTime)
+                            }
+                        }
+                    }
+                }
+            }
+            return ConflictProperties(minDelayWithoutConflicts, maxDelay, timeOfNextConflict)
+        }
+    }
+
+    override fun minDelayWithoutConflicts(
+        spacingRequirements: List<SpacingRequirement>,
+        routingRequirements: List<RoutingRequirement>
+    ): Double {
+        var globalMinDelay = 0.0
+        while (globalMinDelay.isFinite()) {
+            var minDelay = 0.0
+            for (spacingRequirement in spacingRequirements) {
+                if (spacingZoneRequirements[spacingRequirement.zone!!] != null) {
+                    val conflictingRequirements =
+                        spacingZoneRequirements[spacingRequirement.zone!!]!!.filter {
+                            !(spacingRequirement.beginTime >= it.endTime ||
+                                spacingRequirement.endTime <= it.beginTime)
+                        }
+                    if (conflictingRequirements.isNotEmpty()) {
+                        val latestEndTime = conflictingRequirements.maxOf { it.endTime }
+                        minDelay = max(minDelay, latestEndTime - spacingRequirement.beginTime)
+                    }
+                }
+            }
+            for (routingRequirement in routingRequirements) {
+                for (zoneReq in routingRequirement.zones) {
+                    if (routingZoneRequirements[zoneReq.zone!!] != null) {
+                        val config =
+                            RoutingZoneConfig(
+                                zoneReq.entryDetector,
+                                zoneReq.exitDetector,
+                                zoneReq.switches!!
+                            )
+                        val conflictingRequirements =
+                            routingZoneRequirements[zoneReq.zone!!]!!.filter {
+                                !(routingRequirement.beginTime >= it.endTime ||
+                                    zoneReq.endTime <= it.beginTime) && config != it.config
+                            }
+                        if (conflictingRequirements.isNotEmpty()) {
+                            val latestEndTime = conflictingRequirements.maxOf { it.endTime }
+                            minDelay = max(minDelay, latestEndTime - routingRequirement.beginTime)
+                        }
+                    }
+                }
+            }
+            // No new conflicts
+            if (minDelay == 0.0) return globalMinDelay
+
+            // Check for conflicts with newly added delay
+            globalMinDelay += minDelay
+            spacingRequirements.onEach {
+                it.beginTime += minDelay
+                it.endTime += minDelay
+            }
+            routingRequirements.onEach { routingRequirement ->
+                routingRequirement.beginTime += minDelay
+                routingRequirement.zones.onEach { it.endTime += minDelay }
+            }
+        }
+        return Double.POSITIVE_INFINITY
+    }
+
+    override fun maxDelayWithoutConflicts(
+        spacingRequirements: List<SpacingRequirement>,
+        routingRequirements: List<RoutingRequirement>
+    ): Double {
+        return analyseConflicts(spacingRequirements, routingRequirements).maxDelayWithoutConflicts
+    }
+
+    override fun timeOfNextConflict(
+        spacingRequirements: List<SpacingRequirement>,
+        routingRequirements: List<RoutingRequirement>
+    ): Double {
+        return analyseConflicts(spacingRequirements, routingRequirements).timeOfNextConflict
     }
 }
 
