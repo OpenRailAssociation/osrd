@@ -5,12 +5,16 @@ import fr.sncf.osrd.railjson.schema.common.Identified;
 
 @SuppressFBWarnings({"UWF_UNWRITTEN_PUBLIC_OR_PROTECTED_FIELD"})
 public class RJSRouteWaypoint extends RJSTrackObject implements Identified {
-    public RJSRouteWaypoint(String id) {
+    public RJSRouteWaypoint(String id, Double position, String track) {
         this.id = id;
+        this.position = position;
+        this.track = track;
     }
 
     public RJSRouteWaypoint() {
         this.id = null;
+        this.position = -1;
+        this.track = null;
     }
 
     public String id;
