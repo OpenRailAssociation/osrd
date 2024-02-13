@@ -1,8 +1,6 @@
 package fr.sncf.osrd.stdcm.preprocessing.implementation
 
 import fr.sncf.osrd.api.FullInfra
-import fr.sncf.osrd.conflicts.IncrementalRequirementEnvelopeAdapter
-import fr.sncf.osrd.conflicts.SpacingRequirementAutomaton
 import fr.sncf.osrd.envelope_utils.DoubleBinarySearch
 import fr.sncf.osrd.sim_infra.api.Path
 import fr.sncf.osrd.sim_infra.api.ZoneId
@@ -31,43 +29,7 @@ data class BlockAvailability(
         startOffset: Offset<Path>,
         endOffset: Offset<Path>
     ): List<ResourceUse> {
-        // TODO: discuss things here
-        // We're supposed to return null at some point (when more lookahead is required)
-        // Instantiating an automaton each time is probably wrong
-        val incrementalPath = infraExplorer.getIncrementalPath()
-        val envelopeAdapter =
-            IncrementalRequirementEnvelopeAdapter(
-                incrementalPath,
-                rollingStock,
-                infraExplorer.getFullEnvelope()
-            )
-        val spacingGenerator =
-            SpacingRequirementAutomaton(
-                fullInfra.rawInfra,
-                fullInfra.loadedSignalInfra,
-                fullInfra.blockInfra,
-                fullInfra.signalingSimulator,
-                envelopeAdapter,
-                incrementalPath
-            )
-        val res = mutableListOf<ResourceUse>()
-        val resources = spacingGenerator.processPathUpdate()
-        for (resource in resources) {
-            val resourceStartOffset = getEnvelopeOffsetFromTime(infraExplorer, resource.beginTime)
-            val resourceEndOffset = getEnvelopeOffsetFromTime(infraExplorer, resource.endTime)
-            if (resourceStartOffset > endOffset || resourceEndOffset < startOffset)
-                continue // The resource use is outside the considered range
-            res.add(
-                ZoneResourceUse(
-                    resourceStartOffset,
-                    resourceEndOffset,
-                    resource.beginTime,
-                    resource.endTime,
-                    fullInfra.rawInfra.getZoneFromName(resource.zone)
-                )
-            )
-        }
-        return res
+        TODO("a pain for the rebase, to be deleted anyway")
     }
 
     override fun getScheduledResources(
