@@ -25,9 +25,9 @@ class TkDataDog(take: Take) : TkWrap(Take { request: Request -> datadog(take, re
             val statusCode = RsStatus.Base(response).status()
             span.setTag(Tags.HTTP_STATUS, statusCode)
             if (statusCode < 400) {
-                span.setTag(Tags.ERROR, true)
-            } else {
                 span.setTag(Tags.ERROR, false)
+            } else {
+                span.setTag(Tags.ERROR, true)
             }
 
             return response
