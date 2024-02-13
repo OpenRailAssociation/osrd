@@ -121,6 +121,7 @@ data class DistanceRangeMapImpl<T>(
                 bounds.remove(bounds.size - 1)
                 values.removeAt(values.size - 1)
             }
+            if (values.isEmpty()) bounds.clear()
         }
     }
 
