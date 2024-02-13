@@ -56,8 +56,8 @@ import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.MutableOffsetArrayList
 import fr.sncf.osrd.utils.units.Offset
-import fr.sncf.osrd.utils.units.Speed
 import fr.sncf.osrd.utils.units.meters
+import fr.sncf.osrd.utils.units.metersPerSecond
 import kotlin.collections.set
 import kotlin.time.Duration.Companion.ZERO
 import kotlin.time.Duration.Companion.seconds
@@ -359,12 +359,12 @@ private fun makeChunk(
             val legacySpeedLimit = entry.value
             val map =
                 legacySpeedLimit.speedLimitByTag.mapValues { mapEntry ->
-                    Speed.fromMetersPerSecond(mapEntry.value!!)
+                    mapEntry.value!!.metersPerSecond
                 }
             res.put(
                 Distance.fromMeters(entry.key.lowerEndpoint()),
                 Distance.fromMeters(entry.key.upperEndpoint()),
-                SpeedSection(Speed.fromMetersPerSecond(legacySpeedLimit.defaultSpeedLimit), map)
+                SpeedSection(legacySpeedLimit.defaultSpeedLimit.metersPerSecond, map)
             )
         }
         return res
