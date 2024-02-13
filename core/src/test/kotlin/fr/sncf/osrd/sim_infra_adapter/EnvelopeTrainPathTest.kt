@@ -310,6 +310,30 @@ class EnvelopeTrainPathTest {
         putInElectrificationMapByPowerClass(
             expectedElectrificationPowerClass1,
             2_600.0,
+            2_900.0,
+            Electrified("1500V"),
+            "B",
+            false
+        )
+        putInElectrificationMapByPowerClass(
+            expectedElectrificationPowerClass1,
+            2_900.0,
+            2_910.0,
+            Neutral(false, Electrified("1500V"), true),
+            "B",
+            false
+        )
+        putInElectrificationMapByPowerClass(
+            expectedElectrificationPowerClass1,
+            2_910.0,
+            3_050.0,
+            Neutral(false, Electrified("1500V"), false),
+            "B",
+            false
+        )
+        putInElectrificationMapByPowerClass(
+            expectedElectrificationPowerClass1,
+            3_050.0,
             3_300.0,
             Electrified("1500V"),
             "B",
@@ -348,14 +372,38 @@ class EnvelopeTrainPathTest {
         putInElectrificationMapByPowerClass(
             expectedElectrificationPowerClass2,
             2_700.0,
-            3_000.0,
+            2_900.0,
             Electrified("1500V"),
             "C",
             false
         )
         putInElectrificationMapByPowerClass(
             expectedElectrificationPowerClass2,
+            2_900.0,
+            2_910.0,
+            Neutral(false, Electrified("1500V"), true),
+            "C",
+            false
+        )
+        putInElectrificationMapByPowerClass(
+            expectedElectrificationPowerClass2,
+            2_910.0,
             3_000.0,
+            Neutral(false, Electrified("1500V"), false),
+            "C",
+            false
+        )
+        putInElectrificationMapByPowerClass(
+            expectedElectrificationPowerClass2,
+            3_000.0,
+            3_050.0,
+            Neutral(false, Electrified("1500V"), false),
+            "D",
+            false
+        )
+        putInElectrificationMapByPowerClass(
+            expectedElectrificationPowerClass2,
+            3_050.0,
             4_000.0,
             Electrified("1500V"),
             "D",
@@ -374,18 +422,18 @@ class EnvelopeTrainPathTest {
                     Direction.INCREASING,
                     ImmutableRangeMap.Builder<Double, Electrification>()
                         .put(Range.closedOpen(0.0, 300.0), NonElectrified())
-                        .put(Range.closedOpen(300.0, 1350.0), Electrified("1500V"))
+                        .put(Range.closedOpen(300.0, 1_350.0), Electrified("1500V"))
                         .put(
-                            Range.closedOpen(1350.0, 1460.0),
+                            Range.closedOpen(1_350.0, 1_460.0),
                             Neutral(true, Electrified("1500V"), true)
                         )
                         .put(
-                            Range.closedOpen(1460.0, 1500.0),
+                            Range.closedOpen(1_460.0, 1_500.0),
                             Neutral(true, Electrified("1500V"), false)
                         )
-                        .put(Range.closedOpen(1500.0, 2500.0), Electrified("1500V"))
-                        .put(Range.closedOpen(2500.0, 2600.0), NonElectrified())
-                        .put(Range.closed(2600.0, 3100.0), Electrified("25000V"))
+                        .put(Range.closedOpen(1_500.0, 2_500.0), Electrified("1500V"))
+                        .put(Range.closedOpen(2_500.0, 2_600.0), NonElectrified())
+                        .put(Range.closed(2_600.0, 3_100.0), Electrified("25000V"))
                         .build()
                 ),
                 Arguments.of(
@@ -394,8 +442,17 @@ class EnvelopeTrainPathTest {
                     ImmutableRangeMap.Builder<Double, Electrification>()
                         .put(Range.closedOpen(0.0, 350.0), Electrified("25000V"))
                         .put(Range.closedOpen(350.0, 450.0), NonElectrified())
-                        .put(Range.closedOpen(450.0, 2650.0), Electrified("1500V"))
-                        .put(Range.closed(2650.0, 3100.0), NonElectrified())
+                        .put(Range.closedOpen(450.0, 1_450.0), Electrified("1500V"))
+                        .put(
+                            Range.closedOpen(1_450.0, 1_460.0),
+                            Neutral(false, Electrified("1500V"), true)
+                        )
+                        .put(
+                            Range.closedOpen(1_460.0, 1_600.0),
+                            Neutral(false, Electrified("1500V"), false)
+                        )
+                        .put(Range.closedOpen(1_600.0, 2_650.0), Electrified("1500V"))
+                        .put(Range.closed(2_650.0, 3_100.0), NonElectrified())
                         .build()
                 ),
             )
