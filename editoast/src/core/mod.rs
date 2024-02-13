@@ -107,9 +107,10 @@ impl CoreClient {
                         // This error occurs quite often in the CI.
                         // It's linked to this issue https://github.com/hyperium/hyper/issues/2136.
                         // This is why we retry the request here
-                        Err(CoreError::ConnectionClosedBeforeMessageCompleted)
-                            if i_try < MAX_RETRIES =>
-                        {
+                        Err(
+                            CoreError::ConnectionResetByPeer
+                            | CoreError::ConnectionClosedBeforeMessageCompleted,
+                        ) if i_try < MAX_RETRIES => {
                             i_try += 1;
                             info!("Core request '{}: {}': Connection closed before message completed. Retry [{}/{}]", method, path, i_try, MAX_RETRIES);
                             continue;
@@ -301,6 +302,10 @@ enum CoreError {
     #[error("Core connection closed before message completed. Should retry.")]
     #[editoast_error(status = 500)]
     ConnectionClosedBeforeMessageCompleted,
+    #[error("Core connection reset by peer. Should retry.")]
+    #[editoast_error(status = 500)]
+    ConnectionResetByPeer,
+
     #[cfg(test)]
     #[error("The mocked response had no body configured - check out StubResponseBuilder::body if this is unexpected")]
     NoResponseContent,
@@ -346,6 +351,9 @@ impl From<reqwest::Error> for CoreError {
             .contains("connection closed before message completed")
         {
             return Self::ConnectionClosedBeforeMessageCompleted;
+        }
+        if value.to_string().contains("Connection reset by peer") {
+            return Self::ConnectionResetByPeer;
         }
 
         // Convert the reqwest error
