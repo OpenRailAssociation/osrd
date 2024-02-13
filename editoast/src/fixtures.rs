@@ -6,14 +6,16 @@ pub mod tests {
     use crate::models::train_schedule::Mrsp;
     use crate::models::{
         self, Identifiable, Infra, Pathfinding, PathfindingChangeset, ResultPosition, ResultStops,
-        ResultTrain, RollingStockModel, Scenario, SimulationOutput, SimulationOutputChangeset,
-        Timetable, TrainSchedule,
+        ResultTrain, Scenario, SimulationOutput, SimulationOutputChangeset, Timetable,
+        TrainSchedule,
     };
     use crate::modelsv2::projects::Tags;
     use crate::modelsv2::rolling_stock_livery::RollingStockLiveryModel;
     use crate::modelsv2::timetable::Timetable as TimetableV2;
     use crate::modelsv2::train_schedule::TrainSchedule as TrainScheduleV2;
-    use crate::modelsv2::{self, Changeset, Document, ElectricalProfileSet, Model, Project, Study};
+    use crate::modelsv2::{
+        self, Changeset, Document, ElectricalProfileSet, Model, Project, RollingStockModel, Study,
+    };
     use crate::schema::electrical_profiles::{ElectricalProfile, ElectricalProfileSetData};
     use crate::schema::v2::trainschedule::TrainScheduleBase;
     use crate::schema::{RailJson, TrackRange};
@@ -117,12 +119,11 @@ pub mod tests {
         Data::new(pool)
     }
 
-    pub fn get_fast_rolling_stock(name: &str) -> RollingStockModel {
-        let mut rs: RollingStockModel =
+    pub fn get_fast_rolling_stock(name: &str) -> Changeset<RollingStockModel> {
+        let rs: Changeset<RollingStockModel> =
             serde_json::from_str(include_str!("./tests/example_rolling_stock_1.json"))
                 .expect("Unable to parse");
-        rs.name = Some(name.to_string());
-        rs
+        rs.name(name.to_string())
     }
 
     pub async fn named_fast_rolling_stock(
@@ -130,16 +131,15 @@ pub mod tests {
         db_pool: Data<DbPool>,
     ) -> TestFixture<RollingStockModel> {
         let rs = get_fast_rolling_stock(name);
-        TestFixture::create_legacy(rs, db_pool).await
+        TestFixture::create(rs, db_pool).await
     }
 
-    pub fn get_other_rolling_stock(name: &str) -> RollingStockModel {
-        let mut rs: RollingStockModel = serde_json::from_str(include_str!(
+    pub fn get_other_rolling_stock(name: &str) -> Changeset<RollingStockModel> {
+        let rs: Changeset<RollingStockModel> = serde_json::from_str(include_str!(
             "./tests/example_rolling_stock_2_energy_sources.json"
         ))
         .expect("Unable to parse");
-        rs.name = Some(name.to_string());
-        rs
+        rs.name(name.to_string())
     }
 
     pub fn get_trainschedule_json_array() -> &'static str {
@@ -151,7 +151,7 @@ pub mod tests {
         db_pool: Data<DbPool>,
     ) -> TestFixture<RollingStockModel> {
         let rs = get_other_rolling_stock(name);
-        TestFixture::create_legacy(rs, db_pool).await
+        TestFixture::create(rs, db_pool).await
     }
 
     async fn make_train_schedule(

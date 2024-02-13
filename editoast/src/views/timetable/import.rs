@@ -14,9 +14,9 @@ use crate::core::simulation::{CoreTrainSchedule, SimulationRequest, TrainStop};
 use crate::core::AsCoreRequest;
 use crate::error::{InternalError, Result};
 use crate::models::{
-    Create, Infra, Pathfinding, Retrieve, RollingStockModel, ScheduledPoint, Timetable,
-    TrainSchedule,
+    Create, Infra, Pathfinding, Retrieve, ScheduledPoint, Timetable, TrainSchedule,
 };
+use crate::modelsv2::RollingStockModel;
 use crate::schema::rolling_stock::{RollingStock, RollingStockComfortType};
 use crate::views::infra::{call_core_infra_state, InfraState};
 use crate::views::pathfinding::save_core_pathfinding;
@@ -235,8 +235,9 @@ async fn import_item(
 ) -> Result<HashMap<String, TrainImportReport>> {
     let mut conn = db_pool.get().await?;
     let mut timings = ImportTimings::default();
+    use crate::modelsv2::Retrieve;
     let Some(rolling_stock_model) =
-        RollingStockModel::retrieve_by_name(&mut conn, import_item.rolling_stock.clone()).await?
+        RollingStockModel::retrieve(&mut conn, import_item.rolling_stock.clone()).await?
     else {
         return Ok(import_item.report_error(
             TimetableImportError::RollingStockNotFound {
@@ -245,7 +246,7 @@ async fn import_item(
             timings.clone(),
         ));
     };
-    let rolling_stock_id = rolling_stock_model.id.unwrap();
+    let rolling_stock_id = rolling_stock_model.id;
     let rollingstock_version = rolling_stock_model.version;
     let rolling_stock: RollingStock = rolling_stock_model.into();
 
@@ -350,7 +351,7 @@ async fn import_item(
             rolling_stock_id,
             timetable_id,
             infra_version: Some(infra_version.to_owned()),
-            rollingstock_version,
+            rollingstock_version: Some(rollingstock_version),
             ..Default::default()
         }
         .create_conn(&mut conn)

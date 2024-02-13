@@ -232,6 +232,7 @@ pub mod test {
             db_pool, get_other_rolling_stock, train_with_simulation_output_fixture_set,
         },
         models::{train_schedule::TrainScheduleValidation, TimetableWithSchedulesDetails},
+        modelsv2::{Changeset, RollingStockModel},
         views::tests::create_test_service,
     };
 
@@ -249,9 +250,8 @@ pub mod test {
             .model
             .rolling_stock_id;
         // patch rolling_stock
-        let mut patch_rolling_stock =
+        let patch_rolling_stock: Changeset<RollingStockModel> =
             get_other_rolling_stock("fast_rolling_stock_newer_rolling_stock_version");
-        patch_rolling_stock.id = Some(rolling_stock_id);
 
         // WHEN
         call_service(

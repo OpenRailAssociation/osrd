@@ -7,9 +7,10 @@ use crate::{
     models::{
         train_schedule::{ElectrificationRange, Mrsp, SimulationPowerRestrictionRange},
         Curve, FullResultStops, PathWaypoint, Pathfinding, PathfindingPayload, ResultPosition,
-        ResultSpeed, ResultStops, ResultTrain, Retrieve, RollingStockModel, SimulationOutput,
+        ResultSpeed, ResultStops, ResultTrain, Retrieve, SimulationOutput,
         SimulationOutputChangeset, Slope, TrainSchedule,
     },
+    modelsv2::RollingStockModel,
     schema::utils::Identifier,
     views::{
         pathfinding::make_track_map,
@@ -87,13 +88,12 @@ pub async fn create_simulation_report(
         .await?
         .expect("Train Schedule should have a path");
     let train_path_payload = train_path.payload;
-    let rolling_stock =
-        RollingStockModel::retrieve(db_pool.clone(), train_schedule.rolling_stock_id)
-            .await?
-            .expect("Train Schedule should have a rolling stock");
-    let train_length = rolling_stock
-        .length
-        .expect("Rolling stock should have a length");
+    use crate::modelsv2::Retrieve;
+    let mut db_conn = db_pool.get().await?;
+    let rolling_stock = RollingStockModel::retrieve(&mut db_conn, train_schedule.rolling_stock_id)
+        .await?
+        .expect("Train Schedule should have a rolling stock");
+    let train_length = rolling_stock.length;
     let departure_time = train_schedule.departure_time;
 
     let base = project_simulation_results(

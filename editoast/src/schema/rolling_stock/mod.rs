@@ -1,12 +1,13 @@
 pub mod light_rolling_stock;
 pub mod rolling_stock_livery;
 
-use diesel_json::Json as DieselJson;
+use derivative::Derivative;
 use serde::{Deserialize, Deserializer, Serialize};
 use std::collections::HashMap;
 use strum_macros::{Display, EnumString};
 use utoipa::ToSchema;
 
+use crate::modelsv2::rolling_stock_model::RollingStockSupportedSignalingSystems;
 use crate::schema::rolling_stock::rolling_stock_livery::{
     RollingStockLivery, RollingStockLiveryMetadata,
 };
@@ -35,7 +36,8 @@ crate::schemas! {
 
 pub const ROLLING_STOCK_RAILJSON_VERSION: &str = "3.2";
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema, Derivative)]
+#[derivative(PartialEq)]
 pub struct RollingStockCommon {
     pub name: String,
     pub effort_curves: EffortCurves,
@@ -53,8 +55,9 @@ pub struct RollingStockCommon {
     #[schema(value_type = LoadingGaugeType)]
     pub loading_gauge: String,
     /// Mapping of power restriction code to power class
-    #[schema(value_type = HashMap<String, String>)]
-    pub power_restrictions: Option<DieselJson<HashMap<String, String>>>,
+    #[serde(default)]
+    #[schema(required)]
+    pub power_restrictions: HashMap<String, String>,
     #[serde(default)]
     pub energy_sources: Vec<EnergySource>,
     /// The time the train takes before actually using electrical power (in seconds). Is null if the train is not electric.
@@ -63,7 +66,7 @@ pub struct RollingStockCommon {
     /// The time it takes to raise this train's pantograph in seconds. Is null if the train is not electric.
     #[schema(example = 15.0)]
     pub raise_pantograph_time: Option<f64>,
-    pub supported_signaling_systems: Vec<String>,
+    pub supported_signaling_systems: RollingStockSupportedSignalingSystems,
 }
 
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize, ToSchema)]
@@ -84,7 +87,7 @@ pub struct RollingStockWithLiveries {
     pub liveries: Vec<RollingStockLiveryMetadata>,
 }
 
-#[derive(Clone, Debug, PartialEq, Deserialize, Serialize, ToSchema)]
+#[derive(Clone, Debug, Default, PartialEq, Deserialize, Serialize, ToSchema)]
 #[serde(deny_unknown_fields)]
 pub struct Gamma {
     #[serde(rename = "type")]
@@ -92,7 +95,7 @@ pub struct Gamma {
     value: f64,
 }
 
-#[derive(Clone, Debug, PartialEq, Deserialize, Serialize, ToSchema)]
+#[derive(Clone, Debug, Default, PartialEq, Deserialize, Serialize, ToSchema)]
 #[serde(deny_unknown_fields)]
 #[allow(non_snake_case)]
 pub struct RollingResistance {
@@ -103,7 +106,7 @@ pub struct RollingResistance {
     C: f64,
 }
 
-#[derive(Clone, Debug, PartialEq, Deserialize, Serialize, ToSchema)]
+#[derive(Clone, Debug, Default, PartialEq, Deserialize, Serialize, ToSchema)]
 #[serde(deny_unknown_fields)]
 pub struct RollingStockMetadata {
     detail: String,
@@ -217,11 +220,21 @@ pub struct ModeEffortCurves {
     pub is_electric: bool,
 }
 
-#[derive(Clone, Debug, PartialEq, Deserialize, Serialize, ToSchema)]
+#[derive(Clone, Debug, Default, PartialEq, Deserialize, Serialize, ToSchema)]
 #[serde(deny_unknown_fields)]
 pub struct EffortCurves {
     pub modes: HashMap<String, ModeEffortCurves>,
     default_mode: String,
+}
+
+impl EffortCurves {
+    fn has_electric_curves(&self) -> bool {
+        self.modes.values().any(|mode| mode.is_electric)
+    }
+
+    pub fn is_electric(&self) -> bool {
+        self.has_electric_curves()
+    }
 }
 
 // Energy sources schema

@@ -58,9 +58,9 @@ pub struct LightRollingStock {
     #[diesel(sql_type = Jsonb)]
     #[schema(value_type = RollingStockMetadata)]
     pub metadata: DieselJson<RollingStockMetadata>,
-    #[diesel(sql_type = Nullable<Jsonb>)]
+    #[diesel(sql_type = Jsonb)]
     #[schema(value_type = HashMap<String, String>)]
-    pub power_restrictions: Option<DieselJson<HashMap<String, String>>>,
+    pub power_restrictions: DieselJson<HashMap<String, String>>,
     #[diesel(sql_type = Jsonb)]
     #[schema(value_type = Vec<EnergySource>)]
     pub energy_sources: DieselJson<Vec<EnergySource>>,

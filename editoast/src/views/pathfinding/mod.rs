@@ -31,9 +31,9 @@ use crate::{
     error::Result,
     models::{
         Create, Curve, Delete, Infra, PathWaypoint, Pathfinding, PathfindingChangeset,
-        PathfindingPayload, Retrieve, RollingStockModel, Slope, Update,
+        PathfindingPayload, Retrieve, Slope, Update,
     },
-    modelsv2::{infra_objects::TrackSectionModel, OperationalPointModel},
+    modelsv2::{infra_objects::TrackSectionModel, OperationalPointModel, RollingStockModel},
     schema::{
         rolling_stock::RollingStock,
         utils::geometry::{diesel_linestring_to_geojson, geojson_to_diesel_linestring},
@@ -255,16 +255,26 @@ impl PathfindingRequest {
 
     /// Fetches all payload's rolling stocks
     async fn parse_rolling_stocks(&self, conn: &mut PgConnection) -> Result<Vec<RollingStock>> {
-        let mut rolling_stocks = vec![];
-        for id in &self.rolling_stocks {
-            let rs: RollingStock = RollingStockModel::retrieve_conn(conn, *id)
-                .await?
-                .ok_or(PathfindingError::RollingStockNotFound {
-                    rolling_stock_id: *id,
-                })?
-                .into();
-            rolling_stocks.push(rs);
-        }
+        use crate::modelsv2::RetrieveBatch;
+        let rolling_stock_batch: Vec<RollingStockModel> =
+            RollingStockModel::retrieve_batch_or_fail(
+                conn,
+                self.rolling_stocks.iter().copied(),
+                |missing| {
+                    let first_missing_id = missing
+                        .iter()
+                        .next()
+                        .expect("Retrieve batch fail without missing ids");
+                    PathfindingError::RollingStockNotFound {
+                        rolling_stock_id: *first_missing_id,
+                    }
+                },
+            )
+            .await?;
+        let rolling_stocks = rolling_stock_batch
+            .into_iter()
+            .map(|rs| rs.into())
+            .collect();
         Ok(rolling_stocks)
     }
 }
@@ -621,7 +631,7 @@ mod test {
             .model;
         let small_infra = small_infra(db_pool()).await;
         let infra = &small_infra.model;
-        let rs_id = rs.id.unwrap();
+        let rs_id = rs.id;
         let infra_id = infra.id.unwrap();
         let mut payload: serde_json::Value = serde_json::from_str(include_str!(
             "../../tests/small_infra/pathfinding_post_payload.json"
@@ -662,7 +672,7 @@ mod test {
                 .model;
         let small_infra = small_infra(db_pool()).await;
         let infra = &small_infra.model;
-        let rs_id = rs.id.unwrap();
+        let rs_id = rs.id;
         let infra_id = infra.id.unwrap();
         let mut payload: serde_json::Value = serde_json::from_str(include_str!(
             "../../tests/small_infra/pathfinding_post_multiple_waypoints_payload.json"

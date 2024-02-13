@@ -1,8 +1,8 @@
 use serde::{Deserialize, Serialize};
 
-use crate::models::{RollingStockModel, SpacingRequirement};
-
 use crate::core::{pathfinding::Waypoint, simulation::SimulationResponse};
+use crate::models::SpacingRequirement;
+use crate::modelsv2::RollingStockModel;
 use crate::schema::rolling_stock::RollingStockComfortType;
 use crate::views::stdcm::AllowanceValue;
 

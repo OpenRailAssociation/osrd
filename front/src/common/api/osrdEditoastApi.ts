@@ -2076,6 +2076,7 @@ export type EffortCurves = {
     [key: string]: ModeEffortCurves;
   };
 };
+export type RollingStockSupportedSignalingSystems = string[];
 export type RollingStockCommon = {
   base_power_class: string | null;
   comfort_acceleration: number;
@@ -2099,7 +2100,7 @@ export type RollingStockCommon = {
   rolling_resistance: RollingResistance;
   startup_acceleration: number;
   startup_time: number;
-  supported_signaling_systems: string[];
+  supported_signaling_systems: RollingStockSupportedSignalingSystems;
 };
 export type RollingStock = RollingStockCommon & {
   id: number;

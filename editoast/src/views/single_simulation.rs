@@ -7,9 +7,9 @@ use crate::models::train_schedule::{
     Allowance, ElectrificationRange, Mrsp, ResultTrain, RjsPowerRestrictionRange, ScheduledPoint,
     SimulationPowerRestrictionRange, TrainScheduleOptions,
 };
-use crate::models::{Pathfinding, Retrieve, RollingStockModel};
+use crate::models::{Pathfinding, Retrieve};
 use crate::modelsv2::electrical_profiles::ElectricalProfileSet;
-use crate::modelsv2::Exists;
+use crate::modelsv2::{Exists, RollingStockModel};
 use crate::schema::rolling_stock::RollingStockComfortType;
 use crate::{schemas, DbPool};
 use actix_web::post;
@@ -143,16 +143,15 @@ async fn standalone_simulation(
     request: Json<SingleSimulationRequest>,
     core: Data<CoreClient>,
 ) -> Result<Json<SingleSimulationResponse>> {
+    use crate::modelsv2::Retrieve;
+    let mut db_conn = db_pool.get().await?;
     let request = request.into_inner();
-
     let rolling_stock_id = request.rolling_stock_id;
-    let rolling_stock = RollingStockModel::retrieve(db_pool.clone(), rolling_stock_id).await?;
-    let rolling_stock = match rolling_stock {
-        Some(rolling_stock) => rolling_stock,
-        None => {
-            return Err(SingleSimulationError::RollingStockNotFound { rolling_stock_id }.into())
-        }
-    };
+
+    let rolling_stock = RollingStockModel::retrieve_or_fail(&mut db_conn, rolling_stock_id, || {
+        SingleSimulationError::RollingStockNotFound { rolling_stock_id }
+    })
+    .await?;
 
     let path_id = request.path_id;
     let pathfinding = Pathfinding::retrieve(db_pool.clone(), path_id).await?;
@@ -173,7 +172,7 @@ async fn standalone_simulation(
         }
     }
 
-    let rs_name = rolling_stock.name.clone().unwrap().to_string();
+    let rs_name = rolling_stock.name.clone();
     let request_payload = SimulationRequest {
         infra: pathfinding.infra_id,
         rolling_stocks: vec![rolling_stock.into()],

@@ -157,7 +157,7 @@ mod tests {
         let vec_fixtures = futures::future::join_all(vec_fixtures).await;
         let expected_ids = vec_fixtures
             .iter()
-            .map(|x| x.rolling_stock.model.id.unwrap())
+            .map(|x| x.rolling_stock.model.id)
             .collect::<HashSet<_>>();
 
         // Fetch all rolling stocks using /light_rolling_stock
