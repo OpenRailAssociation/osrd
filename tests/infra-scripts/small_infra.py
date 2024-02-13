@@ -600,15 +600,18 @@ builder.infra.electrifications.append(Electrification("electrification_1.5k", "1
 lower_pantograph_section_1 = builder.add_neutral_section(lower_pantograph=True)
 lower_pantograph_section_1.add_announcement_track_range(tg1, 3500, tg1.length, Direction.START_TO_STOP)
 lower_pantograph_section_1.add_track_range(tg4, 0, 500, Direction.START_TO_STOP)
-
+lower_pantograph_section_1.add_track_range(ta6, 0, 10, Direction.START_TO_STOP)
 
 lower_pantograph_section_2 = builder.add_neutral_section(lower_pantograph=True)
 lower_pantograph_section_2.add_announcement_track_range(ta0, 1850, 1960, Direction.START_TO_STOP)
 lower_pantograph_section_2.add_track_range(ta0, 1960, 2000, Direction.START_TO_STOP)
-lower_pantograph_section_1.add_track_range(ta6, 0, 10, Direction.START_TO_STOP)
 
-lower_pantograph_section_3 = builder.add_neutral_section(lower_pantograph=False)
-lower_pantograph_section_3.add_track_range(ta6, 8500, 8600, Direction.START_TO_STOP)
+keep_pantograph_section_3 = builder.add_neutral_section(lower_pantograph=False)
+keep_pantograph_section_3.add_track_range(ta6, 8500, 8600, Direction.START_TO_STOP)
+
+keep_pantograph_section_4 = builder.add_neutral_section(lower_pantograph=False)
+keep_pantograph_section_4.add_announcement_track_range(ta0, 1990, 2000, Direction.STOP_TO_START)
+keep_pantograph_section_4.add_track_range(ta0, 1850, 1990, Direction.STOP_TO_START)
 
 
 # ================================
