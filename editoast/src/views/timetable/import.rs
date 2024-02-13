@@ -23,6 +23,7 @@ use crate::views::pathfinding::save_core_pathfinding;
 use crate::views::train_schedule::process_simulation_response;
 use actix_web::web::Json;
 use chrono::Timelike;
+use futures::future::try_join_all;
 
 use utoipa::ToSchema;
 
@@ -194,21 +195,24 @@ pub async fn post_timetable(
         return Err(TimetableError::InfraNotLoaded { infra_id }.into());
     }
 
-    let mut reports = HashMap::new();
+    let mut item_futures = Vec::new();
 
     for item in data.into_inner() {
-        reports.extend(
-            import_item(
-                infra_id,
-                &infra_version,
-                &mut conn,
-                item,
-                timetable_id,
-                &core_client,
-            )
-            .await?,
-        );
+        item_futures.push(import_item(
+            infra_id,
+            &infra_version,
+            db_pool.clone(),
+            item,
+            timetable_id,
+            &core_client,
+        ));
     }
+    let item_results = try_join_all(item_futures).await?;
+
+    let reports: HashMap<String, TrainImportReport> = item_results
+        .into_iter()
+        .flat_map(|res| res.into_iter())
+        .collect();
 
     Ok(Json(reports))
 }
@@ -224,14 +228,15 @@ macro_rules! time_execution {
 async fn import_item(
     infra_id: i64,
     infra_version: &str,
-    conn: &mut AsyncPgConnection,
+    db_pool: Data<DbPool>,
     import_item: TimetableImportItem,
     timetable_id: i64,
     core_client: &CoreClient,
 ) -> Result<HashMap<String, TrainImportReport>> {
+    let mut conn = db_pool.get().await?;
     let mut timings = ImportTimings::default();
     let Some(rolling_stock_model) =
-        RollingStockModel::retrieve_by_name(conn, import_item.rolling_stock.clone()).await?
+        RollingStockModel::retrieve_by_name(&mut conn, import_item.rolling_stock.clone()).await?
     else {
         return Ok(import_item.report_error(
             TimetableImportError::RollingStockNotFound {
@@ -254,7 +259,7 @@ async fn import_item(
     let ops_uic = ops_uic_from_path(&import_item.path);
     let ops_id = ops_id_from_path(&import_item.path);
     // Retrieve operational points
-    let op_to_parts = match find_operation_points(&ops_uic, &ops_id, infra_id, conn).await? {
+    let op_to_parts = match find_operation_points(&ops_uic, &ops_id, infra_id, &mut conn).await? {
         Ok(op_to_parts) => op_to_parts,
         Err(err) => {
             return Ok(import_item.report_error(err.clone(), timings.clone()));
@@ -279,7 +284,8 @@ async fn import_item(
             ));
         }
         Ok(raw_path_response) => {
-            save_core_pathfinding(raw_path_response, conn, infra_id, None, steps_duration).await?
+            save_core_pathfinding(raw_path_response, &mut conn, infra_id, None, steps_duration)
+                .await?
         }
     };
     let path_id = pathfinding_result.id;
@@ -347,12 +353,12 @@ async fn import_item(
             rollingstock_version,
             ..Default::default()
         }
-        .create_conn(conn)
+        .create_conn(&mut conn)
         .await?
         .id;
 
         sim_output.train_schedule_id = Some(train_id);
-        sim_output.create_conn(conn).await?;
+        sim_output.create_conn(&mut conn).await?;
     }
 
     Ok(import_item.report_success(timings))
