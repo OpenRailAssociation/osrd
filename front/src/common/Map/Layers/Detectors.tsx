@@ -16,6 +16,7 @@ export function getDetectorsLayerProps(params: {
 }): OmitLayer<CircleLayer> {
   const res: OmitLayer<CircleLayer> = {
     type: 'circle',
+    minzoom: 8,
     paint: {
       'circle-stroke-color': params.colors.detectors.circle,
       'circle-color': params.colors.detectors.circle,
