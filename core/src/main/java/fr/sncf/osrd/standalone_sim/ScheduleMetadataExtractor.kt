@@ -101,7 +101,7 @@ fun run(
     // Compute stops
     val stops = ArrayList<ResultStops>()
     for (stop in schedule.stops) {
-        val stopTime = ResultPosition.interpolateTime(stop.position, headPositions)
+        val stopTime = envelopeWithStops.interpolateTotalTime(stop.position) - stop.duration
         stops.add(ResultStops(stopTime, stop.position, stop.duration))
     }
 
