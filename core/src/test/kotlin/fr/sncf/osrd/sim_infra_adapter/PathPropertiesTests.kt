@@ -16,8 +16,8 @@ import fr.sncf.osrd.utils.Helpers
 import fr.sncf.osrd.utils.indexing.StaticIdx
 import fr.sncf.osrd.utils.pathFromTracks
 import fr.sncf.osrd.utils.units.Offset
-import fr.sncf.osrd.utils.units.Speed.Companion.fromMetersPerSecond
 import fr.sncf.osrd.utils.units.meters
+import fr.sncf.osrd.utils.units.metersPerSecond
 import kotlin.math.absoluteValue
 import kotlin.test.assertEquals
 import org.assertj.core.api.Assertions.assertThat
@@ -447,15 +447,11 @@ class PathPropertiesTests {
         assertThat(speedLimits.asList())
             .containsExactlyElementsOf(
                 listOf(
-                    DistanceRangeMap.RangeMapEntry(
-                        0.meters,
-                        400.meters,
-                        fromMetersPerSecond(42.42)
-                    ),
+                    DistanceRangeMap.RangeMapEntry(0.meters, 400.meters, 42.42.metersPerSecond),
                     DistanceRangeMap.RangeMapEntry(
                         400.meters,
                         1_820.meters,
-                        fromMetersPerSecond(MAX_SPEED)
+                        MAX_SPEED.metersPerSecond
                     )
                 )
             )
