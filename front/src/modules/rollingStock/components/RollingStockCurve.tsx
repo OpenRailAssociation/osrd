@@ -74,23 +74,29 @@ function LegendComfortSwitches(props: {
 
 function Legend(props: {
   curves: ParsedCurve[];
-  curvesState: { [key: string]: boolean };
-  onCurvesStateChange: (id: string) => void;
+  curvesVisibility: { [key: string]: boolean };
+  onCurvesVisibilityChange: (id: string) => void;
   isOnEditionMode?: boolean;
   showPowerRestriction?: boolean;
 }) {
-  const { curves, curvesState, onCurvesStateChange, isOnEditionMode, showPowerRestriction } = props;
+  const {
+    curves,
+    curvesVisibility,
+    onCurvesVisibilityChange,
+    isOnEditionMode,
+    showPowerRestriction,
+  } = props;
 
   return (
     <span className="d-flex">
       {curves.map((curve) => (
         <span
           className="curves-chart-legend-item"
-          style={curvesState[curve.id] ? { borderColor: curve.color } : {}}
+          style={curvesVisibility[curve.id] ? { borderColor: curve.color } : {}}
           key={`legend-${curve.id}`}
           role="button"
           tabIndex={0}
-          onClick={() => onCurvesStateChange(curve.id)}
+          onClick={() => onCurvesVisibilityChange(curve.id)}
         >
           {isOnEditionMode && showPowerRestriction && curve.power_restriction}
           {isOnEditionMode && !showPowerRestriction && curve.electrical_profile_level}
@@ -127,12 +133,15 @@ function curveColor(
   return Object.keys(COLORS)[indexShort];
 }
 
-function initialCurvesState(data: TransformedCurves) {
-  const curvesState: { [key: string]: boolean } = {};
+function setupCurvesVisibility(
+  data: TransformedCurves,
+  previousCurvesVisibility: { [key: string]: boolean } = {}
+) {
+  const nextCurvesVisibility: { [key: string]: boolean } = {};
   Object.keys(data).forEach((id) => {
-    curvesState[id] = true;
+    nextCurvesVisibility[id] = id in previousCurvesVisibility ? previousCurvesVisibility[id] : true;
   });
-  return curvesState;
+  return nextCurvesVisibility;
 }
 
 function initialComfortsState(curvesComfortList: string[]) {
@@ -203,7 +212,7 @@ export default function RollingStockCurve({
   const [curves, setCurves] = useState<ParsedCurve[]>([]);
   const [curvesToDisplay, setCurvesToDisplay] = useState(curves);
   const [comfortsStates, setComfortsStates] = useState(initialComfortsState(curvesComfortList));
-  const [curvesState, setCurvesState] = useState(initialCurvesState(transformedData));
+  const [curvesVisibility, setCurvesVisibility] = useState(setupCurvesVisibility(transformedData));
 
   const formatTooltip = (tooltip: PointTooltipProps) => {
     const editionModeTooltipLabel =
@@ -264,10 +273,10 @@ export default function RollingStockCurve({
   }, [transformedData, comfortsStates, hoveredElectricalParam, selectedElectricalParam]);
 
   useEffect(() => {
-    if (curves && curvesState) {
-      setCurvesToDisplay(curves.filter((curve) => curvesState[curve.id]));
+    if (curves && curvesVisibility) {
+      setCurvesToDisplay(curves.filter((curve) => curvesVisibility[curve.id]));
     }
-  }, [curves, curvesState]);
+  }, [curves, curvesVisibility]);
 
   useEffect(() => {
     if (isOnEditionMode) {
@@ -275,13 +284,15 @@ export default function RollingStockCurve({
     } else {
       setComfortsStates(initialComfortsState(curvesComfortList));
     }
-    setCurvesState(initialCurvesState(transformedData));
+    setCurvesVisibility((prevCurvesVisibility) =>
+      setupCurvesVisibility(transformedData, prevCurvesVisibility)
+    );
   }, [transformedData, ready]);
 
   const changeComfortState = (comfort: string) => {
     const nextComfortsStatesState = { ...comfortsStates, [comfort]: !comfortsStates[comfort] };
     const nextCurves = getCurvesByComfortState(transformedData, nextComfortsStatesState).filter(
-      (curve) => curvesState[curve]
+      (curve) => curvesVisibility[curve]
     );
 
     if (nextCurves.length > 0) {
@@ -289,15 +300,15 @@ export default function RollingStockCurve({
     }
   };
 
-  const changeCurveState = (id: string) => {
-    const nextCurvesState = { ...curvesState, [id]: !curvesState[id] };
+  const changeCurveVisibility = (id: string) => {
+    const nextCurvesVisibility = { ...curvesVisibility, [id]: !curvesVisibility[id] };
 
     const nextCurves = getCurvesByComfortState(transformedData, comfortsStates).filter(
-      (curve) => nextCurvesState[curve]
+      (curve) => nextCurvesVisibility[curve]
     );
 
     if (nextCurves.length > 0) {
-      setCurvesState(nextCurvesState);
+      setCurvesVisibility(nextCurvesVisibility);
     }
   };
 
@@ -311,8 +322,8 @@ export default function RollingStockCurve({
         />
         <Legend
           curves={curves}
-          curvesState={curvesState}
-          onCurvesStateChange={changeCurveState}
+          curvesVisibility={curvesVisibility}
+          onCurvesVisibilityChange={changeCurveVisibility}
           isOnEditionMode={isOnEditionMode}
           showPowerRestriction={showPowerRestriction}
         />
