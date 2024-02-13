@@ -11,6 +11,7 @@ osrd-schemas = { path = "../python/osrd_schemas/", develop = true }
 railjson-generator = { path = "../python/railjson_generator/", develop = true }
 pytest = "^7.2.2"
 pytest-cov = "^4.1.0"
+tqdm = "^4.66.2"
 
 [tool.poetry.group.dev.dependencies]
 black = "^22.12.0"
