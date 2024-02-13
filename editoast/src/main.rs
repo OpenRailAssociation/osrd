@@ -20,7 +20,7 @@ mod views;
 
 use crate::core::CoreClient;
 use crate::error::InternalError;
-use crate::models::{Create, Infra};
+use crate::models::Infra;
 use crate::schema::electrical_profiles::ElectricalProfileSetData;
 use crate::schema::RailJson;
 use crate::views::infra::InfraForm;
@@ -43,6 +43,7 @@ use modelsv2::{
     train_schedule::TrainScheduleChangeset, Create as CreateV2, CreateBatch, DeleteStatic, Model,
     Retrieve as RetrieveV2, RetrieveBatch,
 };
+use modelsv2::{Changeset, RollingStockModel};
 use schema::v2::trainschedule::TrainScheduleBase;
 use views::v2::train_schedule::{TrainScheduleForm, TrainScheduleResult};
 
@@ -60,7 +61,7 @@ use futures_util::FutureExt;
 use infra_cache::InfraCache;
 use map::MapLayers;
 use models::infra::InfraError;
-use models::{Retrieve, RollingStockModel};
+use models::Retrieve;
 use modelsv2::electrical_profiles::ElectricalProfileSet;
 use openssl::ssl::{SslConnector, SslMethod, SslVerifyMode};
 pub use redis_utils::{RedisClient, RedisConnection};
@@ -74,7 +75,7 @@ use thiserror::Error;
 use tracing::{error, info, warn};
 use tracing_subscriber::{layer::SubscriberExt as _, util::SubscriberInitExt as _};
 use url::Url;
-use validator::{Validate, ValidationErrorsKind};
+use validator::ValidationErrorsKind;
 use views::infra::InfraApiError;
 use views::search::{SearchConfig, SearchConfigFinder, SearchConfigStore};
 
@@ -530,21 +531,25 @@ async fn import_rolling_stock(
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
     for rolling_stock_path in args.rolling_stock_path {
         let rolling_stock_file = File::open(rolling_stock_path)?;
-        let mut rolling_stock: RollingStockModel =
+        let rolling_stock: Changeset<RollingStockModel> =
             serde_json::from_reader(BufReader::new(rolling_stock_file))?;
-        match rolling_stock.validate() {
+        match rolling_stock.validate_imported_rolling_stock() {
             Ok(()) => {
                 println!(
                     "🍞 Importing rolling stock {}",
-                    rolling_stock.name.clone().unwrap().bold()
+                    rolling_stock
+                        .name
+                        .as_ref()
+                        .map(|n| n.bold())
+                        .unwrap_or("rolling stock witout name".bold())
                 );
-                rolling_stock.locked = Some(false);
-                rolling_stock.version = Some(0);
-                let rolling_stock = rolling_stock.create(db_pool.clone()).await?;
+                use crate::modelsv2::prelude::*;
+                let conn = &mut db_pool.get().await?;
+                let rolling_stock = rolling_stock.locked(false).version(0).create(conn).await?;
                 println!(
                     "✅ Rolling stock {}[{}] saved!",
-                    rolling_stock.name.clone().unwrap().bold(),
-                    rolling_stock.id.unwrap()
+                    &rolling_stock.name.bold(),
+                    &rolling_stock.id
                 );
             }
             Err(e) => {
@@ -891,6 +896,7 @@ mod tests {
         db_pool, electrical_profile_set, get_fast_rolling_stock, get_trainschedule_json_array,
         TestFixture,
     };
+    use crate::modelsv2::RollingStockModel;
     use diesel::sql_query;
     use diesel::sql_types::Text;
     use diesel_async::RunQueryDsl;
@@ -960,13 +966,17 @@ mod tests {
         // GIVEN
         let rolling_stock_name =
             "fast_rolling_stock_import_non_electric_rs_without_startup_and_panto_values";
-        let mut non_electric_rolling_stock = get_fast_rolling_stock(rolling_stock_name);
-        if let Some(ref mut effort_curves) = non_electric_rolling_stock.effort_curves {
-            effort_curves.modes.remove("25000V");
-            non_electric_rolling_stock.electrical_power_startup_time = Some(None);
-            non_electric_rolling_stock.raise_pantograph_time = Some(None);
-        }
-        let file = generate_temp_file(&non_electric_rolling_stock);
+        let mut non_electric_rs_changeset = get_fast_rolling_stock(rolling_stock_name);
+
+        non_electric_rs_changeset.effort_curves.as_mut().map(|ec| {
+            ec.0.modes.remove("25000V");
+            ec
+        });
+
+        let non_electric_rs_changeset = non_electric_rs_changeset
+            .electrical_power_startup_time(None)
+            .raise_pantograph_time(None);
+        let file = generate_temp_file(&non_electric_rs_changeset);
         let args = ImportRollingStockArgs {
             rolling_stock_path: vec![file.path().into()],
         };
@@ -978,10 +988,10 @@ mod tests {
         // import should not fail, as raise_panto and startup are not required for non electric
         assert!(result.is_ok());
         let mut conn = db_pool.get().await.unwrap();
-        let created_rs =
-            RollingStockModel::retrieve_by_name(&mut conn, rolling_stock_name.to_string())
-                .await
-                .unwrap();
+        use crate::modelsv2::Retrieve;
+        let created_rs = RollingStockModel::retrieve(&mut conn, rolling_stock_name.to_string())
+            .await
+            .unwrap();
         assert!(created_rs.is_some());
         TestFixture::new(created_rs.unwrap(), db_pool.clone());
     }
@@ -991,11 +1001,19 @@ mod tests {
         // GIVEN
         let rolling_stock_name =
             "fast_rolling_stock_import_non_electric_rs_with_startup_and_panto_values";
-        let mut non_electric_rolling_stock = get_fast_rolling_stock(rolling_stock_name);
-        if let Some(ref mut effort_curves) = non_electric_rolling_stock.effort_curves {
-            effort_curves.modes.remove("25000V");
-        }
-        let file = generate_temp_file(&non_electric_rolling_stock);
+        let non_electric_rs_changeset = get_fast_rolling_stock(rolling_stock_name);
+
+        let effort_curves = non_electric_rs_changeset
+            .effort_curves
+            .clone()
+            .map(|mut ec| {
+                ec.0.modes.remove("25000V");
+                ec.0
+            });
+
+        let non_electric_rs_changeset = non_electric_rs_changeset.flat_effort_curves(effort_curves);
+
+        let file = generate_temp_file(&non_electric_rs_changeset);
         let args = ImportRollingStockArgs {
             rolling_stock_path: vec![file.path().into()],
         };
@@ -1006,10 +1024,10 @@ mod tests {
         // THEN
         assert!(result.is_ok());
         let mut conn = db_pool.get().await.unwrap();
-        let created_rs =
-            RollingStockModel::retrieve_by_name(&mut conn, rolling_stock_name.to_string())
-                .await
-                .unwrap();
+        use crate::modelsv2::Retrieve;
+        let created_rs = RollingStockModel::retrieve(&mut conn, rolling_stock_name.to_string())
+            .await
+            .unwrap();
         assert!(created_rs.is_some());
         let rs_fixture = TestFixture::new(created_rs.unwrap(), db_pool.clone());
         let RollingStockModel {
@@ -1017,8 +1035,8 @@ mod tests {
             raise_pantograph_time,
             ..
         } = rs_fixture.model;
-        assert!(electrical_power_startup_time.unwrap().is_some());
-        assert!(raise_pantograph_time.unwrap().is_some());
+        assert!(electrical_power_startup_time.is_some());
+        assert!(raise_pantograph_time.is_some());
     }
 
     #[rstest]
@@ -1026,10 +1044,11 @@ mod tests {
         // GIVEN
         let rolling_stock_name =
             "fast_rolling_stock_import_electric_rs_without_startup_and_panto_values";
-        let mut electric_rolling_stock = get_fast_rolling_stock(rolling_stock_name);
-        electric_rolling_stock.electrical_power_startup_time = Some(None);
-        electric_rolling_stock.raise_pantograph_time = Some(None);
-        let file = generate_temp_file(&electric_rolling_stock.clone());
+        let electric_rs_changeset = get_fast_rolling_stock(rolling_stock_name);
+        let electric_rs_changeset = electric_rs_changeset
+            .electrical_power_startup_time(None)
+            .raise_pantograph_time(None);
+        let file = generate_temp_file(&electric_rs_changeset);
         let args = ImportRollingStockArgs {
             rolling_stock_path: vec![file.path().into()],
         };
@@ -1041,10 +1060,10 @@ mod tests {
         // it should just fail to import
         assert!(result.is_err());
         let mut conn = db_pool.get().await.unwrap();
-        let created_rs =
-            RollingStockModel::retrieve_by_name(&mut conn, rolling_stock_name.to_string())
-                .await
-                .unwrap();
+        use crate::modelsv2::Retrieve;
+        let created_rs = RollingStockModel::retrieve(&mut conn, rolling_stock_name.to_string())
+            .await
+            .unwrap();
         assert!(created_rs.is_none());
     }
 
@@ -1066,10 +1085,10 @@ mod tests {
         // import should succeed, and rolling stock should have the correct values in DB
         assert!(result.is_ok());
         let mut conn = db_pool.get().await.unwrap();
-        let created_rs =
-            RollingStockModel::retrieve_by_name(&mut conn, rolling_stock_name.to_string())
-                .await
-                .unwrap();
+        use crate::modelsv2::Retrieve;
+        let created_rs = RollingStockModel::retrieve(&mut conn, rolling_stock_name.to_string())
+            .await
+            .unwrap();
         assert!(created_rs.is_some());
         let rs_fixture = TestFixture::new(created_rs.unwrap(), db_pool.clone());
         let RollingStockModel {

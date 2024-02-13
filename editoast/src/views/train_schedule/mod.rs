@@ -4,6 +4,8 @@ pub mod simulation_report;
 use self::projection::Projection;
 use super::electrical_profiles::ElectricalProfilesError;
 
+use crate::modelsv2::{RetrieveBatch, RollingStockModel};
+use crate::schema::rolling_stock::RollingStock;
 use crate::tables;
 use crate::{
     core::{
@@ -16,9 +18,8 @@ use crate::{
             filter_invalid_trains, Allowance, RjsPowerRestrictionRange, ScheduledPoint,
             TrainScheduleOptions,
         },
-        Create, Delete, Infra, LightRollingStockModel, Pathfinding, Retrieve, RollingStockModel,
-        Scenario, SimulationOutputChangeset, Timetable, TrainSchedule, TrainScheduleChangeset,
-        Update,
+        Create, Delete, Infra, LightRollingStockModel, Pathfinding, Retrieve, Scenario,
+        SimulationOutputChangeset, Timetable, TrainSchedule, TrainScheduleChangeset, Update,
     },
     modelsv2::ElectricalProfileSet,
     schema::rolling_stock::RollingStockComfortType,
@@ -628,26 +629,33 @@ async fn create_backend_request_payload(
     scenario: &Scenario,
     db_pool: Data<DbPool>,
 ) -> Result<SimulationRequest> {
+    let mut db_conn = db_pool.get().await?;
+
     let infra = scenario.infra_id.expect("Scenario should have an infra");
     let rolling_stocks_ids = train_schedules
         .iter()
         .map(|ts| ts.rolling_stock_id)
         .collect::<HashSet<_>>();
-    let mut rolling_stocks = Vec::new();
+    let mut rolling_stocks: Vec<RollingStock> = Vec::new();
     let mut rolling_id_to_name = HashMap::new();
-    for rolling_stock_id in rolling_stocks_ids {
-        let rolling_stock = RollingStockModel::retrieve(db_pool.clone(), rolling_stock_id)
-            .await?
-            .ok_or(TrainScheduleError::RollingStockNotFound { rolling_stock_id })?;
-        rolling_id_to_name.insert(
-            rolling_stock_id,
-            rolling_stock
-                .name
-                .clone()
-                .expect("Rolling stock shoud have a name"),
-        );
+
+    let rolling_stock_batch: Vec<RollingStockModel> =
+        RollingStockModel::retrieve_batch_or_fail(&mut db_conn, rolling_stocks_ids, |missing| {
+            let first_missing_id = missing
+                .iter()
+                .next()
+                .expect("Retrieve batch fail without missing ids");
+            TrainScheduleError::RollingStockNotFound {
+                rolling_stock_id: *first_missing_id,
+            } // TODO change error type or create specific error
+        })
+        .await?;
+
+    for rolling_stock in rolling_stock_batch {
+        rolling_id_to_name.insert(rolling_stock.id, rolling_stock.name.clone());
         rolling_stocks.push(rolling_stock.into());
     }
+
     let path = Pathfinding::retrieve(db_pool.clone(), train_schedules[0].path_id)
         .await?
         .ok_or_else(|| TrainScheduleError::PathNotFound {

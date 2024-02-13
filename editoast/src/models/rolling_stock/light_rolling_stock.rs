@@ -44,7 +44,7 @@ pub struct LightRollingStockModel {
     #[schema(value_type = LoadingGaugeType)]
     loading_gauge: String,
     #[schema(value_type = HashMap<String, String>)]
-    power_restrictions: Option<DieselJson<HashMap<String, String>>>,
+    power_restrictions: DieselJson<HashMap<String, String>>,
     #[schema(value_type = Vec<EnergySource>)]
     energy_sources: DieselJson<Vec<EnergySource>>,
     locked: bool,

@@ -4757,9 +4757,7 @@ components:
           format: double
           type: number
         supported_signaling_systems:
-          items:
-            type: string
-          type: array
+          $ref: '#/components/schemas/RollingStockSupportedSignalingSystems'
       required:
       - name
       - effort_curves
@@ -4940,6 +4938,10 @@ components:
       - number
       - reference
       type: object
+    RollingStockSupportedSignalingSystems:
+      items:
+        type: string
+      type: array
     RollingStockWithLiveries:
       allOf:
       - $ref: '#/components/schemas/RollingStock'

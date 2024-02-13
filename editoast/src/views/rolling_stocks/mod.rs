@@ -1,13 +1,14 @@
-use crate::error::Result;
-use crate::models::{Create, Delete, Retrieve, RollingStockModel, Update};
+mod rolling_stock_form;
+
+use crate::error::{InternalError, Result};
 use crate::modelsv2::rolling_stock_livery::RollingStockLiveryModel;
-use crate::modelsv2::RollingStockSeparatedImageModel;
-use crate::modelsv2::{Document, Model};
-use crate::schema::rolling_stock::rolling_stock_livery::RollingStockLivery;
-use crate::schema::rolling_stock::{
-    RollingStock, RollingStockCommon, RollingStockMetadata, RollingStockWithLiveries,
-    ROLLING_STOCK_RAILJSON_VERSION,
+use crate::modelsv2::rolling_stock_model::RollingStockSupportedSignalingSystems;
+use crate::modelsv2::{
+    Changeset, Create, DeleteStatic, Document, Exists, Model, Retrieve, RollingStockModel,
+    RollingStockSeparatedImageModel, Update,
 };
+use crate::schema::rolling_stock::rolling_stock_livery::RollingStockLivery;
+use crate::schema::rolling_stock::{RollingStock, RollingStockWithLiveries};
 use crate::DbPool;
 use actix_multipart::form::text::Text;
 use actix_web::web::{Data, Json, Path, Query};
@@ -17,10 +18,10 @@ use diesel::{
     sql_types::{BigInt, Text as SqlText},
 };
 use diesel_async::RunQueryDsl;
-use diesel_json::Json as DieselJson;
 use editoast_derive::EditoastError;
 use image::io::Reader as ImageReader;
 use image::{DynamicImage, GenericImage, ImageBuffer, ImageOutputFormat};
+use rolling_stock_form::RollingStockForm;
 
 use serde_derive::{Deserialize, Serialize};
 use std::io::{BufReader, Cursor, Read};
@@ -59,6 +60,7 @@ crate::schemas! {
     PowerRestriction,
     RollingStockError,
     TrainScheduleScenarioStudyProject,
+    RollingStockSupportedSignalingSystems,
 }
 
 #[derive(Debug, Error, EditoastError, ToSchema)]
@@ -90,6 +92,18 @@ pub enum RollingStockError {
     BasePowerClassEmpty,
 }
 
+pub fn map_diesel_error(e: InternalError, name: impl AsRef<str>) -> InternalError {
+    if e.message
+        .contains(r#"duplicate key value violates unique constraint "rolling_stock_name_key""#)
+    {
+        RollingStockError::NameAlreadyUsed { name: name.as_ref().to_string() }.into()
+    } else if e.message.contains(r#"new row for relation "rolling_stock" violates check constraint "base_power_class_null_or_non_empty""#) {
+        RollingStockError::BasePowerClassEmpty.into()
+    } else {
+        e
+    }
+}
+
 #[derive(IntoParams)]
 #[allow(unused)]
 pub struct RollingStockIdParam {
@@ -110,57 +124,6 @@ async fn get(db_pool: Data<DbPool>, path: Path<i64>) -> Result<Json<RollingStock
     let rolling_stock = retrieve_existing_rolling_stock(&db_pool, rolling_stock_id).await?;
     let rolling_stock_with_liveries = rolling_stock.with_liveries(db_pool).await?;
     Ok(Json(rolling_stock_with_liveries))
-}
-
-#[derive(Debug, Clone, Deserialize, Serialize, ToSchema)]
-pub struct RollingStockForm {
-    #[serde(flatten)]
-    pub common: RollingStockCommon,
-    pub locked: Option<bool>,
-    pub metadata: RollingStockMetadata,
-}
-
-impl From<RollingStockForm> for RollingStockModel {
-    fn from(rolling_stock: RollingStockForm) -> Self {
-        RollingStockModel {
-            railjson_version: Some(ROLLING_STOCK_RAILJSON_VERSION.to_string()),
-            locked: rolling_stock.locked,
-            metadata: Some(DieselJson(rolling_stock.metadata)),
-            name: Some(rolling_stock.common.name),
-            effort_curves: Some(DieselJson(rolling_stock.common.effort_curves)),
-            base_power_class: Some(rolling_stock.common.base_power_class),
-            length: Some(rolling_stock.common.length),
-            max_speed: Some(rolling_stock.common.max_speed),
-            startup_time: Some(rolling_stock.common.startup_time),
-            startup_acceleration: Some(rolling_stock.common.startup_acceleration),
-            comfort_acceleration: Some(rolling_stock.common.comfort_acceleration),
-            gamma: Some(DieselJson(rolling_stock.common.gamma)),
-            inertia_coefficient: Some(rolling_stock.common.inertia_coefficient),
-            mass: Some(rolling_stock.common.mass),
-            rolling_resistance: Some(DieselJson(rolling_stock.common.rolling_resistance)),
-            loading_gauge: Some(rolling_stock.common.loading_gauge),
-            power_restrictions: Some(rolling_stock.common.power_restrictions),
-            energy_sources: Some(DieselJson(rolling_stock.common.energy_sources)),
-            electrical_power_startup_time: Some(rolling_stock.common.electrical_power_startup_time),
-            raise_pantograph_time: Some(rolling_stock.common.raise_pantograph_time),
-            supported_signaling_systems: Some(rolling_stock.common.supported_signaling_systems),
-            ..Default::default()
-        }
-    }
-}
-
-impl RollingStockForm {
-    fn into_rolling_stock_model(
-        self,
-        rolling_stock_id: i64,
-        rollingstock_version: Option<i64>,
-    ) -> RollingStockModel {
-        RollingStockModel {
-            id: Some(rolling_stock_id),
-            version: rollingstock_version,
-            ..self.into()
-        }
-    }
 }
 
 #[derive(QueryableByName, Debug, Clone, Serialize, Deserialize, ToSchema)]
@@ -209,14 +172,23 @@ struct PostRollingStockQueryParams {
 #[post("")]
 async fn create(
     db_pool: Data<DbPool>,
-    data: Json<RollingStockForm>,
+    Json(rolling_stock_form): Json<RollingStockForm>,
     query_params: Query<PostRollingStockQueryParams>,
 ) -> Result<Json<RollingStock>> {
-    let mut rolling_stock: RollingStockModel = data.into_inner().into();
-    rolling_stock.validate()?;
-    rolling_stock.locked = Some(query_params.locked);
-    rolling_stock.version = Some(0);
-    let rolling_stock: RollingStock = rolling_stock.create(db_pool).await?.into();
+    rolling_stock_form.validate()?;
+    let mut db_conn = db_pool.get().await?;
+    let rolling_stock_name = rolling_stock_form.common.name.clone();
+    let rolling_stock_changeset: Changeset<RollingStockModel> = rolling_stock_form.into();
+
+    let rolling_stock = rolling_stock_changeset
+        .locked(query_params.locked)
+        .version(0)
+        .create(&mut db_conn)
+        .await;
+
+    let rolling_stock: RollingStock = rolling_stock
+        .map_err(|e| map_diesel_error(e, rolling_stock_name))?
+        .into();
 
     Ok(Json(rolling_stock))
 }
@@ -233,25 +205,39 @@ async fn create(
 async fn update(
     db_pool: Data<DbPool>,
     path: Path<i64>,
-    data: Json<RollingStockForm>,
+    Json(rolling_stock_form): Json<RollingStockForm>,
 ) -> Result<Json<RollingStockWithLiveries>> {
-    let data = data.into_inner();
-    let rolling_stock_id = path.into_inner();
-    let existing_rolling_stock =
-        retrieve_existing_rolling_stock(&db_pool, rolling_stock_id).await?;
-    assert_rolling_stock_unlocked(existing_rolling_stock.clone())?;
-    let version = existing_rolling_stock.version;
+    rolling_stock_form.validate()?;
+    let mut db_conn = db_pool.get().await?;
 
-    let mut rolling_stock = data.into_rolling_stock_model(rolling_stock_id, version);
-    rolling_stock.validate()?;
-    if existing_rolling_stock != rolling_stock {
-        rolling_stock.version = version.map(|v| v + 1);
+    let rolling_stock_id = path.into_inner();
+
+    let existing_rs = RollingStockModel::retrieve_or_fail(&mut db_conn, rolling_stock_id, || {
+        RollingStockError::NotFound { rolling_stock_id }
+    })
+    .await?;
+
+    let existing_rs_version = existing_rs.version;
+    assert_rolling_stock_unlocked(existing_rs.clone())?;
+
+    let rolling_stock_name = rolling_stock_form.common.name.clone();
+
+    let existing_rs_form: RollingStockForm = existing_rs.into();
+
+    let new_rs_version = if existing_rs_form != rolling_stock_form {
+        existing_rs_version + 1
+    } else {
+        existing_rs_version
     };
 
-    let rolling_stock = rolling_stock
-        .update(db_pool.clone(), rolling_stock_id)
-        .await?;
-    if let Some(rolling_stock) = rolling_stock {
+    let rs_changeset: Changeset<RollingStockModel> = rolling_stock_form.into();
+    let rs_updated = rs_changeset
+        .version(new_rs_version)
+        .update(&mut db_conn, rolling_stock_id)
+        .await
+        .map_err(|e| map_diesel_error(e, rolling_stock_name))?;
+
+    if let Some(rolling_stock) = rs_updated {
         let rolling_stock_with_liveries = rolling_stock.with_liveries(db_pool).await?;
         Ok(Json(rolling_stock_with_liveries))
     } else {
@@ -306,11 +292,12 @@ async fn delete_rolling_stock(
     db_pool: Data<DbPool>,
     rolling_stock_id: i64,
 ) -> Result<HttpResponse> {
-    match RollingStockModel::delete(db_pool.clone(), rolling_stock_id).await {
-        Ok(false) => Err(RollingStockError::NotFound { rolling_stock_id }.into()),
-        Ok(true) => Ok(HttpResponse::NoContent().finish()),
-        Err(err) => Err(err),
-    }
+    let mut db_conn = db_pool.get().await?;
+    RollingStockModel::delete_static_or_fail(&mut db_conn, rolling_stock_id, || {
+        RollingStockError::NotFound { rolling_stock_id }
+    })
+    .await?;
+    Ok(HttpResponse::NoContent().finish())
 }
 
 #[derive(Debug, Deserialize, ToSchema)]
@@ -318,16 +305,6 @@ async fn delete_rolling_stock(
 struct RollingStockLockedUpdateForm {
     /// New locked value
     pub locked: bool,
-}
-
-impl RollingStockLockedUpdateForm {
-    fn into_rolling_stock_model(self, rolling_stock_id: i64) -> RollingStockModel {
-        RollingStockModel {
-            id: Some(rolling_stock_id),
-            locked: Some(self.locked),
-            ..Default::default()
-        }
-    }
 }
 
 /// Update rolling_stock locked field
@@ -344,13 +321,15 @@ async fn update_locked(
     rolling_stock_id: Path<i64>,
     data: Json<RollingStockLockedUpdateForm>,
 ) -> Result<HttpResponse> {
-    let data = data.into_inner();
+    let mut db_conn = db_pool.get().await?;
+    let rolling_stock_locked_update_form = data.into_inner();
     let rolling_stock_id = rolling_stock_id.into_inner();
-    let rolling_stock = data.into_rolling_stock_model(rolling_stock_id);
 
-    rolling_stock
-        .update(db_pool.clone(), rolling_stock_id)
+    RollingStockModel::changeset()
+        .locked(rolling_stock_locked_update_form.locked)
+        .update(&mut db_conn, rolling_stock_id)
         .await?;
+
     Ok(HttpResponse::NoContent().finish())
 }
 
@@ -386,14 +365,12 @@ async fn get_rolling_stock_usage(
     db_pool: Data<DbPool>,
     rolling_stock_id: i64,
 ) -> Result<Vec<TrainScheduleScenarioStudyProject>> {
-    let mut conn = db_pool.get().await?;
-    let _stock = RollingStockModel::retrieve(db_pool.clone(), rolling_stock_id)
-        .await?
-        .ok_or(RollingStockError::NotFound { rolling_stock_id })?;
+    let mut db_conn = db_pool.get().await?;
+    RollingStockModel::exists(&mut db_conn, rolling_stock_id).await?;
 
     sql_query(include_str!("sql/get_train_schedules_with_scenario.sql"))
         .bind::<BigInt, _>(rolling_stock_id)
-        .load(&mut conn)
+        .load(&mut db_conn)
         .await
         .map_err(|e| e.into())
 }
@@ -460,15 +437,17 @@ pub async fn retrieve_existing_rolling_stock(
     db_pool: &Data<DbPool>,
     rolling_stock_id: i64,
 ) -> Result<RollingStockModel> {
-    RollingStockModel::retrieve(db_pool.clone(), rolling_stock_id)
-        .await?
-        .ok_or(RollingStockError::NotFound { rolling_stock_id }.into())
+    let mut db_conn = db_pool.get().await?;
+    RollingStockModel::retrieve_or_fail(&mut db_conn, rolling_stock_id, || {
+        RollingStockError::NotFound { rolling_stock_id }
+    })
+    .await
 }
 
 fn assert_rolling_stock_unlocked(rolling_stock: RollingStockModel) -> Result<()> {
-    if rolling_stock.locked.unwrap() {
+    if rolling_stock.locked {
         return Err(RollingStockError::RollingStockIsLocked {
-            rolling_stock_id: rolling_stock.id.unwrap(),
+            rolling_stock_id: rolling_stock.id,
         }
         .into());
     }
@@ -544,7 +523,6 @@ async fn create_compound_image(
         .unwrap();
 
     // save the compound_image in the db
-    use crate::modelsv2::Create;
     let conn = &mut db_pool.get().await?;
     let compound_image = Document::changeset()
         .content_type(String::from("image/png"))
@@ -565,7 +543,8 @@ pub mod tests {
         named_other_rolling_stock, train_schedule_with_scenario,
     };
     use crate::models::rolling_stock::tests::get_invalid_effort_curves;
-    use crate::models::{Delete, RollingStockModel};
+    use crate::modelsv2::rolling_stock_model::RollingStockModel;
+    use crate::modelsv2::Changeset;
     use crate::views::tests::create_test_service;
     use crate::{assert_response_error_type_match, assert_status_and_read, DbPool};
     use actix_http::{Request, StatusCode};
@@ -605,7 +584,8 @@ pub mod tests {
     async fn create_and_delete_unlocked_rolling_stock_successfully() {
         // GIVEN
         let app = create_test_service().await;
-        let mut rolling_stock: RollingStockModel = get_fast_rolling_stock(
+
+        let rolling_stock: Changeset<RollingStockModel> = get_fast_rolling_stock(
             "fast_rolling_stock_create_and_delete_unlocked_rolling_stock_successfully",
         );
 
@@ -623,9 +603,9 @@ pub mod tests {
         // Check rolling_stock creation
         let response_body: RollingStock = assert_status_and_read!(post_response, StatusCode::OK);
         let rolling_stock_id: i64 = response_body.id;
-        rolling_stock.id = Some(response_body.id);
-        let expected_body = RollingStock::from(rolling_stock.clone());
-        assert_eq!(response_body, expected_body);
+        let response_body: Changeset<RollingStockModel> = response_body.into();
+
+        assert_eq!(response_body.name, rolling_stock.name);
 
         // Check rolling_stock deletion
         let delete_request = rolling_stock_delete_request(rolling_stock_id);
@@ -639,10 +619,12 @@ pub mod tests {
     }
 
     async fn check_create_gave_400(db_pool: Data<DbPool>, response: ServiceResponse) {
+        use crate::modelsv2::DeleteStatic;
+        let mut db_conn = db_pool.get().await.expect("Failed to get db connection");
         if response.status() == StatusCode::OK {
             let rolling_stock: RollingStock = read_body_json(response).await;
             let rolling_stock_id = rolling_stock.id;
-            RollingStockModel::delete(db_pool.clone(), rolling_stock_id)
+            RollingStockModel::delete_static(&mut db_conn, rolling_stock_id)
                 .await
                 .unwrap();
             panic!("Rolling stock created but should not have been");
@@ -660,11 +642,10 @@ pub mod tests {
     async fn create_rolling_stock_with_base_power_class_empty(db_pool: Data<DbPool>) {
         // GIVEN
         let app = create_test_service().await;
-        let mut rolling_stock: RollingStockModel = get_fast_rolling_stock(
+        let rolling_stock: Changeset<RollingStockModel> = get_fast_rolling_stock(
             "fast_rolling_stock_create_rolling_stock_with_base_power_class_empty",
-        );
-
-        rolling_stock.base_power_class = Some(Some("".to_string()));
+        )
+        .base_power_class(Some("".to_string()));
 
         // WHEN
         let post_response = call_service(
@@ -686,9 +667,8 @@ pub mod tests {
         let name = "fast_rolling_stock_create_rolling_stock_with_duplicate_name";
         let fast_rolling_stock = named_fast_rolling_stock(name, db_pool.clone()).await;
         let app = create_test_service().await;
-        let mut rolling_stock: RollingStockModel = get_fast_rolling_stock(name);
-
-        rolling_stock.name = fast_rolling_stock.model.name.clone();
+        let rolling_stock: Changeset<RollingStockModel> =
+            get_fast_rolling_stock(name).name(fast_rolling_stock.model.name.clone());
 
         // WHEN
         let post_response = call_service(
@@ -706,9 +686,10 @@ pub mod tests {
 
     #[rstest]
     async fn update_and_delete_locked_rolling_stock_fails(db_pool: Data<DbPool>) {
+        let mut db_conn = db_pool.get().await.expect("Failed to get db connection");
         // GIVEN
         let app = create_test_service().await;
-        let rolling_stock: RollingStockModel = get_fast_rolling_stock(
+        let rolling_stock: Changeset<RollingStockModel> = get_fast_rolling_stock(
             "fast_rolling_stock_update_and_delete_locked_rolling_stock_fails",
         );
 
@@ -756,8 +737,9 @@ pub mod tests {
         let get_response = call_service(&app, get_request).await;
         assert_eq!(get_response.status(), StatusCode::OK);
 
+        use crate::modelsv2::DeleteStatic;
         // Delete rolling_stock to clean db
-        let _ = RollingStockModel::delete(db_pool, rolling_stock_id).await;
+        let _ = RollingStockModel::delete_static(&mut db_conn, rolling_stock_id).await;
     }
 
     #[rstest]
@@ -817,9 +799,8 @@ pub mod tests {
         .await;
         let rolling_stock_id = fast_rolling_stock.id();
 
-        let mut rolling_stock =
+        let rolling_stock =
             get_other_rolling_stock("other_rolling_stock_update_unlocked_rolling_stock");
-        rolling_stock.id = Some(rolling_stock_id);
 
         // WHEN
         let response = call_service(
@@ -839,7 +820,7 @@ pub mod tests {
             .unwrap();
 
         // Assert rolling_stock version is 1
-        assert_eq!(rolling_stock.version.unwrap(), 1);
+        assert_eq!(rolling_stock.version, 1);
 
         let expected_body = RollingStock::from(rolling_stock);
         assert_eq!(response_body, expected_body);
@@ -859,8 +840,7 @@ pub mod tests {
 
         let rolling_stock_id = fast_rolling_stock.id();
 
-        let mut rolling_stock = get_other_rolling_stock(other_rs_name);
-        rolling_stock.id = Some(rolling_stock_id);
+        let rolling_stock = get_other_rolling_stock(other_rs_name);
 
         // WHEN
         let response = call_service(
@@ -911,7 +891,7 @@ pub mod tests {
         let rolling_stock = retrieve_existing_rolling_stock(&db_pool, rolling_stock_id)
             .await
             .unwrap();
-        assert!(rolling_stock.locked.unwrap());
+        assert!(rolling_stock.locked);
 
         // Unlock rolling_stock
         let request = rolling_stock_locked_request(rolling_stock_id, false);
@@ -921,7 +901,7 @@ pub mod tests {
         let rolling_stock = retrieve_existing_rolling_stock(&db_pool, rolling_stock_id)
             .await
             .unwrap();
-        assert!(!rolling_stock.locked.unwrap());
+        assert!(!rolling_stock.locked);
 
         // Delete rolling_stock
         call_service(&app, rolling_stock_delete_request(rolling_stock_id)).await;
@@ -996,7 +976,7 @@ pub mod tests {
         let rolling_stock =
             named_fast_rolling_stock("fast_rolling_stock_get_power_restrictions_list", db_pool)
                 .await;
-        let power_restrictions = rolling_stock.model.power_restrictions.clone().unwrap();
+        let power_restrictions = rolling_stock.model.power_restrictions.clone();
 
         // WHEN
         let response = call_service(
