@@ -6,11 +6,8 @@ import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 
-/**
- * This class is used to share as much code as possible between BlockAvailability and the legacy /
- * test version
- */
-abstract class GenericBlockAvailability : BlockAvailabilityInterface {
+/** To be moved to test module with BlockAvailabilityLegacyAdapter. */
+abstract class DummyBlockAvailability : BlockAvailabilityInterface {
 
     interface ResourceUse {
         val startOffset: Offset<Path>

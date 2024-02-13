@@ -89,7 +89,6 @@ public class ResultTrain {
             assert !Double.isNaN(beginTime);
             assert !Double.isNaN(endTime);
             assert Double.isFinite(beginTime);
-            assert Double.isFinite(endTime);
         }
 
         public SpacingRequirement withAddedTime(double timeToAdd) {

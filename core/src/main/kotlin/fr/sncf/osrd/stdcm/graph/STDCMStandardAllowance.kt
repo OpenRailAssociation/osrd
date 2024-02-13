@@ -20,7 +20,6 @@ import fr.sncf.osrd.train.RollingStock.Comfort
 import fr.sncf.osrd.train.TrainStop
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Offset
-import java.lang.RuntimeException
 import java.util.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
