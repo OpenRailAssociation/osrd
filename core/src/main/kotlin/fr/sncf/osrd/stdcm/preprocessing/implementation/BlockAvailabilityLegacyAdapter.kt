@@ -19,7 +19,7 @@ import fr.sncf.osrd.utils.units.meters
 class BlockAvailabilityLegacyAdapter(
     private val blockInfra: BlockInfra,
     private val unavailableSpace: Multimap<BlockId, OccupancySegment>
-) : GenericBlockAvailability() {
+) : DummyBlockAvailability() {
     /**
      * Simple record used to group together a block and the offset of its start on the given path
      */

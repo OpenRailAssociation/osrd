@@ -1,9 +1,14 @@
 package fr.sncf.osrd.stdcm.infra_exploration
 
+import fr.sncf.osrd.conflicts.IncrementalRequirementEnvelopeAdapter
 import fr.sncf.osrd.conflicts.SpacingRequirementAutomaton
+import fr.sncf.osrd.conflicts.SpacingRequirements
 import fr.sncf.osrd.envelope.EnvelopeConcat
 import fr.sncf.osrd.envelope.EnvelopeTimeInterpolate
+import fr.sncf.osrd.envelope_sim.PhysicsRollingStock
 import fr.sncf.osrd.sim_infra.api.Path
+import fr.sncf.osrd.standalone_sim.result.ResultTrain.SpacingRequirement
+import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
@@ -12,6 +17,8 @@ data class InfraExplorerWithEnvelopeImpl(
     private val infraExplorer: InfraExplorer,
     private val envelopes: MutableList<EnvelopeTimeInterpolate>,
     private val spacingRequirementAutomaton: SpacingRequirementAutomaton,
+    private val rollingStock: PhysicsRollingStock,
+    private var spacingRequirementsCache: List<SpacingRequirement>? = null
 ) : InfraExplorer by infraExplorer, InfraExplorerWithEnvelope {
 
     override fun cloneAndExtendLookahead(): Collection<InfraExplorerWithEnvelope> {
@@ -19,17 +26,15 @@ data class InfraExplorerWithEnvelopeImpl(
             InfraExplorerWithEnvelopeImpl(
                 explorer,
                 ArrayList(envelopes),
-                spacingRequirementAutomaton.clone()
+                spacingRequirementAutomaton.clone(),
+                rollingStock,
+                spacingRequirementsCache?.toList(),
             )
         }
     }
 
     override fun getFullEnvelope(): EnvelopeTimeInterpolate {
         return EnvelopeConcat.from(envelopes)
-    }
-
-    override fun getLastEnvelope(): EnvelopeTimeInterpolate {
-        return envelopes.last()
     }
 
     override fun addEnvelope(envelope: EnvelopeTimeInterpolate): InfraExplorerWithEnvelope {
@@ -44,9 +49,51 @@ data class InfraExplorerWithEnvelopeImpl(
             )
     }
 
-    override fun getSpacingRequirementAutomaton(): SpacingRequirementAutomaton {
-        spacingRequirementAutomaton.incrementalPath = getIncrementalPath()
-        return spacingRequirementAutomaton
+    override fun getSpacingRequirements(): List<SpacingRequirement> {
+        if (spacingRequirementsCache == null) {
+            spacingRequirementAutomaton.incrementalPath = getIncrementalPath()
+            // Path is complete and has been completely simulated
+            val simulationComplete = getIncrementalPath().pathComplete && getLookahead().size == 0
+            spacingRequirementAutomaton.callbacks =
+                IncrementalRequirementEnvelopeAdapter(
+                    rollingStock,
+                    getFullEnvelope(),
+                    simulationComplete
+                )
+            val updatedRequirements =
+                spacingRequirementAutomaton.processPathUpdate() as? SpacingRequirements
+                    ?: throw BlockAvailabilityInterface.NotEnoughLookaheadError()
+            spacingRequirementsCache = updatedRequirements.requirements
+        }
+        return spacingRequirementsCache!!
+    }
+
+    override fun getFullSpacingRequirements(): List<SpacingRequirement> {
+        val simulationComplete = getIncrementalPath().pathComplete && getLookahead().size == 0
+        // We need a new automaton to get the resource uses over the whole path, and not just since
+        // the last update
+        val newAutomaton =
+            SpacingRequirementAutomaton(
+                spacingRequirementAutomaton.rawInfra,
+                spacingRequirementAutomaton.loadedSignalInfra,
+                spacingRequirementAutomaton.blockInfra,
+                spacingRequirementAutomaton.simulator,
+                IncrementalRequirementEnvelopeAdapter(
+                    rollingStock,
+                    getFullEnvelope(),
+                    simulationComplete
+                ),
+                getIncrementalPath(),
+            )
+        val res =
+            newAutomaton.processPathUpdate() as? SpacingRequirements
+                ?: throw BlockAvailabilityInterface.NotEnoughLookaheadError()
+        return res.requirements
+    }
+
+    override fun moveForward() {
+        infraExplorer.moveForward()
+        spacingRequirementsCache = null
     }
 
     override fun getSimulatedLength(): Length<Path> {
@@ -56,8 +103,10 @@ data class InfraExplorerWithEnvelopeImpl(
     override fun clone(): InfraExplorerWithEnvelope {
         return InfraExplorerWithEnvelopeImpl(
             infraExplorer.clone(),
-            ArrayList(envelopes),
-            spacingRequirementAutomaton.clone()
+            envelopes.toMutableList(),
+            spacingRequirementAutomaton.clone(),
+            rollingStock,
+            spacingRequirementsCache?.toList()
         )
     }
 }

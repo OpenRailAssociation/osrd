@@ -236,13 +236,15 @@ private class InfraExplorerImpl(
         }
         blocks.addAll(routeBlocks)
         routes.add(route)
-        for (block in blocks) {
+        for (block in routeBlocks) {
             blockToPathProperties[block] = makePathProps(blockInfra, rawInfra, block)
             val endPath = endBlocks.contains(block)
             val startPath = !incrementalPath.pathStarted
+            val firstBlock = block == routeBlocks.first()
             incrementalPath.extend(
                 PathFragment(
-                    mutableStaticIdxArrayListOf(route),
+                    if (firstBlock) mutableStaticIdxArrayListOf(route)
+                    else mutableStaticIdxArrayListOf(),
                     mutableStaticIdxArrayListOf(block),
                     containsStart = startPath,
                     containsEnd = endPath,
