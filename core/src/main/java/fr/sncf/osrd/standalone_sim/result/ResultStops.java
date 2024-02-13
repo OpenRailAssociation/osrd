@@ -4,9 +4,9 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 @SuppressFBWarnings("URF_UNREAD_FIELD")
 public class ResultStops {
-    double time;
-    double position;
-    double duration;
+    public double time;
+    public double position;
+    public double duration;
 
     /** RestultStops constructor */
     public ResultStops(double time, double position, double duration) {
