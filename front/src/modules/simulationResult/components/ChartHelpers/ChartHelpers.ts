@@ -18,6 +18,7 @@ import {
   PositionsSpeedTimes,
 } from 'reducers/osrdsimulation/types';
 import { ChartAxes, ListValues, XAxis, Y2Axis, YAxis } from 'modules/simulationResult/consts';
+import { BaseType } from 'd3';
 
 export function sec2d3datetime(time: number) {
   return d3.timeParse('%H:%M:%S')(sec2time(time));
@@ -429,4 +430,26 @@ export function getAxis(keyValues: ChartAxes, axis: 'x' | 'y' | 'y2', rotate: bo
     return (!rotate ? keyValues[0] : keyValues[1]) as XAxis;
   }
   return (!rotate ? keyValues[1] : keyValues[0]) as YAxis | Y2Axis;
+}
+
+export function buildStripe(
+  stripSelection: d3.Selection<BaseType, unknown, null, undefined>,
+  {
+    id,
+    color,
+    width = 8,
+    height = 8,
+    strokeWidth = 2.5,
+  }: { id: string; color: string; width?: number; height?: number; strokeWidth?: number }
+) {
+  stripSelection
+    .append('pattern')
+    .attr('id', id)
+    .attr('patternUnits', 'userSpaceOnUse')
+    .attr('width', width)
+    .attr('height', height)
+    .append('path')
+    .attr('d', 'M-2,2 l4,-4 M0,8 l8,-8 M6,10 l4,-4')
+    .attr('stroke', color)
+    .attr('stroke-width', strokeWidth);
 }

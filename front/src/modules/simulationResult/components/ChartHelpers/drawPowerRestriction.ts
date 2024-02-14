@@ -3,6 +3,7 @@ import { pointer } from 'd3-selection';
 import i18n from 'i18n';
 import { Chart } from 'reducers/osrdsimulation/types';
 import getAxisValues from 'modules/simulationResult/components/ChartHelpers/drawHelpers';
+import { buildStripe } from './ChartHelpers';
 
 const drawPowerRestriction = (
   chart: Chart,
@@ -29,17 +30,7 @@ const drawPowerRestriction = (
 
   // prepare stripe pattern
   if (isStripe) {
-    const stripe = chart.drawZone.select(`#${groupID}`);
-    stripe
-      .append('pattern')
-      .attr('id', `${id}`)
-      .attr('patternUnits', 'userSpaceOnUse')
-      .attr('width', 8)
-      .attr('height', 8)
-      .append('path')
-      .attr('d', 'M-2,2 l4,-4 M0,8 l8,-8 M6,10 l4,-4')
-      .attr('stroke', '#333')
-      .attr('stroke-width', 2.5);
+    buildStripe(chart.drawZone.select(`#${groupID}`), { id, color: '#333' });
   }
 
   const drawZone = chart.drawZone.select(`#${groupID}`);

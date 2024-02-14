@@ -3,7 +3,7 @@ import i18n from 'i18n';
 import { Chart } from 'reducers/osrdsimulation/types';
 import { ElectricalConditionSegment, DrawingKeys } from 'applications/operationalStudies/consts';
 import getAxisValues from 'modules/simulationResult/components/ChartHelpers/drawHelpers';
-import { getElementWidth } from './ChartHelpers';
+import { getElementWidth, buildStripe } from './ChartHelpers';
 
 const ELECTRIFIED = 'Electrified';
 const NEUTRAL = 'Neutral';
@@ -39,18 +39,10 @@ const drawElectricalProfile = (
 
   // prepare stripe pattern
   if (isStripe) {
-    const stripe = chart.drawZone.select(`#${groupID}`);
-    stripe
-
-      .append('pattern')
-      .attr('id', `${id}`)
-      .attr('patternUnits', 'userSpaceOnUse')
-      .attr('width', 8)
-      .attr('height', 8)
-      .append('path')
-      .attr('d', 'M-2,2 l4,-4 M0,8 l8,-8 M6,10 l4,-4')
-      .attr('stroke', electricalConditionSegment.color)
-      .attr('stroke-width', 2.5);
+    buildStripe(chart.drawZone.select(`#${groupID}`), {
+      id,
+      color: electricalConditionSegment.color,
+    });
   }
 
   const drawZone = chart.drawZone.select(`#${groupID}`);
