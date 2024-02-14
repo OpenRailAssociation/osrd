@@ -88,14 +88,14 @@ export default function drawTrain(
       });
     } else {
       // Let's draw normal route_aspects
-      trainToDraw.routeAspects.forEach((routeAspect) => {
+      trainToDraw.routeAspects.forEach((routeAspect, index) => {
         drawRect(
           chart,
           `${isSelected && 'selected'} route-aspect`,
           routeAspect,
           groupID,
           rotate,
-          `${groupID}${routeAspect.route_id}${routeAspect.color}`
+          `${groupID}_${routeAspect.signal_id}_${index}`
         );
       });
     }
