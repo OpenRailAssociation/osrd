@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import PlaywrightSTDCMPage from './pages/stdcm-page-model';
+import StdcmPage from './pages/stdcm-page-model';
 import manageTrainScheduleTranslation from '../public/locales/fr/operationalStudies/manageTrainSchedule.json';
 
 import project from './assets/operationStudies/project.json';
@@ -15,7 +15,7 @@ const rollingStockTranslation = manageTrainScheduleTranslation.rollingstock;
 
 test.describe('STDCM page (enabled)', () => {
   test('should correctly display the rolling stock list and select one', async ({ page }) => {
-    const stdcmPage = new PlaywrightSTDCMPage(page);
+    const stdcmPage = new StdcmPage(page);
 
     await stdcmPage.navigateToPage();
     await expect(stdcmPage.scenarioExplorerModal).not.toBeVisible();

@@ -1,8 +1,8 @@
 import { expect, Locator, Page } from '@playwright/test';
 
-import BasePage from './base-page';
+import RollingStockSelectorPage from './rolling-stock-selector-page';
 
-export default class PlaywrightSTDCMPage extends BasePage {
+export default class StdcmPage extends RollingStockSelectorPage {
   readonly missingParams: Locator;
 
   // Scenario Explorator
@@ -11,17 +11,6 @@ export default class PlaywrightSTDCMPage extends BasePage {
   readonly scenarioExplorerModal: Locator;
 
   private scenarioExplorerMinicards: Locator;
-
-  // Rolling stock selector
-  readonly rollingStockSelectorButton: Locator;
-
-  readonly rollingStockSelectorModal: Locator;
-
-  private rollingStockList: Locator;
-
-  readonly getRollingStockSearch: Locator;
-
-  readonly rollingStockListItem: Locator;
 
   // STDCM
   private getOriginTimeDelta: Locator;
@@ -35,13 +24,6 @@ export default class PlaywrightSTDCMPage extends BasePage {
     this.scenarioExplorerButton = page.getByTestId('scenario-explorator');
     this.scenarioExplorerModal = page.locator('.scenario-explorator-modal');
     this.scenarioExplorerMinicards = page.locator('.minicard');
-
-    // Rollingstock
-    this.rollingStockSelectorModal = page.locator('.modal-dialog');
-    this.rollingStockSelectorButton = page.getByTestId('rollingstock-selector');
-    this.rollingStockList = page.locator('.rollingstock-search-list');
-    this.rollingStockListItem = page.locator('.rollingstock-container');
-    this.getRollingStockSearch = this.rollingStockSelectorModal.locator('#searchfilter');
 
     // STDCM
     this.getOriginTimeDelta = page.locator('#osrd-config-time-origin').first();
@@ -61,22 +43,6 @@ export default class PlaywrightSTDCMPage extends BasePage {
   async selectMiniCard(itemName: string) {
     const miniCards = this.scenarioExplorerMinicards.getByText(itemName);
     await miniCards.first().click();
-  }
-
-  // Rollingstock
-  async openRollingstockModal() {
-    await this.rollingStockSelectorButton.click();
-  }
-
-  async selectRollingStock(rollingStockName: string) {
-    await this.getRollingStockSearch.fill(rollingStockName);
-    const rollingstockItem = this.rollingStockList.getByTestId(`rollingstock-${rollingStockName}`);
-    await rollingstockItem.click();
-    await rollingstockItem.locator('.rollingstock-footer-buttons > button').click();
-  }
-
-  async closeRollingstockModal() {
-    await this.rollingStockSelectorModal.locator('.close').click();
   }
 
   // STDCM
