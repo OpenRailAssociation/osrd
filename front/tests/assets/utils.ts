@@ -1,7 +1,7 @@
 import { expect, Page, request } from '@playwright/test';
 import type { Project, Scenario, Study, RollingStock, Infra } from 'common/api/osrdEditoastApi';
 import { PlaywrightHomePage } from '../pages/home-page-model';
-import PlaywrightRollingstockModalPage from '../pages/rollingstock-modal-model';
+import RollingStockSelectorPage from '../pages/rolling-stock-selector-page';
 import PlaywrightMap, { selectPointOnMapProps } from '../pages/map-model';
 import PlaywrightScenarioPage from '../pages/scenario-page-model';
 import { ProjectPage } from '../pages/project-page-model';
@@ -45,9 +45,7 @@ export default async function createCompleteScenario(
   await scenarioPage.setDelta(delta);
 
   // ***************** Select Rolling Stock *****************
-  const playwrightRollingstockModalPage = new PlaywrightRollingstockModalPage(
-    playwrightHomePage.page
-  );
+  const playwrightRollingstockModalPage = new RollingStockSelectorPage(playwrightHomePage.page);
   await playwrightRollingstockModalPage.openRollingstockModal();
 
   const rollingstockCard = playwrightRollingstockModalPage.getRollingstockCardByTestID(
