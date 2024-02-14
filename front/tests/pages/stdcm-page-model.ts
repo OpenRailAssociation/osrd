@@ -1,125 +1,82 @@
 import { expect, Locator, Page } from '@playwright/test';
-/* eslint-disable import/prefer-default-export */
-import infraManagement from '../../public/locales/fr/infraManagement.json';
-import rollingstockTranslation from '../../public/locales/fr/rollingstock.json';
-import manageTrainScheduleTranslation from '../../public/locales/fr/operationalStudies/manageTrainSchedule.json';
 
-export class PlaywrightSTDCMPage {
-  readonly page: Page;
+import BasePage from './base-page';
 
-  readonly getBody: Locator;
-
-  readonly translation: typeof infraManagement;
-
-  readonly rollingstockTranslation: typeof rollingstockTranslation;
-
-  readonly manageTrainScheduleTranslation: typeof manageTrainScheduleTranslation;
-
-  readonly getMissingParam: Locator;
+export default class PlaywrightSTDCMPage extends BasePage {
+  readonly missingParams: Locator;
 
   // Scenario Explorator
-  readonly getScenarioExplorator: Locator;
+  private scenarioExplorerButton: Locator;
 
-  readonly getScenarioExploratorModal: Locator;
+  readonly scenarioExplorerModal: Locator;
 
-  readonly getItemsScenarioExplorator: Locator;
+  private scenarioExplorerMinicards: Locator;
 
-  // Rollingstock
-  readonly getRollingStockSelector: Locator;
+  // Rolling stock selector
+  readonly rollingStockSelectorButton: Locator;
 
-  readonly getRollingstockModal: Locator;
+  readonly rollingStockSelectorModal: Locator;
+
+  private rollingStockList: Locator;
 
   readonly getRollingStockSearch: Locator;
 
-  readonly getRollingStockSearchFilter: Locator;
-
-  readonly getRollingStockSearchList: Locator;
-
-  readonly getRollingStockListItem: Locator;
-
-  readonly getRollingstockSpanNames: Locator;
+  readonly rollingStockListItem: Locator;
 
   // STDCM
-  readonly getOriginTimeDelta: Locator;
+  private getOriginTimeDelta: Locator;
 
   constructor(page: Page) {
-    this.page = page;
-    this.getBody = page.locator('body');
-    this.translation = infraManagement;
-    this.manageTrainScheduleTranslation = manageTrainScheduleTranslation;
-    this.getMissingParam = page.locator('.missing-params');
+    super(page);
+
+    this.missingParams = page.locator('.missing-params');
 
     // Scenario Explorator
-    this.getScenarioExplorator = page.getByTestId('scenario-explorator');
-    this.getScenarioExploratorModal = page.locator('.scenario-explorator-modal');
-    this.getItemsScenarioExplorator = page.locator('.minicard');
+    this.scenarioExplorerButton = page.getByTestId('scenario-explorator');
+    this.scenarioExplorerModal = page.locator('.scenario-explorator-modal');
+    this.scenarioExplorerMinicards = page.locator('.minicard');
 
     // Rollingstock
-    this.getRollingstockModal = page.locator('.modal-dialog');
-    this.getRollingStockSelector = page.getByTestId('rollingstock-selector-minicard');
-    this.getRollingStockSearch = page.locator('.rollingstock-selector');
-    this.getRollingStockSearchFilter = page.locator('.rollingstock-search-filters');
-    this.getRollingStockSearchList = page.locator('.rollingstock-search-list');
-    this.getRollingStockListItem = page.locator('.rollingstock-container');
-    this.getRollingstockSpanNames = this.getRollingStockListItem.locator('.rollingstock-info-end');
-    this.rollingstockTranslation = rollingstockTranslation;
+    this.rollingStockSelectorModal = page.locator('.modal-dialog');
+    this.rollingStockSelectorButton = page.getByTestId('rollingstock-selector');
+    this.rollingStockList = page.locator('.rollingstock-search-list');
+    this.rollingStockListItem = page.locator('.rollingstock-container');
+    this.getRollingStockSearch = this.rollingStockSelectorModal.locator('#searchfilter');
 
     // STDCM
     this.getOriginTimeDelta = page.locator('#osrd-config-time-origin').first();
   }
 
-  getTranslations(key: keyof typeof infraManagement) {
-    return this.translation[key];
-  }
-
-  getmanageTrainScheduleTranslations(key: keyof typeof manageTrainScheduleTranslation) {
-    return this.manageTrainScheduleTranslation[key];
+  async navigateToPage() {
+    await this.page.goto('/stdcm/');
+    await this.removeViteOverlay();
   }
 
   // Scenario Explorator
-  async openScenarioExplorator() {
-    await this.getScenarioExplorator.click();
+  async openScenarioExplorer() {
+    await this.scenarioExplorerButton.click();
+    await expect(this.scenarioExplorerModal).toBeVisible();
   }
 
-  async getScenarioExploratorModalClose() {
-    await expect(this.getScenarioExploratorModal).not.toBeVisible();
-  }
-
-  async getScenarioExploratorModalOpen() {
-    await expect(this.getScenarioExploratorModal).toBeVisible();
-  }
-
-  getItemScenarioExploratorByName(itemName: string): Locator {
-    return this.getItemsScenarioExplorator.getByText(itemName);
-  }
-
-  async clickItemScenarioExploratorByName(itemName: string) {
-    await this.getItemScenarioExploratorByName(itemName).first().click();
+  async selectMiniCard(itemName: string) {
+    const miniCards = this.scenarioExplorerMinicards.getByText(itemName);
+    await miniCards.first().click();
   }
 
   // Rollingstock
-  async getRollingstockModalOpen() {
-    await expect(this.getRollingstockModal).toBeVisible();
-  }
-
-  async getRollingstockModalClose() {
-    await expect(this.getRollingstockModal).not.toBeVisible();
-  }
-
   async openRollingstockModal() {
-    await this.getRollingStockSelector.click();
+    await this.rollingStockSelectorButton.click();
+  }
+
+  async selectRollingStock(rollingStockName: string) {
+    await this.getRollingStockSearch.fill(rollingStockName);
+    const rollingstockItem = this.rollingStockList.getByTestId(`rollingstock-${rollingStockName}`);
+    await rollingstockItem.click();
+    await rollingstockItem.locator('.rollingstock-footer-buttons > button').click();
   }
 
   async closeRollingstockModal() {
-    await this.getRollingstockModal.locator('.close').click();
-  }
-
-  getRollingstockByTestId(dataTestId: string) {
-    return this.getRollingStockSearchList.getByTestId(dataTestId);
-  }
-
-  getRollingstockTranslations(key: keyof typeof rollingstockTranslation) {
-    return this.rollingstockTranslation[key];
+    await this.rollingStockSelectorModal.locator('.close').click();
   }
 
   // STDCM
