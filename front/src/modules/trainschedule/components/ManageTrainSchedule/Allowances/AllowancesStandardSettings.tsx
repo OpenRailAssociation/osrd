@@ -84,6 +84,7 @@ export default function AllowancesStandardSettings({
             min={1}
             isInvalid={allowanceValue !== undefined && allowanceValue < 1}
             textRight
+            inputDataTestId="allowances-standard-settings-value-input"
           />
         </div>
       </div>

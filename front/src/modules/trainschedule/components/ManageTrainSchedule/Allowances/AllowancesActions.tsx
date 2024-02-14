@@ -376,6 +376,7 @@ const AllowancesActions = <T extends RangeAllowanceForm | EngineeringAllowanceFo
             isInvalid={allowanceValue !== undefined && allowanceValue < 1}
             textRight
             disabled={isDisabled}
+            inputDataTestId="allowances-engineering-allowance-input"
           />
         </div>
         {allowanceSelectedIndex !== undefined ? (
