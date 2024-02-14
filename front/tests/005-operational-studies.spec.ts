@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import type { Project, RollingStock, Scenario, Study } from 'common/api/osrdEditoastApi';
 import { PlaywrightHomePage } from './pages/home-page-model';
-import PlaywrightRollingstockModalPage from './pages/rollingstock-modal-model';
+import PlaywrightRollingstockModalPage from './pages/RollingStockSelectorPage';
 import PlaywrightMap from './pages/map-model';
 import PATH_VARIABLES from './assets/operationStudies/testVariablesPaths';
 import PlaywrightScenarioPage from './pages/scenario-page-model';
@@ -43,7 +43,7 @@ test.describe('Testing if all mandatory elements simulation configuration are lo
     );
     await expect(scenarioPage.getRollingStockSelector).toBeVisible();
     await playwrightRollingstockModalPage.openRollingstockModal();
-    const rollingstockModal = playwrightRollingstockModalPage.getRollingstockModal;
+    const rollingstockModal = playwrightRollingstockModalPage.rollingStockSelectorModal;
     await expect(rollingstockModal).toBeVisible();
 
     await playwrightRollingstockModalPage.searchRollingstock('rollingstock_1500_25000_test_e2e');

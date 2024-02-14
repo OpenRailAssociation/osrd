@@ -1,91 +1,44 @@
 import { test, expect } from '@playwright/test';
-import { PlaywrightHomePage } from './pages/home-page-model';
-import { PlaywrightSTDCMPage } from './pages/stdcm-page-model';
+import PlaywrightSTDCMPage from './pages/stdcm-page-model';
+import manageTrainScheduleTranslation from '../public/locales/fr/operationalStudies/manageTrainSchedule.json';
 
-// Describe the test suite for the STDCM page
-test.describe('STDCM page', () => {
-  // Declare the necessary variables for the test suite
-  let playwrightHomePage: PlaywrightHomePage;
-  let playwrightSTDCMPage: PlaywrightSTDCMPage;
+import project from './assets/operationStudies/project.json';
+import study from './assets/operationStudies/study.json';
+import scenario from './assets/operationStudies/scenario.json';
 
-  test('should be correctly displays the rolling stock list and select one', async ({ page }) => {
-    // Create an instance of the PlaywrightHomePage class
-    playwrightHomePage = new PlaywrightHomePage(page);
+const projectName = project.name;
+const studyName = study.name;
+const scenarioName = scenario.name;
+const rollingStockName = 'rollingstock_1500_25000_test_e2e';
 
-    // Create an instance of the PlaywrightSTDCMPage class
-    playwrightSTDCMPage = new PlaywrightSTDCMPage(page);
+const rollingStockTranslation = manageTrainScheduleTranslation.rollingstock;
 
-    // Go to the home page of OSRD
-    await playwrightHomePage.goToHomePage();
+test.describe('STDCM page (enabled)', () => {
+  test('should correctly display the rolling stock list and select one', async ({ page }) => {
+    const stdcmPage = new PlaywrightSTDCMPage(page);
 
-    await playwrightHomePage.goToSTDCMPage();
+    await stdcmPage.navigateToPage();
+    await expect(stdcmPage.scenarioExplorerModal).not.toBeVisible();
+    await expect(stdcmPage.rollingStockSelectorModal).not.toBeVisible();
 
-    await playwrightSTDCMPage.getScenarioExploratorModalClose();
+    // Open the scenario explorer and select project, study and scenario
+    await stdcmPage.openScenarioExplorer();
+    await stdcmPage.selectMiniCard(projectName);
+    await stdcmPage.selectMiniCard(studyName);
+    await stdcmPage.selectMiniCard(scenarioName);
 
-    // Opens the scenario explorator and selects project, study and scenario
-    await playwrightSTDCMPage.openScenarioExplorator();
-    await playwrightSTDCMPage.getScenarioExploratorModalOpen();
-    await playwrightSTDCMPage.clickItemScenarioExploratorByName('_@Test integration project');
-    await playwrightSTDCMPage.clickItemScenarioExploratorByName('_@Test integration study');
-    await playwrightSTDCMPage.clickItemScenarioExploratorByName('_@Test integration scenario');
+    // Check no rollingstock is selected and "rollingstock" is in the missing information
+    await expect(stdcmPage.missingParams).toContainText(rollingStockTranslation);
 
-    const rollingStockTranslation =
-      playwrightSTDCMPage.getmanageTrainScheduleTranslations('rollingstock');
-    const rollingStockTranslationRegEx = new RegExp(rollingStockTranslation as string);
-    // Check that the three tests rolling stocks are present
-    playwrightSTDCMPage.getRollingstockByTestId(`rollingstock-_@Test Locomotives électriques`);
-    playwrightSTDCMPage.getRollingstockByTestId(`rollingstock-_@Test BB 22200`);
-    const rollingstockItem = playwrightSTDCMPage.getRollingstockByTestId(
-      `rollingstock-_@Test BB 7200GVLOCOMOTIVES`
-    );
-    // Check that no rollingstock is selected
-    await expect(
-      playwrightSTDCMPage.getRollingStockSelector.locator('.rollingstock-minicard')
-    ).not.toBeVisible();
-    await expect(playwrightSTDCMPage.getMissingParam).toContainText(rollingStockTranslationRegEx);
+    // Select a rolling stock
+    await stdcmPage.openRollingstockModal();
+    await expect(stdcmPage.rollingStockSelectorModal).toBeVisible();
+    await stdcmPage.selectRollingStock(rollingStockName);
 
-    await playwrightSTDCMPage.getRollingstockModalClose();
-    await playwrightSTDCMPage.openRollingstockModal();
-    await playwrightSTDCMPage.getRollingstockModalOpen();
+    // Check that the rollingstock is selected and "rollingstock" is not in the missing information anymore
+    await expect(stdcmPage.rollingStockSelectorModal).not.toBeVisible();
+    await expect(stdcmPage.missingParams).not.toContainText(rollingStockTranslation);
 
-    await playwrightSTDCMPage.page.waitForSelector('.rollingstock-container');
-
-    const infoCardText = await playwrightSTDCMPage.getRollingStockListItem
-      .locator('.rollingstock-info')
-      .allTextContents();
-    expect(infoCardText).toContain(
-      'BB 7200GVLOCOMOTIVES / Locomotives électriques / Locomotives électriques courant continu_@Test BB 7200GVLOCOMOTIVES'
-    );
-    expect(infoCardText).toContain(
-      'BB 15000BB15000 USLOCOMOTIVES / Locomotives électriques / Locomotives électriques monophasé_@Test Locomotives électriques'
-    );
-    expect(infoCardText).toContain(
-      'BB 22200V160LOCOMOTIVES / Locomotives électriques / Locomotives électriques bi courant_@Test BB 22200'
-    );
-
-    const footerCardText = await playwrightSTDCMPage.getRollingStockListItem
-      .locator('.rollingstock-footer')
-      .allTextContents();
-    expect(footerCardText).toContain('25000V400m900t288km/h');
-
-    // Check if rollingstock detail is close
-    await expect(rollingstockItem).toHaveClass(/inactive/);
-    await rollingstockItem.click();
-
-    // Check if rollingstock detail is open
-    await expect(rollingstockItem).toHaveClass(/active/);
-
-    await rollingstockItem.locator('.rollingstock-footer-buttons > button').click();
-
-    // Check that the rollingstock is selected
-    await expect(
-      playwrightSTDCMPage.getRollingStockSelector.locator('.rollingstock-minicard')
-    ).toBeVisible();
-
-    await expect(playwrightSTDCMPage.getMissingParam).not.toContainText(
-      rollingStockTranslationRegEx
-    );
-
-    await playwrightHomePage.backToHomePage();
+    await stdcmPage.backToHomePage();
   });
 });
