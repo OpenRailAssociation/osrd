@@ -266,6 +266,7 @@ const CurveParamSelectors = ({
             options: comfortOptions,
             selectNewItem: updateComfortLevelsList,
           }}
+          dataTestId="comfort-level-selector"
         />
       </div>
       <div className="selector-container">
@@ -286,6 +287,7 @@ const CurveParamSelectors = ({
             disabled: isEmpty(availableModes),
             selectNewItem: updateTractionModesList,
           }}
+          dataTestId="traction-mode-selector"
         />
       </div>
       {selectedTractionMode && selectedTractionMode !== THERMAL_TRACTION_IDENTIFIER && (
@@ -306,6 +308,7 @@ const CurveParamSelectors = ({
                 options: compact(EP_BY_MODE[selectedTractionMode as keyof ElectricalProfileByMode]),
                 selectNewItem: updateElectricalProfilesList,
               }}
+              dataTestId="electrical-profile-selector"
             />
           </div>
           <div className="selector-container">
@@ -334,6 +337,7 @@ const CurveParamSelectors = ({
                     'lg'
                   ),
               }}
+              dataTestId="power-restriction-selector"
             />
           </div>
         </>

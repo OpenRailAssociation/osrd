@@ -130,12 +130,12 @@ class PlaywrightScenarioPage {
     this.getAllowancesModule = page.locator('.operational-studies-allowances');
     this.getAllowancesStandardSettings = page
       .getByTestId('standard-allowance-group')
-      .getByTestId('input-group-first-field');
+      .getByTestId('allowances-standard-settings-value-input');
     this.getAllowancesEnergyConsumed = page.getByTestId('allowance-energy-consumed');
     this.getAverageEnergyConsumed = page.getByTestId('average-energy-consumed');
     this.getAllowancesEngineeringSettings = page
       .getByTestId('engineering-allowance-group')
-      .getByTestId('input-group-first-field');
+      .getByTestId('allowances-engineering-allowance-input');
     this.getAllowancesEngineeringBtn = page.getByTestId('engineering-allowance');
     this.getSuccessBtn = page
       .locator('div')
