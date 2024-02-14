@@ -43,7 +43,7 @@ const CurveSpreadsheet = ({
               value:
                 speeds[index] !== undefined ? Math.round(msToKmh(speeds[index]!)).toString() : '',
             },
-            { value: effort !== undefined ? Math.round(effort / 10).toString() : '' },
+            { value: effort !== undefined ? (effort / 10).toFixed(effort % 10 !== 0 ? 2 : 0) : '' },
           ])
         : [];
     const numberOfRows = filledMatrix.length < 8 ? 8 - filledMatrix.length : 1;
