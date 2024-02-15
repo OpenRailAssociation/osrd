@@ -8,6 +8,8 @@ listen_addr = "0.0.0.0"
 
 [telemetry.tracing]
 enable = true
+type = "Otlp"
+service_name = "gateway"
 endpoint = "http://osrd-jaeger:4317"
 
 [[targets]]

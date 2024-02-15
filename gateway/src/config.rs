@@ -7,7 +7,9 @@ use figment::{
 use log::info;
 use opentelemetry::global;
 use opentelemetry_otlp::WithExportConfig;
-use opentelemetry_sdk::{runtime::TokioCurrentThread, trace::TracerProvider};
+use opentelemetry_sdk::{
+    propagation::TraceContextPropagator, runtime::TokioCurrentThread, trace::TracerProvider,
+};
 use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize, Serialize, Clone)]
@@ -63,6 +65,7 @@ impl TracingTelemetry {
             .with_batch_exporter(exporter, TokioCurrentThread)
             .build();
 
+        global::set_text_map_propagator(TraceContextPropagator::new());
         global::set_tracer_provider(provider);
     }
 

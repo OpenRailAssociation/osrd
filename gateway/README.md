@@ -89,3 +89,12 @@ user_id = "example-user-id"
 # It's used for testing.
 require_login = true
 ```
+
+# Enable open telemetry
+```toml
+[telemetry.tracing]
+endpoint = "http://localhost:4317"
+type = "Otlp"
+enable = true
+service_name = "gateway"
+```
