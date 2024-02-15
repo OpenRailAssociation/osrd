@@ -16,7 +16,7 @@
 [versions]
 kotlin = '1.9.22'
 ksp = '1.9.22-1.0.16'
-kotlinx-coroutines = '1.7.+'
+kotlinx-coroutines = '1.8.+'
 logback = '1.4.+'
 moshi = '1.15.1'
 junit = '5.10.+'
