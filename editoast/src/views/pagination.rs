@@ -6,10 +6,10 @@ use diesel::sql_types::Untyped;
 use diesel::{QueryResult, QueryableByName};
 use diesel_async::methods::LoadQuery;
 use diesel_async::AsyncPgConnection as PgConnection;
-use log::warn;
 use serde::Deserialize;
 use serde::Serialize;
 use thiserror::Error;
+use tracing::warn;
 
 use editoast_derive::EditoastError;
 use utoipa::IntoParams;

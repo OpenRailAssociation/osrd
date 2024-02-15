@@ -17,12 +17,12 @@ use async_trait::async_trait;
 use colored::{ColoredString, Colorize};
 use editoast_derive::EditoastError;
 pub use http_client::{HttpClient, HttpClientBuilder};
-use log::info;
 use reqwest::Url;
 use serde::{de::DeserializeOwned, Serialize};
 use serde_derive::Deserialize;
 use serde_json::Value;
 use thiserror::Error;
+use tracing::{debug, error, info};
 
 #[cfg(test)]
 use crate::core::mocking::MockingError;
@@ -93,8 +93,8 @@ impl CoreClient {
         body: Option<&B>,
     ) -> Result<R::Response> {
         let method_s = colored_method(&method);
-        log::info!(target: "editoast::coreclient", "{method_s} {path}");
-        log::debug!(target: "editoast::coreclient", "Request content: {body}", body = body.and_then(|b| serde_json::to_string_pretty(b).ok()).unwrap_or_default());
+        info!(target: "editoast::coreclient", "{method_s} {path}");
+        debug!(target: "editoast::coreclient", "Request content: {body}", body = body.and_then(|b| serde_json::to_string_pretty(b).ok()).unwrap_or_default());
         match self {
             CoreClient::Direct(client) => {
                 let mut i_try = 0;
@@ -129,11 +129,11 @@ impl CoreClient {
                             msg: err.to_string(),
                         })?;
                 if status.is_success() {
-                    log::info!(target: "editoast::coreclient", "{method_s} {path} {status}", status = status.to_string().bold().green());
+                    info!(target: "editoast::coreclient", "{method_s} {path} {status}", status = status.to_string().bold().green());
                     return R::from_bytes(bytes.as_ref());
                 }
 
-                log::error!(target: "editoast::coreclient", "{method_s} {path} {status}", status = status.to_string().bold().red());
+                error!(target: "editoast::coreclient", "{method_s} {path} {status}", status = status.to_string().bold().red());
                 Err(self.handle_error(bytes.as_ref(), status, url))
             }
             #[cfg(test)]

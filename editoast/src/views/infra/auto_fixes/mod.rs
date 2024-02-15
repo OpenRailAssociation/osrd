@@ -13,9 +13,9 @@ use actix_web::web::{Data, Json as WebJson, Path};
 use chashmap::CHashMap;
 use editoast_derive::EditoastError;
 use itertools::Itertools as _;
-use log::{debug, error};
 use std::collections::hash_map::{Entry, HashMap};
 use thiserror::Error;
+use tracing::{debug, error};
 
 mod buffer_stop;
 mod detector;

@@ -27,10 +27,10 @@ use diesel_async::{AsyncPgConnection as PgConnection, RunQueryDsl};
 use editoast_derive::{EditoastError, Model};
 use futures::future::try_join_all;
 use futures::Future;
-use log::{debug, error};
 use serde::{Deserialize, Serialize};
 use strum::IntoEnumIterator;
 use thiserror::Error;
+use tracing::{debug, error};
 use uuid::Uuid;
 
 pub const INFRA_VERSION: &str = "0";

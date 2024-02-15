@@ -33,6 +33,7 @@ use actix_web::{get, services};
 use diesel::sql_query;
 use redis::cmd;
 use serde_derive::{Deserialize, Serialize};
+use tracing::debug;
 use utoipa::openapi::RefOr;
 use utoipa::{OpenApi, ToSchema};
 
@@ -144,7 +145,7 @@ impl OpenApiRoot {
 
         let routes = routes_v2();
         for (path, path_item) in routes.paths.into_flat_path_list() {
-            log::debug!("processing {path}");
+            debug!("processing {path}");
             if openapi.paths.paths.contains_key(&path) {
                 let existing_path_item = openapi.paths.paths.remove(&path).unwrap();
                 let merged = merge_path_items(existing_path_item, path_item);

@@ -1,6 +1,6 @@
 use super::utils::*;
 use crate::{converters::generate_routes, schema::*};
-use log::{error, info};
+use tracing::{debug, error, info};
 
 use std::{collections::HashMap, error::Error, path::PathBuf};
 /// Run the osm-to-railjson subcommand
@@ -110,12 +110,12 @@ pub fn parse_osm(osm_pbf_in: PathBuf) -> Result<RailJson, Box<dyn Error + Send +
             (4, 4) => railjson
                 .switches
                 .push(double_slip_switch(node, &adj.branches)),
-            _ => log::debug!("node {id} with {edges_count} edges and {branches_count} branches"),
+            _ => debug!("node {id} with {edges_count} edges and {branches_count} branches"),
         }
     }
-    log::debug!("Start generating routes");
+    debug!("Start generating routes");
     railjson.routes = generate_routes::routes(&railjson);
-    log::debug!("Done, got {} routes", railjson.routes.len());
+    debug!("Done, got {} routes", railjson.routes.len());
     Ok(railjson)
 }
 

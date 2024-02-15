@@ -5,8 +5,8 @@ use crate::schema::{
 };
 use itertools::Itertools as _;
 use json_patch::{Patch, PatchOperation, RemoveOperation};
-use log::{debug, error};
 use std::collections::HashMap;
+use tracing::{debug, error};
 
 fn invalid_reference_to_ordered_operation(
     electrification: &Electrification,

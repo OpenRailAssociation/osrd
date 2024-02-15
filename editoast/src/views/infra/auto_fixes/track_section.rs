@@ -3,8 +3,8 @@ use crate::schema::{
     operation::RailjsonObject, utils::Identifier, BufferStop, Endpoint, InfraError, InfraErrorType,
     OSRDIdentified as _, OSRDObject as _, ObjectRef, TrackSectionCache,
 };
-use log::debug;
 use std::collections::HashMap;
+use tracing::debug;
 use uuid::Uuid;
 
 pub fn fix_track_section(

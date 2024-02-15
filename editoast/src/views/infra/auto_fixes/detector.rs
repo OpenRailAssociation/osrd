@@ -2,8 +2,8 @@ use super::{new_ref_fix_delete_pair, Fix};
 use crate::schema::{
     DetectorCache, InfraError, InfraErrorType, OSRDObject as _, ObjectRef, ObjectType,
 };
-use log::debug;
 use std::collections::HashMap;
+use tracing::debug;
 
 pub fn fix_detector(
     detector: &DetectorCache,

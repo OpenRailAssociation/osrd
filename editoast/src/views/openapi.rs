@@ -9,6 +9,7 @@ use std::{
 
 use actix_web::dev::HttpServiceFactory;
 use serde_json::Value as Json;
+use tracing::warn;
 use utoipa::{
     openapi::{
         path::PathItemBuilder, schema::AnyOf, AllOf, Array, Object, OneOf, PathItem, RefOr, Schema,
@@ -119,7 +120,7 @@ pub(super) fn merge_path_items(a: PathItem, b: PathItem) -> PathItem {
     let mut operations: BTreeMap<_, _> = a.operations;
     for (method, operation) in b.operations {
         if operations.contains_key(&method) {
-            log::warn!(
+            warn!(
                 "duplicate operation for method {}",
                 serde_json::to_string(&method).unwrap() // PathItemType does not implement Display or Debug :(
             );
@@ -487,7 +488,7 @@ impl OpenApiMerger {
             .unwrap();
         for (key, schema) in new_schemas.iter_mut() {
             if old_schemas.insert(key.clone(), schema.clone()).is_some() {
-                log::warn!("duplicated schema replaced: {}", key);
+                warn!("duplicated schema replaced: {}", key);
             }
         }
 
@@ -506,7 +507,7 @@ impl OpenApiMerger {
                     let old_path = old_path.as_object_mut().unwrap();
                     for (method, operation) in path.as_object_mut().unwrap().iter_mut() {
                         if old_path.insert(method.clone(), operation.clone()).is_some() {
-                            log::warn!("duplicated operation replaced: {} {}", method, key);
+                            warn!("duplicated operation replaced: {} {}", method, key);
                         }
                     }
                 }
