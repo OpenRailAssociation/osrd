@@ -4,6 +4,12 @@
 # python3 -c "import secrets, base64; print(base64.standard_b64encode(secrets.token_bytes(64)).decode())"
 secret_key = "NOT+A+SECRET++NOT+A+SECRET++NOT+A+SECRET++NOT+A+SECRET++NOT+A+SECRET++NOT+A+SECRET++NOT+A+SECRET"
 
+[telemetry.tracing]
+type = "Otlp"
+enable = true
+service_name = "gateway"
+endpoint = "http://localhost::4317"
+
 [[targets]]
 prefix = "/api"
 upstream = "http://localhost:8090"
