@@ -87,7 +87,7 @@
     "react-dom": "^18.2.0",
     "react-flatpickr": "^3.10.13",
     "react-hook-form": "^7.50.0",
-    "react-i18next": "^14.0.3",
+    "react-i18next": "^14.0.5",
     "react-icons": "^5.0.1",
     "react-id-generator": "^3.0.2",
     "react-infinite-scroll-component": "^6.1.0",
