@@ -11,6 +11,7 @@ import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.sim_infra.api.Path
 import fr.sncf.osrd.train.RollingStock
+import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
 
 /**
@@ -37,6 +38,9 @@ interface InfraExplorerWithEnvelope : InfraExplorer {
 
     /** Returns the underlying spacing requirement automaton */
     fun getSpacingRequirementAutomaton(): SpacingRequirementAutomaton
+
+    /** Returns the length of the simulated section of the path */
+    fun getSimulatedLength(): Length<Path>
 
     /**
      * Only shallow copies are made. Used to enable backtracking by cloning explorers at each step.
