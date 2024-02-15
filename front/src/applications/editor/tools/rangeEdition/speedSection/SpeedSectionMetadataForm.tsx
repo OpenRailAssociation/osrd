@@ -1,9 +1,9 @@
-import React, { FC, useContext, useMemo, useState } from 'react';
+import React, { FC, useContext, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AiOutlinePlusCircle } from 'react-icons/ai';
 import { FaTimes } from 'react-icons/fa';
 import { MdSpeed } from 'react-icons/md';
-import { cloneDeep, isEmpty, mapKeys, omit } from 'lodash';
+import { cloneDeep, isEmpty, isEqual, map, size } from 'lodash';
 import nextId from 'react-id-generator';
 
 import EditorContext from 'applications/editor/context';
@@ -30,31 +30,50 @@ const getNewSpeedLimitTag = (
 const SpeedSectionMetadataForm: FC = () => {
   const { t } = useTranslation();
   const {
-    state: { entity },
+    state: { entity, error },
     setState,
   } = useContext(EditorContext) as ExtendedEditorContextType<RangeEditionState<SpeedSectionEntity>>;
 
-  const [uniqueIds, setUniqueIds] = useState<string[]>(
-    Object.keys(entity.properties?.speed_limit_by_tag || {}).map(() => nextId())
+  const [tagSpeedLimits, setTagSpeedLimits] = useState<
+    { id: string; tag: string; value?: number }[]
+  >(map(entity.properties.speed_limit_by_tag, (value, tag) => ({ tag, value, id: nextId() })));
+
+  const tagCounts = useMemo(
+    () =>
+      tagSpeedLimits.reduce(
+        (iter: Record<string, number>, { tag }) => ({ ...iter, [tag]: (iter[tag] || 0) + 1 }),
+        {}
+      ),
+    [tagSpeedLimits]
   );
 
-  const addSpeedSectionButtonIsDisabled = useMemo(() => {
-    const { speed_limit_by_tag } = entity.properties;
-    if (speed_limit_by_tag) {
-      const speed_limits = Object.values(speed_limit_by_tag);
-      const has_undefined_speed_limit = speed_limits.some(
-        (speed_limit) => speed_limit === undefined || speed_limit === 0
-      );
-      return has_undefined_speed_limit;
+  useEffect(() => {
+    const newState: Partial<RangeEditionState<SpeedSectionEntity>> = {};
+    const newSpeedLimitByTags = tagSpeedLimits.reduce(
+      (iter, { tag, value }) => ({ ...iter, [tag]: value }),
+      {}
+    );
+    if (!isEqual(newSpeedLimitByTags, entity.properties.speed_limit_by_tag)) {
+      const newEntity = cloneDeep(entity);
+      newEntity.properties.speed_limit_by_tag = newSpeedLimitByTags;
+      newState.entity = newEntity;
     }
-    return false;
-  }, [entity]);
+
+    const speedLimitsByTag = entity.properties.speed_limit_by_tag || {};
+    let newError: string | undefined;
+    if (Object.values(speedLimitsByTag).some((limit) => !limit)) newError = 'empty-limit';
+    if (size(speedLimitsByTag) !== tagSpeedLimits.length) newError = 'duplicate-tags';
+    if (newError !== error) newState.error = newError;
+
+    if (!isEmpty(newState)) setState(newState);
+  }, [tagSpeedLimits, entity, error]);
+
   return (
     <div>
       <h4 className="pb-0">
         <MdSpeed className="me-1" /> {t('Editor.tools.speed-edition.speed-limits')}
       </h4>
-      {/* The following tag is here to mimick other tools' forms style: */}
+      {/* The following tag is here to mimic other tools' forms style: */}
       <form className="rjsf" onSubmit={(e) => e.preventDefault()}>
         <div className="form-group field field-string mb-2">
           <label className="control-label" htmlFor="speed-section.main-limit">
@@ -80,78 +99,72 @@ const SpeedSectionMetadataForm: FC = () => {
             {t('Editor.tools.speed-edition.additional-speed-limit')}
           </div>
         )}
-        {Object.entries(entity.properties.speed_limit_by_tag || {}).map(
-          ([key, value], currentIndex) => (
-            <div key={uniqueIds[currentIndex]} className="form-group field field-string">
-              <div className="d-flex flex-row align-items-center">
-                <input
-                  required
-                  className="form-control flex-grow-2 flex-shrink-1 mr-2 px-2"
-                  placeholder=""
-                  type="text"
-                  value={key}
-                  onChange={(e) => {
-                    const newEntity = cloneDeep(entity);
-                    const newKey = e.target.value;
-                    newEntity.properties.speed_limit_by_tag = mapKeys(
-                      newEntity.properties.speed_limit_by_tag || {},
-                      (_v, k) => (k === key ? newKey : k)
-                    );
-                    setState({ entity: newEntity });
+        {tagSpeedLimits.map(({ id, tag, value }, currentIndex) => (
+          <div key={id} className="form-group field field-string">
+            <div className="d-flex flex-row align-items-center">
+              <input
+                required
+                className="form-control flex-grow-2 flex-shrink-1 mr-2 px-2"
+                placeholder=""
+                type="text"
+                value={tag}
+                pattern={
+                  // Insert an invalid pattern to force the error appearance when tag is redundant
+                  tagCounts[tag] && tagCounts[tag] > 1 ? `not ${tag}` : undefined
+                }
+                onChange={(e) => {
+                  const newKey = e.target.value;
+                  setTagSpeedLimits((state) =>
+                    state.map((pair, i) => (i === currentIndex ? { ...pair, tag: newKey } : pair))
+                  );
+                }}
+              />
+              <SpeedInput
+                className="form-control flex-shrink-0 px-2"
+                style={{ width: '5em' }}
+                required
+                placeholder=""
+                msSpeed={value}
+                onChange={(newMsSpeed) => {
+                  setTagSpeedLimits((state) =>
+                    state.map((pair, i) =>
+                      i === currentIndex ? { ...pair, value: newMsSpeed } : pair
+                    )
+                  );
+                }}
+              />
+              <span className="text-muted ml-2">km/h</span>
+              <small>
+                <button
+                  type="button"
+                  className="btn btn-primary btn-sm px-2 ml-2"
+                  aria-label={t('commons.delete')}
+                  title={t('commons.delete')}
+                  onClick={() => {
+                    setTagSpeedLimits((state) => state.filter((_, i) => i !== currentIndex));
                   }}
-                />
-                <SpeedInput
-                  className="form-control flex-shrink-0 px-2"
-                  style={{ width: '5em' }}
-                  placeholder=""
-                  msSpeed={value}
-                  onChange={(newMsSpeed) => {
-                    const newEntity = cloneDeep(entity);
-                    newEntity.properties.speed_limit_by_tag =
-                      newEntity.properties.speed_limit_by_tag || {};
-                    newEntity.properties.speed_limit_by_tag[key] = newMsSpeed;
-                    setState({ entity: newEntity });
-                  }}
-                />
-                <span className="text-muted ml-2">km/h</span>
-                <small>
-                  <button
-                    type="button"
-                    className="btn btn-primary btn-sm px-2 ml-2"
-                    aria-label={t('commons.delete')}
-                    title={t('commons.delete')}
-                    onClick={() => {
-                      const newEntity = cloneDeep(entity);
-                      newEntity.properties.speed_limit_by_tag = omit(
-                        newEntity.properties.speed_limit_by_tag || {},
-                        key
-                      );
-                      setUniqueIds(uniqueIds.filter((_, index) => index !== currentIndex));
-                      setState({ entity: newEntity });
-                    }}
-                  >
-                    <FaTimes />
-                  </button>
-                </small>
-              </div>
+                >
+                  <FaTimes />
+                </button>
+              </small>
             </div>
-          )
-        )}
+          </div>
+        ))}
         <button
           type="button"
           className="btn btn-secondary w-100 text-wrap small mb-2"
           onClick={async () => {
-            const newEntity = cloneDeep(entity);
-            newEntity.properties.speed_limit_by_tag = newEntity.properties.speed_limit_by_tag || {};
-            const newSpeedLimitTag = getNewSpeedLimitTag(
-              newEntity.properties.speed_limit_by_tag,
-              t('Editor.tools.speed-edition.new-tag')
+            setTagSpeedLimits((state) =>
+              state.concat({
+                id: nextId(),
+                tag: getNewSpeedLimitTag(
+                  entity.properties.speed_limit_by_tag || {},
+                  t('Editor.tools.speed-edition.new-tag')
+                ),
+                value: undefined,
+              })
             );
-            newEntity.properties.speed_limit_by_tag[newSpeedLimitTag] = undefined;
-            setUniqueIds([...uniqueIds, nextId()]);
-            setState({ entity: newEntity });
           }}
-          disabled={addSpeedSectionButtonIsDisabled}
         >
           <AiOutlinePlusCircle className="mr-2" />
           {t('Editor.tools.speed-edition.add-new-speed-limit')}
