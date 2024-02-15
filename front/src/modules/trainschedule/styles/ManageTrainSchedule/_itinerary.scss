@@ -61,8 +61,11 @@
         max-width: 47%;
         white-space: nowrap;
         overflow: hidden;
-       text-overflow: ellipsis;
+        text-overflow: ellipsis;
       }
     }
   }
+}
+.btn-itinerary-gap {
+  gap: 0.5em;
 }

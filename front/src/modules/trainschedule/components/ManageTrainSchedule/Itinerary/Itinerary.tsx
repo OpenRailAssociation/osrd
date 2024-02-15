@@ -111,7 +111,7 @@ function Itinerary({ path }: ItineraryProps) {
       )}
       {origin && destination && (
 
-        <div className="d-flex flex-column flex-sm-row flex-wrap"style={{ gap: '0.5rem' }}>
+        <div className="d-flex flex-column flex-sm-row flex-wrap gap-2 btn-itinerary-gap">
           {geojson && (
             <button
               className="col text-white btn bg-info btn-sm"
