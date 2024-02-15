@@ -144,6 +144,7 @@ export type PslSignInformation =
   | { signType: PSL_SIGN_TYPES.Z };
 
 export type RangeEditionState<E extends EditorEntity> = CommonToolState & {
+  error?: string;
   initialEntity: E;
   entity: E;
   hoveredItem:

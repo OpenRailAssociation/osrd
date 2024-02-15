@@ -28,8 +28,7 @@ export const SpeedEditionTool = getRangeEditionTool<SpeedSectionEntity | SpeedSe
   leftPanelComponent: RangeEditionLeftPanel,
   canSave(state) {
     const records = state.entity.properties.speed_limit_by_tag || {};
-    const compositionCodes = Object.keys(records);
-    return compositionCodes.every((code) => !!code);
+    return !state.error && Object.keys(records).every((code) => !!code);
   },
   getEventsLayers() {
     return [
