@@ -8,13 +8,11 @@ import fr.sncf.osrd.sim_infra.api.Path
 import fr.sncf.osrd.sim_infra.api.ZoneId
 import fr.sncf.osrd.standalone_sim.result.ResultTrain.SpacingRequirement
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
-import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Offset
 
 data class BlockAvailability(
     val fullInfra: FullInfra,
-    val rollingStock: RollingStock,
     val requirements: Map<ZoneId, List<SpacingRequirement>>
 ) : GenericBlockAvailability() {
 
@@ -108,18 +106,4 @@ data class BlockAvailability(
             .getIncrementalPath()
             .fromTravelledPath(Offset(Distance.fromMeters(search.result)))
     }
-}
-
-fun buildBlockAvailability(
-    infra: FullInfra,
-    rollingStock: RollingStock,
-    rawRequirements: Collection<SpacingRequirement>
-): BlockAvailability {
-    val requirements = mutableMapOf<ZoneId, MutableList<SpacingRequirement>>()
-    for (requirement in rawRequirements) {
-        val zone = infra.rawInfra.getZoneFromName(requirement.zone)
-        requirements.putIfAbsent(zone, mutableListOf())
-        requirements[zone]!!.add(requirement)
-    }
-    return BlockAvailability(infra, rollingStock, requirements)
 }

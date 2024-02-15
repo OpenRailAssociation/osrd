@@ -4,6 +4,8 @@ import fr.sncf.osrd.conflicts.SpacingRequirementAutomaton
 import fr.sncf.osrd.envelope.EnvelopeConcat
 import fr.sncf.osrd.envelope.EnvelopeTimeInterpolate
 import fr.sncf.osrd.sim_infra.api.Path
+import fr.sncf.osrd.utils.units.Distance
+import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
 
 data class InfraExplorerWithEnvelopeImpl(
@@ -45,6 +47,10 @@ data class InfraExplorerWithEnvelopeImpl(
     override fun getSpacingRequirementAutomaton(): SpacingRequirementAutomaton {
         spacingRequirementAutomaton.incrementalPath = getIncrementalPath()
         return spacingRequirementAutomaton
+    }
+
+    override fun getSimulatedLength(): Length<Path> {
+        return Length(Distance.fromMeters(getFullEnvelope().endPos))
     }
 
     override fun clone(): InfraExplorerWithEnvelope {
