@@ -2,8 +2,8 @@ use super::{new_ref_fix_delete_pair, Fix};
 use crate::schema::{
     InfraError, InfraErrorType, OSRDObject as _, ObjectRef, ObjectType, SignalCache,
 };
-use log::debug;
 use std::collections::HashMap;
+use tracing::debug;
 
 pub fn fix_signal(
     signal: &SignalCache,

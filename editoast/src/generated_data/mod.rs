@@ -27,6 +27,7 @@ use psl_sign::PSLSignLayer;
 use signal::SignalLayer;
 use speed_section::SpeedSectionLayer;
 use switch::SwitchLayer;
+use tracing::debug;
 use track_section::TrackSectionLayer;
 
 use crate::error::Result;
@@ -86,13 +87,13 @@ pub async fn refresh_all(
     // The other layers depend on track section layer.
     // We must wait until its completion before running the other requests in parallel
     TrackSectionLayer::refresh_pool(db_pool.clone(), infra, infra_cache).await?;
-    log::debug!("⚙️ Infra {infra}: track section layer is generated");
+    debug!("⚙️ Infra {infra}: track section layer is generated");
     let mut conn = db_pool.get().await?;
     // The analyze step significantly improves the performance when importing and generating together
     // It doesn’t seem to make a different when the generation step is ran separately
     // It isn’t clear why without analyze the Postgres server seems to run at 100% without halting
     sql_query("analyze").execute(&mut conn).await?;
-    log::debug!("⚙️ Infra {infra}: database analyzed");
+    debug!("⚙️ Infra {infra}: database analyzed");
     futures::try_join!(
         SpeedSectionLayer::refresh_pool(db_pool.clone(), infra, infra_cache),
         SignalLayer::refresh_pool(db_pool.clone(), infra, infra_cache),
@@ -105,10 +106,10 @@ pub async fn refresh_all(
         NeutralSectionLayer::refresh_pool(db_pool.clone(), infra, infra_cache),
         NeutralSignLayer::refresh_pool(db_pool.clone(), infra, infra_cache),
     )?;
-    log::debug!("⚙️ Infra {infra}: object layers is generated");
+    debug!("⚙️ Infra {infra}: object layers is generated");
     // The error layer depends on the other layers and must be executed at the end.
     ErrorLayer::refresh_pool(db_pool.clone(), infra, infra_cache).await?;
-    log::debug!("⚙️ Infra {infra}: errors layer is generated");
+    debug!("⚙️ Infra {infra}: errors layer is generated");
     Ok(())
 }
 

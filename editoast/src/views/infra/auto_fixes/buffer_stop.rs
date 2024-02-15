@@ -2,8 +2,8 @@ use super::{new_ref_fix_delete_pair, Fix};
 use crate::schema::{
     BufferStopCache, InfraError, InfraErrorType, OSRDObject as _, ObjectRef, ObjectType,
 };
-use log::debug;
 use std::collections::HashMap;
+use tracing::debug;
 
 pub fn fix_buffer_stop(
     buffer_stop: &BufferStopCache,

@@ -11,6 +11,7 @@ use std::{
     error::Error,
     fmt::{Display, Formatter},
 };
+use tracing::error;
 use utoipa::ToSchema;
 use validator::{ValidationErrors, ValidationErrorsKind};
 
@@ -104,7 +105,7 @@ impl ResponseError for InternalError {
     }
 
     fn error_response(&self) -> HttpResponse {
-        log::error!(
+        error!(
             "[{}] {}: {}",
             self.error_type.bold(),
             self.message,

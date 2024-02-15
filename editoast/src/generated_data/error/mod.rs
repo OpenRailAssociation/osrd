@@ -18,10 +18,10 @@ use diesel::sql_types::{Array, BigInt, Json, Text};
 use diesel_async::{AsyncPgConnection as PgConnection, RunQueryDsl};
 use futures_util::Future;
 use itertools::Itertools;
-use log::warn;
 use serde_json::to_value;
 use sha1::{Digest, Sha1};
 use std::pin::Pin;
+use tracing::warn;
 
 use super::GeneratedData;
 use crate::error::Result;

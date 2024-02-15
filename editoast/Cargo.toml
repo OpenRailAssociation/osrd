@@ -46,7 +46,7 @@ actix-web = "4.4.1"
 actix-http = "3.5.1"
 actix-cors = "0.7.0"
 env_logger = "0.10.1"
-log = "0.4.20"
+tracing = { version = "0.1.40", features = [ "log" ] }
 redis = { version = "0.24.0", features = [
     "tokio-comp",
     "connection-manager",
