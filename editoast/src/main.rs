@@ -63,6 +63,7 @@ use std::process::exit;
 use std::{env, fs};
 use thiserror::Error;
 use tracing::{error, info, warn};
+use tracing_subscriber::{layer::SubscriberExt as _, util::SubscriberInitExt as _};
 use url::Url;
 use validator::{Validate, ValidationErrorsKind};
 use views::infra::InfraApiError;
@@ -70,10 +71,21 @@ use views::search::{SearchConfig, SearchConfigFinder, SearchConfigStore};
 
 type DbPool = Pool<PgConnection>;
 
+fn init_tracing() {
+    tracing_subscriber::registry()
+        .with(
+            tracing_subscriber::EnvFilter::builder()
+                // Set the default log level to 'info'
+                .with_default_directive(tracing_subscriber::filter::LevelFilter::INFO.into())
+                .from_env_lossy(),
+        )
+        .with(tracing_subscriber::fmt::layer().compact())
+        .init();
+}
+
 #[actix_web::main]
 async fn main() {
-    // Set the default log level to 'info'
-    env_logger::init_from_env(env_logger::Env::new().default_filter_or("info"));
+    init_tracing();
 
     match run().await {
         Ok(_) => (),
