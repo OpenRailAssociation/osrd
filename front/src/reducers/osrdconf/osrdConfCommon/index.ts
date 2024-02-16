@@ -4,7 +4,7 @@ import { omit } from 'lodash';
 
 import { formatIsoDate } from 'utils/date';
 
-import { computeLinkedOriginTimes } from 'reducers/osrdconf/helpers';
+import { computeLinkedOriginTimes, insertVia } from 'reducers/osrdconf/helpers';
 import { InfraStateReducers, buildInfraStateReducers, infraState } from 'reducers/infra';
 import type { PointOnMap } from 'applications/operationalStudies/consts';
 import type {
@@ -221,7 +221,9 @@ export function buildCommonConfReducers<S extends OsrdConfState>(): CommonConfRe
       state.vias = action.payload;
     },
     addVias(state: Draft<S>, action: PayloadAction<PointOnMap>) {
-      state.vias.push(action.payload);
+      if (state.origin && state.destination) {
+        state.vias = insertVia(state.vias, state.origin, state.destination, action.payload);
+      }
     },
     clearVias(state: Draft<S>) {
       state.vias = [];

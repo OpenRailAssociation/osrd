@@ -70,9 +70,10 @@ export default function DisplayVias({ zoomToFeaturePoint }: DisplayViasProps) {
 
   return (
     <DragDropContext
-      onDragEnd={(e) =>
-        e.destination &&
-        dispatchAndRun(permuteVias(osrdconf.vias, e.source.index, e.destination.index))
+      onDragEnd={({ destination, source }) =>
+        destination &&
+        source.index !== destination.index &&
+        dispatchAndRun(permuteVias(osrdconf.vias, source.index, destination.index))
       }
     >
       <Droppable droppableId="droppableVias">
@@ -81,7 +82,7 @@ export default function DisplayVias({ zoomToFeaturePoint }: DisplayViasProps) {
             {osrdconf.vias.map((place, index) => (
               <Draggable
                 key={`drag-key-${place.id}-${place.path_offset}`}
-                draggableId={`drag-vias-${index}`}
+                draggableId={`drag-vias-${place.location?.track_section}-${place.location?.offset}`}
                 index={index}
               >
                 {(providedDraggable) => (
