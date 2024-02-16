@@ -2,18 +2,16 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
+import { Plus } from '@osrd-project/ui-icons';
 import { time2sec, sec2time } from 'utils/timeManipulation';
-
+import { castErrorToFailure } from 'utils/error';
 import formatConf from 'modules/trainschedule/components/ManageTrainSchedule/helpers/formatConf';
 import trainNameWithNum from 'modules/trainschedule/components/ManageTrainSchedule/helpers/trainNameHelper';
-
 import { useOsrdConfSelectors } from 'common/osrdContext';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { Infra, TrainScheduleBatchItem } from 'common/api/osrdEditoastApi';
-
 import { setFailure, setSuccess } from 'reducers/main';
 import { useAppDispatch } from 'store';
-import { Plus } from '@osrd-project/ui-icons';
 
 type SubmitConfAddTrainScheduleProps = {
   infraState?: Infra['state'];
@@ -21,17 +19,6 @@ type SubmitConfAddTrainScheduleProps = {
   refetchConflicts: () => void;
   setIsWorking: (isWorking: boolean) => void;
   setTrainResultsToFetch: (trainScheduleIds?: number[]) => void;
-};
-
-type error400 = {
-  status: 400;
-  data: {
-    cause: string;
-    errorType: string;
-    message: string;
-    trace: unknown;
-    type: string;
-  };
 };
 
 export default function SubmitConfAddTrainSchedule({
@@ -108,24 +95,9 @@ export default function SubmitConfAddTrainSchedule({
         setTrainResultsToFetch(newTrainIds);
         refetchTimetable();
         refetchConflicts();
-      } catch (e: unknown) {
+      } catch (e) {
         setIsWorking(false);
-        if (e instanceof Error) {
-          dispatch(
-            setFailure({
-              name: e.name,
-              message: t(`errorMessages.${e.message}`),
-            })
-          );
-        } else {
-          const error = { ...(e as error400) };
-          dispatch(
-            setFailure({
-              name: t('errorMessages.error'),
-              message: t(`errorMessages.${error.data.errorType}`),
-            })
-          );
-        }
+        dispatch(setFailure(castErrorToFailure(e)));
       }
     }
   }

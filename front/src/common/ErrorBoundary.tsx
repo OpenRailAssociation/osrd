@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, useNavigate, useRouteError } from 'react-router-dom';
 import { SerializedError } from '@reduxjs/toolkit';
 import { useTranslation } from 'react-i18next';
-import { extractMessageFromError } from 'utils/error';
+import { getErrorMessage } from 'utils/error';
 import { ApiError } from 'common/api/baseGeneratedApis';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import { ModalProvider } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
@@ -21,7 +21,7 @@ export default function ErrorBoundary() {
               <h1>
                 {t(`errors:${(error as ApiError).status ? (error as ApiError).status : 'default'}`)}
               </h1>
-              <p>{extractMessageFromError(error)}</p>
+              <p>{getErrorMessage(error)}</p>
             </>
           ) : (
             <h1>{t('errors:pageNotFound')}</h1>

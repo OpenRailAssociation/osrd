@@ -1,10 +1,12 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import Countdown from 'react-countdown';
+
 import { Infra, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useAppDispatch } from 'store';
 import { setFailure, setSuccess } from 'reducers/main';
 import { Spinner } from 'common/Loaders';
+import { castErrorToFailure } from 'utils/error';
 
 type InfraSelectorEditionActionsBarDeleteProps = {
   infra: Infra;
@@ -33,12 +35,7 @@ export default function InfraSelectorEditionActionsBarDelete({
       );
     } catch (e) {
       if (e instanceof Error) {
-        dispatch(
-          setFailure({
-            name: e.name,
-            message: e.message,
-          })
-        );
+        dispatch(setFailure(castErrorToFailure(e)));
       }
     }
   }

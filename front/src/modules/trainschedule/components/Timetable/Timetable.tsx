@@ -35,6 +35,7 @@ import { updateSelectedTrainId, updateSimulation } from 'reducers/osrdsimulation
 import { getSelectedProjection } from 'reducers/osrdsimulation/selectors';
 import { enhancedEditoastApi } from 'common/api/enhancedEditoastApi';
 import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
+import { castErrorToFailure } from 'utils/error';
 
 type TimetableProps = {
   setDisplayTrainScheduleManagement: (mode: string) => void;
@@ -272,18 +273,11 @@ export default function Timetable({
           })
         );
       })
-      .catch((e: unknown) => {
-        console.error(e);
+      .catch((e) => {
         if (selectedTrainId && selectedTrainIds.includes(selectedTrainId)) {
           dispatch(updateSelectedTrainId(selectedTrainId));
-        }
-        if (e instanceof Error) {
-          dispatch(
-            setFailure({
-              name: e.name,
-              message: e.message,
-            })
-          );
+        } else {
+          dispatch(setFailure(castErrorToFailure(e)));
         }
       });
   };

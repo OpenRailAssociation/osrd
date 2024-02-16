@@ -1,11 +1,12 @@
-import { FetchBaseQueryError } from '@reduxjs/toolkit/query';
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import { useOsrdConfSelectors, useOsrdConfActions, useInfraID } from 'common/osrdContext';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { useAppDispatch } from 'store';
+
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { useOsrdConfSelectors, useOsrdConfActions, useInfraID } from 'common/osrdContext';
 import { setFailure } from 'reducers/main';
+import { castErrorToFailure } from 'utils/error';
 
 export const useStoreDataForSpeedLimitByTagSelector = () => {
   const dispatch = useAppDispatch();
@@ -32,12 +33,7 @@ export const useStoreDataForSpeedLimitByTagSelector = () => {
     // Update the document title using the browser API
     if (error) {
       dispatch(
-        setFailure({
-          name: t('errorMessages.unableToRetrieveTags'),
-          message: `${(error as FetchBaseQueryError).status} : ${JSON.stringify(
-            (error as FetchBaseQueryError).data
-          )}`,
-        })
+        setFailure(castErrorToFailure(error, { name: t('errorMessages.unableToRetrieveTags') }))
       );
     }
   }, [error]);

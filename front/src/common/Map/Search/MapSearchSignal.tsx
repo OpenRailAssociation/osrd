@@ -5,6 +5,7 @@ import { getMap } from 'reducers/map/selectors';
 import { setFailure } from 'reducers/main';
 import { sortBy } from 'lodash';
 import { useDebounce } from 'utils/helpers';
+import { castErrorToFailure } from 'utils/error';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
@@ -14,7 +15,6 @@ import MultiSelectSNCF from 'common/BootstrapSNCF/MultiSelectSNCF';
 import nextId from 'react-id-generator';
 import SelectImproved from 'common/BootstrapSNCF/SelectImprovedSNCF';
 import SignalCard from 'common/Map/Search/SignalCard';
-
 import type { SearchResultItemSignal, SearchPayload } from 'common/api/osrdEditoastApi';
 import { useAppDispatch } from 'store';
 import type { Viewport } from 'reducers/map';
@@ -137,13 +137,11 @@ const MapSearchSignal = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchSi
         setSearchResults([...results] as SearchResultItemSignal[]);
       })
       .catch((e) => {
-        console.error(e);
         setSearchResults([]);
         dispatch(
-          setFailure({
-            name: t('map-search:errorMessages.unableToSearchSignal'),
-            message: `${e.message}`,
-          })
+          setFailure(
+            castErrorToFailure(e, { name: t('map-search:errorMessages.unableToSearchSignal') })
+          )
         );
       });
   };

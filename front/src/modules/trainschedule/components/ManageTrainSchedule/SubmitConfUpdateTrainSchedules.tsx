@@ -2,19 +2,15 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 
-import { extractMessageFromError } from 'utils/error';
-
+import { Pencil } from '@osrd-project/ui-icons';
+import { castErrorToFailure } from 'utils/error';
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
-
 import formatConf from 'modules/trainschedule/components/ManageTrainSchedule/helpers/formatConf';
-
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
-
 import { useAppDispatch } from 'store';
 import { setFailure, setSuccess } from 'reducers/main';
 import { updateSelectedProjection, updateSelectedTrainId } from 'reducers/osrdsimulation/actions';
-import { Pencil } from '@osrd-project/ui-icons';
 
 type SubmitConfUpdateTrainSchedulesProps = {
   setIsWorking: (isWorking: boolean) => void;
@@ -70,14 +66,8 @@ export default function SubmitConfUpdateTrainSchedules({
             })
               .unwrap()
               .catch((e) => {
-                extractMessageFromError(e);
                 callSuccess = false;
-                dispatch(
-                  setFailure({
-                    name: t('errorMessages.error'),
-                    message: t(`errorMessages.${e.data.type}`),
-                  })
-                );
+                dispatch(setFailure(castErrorToFailure(e)));
               });
           })
         );
@@ -100,16 +90,9 @@ export default function SubmitConfUpdateTrainSchedules({
           setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.none);
           dispatch(updateTrainScheduleIDsToModify([]));
         }
-      } catch (e: unknown) {
+      } catch (e) {
         setIsWorking(false);
-        if (e instanceof Error) {
-          dispatch(
-            setFailure({
-              name: e.name,
-              message: t(`errorMessages.${e.message}`),
-            })
-          );
-        }
+        dispatch(setFailure(castErrorToFailure(e)));
       }
     }
   }

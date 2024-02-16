@@ -8,6 +8,7 @@ import { Infra, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useAppDispatch } from 'store';
 import { setFailure } from 'reducers/main';
 import InfraLockState from 'modules/infra/consts';
+import { castErrorToFailure } from 'utils/error';
 
 type ActionBarProps = {
   infra: Infra;
@@ -39,12 +40,7 @@ export default function ActionsBar({ infra, isFocused, setIsFocused, inputValue 
         }
       } catch (e) {
         if (e instanceof Error) {
-          dispatch(
-            setFailure({
-              name: e.name,
-              message: e.message,
-            })
-          );
+          dispatch(setFailure(castErrorToFailure(e)));
         }
       } finally {
         setIsWaiting(false);

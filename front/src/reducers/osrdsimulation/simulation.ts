@@ -9,8 +9,7 @@ import {
   TrainSchedulePatch,
   osrdEditoastApi,
 } from 'common/api/osrdEditoastApi';
-import { ApiError } from 'common/api/baseGeneratedApis';
-import { SerializedError } from '@reduxjs/toolkit';
+import { castErrorToFailure } from 'utils/error';
 import { OsrdSimulationState, SimulationSnapshot, Train } from './types';
 import {
   UPDATE_SIMULATION,
@@ -67,26 +66,24 @@ export const changeTrain =
       );
       if ('error' in response) {
         dispatch(
-          setFailure({
-            name: i18n.t('operationalStudies/manageTrainSchedule:errorMessages.unableToPatchTrain'),
-            message: `${
-              (response.error as ApiError)?.data?.message ||
-              (response.error as SerializedError)?.message
-            }`,
-          })
+          setFailure(
+            castErrorToFailure(response.error, {
+              name: i18n.t(
+                'operationalStudies/manageTrainSchedule:errorMessages.unableToPatchTrain'
+              ),
+            })
+          )
         );
       }
     } else if (isGetTrainDetailsError && getTrainDetailsError) {
       dispatch(
-        setFailure({
-          name: i18n.t(
-            'operationalStudies/manageTrainSchedule:errorMessages.unableToRetrieveTrain'
-          ),
-          message: `${
-            (getTrainDetailsError as ApiError)?.data?.message ||
-            (getTrainDetailsError as SerializedError)?.message
-          }`,
-        })
+        setFailure(
+          castErrorToFailure(getTrainDetailsError, {
+            name: i18n.t(
+              'operationalStudies/manageTrainSchedule:errorMessages.unableToRetrieveTrain'
+            ),
+          })
+        )
       );
     }
   };
@@ -123,14 +120,7 @@ const apiSyncOnDiff = (
       try {
         dispatch(osrdEditoastApi.endpoints.deleteTrainScheduleById.initiate({ id }));
       } catch (deleteTrainScheduleError) {
-        dispatch(
-          setFailure({
-            name: i18n.t(''),
-            message:
-              `${(deleteTrainScheduleError as ApiError).data.message}` ||
-              `${(deleteTrainScheduleError as SerializedError).message}`,
-          })
-        );
+        dispatch(setFailure(castErrorToFailure(deleteTrainScheduleError)));
       }
     } else if (
       JSON.stringify(apiDetailsForNextTrain) !== JSON.stringify(apiDetailsForPresentTrain)

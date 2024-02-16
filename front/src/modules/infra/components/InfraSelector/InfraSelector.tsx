@@ -1,12 +1,11 @@
 import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { castErrorToFailure } from 'utils/error';
 import { useInfraID } from 'common/osrdContext';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-
 import { useAppDispatch } from 'store';
 import { setFailure } from 'reducers/main';
-
 import InfraSelectorModal from './InfraSelectorModal';
 
 type InfraSelectorProps = {
@@ -24,10 +23,7 @@ const InfraSelector = ({ isInEditor }: InfraSelectorProps) => {
       .unwrap()
       .catch((e) =>
         dispatch(
-          setFailure({
-            name: t('errorMessages.unableToRetrieveInfra'),
-            message: e.message,
-          })
+          setFailure(castErrorToFailure(e, { name: t('errorMessages.unableToRetrieveInfra') }))
         )
       );
   };

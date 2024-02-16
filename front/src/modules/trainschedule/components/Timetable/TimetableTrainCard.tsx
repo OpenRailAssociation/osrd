@@ -1,26 +1,22 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { GiPathDistance } from 'react-icons/gi';
-import { Pencil, Trash } from '@osrd-project/ui-icons';
 import { MdAvTimer, MdContentCopy } from 'react-icons/md';
 import nextId from 'react-id-generator';
 import cx from 'classnames';
 
+import { Pencil, Trash } from '@osrd-project/ui-icons';
 import invalidInfra from 'assets/pictures/components/missing_tracks.svg';
 import invalidRollingStock from 'assets/pictures/components/missing_train.svg';
-
 import { jouleToKwh, mToKmOneDecimal } from 'utils/physics';
 import { durationInSeconds, sec2time } from 'utils/timeManipulation';
-
+import { castErrorToFailure } from 'utils/error';
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
-
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import trainNameWithNum from 'modules/trainschedule/components/ManageTrainSchedule/helpers/trainNameHelper';
-
 import { useOsrdConfActions } from 'common/osrdContext';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { SimulationReport, TrainScheduleValidation } from 'common/api/osrdEditoastApi';
-
 import { useAppDispatch } from 'store';
 import { setFailure, setSuccess } from 'reducers/main';
 import type { Projection, ScheduledTrain, SimulationSnapshot } from 'reducers/osrdsimulation/types';
@@ -126,14 +122,8 @@ function TimetableTrainCard({
           })
         );
       })
-      .catch((e: unknown) => {
-        console.error(e);
-        dispatch(
-          setFailure({
-            name: t('errorMessages.error'),
-            message: t('errorMessages.unableToDeleteTrain'),
-          })
-        );
+      .catch((e) => {
+        dispatch(setFailure(castErrorToFailure(e)));
         if (isSelected) {
           dispatch(updateSelectedTrainId(train.id));
         }
@@ -149,13 +139,8 @@ function TimetableTrainCard({
 
     const trainDetail = await getTrainScheduleById({ id: train.id })
       .unwrap()
-      .catch(() => {
-        dispatch(
-          setFailure({
-            name: t('errorMessages.error'),
-            message: t('errorMessages.unableToRetrieveTrain'),
-          })
-        );
+      .catch((e) => {
+        dispatch(setFailure(castErrorToFailure(e)));
       });
 
     if (trainDetail) {
@@ -185,13 +170,7 @@ function TimetableTrainCard({
           );
         })
         .catch((e) => {
-          console.error(e);
-          dispatch(
-            setFailure({
-              name: t('errorMessages.error'),
-              message: t('errorMessages.unableToDuplicateATrain'),
-            })
-          );
+          dispatch(setFailure(castErrorToFailure(e)));
         });
     }
   };

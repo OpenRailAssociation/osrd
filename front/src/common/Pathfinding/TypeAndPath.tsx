@@ -13,12 +13,10 @@ import type { Position } from 'geojson';
 import cx from 'classnames';
 
 import { useDebounce } from 'utils/helpers';
-
+import { castErrorToFailure } from 'utils/error';
 import { loadPathFinding } from 'modules/trainschedule/components/ManageTrainSchedule/helpers/adjustConfWithTrainToModify';
-
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useInfraID, useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
-
 import { useAppDispatch } from 'store';
 import { setFailure } from 'reducers/main';
 
@@ -134,12 +132,7 @@ export default function TypeAndPath({ zoomToFeature }: PathfindingProps) {
           loadPathFinding(itineraryCreated, dispatch, osrdActions);
         })
         .catch((e) => {
-          dispatch(
-            setFailure({
-              name: e.data.name,
-              message: e.data.message,
-            })
-          );
+          dispatch(setFailure(castErrorToFailure(e)));
         });
     }
   }

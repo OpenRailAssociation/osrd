@@ -1,4 +1,3 @@
-import { SerializedError } from '@reduxjs/toolkit';
 import cx from 'classnames';
 import { isNil, toInteger } from 'lodash';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -7,10 +6,8 @@ import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
-import { ApiError } from 'common/api/baseGeneratedApis';
 import type { ObjectType } from 'common/api/osrdEditoastApi';
 import { useInfraID, useOsrdActions } from 'common/osrdContext';
-
 import type { EditorSliceActions } from 'reducers/editor';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import MapButtons from 'common/Map/Buttons/MapButtons';
@@ -23,8 +20,7 @@ import { getEditorState, getInfraLockStatus } from 'reducers/editor/selectors';
 import { loadDataModel, updateTotalsIssue } from 'reducers/editor/thunkActions';
 import { updateViewport, type Viewport } from 'reducers/map';
 import { setFailure } from 'reducers/main';
-import { extractMessageFromError } from 'utils/error';
-
+import { castErrorToFailure } from 'utils/error';
 import { getEntity, getMixedEntities } from 'applications/editor/data/api';
 import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
 import { useSwitchTypes } from 'applications/editor/tools/switchEdition/types';
@@ -37,7 +33,6 @@ import type { switchProps } from 'applications/editor/tools/switchProps';
 import { centerMapOnObject, selectEntities } from 'applications/editor/tools/utils';
 import TOOLS from 'applications/editor/tools/constsTools';
 import TOOL_NAMES from 'applications/editor/tools/constsToolNames';
-
 import type { EditoastType } from './consts';
 import type { EditorContextType, ExtendedEditorContextType, FullTool, Reducer } from './types';
 import type { EditorEntity } from './typesEditorEntity';
@@ -244,13 +239,12 @@ const Editor = () => {
             if (mapRef.current) centerMapOnObject(+urlInfra, entities, dispatch, mapRef.current);
           } catch (e) {
             dispatch(
-              setFailure({
-                name: t('translation:Editor.tools.select-items.errors.unable-to-select'),
-                message:
-                  extractMessageFromError(e as ApiError | SerializedError) !== 'undefined'
-                    ? extractMessageFromError(e as ApiError | SerializedError)
-                    : t('translation:Editor.tools.select-items.errors.invalid-url'),
-              })
+              setFailure(
+                castErrorToFailure(e, {
+                  name: t('translation:Editor.tools.select-items.errors.unable-to-select'),
+                  message: t('translation:Editor.tools.select-items.errors.invalid-url'),
+                })
+              )
             );
           }
         };

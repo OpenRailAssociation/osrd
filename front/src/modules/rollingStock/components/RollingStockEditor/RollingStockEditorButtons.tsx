@@ -10,6 +10,7 @@ import { Duplicate, Pencil, Trash } from '@osrd-project/ui-icons';
 import RollingStockEditorFormModal from 'modules/rollingStock/components/RollingStockEditor/RollingStockEditorFormModal';
 
 import type { RollingStock } from 'common/api/osrdEditoastApi';
+import { castErrorToFailure, getErrorStatus } from 'utils/error';
 
 type RollingStockEditorButtonsProps = {
   rollingStock: RollingStock;
@@ -48,7 +49,7 @@ const RollingStockEditorButtons = ({
           );
         })
         .catch((error) => {
-          if (error.status === 409) {
+          if (getErrorStatus(error) === 409) {
             openModal(
               <RollingStockEditorFormModal
                 mainText={t('messages.rollingStockNotDeleted')}
@@ -57,10 +58,12 @@ const RollingStockEditorButtons = ({
             );
           }
           dispatch(
-            setFailure({
-              name: t('messages.failure'),
-              message: t('messages.rollingStockNotDeleted'),
-            })
+            setFailure(
+              castErrorToFailure(error, {
+                name: t('messages.failure'),
+                message: t('messages.rollingStockNotDeleted'),
+              })
+            )
           );
         });
   };
@@ -85,21 +88,7 @@ const RollingStockEditorButtons = ({
         );
       })
       .catch((error) => {
-        if (error.data?.message.includes('duplicate')) {
-          dispatch(
-            setFailure({
-              name: t('messages.failure'),
-              message: t('messages.rollingStockDuplicateName'),
-            })
-          );
-        } else {
-          dispatch(
-            setFailure({
-              name: t('messages.failure'),
-              message: t('messages.rollingStockNotAdded'),
-            })
-          );
-        }
+        dispatch(setFailure(castErrorToFailure(error, { name: t('messages.failure') })));
       });
   };
 

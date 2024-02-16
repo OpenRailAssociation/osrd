@@ -13,10 +13,8 @@ import {
   TrainScheduleSummary,
   osrdEditoastApi,
 } from 'common/api/osrdEditoastApi';
-import { extractMessageFromError } from 'utils/error';
+import { castErrorToFailure } from 'utils/error';
 import { AllowancesSettings, Projection } from 'reducers/osrdsimulation/types';
-import { ApiError } from 'common/api/baseGeneratedApis';
-import { SerializedError } from '@reduxjs/toolkit';
 import { differenceBy } from 'lodash';
 
 export function selectProjection(
@@ -132,12 +130,12 @@ export default async function getSimulationResults(
       store.dispatch(updateAllowancesSettings(newAllowancesSettings));
     } catch (e) {
       store.dispatch(
-        setFailure({
-          name: i18n.t('simulation:errorMessages.unableToRetrieveTrainSchedule'),
-          message: extractMessageFromError(e as ApiError | SerializedError),
-        })
+        setFailure(
+          castErrorToFailure(e, {
+            name: i18n.t('simulation:errorMessages.unableToRetrieveTrainSchedule'),
+          })
+        )
       );
-      console.error('trainScheduleResults error : ', e);
     } finally {
       store.dispatch(updateIsUpdating(false));
     }

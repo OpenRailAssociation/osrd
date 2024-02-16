@@ -1,17 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { MdEditNote, MdList } from 'react-icons/md';
+
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import icon from 'assets/pictures/components/tracks.svg';
 import iconEdition from 'assets/pictures/components/tracks_edit.svg';
 import { useDebounce } from 'utils/helpers';
+import { castErrorToFailure } from 'utils/error';
 import { Loader } from 'common/Loaders';
-import { MdEditNote, MdList } from 'react-icons/md';
 import { Infra, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useAppDispatch } from 'store';
 import { setFailure } from 'reducers/main';
-import { ApiError } from 'common/api/baseGeneratedApis';
-import { SerializedError } from '@reduxjs/toolkit';
 import InfraSelectorModalBodyEdition from './InfraSelectorModalBodyEdition';
 import InfraSelectorModalBodyStandard from './InfraSelectorModalBodyStandard';
 
@@ -57,10 +57,11 @@ const InfraSelectorModal = ({ onlySelectionMode = false, isInEditor }: InfraSele
   useEffect(() => {
     if (isError && error) {
       dispatch(
-        setFailure({
-          name: t('infraManagement:errorMessages.unableToRetrieveInfraList'),
-          message: `${(error as ApiError)?.data?.message || (error as SerializedError)?.message}`,
-        })
+        setFailure(
+          castErrorToFailure(error, {
+            name: t('infraManagement:errorMessages.unableToRetrieveInfraList'),
+          })
+        )
       );
     }
   }, [isError]);
