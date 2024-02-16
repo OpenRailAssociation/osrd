@@ -16,7 +16,7 @@ import {
 } from 'common/api/osrdEditoastApi';
 import { useAppDispatch } from 'store';
 import { setFailure } from 'reducers/main';
-
+import { castErrorToFailure } from 'utils/error';
 import { ProjectMiniCard, StudyMiniCard, ScenarioMiniCard } from './MiniCards';
 
 export type ScenarioExplorerProps = {
@@ -59,13 +59,7 @@ const ScenarioExplorerModal = ({
 
   useEffect(() => {
     if (isProjectsError) {
-      dispatch(
-        setFailure({
-          name: t('errorMessages.error'),
-          message: t('errorMessages.unableToRetrieveProjectsMessage'),
-        })
-      );
-      console.error('error : ', projectsError);
+      dispatch(setFailure(castErrorToFailure(projectsError)));
     }
   }, [isProjectsError]);
 

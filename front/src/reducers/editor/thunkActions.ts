@@ -12,10 +12,9 @@ import {
   entityToDeleteOperation,
 } from 'applications/editor/data/utils';
 import { EditorEntity, EditorSchema } from 'applications/editor/typesEditorEntity';
-
 import type { Operation } from 'common/api/osrdEditoastApi';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-
+import { castErrorToFailure } from 'utils/error';
 import { updateIssuesSettings } from 'reducers/map';
 import infra_schema from 'reducers/osrdconf/infra_schema.json';
 import { setLoading, setSuccess, setFailure, setSuccessWithoutMessage } from 'reducers/main';
@@ -64,8 +63,7 @@ export function loadDataModel() {
         dispatch(setSuccessWithoutMessage());
         dispatch(loadDataModelAction(schema));
       } catch (e) {
-        console.error(e);
-        dispatch(setFailure(e as Error));
+        dispatch(setFailure(castErrorToFailure(e)));
       }
     }
   };
@@ -109,8 +107,7 @@ export function updateTotalsIssue(infraID: number | undefined) {
       }
       dispatch(updateTotalsIssueAction({ total, filterTotal }));
     } catch (e) {
-      dispatch(setFailure(e as Error));
-      throw e;
+      dispatch(setFailure(castErrorToFailure(e)));
     } finally {
       dispatch(setSuccessWithoutMessage());
     }
@@ -189,10 +186,12 @@ export function saveOperations(
       throw new Error(JSON.stringify(response.error));
     } catch (e) {
       dispatch(
-        setFailure({
-          name: i18next.t('common.failure.save.title'),
-          message: i18next.t('common.failure.save.text'),
-        })
+        setFailure(
+          castErrorToFailure(e, {
+            name: i18next.t('common.failure.save.title'),
+            message: i18next.t('common.failure.save.text'),
+          })
+        )
       );
       throw e;
     } finally {

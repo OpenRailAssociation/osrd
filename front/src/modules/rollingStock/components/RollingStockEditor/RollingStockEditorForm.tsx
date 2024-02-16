@@ -30,6 +30,7 @@ import type {
 } from 'common/api/osrdEditoastApi';
 import type { TabProps } from 'common/Tabs';
 import { useAppDispatch } from 'store';
+import { castErrorToFailure } from 'utils/error';
 
 type RollingStockParametersProps = {
   rollingStockData?: RollingStockWithLiveries;
@@ -112,21 +113,13 @@ const RollingStockEditorForm = ({
         setAddOrEditState(false);
       })
       .catch((error) => {
-        if (error.data?.message.includes('duplicate')) {
-          dispatch(
-            setFailure({
+        dispatch(
+          setFailure(
+            castErrorToFailure(error, {
               name: t('messages.failure'),
-              message: t('messages.rollingStockDuplicateName'),
             })
-          );
-        } else {
-          dispatch(
-            setFailure({
-              name: t('messages.failure'),
-              message: t('messages.rollingStockNotAdded'),
-            })
-          );
-        }
+          )
+        );
       });
   };
 
@@ -147,21 +140,13 @@ const RollingStockEditorForm = ({
           setAddOrEditState(false);
         })
         .catch((error) => {
-          if (error.data?.message.includes('used')) {
-            dispatch(
-              setFailure({
+          dispatch(
+            setFailure(
+              castErrorToFailure(error, {
                 name: t('messages.failure'),
-                message: t('messages.rollingStockDuplicateName'),
               })
-            );
-          } else {
-            dispatch(
-              setFailure({
-                name: t('messages.failure'),
-                message: t('messages.rollingStockNotUpdated'),
-              })
-            );
-          }
+            )
+          );
         });
     }
   };

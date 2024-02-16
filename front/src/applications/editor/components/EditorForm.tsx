@@ -17,7 +17,7 @@ import {
 import { translateSchema } from 'applications/editor/tools/translationTools';
 import { getEditorState } from 'reducers/editor/selectors';
 import type { EditorEntity } from 'applications/editor/typesEditorEntity';
-
+import { getErrorMessage } from 'utils/error';
 import { FormComponent, FormLineStringLength } from './LinearMetadata';
 
 const fields = {
@@ -119,8 +119,7 @@ function EditorForm<T extends Omit<EditorEntity, 'objType'> & { objType: string 
             setError(null);
             await onSubmit({ ...data, properties: { ...data.properties, ...formData } });
           } catch (e) {
-            if (e instanceof Error) setError(e.message);
-            else setError(JSON.stringify(e));
+            setError(getErrorMessage(e));
           } finally {
             setSubmited(true);
           }

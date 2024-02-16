@@ -113,9 +113,6 @@ export default function ImportTrainScheduleConfig({
           message: t('errorMessage.errorImport'),
         })
       );
-      console.error(
-        'Invalid data format: can not convert response into TrainSchedules. Expected format : { trainNumber: string; rollingStock: string; departureTime: string; arrivalTime: string; departure: string; steps: ({uic: number; yard?: string; name: string; trigram: string; latitude: number; longitude: number; arrivalTime: string; departureTime: string; })[]; transilienName?: string; }'
-      );
       return null;
     }
     return importedTrainSchedules as ImportedTrainSchedule[];

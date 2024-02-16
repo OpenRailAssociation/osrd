@@ -4,21 +4,18 @@ import type { Position } from 'geojson';
 import bbox from '@turf/bbox';
 import { useTranslation } from 'react-i18next';
 import { compact, isEqual, omit } from 'lodash';
-import { Alert, CheckCircle, Stop } from '@osrd-project/ui-icons';
 
+import { Alert, CheckCircle, Stop } from '@osrd-project/ui-icons';
 import type { ArrayElement } from 'utils/types';
 import { conditionalStringConcat, formatKmValue } from 'utils/strings';
-
+import { castErrorToFailure } from 'utils/error';
 import type { PathResponse, PathfindingRequest, PathfindingStep } from 'common/api/osrdEditoastApi';
-
 import infraLogo from 'assets/pictures/components/tracks.svg';
 import type { PointOnMap } from 'applications/operationalStudies/consts';
 import InfraLoadingState from 'applications/operationalStudies/components/Scenario/InfraLoadingState';
-
 import { Spinner } from 'common/Loaders';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
-
 import { useAppDispatch } from 'store';
 import { setFailure } from 'reducers/main';
 
@@ -420,12 +417,7 @@ function Pathfinding({ zoomToFeature, path }: PathfindingProps) {
         })
         .catch((e) => {
           if (e.error) {
-            dispatch(
-              setFailure({
-                name: t('pathfinding'),
-                message: e.error,
-              })
-            );
+            dispatch(setFailure(castErrorToFailure(e, { name: t('pathfinding') })));
             pathfindingDispatch({ type: 'PATHFINDING_ERROR', message: 'failedRequest' });
           } else if (e?.data?.message) {
             pathfindingDispatch({ type: 'PATHFINDING_ERROR', message: e.data.message });

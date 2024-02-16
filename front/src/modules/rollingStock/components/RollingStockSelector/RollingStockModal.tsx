@@ -1,18 +1,18 @@
 import React, { useState, useEffect, useContext, useMemo, type MutableRefObject } from 'react';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { enhancedEditoastApi } from 'common/api/enhancedEditoastApi';
-import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
+
 import { useAppDispatch } from 'store';
 import { setFailure } from 'reducers/main';
+import { enhancedEditoastApi } from 'common/api/enhancedEditoastApi';
+import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { useOsrdConfSelectors } from 'common/osrdContext';
-
 import { Loader } from 'common/Loaders';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import RollingStockCard from 'modules/rollingStock/components/RollingStockCard/RollingStockCard';
-import SearchRollingStock from 'modules/rollingStock/components/RollingStockSelector/SearchRollingStock';
-
 import type { LightRollingStockWithLiveries } from 'common/api/osrdEditoastApi';
+import SearchRollingStock from 'modules/rollingStock/components/RollingStockSelector/SearchRollingStock';
+import { castErrorToFailure } from 'utils/error';
 
 interface RollingStockModal {
   ref2scroll: MutableRefObject<HTMLDivElement | null>;
@@ -49,16 +49,8 @@ function RollingStockModal({ ref2scroll }: RollingStockModal) {
   }, [ref2scroll.current]);
 
   useEffect(() => {
-    if (isError && error && 'status' in error) {
-      dispatch(
-        setFailure({
-          name: t('rollingstock:errorMessages.unableToRetrieveRollingStock'),
-          message:
-            error.status === 404
-              ? t('rollingstock:errorMessages.ressourcesNotFound')
-              : t('rollingstock:errorMessages.unableToRetrieveRollingStockMessage'),
-        })
-      );
+    if (isError && error) {
+      dispatch(setFailure(castErrorToFailure(error)));
     }
   }, [isError]);
 

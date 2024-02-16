@@ -55,7 +55,7 @@
       },
       "objects": {
         "DuplicateIdsProvided": "Duplicate object ids provided",
-        "ObjectIdNotFound": "Object ID not found"
+        "ObjectIdNotFound": "Object '{{object_id}}' not found"
       },
       "pathfinding": {
         "EndingTrackLocationNotFound": "Ending track location was not found",

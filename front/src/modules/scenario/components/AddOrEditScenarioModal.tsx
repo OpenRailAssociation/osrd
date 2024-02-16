@@ -29,6 +29,7 @@ import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
 import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
 import useInputChange from 'utils/hooks/useInputChange';
 import useOutsideClick from 'utils/hooks/useOutsideClick';
+import { castErrorToFailure } from 'utils/error';
 
 type ScenarioForm = ScenarioPatchForm & {
   id?: number;
@@ -160,13 +161,7 @@ export default function AddOrEditScenarioModal({
         })
 
         .catch((error) => {
-          console.error(error);
-          dispatch(
-            setFailure({
-              name: t('errorMessages.error'),
-              message: t('errorMessages.unableToCreateScenarioMessage'),
-            })
-          );
+          dispatch(setFailure(castErrorToFailure(error)));
         });
     }
   };
@@ -192,13 +187,7 @@ export default function AddOrEditScenarioModal({
           closeModal();
         })
         .catch((error) => {
-          console.error(error);
-          dispatch(
-            setFailure({
-              name: t('errorMessages.error'),
-              message: t('errorMessages.unableToUpdateScenarioMessage'),
-            })
-          );
+          dispatch(setFailure(castErrorToFailure(error)));
         });
     }
   };

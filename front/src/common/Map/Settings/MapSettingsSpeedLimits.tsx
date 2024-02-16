@@ -3,26 +3,24 @@ import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { IoMdSpeedometer } from 'react-icons/io';
 import type { IconType } from 'react-icons';
-import type { SerializedError } from '@reduxjs/toolkit';
 
 import TIVsSVGFile from 'assets/pictures/layersicons/layer_tivs.svg';
 
 import DotsLoader from 'common/DotsLoader/DotsLoader';
 import { useInfraID } from 'common/osrdContext';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import type { ApiError } from 'common/api/baseGeneratedApis';
 import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
 import SwitchSNCF, { SWITCH_TYPES } from 'common/BootstrapSNCF/SwitchSNCF/SwitchSNCF';
 import {
   FormatSwitch as SimpleFormatSwitch,
   Icon2SVG,
 } from 'common/Map/Settings/MapSettingsLayers';
-
 import { useAppDispatch } from 'store';
 import { setFailure } from 'reducers/main';
 import { getMap } from 'reducers/map/selectors';
 import { updateLayersSettings } from 'reducers/map';
 import type { MapState } from 'reducers/map';
+import { castErrorToFailure } from 'utils/error';
 
 type FormatSwitchProps = {
   name: keyof MapState['layersSettings'];
@@ -76,12 +74,11 @@ const FormatSwitch = ({ name, icon: IconComponent, color = '', disabled }: Forma
   useEffect(() => {
     if (isGetSpeedLimitTagsError && getSpeedLimitTagsError) {
       dispatch(
-        setFailure({
-          name: t('errorMessages.unableToRetrieveTags'),
-          message:
-            `${(getSpeedLimitTagsError as ApiError).data.message}` ||
-            `${(getSpeedLimitTagsError as SerializedError).message}}`,
-        })
+        setFailure(
+          castErrorToFailure(getSpeedLimitTagsError, {
+            name: t('errorMessages.unableToRetrieveTags'),
+          })
+        )
       );
     }
   }, [isGetSpeedLimitTagsError]);

@@ -13,6 +13,7 @@ import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 
 import type { EffortCurveForms } from 'modules/rollingStock/types';
 import type { RollingStockComfortType, RollingStockWithLiveries } from 'common/api/osrdEditoastApi';
+import { castErrorToFailure } from 'utils/error';
 
 type RollingStockCardDetailProps = {
   id: number;
@@ -64,10 +65,12 @@ export default function RollingStockCardDetail({
   useEffect(() => {
     if (error) {
       dispatch(
-        setFailure({
-          name: t('errorMessages.unableToRetrieveRollingStockMessage'),
-          message: t('errorMessages.unableToRetrieveRollingStock'),
-        })
+        setFailure(
+          castErrorToFailure(error, {
+            name: t('errorMessages.unableToRetrieveRollingStockMessage'),
+            message: t('errorMessages.unableToRetrieveRollingStock'),
+          })
+        )
       );
     }
   }, [error]);

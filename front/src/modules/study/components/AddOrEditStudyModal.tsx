@@ -32,6 +32,7 @@ import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
 import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
 import useInputChange from 'utils/hooks/useInputChange';
 import useOutsideClick from 'utils/hooks/useOutsideClick';
+import { castErrorToFailure } from 'utils/error';
 
 export interface StudyForm extends StudyCreateForm {
   id?: number;
@@ -70,11 +71,11 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
-  const [createStudies, { isError: isCreateStudyError }] =
+  const [createStudies, { error: createStudyError }] =
     osrdEditoastApi.usePostProjectsByProjectIdStudiesMutation();
-  const [patchStudies, { isError: isPatchStudyError }] =
+  const [patchStudies, { error: patchStudyError }] =
     osrdEditoastApi.usePatchProjectsByProjectIdStudiesAndStudyIdMutation();
-  const [deleteStudies, { isError: isDeleteStudyError }] =
+  const [deleteStudies, { error: deleteStudyError }] =
     osrdEditoastApi.useDeleteProjectsByProjectIdStudiesAndStudyIdMutation();
 
   const studyStateOptions = createSelectOptions('studyStates', studyStates);
@@ -186,16 +187,16 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
     }
   }, [study]);
 
+  /* Notify API errors */
   useEffect(() => {
-    if (isCreateStudyError || isPatchStudyError || isDeleteStudyError) {
-      dispatch(
-        setFailure({
-          name: t('errorHappened'),
-          message: t('errorHappened'),
-        })
-      );
-    }
-  }, [isCreateStudyError, isPatchStudyError, isDeleteStudyError]);
+    if (createStudyError) dispatch(setFailure(castErrorToFailure(createStudyError)));
+  }, [createStudyError]);
+  useEffect(() => {
+    if (patchStudyError) dispatch(setFailure(castErrorToFailure(patchStudyError)));
+  }, [patchStudyError]);
+  useEffect(() => {
+    if (deleteStudyError) dispatch(setFailure(castErrorToFailure(deleteStudyError)));
+  }, [deleteStudyError]);
 
   useModalFocusTrap(modalRef, closeModal);
 

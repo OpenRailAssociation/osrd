@@ -8,18 +8,14 @@ import { Pencil, Trash } from '@osrd-project/ui-icons';
 import { RiMoneyEuroCircleLine } from 'react-icons/ri';
 import { MdBusinessCenter, MdDescription, MdTitle } from 'react-icons/md';
 import ReactMarkdown from 'react-markdown';
-import { SerializedError } from '@reduxjs/toolkit';
 import remarkGfm from 'remark-gfm';
 
 import { useDebounce } from 'utils/helpers';
-
 import PictureUploader from 'applications/operationalStudies/components/Project/PictureUploader';
-
 import { useOsrdConfActions } from 'common/osrdContext';
 import { postDocument } from 'common/api/documentApi';
 import ChipsSNCF from 'common/BootstrapSNCF/ChipsSNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import type { ApiError } from 'common/api/baseGeneratedApis';
 import TextareaSNCF from 'common/BootstrapSNCF/TextareaSNCF';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
@@ -27,7 +23,6 @@ import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import type { ProjectWithStudies, ProjectCreateForm } from 'common/api/osrdEditoastApi';
-
 import { useAppDispatch } from 'store';
 import { setFailure, setSuccess } from 'reducers/main';
 import { getUserSafeWord } from 'reducers/user/userSelectors';
@@ -35,6 +30,7 @@ import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
 import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
 import useInputChange from 'utils/hooks/useInputChange';
 import useOutsideClick from 'utils/hooks/useOutsideClick';
+import { castErrorToFailure } from 'utils/error';
 
 const emptyProject: ProjectCreateForm = {
   budget: undefined,
@@ -113,15 +109,10 @@ export default function AddOrEditProjectModal({
     try {
       const imageId = await postDocument(image as Blob);
       return imageId;
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        dispatch(
-          setFailure({
-            name: t('error.unableToPostDocumentTitle'),
-            message: t('error.unableToPostDocument'),
-          })
-        );
-      }
+    } catch (error) {
+      dispatch(
+        setFailure(castErrorToFailure(error, { name: t('error.unableToPostDocumentTitle') }))
+      );
       return null;
     }
   };
@@ -147,11 +138,11 @@ export default function AddOrEditProjectModal({
           })
           .catch((error) => {
             dispatch(
-              setFailure({
-                name: t('error.unableToCreateProjectTitle'),
-                message: t('error.unableToCreateProject'),
-                cause: error,
-              })
+              setFailure(
+                castErrorToFailure(error, {
+                  name: t('error.unableToCreateProjectTitle'),
+                })
+              )
             );
             console.error('Create project error', error);
           });
@@ -193,11 +184,11 @@ export default function AddOrEditProjectModal({
           })
           .catch((error) => {
             dispatch(
-              setFailure({
-                name: t('error.unableToUpdateProjectTitle'),
-                message: t('error.unableToUpdateProject'),
-                cause: error,
-              })
+              setFailure(
+                castErrorToFailure(error, {
+                  name: t('error.unableToUpdateProjectTitle'),
+                })
+              )
             );
             console.error('Patch project error', error);
           });
@@ -224,10 +215,11 @@ export default function AddOrEditProjectModal({
         })
         .catch((e) => {
           dispatch(
-            setFailure({
-              name: t('error.unableToDeleteProject'),
-              message: `${(e as ApiError)?.data?.message || (e as SerializedError)?.message}`,
-            })
+            setFailure(
+              castErrorToFailure(e, {
+                name: t('error.unableToDeleteProject'),
+              })
+            )
           );
         });
     }

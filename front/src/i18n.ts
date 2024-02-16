@@ -22,4 +22,8 @@ i18n
     },
   });
 
+// Errors namespace must be initialized so t function
+// can be used in plain old function (see utils/error)
+i18n.loadNamespaces('errors');
+
 export default i18n;

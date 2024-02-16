@@ -25,7 +25,7 @@ import { Spinner } from 'common/Loaders';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { SimulationReport } from 'common/api/osrdEditoastApi';
 import type { StdcmRequestStatus } from 'applications/stdcm/types';
-import { extractMessageFromError, extractStatusFromError } from 'utils/error';
+import { castErrorToFailure } from 'utils/error';
 import { Train } from 'reducers/osrdsimulation/types';
 import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
 import { useAppDispatch } from 'store';
@@ -104,29 +104,22 @@ export default function StdcmRequestModal(props: StdcmRequestModalProps) {
                     })
                   );
                 })
-                .catch(() => {
+                .catch((e) => {
                   dispatch(
-                    setFailure({
-                      name: t('stdcm:stdcmError'),
-                      message: t('translation:common.error'),
-                    })
+                    setFailure(
+                      castErrorToFailure(e, {
+                        name: t('stdcm:stdcmError'),
+                        message: t('translation:common.error'),
+                      })
+                    )
                   );
                 });
             });
           }
         })
         .catch((e) => {
-          const errorMessage = extractMessageFromError(e);
           setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.rejected);
-          dispatch(
-            setFailure({
-              name: t('stdcm:stdcmError'),
-              message:
-                extractStatusFromError(e) === 400 && errorMessage === 'No path could be found'
-                  ? t('stdcm:stdcmErrorNoPaths')
-                  : errorMessage,
-            })
-          );
+          dispatch(setFailure(castErrorToFailure(e, { name: t('stdcm:stdcmError') })));
         });
     }
   }, [currentStdcmRequestStatus]);
