@@ -3,7 +3,6 @@ package fr.sncf.osrd.stdcm.infra_exploration
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.conflicts.IncrementalRequirementEnvelopeAdapter
 import fr.sncf.osrd.conflicts.SpacingRequirementAutomaton
-import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope.EnvelopeConcat
 import fr.sncf.osrd.envelope.EnvelopeTimeInterpolate
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock
@@ -25,9 +24,6 @@ interface InfraExplorerWithEnvelope : InfraExplorer {
 
     /** Access the full envelope from the train start. */
     fun getFullEnvelope(): EnvelopeTimeInterpolate
-
-    /** Returns the envelope spanning over the last block. */
-    fun getLastEnvelope(): EnvelopeTimeInterpolate
 
     /** Adds an envelope. */
     fun addEnvelope(envelope: EnvelopeTimeInterpolate): InfraExplorerWithEnvelope
@@ -74,7 +70,7 @@ fun initInfraExplorerWithEnvelope(
                     fullInfra.loadedSignalInfra,
                     fullInfra.blockInfra,
                     fullInfra.signalingSimulator,
-                    IncrementalRequirementEnvelopeAdapter(rollingStock, Envelope.make(), false),
+                    IncrementalRequirementEnvelopeAdapter(rollingStock, null, false),
                     explorer.getIncrementalPath(),
                 )
             )

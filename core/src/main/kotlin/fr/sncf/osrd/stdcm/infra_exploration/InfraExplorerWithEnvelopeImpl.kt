@@ -33,10 +33,6 @@ data class InfraExplorerWithEnvelopeImpl(
         return EnvelopeConcat.from(envelopes)
     }
 
-    override fun getLastEnvelope(): EnvelopeTimeInterpolate {
-        return envelopes.last()
-    }
-
     override fun addEnvelope(envelope: EnvelopeTimeInterpolate): InfraExplorerWithEnvelope {
         envelopes.add(envelope)
         return this
