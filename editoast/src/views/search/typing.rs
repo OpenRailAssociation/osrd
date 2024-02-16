@@ -30,8 +30,9 @@ enum TypeCheckError {
     #[error("expected argument of type {expected} at position {arg_pos} is missing")]
     #[editoast_error(no_context)]
     ArgMissing { expected: TypeSpec, arg_pos: usize },
-    #[error("unexpected argument of type {0} found")]
-    UnexpectedArg(TypeSpec),
+    #[error("unexpected argument of type {arg_type} found")]
+    #[editoast_error(no_context)]
+    UnexpectedArg { arg_type: TypeSpec },
 }
 
 /// Defines all the atomic types that are expressible by the search query language
@@ -249,7 +250,10 @@ impl TypeSpec {
             }
         }
         match args_iter.next() {
-            Some(arg) => Err(TypeCheckError::UnexpectedArg((*arg).clone()).into()),
+            Some(arg) => Err(TypeCheckError::UnexpectedArg {
+                arg_type: (*arg).clone(),
+            }
+            .into()),
             None => Ok(()),
         }
     }

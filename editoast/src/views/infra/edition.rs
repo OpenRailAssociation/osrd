@@ -53,7 +53,10 @@ async fn apply_edit(
     let infra_id = infra.id.unwrap();
     // Check if the infra is locked
     if infra.locked.unwrap() {
-        return Err(EditionError::InfraIsLocked(infra.id.unwrap()).into());
+        return Err(EditionError::InfraIsLocked {
+            infra_id: infra.id.unwrap(),
+        }
+        .into());
     }
 
     // Apply modifications
@@ -104,6 +107,6 @@ async fn apply_edit(
 #[derive(Debug, Clone, Error, EditoastError)]
 #[editoast_error(base_id = "infra:edition")]
 enum EditionError {
-    #[error("Infra {0} is locked")]
-    InfraIsLocked(i64),
+    #[error("Infra {infra_id} is locked")]
+    InfraIsLocked { infra_id: i64 },
 }

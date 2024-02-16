@@ -17,12 +17,12 @@ crate::routes! {
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "sprites")]
 enum SpriteErrors {
-    #[error("Unknown signaling system '{0}'")]
+    #[error("Unknown signaling system '{signaling_system}'")]
     #[editoast_error(status = 404)]
-    UnknownSignalingSystem(String),
-    #[error("File '{0}' not found")]
+    UnknownSignalingSystem { signaling_system: String },
+    #[error("File '{file}' not found")]
     #[editoast_error(status = 404)]
-    FileNotFound(String),
+    FileNotFound { file: String },
 }
 
 /// This endpoint returns the list of supported signaling systems
@@ -56,11 +56,11 @@ async fn sprites(path: Path<(String, String)>) -> Result<NamedFile> {
     let (signaling_system, file_name) = path.into_inner();
     let sprite_configs = SpriteConfig::load();
     if !sprite_configs.contains_key(&signaling_system) {
-        return Err(SpriteErrors::UnknownSignalingSystem(signaling_system).into());
+        return Err(SpriteErrors::UnknownSignalingSystem { signaling_system }.into());
     }
     let path = get_assets_path().join(format!("signal_sprites/{signaling_system}/{file_name}"));
     if !path.is_file() {
-        return Err(SpriteErrors::FileNotFound(file_name).into());
+        return Err(SpriteErrors::FileNotFound { file: file_name }.into());
     }
     Ok(NamedFile::open(path).unwrap().use_last_modified(false))
 }

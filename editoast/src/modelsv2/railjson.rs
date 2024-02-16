@@ -12,8 +12,8 @@ use crate::{
 #[derive(Debug, thiserror::Error, EditoastError)]
 #[editoast_error(base_id = "railjson")]
 pub enum RailJsonError {
-    #[error("Unsupported railjson version '{0}'. Should be {}.", RAILJSON_VERSION)]
-    UnsupportedVersion(String),
+    #[error("Unsupported railjson version '{actual}'. Should be {expected}.")]
+    UnsupportedVersion { actual: String, expected: String },
 }
 
 /// Inserts the content of a RailJson object into the database
@@ -55,7 +55,11 @@ pub async fn persist_railjson(
         neutral_sections,
     } = railjson;
     if version != RAILJSON_VERSION {
-        return Err(RailJsonError::UnsupportedVersion(version).into());
+        return Err(RailJsonError::UnsupportedVersion {
+            actual: version,
+            expected: RAILJSON_VERSION.to_string(),
+        }
+        .into());
     }
     futures::try_join!(
         persist!(TrackSectionModel, track_sections),
