@@ -2,7 +2,7 @@
     "version": "3.4.9",
     "operational_points": [
         {
-            "id": "South_West_station",
+            "id": "West_station",
             "parts": [
                 {
                     "track": "TA0",
@@ -20,19 +20,19 @@
             "extensions": {
                 "sncf": {
                     "ci": 0,
-                    "ch": "aa",
-                    "ch_short_label": "aa",
+                    "ch": "BV",
+                    "ch_short_label": "BV",
                     "ch_long_label": "0",
-                    "trigram": "SOU"
+                    "trigram": "WS"
                 },
                 "identifier": {
-                    "name": "South_West_station",
-                    "uic": 1
+                    "name": "West_station",
+                    "uic": 2
                 }
             }
         },
         {
-            "id": "West_station",
+            "id": "South_West_station",
             "parts": [
                 {
                     "track": "TB0",
@@ -42,14 +42,14 @@
             "extensions": {
                 "sncf": {
                     "ci": 0,
-                    "ch": "aa",
-                    "ch_short_label": "aa",
+                    "ch": "BV",
+                    "ch_short_label": "BV",
                     "ch_long_label": "0",
-                    "trigram": "WES"
+                    "trigram": "SWS"
                 },
                 "identifier": {
-                    "name": "West_station",
-                    "uic": 2
+                    "name": "South_West_station",
+                    "uic": 1
                 }
             }
         },
@@ -76,10 +76,10 @@
             "extensions": {
                 "sncf": {
                     "ci": 0,
-                    "ch": "aa",
-                    "ch_short_label": "aa",
+                    "ch": "BV",
+                    "ch_short_label": "BV",
                     "ch_long_label": "0",
-                    "trigram": "MID"
+                    "trigram": "MWS"
                 },
                 "identifier": {
                     "name": "Mid_West_station",
@@ -102,10 +102,10 @@
             "extensions": {
                 "sncf": {
                     "ci": 0,
-                    "ch": "aa",
-                    "ch_short_label": "aa",
+                    "ch": "BV",
+                    "ch_short_label": "BV",
                     "ch_long_label": "0",
-                    "trigram": "MID"
+                    "trigram": "MES"
                 },
                 "identifier": {
                     "name": "Mid_East_station",
@@ -128,10 +128,10 @@
             "extensions": {
                 "sncf": {
                     "ci": 0,
-                    "ch": "aa",
-                    "ch_short_label": "aa",
+                    "ch": "BV",
+                    "ch_short_label": "BV",
                     "ch_long_label": "0",
-                    "trigram": "NOR"
+                    "trigram": "NS"
                 },
                 "identifier": {
                     "name": "North_station",
@@ -150,10 +150,10 @@
             "extensions": {
                 "sncf": {
                     "ci": 0,
-                    "ch": "aa",
-                    "ch_short_label": "aa",
+                    "ch": "BV",
+                    "ch_short_label": "BV",
                     "ch_long_label": "0",
-                    "trigram": "SOU"
+                    "trigram": "SS"
                 },
                 "identifier": {
                     "name": "South_station",
@@ -176,10 +176,10 @@
             "extensions": {
                 "sncf": {
                     "ci": 0,
-                    "ch": "aa",
-                    "ch_short_label": "aa",
+                    "ch": "BV",
+                    "ch_short_label": "BV",
                     "ch_long_label": "0",
-                    "trigram": "NOR"
+                    "trigram": "NES"
                 },
                 "identifier": {
                     "name": "North_East_station",
@@ -198,10 +198,10 @@
             "extensions": {
                 "sncf": {
                     "ci": 0,
-                    "ch": "aa",
-                    "ch_short_label": "aa",
+                    "ch": "BV",
+                    "ch_short_label": "BV",
                     "ch_long_label": "0",
-                    "trigram": "SOU"
+                    "trigram": "SES"
                 },
                 "identifier": {
                     "name": "South_East_station",

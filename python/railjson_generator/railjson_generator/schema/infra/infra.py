@@ -81,8 +81,8 @@ class Infra:
                 extensions={
                     "sncf": infra.OperationalPointSncfExtension(
                         ci=0,
-                        ch="aa",
-                        ch_short_label="aa",
+                        ch="BV",
+                        ch_short_label="BV",
                         ch_long_label="0",
                         trigram=op.trigram,
                     ),

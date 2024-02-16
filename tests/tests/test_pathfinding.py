@@ -72,7 +72,7 @@ _EXPECTED_WEST_TO_SOUTH_EAST_PATH = Path(
                 "suggestion": True,
                 "geo": {"coordinates": [-0.30369999999999997, 49.4999], "type": "Point"},
                 "sch": {"coordinates": [-0.30369999999999997, 49.4999], "type": "Point"},
-                "ch": "aa",
+                "ch": "BV",
                 "uic": 3,
             },
             {
@@ -84,7 +84,7 @@ _EXPECTED_WEST_TO_SOUTH_EAST_PATH = Path(
                 "suggestion": True,
                 "geo": {"coordinates": [-0.22656, 49.4999], "type": "Point"},
                 "sch": {"coordinates": [-0.22656, 49.4999], "type": "Point"},
-                "ch": "aa",
+                "ch": "BV",
                 "uic": 4,
             },
             {
