@@ -75,30 +75,17 @@ export default function drawTrain(
     : undefined;
 
   if (direction && currentAllowanceSettings) {
-    if (trainToDraw.eco_routeAspects) {
-      // Let's draw eco_route_aspects
-      trainToDraw.eco_routeAspects.forEach((ecoRouteAspect) => {
-        drawRect(
-          chart,
-          `${isSelected && 'selected'} route-aspect`,
-          ecoRouteAspect,
-          groupID,
-          rotate
-        );
-      });
-    } else {
-      // Let's draw normal route_aspects
-      trainToDraw.routeAspects.forEach((routeAspect, index) => {
-        drawRect(
-          chart,
-          `${isSelected && 'selected'} route-aspect`,
-          routeAspect,
-          groupID,
-          rotate,
-          `${groupID}_${routeAspect.signal_id}_${index}`
-        );
-      });
-    }
+    const routeAspects = trainToDraw.eco_routeAspects ?? trainToDraw.routeAspects;
+    routeAspects.forEach((routeAspect, index) => {
+      drawRect(
+        chart,
+        `${isSelected && 'selected'} route-aspect`,
+        routeAspect,
+        groupID,
+        rotate,
+        `${groupID}_${routeAspect.signal_id}_${index}`
+      );
+    });
   }
 
   if (currentAllowanceSettings?.base) {
