@@ -358,16 +358,75 @@ const testCommonConfReducers = (slice: OperationalStudiesConfSlice | StdcmConfSl
     expect(state.vias).toBe(newVias);
   });
 
-  it('should handle addVias', () => {
-    const via1 = testDataBuilder.buildPointOnMap({ id: 'via-1' });
-    const via2 = testDataBuilder.buildPointOnMap({ id: 'via-2' });
-    const store = createStore(slice, {
-      vias: [via1],
+  describe('should handle addVias', () => {
+    const brest = testDataBuilder.buildPointOnMap({
+      id: 'brest',
+      coordinates: [48.390394, -4.486076],
+    });
+    const rennes = testDataBuilder.buildPointOnMap({
+      id: 'rennes',
+      coordinates: [48.117266, -1.6777926],
+    });
+    const mans = testDataBuilder.buildPointOnMap({
+      id: 'mans',
+      coordinates: [48.00611, 0.199556],
+    });
+    const paris = testDataBuilder.buildPointOnMap({
+      id: 'paris',
+      coordinates: [48.8566, 2.3522],
+    });
+    const strasbourg = testDataBuilder.buildPointOnMap({
+      id: 'paris',
+      coordinates: [7.750713, 48.583148],
     });
 
-    store.dispatch(slice.actions.addVias(via2));
-    const state = store.getState()[slice.name];
-    expect(state.vias).toStrictEqual([via1, via2]);
+    it('should handle insertion for a route with no existing via', () => {
+      const store = createStore(slice, {
+        origin: brest,
+        destination: strasbourg,
+        vias: [],
+      });
+
+      store.dispatch(slice.actions.addVias(mans));
+      const state = store.getState()[slice.name];
+      expect(state.vias).toStrictEqual([mans]);
+    });
+
+    it('should correctly append a new via point when the existing via is closer to the origin', () => {
+      const store = createStore(slice, {
+        origin: brest,
+        destination: strasbourg,
+        vias: [mans],
+      });
+
+      store.dispatch(slice.actions.addVias(rennes));
+      const state = store.getState()[slice.name];
+      expect(state.vias).toStrictEqual([rennes, mans]);
+    });
+
+    it('should insert a via between two existing ones based on distance from origin', () => {
+      const store = createStore(slice, {
+        origin: brest,
+        destination: strasbourg,
+        vias: [rennes, paris],
+      });
+
+      store.dispatch(slice.actions.addVias(mans));
+      const state = store.getState()[slice.name];
+      expect(state.vias).toStrictEqual([rennes, mans, paris]);
+    });
+
+    it('should insert a via at the end of the route', () => {
+      const store = createStore(slice, {
+        origin: brest,
+        destination: strasbourg,
+        vias: [rennes, mans],
+      });
+
+      store.dispatch(slice.actions.addVias(paris));
+      const state = store.getState()[slice.name];
+      expect(state.vias).toStrictEqual([rennes, mans, paris]);
+    });
   });
 
   it('should handle updateViaStopTime', () => {
