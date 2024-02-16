@@ -88,12 +88,12 @@ where
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "search")]
 pub enum ProcessingError {
-    #[error("undefined function '{0}'")]
-    UndefinedFunction(String),
+    #[error("undefined function '{function}'")]
+    UndefinedFunction { function: String },
     #[error("no suitable overload of '{0}' found for {1}")]
     UndefinedOverload(String, String),
-    #[error("unexpected column '{0}'")]
-    UnexpectedColummn(String),
+    #[error("unexpected column '{column}'")]
+    UnexpectedColumn { column: String },
     #[error("expected type {expected}, got value '{value}' of type {actual} instead")]
     #[editoast_error(no_context)]
     RuntimeTypeCheckFail {
@@ -155,12 +155,15 @@ impl QueryContext {
         function_name: &String,
         arglist_types: &[TypeSpec],
     ) -> Result<&QueryFunction> {
-        let functions = self
-            .functions
-            .get(function_name)
-            .ok_or_else(|| ProcessingError::UndefinedFunction(function_name.to_owned()))?;
+        let functions = self.functions.get(function_name).ok_or_else(|| {
+            ProcessingError::UndefinedFunction {
+                function: function_name.to_owned(),
+            }
+        })?;
         let function = match functions.len() {
-            0 => Err(ProcessingError::UndefinedFunction(function_name.to_owned())),
+            0 => Err(ProcessingError::UndefinedFunction {
+                function: function_name.to_owned(),
+            }),
             1 => {
                 let function = functions.first().unwrap();
                 function

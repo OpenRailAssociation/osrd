@@ -133,7 +133,7 @@ impl Infra {
         // Duplicate infra shell
         let infra_to_clone = Infra::retrieve(db_pool.clone(), infra_id)
             .await?
-            .ok_or(InfraError::NotFound(infra_id))?;
+            .ok_or(InfraError::NotFound { infra_id })?;
         let new_name = new_name.unwrap_or_else(|| {
             let mut cloned_name = infra_to_clone.name.unwrap();
             cloned_name.push_str(" (copy)");
@@ -268,8 +268,8 @@ impl Identifiable for Infra {
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "infra")]
 pub enum InfraError {
-    #[error("Infrastructure not found, ID: {0}")]
-    NotFound(i64),
+    #[error("Infrastructure not found, ID : {infra_id}")]
+    NotFound { infra_id: i64 },
 }
 
 #[cfg(test)]
@@ -434,7 +434,10 @@ pub mod tests {
         assert!(result.is_err());
         assert_eq!(
             result.unwrap_err(),
-            InfraError::NotFound(not_found_infra_id).into(),
+            InfraError::NotFound {
+                infra_id: not_found_infra_id
+            }
+            .into(),
             "error type mismatch"
         );
     }
@@ -449,7 +452,10 @@ pub mod tests {
         };
         let res = infra.persist(railjson_with_invalid_version, pool).await;
         assert!(res.is_err());
-        let expected_error = RailJsonError::UnsupportedVersion("0".to_string());
+        let expected_error = RailJsonError::UnsupportedVersion {
+            actual: "0".to_string(),
+            expected: RAILJSON_VERSION.to_string(),
+        };
         assert_eq!(res.unwrap_err().get_type(), expected_error.get_type());
     }
 

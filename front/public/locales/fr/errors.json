@@ -132,7 +132,7 @@
       "UndefinedFunction": "Fonction non définie",
       "UndefinedOverload": "Aucune surcharge appropriée",
       "UnexpectedArg": "Argument inattendu trouvé",
-      "UnexpectedColummn": "Colonne inattendue",
+      "UnexpectedColumn": "Colonne inattendue",
       "UnexpectedErsatz": "Une valeur de type {{expected}} était attendue, mais '{{value}}' trouvé",
       "VariadicArgTypeMismatch": "Un argument variadique de type {{expected}} était attendu, mais {{actual}} trouvé"
     },

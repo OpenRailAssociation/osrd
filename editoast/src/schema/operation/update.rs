@@ -79,8 +79,11 @@ impl DataObject {
     /// This function will patch the data object given an update operation.
     /// It will also check that the id of the id of the object is untouched and that the resulted data is valid.
     pub fn patch_and_check(&mut self, update: &UpdateOperation) -> Result<RailjsonObject> {
-        json_patch::patch(&mut self.data, &update.railjson_patch)
-            .map_err(|err| OperationError::InvalidPatch(err.to_string()))?;
+        json_patch::patch(&mut self.data, &update.railjson_patch).map_err(|err| {
+            OperationError::InvalidPatch {
+                error: err.to_string(),
+            }
+        })?;
 
         let value = json!({
             "railjson": self.data,
@@ -89,7 +92,12 @@ impl DataObject {
 
         let obj_railjson = match from_value::<RailjsonObject>(value) {
             Ok(obj) => obj,
-            Err(err) => return Err(OperationError::InvalidPatch(err.to_string()).into()),
+            Err(err) => {
+                return Err(OperationError::InvalidPatch {
+                    error: err.to_string(),
+                }
+                .into())
+            }
         };
 
         if obj_railjson.get_id() != &update.obj_id {

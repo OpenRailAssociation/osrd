@@ -448,7 +448,11 @@ async fn clone_infra(
             cloned_infra.id.unwrap()
         ),
         Err(e) => {
-            if e == InfraError::NotFound(infra_args.id as i64).into() {
+            if e == (InfraError::NotFound {
+                infra_id: infra_args.id as i64,
+            })
+            .into()
+            {
                 let error = CliError::new(
                     1,
                     format!("❌ Infrastructure not found, ID: {}", infra_args.id),

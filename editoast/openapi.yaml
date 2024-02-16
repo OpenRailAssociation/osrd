@@ -621,7 +621,7 @@ components:
       - $ref: '#/components/schemas/EditoastSearchUndefinedFunction'
       - $ref: '#/components/schemas/EditoastSearchUndefinedOverload'
       - $ref: '#/components/schemas/EditoastSearchUnexpectedArg'
-      - $ref: '#/components/schemas/EditoastSearchUnexpectedColummn'
+      - $ref: '#/components/schemas/EditoastSearchUnexpectedColumn'
       - $ref: '#/components/schemas/EditoastSearchUnexpectedErsatz'
       - $ref: '#/components/schemas/EditoastSearchVariadicArgTypeMismatch'
       - $ref: '#/components/schemas/EditoastSingleSimulationElectricalProfileSetNotFound'
@@ -702,6 +702,11 @@ components:
     EditoastInfraEditionInfraIsLocked:
       properties:
         context:
+          properties:
+            infra_id:
+              type: integer
+          required:
+          - infra_id
           type: object
         message:
           type: string
@@ -764,6 +769,11 @@ components:
     EditoastInfraNotFound:
       properties:
         context:
+          properties:
+            infra_id:
+              type: integer
+          required:
+          - infra_id
           type: object
         message:
           type: string
@@ -802,6 +812,11 @@ components:
     EditoastInfraObjectsObjectIdNotFound:
       properties:
         context:
+          properties:
+            object_id:
+              type: string
+          required:
+          - object_id
           type: object
         message:
           type: string
@@ -840,6 +855,14 @@ components:
     EditoastInfraPathfindingInvalidNumberOfPaths:
       properties:
         context:
+          properties:
+            max_number:
+              type: integer
+            path_number:
+              type: integer
+          required:
+          - max_number
+          - path_number
           type: object
         message:
           type: string
@@ -970,6 +993,11 @@ components:
     EditoastOperationInvalidPatch:
       properties:
         context:
+          properties:
+            error:
+              type: string
+          required:
+          - error
           type: object
         message:
           type: string
@@ -1343,6 +1371,11 @@ components:
     EditoastProjectImageError:
       properties:
         context:
+          properties:
+            error:
+              type: string
+          required:
+          - error
           type: object
         message:
           type: string
@@ -1410,6 +1443,14 @@ components:
     EditoastRailjsonUnsupportedVersion:
       properties:
         context:
+          properties:
+            actual:
+              type: string
+            expected:
+              type: string
+          required:
+          - actual
+          - expected
           type: object
         message:
           type: string
@@ -1709,6 +1750,11 @@ components:
     EditoastSearchIntegerConversion:
       properties:
         context:
+          properties:
+            value:
+              type: integer
+          required:
+          - value
           type: object
         message:
           type: string
@@ -1728,6 +1774,11 @@ components:
     EditoastSearchInvalidColumnName:
       properties:
         context:
+          properties:
+            value:
+              type: object
+          required:
+          - value
           type: object
         message:
           type: string
@@ -1747,6 +1798,11 @@ components:
     EditoastSearchInvalidFunctionIdentifier:
       properties:
         context:
+          properties:
+            value:
+              type: object
+          required:
+          - value
           type: object
         message:
           type: string
@@ -1766,6 +1822,11 @@ components:
     EditoastSearchInvalidSyntax:
       properties:
         context:
+          properties:
+            value:
+              type: object
+          required:
+          - value
           type: object
         message:
           type: string
@@ -1785,6 +1846,11 @@ components:
     EditoastSearchObjectType:
       properties:
         context:
+          properties:
+            object_type:
+              type: string
+          required:
+          - object_type
           type: object
         message:
           type: string
@@ -1804,6 +1870,11 @@ components:
     EditoastSearchQueryAst:
       properties:
         context:
+          properties:
+            query_type:
+              type: string
+          required:
+          - query_type
           type: object
         message:
           type: string
@@ -1853,6 +1924,11 @@ components:
     EditoastSearchUndefinedFunction:
       properties:
         context:
+          properties:
+            function:
+              type: string
+          required:
+          - function
           type: object
         message:
           type: string
@@ -1891,6 +1967,11 @@ components:
     EditoastSearchUnexpectedArg:
       properties:
         context:
+          properties:
+            arg_type:
+              type: object
+          required:
+          - arg_type
           type: object
         message:
           type: string
@@ -1907,9 +1988,14 @@ components:
       - status
       - message
       type: object
-    EditoastSearchUnexpectedColummn:
+    EditoastSearchUnexpectedColumn:
       properties:
         context:
+          properties:
+            column:
+              type: string
+          required:
+          - column
           type: object
         message:
           type: string
@@ -1919,7 +2005,7 @@ components:
           type: integer
         type:
           enum:
-          - editoast:search:UnexpectedColummn
+          - editoast:search:UnexpectedColumn
           type: string
       required:
       - type
@@ -2074,6 +2160,11 @@ components:
     EditoastSpritesFileNotFound:
       properties:
         context:
+          properties:
+            file:
+              type: string
+          required:
+          - file
           type: object
         message:
           type: string
@@ -2093,6 +2184,11 @@ components:
     EditoastSpritesUnknownSignalingSystem:
       properties:
         context:
+          properties:
+            signaling_system:
+              type: string
+          required:
+          - signaling_system
           type: object
         message:
           type: string

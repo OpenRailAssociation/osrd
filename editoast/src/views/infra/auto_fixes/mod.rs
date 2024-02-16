@@ -74,7 +74,7 @@ async fn list_auto_fixes(
     let infra_id = infra.into_inner();
     let infra = Infra::retrieve(db_pool.clone(), infra_id)
         .await?
-        .ok_or(models::infra::InfraError::NotFound(infra_id))?;
+        .ok_or(models::infra::InfraError::NotFound { infra_id })?;
     let mut conn = db_pool.get().await?;
 
     // accepting the early release of ReadGuard as it's anyway released when sending the suggestions (so before edit)

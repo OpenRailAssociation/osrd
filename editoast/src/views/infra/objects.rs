@@ -27,8 +27,8 @@ pub fn routes() -> impl HttpServiceFactory {
 enum GetObjectsErrors {
     #[error("Duplicate object ids provided")]
     DuplicateIdsProvided,
-    #[error("Object id '{0}' not found")]
-    ObjectIdNotFound(String),
+    #[error("Object id '{object_id}' not found")]
+    ObjectIdNotFound { object_id: String },
 }
 
 /// Return whether the list of ids contains unique values or has duplicate
@@ -104,7 +104,10 @@ async fn get_objects(
             .iter()
             .find(|obj_id| !objects.contains_key(*obj_id))
             .unwrap();
-        return Err(GetObjectsErrors::ObjectIdNotFound(not_found_id.clone()).into());
+        return Err(GetObjectsErrors::ObjectIdNotFound {
+            object_id: not_found_id.clone(),
+        }
+        .into());
     }
 
     // Reorder the result to match the order of the input

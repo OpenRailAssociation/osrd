@@ -24,7 +24,9 @@ impl QueryContext {
             SearchAst::Column(column) => self
                 .columns_type
                 .get(column)
-                .ok_or_else(|| ProcessingError::UnexpectedColummn(column.to_owned()))?
+                .ok_or_else(|| ProcessingError::UnexpectedColumn {
+                    column: column.to_owned(),
+                })?
                 .clone(),
             SearchAst::Call(function_name, args) => {
                 let arglist_types = args

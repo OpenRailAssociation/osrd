@@ -241,10 +241,10 @@ crate::schemas! {
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "search")]
 enum SearchError {
-    #[error("object type '{0}' is invalid")]
-    ObjectType(String),
-    #[error("query has type {0} but Boolean is expected")]
-    QueryAst(TypeSpec),
+    #[error("object type '{object_type}' is invalid")]
+    ObjectType { object_type: String },
+    #[error("query has type '{query_type}' but Boolean is expected")]
+    QueryAst { query_type: String },
 }
 
 impl SearchConfig {
@@ -312,7 +312,10 @@ fn create_sql_query(
     let context = search_config.create_context();
     let search_ast_expression_type = context.typecheck_search_query(&ast)?;
     if !AstType::Boolean.is_supertype_spec(&search_ast_expression_type) {
-        return Err(SearchError::QueryAst(search_ast_expression_type).into());
+        return Err(SearchError::QueryAst {
+            query_type: search_ast_expression_type.to_string(),
+        }
+        .into());
     }
     let where_expression = context.search_ast_to_sql(&ast)?;
     let table = &search_config.table;
@@ -401,8 +404,10 @@ pub async fn search(
 ) -> Result<impl Responder> {
     let (page, per_page) = query_params.validate(1000)?.warn_page_size(100).unpack();
     let Json(SearchPayload { object, query, dry }) = payload;
-    let search_config = SearchConfigFinder::find(&object)
-        .ok_or_else(|| SearchError::ObjectType(object.to_owned()))?;
+    let search_config =
+        SearchConfigFinder::find(&object).ok_or_else(|| SearchError::ObjectType {
+            object_type: object.to_owned(),
+        })?;
     let offset = (page - 1) * per_page;
     let sql = create_sql_query(query, &search_config, per_page, offset)?;
 

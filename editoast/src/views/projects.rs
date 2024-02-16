@@ -10,7 +10,6 @@ use actix_web::{delete, get, patch, post, HttpResponse};
 use chrono::Utc;
 use derivative::Derivative;
 use editoast_derive::EditoastError;
-use image::ImageError;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use utoipa::IntoParams;
@@ -49,8 +48,8 @@ pub enum ProjectError {
     #[error("Image document '{document_key}' not found")]
     ImageNotFound { document_key: i64 },
     // Couldn't found the project with the given id
-    #[error("The provided image is not valid : {0}")]
-    ImageError(ImageError),
+    #[error("The provided image is not valid : {error}")]
+    ImageError { error: String },
 }
 
 #[derive(Debug, Clone, Deserialize, IntoParams)]
@@ -108,7 +107,10 @@ async fn check_image_content(db_pool: Data<DbPool>, document_key: i64) -> Result
     .await?;
 
     if let Err(e) = image::load_from_memory(&doc.data) {
-        return Err(ProjectError::ImageError(e).into());
+        return Err(ProjectError::ImageError {
+            error: e.to_string(),
+        }
+        .into());
     }
     Ok(())
 }

@@ -41,11 +41,8 @@ enum PathfindingViewErrors {
     StartingTrackLocationNotFound,
     #[error("Ending track location was not found")]
     EndingTrackLocationNotFound,
-    #[error(
-        "The pathfinding cannot return {0} paths (expected: [1-{}])",
-        MAX_NUMBER_OF_PATHS
-    )]
-    InvalidNumberOfPaths(u8),
+    #[error("The pathfinding cannot return {path_number} paths (expected: [1-{max_number}])")]
+    InvalidNumberOfPaths { path_number: u8, max_number: u8 },
 }
 
 #[derive(Debug, Clone, Deserialize, ToSchema)]
@@ -94,7 +91,11 @@ async fn pathfinding_view(
     let infra_id = infra.into_inner().infra_id;
     let number = params.number.unwrap_or(DEFAULT_NUMBER_OF_PATHS);
     if !(1..=MAX_NUMBER_OF_PATHS).contains(&number) {
-        return Err(PathfindingViewErrors::InvalidNumberOfPaths(number).into());
+        return Err(PathfindingViewErrors::InvalidNumberOfPaths {
+            path_number: number,
+            max_number: MAX_NUMBER_OF_PATHS,
+        }
+        .into());
     }
 
     let mut conn = db_pool.get().await?;

@@ -94,6 +94,6 @@ enum OperationError {
     EmptyId,
     #[error("Update operation try to modify object id, which is forbidden")]
     ModifyId,
-    #[error("A Json Patch error occurred: '{}'", .0)]
-    InvalidPatch(String),
+    #[error("A Json Patch error occurred: '{error}'")]
+    InvalidPatch { error: String },
 }
