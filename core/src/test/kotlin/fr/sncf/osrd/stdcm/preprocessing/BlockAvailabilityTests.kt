@@ -111,7 +111,7 @@ class BlockAvailabilityTests {
                 .first()
         while (infraExplorer.getLookahead().size + 1 < nBlocksInPath) infraExplorer =
             infraExplorer.cloneAndExtendLookahead().first()
-        for (i in 0..nBlocksSimulated) {
+        for (i in 0..<nBlocksSimulated - 1) {
             infraExplorer.moveForward()
             infraExplorer =
                 infraExplorer.addEnvelope(
