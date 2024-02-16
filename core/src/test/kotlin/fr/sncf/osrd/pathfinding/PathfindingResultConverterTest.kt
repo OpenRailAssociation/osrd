@@ -94,7 +94,7 @@ class PathfindingResultConverterTest {
         Assertions.assertEquals("TA0", waypoints[1].location.trackSection)
         Assertions.assertEquals(700.0, waypoints[1].location.offset, 1e-5)
         Assertions.assertTrue(waypoints[1].suggestion)
-        Assertions.assertEquals("South_West_station", waypoints[1].id)
+        Assertions.assertEquals("West_station", waypoints[1].id)
     }
 
     /**

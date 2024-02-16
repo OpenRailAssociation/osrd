@@ -16,8 +16,8 @@
             "extensions": {
                 "sncf": {
                     "ci": 0,
-                    "ch": "aa",
-                    "ch_short_label": "aa",
+                    "ch": "BV",
+                    "ch_short_label": "BV",
                     "ch_long_label": "0",
                     "trigram": "OP."
                 },
@@ -38,8 +38,8 @@
             "extensions": {
                 "sncf": {
                     "ci": 0,
-                    "ch": "aa",
-                    "ch_short_label": "aa",
+                    "ch": "BV",
+                    "ch_short_label": "BV",
                     "ch_long_label": "0",
                     "trigram": "OP."
                 },

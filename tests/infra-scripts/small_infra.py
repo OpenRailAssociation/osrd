@@ -177,7 +177,7 @@ place_regular_signals_detectors(ta6, "A6", Direction.START_TO_STOP, 200, -200)
 place_regular_signals_detectors(ta7, "A7", Direction.STOP_TO_START, 200, -200)
 
 # Station
-west = builder.add_operational_point(label="South_West_station", uic=1)
+west = builder.add_operational_point(label="West_station", trigram="WS", uic=2)
 west.add_part(ta0, 700)
 west.add_part(ta1, 500)
 west.add_part(ta2, 500)
@@ -209,7 +209,7 @@ ta0.add_loading_gauge_limit(begin=100, end=1500, category=LoadingGaugeType.FR3_3
 
 tb0.set_remaining_coords([(-0.4, 49.49), (-0.373, 49.49), (-0.37, 49.492)])
 
-south_west = builder.add_operational_point(label="West_station", uic=2)
+south_west = builder.add_operational_point(label="South_West_station", trigram="SWS", uic=1)
 south_west.add_part(tb0, 500)
 
 # ================================
@@ -294,7 +294,7 @@ tc0.set_remaining_coords([(-0.309, LAT_0 + LAT_LINE_SPACE), (-0.297, LAT_0 + LAT
 tc3.set_remaining_coords([(-0.309, LAT_1 - LAT_LINE_SPACE), (-0.297, LAT_1 - LAT_LINE_SPACE)])
 
 # Station
-mid_west = builder.add_operational_point(label="Mid_West_station", uic=3)
+mid_west = builder.add_operational_point(label="Mid_West_station", trigram="MWS", uic=3)
 mid_west.add_part(tc0, 550)
 mid_west.add_part(tc1, 550)
 mid_west.add_part(tc2, 450)
@@ -349,7 +349,7 @@ place_regular_signals_detectors(td0, "D0", Direction.START_TO_STOP, 200, -200)
 place_regular_signals_detectors(td1, "D1", Direction.STOP_TO_START, 200, -200)
 
 # Station
-mid_east = builder.add_operational_point(label="Mid_East_station", uic=4)
+mid_east = builder.add_operational_point(label="Mid_East_station", trigram="MES", uic=4)
 mid_east.add_part(td0, 14000)
 mid_east.add_part(td1, 14000)
 
@@ -435,7 +435,7 @@ te1.set_remaining_coords(
 te3.set_remaining_coords([(-0.145, LAT_0 + 0.002), (-0.145, LAT_3 - 0.002)])
 
 # Station
-north = builder.add_operational_point(label="North_station", uic=5)
+north = builder.add_operational_point(label="North_station", trigram="NS", uic=5)
 north.add_part(te1, 1000)
 north.add_part(te2, 1025)
 
@@ -457,7 +457,7 @@ te0.add_curve(begin=500, end=1000, curve=8000)
 
 tf1.set_remaining_coords([(-0.172, 49.47), (-0.167, 49.466), (-0.135, 49.466)])
 
-south = builder.add_operational_point(label="South_station", uic=6)
+south = builder.add_operational_point(label="South_station", trigram="SS", uic=6)
 south.add_part(tf1, 4300)
 
 place_regular_signals_detectors(tf1, "F1", min_offset=200, max_offset=4300)
@@ -497,7 +497,7 @@ tg5.set_remaining_coords([(-0.09, LAT_4 - LAT_LINE_SPACE)])
 
 dg6 = tg3.add_detector(label="DG7", position=tg3.length / 2)
 
-north_east = builder.add_operational_point(label="North_East_station", uic=7)
+north_east = builder.add_operational_point(label="North_East_station", trigram="NES", uic=7)
 north_east.add_part(tg4, 1550)
 north_east.add_part(tg5, 1500)
 
@@ -569,7 +569,7 @@ th0.set_remaining_coords([(-0.1346, LAT_1)])
 th1.set_remaining_coords([(-0.115, 49.497), (-0.115, 49.487), (-0.11, 49.484), (-0.09, 49.484)])
 
 # Station
-south_east = builder.add_operational_point(label="South_East_station", uic=8)
+south_east = builder.add_operational_point(label="South_East_station", trigram="SES", uic=8)
 south_east.add_part(th1, 4400)
 
 # ================================
