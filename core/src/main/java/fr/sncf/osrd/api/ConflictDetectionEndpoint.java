@@ -11,6 +11,7 @@ import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl;
 import fr.sncf.osrd.reporting.warnings.Warning;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import org.takes.Request;
 import org.takes.Response;
@@ -71,7 +72,7 @@ public class ConflictDetectionEndpoint implements Take {
         @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
         public static class Conflict {
             @Json(name = "train_ids")
-            public final List<Long> trainIds;
+            public final Collection<Long> trainIds;
 
             @Json(name = "start_time")
             public final double startTime;
@@ -89,7 +90,7 @@ public class ConflictDetectionEndpoint implements Take {
             @Json(name = "conflict_type")
             public final ConflictType conflictType;
 
-            public Conflict(List<Long> trainIds, double startTime, double endTime, ConflictType conflictType) {
+            public Conflict(Collection<Long> trainIds, double startTime, double endTime, ConflictType conflictType) {
                 this.trainIds = trainIds;
                 this.startTime = startTime;
                 this.endTime = endTime;

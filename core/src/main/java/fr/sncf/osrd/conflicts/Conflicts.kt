@@ -6,6 +6,7 @@ import fr.sncf.osrd.api.ConflictDetectionEndpoint.ConflictDetectionResult.Confli
 import fr.sncf.osrd.api.ConflictDetectionEndpoint.ConflictDetectionResult.Conflict.ConflictType
 import fr.sncf.osrd.standalone_sim.result.ResultTrain.RoutingRequirement
 import fr.sncf.osrd.standalone_sim.result.ResultTrain.SpacingRequirement
+import kotlin.math.max
 import kotlin.math.min
 
 interface SpacingTrainRequirement {
@@ -192,13 +193,17 @@ class IncrementalConflictDetectorImpl(trainRequirements: List<TrainRequirements>
 
         val res = mutableListOf<Conflict>()
         for (conflictGroup in detectRequirementConflicts(requirements) { _, _ -> true }) {
-            if (conflictGroup.none { it.trainId == -1L })
+            if (conflictGroup.none { it.trainId == -1L }) {
                 continue // don't report timetable conflicts to STDCM
-            val filteredConflictGroup = conflictGroup.filter { it.trainId != -1L }
-            val trains = filteredConflictGroup.map { it.trainId }
-            val beginTime = filteredConflictGroup.minBy { it.beginTime }.beginTime
-            val endTime = filteredConflictGroup.maxBy { it.endTime }.endTime
+            }
+            val otherTrainResourceUses = conflictGroup.filter { it.trainId != -1L }
+            val earliestStartTime = otherTrainResourceUses.minBy { it.beginTime }.beginTime
+            val latestEndTime = otherTrainResourceUses.maxBy { it.endTime }.endTime
+            val beginTime = max(earliestStartTime, req.beginTime)
+            val endTime = min(latestEndTime, req.endTime)
+            val trains = otherTrainResourceUses.map { it.trainId }.toSet()
             res.add(Conflict(trains, beginTime, endTime, ConflictType.SPACING))
+            TODO("Not quite there yet")
         }
 
         return res

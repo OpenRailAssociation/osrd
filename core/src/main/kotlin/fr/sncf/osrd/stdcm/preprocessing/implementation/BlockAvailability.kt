@@ -51,17 +51,18 @@ data class BlockAvailability(
         conflicts: List<ConflictDetectionEndpoint.ConflictDetectionResult.Conflict>,
         spacingRequirements: List<SpacingRequirement>
     ): Double {
-        var minimumDelay = 0.0
+        var globalMinimumDelay = 0.0
         var recConflicts = conflicts.toMutableList()
-        while (recConflicts.isNotEmpty() && minimumDelay.isFinite()) {
-            minimumDelay += max(conflicts.map { it.endTime - it.startTime })
+        while (recConflicts.isNotEmpty() && globalMinimumDelay.isFinite()) {
+            val minimumDelay = max(conflicts.map { it.endTime - it.startTime })
             val recSpacingRequirements = shiftSpacingRequirements(spacingRequirements, minimumDelay)
             recConflicts =
                 incrementalConflictDetector
                     .checkConflicts(recSpacingRequirements, listOf())
                     .toMutableList()
+            globalMinimumDelay += minimumDelay
         }
-        return minimumDelay
+        return globalMinimumDelay
     }
 
     /**

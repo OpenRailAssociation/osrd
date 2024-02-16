@@ -1,9 +1,11 @@
 package fr.sncf.osrd.stdcm.infra_exploration
 
+import fr.sncf.osrd.conflicts.IncrementalRequirementEnvelopeAdapter
 import fr.sncf.osrd.conflicts.SpacingRequirementAutomaton
 import fr.sncf.osrd.conflicts.SpacingRequirements
 import fr.sncf.osrd.envelope.EnvelopeConcat
 import fr.sncf.osrd.envelope.EnvelopeTimeInterpolate
+import fr.sncf.osrd.envelope_sim.PhysicsRollingStock
 import fr.sncf.osrd.sim_infra.api.Path
 import fr.sncf.osrd.standalone_sim.result.ResultTrain.SpacingRequirement
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
@@ -15,6 +17,7 @@ data class InfraExplorerWithEnvelopeImpl(
     private val infraExplorer: InfraExplorer,
     private val envelopes: MutableList<EnvelopeTimeInterpolate>,
     private val spacingRequirementAutomaton: SpacingRequirementAutomaton,
+    private val rollingStock: PhysicsRollingStock,
     private var spacingRequirements: List<SpacingRequirement>? = null
 ) : InfraExplorer by infraExplorer, InfraExplorerWithEnvelope {
 
@@ -24,7 +27,8 @@ data class InfraExplorerWithEnvelopeImpl(
                 explorer,
                 ArrayList(envelopes),
                 spacingRequirementAutomaton.clone(),
-                spacingRequirements?.toList()
+                rollingStock,
+                spacingRequirements?.toList(),
             )
         }
     }
@@ -48,6 +52,12 @@ data class InfraExplorerWithEnvelopeImpl(
     override fun getSpacingRequirements(): List<SpacingRequirement> {
         if (spacingRequirements == null) {
             spacingRequirementAutomaton.incrementalPath = getIncrementalPath()
+            spacingRequirementAutomaton.callbacks =
+                IncrementalRequirementEnvelopeAdapter(
+                    rollingStock,
+                    getFullEnvelope(),
+                    getIncrementalPath().pathComplete
+                )
             val updatedRequirements =
                 spacingRequirementAutomaton.processPathUpdate() as? SpacingRequirements
                     ?: throw BlockAvailabilityInterface.NotEnoughLookaheadError()
@@ -70,6 +80,7 @@ data class InfraExplorerWithEnvelopeImpl(
             infraExplorer.clone(),
             envelopes.toMutableList(),
             spacingRequirementAutomaton.clone(),
+            rollingStock,
             spacingRequirements?.toList()
         )
     }

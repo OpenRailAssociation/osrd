@@ -72,7 +72,8 @@ fun initInfraExplorerWithEnvelope(
                     fullInfra.signalingSimulator,
                     IncrementalRequirementEnvelopeAdapter(rollingStock, null, false),
                     explorer.getIncrementalPath(),
-                )
+                ),
+                rollingStock
             )
         }
 }
@@ -98,6 +99,7 @@ fun InfraExplorer.withEnvelope(
                 isSimulationComplete
             ),
             getIncrementalPath(),
-        )
+        ),
+        rollingStock,
     )
 }
