@@ -10,7 +10,7 @@ const drawRect = (
   dataSimulation: ConsolidatedRouteAspect,
   groupID: string,
   rotate: boolean,
-  id: string | null = null
+  id: string
 ) => {
   if (dataSimulation.time_end === null || dataSimulation.time_start === null) {
     return;
@@ -25,7 +25,7 @@ const drawRect = (
 
   const isStripe = dataSimulation.blinking;
   if (isStripe) {
-    buildStripe(chart.drawZone.select(`#${groupID}`), { id: id!, color: dataSimulation.color });
+    buildStripe(chart.drawZone.select(`#${groupID}`), { id, color: dataSimulation.color });
   }
 
   const drawZone = chart.drawZone.select(`#${groupID}`);
