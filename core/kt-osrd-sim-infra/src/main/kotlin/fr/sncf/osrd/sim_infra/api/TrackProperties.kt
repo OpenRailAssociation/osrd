@@ -2,6 +2,7 @@ package fr.sncf.osrd.sim_infra.api
 
 import fr.sncf.osrd.geom.LineString
 import fr.sncf.osrd.sim_infra.impl.NeutralSection
+import fr.sncf.osrd.sim_infra.impl.SpeedSection
 import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.indexing.StaticIdx
 import fr.sncf.osrd.utils.indexing.StaticIdxList
@@ -41,6 +42,8 @@ interface TrackProperties {
     fun getTrackChunkElectrificationVoltage(trackChunk: TrackChunkId): DistanceRangeMap<String>
 
     fun getTrackChunkNeutralSections(trackChunk: DirTrackChunkId): DistanceRangeMap<NeutralSection>
+
+    fun getTrackChunkSpeedSections(trackChunk: DirTrackChunkId): DistanceRangeMap<SpeedSection>
 
     fun getTrackChunkSpeedSections(
         trackChunk: DirTrackChunkId,
