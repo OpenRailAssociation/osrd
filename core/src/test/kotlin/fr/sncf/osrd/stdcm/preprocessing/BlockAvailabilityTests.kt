@@ -21,11 +21,11 @@ import fr.sncf.osrd.utils.Direction
 import fr.sncf.osrd.utils.Helpers
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
+import org.junit.jupiter.api.*
 import kotlin.Double.Companion.POSITIVE_INFINITY
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
-import org.junit.jupiter.api.*
 
 class BlockAvailabilityTests {
     // See overlapping_routes.py for a detailed infrastructure description
@@ -393,8 +393,8 @@ class BlockAvailabilityTests {
                 explorer.getSimulatedLength(),
                 startTime
             ) as BlockAvailabilityInterface.Available
-        assertTrue { res.maximumDelay <= startTime }
-        assertEquals(startTime, res.timeOfNextConflict)
+        assertEquals(POSITIVE_INFINITY, res.maximumDelay)
+        assertEquals(POSITIVE_INFINITY, res.timeOfNextConflict)
     }
 
     /** Test that the start time is properly accounted for with a start offset != 0 */
