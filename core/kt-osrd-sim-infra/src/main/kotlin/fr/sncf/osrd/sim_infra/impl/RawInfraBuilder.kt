@@ -303,27 +303,6 @@ interface RestrictedRawInfraBuilder {
         sightDistance: Distance,
         init: PhysicalSignalBuilder.() -> Unit
     ): PhysicalSignalId
-
-    fun trackSection(name: String?, init: TrackSectionBuilder.() -> Unit): TrackSectionId
-
-    fun trackChunk(
-        geo: LineString,
-        slopes: DirectionalMap<DistanceRangeMap<Double>>,
-        length: Length<TrackChunk>,
-        offset: Offset<TrackSection>,
-        curves: DirectionalMap<DistanceRangeMap<Double>>,
-        gradients: DirectionalMap<DistanceRangeMap<Double>>,
-        loadingGaugeConstraints: DistanceRangeMap<LoadingGaugeConstraint>,
-        electrificationVoltage: DistanceRangeMap<String>,
-        neutralSections: DirectionalMap<DistanceRangeMap<NeutralSection>>,
-        speedSections: DirectionalMap<DistanceRangeMap<SpeedSection>>
-    ): TrackChunkId
-
-    fun operationalPointPart(
-        name: String,
-        chunkOffset: Offset<TrackChunk>,
-        chunk: TrackChunkId
-    ): OperationalPointPartId
 }
 
 interface TrackSectionBuilder {
@@ -482,13 +461,13 @@ class RawInfraBuilderImpl : RawInfraBuilder {
         return physicalSignalPool.add(builder.build())
     }
 
-    override fun trackSection(name: String?, init: TrackSectionBuilder.() -> Unit): TrackSectionId {
+    fun trackSection(name: String?, init: TrackSectionBuilder.() -> Unit): TrackSectionId {
         val builder = TrackSectionBuilderImpl(name)
         builder.init()
         return trackSectionPool.add(builder.build())
     }
 
-    override fun trackChunk(
+    fun trackChunk(
         geo: LineString,
         slopes: DirectionalMap<DistanceRangeMap<Double>>,
         length: Length<TrackChunk>,
@@ -522,7 +501,7 @@ class RawInfraBuilderImpl : RawInfraBuilder {
         )
     }
 
-    override fun operationalPointPart(
+    fun operationalPointPart(
         name: String,
         chunkOffset: Offset<TrackChunk>,
         chunk: TrackChunkId
