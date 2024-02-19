@@ -49,11 +49,11 @@ export function onlyDigit(str: string): string {
 }
 
 /**
- * Given a string, return a number or undefined
+ * Given a string, return a number or 0
  * Useful for number input
  */
 export function convertInputStringToNumber(str: string) {
-  return str !== '' && !Number.isNaN(str) ? +str : undefined;
+  return str !== '' && !Number.isNaN(str) ? +str : 0;
 }
 
 /**
