@@ -310,6 +310,12 @@ class RawInfraImpl(
     }
 
     override fun getTrackChunkSpeedSections(
+        trackChunk: DirTrackChunkId
+    ): DistanceRangeMap<SpeedSection> {
+        return trackChunkPool[trackChunk.value].speedSections.get(trackChunk.direction)
+    }
+
+    override fun getTrackChunkSpeedSections(
         trackChunk: DirTrackChunkId,
         trainTag: String?
     ): DistanceRangeMap<Speed> {
