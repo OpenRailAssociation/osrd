@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableSet
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType
 import fr.sncf.osrd.sim_infra.api.LoadingGaugeConstraint
 import fr.sncf.osrd.sim_infra.api.LoadingGaugeTypeId
+import java.util.Objects
 
 class LoadingGaugeConstraintImpl(blockedTypes: ImmutableSet<RJSLoadingGaugeType>) :
     LoadingGaugeConstraint {
@@ -19,5 +20,16 @@ class LoadingGaugeConstraintImpl(blockedTypes: ImmutableSet<RJSLoadingGaugeType>
 
     override fun isCompatibleWith(trainType: LoadingGaugeTypeId): Boolean {
         return !blockedTypes.contains(trainType)
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is LoadingGaugeConstraintImpl) return false
+        if (blockedTypes != other.blockedTypes) return false
+        return true
+    }
+
+    override fun hashCode(): Int {
+        return Objects.hash(blockedTypes)
     }
 }

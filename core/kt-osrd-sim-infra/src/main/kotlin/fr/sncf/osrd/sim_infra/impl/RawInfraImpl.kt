@@ -55,6 +55,8 @@ import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.OffsetList
 import fr.sncf.osrd.utils.units.Speed
+import java.util.Objects
+import kotlin.collections.HashMap
 import kotlin.time.Duration
 
 class TrackNodeConfigDescriptor(
@@ -162,12 +164,36 @@ class OperationalPointPartDescriptor(
 class SpeedSection(
     val default: Speed,
     val speedByTrainTag: Map<String, Speed>,
-)
+) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is SpeedSection) return false
+        if (default != other.default) return false
+        if (speedByTrainTag != other.speedByTrainTag) return false
+        return true
+    }
+
+    override fun hashCode(): Int {
+        return Objects.hash(default, speedByTrainTag)
+    }
+}
 
 class NeutralSection(
     val lowerPantograph: Boolean,
     val isAnnouncement: Boolean,
-)
+) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is NeutralSection) return false
+        if (lowerPantograph != other.lowerPantograph) return false
+        if (isAnnouncement != other.isAnnouncement) return false
+        return true
+    }
+
+    override fun hashCode(): Int {
+        return Objects.hash(lowerPantograph, isAnnouncement)
+    }
+}
 
 class RawInfraImpl(
     val trackNodePool: StaticPool<TrackNode, TrackNodeDescriptor>,

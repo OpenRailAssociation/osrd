@@ -3,6 +3,7 @@ package fr.sncf.osrd.utils
 import com.google.common.collect.RangeMap
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.MutableDistanceArrayList
+import java.util.Objects
 import java.util.PriorityQueue
 import java.util.function.BiFunction
 import kotlin.math.min
@@ -273,6 +274,18 @@ data class DistanceRangeMapImpl<T>(
     /** Asserts that the internal state is consistent */
     private fun validate() {
         assert(bounds.size == values.size + 1 || (bounds.size == 0 && values.isEmpty()))
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is DistanceRangeMapImpl<*>) return false
+        if (bounds != other.bounds) return false
+        if (values != other.values) return false
+        return true
+    }
+
+    override fun hashCode(): Int {
+        return Objects.hash(bounds, values)
     }
 
     companion object {
