@@ -19,7 +19,8 @@ const formatToEffortCurve = (rows: Matrix<string>) =>
   rows.reduce<EffortCurveForm>(
     (result, row) => {
       result.speeds.push(row[0] !== '' ? kmhToMs(Number(row[0])) : undefined);
-      result.max_efforts.push(row[1] !== '' ? Number(row[1]) * 10 : undefined);
+      // Back-end needs effort in newton
+      result.max_efforts.push(row[1] !== '' ? Number(row[1]) * 1000 : undefined);
       return result;
     },
     { max_efforts: [], speeds: [] }

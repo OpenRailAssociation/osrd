@@ -1,11 +1,11 @@
 import React from 'react';
 
 import cx from 'classnames';
-import { isNil } from 'lodash';
+import { floor, isNil } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
 import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
-import InputGroupSNCF from 'common/BootstrapSNCF/InputGroupSNCF';
+import InputGroupSNCF, { type InputGroupSNCFValue } from 'common/BootstrapSNCF/InputGroupSNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import SelectSNCF from 'common/BootstrapSNCF/SelectSNCF';
 import {
@@ -13,13 +13,20 @@ import {
   RollingStockEditorMetadata,
   RollingStockEditorParameter,
 } from 'modules/rollingStock/consts';
-import { splitRollingStockProperties } from 'modules/rollingStock/helpers/utils';
+import {
+  handleUnitValue,
+  isConversionPossible,
+  splitRollingStockProperties,
+} from 'modules/rollingStock/helpers/utils';
 import useCompleteRollingStockSchemasProperties from 'modules/rollingStock/hooks/useCompleteRollingStockSchemasProperties';
 import type {
   EffortCurveForms,
+  MultiUnitsParameter,
   RollingStockParametersValues,
   SchemaProperty,
 } from 'modules/rollingStock/types';
+import { setFailure } from 'reducers/main';
+import { useAppDispatch } from 'store';
 
 type RollingStockMetadataFormProps = {
   rollingStockValues: RollingStockParametersValues;
@@ -96,9 +103,7 @@ export const RollingStockEditorMetadataForm = ({
 };
 
 type RollingStockEditorParameterFormProps = {
-  optionValue: string;
   rollingStockValues: RollingStockParametersValues;
-  setOptionValue: (option: React.SetStateAction<string>) => void;
   setRollingStockValues: (
     rollingStockValue: React.SetStateAction<RollingStockParametersValues>
   ) => void;
@@ -106,20 +111,44 @@ type RollingStockEditorParameterFormProps = {
 
 // TODO: make the conditional return clearer
 const RollingStockEditorParameterFormColumn = ({
-  optionValue,
   rollingStockValues,
-  setOptionValue,
   setRollingStockValues,
   propertiesList,
 }: RollingStockEditorParameterFormProps & {
   propertiesList: SchemaProperty[];
 }) => {
   const { t } = useTranslation(['rollingstock', 'translation']);
+  const dispatch = useAppDispatch();
+
+  const handleUnitChange = (option: InputGroupSNCFValue, property: SchemaProperty) => {
+    const selectedParam = rollingStockValues[property.title] as MultiUnitsParameter;
+
+    setRollingStockValues({
+      ...rollingStockValues,
+      [property.title]: {
+        min: handleUnitValue(option, selectedParam, rollingStockValues.mass, 'min'),
+        max: handleUnitValue(option, selectedParam, rollingStockValues.mass, 'max'),
+        unit: option.unit,
+        value: handleUnitValue(option, selectedParam, rollingStockValues.mass),
+      } as MultiUnitsParameter,
+    });
+
+    // Should only appear if a conversion is missing in the schema
+    if (!isConversionPossible(selectedParam.unit, option.unit)) {
+      dispatch(
+        setFailure({
+          name: t('errorMessages.invalidConversion'),
+          message: t('errorMessages.missingConversion'),
+        })
+      );
+    }
+  };
 
   return (
     <>
       {propertiesList.map((property, index, arr) => {
         const isLast = index === arr.length - 1;
+
         if (property.type === 'select' && property.enum) {
           return (
             <div
@@ -152,6 +181,12 @@ const RollingStockEditorParameterFormColumn = ({
           );
         }
         if (property.units) {
+          // Can be undefined if creating a new rolling stock
+          const currentParam = rollingStockValues[property.title] as
+            | MultiUnitsParameter
+            | undefined;
+          const maxValue = currentParam?.max;
+
           return (
             <div
               className={cx(
@@ -159,7 +194,8 @@ const RollingStockEditorParameterFormColumn = ({
                 ' justify-content-between',
                 property.margin || 'mb-4',
                 {
-                  'd-flex align-items-center': property.title === 'mass',
+                  'd-flex align-items-center':
+                    property.title === 'mass' || property.title === 'maxSpeed',
                   'mb-xl-0': isLast,
                 }
               )}
@@ -170,38 +206,28 @@ const RollingStockEditorParameterFormColumn = ({
                 inputDataTestId={`${property.title}-input`}
                 label={t(property.title)}
                 typeValue={property.type}
-                type={optionValue}
-                value={
-                  !isNil(rollingStockValues[property.title])
-                    ? (rollingStockValues[property.title] as string | number)
-                    : ''
-                }
+                unit={currentParam?.unit ?? property.units[0]}
+                value={!isNil(currentParam) ? currentParam.value : ''}
                 options={property.units.map((unit) => ({
                   id: `${property.title}-${unit}`,
                   label: unit,
                 }))}
-                handleType={(type) => {
-                  setRollingStockValues({
-                    ...rollingStockValues,
-                    [property.title]: type.value !== '' ? Number(type.value) : undefined,
-                  });
-                  setOptionValue(type.type as string);
-                }}
-                min={property.min}
-                max={property.max}
+                handleUnit={(option) => handleUnitChange(option, property)}
+                min={currentParam?.min ?? property.min}
+                max={currentParam?.max ?? property.max}
                 isInvalid={
-                  rollingStockValues[property.title]?.toString().length === 0 ||
-                  (rollingStockValues[property.title] as number) < (property.min as number) ||
-                  (rollingStockValues[property.title] as number) > (property.max as number)
+                  currentParam?.value?.toString().length === 0 ||
+                  (currentParam?.value as number) < (currentParam?.min as number) ||
+                  (currentParam?.value as number) > (currentParam?.max as number)
                 }
                 errorMsg={
-                  property.max
+                  maxValue
                     ? t('errorMessages.minMaxRangeError', {
-                        min: property.min?.toString().replace('.', ','),
-                        max: property.max?.toString().replace('.', ','),
+                        min: currentParam.min?.toString().replace('.', ','),
+                        max: floor(maxValue, 6).toString().replace('.', ','),
                       })
                     : t('errorMessages.minRangeError', {
-                        min: property.min?.toString().replace('.', ','),
+                        min: currentParam?.min?.toString().replace('.', ','),
                       })
                 }
                 step="any"
@@ -209,7 +235,6 @@ const RollingStockEditorParameterFormColumn = ({
                 condensed
                 orientation="right"
                 textRight
-                disableUnitSelector
               />
             </div>
           );
@@ -269,9 +294,7 @@ const RollingStockEditorParameterFormColumn = ({
 };
 
 export const RollingStockEditorParameterForm = ({
-  optionValue,
   rollingStockValues,
-  setOptionValue,
   setRollingStockValues,
   effortCurves,
 }: RollingStockEditorParameterFormProps & {
@@ -290,18 +313,14 @@ export const RollingStockEditorParameterForm = ({
     <div className="d-xl-flex justify-content-center px-1 pb-3">
       <div className="col-xl-4 rollingstock-editor-input-container mb-3">
         <RollingStockEditorParameterFormColumn
-          optionValue={optionValue}
           rollingStockValues={rollingStockValues}
-          setOptionValue={setOptionValue}
           setRollingStockValues={setRollingStockValues}
           propertiesList={leftSideList}
         />
       </div>
       <div className="col-xl-4 rollingstock-editor-input-container mb-3">
         <RollingStockEditorParameterFormColumn
-          optionValue={optionValue}
           rollingStockValues={rollingStockValues}
-          setOptionValue={setOptionValue}
           setRollingStockValues={setRollingStockValues}
           propertiesList={middleSideList}
         />
@@ -312,9 +331,7 @@ export const RollingStockEditorParameterForm = ({
           <span className=" ml-4 text-muted">{t('rollingResistanceFormula')}</span>
         </div>
         <RollingStockEditorParameterFormColumn
-          optionValue={optionValue}
           rollingStockValues={rollingStockValues}
-          setOptionValue={setOptionValue}
           setRollingStockValues={setRollingStockValues}
           propertiesList={rightSideList}
         />
@@ -355,9 +372,8 @@ export const RollingStockEditorOnboardSystemEquipmentForm = ({
   const signalingSystemCheckboxes = sigSystemProperty.enum!.map((sigSystem, index) => {
     const checked = rsSignalingSystemsList.includes(sigSystem);
     return (
-      <div className={cx('col-6', 'col-xl-3')}>
+      <div key={`${index}-${sigSystem}`} className={cx('col-6', 'col-xl-3')}>
         <CheckboxRadioSNCF
-          key={`${index}-${sigSystem}`}
           type="checkbox"
           id={sigSystem}
           name={sigSystem}

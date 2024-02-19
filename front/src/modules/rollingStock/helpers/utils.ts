@@ -8,22 +8,26 @@ import type {
   RollingStock,
   RollingStockForm,
 } from 'common/api/osrdEditoastApi';
+import type { InputGroupSNCFValue } from 'common/BootstrapSNCF/InputGroupSNCF';
 import {
   RS_REQUIRED_FIELDS,
   THERMAL_TRACTION_IDENTIFIER,
   EP_BY_MODE,
   DEFAULT_SIGNALING_SYSTEMS,
   RS_SCHEMA_PROPERTIES,
+  conversionFactorsSchema,
 } from 'modules/rollingStock/consts';
 import { isElectric } from 'modules/rollingStock/helpers/electric';
 import type {
   ConditionalEffortCurveForm,
   EffortCurveForm,
   EffortCurveForms,
+  MultiUnitsParameter,
   RollingStockParametersValidValues,
   RollingStockParametersValues,
   SchemaProperty,
 } from 'modules/rollingStock/types';
+import { kmhToMs } from 'utils/physics';
 import { getTranslationKey } from 'utils/strings';
 import type { ValueOf } from 'utils/types';
 
@@ -39,6 +43,36 @@ const newRollingStockValues = {
   subseries: '',
   type: '',
   unit: '',
+  mass: {
+    min: 0.1,
+    max: 10000,
+    unit: 't',
+    value: 0.1,
+  },
+  maxSpeed: {
+    min: 1,
+    max: 600,
+    unit: 'km/h',
+    value: 1,
+  },
+  rollingResistanceA: {
+    min: 0,
+    max: 20,
+    unit: 'kN',
+    value: 0,
+  },
+  rollingResistanceB: {
+    min: 0,
+    max: 0.5,
+    unit: 'kN/(km/h)',
+    value: 0,
+  },
+  rollingResistanceC: {
+    min: 0,
+    max: 0.01,
+    unit: 'kN/(km/h)²',
+    value: 0,
+  },
   loadingGauge: 'G1' as RollingStockParametersValues['loadingGauge'],
   electricalPowerStartupTime: null,
   raisePantographTime: null,
@@ -67,6 +101,18 @@ export const getDefaultRollingStockMode = (selectedMode: string | null): EffortC
       }
     : null;
 
+const getDefaultMultiUnitsParameter = (parameter: string): MultiUnitsParameter => {
+  const { min, max, units } = RS_SCHEMA_PROPERTIES.find(
+    (rsParam) => rsParam.title === parameter
+  ) as SchemaProperty;
+  return {
+    min,
+    max,
+    unit: units![0],
+    value: 0,
+  };
+};
+
 export const getRollingStockEditorDefaultValues = (
   rollingStockData?: RollingStock
 ): RollingStockParametersValues =>
@@ -84,17 +130,32 @@ export const getRollingStockEditorDefaultValues = (
         type: rollingStockData.metadata.type,
         unit: rollingStockData.metadata.unit,
         length: rollingStockData.length,
-        mass: rollingStockData.mass / 1000, // The mass received is in kg and should appear in tons.
-        maxSpeed: rollingStockData.max_speed * 3.6, // The speed received is in m/s and should appear in km/h.
+        mass: {
+          ...getDefaultMultiUnitsParameter('mass'),
+          value: rollingStockData.mass / 1000, // The mass received is in kg and should appear in tons.
+        },
+        maxSpeed: {
+          ...getDefaultMultiUnitsParameter('maxSpeed'),
+          value: rollingStockData.max_speed * 3.6, // The speed received is in m/s and should appear in km/h.
+        },
         startupTime: rollingStockData.startup_time,
         startupAcceleration: rollingStockData.startup_acceleration,
         comfortAcceleration: rollingStockData.comfort_acceleration,
         gammaValue: rollingStockData.gamma.value,
         inertiaCoefficient: rollingStockData.inertia_coefficient,
         loadingGauge: rollingStockData.loading_gauge,
-        rollingResistanceA: rollingStockData.rolling_resistance.A,
-        rollingResistanceB: rollingStockData.rolling_resistance.B,
-        rollingResistanceC: rollingStockData.rolling_resistance.C,
+        rollingResistanceA: {
+          ...getDefaultMultiUnitsParameter('rollingResistanceA'),
+          value: rollingStockData.rolling_resistance.A / 1000, // The b resistance received is in N and should appear in kN.
+        },
+        rollingResistanceB: {
+          ...getDefaultMultiUnitsParameter('rollingResistanceB'),
+          value: rollingStockData.rolling_resistance.B / (1000 * 3.6), // The b resistance received is in N/(m/s) and should appear in kN/(km/h).
+        },
+        rollingResistanceC: {
+          ...getDefaultMultiUnitsParameter('rollingResistanceC'),
+          value: rollingStockData.rolling_resistance.C / (1000 * 3.6 ** 2), // The c resistance received is in N/(m/s)² and should appear in kN/(km/h)².
+        },
         electricalPowerStartupTime: rollingStockData.electrical_power_startup_time || null,
         raisePantographTime: rollingStockData.raise_pantograph_time || null,
         basePowerClass: rollingStockData.base_power_class || null,
@@ -135,7 +196,11 @@ export const rollingStockEditorQueryArg = (
   return {
     name: data.name,
     length: data.length,
-    max_speed: data.maxSpeed / 3.6, // The user enters a value in km/h, which is then interpreted in m/s by the server.
+    max_speed: handleUnitValue(
+      { unit: 'm/s', value: data.maxSpeed.value },
+      data.maxSpeed,
+      data.mass
+    ) as number, // Back-end needs value in m/s.
     startup_time: data.startupTime,
     startup_acceleration: data.startupAcceleration,
     comfort_acceleration: data.comfortAcceleration,
@@ -144,11 +209,23 @@ export const rollingStockEditorQueryArg = (
       value: data.gammaValue,
     },
     inertia_coefficient: data.inertiaCoefficient,
-    mass: data.mass * 1000, // Here we receive a value in ton which will be interpreted in kg by the server.
+    mass: handleUnitValue({ unit: 'kg', value: data.mass.value }, data.mass, data.mass) as number, // Back-end needs value in kg.
     rolling_resistance: {
-      A: data.rollingResistanceA,
-      B: data.rollingResistanceB,
-      C: data.rollingResistanceC,
+      A: handleUnitValue(
+        { unit: 'N', value: data.rollingResistanceA.value },
+        data.rollingResistanceA,
+        data.mass
+      ) as number, // Back-end needs value in N.
+      B: handleUnitValue(
+        { unit: 'N/(m/s)', value: data.rollingResistanceB.value },
+        data.rollingResistanceB,
+        data.mass
+      ) as number, // Back-end needs value in N/(m/s).
+      C: handleUnitValue(
+        { unit: 'N/(m/s)²', value: data.rollingResistanceC.value },
+        data.rollingResistanceC,
+        data.mass
+      ) as number, // Back-end needs value in N/(m/s)².
       type: 'davis',
     },
     loading_gauge: data.loadingGauge,
@@ -178,6 +255,18 @@ export const rollingStockEditorQueryArg = (
 
 type Conditions = Record<string, (effortCurves: EffortCurveForms | null) => boolean>;
 
+const isMultiUnitsParam = (
+  param:
+    | string
+    | number
+    | string[]
+    | { [key: string]: string }
+    | MultiUnitsParameter
+    | null
+    | undefined
+): param is MultiUnitsParameter =>
+  param ? Object.keys(param as MultiUnitsParameter).includes('value') : false;
+
 export const checkRollingStockFormValidity = (
   rollingStockForm: RollingStockParametersValues,
   effortCurves: EffortCurveForms | null,
@@ -195,7 +284,10 @@ export const checkRollingStockFormValidity = (
   }, {});
   const invalidFields = Object.keys(RS_REQUIRED_FIELDS).filter((field) => {
     const conditionForFieldBeingRequired = conditions[field];
-    const isFieldInvalid = !has(rollingStockForm, field) || isNil(rollingStockForm[field]);
+    const paramValue = rollingStockForm[field];
+    const isFieldInvalid =
+      !has(rollingStockForm, field) ||
+      isNil(isMultiUnitsParam(paramValue) ? paramValue.value : paramValue);
     const isRequired = conditionForFieldBeingRequired
       ? conditionForFieldBeingRequired(effortCurves)
       : true;
@@ -214,7 +306,9 @@ export const checkRollingStockFormValidity = (
         if (
           filteredCurve.max_efforts.length < 2 ||
           filteredCurve.speeds.length < 2 ||
-          new Set(filteredCurve.speeds).size !== filteredCurve.speeds.length
+          new Set(filteredCurve.speeds).size !== filteredCurve.speeds.length ||
+          filteredCurve.max_efforts.some((maxEffort) => maxEffort > 1000000) ||
+          filteredCurve.speeds.some((speed) => speed > kmhToMs(600))
         ) {
           const formattedComfort = formatCurveCondition(comfort, t, 'comfortTypes');
           const formattedElecProfile = formatCurveCondition(electrical_profile_level, t);
@@ -374,4 +468,103 @@ export const splitRollingStockProperties = (
     return isInThisGroup;
   });
   return groupBy(displayedProperties, 'side') as { [key: string]: SchemaProperty[] };
+};
+
+/**
+ * According the conversion factors schema, convert a value if
+ * the factors exist in the schema
+ */
+export const convertUnits = (prevUnit: string, newUnit: string, prevValue: number): number => {
+  if (prevUnit in conversionFactorsSchema && newUnit in conversionFactorsSchema[prevUnit]) {
+    return conversionFactorsSchema[prevUnit][newUnit] * prevValue;
+  }
+  return prevValue;
+};
+
+export const isConversionWithTon = (previousUnit: string, newUnit: string) =>
+  previousUnit !== 't' && newUnit !== 't' && (previousUnit.endsWith('t') || newUnit.endsWith('t'));
+
+/**
+ * For the rollingstock resistance (a, b or c), check if its unit
+ * to be converted or the unit to convert to is by ton (i.e. daN/t).
+ *
+ * As the resistance mass unit can only be in ton, return the converted
+ * resistance depending if the rollingstock's current mass is in kg or ton
+ */
+export const convertUnitsWithMass = (
+  previousUnit: string,
+  newUnit: string,
+  currentMassValue: number,
+  currentMassUnit: string,
+  previousValue: number
+) => {
+  let convertedValue = previousValue;
+
+  const massInTons =
+    currentMassUnit === 'kg' ? convertUnits('kg', 't', currentMassValue) : currentMassValue;
+  if (isConversionWithTon(previousUnit, newUnit)) {
+    if (newUnit.endsWith('t')) {
+      convertedValue = convertUnits(previousUnit, newUnit.slice(0, -2), previousValue) / massInTons;
+    } else {
+      convertedValue = convertUnits(previousUnit.slice(0, -2), newUnit, previousValue) * massInTons;
+    }
+  }
+
+  return convertedValue;
+};
+
+/**
+ * When switching unit for the rollingstock's multi units parameters,
+ * convert the parameter value or its min/max interval into the good unit
+ * depending if there is an unit and if it has changed or not.
+ *
+ * @param option contains the unit and value from the parameter input
+ * @param param contains the current properties (unit, value, min, max) of the parameter
+ * @param currentMass the current mass of the edited rolling stock
+ * @param valueType tells if we are changing the value of the parameter of its min or max
+ * @returns
+ */
+export const handleUnitValue = (
+  option: InputGroupSNCFValue,
+  param: MultiUnitsParameter,
+  currentMass?: RollingStockParametersValues['mass'],
+  valueType: 'value' | 'min' | 'max' = 'value'
+): number | undefined => {
+  const valueToConvert = valueType === 'value' ? option.value : param[valueType];
+
+  if (valueToConvert === '' || valueToConvert === undefined) return undefined;
+
+  if (option.unit !== param.unit && valueToConvert !== 0) {
+    const result =
+      currentMass && isConversionWithTon(param.unit, option.unit)
+        ? convertUnitsWithMass(
+            param.unit,
+            option.unit,
+            currentMass.value,
+            currentMass.unit,
+            +valueToConvert
+          )
+        : convertUnits(param.unit, option.unit, +valueToConvert);
+
+    return result;
+  }
+  return +valueToConvert;
+};
+
+export const isConversionPossible = (previousUnit: string, newUnit: string) => {
+  let localPreviousUnit = previousUnit;
+  let localNewUnit = newUnit;
+
+  if (isConversionWithTon(previousUnit, newUnit) && previousUnit !== newUnit) {
+    if (newUnit.endsWith('t')) {
+      localNewUnit = newUnit.slice(0, -2);
+    } else {
+      localPreviousUnit = previousUnit.slice(0, -2);
+    }
+  }
+  return (
+    localPreviousUnit === localNewUnit &&
+    localPreviousUnit in conversionFactorsSchema &&
+    localNewUnit in conversionFactorsSchema[localPreviousUnit]
+  );
 };

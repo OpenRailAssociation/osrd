@@ -31,13 +31,15 @@
   },
   "deleteRollingStock": "Voulez-vous supprimer ce matériel roulant ?",
   "detail": "Détail",
-  "effort": "Effort (daN)",
+  "effort": "Effort (kN)",
   "electric": "Électrique",
   "electricalPowerStartupTime": "Temps de reprise de courant",
   "electricalProfiles": "Profils électriques",
   "electricOnly": "Uniquement éléctrique",
   "equipement": "Équipement",
   "errorMessages": {
+    "invalidConversion": "Conversion invalide",
+    "missingConversion": "Cette conversion n'existe pas dans le schéma. La valeur n'a pas été modifiée",
     "missingInformation": "Informations manquantes",
     "minMaxRangeError": "La valeur doit être comprise entre {{min}} et {{max}}",
     "minRangeError": "La valeur doit être supérieure ou égale à {{min}}",
@@ -72,7 +74,7 @@
     "rollingStockNotAdded": "Le matériel roulant n'a pas été ajouté.",
     "rollingStockNotUpdated": "Le matériel roulant n'a pas été mis à jour.",
     "rollingStockNotDeleted": "Le matériel roulant n'a pas été supprimé.",
-    "invalidEffortCurves": "Courbes invalides : {{invalidEffortCurves}}. Chaque courbe doit posséder au moins 2 combinaisons de valeurs vitesse / effort (sans doublon sur les valeurs de vitesse). Les combinaisons ayant au moins un champs vide sont ignorées."
+    "invalidEffortCurves": "Courbes invalides : {{invalidEffortCurves}}. Chaque courbe doit posséder au moins 2 combinaisons de valeurs vitesse / effort (sans doublon sur les valeurs de vitesse). Les combinaisons ayant au moins un champs vide sont ignorées. Une vitesse ne peut pas excéder 600km/h et un effort ne peut pas excéder 1000kN."
   },
   "name": "Nom",
   "no": "Non",

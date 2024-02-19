@@ -19,7 +19,6 @@ import {
   RollingStockEditorParameterForm,
 } from 'modules/rollingStock/components/RollingStockEditor/RollingStockEditorFormHelpers';
 import RollingStockEditorFormModal from 'modules/rollingStock/components/RollingStockEditor/RollingStockEditorFormModal';
-import { RS_SCHEMA_PROPERTIES, RollingStockEditorParameter } from 'modules/rollingStock/consts';
 import { isElectric } from 'modules/rollingStock/helpers/electric';
 import {
   checkRollingStockFormValidity,
@@ -72,8 +71,6 @@ const RollingStockEditorForm = ({
   const [patchRollingStock] =
     osrdEditoastApi.endpoints.patchRollingStockByRollingStockId.useMutation();
 
-  const [isValid, setIsValid] = useState(true);
-  const [optionValue, setOptionValue] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
 
   const [selectedTractionMode, setSelectedTractionMode] = useState<string | null>(null);
@@ -215,21 +212,6 @@ const RollingStockEditorForm = ({
   };
 
   useEffect(() => {
-    setIsValid(true);
-    RS_SCHEMA_PROPERTIES.forEach((property) => {
-      if (
-        (property.title ===
-          RollingStockEditorParameter[property.title as RollingStockEditorParameter] &&
-          Number.isNaN(rollingStockValues[property.title])) ||
-        (rollingStockValues[property.title] as number) < (property.min as number) ||
-        (rollingStockValues[property.title] as number) > (property.max as number)
-      ) {
-        setIsValid(false);
-      }
-    });
-  }, [rollingStockValues]);
-
-  useEffect(() => {
     if (rollingStockData) {
       setSelectedTractionMode(rollingStockData.effort_curves.default_mode);
       setEffortCurves(rollingStockData.effort_curves.modes);
@@ -253,9 +235,7 @@ const RollingStockEditorForm = ({
         />
 
         <RollingStockEditorParameterForm
-          optionValue={optionValue}
           rollingStockValues={rollingStockValues}
-          setOptionValue={setOptionValue}
           setRollingStockValues={setRollingStockValues}
           effortCurves={effortCurves}
         />
@@ -314,7 +294,6 @@ const RollingStockEditorForm = ({
             <button
               type="submit"
               className="btn btn-primary py-1 px-2"
-              disabled={!isValid}
               data-testid="submit-rollingstock-button"
             >
               {t('translation:common.confirm')}

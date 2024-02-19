@@ -10,6 +10,7 @@ import { Loader } from 'common/Loaders/Loader';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import RollingStockCurves from 'modules/rollingStock/components/RollingStockCurve';
 import { STANDARD_COMFORT_LEVEL } from 'modules/rollingStock/consts';
+import { convertUnits } from 'modules/rollingStock/helpers/utils';
 import type { EffortCurveForms } from 'modules/rollingStock/types';
 import { setFailure } from 'reducers/main';
 import { useAppDispatch } from 'store';
@@ -133,22 +134,24 @@ export default function RollingStockCardDetail({
         <tr>
           <td className="text-primary">{t('rollingResistanceA')}</td>
           <td>
-            {Math.floor(rs.rolling_resistance?.A ? (rs.rolling_resistance.A * 10000) / 10000 : 0)}
-            <span className="small ml-1 text-muted">N</span>
+            {floor(convertUnits('N', 'kN', rs.rolling_resistance.A), 2)}
+            <span className="small ml-1 text-muted">kN</span>
           </td>
         </tr>
         <tr>
           <td className="text-primary">{t('rollingResistanceB')}</td>
           <td>
-            {Math.floor(rs.rolling_resistance?.B ? (rs.rolling_resistance.B * 10000) / 10000 : 0)}
-            <span className="small ml-1 text-muted">N/(m/s)</span>
+            {/* The b resistance received is in N/(m/s) and should appear in N/(km/h) */}
+            {floor(convertUnits('N/(m/s)', 'kN/(km/h)', rs.rolling_resistance.B), 6)}
+            <span className="small ml-1 text-muted">kN/(km/h)</span>
           </td>
         </tr>
         <tr>
           <td className="text-primary">{t('rollingResistanceC')}</td>
-          <td title={rs.rolling_resistance?.C.toString()}>
-            {floor(rs.rolling_resistance?.C ?? 0, 2)}
-            <span className="small ml-1 text-muted">N/(m/s)²</span>
+          <td title={rs.rolling_resistance.C.toString()}>
+            {/* The c resistance received is in N/(m/s)² and should appear in N/(km/h)² */}
+            {floor(convertUnits('N/(m/s)²', 'kN/(km/h)²', rs.rolling_resistance.C), 6)}
+            <span className="small ml-1 text-muted">kN/(km/h)²</span>
           </td>
         </tr>
         {!isEmpty(rs.supported_signaling_systems) && (

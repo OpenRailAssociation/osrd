@@ -371,10 +371,10 @@ const AllowancesActions = <T extends RangeAllowanceForm | EngineeringAllowanceFo
             sm
             condensed
             value={allowanceValue}
-            handleType={handleValueAndUnit}
+            handleUnit={handleValueAndUnit}
             options={unitsList}
             typeValue="number"
-            type={valueAndUnit?.value_type || defaultType()}
+            unit={valueAndUnit?.value_type || defaultType()}
             min={1}
             isInvalid={allowanceValue !== undefined && allowanceValue < 1}
             textRight

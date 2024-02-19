@@ -17,11 +17,13 @@
   .btn-sm {
     font-size: 0.8rem;
   }
+  .dropdown .dropdown-menu[x-placement='bottom-end'] {
+    top: 2.3rem !important;
+  }
+  .osrd-dropdown-sncf {
+    right: 0 !important;
+  }
 }
 .dropdown-item {
   cursor: pointer;
-}
-
-.osrd-dropdown-sncf {
-  right: 0 !important;
 }
