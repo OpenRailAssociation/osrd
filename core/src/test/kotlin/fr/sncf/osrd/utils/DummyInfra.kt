@@ -8,6 +8,7 @@ import fr.sncf.osrd.geom.LineString
 import fr.sncf.osrd.geom.Point
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.impl.NeutralSection
+import fr.sncf.osrd.sim_infra.impl.SpeedSection
 import fr.sncf.osrd.utils.indexing.*
 import fr.sncf.osrd.utils.units.*
 import kotlin.time.Duration
@@ -391,6 +392,13 @@ class DummyInfra : RawInfra, BlockInfra {
             else desc.neutralSectionBackward
         return if (neutralSection == null) DistanceRangeMapImpl()
         else makeRangeMap(desc.length, neutralSection)
+    }
+
+    override fun getTrackChunkSpeedSections(
+        trackChunk: DirTrackChunkId,
+    ): DistanceRangeMap<SpeedSection> {
+        val desc = blockPool[trackChunk.value.index]
+        return makeRangeMap(desc.length, SpeedSection(desc.allowedSpeed.metersPerSecond, mapOf()))
     }
 
     override fun getTrackChunkSpeedSections(
