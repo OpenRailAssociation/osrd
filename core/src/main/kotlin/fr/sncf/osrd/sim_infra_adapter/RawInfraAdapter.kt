@@ -106,7 +106,7 @@ fun adaptRawInfra(infra: SignalingInfra): SimInfraAdapter {
     for (edge in infra.trackGraph.edges()) {
         val track = edge as? TrackSection
         if (track != null) {
-            val trackLength = Distance.fromMeters(track.length)
+            val trackLength = track.length.meters
             var lastOffset = 0.meters
             trackSectionMap[track] =
                 builder.trackSection(track.id) {
@@ -114,7 +114,7 @@ fun adaptRawInfra(infra: SignalingInfra): SimInfraAdapter {
                     for (d in track.detectors) {
                         val detectorId = builder.detector(d.id)
                         detectorMap[d] = detectorId
-                        val endOffset = Distance.fromMeters(d.offset)
+                        val endOffset = d.offset.meters
                         makeChunk(
                             builder,
                             track,
@@ -133,8 +133,7 @@ fun adaptRawInfra(infra: SignalingInfra): SimInfraAdapter {
 
     // parse operational points
     for (track in infra.trackGraph.edges()) for (op in track.operationalPoints) {
-        val (chunkId, offset) =
-            getChunkLocation(track, Distance.fromMeters(op.offset), trackChunkMap)
+        val (chunkId, offset) = getChunkLocation(track, op.offset.meters, trackChunkMap)
         builder.operationalPointPart(op.id, offset, chunkId)
     }
 
@@ -190,15 +189,6 @@ fun adaptRawInfra(infra: SignalingInfra): SimInfraAdapter {
     }
 
     fun getOrCreateDet(oldDiDetector: DiDetector): DirDetectorId {
-        val oldDetector = oldDiDetector.detector
-        val detector = detectorMap[oldDetector!!]!!
-        return when (oldDiDetector.direction!!) {
-            Direction.FORWARD -> detector.increasing
-            Direction.BACKWARD -> detector.decreasing
-        }
-    }
-
-    fun getDet(oldDiDetector: DiDetector): DirDetectorId {
         val oldDetector = oldDiDetector.detector
         val detector = detectorMap[oldDetector!!]!!
         return when (oldDiDetector.direction!!) {
@@ -275,8 +265,8 @@ fun adaptRawInfra(infra: SignalingInfra): SimInfraAdapter {
                 for (startDetIndex in 0 until oldPath.size - 1) {
                     val oldStartDet = oldPath[startDetIndex]
                     val oldEndDet = oldPath[startDetIndex + 1]
-                    val entry = getDet(oldStartDet)
-                    val exit = getDet(oldEndDet)
+                    val entry = getOrCreateDet(oldStartDet)
+                    val exit = getOrCreateDet(oldEndDet)
                     val zonePathId =
                         buildZonePath(
                             viewIterator,
@@ -362,8 +352,8 @@ private fun makeChunk(
                     mapEntry.value!!.metersPerSecond
                 }
             res.put(
-                Distance.fromMeters(entry.key.lowerEndpoint()),
-                Distance.fromMeters(entry.key.upperEndpoint()),
+                entry.key.lowerEndpoint().meters,
+                entry.key.upperEndpoint().meters,
                 SpeedSection(legacySpeedLimit.defaultSpeedLimit.metersPerSecond, map)
             )
         }
@@ -380,8 +370,8 @@ private fun makeChunk(
             for (entry in rangeMap.asMapOfRanges()) {
                 val legacyNeutralSection = entry.value
                 res.put(
-                    Distance.fromMeters(entry.key.lowerEndpoint()),
-                    Distance.fromMeters(entry.key.upperEndpoint()),
+                    entry.key.lowerEndpoint().meters,
+                    entry.key.upperEndpoint().meters,
                     SimNeutralSection(legacyNeutralSection.lowerPantograph, isAnnouncement)
                 )
             }
@@ -531,7 +521,7 @@ private fun buildZonePath(
             // They can and should be ignored, adding the chunk starting there would add an extra
             // chunk.
             // We assert that we are at a track transition, and move on
-            assert(range.end == Distance.fromMeters(range.track.length) || range.end == 0.meters)
+            assert(range.end == range.track.length.meters || range.end == 0.meters)
         } else {
             val chunk = trackChunkMap[range.track]!![range.begin]!!
             chunks.add(DirStaticIdx(chunk, range.direction.toKtDirection()))
