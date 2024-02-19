@@ -168,10 +168,6 @@
         justify-content: space-between;
       }
     }
-    .invalid-feedback {
-      display: block;
-      font-size: 0.7rem;
-    }
     label {
       white-space: normal;
       min-width: calc(50% - 0.5rem);
@@ -179,6 +175,11 @@
     .signaling-systems-label {
       min-width: 40%;
     }
+  }
+
+  .invalid-feedback {
+    display: block;
+    font-size: 0.7rem;
   }
 
   &-select {

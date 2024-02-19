@@ -13,19 +13,18 @@ type Option = {
   unit?: string;
 };
 
-export type InputGroupSNCFValue = { type?: string; value?: string | number };
+export type InputGroupSNCFValue = { type?: string; unit: string; value?: string | number };
 
 type Props = {
   id: string;
   label?: React.ReactElement | string;
   options: Option[];
-  handleType: (type: InputGroupSNCFValue) => void;
+  unit: string;
+  handleUnit: (type: InputGroupSNCFValue) => void;
   orientation?: string;
   placeholder?: string;
   sm?: boolean;
-  title?: string;
   value?: number | string;
-  type?: string;
   typeValue?: string;
   condensed?: boolean;
   isInvalid?: boolean;
@@ -48,14 +47,13 @@ const isNeedStripDecimalDigits = (inputValue: string, limit: number) => {
 export default function InputGroupSNCF({
   id,
   label,
-  handleType,
+  unit,
+  handleUnit,
   options,
   orientation = 'left',
   placeholder = '',
   sm = false,
-  title,
   value,
-  type,
   typeValue = 'text',
   condensed = false,
   isInvalid = false,
@@ -70,36 +68,34 @@ export default function InputGroupSNCF({
   inputDataTestId,
 }: Props) {
   const [isDropdownShown, setIsDropdownShown] = useState(false);
-  const [selected, setSelected] = useState(
-    value
-      ? {
-          label: title,
-        }
-      : { id: options[0].id, label: options[0].label, unit: options[0].unit }
-  );
+  const [selectedUnit, setSelectedUnit] = useState<Option>({
+    id: options[0].id,
+    label: options[0].label,
+    unit: options[0].unit,
+  });
+
   const textAlignmentClass = textRight ? 'right-alignment' : 'left-alignment';
 
   useEffect(() => {
-    const selectedOption = options?.find((option) => option.id === type);
-
-    setSelected({
+    // Check if we can find the unit in the options id (allowances) or label (rolling stock editor)
+    const selectedOption = options?.find((option) => option.id === unit || option.label === unit);
+    setSelectedUnit({
       label: selectedOption?.label || options[0].label,
       id: selectedOption?.id || options[0].id,
       unit: selectedOption?.unit || options[0].unit,
     });
-  }, [type, options]);
+  }, [unit, options]);
 
   const handleOnChange = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
       const eventValue = Number(event.target.value);
-      if (limitDecimal && isNeedStripDecimalDigits(event.target.value, limitDecimal)) {
-        const limitedValue = stripDecimalDigits(eventValue, limitDecimal);
-        handleType({ type: selected.id, value: limitedValue });
-      } else {
-        handleType({ type: selected.id, value: event.target.value });
-      }
+      const selectedUnitValue: InputGroupSNCFValue['value'] =
+        limitDecimal && isNeedStripDecimalDigits(event.target.value, limitDecimal)
+          ? stripDecimalDigits(eventValue, limitDecimal)
+          : event.target.value;
+      handleUnit({ type: selectedUnit.id, unit: selectedUnit.label, value: selectedUnitValue });
     },
-    [handleType, selected, limitDecimal]
+    [handleUnit, selectedUnit, limitDecimal]
   );
 
   const inputValue = useMemo(() => {
@@ -114,15 +110,15 @@ export default function InputGroupSNCF({
 
   const inputField = (
     <div
-      className={cx(
-        'form-control-container',
-        selected.unit && 'has-right-icon',
-        isInvalid && 'is-invalid'
-      )}
+      className={cx('form-control-container', {
+        'is-invalid': isInvalid,
+      })}
     >
       <input
         type={typeValue}
-        className={cx('form-control h-100', condensed && 'px-2', textAlignmentClass)}
+        className={cx('form-control h-100', textAlignmentClass, {
+          'px-2': condensed,
+        })}
         title={placeholder}
         placeholder={placeholder}
         onChange={handleOnChange}
@@ -134,11 +130,6 @@ export default function InputGroupSNCF({
         disabled={disabled}
       />
       <span className="form-control-state" />
-      {selected.unit && (
-        <span className={cx('form-control-icon small', condensed && 'condensed-icon')}>
-          {selected.unit}
-        </span>
-      )}
     </div>
   );
 
@@ -149,64 +140,74 @@ export default function InputGroupSNCF({
           {label}
         </label>
       )}
-      <div className={cx('input-group', sm && 'input-group-sm')}>
+      <div
+        className={cx('input-group', {
+          'input-group-sm': sm,
+        })}
+      >
         {orientation === 'right' && inputField}
-        <div className={`input-group-${orientation === 'left' ? 'prepend' : 'append'}`}>
+        <div
+          className={cx({
+            'input-group-prepend': orientation === 'left',
+            'input-group-append': orientation !== 'left',
+          })}
+        >
           {' '}
           <div className="btn-group dropdown">
             <button
               type="button"
-              className={cx('btn btn-secondary dropdown-toggle', condensed && 'pr-2 pl-2')}
+              className={cx('btn btn-secondary dropdown-toggle', {
+                'pr-2 pl-2': condensed,
+              })}
               onClick={() => setIsDropdownShown(!isDropdownShown)}
               aria-haspopup="true"
               aria-expanded="false"
               aria-controls={id}
               disabled={disabled || disableUnitSelector}
             >
-              <span className={cx(condensed && 'small')}>{selected.label}</span>
+              <span className={cx({ small: condensed })}>{selectedUnit.label}</span>
               <i
-                className={cx(
-                  isDropdownShown ? 'icons-arrow-up' : 'icons-arrow-down',
-                  condensed && ' ml-2'
-                )}
+                className={cx(isDropdownShown ? 'icons-arrow-up' : 'icons-arrow-down', {
+                  'ml-2': condensed,
+                })}
                 aria-hidden="true"
               />
             </button>
             <div
-              className={cx(
-                'dropdown-menu dropdown-menu-right osrd-dropdown-sncf',
-                isDropdownShown && 'show'
-              )}
+              className={cx('dropdown-menu dropdown-menu-right osrd-dropdown-sncf', {
+                show: isDropdownShown,
+              })}
               id={id}
               // eslint-disable-next-line react/no-unknown-property
               x-placement="bottom-end"
             >
-              <ul>
-                {options.map((option) => (
-                  <li key={nextId()}>
-                    <label htmlFor={option.id} className="dropdown-item">
-                      <div
-                        onClick={() => {
-                          setSelected(option);
-                          handleType({ type: option.id, value: 0 });
-                          setIsDropdownShown(false);
-                        }}
-                        role="button"
-                        tabIndex={0}
-                      >
-                        {option.label}
-                      </div>
-                    </label>
-                    <input
-                      type="radio"
-                      name={id}
-                      value={option.id}
-                      id={option.id}
-                      className="sr-only"
-                    />
-                  </li>
-                ))}
-              </ul>
+              {options.map((option) => (
+                <div
+                  key={nextId()}
+                  onClick={() => {
+                    setSelectedUnit(option);
+                    handleUnit({
+                      type: option.id,
+                      unit: option.label,
+                      value,
+                    });
+                    setIsDropdownShown(false);
+                  }}
+                  role="button"
+                  tabIndex={0}
+                >
+                  <label className="dropdown-item" htmlFor={option.id}>
+                    {option.label}
+                  </label>
+                  <input
+                    type="radio"
+                    name={id}
+                    value={option.id}
+                    id={option.id}
+                    className="sr-only"
+                  />
+                </div>
+              ))}
             </div>
           </div>
         </div>

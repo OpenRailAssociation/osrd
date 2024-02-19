@@ -31,12 +31,14 @@
   },
   "deleteRollingStock": "Would you like to delete this rolling stock?",
   "detail": "Detail",
-  "effort": "Effort (daN)",
+  "effort": "Effort (kN)",
   "electric": "Electric",
   "electricalProfiles": "Electrical Profiles",
   "electricOnly": "Electric only",
   "equipement": "Equipment",
   "errorMessages": {
+    "invalidConversion": "Invalid conversion",
+    "missingConversion": "This conversion doesn't exist in the schema. Value hasn't been changed.",
     "missingInformation": "Missing informations",
     "minMaxRangeError": "The value must be between {{min}} and {{max}}",
     "minRangeError": "The value must be greater than {{min}}",
@@ -71,7 +73,7 @@
     "rollingStockNotAdded": "Rolling stock not added",
     "rollingStockNotUpdated": "Rolling stock not updated",
     "rollingStockNotDeleted": "Rolling stock not deleted",
-    "invalidEffortCurves": "Invalid curves: {{invalidEffortCurves}}. Each curve must have at least 2 combinations of speed / effort values (with no duplication of speed values). Combinations with at least one empty field are ignored."
+    "invalidEffortCurves": "Invalid curves: {{invalidEffortCurves}}. Each curve must have at least 2 combinations of speed / effort values (with no duplication of speed values). Combinations with at least one empty field are ignored. A speed can't exceed 600km/h and an effort can't exceed 1000kN."
   },
   "name": "Name",
   "no": "No",

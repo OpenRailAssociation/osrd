@@ -86,9 +86,9 @@ const StdcmAllowances = () => {
         <InputGroupSNCF
           id="standardAllowanceTypeSelect"
           options={standardAllowanceTypes}
-          handleType={onchangeType}
+          handleUnit={onchangeType}
           value={stdcmStandardAllowance?.value || ''}
-          type={stdcmStandardAllowance?.type || 'percentage'}
+          unit={stdcmStandardAllowance?.type || 'percentage'}
           orientation="right"
           typeValue="number"
           condensed

@@ -7,7 +7,13 @@ import type {
 
 export type RollingStockParametersValidValues = {
   // TODO: remove this line in the type
-  [key: string]: string | number | null | RollingStockCommon['power_restrictions'] | string[];
+  [key: string]:
+    | string
+    | number
+    | null
+    | RollingStockCommon['power_restrictions']
+    | string[]
+    | MultiUnitsParameter;
   railjsonVersion: string;
   name: string;
   detail: string;
@@ -20,17 +26,17 @@ export type RollingStockParametersValidValues = {
   type: string;
   unit: string;
   length: number;
-  mass: number;
-  maxSpeed: number;
+  mass: MultiUnitsParameter;
+  maxSpeed: MultiUnitsParameter;
   startupTime: number;
   startupAcceleration: number;
   comfortAcceleration: number;
   gammaValue: number;
   inertiaCoefficient: number;
   loadingGauge: LoadingGaugeType;
-  rollingResistanceA: number;
-  rollingResistanceB: number;
-  rollingResistanceC: number;
+  rollingResistanceA: MultiUnitsParameter;
+  rollingResistanceB: MultiUnitsParameter;
+  rollingResistanceC: MultiUnitsParameter;
   electricalPowerStartupTime: number | null;
   raisePantographTime: number | null;
   basePowerClass: string | null;
@@ -46,7 +52,8 @@ export type RollingStockParametersValues = {
     | null
     | RollingStockCommon['power_restrictions']
     | undefined
-    | string[];
+    | string[]
+    | MultiUnitsParameter;
   railjsonVersion: string;
   name: string;
   detail: string;
@@ -59,17 +66,17 @@ export type RollingStockParametersValues = {
   type: string;
   unit: string;
   length?: number;
-  mass?: number;
-  maxSpeed?: number;
+  mass?: MultiUnitsParameter;
+  maxSpeed?: MultiUnitsParameter;
   startupTime?: number;
   startupAcceleration?: number;
   comfortAcceleration?: number;
   gammaValue?: number;
   inertiaCoefficient?: number;
   loadingGauge: 'G1' | 'G2' | 'GA' | 'GB' | 'GB1' | 'GC' | 'FR3.3' | 'FR3.3/GB/G2' | 'GLOTT';
-  rollingResistanceA?: number;
-  rollingResistanceB?: number;
-  rollingResistanceC?: number;
+  rollingResistanceA?: MultiUnitsParameter;
+  rollingResistanceB?: MultiUnitsParameter;
+  rollingResistanceC?: MultiUnitsParameter;
   electricalPowerStartupTime: number | null;
   raisePantographTime: number | null;
   basePowerClass: string | null;
@@ -152,4 +159,11 @@ export type ParsedCurve = {
   mode: string;
   electrical_profile_level?: string | null;
   power_restriction?: string | null;
+};
+
+export type MultiUnitsParameter = {
+  min?: number;
+  max?: number;
+  unit: string;
+  value: number;
 };

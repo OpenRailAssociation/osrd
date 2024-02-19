@@ -45,7 +45,8 @@ const CurveSpreadsheet = ({
               value:
                 speeds[index] !== undefined ? Math.round(msToKmh(speeds[index]!)).toString() : '',
             },
-            { value: effort !== undefined ? Math.round(effort / 10).toString() : '' },
+            // Effort needs to be displayed in kN
+            { value: effort !== undefined ? Math.round(effort / 1000).toString() : '' },
           ])
         : [];
     const numberOfRows = filledMatrix.length < 8 ? 8 - filledMatrix.length : 1;

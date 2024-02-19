@@ -28,9 +28,9 @@ test.describe('Rollingstock editor page', () => {
 
     await playwrightRollingstockEditorPage.fillAndCheckInputById('length', 50);
     await playwrightRollingstockEditorPage.fillAndCheckInputById('mass-input', 80, true);
-    await playwrightRollingstockEditorPage.fillAndCheckInputById('maxSpeed', 200);
+    await playwrightRollingstockEditorPage.fillAndCheckInputById('maxSpeed-input', 200, true);
     await playwrightRollingstockEditorPage.fillAndCheckInputById('startupTime', 5);
-    await playwrightRollingstockEditorPage.fillAndCheckInputById('startupAcceleration', 5);
+    await playwrightRollingstockEditorPage.fillAndCheckInputById('startupAcceleration', 0.1);
 
     await playwrightRollingstockEditorPage.fillAndCheckInputById('comfortAcceleration', 1);
     await playwrightRollingstockEditorPage.fillAndCheckInputById('inertiaCoefficient', 1);
@@ -42,17 +42,17 @@ test.describe('Rollingstock editor page', () => {
 
     await playwrightRollingstockEditorPage.fillAndCheckInputById(
       'rollingResistanceA-input',
-      1105,
+      15,
       true
     );
     await playwrightRollingstockEditorPage.fillAndCheckInputById(
       'rollingResistanceB-input',
-      30,
+      0.3,
       true
     );
     await playwrightRollingstockEditorPage.fillAndCheckInputById(
       'rollingResistanceC-input',
-      2,
+      0.005,
       true
     );
 
@@ -88,13 +88,13 @@ test.describe('Rollingstock editor page', () => {
     await playwrightRollingstockEditorPage.setSpreedsheetCell('0', velocityCellRow0);
 
     const effortCellRow0 = playwrightRollingstockEditorPage.getEffortCellByRow('0');
-    await playwrightRollingstockEditorPage.setSpreedsheetCell('30500', effortCellRow0);
+    await playwrightRollingstockEditorPage.setSpreedsheetCell('900', effortCellRow0);
 
     const velocityCellRow1 = playwrightRollingstockEditorPage.getVelocityCellByRow('1');
     await playwrightRollingstockEditorPage.setSpreedsheetCell('5', velocityCellRow1);
 
     const effortCellRow1 = playwrightRollingstockEditorPage.getEffortCellByRow('1');
-    await playwrightRollingstockEditorPage.setSpreedsheetCell('30000', effortCellRow1);
+    await playwrightRollingstockEditorPage.setSpreedsheetCell('800', effortCellRow1);
 
     // Select and complete the speed effort curves C0
     await powerRestrictionSelector.getByRole('button').nth(1).click();
@@ -107,23 +107,23 @@ test.describe('Rollingstock editor page', () => {
 
     await playwrightRollingstockEditorPage.setSpreedsheetCell('0', velocityCellRow0);
 
-    await playwrightRollingstockEditorPage.setSpreedsheetCell('30500', effortCellRow0);
+    await playwrightRollingstockEditorPage.setSpreedsheetCell('900', effortCellRow0);
 
     await playwrightRollingstockEditorPage.setSpreedsheetCell('5', velocityCellRow1);
 
-    await playwrightRollingstockEditorPage.setSpreedsheetCell('30000', effortCellRow1);
+    await playwrightRollingstockEditorPage.setSpreedsheetCell('800', effortCellRow1);
 
     const velocityCellRow2 = playwrightRollingstockEditorPage.getVelocityCellByRow('2');
     await playwrightRollingstockEditorPage.setSpreedsheetCell('10', velocityCellRow2);
 
     const effortCellRow2 = playwrightRollingstockEditorPage.getEffortCellByRow('2');
-    await playwrightRollingstockEditorPage.setSpreedsheetCell('25000', effortCellRow2);
+    await playwrightRollingstockEditorPage.setSpreedsheetCell('900', effortCellRow2);
 
     const velocityCellRow3 = playwrightRollingstockEditorPage.getVelocityCellByRow('3');
     await playwrightRollingstockEditorPage.setSpreedsheetCell('20', velocityCellRow3);
 
     const effortCellRow3 = playwrightRollingstockEditorPage.getEffortCellByRow('3');
-    await playwrightRollingstockEditorPage.setSpreedsheetCell('20000', effortCellRow3);
+    await playwrightRollingstockEditorPage.setSpreedsheetCell('800', effortCellRow3);
 
     await playwrightRollingstockEditorPage.clickOnRollingstockDetailsButton();
 
