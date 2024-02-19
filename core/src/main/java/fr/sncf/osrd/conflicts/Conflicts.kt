@@ -330,16 +330,19 @@ class IncrementalConflictDetectorImpl(trainRequirements: List<TrainRequirements>
         var timeOfNextConflict = Double.POSITIVE_INFINITY
         for (spacingRequirement in spacingRequirements) {
             if (spacingZoneRequirements[spacingRequirement.zone!!] != null) {
+                val endTime = spacingRequirement.endTime
                 spacingZoneRequirements[spacingRequirement.zone!!]!!.forEach {
-                    if (it.beginTime < timeOfNextConflict) timeOfNextConflict = it.beginTime
+                    if (endTime <= it.beginTime) timeOfNextConflict = min(timeOfNextConflict, it.beginTime)
                 }
             }
         }
         for (routingRequirement in routingRequirements) {
             for (zoneReq in routingRequirement.zones) {
                 if (routingZoneRequirements[zoneReq.zone!!] != null) {
+                    val endTime = zoneReq.endTime
                     routingZoneRequirements[zoneReq.zone!!]!!.forEach {
-                        if (it.beginTime < timeOfNextConflict) timeOfNextConflict = it.beginTime
+                        if (endTime <= it.beginTime)
+                            timeOfNextConflict = min(timeOfNextConflict, it.beginTime)
                     }
                 }
             }
