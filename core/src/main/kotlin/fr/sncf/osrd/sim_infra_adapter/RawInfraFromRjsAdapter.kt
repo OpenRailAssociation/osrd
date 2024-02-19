@@ -44,6 +44,7 @@ import fr.sncf.osrd.utils.DirectionalMap
 import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.DistanceRangeMapImpl
 import fr.sncf.osrd.utils.Endpoint
+import fr.sncf.osrd.utils.assertEqualSimInfra
 import fr.sncf.osrd.utils.distanceRangeMapOf
 import fr.sncf.osrd.utils.indexing.DirStaticIdx
 import fr.sncf.osrd.utils.indexing.MutableDirStaticIdxArrayList
@@ -275,16 +276,20 @@ fun adaptRawInfra(infra: SignalingInfra, rjsInfra: RJSInfra): SimInfraAdapter {
     // TODO: check the length of built routes is the same as on the base infra
     // assert(route.length.meters == routeLength)
 
-    return SimInfraAdapter(
-        builder.build(),
-        zoneMap,
-        detectorMap,
-        trackNodeMap,
-        trackNodeGroupsMap,
-        routeMap,
-        signalMap,
-        rjsSignalMap
-    )
+    val rawInfra =
+        SimInfraAdapter(
+            builder.build(),
+            zoneMap,
+            detectorMap,
+            trackNodeMap,
+            trackNodeGroupsMap,
+            routeMap,
+            signalMap,
+            rjsSignalMap
+        )
+    val controlInfra = adaptRawInfra(infra)
+    assertEqualSimInfra(rawInfra, controlInfra)
+    return rawInfra
 }
 
 private fun makeChunk(
