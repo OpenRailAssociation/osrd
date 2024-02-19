@@ -26,16 +26,17 @@ data class BlockAvailability(
         val spacingRequirements = infraExplorer.getSpacingRequirements()
         val pathStartTime = startTime - infraExplorer.interpolateTimeClamp(startOffset)
         val endTime = infraExplorer.interpolateTimeClamp(endOffset) + pathStartTime
-        val shiftedSpacingRequirements = spacingRequirements.map {
-            SpacingRequirement(
-                it.zone,
-                max(pathStartTime + it.beginTime, startTime),
-                min(pathStartTime + it.endTime, endTime),
-                it.isComplete
-            )
-        }.filter {
-            it.beginTime < it.endTime
-        }
+        val shiftedSpacingRequirements =
+            spacingRequirements
+                .map {
+                    SpacingRequirement(
+                        it.zone,
+                        max(pathStartTime + it.beginTime, startTime),
+                        min(pathStartTime + it.endTime, endTime),
+                        it.isComplete
+                    )
+                }
+                .filter { it.beginTime < it.endTime }
         val conflicts =
             incrementalConflictDetector.checkConflicts(shiftedSpacingRequirements, listOf())
         if (conflicts.isEmpty()) {
@@ -49,9 +50,15 @@ data class BlockAvailability(
             return BlockAvailabilityInterface.Available(maximumDelay, timeOfNextConflict)
         } else {
             val minimumDelay =
-                incrementalConflictDetector.minDelayWithoutConflicts(shiftedSpacingRequirements, listOf())
+                incrementalConflictDetector.minDelayWithoutConflicts(
+                    shiftedSpacingRequirements,
+                    listOf()
+                )
             val firstConflictOffset =
-                getEnvelopeOffsetFromTime(infraExplorer, conflicts.first().startTime)
+                getEnvelopeOffsetFromTime(
+                    infraExplorer,
+                    conflicts.first().startTime - pathStartTime
+                )
             return BlockAvailabilityInterface.Unavailable(minimumDelay, firstConflictOffset)
         }
     }

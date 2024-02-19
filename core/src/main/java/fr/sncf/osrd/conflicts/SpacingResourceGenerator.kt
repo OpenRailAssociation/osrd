@@ -87,7 +87,8 @@ class SpacingRequirementAutomaton(
                 if (signalPathOffset < incrementalPath.travelledPathBegin) continue
                 if (
                     incrementalPath.pathComplete &&
-                        signalPathOffset >= incrementalPath.fromTravelledPath(callbacks.currentPathOffset)
+                        signalPathOffset >=
+                            incrementalPath.fromTravelledPath(callbacks.currentPathOffset)
                 )
                     continue
                 pendingSignals.addLast(PathSignal(signal, signalPathOffset, blockIndex))

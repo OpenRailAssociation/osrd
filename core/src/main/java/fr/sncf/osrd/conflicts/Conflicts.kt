@@ -251,10 +251,12 @@ class IncrementalConflictDetectorImpl(trainRequirements: List<TrainRequirements>
         var hasConflict = false
         for (spacingRequirement in spacingRequirements) {
             if (spacingZoneRequirements[spacingRequirement.zone!!] != null) {
-                val conflictingRequirements = spacingZoneRequirements[spacingRequirement.zone!!]!!.filter {
-                    !(spacingRequirement.beginTime >= it.endTime || spacingRequirement.endTime <= it.beginTime)
-                }
-                if(conflictingRequirements.isNotEmpty()) {
+                val conflictingRequirements =
+                    spacingZoneRequirements[spacingRequirement.zone!!]!!.filter {
+                        !(spacingRequirement.beginTime >= it.endTime ||
+                            spacingRequirement.endTime <= it.beginTime)
+                    }
+                if (conflictingRequirements.isNotEmpty()) {
                     hasConflict = true
                     val latestEndTime = conflictingRequirements.maxOf { it.endTime }
                     minDelay = min(minDelay, latestEndTime - spacingRequirement.beginTime)
@@ -264,10 +266,12 @@ class IncrementalConflictDetectorImpl(trainRequirements: List<TrainRequirements>
         for (routingRequirement in routingRequirements) {
             for (zoneReq in routingRequirement.zones) {
                 if (routingZoneRequirements[zoneReq.zone!!] != null) {
-                    val conflictingRequirements = routingZoneRequirements[zoneReq.zone!!]!!.filter {
-                        !(routingRequirement.beginTime >= it.endTime || zoneReq.endTime <= it.beginTime)
-                    }
-                    if(conflictingRequirements.isNotEmpty()) {
+                    val conflictingRequirements =
+                        routingZoneRequirements[zoneReq.zone!!]!!.filter {
+                            !(routingRequirement.beginTime >= it.endTime ||
+                                zoneReq.endTime <= it.beginTime)
+                        }
+                    if (conflictingRequirements.isNotEmpty()) {
                         hasConflict = true
                         val latestEndTime = conflictingRequirements.maxOf { it.endTime }
                         minDelay = min(minDelay, latestEndTime - routingRequirement.beginTime)
@@ -275,19 +279,19 @@ class IncrementalConflictDetectorImpl(trainRequirements: List<TrainRequirements>
                 }
             }
         }
-        if (!hasConflict)
-            return globalMinDelay
-        else if (!isFinite(minDelay))
-            return Double.POSITIVE_INFINITY
+        if (!hasConflict) return globalMinDelay
+        else if (!isFinite(minDelay)) return Double.POSITIVE_INFINITY
         else {
-            val shiftedSpacingRequirements = spacingRequirements.toMutableList().onEach {
-                it.beginTime += minDelay
-                it.endTime += minDelay
-            }
-            val shiftedRoutingRequirements = routingRequirements.toMutableList().onEach { routingRequirement ->
-                routingRequirement.beginTime += minDelay
-                routingRequirement.zones.onEach { it.endTime += minDelay }
-            }
+            val shiftedSpacingRequirements =
+                spacingRequirements.toMutableList().onEach {
+                    it.beginTime += minDelay
+                    it.endTime += minDelay
+                }
+            val shiftedRoutingRequirements =
+                routingRequirements.toMutableList().onEach { routingRequirement ->
+                    routingRequirement.beginTime += minDelay
+                    routingRequirement.zones.onEach { it.endTime += minDelay }
+                }
             return minDelayWithoutConflicts(
                 shiftedSpacingRequirements,
                 shiftedRoutingRequirements,
@@ -332,7 +336,8 @@ class IncrementalConflictDetectorImpl(trainRequirements: List<TrainRequirements>
             if (spacingZoneRequirements[spacingRequirement.zone!!] != null) {
                 val endTime = spacingRequirement.endTime
                 spacingZoneRequirements[spacingRequirement.zone!!]!!.forEach {
-                    if (endTime <= it.beginTime) timeOfNextConflict = min(timeOfNextConflict, it.beginTime)
+                    if (endTime <= it.beginTime)
+                        timeOfNextConflict = min(timeOfNextConflict, it.beginTime)
                 }
             }
         }
