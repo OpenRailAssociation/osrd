@@ -40,6 +40,7 @@ import fr.sncf.osrd.sim_infra.api.decreasing
 import fr.sncf.osrd.sim_infra.api.increasing
 import fr.sncf.osrd.sim_infra.impl.NeutralSection as SimNeutralSection
 import fr.sncf.osrd.sim_infra.impl.RawInfraBuilder
+import fr.sncf.osrd.sim_infra.impl.RawInfraBuilderImpl
 import fr.sncf.osrd.sim_infra.impl.SpeedSection
 import fr.sncf.osrd.sim_infra.impl.TrackSectionBuilder
 import fr.sncf.osrd.utils.DirectionalMap
@@ -90,7 +91,7 @@ data class TrackSignal(
 )
 
 fun adaptRawInfra(infra: SignalingInfra): SimInfraAdapter {
-    val builder = RawInfraBuilder()
+    val builder = RawInfraBuilderImpl()
     val zoneMap = HashBiMap.create<DetectionSection, ZoneId>()
     val detectorMap = HashBiMap.create<Detector, DetectorId>()
     val trackNodeMap = HashBiMap.create<Switch, TrackNodeId>()
@@ -318,7 +319,7 @@ fun adaptRawInfra(infra: SignalingInfra): SimInfraAdapter {
 }
 
 private fun makeChunk(
-    builder: RawInfraBuilder,
+    builder: RawInfraBuilderImpl,
     track: TrackSection,
     startOffset: Distance,
     endOffset: Distance,

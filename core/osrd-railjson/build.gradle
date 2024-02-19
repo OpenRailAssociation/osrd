@@ -23,6 +23,8 @@ dependencies {
     implementation libs.moshi
     implementation libs.moshi.adapters
 
+    implementation libs.guava
+
     // for linter annotations
     compileOnly libs.jcip.annotations
     compileOnly libs.spotbugs.annotations

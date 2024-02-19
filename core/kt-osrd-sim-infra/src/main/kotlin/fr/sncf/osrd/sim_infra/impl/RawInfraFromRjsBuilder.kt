@@ -1,6 +1,7 @@
 package fr.sncf.osrd.sim_infra.impl
 
 import fr.sncf.osrd.geom.LineString
+import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.sim_infra.api.Detector
 import fr.sncf.osrd.sim_infra.api.DetectorId
@@ -30,6 +31,7 @@ import fr.sncf.osrd.sim_infra.api.decreasing
 import fr.sncf.osrd.sim_infra.api.increasing
 import fr.sncf.osrd.utils.DirectionalMap
 import fr.sncf.osrd.utils.DistanceRangeMap
+import fr.sncf.osrd.utils.distanceRangeMapOf
 import fr.sncf.osrd.utils.indexing.DirStaticIdx
 import fr.sncf.osrd.utils.indexing.DirStaticIdxList
 import fr.sncf.osrd.utils.indexing.IdxMap
@@ -45,6 +47,10 @@ import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.OffsetList
+import fr.sncf.osrd.utils.units.meters
+import fr.sncf.osrd.utils.units.metersPerSecond
+import java.util.*
+import kotlin.collections.HashMap
 import kotlin.collections.set
 import kotlin.time.Duration
 
@@ -63,6 +69,36 @@ class RawInfraFromRjsBuilderImpl : RawInfraBuilder {
     private val zonePathMap = mutableMapOf<ZonePathSpec, ZonePathId>()
     private val operationalPointPartPool =
         StaticPool<OperationalPointPart, OperationalPointPartDescriptor>()
+
+    private val sectionNameToIdxMap = mutableMapOf<String, TrackSectionId>()
+    private val sectionDistanceSortedChunkMap =
+        mutableMapOf<TrackSectionId, TreeMap<Distance, TrackChunkId>>()
+
+    // TODO remove this accessor once useless in adapter
+    fun getSectionNameToIdxMap(): Map<String, TrackSectionId> {
+        return sectionNameToIdxMap
+    }
+
+    // TODO remove this accessor once useless in adapter
+    fun getSectionDistanceSortedChunkMap(): Map<TrackSectionId, TreeMap<Distance, TrackChunkId>> {
+        return sectionDistanceSortedChunkMap
+    }
+
+    private fun getSectionDistanceSortedChunks(
+        sectionName: String
+    ): TreeMap<Distance, TrackChunkId> {
+        val sectionIdx =
+            sectionNameToIdxMap[sectionName]
+                ?: throw OSRDError.newInfraLoadingError(
+                    ErrorType.InfraHardLoadingError,
+                    "Accessing track-section from unregistered name $sectionName"
+                )
+        return sectionDistanceSortedChunkMap[sectionIdx]
+            ?: throw OSRDError.newInfraLoadingError(
+                ErrorType.InfraHardLoadingError,
+                "Accessing sorted chunks from unregistered track-section idx $sectionIdx (name: $sectionName)"
+            )
+    }
 
     override fun movableElement(
         name: String,
@@ -178,23 +214,30 @@ class RawInfraFromRjsBuilderImpl : RawInfraBuilder {
         return physicalSignalPool.add(builder.build())
     }
 
-    override fun trackSection(name: String?, init: TrackSectionBuilder.() -> Unit): TrackSectionId {
-        val builder = TrackSectionBuilderImpl(name)
-        builder.init()
-        return trackSectionPool.add(builder.build())
+    fun trackSection(name: String, chunks: StaticIdxList<TrackChunk>): TrackSectionId {
+        val sectionIdx = trackSectionPool.add(TrackSectionDescriptor(name, chunks))
+
+        sectionNameToIdxMap[name] = sectionIdx
+
+        val sectionOffsetChunks = TreeMap<Distance, TrackChunkId>()
+        for (chunkIdx in chunks) {
+            val chunk = trackChunkPool[chunkIdx]
+            chunk.track = sectionIdx
+            sectionOffsetChunks[chunk.offset.distance] = chunkIdx
+        }
+        sectionDistanceSortedChunkMap[sectionIdx] = sectionOffsetChunks
+
+        return sectionIdx
     }
 
-    override fun trackChunk(
+    fun trackChunk(
         geo: LineString,
         slopes: DirectionalMap<DistanceRangeMap<Double>>,
-        length: Length<TrackChunk>,
-        offset: Offset<TrackSection>,
         curves: DirectionalMap<DistanceRangeMap<Double>>,
         gradients: DirectionalMap<DistanceRangeMap<Double>>,
-        loadingGaugeConstraints: DistanceRangeMap<LoadingGaugeConstraint>,
-        electrificationVoltage: DistanceRangeMap<String>,
-        neutralSections: DirectionalMap<DistanceRangeMap<NeutralSection>>,
-        speedSections: DirectionalMap<DistanceRangeMap<SpeedSection>>
+        length: Length<TrackChunk>,
+        offset: Offset<TrackSection>,
+        loadingGaugeConstraints: DistanceRangeMap<LoadingGaugeConstraint>
     ): TrackChunkId {
         return trackChunkPool.add(
             TrackChunkDescriptor(
@@ -203,29 +246,90 @@ class RawInfraFromRjsBuilderImpl : RawInfraBuilder {
                 curves,
                 gradients,
                 length,
-                // Route IDs will be filled later on, the routes are not initialized and don't have
-                // IDs
-                // yet
+                // Route IDs will be filled later on, routes are not initialized yet
                 DirectionalMap(MutableStaticIdxArrayList(), MutableStaticIdxArrayList()),
-                StaticIdx(0u), // The track ID will be filled later on for the same reason as routes
+                // The track ID will be filled later, track is not initialized yet
+                StaticIdx(0u),
                 offset,
-                MutableStaticIdxArrayList(), // Same
+                // OperationalPointPart IDs will be filled later on, operational point parts
+                // are not initialized yet
+                MutableStaticIdxArrayList(),
                 loadingGaugeConstraints,
-                electrificationVoltage,
-                neutralSections,
-                speedSections
+                // Electrifications will be filled later on
+                distanceRangeMapOf(
+                    listOf(DistanceRangeMap.RangeMapEntry(0.meters, length.distance, ""))
+                ),
+                // NeutralSections will be filled later on
+                DirectionalMap(distanceRangeMapOf(), distanceRangeMapOf()),
+                // SpeedSections will be filled later on
+                DirectionalMap(
+                    distanceRangeMapOf(
+                        listOf(
+                            DistanceRangeMap.RangeMapEntry(
+                                0.meters,
+                                length.distance,
+                                SpeedSection(Double.POSITIVE_INFINITY.metersPerSecond, mapOf())
+                            )
+                        )
+                    ),
+                    distanceRangeMapOf(
+                        listOf(
+                            DistanceRangeMap.RangeMapEntry(
+                                0.meters,
+                                length.distance,
+                                SpeedSection(Double.POSITIVE_INFINITY.metersPerSecond, mapOf())
+                            )
+                        )
+                    )
+                )
             )
         )
     }
 
-    override fun operationalPointPart(
-        name: String,
-        chunkOffset: Offset<TrackChunk>,
-        chunk: TrackChunkId
+    fun applyFunctionToSectionChunksBetween(
+        trackName: String,
+        lower: Distance,
+        upper: Distance,
+        function:
+            (
+                chunkDescriptor: TrackChunkDescriptor,
+                incomingRangeLowerBound: Distance,
+                incomingRangeUpperBound: Distance
+            ) -> Unit
+    ) {
+        val sectionChunks = getSectionDistanceSortedChunks(trackName)
+        for (chunkDistanceId in sectionChunks.tailMap(sectionChunks.floorKey(lower))) {
+            if (chunkDistanceId.key >= upper) break
+
+            val chunkDescriptor = trackChunkPool[chunkDistanceId.value]
+            val incomingRangeLowerBound = Distance.max(lower - chunkDistanceId.key, 0.meters)
+            val incomingRangeUpperBound =
+                Distance.min(upper - chunkDistanceId.key, chunkDescriptor.length.distance)
+
+            function(chunkDescriptor, incomingRangeLowerBound, incomingRangeUpperBound)
+        }
+    }
+
+    fun operationalPointPart(
+        operationalPointName: String,
+        sectionName: String,
+        sectionOffset: Offset<TrackSection>
     ): OperationalPointPartId {
-        return operationalPointPartPool.add(
-            OperationalPointPartDescriptor(name, chunkOffset, chunk)
-        )
+        val sectionChunks = getSectionDistanceSortedChunks(sectionName)
+        val chunkDistanceIdx = sectionChunks.floorEntry(sectionOffset.distance)
+        val opPartIdx =
+            operationalPointPartPool.add(
+                OperationalPointPartDescriptor(
+                    operationalPointName,
+                    Offset(sectionOffset.distance - chunkDistanceIdx.key),
+                    chunkDistanceIdx.value
+                )
+            )
+        val oppList =
+            trackChunkPool[chunkDistanceIdx.value].operationalPointParts
+                as MutableStaticIdxArrayList
+        oppList.add(opPartIdx)
+        return opPartIdx
     }
 
     override fun build(): RawInfra {
@@ -319,13 +423,6 @@ class RawInfraFromRjsBuilderImpl : RawInfraBuilder {
         // Resolve track references
         for (track in trackSectionPool) for (chunk in
             trackSectionPool[track].chunks) trackChunkPool[chunk].track = track
-
-        // Resolve operational points
-        for (op in operationalPointPartPool) {
-            val chunk = trackChunkPool[operationalPointPartPool[op].chunk]
-            val opList = chunk.operationalPointParts as MutableStaticIdxArrayList
-            opList.add(op)
-        }
 
         // Build a map from track section endpoint to track node
         for (trackNode in trackNodePool) {
