@@ -60,7 +60,7 @@ const StdcmAllowances = () => {
           value={gridMarginBefore || ''}
           unit={ALLOWANCE_UNITS_KEYS.time}
           onChange={(e) =>
-            dispatch(updateGridMarginBefore(Math.abs(convertInputStringToNumber(e.target.value)!)))
+            dispatch(updateGridMarginBefore(Math.abs(convertInputStringToNumber(e.target.value))))
           }
           sm
           noMargin
@@ -75,7 +75,7 @@ const StdcmAllowances = () => {
           value={gridMarginAfter || ''}
           unit={ALLOWANCE_UNITS_KEYS.time}
           onChange={(e) =>
-            dispatch(updateGridMarginAfter(Math.abs(convertInputStringToNumber(e.target.value)!)))
+            dispatch(updateGridMarginAfter(Math.abs(convertInputStringToNumber(e.target.value))))
           }
           sm
           noMargin
