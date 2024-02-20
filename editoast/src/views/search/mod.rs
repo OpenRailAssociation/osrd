@@ -210,6 +210,7 @@ use utoipa::ToSchema;
 
 use crate::error::Result;
 use crate::views::pagination::PaginationQueryParam;
+use crate::views::search::objects::SearchResultItemOperationalPoint;
 use crate::DbPool;
 use actix_web::web::{Data, Json, Query};
 use actix_web::{post, HttpResponse, Responder};
@@ -227,6 +228,7 @@ use self::context::{QueryContext, TypedAst};
 use self::process::create_processing_context;
 use self::searchast::SearchAst;
 use self::typing::{AstType, TypeSpec};
+use crate::views::search::SearchObject;
 
 crate::routes! {
     search
@@ -399,10 +401,15 @@ pub async fn search(
     payload: Json<SearchPayload>,
     db_pool: Data<DbPool>,
 ) -> Result<impl Responder> {
-    let (page, per_page) = query_params.validate(1000)?.warn_page_size(100).unpack();
+    let (page, mut per_page) = query_params.validate(1000)?.warn_page_size(100).unpack();
     let Json(SearchPayload { object, query, dry }) = payload;
+    let operation_point_search_config =
+        <SearchResultItemOperationalPoint as SearchObject>::search_config();
     let search_config = SearchConfigFinder::find(&object)
         .ok_or_else(|| SearchError::ObjectType(object.to_owned()))?;
+    if operation_point_search_config.name == search_config.name {
+        per_page = 5000;
+    }
     let offset = (page - 1) * per_page;
     let sql = create_sql_query(query, &search_config, per_page, offset)?;
 
