@@ -1,6 +1,5 @@
 @import './editorForm';
 
-
 .editor-root {
   $blue: var(--primary);
   $blue-dark: var(--primary-dark);
@@ -155,7 +154,7 @@
 
       .map-modal {
         width: clamp(25%, 50%, 100%);
-    }
+      }
 
       .popup {
         text-align: center;
@@ -198,10 +197,6 @@
       min-width: 200px;
       min-height: 100px;
     }
-  }
-
-  .z-index-tooltip {
-    z-index: 1070 !important;
   }
 
   .editor-infra-errors-list {
