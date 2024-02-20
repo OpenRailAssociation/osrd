@@ -46,6 +46,7 @@ function OpTooltips({ opList }: { opList: SearchResultItemOperationalPoint[] }) 
               key={`typeandpath-op-${idx}-${op.trigram}`}
               style={{ left: `${leftMargin}rem` }}
               title={op.name}
+              data-testid={`typeandpath-op-${op.trigram}`}
             >
               {op.name ? op.name : <Alert />}
             </div>
@@ -155,6 +156,7 @@ export default function TypeAndPath({ zoomToFeature }: PathfindingProps) {
     <div
       className="type-and-path"
       style={{ minWidth: `${monospaceOneCharREMWidth * inputText.length + 5.5}rem` }} // To grow input field & whole div along text size
+      data-testid="type-and-path-container"
     >
       <div className="help">{opList.length === 0 && t('inputOPTrigrams')}</div>
       <OpTooltips opList={opList} />
@@ -171,6 +173,7 @@ export default function TypeAndPath({ zoomToFeature }: PathfindingProps) {
             onChange={(e) => handleInput(e.target.value)}
             placeholder={t('inputOPTrigramsExample')}
             autoFocus
+            data-testid="type-and-path-input"
           />
           <span className="form-control-state" />
         </div>
@@ -181,6 +184,7 @@ export default function TypeAndPath({ zoomToFeature }: PathfindingProps) {
           title={t('launchPathFinding')}
           onClick={launchPathFinding}
           disabled={isInvalid || opList.length < 2}
+          data-testid="submit-search-by-trigram"
         >
           <TriangleRight />
         </button>

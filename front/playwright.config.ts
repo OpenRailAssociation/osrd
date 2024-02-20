@@ -62,8 +62,6 @@ export default defineConfig({
         ...devices['Desktop Firefox'],
       },
       dependencies: ['setup'],
-      // ! we ignore tests that use canvas because it's not well supported in firefox with playwright
-      testIgnore: /.005-operational-studies.spec.ts/,
     },
   ],
 

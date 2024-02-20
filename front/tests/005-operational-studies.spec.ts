@@ -1,22 +1,33 @@
 import { test, expect } from '@playwright/test';
-import type { Project, RollingStock, Scenario, Study } from 'common/api/osrdEditoastApi';
+import type { Infra, Project, RollingStock, Scenario, Study } from 'common/api/osrdEditoastApi';
+import { v4 as uuidv4 } from 'uuid';
 import { PlaywrightHomePage } from './pages/home-page-model';
+import scenarioData from './assets/operationStudies/scenario.json';
 import RollingStockSelectorPage from './pages/rolling-stock-selector-page';
 import PlaywrightMap from './pages/map-model';
-import PATH_VARIABLES from './assets/operationStudies/testVariablesPaths';
 import PlaywrightScenarioPage from './pages/scenario-page-model';
-import { getProject, getStudy, getScenario, getRollingStock } from './assets/utils';
+import { getProject, getStudy, getRollingStock, postApiRequest, getInfra } from './assets/utils';
 
+let smallInfra: Infra;
 let project: Project;
 let study: Study;
 let scenario: Scenario;
 let rollingStock: RollingStock;
 
 test.beforeAll(async () => {
+  smallInfra = (await getInfra()) as Infra;
   project = await getProject();
   study = await getStudy(project.id);
-  scenario = await getScenario(project.id, study.id);
   rollingStock = await getRollingStock();
+});
+
+test.beforeEach(async () => {
+  scenario = await postApiRequest(`/api/projects/${project.id}/studies/${study.id}/scenarios`, {
+    ...scenarioData,
+    name: `${scenarioData.name} ${uuidv4()}`,
+    study_id: study.id,
+    infra_id: smallInfra.id,
+  });
 });
 
 // TODO: remove (enabled) when every tests are refactored
@@ -81,15 +92,10 @@ test.describe('Testing if all mandatory elements simulation configuration are lo
     await playwrightMap.disableLayers();
     const itinerary = scenarioPage.getItineraryModule;
     await expect(itinerary).toBeVisible();
-    await expect(scenarioPage.getMapModule).toBeVisible();
 
-    // Search and select origin
-    await playwrightMap.selectOrigin(PATH_VARIABLES.originSearch);
+    await scenarioPage.getPathfindingByTriGramSearch('MWS', 'NES');
 
-    // Search and select destination
-    await playwrightMap.selectDestination(PATH_VARIABLES.destinationSearch);
-
-    await scenarioPage.checkPathfindingDistance('34.000 km');
+    await scenarioPage.checkPathfindingDistance('33.950 km');
 
     // ***************** Test Add Train Schedule *****************
     await scenarioPage.addTrainSchedule();
