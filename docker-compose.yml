@@ -94,6 +94,7 @@ services:
       REDIS_URL: "redis://redis"
       OSRD_BACKEND_URL: "http://osrd-core:8080"
       DATABASE_URL: "postgres://osrd:password@postgres/osrd"
+      TELEMETRY_KIND: "opentelemetry"
     command:
       - /bin/sh
       - -c

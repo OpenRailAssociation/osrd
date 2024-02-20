@@ -1,5 +1,6 @@
 mod postgres_config;
 mod redis_config;
+mod telemetry_config;
 
 use crate::error::Result;
 use clap::{Args, Parser, Subcommand, ValueEnum};
@@ -8,6 +9,7 @@ use editoast_derive::EditoastError;
 pub use postgres_config::PostgresConfig;
 pub use redis_config::RedisConfig;
 use std::{env, path::PathBuf};
+pub use telemetry_config::{TelemetryConfig, TelemetryKind};
 use thiserror::Error;
 use url::Url;
 
@@ -18,6 +20,8 @@ pub struct Client {
     pub postgres_config: PostgresConfig,
     #[command(flatten)]
     pub redis_config: RedisConfig,
+    #[command(flatten)]
+    pub telemetry_config: TelemetryConfig,
     #[arg(long, env, value_enum, default_value_t = Color::Auto)]
     pub color: Color,
     #[command(subcommand)]
