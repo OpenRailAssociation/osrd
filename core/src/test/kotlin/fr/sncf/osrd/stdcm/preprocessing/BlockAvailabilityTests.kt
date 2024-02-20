@@ -334,15 +334,16 @@ class BlockAvailabilityTests {
                 Offset(0.meters),
                 explorer.getSimulatedLength(),
                 0.0
-            )
+            ) as BlockAvailabilityInterface.Unavailable
         val res2 =
             availability.getAvailability(
                 explorer,
                 Offset(0.meters),
                 explorer.getSimulatedLength(),
                 0.0
-            )
+            ) as BlockAvailabilityInterface.Unavailable
         assertEquals(res1, res2)
+        assertEquals(duration, res1.duration)
     }
 
     /** Test that we consider the start offset when getting a specific section */
