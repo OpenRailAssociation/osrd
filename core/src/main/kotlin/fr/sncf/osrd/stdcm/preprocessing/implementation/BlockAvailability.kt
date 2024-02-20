@@ -1,57 +1,66 @@
 package fr.sncf.osrd.stdcm.preprocessing.implementation
 
 import fr.sncf.osrd.api.FullInfra
+import fr.sncf.osrd.conflicts.IncrementalConflictDetector
 import fr.sncf.osrd.envelope_utils.DoubleBinarySearch
 import fr.sncf.osrd.sim_infra.api.Path
-import fr.sncf.osrd.sim_infra.api.ZoneId
 import fr.sncf.osrd.standalone_sim.result.ResultTrain.SpacingRequirement
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
+import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Offset
+import kotlin.math.max
+import kotlin.math.min
 
 data class BlockAvailability(
     val fullInfra: FullInfra,
-    val requirements: Map<ZoneId, List<SpacingRequirement>>
-) : GenericBlockAvailability() {
+    val incrementalConflictDetector: IncrementalConflictDetector
+) : BlockAvailabilityInterface {
 
-    private data class ZoneResourceUse(
-        override val startOffset: Offset<Path>,
-        override val endOffset: Offset<Path>,
-        override val startTime: Double,
-        override val endTime: Double,
-        val zoneId: ZoneId,
-    ) : ResourceUse
-
-    override fun generateResourcesForPath(
+    override fun getAvailability(
         infraExplorer: InfraExplorerWithEnvelope,
         startOffset: Offset<Path>,
-        endOffset: Offset<Path>
-    ): List<ResourceUse> {
-        TODO("a pain for the rebase, to be deleted anyway")
-    }
-
-    override fun getScheduledResources(
-        infraExplorer: InfraExplorerWithEnvelope,
-        resource: ResourceUse
-    ): List<ResourceUse> {
-        val res = mutableListOf<ResourceUse>()
-        val zoneResourceUse = resource as ZoneResourceUse
-        for (scheduledRequirement in requirements[zoneResourceUse.zoneId] ?: listOf()) {
-            val resourceStartOffset =
-                getEnvelopeOffsetFromTime(infraExplorer, scheduledRequirement.beginTime)
-            val resourceEndOffset =
-                getEnvelopeOffsetFromTime(infraExplorer, scheduledRequirement.endTime)
-            res.add(
-                ZoneResourceUse(
-                    resourceStartOffset,
-                    resourceEndOffset,
-                    scheduledRequirement.beginTime,
-                    scheduledRequirement.endTime,
-                    zoneResourceUse.zoneId
+        endOffset: Offset<Path>,
+        startTime: Double
+    ): BlockAvailabilityInterface.Availability {
+        val spacingRequirements = infraExplorer.getSpacingRequirements()
+        val pathStartTime = startTime - infraExplorer.interpolateTimeClamp(startOffset)
+        val endTime = infraExplorer.interpolateTimeClamp(endOffset) + pathStartTime
+        val shiftedSpacingRequirements =
+            spacingRequirements
+                .map {
+                    SpacingRequirement(
+                        it.zone,
+                        max(pathStartTime + it.beginTime, startTime),
+                        min(pathStartTime + it.endTime, endTime),
+                        it.isComplete
+                    )
+                }
+                .filter { it.beginTime < it.endTime }
+        val conflicts =
+            incrementalConflictDetector.checkConflicts(shiftedSpacingRequirements, listOf())
+        if (conflicts.isEmpty()) {
+            val maximumDelay =
+                incrementalConflictDetector.maxDelayWithoutConflicts(
+                    shiftedSpacingRequirements,
+                    listOf()
                 )
-            )
+            val timeOfNextConflict =
+                incrementalConflictDetector.timeOfNextConflict(shiftedSpacingRequirements, listOf())
+            return BlockAvailabilityInterface.Available(maximumDelay, timeOfNextConflict)
+        } else {
+            val minimumDelay =
+                incrementalConflictDetector.minDelayWithoutConflicts(
+                    shiftedSpacingRequirements,
+                    listOf()
+                )
+            val firstConflictOffset =
+                getEnvelopeOffsetFromTime(
+                    infraExplorer,
+                    conflicts.first().startTime - pathStartTime
+                )
+            return BlockAvailabilityInterface.Unavailable(minimumDelay, firstConflictOffset)
         }
-        return res
     }
 
     /**
