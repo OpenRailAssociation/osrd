@@ -407,12 +407,7 @@ class BlockAvailabilityTests {
         val availability =
             makeAvailability(
                 listOf(
-                    SpacingRequirement(
-                        explorer.getSpacingRequirements().last().zone,
-                        startTime,
-                        startTime + duration,
-                        true
-                    ),
+                    SpacingRequirement(zoneNames.last(), startTime, startTime + duration, true),
                 )
             )
         val res =
