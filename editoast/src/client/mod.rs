@@ -110,6 +110,8 @@ pub struct RunserverArgs {
     #[derivative(Default(value = r#""".into()"#))]
     #[clap(long, env = "ROOT_PATH", default_value_t = String::new())]
     pub root_path: String,
+    #[clap(long)]
+    pub workers: Option<usize>,
 }
 
 #[derive(Args, Debug)]
