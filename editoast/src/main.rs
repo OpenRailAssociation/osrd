@@ -329,6 +329,11 @@ async fn runserver(
             .service(scope(&args.root_path).service(views::routes()))
     });
 
+    let server = match args.workers {
+        Some(workers) => server.workers(workers),
+        None => server,
+    };
+
     // Run server
     info!("Running server...");
     server
