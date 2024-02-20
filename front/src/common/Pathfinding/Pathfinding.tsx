@@ -535,7 +535,7 @@ function Pathfinding({ zoomToFeature, path }: PathfindingProps) {
 
       {!pathfindingState.error && !pathfindingState.running && path && origin && destination && (
         <div className="content pathfinding-done">
-          <span className="lead">
+          <span className="lead" data-testid="result-pathfinding-done">
             <CheckCircle />
           </span>
           <span className="flex-grow-1">{t('pathfindingDone')}</span>

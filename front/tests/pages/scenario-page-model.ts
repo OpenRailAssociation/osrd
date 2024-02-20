@@ -63,6 +63,16 @@ class PlaywrightScenarioPage {
 
   readonly getPathfindingState: Locator;
 
+  readonly getSearchByTrigramButton: Locator;
+
+  readonly getSearchByTrigramContainer: Locator;
+
+  readonly getSearchByTrigramInput: Locator;
+
+  readonly getSearchByTrigramsubmit: Locator;
+
+  readonly getResultPathfindingDone: Locator;
+
   readonly getTimetableList: Locator;
 
   readonly getTrainEditBtn: Locator;
@@ -111,6 +121,11 @@ class PlaywrightScenarioPage {
     this.getScenarioName = page.locator('.scenario-details-name .scenario-name');
     this.getScenarioDescription = page.locator('.scenario-details-description');
     this.getScenarioInfraName = page.locator('.scenario-infra-name');
+    this.getSearchByTrigramButton = page.getByTestId('rocket-button');
+    this.getSearchByTrigramContainer = page.getByTestId('type-and-path-container');
+    this.getSearchByTrigramInput = page.getByTestId('type-and-path-input');
+    this.getSearchByTrigramsubmit = page.getByTestId('submit-search-by-trigram');
+    this.getResultPathfindingDone = page.getByTestId('result-pathfinding-done');
     this.getResultPathfindingDistance = page.getByTestId('result-pathfinding-distance');
     this.getInfraLoadState = page.locator('.infra-loading-state');
     this.getTrainCountInput = page.locator('#osrdconf-traincount');
@@ -246,6 +261,18 @@ class PlaywrightScenarioPage {
 
   async checkPathfingingStateText(text: string | RegExp) {
     await expect(this.getPathfindingState).toHaveText(text);
+  }
+
+  async getPathfindingByTriGramSearch(firstTrigram: string, secondTrigram: string) {
+    await this.getSearchByTrigramButton.click();
+    await expect(this.getSearchByTrigramContainer).toBeVisible();
+    await this.getSearchByTrigramInput.fill(`${firstTrigram} ${secondTrigram}`);
+    await expect(
+      this.page.getByTestId(`typeandpath-op-${firstTrigram}`) &&
+        this.page.getByTestId(`typeandpath-op-${secondTrigram}`)
+    ).toBeVisible();
+    await this.getSearchByTrigramsubmit.click();
+    await expect(this.getResultPathfindingDone).toBeVisible();
   }
 
   async clickBtnByName(name: string) {

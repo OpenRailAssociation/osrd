@@ -101,6 +101,7 @@ function Itinerary({ path }: ItineraryProps) {
           aria-label={t('toggleTrigramSearch')}
           title={t('toggleTrigramSearch')}
           onClick={() => setDisplayTypeAndPath(!displayTypeAndPath)}
+          data-testid="rocket-button"
         >
           <Rocket />
         </button>
