@@ -276,16 +276,17 @@ class BlockAvailabilityTests {
                     SpacingRequirement(zoneNames[0], 0.0, occupancyEnd, true),
                 )
             )
-        val res =
-            availability.getAvailability(
-                explorer,
-                Offset(0.meters),
-                explorer.getSimulatedLength(),
-                0.0
-            ) as BlockAvailabilityInterface.Unavailable
 
         // The train is so long that it never leaves the first zone
-        assertEquals(explorer.getFullEnvelope().totalTime, res.duration)
+        // We expect a conflict (with the first zone) even on the last meter of the simulation
+        assertNotNull(
+            availability.getAvailability(
+                explorer,
+                explorer.getSimulatedLength() - 1.meters,
+                explorer.getSimulatedLength(),
+                0.0
+            ) as? BlockAvailabilityInterface.Unavailable
+        )
     }
 
     /** Test that we still "use" the first zone, even when checking the conflicts for each block */
