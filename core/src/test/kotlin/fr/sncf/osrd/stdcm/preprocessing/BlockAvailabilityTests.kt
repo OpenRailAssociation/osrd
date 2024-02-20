@@ -1,10 +1,14 @@
 package fr.sncf.osrd.stdcm.preprocessing
 
+import fr.sncf.osrd.conflicts.TrainRequirements
+import fr.sncf.osrd.conflicts.incrementalConflictDetector
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope.part.EnvelopePart
 import fr.sncf.osrd.envelope_sim.EnvelopeProfile
 import fr.sncf.osrd.graph.PathfindingEdgeLocationId
-import fr.sncf.osrd.sim_infra.api.*
+import fr.sncf.osrd.sim_infra.api.Block
+import fr.sncf.osrd.sim_infra.api.BlockId
+import fr.sncf.osrd.sim_infra.api.DirDetectorId
 import fr.sncf.osrd.standalone_sim.result.ResultTrain.SpacingRequirement
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
 import fr.sncf.osrd.stdcm.infra_exploration.initInfraExplorerWithEnvelope
@@ -97,6 +101,10 @@ class BlockAvailabilityTests {
     ): InfraExplorerWithEnvelope {
         assert(nBlocksInPath >= nBlocksSimulated)
         assert(nBlocksInPath <= 5)
+        fun filterExplorer(explorer: InfraExplorerWithEnvelope): Boolean {
+            return explorer.getLookahead().all { blocks.contains(it) }
+        }
+
         var infraExplorer =
             initInfraExplorerWithEnvelope(
                     infra,
@@ -104,11 +112,11 @@ class BlockAvailabilityTests {
                     listOf(blocks.last()),
                     rollingStock
                 )
-                .first()
+                .find { filterExplorer(it) }!!
         while (infraExplorer.getLookahead().size + 1 < nBlocksInPath) infraExplorer =
-            infraExplorer.cloneAndExtendLookahead().first()
-        for (i in 0..nBlocksSimulated) {
-            infraExplorer.moveForward()
+            infraExplorer.cloneAndExtendLookahead().find { filterExplorer(it) }!!
+        for (i in 0 ..< nBlocksSimulated - 1) infraExplorer.moveForward()
+        for (i in 0 ..< nBlocksSimulated) {
             infraExplorer =
                 infraExplorer.addEnvelope(
                     Envelope.make(
@@ -167,7 +175,24 @@ class BlockAvailabilityTests {
                 explorer.getSimulatedLength(),
                 0.0
             ) as BlockAvailabilityInterface.Unavailable
-        assertTrue { res.duration > duration }
+        assertEquals(duration, res.duration)
+    }
+
+    /** Test that we add the right amount of delay if the conflict doesn't start at t=0 */
+    @Test
+    fun testSimpleDelayNotStartingAt0() {
+        val explorer = makeExplorer(5, 1)
+        val duration = 120.0
+        val availability =
+            makeAvailability(listOf(SpacingRequirement(zoneNames[0], 10.0, duration, true)))
+        val res =
+            availability.getAvailability(
+                explorer,
+                Offset(0.meters),
+                explorer.getSimulatedLength(),
+                0.0
+            ) as BlockAvailabilityInterface.Unavailable
+        assertEquals(duration, res.duration)
     }
 
     /** Test that the minimum delay does avoid conflicts, even with consecutive occupancies */
@@ -189,7 +214,7 @@ class BlockAvailabilityTests {
                 explorer.getSimulatedLength(),
                 0.0
             ) as BlockAvailabilityInterface.Unavailable
-        assertTrue { res.duration > 2 * duration }
+        assertEquals(2 * duration, res.duration)
     }
 
     /** Test that an `Availability` is returned when the path is available */
@@ -211,7 +236,7 @@ class BlockAvailabilityTests {
                 0.0
             ) as BlockAvailabilityInterface.Available
         assertTrue { res.maximumDelay <= startTime }
-        assertTrue { res.timeOfNextConflict == startTime }
+        assertEquals(startTime, res.timeOfNextConflict)
     }
 
     /**
@@ -237,7 +262,7 @@ class BlockAvailabilityTests {
                 explorer.getSimulatedLength(),
                 0.0
             ) as BlockAvailabilityInterface.Available
-        assertTrue { res.timeOfNextConflict == minStartTime }
+        assertEquals(minStartTime, res.timeOfNextConflict)
     }
 
     /** Test that we consider the rolling stock length when evaluating resource use */
@@ -251,16 +276,17 @@ class BlockAvailabilityTests {
                     SpacingRequirement(zoneNames[0], 0.0, occupancyEnd, true),
                 )
             )
-        val res =
-            availability.getAvailability(
-                explorer,
-                Offset(0.meters),
-                explorer.getSimulatedLength(),
-                0.0
-            ) as BlockAvailabilityInterface.Unavailable
 
         // The train is so long that it never leaves the first zone
-        assertTrue { res.duration == explorer.getFullEnvelope().totalTime }
+        // We expect a conflict (with the first zone) even on the last meter of the simulation
+        assertNotNull(
+            availability.getAvailability(
+                explorer,
+                explorer.getSimulatedLength() - 1.meters,
+                explorer.getSimulatedLength(),
+                0.0
+            ) as? BlockAvailabilityInterface.Unavailable
+        )
     }
 
     /** Test that we still "use" the first zone, even when checking the conflicts for each block */
@@ -286,6 +312,7 @@ class BlockAvailabilityTests {
                     )
                 )
             )
+        explorer.moveForward()
         val res =
             availability.getAvailability(
                 explorer,
@@ -293,7 +320,7 @@ class BlockAvailabilityTests {
                 explorer.getSimulatedLength(),
                 0.0
             ) as BlockAvailabilityInterface.Unavailable
-        assertTrue { res.duration >= occupancyEnd }
+        assertEquals(occupancyEnd, res.duration)
     }
 
     /** Test that we can make the same call several times */
@@ -309,15 +336,16 @@ class BlockAvailabilityTests {
                 Offset(0.meters),
                 explorer.getSimulatedLength(),
                 0.0
-            )
+            ) as BlockAvailabilityInterface.Unavailable
         val res2 =
             availability.getAvailability(
                 explorer,
                 Offset(0.meters),
                 explorer.getSimulatedLength(),
                 0.0
-            )
+            ) as BlockAvailabilityInterface.Unavailable
         assertEquals(res1, res2)
+        assertEquals(duration, res1.duration)
     }
 
     /** Test that we consider the start offset when getting a specific section */
@@ -350,6 +378,50 @@ class BlockAvailabilityTests {
         assertNotNull(res)
     }
 
+    /** Test that the start time is properly accounted for */
+    @Test
+    fun testStartTime() {
+        val explorer = makeExplorer(5, 1)
+        val startTime = 1200.0
+        val availability =
+            makeAvailability(
+                listOf(
+                    SpacingRequirement(zoneNames[0], 0.0, startTime - 1, true),
+                )
+            )
+        val res =
+            availability.getAvailability(
+                explorer,
+                Offset(0.meters),
+                explorer.getSimulatedLength(),
+                startTime
+            ) as BlockAvailabilityInterface.Available
+        assertEquals(POSITIVE_INFINITY, res.maximumDelay)
+        assertEquals(POSITIVE_INFINITY, res.timeOfNextConflict)
+    }
+
+    /** Test that the start time is properly accounted for with a start offset != 0 */
+    @Test
+    fun testStartTimeWithStartOffset() {
+        val explorer = makeExplorer(5, 5)
+        val startTime = 1200.0
+        val duration = 120.0
+        val availability =
+            makeAvailability(
+                listOf(
+                    SpacingRequirement(zoneNames.last(), startTime, startTime + duration, true),
+                )
+            )
+        val res =
+            availability.getAvailability(
+                explorer,
+                explorer.getSimulatedLength() - 100.meters,
+                explorer.getSimulatedLength(),
+                startTime
+            ) as BlockAvailabilityInterface.Unavailable
+        assertEquals(duration, res.duration)
+    }
+
     /** Test that we can handle grid margins */
     @Disabled
     @Test
@@ -361,12 +433,8 @@ class BlockAvailabilityTests {
     private fun makeAvailability(
         requirements: List<SpacingRequirement>
     ): BlockAvailabilityInterface {
-        val map = mutableMapOf<ZoneId, MutableList<SpacingRequirement>>()
-        for (requirement in requirements) {
-            val zoneId = infra.rawInfra.getZoneFromName(requirement.zone)
-            map.putIfAbsent(zoneId, mutableListOf())
-            map[zoneId]!!.add(requirement)
-        }
-        return BlockAvailability(infra, map)
+        val trainRequirements = listOf(TrainRequirements(0L, requirements, listOf()))
+        val incrementalConflictDetector = incrementalConflictDetector(trainRequirements)
+        return BlockAvailability(infra, incrementalConflictDetector)
     }
 }
