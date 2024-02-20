@@ -52,11 +52,13 @@ data class InfraExplorerWithEnvelopeImpl(
     override fun getSpacingRequirements(): List<SpacingRequirement> {
         if (spacingRequirements == null) {
             spacingRequirementAutomaton.incrementalPath = getIncrementalPath()
+            // Path is complete and has been completely simulated
+            val simulationComplete = getIncrementalPath().pathComplete && getLookahead().size == 0
             spacingRequirementAutomaton.callbacks =
                 IncrementalRequirementEnvelopeAdapter(
                     rollingStock,
                     getFullEnvelope(),
-                    getIncrementalPath().pathComplete
+                    simulationComplete
                 )
             val updatedRequirements =
                 spacingRequirementAutomaton.processPathUpdate() as? SpacingRequirements

@@ -20,10 +20,10 @@ import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import kotlin.test.assertFalse
 
 class SpacingResourceGeneratorTest {
     // See overlapping_routes.py for a detailed infrastructure description
@@ -260,21 +260,17 @@ class SpacingResourceGeneratorTest {
                 0.meters
             )
         )
+        val length = Distance(blockLengths.sumOf { it.distance.millimeters }) - 1.meters
+        val callbacks = makeCallbacks(length, false, rollingStock = TestTrains.VERY_LONG_FAST_TRAIN)
         val automaton =
             SpacingRequirementAutomaton(
                 infra.rawInfra,
                 infra.loadedSignalInfra,
                 infra.blockInfra,
                 infra.signalingSimulator,
-                makeCallbacks(blockLengths[0].distance, false),
+                callbacks,
                 path
             )
-        val length =
-            Distance(
-                blockLengths.sumOf { it.distance.millimeters }
-            ) - 1.meters
-        automaton.callbacks =
-            makeCallbacks(length, false, rollingStock = TestTrains.VERY_LONG_FAST_TRAIN)
         val res = (automaton.processPathUpdate() as SpacingRequirements).requirements
         for (requirement in res) {
             assertFalse { requirement.isComplete }
