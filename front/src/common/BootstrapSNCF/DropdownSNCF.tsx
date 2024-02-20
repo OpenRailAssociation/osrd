@@ -44,7 +44,7 @@ const DropdownSNCF: FC<{
   return (
     <div className="btn-group dropdown">
       <TetherComponent
-        className="over-modal z-index-tooltip dropdown"
+        className="over-modal dropdown"
         attachment="top right"
         targetAttachment="bottom right"
         renderTarget={(ref) => (
