@@ -11,8 +11,8 @@ import java.util.List;
  */
 public class EnvelopeConcat implements EnvelopeTimeInterpolate {
 
-    private List<LocatedEnvelope> envelopes;
-    private double endPos;
+    private final List<LocatedEnvelope> envelopes;
+    private final double endPos;
 
     private EnvelopeConcat(List<LocatedEnvelope> envelopes, double endPos) {
         this.envelopes = envelopes;
