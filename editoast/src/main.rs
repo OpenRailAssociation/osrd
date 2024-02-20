@@ -64,6 +64,9 @@ use models::infra::InfraError;
 use models::Retrieve;
 use modelsv2::electrical_profiles::ElectricalProfileSet;
 use openssl::ssl::{SslConnector, SslMethod, SslVerifyMode};
+use opentelemetry::KeyValue;
+use opentelemetry_otlp::WithExportConfig as _;
+use opentelemetry_sdk::Resource;
 pub use redis_utils::{RedisClient, RedisConnection};
 use sentry::ClientInitGuard;
 use std::error::Error;
@@ -73,7 +76,7 @@ use std::process::exit;
 use std::{env, fs};
 use thiserror::Error;
 use tracing::{error, info, warn};
-use tracing_subscriber::{layer::SubscriberExt as _, util::SubscriberInitExt as _};
+use tracing_subscriber::{layer::SubscriberExt as _, util::SubscriberInitExt as _, Layer as _};
 use url::Url;
 use validator::ValidationErrorsKind;
 use views::infra::InfraApiError;
@@ -96,19 +99,59 @@ enum EditoastMode {
     Cli,
 }
 
-fn init_tracing(mode: EditoastMode) {
-    let sub = tracing_subscriber::registry().with(
-        tracing_subscriber::EnvFilter::builder()
-            // Set the default log level to 'info'
-            .with_default_directive(tracing_subscriber::filter::LevelFilter::INFO.into())
-            .from_env_lossy(),
-    );
-    let layer = tracing_subscriber::fmt::layer().compact();
-    if mode == EditoastMode::Cli {
-        sub.with(layer.with_writer(std::io::stderr)).init();
+fn init_tracing(mode: EditoastMode, telemetry_config: &client::TelemetryConfig) {
+    let env_filter_layer = tracing_subscriber::EnvFilter::builder()
+        // Set the default log level to 'info'
+        .with_default_directive(tracing_subscriber::filter::LevelFilter::INFO.into())
+        .from_env_lossy();
+    let fmt_layer = tracing_subscriber::fmt::layer().compact();
+    let fmt_layer = if mode == EditoastMode::Cli {
+        fmt_layer.with_writer(std::io::stderr).boxed()
     } else {
-        sub.with(layer).init();
-    }
+        fmt_layer.boxed()
+    };
+    // https://docs.rs/tracing-subscriber/latest/tracing_subscriber/layer/index.html#runtime-configuration-with-layers
+    let telemetry_layer = match telemetry_config.telemetry_kind {
+        client::TelemetryKind::None => None,
+        client::TelemetryKind::Datadog => {
+            let datadog_tracer = opentelemetry_datadog::new_pipeline()
+                .with_service_name(telemetry_config.service_name.as_str())
+                .with_agent_endpoint(telemetry_config.telemetry_endpoint.as_str())
+                .install_batch(opentelemetry_sdk::runtime::Tokio)
+                .expect("Failed to initialize datadog tracer");
+            let layer = tracing_opentelemetry::layer()
+                .with_tracer(datadog_tracer)
+                .boxed();
+            Some(layer)
+        }
+        client::TelemetryKind::Opentelemetry => {
+            let exporter = opentelemetry_otlp::new_exporter()
+                .tonic()
+                .with_endpoint(telemetry_config.telemetry_endpoint.as_str());
+            let trace_config =
+                opentelemetry_sdk::trace::config().with_resource(Resource::new(vec![
+                    KeyValue::new(
+                        opentelemetry_semantic_conventions::resource::SERVICE_NAME,
+                        telemetry_config.service_name.clone(),
+                    ),
+                ]));
+            let otlp_tracer = opentelemetry_otlp::new_pipeline()
+                .tracing()
+                .with_exporter(exporter)
+                .with_trace_config(trace_config)
+                .install_batch(opentelemetry_sdk::runtime::Tokio)
+                .expect("Failed to initialize Opentelemetry tracer");
+            let layer = tracing_opentelemetry::layer()
+                .with_tracer(otlp_tracer)
+                .boxed();
+            Some(layer)
+        }
+    };
+    tracing_subscriber::registry()
+        .with(telemetry_layer)
+        .with(env_filter_layer)
+        .with(fmt_layer)
+        .init();
 }
 
 impl EditoastMode {
@@ -139,8 +182,7 @@ async fn main() {
 
 async fn run() -> Result<(), Box<dyn Error + Send + Sync>> {
     let client = Client::parse();
-    init_tracing(EditoastMode::from_client(&client));
-
+    init_tracing(EditoastMode::from_client(&client), &client.telemetry_config);
     let pg_config = client.postgres_config;
     let create_db_pool = || {
         Ok::<_, Box<dyn Error + Send + Sync>>(Data::new(get_pool(
@@ -408,6 +450,7 @@ async fn runserver(
         let actix_logger_format = r#"%r STATUS: %s in %T s ("%{Referer}i" "%{User-Agent}i")"#;
 
         App::new()
+            .wrap(actix_web_opentelemetry::RequestTracing::new())
             .wrap(Condition::new(
                 is_sentry_initialized,
                 sentry_actix::Sentry::new(),
