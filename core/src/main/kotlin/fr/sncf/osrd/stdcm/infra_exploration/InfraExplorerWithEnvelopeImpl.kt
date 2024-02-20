@@ -18,7 +18,7 @@ data class InfraExplorerWithEnvelopeImpl(
     private val envelopes: MutableList<EnvelopeTimeInterpolate>,
     private val spacingRequirementAutomaton: SpacingRequirementAutomaton,
     private val rollingStock: PhysicsRollingStock,
-    private var spacingRequirements: List<SpacingRequirement>? = null
+    private var spacingRequirementsCache: List<SpacingRequirement>? = null
 ) : InfraExplorer by infraExplorer, InfraExplorerWithEnvelope {
 
     override fun cloneAndExtendLookahead(): Collection<InfraExplorerWithEnvelope> {
@@ -28,7 +28,7 @@ data class InfraExplorerWithEnvelopeImpl(
                 ArrayList(envelopes),
                 spacingRequirementAutomaton.clone(),
                 rollingStock,
-                spacingRequirements?.toList(),
+                spacingRequirementsCache?.toList(),
             )
         }
     }
@@ -50,7 +50,7 @@ data class InfraExplorerWithEnvelopeImpl(
     }
 
     override fun getSpacingRequirements(): List<SpacingRequirement> {
-        if (spacingRequirements == null) {
+        if (spacingRequirementsCache == null) {
             spacingRequirementAutomaton.incrementalPath = getIncrementalPath()
             // Path is complete and has been completely simulated
             val simulationComplete = getIncrementalPath().pathComplete && getLookahead().size == 0
@@ -63,14 +63,14 @@ data class InfraExplorerWithEnvelopeImpl(
             val updatedRequirements =
                 spacingRequirementAutomaton.processPathUpdate() as? SpacingRequirements
                     ?: throw BlockAvailabilityInterface.NotEnoughLookaheadError()
-            spacingRequirements = updatedRequirements.requirements
+            spacingRequirementsCache = updatedRequirements.requirements
         }
-        return spacingRequirements!!
+        return spacingRequirementsCache!!
     }
 
     override fun moveForward() {
         infraExplorer.moveForward()
-        spacingRequirements = null
+        spacingRequirementsCache = null
     }
 
     override fun getSimulatedLength(): Length<Path> {
@@ -83,7 +83,7 @@ data class InfraExplorerWithEnvelopeImpl(
             envelopes.toMutableList(),
             spacingRequirementAutomaton.clone(),
             rollingStock,
-            spacingRequirements?.toList()
+            spacingRequirementsCache?.toList()
         )
     }
 }
