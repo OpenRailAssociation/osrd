@@ -68,9 +68,4 @@ public class EnvelopeStopWrapper implements EnvelopeTimeInterpolate {
         }
         return res;
     }
-
-    @Override
-    public EnvelopeTimeInterpolate clone() {
-        return new EnvelopeStopWrapper(envelope.clone(), stops);
-    }
 }

@@ -28,6 +28,4 @@ public interface EnvelopeTimeInterpolate extends Cloneable {
     record EnvelopePoint(double time, double speed, double position) {}
 
     List<EnvelopePoint> iteratePoints();
-
-    EnvelopeTimeInterpolate clone();
 }

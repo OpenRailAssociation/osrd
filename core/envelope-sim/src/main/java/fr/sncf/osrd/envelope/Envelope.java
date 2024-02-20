@@ -350,11 +350,6 @@ public final class Envelope implements Iterable<EnvelopePart>, SearchableEnvelop
         return res;
     }
 
-    @Override
-    public EnvelopeTimeInterpolate clone() {
-        return Envelope.make(parts);
-    }
-
     /** Makes a stream from the parts */
     public Stream<EnvelopePart> stream() {
         return Arrays.stream(parts);
