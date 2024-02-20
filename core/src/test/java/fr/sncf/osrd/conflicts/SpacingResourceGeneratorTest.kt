@@ -3,12 +3,14 @@ package fr.sncf.osrd.conflicts
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope.part.EnvelopePart
 import fr.sncf.osrd.envelope_sim.EnvelopeProfile
+import fr.sncf.osrd.envelope_sim.PhysicsRollingStock
 import fr.sncf.osrd.envelope_sim.SimpleRollingStock
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.sim_infra.api.DirDetectorId
 import fr.sncf.osrd.sim_infra.api.Route
 import fr.sncf.osrd.standalone_sim.result.ResultTrain.SpacingRequirement
+import fr.sncf.osrd.train.TestTrains
 import fr.sncf.osrd.utils.Direction.INCREASING
 import fr.sncf.osrd.utils.Helpers
 import fr.sncf.osrd.utils.indexing.StaticIdx
@@ -21,6 +23,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import kotlin.test.assertFalse
 
 class SpacingResourceGeneratorTest {
     // See overlapping_routes.py for a detailed infrastructure description
@@ -242,10 +245,50 @@ class SpacingResourceGeneratorTest {
             }
         }
     }
+
+    @Test
+    fun testVeryLongTrain() {
+        // The rolling stock is longer than the train path, every resource use should be incomplete
+        val path = incrementalPathOf(infra.rawInfra, infra.blockInfra)
+        path.extend(
+            PathFragment(
+                routes.toIdxList(),
+                blocks.toIdxList(),
+                containsStart = true,
+                containsEnd = true,
+                0.meters,
+                0.meters
+            )
+        )
+        val automaton =
+            SpacingRequirementAutomaton(
+                infra.rawInfra,
+                infra.loadedSignalInfra,
+                infra.blockInfra,
+                infra.signalingSimulator,
+                makeCallbacks(blockLengths[0].distance, false),
+                path
+            )
+        val length =
+            Distance(
+                blockLengths.sumOf { it.distance.millimeters }
+            ) - 1.meters
+        automaton.callbacks =
+            makeCallbacks(length, false, rollingStock = TestTrains.VERY_LONG_FAST_TRAIN)
+        val res = (automaton.processPathUpdate() as SpacingRequirements).requirements
+        for (requirement in res) {
+            assertFalse { requirement.isComplete }
+            assertEquals(automaton.callbacks.currentTime, requirement.endTime)
+        }
+    }
 }
 
 /** Returns an incremental requirement callback of the given length */
-private fun makeCallbacks(length: Distance, complete: Boolean): IncrementalRequirementCallbacks {
+private fun makeCallbacks(
+    length: Distance,
+    complete: Boolean,
+    rollingStock: PhysicsRollingStock = SimpleRollingStock.STANDARD_TRAIN
+): IncrementalRequirementCallbacks {
     val envelope =
         Envelope.make(
             EnvelopePart.generateTimes(
@@ -254,11 +297,7 @@ private fun makeCallbacks(length: Distance, complete: Boolean): IncrementalRequi
                 doubleArrayOf(30.0, 30.0)
             )
         )
-    return IncrementalRequirementEnvelopeAdapter(
-        SimpleRollingStock.STANDARD_TRAIN,
-        envelope,
-        complete
-    )
+    return IncrementalRequirementEnvelopeAdapter(rollingStock, envelope, complete)
 }
 
 fun <T> List<StaticIdx<T>>.toIdxList(): StaticIdxList<T> {

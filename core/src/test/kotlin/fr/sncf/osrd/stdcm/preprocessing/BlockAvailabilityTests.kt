@@ -312,6 +312,7 @@ class BlockAvailabilityTests {
                     )
                 )
             )
+        explorer.moveForward()
         val res =
             availability.getAvailability(
                 explorer,
