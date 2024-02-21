@@ -298,6 +298,44 @@ class BlockAvailabilityTests {
         )
     }
 
+    /**
+     * Test that we can check for availability over the full path, even after partial calls
+     * (requires automaton reset)
+     */
+    @Test
+    fun testFullPathAfterPartialCalls() {
+        var explorer = makeExplorer(5, 4)
+        val occupancyEnd = 6000.0
+        val availability =
+            makeBlockAvailability(
+                infra,
+                listOf(
+                    SpacingRequirement(zoneNames[0], 0.0, occupancyEnd, true),
+                )
+            )
+        val firstSimEndOffset = explorer.getSimulatedLength()
+        availability.getAvailability(explorer, Offset(0.meters), firstSimEndOffset, 0.0)
+        explorer =
+            explorer.addEnvelope(
+                Envelope.make(
+                    EnvelopePart.generateTimes(
+                        listOf(EnvelopeProfile.CONSTANT_SPEED),
+                        doubleArrayOf(0.0, blockLengths.last().distance.meters),
+                        doubleArrayOf(30.0, 30.0)
+                    )
+                )
+            )
+        explorer.moveForward()
+        val res =
+            availability.getAvailability(
+                explorer,
+                Offset(0.meters),
+                explorer.getSimulatedLength(),
+                0.0
+            ) as BlockAvailabilityInterface.Unavailable
+        assertEquals(occupancyEnd, res.duration)
+    }
+
     /** Test that we still "use" the first zone, even when checking the conflicts for each block */
     @Test
     fun testPartialResourceUse() {

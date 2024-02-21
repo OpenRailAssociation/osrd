@@ -34,8 +34,11 @@ interface InfraExplorerWithEnvelope : InfraExplorer {
      */
     fun interpolateTimeClamp(pathOffset: Offset<Path>): Double
 
-    /** Returns the underlying spacing requirement automaton */
+    /** Returns the spacing requirements since the last update */
     fun getSpacingRequirements(): List<ResultTrain.SpacingRequirement>
+
+    /** Returns all the spacing requirements over the whole path */
+    fun getFullSpacingRequirements(): List<ResultTrain.SpacingRequirement>
 
     /** Returns the length of the simulated section of the path */
     fun getSimulatedLength(): Length<Path>

@@ -28,7 +28,10 @@ data class BlockAvailability(
         endOffset: Offset<Path>,
         startTime: Double
     ): BlockAvailabilityInterface.Availability {
-        val spacingRequirements = infraExplorer.getSpacingRequirements()
+        val needFullRequirements = startOffset < infraExplorer.getPredecessorLength()
+        val spacingRequirements =
+            if (needFullRequirements) infraExplorer.getFullSpacingRequirements()
+            else infraExplorer.getSpacingRequirements()
         val pathStartTime = startTime - infraExplorer.interpolateTimeClamp(startOffset)
         val endTime = infraExplorer.interpolateTimeClamp(endOffset) + pathStartTime
 
