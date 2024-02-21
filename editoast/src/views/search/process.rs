@@ -95,6 +95,9 @@ impl QueryContext {
 /// - ilike : string -> (string | null) -> (bool | null)
 /// - search : string -> (string | null) -> bool
 /// - =i : string -> string -> bool
+/// - to_string : (int | null) -> string
+/// - to_string : (float | null) -> string
+/// - to_string : (string | null) -> string
 /// - list : variadic string -> string list
 /// - contains : string list -> string list -> bool
 pub fn create_processing_context() -> QueryContext {
@@ -175,6 +178,24 @@ pub fn create_processing_context() -> QueryContext {
         Rc::new(|left, right| {
             Ok(SqlQuery::infix("ILIKE", left, right.into()))
         })
+    );
+    let to_string = Rc::new(|value: Option<TypedAst>| {
+        Ok(SqlQuery::cast(
+            value.unwrap_or(TypedAst::String(Default::default())),
+            "TEXT",
+        ))
+    });
+    context.def_function_1::<dsl::Nullable<dsl::Ersatz<dsl::String>>, dsl::Sql<dsl::String>>(
+        "to_string",
+        to_string.clone(),
+    );
+    context.def_function_1::<dsl::Nullable<dsl::Ersatz<dsl::Integer>>, dsl::Sql<dsl::String>>(
+        "to_string",
+        to_string.clone(),
+    );
+    context.def_function_1::<dsl::Nullable<dsl::Ersatz<dsl::Float>>, dsl::Sql<dsl::String>>(
+        "to_string",
+        to_string.clone(),
     );
     context.def_function(
         "list",
