@@ -421,6 +421,7 @@ const AllowancesActions = <T extends RangeAllowanceForm | EngineeringAllowanceFo
             type="button"
             onClick={() => handleManageAllowance(ActionOnAllowance.add)}
             disabled={!isValid || isMarginDefinedEverywhere}
+            data-testid="add-allowance-button"
           >
             <FaPlus />
           </button>

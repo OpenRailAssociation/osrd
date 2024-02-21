@@ -321,6 +321,7 @@ function TimetableTrainCard({
                 aria-label={t('timetable.update')}
                 title={t('timetable.update')}
                 onClick={editTrainSchedule}
+                data-testid="edit-train"
               >
                 <Pencil />
               </button>

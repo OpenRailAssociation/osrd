@@ -1,65 +1,25 @@
-import { test, expect } from '@playwright/test';
-import PATH_VARIABLES from './assets/operationStudies/testVariablesPaths';
+import { test } from '@playwright/test';
+import { v4 as uuidv4 } from 'uuid';
 import PlaywrightScenarioPage from './pages/scenario-page-model';
-import createCompleteScenario from './assets/utils';
+import createCompleteScenario, { allowancesManagement } from './assets/utils';
 
-test.describe('Testing if all mandatory elements simulation configuration are loaded in operationnal studies app', () => {
+let scenarioName: string;
+let scenarioPage: PlaywrightScenarioPage;
+
+test.describe('Testing if all mandatory elements simulation configuration are loaded in operationnal studies app (enabled)', () => {
   test.beforeEach(async ({ page }) => {
-    test.setTimeout(120000); // 2min
-    await createCompleteScenario(
-      page,
-      '_@Test integration scenario',
-      'Train Schedule 1',
-      '1',
-      '15',
-      PATH_VARIABLES.originSearch,
-      PATH_VARIABLES.destinationSearch,
-      '16 km'
-    );
+    scenarioPage = new PlaywrightScenarioPage(page);
+    scenarioName = `Train_Schedule_${uuidv4().slice(0, 5)}`;
+    await createCompleteScenario(page, scenarioName, '1', '15');
   });
 
   // ***************** Test apply allowances *****************
 
-  test('Testing allowances', async ({ page }) => {
-    const scenarioPage = new PlaywrightScenarioPage(page);
-
-    await expect(scenarioPage.getTimetableList).toBeVisible();
-
-    await scenarioPage.clickBtnByName('Afficher/masquer le détail des trains');
-
-    await scenarioPage.getBtnByName(/Train Schedule 1/).hover();
-
-    await scenarioPage.clickBtnByName('Modifier');
-
-    await scenarioPage.openAllowancesModule();
-    await expect(scenarioPage.getAllowancesModule).toBeVisible();
-
-    // Add and check standard allowance
-    await scenarioPage.setStandardAllowance();
-    await scenarioPage.clickBtnByName('Modifier le train');
-
-    expect(await scenarioPage.isAllowanceWorking()).toEqual(true);
-
-    await scenarioPage.getBtnByName(/Train Schedule 1/).hover();
-    await scenarioPage.clickBtnByName('Modifier');
-    await scenarioPage.openAllowancesModule();
-    await expect(scenarioPage.getAllowancesModule).toBeVisible();
-
-    // Add and check engineering allowance
-    await scenarioPage.setEngineeringAllowance();
-    await scenarioPage.clickSuccessBtn();
-    expect(scenarioPage.checkAllowanceEngineeringBtn());
-    await scenarioPage.clickBtnByName('Modifier le train');
-    await scenarioPage.page.waitForSelector('.scenario-details-name');
-
-    expect(await scenarioPage.isAllowanceWorking()).toEqual(true);
+  test('Testing standard allowances', async () => {
+    await allowancesManagement(scenarioPage, scenarioName, 'standard');
   });
 
-  // ***************** Deleting train *****************
-
-  test.afterEach(async ({ page }) => {
-    const scenarioPage = new PlaywrightScenarioPage(page);
-    await scenarioPage.getBtnByName(/Train Schedule 1/).hover();
-    await scenarioPage.page.getByRole('button', { name: 'Supprimer' }).click();
+  test('Testing engineering allowances', async () => {
+    await allowancesManagement(scenarioPage, scenarioName, 'engineering');
   });
 });

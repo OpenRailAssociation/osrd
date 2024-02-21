@@ -89,8 +89,6 @@ class PlaywrightScenarioPage {
 
   readonly getAllowancesEngineeringSettings: Locator;
 
-  readonly getAllowancesEngineeringBtn: Locator;
-
   readonly getSuccessBtn: Locator;
 
   constructor(readonly page: Page) {
@@ -150,13 +148,9 @@ class PlaywrightScenarioPage {
     this.getAverageEnergyConsumed = page.getByTestId('average-energy-consumed');
     this.getAllowancesEngineeringSettings = page
       .getByTestId('engineering-allowance-group')
+      .last()
       .getByTestId('allowances-engineering-allowance-input');
-    this.getAllowancesEngineeringBtn = page.getByTestId('engineering-allowance');
-    this.getSuccessBtn = page
-      .locator('div')
-      .filter({ hasText: /^●Linéaire●Mareco s%min\/100kms$/ })
-      .getByRole('button')
-      .nth(1);
+    this.getSuccessBtn = page.getByTestId('add-allowance-button');
     this.getScenarioUpdateConfirmBtn = page.locator('#modal-content').getByTestId('updateScenario');
   }
 
@@ -313,10 +307,6 @@ class PlaywrightScenarioPage {
     await this.page.keyboard.press('Digit1');
     await this.page.keyboard.press('Digit8');
     await this.page.keyboard.press('Digit0');
-  }
-
-  async checkAllowanceEngineeringBtn() {
-    await expect(this.getAllowancesEngineeringBtn).toBeVisible();
   }
 
   async clickSuccessBtn() {

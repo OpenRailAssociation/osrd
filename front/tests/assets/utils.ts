@@ -1,80 +1,11 @@
-import { expect, Page, request } from '@playwright/test';
+import { Page, request, expect } from '@playwright/test';
 import type { Project, Scenario, Study, RollingStock, Infra } from 'common/api/osrdEditoastApi';
+import { v4 as uuidv4 } from 'uuid';
 import { PlaywrightHomePage } from '../pages/home-page-model';
+import scenarioData from './operationStudies/scenario.json';
+
 import RollingStockSelectorPage from '../pages/rolling-stock-selector-page';
-import PlaywrightMap, { selectPointOnMapProps } from '../pages/map-model';
 import PlaywrightScenarioPage from '../pages/scenario-page-model';
-import { ProjectPage } from '../pages/project-page-model';
-import { StudyPage } from '../pages/study-page-model';
-
-export default async function createCompleteScenario(
-  page: Page,
-  scenarioName: string,
-  trainScheduleName: string,
-  trainCount: string,
-  delta: string,
-  originSearch: selectPointOnMapProps,
-  destinationSearch: selectPointOnMapProps,
-  pathfindingDistance: string | RegExp
-) {
-  const playwrightHomePage = new PlaywrightHomePage(page);
-  const scenarioPage = new PlaywrightScenarioPage(page);
-  const projectPage = new ProjectPage(page);
-  const studyPage = new StudyPage(page);
-  const playwrightMap = new PlaywrightMap(playwrightHomePage.page);
-
-  await playwrightHomePage.goToHomePage();
-
-  // Real click on project, study, scenario
-  await playwrightHomePage.goToOperationalStudiesPage();
-  await projectPage.openProjectByTestId('_@Test integration project');
-  await studyPage.openStudyByTestId('_@Test integration study');
-
-  await scenarioPage.openScenarioCreationModal();
-  await scenarioPage.setScenarioName(scenarioName);
-  await scenarioPage.setScenarioInfraByName('small_infra');
-  const createButton = playwrightHomePage.page.getByText('Créer le scénario');
-  await createButton.click();
-  await playwrightMap.page.waitForTimeout(2000);
-
-  await scenarioPage.checkInfraLoaded();
-  await playwrightHomePage.page.getByTestId('scenarios-add-train-schedule-button').click();
-
-  await scenarioPage.setTrainScheduleName(trainScheduleName);
-  await scenarioPage.setNumberOfTrains(trainCount);
-  await scenarioPage.setDelta(delta);
-
-  // ***************** Select Rolling Stock *****************
-  const playwrightRollingstockModalPage = new RollingStockSelectorPage(playwrightHomePage.page);
-  await playwrightRollingstockModalPage.openRollingstockModal();
-
-  const rollingstockCard = playwrightRollingstockModalPage.getRollingstockCardByTestID(
-    'rollingstock-rollingstock-1500-25000'
-  );
-  await rollingstockCard.click();
-  await rollingstockCard.locator('button').click();
-
-  // ***************** Select Origin/Destination *****************
-  await scenarioPage.openTabByDataId('tab-pathfinding');
-  await playwrightMap.page.waitForTimeout(2000);
-  const itinerary = scenarioPage.getItineraryModule;
-  await expect(itinerary).toBeVisible();
-  await expect(scenarioPage.getMapModule).toBeVisible();
-
-  // Search and select origin
-  await playwrightMap.selectOrigin(originSearch);
-
-  // Search and select destination
-  await playwrightMap.selectDestination(destinationSearch);
-
-  await scenarioPage.checkPathfindingDistance(pathfindingDistance);
-
-  // ***************** Create train *****************
-  await scenarioPage.addTrainSchedule();
-  await scenarioPage.page.waitForSelector('.dots-loader', { state: 'hidden' });
-  await scenarioPage.checkToastSNCFTitle();
-  await scenarioPage.returnSimulationResult();
-}
 
 // API requests
 
@@ -98,14 +29,14 @@ export const postApiRequest = async <T>(
   params?: { [key: string]: string | number | boolean }
 ) => {
   const apiContext = await getApiContext();
-  const newProject = await apiContext.post(url, { data, params });
-  return newProject.json();
+  const response = await apiContext.post(url, { data, params });
+  return response.json();
 };
 
 export const deleteApiRequest = async (url: string) => {
   const apiContext = await getApiContext();
-  const deleteProject = apiContext.delete(url);
-  return deleteProject;
+  const response = apiContext.delete(url);
+  return response;
 };
 
 // API calls for beforeAll setup in tests
@@ -147,3 +78,93 @@ export const getRollingStock = async () => {
   ) as RollingStock;
   return rollingStock;
 };
+
+// Scenario creation
+
+export default async function createCompleteScenario(
+  page: Page,
+  trainScheduleName: string,
+  trainCount: string,
+  delta: string
+) {
+  const smallInfra = (await getInfra()) as Infra;
+  const project = await getProject();
+  const study = await getStudy(project.id);
+  const rollingStock = await getRollingStock();
+
+  const scenario = await postApiRequest(
+    `/api/projects/${project.id}/studies/${study.id}/scenarios`,
+    {
+      ...scenarioData,
+      name: `${scenarioData.name} ${uuidv4()}`,
+      study_id: study.id,
+      infra_id: smallInfra.id,
+    }
+  );
+
+  const playwrightHomePage = new PlaywrightHomePage(page);
+  const scenarioPage = new PlaywrightScenarioPage(page);
+
+  await page.goto(
+    `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenario.id}`
+  );
+
+  await playwrightHomePage.page.getByTestId('scenarios-add-train-schedule-button').click();
+
+  await scenarioPage.setTrainScheduleName(trainScheduleName);
+  await scenarioPage.setNumberOfTrains(trainCount);
+  await scenarioPage.setDelta(delta);
+
+  // ***************** Select Rolling Stock *****************
+  const playwrightRollingstockModalPage = new RollingStockSelectorPage(playwrightHomePage.page);
+  await playwrightRollingstockModalPage.openRollingstockModal();
+
+  await playwrightRollingstockModalPage.searchRollingstock('rollingstock_1500_25000_test_e2e');
+
+  const rollingstockCard = playwrightRollingstockModalPage.getRollingstockCardByTestID(
+    `rollingstock-${rollingStock.name}`
+  );
+
+  await rollingstockCard.click();
+  await rollingstockCard.locator('button').click();
+
+  // ***************** Select Origin/Destination *****************
+  await scenarioPage.openTabByDataId('tab-pathfinding');
+  await scenarioPage.getPathfindingByTriGramSearch('MWS', 'NES');
+
+  // ***************** Create train *****************
+  await scenarioPage.addTrainSchedule();
+  await scenarioPage.page.waitForSelector('.dots-loader', { state: 'hidden' });
+  await scenarioPage.checkToastSNCFTitle();
+  await scenarioPage.returnSimulationResult();
+}
+
+// Allowances management
+
+export async function allowancesManagement(
+  scenarioPage: PlaywrightScenarioPage,
+  scenarioName: string,
+  allowanceType: 'standard' | 'engineering'
+) {
+  expect(scenarioPage.getTimetableList).toBeVisible();
+
+  await scenarioPage.getBtnByName(scenarioName).hover();
+  await scenarioPage.page.getByTestId('edit-train').click();
+
+  await scenarioPage.openAllowancesModule();
+  expect(scenarioPage.getAllowancesModule).toBeVisible();
+
+  if (allowanceType === 'standard') {
+    await scenarioPage.setStandardAllowance();
+  } else {
+    await scenarioPage.setEngineeringAllowance();
+    await scenarioPage.clickSuccessBtn();
+    expect(scenarioPage.getAllowancesEngineeringSettings).toHaveAttribute('disabled');
+  }
+
+  await scenarioPage.page.getByTestId('submit-edit-train-schedule').click();
+  await scenarioPage.page.waitForSelector('.scenario-details-name');
+  expect(await scenarioPage.isAllowanceWorking()).toEqual(true);
+
+  // TODO: check if the allowances are taken into account in the scenario page (waiting for issue # 6695 to be fixed)
+}
