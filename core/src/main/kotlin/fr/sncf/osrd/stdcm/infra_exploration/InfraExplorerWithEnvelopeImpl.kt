@@ -68,6 +68,29 @@ data class InfraExplorerWithEnvelopeImpl(
         return spacingRequirementsCache!!
     }
 
+    override fun getFullSpacingRequirements(): List<SpacingRequirement> {
+        val simulationComplete = getIncrementalPath().pathComplete && getLookahead().size == 0
+        // We need a new automaton to get the resource uses over the whole path, and not just since
+        // the last update
+        val newAutomaton =
+            SpacingRequirementAutomaton(
+                spacingRequirementAutomaton.rawInfra,
+                spacingRequirementAutomaton.loadedSignalInfra,
+                spacingRequirementAutomaton.blockInfra,
+                spacingRequirementAutomaton.simulator,
+                IncrementalRequirementEnvelopeAdapter(
+                    rollingStock,
+                    getFullEnvelope(),
+                    simulationComplete
+                ),
+                getIncrementalPath(),
+            )
+        val res =
+            newAutomaton.processPathUpdate() as? SpacingRequirements
+                ?: throw BlockAvailabilityInterface.NotEnoughLookaheadError()
+        return res.requirements
+    }
+
     override fun moveForward() {
         infraExplorer.moveForward()
         spacingRequirementsCache = null
