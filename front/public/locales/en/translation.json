@@ -20,7 +20,7 @@
     "help-display": "Show help",
     "help-legend": "Show legend",
     "itinerary": "Route",
-    "leaveEditionMode":"You are about to exit edit mode, any unsaved changes will be lost.",
+    "leaveEditionMode": "You are about to exit edit mode, any unsaved changes will be lost.",
     "loading": "Loading...",
     "next": "Next",
     "no": "No",
@@ -127,7 +127,7 @@
         },
         "out_of_range": {
           "name": "Invalid value",
-          "description": "Object « {{obj_id}} » has the field « {{field}} » with an invalid value. Value must be in the following range {{expected_range}}."
+          "description": "Object « {{obj_id}} » has the field « {{field}} » with an invalid value. Value must be in the following range [{{expected_range}}]."
         },
         "overlapping_speed_sections": {
           "name": "Overlapping of speed limits",
