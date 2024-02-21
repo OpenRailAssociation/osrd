@@ -15,6 +15,7 @@ type IntervalsEditorFormProps = {
   setData: (newData: IntervalItem[]) => void;
   setSelectedIntervalIndex: (selectedIntervalIndex: number) => void;
   totalLength: number;
+  defaultValue: string | number;
 };
 
 const IntervalsEditorCommonForm = ({
@@ -24,6 +25,7 @@ const IntervalsEditorCommonForm = ({
   setData,
   setSelectedIntervalIndex,
   totalLength,
+  defaultValue,
 }: IntervalsEditorFormProps) => {
   const { t } = useTranslation('common/common');
 
@@ -47,7 +49,10 @@ const IntervalsEditorCommonForm = ({
         context,
         false
       );
-      const fixedResults = fixLinearMetadataItems(result?.filter(notEmpty), totalLength);
+      const fixedResults = fixLinearMetadataItems(result.filter(notEmpty), totalLength, {
+        fieldName: 'value',
+        defaultValue,
+      });
       setData(fixedResults);
 
       // update the selected interval if needed

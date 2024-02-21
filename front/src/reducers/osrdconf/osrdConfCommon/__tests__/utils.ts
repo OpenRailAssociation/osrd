@@ -2,6 +2,9 @@ import { omit } from 'lodash';
 
 import type { PointOnMap } from 'applications/operationalStudies/consts';
 import type { Allowance, Infra } from 'common/api/osrdEditoastApi';
+import NO_POWER_RESTRICTION from 'modules/trainschedule/components/ManageTrainSchedule/consts';
+import displayPowerRestrictionIntervals from 'modules/trainschedule/components/ManageTrainSchedule/helpers/displayPowerRestrictionIntervals';
+import mergePowerRestrictionRanges from 'modules/trainschedule/components/ManageTrainSchedule/helpers/mergePowerRestrictionRanges';
 import type { OsrdConfState } from 'reducers/osrdconf/consts';
 import type { OperationalStudiesConfSlice } from 'reducers/osrdconf/operationalStudiesConf';
 import { defaultCommonConf } from 'reducers/osrdconf/osrdConfCommon';
@@ -567,6 +570,27 @@ const testCommonConfReducers = (slice: OperationalStudiesConfSlice | StdcmConfSl
     defaultStore.dispatch(slice.actions.updatePowerRestrictionRanges(newPowerRestrictionRanges));
     const state = defaultStore.getState()[slice.name];
     expect(state.powerRestrictionRanges).toStrictEqual(newPowerRestrictionRanges);
+  });
+
+  describe('Testing updated intervals on power restriction selection', () => {
+    it('should correctly handle intervals cuts in relation to electrifications and power restrictions', () => {
+      const formattedPathElectrificationRanges =
+        testDataBuilder.buildFormattedPathElectrificationRanges();
+      const powerRestrictionRanges = testDataBuilder.buildFormattedPowerRestrictionRanges();
+      const formattedIntervals = displayPowerRestrictionIntervals(
+        formattedPathElectrificationRanges,
+        powerRestrictionRanges
+      );
+      const expectedIntervals = testDataBuilder.buildExpectedIntervals();
+      expect(formattedIntervals).toEqual(expectedIntervals);
+    });
+    it('should fuse intervals correctly, and match powerRestrictionRanges', () => {
+      const powerRestrictionRanges = testDataBuilder.buildIntervals();
+      const expectedIntervals = [
+        { begin_position: 0, end_position: 25, power_restriction_code: NO_POWER_RESTRICTION },
+      ];
+      expect(expectedIntervals).toEqual(mergePowerRestrictionRanges(powerRestrictionRanges));
+    });
   });
 
   it('should handle updateTrainScheduleIDsToModify', () => {

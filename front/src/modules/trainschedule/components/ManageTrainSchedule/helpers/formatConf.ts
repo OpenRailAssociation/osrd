@@ -1,26 +1,12 @@
-import { isEmpty } from 'lodash';
 import type { Dispatch } from 'redux';
 
-import type { PowerRestrictionRange } from 'applications/operationalStudies/consts';
 import { formatAllowances } from 'modules/trainschedule/components/ManageTrainSchedule/Allowances/helpers';
-import { NO_POWER_RESTRICTION } from 'modules/trainschedule/components/ManageTrainSchedule/PowerRestrictionsSelector';
 import { setFailure } from 'reducers/main';
 import type { OsrdConfState } from 'reducers/osrdconf/consts';
 import { kmhToMs } from 'utils/physics';
 import { time2sec } from 'utils/timeManipulation';
 
-const formatPowerRestrictionRanges = (powerRestrictionRanges: PowerRestrictionRange[]) => {
-  if (isEmpty(powerRestrictionRanges) || powerRestrictionRanges[0].value === NO_POWER_RESTRICTION) {
-    return null;
-  }
-  return powerRestrictionRanges
-    .filter((powerRestrictionRange) => powerRestrictionRange.value !== NO_POWER_RESTRICTION)
-    .map((powerRestrictionRange) => ({
-      begin_position: powerRestrictionRange.begin,
-      end_position: powerRestrictionRange.end,
-      power_restriction_code: powerRestrictionRange.value,
-    }));
-};
+import mergePowerRestrictionRanges from './mergePowerRestrictionRanges';
 
 export default function formatConf(
   dispatch: Dispatch,
@@ -125,7 +111,7 @@ export default function formatConf(
       rolling_stock_id: osrdconf.rollingStockID as number,
       comfort: osrdconf.rollingStockComfort,
       speed_limit_tags: osrdconf.speedLimitByTag,
-      power_restriction_ranges: formatPowerRestrictionRanges(osrdconf.powerRestrictionRanges),
+      power_restriction_ranges: mergePowerRestrictionRanges(osrdconf.powerRestrictionRanges),
       options: {
         ignore_electrical_profiles: !osrdconf.usingElectricalProfiles,
       },

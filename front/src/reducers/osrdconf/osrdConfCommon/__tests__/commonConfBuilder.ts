@@ -2,7 +2,8 @@ import type { Feature } from 'geojson';
 
 import type { SwitchType } from 'applications/editor/tools/switchEdition/types';
 import type { PointOnMap, PowerRestrictionRange } from 'applications/operationalStudies/consts';
-import type { Allowance, PathResponse } from 'common/api/osrdEditoastApi';
+import type { Allowance, PathResponse, RangedValue } from 'common/api/osrdEditoastApi';
+import NO_POWER_RESTRICTION from 'modules/trainschedule/components/ManageTrainSchedule/consts';
 import type { OsrdConfState } from 'reducers/osrdconf/consts';
 
 export default function commonConfBuilder() {
@@ -117,6 +118,35 @@ export default function commonConfBuilder() {
         begin: 1,
         end: 2,
       },
+    ],
+
+    buildFormattedPathElectrificationRanges: (): RangedValue[] => [
+      { begin: 0, end: 10, value: '1500V' },
+      { begin: 10, end: 20, value: '25000V' },
+      { begin: 20, end: 25, value: '1500V' },
+    ],
+
+    buildFormattedPowerRestrictionRanges: (): PowerRestrictionRange[] => [
+      { begin: 0, end: 10, value: NO_POWER_RESTRICTION },
+      { begin: 10, end: 12, value: 'C1US' },
+      { begin: 12, end: 22, value: 'C2US' },
+      { begin: 22, end: 25, value: NO_POWER_RESTRICTION },
+    ],
+
+    buildExpectedIntervals: (): PowerRestrictionRange[] => [
+      { begin: 0, end: 10, value: NO_POWER_RESTRICTION },
+      { begin: 10, end: 12, value: 'C1US' },
+      { begin: 12, end: 20, value: 'C2US' },
+      { begin: 20, end: 22, value: 'C2US' },
+      { begin: 22, end: 25, value: NO_POWER_RESTRICTION },
+    ],
+
+    buildIntervals: (): PowerRestrictionRange[] => [
+      { begin: 0, end: 10, value: NO_POWER_RESTRICTION },
+      { begin: 10, end: 12, value: NO_POWER_RESTRICTION },
+      { begin: 12, end: 17, value: NO_POWER_RESTRICTION },
+      { begin: 17, end: 20, value: NO_POWER_RESTRICTION },
+      { begin: 20, end: 25, value: NO_POWER_RESTRICTION },
     ],
 
     buildFeatureInfoClick: (
