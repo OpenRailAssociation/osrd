@@ -315,6 +315,7 @@ const IntervalsEditor = (props: IntervalsEditorProps) => {
               setData={setData}
               setSelectedIntervalIndex={setSelected}
               totalLength={totalLength}
+              defaultValue={defaultValue}
             />
             {formContent}
           </div>

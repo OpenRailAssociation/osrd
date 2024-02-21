@@ -387,20 +387,6 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
           />
         )}
 
-        {/* Display the operational points */}
-        {operationalPoints4viz.map((operationalPoint) => (
-          <div
-            key={`op-${operationalPoint.id}`}
-            className="operational-point"
-            style={{
-              position: 'absolute',
-              height: '100%',
-              left: `${operationalPoint.positionInPx}px`,
-              borderLeft: '2px dashed #a0a0a0',
-            }}
-          />
-        ))}
-
         {/* Create one div per item for the X axis */}
         {data4viz.map((segment) => (
           <IntervalItem

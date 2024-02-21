@@ -14,7 +14,9 @@ import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
 import { setWarning } from 'reducers/main';
 import { useAppDispatch } from 'store';
 
-export const NO_POWER_RESTRICTION = 'NO_POWER_RESTRICTION';
+import NO_POWER_RESTRICTION from './consts';
+import displayPowerRestrictionIntervals from './helpers/displayPowerRestrictionIntervals';
+
 /** Arbitrairy default segment length (1km) */
 const DEFAULT_SEGMENT_LENGTH = 1000;
 
@@ -184,6 +186,14 @@ const PowerRestrictionsSelector = ({
       });
     }
   }, [powerRestrictionRanges]);
+
+  useEffect(() => {
+    const formattedPowerRestrictionRanges = displayPowerRestrictionIntervals(
+      formattedPathElectrificationRanges,
+      powerRestrictionRanges
+    );
+    dispatch(updatePowerRestrictionRanges(formattedPowerRestrictionRanges));
+  }, [formattedPathElectrificationRanges]);
 
   return (
     <div className="osrd-config-item mb-2">
