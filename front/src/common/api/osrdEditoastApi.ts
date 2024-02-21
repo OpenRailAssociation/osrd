@@ -266,6 +266,16 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['infra', 'pathfinding'],
       }),
+      getInfraByInfraIdRoutesNodes: build.query<
+        GetInfraByInfraIdRoutesNodesApiResponse,
+        GetInfraByInfraIdRoutesNodesApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/infra/${queryArg.infraId}/routes/nodes/`,
+          body: queryArg.body,
+        }),
+        providesTags: ['infra', 'routes'],
+      }),
       getInfraByInfraIdRoutesTrackRanges: build.query<
         GetInfraByInfraIdRoutesTrackRangesApiResponse,
         GetInfraByInfraIdRoutesTrackRangesApiArg
@@ -951,6 +961,16 @@ export type PostInfraByInfraIdPathfindingApiArg = {
   infraId: number;
   number?: number | null;
   pathfindingInput: PathfindingInput;
+};
+export type GetInfraByInfraIdRoutesNodesApiResponse =
+  /** status 200 A list of routes IDs */ string[];
+export type GetInfraByInfraIdRoutesNodesApiArg = {
+  /** The ID of the infra to fix */
+  infraId: number;
+  /** A mapping node_id -> node_state | null */
+  body: {
+    [key: string]: string | null;
+  };
 };
 export type GetInfraByInfraIdRoutesTrackRangesApiResponse =
   /** status 200 Foreach route, all the track ranges in it or an error */ (

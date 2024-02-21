@@ -6999,6 +6999,40 @@ paths:
       tags:
       - infra
       - pathfinding
+  /infra/{infra_id}/routes/nodes/:
+    get:
+      description: Return all routes that depend on the position of the specified nodes
+      parameters:
+      - description: The ID of the infra to fix
+        in: path
+        name: infra_id
+        required: true
+        schema:
+          format: int64
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              additionalProperties:
+                nullable: true
+                type: string
+              type: object
+        description: A mapping node_id -> node_state | null
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                items:
+                  type: string
+                type: array
+          description: A list of routes IDs
+      summary: Return all routes that depend on the position of the specified nodes
+      tags:
+      - infra
+      - routes
   /infra/{infra_id}/routes/track_ranges/:
     get:
       description: Compute the track ranges through which routes passes.
