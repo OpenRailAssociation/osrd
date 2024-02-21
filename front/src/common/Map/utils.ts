@@ -17,7 +17,7 @@ type OnResultSearchClickType = {
   map: MapState;
   updateExtViewport: (viewport: Partial<Viewport>) => void;
   dispatch: AppDispatch;
-  setSearch?: React.Dispatch<React.SetStateAction<string>>;
+  setSearchTerm?: React.Dispatch<React.SetStateAction<string>>;
   title: string;
 };
 
@@ -26,10 +26,10 @@ export const onResultSearchClick = ({
   map,
   updateExtViewport,
   dispatch,
-  setSearch,
+  setSearchTerm,
   title,
 }: OnResultSearchClickType) => {
-  if (setSearch) setSearch(title);
+  if (setSearchTerm) setSearchTerm(title);
   const coordinates = getCoordinates(result);
 
   const center = turfCenter(coordinates as AllGeoJSON);

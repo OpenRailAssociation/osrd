@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getMap } from 'reducers/map/selectors';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import { createMapSearchQuery, onResultSearchClick } from 'common/Map/utils';
+import { onResultSearchClick } from 'common/Map/utils';
 import { useDebounce } from 'utils/helpers';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
@@ -13,9 +13,9 @@ import { useAppDispatch } from 'store';
 import type { Viewport } from 'reducers/map';
 import { useInfraID } from 'common/osrdContext';
 import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
-import StationCardsList from './StationCardList';
+import StationCard from 'common/StationCard';
 
-const stationCHcodes = ['', '00', 'BV'];
+const mainStationYardNames = ['', '00', 'BV'];
 
 type MapSearchStationProps = {
   updateExtViewport: (viewport: Partial<Viewport>) => void;
@@ -24,12 +24,11 @@ type MapSearchStationProps = {
 
 const MapSearchStation = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchStationProps) => {
   const map = useSelector(getMap);
-  const [chCodeFilter, setChCodeFilter] = useState('');
-  const [bvOnly, toggleBvOnly] = useState(false);
   const [searchResults, setSearchResults] = useState<SearchResultItemOperationalPoint[]>([]);
-  const [searchState, setSearch] = useState('');
-  const [trigramResults, setTrigramResults] = useState<SearchResultItemOperationalPoint[]>([]);
-  const [nameResults, setNameResults] = useState<SearchResultItemOperationalPoint[]>([]);
+  const [orderedResults, setOrderedResults] = useState<SearchResultItemOperationalPoint[]>([]);
+  const [chCodeFilter, setChCodeFilter] = useState('');
+  const [mainStationsOnly, setMainStationsOnly] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
   const infraID = useInfraID();
 
   const [postSearch] = osrdEditoastApi.endpoints.postSearch.useMutation();
@@ -37,13 +36,7 @@ const MapSearchStation = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchS
 
   const { t } = useTranslation(['map-search']);
 
-  const debouncedSearchTerm = useDebounce(searchState, 300);
-  const isSearchingByName = (searchState.charCodeAt(0) ?? 0) > 57;
-
-  const resetSearchResult = () => {
-    setNameResults([]);
-    setTrigramResults([]);
-  };
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
   // Create playload based on the type of search "name" or "trigram"
   const createPayload = (searchQuery: SearchQuery) => ({
@@ -52,18 +45,31 @@ const MapSearchStation = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchS
   });
 
   // Sort on name, and on yardname
-  const orderResults = (results: SearchResultItemOperationalPoint[]) =>
-    results.slice().sort((a, b) => a.name.localeCompare(b.name) || a.ch.localeCompare(b.ch));
+  const orderAndFilterResults = () =>
+    [...searchResults]
+      .map((result) => ({
+        ...result,
+        // remove yard name information when it's a main station (aka "BV") to ensure it'll be on top of search results
+        ch: mainStationYardNames.includes(result.ch) ? '' : result.ch,
+      }))
+      // Begin to filter with main stations (CH = ''), if not checked, filter on chCode input field
+      .filter((result) => {
+        if (mainStationsOnly) return result.ch === '';
+        return chCodeFilter !== ''
+          ? chCodeFilter.trim().toLowerCase() === result.ch.toLocaleLowerCase()
+          : true;
+      })
+      .sort((a, b) => a.name.localeCompare(b.name) || a.ch.localeCompare(b.ch));
 
   const searchOperationalPoints = async () => {
-    if (!isSearchingByName && searchState.length !== 6) return;
-    const isSearchingByTrigram = isSearchingByName && searchState.length < 3;
+    const isSearchingByTrigram = !Number.isInteger(+debouncedSearchTerm) && searchTerm.length < 4;
     const searchQuery = isSearchingByTrigram
-      ? ['=i', ['trigram'], searchState]
-      : createMapSearchQuery(searchState, {
-          codeColumn: 'ci',
-          nameColumn: 'name',
-        });
+      ? ['=i', ['trigram'], debouncedSearchTerm]
+      : [
+          'or',
+          ['search', ['name'], debouncedSearchTerm],
+          ['like', ['to_string', ['ci']], `%${debouncedSearchTerm}%`],
+        ];
     const payload = createPayload(searchQuery);
 
     await postSearch({
@@ -72,54 +78,24 @@ const MapSearchStation = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchS
     })
       .unwrap()
       .then((results) => {
-        if (isSearchingByTrigram) {
-          setNameResults([]);
-          setTrigramResults(results as SearchResultItemOperationalPoint[]);
-        } else {
-          setTrigramResults([]);
-          setNameResults(orderResults(results as SearchResultItemOperationalPoint[]));
-        }
+        setSearchResults(results as SearchResultItemOperationalPoint[]);
       })
       .catch(() => {
-        resetSearchResult();
+        setSearchResults([]);
       });
-
-    // We need to make a second api call for this case in order to obtain the results of the search by trigram and by name.
-    if (isSearchingByName && searchState.length === 3) {
-      await postSearch({
-        searchPayload: createPayload(['=i', ['trigram'], searchState]),
-      })
-        .unwrap()
-        .then((results) => {
-          setTrigramResults(results as SearchResultItemOperationalPoint[]);
-        })
-        .catch(() => {
-          resetSearchResult();
-        });
-    }
   };
 
   useEffect(() => {
-    if (searchState) {
+    if (debouncedSearchTerm) {
       searchOperationalPoints();
     } else {
-      resetSearchResult();
+      setSearchResults([]);
     }
   }, [debouncedSearchTerm]);
 
   useEffect(() => {
-    let results = [...trigramResults, ...nameResults];
-    if (bvOnly) {
-      results = results.filter((result) => stationCHcodes.includes(result.ch));
-    } else if (chCodeFilter?.trim().length > 0) {
-      results = results.filter((result) => result.ch.startsWith(chCodeFilter.toUpperCase()));
-    }
-    setSearchResults(results);
-  }, [trigramResults, nameResults, bvOnly, chCodeFilter]);
-
-  useEffect(() => {
-    if (bvOnly) setChCodeFilter('');
-  }, [bvOnly]);
+    setOrderedResults(orderAndFilterResults());
+  }, [searchResults, chCodeFilter, mainStationsOnly]);
 
   const onResultClick = (result: SearchResultItemOperationalPoint) => {
     onResultSearchClick({
@@ -128,7 +104,7 @@ const MapSearchStation = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchS
       updateExtViewport,
       dispatch,
       title: result.name,
-      setSearch,
+      setSearchTerm,
     });
     closeMapSearchPopUp();
   };
@@ -143,11 +119,11 @@ const MapSearchStation = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchS
             placeholder={t('map-search:placeholdername')}
             title={t('map-search:placeholdername')}
             type="text"
-            value={searchState}
+            value={searchTerm}
             onChange={(e) => {
-              setSearch(e.target.value);
+              setSearchTerm(e.target.value);
             }}
-            onClear={() => setSearch('')}
+            onClear={() => setSearchTerm('')}
             clearButton
             noMargin
             sm
@@ -164,7 +140,7 @@ const MapSearchStation = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchS
             }}
             onClear={() => setChCodeFilter('')}
             value={chCodeFilter}
-            disabled={bvOnly}
+            disabled={mainStationsOnly}
             clearButton
             noMargin
             sm
@@ -175,8 +151,8 @@ const MapSearchStation = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchS
             type="checkbox"
             label={t('map-search:labelbvonly')}
             id="map-search-station-bv-only"
-            checked={bvOnly}
-            onChange={(e) => toggleBvOnly(e.target.checked)}
+            checked={mainStationsOnly}
+            onChange={() => setMainStationsOnly(!mainStationsOnly)}
           />
         </span>
       </div>
@@ -184,15 +160,20 @@ const MapSearchStation = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchS
         {searchResults.length > 100
           ? t('map-search:resultsCountTooMuch')
           : t('map-search:resultsCount', {
-              count: searchResults.length,
+              count: orderedResults.length,
             })}
       </h2>
       {searchResults.length > 0 && searchResults.length <= 100 && (
-        <StationCardsList
-          operationalPoints={searchResults}
-          stationCHcodes={stationCHcodes}
-          onStationClick={onResultClick}
-        />
+        <div className="search-results">
+          {orderedResults.map((searchResult) => (
+            <div className="mb-1" key={`mapSearchStation-${searchResult.obj_id}`}>
+              <StationCard
+                station={{ ...searchResult, yardname: searchResult.ch }}
+                onClick={() => onResultClick(searchResult)}
+              />
+            </div>
+          ))}
+        </div>
       )}
     </>
   );
