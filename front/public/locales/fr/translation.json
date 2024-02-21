@@ -127,7 +127,7 @@
         },
         "out_of_range": {
           "name": "Valeur invalide",
-          "description": "L’objet « {{obj_id}} » a le champ « {{field}} » avec une valeur invalide. La valeur doit être comprise dans l'intervalle {{expected_range}}."
+          "description": "L’objet « {{obj_id}} » a le champ « {{field}} » avec une valeur invalide. La valeur doit être comprise dans l'intervalle [{{expected_range}}]."
         },
         "overlapping_speed_sections": {
           "name": "Superposition de limites de vitesse",
