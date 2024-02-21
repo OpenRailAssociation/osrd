@@ -19,6 +19,7 @@
   "resultsCount_one": "1 résultat",
   "resultsCount_other": "{{ count }} résultats",
   "resultsCount_zero": "Aucun résultat",
+  "resultsCountTooMuch": "Il y a plus de 100 résultats, merci d'affiner votre recherche.",
   "search": "Rechercher",
   "signal": "Signal",
   "signalbox": "Poste",

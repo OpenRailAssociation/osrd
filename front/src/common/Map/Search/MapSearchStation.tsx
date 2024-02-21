@@ -68,6 +68,7 @@ const MapSearchStation = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchS
 
     await postSearch({
       searchPayload: payload,
+      pageSize: 101,
     })
       .unwrap()
       .then((results) => {
@@ -180,11 +181,13 @@ const MapSearchStation = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchS
         </span>
       </div>
       <h2 className="text-center mt-3">
-        {t('map-search:resultsCount', {
-          count: searchResults.length,
-        })}
+        {searchResults.length > 100
+          ? t('map-search:resultsCountTooMuch')
+          : t('map-search:resultsCount', {
+              count: searchResults.length,
+            })}
       </h2>
-      {searchResults.length > 0 && (
+      {searchResults.length > 0 && searchResults.length <= 100 && (
         <StationCardsList
           operationalPoints={searchResults}
           stationCHcodes={stationCHcodes}
