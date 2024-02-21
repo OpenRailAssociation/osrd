@@ -26,6 +26,10 @@ pub enum SqlQuery {
         operator: String,
         operands: Vec<SqlQuery>,
     },
+    Cast {
+        operand: Box<SqlQuery>,
+        ty: String,
+    },
 }
 
 impl<T> From<T> for SqlQuery
@@ -77,6 +81,13 @@ impl SqlQuery {
         }
     }
 
+    pub fn cast<S: AsRef<str>, V: Into<SqlQuery>>(operand: V, ty: S) -> SqlQuery {
+        Self::Cast {
+            operand: Box::new(operand.into()),
+            ty: ty.as_ref().into(),
+        }
+    }
+
     pub fn into_typed_ast(self, spec: TypeSpec) -> TypedAst {
         TypedAst::Sql(Box::new(self), spec)
     }
@@ -100,6 +111,9 @@ impl SqlQuery {
                 .map(|op| format!("({0})", op.to_sql(string_bindings)))
                 .collect::<Vec<_>>()
                 .join(&format!(" {operator} ")),
+            SqlQuery::Cast { operand, ty } => {
+                format!("({0})::{ty}", operand.to_sql(string_bindings),)
+            }
         }
     }
 }
