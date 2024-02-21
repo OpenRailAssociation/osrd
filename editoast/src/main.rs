@@ -71,22 +71,48 @@ use views::search::{SearchConfig, SearchConfigFinder, SearchConfigStore};
 
 type DbPool = Pool<PgConnection>;
 
-fn init_tracing() {
-    tracing_subscriber::registry()
-        .with(
-            tracing_subscriber::EnvFilter::builder()
-                // Set the default log level to 'info'
-                .with_default_directive(tracing_subscriber::filter::LevelFilter::INFO.into())
-                .from_env_lossy(),
-        )
-        .with(tracing_subscriber::fmt::layer().compact())
-        .init();
+/// The mode editoast is running in
+///
+/// This is used to determine the logging output. For a CLI command, it's better to
+/// log to stderr in order to redirect/pipe stdout. However, for a webservice,
+/// the logs should be written to stdout for several reasons:
+/// - stdout is bufferized, stderr is not
+/// - some tools might parse the service logs and expect them to be on stdout
+/// - we *expect* a webserver to output logging information, so since it's an expected
+///   output (and not extra information), it should be on stdout
+#[derive(Debug, PartialEq)]
+enum EditoastMode {
+    Webservice,
+    Cli,
+}
+
+fn init_tracing(mode: EditoastMode) {
+    let sub = tracing_subscriber::registry().with(
+        tracing_subscriber::EnvFilter::builder()
+            // Set the default log level to 'info'
+            .with_default_directive(tracing_subscriber::filter::LevelFilter::INFO.into())
+            .from_env_lossy(),
+    );
+    let layer = tracing_subscriber::fmt::layer().compact();
+    if mode == EditoastMode::Cli {
+        sub.with(layer.with_writer(std::io::stderr)).init();
+    } else {
+        sub.with(layer).init();
+    }
+}
+
+impl EditoastMode {
+    fn from_client(client: &Client) -> Self {
+        if matches!(client.command, Commands::Runserver(_)) {
+            EditoastMode::Webservice
+        } else {
+            EditoastMode::Cli
+        }
+    }
 }
 
 #[actix_web::main]
 async fn main() {
-    init_tracing();
-
     match run().await {
         Ok(_) => (),
         Err(e) => {
@@ -103,6 +129,8 @@ async fn main() {
 
 async fn run() -> Result<(), Box<dyn Error + Send + Sync>> {
     let client = Client::parse();
+    init_tracing(EditoastMode::from_client(&client));
+
     let pg_config = client.postgres_config;
     let create_db_pool = || {
         Ok::<_, Box<dyn Error + Send + Sync>>(Data::new(get_pool(
