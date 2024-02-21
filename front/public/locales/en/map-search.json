@@ -19,6 +19,7 @@
   "resultsCount_one": "1 result",
   "resultsCount_other": "{{ count }} results",
   "resultsCount_zero": "No results",
+  "resultsCountTooMuch": "There are more than 100 results, please refine your search.",
   "search": "Search",
   "signal": "Signal",
   "signalbox": "Switchbox",
