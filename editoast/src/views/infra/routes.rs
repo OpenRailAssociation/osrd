@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use crate::{
     error::Result,
     infra_cache::{Graph, InfraCache},
@@ -28,6 +30,7 @@ crate::routes! {
     "/routes" => {
         get_routes_track_ranges,
         get_routes_from_waypoint,
+        get_routes_nodes,
     }
 }
 
@@ -163,21 +166,141 @@ async fn get_routes_track_ranges<'a>(
     Ok(Json(result))
 }
 
+/// Return all routes that depend on the position of the specified nodes
+#[utoipa::path(
+    tag = "infra,routes",
+    params(InfraIdParam),
+    request_body(content = HashMap<String, Option<String>>, description = "A mapping node_id -> node_state | null"),
+    responses(
+        (status = 200, body = inline(Vec<String>), description = "A list of routes IDs")
+    ),
+)]
+#[get("/nodes")]
+async fn get_routes_nodes(
+    params: Path<InfraIdParam>,
+    infra_caches: Data<CHashMap<i64, InfraCache>>,
+    db_pool: Data<DbPool>,
+    Json(node_states): Json<HashMap<String, Option<String>>>,
+) -> Result<Json<Vec<String>>> {
+    let infra = match Infra::retrieve(db_pool.clone(), params.infra_id).await? {
+        Some(infra) => infra,
+        None => {
+            return Err(InfraApiError::NotFound {
+                infra_id: params.infra_id,
+            }
+            .into())
+        }
+    };
+
+    if node_states.is_empty() {
+        return Ok(Json(vec![]));
+    }
+
+    let mut conn = db_pool.get().await?;
+    let infra_cache = InfraCache::get_or_load(&mut conn, &infra_caches, &infra).await?;
+    let routes_cache = infra_cache.routes();
+
+    let result = routes_cache
+        .iter()
+        // We're only interested in routes that depend on specific node positions
+        .filter(|(_, route)| !route.unwrap_route().switches_directions.is_empty())
+        .filter(|(_, route)| {
+            let route = route.unwrap_route();
+            node_states.iter().all(|(node_id, node_state)| {
+                match route.switches_directions.get(&node_id.clone().into()) {
+                    // The route crosses the requested node
+                    Some(node_state_in_route) => {
+                        if let Some(required_state) = node_state {
+                            required_state == node_state_in_route.as_str()
+                        } else {
+                            true
+                        }
+                    }
+                    // The route doesn't cross the requested node
+                    None => false,
+                }
+            })
+        })
+        .map(|(route_id, _)| route_id.clone())
+        .collect::<Vec<_>>();
+
+    Ok(Json(result))
+}
+
 #[cfg(test)]
 mod tests {
     use actix_http::StatusCode;
     use actix_web::test::{call_service, read_body_json, TestRequest};
+    use pretty_assertions::assert_eq;
     use rstest::rstest;
     use serde_json::json;
 
     use crate::{
-        fixtures::tests::{db_pool, empty_infra},
+        assert_status_and_read,
+        fixtures::tests::{db_pool, empty_infra, small_infra},
         schema::{operation::Operation, BufferStop, Detector, Route, TrackSection, Waypoint},
         views::{
             infra::routes::{RoutesResponse, WaypointType},
             tests::create_test_service,
         },
     };
+
+    #[rstest]
+    async fn get_routes_nodes() {
+        let tests = vec![
+            (json!({}), vec![]),
+            (
+                json!({ "PA2": "A_B2" }), // point_switch
+                vec!["rt.DA2->DA5", "rt.DA3->buffer_stop.0"],
+            ),
+            (
+                json!({ "PD0": "STATIC" }), // crossing
+                vec![
+                    "rt.DD2->DD6",
+                    "rt.DD4->DD0",
+                    "rt.DD5->DE1",
+                    "rt.DE0->buffer_stop.4",
+                ],
+            ),
+            (
+                json!({ "PH0": "A1_B1" }), // double_slip_switch
+                vec!["rt.DG0->DG3", "rt.DG1->DD7"],
+            ),
+            (
+                json!({ "PH1": null }), // all routes crossing PH1
+                vec![
+                    "rt.DG2->DH1",
+                    "rt.DH2->DG4",
+                    "rt.DH2->buffer_stop.7",
+                    "rt.DH3->DH1",
+                ],
+            ),
+            (
+                json!({ "PA0": "A_B1", "PA2": "A_B1" }),
+                vec!["rt.DA0->DA5", "rt.DA3->buffer_stop.1"],
+            ),
+            (
+                json!({ "PA0": "A_B1", "PA2": null }),
+                vec!["rt.DA0->DA5", "rt.DA3->buffer_stop.1"],
+            ),
+        ];
+
+        let app = create_test_service().await;
+        let small_infra = small_infra(db_pool()).await;
+
+        for (params, mut expected) in tests {
+            let request = TestRequest::get()
+                .uri(&format!("/infra/{}/routes/nodes", small_infra.id()))
+                .set_json(&params)
+                .to_request();
+            println!("{request:?}  body:\n    {params}");
+            let response = call_service(&app, request).await;
+            let mut got: Vec<String> = assert_status_and_read!(response, StatusCode::OK);
+            expected.sort();
+            got.sort();
+            assert_eq!(got, expected);
+        }
+    }
 
     #[rstest]
     async fn get_routes_should_return_routes_from_buffer_stop_and_detector() {
