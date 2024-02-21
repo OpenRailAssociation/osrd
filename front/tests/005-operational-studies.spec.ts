@@ -4,7 +4,6 @@ import { v4 as uuidv4 } from 'uuid';
 import { PlaywrightHomePage } from './pages/home-page-model';
 import scenarioData from './assets/operationStudies/scenario.json';
 import RollingStockSelectorPage from './pages/rolling-stock-selector-page';
-import PlaywrightMap from './pages/map-model';
 import PlaywrightScenarioPage from './pages/scenario-page-model';
 import { getProject, getStudy, getRollingStock, postApiRequest, getInfra } from './assets/utils';
 
@@ -87,9 +86,7 @@ test.describe('Testing if all mandatory elements simulation configuration are lo
     );
 
     // ***************** Test choice Origin/Destination *****************
-    const playwrightMap = new PlaywrightMap(playwrightHomePage.page);
     await scenarioPage.openTabByDataId('tab-pathfinding');
-    await playwrightMap.disableLayers();
     const itinerary = scenarioPage.getItineraryModule;
     await expect(itinerary).toBeVisible();
 

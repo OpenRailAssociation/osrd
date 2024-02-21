@@ -97,7 +97,12 @@ export default function SubmitConfUpdateTrainSchedules({
     }
   }
   return (
-    <button className="btn btn-warning" type="button" onClick={submitConfUpdateTrainSchedules}>
+    <button
+      className="btn btn-warning"
+      type="button"
+      onClick={submitConfUpdateTrainSchedules}
+      data-testid="submit-edit-train-schedule"
+    >
       <span className="mr-2">
         <Pencil size="lg" />
       </span>
