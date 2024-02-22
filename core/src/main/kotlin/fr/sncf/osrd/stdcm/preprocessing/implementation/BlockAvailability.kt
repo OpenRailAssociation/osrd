@@ -90,7 +90,7 @@ data class BlockAvailability(
 
 fun makeBlockAvailability(
     infra: FullInfra,
-    requirements: List<SpacingRequirement>,
+    requirements: Collection<SpacingRequirement>,
     gridMarginBeforeTrain: Double = 0.0,
     gridMarginAfterTrain: Double = 0.0,
 ): BlockAvailabilityInterface {

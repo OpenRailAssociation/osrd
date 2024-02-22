@@ -5,6 +5,7 @@ import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.api.InfraManager
 import fr.sncf.osrd.api.pathfinding.convertPathfindingResult
 import fr.sncf.osrd.api.pathfinding.findWaypointBlocks
+import fr.sncf.osrd.conflicts.*
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue
 import fr.sncf.osrd.envelope_sim_infra.MRSP
 import fr.sncf.osrd.graph.Pathfinding
@@ -14,12 +15,12 @@ import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl
 import fr.sncf.osrd.standalone_sim.result.ResultEnvelopePoint
+import fr.sncf.osrd.standalone_sim.result.ResultTrain
 import fr.sncf.osrd.standalone_sim.result.StandaloneSimResult
 import fr.sncf.osrd.standalone_sim.run
 import fr.sncf.osrd.stdcm.STDCMStep
 import fr.sncf.osrd.stdcm.graph.findPath
-import fr.sncf.osrd.stdcm.preprocessing.implementation.BlockAvailabilityLegacyAdapter
-import fr.sncf.osrd.stdcm.preprocessing.implementation.computeUnavailableSpace
+import fr.sncf.osrd.stdcm.preprocessing.implementation.makeBlockAvailability
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.RollingStock.Comfort
 import fr.sncf.osrd.train.StandaloneTrainSchedule
@@ -60,18 +61,6 @@ class STDCMEndpoint(private val infraManager: InfraManager) : Take {
                     RJSStandaloneTrainScheduleParser.parseAllowanceValue(request.standardAllowance)
             assert(java.lang.Double.isFinite(startTime))
 
-            // Build the unavailable space
-            // temporary workaround, to remove with new signaling
-            val unavailableSpace =
-                computeUnavailableSpace(
-                    infra.rawInfra,
-                    infra.blockInfra,
-                    request.spacingRequirements,
-                    rollingStock,
-                    request.gridMarginAfterSTDCM,
-                    request.gridMarginBeforeSTDCM
-                )
-
             // Run the STDCM pathfinding
             val res =
                 findPath(
@@ -80,7 +69,12 @@ class STDCMEndpoint(private val infraManager: InfraManager) : Take {
                     comfort,
                     startTime,
                     steps,
-                    BlockAvailabilityLegacyAdapter(infra.blockInfra, unavailableSpace),
+                    makeBlockAvailability(
+                        infra,
+                        request.spacingRequirements,
+                        gridMarginBeforeTrain = request.gridMarginBeforeSTDCM,
+                        gridMarginAfterTrain = request.gridMarginAfterSTDCM
+                    ),
                     request.timeStep,
                     request.maximumDepartureDelay,
                     request.maximumRunTime,
@@ -108,6 +102,11 @@ class STDCMEndpoint(private val infraManager: InfraManager) : Take {
                 )
             )
             simResult.ecoSimulations.add(null)
+            checkForConflicts(
+                request.spacingRequirements,
+                simResult.baseSimulations.first(),
+                res.departureTime
+            )
             val pathfindingRes =
                 convertPathfindingResult(infra.blockInfra, infra.rawInfra, res.blocks, recorder)
             val response = STDCMResponse(simResult, pathfindingRes, res.departureTime)
@@ -147,4 +146,29 @@ fun makeTrainSchedule(
         null,
         null
     )
+}
+
+/** Sanity check, we assert that the result is not conflicting with the scheduled timetable */
+private fun checkForConflicts(
+    spacingRequirements: Collection<ResultTrain.SpacingRequirement>,
+    simResult: ResultTrain,
+    departureTime: Double
+) {
+    val requirements = TrainRequirements(0, spacingRequirements, listOf())
+    val conflictDetector = IncrementalConflictDetectorImpl(listOf(requirements))
+    val conflicts =
+        conflictDetector.checkConflicts(
+            simResult.spacingRequirements.map {
+                ResultTrain.SpacingRequirement(
+                    it.zone,
+                    it.beginTime + departureTime,
+                    it.endTime + departureTime,
+                    it.isComplete
+                )
+            },
+            simResult.routingRequirements.map {
+                ResultTrain.RoutingRequirement(it.route, it.beginTime + departureTime, it.zones)
+            }
+        )
+    assert(conflicts.isEmpty()) { "STDCM result is conflicting with the scheduled timetable" }
 }
