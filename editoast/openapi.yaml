@@ -188,7 +188,7 @@ components:
       - end
       - direction
       type: object
-    EditoastAttachedTrackNotFound:
+    EditoastAttachedErrorTrackNotFound:
       properties:
         context:
           properties:
@@ -212,7 +212,7 @@ components:
       - status
       - message
       type: object
-    EditoastAutoFixesConflictingFixesOnSameObject:
+    EditoastAutoFixesEditoastErrorConflictingFixesOnSameObject:
       properties:
         context:
           properties:
@@ -239,7 +239,7 @@ components:
       - status
       - message
       type: object
-    EditoastAutoFixesFixTrialFailure:
+    EditoastAutoFixesEditoastErrorFixTrialFailure:
       properties:
         context:
           properties:
@@ -263,7 +263,7 @@ components:
       - status
       - message
       type: object
-    EditoastAutoFixesMaximumIterationReached:
+    EditoastAutoFixesEditoastErrorMaximumIterationReached:
       properties:
         context:
           type: object
@@ -282,7 +282,7 @@ components:
       - status
       - message
       type: object
-    EditoastAutoFixesMissingErrorObject:
+    EditoastAutoFixesEditoastErrorMissingErrorObject:
       properties:
         context:
           properties:
@@ -306,7 +306,7 @@ components:
       - status
       - message
       type: object
-    EditoastCacheOperationDuplicateIdsProvided:
+    EditoastCacheOperationErrorDuplicateIdsProvided:
       properties:
         context:
           properties:
@@ -333,7 +333,7 @@ components:
       - status
       - message
       type: object
-    EditoastCacheOperationObjectNotFound:
+    EditoastCacheOperationErrorObjectNotFound:
       properties:
         context:
           properties:
@@ -360,7 +360,7 @@ components:
       - status
       - message
       type: object
-    EditoastCoreclientCannotExtractResponseBody:
+    EditoastCoreErrorCannotExtractResponseBody:
       properties:
         context:
           properties:
@@ -384,7 +384,7 @@ components:
       - status
       - message
       type: object
-    EditoastCoreclientConnectionClosedBeforeMessageCompleted:
+    EditoastCoreErrorConnectionClosedBeforeMessageCompleted:
       properties:
         context:
           type: object
@@ -403,7 +403,7 @@ components:
       - status
       - message
       type: object
-    EditoastCoreclientConnectionResetByPeer:
+    EditoastCoreErrorConnectionResetByPeer:
       properties:
         context:
           type: object
@@ -422,7 +422,7 @@ components:
       - status
       - message
       type: object
-    EditoastCoreclientCoreResponseFormatError:
+    EditoastCoreErrorCoreResponseFormatError:
       properties:
         context:
           properties:
@@ -446,7 +446,7 @@ components:
       - status
       - message
       type: object
-    EditoastCoreclientGenericCoreError:
+    EditoastCoreErrorGenericCoreError:
       properties:
         context:
           properties:
@@ -476,7 +476,7 @@ components:
       - status
       - message
       type: object
-    EditoastCoreclientUnparsableErrorOutput:
+    EditoastCoreErrorUnparsableErrorOutput:
       properties:
         context:
           type: object
@@ -495,7 +495,7 @@ components:
       - status
       - message
       type: object
-    EditoastDocumentNotFound:
+    EditoastDocumentErrorsNotFound:
       properties:
         context:
           properties:
@@ -519,7 +519,55 @@ components:
       - status
       - message
       type: object
-    EditoastElectricalProfilesNotFound:
+    EditoastEditionErrorInfraIsLocked:
+      properties:
+        context:
+          properties:
+            infra_id:
+              type: integer
+          required:
+          - infra_id
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:infra:edition:InfraIsLocked
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastEditoastUrlErrorInvalidUrl:
+      properties:
+        context:
+          properties:
+            url:
+              type: string
+          required:
+          - url
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 500
+          type: integer
+        type:
+          enum:
+          - editoast:url:InvalidUrl
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastElectricalProfilesErrorNotFound:
       properties:
         context:
           properties:
@@ -548,104 +596,104 @@ components:
       discriminator:
         propertyName: type
       oneOf:
-      - $ref: '#/components/schemas/EditoastAttachedTrackNotFound'
-      - $ref: '#/components/schemas/EditoastAutoFixesConflictingFixesOnSameObject'
-      - $ref: '#/components/schemas/EditoastAutoFixesFixTrialFailure'
-      - $ref: '#/components/schemas/EditoastAutoFixesMaximumIterationReached'
-      - $ref: '#/components/schemas/EditoastAutoFixesMissingErrorObject'
-      - $ref: '#/components/schemas/EditoastCacheOperationDuplicateIdsProvided'
-      - $ref: '#/components/schemas/EditoastCacheOperationObjectNotFound'
-      - $ref: '#/components/schemas/EditoastCoreclientCannotExtractResponseBody'
-      - $ref: '#/components/schemas/EditoastCoreclientConnectionClosedBeforeMessageCompleted'
-      - $ref: '#/components/schemas/EditoastCoreclientConnectionResetByPeer'
-      - $ref: '#/components/schemas/EditoastCoreclientCoreResponseFormatError'
-      - $ref: '#/components/schemas/EditoastCoreclientGenericCoreError'
-      - $ref: '#/components/schemas/EditoastCoreclientUnparsableErrorOutput'
-      - $ref: '#/components/schemas/EditoastDocumentNotFound'
-      - $ref: '#/components/schemas/EditoastElectricalProfilesNotFound'
-      - $ref: '#/components/schemas/EditoastGeometryUnexpectedGeometry'
-      - $ref: '#/components/schemas/EditoastInfraNotFound'
-      - $ref: '#/components/schemas/EditoastInfraNotFound'
-      - $ref: '#/components/schemas/EditoastInfraEditionInfraIsLocked'
-      - $ref: '#/components/schemas/EditoastInfraErrorsWrongErrorTypeProvided'
-      - $ref: '#/components/schemas/EditoastInfraLinesLineNotFound'
-      - $ref: '#/components/schemas/EditoastInfraObjectsDuplicateIdsProvided'
-      - $ref: '#/components/schemas/EditoastInfraObjectsObjectIdNotFound'
-      - $ref: '#/components/schemas/EditoastInfraPathfindingEndingTrackLocationNotFound'
-      - $ref: '#/components/schemas/EditoastInfraPathfindingInvalidNumberOfPaths'
-      - $ref: '#/components/schemas/EditoastInfraPathfindingStartingTrackLocationNotFound'
-      - $ref: '#/components/schemas/EditoastInfraRailjsonWrongRailjsonVersionProvided'
-      - $ref: '#/components/schemas/EditoastInfraCacheObjectNotFound'
-      - $ref: '#/components/schemas/EditoastLayersLayerNotFound'
-      - $ref: '#/components/schemas/EditoastLayersViewNotFound'
-      - $ref: '#/components/schemas/EditoastOperationEmptyId'
-      - $ref: '#/components/schemas/EditoastOperationInvalidPatch'
-      - $ref: '#/components/schemas/EditoastOperationModifyId'
-      - $ref: '#/components/schemas/EditoastOperationObjectNotFound'
-      - $ref: '#/components/schemas/EditoastPaginationInvalidPage'
-      - $ref: '#/components/schemas/EditoastPaginationInvalidPageSize'
-      - $ref: '#/components/schemas/EditoastPathfindingElectricalProfilesOverlap'
-      - $ref: '#/components/schemas/EditoastPathfindingElectrificationOverlap'
-      - $ref: '#/components/schemas/EditoastPathfindingInfraNotFound'
-      - $ref: '#/components/schemas/EditoastPathfindingNotFound'
-      - $ref: '#/components/schemas/EditoastPathfindingOperationalPointsNotFound'
-      - $ref: '#/components/schemas/EditoastPathfindingRollingStockNotFound'
-      - $ref: '#/components/schemas/EditoastPathfindingTrackSectionsNotFound'
-      - $ref: '#/components/schemas/EditoastPostgresHost'
-      - $ref: '#/components/schemas/EditoastPostgresPassword'
-      - $ref: '#/components/schemas/EditoastPostgresPort'
-      - $ref: '#/components/schemas/EditoastPostgresUsername'
-      - $ref: '#/components/schemas/EditoastProjectImageError'
-      - $ref: '#/components/schemas/EditoastProjectImageNotFound'
-      - $ref: '#/components/schemas/EditoastProjectNotFound'
-      - $ref: '#/components/schemas/EditoastRailjsonUnsupportedVersion'
-      - $ref: '#/components/schemas/EditoastRedisUrl'
-      - $ref: '#/components/schemas/EditoastRollingstocksBasePowerClassEmpty'
-      - $ref: '#/components/schemas/EditoastRollingstocksCannotCreateCompoundImage'
-      - $ref: '#/components/schemas/EditoastRollingstocksCannotReadImage'
-      - $ref: '#/components/schemas/EditoastRollingstocksNameAlreadyUsed'
-      - $ref: '#/components/schemas/EditoastRollingstocksNotFound'
-      - $ref: '#/components/schemas/EditoastRollingstocksRollingStockIsLocked'
-      - $ref: '#/components/schemas/EditoastRollingstocksRollingStockIsUsed'
-      - $ref: '#/components/schemas/EditoastScenarioNotFound'
-      - $ref: '#/components/schemas/EditoastSearchArgMissing'
-      - $ref: '#/components/schemas/EditoastSearchArgTypeMismatch'
-      - $ref: '#/components/schemas/EditoastSearchEmptyArray'
-      - $ref: '#/components/schemas/EditoastSearchIntegerConversion'
-      - $ref: '#/components/schemas/EditoastSearchInvalidColumnName'
-      - $ref: '#/components/schemas/EditoastSearchInvalidFunctionIdentifier'
-      - $ref: '#/components/schemas/EditoastSearchInvalidSyntax'
-      - $ref: '#/components/schemas/EditoastSearchObjectType'
-      - $ref: '#/components/schemas/EditoastSearchQueryAst'
-      - $ref: '#/components/schemas/EditoastSearchRuntimeTypeCheckFail'
-      - $ref: '#/components/schemas/EditoastSearchUndefinedFunction'
-      - $ref: '#/components/schemas/EditoastSearchUndefinedOverload'
-      - $ref: '#/components/schemas/EditoastSearchUnexpectedArg'
-      - $ref: '#/components/schemas/EditoastSearchUnexpectedColumn'
-      - $ref: '#/components/schemas/EditoastSearchUnexpectedErsatz'
-      - $ref: '#/components/schemas/EditoastSearchVariadicArgTypeMismatch'
-      - $ref: '#/components/schemas/EditoastSingleSimulationElectricalProfileSetNotFound'
-      - $ref: '#/components/schemas/EditoastSingleSimulationPathNotFound'
-      - $ref: '#/components/schemas/EditoastSingleSimulationRollingStockNotFound'
-      - $ref: '#/components/schemas/EditoastSingleSimulationWrongCoreResponseFormat'
-      - $ref: '#/components/schemas/EditoastSpritesFileNotFound'
-      - $ref: '#/components/schemas/EditoastSpritesUnknownSignalingSystem'
-      - $ref: '#/components/schemas/EditoastStdcmInfraNotFound'
-      - $ref: '#/components/schemas/EditoastStudyNotFound'
-      - $ref: '#/components/schemas/EditoastStudyStartDateAfterEndDate'
-      - $ref: '#/components/schemas/EditoastTimetableInfraNotLoaded'
-      - $ref: '#/components/schemas/EditoastTimetableNotFound'
-      - $ref: '#/components/schemas/EditoastTrainScheduleBatchShouldHaveSameTimetable'
-      - $ref: '#/components/schemas/EditoastTrainScheduleBatchTrainScheduleNotFound'
-      - $ref: '#/components/schemas/EditoastTrainScheduleNoSimulation'
-      - $ref: '#/components/schemas/EditoastTrainScheduleNoTrainSchedules'
-      - $ref: '#/components/schemas/EditoastTrainScheduleNotFound'
-      - $ref: '#/components/schemas/EditoastTrainSchedulePathNotFound'
-      - $ref: '#/components/schemas/EditoastTrainScheduleRollingStockNotFound'
-      - $ref: '#/components/schemas/EditoastTrainScheduleTimetableNotFound'
-      - $ref: '#/components/schemas/EditoastTrainScheduleUnsimulatedTrainSchedule'
-      - $ref: '#/components/schemas/EditoastUrlInvalidUrl'
-    EditoastGeometryUnexpectedGeometry:
+      - $ref: '#/components/schemas/EditoastAttachedErrorTrackNotFound'
+      - $ref: '#/components/schemas/EditoastAutoFixesEditoastErrorConflictingFixesOnSameObject'
+      - $ref: '#/components/schemas/EditoastAutoFixesEditoastErrorFixTrialFailure'
+      - $ref: '#/components/schemas/EditoastAutoFixesEditoastErrorMaximumIterationReached'
+      - $ref: '#/components/schemas/EditoastAutoFixesEditoastErrorMissingErrorObject'
+      - $ref: '#/components/schemas/EditoastCacheOperationErrorDuplicateIdsProvided'
+      - $ref: '#/components/schemas/EditoastCacheOperationErrorObjectNotFound'
+      - $ref: '#/components/schemas/EditoastCoreErrorCannotExtractResponseBody'
+      - $ref: '#/components/schemas/EditoastCoreErrorConnectionClosedBeforeMessageCompleted'
+      - $ref: '#/components/schemas/EditoastCoreErrorConnectionResetByPeer'
+      - $ref: '#/components/schemas/EditoastCoreErrorCoreResponseFormatError'
+      - $ref: '#/components/schemas/EditoastCoreErrorGenericCoreError'
+      - $ref: '#/components/schemas/EditoastCoreErrorUnparsableErrorOutput'
+      - $ref: '#/components/schemas/EditoastDocumentErrorsNotFound'
+      - $ref: '#/components/schemas/EditoastEditionErrorInfraIsLocked'
+      - $ref: '#/components/schemas/EditoastEditoastUrlErrorInvalidUrl'
+      - $ref: '#/components/schemas/EditoastElectricalProfilesErrorNotFound'
+      - $ref: '#/components/schemas/EditoastGeometryErrorUnexpectedGeometry'
+      - $ref: '#/components/schemas/EditoastGetObjectsErrorsDuplicateIdsProvided'
+      - $ref: '#/components/schemas/EditoastGetObjectsErrorsObjectIdNotFound'
+      - $ref: '#/components/schemas/EditoastInfraApiErrorNotFound'
+      - $ref: '#/components/schemas/EditoastInfraCacheEditoastErrorObjectNotFound'
+      - $ref: '#/components/schemas/EditoastInfraErrorNotFound'
+      - $ref: '#/components/schemas/EditoastLayersErrorLayerNotFound'
+      - $ref: '#/components/schemas/EditoastLayersErrorViewNotFound'
+      - $ref: '#/components/schemas/EditoastLinesErrorsLineNotFound'
+      - $ref: '#/components/schemas/EditoastListErrorsErrorsWrongErrorTypeProvided'
+      - $ref: '#/components/schemas/EditoastListErrorsRailjsonWrongRailjsonVersionProvided'
+      - $ref: '#/components/schemas/EditoastOperationErrorEmptyId'
+      - $ref: '#/components/schemas/EditoastOperationErrorInvalidPatch'
+      - $ref: '#/components/schemas/EditoastOperationErrorModifyId'
+      - $ref: '#/components/schemas/EditoastOperationErrorObjectNotFound'
+      - $ref: '#/components/schemas/EditoastPaginationErrorInvalidPage'
+      - $ref: '#/components/schemas/EditoastPaginationErrorInvalidPageSize'
+      - $ref: '#/components/schemas/EditoastPathfindingErrorElectricalProfilesOverlap'
+      - $ref: '#/components/schemas/EditoastPathfindingErrorElectrificationOverlap'
+      - $ref: '#/components/schemas/EditoastPathfindingErrorInfraNotFound'
+      - $ref: '#/components/schemas/EditoastPathfindingErrorNotFound'
+      - $ref: '#/components/schemas/EditoastPathfindingErrorOperationalPointsNotFound'
+      - $ref: '#/components/schemas/EditoastPathfindingErrorRollingStockNotFound'
+      - $ref: '#/components/schemas/EditoastPathfindingErrorTrackSectionsNotFound'
+      - $ref: '#/components/schemas/EditoastPathfindingViewErrorsEndingTrackLocationNotFound'
+      - $ref: '#/components/schemas/EditoastPathfindingViewErrorsInvalidNumberOfPaths'
+      - $ref: '#/components/schemas/EditoastPathfindingViewErrorsStartingTrackLocationNotFound'
+      - $ref: '#/components/schemas/EditoastPostgresConfigErrorHost'
+      - $ref: '#/components/schemas/EditoastPostgresConfigErrorPassword'
+      - $ref: '#/components/schemas/EditoastPostgresConfigErrorPort'
+      - $ref: '#/components/schemas/EditoastPostgresConfigErrorUsername'
+      - $ref: '#/components/schemas/EditoastProcessingErrorRuntimeTypeCheckFail'
+      - $ref: '#/components/schemas/EditoastProcessingErrorUndefinedFunction'
+      - $ref: '#/components/schemas/EditoastProcessingErrorUndefinedOverload'
+      - $ref: '#/components/schemas/EditoastProcessingErrorUnexpectedColumn'
+      - $ref: '#/components/schemas/EditoastProcessingErrorUnexpectedErsatz'
+      - $ref: '#/components/schemas/EditoastProjectErrorImageError'
+      - $ref: '#/components/schemas/EditoastProjectErrorImageNotFound'
+      - $ref: '#/components/schemas/EditoastProjectErrorNotFound'
+      - $ref: '#/components/schemas/EditoastRailJsonErrorUnsupportedVersion'
+      - $ref: '#/components/schemas/EditoastRedisConfigErrorUrl'
+      - $ref: '#/components/schemas/EditoastRollingStockErrorBasePowerClassEmpty'
+      - $ref: '#/components/schemas/EditoastRollingStockErrorCannotCreateCompoundImage'
+      - $ref: '#/components/schemas/EditoastRollingStockErrorCannotReadImage'
+      - $ref: '#/components/schemas/EditoastRollingStockErrorNameAlreadyUsed'
+      - $ref: '#/components/schemas/EditoastRollingStockErrorNotFound'
+      - $ref: '#/components/schemas/EditoastRollingStockErrorRollingStockIsLocked'
+      - $ref: '#/components/schemas/EditoastRollingStockErrorRollingStockIsUsed'
+      - $ref: '#/components/schemas/EditoastScenarioErrorNotFound'
+      - $ref: '#/components/schemas/EditoastSearchAstErrorEmptyArray'
+      - $ref: '#/components/schemas/EditoastSearchAstErrorIntegerConversion'
+      - $ref: '#/components/schemas/EditoastSearchAstErrorInvalidColumnName'
+      - $ref: '#/components/schemas/EditoastSearchAstErrorInvalidFunctionIdentifier'
+      - $ref: '#/components/schemas/EditoastSearchAstErrorInvalidSyntax'
+      - $ref: '#/components/schemas/EditoastSearchErrorObjectType'
+      - $ref: '#/components/schemas/EditoastSearchErrorQueryAst'
+      - $ref: '#/components/schemas/EditoastSingleSimulationErrorElectricalProfileSetNotFound'
+      - $ref: '#/components/schemas/EditoastSingleSimulationErrorPathNotFound'
+      - $ref: '#/components/schemas/EditoastSingleSimulationErrorRollingStockNotFound'
+      - $ref: '#/components/schemas/EditoastSingleSimulationErrorWrongCoreResponseFormat'
+      - $ref: '#/components/schemas/EditoastSpriteErrorsFileNotFound'
+      - $ref: '#/components/schemas/EditoastSpriteErrorsUnknownSignalingSystem'
+      - $ref: '#/components/schemas/EditoastStdcmErrorInfraNotFound'
+      - $ref: '#/components/schemas/EditoastStudyErrorNotFound'
+      - $ref: '#/components/schemas/EditoastStudyErrorStartDateAfterEndDate'
+      - $ref: '#/components/schemas/EditoastTimetableErrorInfraNotLoaded'
+      - $ref: '#/components/schemas/EditoastTimetableErrorNotFound'
+      - $ref: '#/components/schemas/EditoastTrainScheduleErrorBatchShouldHaveSameTimetable'
+      - $ref: '#/components/schemas/EditoastTrainScheduleErrorBatchTrainScheduleNotFound'
+      - $ref: '#/components/schemas/EditoastTrainScheduleErrorNoSimulation'
+      - $ref: '#/components/schemas/EditoastTrainScheduleErrorNoTrainSchedules'
+      - $ref: '#/components/schemas/EditoastTrainScheduleErrorNotFound'
+      - $ref: '#/components/schemas/EditoastTrainScheduleErrorPathNotFound'
+      - $ref: '#/components/schemas/EditoastTrainScheduleErrorRollingStockNotFound'
+      - $ref: '#/components/schemas/EditoastTrainScheduleErrorTimetableNotFound'
+      - $ref: '#/components/schemas/EditoastTrainScheduleErrorUnsimulatedTrainSchedule'
+      - $ref: '#/components/schemas/EditoastTypeCheckErrorArgMissing'
+      - $ref: '#/components/schemas/EditoastTypeCheckErrorArgTypeMismatch'
+      - $ref: '#/components/schemas/EditoastTypeCheckErrorUnexpectedArg'
+      - $ref: '#/components/schemas/EditoastTypeCheckErrorVariadicArgTypeMismatch'
+    EditoastGeometryErrorUnexpectedGeometry:
       properties:
         context:
           properties:
@@ -672,7 +720,74 @@ components:
       - status
       - message
       type: object
-    EditoastInfraCacheObjectNotFound:
+    EditoastGetObjectsErrorsDuplicateIdsProvided:
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:infra:objects:DuplicateIdsProvided
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastGetObjectsErrorsObjectIdNotFound:
+      properties:
+        context:
+          properties:
+            object_id:
+              type: string
+          required:
+          - object_id
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:infra:objects:ObjectIdNotFound
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastInfraApiErrorNotFound:
+      properties:
+        context:
+          properties:
+            infra_id:
+              type: integer
+          required:
+          - infra_id
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 404
+          type: integer
+        type:
+          enum:
+          - editoast:infra:NotFound
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastInfraCacheEditoastErrorObjectNotFound:
       properties:
         context:
           properties:
@@ -699,74 +814,7 @@ components:
       - status
       - message
       type: object
-    EditoastInfraEditionInfraIsLocked:
-      properties:
-        context:
-          properties:
-            infra_id:
-              type: integer
-          required:
-          - infra_id
-          type: object
-        message:
-          type: string
-        status:
-          enum:
-          - 400
-          type: integer
-        type:
-          enum:
-          - editoast:infra:edition:InfraIsLocked
-          type: string
-      required:
-      - type
-      - status
-      - message
-      type: object
-    EditoastInfraErrorsWrongErrorTypeProvided:
-      properties:
-        context:
-          type: object
-        message:
-          type: string
-        status:
-          enum:
-          - 400
-          type: integer
-        type:
-          enum:
-          - editoast:infra:errors:WrongErrorTypeProvided
-          type: string
-      required:
-      - type
-      - status
-      - message
-      type: object
-    EditoastInfraLinesLineNotFound:
-      properties:
-        context:
-          properties:
-            line_code:
-              type: integer
-          required:
-          - line_code
-          type: object
-        message:
-          type: string
-        status:
-          enum:
-          - 400
-          type: integer
-        type:
-          enum:
-          - editoast:infra:lines:LineNotFound
-          type: string
-      required:
-      - type
-      - status
-      - message
-      type: object
-    EditoastInfraNotFound:
+    EditoastInfraErrorNotFound:
       properties:
         context:
           properties:
@@ -790,134 +838,7 @@ components:
       - status
       - message
       type: object
-    EditoastInfraObjectsDuplicateIdsProvided:
-      properties:
-        context:
-          type: object
-        message:
-          type: string
-        status:
-          enum:
-          - 400
-          type: integer
-        type:
-          enum:
-          - editoast:infra:objects:DuplicateIdsProvided
-          type: string
-      required:
-      - type
-      - status
-      - message
-      type: object
-    EditoastInfraObjectsObjectIdNotFound:
-      properties:
-        context:
-          properties:
-            object_id:
-              type: string
-          required:
-          - object_id
-          type: object
-        message:
-          type: string
-        status:
-          enum:
-          - 400
-          type: integer
-        type:
-          enum:
-          - editoast:infra:objects:ObjectIdNotFound
-          type: string
-      required:
-      - type
-      - status
-      - message
-      type: object
-    EditoastInfraPathfindingEndingTrackLocationNotFound:
-      properties:
-        context:
-          type: object
-        message:
-          type: string
-        status:
-          enum:
-          - 400
-          type: integer
-        type:
-          enum:
-          - editoast:infra:pathfinding:EndingTrackLocationNotFound
-          type: string
-      required:
-      - type
-      - status
-      - message
-      type: object
-    EditoastInfraPathfindingInvalidNumberOfPaths:
-      properties:
-        context:
-          properties:
-            max_number:
-              type: integer
-            path_number:
-              type: integer
-          required:
-          - max_number
-          - path_number
-          type: object
-        message:
-          type: string
-        status:
-          enum:
-          - 400
-          type: integer
-        type:
-          enum:
-          - editoast:infra:pathfinding:InvalidNumberOfPaths
-          type: string
-      required:
-      - type
-      - status
-      - message
-      type: object
-    EditoastInfraPathfindingStartingTrackLocationNotFound:
-      properties:
-        context:
-          type: object
-        message:
-          type: string
-        status:
-          enum:
-          - 400
-          type: integer
-        type:
-          enum:
-          - editoast:infra:pathfinding:StartingTrackLocationNotFound
-          type: string
-      required:
-      - type
-      - status
-      - message
-      type: object
-    EditoastInfraRailjsonWrongRailjsonVersionProvided:
-      properties:
-        context:
-          type: object
-        message:
-          type: string
-        status:
-          enum:
-          - 400
-          type: integer
-        type:
-          enum:
-          - editoast:infra:railjson:WrongRailjsonVersionProvided
-          type: string
-      required:
-      - type
-      - status
-      - message
-      type: object
-    EditoastLayersLayerNotFound:
+    EditoastLayersErrorLayerNotFound:
       properties:
         context:
           properties:
@@ -944,7 +865,7 @@ components:
       - status
       - message
       type: object
-    EditoastLayersViewNotFound:
+    EditoastLayersErrorViewNotFound:
       properties:
         context:
           properties:
@@ -971,7 +892,69 @@ components:
       - status
       - message
       type: object
-    EditoastOperationEmptyId:
+    EditoastLinesErrorsLineNotFound:
+      properties:
+        context:
+          properties:
+            line_code:
+              type: integer
+          required:
+          - line_code
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:infra:lines:LineNotFound
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastListErrorsErrorsWrongErrorTypeProvided:
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:infra:errors:WrongErrorTypeProvided
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastListErrorsRailjsonWrongRailjsonVersionProvided:
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:infra:railjson:WrongRailjsonVersionProvided
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastOperationErrorEmptyId:
       properties:
         context:
           type: object
@@ -990,7 +973,7 @@ components:
       - status
       - message
       type: object
-    EditoastOperationInvalidPatch:
+    EditoastOperationErrorInvalidPatch:
       properties:
         context:
           properties:
@@ -1014,7 +997,7 @@ components:
       - status
       - message
       type: object
-    EditoastOperationModifyId:
+    EditoastOperationErrorModifyId:
       properties:
         context:
           type: object
@@ -1033,7 +1016,7 @@ components:
       - status
       - message
       type: object
-    EditoastOperationObjectNotFound:
+    EditoastOperationErrorObjectNotFound:
       properties:
         context:
           properties:
@@ -1060,7 +1043,7 @@ components:
       - status
       - message
       type: object
-    EditoastPaginationInvalidPage:
+    EditoastPaginationErrorInvalidPage:
       properties:
         context:
           properties:
@@ -1084,7 +1067,7 @@ components:
       - status
       - message
       type: object
-    EditoastPaginationInvalidPageSize:
+    EditoastPaginationErrorInvalidPageSize:
       properties:
         context:
           properties:
@@ -1111,7 +1094,7 @@ components:
       - status
       - message
       type: object
-    EditoastPathfindingElectricalProfilesOverlap:
+    EditoastPathfindingErrorElectricalProfilesOverlap:
       properties:
         context:
           properties:
@@ -1135,7 +1118,7 @@ components:
       - status
       - message
       type: object
-    EditoastPathfindingElectrificationOverlap:
+    EditoastPathfindingErrorElectrificationOverlap:
       properties:
         context:
           properties:
@@ -1162,7 +1145,7 @@ components:
       - status
       - message
       type: object
-    EditoastPathfindingInfraNotFound:
+    EditoastPathfindingErrorInfraNotFound:
       properties:
         context:
           properties:
@@ -1186,7 +1169,7 @@ components:
       - status
       - message
       type: object
-    EditoastPathfindingNotFound:
+    EditoastPathfindingErrorNotFound:
       properties:
         context:
           properties:
@@ -1210,7 +1193,7 @@ components:
       - status
       - message
       type: object
-    EditoastPathfindingOperationalPointsNotFound:
+    EditoastPathfindingErrorOperationalPointsNotFound:
       properties:
         context:
           properties:
@@ -1234,7 +1217,7 @@ components:
       - status
       - message
       type: object
-    EditoastPathfindingRollingStockNotFound:
+    EditoastPathfindingErrorRollingStockNotFound:
       properties:
         context:
           properties:
@@ -1258,7 +1241,7 @@ components:
       - status
       - message
       type: object
-    EditoastPathfindingTrackSectionsNotFound:
+    EditoastPathfindingErrorTrackSectionsNotFound:
       properties:
         context:
           properties:
@@ -1282,7 +1265,72 @@ components:
       - status
       - message
       type: object
-    EditoastPostgresHost:
+    EditoastPathfindingViewErrorsEndingTrackLocationNotFound:
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:infra:pathfinding:EndingTrackLocationNotFound
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastPathfindingViewErrorsInvalidNumberOfPaths:
+      properties:
+        context:
+          properties:
+            max_number:
+              type: integer
+            path_number:
+              type: integer
+          required:
+          - max_number
+          - path_number
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:infra:pathfinding:InvalidNumberOfPaths
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastPathfindingViewErrorsStartingTrackLocationNotFound:
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:infra:pathfinding:StartingTrackLocationNotFound
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastPostgresConfigErrorHost:
       properties:
         context:
           properties:
@@ -1306,7 +1354,7 @@ components:
       - status
       - message
       type: object
-    EditoastPostgresPassword:
+    EditoastPostgresConfigErrorPassword:
       properties:
         context:
           type: object
@@ -1325,7 +1373,7 @@ components:
       - status
       - message
       type: object
-    EditoastPostgresPort:
+    EditoastPostgresConfigErrorPort:
       properties:
         context:
           properties:
@@ -1349,7 +1397,7 @@ components:
       - status
       - message
       type: object
-    EditoastPostgresUsername:
+    EditoastPostgresConfigErrorUsername:
       properties:
         context:
           type: object
@@ -1368,530 +1416,7 @@ components:
       - status
       - message
       type: object
-    EditoastProjectImageError:
-      properties:
-        context:
-          properties:
-            error:
-              type: string
-          required:
-          - error
-          type: object
-        message:
-          type: string
-        status:
-          enum:
-          - 400
-          type: integer
-        type:
-          enum:
-          - editoast:project:ImageError
-          type: string
-      required:
-      - type
-      - status
-      - message
-      type: object
-    EditoastProjectImageNotFound:
-      properties:
-        context:
-          properties:
-            document_key:
-              type: integer
-          required:
-          - document_key
-          type: object
-        message:
-          type: string
-        status:
-          enum:
-          - 400
-          type: integer
-        type:
-          enum:
-          - editoast:project:ImageNotFound
-          type: string
-      required:
-      - type
-      - status
-      - message
-      type: object
-    EditoastProjectNotFound:
-      properties:
-        context:
-          properties:
-            project_id:
-              type: integer
-          required:
-          - project_id
-          type: object
-        message:
-          type: string
-        status:
-          enum:
-          - 404
-          type: integer
-        type:
-          enum:
-          - editoast:project:NotFound
-          type: string
-      required:
-      - type
-      - status
-      - message
-      type: object
-    EditoastRailjsonUnsupportedVersion:
-      properties:
-        context:
-          properties:
-            actual:
-              type: string
-            expected:
-              type: string
-          required:
-          - actual
-          - expected
-          type: object
-        message:
-          type: string
-        status:
-          enum:
-          - 400
-          type: integer
-        type:
-          enum:
-          - editoast:railjson:UnsupportedVersion
-          type: string
-      required:
-      - type
-      - status
-      - message
-      type: object
-    EditoastRedisUrl:
-      properties:
-        context:
-          properties:
-            url:
-              type: string
-          required:
-          - url
-          type: object
-        message:
-          type: string
-        status:
-          enum:
-          - 500
-          type: integer
-        type:
-          enum:
-          - editoast:redis:Url
-          type: string
-      required:
-      - type
-      - status
-      - message
-      type: object
-    EditoastRollingstocksBasePowerClassEmpty:
-      properties:
-        context:
-          type: object
-        message:
-          type: string
-        status:
-          enum:
-          - 400
-          type: integer
-        type:
-          enum:
-          - editoast:rollingstocks:BasePowerClassEmpty
-          type: string
-      required:
-      - type
-      - status
-      - message
-      type: object
-    EditoastRollingstocksCannotCreateCompoundImage:
-      properties:
-        context:
-          type: object
-        message:
-          type: string
-        status:
-          enum:
-          - 500
-          type: integer
-        type:
-          enum:
-          - editoast:rollingstocks:CannotCreateCompoundImage
-          type: string
-      required:
-      - type
-      - status
-      - message
-      type: object
-    EditoastRollingstocksCannotReadImage:
-      properties:
-        context:
-          type: object
-        message:
-          type: string
-        status:
-          enum:
-          - 500
-          type: integer
-        type:
-          enum:
-          - editoast:rollingstocks:CannotReadImage
-          type: string
-      required:
-      - type
-      - status
-      - message
-      type: object
-    EditoastRollingstocksNameAlreadyUsed:
-      properties:
-        context:
-          properties:
-            name:
-              type: string
-          required:
-          - name
-          type: object
-        message:
-          type: string
-        status:
-          enum:
-          - 400
-          type: integer
-        type:
-          enum:
-          - editoast:rollingstocks:NameAlreadyUsed
-          type: string
-      required:
-      - type
-      - status
-      - message
-      type: object
-    EditoastRollingstocksNotFound:
-      properties:
-        context:
-          properties:
-            rolling_stock_id:
-              type: integer
-          required:
-          - rolling_stock_id
-          type: object
-        message:
-          type: string
-        status:
-          enum:
-          - 404
-          type: integer
-        type:
-          enum:
-          - editoast:rollingstocks:NotFound
-          type: string
-      required:
-      - type
-      - status
-      - message
-      type: object
-    EditoastRollingstocksRollingStockIsLocked:
-      properties:
-        context:
-          properties:
-            rolling_stock_id:
-              type: integer
-          required:
-          - rolling_stock_id
-          type: object
-        message:
-          type: string
-        status:
-          enum:
-          - 400
-          type: integer
-        type:
-          enum:
-          - editoast:rollingstocks:RollingStockIsLocked
-          type: string
-      required:
-      - type
-      - status
-      - message
-      type: object
-    EditoastRollingstocksRollingStockIsUsed:
-      properties:
-        context:
-          properties:
-            rolling_stock_id:
-              type: integer
-            usage:
-              type: array
-          required:
-          - rolling_stock_id
-          - usage
-          type: object
-        message:
-          type: string
-        status:
-          enum:
-          - 409
-          type: integer
-        type:
-          enum:
-          - editoast:rollingstocks:RollingStockIsUsed
-          type: string
-      required:
-      - type
-      - status
-      - message
-      type: object
-    EditoastScenarioNotFound:
-      properties:
-        context:
-          properties:
-            scenario_id:
-              type: integer
-          required:
-          - scenario_id
-          type: object
-        message:
-          type: string
-        status:
-          enum:
-          - 404
-          type: integer
-        type:
-          enum:
-          - editoast:scenario:NotFound
-          type: string
-      required:
-      - type
-      - status
-      - message
-      type: object
-    EditoastSearchArgMissing:
-      properties:
-        context:
-          properties:
-            arg_pos:
-              type: integer
-            expected:
-              type: object
-          required:
-          - arg_pos
-          - expected
-          type: object
-        message:
-          type: string
-        status:
-          enum:
-          - 400
-          type: integer
-        type:
-          enum:
-          - editoast:search:ArgMissing
-          type: string
-      required:
-      - type
-      - status
-      - message
-      type: object
-    EditoastSearchArgTypeMismatch:
-      properties:
-        context:
-          properties:
-            actual:
-              type: object
-            arg_pos:
-              type: integer
-            expected:
-              type: object
-          required:
-          - actual
-          - arg_pos
-          - expected
-          type: object
-        message:
-          type: string
-        status:
-          enum:
-          - 400
-          type: integer
-        type:
-          enum:
-          - editoast:search:ArgTypeMismatch
-          type: string
-      required:
-      - type
-      - status
-      - message
-      type: object
-    EditoastSearchEmptyArray:
-      properties:
-        context:
-          type: object
-        message:
-          type: string
-        status:
-          enum:
-          - 400
-          type: integer
-        type:
-          enum:
-          - editoast:search:EmptyArray
-          type: string
-      required:
-      - type
-      - status
-      - message
-      type: object
-    EditoastSearchIntegerConversion:
-      properties:
-        context:
-          properties:
-            value:
-              type: integer
-          required:
-          - value
-          type: object
-        message:
-          type: string
-        status:
-          enum:
-          - 400
-          type: integer
-        type:
-          enum:
-          - editoast:search:IntegerConversion
-          type: string
-      required:
-      - type
-      - status
-      - message
-      type: object
-    EditoastSearchInvalidColumnName:
-      properties:
-        context:
-          properties:
-            value:
-              type: object
-          required:
-          - value
-          type: object
-        message:
-          type: string
-        status:
-          enum:
-          - 400
-          type: integer
-        type:
-          enum:
-          - editoast:search:InvalidColumnName
-          type: string
-      required:
-      - type
-      - status
-      - message
-      type: object
-    EditoastSearchInvalidFunctionIdentifier:
-      properties:
-        context:
-          properties:
-            value:
-              type: object
-          required:
-          - value
-          type: object
-        message:
-          type: string
-        status:
-          enum:
-          - 400
-          type: integer
-        type:
-          enum:
-          - editoast:search:InvalidFunctionIdentifier
-          type: string
-      required:
-      - type
-      - status
-      - message
-      type: object
-    EditoastSearchInvalidSyntax:
-      properties:
-        context:
-          properties:
-            value:
-              type: object
-          required:
-          - value
-          type: object
-        message:
-          type: string
-        status:
-          enum:
-          - 400
-          type: integer
-        type:
-          enum:
-          - editoast:search:InvalidSyntax
-          type: string
-      required:
-      - type
-      - status
-      - message
-      type: object
-    EditoastSearchObjectType:
-      properties:
-        context:
-          properties:
-            object_type:
-              type: string
-          required:
-          - object_type
-          type: object
-        message:
-          type: string
-        status:
-          enum:
-          - 400
-          type: integer
-        type:
-          enum:
-          - editoast:search:ObjectType
-          type: string
-      required:
-      - type
-      - status
-      - message
-      type: object
-    EditoastSearchQueryAst:
-      properties:
-        context:
-          properties:
-            query_type:
-              type: string
-          required:
-          - query_type
-          type: object
-        message:
-          type: string
-        status:
-          enum:
-          - 400
-          type: integer
-        type:
-          enum:
-          - editoast:search:QueryAst
-          type: string
-      required:
-      - type
-      - status
-      - message
-      type: object
-    EditoastSearchRuntimeTypeCheckFail:
+    EditoastProcessingErrorRuntimeTypeCheckFail:
       properties:
         context:
           properties:
@@ -1921,7 +1446,7 @@ components:
       - status
       - message
       type: object
-    EditoastSearchUndefinedFunction:
+    EditoastProcessingErrorUndefinedFunction:
       properties:
         context:
           properties:
@@ -1945,7 +1470,7 @@ components:
       - status
       - message
       type: object
-    EditoastSearchUndefinedOverload:
+    EditoastProcessingErrorUndefinedOverload:
       properties:
         context:
           type: object
@@ -1964,31 +1489,7 @@ components:
       - status
       - message
       type: object
-    EditoastSearchUnexpectedArg:
-      properties:
-        context:
-          properties:
-            arg_type:
-              type: object
-          required:
-          - arg_type
-          type: object
-        message:
-          type: string
-        status:
-          enum:
-          - 400
-          type: integer
-        type:
-          enum:
-          - editoast:search:UnexpectedArg
-          type: string
-      required:
-      - type
-      - status
-      - message
-      type: object
-    EditoastSearchUnexpectedColumn:
+    EditoastProcessingErrorUnexpectedColumn:
       properties:
         context:
           properties:
@@ -2012,7 +1513,7 @@ components:
       - status
       - message
       type: object
-    EditoastSearchUnexpectedErsatz:
+    EditoastProcessingErrorUnexpectedErsatz:
       properties:
         context:
           properties:
@@ -2039,14 +1540,86 @@ components:
       - status
       - message
       type: object
-    EditoastSearchVariadicArgTypeMismatch:
+    EditoastProjectErrorImageError:
+      properties:
+        context:
+          properties:
+            error:
+              type: string
+          required:
+          - error
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:project:ImageError
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastProjectErrorImageNotFound:
+      properties:
+        context:
+          properties:
+            document_key:
+              type: integer
+          required:
+          - document_key
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:project:ImageNotFound
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastProjectErrorNotFound:
+      properties:
+        context:
+          properties:
+            project_id:
+              type: integer
+          required:
+          - project_id
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 404
+          type: integer
+        type:
+          enum:
+          - editoast:project:NotFound
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastRailJsonErrorUnsupportedVersion:
       properties:
         context:
           properties:
             actual:
-              type: object
+              type: string
             expected:
-              type: object
+              type: string
           required:
           - actual
           - expected
@@ -2059,14 +1632,381 @@ components:
           type: integer
         type:
           enum:
-          - editoast:search:VariadicArgTypeMismatch
+          - editoast:railjson:UnsupportedVersion
           type: string
       required:
       - type
       - status
       - message
       type: object
-    EditoastSingleSimulationElectricalProfileSetNotFound:
+    EditoastRedisConfigErrorUrl:
+      properties:
+        context:
+          properties:
+            url:
+              type: string
+          required:
+          - url
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 500
+          type: integer
+        type:
+          enum:
+          - editoast:redis:Url
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastRollingStockErrorBasePowerClassEmpty:
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:rollingstocks:BasePowerClassEmpty
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastRollingStockErrorCannotCreateCompoundImage:
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 500
+          type: integer
+        type:
+          enum:
+          - editoast:rollingstocks:CannotCreateCompoundImage
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastRollingStockErrorCannotReadImage:
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 500
+          type: integer
+        type:
+          enum:
+          - editoast:rollingstocks:CannotReadImage
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastRollingStockErrorNameAlreadyUsed:
+      properties:
+        context:
+          properties:
+            name:
+              type: string
+          required:
+          - name
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:rollingstocks:NameAlreadyUsed
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastRollingStockErrorNotFound:
+      properties:
+        context:
+          properties:
+            rolling_stock_id:
+              type: integer
+          required:
+          - rolling_stock_id
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 404
+          type: integer
+        type:
+          enum:
+          - editoast:rollingstocks:NotFound
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastRollingStockErrorRollingStockIsLocked:
+      properties:
+        context:
+          properties:
+            rolling_stock_id:
+              type: integer
+          required:
+          - rolling_stock_id
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:rollingstocks:RollingStockIsLocked
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastRollingStockErrorRollingStockIsUsed:
+      properties:
+        context:
+          properties:
+            rolling_stock_id:
+              type: integer
+            usage:
+              type: array
+          required:
+          - rolling_stock_id
+          - usage
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 409
+          type: integer
+        type:
+          enum:
+          - editoast:rollingstocks:RollingStockIsUsed
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastScenarioErrorNotFound:
+      properties:
+        context:
+          properties:
+            scenario_id:
+              type: integer
+          required:
+          - scenario_id
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 404
+          type: integer
+        type:
+          enum:
+          - editoast:scenario:NotFound
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastSearchAstErrorEmptyArray:
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:search:EmptyArray
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastSearchAstErrorIntegerConversion:
+      properties:
+        context:
+          properties:
+            value:
+              type: integer
+          required:
+          - value
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:search:IntegerConversion
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastSearchAstErrorInvalidColumnName:
+      properties:
+        context:
+          properties:
+            value:
+              type: object
+          required:
+          - value
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:search:InvalidColumnName
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastSearchAstErrorInvalidFunctionIdentifier:
+      properties:
+        context:
+          properties:
+            value:
+              type: object
+          required:
+          - value
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:search:InvalidFunctionIdentifier
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastSearchAstErrorInvalidSyntax:
+      properties:
+        context:
+          properties:
+            value:
+              type: object
+          required:
+          - value
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:search:InvalidSyntax
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastSearchErrorObjectType:
+      properties:
+        context:
+          properties:
+            object_type:
+              type: string
+          required:
+          - object_type
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:search:ObjectType
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastSearchErrorQueryAst:
+      properties:
+        context:
+          properties:
+            query_type:
+              type: string
+          required:
+          - query_type
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:search:QueryAst
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastSingleSimulationErrorElectricalProfileSetNotFound:
       properties:
         context:
           properties:
@@ -2090,7 +2030,7 @@ components:
       - status
       - message
       type: object
-    EditoastSingleSimulationPathNotFound:
+    EditoastSingleSimulationErrorPathNotFound:
       properties:
         context:
           properties:
@@ -2114,7 +2054,7 @@ components:
       - status
       - message
       type: object
-    EditoastSingleSimulationRollingStockNotFound:
+    EditoastSingleSimulationErrorRollingStockNotFound:
       properties:
         context:
           properties:
@@ -2138,7 +2078,7 @@ components:
       - status
       - message
       type: object
-    EditoastSingleSimulationWrongCoreResponseFormat:
+    EditoastSingleSimulationErrorWrongCoreResponseFormat:
       properties:
         context:
           type: object
@@ -2157,7 +2097,7 @@ components:
       - status
       - message
       type: object
-    EditoastSpritesFileNotFound:
+    EditoastSpriteErrorsFileNotFound:
       properties:
         context:
           properties:
@@ -2181,7 +2121,7 @@ components:
       - status
       - message
       type: object
-    EditoastSpritesUnknownSignalingSystem:
+    EditoastSpriteErrorsUnknownSignalingSystem:
       properties:
         context:
           properties:
@@ -2205,7 +2145,7 @@ components:
       - status
       - message
       type: object
-    EditoastStdcmInfraNotFound:
+    EditoastStdcmErrorInfraNotFound:
       properties:
         context:
           properties:
@@ -2229,7 +2169,7 @@ components:
       - status
       - message
       type: object
-    EditoastStudyNotFound:
+    EditoastStudyErrorNotFound:
       properties:
         context:
           properties:
@@ -2253,7 +2193,7 @@ components:
       - status
       - message
       type: object
-    EditoastStudyStartDateAfterEndDate:
+    EditoastStudyErrorStartDateAfterEndDate:
       properties:
         context:
           type: object
@@ -2272,7 +2212,7 @@ components:
       - status
       - message
       type: object
-    EditoastTimetableInfraNotLoaded:
+    EditoastTimetableErrorInfraNotLoaded:
       properties:
         context:
           properties:
@@ -2296,7 +2236,7 @@ components:
       - status
       - message
       type: object
-    EditoastTimetableNotFound:
+    EditoastTimetableErrorNotFound:
       properties:
         context:
           properties:
@@ -2320,7 +2260,7 @@ components:
       - status
       - message
       type: object
-    EditoastTrainScheduleBatchShouldHaveSameTimetable:
+    EditoastTrainScheduleErrorBatchShouldHaveSameTimetable:
       properties:
         context:
           type: object
@@ -2339,7 +2279,7 @@ components:
       - status
       - message
       type: object
-    EditoastTrainScheduleBatchTrainScheduleNotFound:
+    EditoastTrainScheduleErrorBatchTrainScheduleNotFound:
       properties:
         context:
           type: object
@@ -2358,7 +2298,7 @@ components:
       - status
       - message
       type: object
-    EditoastTrainScheduleNoSimulation:
+    EditoastTrainScheduleErrorNoSimulation:
       properties:
         context:
           type: object
@@ -2377,7 +2317,7 @@ components:
       - status
       - message
       type: object
-    EditoastTrainScheduleNoTrainSchedules:
+    EditoastTrainScheduleErrorNoTrainSchedules:
       properties:
         context:
           type: object
@@ -2396,7 +2336,7 @@ components:
       - status
       - message
       type: object
-    EditoastTrainScheduleNotFound:
+    EditoastTrainScheduleErrorNotFound:
       properties:
         context:
           properties:
@@ -2420,7 +2360,7 @@ components:
       - status
       - message
       type: object
-    EditoastTrainSchedulePathNotFound:
+    EditoastTrainScheduleErrorPathNotFound:
       properties:
         context:
           properties:
@@ -2444,7 +2384,7 @@ components:
       - status
       - message
       type: object
-    EditoastTrainScheduleRollingStockNotFound:
+    EditoastTrainScheduleErrorRollingStockNotFound:
       properties:
         context:
           properties:
@@ -2468,7 +2408,7 @@ components:
       - status
       - message
       type: object
-    EditoastTrainScheduleTimetableNotFound:
+    EditoastTrainScheduleErrorTimetableNotFound:
       properties:
         context:
           properties:
@@ -2492,7 +2432,7 @@ components:
       - status
       - message
       type: object
-    EditoastTrainScheduleUnsimulatedTrainSchedule:
+    EditoastTrainScheduleErrorUnsimulatedTrainSchedule:
       properties:
         context:
           properties:
@@ -2516,24 +2456,108 @@ components:
       - status
       - message
       type: object
-    EditoastUrlInvalidUrl:
+    EditoastTypeCheckErrorArgMissing:
       properties:
         context:
           properties:
-            url:
-              type: string
+            arg_pos:
+              type: integer
+            expected:
+              type: object
           required:
-          - url
+          - arg_pos
+          - expected
           type: object
         message:
           type: string
         status:
           enum:
-          - 500
+          - 400
           type: integer
         type:
           enum:
-          - editoast:url:InvalidUrl
+          - editoast:search:ArgMissing
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastTypeCheckErrorArgTypeMismatch:
+      properties:
+        context:
+          properties:
+            actual:
+              type: object
+            arg_pos:
+              type: integer
+            expected:
+              type: object
+          required:
+          - actual
+          - arg_pos
+          - expected
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:search:ArgTypeMismatch
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastTypeCheckErrorUnexpectedArg:
+      properties:
+        context:
+          properties:
+            arg_type:
+              type: object
+          required:
+          - arg_type
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:search:UnexpectedArg
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastTypeCheckErrorVariadicArgTypeMismatch:
+      properties:
+        context:
+          properties:
+            actual:
+              type: object
+            expected:
+              type: object
+          required:
+          - actual
+          - expected
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:search:VariadicArgTypeMismatch
           type: string
       required:
       - type
