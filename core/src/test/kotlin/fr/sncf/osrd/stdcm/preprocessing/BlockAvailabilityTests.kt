@@ -1,10 +1,9 @@
 package fr.sncf.osrd.stdcm.preprocessing
 
-import fr.sncf.osrd.conflicts.TrainRequirements
-import fr.sncf.osrd.conflicts.incrementalConflictDetector
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope.part.EnvelopePart
 import fr.sncf.osrd.envelope_sim.EnvelopeProfile
+import fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.areTimesEqual
 import fr.sncf.osrd.graph.PathfindingEdgeLocationId
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
@@ -12,7 +11,7 @@ import fr.sncf.osrd.sim_infra.api.DirDetectorId
 import fr.sncf.osrd.standalone_sim.result.ResultTrain.SpacingRequirement
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
 import fr.sncf.osrd.stdcm.infra_exploration.initInfraExplorerWithEnvelope
-import fr.sncf.osrd.stdcm.preprocessing.implementation.BlockAvailability
+import fr.sncf.osrd.stdcm.preprocessing.implementation.makeBlockAvailability
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.TestTrains.REALISTIC_FAST_TRAIN
@@ -135,7 +134,7 @@ class BlockAvailabilityTests {
     @Test
     fun testNotEnoughPath() {
         val explorer = makeExplorer(4, 4)
-        val availability = makeAvailability(listOf())
+        val availability = makeBlockAvailability(infra, listOf())
         assertThrows<BlockAvailabilityInterface.NotEnoughLookaheadError> {
             availability.getAvailability(
                 explorer,
@@ -150,7 +149,7 @@ class BlockAvailabilityTests {
     @Test
     fun testFullPath() {
         val explorer = makeExplorer(5, 5)
-        val availability = makeAvailability(listOf())
+        val availability = makeBlockAvailability(infra, listOf())
         assertDoesNotThrow {
             availability.getAvailability(
                 explorer,
@@ -167,7 +166,10 @@ class BlockAvailabilityTests {
         val explorer = makeExplorer(5, 1)
         val duration = 120.0
         val availability =
-            makeAvailability(listOf(SpacingRequirement(zoneNames[0], 0.0, duration, true)))
+            makeBlockAvailability(
+                infra,
+                listOf(SpacingRequirement(zoneNames[0], 0.0, duration, true))
+            )
         val res =
             availability.getAvailability(
                 explorer,
@@ -184,7 +186,10 @@ class BlockAvailabilityTests {
         val explorer = makeExplorer(5, 1)
         val duration = 120.0
         val availability =
-            makeAvailability(listOf(SpacingRequirement(zoneNames[0], 10.0, duration, true)))
+            makeBlockAvailability(
+                infra,
+                listOf(SpacingRequirement(zoneNames[0], 10.0, duration, true))
+            )
         val res =
             availability.getAvailability(
                 explorer,
@@ -201,7 +206,8 @@ class BlockAvailabilityTests {
         val explorer = makeExplorer(5, 1)
         val duration = 1200.0
         val availability =
-            makeAvailability(
+            makeBlockAvailability(
+                infra,
                 listOf(
                     SpacingRequirement(zoneNames[0], 0.0, duration - 1, true),
                     SpacingRequirement(zoneNames[0], duration + 1, 2 * duration, true)
@@ -223,7 +229,8 @@ class BlockAvailabilityTests {
         val explorer = makeExplorer(5, 1)
         val startTime = 1200.0
         val availability =
-            makeAvailability(
+            makeBlockAvailability(
+                infra,
                 listOf(
                     SpacingRequirement(zoneNames[0], startTime, POSITIVE_INFINITY, true),
                 )
@@ -248,7 +255,8 @@ class BlockAvailabilityTests {
         val explorer = makeExplorer(5, 5)
         val minStartTime = 1200.0
         val availability =
-            makeAvailability(
+            makeBlockAvailability(
+                infra,
                 listOf(
                     SpacingRequirement(zoneNames[0], minStartTime + 2, POSITIVE_INFINITY, true),
                     SpacingRequirement(zoneNames[1], minStartTime, POSITIVE_INFINITY, true),
@@ -271,7 +279,8 @@ class BlockAvailabilityTests {
         val explorer = makeExplorer(5, 5, rollingStock = VERY_LONG_FAST_TRAIN)
         val occupancyEnd = 1200.0
         val availability =
-            makeAvailability(
+            makeBlockAvailability(
+                infra,
                 listOf(
                     SpacingRequirement(zoneNames[0], 0.0, occupancyEnd, true),
                 )
@@ -295,7 +304,8 @@ class BlockAvailabilityTests {
         var explorer = makeExplorer(5, 1)
         val occupancyEnd = 1200.0
         val availability =
-            makeAvailability(
+            makeBlockAvailability(
+                infra,
                 listOf(
                     SpacingRequirement(zoneNames[0], 0.0, occupancyEnd, true),
                 )
@@ -329,7 +339,10 @@ class BlockAvailabilityTests {
         val explorer = makeExplorer(5, 5)
         val duration = 120.0
         val availability =
-            makeAvailability(listOf(SpacingRequirement(zoneNames[0], 0.0, duration, true)))
+            makeBlockAvailability(
+                infra,
+                listOf(SpacingRequirement(zoneNames[0], 0.0, duration, true))
+            )
         val res1 =
             availability.getAvailability(
                 explorer,
@@ -353,7 +366,10 @@ class BlockAvailabilityTests {
     fun testStartOffset() {
         val explorer = makeExplorer(5, 5)
         val availability =
-            makeAvailability(listOf(SpacingRequirement(zoneNames[0], 0.0, POSITIVE_INFINITY, true)))
+            makeBlockAvailability(
+                infra,
+                listOf(SpacingRequirement(zoneNames[0], 0.0, POSITIVE_INFINITY, true))
+            )
         val res =
             availability.getAvailability(
                 explorer,
@@ -369,7 +385,8 @@ class BlockAvailabilityTests {
     fun testEndOffset() {
         val explorer = makeExplorer(5, 5)
         val availability =
-            makeAvailability(
+            makeBlockAvailability(
+                infra,
                 listOf(SpacingRequirement(zoneNames.last(), 0.0, POSITIVE_INFINITY, true))
             )
         val res =
@@ -384,7 +401,8 @@ class BlockAvailabilityTests {
         val explorer = makeExplorer(5, 1)
         val startTime = 1200.0
         val availability =
-            makeAvailability(
+            makeBlockAvailability(
+                infra,
                 listOf(
                     SpacingRequirement(zoneNames[0], 0.0, startTime - 1, true),
                 )
@@ -407,7 +425,8 @@ class BlockAvailabilityTests {
         val startTime = 1200.0
         val duration = 120.0
         val availability =
-            makeAvailability(
+            makeBlockAvailability(
+                infra,
                 listOf(
                     SpacingRequirement(zoneNames.last(), startTime, startTime + duration, true),
                 )
@@ -423,18 +442,48 @@ class BlockAvailabilityTests {
     }
 
     /** Test that we can handle grid margins */
-    @Disabled
     @Test
     fun testGridMargins() {
-        TODO("Not currently supported, not even part of the interface yet")
-    }
+        val explorer = makeExplorer(5, 1)
+        val marginBefore = 42.0
+        val marginAfter = 84.0
+        val endFirstConflict = 1200.0
+        val startSecondConflict = 6000.0
+        val availability =
+            makeBlockAvailability(
+                infra,
+                listOf(
+                    SpacingRequirement(zoneNames[0], 0.0, endFirstConflict, true),
+                    SpacingRequirement(zoneNames[0], startSecondConflict, POSITIVE_INFINITY, true),
+                ),
+                marginBefore,
+                marginAfter
+            )
+        val res1 =
+            availability.getAvailability(
+                explorer,
+                Offset(0.meters),
+                explorer.getSimulatedLength(),
+                0.0
+            ) as BlockAvailabilityInterface.Unavailable
+        assertEquals(endFirstConflict + marginBefore, res1.duration)
 
-    /** Utility function, creates a block availability function from a list of requirements */
-    private fun makeAvailability(
-        requirements: List<SpacingRequirement>
-    ): BlockAvailabilityInterface {
-        val trainRequirements = listOf(TrainRequirements(0L, requirements, listOf()))
-        val incrementalConflictDetector = incrementalConflictDetector(trainRequirements)
-        return BlockAvailability(infra, incrementalConflictDetector)
+        val startTime = 4000.0
+        val res2 =
+            availability.getAvailability(
+                explorer,
+                Offset(0.meters),
+                explorer.getSimulatedLength(),
+                startTime
+            ) as BlockAvailabilityInterface.Available
+        assertTrue {
+            areTimesEqual(
+                startSecondConflict -
+                    marginAfter -
+                    startTime -
+                    explorer.getFullEnvelope().totalTime,
+                res2.maximumDelay,
+            )
+        }
     }
 }
