@@ -24,7 +24,10 @@ import kotlin.Double.Companion.POSITIVE_INFINITY
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
-import org.junit.jupiter.api.*
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertDoesNotThrow
+import org.junit.jupiter.api.assertThrows
 
 class BlockAvailabilityTests {
     // See overlapping_routes.py for a detailed infrastructure description
@@ -523,5 +526,50 @@ class BlockAvailabilityTests {
                 res2.maximumDelay,
             )
         }
+    }
+
+    /**
+     * Test that there is no missing conflict after a "not enough lookahead" error. The lookahead
+     * problem happens at the end of the path, the conflict is at the beginning
+     */
+    @Test
+    fun testNoMissingConflictAfterNotEnoughLookahead() {
+        var explorer = makeExplorer(4, 4)
+        val duration = 120.0
+        val availability =
+            makeBlockAvailability(
+                infra,
+                listOf(SpacingRequirement(zoneNames[0], 0.0, duration, true))
+            )
+        assertThrows<BlockAvailabilityInterface.NotEnoughLookaheadError> {
+            availability.getAvailability(
+                explorer,
+                Offset(0.meters),
+                explorer.getSimulatedLength(),
+                0.0
+            )
+        }
+        explorer =
+            explorer
+                .cloneAndExtendLookahead()
+                .first()
+                .addEnvelope(
+                    Envelope.make(
+                        EnvelopePart.generateTimes(
+                            listOf(EnvelopeProfile.CONSTANT_SPEED),
+                            doubleArrayOf(0.0, blockLengths.last().distance.meters),
+                            doubleArrayOf(30.0, 30.0)
+                        )
+                    )
+                )
+        explorer.moveForward()
+        val res =
+            availability.getAvailability(
+                explorer,
+                Offset(0.meters),
+                explorer.getSimulatedLength(),
+                0.0
+            ) as BlockAvailabilityInterface.Unavailable
+        assertEquals(duration, res.duration)
     }
 }
