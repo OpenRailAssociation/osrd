@@ -1,15 +1,13 @@
 pub mod light_rolling_stock;
 pub mod rolling_stock_image;
-pub mod rolling_stock_livery;
 
+use crate::modelsv2::rolling_stock_livery::RollingStockLiveryMetadata;
 use async_trait::async_trait;
 pub use light_rolling_stock::LightRollingStockModel;
 pub use rolling_stock_image::RollingStockSeparatedImageModel;
-pub use rolling_stock_livery::RollingStockLiveryModel;
 use utoipa::ToSchema;
 
 use crate::error::{InternalError, Result};
-use crate::models::rolling_stock::rolling_stock_livery::RollingStockLiveryMetadata;
 use crate::models::{Create, Identifiable, TextArray, Update};
 use crate::schema::rolling_stock::{
     EffortCurves, EnergySource, Gamma, RollingResistance, RollingStock, RollingStockCommon,

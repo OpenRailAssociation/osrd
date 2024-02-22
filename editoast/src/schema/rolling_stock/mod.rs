@@ -7,10 +7,9 @@ use std::collections::HashMap;
 use strum_macros::{Display, EnumString};
 use utoipa::ToSchema;
 
-use crate::{
-    models::rolling_stock::rolling_stock_livery::RollingStockLiveryMetadata,
-    schema::rolling_stock::rolling_stock_livery::RollingStockLivery,
-};
+use crate::modelsv2::rolling_stock_livery::RollingStockLiveryMetadata;
+use crate::schema::rolling_stock::rolling_stock_livery::RollingStockLivery;
+
 crate::schemas! {
     RollingStockComfortType,
     RollingStockCommon,
