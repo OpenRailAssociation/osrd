@@ -62,7 +62,8 @@ const MapSearchOperationalPoint = ({
   const searchOperationalPoints = async () => {
     const isSearchingByTrigram = !Number.isInteger(+debouncedSearchTerm) && searchTerm.length < 4;
     const searchQuery = isSearchingByTrigram
-      ? ['=i', ['trigram'], debouncedSearchTerm]
+      ? // We have to test for op names that goes under 4 letters too
+        ['or', ['=i', ['trigram'], debouncedSearchTerm], ['=i', ['name'], debouncedSearchTerm]]
       : [
           'or',
           ['search', ['name'], debouncedSearchTerm],
