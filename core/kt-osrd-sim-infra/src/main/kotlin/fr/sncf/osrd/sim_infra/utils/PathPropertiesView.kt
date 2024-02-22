@@ -12,9 +12,8 @@ import fr.sncf.osrd.utils.units.meters
 /**
  * This class is used to create a PathProperties from a slice of an existing PathProperties.
  *
- * This implementation is *not* optimized, deep copies are made at every call. It should eventually
- * be improved by implementing actual views on DistanceRangeMaps. This should be done as part of the
- * refactor that integrates STDCM with conflict detection, once everything is working properly.
+ * This implementation is *not* optimized, deep copies are made at every call. It can be improved by
+ * implementing actual views on DistanceRangeMaps if the performance cost is measurable.
  */
 data class PathPropertiesView(
     val base: PathProperties,
