@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { getMap } from 'reducers/map/selectors';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { onResultSearchClick } from 'common/Map/utils';
@@ -28,7 +28,6 @@ const MapSearchOperationalPoint = ({
 }: MapSearchOperationalPointProps) => {
   const map = useSelector(getMap);
   const [searchResults, setSearchResults] = useState<SearchResultItemOperationalPoint[]>([]);
-  const [orderedResults, setOrderedResults] = useState<SearchResultItemOperationalPoint[]>([]);
   const [chCodeFilter, setChCodeFilter] = useState('');
   const [mainOperationalPointsOnly, setMainOperationalPointsOnly] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -39,7 +38,7 @@ const MapSearchOperationalPoint = ({
 
   const { t } = useTranslation(['map-search']);
 
-  const debouncedSearchTerm = useDebounce(searchTerm, 500);
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
   const sortAndFilterSearchResults = () =>
     [...searchResults]
@@ -52,7 +51,7 @@ const MapSearchOperationalPoint = ({
       .filter((result) => {
         if (mainOperationalPointsOnly) return result.ch === '';
         return chCodeFilter !== ''
-          ? chCodeFilter.trim().toLowerCase() === result.ch.toLocaleLowerCase()
+          ? result.ch.toLocaleLowerCase().includes(chCodeFilter.trim().toLowerCase())
           : true;
       })
       .sort((a, b) => a.name.localeCompare(b.name) || a.ch.localeCompare(b.ch));
@@ -84,17 +83,10 @@ const MapSearchOperationalPoint = ({
       });
   };
 
-  useEffect(() => {
-    if (debouncedSearchTerm) {
-      searchOperationalPoints();
-    } else {
-      setSearchResults([]);
-    }
-  }, [debouncedSearchTerm]);
-
-  useEffect(() => {
-    setOrderedResults(sortAndFilterSearchResults());
-  }, [searchResults, chCodeFilter, mainOperationalPointsOnly]);
+  const orderedResults = useMemo(
+    () => sortAndFilterSearchResults(),
+    [searchResults, chCodeFilter, mainOperationalPointsOnly]
+  );
 
   const onResultClick = (result: SearchResultItemOperationalPoint) => {
     onResultSearchClick({
@@ -103,13 +95,20 @@ const MapSearchOperationalPoint = ({
       updateExtViewport,
       dispatch,
       title: result.name,
-      setSearchTerm,
     });
     closeMapSearchPopUp();
   };
 
+  useEffect(() => {
+    if (debouncedSearchTerm) {
+      searchOperationalPoints();
+    } else {
+      setSearchResults([]);
+    }
+  }, [debouncedSearchTerm]);
+
   return (
-    <>
+    <div className="mt-2">
       <div className="d-flex mb-2 flex-column flex-md-row">
         <span className="flex-fill col-md-6 col-xl-7 pl-0 mb-2">
           <InputSNCF
@@ -122,7 +121,10 @@ const MapSearchOperationalPoint = ({
             onChange={(e) => {
               setSearchTerm(e.target.value);
             }}
-            onClear={() => setSearchTerm('')}
+            onClear={() => {
+              setSearchTerm('');
+              setSearchResults([]);
+            }}
             clearButton
             noMargin
             sm
@@ -168,7 +170,7 @@ const MapSearchOperationalPoint = ({
           orderedResults.map((searchResult) => (
             <button
               type="button"
-              className={cx('operational-point', { main: searchResult.ch === '' })}
+              className={cx('search-result-item', { main: searchResult.ch === '' })}
               key={`mapSearchOperationalPoint-${searchResult.obj_id}`}
               onClick={() => onResultClick(searchResult)}
             >
@@ -181,7 +183,7 @@ const MapSearchOperationalPoint = ({
             </button>
           ))}
       </div>
-    </>
+    </div>
   );
 };
 

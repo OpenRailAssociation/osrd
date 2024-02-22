@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { createMapSearchQuery } from 'common/Map/utils';
 import { getMap } from 'reducers/map/selectors';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { updateLineSearchCode, updateMapSearchMarker } from 'reducers/map';
@@ -10,12 +9,10 @@ import { useTranslation } from 'react-i18next';
 import { zoomToFeature } from 'common/Map/WarpedMap/core/helpers';
 import bbox from '@turf/bbox';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import LineCard from 'common/Map/Search/LineCard';
-import nextId from 'react-id-generator';
 
 import { useAppDispatch } from 'store';
 import type { Viewport } from 'reducers/map';
-import type { Zone, SearchResultItemTrack, SearchPayload } from 'common/api/osrdEditoastApi';
+import type { Zone, SearchResultItemTrack } from 'common/api/osrdEditoastApi';
 
 type MapSearchLineProps = {
   updateExtViewport: (viewport: Partial<Viewport>) => void;
@@ -28,35 +25,39 @@ const MapSearchLine = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchLine
   const { t } = useTranslation(['map-search']);
   const dispatch = useAppDispatch();
   const [postSearch] = osrdEditoastApi.usePostSearchMutation();
-  const [searchState, setSearchState] = useState<string>('');
-  const [searchResults, setSearchResults] = useState<SearchResultItemTrack[] | undefined>(
-    undefined
-  );
-  const [getTrackZones, { data: trackZones }] =
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [searchResults, setSearchResults] = useState<SearchResultItemTrack[]>([]);
+  const [getTrackPath] =
     osrdEditoastApi.endpoints.getInfraByInfraIdLinesAndLineCodeBbox.useLazyQuery({});
 
-  const debouncedSearchTerm = useDebounce(searchState, 300);
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
-  const updateSearch = async (searchPayload: SearchPayload) => {
-    try {
-      const results = await postSearch({ searchPayload }).unwrap();
-      setSearchResults(results as SearchResultItemTrack[]);
-    } catch (e) {
-      console.error(e);
-      setSearchResults(undefined);
-    }
-  };
-
-  const getPayload = (lineSearch: string, infraIDPayload: number): SearchPayload => {
-    const payloadQuery = createMapSearchQuery(lineSearch, {
-      codeColumn: 'line_code',
-      nameColumn: 'line_name',
-    });
-
-    return {
+  const searchLine = async () => {
+    const searchQuery = [
+      'or',
+      ['search', ['line_name'], debouncedSearchTerm],
+      ['like', ['to_string', ['line_code']], `%${debouncedSearchTerm}%`],
+    ];
+    const payload = {
       object: 'track',
-      query: ['and', ['=', ['infra_id'], infraIDPayload], payloadQuery],
+      query: ['and', searchQuery, infraID !== undefined ? ['=', ['infra_id'], infraID] : true],
     };
+
+    await postSearch({
+      searchPayload: payload,
+      pageSize: 101,
+    })
+      .unwrap()
+      .then((results) => {
+        setSearchResults(
+          [...(results as SearchResultItemTrack[])].sort((a, b) =>
+            a.line_name.localeCompare(b.line_name)
+          )
+        );
+      })
+      .catch(() => {
+        setSearchResults([]);
+      });
   };
 
   const coordinates = (search: Zone) => search.geo;
@@ -65,63 +66,66 @@ const MapSearchLine = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchLine
     if (map.mapSearchMarker) {
       dispatch(updateMapSearchMarker(undefined));
     }
-    getTrackZones({ infraId: infraID as number, lineCode: searchResultItem.line_code });
+    await getTrackPath({ infraId: infraID as number, lineCode: searchResultItem.line_code })
+      .unwrap()
+      .then((trackPath) => {
+        const boundaries = bbox({
+          type: 'LineString',
+          coordinates: coordinates(trackPath),
+        });
+        zoomToFeature(boundaries, map.viewport, updateExtViewport);
+      })
+      .catch(() => {
+        dispatch(updateLineSearchCode(undefined));
+      });
     dispatch(updateLineSearchCode(searchResultItem.line_code));
+    closeMapSearchPopUp();
   };
 
   useEffect(() => {
-    if (searchState && infraID) {
-      updateSearch(getPayload(searchState, infraID));
+    if (debouncedSearchTerm) {
+      searchLine();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedSearchTerm]);
 
-  useEffect(() => {
-    if (trackZones) {
-      const tempBbox = bbox({
-        type: 'LineString',
-        coordinates: coordinates(trackZones),
-      });
-      zoomToFeature(tempBbox, map.viewport, updateExtViewport);
-      closeMapSearchPopUp();
-    }
-  }, [trackZones]);
-
-  const clearSearchResult = () => {
-    setSearchState('');
-    setSearchResults(undefined);
-  };
-
   return (
-    <>
-      <div className="d-flex mb-2">
-        <span className="flex-grow-1">
-          <InputSNCF
-            type="text"
-            placeholder={t('map-search:placeholderline')}
-            id="map-search-line"
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-              setSearchState(e.target.value);
-            }}
-            onClear={clearSearchResult}
-            value={searchState}
-            clearButton
-            noMargin
-            sm
-            focus
-          />
-        </span>
-      </div>
+    <div className="mt-2">
+      <InputSNCF
+        id="map-search-line"
+        type="text"
+        placeholder={t('map-search:placeholderline')}
+        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+          setSearchTerm(e.target.value);
+        }}
+        value={searchTerm}
+        clearButton
+        onClear={() => setSearchTerm('')}
+        sm
+        focus
+      />
       <h2 className="text-center mt-3">
-        {t('map-search:resultsCount', { count: searchResults ? searchResults.length : 0 })}
+        {searchResults.length > 100
+          ? t('resultsCountTooMuch')
+          : t('resultsCount', {
+              count: searchResults.length,
+            })}
       </h2>
       <div className="search-results">
-        {searchResults &&
+        {searchResults?.length > 0 &&
+          searchResults.length <= 100 &&
           searchResults.map((result) => (
-            <LineCard key={nextId()} resultSearchItem={result} onResultClick={onResultClick} />
+            <button
+              className="search-result-item"
+              onClick={() => onResultClick(result)}
+              type="button"
+              key={`line-search-item-${result.line_code}`}
+            >
+              <span className="name">{result.line_name}</span>
+              <span className="line-code">{result.line_code}</span>
+            </button>
           ))}
       </div>
-    </>
+    </div>
   );
 };
 
