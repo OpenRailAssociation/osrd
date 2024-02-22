@@ -4,9 +4,8 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use utoipa::ToSchema;
 
-use crate::models::rolling_stock::rolling_stock_livery::RollingStockLiveryMetadata;
-
 use super::{EnergySource, Gamma, RollingResistance, RollingStockMetadata};
+use crate::modelsv2::rolling_stock_livery::RollingStockLiveryMetadata;
 
 crate::schemas! {
     LightRollingStock,

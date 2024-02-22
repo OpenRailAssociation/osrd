@@ -1,5 +1,6 @@
 use crate::error::Result;
-use crate::models::{rolling_stock::rolling_stock_livery::RollingStockLiveryMetadata, TextArray};
+use crate::models::TextArray;
+use crate::modelsv2::rolling_stock_livery::RollingStockLiveryMetadata;
 use crate::schema::rolling_stock::light_rolling_stock::{
     LightEffortCurves, LightRollingStock, LightRollingStockWithLiveries,
 };

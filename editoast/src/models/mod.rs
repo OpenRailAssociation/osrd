@@ -17,7 +17,7 @@ use diesel_async::AsyncPgConnection as PgConnection;
 pub use self::pathfinding::*;
 pub use electrical_profiles::ElectricalProfileSet;
 pub use infra::Infra;
-pub use rolling_stock::{LightRollingStockModel, RollingStockLiveryModel, RollingStockModel};
+pub use rolling_stock::{LightRollingStockModel, RollingStockModel};
 pub use scenario::{Scenario, ScenarioWithCountTrains, ScenarioWithDetails};
 pub use text_array::TextArray;
 pub use timetable::{check_train_validity, Timetable, TimetableWithSchedulesDetails};

@@ -1,8 +1,9 @@
 use crate::error::Result;
 use crate::models::{
-    rolling_stock::RollingStockSeparatedImageModel, Create, Delete, Retrieve,
-    RollingStockLiveryModel, RollingStockModel, Update,
+    rolling_stock::RollingStockSeparatedImageModel, Create, Delete, Retrieve, RollingStockModel,
+    Update,
 };
+use crate::modelsv2::rolling_stock_livery::RollingStockLiveryModel;
 use crate::modelsv2::{Document, Model};
 use crate::schema::rolling_stock::rolling_stock_livery::RollingStockLivery;
 use crate::schema::rolling_stock::{
@@ -414,6 +415,8 @@ async fn create_livery(
     rolling_stock_id: Path<i64>,
     MultipartForm(form): MultipartForm<RollingStockLiveryCreateForm>,
 ) -> Result<Json<RollingStockLivery>> {
+    let mut conn = db_pool.get().await?;
+
     let rolling_stock_id = rolling_stock_id.into_inner();
 
     let formatted_images = format_images(form.images)?;
@@ -422,14 +425,14 @@ async fn create_livery(
     let compound_image = create_compound_image(db_pool.clone(), formatted_images.clone()).await?;
 
     // create livery
-    let rolling_stock_livery = RollingStockLiveryModel {
-        name: Some(form.name.into_inner()),
-        rolling_stock_id: Some(rolling_stock_id),
-        compound_image_id: Some(Some(compound_image.id)),
-        ..Default::default()
-    };
-    let rolling_stock_livery: RollingStockLivery =
-        rolling_stock_livery.create(db_pool.clone()).await?.into();
+    use crate::modelsv2::Create;
+    let rolling_stock_livery: RollingStockLivery = RollingStockLiveryModel::changeset()
+        .name(form.name.into_inner())
+        .rolling_stock_id(rolling_stock_id)
+        .compound_image_id(Some(compound_image.id))
+        .create(&mut conn)
+        .await?
+        .into();
 
     // create separated images
     let FormattedImages { images, .. } = formatted_images;
@@ -438,11 +441,10 @@ async fn create_livery(
         image.write_to(&mut w, ImageOutputFormat::Png).unwrap();
 
         use crate::modelsv2::Create;
-        let conn = &mut db_pool.get().await?;
         let image = Document::changeset()
             .content_type(String::from("image/png"))
             .data(w.into_inner())
-            .create(conn)
+            .create(&mut conn)
             .await?;
 
         let _ = RollingStockSeparatedImageModel {

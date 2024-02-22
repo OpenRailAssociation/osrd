@@ -370,14 +370,14 @@ pub mod tests {
         rs_name.push_str(name);
         let rolling_stock = named_fast_rolling_stock(&rs_name, db_pool.clone()).await;
         let image = document_example(db_pool.clone()).await;
-        let rolling_stock_livery = RollingStockLiveryModel {
-            id: None,
-            name: Some(String::from("test_livery")),
-            rolling_stock_id: Some(rolling_stock.id()),
-            compound_image_id: Some(Some(image.id())),
-        };
+
+        let rolling_stock_livery = RollingStockLiveryModel::changeset()
+            .name("test_livery".to_string())
+            .rolling_stock_id(rolling_stock.id())
+            .compound_image_id(Some(image.id()));
+
         RollingStockLiveryFixture {
-            rolling_stock_livery: TestFixture::create_legacy(rolling_stock_livery, db_pool).await,
+            rolling_stock_livery: TestFixture::create(rolling_stock_livery, db_pool).await,
             rolling_stock,
             image,
         }
