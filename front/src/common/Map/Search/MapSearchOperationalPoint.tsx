@@ -5,29 +5,32 @@ import { onResultSearchClick } from 'common/Map/utils';
 import { useDebounce } from 'utils/helpers';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
+import cx from 'classnames';
 
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 
-import type { SearchQuery, SearchResultItemOperationalPoint } from 'common/api/osrdEditoastApi';
+import type { SearchResultItemOperationalPoint } from 'common/api/osrdEditoastApi';
 import { useAppDispatch } from 'store';
 import type { Viewport } from 'reducers/map';
 import { useInfraID } from 'common/osrdContext';
 import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
-import StationCard from 'common/StationCard';
 
-const mainStationYardNames = ['', '00', 'BV'];
+const mainOperationalPointsCHCodes = ['', '00', 'BV'];
 
-type MapSearchStationProps = {
+type MapSearchOperationalPointProps = {
   updateExtViewport: (viewport: Partial<Viewport>) => void;
   closeMapSearchPopUp: () => void;
 };
 
-const MapSearchStation = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchStationProps) => {
+const MapSearchOperationalPoint = ({
+  updateExtViewport,
+  closeMapSearchPopUp,
+}: MapSearchOperationalPointProps) => {
   const map = useSelector(getMap);
   const [searchResults, setSearchResults] = useState<SearchResultItemOperationalPoint[]>([]);
   const [orderedResults, setOrderedResults] = useState<SearchResultItemOperationalPoint[]>([]);
   const [chCodeFilter, setChCodeFilter] = useState('');
-  const [mainStationsOnly, setMainStationsOnly] = useState(false);
+  const [mainOperationalPointsOnly, setMainOperationalPointsOnly] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const infraID = useInfraID();
 
@@ -36,25 +39,18 @@ const MapSearchStation = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchS
 
   const { t } = useTranslation(['map-search']);
 
-  const debouncedSearchTerm = useDebounce(searchTerm, 300);
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
-  // Create playload based on the type of search "name" or "trigram"
-  const createPayload = (searchQuery: SearchQuery) => ({
-    object: 'operationalpoint',
-    query: ['and', searchQuery, infraID !== undefined ? ['=', ['infra_id'], infraID] : true],
-  });
-
-  // Sort on name, and on yardname
-  const orderAndFilterResults = () =>
+  const sortAndFilterSearchResults = () =>
     [...searchResults]
       .map((result) => ({
         ...result,
-        // remove yard name information when it's a main station (aka "BV") to ensure it'll be on top of search results
-        ch: mainStationYardNames.includes(result.ch) ? '' : result.ch,
+        // remove CH Code information when it's a main operational point (=== "BV" or "00") to ensure it'll be on top of search results
+        ch: mainOperationalPointsCHCodes.includes(result.ch) ? '' : result.ch,
       }))
-      // Begin to filter with main stations (CH = ''), if not checked, filter on chCode input field
+      // Begin to filter with main operational points (CH code = ''), if not checked, filter on chCode input field
       .filter((result) => {
-        if (mainStationsOnly) return result.ch === '';
+        if (mainOperationalPointsOnly) return result.ch === '';
         return chCodeFilter !== ''
           ? chCodeFilter.trim().toLowerCase() === result.ch.toLocaleLowerCase()
           : true;
@@ -70,7 +66,10 @@ const MapSearchStation = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchS
           ['search', ['name'], debouncedSearchTerm],
           ['like', ['to_string', ['ci']], `%${debouncedSearchTerm}%`],
         ];
-    const payload = createPayload(searchQuery);
+    const payload = {
+      object: 'operationalpoint',
+      query: ['and', searchQuery, infraID !== undefined ? ['=', ['infra_id'], infraID] : true],
+    };
 
     await postSearch({
       searchPayload: payload,
@@ -94,8 +93,8 @@ const MapSearchStation = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchS
   }, [debouncedSearchTerm]);
 
   useEffect(() => {
-    setOrderedResults(orderAndFilterResults());
-  }, [searchResults, chCodeFilter, mainStationsOnly]);
+    setOrderedResults(sortAndFilterSearchResults());
+  }, [searchResults, chCodeFilter, mainOperationalPointsOnly]);
 
   const onResultClick = (result: SearchResultItemOperationalPoint) => {
     onResultSearchClick({
@@ -114,10 +113,10 @@ const MapSearchStation = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchS
       <div className="d-flex mb-2 flex-column flex-md-row">
         <span className="flex-fill col-md-6 col-xl-7 pl-0 mb-2">
           <InputSNCF
-            id="map-search-station"
-            name="map-search-station"
-            placeholder={t('map-search:placeholdername')}
-            title={t('map-search:placeholdername')}
+            id="map-search-operational-points"
+            name="map-search-operational-points"
+            placeholder={t('placeholdername')}
+            title={t('placeholdername')}
             type="text"
             value={searchTerm}
             onChange={(e) => {
@@ -132,15 +131,15 @@ const MapSearchStation = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchS
         </span>
         <span className="col-md-3 pl-0 mb-2">
           <InputSNCF
+            id="map-search-operational-points-ch-code"
             type="text"
-            placeholder={t('map-search:placeholderchcode')}
-            id="map-search-station-ch-code"
+            placeholder={t('placeholderchcode')}
             onChange={(e) => {
               setChCodeFilter(e.target.value);
             }}
             onClear={() => setChCodeFilter('')}
             value={chCodeFilter}
-            disabled={mainStationsOnly}
+            disabled={mainOperationalPointsOnly}
             clearButton
             noMargin
             sm
@@ -148,35 +147,42 @@ const MapSearchStation = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchS
         </span>
         <span className="col-md-3 col-xl-2 pr-2 pl-0 mt-md-1">
           <CheckboxRadioSNCF
+            id="map-search-operational-points-main-only"
             type="checkbox"
-            label={t('map-search:labelbvonly')}
-            id="map-search-station-bv-only"
-            checked={mainStationsOnly}
-            onChange={() => setMainStationsOnly(!mainStationsOnly)}
+            label={t('mainOperationalPointsOnly')}
+            checked={mainOperationalPointsOnly}
+            onChange={() => setMainOperationalPointsOnly(!mainOperationalPointsOnly)}
           />
         </span>
       </div>
       <h2 className="text-center mt-3">
         {searchResults.length > 100
-          ? t('map-search:resultsCountTooMuch')
-          : t('map-search:resultsCount', {
+          ? t('resultsCountTooMuch')
+          : t('resultsCount', {
               count: orderedResults.length,
             })}
       </h2>
-      {searchResults.length > 0 && searchResults.length <= 100 && (
-        <div className="search-results">
-          {orderedResults.map((searchResult) => (
-            <div className="mb-1" key={`mapSearchStation-${searchResult.obj_id}`}>
-              <StationCard
-                station={{ ...searchResult, yardname: searchResult.ch }}
-                onClick={() => onResultClick(searchResult)}
-              />
-            </div>
+      <div className="search-results">
+        {searchResults.length > 0 &&
+          searchResults.length <= 100 &&
+          orderedResults.map((searchResult) => (
+            <button
+              type="button"
+              className={cx('operational-point', { main: searchResult.ch === '' })}
+              key={`mapSearchOperationalPoint-${searchResult.obj_id}`}
+              onClick={() => onResultClick(searchResult)}
+            >
+              <span className="trigram">{searchResult.trigram}</span>
+              <span className="name">
+                {searchResult.name}
+                <span className="ch">{searchResult.ch}</span>
+              </span>
+              <span className="uic">{searchResult.uic}</span>
+            </button>
           ))}
-        </div>
-      )}
+      </div>
     </>
   );
 };
 
-export default MapSearchStation;
+export default MapSearchOperationalPoint;

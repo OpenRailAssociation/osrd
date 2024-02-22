@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import type { MapRef } from 'react-map-gl/maplibre';
 
-import MapSearchStation from 'common/Map/Search/MapSearchStation';
+import MapSearchOperationalPoint from 'common/Map/Search/MapSearchOperationalPoint';
 import Tabs from 'common/Tabs';
 import HearderPopUp from 'common/Map/HeaderPopUp';
 import MapSearchLine from 'common/Map/Search/MapSearchLine';
@@ -70,9 +70,9 @@ const MapSearch = ({ map, closeMapSearchPopUp }: MapSearchProps) => {
         tabs={[
           {
             id: 'station',
-            label: t('map-search:station'),
+            label: t('map-search:operationalPoint'),
             content: (
-              <MapSearchStation
+              <MapSearchOperationalPoint
                 updateExtViewport={updateViewportChange}
                 closeMapSearchPopUp={closeMapSearchPopUp}
               />

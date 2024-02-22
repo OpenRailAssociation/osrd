@@ -4,12 +4,13 @@
   "errorMessages": {
     "unableToSearchSignal": "Signal search impossible"
   },
-  "labelbvonly": "BV only",
   "line": "Line",
   "linecode": "Line code",
+  "mainOperationalPointsOnly": "Main only",
   "name": "Name",
   "noAspectSelected": "No state selected",
   "noresult": "No results",
+  "operationalPoint": "Operational point",
   "pk": "PK",
   "placeholderchcode": "CH",
   "placeholderline": "Line name or number",
@@ -23,7 +24,6 @@
   "search": "Search",
   "signal": "Signal",
   "signalbox": "Switchbox",
-  "station": "Station",
   "signalSettings": {
     "distant": "Far",
     "is_430": "430",
