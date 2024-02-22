@@ -15,6 +15,7 @@ import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
+import fr.sncf.osrd.utils.units.meters
 import java.util.*
 
 /**
@@ -124,7 +125,7 @@ private class InfraExplorerImpl(
     private var blocks: MutableStaticIdxArrayList<Block>,
     private var routes: MutableStaticIdxArrayList<Route>,
     private var incrementalPath: IncrementalPath,
-    private var blockToPathProperties: MutableMap<BlockId, PathProperties>,
+    private var pathPropertiesCache: MutableMap<BlockId, PathProperties>,
     private var currentIndex: Int = 0,
     private val endBlocks:
         Collection<BlockId>, // Blocks on which "end of path" should be set to true
@@ -138,12 +139,16 @@ private class InfraExplorerImpl(
         offset: Offset<Block>,
         length: Distance?
     ): PathProperties {
-        return PathPropertiesView(
-            blockToPathProperties[getCurrentBlock()]!!,
-            offset.cast(),
-            if (length == null) Offset(blockInfra.getBlockLength(getCurrentBlock()).distance)
-            else offset.plus(length).cast()
-        )
+        val blockPathProperties =
+            pathPropertiesCache.computeIfAbsent(getCurrentBlock()) {
+                makePathProps(blockInfra, rawInfra, it)
+            }
+        val blockLength = Length<Path>(blockInfra.getBlockLength(getCurrentBlock()).distance)
+        val endOffset = if (length == null) blockLength else offset.plus(length).cast()
+        if (offset.distance == 0.meters && endOffset == blockLength) {
+            return blockPathProperties
+        }
+        return PathPropertiesView(blockPathProperties, offset.cast(), endOffset)
     }
 
     override fun getLastEdgeIdentifier(): EdgeIdentifier {
@@ -215,7 +220,7 @@ private class InfraExplorerImpl(
             this.blocks.clone(),
             this.routes.clone(),
             this.incrementalPath.clone(),
-            this.blockToPathProperties.toMutableMap(),
+            this.pathPropertiesCache.toMutableMap(),
             this.currentIndex,
             this.endBlocks,
         )
@@ -237,7 +242,6 @@ private class InfraExplorerImpl(
         blocks.addAll(routeBlocks)
         routes.add(route)
         for (block in routeBlocks) {
-            blockToPathProperties[block] = makePathProps(blockInfra, rawInfra, block)
             val endPath = endBlocks.contains(block)
             val startPath = !incrementalPath.pathStarted
             val firstBlock = block == routeBlocks.first()
