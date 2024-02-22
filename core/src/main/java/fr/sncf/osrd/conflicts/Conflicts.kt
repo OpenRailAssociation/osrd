@@ -11,12 +11,12 @@ import kotlin.math.min
 
 interface SpacingTrainRequirement {
     val trainId: Long
-    val spacingRequirements: List<SpacingRequirement>
+    val spacingRequirements: Collection<SpacingRequirement>
 }
 
 interface RoutingTrainRequirement {
     val trainId: Long
-    val routingRequirements: List<RoutingRequirement>
+    val routingRequirements: Collection<RoutingRequirement>
 }
 
 interface ResourceRequirement {
@@ -27,8 +27,10 @@ interface ResourceRequirement {
 class TrainRequirements(
     @Json(name = "train_id")
     override val trainId: Long, // Not the usual RJS ids, but an actual DB id
-    @Json(name = "spacing_requirements") override val spacingRequirements: List<SpacingRequirement>,
-    @Json(name = "routing_requirements") override val routingRequirements: List<RoutingRequirement>,
+    @Json(name = "spacing_requirements")
+    override val spacingRequirements: Collection<SpacingRequirement>,
+    @Json(name = "routing_requirements")
+    override val routingRequirements: Collection<RoutingRequirement>,
 ) : SpacingTrainRequirement, RoutingTrainRequirement
 
 fun detectConflicts(trainRequirements: List<TrainRequirements>): List<Conflict> {
