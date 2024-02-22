@@ -28,7 +28,6 @@ import { getMapMouseEventNearestFeature } from 'utils/mapHelper';
 import { getMap, getShowOSM, getTerrain3DExaggeration } from 'reducers/map/selectors';
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
 import { LAYER_TO_EDITOAST_DICT, LAYERS_SET } from 'applications/editor/consts';
-import { updateMapSearchMarker } from 'reducers/map';
 import { useMapBlankStyle } from 'common/Map/Layers/blankStyle';
 import { useSwitchTypes } from 'applications/editor/tools/switchEdition/types';
 
@@ -39,6 +38,7 @@ import type { InfraError } from 'applications/editor/components/InfraErrors';
 import type { Viewport } from 'reducers/map';
 import { getEditorState } from 'reducers/editor/selectors';
 import { useAppDispatch } from 'store';
+import { removeSearchItemMarkersOnMap } from 'common/Map/utils';
 
 interface MapProps<S extends CommonToolState = CommonToolState> {
   t: TFunction;
@@ -278,7 +278,7 @@ const MapUnplugged = ({
             if (activeTool.onClickMap) {
               activeTool.onClickMap(eventWithFeature, extendedContext);
             }
-            dispatch(updateMapSearchMarker(undefined));
+            removeSearchItemMarkersOnMap(dispatch);
           }}
         >
           <VirtualLayers />

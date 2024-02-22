@@ -30,7 +30,7 @@ const MapSearchLine = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchLine
   const [getTrackPath] =
     osrdEditoastApi.endpoints.getInfraByInfraIdLinesAndLineCodeBbox.useLazyQuery({});
 
-  const debouncedSearchTerm = useDebounce(searchTerm, 500);
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
   const searchLine = async () => {
     const searchQuery = [
@@ -85,6 +85,8 @@ const MapSearchLine = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchLine
   useEffect(() => {
     if (debouncedSearchTerm) {
       searchLine();
+    } else if (searchResults.length !== 0) {
+      setSearchResults([]);
     }
   }, [debouncedSearchTerm]);
 
@@ -99,7 +101,10 @@ const MapSearchLine = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchLine
         }}
         value={searchTerm}
         clearButton
-        onClear={() => setSearchTerm('')}
+        onClear={() => {
+          setSearchTerm('');
+          setSearchResults([]);
+        }}
         sm
         focus
       />

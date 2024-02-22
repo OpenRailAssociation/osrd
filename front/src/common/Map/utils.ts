@@ -1,6 +1,6 @@
 import turfCenter from '@turf/center';
 import { AppDispatch } from 'store';
-import { updateMapSearchMarker } from 'reducers/map/index';
+import { updateLineSearchCode, updateMapSearchMarker } from 'reducers/map/index';
 import type { AllGeoJSON } from '@turf/helpers';
 import type { MapState, Viewport } from 'reducers/map/index';
 import type {
@@ -26,10 +26,8 @@ export const onResultSearchClick = ({
   map,
   updateExtViewport,
   dispatch,
-  setSearchTerm,
   title,
 }: OnResultSearchClickType) => {
-  if (setSearchTerm) setSearchTerm(title);
   const coordinates = getCoordinates(result);
 
   const center = turfCenter(coordinates as AllGeoJSON);
@@ -58,4 +56,9 @@ export function createMapSearchQuery(
   return !Number.isNaN(Number(searchState))
     ? ['=', [codeColumn], Number(searchState)]
     : ['search', [nameColumn], searchState];
+}
+
+export function removeSearchItemMarkersOnMap(dispatch: AppDispatch) {
+  dispatch(updateMapSearchMarker(undefined));
+  dispatch(updateLineSearchCode(undefined));
 }
