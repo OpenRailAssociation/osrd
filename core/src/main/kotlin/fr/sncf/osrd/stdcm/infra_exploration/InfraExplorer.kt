@@ -124,7 +124,7 @@ private class InfraExplorerImpl(
     private var blocks: MutableStaticIdxArrayList<Block>,
     private var routes: MutableStaticIdxArrayList<Route>,
     private var incrementalPath: IncrementalPath,
-    private var blockToPathProperties: MutableMap<BlockId, PathProperties>,
+    private var pathPropertiesCache: MutableMap<BlockId, PathProperties>,
     private var currentIndex: Int = 0,
     private val endBlocks:
         Collection<BlockId>, // Blocks on which "end of path" should be set to true
@@ -139,7 +139,9 @@ private class InfraExplorerImpl(
         length: Distance?
     ): PathProperties {
         return PathPropertiesView(
-            blockToPathProperties[getCurrentBlock()]!!,
+            pathPropertiesCache.computeIfAbsent(getCurrentBlock()) {
+                makePathProps(blockInfra, rawInfra, it)
+            },
             offset.cast(),
             if (length == null) Offset(blockInfra.getBlockLength(getCurrentBlock()).distance)
             else offset.plus(length).cast()
@@ -215,7 +217,7 @@ private class InfraExplorerImpl(
             this.blocks.clone(),
             this.routes.clone(),
             this.incrementalPath.clone(),
-            this.blockToPathProperties.toMutableMap(),
+            this.pathPropertiesCache.toMutableMap(),
             this.currentIndex,
             this.endBlocks,
         )
@@ -237,7 +239,6 @@ private class InfraExplorerImpl(
         blocks.addAll(routeBlocks)
         routes.add(route)
         for (block in routeBlocks) {
-            blockToPathProperties[block] = makePathProps(blockInfra, rawInfra, block)
             val endPath = endBlocks.contains(block)
             val startPath = !incrementalPath.pathStarted
             val firstBlock = block == routeBlocks.first()
