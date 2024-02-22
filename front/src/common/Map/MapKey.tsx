@@ -5,7 +5,7 @@ import colors from 'common/Map/Consts/colors';
 import { getMapStyle } from 'reducers/map/selectors';
 import { electrificationMapKey, MapKeyProps, speedLimitMapKey } from './const';
 import 'common/Map/MapKey.scss';
-import HearderPopUp from './HeaderPopUp';
+import MapModalHeader from './MapModalHeader';
 
 const MapSettings = ({ closeMapKeyPopUp }: MapKeyProps) => {
   const { t } = useTranslation(['translation', 'map-key']);
@@ -40,7 +40,7 @@ const MapSettings = ({ closeMapKeyPopUp }: MapKeyProps) => {
 
   return (
     <div className="map-modal map-modal-dark">
-      <HearderPopUp onClick={closeMapKeyPopUp} title={t('map-key:keyTitle')} isLight />
+      <MapModalHeader closeAction={closeMapKeyPopUp} title={t('map-key:keyTitle')} textLight />
       <div className="row">
         <div className="col-lg-6">
           <div className="mapkey">

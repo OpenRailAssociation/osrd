@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { MapRef } from 'react-map-gl/maplibre';
 import ReactMapGL, { AttributionControl, ScaleControl } from 'react-map-gl/maplibre';
 import type { Viewport } from 'reducers/map';
-import { updateMapSearchMarker, updateViewport } from 'reducers/map';
+import { updateViewport } from 'reducers/map';
 import { useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
@@ -53,6 +53,7 @@ import { useInfraID, useOsrdConfActions, useOsrdConfSelectors } from 'common/osr
 import Itinerary from 'modules/trainschedule/components/ManageTrainSchedule/ManageTrainScheduleMap/Itinerary';
 import ItineraryMarkers from 'modules/trainschedule/components/ManageTrainSchedule/ManageTrainScheduleMap/ItineraryMarkers';
 import { useAppDispatch } from 'store';
+import { removeSearchItemMarkersOnMap } from 'common/Map/utils';
 
 const Map = () => {
   const mapBlankStyle = useMapBlankStyle();
@@ -124,7 +125,7 @@ const Map = () => {
         })
       );
     }
-    dispatch(updateMapSearchMarker(undefined));
+    removeSearchItemMarkersOnMap(dispatch);
   };
 
   const onMoveGetFeature = (e: MapLayerMouseEvent) => {

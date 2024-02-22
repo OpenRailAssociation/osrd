@@ -40,21 +40,24 @@ const MapSearchOperationalPoint = ({
 
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
-  const sortAndFilterSearchResults = () =>
-    [...searchResults]
-      .map((result) => ({
-        ...result,
-        // remove CH Code information when it's a main operational point (=== "BV" or "00") to ensure it'll be on top of search results
-        ch: mainOperationalPointsCHCodes.includes(result.ch) ? '' : result.ch,
-      }))
-      // Begin to filter with main operational points (CH code = ''), if not checked, filter on chCode input field
-      .filter((result) => {
-        if (mainOperationalPointsOnly) return result.ch === '';
-        return chCodeFilter !== ''
-          ? result.ch.toLocaleLowerCase().includes(chCodeFilter.trim().toLowerCase())
-          : true;
-      })
-      .sort((a, b) => a.name.localeCompare(b.name) || a.ch.localeCompare(b.ch));
+  const sortedResults = useMemo(
+    () =>
+      [...searchResults]
+        .map((result) => ({
+          ...result,
+          // remove CH Code information when it's a main operational point (=== "BV" or "00") to ensure it'll be on top of search results
+          ch: mainOperationalPointsCHCodes.includes(result.ch) ? '' : result.ch,
+        }))
+        // Begin to filter with main operational points (CH code = ''), if not checked, filter on chCode input field
+        .filter((result) => {
+          if (mainOperationalPointsOnly) return result.ch === '';
+          return chCodeFilter !== ''
+            ? result.ch.toLocaleLowerCase().includes(chCodeFilter.trim().toLowerCase())
+            : true;
+        })
+        .sort((a, b) => a.name.localeCompare(b.name) || a.ch.localeCompare(b.ch)),
+    [searchResults, chCodeFilter, mainOperationalPointsOnly]
+  );
 
   const searchOperationalPoints = async () => {
     const isSearchingByTrigram = !Number.isInteger(+debouncedSearchTerm) && searchTerm.length < 4;
@@ -83,11 +86,6 @@ const MapSearchOperationalPoint = ({
       });
   };
 
-  const orderedResults = useMemo(
-    () => sortAndFilterSearchResults(),
-    [searchResults, chCodeFilter, mainOperationalPointsOnly]
-  );
-
   const onResultClick = (result: SearchResultItemOperationalPoint) => {
     onResultSearchClick({
       result,
@@ -102,7 +100,7 @@ const MapSearchOperationalPoint = ({
   useEffect(() => {
     if (debouncedSearchTerm) {
       searchOperationalPoints();
-    } else {
+    } else if (searchResults.length !== 0) {
       setSearchResults([]);
     }
   }, [debouncedSearchTerm]);
@@ -161,13 +159,13 @@ const MapSearchOperationalPoint = ({
         {searchResults.length > 100
           ? t('resultsCountTooMuch')
           : t('resultsCount', {
-              count: orderedResults.length,
+              count: sortedResults.length,
             })}
       </h2>
       <div className="search-results">
         {searchResults.length > 0 &&
           searchResults.length <= 100 &&
-          orderedResults.map((searchResult) => (
+          sortedResults.map((searchResult) => (
             <button
               type="button"
               className={cx('search-result-item', { main: searchResult.ch === '' })}

@@ -1,7 +1,7 @@
 import React, { FC, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import HearderPopUp from 'common/Map/HeaderPopUp';
+import MapModalHeader from 'common/Map/MapModalHeader';
 import MapSettingsLayers from 'common/Map/Settings/MapSettingsLayers';
 import MapSettingsMapStyle from 'common/Map/Settings/MapSettingsMapStyle';
 import MapSettingsBackgroundSwitches from 'common/Map/Settings/MapSettingsBackgroundSwitches';
@@ -18,7 +18,7 @@ const MapSettings: FC<MapSettingsProps> = ({ closeMapSettingsPopUp }) => {
 
   return (
     <div className="map-modal">
-      <HearderPopUp onClick={closeMapSettingsPopUp} title={t('map-settings:mapSettings')} />
+      <MapModalHeader closeAction={closeMapSettingsPopUp} title={t('map-settings:mapSettings')} />
       <div className="my-1" />
       <MapSettingsMapStyle />
       <div className="my-1" />

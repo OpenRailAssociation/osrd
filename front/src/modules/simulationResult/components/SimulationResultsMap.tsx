@@ -16,7 +16,7 @@ import type { TrainPosition } from 'modules/simulationResult/components/Simulati
 import { useAppDispatch } from 'store';
 import type { RootState } from 'reducers';
 import type { Viewport } from 'reducers/map';
-import { updateMapSearchMarker, updateViewport } from 'reducers/map';
+import { updateViewport } from 'reducers/map';
 import type { Train } from 'reducers/osrdsimulation/types';
 import { getPresentSimulation, getSelectedTrain } from 'reducers/osrdsimulation/selectors';
 
@@ -68,6 +68,7 @@ import SNCF_PSL from 'common/Map/Layers/extensions/SNCF/PSL';
 import type { SimulationReport } from 'common/api/osrdEditoastApi';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { getTerrain3DExaggeration } from 'reducers/map/selectors';
+import { removeSearchItemMarkersOnMap } from 'common/Map/utils';
 import { getRegimeKey, getSimulationHoverPositions } from './SimulationResultsMap/helpers';
 import { useChartSynchronizer } from './ChartHelpers/ChartSynchronizer';
 
@@ -244,7 +245,7 @@ const Map: FC<MapProps> = () => {
           });
         }}
         onClick={() => {
-          dispatch(updateMapSearchMarker(undefined));
+          removeSearchItemMarkersOnMap(dispatch);
         }}
         interactiveLayerIds={interactiveLayerIds}
         touchZoomRotate

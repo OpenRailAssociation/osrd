@@ -3,7 +3,7 @@ import type { MapRef } from 'react-map-gl/maplibre';
 import ReactMapGL, { AttributionControl, ScaleControl } from 'react-map-gl/maplibre';
 import { isNil } from 'lodash';
 import type { Viewport } from 'reducers/map';
-import { updateMapSearchMarker, updateViewport } from 'reducers/map';
+import { updateViewport } from 'reducers/map';
 import { useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
@@ -43,6 +43,7 @@ import { CUSTOM_ATTRIBUTION } from 'common/Map/const';
 import { useMapBlankStyle } from 'common/Map/Layers/blankStyle';
 
 import { useInfraID } from 'common/osrdContext';
+import { removeSearchItemMarkersOnMap } from 'common/Map/utils';
 
 function Map() {
   const mapBlankStyle = useMapBlankStyle();
@@ -135,7 +136,7 @@ function Map() {
           setMapLoaded(true);
         }}
         onClick={() => {
-          dispatch(updateMapSearchMarker(undefined));
+          removeSearchItemMarkersOnMap(dispatch);
         }}
       >
         <VirtualLayers />
