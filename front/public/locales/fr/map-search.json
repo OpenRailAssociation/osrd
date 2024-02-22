@@ -4,12 +4,13 @@
   "errorMessages": {
     "unableToSearchSignal": "Recherche du signal impossible"
   },
-  "labelbvonly": "BV seuls",
   "line": "Ligne",
   "linecode": "Code ligne",
+  "mainOperationalPointsOnly": "BV seuls",
   "name": "Nom",
   "noAspectSelected": "Aucun aspect sélectionné",
   "noresult": "Aucun résultat",
+  "operationalPoint": "Point remarquable",
   "pk": "PK",
   "placeholderchcode": "CH",
   "placeholderline": "Nom ou numéro de ligne",
@@ -23,7 +24,6 @@
   "search": "Rechercher",
   "signal": "Signal",
   "signalbox": "Poste",
-  "station": "Gare",
   "signalSettings": {
     "distant": "Distant",
     "is_430": "430",
