@@ -31,7 +31,6 @@ use actix_web::dev::HttpServiceFactory;
 use actix_web::web::{Data, Json};
 use actix_web::{get, services};
 use diesel::sql_query;
-use heck::ToUpperCamelCase;
 use itertools::Itertools;
 use redis::cmd;
 use serde_derive::{Deserialize, Serialize};
@@ -192,11 +191,10 @@ impl OpenApiRoot {
         for error_def in inventory::iter::<ErrorDefinition> {
             errors.push(error_def);
         }
-        errors.sort_by(|a, b| a.id.cmp(b.id));
+        errors.sort_by(|a, b| a.namespace.cmp(b.namespace).then(a.id.cmp(b.id)));
         for error_def in errors {
-            let error_id = error_def.id.to_upper_camel_case();
             openapi.components.as_mut().unwrap().schemas.insert(
-                error_id.clone(),
+                error_def.get_schema_name(),
                 utoipa::openapi::ObjectBuilder::new()
                     .property(
                         "type",
@@ -224,8 +222,11 @@ impl OpenApiRoot {
 
             // Adding the ref of the error to the generic error
             editoast_error.items.push(
-                utoipa::openapi::Ref::new(format!("#/components/schemas/{}", error_id.clone()))
-                    .into(),
+                utoipa::openapi::Ref::new(format!(
+                    "#/components/schemas/{}",
+                    error_def.get_schema_name()
+                ))
+                .into(),
             );
         }
 

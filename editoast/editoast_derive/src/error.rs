@@ -14,13 +14,14 @@ struct ErrorOptions {
     default_status: Option<u16>,
 }
 
-#[derive(FromVariant)]
+#[derive(Debug, FromVariant)]
 #[darling(attributes(editoast_error), forward_attrs(allow, doc, cfg))]
 struct ErrorVariantParams {
     status: Option<syn::Expr>,
     no_context: Option<bool>,
 }
 
+#[derive(Debug)]
 struct ParsedVariant {
     ident: Ident,
     params: ErrorVariantParams,
@@ -43,9 +44,10 @@ pub fn expand_editoast_error(input: &DeriveInput) -> Result<TokenStream> {
     let contexts = expand_contexts(&variants);
     let get_types = expand_get_types(&variants, &base_id);
 
+    let error_defs_namespace = name.to_string();
     let error_definition = variants
         .iter()
-        .map(|v| parse_error_definition(&base_id, default_status, v))
+        .map(|v| parse_error_definition(&base_id, default_status, &error_defs_namespace, v))
         .collect::<Result<Vec<TokenStream>>>()?;
 
     let error_definitions: TokenStream = error_definition.into_iter().collect();
@@ -71,6 +73,7 @@ pub fn expand_editoast_error(input: &DeriveInput) -> Result<TokenStream> {
 fn parse_error_definition(
     base_id: &String,
     default_status: u16,
+    namespace: &String,
     variant: &ParsedVariant,
 ) -> Result<TokenStream> {
     //Error name
@@ -119,7 +122,7 @@ fn parse_error_definition(
     let context_serialized = serde_json::to_string(&context).unwrap();
     Ok(quote! {
         inventory::submit! {
-            crate::error::ErrorDefinition::new(#id, #name, #status, #context_serialized )
+            crate::error::ErrorDefinition::new(#id, #name, #namespace, #status, #context_serialized )
         }
     })
 }
