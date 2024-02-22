@@ -7,7 +7,7 @@
     height: 30vh;
     overflow: auto;
     padding-right: 0.5rem;
-    .operational-point {
+    .search-result-item {
       all: unset;
       display: flex;
       align-items: center;
@@ -15,24 +15,29 @@
       border-radius: var(--border-radius);
       width: 100%;
       cursor: pointer;
-      line-height: 1.5rem;
+      line-height: 1.25rem;
       .trigram {
-        font-size: 0.7rem;
-        width: 1.75rem;
+        color: var(--coolgray9);
+        font-family: monospace;
+        font-size: 0.8rem;
+        width: 2rem;
       }
       .name {
-        padding-left: 0.5rem;
+        padding: 0.25rem 0 0 0.5rem;
         .ch {
           margin-left: 0.25rem;
           font-size: 0.9rem;
         }
       }
-      .uic {
+      .uic, .line-code {
         margin-left: auto;
         font-size: 0.7rem;
         color: var(--primary);
       }
       &.main {
+        .trigram {
+          color: inherit;
+        }
         .name {
           font-size: 1.1rem;
           padding-left: 0;
@@ -41,22 +46,6 @@
       }
       &:hover {
         background-color: var(--coolgray1);
-      }
-    }
-    .search-result-item {
-      display: block;
-      background-color: inherit;
-      border: solid 1px;
-      width: 100%;
-      text-align: left;
-      padding: 0.315rem 1rem;
-      border-radius: 4px;
-      overflow: auto;
-      &:hover {
-        color: #0088ce;
-      }
-      div {
-        vertical-align: baseline;
       }
     }
     .search-result-table-item {
