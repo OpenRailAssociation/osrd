@@ -249,6 +249,7 @@ pub fn search_config_store(input: proc_macro::TokenStream) -> proc_macro::TokenS
 /// * `#[model(primary)]`: implies `identifier` ; marks the field as the primary key of the table
 /// * `#[model(json)]`: wraps the row field with `diesel_jsonb::JsonValue` (diesel column type: `diesel_jsonb::Json<T>`)
 /// * `#[model(to_string)]`: calls `to_string()` before writing the field to the database and calls `String::from` after reading (diesel column type: String)
+/// * `#[model(to_enum)]`: is converted as `u8` before writing the field to the database and calls `FromRepr::from_repr` after reading (diesel column type: TinyInt)
 /// * `#[model(remote = "T")]`: calls `Into::<T>::into` before writing the field to the database and calls `T::from` after reading (diesel column type: T)
 /// * `#[model(geo)]` **TODO**: TBD
 ///

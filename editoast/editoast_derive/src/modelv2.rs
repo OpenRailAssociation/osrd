@@ -148,6 +148,8 @@ struct ModelFieldOption {
     #[darling(default)]
     to_string: bool,
     #[darling(default)]
+    to_enum: bool,
+    #[darling(default)]
     remote: Option<syn::Type>,
 }
 
@@ -182,6 +184,7 @@ enum FieldTransformation {
     Json,
     Geo,
     ToString,
+    ToEnum(syn::Type),
 }
 
 impl FieldTransformation {
@@ -190,15 +193,17 @@ impl FieldTransformation {
         json: bool,
         geo: bool,
         to_string: bool,
+        to_enum: Option<syn::Type>,
     ) -> Result<Option<Self>> {
-        match (remote, json, geo, to_string) {
-            (Some(ty), false, false, false) => Ok(Some(Self::Remote(ty))),
-            (None, true, false, false) => Ok(Some(Self::Json)),
-            (None, false, true, false) => Ok(Some(Self::Geo)),
-            (None, false, false, true) => Ok(Some(Self::ToString)),
-            (None, false, false, false) => Ok(None),
+        match (remote, json, geo, to_string, to_enum) {
+            (Some(ty), false, false, false, None) => Ok(Some(Self::Remote(ty))),
+            (None, true, false, false, None) => Ok(Some(Self::Json)),
+            (None, false, true, false, None) => Ok(Some(Self::Geo)),
+            (None, false, false, true, None) => Ok(Some(Self::ToString)),
+            (None, false, false, false, Some(ty)) => Ok(Some(Self::ToEnum(ty))),
+            (None, false, false, false, None) => Ok(None),
             _ => Err(Error::custom(
-                "Model: remote, json, geo, and to_string attributes are mutually exclusive",
+                "Model: remote, json, geo, to_string and to_enum attributes are mutually exclusive",
             )),
         }
     }
@@ -211,9 +216,19 @@ impl ModelField {
             .ok_or(Error::custom("Model: only works for named structs"))?;
         let column = value.column.unwrap_or_else(|| ident.to_string());
         let builder_ident = value.builder_fn.unwrap_or_else(|| ident.clone());
-        let transform =
-            FieldTransformation::from_args(value.remote, value.json, value.geo, value.to_string)
-                .map_err(|e| e.with_span(&ident))?;
+        let to_enum = match value.to_enum {
+            true => Some(value.ty.clone()),
+            false => None,
+        };
+
+        let transform = FieldTransformation::from_args(
+            value.remote,
+            value.json,
+            value.geo,
+            value.to_string,
+            to_enum,
+        )
+        .map_err(|e| e.with_span(&ident))?;
         Ok(Self {
             ident,
             builder_ident,
@@ -234,6 +249,9 @@ impl ModelField {
             Some(FieldTransformation::Json) => quote! { diesel_json::Json(#expr) },
             Some(FieldTransformation::Geo) => unimplemented!("to be designed"),
             Some(FieldTransformation::ToString) => quote! { #expr.to_string() },
+            Some(FieldTransformation::ToEnum(_)) => {
+                quote! { #expr as i16 }
+            }
             None => quote! { #expr },
         }
     }
@@ -245,6 +263,9 @@ impl ModelField {
             Some(FieldTransformation::Json) => quote! { #expr.0 },
             Some(FieldTransformation::Geo) => unimplemented!("to be designed"),
             Some(FieldTransformation::ToString) => quote! { String::from(#expr.parse()) },
+            Some(FieldTransformation::ToEnum(ref ty)) => {
+                quote! { #ty::from_repr(#expr as usize).expect("Invalid variant repr") }
+            }
             None => quote! { #expr },
         }
     }
@@ -256,6 +277,7 @@ impl ModelField {
             Some(FieldTransformation::Json) => quote! { diesel_json::Json<#ty> },
             Some(FieldTransformation::Geo) => unimplemented!("to be designed"),
             Some(FieldTransformation::ToString) => quote! { String },
+            Some(FieldTransformation::ToEnum(_)) => quote! { i16 },
             None => quote! { #ty },
         }
     }
