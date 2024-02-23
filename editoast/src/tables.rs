@@ -637,6 +637,16 @@ diesel::table! {
     use diesel::sql_types::*;
     use postgis_diesel::sql_types::*;
 
+    timetable_v2 (id) {
+        id -> Int8,
+        electrical_profile_set_id -> Nullable<Int8>,
+    }
+}
+
+diesel::table! {
+    use diesel::sql_types::*;
+    use postgis_diesel::sql_types::*;
+
     train_schedule (id) {
         id -> Int8,
         #[max_length = 128]
@@ -658,6 +668,32 @@ diesel::table! {
         #[max_length = 40]
         infra_version -> Varchar,
         rollingstock_version -> Int8,
+    }
+}
+
+diesel::table! {
+    use diesel::sql_types::*;
+    use postgis_diesel::sql_types::*;
+
+    train_schedule_v2 (id) {
+        id -> Int8,
+        #[max_length = 128]
+        train_name -> Varchar,
+        labels -> Array<Nullable<Text>>,
+        #[max_length = 128]
+        rolling_stock_name -> Varchar,
+        timetable_id -> Int8,
+        start_time -> Timestamptz,
+        schedule -> Jsonb,
+        margins -> Jsonb,
+        initial_speed -> Float8,
+        comfort -> Int2,
+        path -> Jsonb,
+        constraint_distribution -> Int2,
+        #[max_length = 128]
+        speed_limit_tag -> Nullable<Varchar>,
+        power_restrictions -> Jsonb,
+        options -> Jsonb,
     }
 }
 
@@ -701,9 +737,11 @@ diesel::joinable!(search_signal -> infra_object_signal (id));
 diesel::joinable!(search_study -> study (id));
 diesel::joinable!(simulation_output -> train_schedule (train_schedule_id));
 diesel::joinable!(study -> project (project_id));
+diesel::joinable!(timetable_v2 -> electrical_profile_set (electrical_profile_set_id));
 diesel::joinable!(train_schedule -> pathfinding (path_id));
 diesel::joinable!(train_schedule -> rolling_stock (rolling_stock_id));
 diesel::joinable!(train_schedule -> timetable (timetable_id));
+diesel::joinable!(train_schedule_v2 -> timetable_v2 (timetable_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
     document,
@@ -747,5 +785,7 @@ diesel::allow_tables_to_appear_in_same_query!(
     simulation_output,
     study,
     timetable,
+    timetable_v2,
     train_schedule,
+    train_schedule_v2,
 );
