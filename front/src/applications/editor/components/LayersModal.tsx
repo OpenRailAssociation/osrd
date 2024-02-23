@@ -1,6 +1,6 @@
 import React, { FC, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { groupBy, mapKeys, mapValues, sum, isString, isArray, uniq } from 'lodash';
+import { groupBy, mapKeys, mapValues, sum, isString, isArray, uniq, isNil } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { MdSpeed } from 'react-icons/md';
 import { GiElectric } from 'react-icons/gi';
@@ -62,9 +62,10 @@ const LayersModal: FC<LayersModalProps> = ({
   const [selectedLayers, setSelectedLayers] = useState<Set<Layer>>(initialLayers);
   const infraID = useInfraID();
 
-  const { data: speedLimitTags } = osrdEditoastApi.endpoints.getInfraByIdSpeedLimitTags.useQuery({
-    id: infraID as number,
-  });
+  const { data: speedLimitTags } = osrdEditoastApi.endpoints.getInfraByIdSpeedLimitTags.useQuery(
+    { id: infraID as number },
+    { skip: isNil(infraID) }
+  );
   const DEFAULT_SPEED_LIMIT_TAG = useMemo(() => t('map-settings:noSpeedLimitByTag'), [t]);
   const selectionCounts = useMemo(
     () =>
