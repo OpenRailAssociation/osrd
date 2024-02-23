@@ -6,6 +6,7 @@ use diesel::sql_types::Untyped;
 use diesel::{QueryResult, QueryableByName};
 use diesel_async::methods::LoadQuery;
 use diesel_async::AsyncPgConnection as PgConnection;
+use itertools::Itertools;
 use serde::Deserialize;
 use serde::Serialize;
 use thiserror::Error;
@@ -219,4 +220,15 @@ where
 
 impl<T: Query> Query for Paginated<T> {
     type SqlType = Untyped;
+}
+
+impl<T> PaginatedResponse<T> {
+    pub fn into<A: From<T>>(self) -> PaginatedResponse<A> {
+        PaginatedResponse {
+            count: self.count,
+            previous: self.previous,
+            next: self.next,
+            results: self.results.into_iter().map_into().collect(),
+        }
+    }
 }
