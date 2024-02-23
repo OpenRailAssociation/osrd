@@ -53,6 +53,8 @@ fn routes_v2() -> Routes<impl HttpServiceFactory> {
         (projects::routes(),timetable::routes()),
         documents::routes(),
         sprites::routes(),
+        projects::routes(),
+        v2::routes(),
         search::routes(),
         electrical_profiles::routes(),
         layers::routes(),
@@ -84,7 +86,6 @@ schemas! {
     light_rolling_stocks::schemas(),
     electrical_profiles::schemas(),
     infra::schemas(),
-    single_simulation::schemas(),
     v2::schemas(),
 }
 
