@@ -3,12 +3,6 @@ import { isObject } from 'lodash';
 
 import { ApiError } from 'common/api/baseGeneratedApis';
 
-// function loadIfNeededI18NErrorsNamespace(): void {
-//   if (!i18n.hasLoadedNamespace('errors')) {
-//     i18n.loadNamespaces('errors');
-//   }
-// }
-
 /**
  * Given an error, return the associated i18n name.
  * If name can't be found, a default one is return (or the default value specified)

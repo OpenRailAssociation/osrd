@@ -183,7 +183,7 @@ export function saveOperations(
         );
         return response.data;
       }
-      throw new Error(JSON.stringify(response.error));
+      throw response.error;
     } catch (e) {
       dispatch(
         setFailure(
