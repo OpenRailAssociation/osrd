@@ -5,6 +5,7 @@ use std::{
 
 use rand::{distributions::Alphanumeric, thread_rng, Rng};
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use utoipa::openapi::{ObjectBuilder, RefOr, Schema};
 
 /// A wrapper around a String that ensures that the string is not empty.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -86,6 +87,18 @@ impl Display for NonBlankString {
 impl PartialEq<NonBlankString> for &str {
     fn eq(&self, other: &NonBlankString) -> bool {
         self.eq(&other.as_ref())
+    }
+}
+
+impl<'a> utoipa::ToSchema<'a> for NonBlankString {
+    fn schema() -> (&'a str, RefOr<Schema>) {
+        (
+            "NonBlankString",
+            ObjectBuilder::new()
+                .schema_type(utoipa::openapi::SchemaType::String)
+                .min_length(Some(1))
+                .into(),
+        )
     }
 }
 
