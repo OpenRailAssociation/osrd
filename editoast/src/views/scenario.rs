@@ -124,7 +124,7 @@ impl ScenarioResponse {
 }
 
 /// Check if project and study exist given a study ID and a project ID
-async fn check_project_study(
+pub async fn check_project_study(
     db_pool: Data<DbPool>,
     project_id: i64,
     study_id: i64,
@@ -133,7 +133,7 @@ async fn check_project_study(
     check_project_study_conn(&mut conn, project_id, study_id).await
 }
 
-async fn check_project_study_conn(
+pub async fn check_project_study_conn(
     conn: &mut PgConnection,
     project_id: i64,
     study_id: i64,
