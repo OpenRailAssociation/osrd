@@ -7,7 +7,7 @@ import kotlin.time.Duration.Companion.seconds
 import org.junit.Test
 
 class TestDistanceRangeMap {
-    fun <T> testPut(
+    private fun <T> testPut(
         entries: List<DistanceRangeMap.RangeMapEntry<T>>,
         expected: List<DistanceRangeMap.RangeMapEntry<T>> = entries
     ) {
@@ -136,6 +136,18 @@ class TestDistanceRangeMap {
                 DistanceRangeMap.RangeMapEntry(Distance(50), Distance(450), 42)
             )
         val expected = listOf(DistanceRangeMap.RangeMapEntry(Distance(0), Distance(500), 42))
+
+        testPut(entries, expected)
+    }
+
+    @Test
+    fun testAdjacentRanges() {
+        val entries =
+            listOf(
+                DistanceRangeMap.RangeMapEntry(Distance(0), Distance(5), 1),
+                DistanceRangeMap.RangeMapEntry(Distance(5), Distance(10), 1),
+            )
+        val expected = listOf(DistanceRangeMap.RangeMapEntry(Distance(0), Distance(10), 1))
 
         testPut(entries, expected)
     }
