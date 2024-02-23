@@ -50,7 +50,7 @@ async fn get_railjson(infra: Path<i64>, db_pool: Data<DbPool>) -> Result<impl Re
             let mut conn = conn_future.await?;
             let table = get_table(&object_type);
             let query =
-                format!("SELECT (x.data)::text AS railjson FROM {table} x WHERE x.infra_id = $1");
+                format!("SELECT (x.data)::text AS railjson FROM {table} x WHERE x.infra_id = $1 ORDER BY x.obj_id");
 
             let result: Result<_> = Ok((
                 object_type,
