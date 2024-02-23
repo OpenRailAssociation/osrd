@@ -10,6 +10,7 @@ pub mod rolling_stock_model;
 pub mod study;
 pub mod timetable;
 pub mod train_schedule;
+pub mode scenario;
 
 pub use documents::Document;
 pub use electrical_profiles::ElectricalProfileSet;
