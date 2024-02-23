@@ -33,7 +33,36 @@ data class DistanceRangeMapImpl<T>(
      * structure (RangeMaps lib).
      */
     override fun putMany(entries: List<DistanceRangeMap.RangeMapEntry<T>>) {
+        // Unfortunately, built-in groupBy doesn't consider the original order, here we want
+        // consecutive values.
+        fun <U, V> groupByConsecutiveFirst(pairs: List<Pair<U, V>>): List<Pair<U, List<V>>> {
+            val result = mutableListOf<Pair<U, List<V>>>()
+            if (pairs.isEmpty()) return result
+            var nextKey = pairs[0].first
+            var nextValues = mutableListOf(pairs[0].second)
+            for ((key, value) in pairs.slice(1 ..< pairs.size)) {
+                if (key == nextKey) {
+                    nextValues.add(value)
+                } else {
+                    result.add(Pair(nextKey, nextValues))
+                    nextKey = key
+                    nextValues = mutableListOf(value)
+                }
+            }
+            result.add(Pair(nextKey, nextValues))
+            return result
+        }
+
+        fun <U, V> groupByConsecutiveSecond(pairs: List<Pair<U, V>>): List<Pair<V, List<U>>> {
+            val swapped = mutableListOf<Pair<V, U>>()
+            for ((first, second) in pairs) {
+                swapped.add(Pair(second, first))
+            }
+            return groupByConsecutiveFirst(swapped)
+        }
+
         // Order matters and existing entries should come first.
+        // E.g. allEntries = [(lower=0, upper=5, value=1), (lower=5, upper=10, value=1)]
         val allEntries = asList() + entries
 
         // Start from scratch.
@@ -46,42 +75,45 @@ data class DistanceRangeMapImpl<T>(
             boundEntries.add(Pair(entry.lower, index))
             boundEntries.add(Pair(entry.upper, index))
         }
+        // E.g. boundEntries = [(0, 0), (5, 0), (5, 1), (10, 1)]
         boundEntries.sortWith(
             Comparator<Pair<Distance, Int>> { a, b -> a.first.compareTo(b.first) }
                 .thenBy { it.second }
         )
+        // Group entries with the same bound.
+        // E.g. entriesByBound = [(0, [0]), (5, [0, 1]), (10, [1])]
+        val entriesByBound = groupByConsecutiveFirst(boundEntries)
 
         // Relevant entries for the interval we're building. Early entries have low priority.
         val entryQueue = PriorityQueue<Int> { i, j -> j - i }
-        // Value over the interval we're building.
-        var value: T? = null
-        // Start of the interval we're building.
-        var start: Distance? = null
-        for ((bound, index) in boundEntries) {
-            // Update relevant entries. PriorityQueue only guarantees linear time for contains and
-            // remove,
-            // an
-            // optimized heap could be helpful.
-            if (entryQueue.contains(index)) entryQueue.remove(index) else entryQueue.add(index)
 
-            // Get the latest relevant entry.
-            val entryIndex = entryQueue.peek()
-            val newValue = if (entryIndex != null) allEntries[entryIndex].value else null
-            val newStart = bound
-
-            // Merge identical ranges.
-            if (value == newValue) continue
-
-            // Add the interval, unless it's empty or implicitly null (very beginning).
-            if (start != newStart && start != null) {
-                values.add(value)
-                bounds.add(start)
+        // Compute bounds and values.
+        // E.g. nonEmptyBoundValues = [(0, 1), (5, 1), (10, null)]
+        val nonEmptyBoundValues = mutableListOf<Pair<Distance, T?>>()
+        for ((bound, indices) in entriesByBound) {
+            for (index in indices) {
+                // Update relevant entries. PriorityQueue only guarantees linear time for
+                // contains and remove, an optimized heap could be helpful.
+                if (entryQueue.contains(index)) entryQueue.remove(index) else entryQueue.add(index)
             }
-            value = newValue
-            start = newStart
+            // Get the latest relevant entry.
+            val bestIndex = entryQueue.peek()
+            val value = if (bestIndex != null) allEntries[bestIndex].value else null
+            nonEmptyBoundValues.add(Pair(bound, value))
         }
-        // Close the last interval, if needed.
-        if (start != null) bounds.add(start)
+
+        // Merge adjacent ranges with the same value.
+        // E.g. boundsByValue = [(1, [0, 5]), (null, [10])]
+        val boundsByValue = groupByConsecutiveSecond(nonEmptyBoundValues)
+        // E.g. bounds = [0, 10] values = [1, null]
+        for ((value, boundsGroup) in boundsByValue) {
+            bounds.add(boundsGroup.min())
+            values.add(value)
+        }
+        // E.g. values = [1]
+        if (values.isNotEmpty()) {
+            values.removeLast()
+        }
     }
 
     /** Iterates over the entries in the map */
