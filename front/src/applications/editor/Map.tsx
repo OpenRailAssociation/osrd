@@ -1,6 +1,6 @@
 import React, { useContext, useMemo, useState, type PropsWithChildren } from 'react';
 import ReactMapGL, { AttributionControl, ScaleControl, type MapRef } from 'react-map-gl/maplibre';
-import { isEmpty, isEqual } from 'lodash';
+import { isEmpty, isEqual, isNil } from 'lodash';
 import { TFunction } from 'i18next';
 import { useSelector } from 'react-redux';
 import { withTranslation } from 'react-i18next';
@@ -329,7 +329,7 @@ const MapUnplugged = ({
           />
 
           {/* Tool specific layers */}
-          {activeTool.layersComponent && mapRef.current && (
+          {!isNil(infraID) && activeTool.layersComponent && mapRef.current && (
             <activeTool.layersComponent map={mapRef.current.getMap()} />
           )}
           {mapSearchMarker && <SearchMarker data={mapSearchMarker} colors={colors[mapStyle]} />}
