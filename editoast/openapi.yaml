@@ -65,6 +65,17 @@ components:
         - percentage
         - value_type
         type: object
+    BatchDeletionRequest:
+      properties:
+        ids:
+          items:
+            format: int64
+            type: integer
+          type: array
+          uniqueItems: true
+      required:
+      - ids
+      type: object
     BoundingBox:
       description: A bounding box
       items:
@@ -180,6 +191,11 @@ components:
       - end
       - direction
       type: object
+    Distribution:
+      enum:
+      - STANDARD
+      - MARECO
+      type: string
     EditoastAttachedErrorTrackNotFound:
       properties:
         context:
@@ -672,6 +688,7 @@ components:
       - $ref: '#/components/schemas/EditoastStudyErrorStartDateAfterEndDate'
       - $ref: '#/components/schemas/EditoastTimetableErrorInfraNotLoaded'
       - $ref: '#/components/schemas/EditoastTimetableErrorNotFound'
+      - $ref: '#/components/schemas/EditoastTimetableErrorNotFound'
       - $ref: '#/components/schemas/EditoastTrainScheduleErrorBatchShouldHaveSameTimetable'
       - $ref: '#/components/schemas/EditoastTrainScheduleErrorBatchTrainScheduleNotFound'
       - $ref: '#/components/schemas/EditoastTrainScheduleErrorNoSimulation'
@@ -681,6 +698,8 @@ components:
       - $ref: '#/components/schemas/EditoastTrainScheduleErrorRollingStockNotFound'
       - $ref: '#/components/schemas/EditoastTrainScheduleErrorTimetableNotFound'
       - $ref: '#/components/schemas/EditoastTrainScheduleErrorUnsimulatedTrainSchedule'
+      - $ref: '#/components/schemas/EditoastTrainScheduleErrorBatchTrainScheduleNotFound'
+      - $ref: '#/components/schemas/EditoastTrainScheduleErrorNotFound'
       - $ref: '#/components/schemas/EditoastTypeCheckErrorArgMissing'
       - $ref: '#/components/schemas/EditoastTypeCheckErrorArgTypeMismatch'
       - $ref: '#/components/schemas/EditoastTypeCheckErrorUnexpectedArg'
@@ -2274,16 +2293,21 @@ components:
     EditoastTrainScheduleErrorBatchTrainScheduleNotFound:
       properties:
         context:
+          properties:
+            number:
+              type: integer
+          required:
+          - number
           type: object
         message:
           type: string
         status:
           enum:
-          - 400
+          - 404
           type: integer
         type:
           enum:
-          - editoast:train_schedule:BatchTrainScheduleNotFound
+          - editoast:train_schedule_v2:BatchTrainScheduleNotFound
           type: string
       required:
       - type
@@ -2341,11 +2365,11 @@ components:
           type: string
         status:
           enum:
-          - 400
+          - 404
           type: integer
         type:
           enum:
-          - editoast:train_schedule:NotFound
+          - editoast:train_schedule_v2:NotFound
           type: string
       required:
       - type
@@ -3609,6 +3633,34 @@ components:
           description: The list of results
           items:
             $ref: '#/components/schemas/StudyWithScenarios'
+          type: array
+      required:
+      - count
+      - previous
+      - next
+      - results
+      type: object
+    PaginatedResponseOfTimetable:
+      description: A paginated response
+      properties:
+        count:
+          description: The total number of items
+          format: int64
+          type: integer
+        next:
+          description: The next page number
+          format: int64
+          nullable: true
+          type: integer
+        previous:
+          description: The previous page number
+          format: int64
+          nullable: true
+          type: integer
+        results:
+          description: The list of results
+          items:
+            $ref: '#/components/schemas/TimetableResult'
           type: array
       required:
       - count
@@ -5547,6 +5599,38 @@ components:
       - id
       - name
       type: object
+    TimetableDetailedResult:
+      allOf:
+      - description: Creation form for a Timetable
+        properties:
+          electrical_profile_set_id:
+            format: int64
+            nullable: true
+            type: integer
+          id:
+            format: int64
+            type: integer
+        required:
+        - id
+        type: object
+      - properties:
+          train_ids:
+            items:
+              format: int64
+              type: integer
+            type: array
+        required:
+        - train_ids
+        type: object
+      description: Creation form for a Timetable
+    TimetableForm:
+      description: Creation form for a Timetable
+      properties:
+        electrical_profile_set_id:
+          format: int64
+          nullable: true
+          type: integer
+      type: object
     TimetableImportError:
       oneOf:
       - properties:
@@ -5703,6 +5787,19 @@ components:
       - name
       - departure_time
       type: object
+    TimetableResult:
+      description: Creation form for a Timetable
+      properties:
+        electrical_profile_set_id:
+          format: int64
+          nullable: true
+          type: integer
+        id:
+          format: int64
+          type: integer
+      required:
+      - id
+      type: object
     TimetableWithSchedulesDetails:
       allOf:
       - $ref: '#/components/schemas/Timetable'
@@ -5819,6 +5916,185 @@ components:
       - timetable_id
       - scheduled_points
       type: object
+    TrainScheduleBase:
+      properties:
+        comfort:
+          allOf:
+          - enum:
+            - STANDARD
+            - AIR_CONDITIONING
+            - HEATING
+            type: string
+        constraint_distribution:
+          $ref: '#/components/schemas/Distribution'
+        initial_speed:
+          format: double
+          type: number
+        labels:
+          items:
+            type: string
+          type: array
+        margins:
+          allOf:
+          - additionalProperties: false
+            properties:
+              boundaries:
+                items:
+                  minLength: 1
+                  type: string
+                type: array
+              values:
+                description: |-
+                  The values of the margins. Must contains one more element than the boundaries
+                  Can be a percentage `X%`, a time in minutes per kilometer `Xmin/km` or `0`
+                example:
+                - '0'
+                - 5%
+                - 2min/km
+                items:
+                  type: string
+                type: array
+            required:
+            - boundaries
+            - values
+            type: object
+        options:
+          allOf:
+          - additionalProperties: false
+            properties:
+              use_electrical_profiles:
+                default: 'true'
+                type: boolean
+            required:
+            - use_electrical_profiles
+            type: object
+        path:
+          items:
+            allOf:
+            - description: The location of a path waypoint
+              oneOf:
+              - properties:
+                  offset:
+                    description: The offset in millimeters from the start of the track
+                    format: int64
+                    minimum: 0
+                    type: integer
+                  track:
+                    minLength: 1
+                    type: string
+                required:
+                - track
+                - offset
+                type: object
+              - properties:
+                  operational_point:
+                    minLength: 1
+                    type: string
+                required:
+                - operational_point
+                type: object
+              - properties:
+                  secondary_code:
+                    description: An optional secondary code to identify a more specific location
+                    nullable: true
+                    type: string
+                  trigram:
+                    minLength: 1
+                    type: string
+                required:
+                - trigram
+                type: object
+              - properties:
+                  secondary_code:
+                    description: An optional secondary code to identify a more specific location
+                    nullable: true
+                    type: string
+                  uic:
+                    description: The [UIC](https://en.wikipedia.org/wiki/Railway_vehicle_owner%27s_code) code of an operational point
+                    format: int32
+                    minimum: 0
+                    type: integer
+                required:
+                - uic
+                type: object
+            - properties:
+                deleted:
+                  description: |-
+                    Metadata given to mark a point as wishing to be deleted by the user.
+                    It's useful for soft deleting the point (waiting to fix / remove all references)
+                    If true, the train schedule is consider as invalid and must be edited
+                  type: boolean
+                id:
+                  minLength: 1
+                  type: string
+              required:
+              - id
+              type: object
+            description: A location on the path of a train
+          type: array
+        power_restrictions:
+          items:
+            additionalProperties: false
+            properties:
+              from:
+                minLength: 1
+                type: string
+              to:
+                minLength: 1
+                type: string
+              value:
+                type: string
+            required:
+            - from
+            - to
+            - value
+            type: object
+          type: array
+        rolling_stock_name:
+          type: string
+        schedule:
+          items:
+            additionalProperties: false
+            properties:
+              arrival:
+                nullable: true
+                type: string
+              at:
+                minLength: 1
+                type: string
+              locked:
+                type: boolean
+              stop_for:
+                nullable: true
+                type: string
+            required:
+            - at
+            type: object
+          type: array
+        speed_limit_tag:
+          allOf:
+          - minLength: 1
+            type: string
+          nullable: true
+        start_time:
+          format: date-time
+          type: string
+        train_name:
+          type: string
+      required:
+      - train_name
+      - labels
+      - rolling_stock_name
+      - start_time
+      - path
+      - schedule
+      - margins
+      - initial_speed
+      - comfort
+      - constraint_distribution
+      - power_restrictions
+      - options
+      type: object
     TrainScheduleBatchItem:
       properties:
         allowances:
@@ -5864,6 +6140,16 @@ components:
       - initial_speed
       - rolling_stock_id
       type: object
+    TrainScheduleForm:
+      allOf:
+      - $ref: '#/components/schemas/TrainScheduleBase'
+      - properties:
+          timetable_id:
+            format: int64
+            type: integer
+        required:
+        - timetable_id
+        type: object
     TrainScheduleOptions:
       description: Options for the standalone simulation
       properties:
@@ -5931,6 +6217,20 @@ components:
       required:
       - id
       type: object
+    TrainScheduleResult:
+      allOf:
+      - $ref: '#/components/schemas/TrainScheduleBase'
+      - properties:
+          id:
+            format: int64
+            type: integer
+          timetable_id:
+            format: int64
+            type: integer
+        required:
+        - id
+        - timetable_id
+        type: object
     TrainScheduleScenarioStudyProject:
       properties:
         project_id:
@@ -8608,6 +8908,206 @@ paths:
       summary: Retrieve a simulation result
       tags:
       - train_schedule
+  /v2/timetable/:
+    get:
+      description: Return all timetables
+      parameters:
+      - in: query
+        name: page
+        required: false
+        schema:
+          default: 1
+          format: int64
+          minimum: 1
+          type: integer
+      - in: query
+        name: page_size
+        required: false
+        schema:
+          default: 25
+          format: int64
+          minimum: 1
+          nullable: true
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedResponseOfTimetable'
+          description: List timetables
+      summary: Return all timetables
+      tags:
+      - timetablev2
+    post:
+      description: Return a specific timetable with its associated schedules
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TimetableForm'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TimetableResult'
+          description: Timetable with train schedules ids
+        '404':
+          description: Timetable not found
+      summary: Return a specific timetable with its associated schedules
+      tags:
+      - timetablev2
+  /v2/timetable/{id}/:
+    delete:
+      description: Return a specific timetable with its associated schedules
+      responses:
+        '204':
+          description: No content
+        '404':
+          description: Timetable not found
+      summary: Return a specific timetable with its associated schedules
+      tags:
+      - timetablev2
+    get:
+      description: Return a specific timetable with its associated schedules
+      parameters:
+      - description: Timetable id
+        in: path
+        name: id
+        required: true
+        schema:
+          format: int64
+          minimum: 0
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TimetableDetailedResult'
+          description: Timetable with train schedules ids
+        '404':
+          description: Timetable not found
+      summary: Return a specific timetable with its associated schedules
+      tags:
+      - timetablev2
+    put:
+      description: Update a specific timetable with its associated schedules
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TimetableForm'
+        description: ''
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TimetableDetailedResult'
+          description: Timetable with train schedules ids
+        '404':
+          description: Timetable not found
+      summary: Update a specific timetable with its associated schedules
+      tags:
+      - timetablev2
+  /v2/train_schedule/:
+    delete:
+      description: Delete a train schedule and its result
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                ids:
+                  items:
+                    format: int64
+                    type: integer
+                  type: array
+                  uniqueItems: true
+              required:
+              - ids
+              type: object
+        required: true
+      responses:
+        '204':
+          description: All train schedules have been deleted
+      summary: Delete a train schedule and its result
+      tags:
+      - train_schedulev2
+    post:
+      description: Create train schedule by batch
+      requestBody:
+        content:
+          application/json:
+            schema:
+              items:
+                $ref: '#/components/schemas/TrainScheduleForm'
+              type: array
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/TrainScheduleResult'
+                type: array
+          description: The train schedule
+      summary: Create train schedule by batch
+      tags:
+      - train_schedulev2
+  /v2/train_schedule/{id}/:
+    get:
+      description: Return a specific timetable with its associated schedules
+      parameters:
+      - description: A train schedule ID
+        in: path
+        name: id
+        required: true
+        schema:
+          format: int64
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrainScheduleResult'
+          description: The train schedule
+      summary: Return a specific timetable with its associated schedules
+      tags:
+      - train_schedulev2
+    put:
+      description: Update  train schedule at once
+      parameters:
+      - description: A train schedule ID
+        in: path
+        name: id
+        required: true
+        schema:
+          format: int64
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TrainScheduleForm'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrainScheduleResult'
+          description: The train schedule have been updated
+      summary: Update  train schedule at once
+      tags:
+      - train_schedulev2
+      - timetable
   /version/:
     get:
       responses:

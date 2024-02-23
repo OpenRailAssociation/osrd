@@ -17,6 +17,7 @@ pub mod stdcm;
 pub mod study;
 pub mod timetable;
 pub mod train_schedule;
+pub mod v2;
 
 use self::openapi::{merge_path_items, remove_discriminator, OpenApiMerger, Routes};
 use crate::client::get_app_version;
@@ -48,15 +49,15 @@ fn routes_v2() -> Routes<impl HttpServiceFactory> {
         (health, version, core_version),
         (rolling_stocks::routes(), light_rolling_stocks::routes()),
         (pathfinding::routes(), stdcm::routes(), train_schedule::routes()),
-        timetable::routes(),
+        (projects::routes(),timetable::routes()),
         documents::routes(),
         sprites::routes(),
-        projects::routes(),
         search::routes(),
         electrical_profiles::routes(),
         layers::routes(),
         infra::routes(),
         single_simulation::routes(),
+        v2::routes()
     }
     routes()
 }
@@ -83,6 +84,7 @@ schemas! {
     electrical_profiles::schemas(),
     infra::schemas(),
     single_simulation::schemas(),
+    v2::schemas(),
 }
 
 #[derive(OpenApi)]
