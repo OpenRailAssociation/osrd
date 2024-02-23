@@ -155,9 +155,15 @@ export default function Timetable({
 
         // Apply rolling stock filter
         const rollingStock = rollingStocks.find((rs) => rs.id === train.rolling_stock_id);
-        const { family = '', detail = '', series = '' } = rollingStock?.metadata || {};
+        const {
+          detail = '',
+          family = '',
+          reference = '',
+          series = '',
+          subseries = '',
+        } = rollingStock?.metadata || {};
         if (
-          ![family, detail, series].some((v) =>
+          ![detail, family, reference, series, subseries].some((v) =>
             v.toLowerCase().includes(debouncedRollingstockFilter.toLowerCase())
           )
         )
