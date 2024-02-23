@@ -90,7 +90,7 @@ function EditorForm<T extends Omit<EditorEntity, 'objType'> & { objType: string 
     <div>
       {submited && error !== null && (
         <div className="form-error mt-3 mb-3">
-          <p>{error}</p>
+          <p className="mb-0">{error}</p>
         </div>
       )}
       <Form
