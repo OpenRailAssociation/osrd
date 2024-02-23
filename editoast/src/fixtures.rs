@@ -10,10 +10,14 @@ pub mod tests {
         Scenario, SimulationOutput, SimulationOutputChangeset, Study, Timetable, TrainSchedule,
     };
     use crate::modelsv2::projects::Tags;
+    use crate::modelsv2::timetable::Timetable as TimetableV2;
+    use crate::modelsv2::train_schedule::TrainSchedule as TrainScheduleV2;
     use crate::modelsv2::{self, Document, Model, Project};
     use crate::schema::electrical_profiles::{ElectricalProfile, ElectricalProfileSetData};
+    use crate::schema::v2::trainschedule::TrainScheduleBase;
     use crate::schema::{RailJson, TrackRange};
     use crate::views::infra::InfraForm;
+    use crate::views::v2::train_schedule::TrainScheduleForm;
     use crate::DbPool;
 
     use actix_web::web::Data;
@@ -164,6 +168,34 @@ pub mod tests {
     }
 
     #[derive(Debug)]
+    pub struct TrainScheduleV2FixtureSet {
+        pub train_schedule: TestFixture<TrainScheduleV2>,
+        pub timetable: TestFixture<TimetableV2>,
+    }
+
+    #[fixture]
+    pub async fn train_schedule_v2(
+        #[future] timetable_v2: TestFixture<TimetableV2>,
+        db_pool: Data<DbPool>,
+    ) -> TrainScheduleV2FixtureSet {
+        let timetable = timetable_v2.await;
+        let train_schedule_base: TrainScheduleBase =
+            serde_json::from_str(include_str!("./tests/train_schedules/simple.json"))
+                .expect("Unable to parse");
+        let train_schedule_form = TrainScheduleForm {
+            timetable_id: timetable.id(),
+            train_schedule: train_schedule_base,
+        };
+
+        let train_schedule = TestFixture::create(train_schedule_form.into(), db_pool).await;
+
+        TrainScheduleV2FixtureSet {
+            train_schedule,
+            timetable,
+        }
+    }
+
+    #[derive(Debug)]
     pub struct TrainScheduleFixtureSet {
         pub train_schedule: TestFixture<TrainSchedule>,
         pub project: TestFixture<Project>,
@@ -291,6 +323,15 @@ pub mod tests {
             name: Some(String::from("with_electrical_profiles")),
         };
         TestFixture::create_legacy(timetable_model, db_pool).await
+    }
+
+    #[fixture]
+    pub async fn timetable_v2(db_pool: Data<DbPool>) -> TestFixture<TimetableV2> {
+        TestFixture::create(
+            TimetableV2::changeset().electrical_profile_set_id(None),
+            db_pool,
+        )
+        .await
     }
 
     #[fixture]

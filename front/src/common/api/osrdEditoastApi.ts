@@ -17,6 +17,8 @@ export const addTagTypes = [
   'stdcm',
   'timetable',
   'train_schedule',
+  'timetablev2',
+  'train_schedulev2',
 ] as const;
 const injectedRtkApi = api
   .enhanceEndpoints({
@@ -721,6 +723,76 @@ const injectedRtkApi = api
         }),
         providesTags: ['train_schedule'],
       }),
+      getV2Timetable: build.query<GetV2TimetableApiResponse, GetV2TimetableApiArg>({
+        query: (queryArg) => ({
+          url: `/v2/timetable/`,
+          params: { page: queryArg.page, page_size: queryArg.pageSize },
+        }),
+        providesTags: ['timetablev2'],
+      }),
+      postV2Timetable: build.mutation<PostV2TimetableApiResponse, PostV2TimetableApiArg>({
+        query: (queryArg) => ({
+          url: `/v2/timetable/`,
+          method: 'POST',
+          body: queryArg.timetableForm,
+        }),
+        invalidatesTags: ['timetablev2'],
+      }),
+      deleteV2TimetableById: build.mutation<
+        DeleteV2TimetableByIdApiResponse,
+        DeleteV2TimetableByIdApiArg
+      >({
+        query: (queryArg) => ({ url: `/v2/timetable/${queryArg.id}/`, method: 'DELETE' }),
+        invalidatesTags: ['timetablev2'],
+      }),
+      getV2TimetableById: build.query<GetV2TimetableByIdApiResponse, GetV2TimetableByIdApiArg>({
+        query: (queryArg) => ({ url: `/v2/timetable/${queryArg.id}/` }),
+        providesTags: ['timetablev2'],
+      }),
+      putV2TimetableById: build.mutation<PutV2TimetableByIdApiResponse, PutV2TimetableByIdApiArg>({
+        query: (queryArg) => ({
+          url: `/v2/timetable/${queryArg.id}/`,
+          method: 'PUT',
+          body: queryArg.timetableForm,
+        }),
+        invalidatesTags: ['timetablev2'],
+      }),
+      deleteV2TrainSchedule: build.mutation<
+        DeleteV2TrainScheduleApiResponse,
+        DeleteV2TrainScheduleApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/v2/train_schedule/`,
+          method: 'DELETE',
+          body: queryArg.body,
+        }),
+        invalidatesTags: ['train_schedulev2'],
+      }),
+      postV2TrainSchedule: build.mutation<
+        PostV2TrainScheduleApiResponse,
+        PostV2TrainScheduleApiArg
+      >({
+        query: (queryArg) => ({ url: `/v2/train_schedule/`, method: 'POST', body: queryArg.body }),
+        invalidatesTags: ['train_schedulev2'],
+      }),
+      getV2TrainScheduleById: build.query<
+        GetV2TrainScheduleByIdApiResponse,
+        GetV2TrainScheduleByIdApiArg
+      >({
+        query: (queryArg) => ({ url: `/v2/train_schedule/${queryArg.id}/` }),
+        providesTags: ['train_schedulev2'],
+      }),
+      putV2TrainScheduleById: build.mutation<
+        PutV2TrainScheduleByIdApiResponse,
+        PutV2TrainScheduleByIdApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/v2/train_schedule/${queryArg.id}/`,
+          method: 'PUT',
+          body: queryArg.trainScheduleForm,
+        }),
+        invalidatesTags: ['train_schedulev2', 'timetable'],
+      }),
       getVersion: build.query<GetVersionApiResponse, GetVersionApiArg>({
         query: () => ({ url: `/version/` }),
       }),
@@ -1347,6 +1419,59 @@ export type GetTrainScheduleByIdResultApiArg = {
   pathId?: number | null;
   /** A train schedule ID */
   id: number;
+};
+export type GetV2TimetableApiResponse =
+  /** status 200 List timetables */ PaginatedResponseOfTimetable;
+export type GetV2TimetableApiArg = {
+  page?: number;
+  pageSize?: number | null;
+};
+export type PostV2TimetableApiResponse =
+  /** status 200 Timetable with train schedules ids */ TimetableResult;
+export type PostV2TimetableApiArg = {
+  timetableForm: TimetableForm;
+};
+export type DeleteV2TimetableByIdApiResponse = unknown;
+export type DeleteV2TimetableByIdApiArg = {
+  /** A timetable ID */
+  id: number;
+};
+export type GetV2TimetableByIdApiResponse =
+  /** status 200 Timetable with train schedules ids */ TimetableDetailedResult;
+export type GetV2TimetableByIdApiArg = {
+  /** A timetable ID */
+  id: number;
+};
+export type PutV2TimetableByIdApiResponse =
+  /** status 200 Timetable with train schedules ids */ TimetableDetailedResult;
+export type PutV2TimetableByIdApiArg = {
+  /** A timetable ID */
+  id: number;
+  timetableForm: TimetableForm;
+};
+export type DeleteV2TrainScheduleApiResponse = unknown;
+export type DeleteV2TrainScheduleApiArg = {
+  body: {
+    ids: number[];
+  };
+};
+export type PostV2TrainScheduleApiResponse =
+  /** status 200 The train schedule */ TrainScheduleResult[];
+export type PostV2TrainScheduleApiArg = {
+  body: TrainScheduleForm[];
+};
+export type GetV2TrainScheduleByIdApiResponse =
+  /** status 200 The train schedule */ TrainScheduleResult;
+export type GetV2TrainScheduleByIdApiArg = {
+  /** A train schedule ID */
+  id: number;
+};
+export type PutV2TrainScheduleByIdApiResponse =
+  /** status 200 The train schedule have been updated */ TrainScheduleResult;
+export type PutV2TrainScheduleByIdApiArg = {
+  /** A train schedule ID */
+  id: number;
+  trainScheduleForm: TrainScheduleForm;
 };
 export type GetVersionApiResponse = /** status 200 Return the service version */ Version;
 export type GetVersionApiArg = void;
@@ -2499,6 +2624,94 @@ export type TrainScheduleBatchItem = {
   scheduled_points?: ScheduledPoint[];
   speed_limit_tags?: string | null;
   train_name: string;
+};
+export type TimetableResult = {
+  electrical_profile_set_id?: number | null;
+  id: number;
+};
+export type PaginatedResponseOfTimetable = {
+  /** The total number of items */
+  count: number;
+  /** The next page number */
+  next: number | null;
+  /** The previous page number */
+  previous: number | null;
+  /** The list of results */
+  results: TimetableResult[];
+};
+export type TimetableForm = {
+  electrical_profile_set_id?: number | null;
+};
+export type TimetableDetailedResult = {
+  electrical_profile_set_id?: number | null;
+  id: number;
+} & {
+  train_ids: number[];
+};
+export type Distribution = 'STANDARD' | 'MARECO';
+export type TrainScheduleBase = {
+  comfort: 'STANDARD' | 'AIR_CONDITIONING' | 'HEATING';
+  constraint_distribution: Distribution;
+  initial_speed: number;
+  labels: string[];
+  margins: {
+    boundaries: string[];
+    /** The values of the margins. Must contains one more element than the boundaries
+        Can be a percentage `X%`, a time in minutes per kilometer `Xmin/km` or `0` */
+    values: string[];
+  };
+  options: {
+    use_electrical_profiles: boolean;
+  };
+  path: ((
+    | {
+        /** The offset in millimeters from the start of the track */
+        offset: number;
+        track: string;
+      }
+    | {
+        operational_point: string;
+      }
+    | {
+        /** An optional secondary code to identify a more specific location */
+        secondary_code?: string | null;
+        trigram: string;
+      }
+    | {
+        /** An optional secondary code to identify a more specific location */
+        secondary_code?: string | null;
+        /** The [UIC](https://en.wikipedia.org/wiki/Railway_vehicle_owner%27s_code) code of an operational point */
+        uic: number;
+      }
+  ) & {
+    /** Metadata given to mark a point as wishing to be deleted by the user.
+        It's useful for soft deleting the point (waiting to fix / remove all references)
+        If true, the train schedule is consider as invalid and must be edited */
+    deleted?: boolean;
+    id: string;
+  })[];
+  power_restrictions: {
+    from: string;
+    to: string;
+    value: string;
+  }[];
+  rolling_stock_name: string;
+  schedule: {
+    arrival?: string | null;
+    at: string;
+    locked?: boolean;
+    stop_for?: string | null;
+  }[];
+  speed_limit_tag?: string | null;
+  start_time: string;
+  train_name: string;
+};
+export type TrainScheduleResult = TrainScheduleBase & {
+  id: number;
+  timetable_id: number;
+};
+export type TrainScheduleForm = TrainScheduleBase & {
+  timetable_id: number;
 };
 export type Version = {
   git_describe: string | null;
