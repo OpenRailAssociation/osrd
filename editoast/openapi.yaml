@@ -6474,11 +6474,7 @@ components:
       properties:
         comfort:
           allOf:
-          - enum:
-            - STANDARD
-            - AIR_CONDITIONING
-            - HEATING
-            type: string
+          - $ref: '#/components/schemas/Comfort'
         constraint_distribution:
           $ref: '#/components/schemas/Distribution'
         initial_speed:
@@ -6502,7 +6498,7 @@ components:
                   The values of the margins. Must contains one more element than the boundaries
                   Can be a percentage `X%`, a time in minutes per kilometer `Xmin/km` or `0`
                 example:
-                - none
+                - '0'
                 - 5%
                 - 2min/km
                 items:
@@ -6553,7 +6549,7 @@ components:
                     nullable: true
                     type: string
                   uic:
-                    description: The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point
+                    description: The [UIC](https://en.wikipedia.org/wiki/Railway_vehicle_owner%27s_code) code of an operational point
                     format: int32
                     minimum: 0
                     type: integer
@@ -9559,14 +9555,6 @@ paths:
   /v2/timetable/{id}/:
     delete:
       description: Return a specific timetable with its associated schedules
-      parameters:
-      - description: A timetable ID
-        in: path
-        name: id
-        required: true
-        schema:
-          format: int64
-          type: integer
       responses:
         '204':
           description: No content
@@ -9578,12 +9566,13 @@ paths:
     get:
       description: Return a specific timetable with its associated schedules
       parameters:
-      - description: A timetable ID
+      - description: Timetable id
         in: path
         name: id
         required: true
         schema:
           format: int64
+          minimum: 0
           type: integer
       responses:
         '200':
@@ -9599,14 +9588,6 @@ paths:
       - timetablev2
     put:
       description: Update a specific timetable with its associated schedules
-      parameters:
-      - description: A timetable ID
-        in: path
-        name: id
-        required: true
-        schema:
-          format: int64
-          type: integer
       requestBody:
         content:
           application/json:

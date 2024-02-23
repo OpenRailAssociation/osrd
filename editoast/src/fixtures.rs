@@ -16,6 +16,8 @@ pub mod tests {
     use crate::modelsv2::{
         self, Changeset, Document, ElectricalProfileSet, Model, Project, RollingStockModel, Study,
     };
+    use crate::modelsv2::timetable::Timetable as TimetableV2;
+    use crate::modelsv2::train_schedule::TrainSchedule as TrainScheduleV2;
     use crate::schema::electrical_profiles::{ElectricalProfile, ElectricalProfileSetData};
     use crate::schema::v2::trainschedule::TrainScheduleBase;
     use crate::schema::{RailJson, TrackRange};
