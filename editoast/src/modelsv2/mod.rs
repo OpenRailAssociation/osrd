@@ -2,11 +2,12 @@ pub mod documents;
 pub mod infra_objects;
 pub mod projects;
 pub mod railjson;
-
-pub use projects::{Ordering, Project};
+pub mod timetable;
+pub mod train_schedule;
 
 pub use documents::Document;
 pub use infra_objects::*;
+pub use projects::{Ordering, Project};
 
 use async_trait::async_trait;
 use diesel::{pg::Pg, result::Error::NotFound, AsChangeset, QueryableByName};
