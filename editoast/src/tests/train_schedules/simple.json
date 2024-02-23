@@ -1,0 +1,73 @@
+{
+  "train_name": "ABC3615",
+  "rolling_stock_name": "R2D2",
+  "labels": [
+    "INOUI",
+    "TCHOU"
+  ],
+  "speed_limit_tag": "MA100",
+  "start_time": "2023-12-21T08:51:30+00:00",
+  "path": [
+    {
+      "id": "a",
+      "uic": 87210
+    },
+    {
+      "id": "b",
+      "track": "foo",
+      "offset": 10
+    },
+    {
+      "id": "c",
+      "deleted": true,
+      "trigram": "ABC"
+    },
+    {
+      "id": "d",
+      "operational_point": "X"
+    }
+  ],
+  "constraint_distribution": "MARECO",
+  "schedule": [
+    {
+      "at": "a",
+      "stop_for": "PT5M",
+      "locked": true
+    },
+    {
+      "at": "b",
+      "arrival": "PT10M",
+      "stop_for": "PT5M"
+    },
+    {
+      "at": "c",
+      "stop_for": "PT5M"
+    },
+    {
+      "at": "d",
+      "arrival": "PT50M",
+      "locked": true
+    }
+  ],
+  "margins": {
+    "boundaries": [
+      "b"
+    ],
+    "values": [
+      "5%",
+      "3%"
+    ]
+  },
+  "initial_speed": 2.5,
+  "power_restrictions": [
+    {
+      "from": "b",
+      "to": "c",
+      "value": "M1C1"
+    }
+  ],
+  "comfort": "AIR_CONDITIONING",
+  "options": {
+    "use_electrical_profiles": true
+  }
+}

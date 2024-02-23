@@ -17,6 +17,7 @@ mod switch;
 mod switch_type;
 pub mod track_section;
 pub mod utils;
+pub mod v2;
 
 pub use buffer_stop::{BufferStop, BufferStopCache};
 pub use detector::{Detector, DetectorCache};
