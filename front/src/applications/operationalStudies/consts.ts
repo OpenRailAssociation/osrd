@@ -110,21 +110,20 @@ export const STUDY_STATES = {
 export type StudyState = keyof typeof STUDY_STATES;
 export const studyStates = Object.keys(STUDY_STATES) as StudyState[];
 
-const STUDY_TYPES = {
-  nothingSelected: 'nothingSelected',
-  timeTables: 'timeTables',
-  flowRate: 'flowRate',
-  parkSizing: 'parkSizing',
-  garageRequirement: 'garageRequirement',
-  operationOrSizing: 'operationOrSizing',
-  operability: 'operability',
-  strategicPlanning: 'strategicPlanning',
-  chartStability: 'chartStability',
-  disturbanceTests: 'disturbanceTests',
-};
+export const STUDY_TYPES = [
+  'nothingSelected',
+  'timeTables',
+  'flowRate',
+  'parkSizing',
+  'garageRequirement',
+  'operationOrSizing',
+  'operability',
+  'strategicPlanning',
+  'chartStability',
+  'disturbanceTests',
+] as const;
 
-export type StudyType = keyof typeof STUDY_TYPES;
-export const studyTypes = Object.keys(STUDY_TYPES) as StudyType[];
+export type StudyType = typeof STUDY_TYPES;
 
 export type PowerRestrictionRange = LinearMetadataItem<{ value: string }>;
 

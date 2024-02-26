@@ -7,7 +7,7 @@ import { MdBusinessCenter, MdTitle } from 'react-icons/md';
 import { RiCalendarLine, RiMoneyEuroCircleLine, RiQuestionLine } from 'react-icons/ri';
 import { useNavigate, useParams } from 'react-router-dom';
 
-import { STUDY_STATES, studyStates, studyTypes } from 'applications/operationalStudies/consts';
+import { STUDY_STATES, STUDY_TYPES, studyStates } from 'applications/operationalStudies/consts';
 import studyLogo from 'assets/pictures/views/studies.svg';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { StudyCreateForm } from 'common/api/osrdEditoastApi';
@@ -53,7 +53,7 @@ const emptyStudy: StudyForm = {
   service_code: '',
   start_date: null,
   state: STUDY_STATES.started,
-  study_type: 'nothingSelected',
+  study_type: '',
   tags: [],
 };
 
@@ -75,8 +75,6 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
     osrdEditoastApi.useDeleteProjectsByProjectIdStudiesAndStudyIdMutation();
 
   const studyStateOptions = createSelectOptions('studyStates', studyStates);
-
-  const studyCategoriesOptions = createSelectOptions('studyCategories', studyTypes);
 
   const initialValuesRef = useRef<StudyForm | null>(null);
 
@@ -257,10 +255,13 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
                         `studyCategories.${currentStudy.study_type || 'nothingSelected'}`
                       ).toString(),
                     }}
-                    options={studyCategoriesOptions}
-                    onChange={(e) =>
-                      handleStudyInputChange('study_type', e?.id as StudyForm['study_type'])
-                    }
+                    options={STUDY_TYPES.map((studyType) => ({
+                      id: studyType === 'nothingSelected' ? '' : studyType,
+                      label: t(`studyCategories.${studyType}`),
+                    }))}
+                    onChange={(e) => {
+                      handleStudyInputChange('study_type', e.id);
+                    }}
                     data-testid="studyType"
                   />
                 </div>
@@ -278,7 +279,7 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
                     }
                     value={{
                       id: currentStudy.state,
-                      label: t(`studyStates.${currentStudy.state || 'nothingSelected'}`).toString(),
+                      label: t(`studyStates.${currentStudy.state}`).toString(),
                     }}
                     options={studyStateOptions}
                     onChange={(e) => handleStudyInputChange('state', e?.id as StudyForm['state'])}
