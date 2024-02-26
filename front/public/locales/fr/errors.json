@@ -55,7 +55,7 @@
       },
       "objects": {
         "DuplicateIdsProvided": "Identifiants d'objet fournis en double",
-        "ObjectIdNotFound": "Objet '{{object_id}}' non trouvé"
+        "ObjectIdNotFound": "Objet ID non trouvé"
       },
       "pathfinding": {
         "EndingTrackLocationNotFound": "Localisation de la fin de la section non trouvé",
@@ -132,7 +132,7 @@
       "UndefinedFunction": "Fonction non définie",
       "UndefinedOverload": "Aucune surcharge appropriée",
       "UnexpectedArg": "Argument inattendu trouvé",
-      "UnexpectedColumn": "Colonne inattendue",
+      "UnexpectedColummn": "Colonne inattendue",
       "UnexpectedErsatz": "Une valeur de type {{expected}} était attendue, mais '{{value}}' trouvé",
       "VariadicArgTypeMismatch": "Un argument variadique de type {{expected}} était attendu, mais {{actual}} trouvé"
     },
