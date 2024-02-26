@@ -1,10 +1,10 @@
 import { isEmpty, sortBy } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
-import type { StudyState, StudyType } from 'applications/operationalStudies/consts';
+import type { StudyState } from 'applications/operationalStudies/consts';
 import type { SelectOptionObject } from 'common/BootstrapSNCF/SelectImprovedSNCF';
 
-type OptionsList = StudyType[] | StudyState[];
+type OptionsList = StudyState[];
 
 export const createSelectOptions = (
   translationList: string,
