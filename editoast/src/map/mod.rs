@@ -1,17 +1,16 @@
 mod bounding_box;
 mod layer_cache;
 mod layers;
-pub mod redis_utils;
 
 use crate::error::Result;
 pub use bounding_box::{BoundingBox, Zone};
 pub use layers::{Layer, MapLayers, View};
-use redis::aio::ConnectionLike;
+use redis::AsyncCommands;
 
 pub use self::layer_cache::{
     get_cache_tile_key, get_layer_cache_prefix, get_view_cache_prefix, Tile,
 };
-pub use self::redis_utils::{delete, get, keys, set};
+use crate::RedisConnection;
 
 crate::schemas! {
     bounding_box::schemas(),
@@ -26,14 +25,17 @@ crate::schemas! {
 /// * `layer_name` - Layer to invalidate
 ///
 /// Returns the number of deleted keys
-async fn invalidate_full_layer_cache<C: ConnectionLike>(
-    redis: &mut C,
+async fn invalidate_full_layer_cache(
+    redis: &mut RedisConnection,
     infra_id: i64,
     layer_name: &str,
 ) -> Result<u64> {
     let prefix: String = get_layer_cache_prefix(layer_name, infra_id);
-    let matching_keys = keys(redis, &format!("{prefix}.*")).await?;
-    let number_of_deleted_keys = delete(redis, matching_keys).await?;
+    let matching_keys: Vec<String> = redis.keys(format!("{prefix}.*")).await?;
+    if matching_keys.is_empty() {
+        return Ok(0);
+    }
+    let number_of_deleted_keys = redis.del(matching_keys).await?;
     Ok(number_of_deleted_keys)
 }
 
@@ -46,8 +48,8 @@ async fn invalidate_full_layer_cache<C: ConnectionLike>(
 /// * `infra_id` - Infra to on which layers must be invalidated
 ///
 /// Panics if fail
-pub async fn invalidate_all<C: ConnectionLike>(
-    redis: &mut C,
+pub async fn invalidate_all(
+    redis: &mut RedisConnection,
     layers: &Vec<String>,
     infra_id: i64,
 ) -> Result<()> {

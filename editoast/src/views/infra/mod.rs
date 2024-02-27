@@ -15,13 +15,13 @@ use crate::core::infra_state::{InfraStateRequest, InfraStateResponse};
 use crate::core::{AsCoreRequest, CoreClient};
 use crate::error::Result;
 use crate::infra_cache::{InfraCache, ObjectCache};
-use crate::map::redis_utils::RedisClient;
 use crate::map::{self, MapLayers};
 use crate::models::infra::INFRA_VERSION;
 use crate::models::{Create, Delete, Infra, List as ModelList, NoParams, Retrieve, Update};
 use crate::schema::{SwitchType, RAILJSON_VERSION};
 use crate::views::pagination::{PaginatedResponse, PaginationQueryParam};
 use crate::DbPool;
+use crate::RedisClient;
 
 use actix_web::dev::HttpServiceFactory;
 use actix_web::web::{scope, Data, Json, Path, Query};

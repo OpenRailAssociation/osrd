@@ -13,18 +13,11 @@ mod infra_cache;
 mod map;
 mod models;
 mod modelsv2;
+mod redis_utils;
 mod schema;
 mod tables;
 mod views;
 
-use crate::core::CoreClient;
-use crate::error::InternalError;
-use crate::map::redis_utils::RedisClient;
-use crate::models::{Create, Delete, Infra};
-use crate::schema::electrical_profiles::ElectricalProfileSetData;
-use crate::schema::RailJson;
-use crate::views::infra::InfraForm;
-use crate::views::OpenApiRoot;
 use actix_cors::Cors;
 use actix_web::dev::{Service, ServiceRequest};
 use actix_web::middleware::{Condition, Logger, NormalizePath};
@@ -39,6 +32,7 @@ use client::{
     SearchCommands,
 };
 use colored::*;
+use core::CoreClient;
 use diesel::{sql_query, ConnectionError, ConnectionResult};
 use diesel_async::pooled_connection::deadpool::Pool;
 use diesel_async::pooled_connection::{
@@ -47,14 +41,19 @@ use diesel_async::pooled_connection::{
 use diesel_async::AsyncPgConnection as PgConnection;
 use diesel_async::{AsyncPgConnection, RunQueryDsl};
 use diesel_json::Json as DieselJson;
+use error::InternalError;
 use futures_util::future::BoxFuture;
 use futures_util::FutureExt;
 use infra_cache::InfraCache;
 use map::MapLayers;
 use models::electrical_profiles::ElectricalProfileSet;
 use models::infra::InfraError;
+use models::{Create, Delete, Infra};
 use models::{Retrieve, RollingStockModel};
 use openssl::ssl::{SslConnector, SslMethod, SslVerifyMode};
+pub use redis_utils::{RedisClient, RedisConnection};
+use schema::electrical_profiles::ElectricalProfileSetData;
+use schema::RailJson;
 use sentry::ClientInitGuard;
 use std::error::Error;
 use std::fs::File;
@@ -67,7 +66,9 @@ use tracing_subscriber::{layer::SubscriberExt as _, util::SubscriberInitExt as _
 use url::Url;
 use validator::{Validate, ValidationErrorsKind};
 use views::infra::InfraApiError;
+use views::infra::InfraForm;
 use views::search::{SearchConfig, SearchConfigFinder, SearchConfigStore};
+use views::OpenApiRoot;
 
 type DbPool = Pool<PgConnection>;
 

@@ -4,9 +4,9 @@ use std::collections::HashMap;
 
 use crate::client::{get_root_url, MapLayersConfig};
 use crate::error::Result;
-use crate::map::redis_utils::RedisClient;
-use crate::map::{get, get_cache_tile_key, get_view_cache_prefix, set, Layer, MapLayers, Tile};
+use crate::map::{get_cache_tile_key, get_view_cache_prefix, Layer, MapLayers, Tile};
 use crate::DbPool;
+use crate::RedisClient;
 use actix_web::web::{Data, Json, Path, Query};
 use actix_web::{get, HttpResponse};
 use diesel::sql_query;
@@ -14,6 +14,7 @@ use diesel::sql_types::Integer;
 use diesel_async::RunQueryDsl;
 use editoast_derive::EditoastError;
 use mvt_utils::{create_and_fill_mvt_tile, get_geo_json_sql_query, GeoJsonAndData};
+use redis::AsyncCommands;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use utoipa::{IntoParams, ToSchema};
@@ -182,8 +183,8 @@ async fn cache_and_get_mvt_tile(
         &Tile { x, y, z },
     );
 
-    let mut redis_conn = redis_client.get_connection().await?;
-    let cached_value = get::<_, Vec<u8>>(&mut redis_conn, &cache_key).await;
+    let mut redis = redis_client.get_connection().await?;
+    let cached_value: Option<Vec<u8>> = redis.get(&cache_key).await?;
 
     if let Some(value) = cached_value {
         return Ok(HttpResponse::Ok()
@@ -204,14 +205,10 @@ async fn cache_and_get_mvt_tile(
     let mvt_bytes: Vec<u8> = create_and_fill_mvt_tile(layer_slug, records)
         .to_bytes()
         .unwrap();
-    set(
-        &mut redis_conn,
-        &cache_key,
-        mvt_bytes.clone(),
-        view.cache_duration,
-    )
-    .await
-    .unwrap_or_else(|_| panic!("Fail to set value in redis with key {cache_key}"));
+    redis
+        .set_ex(&cache_key, mvt_bytes.clone(), view.cache_duration)
+        .await
+        .unwrap_or_else(|_| panic!("Fail to set value in redis with key {cache_key}"));
     Ok(HttpResponse::Ok()
         .content_type("application/x-protobuf")
         .body(mvt_bytes))
