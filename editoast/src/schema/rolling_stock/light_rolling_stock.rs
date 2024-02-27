@@ -5,7 +5,7 @@ use std::collections::HashMap;
 use utoipa::ToSchema;
 
 use super::{EnergySource, Gamma, RollingResistance, RollingStockMetadata};
-use crate::modelsv2::rolling_stock_livery::RollingStockLiveryMetadata;
+use crate::modelsv2::rolling_stock_livery::RollingStockLiveryMetadataModel;
 
 crate::schemas! {
     LightRollingStock,
@@ -75,7 +75,7 @@ pub struct LightRollingStockWithLiveries {
     pub rolling_stock: LightRollingStock,
     #[diesel(sql_type = Array<Jsonb>)]
     #[schema(value_type = Vec<RollingStockLiveryMetadata>)]
-    pub liveries: Vec<DieselJson<RollingStockLiveryMetadata>>,
+    pub liveries: Vec<DieselJson<RollingStockLiveryMetadataModel>>,
 }
 
 // Light effort curves schema for LightRollingStock

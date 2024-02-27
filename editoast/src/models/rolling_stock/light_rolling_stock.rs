@@ -1,6 +1,6 @@
 use crate::error::Result;
 use crate::models::TextArray;
-use crate::modelsv2::rolling_stock_livery::RollingStockLiveryMetadata;
+use crate::modelsv2::rolling_stock_livery::RollingStockLiveryMetadataModel;
 use crate::schema::rolling_stock::light_rolling_stock::{
     LightEffortCurves, LightRollingStock, LightRollingStockWithLiveries,
 };
@@ -64,7 +64,7 @@ impl LightRollingStockModel {
         let mut conn = db_pool.get().await?;
         let liveries = livery_dsl::rolling_stock_livery
             .filter(livery_dsl::rolling_stock_id.eq(self.id))
-            .select(RollingStockLiveryMetadata::as_select())
+            .select(RollingStockLiveryMetadataModel::as_select())
             .load(&mut conn)
             .await?;
         Ok(LightRollingStockWithLiveries {

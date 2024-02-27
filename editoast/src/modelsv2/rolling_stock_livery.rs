@@ -57,7 +57,7 @@ impl RollingStockLiveryModel {
 
 #[derive(Debug, Deserialize, Queryable, QueryableByName, Selectable, Serialize, ToSchema)]
 #[diesel(table_name = rolling_stock_livery)]
-pub struct RollingStockLiveryMetadata {
+pub struct RollingStockLiveryMetadataModel {
     #[diesel(sql_type = BigInt)]
     #[diesel(deserialize_as = i64)]
     id: i64,
