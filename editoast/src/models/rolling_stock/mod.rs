@@ -1,7 +1,7 @@
 pub mod light_rolling_stock;
 pub mod rolling_stock_image;
 
-use crate::modelsv2::rolling_stock_livery::RollingStockLiveryMetadata;
+use crate::modelsv2::rolling_stock_livery::RollingStockLiveryMetadataModel;
 use async_trait::async_trait;
 pub use light_rolling_stock::LightRollingStockModel;
 pub use rolling_stock_image::RollingStockSeparatedImageModel;
@@ -32,7 +32,7 @@ crate::schemas! {
     RollingStock,
     RollingStockWithLiveries,
     LoadingGaugeType,
-    RollingStockLiveryMetadata,
+    RollingStockLiveryMetadataModel,
 }
 
 #[derive(
@@ -170,7 +170,7 @@ impl RollingStockModel {
         let mut conn = db_pool.get().await?;
         let liveries = livery_dsl::rolling_stock_livery
             .filter(livery_dsl::rolling_stock_id.eq(self.id.unwrap()))
-            .select(RollingStockLiveryMetadata::as_select())
+            .select(RollingStockLiveryMetadataModel::as_select())
             .load(&mut conn)
             .await?;
         Ok(RollingStockWithLiveries {

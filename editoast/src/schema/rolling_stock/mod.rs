@@ -7,7 +7,7 @@ use std::collections::HashMap;
 use strum_macros::{Display, EnumString};
 use utoipa::ToSchema;
 
-use crate::modelsv2::rolling_stock_livery::RollingStockLiveryMetadata;
+use crate::modelsv2::rolling_stock_livery::RollingStockLiveryMetadataModel;
 use crate::schema::rolling_stock::rolling_stock_livery::RollingStockLivery;
 
 crate::schemas! {
@@ -79,7 +79,7 @@ pub struct RollingStock {
 pub struct RollingStockWithLiveries {
     #[serde(flatten)]
     pub rolling_stock: RollingStock,
-    pub liveries: Vec<RollingStockLiveryMetadata>,
+    pub liveries: Vec<RollingStockLiveryMetadataModel>,
 }
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize, ToSchema)]
