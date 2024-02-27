@@ -7,12 +7,12 @@ pub mod tests {
     use crate::models::{
         self, ElectricalProfileSet, Identifiable, Infra, Pathfinding, PathfindingChangeset,
         ResultPosition, ResultStops, ResultTrain, RollingStockLiveryModel, RollingStockModel,
-        Scenario, SimulationOutput, SimulationOutputChangeset, Study, Timetable, TrainSchedule,
+        Scenario, SimulationOutput, SimulationOutputChangeset, Timetable, TrainSchedule,
     };
     use crate::modelsv2::projects::Tags;
     use crate::modelsv2::timetable::Timetable as TimetableV2;
     use crate::modelsv2::train_schedule::TrainSchedule as TrainScheduleV2;
-    use crate::modelsv2::{self, Document, Model, Project};
+    use crate::modelsv2::{self, Document, Model, Project, Study};
     use crate::schema::electrical_profiles::{ElectricalProfile, ElectricalProfileSetData};
     use crate::schema::v2::trainschedule::TrainScheduleBase;
     use crate::schema::{RailJson, TrackRange};
@@ -283,22 +283,22 @@ pub mod tests {
         #[future] project: TestFixture<Project>,
     ) -> StudyFixtureSet {
         let project = project.await;
-        let study_model = Study {
-            name: Some("test_study".into()),
-            project_id: Some(project.id()),
-            description: Some("test".into()),
-            creation_date: Some(Utc::now().naive_utc()),
-            business_code: Some("AAA".into()),
-            service_code: Some("BBB".into()),
-            state: Some("some_type".into()),
-            study_type: Some("some_type".into()),
-            budget: Some(0),
-            tags: Some(vec![]),
-            ..Default::default()
-        };
+        let study_model = Study::changeset()
+            .name("test_study".into())
+            .description("test".into())
+            .creation_date(Utc::now().naive_utc())
+            .business_code("AAA".into())
+            .service_code("BBB".into())
+            .creation_date(Utc::now().naive_utc())
+            .last_modification(Utc::now().naive_utc())
+            .budget(0)
+            .tags(Tags::default())
+            .state("some_state".into())
+            .study_type("some_type".into())
+            .project_id(project.id());
         StudyFixtureSet {
             project,
-            study: TestFixture::create_legacy(study_model, db_pool).await,
+            study: TestFixture::create(study_model, db_pool).await,
         }
     }
 

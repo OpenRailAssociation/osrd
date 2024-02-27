@@ -5421,7 +5421,6 @@ components:
       - distribution
       type: object
     Study:
-      additionalProperties: false
       properties:
         actual_end_date:
           format: date
@@ -5463,9 +5462,7 @@ components:
         study_type:
           type: string
         tags:
-          items:
-            type: string
-          type: array
+          $ref: '#/components/schemas/Tags'
       required:
       - id
       - name
@@ -5511,9 +5508,7 @@ components:
         study_type:
           type: string
         tags:
-          items:
-            type: string
-          type: array
+          $ref: '#/components/schemas/Tags'
       required:
       - name
       - state
@@ -5556,10 +5551,9 @@ components:
           nullable: true
           type: string
         tags:
-          items:
-            type: string
+          allOf:
+          - $ref: '#/components/schemas/Tags'
           nullable: true
-          type: array
       type: object
     StudyResponse:
       allOf:

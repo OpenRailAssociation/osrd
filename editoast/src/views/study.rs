@@ -1,14 +1,8 @@
 use crate::decl_paginated_response;
 use crate::error::InternalError;
 use crate::error::Result;
-use crate::models::Create;
-use crate::models::Delete;
 use crate::models::List;
-use crate::models::Retrieve;
-use crate::models::Study;
-use crate::models::StudyWithScenarios;
-use crate::models::Update;
-use crate::modelsv2::Project;
+use crate::modelsv2::{Changeset, Create, DeleteStatic, Model, Project, Study, Tags, Update};
 use crate::views::pagination::{PaginatedResponse, PaginationQueryParam};
 use crate::views::projects::ProjectError;
 use crate::views::projects::ProjectIdParam;
@@ -83,32 +77,47 @@ struct StudyCreateForm {
     #[serde(default)]
     pub budget: i32,
     #[serde(default)]
-    pub tags: Vec<String>,
+    pub tags: Tags,
     pub state: String,
     #[serde(default)]
     pub study_type: String,
 }
 
 impl StudyCreateForm {
-    pub fn into_study(self, project_id: i64) -> Result<Study> {
-        let res = Study {
-            name: Some(self.name),
-            project_id: Some(project_id),
-            description: Some(self.description),
-            budget: Some(self.budget),
-            tags: Some(self.tags),
-            creation_date: Some(Utc::now().naive_utc()),
-            business_code: Some(self.business_code),
-            service_code: Some(self.service_code),
-            state: Some(self.state),
-            study_type: Some(self.study_type),
-            start_date: Some(self.start_date),
-            expected_end_date: Some(self.expected_end_date),
-            actual_end_date: Some(self.actual_end_date),
-            ..Default::default()
-        };
-        res.validate()?;
-        Ok(res)
+    pub fn into_study_changeset(self, project_id: i64) -> Result<Changeset<Study>> {
+        let study_changeset = Study::changeset()
+            .name(self.name)
+            .description(self.description)
+            .business_code(self.business_code)
+            .service_code(self.service_code)
+            .creation_date(Utc::now().naive_utc())
+            .last_modification(Utc::now().naive_utc())
+            .start_date(self.start_date)
+            .expected_end_date(self.expected_end_date)
+            .actual_end_date(self.actual_end_date)
+            .budget(self.budget)
+            .tags(self.tags)
+            .state(self.state)
+            .study_type(self.study_type)
+            .project_id(project_id);
+        Study::validate(&study_changeset)?;
+        Ok(study_changeset)
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+pub struct StudyWithScenarios {
+    #[serde(flatten)]
+    pub study: Study,
+    pub scenarios_count: i64,
+}
+
+impl StudyWithScenarios {
+    pub fn new(study: Study, scenarios_count: i64) -> Self {
+        Self {
+            study,
+            scenarios_count,
+        }
     }
 }
 
@@ -161,8 +170,8 @@ async fn create(
                 // Create study
                 let study: Study = data
                     .into_inner()
-                    .into_study(project_id)?
-                    .create_conn(conn)
+                    .into_study_changeset(project_id)?
+                    .create(conn)
                     .await?;
 
                 // Update project last_modification field
@@ -210,9 +219,7 @@ async fn delete(path: Path<(i64, i64)>, db_pool: Data<DbPool>) -> Result<HttpRes
             .await?;
 
     // Delete study
-    if !Study::delete(db_pool.clone(), study_id).await? {
-        return Err(StudyError::NotFound { study_id }.into());
-    }
+    Study::delete_static_or_fail(conn, study_id, || StudyError::NotFound { study_id }).await?;
 
     // Update project last_modification field
     project.update_last_modified(conn).await?;
@@ -243,9 +250,20 @@ async fn list(
         .unpack();
     let project = project.into_inner();
     let ordering = params.ordering.clone();
-    let studies = StudyWithScenarios::list(db_pool, page, per_page, (project, ordering)).await?;
+    let studies = Study::list(db_pool.clone(), page, per_page, (project, ordering)).await?;
 
-    Ok(Json(studies))
+    let mut results = Vec::new();
+    for study in studies.results.into_iter() {
+        let scenarios_count = study.scenarios_count(db_pool.clone()).await?;
+        results.push(StudyWithScenarios::new(study, scenarios_count));
+    }
+
+    Ok(Json(PaginatedResponse {
+        count: studies.count,
+        previous: studies.previous,
+        next: studies.next,
+        results,
+    }))
 }
 
 /// Return a specific study
@@ -269,17 +287,16 @@ async fn get(db_pool: Data<DbPool>, path: Path<(i64, i64)>) -> Result<Json<Study
             .await?;
 
     // Return the study
-    let study = match Study::retrieve(db_pool.clone(), study_id).await? {
-        Some(study) => study,
-        None => return Err(StudyError::NotFound { study_id }.into()),
-    };
+    let study =
+        Study::retrieve_or_fail(conn, study_id, || StudyError::NotFound { study_id }).await?;
 
     //Check if the study belongs to the project
-    if study.project_id.unwrap() != project_id {
+    if study.project_id != project_id {
         return Err(StudyError::NotFound { study_id }.into());
     }
 
-    let study_scenarios = study.with_scenarios(db_pool).await?;
+    let scenarios_count = study.scenarios_count(db_pool.clone()).await?;
+    let study_scenarios = StudyWithScenarios::new(study, scenarios_count);
     let study_response = StudyResponse::new(study_scenarios, project);
     Ok(Json(study_response))
 }
@@ -296,31 +313,27 @@ struct StudyPatchForm {
     pub business_code: Option<String>,
     pub service_code: Option<String>,
     pub budget: Option<i32>,
-    pub tags: Option<Vec<String>>,
+    pub tags: Option<Tags>,
     pub state: Option<String>,
     pub study_type: Option<String>,
 }
 
-impl TryFrom<StudyPatchForm> for Study {
-    type Error = crate::error::InternalError;
-
-    fn try_from(form: StudyPatchForm) -> std::result::Result<Self, Self::Error> {
-        let res = Study {
-            name: form.name,
-            description: form.description,
-            start_date: Some(form.start_date),
-            expected_end_date: Some(form.expected_end_date),
-            actual_end_date: Some(form.actual_end_date),
-            budget: form.budget,
-            business_code: form.business_code,
-            service_code: form.service_code,
-            state: form.state,
-            tags: form.tags,
-            study_type: form.study_type,
-            ..Default::default()
-        };
-        res.validate()?;
-        Ok(res)
+impl StudyPatchForm {
+    pub fn into_study_changeset(self) -> Result<Changeset<Study>> {
+        let study_changeset = Study::changeset()
+            .flat_name(self.name)
+            .flat_description(self.description)
+            .flat_business_code(self.business_code)
+            .flat_service_code(self.service_code)
+            .flat_start_date(Some(self.start_date))
+            .flat_expected_end_date(Some(self.expected_end_date))
+            .flat_actual_end_date(Some(self.actual_end_date))
+            .flat_budget(self.budget)
+            .flat_tags(self.tags)
+            .flat_state(self.state)
+            .flat_study_type(self.study_type);
+        Study::validate(&study_changeset)?;
+        Ok(study_changeset)
     }
 }
 
@@ -356,18 +369,18 @@ async fn patch(
                 .await?;
 
                 // Update study
-                let study: Study = data.into_inner().try_into()?;
-                let study = match study.update_conn(conn, study_id).await? {
-                    Some(study) => study,
-                    None => return Err(StudyError::NotFound { study_id }.into()),
-                };
-
-                study.validate()?;
+                let study = data
+                    .into_inner()
+                    .into_study_changeset()?
+                    .update_or_fail(conn, study_id, || StudyError::NotFound { study_id })
+                    .await?;
+                let scenarios_count = study.scenarios_count(db_pool.clone()).await?;
+                let study_scenarios = StudyWithScenarios::new(study, scenarios_count);
 
                 // Update project last_modification field
                 project.update_last_modified(conn).await?;
 
-                Ok((study.with_scenarios_conn(conn).await?, project))
+                Ok((study_scenarios, project))
             }
             .scope_boxed()
         })
@@ -382,8 +395,7 @@ pub mod test {
     use crate::fixtures::tests::{
         db_pool, project, study_fixture_set, StudyFixtureSet, TestFixture,
     };
-    use crate::models::Study;
-    use crate::modelsv2::Project;
+    use crate::modelsv2::{DeleteStatic, Project, Study};
     use crate::views::tests::create_test_service;
     use actix_http::Request;
     use actix_web::http::StatusCode;
@@ -430,13 +442,14 @@ pub mod test {
 
         let study_response: StudyResponse = read_body_json(response).await;
         let study = TestFixture::new(study_response.study, db_pool.clone());
-        assert_eq!(study.model.name.clone().unwrap(), "study_test");
+        assert_eq!(study.model.name.clone(), "study_test");
     }
 
     #[rstest]
     async fn study_delete(#[future] study_fixture_set: StudyFixtureSet) {
         let app = create_test_service().await;
         let study_fixture_set = study_fixture_set.await;
+
         let response = call_service(&app, delete_study_request(&study_fixture_set)).await;
         assert_eq!(response.status(), StatusCode::NO_CONTENT);
 
@@ -477,7 +490,8 @@ pub mod test {
         let response = call_service(&app, req).await;
         assert_eq!(response.status(), StatusCode::OK);
 
-        assert!(Study::delete(db_pool, study_fixture_set.study.id())
+        let conn = &mut db_pool.get().await.unwrap();
+        assert!(Study::delete_static(conn, study_fixture_set.study.id())
             .await
             .unwrap());
 
@@ -498,6 +512,6 @@ pub mod test {
         assert_eq!(response.status(), StatusCode::OK);
 
         let StudyWithScenarios { study, .. } = read_body_json(response).await;
-        assert_eq!(study.name.unwrap(), "rename_test");
+        assert_eq!(study.name, "rename_test");
     }
 }
