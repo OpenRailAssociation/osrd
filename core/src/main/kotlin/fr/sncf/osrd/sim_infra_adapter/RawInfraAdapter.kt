@@ -13,7 +13,6 @@ import fr.sncf.osrd.infra.api.tracks.undirected.Switch
 import fr.sncf.osrd.infra.api.tracks.undirected.SwitchBranch
 import fr.sncf.osrd.infra.api.tracks.undirected.SwitchPort
 import fr.sncf.osrd.infra.api.tracks.undirected.TrackEdge
-import fr.sncf.osrd.infra.api.tracks.undirected.TrackNode.Joint
 import fr.sncf.osrd.infra.api.tracks.undirected.TrackSection
 import fr.sncf.osrd.infra.implementation.tracks.directed.DiTrackEdgeImpl
 import fr.sncf.osrd.infra.implementation.tracks.directed.TrackRangeView
@@ -159,24 +158,6 @@ fun adaptRawInfra(infra: SignalingInfra): SimInfraAdapter {
                 }
                 trackNodeGroupsMap[oldSwitch] = switchGroups
             }
-    }
-
-    // parse track links
-    for (node in infra.trackGraph.nodes()) {
-        if (node is Joint) {
-            val edges = infra.trackGraph.incidentEdges(node)
-            assert(edges.count() == 2)
-            builder.movableElement(node.id, ZERO) {
-                val ports = ArrayList<TrackNodePortId>()
-                for (edge in edges) {
-                    val endpoint =
-                        if (infra.trackGraph.incidentNodes(edge).nodeU() == node) Endpoint.START
-                        else Endpoint.END
-                    ports.add(port(EndpointTrackSectionId(trackSectionMap[edge]!!, endpoint)))
-                }
-                config("default", Pair(ports[0], ports[1]))
-            }
-        }
     }
 
     fun getOrCreateDet(oldDiDetector: DiDetector): DirDetectorId {
