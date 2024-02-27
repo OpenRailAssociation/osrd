@@ -92,8 +92,7 @@ fun BlockInfra.getRouteBlocks(
 ): StaticIdxList<Block> {
     val blockPaths =
         recoverBlocks(rawInfra, this, mutableStaticIdxArrayListOf(route), allowedSigSystems)
-    if (blockPaths.isEmpty())
-        return mutableStaticIdxArrayListOf()
+    if (blockPaths.isEmpty()) return mutableStaticIdxArrayListOf()
     // No signaling system for now, take the first block path possibility.
     // Correct when signalisation is taken into account.
     val blocks = blockPaths[0].toBlockList()
