@@ -168,14 +168,14 @@ impl RollingStockModel {
     pub async fn with_liveries(self, db_pool: Data<DbPool>) -> Result<RollingStockWithLiveries> {
         use crate::tables::rolling_stock_livery::dsl as livery_dsl;
         let mut conn = db_pool.get().await?;
-        let liveries = livery_dsl::rolling_stock_livery
+        let liveries: Vec<RollingStockLiveryMetadataModel> = livery_dsl::rolling_stock_livery
             .filter(livery_dsl::rolling_stock_id.eq(self.id.unwrap()))
             .select(RollingStockLiveryMetadataModel::as_select())
             .load(&mut conn)
             .await?;
         Ok(RollingStockWithLiveries {
             rolling_stock: self.into(),
-            liveries,
+            liveries: liveries.into_iter().map(|m| m.into()).collect(),
         })
     }
 
