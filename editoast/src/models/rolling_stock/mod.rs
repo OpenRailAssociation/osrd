@@ -32,7 +32,6 @@ crate::schemas! {
     RollingStock,
     RollingStockWithLiveries,
     LoadingGaugeType,
-    RollingStockLiveryMetadataModel,
 }
 
 #[derive(

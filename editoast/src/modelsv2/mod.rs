@@ -2,10 +2,10 @@ pub mod documents;
 pub mod infra_objects;
 pub mod projects;
 pub mod railjson;
+pub mod rolling_stock_livery;
 pub mod study;
 pub mod timetable;
 pub mod train_schedule;
-pub mod rolling_stock_livery;
 
 pub use documents::Document;
 pub use infra_objects::*;

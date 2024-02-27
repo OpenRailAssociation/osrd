@@ -4,7 +4,10 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use utoipa::ToSchema;
 
-use super::{EnergySource, Gamma, RollingResistance, RollingStockMetadata};
+use super::{
+    rolling_stock_livery::RollingStockLiveryMetadata, EnergySource, Gamma, RollingResistance,
+    RollingStockMetadata,
+};
 use crate::modelsv2::rolling_stock_livery::RollingStockLiveryMetadataModel;
 
 crate::schemas! {
@@ -68,18 +71,35 @@ pub struct LightRollingStock {
     pub supported_signaling_systems: Vec<String>,
 }
 
-#[derive(Debug, QueryableByName, Serialize, Deserialize, ToSchema)]
-pub struct LightRollingStockWithLiveries {
+#[derive(Debug, QueryableByName, Deserialize)]
+pub struct LightRollingStockWithLiveriesModel {
     #[diesel(embed)]
-    #[serde(flatten)]
     pub rolling_stock: LightRollingStock,
     #[diesel(sql_type = Array<Jsonb>)]
-    #[schema(value_type = Vec<RollingStockLiveryMetadata>)]
     pub liveries: Vec<DieselJson<RollingStockLiveryMetadataModel>>,
 }
 
-// Light effort curves schema for LightRollingStock
+#[derive(Debug, Serialize, Deserialize, ToSchema)]
+pub struct LightRollingStockWithLiveries {
+    #[serde(flatten)]
+    pub rolling_stock: LightRollingStock,
+    pub liveries: Vec<RollingStockLiveryMetadata>,
+}
 
+impl From<LightRollingStockWithLiveriesModel> for LightRollingStockWithLiveries {
+    fn from(rolling_stock_with_liveries: LightRollingStockWithLiveriesModel) -> Self {
+        LightRollingStockWithLiveries {
+            rolling_stock: rolling_stock_with_liveries.rolling_stock,
+            liveries: rolling_stock_with_liveries
+                .liveries
+                .into_iter()
+                .map(|livery| livery.0.into())
+                .collect(),
+        }
+    }
+}
+
+// Light effort curves schema for LightRollingStock
 #[derive(Debug, Deserialize, Serialize, ToSchema)]
 pub struct LightModeEffortCurves {
     is_electric: bool,

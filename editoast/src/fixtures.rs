@@ -6,10 +6,11 @@ pub mod tests {
     use crate::models::train_schedule::Mrsp;
     use crate::models::{
         self, ElectricalProfileSet, Identifiable, Infra, Pathfinding, PathfindingChangeset,
-        ResultPosition, ResultStops, ResultTrain, RollingStockLiveryModel, RollingStockModel,
-        Scenario, SimulationOutput, SimulationOutputChangeset, Timetable, TrainSchedule,
+        ResultPosition, ResultStops, ResultTrain, RollingStockModel, Scenario, SimulationOutput,
+        SimulationOutputChangeset, Timetable, TrainSchedule,
     };
     use crate::modelsv2::projects::Tags;
+    use crate::modelsv2::rolling_stock_livery::RollingStockLiveryModel;
     use crate::modelsv2::timetable::Timetable as TimetableV2;
     use crate::modelsv2::train_schedule::TrainSchedule as TrainScheduleV2;
     use crate::modelsv2::{self, Document, Model, Project, Study};
