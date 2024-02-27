@@ -4,6 +4,7 @@ use chrono::{DateTime, Utc};
 use derivative::Derivative;
 use serde::de::Error as SerdeError;
 use serde::{Deserialize, Serialize};
+use std::hash::Hash;
 use std::{
     collections::{HashMap, HashSet},
     str::FromStr,
@@ -170,7 +171,7 @@ pub struct ScheduleItem {
 }
 
 /// The location of a path waypoint
-#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema, Hash)]
 #[serde(untagged, deny_unknown_fields)]
 pub enum PathItemLocation {
     TrackOffset(#[schema(inline)] TrackOffset),

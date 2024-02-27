@@ -95,7 +95,7 @@ pub struct Slope {
     pub end: f64,
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq, ToSchema)]
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq, ToSchema, Hash)]
 pub enum LoadingGaugeType {
     G1,
     G2,

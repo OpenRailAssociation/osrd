@@ -6,7 +6,7 @@ mod errors;
 mod geo_json;
 mod neutral_section;
 pub mod operation;
-mod operational_point;
+pub mod operational_point;
 mod railjson;
 pub mod rolling_stock;
 mod route;
@@ -60,6 +60,7 @@ use utoipa::ToSchema;
 crate::schemas! {
     ObjectType,
     TrackLocation,
+    TrackOffset,
     DirectionalTrackRange,
     Direction,
     utils::schemas(),
@@ -350,6 +351,13 @@ impl TrackEndpoint {
             endpoint,
         }
     }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema, Hash)]
+pub struct TrackOffset {
+    #[schema(inline)]
+    pub track: Identifier,
+    pub offset: u64,
 }
 
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, Eq)]

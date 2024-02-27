@@ -184,7 +184,9 @@ components:
           format: double
           type: number
         track:
-          $ref: '#/components/schemas/Identifier'
+          maxLength: 255
+          minLength: 1
+          type: string
       required:
       - track
       - begin
@@ -640,6 +642,7 @@ components:
       - $ref: '#/components/schemas/EditoastPaginationErrorInvalidPageSize'
       - $ref: '#/components/schemas/EditoastPathfindingErrorElectricalProfilesOverlap'
       - $ref: '#/components/schemas/EditoastPathfindingErrorElectrificationOverlap'
+      - $ref: '#/components/schemas/EditoastPathfindingErrorInfraNotFound'
       - $ref: '#/components/schemas/EditoastPathfindingErrorInfraNotFound'
       - $ref: '#/components/schemas/EditoastPathfindingErrorNotFound'
       - $ref: '#/components/schemas/EditoastPathfindingErrorOperationalPointsNotFound'
@@ -3053,9 +3056,6 @@ components:
       - time
       - position
       type: object
-    Identifier:
-      description: A wrapper around a String that ensures that the string is not empty and not longer than 255 characters.
-      type: string
     ImportTimings:
       properties:
         pathfinding:
@@ -3781,24 +3781,86 @@ components:
       - ch
       type: object
     PathfindingInput:
+      description: |-
+        Path input is described by some rolling stock information
+        and a list of path waypoints
       properties:
-        ending:
-          $ref: '#/components/schemas/PathfindingTrackLocationInput'
-        starting:
-          $ref: '#/components/schemas/PathfindingTrackLocationInput'
+        path_items:
+          description: List of waypoints given to the pathfinding
+          items:
+            description: The location of a path waypoint
+            oneOf:
+            - $ref: '#/components/schemas/TrackOffset'
+            - properties:
+                operational_point:
+                  maxLength: 255
+                  minLength: 1
+                  type: string
+              required:
+              - operational_point
+              type: object
+            - properties:
+                secondary_code:
+                  description: An optional secondary code to identify a more specific location
+                  nullable: true
+                  type: string
+                trigram:
+                  minLength: 1
+                  type: string
+              required:
+              - trigram
+              type: object
+            - properties:
+                secondary_code:
+                  description: An optional secondary code to identify a more specific location
+                  nullable: true
+                  type: string
+                uic:
+                  description: The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point
+                  format: int32
+                  minimum: 0
+                  type: integer
+              required:
+              - uic
+              type: object
+          type: array
+        rolling_stock_is_thermal:
+          description: Can the rolling stock run on non-electrified tracks
+          type: boolean
+        rolling_stock_loading_gauge:
+          $ref: '#/components/schemas/LoadingGaugeType'
+        rolling_stock_supported_electrification:
+          description: |-
+            List of supported electrification modes.
+            Empty if does not support any electrification
+          items:
+            type: string
+          type: array
+        rolling_stock_supported_signaling_systems:
+          description: List of supported signaling systems
+          items:
+            type: string
+          type: array
       required:
-      - starting
-      - ending
+      - rolling_stock_loading_gauge
+      - rolling_stock_is_thermal
+      - rolling_stock_supported_electrification
+      - rolling_stock_supported_signaling_systems
+      - path_items
       type: object
     PathfindingOutput:
       properties:
         detectors:
           items:
-            $ref: '#/components/schemas/Identifier'
+            maxLength: 255
+            minLength: 1
+            type: string
           type: array
         switches_directions:
           additionalProperties:
-            $ref: '#/components/schemas/Identifier'
+            maxLength: 255
+            minLength: 1
+            type: string
           type: object
         track_ranges:
           items:
@@ -3848,6 +3910,268 @@ components:
       - infra
       - steps
       type: object
+    PathfindingResult:
+      oneOf:
+      - properties:
+          blocks:
+            items:
+              maxLength: 255
+              minLength: 1
+              type: string
+            type: array
+          length:
+            format: int64
+            minimum: 0
+            type: integer
+          routes:
+            items:
+              maxLength: 255
+              minLength: 1
+              type: string
+            type: array
+          status:
+            enum:
+            - success
+            type: string
+          track_section_ranges:
+            items:
+              $ref: '#/components/schemas/TrackRange'
+            type: array
+        required:
+        - blocks
+        - routes
+        - track_section_ranges
+        - length
+        - status
+        type: object
+      - properties:
+          length:
+            format: int64
+            minimum: 0
+            type: integer
+          status:
+            enum:
+            - not_found_in_blocks
+            type: string
+          track_section_ranges:
+            items:
+              $ref: '#/components/schemas/TrackRange'
+            type: array
+        required:
+        - track_section_ranges
+        - length
+        - status
+        type: object
+      - properties:
+          length:
+            format: int64
+            minimum: 0
+            type: integer
+          status:
+            enum:
+            - not_found_in_routes
+            type: string
+          track_section_ranges:
+            items:
+              $ref: '#/components/schemas/TrackRange'
+            type: array
+        required:
+        - track_section_ranges
+        - length
+        - status
+        type: object
+      - properties:
+          status:
+            enum:
+            - not_found_in_tracks
+            type: string
+        required:
+        - status
+        type: object
+      - properties:
+          blocks:
+            items:
+              maxLength: 255
+              minLength: 1
+              type: string
+            type: array
+          incompatible_ranges:
+            items:
+              items:
+                allOf:
+                - format: int64
+                  minimum: 0
+                  type: integer
+                - format: int64
+                  minimum: 0
+                  type: integer
+              type: array
+            type: array
+          length:
+            format: int64
+            minimum: 0
+            type: integer
+          routes:
+            items:
+              maxLength: 255
+              minLength: 1
+              type: string
+            type: array
+          status:
+            enum:
+            - incompatible_electrification
+            type: string
+          track_section_ranges:
+            items:
+              $ref: '#/components/schemas/TrackRange'
+            type: array
+        required:
+        - blocks
+        - routes
+        - track_section_ranges
+        - length
+        - incompatible_ranges
+        - status
+        type: object
+      - properties:
+          blocks:
+            items:
+              maxLength: 255
+              minLength: 1
+              type: string
+            type: array
+          incompatible_ranges:
+            items:
+              items:
+                allOf:
+                - format: int64
+                  minimum: 0
+                  type: integer
+                - format: int64
+                  minimum: 0
+                  type: integer
+              type: array
+            type: array
+          length:
+            format: int64
+            minimum: 0
+            type: integer
+          routes:
+            items:
+              maxLength: 255
+              minLength: 1
+              type: string
+            type: array
+          status:
+            enum:
+            - incompatible_loading_gauge
+            type: string
+          track_section_ranges:
+            items:
+              $ref: '#/components/schemas/TrackRange'
+            type: array
+        required:
+        - blocks
+        - routes
+        - track_section_ranges
+        - length
+        - incompatible_ranges
+        - status
+        type: object
+      - properties:
+          blocks:
+            items:
+              maxLength: 255
+              minLength: 1
+              type: string
+            type: array
+          incompatible_ranges:
+            items:
+              items:
+                allOf:
+                - format: int64
+                  minimum: 0
+                  type: integer
+                - format: int64
+                  minimum: 0
+                  type: integer
+              type: array
+            type: array
+          length:
+            format: int64
+            minimum: 0
+            type: integer
+          routes:
+            items:
+              maxLength: 255
+              minLength: 1
+              type: string
+            type: array
+          status:
+            enum:
+            - incompatible_signaling_system
+            type: string
+          track_section_ranges:
+            items:
+              $ref: '#/components/schemas/TrackRange'
+            type: array
+        required:
+        - blocks
+        - routes
+        - track_section_ranges
+        - length
+        - incompatible_ranges
+        - status
+        type: object
+      - properties:
+          index:
+            minimum: 0
+            type: integer
+          path_item:
+            description: The location of a path waypoint
+            oneOf:
+            - $ref: '#/components/schemas/TrackOffset'
+            - properties:
+                operational_point:
+                  maxLength: 255
+                  minLength: 1
+                  type: string
+              required:
+              - operational_point
+              type: object
+            - properties:
+                secondary_code:
+                  description: An optional secondary code to identify a more specific location
+                  nullable: true
+                  type: string
+                trigram:
+                  minLength: 1
+                  type: string
+              required:
+              - trigram
+              type: object
+            - properties:
+                secondary_code:
+                  description: An optional secondary code to identify a more specific location
+                  nullable: true
+                  type: string
+                uic:
+                  description: The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point
+                  format: int32
+                  minimum: 0
+                  type: integer
+              required:
+              - uic
+              type: object
+          status:
+            enum:
+            - invalid_path_item
+            type: string
+        required:
+        - index
+        - path_item
+        - status
+        type: object
     PathfindingStep:
       properties:
         duration:
@@ -3868,7 +4192,9 @@ components:
           format: double
           type: number
         track:
-          $ref: '#/components/schemas/Identifier'
+          maxLength: 255
+          minLength: 1
+          type: string
       required:
       - track
       - position
@@ -5813,27 +6139,48 @@ components:
           format: double
           type: number
         track_section:
-          $ref: '#/components/schemas/Identifier'
+          maxLength: 255
+          minLength: 1
+          type: string
       required:
       - track_section
       - offset
       type: object
-    TrackRange:
-      additionalProperties: false
+    TrackOffset:
       properties:
-        begin:
-          format: double
-          type: number
-        end:
-          format: double
-          type: number
+        offset:
+          format: int64
+          minimum: 0
+          type: integer
         track:
-          example: 01234567-89ab-cdef-0123-456789abcdef
+          maxLength: 255
+          minLength: 1
           type: string
       required:
       - track
+      - offset
+      type: object
+    TrackRange:
+      properties:
+        begin:
+          format: int64
+          minimum: 0
+          type: integer
+        direction:
+          $ref: '#/components/schemas/Direction'
+        end:
+          format: int64
+          minimum: 0
+          type: integer
+        track_section:
+          maxLength: 255
+          minLength: 1
+          type: string
+      required:
+      - track_section
       - begin
       - end
+      - direction
       type: object
     TrainImportReport:
       properties:
@@ -5967,21 +6314,10 @@ components:
             allOf:
             - description: The location of a path waypoint
               oneOf:
-              - properties:
-                  offset:
-                    description: The offset in millimeters from the start of the track
-                    format: int64
-                    minimum: 0
-                    type: integer
-                  track:
-                    minLength: 1
-                    type: string
-                required:
-                - track
-                - offset
-                type: object
+              - $ref: '#/components/schemas/TrackOffset'
               - properties:
                   operational_point:
+                    maxLength: 255
                     minLength: 1
                     type: string
                 required:
@@ -8902,6 +9238,25 @@ paths:
       summary: Retrieve a simulation result
       tags:
       - train_schedule
+  /v2/infra/{infra_id}/pathfinding/blocks/:
+    post:
+      description: Compute a pathfinding
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PathfindingInput'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PathfindingResult'
+          description: Pathfinding Result
+      summary: Compute a pathfinding
+      tags:
+      - pathfindingv2
   /v2/timetable/:
     get:
       description: Return all timetables
