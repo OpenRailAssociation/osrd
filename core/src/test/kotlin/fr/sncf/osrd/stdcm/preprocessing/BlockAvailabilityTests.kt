@@ -91,6 +91,11 @@ class BlockAvailabilityTests {
         blockLengths = blocks.map { infra.blockInfra.getBlockLength(it) }
     }
 
+    /** Used to filter explorers that are on the right blocks */
+    private fun filterExplorer(explorer: InfraExplorerWithEnvelope): Boolean {
+        return explorer.getLookahead().all { blocks.contains(it) }
+    }
+
     /**
      * Creates an infra explorer on the infra described above, with at least the given number of
      * blocks in the path, and the given number of simulated blocks. note: the path is always
@@ -103,9 +108,6 @@ class BlockAvailabilityTests {
     ): InfraExplorerWithEnvelope {
         assert(nBlocksInPath >= nBlocksSimulated)
         assert(nBlocksInPath <= 5)
-        fun filterExplorer(explorer: InfraExplorerWithEnvelope): Boolean {
-            return explorer.getLookahead().all { blocks.contains(it) }
-        }
 
         var infraExplorer =
             initInfraExplorerWithEnvelope(
@@ -571,5 +573,51 @@ class BlockAvailabilityTests {
                 0.0
             ) as BlockAvailabilityInterface.Unavailable
         assertEquals(duration, res.duration)
+    }
+
+    /**
+     * Test that the travelled path conversion works properly when not starting on the route first
+     * block
+     */
+    @Test
+    fun testNotStartingOnRouteFirstBlock() {
+        var explorer =
+            initInfraExplorerWithEnvelope(
+                    infra,
+                    PathfindingEdgeLocationId(blocks[2], Offset(50.meters)),
+                    listOf(blocks.last()),
+                    REALISTIC_FAST_TRAIN
+                )
+                .first { filterExplorer(it) }
+        while (true) {
+            val next = explorer.cloneAndExtendLookahead().filter { filterExplorer(it) }
+            if (next.isEmpty()) break
+            explorer = next.first()
+        }
+        explorer =
+            explorer.addEnvelope(
+                Envelope.make(
+                    EnvelopePart.generateTimes(
+                        listOf(EnvelopeProfile.CONSTANT_SPEED),
+                        doubleArrayOf(0.0, 10.0),
+                        doubleArrayOf(1.0, 1.0)
+                    )
+                )
+            )
+        val availability =
+            makeBlockAvailability(
+                infra,
+                listOf(
+                    SpacingRequirement(zoneNames[2], 0.0, 120.0, true),
+                )
+            )
+        val res =
+            availability.getAvailability(
+                explorer,
+                explorer.getIncrementalPath().fromTravelledPath(Offset(0.meters)),
+                explorer.getIncrementalPath().fromTravelledPath(Offset(10.meters)),
+                0.0
+            ) as BlockAvailabilityInterface.Unavailable
+        assertEquals(120.0, res.duration)
     }
 }

@@ -28,6 +28,12 @@ data class BlockAvailability(
         endOffset: Offset<Path>,
         startTime: Double
     ): BlockAvailabilityInterface.Availability {
+        assert(
+            infraExplorer.interpolateTimeClamp(startOffset) <
+                infraExplorer.interpolateTimeClamp(endOffset)
+        ) {
+            "Getting block availability on empty time range"
+        }
         val needFullRequirements = startOffset < infraExplorer.getPredecessorLength()
         val spacingRequirements =
             if (needFullRequirements) infraExplorer.getFullSpacingRequirements()
@@ -48,6 +54,9 @@ data class BlockAvailability(
                     )
                 }
                 .filter { it.beginTime < it.endTime }
+        assert(shiftedSpacingRequirements.isNotEmpty()) {
+            "Not generating any requirement for block availability"
+        }
         val conflicts =
             incrementalConflictDetector.checkConflicts(shiftedSpacingRequirements, listOf())
         val conflictProperties =

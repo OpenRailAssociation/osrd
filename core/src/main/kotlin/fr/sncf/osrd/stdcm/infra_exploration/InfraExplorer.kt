@@ -94,7 +94,7 @@ fun initInfraExplorer(
     rawInfra: RawInfra,
     blockInfra: BlockInfra,
     location: PathfindingEdgeLocationId<Block>,
-    endBlocks: Collection<BlockId> = setOf()
+    endBlocks: Collection<BlockId> = setOf(),
 ): Collection<InfraExplorer> {
     val infraExplorers = mutableListOf<InfraExplorer>()
     val block = location.edge
@@ -227,38 +227,38 @@ private class InfraExplorerImpl(
     }
 
     fun extend(route: RouteId, firstLocation: PathfindingEdgeLocationId<Block>? = null) {
-        var routeBlocks = blockInfra.getRouteBlocks(rawInfra, route)
-        if (firstLocation != null) {
-            // Only add the blocks after (including) the first block
-            val filteredRouteBlocks = mutableStaticIdxArrayListOf<Block>()
-            var seenFirstBlock = false
-            for (block in routeBlocks) {
-                if (block == firstLocation.edge) seenFirstBlock = true
-                if (seenFirstBlock) filteredRouteBlocks.add(block)
-            }
-            assert(seenFirstBlock)
-            routeBlocks = filteredRouteBlocks
-        }
+        val routeBlocks = blockInfra.getRouteBlocks(rawInfra, route)
+        var seenFirstBlock = firstLocation == null
         blocks.addAll(routeBlocks)
         routes.add(route)
+        var nBlocksToSkip = 0
         for (block in routeBlocks) {
-            val endPath = endBlocks.contains(block)
-            val startPath = !incrementalPath.pathStarted
-            val firstBlock = block == routeBlocks.first()
-            incrementalPath.extend(
-                PathFragment(
-                    if (firstBlock) mutableStaticIdxArrayListOf(route)
-                    else mutableStaticIdxArrayListOf(),
-                    mutableStaticIdxArrayListOf(block),
-                    containsStart = startPath,
-                    containsEnd = endPath,
-                    travelledPathBegin =
-                        if (startPath) firstLocation!!.offset.distance else Distance.ZERO,
-                    travelledPathEnd = Distance.ZERO
+            if (block == firstLocation?.edge) {
+                seenFirstBlock = true
+            }
+            if (!seenFirstBlock) {
+                nBlocksToSkip++
+            } else {
+                val endPath = endBlocks.contains(block)
+                val startPath = !incrementalPath.pathStarted
+                val addRoute = block == routeBlocks.first() || startPath
+                incrementalPath.extend(
+                    PathFragment(
+                        if (addRoute) mutableStaticIdxArrayListOf(route)
+                        else mutableStaticIdxArrayListOf(),
+                        mutableStaticIdxArrayListOf(block),
+                        containsStart = startPath,
+                        containsEnd = endPath,
+                        travelledPathBegin =
+                            if (startPath) firstLocation!!.offset.distance else Distance.ZERO,
+                        travelledPathEnd = Distance.ZERO
+                    )
                 )
-            )
-            if (endPath) break // Can't extend any further
+                if (endPath) break // Can't extend any further
+            }
         }
+        assert(seenFirstBlock)
+        for (i in 0 ..< nBlocksToSkip) moveForward()
     }
 
     override fun toString(): String {
