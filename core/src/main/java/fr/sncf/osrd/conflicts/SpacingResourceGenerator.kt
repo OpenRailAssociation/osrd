@@ -159,7 +159,8 @@ class SpacingRequirementAutomaton(
             val unprotectedReqTime = callbacks.arrivalTimeInRange(zoneEntryOffset, zoneExitOffset)
             // TODO: emit a warning message if the unprotected zone is after the first processed
             // signal
-            addZonePendingRequirement(unprotectedZoneIndex, unprotectedReqTime)
+            if (unprotectedReqTime.isFinite()) // The train may not even reach the zone
+                addZonePendingRequirement(unprotectedZoneIndex, unprotectedReqTime)
             lastEmittedZone = unprotectedZoneIndex
         }
 
