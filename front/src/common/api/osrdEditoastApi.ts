@@ -1954,7 +1954,7 @@ export type Study = {
   start_date?: string | null;
   state: string;
   study_type: string;
-  tags: string[];
+  tags: Tags;
 };
 export type StudyWithScenarios = Study & {
   scenarios_count: number;
@@ -1984,7 +1984,7 @@ export type StudyCreateForm = {
   start_date?: string | null;
   state: string;
   study_type?: string;
-  tags?: string[];
+  tags?: Tags;
 };
 export type StudyPatchForm = {
   actual_end_date?: string | null;
@@ -1997,7 +1997,7 @@ export type StudyPatchForm = {
   start_date?: string | null;
   state?: string | null;
   study_type?: string | null;
-  tags?: string[] | null;
+  tags?: Tags | null;
 };
 export type Scenario = {
   creation_date: string;

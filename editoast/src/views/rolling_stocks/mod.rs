@@ -957,12 +957,7 @@ pub mod tests {
                 .clone()
                 .unwrap(),
             study_id: train_schedule_with_scenario.study.id(),
-            study_name: train_schedule_with_scenario
-                .study
-                .model
-                .name
-                .clone()
-                .unwrap(),
+            study_name: train_schedule_with_scenario.study.model.name.clone(),
             project_id: train_schedule_with_scenario.project.id(),
             project_name: train_schedule_with_scenario.project.model.name.clone(),
         }];

@@ -3,7 +3,6 @@ pub mod infra;
 pub mod pathfinding;
 pub mod rolling_stock;
 mod scenario;
-mod study;
 mod text_array;
 mod timetable;
 pub mod train_schedule;
@@ -20,7 +19,6 @@ pub use electrical_profiles::ElectricalProfileSet;
 pub use infra::Infra;
 pub use rolling_stock::{LightRollingStockModel, RollingStockLiveryModel, RollingStockModel};
 pub use scenario::{Scenario, ScenarioWithCountTrains, ScenarioWithDetails};
-pub use study::{Study, StudyWithScenarios};
 pub use text_array::TextArray;
 pub use timetable::{check_train_validity, Timetable, TimetableWithSchedulesDetails};
 pub use train_schedule::{
