@@ -419,10 +419,6 @@ class RawInfraFromRjsBuilderImpl : RawInfraBuilder {
             routePool[route].length = Length(routeLength)
         }
 
-        // Resolve track references
-        for (track in trackSectionPool) for (chunk in
-            trackSectionPool[track].chunks) trackChunkPool[chunk].track = track
-
         // Build a map from track section endpoint to track node
         for (trackNode in trackNodePool) {
             val nodeDescriptor = trackNodePool[trackNode]
