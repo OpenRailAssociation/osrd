@@ -1137,18 +1137,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "docopt"
-version = "1.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7f3f119846c823f9eafcf953a8f6ffb6ed69bf6240883261a7f13b634579a51f"
-dependencies = [
- "lazy_static",
- "regex",
- "serde",
- "strsim 0.10.0",
-]
-
-[[package]]
 name = "editoast"
 version = "0.1.0"
 dependencies = [
@@ -2416,12 +2404,13 @@ dependencies = [
 
 [[package]]
 name = "osm4routing"
-version = "0.5.9"
+version = "0.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "389e7e25f11c259224d74b39b6db2400084f58f3bc79dfb01d4e9121e7088f3b"
+checksum = "f00a8f5745773d0364df94a13f454e3d27fb7a85c75f1fdd6cfbef0aa9511638"
 dependencies = [
+ "clap",
  "csv",
- "docopt",
+ "geo-types",
  "osmpbfreader",
  "serde",
 ]
