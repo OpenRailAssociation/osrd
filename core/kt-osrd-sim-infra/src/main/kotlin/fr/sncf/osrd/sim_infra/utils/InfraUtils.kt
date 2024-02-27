@@ -50,8 +50,11 @@ fun BlockInfra.routesOnBlock(rawInfra: RawInfra, block: BlockId): StaticIdxList<
     val chunks = getTrackChunksFromBlock(block)
     val routes = rawInfra.getRoutesOnTrackChunk(chunks[0])
     val res = mutableStaticIdxArrayListOf<Route>()
-    for (routeId in routes) if (routeMatchPath(rawInfra, this, chunks, 0, false, routeId))
-        res.add(routeId)
+    for (routeId in routes) {
+        if (getRouteBlocks(rawInfra, routeId).contains(block)) {
+            res.add(routeId)
+        }
+    }
     return res
 }
 
@@ -89,6 +92,8 @@ fun BlockInfra.getRouteBlocks(
 ): StaticIdxList<Block> {
     val blockPaths =
         recoverBlocks(rawInfra, this, mutableStaticIdxArrayListOf(route), allowedSigSystems)
+    if (blockPaths.isEmpty())
+        return mutableStaticIdxArrayListOf()
     // No signaling system for now, take the first block path possibility.
     // Correct when signalisation is taken into account.
     val blocks = blockPaths[0].toBlockList()
