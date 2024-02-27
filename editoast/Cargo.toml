@@ -88,6 +88,6 @@ iso8601 = "0.6.1"
 [dev-dependencies]
 async-std = { version = "1.12.0", features = ["attributes", "tokio1"] }
 rstest = "0.18.2"
-tempfile = "3.9.0"
+tempfile = "3.10.1"
 pretty_assertions = "1.4.0"
 serial_test = "3.0.0"
