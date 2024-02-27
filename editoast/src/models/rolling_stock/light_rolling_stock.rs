@@ -2,7 +2,7 @@ use crate::error::Result;
 use crate::models::TextArray;
 use crate::modelsv2::rolling_stock_livery::RollingStockLiveryMetadataModel;
 use crate::schema::rolling_stock::light_rolling_stock::{
-    LightEffortCurves, LightRollingStock, LightRollingStockWithLiveries,
+    LightEffortCurves, LightRollingStock, LightRollingStockWithLiveriesModel,
 };
 use crate::schema::rolling_stock::{EnergySource, Gamma, RollingResistance, RollingStockMetadata};
 use crate::tables::rolling_stock;
@@ -59,7 +59,7 @@ impl LightRollingStockModel {
     pub async fn with_liveries(
         self,
         db_pool: Data<DbPool>,
-    ) -> Result<LightRollingStockWithLiveries> {
+    ) -> Result<LightRollingStockWithLiveriesModel> {
         use crate::tables::rolling_stock_livery::dsl as livery_dsl;
         let mut conn = db_pool.get().await?;
         let liveries = livery_dsl::rolling_stock_livery
@@ -67,7 +67,7 @@ impl LightRollingStockModel {
             .select(RollingStockLiveryMetadataModel::as_select())
             .load(&mut conn)
             .await?;
-        Ok(LightRollingStockWithLiveries {
+        Ok(LightRollingStockWithLiveriesModel {
             rolling_stock: self.into(),
             liveries: liveries.into_iter().map(DieselJson).collect(),
         })
@@ -78,7 +78,7 @@ impl LightRollingStockModel {
         db_pool: Data<DbPool>,
         page: i64,
         per_page: i64,
-    ) -> Result<PaginatedResponse<LightRollingStockWithLiveries>> {
+    ) -> Result<PaginatedResponse<LightRollingStockWithLiveriesModel>> {
         let mut conn = db_pool.get().await?;
         sql_query(
             "WITH liveries_by_rs AS (SELECT rolling_stock_id, jsonb_build_object('id', livery.id, 'name', livery.name, 'compound_image_id', livery.compound_image_id) AS liveries

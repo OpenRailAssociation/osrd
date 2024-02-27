@@ -3,7 +3,6 @@ use diesel::sql_types::{BigInt, Text};
 use diesel_async::AsyncPgConnection;
 use editoast_derive::ModelV2;
 use serde::{Deserialize, Serialize};
-use utoipa::ToSchema;
 
 use crate::error::Result;
 use crate::schema::rolling_stock::rolling_stock_livery::{
@@ -57,7 +56,7 @@ impl RollingStockLiveryModel {
     }
 }
 
-#[derive(Debug, Queryable, QueryableByName, Selectable, Serialize, Deserialize, ToSchema)] // TODO remove Serialize, Deserialize and ToSchema later
+#[derive(Debug, Queryable, QueryableByName, Selectable, Serialize, Deserialize)]
 #[diesel(table_name = rolling_stock_livery)]
 pub struct RollingStockLiveryMetadataModel {
     #[diesel(sql_type = BigInt)]

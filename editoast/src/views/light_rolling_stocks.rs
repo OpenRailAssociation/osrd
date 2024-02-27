@@ -39,9 +39,19 @@ async fn list(
     page_settings: Query<PaginationQueryParam>,
 ) -> Result<Json<PaginatedResponse<LightRollingStockWithLiveries>>> {
     let (page, per_page) = page_settings.validate(1000)?.warn_page_size(100).unpack();
-    Ok(Json(
-        LightRollingStockModel::list(db_pool, page, per_page).await?,
-    ))
+    let result = LightRollingStockModel::list(db_pool, page, per_page).await?;
+
+    let results: Vec<LightRollingStockWithLiveries> =
+        result.results.into_iter().map(|l| l.into()).collect();
+
+    let result = PaginatedResponse {
+        count: result.count,
+        previous: result.previous,
+        next: result.next,
+        results,
+    };
+
+    Ok(Json(result))
 }
 
 /// Retrieve a rolling stock's light representation
@@ -63,7 +73,8 @@ async fn get(
             Some(rolling_stock) => rolling_stock,
             None => return Err(RollingStockError::NotFound { rolling_stock_id }.into()),
         };
-    let rollig_stock_with_liveries = rolling_stock.with_liveries(db_pool).await?;
+    let rollig_stock_with_liveries: LightRollingStockWithLiveries =
+        rolling_stock.with_liveries(db_pool).await?.into();
     Ok(Json(rollig_stock_with_liveries))
 }
 
