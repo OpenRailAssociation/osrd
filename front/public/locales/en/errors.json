@@ -168,6 +168,10 @@
       "TimetableNotFound": "Timetable '{{timetable_id}}' could not be found",
       "UnsimulatedTrainSchedule": "Train Schedule '{{train_schedule_id}}' is not simulated"
     },
+    "train_schedule_v2": {
+      "BatchTrainScheduleNotFound": "'{{number}}' train schedule(s) could not be found",
+      "NotFound": "Train Schedule '{{train_schedule_id}}' could not be found"
+    },
     "url": {
       "InvalidUrl": "Invalid url '{{url}}'"
     }
