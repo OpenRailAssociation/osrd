@@ -7,12 +7,15 @@ use std::collections::HashMap;
 use strum_macros::{Display, EnumString};
 use utoipa::ToSchema;
 
-use crate::modelsv2::rolling_stock_livery::RollingStockLiveryMetadataModel;
-use crate::schema::rolling_stock::rolling_stock_livery::RollingStockLivery;
+use crate::schema::rolling_stock::rolling_stock_livery::{
+    RollingStockLivery, RollingStockLiveryMetadata,
+};
 
 crate::schemas! {
     RollingStockComfortType,
     RollingStockCommon,
+    RollingStockLivery,
+    RollingStockLiveryMetadata,
     RollingStockWithLiveries,
     RollingResistance,
     RollingStockMetadata,
@@ -27,7 +30,6 @@ crate::schemas! {
     SpeedDependantPower,
     EnergyStorage,
     RefillLaw,
-    RollingStockLivery,
     light_rolling_stock::schemas(),
 }
 
@@ -79,7 +81,7 @@ pub struct RollingStock {
 pub struct RollingStockWithLiveries {
     #[serde(flatten)]
     pub rolling_stock: RollingStock,
-    pub liveries: Vec<RollingStockLiveryMetadataModel>,
+    pub liveries: Vec<RollingStockLiveryMetadata>,
 }
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize, ToSchema)]

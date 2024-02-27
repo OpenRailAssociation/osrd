@@ -1,13 +1,15 @@
-use crate::schema::rolling_stock::rolling_stock_livery::RollingStockLivery;
-use crate::tables::rolling_stock_livery;
 use derivative::Derivative;
 use diesel::sql_types::{BigInt, Text};
 use diesel_async::AsyncPgConnection;
+use editoast_derive::ModelV2;
 use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
 
 use crate::error::Result;
-use editoast_derive::ModelV2;
-use utoipa::ToSchema;
+use crate::schema::rolling_stock::rolling_stock_livery::{
+    RollingStockLivery, RollingStockLiveryMetadata,
+};
+use crate::tables::rolling_stock_livery;
 
 use super::Document;
 
@@ -55,18 +57,28 @@ impl RollingStockLiveryModel {
     }
 }
 
-#[derive(Debug, Deserialize, Queryable, QueryableByName, Selectable, Serialize, ToSchema)]
+#[derive(Debug, Queryable, QueryableByName, Selectable, Serialize, Deserialize, ToSchema)] // TODO remove Serialize, Deserialize and ToSchema later
 #[diesel(table_name = rolling_stock_livery)]
 pub struct RollingStockLiveryMetadataModel {
     #[diesel(sql_type = BigInt)]
     #[diesel(deserialize_as = i64)]
-    id: i64,
+    pub id: i64,
     #[diesel(sql_type = Text)]
     #[diesel(deserialize_as = String)]
-    name: String,
+    pub name: String,
     #[diesel(sql_type = BigInt)]
     #[diesel(deserialize_as = Option<i64>)]
-    compound_image_id: Option<i64>,
+    pub compound_image_id: Option<i64>,
+}
+
+impl From<RollingStockLiveryMetadataModel> for RollingStockLiveryMetadata {
+    fn from(livery_metadata_model: RollingStockLiveryMetadataModel) -> Self {
+        RollingStockLiveryMetadata {
+            id: livery_metadata_model.id,
+            name: livery_metadata_model.name,
+            compound_image_id: livery_metadata_model.compound_image_id,
+        }
+    }
 }
 
 #[cfg(test)]
