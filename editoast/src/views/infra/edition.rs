@@ -1,6 +1,6 @@
 use crate::error::Result;
-use crate::map::redis_utils::RedisClient;
 use crate::views::infra::InfraApiError;
+use crate::RedisClient;
 use actix_web::post;
 use actix_web::web::{Data, Json, Path};
 use chashmap::CHashMap;

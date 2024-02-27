@@ -24,9 +24,10 @@ use crate::client::get_app_version;
 use crate::core::version::CoreVersionRequest;
 use crate::core::{self, AsCoreRequest, CoreClient};
 use crate::error::{self, ErrorDefinition, Result};
-use crate::map::{self, redis_utils::RedisClient};
+use crate::map;
 use crate::models;
 use crate::schema;
+use crate::RedisClient;
 use crate::{schemas, DbPool};
 use actix_web::dev::HttpServiceFactory;
 use actix_web::web::{Data, Json};
@@ -347,8 +348,8 @@ mod tests {
     use crate::core::CoreClient;
     use crate::error::InternalError;
     use crate::infra_cache::InfraCache;
-    use crate::map::redis_utils::RedisClient;
     use crate::map::MapLayers;
+    use crate::RedisClient;
 
     use super::{routes, OpenApiRoot};
     use actix_http::body::BoxBody;
