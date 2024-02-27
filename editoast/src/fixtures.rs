@@ -142,6 +142,10 @@ pub mod tests {
         rs
     }
 
+    pub fn get_trainschedule_json_array() -> &'static str {
+        include_str!("./tests/train_schedules/simple_array.json")
+    }
+
     pub async fn named_other_rolling_stock(
         name: &str,
         db_pool: Data<DbPool>,

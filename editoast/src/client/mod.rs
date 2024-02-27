@@ -50,6 +50,22 @@ pub enum Commands {
     Search(SearchCommands),
     #[command(subcommand, about, long_about = "Infrastructure related commands")]
     Infra(InfraCommands),
+    #[command(subcommand, about, long_about = "Trains related commands")]
+    Trains(TrainsCommands),
+}
+
+#[derive(Subcommand, Debug)]
+pub enum TrainsCommands {
+    Import(ImportTrainArgs),
+}
+
+#[derive(Args, Debug, Derivative)]
+#[derivative(Default)]
+#[command(about, long_about = "Import a train given a JSON file")]
+pub struct ImportTrainArgs {
+    #[arg(long, help = "The timetable id on which attach the trains to")]
+    pub timetable: Option<i64>,
+    pub path: PathBuf,
 }
 
 #[derive(Subcommand, Debug)]

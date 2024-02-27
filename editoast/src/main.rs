@@ -27,10 +27,17 @@ use chashmap::CHashMap;
 use clap::Parser;
 use client::{
     ClearArgs, Client, Color, Commands, DeleteProfileSetArgs, ElectricalProfilesCommands,
-    GenerateArgs, ImportProfileSetArgs, ImportRailjsonArgs, ImportRollingStockArgs, InfraCloneArgs,
-    InfraCommands, ListProfileSetArgs, MakeMigrationArgs, RedisConfig, RefreshArgs, RunserverArgs,
-    SearchCommands,
+    GenerateArgs, ImportProfileSetArgs, ImportRailjsonArgs, ImportRollingStockArgs,
+    ImportTrainArgs, InfraCloneArgs, InfraCommands, ListProfileSetArgs, MakeMigrationArgs,
+    RedisConfig, RefreshArgs, RunserverArgs, SearchCommands, TrainsCommands,
 };
+use modelsv2::{
+    timetable::Timetable, train_schedule::TrainSchedule, train_schedule::TrainScheduleChangeset,
+    Create as CreateV2, CreateBatch, Model, Retrieve as RetrieveV2,
+};
+use schema::v2::trainschedule::TrainScheduleBase;
+use views::v2::train_schedule::TrainScheduleForm;
+
 use colored::*;
 use core::CoreClient;
 use diesel::{sql_query, ConnectionError, ConnectionResult};
@@ -185,7 +192,63 @@ async fn run() -> Result<(), Box<dyn Error + Send + Sync>> {
             }
             InfraCommands::ImportRailjson(args) => import_railjson(args, create_db_pool()?).await,
         },
+        Commands::Trains(subcommand) => match subcommand {
+            TrainsCommands::Import(args) => trains_import(args, create_db_pool()?).await,
+        },
     }
+}
+
+async fn trains_import(
+    args: ImportTrainArgs,
+    db_pool: Data<DbPool>,
+) -> Result<(), Box<dyn Error + Send + Sync>> {
+    let train_file = match File::open(args.path.clone()) {
+        Ok(file) => file,
+        Err(e) => {
+            let error = CliError::new(
+                1,
+                format!("❌ Could not open file {:?} ({:?})", args.path, e),
+            );
+            return Err(Box::new(error));
+        }
+    };
+
+    let conn = &mut db_pool.get().await?;
+    let timetable = match args.timetable {
+        Some(timetable) => match Timetable::retrieve(conn, timetable).await? {
+            Some(timetable) => timetable,
+            None => {
+                let error = CliError::new(1, format!("❌ Timetable not found, id: {0}", timetable));
+                return Err(Box::new(error));
+            }
+        },
+        None => {
+            let changeset = Timetable::changeset();
+            changeset.create(conn).await?
+        }
+    };
+
+    let train_schedules: Vec<TrainScheduleBase> =
+        serde_json::from_reader(BufReader::new(train_file))?;
+    let changesets: Vec<TrainScheduleChangeset> = train_schedules
+        .into_iter()
+        .map(|train_schedule| {
+            TrainScheduleForm {
+                timetable_id: timetable.id,
+                train_schedule,
+            }
+            .into()
+        })
+        .collect();
+    let inserted: Vec<_> = TrainSchedule::create_batch(conn, changesets).await?;
+
+    println!(
+        "✅ {} train schedules created for timetable with id {}",
+        inserted.len(),
+        timetable.id
+    );
+
+    Ok(())
 }
 
 fn init_sentry(args: &RunserverArgs) -> Option<ClientInitGuard> {
@@ -790,17 +853,42 @@ mod tests {
     use super::*;
 
     use crate::fixtures::tests::{
-        db_pool, electrical_profile_set, get_fast_rolling_stock, TestFixture,
+        db_pool, electrical_profile_set, get_fast_rolling_stock, get_trainschedule_json_array,
+        TestFixture,
     };
     use diesel::sql_query;
     use diesel::sql_types::Text;
     use diesel_async::RunQueryDsl;
+    use modelsv2::DeleteStatic;
     use rand::distributions::Alphanumeric;
     use rand::{thread_rng, Rng};
     use rstest::rstest;
     use serde::Serialize;
     use std::io::Write;
     use tempfile::NamedTempFile;
+
+    #[rstest]
+    async fn import_train_schedule_v2(db_pool: Data<DbPool>) {
+        let conn = &mut db_pool.get().await.unwrap();
+
+        let changeset = Timetable::changeset();
+        let timetable = changeset.create(conn).await.unwrap();
+
+        let mut file = NamedTempFile::new().unwrap();
+        file.write_all(get_trainschedule_json_array().as_bytes())
+            .unwrap();
+
+        let args = ImportTrainArgs {
+            path: file.path().into(),
+            timetable: Some(timetable.id),
+        };
+
+        let result = trains_import(args, db_pool.clone()).await;
+
+        assert!(result.is_ok(), "{:?}", result);
+
+        Timetable::delete_static(conn, timetable.id).await.unwrap();
+    }
 
     #[rstest]
     async fn import_rolling_stock_ko_file_not_found(db_pool: Data<DbPool>) {
