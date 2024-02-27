@@ -258,6 +258,29 @@ impl OperationalPointModel {
             .map(Self::from_row)
             .collect())
     }
+
+    pub async fn retrieve_from_trigrams(
+        conn: &mut diesel_async::AsyncPgConnection,
+        infra_id: i64,
+        trigrams: &[String],
+    ) -> crate::error::Result<Vec<Self>> {
+        use diesel::sql_query;
+        use diesel::sql_types::{Array, BigInt, Text};
+        use diesel_async::RunQueryDsl;
+        let query = {
+            "SELECT * FROM infra_object_operational_point
+                WHERE infra_id = $1 AND (data->'extensions'->'sncf'->'trigram')::text = ANY($2)"
+        }
+        .to_string();
+        Ok(sql_query(query)
+            .bind::<BigInt, _>(infra_id)
+            .bind::<Array<Text>, _>(trigrams)
+            .load(conn)
+            .await?
+            .into_iter()
+            .map(Self::from_row)
+            .collect())
+    }
 }
 
 #[cfg(test)]

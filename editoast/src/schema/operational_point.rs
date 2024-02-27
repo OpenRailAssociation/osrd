@@ -7,6 +7,8 @@ use super::ObjectType;
 
 use crate::infra_cache::Cache;
 use crate::infra_cache::ObjectCache;
+use crate::modelsv2::OperationalPointModel;
+use crate::schema::TrackOffset;
 use derivative::Derivative;
 
 use serde::{Deserialize, Serialize};
@@ -77,6 +79,19 @@ impl OSRDTyped for OperationalPoint {
 impl OSRDIdentified for OperationalPoint {
     fn get_id(&self) -> &String {
         &self.id
+    }
+}
+
+impl OperationalPoint {
+    pub fn track_offset(op: &OperationalPointModel) -> Vec<TrackOffset> {
+        op.parts
+            .clone()
+            .into_iter()
+            .map(|el| TrackOffset {
+                track: el.track,
+                offset: (el.position * 1000.0) as u64,
+            })
+            .collect()
     }
 }
 
