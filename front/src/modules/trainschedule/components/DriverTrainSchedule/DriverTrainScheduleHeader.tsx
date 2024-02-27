@@ -2,12 +2,14 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { jouleToKwh } from 'utils/physics';
-import { Train } from 'reducers/osrdsimulation/types';
-import { LightRollingStock } from 'common/api/osrdEditoastApi';
+import type { Train } from 'reducers/osrdsimulation/types';
+import type { LightRollingStock } from 'common/api/osrdEditoastApi';
 import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 import cx from 'classnames';
+import { GoDownload } from 'react-icons/go';
 import { massWithOneDecimal } from './DriverTrainScheduleHelpers';
-import { BaseOrEco, BaseOrEcoType } from './DriverTrainScheduleTypes';
+import { BaseOrEco, type BaseOrEcoType } from './DriverTrainScheduleTypes';
+import exportTrainCSV from './driverTrainScheduleExportCSV';
 
 type Props = {
   train: Train;
@@ -40,9 +42,9 @@ export default function DriverTrainScheduleHeader({
   return (
     <>
       <div className="d-flex align-items-center">
-        <h1 className="text-blue mt-2">{train.name}</h1>
+        <h1 className="text-blue flex-grow-1">{train.name}</h1>
         {train.eco?.stops && (
-          <div className="ml-auto text-uppercase">
+          <div className="text-uppercase">
             <OptionsSNCF
               name="driver-train-schedule-base-or-eco"
               sm
@@ -52,6 +54,14 @@ export default function DriverTrainScheduleHeader({
             />
           </div>
         )}
+        <button
+          type="button"
+          className="btn btn-link ml-2"
+          onClick={() => exportTrainCSV(train, baseOrEco)}
+          aria-label="train-csv"
+        >
+          <GoDownload size="24" />
+        </button>
       </div>
       <div className="row no-gutters align-items-center">
         <div className="col-hd-3 col-xl-4 col-lg-6 small">
