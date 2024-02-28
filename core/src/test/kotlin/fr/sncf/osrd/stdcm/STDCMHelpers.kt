@@ -16,6 +16,7 @@ import fr.sncf.osrd.standalone_sim.result.ResultTrain.SpacingRequirement
 import fr.sncf.osrd.stdcm.graph.simulateBlock
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorer
 import fr.sncf.osrd.stdcm.infra_exploration.initInfraExplorer
+import fr.sncf.osrd.stdcm.preprocessing.OccupancySegment
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.StandaloneTrainSchedule
 import fr.sncf.osrd.train.TestTrains

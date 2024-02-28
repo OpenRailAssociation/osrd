@@ -9,7 +9,8 @@ import fr.sncf.osrd.graph.PathfindingEdgeLocationId
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.stdcm.graph.findPath
-import fr.sncf.osrd.stdcm.preprocessing.implementation.BlockAvailabilityLegacyAdapter
+import fr.sncf.osrd.stdcm.preprocessing.DummyBlockAvailability
+import fr.sncf.osrd.stdcm.preprocessing.OccupancySegment
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.RollingStock.Comfort
@@ -160,8 +161,7 @@ class STDCMPathfindingBuilder {
             "Can't set both block availability and unavailable times"
         }
         val blockAvailabilityAdapter =
-            blockAvailability
-                ?: BlockAvailabilityLegacyAdapter(infra!!.blockInfra, unavailableTimes)
+            blockAvailability ?: DummyBlockAvailability(infra!!.blockInfra, unavailableTimes)
         return findPath(
             infra!!,
             rollingStock!!,

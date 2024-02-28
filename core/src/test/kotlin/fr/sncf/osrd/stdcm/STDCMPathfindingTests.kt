@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMultimap
 import fr.sncf.osrd.graph.Pathfinding.EdgeLocation
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.sim_infra.api.Path
+import fr.sncf.osrd.stdcm.preprocessing.OccupancySegment
 import fr.sncf.osrd.utils.DummyInfra
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
