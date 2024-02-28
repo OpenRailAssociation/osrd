@@ -106,7 +106,7 @@ export default function RollingStockCardDetail({
         <tr>
           <td className="text-primary">{t('gammaValue')}</td>
           <td>
-            {rs.gamma.value * -1}
+            {rs.gamma.value}
             <span className="small ml-1 text-muted">m/s²</span>
           </td>
         </tr>
