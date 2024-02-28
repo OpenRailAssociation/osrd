@@ -192,7 +192,7 @@ pub enum PathItemLocation {
         secondary_code: Option<String>,
     },
     OperationalPointUic {
-        /// The [UIC](https://en.wikipedia.org/wiki/Railway_vehicle_owner%27s_code) code of an operational point
+        /// The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point
         uic: u32,
         /// An optional secondary code to identify a more specific location
         secondary_code: Option<String>,

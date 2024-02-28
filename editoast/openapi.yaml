@@ -6010,7 +6010,7 @@ components:
                     nullable: true
                     type: string
                   uic:
-                    description: The [UIC](https://en.wikipedia.org/wiki/Railway_vehicle_owner%27s_code) code of an operational point
+                    description: The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point
                     format: int32
                     minimum: 0
                     type: integer
