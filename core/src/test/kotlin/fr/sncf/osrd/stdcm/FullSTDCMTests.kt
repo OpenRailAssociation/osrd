@@ -6,6 +6,7 @@ import fr.sncf.osrd.api.stdcm.makeTrainSchedule
 import fr.sncf.osrd.railjson.parser.RJSRollingStockParser
 import fr.sncf.osrd.standalone_sim.result.ResultTrain.SpacingRequirement
 import fr.sncf.osrd.standalone_sim.run
+import fr.sncf.osrd.stdcm.preprocessing.implementation.makeBlockAvailability
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.TestTrains
 import fr.sncf.osrd.utils.Helpers
@@ -78,23 +79,17 @@ class FullSTDCMTests {
                     Offset(10125.meters)
                 )
             )
-        val requirements = makeRequirementsFromPath(infra, start, end, 0.0)
-        val occupancies = makeOccupancyFromRequirements(infra, requirements)
+        val requirements = makeRequirementsFromPath(infra, start, end, 0.0).toMutableList()
         val minDelay =
-            getMaxOccupancyLength(occupancies) // Eventually we may need to add a % margin
-        occupancies.putAll(
-            makeOccupancyFromRequirements(
-                infra,
-                makeRequirementsFromPath(infra, start, end, minDelay * 2)
-            )
-        )
+            getMaxOccupancyLength(requirements) // Eventually we may need to add a % margin
+        requirements.addAll(makeRequirementsFromPath(infra, start, end, minDelay * 2))
         val res =
             STDCMPathfindingBuilder()
                 .setInfra(infra)
                 .setStartTime(minDelay)
                 .setStartLocations(start)
                 .setEndLocations(end)
-                .setUnavailableTimes(occupancies)
+                .setBlockAvailability(makeBlockAvailability(infra, requirements))
                 .setMaxDepartureDelay(minDelay * 2)
                 .run()!!
         checkNoConflict(infra, requirements, res)
@@ -117,7 +112,7 @@ class FullSTDCMTests {
                 .setStartTime(300.0)
                 .setStartLocations(start)
                 .setEndLocations(end)
-                .setUnavailableTimes(makeOccupancyFromRequirements(infra, requirements))
+                .setBlockAvailability(makeBlockAvailability(infra, requirements))
                 .setMaxDepartureDelay(600.0)
                 .run()!!
         checkNoConflict(infra, requirements, res)
@@ -135,21 +130,15 @@ class FullSTDCMTests {
             setOf(Helpers.convertRouteLocation(infra, "rt.buffer_stop.3->DB0", Offset(1590.meters)))
         val end =
             setOf(Helpers.convertRouteLocation(infra, "rt.DH2->buffer_stop.7", Offset(5000.meters)))
-        val requirements = makeRequirementsFromPath(infra, start, end, 0.0)
-        val occupancies = makeOccupancyFromRequirements(infra, requirements)
-        val minDelay = getMaxOccupancyLength(occupancies)
-        occupancies.putAll(
-            makeOccupancyFromRequirements(
-                infra,
-                makeRequirementsFromPath(infra, start, end, minDelay * 0.95)
-            )
-        )
+        val requirements = makeRequirementsFromPath(infra, start, end, 0.0).toMutableList()
+        val minDelay = getMaxOccupancyLength(requirements)
+        requirements.addAll(makeRequirementsFromPath(infra, start, end, minDelay * 0.95))
         val res =
             STDCMPathfindingBuilder()
                 .setInfra(infra)
                 .setStartLocations(start)
                 .setEndLocations(end)
-                .setUnavailableTimes(makeOccupancyFromRequirements(infra, requirements))
+                .setBlockAvailability(makeBlockAvailability(infra, requirements))
                 .run()!!
         checkNoConflict(infra, requirements, res)
     }
