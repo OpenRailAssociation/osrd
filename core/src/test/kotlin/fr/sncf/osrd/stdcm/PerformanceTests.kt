@@ -6,6 +6,7 @@ import fr.sncf.osrd.geom.Point
 import fr.sncf.osrd.graph.Pathfinding.EdgeLocation
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
+import fr.sncf.osrd.stdcm.preprocessing.OccupancySegment
 import fr.sncf.osrd.utils.DummyInfra
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Offset
