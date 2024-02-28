@@ -72,9 +72,11 @@ class STDCMGraph(
     }
 
     override fun getAdjacentEdges(node: STDCMNode): Collection<STDCMEdge> {
-        return if (node.locationOnEdge != null)
-            STDCMEdgeBuilder.fromNode(this, node, node.infraExplorer).makeAllEdges()
-        else {
+        return if (node.locationOnEdge != null) {
+            val explorer = node.infraExplorer.clone()
+            explorer.addEnvelope(node.previousEdge.envelope)
+            STDCMEdgeBuilder.fromNode(this, node, explorer).makeAllEdges()
+        } else {
             val res = ArrayList<STDCMEdge>()
             val extendedPaths =
                 if (node.infraExplorer.getLookahead().size == 0)
