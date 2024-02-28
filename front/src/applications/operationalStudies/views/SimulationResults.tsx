@@ -135,9 +135,7 @@ export default function SimulationResults({
     }
   }, [selectedTrain]);
 
-  return simulation.trains.length === 0 && !isUpdating ? (
-    <h1 className="text-center mt-5">{t('noData')}</h1>
-  ) : (
+  return simulation.trains.length === 0 && !isUpdating ? null : (
     <div className="simulation-results">
       {/* SIMULATION : STICKY BAR */}
       <div
