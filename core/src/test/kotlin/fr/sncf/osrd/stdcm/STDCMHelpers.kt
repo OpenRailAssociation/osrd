@@ -1,7 +1,6 @@
 package fr.sncf.osrd.stdcm
 
 import com.google.common.collect.ImmutableMultimap
-import com.google.common.collect.Multimap
 import fr.sncf.osrd.DriverBehaviour
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.api.pathfinding.makeChunkPath
@@ -17,15 +16,12 @@ import fr.sncf.osrd.standalone_sim.result.ResultTrain.SpacingRequirement
 import fr.sncf.osrd.stdcm.graph.simulateBlock
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorer
 import fr.sncf.osrd.stdcm.infra_exploration.initInfraExplorer
-import fr.sncf.osrd.stdcm.preprocessing.implementation.computeUnavailableSpace
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.StandaloneTrainSchedule
 import fr.sncf.osrd.train.TestTrains
 import fr.sncf.osrd.train.TrainStop
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
-import kotlin.math.max
-import kotlin.math.min
 import org.junit.jupiter.api.Assertions
 
 /** Make the occupancy multimap of a train going from point A to B starting at departureTime */
@@ -74,21 +70,6 @@ fun makeRequirementsFromPath(
     return requirements
 }
 
-/** Make the route occupancies from a spacing requirement list */
-fun makeOccupancyFromRequirements(
-    infra: FullInfra,
-    requirements: List<SpacingRequirement>
-): Multimap<BlockId, OccupancySegment> {
-    return computeUnavailableSpace(
-        infra.rawInfra,
-        infra.blockInfra,
-        requirements,
-        TestTrains.REALISTIC_FAST_TRAIN,
-        0.0,
-        0.0
-    )
-}
-
 /** Creates a chunk path object from start and end locations */
 private fun makeChunkPath(
     infra: FullInfra,
@@ -103,21 +84,11 @@ private fun makeChunkPath(
 }
 
 /**
- * Returns how long the longest occupancy segment lasts, which is the minimum delay we need to add
+ * Returns how long the longest requirement segment lasts, which is the minimum delay we need to add
  * between two identical trains
  */
-fun getMaxOccupancyLength(occupancies: Multimap<BlockId, OccupancySegment>): Double {
-    var maxOccupancyLength = 0.0
-    for (block in occupancies.keySet()) {
-        var endTime = 0.0
-        var startTime = Double.POSITIVE_INFINITY
-        for ((timeStart, timeEnd) in occupancies[block]) {
-            endTime = max(endTime, timeEnd)
-            startTime = min(startTime, timeStart)
-        }
-        maxOccupancyLength = max(maxOccupancyLength, endTime - startTime)
-    }
-    return maxOccupancyLength
+fun getMaxOccupancyLength(requirements: List<SpacingRequirement>): Double {
+    return requirements.maxOf { it.endTime - it.beginTime }
 }
 
 /**
