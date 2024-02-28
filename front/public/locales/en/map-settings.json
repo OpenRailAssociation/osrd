@@ -30,7 +30,7 @@
   "sncf_psl": "Permanent speed limits",
   "speedlimits": "Speed limits",
   "stops": "Stop signs",
-  "switches": "Switch",
+  "track_nodes": "TrackNode",
   "tags": "Compositions",
   "tivs": "Speed limits",
   "terrain3DExaggeration": "3D relief scale",

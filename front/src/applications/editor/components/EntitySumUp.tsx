@@ -15,7 +15,7 @@ import type {
   RouteEntity,
   SignalEntity,
   SpeedSectionEntity,
-  SwitchEntity,
+  TrackNodeEntity,
   TrackSectionEntity,
 } from 'types';
 import { getSpeedSectionsNameString } from 'common/Map/Layers/SpeedLimits';
@@ -68,8 +68,8 @@ async function getAdditionalEntities(
       }
       return {};
     }
-    case 'Switch': {
-      const trackIDs = flatMap((entity as SwitchEntity).properties.ports, (port) =>
+    case 'TrackNode': {
+      const trackIDs = flatMap((entity as TrackNodeEntity).properties.ports, (port) =>
         port.track ? [port.track] : []
       );
       try {
@@ -161,11 +161,11 @@ function getSumUpContent(
 
       break;
     }
-    case 'Switch': {
-      const switchEntity = entity as SwitchEntity;
-      const label = switchEntity.properties?.extensions?.sncf?.label;
+    case 'TrackNode': {
+      const trackNodeEntity = entity as TrackNodeEntity;
+      const label = trackNodeEntity.properties?.extensions?.sncf?.label;
       const trackNames = uniq(
-        flatMap(switchEntity.properties.ports, (port) => {
+        flatMap(trackNodeEntity.properties.ports, (port) => {
           const track = additionalEntities[port.track] as TrackSectionEntity | undefined;
           const trackLabel = track?.properties?.extensions?.sncf?.line_name;
           return trackLabel ? [trackLabel] : [];
@@ -173,9 +173,9 @@ function getSumUpContent(
       );
       if (label) {
         text = label;
-        subtexts.push(switchEntity.properties.id);
+        subtexts.push(trackNodeEntity.properties.id);
       } else {
-        text = switchEntity.properties.id;
+        text = trackNodeEntity.properties.id;
       }
       if (trackNames.length) {
         subtexts.push(

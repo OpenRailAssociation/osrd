@@ -915,14 +915,14 @@
                     "title": "Release Detectors",
                     "type": "array"
                 },
-                "switches_directions": {
+                "track_nodes_directions": {
                     "additionalProperties": {
                         "maxLength": 255,
                         "minLength": 1,
                         "type": "string"
                     },
-                    "description": "Switches position part of the route",
-                    "title": "Switches Directions",
+                    "description": "Track Nodes position part of the route",
+                    "title": "Track Nodes Directions",
                     "type": "object"
                 }
             },
@@ -932,7 +932,7 @@
                 "entry_point_direction",
                 "exit_point",
                 "release_detectors",
-                "switches_directions"
+                "track_nodes_directions"
             ],
             "title": "Route",
             "type": "object"
@@ -1262,19 +1262,19 @@
             "title": "SpeedSectionPslSncfExtension",
             "type": "object"
         },
-        "Switch": {
-            "description": "\n    Switches are devices used for track changes.\n    ",
+        "TrackNode": {
+            "description": "\n    Track nodes are devices used for track changes.\n    ",
             "properties": {
                 "extensions": {
                     "allOf": [
                         {
-                            "$ref": "#/$defs/SwitchExtensions"
+                            "$ref": "#/$defs/TrackNodeExtensions"
                         }
                     ],
                     "default": null
                 },
                 "group_change_delay": {
-                    "description": "Time it takes to change which group of the switch is activated",
+                    "description": "Time it takes to change which group of the track node is activated",
                     "minimum": 0,
                     "title": "Group Change Delay",
                     "type": "number"
@@ -1294,39 +1294,39 @@
                     "title": "Ports",
                     "type": "object"
                 },
-                "switch_type": {
-                    "description": "Identifier and type of the switch type",
+                "track_node_type": {
+                    "description": "Identifier and type of the track node type",
                     "maxLength": 255,
                     "minLength": 1,
-                    "title": "Switch Type",
+                    "title": "Track node type",
                     "type": "string"
                 }
             },
             "required": [
                 "id",
-                "switch_type",
+                "track_node_type",
                 "group_change_delay",
                 "ports"
             ],
-            "title": "Switch",
+            "title": "TrackNode",
             "type": "object"
         },
-        "SwitchExtensions": {
+        "TrackNodeExtensions": {
             "properties": {
                 "sncf": {
                     "allOf": [
                         {
-                            "$ref": "#/$defs/SwitchSncfExtension"
+                            "$ref": "#/$defs/TrackNodeSncfExtension"
                         }
                     ],
                     "default": null
                 }
             },
-            "title": "SwitchExtensions",
+            "title": "TrackNodeExtensions",
             "type": "object"
         },
-        "SwitchPortConnection": {
-            "description": "\n    This class allows to know the connection between each port in switch type.\n    The connection is always bidirectional.\n    ",
+        "TrackNodePortConnection": {
+            "description": "\n    This class allows to know the connection between each port in track node type.\n    The connection is always bidirectional.\n    ",
             "properties": {
                 "dst": {
                     "description": "Port name that is destination of the connection",
@@ -1347,13 +1347,13 @@
                 "src",
                 "dst"
             ],
-            "title": "SwitchPortConnection",
+            "title": "TrackNodePortConnection",
             "type": "object"
         },
-        "SwitchSncfExtension": {
+        "TrackNodeSncfExtension": {
             "properties": {
                 "label": {
-                    "description": "Identifier of the switch",
+                    "description": "Identifier of the track node",
                     "minLength": 1,
                     "title": "Label",
                     "type": "string"
@@ -1362,16 +1362,16 @@
             "required": [
                 "label"
             ],
-            "title": "SwitchSncfExtension",
+            "title": "TrackNodeSncfExtension",
             "type": "object"
         },
-        "SwitchType": {
-            "description": "\n    Switch types are used to define what kind of switch is used in the infrastructure.\n    A switch type is defined by a list of ports and groups which are the possible configurations of the switch.\n    ",
+        "TrackNodeType": {
+            "description": "\n    Track node types are used to define what kind of track node is used in the infrastructure.\n    A track node type is defined by a list of ports and groups which are the possible configurations of the track node.\n    ",
             "properties": {
                 "groups": {
                     "additionalProperties": {
                         "items": {
-                            "$ref": "#/$defs/SwitchPortConnection"
+                            "$ref": "#/$defs/TrackNodePortConnection"
                         },
                         "type": "array"
                     },
@@ -1387,7 +1387,7 @@
                     "type": "string"
                 },
                 "ports": {
-                    "description": "List of ports. Ports map to the ends of switches",
+                    "description": "List of ports. Ports map to the ends of track nodes",
                     "items": {
                         "maxLength": 255,
                         "minLength": 1,
@@ -1403,7 +1403,7 @@
                 "ports",
                 "groups"
             ],
-            "title": "SwitchType",
+            "title": "TrackNodeType",
             "type": "object"
         },
         "TrackEndpoint": {
@@ -1721,13 +1721,13 @@
             "title": "Electrifications",
             "type": "array"
         },
-        "extended_switch_types": {
+        "extended_trak_node_types": {
             "default": [],
-            "description": "Switch types of the infra that can be added by the user",
+            "description": "Track node types of the infra that can be added by the user",
             "items": {
-                "$ref": "#/$defs/SwitchType"
+                "$ref": "#/$defs/TrackNodeType"
             },
-            "title": "Extended Switch Types",
+            "title": "Extended Track Node Types",
             "type": "array"
         },
         "neutral_sections": {
@@ -1770,12 +1770,12 @@
             "title": "Speed Sections",
             "type": "array"
         },
-        "switches": {
-            "description": "Switches of the infra",
+        "track_nodes": {
+            "description": "Track nodes of the infra",
             "items": {
-                "$ref": "#/$defs/Switch"
+                "$ref": "#/$defs/TrackNode"
             },
-            "title": "Switches",
+            "title": "TrackNodes",
             "type": "array"
         },
         "track_sections": {
@@ -1796,7 +1796,7 @@
     "required": [
         "operational_points",
         "routes",
-        "switches",
+        "track_nodes",
         "track_sections",
         "speed_sections",
         "electrifications",

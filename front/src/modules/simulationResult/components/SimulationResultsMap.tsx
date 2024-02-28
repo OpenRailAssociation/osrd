@@ -30,7 +30,7 @@ import RenderItinerary from 'modules/simulationResult/components/SimulationResul
 import OSM from 'common/Map/Layers/OSM';
 import Routes from 'common/Map/Layers/Routes';
 import Signals from 'common/Map/Layers/Signals';
-import Switches from 'common/Map/Layers/Switches';
+import TrackNodes from 'common/Map/Layers/TrackNodes';
 import Detectors from 'common/Map/Layers/Detectors';
 import Hillshade from 'common/Map/Layers/Hillshade';
 import Electrifications from 'common/Map/Layers/Electrifications';
@@ -329,9 +329,9 @@ const Map: FC<MapProps> = () => {
           layerOrder={LAYER_GROUPS_ORDER[LAYERS.DETECTORS.GROUP]}
           infraID={infraID}
         />
-        <Switches
+        <TrackNodes
           colors={colors[mapStyle]}
-          layerOrder={LAYER_GROUPS_ORDER[LAYERS.SWITCHES.GROUP]}
+          layerOrder={LAYER_GROUPS_ORDER[LAYERS.TRACK_NODES.GROUP]}
           infraID={infraID}
         />
 

@@ -5,7 +5,7 @@ import { IconType } from 'react-icons/lib/esm/iconBase';
 import { ViewState } from 'react-map-gl/maplibre';
 import { Map, MapLayerMouseEvent } from 'maplibre-gl';
 import { ModalContextType } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
-import { EditorEntity, SwitchType } from 'types';
+import { EditorEntity, TrackNodeType } from 'types';
 import { EditorState, LayerType } from './types';
 import { switchProps } from './switchProps';
 
@@ -19,7 +19,7 @@ export interface MapState {
 }
 export interface OSRDConf {
   infraID: number | undefined;
-  switchTypes: SwitchType[] | undefined;
+  trackNodeTypes: TrackNodeType[] | undefined;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -47,7 +47,7 @@ export interface ExtendedEditorContextType<S> extends EditorContextType<S> {
   editorState: EditorState;
   mapState: MapState;
   infraID: number | undefined;
-  switchTypes: SwitchType[] | undefined;
+  trackNodeTypes: TrackNodeType[] | undefined;
   isLoading?: boolean;
   isFormSubmited?: boolean;
   isInfraLocked?: boolean;
@@ -83,7 +83,7 @@ export interface Tool<S> {
   actions: ToolAction<S>[][];
   getInitialState: (context: {
     infraID: number | undefined;
-    switchTypes: SwitchType[] | undefined;
+    trackNodeTypes: TrackNodeType[] | undefined;
   }) => S;
   requiredLayers?: Set<LayerType>;
   isDisabled?: (context: ReadOnlyEditorContextType<S>) => boolean;

@@ -203,7 +203,7 @@ const RouteEditionPanel: FC = () => {
             ...(!isCurrentSelection
               ? {
                   entry_point_direction: candidate.data.track_ranges[0].direction,
-                  switches_directions: candidate.data.switches_directions,
+                  track_nodes_directions: candidate.data.track_nodes_directions,
                   release_detectors: candidate.data.detectors,
                 }
               : {}),

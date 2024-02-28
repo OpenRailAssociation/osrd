@@ -3,7 +3,7 @@ enum TOOL_TYPES {
   TRACK_EDITION = 'track-edition',
   SPEED_SECTION_EDITION = 'speed-edition',
   ELECTRIFICATION_EDITION = 'electrification',
-  SWITCH_EDITION = 'switch-edition',
+  TRACK_NODE_EDITION = 'track-node-edition',
   SIGNAL_EDITION = 'signal-edition',
   DETECTOR_EDITION = 'detector-edition',
   BUFFER_STOP_EDITION = 'buffer-stop-edition',

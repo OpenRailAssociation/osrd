@@ -120,7 +120,7 @@ describe('mapReducer', () => {
       sncf_psl: true,
       speedlimittag: '60',
       speedlimits: true,
-      switches: true,
+      track_nodes: true,
       tvds: true,
       errors: true,
       platforms: true,

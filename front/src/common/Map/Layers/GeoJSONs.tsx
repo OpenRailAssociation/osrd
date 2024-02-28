@@ -25,7 +25,7 @@ import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 import getKPLabelLayerProps from 'common/Map/Layers/KPLabel';
 import { MAP_TRACK_SOURCE, MAP_URL } from 'common/Map/const';
 import { getBufferStopsLayerProps } from 'common/Map/Layers/BufferStops';
-import { getSwitchesLayerProps, getSwitchesNameLayerProps } from 'common/Map/Layers/Switches';
+import { getTrackNodesLayerProps, getTrackNodesNameLayerProps } from 'common/Map/Layers/TrackNodes';
 import { lineNameLayer, lineNumberLayer, trackNameLayer } from 'common/Map/Layers/commonLayers';
 import { getDetectorsLayerProps, getDetectorsNameLayerProps } from 'common/Map/Layers/Detectors';
 import {
@@ -317,16 +317,16 @@ function getPSLLayers(context: LayerContext, prefix: string): LayerProps[] {
   ];
 }
 
-function getSwitchesLayers(context: LayerContext, prefix: string): LayerProps[] {
+function getTrackNodesLayers(context: LayerContext, prefix: string): LayerProps[] {
   return [
     {
-      ...getSwitchesLayerProps(context),
-      id: `${prefix}geo/switch-main`,
+      ...getTrackNodesLayerProps(context),
+      id: `${prefix}geo/track-node-main`,
       minzoom: POINT_ENTITIES_MIN_ZOOM,
     },
     {
-      ...getSwitchesNameLayerProps(context),
-      id: `${prefix}geo/switch-name`,
+      ...getTrackNodesNameLayerProps(context),
+      id: `${prefix}geo/track-node-name`,
       minzoom: POINT_ENTITIES_MIN_ZOOM,
     },
   ];
@@ -384,7 +384,7 @@ const SOURCES_DEFINITION: {
   { entityType: 'signals', getLayers: getSignalLayers },
   { entityType: 'buffer_stops', getLayers: getBufferStopsLayers },
   { entityType: 'detectors', getLayers: getDetectorsLayers },
-  { entityType: 'switches', getLayers: getSwitchesLayers },
+  { entityType: 'track_nodes', getLayers: getTrackNodesLayers },
   { entityType: 'speed_sections', getLayers: getSpeedSectionLayers },
   { entityType: 'psl', getLayers: getPSLLayers },
   { entityType: 'psl_signs', getLayers: getPSLSignsLayers },

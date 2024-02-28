@@ -143,7 +143,7 @@ const colors: Record<string, Theme> = {
       halo: '#ffffff',
       text: '#555555',
     },
-    switches: {
+    track_nodes: {
       circle: '#a1006b',
       halo: '#e7e7e7',
       text: '#a1006b',
@@ -304,7 +304,7 @@ const colors: Record<string, Theme> = {
       halo: '#0b011d',
       text: '#e0e1dd',
     },
-    switches: {
+    track_nodes: {
       circle: '#555555',
       halo: '#ffffff',
       text: '#555555',
@@ -465,7 +465,7 @@ const colors: Record<string, Theme> = {
       halo: bpBg,
       text: bpLight,
     },
-    switches: {
+    track_nodes: {
       circle: bpLight,
       halo: bpBg,
       text: bpLight,
@@ -626,7 +626,7 @@ const colors: Record<string, Theme> = {
       halo: '#ffffff',
       text: '#555555',
     },
-    switches: {
+    track_nodes: {
       circle: '#a1006b',
       halo: '#e7e7e7',
       text: '#a1006b',

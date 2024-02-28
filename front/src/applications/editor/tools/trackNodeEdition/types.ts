@@ -1,7 +1,7 @@
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { Position } from 'geojson';
 
-import { EndPoint, SwitchEntity, SwitchType } from 'types';
+import { EndPoint, TrackNodeEntity, TrackNodeType } from 'types';
 import { CommonToolState } from 'applications/editor/tools/commonToolState';
 
 export type PortEndPointCandidate = {
@@ -11,9 +11,9 @@ export type PortEndPointCandidate = {
   trackSectionName: string;
 };
 
-export type SwitchEditionState = CommonToolState & {
-  initialEntity: Partial<SwitchEntity>;
-  entity: Partial<SwitchEntity>;
+export type TrackNodeEditionState = CommonToolState & {
+  initialEntity: Partial<TrackNodeEntity>;
+  entity: Partial<TrackNodeEntity>;
 
   portEditionState:
     | { type: 'idle' }
@@ -34,14 +34,14 @@ const trackNodeTypeOrder = [
   'double_slip_switch',
 ];
 
-export const useSwitchTypes = (infraID: number | undefined) => {
-  const { data } = osrdEditoastApi.endpoints.getInfraByIdSwitchTypes.useQuery(
+export const useTrackNodeTypes = (infraID: number | undefined) => {
+  const { data } = osrdEditoastApi.endpoints.getInfraByIdTrackNodeTypes.useQuery(
     { id: infraID as number },
     { skip: !infraID }
   );
-  let orderedData = [] as SwitchType[];
+  let orderedData = [] as TrackNodeType[];
   if (data) {
-    orderedData = ([...data] as SwitchType[]).sort(
+    orderedData = ([...data] as TrackNodeType[]).sort(
       (a, b) => trackNodeTypeOrder.indexOf(a.id) - trackNodeTypeOrder.indexOf(b.id)
     );
   }

@@ -27,7 +27,7 @@ import RenderPopup from 'modules/trainschedule/components/ManageTrainSchedule/Ma
 
 import Routes from 'common/Map/Layers/Routes';
 import Signals from 'common/Map/Layers/Signals';
-import Switches from 'common/Map/Layers/Switches';
+import TrackNodes from 'common/Map/Layers/TrackNodes';
 import TracksOSM from 'common/Map/Layers/TracksOSM';
 import Detectors from 'common/Map/Layers/Detectors';
 import BufferStops from 'common/Map/Layers/BufferStops';
@@ -285,9 +285,9 @@ const Map = () => {
           layerOrder={LAYER_GROUPS_ORDER[LAYERS.DETECTORS.GROUP]}
           infraID={infraID}
         />
-        <Switches
+        <TrackNodes
           colors={colors[mapStyle]}
-          layerOrder={LAYER_GROUPS_ORDER[LAYERS.SWITCHES.GROUP]}
+          layerOrder={LAYER_GROUPS_ORDER[LAYERS.TRACK_NODES.GROUP]}
           infraID={infraID}
         />
 

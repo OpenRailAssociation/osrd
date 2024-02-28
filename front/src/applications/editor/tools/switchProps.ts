@@ -11,7 +11,7 @@ import { TrackEditionState } from './trackEdition/types';
 import { RangeEditionState } from './rangeEdition/types';
 import { PointEditionState } from './pointEdition/types';
 import TOOL_TYPES from './toolTypes';
-import { SwitchEditionState } from './switchEdition/types';
+import { TrackNodeEditionState } from './trackNodeEdition/types';
 
 export type switchProps =
   | { toolType: TOOL_TYPES.SELECTION; toolState: Partial<SelectionState> }
@@ -24,7 +24,7 @@ export type switchProps =
       toolType: TOOL_TYPES.ELECTRIFICATION_EDITION;
       toolState: Partial<RangeEditionState<ElectrificationEntity>>;
     }
-  | { toolType: TOOL_TYPES.SWITCH_EDITION; toolState: Partial<SwitchEditionState> }
+  | { toolType: TOOL_TYPES.TRACK_NODE_EDITION; toolState: Partial<TrackNodeEditionState> }
   | { toolType: TOOL_TYPES.SIGNAL_EDITION; toolState: Partial<PointEditionState<SignalEntity>> }
   | { toolType: TOOL_TYPES.DETECTOR_EDITION; toolState: Partial<PointEditionState<DetectorEntity>> }
   | {

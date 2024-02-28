@@ -3,16 +3,16 @@ import { useTranslation } from 'react-i18next';
 
 import EditorContext from '../../../context';
 import type { ExtendedEditorContextType } from '../../editorContextTypes';
-import { SwitchEditionState } from '../types';
+import { TrackNodeEditionState } from '../types';
 
-const SwitchMessages = () => {
+const TrackNodeMessages = () => {
   const { t } = useTranslation();
   const {
     state: { portEditionState },
-  } = useContext(EditorContext) as ExtendedEditorContextType<SwitchEditionState>;
+  } = useContext(EditorContext) as ExtendedEditorContextType<TrackNodeEditionState>;
   return portEditionState.type === 'selection'
-    ? t('Editor.tools.switch-edition.help.select-track')
-    : t('Editor.tools.switch-edition.help.no-move');
+    ? t('Editor.tools.track-node-edition.help.select-track')
+    : t('Editor.tools.track-node-edition.help.no-move');
 };
 
-export default SwitchMessages;
+export default TrackNodeMessages;

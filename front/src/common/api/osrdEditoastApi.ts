@@ -207,11 +207,11 @@ const injectedRtkApi = api
         query: (queryArg) => ({ url: `/infra/${queryArg.id}/speed_limit_tags/` }),
         providesTags: ['infra'],
       }),
-      getInfraByIdSwitchTypes: build.query<
-        GetInfraByIdSwitchTypesApiResponse,
-        GetInfraByIdSwitchTypesApiArg
+      getInfraByIdTrackNodeTypes: build.query<
+        GetInfraByIdTrackNodeTypesApiResponse,
+        GetInfraByIdTrackNodeTypesApiArg
       >({
-        query: (queryArg) => ({ url: `/infra/${queryArg.id}/switch_types/` }),
+        query: (queryArg) => ({ url: `/infra/${queryArg.id}/track_node_types/` }),
         providesTags: ['infra'],
       }),
       postInfraByIdUnlock: build.mutation<
@@ -897,8 +897,8 @@ export type GetInfraByIdSpeedLimitTagsApiArg = {
   /** Infra id */
   id: number;
 };
-export type GetInfraByIdSwitchTypesApiResponse = /** status 200 A list of switch types */ object[];
-export type GetInfraByIdSwitchTypesApiArg = {
+export type GetInfraByIdTrackNodeTypesApiResponse = /** status 200 A list of track node types */ object[];
+export type GetInfraByIdTrackNodeTypesApiArg = {
   /** infra id */
   id: number;
 };
@@ -1379,8 +1379,8 @@ export type RailjsonFile = {
   routes?: any;
   signals?: any;
   speed_sections?: any;
-  switch_types?: any;
-  switches?: any;
+  track_node_types?: any;
+  track_nodes?: any;
   track_sections?: any;
   version?: string;
 };
@@ -1390,8 +1390,8 @@ export type ObjectType =
   | 'SpeedSection'
   | 'Detector'
   | 'NeutralSection'
-  | 'Switch'
-  | 'SwitchType'
+  | 'TrackNode'
+  | 'TrackNodeType'
   | 'BufferStop'
   | 'Route'
   | 'OperationalPoint'
@@ -1464,14 +1464,14 @@ export type InfraErrorType =
   | 'invalid_group'
   | 'invalid_reference'
   | 'invalid_route'
-  | 'invalid_switch_ports'
+  | 'invalid_track_node_ports'
   | 'missing_route'
   | 'missing_buffer_stop'
   | 'object_out_of_path'
   | 'odd_buffer_stop_location'
   | 'out_of_range'
   | 'overlapping_speed_sections'
-  | 'overlapping_switches'
+  | 'overlapping_track_nodes'
   | 'overlapping_electrifications'
   | 'unknown_port_name'
   | 'unused_port'
@@ -1483,7 +1483,7 @@ export type InfraError = {
     field?: string;
     is_warning: boolean;
     obj_id: string;
-    obj_type: 'TrackSection' | 'Signal' | 'BufferStop' | 'Detector' | 'Switch' | 'Route';
+    obj_type: 'TrackSection' | 'Signal' | 'BufferStop' | 'Detector' | 'TrackNode' | 'Route';
   };
   schematic?: object | null;
 };
@@ -1502,7 +1502,7 @@ export type DirectionalTrackRange = {
 };
 export type PathfindingOutput = {
   detectors: Identifier[];
-  switches_directions: {
+  track_nodes_directions: {
     [key: string]: Identifier;
   };
   track_ranges: DirectionalTrackRange[];

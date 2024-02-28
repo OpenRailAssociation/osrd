@@ -314,9 +314,9 @@
         "description": "Détecteur autorisant la libération des ressources réservées depuis le début de l’itinéraire",
         "title": "Détecteurs de libération"
       },
-      "switches_directions": {
-        "description": "Liste des directions des aiguilles sur l’itinéraire.",
-        "title": "Directions des aiguilles"
+      "track_nodes_directions": {
+        "description": "Liste des directions des noeuds sur l’itinéraire.",
+        "title": "Directions des noeuds"
       }
     },
     "title": "Itinéraire"
@@ -469,26 +469,26 @@
     },
     "title": "Extensions spécifiques à la SNCF"
   },
-  "Switch": {
-    "description": "Les aiguilles sont des appareils permettant de changer de voies.",
+  "TrackNode": {
+    "description": "Les noeuds sont des appareils permettant de changer de voies.",
     "properties": {
       "group_change_delay": {
-        "description": "Temps nécessaire pour changer la configuration d’une aiguille.",
-        "title": "Délai de changement de configuration d’un groupe d’aiguilles"
+        "description": "Temps nécessaire pour changer la configuration d’un noeud.",
+        "title": "Délai de changement de configuration d’un groupe d'un noeud"
       },
       "ports": {
         "description": "Emplacement des différentes branches selon des TIV",
-        "title": "Branches de l’aiguille"
+        "title": "Branches du noeud"
       },
-      "switch_type": {
-        "description": "Identifiant et type d’aiguille",
-        "title": "Type d’aiguille"
+      "track_node_type": {
+        "description": "Identifiant et type de noeud",
+        "title": "Type de noeud"
       }
     },
     "title": "Aiguille"
   },
-  "SwitchPortConnection": {
-    "description": "Connexion entre chaque branche d’un type d’aiguille. Elle est toujours bidirectionnelle.",
+  "TrackNodePortConnection": {
+    "description": "Connexion entre chaque branche d’un type de noeud. Elle est toujours bidirectionnelle.",
     "properties": {
       "dst": {
         "description": "Nom de la branche de destination de la connexion.",
@@ -499,30 +499,30 @@
         "title": "Src"
       }
     },
-    "title": "Connexion des branches de l’aiguille"
+    "title": "Connexion des branches du noeud"
   },
-  "SwitchSncfExtension": {
+  "TrackNodeSncfExtension": {
     "properties": {
       "label": {
-        "description": "Identifiant de l’aiguille",
+        "description": "Identifiant du noeud",
         "title": "Label"
       }
     },
     "title": "Extension spécifique à la SNCF"
   },
-  "SwitchType": {
-    "description": "Liste de branches et groupes pouvant servir à configurer une aiguille.",
+  "TrackNodeType": {
+    "description": "Liste de branches et groupes pouvant servir à configurer un noeud.",
     "properties": {
       "groups": {
         "description": "Groupe de connexion de branches",
         "title": "Groupes"
       },
       "ports": {
-        "description": "Liste des branches d’une aiguille. Les branches correspondent aux extrémités des aiguilles.",
-        "title": "Branches de l’aiguille"
+        "description": "Liste des branches d’un noeud. Les branches correspondent aux extrémités des noeuds.",
+        "title": "Branches d'un noeud"
       }
     },
-    "title": "Type d’aiguille"
+    "title": "Type de noeud"
   },
   "TrackEndpoint": {
     "description": "Extrémité d’une voie (début ou fin).",
@@ -651,13 +651,13 @@
       "description": "Limites de vitesse de l’infrastructure",
       "title": "Limites de vitesse"
     },
-    "switch_types": {
-      "description": "Types d’aiguille de l’infrastructure",
-      "title": "Types d’aiguille"
+    "track_node_types": {
+      "description": "Types de noeud de l’infrastructure",
+      "title": "Types de noeud"
     },
-    "switches": {
-      "description": "Aiguilles de l’infrastructure",
-      "title": "Aiguilles"
+    "track_nodes": {
+      "description": "Noeuds de l’infrastructure",
+      "title": "Noeuds"
     },
     "track_section_links": {
       "description": "Raccordements de TIV de l’infrastructure",

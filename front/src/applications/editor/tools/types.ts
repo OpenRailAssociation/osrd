@@ -27,7 +27,7 @@ export const LAYERS = [
   'routes',
   'signals',
   'speed_sections',
-  'switches',
+  'track_nodes',
   'track_sections',
   'platforms',
 ] as const;
@@ -41,7 +41,7 @@ export const EDITOAST_TYPES = [
   'Route',
   'Signal',
   'SpeedSection',
-  'Switch',
+  'TrackNode',
   'TrackSection',
 ] as const;
 export const EDITOAST_TYPES_SET: Set<string> = new Set(EDITOAST_TYPES);
@@ -54,7 +54,7 @@ export const EDITOAST_TO_LAYER_DICT: Record<EditoastType, LayerType[]> = {
   Route: ['routes'],
   Signal: ['signals'],
   SpeedSection: ['speed_sections', 'psl', 'psl_signs'],
-  Switch: ['switches'],
+  Tracknode: ['track_nodes'],
   TrackSection: ['track_sections'],
 };
 export const LAYER_TO_EDITOAST_DICT = flatMap(EDITOAST_TO_LAYER_DICT, (values, key) =>

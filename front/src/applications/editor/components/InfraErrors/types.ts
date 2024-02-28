@@ -19,7 +19,7 @@ export const infraErrorTypeList: Record<'errors' | 'warnings', Set<InfraErrorTyp
     'invalid_group',
     'invalid_reference',
     'invalid_route',
-    'invalid_switch_ports',
+    'invalid_track_node_ports',
     'object_out_of_path',
     'out_of_range',
     'unknown_port_name',
@@ -32,7 +32,7 @@ export const infraErrorTypeList: Record<'errors' | 'warnings', Set<InfraErrorTyp
     'missing_buffer_stop',
     'odd_buffer_stop_location',
     'overlapping_speed_sections',
-    'overlapping_switches',
+    'overlapping_track_nodes',
     'overlapping_electrifications',
     'unused_port',
   ]),
@@ -52,14 +52,14 @@ type InfraErrorEmptyObject = InfraErrorInformation & { error_type: 'empty_object
 type InfraErrorInvalidGroup = InfraErrorInformation & {
   error_type: 'invalid_group';
   group: string;
-  switch_type: string;
+  track_node_type: string;
 };
 type InfraErrorInvalidReference = InfraErrorInformation & {
   error_type: 'invalid_reference';
   reference: ObjectRef;
 };
 type InfraErrorInvalidRoute = InfraErrorInformation & { error_type: 'invalid_route' };
-type InfraErrorInvalidSwitchPorts = InfraErrorInformation & { error_type: 'invalid_switch_ports' };
+type InfraErrorInvalidTrackNodePorts = InfraErrorInformation & { error_type: 'invalid_track_node_ports' };
 type InfraErrorMissingRoute = InfraErrorInformation & { error_type: 'missing_route' };
 type InfraErrorMissingBufferStop = InfraErrorInformation & {
   error_type: 'missing_buffer_stop';
@@ -81,8 +81,8 @@ type InfraErrorOverlappingSpeedSections = InfraErrorInformation & {
   error_type: 'overlapping_speed_sections';
   reference: ObjectRef;
 };
-type InfraErrorOverlappingSwitches = InfraErrorInformation & {
-  error_type: 'overlapping_switches';
+type InfraErrorOverlappingTrackNodes = InfraErrorInformation & {
+  error_type: 'overlapping_track_nodes';
   reference: ObjectRef;
 };
 type InfraErrorOverlappingElectrifications = InfraErrorInformation & {
@@ -108,7 +108,7 @@ export type InfraError = Omit<InfraErrorApiType, 'informations'> & {
     | InfraErrorInvalidGroup
     | InfraErrorInvalidReference
     | InfraErrorInvalidRoute
-    | InfraErrorInvalidSwitchPorts
+    | InfraErrorInvalidTrackNodePorts
     | InfraErrorObjectOutOfPath
     | InfraErrorOutOfRange
     | InfraErrorUnknownPortName
@@ -118,7 +118,7 @@ export type InfraError = Omit<InfraErrorApiType, 'informations'> & {
     | InfraErrorMissingBufferStop
     | InfraErrorOddBufferStopLocation
     | InfraErrorOverlappingSpeedSections
-    | InfraErrorOverlappingSwitches
+    | InfraErrorOverlappingTrackNodes
     | InfraErrorOverlappingElectrifications
     | InfraErrorUnusedPort
     | InfraErrorNodeEndpointsNotUnique;

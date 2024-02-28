@@ -9,15 +9,15 @@ import { isEmpty, isNil, keyBy } from 'lodash';
 import EditorContext from 'applications/editor/context';
 import { getEntity } from 'applications/editor/data/api';
 import Tipped from 'applications/editor/components/Tipped';
-import { FLAT_SWITCH_PORTS_PREFIX } from 'applications/editor/tools/switchEdition/utils';
+import { FLAT_TRACK_NODE_PORTS_PREFIX } from 'applications/editor/tools/trackNodeEdition/utils';
 import type { ExtendedEditorContextType } from 'applications/editor/tools/editorContextTypes';
 
 import type { TrackSectionEntity } from 'types';
 import { DEFAULT_ENDPOINT, ENDPOINTS, ENDPOINTS_SET } from 'types';
 import type {
   PortEndPointCandidate,
-  SwitchEditionState,
-} from 'applications/editor/tools/switchEdition/types';
+  TrackNodeEditionState,
+} from 'applications/editor/tools/trackNodeEdition/types';
 
 import { useInfraID } from 'common/osrdContext';
 
@@ -28,7 +28,7 @@ const TrackSectionEndpointSelector = ({ schema, formData, onChange, name }: Fiel
   const dispatch = useDispatch();
   const { state, setState } = useContext(
     EditorContext
-  ) as ExtendedEditorContextType<SwitchEditionState>;
+  ) as ExtendedEditorContextType<TrackNodeEditionState>;
 
   const duplicateWith = useMemo(() => {
     const allPorts = Object.entries(state.entity.properties?.ports ?? {});
@@ -48,7 +48,7 @@ const TrackSectionEndpointSelector = ({ schema, formData, onChange, name }: Fiel
   const { t } = useTranslation();
   const infraID = useInfraID();
 
-  const portId = name.replace(FLAT_SWITCH_PORTS_PREFIX, '');
+  const portId = name.replace(FLAT_TRACK_NODE_PORTS_PREFIX, '');
   const endpoint = ENDPOINTS_SET.has(formData?.endpoint) ? formData.endpoint : DEFAULT_ENDPOINT;
   const [trackSection, setTrackSection] = useState<TrackSectionEntity | null>(null);
 
@@ -107,7 +107,7 @@ const TrackSectionEndpointSelector = ({ schema, formData, onChange, name }: Fiel
       {schema.description && <p>{schema.description}</p>}
       {duplicateWith.map(({ track, port }, i) => (
         <div className="text-danger small font-weight-bold" key={`${name}-${track}-${i}`}>
-          {t('Editor.tools.switch-edition.duplicate-errors', {
+          {t('Editor.tools.track-node-edition.duplicate-errors', {
             track,
             port,
           })}
@@ -121,13 +121,13 @@ const TrackSectionEndpointSelector = ({ schema, formData, onChange, name }: Fiel
             </span>
           ) : (
             <span className="text-danger font-weight-bold">
-              {t('Editor.tools.switch-edition.no-track-picked-yet')}
+              {t('Editor.tools.track-node-edition.no-track-picked-yet')}
             </span>
           )}
           {!!trackSection && <div className="text-muted small">{trackSection.properties.id}</div>}
           {!!trackSection && (
             <div className="d-flex flex-row align-items-baseline mb-2">
-              <span className="mr-2">{t('Editor.tools.switch-edition.endpoint')}</span>
+              <span className="mr-2">{t('Editor.tools.track-node-edition.endpoint')}</span>
               <Select
                 value={ENDPOINT_OPTIONS_DICT[endpoint]}
                 options={ENDPOINT_OPTIONS}
@@ -153,7 +153,7 @@ const TrackSectionEndpointSelector = ({ schema, formData, onChange, name }: Fiel
           </button>
           <span>
             {t(
-              `Editor.tools.switch-edition.actions.${
+              `Editor.tools.track-node-edition.actions.${
                 isPicking ? 'pick-track-cancel' : 'pick-track'
               }`
             )}

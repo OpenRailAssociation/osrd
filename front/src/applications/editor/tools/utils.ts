@@ -19,7 +19,7 @@ import type {
   RouteEntity,
   SignalEntity,
   SpeedSectionEntity,
-  SwitchEntity,
+  TrackNodeEntity,
   TrackSectionEntity,
 } from 'types';
 import { getEntity } from 'applications/editor/data/api';
@@ -170,12 +170,12 @@ export function openEntityEditionPanel(
         },
       });
       break;
-    case 'Switch':
+    case 'TrackNode':
       switchTool({
-        toolType: TOOL_TYPES.SWITCH_EDITION,
+        toolType: TOOL_TYPES.TRACK_NODE_EDITION,
         toolState: {
-          initialEntity: entity as SwitchEntity,
-          entity: entity as SwitchEntity,
+          initialEntity: entity as TrackNodeEntity,
+          entity: entity as TrackNodeEntity,
         },
       });
       break;

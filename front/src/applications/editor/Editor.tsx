@@ -14,7 +14,7 @@ import { loadDataModel, updateTotalsIssue } from 'reducers/editor';
 import { LoaderState } from 'common/Loaders';
 import { updateViewport } from 'reducers/map';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
-import { useSwitchTypes } from 'applications/editor/tools/switchEdition/types';
+import { useTrackNodeTypes } from 'applications/editor/tools/trackNodeEdition/types';
 import EditorContext from 'applications/editor/context';
 import InfraErrorCorrector from 'applications/editor/components/InfraErrors/InfraErrorCorrector';
 import InfraErrorMapControl from 'applications/editor/components/InfraErrors/InfraErrorMapControl';
@@ -62,11 +62,11 @@ const Editor = () => {
   const isLocked = useSelector(getInfraLockStatus);
   const isLoading = useSelector(getIsLoading);
   const editorState = useSelector((state: { editor: EditorState }) => state.editor);
-  const switchTypes = useSwitchTypes(infraID);
+  const trackNodeTypes = useTrackNodeTypes(infraID);
   /* eslint-disable @typescript-eslint/no-explicit-any */
   const [toolAndState, setToolAndState] = useState<FullTool<any>>({
     tool: TOOLS[TOOL_TYPES.SELECTION],
-    state: TOOLS[TOOL_TYPES.SELECTION].getInitialState({ infraID, switchTypes }),
+    state: TOOLS[TOOL_TYPES.SELECTION].getInitialState({ infraID, trackNodeTypes }),
   });
   const [isSearchToolOpened, setIsSearchToolOpened] = useState(false);
   const [renderingFingerprint, setRenderingFingerprint] = useState(Date.now());
@@ -80,7 +80,7 @@ const Editor = () => {
     ({ toolType, toolState }: switchProps) => {
       const tool = TOOLS[toolType];
       const state = {
-        ...tool.getInitialState({ infraID, switchTypes }),
+        ...tool.getInitialState({ infraID, trackNodeTypes }),
         ...(toolState || {}),
       };
       setToolAndState({
@@ -88,7 +88,7 @@ const Editor = () => {
         state,
       });
     },
-    [infraID, switchTypes, setToolAndState]
+    [infraID, trackNodeTypes, setToolAndState]
   );
 
   const setToolState = useCallback(
@@ -161,7 +161,7 @@ const Editor = () => {
       isLoading,
       isFormSubmited,
       setIsFormSubmited,
-      switchTypes,
+      trackNodeTypes,
       mapState: {
         viewport,
         mapStyle,
@@ -173,7 +173,7 @@ const Editor = () => {
       editorState,
       mapStyle,
       infraID,
-      switchTypes,
+      trackNodeTypes,
       viewport,
       isLoading,
       isLocked,

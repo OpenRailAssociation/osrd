@@ -7,7 +7,7 @@ import { CommonToolState } from 'applications/editor/tools/commonToolState';
 export interface RouteCandidate {
   track_ranges: Required<DirectionalTrackRange>[];
   detectors: string[];
-  switches_directions: Record<string, string>;
+  track_nodes_directions: Record<string, string>;
 }
 
 export enum EndPointKeys {

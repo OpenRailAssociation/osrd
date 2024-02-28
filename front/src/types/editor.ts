@@ -169,7 +169,7 @@ export interface RouteEntity
       entry_point: WayPoint;
       entry_point_direction: Direction;
       exit_point: WayPoint;
-      switches_directions: Record<string, string>;
+      track_nodes_directions: Record<string, string>;
       release_detectors: string[];
     }
   > {
@@ -180,7 +180,7 @@ export const ENDPOINTS = ['BEGIN', 'END'] as const;
 export const ENDPOINTS_SET = new Set(ENDPOINTS);
 export const DEFAULT_ENDPOINT = ENDPOINTS[0];
 export type EndPoint = (typeof ENDPOINTS)[number];
-export interface SwitchPortConnection {
+export interface TrackNodePortConnection {
   src: string;
   dst: string;
 }
@@ -189,11 +189,11 @@ export interface TrackEndpoint {
   track: string;
 }
 
-// TODO : Would be better and safer if editoast was sending this type in the getSwitchTypes endpoint so we can remove all related types
-export interface SwitchType {
+// TODO : Would be better and safer if editoast was sending this type in the getTrackNodeTypes endpoint so we can remove all related types
+export interface TrackNodeType {
   id: TrackNodeTypeId;
   ports: string[];
-  groups: Record<string, SwitchPortConnection[]>;
+  groups: Record<string, TrackNodePortConnection[]>;
 }
 
 export type TrackNodeTypeId =
@@ -211,11 +211,11 @@ export enum TRACK_NODE_TYPES_ID {
   POINT_SWITCH = 'point_switch',
 }
 
-export interface SwitchEntity
+export interface TrackNodeEntity
   extends EditorEntity<
     Point,
     {
-      switch_type: string;
+      track_node_type: string;
       ports: Record<string, TrackEndpoint>;
       extensions?: {
         sncf: {
@@ -224,5 +224,5 @@ export interface SwitchEntity
       };
     }
   > {
-  objType: 'Switch';
+  objType: 'TrackNode';
 }

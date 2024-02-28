@@ -11,7 +11,7 @@ import type { LayerType, EditoastType } from 'applications/editor/tools/types';
 import type { EditorEntity } from 'types';
 
 import pslsIcon from 'assets/pictures/layersicons/layer_tivs.svg';
-import switchesIcon from 'assets/pictures/layersicons/switches.svg';
+import trackNodesIcon from 'assets/pictures/layersicons/track_nodes.svg';
 import detectorsIcon from 'assets/pictures/layersicons/detectors.svg';
 import signalsIcon from 'assets/pictures/layersicons/layer_signal.svg';
 import bufferStopIcon from 'assets/pictures/layersicons/bufferstop.svg';
@@ -33,7 +33,7 @@ export const LAYERS: Array<{ layers: LayerType[]; icon: string | JSX.Element }> 
   { layers: ['signals'], icon: signalsIcon },
   { layers: ['buffer_stops'], icon: bufferStopIcon },
   { layers: ['detectors'], icon: detectorsIcon },
-  { layers: ['switches'], icon: switchesIcon },
+  { layers: ['track_nodes'], icon: trackNodesIcon },
   { layers: ['speed_sections'], icon: <MdSpeed style={{ width: '20px' }} className="mx-2" /> },
   { layers: ['psl', 'psl_signs'], icon: pslsIcon },
   { layers: ['electrifications'], icon: <GiElectric style={{ width: '20px' }} className="mx-2" /> },

@@ -31,7 +31,7 @@ import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
 import { LAYER_TO_EDITOAST_DICT, LAYERS_SET } from 'applications/editor/tools/types';
 import { updateMapSearchMarker } from 'reducers/map';
 import { useMapBlankStyle } from 'common/Map/Layers/blankStyle';
-import { useSwitchTypes } from 'applications/editor/tools/switchEdition/types';
+import { usetrackNodeTypes } from 'applications/editor/tools/trackNodeEdition/types';
 
 import type { CommonToolState } from 'applications/editor/tools/commonToolState';
 import type {
@@ -82,7 +82,7 @@ const MapUnplugged = ({
     isHovering: false,
   });
   const context = useContext(EditorContext) as EditorContextType<CommonToolState>;
-  const switchTypes = useSwitchTypes(infraID);
+  const trackNodeTypes = useTrackNodeTypes(infraID);
   const editorState = useSelector((state: { editor: EditorState }) => state.editor);
   const showOSM = useSelector(getShowOSM);
   const terrain3DExaggeration = useSelector(getTerrain3DExaggeration);
@@ -93,13 +93,13 @@ const MapUnplugged = ({
       dispatch,
       editorState,
       infraID,
-      switchTypes,
+      trackNodeTypes,
       mapState: {
         viewport,
         mapStyle,
       },
     }),
-    [context, dispatch, editorState, mapStyle, infraID, switchTypes, viewport]
+    [context, dispatch, editorState, mapStyle, infraID, trackNodeTypes, viewport]
   );
   const interactiveLayerIDs = useMemo(
     () => (activeTool.getInteractiveLayers ? activeTool.getInteractiveLayers(extendedContext) : []),

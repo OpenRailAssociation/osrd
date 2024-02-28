@@ -4,25 +4,25 @@ import { AiFillSave } from 'react-icons/ai';
 import { GoPlusCircle, GoTrash } from 'react-icons/go';
 
 import { save } from 'reducers/editor';
-import { SwitchEntity, SwitchType } from 'types';
+import { TrackNodeEntity, TrackNodeType } from 'types';
 import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
 
 import { filter, groupBy } from 'lodash';
 import { NEW_ENTITY_ID } from '../../data/utils';
 import { Tool } from '../editorContextTypes';
 import { DEFAULT_COMMON_TOOL_STATE } from '../commonToolState';
-import { SwitchEditionLayers, SwitchEditionLeftPanel, SwitchMessages } from './components';
-import { SwitchEditionState } from './types';
-import { getNewSwitch } from './utils';
+import { TrackNodeEditionLayers, TrackNodeEditionLeftPanel, TrackNodeMessages } from './components';
+import { TrackNodeEditionState } from './types';
+import { getNewTrackNode } from './utils';
 
 function getInitialState({
-  switchTypes,
+  trackNodeTypes,
 }: {
-  switchTypes: SwitchType[] | undefined;
-}): SwitchEditionState {
-  if (!switchTypes?.length) throw new Error('There is no switch type yet.');
+  trackNodeTypes: TrackNodeType[] | undefined;
+}): TrackNodeEditionState {
+  if (!trackNodeTypes?.length) throw new Error('There is no track node type yet.');
 
-  const entity = getNewSwitch(switchTypes[0]);
+  const entity = getNewTrackNode(trackNodeTypes[0]);
 
   return {
     ...DEFAULT_COMMON_TOOL_STATE,
@@ -32,23 +32,23 @@ function getInitialState({
   };
 }
 
-const SwitchEditionTool: Tool<SwitchEditionState> = {
-  id: 'switch-edition',
+const TrackNodeEditionTool: Tool<TrackNodeEditionState> = {
+  id: 'track-node-edition',
   icon: TbSwitch2,
-  labelTranslationKey: 'Editor.tools.switch-edition.label',
-  requiredLayers: new Set(['switches', 'track_sections']),
+  labelTranslationKey: 'Editor.tools.track-node-edition.label',
+  requiredLayers: new Set(['track_nodes', 'track_sections']),
   isDisabled({ editorState }) {
     return (
-      !editorState.editorLayers.has('switches') || !editorState.editorLayers.has('track_sections')
+      !editorState.editorLayers.has('track_nodes') || !editorState.editorLayers.has('track_sections')
     );
   },
   getInitialState,
   actions: [
     [
       {
-        id: 'save-switch',
+        id: 'save-track-node',
         icon: AiFillSave,
-        labelTranslationKey: 'Editor.tools.switch-edition.actions.save-switch',
+        labelTranslationKey: 'Editor.tools.track-node-edition.actions.save-track-node',
         isDisabled({ isLoading, state }) {
           const portWithTracks = filter(state.entity?.properties?.ports ?? {}, (p) => !!p?.track);
           const portsKeys = Object.keys(state.entity?.properties?.ports ?? {});
@@ -73,13 +73,13 @@ const SwitchEditionTool: Tool<SwitchEditionState> = {
     ],
     [
       {
-        id: 'new-switch',
+        id: 'new-track-node',
         icon: GoPlusCircle,
-        labelTranslationKey: 'Editor.tools.switch-edition.actions.new-switch',
-        onClick({ setState, switchTypes }) {
-          if (!switchTypes?.length) throw new Error('There is no switch type yet.');
+        labelTranslationKey: 'Editor.tools.track-node-edition.actions.new-track-node',
+        onClick({ setState, trackNodeTypes }) {
+          if (!trackNodeTypes?.length) throw new Error('There is no track node type yet.');
 
-          const entity = getNewSwitch(switchTypes[0]);
+          const entity = getNewTrackNode(trackNodeTypes[0]);
 
           setState({
             ...DEFAULT_COMMON_TOOL_STATE,
@@ -92,9 +92,9 @@ const SwitchEditionTool: Tool<SwitchEditionState> = {
     ],
     [
       {
-        id: 'delete-switch',
+        id: 'delete-track-node',
         icon: GoTrash,
-        labelTranslationKey: `Editor.tools.switch-edition.actions.delete-switch`,
+        labelTranslationKey: `Editor.tools.track-node-edition.actions.delete-track-node`,
         // Show button only if we are editing
         isDisabled({ state }) {
           return state.initialEntity.properties?.id === NEW_ENTITY_ID;
@@ -106,25 +106,25 @@ const SwitchEditionTool: Tool<SwitchEditionState> = {
           forceRender,
           state,
           setState,
-          switchTypes,
+          trackNodeTypes,
           dispatch,
           t,
         }) {
           openModal(
             <ConfirmModal
-              title={t(`Editor.tools.switch-edition.actions.delete-switch`)}
+              title={t(`Editor.tools.track-node-edition.actions.delete-trak-node`)}
               onConfirm={async () => {
                 await dispatch<ReturnType<typeof save>>(
                   // We have to put state.initialEntity in array because delete initially works with selection which can get multiple elements
-                  // The cast is required because of the Partial<SwitchEntity> returned by getNewSwitch which doesnt fit with EditorEntity
-                  save(infraID, { delete: [state.initialEntity as SwitchEntity] })
+                  // The cast is required because of the Partial<TrackNodeEntity> returned by getNewTrackNode which doesnt fit with EditorEntity
+                  save(infraID, { delete: [state.initialEntity as TrackNodeEntity] })
                 );
-                setState(getInitialState({ switchTypes }));
+                setState(getInitialState({ trackNodeTypes }));
                 closeModal();
                 forceRender();
               }}
             >
-              <p>{t('Editor.tools.switch-edition.actions.confirm-delete-switch').toString()}</p>
+              <p>{t('Editor.tools.tack-node-edition.actions.confirm-delete-track-node').toString()}</p>
             </ConfirmModal>
           );
         },
@@ -150,12 +150,12 @@ const SwitchEditionTool: Tool<SwitchEditionState> = {
     }
   },
 
-  messagesComponent: SwitchMessages,
-  layersComponent: SwitchEditionLayers,
-  leftPanelComponent: SwitchEditionLeftPanel,
+  messagesComponent: TrackNodeMessages,
+  layersComponent: TrackNodeEditionLayers,
+  leftPanelComponent: TrackNodeEditionLeftPanel,
   getInteractiveLayers() {
     return ['editor/geo/track-main'];
   },
 };
 
-export default SwitchEditionTool;
+export default TrackNodeEditionTool;
