@@ -10,6 +10,7 @@ import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.stdcm.graph.findPath
 import fr.sncf.osrd.stdcm.preprocessing.implementation.BlockAvailabilityLegacyAdapter
+import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.RollingStock.Comfort
 import fr.sncf.osrd.train.TestTrains
@@ -39,6 +40,7 @@ class STDCMPathfindingBuilder {
     private var maxRunTime = Double.POSITIVE_INFINITY
     private var tag = ""
     private var standardAllowance: AllowanceValue? = null
+    private var blockAvailability: BlockAvailabilityInterface? = null
     // endregion OPTIONAL
     // region SETTERS
     /** Sets the infra to be used */
@@ -139,19 +141,34 @@ class STDCMPathfindingBuilder {
         this.pathfindingTimeout = pathfindingTimeout
         return this
     }
+
+    /**
+     * Sets the method used to get the availability of each block. Uses the given occupancy by
+     * default.
+     */
+    fun setBlockAvailability(availability: BlockAvailabilityInterface): STDCMPathfindingBuilder {
+        this.blockAvailability = availability
+        return this
+    }
     // endregion SETTERS
     /** Runs the pathfinding request with the given parameters */
     fun run(): STDCMResult? {
         assert(infra != null) { "infra is a required parameter and was not set" }
         assert(rollingStock != null) { "rolling stock is a required parameter and was not set" }
         assert(steps.size >= 2) { "Not enough steps have been set" }
+        assert(blockAvailability == null || unavailableTimes.isEmpty) {
+            "Can't set both block availability and unavailable times"
+        }
+        val blockAvailabilityAdapter =
+            blockAvailability
+                ?: BlockAvailabilityLegacyAdapter(infra!!.blockInfra, unavailableTimes)
         return findPath(
             infra!!,
             rollingStock!!,
             comfort,
             startTime,
             steps,
-            BlockAvailabilityLegacyAdapter(infra!!.blockInfra, unavailableTimes),
+            blockAvailabilityAdapter,
             timeStep,
             maxDepartureDelay,
             maxRunTime,
