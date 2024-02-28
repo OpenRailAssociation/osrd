@@ -179,30 +179,32 @@ export default function InputGroupSNCF({
               // eslint-disable-next-line react/no-unknown-property
               x-placement="bottom-end"
             >
-              {options.map((option) => (
-                <React.Fragment key={nextId()}>
-                  <label className="dropdown-item" htmlFor={option.id}>
-                    <div
-                      onClick={() => {
-                        setSelected(option);
-                        handleType({ type: option.id, value: 0 });
-                        setIsDropdownShown(false);
-                      }}
-                      role="button"
-                      tabIndex={0}
-                    >
-                      {option.label}
-                    </div>
-                  </label>
-                  <input
-                    type="radio"
-                    name={id}
-                    value={option.id}
-                    id={option.id}
-                    className="sr-only"
-                  />
-                </React.Fragment>
-              ))}
+              <ul>
+                {options.map((option) => (
+                  <li key={nextId()}>
+                    <label htmlFor={option.id} className="dropdown-item">
+                      <div
+                        onClick={() => {
+                          setSelected(option);
+                          handleType({ type: option.id, value: 0 });
+                          setIsDropdownShown(false);
+                        }}
+                        role="button"
+                        tabIndex={0}
+                      >
+                        {option.label}
+                      </div>
+                    </label>
+                    <input
+                      type="radio"
+                      name={id}
+                      value={option.id}
+                      id={option.id}
+                      className="sr-only"
+                    />
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
         </div>
