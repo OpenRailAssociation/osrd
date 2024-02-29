@@ -123,7 +123,7 @@ class SignalingSimulatorImpl(override val sigModuleManager: SigSystemManager) : 
         evaluatedPathEnd: Int,
         zoneStates: List<ZoneStatus>,
         followingZoneState: ZoneStatus,
-    ): IdxMap<LogicalSignalId, SigState> {
+    ): Map<LogicalSignalId, SigState> {
         assert(evaluatedPathBegin >= 0)
         assert(evaluatedPathEnd > evaluatedPathBegin)
         assert(evaluatedPathEnd <= fullPath.size)
@@ -207,7 +207,7 @@ class SignalingSimulatorImpl(override val sigModuleManager: SigSystemManager) : 
                 get() = _nextSignalSettings!!
         }
 
-        val res = IdxMap<LogicalSignalId, SigState>()
+        val res = mutableMapOf<LogicalSignalId, SigState>()
         var lastSignalState: SigState? = null
         var lastSignalSettings: SigSettings? = null
         var lastSignalSSId: SignalingSystemId? = null
