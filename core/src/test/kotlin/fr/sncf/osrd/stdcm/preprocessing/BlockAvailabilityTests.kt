@@ -119,7 +119,6 @@ class BlockAvailabilityTests {
                 .find { filterExplorer(it) }!!
         while (infraExplorer.getLookahead().size + 1 < nBlocksInPath) infraExplorer =
             infraExplorer.cloneAndExtendLookahead().find { filterExplorer(it) }!!
-        for (i in 0 ..< nBlocksSimulated - 1) infraExplorer.moveForward()
         for (i in 0 ..< nBlocksSimulated) {
             infraExplorer =
                 infraExplorer.addEnvelope(
@@ -131,6 +130,7 @@ class BlockAvailabilityTests {
                         )
                     )
                 )
+            if (i < nBlocksSimulated - 1) infraExplorer.moveForward()
         }
         return infraExplorer
     }
@@ -320,6 +320,7 @@ class BlockAvailabilityTests {
             )
         val firstSimEndOffset = explorer.getSimulatedLength()
         availability.getAvailability(explorer, Offset(0.meters), firstSimEndOffset, 0.0)
+        explorer.moveForward()
         explorer =
             explorer.addEnvelope(
                 Envelope.make(
@@ -330,7 +331,6 @@ class BlockAvailabilityTests {
                     )
                 )
             )
-        explorer.moveForward()
         val res =
             availability.getAvailability(
                 explorer,
@@ -356,16 +356,17 @@ class BlockAvailabilityTests {
         val firstSimEndOffset = explorer.getSimulatedLength()
         availability.getAvailability(explorer, Offset(0.meters), firstSimEndOffset, 0.0)
         explorer =
-            explorer.addEnvelope(
-                Envelope.make(
-                    EnvelopePart.generateTimes(
-                        listOf(EnvelopeProfile.CONSTANT_SPEED),
-                        doubleArrayOf(0.0, blockLengths[1].distance.meters),
-                        doubleArrayOf(30.0, 30.0)
+            explorer
+                .moveForward()
+                .addEnvelope(
+                    Envelope.make(
+                        EnvelopePart.generateTimes(
+                            listOf(EnvelopeProfile.CONSTANT_SPEED),
+                            doubleArrayOf(0.0, blockLengths[1].distance.meters),
+                            doubleArrayOf(30.0, 30.0)
+                        )
                     )
                 )
-            )
-        explorer.moveForward()
         val res =
             availability.getAvailability(
                 explorer,
@@ -555,6 +556,7 @@ class BlockAvailabilityTests {
             explorer
                 .cloneAndExtendLookahead()
                 .first()
+                .moveForward()
                 .addEnvelope(
                     Envelope.make(
                         EnvelopePart.generateTimes(
@@ -564,7 +566,6 @@ class BlockAvailabilityTests {
                         )
                     )
                 )
-        explorer.moveForward()
         val res =
             availability.getAvailability(
                 explorer,
