@@ -40,7 +40,7 @@ export default defineConfig({
     locale: 'fr',
     video: 'retain-on-failure',
   },
-  reporter: process.env.CI ? 'github' : 'line',
+  reporter: process.env.CI ? 'github' : [['line'], ['html']],
 
   /* Configure projects for major browsers */
   projects: [
