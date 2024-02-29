@@ -8,7 +8,6 @@ import fr.sncf.osrd.signaling.impl.SigSystemManagerImpl
 import fr.sncf.osrd.signaling.impl.SignalingSimulatorImpl
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.impl.RawInfraBuilder
-import fr.sncf.osrd.utils.indexing.IdxMap
 import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
@@ -142,7 +141,7 @@ class TestBAPRtoBAL {
 
     private fun asserSignalListAspectEquals(
         expectedAspects: List<String>,
-        actualAspects: IdxMap<LogicalSignalId, SigState>,
+        actualAspects: Map<LogicalSignalId, SigState>,
         signals: List<LogicalSignalId>
     ) {
         for ((aspect, signal) in expectedAspects.zip(signals)) {

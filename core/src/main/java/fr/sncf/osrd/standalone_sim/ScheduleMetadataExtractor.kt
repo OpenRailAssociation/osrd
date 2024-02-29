@@ -24,7 +24,6 @@ import fr.sncf.osrd.standalone_sim.result.ResultTrain.SignalSighting
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.StandaloneTrainSchedule
 import fr.sncf.osrd.utils.CurveSimplification
-import fr.sncf.osrd.utils.indexing.IdxMap
 import fr.sncf.osrd.utils.indexing.MutableStaticIdxArrayList
 import fr.sncf.osrd.utils.indexing.StaticIdxList
 import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
@@ -372,7 +371,7 @@ data class LimitingSignal(val blockIndex: Int, val signalIndex: Int)
  */
 private fun findLimitingSignal(
     blockInfra: BlockInfra,
-    simulatedSignalStates: IdxMap<LogicalSignalId, SigState>,
+    simulatedSignalStates: Map<LogicalSignalId, SigState>,
     blockPath: StaticIdxList<Block>,
     routeStartBlockIndex: Int
 ): LimitingSignal? {
