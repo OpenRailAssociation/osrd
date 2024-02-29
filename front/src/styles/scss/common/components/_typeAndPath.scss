@@ -1,6 +1,5 @@
 .type-and-path {
   position: relative;
-
   background-color: var(--white);
   padding: 0.5rem;
   border-radius: var(--border-radius);
@@ -73,4 +72,56 @@
       font-size: 0.9rem;
     }
   }
+}
+
+.results-container {
+  max-height: 4.7rem;
+  max-width: 34rem;
+  position: relative;
+  line-height: 1.5rem;
+  overflow: hidden;
+  border-radius: var(--border-radius);
+  .station-results {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    background-color: white;
+    .station {
+      flex: 1 0 auto;
+      max-width: 45%;
+      border-radius: 4px;
+      border: none;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-size: small;
+      text-align: center;
+      &:nth-child(n + 9) {
+        display: none;
+      }
+      .station-text {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+    }
+  }
+}
+
+.arrow-img {
+  position: relative;
+  width: 1px;
+  height: 1px;
+  background-color: transparent;
+}
+
+.arrow-img::before {
+  content: '';
+  position: absolute;
+  bottom: 25%;
+  left: var(--cursor-position);
+  border-left: 1.2rem solid transparent;
+  border-right: 1.2rem solid transparent;
+  border-bottom: 1.5rem solid white;
+  z-index: 4;
 }
