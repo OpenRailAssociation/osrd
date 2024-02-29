@@ -64,8 +64,8 @@ fun findPath(
             .setTotalCostUntilEdgeLocation { range ->
                 totalCostUntilEdgeLocation(range, maxDepartureDelay)
             }
-            .setTimeout(pathfindingTimeout)
-            .runPathfinding(
+            .setTimeout(pathfindingTimeout) // a recup direct depuis la classe ?
+            .runPathfinding( // à faire T-T
                 convertLocations(
                     graph,
                     steps[0].locations,
@@ -124,7 +124,7 @@ private fun makeObjectiveFunction(
  * - the second one leaves at 9:00 and lasts for 20:01 min. As we are looking for the fastest train,
  *   the first train should have the lightest weight, which is the case with the formula above.
  */
-private fun totalCostUntilEdgeLocation(
+private fun totalCostUntilEdgeLocation( // duree totale du chemin parcouru
     range: EdgeLocation<STDCMEdge, STDCMEdge>,
     searchTimeRange: Double
 ): Double {
@@ -146,7 +146,7 @@ private fun totalCostUntilEdgeLocation(
  * Converts the "raw" heuristics based on physical blocks, returning the most optimistic distance,
  * into heuristics based on stdcm edges, returning the most optimistic time
  */
-private fun makeAStarHeuristic(
+private fun makeAStarHeuristic( // estimation de la duree restante
     baseBlockHeuristics: ArrayList<AStarHeuristicId<Block>>,
     rollingStock: RollingStock
 ): List<AStarHeuristic<STDCMEdge, STDCMEdge>> {
