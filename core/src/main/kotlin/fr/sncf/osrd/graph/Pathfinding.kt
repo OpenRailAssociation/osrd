@@ -127,7 +127,7 @@ class Pathfinding<NodeT : Any, EdgeT : Any, OffsetType>(
     }
 
     /** Sets the functor used to determine which ranges are blocked on an edge */
-    fun addBlockedRangeOnEdges(
+   fun addBlockedRangeOnEdges(
         f: EdgeToRanges<EdgeT, OffsetType>
     ): Pathfinding<NodeT, EdgeT, OffsetType> {
         blockedRangesOnEdge.functions.add(f)
@@ -326,7 +326,8 @@ class Pathfinding<NodeT : Any, EdgeT : Any, OffsetType>(
         nPassedTargets: Int,
         targets: List<EdgeLocation<EdgeT, OffsetType>> = listOf()
     ) {
-        val filteredRange = filterRange(range) ?: return
+        // val filteredRange = filterRange(range) ?: return --> plus besoin si on ne filtre plus
+        val filteredRange = EdgeRange(range.edge, range.start, range.end)
         val totalDistance =
             if (totalCostUntilEdgeLocation != null)
                 totalCostUntilEdgeLocation!!.apply(

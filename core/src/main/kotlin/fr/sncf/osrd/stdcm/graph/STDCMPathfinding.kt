@@ -53,7 +53,7 @@ fun findPath(
         )
 
     // Initializes the constraints
-    val loadingGaugeConstraints =
+    val loadingGaugeConstraints = // contraintes gérées par l'infra explorer
         LoadingGaugeConstraints(fullInfra.blockInfra, fullInfra.rawInfra, listOf(rollingStock))
     val electrificationConstraints =
         ElectrificationConstraints(fullInfra.blockInfra, fullInfra.rawInfra, listOf(rollingStock))
@@ -70,12 +70,12 @@ fun findPath(
     val endBlocks = steps.last().locations.map { it.edge }
     val path =
         Pathfinding(graph)
-            .setEdgeToLength { edge -> edge.infraExplorer.getCurrentBlockLength().cast() }
+            .setEdgeToLength { edge -> edge.infraExplorer.getCurrentBlockLength().cast() } // garde comme ça ou on le garde dans la classe?
             .setRemainingDistanceEstimator(
                 makeAStarHeuristic(remainingDistanceEstimators, rollingStock)
             )
-            .setEdgeToLength { edge -> edge.length.cast() }
-            .addBlockedRangeOnEdges { edge: STDCMEdge ->
+            .setEdgeToLength { edge -> edge.length.cast() } //bye
+            /*.addBlockedRangeOnEdges { edge: STDCMEdge ->
                 convertRanges(loadingGaugeConstraints.apply(edge.block))
             }
             .addBlockedRangeOnEdges { edge: STDCMEdge ->
@@ -83,12 +83,12 @@ fun findPath(
             }
             .addBlockedRangeOnEdges { edge: STDCMEdge ->
                 convertRanges(signalingSystemConstraints.apply(edge.block))
-            }
+            }*/
             .setTotalCostUntilEdgeLocation { range ->
                 totalCostUntilEdgeLocation(range, maxDepartureDelay)
             }
-            .setTimeout(pathfindingTimeout)
-            .runPathfinding(
+            .setTimeout(pathfindingTimeout) // a recup direct depuis la classe ?
+            .runPathfinding( // à faire T-T
                 convertLocations(
                     graph,
                     steps[0].locations,
@@ -121,7 +121,7 @@ fun convertRanges(
 }
 
 /** Make the objective function from the edge locations */
-private fun makeObjectiveFunction(
+private fun makeObjectiveFunction( // utiliser les STDCMNodes a la place des Edge (on peut recup Nodes depuis Edges et inversement)
     steps: List<STDCMStep>
 ): List<TargetsOnEdge<STDCMEdge, STDCMEdge>> {
     val globalResult = ArrayList<TargetsOnEdge<STDCMEdge, STDCMEdge>>()
@@ -154,7 +154,7 @@ private fun makeObjectiveFunction(
  * - the second one leaves at 9:00 and lasts for 20:01 min. As we are looking for the fastest train,
  *   the first train should have the lightest weight, which is the case with the formula above.
  */
-private fun totalCostUntilEdgeLocation(
+private fun totalCostUntilEdgeLocation( // duree totale du chemin parcouru
     range: EdgeLocation<STDCMEdge, STDCMEdge>,
     searchTimeRange: Double
 ): Double {
@@ -174,7 +174,7 @@ private fun totalCostUntilEdgeLocation(
  * Converts the "raw" heuristics based on physical blocks, returning the most optimistic distance,
  * into heuristics based on stdcm edges, returning the most optimistic time
  */
-private fun makeAStarHeuristic(
+private fun makeAStarHeuristic( // estimation de la duree restante
     baseBlockHeuristics: ArrayList<AStarHeuristicId<Block>>,
     rollingStock: RollingStock
 ): List<AStarHeuristic<STDCMEdge, STDCMEdge>> {
