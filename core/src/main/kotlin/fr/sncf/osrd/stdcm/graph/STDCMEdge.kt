@@ -41,9 +41,10 @@ data class STDCMEdge(
     val endSpeed: Double, // Speed at the end of the edge
     val length: Length<STDCMEdge>, // Edge length
     val totalTime:
-        Double // How long it takes to go from the beginning to the end of the block, taking the
+        Double, // How long it takes to go from the beginning to the end of the block, taking the
     // standard allowance into account
-) {
+    var weight: Double? = null // Weight (total distance from start + estimation to end) of the edge
+) : Comparable<STDCMEdge> {
     val block = infraExplorer.getCurrentBlock()
 
     override fun equals(other: Any?): Boolean {
@@ -63,6 +64,14 @@ data class STDCMEdge(
         // We handle it by discretizing the start time of the edge: we round the time down to the
         // minute and compare
         // this value.
+    }
+
+    override fun compareTo(other: STDCMEdge): Int {
+        return if (weight != other.weight) weight!!.compareTo(other.weight!!)
+        else {
+            // If the weights are equal, we prioritize the highest number of reached targets
+            other.waypointIndex - waypointIndex
+        }
     }
 
     override fun hashCode(): Int {

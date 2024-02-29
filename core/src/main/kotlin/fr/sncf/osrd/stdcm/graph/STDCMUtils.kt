@@ -1,6 +1,5 @@
 package fr.sncf.osrd.stdcm.graph
 
-import fr.sncf.osrd.graph.Pathfinding.EdgeRange
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.impl.ChunkPath
 import fr.sncf.osrd.sim_infra.impl.buildChunkPath
@@ -37,23 +36,16 @@ fun getStopOnBlock(
 }
 
 /** Create a TrainPath instance from a list of edge ranges */
-fun makeChunkPathFromRanges(
-    graph: STDCMGraph,
-    ranges: List<EdgeRange<STDCMEdge, STDCMEdge>>
-): ChunkPath {
-    val blocks = ranges.stream().map { range -> range.edge.block }.distinct().toList()
+fun makeChunkPathFromEdges(graph: STDCMGraph, edges: List<STDCMEdge>): ChunkPath {
+    val blocks = edges.stream().map { edge -> edge.block }.distinct().toList()
     val totalPathLength =
         Length<Path>(
             Distance(
                 millimeters =
-                    ranges
-                        .stream()
-                        .mapToLong { range -> (range.end - range.start).millimeters }
-                        .sum()
+                    edges.stream().mapToLong { edge -> (edge.length.distance).millimeters }.sum()
             )
         )
-    val firstOffset =
-        Offset<Path>(ranges[0].edge.envelopeStartOffset.distance + ranges[0].start.distance)
+    val firstOffset = Offset<Path>(edges[0].envelopeStartOffset.distance)
     val lastOffset = totalPathLength + firstOffset.distance
     val chunks = MutableDirStaticIdxArrayList<TrackChunk>()
     for (block in blocks) for (chunk in graph.blockInfra.getTrackChunksFromBlock(block)) chunks.add(

@@ -82,15 +82,6 @@ class Pathfinding<NodeT : Any, EdgeT : Any, OffsetType>(
      */
     private var estimateRemainingDistance: List<AStarHeuristic<EdgeT, OffsetType>>? = ArrayList()
 
-    /** Function to call to know the cost of the range. */
-    private var edgeRangeCost: EdgeRangeCost<EdgeT, OffsetType>? = null
-
-    /**
-     * Function to call to know the cost of the path from the departure point to the edge location .
-     * Used in STDCM. Either totalDistanceUntilEdgeLocation or edgeRangeCost must be defined.
-     */
-    private var totalCostUntilEdgeLocation: TotalCostUntilEdgeLocation<EdgeT, OffsetType>? = null
-
     /** Timeout, in seconds, to avoid infinite loop when no path can be found. */
     private var timeout = TIMEOUT
 
@@ -107,22 +98,6 @@ class Pathfinding<NodeT : Any, EdgeT : Any, OffsetType>(
         f: List<AStarHeuristic<EdgeT, OffsetType>>?
     ): Pathfinding<NodeT, EdgeT, OffsetType> {
         estimateRemainingDistance = f
-        return this
-    }
-
-    /** Sets the functor used to estimate the cost for a range */
-    fun setEdgeRangeCost(
-        f: EdgeRangeCost<EdgeT, OffsetType>?
-    ): Pathfinding<NodeT, EdgeT, OffsetType> {
-        edgeRangeCost = f
-        return this
-    }
-
-    /** Sets the functor used to estimate the cost for a range */
-    fun setTotalCostUntilEdgeLocation(
-        f: TotalCostUntilEdgeLocation<EdgeT, OffsetType>?
-    ): Pathfinding<NodeT, EdgeT, OffsetType> {
-        totalCostUntilEdgeLocation = f
         return this
     }
 
@@ -204,8 +179,7 @@ class Pathfinding<NodeT : Any, EdgeT : Any, OffsetType>(
             seen[step.range] = step.nReachedTargets
             if (hasReachedEnd(targetsOnEdges.size, step)) return buildResult(step)
             // Check if the next target is reached in this step, only if the step doesn't already
-            // reach a
-            // step
+            // reach a target
             var waypointOnRange = false
             if (step.prev == null || step.nReachedTargets == step.prev.nReachedTargets)
                 for (target in targetsOnEdges[step.nReachedTargets].apply(step.range.edge)) if (
@@ -268,10 +242,6 @@ class Pathfinding<NodeT : Any, EdgeT : Any, OffsetType>(
     private fun checkParameters() {
         assert(edgeToLength != null)
         assert(estimateRemainingDistance != null)
-        if (totalCostUntilEdgeLocation == null && edgeRangeCost == null)
-            edgeRangeCost = EdgeRangeCost { range ->
-                (range.end - range.start).millimeters.toDouble()
-            }
     }
 
     /** Returns true if the step has reached the end of the path (last target) */
@@ -332,17 +302,13 @@ class Pathfinding<NodeT : Any, EdgeT : Any, OffsetType>(
     ) {
         val filteredRange = filterRange(range) ?: return
         val totalDistance =
-            if (totalCostUntilEdgeLocation != null)
-                totalCostUntilEdgeLocation!!.apply(
-                    EdgeLocation(filteredRange.edge, filteredRange.end)
-                )
-            else prevDistance + edgeRangeCost!!.apply(filteredRange)
+            prevDistance + (filteredRange.end - filteredRange.start).millimeters.toDouble()
         var distanceLeftEstimation = 0.0
         if (nPassedTargets < estimateRemainingDistance!!.size)
             distanceLeftEstimation =
                 estimateRemainingDistance!![nPassedTargets].apply(
                     filteredRange.edge,
-                    filteredRange.start
+                    filteredRange.end
                 )
         queue.add(
             Step(
@@ -362,8 +328,6 @@ class Pathfinding<NodeT : Any, EdgeT : Any, OffsetType>(
 }
 
 // Type aliases to avoid repeating `StaticIdx<T>, T` when edge types are static idx
-typealias PathfindingId<NodeT, T> = Pathfinding<NodeT, StaticIdx<T>, T>
-
 typealias PathfindingResultId<T> = Pathfinding.Result<StaticIdx<T>, T>
 
 typealias PathfindingEdgeLocationId<T> = Pathfinding.EdgeLocation<StaticIdx<T>, T>

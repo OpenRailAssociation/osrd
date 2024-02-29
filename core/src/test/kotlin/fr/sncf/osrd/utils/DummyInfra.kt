@@ -47,10 +47,8 @@ class DummyInfra : RawInfra, BlockInfra {
         signalingSystemName: String = "BAL"
     ): BlockId {
         val name = String.format("%s->%s", entry, exit)
-        val entryId =
-            detectorMap.computeIfAbsent(entry) { DirDetectorId(detectorMap.size.toUInt() * 2u) }
-        val exitId =
-            detectorMap.computeIfAbsent(exit) { DirDetectorId(detectorMap.size.toUInt() * 2u) }
+        val entryId = getOrCreateDetectorId(entry)
+        val exitId = getOrCreateDetectorId(exit)
         val id = BlockId(blockPool.size.toUInt())
         val signalingSystemId = getSignalingSystemIdfromName(signalingSystemName)
         blockPool.add(
@@ -68,6 +66,24 @@ class DummyInfra : RawInfra, BlockInfra {
         entryMap.put(entryId, id)
         exitMap.put(exitId, id)
         return id
+    }
+
+    /** Creates a path made of several blocks */
+    fun addBlockChain(routePoints: List<String>): MutableList<BlockId> {
+        val routeBlockIds = mutableListOf<BlockId>()
+        for ((index, current) in routePoints.withIndex()) if (index != routePoints.size - 1) {
+            val next = routePoints[index + 1]
+            val currentPoint = detectorGeoPoint[current]!!
+            val nextPoint = detectorGeoPoint[next]
+            val d = currentPoint.distanceAsMeters(nextPoint)
+            routeBlockIds.add(addBlock(current, next, d.meters))
+        }
+        return routeBlockIds
+    }
+
+    /** Populate all the graph nodes at once */
+    fun addDetectorGeoPoints(detectorGeoPoints: HashMap<String, Point>) {
+        detectorGeoPoint.putAll(detectorGeoPoints)
     }
 
     class DummyBlockDescriptor(
@@ -269,6 +285,10 @@ class DummyInfra : RawInfra, BlockInfra {
 
     override fun getDetectorName(det: DetectorId): String? {
         return detectorMap.inverse()[DirDetectorId(det, Direction.INCREASING)]
+    }
+
+    private fun getOrCreateDetectorId(name: String): DirDetectorId {
+        return detectorMap.computeIfAbsent(name) { DirDetectorId(detectorMap.size.toUInt() * 2u) }
     }
 
     override fun getNextTrackSection(

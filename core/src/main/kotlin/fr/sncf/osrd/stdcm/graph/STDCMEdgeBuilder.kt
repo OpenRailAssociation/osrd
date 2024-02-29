@@ -120,13 +120,13 @@ internal constructor(
      * specified.
      */
     fun makeAllEdges(): Collection<STDCMEdge> {
-        try {
+        return try {
             if (getEnvelope() == null || hasDuplicateBlocks()) {
-                return listOf()
+                listOf()
             } else {
                 val delays = getDelaysPerOpening()
                 val edges = delays.mapNotNull { delayNeeded -> makeSingleEdge(delayNeeded) }
-                return edges
+                edges
             }
         } catch (_: BlockAvailabilityInterface.NotEnoughLookaheadError) {
             // More lookahead required, extend and repeat for each new path
