@@ -1,7 +1,6 @@
 package fr.sncf.osrd.signaling
 
 import fr.sncf.osrd.sim_infra.api.*
-import fr.sncf.osrd.utils.indexing.IdxMap
 import fr.sncf.osrd.utils.indexing.StaticIdxList
 
 /*
@@ -56,5 +55,5 @@ interface SignalingSimulator {
         evaluatedPathEnd: Int,
         zoneStates: List<ZoneStatus>,
         followingZoneState: ZoneStatus,
-    ): IdxMap<LogicalSignalId, SigState>
+    ): Map<LogicalSignalId, SigState>
 }
