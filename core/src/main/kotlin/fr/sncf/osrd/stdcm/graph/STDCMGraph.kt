@@ -73,20 +73,19 @@ class STDCMGraph(
     }
 
     override fun getAdjacentEdges(node: STDCMNode): Collection<STDCMEdge> {
-        return if (node.locationOnEdge != null) {
+        val res = ArrayList<STDCMEdge>()
+        if (node.locationOnEdge != null) {
             val explorer = node.infraExplorer.clone()
-            explorer.addEnvelope(node.previousEdge.envelope)
-            STDCMEdgeBuilder.fromNode(this, node, explorer).makeAllEdges()
+            res.addAll(STDCMEdgeBuilder.fromNode(this, node, explorer).makeAllEdges())
         } else {
-            val res = ArrayList<STDCMEdge>()
             val extended = extendLookaheadUntil(node.infraExplorer.clone(), 4)
             for (newPath in extended) {
-                newPath.addEnvelope(node.previousEdge.envelope)
+                if (newPath.getLookahead().size == 0) continue
                 newPath.moveForward()
                 res.addAll(STDCMEdgeBuilder.fromNode(this, node, newPath).makeAllEdges())
             }
-            res
         }
+        return res
     }
 
     /**
@@ -106,7 +105,7 @@ class STDCMGraph(
         while (candidates.isNotEmpty()) {
             val candidate = candidates.removeFirst()
             if (
-                (candidate.getIncrementalPath().pathComplete && candidate.getLookahead().size > 0) ||
+                candidate.getIncrementalPath().pathComplete ||
                     candidate.getLookahead().size >= minBlocks
             )
                 res.add(candidate)
