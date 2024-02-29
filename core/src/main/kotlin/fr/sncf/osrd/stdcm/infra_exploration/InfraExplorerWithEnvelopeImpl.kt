@@ -12,6 +12,7 @@ import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
+import fr.sncf.osrd.utils.units.meters
 
 data class InfraExplorerWithEnvelopeImpl(
     private val infraExplorer: InfraExplorer,
@@ -91,9 +92,10 @@ data class InfraExplorerWithEnvelopeImpl(
         return res.requirements
     }
 
-    override fun moveForward() {
+    override fun moveForward(): InfraExplorerWithEnvelope {
         infraExplorer.moveForward()
         spacingRequirementsCache = null
+        return this
     }
 
     override fun getSimulatedLength(): Length<Path> {

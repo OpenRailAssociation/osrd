@@ -20,7 +20,8 @@ import java.util.*
 
 /**
  * Explore the infra, without running simulations. Builds one global path from the start of the
- * train, one block at a time.
+ * train, one block at a time. The instances are meant to be "cloned" for each possible path, using
+ * the method `cloneAndExtendLookahead()`.
  *
  * The path has several parts: the current block (on which is the train head), the path the train
  * comes from, and the *lookahead* (i.e. the path the train will follow later). The lookahead is
@@ -50,18 +51,22 @@ interface InfraExplorer {
 
     /**
      * Returns an object that can be used to identify edges. The last edge contains the current
-     * block (current position in the path) and the lookahead's blocks (path to explore).
+     * block (current position in the path) and the lookahead's blocks (path to explore). This is
+     * used by the pathfinding to check if the path has already been visited.
      */
     fun getLastEdgeIdentifier(): EdgeIdentifier
 
     /**
-     * Clone the current object and extend the lookahead by one route, for each route starting
-     * there.
+     * Clone the current object and extend the lookahead by one route, for each route starting at
+     * the current end of the lookahead section.
      */
     fun cloneAndExtendLookahead(): Collection<InfraExplorer>
 
-    /** Move the current block by one, following the lookahead section. */
-    fun moveForward()
+    /**
+     * Move the current block by one, following the lookahead section. Can only be called when the
+     * lookahead isn't empty. The operation is done in-place.
+     */
+    fun moveForward(): InfraExplorer
 
     /** Returns the current block. */
     fun getCurrentBlock(): BlockId
@@ -89,7 +94,10 @@ interface EdgeIdentifier {
     override fun hashCode(): Int
 }
 
-/** Init all InfraExplorers starting at the given location. */
+/**
+ * Init all InfraExplorers starting at the given location. `endBlocks` are used to identify when the
+ * incremental path is complete.
+ */
 fun initInfraExplorer(
     rawInfra: RawInfra,
     blockInfra: BlockInfra,
@@ -174,11 +182,12 @@ private class InfraExplorerImpl(
         return infraExplorers
     }
 
-    override fun moveForward() {
+    override fun moveForward(): InfraExplorer {
         assert(currentIndex < blocks.size - 1) {
             "Infra Explorer: Current edge is already the last edge: can't move forward."
         }
         currentIndex += 1
+        return this
     }
 
     override fun getCurrentBlock(): BlockId {
@@ -262,6 +271,7 @@ private class InfraExplorerImpl(
     }
 
     override fun toString(): String {
+        // Not everything is printed, this is what feels the most comfortable in a debugging window
         return String.format("currentBlock=%s, lookahead=%s", getCurrentBlock(), getLookahead())
     }
 }

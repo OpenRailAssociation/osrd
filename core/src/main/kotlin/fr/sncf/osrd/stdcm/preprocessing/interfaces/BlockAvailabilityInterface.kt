@@ -17,6 +17,12 @@ interface BlockAvailabilityInterface {
      *
      * More details are given in the instances.
      *
+     * We are only interested in what happens during the time when the head of the train is in the
+     * given section. It's expressed as a path segment because it's the more convenient way to input
+     * it, but it should actually be seen as a time segment. Conflicts can be reported during that
+     * time in other places, but anything that happens when the train's head isn't in the given path
+     * segment is not reported.
+     *
      * Note: every position refers to the position of the head of the train. The implementation of
      * BlockAvailabilityInterface must account for train length, sight distance, and similar
      * factors.
