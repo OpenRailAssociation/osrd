@@ -78,7 +78,7 @@
                 ]
             },
             {
-                "duration": 0,
+                "duration": 1,
                 "waypoints": [
                     {
                         "track_section": "TA1",

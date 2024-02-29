@@ -13,11 +13,6 @@ fun interface AStarHeuristic<EdgeT, OffsetType> {
     fun apply(edge: EdgeT, offset: Offset<OffsetType>): Double
 }
 
-/** Defines the cost of an edge range */
-fun interface EdgeRangeCost<EdgeT, OffsetType> {
-    fun apply(range: Pathfinding.EdgeRange<EdgeT, OffsetType>): Double
-}
-
 /** Defines a function that takes an edge and returns its length */
 fun interface EdgeToLength<EdgeT, OffsetType> {
     fun apply(edge: EdgeT): Length<OffsetType>
@@ -46,8 +41,6 @@ fun interface TotalCostUntilEdgeLocation<EdgeT, OffsetType> {
 
 // Type aliases to avoid repeating `StaticIdx<T>, T` when edge types are static idx
 typealias AStarHeuristicId<T> = AStarHeuristic<StaticIdx<T>, T>
-
-typealias EdgeRangeCostId<T> = EdgeRangeCost<StaticIdx<T>, T>
 
 typealias EdgeToLengthId<T> = EdgeToLength<StaticIdx<T>, T>
 

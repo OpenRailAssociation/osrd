@@ -9,7 +9,6 @@ import fr.sncf.osrd.envelope_sim.allowances.LinearAllowance
 import fr.sncf.osrd.envelope_sim.allowances.MarecoAllowance
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceRange
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue
-import fr.sncf.osrd.graph.Pathfinding.EdgeRange
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.standalone_sim.EnvelopeStopWrapper
@@ -55,7 +54,7 @@ private data class FixedTimePoint(
 fun buildFinalEnvelope(
     graph: STDCMGraph,
     maxSpeedEnvelope: Envelope,
-    ranges: List<EdgeRange<STDCMEdge, STDCMEdge>>,
+    edges: List<STDCMEdge>,
     standardAllowance: AllowanceValue?,
     envelopeSimPath: EnvelopeSimPath,
     rollingStock: RollingStock,
@@ -67,17 +66,17 @@ fun buildFinalEnvelope(
     isMareco: Boolean = true,
 ): Envelope {
     val context = build(rollingStock, envelopeSimPath, timeStep, comfort)
-    val fullInfraExplorer = ranges.last().edge.infraExplorerWithNewEnvelope
+    val fullInfraExplorer = edges.last().infraExplorerWithNewEnvelope
 
     val incrementalPath = fullInfraExplorer.getIncrementalPath()
     val pathLength =
         Length<TravelledPath>(
-            Distance(millimeters = ranges.sumOf { (it.end - it.start).millimeters })
+            Distance(millimeters = edges.sumOf { it.length.distance.millimeters })
         )
     assert(incrementalPath.pathComplete)
     val fixedPoints =
         initFixedPoints(
-            ranges,
+            edges,
             stops,
             departureTime,
             pathLength,
@@ -88,7 +87,7 @@ fun buildFinalEnvelope(
                 ) > 0.0
         )
 
-    val maxIterations = ranges.size * 2 // just to avoid infinite loops on bugs or edge cases
+    val maxIterations = edges.size * 2 // just to avoid infinite loops on bugs or edge cases
     for (i in 0 until maxIterations) {
         try {
             val newEnvelope =
@@ -98,18 +97,18 @@ fun buildFinalEnvelope(
                     graph,
                     newEnvelope,
                     blockAvailability,
-                    ranges,
+                    edges,
                     departureTime,
                     stops
                 ) ?: return newEnvelope
             if (fixedPoints.any { it.offset == conflictOffset })
                 break // Error case, we exit and fallback to the linear envelope
             logger.info(
-                "Conflict in new envelope at offset {}, splitting mareco ranges",
+                "Conflict when running final stdcm simulation at offset {}, adding a fixed time point",
                 conflictOffset
             )
             fixedPoints.add(
-                makeFixedPoint(fixedPoints, ranges, conflictOffset, departureTime, pathLength)
+                makeFixedPoint(fixedPoints, edges, conflictOffset, departureTime, pathLength)
             )
         } catch (e: OSRDError) {
             if (e.osrdErrorType == ErrorType.AllowanceConvergenceTooMuchTime) {
@@ -130,7 +129,7 @@ fun buildFinalEnvelope(
         return buildFinalEnvelope(
             graph,
             maxSpeedEnvelope,
-            ranges,
+            edges,
             standardAllowance,
             envelopeSimPath,
             rollingStock,
@@ -146,7 +145,7 @@ fun buildFinalEnvelope(
 
 /** Initialize all fixed points at stop locations, including stop durations. */
 private fun initFixedPoints(
-    ranges: List<EdgeRange<STDCMEdge, STDCMEdge>>,
+    edges: List<STDCMEdge>,
     stops: List<TrainStop>,
     departureTime: Double,
     length: Length<TravelledPath>,
@@ -158,7 +157,7 @@ private fun initFixedPoints(
         res.add(
             makeFixedPoint(
                 res,
-                ranges,
+                edges,
                 Offset(Distance.fromMeters(stop.position)),
                 departureTime,
                 length,
@@ -168,13 +167,13 @@ private fun initFixedPoints(
         prevStopTime += stop.duration
     }
     if (hasStandardAllowance && res.none { it.offset == length })
-        res.add(makeFixedPoint(res, ranges, length, departureTime, length, 0.0))
+        res.add(makeFixedPoint(res, edges, length, departureTime, length, 0.0))
     return res
 }
 
 /**
  * Create a new fixed point at a given offset **rounded to an edge transition**. The reference time
- * is fetched on the given ranges.
+ * is fetched on the given edges.
  *
  * The reason we round it to the start of the edge is because we don't have a reliable way to fetch
  * the time of a location on an edge, we can only make approximations. If that approximation falls
@@ -189,22 +188,22 @@ private fun initFixedPoints(
  */
 private fun makeFixedPoint(
     fixedPoints: TreeSet<FixedTimePoint>,
-    ranges: List<EdgeRange<STDCMEdge, STDCMEdge>>,
+    edges: List<STDCMEdge>,
     conflictOffset: Offset<TravelledPath>,
     departureTime: Double,
     pathLength: Length<TravelledPath>,
     stopDuration: Double = 0.0,
 ): FixedTimePoint {
-    var offset = roundOffset(ranges, Offset.min(conflictOffset, pathLength), true)
+    var offset = roundOffset(edges, Offset.min(conflictOffset, pathLength), true)
     if (fixedPoints.any { it.offset == offset }) {
-        offset = roundOffset(ranges, conflictOffset, false)
+        offset = roundOffset(edges, conflictOffset, false)
     }
     if (fixedPoints.any { it.offset == offset } || offset.distance == 0.meters) {
         offset = conflictOffset
     }
     offset = Offset.min(offset, pathLength)
     return FixedTimePoint(
-        getTimeOnRanges(ranges, offset, departureTime),
+        getTimeOnEdges(edges, offset, departureTime),
         offset,
         if (stopDuration > 0) stopDuration else null
     )
@@ -215,13 +214,12 @@ private fun makeFixedPoint(
  * edge containing the offset. Otherwise, rounds to the start.
  */
 private fun roundOffset(
-    ranges: List<EdgeRange<STDCMEdge, STDCMEdge>>,
+    edges: List<STDCMEdge>,
     offset: Offset<TravelledPath>,
     roundToEnd: Boolean
 ): Offset<TravelledPath> {
     var prevEdgesLength = Offset<TravelledPath>(0.meters)
-    for (range in ranges) {
-        val edge = range.edge
+    for (edge in edges) {
         if (offset <= prevEdgesLength + edge.length.distance) {
             return if (roundToEnd) prevEdgesLength + edge.length.distance else prevEdgesLength
         }
@@ -236,28 +234,26 @@ private fun roundOffset(
  * as it may include allowances that aren't known on the previous edge. Unless the edge starts with
  * a stop, in which case we want the *arrival* time.
  */
-private fun getTimeOnRanges(
-    ranges: List<EdgeRange<STDCMEdge, STDCMEdge>>,
+private fun getTimeOnEdges(
+    edges: List<STDCMEdge>,
     offset: Offset<TravelledPath>,
     departureTime: Double,
 ): Double {
     var remainingDistance = offset.distance
-    var edge = ranges[0].edge
-    for (range in ranges) {
-        edge = range.edge
-        val atStop = edge.endAtStop && remainingDistance == range.end.distance
-        if (remainingDistance < range.end.distance || atStop) {
+    for (edge in edges) {
+        val atStop = edge.endAtStop && remainingDistance == edge.length.distance
+        if (remainingDistance < edge.length.distance || atStop) {
             val absoluteTime = edge.getApproximateTimeAtLocation(Offset(remainingDistance))
             // We still have to account for departure time shift
-            val actualDepartureTimeShift = ranges.last().edge.totalDepartureTimeShift
+            val actualDepartureTimeShift = edges.last().totalDepartureTimeShift
             val timeWithShift =
                 absoluteTime - edge.totalDepartureTimeShift + actualDepartureTimeShift
             return timeWithShift - departureTime
         }
-        remainingDistance -= range.end.distance
+        remainingDistance -= edge.length.distance
     }
     // End of the last edge, this case is easier to handle separately
-    val absoluteTime = edge.getApproximateTimeAtLocation(edge.length)
+    val absoluteTime = edges.last().getApproximateTimeAtLocation(edges.last().length)
     return absoluteTime - departureTime
 }
 
@@ -269,25 +265,21 @@ private fun findConflictOffsets(
     graph: STDCMGraph,
     envelope: Envelope,
     blockAvailability: BlockAvailabilityInterface,
-    ranges: List<EdgeRange<STDCMEdge, STDCMEdge>>,
+    edges: List<STDCMEdge>,
     departureTime: Double,
     stops: List<TrainStop>
 ): Offset<TravelledPath>? {
     val envelopeWithStops = EnvelopeStopWrapper(envelope, stops)
-    val startOffset = ranges[0].edge.envelopeStartOffset
+    val startOffset = edges[0].envelopeStartOffset
     val endOffset =
         startOffset +
             Distance(
                 millimeters =
-                    ranges
-                        .stream()
-                        .mapToLong { range -> (range.end - range.start).millimeters }
-                        .sum()
+                    edges.stream().mapToLong { edge -> edge.length.distance.millimeters }.sum()
             )
     val explorer =
-        ranges
+        edges
             .last()
-            .edge
             .infraExplorer
             .withEnvelope(
                 envelopeWithStops,
@@ -335,8 +327,7 @@ private fun runSimulationWithFixedPoints(
                 ranges
             )
         else LinearAllowance(0.0, envelope.endPos, 0.0, ranges)
-    val res = allowance.apply(envelope, context)
-    return res
+    return allowance.apply(envelope, context)
 }
 
 /** Create the list of `AllowanceRange`, with the given fixed points */

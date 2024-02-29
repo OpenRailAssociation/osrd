@@ -21,7 +21,6 @@ import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.RollingStock.Comfort
 import fr.sncf.osrd.train.TrainStop
-import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import java.util.*
 
@@ -35,8 +34,8 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
      * method of this class, the rest is implementation detail.
      */
     fun makeResult(
-        infra: RawSignalingInfra?,
-        path: Pathfinding.Result<STDCMEdge, STDCMEdge>,
+        infra: RawSignalingInfra,
+        path: Result,
         startTime: Double,
         standardAllowance: AllowanceValue?,
         rollingStock: RollingStock,
@@ -46,14 +45,15 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
         blockAvailability: BlockAvailabilityInterface,
         trainTag: String?
     ): STDCMResult? {
-        val ranges = makeEdgeRange(path)
-        val blockRanges = makeBlockRanges(ranges)
+        val edges = path.edges
+        val blockRanges = makeBlockRanges(edges)
         val blockWaypoints = makeBlockWaypoints(path)
-        val chunkPath = makeChunkPathFromRanges(graph, ranges)
-        val routes = ranges.last().edge.infraExplorer.getExploredRoutes()
-        val trainPath = makePathProperties(infra!!, chunkPath, routes)
-        val stops = makeStops(ranges)
+        val chunkPath = makeChunkPathFromEdges(graph, edges)
+        val routes = edges.last().infraExplorer.getExploredRoutes()
+        val trainPath = makePathProperties(infra, chunkPath, routes)
         val physicsPath = EnvelopeTrainPath.from(infra, trainPath)
+        val departureTime = computeDepartureTime(edges, startTime)
+        val stops = makeStops(edges)
         val maxSpeedEnvelope =
             makeMaxSpeedEnvelope(
                 trainPath,
@@ -63,14 +63,13 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
                 timeStep,
                 comfort,
                 trainTag,
-                areSpeedsEqual(0.0, ranges.last().edge.endSpeed)
+                areSpeedsEqual(0.0, edges.last().endSpeed)
             )
-        val departureTime = computeDepartureTime(ranges, startTime)
         val withAllowance =
             buildFinalEnvelope(
                 graph,
                 maxSpeedEnvelope,
-                ranges,
+                edges,
                 standardAllowance,
                 physicsPath,
                 rollingStock,
@@ -120,9 +119,7 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
 }
 
 /** Creates the list of waypoints on the path */
-private fun makeBlockWaypoints(
-    path: Pathfinding.Result<STDCMEdge, STDCMEdge>
-): List<PathfindingEdgeLocationId<Block>> {
+private fun makeBlockWaypoints(path: Result): List<PathfindingEdgeLocationId<Block>> {
     val res = ArrayList<PathfindingEdgeLocationId<Block>>()
     for (waypoint in path.waypoints) {
         val blockOffset = convertOffsetToBlock(waypoint.offset, waypoint.edge.envelopeStartOffset)
@@ -131,74 +128,42 @@ private fun makeBlockWaypoints(
     return res
 }
 
-/**
- * Builds the actual list of EdgeRange given the raw result of the pathfinding. We can't use the
- * pathfinding result directly because we use our own method to keep track of previous nodes/edges.
- */
-private fun makeEdgeRange(
-    raw: Pathfinding.Result<STDCMEdge, STDCMEdge>
-): List<EdgeRange<STDCMEdge, STDCMEdge>> {
-    val orderedEdges = ArrayDeque<STDCMEdge>()
-    var firstRange = raw.ranges[0]
-    var lastRange = raw.ranges[raw.ranges.size - 1]
-    var current = lastRange.edge
-    while (true) {
-        orderedEdges.addFirst(current)
-        if (current.previousNode == null) break
-        current = current.previousNode!!.previousEdge
-    }
-    firstRange = EdgeRange(orderedEdges.removeFirst(), firstRange.start, firstRange.end)
-    if (lastRange.edge !== firstRange.edge)
-        lastRange = EdgeRange(orderedEdges.removeLast(), lastRange.start, lastRange.end)
-    val res = ArrayList<EdgeRange<STDCMEdge, STDCMEdge>>()
-    res.add(firstRange)
-    for (edge in orderedEdges) res.add(EdgeRange(edge, Offset(0.meters), edge.length))
-    if (firstRange.edge !== lastRange.edge) res.add(lastRange)
-    return res
-}
-
 /** Computes the departure time, made of the sum of all delays added over the path */
-fun computeDepartureTime(ranges: List<EdgeRange<STDCMEdge, STDCMEdge>>, startTime: Double): Double {
+fun computeDepartureTime(edges: List<STDCMEdge>, startTime: Double): Double {
     var mutStartTime = startTime
-    for (range in ranges) mutStartTime += range.edge.addedDelay
+    for (edge in edges) mutStartTime += edge.addedDelay
     return mutStartTime
 }
 
-/** Builds the list of stops from the ranges */
-private fun makeStops(ranges: List<EdgeRange<STDCMEdge, STDCMEdge>>): List<TrainStop> {
+/** Builds the list of stops from the edges */
+private fun makeStops(edges: List<STDCMEdge>): List<TrainStop> {
     val res = ArrayList<TrainStop>()
     var offset = 0.meters
-    for (range in ranges) {
-        val prevNode = range.edge.previousNode
-        if (
-            (prevNode != null) &&
-                (prevNode.stopDuration != null) &&
-                (range.start == Offset<STDCMEdge>(0.meters))
-        )
+    for (edge in edges) {
+        val prevNode = edge.previousNode
+        if (prevNode?.stopDuration != null && prevNode.stopDuration >= 0)
             res.add(TrainStop(offset.meters, prevNode.stopDuration))
-        offset += range.end - range.start
+        offset += edge.length.distance
     }
     return res
 }
 
 /** Builds the list of block ranges, merging the ranges on the same block */
-private fun makeBlockRanges(
-    ranges: List<EdgeRange<STDCMEdge, STDCMEdge>>
-): List<PathfindingEdgeRangeId<Block>> {
+private fun makeBlockRanges(edges: List<STDCMEdge>): List<PathfindingEdgeRangeId<Block>> {
     val res = ArrayList<PathfindingEdgeRangeId<Block>>()
     var i = 0
-    while (i < ranges.size) {
-        val range = ranges[i]
-        val start = convertOffsetToBlock(range.start, range.edge.envelopeStartOffset)
-        var length = range.end - range.start
-        while (i + 1 < ranges.size) {
-            val nextRange = ranges[i + 1]
-            if (range.edge.block != nextRange.edge.block) break
-            length += nextRange.end - nextRange.start
+    while (i < edges.size) {
+        val edge = edges[i]
+        val start = edge.envelopeStartOffset
+        var length = edge.length
+        while (i + 1 < edges.size) {
+            val nextEdge = edges[i + 1]
+            if (edge.block != nextEdge.block) break
+            length += nextEdge.length.distance
             i++
         }
-        val end = start + length
-        res.add(EdgeRange(range.edge.block, start, end))
+        val end = start + length.distance
+        res.add(EdgeRange(edge.block, start, end))
         i++
     }
     return res

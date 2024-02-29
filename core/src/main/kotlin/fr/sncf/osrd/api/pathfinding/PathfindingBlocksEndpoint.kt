@@ -201,7 +201,7 @@ fun runPathfinding(
     rollingStocks: Collection<RollingStock>?,
     timeout: Double?
 ): PathfindingResultId<Block> {
-    // Parse the waypoints
+    // Parse the waypoints (converts track section + offset into block + block offset
     val waypoints = ArrayList<Collection<PathfindingEdgeLocationId<Block>>>()
     for (step in reqWaypoints) {
         val allStarts = HashSet<PathfindingEdgeLocationId<Block>>()
