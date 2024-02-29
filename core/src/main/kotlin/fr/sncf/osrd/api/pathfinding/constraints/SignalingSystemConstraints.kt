@@ -1,7 +1,7 @@
 package fr.sncf.osrd.api.pathfinding.constraints
 
-import fr.sncf.osrd.graph.EdgeToRangesId
 import fr.sncf.osrd.graph.Pathfinding
+import fr.sncf.osrd.graph.PathfindingConstraint
 import fr.sncf.osrd.signaling.SignalingSimulator
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.train.RollingStock
@@ -11,11 +11,11 @@ import fr.sncf.osrd.utils.units.meters
 data class SignalingSystemConstraints(
     val blockInfra: BlockInfra,
     val rollingStocksSupportedSigSystems: List<List<SignalingSystemId>>
-) : EdgeToRangesId<Block> {
+) : PathfindingConstraint<Block> {
     override fun apply(edge: BlockId): MutableCollection<Pathfinding.Range<Block>> {
         val res = HashSet<Pathfinding.Range<Block>>()
-        for (rollingStocksigSystems in rollingStocksSupportedSigSystems) {
-            val edgeBlockedRanges = getBlockedRanges(edge, blockInfra, rollingStocksigSystems)
+        for (rollingStockSigSystems in rollingStocksSupportedSigSystems) {
+            val edgeBlockedRanges = getBlockedRanges(edge, blockInfra, rollingStockSigSystems)
             if (edgeBlockedRanges.isNotEmpty()) {
                 res.addAll(edgeBlockedRanges)
                 break // if this edge is blocked for 2 RS, we will have the same exact range (the

@@ -4,8 +4,8 @@ import com.google.common.collect.Range
 import com.google.common.collect.RangeSet
 import com.google.common.collect.TreeRangeSet
 import fr.sncf.osrd.api.pathfinding.makePathProps
-import fr.sncf.osrd.graph.EdgeToRangesId
 import fr.sncf.osrd.graph.Pathfinding
+import fr.sncf.osrd.graph.PathfindingConstraint
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.utils.DistanceRangeMap
@@ -17,7 +17,7 @@ data class ElectrificationConstraints(
     val blockInfra: BlockInfra,
     val rawInfra: RawSignalingInfra,
     val rollingStocks: Collection<RollingStock>
-) : EdgeToRangesId<Block> {
+) : PathfindingConstraint<Block> {
     override fun apply(edge: BlockId): MutableCollection<Pathfinding.Range<Block>> {
         val res = HashSet<Pathfinding.Range<Block>>()
         val path = makePathProps(blockInfra, rawInfra, edge)

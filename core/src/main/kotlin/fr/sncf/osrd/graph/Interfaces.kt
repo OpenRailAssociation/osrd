@@ -51,7 +51,7 @@ typealias EdgeRangeCostId<T> = EdgeRangeCost<StaticIdx<T>, T>
 
 typealias EdgeToLengthId<T> = EdgeToLength<StaticIdx<T>, T>
 
-typealias EdgeToRangesId<T> = EdgeToRanges<StaticIdx<T>, T>
+typealias PathfindingConstraint<T> = EdgeToRanges<StaticIdx<T>, T>
 
 typealias TargetsOnEdgeId<T> = TargetsOnEdge<StaticIdx<T>, T>
 
