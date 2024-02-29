@@ -52,7 +52,6 @@ class InfraExplorerWithEnvelopeTests {
         assertEquals(2, extended.size)
 
         // Move forward once, current block b->c1 and b->c2, lookahead c1->d->e and c2->d->e
-        extended[0].moveForward()
         extended[0].addEnvelope(
             Envelope.make(
                 EnvelopePart.generateTimes(
@@ -62,7 +61,7 @@ class InfraExplorerWithEnvelopeTests {
                 )
             )
         )
-        extended[1].moveForward()
+        extended[0].moveForward()
         extended[1].addEnvelope(
             Envelope.make(
                 EnvelopePart.generateTimes(
@@ -72,6 +71,7 @@ class InfraExplorerWithEnvelopeTests {
                 )
             )
         )
+        extended[1].moveForward()
         extended[0].addEnvelope(
             Envelope.make(
                 EnvelopePart.generateTimes(
@@ -141,7 +141,6 @@ class InfraExplorerWithEnvelopeTests {
         explorer = extended.first()
 
         // Move forward
-        explorer.moveForward()
         explorer.addEnvelope(
             Envelope.make(
                 EnvelopePart.generateTimes(
@@ -151,6 +150,7 @@ class InfraExplorerWithEnvelopeTests {
                 )
             )
         )
+        explorer.moveForward()
 
         val cloned = explorer.clone()
 

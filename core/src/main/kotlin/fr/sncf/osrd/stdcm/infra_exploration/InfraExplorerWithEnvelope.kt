@@ -19,13 +19,23 @@ import fr.sncf.osrd.utils.units.Offset
  * Explore the infra while running simulations. Builds one global envelope and path from the start
  * of the train. The path can extend further than the part that has been simulated (see
  * InfraExplorer for a more detailed explanation).
+ *
+ * Generally speaking, the "current block" is the part where we are currently running simulations,
+ * it doesn't have its envelope in the explorer. But there are some exceptions to this, such as when
+ * the path and simulation are both complete. The envelopes always cover at least all the
+ * predecessor blocks, and never extend into the lookahead. This is enforced through asserts.
+ *
+ * Note: the first envelope doesn't necessarily cover the first block in its entirety, while path
+ * offsets start at offset=0 on the first block. There are two ways to properly handle time at path
+ * offsets: either using `explorer.interpolateTimeClamp`, or by converting the offsets into
+ * `Offset<TravelledPath>` using the underlying incremental path.
  */
 interface InfraExplorerWithEnvelope : InfraExplorer {
 
     /** Access the full envelope from the train start. */
     fun getFullEnvelope(): EnvelopeTimeInterpolate
 
-    /** Adds an envelope. */
+    /** Adds an envelope. This is done in-place. */
     fun addEnvelope(envelope: EnvelopeTimeInterpolate): InfraExplorerWithEnvelope
 
     /**
@@ -49,6 +59,8 @@ interface InfraExplorerWithEnvelope : InfraExplorer {
     override fun clone(): InfraExplorerWithEnvelope
 
     override fun cloneAndExtendLookahead(): Collection<InfraExplorerWithEnvelope>
+
+    override fun moveForward(): InfraExplorerWithEnvelope
 }
 
 /** Init all InfraExplorersWithEnvelope starting at the given location. */

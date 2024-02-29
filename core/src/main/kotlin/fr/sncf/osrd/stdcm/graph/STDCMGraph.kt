@@ -83,8 +83,8 @@ class STDCMGraph(
                     node.infraExplorer.cloneAndExtendLookahead()
                 else listOf(node.infraExplorer.clone())
             for (newPath in extendedPaths) {
-                newPath.moveForward()
                 newPath.addEnvelope(node.previousEdge.envelope)
+                newPath.moveForward()
                 res.addAll(STDCMEdgeBuilder.fromNode(this, node, newPath).makeAllEdges())
             }
             res

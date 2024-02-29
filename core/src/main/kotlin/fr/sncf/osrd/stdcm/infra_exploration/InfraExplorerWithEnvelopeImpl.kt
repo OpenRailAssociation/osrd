@@ -12,6 +12,7 @@ import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
+import fr.sncf.osrd.utils.units.meters
 
 data class InfraExplorerWithEnvelopeImpl(
     private val infraExplorer: InfraExplorer,
@@ -38,7 +39,9 @@ data class InfraExplorerWithEnvelopeImpl(
     }
 
     override fun addEnvelope(envelope: EnvelopeTimeInterpolate): InfraExplorerWithEnvelope {
+        sanityChecks()
         envelopes.add(envelope)
+        sanityChecks()
         return this
     }
 
@@ -91,9 +94,12 @@ data class InfraExplorerWithEnvelopeImpl(
         return res.requirements
     }
 
-    override fun moveForward() {
+    override fun moveForward(): InfraExplorerWithEnvelope {
+        sanityChecks()
         infraExplorer.moveForward()
         spacingRequirementsCache = null
+        sanityChecks()
+        return this
     }
 
     override fun getSimulatedLength(): Length<Path> {
@@ -108,5 +114,20 @@ data class InfraExplorerWithEnvelopeImpl(
             rollingStock,
             spacingRequirementsCache?.toList()
         )
+    }
+
+    /**
+     * Asserts that there isn't too much or too little simulated length compared to the explore
+     * position
+     */
+    private fun sanityChecks() {
+        val incrementalPath = getIncrementalPath()
+        if (!incrementalPath.pathStarted) return
+        val pathBegin = getIncrementalPath().travelledPathBegin
+        val minSimulatedLength = getPredecessorLength() - pathBegin
+        val maxSimulatedLength = minSimulatedLength + getCurrentBlockLength().distance
+        val simulatedLength = if (envelopes.isEmpty()) 0.meters else getSimulatedLength().distance
+        assert(simulatedLength >= minSimulatedLength) { "missing simulations in infra explorer" }
+        assert(simulatedLength <= maxSimulatedLength) { "too many simulations in infra explorer" }
     }
 }
