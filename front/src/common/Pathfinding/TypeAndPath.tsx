@@ -1,5 +1,6 @@
 /* eslint-disable jsx-a11y/no-autofocus */
-import React, { useEffect, useMemo, useState } from 'react';
+
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 import { Alert, TriangleRight } from '@osrd-project/ui-icons';
 import bbox from '@turf/bbox';
@@ -20,6 +21,11 @@ import { setFailure } from 'reducers/main';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 import { useDebounce } from 'utils/helpers';
+import {
+  isCursorSurroundedBySpace,
+  findCurrentWord,
+  calculateAdjustedCursorPositionRem,
+} from 'utils/inputManipulation';
 
 type SearchConstraintType = (string | number | string[])[];
 type PathfindingProps = {
@@ -65,13 +71,60 @@ export default function TypeAndPath({ zoomToFeature }: PathfindingProps) {
   const rollingStockId = useSelector(getRollingStockID);
   const [postSearch] = osrdEditoastApi.endpoints.postSearch.useMutation();
   const [postPathfinding] = osrdEditoastApi.endpoints.postPathfinding.useMutation();
-  const { t } = useTranslation('operationalStudies/manageTrainSchedule');
+  const { t: tManageTrainSchedule } = useTranslation('operationalStudies/manageTrainSchedule');
+  const { t: tTypeAndPath } = useTranslation('common/typeAndPath');
+
   const osrdActions = useOsrdConfActions();
 
+  const [searchResults, setSearchResults] = useState<SearchResultItemOperationalPoint[]>([]);
+  const [searchState, setSearch] = useState('');
+  const mainOperationalPointsCHCodes = ['', '00', 'BV'];
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const debouncedSearchTerm = useDebounce(searchState, 300);
   const debouncedInputText = useDebounce(inputText.trimEnd(), 500);
 
-  const handleInput = (text: string) => {
-    setInputText(text.trimStart());
+  const activeElement = document.activeElement as HTMLInputElement;
+  const cursorIndex = activeElement.selectionStart || 0;
+  const sortedSearchResults = [...searchResults].sort((a, b) => a.name.localeCompare(b.name));
+  const [initialCursorPositionRem, setInitialCursorPositionRem] = useState(0);
+  const [trigramCount, setTrigramCount] = useState(0);
+
+  const handleInput = (text: string, cursorPosition: number) => {
+    const trimmedTextStart = text.trimStart();
+    setInputText(trimmedTextStart);
+
+    if (isCursorSurroundedBySpace(text, cursorPosition)) {
+      setSearchResults([]);
+      setSearch('');
+    } else {
+      const currentWord = findCurrentWord(trimmedTextStart, cursorPosition);
+      setSearch(currentWord || '');
+    }
+  };
+
+  const searchOperationalPoints = async () => {
+    const searchQuery = ['or', ['search', ['name'], debouncedSearchTerm]];
+
+    const payload = {
+      object: 'operationalpoint',
+      query: ['and', searchQuery, infraId !== undefined ? ['=', ['infra_id'], infraId] : true],
+    };
+
+    await postSearch({
+      searchPayload: payload,
+      pageSize: 101,
+    })
+      .unwrap()
+      .then((results) => {
+        const filteredResults = results.filter((result) =>
+          mainOperationalPointsCHCodes.includes((result as SearchResultItemOperationalPoint).ch)
+        );
+        setSearchResults(filteredResults as SearchResultItemOperationalPoint[]);
+      })
+      .catch(() => {
+        setSearchResults([]);
+      });
   };
 
   function getOpNames() {
@@ -138,6 +191,37 @@ export default function TypeAndPath({ zoomToFeature }: PathfindingProps) {
     }
   }
 
+  const onResultClick = (result: SearchResultItemOperationalPoint) => {
+    const newText = inputText.replace(searchState, result.trigram);
+    setInputText(newText);
+    setSearch('');
+    setTrigramCount((prev) => prev + 1);
+
+    setTimeout(() => {
+      const adjustedCursorPositionRem = calculateAdjustedCursorPositionRem(
+        initialCursorPositionRem,
+        trigramCount,
+        monospaceOneCharREMWidth
+      );
+      document.documentElement.style.setProperty(
+        '--cursor-position',
+        `${adjustedCursorPositionRem}rem`
+      );
+
+      if (inputRef.current) {
+        inputRef.current.focus();
+      }
+    }, 0);
+  };
+
+  useEffect(() => {
+    if (debouncedSearchTerm) {
+      searchOperationalPoints();
+    } else if (searchResults.length) {
+      setSearchResults([]);
+    }
+  }, [debouncedSearchTerm, inputText]);
+
   useEffect(() => {
     if (debouncedInputText !== '') {
       getOpNames();
@@ -146,43 +230,85 @@ export default function TypeAndPath({ zoomToFeature }: PathfindingProps) {
     }
   }, [debouncedInputText]);
 
+  useEffect(() => {
+    const cursorPositionRem = (cursorIndex - searchState.length / 2) * 0.55;
+
+    document.documentElement.style.setProperty('--cursor-position', `${cursorPositionRem}rem`);
+  }, [cursorIndex, searchState]);
+
+  useEffect(() => {
+    setInitialCursorPositionRem(0);
+  }, []);
+
   return (
-    <div
-      className="type-and-path"
-      style={{ minWidth: `${monospaceOneCharREMWidth * inputText.length + 5.5}rem` }} // To grow input field & whole div along text size
-      data-testid="type-and-path-container"
-    >
-      <div className="help">{opList.length === 0 && t('inputOPTrigrams')}</div>
-      <OpTooltips opList={opList} />
-      <div className="d-flex align-items-center">
-        <div
-          className={cx('form-control-container', 'flex-grow-1', 'mr-2', {
-            'is-invalid': isInvalid,
-          })}
-        >
-          <input
-            className="form-control form-control-sm text-zone"
-            type="text"
-            value={inputText}
-            onChange={(e) => handleInput(e.target.value)}
-            placeholder={t('inputOPTrigramsExample')}
-            autoFocus
-            data-testid="type-and-path-input"
-          />
-          <span className="form-control-state" />
+    <>
+      <div
+        className="type-and-path mb-2"
+        style={{ minWidth: `${monospaceOneCharREMWidth * inputText.length + 5.5}rem` }} // To grow input field & whole div along text size
+        data-testid="type-and-path-container"
+      >
+        <div className="help">{opList.length === 0 && tManageTrainSchedule('inputOPTrigrams')}</div>
+        <OpTooltips opList={opList} />
+        <div className="d-flex align-items-center">
+          <div
+            className={cx('form-control-container', 'flex-grow-1', 'mr-2', {
+              'is-invalid': isInvalid,
+            })}
+          >
+            <input
+              ref={inputRef}
+              className="form-control form-control-sm text-zone"
+              type="text"
+              value={inputText}
+              onChange={(e) => handleInput(e.target.value, e.target.selectionStart as number)}
+              placeholder={tManageTrainSchedule('inputOPTrigramsExample')}
+              autoFocus
+              data-testid="type-and-path-input"
+            />
+            <span className="form-control-state" />
+          </div>
+          <button
+            className="btn btn-sm btn-success"
+            type="button"
+            aria-label={tManageTrainSchedule('launchPathFinding')}
+            title={tManageTrainSchedule('launchPathFinding')}
+            onClick={launchPathFinding}
+            disabled={isInvalid || opList.length < 2}
+            data-testid="submit-search-by-trigram"
+          >
+            <TriangleRight />
+          </button>
         </div>
-        <button
-          className="btn btn-sm btn-success"
-          type="button"
-          aria-label={t('launchPathFinding')}
-          title={t('launchPathFinding')}
-          onClick={launchPathFinding}
-          disabled={isInvalid || opList.length < 2}
-          data-testid="submit-search-by-trigram"
-        >
-          <TriangleRight />
-        </button>
       </div>
-    </div>
+      {searchResults.length > 0 && (
+        <>
+          <span className="arrow-img"> </span>
+          <div className="results-container">
+            <div className="station-results  p-2 ">
+              {sortedSearchResults.map((result) => (
+                <button
+                  id={`trigram-button-${result.name}`}
+                  type="button"
+                  onClick={() => onResultClick(result)}
+                  key={result.obj_id}
+                  className="station"
+                  title={`${result.name} ${result.ch}`}
+                >
+                  <span className="station-text text-secondary ">{result.name}</span>
+                </button>
+              ))}
+              {sortedSearchResults.length > 8 && (
+                <div
+                  className="ellipsis-placeholder"
+                  title={tTypeAndPath('refineSearchForMoreResults')}
+                >
+                  ...
+                </div>
+              )}
+            </div>
+          </div>
+        </>
+      )}
+    </>
   );
 }
