@@ -25,6 +25,7 @@ import {
   isCursorSurroundedBySpace,
   findCurrentWord,
   calculateAdjustedCursorPositionRem,
+  replaceCurrentWord,
 } from 'utils/inputManipulation';
 
 type SearchConstraintType = (string | number | string[])[];
@@ -89,17 +90,18 @@ export default function TypeAndPath({ zoomToFeature }: PathfindingProps) {
   const sortedSearchResults = [...searchResults].sort((a, b) => a.name.localeCompare(b.name));
   const [initialCursorPositionRem, setInitialCursorPositionRem] = useState(0);
   const [trigramCount, setTrigramCount] = useState(0);
+  const [cursorPosition, setCursorPosition] = useState(0);
 
-  const handleInput = (text: string, cursorPosition: number) => {
+  const handleInput = (text: string, newCursorPosition: number) => {
     const trimmedTextStart = text.trimStart();
     setInputText(trimmedTextStart);
-
-    if (isCursorSurroundedBySpace(text, cursorPosition)) {
+    if (isCursorSurroundedBySpace(text, newCursorPosition)) {
       setSearchResults([]);
       setSearch('');
     } else {
-      const currentWord = findCurrentWord(trimmedTextStart, cursorPosition);
+      const currentWord = findCurrentWord(trimmedTextStart, newCursorPosition);
       setSearch(currentWord || '');
+      setCursorPosition(newCursorPosition);
     }
   };
 
@@ -192,24 +194,27 @@ export default function TypeAndPath({ zoomToFeature }: PathfindingProps) {
   }
 
   const onResultClick = (result: SearchResultItemOperationalPoint) => {
-    const newText = inputText.replace(searchState, result.trigram);
+    const newText = replaceCurrentWord(inputText, cursorPosition, result);
+
     setInputText(newText);
     setSearch('');
     setTrigramCount((prev) => prev + 1);
 
     setTimeout(() => {
-      const adjustedCursorPositionRem = calculateAdjustedCursorPositionRem(
-        initialCursorPositionRem,
-        trigramCount,
-        monospaceOneCharREMWidth
-      );
-      document.documentElement.style.setProperty(
-        '--cursor-position',
-        `${adjustedCursorPositionRem}rem`
-      );
-
       if (inputRef.current) {
+        const newCursorPosition = newText.length;
         inputRef.current.focus();
+        inputRef.current.selectionStart = newCursorPosition;
+        inputRef.current.selectionEnd = newCursorPosition;
+        const adjustedCursorPositionRem = calculateAdjustedCursorPositionRem(
+          initialCursorPositionRem,
+          trigramCount,
+          monospaceOneCharREMWidth
+        );
+        document.documentElement.style.setProperty(
+          '--cursor-position',
+          `${adjustedCursorPositionRem}rem`
+        );
       }
     }, 0);
   };
