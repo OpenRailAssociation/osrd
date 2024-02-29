@@ -12,7 +12,7 @@ default-members = [".", "actix_proxy", "actix_auth"]
 
 [workspace.dependencies]
 # common utils
-log = "0.4.20"
+log = "0.4.21"
 env_logger = "0.10.2"
 either = "1.9.0"
 thiserror = "1.0.53"
