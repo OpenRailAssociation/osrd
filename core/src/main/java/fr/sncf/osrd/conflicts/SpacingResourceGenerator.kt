@@ -305,14 +305,21 @@ class SpacingRequirementAutomaton(
     }
 
     fun clone(): SpacingRequirementAutomaton {
-        return SpacingRequirementAutomaton(
-            this.rawInfra,
-            this.loadedSignalInfra,
-            this.blockInfra,
-            this.simulator,
-            this.callbacks.clone(),
-            this.incrementalPath.clone()
-        )
+        val res =
+            SpacingRequirementAutomaton(
+                this.rawInfra,
+                this.loadedSignalInfra,
+                this.blockInfra,
+                this.simulator,
+                this.callbacks.clone(),
+                this.incrementalPath.clone()
+            )
+        res.nextProcessedBlock = nextProcessedBlock
+        res.lastEmittedZone = lastEmittedZone
+        res.nextProbedZoneForSignal = nextProbedZoneForSignal
+        res.pendingSignals.addAll(pendingSignals)
+        res.pendingRequirements.addAll(pendingRequirements)
+        return res
     }
 }
 

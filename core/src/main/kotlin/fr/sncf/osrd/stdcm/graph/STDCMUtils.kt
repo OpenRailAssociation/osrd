@@ -6,12 +6,9 @@ import fr.sncf.osrd.envelope_sim.EnvelopeSimContext
 import fr.sncf.osrd.envelope_sim.PhysicsPath
 import fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator
 import fr.sncf.osrd.graph.Pathfinding.EdgeRange
-import fr.sncf.osrd.sim_infra.api.Block
-import fr.sncf.osrd.sim_infra.api.Path
-import fr.sncf.osrd.sim_infra.api.TrackChunk
+import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.impl.ChunkPath
 import fr.sncf.osrd.sim_infra.impl.buildChunkPath
-import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorer
 import fr.sncf.osrd.utils.indexing.MutableDirStaticIdxArrayList
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Length
@@ -54,7 +51,7 @@ fun mergeEnvelopes(
 /** Returns the offset of the stops on the given block, starting at startOffset */
 fun getStopOnBlock(
     graph: STDCMGraph,
-    infraExplorer: InfraExplorer,
+    block: BlockId,
     startOffset: Offset<Block>,
     waypointIndex: Int
 ): Offset<Block>? {
@@ -67,7 +64,7 @@ fun getStopOnBlock(
     val nextStep = graph.steps[mutWaypointIndex + 1]
     if (!nextStep.stop) return null
     for (endLocation in nextStep.locations) {
-        if (endLocation.edge == infraExplorer.getCurrentBlock()) {
+        if (endLocation.edge == block) {
             val offset = endLocation.offset - startOffset.distance
             if (offset >= Offset(0.meters)) res.add(offset)
         }
