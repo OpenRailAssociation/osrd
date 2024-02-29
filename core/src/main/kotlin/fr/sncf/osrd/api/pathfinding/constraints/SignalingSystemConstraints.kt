@@ -14,8 +14,8 @@ data class SignalingSystemConstraints(
 ) : EdgeToRangesId<Block> {
     override fun apply(edge: BlockId): MutableCollection<Pathfinding.Range<Block>> {
         val res = HashSet<Pathfinding.Range<Block>>()
-        for (rollingStocksigSystems in rollingStocksSupportedSigSystems) {
-            val edgeBlockedRanges = getBlockedRanges(edge, blockInfra, rollingStocksigSystems)
+        for (rollingStockSigSystems in rollingStocksSupportedSigSystems) {
+            val edgeBlockedRanges = getBlockedRanges(edge, blockInfra, rollingStockSigSystems)
             if (edgeBlockedRanges.isNotEmpty()) {
                 res.addAll(edgeBlockedRanges)
                 break // if this edge is blocked for 2 RS, we will have the same exact range (the

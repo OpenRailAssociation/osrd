@@ -1,6 +1,7 @@
 package fr.sncf.osrd.stdcm.infra_exploration
 
 import fr.sncf.osrd.api.FullInfra
+import fr.sncf.osrd.api.pathfinding.constraints.*
 import fr.sncf.osrd.conflicts.IncrementalRequirementEnvelopeAdapter
 import fr.sncf.osrd.conflicts.SpacingRequirementAutomaton
 import fr.sncf.osrd.envelope.EnvelopeConcat
@@ -73,13 +74,15 @@ fun initInfraExplorerWithEnvelope(
     fullInfra: FullInfra,
     location: PathfindingEdgeLocationId<Block>,
     endBlocks: Collection<BlockId> = setOf(),
-    rollingStock: RollingStock
+    rollingStock: RollingStock,
+    blockedRangesOnEdge: ConstraintCombiner<BlockId, Block> = ConstraintCombiner()
 ): Collection<InfraExplorerWithEnvelope> {
     return initInfraExplorer(
             fullInfra.rawInfra,
             fullInfra.blockInfra,
             location,
-            endBlocks = endBlocks
+            endBlocks = endBlocks,
+            blockedRangesOnEdge
         )
         .map { explorer ->
             InfraExplorerWithEnvelopeImpl(

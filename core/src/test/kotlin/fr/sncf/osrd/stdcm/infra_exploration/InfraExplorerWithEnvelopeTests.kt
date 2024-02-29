@@ -29,6 +29,7 @@ class InfraExplorerWithEnvelopeTests {
                  c2
          */
         val infra = DummyInfra()
+        val fullInfra = infra.fullInfra()
         val blocks =
             listOf(
                 infra.addBlock("a", "b"),
@@ -40,7 +41,7 @@ class InfraExplorerWithEnvelopeTests {
         // a --> b
         val firstExplorers =
             initInfraExplorerWithEnvelope(
-                infra.fullInfra(),
+                fullInfra,
                 PathfindingEdgeLocationId(blocks[0], Offset(0.meters)),
                 rollingStock = REALISTIC_FAST_TRAIN
             )
@@ -119,6 +120,7 @@ class InfraExplorerWithEnvelopeTests {
         a --> b --> c
          */
         val infra = DummyInfra()
+        val fullInfra = infra.fullInfra()
         val blocks =
             listOf(
                 infra.addBlock("a", "b"),
@@ -128,7 +130,7 @@ class InfraExplorerWithEnvelopeTests {
         // a --> b
         val firstExplorers =
             initInfraExplorerWithEnvelope(
-                infra.fullInfra(),
+                fullInfra,
                 PathfindingEdgeLocationId(blocks[0], Offset(0.meters)),
                 rollingStock = REALISTIC_FAST_TRAIN
             )

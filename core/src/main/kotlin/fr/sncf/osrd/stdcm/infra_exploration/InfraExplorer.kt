@@ -1,5 +1,6 @@
 package fr.sncf.osrd.stdcm.infra_exploration
 
+import fr.sncf.osrd.api.pathfinding.constraints.*
 import fr.sncf.osrd.api.pathfinding.makePathProps
 import fr.sncf.osrd.conflicts.IncrementalPath
 import fr.sncf.osrd.conflicts.PathFragment
@@ -104,12 +105,14 @@ fun initInfraExplorer(
     blockInfra: BlockInfra,
     location: PathfindingEdgeLocationId<Block>,
     endBlocks: Collection<BlockId> = setOf(),
+    blockedRangesOnEdge: ConstraintCombiner<BlockId, Block> = ConstraintCombiner()
 ): Collection<InfraExplorer> {
     val infraExplorers = mutableListOf<InfraExplorer>()
     val block = location.edge
     val pathProps = makePathProps(blockInfra, rawInfra, block)
     val blockToPathProperties = mutableMapOf(block to pathProps)
     val routes = blockInfra.routesOnBlock(rawInfra, block)
+
     routes.forEach {
         val incrementalPath = incrementalPathOf(rawInfra, blockInfra)
         val infraExplorer =
@@ -120,10 +123,11 @@ fun initInfraExplorer(
                 appendOnlyLinkedListOf(),
                 incrementalPath,
                 blockToPathProperties,
-                endBlocks = endBlocks
+                endBlocks = endBlocks,
+                blockedRangesOnEdge = blockedRangesOnEdge
             )
-        infraExplorer.extend(it, location)
-        infraExplorers.add(infraExplorer)
+        val infraExtended = infraExplorer.extend(it, location)
+        if (infraExtended) infraExplorers.add(infraExplorer)
     }
     return infraExplorers
 }
@@ -138,7 +142,8 @@ private class InfraExplorerImpl(
     private var currentIndex: Int = 0,
     private val endBlocks:
         Collection<BlockId>, // Blocks on which "end of path" should be set to true
-    private var predecessorLength: Length<Path> = Length(0.meters) // to avoid re-computing it
+    private var predecessorLength: Length<Path> = Length(0.meters), // to avoid re-computing it
+    private var blockedRangesOnEdge: ConstraintCombiner<BlockId, Block>
 ) : InfraExplorer {
 
     override fun getIncrementalPath(): IncrementalPath {
@@ -178,8 +183,8 @@ private class InfraExplorerImpl(
         val nextRoutes = rawInfra.getRoutesStartingAtDet(lastRouteExit)
         nextRoutes.forEach {
             val infraExplorer = this.clone() as InfraExplorerImpl
-            infraExplorer.extend(it)
-            infraExplorers.add(infraExplorer)
+            val infraExtended = infraExplorer.extend(it)
+            if (infraExtended) infraExplorers.add(infraExplorer)
         }
         return infraExplorers
     }
@@ -227,15 +232,17 @@ private class InfraExplorerImpl(
             this.currentIndex,
             this.endBlocks,
             this.predecessorLength,
+            this.blockedRangesOnEdge
         )
     }
 
-    fun extend(route: RouteId, firstLocation: PathfindingEdgeLocationId<Block>? = null) {
+    fun extend(route: RouteId, firstLocation: PathfindingEdgeLocationId<Block>? = null): Boolean {
         val routeBlocks = blockInfra.getRouteBlocks(rawInfra, route)
         var seenFirstBlock = firstLocation == null
-        blocks.addAll(routeBlocks)
-        routes.add(route)
         var nBlocksToSkip = 0
+        var pathFragments = arrayListOf<PathFragment>()
+        var pathStarted = incrementalPath.pathStarted
+
         for (block in routeBlocks) {
             if (block == firstLocation?.edge) {
                 seenFirstBlock = true
@@ -243,10 +250,11 @@ private class InfraExplorerImpl(
             if (!seenFirstBlock) {
                 nBlocksToSkip++
             } else {
+                if (!blockedRangesOnEdge.apply(block).isEmpty()) return false
                 val endPath = endBlocks.contains(block)
-                val startPath = !incrementalPath.pathStarted
+                val startPath = !pathStarted
                 val addRoute = block == routeBlocks.first() || startPath
-                incrementalPath.extend(
+                pathFragments.add(
                     PathFragment(
                         if (addRoute) mutableStaticIdxArrayListOf(route)
                         else mutableStaticIdxArrayListOf(),
@@ -258,11 +266,17 @@ private class InfraExplorerImpl(
                         travelledPathEnd = Distance.ZERO
                     )
                 )
+                pathStarted = true
                 if (endPath) break // Can't extend any further
             }
         }
         assert(seenFirstBlock)
+        blocks.addAll(routeBlocks)
+        routes.add(route)
         for (i in 0 ..< nBlocksToSkip) moveForward()
+        for (pathFragment in pathFragments) incrementalPath.extend(pathFragment)
+
+        return true
     }
 
     override fun toString(): String {

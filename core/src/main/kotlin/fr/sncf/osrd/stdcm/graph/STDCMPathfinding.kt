@@ -1,6 +1,7 @@
 package fr.sncf.osrd.stdcm.graph
 
 import fr.sncf.osrd.api.FullInfra
+import fr.sncf.osrd.api.pathfinding.constraints.ConstraintCombiner
 import fr.sncf.osrd.api.pathfinding.constraints.ElectrificationConstraints
 import fr.sncf.osrd.api.pathfinding.constraints.LoadingGaugeConstraints
 import fr.sncf.osrd.api.pathfinding.constraints.makeSignalingSystemConstraints
@@ -54,7 +55,7 @@ fun findPath(
         )
 
     // Initializes the constraints
-    val loadingGaugeConstraints =
+    /* val loadingGaugeConstraints = // contraintes gérées par l'infra explorer
         LoadingGaugeConstraints(fullInfra.blockInfra, fullInfra.rawInfra, listOf(rollingStock))
     val electrificationConstraints =
         ElectrificationConstraints(fullInfra.blockInfra, fullInfra.rawInfra, listOf(rollingStock))
@@ -63,7 +64,7 @@ fun findPath(
             fullInfra.blockInfra,
             fullInfra.signalingSimulator,
             listOf(rollingStock)
-        )
+        )*/
 
     // Initialize the A* heuristic
     val locations = steps.stream().map(STDCMStep::locations).toList()
@@ -75,8 +76,8 @@ fun findPath(
             .setRemainingDistanceEstimator(
                 makeAStarHeuristic(remainingDistanceEstimators, rollingStock)
             )
-            .setEdgeToLength { edge -> edge.length.cast() }
-            .addBlockedRangeOnEdges { edge: STDCMEdge ->
+            .setEdgeToLength { edge -> edge.length.cast() } // bye
+            /* .addBlockedRangeOnEdges { edge: STDCMEdge ->
                 convertRanges(loadingGaugeConstraints.apply(edge.block))
             }
             .addBlockedRangeOnEdges { edge: STDCMEdge ->
@@ -84,12 +85,12 @@ fun findPath(
             }
             .addBlockedRangeOnEdges { edge: STDCMEdge ->
                 convertRanges(signalingSystemConstraints.apply(edge.block))
-            }
+            }*/
             .setTotalCostUntilEdgeLocation { range ->
                 totalCostUntilEdgeLocation(range, maxDepartureDelay)
             }
-            .setTimeout(pathfindingTimeout)
-            .runPathfinding(
+            .setTimeout(pathfindingTimeout) // a recup direct depuis la classe ?
+            .runPathfinding( // à faire T-T
                 convertLocations(
                     graph,
                     steps[0].locations,
@@ -155,7 +156,7 @@ private fun makeObjectiveFunction(
  * - the second one leaves at 9:00 and lasts for 20:01 min. As we are looking for the fastest train,
  *   the first train should have the lightest weight, which is the case with the formula above.
  */
-private fun totalCostUntilEdgeLocation(
+private fun totalCostUntilEdgeLocation( // duree totale du chemin parcouru
     range: EdgeLocation<STDCMEdge, STDCMEdge>,
     searchTimeRange: Double
 ): Double {
@@ -177,7 +178,7 @@ private fun totalCostUntilEdgeLocation(
  * Converts the "raw" heuristics based on physical blocks, returning the most optimistic distance,
  * into heuristics based on stdcm edges, returning the most optimistic time
  */
-private fun makeAStarHeuristic(
+private fun makeAStarHeuristic( // estimation de la duree restante
     baseBlockHeuristics: ArrayList<AStarHeuristicId<Block>>,
     rollingStock: RollingStock
 ): List<AStarHeuristic<STDCMEdge, STDCMEdge>> {
@@ -207,9 +208,35 @@ private fun convertLocations(
     endBlocks: Collection<BlockId> = setOf()
 ): Set<EdgeLocation<STDCMEdge, STDCMEdge>> {
     val res = HashSet<EdgeLocation<STDCMEdge, STDCMEdge>>()
+    val fullInfra = graph.fullInfra
+    // Initializes the constraints
+    val loadingGaugeConstraints =
+        LoadingGaugeConstraints(fullInfra.blockInfra, fullInfra.rawInfra, listOf(rollingStock))
+
+    val electrificationConstraints =
+        ElectrificationConstraints(fullInfra.blockInfra, fullInfra.rawInfra, listOf(rollingStock))
+
+    val signalingSystemConstraints =
+        makeSignalingSystemConstraints(
+            fullInfra.blockInfra,
+            fullInfra.signalingSimulator,
+            listOf(rollingStock)
+        )
+
+    val combiner = ConstraintCombiner<BlockId, Block>()
+    combiner.functions.addAll(
+        arrayListOf(loadingGaugeConstraints, electrificationConstraints, signalingSystemConstraints)
+    )
+
     for (location in locations) {
         val infraExplorers =
-            initInfraExplorerWithEnvelope(graph.fullInfra, location, endBlocks, rollingStock)
+            initInfraExplorerWithEnvelope(
+                graph.fullInfra,
+                location,
+                endBlocks,
+                rollingStock,
+                combiner
+            )
         for (explorer in infraExplorers) {
             val edges =
                 STDCMEdgeBuilder(explorer, graph)
