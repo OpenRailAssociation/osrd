@@ -19,4 +19,15 @@ data class STDCMNode(
             Block
         >?, // Position on a block, if this node isn't on the transition between blocks (stop)
     val stopDuration: Double? // When the node is a stop, how long the train remains here
-)
+) {
+    override fun toString(): String {
+        // Not everything is included, otherwise it may recurse a lot over edges / nodes
+        return String.format(
+            "time=%s, speed=%s, lastBlock=%s, waypointIndex=%s",
+            time,
+            speed,
+            infraExplorer.getCurrentBlock(),
+            waypointIndex
+        )
+    }
+}

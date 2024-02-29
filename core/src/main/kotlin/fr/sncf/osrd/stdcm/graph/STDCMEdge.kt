@@ -15,6 +15,7 @@ data class STDCMEdge(
     val envelope:
         Envelope, // Envelope of the train going through the block (starts at t=0). Does not account
     // for allowances.
+    val infraExplorerWithNewEnvelope: InfraExplorerWithEnvelope, // Includes this edge's envelope
     val timeStart: Double, // Time at which the train enters the block
     val maximumAddedDelayAfter:
         Double, // Maximum delay we can add after this block by delaying the start time without
@@ -69,7 +70,7 @@ data class STDCMEdge(
             STDCMNode(
                 totalTime + timeStart,
                 envelope.endSpeed,
-                infraExplorer,
+                infraExplorerWithNewEnvelope,
                 totalDepartureTimeShift,
                 maximumAddedDelayAfter,
                 this,
@@ -87,7 +88,7 @@ data class STDCMEdge(
             STDCMNode(
                 totalTime + timeStart + stopDuration,
                 envelope.endSpeed,
-                infraExplorer,
+                infraExplorerWithNewEnvelope,
                 totalDepartureTimeShift,
                 maximumAddedDelayAfter,
                 this,
