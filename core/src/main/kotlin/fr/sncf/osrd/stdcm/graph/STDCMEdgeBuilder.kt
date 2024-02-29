@@ -1,9 +1,12 @@
 package fr.sncf.osrd.stdcm.graph
 
 import fr.sncf.osrd.envelope.Envelope
+import fr.sncf.osrd.envelope_sim.allowances.LinearAllowance
 import fr.sncf.osrd.sim_infra.api.Block
+import fr.sncf.osrd.standalone_sim.EnvelopeStopWrapper
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
+import fr.sncf.osrd.train.TrainStop
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import java.util.*
@@ -41,6 +44,12 @@ internal constructor(
 
     /** Envelope to use on the edge, if unspecified we try to go at maximum allowed speed */
     private var envelope: Envelope? = null,
+
+    /**
+     * Infra explorer with the new envelope for the current edge. Keeping one instance is important
+     * for the resource generator caches. This is the instance that must be used for next edges
+     */
+    private var explorerWithNewEnvelope: InfraExplorerWithEnvelope? = null,
 
     /**
      * If set to true, we add the maximum amount of delay allowed by shifting the departure time.
@@ -124,20 +133,19 @@ internal constructor(
      * Creates all edges that can be accessed on the given block, using all the parameters
      * specified.
      */
-    @Suppress("UNCHECKED_CAST")
     fun makeAllEdges(): Collection<STDCMEdge> {
-        return try {
-            if (getEnvelope() == null || hasDuplicateBlocks()) listOf()
-            else
-                getDelaysPerOpening()
-                    .stream()
-                    .map { delayNeeded -> makeSingleEdge(delayNeeded) }
-                    .filter { obj -> Objects.nonNull(obj) }
-                    .toList() as Collection<STDCMEdge>
+        try {
+            if (getEnvelope() == null || hasDuplicateBlocks()) {
+                return listOf()
+            } else {
+                val delays = getDelaysPerOpening()
+                val edges = delays.mapNotNull { delayNeeded -> makeSingleEdge(delayNeeded) }
+                return edges
+            }
         } catch (_: BlockAvailabilityInterface.NotEnoughLookaheadError) {
             // More lookahead required, extend and repeat for each new path
-            infraExplorer.cloneAndExtendLookahead().flatMap {
-                copy(infraExplorer = it).makeAllEdges()
+            return infraExplorer.cloneAndExtendLookahead().flatMap {
+                copy(infraExplorer = it, explorerWithNewEnvelope = null).makeAllEdges()
             }
         }
     }
@@ -175,10 +183,39 @@ internal constructor(
                         infraExplorer,
                         startSpeed,
                         startOffset,
-                        getStopOnBlock(graph, infraExplorer, startOffset, waypointIndex)
+                        getStopOnBlock(
+                            graph,
+                            infraExplorer.getCurrentBlock(),
+                            startOffset,
+                            waypointIndex
+                        )
                     )
                 )
         return envelope
+    }
+
+    /**
+     * Returns the (single) explorer with the envelope of the current edge, instantiating it if
+     * needed.
+     */
+    private fun getExplorerWithNewEnvelope(): InfraExplorerWithEnvelope? {
+        if (explorerWithNewEnvelope == null) {
+            val envelope = getEnvelope() ?: return null
+            val speedRatio = graph.getStandardAllowanceSpeedRatio(envelope)
+            val scaledEnvelope =
+                if (envelope.endPos == 0.0) envelope
+                else LinearAllowance.scaleEnvelope(envelope, speedRatio)
+            val stopDuration = getEndStopDuration()
+            val envelopeWithStop =
+                if (stopDuration == null) scaledEnvelope
+                else
+                    EnvelopeStopWrapper(
+                        scaledEnvelope,
+                        listOf(TrainStop(envelope.endPos, stopDuration))
+                    )
+            explorerWithNewEnvelope = infraExplorer.clone().addEnvelope(envelopeWithStop)
+        }
+        return explorerWithNewEnvelope
     }
 
     /**
@@ -189,11 +226,10 @@ internal constructor(
         return if (forceMaxDelay) findMaxDelay()
         else
             graph.delayManager.minimumDelaysPerOpening(
-                infraExplorer,
+                getExplorerWithNewEnvelope()!!,
                 startTime,
                 envelope!!,
                 startOffset,
-                getEndStopDuration()
             )
     }
 
@@ -202,14 +238,12 @@ internal constructor(
      * engineering allowance)
      */
     private fun findMaxDelay(): Set<Double> {
-        val endStopDuration = getEndStopDuration()
         val allDelays =
             graph.delayManager.minimumDelaysPerOpening(
-                infraExplorer,
+                getExplorerWithNewEnvelope()!!,
                 startTime,
                 envelope!!,
                 startOffset,
-                endStopDuration
             )
         val lastOpeningDelay = allDelays.floor(prevMaximumAddedDelay) ?: return setOf()
         return mutableSetOf(
@@ -217,11 +251,10 @@ internal constructor(
                 prevMaximumAddedDelay,
                 lastOpeningDelay +
                     graph.delayManager.findMaximumAddedDelay(
-                        infraExplorer,
+                        getExplorerWithNewEnvelope()!!,
                         startTime + lastOpeningDelay,
                         startOffset,
                         envelope!!,
-                        endStopDuration
                     )
             )
         )
@@ -229,7 +262,9 @@ internal constructor(
 
     /** Returns the stop duration at the end of the edge being built, or null if there's no stop */
     private fun getEndStopDuration(): Double? {
-        val endAtStop = getStopOnBlock(graph, infraExplorer, startOffset, waypointIndex) != null
+        val endAtStop =
+            getStopOnBlock(graph, infraExplorer.getCurrentBlock(), startOffset, waypointIndex) !=
+                null
         if (!endAtStop) return null
         return graph.steps[waypointIndex + 1].duration!!
     }
@@ -242,11 +277,10 @@ internal constructor(
             min(
                 prevMaximumAddedDelay - delayNeeded,
                 graph.delayManager.findMaximumAddedDelay(
-                    infraExplorer,
+                    getExplorerWithNewEnvelope()!!,
                     startTime + delayNeeded,
                     startOffset,
                     envelope!!,
-                    endStopDuration
                 )
             )
         val actualStartTime = startTime + delayNeeded
@@ -255,15 +289,15 @@ internal constructor(
             STDCMEdge(
                 infraExplorer,
                 envelope!!,
+                getExplorerWithNewEnvelope()!!,
                 actualStartTime,
                 maximumDelay,
                 delayNeeded,
                 graph.delayManager.findNextOccupancy(
-                    infraExplorer,
+                    getExplorerWithNewEnvelope()!!,
                     startTime + delayNeeded,
                     startOffset,
                     envelope!!,
-                    endStopDuration
                 ),
                 prevAddedDelay + delayNeeded,
                 prevNode,

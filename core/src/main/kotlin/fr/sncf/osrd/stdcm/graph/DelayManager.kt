@@ -1,13 +1,10 @@
 package fr.sncf.osrd.stdcm.graph
 
 import fr.sncf.osrd.envelope.Envelope
-import fr.sncf.osrd.envelope_sim.allowances.LinearAllowance
 import fr.sncf.osrd.sim_infra.api.Block
-import fr.sncf.osrd.standalone_sim.EnvelopeStopWrapper
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface.Availability
-import fr.sncf.osrd.train.TrainStop
 import fr.sncf.osrd.utils.units.Distance.Companion.fromMeters
 import fr.sncf.osrd.utils.units.Offset
 import java.util.*
@@ -30,11 +27,10 @@ internal constructor(
      * shortest delay to add to enter this opening.
      */
     fun minimumDelaysPerOpening(
-        infraExplorer: InfraExplorerWithEnvelope,
+        infraExplorerWithNewEnvelope: InfraExplorerWithEnvelope,
         startTime: Double,
         envelope: Envelope,
         startOffset: Offset<Block>,
-        stopDurationAtEnd: Double?
     ): NavigableSet<Double> {
         val res = TreeSet<Double>()
         val endOffset = startOffset + fromMeters(envelope.endPos)
@@ -42,12 +38,10 @@ internal constructor(
         while (java.lang.Double.isFinite(time)) {
             val availability =
                 getScaledAvailability(
-                    infraExplorer,
+                    infraExplorerWithNewEnvelope,
                     startOffset,
                     endOffset,
-                    envelope,
                     time,
-                    stopDurationAtEnd
                 )
             time +=
                 when (availability) {
@@ -69,7 +63,6 @@ internal constructor(
         time: Double,
         startOffset: Offset<Block>,
         envelope: Envelope,
-        stopDurationAtEnd: Double?
     ): Double {
         val endOffset = startOffset + fromMeters(envelope.endPos)
         val availability =
@@ -77,9 +70,7 @@ internal constructor(
                 infraExplorer,
                 startOffset,
                 endOffset,
-                envelope,
                 time,
-                stopDurationAtEnd
             )
         assert(availability.javaClass == BlockAvailabilityInterface.Available::class.java)
         return (availability as BlockAvailabilityInterface.Available).timeOfNextConflict
@@ -103,21 +94,18 @@ internal constructor(
      * to leave the block at t=60s, this will return 8s.
      */
     fun findMaximumAddedDelay(
-        infraExplorer: InfraExplorerWithEnvelope,
+        infraExplorerWithNewEnvelope: InfraExplorerWithEnvelope,
         startTime: Double,
         startOffset: Offset<Block>,
         envelope: Envelope,
-        stopDurationAtEnd: Double?
     ): Double {
         val endOffset = startOffset + fromMeters(envelope.endPos)
         val availability =
             getScaledAvailability(
-                infraExplorer,
+                infraExplorerWithNewEnvelope,
                 startOffset,
                 endOffset,
-                envelope,
                 startTime,
-                stopDurationAtEnd
             )
         assert(availability is BlockAvailabilityInterface.Available)
         return (availability as BlockAvailabilityInterface.Available).maximumDelay - internalMargin
@@ -128,25 +116,11 @@ internal constructor(
      * allowance.
      */
     private fun getScaledAvailability(
-        infraExplorer: InfraExplorerWithEnvelope,
+        explorerWithNewEnvelope: InfraExplorerWithEnvelope,
         startOffset: Offset<Block>,
         endOffset: Offset<Block>,
-        envelope: Envelope,
         startTime: Double,
-        stopDurationAtEnd: Double?
     ): Availability {
-        val speedRatio = graph.getStandardAllowanceSpeedRatio(envelope)
-        val scaledEnvelope =
-            if (envelope.endPos == 0.0) envelope
-            else LinearAllowance.scaleEnvelope(envelope, speedRatio)
-        val envelopeWithStop =
-            if (stopDurationAtEnd == null) scaledEnvelope
-            else
-                EnvelopeStopWrapper(
-                    scaledEnvelope,
-                    listOf(TrainStop(envelope.endPos, stopDurationAtEnd))
-                )
-        val explorerWithNewEnvelope = infraExplorer.clone().addEnvelope(envelopeWithStop)
         val startOffsetOnPath =
             startOffset + explorerWithNewEnvelope.getPredecessorLength().distance
         val endOffsetOnPath = startOffsetOnPath + (endOffset - startOffset)
