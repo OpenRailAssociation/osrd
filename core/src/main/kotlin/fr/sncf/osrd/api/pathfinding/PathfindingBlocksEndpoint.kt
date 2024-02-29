@@ -3,10 +3,7 @@ package fr.sncf.osrd.api.pathfinding
 import fr.sncf.osrd.api.ExceptionHandler
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.api.InfraManager
-import fr.sncf.osrd.api.pathfinding.constraints.ElectrificationConstraints
-import fr.sncf.osrd.api.pathfinding.constraints.LoadingGaugeConstraints
-import fr.sncf.osrd.api.pathfinding.constraints.SignalingSystemConstraints
-import fr.sncf.osrd.api.pathfinding.constraints.makeSignalingSystemConstraints
+import fr.sncf.osrd.api.pathfinding.constraints.*
 import fr.sncf.osrd.api.pathfinding.request.PathfindingRequest
 import fr.sncf.osrd.api.pathfinding.request.PathfindingWaypoint
 import fr.sncf.osrd.api.pathfinding.response.PathfindingResult
@@ -211,16 +208,7 @@ fun runPathfinding(
         for (waypoint in step) allStarts.addAll(findWaypointBlocks(infra, waypoint))
         waypoints.add(allStarts)
     }
-
-    // Initializes the constraints
-    val loadingGaugeConstraints =
-        LoadingGaugeConstraints(infra.blockInfra, infra.rawInfra, rollingStocks!!)
-    val electrificationConstraints =
-        ElectrificationConstraints(infra.blockInfra, infra.rawInfra, rollingStocks)
-    val signalisationSystemConstraints =
-        makeSignalingSystemConstraints(infra.blockInfra, infra.signalingSimulator, rollingStocks)
-    val constraints =
-        listOf(loadingGaugeConstraints, electrificationConstraints, signalisationSystemConstraints)
+    val constraints = initConstraints(infra, rollingStocks!!)
     val remainingDistanceEstimators = makeHeuristics(infra, waypoints)
 
     // Compute the paths from the entry waypoint to the exit waypoint
@@ -268,7 +256,7 @@ fun makeHeuristics(
 private fun computePaths(
     infra: FullInfra,
     waypoints: ArrayList<Collection<PathfindingEdgeLocationId<Block>>>,
-    constraints: List<EdgeToRangesId<Block>>,
+    constraints: List<PathfindingConstraint<Block>>,
     remainingDistanceEstimators: List<AStarHeuristicId<Block>>,
     timeout: Double?
 ): PathfindingResultId<Block> {

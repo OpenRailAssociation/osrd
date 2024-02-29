@@ -1,8 +1,8 @@
 package fr.sncf.osrd.api.pathfinding.constraints
 
 import fr.sncf.osrd.api.pathfinding.makePathProps
-import fr.sncf.osrd.graph.EdgeToRangesId
 import fr.sncf.osrd.graph.Pathfinding
+import fr.sncf.osrd.graph.PathfindingConstraint
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.utils.DistanceRangeMap
@@ -13,7 +13,7 @@ data class LoadingGaugeConstraints(
     val blockInfra: BlockInfra,
     val infra: RawSignalingInfra,
     val rollingStocks: Collection<RollingStock>
-) : EdgeToRangesId<Block> {
+) : PathfindingConstraint<Block> {
     override fun apply(edge: BlockId): Collection<Pathfinding.Range<Block>> {
         val res = HashSet<Pathfinding.Range<Block>>()
         val path = makePathProps(blockInfra, infra, edge)

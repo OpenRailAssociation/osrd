@@ -1,9 +1,11 @@
 package fr.sncf.osrd.stdcm.infra_exploration
 
+import fr.sncf.osrd.api.pathfinding.constraints.ElectrificationConstraints
 import fr.sncf.osrd.graph.PathfindingEdgeLocationId
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.sim_infra.api.DirDetectorId
 import fr.sncf.osrd.sim_infra.utils.routesOnBlock
+import fr.sncf.osrd.train.TestTrains
 import fr.sncf.osrd.utils.Direction
 import fr.sncf.osrd.utils.DummyInfra
 import fr.sncf.osrd.utils.Helpers
@@ -17,6 +19,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
 class InfraExplorerTests {
+
     @Test
     fun testSingleEdge() {
         /*
@@ -171,8 +174,82 @@ class InfraExplorerTests {
         )
     }
 
+    @Test
+    fun testBlockedPath() {
+        /*
+                 c1
+                ^  \
+               /    v
+        a --> b     d --> e
+               \    ^
+                v  /
+                 c2
+
+         Same as testTwoDifferentPaths(), but with constraints applied on one of the path.
+         */
+        val infra = DummyInfra()
+        val blocks =
+            listOf(
+                infra.addBlock("a", "b"),
+                infra.addBlock("b", "c1"),
+                infra.addBlock("c1", "d"),
+                infra.addBlock("b", "c2"),
+                infra.addBlock("c2", "d"),
+                infra.addBlock("d", "e"),
+            )
+
+        // Every block is electrified, except b->c1
+        for (block in infra.blockPool) block.voltage = "25000V"
+        infra.blockPool[1].voltage = ""
+
+        val electrificationConstraints =
+            ElectrificationConstraints(infra, infra, listOf(TestTrains.FAST_ELECTRIC_TRAIN))
+        val constraints = listOf(electrificationConstraints)
+
+        // a --> b
+        val firstExplorers =
+            initInfraExplorer(
+                infra,
+                infra,
+                PathfindingEdgeLocationId(blocks[0], Offset(0.meters)),
+                constraints = constraints
+            )
+        assertEquals(1, firstExplorers.size)
+        val firstExplorer = firstExplorers.first()
+
+        // current block a->b, since b->c1 is not electrified, the lookahead is b->c2
+        val firstExplorerExtended = firstExplorer.cloneAndExtendLookahead().toList()
+        assertEquals(1, firstExplorerExtended.size)
+
+        // we add the block c2->d in the lookahead
+        val firstExplorerExtended2 =
+            firstExplorerExtended.first().cloneAndExtendLookahead().toList()
+        assertEquals(1, firstExplorerExtended2.size)
+
+        // we add the block d->e in the lookahead
+        val firstExplorerExtended3 =
+            firstExplorerExtended2.first().cloneAndExtendLookahead().toList()
+        assertEquals(1, firstExplorerExtended3.size)
+
+        firstExplorerExtended3.first().moveForward()
+        assertEquals(
+            blocks[3],
+            firstExplorerExtended3.first().getCurrentBlock(),
+        )
+        firstExplorerExtended3.first().moveForward()
+        assertEquals(
+            blocks[4],
+            firstExplorerExtended3.first().getCurrentBlock(),
+        )
+        firstExplorerExtended3.first().moveForward()
+        assertEquals(
+            blocks[5],
+            firstExplorerExtended3.first().getCurrentBlock(),
+        )
+    }
+
     /**
-     * Test that there are two instances of InfraExplorer when starting on a point with overlaping
+     * Test that there are two instances of InfraExplorer when starting on a point with overlapping
      * routes
      */
     @Test
