@@ -5,15 +5,15 @@ pub mod tests {
     use crate::client::PostgresConfig;
     use crate::models::train_schedule::Mrsp;
     use crate::models::{
-        self, ElectricalProfileSet, Identifiable, Infra, Pathfinding, PathfindingChangeset,
-        ResultPosition, ResultStops, ResultTrain, RollingStockModel, Scenario, SimulationOutput,
-        SimulationOutputChangeset, Timetable, TrainSchedule,
+        self, Identifiable, Infra, Pathfinding, PathfindingChangeset, ResultPosition, ResultStops,
+        ResultTrain, RollingStockModel, Scenario, SimulationOutput, SimulationOutputChangeset,
+        Timetable, TrainSchedule,
     };
     use crate::modelsv2::projects::Tags;
     use crate::modelsv2::rolling_stock_livery::RollingStockLiveryModel;
     use crate::modelsv2::timetable::Timetable as TimetableV2;
     use crate::modelsv2::train_schedule::TrainSchedule as TrainScheduleV2;
-    use crate::modelsv2::{self, Document, Model, Project, Study};
+    use crate::modelsv2::{self, Changeset, Document, ElectricalProfileSet, Model, Project, Study};
     use crate::schema::electrical_profiles::{ElectricalProfile, ElectricalProfileSetData};
     use crate::schema::v2::trainschedule::TrainScheduleBase;
     use crate::schema::{RailJson, TrackRange};
@@ -24,7 +24,6 @@ pub mod tests {
     use actix_web::web::Data;
     use chrono::Utc;
     use diesel_async::pooled_connection::AsyncDieselConnectionManager;
-    use diesel_json::Json as DieselJson;
     use futures::executor;
     use postgis_diesel::types::LineString;
     use rstest::*;
@@ -388,8 +387,8 @@ pub mod tests {
     pub async fn electrical_profile_set(
         db_pool: Data<DbPool>,
     ) -> TestFixture<ElectricalProfileSet> {
-        TestFixture::create_legacy(
-            serde_json::from_str::<ElectricalProfileSet>(include_str!(
+        TestFixture::create(
+            serde_json::from_str::<Changeset<ElectricalProfileSet>>(include_str!(
                 "./tests/electrical_profile_set.json"
             ))
             .expect("Unable to parse"),
@@ -410,12 +409,10 @@ pub mod tests {
             }],
             level_order: Default::default(),
         };
-        let ep_set = ElectricalProfileSet {
-            id: None,
-            name: Some("test".to_string()),
-            data: Some(DieselJson::new(ep_set_data.clone())),
-        };
-        TestFixture::create_legacy(ep_set, db_pool).await
+        let ep_set = ElectricalProfileSet::changeset()
+            .name("test".to_string())
+            .data(ep_set_data.clone());
+        TestFixture::create(ep_set, db_pool).await
     }
 
     #[fixture]

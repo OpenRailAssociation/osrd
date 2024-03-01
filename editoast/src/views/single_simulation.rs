@@ -3,12 +3,13 @@ use crate::core::simulation::{
 };
 use crate::core::{AsCoreRequest, CoreClient};
 use crate::error::{InternalError, Result};
-use crate::models::electrical_profiles::ElectricalProfileSet;
 use crate::models::train_schedule::{
     Allowance, ElectrificationRange, Mrsp, ResultTrain, RjsPowerRestrictionRange, ScheduledPoint,
     SimulationPowerRestrictionRange, TrainScheduleOptions,
 };
 use crate::models::{Pathfinding, Retrieve, RollingStockModel};
+use crate::modelsv2::electrical_profiles::ElectricalProfileSet;
+use crate::modelsv2::Exists;
 use crate::schema::rolling_stock::RollingStockComfortType;
 use crate::{schemas, DbPool};
 use actix_web::post;
@@ -161,9 +162,10 @@ async fn standalone_simulation(
     };
 
     if let Some(electrical_profile_set_id) = request.electrical_profile_set_id {
-        let electrical_profile_set =
-            ElectricalProfileSet::retrieve(db_pool.clone(), electrical_profile_set_id).await?;
-        if electrical_profile_set.is_none() {
+        let conn = &mut db_pool.get().await?;
+        let does_electrical_profile_set_exist =
+            ElectricalProfileSet::exists(conn, electrical_profile_set_id).await?;
+        if !does_electrical_profile_set_exist {
             return Err(SingleSimulationError::ElectricalProfileSetNotFound {
                 electrical_profile_set_id,
             }

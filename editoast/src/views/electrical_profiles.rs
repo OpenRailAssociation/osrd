@@ -1,12 +1,11 @@
 use crate::error::Result;
-use crate::models::electrical_profiles::{ElectricalProfileSet, LightElectricalProfileSet};
-use crate::models::{Create, Delete, Retrieve};
+use crate::modelsv2::electrical_profiles::{ElectricalProfileSet, LightElectricalProfileSet};
+use crate::modelsv2::{Create, DeleteStatic, Model, Retrieve};
 use crate::schema::electrical_profiles::{
     ElectricalProfile, ElectricalProfileSetData, LevelValues,
 };
 use crate::schema::TrackRange;
 use crate::DbPool;
-use crate::DieselJson;
 
 use actix_web::web::{Data, Json, Path, Query};
 use actix_web::{delete, get, post, HttpResponse};
@@ -73,12 +72,14 @@ async fn get(
     electrical_profile_set: Path<i64>,
 ) -> Result<Json<ElectricalProfileSetData>> {
     let electrical_profile_set_id = electrical_profile_set.into_inner();
-    let ep_set = ElectricalProfileSet::retrieve(db_pool, electrical_profile_set_id)
-        .await?
-        .ok_or(ElectricalProfilesError::NotFound {
+    let conn = &mut db_pool.get().await?;
+    let ep_set = ElectricalProfileSet::retrieve_or_fail(conn, electrical_profile_set_id, || {
+        ElectricalProfilesError::NotFound {
             electrical_profile_set_id,
-        })?;
-    Ok(Json(ep_set.data.unwrap().0))
+        }
+    })
+    .await?;
+    Ok(Json(ep_set.data))
 }
 
 /// Return the electrical profile value order for this set
@@ -103,12 +104,14 @@ async fn get_level_order(
     electrical_profile_set: Path<i64>,
 ) -> Result<Json<HashMap<String, LevelValues>>> {
     let electrical_profile_set_id = electrical_profile_set.into_inner();
-    let ep_set = ElectricalProfileSet::retrieve(db_pool, electrical_profile_set_id)
-        .await?
-        .ok_or(ElectricalProfilesError::NotFound {
+    let conn = &mut db_pool.get().await?;
+    let ep_set = ElectricalProfileSet::retrieve_or_fail(conn, electrical_profile_set_id, || {
+        ElectricalProfilesError::NotFound {
             electrical_profile_set_id,
-        })?;
-    Ok(Json(ep_set.data.unwrap().0.level_order))
+        }
+    })
+    .await?;
+    Ok(Json(ep_set.data.level_order))
 }
 
 /// Delete an electrical profile set
@@ -123,7 +126,8 @@ async fn get_level_order(
 #[delete("")]
 async fn delete(db_pool: Data<DbPool>, electrical_profile_set: Path<i64>) -> Result<HttpResponse> {
     let electrical_profile_set_id = electrical_profile_set.into_inner();
-    let deleted = ElectricalProfileSet::delete(db_pool, electrical_profile_set_id).await?;
+    let conn = &mut db_pool.get().await?;
+    let deleted = ElectricalProfileSet::delete_static(conn, electrical_profile_set_id).await?;
     if deleted {
         Ok(HttpResponse::NoContent().finish())
     } else {
@@ -151,12 +155,11 @@ async fn post_electrical_profile(
     ep_set_name: Query<ElectricalProfileQueryArgs>,
     data: Json<ElectricalProfileSetData>,
 ) -> Result<Json<ElectricalProfileSet>> {
-    let ep_set = ElectricalProfileSet {
-        name: Some(ep_set_name.into_inner().name),
-        data: Some(DieselJson(data.into_inner())),
-        ..Default::default()
-    };
-    Ok(Json(ep_set.create(db_pool).await.unwrap()))
+    let ep_set = ElectricalProfileSet::changeset()
+        .name(ep_set_name.into_inner().name)
+        .data(data.into_inner());
+    let conn = &mut db_pool.get().await?;
+    Ok(Json(ep_set.create(conn).await?))
 }
 
 #[derive(Debug, Error, EditoastError)]
@@ -285,7 +288,8 @@ mod tests {
         let response = call_service(&app, req).await;
         assert_eq!(response.status(), StatusCode::NO_CONTENT);
 
-        assert!(ElectricalProfileSet::retrieve(db_pool(), profile_set.id())
+        let conn = &mut db_pool().get().await.unwrap();
+        assert!(ElectricalProfileSet::retrieve(conn, profile_set.id())
             .await
             .unwrap()
             .is_none());
@@ -314,6 +318,6 @@ mod tests {
             db_pool,
             infra: None,
         };
-        assert_eq!(created_ep_set.model.name.clone().unwrap(), "elec");
+        assert_eq!(created_ep_set.model.name.clone(), "elec");
     }
 }

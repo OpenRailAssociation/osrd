@@ -2661,12 +2661,12 @@ components:
           $ref: '#/components/schemas/ElectricalProfileSetData'
         id:
           format: int64
-          nullable: true
           type: integer
         name:
-          nullable: true
           type: string
       required:
+      - id
+      - name
       - data
       type: object
     ElectricalProfileSetData:

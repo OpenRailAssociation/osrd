@@ -1,4 +1,5 @@
 pub mod documents;
+pub mod electrical_profiles;
 pub mod infra_objects;
 pub mod projects;
 pub mod railjson;
@@ -9,6 +10,7 @@ pub mod timetable;
 pub mod train_schedule;
 
 pub use documents::Document;
+pub use electrical_profiles::ElectricalProfileSet;
 pub use infra_objects::*;
 pub use projects::{Ordering, Project, Tags};
 pub use rolling_stock_image::RollingStockSeparatedImageModel;

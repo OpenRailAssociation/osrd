@@ -1,4 +1,3 @@
-pub mod electrical_profiles;
 pub mod infra;
 pub mod pathfinding;
 pub mod rolling_stock;
@@ -15,7 +14,6 @@ use async_trait::async_trait;
 use diesel_async::AsyncPgConnection as PgConnection;
 
 pub use self::pathfinding::*;
-pub use electrical_profiles::ElectricalProfileSet;
 pub use infra::Infra;
 pub use rolling_stock::{LightRollingStockModel, RollingStockModel};
 pub use scenario::{Scenario, ScenarioWithCountTrains, ScenarioWithDetails};
