@@ -1,7 +1,8 @@
 import React, { useContext } from 'react';
-import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
+
 import type { PathWaypoint } from 'common/api/osrdEditoastApi';
 import { ModalBodySNCF, ModalHeaderSNCF } from 'common/BootstrapSNCF/ModalSNCF';
+import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 
 export default function AllowancesModalOP({
   setPosition,

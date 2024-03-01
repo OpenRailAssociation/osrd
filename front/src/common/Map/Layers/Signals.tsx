@@ -1,15 +1,15 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
-import { Source, type MapRef } from 'react-map-gl/maplibre';
 
-import type { Theme } from 'types';
+import { Source, type MapRef } from 'react-map-gl/maplibre';
+import { useSelector } from 'react-redux';
 
 import { MAP_URL } from 'common/Map/const';
-
-import OrderedLayer from 'common/Map/Layers/OrderedLayer';
-import { getLayersSettings, getMapStyle } from 'reducers/map/selectors';
 import getMastLayerProps from 'common/Map/Layers/mastLayerProps';
+import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 import type { SignalContext } from 'common/Map/Layers/types';
+import { getLayersSettings, getMapStyle } from 'reducers/map/selectors';
+import type { Theme } from 'types';
+
 import { getPointLayerProps, getSignalLayerProps } from './geoSignalsLayers';
 import getKPLabelLayerProps from './KPLabel';
 

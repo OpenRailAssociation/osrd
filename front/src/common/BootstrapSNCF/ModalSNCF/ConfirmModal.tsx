@@ -1,8 +1,9 @@
 import React, { type FC, type PropsWithChildren, useContext, useState, useCallback } from 'react';
+
 import { useTranslation } from 'react-i18next';
 
-import { ModalContext } from './ModalProvider';
 import { Modal } from './Modal';
+import { ModalContext } from './ModalProvider';
 
 export interface ConfirmModalProps {
   title?: string;

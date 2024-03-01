@@ -2,6 +2,7 @@ import type { CircleLayer, LineLayer, SymbolLayer } from 'react-map-gl/maplibre'
 
 import { INFRA_ERRORS } from 'applications/editor/components/InfraErrors';
 import type { OmitLayer } from 'types';
+
 import type { LayerContext } from './types';
 
 const LINE_OBJECT = ['TrackSection', 'Electrification', 'SpeedSection'];

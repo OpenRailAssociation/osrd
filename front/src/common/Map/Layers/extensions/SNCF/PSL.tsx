@@ -1,21 +1,20 @@
 /* eslint-disable react/jsx-pascal-case */
 import React from 'react';
-import { useSelector } from 'react-redux';
+
+import type { TFunction } from 'i18next';
+import { isNil } from 'lodash';
+import { useTranslation } from 'react-i18next';
 import { Source } from 'react-map-gl/maplibre';
 import type { LineLayer, SymbolLayer } from 'react-map-gl/maplibre';
-import { isNil } from 'lodash';
-import type { TFunction } from 'i18next';
-import { useTranslation } from 'react-i18next';
-
-import type { Theme, OmitLayer } from 'types';
+import { useSelector } from 'react-redux';
 
 import { MAP_URL } from 'common/Map/const';
-import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 import SNCF_PSL_Signs from 'common/Map/Layers/extensions/SNCF/PSLSigns';
+import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 import { getSpeedSectionsName, getFilterBySpeedSectionsTag } from 'common/Map/Layers/SpeedLimits';
-
 import type { RootState } from 'reducers';
 import type { MapState } from 'reducers/map';
+import type { Theme, OmitLayer } from 'types';
 
 interface SNCF_PSLProps {
   colors: Theme;

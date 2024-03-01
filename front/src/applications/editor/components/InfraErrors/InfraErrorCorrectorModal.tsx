@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
+
 import { useTranslation } from 'react-i18next';
 
 import { OPERATION_TYPE } from 'applications/editor/consts';
-import { useInfraID } from 'common/osrdContext';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { ConfirmModal, useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { Loader } from 'common/Loaders';
+import { useInfraID } from 'common/osrdContext';
 import { saveOperations } from 'reducers/editor/thunkActions';
 import { useAppDispatch } from 'store';
 

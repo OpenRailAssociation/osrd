@@ -1,11 +1,12 @@
 import type * as d3 from 'd3';
-import type { AllListValues, SIGNAL_BASE_DEFAULT } from 'modules/simulationResult/consts';
-import {
-  type ElectrificationRange,
-  type SimulationPowerRestrictionRange,
-  type SimulationReport,
-  type TrainScheduleSummary,
+
+import type {
+  ElectrificationRange,
+  SimulationPowerRestrictionRange,
+  SimulationReport,
+  TrainScheduleSummary,
 } from 'common/api/osrdEditoastApi';
+import type { AllListValues, SIGNAL_BASE_DEFAULT } from 'modules/simulationResult/consts';
 
 export type MergedDataPoint<T = number> = {
   [key: string]: number | T;

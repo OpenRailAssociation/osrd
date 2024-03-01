@@ -1,23 +1,25 @@
 import React, { useState, useEffect, useCallback, type ChangeEvent } from 'react';
+
 import { Image, XCircle } from '@osrd-project/ui-icons';
+import type { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
+
+import logoCat from 'assets/pictures/misc/cat.svg';
 import logoCheese from 'assets/pictures/misc/cheese.svg';
 import logoDog from 'assets/pictures/misc/dog.svg';
-import logoCat from 'assets/pictures/misc/cat.svg';
+import logoGhibli from 'assets/pictures/misc/ghibli.svg';
 import logoMeat from 'assets/pictures/misc/meat.svg';
-import logoTrain from 'assets/pictures/misc/train.svg';
 import logoPanda from 'assets/pictures/misc/panda.svg';
 import logoRedPanda from 'assets/pictures/misc/redpanda.svg';
+import logoSNCF from 'assets/pictures/misc/sncf.svg';
 import logoTeddyBear from 'assets/pictures/misc/teddybear.svg';
 import logoTiger from 'assets/pictures/misc/tiger.svg';
-import logoGhibli from 'assets/pictures/misc/ghibli.svg';
-import logoSNCF from 'assets/pictures/misc/sncf.svg';
+import logoTrain from 'assets/pictures/misc/train.svg';
 import { getDocument } from 'common/api/documentApi';
-import { useSelector } from 'react-redux';
-import { useAppDispatch } from 'store';
-import { getUserSafeWord } from 'reducers/user/userSelectors';
 import { setFailure } from 'reducers/main';
-import type { TFunction } from 'i18next';
+import { getUserSafeWord } from 'reducers/user/userSelectors';
+import { useAppDispatch } from 'store';
 
 type PicturePlaceholderProps = {
   image?: number | null;

@@ -1,12 +1,13 @@
-import cx from 'classnames';
 import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+
 import { Pencil, Trash } from '@osrd-project/ui-icons';
+import cx from 'classnames';
+import { sortBy } from 'lodash';
+import { useTranslation } from 'react-i18next';
 import { FaPlus } from 'react-icons/fa';
 import { GiElectric } from 'react-icons/gi';
 import { MdDescription, MdTitle } from 'react-icons/md';
 import { useNavigate, useParams } from 'react-router-dom';
-import { sortBy } from 'lodash';
 
 import {
   type ScenarioCreateForm,
@@ -15,21 +16,21 @@ import {
 } from 'common/api/osrdEditoastApi';
 import ChipsSNCF from 'common/BootstrapSNCF/ChipsSNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import TextareaSNCF from 'common/BootstrapSNCF/TextareaSNCF';
-import { useInfraID, useOsrdConfActions } from 'common/osrdContext';
-import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
+import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
+import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
+import TextareaSNCF from 'common/BootstrapSNCF/TextareaSNCF';
+import { useInfraID, useOsrdConfActions } from 'common/osrdContext';
 import { InfraSelectorModal } from 'modules/infra/components/InfraSelector';
-import { useAppDispatch } from 'store';
 import { setFailure, setSuccess } from 'reducers/main';
-import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
-import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
-import useInputChange from 'utils/hooks/useInputChange';
-import useOutsideClick from 'utils/hooks/useOutsideClick';
+import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
+import useInputChange from 'utils/hooks/useInputChange';
+import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
+import useOutsideClick from 'utils/hooks/useOutsideClick';
 
 type ScenarioForm = ScenarioPatchForm & {
   id?: number;

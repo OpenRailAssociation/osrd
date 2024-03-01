@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
+
+import { Search } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
+
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { useDebounce } from 'utils/helpers';
-import { Search } from '@osrd-project/ui-icons';
 
 type Props = {
   id: string;

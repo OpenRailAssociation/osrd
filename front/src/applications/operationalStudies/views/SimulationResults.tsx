@@ -1,34 +1,33 @@
-import cx from 'classnames';
 import React, { useEffect, useState, useRef } from 'react';
-import { Rnd } from 'react-rnd';
+
+import { ChevronLeft, ChevronRight } from '@osrd-project/ui-icons';
+import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
+import { Rnd } from 'react-rnd';
 
+import { osrdEditoastApi, type SimulationReport } from 'common/api/osrdEditoastApi';
+import SimulationWarpedMap from 'common/Map/WarpedMap/SimulationWarpedMap';
+import getScaleDomainFromValues from 'modules/simulationResult/components/ChartHelpers/getScaleDomainFromValues';
+import SimulationResultsMap from 'modules/simulationResult/components/SimulationResultsMap';
+import SpaceCurvesSlopes from 'modules/simulationResult/components/SpaceCurvesSlopes';
+import SpaceTimeChart from 'modules/simulationResult/components/SpaceTimeChart/SpaceTimeChart';
+import { useStoreDataForSpaceTimeChart } from 'modules/simulationResult/components/SpaceTimeChart/useStoreDataForSpaceTimeChart';
+import SpeedSpaceChart from 'modules/simulationResult/components/SpeedSpaceChart/SpeedSpaceChart';
+import TimeButtons from 'modules/simulationResult/components/TimeButtons';
+import TrainDetails from 'modules/simulationResult/components/TrainDetails';
+import type { PositionScaleDomain, TimeScaleDomain } from 'modules/simulationResult/types';
+import DriverTrainSchedule from 'modules/trainschedule/components/DriverTrainSchedule/DriverTrainSchedule';
 import { updateViewport, type Viewport } from 'reducers/map';
+import { updateSelectedProjection, updateSimulation } from 'reducers/osrdsimulation/actions';
+import { getIsUpdating } from 'reducers/osrdsimulation/selectors';
 import {
   persistentRedoSimulation,
   persistentUndoSimulation,
 } from 'reducers/osrdsimulation/simulation';
-import { getIsUpdating } from 'reducers/osrdsimulation/selectors';
-import { updateSelectedProjection, updateSimulation } from 'reducers/osrdsimulation/actions';
-
-import SimulationWarpedMap from 'common/Map/WarpedMap/SimulationWarpedMap';
-import { osrdEditoastApi, type SimulationReport } from 'common/api/osrdEditoastApi';
-
-import SimulationResultsMap from 'modules/simulationResult/components/SimulationResultsMap';
-import TimeButtons from 'modules/simulationResult/components/TimeButtons';
 // TIMELINE DISABLED // import TimeLine from 'modules/simulationResult/components/TimeLine/TimeLine';
-import TrainDetails from 'modules/simulationResult/components/TrainDetails';
-import DriverTrainSchedule from 'modules/trainschedule/components/DriverTrainSchedule/DriverTrainSchedule';
-import SpaceCurvesSlopes from 'modules/simulationResult/components/SpaceCurvesSlopes';
-import SpaceTimeChart from 'modules/simulationResult/components/SpaceTimeChart/SpaceTimeChart';
-import SpeedSpaceChart from 'modules/simulationResult/components/SpeedSpaceChart/SpeedSpaceChart';
-import type { PositionScaleDomain, TimeScaleDomain } from 'modules/simulationResult/types';
 import type { Train } from 'reducers/osrdsimulation/types';
-import { useStoreDataForSpaceTimeChart } from 'modules/simulationResult/components/SpaceTimeChart/useStoreDataForSpaceTimeChart';
-import getScaleDomainFromValues from 'modules/simulationResult/components/ChartHelpers/getScaleDomainFromValues';
 import { useAppDispatch } from 'store';
-import { ChevronLeft, ChevronRight } from '@osrd-project/ui-icons';
 
 const MAP_MIN_HEIGHT = 450;
 

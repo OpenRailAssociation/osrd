@@ -1,9 +1,10 @@
+import React, { useState, type PropsWithChildren } from 'react';
+
+import { Trash } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { isNull } from 'lodash';
-import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import React, { useState, type PropsWithChildren } from 'react';
-import { Trash } from '@osrd-project/ui-icons';
 
+import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import SelectNewItemButton from 'common/Selector/SelectNewItemButton';
 
 const SelectorItem = <T extends string | null>({

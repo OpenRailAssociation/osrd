@@ -1,30 +1,30 @@
-import { isEmpty } from 'lodash';
 import React, { useMemo, useState } from 'react';
-import { STANDARD_COMFORT_LEVEL, THERMAL_TRACTION_IDENTIFIER } from 'modules/rollingStock/consts';
-import {
-  filterUndefinedValueInCurve,
-  orderElectricalProfils,
-  orderSelectorList,
-} from 'modules/rollingStock/helpers/utils';
-import { getCurvesComforts } from 'modules/rollingStock/components/RollingStockCard/RollingStockCardDetail';
-import { getElectricalProfilesAndPowerRestrictions } from 'modules/rollingStock/helpers/rollingStockEditor';
-import { removeDuplicates } from 'utils/array';
-
-import CurveParamSelectors from 'modules/rollingStock/components/RollingStockEditor/CurveParamSelectors';
-import CurveSpreadsheet from 'modules/rollingStock/components/RollingStockEditor/CurveSpreadsheet';
-import RollingStockCurve from 'modules/rollingStock/components/RollingStockCurve';
-
-import type {
-  ConditionalEffortCurveForm,
-  EffortCurveForms,
-  RollingStockParametersValues,
-} from 'modules/rollingStock/types';
 import type { Dispatch, PropsWithChildren, SetStateAction } from 'react';
+
+import { isEmpty } from 'lodash';
+
 import type {
   EffortCurves,
   RollingStock,
   RollingStockComfortType,
 } from 'common/api/osrdEditoastApi';
+import { getCurvesComforts } from 'modules/rollingStock/components/RollingStockCard/RollingStockCardDetail';
+import RollingStockCurve from 'modules/rollingStock/components/RollingStockCurve';
+import CurveParamSelectors from 'modules/rollingStock/components/RollingStockEditor/CurveParamSelectors';
+import CurveSpreadsheet from 'modules/rollingStock/components/RollingStockEditor/CurveSpreadsheet';
+import { STANDARD_COMFORT_LEVEL, THERMAL_TRACTION_IDENTIFIER } from 'modules/rollingStock/consts';
+import { getElectricalProfilesAndPowerRestrictions } from 'modules/rollingStock/helpers/rollingStockEditor';
+import {
+  filterUndefinedValueInCurve,
+  orderElectricalProfils,
+  orderSelectorList,
+} from 'modules/rollingStock/helpers/utils';
+import type {
+  ConditionalEffortCurveForm,
+  EffortCurveForms,
+  RollingStockParametersValues,
+} from 'modules/rollingStock/types';
+import { removeDuplicates } from 'utils/array';
 
 const EMPTY_PARAMS = {
   comfortLevels: [STANDARD_COMFORT_LEVEL],

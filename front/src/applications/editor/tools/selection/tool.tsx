@@ -1,21 +1,22 @@
 import React from 'react';
-import { FiEdit } from 'react-icons/fi';
+
 import { Trash } from '@osrd-project/ui-icons';
+import { isEqual, max, min } from 'lodash';
+import type { PointLike } from 'maplibre-gl';
+import { BiLoader, BiSelection } from 'react-icons/bi';
 import { BsCursor } from 'react-icons/bs';
 import { FaDrawPolygon } from 'react-icons/fa';
-import { BiLoader, BiSelection } from 'react-icons/bi';
-import type { PointLike } from 'maplibre-gl';
-import { isEqual, max, min } from 'lodash';
+import { FiEdit } from 'react-icons/fi';
 
+import { LAYER_TO_EDITOAST_DICT, type Layer } from 'applications/editor/consts';
+import { getMixedEntities } from 'applications/editor/data/api';
+import { DEFAULT_COMMON_TOOL_STATE } from 'applications/editor/tools/consts';
+import { openEntityEditionPanel } from 'applications/editor/tools/utils';
+import type { Tool } from 'applications/editor/types';
 import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF/ConfirmModal';
 import { save } from 'reducers/editor/thunkActions';
 import { selectInZone } from 'utils/mapHelper';
 
-import { getMixedEntities } from 'applications/editor/data/api';
-import { LAYER_TO_EDITOAST_DICT, type Layer } from 'applications/editor/consts';
-import type { Tool } from 'applications/editor/types';
-import { DEFAULT_COMMON_TOOL_STATE } from 'applications/editor/tools/consts';
-import { openEntityEditionPanel } from 'applications/editor/tools/utils';
 import { SelectionLayers, SelectionMessages, SelectionLeftPanel } from './components';
 import type { SelectionState } from './types';
 

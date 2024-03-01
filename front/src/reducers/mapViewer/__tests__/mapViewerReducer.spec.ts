@@ -1,6 +1,5 @@
-import { createStoreWithoutMiddleware } from 'store';
-
 import { mapViewerInitialState, mapViewerSlice, mapViewerSliceActions } from 'reducers/mapViewer';
+import { createStoreWithoutMiddleware } from 'store';
 
 const createStore = () =>
   createStoreWithoutMiddleware({

@@ -1,7 +1,8 @@
 import { expect } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
-import rollingstockTranslation from '../../public/locales/fr/rollingstock.json';
+
 import BasePage from './base-page';
+import rollingstockTranslation from '../../public/locales/fr/rollingstock.json';
 
 class PlaywrightCommonPage extends BasePage {
   readonly rollingstockTranslation: typeof rollingstockTranslation;

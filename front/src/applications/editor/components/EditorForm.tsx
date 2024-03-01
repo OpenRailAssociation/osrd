@@ -1,13 +1,13 @@
+import React, { useState, useEffect, useMemo, type PropsWithChildren } from 'react';
+
 import Form from '@rjsf/core';
 import type { Field, UiSchema } from '@rjsf/utils';
+import validator from '@rjsf/validator-ajv8';
 import type { GeoJsonProperties } from 'geojson';
-import i18n from 'i18n';
 import type { JSONSchema7 } from 'json-schema';
 import { isNil, omitBy } from 'lodash';
-import React, { useState, useEffect, useMemo, type PropsWithChildren } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
-import validator from '@rjsf/validator-ajv8';
 
 import {
   getLayerForObjectType,
@@ -15,9 +15,11 @@ import {
   NEW_ENTITY_ID,
 } from 'applications/editor/data/utils';
 import { translateSchema } from 'applications/editor/tools/translationTools';
-import { getEditorState } from 'reducers/editor/selectors';
 import type { EditorEntity } from 'applications/editor/typesEditorEntity';
+import i18n from 'i18n';
+import { getEditorState } from 'reducers/editor/selectors';
 import { getErrorMessage } from 'utils/error';
+
 import { FormComponent, FormLineStringLength } from './LinearMetadata';
 
 const fields = {

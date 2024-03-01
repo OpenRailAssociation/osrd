@@ -1,7 +1,7 @@
-import { tail, last } from 'lodash';
-import distance from '@turf/distance';
 import along from '@turf/along';
+import distance from '@turf/distance';
 import type { LineString, FeatureCollection } from 'geojson';
+import { tail, last } from 'lodash';
 
 import { getLineStringDistance, update, resizeSegment, splitAt, mergeIn } from './data';
 import type { LinearMetadataItem } from './types';

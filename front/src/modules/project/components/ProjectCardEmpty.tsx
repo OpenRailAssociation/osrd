@@ -1,8 +1,10 @@
 import React from 'react';
-import AddOrEditProjectModal from 'modules/project/components/AddOrEditProjectModal';
-import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
+
 import { useTranslation } from 'react-i18next';
 import { FaPlus } from 'react-icons/fa';
+
+import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
+import AddOrEditProjectModal from 'modules/project/components/AddOrEditProjectModal';
 
 export default function ProjectCard() {
   const { t } = useTranslation('operationalStudies/home');

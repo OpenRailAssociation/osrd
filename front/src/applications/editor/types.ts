@@ -1,13 +1,14 @@
-import type { TFunction } from 'i18next';
 import type { ComponentType } from 'react';
-import type { ViewState } from 'react-map-gl/maplibre';
+
+import type { TFunction } from 'i18next';
 import type { Map, MapLayerMouseEvent } from 'maplibre-gl';
 import type { IconType } from 'react-icons/lib/iconBase';
+import type { ViewState } from 'react-map-gl/maplibre';
 
 import type { SwitchType } from 'applications/editor/tools/switchEdition/types';
 import type { ModalContextType } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
-import type { AppDispatch } from 'store';
 import type { EditorState } from 'reducers/editor';
+import type { AppDispatch } from 'store';
 
 import type { Layer } from './consts';
 import type { switchProps } from './tools/switchProps';

@@ -1,22 +1,20 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { head, isNil, last, maxBy, minBy } from 'lodash';
+
 import cx from 'classnames';
+import { head, isNil, last, maxBy, minBy } from 'lodash';
 
 import type { AdditionalDataItem } from 'common/IntervalsEditor/types';
-import { preventDefault, getPositionFromMouseEvent } from './utils';
+
 import {
   cropForDatavizViewbox,
   cropOperationPointsForDatavizViewbox,
   getClosestOperationalPoint,
   getHoveredItem,
 } from './data';
-import { ResizingScale, SimpleScale } from './Scales';
 import IntervalItem from './IntervalItem';
-import {
-  type IntervalItemBaseProps,
-  type LinearMetadataItem,
-  type OperationalPoint,
-} from './types';
+import { ResizingScale, SimpleScale } from './Scales';
+import type { IntervalItemBaseProps, LinearMetadataItem, OperationalPoint } from './types';
+import { preventDefault, getPositionFromMouseEvent } from './utils';
 import './style.scss';
 
 export interface LinearMetadataDatavizProps<T> extends IntervalItemBaseProps<T> {

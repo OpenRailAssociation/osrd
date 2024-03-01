@@ -1,15 +1,16 @@
-import { filter, groupBy } from 'lodash';
 import React from 'react';
-import { TbSwitch2 } from 'react-icons/tb';
-import { AiFillSave } from 'react-icons/ai';
-import { PlusCircle, Trash } from '@osrd-project/ui-icons';
 
-import { save } from 'reducers/editor/thunkActions';
-import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
+import { PlusCircle, Trash } from '@osrd-project/ui-icons';
+import { filter, groupBy } from 'lodash';
+import { AiFillSave } from 'react-icons/ai';
+import { TbSwitch2 } from 'react-icons/tb';
 
 import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
-import type { Tool } from 'applications/editor/types';
 import { DEFAULT_COMMON_TOOL_STATE } from 'applications/editor/tools/consts';
+import type { Tool } from 'applications/editor/types';
+import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
+import { save } from 'reducers/editor/thunkActions';
+
 import { SwitchEditionLayers, SwitchEditionLeftPanel, SwitchMessages } from './components';
 import type { SwitchEditionState, SwitchEntity, SwitchType } from './types';
 import { getNewSwitch } from './utils';

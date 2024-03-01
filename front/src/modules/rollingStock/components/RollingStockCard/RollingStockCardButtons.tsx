@@ -1,14 +1,14 @@
 import React, { useContext, useEffect, useMemo, useState } from 'react';
-import { useSelector } from 'react-redux';
-import { useTranslation } from 'react-i18next';
 
-import { comfort2pictogram } from 'modules/rollingStock/components/RollingStockSelector/RollingStockHelpers';
+import { useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
 
 import type { RollingStockComfortType } from 'common/api/osrdEditoastApi';
+import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 import type { Option } from 'common/BootstrapSNCF/OptionsSNCF';
 import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
-import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
+import { comfort2pictogram } from 'modules/rollingStock/components/RollingStockSelector/RollingStockHelpers';
 import { useAppDispatch } from 'store';
 
 interface RollingStockCardButtonsProps {

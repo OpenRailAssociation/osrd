@@ -1,10 +1,19 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import { compact, isEmpty } from 'lodash';
 import type { Dispatch, SetStateAction } from 'react';
-import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
+
+import { compact, isEmpty } from 'lodash';
 import { useTranslation } from 'react-i18next';
+
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import type {
+  ConditionalEffortCurve,
+  RollingStock,
+  RollingStockComfortType,
+} from 'common/api/osrdEditoastApi';
+import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import Selector from 'common/Selector/Selector';
+import PowerRestrictionGridModal from 'modules/rollingStock/components/RollingStockEditor/PowerRestrictionGridModal';
+import RollingStockEditorFormModal from 'modules/rollingStock/components/RollingStockEditor/RollingStockEditorFormModal';
 import {
   COMFORTS,
   EP_BY_MODE,
@@ -17,15 +26,6 @@ import {
   sortSelectedModeCurves,
   translateItemsList,
 } from 'modules/rollingStock/helpers/utils';
-
-import PowerRestrictionGridModal from 'modules/rollingStock/components/RollingStockEditor/PowerRestrictionGridModal';
-import RollingStockEditorFormModal from 'modules/rollingStock/components/RollingStockEditor/RollingStockEditorFormModal';
-
-import type {
-  ConditionalEffortCurve,
-  RollingStock,
-  RollingStockComfortType,
-} from 'common/api/osrdEditoastApi';
 import type {
   ConditionalEffortCurveForm,
   EffortCurveForms,

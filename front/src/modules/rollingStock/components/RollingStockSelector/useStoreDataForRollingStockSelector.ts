@@ -1,6 +1,7 @@
+import { useSelector } from 'react-redux';
+
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useOsrdConfSelectors } from 'common/osrdContext';
-import { useSelector } from 'react-redux';
 
 export const useStoreDataForRollingStockSelector = () => {
   const { getRollingStockID, getRollingStockComfort } = useOsrdConfSelectors();

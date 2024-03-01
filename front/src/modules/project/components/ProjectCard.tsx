@@ -1,11 +1,12 @@
-import cx from 'classnames';
 import React, { useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { useSelector } from 'react-redux';
+
 import { Calendar, CheckCircle, FileDirectory, FileDirectoryOpen } from '@osrd-project/ui-icons';
-import { LazyLoadImage } from 'react-lazy-load-image-component';
-import { Link } from 'react-router-dom';
+import cx from 'classnames';
+import { useTranslation } from 'react-i18next';
 import nextId from 'react-id-generator';
+import { LazyLoadImage } from 'react-lazy-load-image-component';
+import { useSelector } from 'react-redux';
+import { Link } from 'react-router-dom';
 
 import { getDocument } from 'common/api/documentApi';
 import type { ProjectWithStudies, SearchResultItemProject } from 'common/api/osrdEditoastApi';

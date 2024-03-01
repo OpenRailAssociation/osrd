@@ -1,34 +1,22 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useSelector } from 'react-redux';
-import type { AnyLayer, LayerProps } from 'react-map-gl/maplibre';
-import { Layer, Source } from 'react-map-gl/maplibre';
-import type { FilterSpecification } from 'maplibre-gl';
+
 import chroma from 'chroma-js';
 import type { Feature, FeatureCollection } from 'geojson';
 import { isPlainObject, mapValues, omit } from 'lodash';
-
-import type { Theme } from 'types';
-
-import { LAYER_ENTITIES_ORDERS, LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
+import type { FilterSpecification } from 'maplibre-gl';
+import { Layer, Source } from 'react-map-gl/maplibre';
+import type { AnyLayer, LayerProps } from 'react-map-gl/maplibre';
+import { useSelector } from 'react-redux';
 
 import type { Layer as LayerType } from 'applications/editor/consts';
-
-import geoMainLayer from 'common/Map/Layers/geographiclayers';
-import { getPointLayerProps, getSignalLayerProps } from 'common/Map/Layers/geoSignalsLayers';
-import type { LayerContext } from 'common/Map/Layers/types';
-import { Platforms } from 'common/Map/Layers/Platforms';
-import OrderedLayer from 'common/Map/Layers/OrderedLayer';
-import getKPLabelLayerProps from 'common/Map/Layers/KPLabel';
 import { MAP_TRACK_SOURCE, MAP_URL } from 'common/Map/const';
 import { getBufferStopsLayerProps } from 'common/Map/Layers/BufferStops';
-import { getSwitchesLayerProps, getSwitchesNameLayerProps } from 'common/Map/Layers/Switches';
 import { lineNameLayer, lineNumberLayer, trackNameLayer } from 'common/Map/Layers/commonLayers';
 import { getDetectorsLayerProps, getDetectorsNameLayerProps } from 'common/Map/Layers/Detectors';
 import {
   getElectrificationsProps,
   getElectrificationsTextParams,
 } from 'common/Map/Layers/Electrifications';
-import { getPSLSignsLayerProps } from 'common/Map/Layers/extensions/SNCF/PSLSigns';
 import {
   getLineErrorsLayerProps,
   getLineTextErrorsLayerProps,
@@ -36,19 +24,29 @@ import {
   getPointTextErrorsLayerProps,
 } from 'common/Map/Layers/Errors';
 import {
+  getPSLSpeedLineBGLayerProps,
+  getPSLSpeedLineLayerProps,
+  getPSLSpeedValueLayerProps,
+} from 'common/Map/Layers/extensions/SNCF/PSL';
+import { getPSLSignsLayerProps } from 'common/Map/Layers/extensions/SNCF/PSLSigns';
+import geoMainLayer from 'common/Map/Layers/geographiclayers';
+import { getPointLayerProps, getSignalLayerProps } from 'common/Map/Layers/geoSignalsLayers';
+import getKPLabelLayerProps from 'common/Map/Layers/KPLabel';
+import OrderedLayer from 'common/Map/Layers/OrderedLayer';
+import { Platforms } from 'common/Map/Layers/Platforms';
+import {
   getFilterBySpeedSectionsTag,
   getSpeedSectionsLineLayerProps,
   getSpeedSectionsPointLayerProps,
   getSpeedSectionsTextLayerProps,
 } from 'common/Map/Layers/SpeedLimits';
-import {
-  getPSLSpeedLineBGLayerProps,
-  getPSLSpeedLineLayerProps,
-  getPSLSpeedValueLayerProps,
-} from 'common/Map/Layers/extensions/SNCF/PSL';
-
+import { getSwitchesLayerProps, getSwitchesNameLayerProps } from 'common/Map/Layers/Switches';
+import type { LayerContext } from 'common/Map/Layers/types';
+import { LAYER_ENTITIES_ORDERS, LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
 import type { RootState } from 'reducers';
 import type { MapState } from 'reducers/map';
+import type { Theme } from 'types';
+
 import getMastLayerProps from './mastLayerProps';
 
 const POINT_ENTITIES_MIN_ZOOM = 12;

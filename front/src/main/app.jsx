@@ -1,34 +1,33 @@
 import React, { Suspense, useEffect } from 'react';
+
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import 'i18n';
 
-import Home from 'main/home';
-import { Loader } from 'common/Loaders';
-import useAuth from 'utils/hooks/OsrdAuth';
-import ErrorBoundary from 'common/ErrorBoundary';
-import { OsrdContextLayout } from 'common/osrdContext';
-import NotificationsState from 'common/Notifications';
-
-import HomeStdcm from 'applications/stdcm/Home';
 import HomeEditor from 'applications/editor/Home';
-import HomeMap from 'applications/referenceMap/Home';
-import { MODES } from 'main/consts';
-import Study from 'applications/operationalStudies/views/Study';
+import HomeOperationalStudies from 'applications/operationalStudies/Home';
 import Project from 'applications/operationalStudies/views/Project';
 import Scenario from 'applications/operationalStudies/views/Scenario';
-import HomeOperationalStudies from 'applications/operationalStudies/Home';
+import Study from 'applications/operationalStudies/views/Study';
+import HomeMap from 'applications/referenceMap/Home';
 import HomeRollingStockEditor from 'applications/rollingStockEditor/Home';
-
-import { useAppDispatch } from 'store';
+import HomeStdcm from 'applications/stdcm/Home';
+import ErrorBoundary from 'common/ErrorBoundary';
+import { Loader } from 'common/Loaders';
+import NotificationsState from 'common/Notifications';
+import { OsrdContextLayout } from 'common/osrdContext';
+import { MODES } from 'main/consts';
+import Home from 'main/home';
 import { editorSlice } from 'reducers/editor';
-import { mapViewerSlice } from 'reducers/mapViewer';
 import editorSelectors from 'reducers/editor/selectors';
 import { updateLastInterfaceVersion } from 'reducers/main';
-import { stdcmConfSlice } from 'reducers/osrdconf/stdcmConf';
+import { mapViewerSlice } from 'reducers/mapViewer';
 import mapViewerSelectors from 'reducers/mapViewer/selectors';
-import stdcmConfSelectors from 'reducers/osrdconf/stdcmConf/selectors';
 import { operationalStudiesConfSlice } from 'reducers/osrdconf/operationalStudiesConf';
 import simulationConfSelectors from 'reducers/osrdconf/operationalStudiesConf/selectors';
+import { stdcmConfSlice } from 'reducers/osrdconf/stdcmConf';
+import stdcmConfSelectors from 'reducers/osrdconf/stdcmConf/selectors';
+import { useAppDispatch } from 'store';
+import useAuth from 'utils/hooks/OsrdAuth';
 
 import('@sncf/bootstrap-sncf.metier.reseau/dist/css/bootstrap-sncf.min.css');
 

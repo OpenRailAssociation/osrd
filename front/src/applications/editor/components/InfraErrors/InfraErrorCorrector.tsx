@@ -1,10 +1,12 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
+
+import { Wand } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
 
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { getEditorState } from 'reducers/editor/selectors';
-import { Wand } from '@osrd-project/ui-icons';
+
 import InfraErrorCorrectorModal from './InfraErrorCorrectorModal';
 
 const InfraErrorCorrector = () => {

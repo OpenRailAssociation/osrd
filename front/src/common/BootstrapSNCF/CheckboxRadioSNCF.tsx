@@ -1,4 +1,5 @@
 import React, { type FC, type ReactNode, type InputHTMLAttributes } from 'react';
+
 import './CheckboxRadioSNCF.scss';
 import cx from 'classnames';
 

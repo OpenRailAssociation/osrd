@@ -1,16 +1,18 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { useSelector } from 'react-redux';
+
 import * as d3 from 'd3';
 import { CgLoadbar } from 'react-icons/cg';
+import { useSelector } from 'react-redux';
 
-import { CHART_AXES } from 'modules/simulationResult/consts';
-import type { PositionScaleDomain } from 'modules/simulationResult/types';
 import {
   defineLinear,
   interpolateOnPosition,
   mergeDatasAreaConstant,
   type MergedBlock,
 } from 'modules/simulationResult/components/ChartHelpers/ChartHelpers';
+import defineChart from 'modules/simulationResult/components/ChartHelpers/defineChart';
+import drawArea from 'modules/simulationResult/components/ChartHelpers/drawArea';
+import drawCurve from 'modules/simulationResult/components/ChartHelpers/drawCurve';
 import {
   traceVerticalLine,
   enableInteractivity,
@@ -19,20 +21,20 @@ import {
   createCurveCurve,
   createSlopeCurve,
 } from 'modules/simulationResult/components/SpeedSpaceChart/utils';
-import defineChart from 'modules/simulationResult/components/ChartHelpers/defineChart';
-import drawArea from 'modules/simulationResult/components/ChartHelpers/drawArea';
-import drawCurve from 'modules/simulationResult/components/ChartHelpers/drawCurve';
-import {
-  type Chart,
-  type GradientPosition,
-  type HeightPosition,
-  type RadiusPosition,
-  type SpeedSpaceChart,
-  type PositionSpeedTime,
-  type Train,
+import { CHART_AXES } from 'modules/simulationResult/consts';
+import type { PositionScaleDomain } from 'modules/simulationResult/types';
+import { getIsPlaying } from 'reducers/osrdsimulation/selectors';
+import type {
+  Chart,
+  GradientPosition,
+  HeightPosition,
+  RadiusPosition,
+  SpeedSpaceChart,
+  PositionSpeedTime,
+  Train,
 } from 'reducers/osrdsimulation/types';
 import { dateIsInRange } from 'utils/date';
-import { getIsPlaying } from 'reducers/osrdsimulation/selectors';
+
 import { useChartSynchronizer } from './ChartHelpers/ChartSynchronizer';
 
 const CHART_ID = 'SpaceCurvesSlopes';

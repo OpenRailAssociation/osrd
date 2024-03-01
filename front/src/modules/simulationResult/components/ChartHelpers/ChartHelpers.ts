@@ -1,8 +1,9 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import * as d3 from 'd3';
+import type { BaseType } from 'd3';
 import { has, last, memoize } from 'lodash';
 
-import { datetime2time, durationInSeconds, sec2time } from 'utils/timeManipulation';
+import type { ChartAxes, ListValues, XAxis, Y2Axis, YAxis } from 'modules/simulationResult/consts';
 import type {
   Position,
   PositionSpeedTime,
@@ -15,14 +16,7 @@ import type {
   SimulationD3Scale,
   PositionsSpeedTimes,
 } from 'reducers/osrdsimulation/types';
-import {
-  type ChartAxes,
-  type ListValues,
-  type XAxis,
-  type Y2Axis,
-  type YAxis,
-} from 'modules/simulationResult/consts';
-import type { BaseType } from 'd3';
+import { datetime2time, durationInSeconds, sec2time } from 'utils/timeManipulation';
 
 export function sec2d3datetime(time: number) {
   return d3.timeParse('%H:%M:%S')(sec2time(time));

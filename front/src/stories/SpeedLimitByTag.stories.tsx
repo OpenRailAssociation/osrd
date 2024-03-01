@@ -1,5 +1,6 @@
-import SpeedLimitByTagSelector from 'common/SpeedLimitByTagSelector/SpeedLimitByTagSelector';
 import { noop } from 'lodash';
+
+import SpeedLimitByTagSelector from 'common/SpeedLimitByTagSelector/SpeedLimitByTagSelector';
 
 const selectedSpeedLimitByTag = 'First Category of Speed Limits';
 const speedLimitsByTags = [selectedSpeedLimitByTag, 'Second Category of Speed Limits'];

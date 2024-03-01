@@ -1,7 +1,7 @@
 import * as d3 from 'd3';
-import { mapValues } from 'lodash';
-import { zoom as d3zoom } from 'd3-zoom';
 import { pointer } from 'd3-selection';
+import { zoom as d3zoom } from 'd3-zoom';
+import { mapValues } from 'lodash';
 
 import {
   gridX,
@@ -12,14 +12,14 @@ import {
   getAxis,
   isSpaceTimeChart,
 } from 'modules/simulationResult/components/ChartHelpers/ChartHelpers';
-import { CHART_AXES, LIST_VALUES, type ChartAxes } from 'modules/simulationResult/consts';
-import type { PositionScaleDomain } from 'modules/simulationResult/types';
 import drawGuideLines from 'modules/simulationResult/components/ChartHelpers/drawGuideLines';
 import type { SpaceCurvesSlopesData } from 'modules/simulationResult/components/SpaceCurvesSlopes';
 import type {
   AreaBlock,
   GevPreparedData,
 } from 'modules/simulationResult/components/SpeedSpaceChart/prepareData';
+import { CHART_AXES, LIST_VALUES, type ChartAxes } from 'modules/simulationResult/consts';
+import type { PositionScaleDomain } from 'modules/simulationResult/types';
 import type {
   Chart,
   ConsolidatedRouteAspect,

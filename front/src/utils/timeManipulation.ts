@@ -1,4 +1,5 @@
 import * as d3 from 'd3';
+
 import type { TimeString } from 'common/types';
 
 export function datetime2string(ts: string | number | Date): TimeString {

@@ -1,14 +1,15 @@
 import { cloneDeep } from 'lodash';
-import type { LinearMetadataItem } from 'common/IntervalsDataViz/types';
 
 import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
-import type { EditorEntity } from 'applications/editor/typesEditorEntity';
+import { DEFAULT_COMMON_TOOL_STATE } from 'applications/editor/tools/consts';
 import type {
   ElectrificationEntity,
   RangeEditionState,
   SpeedSectionEntity,
 } from 'applications/editor/tools/rangeEdition/types';
-import { DEFAULT_COMMON_TOOL_STATE } from 'applications/editor/tools/consts';
+import type { EditorEntity } from 'applications/editor/typesEditorEntity';
+import type { LinearMetadataItem } from 'common/IntervalsDataViz/types';
+
 import type { TrackEditionState, TrackSectionEntity } from './types';
 
 function getNewLine(points: [number, number][]): TrackSectionEntity {

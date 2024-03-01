@@ -1,5 +1,7 @@
 import * as d3 from 'd3';
 import { select as d3select } from 'd3-selection';
+import nextId from 'react-id-generator';
+
 import {
   gridX,
   gridY,
@@ -7,10 +9,9 @@ import {
   isSpaceSlopesCurves,
   isSpaceTimeChart,
 } from 'modules/simulationResult/components/ChartHelpers/ChartHelpers';
-import nextId from 'react-id-generator';
 import svgDefs from 'modules/simulationResult/components/ChartHelpers/svgDefs';
-import type { Chart, SimulationD3Scale } from 'reducers/osrdsimulation/types';
 import type { ChartAxes } from 'modules/simulationResult/consts';
+import type { Chart, SimulationD3Scale } from 'reducers/osrdsimulation/types';
 
 // keyValues ['position', 'gradient']
 const defineChart = (

@@ -1,4 +1,5 @@
 import React, { useState, useRef, useMemo, useEffect } from 'react';
+
 import { isNil, max } from 'lodash';
 
 import {
@@ -10,11 +11,14 @@ import {
   transalteViewBox,
 } from 'common/IntervalsDataViz/data';
 import { LinearMetadataDataviz } from 'common/IntervalsDataViz/dataviz';
+import type { LinearMetadataItem, OperationalPoint } from 'common/IntervalsDataViz/types';
 import { notEmpty, tooltipPosition } from 'common/IntervalsDataViz/utils';
 
-import type { LinearMetadataItem, OperationalPoint } from 'common/IntervalsDataViz/types';
-import IntervalsEditorTootlip from './IntervalsEditorTooltip';
 import IntervalsEditorCommonForm from './IntervalsEditorCommonForm';
+import IntervalsEditorMarginForm from './IntervalsEditorMarginForm';
+import IntervalsEditorSelectForm from './IntervalsEditorSelectForm';
+import ToolButtons from './IntervalsEditorToolButtons';
+import IntervalsEditorTootlip from './IntervalsEditorTooltip';
 import {
   type AdditionalDataItem,
   INTERVALS_EDITOR_TOOLS,
@@ -23,11 +27,8 @@ import {
   type IntervalsEditorTool,
   type IntervalsEditorToolsConfig,
 } from './types';
-import ZoomButtons from './ZoomButtons';
-import ToolButtons from './IntervalsEditorToolButtons';
-import IntervalsEditorMarginForm from './IntervalsEditorMarginForm';
-import IntervalsEditorSelectForm from './IntervalsEditorSelectForm';
 import { createEmptySegmentAt, removeSegment } from './utils';
+import ZoomButtons from './ZoomButtons';
 
 type IntervalsEditorProps = {
   /** Additionnal read-only data that will be displayed along the path, below the intervals editor */

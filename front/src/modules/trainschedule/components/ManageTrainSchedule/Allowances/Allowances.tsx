@@ -1,17 +1,21 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { useSelector } from 'react-redux';
-import { AiOutlineDash } from 'react-icons/ai';
 
-import { AllowancesTypes } from 'modules/trainschedule/components/ManageTrainSchedule/Allowances/types';
-import AllowancesList from 'modules/trainschedule/components/ManageTrainSchedule/Allowances/AllowancesList';
+import { useTranslation } from 'react-i18next';
+import { AiOutlineDash } from 'react-icons/ai';
+import { useSelector } from 'react-redux';
+
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import type { StandardAllowance, Allowance } from 'common/api/osrdEditoastApi';
+import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
 import AllowancesActions from 'modules/trainschedule/components/ManageTrainSchedule/Allowances/AllowancesActions';
-import { initialStandardAllowance } from 'modules/trainschedule/components/ManageTrainSchedule/Allowances/consts';
 import AllowancesLinearView from 'modules/trainschedule/components/ManageTrainSchedule/Allowances/AllowancesLinearView';
+import AllowancesList from 'modules/trainschedule/components/ManageTrainSchedule/Allowances/AllowancesList';
 import AllowancesStandardSettings from 'modules/trainschedule/components/ManageTrainSchedule/Allowances/AllowancesStandardSettings';
+import { initialStandardAllowance } from 'modules/trainschedule/components/ManageTrainSchedule/Allowances/consts';
 import getAllowanceValue, {
   fillAllowancesWithDefaultRanges,
 } from 'modules/trainschedule/components/ManageTrainSchedule/Allowances/helpers';
+import { AllowancesTypes } from 'modules/trainschedule/components/ManageTrainSchedule/Allowances/types';
 import type {
   AllowanceValueForm,
   EngineeringAllowanceForm,
@@ -19,10 +23,6 @@ import type {
   RangeAllowanceForm,
   StandardAllowanceForm,
 } from 'modules/trainschedule/components/ManageTrainSchedule/Allowances/types';
-
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
-import type { StandardAllowance, Allowance } from 'common/api/osrdEditoastApi';
 import { useAppDispatch } from 'store';
 
 const MissingPathFindingMessage = () => {

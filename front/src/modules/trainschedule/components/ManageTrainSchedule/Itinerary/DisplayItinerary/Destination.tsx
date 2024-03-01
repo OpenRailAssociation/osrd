@@ -1,11 +1,12 @@
 import React from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+
+import { XCircle } from '@osrd-project/ui-icons';
+import type { Position } from 'geojson';
 import { useTranslation } from 'react-i18next';
 import { IoFlag } from 'react-icons/io5';
-import type { Position } from 'geojson';
+import { useDispatch, useSelector } from 'react-redux';
 
 import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
-import { XCircle } from '@osrd-project/ui-icons';
 
 interface DestinationProps {
   zoomToFeaturePoint: (lngLat?: Position, id?: string) => void;

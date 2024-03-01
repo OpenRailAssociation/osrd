@@ -1,16 +1,17 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
+
 import { useTranslation } from 'react-i18next';
+
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import type { LightRollingStockWithLiveries } from 'common/api/osrdEditoastApi';
+import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { Loader } from 'common/Loaders/Loader';
 import { RollingStockCard } from 'modules/rollingStock/components/RollingStockCard';
-import RollingStockEditorButtons from 'modules/rollingStock/components/RollingStockEditor/RollingStockEditorButtons';
 import RollingStockEditorForm from 'modules/rollingStock/components/RollingStockEditor';
+import RollingStockEditorButtons from 'modules/rollingStock/components/RollingStockEditor/RollingStockEditorButtons';
 import RollingStockEditorFormModal from 'modules/rollingStock/components/RollingStockEditor/RollingStockEditorFormModal';
 import RollingStockInformationPanel from 'modules/rollingStock/components/RollingStockEditor/RollingStockInformationPanel';
 import { SearchRollingStock } from 'modules/rollingStock/components/RollingStockSelector';
-
-import type { LightRollingStockWithLiveries } from 'common/api/osrdEditoastApi';
 
 type RollingStockEditorProps = {
   rollingStocks: LightRollingStockWithLiveries[];

@@ -1,11 +1,12 @@
-import i18n from 'i18n';
 import type { Position } from 'geojson';
-import {
-  type ElectrificationRange,
-  type ElectrificationUsage,
-  type SimulationPowerRestrictionRange,
+
+import type {
+  ElectrificationRange,
+  ElectrificationUsage,
+  SimulationPowerRestrictionRange,
 } from 'common/api/osrdEditoastApi';
 import type { LinearMetadataItem } from 'common/IntervalsDataViz/types';
+import i18n from 'i18n';
 import type { HeightPosition } from 'reducers/osrdsimulation/types';
 
 export const BLOCKTYPES = [

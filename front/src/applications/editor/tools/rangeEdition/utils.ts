@@ -1,37 +1,36 @@
+import along from '@turf/along';
+import { feature, lineString, point, type Feature, type LineString } from '@turf/helpers';
+import length from '@turf/length';
+import lineSliceAlong from '@turf/line-slice-along';
 import type { Position } from 'geojson';
 import { last, cloneDeep, compact, isEmpty } from 'lodash';
-import along from '@turf/along';
-import length from '@turf/length';
-import { feature, lineString, point, type Feature, type LineString } from '@turf/helpers';
-import lineSliceAlong from '@turf/line-slice-along';
 import type { MapLayerMouseEvent } from 'maplibre-gl';
 
-import { getNearestPoint } from 'utils/mapHelper';
-
 import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
+import type { TrackRange, TrackSectionEntity } from 'applications/editor/tools/trackEdition/types';
 import {
   approximateDistanceWithEditoastData,
   getHoveredTrackRanges,
   getTrackSectionEntityFromNearestPoint,
 } from 'applications/editor/tools/utils';
 import type { PartialOrReducer } from 'applications/editor/types';
-import type { TrackRange, TrackSectionEntity } from 'applications/editor/tools/trackEdition/types';
+import { getNearestPoint } from 'utils/mapHelper';
 
-import {
-  type ElectrificationEntity,
-  type PSLExtension,
-  type PSLSign,
-  type PSL_SIGN_TYPE,
-  PSL_SIGN_TYPES,
-  type PslSignFeature,
-  type PslSignInformation,
-  type RangeEditionState,
-  type SpeedSectionEntity,
-  type SpeedSectionPslEntity,
-  type TrackRangeExtremityFeature,
-  type TrackRangeFeature,
-  type TrackState,
+import type {
+  ElectrificationEntity,
+  PSLExtension,
+  PSLSign,
+  PSL_SIGN_TYPE,
+  PslSignFeature,
+  PslSignInformation,
+  RangeEditionState,
+  SpeedSectionEntity,
+  SpeedSectionPslEntity,
+  TrackRangeExtremityFeature,
+  TrackRangeFeature,
+  TrackState,
 } from './types';
+import { PSL_SIGN_TYPES } from './types';
 
 // Tool functions
 

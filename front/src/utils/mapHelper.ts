@@ -1,31 +1,31 @@
-import bboxClip from '@turf/bbox-clip';
-import { chunk, head, sortBy } from 'lodash';
-import booleanPointInPolygon from '@turf/boolean-point-in-polygon';
-import booleanIntersects from '@turf/boolean-intersects';
 import bbox from '@turf/bbox';
-import lineIntersect from '@turf/line-intersect';
-import lineSlice from '@turf/line-slice';
-import WebMercatorViewport from 'viewport-mercator-project';
-import type { ViewState } from 'react-map-gl/maplibre';
-import { type BBox, type Coord, featureCollection, lineString } from '@turf/helpers';
-import type { Map, MapLayerMouseEvent, MapGeoJSONFeature } from 'maplibre-gl';
-import {
-  type Feature,
-  type FeatureCollection,
-  type LineString,
-  type MultiLineString,
-  type Point,
-  type MultiPoint,
-  type Position,
-  type Polygon,
-} from 'geojson';
-import nearestPointOnLine from '@turf/nearest-point-on-line';
-import nearestPoint, { type NearestPoint } from '@turf/nearest-point';
+import bboxClip from '@turf/bbox-clip';
+import booleanIntersects from '@turf/boolean-intersects';
+import booleanPointInPolygon from '@turf/boolean-point-in-polygon';
 import fnDistance from '@turf/distance';
 import fnExplode from '@turf/explode';
+import { type BBox, type Coord, featureCollection, lineString } from '@turf/helpers';
+import lineIntersect from '@turf/line-intersect';
+import lineSlice from '@turf/line-slice';
+import nearestPoint, { type NearestPoint } from '@turf/nearest-point';
+import nearestPointOnLine from '@turf/nearest-point-on-line';
+import type {
+  Feature,
+  FeatureCollection,
+  LineString,
+  MultiLineString,
+  Point,
+  MultiPoint,
+  Position,
+  Polygon,
+} from 'geojson';
+import { chunk, head, sortBy } from 'lodash';
+import type { Map, MapLayerMouseEvent, MapGeoJSONFeature } from 'maplibre-gl';
+import type { ViewState } from 'react-map-gl/maplibre';
+import WebMercatorViewport from 'viewport-mercator-project';
 
-import { getAngle } from 'applications/editor/data/utils';
 import type { Layer } from 'applications/editor/consts';
+import { getAngle } from 'applications/editor/data/utils';
 import type { Zone } from 'types';
 
 /**

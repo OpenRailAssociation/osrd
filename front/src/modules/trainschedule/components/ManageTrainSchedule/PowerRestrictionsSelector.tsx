@@ -1,20 +1,18 @@
 import React, { useEffect, useMemo } from 'react';
-import { compact, isEmpty, last, reduce, uniq } from 'lodash';
-import { useSelector } from 'react-redux';
-import { useTranslation } from 'react-i18next';
 
-import icon from 'assets/pictures/components/power_restrictions.svg';
+import { compact, isEmpty, last, reduce, uniq } from 'lodash';
+import { useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
 
 import type { PowerRestrictionRange } from 'applications/operationalStudies/consts';
-
+import icon from 'assets/pictures/components/power_restrictions.svg';
+import type { RangedValue, RollingStock } from 'common/api/osrdEditoastApi';
+import IntervalsEditor from 'common/IntervalsEditor/IntervalsEditor';
 import { INTERVAL_TYPES } from 'common/IntervalsEditor/types';
 import type { IntervalItem } from 'common/IntervalsEditor/types';
-import IntervalsEditor from 'common/IntervalsEditor/IntervalsEditor';
-import type { RangedValue, RollingStock } from 'common/api/osrdEditoastApi';
 import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
-
-import { useAppDispatch } from 'store';
 import { setWarning } from 'reducers/main';
+import { useAppDispatch } from 'store';
 
 export const NO_POWER_RESTRICTION = 'NO_POWER_RESTRICTION';
 /** Arbitrairy default segment length (1km) */

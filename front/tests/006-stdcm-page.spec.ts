@@ -1,10 +1,10 @@
 import { test, expect } from '@playwright/test';
-import StdcmPage from './pages/stdcm-page-model';
-import manageTrainScheduleTranslation from '../public/locales/fr/operationalStudies/manageTrainSchedule.json';
 
 import project from './assets/operationStudies/project.json';
-import study from './assets/operationStudies/study.json';
 import scenario from './assets/operationStudies/scenario.json';
+import study from './assets/operationStudies/study.json';
+import StdcmPage from './pages/stdcm-page-model';
+import manageTrainScheduleTranslation from '../public/locales/fr/operationalStudies/manageTrainSchedule.json';
 
 const projectName = project.name;
 const studyName = study.name;

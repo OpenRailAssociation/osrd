@@ -1,9 +1,12 @@
 import React, { useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
+
+import cx from 'classnames';
 import { isEmpty } from 'lodash';
+import { useTranslation } from 'react-i18next';
+
 import icon from 'assets/pictures/components/speedometer.svg';
 import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
-import cx from 'classnames';
+
 import 'common/SpeedLimitByTagSelector/SpeedLimitByTagSelector.scss';
 
 type SpeedLimitByTagSelectorProps = {

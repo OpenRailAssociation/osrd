@@ -1,6 +1,7 @@
 import React, { type FC } from 'react';
-import { Marker } from 'react-map-gl/maplibre';
+
 import type { Feature, Point } from 'geojson';
+import { Marker } from 'react-map-gl/maplibre';
 
 const SnappedMarker: FC<{ geojson: Feature<Point> }> = ({ geojson }) => (
   <Marker longitude={geojson.geometry.coordinates[0]} latitude={geojson.geometry.coordinates[1]}>

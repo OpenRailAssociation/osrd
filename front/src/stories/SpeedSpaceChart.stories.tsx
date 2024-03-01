@@ -1,13 +1,15 @@
 import React from 'react';
-import { noop } from 'lodash';
+
 import type { StoryFn } from '@storybook/react';
+import { noop } from 'lodash';
+import { Provider } from 'react-redux';
+
+import ORSD_GRAPH_SAMPLE_DATA from 'modules/simulationResult/components/sampleData';
 import SpeedSpaceChart, {
   type SpeedSpaceChartProps,
 } from 'modules/simulationResult/components/SpeedSpaceChart/SpeedSpaceChart';
 import 'stories/storybook.css';
-import { Provider } from 'react-redux';
 import { store } from 'store';
-import ORSD_GRAPH_SAMPLE_DATA from 'modules/simulationResult/components/sampleData';
 
 export default {
   /* 👇 The title prop is optional.

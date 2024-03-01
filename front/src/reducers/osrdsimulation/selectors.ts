@@ -1,6 +1,7 @@
+import type { SimulationReport } from 'common/api/osrdEditoastApi';
 import type { RootState } from 'reducers';
 import { makeSubSelector } from 'utils/selectors';
-import type { SimulationReport } from 'common/api/osrdEditoastApi';
+
 import type { OsrdSimulationState, Train } from './types';
 
 export const getOsrdSimulation = (state: RootState) => state.osrdsimulation;

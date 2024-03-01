@@ -1,18 +1,18 @@
 import React, { type ComponentType } from 'react';
-import type { Map } from 'maplibre-gl';
-import { cloneDeep, isEqual } from 'lodash';
-import type { IconType } from 'react-icons';
-import { BiReset } from 'react-icons/bi';
-import { AiFillSave } from 'react-icons/ai';
-import { PlusCircle, Trash } from '@osrd-project/ui-icons';
 
-import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
-import type { PartialOrReducer, ReadOnlyEditorContextType, Tool } from 'applications/editor/types';
+import { PlusCircle, Trash } from '@osrd-project/ui-icons';
+import { cloneDeep, isEqual } from 'lodash';
+import type { Map } from 'maplibre-gl';
+import type { IconType } from 'react-icons';
+import { AiFillSave } from 'react-icons/ai';
+import { BiReset } from 'react-icons/bi';
+
 import { LAYER_TO_EDITOAST_DICT, LAYERS_SET, type Layer } from 'applications/editor/consts';
-import { approximateDistanceWithEditoastData } from 'applications/editor/tools/utils';
+import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
 import { DEFAULT_COMMON_TOOL_STATE } from 'applications/editor/tools/consts';
 import type { TrackSectionEntity } from 'applications/editor/tools/trackEdition/types';
-
+import { approximateDistanceWithEditoastData } from 'applications/editor/tools/utils';
+import type { PartialOrReducer, ReadOnlyEditorContextType, Tool } from 'applications/editor/types';
 import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { save } from 'reducers/editor/thunkActions';
 import { getNearestPoint } from 'utils/mapHelper';

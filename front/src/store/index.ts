@@ -1,18 +1,18 @@
-import { configureStore, type Middleware } from '@reduxjs/toolkit';
-import { persistStore, getStoredState } from 'redux-persist';
 import type { Config } from '@redux-devtools/extension';
+import { configureStore, type Middleware } from '@reduxjs/toolkit';
 import { type TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
+import { persistStore, getStoredState } from 'redux-persist';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { osrdGatewayApi } from 'common/api/osrdGatewayApi';
-
+import { ChartSynchronizer } from 'modules/simulationResult/components/ChartHelpers/ChartSynchronizer';
 import persistedReducer, {
   rootReducer,
   rootInitialState,
   type RootState,
   persistConfig,
 } from 'reducers';
-import { ChartSynchronizer } from 'modules/simulationResult/components/ChartHelpers/ChartSynchronizer';
+
 import { listenerMiddleware } from './listenerMiddleware';
 
 const reduxDevToolsOptions: Config = {

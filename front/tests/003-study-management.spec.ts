@@ -1,11 +1,13 @@
 import { test, expect } from '@playwright/test';
 import { v4 as uuidv4 } from 'uuid';
+
 import type { Project, Study } from 'common/api/osrdEditoastApi';
-import { PlaywrightHomePage } from './pages/home-page-model';
+
 import studyData from './assets/operationStudies/study.json';
-import { StudyPage } from './pages/study-page-model';
-import PlaywrightCommonPage from './pages/common-page-model';
 import { getProject, postApiRequest } from './assets/utils';
+import PlaywrightCommonPage from './pages/common-page-model';
+import { PlaywrightHomePage } from './pages/home-page-model';
+import { StudyPage } from './pages/study-page-model';
 
 let project: Project;
 let study: Study;

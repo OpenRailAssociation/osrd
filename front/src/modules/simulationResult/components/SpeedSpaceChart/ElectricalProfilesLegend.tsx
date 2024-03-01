@@ -1,5 +1,7 @@
 import React from 'react';
+
 import { useTranslation } from 'react-i18next';
+
 import { legend } from 'applications/operationalStudies/consts';
 
 interface ElecProfileProps {

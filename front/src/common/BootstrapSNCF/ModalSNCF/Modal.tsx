@@ -1,10 +1,12 @@
 import React, { type FC, type PropsWithChildren, useContext, useEffect } from 'react';
+
 import { isArray } from 'lodash';
 
 import useKeyboardShortcuts from 'utils/hooks/useKeyboardShortcuts';
-import ModalHeaderSNCF from './ModalHeaderSNCF';
-import ModalFooterSNCF from './ModalFooterSNCF';
+
 import ModalBodySNCF from './ModalBodySNCF';
+import ModalFooterSNCF from './ModalFooterSNCF';
+import ModalHeaderSNCF from './ModalHeaderSNCF';
 import { ModalContext } from './ModalProvider';
 
 export interface ModalProps {

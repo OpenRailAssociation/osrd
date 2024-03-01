@@ -1,4 +1,5 @@
 import { useContext, useMemo } from 'react';
+
 import { first, keyBy } from 'lodash';
 
 import EditorContext from 'applications/editor/context';
@@ -8,12 +9,11 @@ import type {
   SwitchEditionState,
   SwitchEntity,
 } from 'applications/editor/tools/switchEdition/types';
-import type { ExtendedEditorContextType } from 'applications/editor/types';
 import {
   getSwitchTypeJSONSchema,
   switchToFlatSwitch,
 } from 'applications/editor/tools/switchEdition/utils';
-
+import type { ExtendedEditorContextType } from 'applications/editor/types';
 import { useInfraID } from 'common/osrdContext';
 
 // TODO : Rename all switch by tracknode when back renaming PR merged

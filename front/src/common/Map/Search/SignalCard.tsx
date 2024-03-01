@@ -1,4 +1,5 @@
 import React from 'react';
+
 import type { SearchResultItemSignal } from 'common/api/osrdEditoastApi';
 import mainConfig from 'config/config';
 

@@ -1,32 +1,29 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
-import { useSelector } from 'react-redux';
-import { Pencil, Eye, EyeClosed, ChevronLeft, ChevronRight } from '@osrd-project/ui-icons';
-import { GiElectric } from 'react-icons/gi';
 
-import infraLogo from 'assets/pictures/components/tracks.svg';
+import { Pencil, Eye, EyeClosed, ChevronLeft, ChevronRight } from '@osrd-project/ui-icons';
+import { useTranslation } from 'react-i18next';
+import { GiElectric } from 'react-icons/gi';
+import { useSelector } from 'react-redux';
+import { useParams } from 'react-router-dom';
 
 import BreadCrumbs from 'applications/operationalStudies/components/BreadCrumbs';
-import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
-import SimulationResults from 'applications/operationalStudies/views/SimulationResults';
-import ImportTrainSchedule from 'applications/operationalStudies/views/ImportTrainSchedule';
-import ManageTrainSchedule from 'applications/operationalStudies/views/ManageTrainSchedule';
-import InfraLoadingState from 'applications/operationalStudies/components/Scenario/InfraLoadingState';
 import getSimulationResults, {
   selectProjection,
 } from 'applications/operationalStudies/components/Scenario/getSimulationResults';
-
-import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
-import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
+import InfraLoadingState from 'applications/operationalStudies/components/Scenario/InfraLoadingState';
+import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
+import ImportTrainSchedule from 'applications/operationalStudies/views/ImportTrainSchedule';
+import ManageTrainSchedule from 'applications/operationalStudies/views/ManageTrainSchedule';
+import SimulationResults from 'applications/operationalStudies/views/SimulationResults';
+import infraLogo from 'assets/pictures/components/tracks.svg';
 import { type SimulationReport, osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
+import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import { useInfraID, useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
-
-import Timetable from 'modules/trainschedule/components/Timetable/Timetable';
-import ScenarioLoaderMessage from 'modules/scenario/components/ScenarioLoaderMessage';
 import AddAndEditScenarioModal from 'modules/scenario/components/AddOrEditScenarioModal';
+import ScenarioLoaderMessage from 'modules/scenario/components/ScenarioLoaderMessage';
+import Timetable from 'modules/trainschedule/components/Timetable/Timetable';
 import TimetableManageTrainSchedule from 'modules/trainschedule/components/Timetable/TimetableManageTrainSchedule';
-
 import type { RootState } from 'reducers';
 import { updateSelectedProjection, updateSimulation } from 'reducers/osrdsimulation/actions';
 import {

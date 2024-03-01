@@ -1,33 +1,31 @@
 import React, { type FC, useEffect, useMemo, useState } from 'react';
-import { useSelector } from 'react-redux';
+
 import { groupBy, mapKeys, mapValues, sum, isString, isArray, uniq, isNil } from 'lodash';
 import { useTranslation } from 'react-i18next';
-import { MdSpeed } from 'react-icons/md';
 import { GiElectric } from 'react-icons/gi';
+import { MdSpeed } from 'react-icons/md';
 import { TbRectangleVerticalFilled } from 'react-icons/tb';
+import { useSelector } from 'react-redux';
 
 import { EDITOAST_TO_LAYER_DICT } from 'applications/editor/consts';
 import type { Layer, EditoastType } from 'applications/editor/consts';
 import type { EditorEntity } from 'applications/editor/typesEditorEntity';
-
+import bufferStopIcon from 'assets/pictures/layersicons/bufferstop.svg';
+import detectorsIcon from 'assets/pictures/layersicons/detectors.svg';
+import trackSectionsIcon from 'assets/pictures/layersicons/layer_adv.svg';
+import signalsIcon from 'assets/pictures/layersicons/layer_signal.svg';
 import pslsIcon from 'assets/pictures/layersicons/layer_tivs.svg';
 import switchesIcon from 'assets/pictures/layersicons/switches.svg';
-import detectorsIcon from 'assets/pictures/layersicons/detectors.svg';
-import signalsIcon from 'assets/pictures/layersicons/layer_signal.svg';
-import bufferStopIcon from 'assets/pictures/layersicons/bufferstop.svg';
-import trackSectionsIcon from 'assets/pictures/layersicons/layer_adv.svg';
-
-import { useInfraID } from 'common/osrdContext';
-import { Modal } from 'common/BootstrapSNCF/ModalSNCF';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { Modal } from 'common/BootstrapSNCF/ModalSNCF';
 import SwitchSNCF from 'common/BootstrapSNCF/SwitchSNCF/SwitchSNCF';
-import MapSettingsMapStyle from 'common/Map/Settings/MapSettingsMapStyle';
 import MapSettingsBackgroundSwitches from 'common/Map/Settings/MapSettingsBackgroundSwitches';
-
-import { useAppDispatch } from 'store';
-import { getMap } from 'reducers/map/selectors';
-import { updateLayersSettings } from 'reducers/map';
+import MapSettingsMapStyle from 'common/Map/Settings/MapSettingsMapStyle';
+import { useInfraID } from 'common/osrdContext';
 import { editorSliceActions } from 'reducers/editor';
+import { updateLayersSettings } from 'reducers/map';
+import { getMap } from 'reducers/map/selectors';
+import { useAppDispatch } from 'store';
 
 export const LAYERS: Array<{ layers: Layer[]; icon: string | JSX.Element }> = [
   { layers: ['track_sections'], icon: trackSectionsIcon },

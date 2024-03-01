@@ -1,4 +1,5 @@
 import * as d3 from 'd3';
+
 import type { PositionSpeedTime, SpeedPosition } from 'reducers/osrdsimulation/types';
 
 export function massWithOneDecimal(number: number) {

@@ -6,18 +6,15 @@ import {
   createPowerRestrictionSegment,
   DRAWING_KEYS,
 } from 'applications/operationalStudies/consts';
-import { CHART_AXES } from 'modules/simulationResult/consts';
+import { defineLinear } from 'modules/simulationResult/components/ChartHelpers/ChartHelpers';
+import defineChart from 'modules/simulationResult/components/ChartHelpers/defineChart';
 import drawArea from 'modules/simulationResult/components/ChartHelpers/drawArea';
 import drawCurve from 'modules/simulationResult/components/ChartHelpers/drawCurve';
-import defineChart from 'modules/simulationResult/components/ChartHelpers/defineChart';
-import { defineLinear } from 'modules/simulationResult/components/ChartHelpers/ChartHelpers';
 import drawElectricalProfile from 'modules/simulationResult/components/ChartHelpers/drawElectricalProfile';
 import drawPowerRestriction from 'modules/simulationResult/components/ChartHelpers/drawPowerRestriction';
-import {
-  type Chart,
-  type SpeedSpaceChart,
-  type SpeedSpaceSettingsType,
-} from 'reducers/osrdsimulation/types';
+import { CHART_AXES } from 'modules/simulationResult/consts';
+import type { Chart, SpeedSpaceChart, SpeedSpaceSettingsType } from 'reducers/osrdsimulation/types';
+
 import type { GevPreparedData } from './prepareData';
 
 /**

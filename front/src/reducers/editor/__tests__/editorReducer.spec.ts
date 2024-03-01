@@ -1,5 +1,6 @@
-import { createStoreWithoutMiddleware } from 'store';
 import { editorInitialState, editorSliceActions, editorSlice } from 'reducers/editor';
+import { createStoreWithoutMiddleware } from 'store';
+
 import editorTestDataBuilder from './editorTestDataBuilder';
 
 const { selectLayers, loadDataModelAction, updateTotalsIssueAction, updateFiltersIssueAction } =

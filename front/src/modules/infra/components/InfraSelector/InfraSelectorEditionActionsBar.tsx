@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
+
 import { Duplicate, Pencil, Download, Lock, Unlock } from '@osrd-project/ui-icons';
+import fileDownload from 'js-file-download';
 import { useTranslation } from 'react-i18next';
 import { MdCancel, MdCheck } from 'react-icons/md';
-import fileDownload from 'js-file-download';
 
 import { type Infra, osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import { useAppDispatch } from 'store';
-import { setFailure } from 'reducers/main';
 import InfraLockState from 'modules/infra/consts';
+import { setFailure } from 'reducers/main';
+import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 
 type ActionBarProps = {

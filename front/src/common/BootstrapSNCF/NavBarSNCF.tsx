@@ -1,18 +1,20 @@
 import React, { type ReactElement } from 'react';
+
+import { Gear, Info, ShieldCheck, SignOut } from '@osrd-project/ui-icons';
+import getUnicodeFlagIcon from 'country-flag-icons/unicode';
+import i18n from 'i18next';
+import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
-import { Gear, Info, ShieldCheck, SignOut } from '@osrd-project/ui-icons';
-import { useTranslation } from 'react-i18next';
-import i18n from 'i18next';
 
-import useAuth from 'utils/hooks/OsrdAuth';
-import { getUserSafeWord } from 'reducers/user/userSelectors';
-import ReleaseInformations from 'common/ReleaseInformations/ReleaseInformations';
-import ChangeLanguageModal from 'common/ChangeLanguageModal';
-import UserSettings from 'common/UserSettings';
-import getUnicodeFlagIcon from 'country-flag-icons/unicode';
-import { language2flag } from 'utils/strings';
 import logoOSRD from 'assets/fav-osrd-color.svg';
+import ChangeLanguageModal from 'common/ChangeLanguageModal';
+import ReleaseInformations from 'common/ReleaseInformations/ReleaseInformations';
+import UserSettings from 'common/UserSettings';
+import { getUserSafeWord } from 'reducers/user/userSelectors';
+import useAuth from 'utils/hooks/OsrdAuth';
+import { language2flag } from 'utils/strings';
+
 import DropdownSNCF, { DROPDOWN_STYLE_TYPES } from './DropdownSNCF';
 import { useModal } from './ModalSNCF';
 

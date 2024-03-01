@@ -1,11 +1,11 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
-import { useTranslation } from 'react-i18next';
-import type { Position } from 'geojson';
 
-import DisplayVias from 'modules/trainschedule/components/ManageTrainSchedule/Itinerary/DisplayVias';
+import type { Position } from 'geojson';
+import { useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
 
 import { useOsrdConfSelectors } from 'common/osrdContext';
+import DisplayVias from 'modules/trainschedule/components/ManageTrainSchedule/Itinerary/DisplayVias';
 
 interface ViasProps {
   zoomToFeaturePoint: (lngLat?: Position, id?: string) => void;

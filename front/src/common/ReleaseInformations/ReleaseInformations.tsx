@@ -2,14 +2,15 @@
 // List of applications : Editoast, Core, Api
 
 import React from 'react';
+
 import { useTranslation } from 'react-i18next';
 
+import osrdLogo from 'assets/fav-osrd-color.svg';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
-import osrdLogo from 'assets/fav-osrd-color.svg';
 import motriceParty from 'common/MotriceRelated/motriceParty';
+
 import LicenseAttributions from './LicenseAttributions';
 
 function ReleaseInformations() {

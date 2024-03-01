@@ -1,7 +1,9 @@
 import React from 'react';
+
 import { useTranslation } from 'react-i18next';
 
 import type { Train } from 'reducers/osrdsimulation/types';
+
 import DriverTrainScheduleStop from './DriverTrainScheduleStop';
 import type { BaseOrEcoType } from './DriverTrainScheduleTypes';
 

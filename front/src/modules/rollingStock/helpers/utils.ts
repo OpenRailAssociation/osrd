@@ -1,4 +1,13 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
+import type { TFunction } from 'i18next';
+import { groupBy, has, isNil, isNull, omit, pick } from 'lodash';
+
+import type {
+  EffortCurve,
+  RollingStockComfortType,
+  RollingStock,
+  RollingStockForm,
+} from 'common/api/osrdEditoastApi';
 import {
   RS_REQUIRED_FIELDS,
   THERMAL_TRACTION_IDENTIFIER,
@@ -6,11 +15,7 @@ import {
   DEFAULT_SIGNALING_SYSTEMS,
   RS_SCHEMA_PROPERTIES,
 } from 'modules/rollingStock/consts';
-import { getTranslationKey } from 'utils/strings';
-import { groupBy, has, isNil, isNull, omit, pick } from 'lodash';
 import { isElectric } from 'modules/rollingStock/helpers/electric';
-import type { TFunction } from 'i18next';
-
 import type {
   ConditionalEffortCurveForm,
   EffortCurveForm,
@@ -19,12 +24,7 @@ import type {
   RollingStockParametersValues,
   SchemaProperty,
 } from 'modules/rollingStock/types';
-import type {
-  EffortCurve,
-  RollingStockComfortType,
-  RollingStock,
-  RollingStockForm,
-} from 'common/api/osrdEditoastApi';
+import { getTranslationKey } from 'utils/strings';
 import type { ValueOf } from 'utils/types';
 
 const newRollingStockValues = {

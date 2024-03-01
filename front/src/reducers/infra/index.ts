@@ -1,4 +1,5 @@
 import type { CaseReducer, Draft, PayloadAction } from '@reduxjs/toolkit';
+
 import type { Infra } from 'common/api/osrdEditoastApi';
 
 export interface InfraState {

@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { useSelector } from 'react-redux';
-import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+
+import { XCircle } from '@osrd-project/ui-icons';
 import type { Action } from '@reduxjs/toolkit';
 import cx from 'classnames';
 import type { Position } from 'geojson';
-import { formatUicToCi } from 'utils/strings';
-
-import { useDebounce } from 'utils/helpers';
+import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+import { useSelector } from 'react-redux';
 
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
 import { useAppDispatch } from 'store';
-import { XCircle } from '@osrd-project/ui-icons';
+import { useDebounce } from 'utils/helpers';
+import { formatUicToCi } from 'utils/strings';
 
 type InputStopTimeProps = {
   index: number;

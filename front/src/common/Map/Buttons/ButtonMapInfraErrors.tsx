@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { BsExclamationOctagon } from 'react-icons/bs';
-import { useTranslation } from 'react-i18next';
-import { useAppDispatch } from 'store';
-import { type EditorState, editorSliceActions } from 'reducers/editor';
-import type { Layer } from 'applications/editor/consts';
+
 import cx from 'classnames';
+import { useTranslation } from 'react-i18next';
+import { BsExclamationOctagon } from 'react-icons/bs';
+
+import type { Layer } from 'applications/editor/consts';
+import { type EditorState, editorSliceActions } from 'reducers/editor';
+import { useAppDispatch } from 'store';
 
 interface ButtonMapInfraErrorsProps {
   editorState: EditorState;

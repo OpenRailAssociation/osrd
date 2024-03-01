@@ -1,23 +1,24 @@
 import React, { useState, useEffect, useReducer } from 'react';
-import { useSelector } from 'react-redux';
-import type { Position } from 'geojson';
-import bbox from '@turf/bbox';
-import { useTranslation } from 'react-i18next';
-import { compact, isEqual, omit } from 'lodash';
 
 import { Alert, CheckCircle, Stop } from '@osrd-project/ui-icons';
-import type { ArrayElement } from 'utils/types';
-import { conditionalStringConcat, formatKmValue } from 'utils/strings';
-import { castErrorToFailure } from 'utils/error';
-import type { PathResponse, PathfindingRequest, PathfindingStep } from 'common/api/osrdEditoastApi';
-import infraLogo from 'assets/pictures/components/tracks.svg';
-import type { PointOnMap } from 'applications/operationalStudies/consts';
+import bbox from '@turf/bbox';
+import type { Position } from 'geojson';
+import { compact, isEqual, omit } from 'lodash';
+import { useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
+
 import InfraLoadingState from 'applications/operationalStudies/components/Scenario/InfraLoadingState';
-import { Spinner } from 'common/Loaders';
+import type { PointOnMap } from 'applications/operationalStudies/consts';
+import infraLogo from 'assets/pictures/components/tracks.svg';
+import type { PathResponse, PathfindingRequest, PathfindingStep } from 'common/api/osrdEditoastApi';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { Spinner } from 'common/Loaders';
 import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
-import { useAppDispatch } from 'store';
 import { setFailure } from 'reducers/main';
+import { useAppDispatch } from 'store';
+import { castErrorToFailure } from 'utils/error';
+import { conditionalStringConcat, formatKmValue } from 'utils/strings';
+import type { ArrayElement } from 'utils/types';
 
 interface PathfindingState {
   running: boolean;

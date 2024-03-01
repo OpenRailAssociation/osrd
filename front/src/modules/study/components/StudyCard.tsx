@@ -1,17 +1,16 @@
 import React from 'react';
-import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
-import nextId from 'react-id-generator';
+
 import { Calendar, FileDirectory, FileDirectoryOpen } from '@osrd-project/ui-icons';
+import { useTranslation } from 'react-i18next';
+import nextId from 'react-id-generator';
+import { useNavigate } from 'react-router-dom';
 
 import studyLogo from 'assets/pictures/views/study.svg';
-
-import { budgetFormat } from 'utils/numbers';
-import { dateTimeFormatting } from 'utils/date';
-
 import type { StudyWithScenarios } from 'common/api/osrdEditoastApi';
 import { useOsrdConfActions } from 'common/osrdContext';
 import { useAppDispatch } from 'store';
+import { dateTimeFormatting } from 'utils/date';
+import { budgetFormat } from 'utils/numbers';
 
 type StudyCardProps = {
   setFilterChips: (filterChips: string) => void;

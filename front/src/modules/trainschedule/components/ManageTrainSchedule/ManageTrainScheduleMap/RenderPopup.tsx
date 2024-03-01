@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
-import { useSelector } from 'react-redux';
+
 import { useTranslation } from 'react-i18next';
-import { Popup } from 'react-map-gl/maplibre';
 import { IoFlag } from 'react-icons/io5';
 import { RiMapPin2Fill, RiMapPin3Fill } from 'react-icons/ri';
+import { Popup } from 'react-map-gl/maplibre';
+import { useSelector } from 'react-redux';
 
 import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
 import setPointIti from 'modules/trainschedule/components/ManageTrainSchedule/ManageTrainScheduleMap/setPointIti';

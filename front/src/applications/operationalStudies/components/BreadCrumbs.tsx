@@ -1,7 +1,9 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
+
 import { ChevronRight } from '@osrd-project/ui-icons';
+import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
+
 import type { Project, Study, Scenario } from 'common/api/osrdEditoastApi';
 
 type Props = {

@@ -1,7 +1,10 @@
 import React, { useMemo } from 'react';
+
 import { useTranslation } from 'react-i18next';
+
 import InputGroupSNCF, { type InputGroupSNCFValue } from 'common/BootstrapSNCF/InputGroupSNCF';
 import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
+
 import { unitsList, unitsNames } from './consts';
 import getAllowanceValue from './helpers';
 import type { AllowanceValueForm, StandardAllowanceForm } from './types';

@@ -1,5 +1,3 @@
-import { createStoreWithoutMiddleware } from 'store';
-
 import { describe, expect } from 'vitest';
 
 import type { MapState, Viewport } from 'reducers/map';
@@ -18,6 +16,7 @@ import {
   updateLayersSettings,
   updateTerrain3DExaggeration,
 } from 'reducers/map';
+import { createStoreWithoutMiddleware } from 'store';
 
 const createStore = (initialStateExtra?: MapState) =>
   createStoreWithoutMiddleware({

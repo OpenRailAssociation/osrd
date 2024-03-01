@@ -1,8 +1,9 @@
 import { useEffect } from 'react';
+
 import { useSelector } from 'react-redux';
 
-import { getIsUserLogged, getUsername } from 'reducers/user/userSelectors';
 import { osrdGatewayApi } from 'common/api/osrdGatewayApi';
+import { getIsUserLogged, getUsername } from 'reducers/user/userSelectors';
 
 type AuthHookData = {
   username?: string;

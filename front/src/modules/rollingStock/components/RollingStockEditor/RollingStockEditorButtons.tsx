@@ -1,15 +1,15 @@
-import cx from 'classnames';
 import React from 'react';
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import { useAppDispatch } from 'store';
-import { setSuccess, setFailure } from 'reducers/main';
-import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
-import { useTranslation } from 'react-i18next';
 
 import { Duplicate, Pencil, Trash } from '@osrd-project/ui-icons';
-import RollingStockEditorFormModal from 'modules/rollingStock/components/RollingStockEditor/RollingStockEditorFormModal';
+import cx from 'classnames';
+import { useTranslation } from 'react-i18next';
 
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { RollingStock } from 'common/api/osrdEditoastApi';
+import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
+import RollingStockEditorFormModal from 'modules/rollingStock/components/RollingStockEditor/RollingStockEditorFormModal';
+import { setSuccess, setFailure } from 'reducers/main';
+import { useAppDispatch } from 'store';
 import { castErrorToFailure, getErrorStatus } from 'utils/error';
 
 type RollingStockEditorButtonsProps = {

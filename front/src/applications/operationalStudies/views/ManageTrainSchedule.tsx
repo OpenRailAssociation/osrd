@@ -1,32 +1,30 @@
 import React, { useEffect } from 'react';
+
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
-import rollingStockPic from 'assets/pictures/components/train.svg';
-import pahtFindingPic from 'assets/pictures/components/pathfinding.svg';
 import allowancesPic from 'assets/pictures/components/allowances.svg';
+import pahtFindingPic from 'assets/pictures/components/pathfinding.svg';
 import simulationSettings from 'assets/pictures/components/simulationSettings.svg';
-
-import { formatKmValue } from 'utils/strings';
-
-import { isElectric } from 'modules/rollingStock/helpers/electric';
-import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
-import { Itinerary, Map } from 'modules/trainschedule/components/ManageTrainSchedule';
-import { RollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector';
-import TrainSettings from 'modules/trainschedule/components/ManageTrainSchedule/TrainSettings';
-import Allowances from 'modules/trainschedule/components/ManageTrainSchedule/Allowances/Allowances';
-import ElectricalProfiles from 'modules/trainschedule/components/ManageTrainSchedule/ElectricalProfiles';
-import PowerRestrictionsSelector from 'modules/trainschedule/components/ManageTrainSchedule/PowerRestrictionsSelector';
-import adjustConfWithTrainToModify from 'modules/trainschedule/components/ManageTrainSchedule/helpers/adjustConfWithTrainToModify';
-
-import Tabs from 'common/Tabs';
+import rollingStockPic from 'assets/pictures/components/train.svg';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { RangedValue } from 'common/api/osrdEditoastApi';
 import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
 import SpeedLimitByTagSelector from 'common/SpeedLimitByTagSelector/SpeedLimitByTagSelector';
 import { useStoreDataForSpeedLimitByTagSelector } from 'common/SpeedLimitByTagSelector/useStoreDataForSpeedLimitByTagSelector';
+import Tabs from 'common/Tabs';
+import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
+import { RollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
+import { isElectric } from 'modules/rollingStock/helpers/electric';
+import { Itinerary, Map } from 'modules/trainschedule/components/ManageTrainSchedule';
+import Allowances from 'modules/trainschedule/components/ManageTrainSchedule/Allowances/Allowances';
+import ElectricalProfiles from 'modules/trainschedule/components/ManageTrainSchedule/ElectricalProfiles';
+import adjustConfWithTrainToModify from 'modules/trainschedule/components/ManageTrainSchedule/helpers/adjustConfWithTrainToModify';
+import PowerRestrictionsSelector from 'modules/trainschedule/components/ManageTrainSchedule/PowerRestrictionsSelector';
+import TrainSettings from 'modules/trainschedule/components/ManageTrainSchedule/TrainSettings';
 import { useAppDispatch } from 'store';
+import { formatKmValue } from 'utils/strings';
 
 export default function ManageTrainSchedule() {
   const dispatch = useAppDispatch();

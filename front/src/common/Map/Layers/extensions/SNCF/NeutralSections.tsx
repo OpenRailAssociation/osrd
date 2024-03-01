@@ -1,12 +1,12 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
+
 import { type LayerProps, Source } from 'react-map-gl/maplibre';
+import { useSelector } from 'react-redux';
 
-import type { RootState } from 'reducers';
 import { MAP_URL } from 'common/Map/const';
-
-import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 import NeutralSectionSigns from 'common/Map/Layers/extensions/SNCF/NeutralSectionSigns';
+import OrderedLayer from 'common/Map/Layers/OrderedLayer';
+import type { RootState } from 'reducers';
 import type { Theme } from 'types';
 
 type NeutralSectionsProps = {

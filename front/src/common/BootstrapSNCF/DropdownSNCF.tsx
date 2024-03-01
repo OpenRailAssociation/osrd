@@ -1,6 +1,7 @@
+import React, { type FC, type LegacyRef, type ReactNode, useEffect, useRef, useState } from 'react';
+
 import nextId from 'react-id-generator';
 import TetherComponent from 'react-tether';
-import React, { type FC, type LegacyRef, type ReactNode, useEffect, useRef, useState } from 'react';
 
 export const DROPDOWN_STYLE_TYPES = {
   primary: 'btn-primary btn-sm',

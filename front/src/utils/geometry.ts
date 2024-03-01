@@ -1,7 +1,7 @@
-import type { Feature, Point, FeatureCollection, LineString } from 'geojson';
+import bearing from '@turf/bearing';
 import { point, type Position, featureCollection, lineString } from '@turf/helpers';
 import length from '@turf/length';
-import bearing from '@turf/bearing';
+import type { Feature, Point, FeatureCollection, LineString } from 'geojson';
 
 // eslint-disable-next-line import/prefer-default-export
 export function getTangent(

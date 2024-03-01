@@ -1,9 +1,9 @@
 import { describe, expect } from 'vitest';
-import { createStoreWithoutMiddleware } from 'store';
 
+import { operationalStudiesConfSlice } from 'reducers/osrdconf/operationalStudiesConf';
 import { defaultCommonConf } from 'reducers/osrdconf/osrdConfCommon';
 import testCommonConfReducers from 'reducers/osrdconf/osrdConfCommon/__tests__/utils';
-import { operationalStudiesConfSlice } from 'reducers/osrdconf/operationalStudiesConf';
+import { createStoreWithoutMiddleware } from 'store';
 
 const createStore = () =>
   createStoreWithoutMiddleware({

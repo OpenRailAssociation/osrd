@@ -2,12 +2,14 @@
 // List of applications : Editoast, Core, Api
 
 import React from 'react';
-import i18n from 'i18n';
-import { useTranslation } from 'react-i18next';
+
 import { DE, ES, FR, GB, IT, JP, RU, UA } from 'country-flag-icons/react/3x2';
+import { useTranslation } from 'react-i18next';
 
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
+import i18n from 'i18n';
+
 import { useModal } from './BootstrapSNCF/ModalSNCF';
 
 const SortedLanguages = () => {

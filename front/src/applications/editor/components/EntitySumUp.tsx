@@ -1,26 +1,27 @@
 import React, { type FC, useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { flatMap, forEach, isNumber, uniq } from 'lodash';
-import type { TFunction } from 'i18next';
-import cx from 'classnames';
 
-import { useInfraID } from 'common/osrdContext';
-import { LoaderFill } from 'common/Loaders';
-import { getSpeedSectionsNameString } from 'common/Map/Layers/SpeedLimits';
+import cx from 'classnames';
+import type { TFunction } from 'i18next';
+import { flatMap, forEach, isNumber, uniq } from 'lodash';
+import { useTranslation } from 'react-i18next';
 
 import type { EditoastType } from 'applications/editor/consts';
-import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
 import { getEntities, getEntity } from 'applications/editor/data/api';
-import type { EditorEntity } from 'applications/editor/typesEditorEntity';
+import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
 import type { BufferStopEntity, SignalEntity } from 'applications/editor/tools/pointEdition/types';
-import type { TrackSectionEntity } from 'applications/editor/tools/trackEdition/types';
-import type { RouteEntity } from 'applications/editor/tools/routeEdition/types';
-import type { SwitchEntity } from 'applications/editor/tools/switchEdition/types';
 import type {
   ElectrificationEntity,
   SpeedSectionEntity,
 } from 'applications/editor/tools/rangeEdition/types';
+import type { RouteEntity } from 'applications/editor/tools/routeEdition/types';
+import type { SwitchEntity } from 'applications/editor/tools/switchEdition/types';
+import type { TrackSectionEntity } from 'applications/editor/tools/trackEdition/types';
+import type { EditorEntity } from 'applications/editor/typesEditorEntity';
+import { LoaderFill } from 'common/Loaders';
+import { getSpeedSectionsNameString } from 'common/Map/Layers/SpeedLimits';
+import { useInfraID } from 'common/osrdContext';
 import { type AppDispatch, useAppDispatch } from 'store';
+
 import { type InfraError, InfraErrorIcon, InfraErrorTypeLabel } from './InfraErrors';
 
 function prettifyStringsArray(strings: string[], finalSeparator: string): string {

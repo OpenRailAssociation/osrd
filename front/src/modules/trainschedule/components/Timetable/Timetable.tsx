@@ -1,41 +1,38 @@
 import React, { useContext, useEffect, useMemo, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { useSelector } from 'react-redux';
-import { BiSelectMultiple } from 'react-icons/bi';
-import { Alert, Download, Filter, Plus, Trash } from '@osrd-project/ui-icons';
-import { isEmpty, uniq } from 'lodash';
-import cx from 'classnames';
 
-import { useDebounce } from 'utils/helpers';
-import { valueToInterval } from 'utils/numbers';
-import { durationInSeconds } from 'utils/timeManipulation';
+import { Alert, Download, Filter, Plus, Trash } from '@osrd-project/ui-icons';
+import cx from 'classnames';
+import { isEmpty, uniq } from 'lodash';
+import { useTranslation } from 'react-i18next';
+import { BiSelectMultiple } from 'react-icons/bi';
+import { useSelector } from 'react-redux';
 
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
-
-import ConflictsList from 'modules/conflict/components/ConflictsList';
-import findTrainsDurationsIntervals from 'modules/trainschedule/components/ManageTrainSchedule/helpers/trainsDurationsIntervals';
-
-import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
+import { enhancedEditoastApi } from 'common/api/enhancedEditoastApi';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import DeleteModal from 'common/BootstrapSNCF/ModalSNCF/DeleteModal';
-import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
-import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
-import TimetableTrainCard from 'modules/trainschedule/components/Timetable/TimetableTrainCard';
 import type {
   Conflict,
   Infra,
   SimulationReport,
   TimetableWithSchedulesDetails,
 } from 'common/api/osrdEditoastApi';
-
-import { useAppDispatch } from 'store';
+import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
+import DeleteModal from 'common/BootstrapSNCF/ModalSNCF/DeleteModal';
+import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
+import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
+import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
+import ConflictsList from 'modules/conflict/components/ConflictsList';
+import findTrainsDurationsIntervals from 'modules/trainschedule/components/ManageTrainSchedule/helpers/trainsDurationsIntervals';
+import TimetableTrainCard from 'modules/trainschedule/components/Timetable/TimetableTrainCard';
 import { setFailure, setSuccess } from 'reducers/main';
-import type { ScheduledTrain, SimulationSnapshot } from 'reducers/osrdsimulation/types';
 import { updateSelectedTrainId, updateSimulation } from 'reducers/osrdsimulation/actions';
 import { getSelectedProjection } from 'reducers/osrdsimulation/selectors';
-import { enhancedEditoastApi } from 'common/api/enhancedEditoastApi';
-import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
+import type { ScheduledTrain, SimulationSnapshot } from 'reducers/osrdsimulation/types';
+import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
+import { useDebounce } from 'utils/helpers';
+import { valueToInterval } from 'utils/numbers';
+import { durationInSeconds } from 'utils/timeManipulation';
 
 type TimetableProps = {
   setDisplayTrainScheduleManagement: (mode: string) => void;

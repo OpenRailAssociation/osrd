@@ -1,8 +1,10 @@
-import cx from 'classnames';
-import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
-import type { ElectrificationRange, LightRollingStock } from 'common/api/osrdEditoastApi';
 import React, { useCallback, useEffect, useState } from 'react';
+
+import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
+
+import type { ElectrificationRange, LightRollingStock } from 'common/api/osrdEditoastApi';
+import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
 import {
   type SpeedSpaceSettingKey,
   SPEED_SPACE_SETTINGS_KEYS,

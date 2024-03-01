@@ -1,14 +1,17 @@
 import React from 'react';
-import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
+
+import { Trash } from '@osrd-project/ui-icons';
+import { useTranslation } from 'react-i18next';
+import { AiFillCheckCircle } from 'react-icons/ai';
+import { MdOutlineDeselect } from 'react-icons/md';
+
 import {
   type ProjectWithStudies,
   type SearchResultItemProject,
   osrdEditoastApi,
 } from 'common/api/osrdEditoastApi';
-import { useTranslation } from 'react-i18next';
-import { AiFillCheckCircle } from 'react-icons/ai';
-import { Trash } from '@osrd-project/ui-icons';
-import { MdOutlineDeselect } from 'react-icons/md';
+import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
+
 import DeleteProjectsModal from './DeleteProjectsModal';
 
 type Props = {

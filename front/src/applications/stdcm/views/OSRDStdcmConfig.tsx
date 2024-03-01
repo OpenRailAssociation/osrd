@@ -1,25 +1,24 @@
 import React, { useEffect, useMemo, useState } from 'react';
+
+import { ChevronDown, ChevronUp } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
+import RunningTime from 'applications/stdcm/components/RunningTime';
 import STDCM_REQUEST_STATUS from 'applications/stdcm/consts';
 import type { StdcmRequestStatus } from 'applications/stdcm/types';
-import RunningTime from 'applications/stdcm/components/RunningTime';
 import OSRDStdcmResults from 'applications/stdcm/views/OSRDStdcmResults';
-
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { useInfraID, useOsrdConfSelectors } from 'common/osrdContext';
+import SpeedLimitByTagSelector from 'common/SpeedLimitByTagSelector/SpeedLimitByTagSelector';
+import { useStoreDataForSpeedLimitByTagSelector } from 'common/SpeedLimitByTagSelector/useStoreDataForSpeedLimitByTagSelector';
+import { RollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector';
+import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
+import ScenarioExplorer from 'modules/scenario/components/ScenarioExplorer';
 import StdcmAllowances from 'modules/stdcmAllowances/components/StdcmAllowances';
 import { Itinerary, Map } from 'modules/trainschedule/components/ManageTrainSchedule';
-import { RollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector';
-
-import { useInfraID, useOsrdConfSelectors } from 'common/osrdContext';
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import ScenarioExplorer from 'modules/scenario/components/ScenarioExplorer';
-import SpeedLimitByTagSelector from 'common/SpeedLimitByTagSelector/SpeedLimitByTagSelector';
-import { getSelectedTrain } from 'reducers/osrdsimulation/selectors';
 import type { OsrdStdcmConfState } from 'reducers/osrdconf/consts';
-import { useStoreDataForSpeedLimitByTagSelector } from 'common/SpeedLimitByTagSelector/useStoreDataForSpeedLimitByTagSelector';
-import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
-import { ChevronDown, ChevronUp } from '@osrd-project/ui-icons';
+import { getSelectedTrain } from 'reducers/osrdsimulation/selectors';
 
 type OSRDStdcmConfigProps = {
   currentStdcmRequestStatus: string;

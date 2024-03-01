@@ -1,15 +1,17 @@
 import React, { type FC, useMemo } from 'react';
-import { BsArrowBarRight } from 'react-icons/bs';
-import { HiSwitchVertical } from 'react-icons/hi';
-import { FaFlagCheckered } from 'react-icons/fa';
-import { useTranslation } from 'react-i18next';
 
+import { useTranslation } from 'react-i18next';
+import { BsArrowBarRight } from 'react-icons/bs';
+import { FaFlagCheckered } from 'react-icons/fa';
+import { HiSwitchVertical } from 'react-icons/hi';
+
+import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
 import type {
   WayPointEntity,
   RouteEditionState,
 } from 'applications/editor/tools/routeEdition/types';
 import type { EndPoint } from 'applications/editor/tools/switchEdition/types';
-import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
+
 import WayPointInput from './WayPointInput';
 
 export const Endpoints: FC<{

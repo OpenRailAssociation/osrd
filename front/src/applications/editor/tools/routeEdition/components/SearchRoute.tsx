@@ -1,9 +1,11 @@
 import React, { type FC, useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
-import { Search } from '@osrd-project/ui-icons';
 
-import { LoaderFill } from 'common/Loaders';
+import { Search } from '@osrd-project/ui-icons';
+import { useTranslation } from 'react-i18next';
+
 import type { OptionsStateType } from 'applications/editor/tools/routeEdition/types';
+import { LoaderFill } from 'common/Loaders';
+
 import { SearchRouteItem } from './SearchRouteItem';
 
 interface SearchRouteProps {

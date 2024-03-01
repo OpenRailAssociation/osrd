@@ -1,11 +1,13 @@
 import { pointer } from 'd3-selection';
-import i18n from 'i18n';
-import type { Chart } from 'reducers/osrdsimulation/types';
-import {
-  type ElectricalConditionSegment,
-  type DrawingKeys,
+
+import type {
+  ElectricalConditionSegment,
+  DrawingKeys,
 } from 'applications/operationalStudies/consts';
+import i18n from 'i18n';
 import getAxisValues from 'modules/simulationResult/components/ChartHelpers/drawHelpers';
+import type { Chart } from 'reducers/osrdsimulation/types';
+
 import { getElementWidth, buildStripe } from './ChartHelpers';
 
 const ELECTRIFIED = 'Electrified';

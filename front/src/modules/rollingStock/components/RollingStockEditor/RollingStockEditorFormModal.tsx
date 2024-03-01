@@ -1,8 +1,10 @@
 import React from 'react';
+
 import { groupBy } from 'lodash';
-import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { useTranslation } from 'react-i18next';
+
 import type { TrainScheduleScenarioStudyProject } from 'common/api/osrdEditoastApi';
+import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 
 type RollingStockEditorFormModalProps = {
   setAddOrEditState?: React.Dispatch<React.SetStateAction<boolean>>;

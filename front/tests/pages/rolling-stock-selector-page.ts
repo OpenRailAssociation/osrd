@@ -1,6 +1,7 @@
 import { type Locator, type Page, expect } from '@playwright/test';
-import rollingstockTranslation from '../../public/locales/fr/rollingstock.json';
+
 import BasePage from './base-page';
+import rollingstockTranslation from '../../public/locales/fr/rollingstock.json';
 
 const electricCheckboxTranslation = rollingstockTranslation.electric;
 

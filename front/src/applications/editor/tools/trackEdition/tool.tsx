@@ -1,22 +1,23 @@
 import React from 'react';
+
+import { NoEntry, PlusCircle, Trash, XCircle } from '@osrd-project/ui-icons';
+import { featureCollection } from '@turf/helpers';
+import getNearestPoint from '@turf/nearest-point';
+import nearestPointOnLine, { type NearestPointOnLine } from '@turf/nearest-point-on-line';
 import type { Feature, LineString } from 'geojson';
 import { cloneDeep, isEmpty, isEqual } from 'lodash';
+import { AiFillSave } from 'react-icons/ai';
+import { BiAnchor, BiArrowFromLeft, BiArrowToRight, BiReset } from 'react-icons/bi';
 import { MdShowChart } from 'react-icons/md';
 import { RiDragMoveLine } from 'react-icons/ri';
-import { AiFillSave } from 'react-icons/ai';
-import { NoEntry, PlusCircle, Trash, XCircle } from '@osrd-project/ui-icons';
-import { BiAnchor, BiArrowFromLeft, BiArrowToRight, BiReset } from 'react-icons/bi';
-import getNearestPoint from '@turf/nearest-point';
-import { featureCollection } from '@turf/helpers';
-import nearestPointOnLine, { type NearestPointOnLine } from '@turf/nearest-point-on-line';
-
-import { entityDoUpdate, getLineStringDistance } from 'common/IntervalsDataViz/data';
-import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
-import { save } from 'reducers/editor/thunkActions';
-import { getMapMouseEventNearestFeature } from 'utils/mapHelper';
 
 import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
 import type { Tool } from 'applications/editor/types';
+import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
+import { entityDoUpdate, getLineStringDistance } from 'common/IntervalsDataViz/data';
+import { save } from 'reducers/editor/thunkActions';
+import { getMapMouseEventNearestFeature } from 'utils/mapHelper';
+
 import { TrackEditionLayers, TrackEditionLeftPanel, TrackEditionMessages } from './components';
 import { POINTS_LAYER_ID, TRACK_LAYER_ID } from './consts';
 import type { TrackEditionState } from './types';

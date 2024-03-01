@@ -1,11 +1,13 @@
 import { test, expect } from '@playwright/test';
-import type { Infra, Project, Scenario, Study } from 'common/api/osrdEditoastApi';
 import { v4 as uuidv4 } from 'uuid';
-import { PlaywrightHomePage } from './pages/home-page-model';
+
+import type { Infra, Project, Scenario, Study } from 'common/api/osrdEditoastApi';
+
 import scenarioData from './assets/operationStudies/scenario.json';
-import ScenarioPage from './pages/scenario-page-model';
-import PlaywrightCommonPage from './pages/common-page-model';
 import { getInfra, getProject, getStudy, postApiRequest } from './assets/utils';
+import PlaywrightCommonPage from './pages/common-page-model';
+import { PlaywrightHomePage } from './pages/home-page-model';
+import ScenarioPage from './pages/scenario-page-model';
 
 let smallInfra: Infra;
 let project: Project;

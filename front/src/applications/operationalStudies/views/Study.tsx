@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+
 import { Pencil } from '@osrd-project/ui-icons';
+import { useTranslation } from 'react-i18next';
 import nextId from 'react-id-generator';
 import { useParams } from 'react-router-dom';
 

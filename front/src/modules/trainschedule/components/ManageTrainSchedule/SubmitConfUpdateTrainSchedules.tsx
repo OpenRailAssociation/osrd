@@ -1,16 +1,17 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
-import { useTranslation } from 'react-i18next';
 
 import { Pencil } from '@osrd-project/ui-icons';
-import { castErrorToFailure } from 'utils/error';
+import { useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
+
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
-import formatConf from 'modules/trainschedule/components/ManageTrainSchedule/helpers/formatConf';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
-import { useAppDispatch } from 'store';
+import formatConf from 'modules/trainschedule/components/ManageTrainSchedule/helpers/formatConf';
 import { setFailure, setSuccess } from 'reducers/main';
 import { updateSelectedProjection, updateSelectedTrainId } from 'reducers/osrdsimulation/actions';
+import { useAppDispatch } from 'store';
+import { castErrorToFailure } from 'utils/error';
 
 type SubmitConfUpdateTrainSchedulesProps = {
   setIsWorking: (isWorking: boolean) => void;

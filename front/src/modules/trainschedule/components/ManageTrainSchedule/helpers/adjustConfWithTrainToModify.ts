@@ -1,15 +1,12 @@
-import type { Dispatch } from 'redux';
 import { compact } from 'lodash';
-
-import { msToKmh } from 'utils/physics';
-import type { ArrayElement } from 'utils/types';
-import { sec2time } from 'utils/timeManipulation';
+import type { Dispatch } from 'redux';
 
 import type { PointOnMap } from 'applications/operationalStudies/consts';
-
 import type { Allowance, PathResponse, TrainSchedule } from 'common/api/osrdEditoastApi';
-
 import type { ConfSliceActions } from 'reducers/osrdconf/osrdConfCommon';
+import { msToKmh } from 'utils/physics';
+import { sec2time } from 'utils/timeManipulation';
+import type { ArrayElement } from 'utils/types';
 
 function convertStepToPointOnMap(
   step?: ArrayElement<PathResponse['steps']>

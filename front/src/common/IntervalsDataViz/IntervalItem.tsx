@@ -1,13 +1,15 @@
 import React from 'react';
+
 import cx from 'classnames';
 
 import { INTERVAL_TYPES } from 'common/IntervalsEditor/types';
+
+import type { IntervalItemBaseProps, LinearMetadataItem } from './types';
 import {
   computeStyleForDataValue,
   getPositionFromMouseEventAndSegment,
   isNilObject,
 } from './utils';
-import type { IntervalItemBaseProps, LinearMetadataItem } from './types';
 
 interface IntervalItemProps<T> extends IntervalItemBaseProps<T> {
   dragingStartAt: number | null;

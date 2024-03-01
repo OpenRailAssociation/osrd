@@ -1,25 +1,26 @@
-import cx from 'classnames';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { getMap } from 'reducers/map/selectors';
 
-import { setFailure } from 'reducers/main';
+import { ChevronDown, ChevronUp } from '@osrd-project/ui-icons';
+import cx from 'classnames';
 import { sortBy } from 'lodash';
-import { useDebounce } from 'utils/helpers';
-import { castErrorToFailure } from 'utils/error';
-import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import { createMapSearchQuery, onResultSearchClick } from 'common/Map/utils';
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import MultiSelectSNCF from 'common/BootstrapSNCF/MultiSelectSNCF';
 import nextId from 'react-id-generator';
+import { useSelector } from 'react-redux';
+
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import type { SearchResultItemSignal, SearchPayload } from 'common/api/osrdEditoastApi';
+import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
+import MultiSelectSNCF from 'common/BootstrapSNCF/MultiSelectSNCF';
 import SelectImproved from 'common/BootstrapSNCF/SelectImprovedSNCF';
 import SignalCard from 'common/Map/Search/SignalCard';
-import type { SearchResultItemSignal, SearchPayload } from 'common/api/osrdEditoastApi';
-import { useAppDispatch } from 'store';
-import type { Viewport } from 'reducers/map';
+import { createMapSearchQuery, onResultSearchClick } from 'common/Map/utils';
 import { useInfraID } from 'common/osrdContext';
-import { ChevronDown, ChevronUp } from '@osrd-project/ui-icons';
+import { setFailure } from 'reducers/main';
+import type { Viewport } from 'reducers/map';
+import { getMap } from 'reducers/map/selectors';
+import { useAppDispatch } from 'store';
+import { castErrorToFailure } from 'utils/error';
+import { useDebounce } from 'utils/helpers';
 
 type MapSearchSignalProps = {
   updateExtViewport: (viewport: Partial<Viewport>) => void;

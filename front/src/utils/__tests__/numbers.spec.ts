@@ -1,5 +1,5 @@
-import { NARROW_NO_BREAK_SPACE, NO_BREAK_SPACE } from 'utils/strings';
 import { budgetFormat, isFloat, stripDecimalDigits } from 'utils/numbers';
+import { NARROW_NO_BREAK_SPACE, NO_BREAK_SPACE } from 'utils/strings';
 
 describe('budgetFormat', () => {
   it('should return the complete number as a currency (€)', () => {

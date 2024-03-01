@@ -1,17 +1,10 @@
 /* eslint-disable prefer-destructuring, no-plusplus */
-import {
-  type Feature,
-  type FeatureCollection,
-  type LineString,
-  type Point,
-  type Polygon,
-  type Position,
-} from 'geojson';
-import _, { first, last, mapValues } from 'lodash';
-import length from '@turf/length';
-import { point, type BBox } from '@turf/helpers';
 import along from '@turf/along';
 import distance from '@turf/distance';
+import { point, type BBox } from '@turf/helpers';
+import length from '@turf/length';
+import type { Feature, FeatureCollection, LineString, Point, Polygon, Position } from 'geojson';
+import _, { first, last, mapValues } from 'lodash';
 import type { MapGeoJSONFeature } from 'maplibre-gl';
 import WebMercatorViewport from 'viewport-mercator-project';
 
@@ -19,8 +12,8 @@ import { type EditoastType, LAYER_TO_EDITOAST_DICT, type Layer } from 'applicati
 import { getMixedEntities } from 'applications/editor/data/api';
 import { flattenEntity } from 'applications/editor/data/utils';
 import vec, { type Vec2 } from 'common/Map/WarpedMap/core/vec-lib';
-import type { AppDispatch } from 'store';
 import type { Viewport } from 'reducers/map';
+import type { AppDispatch } from 'store';
 
 /*
  * Useful types:

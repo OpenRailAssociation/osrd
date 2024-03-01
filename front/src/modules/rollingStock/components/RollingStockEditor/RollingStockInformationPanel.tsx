@@ -1,10 +1,12 @@
-import cx from 'classnames';
 import React, { useState } from 'react';
+
+import cx from 'classnames';
+
 import type { RollingStockComfortType, RollingStockWithLiveries } from 'common/api/osrdEditoastApi';
+import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import RollingStockCardDetail, {
   getCurvesComforts,
 } from 'modules/rollingStock/components/RollingStockCard/RollingStockCardDetail';
-import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import RollingStockCurve from 'modules/rollingStock/components/RollingStockCurve';
 import { RollingStockInfo } from 'modules/rollingStock/components/RollingStockSelector/RollingStockHelpers';
 

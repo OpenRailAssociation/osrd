@@ -1,7 +1,8 @@
 // import distance from '@turf/distance';
-import length from '@turf/length';
 import { lineString, point } from '@turf/helpers';
+import length from '@turf/length';
 import nearestPointOnLine from '@turf/nearest-point-on-line';
+
 import type { PointOnMap } from 'applications/operationalStudies/consts';
 import { formatIsoDate } from 'utils/date';
 import { sec2time, time2sec } from 'utils/timeManipulation';

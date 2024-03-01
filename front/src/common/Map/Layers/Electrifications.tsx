@@ -1,15 +1,14 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
+
+import { isNil } from 'lodash';
 import { Source } from 'react-map-gl/maplibre';
 import type { LayerProps } from 'react-map-gl/maplibre';
-import { isNil } from 'lodash';
-
-import type { Theme } from 'types';
+import { useSelector } from 'react-redux';
 
 import { MAP_URL } from 'common/Map/const';
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
-
 import type { RootState } from 'reducers';
+import type { Theme } from 'types';
 
 interface ElectrificationsProps {
   colors: Theme;

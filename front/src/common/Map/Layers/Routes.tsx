@@ -1,14 +1,13 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
+
 import { Source } from 'react-map-gl/maplibre';
 import type { CircleLayer, LineLayer, SymbolLayer } from 'react-map-gl/maplibre';
-
-import type { Theme, OmitLayer } from 'types';
+import { useSelector } from 'react-redux';
 
 import { MAP_URL } from 'common/Map/const';
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
-
 import { getMap } from 'reducers/map/selectors';
+import type { Theme, OmitLayer } from 'types';
 
 interface RoutesProps {
   colors: Theme;

@@ -1,7 +1,8 @@
 import { test } from '@playwright/test';
 import { v4 as uuidv4 } from 'uuid';
-import PlaywrightScenarioPage from './pages/scenario-page-model';
+
 import createCompleteScenario, { allowancesManagement } from './assets/utils';
+import PlaywrightScenarioPage from './pages/scenario-page-model';
 
 let scenarioName: string;
 let scenarioPage: PlaywrightScenarioPage;

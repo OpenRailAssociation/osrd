@@ -1,6 +1,6 @@
-import { random } from 'lodash';
-import type { LineString, Feature, Position } from 'geojson';
 import { lineString as turfLineString } from '@turf/helpers';
+import type { LineString, Feature, Position } from 'geojson';
+import { random } from 'lodash';
 
 /**
  * Creates a random position from a range

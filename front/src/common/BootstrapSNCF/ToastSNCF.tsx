@@ -1,4 +1,5 @@
 import React, { type FC, useState } from 'react';
+
 import type { Notification } from 'types';
 /**
  * Display the date to the "from ago" format.

@@ -1,16 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { useSelector } from 'react-redux';
-import { AiOutlineTags } from 'react-icons/ai';
-import { SlSpeedometer } from 'react-icons/sl';
-import { MdOutlineAccessTime, MdOutlineDriveFileRenameOutline } from 'react-icons/md';
 
-import { useDebounce } from 'utils/helpers';
+import { useTranslation } from 'react-i18next';
+import { AiOutlineTags } from 'react-icons/ai';
+import { MdOutlineAccessTime, MdOutlineDriveFileRenameOutline } from 'react-icons/md';
+import { SlSpeedometer } from 'react-icons/sl';
+import { useSelector } from 'react-redux';
 
 import ChipsSNCF from 'common/BootstrapSNCF/ChipsSNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
 import { useAppDispatch } from 'store';
+import { useDebounce } from 'utils/helpers';
 
 export default function TrainSettings() {
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);

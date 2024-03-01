@@ -14,11 +14,12 @@ import {
 import type { EditorEntity, EditorSchema } from 'applications/editor/typesEditorEntity';
 import type { Operation } from 'common/api/osrdEditoastApi';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import { castErrorToFailure } from 'utils/error';
+import { setLoading, setSuccess, setFailure, setSuccessWithoutMessage } from 'reducers/main';
 import { updateIssuesSettings } from 'reducers/map';
 import infra_schema from 'reducers/osrdconf/infra_schema.json';
-import { setLoading, setSuccess, setFailure, setSuccessWithoutMessage } from 'reducers/main';
 import type { AppDispatch, GetState } from 'store';
+import { castErrorToFailure } from 'utils/error';
+
 import { type EditorState, editorSliceActions } from '.';
 
 const { loadDataModelAction, updateTotalsIssueAction, updateFiltersIssueAction } =

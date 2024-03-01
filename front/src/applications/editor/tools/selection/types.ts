@@ -1,5 +1,5 @@
-import type { EditorEntity } from 'applications/editor/typesEditorEntity';
 import type { CommonToolState } from 'applications/editor/tools/types';
+import type { EditorEntity } from 'applications/editor/typesEditorEntity';
 
 export type SelectionState = CommonToolState & {
   selectionState:

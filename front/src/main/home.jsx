@@ -1,14 +1,16 @@
 import React from 'react';
-import Card from 'common/BootstrapSNCF/CardSNCF/CardSNCF';
-import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
-import mapImg from 'assets/pictures/home/map.svg';
+
+import { useTranslation } from 'react-i18next';
+
+import logo from 'assets/logo-osrd-color-white.svg';
 import editorImg from 'assets/pictures/home/editor.svg';
+import mapImg from 'assets/pictures/home/map.svg';
+import operationalStudiesImg from 'assets/pictures/home/operationalStudies.svg';
 import rollingStockEditorImg from 'assets/pictures/home/rollingstockeditor.svg';
 import stdcmImg from 'assets/pictures/home/stdcm.svg';
-import operationalStudiesImg from 'assets/pictures/home/operationalStudies.svg';
-import logo from 'assets/logo-osrd-color-white.svg';
-import { useTranslation } from 'react-i18next';
+import Card from 'common/BootstrapSNCF/CardSNCF/CardSNCF';
 import { ModalProvider } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
+import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 
 export default function Home() {
   const { t } = useTranslation('home/home');

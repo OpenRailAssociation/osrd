@@ -1,9 +1,11 @@
 import React, { type FC } from 'react';
-import { useTranslation } from 'react-i18next';
-import { enhancedEditoastApi } from 'common/api/enhancedEditoastApi';
 
-import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
+import { useTranslation } from 'react-i18next';
+
+import { enhancedEditoastApi } from 'common/api/enhancedEditoastApi';
 import { ModalProvider } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
+import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
+
 import RollingStockEditor from './views/RollingStockEditor';
 
 const HomeRollingStockEditor: FC = () => {

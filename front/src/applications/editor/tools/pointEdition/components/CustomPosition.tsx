@@ -1,5 +1,7 @@
 import React from 'react';
+
 import type { WidgetProps } from '@rjsf/utils';
+
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 
 const CustomPosition: React.FC<WidgetProps> = (props) => {

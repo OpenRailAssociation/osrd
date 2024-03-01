@@ -1,7 +1,8 @@
 import dayjs from 'dayjs';
 import 'dayjs/locale/fr';
-import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
+import utc from 'dayjs/plugin/utc';
+
 import i18n from 'i18n';
 
 dayjs.locale('fr');

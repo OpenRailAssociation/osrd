@@ -1,30 +1,30 @@
 import React, { useContext, useEffect, useMemo, useState } from 'react';
-import { useSelector } from 'react-redux';
+
+import { featureCollection, point } from '@turf/helpers';
+import nearestPoint from '@turf/nearest-point';
+import type { Position } from 'geojson';
+import { first, last } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { Layer, Popup, Source } from 'react-map-gl/maplibre';
-import nearestPoint from '@turf/nearest-point';
-import { featureCollection, point } from '@turf/helpers';
-import { first, last } from 'lodash';
-import type { Position } from 'geojson';
+import { useSelector } from 'react-redux';
 
-import colors from 'common/Map/Consts/colors';
-import GeoJSONs from 'common/Map/Layers/GeoJSONs';
-import { useInfraID } from 'common/osrdContext';
-import { getSwitchesLayerProps, getSwitchesNameLayerProps } from 'common/Map/Layers/Switches';
-import { useAppDispatch } from 'store';
-import { getMap } from 'reducers/map/selectors';
-
+import EntitySumUp from 'applications/editor/components/EntitySumUp';
 import EditorContext from 'applications/editor/context';
 import { getEntity } from 'applications/editor/data/api';
 import { flattenEntity } from 'applications/editor/data/utils';
-import EntitySumUp from 'applications/editor/components/EntitySumUp';
-import type { ExtendedEditorContextType } from 'applications/editor/types';
-import useSwitch from 'applications/editor/tools/switchEdition/useSwitch';
 import type {
   SwitchEditionState,
   SwitchEntity,
 } from 'applications/editor/tools/switchEdition/types';
+import useSwitch from 'applications/editor/tools/switchEdition/useSwitch';
 import type { TrackSectionEntity } from 'applications/editor/tools/trackEdition/types';
+import type { ExtendedEditorContextType } from 'applications/editor/types';
+import colors from 'common/Map/Consts/colors';
+import GeoJSONs from 'common/Map/Layers/GeoJSONs';
+import { getSwitchesLayerProps, getSwitchesNameLayerProps } from 'common/Map/Layers/Switches';
+import { useInfraID } from 'common/osrdContext';
+import { getMap } from 'reducers/map/selectors';
+import { useAppDispatch } from 'store';
 
 const SwitchEditionLayers = () => {
   const dispatch = useAppDispatch();

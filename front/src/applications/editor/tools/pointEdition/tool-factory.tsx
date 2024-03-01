@@ -1,29 +1,29 @@
 import React, { type ComponentType } from 'react';
-import { cloneDeep, isEqual, omit } from 'lodash';
-import type { IconType } from 'react-icons';
-import { BiReset } from 'react-icons/bi';
-import { AiFillSave } from 'react-icons/ai';
-import { PlusCircle, Trash } from '@osrd-project/ui-icons';
-import type { Map } from 'maplibre-gl';
-import type { Feature, LineString, Point } from 'geojson';
-import nearestPointOnLine from '@turf/nearest-point-on-line';
 
-import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
-import { NULL_GEOMETRY } from 'types';
-import { getNearestPoint } from 'utils/mapHelper';
-import { save } from 'reducers/editor/thunkActions';
+import { PlusCircle, Trash } from '@osrd-project/ui-icons';
+import nearestPointOnLine from '@turf/nearest-point-on-line';
+import type { Feature, LineString, Point } from 'geojson';
+import { cloneDeep, isEqual, omit } from 'lodash';
+import type { Map } from 'maplibre-gl';
+import type { IconType } from 'react-icons';
+import { AiFillSave } from 'react-icons/ai';
+import { BiReset } from 'react-icons/bi';
 
 import { LAYER_TO_EDITOAST_DICT, type Layer } from 'applications/editor/consts';
-import type { Tool } from 'applications/editor/types';
-import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
 import { getEntity } from 'applications/editor/data/api';
+import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
 import { DEFAULT_COMMON_TOOL_STATE } from 'applications/editor/tools/consts';
 import type { TrackSectionEntity } from 'applications/editor/tools/trackEdition/types';
 import { approximateDistanceWithEditoastData } from 'applications/editor/tools/utils';
+import type { Tool } from 'applications/editor/types';
+import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
+import { save } from 'reducers/editor/thunkActions';
+import { NULL_GEOMETRY } from 'types';
+import { getNearestPoint } from 'utils/mapHelper';
 
 import { PointEditionMessages, getPointEditionLeftPanel } from './components';
-import type { BufferStopEntity, DetectorEntity, PointEditionState, SignalEntity } from './types';
 import { POINT_LAYER_ID } from './consts';
+import type { BufferStopEntity, DetectorEntity, PointEditionState, SignalEntity } from './types';
 
 type EditorPoint = BufferStopEntity | DetectorEntity | SignalEntity;
 type PointEditionToolParams<T extends EditorPoint> = {

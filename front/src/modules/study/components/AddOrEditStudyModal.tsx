@@ -1,38 +1,34 @@
 import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { useNavigate, useParams } from 'react-router-dom';
-import { FaPlus, FaTasks } from 'react-icons/fa';
+
 import { Note, Pencil, Trash } from '@osrd-project/ui-icons';
+import { useTranslation } from 'react-i18next';
+import { FaPlus, FaTasks } from 'react-icons/fa';
 import { MdBusinessCenter, MdTitle } from 'react-icons/md';
 import { RiCalendarLine, RiMoneyEuroCircleLine, RiQuestionLine } from 'react-icons/ri';
-
-import studyLogo from 'assets/pictures/views/studies.svg';
-
-import { formatDateForInput, getEarliestDate } from 'utils/date';
+import { useNavigate, useParams } from 'react-router-dom';
 
 import { STUDY_STATES, studyStates, studyTypes } from 'applications/operationalStudies/consts';
-
-import { createSelectOptions } from 'modules/study/utils';
-
-import { useOsrdConfActions } from 'common/osrdContext';
+import studyLogo from 'assets/pictures/views/studies.svg';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import type { StudyCreateForm } from 'common/api/osrdEditoastApi';
 import ChipsSNCF from 'common/BootstrapSNCF/ChipsSNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import TextareaSNCF from 'common/BootstrapSNCF/TextareaSNCF';
-import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
+import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
-import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
-import type { StudyCreateForm } from 'common/api/osrdEditoastApi';
-
-import { useAppDispatch } from 'store';
+import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
+import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
+import TextareaSNCF from 'common/BootstrapSNCF/TextareaSNCF';
+import { useOsrdConfActions } from 'common/osrdContext';
+import { createSelectOptions } from 'modules/study/utils';
 import { setFailure, setSuccess } from 'reducers/main';
-import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
-import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
-import useInputChange from 'utils/hooks/useInputChange';
-import useOutsideClick from 'utils/hooks/useOutsideClick';
+import { useAppDispatch } from 'store';
+import { formatDateForInput, getEarliestDate } from 'utils/date';
 import { castErrorToFailure } from 'utils/error';
+import useInputChange from 'utils/hooks/useInputChange';
+import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
+import useOutsideClick from 'utils/hooks/useOutsideClick';
 
 export interface StudyForm extends StudyCreateForm {
   id?: number;

@@ -1,8 +1,10 @@
 import React from 'react';
+
 import { useTranslation } from 'react-i18next';
-import AddOrEditScenarioModal from 'modules/scenario/components/AddOrEditScenarioModal';
-import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { FaPlus } from 'react-icons/fa';
+
+import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
+import AddOrEditScenarioModal from 'modules/scenario/components/AddOrEditScenarioModal';
 
 export default function StudyCard() {
   const { t } = useTranslation('operationalStudies/study');

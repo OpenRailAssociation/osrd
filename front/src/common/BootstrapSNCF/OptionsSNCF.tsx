@@ -6,8 +6,9 @@
  * options={[{ value: string, label: string}, { value: string, label: string}]} />
  */
 
-import cx from 'classnames';
 import React, { type ChangeEventHandler } from 'react';
+
+import cx from 'classnames';
 import './OptionsSNCF.scss';
 
 export type Option = {

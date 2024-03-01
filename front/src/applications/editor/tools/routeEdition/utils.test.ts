@@ -1,10 +1,11 @@
-import type { LineString, Point, Position } from 'geojson';
-import length from '@turf/length';
 import { lineString } from '@turf/helpers';
+import length from '@turf/length';
+import type { LineString, Point, Position } from 'geojson';
 
-import type { TrackSectionEntity } from 'applications/editor/tools/trackEdition/types';
-import type { DetectorEntity } from 'applications/editor/tools/pointEdition/types';
 import { editoastToEditorEntity } from 'applications/editor/data/utils';
+import type { DetectorEntity } from 'applications/editor/tools/pointEdition/types';
+import type { TrackSectionEntity } from 'applications/editor/tools/trackEdition/types';
+
 import { computeRouteGeometry, removeDuplicatePoints } from './utils';
 
 const p1: Position = [-1.1, 49.5];

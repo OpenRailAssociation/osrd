@@ -1,24 +1,23 @@
 import React, { useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { useSelector } from 'react-redux';
+
 import { ArrowSwitch, Plus, Rocket, Trash } from '@osrd-project/ui-icons';
 import type { Position } from 'geojson';
-
-import DisplayItinerary from 'modules/trainschedule/components/ManageTrainSchedule/Itinerary/DisplayItinerary';
-import ModalSuggerredVias from 'modules/trainschedule/components/ManageTrainSchedule/Itinerary/ModalSuggeredVias';
-import Pathfinding from 'common/Pathfinding/Pathfinding';
-import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
-import TypeAndPath from 'common/Pathfinding/TypeAndPath';
+import { useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
 
 import type { PathResponse } from 'common/api/osrdEditoastApi';
-import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
+import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { zoomToFeature } from 'common/Map/WarpedMap/core/helpers';
+import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
+import Pathfinding from 'common/Pathfinding/Pathfinding';
+import TypeAndPath from 'common/Pathfinding/TypeAndPath';
 import Tipped from 'common/Tipped';
-
-import { useAppDispatch } from 'store';
+import DisplayItinerary from 'modules/trainschedule/components/ManageTrainSchedule/Itinerary/DisplayItinerary';
+import ModalSuggerredVias from 'modules/trainschedule/components/ManageTrainSchedule/Itinerary/ModalSuggeredVias';
 import type { Viewport } from 'reducers/map';
-import { getMap } from 'reducers/map/selectors';
 import { updateViewport } from 'reducers/map';
+import { getMap } from 'reducers/map/selectors';
+import { useAppDispatch } from 'store';
 
 type ItineraryProps = {
   path?: PathResponse;

@@ -1,8 +1,7 @@
-import { makeSubSelector } from 'utils/selectors';
-
 import type { RootState } from 'reducers';
 import { type EditorState, editorSlice } from 'reducers/editor';
 import buildInfraStateSelectors from 'reducers/infra/selectors';
+import { makeSubSelector } from 'utils/selectors';
 
 export const getEditorState = (state: RootState) => state.editor;
 const makeEditorSelector = makeSubSelector<EditorState>(getEditorState);

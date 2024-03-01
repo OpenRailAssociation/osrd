@@ -1,18 +1,18 @@
 /* eslint-disable prefer-destructuring, no-plusplus */
+import bearing from '@turf/bearing';
+import center from '@turf/center';
+import destination from '@turf/destination';
+import { featureCollection, lineString, polygon } from '@turf/helpers';
+import length from '@turf/length';
 import type { Feature, LineString, Position } from 'geojson';
 import { clamp, cloneDeep, keyBy, meanBy } from 'lodash';
-import length from '@turf/length';
-import center from '@turf/center';
-import { featureCollection, lineString, polygon } from '@turf/helpers';
-import destination from '@turf/destination';
-import bearing from '@turf/bearing';
 
-import {
-  type GridFeature,
-  type GridIndex,
-  type Grids,
-  type PointsGrid,
-  type Triangle,
+import type {
+  GridFeature,
+  GridIndex,
+  Grids,
+  PointsGrid,
+  Triangle,
 } from 'common/Map/WarpedMap/core/helpers';
 import vec, { type Vec2 } from 'common/Map/WarpedMap/core/vec-lib';
 import type { PolygonZone } from 'types';

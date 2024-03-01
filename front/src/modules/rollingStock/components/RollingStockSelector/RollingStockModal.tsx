@@ -1,17 +1,18 @@
 import React, { useState, useEffect, useContext, useMemo, type MutableRefObject } from 'react';
-import { useSelector } from 'react-redux';
-import { useTranslation } from 'react-i18next';
 
-import { useAppDispatch } from 'store';
-import { setFailure } from 'reducers/main';
+import { useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
+
 import { enhancedEditoastApi } from 'common/api/enhancedEditoastApi';
-import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
-import { useOsrdConfSelectors } from 'common/osrdContext';
-import { Loader } from 'common/Loaders';
-import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
-import RollingStockCard from 'modules/rollingStock/components/RollingStockCard/RollingStockCard';
 import type { LightRollingStockWithLiveries } from 'common/api/osrdEditoastApi';
+import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
+import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
+import { Loader } from 'common/Loaders';
+import { useOsrdConfSelectors } from 'common/osrdContext';
+import RollingStockCard from 'modules/rollingStock/components/RollingStockCard/RollingStockCard';
 import SearchRollingStock from 'modules/rollingStock/components/RollingStockSelector/SearchRollingStock';
+import { setFailure } from 'reducers/main';
+import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 
 interface RollingStockModal {

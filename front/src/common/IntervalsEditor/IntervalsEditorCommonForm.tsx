@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
+
 import { useTranslation } from 'react-i18next';
 
+import DebouncedNumberInputSNCF from 'common/BootstrapSNCF/FormSNCF/DebouncedNumberInputSNCF';
 import { fixLinearMetadataItems, resizeSegment } from 'common/IntervalsDataViz/data';
 import { notEmpty } from 'common/IntervalsDataViz/utils';
-import DebouncedNumberInputSNCF from 'common/BootstrapSNCF/FormSNCF/DebouncedNumberInputSNCF';
+
 import type { IntervalItem } from './types';
 
 type IntervalsEditorFormProps = {

@@ -1,4 +1,5 @@
 import { type Locator, type Page, expect } from '@playwright/test';
+
 import { PlaywrightHomePage } from './home-page-model';
 
 export interface selectPointOnMapProps {

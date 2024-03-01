@@ -1,15 +1,23 @@
 import React, { useContext, useMemo, useState, type PropsWithChildren } from 'react';
-import ReactMapGL, { AttributionControl, ScaleControl, type MapRef } from 'react-map-gl/maplibre';
-import { isEmpty, isEqual, isNil } from 'lodash';
+
 import type { TFunction } from 'i18next';
-import { useSelector } from 'react-redux';
+import { isEmpty, isEqual, isNil } from 'lodash';
 import { withTranslation } from 'react-i18next';
+import ReactMapGL, { AttributionControl, ScaleControl, type MapRef } from 'react-map-gl/maplibre';
+import { useSelector } from 'react-redux';
 
-import colors from 'common/Map/Consts/colors';
-
-/* Main data & layers */
+import type { InfraError } from 'applications/editor/components/InfraErrors';
+import { LAYER_TO_EDITOAST_DICT, LAYERS_SET } from 'applications/editor/consts';
+import type { Layer } from 'applications/editor/consts';
+import EditorContext from 'applications/editor/context';
+import { getEntity } from 'applications/editor/data/api';
+import { useSwitchTypes } from 'applications/editor/tools/switchEdition/types';
+import type { CommonToolState } from 'applications/editor/tools/types';
+import type { EditorContextType, ExtendedEditorContextType, Tool } from 'applications/editor/types';
 import { CUSTOM_ATTRIBUTION } from 'common/Map/const';
+import colors from 'common/Map/Consts/colors';
 import Background from 'common/Map/Layers/Background';
+import { useMapBlankStyle } from 'common/Map/Layers/blankStyle';
 import Hillshade from 'common/Map/Layers/Hillshade';
 import IGN_BD_ORTHO from 'common/Map/Layers/IGN_BD_ORTHO';
 import IGN_CADASTRE from 'common/Map/Layers/IGN_CADASTRE';
@@ -20,25 +28,14 @@ import PlatformsLayer from 'common/Map/Layers/Platforms';
 import SearchMarker from 'common/Map/Layers/SearchMarker';
 import Terrain from 'common/Map/Layers/Terrain';
 import TracksOSM from 'common/Map/Layers/TracksOSM';
-import VirtualLayers from 'modules/simulationResult/components/SimulationResultsMap/VirtualLayers';
-
-import EditorContext from 'applications/editor/context';
-import { getEntity } from 'applications/editor/data/api';
-import { getMapMouseEventNearestFeature } from 'utils/mapHelper';
-import { getMap, getShowOSM, getTerrain3DExaggeration } from 'reducers/map/selectors';
-import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
-import { LAYER_TO_EDITOAST_DICT, LAYERS_SET } from 'applications/editor/consts';
-import { useMapBlankStyle } from 'common/Map/Layers/blankStyle';
-import { useSwitchTypes } from 'applications/editor/tools/switchEdition/types';
-
-import type { EditorContextType, ExtendedEditorContextType, Tool } from 'applications/editor/types';
-import type { Layer } from 'applications/editor/consts';
-import type { CommonToolState } from 'applications/editor/tools/types';
-import type { InfraError } from 'applications/editor/components/InfraErrors';
-import type { Viewport } from 'reducers/map';
-import { getEditorState } from 'reducers/editor/selectors';
-import { useAppDispatch } from 'store';
 import { removeSearchItemMarkersOnMap } from 'common/Map/utils';
+import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
+import VirtualLayers from 'modules/simulationResult/components/SimulationResultsMap/VirtualLayers';
+import { getEditorState } from 'reducers/editor/selectors';
+import type { Viewport } from 'reducers/map';
+import { getMap, getShowOSM, getTerrain3DExaggeration } from 'reducers/map/selectors';
+import { useAppDispatch } from 'store';
+import { getMapMouseEventNearestFeature } from 'utils/mapHelper';
 
 interface MapProps<S extends CommonToolState = CommonToolState> {
   t: TFunction;

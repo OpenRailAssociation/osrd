@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import { osrdGatewayApi } from 'common/api/osrdGatewayApi';
 import type { AppStartListening } from 'store/listenerMiddleware';
+
 import { loginSuccess, loginError, logoutSuccess } from '.';
 
 export default function addUserListeners(startListening: AppStartListening) {

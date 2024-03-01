@@ -1,24 +1,25 @@
 import React from 'react';
+
 import cx from 'classnames';
 import { isNil } from 'lodash';
+import { useTranslation } from 'react-i18next';
+
+import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
+import InputGroupSNCF from 'common/BootstrapSNCF/InputGroupSNCF';
+import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
+import SelectSNCF from 'common/BootstrapSNCF/SelectSNCF';
 import {
   DEFAULT_SIGNALING_SYSTEMS,
   RollingStockEditorMetadata,
   RollingStockEditorParameter,
 } from 'modules/rollingStock/consts';
-import { useTranslation } from 'react-i18next';
-import InputGroupSNCF from 'common/BootstrapSNCF/InputGroupSNCF';
-import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import SelectSNCF from 'common/BootstrapSNCF/SelectSNCF';
-
+import { splitRollingStockProperties } from 'modules/rollingStock/helpers/utils';
+import useCompleteRollingStockSchemasProperties from 'modules/rollingStock/hooks/useCompleteRollingStockSchemasProperties';
 import type {
   EffortCurveForms,
   RollingStockParametersValues,
   SchemaProperty,
 } from 'modules/rollingStock/types';
-import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
-import { splitRollingStockProperties } from 'modules/rollingStock/helpers/utils';
-import useCompleteRollingStockSchemasProperties from 'modules/rollingStock/hooks/useCompleteRollingStockSchemasProperties';
 
 type RollingStockMetadataFormProps = {
   rollingStockValues: RollingStockParametersValues;

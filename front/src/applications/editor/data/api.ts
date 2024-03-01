@@ -1,11 +1,11 @@
 import { groupBy, uniq, toPairs } from 'lodash';
 
+import type { EditoastType } from 'applications/editor/consts';
+import type { EditorEntity } from 'applications/editor/typesEditorEntity';
 import {
   type PostInfraByIdObjectsAndObjectTypeApiResponse,
   osrdEditoastApi,
 } from 'common/api/osrdEditoastApi';
-import type { EditoastType } from 'applications/editor/consts';
-import type { EditorEntity } from 'applications/editor/typesEditorEntity';
 import type { AppDispatch } from 'store';
 
 export function editoastToEditorEntity<T extends EditorEntity = EditorEntity>(

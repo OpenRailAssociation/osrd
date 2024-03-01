@@ -1,14 +1,13 @@
 import React, { useContext, useState } from 'react';
+
+import { cloneDeep } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { BsArrowBarRight } from 'react-icons/bs';
-import { MdShowChart } from 'react-icons/md';
 import { FaFlagCheckered, FaTimes } from 'react-icons/fa';
-import { cloneDeep } from 'lodash';
+import { MdShowChart } from 'react-icons/md';
 
-import { LoaderFill } from 'common/Loaders';
-
-import EditorContext from 'applications/editor/context';
 import EntitySumUp from 'applications/editor/components/EntitySumUp';
+import EditorContext from 'applications/editor/context';
 import { APPLICABLE_DIRECTIONS } from 'applications/editor/tools/rangeEdition/consts';
 import type {
   ApplicableDirection,
@@ -18,6 +17,7 @@ import type {
 } from 'applications/editor/tools/rangeEdition/types';
 import { getPointAt } from 'applications/editor/tools/rangeEdition/utils';
 import type { ExtendedEditorContextType } from 'applications/editor/types';
+import { LoaderFill } from 'common/Loaders';
 
 const DEFAULT_DISPLAYED_RANGES_COUNT = 5;
 

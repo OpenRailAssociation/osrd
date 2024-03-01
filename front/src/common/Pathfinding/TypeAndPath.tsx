@@ -1,24 +1,25 @@
 /* eslint-disable jsx-a11y/no-autofocus */
+import React, { useEffect, useMemo, useState } from 'react';
+
+import { Alert, TriangleRight } from '@osrd-project/ui-icons';
+import bbox from '@turf/bbox';
+import cx from 'classnames';
+import type { Position } from 'geojson';
+import { useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
+
 import type {
   PathResponse,
   PostSearchApiArg,
   SearchResultItemOperationalPoint,
 } from 'common/api/osrdEditoastApi';
-import React, { useEffect, useMemo, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { useSelector } from 'react-redux';
-import { Alert, TriangleRight } from '@osrd-project/ui-icons';
-import bbox from '@turf/bbox';
-import type { Position } from 'geojson';
-import cx from 'classnames';
-
-import { useDebounce } from 'utils/helpers';
-import { castErrorToFailure } from 'utils/error';
-import { loadPathFinding } from 'modules/trainschedule/components/ManageTrainSchedule/helpers/adjustConfWithTrainToModify';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useInfraID, useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
-import { useAppDispatch } from 'store';
+import { loadPathFinding } from 'modules/trainschedule/components/ManageTrainSchedule/helpers/adjustConfWithTrainToModify';
 import { setFailure } from 'reducers/main';
+import { useAppDispatch } from 'store';
+import { castErrorToFailure } from 'utils/error';
+import { useDebounce } from 'utils/helpers';
 
 type SearchConstraintType = (string | number | string[])[];
 type PathfindingProps = {

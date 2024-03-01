@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from 'react';
+
 import { useTranslation } from 'react-i18next';
-import { useSelector } from 'react-redux';
 import { AiOutlineNumber } from 'react-icons/ai';
 import { IoFootstepsSharp } from 'react-icons/io5';
 import { RxSpaceEvenlyHorizontally } from 'react-icons/rx';
-
-import { useDebounce } from 'utils/helpers';
+import { useSelector } from 'react-redux';
 
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
 import { useAppDispatch } from 'store';
+import { useDebounce } from 'utils/helpers';
 
 export default function TrainAddingSettings() {
   const { getTrainStep, getTrainCount, getTrainDelta } = useOsrdConfSelectors();

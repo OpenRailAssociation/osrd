@@ -1,15 +1,17 @@
 import React from 'react';
+
+import { Download } from '@osrd-project/ui-icons';
+import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
-import { jouleToKwh } from 'utils/physics';
-import type { Train } from 'reducers/osrdsimulation/types';
 import type { LightRollingStock } from 'common/api/osrdEditoastApi';
 import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
-import cx from 'classnames';
-import { Download } from '@osrd-project/ui-icons';
+import type { Train } from 'reducers/osrdsimulation/types';
+import { jouleToKwh } from 'utils/physics';
+
+import exportTrainCSV from './driverTrainScheduleExportCSV';
 import { massWithOneDecimal } from './DriverTrainScheduleHelpers';
 import { BaseOrEco, type BaseOrEcoType } from './DriverTrainScheduleTypes';
-import exportTrainCSV from './driverTrainScheduleExportCSV';
 
 type Props = {
   train: Train;

@@ -1,4 +1,5 @@
 import { last } from 'lodash';
+
 import type { LinearMetadataItem } from 'common/IntervalsDataViz/types';
 
 /**

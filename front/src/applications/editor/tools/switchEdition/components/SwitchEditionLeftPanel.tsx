@@ -1,26 +1,27 @@
-import { debounce } from 'lodash';
 import React, { useContext, useEffect, useRef } from 'react';
+
+import { debounce } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import Select from 'react-select';
 
-import { useInfraID } from 'common/osrdContext';
-import { useAppDispatch } from 'store';
-import { save } from 'reducers/editor/thunkActions';
-
-import EditorContext from 'applications/editor/context';
 import EditorForm from 'applications/editor/components/EditorForm';
 import EntityError from 'applications/editor/components/EntityError';
-import type { ExtendedEditorContextType } from 'applications/editor/types';
-import useSwitch from 'applications/editor/tools/switchEdition/useSwitch';
+import EditorContext from 'applications/editor/context';
 import type {
   SwitchEditionState,
   SwitchEntity,
 } from 'applications/editor/tools/switchEdition/types';
+import useSwitch from 'applications/editor/tools/switchEdition/useSwitch';
 import {
   type FlatSwitchEntity,
   flatSwitchToSwitch,
   getNewSwitch,
 } from 'applications/editor/tools/switchEdition/utils';
+import type { ExtendedEditorContextType } from 'applications/editor/types';
+import { useInfraID } from 'common/osrdContext';
+import { save } from 'reducers/editor/thunkActions';
+import { useAppDispatch } from 'store';
+
 import CustomSchemaField from './CustomSchemaField';
 
 const SwitchEditionLeftPanel = () => {

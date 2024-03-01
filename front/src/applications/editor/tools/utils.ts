@@ -1,39 +1,38 @@
-import type { MapRef } from 'react-map-gl/maplibre';
-import type { LngLatBoundsLike, MapLayerMouseEvent } from 'maplibre-gl';
-import type { Dispatch } from 'redux';
 import turfBbox from '@turf/bbox';
+import { featureCollection } from '@turf/helpers';
+import type { BBox2d } from '@turf/helpers/dist/js/lib/geojson';
 import length from '@turf/length';
 import lineSlice from '@turf/line-slice';
-import { featureCollection } from '@turf/helpers';
 import type { NearestPoint } from '@turf/nearest-point';
-import type { BBox2d } from '@turf/helpers/dist/js/lib/geojson';
 import type { Feature, LineString, Point } from 'geojson';
 import { uniq } from 'lodash';
+import type { LngLatBoundsLike, MapLayerMouseEvent } from 'maplibre-gl';
+import type { MapRef } from 'react-map-gl/maplibre';
+import type { Dispatch } from 'redux';
 
-import { getEntity } from 'applications/editor/data/api';
 import { EDITOAST_TO_LAYER_DICT } from 'applications/editor/consts';
+import type { EditoastType } from 'applications/editor/consts';
+import { getEntity } from 'applications/editor/data/api';
 import TOOL_NAMES from 'applications/editor/tools/constsToolNames';
-import type {
-  ElectrificationEntity,
-  SpeedSectionEntity,
-  TrackState,
-} from 'applications/editor/tools/rangeEdition/types';
-import { getRouteEditionState } from 'applications/editor/tools/routeEdition/utils';
-import type { TrackSectionEntity } from 'applications/editor/tools/trackEdition/types';
 import type {
   BufferStopEntity,
   DetectorEntity,
   SignalEntity,
 } from 'applications/editor/tools/pointEdition/types';
-import type { SwitchEntity } from 'applications/editor/tools/switchEdition/types';
+import type {
+  ElectrificationEntity,
+  SpeedSectionEntity,
+  TrackState,
+} from 'applications/editor/tools/rangeEdition/types';
 import type { RouteEntity } from 'applications/editor/tools/routeEdition/types';
-import type { EditoastType } from 'applications/editor/consts';
+import { getRouteEditionState } from 'applications/editor/tools/routeEdition/utils';
+import type { SwitchEntity } from 'applications/editor/tools/switchEdition/types';
+import type { TrackSectionEntity } from 'applications/editor/tools/trackEdition/types';
 import type { EditorContextType } from 'applications/editor/types';
 import type { EditorEntity } from 'applications/editor/typesEditorEntity';
-import type { Bbox } from 'types';
-
 import { type EditorState, editorSliceActions } from 'reducers/editor';
 import type { AppDispatch } from 'store';
+import type { Bbox } from 'types';
 
 /**
  * Since Turf and Editoast do not compute the lengths the same way (see #1751)

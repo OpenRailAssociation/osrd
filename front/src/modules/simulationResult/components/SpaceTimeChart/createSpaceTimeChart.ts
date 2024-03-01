@@ -2,16 +2,13 @@ import * as d3 from 'd3';
 import { select as d3select } from 'd3-selection';
 
 import {
-  type Chart,
-  type SimulationTrain,
-  type ConsolidatedPosition,
-} from 'reducers/osrdsimulation/types';
-import { CHART_AXES } from 'modules/simulationResult/consts';
-import {
   defineLinear,
   defineTime,
 } from 'modules/simulationResult/components/ChartHelpers/ChartHelpers';
 import defineChart from 'modules/simulationResult/components/ChartHelpers/defineChart';
+import { CHART_AXES } from 'modules/simulationResult/consts';
+import type { Chart, SimulationTrain, ConsolidatedPosition } from 'reducers/osrdsimulation/types';
+
 import { SPACE_TIME_CHART_ID } from './consts';
 
 function getMaxPosition(trains: SimulationTrain[], pos: 'tailPosition' | 'headPosition') {

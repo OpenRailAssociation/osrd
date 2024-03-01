@@ -1,9 +1,7 @@
-import { makeSubSelector } from 'utils/selectors';
-
 import type { OsrdStdcmConfState } from 'reducers/osrdconf/consts';
-
-import { stdcmConfSlice } from 'reducers/osrdconf/stdcmConf';
 import buildCommonConfSelectors from 'reducers/osrdconf/osrdConfCommon/selectors';
+import { stdcmConfSlice } from 'reducers/osrdconf/stdcmConf';
+import { makeSubSelector } from 'utils/selectors';
 
 const buildStdcmConfSelectors = () => {
   const commonConfSelectors = buildCommonConfSelectors<OsrdStdcmConfState>(stdcmConfSlice);

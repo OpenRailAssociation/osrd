@@ -1,16 +1,16 @@
-import { setFailure } from 'reducers/main';
 import i18n from 'i18next';
-
 import type { AnyAction, Reducer } from 'redux';
-import type { AppDispatch, GetState } from 'store';
+
 import {
   type SimulationReport,
   type TrainSchedule,
   type TrainSchedulePatch,
   osrdEditoastApi,
 } from 'common/api/osrdEditoastApi';
+import { setFailure } from 'reducers/main';
+import type { AppDispatch, GetState } from 'store';
 import { castErrorToFailure } from 'utils/error';
-import type { OsrdSimulationState, SimulationSnapshot, Train } from './types';
+
 import {
   UPDATE_SIMULATION,
   UNDO_SIMULATION,
@@ -19,6 +19,7 @@ import {
   redoSimulation,
   updateSimulation,
 } from './actions';
+import type { OsrdSimulationState, SimulationSnapshot, Train } from './types';
 
 /**
  * Premare the params to override the trains details and save them

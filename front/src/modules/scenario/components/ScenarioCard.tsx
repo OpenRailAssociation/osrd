@@ -1,21 +1,18 @@
 import React from 'react';
+
+import { Calendar, FileDirectoryOpen } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 import { MdTrain } from 'react-icons/md';
-import { useNavigate } from 'react-router-dom';
 import { RiFolderChartLine } from 'react-icons/ri';
-import { Calendar, FileDirectoryOpen } from '@osrd-project/ui-icons';
-
 import nextId from 'react-id-generator';
-
-import { dateTimeFormatting } from 'utils/date';
+import { useNavigate } from 'react-router-dom';
 
 import infraLogo from 'assets/pictures/components/tracks.svg';
-
-import { useOsrdConfActions } from 'common/osrdContext';
 import type { ScenarioWithCountTrains } from 'common/api/osrdEditoastApi';
-
-import { useAppDispatch } from 'store';
+import { useOsrdConfActions } from 'common/osrdContext';
 import { updateSelectedProjection } from 'reducers/osrdsimulation/actions';
+import { useAppDispatch } from 'store';
+import { dateTimeFormatting } from 'utils/date';
 
 type StudyCardProps = {
   setFilterChips: (filterChips: string) => void;

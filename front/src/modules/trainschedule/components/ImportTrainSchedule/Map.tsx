@@ -1,31 +1,29 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useSelector } from 'react-redux';
-import type { MapLayerMouseEvent } from 'react-map-gl/maplibre';
-import ReactMapGL, { AttributionControl, ScaleControl } from 'react-map-gl/maplibre';
+
 import { point as turfPoint } from '@turf/helpers';
 import turfNearestPointOnLine, { type NearestPointOnLine } from '@turf/nearest-point-on-line';
 import type { LineString } from 'geojson';
+import ReactMapGL, { AttributionControl, ScaleControl } from 'react-map-gl/maplibre';
+import type { MapLayerMouseEvent } from 'react-map-gl/maplibre';
+import { useSelector } from 'react-redux';
 
 /* Main data & layers */
-import VirtualLayers from 'modules/simulationResult/components/SimulationResultsMap/VirtualLayers';
-
-import Background from 'common/Map/Layers/Background';
-import SnappedMarker from 'common/Map/Layers/SnappedMarker';
 
 /* Objects & various */
-import { getMapMouseEventNearestFeature } from 'utils/mapHelper';
 
-import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
-
-import colors from 'common/Map/Consts/colors';
 import { CUSTOM_ATTRIBUTION } from 'common/Map/const';
-import { useInfraID } from 'common/osrdContext';
-import { Platforms } from 'common/Map/Layers/Platforms';
+import colors from 'common/Map/Consts/colors';
+import Background from 'common/Map/Layers/Background';
 import { useMapBlankStyle } from 'common/Map/Layers/blankStyle';
-import TracksGeographic from 'common/Map/Layers/TracksGeographic';
 import OperationalPoints from 'common/Map/Layers/OperationalPoints';
-
+import { Platforms } from 'common/Map/Layers/Platforms';
+import SnappedMarker from 'common/Map/Layers/SnappedMarker';
+import TracksGeographic from 'common/Map/Layers/TracksGeographic';
+import { useInfraID } from 'common/osrdContext';
+import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
+import VirtualLayers from 'modules/simulationResult/components/SimulationResultsMap/VirtualLayers';
 import { getMapStyle } from 'reducers/map/selectors';
+import { getMapMouseEventNearestFeature } from 'utils/mapHelper';
 
 interface MapProps {
   viewport: { latitude: number; longitude: number };

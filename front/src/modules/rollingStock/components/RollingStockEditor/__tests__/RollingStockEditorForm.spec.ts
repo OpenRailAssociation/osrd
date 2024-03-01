@@ -2,6 +2,7 @@ import {
   getDefaultRollingStockMode,
   getRollingStockEditorDefaultValues,
 } from 'modules/rollingStock/helpers/utils';
+
 import { modifyRollingStockElectricalValues } from '../RollingStockEditorForm';
 
 const newEmptyRollingStock = getRollingStockEditorDefaultValues();

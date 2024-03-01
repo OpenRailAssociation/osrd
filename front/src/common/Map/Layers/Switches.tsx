@@ -1,14 +1,13 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
+
 import { Source } from 'react-map-gl/maplibre';
 import type { SymbolLayer, CircleLayer } from 'react-map-gl/maplibre';
-
-import type { Theme, OmitLayer } from 'types';
+import { useSelector } from 'react-redux';
 
 import { MAP_URL } from 'common/Map/const';
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
-
 import type { RootState } from 'reducers';
+import type { Theme, OmitLayer } from 'types';
 
 export function getSwitchesLayerProps(params: {
   colors: Theme;

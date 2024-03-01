@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest';
-import { createStoreWithoutMiddleware } from 'store';
+
 import {
   mainInitialState,
   setLoading,
@@ -13,6 +13,7 @@ import {
   addFailureNotification,
   addSuccessNotification,
 } from 'reducers/main';
+import { createStoreWithoutMiddleware } from 'store';
 
 const createStore = (initialStateExtra?: MainState) =>
   createStoreWithoutMiddleware({

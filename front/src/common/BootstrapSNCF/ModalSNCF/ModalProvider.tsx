@@ -1,4 +1,3 @@
-import { noop } from 'lodash';
 import React, {
   type FC,
   type PropsWithChildren,
@@ -10,8 +9,11 @@ import React, {
   useEffect,
   useRef,
 } from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
+
 import cx from 'classnames';
+import { noop } from 'lodash';
+import { Outlet, useLocation } from 'react-router-dom';
+
 import useOutsideClick from 'utils/hooks/useOutsideClick';
 
 /**

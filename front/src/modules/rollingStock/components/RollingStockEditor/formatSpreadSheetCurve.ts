@@ -1,7 +1,8 @@
 import type { Matrix } from 'react-spreadsheet';
+
 import type { EffortCurveForm } from 'modules/rollingStock/types';
-import { emptyStringRegex, onlyDigit } from 'utils/strings';
 import { kmhToMs } from 'utils/physics';
+import { emptyStringRegex, onlyDigit } from 'utils/strings';
 
 /** Remove rows which have at least 1 empty cell */
 const filterUnvalidRows = (sheetValues: Matrix<{ value: string }>) =>

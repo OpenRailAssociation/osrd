@@ -1,5 +1,5 @@
-import { geti18nKeyForNull } from 'utils/strings';
 import type { RollingStockComfortType } from 'common/api/osrdEditoastApi';
+import { geti18nKeyForNull } from 'utils/strings';
 
 // eslint-disable-next-line import/prefer-default-export
 export const getCurveName = (

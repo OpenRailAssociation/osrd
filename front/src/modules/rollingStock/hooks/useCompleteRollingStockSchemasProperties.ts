@@ -1,7 +1,8 @@
+import { useMemo } from 'react';
+
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { RS_SCHEMA_PROPERTIES } from 'modules/rollingStock/consts';
 import type { SchemaProperty } from 'modules/rollingStock/types';
-import { useMemo } from 'react';
 import { replaceElementAtIndex } from 'utils/array';
 
 /** Custom hook to get all available signaling systems from editoast.
