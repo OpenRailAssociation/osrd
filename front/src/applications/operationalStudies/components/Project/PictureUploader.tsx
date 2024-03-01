@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, ChangeEvent } from 'react';
+import React, { useState, useEffect, useCallback, type ChangeEvent } from 'react';
 import { Image, XCircle } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 import logoCheese from 'assets/pictures/misc/cheese.svg';
@@ -17,7 +17,7 @@ import { useSelector } from 'react-redux';
 import { useAppDispatch } from 'store';
 import { getUserSafeWord } from 'reducers/user/userSelectors';
 import { setFailure } from 'reducers/main';
-import { TFunction } from 'i18next';
+import type { TFunction } from 'i18next';
 
 type PicturePlaceholderProps = {
   image?: number | null;

@@ -8,9 +8,9 @@ import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 import { Spinner } from 'common/Loaders';
 import { useTranslation } from 'react-i18next';
 import {
-  PostSearchApiArg,
-  ProjectWithStudies,
-  SearchResultItemProject,
+  type PostSearchApiArg,
+  type ProjectWithStudies,
+  type SearchResultItemProject,
   osrdEditoastApi,
 } from 'common/api/osrdEditoastApi';
 import { useSelector } from 'react-redux';

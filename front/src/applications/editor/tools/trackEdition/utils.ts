@@ -1,8 +1,8 @@
 import { cloneDeep } from 'lodash';
-import { LinearMetadataItem } from 'common/IntervalsDataViz/types';
+import type { LinearMetadataItem } from 'common/IntervalsDataViz/types';
 
 import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
-import { EditorEntity } from 'applications/editor/typesEditorEntity';
+import type { EditorEntity } from 'applications/editor/typesEditorEntity';
 import type {
   ElectrificationEntity,
   RangeEditionState,

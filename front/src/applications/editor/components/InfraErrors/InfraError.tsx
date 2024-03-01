@@ -1,7 +1,7 @@
 import cx from 'classnames';
-import React, { PropsWithChildren } from 'react';
+import React, { type PropsWithChildren } from 'react';
 
-import { InfraError } from './types';
+import type { InfraError } from './types';
 import InfraErrorIcon from './InfraErrorIcon';
 import InfraErrorDescription from './InfraErrorDescription';
 import InfraErrorTypeLabel from './InfraErrorTypeLabel';

@@ -1,4 +1,4 @@
-import { PositionsSpeedTimes } from 'reducers/osrdsimulation/types';
+import type { PositionsSpeedTimes } from 'reducers/osrdsimulation/types';
 import { lineString } from 'test-data/geojson';
 import { getSimulationHoverPositions } from '../helpers';
 

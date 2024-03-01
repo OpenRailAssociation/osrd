@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { fixLinearMetadataItems, resizeSegment } from 'common/IntervalsDataViz/data';
 import { notEmpty } from 'common/IntervalsDataViz/utils';
 import DebouncedNumberInputSNCF from 'common/BootstrapSNCF/FormSNCF/DebouncedNumberInputSNCF';
-import { IntervalItem } from './types';
+import type { IntervalItem } from './types';
 
 type IntervalsEditorFormProps = {
   data: IntervalItem[];

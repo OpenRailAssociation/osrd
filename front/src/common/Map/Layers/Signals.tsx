@@ -1,6 +1,6 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { Source, MapRef } from 'react-map-gl/maplibre';
+import { Source, type MapRef } from 'react-map-gl/maplibre';
 
 import type { Theme } from 'types';
 
@@ -9,7 +9,7 @@ import { MAP_URL } from 'common/Map/const';
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 import { getLayersSettings, getMapStyle } from 'reducers/map/selectors';
 import getMastLayerProps from 'common/Map/Layers/mastLayerProps';
-import { SignalContext } from 'common/Map/Layers/types';
+import type { SignalContext } from 'common/Map/Layers/types';
 import { getPointLayerProps, getSignalLayerProps } from './geoSignalsLayers';
 import getKPLabelLayerProps from './KPLabel';
 

@@ -1,4 +1,4 @@
-import React, { FC, ReactNode, useCallback } from 'react';
+import React, { type FC, type ReactNode, useCallback } from 'react';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { updateLayersSettings } from 'reducers/map';
@@ -11,7 +11,7 @@ import OPsSVGFile from 'assets/pictures/layersicons/ops.svg';
 import SwitchesSVGFile from 'assets/pictures/layersicons/switches.svg';
 import DetectorsSVGFile from 'assets/pictures/layersicons/detectors.svg';
 import SwitchSNCF, { SWITCH_TYPES } from 'common/BootstrapSNCF/SwitchSNCF/SwitchSNCF';
-import { RootState } from 'reducers';
+import type { RootState } from 'reducers';
 import { useAppDispatch } from 'store';
 import { getMap } from 'reducers/map/selectors';
 

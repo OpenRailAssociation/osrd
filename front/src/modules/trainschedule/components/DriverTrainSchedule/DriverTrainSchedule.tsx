@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Train } from 'reducers/osrdsimulation/types';
-import { LightRollingStock } from 'common/api/osrdEditoastApi';
+import type { Train } from 'reducers/osrdsimulation/types';
+import type { LightRollingStock } from 'common/api/osrdEditoastApi';
 import DriverTrainScheduleHeader from './DriverTrainScheduleHeader';
 import DriverTrainScheduleStopList from './DriverTrainScheduleStopList';
-import { BaseOrEco, BaseOrEcoType } from './DriverTrainScheduleTypes';
+import { BaseOrEco, type BaseOrEcoType } from './DriverTrainScheduleTypes';
 
 export default function DriverTrainSchedule({
   train,

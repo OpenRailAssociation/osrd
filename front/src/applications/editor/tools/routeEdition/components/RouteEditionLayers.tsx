@@ -1,7 +1,7 @@
-import { Feature, LineString } from 'geojson';
+import type { Feature, LineString } from 'geojson';
 import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { Layer, Popup, Source, LineLayer } from 'react-map-gl/maplibre';
+import { Layer, Popup, Source, type LineLayer } from 'react-map-gl/maplibre';
 import { featureCollection } from '@turf/helpers';
 import { FaFlagCheckered } from 'react-icons/fa';
 import { BsArrowBarRight } from 'react-icons/bs';
@@ -32,7 +32,7 @@ import {
   getOptionsStateType,
   getRouteGeometryByRouteId,
 } from 'applications/editor/tools/routeEdition/utils';
-import { EditorEntity } from 'applications/editor/typesEditorEntity';
+import type { EditorEntity } from 'applications/editor/typesEditorEntity';
 
 const RouteEditionLayers = () => {
   const {

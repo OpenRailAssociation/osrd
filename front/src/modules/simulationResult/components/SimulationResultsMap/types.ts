@@ -1,4 +1,4 @@
-import { Point, Feature } from 'geojson';
+import type { Point, Feature } from 'geojson';
 
 export interface TrainPosition {
   id: string;

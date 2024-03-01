@@ -1,9 +1,9 @@
 import React from 'react';
-import { StoryFn } from '@storybook/react';
+import type { StoryFn } from '@storybook/react';
 import 'stories/storybook.css';
 import SpaceTimeChart from 'modules/simulationResult/components/SpaceTimeChart/SpaceTimeChart';
 import ORSD_GRAPH_SAMPLE_DATA from 'modules/simulationResult/components/sampleData';
-import { AllowancesSettings, Train } from 'reducers/osrdsimulation/types';
+import type { AllowancesSettings, Train } from 'reducers/osrdsimulation/types';
 
 export default {
   /* 👇 The title prop is optional.

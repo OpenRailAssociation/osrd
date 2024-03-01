@@ -29,11 +29,11 @@ import type { SwitchEntity } from 'applications/editor/tools/switchEdition/types
 import type { RouteEntity } from 'applications/editor/tools/routeEdition/types';
 import type { EditoastType } from 'applications/editor/consts';
 import type { EditorContextType } from 'applications/editor/types';
-import { EditorEntity } from 'applications/editor/typesEditorEntity';
+import type { EditorEntity } from 'applications/editor/typesEditorEntity';
 import type { Bbox } from 'types';
 
 import { type EditorState, editorSliceActions } from 'reducers/editor';
-import { AppDispatch } from 'store';
+import type { AppDispatch } from 'store';
 
 /**
  * Since Turf and Editoast do not compute the lengths the same way (see #1751)

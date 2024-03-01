@@ -1,6 +1,6 @@
 import { featureCollection } from '@turf/helpers';
 import { isEqual } from 'lodash';
-import { Map } from 'maplibre-gl';
+import type { Map } from 'maplibre-gl';
 import React, { useContext, useMemo, useState } from 'react';
 import { Popup } from 'react-map-gl/dist/esm/exports-maplibre';
 import { useSelector } from 'react-redux';

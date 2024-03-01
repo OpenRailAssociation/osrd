@@ -1,4 +1,4 @@
-import { Chart } from 'reducers/osrdsimulation/types';
+import type { Chart } from 'reducers/osrdsimulation/types';
 
 const drawText = (
   chart: Chart,

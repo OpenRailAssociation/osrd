@@ -1,9 +1,9 @@
 import cx from 'classnames';
 import React, { useContext } from 'react';
 import {
-  ProjectWithStudies,
-  StudyWithScenarios,
-  ScenarioWithCountTrains,
+  type ProjectWithStudies,
+  type StudyWithScenarios,
+  type ScenarioWithCountTrains,
 } from 'common/api/osrdEditoastApi';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { useOsrdConfActions } from 'common/osrdContext';

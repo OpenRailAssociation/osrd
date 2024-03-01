@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { WidgetProps } from '@rjsf/utils';
+import type { WidgetProps } from '@rjsf/utils';
 
 import DebouncedNumberInputSNCF from 'common/BootstrapSNCF/FormSNCF/DebouncedNumberInputSNCF';
 import { useInfraID } from 'common/osrdContext';

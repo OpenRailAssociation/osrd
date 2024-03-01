@@ -1,14 +1,14 @@
-import { Allowance } from 'common/api/osrdEditoastApi';
+import type { Allowance } from 'common/api/osrdEditoastApi';
 import React, { useMemo } from 'react';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
 import { getAllowanceToDisplay, getAllowanceTag } from './helpers';
 import {
-  AllowanceValueForm,
-  EngineeringAllowanceForm,
-  RangeAllowanceForm,
-  SetAllowanceSelectedIndexType,
+  type AllowanceValueForm,
+  type EngineeringAllowanceForm,
+  type RangeAllowanceForm,
+  type SetAllowanceSelectedIndexType,
 } from './types';
 
 type AllowanceTag = {

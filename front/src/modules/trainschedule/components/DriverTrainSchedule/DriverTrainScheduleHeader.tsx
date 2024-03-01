@@ -39,6 +39,7 @@ export default function DriverTrainScheduleHeader({
   const trainRegime = train[baseOrEco];
 
   if (!trainRegime) return null;
+
   return (
     <>
       <div className="d-flex align-items-center">

@@ -1,6 +1,6 @@
-import { Feature, GeoJsonProperties, Geometry } from 'geojson';
-import { JSONSchema7 } from 'json-schema';
-import { ObjectType } from 'common/api/osrdEditoastApi';
+import type { Feature, GeoJsonProperties, Geometry } from 'geojson';
+import type { JSONSchema7 } from 'json-schema';
+import type { ObjectType } from 'common/api/osrdEditoastApi';
 
 // EDITOR ENTITIES
 

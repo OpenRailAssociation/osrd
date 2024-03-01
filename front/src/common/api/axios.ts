@@ -1,4 +1,4 @@
-import axios, { AxiosRequestConfig } from 'axios';
+import axios, { type AxiosRequestConfig } from 'axios';
 import { mapValues } from 'lodash';
 
 function serializeParams(params: AxiosRequestConfig['params']) {

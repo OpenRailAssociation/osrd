@@ -1,8 +1,8 @@
 import React from 'react';
 import { noop } from 'lodash';
-import { StoryFn } from '@storybook/react';
+import type { StoryFn } from '@storybook/react';
 import SpeedSpaceChart, {
-  SpeedSpaceChartProps,
+  type SpeedSpaceChartProps,
 } from 'modules/simulationResult/components/SpeedSpaceChart/SpeedSpaceChart';
 import 'stories/storybook.css';
 import { Provider } from 'react-redux';

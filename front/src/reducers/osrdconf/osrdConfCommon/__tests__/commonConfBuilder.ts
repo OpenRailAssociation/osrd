@@ -1,4 +1,4 @@
-import { Feature } from 'geojson';
+import type { Feature } from 'geojson';
 
 import type { PointOnMap, PowerRestrictionRange } from 'applications/operationalStudies/consts';
 import type { SwitchType } from 'applications/editor/tools/switchEdition/types';

@@ -1,4 +1,4 @@
-import React, { FC, PropsWithChildren, useContext, useState, useCallback } from 'react';
+import React, { type FC, type PropsWithChildren, useContext, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { ModalContext } from './ModalProvider';

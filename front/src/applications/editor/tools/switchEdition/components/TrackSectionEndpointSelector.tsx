@@ -19,7 +19,7 @@ import {
 
 import { useAppDispatch } from 'store';
 import { useInfraID } from 'common/osrdContext';
-import { TrackSectionEntity } from '../../trackEdition/types';
+import type { TrackSectionEntity } from '../../trackEdition/types';
 
 const DEFAULT_ENDPOINT = ENDPOINTS[0];
 const ENDPOINTS_SET = new Set(ENDPOINTS);

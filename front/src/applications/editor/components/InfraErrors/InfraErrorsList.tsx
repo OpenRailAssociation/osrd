@@ -15,7 +15,7 @@ import { getEditorIssues } from 'reducers/editor/selectors';
 import { EDITOAST_TYPES } from 'applications/editor/consts';
 import { INFRA_ERRORS, INFRA_ERRORS_BY_LEVEL } from './consts';
 import { InfraErrorBox } from './InfraError';
-import { InfraError, InfraErrorLevel, InfraErrorType } from './types';
+import type { InfraError, InfraErrorLevel, InfraErrorType } from './types';
 
 const INFRA_ERROR_LEVELS: Array<NonNullable<InfraErrorLevel>> = ['all', 'errors', 'warnings'];
 

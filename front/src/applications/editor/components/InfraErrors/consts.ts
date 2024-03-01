@@ -1,4 +1,4 @@
-import { InfraErrorType } from './types';
+import type { InfraErrorType } from './types';
 
 export const INFRA_ERRORS_BY_LEVEL: Record<'errors' | 'warnings', Set<InfraErrorType>> = {
   errors: new Set([

@@ -13,8 +13,12 @@ import defineChart from 'modules/simulationResult/components/ChartHelpers/define
 import { defineLinear } from 'modules/simulationResult/components/ChartHelpers/ChartHelpers';
 import drawElectricalProfile from 'modules/simulationResult/components/ChartHelpers/drawElectricalProfile';
 import drawPowerRestriction from 'modules/simulationResult/components/ChartHelpers/drawPowerRestriction';
-import { Chart, SpeedSpaceChart, SpeedSpaceSettingsType } from 'reducers/osrdsimulation/types';
-import { GevPreparedData } from './prepareData';
+import {
+  type Chart,
+  type SpeedSpaceChart,
+  type SpeedSpaceSettingsType,
+} from 'reducers/osrdsimulation/types';
+import type { GevPreparedData } from './prepareData';
 
 /**
  * Typeguard to check if a selector is of type "Element"

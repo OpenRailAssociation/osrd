@@ -1,7 +1,7 @@
 import React from 'react';
-import { Source, LayerProps } from 'react-map-gl/maplibre';
+import { Source, type LayerProps } from 'react-map-gl/maplibre';
 
-import { Theme } from 'types';
+import type { Theme } from 'types';
 
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 

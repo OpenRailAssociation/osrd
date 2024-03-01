@@ -1,7 +1,10 @@
 import { pointer } from 'd3-selection';
 import i18n from 'i18n';
-import { Chart } from 'reducers/osrdsimulation/types';
-import { ElectricalConditionSegment, DrawingKeys } from 'applications/operationalStudies/consts';
+import type { Chart } from 'reducers/osrdsimulation/types';
+import {
+  type ElectricalConditionSegment,
+  type DrawingKeys,
+} from 'applications/operationalStudies/consts';
 import getAxisValues from 'modules/simulationResult/components/ChartHelpers/drawHelpers';
 import { getElementWidth, buildStripe } from './ChartHelpers';
 

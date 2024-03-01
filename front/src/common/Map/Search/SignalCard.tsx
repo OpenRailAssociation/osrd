@@ -1,5 +1,5 @@
 import React from 'react';
-import { SearchResultItemSignal } from 'common/api/osrdEditoastApi';
+import type { SearchResultItemSignal } from 'common/api/osrdEditoastApi';
 import mainConfig from 'config/config';
 
 type SignalCardProps = {

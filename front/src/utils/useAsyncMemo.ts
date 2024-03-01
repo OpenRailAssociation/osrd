@@ -1,4 +1,4 @@
-import { DependencyList, useEffect, useState } from 'react';
+import { type DependencyList, useEffect, useState } from 'react';
 
 export type AsyncMemoState<T> =
   | { type: 'loading'; previousData?: T }

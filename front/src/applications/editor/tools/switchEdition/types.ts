@@ -1,8 +1,8 @@
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import { Position, Point } from 'geojson';
+import type { Position, Point } from 'geojson';
 
 import type { CommonToolState } from 'applications/editor/tools/types';
-import { EditorEntity } from 'applications/editor/typesEditorEntity';
+import type { EditorEntity } from 'applications/editor/typesEditorEntity';
 
 export const ENDPOINTS = ['BEGIN', 'END'] as const;
 export type EndPoint = (typeof ENDPOINTS)[number];

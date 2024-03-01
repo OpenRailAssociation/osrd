@@ -1,12 +1,12 @@
 import React from 'react';
-import { Source, LayerProps } from 'react-map-gl/maplibre';
+import { Source, type LayerProps } from 'react-map-gl/maplibre';
 
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 import { OSM_URL } from 'common/Map/const';
 
 import type { Theme } from 'types';
 import { useSelector } from 'react-redux';
-import { RootState } from 'reducers';
+import type { RootState } from 'reducers';
 
 interface PlatformsProps {
   colors: Theme;

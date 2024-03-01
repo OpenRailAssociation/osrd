@@ -5,18 +5,22 @@ import lineSliceAlong from '@turf/line-slice-along';
 import length from '@turf/length';
 import bezierSpline from '@turf/bezier-spline';
 import transformTranslate from '@turf/transform-translate';
-import { Point, polygon, lineString } from '@turf/helpers';
-import { Feature, LineString } from 'geojson';
+import { type Point, polygon, lineString } from '@turf/helpers';
+import type { Feature, LineString } from 'geojson';
 import cx from 'classnames';
 import { mapValues, get } from 'lodash';
 
-import { Viewport } from 'reducers/map';
-import { AllowancesSetting, AllowancesSettings, Train } from 'reducers/osrdsimulation/types';
+import type { Viewport } from 'reducers/map';
+import {
+  type AllowancesSetting,
+  type AllowancesSettings,
+  type Train,
+} from 'reducers/osrdsimulation/types';
 import { boundedValue } from 'utils/numbers';
 import { getCurrentBearing } from 'utils/geometry';
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 import { datetime2time } from 'utils/timeManipulation';
-import { TrainPosition } from './types';
+import type { TrainPosition } from './types';
 
 function getFill(isSelectedTrain: boolean, ecoBlocks: boolean) {
   if (isSelectedTrain) {

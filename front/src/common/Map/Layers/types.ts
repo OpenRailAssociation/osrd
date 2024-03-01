@@ -1,5 +1,5 @@
-import { MapState } from 'reducers/map';
-import { Theme } from 'types';
+import type { MapState } from 'reducers/map';
+import type { Theme } from 'types';
 
 export type SignalContext = {
   prefix: string;

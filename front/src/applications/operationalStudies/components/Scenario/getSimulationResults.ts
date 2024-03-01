@@ -9,12 +9,12 @@ import { setFailure } from 'reducers/main';
 import { store } from 'store';
 import i18n from 'i18next';
 import {
-  SimulationReport,
-  TrainScheduleSummary,
+  type SimulationReport,
+  type TrainScheduleSummary,
   osrdEditoastApi,
 } from 'common/api/osrdEditoastApi';
 import { castErrorToFailure } from 'utils/error';
-import { AllowancesSettings, Projection } from 'reducers/osrdsimulation/types';
+import type { AllowancesSettings, Projection } from 'reducers/osrdsimulation/types';
 import { differenceBy } from 'lodash';
 
 export function selectProjection(

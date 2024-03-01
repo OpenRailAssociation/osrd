@@ -1,4 +1,4 @@
-import React, { ComponentType, useContext, useEffect, useRef, useState } from 'react';
+import React, { type ComponentType, useContext, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import length from '@turf/length';
 import along from '@turf/along';
@@ -9,24 +9,24 @@ import { useAppDispatch } from 'store';
 import { save } from 'reducers/editor/thunkActions';
 import type { EditorEntity } from 'applications/editor/typesEditorEntity';
 import {
-  BufferStopEntity,
-  DetectorEntity,
-  PointEditionState,
-  SignalEntity,
+  type BufferStopEntity,
+  type DetectorEntity,
+  type PointEditionState,
+  type SignalEntity,
 } from 'applications/editor/tools/pointEdition/types';
 import EditorContext from 'applications/editor/context';
 import EntityError from 'applications/editor/components/EntityError';
 import EditorForm from 'applications/editor/components/EditorForm';
 import { getEntity } from 'applications/editor/data/api';
 import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
-import { ExtendedEditorContextType } from 'applications/editor/types';
-import { EditoastType } from 'applications/editor/consts';
+import type { ExtendedEditorContextType } from 'applications/editor/types';
+import type { EditoastType } from 'applications/editor/consts';
 import { formatSignalingSystems } from 'applications/editor/tools/pointEdition/utils';
 
 import CustomFlagSignalCheckbox from './CustomFlagSignalCheckbox';
 import CustomPosition from './CustomPosition';
 import RoutesList from './RoutesList';
-import { TrackSectionEntity } from '../../trackEdition/types';
+import type { TrackSectionEntity } from '../../trackEdition/types';
 
 type EditorPoint = BufferStopEntity | DetectorEntity | SignalEntity;
 

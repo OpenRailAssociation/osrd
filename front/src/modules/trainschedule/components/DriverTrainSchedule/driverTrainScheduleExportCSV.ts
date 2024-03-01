@@ -5,7 +5,7 @@ import type {
   Train,
 } from 'reducers/osrdsimulation/types';
 import * as d3 from 'd3';
-import { BaseOrEcoType } from './DriverTrainScheduleTypes';
+import type { BaseOrEcoType } from './DriverTrainScheduleTypes';
 
 /**
  * CSV Export of trainschedule

@@ -4,6 +4,7 @@ import { GiElectric } from 'react-icons/gi';
 import type {
   ElectrificationEntity,
   SpeedSectionEntity,
+  SpeedSectionPslEntity,
 } from 'applications/editor/tools/rangeEdition/types';
 
 import getRangeEditionTool from './tool-factory';
@@ -17,7 +18,6 @@ import {
   ElectrificationEditionLayers,
   ElectrificationMessages,
 } from './electrification/ElectrificationEditionLayers';
-import { SpeedSectionPslEntity } from './types';
 
 export const SpeedEditionTool = getRangeEditionTool<SpeedSectionEntity | SpeedSectionPslEntity>({
   id: 'SpeedSection',

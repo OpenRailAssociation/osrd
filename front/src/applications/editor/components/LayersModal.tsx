@@ -1,4 +1,4 @@
-import React, { FC, useEffect, useMemo, useState } from 'react';
+import React, { type FC, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { groupBy, mapKeys, mapValues, sum, isString, isArray, uniq, isNil } from 'lodash';
 import { useTranslation } from 'react-i18next';

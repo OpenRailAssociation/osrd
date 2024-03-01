@@ -1,13 +1,13 @@
 import drawTrain from 'modules/simulationResult/components/SpaceTimeChart/drawTrain';
 import createSpaceTimeChart from 'modules/simulationResult/components/SpaceTimeChart/createSpaceTimeChart';
 import {
-  AllowancesSettings,
-  Chart,
-  OsrdSimulationState,
-  SimulationTrain,
-  Train,
+  type AllowancesSettings,
+  type Chart,
+  type OsrdSimulationState,
+  type SimulationTrain,
+  type Train,
 } from 'reducers/osrdsimulation/types';
-import { DispatchUpdateSelectedTrainId } from './types';
+import type { DispatchUpdateSelectedTrainId } from './types';
 
 function drawOPs(chartLocal: Chart, projectedTrainSimulation: Train, rotate: boolean) {
   const operationalPointsZone = chartLocal.drawZone

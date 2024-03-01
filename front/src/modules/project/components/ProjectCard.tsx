@@ -8,7 +8,7 @@ import { Link } from 'react-router-dom';
 import nextId from 'react-id-generator';
 
 import { getDocument } from 'common/api/documentApi';
-import { ProjectWithStudies, SearchResultItemProject } from 'common/api/osrdEditoastApi';
+import type { ProjectWithStudies, SearchResultItemProject } from 'common/api/osrdEditoastApi';
 import { getUserSafeWord } from 'reducers/user/userSelectors';
 import { dateTimeFormatting } from 'utils/date';
 

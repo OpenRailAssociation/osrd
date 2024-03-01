@@ -1,4 +1,4 @@
-import { OsrdSimulationState } from 'reducers/osrdsimulation/types';
+import type { OsrdSimulationState } from 'reducers/osrdsimulation/types';
 
 const ORSD_GRAPH_SAMPLE_DATA: OsrdSimulationState = {
   chart: {

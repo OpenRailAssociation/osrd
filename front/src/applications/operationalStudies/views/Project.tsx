@@ -10,7 +10,11 @@ import remarkGfm from 'remark-gfm';
 import BreadCrumbs from 'applications/operationalStudies/components/BreadCrumbs';
 import FilterTextField from 'applications/operationalStudies/components/FilterTextField';
 import { getDocument } from 'common/api/documentApi';
-import { PostSearchApiArg, StudyWithScenarios, osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import {
+  type PostSearchApiArg,
+  type StudyWithScenarios,
+  osrdEditoastApi,
+} from 'common/api/osrdEditoastApi';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import { Loader, Spinner } from 'common/Loaders';
 import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';

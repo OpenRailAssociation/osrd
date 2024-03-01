@@ -1,4 +1,4 @@
-import { Chart, ConsolidatedRouteAspect } from 'reducers/osrdsimulation/types';
+import type { Chart, ConsolidatedRouteAspect } from 'reducers/osrdsimulation/types';
 import { buildStripe } from './ChartHelpers';
 
 /**

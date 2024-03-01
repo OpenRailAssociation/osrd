@@ -1,6 +1,6 @@
 import i18n from 'i18n';
-import { TFunction } from 'i18next';
-import { JSONSchema7, JSONSchema7Definition } from 'json-schema';
+import type { TFunction } from 'i18next';
+import type { JSONSchema7, JSONSchema7Definition } from 'json-schema';
 
 function getI18nTranslation(key: string, defaultTranslation: string, t: TFunction) {
   return i18n.exists(key) ? t(key) : defaultTranslation;

@@ -6,27 +6,27 @@ import bbox from '@turf/bbox';
 import lineIntersect from '@turf/line-intersect';
 import lineSlice from '@turf/line-slice';
 import WebMercatorViewport from 'viewport-mercator-project';
-import { ViewState } from 'react-map-gl/maplibre';
-import { BBox, Coord, featureCollection, lineString } from '@turf/helpers';
-import { Map, MapLayerMouseEvent, MapGeoJSONFeature } from 'maplibre-gl';
+import type { ViewState } from 'react-map-gl/maplibre';
+import { type BBox, type Coord, featureCollection, lineString } from '@turf/helpers';
+import type { Map, MapLayerMouseEvent, MapGeoJSONFeature } from 'maplibre-gl';
 import {
-  Feature,
-  FeatureCollection,
-  LineString,
-  MultiLineString,
-  Point,
-  MultiPoint,
-  Position,
-  Polygon,
+  type Feature,
+  type FeatureCollection,
+  type LineString,
+  type MultiLineString,
+  type Point,
+  type MultiPoint,
+  type Position,
+  type Polygon,
 } from 'geojson';
 import nearestPointOnLine from '@turf/nearest-point-on-line';
-import nearestPoint, { NearestPoint } from '@turf/nearest-point';
+import nearestPoint, { type NearestPoint } from '@turf/nearest-point';
 import fnDistance from '@turf/distance';
 import fnExplode from '@turf/explode';
 
 import { getAngle } from 'applications/editor/data/utils';
 import type { Layer } from 'applications/editor/consts';
-import { Zone } from 'types';
+import type { Zone } from 'types';
 
 /**
  * This helpers transforms a given Zone object to the related Feature object (mainly to use with

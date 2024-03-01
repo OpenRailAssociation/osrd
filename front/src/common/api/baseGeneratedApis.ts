@@ -1,4 +1,9 @@
-import { createApi, fetchBaseQuery, BaseQueryFn, FetchArgs } from '@reduxjs/toolkit/query/react';
+import {
+  createApi,
+  fetchBaseQuery,
+  type BaseQueryFn,
+  type FetchArgs,
+} from '@reduxjs/toolkit/query/react';
 
 import { MAIN_API } from 'config/config';
 

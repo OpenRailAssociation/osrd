@@ -4,7 +4,7 @@ import { Rnd } from 'react-rnd';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
-import { updateViewport, Viewport } from 'reducers/map';
+import { updateViewport, type Viewport } from 'reducers/map';
 import {
   persistentRedoSimulation,
   persistentUndoSimulation,
@@ -13,7 +13,7 @@ import { getIsUpdating } from 'reducers/osrdsimulation/selectors';
 import { updateSelectedProjection, updateSimulation } from 'reducers/osrdsimulation/actions';
 
 import SimulationWarpedMap from 'common/Map/WarpedMap/SimulationWarpedMap';
-import { osrdEditoastApi, SimulationReport } from 'common/api/osrdEditoastApi';
+import { osrdEditoastApi, type SimulationReport } from 'common/api/osrdEditoastApi';
 
 import SimulationResultsMap from 'modules/simulationResult/components/SimulationResultsMap';
 import TimeButtons from 'modules/simulationResult/components/TimeButtons';
@@ -24,7 +24,7 @@ import SpaceCurvesSlopes from 'modules/simulationResult/components/SpaceCurvesSl
 import SpaceTimeChart from 'modules/simulationResult/components/SpaceTimeChart/SpaceTimeChart';
 import SpeedSpaceChart from 'modules/simulationResult/components/SpeedSpaceChart/SpeedSpaceChart';
 import type { PositionScaleDomain, TimeScaleDomain } from 'modules/simulationResult/types';
-import { Train } from 'reducers/osrdsimulation/types';
+import type { Train } from 'reducers/osrdsimulation/types';
 import { useStoreDataForSpaceTimeChart } from 'modules/simulationResult/components/SpaceTimeChart/useStoreDataForSpaceTimeChart';
 import getScaleDomainFromValues from 'modules/simulationResult/components/ChartHelpers/getScaleDomainFromValues';
 import { useAppDispatch } from 'store';

@@ -2,7 +2,7 @@ import { checkRollingStockFormValidity, makeEffortCurve } from 'modules/rollingS
 
 import type { EffortCurves } from 'common/api/osrdEditoastApi';
 import type { EffortCurveForms, RollingStockParametersValues } from 'modules/rollingStock/types';
-import { TFunction } from 'i18next';
+import type { TFunction } from 'i18next';
 
 function setupEffortCurve(tractionMode: string, max_efforts: number[], speeds: number[]) {
   const curves = makeEffortCurve(tractionMode);

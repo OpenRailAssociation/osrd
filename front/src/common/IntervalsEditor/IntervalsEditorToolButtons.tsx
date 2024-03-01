@@ -4,7 +4,11 @@ import { IoIosAdd } from 'react-icons/io';
 import { TbArrowsHorizontal, TbScissors } from 'react-icons/tb';
 import { BsFillTrashFill } from 'react-icons/bs';
 import { BiArrowFromLeft } from 'react-icons/bi';
-import { INTERVALS_EDITOR_TOOLS, IntervalsEditorTool, IntervalsEditorToolsConfig } from './types';
+import {
+  INTERVALS_EDITOR_TOOLS,
+  type IntervalsEditorTool,
+  type IntervalsEditorToolsConfig,
+} from './types';
 
 const ToolButton = ({
   selectedTool,

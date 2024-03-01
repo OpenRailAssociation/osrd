@@ -12,12 +12,12 @@ import {
   type RangeEditionState,
   type TrackState,
   type SpeedSectionPslEntity,
-  PSLSign,
-  SpeedSectionEntity,
-  PSLExtension,
+  type PSLSign,
+  type SpeedSectionEntity,
+  type PSLExtension,
 } from 'applications/editor/tools/rangeEdition/types';
 import { selectPslSign } from 'applications/editor/tools/rangeEdition/utils';
-import { TrackSectionEntity } from 'applications/editor/tools/trackEdition/types';
+import type { TrackSectionEntity } from 'applications/editor/tools/trackEdition/types';
 import PslSignCard from './PslSignCard';
 import PslSignSubSection from './PslSignSubSection';
 

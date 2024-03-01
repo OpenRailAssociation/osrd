@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import React, { type ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import nextId from 'react-id-generator';
 import './InputGroupSNCF.scss';
 import cx from 'classnames';

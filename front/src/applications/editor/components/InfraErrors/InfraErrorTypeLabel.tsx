@@ -1,7 +1,7 @@
-import React from 'react';
+import type React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { InfraError } from './types';
+import type { InfraError } from './types';
 
 /**
  * A component that display an infra error type label.

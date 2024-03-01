@@ -1,10 +1,10 @@
 import Form from '@rjsf/core';
-import { Field, UiSchema } from '@rjsf/utils';
-import { GeoJsonProperties } from 'geojson';
+import type { Field, UiSchema } from '@rjsf/utils';
+import type { GeoJsonProperties } from 'geojson';
 import i18n from 'i18n';
-import { JSONSchema7 } from 'json-schema';
+import type { JSONSchema7 } from 'json-schema';
 import { isNil, omitBy } from 'lodash';
-import React, { useState, useEffect, useMemo, PropsWithChildren } from 'react';
+import React, { useState, useEffect, useMemo, type PropsWithChildren } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import validator from '@rjsf/validator-ajv8';

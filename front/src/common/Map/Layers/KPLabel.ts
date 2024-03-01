@@ -1,5 +1,5 @@
-import { ExpressionFilterSpecification } from 'maplibre-gl';
-import { LayerProps, SymbolLayer } from 'react-map-gl/maplibre';
+import type { ExpressionFilterSpecification } from 'maplibre-gl';
+import type { LayerProps, SymbolLayer } from 'react-map-gl/maplibre';
 
 import type { OmitLayer, Theme } from 'types';
 

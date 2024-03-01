@@ -9,7 +9,7 @@ import {
   getSelectedTrain,
 } from 'reducers/osrdsimulation/selectors';
 import { persistentUpdateSimulation } from 'reducers/osrdsimulation/simulation';
-import { SimulationSnapshot } from 'reducers/osrdsimulation/types';
+import type { SimulationSnapshot } from 'reducers/osrdsimulation/types';
 
 export const useStoreDataForSpaceTimeChart = () => {
   const dispatch = useAppDispatch();

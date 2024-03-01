@@ -1,4 +1,4 @@
-import { Page, request, expect } from '@playwright/test';
+import { type Page, request, expect } from '@playwright/test';
 import type { Project, Scenario, Study, RollingStock, Infra } from 'common/api/osrdEditoastApi';
 import { v4 as uuidv4 } from 'uuid';
 import { PlaywrightHomePage } from '../pages/home-page-model';

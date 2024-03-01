@@ -9,7 +9,7 @@ import {
 import { getTranslationKey } from 'utils/strings';
 import { groupBy, has, isNil, isNull, omit, pick } from 'lodash';
 import { isElectric } from 'modules/rollingStock/helpers/electric';
-import { TFunction } from 'i18next';
+import type { TFunction } from 'i18next';
 
 import type {
   ConditionalEffortCurveForm,

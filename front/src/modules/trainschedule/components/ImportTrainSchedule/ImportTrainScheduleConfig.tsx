@@ -7,17 +7,17 @@ import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import StationSelector from 'modules/trainschedule/components/ImportTrainSchedule/ImportTrainScheduleStationSelector';
 import { useAppDispatch } from 'store';
 import { setFailure } from 'reducers/main';
-import StationCard, { ImportStation } from 'common/StationCard';
+import StationCard, { type ImportStation } from 'common/StationCard';
 import { formatIsoDate } from 'utils/date';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import {
-  ImportedTrainSchedule,
-  TrainSchedule,
-  TrainScheduleImportConfig,
+  type ImportedTrainSchedule,
+  type TrainSchedule,
+  type TrainScheduleImportConfig,
 } from 'applications/operationalStudies/types';
 import {
-  SearchResultItemOperationalPoint,
-  PostSearchApiArg,
+  type SearchResultItemOperationalPoint,
+  type PostSearchApiArg,
   osrdEditoastApi,
 } from 'common/api/osrdEditoastApi';
 import { getGraouTrainSchedules } from 'common/api/graouApi';

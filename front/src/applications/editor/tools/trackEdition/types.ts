@@ -1,10 +1,10 @@
-import { Feature, Point, LineString } from 'geojson';
+import type { Feature, Point, LineString } from 'geojson';
 
-import { EditorEntity } from 'applications/editor/typesEditorEntity';
-import { CommonToolState } from 'applications/editor/tools/types';
+import type { EditorEntity } from 'applications/editor/typesEditorEntity';
+import type { CommonToolState } from 'applications/editor/tools/types';
 
 import type { DirectionalTrackRange, LoadingGaugeType } from 'common/api/osrdEditoastApi';
-import { LinearMetadataItem } from 'common/IntervalsDataViz/types';
+import type { LinearMetadataItem } from 'common/IntervalsDataViz/types';
 
 export type { DirectionalTrackRange as TrackRange };
 

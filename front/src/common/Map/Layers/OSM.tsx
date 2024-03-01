@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { LayerProps, Source } from 'react-map-gl/maplibre';
+import { type LayerProps, Source } from 'react-map-gl/maplibre';
 import { get } from 'lodash';
 
 import mapStyleBluePrintJson from 'assets/mapstyles/OSMBluePrintStyle.json';
@@ -9,7 +9,7 @@ import mapStyleMinimalJson from 'assets/mapstyles/OSMMinimalStyle.json';
 import mapStyleJson from 'assets/mapstyles/OSMStyle.json';
 import { OSM_URL } from 'common/Map/const';
 
-import OrderedLayer, { OrderedLayerProps } from 'common/Map/Layers/OrderedLayer';
+import OrderedLayer, { type OrderedLayerProps } from 'common/Map/Layers/OrderedLayer';
 import { getShowOSM3dBuildings } from 'reducers/map/selectors';
 
 interface OSMProps {

@@ -1,13 +1,13 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { IntervalItem } from './types';
+import type { IntervalItem } from './types';
 
 interface IntervalsEditorTooltip {
   item: IntervalItem;
   point: number;
 }
 
-export const IntervalsEditorTooltip = ({ item, point }: IntervalsEditorTooltip) => {
+const IntervalsEditorTooltip = ({ item, point }: IntervalsEditorTooltip) => {
   const { t } = useTranslation('common/common');
   return (
     <div className="linear-metadata-tooltip">

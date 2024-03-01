@@ -1,7 +1,7 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { Source, SymbolLayer } from 'react-map-gl/maplibre';
-import { Theme, OmitLayer } from 'types';
+import { Source, type SymbolLayer } from 'react-map-gl/maplibre';
+import type { Theme, OmitLayer } from 'types';
 import { MAP_URL } from 'common/Map/const';
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 import { getLayersSettings } from 'reducers/map/selectors';

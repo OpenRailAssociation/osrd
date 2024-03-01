@@ -1,6 +1,10 @@
 import { sortBy } from 'lodash';
 
-import { osrdEditoastApi, GetLightRollingStockApiResponse, GetSpritesSignalingSystemsApiResponse } from "./osrdEditoastApi";
+import {
+  type GetLightRollingStockApiResponse,
+  type GetSpritesSignalingSystemsApiResponse,
+  osrdEditoastApi,
+} from './osrdEditoastApi';
 
 const enhancedEditoastApi = osrdEditoastApi.enhanceEndpoints({
   endpoints: {
@@ -8,16 +12,16 @@ const enhancedEditoastApi = osrdEditoastApi.enhanceEndpoints({
       transformResponse: (response: GetLightRollingStockApiResponse) => {
         return {
           ...response,
-            results: sortBy(response?.results, ['metadata.reference', 'name']),
-        }
-      }
+          results: sortBy(response?.results, ['metadata.reference', 'name']),
+        };
+      },
     },
     getSpritesSignalingSystems: {
       transformResponse: (response: GetSpritesSignalingSystemsApiResponse) => {
-        return response.sort()
-      }
+        return response.sort();
+      },
     },
-  }
-})
+  },
+});
 
-export { enhancedEditoastApi } ;
+export { enhancedEditoastApi };

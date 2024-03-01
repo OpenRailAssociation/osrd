@@ -1,8 +1,8 @@
-import React, { useState, useEffect, ReactNode, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, type ReactNode, useCallback, useMemo } from 'react';
 import { isObject, isNil } from 'lodash';
 import cx from 'classnames';
 
-import { SelectOptionObject, getOptionLabel, getOptionValue } from './SelectSNCF';
+import { type SelectOptionObject, getOptionLabel, getOptionValue } from './SelectSNCF';
 import './SelectImprovedSNCF.scss';
 
 interface SelectProps<T> {

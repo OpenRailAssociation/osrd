@@ -1,5 +1,5 @@
 import React from 'react';
-import { Feature, LineString } from 'geojson';
+import type { Feature, LineString } from 'geojson';
 import { cloneDeep, isEmpty, isEqual } from 'lodash';
 import { MdShowChart } from 'react-icons/md';
 import { RiDragMoveLine } from 'react-icons/ri';
@@ -8,7 +8,7 @@ import { NoEntry, PlusCircle, Trash, XCircle } from '@osrd-project/ui-icons';
 import { BiAnchor, BiArrowFromLeft, BiArrowToRight, BiReset } from 'react-icons/bi';
 import getNearestPoint from '@turf/nearest-point';
 import { featureCollection } from '@turf/helpers';
-import nearestPointOnLine, { NearestPointOnLine } from '@turf/nearest-point-on-line';
+import nearestPointOnLine, { type NearestPointOnLine } from '@turf/nearest-point-on-line';
 
 import { entityDoUpdate, getLineStringDistance } from 'common/IntervalsDataViz/data';
 import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';

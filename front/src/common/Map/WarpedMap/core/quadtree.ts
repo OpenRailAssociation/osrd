@@ -1,6 +1,12 @@
 /* eslint-disable prefer-destructuring, no-plusplus */
-import { BBox2d } from '@turf/helpers/dist/js/lib/geojson';
-import { Feature, FeatureCollection, GeoJsonProperties, Geometry, Position } from 'geojson';
+import type { BBox2d } from '@turf/helpers/dist/js/lib/geojson';
+import {
+  type Feature,
+  type FeatureCollection,
+  type GeoJsonProperties,
+  type Geometry,
+  type Position,
+} from 'geojson';
 import bbox from '@turf/bbox';
 
 // The following types help describing a full QuadTree:

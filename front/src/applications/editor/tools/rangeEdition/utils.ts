@@ -1,10 +1,10 @@
-import { Position } from 'geojson';
+import type { Position } from 'geojson';
 import { last, cloneDeep, compact, isEmpty } from 'lodash';
 import along from '@turf/along';
 import length from '@turf/length';
-import { Feature, feature, lineString, LineString, point } from '@turf/helpers';
+import { feature, lineString, point, type Feature, type LineString } from '@turf/helpers';
 import lineSliceAlong from '@turf/line-slice-along';
-import { MapLayerMouseEvent } from 'maplibre-gl';
+import type { MapLayerMouseEvent } from 'maplibre-gl';
 
 import { getNearestPoint } from 'utils/mapHelper';
 
@@ -18,19 +18,19 @@ import type { PartialOrReducer } from 'applications/editor/types';
 import type { TrackRange, TrackSectionEntity } from 'applications/editor/tools/trackEdition/types';
 
 import {
-  ElectrificationEntity,
-  PSLExtension,
-  PSLSign,
-  PSL_SIGN_TYPE,
+  type ElectrificationEntity,
+  type PSLExtension,
+  type PSLSign,
+  type PSL_SIGN_TYPE,
   PSL_SIGN_TYPES,
-  PslSignFeature,
-  PslSignInformation,
-  RangeEditionState,
-  SpeedSectionEntity,
-  SpeedSectionPslEntity,
-  TrackRangeExtremityFeature,
-  TrackRangeFeature,
-  TrackState,
+  type PslSignFeature,
+  type PslSignInformation,
+  type RangeEditionState,
+  type SpeedSectionEntity,
+  type SpeedSectionPslEntity,
+  type TrackRangeExtremityFeature,
+  type TrackRangeFeature,
+  type TrackState,
 } from './types';
 
 // Tool functions

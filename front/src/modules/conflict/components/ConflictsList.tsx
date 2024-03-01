@@ -3,7 +3,7 @@ import cx from 'classnames';
 import { BsLightningFill } from 'react-icons/bs';
 import { useTranslation } from 'react-i18next';
 import { sec2time } from 'utils/timeManipulation';
-import { Conflict } from 'common/api/osrdEditoastApi';
+import type { Conflict } from 'common/api/osrdEditoastApi';
 
 type ConflictTableProps = {
   conflicts: Conflict[];

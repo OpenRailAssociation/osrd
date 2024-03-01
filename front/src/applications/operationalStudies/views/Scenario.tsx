@@ -19,7 +19,7 @@ import getSimulationResults, {
 
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
-import { SimulationReport, osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { type SimulationReport, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useInfraID, useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
 
 import Timetable from 'modules/trainschedule/components/Timetable/Timetable';

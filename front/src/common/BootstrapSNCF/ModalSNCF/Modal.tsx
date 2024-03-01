@@ -1,4 +1,4 @@
-import React, { FC, PropsWithChildren, useContext, useEffect } from 'react';
+import React, { type FC, type PropsWithChildren, useContext, useEffect } from 'react';
 import { isArray } from 'lodash';
 
 import useKeyboardShortcuts from 'utils/hooks/useKeyboardShortcuts';

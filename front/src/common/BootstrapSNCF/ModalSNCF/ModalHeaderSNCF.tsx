@@ -1,4 +1,4 @@
-import React, { FC, useContext, PropsWithChildren } from 'react';
+import React, { type FC, useContext, type PropsWithChildren } from 'react';
 import { ModalContext } from './ModalProvider';
 
 interface ModalHeaderSNCFProps {

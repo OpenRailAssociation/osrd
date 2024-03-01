@@ -1,5 +1,5 @@
-import { Step, TrainScheduleWithPath } from 'applications/operationalStudies/types';
-import { PathWaypoint, TrainScheduleBatchItem } from 'common/api/osrdEditoastApi';
+import type { Step, TrainScheduleWithPath } from 'applications/operationalStudies/types';
+import type { PathWaypoint, TrainScheduleBatchItem } from 'common/api/osrdEditoastApi';
 import { time2sec } from 'utils/timeManipulation';
 
 // Hope for indexes are the same !

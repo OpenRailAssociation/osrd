@@ -1,7 +1,7 @@
 import {
-  GetInfraByIdErrorsApiArg,
-  InfraError as InfraErrorApiType,
-  InfraErrorType,
+  type GetInfraByIdErrorsApiArg,
+  type InfraError as InfraErrorApiType,
+  type InfraErrorType,
 } from 'common/api/osrdEditoastApi';
 
 // Error level

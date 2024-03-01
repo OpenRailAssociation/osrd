@@ -1,4 +1,4 @@
-import { Dispatch } from 'redux';
+import type { Dispatch } from 'redux';
 import { compact } from 'lodash';
 
 import { msToKmh } from 'utils/physics';
@@ -9,7 +9,7 @@ import type { PointOnMap } from 'applications/operationalStudies/consts';
 
 import type { Allowance, PathResponse, TrainSchedule } from 'common/api/osrdEditoastApi';
 
-import { ConfSliceActions } from 'reducers/osrdconf/osrdConfCommon';
+import type { ConfSliceActions } from 'reducers/osrdconf/osrdConfCommon';
 
 function convertStepToPointOnMap(
   step?: ArrayElement<PathResponse['steps']>

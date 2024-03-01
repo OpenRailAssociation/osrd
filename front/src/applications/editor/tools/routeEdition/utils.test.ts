@@ -1,9 +1,9 @@
-import { LineString, Point, Position } from 'geojson';
+import type { LineString, Point, Position } from 'geojson';
 import length from '@turf/length';
 import { lineString } from '@turf/helpers';
 
-import { TrackSectionEntity } from 'applications/editor/tools/trackEdition/types';
-import { DetectorEntity } from 'applications/editor/tools/pointEdition/types';
+import type { TrackSectionEntity } from 'applications/editor/tools/trackEdition/types';
+import type { DetectorEntity } from 'applications/editor/tools/pointEdition/types';
 import { editoastToEditorEntity } from 'applications/editor/data/utils';
 import { computeRouteGeometry, removeDuplicatePoints } from './utils';
 

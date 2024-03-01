@@ -1,7 +1,10 @@
-import { PowerRestrictionSegment, DrawingKeys } from 'applications/operationalStudies/consts';
+import {
+  type PowerRestrictionSegment,
+  type DrawingKeys,
+} from 'applications/operationalStudies/consts';
 import { pointer } from 'd3-selection';
 import i18n from 'i18n';
-import { Chart } from 'reducers/osrdsimulation/types';
+import type { Chart } from 'reducers/osrdsimulation/types';
 import getAxisValues from 'modules/simulationResult/components/ChartHelpers/drawHelpers';
 import { buildStripe } from './ChartHelpers';
 

@@ -1,9 +1,9 @@
 import { compact, isEmpty } from 'lodash';
 import rollingstockOpenData2OSRD from 'modules/trainschedule/components/ImportTrainSchedule/rollingstock_opendata2osrd.json';
 import { isFirstOrLastElement } from 'utils/array';
-import { Step, TrainScheduleWithPathRef } from 'applications/operationalStudies/types';
-import { LightRollingStock } from 'common/api/osrdEditoastApi';
-import { Point } from './types';
+import type { Step, TrainScheduleWithPathRef } from 'applications/operationalStudies/types';
+import type { LightRollingStock } from 'common/api/osrdEditoastApi';
+import type { Point } from './types';
 
 const getTrainAndRollingStockFromPath = (
   trainNumber: string,

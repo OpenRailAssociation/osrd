@@ -1,8 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import SpeedSpaceChart from 'modules/simulationResult/components/SpeedSpaceChart/SpeedSpaceChart';
 import { useTranslation } from 'react-i18next';
-import { AllowancesSettings } from 'reducers/osrdsimulation/types';
-import { SimulationReport } from 'common/api/osrdEditoastApi';
+import type { AllowancesSettings } from 'reducers/osrdsimulation/types';
+import type { SimulationReport } from 'common/api/osrdEditoastApi';
 import SpaceTimeChart from 'modules/simulationResult/components/SpaceTimeChart/SpaceTimeChart';
 import { useStoreDataForSpaceTimeChart } from 'modules/simulationResult/components/SpaceTimeChart/useStoreDataForSpaceTimeChart';
 import { ChevronDown, ChevronUp } from '@osrd-project/ui-icons';

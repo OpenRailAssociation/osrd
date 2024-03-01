@@ -1,4 +1,4 @@
-import React, { FC, useCallback, useContext, useEffect, useState } from 'react';
+import React, { type FC, useCallback, useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pencil } from '@osrd-project/ui-icons';
 import { FaMapMarkedAlt, FaTimesCircle } from 'react-icons/fa';
@@ -19,7 +19,7 @@ import { useInfraID } from 'common/osrdContext';
 import Tipped from 'common/Tipped';
 import { useAppDispatch } from 'store';
 import useKeyboardShortcuts from 'utils/hooks/useKeyboardShortcuts';
-import { EndPoint } from '../../switchEdition/types';
+import type { EndPoint } from '../../switchEdition/types';
 
 interface WayPointInputProps {
   endPoint: EndPoint;

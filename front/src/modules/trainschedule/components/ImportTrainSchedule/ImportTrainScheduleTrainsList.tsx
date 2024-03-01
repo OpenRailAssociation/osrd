@@ -11,9 +11,9 @@ import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { keyBy } from 'lodash';
 import rollingstockOpenData2OSRD from 'modules/trainschedule/components/ImportTrainSchedule/rollingstock_opendata2osrd.json';
 import nextId from 'react-id-generator';
-import { TrainSchedule } from 'applications/operationalStudies/types';
-import { LightRollingStockWithLiveries } from 'common/api/osrdEditoastApi';
-import { TFunction } from 'i18next';
+import type { TrainSchedule } from 'applications/operationalStudies/types';
+import type { LightRollingStockWithLiveries } from 'common/api/osrdEditoastApi';
+import type { TFunction } from 'i18next';
 
 function LoadingIfSearching({ isLoading, t }: { isLoading: boolean; t: TFunction }) {
   return (

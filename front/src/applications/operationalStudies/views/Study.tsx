@@ -10,8 +10,8 @@ import DateBox from 'applications/operationalStudies/components/Study/DateBox';
 import StateStep from 'applications/operationalStudies/components/Study/StateStep';
 import { type StudyState, studyStates } from 'applications/operationalStudies/consts';
 import {
-  PostSearchApiArg,
-  ScenarioWithCountTrains,
+  type PostSearchApiArg,
+  type ScenarioWithCountTrains,
   osrdEditoastApi,
 } from 'common/api/osrdEditoastApi';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
@@ -20,7 +20,7 @@ import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 import { Loader, Spinner } from 'common/Loaders';
 import ScenarioCard from 'modules/scenario/components/ScenarioCard';
 import ScenarioCardEmpty from 'modules/scenario/components/ScenarioCardEmpty';
-import AddOrEditStudyModal, { StudyForm } from 'modules/study/components/AddOrEditStudyModal';
+import AddOrEditStudyModal, { type StudyForm } from 'modules/study/components/AddOrEditStudyModal';
 import { budgetFormat } from 'utils/numbers';
 
 type SortOptions =

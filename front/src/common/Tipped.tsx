@@ -1,4 +1,4 @@
-import React, { FC, HTMLAttributes, useState } from 'react';
+import React, { type FC, type HTMLAttributes, useState } from 'react';
 import { CSSTransition } from 'react-transition-group';
 import cx from 'classnames';
 

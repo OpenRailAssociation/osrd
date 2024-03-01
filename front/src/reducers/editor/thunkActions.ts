@@ -1,5 +1,5 @@
 import i18next from 'i18next';
-import { JSONSchema7, JSONSchema7Definition } from 'json-schema';
+import type { JSONSchema7, JSONSchema7Definition } from 'json-schema';
 import { omit, clone, isNil, isUndefined } from 'lodash';
 
 import {
@@ -11,15 +11,15 @@ import {
   entityToUpdateOperation,
   entityToDeleteOperation,
 } from 'applications/editor/data/utils';
-import { EditorEntity, EditorSchema } from 'applications/editor/typesEditorEntity';
+import type { EditorEntity, EditorSchema } from 'applications/editor/typesEditorEntity';
 import type { Operation } from 'common/api/osrdEditoastApi';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { castErrorToFailure } from 'utils/error';
 import { updateIssuesSettings } from 'reducers/map';
 import infra_schema from 'reducers/osrdconf/infra_schema.json';
 import { setLoading, setSuccess, setFailure, setSuccessWithoutMessage } from 'reducers/main';
-import { AppDispatch, GetState } from 'store';
-import { EditorState, editorSliceActions } from '.';
+import type { AppDispatch, GetState } from 'store';
+import { type EditorState, editorSliceActions } from '.';
 
 const { loadDataModelAction, updateTotalsIssueAction, updateFiltersIssueAction } =
   editorSliceActions;

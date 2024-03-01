@@ -1,5 +1,5 @@
 import cx from 'classnames';
-import React, { FC, InputHTMLAttributes, ReactNode } from 'react';
+import React, { type FC, type InputHTMLAttributes, type ReactNode } from 'react';
 
 const TextareaSNCF: FC<{
   // Basic input props

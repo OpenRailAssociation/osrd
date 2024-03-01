@@ -1,4 +1,4 @@
-import React, { FC, useCallback } from 'react';
+import React, { type FC, useCallback } from 'react';
 import { MdFullscreen } from 'react-icons/md';
 import { useAppDispatch } from 'store';
 

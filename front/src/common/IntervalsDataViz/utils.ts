@@ -1,7 +1,7 @@
 import { isNil, isNaN, omit, values } from 'lodash';
-import { CSSProperties } from 'react';
+import type { CSSProperties } from 'react';
 
-import { LinearMetadataItem } from './types';
+import type { LinearMetadataItem } from './types';
 
 /**
  * Simple function that take an input and try to convert it as a number.

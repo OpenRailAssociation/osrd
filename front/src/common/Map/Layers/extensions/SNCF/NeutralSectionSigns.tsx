@@ -1,12 +1,12 @@
 import React from 'react';
 import { isNil } from 'lodash';
 import { useSelector } from 'react-redux';
-import { LayerProps, Source, SymbolLayer } from 'react-map-gl/maplibre';
+import { type LayerProps, Source, type SymbolLayer } from 'react-map-gl/maplibre';
 import { MAP_URL } from 'common/Map/const';
-import { Theme } from 'types';
+import type { Theme } from 'types';
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 import { getMap } from 'reducers/map/selectors';
-import { LayerContext } from 'common/Map/Layers/types';
+import type { LayerContext } from 'common/Map/Layers/types';
 import getKPLabelLayerProps from 'common/Map/Layers/KPLabel';
 import getMastLayerProps from 'common/Map/Layers/mastLayerProps';
 

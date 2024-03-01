@@ -29,7 +29,7 @@ import stdcmConfReducer, {
 import operationalStudiesConfReducer, {
   operationalStudiesConfSlice,
 } from 'reducers/osrdconf/operationalStudiesConf';
-import { ConfSlice, defaultCommonConf } from './osrdconf/osrdConfCommon';
+import { type ConfSlice, defaultCommonConf } from './osrdconf/osrdConfCommon';
 
 const compressor = createCompressor({
   whitelist: ['rollingstock'],

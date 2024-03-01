@@ -4,7 +4,7 @@ import { Trash } from '@osrd-project/ui-icons';
 import { BsCursor } from 'react-icons/bs';
 import { FaDrawPolygon } from 'react-icons/fa';
 import { BiLoader, BiSelection } from 'react-icons/bi';
-import { PointLike } from 'maplibre-gl';
+import type { PointLike } from 'maplibre-gl';
 import { isEqual, max, min } from 'lodash';
 
 import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF/ConfirmModal';
@@ -12,12 +12,12 @@ import { save } from 'reducers/editor/thunkActions';
 import { selectInZone } from 'utils/mapHelper';
 
 import { getMixedEntities } from 'applications/editor/data/api';
-import { LAYER_TO_EDITOAST_DICT, Layer } from 'applications/editor/consts';
+import { LAYER_TO_EDITOAST_DICT, type Layer } from 'applications/editor/consts';
 import type { Tool } from 'applications/editor/types';
 import { DEFAULT_COMMON_TOOL_STATE } from 'applications/editor/tools/consts';
 import { openEntityEditionPanel } from 'applications/editor/tools/utils';
 import { SelectionLayers, SelectionMessages, SelectionLeftPanel } from './components';
-import { SelectionState } from './types';
+import type { SelectionState } from './types';
 
 const SelectionTool: Tool<SelectionState> = {
   id: 'select-items',

@@ -54,6 +54,7 @@
     "suppressImplicitAnyIndexErrors": false,
     "typeRoots": ["node_modules/@types"],
     "types": ["vite/client"],
-    "target": "ESNext"
+    "target": "ESNext",
+    "verbatimModuleSyntax": true
   }
 }

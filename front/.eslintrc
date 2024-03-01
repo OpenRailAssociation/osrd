@@ -16,6 +16,7 @@
   },
   "rules": {
     "no-shadow": "off",
+    "@typescript-eslint/consistent-type-imports": ["error", { "fixStyle": "inline-type-imports" }],
     "@typescript-eslint/no-shadow": "error",
     "@typescript-eslint/no-use-before-define": ["error"],
 

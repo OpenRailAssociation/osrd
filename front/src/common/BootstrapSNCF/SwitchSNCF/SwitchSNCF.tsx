@@ -1,5 +1,5 @@
 import cx from 'classnames';
-import React, { FC, InputHTMLAttributes } from 'react';
+import React, { type FC, type InputHTMLAttributes } from 'react';
 import './SwitchSNCF.scss';
 
 export const SWITCH_TYPES = {

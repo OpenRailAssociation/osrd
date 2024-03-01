@@ -1,4 +1,4 @@
-import React, { Dispatch, SetStateAction, useMemo } from 'react';
+import React, { type Dispatch, type SetStateAction, useMemo } from 'react';
 import Spreadsheet, { createEmptyMatrix } from 'react-spreadsheet';
 import { replaceElementAtIndex } from 'utils/array';
 import { useTranslation } from 'react-i18next';

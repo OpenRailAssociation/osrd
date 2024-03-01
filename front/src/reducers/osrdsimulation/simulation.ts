@@ -1,16 +1,16 @@
 import { setFailure } from 'reducers/main';
 import i18n from 'i18next';
 
-import { AnyAction, Reducer } from 'redux';
+import type { AnyAction, Reducer } from 'redux';
 import type { AppDispatch, GetState } from 'store';
 import {
-  SimulationReport,
-  TrainSchedule,
-  TrainSchedulePatch,
+  type SimulationReport,
+  type TrainSchedule,
+  type TrainSchedulePatch,
   osrdEditoastApi,
 } from 'common/api/osrdEditoastApi';
 import { castErrorToFailure } from 'utils/error';
-import { OsrdSimulationState, SimulationSnapshot, Train } from './types';
+import type { OsrdSimulationState, SimulationSnapshot, Train } from './types';
 import {
   UPDATE_SIMULATION,
   UNDO_SIMULATION,

@@ -4,10 +4,10 @@ import nextId from 'react-id-generator';
 import { seconds2hhmmss } from 'modules/trainschedule/components/ImportTrainSchedule/ImportTrainScheduleHelpers';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import { LazyLoadComponent } from 'react-lazy-load-image-component';
-import { TrainSchedule } from 'applications/operationalStudies/types';
+import type { TrainSchedule } from 'applications/operationalStudies/types';
 import {
-  LightRollingStockWithLiveries,
-  RollingStockWithLiveries,
+  type LightRollingStockWithLiveries,
+  type RollingStockWithLiveries,
 } from 'common/api/osrdEditoastApi';
 
 type Props = {

@@ -9,7 +9,7 @@ import {
   defineLinear,
   interpolateOnPosition,
   mergeDatasAreaConstant,
-  MergedBlock,
+  type MergedBlock,
 } from 'modules/simulationResult/components/ChartHelpers/ChartHelpers';
 import {
   traceVerticalLine,
@@ -23,13 +23,13 @@ import defineChart from 'modules/simulationResult/components/ChartHelpers/define
 import drawArea from 'modules/simulationResult/components/ChartHelpers/drawArea';
 import drawCurve from 'modules/simulationResult/components/ChartHelpers/drawCurve';
 import {
-  Chart,
-  GradientPosition,
-  HeightPosition,
-  RadiusPosition,
-  SpeedSpaceChart,
-  PositionSpeedTime,
-  Train,
+  type Chart,
+  type GradientPosition,
+  type HeightPosition,
+  type RadiusPosition,
+  type SpeedSpaceChart,
+  type PositionSpeedTime,
+  type Train,
 } from 'reducers/osrdsimulation/types';
 import { dateIsInRange } from 'utils/date';
 import { getIsPlaying } from 'reducers/osrdsimulation/selectors';

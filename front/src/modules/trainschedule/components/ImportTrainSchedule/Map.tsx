@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 import type { MapLayerMouseEvent } from 'react-map-gl/maplibre';
 import ReactMapGL, { AttributionControl, ScaleControl } from 'react-map-gl/maplibre';
 import { point as turfPoint } from '@turf/helpers';
-import turfNearestPointOnLine, { NearestPointOnLine } from '@turf/nearest-point-on-line';
+import turfNearestPointOnLine, { type NearestPointOnLine } from '@turf/nearest-point-on-line';
 import type { LineString } from 'geojson';
 
 /* Main data & layers */

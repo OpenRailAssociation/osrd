@@ -1,4 +1,4 @@
-import { Position, Geometry } from 'geojson';
+import type { Position, Geometry } from 'geojson';
 
 export const NULL_GEOMETRY = {
   type: 'GeometryCollection',

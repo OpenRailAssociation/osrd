@@ -1,9 +1,9 @@
-import { Feature, Point } from 'geojson';
+import type { Feature, Point } from 'geojson';
 
-import { EditorEntity } from 'applications/editor/typesEditorEntity';
-import { Layer } from 'applications/editor/consts';
-import { CommonToolState } from 'applications/editor/tools/types';
-import { NullGeometry } from 'types';
+import type { EditorEntity } from 'applications/editor/typesEditorEntity';
+import type { Layer } from 'applications/editor/consts';
+import type { CommonToolState } from 'applications/editor/tools/types';
+import type { NullGeometry } from 'types';
 
 export type SignalingSystem = {
   next_signaling_systems?: Array<string | undefined>;

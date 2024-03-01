@@ -1,12 +1,12 @@
 import { produce } from 'immer';
-import { AnyAction } from 'redux';
+import type { AnyAction } from 'redux';
 
 import { SIGNAL_BASE_DEFAULT, CHART_AXES } from 'modules/simulationResult/consts';
 import createTrain from 'modules/simulationResult/components/SpaceTimeChart/createTrain';
 import {
   SPEED_SPACE_SETTINGS_KEYS,
-  OsrdSimulationState,
-  Train,
+  type OsrdSimulationState,
+  type Train,
 } from 'reducers/osrdsimulation/types';
 // TODO: Dependency cycle will be removed during the refactoring of store
 // eslint-disable-next-line import/no-cycle

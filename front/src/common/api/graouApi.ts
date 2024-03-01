@@ -1,5 +1,5 @@
-import { TrainScheduleImportConfig } from 'applications/operationalStudies/types';
-import { ImportStation } from 'common/StationCard';
+import type { TrainScheduleImportConfig } from 'applications/operationalStudies/types';
+import type { ImportStation } from 'common/StationCard';
 import customAxios from './axios';
 
 export const GRAOU_URL = 'https://graou.info';

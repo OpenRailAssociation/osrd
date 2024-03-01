@@ -1,8 +1,8 @@
 import React from 'react';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import {
-  ProjectWithStudies,
-  SearchResultItemProject,
+  type ProjectWithStudies,
+  type SearchResultItemProject,
   osrdEditoastApi,
 } from 'common/api/osrdEditoastApi';
 import { useTranslation } from 'react-i18next';

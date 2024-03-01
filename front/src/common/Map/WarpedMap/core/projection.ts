@@ -1,17 +1,17 @@
 /* eslint-disable prefer-destructuring, no-plusplus */
-import { Feature, FeatureCollection, Geometry, Position } from 'geojson';
+import type { Feature, FeatureCollection, Geometry, Position } from 'geojson';
 import { keyBy } from 'lodash';
 
-import { Zone } from 'types';
+import type { Zone } from 'types';
 import { clip } from 'utils/mapHelper';
 import {
   getBarycentricCoordinates,
   getPointInTriangle,
-  GridIndex,
+  type GridIndex,
   isInTriangle,
-  Triangle,
+  type Triangle,
 } from 'common/Map/WarpedMap/core/helpers';
-import { getElements, Quad } from 'common/Map/WarpedMap/core/quadtree';
+import { getElements, type Quad } from 'common/Map/WarpedMap/core/quadtree';
 
 export type Projection = (position: Position) => Position | null;
 
