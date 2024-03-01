@@ -59,7 +59,7 @@ import kotlin.time.Duration
 
 class TrackNodeConfigDescriptor(
     val name: String,
-    val portLink: Pair<TrackNodePortId, TrackNodePortId>,
+    val portLinks: List<Pair<TrackNodePortId, TrackNodePortId>>,
 )
 
 class TrackNodeDescriptor(
@@ -351,9 +351,10 @@ class RawInfraImpl(
         config: TrackNodeConfigId,
         entryPort: TrackNodePortId
     ): OptStaticIdx<TrackNodePort> {
-        val ports = trackNodePool[trackNode].configs[config].portLink
-        if (ports.first == entryPort) return OptStaticIdx(ports.second.index)
-        if (ports.second == entryPort) return OptStaticIdx(ports.first.index)
+        for (link in trackNodePool[trackNode].configs[config].portLinks) {
+            if (link.first == entryPort) return OptStaticIdx(link.second.index)
+            if (link.second == entryPort) return OptStaticIdx(link.first.index)
+        }
         return OptStaticIdx()
     }
 

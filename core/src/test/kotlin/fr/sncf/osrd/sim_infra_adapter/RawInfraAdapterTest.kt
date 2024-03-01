@@ -4,8 +4,14 @@ import fr.sncf.osrd.railjson.schema.common.RJSWaypointRef
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection
 import fr.sncf.osrd.railjson.schema.infra.RJSRoute
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSTrainDetector
+import fr.sncf.osrd.sim_infra.api.DirTrackSectionId
+import fr.sncf.osrd.sim_infra.api.RawInfra
+import fr.sncf.osrd.sim_infra.api.TrackNode
+import fr.sncf.osrd.sim_infra.api.TrackNodeConfigId
+import fr.sncf.osrd.utils.Direction
 import fr.sncf.osrd.utils.DistanceRangeMapImpl
 import fr.sncf.osrd.utils.Helpers
+import fr.sncf.osrd.utils.indexing.StaticIdx
 import fr.sncf.osrd.utils.units.meters
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -112,5 +118,64 @@ class RawInfraAdapterTest {
         rjsInfra.routes = listOf(newRoute)
         val oldInfra = Helpers.infraFromRJS(rjsInfra)
         adaptRawInfra(oldInfra)
+    }
+
+    private fun assertCrossing(rawInfra: RawInfra, nodeIdx: StaticIdx<TrackNode>) {
+        val portIdxs = rawInfra.getTrackNodePorts(nodeIdx)
+        assert(portIdxs.size == 4u)
+        val configIdxs = rawInfra.getTrackNodeConfigs(nodeIdx)
+        assert(configIdxs.size == 1u)
+    }
+
+    private fun assertDoubleSlipSwitch(rawInfra: RawInfra, nodeIdx: StaticIdx<TrackNode>) {
+        val portIdxs = rawInfra.getTrackNodePorts(nodeIdx)
+        assert(portIdxs.size == 4u)
+        val configIdxs = rawInfra.getTrackNodeConfigs(nodeIdx)
+        assert(configIdxs.size == 4u)
+    }
+
+    private fun assertPointSwitch(rawInfra: RawInfra, nodeIdx: StaticIdx<TrackNode>) {
+        val portIdxs = rawInfra.getTrackNodePorts(nodeIdx)
+        assert(portIdxs.size == 3u)
+        val configIdxs = rawInfra.getTrackNodeConfigs(nodeIdx)
+        assert(configIdxs.size == 2u)
+    }
+
+    @Test
+    fun loadSmallInfraNodes() {
+        val rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")
+        val rawInfra = adaptRawInfra(Helpers.infraFromRJS(rjsInfra)).simInfra
+        val nodeNameToIdxMap =
+            rawInfra.trackNodes
+                .map { nodeIdx -> Pair(rawInfra.getTrackNodeName(nodeIdx), nodeIdx) }
+                .toMap()
+        assertPointSwitch(rawInfra, nodeNameToIdxMap["PA0"]!!)
+        assertPointSwitch(rawInfra, nodeNameToIdxMap["PE1"]!!)
+        assertDoubleSlipSwitch(rawInfra, nodeNameToIdxMap["PH0"]!!)
+        assertCrossing(rawInfra, nodeNameToIdxMap["PD1"]!!)
+
+        // check that PD0 crossing connects correctly track-sections with their directions
+        assertCrossing(rawInfra, nodeNameToIdxMap["PD0"]!!)
+        val configIdx = TrackNodeConfigId(0u) // only configuration of "PD0" crossing node
+        val te0 = rawInfra.getTrackSectionFromName("TE0")!!
+        val tf0 = rawInfra.getTrackSectionFromName("TF0")!!
+        val td0 = rawInfra.getTrackSectionFromName("TD0")!!
+        val td2 = rawInfra.getTrackSectionFromName("TD2")!!
+        val te0Increasing = DirTrackSectionId(te0, Direction.INCREASING)
+        val te0Decreasing = DirTrackSectionId(te0, Direction.DECREASING)
+        val tf0Increasing = DirTrackSectionId(tf0, Direction.INCREASING)
+        val tf0Decreasing = DirTrackSectionId(tf0, Direction.DECREASING)
+        val td0Increasing = DirTrackSectionId(td0, Direction.INCREASING)
+        val td0Decreasing = DirTrackSectionId(td0, Direction.DECREASING)
+        val td2Increasing = DirTrackSectionId(td2, Direction.INCREASING)
+        val td2Decreasing = DirTrackSectionId(td2, Direction.DECREASING)
+        assert(rawInfra.getNextTrackNode(te0Increasing).asIndex() == nodeNameToIdxMap["PD0"])
+        assert(rawInfra.getNextTrackNode(tf0Decreasing).asIndex() == nodeNameToIdxMap["PD0"])
+        assert(rawInfra.getNextTrackNode(td0Increasing).asIndex() == nodeNameToIdxMap["PD0"])
+        assert(rawInfra.getNextTrackNode(td2Decreasing).asIndex() == nodeNameToIdxMap["PD0"])
+        assert(rawInfra.getNextTrackSection(te0Increasing, configIdx).asIndex() == tf0Increasing)
+        assert(rawInfra.getNextTrackSection(tf0Decreasing, configIdx).asIndex() == te0Decreasing)
+        assert(rawInfra.getNextTrackSection(td0Increasing, configIdx).asIndex() == td2Increasing)
+        assert(rawInfra.getNextTrackSection(td2Decreasing, configIdx).asIndex() == td0Decreasing)
     }
 }
