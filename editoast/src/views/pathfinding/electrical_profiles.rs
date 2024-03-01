@@ -1,7 +1,6 @@
 use crate::error::{InternalError, Result};
-use crate::models::{
-    pathfinding::Pathfinding, ElectricalProfileSet, LightRollingStockModel, Retrieve,
-};
+use crate::models::{pathfinding::Pathfinding, LightRollingStockModel, Retrieve};
+use crate::modelsv2::electrical_profiles::ElectricalProfileSet;
 use crate::schema::electrical_profiles::ElectricalProfileSetData;
 use crate::views::electrical_profiles::ElectricalProfilesError;
 use crate::views::pathfinding::PathfindingIdParam;
@@ -98,17 +97,6 @@ async fn electrical_profiles_on_path(
         None => return Err(PathfindingError::NotFound { pathfinding_id }.into()),
     };
 
-    let eps_id = request.electrical_profile_set_id;
-    let eps = match ElectricalProfileSet::retrieve(db_pool.clone(), eps_id).await? {
-        Some(eps) => eps.data.unwrap().0,
-        None => {
-            return Err(ElectricalProfilesError::NotFound {
-                electrical_profile_set_id: eps_id,
-            }
-            .into())
-        }
-    };
-
     let rs_id = request.rolling_stock_id;
     let rs = match LightRollingStockModel::retrieve(db_pool.clone(), rs_id).await? {
         Some(rs) => rs,
@@ -120,9 +108,19 @@ async fn electrical_profiles_on_path(
         }
     };
 
+    let eps_id = request.electrical_profile_set_id;
+    use crate::modelsv2::Retrieve;
+    let conn = &mut db_pool.get().await.unwrap();
+    let eps = ElectricalProfileSet::retrieve_or_fail(conn, eps_id, || {
+        ElectricalProfilesError::NotFound {
+            electrical_profile_set_id: eps_id,
+        }
+    })
+    .await?;
+
     let track_section_ids = pathfinding.track_section_ids();
     let (electrical_profiles_by_track, warnings) =
-        map_electrical_profiles(eps, rs.base_power_class.unwrap(), track_section_ids);
+        map_electrical_profiles(eps.data, rs.base_power_class.unwrap(), track_section_ids);
 
     let res = make_path_range_map(&electrical_profiles_by_track, &pathfinding);
     Ok(Json(ProfilesOnPathResponse {
@@ -136,9 +134,9 @@ mod tests {
     use super::*;
     use crate::fixtures::tests::{db_pool, empty_infra, named_fast_rolling_stock, TestFixture};
     use crate::models::{pathfinding::tests::simple_pathfinding_fixture, Infra};
+    use crate::modelsv2::Model;
     use crate::schema::{electrical_profiles::ElectricalProfile, TrackRange};
     use crate::views::tests::create_test_service;
-    use crate::DieselJson;
     use actix_http::StatusCode;
     use actix_web::test::{call_service, read_body_json, TestRequest};
     use osrd_containers::range_map;
@@ -195,13 +193,11 @@ mod tests {
             level_order: Default::default(),
         };
 
-        let electrical_profile_set = ElectricalProfileSet {
-            id: None,
-            name: Some("Small_ep_test".into()),
-            data: Some(DieselJson::new(ep_data)),
-        };
+        let electrical_profile_set = ElectricalProfileSet::changeset()
+            .name("Small_ep_test".into())
+            .data(ep_data);
 
-        TestFixture::create_legacy(electrical_profile_set, db_pool).await
+        TestFixture::create(electrical_profile_set, db_pool).await
     }
 
     #[rstest]
@@ -209,7 +205,7 @@ mod tests {
     async fn test_map_electrical_profiles(
         #[future] electrical_profile_set: TestFixture<ElectricalProfileSet>,
     ) {
-        let ep_data = electrical_profile_set.await.model.data.clone().unwrap().0;
+        let ep_data = electrical_profile_set.await.model.data.clone();
         let track_sections: HashSet<_> =
             vec!["track_1", "track_2", "track_3", "track_4", "track_5"]
                 .into_iter()

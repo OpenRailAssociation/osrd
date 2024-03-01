@@ -1,48 +1,20 @@
+use crate::diesel::QueryDsl;
 use crate::error::Result;
 use crate::schema::electrical_profiles::ElectricalProfileSetData;
 use crate::tables::electrical_profile_set;
-
-use crate::diesel::ExpressionMethods;
-use crate::diesel::QueryDsl;
-use crate::models::Identifiable;
-use crate::DieselJson;
-use diesel::result::Error as DieselError;
 use diesel_async::{AsyncPgConnection as PgConnection, RunQueryDsl};
-use editoast_derive::Model;
+use editoast_derive::ModelV2;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
-#[derive(
-    Clone,
-    Debug,
-    Default,
-    Deserialize,
-    Identifiable,
-    Insertable,
-    Model,
-    PartialEq,
-    Queryable,
-    Selectable,
-    Serialize,
-    ToSchema,
-)]
-#[model(table = "electrical_profile_set")]
-#[model(create, delete, retrieve)]
-#[diesel(table_name = electrical_profile_set)]
+#[derive(Clone, Debug, Serialize, Deserialize, ModelV2, ToSchema)]
+#[model(table = crate::tables::electrical_profile_set)]
+#[model(changeset(derive(Deserialize)))]
 pub struct ElectricalProfileSet {
-    #[diesel(deserialize_as = i64)]
-    pub id: Option<i64>,
-    #[diesel(deserialize_as = String)]
-    pub name: Option<String>,
-    #[schema(value_type=ElectricalProfileSetData)]
-    #[diesel(deserialize_as = DieselJson<ElectricalProfileSetData>)]
-    pub data: Option<DieselJson<ElectricalProfileSetData>>,
-}
-
-impl Identifiable for ElectricalProfileSet {
-    fn get_id(&self) -> i64 {
-        self.id.unwrap()
-    }
+    pub id: i64,
+    pub name: String,
+    #[model(json)]
+    pub data: ElectricalProfileSetData,
 }
 
 impl ElectricalProfileSet {
@@ -82,12 +54,12 @@ mod tests {
         let list = ElectricalProfileSet::list_light(&mut conn).await.unwrap();
 
         assert!(list.contains(&LightElectricalProfileSet {
-            id: set_1.model.id.unwrap(),
-            name: set_1.model.name.clone().unwrap(),
+            id: set_1.model.id,
+            name: set_1.model.name.clone(),
         }));
         assert!(list.contains(&LightElectricalProfileSet {
-            id: set_2.model.id.unwrap(),
-            name: set_2.model.name.clone().unwrap(),
+            id: set_2.model.id,
+            name: set_2.model.name.clone(),
         }));
     }
 }

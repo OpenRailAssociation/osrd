@@ -12,7 +12,6 @@ use crate::{
     },
     error::{InternalError, Result},
     models::{
-        electrical_profiles::ElectricalProfileSet,
         train_schedule::{
             filter_invalid_trains, Allowance, RjsPowerRestrictionRange, ScheduledPoint,
             TrainScheduleOptions,
@@ -21,6 +20,7 @@ use crate::{
         Scenario, SimulationOutputChangeset, Timetable, TrainSchedule, TrainScheduleChangeset,
         Update,
     },
+    modelsv2::ElectricalProfileSet,
     schema::rolling_stock::RollingStockComfortType,
     views::train_schedule::simulation_report::fetch_simulation_output,
     DbPool, DieselJson,
@@ -654,15 +654,18 @@ async fn create_backend_request_payload(
             path_id: train_schedules[0].path_id,
         })?;
 
+    use crate::modelsv2::Retrieve;
+    let conn = &mut db_pool.get().await?;
     let electrical_profile_set = match scenario.electrical_profile_set_id {
         Some(Some(electrical_profile_set_id)) => {
-            ElectricalProfileSet::retrieve(db_pool, electrical_profile_set_id)
-                .await?
-                .ok_or(ElectricalProfilesError::NotFound {
-                    electrical_profile_set_id,
-                })?
-                .id
-                .map(|id| id.to_string())
+            let electrical_profile_set_tmp =
+                ElectricalProfileSet::retrieve_or_fail(conn, electrical_profile_set_id, || {
+                    ElectricalProfilesError::NotFound {
+                        electrical_profile_set_id,
+                    }
+                })
+                .await?;
+            Some(electrical_profile_set_tmp.id.to_string())
         }
         _ => None,
     };

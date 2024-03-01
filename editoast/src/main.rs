@@ -18,6 +18,13 @@ mod schema;
 mod tables;
 mod views;
 
+use crate::core::CoreClient;
+use crate::error::InternalError;
+use crate::models::{Create, Infra};
+use crate::schema::electrical_profiles::ElectricalProfileSetData;
+use crate::schema::RailJson;
+use crate::views::infra::InfraForm;
+use crate::views::OpenApiRoot;
 use actix_cors::Cors;
 use actix_web::dev::{Service, ServiceRequest};
 use actix_web::middleware::{Condition, Logger, NormalizePath};
@@ -33,14 +40,13 @@ use client::{
 };
 use modelsv2::{
     timetable::Timetable, timetable::TimetableWithTrains, train_schedule::TrainSchedule,
-    train_schedule::TrainScheduleChangeset, Create as CreateV2, CreateBatch, Model,
+    train_schedule::TrainScheduleChangeset, Create as CreateV2, CreateBatch, DeleteStatic, Model,
     Retrieve as RetrieveV2, RetrieveBatch,
 };
 use schema::v2::trainschedule::TrainScheduleBase;
 use views::v2::train_schedule::{TrainScheduleForm, TrainScheduleResult};
 
 use colored::*;
-use core::CoreClient;
 use diesel::{sql_query, ConnectionError, ConnectionResult};
 use diesel_async::pooled_connection::deadpool::Pool;
 use diesel_async::pooled_connection::{
@@ -49,19 +55,15 @@ use diesel_async::pooled_connection::{
 use diesel_async::AsyncPgConnection as PgConnection;
 use diesel_async::{AsyncPgConnection, RunQueryDsl};
 use diesel_json::Json as DieselJson;
-use error::InternalError;
 use futures_util::future::BoxFuture;
 use futures_util::FutureExt;
 use infra_cache::InfraCache;
 use map::MapLayers;
-use models::electrical_profiles::ElectricalProfileSet;
 use models::infra::InfraError;
-use models::{Create, Delete, Infra};
 use models::{Retrieve, RollingStockModel};
+use modelsv2::electrical_profiles::ElectricalProfileSet;
 use openssl::ssl::{SslConnector, SslMethod, SslVerifyMode};
 pub use redis_utils::{RedisClient, RedisConnection};
-use schema::electrical_profiles::ElectricalProfileSetData;
-use schema::RailJson;
 use sentry::ClientInitGuard;
 use std::error::Error;
 use std::fs::File;
@@ -74,9 +76,7 @@ use tracing_subscriber::{layer::SubscriberExt as _, util::SubscriberInitExt as _
 use url::Url;
 use validator::{Validate, ValidationErrorsKind};
 use views::infra::InfraApiError;
-use views::infra::InfraForm;
 use views::search::{SearchConfig, SearchConfigFinder, SearchConfigStore};
-use views::OpenApiRoot;
 
 type DbPool = Pool<PgConnection>;
 
@@ -658,16 +658,14 @@ async fn electrical_profile_set_import(
 
     let electrical_profile_set_data: ElectricalProfileSetData =
         serde_json::from_reader(BufReader::new(electrical_profile_set_file))?;
-    let ep_set = ElectricalProfileSet {
-        id: None,
-        name: Some(args.name),
-        data: Some(DieselJson(electrical_profile_set_data)),
-    };
+    let ep_set = ElectricalProfileSet::changeset()
+        .name(args.name)
+        .data(electrical_profile_set_data);
 
-    let mut conn = db_pool.get().await?;
-    let created_ep_set = ep_set.create_conn(&mut conn).await.unwrap();
-    let ep_set_id = created_ep_set.id.unwrap();
-    println!("✅ Electrical profile set {ep_set_id} created");
+    use crate::modelsv2::Create;
+    let conn = &mut db_pool.get().await?;
+    let created_ep_set = ep_set.create(conn).await?;
+    println!("✅ Electrical profile set {} created", created_ep_set.id);
     Ok(())
 }
 
@@ -694,7 +692,8 @@ async fn electrical_profile_set_delete(
     db_pool: Data<DbPool>,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
     for profile_set_id in args.profile_set_ids {
-        let deleted = ElectricalProfileSet::delete(db_pool.clone(), profile_set_id)
+        let conn = &mut db_pool.get().await?;
+        let deleted = ElectricalProfileSet::delete_static(conn, profile_set_id)
             .await
             .unwrap();
         if !deleted {

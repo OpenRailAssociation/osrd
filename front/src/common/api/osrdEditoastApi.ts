@@ -1511,8 +1511,8 @@ export type ElectricalProfileSetData = {
 };
 export type ElectricalProfileSet = {
   data: ElectricalProfileSetData;
-  id?: number | null;
-  name?: string | null;
+  id: number;
+  name: string;
 };
 export type Infra = {
   created: string;
