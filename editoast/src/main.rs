@@ -27,16 +27,17 @@ use chashmap::CHashMap;
 use clap::Parser;
 use client::{
     ClearArgs, Client, Color, Commands, DeleteProfileSetArgs, ElectricalProfilesCommands,
-    GenerateArgs, ImportProfileSetArgs, ImportRailjsonArgs, ImportRollingStockArgs,
-    ImportTrainArgs, InfraCloneArgs, InfraCommands, ListProfileSetArgs, MakeMigrationArgs,
-    RedisConfig, RefreshArgs, RunserverArgs, SearchCommands, TrainsCommands,
+    ExportTimetableArgs, GenerateArgs, ImportProfileSetArgs, ImportRailjsonArgs,
+    ImportRollingStockArgs, ImportTimetableArgs, InfraCloneArgs, InfraCommands, ListProfileSetArgs,
+    MakeMigrationArgs, RedisConfig, RefreshArgs, RunserverArgs, SearchCommands, TimetablesCommands,
 };
 use modelsv2::{
-    timetable::Timetable, train_schedule::TrainSchedule, train_schedule::TrainScheduleChangeset,
-    Create as CreateV2, CreateBatch, Model, Retrieve as RetrieveV2,
+    timetable::Timetable, timetable::TimetableWithTrains, train_schedule::TrainSchedule,
+    train_schedule::TrainScheduleChangeset, Create as CreateV2, CreateBatch, Model,
+    Retrieve as RetrieveV2, RetrieveBatch,
 };
 use schema::v2::trainschedule::TrainScheduleBase;
-use views::v2::train_schedule::TrainScheduleForm;
+use views::v2::train_schedule::{TrainScheduleForm, TrainScheduleResult};
 
 use colored::*;
 use core::CoreClient;
@@ -192,14 +193,49 @@ async fn run() -> Result<(), Box<dyn Error + Send + Sync>> {
             }
             InfraCommands::ImportRailjson(args) => import_railjson(args, create_db_pool()?).await,
         },
-        Commands::Trains(subcommand) => match subcommand {
-            TrainsCommands::Import(args) => trains_import(args, create_db_pool()?).await,
+        Commands::Timetables(subcommand) => match subcommand {
+            TimetablesCommands::Import(args) => trains_import(args, create_db_pool()?).await,
+            TimetablesCommands::Export(args) => trains_export(args, create_db_pool()?).await,
         },
     }
 }
 
+async fn trains_export(
+    args: ExportTimetableArgs,
+    db_pool: Data<DbPool>,
+) -> Result<(), Box<dyn Error + Send + Sync>> {
+    let conn = &mut db_pool.get().await?;
+    let train_ids = match TimetableWithTrains::retrieve(conn, args.id).await? {
+        Some(timetable) => timetable.train_ids,
+        None => {
+            let error = CliError::new(1, format!("❌ Timetable not found, id: {0}", args.id));
+            return Err(Box::new(error));
+        }
+    };
+
+    let (train_schedules, missing): (Vec<_>, _) =
+        TrainSchedule::retrieve_batch(conn, train_ids).await?;
+
+    assert!(missing.is_empty());
+
+    let train_schedules: Vec<TrainScheduleBase> = train_schedules
+        .into_iter()
+        .map(|ts| Into::<TrainScheduleResult>::into(ts).train_schedule)
+        .collect();
+
+    let file = File::create(args.path.clone())?;
+    serde_json::to_writer_pretty(file, &train_schedules)?;
+
+    println!(
+        "✅ Train schedules exported to {0}",
+        args.path.to_string_lossy()
+    );
+
+    Ok(())
+}
+
 async fn trains_import(
-    args: ImportTrainArgs,
+    args: ImportTimetableArgs,
     db_pool: Data<DbPool>,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
     let train_file = match File::open(args.path.clone()) {
@@ -214,7 +250,7 @@ async fn trains_import(
     };
 
     let conn = &mut db_pool.get().await?;
-    let timetable = match args.timetable {
+    let timetable = match args.id {
         Some(timetable) => match Timetable::retrieve(conn, timetable).await? {
             Some(timetable) => timetable,
             None => {
@@ -868,7 +904,7 @@ mod tests {
     use tempfile::NamedTempFile;
 
     #[rstest]
-    async fn import_train_schedule_v2(db_pool: Data<DbPool>) {
+    async fn import_export_timetable_schedule_v2(db_pool: Data<DbPool>) {
         let conn = &mut db_pool.get().await.unwrap();
 
         let changeset = Timetable::changeset();
@@ -878,14 +914,30 @@ mod tests {
         file.write_all(get_trainschedule_json_array().as_bytes())
             .unwrap();
 
-        let args = ImportTrainArgs {
+        // Test import
+        let args = ImportTimetableArgs {
             path: file.path().into(),
-            timetable: Some(timetable.id),
+            id: Some(timetable.id),
         };
-
         let result = trains_import(args, db_pool.clone()).await;
-
         assert!(result.is_ok(), "{:?}", result);
+
+        // Test to export the import
+        let export_file = NamedTempFile::new().unwrap();
+        let args = ExportTimetableArgs {
+            path: export_file.path().into(),
+            id: timetable.id,
+        };
+        let export_result = trains_export(args, db_pool.clone()).await;
+        assert!(export_result.is_ok(), "{:?}", export_result);
+
+        // Test to reimport the exported import
+        let reimport_args = ImportTimetableArgs {
+            path: export_file.path().into(),
+            id: Some(timetable.id),
+        };
+        let reimport_result = trains_import(reimport_args, db_pool.clone()).await;
+        assert!(reimport_result.is_ok(), "{:?}", reimport_result);
 
         Timetable::delete_static(conn, timetable.id).await.unwrap();
     }

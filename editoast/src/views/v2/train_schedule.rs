@@ -50,11 +50,11 @@ struct TrainScheduleIdParam {
 }
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize, ToSchema)]
-struct TrainScheduleResult {
+pub struct TrainScheduleResult {
     id: i64,
     timetable_id: i64,
     #[serde(flatten)]
-    train_schedule: TrainScheduleBase,
+    pub train_schedule: TrainScheduleBase,
 }
 
 impl From<TrainSchedule> for TrainScheduleResult {
