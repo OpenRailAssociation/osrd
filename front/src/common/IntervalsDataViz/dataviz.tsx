@@ -15,7 +15,6 @@ import IntervalItem from './IntervalItem';
 import { ResizingScale, SimpleScale } from './Scales';
 import type { IntervalItemBaseProps, LinearMetadataItem, OperationalPoint } from './types';
 import { preventDefault, getPositionFromMouseEvent } from './utils';
-import './style.scss';
 
 export interface LinearMetadataDatavizProps<T> extends IntervalItemBaseProps<T> {
   /**

@@ -9,7 +9,6 @@
 import React, { type ChangeEventHandler } from 'react';
 
 import cx from 'classnames';
-import './OptionsSNCF.scss';
 
 export type Option = {
   label: string | React.ReactElement;
