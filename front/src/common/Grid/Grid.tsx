@@ -1,7 +1,6 @@
 import React from 'react';
 
 import cx from 'classnames';
-import './Grid.scss';
 import { useTranslation } from 'react-i18next';
 
 type GridProps = {

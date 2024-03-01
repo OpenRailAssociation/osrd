@@ -4,7 +4,6 @@ import cx from 'classnames';
 import { isObject, isNil } from 'lodash';
 
 import { type SelectOptionObject, getOptionLabel, getOptionValue } from './SelectSNCF';
-import './SelectImprovedSNCF.scss';
 
 interface SelectProps<T> {
   inline?: boolean;

@@ -6,7 +6,6 @@ import ToastSNCF from 'common/BootstrapSNCF/ToastSNCF';
 import { type MainState, deleteNotification } from 'reducers/main';
 import { useAppDispatch } from 'store';
 import type { Notification } from 'types';
-import './Notifications.scss';
 
 const TIMEOUT_MS = 5000;
 

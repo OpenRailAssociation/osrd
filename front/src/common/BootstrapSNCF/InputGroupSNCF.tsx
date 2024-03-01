@@ -2,7 +2,6 @@ import React, { type ChangeEvent, useCallback, useMemo, useState } from 'react';
 
 import cx from 'classnames';
 import { isNil } from 'lodash';
-import './InputGroupSNCF.scss';
 
 import type { MultiUnit } from 'modules/rollingStock/types';
 import { isFloat, stripDecimalDigits } from 'utils/numbers';

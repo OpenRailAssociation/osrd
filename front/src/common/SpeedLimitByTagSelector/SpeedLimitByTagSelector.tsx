@@ -7,8 +7,6 @@ import { useTranslation } from 'react-i18next';
 import icon from 'assets/pictures/components/speedometer.svg';
 import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
 
-import 'common/SpeedLimitByTagSelector/SpeedLimitByTagSelector.scss';
-
 type SpeedLimitByTagSelectorProps = {
   condensed?: boolean;
   selectedSpeedLimitByTag?: string;

@@ -3,8 +3,6 @@ import React, { type FC } from 'react';
 import cx from 'classnames';
 import { Link } from 'react-router-dom';
 
-import './CardSNCF.scss';
-
 interface CardProps {
   link: string;
   img: string;

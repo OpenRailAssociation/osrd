@@ -33,7 +33,6 @@ import { useAppDispatch } from 'store';
 import { clip } from 'utils/mapHelper';
 import type { AsyncMemoState } from 'utils/useAsyncMemo';
 import { getAsyncMemoData, useAsyncMemo } from 'utils/useAsyncMemo';
-import 'common/Map/WarpedMap/SimulationWarpedMap.scss';
 
 const TIME_LABEL = 'Warping OSRD and OSM data';
 const WIDTH = 300;

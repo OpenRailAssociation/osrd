@@ -4,7 +4,6 @@ import cx from 'classnames';
 import { useSelector } from 'react-redux';
 
 import { getIsLoading } from 'reducers/main/mainSelector';
-import './Loader.scss';
 
 type SpinnerProps = HTMLAttributes<HTMLDivElement> & { displayDelay?: number };
 
