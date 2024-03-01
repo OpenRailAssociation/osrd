@@ -1,15 +1,13 @@
-use std::{
-    fmt::Display,
-    ops::{Deref, DerefMut},
-};
-
 use rand::{distributions::Alphanumeric, thread_rng, Rng};
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use std::fmt::Display;
+use std::ops::{Deref, DerefMut};
+use utoipa::openapi::{ObjectBuilder, RefOr, Schema};
 use uuid::Uuid;
 
 /// A wrapper around a String that ensures that the string is not empty and not longer than 255 characters.
-#[derive(Debug, Clone, PartialEq, Eq, Hash, utoipa::ToSchema)]
-pub struct Identifier(#[schema(max_length = 255)] pub String);
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct Identifier(pub String);
 
 impl<'de> Deserialize<'de> for Identifier {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
@@ -91,6 +89,19 @@ impl AsRef<str> for Identifier {
 impl Display for Identifier {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         self.0.fmt(f)
+    }
+}
+
+impl<'a> utoipa::ToSchema<'a> for Identifier {
+    fn schema() -> (&'a str, RefOr<Schema>) {
+        (
+            "NonBlankString",
+            ObjectBuilder::new()
+                .schema_type(utoipa::openapi::SchemaType::String)
+                .min_length(Some(1))
+                .max_length(Some(255))
+                .into(),
+        )
     }
 }
 
