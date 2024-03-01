@@ -1,9 +1,9 @@
-import useModal from './useModal';
-import { Modal } from './Modal';
 import { ConfirmModal } from './ConfirmModal';
-import ModalHeaderSNCF from './ModalHeaderSNCF';
-import ModalFooterSNCF from './ModalFooterSNCF';
+import { Modal } from './Modal';
 import ModalBodySNCF from './ModalBodySNCF';
+import ModalFooterSNCF from './ModalFooterSNCF';
+import ModalHeaderSNCF from './ModalHeaderSNCF';
+import useModal from './useModal';
 import './style.scss';
 
 export { useModal, Modal, ConfirmModal, ModalHeaderSNCF, ModalFooterSNCF, ModalBodySNCF };

@@ -1,7 +1,9 @@
 import React, { useContext } from 'react';
+
 import { useTranslation } from 'react-i18next';
-import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
 import { useNavigate } from 'react-router-dom';
+
+import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 
 const ImportTrainScheduleModalFooter = ({

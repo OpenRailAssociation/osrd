@@ -1,10 +1,11 @@
+import type { Feature } from 'geojson';
+
 import type { PowerRestrictionRange, PointOnMap } from 'applications/operationalStudies/consts';
 import type {
   RollingStockComfortType,
   PathResponse,
   AllowanceValue,
 } from 'common/api/osrdEditoastApi';
-import type { Feature } from 'geojson';
 import type { AllowanceForm } from 'modules/trainschedule/components/ManageTrainSchedule/Allowances/types';
 import type { InfraState } from 'reducers/infra';
 

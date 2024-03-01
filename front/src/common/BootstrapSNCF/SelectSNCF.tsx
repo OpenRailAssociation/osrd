@@ -1,6 +1,7 @@
 import React, { type ReactNode } from 'react';
-import { isString } from 'lodash';
+
 import cx from 'classnames';
+import { isString } from 'lodash';
 
 export interface SelectOptionObject {
   id?: string;

@@ -1,19 +1,19 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { getMap } from 'reducers/map/selectors';
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import { onResultSearchClick } from 'common/Map/utils';
-import { useDebounce } from 'utils/helpers';
-import { useSelector } from 'react-redux';
-import { useTranslation } from 'react-i18next';
+
 import cx from 'classnames';
+import { useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
 
-import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { SearchResultItemOperationalPoint } from 'common/api/osrdEditoastApi';
-import { useAppDispatch } from 'store';
-import type { Viewport } from 'reducers/map';
-import { useInfraID } from 'common/osrdContext';
 import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
+import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
+import { onResultSearchClick } from 'common/Map/utils';
+import { useInfraID } from 'common/osrdContext';
+import type { Viewport } from 'reducers/map';
+import { getMap } from 'reducers/map/selectors';
+import { useAppDispatch } from 'store';
+import { useDebounce } from 'utils/helpers';
 
 const mainOperationalPointsCHCodes = ['', '00', 'BV'];
 

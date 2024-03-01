@@ -1,7 +1,8 @@
-import type { SelectOptionObject } from 'common/BootstrapSNCF/SelectImprovedSNCF';
-import type { StudyState, StudyType } from 'applications/operationalStudies/consts';
 import { isEmpty, sortBy } from 'lodash';
 import { useTranslation } from 'react-i18next';
+
+import type { StudyState, StudyType } from 'applications/operationalStudies/consts';
+import type { SelectOptionObject } from 'common/BootstrapSNCF/SelectImprovedSNCF';
 
 type OptionsList = StudyType[] | StudyState[];
 

@@ -1,17 +1,18 @@
 import React from 'react';
+
+import { Plus } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
-import { Plus } from '@osrd-project/ui-icons';
-import { time2sec, sec2time } from 'utils/timeManipulation';
-import { castErrorToFailure } from 'utils/error';
-import formatConf from 'modules/trainschedule/components/ManageTrainSchedule/helpers/formatConf';
-import trainNameWithNum from 'modules/trainschedule/components/ManageTrainSchedule/helpers/trainNameHelper';
-import { useOsrdConfSelectors } from 'common/osrdContext';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { Infra, TrainScheduleBatchItem } from 'common/api/osrdEditoastApi';
+import { useOsrdConfSelectors } from 'common/osrdContext';
+import formatConf from 'modules/trainschedule/components/ManageTrainSchedule/helpers/formatConf';
+import trainNameWithNum from 'modules/trainschedule/components/ManageTrainSchedule/helpers/trainNameHelper';
 import { setFailure, setSuccess } from 'reducers/main';
 import { useAppDispatch } from 'store';
+import { castErrorToFailure } from 'utils/error';
+import { time2sec, sec2time } from 'utils/timeManipulation';
 
 type SubmitConfAddTrainScheduleProps = {
   infraState?: Infra['state'];

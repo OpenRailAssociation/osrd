@@ -1,17 +1,19 @@
 import React, { useEffect, useState } from 'react';
+
 import { useTranslation } from 'react-i18next';
 import { MdEditNote, MdList } from 'react-icons/md';
 
-import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
-import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import icon from 'assets/pictures/components/tracks.svg';
 import iconEdition from 'assets/pictures/components/tracks_edit.svg';
-import { useDebounce } from 'utils/helpers';
-import { castErrorToFailure } from 'utils/error';
-import { Loader } from 'common/Loaders';
 import { type Infra, osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import { useAppDispatch } from 'store';
+import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
+import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
+import { Loader } from 'common/Loaders';
 import { setFailure } from 'reducers/main';
+import { useAppDispatch } from 'store';
+import { castErrorToFailure } from 'utils/error';
+import { useDebounce } from 'utils/helpers';
+
 import InfraSelectorModalBodyEdition from './InfraSelectorModalBodyEdition';
 import InfraSelectorModalBodyStandard from './InfraSelectorModalBodyStandard';
 

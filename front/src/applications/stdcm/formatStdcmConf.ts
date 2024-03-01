@@ -1,15 +1,13 @@
-import type { Dispatch } from 'redux';
 import type { TFunction } from 'i18next';
+import type { Dispatch } from 'redux';
+
 import type { PathfindingRequest, PostStdcmApiArg } from 'common/api/osrdEditoastApi';
-
-import { time2sec } from 'utils/timeManipulation';
-
 import { getPathfindingQuery } from 'common/Pathfinding/Pathfinding';
-
-import { setFailure } from 'reducers/main';
-import type { InfraState } from 'reducers/infra';
-import type { OsrdStdcmConfState } from 'reducers/osrdconf/consts';
 import { createAllowanceValue } from 'modules/stdcmAllowances/allowancesConsts';
+import type { InfraState } from 'reducers/infra';
+import { setFailure } from 'reducers/main';
+import type { OsrdStdcmConfState } from 'reducers/osrdconf/consts';
+import { time2sec } from 'utils/timeManipulation';
 
 export default function formatStdcmConf(
   dispatch: Dispatch,

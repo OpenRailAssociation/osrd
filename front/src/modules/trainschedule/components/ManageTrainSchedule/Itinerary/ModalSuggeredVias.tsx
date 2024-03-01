@@ -1,18 +1,20 @@
 import React, { useMemo } from 'react';
-import { useSelector } from 'react-redux';
+
 import { Dash, Plus, Trash } from '@osrd-project/ui-icons';
-import { useTranslation } from 'react-i18next';
-import { formatUicToCi } from 'utils/strings';
 import cx from 'classnames';
 import { uniqBy } from 'lodash';
-import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
-import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
+import { useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
+
+import type { PathResponse, PathWaypoint } from 'common/api/osrdEditoastApi';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
+import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import { Spinner } from 'common/Loaders';
-import type { ArrayElement } from 'utils/types';
-import type { PathResponse, PathWaypoint } from 'common/api/osrdEditoastApi';
+import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
 import { useAppDispatch } from 'store';
+import { formatUicToCi } from 'utils/strings';
+import type { ArrayElement } from 'utils/types';
 
 type ModalSugerredViasProps = {
   removeAllVias: () => void;

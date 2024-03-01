@@ -1,9 +1,10 @@
 import { useContext } from 'react';
+
 import { useTranslation } from 'react-i18next';
 
 import EditorContext from 'applications/editor/context';
-import type { ExtendedEditorContextType } from 'applications/editor/types';
 import type { SwitchEditionState } from 'applications/editor/tools/switchEdition/types';
+import type { ExtendedEditorContextType } from 'applications/editor/types';
 
 const SwitchMessages = () => {
   const { t } = useTranslation();

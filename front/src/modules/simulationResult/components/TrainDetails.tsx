@@ -1,11 +1,11 @@
 import React, { useMemo, useState } from 'react';
-import { useSelector } from 'react-redux';
+
 import { useTranslation } from 'react-i18next';
-import {
-  type ConsolidatedRouteAspect,
-  type PositionsSpeedTimes,
-} from 'reducers/osrdsimulation/types';
+import { useSelector } from 'react-redux';
+
 import type { RootState } from 'reducers';
+import type { ConsolidatedRouteAspect, PositionsSpeedTimes } from 'reducers/osrdsimulation/types';
+
 import { useChartSynchronizer } from './ChartHelpers/ChartSynchronizer';
 
 /**

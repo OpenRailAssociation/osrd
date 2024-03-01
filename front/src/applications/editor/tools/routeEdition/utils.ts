@@ -1,10 +1,10 @@
-import { cloneDeep, first, isEqual, isNil, last } from 'lodash';
-import type { Feature, LineString, Position } from 'geojson';
 import { lineString, point } from '@turf/helpers';
 import lineSlice from '@turf/line-slice';
+import type { Feature, LineString, Position } from 'geojson';
+import { cloneDeep, first, isEqual, isNil, last } from 'lodash';
 
-import { osrdEditoastApi, type Identifier } from 'common/api/osrdEditoastApi';
 import { getEntities, getEntity, getMixedEntities } from 'applications/editor/data/api';
+import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
 import { DEFAULT_COMMON_TOOL_STATE } from 'applications/editor/tools/consts';
 import type {
   OptionsStateType,
@@ -14,10 +14,10 @@ import type {
   WayPoint,
   WayPointEntity,
 } from 'applications/editor/tools/routeEdition/types';
-import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
 import type { TrackRange, TrackSectionEntity } from 'applications/editor/tools/trackEdition/types';
-import { NULL_GEOMETRY, type PartialButFor } from 'types';
+import { osrdEditoastApi, type Identifier } from 'common/api/osrdEditoastApi';
 import type { AppDispatch } from 'store';
+import { NULL_GEOMETRY, type PartialButFor } from 'types';
 
 /**
  * Check if a route is valid or not.

@@ -1,19 +1,18 @@
 import React from 'react';
+
+import { isNil } from 'lodash';
 import type { LayerProps, SymbolLayer } from 'react-map-gl/maplibre';
 import { Source } from 'react-map-gl/maplibre';
 import { useSelector } from 'react-redux';
-import { isNil } from 'lodash';
-
-import type { Theme } from 'types';
 
 import { MAP_URL } from 'common/Map/const';
-import { useInfraID } from 'common/osrdContext';
+import getKPLabelLayerProps from 'common/Map/Layers/KPLabel';
+import getMastLayerProps from 'common/Map/Layers/mastLayerProps';
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 import type { LayerContext } from 'common/Map/Layers/types';
-import getKPLabelLayerProps from 'common/Map/Layers/KPLabel';
-
+import { useInfraID } from 'common/osrdContext';
 import { getMap } from 'reducers/map/selectors';
-import getMastLayerProps from 'common/Map/Layers/mastLayerProps';
+import type { Theme } from 'types';
 
 type SNCF_PSL_SignsProps = {
   colors: Theme;

@@ -1,35 +1,32 @@
 import React, { useEffect } from 'react';
+
 import { cloneDeep } from 'lodash';
-// osrd Redux reducers
+import { useTranslation } from 'react-i18next';
+import ReactModal from 'react-modal';
+import { useSelector } from 'react-redux';
+
+import STDCM_REQUEST_STATUS from 'applications/stdcm/consts';
+import formatStdcmConf from 'applications/stdcm/formatStdcmConf';
+import type { StdcmRequestStatus } from 'applications/stdcm/types';
+import type { SimulationReport } from 'common/api/osrdEditoastApi';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
+import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
+import { Spinner } from 'common/Loaders';
+import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
+import createTrain from 'modules/simulationResult/components/SpaceTimeChart/createTrain';
+import { CHART_AXES } from 'modules/simulationResult/consts';
+import { setFailure } from 'reducers/main';
+import type { OsrdStdcmConfState } from 'reducers/osrdconf/consts';
 import {
   updateConsolidatedSimulation,
   updateSelectedTrainId,
   updateSimulation,
   updateSelectedProjection,
 } from 'reducers/osrdsimulation/actions';
-import { useSelector } from 'react-redux';
-
-import { CHART_AXES } from 'modules/simulationResult/consts';
-// Generic components
-import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
-import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
-import ReactModal from 'react-modal';
-// OSRD helpers
-import createTrain from 'modules/simulationResult/components/SpaceTimeChart/createTrain';
-import formatStdcmConf from 'applications/stdcm/formatStdcmConf';
-// Static Data and Assets
-import { setFailure } from 'reducers/main';
-import STDCM_REQUEST_STATUS from 'applications/stdcm/consts';
-import { useTranslation } from 'react-i18next';
-import { Spinner } from 'common/Loaders';
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import type { SimulationReport } from 'common/api/osrdEditoastApi';
-import type { StdcmRequestStatus } from 'applications/stdcm/types';
-import { castErrorToFailure } from 'utils/error';
 import type { Train } from 'reducers/osrdsimulation/types';
-import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
 import { useAppDispatch } from 'store';
-import type { OsrdStdcmConfState } from 'reducers/osrdconf/consts';
+import { castErrorToFailure } from 'utils/error';
 
 type StdcmRequestModalProps = {
   setCurrentStdcmRequestStatus: (currentStdcmRequestStatus: StdcmRequestStatus) => void;

@@ -1,12 +1,13 @@
 import React, { useContext, useEffect } from 'react';
-import { groupBy, map } from 'lodash';
+
 import { NoEntry } from '@osrd-project/ui-icons';
-import { RiFocus3Line } from 'react-icons/ri';
+import { groupBy, map } from 'lodash';
 import { useTranslation } from 'react-i18next';
+import { RiFocus3Line } from 'react-icons/ri';
 import { useSearchParams } from 'react-router-dom';
 
-import EditorContext from 'applications/editor/context';
 import EntitySumUp from 'applications/editor/components/EntitySumUp';
+import EditorContext from 'applications/editor/context';
 import type { SelectionState } from 'applications/editor/tools/selection/types';
 import type { ExtendedEditorContextType } from 'applications/editor/types';
 

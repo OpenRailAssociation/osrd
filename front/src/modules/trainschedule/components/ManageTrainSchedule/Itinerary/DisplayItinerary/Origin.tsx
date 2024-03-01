@@ -1,16 +1,16 @@
 import React from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { useTranslation } from 'react-i18next';
-import { RiMapPin2Fill } from 'react-icons/ri';
-import { BiLink, BiUnlink } from 'react-icons/bi';
-import type { Position } from 'geojson';
 
-import { makeEnumBooleans } from 'utils/constants';
+import { XCircle } from '@osrd-project/ui-icons';
+import type { Position } from 'geojson';
+import { useTranslation } from 'react-i18next';
+import { BiLink, BiUnlink } from 'react-icons/bi';
+import { RiMapPin2Fill } from 'react-icons/ri';
+import { useDispatch, useSelector } from 'react-redux';
 
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { useOsrdConfActions, useOsrdContext, useOsrdConfSelectors } from 'common/osrdContext';
 import { MODES } from 'main/consts';
-import { XCircle } from '@osrd-project/ui-icons';
+import { makeEnumBooleans } from 'utils/constants';
 
 interface OriginProps {
   zoomToFeaturePoint: (lngLat?: Position, id?: string) => void;

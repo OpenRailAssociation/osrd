@@ -1,5 +1,7 @@
-import { test as setup } from '@playwright/test';
 import fs from 'fs';
+
+import { test as setup } from '@playwright/test';
+
 import type {
   Infra,
   PostInfraRailjsonApiResponse,
@@ -7,10 +9,11 @@ import type {
   RailjsonFile,
   StudyCreateForm,
 } from 'common/api/osrdEditoastApi';
-import { getApiRequest, postApiRequest } from './assets/utils';
+
 import projectData from './assets/operationStudies/project.json';
-import studyData from './assets/operationStudies/study.json';
 import scenarioData from './assets/operationStudies/scenario.json';
+import studyData from './assets/operationStudies/study.json';
+import { getApiRequest, postApiRequest } from './assets/utils';
 
 async function createDataForTests() {
   const smallInfraRailjson: RailjsonFile = JSON.parse(

@@ -1,30 +1,31 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { useSelector } from 'react-redux';
+
+import { ChevronLeft, ChevronRight, Info } from '@osrd-project/ui-icons';
+import { useTranslation } from 'react-i18next';
 import { CgLoadbar } from 'react-icons/cg';
 import { GiResize } from 'react-icons/gi';
+import { useSelector } from 'react-redux';
 import { Rnd } from 'react-rnd';
-import { useTranslation } from 'react-i18next';
 
 import type { LightRollingStock, SimulationReport } from 'common/api/osrdEditoastApi';
-import { CHART_AXES, type ChartAxes } from 'modules/simulationResult/consts';
-import type { PositionScaleDomain } from 'modules/simulationResult/types';
+import { interpolateOnPosition } from 'modules/simulationResult/components/ChartHelpers/ChartHelpers';
+import { useChartSynchronizer } from 'modules/simulationResult/components/ChartHelpers/ChartSynchronizer';
 import {
   enableInteractivity,
   traceVerticalLine,
 } from 'modules/simulationResult/components/ChartHelpers/enableInteractivity';
-import { interpolateOnPosition } from 'modules/simulationResult/components/ChartHelpers/ChartHelpers';
-import { useChartSynchronizer } from 'modules/simulationResult/components/ChartHelpers/ChartSynchronizer';
 import {
   createChart,
   drawTrain,
 } from 'modules/simulationResult/components/SpeedSpaceChart/d3Helpers';
-import { useAppDispatch } from 'store';
-import type { SpeedSpaceChart, SpeedSpaceSettingsType, Train } from 'reducers/osrdsimulation/types';
-import { getIsPlaying, getSpeedSpaceSettings } from 'reducers/osrdsimulation/selectors';
+import { CHART_AXES, type ChartAxes } from 'modules/simulationResult/consts';
+import type { PositionScaleDomain } from 'modules/simulationResult/types';
 import { updateSpeedSpaceSettings } from 'reducers/osrdsimulation/actions';
+import { getIsPlaying, getSpeedSpaceSettings } from 'reducers/osrdsimulation/selectors';
+import type { SpeedSpaceChart, SpeedSpaceSettingsType, Train } from 'reducers/osrdsimulation/types';
+import { useAppDispatch } from 'store';
 import { dateIsInRange } from 'utils/date';
 
-import { ChevronLeft, ChevronRight, Info } from '@osrd-project/ui-icons';
 import ElectricalProfilesLegend from './ElectricalProfilesLegend';
 import prepareData from './prepareData';
 import SpeedSpaceSettings from './SpeedSpaceSettings';

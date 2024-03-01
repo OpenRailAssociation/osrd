@@ -1,14 +1,14 @@
-import type { SimulationTrain } from 'reducers/osrdsimulation/types';
 import { LIST_VALUES, CHART_AXES } from 'modules/simulationResult/consts';
+import type { SimulationTrain } from 'reducers/osrdsimulation/types';
+
+import simulationTrain from '../../../../../../tests/assets/operationStudies/simulationTrain';
+import train from '../../../../../../tests/assets/operationStudies/trainExample';
 import {
   mergeDatasArea,
   interpolateOnTime,
   trainWithDepartureAndArrivalTimes,
   getAxis,
 } from '../ChartHelpers';
-
-import train from '../../../../../../tests/assets/operationStudies/trainExample';
-import simulationTrain from '../../../../../../tests/assets/operationStudies/simulationTrain';
 
 describe('mergeDatasArea', () => {
   test('avoid crash', () => {

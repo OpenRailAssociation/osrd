@@ -1,8 +1,10 @@
 import React from 'react';
+
 import { cloneDeep, head } from 'lodash';
 
-import SelectSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
+import SelectSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
+
 import type { IntervalItem } from './types';
 
 type IntervalsEditorMarginFormProps = {

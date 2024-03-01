@@ -1,23 +1,18 @@
 import React, { type FC, useCallback, useContext, useEffect, useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
+
 import chroma from 'chroma-js';
 import { isNil } from 'lodash';
+import { useTranslation } from 'react-i18next';
 
-import EditorContext from 'applications/editor/context';
 import EntityError from 'applications/editor/components/EntityError';
+import EditorContext from 'applications/editor/context';
 import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import { useInfraID } from 'common/osrdContext';
-
-import type { ExtendedEditorContextType } from 'applications/editor/types';
 import { EndPointKeys } from 'applications/editor/tools/routeEdition/types';
 import type {
   WayPointEntity,
   RouteEditionState,
   RouteEntity,
 } from 'applications/editor/tools/routeEdition/types';
-import { useAppDispatch } from 'store';
-import { save } from 'reducers/editor/thunkActions';
 import {
   getCompatibleRoutesPayload,
   getRouteEditionState,
@@ -25,9 +20,15 @@ import {
   routeHasExtremities,
 } from 'applications/editor/tools/routeEdition/utils';
 import type { EndPoint } from 'applications/editor/tools/switchEdition/types';
+import type { ExtendedEditorContextType } from 'applications/editor/types';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { useInfraID } from 'common/osrdContext';
+import { save } from 'reducers/editor/thunkActions';
+import { useAppDispatch } from 'store';
+
 import { Endpoints } from './EndPoints';
-import { SearchRoute } from './SearchRoute';
 import { RouteMetadata } from './RouteMetadata';
+import { SearchRoute } from './SearchRoute';
 
 const RouteEditionPanel: FC = () => {
   const { t } = useTranslation();

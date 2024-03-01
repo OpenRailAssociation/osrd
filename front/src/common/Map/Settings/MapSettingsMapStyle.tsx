@@ -1,5 +1,6 @@
-import cx from 'classnames';
 import React, { type FC } from 'react';
+
+import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
@@ -7,9 +8,9 @@ import picBlueprint from 'assets/pictures/mapbuttons/mapstyle-blueprint.jpg';
 import picDarkMode from 'assets/pictures/mapbuttons/mapstyle-dark.jpg';
 import picMinimalMode from 'assets/pictures/mapbuttons/mapstyle-minimal.jpg';
 import picNormalMode from 'assets/pictures/mapbuttons/mapstyle-normal.jpg';
-import { useAppDispatch } from 'store';
 import { updateMapStyle } from 'reducers/map';
 import { getMap } from 'reducers/map/selectors';
+import { useAppDispatch } from 'store';
 
 const MapSettingsMapStyle: FC<unknown> = () => {
   const { t } = useTranslation(['map-settings']);

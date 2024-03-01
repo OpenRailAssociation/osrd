@@ -1,6 +1,8 @@
-import type { SymbolLayer } from 'react-map-gl/maplibre';
 import { isNil } from 'lodash';
+import type { SymbolLayer } from 'react-map-gl/maplibre';
+
 import type { OmitLayer } from 'types';
+
 import type { LayerContext } from './types';
 
 export default function getMastLayerProps({

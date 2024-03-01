@@ -1,7 +1,8 @@
 import React, { type FC } from 'react';
-import { BsFillExclamationCircleFill, BsFillExclamationTriangleFill } from 'react-icons/bs';
+
 import cx from 'classnames';
 import type { IconBaseProps } from 'react-icons';
+import { BsFillExclamationCircleFill, BsFillExclamationTriangleFill } from 'react-icons/bs';
 
 import type { InfraError } from './types';
 

@@ -1,8 +1,10 @@
 import React from 'react';
+
 import type { StoryFn } from '@storybook/react';
+
 import 'stories/storybook.css';
-import SpaceTimeChart from 'modules/simulationResult/components/SpaceTimeChart/SpaceTimeChart';
 import ORSD_GRAPH_SAMPLE_DATA from 'modules/simulationResult/components/sampleData';
+import SpaceTimeChart from 'modules/simulationResult/components/SpaceTimeChart/SpaceTimeChart';
 import type { AllowancesSettings, Train } from 'reducers/osrdsimulation/types';
 
 export default {

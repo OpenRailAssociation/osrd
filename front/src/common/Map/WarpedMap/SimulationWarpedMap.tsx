@@ -1,43 +1,38 @@
 /* eslint-disable no-console */
 import React, { useEffect, useMemo, useState } from 'react';
-import { useSelector } from 'react-redux';
-import { clamp, first, isEmpty, isNil, keyBy, last, mapValues, omitBy, debounce } from 'lodash';
-import { PiLinkBold, PiLinkBreakBold } from 'react-icons/pi';
 
 import bbox from '@turf/bbox';
-import length from '@turf/length';
 import { lineString } from '@turf/helpers';
 import type { BBox2d } from '@turf/helpers/dist/js/lib/geojson';
+import length from '@turf/length';
 import type { Feature, FeatureCollection, LineString, Position } from 'geojson';
+import { clamp, first, isEmpty, isNil, keyBy, last, mapValues, omitBy, debounce } from 'lodash';
 import type { LngLatBoundsLike } from 'maplibre-gl';
-
-import { clip } from 'utils/mapHelper';
-import { getAsyncMemoData, useAsyncMemo } from 'utils/useAsyncMemo';
-import type { AsyncMemoState } from 'utils/useAsyncMemo';
+import { PiLinkBold, PiLinkBreakBold } from 'react-icons/pi';
+import { useSelector } from 'react-redux';
 
 import type { Layer } from 'applications/editor/consts';
-
-import type { TrainPosition } from 'modules/simulationResult/components/SimulationResultsMap/types';
-import { getSimulationHoverPositions } from 'modules/simulationResult/components/SimulationResultsMap/helpers';
-
-import { LoaderFill } from 'common/Loaders';
-import { useInfraID } from 'common/osrdContext';
-import WarpedMap from 'common/Map/WarpedMap/WarpedMap';
-import getWarping from 'common/Map/WarpedMap/getWarping';
-import DataLoader from 'common/Map/WarpedMap/DataLoader';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import type { WarpingFunction } from 'common/Map/WarpedMap/getWarping';
+import { LoaderFill } from 'common/Loaders';
 import { getImprovedOSRDData } from 'common/Map/WarpedMap/core/helpers';
-
-import { useAppDispatch } from 'store';
-import type { PositionsSpeedTimes, Train } from 'reducers/osrdsimulation/types';
+import DataLoader from 'common/Map/WarpedMap/DataLoader';
+import type { WarpingFunction } from 'common/Map/WarpedMap/getWarping';
+import getWarping from 'common/Map/WarpedMap/getWarping';
+import WarpedMap from 'common/Map/WarpedMap/WarpedMap';
+import { useInfraID } from 'common/osrdContext';
+import { useChartSynchronizer } from 'modules/simulationResult/components/ChartHelpers/ChartSynchronizer';
+import { getSimulationHoverPositions } from 'modules/simulationResult/components/SimulationResultsMap/helpers';
+import type { TrainPosition } from 'modules/simulationResult/components/SimulationResultsMap/types';
 import {
   getOsrdSimulation,
   getSelectedProjection,
   getSelectedTrain,
 } from 'reducers/osrdsimulation/selectors';
-
-import { useChartSynchronizer } from 'modules/simulationResult/components/ChartHelpers/ChartSynchronizer';
+import type { PositionsSpeedTimes, Train } from 'reducers/osrdsimulation/types';
+import { useAppDispatch } from 'store';
+import { clip } from 'utils/mapHelper';
+import type { AsyncMemoState } from 'utils/useAsyncMemo';
+import { getAsyncMemoData, useAsyncMemo } from 'utils/useAsyncMemo';
 import 'common/Map/WarpedMap/SimulationWarpedMap.scss';
 
 const TIME_LABEL = 'Warping OSRD and OSM data';

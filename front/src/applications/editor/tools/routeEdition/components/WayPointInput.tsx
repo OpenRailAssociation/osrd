@@ -1,24 +1,26 @@
 import React, { type FC, useCallback, useContext, useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { Pencil } from '@osrd-project/ui-icons';
-import { FaMapMarkedAlt, FaTimesCircle } from 'react-icons/fa';
-import { isNil } from 'lodash';
 
+import { Pencil } from '@osrd-project/ui-icons';
+import { isNil } from 'lodash';
+import { useTranslation } from 'react-i18next';
+import { FaMapMarkedAlt, FaTimesCircle } from 'react-icons/fa';
+
+import EntitySumUp from 'applications/editor/components/EntitySumUp';
 import EditorContext from 'applications/editor/context';
+import { getEntity } from 'applications/editor/data/api';
+import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
 import { EndPointKeys } from 'applications/editor/tools/routeEdition/types';
 import type {
   RouteEditionState,
   WayPoint,
   WayPointEntity,
 } from 'applications/editor/tools/routeEdition/types';
-import { getEntity } from 'applications/editor/data/api';
-import EntitySumUp from 'applications/editor/components/EntitySumUp';
 import type { ExtendedEditorContextType } from 'applications/editor/types';
-import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
 import { useInfraID } from 'common/osrdContext';
 import Tipped from 'common/Tipped';
 import { useAppDispatch } from 'store';
 import useKeyboardShortcuts from 'utils/hooks/useKeyboardShortcuts';
+
 import type { EndPoint } from '../../switchEdition/types';
 
 interface WayPointInputProps {

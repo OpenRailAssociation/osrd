@@ -1,25 +1,26 @@
-import { useSelector } from 'react-redux';
 import React, { type FC, useEffect, useMemo, useState } from 'react';
-import { groupBy, map, omit } from 'lodash';
+
 import { featureCollection } from '@turf/helpers';
 import type { BBox2d } from '@turf/helpers/dist/js/lib/geojson';
 import type { Feature, FeatureCollection, LineString } from 'geojson';
-import ReactMapGL, { Layer, type MapRef, Source } from 'react-map-gl/maplibre';
+import { groupBy, map, omit } from 'lodash';
 import type { LngLatBoundsLike } from 'maplibre-gl';
+import ReactMapGL, { Layer, type MapRef, Source } from 'react-map-gl/maplibre';
+import { useSelector } from 'react-redux';
 
-import { LAYERS, LAYER_ENTITIES_ORDERS, LAYER_GROUPS_ORDER } from 'config/layerOrder';
+import type { Layer as LayerType } from 'applications/editor/consts';
 import colors from 'common/Map/Consts/colors';
 import { ALL_SIGNAL_LAYERS } from 'common/Map/Consts/SignalsNames';
-import type { Layer as LayerType } from 'applications/editor/consts';
-import type { TrainPosition } from 'modules/simulationResult/components/SimulationResultsMap/types';
-import VirtualLayers from 'modules/simulationResult/components/SimulationResultsMap/VirtualLayers';
-import RenderItinerary from 'modules/simulationResult/components/SimulationResultsMap/RenderItinerary';
-import TrainHoverPosition from 'modules/simulationResult/components/SimulationResultsMap/TrainHoverPosition';
-import type { LayerContext } from 'common/Map/Layers/types';
-import OrderedLayer, { type OrderedLayerProps } from 'common/Map/Layers/OrderedLayer';
-import { genOSMLayerProps } from 'common/Map/Layers/OSM';
 import { useMapBlankStyle } from 'common/Map/Layers/blankStyle';
 import { EditorSource, SourcesDefinitionsIndex } from 'common/Map/Layers/GeoJSONs';
+import OrderedLayer, { type OrderedLayerProps } from 'common/Map/Layers/OrderedLayer';
+import { genOSMLayerProps } from 'common/Map/Layers/OSM';
+import type { LayerContext } from 'common/Map/Layers/types';
+import { LAYERS, LAYER_ENTITIES_ORDERS, LAYER_GROUPS_ORDER } from 'config/layerOrder';
+import RenderItinerary from 'modules/simulationResult/components/SimulationResultsMap/RenderItinerary';
+import TrainHoverPosition from 'modules/simulationResult/components/SimulationResultsMap/TrainHoverPosition';
+import type { TrainPosition } from 'modules/simulationResult/components/SimulationResultsMap/types';
+import VirtualLayers from 'modules/simulationResult/components/SimulationResultsMap/VirtualLayers';
 import type { Viewport } from 'reducers/map';
 import { getMap } from 'reducers/map/selectors';
 import type { AllowancesSettings, Train } from 'reducers/osrdsimulation/types';

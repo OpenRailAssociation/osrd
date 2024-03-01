@@ -1,18 +1,18 @@
 import React, { useEffect } from 'react';
+
 import cx from 'classnames';
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import { STANDARD_COMFORT_LEVEL } from 'modules/rollingStock/consts';
 import { floor, isEmpty, uniq } from 'lodash';
-import { useAppDispatch } from 'store';
-import { setFailure } from 'reducers/main';
 import { useTranslation } from 'react-i18next';
 
-import { Loader } from 'common/Loaders/Loader';
-import RollingStockCurves from 'modules/rollingStock/components/RollingStockCurve';
-import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
-
-import type { EffortCurveForms } from 'modules/rollingStock/types';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { RollingStockComfortType, RollingStockWithLiveries } from 'common/api/osrdEditoastApi';
+import { Loader } from 'common/Loaders/Loader';
+import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
+import RollingStockCurves from 'modules/rollingStock/components/RollingStockCurve';
+import { STANDARD_COMFORT_LEVEL } from 'modules/rollingStock/consts';
+import type { EffortCurveForms } from 'modules/rollingStock/types';
+import { setFailure } from 'reducers/main';
+import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 
 type RollingStockCardDetailProps = {

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { useDebouncedFunc } from 'utils/helpers';
 

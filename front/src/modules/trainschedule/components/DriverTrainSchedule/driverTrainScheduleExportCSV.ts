@@ -1,10 +1,12 @@
+import * as d3 from 'd3';
+
 import type {
   PositionSpeedTime,
   Regime,
   SpeedPosition,
   Train,
 } from 'reducers/osrdsimulation/types';
-import * as d3 from 'd3';
+
 import type { BaseOrEcoType } from './DriverTrainScheduleTypes';
 
 /**

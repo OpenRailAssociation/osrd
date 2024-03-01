@@ -1,12 +1,14 @@
 import React, { useEffect } from 'react';
+
+import { Lock } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 import { Route, Routes } from 'react-router-dom';
-import { Lock } from '@osrd-project/ui-icons';
 
-import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { ModalProvider } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
+import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import { useInfraID } from 'common/osrdContext';
+
 import Map from './Map';
 
 const HomeReferenceMap = () => {

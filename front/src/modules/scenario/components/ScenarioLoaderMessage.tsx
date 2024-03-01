@@ -1,9 +1,11 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
-import type { RootState } from 'reducers';
-import type { Infra } from 'common/api/osrdEditoastApi';
+
 import { useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
+
+import type { Infra } from 'common/api/osrdEditoastApi';
 import { Loader } from 'common/Loaders';
+import type { RootState } from 'reducers';
 
 type Props = {
   infraState?: Infra['state'];

@@ -1,26 +1,25 @@
 /* eslint-disable no-console */
 import React, { useEffect, useMemo, useState } from 'react';
-import { createPortal } from 'react-dom';
-import { useSelector } from 'react-redux';
-import ReactMapGL, { Source } from 'react-map-gl/maplibre';
-import type { LayerProps, MapRef } from 'react-map-gl/maplibre';
+
 import { featureCollection } from '@turf/helpers';
 import type { BBox2d } from '@turf/helpers/dist/js/lib/geojson';
 import type { FeatureCollection } from 'geojson';
 import { map, sum, uniqBy } from 'lodash';
-
-import mapStyleJson from 'assets/mapstyles/OSMStyle.json';
+import { createPortal } from 'react-dom';
+import type { LayerProps, MapRef } from 'react-map-gl/maplibre';
+import ReactMapGL, { Source } from 'react-map-gl/maplibre';
+import { useSelector } from 'react-redux';
 
 import type { Layer } from 'applications/editor/consts';
-
+import mapStyleJson from 'assets/mapstyles/OSMStyle.json';
 import { OSM_URL } from 'common/Map/const';
 import colors from 'common/Map/Consts/colors';
-import { getMap } from 'reducers/map/selectors';
-import GeoJSONs from 'common/Map/Layers/GeoJSONs';
-import { useInfraID } from 'common/osrdContext';
-import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 import { useMapBlankStyle } from 'common/Map/Layers/blankStyle';
+import GeoJSONs from 'common/Map/Layers/GeoJSONs';
+import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 import { simplifyFeature } from 'common/Map/WarpedMap/core/helpers';
+import { useInfraID } from 'common/osrdContext';
+import { getMap } from 'reducers/map/selectors';
 
 const TIME_LABEL = 'Loading OSRD and OSM data around warped path';
 

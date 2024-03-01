@@ -1,7 +1,8 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import type { Draft } from 'immer';
-import { defaultCommonConf, buildCommonConfReducers } from 'reducers/osrdconf/osrdConfCommon';
+
 import type { OsrdStdcmConfState } from 'reducers/osrdconf/consts';
+import { defaultCommonConf, buildCommonConfReducers } from 'reducers/osrdconf/osrdConfCommon';
 
 export const stdcmConfInitialState: OsrdStdcmConfState = {
   maximumRunTime: 43200,

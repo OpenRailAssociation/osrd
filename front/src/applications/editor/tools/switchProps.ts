@@ -1,19 +1,19 @@
+import type TOOL_NAMES from './constsToolNames';
+import type {
+  BufferStopEntity,
+  DetectorEntity,
+  PointEditionState,
+  SignalEntity,
+} from './pointEdition/types';
+import type {
+  ElectrificationEntity,
+  RangeEditionState,
+  SpeedSectionEntity,
+} from './rangeEdition/types';
 import type { RouteEditionState } from './routeEdition/types';
 import type { SelectionState } from './selection/types';
-import type { TrackEditionState } from './trackEdition/types';
-import {
-  type ElectrificationEntity,
-  type RangeEditionState,
-  type SpeedSectionEntity,
-} from './rangeEdition/types';
-import {
-  type BufferStopEntity,
-  type DetectorEntity,
-  type PointEditionState,
-  type SignalEntity,
-} from './pointEdition/types';
 import type { SwitchEditionState } from './switchEdition/types';
-import type TOOL_NAMES from './constsToolNames';
+import type { TrackEditionState } from './trackEdition/types';
 
 export type switchProps =
   | { toolType: TOOL_NAMES.SELECTION; toolState: Partial<SelectionState> }

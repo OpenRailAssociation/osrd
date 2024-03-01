@@ -1,17 +1,9 @@
 import bbox from '@turf/bbox';
-import simplify from '@turf/simplify';
 import { lineString } from '@turf/helpers';
 import type { BBox2d } from '@turf/helpers/dist/js/lib/geojson';
-import {
-  type Feature,
-  type FeatureCollection,
-  type Geometry,
-  type LineString,
-  type Position,
-} from 'geojson';
+import simplify from '@turf/simplify';
+import type { Feature, FeatureCollection, Geometry, LineString, Position } from 'geojson';
 
-import { extendLine, getSamples } from 'common/Map/WarpedMap/core/helpers';
-import { getQuadTree } from 'common/Map/WarpedMap/core/quadtree';
 import {
   featureToPointsGrid,
   getGridIndex,
@@ -19,7 +11,9 @@ import {
   pointsGridToZone,
   straightenGrid,
 } from 'common/Map/WarpedMap/core/grids';
+import { extendLine, getSamples } from 'common/Map/WarpedMap/core/helpers';
 import { clipAndProjectGeoJSON, projectBetweenGrids } from 'common/Map/WarpedMap/core/projection';
+import { getQuadTree } from 'common/Map/WarpedMap/core/quadtree';
 
 export type WarpingFunction = ReturnType<typeof getWarping>['transform'];
 

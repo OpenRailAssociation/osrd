@@ -1,35 +1,29 @@
 import React, { useRef, useState, useContext, useEffect, useCallback } from 'react';
-import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
-import type { MapRef } from 'react-map-gl/maplibre';
-import cx from 'classnames';
 
-// Buttons
+import cx from 'classnames';
+import type { MapRef } from 'react-map-gl/maplibre';
+
+import LayersModal from 'applications/editor/components/LayersModal';
+import { EDITOAST_TO_LAYER_DICT, type EditoastType } from 'applications/editor/consts';
+import type { SelectionState } from 'applications/editor/tools/selection/types';
+import type { CommonToolState } from 'applications/editor/tools/types';
+import type { PartialOrReducer, Tool } from 'applications/editor/types';
+import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
+import ButtonMapInfras from 'common/Map/Buttons/ButtonMapInfras';
+import ButtonMapKey from 'common/Map/Buttons/ButtonMapKey';
 import ButtonMapSearch from 'common/Map/Buttons/ButtonMapSearch';
 import ButtonMapSettings from 'common/Map/Buttons/ButtonMapSettings';
-import ButtonMapKey from 'common/Map/Buttons/ButtonMapKey';
 import ButtonResetViewport from 'common/Map/Buttons/ButtonResetViewport';
 import ButtonZoomIn from 'common/Map/Buttons/ButtonZoomIn';
 import ButtonZoomOut from 'common/Map/Buttons/ButtonZoomOut';
-
-// Viewport
-import { updateViewport } from 'reducers/map';
-
-// Map modals
-import ButtonMapInfras from 'common/Map/Buttons/ButtonMapInfras';
 import MapKey from 'common/Map/MapKey';
 import MapSearch from 'common/Map/Search/MapSearch';
 import MapSettings from 'common/Map/Settings/MapSettings';
-
+import type { EditorState } from 'reducers/editor';
+import { updateViewport } from 'reducers/map';
+import { useAppDispatch } from 'store';
 import useOutsideClick from 'utils/hooks/useOutsideClick';
 
-// Editor
-import type { PartialOrReducer, Tool } from 'applications/editor/types';
-import { EDITOAST_TO_LAYER_DICT, type EditoastType } from 'applications/editor/consts';
-import LayersModal from 'applications/editor/components/LayersModal';
-import type { SelectionState } from 'applications/editor/tools/selection/types';
-import type { CommonToolState } from 'applications/editor/tools/types';
-import { useAppDispatch } from 'store';
-import type { EditorState } from 'reducers/editor';
 import ButtonMapInfraErrors from './ButtonMapInfraErrors';
 
 type MapButtonsProps = {

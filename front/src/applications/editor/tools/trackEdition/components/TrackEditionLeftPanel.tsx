@@ -1,22 +1,23 @@
 import React, { useContext, useEffect, useRef } from 'react';
-import { useTranslation } from 'react-i18next';
+
 import type { WidgetProps } from '@rjsf/utils';
+import { useTranslation } from 'react-i18next';
 
-import DebouncedNumberInputSNCF from 'common/BootstrapSNCF/FormSNCF/DebouncedNumberInputSNCF';
-import { useInfraID } from 'common/osrdContext';
-import { useAppDispatch } from 'store';
-import { save } from 'reducers/editor/thunkActions';
-
-import EditorContext from 'applications/editor/context';
-import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
 import EditorForm from 'applications/editor/components/EditorForm';
 import EntityError from 'applications/editor/components/EntityError';
-import type { ExtendedEditorContextType } from 'applications/editor/types';
-import { injectGeometry, removeInvalidRanges } from 'applications/editor/tools/trackEdition/utils';
+import EditorContext from 'applications/editor/context';
+import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
 import type {
   TrackEditionState,
   TrackSectionEntity,
 } from 'applications/editor/tools/trackEdition/types';
+import { injectGeometry, removeInvalidRanges } from 'applications/editor/tools/trackEdition/utils';
+import type { ExtendedEditorContextType } from 'applications/editor/types';
+import DebouncedNumberInputSNCF from 'common/BootstrapSNCF/FormSNCF/DebouncedNumberInputSNCF';
+import { useInfraID } from 'common/osrdContext';
+import { save } from 'reducers/editor/thunkActions';
+import { useAppDispatch } from 'store';
+
 import AttachedRangesItemsList from './AttachedRangesItemsList';
 
 const CustomLengthInput: React.FC<WidgetProps> = (props) => {

@@ -1,14 +1,14 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
-import { Source } from 'react-map-gl/maplibre';
 
-import type { Theme } from 'types';
+import { Source } from 'react-map-gl/maplibre';
+import { useSelector } from 'react-redux';
 
 import { MAP_TRACK_SOURCES, MAP_URL } from 'common/Map/const';
-import geoMainLayer from 'common/Map/Layers/geographiclayers';
 import { lineNameLayer, lineNumberLayer, trackNameLayer } from 'common/Map/Layers/commonLayers';
+import geoMainLayer from 'common/Map/Layers/geographiclayers';
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 import { getMap } from 'reducers/map/selectors';
+import type { Theme } from 'types';
 
 interface TracksGeographicProps {
   colors: Theme;

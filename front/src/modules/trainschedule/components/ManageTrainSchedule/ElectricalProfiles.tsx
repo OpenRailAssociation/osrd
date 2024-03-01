@@ -1,11 +1,11 @@
 import React from 'react';
+
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import electricalProfilesIcon from 'assets/pictures/components/electricalProfiles.svg';
-
-import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
 import SwitchSNCF, { SWITCH_TYPES } from 'common/BootstrapSNCF/SwitchSNCF/SwitchSNCF';
+import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
 import { useAppDispatch } from 'store';
 
 export default function ElectricalProfiles() {

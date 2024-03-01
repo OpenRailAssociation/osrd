@@ -4,31 +4,32 @@ import { persistCombineReducers, persistReducer } from 'redux-persist';
 import storage from 'redux-persist/lib/storage'; // defaults to localStorage
 import createCompressor from 'redux-persist-transform-compress';
 import { createFilter } from 'redux-persist-transform-filter';
-import type { OsrdConfState, OsrdStdcmConfState } from 'reducers/osrdconf/consts';
+
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { osrdGatewayApi } from 'common/api/osrdGatewayApi';
-
-import type { MapState } from 'reducers/map';
-import type { UserState } from 'reducers/user';
-import type { MainState } from 'reducers/main';
 import type { EditorSlice, EditorState } from 'reducers/editor';
-import mapReducer, { mapInitialState, mapSlice } from 'reducers/map';
-import userReducer, { userInitialState, userSlice } from 'reducers/user';
-import mainReducer, { mainInitialState, mainSlice } from 'reducers/main';
-import type { OsrdSimulationState } from 'reducers/osrdsimulation/types';
-import mapViewerReducer, { mapViewerInitialState, mapViewerSlice } from 'reducers/mapViewer';
-import type { MapViewerState, MapViewerSlice } from 'reducers/mapViewer';
 import editorReducer, { editorInitialState, editorSlice } from 'reducers/editor';
-import osrdsimulationReducer, {
-  initialState as osrdSimulationInitialState,
-} from 'reducers/osrdsimulation';
+import mainReducer, { mainInitialState, mainSlice } from 'reducers/main';
+import type { MainState } from 'reducers/main';
+import mapReducer, { mapInitialState, mapSlice } from 'reducers/map';
+import type { MapState } from 'reducers/map';
+import type { MapViewerState, MapViewerSlice } from 'reducers/mapViewer';
+import mapViewerReducer, { mapViewerInitialState, mapViewerSlice } from 'reducers/mapViewer';
+import type { OsrdConfState, OsrdStdcmConfState } from 'reducers/osrdconf/consts';
+import operationalStudiesConfReducer, {
+  operationalStudiesConfSlice,
+} from 'reducers/osrdconf/operationalStudiesConf';
 import stdcmConfReducer, {
   stdcmConfInitialState,
   stdcmConfSlice,
 } from 'reducers/osrdconf/stdcmConf';
-import operationalStudiesConfReducer, {
-  operationalStudiesConfSlice,
-} from 'reducers/osrdconf/operationalStudiesConf';
+import osrdsimulationReducer, {
+  initialState as osrdSimulationInitialState,
+} from 'reducers/osrdsimulation';
+import type { OsrdSimulationState } from 'reducers/osrdsimulation/types';
+import userReducer, { userInitialState, userSlice } from 'reducers/user';
+import type { UserState } from 'reducers/user';
+
 import { type ConfSlice, defaultCommonConf } from './osrdconf/osrdConfCommon';
 
 const compressor = createCompressor({

@@ -2,19 +2,18 @@ import type { CaseReducer, PayloadAction, PrepareAction } from '@reduxjs/toolkit
 import type { Draft } from 'immer';
 import { omit } from 'lodash';
 
-import { formatIsoDate } from 'utils/date';
-
-import { computeLinkedOriginTimes, insertVia } from 'reducers/osrdconf/helpers';
-import { type InfraStateReducers, buildInfraStateReducers, infraState } from 'reducers/infra';
 import type { PointOnMap } from 'applications/operationalStudies/consts';
+import { type InfraStateReducers, buildInfraStateReducers, infraState } from 'reducers/infra';
+import type { OsrdConfState } from 'reducers/osrdconf/consts';
+import { computeLinkedOriginTimes, insertVia } from 'reducers/osrdconf/helpers';
 import type {
   OperationalStudiesConfSlice,
   OperationalStudiesConfSliceActions,
 } from 'reducers/osrdconf/operationalStudiesConf';
+import type { OperationalStudiesConfSelectors } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import type { StdcmConfSlice, StdcmConfSliceActions } from 'reducers/osrdconf/stdcmConf';
 import type { StdcmConfSelectors } from 'reducers/osrdconf/stdcmConf/selectors';
-import type { OperationalStudiesConfSelectors } from 'reducers/osrdconf/operationalStudiesConf/selectors';
-import type { OsrdConfState } from 'reducers/osrdconf/consts';
+import { formatIsoDate } from 'utils/date';
 
 export const defaultCommonConf: OsrdConfState = {
   name: '',

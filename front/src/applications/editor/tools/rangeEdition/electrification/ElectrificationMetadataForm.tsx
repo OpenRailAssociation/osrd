@@ -1,16 +1,16 @@
-import { cloneDeep } from 'lodash';
 import React, { useContext } from 'react';
+
+import { cloneDeep } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { GiElectric } from 'react-icons/gi';
 
-import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
-
 import EditorContext from 'applications/editor/context';
-import type { ExtendedEditorContextType } from 'applications/editor/types';
 import type {
   ElectrificationEntity,
   RangeEditionState,
 } from 'applications/editor/tools/rangeEdition/types';
+import type { ExtendedEditorContextType } from 'applications/editor/types';
+import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
 
 const ElectrificationMetadataForm = ({ voltages }: { voltages: string[] }) => {
   const { t } = useTranslation();

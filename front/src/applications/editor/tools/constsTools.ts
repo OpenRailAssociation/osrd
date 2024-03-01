@@ -1,14 +1,14 @@
-import TrackEditionTool from './trackEdition/tool';
+import TOOL_NAMES from './constsToolNames';
 import {
   BufferStopEditionTool,
   DetectorEditionTool,
   SignalEditionTool,
 } from './pointEdition/tools';
 import { ElectrificationEditionTool, SpeedEditionTool } from './rangeEdition/tools';
+import RouteEditionTool from './routeEdition/tool';
 import SelectionTool from './selection/tool';
 import SwitchEditionTool from './switchEdition/tool';
-import RouteEditionTool from './routeEdition/tool';
-import TOOL_NAMES from './constsToolNames';
+import TrackEditionTool from './trackEdition/tool';
 
 // This const needs to stay in a separate file to avoid import cycle.
 const TOOLS = Object.freeze({

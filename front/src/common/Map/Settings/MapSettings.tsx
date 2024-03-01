@@ -1,12 +1,13 @@
 import React, { type FC, useState } from 'react';
+
+import { ChevronDown, ChevronUp } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 
 import MapModalHeader from 'common/Map/MapModalHeader';
+import MapSettingsBackgroundSwitches from 'common/Map/Settings/MapSettingsBackgroundSwitches';
 import MapSettingsLayers from 'common/Map/Settings/MapSettingsLayers';
 import MapSettingsMapStyle from 'common/Map/Settings/MapSettingsMapStyle';
-import MapSettingsBackgroundSwitches from 'common/Map/Settings/MapSettingsBackgroundSwitches';
 import MapSettingsSpeedLimits from 'common/Map/Settings/MapSettingsSpeedLimits';
-import { ChevronDown, ChevronUp } from '@osrd-project/ui-icons';
 
 interface MapSettingsProps {
   closeMapSettingsPopUp: () => void;

@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
-import nextId from 'react-id-generator';
-import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
+
+import { Search } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 import { VscJson } from 'react-icons/vsc';
+import nextId from 'react-id-generator';
+
 import { type Infra, osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import { Search } from '@osrd-project/ui-icons';
+import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
+
 import InfraSelectorEditionItem from './InfraSelectorEditionItem';
 
 type InfraSelectorModalBodyEditionProps = {

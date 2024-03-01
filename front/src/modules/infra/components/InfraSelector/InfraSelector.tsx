@@ -1,11 +1,13 @@
 import React, { useEffect } from 'react';
+
 import { useTranslation } from 'react-i18next';
 
-import { castErrorToFailure } from 'utils/error';
-import { useInfraID } from 'common/osrdContext';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import { useAppDispatch } from 'store';
+import { useInfraID } from 'common/osrdContext';
 import { setFailure } from 'reducers/main';
+import { useAppDispatch } from 'store';
+import { castErrorToFailure } from 'utils/error';
+
 import InfraSelectorModal from './InfraSelectorModal';
 
 type InfraSelectorProps = {

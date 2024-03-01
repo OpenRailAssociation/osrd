@@ -1,20 +1,31 @@
 import React, { useEffect, useMemo, useState } from 'react';
+
+import { Trash } from '@osrd-project/ui-icons';
+import cx from 'classnames';
+import { sortBy } from 'lodash';
 import { useTranslation } from 'react-i18next';
+import { BiArrowFromLeft, BiArrowFromRight } from 'react-icons/bi';
+import { BsCheckLg } from 'react-icons/bs';
+import { CgArrowsShrinkH } from 'react-icons/cg';
+import { FaPlus, FaSearch } from 'react-icons/fa';
+import { MdCancel } from 'react-icons/md';
+
+import type { EngineeringAllowance, PathWaypoint } from 'common/api/osrdEditoastApi';
 import InputGroupSNCF, { type InputGroupSNCFValue } from 'common/BootstrapSNCF/InputGroupSNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
-import { Trash } from '@osrd-project/ui-icons';
-import { FaPlus, FaSearch } from 'react-icons/fa';
-import { CgArrowsShrinkH } from 'react-icons/cg';
-import { BiArrowFromLeft, BiArrowFromRight } from 'react-icons/bi';
-import type { EngineeringAllowance, PathWaypoint } from 'common/api/osrdEditoastApi';
-import { BsCheckLg } from 'react-icons/bs';
-import { MdCancel } from 'react-icons/md';
-import cx from 'classnames';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
+import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 import { removeElementAtIndex, replaceElementAtIndex } from 'utils/array';
-import { sortBy } from 'lodash';
+
+import AllowancesModalOP from './AllowancesModalOP';
 import { unitsList, unitsNames, unitsTypes } from './consts';
+import getAllowanceValue, {
+  fillAllowancesWithDefaultRanges,
+  findAllowanceOverlap,
+  getExactEndPosition,
+  getFirstEmptyRange,
+  getFirstEmptyRangeFromPosition,
+} from './helpers';
 import {
   AllowancesTypes,
   type SetAllowanceSelectedIndexType,
@@ -24,14 +35,6 @@ import {
   type RangeAllowanceForm,
   type EngineeringAllowanceForm,
 } from './types';
-import getAllowanceValue, {
-  fillAllowancesWithDefaultRanges,
-  findAllowanceOverlap,
-  getExactEndPosition,
-  getFirstEmptyRange,
-  getFirstEmptyRangeFromPosition,
-} from './helpers';
-import AllowancesModalOP from './AllowancesModalOP';
 
 interface Props<T extends RangeAllowanceForm | EngineeringAllowanceForm> {
   allowances: T[];

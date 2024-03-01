@@ -1,15 +1,17 @@
 import React from 'react';
-import { TbArrowRightBar } from 'react-icons/tb';
-import { useTranslation } from 'react-i18next';
+
 import cx from 'classnames';
+import { useTranslation } from 'react-i18next';
+import { TbArrowRightBar } from 'react-icons/tb';
+
+import { unitsLabels } from './consts';
+import getAllowanceValue from './helpers';
 import {
   AllowancesTypes,
   type EngineeringAllowanceForm,
   type RangeAllowanceForm,
   type SetAllowanceSelectedIndexType,
 } from './types';
-import { unitsLabels } from './consts';
-import getAllowanceValue from './helpers';
 
 type AllowanceItemProps = {
   allowance: RangeAllowanceForm | EngineeringAllowanceForm;

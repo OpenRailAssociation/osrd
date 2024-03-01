@@ -6,11 +6,7 @@ import drawCurve from 'modules/simulationResult/components/ChartHelpers/drawCurv
 import drawRect from 'modules/simulationResult/components/ChartHelpers/drawRect';
 import drawText from 'modules/simulationResult/components/ChartHelpers/drawText';
 import { CHART_AXES } from 'modules/simulationResult/consts';
-import {
-  type AllowancesSettings,
-  type Chart,
-  type SimulationTrain,
-} from 'reducers/osrdsimulation/types';
+import type { AllowancesSettings, Chart, SimulationTrain } from 'reducers/osrdsimulation/types';
 
 export default function drawTrain(
   allowancesSettings: AllowancesSettings,

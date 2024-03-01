@@ -1,19 +1,21 @@
 import React, { useMemo } from 'react';
+
+import { Rocket } from '@osrd-project/ui-icons';
+import type { TFunction } from 'i18next';
+import { keyBy } from 'lodash';
 import { useTranslation } from 'react-i18next';
+import nextId from 'react-id-generator';
+
+import type { TrainSchedule } from 'applications/operationalStudies/types';
+import type { LightRollingStockWithLiveries } from 'common/api/osrdEditoastApi';
+import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { Loader } from 'common/Loaders';
 // eslint-disable-next-line import/no-cycle
 import {
   ImportTrainScheduleTrainDetail,
   ImportTrainScheduleModal,
 } from 'modules/trainschedule/components/ImportTrainSchedule';
-import { Rocket } from '@osrd-project/ui-icons';
-import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
-import { keyBy } from 'lodash';
 import rollingstockOpenData2OSRD from 'modules/trainschedule/components/ImportTrainSchedule/rollingstock_opendata2osrd.json';
-import nextId from 'react-id-generator';
-import type { TrainSchedule } from 'applications/operationalStudies/types';
-import type { LightRollingStockWithLiveries } from 'common/api/osrdEditoastApi';
-import type { TFunction } from 'i18next';
 
 function LoadingIfSearching({ isLoading, t }: { isLoading: boolean; t: TFunction }) {
   return (

@@ -1,16 +1,16 @@
 import React, { useContext, useEffect, useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
-import { useSelector } from 'react-redux';
-import { Layer, Popup, Source } from 'react-map-gl/maplibre';
-import type { Feature, FeatureCollection, LineString, Point } from 'geojson';
-import { featureCollection } from '@turf/helpers';
-import { mapValues } from 'lodash';
 
-import EditorContext from 'applications/editor/context';
-import { flattenEntity } from 'applications/editor/data/utils';
+import { featureCollection } from '@turf/helpers';
+import type { Feature, FeatureCollection, LineString, Point } from 'geojson';
+import { mapValues } from 'lodash';
+import { useTranslation } from 'react-i18next';
+import { Layer, Popup, Source } from 'react-map-gl/maplibre';
+import { useSelector } from 'react-redux';
+
 import EntitySumUp from 'applications/editor/components/EntitySumUp';
+import EditorContext from 'applications/editor/context';
 import { getEntities, getEntity } from 'applications/editor/data/api';
-import type { ExtendedEditorContextType } from 'applications/editor/types';
+import { flattenEntity } from 'applications/editor/data/utils';
 import type {
   PslSignFeature,
   RangeEditionState,
@@ -24,13 +24,12 @@ import {
   speedSectionIsPsl,
 } from 'applications/editor/tools/rangeEdition/utils';
 import type { TrackSectionEntity } from 'applications/editor/tools/trackEdition/types';
-
+import type { ExtendedEditorContextType } from 'applications/editor/types';
 import colors from 'common/Map/Consts/colors';
-import { useInfraID } from 'common/osrdContext';
 import GeoJSONs, { SourcesDefinitionsIndex } from 'common/Map/Layers/GeoJSONs';
-
-import { useAppDispatch } from 'store';
+import { useInfraID } from 'common/osrdContext';
 import { getMap } from 'reducers/map/selectors';
+import { useAppDispatch } from 'store';
 
 const emptyFeatureCollection = featureCollection([]);
 

@@ -1,9 +1,10 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
-import { Source } from 'react-map-gl/maplibre';
 
-import { useOsrdConfSelectors } from 'common/osrdContext';
+import { Source } from 'react-map-gl/maplibre';
+import { useSelector } from 'react-redux';
+
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
+import { useOsrdConfSelectors } from 'common/osrdContext';
 
 interface ItineraryProps {
   layerOrder: number;

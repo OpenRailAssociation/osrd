@@ -1,5 +1,7 @@
 import React, { type FC, useCallback } from 'react';
+
 import { MdFullscreen } from 'react-icons/md';
+
 import { useAppDispatch } from 'store';
 
 const ButtonFullscreen: FC<{ onClick: () => void }> = ({ onClick }) => (

@@ -1,7 +1,7 @@
-import {
-  type ElectricalConditionSegment,
-  type PowerRestrictionSegment,
-  type DrawingKeys,
+import type {
+  ElectricalConditionSegment,
+  PowerRestrictionSegment,
+  DrawingKeys,
 } from 'applications/operationalStudies/consts';
 
 /** Returns the start, middle and end values of the heights or the positions

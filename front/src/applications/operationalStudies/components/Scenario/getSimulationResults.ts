@@ -1,3 +1,12 @@
+import i18n from 'i18next';
+import { differenceBy } from 'lodash';
+
+import {
+  type SimulationReport,
+  type TrainScheduleSummary,
+  osrdEditoastApi,
+} from 'common/api/osrdEditoastApi';
+import { setFailure } from 'reducers/main';
 import {
   updateAllowancesSettings,
   updateIsUpdating,
@@ -5,17 +14,9 @@ import {
   updateSelectedTrainId,
   updateSimulation,
 } from 'reducers/osrdsimulation/actions';
-import { setFailure } from 'reducers/main';
-import { store } from 'store';
-import i18n from 'i18next';
-import {
-  type SimulationReport,
-  type TrainScheduleSummary,
-  osrdEditoastApi,
-} from 'common/api/osrdEditoastApi';
-import { castErrorToFailure } from 'utils/error';
 import type { AllowancesSettings, Projection } from 'reducers/osrdsimulation/types';
-import { differenceBy } from 'lodash';
+import { store } from 'store';
+import { castErrorToFailure } from 'utils/error';
 
 export function selectProjection(
   trainSchedules: TrainScheduleSummary[],

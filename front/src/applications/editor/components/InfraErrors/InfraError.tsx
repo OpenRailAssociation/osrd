@@ -1,10 +1,11 @@
-import cx from 'classnames';
 import React, { type PropsWithChildren } from 'react';
 
-import type { InfraError } from './types';
-import InfraErrorIcon from './InfraErrorIcon';
+import cx from 'classnames';
+
 import InfraErrorDescription from './InfraErrorDescription';
+import InfraErrorIcon from './InfraErrorIcon';
 import InfraErrorTypeLabel from './InfraErrorTypeLabel';
+import type { InfraError } from './types';
 
 /**
  * A component that display an infra error.

@@ -1,15 +1,15 @@
+import React, { useCallback, useMemo } from 'react';
+
 import type { Position } from '@turf/helpers';
 import cx from 'classnames';
-import React, { useCallback, useMemo } from 'react';
 import type { Map } from 'maplibre-gl';
-import { useSelector } from 'react-redux';
 import { Marker } from 'react-map-gl/maplibre';
-
-import originSVG from 'assets/pictures/origin.svg';
-import destinationSVG from 'assets/pictures/destination.svg';
-import viaSVG from 'assets/pictures/via.svg';
+import { useSelector } from 'react-redux';
 
 import type { PointOnMap } from 'applications/operationalStudies/consts';
+import destinationSVG from 'assets/pictures/destination.svg';
+import originSVG from 'assets/pictures/origin.svg';
+import viaSVG from 'assets/pictures/via.svg';
 import { useOsrdConfSelectors } from 'common/osrdContext';
 import { getNearestTrack } from 'utils/mapHelper';
 

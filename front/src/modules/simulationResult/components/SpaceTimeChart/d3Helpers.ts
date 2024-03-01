@@ -1,12 +1,13 @@
-import drawTrain from 'modules/simulationResult/components/SpaceTimeChart/drawTrain';
 import createSpaceTimeChart from 'modules/simulationResult/components/SpaceTimeChart/createSpaceTimeChart';
-import {
-  type AllowancesSettings,
-  type Chart,
-  type OsrdSimulationState,
-  type SimulationTrain,
-  type Train,
+import drawTrain from 'modules/simulationResult/components/SpaceTimeChart/drawTrain';
+import type {
+  AllowancesSettings,
+  Chart,
+  OsrdSimulationState,
+  SimulationTrain,
+  Train,
 } from 'reducers/osrdsimulation/types';
+
 import type { DispatchUpdateSelectedTrainId } from './types';
 
 function drawOPs(chartLocal: Chart, projectedTrainSimulation: Train, rotate: boolean) {

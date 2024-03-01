@@ -1,4 +1,3 @@
-import type { ChartAxes } from 'modules/simulationResult/consts';
 import {
   formatRouteAspects,
   formatSignalAspects,
@@ -6,6 +5,7 @@ import {
   formatStepsWithTimeMulti,
   mergeDatasArea,
 } from 'modules/simulationResult/components/ChartHelpers/ChartHelpers';
+import type { ChartAxes } from 'modules/simulationResult/consts';
 import type { Train, SimulationTrain } from 'reducers/osrdsimulation/types';
 
 /**

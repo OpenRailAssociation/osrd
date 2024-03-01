@@ -1,23 +1,23 @@
+import React, { useContext, useMemo, useState } from 'react';
+
 import { featureCollection } from '@turf/helpers';
 import { isEqual } from 'lodash';
 import type { Map } from 'maplibre-gl';
-import React, { useContext, useMemo, useState } from 'react';
 import { Popup } from 'react-map-gl/dist/esm/exports-maplibre';
 import { useSelector } from 'react-redux';
 
-import { useInfraID } from 'common/osrdContext';
-import colors from 'common/Map/Consts/colors';
-import GeoJSONs, { EditorSource, SourcesDefinitionsIndex } from 'common/Map/Layers/GeoJSONs';
-import { getMap } from 'reducers/map/selectors';
-import { NULL_GEOMETRY } from 'types';
-
-import EditorContext from 'applications/editor/context';
 import EntitySumUp from 'applications/editor/components/EntitySumUp';
+import EditorContext from 'applications/editor/context';
 import { NEW_ENTITY_ID, cleanSymbolType, flattenEntity } from 'applications/editor/data/utils';
-import type { ExtendedEditorContextType } from 'applications/editor/types';
 import { POINT_LAYER_ID } from 'applications/editor/tools/pointEdition/consts';
 import type { PointEditionState } from 'applications/editor/tools/pointEdition/types';
+import type { ExtendedEditorContextType } from 'applications/editor/types';
 import type { EditorEntity } from 'applications/editor/typesEditorEntity';
+import colors from 'common/Map/Consts/colors';
+import GeoJSONs, { EditorSource, SourcesDefinitionsIndex } from 'common/Map/Layers/GeoJSONs';
+import { useInfraID } from 'common/osrdContext';
+import { getMap } from 'reducers/map/selectors';
+import { NULL_GEOMETRY } from 'types';
 
 interface BasePointEditionLayersProps {
   // eslint-disable-next-line react/no-unused-prop-types

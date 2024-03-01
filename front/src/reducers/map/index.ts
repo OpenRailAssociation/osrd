@@ -1,15 +1,12 @@
-import type { ViewState } from 'react-map-gl/maplibre';
-import type { Position } from '@turf/helpers';
 import type { Dispatch, PayloadAction } from '@reduxjs/toolkit';
 import { createSlice } from '@reduxjs/toolkit';
-
-import history from 'main/history';
-
-import { gpsRound } from 'utils/helpers';
+import type { Position } from '@turf/helpers';
+import type { ViewState } from 'react-map-gl/maplibre';
 
 import type { InfraErrorType } from 'applications/editor/components/InfraErrors';
-
 import { MAP_URL } from 'common/Map/const';
+import history from 'main/history';
+import { gpsRound } from 'utils/helpers';
 
 export type Viewport = ViewState & {
   width: number;

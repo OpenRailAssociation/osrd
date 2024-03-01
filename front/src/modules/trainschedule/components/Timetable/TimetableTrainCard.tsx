@@ -1,30 +1,31 @@
 import React from 'react';
+
+import { Pencil, Trash } from '@osrd-project/ui-icons';
+import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { GiPathDistance } from 'react-icons/gi';
 import { MdAvTimer, MdContentCopy } from 'react-icons/md';
 import nextId from 'react-id-generator';
-import cx from 'classnames';
 
-import { Pencil, Trash } from '@osrd-project/ui-icons';
+import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
 import invalidInfra from 'assets/pictures/components/missing_tracks.svg';
 import invalidRollingStock from 'assets/pictures/components/missing_train.svg';
-import { jouleToKwh, mToKmOneDecimal } from 'utils/physics';
-import { durationInSeconds, sec2time } from 'utils/timeManipulation';
-import { castErrorToFailure } from 'utils/error';
-import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
-import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
-import trainNameWithNum from 'modules/trainschedule/components/ManageTrainSchedule/helpers/trainNameHelper';
-import { useOsrdConfActions } from 'common/osrdContext';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { SimulationReport, TrainScheduleValidation } from 'common/api/osrdEditoastApi';
-import { useAppDispatch } from 'store';
+import { useOsrdConfActions } from 'common/osrdContext';
+import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
+import trainNameWithNum from 'modules/trainschedule/components/ManageTrainSchedule/helpers/trainNameHelper';
 import { setFailure, setSuccess } from 'reducers/main';
-import type { Projection, ScheduledTrain, SimulationSnapshot } from 'reducers/osrdsimulation/types';
 import {
   updateSelectedProjection,
   updateSelectedTrainId,
   updateSimulation,
 } from 'reducers/osrdsimulation/actions';
+import type { Projection, ScheduledTrain, SimulationSnapshot } from 'reducers/osrdsimulation/types';
+import { useAppDispatch } from 'store';
+import { castErrorToFailure } from 'utils/error';
+import { jouleToKwh, mToKmOneDecimal } from 'utils/physics';
+import { durationInSeconds, sec2time } from 'utils/timeManipulation';
 
 const invalidTrainValues: {
   [key in TrainScheduleValidation]: TrainScheduleValidation;

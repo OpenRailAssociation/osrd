@@ -1,5 +1,6 @@
 /* eslint-disable import/prefer-default-export */
 import { expect, type Locator, type Page } from '@playwright/test';
+
 import home from '../../public/locales/fr/home/home.json';
 
 export class PlaywrightHomePage {

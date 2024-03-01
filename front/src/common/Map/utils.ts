@@ -1,13 +1,14 @@
 import turfCenter from '@turf/center';
-import type { AppDispatch } from 'store';
-import { updateLineSearchCode, updateMapSearchMarker } from 'reducers/map/index';
 import type { AllGeoJSON } from '@turf/helpers';
-import type { MapState, Viewport } from 'reducers/map/index';
+
 import type {
   SearchQuery,
   SearchResultItemOperationalPoint,
   SearchResultItemSignal,
 } from 'common/api/osrdEditoastApi';
+import { updateLineSearchCode, updateMapSearchMarker } from 'reducers/map/index';
+import type { MapState, Viewport } from 'reducers/map/index';
+import type { AppDispatch } from 'store';
 
 export const getCoordinates = (result: SearchResultItemSignal | SearchResultItemOperationalPoint) =>
   result.geographic;

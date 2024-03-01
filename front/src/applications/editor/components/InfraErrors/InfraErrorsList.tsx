@@ -1,18 +1,19 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useTranslation } from 'react-i18next';
-import InfiniteScroll from 'react-infinite-scroll-component';
+
 import { isNil, sortBy, uniqueId } from 'lodash';
+import { useTranslation } from 'react-i18next';
 import { FaDiamondTurnRight } from 'react-icons/fa6';
+import InfiniteScroll from 'react-infinite-scroll-component';
 import { useSelector } from 'react-redux';
 
+import { EDITOAST_TYPES } from 'applications/editor/consts';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 import { LoaderFill, Spinner } from 'common/Loaders';
-import { useAppDispatch } from 'store';
-import { updateFiltersIssue } from 'reducers/editor/thunkActions';
 import { getEditorIssues } from 'reducers/editor/selectors';
+import { updateFiltersIssue } from 'reducers/editor/thunkActions';
+import { useAppDispatch } from 'store';
 
-import { EDITOAST_TYPES } from 'applications/editor/consts';
 import { INFRA_ERRORS, INFRA_ERRORS_BY_LEVEL } from './consts';
 import { InfraErrorBox } from './InfraError';
 import type { InfraError, InfraErrorLevel, InfraErrorType } from './types';

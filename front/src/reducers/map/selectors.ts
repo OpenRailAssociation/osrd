@@ -1,5 +1,6 @@
 import type { RootState } from 'reducers';
 import { makeSubSelector } from 'utils/selectors';
+
 import type { MapState } from '.';
 
 export const getMap = (state: RootState) => state.map;

@@ -1,6 +1,8 @@
 import React from 'react';
-import { ModalBodySNCF, ModalFooterSNCF, useModal } from 'common/BootstrapSNCF/ModalSNCF';
+
 import { useTranslation } from 'react-i18next';
+
+import { ModalBodySNCF, ModalFooterSNCF, useModal } from 'common/BootstrapSNCF/ModalSNCF';
 
 export default function DeleteModal({
   handleDelete,

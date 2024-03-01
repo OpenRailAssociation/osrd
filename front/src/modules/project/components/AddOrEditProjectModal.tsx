@@ -1,36 +1,37 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
-import { useSelector } from 'react-redux';
-import { FaPlus } from 'react-icons/fa';
-import { BiTargetLock } from 'react-icons/bi';
+
 import { Pencil, Trash } from '@osrd-project/ui-icons';
-import { RiMoneyEuroCircleLine } from 'react-icons/ri';
+import { useTranslation } from 'react-i18next';
+import { BiTargetLock } from 'react-icons/bi';
+import { FaPlus } from 'react-icons/fa';
 import { MdBusinessCenter, MdDescription, MdTitle } from 'react-icons/md';
+import { RiMoneyEuroCircleLine } from 'react-icons/ri';
 import ReactMarkdown from 'react-markdown';
+import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import remarkGfm from 'remark-gfm';
 
-import { useDebounce } from 'utils/helpers';
 import PictureUploader from 'applications/operationalStudies/components/Project/PictureUploader';
-import { useOsrdConfActions } from 'common/osrdContext';
 import { postDocument } from 'common/api/documentApi';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import type { ProjectWithStudies, ProjectCreateForm } from 'common/api/osrdEditoastApi';
 import ChipsSNCF from 'common/BootstrapSNCF/ChipsSNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import TextareaSNCF from 'common/BootstrapSNCF/TextareaSNCF';
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
-import type { ProjectWithStudies, ProjectCreateForm } from 'common/api/osrdEditoastApi';
-import { useAppDispatch } from 'store';
+import TextareaSNCF from 'common/BootstrapSNCF/TextareaSNCF';
+import { useOsrdConfActions } from 'common/osrdContext';
 import { setFailure, setSuccess } from 'reducers/main';
 import { getUserSafeWord } from 'reducers/user/userSelectors';
-import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
-import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
-import useInputChange from 'utils/hooks/useInputChange';
-import useOutsideClick from 'utils/hooks/useOutsideClick';
+import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
+import { useDebounce } from 'utils/helpers';
+import useInputChange from 'utils/hooks/useInputChange';
+import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
+import useOutsideClick from 'utils/hooks/useOutsideClick';
 
 const emptyProject: ProjectCreateForm = {
   budget: undefined,

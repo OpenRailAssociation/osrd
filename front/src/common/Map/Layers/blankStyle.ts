@@ -1,7 +1,9 @@
-import type { MapProps } from 'react-map-gl/maplibre';
-import { MAIN_API } from 'config/config';
 import { useEffect, useMemo, useState } from 'react';
+
+import type { MapProps } from 'react-map-gl/maplibre';
+
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { MAIN_API } from 'config/config';
 
 type Sprite = { url: string; id: string };
 

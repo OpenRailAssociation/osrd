@@ -1,18 +1,19 @@
 import React, { useEffect, useState } from 'react';
-import { getMap } from 'reducers/map/selectors';
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import { updateLineSearchCode, updateMapSearchMarker } from 'reducers/map';
-import { useDebounce } from 'utils/helpers';
-import { useInfraID } from 'common/osrdContext';
-import { useSelector } from 'react-redux';
-import { useTranslation } from 'react-i18next';
-import { zoomToFeature } from 'common/Map/WarpedMap/core/helpers';
-import bbox from '@turf/bbox';
-import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 
-import { useAppDispatch } from 'store';
-import type { Viewport } from 'reducers/map';
+import bbox from '@turf/bbox';
+import { useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
+
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { Zone, SearchResultItemTrack } from 'common/api/osrdEditoastApi';
+import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
+import { zoomToFeature } from 'common/Map/WarpedMap/core/helpers';
+import { useInfraID } from 'common/osrdContext';
+import { updateLineSearchCode, updateMapSearchMarker } from 'reducers/map';
+import type { Viewport } from 'reducers/map';
+import { getMap } from 'reducers/map/selectors';
+import { useAppDispatch } from 'store';
+import { useDebounce } from 'utils/helpers';
 
 type MapSearchLineProps = {
   updateExtViewport: (viewport: Partial<Viewport>) => void;

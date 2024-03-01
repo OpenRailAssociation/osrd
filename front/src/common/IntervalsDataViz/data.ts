@@ -1,13 +1,14 @@
-import type { Feature, Point, LineString, Position } from 'geojson';
-import { last, differenceWith, cloneDeep, isEqual, isArray, isNil, isEmpty, sortBy } from 'lodash';
-import type { JSONSchema7, JSONSchema7Definition } from 'json-schema';
 import { retrieveSchema } from '@rjsf/utils';
 import validator from '@rjsf/validator-ajv8';
-
-import lineSplit from '@turf/line-split';
 import fnLength from '@turf/length';
-import type { EditorEntity } from 'applications/editor/typesEditorEntity';
+import lineSplit from '@turf/line-split';
+import type { Feature, Point, LineString, Position } from 'geojson';
+import type { JSONSchema7, JSONSchema7Definition } from 'json-schema';
+import { last, differenceWith, cloneDeep, isEqual, isArray, isNil, isEmpty, sortBy } from 'lodash';
+
 import { removeInvalidRanges } from 'applications/editor/tools/trackEdition/utils';
+import type { EditorEntity } from 'applications/editor/typesEditorEntity';
+
 import type { LinearMetadataItem, OperationalPoint } from './types';
 
 export const LINEAR_METADATA_FIELDS = ['slopes', 'curves'];

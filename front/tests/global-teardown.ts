@@ -1,5 +1,7 @@
 import { test as setup } from '@playwright/test';
+
 import type { Infra, Project, RollingStock } from 'common/api/osrdEditoastApi';
+
 import { deleteApiRequest, getApiRequest } from './assets/utils';
 
 setup('teardown (enabled)', async () => {

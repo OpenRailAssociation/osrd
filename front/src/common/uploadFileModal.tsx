@@ -1,11 +1,12 @@
 import React, { type FC, useCallback, useContext, useState } from 'react';
+
+import { Download } from '@osrd-project/ui-icons';
 import { isNil } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
-import { Download } from '@osrd-project/ui-icons';
 
 interface UploadFileModalProps {
   handleSubmit: (file: File) => void;

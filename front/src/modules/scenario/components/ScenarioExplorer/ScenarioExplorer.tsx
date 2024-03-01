@@ -1,20 +1,20 @@
 import React, { useEffect, useState } from 'react';
+
 import { useTranslation } from 'react-i18next';
 import { MdTrain } from 'react-icons/md';
 import { useSelector } from 'react-redux';
 
-import studyIcon from 'assets/pictures/views/study.svg';
-import projectIcon from 'assets/pictures/views/projects.svg';
 import infraIcon from 'assets/pictures/components/tracks.svg';
 import scenarioIcon from 'assets/pictures/home/operationalStudies.svg';
-
+import projectIcon from 'assets/pictures/views/projects.svg';
+import studyIcon from 'assets/pictures/views/study.svg';
 import { getDocument } from 'common/api/documentApi';
-import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
 import type { TrainScheduleSummary } from 'common/api/osrdEditoastApi';
-
+import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
+import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
 import { useAppDispatch } from 'store';
+
 import ScenarioExplorerModal, { type ScenarioExplorerProps } from './ScenarioExplorerModal';
 
 const ScenarioExplorer = ({

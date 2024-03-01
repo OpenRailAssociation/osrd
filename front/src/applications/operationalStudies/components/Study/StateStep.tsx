@@ -1,10 +1,12 @@
 import React from 'react';
+
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+
 import type { StudyState } from 'applications/operationalStudies/consts';
-import { useAppDispatch } from 'store';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { setSuccess } from 'reducers/main';
+import { useAppDispatch } from 'store';
 
 type Props = {
   projectID: number;

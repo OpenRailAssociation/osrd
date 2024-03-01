@@ -4,9 +4,8 @@ import STDCM_REQUEST_STATUS from 'applications/stdcm/consts';
 import type { StdcmRequestStatus } from 'applications/stdcm/types';
 import OSRDStdcmConfig from 'applications/stdcm/views/OSRDStdcmConfig';
 import StdcmRequestModal from 'applications/stdcm/views/StdcmRequestModal';
-
-import { useAppDispatch } from 'store';
 import { updateSelectedTrainId, updateSelectedProjection } from 'reducers/osrdsimulation/actions';
+import { useAppDispatch } from 'store';
 
 export default function OSRDSTDCM() {
   const dispatch = useAppDispatch();

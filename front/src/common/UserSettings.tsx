@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { ModalBodySNCF, ModalHeaderSNCF } from 'common/BootstrapSNCF/ModalSNCF';
+
 import { Gear, ShieldCheck } from '@osrd-project/ui-icons';
+import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
-import { updateUserPreferences } from 'reducers/user';
-import cx from 'classnames';
-import { useDebounce } from 'utils/helpers';
+
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import { useAppDispatch } from 'store';
+import { ModalBodySNCF, ModalHeaderSNCF } from 'common/BootstrapSNCF/ModalSNCF';
+import { updateUserPreferences } from 'reducers/user';
 import { getUserPreferences } from 'reducers/user/userSelectors';
+import { useAppDispatch } from 'store';
+import { useDebounce } from 'utils/helpers';
 
 export default function UserSettings() {
   const userPreferences = useSelector(getUserPreferences);

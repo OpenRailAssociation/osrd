@@ -1,20 +1,20 @@
 import React, { useContext, useEffect, useState } from 'react';
+
 import { useTranslation } from 'react-i18next';
 import { BiArrowFromLeft, BiArrowToRight } from 'react-icons/bi';
 import { BsBoxArrowInRight } from 'react-icons/bs';
 
+import EntitySumUp from 'applications/editor/components/EntitySumUp';
+import type { EditoastType } from 'applications/editor/consts';
+import EditorContext from 'applications/editor/context';
+import { getEntities } from 'applications/editor/data/api';
+import TOOL_NAMES from 'applications/editor/tools/constsToolNames';
+import type { RouteEntity } from 'applications/editor/tools/routeEdition/types';
+import { getRouteEditionState } from 'applications/editor/tools/routeEdition/utils';
+import type { ExtendedEditorContextType } from 'applications/editor/types';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { Spinner } from 'common/Loaders';
 import { useInfraID } from 'common/osrdContext';
-
-import EntitySumUp from 'applications/editor/components/EntitySumUp';
-import EditorContext from 'applications/editor/context';
-import { getEntities } from 'applications/editor/data/api';
-import type { ExtendedEditorContextType } from 'applications/editor/types';
-import type { RouteEntity } from 'applications/editor/tools/routeEdition/types';
-import type { EditoastType } from 'applications/editor/consts';
-import TOOL_NAMES from 'applications/editor/tools/constsToolNames';
-import { getRouteEditionState } from 'applications/editor/tools/routeEdition/utils';
 import { useAppDispatch } from 'store';
 
 interface RoutesListProps {

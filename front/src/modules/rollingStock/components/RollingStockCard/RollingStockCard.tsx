@@ -1,21 +1,22 @@
-import cx from 'classnames';
 import React, { useMemo, useRef, useState } from 'react';
+
+import cx from 'classnames';
+import { AiOutlineColumnWidth } from 'react-icons/ai';
+import { BsLightningFill } from 'react-icons/bs';
+import { FaWeightHanging } from 'react-icons/fa';
+import { IoIosSpeedometer } from 'react-icons/io';
+import { MdLocalGasStation } from 'react-icons/md';
 import { LazyLoadComponent } from 'react-lazy-load-image-component';
 
-import { BsLightningFill } from 'react-icons/bs';
-import { MdLocalGasStation } from 'react-icons/md';
-import { IoIosSpeedometer } from 'react-icons/io';
-import { FaWeightHanging } from 'react-icons/fa';
-import { AiOutlineColumnWidth } from 'react-icons/ai';
-
-import {
-  type RollingStockComfortType,
-  type LightRollingStockWithLiveries,
+import type {
+  RollingStockComfortType,
+  LightRollingStockWithLiveries,
 } from 'common/api/osrdEditoastApi';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import { RollingStockInfo } from 'modules/rollingStock/components/RollingStockSelector/RollingStockHelpers';
-import RollingStockCardDetail from './RollingStockCardDetail';
+
 import RollingStockCardButtons from './RollingStockCardButtons';
+import RollingStockCardDetail from './RollingStockCardDetail';
 
 interface RollingStockCardProps {
   isOpen: boolean;

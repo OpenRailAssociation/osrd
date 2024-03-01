@@ -1,14 +1,16 @@
-import cx from 'classnames';
 import React, { useState } from 'react';
+
+import cx from 'classnames';
 import nextId from 'react-id-generator';
-import { seconds2hhmmss } from 'modules/trainschedule/components/ImportTrainSchedule/ImportTrainScheduleHelpers';
-import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import { LazyLoadComponent } from 'react-lazy-load-image-component';
+
 import type { TrainSchedule } from 'applications/operationalStudies/types';
-import {
-  type LightRollingStockWithLiveries,
-  type RollingStockWithLiveries,
+import type {
+  LightRollingStockWithLiveries,
+  RollingStockWithLiveries,
 } from 'common/api/osrdEditoastApi';
+import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
+import { seconds2hhmmss } from 'modules/trainschedule/components/ImportTrainSchedule/ImportTrainScheduleHelpers';
 
 type Props = {
   trainData: TrainSchedule;

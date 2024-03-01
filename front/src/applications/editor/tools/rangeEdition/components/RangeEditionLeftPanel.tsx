@@ -1,15 +1,14 @@
 import React, { useContext } from 'react';
-import { useTranslation } from 'react-i18next';
+
 import { cloneDeep } from 'lodash';
+import { useTranslation } from 'react-i18next';
 
-import { useInfraID } from 'common/osrdContext';
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
-
+import EntityError from 'applications/editor/components/EntityError';
 import EditorContext from 'applications/editor/context';
 import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
-import EntityError from 'applications/editor/components/EntityError';
-import type { ExtendedEditorContextType, PartialOrReducer } from 'applications/editor/types';
+import ElectrificationMetadataForm from 'applications/editor/tools/rangeEdition/electrification/ElectrificationMetadataForm';
+import EditPSLSection from 'applications/editor/tools/rangeEdition/speedSection/EditPSLSection';
+import SpeedSectionMetadataForm from 'applications/editor/tools/rangeEdition/speedSection/SpeedSectionMetadataForm';
 import type {
   ElectrificationEntity,
   RangeEditionState,
@@ -17,9 +16,11 @@ import type {
   SpeedSectionPslEntity,
 } from 'applications/editor/tools/rangeEdition/types';
 import { speedSectionIsPsl } from 'applications/editor/tools/rangeEdition/utils';
-import EditPSLSection from 'applications/editor/tools/rangeEdition/speedSection/EditPSLSection';
-import ElectrificationMetadataForm from 'applications/editor/tools/rangeEdition/electrification/ElectrificationMetadataForm';
-import SpeedSectionMetadataForm from 'applications/editor/tools/rangeEdition/speedSection/SpeedSectionMetadataForm';
+import type { ExtendedEditorContextType, PartialOrReducer } from 'applications/editor/types';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
+import { useInfraID } from 'common/osrdContext';
+
 import TrackRangesList from './RangeEditionTrackRangeList';
 
 const RangeEditionLeftPanel = () => {

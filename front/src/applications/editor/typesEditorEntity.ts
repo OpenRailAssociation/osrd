@@ -1,5 +1,6 @@
 import type { Feature, GeoJsonProperties, Geometry } from 'geojson';
 import type { JSONSchema7 } from 'json-schema';
+
 import type { ObjectType } from 'common/api/osrdEditoastApi';
 
 // EDITOR ENTITIES

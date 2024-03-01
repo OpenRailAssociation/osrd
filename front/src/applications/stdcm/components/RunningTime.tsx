@@ -1,17 +1,16 @@
 import React, { useState } from 'react';
+
 import { useTranslation } from 'react-i18next';
-import { useSelector } from 'react-redux';
 import { RxLapTimer } from 'react-icons/rx';
+import { useSelector } from 'react-redux';
 
-import { sec2time, time2sec } from 'utils/timeManipulation';
-
+import { RUNTIME_CAP } from 'applications/stdcm/consts';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
-
-import { useAppDispatch } from 'store';
 import type { StdcmConfSliceActions } from 'reducers/osrdconf/stdcmConf';
 import type { StdcmConfSelectors } from 'reducers/osrdconf/stdcmConf/selectors';
-import { RUNTIME_CAP } from 'applications/stdcm/consts';
+import { useAppDispatch } from 'store';
+import { sec2time, time2sec } from 'utils/timeManipulation';
 
 function RunningTime() {
   const dispatch = useAppDispatch();

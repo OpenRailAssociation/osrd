@@ -1,9 +1,10 @@
 import { type Page, request, expect } from '@playwright/test';
-import type { Project, Scenario, Study, RollingStock, Infra } from 'common/api/osrdEditoastApi';
 import { v4 as uuidv4 } from 'uuid';
-import { PlaywrightHomePage } from '../pages/home-page-model';
-import scenarioData from './operationStudies/scenario.json';
 
+import type { Project, Scenario, Study, RollingStock, Infra } from 'common/api/osrdEditoastApi';
+
+import scenarioData from './operationStudies/scenario.json';
+import { PlaywrightHomePage } from '../pages/home-page-model';
 import RollingStockSelectorPage from '../pages/rolling-stock-selector-page';
 import PlaywrightScenarioPage from '../pages/scenario-page-model';
 

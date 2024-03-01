@@ -1,49 +1,48 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import type { MapRef } from 'react-map-gl/maplibre';
-import ReactMapGL, { AttributionControl, ScaleControl } from 'react-map-gl/maplibre';
+
 import { isNil } from 'lodash';
-import type { Viewport } from 'reducers/map';
-import { updateViewport } from 'reducers/map';
+import ReactMapGL, { AttributionControl, ScaleControl } from 'react-map-gl/maplibre';
+import type { MapRef } from 'react-map-gl/maplibre';
 import { useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
-import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
-import { useAppDispatch } from 'store';
-import { getMap, getTerrain3DExaggeration } from 'reducers/map/selectors';
-
 /* Main data & layers */
-import Background from 'common/Map/Layers/Background';
-import BufferStops from 'common/Map/Layers/BufferStops';
-import Terrain from 'common/Map/Layers/Terrain';
-import VirtualLayers from 'modules/simulationResult/components/SimulationResultsMap/VirtualLayers';
 /* Settings & Buttons */
-import Electrifications from 'common/Map/Layers/Electrifications';
+import MapButtons from 'common/Map/Buttons/MapButtons';
+import { CUSTOM_ATTRIBUTION } from 'common/Map/const';
+import colors from 'common/Map/Consts/colors';
+import Background from 'common/Map/Layers/Background';
+import { useMapBlankStyle } from 'common/Map/Layers/blankStyle';
+import BufferStops from 'common/Map/Layers/BufferStops';
 import Detectors from 'common/Map/Layers/Detectors';
+import Electrifications from 'common/Map/Layers/Electrifications';
+import NeutralSections from 'common/Map/Layers/extensions/SNCF/NeutralSections';
+import SNCF_PSL from 'common/Map/Layers/extensions/SNCF/PSL';
 import Hillshade from 'common/Map/Layers/Hillshade';
 import IGN_BD_ORTHO from 'common/Map/Layers/IGN_BD_ORTHO';
-import IGN_SCAN25 from 'common/Map/Layers/IGN_SCAN25';
 import IGN_CADASTRE from 'common/Map/Layers/IGN_CADASTRE';
-import MapButtons from 'common/Map/Buttons/MapButtons';
-import NeutralSections from 'common/Map/Layers/extensions/SNCF/NeutralSections';
-import OSM from 'common/Map/Layers/OSM';
-/* Objects & various */
-import colors from 'common/Map/Consts/colors';
+import IGN_SCAN25 from 'common/Map/Layers/IGN_SCAN25';
 import LineSearchLayer from 'common/Map/Layers/LineSearchLayer';
 import OperationalPoints from 'common/Map/Layers/OperationalPoints';
+import OSM from 'common/Map/Layers/OSM';
+/* Objects & various */
 import PlatformsLayer from 'common/Map/Layers/Platforms';
 import Routes from 'common/Map/Layers/Routes';
 import SearchMarker from 'common/Map/Layers/SearchMarker';
 import Signals from 'common/Map/Layers/Signals';
 import SpeedLimits from 'common/Map/Layers/SpeedLimits';
-import SNCF_PSL from 'common/Map/Layers/extensions/SNCF/PSL';
 import Switches from 'common/Map/Layers/Switches';
+import Terrain from 'common/Map/Layers/Terrain';
 import TracksGeographic from 'common/Map/Layers/TracksGeographic';
 import TracksOSM from 'common/Map/Layers/TracksOSM';
-import { CUSTOM_ATTRIBUTION } from 'common/Map/const';
-import { useMapBlankStyle } from 'common/Map/Layers/blankStyle';
-
-import { useInfraID } from 'common/osrdContext';
 import { removeSearchItemMarkersOnMap } from 'common/Map/utils';
+import { useInfraID } from 'common/osrdContext';
+import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
+import VirtualLayers from 'modules/simulationResult/components/SimulationResultsMap/VirtualLayers';
+import type { Viewport } from 'reducers/map';
+import { updateViewport } from 'reducers/map';
+import { getMap, getTerrain3DExaggeration } from 'reducers/map/selectors';
+import { useAppDispatch } from 'store';
 
 function Map() {
   const mapBlankStyle = useMapBlankStyle();

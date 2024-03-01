@@ -1,22 +1,23 @@
 import React, { useEffect, useState } from 'react';
-import { MdArrowRight } from 'react-icons/md';
+
 import { useTranslation } from 'react-i18next';
+import { MdArrowRight } from 'react-icons/md';
 
 import projectsLogo from 'assets/pictures/views/projects.svg';
 import scenarioExploratorLogo from 'assets/pictures/views/scenarioExplorator.svg';
 import scenariosLogo from 'assets/pictures/views/scenarios.svg';
 import studiesLogo from 'assets/pictures/views/studies.svg';
-
-import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
-import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import {
   type ScenarioWithCountTrains,
   type StudyWithScenarios,
   osrdEditoastApi,
 } from 'common/api/osrdEditoastApi';
-import { useAppDispatch } from 'store';
+import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
+import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import { setFailure } from 'reducers/main';
+import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
+
 import { ProjectMiniCard, StudyMiniCard, ScenarioMiniCard } from './MiniCards';
 
 export type ScenarioExplorerProps = {

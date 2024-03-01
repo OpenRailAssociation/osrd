@@ -1,17 +1,18 @@
 import React, { useCallback } from 'react';
-import { useSelector } from 'react-redux';
+
 import { useTranslation } from 'react-i18next';
 import type { MapRef } from 'react-map-gl/maplibre';
+import { useSelector } from 'react-redux';
 
-import MapSearchOperationalPoint from 'common/Map/Search/MapSearchOperationalPoint';
-import Tabs from 'common/Tabs';
 import MapSearchLine from 'common/Map/Search/MapSearchLine';
+import MapSearchOperationalPoint from 'common/Map/Search/MapSearchOperationalPoint';
 import MapSearchSignal from 'common/Map/Search/MapSearchSignal';
-
-import { useAppDispatch } from 'store';
+import Tabs from 'common/Tabs';
 import type { Viewport } from 'reducers/map';
-import { getMap } from 'reducers/map/selectors';
 import { updateViewport } from 'reducers/map';
+import { getMap } from 'reducers/map/selectors';
+import { useAppDispatch } from 'store';
+
 import MapModalHeader from '../MapModalHeader';
 
 type MapSearchProps = {

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+
 import nextId from 'react-id-generator';
 
 enum colorClasses {

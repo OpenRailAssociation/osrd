@@ -1,6 +1,7 @@
 import React, { type FC } from 'react';
-import { useTranslation } from 'react-i18next';
+
 import cx from 'classnames';
+import { useTranslation } from 'react-i18next';
 
 import type { RouteCandidate } from 'applications/editor/tools/routeEdition/types';
 

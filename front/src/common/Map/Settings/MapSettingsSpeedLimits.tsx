@@ -1,25 +1,25 @@
 import React, { useEffect, useMemo } from 'react';
-import { useSelector } from 'react-redux';
+
 import { useTranslation } from 'react-i18next';
-import { IoMdSpeedometer } from 'react-icons/io';
 import type { IconType } from 'react-icons';
+import { IoMdSpeedometer } from 'react-icons/io';
+import { useSelector } from 'react-redux';
 
 import TIVsSVGFile from 'assets/pictures/layersicons/layer_tivs.svg';
-
-import DotsLoader from 'common/DotsLoader/DotsLoader';
-import { useInfraID } from 'common/osrdContext';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
 import SwitchSNCF, { SWITCH_TYPES } from 'common/BootstrapSNCF/SwitchSNCF/SwitchSNCF';
+import DotsLoader from 'common/DotsLoader/DotsLoader';
 import {
   FormatSwitch as SimpleFormatSwitch,
   Icon2SVG,
 } from 'common/Map/Settings/MapSettingsLayers';
-import { useAppDispatch } from 'store';
+import { useInfraID } from 'common/osrdContext';
 import { setFailure } from 'reducers/main';
-import { getMap } from 'reducers/map/selectors';
 import { updateLayersSettings } from 'reducers/map';
 import type { MapState } from 'reducers/map';
+import { getMap } from 'reducers/map/selectors';
+import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 
 type FormatSwitchProps = {

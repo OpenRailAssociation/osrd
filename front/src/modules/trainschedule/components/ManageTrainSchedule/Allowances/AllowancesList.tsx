@@ -1,11 +1,12 @@
 import React, { useCallback } from 'react';
-import {
-  type SetAllowanceSelectedIndexType,
-  type OverlapAllowancesIndexesType,
-  type RangeAllowanceForm,
-  type EngineeringAllowanceForm,
-} from './types';
+
 import AllowancesListItem from './AllowancesListItem';
+import type {
+  SetAllowanceSelectedIndexType,
+  OverlapAllowancesIndexesType,
+  RangeAllowanceForm,
+  EngineeringAllowanceForm,
+} from './types';
 
 type AllowancesListProps = {
   allowances: RangeAllowanceForm[] | EngineeringAllowanceForm[];

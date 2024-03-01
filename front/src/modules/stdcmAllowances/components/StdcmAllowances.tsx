@@ -1,21 +1,19 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
+
 import { useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
 
-import { convertInputStringToNumber } from 'utils/strings';
-
-import { ALLOWANCE_UNITS_KEYS } from 'modules/stdcmAllowances/allowancesConsts';
-
-import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import InputGroupSNCF from 'common/BootstrapSNCF/InputGroupSNCF';
 import type { AllowanceValue } from 'common/api/osrdEditoastApi';
-import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
+import InputGroupSNCF from 'common/BootstrapSNCF/InputGroupSNCF';
 import type { InputGroupSNCFValue } from 'common/BootstrapSNCF/InputGroupSNCF';
-
-import { useAppDispatch } from 'store';
+import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
+import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
+import { ALLOWANCE_UNITS_KEYS } from 'modules/stdcmAllowances/allowancesConsts';
+import type { StandardAllowance } from 'reducers/osrdconf/consts';
 import type { StdcmConfSliceActions } from 'reducers/osrdconf/stdcmConf';
 import type { StdcmConfSelectors } from 'reducers/osrdconf/stdcmConf/selectors';
-import type { StandardAllowance } from 'reducers/osrdconf/consts';
+import { useAppDispatch } from 'store';
+import { convertInputStringToNumber } from 'utils/strings';
 
 const StdcmAllowances = () => {
   const { t } = useTranslation('allowances');

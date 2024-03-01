@@ -1,10 +1,10 @@
 import { BsSkipEnd } from 'react-icons/bs';
-import { MdSensors } from 'react-icons/md';
 import { FaMapSigns } from 'react-icons/fa';
+import { MdSensors } from 'react-icons/md';
 
-import type { BufferStopEntity, DetectorEntity, SignalEntity } from './types';
 import { BasePointEditionLayers, SignalEditionLayers } from './components';
 import getPointEditionTool from './tool-factory';
+import type { BufferStopEntity, DetectorEntity, SignalEntity } from './types';
 import { getNewBufferStop, getNewDetector, getNewSignal } from './utils';
 
 export const SignalEditionTool = getPointEditionTool<SignalEntity>({

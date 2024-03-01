@@ -1,37 +1,35 @@
-import { noop } from 'lodash';
 import React, { useEffect, useRef, useState, useCallback } from 'react';
+
+import { noop } from 'lodash';
+import { useTranslation } from 'react-i18next';
 import { CgLoadbar } from 'react-icons/cg';
 import { GiResize } from 'react-icons/gi';
 import { Rnd } from 'react-rnd';
-import { useTranslation } from 'react-i18next';
 
-import { CHART_AXES } from 'modules/simulationResult/consts';
-import type { TimeScaleDomain } from 'modules/simulationResult/types';
+import type { SimulationReport } from 'common/api/osrdEditoastApi';
+import { timeShiftTrain } from 'modules/simulationResult/components/ChartHelpers/ChartHelpers';
+import { useChartSynchronizer } from 'modules/simulationResult/components/ChartHelpers/ChartSynchronizer';
 import {
   enableInteractivity,
   traceVerticalLine,
 } from 'modules/simulationResult/components/ChartHelpers/enableInteractivity';
-import { timeShiftTrain } from 'modules/simulationResult/components/ChartHelpers/ChartHelpers';
-import { useChartSynchronizer } from 'modules/simulationResult/components/ChartHelpers/ChartSynchronizer';
 import ChartModal from 'modules/simulationResult/components/SpaceTimeChart/ChartModal';
 import { isolatedCreateTrain as createTrain } from 'modules/simulationResult/components/SpaceTimeChart/createTrain';
 import { drawAllTrains } from 'modules/simulationResult/components/SpaceTimeChart/d3Helpers';
-import {
-  type AllowancesSettings,
-  type Chart,
-  type OsrdSimulationState,
-  type SimulationSnapshot,
-  type Train,
+import { CHART_AXES } from 'modules/simulationResult/consts';
+import type { TimeScaleDomain } from 'modules/simulationResult/types';
+import type {
+  AllowancesSettings,
+  Chart,
+  OsrdSimulationState,
+  SimulationSnapshot,
+  Train,
 } from 'reducers/osrdsimulation/types';
 import { dateIsInRange } from 'utils/date';
 import { sec2datetime, datetime2sec } from 'utils/timeManipulation';
-import type { SimulationReport } from 'common/api/osrdEditoastApi';
 
-import {
-  type DispatchPersistentUpdateSimulation,
-  type DispatchUpdateSelectedTrainId,
-} from './types';
 import { SPACE_TIME_CHART_ID } from './consts';
+import type { DispatchPersistentUpdateSimulation, DispatchUpdateSelectedTrainId } from './types';
 
 const CHART_MIN_HEIGHT = 250;
 

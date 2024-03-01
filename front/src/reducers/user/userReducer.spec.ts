@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest';
-import { createStoreWithoutMiddleware } from 'store';
+
 import {
   userInitialState,
   loginSuccess,
@@ -8,6 +8,7 @@ import {
   type UserState,
   updateUserPreferences,
 } from 'reducers/user';
+import { createStoreWithoutMiddleware } from 'store';
 
 const createStore = (initialStateExtra?: UserState) =>
   createStoreWithoutMiddleware({

@@ -1,9 +1,10 @@
 import React from 'react';
 
+import { useTranslation } from 'react-i18next';
 import { Route, Routes } from 'react-router-dom';
 
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
-import { useTranslation } from 'react-i18next';
+
 import OSRDSTDCM from './views/OSRDSTDCM';
 
 export default function HomeStdcm() {

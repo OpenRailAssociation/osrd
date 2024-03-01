@@ -1,4 +1,5 @@
 import React from 'react';
+
 import type { WidgetProps } from '@rjsf/utils';
 
 const CustomFlagSignalCheckbox: React.FC<WidgetProps> = (props) => {

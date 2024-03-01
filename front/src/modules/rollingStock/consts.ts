@@ -1,6 +1,5 @@
-import { isElectric } from 'modules/rollingStock/helpers/electric';
-
 import type { RollingStockComfortType } from 'common/api/osrdEditoastApi';
+import { isElectric } from 'modules/rollingStock/helpers/electric';
 import type { ElectricalProfileByMode, SchemaProperty } from 'modules/rollingStock/types';
 
 export const THERMAL_TRACTION_IDENTIFIER = 'thermal';

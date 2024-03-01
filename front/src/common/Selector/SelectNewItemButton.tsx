@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
+
 import cx from 'classnames';
 import { RiAddFill } from 'react-icons/ri';
+
 import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
 
 export default function SelectNewItemButton<

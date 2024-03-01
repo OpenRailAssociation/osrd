@@ -1,14 +1,16 @@
 import React from 'react';
+
 import { isNil } from 'lodash';
-import { useSelector } from 'react-redux';
 import { type LayerProps, Source, type SymbolLayer } from 'react-map-gl/maplibre';
+import { useSelector } from 'react-redux';
+
 import { MAP_URL } from 'common/Map/const';
-import type { Theme } from 'types';
-import OrderedLayer from 'common/Map/Layers/OrderedLayer';
-import { getMap } from 'reducers/map/selectors';
-import type { LayerContext } from 'common/Map/Layers/types';
 import getKPLabelLayerProps from 'common/Map/Layers/KPLabel';
 import getMastLayerProps from 'common/Map/Layers/mastLayerProps';
+import OrderedLayer from 'common/Map/Layers/OrderedLayer';
+import type { LayerContext } from 'common/Map/Layers/types';
+import { getMap } from 'reducers/map/selectors';
+import type { Theme } from 'types';
 
 export function getNeutralSectionSignsLayerProps({
   sourceTable,

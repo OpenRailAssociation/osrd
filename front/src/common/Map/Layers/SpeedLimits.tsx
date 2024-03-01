@@ -1,17 +1,16 @@
 import React from 'react';
+
 import { isNil } from 'lodash';
-import { useSelector } from 'react-redux';
+import type { ExpressionSpecification, FilterSpecification } from 'maplibre-gl';
 import { Source } from 'react-map-gl/maplibre';
 import type { SymbolLayer, LineLayer } from 'react-map-gl/maplibre';
-import type { ExpressionSpecification, FilterSpecification } from 'maplibre-gl';
-
-import type { Theme, OmitLayer } from 'types';
+import { useSelector } from 'react-redux';
 
 import { MAP_URL } from 'common/Map/const';
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
-
 import type { RootState } from 'reducers';
 import type { MapState } from 'reducers/map';
+import type { Theme, OmitLayer } from 'types';
 
 interface SpeedLimitsProps {
   colors: Theme;

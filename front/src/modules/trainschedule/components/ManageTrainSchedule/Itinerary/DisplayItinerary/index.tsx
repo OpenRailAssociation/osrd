@@ -1,8 +1,10 @@
 import React from 'react';
+
 import type { Position } from 'geojson';
+
+import Destination from './Destination';
 import Origin from './Origin';
 import Vias from './Vias';
-import Destination from './Destination';
 
 interface DisplayItineraryProps {
   zoomToFeaturePoint: (lngLat?: Position, id?: string) => void;

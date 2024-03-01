@@ -1,18 +1,18 @@
 import React, { useContext } from 'react';
-import { useSelector } from 'react-redux';
-import { Layer, Source } from 'react-map-gl/maplibre';
-import { last } from 'lodash';
-import type { Position } from 'geojson';
 
+import type { Position } from 'geojson';
+import { last } from 'lodash';
+import { Layer, Source } from 'react-map-gl/maplibre';
+import { useSelector } from 'react-redux';
+
+import EditorContext from 'applications/editor/context';
+import { POINTS_LAYER_ID, TRACK_LAYER_ID } from 'applications/editor/tools/trackEdition/consts';
+import type { TrackEditionState } from 'applications/editor/tools/trackEdition/types';
+import type { ExtendedEditorContextType } from 'applications/editor/types';
 import colors from 'common/Map/Consts/colors';
 import GeoJSONs from 'common/Map/Layers/GeoJSONs';
 import { useInfraID } from 'common/osrdContext';
 import { getMap } from 'reducers/map/selectors';
-
-import EditorContext from 'applications/editor/context';
-import type { ExtendedEditorContextType } from 'applications/editor/types';
-import type { TrackEditionState } from 'applications/editor/tools/trackEdition/types';
-import { POINTS_LAYER_ID, TRACK_LAYER_ID } from 'applications/editor/tools/trackEdition/consts';
 
 const TRACK_COLOR = '#666';
 const TRACK_STYLE = { 'line-color': TRACK_COLOR, 'line-dasharray': [2, 1], 'line-width': 2 };

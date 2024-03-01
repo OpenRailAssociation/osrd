@@ -1,12 +1,13 @@
 import type { Allowance } from 'common/api/osrdEditoastApi';
+
 import { unitsLabels } from './consts';
-import {
-  type AllowanceForm,
-  type AllowanceValueForm,
-  type EngineeringAllowanceForm,
-  type FindAllowanceOverlapType,
-  type OverlapAllowancesIndexesType,
-  type RangeAllowanceForm,
+import type {
+  AllowanceForm,
+  AllowanceValueForm,
+  EngineeringAllowanceForm,
+  FindAllowanceOverlapType,
+  OverlapAllowancesIndexesType,
+  RangeAllowanceForm,
 } from './types';
 
 // Return an array containing index of allowances that are included in range of begin & end position

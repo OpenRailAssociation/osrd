@@ -1,16 +1,18 @@
 import React from 'react';
-import { isEqual } from 'lodash';
-import { GiPathDistance } from 'react-icons/gi';
-import { AiFillSave } from 'react-icons/ai';
-import { PlusCircle, Trash } from '@osrd-project/ui-icons';
-import { BiReset } from 'react-icons/bi';
 
-import { save } from 'reducers/editor/thunkActions';
+import { PlusCircle, Trash } from '@osrd-project/ui-icons';
+import { isEqual } from 'lodash';
+import { AiFillSave } from 'react-icons/ai';
+import { BiReset } from 'react-icons/bi';
+import { GiPathDistance } from 'react-icons/gi';
+
 import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
-import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF/ConfirmModal';
 import type { Tool } from 'applications/editor/types';
-import type { RouteEditionState, WayPointEntity } from './types';
+import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF/ConfirmModal';
+import { save } from 'reducers/editor/thunkActions';
+
 import { RouteEditionLayers, RouteEditionLeftPanel, RouteEditionMessages } from './components';
+import type { RouteEditionState, WayPointEntity } from './types';
 import { getRouteEditionState } from './utils';
 
 const RouteEditionTool: Tool<RouteEditionState> = {

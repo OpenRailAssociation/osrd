@@ -1,7 +1,8 @@
 import type { Dispatch } from 'redux';
 
-import type { GetState } from 'store';
 import type { ChartSynchronizer } from 'modules/simulationResult/components/ChartHelpers/ChartSynchronizer';
+import type { GetState } from 'store';
+
 import type { SimulationSnapshot, OsrdSimulationState } from './types';
 
 // Action Types

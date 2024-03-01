@@ -1,76 +1,74 @@
 import React, { type FC, useCallback, useEffect, useMemo, useState } from 'react';
-import { useSelector } from 'react-redux';
-import { useParams } from 'react-router-dom';
-import type { MapLayerMouseEvent } from 'maplibre-gl';
-import type { MapRef } from 'react-map-gl/maplibre';
-import ReactMapGL, { AttributionControl, ScaleControl } from 'react-map-gl/maplibre';
-import type { Feature, LineString } from 'geojson';
-import { lineString, point } from '@turf/helpers';
+
 import bbox from '@turf/bbox';
+import { lineString, point } from '@turf/helpers';
 import lineLength from '@turf/length';
 import lineSlice from '@turf/line-slice';
+import type { Feature, LineString } from 'geojson';
 import { keyBy } from 'lodash';
-
-import type { TrainPosition } from 'modules/simulationResult/components/SimulationResultsMap/types';
-
-import { useAppDispatch } from 'store';
-import type { RootState } from 'reducers';
-import type { Viewport } from 'reducers/map';
-import { updateViewport } from 'reducers/map';
-import type { Train } from 'reducers/osrdsimulation/types';
-import { getPresentSimulation, getSelectedTrain } from 'reducers/osrdsimulation/selectors';
+import type { MapLayerMouseEvent } from 'maplibre-gl';
+import ReactMapGL, { AttributionControl, ScaleControl } from 'react-map-gl/maplibre';
+import type { MapRef } from 'react-map-gl/maplibre';
+import { useSelector } from 'react-redux';
+import { useParams } from 'react-router-dom';
 
 /* Main data & layers */
-import Background from 'common/Map/Layers/Background';
-import BufferStops from 'common/Map/Layers/BufferStops';
-import VirtualLayers from 'modules/simulationResult/components/SimulationResultsMap/VirtualLayers';
 
 /* Settings & Buttons */
-import RenderItinerary from 'modules/simulationResult/components/SimulationResultsMap/RenderItinerary';
-
-import OSM from 'common/Map/Layers/OSM';
-import Routes from 'common/Map/Layers/Routes';
-import Signals from 'common/Map/Layers/Signals';
-import Switches from 'common/Map/Layers/Switches';
-import Detectors from 'common/Map/Layers/Detectors';
-import Hillshade from 'common/Map/Layers/Hillshade';
-import Electrifications from 'common/Map/Layers/Electrifications';
-import MapButtons from 'common/Map/Buttons/MapButtons';
-import SpeedLimits from 'common/Map/Layers/SpeedLimits';
-import PlatformsLayer from 'common/Map/Layers/Platforms';
-import SearchMarker from 'common/Map/Layers/SearchMarker';
-import NeutralSections from 'common/Map/Layers/extensions/SNCF/NeutralSections';
-import OperationalPoints from 'common/Map/Layers/OperationalPoints';
 
 /* Objects & various */
-import TracksOSM from 'common/Map/Layers/TracksOSM';
-import TracksGeographic from 'common/Map/Layers/TracksGeographic';
 
 /* Interactions */
-import TrainHoverPosition from 'modules/simulationResult/components/SimulationResultsMap/TrainHoverPosition';
 
+import type { SimulationReport } from 'common/api/osrdEditoastApi';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import MapButtons from 'common/Map/Buttons/MapButtons';
+import { CUSTOM_ATTRIBUTION } from 'common/Map/const';
 import colors from 'common/Map/Consts/colors';
+import Background from 'common/Map/Layers/Background';
 import { useMapBlankStyle } from 'common/Map/Layers/blankStyle';
+import BufferStops from 'common/Map/Layers/BufferStops';
+import Detectors from 'common/Map/Layers/Detectors';
+import Electrifications from 'common/Map/Layers/Electrifications';
+import NeutralSections from 'common/Map/Layers/extensions/SNCF/NeutralSections';
+import SNCF_PSL from 'common/Map/Layers/extensions/SNCF/PSL';
+import Hillshade from 'common/Map/Layers/Hillshade';
+import IGN_BD_ORTHO from 'common/Map/Layers/IGN_BD_ORTHO';
+import IGN_CADASTRE from 'common/Map/Layers/IGN_CADASTRE';
+import IGN_SCAN25 from 'common/Map/Layers/IGN_SCAN25';
+import OperationalPoints from 'common/Map/Layers/OperationalPoints';
+import OSM from 'common/Map/Layers/OSM';
+import PlatformsLayer from 'common/Map/Layers/Platforms';
+import Routes from 'common/Map/Layers/Routes';
+import SearchMarker from 'common/Map/Layers/SearchMarker';
+import Signals from 'common/Map/Layers/Signals';
+import SpeedLimits from 'common/Map/Layers/SpeedLimits';
+import Switches from 'common/Map/Layers/Switches';
+import Terrain from 'common/Map/Layers/Terrain';
+import TracksGeographic from 'common/Map/Layers/TracksGeographic';
+import TracksOSM from 'common/Map/Layers/TracksOSM';
+import { removeSearchItemMarkersOnMap } from 'common/Map/utils';
+import { zoomToFeature } from 'common/Map/WarpedMap/core/helpers';
+import { useInfraID } from 'common/osrdContext';
+import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
 import {
   getDirection,
   interpolateOnPosition,
 } from 'modules/simulationResult/components/ChartHelpers/ChartHelpers';
-import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
-
-import Terrain from 'common/Map/Layers/Terrain';
-import { CUSTOM_ATTRIBUTION } from 'common/Map/const';
-import { useInfraID } from 'common/osrdContext';
-import { zoomToFeature } from 'common/Map/WarpedMap/core/helpers';
-import IGN_SCAN25 from 'common/Map/Layers/IGN_SCAN25';
-import IGN_CADASTRE from 'common/Map/Layers/IGN_CADASTRE';
-import IGN_BD_ORTHO from 'common/Map/Layers/IGN_BD_ORTHO';
-import SNCF_PSL from 'common/Map/Layers/extensions/SNCF/PSL';
-import type { SimulationReport } from 'common/api/osrdEditoastApi';
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import RenderItinerary from 'modules/simulationResult/components/SimulationResultsMap/RenderItinerary';
+import TrainHoverPosition from 'modules/simulationResult/components/SimulationResultsMap/TrainHoverPosition';
+import type { TrainPosition } from 'modules/simulationResult/components/SimulationResultsMap/types';
+import VirtualLayers from 'modules/simulationResult/components/SimulationResultsMap/VirtualLayers';
+import type { RootState } from 'reducers';
+import { updateViewport } from 'reducers/map';
+import type { Viewport } from 'reducers/map';
 import { getTerrain3DExaggeration } from 'reducers/map/selectors';
-import { removeSearchItemMarkersOnMap } from 'common/Map/utils';
-import { getRegimeKey, getSimulationHoverPositions } from './SimulationResultsMap/helpers';
+import { getPresentSimulation, getSelectedTrain } from 'reducers/osrdsimulation/selectors';
+import type { Train } from 'reducers/osrdsimulation/types';
+import { useAppDispatch } from 'store';
+
 import { useChartSynchronizer } from './ChartHelpers/ChartSynchronizer';
+import { getRegimeKey, getSimulationHoverPositions } from './SimulationResultsMap/helpers';
 
 interface MapProps {
   setExtViewport: (viewport: Viewport) => void;

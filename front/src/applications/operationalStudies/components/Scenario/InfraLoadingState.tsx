@@ -1,6 +1,8 @@
 import React from 'react';
+
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
+
 import type { Infra } from 'common/api/osrdEditoastApi';
 
 const STEPS = [

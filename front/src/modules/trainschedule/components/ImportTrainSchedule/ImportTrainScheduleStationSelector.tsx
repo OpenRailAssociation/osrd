@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
+
 import { useTranslation } from 'react-i18next';
 import nextId from 'react-id-generator';
 
+import { searchGraouStations } from 'common/api/graouApi';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import { useDebounce } from 'utils/helpers';
 import { Loader } from 'common/Loaders';
 import StationCard, { type ImportStation } from 'common/StationCard';
-import { searchGraouStations } from 'common/api/graouApi';
+import { useDebounce } from 'utils/helpers';
 
 interface ImportTrainScheduleStationSelectorProps {
   id: string;

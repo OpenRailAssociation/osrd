@@ -1,35 +1,34 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useSelector } from 'react-redux';
-import { useTranslation } from 'react-i18next';
-import { compact } from 'lodash';
+
 import cx from 'classnames';
+import { compact } from 'lodash';
+import { useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
 
-import {
-  type TrainSchedule,
-  type TrainScheduleWithPath,
-  type TrainScheduleWithPathRef,
+import type {
+  TrainSchedule,
+  TrainScheduleWithPath,
+  TrainScheduleWithPathRef,
 } from 'applications/operationalStudies/types';
-
-import Map from 'modules/trainschedule/components/ImportTrainSchedule/Map';
-import type { Point } from 'modules/trainschedule/components/ImportTrainSchedule/types';
-import { refactorUniquePaths } from 'modules/trainschedule/components/ImportTrainSchedule/ImportTrainScheduleHelpers';
-import generatePathfindingPayload from 'modules/trainschedule/components/ImportTrainSchedule/generatePathfindingPayload';
-import generateTrainSchedulesPayload from 'modules/trainschedule/components/ImportTrainSchedule/generateTrainSchedulesPayload';
-import {
-  initialViewport,
-  initialStatus,
-} from 'modules/trainschedule/components/ImportTrainSchedule/consts';
-import Spacer from 'common/Spacer';
-import { useOsrdConfSelectors } from 'common/osrdContext';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import type {
   LightRollingStock,
   PathResponse,
   TrainScheduleBatchItem,
 } from 'common/api/osrdEditoastApi';
-
+import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
+import { useOsrdConfSelectors } from 'common/osrdContext';
+import Spacer from 'common/Spacer';
+import {
+  initialViewport,
+  initialStatus,
+} from 'modules/trainschedule/components/ImportTrainSchedule/consts';
+import generatePathfindingPayload from 'modules/trainschedule/components/ImportTrainSchedule/generatePathfindingPayload';
+import generateTrainSchedulesPayload from 'modules/trainschedule/components/ImportTrainSchedule/generateTrainSchedulesPayload';
+import { refactorUniquePaths } from 'modules/trainschedule/components/ImportTrainSchedule/ImportTrainScheduleHelpers';
 import ImportTrainScheduleModalFooter from 'modules/trainschedule/components/ImportTrainSchedule/ImportTrainScheduleModalFooter';
+import Map from 'modules/trainschedule/components/ImportTrainSchedule/Map';
+import type { Point } from 'modules/trainschedule/components/ImportTrainSchedule/types';
 
 /* METHOD
  *

@@ -1,20 +1,19 @@
 import React, { type FC } from 'react';
-import { useSelector } from 'react-redux';
-import { useTranslation } from 'react-i18next';
-import Slider from 'rc-slider';
 
-import iconIGNBDORTHO from 'assets/pictures/mapbuttons/mapstyle-ortho.jpg';
-import iconIGNSCAN25 from 'assets/pictures/mapbuttons/mapstyle-scan25.jpg';
+import Slider from 'rc-slider';
+import { useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
+
+import icon3dBuildings from 'assets/pictures/mapbuttons/mapstyle-3d-buildings.jpg';
 import iconIGNCadastre from 'assets/pictures/mapbuttons/mapstyle-cadastre.jpg';
 import iconOSM from 'assets/pictures/mapbuttons/mapstyle-normal.jpg';
+import iconIGNBDORTHO from 'assets/pictures/mapbuttons/mapstyle-ortho.jpg';
 import iconOSMTracks from 'assets/pictures/mapbuttons/mapstyle-osm-tracks.jpg';
-import icon3dBuildings from 'assets/pictures/mapbuttons/mapstyle-3d-buildings.jpg';
+import iconIGNSCAN25 from 'assets/pictures/mapbuttons/mapstyle-scan25.jpg';
 import SwitchSNCF, {
   SWITCH_TYPES,
   type SwitchSNCFProps,
 } from 'common/BootstrapSNCF/SwitchSNCF/SwitchSNCF';
-import { useAppDispatch } from 'store';
-import { getMap, getTerrain3DExaggeration } from 'reducers/map/selectors';
 import {
   updateShowIGNBDORTHO,
   updateShowIGNCadastre,
@@ -25,6 +24,8 @@ import {
   updateTerrain3DExaggeration,
   updateSmoothTravel,
 } from 'reducers/map';
+import { getMap, getTerrain3DExaggeration } from 'reducers/map/selectors';
+import { useAppDispatch } from 'store';
 
 const FormatSwitch: FC<{
   name: string;

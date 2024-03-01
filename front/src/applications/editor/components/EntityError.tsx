@@ -1,12 +1,14 @@
 import React, { type FC, useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
+
 import cx from 'classnames';
-import { BsExclamationOctagon } from 'react-icons/bs';
 import { isNil, uniqueId } from 'lodash';
+import { useTranslation } from 'react-i18next';
+import { BsExclamationOctagon } from 'react-icons/bs';
 
 import type { EditorEntity } from 'applications/editor/typesEditorEntity';
-import { useInfraID } from 'common/osrdContext';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { useInfraID } from 'common/osrdContext';
+
 import { InfraErrorLine } from './InfraErrors';
 
 const EntityError: FC<{ entity: EditorEntity; className?: string }> = ({ entity, className }) => {

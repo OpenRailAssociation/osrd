@@ -1,25 +1,23 @@
 import React from 'react';
-import { Source, Marker } from 'react-map-gl/maplibre';
-import along from '@turf/along';
-import lineSliceAlong from '@turf/line-slice-along';
-import length from '@turf/length';
-import bezierSpline from '@turf/bezier-spline';
-import transformTranslate from '@turf/transform-translate';
-import { type Point, polygon, lineString } from '@turf/helpers';
-import type { Feature, LineString } from 'geojson';
-import cx from 'classnames';
-import { mapValues, get } from 'lodash';
 
-import type { Viewport } from 'reducers/map';
-import {
-  type AllowancesSetting,
-  type AllowancesSettings,
-  type Train,
-} from 'reducers/osrdsimulation/types';
-import { boundedValue } from 'utils/numbers';
-import { getCurrentBearing } from 'utils/geometry';
+import along from '@turf/along';
+import bezierSpline from '@turf/bezier-spline';
+import { type Point, polygon, lineString } from '@turf/helpers';
+import length from '@turf/length';
+import lineSliceAlong from '@turf/line-slice-along';
+import transformTranslate from '@turf/transform-translate';
+import cx from 'classnames';
+import type { Feature, LineString } from 'geojson';
+import { mapValues, get } from 'lodash';
+import { Source, Marker } from 'react-map-gl/maplibre';
+
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
+import type { Viewport } from 'reducers/map';
+import type { AllowancesSetting, AllowancesSettings, Train } from 'reducers/osrdsimulation/types';
+import { getCurrentBearing } from 'utils/geometry';
+import { boundedValue } from 'utils/numbers';
 import { datetime2time } from 'utils/timeManipulation';
+
 import type { TrainPosition } from './types';
 
 function getFill(isSelectedTrain: boolean, ecoBlocks: boolean) {

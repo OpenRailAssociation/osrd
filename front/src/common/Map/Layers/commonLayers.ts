@@ -1,4 +1,5 @@
 import type { SymbolLayer, LineLayer, CircleLayer } from 'react-map-gl/maplibre';
+
 import type { Theme, OmitLayer } from 'types';
 
 export function trackNameLayer(colors: Theme): OmitLayer<SymbolLayer> {

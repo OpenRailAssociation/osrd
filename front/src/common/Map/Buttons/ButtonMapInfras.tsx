@@ -1,11 +1,13 @@
 import React from 'react';
-import { GiRailway } from 'react-icons/gi';
-import InfraSelector from 'modules/infra/components/InfraSelector';
-import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
-import { useTranslation } from 'react-i18next';
+
 import cx from 'classnames';
+import { useTranslation } from 'react-i18next';
+import { GiRailway } from 'react-icons/gi';
+
+import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { useInfraID } from 'common/osrdContext';
 import Tipped from 'common/Tipped';
+import InfraSelector from 'modules/infra/components/InfraSelector';
 
 const ButtonMapInfras = ({ isInEditor }: { isInEditor?: boolean }) => {
   const { openModal } = useModal();

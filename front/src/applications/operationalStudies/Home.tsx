@@ -1,19 +1,21 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import FilterTextField from 'applications/operationalStudies/components/FilterTextField';
-import ProjectSelectionToolbar from 'modules/project/components/ProjectSelectionToolbar';
-import ProjectCard from 'modules/project/components/ProjectCard';
-import ProjectCardEmpty from 'modules/project/components/ProjectCardEmpty';
-import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
-import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
-import { Spinner } from 'common/Loaders';
+
 import { useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
+
+import FilterTextField from 'applications/operationalStudies/components/FilterTextField';
 import {
   type PostSearchApiArg,
   type ProjectWithStudies,
   type SearchResultItemProject,
   osrdEditoastApi,
 } from 'common/api/osrdEditoastApi';
-import { useSelector } from 'react-redux';
+import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
+import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
+import { Spinner } from 'common/Loaders';
+import ProjectCard from 'modules/project/components/ProjectCard';
+import ProjectCardEmpty from 'modules/project/components/ProjectCardEmpty';
+import ProjectSelectionToolbar from 'modules/project/components/ProjectSelectionToolbar';
 import { getUserSafeWord } from 'reducers/user/userSelectors';
 
 type SortOptions =

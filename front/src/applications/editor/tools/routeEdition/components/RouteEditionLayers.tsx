@@ -1,29 +1,17 @@
-import type { Feature, LineString } from 'geojson';
 import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { useSelector } from 'react-redux';
-import { Layer, Popup, Source, type LineLayer } from 'react-map-gl/maplibre';
-import { featureCollection } from '@turf/helpers';
-import { FaFlagCheckered } from 'react-icons/fa';
-import { BsArrowBarRight } from 'react-icons/bs';
-import { useTranslation } from 'react-i18next';
-import { compact, isNil } from 'lodash';
 
-import {
-  getRoutesLineLayerProps,
-  getRoutesPointLayerProps,
-  getRoutesTextLayerProps,
-} from 'common/Map/Layers/Routes';
-import colors from 'common/Map/Consts/colors';
-import GeoJSONs from 'common/Map/Layers/GeoJSONs';
-import { useInfraID } from 'common/osrdContext';
-import { useAppDispatch } from 'store';
-import { getMap } from 'reducers/map/selectors';
-import { NULL_GEOMETRY, type OmitLayer, type NullGeometry } from 'types';
+import { featureCollection } from '@turf/helpers';
+import type { Feature, LineString } from 'geojson';
+import { compact, isNil } from 'lodash';
+import { useTranslation } from 'react-i18next';
+import { BsArrowBarRight } from 'react-icons/bs';
+import { FaFlagCheckered } from 'react-icons/fa';
+import { Layer, Popup, Source, type LineLayer } from 'react-map-gl/maplibre';
+import { useSelector } from 'react-redux';
 
 import EntitySumUp from 'applications/editor/components/EntitySumUp';
 import EditorContext from 'applications/editor/context';
 import { nestEntity } from 'applications/editor/data/utils';
-import type { ExtendedEditorContextType } from 'applications/editor/types';
 import type {
   RouteEditionState,
   WayPointEntity,
@@ -32,7 +20,19 @@ import {
   getOptionsStateType,
   getRouteGeometryByRouteId,
 } from 'applications/editor/tools/routeEdition/utils';
+import type { ExtendedEditorContextType } from 'applications/editor/types';
 import type { EditorEntity } from 'applications/editor/typesEditorEntity';
+import colors from 'common/Map/Consts/colors';
+import GeoJSONs from 'common/Map/Layers/GeoJSONs';
+import {
+  getRoutesLineLayerProps,
+  getRoutesPointLayerProps,
+  getRoutesTextLayerProps,
+} from 'common/Map/Layers/Routes';
+import { useInfraID } from 'common/osrdContext';
+import { getMap } from 'reducers/map/selectors';
+import { useAppDispatch } from 'store';
+import { NULL_GEOMETRY, type OmitLayer, type NullGeometry } from 'types';
 
 const RouteEditionLayers = () => {
   const {

@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+
 import { getDocument } from 'common/api/documentApi';
 import type { ProjectWithStudies } from 'common/api/osrdEditoastApi';
 

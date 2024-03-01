@@ -1,11 +1,13 @@
 import React, { useMemo, useRef, useState } from 'react';
+
+import { Search } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
-import Grid from 'common/Grid/Grid';
+
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { ModalBodySNCF, ModalHeaderSNCF, useModal } from 'common/BootstrapSNCF/ModalSNCF';
+import Grid from 'common/Grid/Grid';
 import { splitArrayByFirstLetter } from 'utils/array';
 import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
-import { Search } from '@osrd-project/ui-icons';
 
 type PowerRestrictionGridModalProps = {
   powerRestrictionsList: string[];

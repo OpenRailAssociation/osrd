@@ -2,8 +2,6 @@
 import type { Feature, FeatureCollection, Geometry, Position } from 'geojson';
 import { keyBy } from 'lodash';
 
-import type { Zone } from 'types';
-import { clip } from 'utils/mapHelper';
 import {
   getBarycentricCoordinates,
   getPointInTriangle,
@@ -12,6 +10,8 @@ import {
   type Triangle,
 } from 'common/Map/WarpedMap/core/helpers';
 import { getElements, type Quad } from 'common/Map/WarpedMap/core/quadtree';
+import type { Zone } from 'types';
+import { clip } from 'utils/mapHelper';
 
 export type Projection = (position: Position) => Position | null;
 

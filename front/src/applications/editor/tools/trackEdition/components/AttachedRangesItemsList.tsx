@@ -1,24 +1,24 @@
 import React, { useContext, useEffect, useState } from 'react';
+
 import { useTranslation } from 'react-i18next';
 import { BsBoxArrowInRight } from 'react-icons/bs';
 
-import { Spinner } from 'common/Loaders';
-import { useInfraID } from 'common/osrdContext';
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-
+import EntitySumUp from 'applications/editor/components/EntitySumUp';
 import EditorContext from 'applications/editor/context';
 import { getEntities } from 'applications/editor/data/api';
-import EntitySumUp from 'applications/editor/components/EntitySumUp';
-import type { ExtendedEditorContextType } from 'applications/editor/types';
+import TOOL_NAMES from 'applications/editor/tools/constsToolNames';
+import type {
+  ElectrificationEntity,
+  SpeedSectionEntity,
+} from 'applications/editor/tools/rangeEdition/types';
 import {
   getEditElectrificationState,
   getEditSpeedSectionState,
 } from 'applications/editor/tools/trackEdition/utils';
-import {
-  type ElectrificationEntity,
-  type SpeedSectionEntity,
-} from 'applications/editor/tools/rangeEdition/types';
-import TOOL_NAMES from 'applications/editor/tools/constsToolNames';
+import type { ExtendedEditorContextType } from 'applications/editor/types';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { Spinner } from 'common/Loaders';
+import { useInfraID } from 'common/osrdContext';
 import { useAppDispatch } from 'store';
 
 const DEFAULT_DISPLAYED_RANGES_COUNT = 3;

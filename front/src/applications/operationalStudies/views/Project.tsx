@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
+
+import { Pencil } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 import { BiTargetLock } from 'react-icons/bi';
-import { Pencil } from '@osrd-project/ui-icons';
 import nextId from 'react-id-generator';
 import ReactMarkdown from 'react-markdown';
 import { useParams } from 'react-router-dom';
@@ -15,10 +16,10 @@ import {
   type StudyWithScenarios,
   osrdEditoastApi,
 } from 'common/api/osrdEditoastApi';
-import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
-import { Loader, Spinner } from 'common/Loaders';
-import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
+import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
+import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
+import { Loader, Spinner } from 'common/Loaders';
 import AddOrEditProjectModal from 'modules/project/components/AddOrEditProjectModal';
 import StudyCard from 'modules/study/components/StudyCard';
 import StudyCardEmpty from 'modules/study/components/StudyCardEmpty';

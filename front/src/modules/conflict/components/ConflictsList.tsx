@@ -1,9 +1,11 @@
 import React from 'react';
+
 import cx from 'classnames';
-import { BsLightningFill } from 'react-icons/bs';
 import { useTranslation } from 'react-i18next';
-import { sec2time } from 'utils/timeManipulation';
+import { BsLightningFill } from 'react-icons/bs';
+
 import type { Conflict } from 'common/api/osrdEditoastApi';
+import { sec2time } from 'utils/timeManipulation';
 
 type ConflictTableProps = {
   conflicts: Conflict[];

@@ -1,11 +1,13 @@
-import { createStoreWithoutMiddleware } from 'store';
 import { describe, expect } from 'vitest';
+
+import type { OsrdStdcmConfState, StandardAllowance } from 'reducers/osrdconf/consts';
 import {
   stdcmConfInitialState,
   stdcmConfSlice,
   stdcmConfSliceActions,
 } from 'reducers/osrdconf/stdcmConf';
-import type { OsrdStdcmConfState, StandardAllowance } from 'reducers/osrdconf/consts';
+import { createStoreWithoutMiddleware } from 'store';
+
 import testCommonConfReducers from '../osrdConfCommon/__tests__/utils';
 
 const createStore = (initialStateExtra?: Partial<OsrdStdcmConfState>) =>

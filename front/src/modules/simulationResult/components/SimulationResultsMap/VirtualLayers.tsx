@@ -1,6 +1,7 @@
 import React from 'react';
-import { Layer } from 'react-map-gl/maplibre';
+
 import { range } from 'lodash';
+import { Layer } from 'react-map-gl/maplibre';
 
 export const VIRTUAL_LAYERS = 8;
 

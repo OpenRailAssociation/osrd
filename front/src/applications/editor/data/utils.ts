@@ -1,24 +1,23 @@
+import bearing from '@turf/bearing';
+import { compare } from 'fast-json-patch';
 import type { Position } from 'geojson';
 import type { JSONSchema7 } from 'json-schema';
 import { isArray, isNil, isObject, uniq } from 'lodash';
-import bearing from '@turf/bearing';
-import { compare } from 'fast-json-patch';
 import { v4 as uuid } from 'uuid';
 
+import type { EditoastType } from 'applications/editor/consts';
 import type { EditorEntity, EditorSchema } from 'applications/editor/typesEditorEntity';
+import type {
+  DeleteOperation,
+  UpdateOperation,
+  Operation,
+  PostInfraByIdObjectsAndObjectTypeApiResponse,
+} from 'common/api/osrdEditoastApi';
 import {
   ALL_SIGNAL_LAYERS_SET,
   SIGNALS_TO_SYMBOLS,
   type SignalType,
 } from 'common/Map/Consts/SignalsNames';
-import {
-  type DeleteOperation,
-  type UpdateOperation,
-  type Operation,
-  type PostInfraByIdObjectsAndObjectTypeApiResponse,
-} from 'common/api/osrdEditoastApi';
-
-import type { EditoastType } from 'applications/editor/consts';
 
 // Quick helper to get a "promised" setTimeout:
 export function setTimeoutPromise(ms: number) {

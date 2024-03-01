@@ -1,12 +1,14 @@
-import { FaBackward, FaPause, FaPlay, FaStop } from 'react-icons/fa';
-import { useTranslation } from 'react-i18next';
 import React, { useState } from 'react';
-import { datetime2time, sec2datetime, time2datetime } from 'utils/timeManipulation';
-import { useAppDispatch } from 'store';
-import { updateIsPlaying } from 'reducers/osrdsimulation/actions';
 
-import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
+import { useTranslation } from 'react-i18next';
+import { FaBackward, FaPause, FaPlay, FaStop } from 'react-icons/fa';
+
 import type { SimulationReport } from 'common/api/osrdEditoastApi';
+import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
+import { updateIsPlaying } from 'reducers/osrdsimulation/actions';
+import { useAppDispatch } from 'store';
+import { datetime2time, sec2datetime, time2datetime } from 'utils/timeManipulation';
+
 import { useChartSynchronizer } from './ChartHelpers/ChartSynchronizer';
 
 // transform a speed ratio (X2 X10 X20, etc.) to interval time & step to bypass

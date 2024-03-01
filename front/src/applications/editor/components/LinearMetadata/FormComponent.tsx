@@ -1,15 +1,17 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+
 import Form, { getDefaultRegistry } from '@rjsf/core';
 import type { FieldProps } from '@rjsf/utils';
+import validator from '@rjsf/validator-ajv8';
 import type { JSONSchema7 } from 'json-schema';
 import { omit, head, max as fnMax, min as fnMin, isNil } from 'lodash';
-import { TbZoomIn, TbZoomOut, TbZoomCancel } from 'react-icons/tb';
+import { useTranslation } from 'react-i18next';
 import { BsBoxArrowInLeft, BsBoxArrowInRight, BsChevronLeft, BsChevronRight } from 'react-icons/bs';
 import { IoIosCut } from 'react-icons/io';
 import { MdOutlineHelpOutline } from 'react-icons/md';
-import { useTranslation } from 'react-i18next';
-import validator from '@rjsf/validator-ajv8';
+import { TbZoomIn, TbZoomOut, TbZoomCancel } from 'react-icons/tb';
 
+import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import {
   getZoomedViewBox,
   transalteViewBox,
@@ -23,13 +25,13 @@ import {
   getLineStringDistance,
   fixLinearMetadataItems,
 } from 'common/IntervalsDataViz/data';
-import type { LinearMetadataItem } from 'common/IntervalsDataViz/types';
 import { LinearMetadataDataviz } from 'common/IntervalsDataViz/dataviz';
-import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
+import type { LinearMetadataItem } from 'common/IntervalsDataViz/types';
 import { tooltipPosition, notEmpty } from 'common/IntervalsDataViz/utils';
+
+import { FormBeginEndWidget } from './FormBeginEndWidget';
 import HelpModal from './HelpModal';
 import { LinearMetadataTooltip } from './tooltip';
-import { FormBeginEndWidget } from './FormBeginEndWidget';
 import 'common/IntervalsDataViz/style.scss';
 
 const IntervalEditorComponent: React.FC<FieldProps> = (props) => {

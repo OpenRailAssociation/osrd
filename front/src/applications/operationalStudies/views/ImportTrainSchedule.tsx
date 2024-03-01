@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from 'react';
+
+import { useTranslation } from 'react-i18next';
+
+import type { TrainSchedule } from 'applications/operationalStudies/types';
+import { enhancedEditoastApi } from 'common/api/enhancedEditoastApi';
+import { Loader } from 'common/Loaders';
 import {
   ImportTrainScheduleConfig,
   ImportTrainScheduleTrainsList,
 } from 'modules/trainschedule/components/ImportTrainSchedule';
-import { Loader } from 'common/Loaders';
-import type { TrainSchedule } from 'applications/operationalStudies/types';
-import { enhancedEditoastApi } from 'common/api/enhancedEditoastApi';
-import { useTranslation } from 'react-i18next';
-import { useAppDispatch } from 'store';
 import { setFailure } from 'reducers/main';
+import { useAppDispatch } from 'store';
 
 export default function ImportTrainSchedule({
   infraId,

@@ -1,17 +1,18 @@
 import React, { type FC, useCallback, useEffect } from 'react';
-import { useSelector } from 'react-redux';
-import type { MapRef } from 'react-map-gl/maplibre';
-import { useTranslation } from 'react-i18next';
 
+import { Alert } from '@osrd-project/ui-icons';
+import { useTranslation } from 'react-i18next';
+import type { MapRef } from 'react-map-gl/maplibre';
+import { useSelector } from 'react-redux';
+
+import { getEntity } from 'applications/editor/data/api';
+import { centerMapOnObject, selectEntities } from 'applications/editor/tools/utils';
+import type { EditorContextType } from 'applications/editor/types';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
-import { useAppDispatch } from 'store';
 import { getEditorState } from 'reducers/editor/selectors';
+import { useAppDispatch } from 'store';
 import useKeyboardShortcuts from 'utils/hooks/useKeyboardShortcuts';
 
-import type { EditorContextType } from 'applications/editor/types';
-import { centerMapOnObject, selectEntities } from 'applications/editor/tools/utils';
-import { getEntity } from 'applications/editor/data/api';
-import { Alert } from '@osrd-project/ui-icons';
 import InfraErrorsModal from './InfraErrorsModal';
 import type { InfraError } from './types';
 

@@ -1,12 +1,13 @@
 import { isEmpty } from 'lodash';
 import type { Dispatch } from 'redux';
+
+import type { PowerRestrictionRange } from 'applications/operationalStudies/consts';
 import { formatAllowances } from 'modules/trainschedule/components/ManageTrainSchedule/Allowances/helpers';
 import { NO_POWER_RESTRICTION } from 'modules/trainschedule/components/ManageTrainSchedule/PowerRestrictionsSelector';
 import { setFailure } from 'reducers/main';
-import { time2sec } from 'utils/timeManipulation';
-import { kmhToMs } from 'utils/physics';
-import type { PowerRestrictionRange } from 'applications/operationalStudies/consts';
 import type { OsrdConfState } from 'reducers/osrdconf/consts';
+import { kmhToMs } from 'utils/physics';
+import { time2sec } from 'utils/timeManipulation';
 
 const formatPowerRestrictionRanges = (powerRestrictionRanges: PowerRestrictionRange[]) => {
   if (isEmpty(powerRestrictionRanges) || powerRestrictionRanges[0].value === NO_POWER_RESTRICTION) {

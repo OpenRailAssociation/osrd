@@ -1,9 +1,11 @@
 import React, { useMemo } from 'react';
-import link from 'assets/pictures/trackNodeTypes/link.svg';
+
 import crossing from 'assets/pictures/trackNodeTypes/crossing.svg';
+import doubleSlipSwitch from 'assets/pictures/trackNodeTypes/double_slip_switch.svg';
+import link from 'assets/pictures/trackNodeTypes/link.svg';
 import pointSwitch from 'assets/pictures/trackNodeTypes/point_switch.svg';
 import singleSlipSwitch from 'assets/pictures/trackNodeTypes/single_slip_switch.svg';
-import doubleSlipSwitch from 'assets/pictures/trackNodeTypes/double_slip_switch.svg';
+
 import type { TrackNodeTypeId } from '../types';
 
 enum TRACK_NODE_TYPES_ID {

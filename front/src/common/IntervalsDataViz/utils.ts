@@ -1,5 +1,6 @@
-import { isNil, isNaN, omit, values } from 'lodash';
 import type { CSSProperties } from 'react';
+
+import { isNil, isNaN, omit, values } from 'lodash';
 
 import type { LinearMetadataItem } from './types';
 

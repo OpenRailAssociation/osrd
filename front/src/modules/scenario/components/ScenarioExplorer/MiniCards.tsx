@@ -1,13 +1,16 @@
-import cx from 'classnames';
 import React, { useContext } from 'react';
-import {
-  type ProjectWithStudies,
-  type StudyWithScenarios,
-  type ScenarioWithCountTrains,
+
+import cx from 'classnames';
+
+import type {
+  ProjectWithStudies,
+  StudyWithScenarios,
+  ScenarioWithCountTrains,
 } from 'common/api/osrdEditoastApi';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { useOsrdConfActions } from 'common/osrdContext';
 import { useAppDispatch } from 'store';
+
 import Project2Image from './ScenarioExplorerProject2Image';
 
 type MiniCardProps = {

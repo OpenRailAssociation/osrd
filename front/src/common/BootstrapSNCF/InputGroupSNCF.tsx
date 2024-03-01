@@ -1,9 +1,11 @@
 import React, { type ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
+
+import cx from 'classnames';
+import { isNil } from 'lodash';
 import nextId from 'react-id-generator';
 import './InputGroupSNCF.scss';
-import cx from 'classnames';
+
 import { isFloat, stripDecimalDigits } from 'utils/numbers';
-import { isNil } from 'lodash';
 
 type Option = {
   id: string;

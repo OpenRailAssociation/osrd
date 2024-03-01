@@ -1,24 +1,24 @@
 import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import Select from 'react-select';
-import { useTranslation } from 'react-i18next';
-import { FaMapMarkedAlt, FaTimesCircle } from 'react-icons/fa';
+
 import type { FieldProps } from '@rjsf/utils';
 import { isEmpty, isNil, keyBy } from 'lodash';
+import { useTranslation } from 'react-i18next';
+import { FaMapMarkedAlt, FaTimesCircle } from 'react-icons/fa';
+import Select from 'react-select';
 
 import EditorContext from 'applications/editor/context';
 import { getEntity } from 'applications/editor/data/api';
-import { FLAT_SWITCH_PORTS_PREFIX } from 'applications/editor/tools/switchEdition/utils';
-import type { ExtendedEditorContextType } from 'applications/editor/types';
-
-import Tipped from 'common/Tipped';
 import {
   ENDPOINTS,
   type PortEndPointCandidate,
   type SwitchEditionState,
 } from 'applications/editor/tools/switchEdition/types';
-
-import { useAppDispatch } from 'store';
+import { FLAT_SWITCH_PORTS_PREFIX } from 'applications/editor/tools/switchEdition/utils';
+import type { ExtendedEditorContextType } from 'applications/editor/types';
 import { useInfraID } from 'common/osrdContext';
+import Tipped from 'common/Tipped';
+import { useAppDispatch } from 'store';
+
 import type { TrackSectionEntity } from '../../trackEdition/types';
 
 const DEFAULT_ENDPOINT = ENDPOINTS[0];

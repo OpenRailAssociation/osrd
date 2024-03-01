@@ -1,6 +1,7 @@
 import React, { useState, useEffect, type ReactNode, useCallback, useMemo } from 'react';
-import { isObject, isNil } from 'lodash';
+
 import cx from 'classnames';
+import { isObject, isNil } from 'lodash';
 
 import { type SelectOptionObject, getOptionLabel, getOptionValue } from './SelectSNCF';
 import './SelectImprovedSNCF.scss';

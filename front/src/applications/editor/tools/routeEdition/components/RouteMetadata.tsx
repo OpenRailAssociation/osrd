@@ -1,4 +1,5 @@
 import React, { type FC } from 'react';
+
 import { useTranslation } from 'react-i18next';
 
 import type { RouteEntity } from 'applications/editor/tools/routeEdition/types';

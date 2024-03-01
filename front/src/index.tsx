@@ -1,20 +1,21 @@
 import React from 'react';
+
+import * as Sentry from '@sentry/react';
+import { BrowserTracing } from '@sentry/tracing';
 import ReactDOM from 'react-dom/client';
 import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
-import * as Sentry from '@sentry/react';
-import { BrowserTracing } from '@sentry/tracing';
 
 // Styles
 import 'maplibre-gl/dist/maplibre-gl.css';
 import 'styles/styles.scss';
 
+import { Loader } from 'common/Loaders';
 import { SENTRY_CONFIG } from 'config/config';
+import App from 'main/app';
 import { persistor, store } from 'store';
 
 // Components
-import App from 'main/app';
-import { Loader } from 'common/Loaders';
 import { version } from '../package.json';
 
 if (SENTRY_CONFIG.react_sentry_dsn) {

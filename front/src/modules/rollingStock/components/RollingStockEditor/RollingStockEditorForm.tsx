@@ -1,36 +1,37 @@
 import React, { useEffect, useState } from 'react';
+
+import { useTranslation } from 'react-i18next';
+
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import type {
+  RollingStock,
+  RollingStockForm,
+  RollingStockWithLiveries,
+} from 'common/api/osrdEditoastApi';
+import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
+import Tabs from 'common/Tabs';
+import type { TabProps } from 'common/Tabs';
+import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
+import RollingStockEditorCurves from 'modules/rollingStock/components/RollingStockEditor/RollingStockEditorCurves';
 import {
   RollingStockEditorMetadataForm,
   RollingStockEditorOnboardSystemEquipmentForm,
   RollingStockEditorParameterForm,
 } from 'modules/rollingStock/components/RollingStockEditor/RollingStockEditorFormHelpers';
+import RollingStockEditorFormModal from 'modules/rollingStock/components/RollingStockEditor/RollingStockEditorFormModal';
 import { RS_SCHEMA_PROPERTIES, RollingStockEditorParameter } from 'modules/rollingStock/consts';
-import { addFailureNotification, setFailure, setSuccess } from 'reducers/main';
+import { isElectric } from 'modules/rollingStock/helpers/electric';
 import {
   checkRollingStockFormValidity,
   getDefaultRollingStockMode,
   getRollingStockEditorDefaultValues,
   rollingStockEditorQueryArg,
 } from 'modules/rollingStock/helpers/utils';
-import { isElectric } from 'modules/rollingStock/helpers/electric';
-import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
-import { usePrevious } from 'utils/hooks/state';
-import { useTranslation } from 'react-i18next';
-import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
-import RollingStockEditorCurves from 'modules/rollingStock/components/RollingStockEditor/RollingStockEditorCurves';
-import RollingStockEditorFormModal from 'modules/rollingStock/components/RollingStockEditor/RollingStockEditorFormModal';
-import Tabs from 'common/Tabs';
-
 import type { EffortCurveForms, RollingStockParametersValues } from 'modules/rollingStock/types';
-import type {
-  RollingStock,
-  RollingStockForm,
-  RollingStockWithLiveries,
-} from 'common/api/osrdEditoastApi';
-import type { TabProps } from 'common/Tabs';
+import { addFailureNotification, setFailure, setSuccess } from 'reducers/main';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
+import { usePrevious } from 'utils/hooks/state';
 
 type RollingStockParametersProps = {
   rollingStockData?: RollingStockWithLiveries;

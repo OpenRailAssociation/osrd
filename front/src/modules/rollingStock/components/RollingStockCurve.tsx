@@ -1,15 +1,16 @@
-import cx from 'classnames';
 import React, { useEffect, useMemo, useState } from 'react';
-import { COLORS } from 'modules/rollingStock/components/RollingStockSelector/consts/consts';
-import { STANDARD_COMFORT_LEVEL, THERMAL_TRACTION_IDENTIFIER } from 'modules/rollingStock/consts';
+
 import { ResponsiveLine } from '@nivo/line';
-import { comfort2pictogram } from 'modules/rollingStock/components/RollingStockSelector/RollingStockHelpers';
-import { geti18nKeyForNull } from 'utils/strings';
+import type { PointTooltipProps } from '@nivo/line';
+import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
-import type { ParsedCurve, TransformedCurves } from 'modules/rollingStock/types';
-import type { PointTooltipProps } from '@nivo/line';
 import type { RollingStock, RollingStockComfortType } from 'common/api/osrdEditoastApi';
+import { COLORS } from 'modules/rollingStock/components/RollingStockSelector/consts/consts';
+import { comfort2pictogram } from 'modules/rollingStock/components/RollingStockSelector/RollingStockHelpers';
+import { STANDARD_COMFORT_LEVEL, THERMAL_TRACTION_IDENTIFIER } from 'modules/rollingStock/consts';
+import type { ParsedCurve, TransformedCurves } from 'modules/rollingStock/types';
+import { geti18nKeyForNull } from 'utils/strings';
 
 import { getCurveName } from '../helpers/curves';
 

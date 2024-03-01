@@ -1,19 +1,18 @@
 import React, { useState } from 'react';
-import { useDispatch } from 'react-redux';
+
+import { ChevronLeft } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
+import { useDispatch } from 'react-redux';
 
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
-
+import type { Infra } from 'common/api/osrdEditoastApi';
 import DotsLoader from 'common/DotsLoader/DotsLoader';
-import TrainAddingSettings from 'modules/trainschedule/components/ManageTrainSchedule/TrainAddingSettings';
+import { useOsrdConfActions } from 'common/osrdContext';
 import {
   SubmitConfAddTrainSchedule,
   SubmitConfUpdateTrainSchedules,
 } from 'modules/trainschedule/components/ManageTrainSchedule';
-
-import { useOsrdConfActions } from 'common/osrdContext';
-import type { Infra } from 'common/api/osrdEditoastApi';
-import { ChevronLeft } from '@osrd-project/ui-icons';
+import TrainAddingSettings from 'modules/trainschedule/components/ManageTrainSchedule/TrainAddingSettings';
 
 type TimetableManageTrainScheduleProps = {
   displayTrainScheduleManagement: string;

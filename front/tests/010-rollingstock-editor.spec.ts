@@ -1,7 +1,9 @@
 import { test, expect } from '@playwright/test';
+
 import type { RollingStock } from 'common/api/osrdEditoastApi';
-import { PlaywrightRollingstockEditorPage } from './pages/rollingstock-editor-page-model';
+
 import { deleteApiRequest } from './assets/utils';
+import { PlaywrightRollingstockEditorPage } from './pages/rollingstock-editor-page-model';
 
 test.describe('Rollingstock editor page', () => {
   test('should correctly create a new rolling stock (enabled)', async ({ page }) => {

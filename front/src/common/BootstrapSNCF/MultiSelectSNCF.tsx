@@ -1,5 +1,6 @@
-import cx from 'classnames';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+
+import cx from 'classnames';
 
 type MultiSelectSNCFProps = {
   multiSelectTitle: string;

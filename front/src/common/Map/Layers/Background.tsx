@@ -1,9 +1,9 @@
 import React from 'react';
+
 import { Source, type LayerProps } from 'react-map-gl/maplibre';
 
-import type { Theme } from 'types';
-
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
+import type { Theme } from 'types';
 
 interface BackgroundProps {
   colors: Theme;

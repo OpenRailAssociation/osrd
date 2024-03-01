@@ -1,29 +1,30 @@
-import { isEmpty } from 'lodash';
 import React, { useState, useContext } from 'react';
+
+import { Download, Search } from '@osrd-project/ui-icons';
+import { isEmpty } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
-import { RollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector';
-import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import StationSelector from 'modules/trainschedule/components/ImportTrainSchedule/ImportTrainScheduleStationSelector';
-import { useAppDispatch } from 'store';
-import { setFailure } from 'reducers/main';
-import StationCard, { type ImportStation } from 'common/StationCard';
-import { formatIsoDate } from 'utils/date';
-import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
-import {
-  type ImportedTrainSchedule,
-  type TrainSchedule,
-  type TrainScheduleImportConfig,
+import type {
+  ImportedTrainSchedule,
+  TrainSchedule,
+  TrainScheduleImportConfig,
 } from 'applications/operationalStudies/types';
+import { getGraouTrainSchedules } from 'common/api/graouApi';
 import {
   type SearchResultItemOperationalPoint,
   type PostSearchApiArg,
   osrdEditoastApi,
 } from 'common/api/osrdEditoastApi';
-import { getGraouTrainSchedules } from 'common/api/graouApi';
+import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
+import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
+import StationCard, { type ImportStation } from 'common/StationCard';
 import UploadFileModal from 'common/uploadFileModal';
+import { RollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
-import { Download, Search } from '@osrd-project/ui-icons';
+import StationSelector from 'modules/trainschedule/components/ImportTrainSchedule/ImportTrainScheduleStationSelector';
+import { setFailure } from 'reducers/main';
+import { useAppDispatch } from 'store';
+import { formatIsoDate } from 'utils/date';
 
 interface ImportTrainScheduleConfigProps {
   infraId: number;

@@ -1,11 +1,13 @@
 import { test, expect } from '@playwright/test';
-import type { Infra, Project, RollingStock, Scenario, Study } from 'common/api/osrdEditoastApi';
 import { v4 as uuidv4 } from 'uuid';
-import { PlaywrightHomePage } from './pages/home-page-model';
+
+import type { Infra, Project, RollingStock, Scenario, Study } from 'common/api/osrdEditoastApi';
+
 import scenarioData from './assets/operationStudies/scenario.json';
+import { getProject, getStudy, getRollingStock, postApiRequest, getInfra } from './assets/utils';
+import { PlaywrightHomePage } from './pages/home-page-model';
 import RollingStockSelectorPage from './pages/rolling-stock-selector-page';
 import PlaywrightScenarioPage from './pages/scenario-page-model';
-import { getProject, getStudy, getRollingStock, postApiRequest, getInfra } from './assets/utils';
 
 let smallInfra: Infra;
 let project: Project;

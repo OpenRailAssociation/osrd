@@ -1,8 +1,9 @@
 import * as d3 from 'd3';
-import {
-  type GradientPosition,
-  type HeightPosition,
-  type RadiusPosition,
+
+import type {
+  GradientPosition,
+  HeightPosition,
+  RadiusPosition,
 } from 'reducers/osrdsimulation/types';
 
 const calculateReferentialHeight = (data: number[]) => {

@@ -1,18 +1,18 @@
 import React, { useContext } from 'react';
+
 import { Layer, Popup, Source } from 'react-map-gl/maplibre';
 import { useSelector } from 'react-redux';
 
+import EntitySumUp from 'applications/editor/components/EntitySumUp';
+import EditorContext from 'applications/editor/context';
+import type { SelectionState } from 'applications/editor/tools/selection/types';
+import type { ExtendedEditorContextType } from 'applications/editor/types';
 import colors from 'common/Map/Consts/colors';
 import GeoJSONs from 'common/Map/Layers/GeoJSONs';
 import { useInfraID } from 'common/osrdContext';
 import { getMap } from 'reducers/map/selectors';
 import type { Zone } from 'types';
 import { zoneToFeature } from 'utils/mapHelper';
-
-import EditorContext from 'applications/editor/context';
-import EntitySumUp from 'applications/editor/components/EntitySumUp';
-import type { ExtendedEditorContextType } from 'applications/editor/types';
-import type { SelectionState } from 'applications/editor/tools/selection/types';
 
 const SelectionZone = ({ newZone }: { newZone: Zone }) => (
   <Source type="geojson" data={zoneToFeature(newZone)} key="new-zone">

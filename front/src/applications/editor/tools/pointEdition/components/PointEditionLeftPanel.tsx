@@ -1,27 +1,27 @@
 import React, { type ComponentType, useContext, useEffect, useRef, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import length from '@turf/length';
+
 import along from '@turf/along';
+import length from '@turf/length';
+import { useTranslation } from 'react-i18next';
 
-import { useInfraID } from 'common/osrdContext';
-
-import { useAppDispatch } from 'store';
-import { save } from 'reducers/editor/thunkActions';
-import type { EditorEntity } from 'applications/editor/typesEditorEntity';
-import {
-  type BufferStopEntity,
-  type DetectorEntity,
-  type PointEditionState,
-  type SignalEntity,
-} from 'applications/editor/tools/pointEdition/types';
-import EditorContext from 'applications/editor/context';
-import EntityError from 'applications/editor/components/EntityError';
 import EditorForm from 'applications/editor/components/EditorForm';
+import EntityError from 'applications/editor/components/EntityError';
+import type { EditoastType } from 'applications/editor/consts';
+import EditorContext from 'applications/editor/context';
 import { getEntity } from 'applications/editor/data/api';
 import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
-import type { ExtendedEditorContextType } from 'applications/editor/types';
-import type { EditoastType } from 'applications/editor/consts';
+import type {
+  BufferStopEntity,
+  DetectorEntity,
+  PointEditionState,
+  SignalEntity,
+} from 'applications/editor/tools/pointEdition/types';
 import { formatSignalingSystems } from 'applications/editor/tools/pointEdition/utils';
+import type { ExtendedEditorContextType } from 'applications/editor/types';
+import type { EditorEntity } from 'applications/editor/typesEditorEntity';
+import { useInfraID } from 'common/osrdContext';
+import { save } from 'reducers/editor/thunkActions';
+import { useAppDispatch } from 'store';
 
 import CustomFlagSignalCheckbox from './CustomFlagSignalCheckbox';
 import CustomPosition from './CustomPosition';

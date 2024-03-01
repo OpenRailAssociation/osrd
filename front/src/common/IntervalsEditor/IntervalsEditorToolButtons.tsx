@@ -1,9 +1,11 @@
 import React from 'react';
+
 import { useTranslation } from 'react-i18next';
+import { BiArrowFromLeft } from 'react-icons/bi';
+import { BsFillTrashFill } from 'react-icons/bs';
 import { IoIosAdd } from 'react-icons/io';
 import { TbArrowsHorizontal, TbScissors } from 'react-icons/tb';
-import { BsFillTrashFill } from 'react-icons/bs';
-import { BiArrowFromLeft } from 'react-icons/bi';
+
 import {
   INTERVALS_EDITOR_TOOLS,
   type IntervalsEditorTool,

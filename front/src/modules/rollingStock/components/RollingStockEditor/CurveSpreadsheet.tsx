@@ -1,11 +1,13 @@
 import React, { type Dispatch, type SetStateAction, useMemo } from 'react';
-import Spreadsheet, { createEmptyMatrix } from 'react-spreadsheet';
-import { replaceElementAtIndex } from 'utils/array';
-import { useTranslation } from 'react-i18next';
 
+import { useTranslation } from 'react-i18next';
+import Spreadsheet, { createEmptyMatrix } from 'react-spreadsheet';
 import type { CellBase, Matrix } from 'react-spreadsheet';
+
 import type { ConditionalEffortCurveForm, EffortCurveForms } from 'modules/rollingStock/types';
+import { replaceElementAtIndex } from 'utils/array';
 import { msToKmh } from 'utils/physics';
+
 import formatCurve from './formatSpreadSheetCurve';
 
 type CurveSpreadsheetProps = {
