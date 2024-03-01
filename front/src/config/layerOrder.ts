@@ -1,4 +1,4 @@
-import { Layer } from 'applications/editor/consts';
+import type { Layer } from 'applications/editor/consts';
 
 export const LAYER_GROUPS = Object.freeze({
   MAP_BACKGROUND: Symbol('MAP_BACKGROUND'),

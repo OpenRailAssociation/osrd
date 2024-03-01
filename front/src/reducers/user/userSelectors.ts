@@ -1,6 +1,6 @@
 import type { RootState } from 'reducers';
 import { makeSubSelector } from 'utils/selectors';
-import { UserState } from 'reducers/user';
+import type { UserState } from 'reducers/user';
 
 export const getUser = (state: RootState) => state.user;
 const makeUserSelector = makeSubSelector<UserState>(getUser);

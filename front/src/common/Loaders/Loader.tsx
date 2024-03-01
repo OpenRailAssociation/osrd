@@ -1,4 +1,4 @@
-import React, { FC, HTMLAttributes, useEffect, useRef, useState } from 'react';
+import React, { type FC, type HTMLAttributes, useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import cx from 'classnames';
 

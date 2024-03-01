@@ -1,9 +1,9 @@
-import React, { FC } from 'react';
+import React, { type FC } from 'react';
 import { BsFillExclamationCircleFill, BsFillExclamationTriangleFill } from 'react-icons/bs';
 import cx from 'classnames';
-import { IconBaseProps } from 'react-icons';
+import type { IconBaseProps } from 'react-icons';
 
-import { InfraError } from './types';
+import type { InfraError } from './types';
 
 /**
  * A component that display an infra error Icon.

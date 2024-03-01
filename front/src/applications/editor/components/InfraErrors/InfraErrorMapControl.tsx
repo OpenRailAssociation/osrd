@@ -1,4 +1,4 @@
-import React, { FC, useCallback, useEffect } from 'react';
+import React, { type FC, useCallback, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import type { MapRef } from 'react-map-gl/maplibre';
 import { useTranslation } from 'react-i18next';

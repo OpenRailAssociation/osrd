@@ -5,7 +5,7 @@ import { GiResize } from 'react-icons/gi';
 import { Rnd } from 'react-rnd';
 import { useTranslation } from 'react-i18next';
 
-import { LightRollingStock, SimulationReport } from 'common/api/osrdEditoastApi';
+import type { LightRollingStock, SimulationReport } from 'common/api/osrdEditoastApi';
 import { CHART_AXES, type ChartAxes } from 'modules/simulationResult/consts';
 import type { PositionScaleDomain } from 'modules/simulationResult/types';
 import {

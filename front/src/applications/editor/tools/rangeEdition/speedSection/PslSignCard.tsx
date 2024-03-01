@@ -1,4 +1,4 @@
-import { TFunction } from 'i18next';
+import type { TFunction } from 'i18next';
 import { isNil } from 'lodash';
 import React from 'react';
 import { Trash } from '@osrd-project/ui-icons';
@@ -7,7 +7,7 @@ import { RiDragMoveLine } from 'react-icons/ri';
 import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import {
-  PSLSign,
+  type PSLSign,
   PSL_SIGN_TYPES,
   type PslSignInformation,
 } from 'applications/editor/tools/rangeEdition/types';

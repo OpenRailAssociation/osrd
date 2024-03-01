@@ -1,10 +1,10 @@
 import React from 'react';
-import { TFunction } from 'i18next';
+import type { TFunction } from 'i18next';
 import { FaPlus } from 'react-icons/fa';
 
 import {
-  PSLSign,
-  PSL_SIGN_TYPES,
+  type PSLSign,
+  type PSL_SIGN_TYPES,
   type PslSignInformation,
 } from 'applications/editor/tools/rangeEdition/types';
 import PslSignCard from './PslSignCard';

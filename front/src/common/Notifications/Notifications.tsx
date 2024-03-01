@@ -1,9 +1,9 @@
-import React, { FC, useCallback, useState, useEffect } from 'react';
+import React, { type FC, useCallback, useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import ToastSNCF from 'common/BootstrapSNCF/ToastSNCF';
 import { useAppDispatch } from 'store';
-import { MainState, deleteNotification } from 'reducers/main';
-import { Notification } from 'types';
+import { type MainState, deleteNotification } from 'reducers/main';
+import type { Notification } from 'types';
 import './Notifications.scss';
 
 const TIMEOUT_MS = 5000;

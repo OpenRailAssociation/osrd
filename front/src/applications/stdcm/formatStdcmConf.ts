@@ -1,11 +1,10 @@
-import { Dispatch } from 'redux';
-import { TFunction } from 'i18next';
-import { PathfindingRequest } from 'common/api/osrdEditoastApi';
+import type { Dispatch } from 'redux';
+import type { TFunction } from 'i18next';
+import type { PathfindingRequest, PostStdcmApiArg } from 'common/api/osrdEditoastApi';
 
 import { time2sec } from 'utils/timeManipulation';
 
 import { getPathfindingQuery } from 'common/Pathfinding/Pathfinding';
-import type { PostStdcmApiArg } from 'common/api/osrdEditoastApi';
 
 import { setFailure } from 'reducers/main';
 import type { InfraState } from 'reducers/infra';

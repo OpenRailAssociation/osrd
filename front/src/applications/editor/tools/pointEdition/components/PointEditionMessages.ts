@@ -4,7 +4,7 @@ import { useContext } from 'react';
 import EditorContext from 'applications/editor/context';
 import type { EditorContextType } from 'applications/editor/types';
 import type { EditorEntity } from 'applications/editor/typesEditorEntity';
-import { PointEditionState } from 'applications/editor/tools/pointEdition/types';
+import type { PointEditionState } from 'applications/editor/tools/pointEdition/types';
 import { NULL_GEOMETRY } from 'types';
 
 const PointEditionMessages = () => {

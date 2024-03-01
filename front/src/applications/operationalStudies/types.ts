@@ -1,4 +1,4 @@
-import { PathResponse } from 'common/api/osrdEditoastApi';
+import type { PathResponse } from 'common/api/osrdEditoastApi';
 
 export interface Destination {
   uic: number;

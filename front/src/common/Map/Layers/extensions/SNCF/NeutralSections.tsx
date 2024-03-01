@@ -2,7 +2,7 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import { type LayerProps, Source } from 'react-map-gl/maplibre';
 
-import { type RootState } from 'reducers';
+import type { RootState } from 'reducers';
 import { MAP_URL } from 'common/Map/const';
 
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';

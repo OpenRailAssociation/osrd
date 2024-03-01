@@ -1,5 +1,5 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { Draft } from 'immer';
+import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
+import type { Draft } from 'immer';
 import { defaultCommonConf, buildCommonConfReducers } from 'reducers/osrdconf/osrdConfCommon';
 import type { OsrdStdcmConfState } from 'reducers/osrdconf/consts';
 

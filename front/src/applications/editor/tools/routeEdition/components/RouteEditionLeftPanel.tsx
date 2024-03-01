@@ -1,4 +1,4 @@
-import React, { FC, useCallback, useContext, useEffect, useMemo } from 'react';
+import React, { type FC, useCallback, useContext, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import chroma from 'chroma-js';
 import { isNil } from 'lodash';

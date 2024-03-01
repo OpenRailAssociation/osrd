@@ -1,8 +1,8 @@
 import { noop } from 'lodash';
 import React, {
-  FC,
-  PropsWithChildren,
-  ReactNode,
+  type FC,
+  type PropsWithChildren,
+  type ReactNode,
   useState,
   createContext,
   useContext,

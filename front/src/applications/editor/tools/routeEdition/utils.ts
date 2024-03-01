@@ -1,5 +1,5 @@
 import { cloneDeep, first, isEqual, isNil, last } from 'lodash';
-import { Feature, LineString, Position } from 'geojson';
+import type { Feature, LineString, Position } from 'geojson';
 import { lineString, point } from '@turf/helpers';
 import lineSlice from '@turf/line-slice';
 
@@ -17,7 +17,7 @@ import type {
 import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
 import type { TrackRange, TrackSectionEntity } from 'applications/editor/tools/trackEdition/types';
 import { NULL_GEOMETRY, type PartialButFor } from 'types';
-import { AppDispatch } from 'store';
+import type { AppDispatch } from 'store';
 
 /**
  * Check if a route is valid or not.

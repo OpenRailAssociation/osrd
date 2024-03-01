@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { RollingStock } from 'common/api/osrdEditoastApi';
+import type { RollingStock } from 'common/api/osrdEditoastApi';
 import { PlaywrightRollingstockEditorPage } from './pages/rollingstock-editor-page-model';
 import { deleteApiRequest } from './assets/utils';
 

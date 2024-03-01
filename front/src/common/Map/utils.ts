@@ -1,5 +1,5 @@
 import turfCenter from '@turf/center';
-import { AppDispatch } from 'store';
+import type { AppDispatch } from 'store';
 import { updateLineSearchCode, updateMapSearchMarker } from 'reducers/map/index';
 import type { AllGeoJSON } from '@turf/helpers';
 import type { MapState, Viewport } from 'reducers/map/index';

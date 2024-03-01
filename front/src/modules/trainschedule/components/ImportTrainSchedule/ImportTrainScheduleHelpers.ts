@@ -1,6 +1,9 @@
 import rollingstockOpenData2OSRD from 'modules/trainschedule/components/ImportTrainSchedule/rollingstock_opendata2osrd.json';
-import { TrainSchedule, TrainScheduleWithPathRef } from 'applications/operationalStudies/types';
-import { Point } from './types';
+import {
+  type TrainSchedule,
+  type TrainScheduleWithPathRef,
+} from 'applications/operationalStudies/types';
+import type { Point } from './types';
 
 export function seconds2hhmmss(seconds: number) {
   const dateTime = new Date(seconds * 1000);

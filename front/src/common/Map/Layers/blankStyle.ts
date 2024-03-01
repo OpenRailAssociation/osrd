@@ -1,4 +1,4 @@
-import { MapProps } from 'react-map-gl/maplibre';
+import type { MapProps } from 'react-map-gl/maplibre';
 import { MAIN_API } from 'config/config';
 import { useEffect, useMemo, useState } from 'react';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';

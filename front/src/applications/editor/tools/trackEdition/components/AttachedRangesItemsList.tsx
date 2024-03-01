@@ -15,8 +15,8 @@ import {
   getEditSpeedSectionState,
 } from 'applications/editor/tools/trackEdition/utils';
 import {
-  ElectrificationEntity,
-  SpeedSectionEntity,
+  type ElectrificationEntity,
+  type SpeedSectionEntity,
 } from 'applications/editor/tools/rangeEdition/types';
 import TOOL_NAMES from 'applications/editor/tools/constsToolNames';
 import { useAppDispatch } from 'store';

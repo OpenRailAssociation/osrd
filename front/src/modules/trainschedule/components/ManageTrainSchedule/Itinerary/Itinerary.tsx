@@ -10,7 +10,7 @@ import Pathfinding from 'common/Pathfinding/Pathfinding';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import TypeAndPath from 'common/Pathfinding/TypeAndPath';
 
-import { PathResponse } from 'common/api/osrdEditoastApi';
+import type { PathResponse } from 'common/api/osrdEditoastApi';
 import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
 import { zoomToFeature } from 'common/Map/WarpedMap/core/helpers';
 import Tipped from 'common/Tipped';

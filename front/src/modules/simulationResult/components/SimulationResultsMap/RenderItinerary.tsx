@@ -1,6 +1,6 @@
 import React from 'react';
 import { Source } from 'react-map-gl/maplibre';
-import { Feature, LineString } from 'geojson';
+import type { Feature, LineString } from 'geojson';
 
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 

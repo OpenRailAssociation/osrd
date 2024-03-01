@@ -1,4 +1,4 @@
-import { useEffect, RefObject, useState } from 'react';
+import { useEffect, type RefObject, useState } from 'react';
 
 /**
  * Register click outside event to close the modal.

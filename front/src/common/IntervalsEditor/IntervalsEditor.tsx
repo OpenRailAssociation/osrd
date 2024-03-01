@@ -12,16 +12,16 @@ import {
 import { LinearMetadataDataviz } from 'common/IntervalsDataViz/dataviz';
 import { notEmpty, tooltipPosition } from 'common/IntervalsDataViz/utils';
 
-import { LinearMetadataItem, OperationalPoint } from 'common/IntervalsDataViz/types';
+import type { LinearMetadataItem, OperationalPoint } from 'common/IntervalsDataViz/types';
 import IntervalsEditorTootlip from './IntervalsEditorTooltip';
 import IntervalsEditorCommonForm from './IntervalsEditorCommonForm';
 import {
-  AdditionalDataItem,
+  type AdditionalDataItem,
   INTERVALS_EDITOR_TOOLS,
   INTERVAL_TYPES,
-  IntervalItem,
-  IntervalsEditorTool,
-  IntervalsEditorToolsConfig,
+  type IntervalItem,
+  type IntervalsEditorTool,
+  type IntervalsEditorToolsConfig,
 } from './types';
 import ZoomButtons from './ZoomButtons';
 import ToolButtons from './IntervalsEditorToolButtons';

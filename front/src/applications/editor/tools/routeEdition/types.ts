@@ -1,11 +1,14 @@
-import { Feature, LineString, Point } from 'geojson';
+import type { Feature, LineString, Point } from 'geojson';
 
-import { EditorEntity } from 'applications/editor/typesEditorEntity';
+import type { EditorEntity } from 'applications/editor/typesEditorEntity';
 import type { CommonToolState } from 'applications/editor/tools/types';
-import { EndPoint } from 'applications/editor/tools/switchEdition/types';
+import type { EndPoint } from 'applications/editor/tools/switchEdition/types';
 import type { Direction, DirectionalTrackRange } from 'common/api/osrdEditoastApi';
-import { BufferStopEntity, DetectorEntity } from 'applications/editor/tools/pointEdition/types';
-import { NullGeometry } from 'types';
+import {
+  type BufferStopEntity,
+  type DetectorEntity,
+} from 'applications/editor/tools/pointEdition/types';
+import type { NullGeometry } from 'types';
 
 //
 // Waypoint

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Position } from 'geojson';
+import type { Position } from 'geojson';
 import Origin from './Origin';
 import Vias from './Vias';
 import Destination from './Destination';

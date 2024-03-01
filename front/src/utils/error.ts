@@ -1,7 +1,7 @@
 import i18n from 'i18n';
 import { isObject } from 'lodash';
 
-import { ApiError } from 'common/api/baseGeneratedApis';
+import type { ApiError } from 'common/api/baseGeneratedApis';
 
 /**
  * Given an error, return the associated i18n name.

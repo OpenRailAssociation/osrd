@@ -1,7 +1,7 @@
-import { Feature } from 'geojson';
+import type { Feature } from 'geojson';
 
-import { type InfraError } from 'applications/editor/components/InfraErrors';
-import { EditoastType } from 'applications/editor/consts';
+import type { InfraError } from 'applications/editor/components/InfraErrors';
+import type { EditoastType } from 'applications/editor/consts';
 
 export type CommonToolState = {
   mousePosition: [number, number] | null;

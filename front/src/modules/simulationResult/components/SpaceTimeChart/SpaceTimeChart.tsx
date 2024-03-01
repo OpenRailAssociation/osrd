@@ -17,17 +17,20 @@ import ChartModal from 'modules/simulationResult/components/SpaceTimeChart/Chart
 import { isolatedCreateTrain as createTrain } from 'modules/simulationResult/components/SpaceTimeChart/createTrain';
 import { drawAllTrains } from 'modules/simulationResult/components/SpaceTimeChart/d3Helpers';
 import {
-  AllowancesSettings,
-  Chart,
-  OsrdSimulationState,
-  SimulationSnapshot,
-  Train,
+  type AllowancesSettings,
+  type Chart,
+  type OsrdSimulationState,
+  type SimulationSnapshot,
+  type Train,
 } from 'reducers/osrdsimulation/types';
 import { dateIsInRange } from 'utils/date';
 import { sec2datetime, datetime2sec } from 'utils/timeManipulation';
-import { SimulationReport } from 'common/api/osrdEditoastApi';
+import type { SimulationReport } from 'common/api/osrdEditoastApi';
 
-import { DispatchPersistentUpdateSimulation, DispatchUpdateSelectedTrainId } from './types';
+import {
+  type DispatchPersistentUpdateSimulation,
+  type DispatchUpdateSelectedTrainId,
+} from './types';
 import { SPACE_TIME_CHART_ID } from './consts';
 
 const CHART_MIN_HEIGHT = 250;

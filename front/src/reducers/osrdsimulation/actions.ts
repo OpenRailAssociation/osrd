@@ -1,8 +1,8 @@
-import { Dispatch } from 'redux';
+import type { Dispatch } from 'redux';
 
 import type { GetState } from 'store';
 import type { ChartSynchronizer } from 'modules/simulationResult/components/ChartHelpers/ChartSynchronizer';
-import { SimulationSnapshot, OsrdSimulationState } from './types';
+import type { SimulationSnapshot, OsrdSimulationState } from './types';
 
 // Action Types
 export const UPDATE_CHART = 'osrdsimu/UPDATE_CHART';

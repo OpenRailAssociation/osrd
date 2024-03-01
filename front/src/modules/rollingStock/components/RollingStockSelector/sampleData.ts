@@ -1,4 +1,4 @@
-import { RollingStockWithLiveries } from 'common/api/osrdEditoastApi';
+import type { RollingStockWithLiveries } from 'common/api/osrdEditoastApi';
 
 const ROLLING_STOCK_SAMPLE_DATA: RollingStockWithLiveries = {
   id: 9,

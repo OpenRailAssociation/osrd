@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import colors from 'common/Map/Consts/colors';
 import { getMapStyle } from 'reducers/map/selectors';
-import { electrificationMapKey, MapKeyProps, speedLimitMapKey } from './const';
+import { electrificationMapKey, type MapKeyProps, speedLimitMapKey } from './const';
 import 'common/Map/MapKey.scss';
 import MapModalHeader from './MapModalHeader';
 

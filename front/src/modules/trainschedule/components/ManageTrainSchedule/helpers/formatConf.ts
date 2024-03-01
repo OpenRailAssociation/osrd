@@ -1,5 +1,5 @@
 import { isEmpty } from 'lodash';
-import { Dispatch } from 'redux';
+import type { Dispatch } from 'redux';
 import { formatAllowances } from 'modules/trainschedule/components/ManageTrainSchedule/Allowances/helpers';
 import { NO_POWER_RESTRICTION } from 'modules/trainschedule/components/ManageTrainSchedule/PowerRestrictionsSelector';
 import { setFailure } from 'reducers/main';

@@ -7,7 +7,7 @@
  */
 
 import cx from 'classnames';
-import React, { ChangeEventHandler } from 'react';
+import React, { type ChangeEventHandler } from 'react';
 import './OptionsSNCF.scss';
 
 export type Option = {

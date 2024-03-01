@@ -2,14 +2,14 @@ import React, { useState } from 'react';
 import 'stories/storybook.css';
 
 import { fixLinearMetadataItems } from 'common/IntervalsDataViz/data';
-import { LinearMetadataItem, OperationalPoint } from 'common/IntervalsDataViz/types';
+import type { LinearMetadataItem, OperationalPoint } from 'common/IntervalsDataViz/types';
 import { notEmpty } from 'common/IntervalsDataViz/utils';
 import IntervalsEditor from 'common/IntervalsEditor/IntervalsEditor';
 import {
-  AdditionalDataItem,
+  type AdditionalDataItem,
   INTERVAL_TYPES,
-  IntervalItem,
-  IntervalsEditorToolsConfig,
+  type IntervalItem,
+  type IntervalsEditorToolsConfig,
 } from 'common/IntervalsEditor/types';
 
 const operationalPoints: OperationalPoint[] = [

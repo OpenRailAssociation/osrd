@@ -1,12 +1,15 @@
 import {
-  GradientPosition,
-  HeightPosition,
-  PositionSpeedTime,
-  RadiusPosition,
-  SpeedPosition,
-  Train,
+  type GradientPosition,
+  type HeightPosition,
+  type PositionSpeedTime,
+  type RadiusPosition,
+  type SpeedPosition,
+  type Train,
 } from 'reducers/osrdsimulation/types';
-import { ElectrificationRange, SimulationPowerRestrictionRange } from 'common/api/osrdEditoastApi';
+import {
+  type ElectrificationRange,
+  type SimulationPowerRestrictionRange,
+} from 'common/api/osrdEditoastApi';
 import { createCurveCurve, createSlopeCurve } from './utils';
 
 export interface AreaBlock {

@@ -1,5 +1,5 @@
-import { Matrix } from 'react-spreadsheet';
-import { EffortCurveForm } from 'modules/rollingStock/types';
+import type { Matrix } from 'react-spreadsheet';
+import type { EffortCurveForm } from 'modules/rollingStock/types';
 import { emptyStringRegex, onlyDigit } from 'utils/strings';
 import { kmhToMs } from 'utils/physics';
 

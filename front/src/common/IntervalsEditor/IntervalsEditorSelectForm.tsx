@@ -2,7 +2,7 @@ import React from 'react';
 
 import SelectSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
 import { cloneDeep } from 'lodash';
-import { IntervalItem } from './types';
+import type { IntervalItem } from './types';
 
 type IntervalsEditorSelectFormProps = {
   data: IntervalItem[];

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Lock, Trash } from '@osrd-project/ui-icons';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { useTranslation } from 'react-i18next';
-import { Infra } from 'common/api/osrdEditoastApi';
+import type { Infra } from 'common/api/osrdEditoastApi';
 import ActionsBar from './InfraSelectorEditionActionsBar';
 import { editoastUpToDateIndicator } from './InfraSelectorModalBodyStandard';
 import InfraSelectorEditionActionsBarDelete from './InfraSelectorEditionActionsBarDelete';

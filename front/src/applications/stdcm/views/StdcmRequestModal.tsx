@@ -26,7 +26,7 @@ import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { SimulationReport } from 'common/api/osrdEditoastApi';
 import type { StdcmRequestStatus } from 'applications/stdcm/types';
 import { castErrorToFailure } from 'utils/error';
-import { Train } from 'reducers/osrdsimulation/types';
+import type { Train } from 'reducers/osrdsimulation/types';
 import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
 import { useAppDispatch } from 'store';
 import type { OsrdStdcmConfState } from 'reducers/osrdconf/consts';

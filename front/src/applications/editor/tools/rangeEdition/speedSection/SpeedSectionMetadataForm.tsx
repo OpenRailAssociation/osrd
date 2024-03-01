@@ -1,4 +1,4 @@
-import React, { FC, useContext, useEffect, useMemo, useState } from 'react';
+import React, { type FC, useContext, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AiOutlinePlusCircle } from 'react-icons/ai';
 import { FaTimes } from 'react-icons/fa';
@@ -7,10 +7,10 @@ import { cloneDeep, isEmpty, isEqual, map, size } from 'lodash';
 import nextId from 'react-id-generator';
 
 import EditorContext from 'applications/editor/context';
-import { ExtendedEditorContextType } from 'applications/editor/types';
+import type { ExtendedEditorContextType } from 'applications/editor/types';
 import {
-  RangeEditionState,
-  SpeedSectionEntity,
+  type RangeEditionState,
+  type SpeedSectionEntity,
 } from 'applications/editor/tools/rangeEdition/types';
 import SpeedInput from './SpeedInput';
 

@@ -1,4 +1,4 @@
-import { SimulationTrain } from 'reducers/osrdsimulation/types';
+import type { SimulationTrain } from 'reducers/osrdsimulation/types';
 import { LIST_VALUES, CHART_AXES } from 'modules/simulationResult/consts';
 import {
   mergeDatasArea,

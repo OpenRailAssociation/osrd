@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react';
+import React, { type ReactNode } from 'react';
 import { isString } from 'lodash';
 import cx from 'classnames';
 

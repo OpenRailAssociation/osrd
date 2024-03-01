@@ -1,7 +1,7 @@
-import { configureStore, Middleware } from '@reduxjs/toolkit';
+import { configureStore, type Middleware } from '@reduxjs/toolkit';
 import { persistStore, getStoredState } from 'redux-persist';
-import { Config } from '@redux-devtools/extension';
-import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
+import type { Config } from '@redux-devtools/extension';
+import { type TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { osrdGatewayApi } from 'common/api/osrdGatewayApi';

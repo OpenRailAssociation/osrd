@@ -1,7 +1,7 @@
-import React, { ComponentType } from 'react';
-import { Map } from 'maplibre-gl';
+import React, { type ComponentType } from 'react';
+import type { Map } from 'maplibre-gl';
 import { cloneDeep, isEqual } from 'lodash';
-import { IconType } from 'react-icons';
+import type { IconType } from 'react-icons';
 import { BiReset } from 'react-icons/bi';
 import { AiFillSave } from 'react-icons/ai';
 import { PlusCircle, Trash } from '@osrd-project/ui-icons';
@@ -11,7 +11,7 @@ import type { PartialOrReducer, ReadOnlyEditorContextType, Tool } from 'applicat
 import { LAYER_TO_EDITOAST_DICT, LAYERS_SET, type Layer } from 'applications/editor/consts';
 import { approximateDistanceWithEditoastData } from 'applications/editor/tools/utils';
 import { DEFAULT_COMMON_TOOL_STATE } from 'applications/editor/tools/consts';
-import { TrackSectionEntity } from 'applications/editor/tools/trackEdition/types';
+import type { TrackSectionEntity } from 'applications/editor/tools/trackEdition/types';
 
 import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { save } from 'reducers/editor/thunkActions';

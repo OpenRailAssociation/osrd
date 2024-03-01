@@ -4,9 +4,9 @@ import { useTranslation } from 'react-i18next';
 import cx from 'classnames';
 import {
   AllowancesTypes,
-  EngineeringAllowanceForm,
-  RangeAllowanceForm,
-  SetAllowanceSelectedIndexType,
+  type EngineeringAllowanceForm,
+  type RangeAllowanceForm,
+  type SetAllowanceSelectedIndexType,
 } from './types';
 import { unitsLabels } from './consts';
 import getAllowanceValue from './helpers';

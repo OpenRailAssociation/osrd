@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { head, isNil, last, maxBy, minBy } from 'lodash';
 import cx from 'classnames';
 
-import { AdditionalDataItem } from 'common/IntervalsEditor/types';
+import type { AdditionalDataItem } from 'common/IntervalsEditor/types';
 import { preventDefault, getPositionFromMouseEvent } from './utils';
 import {
   cropForDatavizViewbox,
@@ -12,7 +12,11 @@ import {
 } from './data';
 import { ResizingScale, SimpleScale } from './Scales';
 import IntervalItem from './IntervalItem';
-import { IntervalItemBaseProps, LinearMetadataItem, OperationalPoint } from './types';
+import {
+  type IntervalItemBaseProps,
+  type LinearMetadataItem,
+  type OperationalPoint,
+} from './types';
 import './style.scss';
 
 export interface LinearMetadataDatavizProps<T> extends IntervalItemBaseProps<T> {

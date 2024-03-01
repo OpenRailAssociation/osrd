@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { MdCancel, MdCheck } from 'react-icons/md';
 import fileDownload from 'js-file-download';
 
-import { Infra, osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { type Infra, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useAppDispatch } from 'store';
 import { setFailure } from 'reducers/main';
 import InfraLockState from 'modules/infra/consts';

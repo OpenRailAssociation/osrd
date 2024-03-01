@@ -1,7 +1,7 @@
 import * as d3 from 'd3';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 
-import { SimulationReport } from 'common/api/osrdEditoastApi';
+import type { SimulationReport } from 'common/api/osrdEditoastApi';
 import { getDirection, gridX } from 'modules/simulationResult/components/ChartHelpers/ChartHelpers';
 import { useChartSynchronizer } from 'modules/simulationResult/components/ChartHelpers/ChartSynchronizer';
 import { sec2datetime } from 'utils/timeManipulation';

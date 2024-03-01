@@ -7,7 +7,7 @@ import {
   getPositionFromMouseEventAndSegment,
   isNilObject,
 } from './utils';
-import { IntervalItemBaseProps, LinearMetadataItem } from './types';
+import type { IntervalItemBaseProps, LinearMetadataItem } from './types';
 
 interface IntervalItemProps<T> extends IntervalItemBaseProps<T> {
   dragingStartAt: number | null;

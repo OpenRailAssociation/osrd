@@ -24,7 +24,7 @@ import type {
   SwitchEditionState,
   SwitchEntity,
 } from 'applications/editor/tools/switchEdition/types';
-import { TrackSectionEntity } from 'applications/editor/tools/trackEdition/types';
+import type { TrackSectionEntity } from 'applications/editor/tools/trackEdition/types';
 
 const SwitchEditionLayers = () => {
   const dispatch = useAppDispatch();

@@ -1,10 +1,10 @@
 import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import InputGroupSNCF, { InputGroupSNCFValue } from 'common/BootstrapSNCF/InputGroupSNCF';
+import InputGroupSNCF, { type InputGroupSNCFValue } from 'common/BootstrapSNCF/InputGroupSNCF';
 import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 import { unitsList, unitsNames } from './consts';
 import getAllowanceValue from './helpers';
-import { AllowanceValueForm, StandardAllowanceForm } from './types';
+import type { AllowanceValueForm, StandardAllowanceForm } from './types';
 
 type Props = {
   distribution: string;

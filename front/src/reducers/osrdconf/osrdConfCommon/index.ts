@@ -5,7 +5,7 @@ import { omit } from 'lodash';
 import { formatIsoDate } from 'utils/date';
 
 import { computeLinkedOriginTimes, insertVia } from 'reducers/osrdconf/helpers';
-import { InfraStateReducers, buildInfraStateReducers, infraState } from 'reducers/infra';
+import { type InfraStateReducers, buildInfraStateReducers, infraState } from 'reducers/infra';
 import type { PointOnMap } from 'applications/operationalStudies/consts';
 import type {
   OperationalStudiesConfSlice,

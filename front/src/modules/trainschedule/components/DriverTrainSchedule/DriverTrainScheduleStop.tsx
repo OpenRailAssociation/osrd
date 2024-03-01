@@ -1,7 +1,7 @@
 import cx from 'classnames';
 import React from 'react';
 
-import { Stop, Train } from 'reducers/osrdsimulation/types';
+import type { Stop, Train } from 'reducers/osrdsimulation/types';
 import {
   getActualSpeed,
   getActualVmax,

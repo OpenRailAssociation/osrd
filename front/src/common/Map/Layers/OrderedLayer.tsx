@@ -1,5 +1,5 @@
 import React from 'react';
-import { Layer, LayerProps, useMap } from 'react-map-gl/maplibre';
+import { Layer, type LayerProps, useMap } from 'react-map-gl/maplibre';
 import { isNumber } from 'lodash';
 
 export type OrderedLayerProps = LayerProps & {

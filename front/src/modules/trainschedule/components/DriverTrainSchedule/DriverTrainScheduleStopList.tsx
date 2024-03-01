@@ -1,9 +1,9 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { Train } from 'reducers/osrdsimulation/types';
+import type { Train } from 'reducers/osrdsimulation/types';
 import DriverTrainScheduleStop from './DriverTrainScheduleStop';
-import { BaseOrEcoType } from './DriverTrainScheduleTypes';
+import type { BaseOrEcoType } from './DriverTrainScheduleTypes';
 
 type Props = {
   train: Train;

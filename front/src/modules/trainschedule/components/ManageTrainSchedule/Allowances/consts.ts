@@ -1,4 +1,4 @@
-import { StandardAllowanceForm } from './types';
+import type { StandardAllowanceForm } from './types';
 
 export enum unitsTypes {
   percentage = 'percentage',

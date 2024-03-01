@@ -1,4 +1,4 @@
-import { ChartAxes } from 'modules/simulationResult/consts';
+import type { ChartAxes } from 'modules/simulationResult/consts';
 import {
   formatRouteAspects,
   formatSignalAspects,
@@ -6,7 +6,7 @@ import {
   formatStepsWithTimeMulti,
   mergeDatasArea,
 } from 'modules/simulationResult/components/ChartHelpers/ChartHelpers';
-import { Train, SimulationTrain } from 'reducers/osrdsimulation/types';
+import type { Train, SimulationTrain } from 'reducers/osrdsimulation/types';
 
 /**
  * Will do some formating & computation to get a trains to be displayed. Stored then with currentSimulation splitted reducer

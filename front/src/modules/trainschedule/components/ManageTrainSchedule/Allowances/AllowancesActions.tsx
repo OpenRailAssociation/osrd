@@ -1,13 +1,13 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import InputGroupSNCF, { InputGroupSNCFValue } from 'common/BootstrapSNCF/InputGroupSNCF';
+import InputGroupSNCF, { type InputGroupSNCFValue } from 'common/BootstrapSNCF/InputGroupSNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 import { Trash } from '@osrd-project/ui-icons';
 import { FaPlus, FaSearch } from 'react-icons/fa';
 import { CgArrowsShrinkH } from 'react-icons/cg';
 import { BiArrowFromLeft, BiArrowFromRight } from 'react-icons/bi';
-import { EngineeringAllowance, PathWaypoint } from 'common/api/osrdEditoastApi';
+import type { EngineeringAllowance, PathWaypoint } from 'common/api/osrdEditoastApi';
 import { BsCheckLg } from 'react-icons/bs';
 import { MdCancel } from 'react-icons/md';
 import cx from 'classnames';
@@ -17,12 +17,12 @@ import { sortBy } from 'lodash';
 import { unitsList, unitsNames, unitsTypes } from './consts';
 import {
   AllowancesTypes,
-  SetAllowanceSelectedIndexType,
+  type SetAllowanceSelectedIndexType,
   ActionOnAllowance,
-  OverlapAllowancesIndexesType,
-  AllowanceValueForm,
-  RangeAllowanceForm,
-  EngineeringAllowanceForm,
+  type OverlapAllowancesIndexesType,
+  type AllowanceValueForm,
+  type RangeAllowanceForm,
+  type EngineeringAllowanceForm,
 } from './types';
 import getAllowanceValue, {
   fillAllowancesWithDefaultRanges,

@@ -1,5 +1,5 @@
-import { Feature, Point, FeatureCollection, LineString } from 'geojson';
-import { point, Position, featureCollection, lineString } from '@turf/helpers';
+import type { Feature, Point, FeatureCollection, LineString } from 'geojson';
+import { point, type Position, featureCollection, lineString } from '@turf/helpers';
 import length from '@turf/length';
 import bearing from '@turf/bearing';
 

@@ -8,7 +8,7 @@ import {
   setFailure,
   deleteNotification,
   updateLastInterfaceVersion,
-  MainState,
+  type MainState,
   setSuccessWithoutMessage,
   addFailureNotification,
   addSuccessNotification,

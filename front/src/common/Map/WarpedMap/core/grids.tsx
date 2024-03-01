@@ -1,5 +1,5 @@
 /* eslint-disable prefer-destructuring, no-plusplus */
-import { Feature, LineString, Position } from 'geojson';
+import type { Feature, LineString, Position } from 'geojson';
 import { clamp, cloneDeep, keyBy, meanBy } from 'lodash';
 import length from '@turf/length';
 import center from '@turf/center';
@@ -8,14 +8,14 @@ import destination from '@turf/destination';
 import bearing from '@turf/bearing';
 
 import {
-  GridFeature,
-  GridIndex,
-  Grids,
-  PointsGrid,
-  Triangle,
+  type GridFeature,
+  type GridIndex,
+  type Grids,
+  type PointsGrid,
+  type Triangle,
 } from 'common/Map/WarpedMap/core/helpers';
-import vec, { Vec2 } from 'common/Map/WarpedMap/core/vec-lib';
-import { PolygonZone } from 'types';
+import vec, { type Vec2 } from 'common/Map/WarpedMap/core/vec-lib';
+import type { PolygonZone } from 'types';
 
 /*
  * Base helpers to manipulate grids:

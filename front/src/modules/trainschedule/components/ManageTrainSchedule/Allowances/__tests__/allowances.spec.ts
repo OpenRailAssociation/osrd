@@ -3,7 +3,7 @@ import {
   getFirstEmptyRange,
   getFirstEmptyRangeFromPosition,
 } from '../helpers';
-import { AllowanceValueForm, RangeAllowanceForm } from '../types';
+import type { AllowanceValueForm, RangeAllowanceForm } from '../types';
 
 const defaultAllowance: AllowanceValueForm = {
   value_type: 'percentage',

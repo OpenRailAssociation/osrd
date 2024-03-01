@@ -1,11 +1,11 @@
-import React, { ComponentType } from 'react';
+import React, { type ComponentType } from 'react';
 import { cloneDeep, isEqual, omit } from 'lodash';
-import { IconType } from 'react-icons';
+import type { IconType } from 'react-icons';
 import { BiReset } from 'react-icons/bi';
 import { AiFillSave } from 'react-icons/ai';
 import { PlusCircle, Trash } from '@osrd-project/ui-icons';
-import { Map } from 'maplibre-gl';
-import { Feature, LineString, Point } from 'geojson';
+import type { Map } from 'maplibre-gl';
+import type { Feature, LineString, Point } from 'geojson';
 import nearestPointOnLine from '@turf/nearest-point-on-line';
 
 import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
@@ -13,7 +13,7 @@ import { NULL_GEOMETRY } from 'types';
 import { getNearestPoint } from 'utils/mapHelper';
 import { save } from 'reducers/editor/thunkActions';
 
-import { LAYER_TO_EDITOAST_DICT, Layer } from 'applications/editor/consts';
+import { LAYER_TO_EDITOAST_DICT, type Layer } from 'applications/editor/consts';
 import type { Tool } from 'applications/editor/types';
 import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
 import { getEntity } from 'applications/editor/data/api';

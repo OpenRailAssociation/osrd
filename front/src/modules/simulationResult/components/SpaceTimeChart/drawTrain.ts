@@ -1,12 +1,16 @@
 import * as d3 from 'd3';
-import { drag as d3drag, DragContainerElement } from 'd3-drag';
+import { drag as d3drag, type DragContainerElement } from 'd3-drag';
 
 import { getDirection } from 'modules/simulationResult/components/ChartHelpers/ChartHelpers';
 import drawCurve from 'modules/simulationResult/components/ChartHelpers/drawCurve';
 import drawRect from 'modules/simulationResult/components/ChartHelpers/drawRect';
 import drawText from 'modules/simulationResult/components/ChartHelpers/drawText';
 import { CHART_AXES } from 'modules/simulationResult/consts';
-import { AllowancesSettings, Chart, SimulationTrain } from 'reducers/osrdsimulation/types';
+import {
+  type AllowancesSettings,
+  type Chart,
+  type SimulationTrain,
+} from 'reducers/osrdsimulation/types';
 
 export default function drawTrain(
   allowancesSettings: AllowancesSettings,

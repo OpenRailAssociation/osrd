@@ -1,10 +1,10 @@
 import { tail, last } from 'lodash';
 import distance from '@turf/distance';
 import along from '@turf/along';
-import { LineString, FeatureCollection } from 'geojson';
+import type { LineString, FeatureCollection } from 'geojson';
 
 import { getLineStringDistance, update, resizeSegment, splitAt, mergeIn } from './data';
-import { LinearMetadataItem } from './types';
+import type { LinearMetadataItem } from './types';
 
 const DEBUG = false;
 

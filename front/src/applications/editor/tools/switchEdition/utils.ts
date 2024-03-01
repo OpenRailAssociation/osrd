@@ -1,10 +1,10 @@
-import { JSONSchema7 } from 'json-schema';
+import type { JSONSchema7 } from 'json-schema';
 import { omit, omitBy, without } from 'lodash';
-import { Point } from 'geojson';
+import type { Point } from 'geojson';
 
 import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
-import { EditorEntity } from 'applications/editor/typesEditorEntity';
-import { SwitchEntity, SwitchType, TrackEndpoint } from './types';
+import type { EditorEntity } from 'applications/editor/typesEditorEntity';
+import type { SwitchEntity, SwitchType, TrackEndpoint } from './types';
 
 export function getNewSwitch(type: SwitchType): Partial<SwitchEntity> {
   return {

@@ -2,7 +2,7 @@ import React from 'react';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import { StudyState } from 'applications/operationalStudies/consts';
+import type { StudyState } from 'applications/operationalStudies/consts';
 import { useAppDispatch } from 'store';
 import { setSuccess } from 'reducers/main';
 

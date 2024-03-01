@@ -1,5 +1,5 @@
 /* eslint-disable import/prefer-default-export */
-import { RootState } from 'reducers';
+import type { RootState } from 'reducers';
 
 export const makeSubSelector =
   <ReducerState>(rootSelector: (state: RootState) => ReducerState) =>

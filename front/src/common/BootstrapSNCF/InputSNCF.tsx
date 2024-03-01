@@ -1,5 +1,5 @@
 /* eslint-disable jsx-a11y/no-autofocus */
-import React, { InputHTMLAttributes, ReactNode } from 'react';
+import React, { type InputHTMLAttributes, type ReactNode } from 'react';
 import cx from 'classnames';
 
 export type InputSNCFProps = {

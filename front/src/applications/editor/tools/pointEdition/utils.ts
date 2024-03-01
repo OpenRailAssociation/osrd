@@ -1,6 +1,11 @@
 import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
 import { NULL_GEOMETRY } from 'types';
-import { BufferStopEntity, DetectorEntity, SignalEntity, SignalingSystem } from './types';
+import {
+  type BufferStopEntity,
+  type DetectorEntity,
+  type SignalEntity,
+  type SignalingSystem,
+} from './types';
 
 export function getNewSignal(point?: [number, number]): SignalEntity {
   return {

@@ -5,9 +5,9 @@ import { compact } from 'lodash';
 import cx from 'classnames';
 
 import {
-  TrainSchedule,
-  TrainScheduleWithPath,
-  TrainScheduleWithPathRef,
+  type TrainSchedule,
+  type TrainScheduleWithPath,
+  type TrainScheduleWithPathRef,
 } from 'applications/operationalStudies/types';
 
 import Map from 'modules/trainschedule/components/ImportTrainSchedule/Map';

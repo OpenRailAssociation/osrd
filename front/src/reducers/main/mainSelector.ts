@@ -1,6 +1,6 @@
-import { RootState } from 'reducers';
+import type { RootState } from 'reducers';
 import { makeSubSelector } from 'utils/selectors';
-import { MainState } from 'reducers/main/index';
+import type { MainState } from 'reducers/main/index';
 
 export const getMain = (state: RootState) => state.main;
 const makeMainSelector = makeSubSelector<MainState>(getMain);

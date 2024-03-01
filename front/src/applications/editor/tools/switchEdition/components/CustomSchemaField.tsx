@@ -1,6 +1,6 @@
-import { FieldProps } from '@rjsf/utils';
+import type { FieldProps } from '@rjsf/utils';
 import SchemaField from '@rjsf/core/lib/components/fields/SchemaField';
-import React, { FC, Suspense, lazy } from 'react';
+import React, { type FC, Suspense, lazy } from 'react';
 
 import { Loader } from 'common/Loaders';
 import useSwitch from 'applications/editor/tools/switchEdition/useSwitch';

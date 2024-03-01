@@ -4,7 +4,7 @@ import {
   ImportTrainScheduleTrainsList,
 } from 'modules/trainschedule/components/ImportTrainSchedule';
 import { Loader } from 'common/Loaders';
-import { TrainSchedule } from 'applications/operationalStudies/types';
+import type { TrainSchedule } from 'applications/operationalStudies/types';
 import { enhancedEditoastApi } from 'common/api/enhancedEditoastApi';
 import { useTranslation } from 'react-i18next';
 import { useAppDispatch } from 'store';

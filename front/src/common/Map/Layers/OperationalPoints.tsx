@@ -1,8 +1,8 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { Source, LayerProps } from 'react-map-gl/maplibre';
+import { Source, type LayerProps } from 'react-map-gl/maplibre';
 
-import { RootState } from 'reducers';
+import type { RootState } from 'reducers';
 import type { Theme } from 'types';
 import { MAP_URL } from 'common/Map/const';
 

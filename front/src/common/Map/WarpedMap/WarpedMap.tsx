@@ -1,28 +1,28 @@
 import { useSelector } from 'react-redux';
-import React, { FC, useEffect, useMemo, useState } from 'react';
+import React, { type FC, useEffect, useMemo, useState } from 'react';
 import { groupBy, map, omit } from 'lodash';
 import { featureCollection } from '@turf/helpers';
-import { BBox2d } from '@turf/helpers/dist/js/lib/geojson';
-import { Feature, FeatureCollection, LineString } from 'geojson';
-import ReactMapGL, { Layer, MapRef, Source } from 'react-map-gl/maplibre';
-import { LngLatBoundsLike } from 'maplibre-gl';
+import type { BBox2d } from '@turf/helpers/dist/js/lib/geojson';
+import type { Feature, FeatureCollection, LineString } from 'geojson';
+import ReactMapGL, { Layer, type MapRef, Source } from 'react-map-gl/maplibre';
+import type { LngLatBoundsLike } from 'maplibre-gl';
 
 import { LAYERS, LAYER_ENTITIES_ORDERS, LAYER_GROUPS_ORDER } from 'config/layerOrder';
 import colors from 'common/Map/Consts/colors';
 import { ALL_SIGNAL_LAYERS } from 'common/Map/Consts/SignalsNames';
-import { Layer as LayerType } from 'applications/editor/consts';
-import { TrainPosition } from 'modules/simulationResult/components/SimulationResultsMap/types';
+import type { Layer as LayerType } from 'applications/editor/consts';
+import type { TrainPosition } from 'modules/simulationResult/components/SimulationResultsMap/types';
 import VirtualLayers from 'modules/simulationResult/components/SimulationResultsMap/VirtualLayers';
 import RenderItinerary from 'modules/simulationResult/components/SimulationResultsMap/RenderItinerary';
 import TrainHoverPosition from 'modules/simulationResult/components/SimulationResultsMap/TrainHoverPosition';
-import { LayerContext } from 'common/Map/Layers/types';
-import OrderedLayer, { OrderedLayerProps } from 'common/Map/Layers/OrderedLayer';
+import type { LayerContext } from 'common/Map/Layers/types';
+import OrderedLayer, { type OrderedLayerProps } from 'common/Map/Layers/OrderedLayer';
 import { genOSMLayerProps } from 'common/Map/Layers/OSM';
 import { useMapBlankStyle } from 'common/Map/Layers/blankStyle';
 import { EditorSource, SourcesDefinitionsIndex } from 'common/Map/Layers/GeoJSONs';
-import { Viewport } from 'reducers/map';
+import type { Viewport } from 'reducers/map';
 import { getMap } from 'reducers/map/selectors';
-import { AllowancesSettings, Train } from 'reducers/osrdsimulation/types';
+import type { AllowancesSettings, Train } from 'reducers/osrdsimulation/types';
 
 /**
  * This component handles displaying warped data. The data must be warped before being given to this component.

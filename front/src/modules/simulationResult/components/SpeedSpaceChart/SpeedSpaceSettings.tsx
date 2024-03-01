@@ -1,9 +1,12 @@
 import cx from 'classnames';
 import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
-import { ElectrificationRange, LightRollingStock } from 'common/api/osrdEditoastApi';
+import type { ElectrificationRange, LightRollingStock } from 'common/api/osrdEditoastApi';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { SpeedSpaceSettingKey, SPEED_SPACE_SETTINGS_KEYS } from 'reducers/osrdsimulation/types';
+import {
+  type SpeedSpaceSettingKey,
+  SPEED_SPACE_SETTINGS_KEYS,
+} from 'reducers/osrdsimulation/types';
 
 type RollingStockMode = {
   [key: string]: {

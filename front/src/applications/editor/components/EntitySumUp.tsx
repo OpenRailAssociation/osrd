@@ -1,14 +1,14 @@
-import React, { FC, useEffect, useState } from 'react';
+import React, { type FC, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { flatMap, forEach, isNumber, uniq } from 'lodash';
-import { TFunction } from 'i18next';
+import type { TFunction } from 'i18next';
 import cx from 'classnames';
 
 import { useInfraID } from 'common/osrdContext';
 import { LoaderFill } from 'common/Loaders';
 import { getSpeedSectionsNameString } from 'common/Map/Layers/SpeedLimits';
 
-import { type EditoastType } from 'applications/editor/consts';
+import type { EditoastType } from 'applications/editor/consts';
 import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
 import { getEntities, getEntity } from 'applications/editor/data/api';
 import type { EditorEntity } from 'applications/editor/typesEditorEntity';
@@ -20,7 +20,7 @@ import type {
   ElectrificationEntity,
   SpeedSectionEntity,
 } from 'applications/editor/tools/rangeEdition/types';
-import { AppDispatch, useAppDispatch } from 'store';
+import { type AppDispatch, useAppDispatch } from 'store';
 import { type InfraError, InfraErrorIcon, InfraErrorTypeLabel } from './InfraErrors';
 
 function prettifyStringsArray(strings: string[], finalSeparator: string): string {

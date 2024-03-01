@@ -1,9 +1,9 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { Source, LayerProps } from 'react-map-gl/maplibre';
+import { Source, type LayerProps } from 'react-map-gl/maplibre';
 
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
-import { RootState } from 'reducers';
+import type { RootState } from 'reducers';
 
 interface IGN_BD_ORTHO_Props {
   layerOrder?: number;

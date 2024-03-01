@@ -1,7 +1,7 @@
 import { store } from 'store';
 
 import type { PointOnMap } from 'applications/operationalStudies/consts';
-import { ConfSliceActions } from 'reducers/osrdconf/osrdConfCommon';
+import type { ConfSliceActions } from 'reducers/osrdconf/osrdConfCommon';
 
 export default function setPointIti(
   pointType: string,

@@ -1,5 +1,9 @@
 import * as d3 from 'd3';
-import { GradientPosition, HeightPosition, RadiusPosition } from 'reducers/osrdsimulation/types';
+import {
+  type GradientPosition,
+  type HeightPosition,
+  type RadiusPosition,
+} from 'reducers/osrdsimulation/types';
 
 const calculateReferentialHeight = (data: number[]) => {
   const maxRef = d3.max(data);

@@ -1,7 +1,7 @@
 import React, { useContext, useMemo, useState, type PropsWithChildren } from 'react';
 import ReactMapGL, { AttributionControl, ScaleControl, type MapRef } from 'react-map-gl/maplibre';
 import { isEmpty, isEqual, isNil } from 'lodash';
-import { TFunction } from 'i18next';
+import type { TFunction } from 'i18next';
 import { useSelector } from 'react-redux';
 import { withTranslation } from 'react-i18next';
 

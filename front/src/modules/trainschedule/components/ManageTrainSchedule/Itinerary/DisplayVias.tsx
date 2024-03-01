@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import type { Action } from '@reduxjs/toolkit';
 import cx from 'classnames';
-import { Position } from 'geojson';
+import type { Position } from 'geojson';
 import { formatUicToCi } from 'utils/strings';
 
 import { useDebounce } from 'utils/helpers';

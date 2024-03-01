@@ -2,7 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import Countdown from 'react-countdown';
 
-import { Infra, osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { type Infra, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useAppDispatch } from 'store';
 import { setFailure, setSuccess } from 'reducers/main';
 import { Spinner } from 'common/Loaders';

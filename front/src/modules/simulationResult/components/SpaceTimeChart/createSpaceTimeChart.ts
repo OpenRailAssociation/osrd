@@ -1,7 +1,11 @@
 import * as d3 from 'd3';
 import { select as d3select } from 'd3-selection';
 
-import { Chart, SimulationTrain, ConsolidatedPosition } from 'reducers/osrdsimulation/types';
+import {
+  type Chart,
+  type SimulationTrain,
+  type ConsolidatedPosition,
+} from 'reducers/osrdsimulation/types';
 import { CHART_AXES } from 'modules/simulationResult/consts';
 import {
   defineLinear,

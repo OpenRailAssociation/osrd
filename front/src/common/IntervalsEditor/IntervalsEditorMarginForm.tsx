@@ -3,7 +3,7 @@ import { cloneDeep, head } from 'lodash';
 
 import SelectSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import { IntervalItem } from './types';
+import type { IntervalItem } from './types';
 
 type IntervalsEditorMarginFormProps = {
   data: IntervalItem[];

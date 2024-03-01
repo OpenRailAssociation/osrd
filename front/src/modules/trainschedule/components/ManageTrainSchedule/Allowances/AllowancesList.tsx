@@ -1,9 +1,9 @@
 import React, { useCallback } from 'react';
 import {
-  SetAllowanceSelectedIndexType,
-  OverlapAllowancesIndexesType,
-  RangeAllowanceForm,
-  EngineeringAllowanceForm,
+  type SetAllowanceSelectedIndexType,
+  type OverlapAllowancesIndexesType,
+  type RangeAllowanceForm,
+  type EngineeringAllowanceForm,
 } from './types';
 import AllowancesListItem from './AllowancesListItem';
 

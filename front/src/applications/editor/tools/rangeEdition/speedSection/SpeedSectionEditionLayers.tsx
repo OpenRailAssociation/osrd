@@ -23,7 +23,7 @@ import {
   isOnModeMove,
   speedSectionIsPsl,
 } from 'applications/editor/tools/rangeEdition/utils';
-import { TrackSectionEntity } from 'applications/editor/tools/trackEdition/types';
+import type { TrackSectionEntity } from 'applications/editor/tools/trackEdition/types';
 
 import colors from 'common/Map/Consts/colors';
 import { useInfraID } from 'common/osrdContext';

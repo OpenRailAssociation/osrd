@@ -3,9 +3,7 @@ import * as d3 from 'd3';
 import { has, last, memoize } from 'lodash';
 
 import { datetime2time, durationInSeconds, sec2time } from 'utils/timeManipulation';
-// import/no-cycle is disabled because this func call will be removed by refacto
-// eslint-disable-next-line
-import {
+import type {
   Position,
   PositionSpeedTime,
   RouteAspect,
@@ -17,8 +15,14 @@ import {
   SimulationD3Scale,
   PositionsSpeedTimes,
 } from 'reducers/osrdsimulation/types';
-import { ChartAxes, ListValues, XAxis, Y2Axis, YAxis } from 'modules/simulationResult/consts';
-import { BaseType } from 'd3';
+import {
+  type ChartAxes,
+  type ListValues,
+  type XAxis,
+  type Y2Axis,
+  type YAxis,
+} from 'modules/simulationResult/consts';
+import type { BaseType } from 'd3';
 
 export function sec2d3datetime(time: number) {
   return d3.timeParse('%H:%M:%S')(sec2time(time));

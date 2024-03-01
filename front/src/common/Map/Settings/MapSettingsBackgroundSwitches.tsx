@@ -1,4 +1,4 @@
-import React, { FC } from 'react';
+import React, { type FC } from 'react';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import Slider from 'rc-slider';
@@ -11,7 +11,7 @@ import iconOSMTracks from 'assets/pictures/mapbuttons/mapstyle-osm-tracks.jpg';
 import icon3dBuildings from 'assets/pictures/mapbuttons/mapstyle-3d-buildings.jpg';
 import SwitchSNCF, {
   SWITCH_TYPES,
-  SwitchSNCFProps,
+  type SwitchSNCFProps,
 } from 'common/BootstrapSNCF/SwitchSNCF/SwitchSNCF';
 import { useAppDispatch } from 'store';
 import { getMap, getTerrain3DExaggeration } from 'reducers/map/selectors';

@@ -1,5 +1,5 @@
 import * as d3 from 'd3';
-import { PositionSpeedTime, SpeedPosition } from 'reducers/osrdsimulation/types';
+import type { PositionSpeedTime, SpeedPosition } from 'reducers/osrdsimulation/types';
 
 export function massWithOneDecimal(number: number) {
   return Math.round(number / 100) / 10;

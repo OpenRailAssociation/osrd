@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { getDocument } from 'common/api/documentApi';
-import { ProjectWithStudies } from 'common/api/osrdEditoastApi';
+import type { ProjectWithStudies } from 'common/api/osrdEditoastApi';
 
 const Project2Image = ({ project }: { project: ProjectWithStudies }) => {
   const [imageUrl, setImageUrl] = useState<string>();

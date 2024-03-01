@@ -6,7 +6,7 @@ import { useAppDispatch } from 'store';
 import { updateIsPlaying } from 'reducers/osrdsimulation/actions';
 
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import { SimulationReport } from 'common/api/osrdEditoastApi';
+import type { SimulationReport } from 'common/api/osrdEditoastApi';
 import { useChartSynchronizer } from './ChartHelpers/ChartSynchronizer';
 
 // transform a speed ratio (X2 X10 X20, etc.) to interval time & step to bypass

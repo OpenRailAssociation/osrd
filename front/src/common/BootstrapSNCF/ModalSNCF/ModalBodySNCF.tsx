@@ -1,4 +1,4 @@
-import React, { CSSProperties, FC, PropsWithChildren } from 'react';
+import React, { type CSSProperties, type FC, type PropsWithChildren } from 'react';
 
 const ModalBodySNCF: FC<PropsWithChildren<unknown> & { style?: CSSProperties }> = ({
   children,

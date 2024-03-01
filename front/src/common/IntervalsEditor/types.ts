@@ -1,4 +1,4 @@
-import { LinearMetadataItem } from 'common/IntervalsDataViz/types';
+import type { LinearMetadataItem } from 'common/IntervalsDataViz/types';
 
 export enum INTERVAL_TYPES {
   NUMBER = 'number',

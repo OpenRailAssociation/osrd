@@ -1,4 +1,4 @@
-import React, { FC, useMemo } from 'react';
+import React, { type FC, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import cx from 'classnames';
 import { BsExclamationOctagon } from 'react-icons/bs';

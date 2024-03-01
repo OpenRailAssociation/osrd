@@ -1,4 +1,4 @@
-import { TrainScheduleSummary } from 'common/api/osrdEditoastApi';
+import type { TrainScheduleSummary } from 'common/api/osrdEditoastApi';
 import { distributedIntervalsFromArrayOfValues } from 'utils/numbers';
 import { compact } from 'lodash';
 

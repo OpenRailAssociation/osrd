@@ -1,4 +1,4 @@
-import React, { FC, useMemo } from 'react';
+import React, { type FC, useMemo } from 'react';
 import { BsArrowBarRight } from 'react-icons/bs';
 import { HiSwitchVertical } from 'react-icons/hi';
 import { FaFlagCheckered } from 'react-icons/fa';
@@ -8,7 +8,7 @@ import type {
   WayPointEntity,
   RouteEditionState,
 } from 'applications/editor/tools/routeEdition/types';
-import { EndPoint } from 'applications/editor/tools/switchEdition/types';
+import type { EndPoint } from 'applications/editor/tools/switchEdition/types';
 import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
 import WayPointInput from './WayPointInput';
 

@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import Form, { getDefaultRegistry } from '@rjsf/core';
-import { FieldProps } from '@rjsf/utils';
-import { JSONSchema7 } from 'json-schema';
+import type { FieldProps } from '@rjsf/utils';
+import type { JSONSchema7 } from 'json-schema';
 import { omit, head, max as fnMax, min as fnMin, isNil } from 'lodash';
 import { TbZoomIn, TbZoomOut, TbZoomCancel } from 'react-icons/tb';
 import { BsBoxArrowInLeft, BsBoxArrowInRight, BsChevronLeft, BsChevronRight } from 'react-icons/bs';
@@ -23,7 +23,7 @@ import {
   getLineStringDistance,
   fixLinearMetadataItems,
 } from 'common/IntervalsDataViz/data';
-import { LinearMetadataItem } from 'common/IntervalsDataViz/types';
+import type { LinearMetadataItem } from 'common/IntervalsDataViz/types';
 import { LinearMetadataDataviz } from 'common/IntervalsDataViz/dataviz';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { tooltipPosition, notEmpty } from 'common/IntervalsDataViz/utils';

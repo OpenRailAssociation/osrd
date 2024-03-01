@@ -3,9 +3,9 @@ import type { PayloadAction } from '@reduxjs/toolkit';
 
 import type { InfraErrorLevel } from 'applications/editor/components/InfraErrors';
 import type { Layer } from 'applications/editor/consts';
-import { EditorSchema } from 'applications/editor/typesEditorEntity';
+import type { EditorSchema } from 'applications/editor/typesEditorEntity';
 import type { InfraErrorType } from 'common/api/osrdEditoastApi';
-import { InfraState, buildInfraStateReducers, infraState } from 'reducers/infra';
+import { type InfraState, buildInfraStateReducers, infraState } from 'reducers/infra';
 
 export interface EditorState extends InfraState {
   editorSchema: EditorSchema;

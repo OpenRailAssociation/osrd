@@ -5,7 +5,7 @@ import {
   loginSuccess,
   loginError,
   logoutSuccess,
-  UserState,
+  type UserState,
   updateUserPreferences,
 } from 'reducers/user';
 

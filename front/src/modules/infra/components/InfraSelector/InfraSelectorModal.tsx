@@ -9,7 +9,7 @@ import iconEdition from 'assets/pictures/components/tracks_edit.svg';
 import { useDebounce } from 'utils/helpers';
 import { castErrorToFailure } from 'utils/error';
 import { Loader } from 'common/Loaders';
-import { Infra, osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { type Infra, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useAppDispatch } from 'store';
 import { setFailure } from 'reducers/main';
 import InfraSelectorModalBodyEdition from './InfraSelectorModalBodyEdition';

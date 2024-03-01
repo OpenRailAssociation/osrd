@@ -10,8 +10,8 @@ import studiesLogo from 'assets/pictures/views/studies.svg';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import {
-  ScenarioWithCountTrains,
-  StudyWithScenarios,
+  type ScenarioWithCountTrains,
+  type StudyWithScenarios,
   osrdEditoastApi,
 } from 'common/api/osrdEditoastApi';
 import { useAppDispatch } from 'store';

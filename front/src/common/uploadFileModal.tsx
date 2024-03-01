@@ -1,4 +1,4 @@
-import React, { FC, useCallback, useContext, useState } from 'react';
+import React, { type FC, useCallback, useContext, useState } from 'react';
 import { isNil } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
