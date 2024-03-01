@@ -66,12 +66,22 @@ interface MovableElementDescriptorBuilder {
     fun config(name: String, portLink: Pair<TrackNodePortId, TrackNodePortId>): TrackNodeConfigId
 }
 
-class MovableElementDescriptorBuilderImpl(
-    private val name: String,
-    private val delay: Duration,
-    private val ports: StaticPool<TrackNodePort, EndpointTrackSectionId>,
-    private val configs: StaticPool<TrackNodeConfig, TrackNodeConfigDescriptor>,
-) : MovableElementDescriptorBuilder {
+class TrackNodeConfigDescriptorBuilder(
+    val name: String,
+    val portLinks: MutableList<Pair<TrackNodePortId, TrackNodePortId>>
+) {
+
+    fun build(): TrackNodeConfigDescriptor {
+        return TrackNodeConfigDescriptor(name, portLinks.toList())
+    }
+}
+
+class MovableElementDescriptorBuilderImpl(private val name: String, private val delay: Duration) :
+    MovableElementDescriptorBuilder {
+    private val ports = StaticPool<TrackNodePort, EndpointTrackSectionId>()
+    private val configs = StaticPool<TrackNodeConfig, TrackNodeConfigDescriptorBuilder>()
+    private val nameToConfigMap = mutableMapOf<String, TrackNodeConfigId>()
+
     override fun port(endpoint: EndpointTrackSectionId): TrackNodePortId {
         return ports.add(endpoint)
     }
@@ -80,11 +90,20 @@ class MovableElementDescriptorBuilderImpl(
         name: String,
         portLink: Pair<TrackNodePortId, TrackNodePortId>
     ): TrackNodeConfigId {
-        return configs.add(TrackNodeConfigDescriptor(name, portLink))
+        if (!nameToConfigMap.containsKey(name))
+            nameToConfigMap[name] =
+                configs.add(TrackNodeConfigDescriptorBuilder(name, mutableListOf()))
+        configs[nameToConfigMap[name]!!].portLinks.add(portLink)
+        return nameToConfigMap[name]!!
     }
 
     fun build(): TrackNodeDescriptor {
-        return TrackNodeDescriptor(name, delay, ports, configs)
+        return TrackNodeDescriptor(
+            name,
+            delay,
+            ports,
+            StaticPool(configs.map { c -> configs[c].build() }.toMutableList())
+        )
     }
 }
 
@@ -355,8 +374,7 @@ class RawInfraBuilderImpl : RawInfraBuilder {
         delay: Duration,
         init: MovableElementDescriptorBuilder.() -> Unit
     ): TrackNodeId {
-        val movableElementBuilder =
-            MovableElementDescriptorBuilderImpl(name, delay, StaticPool(), StaticPool())
+        val movableElementBuilder = MovableElementDescriptorBuilderImpl(name, delay)
         movableElementBuilder.init()
         val movableElement = movableElementBuilder.build()
         return trackNodePool.add(movableElement)
