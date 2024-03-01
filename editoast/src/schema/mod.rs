@@ -225,6 +225,7 @@ impl TrackRange {
 #[derivative(Default)]
 pub struct DirectionalTrackRange {
     #[derivative(Default(value = r#""InvalidRef".into()"#))]
+    #[schema(inline)]
     pub track: Identifier,
     pub begin: f64,
     #[derivative(Default(value = "100."))]
@@ -381,6 +382,7 @@ pub struct Sign {
 #[derive(Debug, Clone, Default, Deserialize, Serialize, PartialEq, ToSchema)]
 pub struct TrackLocation {
     /// The track section UUID
+    #[schema(inline)]
     pub track_section: Identifier,
     /// The offset on the track section in meters
     pub offset: f64,

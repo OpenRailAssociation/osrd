@@ -48,6 +48,7 @@ enum PathfindingViewErrors {
 #[derive(Debug, Clone, Deserialize, ToSchema)]
 #[serde(deny_unknown_fields)]
 struct PathfindingTrackLocationInput {
+    #[schema(inline)]
     track: Identifier,
     position: f64,
 }
@@ -61,7 +62,9 @@ struct PathfindingInput {
 #[derive(Debug, Default, Clone, Serialize, ToSchema)]
 struct PathfindingOutput {
     track_ranges: Vec<DirectionalTrackRange>,
+    #[schema(inline)]
     detectors: Vec<Identifier>,
+    #[schema(inline)]
     switches_directions: HashMap<Identifier, Identifier>,
 }
 

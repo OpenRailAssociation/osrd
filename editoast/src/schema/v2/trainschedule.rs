@@ -1,4 +1,5 @@
-use crate::schema::utils::{Duration, NonBlankString};
+use crate::schema::utils::{Duration, Identifier, NonBlankString};
+use crate::schema::TrackOffset;
 use chrono::{DateTime, Utc};
 use derivative::Derivative;
 use serde::de::Error as SerdeError;
@@ -172,17 +173,11 @@ pub struct ScheduleItem {
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 #[serde(untagged, deny_unknown_fields)]
 pub enum PathItemLocation {
-    TrackOffset {
-        /// The track section ID
-        #[schema(inline)]
-        track: NonBlankString,
-        /// The offset in millimeters from the start of the track
-        offset: u64,
-    },
+    TrackOffset(#[schema(inline)] TrackOffset),
     OperationalPointId {
         /// The object id of an operational point
         #[schema(inline)]
-        operational_point: NonBlankString,
+        operational_point: Identifier,
     },
     OperationalPointDescription {
         /// The operational point trigram
