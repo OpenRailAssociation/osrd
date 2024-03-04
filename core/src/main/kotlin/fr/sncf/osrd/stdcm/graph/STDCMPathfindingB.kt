@@ -25,23 +25,24 @@ import kotlin.collections.ArrayList
 import kotlin.collections.HashSet
 
 class STDCMPathfindingB<NodeT : Any, EdgeT : Any, OffsetType>(
-     val fullInfra: FullInfra,
-     val rollingStock: RollingStock,
-     val comfort: RollingStock.Comfort?,
-     val startTime: Double,
-     val steps: List<STDCMStep>,
-     val blockAvailability: BlockAvailabilityInterface,
-     val timeStep: Double,
-     val maxDepartureDelay: Double,
-     val maxRunTime: Double,
-     val tag: String?,
-     val standardAllowance: AllowanceValue?,
-     val pathfindingTimeout: Double,
-     var graph: STDCMGraph? = null,
+    val fullInfra: FullInfra,
+    val rollingStock: RollingStock,
+    val comfort: RollingStock.Comfort?,
+    val startTime: Double,
+    val steps: List<STDCMStep>,
+    val blockAvailability: BlockAvailabilityInterface,
+    val timeStep: Double,
+    val maxDepartureDelay: Double,
+    val maxRunTime: Double,
+    val tag: String?,
+    val standardAllowance: AllowanceValue?,
+    val pathfindingTimeout: Double,
+    var graph: STDCMGraph? = null,
 ) {
 
     private var edgeToLength: EdgeToLength<STDCMEdge, OffsetType>? = null
-    private var totalCostUntilEdgeLocation: TotalCostUntilEdgeLocation<STDCMEdge, OffsetType>? = null
+    private var totalCostUntilEdgeLocation: TotalCostUntilEdgeLocation<STDCMEdge, OffsetType>? =
+        null
     private var estimateRemainingDistance: List<AStarHeuristic<STDCMEdge, STDCMEdge>>? = ArrayList()
 
     init {
@@ -62,14 +63,15 @@ class STDCMPathfindingB<NodeT : Any, EdgeT : Any, OffsetType>(
 
         @Suppress("UNCHECKED_CAST")
         totalCostUntilEdgeLocation = TotalCostUntilEdgeLocation { range ->
-                computeTotalCostUntilEdgeLocation(range as EdgeLocation<STDCMEdge, STDCMEdge>, maxDepartureDelay)
+            computeTotalCostUntilEdgeLocation(
+                range as EdgeLocation<STDCMEdge, STDCMEdge>,
+                maxDepartureDelay
+            )
         }
     }
 
     fun findPath(): STDCMResult? {
         assert(steps.size >= 2) { "Not enough steps have been set to find a path" }
-
-
 
         // Initialize the A* heuristic
         val locations = steps.stream().map(STDCMStep::locations).toList()
@@ -114,7 +116,8 @@ class STDCMPathfindingB<NodeT : Any, EdgeT : Any, OffsetType>(
     }
 
     /** Make the objective function from the edge locations */
-    private fun makeObjectiveFunction( // utiliser les STDCMNodes a la place des Edges (on peut recup Nodes depuis Edges et inversement)
+    private fun makeObjectiveFunction( // utiliser les STDCMNodes a la place des Edges (on peut
+        // recup Nodes depuis Edges et inversement)
         steps: List<STDCMStep>
     ): List<TargetsOnEdge<STDCMEdge, STDCMEdge>> {
         val globalResult = ArrayList<TargetsOnEdge<STDCMEdge, STDCMEdge>>()
@@ -135,17 +138,18 @@ class STDCMPathfindingB<NodeT : Any, EdgeT : Any, OffsetType>(
     }
 
     /**
-     * Compute the total cost of a path (in s) to an edge location This estimation of the total cost is
-     * used to compare paths in the pathfinding algorithm. We select the shortest path (in duration),
-     * and for 2 paths with the same duration, we select the earliest one. The path weight which takes
-     * into account the total duration of the path and the time shift at the departure (with different
-     * weights): path_duration * searchTimeRange + departure_time_shift.
+     * Compute the total cost of a path (in s) to an edge location This estimation of the total cost
+     * is used to compare paths in the pathfinding algorithm. We select the shortest path (in
+     * duration), and for 2 paths with the same duration, we select the earliest one. The path
+     * weight which takes into account the total duration of the path and the time shift at the
+     * departure (with different weights): path_duration * searchTimeRange + departure_time_shift.
      *
      * <br></br> EXAMPLE Let's assume we are trying to find a train between 9am and 10am. The
      * searchTimeRange is 1 hour (3600s). Let's assume we have found two possible trains:
      * - the first one leaves at 9:59 and lasts for 20:00 min.
-     * - the second one leaves at 9:00 and lasts for 20:01 min. As we are looking for the fastest train,
-     *   the first train should have the lightest weight, which is the case with the formula above.
+     * - the second one leaves at 9:00 and lasts for 20:01 min. As we are looking for the fastest
+     *   train, the first train should have the lightest weight, which is the case with the formula
+     *   above.
      */
     private fun computeTotalCostUntilEdgeLocation(
         range: EdgeLocation<STDCMEdge, STDCMEdge>,
@@ -164,8 +168,8 @@ class STDCMPathfindingB<NodeT : Any, EdgeT : Any, OffsetType>(
     }
 
     /**
-     * Converts the "raw" heuristics based on physical blocks, returning the most optimistic distance,
-     * into heuristics based on stdcm edges, returning the most optimistic time
+     * Converts the "raw" heuristics based on physical blocks, returning the most optimistic
+     * distance, into heuristics based on stdcm edges, returning the most optimistic time
      */
     private fun makeAStarHeuristic(
         baseBlockHeuristics: ArrayList<AStarHeuristicId<Block>>,
@@ -203,7 +207,11 @@ class STDCMPathfindingB<NodeT : Any, EdgeT : Any, OffsetType>(
             LoadingGaugeConstraints(fullInfra.blockInfra, fullInfra.rawInfra, listOf(rollingStock))
 
         val electrificationConstraints =
-            ElectrificationConstraints(fullInfra.blockInfra, fullInfra.rawInfra, listOf(rollingStock))
+            ElectrificationConstraints(
+                fullInfra.blockInfra,
+                fullInfra.rawInfra,
+                listOf(rollingStock)
+            )
 
         val signalingSystemConstraints =
             makeSignalingSystemConstraints(
@@ -213,11 +221,23 @@ class STDCMPathfindingB<NodeT : Any, EdgeT : Any, OffsetType>(
             )
 
         val combiner = ConstraintCombiner<BlockId, Block>()
-        combiner.functions.addAll(arrayListOf(loadingGaugeConstraints, electrificationConstraints, signalingSystemConstraints))
+        combiner.functions.addAll(
+            arrayListOf(
+                loadingGaugeConstraints,
+                electrificationConstraints,
+                signalingSystemConstraints
+            )
+        )
 
         for (location in locations) {
             val infraExplorers =
-                initInfraExplorerWithEnvelope(graph.fullInfra, location, endBlocks, rollingStock, combiner)
+                initInfraExplorerWithEnvelope(
+                    graph.fullInfra,
+                    location,
+                    endBlocks,
+                    rollingStock,
+                    combiner
+                )
             for (explorer in infraExplorers) {
                 val edges =
                     STDCMEdgeBuilder(explorer, graph)
@@ -231,15 +251,14 @@ class STDCMPathfindingB<NodeT : Any, EdgeT : Any, OffsetType>(
         return res
     }
 
-    /** ---- TEST PATHFINDING BIS ----  */
-
+    /** ---- TEST PATHFINDING BIS ---- */
     @JvmRecord
     private data class Step<STDCMEdge, OffsetType>(
         val range: EdgeRange<STDCMEdge, OffsetType>, // Range covered by this step
         val prev: Step<STDCMEdge, OffsetType>?, // Previous step (to construct the result)
         val totalDistance: Double, // Total distance from the start
         val weight:
-        Double, // Priority queue weight (could be different from totalDistance to allow for A*)
+            Double, // Priority queue weight (could be different from totalDistance to allow for A*)
         val nReachedTargets: Int, // How many targets we found by this path
         val targets: List<EdgeLocation<STDCMEdge, OffsetType>>
     ) : Comparable<Step<STDCMEdge, OffsetType>> {
@@ -258,10 +277,8 @@ class STDCMPathfindingB<NodeT : Any, EdgeT : Any, OffsetType>(
         val waypoints: List<EdgeLocation<EdgeT, OffsetType>>
     )
 
-
     /** Step priority queue */
     private val queue = PriorityQueue<Step<STDCMEdge, OffsetType>>()
-
 
     /**
      * Keeps track of visited location. For each visited range, keeps the max number of passed
@@ -269,14 +286,11 @@ class STDCMPathfindingB<NodeT : Any, EdgeT : Any, OffsetType>(
      */
     private val seen = HashMap<EdgeRange<STDCMEdge, OffsetType>, Int>()
 
-
     /** Function to call to know the cost of the range. */
     private var edgeRangeCost: EdgeRangeCost<STDCMEdge, OffsetType>? = null
 
-
     /** Timeout, in seconds, to avoid infinite loop when no path can be found. */
     private var timeout = TIMEOUT
-
 
     /** Sets the functor used to estimate the cost for a range */
     fun setEdgeRangeCost(
@@ -285,7 +299,6 @@ class STDCMPathfindingB<NodeT : Any, EdgeT : Any, OffsetType>(
         edgeRangeCost = f
         return this
     }
-
 
     /** Sets the pathfinding's timeout */
     fun setTimeout(timeout: Double?): STDCMPathfindingB<NodeT, EdgeT, OffsetType> {
@@ -482,7 +495,6 @@ class STDCMPathfindingB<NodeT : Any, EdgeT : Any, OffsetType>(
         var distanceLeftEstimation = 0.0
         if (nPassedTargets < estimateRemainingDistance!!.size)
             distanceLeftEstimation =
-
                 estimateRemainingDistance!![nPassedTargets].apply(
                     filteredRange.edge,
                     filteredRange.start as Offset<STDCMEdge> // A supprimer
@@ -502,10 +514,8 @@ class STDCMPathfindingB<NodeT : Any, EdgeT : Any, OffsetType>(
     companion object {
         const val TIMEOUT = 120.0
     }
-
-
-
 }
 
 typealias EdgeLocation<T, U> = Pathfinding.EdgeLocation<T, U>
+
 typealias EdgeRange<T, U> = Pathfinding.EdgeRange<T, U>

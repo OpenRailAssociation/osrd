@@ -104,7 +104,7 @@ fun initInfraExplorer(
     blockInfra: BlockInfra,
     location: PathfindingEdgeLocationId<Block>,
     endBlocks: Collection<BlockId> = setOf(),
-    blockedRangesOnEdge: ConstraintCombiner<BlockId, Block>
+    blockedRangesOnEdge: ConstraintCombiner<BlockId, Block> = ConstraintCombiner()
 ): Collection<InfraExplorer> {
     val infraExplorers = mutableListOf<InfraExplorer>()
     val block = location.edge
@@ -253,20 +253,22 @@ private class InfraExplorerImpl(
             if (!seenFirstBlock) {
                 nBlocksToSkip++
             } else {
-                if(!blockedRangesOnEdge.apply(block).isEmpty()) return false
+                if (!blockedRangesOnEdge.apply(block).isEmpty()) return false
                 val endPath = endBlocks.contains(block)
                 val startPath = !incrementalPath.pathStarted
                 val addRoute = block == routeBlocks.first() || startPath
-                pathFragments.add(PathFragment(
-                    if (addRoute) mutableStaticIdxArrayListOf(route)
-                    else mutableStaticIdxArrayListOf(),
-                    mutableStaticIdxArrayListOf(block),
-                    containsStart = startPath,
-                    containsEnd = endPath,
-                    travelledPathBegin =
-                    if (startPath) firstLocation!!.offset.distance else Distance.ZERO,
-                    travelledPathEnd = Distance.ZERO
-                ))
+                pathFragments.add(
+                    PathFragment(
+                        if (addRoute) mutableStaticIdxArrayListOf(route)
+                        else mutableStaticIdxArrayListOf(),
+                        mutableStaticIdxArrayListOf(block),
+                        containsStart = startPath,
+                        containsEnd = endPath,
+                        travelledPathBegin =
+                            if (startPath) firstLocation!!.offset.distance else Distance.ZERO,
+                        travelledPathEnd = Distance.ZERO
+                    )
+                )
                 if (endPath) break // Can't extend any further
             }
         }
@@ -274,8 +276,7 @@ private class InfraExplorerImpl(
         blocks.addAll(routeBlocks)
         routes.add(route)
         for (i in 0 ..< nBlocksToSkip) moveForward()
-        for(pathFragment in pathFragments)
-            incrementalPath.extend(pathFragment)
+        for (pathFragment in pathFragments) incrementalPath.extend(pathFragment)
 
         return true
     }

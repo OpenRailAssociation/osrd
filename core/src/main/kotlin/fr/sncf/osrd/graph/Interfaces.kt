@@ -1,6 +1,5 @@
 package fr.sncf.osrd.graph
 
-import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.utils.indexing.StaticIdx
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset

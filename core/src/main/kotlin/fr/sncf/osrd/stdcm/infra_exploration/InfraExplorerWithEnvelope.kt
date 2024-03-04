@@ -70,7 +70,7 @@ fun initInfraExplorerWithEnvelope(
     location: PathfindingEdgeLocationId<Block>,
     endBlocks: Collection<BlockId> = setOf(),
     rollingStock: RollingStock,
-    blockedRangesOnEdge: ConstraintCombiner<BlockId, Block>
+    blockedRangesOnEdge: ConstraintCombiner<BlockId, Block> = ConstraintCombiner(),
 ): Collection<InfraExplorerWithEnvelope> {
     return initInfraExplorer(
             fullInfra.rawInfra,

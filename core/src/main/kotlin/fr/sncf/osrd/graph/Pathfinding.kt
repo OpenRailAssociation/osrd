@@ -127,7 +127,7 @@ class Pathfinding<NodeT : Any, EdgeT : Any, OffsetType>(
     }
 
     /** Sets the functor used to determine which ranges are blocked on an edge */
-   fun addBlockedRangeOnEdges(
+    fun addBlockedRangeOnEdges(
         f: EdgeToRanges<EdgeT, OffsetType>
     ): Pathfinding<NodeT, EdgeT, OffsetType> {
         blockedRangesOnEdge.functions.add(f)
