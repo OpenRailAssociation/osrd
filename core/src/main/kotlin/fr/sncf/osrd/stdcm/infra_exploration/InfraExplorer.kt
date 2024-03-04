@@ -246,6 +246,7 @@ private class InfraExplorerImpl(
         var seenFirstBlock = firstLocation == null
         var nBlocksToSkip = 0
         var pathFragments = arrayListOf<PathFragment>()
+        var pathStarted = !incrementalPath.pathStarted
         for (block in routeBlocks) {
             if (block == firstLocation?.edge) {
                 seenFirstBlock = true
@@ -255,7 +256,7 @@ private class InfraExplorerImpl(
             } else {
                 if (!blockedRangesOnEdge.apply(block).isEmpty()) return false
                 val endPath = endBlocks.contains(block)
-                val startPath = !incrementalPath.pathStarted
+                val startPath = !pathStarted
                 val addRoute = block == routeBlocks.first() || startPath
                 pathFragments.add(
                     PathFragment(
@@ -269,14 +270,19 @@ private class InfraExplorerImpl(
                         travelledPathEnd = Distance.ZERO
                     )
                 )
-                if (endPath) break // Can't extend any further
+                pathStarted = true
+                if (endPath) {
+                    break
+                } // Can't extend any further
             }
         }
         assert(seenFirstBlock)
         blocks.addAll(routeBlocks)
         routes.add(route)
         for (i in 0 ..< nBlocksToSkip) moveForward()
-        for (pathFragment in pathFragments) incrementalPath.extend(pathFragment)
+        for (pathFragment in pathFragments) {
+            incrementalPath.extend(pathFragment)
+        }
 
         return true
     }

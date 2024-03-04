@@ -326,8 +326,8 @@ class Pathfinding<NodeT : Any, EdgeT : Any, OffsetType>(
         nPassedTargets: Int,
         targets: List<EdgeLocation<EdgeT, OffsetType>> = listOf()
     ) {
-        // val filteredRange = filterRange(range) ?: return --> plus besoin si on ne filtre plus
-        val filteredRange = EdgeRange(range.edge, range.start, range.end)
+        val filteredRange = filterRange(range) ?: return // --> plus besoin si on ne filtre plus
+        // val filteredRange = EdgeRange(range.edge, range.start, range.end)
         val totalDistance =
             if (totalCostUntilEdgeLocation != null)
                 totalCostUntilEdgeLocation!!.apply(
