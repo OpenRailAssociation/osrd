@@ -15,7 +15,7 @@ import CurveSpreadsheet from 'modules/rollingStock/components/RollingStockEditor
 import { STANDARD_COMFORT_LEVEL, THERMAL_TRACTION_IDENTIFIER } from 'modules/rollingStock/consts';
 import { getElectricalProfilesAndPowerRestrictions } from 'modules/rollingStock/helpers/rollingStockEditor';
 import {
-  filterUndefinedValueInCurve,
+  filterNullValueInCurve,
   orderElectricalProfils,
   orderSelectorList,
 } from 'modules/rollingStock/helpers/utils';
@@ -176,7 +176,7 @@ const RollingStockEditorCurves = ({
         ...selectedModeCurves,
         curves: matchingCurves.map((condCurve) => ({
           ...condCurve,
-          curve: filterUndefinedValueInCurve(condCurve.curve),
+          curve: filterNullValueInCurve(condCurve.curve),
         })),
       },
     } as EffortCurves['modes'];
@@ -211,7 +211,8 @@ const RollingStockEditorCurves = ({
       {selectedTractionMode &&
         selectedCurve &&
         selectedCurveIndex !== null &&
-        selectedTractionModeCurves && (
+        selectedTractionModeCurves &&
+        effortCurves && (
           <div className="rollingstock-editor-curves d-flex p-3">
             <CurveSpreadsheet
               selectedCurve={selectedCurve}

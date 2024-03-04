@@ -122,10 +122,15 @@ export type ElectricalProfileByMode = {
   thermal: null[];
 };
 
+export type DataSheetCurve = {
+  speed: number | null;
+  effort: number | null;
+};
+
 // Effort curve with values number or undefined
 export type EffortCurveForm = {
-  max_efforts: Array<number | undefined>;
-  speeds: Array<number | undefined>;
+  max_efforts: Array<number | null>;
+  speeds: Array<number | null>;
 };
 
 export type ConditionalEffortCurveForm = {

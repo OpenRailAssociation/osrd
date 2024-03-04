@@ -32,11 +32,11 @@ import { kmhToMs, msToKmh } from 'utils/physics';
 import { getTranslationKey } from 'utils/strings';
 import type { ValueOf } from 'utils/types';
 
-export const filterUndefinedValueInCurve = (curve: EffortCurveForm) =>
+export const filterNullValueInCurve = (curve: EffortCurveForm) =>
   curve.speeds.reduce<EffortCurve>(
     (result, speed, index) => {
       const maxEffort = curve.max_efforts[index];
-      if (speed !== undefined && maxEffort !== undefined) {
+      if (speed !== null && maxEffort !== null) {
         result.speeds.push(speed);
         result.max_efforts.push(maxEffort);
       }
@@ -132,11 +132,11 @@ export const rollingStockEditorQueryArg = (
       ...acc,
       [mode]: {
         ...currentRsEffortCurve[mode],
-        default_curve: filterUndefinedValueInCurve(currentRsEffortCurve[mode].default_curve),
+        default_curve: filterNullValueInCurve(currentRsEffortCurve[mode].default_curve),
         curves: [
           ...currentRsEffortCurve[mode].curves.map((curve) => ({
             ...curve,
-            curve: filterUndefinedValueInCurve(curve.curve),
+            curve: filterNullValueInCurve(curve.curve),
           })),
         ],
       },
@@ -259,7 +259,7 @@ export const checkRollingStockFormValidity = (
   Object.entries(effortCurves || {}).forEach(([mode, { curves }]) => {
     curves.forEach(
       ({ curve, cond: { comfort, electrical_profile_level, power_restriction_code } }) => {
-        const filteredCurve = filterUndefinedValueInCurve(curve);
+        const filteredCurve = filterNullValueInCurve(curve);
 
         if (isInvalidCurve(filteredCurve)) {
           const formattedComfort = formatCurveCondition(comfort, t, 'comfortTypes');
