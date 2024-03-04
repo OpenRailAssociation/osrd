@@ -223,19 +223,12 @@
 
   .rollingstock-editor-spreadsheet {
     width: 40%;
-    height: 20.75rem;
-    overflow: auto;
-    tr:not(:first-child) .Spreadsheet__header,
-    tr:first-child .Spreadsheet__header:first-child {
-      width: 2rem;
-      border: solid 1px var(--coolgray3);
-    }
-    tr:not(:first-child) .Spreadsheet__header {
-      background-color: var(--white);
-    }
-    tr:first-child .Spreadsheet__header {
+    height: auto;
+    border-radius: 0.3rem;
+    .dsg-cell-header {
       color: var(--blue);
       white-space: normal !important;
+      background-color: var(--coolgray1);
     }
   }
 

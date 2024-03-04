@@ -33,8 +33,6 @@ export function snakeToCamel(str: string) {
   return str.replace(/[^a-zA-Z0-9]+(.)/g, (_, chr: string) => chr.toUpperCase());
 }
 
-export const emptyStringRegex = /^\s+$/;
-
 export function getTranslationKey(translationList: string | undefined, item: string): string {
   return `${translationList ? `${translationList}.` : ''}${item}`;
 }

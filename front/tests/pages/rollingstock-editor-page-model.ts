@@ -24,7 +24,7 @@ export class PlaywrightRollingstockEditorPage extends PlaywrightCommonPage {
     this.getSubmitRollingstockButton = page.getByTestId('submit-rollingstock-button');
     this.getRollingstockDetailsButton = page.getByTestId('tab-rollingstock-details');
     this.getSpeedEffortCurvesButton = page.getByTestId('tab-rollingstock-curves');
-    this.getRollingStockSpreedsheet = page.locator('.Spreadsheet__table');
+    this.getRollingStockSpreedsheet = page.locator('.dsg-container');
     this.getRollingStockSearchInput = page.locator('#searchfilter');
     this.getRollingStockEditorList = page.getByTestId('rollingstock-editor-list');
   }
@@ -58,12 +58,12 @@ export class PlaywrightRollingstockEditorPage extends PlaywrightCommonPage {
     return this.page.getByTestId(testId);
   }
 
-  getVelocityCellByRow(row: string) {
-    return this.getRollingStockSpreedsheet.locator(`[row="${row}"]`).locator('td').first();
+  getVelocityCellByRow(row: number) {
+    return this.getRollingStockSpreedsheet.locator('.dsg-row').nth(row).locator('.dsg-cell').nth(1);
   }
 
-  getEffortCellByRow(row: string) {
-    return this.getRollingStockSpreedsheet.locator(`[row="${row}"]`).locator('td').last();
+  getEffortCellByRow(row: number) {
+    return this.getRollingStockSpreedsheet.locator('.dsg-row').nth(row).locator('.dsg-cell').last();
   }
 
   async setSpreedsheetCell(value: string, cell: Locator) {
@@ -77,7 +77,7 @@ export class PlaywrightRollingstockEditorPage extends PlaywrightCommonPage {
     );
   }
 
-  async setSpreedsheetRow(data: { row: string; velocity: string; effort: string }[]) {
+  async setSpreedsheetRow(data: { row: number; velocity: string; effort: string }[]) {
     await Promise.all(
       data.map(async ({ row, effort, velocity }) => {
         const velocityCell = this.getVelocityCellByRow(row);
