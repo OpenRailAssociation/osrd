@@ -2,6 +2,7 @@ pub mod documents;
 pub mod infra_objects;
 pub mod projects;
 pub mod railjson;
+pub mod rolling_stock_image;
 pub mod rolling_stock_livery;
 pub mod study;
 pub mod timetable;
@@ -10,6 +11,7 @@ pub mod train_schedule;
 pub use documents::Document;
 pub use infra_objects::*;
 pub use projects::{Ordering, Project, Tags};
+pub use rolling_stock_image::RollingStockSeparatedImageModel;
 pub use study::Study;
 
 use async_trait::async_trait;

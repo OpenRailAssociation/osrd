@@ -1,10 +1,8 @@
 pub mod light_rolling_stock;
-pub mod rolling_stock_image;
 
 use crate::modelsv2::rolling_stock_livery::RollingStockLiveryMetadataModel;
 use async_trait::async_trait;
 pub use light_rolling_stock::LightRollingStockModel;
-pub use rolling_stock_image::RollingStockSeparatedImageModel;
 use utoipa::ToSchema;
 
 use crate::error::{InternalError, Result};
