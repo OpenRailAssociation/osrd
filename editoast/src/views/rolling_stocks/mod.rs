@@ -1,9 +1,7 @@
 use crate::error::Result;
-use crate::models::{
-    rolling_stock::RollingStockSeparatedImageModel, Create, Delete, Retrieve, RollingStockModel,
-    Update,
-};
+use crate::models::{Create, Delete, Retrieve, RollingStockModel, Update};
 use crate::modelsv2::rolling_stock_livery::RollingStockLiveryModel;
+use crate::modelsv2::RollingStockSeparatedImageModel;
 use crate::modelsv2::{Document, Model};
 use crate::schema::rolling_stock::rolling_stock_livery::RollingStockLivery;
 use crate::schema::rolling_stock::{
@@ -447,14 +445,12 @@ async fn create_livery(
             .create(&mut conn)
             .await?;
 
-        let _ = RollingStockSeparatedImageModel {
-            image_id: Some(image.id),
-            livery_id: Some(rolling_stock_livery.id),
-            order: Some(index.try_into().unwrap()),
-            ..Default::default()
-        }
-        .create(db_pool.clone())
-        .await?;
+        let _ = RollingStockSeparatedImageModel::changeset()
+            .image_id(image.id)
+            .livery_id(rolling_stock_livery.id)
+            .order(index.try_into().unwrap())
+            .create(&mut conn)
+            .await?;
     }
 
     Ok(Json(rolling_stock_livery))
