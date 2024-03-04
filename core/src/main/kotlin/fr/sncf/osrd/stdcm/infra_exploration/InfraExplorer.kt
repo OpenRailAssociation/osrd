@@ -171,7 +171,7 @@ private class InfraExplorerImpl(
         if (getIncrementalPath().pathComplete)
             return listOf() // Can't extend beyond the destination
         val infraExplorers = mutableListOf<InfraExplorer>()
-        val lastRoute = routes.last()
+        val lastRoute = routes[routes.size - 1]
         val lastRouteExit = rawInfra.getRouteExit(lastRoute)
         val nextRoutes = rawInfra.getRoutesStartingAtDet(lastRouteExit)
         nextRoutes.forEach {
@@ -200,14 +200,9 @@ private class InfraExplorerImpl(
     }
 
     override fun getPredecessorLength(): Length<Path> {
-        return Length(
-            Distance(
-                millimeters =
-                    getPredecessorBlocks().sumOf {
-                        blockInfra.getBlockLength(it).distance.millimeters
-                    }
-            )
-        )
+        var res = Length<Path>(0.meters)
+        for (i in 0 ..< currentIndex) res += blockInfra.getBlockLength(blocks[i]).distance
+        return res
     }
 
     override fun getPredecessorBlocks(): StaticIdxList<Block> {
@@ -229,7 +224,7 @@ private class InfraExplorerImpl(
             this.blocks.clone(),
             this.routes.clone(),
             this.incrementalPath.clone(),
-            this.pathPropertiesCache.toMutableMap(),
+            this.pathPropertiesCache,
             this.currentIndex,
             this.endBlocks,
         )

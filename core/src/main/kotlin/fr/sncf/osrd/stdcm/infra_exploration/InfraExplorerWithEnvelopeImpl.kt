@@ -99,7 +99,7 @@ data class InfraExplorerWithEnvelopeImpl(
     }
 
     override fun getSimulatedLength(): Length<Path> {
-        return Length(Distance.fromMeters(getFullEnvelope().endPos))
+        return Length(Distance.fromMeters(envelopes.sumOf { it.endPos }))
     }
 
     override fun clone(): InfraExplorerWithEnvelope {
