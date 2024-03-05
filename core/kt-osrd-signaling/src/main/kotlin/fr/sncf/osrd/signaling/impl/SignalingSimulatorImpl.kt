@@ -119,27 +119,21 @@ class SignalingSimulatorImpl(override val sigModuleManager: SigSystemManager) : 
         loadedSignalInfra: LoadedSignalInfra,
         blocks: BlockInfra,
         fullPath: StaticIdxList<Block>,
-        evaluatedPathBegin: Int,
         evaluatedPathEnd: Int,
         zoneStates: List<ZoneStatus>,
         followingZoneState: ZoneStatus,
     ): Map<LogicalSignalId, SigState> {
-        assert(evaluatedPathBegin >= 0)
-        assert(evaluatedPathEnd > evaluatedPathBegin)
+        assert(evaluatedPathEnd > 0)
         assert(evaluatedPathEnd <= fullPath.size)
-        val evaluatedPath =
-            MutableStaticIdxArray(evaluatedPathEnd - evaluatedPathBegin) {
-                fullPath[evaluatedPathBegin + it]
-            }
 
         // compute the offset of each block's first zone inside the partial path
-        val blockZoneMap = IntArray(evaluatedPath.size + 1)
+        val blockZoneMap = IntArray(evaluatedPathEnd + 1)
         var blockZoneOffset = 0
-        for (i in 0 until evaluatedPath.size) {
+        for (i in 0 until evaluatedPathEnd) {
             blockZoneMap[i] = blockZoneOffset
-            blockZoneOffset += blocks.getBlockPath(evaluatedPath[i]).size
+            blockZoneOffset += blocks.getBlockPath(fullPath[i]).size
         }
-        blockZoneMap[evaluatedPath.size] = blockZoneOffset
+        blockZoneMap[evaluatedPathEnd] = blockZoneOffset
 
         // region compute each signal's protection status
         // first, find all the signals we need to evaluate in this call, and which block they belong
@@ -150,7 +144,7 @@ class SignalingSimulatorImpl(override val sigModuleManager: SigSystemManager) : 
         )
 
         val signalEvalSequence = ArrayDeque<SignalEvalTask>()
-        val lastBlock = evaluatedPath[evaluatedPath.size - 1]
+        val lastBlock = fullPath[evaluatedPathEnd - 1]
         val lastBlockEndsAtBufferStop = blocks.blockStopAtBufferStop(lastBlock)
         if (!lastBlockEndsAtBufferStop) {
             val blockSignals = blocks.getBlockSignals(lastBlock)
@@ -160,8 +154,8 @@ class SignalingSimulatorImpl(override val sigModuleManager: SigSystemManager) : 
             )
         }
 
-        for (blockIndex in (0 until evaluatedPath.size).reversed()) {
-            val curBlock = evaluatedPath[blockIndex]
+        for (blockIndex in (0 until evaluatedPathEnd).reversed()) {
+            val curBlock = fullPath[blockIndex]
             val startAtBufferStop = blocks.blockStartAtBufferStop(curBlock)
             val endsAtBufferStop = blocks.blockStopAtBufferStop(curBlock)
             val blockSignals = blocks.getBlockSignals(curBlock)
