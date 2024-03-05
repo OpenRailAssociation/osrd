@@ -21,6 +21,7 @@ import fr.sncf.osrd.sim_infra.api.TrackChunkId
 import fr.sncf.osrd.sim_infra.api.TrackNode
 import fr.sncf.osrd.sim_infra.api.TrackNodeConfig
 import fr.sncf.osrd.sim_infra.api.TrackNodeId
+import fr.sncf.osrd.sim_infra.api.TrackNodePort
 import fr.sncf.osrd.sim_infra.api.TrackSection
 import fr.sncf.osrd.sim_infra.api.TrackSectionId
 import fr.sncf.osrd.sim_infra.api.Zone
@@ -31,6 +32,7 @@ import fr.sncf.osrd.sim_infra.api.decreasing
 import fr.sncf.osrd.sim_infra.api.increasing
 import fr.sncf.osrd.utils.DirectionalMap
 import fr.sncf.osrd.utils.DistanceRangeMap
+import fr.sncf.osrd.utils.Endpoint
 import fr.sncf.osrd.utils.distanceRangeMapOf
 import fr.sncf.osrd.utils.indexing.DirStaticIdx
 import fr.sncf.osrd.utils.indexing.DirStaticIdxList
@@ -84,15 +86,23 @@ class RawInfraFromRjsBuilderImpl : RawInfraBuilder {
         return sectionDistanceSortedChunkMap
     }
 
+    // TODO remove this accessor once useless in adapter
+    fun getTrackNodePool(): StaticPool<TrackNode, TrackNodeDescriptor> {
+        return trackNodePool
+    }
+
+    private fun getSectionIdx(sectionName: String): TrackSectionId {
+        return sectionNameToIdxMap[sectionName]
+            ?: throw OSRDError.newInfraLoadingError(
+                ErrorType.InfraHardLoadingError,
+                "Accessing track-section from unregistered name $sectionName"
+            )
+    }
+
     private fun getSectionDistanceSortedChunks(
         sectionName: String
     ): TreeMap<Distance, TrackChunkId> {
-        val sectionIdx =
-            sectionNameToIdxMap[sectionName]
-                ?: throw OSRDError.newInfraLoadingError(
-                    ErrorType.InfraHardLoadingError,
-                    "Accessing track-section from unregistered name $sectionName"
-                )
+        val sectionIdx = getSectionIdx(sectionName)
         return sectionDistanceSortedChunkMap[sectionIdx]
             ?: throw OSRDError.newInfraLoadingError(
                 ErrorType.InfraHardLoadingError,
@@ -100,15 +110,25 @@ class RawInfraFromRjsBuilderImpl : RawInfraBuilder {
             )
     }
 
-    override fun movableElement(
+    fun getSectionEndpointIdx(sectionName: String, endpoint: Endpoint): EndpointTrackSectionId {
+        return EndpointTrackSectionId(getSectionIdx(sectionName), endpoint)
+    }
+
+    fun node(
         name: String,
         delay: Duration,
-        init: MovableElementDescriptorBuilder.() -> Unit
+        ports: StaticPool<TrackNodePort, EndpointTrackSectionId>,
+        configs: StaticPool<TrackNodeConfig, TrackNodeConfigDescriptor>
     ): TrackNodeId {
-        val movableElementBuilder = MovableElementDescriptorBuilderImpl(name, delay)
-        movableElementBuilder.init()
-        val movableElement = movableElementBuilder.build()
-        return trackNodePool.add(movableElement)
+        val nodeIdx = trackNodePool.add(TrackNodeDescriptor(name, delay, ports, configs))
+        for (portIdx in ports) {
+            val port = ports[portIdx]
+            assert(nodeAtEndpoint[port] == null) {
+                "Assertion failed: section ${trackSectionPool[port.value].name}.${port.endpoint} is referenced multiple times by a node port"
+            }
+            nodeAtEndpoint[port] = nodeIdx
+        }
+        return nodeIdx
     }
 
     override fun detector(name: String?): DetectorId {
@@ -418,15 +438,6 @@ class RawInfraFromRjsBuilderImpl : RawInfraBuilder {
             }
             routePool[route].length = Length(routeLength)
         }
-
-        // Build a map from track section endpoint to track node
-        for (trackNode in trackNodePool) {
-            val nodeDescriptor = trackNodePool[trackNode]
-            for (port in nodeDescriptor.ports) {
-                val connectedEndpoint = nodeDescriptor.ports[port]
-                nodeAtEndpoint.getOrPut(connectedEndpoint) { trackNode }
-            }
-        }
     }
 }
 
@@ -434,7 +445,7 @@ fun RawInfraFromRjsBuilder(): RawInfraBuilder {
     return RawInfraFromRjsBuilderImpl()
 }
 
-inline fun rawInfraFromRjs(init: RestrictedRawInfraBuilder.() -> Unit): RawInfra {
+inline fun rawInfraFromRjs(init: RawInfraFromRjsBuilderImpl.() -> Unit): RawInfra {
     val infraBuilder = RawInfraFromRjsBuilderImpl()
     infraBuilder.init()
     return infraBuilder.build()

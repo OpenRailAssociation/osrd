@@ -224,12 +224,6 @@ class RouteDescriptorImpl(
 ) : RouteDescriptor
 
 interface RestrictedRawInfraBuilder {
-    fun movableElement(
-        name: String,
-        delay: Duration,
-        init: MovableElementDescriptorBuilder.() -> Unit
-    ): TrackNodeId
-
     fun detector(name: String?): DetectorId
 
     fun linkZones(zoneA: ZoneId, zoneB: ZoneId): DetectorId
@@ -320,7 +314,7 @@ class RawInfraBuilderImpl : RawInfraBuilder {
     private val operationalPointPartPool =
         StaticPool<OperationalPointPart, OperationalPointPartDescriptor>()
 
-    override fun movableElement(
+    fun movableElement(
         name: String,
         delay: Duration,
         init: MovableElementDescriptorBuilder.() -> Unit

@@ -4,15 +4,16 @@ import fr.sncf.osrd.signaling.ZoneStatus
 import fr.sncf.osrd.signaling.impl.SigSystemManagerImpl
 import fr.sncf.osrd.signaling.impl.SignalingSimulatorImpl
 import fr.sncf.osrd.sim_infra.api.*
-import fr.sncf.osrd.sim_infra.impl.RawInfraFromRjsBuilder
+import fr.sncf.osrd.sim_infra.impl.RawInfraFromRjsBuilderImpl
 import fr.sncf.osrd.utils.indexing.StaticIdx
+import fr.sncf.osrd.utils.indexing.StaticPool
 import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.ZERO
 
 class TestBALtoBAL {
     @Test
@@ -28,13 +29,9 @@ class TestBALtoBAL {
         //  <-- reverse     normal -->
 
         // region build the test infrastructure
-        val builder = RawInfraFromRjsBuilder()
+        val builder = RawInfraFromRjsBuilderImpl()
         // region switches
-        val switch =
-            builder.movableElement("S", delay = 10L.milliseconds) {
-                config("xy", Pair(TrackNodePortId(0u), TrackNodePortId(1u)))
-                config("vy", Pair(TrackNodePortId(0u), TrackNodePortId(1u)))
-            }
+        val switch = builder.node("S", ZERO, StaticPool(), StaticPool())
         // endregion
 
         // region zones

@@ -1,5 +1,7 @@
 package fr.sncf.osrd.utils
 
+import fr.sncf.osrd.railjson.schema.common.graph.EdgeEndpoint
+
 /** An endpoint on an oriented segment */
 enum class Endpoint {
     /** The point at the start of the oriented segment */
@@ -23,4 +25,10 @@ enum class Endpoint {
 
     val directionFrom: Direction
         get() = directionAway.opposite
+
+    companion object {
+        fun fromEdgeEndpoint(edgeEndpoint: EdgeEndpoint): Endpoint {
+            if (edgeEndpoint == EdgeEndpoint.BEGIN) return START else return END
+        }
+    }
 }
