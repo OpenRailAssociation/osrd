@@ -126,7 +126,6 @@ class TestBAPRtoBAL {
                 loadedSignalInfra,
                 blockInfra,
                 fullPath,
-                0,
                 fullPath.size,
                 zoneStates,
                 ZoneStatus.INCOMPATIBLE

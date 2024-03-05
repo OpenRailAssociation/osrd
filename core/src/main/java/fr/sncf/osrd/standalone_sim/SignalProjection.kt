@@ -123,7 +123,6 @@ private fun computeSignalAspectChangeEvents(
                 loadedSignalInfra,
                 blockInfra,
                 blockPath,
-                0,
                 blockPath.size,
                 zoneStates,
                 ZoneStatus.CLEAR
