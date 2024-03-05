@@ -39,7 +39,15 @@ export const SpeedSectionEditionLayers = () => {
   const {
     editorState: { editorLayers },
     renderingFingerprint,
-    state: { entity, trackSectionsCache, hoveredItem, interactionState, mousePosition },
+    state: {
+      entity,
+      trackSectionsCache,
+      hoveredItem,
+      interactionState,
+      mousePosition,
+      hovered,
+      selectedSwitches,
+    },
     setState,
   } = useContext(EditorContext) as ExtendedEditorContextType<RangeEditionState<SpeedSectionEntity>>;
   const isPSL = speedSectionIsPsl(entity);
@@ -55,10 +63,12 @@ export const SpeedSectionEditionLayers = () => {
     // Custom hovered element:
     else if (hoveredItem?.itemType) {
       res.push(hoveredItem.track.properties.id);
+    } else if (interactionState.type === 'selectSwitch') {
+      res.push(...selectedSwitches);
     }
 
     return res;
-  }, [interactionState, hoveredItem, entity]);
+  }, [interactionState, hoveredItem, entity, selectedSwitches]);
 
   const speedSectionsFeature: FeatureCollection = useMemo(() => {
     const flatEntity = flattenEntity(entity);
@@ -219,6 +229,23 @@ export const SpeedSectionEditionLayers = () => {
             <EntitySumUp id={hoveredItem.id} objType={hoveredItem.type} />
           </Popup>
         )}
+      {mousePosition && hovered && (
+        <Popup
+          className="popup editor-selection"
+          anchor="bottom"
+          longitude={mousePosition[0]}
+          latitude={mousePosition[1]}
+          closeButton={false}
+        >
+          <EntitySumUp
+            key={hovered.id}
+            id={hovered.id}
+            objType={hovered.type}
+            error={hovered.error}
+            status="selected"
+          />
+        </Popup>
+      )}
     </>
   );
 
