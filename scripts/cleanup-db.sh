@@ -28,12 +28,20 @@ fi
 if [ $DB_EXISTS = 't' ]; then
   # Check that no service is connected to the database
   echo "Checking database availability..."
+
+  # if editoast is running, shut it down.
+  if [ "$(docker ps -q -f name=osrd-editoast)" ]; then
+    echo "Stopping editoast..."
+    docker stop osrd-editoast
+  fi
+
   DB_CONN="$(docker exec osrd-postgres psql -c "SELECT numbackends FROM pg_stat_database WHERE datname = 'osrd';")"
   DB_CONN="$(echo "$DB_CONN" | grep -o -E '[0-9]+$')"
 
   if [ $DB_CONN -ne 0 ]; then
     echo "  The database can not be cleared."
-    echo "  You must only have your postgres container running!"
+    echo "  A process is connected to your database, please check it and close it."
+    echo "  In doubt, you can shutdown the whole compose stack and only keep the database running."
     exit 2
   fi
 
