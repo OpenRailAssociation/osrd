@@ -51,7 +51,6 @@ interface SignalingSimulator {
         loadedSignalInfra: LoadedSignalInfra,
         blocks: BlockInfra,
         fullPath: StaticIdxList<Block>,
-        evaluatedPathBegin: Int,
         evaluatedPathEnd: Int,
         zoneStates: List<ZoneStatus>,
         followingZoneState: ZoneStatus,

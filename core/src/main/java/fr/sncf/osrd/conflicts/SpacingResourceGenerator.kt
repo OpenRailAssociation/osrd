@@ -47,11 +47,6 @@ class SpacingRequirementAutomaton(
     // last zone for which a requirement was emitted
     private var lastEmittedZone = -1
 
-    // last zone whose occupancy was tested with the current pending signal
-    // when a new signal starts processing, this value is initialized to the zone immediately after
-    // it
-    private var nextProbedZoneForSignal = -1
-
     // the queue of signals awaiting processing
     private val pendingSignals = ArrayDeque<PathSignal>()
 
@@ -174,28 +169,87 @@ class SpacingRequirementAutomaton(
         lastEmittedZone = endZoneIndex
     }
 
+    // Returns true if the zone is required to be clear for the signal to not be constraining,
+    // false if it's not required, and null if the end of the block path has been reached
+    private fun isZoneIndexRequiredForSignal(
+        probedZoneIndex: Int,
+        pathSignal: PathSignal
+    ): Boolean? {
+        val firstBlockIndex = pathSignal.minBlockPathIndex
+
+        // List of blocks to include in the simulator call
+        val blocks = mutableStaticIdxArrayListOf(incrementalPath.getBlock(firstBlockIndex))
+
+        // Index of the first zone included in the block path,
+        // used to properly index the zone state array
+        val firstSimulatedZone = incrementalPath.getBlockStartZone(firstBlockIndex)
+
+        // Number of zones included in the block path
+        var nSimulatedZones = blockInfra.getBlockPath(blocks[0]).size
+
+        // Add blocks in the block path until the probed zone is covered
+        while (probedZoneIndex - firstSimulatedZone + 1 > nSimulatedZones) {
+            if (firstBlockIndex + blocks.size >= incrementalPath.endBlockIndex) {
+                // exiting, the end of the block path has been reached
+                return null
+            }
+            val newBlock = incrementalPath.getBlock(firstBlockIndex + blocks.size)
+            blocks.add(newBlock)
+            nSimulatedZones += blockInfra.getBlockPath(newBlock).size
+        }
+
+        val zoneStates = MutableList(nSimulatedZones) { ZoneStatus.CLEAR }
+        zoneStates[probedZoneIndex - firstSimulatedZone] = ZoneStatus.OCCUPIED
+        val simulatedSignalStates =
+            simulator.evaluate(
+                rawInfra,
+                loadedSignalInfra,
+                blockInfra,
+                blocks,
+                blocks.size,
+                zoneStates,
+                ZoneStatus.OCCUPIED
+            )
+        val signalState = simulatedSignalStates[pathSignal.signal]!!
+
+        // FIXME: Have a better way to check if the signal is constraining
+        return signalState.getEnum("aspect") != "VL"
+    }
+
+    // Returns the range on which we need to add requirements, or null if more path is required
+    private fun getRequiredZoneIndexes(pathSignal: PathSignal): IntRange? {
+        val firstRequiredZone =
+            getSignalProtectedZone(pathSignal) // index of the first zone required for the train
+        var probedZoneIndex = firstRequiredZone // zone we set to "occupied" in the loop
+
+        // find the first zone after the signal which can be occupied
+        // without disturbing the train
+        while (true) {
+            val required = isZoneIndexRequiredForSignal(probedZoneIndex, pathSignal)
+            when (required) {
+                true -> probedZoneIndex++
+                false -> break
+                null -> {
+                    if (incrementalPath.pathComplete) {
+                        break // More path would normally be required but the train stops there
+                    } else {
+                        return null // More path required
+                    }
+                }
+            }
+        }
+        return firstRequiredZone until probedZoneIndex
+    }
+
     fun processPathUpdate(): SpacingResourceUpdate {
         // process newly added path data
         registerPathExtension()
         // initialize requirements which only apply before the train sees any signal
         setupInitialRequirements()
 
-        val blocks = mutableStaticIdxArrayListOf<Block>()
-        for (blockIndex in
-            incrementalPath.beginBlockIndex until incrementalPath.endBlockIndex) blocks.add(
-            incrementalPath.getBlock(blockIndex)
-        )
-
-        // there may be more zone states than what's contained in the path's blocks, which shouldn't
-        // matter
-        val zoneStartIndex = incrementalPath.getBlockStartZone(incrementalPath.beginBlockIndex)
-        val zoneEndIndex = incrementalPath.getBlockEndZone(incrementalPath.endBlockIndex - 1)
-        val zoneCount = zoneEndIndex - zoneStartIndex
-        val zoneStates = MutableList(zoneCount) { ZoneStatus.CLEAR }
-
         // for all signals, update zone requirement times until a signal is found for which
         // more path is needed
-        signalLoop@ while (pendingSignals.isNotEmpty()) {
+        while (pendingSignals.isNotEmpty()) {
             val pathSignal = pendingSignals.first()
             val physicalSignal = loadedSignalInfra.getPhysicalSignal(pathSignal.signal)
 
@@ -203,51 +257,17 @@ class SpacingRequirementAutomaton(
             val signalOffset = incrementalPath.toTravelledPath(pathSignal.pathOffset)
             val sightOffset = signalOffset - rawInfra.getSignalSightDistance(physicalSignal)
             // If the train's simulation has reached the point where the signal is seen, bail out
-            if (callbacks.currentPathOffset < sightOffset) break@signalLoop
+            if (callbacks.currentPathOffset < sightOffset) {
+                break
+            }
             val sightTime = callbacks.arrivalTimeInRange(sightOffset, signalOffset)
             assert(sightTime.isFinite())
-            val signalProtectedZone = getSignalProtectedZone(pathSignal)
 
-            if (nextProbedZoneForSignal == -1) nextProbedZoneForSignal = signalProtectedZone
-
-            // find the first zone after the signal which can be occupied without disturbing the
-            // train
-            zoneProbingLoop@ while (true) {
-                // if we reached the last zone, just quit
-                if (nextProbedZoneForSignal == zoneEndIndex) {
-                    if (incrementalPath.pathComplete) break@zoneProbingLoop
-                    return NotEnoughPath
-                }
-                val zoneIndex = nextProbedZoneForSignal++
-
-                // find the index of this signal's block in the block array
-                val currentBlockOffset =
-                    pathSignal.minBlockPathIndex - incrementalPath.beginBlockIndex
-                assert(
-                    blocks[currentBlockOffset] ==
-                        incrementalPath.getBlock(pathSignal.minBlockPathIndex)
-                )
-                zoneStates[zoneIndex - zoneStartIndex] = ZoneStatus.OCCUPIED
-                val simulatedSignalStates =
-                    simulator.evaluate(
-                        rawInfra,
-                        loadedSignalInfra,
-                        blockInfra,
-                        blocks,
-                        0,
-                        blocks.size,
-                        zoneStates,
-                        ZoneStatus.CLEAR
-                    )
-                zoneStates[zoneIndex - zoneStartIndex] = ZoneStatus.CLEAR
-                val signalState = simulatedSignalStates[pathSignal.signal]!!
-
-                // FIXME: Have a better way to check if the signal is constraining
-                if (signalState.getEnum("aspect") == "VL") break
-                addSignalRequirements(signalProtectedZone, zoneIndex, sightTime)
+            val requiredIndexes = getRequiredZoneIndexes(pathSignal) ?: return NotEnoughPath
+            for (i in requiredIndexes) {
+                addSignalRequirements(requiredIndexes.first, i, sightTime)
             }
             pendingSignals.removeFirst()
-            nextProbedZoneForSignal = -1
         }
 
         // serialize requirements and find the index of the first incomplete requirement
@@ -316,7 +336,6 @@ class SpacingRequirementAutomaton(
             )
         res.nextProcessedBlock = nextProcessedBlock
         res.lastEmittedZone = lastEmittedZone
-        res.nextProbedZoneForSignal = nextProbedZoneForSignal
         res.pendingSignals.addAll(pendingSignals)
         res.pendingRequirements.addAll(pendingRequirements)
         return res

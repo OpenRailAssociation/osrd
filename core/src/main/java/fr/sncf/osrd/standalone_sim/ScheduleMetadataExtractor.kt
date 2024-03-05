@@ -275,7 +275,6 @@ private fun routingRequirements(
                 loadedSignalInfra,
                 blockInfra,
                 blockPath,
-                0,
                 routeStartBlockIndex,
                 zoneStates,
                 ZoneStatus.INCOMPATIBLE
