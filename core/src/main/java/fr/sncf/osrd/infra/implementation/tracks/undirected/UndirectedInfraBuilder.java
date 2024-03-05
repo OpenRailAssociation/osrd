@@ -81,39 +81,6 @@ public class UndirectedInfraBuilder {
         builder = NetworkBuilder.directed().immutable();
     }
 
-    /**
-     * Creates a new OSRDError for an invalid infrastructure error.
-     *
-     * @param errorType the error type
-     * @param id the ID associated with the error
-     * @return a new OSRDError instance
-     */
-    public static OSRDError newInvalidRangeError(ErrorType errorType, String id) {
-        var error = new OSRDError(errorType);
-        error.context.put("track_id", id);
-        return error;
-    }
-
-    /**
-     * Creates a new OSRDError for an invalid infrastructure error with an RJS switch ID, switch
-     * type, and switch ports.
-     *
-     * @param rjsSwitchID the RJS switch ID associated with the error
-     * @param switchType the switch type
-     * @param switchTypePorts the expected switch ports
-     * @param switchPorts the received switch ports
-     * @return a new OSRDError instance
-     */
-    public static OSRDError newWrongSwitchPortsError(
-            String rjsSwitchID, String switchType, Object switchTypePorts, Object switchPorts) {
-        var error = new OSRDError(ErrorType.InvalidInfraWrongSwitchPorts);
-        error.context.put("rjs_switch_id", rjsSwitchID);
-        error.context.put("switch_type", switchType);
-        error.context.put("expected_switch_ports", switchTypePorts);
-        error.context.put("got_switch_ports", switchPorts);
-        return error;
-    }
-
     /** Creates a TrackInfra from a railjson infra */
     public static TrackInfra parseInfra(RJSInfra infra, DiagnosticRecorder diagnosticRecorder) {
         return new UndirectedInfraBuilder(diagnosticRecorder).parse(infra);
@@ -360,7 +327,7 @@ public class UndirectedInfraBuilder {
             for (var rjsCurve : track.curves) {
                 rjsCurve.simplify();
                 if (rjsCurve.begin < 0 || rjsCurve.end > track.length)
-                    throw newInvalidRangeError(ErrorType.InvalidInfraTrackCurveWithInvalidRange, track.id);
+                    throw OSRDError.newInvalidRangeError(ErrorType.InvalidInfraTrackCurveWithInvalidRange, track.id);
                 if (rjsCurve.radius != 0.) {
                     for (var dir : Direction.values())
                         curves.get(dir)
@@ -385,7 +352,7 @@ public class UndirectedInfraBuilder {
             for (var rjsSlope : track.slopes) {
                 rjsSlope.simplify();
                 if (rjsSlope.begin < 0 || rjsSlope.end > track.length)
-                    throw newInvalidRangeError(ErrorType.InvalidInfraTrackSlopeWithInvalidRange, track.id);
+                    throw OSRDError.newInvalidRangeError(ErrorType.InvalidInfraTrackSlopeWithInvalidRange, track.id);
                 if (rjsSlope.gradient != 0.) {
                     for (var dir : Direction.values())
                         slopes.get(dir)
@@ -460,7 +427,7 @@ public class UndirectedInfraBuilder {
         var switchTypePorts = new HashSet<>(switchType.ports);
         var switchPorts = rjsSwitch.ports.keySet();
         if (!switchTypePorts.equals(switchPorts))
-            throw newWrongSwitchPortsError(rjsSwitch.id, switchType.id, switchTypePorts, switchPorts);
+            throw OSRDError.newWrongSwitchPortsError(rjsSwitch.id, switchType.id, switchTypePorts, switchPorts);
 
         var groupChangeDelay = rjsSwitch.groupChangeDelay;
         if (Double.isNaN(groupChangeDelay)) groupChangeDelay = 0.0;
