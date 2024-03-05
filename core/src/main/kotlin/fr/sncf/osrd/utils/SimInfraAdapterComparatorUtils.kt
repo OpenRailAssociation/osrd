@@ -4,6 +4,8 @@ import fr.sncf.osrd.sim_infra.api.DirTrackChunkId
 import fr.sncf.osrd.sim_infra.api.RawInfra
 import fr.sncf.osrd.sim_infra.api.TrackChunk
 import fr.sncf.osrd.sim_infra.api.TrackChunkId
+import fr.sncf.osrd.sim_infra.api.TrackNodeId
+import fr.sncf.osrd.sim_infra.api.TrackNodePortId
 import fr.sncf.osrd.sim_infra.api.TrackSection
 import fr.sncf.osrd.sim_infra_adapter.SimInfraAdapter
 import fr.sncf.osrd.stdcm.graph.logger
@@ -11,28 +13,14 @@ import fr.sncf.osrd.utils.units.Offset
 import java.util.Objects
 import kotlin.collections.HashSet
 
-open class ComparableOperationalPointPart(
+data class ComparableOperationalPointPart(
     val name: String,
     val track: String,
     val trackOffset: Offset<TrackSection>,
     val chunkOffset: Offset<TrackChunk>
-) {
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other !is ComparableOperationalPointPart) return false
-        if (name != other.name) return false
-        if (track != other.track) return false
-        if (trackOffset != other.trackOffset) return false
-        if (chunkOffset != other.chunkOffset) return false
-        return true
-    }
+)
 
-    override fun hashCode(): Int {
-        return Objects.hash(name, track, trackOffset, chunkOffset)
-    }
-}
-
-open class ComparableChunk(simInfra: RawInfra, chunkId: TrackChunkId) {
+class ComparableChunk(simInfra: RawInfra, chunkId: TrackChunkId) {
     val geo = simInfra.getTrackChunkGeom(chunkId)
     val slopes =
         DirectionalMap(
@@ -134,6 +122,68 @@ open class ComparableChunk(simInfra: RawInfra, chunkId: TrackChunkId) {
     }
 }
 
+data class ComparableSectionEndpoint(val trackSectionName: String, val endpoint: Endpoint)
+
+data class ComparableConfig(
+    val name: String,
+    val connections: Map<ComparableSectionEndpoint, ComparableSectionEndpoint?>
+)
+
+class ComparableNode(simInfra: RawInfra, nodeIdx: TrackNodeId) {
+    val name = simInfra.getTrackNodeName(nodeIdx)
+    val delay = simInfra.getTrackNodeDelay(nodeIdx)
+    val portEndpoints = mutableSetOf<ComparableSectionEndpoint>()
+    val configs = mutableSetOf<ComparableConfig>()
+
+    init {
+        val portMap = mutableMapOf<TrackNodePortId, ComparableSectionEndpoint>()
+        // construct portEndpoints
+        for (portIdx in simInfra.getTrackNodePorts(nodeIdx)) {
+            val sectionEndpointIdx = simInfra.getPortConnection(nodeIdx, portIdx)
+            portMap[portIdx] =
+                ComparableSectionEndpoint(
+                    simInfra.getTrackSectionName(sectionEndpointIdx.value),
+                    sectionEndpointIdx.endpoint
+                )
+            portEndpoints.add(portMap[portIdx]!!)
+        }
+        // construct configs
+        for (configIdx in simInfra.getTrackNodeConfigs(nodeIdx)) {
+            // construct config's connections
+            val connections = mutableMapOf<ComparableSectionEndpoint, ComparableSectionEndpoint?>()
+            for ((portIdx, port) in portMap) {
+                val outPort = simInfra.getTrackNodeExitPort(nodeIdx, configIdx, portIdx)
+                if (outPort.isNone) connections[port] = null
+                else {
+                    val outEndpointIdx = simInfra.getPortConnection(nodeIdx, outPort.asIndex())
+                    connections[port] =
+                        ComparableSectionEndpoint(
+                            simInfra.getTrackSectionName(outEndpointIdx.value),
+                            outEndpointIdx.endpoint
+                        )
+                }
+            }
+            configs.add(
+                ComparableConfig(simInfra.getTrackNodeConfigName(nodeIdx, configIdx), connections)
+            )
+        }
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is ComparableNode) return false
+        if (name != other.name) return false
+        if (delay != other.delay) return false
+        if (portEndpoints != other.portEndpoints) return false
+        if (configs != other.configs) return false
+        return true
+    }
+
+    override fun hashCode(): Int {
+        return Objects.hash(name, delay, portEndpoints, configs)
+    }
+}
+
 fun assertEqualSimInfra(left: SimInfraAdapter, right: SimInfraAdapter) {
     val leftDetectors = mutableSetOf<String>()
     for (d in left.simInfra.detectors) {
@@ -169,6 +219,20 @@ fun assertEqualSimInfra(left: SimInfraAdapter, right: SimInfraAdapter) {
         }
     }
     assert(leftTrackChunks == rightTrackChunks)
+
+    val leftNodes = mutableSetOf<ComparableNode>()
+    for (n in left.simInfra.trackNodes) {
+        val leftNode = ComparableNode(left.simInfra, n)
+        assert(!leftNodes.contains(leftNode))
+        leftNodes.add(leftNode)
+    }
+    val rightNodes = mutableSetOf<ComparableNode>()
+    for (n in right.simInfra.trackNodes) {
+        val rightNode = ComparableNode(right.simInfra, n)
+        assert(!rightNodes.contains(rightNode))
+        rightNodes.add(rightNode)
+    }
+    assert(leftNodes == rightNodes)
 
     // TODO complete simInfra checks
 
