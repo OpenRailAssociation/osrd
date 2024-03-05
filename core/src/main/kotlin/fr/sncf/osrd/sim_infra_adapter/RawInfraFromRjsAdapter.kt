@@ -13,15 +13,13 @@ import fr.sncf.osrd.infra.api.signaling.SignalingInfra
 import fr.sncf.osrd.infra.api.tracks.undirected.Detector
 import fr.sncf.osrd.infra.api.tracks.undirected.Switch
 import fr.sncf.osrd.infra.api.tracks.undirected.SwitchBranch
-import fr.sncf.osrd.infra.api.tracks.undirected.SwitchPort
 import fr.sncf.osrd.infra.api.tracks.undirected.TrackEdge
-import fr.sncf.osrd.infra.api.tracks.undirected.TrackNode.Joint
 import fr.sncf.osrd.infra.api.tracks.undirected.TrackSection as UndirectedTrackSection
 import fr.sncf.osrd.infra.implementation.tracks.directed.TrackRangeView
 import fr.sncf.osrd.infra.implementation.tracks.undirected.LoadingGaugeConstraintImpl
-import fr.sncf.osrd.infra.implementation.tracks.undirected.UndirectedInfraBuilder
 import fr.sncf.osrd.railjson.schema.geom.RJSLineString
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra
+import fr.sncf.osrd.railjson.schema.infra.RJSSwitchType
 import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSRouteWaypoint
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSSignal
@@ -44,6 +42,7 @@ import fr.sncf.osrd.sim_infra.api.TrackNode
 import fr.sncf.osrd.sim_infra.api.TrackNodeConfig
 import fr.sncf.osrd.sim_infra.api.TrackNodeConfigId
 import fr.sncf.osrd.sim_infra.api.TrackNodeId
+import fr.sncf.osrd.sim_infra.api.TrackNodePort
 import fr.sncf.osrd.sim_infra.api.TrackNodePortId
 import fr.sncf.osrd.sim_infra.api.TrackSection
 import fr.sncf.osrd.sim_infra.api.TrackSectionId
@@ -57,6 +56,7 @@ import fr.sncf.osrd.sim_infra.impl.RawInfraBuilder
 import fr.sncf.osrd.sim_infra.impl.RawInfraFromRjsBuilderImpl
 import fr.sncf.osrd.sim_infra.impl.SpeedSection
 import fr.sncf.osrd.sim_infra.impl.TrackChunkDescriptor
+import fr.sncf.osrd.sim_infra.impl.TrackNodeConfigDescriptor
 import fr.sncf.osrd.utils.Direction.DECREASING
 import fr.sncf.osrd.utils.Direction.INCREASING
 import fr.sncf.osrd.utils.DirectionalMap
@@ -68,6 +68,7 @@ import fr.sncf.osrd.utils.distanceRangeMapOf
 import fr.sncf.osrd.utils.indexing.DirStaticIdx
 import fr.sncf.osrd.utils.indexing.MutableDirStaticIdxArrayList
 import fr.sncf.osrd.utils.indexing.MutableStaticIdxArrayList
+import fr.sncf.osrd.utils.indexing.StaticPool
 import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
 import fr.sncf.osrd.utils.indexing.mutableStaticIdxArraySetOf
 import fr.sncf.osrd.utils.units.Distance
@@ -75,10 +76,9 @@ import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.MutableOffsetArrayList
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
-import java.util.TreeSet
+import java.util.*
 import kotlin.collections.set
 import kotlin.math.abs
-import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -107,7 +107,7 @@ private fun getSlopes(rjsSection: RJSTrackSection): DistanceRangeMap<Double> {
         for (rjsSlope in rjsSection.slopes) {
             rjsSlope.simplify()
             if (rjsSlope.begin < 0 || rjsSlope.end > rjsSection.length)
-                throw UndirectedInfraBuilder.newInvalidRangeError(
+                throw OSRDError.newInvalidRangeError(
                     ErrorType.InvalidInfraTrackSlopeWithInvalidRange,
                     rjsSection.id
                 )
@@ -129,7 +129,7 @@ private fun getCurves(rjsSection: RJSTrackSection): DistanceRangeMap<Double> {
         for (rjsCurve in rjsSection.curves) {
             rjsCurve.simplify()
             if (rjsCurve.begin < 0 || rjsCurve.end > rjsSection.length)
-                throw UndirectedInfraBuilder.newInvalidRangeError(
+                throw OSRDError.newInvalidRangeError(
                     ErrorType.InvalidInfraTrackSlopeWithInvalidRange,
                     rjsSection.id
                 )
@@ -535,8 +535,61 @@ fun adaptRawInfra(infra: SignalingInfra, rjsInfra: RJSInfra): SimInfraAdapter {
         }
     }
 
-    // TODO: remove this stitching between new way of loading track-section info and previous way of
-    // loading network
+    // parse nodes
+    val switchTypeMap =
+        listOf(rjsInfra.switchTypes, RJSSwitchType.BUILTIN_NODE_TYPES_LIST).flatten().associateBy {
+            switchType ->
+            switchType.id
+        }
+
+    val nodeNameToIdxMap = mutableMapOf<String, TrackNodeId>()
+    for (rjsNode in rjsInfra.switches) {
+        val ports = StaticPool<TrackNodePort, EndpointTrackSectionId>()
+        val portMap = mutableMapOf<String, TrackNodePortId>()
+        for ((rjsPortName, rjsPort) in rjsNode.ports) {
+            portMap[rjsPortName] =
+                ports.add(
+                    builder.getSectionEndpointIdx(
+                        rjsPort.track,
+                        Endpoint.fromEdgeEndpoint(rjsPort.endpoint)
+                    )
+                )
+        }
+        val switchType =
+            switchTypeMap[rjsNode.switchType]
+                ?: throw OSRDError.newInfraLoadingError(
+                    ErrorType.InfraHardLoadingError,
+                    "Node ${rjsNode.id} references unknown switch-type ${rjsNode.switchType}"
+                )
+        if (
+            rjsNode.ports.size != switchType.ports.size || portMap.keys != switchType.ports.toSet()
+        ) {
+            throw OSRDError.newWrongSwitchPortsError(
+                rjsNode.id,
+                switchType.id,
+                switchType.ports,
+                portMap.keys
+            )
+        }
+        val configs = StaticPool<TrackNodeConfig, TrackNodeConfigDescriptor>()
+        for (group in switchType.groups) {
+            configs.add(
+                TrackNodeConfigDescriptor(
+                    group.key,
+                    group.value
+                        .map { connection ->
+                            Pair(portMap[connection.src]!!, portMap[connection.dst]!!)
+                        }
+                        .toList()
+                )
+            )
+        }
+        nodeNameToIdxMap[rjsNode.id] =
+            builder.node(rjsNode.id, rjsNode.groupChangeDelay.seconds, ports, configs)
+    }
+
+    // TODO: remove this stitching between new way of loading infra directly from railjson and
+    // previous way of loading infra
     for (edge in infra.trackGraph.edges()) {
         val track = edge as? UndirectedTrackSection
         if (track != null) {
@@ -553,57 +606,16 @@ fun adaptRawInfra(infra: SignalingInfra, rjsInfra: RJSInfra): SimInfraAdapter {
             }
         }
     }
-
-    // parse switches
     for (switchEntry in infra.switches) {
         val oldSwitch = switchEntry.value!!
-        val nodeGraph = oldSwitch.graph!!
-        val infraGraph = infra.trackGraph!!
-        trackNodeMap[oldSwitch] =
-            builder.movableElement(oldSwitch.id, oldSwitch.groupChangeDelay.seconds) {
-                val nodeMap: MutableMap<SwitchPort, TrackNodePortId> = mutableMapOf()
-                for (node in nodeGraph.nodes()) {
-                    var track: TrackEdge? = null
-                    for (edge in infraGraph.incidentEdges(node)) {
-                        if (edge is UndirectedTrackSection) {
-                            track = edge
-                            break
-                        }
-                    }
-                    track!!
-                    val endpoint =
-                        if (infraGraph.incidentNodes(track).nodeU() == node) Endpoint.START
-                        else Endpoint.END
-                    nodeMap[node] =
-                        port(EndpointTrackSectionId(oldTrackSectionMap[track]!!, endpoint))
-                }
-                val switchGroups = mutableMapOf<String, TrackNodeConfigId>()
-                for (group in oldSwitch.groups.entries()) {
-                    val groupName = group.key!!
-                    val nodes = nodeGraph.incidentNodes(group.value!!)
-                    val portPair = Pair(nodeMap[nodes.nodeU()]!!, nodeMap[nodes.nodeV()]!!)
-                    switchGroups[groupName] = config(groupName, portPair)
-                }
-                trackNodeGroupsMap[oldSwitch] = switchGroups
-            }
-    }
+        trackNodeMap[oldSwitch] = nodeNameToIdxMap[oldSwitch.id]
 
-    // parse track links
-    for (node in infra.trackGraph.nodes()) {
-        if (node is Joint) {
-            val edges = infra.trackGraph.incidentEdges(node)
-            assert(edges.count() == 2)
-            builder.movableElement(node.id, Duration.ZERO) {
-                val ports = ArrayList<TrackNodePortId>()
-                for (edge in edges) {
-                    val endpoint =
-                        if (infra.trackGraph.incidentNodes(edge).nodeU() == node) Endpoint.START
-                        else Endpoint.END
-                    ports.add(port(EndpointTrackSectionId(oldTrackSectionMap[edge]!!, endpoint)))
-                }
-                config("default", Pair(ports[0], ports[1]))
-            }
+        val switchGroups = mutableMapOf<String, TrackNodeConfigId>()
+        val configs = builder.getTrackNodePool()[nodeNameToIdxMap[oldSwitch.id]!!].configs
+        for (configIdx in configs) {
+            switchGroups[configs[configIdx].name] = configIdx
         }
+        trackNodeGroupsMap[oldSwitch] = switchGroups
     }
 
     fun getOrCreateDet(oldDiDetector: DiDetector): DirDetectorId {

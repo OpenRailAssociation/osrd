@@ -6,10 +6,11 @@ import fr.sncf.osrd.sim.interlocking.impl.locationSim
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.impl.rawInfraFromRjs
 import fr.sncf.osrd.utils.indexing.MutableArena
+import fr.sncf.osrd.utils.indexing.StaticPool
 import fr.sncf.osrd.utils.indexing.dynIdxArraySetOf
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.ZERO
 import kotlinx.coroutines.*
 
 class TestLocation {
@@ -18,11 +19,7 @@ class TestLocation {
         // setup test data
         val infra = rawInfraFromRjs {
             // create a test switch
-            val switchA =
-                movableElement("A", delay = 42L.milliseconds) {
-                    config("a", Pair(TrackNodePortId(0u), TrackNodePortId(1u)))
-                    config("b", Pair(TrackNodePortId(0u), TrackNodePortId(2u)))
-                }
+            val switchA = node("A", ZERO, StaticPool(), StaticPool())
 
             val zoneA = zone(listOf(switchA))
 

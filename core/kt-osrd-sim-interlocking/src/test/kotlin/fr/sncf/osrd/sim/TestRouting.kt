@@ -6,12 +6,12 @@ import fr.sncf.osrd.sim.interlocking.impl.LocationSimImpl
 import fr.sncf.osrd.sim.interlocking.impl.movableElementSim
 import fr.sncf.osrd.sim.interlocking.impl.reservationSim
 import fr.sncf.osrd.sim.interlocking.impl.routingSim
-import fr.sncf.osrd.sim_infra.api.TrackNodePortId
 import fr.sncf.osrd.sim_infra.api.decreasing
 import fr.sncf.osrd.sim_infra.api.increasing
-import fr.sncf.osrd.sim_infra.impl.RawInfraFromRjsBuilder
+import fr.sncf.osrd.sim_infra.impl.RawInfraFromRjsBuilderImpl
 import fr.sncf.osrd.utils.indexing.MutableArena
 import fr.sncf.osrd.utils.indexing.StaticIdx
+import fr.sncf.osrd.utils.indexing.StaticPool
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
@@ -42,14 +42,9 @@ class TestRouting {
             //  <-- reverse     normal -->
 
             // region build the test infrastructure
-            val builder = RawInfraFromRjsBuilder()
+            val builder = RawInfraFromRjsBuilderImpl()
             // region switches
-            val switch =
-                builder.movableElement("S", delay = 10L.milliseconds) {
-                    config("xy", Pair(TrackNodePortId(0u), TrackNodePortId(1u)))
-                    config("vy", Pair(TrackNodePortId(0u), TrackNodePortId(2u)))
-                }
-
+            val switch = builder.node("S", 10L.milliseconds, StaticPool(), StaticPool())
             // endregion
 
             // region zones
