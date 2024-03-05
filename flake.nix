@@ -64,7 +64,7 @@
           nodejs = fixedNode;
         };
 
-        rustChan = pkgs.rust-bin.stable."1.75.0".rust.override {
+        rustChan = pkgs.rust-bin.stable."1.75.0".default.override {
           targets = [];
           extensions = [
             "clippy"
@@ -75,15 +75,19 @@
           ];
         };
 
-        scriptFiles = builtins.attrNames (builtins.readDir ./scripts);
-        scriptBins =
-          map (
-            scriptFile:
-              pkgs.writeScriptBin
-              (pkgs.lib.foldl (fileName: extension: pkgs.lib.strings.removeSuffix extension fileName) scriptFile [".sh" ".py"])
-              (builtins.readFile ./scripts/${scriptFile})
-          )
-          scriptFiles;
+        osrd-dev-scripts = pkgs.stdenv.mkDerivation {
+          name = "osrd-dev-scripts";
+          src = ./scripts;
+          installPhase = ''
+            mkdir -p $out/bin
+            cp -rv * $out/bin
+            # Create symlinks for scripts without the extension (.py, .sh, etc...) for ease of use
+            for script in $out/bin/*; do
+              ln -s $script $out/bin/$(basename $script | cut -d. -f1)
+            done
+            chmod +x $out/bin/*
+          '';
+        };
       in
         with pkgs; {
           devShells.default = mkShell {
@@ -114,12 +118,14 @@
 
                 # Nix formatter
                 alejandra.defaultPackage.${system}
+
+                # OSRD dev scripts
+                osrd-dev-scripts
               ]
               ++ lib.optionals stdenv.isDarwin (with pkgs.darwin.apple_sdk.frameworks; [
                 CoreFoundation
                 SystemConfiguration
-              ])
-              ++ scriptBins;
+              ]);
 
             RUST_SRC_PATH = "${rustPlatform.rustLibSrc}";
           };
