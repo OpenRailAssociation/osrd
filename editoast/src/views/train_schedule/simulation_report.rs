@@ -349,8 +349,8 @@ fn project_head_positions(
     for path_range in intersections {
         let mut current_curve = Vec::new();
         let begin_loc = path_range.begin;
-        // Skip points that doesn't intersect the range
-        while train_locations[loc_index + 1].path_offset < begin_loc.path_offset {
+        // Skip points that don't intersect the range
+        while train_locations[loc_index + 1].path_offset <= begin_loc.path_offset {
             loc_index += 1;
         }
 
@@ -360,10 +360,11 @@ fn project_head_positions(
             &train_locations[loc_index + 1],
             begin_loc.path_offset,
         );
+
         let begin_position = projection.track_position(&begin_loc.track, begin_loc.offset);
         assert!(begin_position.is_some());
         current_curve.push(GetCurvePoint {
-            position: begin_position.unwrap(),
+            position: begin_position.unwrap_or_else(|| panic!("No position for {:?}", begin_loc)),
             time: begin_time + departure_time,
         });
 
@@ -377,7 +378,7 @@ fn project_head_positions(
             let position =
                 projection.track_position(&Identifier(loc.track_section.clone()), loc.offset);
             current_curve.push(GetCurvePoint {
-                position: position.unwrap(),
+                position: position.unwrap_or_else(|| panic!("No position for {:?}", loc)),
                 time: loc.time + departure_time,
             });
         }
@@ -391,7 +392,7 @@ fn project_head_positions(
             );
             let end_position = projection.track_position(&end_loc.track, end_loc.offset);
             current_curve.push(GetCurvePoint {
-                position: end_position.unwrap(),
+                position: end_position.unwrap_or_else(|| panic!("No position for {:?}", end_loc)),
                 time: end_time + departure_time,
             });
         }
