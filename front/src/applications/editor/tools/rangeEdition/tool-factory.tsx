@@ -72,6 +72,8 @@ function getRangeEditionTool<T extends EditorRange>({
       hoveredItem: null,
       interactionState: { type: 'idle' },
       trackSectionsCache: {},
+      selectedSwitches: [],
+      optionsState: { type: 'idle' },
     };
   }
 
@@ -84,7 +86,7 @@ function getRangeEditionTool<T extends EditorRange>({
     labelTranslationKey: `Editor.tools.${objectTypeEdition}-edition.label`,
     requiredLayers: new Set(
       layersEntity.objType === 'SpeedSection'
-        ? ['speed_sections', 'psl', 'psl_signs']
+        ? ['speed_sections', 'psl', 'psl_signs', 'switches']
         : ['electrifications']
     ),
     getInitialState,
@@ -201,10 +203,20 @@ function getRangeEditionTool<T extends EditorRange>({
       if (hoveredItem) return 'pointer';
       return 'default';
     },
-    onClickMap(e, { setState, state: { entity, interactionState } }) {
+    onClickMap(e, { setState, state: { entity, interactionState, selectedSwitches } }) {
       const feature = (e.features || [])[0];
 
-      if (isOnModeMove(interactionState.type)) {
+      if (interactionState.type === 'selectSwitch') {
+        if (feature && feature.sourceLayer === 'switches') {
+          if (selectedSwitches.includes(feature.properties.id)) {
+            setState({
+              selectedSwitches: selectedSwitches.filter(
+                (switchId: string) => switchId !== feature.properties.id
+              ),
+            });
+          } else setState({ selectedSwitches: [...selectedSwitches, feature.properties.id] });
+        }
+      } else if (isOnModeMove(interactionState.type)) {
         if (interactionState.type === 'moveRangeExtremity' && entity.properties.track_ranges) {
           // after resizing a track range, check if the user dragged an extremity beyond the other one
           // if he did, switch the values of each extremities
@@ -275,17 +287,44 @@ function getRangeEditionTool<T extends EditorRange>({
       if (e.code === 'Escape' && interactionState.type === 'moveRangeExtremity')
         setState({ interactionState: { type: 'idle' } });
     },
-    onHover(e, { setState, state: { hoveredItem, trackSectionsCache, interactionState } }) {
+    onHover(
+      e,
+      { setState, state: { hoveredItem, trackSectionsCache, interactionState, hovered } }
+    ) {
       if (interactionState.type === 'moveRangeExtremity') return;
 
       const feature = (e.features || [])[0];
       if (!feature) {
         if (hoveredItem) setState({ hoveredItem: null });
+        if (hovered) setState({ hovered: null });
         return;
       }
-
       // Handle hovering custom elements:
-      if (feature.properties?.itemType === 'TrackRangeExtremity') {
+      if (interactionState.type === 'selectSwitch') {
+        if (feature.sourceLayer && LAYERS_SET.has(feature.sourceLayer)) {
+          const newHoveredItem = {
+            id: feature.properties?.id as string,
+            type: LAYER_TO_EDITOAST_DICT[feature.sourceLayer as Layer],
+            renderedEntity: feature,
+          };
+          if (!isEqual(newHoveredItem, hoveredItem)) {
+            if (feature.sourceLayer === 'switches') {
+              setState({
+                hovered: {
+                  id: feature.properties?.id as string,
+                  type: LAYER_TO_EDITOAST_DICT[feature.sourceLayer as Layer],
+                  renderedEntity: feature,
+                },
+                hoveredItem: null,
+              });
+            } else {
+              setState({
+                hovered: null,
+              });
+            }
+          }
+        }
+      } else if (feature.properties?.itemType === 'TrackRangeExtremity') {
         const hoveredExtremity = feature as unknown as TrackRangeExtremityFeature;
         const trackState = trackSectionsCache[hoveredExtremity.properties.track];
         if (trackState?.type !== 'success') return;
@@ -331,7 +370,6 @@ function getRangeEditionTool<T extends EditorRange>({
             hoveredItem: newHoveredItem,
           });
       }
-
       // Handle hovering EditorEntity elements:
       else if (feature.sourceLayer && LAYERS_SET.has(feature.sourceLayer)) {
         const newHoveredItem = {
@@ -339,10 +377,11 @@ function getRangeEditionTool<T extends EditorRange>({
           type: LAYER_TO_EDITOAST_DICT[feature.sourceLayer as Layer],
           renderedEntity: feature,
         };
-        if (!isEqual(newHoveredItem, hoveredItem))
+        if (!isEqual(newHoveredItem, hoveredItem)) {
           setState({
             hoveredItem: newHoveredItem,
           });
+        }
       }
 
       // Handle other cases:
@@ -394,7 +433,7 @@ function getRangeEditionTool<T extends EditorRange>({
     layersComponent,
     leftPanelComponent,
     getInteractiveLayers() {
-      return ['editor/geo/track-main'];
+      return ['editor/geo/switch-main', 'editor/geo/track-main'];
     },
     getEventsLayers,
   };

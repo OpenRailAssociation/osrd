@@ -6,6 +6,7 @@ import type { CommonToolState } from 'applications/editor/tools/types';
 import type { EditorEntity } from 'applications/editor/typesEditorEntity';
 
 import type { APPLICABLE_DIRECTIONS } from './consts';
+import type { OptionsStateType } from '../routeEdition/types';
 
 export type ApplicableDirection = (typeof APPLICABLE_DIRECTIONS)[number];
 export type PSLSign = {
@@ -157,6 +158,9 @@ export type RangeEditionState<E extends EditorEntity> = CommonToolState & {
   interactionState:
     | { type: 'idle' }
     | { type: 'moveRangeExtremity'; rangeIndex: number; extremity: 'BEGIN' | 'END' }
-    | ({ type: 'moveSign' } & PslSignInformation);
+    | ({ type: 'moveSign' } & PslSignInformation)
+    | { type: 'selectSwitch' };
   trackSectionsCache: Record<string, TrackState>;
+  selectedSwitches: string[];
+  optionsState?: OptionsStateType;
 };

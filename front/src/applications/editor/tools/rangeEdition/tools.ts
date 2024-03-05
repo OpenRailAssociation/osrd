@@ -28,6 +28,7 @@ export const SpeedEditionTool = getRangeEditionTool<SpeedSectionEntity | SpeedSe
   getEventsLayers() {
     return [
       'editor/geo/track-main',
+      'editor/geo/switch-main',
       'speed-section/extremities',
       'speed-section/track-sections',
       'speed-section/psl/extremities',
