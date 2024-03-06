@@ -29,9 +29,16 @@ private fun CollectionItemType.generateArray(context: GeneratorContext, currentF
 
             import ${type.qualifiedName}
 
+            // regular lambda types are compiled to a generic Function<In, Out> type, which boxes
+            // its arguments and return value. It's a significant performance bug.
+            fun interface ${simpleName}ArrayInitializer${paramsDecl} {
+                fun call(idx: Int): $type
+            }
+
             @JvmInline
             value class Mutable${simpleName}Array${paramsDecl}(private val data: $bufferType) {
-                public constructor(size: Int, init: (Int) -> $type) : this($bufferType(size) { i -> ${storageType.toPrimitive("init(i)")} })
+                public constructor(size: Int, init: ${simpleName}ArrayInitializer${paramsUse})
+                    : this($bufferType(size) { i -> ${storageType.toPrimitive("init.call(i)")} })
 
                 val size get() = data.size
 
