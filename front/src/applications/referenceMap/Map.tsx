@@ -107,6 +107,7 @@ function Map() {
         withInfraButton
         withMapKeyButton
         bearing={viewport.bearing}
+        viewPort={viewport}
       />
       <ReactMapGL
         {...viewport}

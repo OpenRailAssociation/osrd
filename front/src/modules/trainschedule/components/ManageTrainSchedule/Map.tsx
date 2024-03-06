@@ -177,6 +177,7 @@ const Map = () => {
         closeFeatureInfoClickPopup={closeFeatureInfoClickPopup}
         bearing={viewport.bearing}
         withMapKeyButton
+        viewPort={viewport}
       />
       <ReactMapGL
         ref={mapRef}

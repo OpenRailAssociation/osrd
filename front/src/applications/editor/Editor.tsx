@@ -428,6 +428,7 @@ const Editor = () => {
                   editorState,
                   activeTool: toolAndState.tool,
                 }}
+                viewPort={viewport}
               />
 
               {mapRef.current &&
