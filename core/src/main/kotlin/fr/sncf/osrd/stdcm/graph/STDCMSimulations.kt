@@ -48,6 +48,7 @@ class STDCMSimulations {
         comfort: Comfort?,
         timeStep: Double,
         trainTag: String?,
+        infraExplorer: InfraExplorer,
         blockParams: BlockSimulationParameters
     ): Envelope? {
         return if (simulatedEnvelopes.containsKey(blockParams)) {
@@ -56,7 +57,7 @@ class STDCMSimulations {
             val simulatedEnvelope =
                 simulateBlock(
                     rawInfra,
-                    blockParams.infraExplorer,
+                    infraExplorer,
                     blockParams.initialSpeed,
                     blockParams.start,
                     rollingStock,

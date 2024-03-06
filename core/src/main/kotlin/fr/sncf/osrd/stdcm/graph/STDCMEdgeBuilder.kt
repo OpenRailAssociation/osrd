@@ -179,8 +179,9 @@ internal constructor(
                     graph.comfort,
                     graph.timeStep,
                     graph.tag,
+                    infraExplorer,
                     BlockSimulationParameters(
-                        infraExplorer,
+                        infraExplorer.getCurrentBlock(),
                         startSpeed,
                         startOffset,
                         getStopOnBlock(
