@@ -104,7 +104,7 @@ export default function MapButtons({
   // Close the pop up of the map
   useEffect(() => {
     if (closeFeatureInfoClickPopup) closeFeatureInfoClickPopup();
-  }, [openedPopover, isOpen, closeFeatureInfoClickPopup]);
+  }, [openedPopover, isOpen]);
 
   // Close the Popover when opening modal
   useEffect(() => {
