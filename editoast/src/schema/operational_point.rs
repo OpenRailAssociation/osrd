@@ -10,62 +10,72 @@ use crate::infra_cache::ObjectCache;
 use crate::modelsv2::OperationalPointModel;
 use crate::schema::TrackOffset;
 use derivative::Derivative;
+use utoipa::ToSchema;
 
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq)]
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, ToSchema)]
 #[serde(deny_unknown_fields)]
 #[derivative(Default)]
 pub struct OperationalPoint {
+    #[schema(inline)]
     pub id: Identifier,
     pub parts: Vec<OperationalPointPart>,
     #[serde(default)]
     pub extensions: OperationalPointExtensions,
 }
 
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize)]
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize, ToSchema)]
 #[serde(deny_unknown_fields)]
 #[derivative(Default, PartialEq)]
 pub struct OperationalPointPart {
     #[derivative(Default(value = r#""InvalidRef".into()"#))]
+    #[schema(inline)]
     pub track: Identifier,
     pub position: f64,
     #[serde(default)]
+    #[schema(inline)]
     pub extensions: OperationalPointPartExtension,
 }
 
-#[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq, Eq, ToSchema)]
 #[serde(deny_unknown_fields)]
 pub struct OperationalPointPartExtension {
+    #[schema(inline)]
     pub sncf: Option<OperationalPointPartSncfExtension>,
 }
 
-#[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq, Eq, ToSchema)]
 #[serde(deny_unknown_fields)]
 pub struct OperationalPointPartSncfExtension {
     pub kp: String,
 }
 
-#[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq, Eq, ToSchema)]
 #[serde(deny_unknown_fields)]
 pub struct OperationalPointExtensions {
+    #[schema(inline)]
     pub sncf: Option<OperationalPointSncfExtension>,
+    #[schema(inline)]
     pub identifier: Option<OperationalPointIdentifierExtension>,
 }
 
-#[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq, Eq, ToSchema)]
 #[serde(deny_unknown_fields)]
 pub struct OperationalPointSncfExtension {
     pub ci: i64,
     pub ch: String,
+    #[schema(inline)]
     pub ch_short_label: NonBlankString,
+    #[schema(inline)]
     pub ch_long_label: NonBlankString,
     pub trigram: String,
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq, ToSchema)]
 #[serde(deny_unknown_fields)]
 pub struct OperationalPointIdentifierExtension {
+    #[schema(inline)]
     pub name: NonBlankString,
     pub uic: i64,
 }

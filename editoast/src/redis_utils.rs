@@ -72,9 +72,9 @@ impl RedisConnection {
     pub async fn json_get_ex<T: DeserializeOwned, K: ToRedisArgs + Send + Sync>(
         &mut self,
         key: K,
-        seconds: usize,
+        seconds: u64,
     ) -> Result<Option<T>> {
-        let value: Option<String> = self.get_ex(key, Expiry::EX(seconds)).await?;
+        let value: Option<String> = self.get_ex(key, Expiry::EX(seconds as usize)).await?;
         match value {
             Some(v) => match serde_json::from_str(&v) {
                 Ok(value) => Ok(value),
