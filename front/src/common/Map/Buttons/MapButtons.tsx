@@ -111,7 +111,6 @@ export default function MapButtons({
     setOpenedPopover(undefined);
   }, [isOpen]);
 
-  // Update the viewport when the props change
   useEffect(() => {
     setViewport(viewportProps);
   }, [viewportProps]);
