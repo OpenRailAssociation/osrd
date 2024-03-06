@@ -19,7 +19,8 @@ data class InfraExplorerWithEnvelopeImpl(
     private val envelopes: MutableList<EnvelopeTimeInterpolate>,
     private val spacingRequirementAutomaton: SpacingRequirementAutomaton,
     private val rollingStock: PhysicsRollingStock,
-    private var spacingRequirementsCache: List<SpacingRequirement>? = null
+    private var spacingRequirementsCache: List<SpacingRequirement>? = null,
+    private var envelopeCache: EnvelopeTimeInterpolate? = null,
 ) : InfraExplorer by infraExplorer, InfraExplorerWithEnvelope {
 
     override fun cloneAndExtendLookahead(): Collection<InfraExplorerWithEnvelope> {
@@ -35,11 +36,13 @@ data class InfraExplorerWithEnvelopeImpl(
     }
 
     override fun getFullEnvelope(): EnvelopeTimeInterpolate {
-        return EnvelopeConcat.from(envelopes)
+        if (envelopeCache == null) envelopeCache = EnvelopeConcat.from(envelopes)
+        return envelopeCache!!
     }
 
     override fun addEnvelope(envelope: EnvelopeTimeInterpolate): InfraExplorerWithEnvelope {
         envelopes.add(envelope)
+        envelopeCache = null
         return this
     }
 
