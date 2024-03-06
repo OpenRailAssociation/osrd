@@ -23,12 +23,17 @@ use crate::core::CoreClient;
 use crate::error::Result;
 use crate::models::RoutingRequirement;
 use crate::models::SpacingRequirement;
+use crate::modelsv2::infra::Infra;
 use crate::modelsv2::train_schedule::TrainSchedule;
 use crate::modelsv2::train_schedule::TrainScheduleChangeset;
 use crate::modelsv2::Model;
+use crate::modelsv2::Retrieve;
 use crate::schema::utils::Identifier;
 use crate::schema::v2::trainschedule::Distribution;
 use crate::schema::v2::trainschedule::TrainScheduleBase;
+use crate::views::v2::path::pathfinding_from_train;
+use crate::views::v2::path::PathfindingError;
+use crate::views::v2::path::PathfindingResult;
 use crate::DbPool;
 use crate::RedisClient;
 
@@ -42,6 +47,9 @@ crate::routes! {
             get,
             put,
             simulation_output,
+            "/path" => {
+                get_path
+            }
         }
     },
 }
@@ -58,6 +66,7 @@ crate::schemas! {
     SimulationSummaryResultResponse,
     CompleteReportTrain,
     ReportTrain,
+    TrainSchedulePathfindingRequest,
 }
 
 #[derive(Debug, Error, EditoastError)]
@@ -183,8 +192,6 @@ async fn get(
     db_pool: Data<DbPool>,
     train_schedule_id: Path<TrainScheduleIdParam>,
 ) -> Result<Json<TrainScheduleResult>> {
-    use crate::modelsv2::Retrieve;
-
     let train_schedule_id = train_schedule_id.id;
     let conn = &mut db_pool.get().await?;
 
@@ -479,6 +486,47 @@ pub async fn simulations_summary(
     // TO DO
     // issue:x https://github.com/osrd-project/osrd/issues/6857
     Ok(Json(HashMap::new()))
+}
+
+#[derive(Debug, Default, Clone, Serialize, Deserialize, IntoParams, ToSchema)]
+pub struct TrainSchedulePathfindingRequest {
+    infra_id: i64,
+}
+
+/// Get a path from a trainschedule given an infrastructure id and a train schedule id
+#[utoipa::path(
+    tag = "train_schedulev2,pathfindingv2",
+    params(TrainScheduleIdParam, TrainSchedulePathfindingRequest),
+    responses(
+        (status = 200, description = "The path", body = PathfindingResult),
+        (status = 404, description = "Infrastructure or Train schedule not found")
+    )
+)]
+#[get("")]
+async fn get_path(
+    db_pool: Data<DbPool>,
+    redis_client: Data<RedisClient>,
+    train_schedule_id: Path<TrainScheduleIdParam>,
+    query: Query<TrainSchedulePathfindingRequest>,
+) -> Result<Json<PathfindingResult>> {
+    let conn = &mut db_pool.get().await?;
+    let mut redis_conn = redis_client.get_connection().await?;
+
+    let inner_query = query.into_inner();
+    let infra_id = inner_query.infra_id;
+    let train_schedule_id = train_schedule_id.id;
+
+    let infra = Infra::retrieve_or_fail(conn, infra_id, || PathfindingError::InfraNotFound {
+        infra_id,
+    })
+    .await?;
+    let train_schedule = TrainSchedule::retrieve_or_fail(conn, train_schedule_id, || {
+        TrainScheduleError::NotFound { train_schedule_id }
+    })
+    .await?;
+    Ok(Json(
+        pathfinding_from_train(conn, &mut redis_conn, &infra, train_schedule).await?,
+    ))
 }
 
 #[cfg(test)]

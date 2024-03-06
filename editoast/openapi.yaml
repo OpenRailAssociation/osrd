@@ -4487,6 +4487,17 @@ components:
         required:
         - status
         type: object
+      - properties:
+          rolling_stock_name:
+            type: string
+          status:
+            enum:
+            - rolling_stock_not_found
+            type: string
+        required:
+        - rolling_stock_name
+        - status
+        type: object
     PathfindingStep:
       properties:
         duration:
@@ -7084,6 +7095,14 @@ components:
           type: string
       required:
       - id
+      type: object
+    TrainSchedulePathfindingRequest:
+      properties:
+        infra_id:
+          format: int64
+          type: integer
+      required:
+      - infra_id
       type: object
     TrainScheduleResult:
       allOf:
@@ -10307,6 +10326,36 @@ paths:
       tags:
       - train_schedulev2
       - timetable
+  /v2/train_schedule/{id}/path/:
+    get:
+      description: Get a path from a trainschedule given an infrastructure id and a train schedule id
+      parameters:
+      - description: A train schedule ID
+        in: path
+        name: id
+        required: true
+        schema:
+          format: int64
+          type: integer
+      - in: query
+        name: infra_id
+        required: true
+        schema:
+          format: int64
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PathfindingResult'
+          description: The path
+        '404':
+          description: Infrastructure or Train schedule not found
+      summary: Get a path from a trainschedule given an infrastructure id and a train schedule id
+      tags:
+      - train_schedulev2
+      - pathfindingv2
   /v2/train_schedule/{id}/simulation/:
     get:
       description: Retrieve the space, speed and time curve of a given train

@@ -1,6 +1,8 @@
 mod pathfinding;
 mod properties;
 
+pub use pathfinding::{pathfinding_from_train, PathfindingResult};
+
 use diesel_async::AsyncPgConnection as PgConnection;
 use editoast_derive::EditoastError;
 use serde::Deserialize;
@@ -29,7 +31,7 @@ crate::schemas! {
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, ToSchema, Hash)]
-struct TrackRange {
+pub struct TrackRange {
     #[schema(inline)]
     track_section: Identifier,
     begin: u64,
@@ -39,7 +41,7 @@ struct TrackRange {
 
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "pathfinding")]
-enum PathfindingError {
+pub enum PathfindingError {
     #[error("Infra '{infra_id}', could not be found")]
     #[editoast_error(status = 404)]
     InfraNotFound { infra_id: i64 },

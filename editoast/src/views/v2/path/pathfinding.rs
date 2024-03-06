@@ -14,9 +14,13 @@ use utoipa::ToSchema;
 
 use super::CACHE_PATH_EXPIRATION;
 use crate::error::Result;
+use crate::modelsv2::train_schedule::TrainSchedule;
+use crate::modelsv2::Infra;
 use crate::modelsv2::OperationalPointModel;
+use crate::modelsv2::Retrieve;
 use crate::modelsv2::RetrieveBatch;
 use crate::modelsv2::RetrieveBatchUnchecked;
+use crate::modelsv2::RollingStockModel;
 use crate::modelsv2::TrackSectionModel;
 use crate::redis_utils::RedisClient;
 use crate::redis_utils::RedisConnection;
@@ -26,7 +30,7 @@ use crate::schema::utils::Identifier;
 use crate::schema::v2::trainschedule::PathItemLocation;
 use crate::schema::TrackOffset;
 use crate::views::get_app_version;
-use crate::views::v2::path::retrieve_infra_version;
+use crate::views::v2::path::PathfindingError;
 use crate::views::v2::path::TrackRange;
 use crate::DbPool;
 
@@ -97,13 +101,16 @@ pub enum PathfindingResult {
         path_item: PathItemLocation,
     },
     NotEnoughPathItems,
+    RollingStockNotFound {
+        rolling_stock_name: String,
+    },
 }
 
 /// Path input is described by some rolling stock information
 /// and a list of path waypoints
 #[derive(Deserialize, Clone, Debug, Hash, ToSchema)]
 #[schema(as = PathfindingInputV2)]
-pub struct PathfindingInput {
+struct PathfindingInput {
     /// The loading gauge of the rolling stock
     rolling_stock_loading_gauge: LoadingGaugeType,
     /// Can the rolling stock run on non-electrified tracks
@@ -136,25 +143,26 @@ pub async fn post(
     infra_id: Path<i64>,
     data: Json<PathfindingInput>,
 ) -> Result<Json<PathfindingResult>> {
-    let infra_id = infra_id.into_inner();
     let path_input = data.into_inner();
     let conn = &mut db_pool.get().await?;
     let mut redis_conn = redis_client.get_connection().await?;
+    let infra = Infra::retrieve_or_fail(conn, *infra_id, || PathfindingError::InfraNotFound {
+        infra_id: *infra_id,
+    })
+    .await?;
     Ok(Json(
-        pathfinding_blocks(conn, &mut redis_conn, infra_id, &path_input).await?,
+        pathfinding_blocks(conn, &mut redis_conn, &infra, &path_input).await?,
     ))
 }
 
-pub async fn pathfinding_blocks(
+async fn pathfinding_blocks(
     conn: &mut PgConnection,
     redis_conn: &mut RedisConnection,
-    infra_id: i64,
+    infra: &Infra,
     path_input: &PathfindingInput,
 ) -> Result<PathfindingResult> {
-    // Deduce infra version from infra
-    let infra_version = retrieve_infra_version(conn, infra_id).await?;
     // Compute unique hash of PathInput
-    let hash = path_input_hash(infra_id, &infra_version, path_input);
+    let hash = path_input_hash(infra.id, &infra.version, path_input);
     // Try to retrieve the result from Redis
     let result: Option<PathfindingResult> =
         redis_conn.json_get_ex(&hash, CACHE_PATH_EXPIRATION).await?;
@@ -167,7 +175,7 @@ pub async fn pathfinding_blocks(
     if path_items.len() <= 1 {
         return Ok(PathfindingResult::NotEnoughPathItems);
     }
-    let result = extract_location_from_path_items(conn, infra_id, &path_items).await?;
+    let result = extract_location_from_path_items(conn, infra.id, &path_items).await?;
     let track_offsets = match result {
         Ok(track_offsets) => track_offsets,
         Err(e) => return Ok(e),
@@ -175,7 +183,7 @@ pub async fn pathfinding_blocks(
 
     // Check if tracks exist
     if let Err(pathfinding_result) =
-        check_tracks_from_path_items(conn, infra_id, track_offsets).await?
+        check_tracks_from_path_items(conn, infra.id, track_offsets).await?
     {
         return Ok(pathfinding_result);
     }
@@ -195,6 +203,36 @@ pub async fn pathfinding_blocks(
         .await?;
 
     Ok(pathfinding_result)
+}
+
+/// Compute a path given a trainschedule and an infrastructure
+pub async fn pathfinding_from_train(
+    conn: &mut PgConnection,
+    redis: &mut RedisConnection,
+    infra: &Infra,
+    train_schedule: TrainSchedule,
+) -> Result<PathfindingResult> {
+    // Retrieve rolling stock
+    let rolling_stock_name = train_schedule.rolling_stock_name.clone();
+    let Some(rolling_stock) = RollingStockModel::retrieve(conn, rolling_stock_name.clone()).await?
+    else {
+        return Ok(PathfindingResult::RollingStockNotFound { rolling_stock_name });
+    };
+
+    // Create the path input
+    let path_input = PathfindingInput {
+        rolling_stock_loading_gauge: rolling_stock.loading_gauge,
+        rolling_stock_is_thermal: rolling_stock.has_thermal_curves(),
+        rolling_stock_supported_electrification: rolling_stock.supported_electrification(),
+        rolling_stock_supported_signaling_systems: rolling_stock.supported_signaling_systems.0,
+        path_items: train_schedule
+            .path
+            .into_iter()
+            .map(|item| item.location)
+            .collect(),
+    };
+
+    pathfinding_blocks(conn, redis, infra, &path_input).await
 }
 
 /// Generates a unique hash based on the pathfinding entries.
