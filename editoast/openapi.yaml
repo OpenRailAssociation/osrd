@@ -7623,7 +7623,7 @@ paths:
       - infra
       - pathfinding
   /infra/{infra_id}/routes/nodes/:
-    get:
+    post:
       description: Return all routes that depend on the position of the specified nodes
       parameters:
       - description: The ID of the infra to fix
