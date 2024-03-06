@@ -94,17 +94,23 @@ public class EnvelopeConcat implements EnvelopeTimeInterpolate {
     }
 
     /**
-     * Returns the envelope at the given position. On transitions, the rightmost envelope is
-     * returned.
+     * Returns the envelope at the given position.
      */
     private LocatedEnvelope findEnvelopeAt(double position) {
         if (position < 0) return null;
-        for (var envelope : envelopes) {
-            if (position < envelope.startOffset + envelope.envelope.getEndPos()) return envelope;
+        var lowerBound = 0; // included
+        var upperBound = envelopes.size(); // excluded
+        while (lowerBound < upperBound) {
+            var i = (lowerBound + upperBound) / 2;
+            var envelope = envelopes.get(i);
+            if (position < envelope.startOffset) {
+                upperBound = i;
+            } else if (position > envelope.startOffset + envelope.envelope.getEndPos()) {
+                lowerBound = i + 1;
+            } else {
+                return envelope;
+            }
         }
-        var lastEnvelope = envelopes.get(envelopes.size() - 1);
-        if (arePositionsEqual(position, lastEnvelope.startOffset + lastEnvelope.envelope.getEndPos()))
-            return lastEnvelope;
         return null;
     }
 
