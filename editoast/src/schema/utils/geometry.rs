@@ -1,6 +1,6 @@
 use geos::geojson::{self, Geometry};
 use postgis_diesel::types::{LineString, Point};
-use serde_derive::Serialize;
+use serde_derive::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
 use crate::schemas;
@@ -71,7 +71,7 @@ pub enum GeoJsonMultiPoint {
     MultiPoint(GeoJsonMultiPointValue),
 }
 
-#[derive(Serialize, ToSchema)]
+#[derive(Serialize, Deserialize, ToSchema, Debug, Clone)]
 #[serde(tag = "type", content = "coordinates")]
 #[allow(unused)]
 pub enum GeoJsonLineString {
@@ -99,7 +99,7 @@ pub enum GeoJsonMultiPolygon {
     MultiPolygon(GeoJsonMultiPolygonValue),
 }
 
-#[derive(Serialize, ToSchema)]
+#[derive(Serialize, Deserialize, ToSchema, Debug, Clone)]
 #[allow(unused)]
 pub struct GeoJsonPointValue(#[schema(min_items = 2, max_items = 2)] Vec<f64>);
 
@@ -107,9 +107,9 @@ pub struct GeoJsonPointValue(#[schema(min_items = 2, max_items = 2)] Vec<f64>);
 #[allow(unused)]
 pub struct GeoJsonMultiPointValue(#[schema(min_items = 1)] Vec<GeoJsonPointValue>);
 
-#[derive(Serialize, ToSchema)]
+#[derive(Serialize, Deserialize, ToSchema, Debug, Clone)]
 #[allow(unused)]
-pub struct GeoJsonLineStringValue(#[schema(min_items = 2, max_items = 2)] Vec<GeoJsonPointValue>);
+pub struct GeoJsonLineStringValue(#[schema(min_items = 2)] Vec<GeoJsonPointValue>);
 
 #[derive(Serialize, ToSchema)]
 #[allow(unused)]

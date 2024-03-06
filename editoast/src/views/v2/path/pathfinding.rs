@@ -1,3 +1,4 @@
+use super::CACHE_PATH_EXPIRATION;
 use crate::error::Result;
 use crate::modelsv2::{
     OperationalPointModel, RetrieveBatch, RetrieveBatchUnchecked, TrackSectionModel,
@@ -7,40 +8,31 @@ use crate::schema::operational_point::OperationalPoint;
 use crate::schema::track_section::LoadingGaugeType;
 use crate::schema::utils::Identifier;
 use crate::schema::v2::trainschedule::PathItemLocation;
-use crate::schema::Direction;
 use crate::schema::TrackOffset;
 use crate::views::get_app_version;
+use crate::views::v2::path::{retrieve_infra_version, TrackRange};
 use crate::DbPool;
 use actix_web::post;
 use actix_web::web::{Data, Json, Path};
-use chrono::Duration;
 use diesel_async::AsyncPgConnection as PgConnection;
-use editoast_derive::EditoastError;
 use serde::{Deserialize, Serialize};
 use std::collections::hash_map::DefaultHasher;
 use std::collections::HashMap;
 use std::hash::{Hash, Hasher};
-use thiserror::Error;
 use utoipa::ToSchema;
 
 type TrackOffsetResult = std::result::Result<Vec<Vec<TrackOffset>>, PathfindingResult>;
 
 crate::routes! {
-    "/v2/infra/{infra_id}/pathfinding/blocks" => {post},
+    "/v2/infra/{infra_id}/pathfinding/blocks" => {
+       post,
+    },
 }
 
 crate::schemas! {
     PathfindingInput,
     PathfindingResult,
     TrackRange,
-}
-
-#[derive(Debug, Error, EditoastError)]
-#[editoast_error(base_id = "pathfinding")]
-enum PathfindingError {
-    #[error("Infra '{infra_id}', could not be found")]
-    #[editoast_error(status = 404)]
-    InfraNotFound { infra_id: i64 },
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, ToSchema)]
@@ -97,15 +89,6 @@ pub enum PathfindingResult {
     },
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, ToSchema)]
-pub struct TrackRange {
-    #[schema(inline)]
-    track_section: Identifier,
-    begin: u64,
-    end: u64,
-    direction: Direction,
-}
-
 /// Path input is described by some rolling stock information
 /// and a list of path waypoints
 #[derive(Deserialize, Clone, Debug, Hash, ToSchema)]
@@ -133,7 +116,7 @@ pub struct PathfindingInput {
     ),
 )]
 #[post("")]
-async fn post(
+pub async fn post(
     db_pool: Data<DbPool>,
     redis_client: Data<RedisClient>,
     infra_id: Path<i64>,
@@ -154,18 +137,13 @@ pub async fn pathfinding_blocks(
     infra_id: i64,
     path_input: &PathfindingInput,
 ) -> Result<PathfindingResult> {
-    use crate::models::Infra;
-    use crate::models::Retrieve;
     // Deduce infra version from infra
-    let infra = Infra::retrieve_conn(conn, infra_id)
-        .await?
-        .ok_or(PathfindingError::InfraNotFound { infra_id })?;
-    let infra_version = infra.version.unwrap();
+    let infra_version = retrieve_infra_version(conn, infra_id).await?;
     // Compute unique hash of PathInput
     let hash = path_input_hash(infra_id, &infra_version, path_input);
     // Try to retrieve the result from Redis
-    let seconds = Duration::weeks(1).num_seconds();
-    let result: Option<PathfindingResult> = redis_conn.json_get_ex(&hash, seconds as usize).await?;
+    let result: Option<PathfindingResult> =
+        redis_conn.json_get_ex(&hash, CACHE_PATH_EXPIRATION).await?;
     if let Some(pathfinding) = result {
         return Ok(pathfinding);
     }
@@ -196,7 +174,7 @@ pub async fn pathfinding_blocks(
     };
     // 3) Put in cache
     redis_conn
-        .json_set_ex(&hash, &pathfinding_result, seconds as u64)
+        .json_set_ex(&hash, &pathfinding_result, CACHE_PATH_EXPIRATION)
         .await?;
 
     Ok(pathfinding_result)
@@ -213,7 +191,7 @@ fn path_input_hash(infra: i64, infra_version: &String, path_input: &PathfindingI
     let mut hasher = DefaultHasher::new();
     path_input.hash(&mut hasher);
     let hash_path_input = hasher.finish();
-    format!("{osrd_version}.{infra}.{infra_version}.{hash_path_input}")
+    format!("pathfinding_{osrd_version}.{infra}.{infra_version}.{hash_path_input}")
 }
 
 fn collect_path_item_ids(path_items: &[PathItemLocation]) -> (Vec<String>, Vec<i64>, Vec<String>) {

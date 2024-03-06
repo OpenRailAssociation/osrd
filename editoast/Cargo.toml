@@ -45,8 +45,8 @@ actix-files = "0.6.5"
 actix-web = "4.4.1"
 actix-http = "3.5.1"
 actix-cors = "0.7.0"
-tracing-subscriber = { version = "0.3.18", features = [ "env-filter" ] }
-tracing = { version = "0.1.40", features = [ "log" ] }
+tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
+tracing = { version = "0.1.40", features = ["log"] }
 redis = { version = "0.24.0", features = [
     "tokio-comp",
     "connection-manager",
@@ -91,6 +91,8 @@ opentelemetry-datadog = { version = "0.9.0", features = ["reqwest-client"] }
 opentelemetry-semantic-conventions = "0.13.0"
 tracing-opentelemetry = "0.22.0"
 actix-web-opentelemetry = { version = "0.16.0", features = ["awc"] }
+serde_qs = { version = "0.12.0", features = ["actix4"] }
+enumset = "1.1.3"
 
 [dev-dependencies]
 async-std = { version = "1.12.0", features = ["attributes", "tokio1"] }

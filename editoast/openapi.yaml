@@ -3519,6 +3519,78 @@ components:
           required:
           - operation_type
           type: object
+    OperationalPointExtensions:
+      additionalProperties: false
+      properties:
+        identifier:
+          allOf:
+          - additionalProperties: false
+            properties:
+              name:
+                minLength: 1
+                type: string
+              uic:
+                format: int64
+                type: integer
+            required:
+            - name
+            - uic
+            type: object
+          nullable: true
+        sncf:
+          allOf:
+          - additionalProperties: false
+            properties:
+              ch:
+                type: string
+              ch_long_label:
+                minLength: 1
+                type: string
+              ch_short_label:
+                minLength: 1
+                type: string
+              ci:
+                format: int64
+                type: integer
+              trigram:
+                type: string
+            required:
+            - ci
+            - ch
+            - ch_short_label
+            - ch_long_label
+            - trigram
+            type: object
+          nullable: true
+      type: object
+    OperationalPointPart:
+      additionalProperties: false
+      properties:
+        extensions:
+          additionalProperties: false
+          properties:
+            sncf:
+              allOf:
+              - additionalProperties: false
+                properties:
+                  kp:
+                    type: string
+                required:
+                - kp
+                type: object
+              nullable: true
+          type: object
+        position:
+          format: double
+          type: number
+        track:
+          maxLength: 255
+          minLength: 1
+          type: string
+      required:
+      - track
+      - position
+      type: object
     Ordering:
       enum:
       - NameAsc
@@ -3698,6 +3770,127 @@ components:
       items:
         $ref: '#/components/schemas/Patch'
       type: array
+    PathProperties:
+      description: Properties along a path. Each property is optional since it depends on what the user requests.
+      properties:
+        electrifications:
+          allOf:
+          - description: Property string values along a path. Each value is associated to a range of the path.
+            properties:
+              boundaries:
+                description: |-
+                  List of `n` boundaries of the ranges.
+                  A boundary is a distance from the beginning of the path in mm.
+                items:
+                  format: int64
+                  minimum: 0
+                  type: integer
+                type: array
+              values:
+                description: List of `n+1` values associated to the ranges
+                items:
+                  type: string
+                type: array
+            required:
+            - boundaries
+            - values
+            type: object
+          nullable: true
+        geometry:
+          allOf:
+          - $ref: '#/components/schemas/GeoJsonLineString'
+          nullable: true
+        gradients:
+          allOf:
+          - description: Property f64 values along a path. Each value is associated to a range of the path.
+            properties:
+              boundaries:
+                description: |-
+                  List of `n` boundaries of the ranges.
+                  A boundary is a distance from the beginning of the path in mm.
+                items:
+                  format: int64
+                  minimum: 0
+                  type: integer
+                type: array
+              values:
+                description: List of `n+1` values associated to the ranges
+                items:
+                  format: double
+                  type: number
+                type: array
+            required:
+            - boundaries
+            - values
+            type: object
+          nullable: true
+        operational_points:
+          description: Operational points along the path
+          items:
+            description: Operational point along a path.
+            properties:
+              extensions:
+                $ref: '#/components/schemas/OperationalPointExtensions'
+              id:
+                maxLength: 255
+                minLength: 1
+                type: string
+              part:
+                $ref: '#/components/schemas/OperationalPointPart'
+              position:
+                description: Distance from the beginning of the path in mm
+                format: int64
+                minimum: 0
+                type: integer
+            required:
+            - id
+            - part
+            - position
+            type: object
+          nullable: true
+          type: array
+        slopes:
+          allOf:
+          - description: Property f64 values along a path. Each value is associated to a range of the path.
+            properties:
+              boundaries:
+                description: |-
+                  List of `n` boundaries of the ranges.
+                  A boundary is a distance from the beginning of the path in mm.
+                items:
+                  format: int64
+                  minimum: 0
+                  type: integer
+                type: array
+              values:
+                description: List of `n+1` values associated to the ranges
+                items:
+                  format: double
+                  type: number
+                type: array
+            required:
+            - boundaries
+            - values
+            type: object
+          nullable: true
+      type: object
+    PathPropertiesInput:
+      properties:
+        rolling_stock_supported_electrification:
+          description: |-
+            List of supported electrification modes.
+            Empty if does not support any electrification
+          items:
+            type: string
+          type: array
+        track_ranges:
+          description: list of track sections
+          items:
+            $ref: '#/components/schemas/TrackRange'
+          type: array
+      required:
+      - track_ranges
+      type: object
     PathResponse:
       properties:
         created:
@@ -9240,6 +9433,25 @@ paths:
       summary: Retrieve a simulation result
       tags:
       - train_schedule
+  /v2/infra/{infra_id}/path_properties/:
+    post:
+      description: Compute path properties
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PathPropertiesInput'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PathProperties'
+          description: Path properties
+      summary: Compute path properties
+      tags:
+      - pathfindingv2
   /v2/infra/{infra_id}/pathfinding/blocks/:
     post:
       description: Compute a pathfinding
