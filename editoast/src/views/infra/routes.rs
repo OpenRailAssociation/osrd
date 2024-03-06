@@ -12,7 +12,7 @@ use crate::{
     DbPool,
 };
 use actix_web::{
-    get,
+    get, post,
     web::{Data, Json, Path, Query},
 };
 use chashmap::CHashMap;
@@ -175,7 +175,7 @@ async fn get_routes_track_ranges<'a>(
         (status = 200, body = inline(Vec<String>), description = "A list of routes IDs")
     ),
 )]
-#[get("/nodes")]
+#[post("/nodes")]
 async fn get_routes_nodes(
     params: Path<InfraIdParam>,
     infra_caches: Data<CHashMap<i64, InfraCache>>,
@@ -289,7 +289,7 @@ mod tests {
         let small_infra = small_infra(db_pool()).await;
 
         for (params, mut expected) in tests {
-            let request = TestRequest::get()
+            let request = TestRequest::post()
                 .uri(&format!("/infra/{}/routes/nodes", small_infra.id()))
                 .set_json(&params)
                 .to_request();
