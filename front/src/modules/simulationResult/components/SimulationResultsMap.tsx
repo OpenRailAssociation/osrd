@@ -226,6 +226,7 @@ const Map: FC<MapProps> = () => {
         resetPitchBearing={resetPitchBearing}
         bearing={viewport.bearing}
         withMapKeyButton
+        viewPort={viewport}
       />
       <ReactMapGL
         {...viewport}
