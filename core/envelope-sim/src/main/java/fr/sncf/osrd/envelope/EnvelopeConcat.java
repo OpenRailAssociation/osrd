@@ -78,7 +78,8 @@ public class EnvelopeConcat implements EnvelopeTimeInterpolate {
 
     @Override
     public double getTotalTime() {
-        return interpolateTotalTime(endPos);
+        var lastEnvelope = envelopes.get(envelopes.size() - 1);
+        return lastEnvelope.startTime + lastEnvelope.envelope.getTotalTime();
     }
 
     @Override
