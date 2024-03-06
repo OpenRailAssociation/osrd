@@ -97,6 +97,22 @@ impl RollingStockModel {
             liveries: liveries.into_iter().map(|livery| livery.into()).collect(),
         })
     }
+
+    pub fn has_thermal_curves(&self) -> bool {
+        self.effort_curves
+            .modes
+            .values()
+            .any(|mode| !mode.is_electric)
+    }
+
+    pub fn supported_electrification(&self) -> Vec<String> {
+        self.effort_curves
+            .modes
+            .iter()
+            .filter(|(_, mode)| mode.is_electric)
+            .map(|(key, _)| key.clone())
+            .collect()
+    }
 }
 
 impl RollingStockModelChangeset {

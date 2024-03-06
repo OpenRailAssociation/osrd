@@ -897,6 +897,16 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['train_schedulev2', 'timetable'],
       }),
+      getV2TrainScheduleByIdPath: build.query<
+        GetV2TrainScheduleByIdPathApiResponse,
+        GetV2TrainScheduleByIdPathApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/v2/train_schedule/${queryArg.id}/path/`,
+          params: { infra_id: queryArg.infraId },
+        }),
+        providesTags: ['train_schedulev2', 'pathfindingv2'],
+      }),
       getV2TrainScheduleByIdSimulation: build.query<
         GetV2TrainScheduleByIdSimulationApiResponse,
         GetV2TrainScheduleByIdSimulationApiArg
@@ -1656,6 +1666,12 @@ export type PutV2TrainScheduleByIdApiArg = {
   /** A train schedule ID */
   id: number;
   trainScheduleForm: TrainScheduleForm;
+};
+export type GetV2TrainScheduleByIdPathApiResponse = /** status 200 The path */ PathfindingResult;
+export type GetV2TrainScheduleByIdPathApiArg = {
+  /** A train schedule ID */
+  id: number;
+  infraId: number;
 };
 export type GetV2TrainScheduleByIdSimulationApiResponse =
   /** status 200 Simulation Output */ SimulationOutput;
@@ -2953,6 +2969,10 @@ export type PathfindingResult =
     }
   | {
       status: 'not_enough_path_items';
+    }
+  | {
+      rolling_stock_name: string;
+      status: 'rolling_stock_not_found';
     };
 export type PathfindingInputV2 = {
   /** List of waypoints given to the pathfinding */
