@@ -1,40 +1,35 @@
-import React, { type ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import React, { type ChangeEvent, useCallback, useMemo, useState } from 'react';
 
 import cx from 'classnames';
 import { isNil } from 'lodash';
-import nextId from 'react-id-generator';
 import './InputGroupSNCF.scss';
 
+import type { MultiUnit } from 'modules/rollingStock/types';
 import { isFloat, stripDecimalDigits } from 'utils/numbers';
 
 type Option = {
   id: string;
   label: string;
-  unit?: string;
 };
 
-export type InputGroupSNCFValue = { type?: string; unit: string; value?: string | number };
+export type InputGroupSNCFValue<U> = { unit: U; value?: number };
 
-type Props = {
+// Generic allow us to custom the type of unit used in this component
+type Props<U> = {
   id: string;
   label?: React.ReactElement | string;
   options: Option[];
-  unit: string;
-  handleUnit: (type: InputGroupSNCFValue) => void;
-  orientation?: string;
-  placeholder?: string;
-  sm?: boolean;
-  value?: number | string;
-  typeValue?: string;
-  condensed?: boolean;
+  onChange: (type: InputGroupSNCFValue<U>) => void;
+  currentValue: {
+    unit: U;
+    value?: number;
+  };
   isInvalid?: boolean;
   errorMsg?: string;
   min?: number;
   max?: number;
   step?: number | string;
-  textRight?: boolean;
   disabled?: boolean;
-  disableUnitSelector?: boolean;
   limitDecimal?: number;
   inputDataTestId?: string;
 };
@@ -44,61 +39,38 @@ const isNeedStripDecimalDigits = (inputValue: string, limit: number) => {
   return !isNil(limit) && limit > 0 && inputValue !== '' && isFloat(eventValue);
 };
 
-export default function InputGroupSNCF({
+export default function InputGroupSNCF<U extends string | MultiUnit>({
   id,
   label,
-  unit,
-  handleUnit,
+  onChange,
   options,
-  orientation = 'left',
-  placeholder = '',
-  sm = false,
-  value,
-  typeValue = 'text',
-  condensed = false,
+  currentValue,
   isInvalid = false,
   errorMsg,
   min,
   max,
-  step,
-  textRight = false,
+  step = 'any',
   disabled = false,
-  disableUnitSelector = false,
   limitDecimal = 10,
   inputDataTestId,
-}: Props) {
+}: Props<U>) {
   const [isDropdownShown, setIsDropdownShown] = useState(false);
-  const [selectedUnit, setSelectedUnit] = useState<Option>({
-    id: options[0].id,
-    label: options[0].label,
-    unit: options[0].unit,
-  });
 
-  const textAlignmentClass = textRight ? 'right-alignment' : 'left-alignment';
-
-  useEffect(() => {
-    // Check if we can find the unit in the options id (allowances) or label (rolling stock editor)
-    const selectedOption = options?.find((option) => option.id === unit || option.label === unit);
-    setSelectedUnit({
-      label: selectedOption?.label || options[0].label,
-      id: selectedOption?.id || options[0].id,
-      unit: selectedOption?.unit || options[0].unit,
-    });
-  }, [unit, options]);
-
-  const handleOnChange = useCallback(
+  const handleValueChange = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
       const eventValue = Number(event.target.value);
-      const selectedUnitValue: InputGroupSNCFValue['value'] =
+      let newValue: InputGroupSNCFValue<U>['value'] =
         limitDecimal && isNeedStripDecimalDigits(event.target.value, limitDecimal)
           ? stripDecimalDigits(eventValue, limitDecimal)
-          : event.target.value;
-      handleUnit({ type: selectedUnit.id, unit: selectedUnit.label, value: selectedUnitValue });
+          : eventValue;
+      if (event.target.value === '') newValue = undefined;
+      onChange({ unit: currentValue.unit, value: newValue });
     },
-    [handleUnit, selectedUnit, limitDecimal]
+    [onChange, currentValue.unit, limitDecimal]
   );
 
   const inputValue = useMemo(() => {
+    const { value } = currentValue;
     if (value !== undefined && !disabled) {
       if (limitDecimal && isNeedStripDecimalDigits(value.toString(), limitDecimal)) {
         return stripDecimalDigits(Number(value), limitDecimal);
@@ -106,7 +78,7 @@ export default function InputGroupSNCF({
       return value;
     }
     return '';
-  }, [value, limitDecimal, disabled]);
+  }, [currentValue.value, limitDecimal, disabled]);
 
   const inputField = (
     <div
@@ -115,23 +87,25 @@ export default function InputGroupSNCF({
       })}
     >
       <input
-        type={typeValue}
-        className={cx('form-control h-100', textAlignmentClass, {
-          'px-2': condensed,
-        })}
-        title={placeholder}
-        placeholder={placeholder}
-        onChange={handleOnChange}
+        type="number"
+        className="form-control h-100 px-2 text-right"
+        title={inputValue.toString()}
+        onChange={handleValueChange}
         value={inputValue}
         min={min}
         max={max}
-        data-testid={inputDataTestId}
         step={step}
+        data-testid={inputDataTestId}
         disabled={disabled}
       />
       <span className="form-control-state" />
     </div>
   );
+
+  const currentUnitLabel = useMemo(() => {
+    const currentUnit = options.find((option) => option.id === currentValue.unit);
+    return currentUnit?.label || currentValue.unit;
+  }, [options, currentValue.unit]);
 
   return (
     <>
@@ -140,36 +114,22 @@ export default function InputGroupSNCF({
           {label}
         </label>
       )}
-      <div
-        className={cx('input-group', {
-          'input-group-sm': sm,
-        })}
-      >
-        {orientation === 'right' && inputField}
-        <div
-          className={cx({
-            'input-group-prepend': orientation === 'left',
-            'input-group-append': orientation !== 'left',
-          })}
-        >
-          {' '}
+      <div className="input-group">
+        {inputField}
+        <div className="input-group-append">
           <div className="btn-group dropdown">
             <button
               type="button"
-              className={cx('btn btn-secondary dropdown-toggle', {
-                'pr-2 pl-2': condensed,
-              })}
+              className="btn btn-secondary px-2 dropdown-toggle"
               onClick={() => setIsDropdownShown(!isDropdownShown)}
               aria-haspopup="true"
               aria-expanded="false"
               aria-controls={id}
-              disabled={disabled || disableUnitSelector}
+              disabled={disabled}
             >
-              <span className={cx({ small: condensed })}>{selectedUnit.label}</span>
+              <span className="small">{currentUnitLabel}</span>
               <i
-                className={cx(isDropdownShown ? 'icons-arrow-up' : 'icons-arrow-down', {
-                  'ml-2': condensed,
-                })}
+                className={cx('ml-2', isDropdownShown ? 'icons-arrow-up' : 'icons-arrow-down')}
                 aria-hidden="true"
               />
             </button>
@@ -183,13 +143,11 @@ export default function InputGroupSNCF({
             >
               {options.map((option) => (
                 <div
-                  key={nextId()}
+                  key={option.id}
                   onClick={() => {
-                    setSelectedUnit(option);
-                    handleUnit({
-                      type: option.id,
-                      unit: option.label,
-                      value,
+                    onChange({
+                      unit: option.id as U,
+                      value: currentValue.value,
                     });
                     setIsDropdownShown(false);
                   }}
@@ -211,7 +169,6 @@ export default function InputGroupSNCF({
             </div>
           </div>
         </div>
-        {orientation === 'left' && inputField}
         {isDropdownShown && (
           // eslint-disable-next-line jsx-a11y/control-has-associated-label
           <div

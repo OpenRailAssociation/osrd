@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import type { TFunction } from 'i18next';
-import { groupBy, has, isNil, isNull, omit, pick } from 'lodash';
+import { floor, groupBy, has, isNil, isNull, omit, pick } from 'lodash';
 
 import type {
   EffortCurve,
@@ -13,73 +13,24 @@ import {
   RS_REQUIRED_FIELDS,
   THERMAL_TRACTION_IDENTIFIER,
   EP_BY_MODE,
-  DEFAULT_SIGNALING_SYSTEMS,
   RS_SCHEMA_PROPERTIES,
-  conversionFactorsSchema,
+  CONVERSION_FACTORS_SCHEMA,
+  newRollingStockValues,
 } from 'modules/rollingStock/consts';
 import { isElectric } from 'modules/rollingStock/helpers/electric';
 import type {
   ConditionalEffortCurveForm,
   EffortCurveForm,
   EffortCurveForms,
+  MultiUnit,
   MultiUnitsParameter,
   RollingStockParametersValidValues,
   RollingStockParametersValues,
   SchemaProperty,
 } from 'modules/rollingStock/types';
-import { kmhToMs } from 'utils/physics';
+import { kmhToMs, msToKmh } from 'utils/physics';
 import { getTranslationKey } from 'utils/strings';
 import type { ValueOf } from 'utils/types';
-
-const newRollingStockValues = {
-  railjsonVersion: '',
-  name: '',
-  detail: '',
-  family: '',
-  grouping: '',
-  number: '',
-  reference: '',
-  series: '',
-  subseries: '',
-  type: '',
-  unit: '',
-  mass: {
-    min: 0.1,
-    max: 10000,
-    unit: 't',
-    value: 0.1,
-  },
-  maxSpeed: {
-    min: 1,
-    max: 600,
-    unit: 'km/h',
-    value: 1,
-  },
-  rollingResistanceA: {
-    min: 0,
-    max: 20,
-    unit: 'kN',
-    value: 0,
-  },
-  rollingResistanceB: {
-    min: 0,
-    max: 0.5,
-    unit: 'kN/(km/h)',
-    value: 0,
-  },
-  rollingResistanceC: {
-    min: 0,
-    max: 0.01,
-    unit: 'kN/(km/h)²',
-    value: 0,
-  },
-  loadingGauge: 'G1' as RollingStockParametersValues['loadingGauge'],
-  electricalPowerStartupTime: null,
-  raisePantographTime: null,
-  basePowerClass: null,
-  powerRestrictions: {},
-  supportedSignalingSystems: DEFAULT_SIGNALING_SYSTEMS,
-};
 
 export const filterUndefinedValueInCurve = (curve: EffortCurveForm) =>
   curve.speeds.reduce<EffortCurve>(
@@ -106,8 +57,8 @@ const getDefaultMultiUnitsParameter = (parameter: string): MultiUnitsParameter =
     (rsParam) => rsParam.title === parameter
   ) as SchemaProperty;
   return {
-    min,
-    max,
+    min: min!,
+    max: max!,
     unit: units![0],
     value: 0,
   };
@@ -136,7 +87,7 @@ export const getRollingStockEditorDefaultValues = (
         },
         maxSpeed: {
           ...getDefaultMultiUnitsParameter('maxSpeed'),
-          value: rollingStockData.max_speed * 3.6, // The speed received is in m/s and should appear in km/h.
+          value: msToKmh(rollingStockData.max_speed), // The speed received is in m/s and should appear in km/h.
         },
         startupTime: rollingStockData.startup_time,
         startupAcceleration: rollingStockData.startup_acceleration,
@@ -267,6 +218,13 @@ const isMultiUnitsParam = (
 ): param is MultiUnitsParameter =>
   param ? Object.keys(param as MultiUnitsParameter).includes('value') : false;
 
+export const isInvalidCurve = (curve: EffortCurve) =>
+  curve.max_efforts.length < 2 ||
+  curve.speeds.length < 2 ||
+  new Set(curve.speeds).size !== curve.speeds.length ||
+  curve.max_efforts.some((maxEffort) => maxEffort > 1000000) ||
+  curve.speeds.some((speed) => speed > kmhToMs(600));
+
 export const checkRollingStockFormValidity = (
   rollingStockForm: RollingStockParametersValues,
   effortCurves: EffortCurveForms | null,
@@ -303,13 +261,7 @@ export const checkRollingStockFormValidity = (
       ({ curve, cond: { comfort, electrical_profile_level, power_restriction_code } }) => {
         const filteredCurve = filterUndefinedValueInCurve(curve);
 
-        if (
-          filteredCurve.max_efforts.length < 2 ||
-          filteredCurve.speeds.length < 2 ||
-          new Set(filteredCurve.speeds).size !== filteredCurve.speeds.length ||
-          filteredCurve.max_efforts.some((maxEffort) => maxEffort > 1000000) ||
-          filteredCurve.speeds.some((speed) => speed > kmhToMs(600))
-        ) {
+        if (isInvalidCurve(filteredCurve)) {
           const formattedComfort = formatCurveCondition(comfort, t, 'comfortTypes');
           const formattedElecProfile = formatCurveCondition(electrical_profile_level, t);
           const formattedResCode = formatCurveCondition(power_restriction_code, t);
@@ -474,11 +426,19 @@ export const splitRollingStockProperties = (
  * According the conversion factors schema, convert a value if
  * the factors exist in the schema
  */
-export const convertUnits = (prevUnit: string, newUnit: string, prevValue: number): number => {
-  if (prevUnit in conversionFactorsSchema && newUnit in conversionFactorsSchema[prevUnit]) {
-    return conversionFactorsSchema[prevUnit][newUnit] * prevValue;
+export const convertUnits = (
+  prevUnit: MultiUnit,
+  newUnit: MultiUnit,
+  prevValue: number,
+  maxDecimals?: number
+): number => {
+  let result = prevValue;
+  const conversionFactorFromPrevUnit = CONVERSION_FACTORS_SCHEMA[prevUnit];
+  if (conversionFactorFromPrevUnit && conversionFactorFromPrevUnit[newUnit]) {
+    const conversionFactor = conversionFactorFromPrevUnit[newUnit];
+    if (conversionFactor) result = conversionFactor * prevValue;
   }
-  return prevValue;
+  return maxDecimals ? floor(result, maxDecimals) : result;
 };
 
 export const isConversionWithTon = (previousUnit: string, newUnit: string) =>
@@ -492,8 +452,8 @@ export const isConversionWithTon = (previousUnit: string, newUnit: string) =>
  * resistance depending if the rollingstock's current mass is in kg or ton
  */
 export const convertUnitsWithMass = (
-  previousUnit: string,
-  newUnit: string,
+  previousUnit: MultiUnit,
+  newUnit: MultiUnit,
   currentMassValue: number,
   currentMassUnit: string,
   previousValue: number
@@ -504,9 +464,11 @@ export const convertUnitsWithMass = (
     currentMassUnit === 'kg' ? convertUnits('kg', 't', currentMassValue) : currentMassValue;
   if (isConversionWithTon(previousUnit, newUnit)) {
     if (newUnit.endsWith('t')) {
-      convertedValue = convertUnits(previousUnit, newUnit.slice(0, -2), previousValue) / massInTons;
+      convertedValue =
+        convertUnits(previousUnit, newUnit.slice(0, -2) as MultiUnit, previousValue) / massInTons;
     } else {
-      convertedValue = convertUnits(previousUnit.slice(0, -2), newUnit, previousValue) * massInTons;
+      convertedValue =
+        convertUnits(previousUnit.slice(0, -2) as MultiUnit, newUnit, previousValue) * massInTons;
     }
   }
 
@@ -524,15 +486,15 @@ export const convertUnitsWithMass = (
  * @param valueType tells if we are changing the value of the parameter of its min or max
  * @returns
  */
-export const handleUnitValue = (
-  option: InputGroupSNCFValue,
+export const handleUnitValue = <U extends MultiUnit>(
+  option: InputGroupSNCFValue<U>,
   param: MultiUnitsParameter,
   currentMass?: RollingStockParametersValues['mass'],
   valueType: 'value' | 'min' | 'max' = 'value'
 ): number | undefined => {
   const valueToConvert = valueType === 'value' ? option.value : param[valueType];
 
-  if (valueToConvert === '' || valueToConvert === undefined) return undefined;
+  if (valueToConvert === undefined) return undefined;
 
   if (option.unit !== param.unit && valueToConvert !== 0) {
     const result =
@@ -542,29 +504,11 @@ export const handleUnitValue = (
             option.unit,
             currentMass.value,
             currentMass.unit,
-            +valueToConvert
+            valueToConvert
           )
-        : convertUnits(param.unit, option.unit, +valueToConvert);
+        : convertUnits(param.unit, option.unit, valueToConvert);
 
     return result;
   }
   return +valueToConvert;
-};
-
-export const isConversionPossible = (previousUnit: string, newUnit: string) => {
-  let localPreviousUnit = previousUnit;
-  let localNewUnit = newUnit;
-
-  if (isConversionWithTon(previousUnit, newUnit) && previousUnit !== newUnit) {
-    if (newUnit.endsWith('t')) {
-      localNewUnit = newUnit.slice(0, -2);
-    } else {
-      localPreviousUnit = previousUnit.slice(0, -2);
-    }
-  }
-  return (
-    localPreviousUnit === localNewUnit &&
-    localPreviousUnit in conversionFactorsSchema &&
-    localNewUnit in conversionFactorsSchema[localPreviousUnit]
-  );
 };

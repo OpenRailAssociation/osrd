@@ -217,16 +217,12 @@ const AllowancesActions = <T extends RangeAllowanceForm | EngineeringAllowanceFo
     updateAllowances(newAllowancesRanges);
   };
 
-  const handleValueAndUnit = (newValueAndUnit: InputGroupSNCFValue) => {
-    if (newValueAndUnit.type) {
-      setValueAndUnit({
-        value_type: newValueAndUnit.type as AllowanceValueForm['value_type'],
-        [unitsNames[newValueAndUnit.type as keyof typeof unitsNames]]:
-          newValueAndUnit.value && newValueAndUnit.value !== ''
-            ? +newValueAndUnit.value
-            : undefined,
-      } as AllowanceValueForm);
-    }
+  const handleValueAndUnit = <U extends string>(newValueAndUnit: InputGroupSNCFValue<U>) => {
+    setValueAndUnit({
+      value_type: newValueAndUnit.unit as AllowanceValueForm['value_type'],
+      [unitsNames[newValueAndUnit.unit as keyof typeof unitsNames]]:
+        newValueAndUnit.value !== undefined ? newValueAndUnit.value : undefined,
+    } as AllowanceValueForm);
   };
 
   const defaultType = () => {
@@ -367,17 +363,14 @@ const AllowancesActions = <T extends RangeAllowanceForm | EngineeringAllowanceFo
         <div className="allowances-value" data-testid="engineering-allowance-group">
           <InputGroupSNCF
             id={`allowances-${type}-value`}
-            orientation="right"
-            sm
-            condensed
-            value={allowanceValue}
-            handleUnit={handleValueAndUnit}
+            currentValue={{
+              unit: valueAndUnit?.value_type || defaultType(),
+              value: allowanceValue,
+            }}
+            onChange={handleValueAndUnit}
             options={unitsList}
-            typeValue="number"
-            unit={valueAndUnit?.value_type || defaultType()}
             min={1}
             isInvalid={allowanceValue !== undefined && allowanceValue < 1}
-            textRight
             disabled={isDisabled}
             inputDataTestId="allowances-engineering-allowance-input"
           />

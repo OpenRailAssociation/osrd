@@ -13,20 +13,15 @@ import {
   RollingStockEditorMetadata,
   RollingStockEditorParameter,
 } from 'modules/rollingStock/consts';
-import {
-  handleUnitValue,
-  isConversionPossible,
-  splitRollingStockProperties,
-} from 'modules/rollingStock/helpers/utils';
+import { handleUnitValue, splitRollingStockProperties } from 'modules/rollingStock/helpers/utils';
 import useCompleteRollingStockSchemasProperties from 'modules/rollingStock/hooks/useCompleteRollingStockSchemasProperties';
 import type {
   EffortCurveForms,
+  MultiUnit,
   MultiUnitsParameter,
   RollingStockParametersValues,
   SchemaProperty,
 } from 'modules/rollingStock/types';
-import { setFailure } from 'reducers/main';
-import { useAppDispatch } from 'store';
 
 type RollingStockMetadataFormProps = {
   rollingStockValues: RollingStockParametersValues;
@@ -118,9 +113,11 @@ const RollingStockEditorParameterFormColumn = ({
   propertiesList: SchemaProperty[];
 }) => {
   const { t } = useTranslation(['rollingstock', 'translation']);
-  const dispatch = useAppDispatch();
 
-  const handleUnitChange = (option: InputGroupSNCFValue, property: SchemaProperty) => {
+  const handleUnitChange = <U extends MultiUnit>(
+    option: InputGroupSNCFValue<U>,
+    property: SchemaProperty
+  ) => {
     const selectedParam = rollingStockValues[property.title] as MultiUnitsParameter;
 
     setRollingStockValues({
@@ -132,16 +129,6 @@ const RollingStockEditorParameterFormColumn = ({
         value: handleUnitValue(option, selectedParam, rollingStockValues.mass),
       } as MultiUnitsParameter,
     });
-
-    // Should only appear if a conversion is missing in the schema
-    if (!isConversionPossible(selectedParam.unit, option.unit)) {
-      dispatch(
-        setFailure({
-          name: t('errorMessages.invalidConversion'),
-          message: t('errorMessages.missingConversion'),
-        })
-      );
-    }
   };
 
   return (
@@ -181,11 +168,7 @@ const RollingStockEditorParameterFormColumn = ({
           );
         }
         if (property.units) {
-          // Can be undefined if creating a new rolling stock
-          const currentParam = rollingStockValues[property.title] as
-            | MultiUnitsParameter
-            | undefined;
-          const maxValue = currentParam?.max;
+          const currentParam = rollingStockValues[property.title] as MultiUnitsParameter;
 
           return (
             <div
@@ -205,36 +188,26 @@ const RollingStockEditorParameterFormColumn = ({
                 id={property.title}
                 inputDataTestId={`${property.title}-input`}
                 label={t(property.title)}
-                typeValue={property.type}
-                unit={currentParam?.unit ?? property.units[0]}
-                value={!isNil(currentParam) ? currentParam.value : ''}
+                currentValue={{
+                  unit: currentParam.unit,
+                  value: currentParam.value,
+                }}
                 options={property.units.map((unit) => ({
-                  id: `${property.title}-${unit}`,
+                  id: unit,
                   label: unit,
                 }))}
-                handleUnit={(option) => handleUnitChange(option, property)}
-                min={currentParam?.min ?? property.min}
-                max={currentParam?.max ?? property.max}
+                onChange={(option) => handleUnitChange(option, property)}
+                min={currentParam.min}
+                max={currentParam.max}
                 isInvalid={
-                  currentParam?.value?.toString().length === 0 ||
-                  (currentParam?.value as number) < (currentParam?.min as number) ||
-                  (currentParam?.value as number) > (currentParam?.max as number)
+                  currentParam.value === undefined ||
+                  currentParam.value < currentParam.min ||
+                  currentParam.value > currentParam.max
                 }
-                errorMsg={
-                  maxValue
-                    ? t('errorMessages.minMaxRangeError', {
-                        min: currentParam.min?.toString().replace('.', ','),
-                        max: floor(maxValue, 6).toString().replace('.', ','),
-                      })
-                    : t('errorMessages.minRangeError', {
-                        min: currentParam?.min?.toString().replace('.', ','),
-                      })
-                }
-                step="any"
-                sm
-                condensed
-                orientation="right"
-                textRight
+                errorMsg={t('errorMessages.minMaxRangeError', {
+                  min: currentParam.min?.toString().replace('.', ','),
+                  max: floor(currentParam.max, 6).toString().replace('.', ','),
+                })}
               />
             </div>
           );
