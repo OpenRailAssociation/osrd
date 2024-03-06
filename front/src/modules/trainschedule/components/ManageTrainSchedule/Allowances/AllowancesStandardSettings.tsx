@@ -50,14 +50,12 @@ export default function AllowancesStandardSettings({
     [t]
   );
 
-  const handleType = (type: InputGroupSNCFValue) => {
-    if (type.type && type.value !== undefined) {
-      updateStandardAllowanceDefaultValue({
-        value_type: type.type as AllowanceValueForm['value_type'],
-        [unitsNames[type.type as keyof typeof unitsNames]]:
-          (type.value as string) !== '' ? +type.value : undefined,
-      } as AllowanceValueForm);
-    }
+  const handleType = <U extends string>(type: InputGroupSNCFValue<U>) => {
+    updateStandardAllowanceDefaultValue({
+      value_type: type.unit as AllowanceValueForm['value_type'],
+      [unitsNames[type.unit as keyof typeof unitsNames]]:
+        type.value !== undefined ? type.value : undefined,
+    } as AllowanceValueForm);
   };
 
   return (
@@ -76,17 +74,11 @@ export default function AllowancesStandardSettings({
         <div className="allowances-value" data-testid="standard-allowance-group">
           <InputGroupSNCF
             id="allowances-standard-settings-value"
-            orientation="right"
-            sm
-            condensed
-            value={allowanceValue || ''}
-            unit={valueAndUnit.value_type}
-            handleUnit={handleType}
+            currentValue={{ unit: valueAndUnit.value_type, value: allowanceValue }}
+            onChange={handleType}
             options={unitsList}
-            typeValue="number"
             min={1}
             isInvalid={allowanceValue !== undefined && allowanceValue < 1}
-            textRight
             inputDataTestId="allowances-standard-settings-value-input"
           />
         </div>

@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 
 import cx from 'classnames';
-import { floor, isEmpty, uniq } from 'lodash';
+import { isEmpty, uniq } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
@@ -134,7 +134,7 @@ export default function RollingStockCardDetail({
         <tr>
           <td className="text-primary">{t('rollingResistanceA')}</td>
           <td>
-            {floor(convertUnits('N', 'kN', rs.rolling_resistance.A), 2)}
+            {convertUnits('N', 'kN', rs.rolling_resistance.A, 2)}
             <span className="small ml-1 text-muted">kN</span>
           </td>
         </tr>
@@ -142,7 +142,7 @@ export default function RollingStockCardDetail({
           <td className="text-primary">{t('rollingResistanceB')}</td>
           <td>
             {/* The b resistance received is in N/(m/s) and should appear in N/(km/h) */}
-            {floor(convertUnits('N/(m/s)', 'kN/(km/h)', rs.rolling_resistance.B), 6)}
+            {convertUnits('N/(m/s)', 'kN/(km/h)', rs.rolling_resistance.B, 6)}
             <span className="small ml-1 text-muted">kN/(km/h)</span>
           </td>
         </tr>
@@ -150,7 +150,7 @@ export default function RollingStockCardDetail({
           <td className="text-primary">{t('rollingResistanceC')}</td>
           <td title={rs.rolling_resistance.C.toString()}>
             {/* The c resistance received is in N/(m/s)² and should appear in N/(km/h)² */}
-            {floor(convertUnits('N/(m/s)²', 'kN/(km/h)²', rs.rolling_resistance.C), 6)}
+            {convertUnits('N/(m/s)²', 'kN/(km/h)²', rs.rolling_resistance.C, 6)}
             <span className="small ml-1 text-muted">kN/(km/h)²</span>
           </td>
         </tr>

@@ -36,14 +36,10 @@ const StdcmAllowances = () => {
     },
   ];
 
-  const onchangeType = (newTypeValue: InputGroupSNCFValue) => {
-    if (newTypeValue.type == null) return;
+  const onchangeType = <U extends string>(newTypeValue: InputGroupSNCFValue<U>) => {
     const processedType: StandardAllowance = {
-      type: newTypeValue.type as AllowanceValue['value_type'],
-      value:
-        newTypeValue.value === '' || newTypeValue.value === undefined
-          ? 0
-          : Math.abs(+newTypeValue.value),
+      type: newTypeValue.unit as AllowanceValue['value_type'],
+      value: newTypeValue.value === undefined ? undefined : Math.abs(newTypeValue.value),
     };
 
     dispatch(updateStdcmStandardAllowance(processedType));
@@ -86,14 +82,11 @@ const StdcmAllowances = () => {
         <InputGroupSNCF
           id="standardAllowanceTypeSelect"
           options={standardAllowanceTypes}
-          handleUnit={onchangeType}
-          value={stdcmStandardAllowance?.value || ''}
-          unit={stdcmStandardAllowance?.type || 'percentage'}
-          orientation="right"
-          typeValue="number"
-          condensed
-          sm
-          textRight
+          onChange={onchangeType}
+          currentValue={{
+            unit: stdcmStandardAllowance?.type || 'percentage',
+            value: stdcmStandardAllowance?.value,
+          }}
         />
       </div>
     </div>

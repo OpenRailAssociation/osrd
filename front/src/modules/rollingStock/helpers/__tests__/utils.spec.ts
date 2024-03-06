@@ -8,11 +8,11 @@ import {
   convertUnits,
   convertUnitsWithMass,
   handleUnitValue,
-  isConversionPossible,
   makeEffortCurve,
 } from 'modules/rollingStock/helpers/utils';
 import type {
   EffortCurveForms,
+  MultiUnit,
   MultiUnitsParameter,
   RollingStockParametersValues,
 } from 'modules/rollingStock/types';
@@ -57,9 +57,9 @@ describe('checkRollingStockFormValidity', () => {
           startupTime: 0,
           gammaValue: 0.01,
           inertiaCoefficient: 1,
-          rollingResistanceA: { unit: 'kN', value: 0 },
-          rollingResistanceB: { unit: 'kN/(km/h)', value: 0 },
-          rollingResistanceC: { unit: 'kN/(km/h)²', value: 0 },
+          rollingResistanceA: { max: 20, min: 0, unit: 'kN', value: 0 },
+          rollingResistanceB: { max: 0.5, min: 0, unit: 'kN/(km/h)', value: 0 },
+          rollingResistanceC: { max: 0.01, min: 0, unit: 'kN/(km/h)²', value: 0 },
         },
         invalidEffortCurves: [],
       };
@@ -104,9 +104,9 @@ describe('checkRollingStockFormValidity', () => {
           startupTime: 0,
           gammaValue: 0.01,
           inertiaCoefficient: 1,
-          rollingResistanceA: { unit: 'kN', value: 0 },
-          rollingResistanceB: { unit: 'kN/(km/h)', value: 0 },
-          rollingResistanceC: { unit: 'kN/(km/h)²', value: 0 },
+          rollingResistanceA: { max: 20, min: 0, unit: 'kN', value: 0 },
+          rollingResistanceB: { max: 0.5, min: 0, unit: 'kN/(km/h)', value: 0 },
+          rollingResistanceC: { max: 0.01, min: 0, unit: 'kN/(km/h)²', value: 0 },
           loadingGauge: 'G1',
           electricalPowerStartupTime: 0,
           raisePantographTime: 15,
@@ -150,9 +150,9 @@ describe('checkRollingStockFormValidity', () => {
         startupTime: 0,
         gammaValue: 0.01,
         inertiaCoefficient: 1,
-        rollingResistanceA: { unit: 'kN', value: 0 },
-        rollingResistanceB: { unit: 'kN/(km/h)', value: 0 },
-        rollingResistanceC: { unit: 'kN/(km/h)²', value: 0 },
+        rollingResistanceA: { max: 20, min: 0, unit: 'kN', value: 0 },
+        rollingResistanceB: { max: 0.5, min: 0, unit: 'kN/(km/h)', value: 0 },
+        rollingResistanceC: { max: 0.01, min: 0, unit: 'kN/(km/h)²', value: 0 },
         loadingGauge: 'G1',
         electricalPowerStartupTime: 0,
         raisePantographTime: 15,
@@ -275,14 +275,6 @@ describe('multi units parameter conversion', () => {
       const convertedUnit = convertUnits('kN/(km/h)²', 'N/(km/h)²', 0.007);
       expect(convertedUnit).toEqual(7);
     });
-    it('should return the same value if the previous unit does not exist in the schema', () => {
-      const convertedUnit = convertUnits('N/(m/h)', 'N(m/s)', 35);
-      expect(convertedUnit).toEqual(35);
-    });
-    it('should return the same value if the new unit does not exist in the schema', () => {
-      const convertedUnit = convertUnits('kN/(km/h)²', 'daN/(km/h)²', 0.5);
-      expect(convertedUnit).toEqual(0.5);
-    });
   });
   describe('mass converter', () => {
     it('should divide the unit value by mass with current mass in t', () => {
@@ -303,10 +295,10 @@ describe('multi units parameter conversion', () => {
     });
   });
   describe('parameter unit convertor', () => {
-    const options: InputGroupSNCFValue[] = [
+    const values: InputGroupSNCFValue<MultiUnit>[] = [
       {
         unit: 'kg',
-        value: '',
+        value: undefined,
       },
       {
         unit: 'km/h',
@@ -336,6 +328,7 @@ describe('multi units parameter conversion', () => {
       },
       rollingResistanceB: {
         min: 0,
+        max: 1800,
         unit: 'N/(m/s)',
         value: 0,
       },
@@ -346,26 +339,17 @@ describe('multi units parameter conversion', () => {
         value: 15000,
       },
     };
-    it("should return undefined if it converts a param value and the option's value is empty", () => {
+    it("should return undefined if it converts a param value and the option's value is undefined", () => {
       const convertedValue = handleUnitValue(
-        options[0],
+        values[0],
         multiUnitsParams.mass,
         multiUnitsParams.mass
       );
       expect(convertedValue).toEqual(undefined);
     });
-    it('should return undefined if it converts a max value but the param has no max value', () => {
-      const convertedMaxValue = handleUnitValue(
-        options[2],
-        multiUnitsParams.rollingResistanceB,
-        multiUnitsParams.mass,
-        'max'
-      );
-      expect(convertedMaxValue).toEqual(undefined);
-    });
     it("should return the same option value if option's unit is the same as the param's current unit", () => {
       const convertedMinValue = handleUnitValue(
-        options[1],
+        values[1],
         multiUnitsParams.maxSpeed,
         multiUnitsParams.mass,
         'min'
@@ -374,7 +358,7 @@ describe('multi units parameter conversion', () => {
     });
     it("should return the same option value if option's unit equals 0", () => {
       const convertedValue = handleUnitValue(
-        options[2],
+        values[2],
         multiUnitsParams.rollingResistanceB,
         multiUnitsParams.mass
       );
@@ -382,7 +366,7 @@ describe('multi units parameter conversion', () => {
     });
     it("should properly convert the unit's value if units are different and there is an option value", () => {
       const convertedMinValue = handleUnitValue(
-        options[0],
+        values[0],
         multiUnitsParams.mass,
         multiUnitsParams.mass,
         'min'
@@ -391,49 +375,11 @@ describe('multi units parameter conversion', () => {
     });
     it("should properly convert the unit's value with the mass convertor if one of the units ends with 't' and is not the mass parameter", () => {
       const convertedValue = handleUnitValue(
-        options[3],
+        values[3],
         multiUnitsParams.rollingResistanceA,
         multiUnitsParams.mass
       );
       expect(convertedValue).toEqual(0.15);
-    });
-  });
-  describe('conversion warning toast display', () => {
-    it('should return true if both units exist in schema and are different', () => {
-      const result = isConversionPossible('N/(km/h)', 'kN/(km/h)');
-      expect(result).toBeTruthy();
-    });
-    it('should return true if both units exist in schema and are the same', () => {
-      const result = isConversionPossible('kN/(km/h)²', 'kN/(km/h)²');
-      expect(result).toBeTruthy();
-    });
-    it('should return true if previousUnit is by ton and both (formated) units exist in schema and are different', () => {
-      const result = isConversionPossible('kN/t', 'N');
-      expect(result).toBeTruthy();
-    });
-    it('should return true if previousUnit is by ton and both (formated) units exist in schema and are the same', () => {
-      const result = isConversionPossible('kN/t', 'kN');
-      expect(result).toBeTruthy();
-    });
-    it('should return true if newUnit is by ton and both (formated) units exist in schema and are different', () => {
-      const result = isConversionPossible('N/(m/s)', 'kN/(km/h)/t');
-      expect(result).toBeTruthy();
-    });
-    it('should return true if newUnit is by ton and both (formated) units exist in schema and are the same', () => {
-      const result = isConversionPossible('kN/(km/h)', 'kN/(km/h)/t');
-      expect(result).toBeTruthy();
-    });
-    it('should return false if previousUnit does not exist in schema', () => {
-      const result = isConversionPossible('g', 't');
-      expect(result).toBeFalsy();
-    });
-    it('should return false if nextUnit does not exist in schema', () => {
-      const result = isConversionPossible('km/h', 'km/min');
-      expect(result).toBeFalsy();
-    });
-    it('should return false if both units do not exist in schema', () => {
-      const result = isConversionPossible('m/h', 'km/min');
-      expect(result).toBeFalsy();
     });
   });
 });

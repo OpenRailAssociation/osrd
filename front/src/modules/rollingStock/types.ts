@@ -84,6 +84,23 @@ export type RollingStockParametersValues = {
   supportedSignalingSystems: string[];
 };
 
+export type MultiUnit =
+  | 't'
+  | 'kg'
+  | 'km/h'
+  | 'm/s'
+  | 'N'
+  | 'kN'
+  | 'kN/t'
+  | 'N/(m/s)'
+  | 'N/(km/h)'
+  | 'kN/(km/h)'
+  | 'kN/(km/h)/t'
+  | 'N/(m/s)²'
+  | 'N/(km/h)²'
+  | 'kN/(km/h)²'
+  | 'kN/(km/h)²/t';
+
 export type SchemaProperty = {
   title: string;
   type: string;
@@ -93,7 +110,7 @@ export type SchemaProperty = {
   min?: number;
   max?: number;
   unit?: string;
-  units?: string[];
+  units?: MultiUnit[];
   condition?: (effortCurves: EffortCurveForms | null) => boolean;
   margin?: string;
 };
@@ -162,8 +179,8 @@ export type ParsedCurve = {
 };
 
 export type MultiUnitsParameter = {
-  min?: number;
-  max?: number;
-  unit: string;
+  min: number;
+  max: number;
+  unit: MultiUnit;
   value: number;
 };

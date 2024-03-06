@@ -49,7 +49,7 @@ export interface OsrdConfState extends InfraState {
 
 export interface StandardAllowance {
   type: AllowanceValue['value_type'];
-  value: number;
+  value?: number;
 }
 export interface OsrdStdcmConfState extends OsrdConfState {
   maximumRunTime: number;

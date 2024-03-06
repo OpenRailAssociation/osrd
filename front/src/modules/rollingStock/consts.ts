@@ -1,22 +1,79 @@
 import type { RollingStockComfortType } from 'common/api/osrdEditoastApi';
 import { isElectric } from 'modules/rollingStock/helpers/electric';
-import type { ElectricalProfileByMode, SchemaProperty } from 'modules/rollingStock/types';
+import type {
+  ElectricalProfileByMode,
+  MultiUnit,
+  RollingStockParametersValues,
+  SchemaProperty,
+} from 'modules/rollingStock/types';
 
 export const THERMAL_TRACTION_IDENTIFIER = 'thermal';
 export const STANDARD_COMFORT_LEVEL: RollingStockComfortType = 'STANDARD';
 
+export const DEFAULT_SIGNALING_SYSTEMS = ['BAL', 'BAPR'];
+
+export const newRollingStockValues: RollingStockParametersValues = {
+  railjsonVersion: '',
+  name: '',
+  detail: '',
+  family: '',
+  grouping: '',
+  number: '',
+  reference: '',
+  series: '',
+  subseries: '',
+  type: '',
+  unit: '',
+  mass: {
+    min: 0.1,
+    max: 10000,
+    unit: 't',
+    value: 0.1,
+  },
+  maxSpeed: {
+    min: 1,
+    max: 600,
+    unit: 'km/h',
+    value: 1,
+  },
+  rollingResistanceA: {
+    min: 0,
+    max: 20,
+    unit: 'kN',
+    value: 0,
+  },
+  rollingResistanceB: {
+    min: 0,
+    max: 0.5,
+    unit: 'kN/(km/h)',
+    value: 0,
+  },
+  rollingResistanceC: {
+    min: 0,
+    max: 0.01,
+    unit: 'kN/(km/h)²',
+    value: 0,
+  },
+  loadingGauge: 'G1' as RollingStockParametersValues['loadingGauge'],
+  electricalPowerStartupTime: null,
+  raisePantographTime: null,
+  basePowerClass: null,
+  powerRestrictions: {},
+  supportedSignalingSystems: DEFAULT_SIGNALING_SYSTEMS,
+};
+
 export const RS_REQUIRED_FIELDS = Object.freeze({
   length: 1,
-  mass: { unit: 't', value: 0.1 },
-  maxSpeed: { unit: 'km/h', value: 1 },
+  mass: newRollingStockValues.mass,
+  maxSpeed: newRollingStockValues.maxSpeed,
   startupAcceleration: 0,
   comfortAcceleration: 0,
   startupTime: 0,
   gammaValue: 0.01,
   inertiaCoefficient: 1,
-  rollingResistanceA: { unit: 'kN', value: 0 },
-  rollingResistanceB: { unit: 'kN/(km/h)', value: 0 },
-  rollingResistanceC: { unit: 'kN/(km/h)²', value: 0 },
+  rollingResistanceA: newRollingStockValues.rollingResistanceA,
+  rollingResistanceB: newRollingStockValues.rollingResistanceB,
+  rollingResistanceC: newRollingStockValues.rollingResistanceC,
   electricalPowerStartupTime: 0,
   raisePantographTime: 15,
 });
@@ -51,8 +108,6 @@ export enum RollingStockEditorParameter {
   rollingResistanceB = 'rollingResistanceB',
   rollingResistanceC = 'rollingResistanceC',
 }
-
-export const DEFAULT_SIGNALING_SYSTEMS = ['BAL', 'BAPR'];
 
 export const RS_SCHEMA_PROPERTIES: readonly SchemaProperty[] = [
   {
@@ -231,7 +286,9 @@ export const RS_SCHEMA_PROPERTIES: readonly SchemaProperty[] = [
   },
 ];
 
-export const conversionFactorsSchema: { [key: string]: { [key: string]: number } } = {
+export const CONVERSION_FACTORS_SCHEMA: Partial<
+  Record<MultiUnit, Partial<Record<MultiUnit, number>>>
+> = {
   t: { kg: 1000 },
   kg: { t: 1 / 1000 },
   'km/h': { 'm/s': 1 / 3.6 },

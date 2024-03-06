@@ -1,4 +1,4 @@
-.input-group-sm {
+.input-group {
   button {
     height: 1.875rem;
     font-size: 0.875rem;
@@ -11,12 +11,8 @@
       font-size: 0.875rem;
     }
   }
-}
-.input-group {
   z-index: auto !important;
-  .btn-sm {
-    font-size: 0.8rem;
-  }
+
   .dropdown .dropdown-menu[x-placement='bottom-end'] {
     top: 2.3rem !important;
   }
