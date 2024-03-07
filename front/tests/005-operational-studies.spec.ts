@@ -74,6 +74,15 @@ test.describe('Testing if all mandatory elements simulation configuration are lo
       await playwrightRollingstockModalPage.getRollingStockInfoComfort().textContent()
     ).toMatch(/ConfortSStandard/i);
 
+    // ***************** Test choice Origin/Destination *****************
+    await scenarioPage.openTabByDataId('tab-pathfinding');
+    const itinerary = scenarioPage.getItineraryModule;
+    await expect(itinerary).toBeVisible();
+
+    await scenarioPage.getPathfindingByTriGramSearch('MWS', 'NES');
+
+    await scenarioPage.checkPathfindingDistance('33.950 km');
+
     // TODO: move this test in his own file
     // ***************** Test Composition Code *****************
     await scenarioPage.openTabByDataId('tab-simulation-settings');
@@ -87,19 +96,10 @@ test.describe('Testing if all mandatory elements simulation configuration are lo
       /Voyageurs - Automoteurs - E32C/i
     );
 
-    // ***************** Test choice Origin/Destination *****************
-    await scenarioPage.openTabByDataId('tab-pathfinding');
-    const itinerary = scenarioPage.getItineraryModule;
-    await expect(itinerary).toBeVisible();
-
-    await scenarioPage.getPathfindingByTriGramSearch('MWS', 'NES');
-
-    await scenarioPage.checkPathfindingDistance('33.950 km');
-
     // ***************** Test Add Train Schedule *****************
     await scenarioPage.addTrainSchedule();
     await scenarioPage.page.waitForSelector('.dots-loader', { state: 'hidden' });
-    await scenarioPage.checkToastSNCFTitle();
+    await scenarioPage.checkTrainHasBeenAdded();
     await scenarioPage.returnSimulationResult();
     await scenarioPage.checkNumberOfTrains(Number(trainCount));
   });

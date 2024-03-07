@@ -136,7 +136,7 @@ export default async function createCompleteScenario(
   // ***************** Create train *****************
   await scenarioPage.addTrainSchedule();
   await scenarioPage.page.waitForSelector('.dots-loader', { state: 'hidden' });
-  await scenarioPage.checkToastSNCFTitle();
+  await scenarioPage.checkTrainHasBeenAdded();
   await scenarioPage.returnSimulationResult();
 }
 

@@ -116,6 +116,8 @@
   "warningMessages": {
     "electrification": "Électrification",
     "powerRestrictionInvalidCombination": "Code {{powerRestrictionCode}} incompatible avec l'électrification à {{electrification}} de l'itinéraire entre {{begin}}m et {{end}}m. ",
-    "missingPowerRestriction": "Restriction de puissance manquante entre {{begin}}m et {{end}}m. "
+    "missingPowerRestriction": "Restriction de puissance manquante entre {{begin}}m et {{end}}m.",
+    "pathfindingChange": "Changement de chemin",
+    "marginsAndPowerRestrictionsReset": "Les marges et les restrictions de puissance ont été réinitialisées."
   }
 }

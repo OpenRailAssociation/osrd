@@ -1,6 +1,11 @@
 import { type Locator, type Page, expect } from '@playwright/test';
 
-class PlaywrightScenarioPage {
+import BasePage from './base-page';
+import manageTrainScheduleTranslation from '../../public/locales/fr/operationalStudies/manageTrainSchedule.json';
+
+const trainAddedTranslation = manageTrainScheduleTranslation.trainAdded;
+
+class PlaywrightScenarioPage extends BasePage {
   readonly getScenarioUpdateBtn: Locator;
 
   readonly getScenarioDeleteConfirmBtn: Locator;
@@ -57,10 +62,6 @@ class PlaywrightScenarioPage {
 
   readonly getReturnSimulationResultBtn: Locator;
 
-  readonly getToastSNCF: Locator;
-
-  readonly getToastSNCFTitle: Locator;
-
   readonly getPathfindingState: Locator;
 
   readonly getSearchByTrigramButton: Locator;
@@ -92,6 +93,8 @@ class PlaywrightScenarioPage {
   readonly getSuccessBtn: Locator;
 
   constructor(readonly page: Page) {
+    super(page);
+
     this.getRollingStockSelector = page.getByTestId('rollingstock-selector-empty');
     this.getScenarioUpdateBtn = page.getByTitle('Modifier le scénario');
     this.getScenarioDeleteConfirmBtn = page
@@ -134,8 +137,6 @@ class PlaywrightScenarioPage {
       .locator('.scenario-timetable-trains')
       .locator('.scenario-timetable-train');
     this.getReturnSimulationResultBtn = page.getByTestId('return-simulation-result');
-    this.getToastSNCF = page.getByTestId('toast-SNCF');
-    this.getToastSNCFTitle = this.getToastSNCF.getByTestId('toast-SNCF-title');
     this.getPathfindingState = page.locator('.pathfinding-state-main-container');
     this.getTimetableList = page.locator('.scenario-timetable-train-with-right-bar');
     this.getTrainEditBtn = page.locator('.scenario-timetable-train-buttons-update');
@@ -241,12 +242,8 @@ class PlaywrightScenarioPage {
     await this.getReturnSimulationResultBtn.click();
   }
 
-  async checkToastSNCFTitle() {
-    await expect(this.getToastSNCFTitle).not.toBeEmpty();
-  }
-
-  async checkToastSNCFBody(text: string | RegExp) {
-    await expect(this.getToastSNCF.locator('.toast-body')).toHaveText(text);
+  async checkTrainHasBeenAdded() {
+    this.checkLastToastTitle(trainAddedTranslation);
   }
 
   getBtnByName(name: string | RegExp) {

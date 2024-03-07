@@ -137,7 +137,6 @@ export function buildCommonConfReducers<S extends OsrdConfState>(): CommonConfRe
     },
     updatePathfindingID(state: Draft<S>, action: PayloadAction<S['pathfindingID']>) {
       state.pathfindingID = action.payload;
-      state.powerRestrictionRanges = [];
     },
     updateTimetableID(state: Draft<S>, action: PayloadAction<S['timetableID']>) {
       state.timetableID = action.payload;
