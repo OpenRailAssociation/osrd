@@ -11,7 +11,7 @@
             "type": "string"
         },
         "ApplicableDirectionsTrackRange": {
-            "description": "\n    An applicable directions track range is a track range with associated directions.\n    ",
+            "description": "An applicable directions track range is a track range with associated directions.",
             "properties": {
                 "applicable_directions": {
                     "allOf": [
@@ -23,13 +23,13 @@
                 },
                 "begin": {
                     "description": "Begin offset in meters of the corresponding track section",
-                    "minimum": 0,
+                    "minimum": 0.0,
                     "title": "Begin",
                     "type": "number"
                 },
                 "end": {
                     "description": "End offset in meters of the corresponding track section",
-                    "minimum": 0,
+                    "minimum": 0.0,
                     "title": "End",
                     "type": "number"
                 },
@@ -111,7 +111,7 @@
             "type": "object"
         },
         "BufferStop": {
-            "description": "This class defines the buffer stop object.\n    A buffer stop is a device placed at the end of a dead-end road\n    to stop any drifting trains from continuing off the road.\n    A buffer stop is characterized by its id and its corresponding track.\n    ",
+            "description": "This class defines the buffer stop object.\nA buffer stop is a device placed at the end of a dead-end road\nto stop any drifting trains from continuing off the road.\nA buffer stop is characterized by its id and its corresponding track.",
             "properties": {
                 "extensions": {
                     "allOf": [
@@ -130,7 +130,7 @@
                 },
                 "position": {
                     "description": "Offset of the point in meters to the beginning of the track section",
-                    "minimum": 0,
+                    "minimum": 0.0,
                     "title": "Position",
                     "type": "number"
                 },
@@ -200,17 +200,17 @@
             "type": "object"
         },
         "Curve": {
-            "description": "This class is used to define the curve object.\n    A curve correspond at radius of curvature in the part of corresponding track section.",
+            "description": "This class is used to define the curve object.\nA curve correspond at radius of curvature in the part of corresponding track section.",
             "properties": {
                 "begin": {
                     "description": "Offset in meters corresponding at the beginning of the corresponding radius in a track section ",
-                    "minimum": 0,
+                    "minimum": 0.0,
                     "title": "Begin",
                     "type": "number"
                 },
                 "end": {
                     "description": "Offset in meters corresponding at the end of the corresponding radius in a track section",
-                    "minimum": 0,
+                    "minimum": 0.0,
                     "title": "End",
                     "type": "number"
                 },
@@ -229,7 +229,7 @@
             "type": "object"
         },
         "Detector": {
-            "description": "This class defines detector object.\n    A detector is characterized by its id and its corresponding track.\n    A detector is used to locate a train\n    in order to consider the section as occupied when there is a train.\n    ",
+            "description": "This class defines detector object.\nA detector is characterized by its id and its corresponding track.\nA detector is used to locate a train\nin order to consider the section as occupied when there is a train.",
             "properties": {
                 "extensions": {
                     "allOf": [
@@ -248,7 +248,7 @@
                 },
                 "position": {
                     "description": "Offset of the point in meters to the beginning of the track section",
-                    "minimum": 0,
+                    "minimum": 0.0,
                     "title": "Position",
                     "type": "number"
                 },
@@ -327,11 +327,11 @@
             "type": "string"
         },
         "DirectionalTrackRange": {
-            "description": "\n    A directional track range is a track range with an associated direction.\n    ",
+            "description": "A directional track range is a track range with an associated direction.",
             "properties": {
                 "begin": {
                     "description": "Begin offset in meters of the corresponding track section",
-                    "minimum": 0,
+                    "minimum": 0.0,
                     "title": "Begin",
                     "type": "number"
                 },
@@ -345,7 +345,7 @@
                 },
                 "end": {
                     "description": "End offset in meters of the corresponding track section",
-                    "minimum": 0,
+                    "minimum": 0.0,
                     "title": "End",
                     "type": "number"
                 },
@@ -367,7 +367,7 @@
             "type": "object"
         },
         "Electrification": {
-            "description": "\n    An electrification corresponds to a set of cables designed to power\n    electric trains by capturing the current through the use\n    of a pantograph. Electrification is identified by its identifier.\n    ",
+            "description": "An electrification corresponds to a set of cables designed to power\nelectric trains by capturing the current through the use\nof a pantograph. Electrification is identified by its identifier.",
             "properties": {
                 "id": {
                     "description": "Unique identifier of the object",
@@ -549,11 +549,11 @@
             "type": "object"
         },
         "LoadingGaugeLimit": {
-            "description": "This class is used to define loading gauge limit.\n    It represents a restriction on the trains according to their categories of loading gauge\n    and the type of the corresponding rolling stock.\n    ",
+            "description": "This class is used to define loading gauge limit.\nIt represents a restriction on the trains according to their categories of loading gauge\nand the type of the corresponding rolling stock.",
             "properties": {
                 "begin": {
                     "description": "Offset in meters corresponding at the beginning of the corresponding loading gauge limit",
-                    "minimum": 0,
+                    "minimum": 0.0,
                     "title": "Begin",
                     "type": "number"
                 },
@@ -567,7 +567,7 @@
                 },
                 "end": {
                     "description": "Offset in meters corresponding at the end of the corresponding loading gauge limit",
-                    "minimum": 0,
+                    "minimum": 0.0,
                     "title": "End",
                     "type": "number"
                 }
@@ -631,7 +631,7 @@
             "type": "object"
         },
         "NeutralSection": {
-            "description": "\n    Neutral sections are portions of track where trains aren't allowed to pull power from electrifications.\n    They have to rely on inertia to cross such sections.\n\n    In practice, neutral sections are delimited by signs. In OSRD, neutral sections are directional\n    to allow accounting for different sign placement depending on the direction.\n\n    For more details see [the documentation](https://osrd.fr/en/docs/explanation/neutral_sections/).\n    ",
+            "description": "Neutral sections are portions of track where trains aren't allowed to pull power from electrifications.\nThey have to rely on inertia to cross such sections.\n\nIn practice, neutral sections are delimited by signs. In OSRD, neutral sections are directional\nto allow accounting for different sign placement depending on the direction.\n\nFor more details see [the documentation](https://osrd.fr/en/docs/explanation/neutral_sections/).",
             "properties": {
                 "announcement_track_ranges": {
                     "description": "List of locations where the upcoming neutral section is announced but not yet crossed",
@@ -738,7 +738,7 @@
             "type": "object"
         },
         "OperationalPoint": {
-            "description": "\n    This class describes the operational points of the corresponding infra.\n    ",
+            "description": "This class describes the operational points of the corresponding infra.",
             "properties": {
                 "extensions": {
                     "allOf": [
@@ -814,7 +814,7 @@
             "type": "object"
         },
         "OperationalPointPart": {
-            "description": "\n    Operational point part is a single point on the infrastructure. It's linked to an operational point.\n    ",
+            "description": "Operational point part is a single point on the infrastructure. It's linked to an operational point.",
             "properties": {
                 "extensions": {
                     "allOf": [
@@ -826,7 +826,7 @@
                 },
                 "position": {
                     "description": "Offset of the point in meters to the beginning of the track section",
-                    "minimum": 0,
+                    "minimum": 0.0,
                     "title": "Position",
                     "type": "number"
                 },
@@ -918,7 +918,7 @@
             "type": "object"
         },
         "Route": {
-            "description": "\n    This class is used to describe routes on the infrastructure.\n    ",
+            "description": "This class is used to describe routes on the infrastructure.",
             "properties": {
                 "entry_point": {
                     "discriminator": {
@@ -1014,7 +1014,7 @@
             "type": "string"
         },
         "Sign": {
-            "description": "This class is used to define signs.\n    This is a physical, punctual, cosmetic object.\n    ",
+            "description": "This class is used to define signs.\nThis is a physical, punctual, cosmetic object.",
             "properties": {
                 "direction": {
                     "allOf": [
@@ -1033,7 +1033,7 @@
                 },
                 "position": {
                     "description": "Offset of the point in meters to the beginning of the track section",
-                    "minimum": 0,
+                    "minimum": 0.0,
                     "title": "Position",
                     "type": "number"
                 },
@@ -1075,7 +1075,7 @@
             "type": "object"
         },
         "Signal": {
-            "description": "This class is used to describe the signal.\n    A signal is characterized by its id and its corresponding track.\n    By default, the signal is located at the center of the track.\n    ",
+            "description": "This class is used to describe the signal.\nA signal is characterized by its id and its corresponding track.\nBy default, the signal is located at the center of the track.",
             "properties": {
                 "direction": {
                     "allOf": [
@@ -1110,13 +1110,13 @@
                 },
                 "position": {
                     "description": "Offset of the point in meters to the beginning of the track section",
-                    "minimum": 0,
+                    "minimum": 0.0,
                     "title": "Position",
                     "type": "number"
                 },
                 "sight_distance": {
                     "description": "Visibility distance of the signal in meters",
-                    "exclusiveMinimum": 0,
+                    "exclusiveMinimum": 0.0,
                     "title": "Sight Distance",
                     "type": "number"
                 },
@@ -1191,17 +1191,17 @@
             "type": "string"
         },
         "Slope": {
-            "description": "\n    This class is used to define the slope object.\n    A slope correspond at the gradient in the part of corresponding track section.\n    The gradient can be positive (case of ramp) or negative (slope case)\n    ",
+            "description": "This class is used to define the slope object.\nA slope correspond at the gradient in the part of corresponding track section.\nThe gradient can be positive (case of ramp) or negative (slope case)",
             "properties": {
                 "begin": {
                     "description": "Offset in meters corresponding at the beginning of the corresponding gradient in a track section",
-                    "minimum": 0,
+                    "minimum": 0.0,
                     "title": "Begin",
                     "type": "number"
                 },
                 "end": {
                     "description": "Offset in meters corresponding at the end of the corresponding gradient in a track section",
-                    "minimum": 0,
+                    "minimum": 0.0,
                     "title": "End",
                     "type": "number"
                 },
@@ -1220,7 +1220,7 @@
             "type": "object"
         },
         "SpeedSection": {
-            "description": "\n    Speed sections are recognized by their identifiers and are in meters per second.\n    ",
+            "description": "Speed sections are recognized by their identifiers and are in meters per second.",
             "properties": {
                 "extensions": {
                     "allOf": [
@@ -1258,7 +1258,7 @@
                 "speed_limit": {
                     "anyOf": [
                         {
-                            "exclusiveMinimum": 0,
+                            "exclusiveMinimum": 0.0,
                             "type": "number"
                         },
                         {
@@ -1344,7 +1344,7 @@
             "type": "object"
         },
         "Switch": {
-            "description": "\n    Switches are devices used for track changes.\n    ",
+            "description": "Switches are devices used for track changes.",
             "properties": {
                 "extensions": {
                     "allOf": [
@@ -1356,7 +1356,7 @@
                 },
                 "group_change_delay": {
                     "description": "Time it takes to change which group of the switch is activated",
-                    "minimum": 0,
+                    "minimum": 0.0,
                     "title": "Group Change Delay",
                     "type": "number"
                 },
@@ -1407,7 +1407,7 @@
             "type": "object"
         },
         "SwitchPortConnection": {
-            "description": "\n    This class allows to know the connection between each port in switch type.\n    The connection is always bidirectional.\n    ",
+            "description": "This class allows to know the connection between each port in switch type.\nThe connection is always bidirectional.",
             "properties": {
                 "dst": {
                     "description": "Port name that is destination of the connection",
@@ -1447,7 +1447,7 @@
             "type": "object"
         },
         "SwitchType": {
-            "description": "\n    Switch types are used to define what kind of switch is used in the infrastructure.\n    A switch type is defined by a list of ports and groups which are the possible configurations of the switch.\n    ",
+            "description": "Switch types are used to define what kind of switch is used in the infrastructure.\nA switch type is defined by a list of ports and groups which are the possible configurations of the switch.",
             "properties": {
                 "groups": {
                     "additionalProperties": {
@@ -1488,7 +1488,7 @@
             "type": "object"
         },
         "TrackEndpoint": {
-            "description": "\n    This class is used to define the endpoint (begin or end) of the considered track on the infrastructure.\n    ",
+            "description": "This class is used to define the endpoint (begin or end) of the considered track on the infrastructure.",
             "properties": {
                 "endpoint": {
                     "allOf": [
@@ -1514,7 +1514,7 @@
             "type": "object"
         },
         "TrackSection": {
-            "description": "\n    A track section is a piece of track and is the tracking system used in OSRD to locate a point.\n    A track section is identified by his unique id and its coordinates (geographic or schematic).\n    ",
+            "description": "A track section is a piece of track and is the tracking system used in OSRD to locate a point.\nA track section is identified by his unique id and its coordinates (geographic or schematic).",
             "properties": {
                 "curves": {
                     "description": "List of curves of corresponding track section",
@@ -1549,7 +1549,7 @@
                 },
                 "length": {
                     "description": "Value of the length of the track section in meters",
-                    "exclusiveMinimum": 0,
+                    "exclusiveMinimum": 0.0,
                     "title": "Length",
                     "type": "number"
                 },
