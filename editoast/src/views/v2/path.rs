@@ -1,7 +1,6 @@
 mod pathfinding;
 mod properties;
 
-use chrono::Duration;
 use diesel_async::AsyncPgConnection as PgConnection;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
@@ -14,8 +13,9 @@ use crate::schema::Direction;
 use editoast_derive::EditoastError;
 use thiserror::Error;
 
-/// Expiration time for the cache of the pathfinding and path properties is set to 1 week
-const CACHE_PATH_EXPIRATION: u64 = Duration::weeks(1).num_seconds() as u64;
+/// Expiration time for the cache of the pathfinding and path properties.
+/// Note: 604800 seconds = 1 week
+const CACHE_PATH_EXPIRATION: u64 = 604800;
 
 crate::routes! {
     properties::routes(),

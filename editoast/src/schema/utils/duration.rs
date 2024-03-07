@@ -117,13 +117,19 @@ where
                     "years and months are not supported",
                 ));
             }
-            ChronoDuration::days(day as i64)
-                + ChronoDuration::hours(hour as i64)
-                + ChronoDuration::minutes(minute as i64)
-                + ChronoDuration::seconds(second as i64)
-                + ChronoDuration::milliseconds(millisecond as i64)
+            ChronoDuration::try_days(day as i64)
+                .ok_or_else(|| serde::de::Error::custom("value for days is not valid"))?
+                + ChronoDuration::try_hours(hour as i64)
+                    .ok_or_else(|| serde::de::Error::custom("value for hours is not valid"))?
+                + ChronoDuration::try_minutes(minute as i64)
+                    .ok_or_else(|| serde::de::Error::custom("value for minutes is not valid"))?
+                + ChronoDuration::try_seconds(second as i64)
+                    .ok_or_else(|| serde::de::Error::custom("value for seconds is not valid"))?
+                + ChronoDuration::try_milliseconds(millisecond as i64)
+                    .ok_or_else(|| serde::de::Error::custom("value for millisecond is not valid"))?
         }
-        IsoDuration::Weeks(weeks) => ChronoDuration::weeks(weeks as i64),
+        IsoDuration::Weeks(weeks) => ChronoDuration::try_weeks(weeks as i64)
+            .ok_or_else(|| serde::de::Error::custom("value for millisecond is not valid"))?,
     })
 }
 
@@ -151,7 +157,7 @@ mod tests {
     fn test_serialize() {
         let s = r#"{"duration":"PT3600S"}"#; // 1 hour
         let my_struct = MyStruct {
-            duration: Duration::from(chrono::Duration::hours(1)),
+            duration: Duration::from(chrono::Duration::try_hours(1).unwrap()),
         };
         assert_eq!(s, to_string(&my_struct).unwrap());
     }
