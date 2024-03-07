@@ -165,7 +165,7 @@ class Battery(BaseModel, extra="forbid"):
     efficiency: float = Field(ge=0, le=1, description="Battery efficiency")
 
 
-class EnergySource(RootModel, extra="forbid"):
+class EnergySource(RootModel):
     """Energy sources used when simulating qualesi trains"""
 
     root: Union[Electrification, PowerPack, Battery] = Field(discriminator="energy_source_type")
