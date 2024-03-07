@@ -1,6 +1,6 @@
 use crate::error::{InternalError, Result};
-use crate::models::{pathfinding::Pathfinding, LightRollingStockModel, Retrieve};
-use crate::modelsv2::electrical_profiles::ElectricalProfileSet;
+use crate::models::{pathfinding::Pathfinding, Retrieve};
+use crate::modelsv2::{electrical_profiles::ElectricalProfileSet, LightRollingStockModel};
 use crate::schema::electrical_profiles::ElectricalProfileSetData;
 use crate::views::electrical_profiles::ElectricalProfilesError;
 use crate::views::pathfinding::PathfindingIdParam;
@@ -98,15 +98,13 @@ async fn electrical_profiles_on_path(
     };
 
     let rs_id = request.rolling_stock_id;
-    let rs = match LightRollingStockModel::retrieve(db_pool.clone(), rs_id).await? {
-        Some(rs) => rs,
-        None => {
-            return Err(PathfindingError::RollingStockNotFound {
-                rolling_stock_id: rs_id,
-            }
-            .into())
+    let conn = &mut db_pool.get().await?;
+    let rs = LightRollingStockModel::retrieve_or_fail(conn, rs_id, || {
+        PathfindingError::RollingStockNotFound {
+            rolling_stock_id: rs_id,
         }
-    };
+    })
+    .await?;
 
     let eps_id = request.electrical_profile_set_id;
     use crate::modelsv2::Retrieve;

@@ -2,14 +2,13 @@ use std::collections::HashMap;
 
 use crate::diesel::QueryDsl;
 use crate::error::Result;
-use crate::models::LightRollingStockModel;
-use crate::models::Retrieve;
 use crate::models::{
     train_schedule::{
         LightTrainSchedule, MechanicalEnergyConsumedBaseEco, TrainSchedule, TrainScheduleSummary,
     },
     SimulationOutput,
 };
+use crate::modelsv2::{LightRollingStockModel, Retrieve};
 use crate::tables::timetable;
 use crate::DbPool;
 use actix_web::web::Data;
@@ -105,10 +104,8 @@ impl Timetable {
             })
             .map(|(train_schedule, simulation_output, future_conn)| async {
                 let mut conn = future_conn.await?;
-                let rolling_stock = LightRollingStockModel::retrieve_conn(
-                    &mut conn,
-                    train_schedule.rolling_stock_id,
-                );
+                let rolling_stock =
+                    LightRollingStockModel::retrieve(&mut conn, train_schedule.rolling_stock_id);
 
                 let result_train = &simulation_output.base_simulation.0;
                 let result_train_eco = &simulation_output.eco_simulation;

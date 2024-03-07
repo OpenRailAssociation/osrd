@@ -1801,6 +1801,7 @@ export type RollingResistance = {
   C: number;
   type: string;
 };
+export type RollingStockSupportedSignalingSystems = string[];
 export type LightRollingStock = {
   base_power_class?: string | null;
   comfort_acceleration: number;
@@ -1823,7 +1824,7 @@ export type LightRollingStock = {
   rolling_resistance: RollingResistance;
   startup_acceleration: number;
   startup_time: number;
-  supported_signaling_systems: string[];
+  supported_signaling_systems: RollingStockSupportedSignalingSystems;
 };
 export type RollingStockLiveryMetadata = {
   compound_image_id?: number | null;
@@ -2114,7 +2115,6 @@ export type EffortCurves = {
     [key: string]: ModeEffortCurves;
   };
 };
-export type RollingStockSupportedSignalingSystems = string[];
 export type RollingStockCommon = {
   base_power_class: string | null;
   comfort_acceleration: number;

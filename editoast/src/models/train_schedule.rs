@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use crate::error::Result;
+use crate::modelsv2::{LightRollingStockModel, Retrieve};
 use crate::tables::train_schedule;
 use crate::{
     models::{Identifiable, Timetable},
@@ -17,7 +18,7 @@ use editoast_derive::Model;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
-use super::{check_train_validity, LightRollingStockModel, Retrieve};
+use super::check_train_validity;
 
 crate::schemas! {
     TrainSchedule,
@@ -559,10 +560,9 @@ pub async fn filter_invalid_trains(
     let mut invalid_trains = Vec::new();
     for schedule in schedules.into_iter() {
         let mut conn = db_pool.get().await?;
-        let rolling_stock =
-            LightRollingStockModel::retrieve_conn(&mut conn, schedule.rolling_stock_id)
-                .await
-                .unwrap();
+        let rolling_stock = LightRollingStockModel::retrieve(&mut conn, schedule.rolling_stock_id)
+            .await
+            .unwrap();
         let current_rolling_stock_version = rolling_stock.unwrap().version;
         let valid = check_train_validity(
             &infra_version,

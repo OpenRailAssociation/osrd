@@ -1,6 +1,7 @@
 pub mod documents;
 pub mod electrical_profiles;
 pub mod infra_objects;
+pub mod light_rolling_stock;
 pub mod projects;
 pub mod railjson;
 pub mod rolling_stock_image;
@@ -13,6 +14,7 @@ pub mod train_schedule;
 pub use documents::Document;
 pub use electrical_profiles::ElectricalProfileSet;
 pub use infra_objects::*;
+pub use light_rolling_stock::LightRollingStockModel;
 pub use projects::{Ordering, Project, Tags};
 pub use rolling_stock_image::RollingStockSeparatedImageModel;
 pub use rolling_stock_model::RollingStockModel;

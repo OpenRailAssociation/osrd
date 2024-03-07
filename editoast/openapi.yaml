@@ -3284,9 +3284,7 @@ components:
           format: double
           type: number
         supported_signaling_systems:
-          items:
-            type: string
-          type: array
+          $ref: '#/components/schemas/RollingStockSupportedSignalingSystems'
       required:
       - id
       - name

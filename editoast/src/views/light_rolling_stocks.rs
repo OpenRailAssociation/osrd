@@ -1,5 +1,5 @@
 use crate::error::Result;
-use crate::models::{LightRollingStockModel, Retrieve};
+use crate::modelsv2::{LightRollingStockModel, Retrieve};
 use crate::schema::rolling_stock::light_rolling_stock::LightRollingStockWithLiveries;
 use crate::views::pagination::{PaginatedResponse, PaginationQueryParam};
 use crate::views::rolling_stocks::{RollingStockError, RollingStockIdParam};
@@ -68,11 +68,11 @@ async fn get(
     rolling_stock_id: Path<i64>,
 ) -> Result<Json<LightRollingStockWithLiveries>> {
     let rolling_stock_id = rolling_stock_id.into_inner();
-    let rolling_stock =
-        match LightRollingStockModel::retrieve(db_pool.clone(), rolling_stock_id).await? {
-            Some(rolling_stock) => rolling_stock,
-            None => return Err(RollingStockError::NotFound { rolling_stock_id }.into()),
-        };
+    let conn = &mut db_pool.get().await?;
+    let rolling_stock = LightRollingStockModel::retrieve_or_fail(conn, rolling_stock_id, || {
+        RollingStockError::NotFound { rolling_stock_id }
+    })
+    .await?;
     let rollig_stock_with_liveries: LightRollingStockWithLiveries =
         rolling_stock.with_liveries(db_pool).await?.into();
     Ok(Json(rollig_stock_with_liveries))
