@@ -2,7 +2,8 @@
 
 """
 This script generates an infrastructure of reasonable size containing all objects defined by the RailJSON schema.
-For more information, and a diagram of this infrastructure, see: https://osrd.fr/en/docs/explanation/data-model/
+For more information, and a diagram of this infrastructure, see:
+https://osrd.fr/en/docs/explanation/models/data-models-full-example/
 """
 from typing import Mapping, Optional, Tuple
 
