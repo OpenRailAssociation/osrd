@@ -102,7 +102,7 @@ fun InfraExplorer.withEnvelope(
 ): InfraExplorerWithEnvelope {
     return InfraExplorerWithEnvelopeImpl(
         this,
-        mutableListOf(envelope),
+        mutableListOf(EnvelopeConcat.LocatedEnvelope(envelope, 0.0, 0.0)),
         SpacingRequirementAutomaton(
             fullInfra.rawInfra,
             fullInfra.loadedSignalInfra,

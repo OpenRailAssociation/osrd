@@ -1,7 +1,5 @@
 package fr.sncf.osrd.envelope;
 
-import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.arePositionsEqual;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,18 +19,18 @@ public class EnvelopeConcat implements EnvelopeTimeInterpolate {
 
     /** Creates an instance from a list of envelopes */
     public static EnvelopeConcat from(List<? extends EnvelopeTimeInterpolate> envelopes) {
-        runSanityChecks(envelopes);
         var locatedEnvelopes = initLocatedEnvelopes(envelopes);
         var lastEnvelope = locatedEnvelopes.get(locatedEnvelopes.size() - 1);
         var endPos = lastEnvelope.startOffset + lastEnvelope.envelope.getEndPos();
         return new EnvelopeConcat(locatedEnvelopes, endPos);
     }
 
-    /** Run some checks to ensure that the inputs match the assumptions made by this class */
-    private static void runSanityChecks(List<? extends EnvelopeTimeInterpolate> envelopes) {
-        assert !envelopes.isEmpty() : "concatenating no envelope";
-        for (var envelope : envelopes)
-            assert arePositionsEqual(0, envelope.getBeginPos()) : "concatenated envelope doesn't start at 0";
+    /** Creates an instance from a list of located envelopes.
+     * Avoids redundant initialization when elements are appended to one envelope list. */
+    public static EnvelopeConcat fromLocated(List<LocatedEnvelope> envelopes) {
+        var lastEnvelope = envelopes.get(envelopes.size() - 1);
+        var endPos = lastEnvelope.startOffset + lastEnvelope.envelope.getEndPos();
+        return new EnvelopeConcat(envelopes, endPos);
     }
 
     /** Place all envelopes in a record containing the offset on which they start */
@@ -114,5 +112,5 @@ public class EnvelopeConcat implements EnvelopeTimeInterpolate {
         return null;
     }
 
-    private record LocatedEnvelope(EnvelopeTimeInterpolate envelope, double startOffset, double startTime) {}
+    public record LocatedEnvelope(EnvelopeTimeInterpolate envelope, double startOffset, double startTime) {}
 }
