@@ -44,6 +44,8 @@ use modelsv2::{
     Retrieve as RetrieveV2, RetrieveBatch,
 };
 use modelsv2::{Changeset, RollingStockModel};
+use opentelemetry_datadog::DatadogPropagator;
+use opentelemetry_sdk::propagation::TraceContextPropagator;
 use schema::v2::trainschedule::TrainScheduleBase;
 use views::v2::train_schedule::{TrainScheduleForm, TrainScheduleResult};
 
@@ -122,6 +124,7 @@ fn init_tracing(mode: EditoastMode, telemetry_config: &client::TelemetryConfig) 
             let layer = tracing_opentelemetry::layer()
                 .with_tracer(datadog_tracer)
                 .boxed();
+            opentelemetry::global::set_text_map_propagator(DatadogPropagator::default());
             Some(layer)
         }
         client::TelemetryKind::Opentelemetry => {
@@ -144,6 +147,7 @@ fn init_tracing(mode: EditoastMode, telemetry_config: &client::TelemetryConfig) 
             let layer = tracing_opentelemetry::layer()
                 .with_tracer(otlp_tracer)
                 .boxed();
+            opentelemetry::global::set_text_map_propagator(TraceContextPropagator::new());
             Some(layer)
         }
     };
