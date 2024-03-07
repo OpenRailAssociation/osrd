@@ -1,12 +1,9 @@
-pub mod light_rolling_stock;
-
 use crate::modelsv2::rolling_stock_model::{
     RollingStockModel, RollingStockSupportedSignalingSystems,
 };
 use crate::schema::rolling_stock::rolling_stock_livery::RollingStockLiveryMetadata;
 use crate::schema::rolling_stock::{RollingStock, RollingStockCommon, RollingStockWithLiveries};
 use crate::schema::track_section::LoadingGaugeType;
-pub use light_rolling_stock::LightRollingStockModel;
 
 crate::schemas! {
     RollingStock,

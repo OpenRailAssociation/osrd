@@ -4,7 +4,7 @@ pub mod simulation_report;
 use self::projection::Projection;
 use super::electrical_profiles::ElectricalProfilesError;
 
-use crate::modelsv2::{RetrieveBatch, RollingStockModel};
+use crate::modelsv2::{Retrieve as RetrieveV2, RetrieveBatch, RollingStockModel};
 use crate::schema::rolling_stock::RollingStock;
 use crate::tables;
 use crate::{
@@ -18,10 +18,10 @@ use crate::{
             filter_invalid_trains, Allowance, RjsPowerRestrictionRange, ScheduledPoint,
             TrainScheduleOptions,
         },
-        Create, Delete, Infra, LightRollingStockModel, Pathfinding, Retrieve, Scenario,
-        SimulationOutputChangeset, Timetable, TrainSchedule, TrainScheduleChangeset, Update,
+        Create, Delete, Infra, Pathfinding, Retrieve, Scenario, SimulationOutputChangeset,
+        Timetable, TrainSchedule, TrainScheduleChangeset, Update,
     },
-    modelsv2::ElectricalProfileSet,
+    modelsv2::{ElectricalProfileSet, LightRollingStockModel},
     schema::rolling_stock::RollingStockComfortType,
     views::train_schedule::simulation_report::fetch_simulation_output,
     DbPool, DieselJson,
@@ -241,7 +241,7 @@ async fn patch_multiple(
                 // Update the rolling stock version if needed
                 if let Some(rs_id) = rs_id {
                     changeset.rollingstock_version = Some(
-                        LightRollingStockModel::retrieve_conn(conn, rs_id)
+                        LightRollingStockModel::retrieve(conn, rs_id)
                             .await?
                             .unwrap()
                             .version,
@@ -607,13 +607,10 @@ async fn standalone_simulation(
                 for mut train_schedule in train_schedules {
                     train_schedule.infra_version = infra.version.clone();
                     train_schedule.rollingstock_version = Some(
-                        LightRollingStockModel::retrieve_conn(
-                            conn,
-                            train_schedule.rolling_stock_id,
-                        )
-                        .await?
-                        .unwrap()
-                        .version,
+                        LightRollingStockModel::retrieve(conn, train_schedule.rolling_stock_id)
+                            .await?
+                            .unwrap()
+                            .version,
                     );
                     let id = train_schedule
                         .create_conn(conn)

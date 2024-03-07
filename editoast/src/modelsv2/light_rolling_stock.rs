@@ -1,58 +1,58 @@
 use crate::error::Result;
-use crate::models::TextArray;
 use crate::modelsv2::rolling_stock_livery::RollingStockLiveryMetadataModel;
+use crate::modelsv2::rolling_stock_model::RollingStockSupportedSignalingSystems;
+use crate::modelsv2::Model;
 use crate::schema::rolling_stock::light_rolling_stock::{
     LightEffortCurves, LightRollingStock, LightRollingStockWithLiveriesModel,
 };
 use crate::schema::rolling_stock::{EnergySource, Gamma, RollingResistance, RollingStockMetadata};
-use crate::tables::rolling_stock;
 use crate::views::pagination::{Paginate, PaginatedResponse};
 use crate::DbPool;
 use actix_web::web::Data;
-use diesel::result::Error as DieselError;
 use diesel::{sql_query, ExpressionMethods, QueryDsl, SelectableHelper};
 use diesel_async::RunQueryDsl;
-use diesel_json::Json as DieselJson;
-use editoast_derive::Model;
+use editoast_derive::ModelV2;
 use serde::Serialize;
 use std::collections::HashMap;
 use utoipa::ToSchema;
 
-#[derive(Debug, Model, Queryable, QueryableByName, Serialize, ToSchema)]
-#[model(table = "rolling_stock")]
-#[model(retrieve)]
-#[diesel(table_name = rolling_stock)]
+use super::Row;
+
+#[derive(Debug, Clone, ModelV2, Serialize, ToSchema)]
+#[model(table = crate::tables::rolling_stock)]
 pub struct LightRollingStockModel {
     pub id: i64,
-    railjson_version: String,
-    name: String,
-    #[schema(value_type = LightEffortCurves)]
-    effort_curves: DieselJson<LightEffortCurves>,
-    #[schema(value_type = RollingStockLiveryMetadata)]
-    metadata: DieselJson<RollingStockMetadata>,
-    length: f64,
-    max_speed: f64,
-    startup_time: f64,
-    startup_acceleration: f64,
-    comfort_acceleration: f64,
-    gamma: DieselJson<Gamma>,
-    inertia_coefficient: f64,
+    pub railjson_version: String,
+    pub name: String,
+    #[model(json)]
+    pub effort_curves: LightEffortCurves,
+    #[model(json)]
+    pub metadata: RollingStockMetadata,
+    pub length: f64,
+    pub max_speed: f64,
+    pub startup_time: f64,
+    pub startup_acceleration: f64,
+    pub comfort_acceleration: f64,
+    #[model(json)]
+    pub gamma: Gamma,
+    pub inertia_coefficient: f64,
     pub base_power_class: Option<String>,
-    mass: f64,
-    #[schema(value_type = RollingResistance)]
-    rolling_resistance: DieselJson<RollingResistance>,
+    pub mass: f64,
+    #[model(json)]
+    pub rolling_resistance: RollingResistance,
     #[schema(value_type = LoadingGaugeType)]
-    loading_gauge: String,
-    #[schema(value_type = HashMap<String, String>)]
-    power_restrictions: DieselJson<HashMap<String, String>>,
-    #[schema(value_type = Vec<EnergySource>)]
-    energy_sources: DieselJson<Vec<EnergySource>>,
-    locked: bool,
-    electrical_power_startup_time: Option<f64>,
-    raise_pantograph_time: Option<f64>,
+    pub loading_gauge: String,
+    #[model(json)]
+    #[schema(required)]
+    pub power_restrictions: HashMap<String, String>,
+    #[model(json)]
+    pub energy_sources: Vec<EnergySource>,
+    pub locked: bool,
+    pub electrical_power_startup_time: Option<f64>,
+    pub raise_pantograph_time: Option<f64>,
     pub version: i64,
-    #[diesel(deserialize_as = TextArray)]
-    supported_signaling_systems: Vec<String>,
+    #[model(remote = "Vec<Option<String>>")]
+    pub supported_signaling_systems: RollingStockSupportedSignalingSystems,
 }
 
 impl LightRollingStockModel {
@@ -69,7 +69,7 @@ impl LightRollingStockModel {
             .await?;
         Ok(LightRollingStockWithLiveriesModel {
             rolling_stock: self.into(),
-            liveries: liveries.into_iter().map(DieselJson).collect(),
+            liveries,
         })
     }
 
@@ -79,20 +79,29 @@ impl LightRollingStockModel {
         page: i64,
         per_page: i64,
     ) -> Result<PaginatedResponse<LightRollingStockWithLiveriesModel>> {
-        let mut conn = db_pool.get().await?;
-        sql_query(
-            "WITH liveries_by_rs AS (SELECT rolling_stock_id, jsonb_build_object('id', livery.id, 'name', livery.name, 'compound_image_id', livery.compound_image_id) AS liveries
-            FROM rolling_stock_livery livery)
-            SELECT
-                rolling_stock.*,
-                COALESCE(ARRAY_AGG(liveries_by_rs.liveries) FILTER (WHERE liveries_by_rs.liveries is not NULL), ARRAY[]::jsonb[]) AS liveries
-            FROM rolling_stock
-            LEFT JOIN liveries_by_rs liveries_by_rs ON liveries_by_rs.rolling_stock_id = rolling_stock.id
-            GROUP BY rolling_stock.id
-            ORDER BY rolling_stock.id"
-        )
-        .paginate(page, per_page)
-        .load_and_count(&mut conn).await
+        let conn = &mut db_pool.get().await?;
+        let light_rolling_stocks = sql_query("SELECT * FROM rolling_stock ORDER BY id")
+            .paginate(page, per_page)
+            .load_and_count::<Row<LightRollingStockModel>>(conn)
+            .await?;
+
+        let lrs_results: Vec<LightRollingStockModel> = light_rolling_stocks
+            .results
+            .into_iter()
+            .map(Self::from_row)
+            .collect();
+
+        let mut results = Vec::new();
+        for lrs in lrs_results.into_iter() {
+            results.push(lrs.with_liveries(db_pool.clone()).await?);
+        }
+
+        Ok(PaginatedResponse {
+            count: light_rolling_stocks.count,
+            previous: light_rolling_stocks.previous,
+            next: light_rolling_stocks.next,
+            results,
+        })
     }
 }
 
@@ -127,7 +136,7 @@ impl From<LightRollingStockModel> for LightRollingStock {
 #[cfg(test)]
 pub mod tests {
     use crate::fixtures::tests::{db_pool, named_fast_rolling_stock};
-    use crate::models::Retrieve;
+    use crate::modelsv2::Retrieve;
     use crate::DbPool;
     use actix_web::web::Data;
     use rstest::*;
@@ -145,7 +154,8 @@ pub mod tests {
         let rolling_stock_id = rolling_stock.id();
 
         // THEN
-        assert!(LightRollingStockModel::retrieve(db_pool, rolling_stock_id)
+        let conn = &mut db_pool.get().await.unwrap();
+        assert!(LightRollingStockModel::retrieve(conn, rolling_stock_id)
             .await
             .is_ok());
     }
