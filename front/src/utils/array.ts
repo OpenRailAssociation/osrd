@@ -1,6 +1,8 @@
 export const isFirstOrLastElement = <T>(array: T[], element: T) =>
   array[0] === element || array[array.length - 1] === element;
 
+export const isEmptyArray = <T>(array: T[]) => array.length === 0;
+
 /**
  * Take an array of strings, sort it and split it in two : one array of letter starting strings and one with digit or special characters starting strings.
  */

@@ -146,7 +146,6 @@ const testCommonConfReducers = (slice: OperationalStudiesConfSlice | StdcmConfSl
     defaultStore.dispatch(slice.actions.updatePathfindingID(newPathfindingID));
     const state = defaultStore.getState()[slice.name];
     expect(state.pathfindingID).toBe(newPathfindingID);
-    expect(state.powerRestrictionRanges).toStrictEqual([]);
   });
 
   it('should handle updateTimetableID', () => {

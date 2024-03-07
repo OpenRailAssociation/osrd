@@ -1,4 +1,16 @@
-import { splitArrayByFirstLetter } from 'utils/array';
+import { isEmptyArray, splitArrayByFirstLetter } from 'utils/array';
+
+describe('isEmptyArray', () => {
+  it('should return true', () => {
+    const array: string[] = [];
+    expect(isEmptyArray(array)).toBe(true);
+  });
+
+  it('should return false', () => {
+    const array: string[] = ['a', 'b'];
+    expect(isEmptyArray(array)).toBe(false);
+  });
+});
 
 describe('splitArrayByFirstLetter', () => {
   it('should return two empty arrays', () => {

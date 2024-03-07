@@ -30,18 +30,13 @@ const RollingStockCardButtons = ({
   const rollingStockComfort = useSelector(getRollingStockComfort);
   const [comfort, setComfort] = useState('STANDARD');
 
-  const {
-    updatePathfindingID,
-    updatePowerRestrictionRanges,
-    updateRollingStockComfort,
-    updateRollingStockID,
-  } = useOsrdConfActions();
+  const { updatePathfindingID, updateRollingStockComfort, updateRollingStockID } =
+    useOsrdConfActions();
 
   const selectRollingStock = () => {
     setOpenedRollingStockCardId(undefined);
     dispatch(updateRollingStockComfort(comfort as RollingStockComfortType));
     dispatch(updateRollingStockID(id));
-    dispatch(updatePowerRestrictionRanges([]));
     dispatch(updatePathfindingID(undefined));
     closeModal();
   };

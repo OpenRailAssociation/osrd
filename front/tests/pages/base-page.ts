@@ -1,4 +1,4 @@
-import type { Locator, Page } from '@playwright/test';
+import { expect, type Locator, type Page } from '@playwright/test';
 
 export default class BasePage {
   public page: Page;
@@ -7,11 +7,14 @@ export default class BasePage {
 
   protected viteOverlay: Locator;
 
+  readonly lastToast: Locator;
+
   constructor(page: Page) {
     this.page = page;
 
     this.backToHomePageButton = page.locator('.mastheader-logo');
     this.viteOverlay = page.locator('vite-plugin-checker-error-overlay');
+    this.lastToast = page.getByTestId('toast-SNCF').last();
   }
 
   // Completly remove VITE button & sign
@@ -23,5 +26,13 @@ export default class BasePage {
 
   async backToHomePage() {
     await this.backToHomePageButton.click();
+  }
+
+  async checkLastToastBody(text: string | RegExp) {
+    await expect(this.lastToast.locator('.toast-body')).toHaveText(text);
+  }
+
+  async checkLastToastTitle(text: string | RegExp) {
+    await expect(this.lastToast.getByTestId('toast-SNCF-title')).toHaveText(text);
   }
 }

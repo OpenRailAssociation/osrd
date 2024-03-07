@@ -14,8 +14,9 @@ import type { PathResponse, PathfindingRequest, PathfindingStep } from 'common/a
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { Spinner } from 'common/Loaders';
 import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
-import { setFailure } from 'reducers/main';
+import { setFailure, setWarning } from 'reducers/main';
 import { useAppDispatch } from 'store';
+import { isEmptyArray } from 'utils/array';
 import { castErrorToFailure } from 'utils/error';
 import { conditionalStringConcat, formatKmValue } from 'utils/strings';
 import type { ArrayElement } from 'utils/types';
@@ -245,7 +246,7 @@ export function getPathfindingQuery({
   return null;
 }
 
-function Pathfinding({ zoomToFeature, path }: PathfindingProps) {
+const Pathfinding = ({ zoomToFeature, path }: PathfindingProps) => {
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
   const [pathfindingRequest, setPathfindingRequest] =
     useState<ReturnType<typeof postPathfinding>>();
@@ -258,6 +259,8 @@ function Pathfinding({ zoomToFeature, path }: PathfindingProps) {
     getRollingStockID,
     getPathfindingID,
     getGeojson,
+    getPowerRestrictionRanges,
+    getAllowances,
   } = useOsrdConfSelectors();
   const infraID = useSelector(getInfraID, isEqual);
   const origin = useSelector(getOrigin, isEqual);
@@ -266,6 +269,8 @@ function Pathfinding({ zoomToFeature, path }: PathfindingProps) {
   const rollingStockID = useSelector(getRollingStockID, isEqual);
   const pathfindingID = useSelector(getPathfindingID, isEqual);
   const geojson = useSelector(getGeojson, isEqual);
+  const powerRestrictions = useSelector(getPowerRestrictionRanges, isEqual);
+  const allowances = useSelector(getAllowances, isEqual);
   const initializerArgs = {
     pathfindingID,
     geojson,
@@ -291,8 +296,14 @@ function Pathfinding({ zoomToFeature, path }: PathfindingProps) {
   );
   const [reloadInfra] = osrdEditoastApi.usePostInfraByIdLoadMutation();
 
-  const { replaceVias, updateItinerary, updatePathfindingID, updateSuggeredVias } =
-    useOsrdConfActions();
+  const {
+    replaceVias,
+    updateItinerary,
+    updatePathfindingID,
+    updateSuggeredVias,
+    updatePowerRestrictionRanges,
+    updateAllowances,
+  } = useOsrdConfActions();
 
   useEffect(() => {
     if (reloadCount <= 5 && infra && infra.state === 'TRANSIENT_ERROR') {
@@ -415,6 +426,17 @@ function Pathfinding({ zoomToFeature, path }: PathfindingProps) {
           dispatch(updatePathfindingID(itineraryCreated.id));
           if (zoom) zoomToFeature(bbox(itineraryCreated.geographic));
           pathfindingDispatch({ type: 'PATHFINDING_FINISHED' });
+
+          if (!isEmptyArray(powerRestrictions) || !isEmptyArray(allowances)) {
+            dispatch(updatePowerRestrictionRanges([]));
+            dispatch(updateAllowances([]));
+            dispatch(
+              setWarning({
+                title: t('warningMessages.pathfindingChange'),
+                text: t('warningMessages.marginsAndPowerRestrictionsReset'),
+              })
+            );
+          }
         })
         .catch((e) => {
           if (e.error) {
@@ -571,6 +593,6 @@ function Pathfinding({ zoomToFeature, path }: PathfindingProps) {
       )}
     </div>
   );
-}
+};
 
 export default Pathfinding;
