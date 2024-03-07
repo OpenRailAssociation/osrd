@@ -6,6 +6,7 @@ import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.standalone_sim.result.ResultTrain.SpacingRequirement
 import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
 import fr.sncf.osrd.utils.units.Offset
+import kotlin.math.min
 import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
@@ -169,12 +170,12 @@ class SpacingRequirementAutomaton(
         lastEmittedZone = endZoneIndex
     }
 
-    // Returns true if the zone is required to be clear for the signal to not be constraining,
-    // false if it's not required, and null if the end of the block path has been reached
+    // Returns true if the zone is required to be clear for the signal to not be constraining.
+    // Returns false if it's either not required, or we need a longer block path to tell.
     private fun isZoneIndexRequiredForSignal(
         probedZoneIndex: Int,
         pathSignal: PathSignal
-    ): Boolean? {
+    ): Boolean {
         val firstBlockIndex = pathSignal.minBlockPathIndex
 
         // List of blocks to include in the simulator call
@@ -191,7 +192,7 @@ class SpacingRequirementAutomaton(
         while (probedZoneIndex - firstSimulatedZone + 1 > nSimulatedZones) {
             if (firstBlockIndex + blocks.size >= incrementalPath.endBlockIndex) {
                 // exiting, the end of the block path has been reached
-                return null
+                return false
             }
             val newBlock = incrementalPath.getBlock(firstBlockIndex + blocks.size)
             blocks.add(newBlock)
@@ -216,29 +217,49 @@ class SpacingRequirementAutomaton(
         return signalState.getEnum("aspect") != "VL"
     }
 
-    // Returns the range on which we need to add requirements, or null if more path is required
-    private fun getRequiredZoneIndexes(pathSignal: PathSignal): IntRange? {
-        val firstRequiredZone =
-            getSignalProtectedZone(pathSignal) // index of the first zone required for the train
-        var probedZoneIndex = firstRequiredZone // zone we set to "occupied" in the loop
+    // Returns the index of the first zone that isn't required for the given signal,
+    // or null if we need more path to determine it
+    private fun findFirstNonRequiredZoneIndex(pathSignal: PathSignal): Int? {
+        // We are looking for the index `i` where `isZoneIndexRequiredForSignal` returns
+        // true at `i-1` and false at `i`. We could just iterate starting at 0, but
+        // because `i` is not that small (20 on average) and the signaling
+        // simulation calls are expensive, we prefer an approach similar to
+        // a binary-search
 
-        // find the first zone after the signal which can be occupied
-        // without disturbing the train
+        // The values here are determined empirically on imported infrastructures,
+        // the solutions mostly follow a gaussian distribution centered
+        // on start+20 that rarely exceeds start+40.
+        // We run a binary search on that range, and iterate one by one when the solution is above.
+        var lowerBound = getSignalProtectedZone(pathSignal)
+        val initialUpperBound = min(lowerBound + 40, incrementalPath.endZonePathIndex)
+        var upperBound = initialUpperBound
+
+        // Main loop, binary search
         while (true) {
+            if (lowerBound == upperBound) break
+            val probedZoneIndex = (upperBound + lowerBound) / 2
             val required = isZoneIndexRequiredForSignal(probedZoneIndex, pathSignal)
-            when (required) {
-                true -> probedZoneIndex++
-                false -> break
-                null -> {
-                    if (incrementalPath.pathComplete) {
-                        break // More path would normally be required but the train stops there
-                    } else {
-                        return null // More path required
-                    }
-                }
+            if (required) {
+                lowerBound = probedZoneIndex + 1
+            } else {
+                upperBound = probedZoneIndex
             }
         }
-        return firstRequiredZone until probedZoneIndex
+
+        // Handle the case where the result is higher than the initial upper bound
+        while (
+            lowerBound >= initialUpperBound && isZoneIndexRequiredForSignal(lowerBound, pathSignal)
+        ) lowerBound++
+
+        // Check if more path is needed for a valid solution
+        // (i.e. the first zone that is not required is out of bounds)
+        if (
+            lowerBound >= incrementalPath.getBlockEndZone(incrementalPath.endBlockIndex - 1) &&
+                !incrementalPath.pathComplete
+        ) {
+            return null
+        }
+        return lowerBound
     }
 
     fun processPathUpdate(): SpacingResourceUpdate {
@@ -263,9 +284,11 @@ class SpacingRequirementAutomaton(
             val sightTime = callbacks.arrivalTimeInRange(sightOffset, signalOffset)
             assert(sightTime.isFinite())
 
-            val requiredIndexes = getRequiredZoneIndexes(pathSignal) ?: return NotEnoughPath
-            for (i in requiredIndexes) {
-                addSignalRequirements(requiredIndexes.first, i, sightTime)
+            val firstRequiredZone = getSignalProtectedZone(pathSignal)
+            val firstNonRequiredZone =
+                findFirstNonRequiredZoneIndex(pathSignal) ?: return NotEnoughPath
+            for (i in firstRequiredZone until firstNonRequiredZone) {
+                addSignalRequirements(firstRequiredZone, i, sightTime)
             }
             pendingSignals.removeFirst()
         }
