@@ -71,6 +71,14 @@ data class STDCMEdge(
 
     /** Returns the node at the end of this edge */
     fun getEdgeEnd(graph: STDCMGraph): STDCMNode {
+        var newWaypointIndex = waypointIndex
+        while (newWaypointIndex + 1 < graph.steps.size) {
+            val nextStep = graph.steps[newWaypointIndex + 1]
+            val endOffset = envelopeStartOffset + length.distance
+            val pass = nextStep.locations.any { it.edge == block && it.offset <= endOffset }
+            if (!pass) break
+            newWaypointIndex++
+        }
         return if (!endAtStop) {
             // We move on to the next block
             STDCMNode(
@@ -80,17 +88,13 @@ data class STDCMEdge(
                 totalDepartureTimeShift,
                 maximumAddedDelayAfter,
                 this,
-                waypointIndex,
+                newWaypointIndex,
                 null,
                 -1.0
             )
         } else {
             // New edge on the same block, after a stop
             val stopDuration = graph.steps[waypointIndex + 1].duration!!
-            var newWaypointIndex = waypointIndex + 1
-            while (
-                newWaypointIndex + 1 < graph.steps.size && !graph.steps[newWaypointIndex + 1].stop
-            ) newWaypointIndex++ // Skip waypoints where we don't stop (not handled here)
             STDCMNode(
                 totalTime + timeStart + stopDuration,
                 envelope.endSpeed,
