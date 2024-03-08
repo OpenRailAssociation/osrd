@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMultimap
 import fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue
 import fr.sncf.osrd.graph.Pathfinding.EdgeLocation
+import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.stdcm.StandardAllowanceTests.Companion.checkAllowanceResult
 import fr.sncf.osrd.stdcm.StandardAllowanceTests.Companion.runWithAndWithoutAllowance
 import fr.sncf.osrd.stdcm.preprocessing.OccupancySegment
@@ -48,6 +49,46 @@ class StopTests {
 
         // Check that the stop is properly returned
         Assertions.assertEquals(listOf(TrainStop(expectedOffset, 10000.0)), res.stopResults)
+    }
+
+    /** Test that we can handle several stops in a row, after waypoints that aren't stops */
+    @Test
+    fun severalStopsAfterSimpleWaypoints() {
+        /*
+        a --> b --> c
+         */
+        val infra = DummyInfra()
+        val firstBlock = infra.addBlock("a", "b")
+        val secondBlock = infra.addBlock("b", "c")
+        val stopsOffsets =
+            listOf<Offset<Block>>(
+                Offset(10.meters),
+                Offset(20.meters),
+                Offset(30.meters),
+                Offset(40.meters),
+            )
+        val builder =
+            STDCMPathfindingBuilder()
+                .setInfra(infra.fullInfra())
+                .addStep(STDCMStep(setOf(EdgeLocation(firstBlock, Offset(0.meters))), 0.0, true))
+                .addStep(STDCMStep(setOf(EdgeLocation(firstBlock, Offset(1.meters))), 0.0, false))
+                .addStep(STDCMStep(setOf(EdgeLocation(firstBlock, Offset(2.meters))), 0.0, false))
+                .addStep(STDCMStep(setOf(EdgeLocation(firstBlock, Offset(3.meters))), 0.0, false))
+        for (offset in stopsOffsets) builder.addStep(
+            STDCMStep(setOf(EdgeLocation(secondBlock, offset)), 1.0, true)
+        )
+        val res =
+            builder
+                .addStep(STDCMStep(setOf(EdgeLocation(secondBlock, Offset(100.meters))), 0.0, true))
+                .run()!!
+
+        // Check that we stop
+        for (offset in stopsOffsets) Assertions.assertTrue(
+            TrainPhysicsIntegrator.areSpeedsEqual(
+                0.0,
+                res.envelope.interpolateSpeed(100.0 + offset.distance.meters)
+            )
+        )
     }
 
     /** Look for a path in an empty timetable, with a stop at the start of a block */
