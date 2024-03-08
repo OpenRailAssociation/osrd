@@ -1,5 +1,6 @@
 package fr.sncf.osrd.utils
 
+import fr.sncf.osrd.sim_infra.api.DirDetectorId
 import fr.sncf.osrd.sim_infra.api.DirTrackChunkId
 import fr.sncf.osrd.sim_infra.api.RawInfra
 import fr.sncf.osrd.sim_infra.api.TrackChunk
@@ -7,6 +8,7 @@ import fr.sncf.osrd.sim_infra.api.TrackChunkId
 import fr.sncf.osrd.sim_infra.api.TrackNodeId
 import fr.sncf.osrd.sim_infra.api.TrackNodePortId
 import fr.sncf.osrd.sim_infra.api.TrackSection
+import fr.sncf.osrd.sim_infra.api.ZoneId
 import fr.sncf.osrd.sim_infra_adapter.SimInfraAdapter
 import fr.sncf.osrd.stdcm.graph.logger
 import fr.sncf.osrd.utils.units.Offset
@@ -184,7 +186,10 @@ class ComparableNode(simInfra: RawInfra, nodeIdx: TrackNodeId) {
     }
 }
 
+data class ComparableZone(val name: String, val nodes: Set<String>)
+
 fun assertEqualSimInfra(left: SimInfraAdapter, right: SimInfraAdapter) {
+    // detectors
     val leftDetectors = mutableSetOf<String>()
     for (d in left.simInfra.detectors) {
         leftDetectors.add(left.simInfra.getDetectorName(d)!!)
@@ -197,6 +202,7 @@ fun assertEqualSimInfra(left: SimInfraAdapter, right: SimInfraAdapter) {
     assert(right.simInfra.detectors.size.toInt() == rightDetectors.size)
     assert(leftDetectors == rightDetectors)
 
+    // track-sections
     assert(left.simInfra.trackSections.size == right.simInfra.trackSections.size)
     val leftTrackChunks = mutableMapOf<Pair<String, Offset<TrackSection>>, ComparableChunk>()
     for (t in left.simInfra.trackSections) {
@@ -220,6 +226,7 @@ fun assertEqualSimInfra(left: SimInfraAdapter, right: SimInfraAdapter) {
     }
     assert(leftTrackChunks == rightTrackChunks)
 
+    // nodes
     val leftNodes = mutableSetOf<ComparableNode>()
     for (n in left.simInfra.trackNodes) {
         val leftNode = ComparableNode(left.simInfra, n)
@@ -234,9 +241,53 @@ fun assertEqualSimInfra(left: SimInfraAdapter, right: SimInfraAdapter) {
     }
     assert(leftNodes == rightNodes)
 
+    // zones
+    val leftZones = mutableMapOf<ZoneId, ComparableZone>()
+    for (z in left.simInfra.zones) {
+        leftZones[z] =
+            ComparableZone(
+                left.simInfra.getZoneName(z),
+                left.simInfra
+                    .getMovableElements(z)
+                    .map { n -> left.simInfra.getTrackNodeName(n) }
+                    .toSet()
+            )
+    }
+    val rightZones = mutableMapOf<ZoneId, ComparableZone>()
+    for (z in right.simInfra.zones) {
+        rightZones[z] =
+            ComparableZone(
+                right.simInfra.getZoneName(z),
+                right.simInfra
+                    .getMovableElements(z)
+                    .map { n -> right.simInfra.getTrackNodeName(n) }
+                    .toSet()
+            )
+    }
+    assert(leftZones.values.toSet() == rightZones.values.toSet())
+
+    val leftDetToNextZone = mutableMapOf<String, ComparableZone?>()
+    for (detIdx in left.simInfra.detectors) {
+        for (dir in Direction.entries) {
+            val dirDet = DirDetectorId(detIdx, dir)
+            val nextZone = left.simInfra.getNextZone(dirDet)
+            leftDetToNextZone["${left.getDetectorName(dirDet.value)}.${dirDet.direction}"] =
+                if (nextZone != null) leftZones[nextZone] else null
+        }
+    }
+    val rightDetToNextZone = mutableMapOf<String, ComparableZone?>()
+    for (detIdx in right.simInfra.detectors) {
+        for (dir in Direction.entries) {
+            val dirDet = DirDetectorId(detIdx, dir)
+            val nextZone = right.simInfra.getNextZone(dirDet)
+            rightDetToNextZone["${right.getDetectorName(dirDet.value)}.${dirDet.direction}"] =
+                if (nextZone != null) rightZones[nextZone] else null
+        }
+    }
+    assert(leftDetToNextZone == rightDetToNextZone)
+
     // TODO complete simInfra checks
 
-    assert(left.zoneMap == right.zoneMap)
     assert(left.detectorMap.size == right.detectorMap.size)
     for (l in left.detectorMap) {
         assert(right.detectorMap.containsKey(l.key))
