@@ -198,16 +198,20 @@ class Pathfinding<NodeT : Any, EdgeT : Any, OffsetType>(
                 throw OSRDError(ErrorType.PathfindingTimeoutError)
             val step = queue.poll() ?: return null
             val endNode = graph.getEdgeEnd(step.range.edge)
-            if (seen.getOrDefault(step.range, -1) >= step.nReachedTargets) continue
+            if (seen.getOrDefault(step.range, -1) >= step.nReachedTargets) {
+                continue
+            }
             seen[step.range] = step.nReachedTargets
             if (hasReachedEnd(targetsOnEdges.size, step)) return buildResult(step)
             // Check if the next target is reached in this step, only if the step doesn't already
             // reach a
             // step
+            var waypointOnRange = false
             if (step.prev == null || step.nReachedTargets == step.prev.nReachedTargets)
                 for (target in targetsOnEdges[step.nReachedTargets].apply(step.range.edge)) if (
                     step.range.start <= target.offset
                 ) {
+                    waypointOnRange = true
                     // Adds a new step precisely on the stop location. This ensures that we don't
                     // ignore the
                     // distance between the start of the edge and the stop location
@@ -229,7 +233,7 @@ class Pathfinding<NodeT : Any, EdgeT : Any, OffsetType>(
                     )
                 }
             val edgeLength = edgeToLength!!.apply(step.range.edge)
-            if (step.range.end == edgeLength) {
+            if (!waypointOnRange && step.range.end == edgeLength) {
                 // We reach the end of the edge: we visit neighbors
                 val neighbors = graph.getAdjacentEdges(endNode)
                 for (edge in neighbors) {

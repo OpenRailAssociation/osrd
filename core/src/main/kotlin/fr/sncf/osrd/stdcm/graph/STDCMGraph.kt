@@ -11,6 +11,7 @@ import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.RollingStock.Comfort
+import fr.sncf.osrd.utils.units.meters
 
 /**
  * This is the class that encodes the STDCM problem as a graph on which we can run our pathfinding
@@ -41,6 +42,9 @@ class STDCMGraph(
     val backtrackingManager: BacktrackingManager
     val tag: String?
     val standardAllowance: AllowanceValue?
+
+    // min 4 minutes between two edges, determined empirically
+    private val visitedNodes = VisitedNodes(4 * 60.0)
 
     /** Constructor */
     init {
@@ -76,12 +80,28 @@ class STDCMGraph(
         val res = ArrayList<STDCMEdge>()
         if (node.locationOnEdge != null) {
             val explorer = node.infraExplorer.clone()
+            val fingerprint =
+                VisitedNodes.Fingerprint(
+                    explorer.getLastEdgeIdentifier(),
+                    node.waypointIndex,
+                    node.locationOnEdge.distance
+                )
+            if (visitedNodes.isVisited(fingerprint, node.time)) return listOf()
+            visitedNodes.markAsVisited(fingerprint, node.time)
             res.addAll(STDCMEdgeBuilder.fromNode(this, node, explorer).makeAllEdges())
         } else {
             val extended = extendLookaheadUntil(node.infraExplorer.clone(), 4)
             for (newPath in extended) {
                 if (newPath.getLookahead().size == 0) continue
                 newPath.moveForward()
+                val fingerprint =
+                    VisitedNodes.Fingerprint(
+                        newPath.getLastEdgeIdentifier(),
+                        node.waypointIndex,
+                        0.meters
+                    )
+                if (visitedNodes.isVisited(fingerprint, node.time)) return listOf()
+                visitedNodes.markAsVisited(fingerprint, node.time)
                 res.addAll(STDCMEdgeBuilder.fromNode(this, node, newPath).makeAllEdges())
             }
         }
