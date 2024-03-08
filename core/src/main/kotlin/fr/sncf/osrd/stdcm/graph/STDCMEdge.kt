@@ -49,7 +49,9 @@ data class STDCMEdge(
             infraExplorer.getLastEdgeIdentifier() != otherEdge.infraExplorer.getLastEdgeIdentifier()
         )
             false
-        else minuteTimeStart == otherEdge.minuteTimeStart
+        else
+            minuteTimeStart == otherEdge.minuteTimeStart &&
+                envelopeStartOffset == otherEdge.envelopeStartOffset
 
         // We need to consider that the edges aren't equal if the times are different,
         // but if we do it "naively" we end up visiting the same places a near-infinite number of
@@ -60,7 +62,11 @@ data class STDCMEdge(
     }
 
     override fun hashCode(): Int {
-        return Objects.hash(infraExplorer.getLastEdgeIdentifier(), minuteTimeStart)
+        return Objects.hash(
+            infraExplorer.getLastEdgeIdentifier(),
+            minuteTimeStart,
+            envelopeStartOffset
+        )
     }
 
     /** Returns the node at the end of this edge */
