@@ -131,7 +131,7 @@ const InfraErrorsList: React.FC<InfraErrorsListProps> = ({ infraID, onErrorClick
       <div className="error-count my-3">
         {!loading ? (
           <p className="text-center text-info">
-            {t('Editor.infra-errors.list.total-error', { count: total || 0 })}
+            {t(`Editor.infra-errors.list.total-${filterLevel}`, { count: total || 0 })}
           </p>
         ) : (
           <LoaderFill />

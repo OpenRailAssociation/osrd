@@ -159,9 +159,15 @@
         "error": "An error occurred while loading the data",
         "filter-level": "Error level",
         "filter-type": "Error type",
-        "total-error": "{{count}} errors found",
-        "total-error_one": "One error found",
-        "total-error_zero": "No error found",
+        "total-all": "{{count}} errors and warnings found",
+        "total-all_one": "One error or warning found",
+        "total-all_zero": "No errors and warnings found",
+        "total-warnings": "{{count}} warnings found",
+        "total-warnings_one": "One warning found",
+        "total-warnings_zero": "No warnings found",
+        "total-errors": "{{count}} errors found",
+        "total-errors_one": "One error found",
+        "total-errors_zero": "No errors found",
         "goto-error": "Select and locate on the map"
       },
       "modal": {
