@@ -159,9 +159,15 @@
         "error": "Une erreur est survenue lors du chargement des données",
         "filter-level": "Niveau",
         "filter-type": "Type d'anomalie",
-        "total-error": "{{count}} anomalies trouvées",
-        "total-error_one": "Une anomalie trouvée",
-        "total-error_zero": "Aucune anomalie trouvée",
+        "total-all": "{{count}} erreurs et avertissements trouvés",
+        "total-all_one": "Une erreur ou un avertissement trouvé",
+        "total-all_zero": "Aucune erreur ni avertissement trouvé",
+        "total-warnings": "{{count}} avertissements trouvés",
+        "total-warnings_zero": "Aucun avertissement trouvé",
+        "total-warnings_one": "Un avertissement trouvés",
+        "total-errors": "{{count}} erreurs trouvées",
+        "total-errors_one": "Une erreur trouvée",
+        "total-errors_zero": "Aucune erreur trouvée",
         "goto-error": "Sélectionner et viualiser sur la carte"
       },
       "modal": {
