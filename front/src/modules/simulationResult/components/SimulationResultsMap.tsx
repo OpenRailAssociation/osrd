@@ -36,6 +36,7 @@ import Hillshade from 'common/Map/Layers/Hillshade';
 import IGN_BD_ORTHO from 'common/Map/Layers/IGN_BD_ORTHO';
 import IGN_CADASTRE from 'common/Map/Layers/IGN_CADASTRE';
 import IGN_SCAN25 from 'common/Map/Layers/IGN_SCAN25';
+import LineSearchLayer from 'common/Map/Layers/LineSearchLayer';
 import OperationalPoints from 'common/Map/Layers/OperationalPoints';
 import OSM from 'common/Map/Layers/OSM';
 import PlatformsLayer from 'common/Map/Layers/Platforms';
@@ -352,6 +353,10 @@ const Map: FC<MapProps> = () => {
           sourceTable="signals"
           colors={colors[mapStyle]}
           layerOrder={LAYER_GROUPS_ORDER[LAYERS.SIGNALS.GROUP]}
+          infraID={infraID}
+        />
+        <LineSearchLayer
+          layerOrder={LAYER_GROUPS_ORDER[LAYERS.LINE_SEARCH.GROUP]}
           infraID={infraID}
         />
 
