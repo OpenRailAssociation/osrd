@@ -159,7 +159,9 @@
         "error": "An error occurred while loading the data",
         "filter-level": "Error level",
         "filter-type": "Error type",
-        "total-error": "{{count}} errors found",
+        "total-errors": "{{count}} errors found",
+        "total-all": "{{count}} errors and warnings found",
+        "total-warnings": "{{count}} warnings found",
         "total-error_one": "One error found",
         "total-error_zero": "No error found",
         "goto-error": "Select and locate on the map"
