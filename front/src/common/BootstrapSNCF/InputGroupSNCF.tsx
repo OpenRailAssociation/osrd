@@ -103,13 +103,14 @@ export default function InputGroupSNCF({
   );
 
   const inputValue = useMemo(() => {
-    if (value !== undefined && !disabled) {
-      if (limitDecimal && isNeedStripDecimalDigits(value.toString(), limitDecimal)) {
-        return stripDecimalDigits(Number(value), limitDecimal);
-      }
-      return value;
+    const shouldStripDecimal =
+      limitDecimal && isNeedStripDecimalDigits(value?.toString() ?? '', limitDecimal);
+
+    if (value !== undefined && !disabled && shouldStripDecimal) {
+      return stripDecimalDigits(Number(value), limitDecimal);
     }
-    return '';
+
+    return value;
   }, [value, limitDecimal, disabled]);
 
   const inputField = (
