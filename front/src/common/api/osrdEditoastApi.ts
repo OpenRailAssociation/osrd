@@ -17,6 +17,7 @@ export const addTagTypes = [
   'stdcm',
   'timetable',
   'train_schedule',
+  'pathfindingv2',
   'timetablev2',
   'train_schedulev2',
 ] as const;
@@ -724,6 +725,28 @@ const injectedRtkApi = api
         }),
         providesTags: ['train_schedule'],
       }),
+      postV2InfraByInfraIdPathProperties: build.mutation<
+        PostV2InfraByInfraIdPathPropertiesApiResponse,
+        PostV2InfraByInfraIdPathPropertiesApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/v2/infra/${queryArg.infraId}/path_properties/`,
+          method: 'POST',
+          body: queryArg.pathPropertiesInput,
+        }),
+        invalidatesTags: ['pathfindingv2'],
+      }),
+      postV2InfraByInfraIdPathfindingBlocks: build.mutation<
+        PostV2InfraByInfraIdPathfindingBlocksApiResponse,
+        PostV2InfraByInfraIdPathfindingBlocksApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/v2/infra/${queryArg.infraId}/pathfinding/blocks/`,
+          method: 'POST',
+          body: queryArg.pathfindingInput,
+        }),
+        invalidatesTags: ['pathfindingv2'],
+      }),
       getV2Timetable: build.query<GetV2TimetableApiResponse, GetV2TimetableApiArg>({
         query: (queryArg) => ({
           url: `/v2/timetable/`,
@@ -1421,6 +1444,20 @@ export type GetTrainScheduleByIdResultApiArg = {
   /** A train schedule ID */
   id: number;
 };
+export type PostV2InfraByInfraIdPathPropertiesApiResponse =
+  /** status 200 Path properties */ PathProperties;
+export type PostV2InfraByInfraIdPathPropertiesApiArg = {
+  /** The infra id */
+  infraId: number;
+  pathPropertiesInput: PathPropertiesInput;
+};
+export type PostV2InfraByInfraIdPathfindingBlocksApiResponse =
+  /** status 200 Pathfinding Result */ PathfindingResult;
+export type PostV2InfraByInfraIdPathfindingBlocksApiArg = {
+  /** The infra id */
+  infraId: number;
+  pathfindingInput: PathfindingInput;
+};
 export type GetV2TimetableApiResponse =
   /** status 200 List timetables */ PaginatedResponseOfTimetable;
 export type GetV2TimetableApiArg = {
@@ -1494,10 +1531,12 @@ export type LightElectricalProfileSet = {
   name: string;
 };
 export type LevelValues = string[];
+export type Direction = 'START_TO_STOP' | 'STOP_TO_START';
 export type TrackRange = {
   begin: number;
+  direction: Direction;
   end: number;
-  track: string;
+  track_section: string;
 };
 export type ElectricalProfile = {
   power_class: string;
@@ -1665,24 +1704,22 @@ export type Zone = {
   geo: BoundingBox;
   sch: BoundingBox;
 };
-export type Identifier = string;
-export type Direction = 'START_TO_STOP' | 'STOP_TO_START';
 export type DirectionalTrackRange = {
   begin: number;
   direction: Direction;
   end: number;
-  track: Identifier;
+  track: string;
 };
 export type PathfindingOutput = {
-  detectors: Identifier[];
+  detectors: string[];
   switches_directions: {
-    [key: string]: Identifier;
+    [key: string]: string;
   };
   track_ranges: DirectionalTrackRange[];
 };
 export type PathfindingTrackLocationInput = {
   position: number;
-  track: Identifier;
+  track: string;
 };
 export type PathfindingInput = {
   ending: PathfindingTrackLocationInput;
@@ -1827,7 +1864,7 @@ export type GeoJsonPoint = {
 export type TrackLocation = {
   /** The offset on the track section in meters */
   offset: number;
-  track_section: Identifier;
+  track_section: string;
 };
 export type PathWaypoint = {
   ch: string | null;
@@ -2627,6 +2664,139 @@ export type TrainScheduleBatchItem = {
   speed_limit_tags?: string | null;
   train_name: string;
 };
+export type OperationalPointExtensions = {
+  identifier?: {
+    name: string;
+    uic: number;
+  } | null;
+  sncf?: {
+    ch: string;
+    ch_long_label: string;
+    ch_short_label: string;
+    ci: number;
+    trigram: string;
+  } | null;
+};
+export type OperationalPointPart = {
+  extensions?: {
+    sncf?: {
+      kp: string;
+    } | null;
+  };
+  position: number;
+  track: string;
+};
+export type PathProperties = {
+  electrifications?: {
+    /** List of `n` boundaries of the ranges.
+        A boundary is a distance from the beginning of the path in mm. */
+    boundaries: number[];
+    /** List of `n+1` values associated to the ranges */
+    values: string[];
+  } | null;
+  geometry?: GeoJsonLineString | null;
+  gradients?: {
+    /** List of `n` boundaries of the ranges.
+        A boundary is a distance from the beginning of the path in mm. */
+    boundaries: number[];
+    /** List of `n+1` values associated to the ranges */
+    values: number[];
+  } | null;
+  /** Operational points along the path */
+  operational_points?:
+    | {
+        extensions?: OperationalPointExtensions;
+        id: string;
+        part: OperationalPointPart;
+        /** Distance from the beginning of the path in mm */
+        position: number;
+      }[]
+    | null;
+  slopes?: {
+    /** List of `n` boundaries of the ranges.
+        A boundary is a distance from the beginning of the path in mm. */
+    boundaries: number[];
+    /** List of `n+1` values associated to the ranges */
+    values: number[];
+  } | null;
+};
+export type PathPropertiesInput = {
+  /** List of supported electrification modes.
+    Empty if does not support any electrification */
+  rolling_stock_supported_electrification?: string[];
+  /** list of track sections */
+  track_ranges: TrackRange[];
+};
+export type TrackOffset = {
+  offset: number;
+  track: string;
+};
+export type PathfindingResult =
+  | {
+      blocks: string[];
+      length: number;
+      routes: string[];
+      status: 'success';
+      track_section_ranges: TrackRange[];
+    }
+  | {
+      length: number;
+      status: 'not_found_in_blocks';
+      track_section_ranges: TrackRange[];
+    }
+  | {
+      length: number;
+      status: 'not_found_in_routes';
+      track_section_ranges: TrackRange[];
+    }
+  | {
+      status: 'not_found_in_tracks';
+    }
+  | {
+      blocks: string[];
+      incompatible_ranges: (number & number)[][];
+      length: number;
+      routes: string[];
+      status: 'incompatible_electrification';
+      track_section_ranges: TrackRange[];
+    }
+  | {
+      blocks: string[];
+      incompatible_ranges: (number & number)[][];
+      length: number;
+      routes: string[];
+      status: 'incompatible_loading_gauge';
+      track_section_ranges: TrackRange[];
+    }
+  | {
+      blocks: string[];
+      incompatible_ranges: (number & number)[][];
+      length: number;
+      routes: string[];
+      status: 'incompatible_signaling_system';
+      track_section_ranges: TrackRange[];
+    }
+  | {
+      index: number;
+      /** The location of a path waypoint */
+      path_item:
+        | TrackOffset
+        | {
+            operational_point: string;
+          }
+        | {
+            /** An optional secondary code to identify a more specific location */
+            secondary_code?: string | null;
+            trigram: string;
+          }
+        | {
+            /** An optional secondary code to identify a more specific location */
+            secondary_code?: string | null;
+            /** The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point */
+            uic: number;
+          };
+      status: 'invalid_path_item';
+    };
 export type TimetableResult = {
   electrical_profile_set_id?: number | null;
   id: number;
@@ -2666,11 +2836,7 @@ export type TrainScheduleBase = {
     use_electrical_profiles: boolean;
   };
   path: ((
-    | {
-        /** The offset in millimeters from the start of the track */
-        offset: number;
-        track: string;
-      }
+    | TrackOffset
     | {
         operational_point: string;
       }

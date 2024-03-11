@@ -92,6 +92,7 @@ pub enum PathfindingResult {
 /// Path input is described by some rolling stock information
 /// and a list of path waypoints
 #[derive(Deserialize, Clone, Debug, Hash, ToSchema)]
+#[schema(as = PathfindingInputV2)]
 pub struct PathfindingInput {
     /// The loading gauge of the rolling stock
     rolling_stock_loading_gauge: LoadingGaugeType,
@@ -110,6 +111,9 @@ pub struct PathfindingInput {
 /// Compute a pathfinding
 #[utoipa::path(
     tag = "pathfindingv2",
+    params(
+        ("infra_id" = i64, Path, description = "The infra id"),
+    ),
     request_body = PathfindingInput,
     responses(
         (status = 200, description = "Pathfinding Result", body = PathfindingResult),

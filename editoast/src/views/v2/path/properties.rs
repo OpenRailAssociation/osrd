@@ -190,6 +190,9 @@ type Properties = EnumSet<Property>;
 /// Compute path properties
 #[utoipa::path(
     tag = "pathfindingv2",
+    params(
+        ("infra_id" = i64, Path, description = "The infra id"),
+    ),
     request_body = PathPropertiesInput,
     responses(
         (status = 200, description = "Path properties", body = PathProperties),
