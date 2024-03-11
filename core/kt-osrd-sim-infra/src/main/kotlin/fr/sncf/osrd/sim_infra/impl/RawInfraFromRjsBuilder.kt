@@ -72,18 +72,19 @@ class RawInfraFromRjsBuilderImpl : RawInfraBuilder {
     private val operationalPointPartPool =
         StaticPool<OperationalPointPart, OperationalPointPartDescriptor>()
 
-    private val sectionNameToIdxMap = mutableMapOf<String, TrackSectionId>()
-    private val sectionDistanceSortedChunkMap =
+    private val trackSectionNameToIdxMap = mutableMapOf<String, TrackSectionId>()
+    private val trackSectionDistanceSortedChunkMap =
         mutableMapOf<TrackSectionId, TreeMap<Distance, TrackChunkId>>()
 
     // TODO remove this accessor once useless in adapter
-    fun getSectionNameToIdxMap(): Map<String, TrackSectionId> {
-        return sectionNameToIdxMap
+    fun getTrackSectionNameToIdxMap(): Map<String, TrackSectionId> {
+        return trackSectionNameToIdxMap
     }
 
     // TODO remove this accessor once useless in adapter
-    fun getSectionDistanceSortedChunkMap(): Map<TrackSectionId, TreeMap<Distance, TrackChunkId>> {
-        return sectionDistanceSortedChunkMap
+    fun getTrackSectionDistanceSortedChunkMap():
+        Map<TrackSectionId, TreeMap<Distance, TrackChunkId>> {
+        return trackSectionDistanceSortedChunkMap
     }
 
     // TODO remove this accessor once useless in adapter
@@ -91,27 +92,28 @@ class RawInfraFromRjsBuilderImpl : RawInfraBuilder {
         return trackNodePool
     }
 
-    private fun getSectionIdx(sectionName: String): TrackSectionId {
-        return sectionNameToIdxMap[sectionName]
+    private fun getTrackSectionIdx(name: String): TrackSectionId {
+        return trackSectionNameToIdxMap[name]
             ?: throw OSRDError.newInfraLoadingError(
                 ErrorType.InfraHardLoadingError,
-                "Accessing track-section from unregistered name $sectionName"
+                "Accessing track-section from unregistered name $name"
             )
     }
 
-    private fun getSectionDistanceSortedChunks(
-        sectionName: String
-    ): TreeMap<Distance, TrackChunkId> {
-        val sectionIdx = getSectionIdx(sectionName)
-        return sectionDistanceSortedChunkMap[sectionIdx]
+    private fun getTrackSectionDistanceSortedChunks(name: String): TreeMap<Distance, TrackChunkId> {
+        val trackSectionIdx = getTrackSectionIdx(name)
+        return trackSectionDistanceSortedChunkMap[trackSectionIdx]
             ?: throw OSRDError.newInfraLoadingError(
                 ErrorType.InfraHardLoadingError,
-                "Accessing sorted chunks from unregistered track-section idx $sectionIdx (name: $sectionName)"
+                "Accessing sorted chunks from unregistered track-section idx $trackSectionIdx (name: $name)"
             )
     }
 
-    fun getSectionEndpointIdx(sectionName: String, endpoint: Endpoint): EndpointTrackSectionId {
-        return EndpointTrackSectionId(getSectionIdx(sectionName), endpoint)
+    fun getTrackSectionEndpointIdx(
+        trackSectionName: String,
+        endpoint: Endpoint
+    ): EndpointTrackSectionId {
+        return EndpointTrackSectionId(getTrackSectionIdx(trackSectionName), endpoint)
     }
 
     fun node(
@@ -124,7 +126,7 @@ class RawInfraFromRjsBuilderImpl : RawInfraBuilder {
         for (portIdx in ports) {
             val port = ports[portIdx]
             assert(nodeAtEndpoint[port] == null) {
-                "Assertion failed: section ${trackSectionPool[port.value].name}.${port.endpoint} is referenced multiple times by a node port"
+                "Assertion failed: endpoint ${trackSectionPool[port.value].name}.${port.endpoint} is referenced multiple times by a node port"
             }
             nodeAtEndpoint[port] = nodeIdx
         }
@@ -234,19 +236,19 @@ class RawInfraFromRjsBuilderImpl : RawInfraBuilder {
     }
 
     fun trackSection(name: String, chunks: StaticIdxList<TrackChunk>): TrackSectionId {
-        val sectionIdx = trackSectionPool.add(TrackSectionDescriptor(name, chunks))
+        val trackSectionIdx = trackSectionPool.add(TrackSectionDescriptor(name, chunks))
 
-        sectionNameToIdxMap[name] = sectionIdx
+        trackSectionNameToIdxMap[name] = trackSectionIdx
 
-        val sectionOffsetChunks = TreeMap<Distance, TrackChunkId>()
+        val trackSectionOffsetChunks = TreeMap<Distance, TrackChunkId>()
         for (chunkIdx in chunks) {
             val chunk = trackChunkPool[chunkIdx]
-            chunk.track = sectionIdx
-            sectionOffsetChunks[chunk.offset.distance] = chunkIdx
+            chunk.track = trackSectionIdx
+            trackSectionOffsetChunks[chunk.offset.distance] = chunkIdx
         }
-        sectionDistanceSortedChunkMap[sectionIdx] = sectionOffsetChunks
+        trackSectionDistanceSortedChunkMap[trackSectionIdx] = trackSectionOffsetChunks
 
-        return sectionIdx
+        return trackSectionIdx
     }
 
     fun trackChunk(
@@ -305,8 +307,8 @@ class RawInfraFromRjsBuilderImpl : RawInfraBuilder {
         )
     }
 
-    fun applyFunctionToSectionChunksBetween(
-        trackName: String,
+    fun applyFunctionToTrackSectionChunksBetween(
+        trackSectionName: String,
         lower: Distance,
         upper: Distance,
         function:
@@ -316,8 +318,8 @@ class RawInfraFromRjsBuilderImpl : RawInfraBuilder {
                 incomingRangeUpperBound: Distance
             ) -> Unit
     ) {
-        val sectionChunks = getSectionDistanceSortedChunks(trackName)
-        for (chunkDistanceId in sectionChunks.tailMap(sectionChunks.floorKey(lower))) {
+        val trackSectionChunks = getTrackSectionDistanceSortedChunks(trackSectionName)
+        for (chunkDistanceId in trackSectionChunks.tailMap(trackSectionChunks.floorKey(lower))) {
             if (chunkDistanceId.key >= upper) break
 
             val chunkDescriptor = trackChunkPool[chunkDistanceId.value]
@@ -331,16 +333,16 @@ class RawInfraFromRjsBuilderImpl : RawInfraBuilder {
 
     fun operationalPointPart(
         operationalPointName: String,
-        sectionName: String,
-        sectionOffset: Offset<TrackSection>
+        trackSectionName: String,
+        trackSectionOffset: Offset<TrackSection>
     ): OperationalPointPartId {
-        val sectionChunks = getSectionDistanceSortedChunks(sectionName)
-        val chunkDistanceIdx = sectionChunks.floorEntry(sectionOffset.distance)
+        val trackSectionChunks = getTrackSectionDistanceSortedChunks(trackSectionName)
+        val chunkDistanceIdx = trackSectionChunks.floorEntry(trackSectionOffset.distance)
         val opPartIdx =
             operationalPointPartPool.add(
                 OperationalPointPartDescriptor(
                     operationalPointName,
-                    Offset(sectionOffset.distance - chunkDistanceIdx.key),
+                    Offset(trackSectionOffset.distance - chunkDistanceIdx.key),
                     chunkDistanceIdx.value
                 )
             )
