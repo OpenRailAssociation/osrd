@@ -81,10 +81,15 @@ data class BlockAvailability(
         val envelope = explorer.getFullEnvelope()
         if (time > envelope.totalTime) return explorer.getSimulatedLength()
         val search = DoubleBinarySearch(envelope.beginPos, envelope.endPos, time, 2.0, false)
-        while (!search.complete()) search.feedback(envelope.interpolateTotalTimeClamp(search.input))
-        return explorer
-            .getIncrementalPath()
-            .fromTravelledPath(Offset(Distance.fromMeters(search.result)))
+
+        // The iteration limit avoids infinite loops when accessing times when the train is stopped
+        var i = 0
+        var value = 0.0
+        while (i++ < 20 && !search.complete()) {
+            value = search.input
+            search.feedback(envelope.interpolateTotalTimeClamp(search.input))
+        }
+        return explorer.getIncrementalPath().fromTravelledPath(Offset(Distance.fromMeters(value)))
     }
 }
 
