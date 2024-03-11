@@ -98,18 +98,18 @@ private fun parseLineString(rjsLineString: RJSLineString?): LineString? {
 }
 
 /** Computes the slopes RangeMap of a track section. */
-private fun getSlopes(rjsSection: RJSTrackSection): DistanceRangeMap<Double> {
+private fun getSlopes(rjsTrackSection: RJSTrackSection): DistanceRangeMap<Double> {
     val slopes =
         distanceRangeMapOf(
-            listOf(DistanceRangeMap.RangeMapEntry(0.meters, rjsSection.length.meters, 0.0))
+            listOf(DistanceRangeMap.RangeMapEntry(0.meters, rjsTrackSection.length.meters, 0.0))
         )
-    if (rjsSection.slopes != null) {
-        for (rjsSlope in rjsSection.slopes) {
+    if (rjsTrackSection.slopes != null) {
+        for (rjsSlope in rjsTrackSection.slopes) {
             rjsSlope.simplify()
-            if (rjsSlope.begin < 0 || rjsSlope.end > rjsSection.length)
+            if (rjsSlope.begin < 0 || rjsSlope.end > rjsTrackSection.length)
                 throw OSRDError.newInvalidRangeError(
                     ErrorType.InvalidInfraTrackSlopeWithInvalidRange,
-                    rjsSection.id
+                    rjsTrackSection.id
                 )
             if (rjsSlope.gradient != 0.0) {
                 slopes.put(rjsSlope.begin.meters, rjsSlope.end.meters, rjsSlope.gradient)
@@ -120,18 +120,18 @@ private fun getSlopes(rjsSection: RJSTrackSection): DistanceRangeMap<Double> {
 }
 
 /** Computes the curves RangeMap of a track section. */
-private fun getCurves(rjsSection: RJSTrackSection): DistanceRangeMap<Double> {
+private fun getCurves(rjsTrackSection: RJSTrackSection): DistanceRangeMap<Double> {
     val curves =
         distanceRangeMapOf(
-            listOf(DistanceRangeMap.RangeMapEntry(0.meters, rjsSection.length.meters, 0.0))
+            listOf(DistanceRangeMap.RangeMapEntry(0.meters, rjsTrackSection.length.meters, 0.0))
         )
-    if (rjsSection.curves != null) {
-        for (rjsCurve in rjsSection.curves) {
+    if (rjsTrackSection.curves != null) {
+        for (rjsCurve in rjsTrackSection.curves) {
             rjsCurve.simplify()
-            if (rjsCurve.begin < 0 || rjsCurve.end > rjsSection.length)
+            if (rjsCurve.begin < 0 || rjsCurve.end > rjsTrackSection.length)
                 throw OSRDError.newInvalidRangeError(
                     ErrorType.InvalidInfraTrackSlopeWithInvalidRange,
-                    rjsSection.id
+                    rjsTrackSection.id
                 )
             if (rjsCurve.radius != 0.0) {
                 curves.put(rjsCurve.begin.meters, rjsCurve.end.meters, rjsCurve.radius)
@@ -146,12 +146,12 @@ private fun getCurves(rjsSection: RJSTrackSection): DistanceRangeMap<Double> {
  * build a complete DirectionalMap.
  */
 private fun getChunkDirectionalDistanceRange(
-    sectionDistanceRange: DistanceRangeMap<Double>,
+    distanceRangeMap: DistanceRangeMap<Double>,
     chunkStartOffset: Offset<TrackSection>,
     chunkEndOffset: Offset<TrackSection>
 ): DirectionalMap<DistanceRangeMap<Double>> {
     val increasingChunkRange =
-        sectionDistanceRange.subMap(chunkStartOffset.distance, chunkEndOffset.distance)
+        distanceRangeMap.subMap(chunkStartOffset.distance, chunkEndOffset.distance)
     increasingChunkRange.shiftPositions(-chunkStartOffset.distance)
     val chunkLength = chunkEndOffset - chunkStartOffset
     return DirectionalMap(
@@ -215,17 +215,22 @@ private fun getGradients(
 }
 
 /** Builds the ranges of blocked loading gauge types on the track */
-private fun getBlockedGauge(rjsSection: RJSTrackSection): DistanceRangeMap<LoadingGaugeConstraint> {
+private fun getBlockedGauge(
+    rjsTrackSection: RJSTrackSection
+): DistanceRangeMap<LoadingGaugeConstraint> {
     // This method has a bad complexity compared to more advanced solutions,
-    // but we don't expect more than a few ranges per section.
+    // but we don't expect more than a few ranges per track-section.
     // TODO: use an interval tree
     val res = distanceRangeMapOf<LoadingGaugeConstraint>()
-    if ((rjsSection.loadingGaugeLimits == null) || (rjsSection.loadingGaugeLimits.isEmpty()))
+    if (
+        (rjsTrackSection.loadingGaugeLimits == null) ||
+            (rjsTrackSection.loadingGaugeLimits.isEmpty())
+    )
         return res
 
     // Sorts and removes duplicates
     val transitions = TreeSet<Double>()
-    for (range in rjsSection.loadingGaugeLimits) {
+    for (range in rjsTrackSection.loadingGaugeLimits) {
         transitions.add(range.begin)
         transitions.add(range.end)
     }
@@ -235,11 +240,13 @@ private fun getBlockedGauge(rjsSection: RJSTrackSection): DistanceRangeMap<Loadi
         val begin = transitionsList[i - 1]
         val end = transitionsList[i]
         val allowedTypes = HashSet<RJSLoadingGaugeType>()
-        for (range in rjsSection.loadingGaugeLimits) {
+        for (range in rjsTrackSection.loadingGaugeLimits) {
             if (range.begin <= begin && range.end >= end) {
                 val compatibleTypes = compatibleGaugeTypeMap[range.category]
                 if (compatibleTypes == null) {
-                    logger.warn("Invalid gauge type ${range.category} for track ${rjsSection.id}")
+                    logger.warn(
+                        "Invalid gauge type ${range.category} for track ${rjsTrackSection.id}"
+                    )
                     allowedTypes.addAll(allLoadingGaugeTypeSet)
                 } else {
                     allowedTypes.addAll(compatibleTypes)
@@ -271,7 +278,7 @@ val allLoadingGaugeTypeSet = enumValues<RJSLoadingGaugeType>().toSet()
 private fun parseRjsRouteWaypoint(
     rjsWaypoint: RJSRouteWaypoint,
     builder: RawInfraFromRjsBuilderImpl,
-    sectionNameToChunkEndOffset: MutableMap<String, TreeSet<Offset<TrackSection>>>,
+    trackSectionNameToChunkEndOffset: MutableMap<String, TreeSet<Offset<TrackSection>>>,
     detectorMap: MutableMap<String, DetectorId>,
 ) {
     detectorMap[rjsWaypoint.id] = builder.detector(rjsWaypoint.id)
@@ -279,10 +286,10 @@ private fun parseRjsRouteWaypoint(
     // Storing only chunk's end: ignore 0 offset that is a chunk's start
     if (rjsWaypoint.position == 0.0) return
 
-    if (!sectionNameToChunkEndOffset.containsKey(rjsWaypoint.track)) {
-        sectionNameToChunkEndOffset[rjsWaypoint.track] = TreeSet<Offset<TrackSection>>()
+    if (!trackSectionNameToChunkEndOffset.containsKey(rjsWaypoint.track)) {
+        trackSectionNameToChunkEndOffset[rjsWaypoint.track] = TreeSet<Offset<TrackSection>>()
     }
-    sectionNameToChunkEndOffset[rjsWaypoint.track]!!.add(Offset(rjsWaypoint.position.meters))
+    trackSectionNameToChunkEndOffset[rjsWaypoint.track]!!.add(Offset(rjsWaypoint.position.meters))
 }
 
 fun adaptRawInfra(infra: SignalingInfra, rjsInfra: RJSInfra): SimInfraAdapter {
@@ -303,56 +310,64 @@ fun adaptRawInfra(infra: SignalingInfra, rjsInfra: RJSInfra): SimInfraAdapter {
     val oldTrackChunkMap = mutableMapOf<UndirectedTrackSection, Map<Distance, TrackChunkId>>()
 
     // Parse waypoints (detectors, buffer-stops)
-    val sectionNameToChunkEndOffsets: MutableMap<String, TreeSet<Offset<TrackSection>>> =
+    val trackSectionNameToChunkEndOffsets: MutableMap<String, TreeSet<Offset<TrackSection>>> =
         mutableMapOf()
 
     for (detector in rjsInfra.detectors) {
-        parseRjsRouteWaypoint(detector, builder, sectionNameToChunkEndOffsets, detectorMap)
+        parseRjsRouteWaypoint(detector, builder, trackSectionNameToChunkEndOffsets, detectorMap)
     }
     for (detector in rjsInfra.bufferStops) {
-        parseRjsRouteWaypoint(detector, builder, sectionNameToChunkEndOffsets, detectorMap)
+        parseRjsRouteWaypoint(detector, builder, trackSectionNameToChunkEndOffsets, detectorMap)
     }
 
     // Parse track-sections
     for (rjsTrack in rjsInfra.trackSections) {
-        val sectionChunks = mutableStaticIdxArrayListOf<TrackChunk>()
+        val trackSectionChunks = mutableStaticIdxArrayListOf<TrackChunk>()
 
-        val sectionLength = Offset<TrackSection>(rjsTrack.length.meters)
-        val sectionGeo = parseLineString(rjsTrack.geo)!!
-        val sectionSlopes = getSlopes(rjsTrack)
-        val sectionCurves = getCurves(rjsTrack)
-        val sectionBlockedGauges = getBlockedGauge(rjsTrack)
+        val trackSectionLength = Offset<TrackSection>(rjsTrack.length.meters)
+        val trackSectionGeo = parseLineString(rjsTrack.geo)!!
+        val trackSectionSlopes = getSlopes(rjsTrack)
+        val trackSectionCurves = getCurves(rjsTrack)
+        val trackSectionBlockedGauges = getBlockedGauge(rjsTrack)
 
         var chunkStartOffset = Offset<TrackSection>(0.meters)
-        val chunkEndOffsets = sectionNameToChunkEndOffsets[rjsTrack.id] ?: mutableSetOf()
-        if (chunkEndOffsets.isEmpty() || chunkEndOffsets.last() != sectionLength)
-            chunkEndOffsets.add(sectionLength)
+        val chunkEndOffsets = trackSectionNameToChunkEndOffsets[rjsTrack.id] ?: mutableSetOf()
+        if (chunkEndOffsets.isEmpty() || chunkEndOffsets.last() != trackSectionLength)
+            chunkEndOffsets.add(trackSectionLength)
 
         for (chunkEndOffset in chunkEndOffsets) {
-            if (chunkEndOffset > sectionLength || chunkEndOffset < Offset(Distance.ZERO)) {
+            if (chunkEndOffset > trackSectionLength || chunkEndOffset < Offset(Distance.ZERO)) {
                 throw OSRDError.newInfraLoadingError(
                     ErrorType.InfraHardLoadingError,
                     "Splitting trackSection ${rjsTrack.id} at a detector's offset $chunkEndOffsets out of range"
                 )
             }
             val chunkSlopes =
-                getChunkDirectionalDistanceRange(sectionSlopes, chunkStartOffset, chunkEndOffset)
+                getChunkDirectionalDistanceRange(
+                    trackSectionSlopes,
+                    chunkStartOffset,
+                    chunkEndOffset
+                )
             val chunkCurves =
-                getChunkDirectionalDistanceRange(sectionCurves, chunkStartOffset, chunkEndOffset)
+                getChunkDirectionalDistanceRange(
+                    trackSectionCurves,
+                    chunkStartOffset,
+                    chunkEndOffset
+                )
 
             val chunkBlockedGauges =
-                sectionBlockedGauges.subMap(chunkStartOffset.distance, chunkEndOffset.distance)
+                trackSectionBlockedGauges.subMap(chunkStartOffset.distance, chunkEndOffset.distance)
             chunkBlockedGauges.shiftPositions(-chunkStartOffset.distance)
 
             val chunkLength = chunkEndOffset - chunkStartOffset
 
             val chunkIdx =
                 builder.trackChunk(
-                    sectionGeo.slice(
+                    trackSectionGeo.slice(
                         chunkStartOffset.distance.millimeters.toDouble() /
-                            sectionLength.distance.millimeters,
+                            trackSectionLength.distance.millimeters,
                         chunkEndOffset.distance.millimeters.toDouble() /
-                            sectionLength.distance.millimeters
+                            trackSectionLength.distance.millimeters
                     ),
                     chunkSlopes,
                     chunkCurves,
@@ -364,10 +379,10 @@ fun adaptRawInfra(infra: SignalingInfra, rjsInfra: RJSInfra): SimInfraAdapter {
                     chunkStartOffset,
                     chunkBlockedGauges
                 )
-            sectionChunks.add(chunkIdx)
+            trackSectionChunks.add(chunkIdx)
             chunkStartOffset = chunkEndOffset
         }
-        builder.trackSection(rjsTrack.id, sectionChunks)
+        builder.trackSection(rjsTrack.id, trackSectionChunks)
     }
 
     // Parse electrifications
@@ -397,7 +412,7 @@ fun adaptRawInfra(infra: SignalingInfra, rjsInfra: RJSInfra): SimInfraAdapter {
                         electrification.voltage
                     )
                 }
-            builder.applyFunctionToSectionChunksBetween(
+            builder.applyFunctionToTrackSectionChunksBetween(
                 electrificationRange.trackSectionID,
                 electrificationRange.begin.meters,
                 electrificationRange.end.meters,
@@ -452,7 +467,7 @@ fun adaptRawInfra(infra: SignalingInfra, rjsInfra: RJSInfra): SimInfraAdapter {
                         chunkDirNeutralSections.putMany(previousDirNeutralSections.asList())
                     }
                 }
-            builder.applyFunctionToSectionChunksBetween(
+            builder.applyFunctionToTrackSectionChunksBetween(
                 trackRange.trackSectionID,
                 trackRange.begin.meters,
                 trackRange.end.meters,
@@ -510,7 +525,7 @@ fun adaptRawInfra(infra: SignalingInfra, rjsInfra: RJSInfra): SimInfraAdapter {
                         )
                     }
                 }
-            builder.applyFunctionToSectionChunksBetween(
+            builder.applyFunctionToTrackSectionChunksBetween(
                 speedRange.trackSectionID,
                 speedRange.begin.meters,
                 speedRange.end.meters,
@@ -549,7 +564,7 @@ fun adaptRawInfra(infra: SignalingInfra, rjsInfra: RJSInfra): SimInfraAdapter {
         for ((rjsPortName, rjsPort) in rjsNode.ports) {
             portMap[rjsPortName] =
                 ports.add(
-                    builder.getSectionEndpointIdx(
+                    builder.getTrackSectionEndpointIdx(
                         rjsPort.track,
                         Endpoint.fromEdgeEndpoint(rjsPort.endpoint)
                     )
@@ -593,10 +608,11 @@ fun adaptRawInfra(infra: SignalingInfra, rjsInfra: RJSInfra): SimInfraAdapter {
     for (edge in infra.trackGraph.edges()) {
         val track = edge as? UndirectedTrackSection
         if (track != null) {
-            oldTrackSectionMap[track] = builder.getSectionNameToIdxMap()[track.id]
+            oldTrackSectionMap[track] = builder.getTrackSectionNameToIdxMap()[track.id]
 
             val chunkMap = mutableMapOf<Distance, TrackChunkId>()
-            for (entry in builder.getSectionDistanceSortedChunkMap()[oldTrackSectionMap[track]]!!) {
+            for (entry in
+                builder.getTrackSectionDistanceSortedChunkMap()[oldTrackSectionMap[track]]!!) {
                 chunkMap[entry.key] = entry.value
             }
             oldTrackChunkMap[track] = chunkMap
