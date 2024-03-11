@@ -129,7 +129,7 @@ where
                     .ok_or_else(|| serde::de::Error::custom("value for millisecond is not valid"))?
         }
         IsoDuration::Weeks(weeks) => ChronoDuration::try_weeks(weeks as i64)
-            .ok_or_else(|| serde::de::Error::custom("value for millisecond is not valid"))?,
+            .ok_or_else(|| serde::de::Error::custom("value for weeks is not valid"))?,
     })
 }
 

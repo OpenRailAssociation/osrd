@@ -15,7 +15,7 @@ import type {
   WayPointEntity,
 } from 'applications/editor/tools/routeEdition/types';
 import type { TrackRange, TrackSectionEntity } from 'applications/editor/tools/trackEdition/types';
-import { osrdEditoastApi, type Identifier } from 'common/api/osrdEditoastApi';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { AppDispatch } from 'store';
 import { NULL_GEOMETRY, type PartialButFor } from 'types';
 
@@ -262,11 +262,11 @@ export async function getCompatibleRoutesPayload(
 
   return {
     starting: {
-      track: entryPointEntity.properties.track as Identifier,
+      track: entryPointEntity.properties.track as string,
       position: entryPointEntity.properties.position as number,
     },
     ending: {
-      track: exitPointEntity.properties.track as Identifier,
+      track: exitPointEntity.properties.track as string,
       position: exitPointEntity.properties.position as number,
     },
   };

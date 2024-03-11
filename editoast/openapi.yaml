@@ -3974,6 +3974,16 @@ components:
       - ch
       type: object
     PathfindingInput:
+      properties:
+        ending:
+          $ref: '#/components/schemas/PathfindingTrackLocationInput'
+        starting:
+          $ref: '#/components/schemas/PathfindingTrackLocationInput'
+      required:
+      - starting
+      - ending
+      type: object
+    PathfindingInputV2:
       description: |-
         Path input is described by some rolling stock information
         and a list of path waypoints
@@ -9436,6 +9446,14 @@ paths:
   /v2/infra/{infra_id}/path_properties/:
     post:
       description: Compute path properties
+      parameters:
+      - description: The infra id
+        in: path
+        name: infra_id
+        required: true
+        schema:
+          format: int64
+          type: integer
       requestBody:
         content:
           application/json:
@@ -9455,6 +9473,14 @@ paths:
   /v2/infra/{infra_id}/pathfinding/blocks/:
     post:
       description: Compute a pathfinding
+      parameters:
+      - description: The infra id
+        in: path
+        name: infra_id
+        required: true
+        schema:
+          format: int64
+          type: integer
       requestBody:
         content:
           application/json:
