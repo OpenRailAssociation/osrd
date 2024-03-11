@@ -284,7 +284,6 @@ const CurveParamSelectors = ({
             options: tractionModeOptions,
             authorizeNewItem: true,
             addNewItemButtonText: t('addNewTractionMode'),
-            disabled: isEmpty(availableModes),
             selectNewItem: updateTractionModesList,
           }}
           dataTestId="traction-mode-selector"
