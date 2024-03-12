@@ -43,14 +43,13 @@ import fr.sncf.osrd.utils.indexing.DirStaticIdxList
 import fr.sncf.osrd.utils.indexing.IdxMap
 import fr.sncf.osrd.utils.indexing.MutableDirStaticIdxArrayList
 import fr.sncf.osrd.utils.indexing.MutableStaticIdxArrayList
-import fr.sncf.osrd.utils.indexing.MutableStaticIdxArraySet
 import fr.sncf.osrd.utils.indexing.MutableStaticIdxList
 import fr.sncf.osrd.utils.indexing.StaticIdx
 import fr.sncf.osrd.utils.indexing.StaticIdxList
-import fr.sncf.osrd.utils.indexing.StaticIdxSortedSet
 import fr.sncf.osrd.utils.indexing.StaticPool
 import fr.sncf.osrd.utils.indexing.mutableDirStaticIdxArrayListOf
 import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
+import fr.sncf.osrd.utils.indexing.mutableStaticIdxArraySetOf
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.MutableOffsetArrayList
@@ -98,12 +97,7 @@ class MovableElementDescriptorBuilderImpl(private val name: String, private val 
     }
 
     fun build(): TrackNodeDescriptor {
-        return TrackNodeDescriptor(
-            name,
-            delay,
-            ports,
-            StaticPool(configs.map { c -> configs[c].build() }.toMutableList())
-        )
+        return TrackNodeDescriptor(name, delay, ports, configs.map { it.build() })
     }
 }
 
@@ -259,15 +253,8 @@ interface RestrictedRawInfraBuilder {
     fun linkZones(detector: DetectorId, zoneA: ZoneId, zoneB: ZoneId)
 
     fun setNextZone(detector: DirDetectorId, zone: ZoneId)
-    // The 3 "zone" methods are outdated because we can compute zones using track topology. They
-    // should be removed once
-    // the rjs parsing has been migrated and the legacy infra isn't used as an intermediate step
-    // anymore
-    fun zone(movableElements: StaticIdxSortedSet<TrackNode>): ZoneId
 
-    fun zone(movableElements: List<TrackNodeId>): ZoneId
-
-    fun zone(movableElements: StaticIdxSortedSet<TrackNode>, bounds: List<DirDetectorId>): ZoneId
+    fun zone(movableElements: List<TrackNodeId>, bounds: List<DirDetectorId> = listOf()): ZoneId
 
     fun zonePath(
         entry: DirDetectorId,
@@ -372,21 +359,11 @@ class RawInfraBuilderImpl : RawInfraBuilder {
         nextZones[detector] = zone
     }
 
-    override fun zone(movableElements: StaticIdxSortedSet<TrackNode>): ZoneId {
-        return zonePool.add(ZoneDescriptor(movableElements))
-    }
+    override fun zone(movableElements: List<TrackNodeId>, bounds: List<DirDetectorId>): ZoneId {
+        val nodes = mutableStaticIdxArraySetOf<TrackNode>()
+        nodes.addAll(movableElements)
+        val zone = zonePool.add(ZoneDescriptor(nodes))
 
-    override fun zone(movableElements: List<TrackNodeId>): ZoneId {
-        val set = MutableStaticIdxArraySet<TrackNode>()
-        for (item in movableElements) set.add(item)
-        return zonePool.add(ZoneDescriptor(set))
-    }
-
-    override fun zone(
-        movableElements: StaticIdxSortedSet<TrackNode>,
-        bounds: List<DirDetectorId>
-    ): ZoneId {
-        val zone = zonePool.add(ZoneDescriptor(movableElements))
         for (detectorDir in bounds) setNextZone(detectorDir, zone)
         return zone
     }
@@ -615,7 +592,7 @@ class RawInfraBuilderImpl : RawInfraBuilder {
     }
 }
 
-fun RawInfraBuilder(): RawInfraBuilder {
+fun rawInfraBuilder(): RawInfraBuilder {
     return RawInfraBuilderImpl()
 }
 

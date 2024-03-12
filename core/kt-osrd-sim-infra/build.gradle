@@ -24,6 +24,7 @@ dependencies {
     api project(":osrd-railjson")
     api project(":osrd-reporting")
     implementation libs.kotlin.stdlib
+    implementation libs.kotlin.logging
     testImplementation libs.kotlin.test
 
     // Use JUnit Jupiter API for testing.

@@ -6,7 +6,7 @@ import fr.sncf.osrd.signaling.impl.SignalingSimulatorImpl
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.decreasing
 import fr.sncf.osrd.sim_infra.api.increasing
-import fr.sncf.osrd.sim_infra.impl.RawInfraFromRjsBuilderImpl
+import fr.sncf.osrd.sim_infra.impl.RawInfraFromRjsBuilder
 import fr.sncf.osrd.utils.indexing.StaticIdx
 import fr.sncf.osrd.utils.indexing.StaticPool
 import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
@@ -31,7 +31,7 @@ class TestBALtoBAL {
         //  <-- reverse     normal -->
 
         // region build the test infrastructure
-        val builder = RawInfraFromRjsBuilderImpl()
+        val builder = RawInfraFromRjsBuilder()
         // region switches
         val switch = builder.node("S", ZERO, StaticPool(), StaticPool())
         // endregion

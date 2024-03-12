@@ -6,7 +6,6 @@ import com.google.common.collect.Sets
 import com.google.common.primitives.Doubles
 import fr.sncf.osrd.geom.LineString
 import fr.sncf.osrd.infra.api.Direction
-import fr.sncf.osrd.infra.api.reservation.DetectionSection
 import fr.sncf.osrd.infra.api.reservation.DiDetector
 import fr.sncf.osrd.infra.api.reservation.ReservationRoute
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra
@@ -53,7 +52,7 @@ import fr.sncf.osrd.sim_infra.api.decreasing
 import fr.sncf.osrd.sim_infra.api.increasing
 import fr.sncf.osrd.sim_infra.impl.NeutralSection
 import fr.sncf.osrd.sim_infra.impl.RawInfraBuilder
-import fr.sncf.osrd.sim_infra.impl.RawInfraFromRjsBuilderImpl
+import fr.sncf.osrd.sim_infra.impl.RawInfraFromRjsBuilder
 import fr.sncf.osrd.sim_infra.impl.SpeedSection
 import fr.sncf.osrd.sim_infra.impl.TrackChunkDescriptor
 import fr.sncf.osrd.sim_infra.impl.TrackNodeConfigDescriptor
@@ -63,6 +62,7 @@ import fr.sncf.osrd.utils.DirectionalMap
 import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.DistanceRangeMapImpl
 import fr.sncf.osrd.utils.Endpoint
+import fr.sncf.osrd.utils.UnionFind
 import fr.sncf.osrd.utils.assertEqualSimInfra
 import fr.sncf.osrd.utils.distanceRangeMapOf
 import fr.sncf.osrd.utils.indexing.DirStaticIdx
@@ -70,7 +70,6 @@ import fr.sncf.osrd.utils.indexing.MutableDirStaticIdxArrayList
 import fr.sncf.osrd.utils.indexing.MutableStaticIdxArrayList
 import fr.sncf.osrd.utils.indexing.StaticPool
 import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
-import fr.sncf.osrd.utils.indexing.mutableStaticIdxArraySetOf
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.MutableOffsetArrayList
@@ -159,11 +158,11 @@ private fun getChunkDirectionalDistanceRange(
         DistanceRangeMapImpl(
             increasingChunkRange
                 .reversed()
-                .map { s ->
+                .map {
                     DistanceRangeMap.RangeMapEntry(
-                        chunkLength - s.upper,
-                        chunkLength - s.lower,
-                        if (s.value == 0.0) 0.0 else -s.value
+                        chunkLength - it.upper,
+                        chunkLength - it.lower,
+                        if (it.value == 0.0) 0.0 else -it.value
                     )
                 }
                 .toList()
@@ -276,26 +275,102 @@ val compatibleGaugeTypeMap = buildCompatibleGaugeTypesMap()
 val allLoadingGaugeTypeSet = enumValues<RJSLoadingGaugeType>().toSet()
 
 private fun parseRjsRouteWaypoint(
-    rjsWaypoint: RJSRouteWaypoint,
-    builder: RawInfraFromRjsBuilderImpl,
-    trackSectionNameToDistanceSortedWaypointIdxs:
+    rjsDetector: RJSRouteWaypoint,
+    builder: RawInfraFromRjsBuilder,
+    trackSectionNameToDistanceSortedDetectorIdxs:
         MutableMap<String, TreeMap<Offset<TrackSection>, DetectorId>>,
     detectorMap: MutableMap<String, DetectorId>,
 ) {
-    val waypointIdx = builder.detector(rjsWaypoint.id)
-    detectorMap[rjsWaypoint.id] = waypointIdx
+    val detectorIdx = builder.detector(rjsDetector.id)
+    detectorMap[rjsDetector.id] = detectorIdx
 
-    if (!trackSectionNameToDistanceSortedWaypointIdxs.containsKey(rjsWaypoint.track)) {
-        trackSectionNameToDistanceSortedWaypointIdxs[rjsWaypoint.track] =
+    if (!trackSectionNameToDistanceSortedDetectorIdxs.containsKey(rjsDetector.track)) {
+        trackSectionNameToDistanceSortedDetectorIdxs[rjsDetector.track] =
             TreeMap<Offset<TrackSection>, DetectorId>()
     }
-    trackSectionNameToDistanceSortedWaypointIdxs[rjsWaypoint.track]!![
-        Offset(rjsWaypoint.position.meters)] = waypointIdx
+    trackSectionNameToDistanceSortedDetectorIdxs[rjsDetector.track]!![
+        Offset(rjsDetector.position.meters)] = detectorIdx
+}
+
+/** Build detection zones on a partially-filled builder (track-sections, nodes and detectors) */
+private fun buildZones(
+    builder: RawInfraFromRjsBuilder,
+    trackSectionNameToDistanceSortedDetectorIdxs:
+        Map<String, TreeMap<Offset<TrackSection>, DetectorId>>
+) {
+    // run a union-find to associate track endpoints:
+    // union by node
+    val trackNodePool = builder.getTrackNodes()
+    val uf = UnionFind(builder.getTrackSections().size.toInt() * 2)
+    for (nodeIdx in trackNodePool) {
+        val ports = builder.getTrackNodePorts(nodeIdx)
+        var firstEndpoint: EndpointTrackSectionId? = null
+        for (port in ports) {
+            val endpoint = ports[port]
+            if (firstEndpoint == null) {
+                firstEndpoint = endpoint
+            } else {
+                uf.union(firstEndpoint.index.toInt(), endpoint.index.toInt())
+            }
+        }
+    }
+    // union by track-section without detector
+    for (trackSectionIdx in builder.getTrackSections()) {
+        val detectors =
+            trackSectionNameToDistanceSortedDetectorIdxs[
+                builder.getTrackSectionName(trackSectionIdx)]
+        if (detectors.isNullOrEmpty()) {
+            val startEndpoint = EndpointTrackSectionId(trackSectionIdx, Endpoint.START)
+            val endEndpoint = EndpointTrackSectionId(trackSectionIdx, Endpoint.END)
+            uf.union(startEndpoint.index.toInt(), endEndpoint.index.toInt())
+        }
+    }
+
+    // now that union-find is complete, create detection zones
+    val rootToZoneMap = mutableMapOf<Int, ZoneId>()
+    for (trackSectionIdx in builder.getTrackSections()) {
+        val detectors =
+            trackSectionNameToDistanceSortedDetectorIdxs[
+                builder.getTrackSectionName(trackSectionIdx)]
+
+        // prepare "node" detection zones
+        for (endpoint in Endpoint.entries) {
+            val trackSectionEndpoint = EndpointTrackSectionId(trackSectionIdx, endpoint)
+            val node = builder.getNodeAtEndpoint(trackSectionEndpoint) ?: continue
+
+            val zoneRoot = uf.findRoot(trackSectionEndpoint.index.toInt())
+            if (!rootToZoneMap.containsKey(zoneRoot)) {
+                rootToZoneMap[zoneRoot] = builder.zone(listOf())
+            }
+            val zoneIdx = rootToZoneMap[zoneRoot]!!
+
+            builder.zoneAddNode(zoneIdx, node)
+
+            if (!detectors.isNullOrEmpty()) {
+                val dirDetector =
+                    if (endpoint == Endpoint.START) detectors.firstEntry().value.decreasing
+                    else detectors.lastEntry().value.increasing
+                builder.setNextZone(dirDetector, zoneIdx)
+            }
+        }
+
+        // create detection zones inside a track-section
+        if (detectors == null || detectors.size < 2) continue
+        val detectorsIterator = detectors.values.iterator()
+        var currentDetectorIdx = detectorsIterator.next()
+        var previousDetectorIdx = currentDetectorIdx
+        while (detectorsIterator.hasNext()) {
+            currentDetectorIdx = detectorsIterator.next()
+            val zoneIdx = builder.zone(listOf())
+            builder.setNextZone(previousDetectorIdx.increasing, zoneIdx)
+            builder.setNextZone(currentDetectorIdx.decreasing, zoneIdx)
+            previousDetectorIdx = currentDetectorIdx
+        }
+    }
 }
 
 fun adaptRawInfra(infra: SignalingInfra, rjsInfra: RJSInfra): SimInfraAdapter {
-    val builder = RawInfraFromRjsBuilderImpl()
-    val zoneMap = HashBiMap.create<DetectionSection, ZoneId>()
+    val builder = RawInfraFromRjsBuilder()
     // TODO: check if this can be remove once stitching is useless
     val detectorMap: MutableMap<String, DetectorId> = mutableMapOf()
     // TODO: remove this once stitching is useless
@@ -311,15 +386,15 @@ fun adaptRawInfra(infra: SignalingInfra, rjsInfra: RJSInfra): SimInfraAdapter {
     // TODO: remove this once stitching is useless
     val oldTrackChunkMap = mutableMapOf<UndirectedTrackSection, Map<Distance, TrackChunkId>>()
 
-    // Parse waypoints (detectors, buffer-stops)
-    val trackSectionNameToDistanceSortedWaypointIdxs =
+    // Parse detectors and buffer-stops
+    val trackSectionNameToDistanceSortedDetectorIdxs =
         mutableMapOf<String, TreeMap<Offset<TrackSection>, DetectorId>>()
 
     for (detector in rjsInfra.detectors) {
         parseRjsRouteWaypoint(
             detector,
             builder,
-            trackSectionNameToDistanceSortedWaypointIdxs,
+            trackSectionNameToDistanceSortedDetectorIdxs,
             detectorMap
         )
     }
@@ -327,7 +402,7 @@ fun adaptRawInfra(infra: SignalingInfra, rjsInfra: RJSInfra): SimInfraAdapter {
         parseRjsRouteWaypoint(
             detector,
             builder,
-            trackSectionNameToDistanceSortedWaypointIdxs,
+            trackSectionNameToDistanceSortedDetectorIdxs,
             detectorMap
         )
     }
@@ -343,11 +418,11 @@ fun adaptRawInfra(infra: SignalingInfra, rjsInfra: RJSInfra): SimInfraAdapter {
         val trackSectionBlockedGauges = getBlockedGauge(rjsTrack)
 
         var chunkStartOffset = Offset<TrackSection>(0.meters)
-        val trackSectionDistanceSortedWaypointIdxs =
-            trackSectionNameToDistanceSortedWaypointIdxs[rjsTrack.id] ?: TreeMap()
-        // ignore 0 offset that is a chunk's start
+        val trackSectionDistanceSortedDetectorIdxs =
+            trackSectionNameToDistanceSortedDetectorIdxs[rjsTrack.id] ?: TreeMap()
+        // finalize chunks on any detector that isn't placed at offset=0
         val chunkEndOffsets =
-            trackSectionDistanceSortedWaypointIdxs.keys
+            trackSectionDistanceSortedDetectorIdxs.keys
                 .filter { d -> d.distance != Distance.ZERO }
                 .toMutableList()
         if (chunkEndOffsets.isEmpty() || chunkEndOffsets.last() != trackSectionLength)
@@ -609,17 +684,16 @@ fun adaptRawInfra(infra: SignalingInfra, rjsInfra: RJSInfra): SimInfraAdapter {
             configs.add(
                 TrackNodeConfigDescriptor(
                     group.key,
-                    group.value
-                        .map { connection ->
-                            Pair(portMap[connection.src]!!, portMap[connection.dst]!!)
-                        }
-                        .toList()
+                    group.value.map { Pair(portMap[it.src]!!, portMap[it.dst]!!) }.toList()
                 )
             )
         }
         nodeNameToIdxMap[rjsNode.id] =
             builder.node(rjsNode.id, rjsNode.groupChangeDelay.seconds, ports, configs)
     }
+
+    // process detection zones
+    buildZones(builder, trackSectionNameToDistanceSortedDetectorIdxs)
 
     // TODO: remove this stitching between new way of loading infra directly from railjson and
     // previous way of loading infra
@@ -650,29 +724,6 @@ fun adaptRawInfra(infra: SignalingInfra, rjsInfra: RJSInfra): SimInfraAdapter {
             switchGroups[configs[configIdx].name] = configIdx
         }
         trackNodeGroupsMap[oldSwitch] = switchGroups
-    }
-
-    // create zones
-    fun getOrCreateDet(oldDiDetector: DiDetector): DirDetectorId {
-        val oldDetector = oldDiDetector.detector
-        val detector = oldDetectorMap[oldDetector!!]!!
-        return when (oldDiDetector.direction!!) {
-            Direction.FORWARD -> detector.increasing
-            Direction.BACKWARD -> detector.decreasing
-        }
-    }
-
-    val switchToZone = mutableMapOf<Switch, ZoneId>()
-    for (detectionSection in infra.detectionSections) {
-        val oldSwitches = detectionSection!!.switches!!
-        val oldDiDetectors = detectionSection.detectors!!
-        val switches = mutableStaticIdxArraySetOf<TrackNode>()
-        for (oldSwitch in oldSwitches) switches.add(trackNodeMap[oldSwitch]!!)
-        val detectors = mutableListOf<DirDetectorId>()
-        for (oldDiDetector in oldDiDetectors) detectors.add(getOrCreateDet(oldDiDetector!!))
-        val zoneId = builder.zone(switches, detectors)
-        for (oldSwitch in oldSwitches) switchToZone[oldSwitch] = zoneId
-        zoneMap[detectionSection] = zoneId
     }
 
     // parse signals
@@ -711,6 +762,15 @@ fun adaptRawInfra(infra: SignalingInfra, rjsInfra: RJSInfra): SimInfraAdapter {
 
     // sort signals by tracks
     for (trackSignals in signalsPerTrack.values) trackSignals.sortBy { it.position }
+
+    fun getOrCreateDet(oldDiDetector: DiDetector): DirDetectorId {
+        val oldDetector = oldDiDetector.detector
+        val detector = oldDetectorMap[oldDetector!!]!!
+        return when (oldDiDetector.direction!!) {
+            Direction.FORWARD -> detector.increasing
+            Direction.BACKWARD -> detector.decreasing
+        }
+    }
 
     // translate routes
     for (route in infra.reservationRouteMap.values) {
@@ -772,7 +832,6 @@ fun adaptRawInfra(infra: SignalingInfra, rjsInfra: RJSInfra): SimInfraAdapter {
     val rawInfra =
         SimInfraAdapter(
             builder.build(),
-            zoneMap,
             oldDetectorMap,
             trackNodeMap,
             trackNodeGroupsMap,
@@ -795,7 +854,7 @@ private fun buildZonePath(
     trackNodeGroupsMap: MutableMap<Switch, Map<String, TrackNodeConfigId>>,
     trackChunkMap: MutableMap<UndirectedTrackSection, Map<Distance, TrackChunkId>>,
     signalsPerTrack: Map<String, MutableList<TrackSignal>>,
-    builder: RawInfraBuilder
+    builder: RawInfraFromRjsBuilder
 ): ZonePathId {
     // at this point, we have trackRangeIndex pointing to the track range which contains the entry
     // detector

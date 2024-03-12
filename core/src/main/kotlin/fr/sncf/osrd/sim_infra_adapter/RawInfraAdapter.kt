@@ -4,7 +4,6 @@ import com.google.common.collect.BiMap
 import com.google.common.collect.HashBiMap
 import com.google.common.collect.ImmutableList
 import fr.sncf.osrd.infra.api.Direction
-import fr.sncf.osrd.infra.api.reservation.DetectionSection
 import fr.sncf.osrd.infra.api.reservation.DiDetector
 import fr.sncf.osrd.infra.api.reservation.ReservationRoute
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra
@@ -32,7 +31,6 @@ import fr.sncf.osrd.sim_infra.api.TrackNodeConfigId
 import fr.sncf.osrd.sim_infra.api.TrackNodeId
 import fr.sncf.osrd.sim_infra.api.TrackNodePortId
 import fr.sncf.osrd.sim_infra.api.TrackSectionId
-import fr.sncf.osrd.sim_infra.api.ZoneId
 import fr.sncf.osrd.sim_infra.api.ZonePath
 import fr.sncf.osrd.sim_infra.api.ZonePathId
 import fr.sncf.osrd.sim_infra.api.decreasing
@@ -51,7 +49,6 @@ import fr.sncf.osrd.utils.indexing.DirStaticIdx
 import fr.sncf.osrd.utils.indexing.MutableDirStaticIdxArrayList
 import fr.sncf.osrd.utils.indexing.MutableStaticIdxArrayList
 import fr.sncf.osrd.utils.indexing.StaticIdx
-import fr.sncf.osrd.utils.indexing.mutableStaticIdxArraySetOf
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.MutableOffsetArrayList
@@ -59,12 +56,10 @@ import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import fr.sncf.osrd.utils.units.metersPerSecond
 import kotlin.collections.set
-import kotlin.time.Duration.Companion.ZERO
 import kotlin.time.Duration.Companion.seconds
 
 class SimInfraAdapter(
     val simInfra: RawInfra,
-    val zoneMap: BiMap<DetectionSection, ZoneId>,
     val detectorMap: BiMap<Detector, DetectorId>,
     val trackNodeMap: BiMap<Switch, TrackNodeId>,
     val trackNodeGroupsMap: Map<Switch, Map<String, TrackNodeConfigId>>,
@@ -91,7 +86,6 @@ data class TrackSignal(
 
 fun adaptRawInfra(infra: SignalingInfra): SimInfraAdapter {
     val builder = RawInfraBuilderImpl()
-    val zoneMap = HashBiMap.create<DetectionSection, ZoneId>()
     val detectorMap = HashBiMap.create<Detector, DetectorId>()
     val trackNodeMap = HashBiMap.create<Switch, TrackNodeId>()
     val trackSectionMap = HashBiMap.create<TrackEdge, TrackSectionId>()
@@ -180,17 +174,13 @@ fun adaptRawInfra(infra: SignalingInfra): SimInfraAdapter {
     }
 
     // create zones
-    val switchToZone = mutableMapOf<Switch, ZoneId>()
     for (detectionSection in infra.detectionSections) {
         val oldSwitches = detectionSection!!.switches!!
         val oldDiDetectors = detectionSection.detectors!!
-        val switches = mutableStaticIdxArraySetOf<TrackNode>()
-        for (oldSwitch in oldSwitches) switches.add(trackNodeMap[oldSwitch]!!)
+        val switches = oldSwitches.map { trackNodeMap[it]!! }.toList()
         val detectors = mutableListOf<DirDetectorId>()
         for (oldDiDetector in oldDiDetectors) detectors.add(getOrCreateDet(oldDiDetector!!))
-        val zoneId = builder.zone(switches, detectors)
-        for (oldSwitch in oldSwitches) switchToZone[oldSwitch] = zoneId
-        zoneMap[detectionSection] = zoneId
+        builder.zone(switches, detectors)
     }
 
     // parse signals
@@ -289,7 +279,6 @@ fun adaptRawInfra(infra: SignalingInfra): SimInfraAdapter {
 
     return SimInfraAdapter(
         builder.build(),
-        zoneMap,
         detectorMap,
         trackNodeMap,
         trackNodeGroupsMap,

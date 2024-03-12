@@ -60,6 +60,9 @@ import fr.sncf.osrd.utils.units.metersPerSecond
 import java.util.Objects
 import kotlin.collections.HashMap
 import kotlin.time.Duration
+import mu.KotlinLogging
+
+private val logger = KotlinLogging.logger {}
 
 class TrackNodeConfigDescriptor(
     val name: String,
@@ -225,24 +228,25 @@ class NeutralSection(
 }
 
 class RawInfraImpl(
-    val trackNodePool: StaticPool<TrackNode, TrackNodeDescriptor>,
-    val trackSectionPool: StaticPool<TrackSection, TrackSectionDescriptor>,
-    val trackChunkPool: StaticPool<TrackChunk, TrackChunkDescriptor>,
-    val nodeAtEndpoint: IdxMap<EndpointTrackSectionId, TrackNodeId>,
-    val zonePool: StaticPool<Zone, ZoneDescriptor>,
-    val detectorPool: StaticPool<Detector, String?>,
-    val nextZones: IdxMap<DirDetectorId, ZoneId>,
-    val routeDescriptors: StaticPool<Route, RouteDescriptor>,
-    val logicalSignalPool: StaticPool<LogicalSignal, LogicalSignalDescriptor>,
-    val physicalSignalPool: StaticPool<PhysicalSignal, PhysicalSignalDescriptor>,
-    val zonePathPool: StaticPool<ZonePath, ZonePathDescriptor>,
-    val zonePathMap: Map<ZonePathSpec, ZonePathId>,
-    val operationalPointPartPool: StaticPool<OperationalPointPart, OperationalPointPartDescriptor>,
-    val trackSectionNameMap: Map<String, TrackSectionId>,
-    val routeNameMap: Map<String, RouteId>,
-    val dirDetEntryToRouteMap: Map<DirDetectorId, StaticIdxList<Route>>,
-    val dirDetExitToRouteMap: Map<DirDetectorId, StaticIdxList<Route>>,
-    val zoneNameMap: HashMap<String, ZoneId> = HashMap(),
+    private val trackNodePool: StaticPool<TrackNode, TrackNodeDescriptor>,
+    private val trackSectionPool: StaticPool<TrackSection, TrackSectionDescriptor>,
+    private val trackChunkPool: StaticPool<TrackChunk, TrackChunkDescriptor>,
+    private val nodeAtEndpoint: IdxMap<EndpointTrackSectionId, TrackNodeId>,
+    private val zonePool: StaticPool<Zone, ZoneDescriptor>,
+    private val detectorPool: StaticPool<Detector, String?>,
+    private val nextZones: IdxMap<DirDetectorId, ZoneId>,
+    private val routeDescriptors: StaticPool<Route, RouteDescriptor>,
+    private val logicalSignalPool: StaticPool<LogicalSignal, LogicalSignalDescriptor>,
+    private val physicalSignalPool: StaticPool<PhysicalSignal, PhysicalSignalDescriptor>,
+    private val zonePathPool: StaticPool<ZonePath, ZonePathDescriptor>,
+    private val zonePathMap: Map<ZonePathSpec, ZonePathId>,
+    private val operationalPointPartPool:
+        StaticPool<OperationalPointPart, OperationalPointPartDescriptor>,
+    private val trackSectionNameMap: Map<String, TrackSectionId>,
+    private val routeNameMap: Map<String, RouteId>,
+    private val dirDetEntryToRouteMap: Map<DirDetectorId, StaticIdxList<Route>>,
+    private val dirDetExitToRouteMap: Map<DirDetectorId, StaticIdxList<Route>>,
+    private val zoneNameMap: HashMap<String, ZoneId> = HashMap(),
 ) : RawInfra {
     override val trackNodes: StaticIdxSpace<TrackNode>
         get() = trackNodePool.space()
@@ -390,6 +394,16 @@ class RawInfraImpl(
 
             zonePool[zone].name = "zone.${name}"
             zoneNameMap[zonePool[zone].name] = zone
+        }
+
+        for (zone in zonePool) {
+            if (getZoneBounds(zone).size < 2) {
+                logger.warn {
+                    val detectorNames = getZoneBounds(zone).map { detectorPool[it.value] }
+                    val nodeNames = getMovableElements(zone).map { trackNodePool[it].name }
+                    "Invalid detection zone delimited by detector(s) $detectorNames and containing node(s) $nodeNames"
+                }
+            }
         }
 
         // initialize the physical signal to logical signal map
