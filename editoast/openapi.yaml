@@ -9493,7 +9493,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PathfindingInput'
+              $ref: '#/components/schemas/PathfindingInputV2'
         required: true
       responses:
         '200':

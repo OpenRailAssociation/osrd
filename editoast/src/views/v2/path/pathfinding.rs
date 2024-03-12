@@ -115,7 +115,7 @@ pub struct PathfindingInput {
     params(
         ("infra_id" = i64, Path, description = "The infra id"),
     ),
-    request_body = PathfindingInput,
+    request_body = PathfindingInputV2,
     responses(
         (status = 200, description = "Pathfinding Result", body = PathfindingResult),
     ),
