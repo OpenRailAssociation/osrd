@@ -21,7 +21,7 @@ import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 import { Loader, Spinner } from 'common/Loaders';
 import ScenarioCard from 'modules/scenario/components/ScenarioCard';
 import ScenarioCardEmpty from 'modules/scenario/components/ScenarioCardEmpty';
-import AddOrEditStudyModal, { type StudyForm } from 'modules/study/components/AddOrEditStudyModal';
+import AddOrEditStudyModal from 'modules/study/components/AddOrEditStudyModal';
 import { budgetFormat } from 'utils/numbers';
 
 type SortOptions =
@@ -221,15 +221,7 @@ export default function Study() {
                     type="button"
                     onClick={() =>
                       openModal(
-                        <AddOrEditStudyModal
-                          editionMode
-                          study={
-                            {
-                              ...study,
-                              budget: study.budget !== 0 ? study.budget : undefined,
-                            } as StudyForm
-                          }
-                        />,
+                        <AddOrEditStudyModal editionMode study={study} />,
                         'xl',
                         'no-close-modal'
                       )
@@ -268,7 +260,9 @@ export default function Study() {
                 )}
               </div>
 
-              {(study.service_code || study.business_code || study.budget !== 0) && (
+              {(study.service_code ||
+                study.business_code ||
+                (study.budget !== 0 && study.budget !== null)) && (
                 <div className="study-details-financials">
                   <div className="study-details-financials-infos">
                     {study.service_code && (
@@ -284,12 +278,12 @@ export default function Study() {
                       </div>
                     )}
                   </div>
-                  {study.budget !== 0 && (
+                  {study.budget ? (
                     <div className="study-details-financials-amount">
                       <span className="study-details-financials-amount-text">{t('budget')}</span>
                       {budgetFormat(study.budget)}
                     </div>
-                  )}
+                  ) : null}
                 </div>
               )}
 

@@ -55,7 +55,7 @@ export default function StudyCard({ setFilterChips, study }: StudyCardProps) {
       )}
       <div className="study-card-description">{study.description}</div>
 
-      {(study.budget > 0 || study.service_code || study.business_code) && (
+      {(study.budget !== 0 || study.service_code || study.business_code) && (
         <div className="study-card-financials">
           <div className="study-card-financials-infos">
             {study.service_code && (
@@ -71,12 +71,12 @@ export default function StudyCard({ setFilterChips, study }: StudyCardProps) {
               </div>
             )}
           </div>
-          {study.budget > 0 && (
+          {study.budget ? (
             <div className="study-card-financials-amount">
               <span className="study-card-financials-amount-text">{t('budget')}</span>
               {budgetFormat(study.budget)}
             </div>
-          )}
+          ) : null}
         </div>
       )}
 

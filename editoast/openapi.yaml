@@ -4475,6 +4475,7 @@ components:
       properties:
         budget:
           format: int32
+          nullable: true
           type: integer
         creation_date:
           format: date-time
@@ -4505,7 +4506,6 @@ components:
       - objectives
       - description
       - funders
-      - budget
       - creation_date
       - last_modification
       - tags
@@ -4515,6 +4515,7 @@ components:
       properties:
         budget:
           format: int32
+          nullable: true
           type: integer
         description:
           maxLength: 1024
@@ -5967,6 +5968,7 @@ components:
           type: string
         budget:
           format: int32
+          nullable: true
           type: integer
         business_code:
           type: string
@@ -6010,7 +6012,6 @@ components:
       - service_code
       - creation_date
       - last_modification
-      - budget
       - tags
       - state
       - study_type
@@ -6025,6 +6026,7 @@ components:
           type: string
         budget:
           format: int32
+          nullable: true
           type: integer
         business_code:
           type: string

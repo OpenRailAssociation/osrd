@@ -45,7 +45,7 @@ type StudyParams = {
 
 const emptyStudy: StudyForm = {
   actual_end_date: null,
-  budget: undefined,
+  budget: null,
   business_code: '',
   description: '',
   expected_end_date: null,
@@ -405,12 +405,13 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
                   {t('studyBudget')}
                 </div>
               }
-              value={currentStudy.budget !== undefined ? currentStudy.budget : ''}
+              value={
+                currentStudy.budget !== undefined && currentStudy.budget !== null
+                  ? currentStudy.budget
+                  : ''
+              }
               onChange={(e) =>
-                handleStudyInputChange(
-                  'budget',
-                  e.target.value !== '' ? +e.target.value : undefined
-                )
+                handleStudyInputChange('budget', e.target.value !== '' ? +e.target.value : null)
               }
               textRight
             />

@@ -28,7 +28,7 @@ pub struct Project {
     pub objectives: String,
     pub description: String,
     pub funders: String,
-    pub budget: i32,
+    pub budget: Option<i32>,
     pub creation_date: NaiveDateTime,
     pub last_modification: NaiveDateTime,
     #[model(remote = "Vec<Option<String>>")]
@@ -239,7 +239,7 @@ pub mod test {
         // Patch a project
         let mut project = project_fixture.model.clone();
         project.name = "update_name".into();
-        project.budget = 1000;
+        project.budget = Some(1000);
         project.save(conn).await.unwrap();
         let project = Project::retrieve(conn, project.id).await.unwrap().unwrap();
         assert_eq!(project.name, String::from("update_name"));

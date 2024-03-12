@@ -295,7 +295,7 @@ pub mod tests {
             .service_code("BBB".into())
             .creation_date(Utc::now().naive_utc())
             .last_modification(Utc::now().naive_utc())
-            .budget(0)
+            .budget(Some(0))
             .tags(Tags::default())
             .state("some_state".into())
             .study_type("some_type".into())
@@ -313,7 +313,7 @@ pub mod tests {
             .objectives("".to_owned())
             .description("".to_owned())
             .funders("".to_owned())
-            .budget(0)
+            .budget(Some(0))
             .creation_date(Utc::now().naive_utc())
             .last_modification(Utc::now().naive_utc())
             .tags(Tags::default());

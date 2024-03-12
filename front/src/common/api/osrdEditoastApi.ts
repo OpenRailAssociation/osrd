@@ -1926,7 +1926,7 @@ export type ElectrificationsOnPathResponse = {
 };
 export type Tags = string[];
 export type Project = {
-  budget: number;
+  budget?: number | null;
   creation_date: string;
   description: string;
   funders: string;
@@ -1958,7 +1958,7 @@ export type Ordering =
   | 'LastModifiedDesc'
   | 'LastModifiedAsc';
 export type ProjectCreateForm = {
-  budget?: number;
+  budget?: number | null;
   description?: string;
   funders?: string;
   /** The id of the image document */
@@ -1979,7 +1979,7 @@ export type ProjectPatchForm = {
 };
 export type Study = {
   actual_end_date?: string | null;
-  budget: number;
+  budget?: number | null;
   business_code: string;
   creation_date: string;
   description: string;
@@ -2013,7 +2013,7 @@ export type StudyResponse = Study & {
 };
 export type StudyCreateForm = {
   actual_end_date?: string | null;
-  budget?: number;
+  budget?: number | null;
   business_code?: string;
   description?: string;
   expected_end_date?: string | null;
