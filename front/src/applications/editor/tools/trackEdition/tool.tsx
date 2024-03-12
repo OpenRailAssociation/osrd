@@ -385,10 +385,10 @@ const TrackEditionTool: Tool<TrackEditionState> = {
   },
 
   getCursor({ state }, { isDragging }) {
-    if (isDragging) return 'move';
+    if (isDragging) return 'grabbing';
     if (state.editionState.type === 'addPoint') return 'copy';
     if (state.editionState.type === 'movePoint') {
-      if (typeof state.editionState.draggedPointIndex === 'number') return 'move';
+      if (typeof state.editionState.draggedPointIndex === 'number') return 'grabbing';
       if (typeof state.editionState.hoveredPointIndex === 'number') return 'pointer';
     }
     if (state.editionState.type === 'deletePoint') {
