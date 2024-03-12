@@ -151,7 +151,7 @@ function getPointEditionTool<T extends EditorPoint>({
     // Interactions:
     getCursor({ state }, { isDragging }) {
       if (isDragging || !state.entity.geometry || isEqual(state.entity.geometry, NULL_GEOMETRY))
-        return 'move';
+        return 'grabbing';
       if (state.isHoveringTarget) return 'pointer';
       return 'default';
     },

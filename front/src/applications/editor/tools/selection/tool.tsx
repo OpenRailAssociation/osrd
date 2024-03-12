@@ -283,7 +283,7 @@ const SelectionTool: Tool<SelectionState> = {
 
   // Layers:
   getCursor({ state }, { isDragging }) {
-    if (isDragging) return 'move';
+    if (isDragging) return 'grabbing';
     if (state.selectionState.type === 'single' && state.hovered) return 'pointer';
     if (state.selectionState.type === 'rectangle' || state.selectionState.type === 'polygon')
       return 'crosshair';
