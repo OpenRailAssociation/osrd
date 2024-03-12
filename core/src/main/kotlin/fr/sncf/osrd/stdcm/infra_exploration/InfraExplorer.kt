@@ -9,7 +9,8 @@ import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.utils.PathPropertiesView
 import fr.sncf.osrd.sim_infra.utils.getRouteBlocks
 import fr.sncf.osrd.sim_infra.utils.routesOnBlock
-import fr.sncf.osrd.utils.indexing.MutableStaticIdxArrayList
+import fr.sncf.osrd.utils.AppendOnlyLinkedList
+import fr.sncf.osrd.utils.appendOnlyLinkedListOf
 import fr.sncf.osrd.utils.indexing.StaticIdxList
 import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
 import fr.sncf.osrd.utils.units.Distance
@@ -78,7 +79,7 @@ interface InfraExplorer {
     fun getPredecessorLength(): Length<Path>
 
     /** Returns all the blocks before the current one */
-    fun getPredecessorBlocks(): StaticIdxList<Block>
+    fun getPredecessorBlocks(): AppendOnlyLinkedList<BlockId>
 
     /** Returns all the blocks after the current one */
     fun getLookahead(): StaticIdxList<Block>
@@ -115,8 +116,8 @@ fun initInfraExplorer(
             InfraExplorerImpl(
                 rawInfra,
                 blockInfra,
-                mutableStaticIdxArrayListOf(),
-                mutableStaticIdxArrayListOf(),
+                appendOnlyLinkedListOf(),
+                appendOnlyLinkedListOf(),
                 incrementalPath,
                 blockToPathProperties,
                 endBlocks = endBlocks
@@ -130,13 +131,14 @@ fun initInfraExplorer(
 private class InfraExplorerImpl(
     private val rawInfra: RawInfra,
     private val blockInfra: BlockInfra,
-    private var blocks: MutableStaticIdxArrayList<Block>,
-    private var routes: MutableStaticIdxArrayList<Route>,
+    private var blocks: AppendOnlyLinkedList<BlockId>,
+    private var routes: AppendOnlyLinkedList<RouteId>,
     private var incrementalPath: IncrementalPath,
     private var pathPropertiesCache: MutableMap<BlockId, PathProperties>,
     private var currentIndex: Int = 0,
     private val endBlocks:
         Collection<BlockId>, // Blocks on which "end of path" should be set to true
+    private var predecessorLength: Length<Path> = Length(0.meters) // to avoid re-computing it
 ) : InfraExplorer {
 
     override fun getIncrementalPath(): IncrementalPath {
@@ -186,6 +188,7 @@ private class InfraExplorerImpl(
         assert(currentIndex < blocks.size - 1) {
             "Infra Explorer: Current edge is already the last edge: can't move forward."
         }
+        predecessorLength += getCurrentBlockLength().distance
         currentIndex += 1
         return this
     }
@@ -200,15 +203,11 @@ private class InfraExplorerImpl(
     }
 
     override fun getPredecessorLength(): Length<Path> {
-        var res = Length<Path>(0.meters)
-        for (i in 0 ..< currentIndex) res += blockInfra.getBlockLength(blocks[i]).distance
-        return res
+        return predecessorLength
     }
 
-    override fun getPredecessorBlocks(): StaticIdxList<Block> {
-        val res = mutableStaticIdxArrayListOf<Block>()
-        for (i in 0 ..< currentIndex) res.add(blocks[i])
-        return res
+    override fun getPredecessorBlocks(): AppendOnlyLinkedList<BlockId> {
+        return blocks.subList(currentIndex)
     }
 
     override fun getLookahead(): StaticIdxList<Block> {
@@ -221,12 +220,13 @@ private class InfraExplorerImpl(
         return InfraExplorerImpl(
             this.rawInfra,
             this.blockInfra,
-            this.blocks.clone(),
-            this.routes.clone(),
+            this.blocks.shallowCopy(),
+            this.routes.shallowCopy(),
             this.incrementalPath.clone(),
             this.pathPropertiesCache,
             this.currentIndex,
             this.endBlocks,
+            this.predecessorLength,
         )
     }
 

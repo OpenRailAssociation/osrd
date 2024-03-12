@@ -12,6 +12,7 @@ import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.sim_infra.api.Path
 import fr.sncf.osrd.standalone_sim.result.ResultTrain
 import fr.sncf.osrd.train.RollingStock
+import fr.sncf.osrd.utils.appendOnlyLinkedListOf
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
 
@@ -79,7 +80,7 @@ fun initInfraExplorerWithEnvelope(
         .map { explorer ->
             InfraExplorerWithEnvelopeImpl(
                 explorer,
-                mutableListOf(),
+                appendOnlyLinkedListOf(),
                 SpacingRequirementAutomaton(
                     fullInfra.rawInfra,
                     fullInfra.loadedSignalInfra,
@@ -102,7 +103,7 @@ fun InfraExplorer.withEnvelope(
 ): InfraExplorerWithEnvelope {
     return InfraExplorerWithEnvelopeImpl(
         this,
-        mutableListOf(EnvelopeConcat.LocatedEnvelope(envelope, 0.0, 0.0)),
+        appendOnlyLinkedListOf(EnvelopeConcat.LocatedEnvelope(envelope, 0.0, 0.0)),
         SpacingRequirementAutomaton(
             fullInfra.rawInfra,
             fullInfra.loadedSignalInfra,
