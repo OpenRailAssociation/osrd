@@ -6,7 +6,6 @@ import com.google.common.collect.Sets
 import com.google.common.primitives.Doubles
 import fr.sncf.osrd.geom.LineString
 import fr.sncf.osrd.infra.api.Direction
-import fr.sncf.osrd.infra.api.reservation.DetectionSection
 import fr.sncf.osrd.infra.api.reservation.DiDetector
 import fr.sncf.osrd.infra.api.reservation.ReservationRoute
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra
@@ -46,7 +45,6 @@ import fr.sncf.osrd.sim_infra.api.TrackNodePort
 import fr.sncf.osrd.sim_infra.api.TrackNodePortId
 import fr.sncf.osrd.sim_infra.api.TrackSection
 import fr.sncf.osrd.sim_infra.api.TrackSectionId
-import fr.sncf.osrd.sim_infra.api.ZoneId
 import fr.sncf.osrd.sim_infra.api.ZonePath
 import fr.sncf.osrd.sim_infra.api.ZonePathId
 import fr.sncf.osrd.sim_infra.api.decreasing
@@ -63,6 +61,7 @@ import fr.sncf.osrd.utils.DirectionalMap
 import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.DistanceRangeMapImpl
 import fr.sncf.osrd.utils.Endpoint
+import fr.sncf.osrd.utils.UnionFind
 import fr.sncf.osrd.utils.assertEqualSimInfra
 import fr.sncf.osrd.utils.distanceRangeMapOf
 import fr.sncf.osrd.utils.indexing.DirStaticIdx
@@ -71,6 +70,7 @@ import fr.sncf.osrd.utils.indexing.MutableStaticIdxArrayList
 import fr.sncf.osrd.utils.indexing.StaticPool
 import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
 import fr.sncf.osrd.utils.indexing.mutableStaticIdxArraySetOf
+import fr.sncf.osrd.utils.indexing.staticIdxArraySetOf
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.MutableOffsetArrayList
@@ -295,7 +295,6 @@ private fun parseRjsRouteWaypoint(
 
 fun adaptRawInfra(infra: SignalingInfra, rjsInfra: RJSInfra): SimInfraAdapter {
     val builder = RawInfraFromRjsBuilderImpl()
-    val zoneMap = HashBiMap.create<DetectionSection, ZoneId>()
     // TODO: check if this can be remove once stitching is useless
     val detectorMap: MutableMap<String, DetectorId> = mutableMapOf()
     // TODO: remove this once stitching is useless
@@ -621,6 +620,93 @@ fun adaptRawInfra(infra: SignalingInfra, rjsInfra: RJSInfra): SimInfraAdapter {
             builder.node(rjsNode.id, rjsNode.groupChangeDelay.seconds, ports, configs)
     }
 
+    // process detection zones
+
+    // run a union-find to associate track endpoints
+    // union by node
+    val uf = UnionFind(rjsInfra.trackSections.size * 2) // TODO: use sections from builder?
+    for (nodeIdx in builder.getTrackNodePool()) { // TODO: move to builder?
+        val node = builder.getTrackNodePool()[nodeIdx]
+        var firstEndpoint: EndpointTrackSectionId? = null
+        for (port in node.ports) {
+            val endpoint = node.ports[port]
+            if (firstEndpoint == null) {
+                firstEndpoint = endpoint
+            } else {
+                uf.union(firstEndpoint.index.toInt(), endpoint.index.toInt())
+            }
+        }
+    }
+    // union by track-section without waypoint
+    for (trackSectionIdx in builder.getTrackSectionPool()) {
+        val waypoints =
+            trackSectionNameToDistanceSortedWaypointIdxs[
+                builder.getTrackSectionPool()[trackSectionIdx].name]
+        if (waypoints.isNullOrEmpty()) {
+            val startEndpoint = EndpointTrackSectionId(trackSectionIdx, Endpoint.START)
+            val endEndpoint = EndpointTrackSectionId(trackSectionIdx, Endpoint.END)
+            uf.union(startEndpoint.index.toInt(), endEndpoint.index.toInt())
+        }
+    }
+
+    // now that union-find is complete, create detection zones
+    val zoneRootToNodesAndDirDetectors =
+        mutableMapOf<Int, Pair<MutableSet<TrackNodeId>, MutableSet<DirDetectorId>>>()
+    for (trackSectionIdx in builder.getTrackSectionPool()) {
+        val waypoints =
+            trackSectionNameToDistanceSortedWaypointIdxs[
+                builder.getTrackSectionPool()[trackSectionIdx].name]
+
+        // prepare "node" detection zones
+        for (endpoint in Endpoint.entries) {
+            val trackSectionEndpoint = EndpointTrackSectionId(trackSectionIdx, endpoint)
+            val node = builder.getNodeAtEndpoint(trackSectionEndpoint) ?: continue
+
+            val zoneRoot = uf.findRoot(trackSectionEndpoint.index.toInt())
+            if (!zoneRootToNodesAndDirDetectors.containsKey(zoneRoot)) {
+                zoneRootToNodesAndDirDetectors[zoneRoot] = Pair(mutableSetOf(), mutableSetOf())
+            }
+
+            val (nodeSet, dirDetectorSet) = zoneRootToNodesAndDirDetectors[zoneRoot]!!
+            nodeSet.add(node)
+            if (!waypoints.isNullOrEmpty()) {
+                val dirDetector =
+                    if (endpoint == Endpoint.START) waypoints.firstEntry().value.decreasing
+                    else waypoints.lastEntry().value.increasing
+                dirDetectorSet.add(dirDetector)
+            }
+        }
+
+        // create detection zones inside a track-section
+        if (waypoints == null || waypoints.size < 2) continue
+        val waypointsIterator = waypoints.values.iterator()
+        var currentWaypointIdx = waypointsIterator.next()
+        var previousWaypointIdx = currentWaypointIdx
+        while (waypointsIterator.hasNext()) {
+            currentWaypointIdx = waypointsIterator.next()
+            builder.zone(
+                staticIdxArraySetOf(),
+                listOf(previousWaypointIdx.increasing, currentWaypointIdx.decreasing)
+            )
+            previousWaypointIdx = currentWaypointIdx
+        }
+    }
+    // create "node" detection zones
+    for ((nodeSet, dirDetectorSet) in zoneRootToNodesAndDirDetectors.values) {
+        if (dirDetectorSet.size < 2) {
+            val detectors = dirDetectorSet.map { builder.getDetectorPool()[it.value] }
+            val nodes = nodeSet.map { builder.getTrackNodePool()[it].name }
+            logger.warn(
+                "Invalid detection zone delimited by detector(s) $detectors and containing node(s) $nodes"
+            )
+            continue
+        }
+
+        val nodes = mutableStaticIdxArraySetOf<TrackNode>()
+        nodes.addAll(nodeSet)
+        builder.zone(nodes, dirDetectorSet.toList())
+    }
+
     // TODO: remove this stitching between new way of loading infra directly from railjson and
     // previous way of loading infra
     for (edge in infra.trackGraph.edges()) {
@@ -650,29 +736,6 @@ fun adaptRawInfra(infra: SignalingInfra, rjsInfra: RJSInfra): SimInfraAdapter {
             switchGroups[configs[configIdx].name] = configIdx
         }
         trackNodeGroupsMap[oldSwitch] = switchGroups
-    }
-
-    // create zones
-    fun getOrCreateDet(oldDiDetector: DiDetector): DirDetectorId {
-        val oldDetector = oldDiDetector.detector
-        val detector = oldDetectorMap[oldDetector!!]!!
-        return when (oldDiDetector.direction!!) {
-            Direction.FORWARD -> detector.increasing
-            Direction.BACKWARD -> detector.decreasing
-        }
-    }
-
-    val switchToZone = mutableMapOf<Switch, ZoneId>()
-    for (detectionSection in infra.detectionSections) {
-        val oldSwitches = detectionSection!!.switches!!
-        val oldDiDetectors = detectionSection.detectors!!
-        val switches = mutableStaticIdxArraySetOf<TrackNode>()
-        for (oldSwitch in oldSwitches) switches.add(trackNodeMap[oldSwitch]!!)
-        val detectors = mutableListOf<DirDetectorId>()
-        for (oldDiDetector in oldDiDetectors) detectors.add(getOrCreateDet(oldDiDetector!!))
-        val zoneId = builder.zone(switches, detectors)
-        for (oldSwitch in oldSwitches) switchToZone[oldSwitch] = zoneId
-        zoneMap[detectionSection] = zoneId
     }
 
     // parse signals
@@ -711,6 +774,15 @@ fun adaptRawInfra(infra: SignalingInfra, rjsInfra: RJSInfra): SimInfraAdapter {
 
     // sort signals by tracks
     for (trackSignals in signalsPerTrack.values) trackSignals.sortBy { it.position }
+
+    fun getOrCreateDet(oldDiDetector: DiDetector): DirDetectorId {
+        val oldDetector = oldDiDetector.detector
+        val detector = oldDetectorMap[oldDetector!!]!!
+        return when (oldDiDetector.direction!!) {
+            Direction.FORWARD -> detector.increasing
+            Direction.BACKWARD -> detector.decreasing
+        }
+    }
 
     // translate routes
     for (route in infra.reservationRouteMap.values) {
@@ -772,7 +844,6 @@ fun adaptRawInfra(infra: SignalingInfra, rjsInfra: RJSInfra): SimInfraAdapter {
     val rawInfra =
         SimInfraAdapter(
             builder.build(),
-            zoneMap,
             oldDetectorMap,
             trackNodeMap,
             trackNodeGroupsMap,

@@ -92,6 +92,21 @@ class RawInfraFromRjsBuilderImpl : RawInfraBuilder {
         return trackNodePool
     }
 
+    // TODO remove this
+    fun getTrackSectionPool(): StaticPool<TrackSection, TrackSectionDescriptor> {
+        return trackSectionPool
+    }
+
+    // TODO remove this
+    fun getNodeAtEndpoint(trackSectionEndpoint: EndpointTrackSectionId): TrackNodeId? {
+        return nodeAtEndpoint[trackSectionEndpoint]
+    }
+
+    // TODO remove this
+    fun getDetectorPool(): StaticPool<Detector, String?> {
+        return detectorPool
+    }
+
     private fun getTrackSectionIdx(name: String): TrackSectionId {
         return trackSectionNameToIdxMap[name]
             ?: throw OSRDError.newInfraLoadingError(
