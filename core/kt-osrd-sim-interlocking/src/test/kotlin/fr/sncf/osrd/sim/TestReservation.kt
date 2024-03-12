@@ -6,7 +6,7 @@ import fr.sncf.osrd.sim.interlocking.api.ZoneReservationStatus.*
 import fr.sncf.osrd.sim.interlocking.api.ZoneState
 import fr.sncf.osrd.sim.interlocking.impl.*
 import fr.sncf.osrd.sim_infra.api.*
-import fr.sncf.osrd.sim_infra.impl.RawInfraFromRjsBuilderImpl
+import fr.sncf.osrd.sim_infra.impl.RawInfraFromRjsBuilder
 import fr.sncf.osrd.utils.indexing.MutableArena
 import fr.sncf.osrd.utils.indexing.StaticPool
 import fr.sncf.osrd.utils.indexing.mutableArenaMap
@@ -38,7 +38,7 @@ class TestReservation {
             //  <-- reverse     normal -->
 
             // region build the test infrastructure
-            val builder = RawInfraFromRjsBuilderImpl()
+            val builder = RawInfraFromRjsBuilder()
             val switch = builder.node("A", ZERO, StaticPool(), StaticPool())
 
             val zoneA = builder.zone(listOf())

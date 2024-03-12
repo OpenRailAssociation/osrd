@@ -41,7 +41,7 @@ value class OptStaticIdx<T>(private val data: UInt) {
 
 @JvmInline
 value class EndpointStaticIdx<T>(val data: UInt) : NumIdx {
-    public constructor(
+    constructor(
         value: StaticIdx<T>,
         endpoint: Endpoint
     ) : this(
@@ -142,6 +142,12 @@ value class StaticPool<IndexT, ValueT>(private val items: MutableList<ValueT>) :
 
     override fun iterator(): StaticIdxIterator<IndexT> {
         return StaticIdxSpaceIterator(items.size.toUInt())
+    }
+
+    fun <NewValueT> map(f: (ValueT) -> NewValueT): StaticPool<IndexT, NewValueT> {
+        val result = mutableListOf<NewValueT>()
+        for (it in items) result.add(f(it))
+        return StaticPool(result)
     }
 }
 
