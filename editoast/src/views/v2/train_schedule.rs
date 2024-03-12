@@ -1,15 +1,21 @@
-use std::collections::HashSet;
-
+use crate::core::CoreClient;
 use crate::error::Result;
+use crate::models::RoutingRequirement;
+use crate::models::SpacingRequirement;
 use crate::modelsv2::train_schedule::{TrainSchedule, TrainScheduleChangeset};
 use crate::modelsv2::Model;
-use crate::schema::v2::trainschedule::{Distribution, TrainScheduleBase};
-use crate::DbPool;
-use actix_web::web::{Data, Json, Path};
+use crate::schema::utils::Identifier;
+use crate::schema::v2::trainschedule::Distribution;
+use crate::schema::v2::trainschedule::TrainScheduleBase;
+
+use crate::{DbPool, RedisClient};
+use actix_web::web::{Data, Json, Path, Query};
 use actix_web::{delete, get, post, put, HttpResponse};
 use editoast_derive::EditoastError;
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
+use serde_qs::actix::QsQuery;
+use std::collections::{HashMap, HashSet};
 use thiserror::Error;
 use utoipa::{IntoParams, ToSchema};
 
@@ -17,9 +23,12 @@ crate::routes! {
     "/v2/train_schedule" => {
         post,
         delete,
+        simulations_summary,
+        project_path,
         "/{id}" => {
             get,
             put,
+            simulation_output,
         }
     },
 }
@@ -30,6 +39,12 @@ crate::schemas! {
     TrainScheduleForm,
     TrainScheduleResult,
     BatchDeletionRequest,
+    SimulationOutput,
+    ProjectPathParams,
+    ProjectPathResult,
+    SimulationSummaryResultResponse,
+    CompleteReportTrain,
+    ReportTrain,
 }
 
 #[derive(Debug, Error, EditoastError)]
@@ -218,6 +233,241 @@ async fn put(
         .await?;
 
     Ok(Json(ts_result.into()))
+}
+
+#[derive(Deserialize, Serialize, Clone, Debug, ToSchema)]
+struct SimulationOutput {
+    base: ReportTrain,
+    provisional: ReportTrain,
+    final_output: CompleteReportTrain,
+    mrsp: Mrsp,
+    power_restriction: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
+pub struct SignalSighting {
+    pub signal: String,
+    pub time: f64,
+    pub position: u64,
+    pub state: String,
+}
+
+#[derive(Deserialize, Serialize, Clone, Debug, ToSchema)]
+#[schema(as = ReportTrainV2)]
+struct ReportTrain {
+    // List of positions of a train
+    // Both positions and times must have the same length
+    positions: Vec<u64>,
+    times: Vec<f64>,
+    // List of speeds associated to a position
+    speeds: Vec<f64>,
+    energy_consumption: f64,
+}
+
+#[derive(Deserialize, Serialize, Clone, Debug, ToSchema)]
+struct CompleteReportTrain {
+    #[serde(flatten)]
+    report_train: ReportTrain,
+    signal_sightings: Vec<SignalSighting>,
+    zone_updates: Vec<ZoneUpdate>,
+    spacing_requirements: Vec<SpacingRequirement>,
+    routing_requirements: Vec<RoutingRequirement>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
+pub struct ZoneUpdate {
+    pub zone: String,
+    pub time: f64,
+    pub position: u64,
+    // TODO: see https://github.com/DGEXSolutions/osrd/issues/4294
+    #[serde(rename = "isEntry")]
+    pub is_entry: bool,
+}
+
+/// A MRSP computation result (Most Restrictive Speed Profile)
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, ToSchema)]
+pub struct Mrsp(pub Vec<MrspPoint>);
+
+/// An MRSP point
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
+pub struct MrspPoint {
+    /// Relative position of the point on its path (in milimeters)
+    pub position: u64,
+    /// Speed limit at this point (in m/s)
+    pub speed: f64,
+}
+
+/// Retrieve the space, speed and time curve of a given train
+#[utoipa::path(
+    tag = "train_schedulev2",
+    params(
+        ("infra_id" = i64, Path, description = "The infra id"),
+    ),
+    responses(
+        (status = 200, description = "Simulation Output", body = SimulationOutput),
+    ),
+)]
+#[get("/simulation")]
+pub async fn simulation_output(
+    _db_pool: Data<DbPool>,
+    _redis_client: Data<RedisClient>,
+    _train_schedule_id: Path<i64>,
+    _params: Query<i64>,
+) -> Result<Json<SimulationOutput>> {
+    // IMPLEMENT THIS FUNCTION
+    // issue: https://github.com/osrd-project/osrd/issues/6853
+
+    Ok(Json(SimulationOutput {
+        base: ReportTrain {
+            speeds: vec![10.0, 27.0],
+            positions: vec![20, 50],
+            times: vec![27.5, 35.5],
+            energy_consumption: 100.0,
+        },
+        provisional: ReportTrain {
+            speeds: vec![10.0, 27.0],
+            positions: vec![20, 50],
+            times: vec![27.5, 35.5],
+            energy_consumption: 100.0,
+        },
+        final_output: CompleteReportTrain {
+            report_train: ReportTrain {
+                speeds: vec![10.0, 27.0],
+                positions: vec![2000, 5000],
+                times: vec![27.5, 35.5],
+                energy_consumption: 100.0,
+            },
+            signal_sightings: vec![SignalSighting {
+                signal: "signal.0".into(),
+                time: 28.0,
+                position: 3000,
+                state: "VL".into(),
+            }],
+            zone_updates: vec![ZoneUpdate {
+                zone: "zone.0".into(),
+                time: 28.0,
+                position: 3000,
+                is_entry: true,
+            }],
+            spacing_requirements: vec![SpacingRequirement {
+                zone: "zone.0".into(),
+                begin_time: 30.0,
+                end_time: 35.5,
+            }],
+            routing_requirements: vec![RoutingRequirement {
+                route: "route.0".into(),
+                begin_time: 32.0,
+                zones: vec![],
+            }],
+        },
+        mrsp: Mrsp(vec![]),
+        power_restriction: "".into(),
+    }))
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema, IntoParams)]
+struct ProjectPathParams {
+    infra: i64,
+    train_ids: Vec<i64>,
+}
+
+/// Project path output is described by time-space points and blocks
+#[derive(Debug, Deserialize, Serialize, ToSchema)]
+pub struct ProjectPathResult {
+    // List of positions of a train
+    // Both positions and times must have the same length
+    positions: Vec<u64>,
+    // List of times associated to a position
+    times: Vec<f64>,
+    // List of blocks that are in the path
+    blocks: Vec<SignalUpdate>,
+}
+
+#[derive(Debug, Serialize, Deserialize, PartialEq, ToSchema)]
+pub struct SignalUpdate {
+    /// The id of the updated signal
+    pub signal_id: String,
+    /// The aspects start being displayed at this time (number of seconds since 1970-01-01T00:00:00)
+    pub time_start: f64,
+    /// The aspects stop being displayed at this time (number of seconds since 1970-01-01T00:00:00)
+    #[schema(required)]
+    pub time_end: Option<f64>,
+    /// The route starts at this position on the train path
+    pub position_start: u64,
+    /// The route ends at this position on the train path
+    #[schema(required)]
+    pub position_end: Option<u64>,
+    /// The color of the aspect
+    /// (Bits 24-31 are alpha, 16-23 are red, 8-15 are green, 0-7 are blue)
+    pub color: i32,
+    /// Whether the signal is blinking
+    pub blinking: bool,
+    /// The labels of the new aspect
+    pub aspect_label: String,
+}
+
+/// Projects the space time curves and paths of a number of train schedules onto a given path
+/// Params are the infra_id and a list of train_ids
+#[utoipa::path(
+    tag = "train_schedulev2",
+    params(ProjectPathParams),
+    responses(
+        (status = 200, description = "Project Path Output", body = HashMap<Identifier, ProjectPathResult>),
+    ),
+)]
+#[post("/project_path")]
+pub async fn project_path(
+    _db_pool: Data<DbPool>,
+    _redis_client: Data<RedisClient>,
+    _params: QsQuery<ProjectPathParams>,
+    _core_client: Data<CoreClient>,
+) -> Result<Json<HashMap<Identifier, ProjectPathResult>>> {
+    // TO DO
+    // issue: https://github.com/osrd-project/osrd/issues/6858
+    Ok(Json(HashMap::new()))
+}
+
+#[derive(Debug, Serialize, ToSchema)]
+enum SimulationSummaryResultResponse {
+    // Minimal information on a simulation's result
+    #[allow(dead_code)]
+    Success {
+        // Length of a path
+        length: u64,
+        // travel time
+        time: f64,
+        energy_consumption: f64,
+    },
+    // Pathfinding not found for a train id
+    #[allow(dead_code)]
+    PathfindingNotFound,
+    // Running time not found or a train id
+    #[allow(dead_code)]
+    RunningTimeNotFound,
+}
+
+/// Retrieve simulation information for a given train list.
+/// Useful for finding out whether pathfinding/simulation was successful.
+#[utoipa::path(
+    tag = "train_schedulev2",
+    params(ProjectPathParams,
+    ("infra_id" = i64, Path, description = "The infra id")),
+    responses(
+        (status = 200, description = "Project Path Output", body = HashMap<Identifier, SimulationSummaryResultResponse>),
+    ),
+)]
+#[get("/simulation_summary")]
+pub async fn simulations_summary(
+    _db_pool: Data<DbPool>,
+    _redis_client: Data<RedisClient>,
+    _params: QsQuery<ProjectPathParams>,
+    _core_client: Data<CoreClient>,
+    _infra_id: Query<i64>,
+) -> Result<Json<HashMap<Identifier, SimulationSummaryResultResponse>>> {
+    // TO DO
+    // issue:x https://github.com/osrd-project/osrd/issues/6857
+    Ok(Json(HashMap::new()))
 }
 
 #[cfg(test)]
