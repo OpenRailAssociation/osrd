@@ -240,20 +240,20 @@ export default function Project() {
                   </div>
                 </div>
               </div>
-              {(project.funders || (project.budget !== undefined && project.budget !== 0)) && (
+              {(project.funders || (project.budget !== 0 && project.budget !== null)) && (
                 <div className="project-details-financials">
                   <div className="project-details-financials-infos">
                     <h3>{t('fundedBy')}</h3>
                     {project.funders && <div>{project.funders}</div>}
                   </div>
-                  {project.budget !== undefined && project.budget !== 0 && (
+                  {project.budget ? (
                     <div className="project-details-financials-amount">
                       <span className="project-details-financials-amount-text">
                         {t('totalBudget')}
                       </span>
                       {budgetFormat(project.budget)}
                     </div>
-                  )}
+                  ) : null}
                 </div>
               )}
               <div className="project-details-tags">

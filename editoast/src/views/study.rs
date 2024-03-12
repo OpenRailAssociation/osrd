@@ -74,8 +74,7 @@ struct StudyCreateForm {
     pub business_code: String,
     #[serde(default)]
     pub service_code: String,
-    #[serde(default)]
-    pub budget: i32,
+    pub budget: Option<i32>,
     #[serde(default)]
     pub tags: Tags,
     pub state: String,
@@ -328,7 +327,7 @@ impl StudyPatchForm {
             .flat_start_date(Some(self.start_date))
             .flat_expected_end_date(Some(self.expected_end_date))
             .flat_actual_end_date(Some(self.actual_end_date))
-            .flat_budget(self.budget)
+            .flat_budget(Some(self.budget))
             .flat_tags(self.tags)
             .flat_state(self.state)
             .flat_study_type(self.study_type);

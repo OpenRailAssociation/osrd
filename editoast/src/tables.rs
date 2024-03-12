@@ -402,7 +402,7 @@ diesel::table! {
         description -> Varchar,
         #[max_length = 255]
         funders -> Varchar,
-        budget -> Int4,
+        budget -> Nullable<Int4>,
         creation_date -> Timestamptz,
         last_modification -> Timestamptz,
         tags -> Array<Nullable<Text>>,
@@ -612,7 +612,7 @@ diesel::table! {
         start_date -> Nullable<Date>,
         expected_end_date -> Nullable<Date>,
         actual_end_date -> Nullable<Date>,
-        budget -> Int4,
+        budget -> Nullable<Int4>,
         tags -> Array<Nullable<Text>>,
         #[max_length = 16]
         state -> Varchar,

@@ -34,7 +34,7 @@ import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
 import useOutsideClick from 'utils/hooks/useOutsideClick';
 
 const emptyProject: ProjectCreateForm = {
-  budget: undefined,
+  budget: null,
   description: '',
   funders: '',
   image: null,
@@ -384,12 +384,13 @@ export default function AddOrEditProjectModal({
                   {t('projectBudget')}
                 </div>
               }
-              value={currentProject.budget !== undefined ? currentProject.budget : ''}
+              value={
+                currentProject.budget !== undefined && currentProject.budget !== null
+                  ? currentProject.budget
+                  : ''
+              }
               onChange={(e) =>
-                handleProjectInputChange(
-                  'budget',
-                  e.target.value !== '' ? +e.target.value : undefined
-                )
+                handleProjectInputChange('budget', e.target.value !== '' ? +e.target.value : null)
               }
               textRight
             />

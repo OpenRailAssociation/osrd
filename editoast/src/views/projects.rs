@@ -76,8 +76,7 @@ struct ProjectCreateForm {
     #[serde(default)]
     #[schema(max_length = 1024)]
     pub funders: String,
-    #[serde(default)]
-    pub budget: i32,
+    pub budget: Option<i32>,
     /// The id of the image document
     pub image: Option<i64>,
     #[serde(default)]
@@ -269,7 +268,7 @@ impl From<ProjectPatchForm> for Changeset<Project> {
             .flat_description(project.description)
             .flat_objectives(project.objectives)
             .flat_funders(project.funders)
-            .flat_budget(project.budget)
+            .flat_budget(Some(project.budget))
             .flat_image(Some(project.image))
             .flat_tags(project.tags)
     }

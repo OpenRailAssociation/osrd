@@ -31,7 +31,7 @@ pub struct Study {
     pub start_date: Option<NaiveDate>,
     pub expected_end_date: Option<NaiveDate>,
     pub actual_end_date: Option<NaiveDate>,
-    pub budget: i32,
+    pub budget: Option<i32>,
     #[model(remote = "Vec<Option<String>>")]
     pub tags: Tags,
     pub state: String,
