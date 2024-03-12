@@ -743,7 +743,7 @@ const injectedRtkApi = api
         query: (queryArg) => ({
           url: `/v2/infra/${queryArg.infraId}/pathfinding/blocks/`,
           method: 'POST',
-          body: queryArg.pathfindingInput,
+          body: queryArg.pathfindingInputV2,
         }),
         invalidatesTags: ['pathfindingv2'],
       }),
@@ -1456,7 +1456,7 @@ export type PostV2InfraByInfraIdPathfindingBlocksApiResponse =
 export type PostV2InfraByInfraIdPathfindingBlocksApiArg = {
   /** The infra id */
   infraId: number;
-  pathfindingInput: PathfindingInput;
+  pathfindingInputV2: PathfindingInputV2;
 };
 export type GetV2TimetableApiResponse =
   /** status 200 List timetables */ PaginatedResponseOfTimetable;
@@ -2800,6 +2800,34 @@ export type PathfindingResult =
   | {
       status: 'not_enough_path_items';
     };
+export type PathfindingInputV2 = {
+  /** List of waypoints given to the pathfinding */
+  path_items: (
+    | TrackOffset
+    | {
+        operational_point: string;
+      }
+    | {
+        /** An optional secondary code to identify a more specific location */
+        secondary_code?: string | null;
+        trigram: string;
+      }
+    | {
+        /** An optional secondary code to identify a more specific location */
+        secondary_code?: string | null;
+        /** The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point */
+        uic: number;
+      }
+  )[];
+  /** Can the rolling stock run on non-electrified tracks */
+  rolling_stock_is_thermal: boolean;
+  rolling_stock_loading_gauge: LoadingGaugeType;
+  /** List of supported electrification modes.
+    Empty if does not support any electrification */
+  rolling_stock_supported_electrification: string[];
+  /** List of supported signaling systems */
+  rolling_stock_supported_signaling_systems: string[];
+};
 export type TimetableResult = {
   electrical_profile_set_id?: number | null;
   id: number;
