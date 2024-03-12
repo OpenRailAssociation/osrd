@@ -90,6 +90,32 @@ components:
       maxItems: 2
       minItems: 2
       type: array
+    CompleteReportTrain:
+      allOf:
+      - $ref: '#/components/schemas/ReportTrain'
+      - properties:
+          routing_requirements:
+            items:
+              $ref: '#/components/schemas/RoutingRequirement'
+            type: array
+          signal_sightings:
+            items:
+              $ref: '#/components/schemas/SignalSighting'
+            type: array
+          spacing_requirements:
+            items:
+              $ref: '#/components/schemas/SpacingRequirement'
+            type: array
+          zone_updates:
+            items:
+              $ref: '#/components/schemas/ZoneUpdate'
+            type: array
+        required:
+        - signal_sightings
+        - zone_updates
+        - spacing_requirements
+        - routing_requirements
+        type: object
     ConditionalEffortCurve:
       additionalProperties: false
       properties:
@@ -134,6 +160,32 @@ components:
       - Spacing
       - Routing
       type: string
+    ConflictV2:
+      properties:
+        conflict_type:
+          $ref: '#/components/schemas/ConflictType'
+        end_time:
+          format: date-time
+          type: string
+        start_time:
+          format: date-time
+          type: string
+        train_ids:
+          items:
+            format: int64
+            type: integer
+          type: array
+        train_names:
+          items:
+            type: string
+          type: array
+      required:
+      - train_ids
+      - train_names
+      - start_time
+      - end_time
+      - conflict_type
+      type: object
     Curve:
       properties:
         position:
@@ -4571,6 +4623,43 @@ components:
           - $ref: '#/components/schemas/Tags'
           nullable: true
       type: object
+    ProjectPathParams:
+      properties:
+        infra:
+          format: int64
+          type: integer
+        train_ids:
+          items:
+            format: int64
+            type: integer
+          type: array
+      required:
+      - infra
+      - train_ids
+      type: object
+    ProjectPathResult:
+      description: Project path output is described by time-space points and blocks
+      properties:
+        blocks:
+          items:
+            $ref: '#/components/schemas/SignalUpdate'
+          type: array
+        positions:
+          items:
+            format: int64
+            minimum: 0
+            type: integer
+          type: array
+        times:
+          items:
+            format: double
+            type: number
+          type: array
+      required:
+      - positions
+      - times
+      - blocks
+      type: object
     ProjectWithStudies:
       allOf:
       - $ref: '#/components/schemas/Project'
@@ -4737,6 +4826,33 @@ components:
       - stops
       - route_aspects
       - mechanical_energy_consumed
+      type: object
+    ReportTrainV2:
+      properties:
+        energy_consumption:
+          format: double
+          type: number
+        positions:
+          items:
+            format: int64
+            minimum: 0
+            type: integer
+          type: array
+        speeds:
+          items:
+            format: double
+            type: number
+          type: array
+        times:
+          items:
+            format: double
+            type: number
+          type: array
+      required:
+      - positions
+      - times
+      - speeds
+      - energy_consumption
       type: object
     ResultPosition:
       properties:
@@ -5729,6 +5845,25 @@ components:
       - track
       - track_offset
       type: object
+    SimulationOutput:
+      properties:
+        base:
+          $ref: '#/components/schemas/ReportTrain'
+        final_output:
+          $ref: '#/components/schemas/CompleteReportTrain'
+        mrsp:
+          $ref: '#/components/schemas/Mrsp'
+        power_restriction:
+          type: string
+        provisional:
+          $ref: '#/components/schemas/ReportTrain'
+      required:
+      - base
+      - provisional
+      - final_output
+      - mrsp
+      - power_restriction
+      type: object
     SimulationPowerRestrictionRange:
       properties:
         code:
@@ -5806,6 +5941,35 @@ components:
       - electrification_ranges
       - power_restriction_ranges
       type: object
+    SimulationSummaryResultResponse:
+      oneOf:
+      - properties:
+          Success:
+            properties:
+              energy_consumption:
+                format: double
+                type: number
+              length:
+                format: int64
+                minimum: 0
+                type: integer
+              time:
+                format: double
+                type: number
+            required:
+            - length
+            - time
+            - energy_consumption
+            type: object
+        required:
+        - Success
+        type: object
+      - enum:
+        - PathfindingNotFound
+        type: string
+      - enum:
+        - RunningTimeNotFound
+        type: string
     SingleSimulationRequest:
       allOf:
       - properties:
@@ -9626,6 +9790,29 @@ paths:
       summary: Update a specific timetable with its associated schedules
       tags:
       - timetablev2
+  /v2/timetable/{id}/conflicts/:
+    get:
+      description: Retrieve the list of conflict of the timetable (invalid trains are ignored)
+      parameters:
+      - description: The infra id
+        in: query
+        name: infra_id
+        required: true
+        schema:
+          format: int64
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/ConflictV2'
+                type: array
+          description: list of conflict
+      summary: Retrieve the list of conflict of the timetable (invalid trains are ignored)
+      tags:
+      - timetablev2
   /v2/train_schedule/:
     delete:
       description: Delete a train schedule and its result
@@ -9670,6 +9857,77 @@ paths:
                 type: array
           description: The train schedule
       summary: Create train schedule by batch
+      tags:
+      - train_schedulev2
+  /v2/train_schedule/project_path/:
+    post:
+      description: |-
+        Projects the space time curves and paths of a number of train schedules onto a given path
+        Params are the infra_id and a list of train_ids
+      parameters:
+      - in: path
+        name: infra
+        required: true
+        schema:
+          format: int64
+          type: integer
+      - in: path
+        name: train_ids
+        required: true
+        schema:
+          items:
+            format: int64
+            type: integer
+          type: array
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                additionalProperties:
+                  $ref: '#/components/schemas/ProjectPathResult'
+                type: object
+          description: Project Path Output
+      summary: Projects the space time curves and paths of a number of train schedules onto a given path
+      tags:
+      - train_schedulev2
+  /v2/train_schedule/simulation_summary/:
+    get:
+      description: |-
+        Retrieve simulation information for a given train list.
+        Useful for finding out whether pathfinding/simulation was successful.
+      parameters:
+      - in: path
+        name: infra
+        required: true
+        schema:
+          format: int64
+          type: integer
+      - in: path
+        name: train_ids
+        required: true
+        schema:
+          items:
+            format: int64
+            type: integer
+          type: array
+      - description: The infra id
+        in: path
+        name: infra_id
+        required: true
+        schema:
+          format: int64
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                additionalProperties:
+                  $ref: '#/components/schemas/SimulationSummaryResultResponse'
+                type: object
+          description: Project Path Output
+      summary: Retrieve simulation information for a given train list.
       tags:
       - train_schedulev2
   /v2/train_schedule/{id}/:
@@ -9720,6 +9978,27 @@ paths:
       tags:
       - train_schedulev2
       - timetable
+  /v2/train_schedule/{id}/simulation/:
+    get:
+      description: Retrieve the space, speed and time curve of a given train
+      parameters:
+      - description: The infra id
+        in: path
+        name: infra_id
+        required: true
+        schema:
+          format: int64
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimulationOutput'
+          description: Simulation Output
+      summary: Retrieve the space, speed and time curve of a given train
+      tags:
+      - train_schedulev2
   /version/:
     get:
       responses:

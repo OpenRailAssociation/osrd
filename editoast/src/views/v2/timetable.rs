@@ -6,10 +6,15 @@ use crate::modelsv2::timetable::{Timetable, TimetableWithTrains};
 use crate::modelsv2::{Create, DeleteStatic, Model, Retrieve, Update};
 use crate::views::pagination::PaginatedResponse;
 use crate::views::pagination::PaginationQueryParam;
+use crate::views::timetable::ConflictType;
+use crate::CoreClient;
 use crate::DbPool;
+use crate::RedisClient;
 
 use actix_web::web::{Data, Json, Path, Query};
 use actix_web::{delete, get, post, put, HttpResponse};
+use chrono::DateTime;
+use chrono::Utc;
 use derivative::Derivative;
 use editoast_derive::EditoastError;
 use serde::{Deserialize, Serialize};
@@ -24,6 +29,7 @@ crate::routes! {
             delete,
             get,
             put,
+            conflicts,
         }
     },
 }
@@ -33,6 +39,7 @@ crate::schemas! {
     TimetableForm,
     TimetableResult,
     TimetableDetailedResult,
+    Conflict,
 }
 
 #[derive(Debug, Error, EditoastError)]
@@ -217,6 +224,44 @@ async fn delete(
     })
     .await?;
     Ok(HttpResponse::NoContent().finish())
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+#[schema(as=ConflictV2)]
+pub struct Conflict {
+    pub train_ids: Vec<i64>,
+    pub train_names: Vec<String>,
+    pub start_time: DateTime<Utc>,
+    pub end_time: DateTime<Utc>,
+    pub conflict_type: ConflictType,
+}
+
+/// Retrieve the list of conflict of the timetable (invalid trains are ignored)
+#[utoipa::path(
+    tag = "timetablev2",
+    params(
+        ("infra_id" = i64, Query, description = "The infra id"),
+    ),
+    responses(
+        (status = 200, description = "list of conflict", body = Vec<ConflictV2>),
+    ),
+)]
+#[get("/conflicts")]
+pub async fn conflicts(
+    _db_pool: Data<DbPool>,
+    _redis_client: Data<RedisClient>,
+    _core_client: Data<CoreClient>,
+    _infra_id: Query<i64>,
+) -> Result<Json<Vec<Conflict>>> {
+    // TODO
+    // issue: https://github.com/osrd-project/osrd/issues/6854
+    Ok(Json(vec![Conflict {
+        train_ids: vec![0, 1],
+        train_names: vec!["train.1".into(), "train.2".into()],
+        start_time: DateTime::from_timestamp(1710496800, 0).expect("invalid timestamp"),
+        end_time: DateTime::from_timestamp(1710497400, 0).expect("invalid timestamp"),
+        conflict_type: ConflictType::Routing,
+    }]))
 }
 
 #[cfg(test)]
