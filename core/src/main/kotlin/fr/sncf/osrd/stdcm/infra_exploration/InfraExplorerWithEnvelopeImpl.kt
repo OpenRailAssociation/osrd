@@ -10,6 +10,7 @@ import fr.sncf.osrd.envelope_sim.PhysicsRollingStock
 import fr.sncf.osrd.sim_infra.api.Path
 import fr.sncf.osrd.standalone_sim.result.ResultTrain.SpacingRequirement
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
+import fr.sncf.osrd.utils.AppendOnlyLinkedList
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
@@ -17,7 +18,7 @@ import fr.sncf.osrd.utils.units.meters
 
 data class InfraExplorerWithEnvelopeImpl(
     private val infraExplorer: InfraExplorer,
-    private val envelopes: MutableList<LocatedEnvelope>,
+    private val envelopes: AppendOnlyLinkedList<LocatedEnvelope>,
     private val spacingRequirementAutomaton: SpacingRequirementAutomaton,
     private val rollingStock: PhysicsRollingStock,
     private var spacingRequirementsCache: List<SpacingRequirement>? = null,
@@ -28,7 +29,7 @@ data class InfraExplorerWithEnvelopeImpl(
         return infraExplorer.cloneAndExtendLookahead().map { explorer ->
             InfraExplorerWithEnvelopeImpl(
                 explorer,
-                ArrayList(envelopes),
+                envelopes.shallowCopy(),
                 spacingRequirementAutomaton.clone(),
                 rollingStock,
                 spacingRequirementsCache?.toList(),
@@ -37,7 +38,7 @@ data class InfraExplorerWithEnvelopeImpl(
     }
 
     override fun getFullEnvelope(): EnvelopeTimeInterpolate {
-        if (envelopeCache == null) envelopeCache = EnvelopeConcat.fromLocated(envelopes)
+        if (envelopeCache == null) envelopeCache = EnvelopeConcat.fromLocated(envelopes.toList())
         return envelopeCache!!
     }
 
@@ -118,7 +119,7 @@ data class InfraExplorerWithEnvelopeImpl(
     override fun clone(): InfraExplorerWithEnvelope {
         return InfraExplorerWithEnvelopeImpl(
             infraExplorer.clone(),
-            envelopes.toMutableList(),
+            envelopes.shallowCopy(),
             spacingRequirementAutomaton.clone(),
             rollingStock,
             spacingRequirementsCache?.toList()

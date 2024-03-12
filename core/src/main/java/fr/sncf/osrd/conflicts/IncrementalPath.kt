@@ -1,9 +1,8 @@
 package fr.sncf.osrd.conflicts
 
-import fr.sncf.osrd.fast_collections.MutableIntRingBuffer
-import fr.sncf.osrd.fast_collections.mutableIntRingBufferOf
 import fr.sncf.osrd.sim_infra.api.*
-import fr.sncf.osrd.utils.indexing.MutableStaticIdxRingBuffer
+import fr.sncf.osrd.utils.AppendOnlyLinkedList
+import fr.sncf.osrd.utils.appendOnlyLinkedListOf
 import fr.sncf.osrd.utils.indexing.StaticIdxList
 import fr.sncf.osrd.utils.units.*
 
@@ -43,17 +42,6 @@ interface IncrementalPath {
     fun extend(fragment: PathFragment)
 
     fun clone(): IncrementalPath
-
-    // TODO: implement trimming
-    fun setLastRequiredBlock(blockIndex: Int)
-
-    fun setLastRequiredRoute(routeIndex: Int)
-
-    fun trim()
-
-    val beginZonePathIndex: Int
-    val beginBlockIndex: Int
-    val beginRouteIndex: Int
 
     val endZonePathIndex: Int
     val endBlockIndex: Int
@@ -113,19 +101,19 @@ private class IncrementalPathImpl(
     private val blockInfra: BlockInfra,
 
     // objects
-    private var zonePaths: MutableStaticIdxRingBuffer<ZonePath> = MutableStaticIdxRingBuffer(),
-    private var routes: MutableStaticIdxRingBuffer<Route> = MutableStaticIdxRingBuffer(),
-    private var blocks: MutableStaticIdxRingBuffer<Block> = MutableStaticIdxRingBuffer(),
+    private var zonePaths: AppendOnlyLinkedList<ZonePathId> = appendOnlyLinkedListOf(),
+    private var routes: AppendOnlyLinkedList<RouteId> = appendOnlyLinkedListOf(),
+    private var blocks: AppendOnlyLinkedList<BlockId> = appendOnlyLinkedListOf(),
 
     // lookup tables from blocks and routes to zone path bounds
-    private val blockZoneBounds: MutableIntRingBuffer = MutableIntRingBuffer(),
-    private val routeZoneBounds: MutableIntRingBuffer = mutableIntRingBufferOf(0),
+    private val blockZoneBounds: AppendOnlyLinkedList<Int> = appendOnlyLinkedListOf(),
+    private val routeZoneBounds: AppendOnlyLinkedList<Int> = appendOnlyLinkedListOf(0),
 
     // a lookup table from zone index to zone start path offset
-    private var zonePathBounds: MutableOffsetRingBuffer<Path> =
-        mutableOffsetRingBufferOf(Offset(0.meters)),
+    private var zonePathBounds: AppendOnlyLinkedList<Offset<Path>> =
+        appendOnlyLinkedListOf(Offset(0.meters)),
     override var travelledPathBegin: Offset<Path> = Offset((-1).meters),
-    override var travelledPathEnd: Offset<Path> = Offset((-1).meters)
+    override var travelledPathEnd: Offset<Path> = Offset((-1).meters),
 ) : IncrementalPath {
 
     override val pathStarted
@@ -134,6 +122,15 @@ private class IncrementalPathImpl(
     override val pathComplete
         get() = travelledPathEnd != Offset<Path>((-1).meters)
 
+    override val endZonePathIndex
+        get() = zonePaths.size
+
+    override val endBlockIndex
+        get() = blocks.size
+
+    override val endRouteIndex
+        get() = routes.size
+
     override fun extend(fragment: PathFragment) {
         assert(!pathComplete) { "extending a complete path" }
 
@@ -141,17 +138,17 @@ private class IncrementalPathImpl(
         for (route in fragment.routes) {
             for (zonePath in rawInfra.getRoutePath(route)) {
                 val zonePathLen = rawInfra.getZonePathLength(zonePath)
-                val curEndOffset = zonePathBounds[zonePathBounds.endIndex - 1]
+                val curEndOffset = zonePathBounds.last()
                 val newEndOffset = curEndOffset + zonePathLen.distance
-                zonePaths.addBack(zonePath)
-                zonePathBounds.addBack(newEndOffset)
+                zonePaths.add(zonePath)
+                zonePathBounds.add(newEndOffset)
             }
-            routeZoneBounds.addBack(zonePaths.endIndex)
-            routes.addBack(route)
+            routeZoneBounds.add(zonePaths.size)
+            routes.add(route)
         }
 
         assert(routes.isNotEmpty())
-        assert(routeZoneBounds.endIndex == routes.endIndex + 1)
+        assert(routeZoneBounds.size == routes.size + 1)
 
         if (fragment.blocks.size == 0) {
             assert(!fragment.containsStart)
@@ -165,8 +162,9 @@ private class IncrementalPathImpl(
             val firstBlock = fragment.blocks[0]
             val firstBlockZonePath = blockInfra.getBlockPath(firstBlock)[0]
             var firstBlockZonePathIndex = -1
-            for (zonePathIndex in zonePaths.beginIndex until zonePaths.endIndex) {
-                val zonePath = zonePaths[zonePathIndex]
+            val zonePathList = zonePaths.toList()
+            for (zonePathIndex in zonePathList.indices) {
+                val zonePath = zonePathList[zonePathIndex]
                 if (zonePath == firstBlockZonePath) {
                     firstBlockZonePathIndex = zonePathIndex
                     break
@@ -177,11 +175,11 @@ private class IncrementalPathImpl(
             }
 
             // initialize block zone bounds
-            blockZoneBounds.addBack(firstBlockZonePathIndex)
+            blockZoneBounds.add(firstBlockZonePathIndex)
         }
 
         // find the index of the zone path at which this fragment's blocks start
-        val fragmentBlocksStartZoneIndex = blockZoneBounds[blockZoneBounds.endIndex - 1]
+        val fragmentBlocksStartZoneIndex = blockZoneBounds.last()
 
         if (fragment.containsStart) {
             assert(!pathStarted)
@@ -194,13 +192,13 @@ private class IncrementalPathImpl(
             val blockPath = blockInfra.getBlockPath(block)
             fragBlocksZoneCount += blockPath.size
             val blockEndZonePathIndex = fragmentBlocksStartZoneIndex + fragBlocksZoneCount
-            assert(blockEndZonePathIndex <= zonePaths.endIndex)
-            blocks.addBack(block)
-            blockZoneBounds.addBack(blockEndZonePathIndex)
+            assert(blockEndZonePathIndex <= zonePaths.size)
+            blocks.add(block)
+            blockZoneBounds.add(blockEndZonePathIndex)
         }
 
         if (fragment.containsEnd) {
-            val blockPathEnd = zonePathBounds[blockZoneBounds[blockZoneBounds.endIndex - 1]]
+            val blockPathEnd = zonePathBounds[blockZoneBounds.last()]
             travelledPathEnd = blockPathEnd - fragment.travelledPathEnd
         }
     }
@@ -209,46 +207,16 @@ private class IncrementalPathImpl(
         return IncrementalPathImpl(
             this.rawInfra,
             this.blockInfra,
-            this.zonePaths.clone(),
-            this.routes.clone(),
-            this.blocks.clone(),
-            this.blockZoneBounds.clone(),
-            this.routeZoneBounds.clone(),
-            this.zonePathBounds.clone(),
+            this.zonePaths.shallowCopy(),
+            this.routes.shallowCopy(),
+            this.blocks.shallowCopy(),
+            this.blockZoneBounds.shallowCopy(),
+            this.routeZoneBounds.shallowCopy(),
+            this.zonePathBounds.shallowCopy(),
             this.travelledPathBegin,
             this.travelledPathEnd
         )
     }
-
-    override fun setLastRequiredBlock(blockIndex: Int) {
-        TODO("Not yet implemented")
-    }
-
-    override fun setLastRequiredRoute(routeIndex: Int) {
-        TODO("Not yet implemented")
-    }
-
-    override fun trim() {
-        TODO("Not yet implemented")
-    }
-
-    override val beginZonePathIndex
-        get() = zonePaths.beginIndex
-
-    override val beginBlockIndex
-        get() = blocks.beginIndex
-
-    override val beginRouteIndex
-        get() = routes.beginIndex
-
-    override val endZonePathIndex
-        get() = zonePaths.endIndex
-
-    override val endBlockIndex
-        get() = blocks.endIndex
-
-    override val endRouteIndex
-        get() = routes.endIndex
 
     override fun getBlock(blockIndex: Int): BlockId {
         return blocks[blockIndex]

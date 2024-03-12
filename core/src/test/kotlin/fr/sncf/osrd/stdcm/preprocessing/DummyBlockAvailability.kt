@@ -212,7 +212,7 @@ class DummyBlockAvailability(
     private fun makeBlocksWithOffsets(infraExplorer: InfraExplorer): List<BlockWithOffset> {
         var offset = 0.meters
         val res = ArrayList<BlockWithOffset>()
-        for (block in infraExplorer.getPredecessorBlocks()) {
+        for (block in infraExplorer.getPredecessorBlocks().toList()) {
             val length = blockInfra.getBlockLength(block)
             res.add(BlockWithOffset(block, offset))
             offset += length.distance
