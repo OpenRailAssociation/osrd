@@ -122,7 +122,7 @@ class SpacingRequirementAutomaton(
         // inside a magic portal until the train entirely moved out of it
         var startZone = -1
         val startingPoint = incrementalPath.travelledPathBegin
-        for (i in incrementalPath.beginZonePathIndex until incrementalPath.endZonePathIndex) {
+        for (i in 0 until incrementalPath.endZonePathIndex) {
             val zonePathStartOffset = incrementalPath.getZonePathStartOffset(i)
             val zonePathEndOffset = incrementalPath.getZonePathEndOffset(i)
             if (startingPoint >= zonePathStartOffset && startingPoint < zonePathEndOffset) {
