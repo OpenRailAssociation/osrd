@@ -278,23 +278,25 @@ val allLoadingGaugeTypeSet = enumValues<RJSLoadingGaugeType>().toSet()
 private fun parseRjsRouteWaypoint(
     rjsWaypoint: RJSRouteWaypoint,
     builder: RawInfraFromRjsBuilderImpl,
-    trackSectionNameToChunkEndOffset: MutableMap<String, TreeSet<Offset<TrackSection>>>,
+    trackSectionNameToDistanceSortedWaypointIdxs:
+        MutableMap<String, TreeMap<Offset<TrackSection>, DetectorId>>,
     detectorMap: MutableMap<String, DetectorId>,
 ) {
-    detectorMap[rjsWaypoint.id] = builder.detector(rjsWaypoint.id)
+    val waypointIdx = builder.detector(rjsWaypoint.id)
+    detectorMap[rjsWaypoint.id] = waypointIdx
 
-    // Storing only chunk's end: ignore 0 offset that is a chunk's start
-    if (rjsWaypoint.position == 0.0) return
-
-    if (!trackSectionNameToChunkEndOffset.containsKey(rjsWaypoint.track)) {
-        trackSectionNameToChunkEndOffset[rjsWaypoint.track] = TreeSet<Offset<TrackSection>>()
+    if (!trackSectionNameToDistanceSortedWaypointIdxs.containsKey(rjsWaypoint.track)) {
+        trackSectionNameToDistanceSortedWaypointIdxs[rjsWaypoint.track] =
+            TreeMap<Offset<TrackSection>, DetectorId>()
     }
-    trackSectionNameToChunkEndOffset[rjsWaypoint.track]!!.add(Offset(rjsWaypoint.position.meters))
+    trackSectionNameToDistanceSortedWaypointIdxs[rjsWaypoint.track]!![
+        Offset(rjsWaypoint.position.meters)] = waypointIdx
 }
 
 fun adaptRawInfra(infra: SignalingInfra, rjsInfra: RJSInfra): SimInfraAdapter {
     val builder = RawInfraFromRjsBuilderImpl()
     val zoneMap = HashBiMap.create<DetectionSection, ZoneId>()
+    // TODO: check if this can be remove once stitching is useless
     val detectorMap: MutableMap<String, DetectorId> = mutableMapOf()
     // TODO: remove this once stitching is useless
     val oldDetectorMap = HashBiMap.create<Detector, DetectorId>()
@@ -310,14 +312,24 @@ fun adaptRawInfra(infra: SignalingInfra, rjsInfra: RJSInfra): SimInfraAdapter {
     val oldTrackChunkMap = mutableMapOf<UndirectedTrackSection, Map<Distance, TrackChunkId>>()
 
     // Parse waypoints (detectors, buffer-stops)
-    val trackSectionNameToChunkEndOffsets: MutableMap<String, TreeSet<Offset<TrackSection>>> =
-        mutableMapOf()
+    val trackSectionNameToDistanceSortedWaypointIdxs =
+        mutableMapOf<String, TreeMap<Offset<TrackSection>, DetectorId>>()
 
     for (detector in rjsInfra.detectors) {
-        parseRjsRouteWaypoint(detector, builder, trackSectionNameToChunkEndOffsets, detectorMap)
+        parseRjsRouteWaypoint(
+            detector,
+            builder,
+            trackSectionNameToDistanceSortedWaypointIdxs,
+            detectorMap
+        )
     }
     for (detector in rjsInfra.bufferStops) {
-        parseRjsRouteWaypoint(detector, builder, trackSectionNameToChunkEndOffsets, detectorMap)
+        parseRjsRouteWaypoint(
+            detector,
+            builder,
+            trackSectionNameToDistanceSortedWaypointIdxs,
+            detectorMap
+        )
     }
 
     // Parse track-sections
@@ -331,7 +343,13 @@ fun adaptRawInfra(infra: SignalingInfra, rjsInfra: RJSInfra): SimInfraAdapter {
         val trackSectionBlockedGauges = getBlockedGauge(rjsTrack)
 
         var chunkStartOffset = Offset<TrackSection>(0.meters)
-        val chunkEndOffsets = trackSectionNameToChunkEndOffsets[rjsTrack.id] ?: mutableSetOf()
+        val trackSectionDistanceSortedWaypointIdxs =
+            trackSectionNameToDistanceSortedWaypointIdxs[rjsTrack.id] ?: TreeMap()
+        // ignore 0 offset that is a chunk's start
+        val chunkEndOffsets =
+            trackSectionDistanceSortedWaypointIdxs.keys
+                .filter { d -> d.distance != Distance.ZERO }
+                .toMutableList()
         if (chunkEndOffsets.isEmpty() || chunkEndOffsets.last() != trackSectionLength)
             chunkEndOffsets.add(trackSectionLength)
 
@@ -634,6 +652,7 @@ fun adaptRawInfra(infra: SignalingInfra, rjsInfra: RJSInfra): SimInfraAdapter {
         trackNodeGroupsMap[oldSwitch] = switchGroups
     }
 
+    // create zones
     fun getOrCreateDet(oldDiDetector: DiDetector): DirDetectorId {
         val oldDetector = oldDiDetector.detector
         val detector = oldDetectorMap[oldDetector!!]!!
@@ -643,7 +662,6 @@ fun adaptRawInfra(infra: SignalingInfra, rjsInfra: RJSInfra): SimInfraAdapter {
         }
     }
 
-    // create zones
     val switchToZone = mutableMapOf<Switch, ZoneId>()
     for (detectionSection in infra.detectionSections) {
         val oldSwitches = detectionSection!!.switches!!
