@@ -111,10 +111,11 @@ private fun findRoute(
 
     // We need to evaluate the longest route first, in case one route covers a subset of another
     val sortedRoutes = routes.sortedBy { r -> -infra.getChunksOnRoute(r).size }
-    for (routeId in sortedRoutes) if (
-        routeMatchPath(infra, blockInfra, chunks, startIndex, routeMustIncludeStart, routeId)
-    )
-        return routeId
+    for (routeId in sortedRoutes) {
+        if (routeMatchPath(infra, blockInfra, chunks, startIndex, routeMustIncludeStart, routeId)) {
+            return routeId
+        }
+    }
     throw RuntimeException("Couldn't find a route matching the given chunk list")
 }
 
