@@ -90,7 +90,7 @@ opentelemetry-otlp = "0.14.0"
 opentelemetry-datadog = { version = "0.9.0", features = ["reqwest-client"] }
 opentelemetry-semantic-conventions = "0.13.0"
 tracing-opentelemetry = "0.22.0"
-actix-web-opentelemetry = { version = "0.16.0", features = ["awc"] }
+actix-web-opentelemetry = { version = "0.17.0", features = ["awc"] }
 serde_qs = { version = "0.12.0", features = ["actix4"] }
 enumset = "1.1.3"
 
