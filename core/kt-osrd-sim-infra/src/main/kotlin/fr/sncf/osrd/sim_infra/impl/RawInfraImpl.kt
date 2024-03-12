@@ -386,9 +386,8 @@ class RawInfraImpl(
         // initialize zone names
         for (zone in zonePool) {
             val name =
-                getZoneBounds(zone)
-                    .sortedBy { id -> id.index }
-                    .map { "${getDetectorName(it.value)}:${it.direction}" }
+                getZoneBounds(zone).map { "${getDetectorName(it.value)}:${it.direction}" }.sorted()
+
             zonePool[zone].name = "zone.${name}"
             zoneNameMap[zonePool[zone].name] = zone
         }
