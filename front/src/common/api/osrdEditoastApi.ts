@@ -2796,6 +2796,9 @@ export type PathfindingResult =
             uic: number;
           };
       status: 'invalid_path_item';
+    }
+  | {
+      status: 'not_enough_path_items';
     };
 export type TimetableResult = {
   electrical_profile_set_id?: number | null;
