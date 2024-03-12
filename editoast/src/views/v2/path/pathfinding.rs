@@ -87,6 +87,7 @@ pub enum PathfindingResult {
         #[schema(inline)]
         path_item: PathItemLocation,
     },
+    NotEnoughPathItems,
 }
 
 /// Path input is described by some rolling stock information
@@ -154,6 +155,9 @@ pub async fn pathfinding_blocks(
     // If miss cache:
     // 1) extract locations from path items
     let path_items = path_input.clone().path_items;
+    if path_items.len() <= 1 {
+        return Ok(PathfindingResult::NotEnoughPathItems);
+    }
     let result = extract_location_from_path_items(conn, infra_id, &path_items).await?;
     let track_offsets = match result {
         Ok(track_offsets) => track_offsets,

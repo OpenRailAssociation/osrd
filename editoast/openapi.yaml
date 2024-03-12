@@ -4375,6 +4375,14 @@ components:
         - path_item
         - status
         type: object
+      - properties:
+          status:
+            enum:
+            - not_enough_path_items
+            type: string
+        required:
+        - status
+        type: object
     PathfindingStep:
       properties:
         duration:
