@@ -88,7 +88,7 @@ private fun makeChunkPath(
  * Returns how long the longest requirement segment lasts, which is the minimum delay we need to add
  * between two identical trains
  */
-fun getMaxOccupancyLength(requirements: List<SpacingRequirement>): Double {
+fun getMaxOccupancyDuration(requirements: List<SpacingRequirement>): Double {
     return requirements.maxOf { it.endTime - it.beginTime }
 }
 

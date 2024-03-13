@@ -81,7 +81,7 @@ class FullSTDCMTests {
             )
         val requirements = makeRequirementsFromPath(infra, start, end, 0.0).toMutableList()
         val minDelay =
-            getMaxOccupancyLength(requirements) // Eventually we may need to add a % margin
+            getMaxOccupancyDuration(requirements) // Eventually we may need to add a % margin
         requirements.addAll(makeRequirementsFromPath(infra, start, end, minDelay * 2))
         val res =
             STDCMPathfindingBuilder()
@@ -131,7 +131,7 @@ class FullSTDCMTests {
         val end =
             setOf(Helpers.convertRouteLocation(infra, "rt.DH2->buffer_stop.7", Offset(5000.meters)))
         val requirements = makeRequirementsFromPath(infra, start, end, 0.0).toMutableList()
-        val minDelay = getMaxOccupancyLength(requirements)
+        val minDelay = getMaxOccupancyDuration(requirements)
         requirements.addAll(makeRequirementsFromPath(infra, start, end, minDelay * 0.95))
         val res =
             STDCMPathfindingBuilder()
