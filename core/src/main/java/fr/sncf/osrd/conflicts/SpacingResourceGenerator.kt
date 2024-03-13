@@ -278,7 +278,7 @@ class SpacingRequirementAutomaton(
             val signalOffset = incrementalPath.toTravelledPath(pathSignal.pathOffset)
             val sightOffset = signalOffset - rawInfra.getSignalSightDistance(physicalSignal)
             // If the train's simulation has reached the point where the signal is seen, bail out
-            if (callbacks.currentPathOffset < sightOffset) {
+            if (callbacks.currentPathOffset <= sightOffset) {
                 break
             }
             val sightTime = callbacks.arrivalTimeInRange(sightOffset, signalOffset)
