@@ -21,6 +21,10 @@ import fr.sncf.osrd.utils.units.Offset
  * of the train. The path can extend further than the part that has been simulated (see
  * InfraExplorer for a more detailed explanation).
  *
+ * **The envelopes are scaled to account for the standard allowance (linearly)**. They can be used
+ * to get an estimation of the train location at any given time, but the end speed should not be
+ * used as a reference for new simulations.
+ *
  * Generally speaking, the "current block" is the part where we are currently running simulations,
  * it doesn't have its envelope in the explorer. But there are some exceptions to this, such as when
  * the path and simulation are both complete. The envelopes always cover at least all the

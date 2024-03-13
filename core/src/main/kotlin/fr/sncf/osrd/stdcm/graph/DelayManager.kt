@@ -37,7 +37,7 @@ internal constructor(
         var time = startTime
         while (java.lang.Double.isFinite(time)) {
             val availability =
-                getScaledAvailability(
+                getLastBlockAvailability(
                     infraExplorerWithNewEnvelope,
                     startOffset,
                     endOffset,
@@ -66,7 +66,7 @@ internal constructor(
     ): Double {
         val endOffset = startOffset + fromMeters(envelope.endPos)
         val availability =
-            getScaledAvailability(
+            getLastBlockAvailability(
                 infraExplorer,
                 startOffset,
                 endOffset,
@@ -101,7 +101,7 @@ internal constructor(
     ): Double {
         val endOffset = startOffset + fromMeters(envelope.endPos)
         val availability =
-            getScaledAvailability(
+            getLastBlockAvailability(
                 infraExplorerWithNewEnvelope,
                 startOffset,
                 endOffset,
@@ -112,10 +112,10 @@ internal constructor(
     }
 
     /**
-     * Calls `blockAvailability.getAvailability`, on an envelope scaled to account for the standard
-     * allowance.
+     * Calls `blockAvailability.getAvailability` on the last block. This accounts for the standard
+     * allowance, as the envelopes in the infra explorer are scaled accordingly.
      */
-    private fun getScaledAvailability(
+    private fun getLastBlockAvailability(
         explorerWithNewEnvelope: InfraExplorerWithEnvelope,
         startOffset: Offset<Block>,
         endOffset: Offset<Block>,
