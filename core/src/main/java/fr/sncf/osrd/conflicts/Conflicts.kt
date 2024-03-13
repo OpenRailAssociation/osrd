@@ -20,6 +20,7 @@ interface RoutingTrainRequirement {
 }
 
 interface ResourceRequirement {
+    val trainId: Long
     val beginTime: Double
     val endTime: Double
 }
@@ -101,7 +102,7 @@ class IncrementalConflictDetectorImpl(trainRequirements: List<TrainRequirements>
     }
 
     data class SpacingZoneRequirement(
-        val trainId: Long,
+        override val trainId: Long,
         override val beginTime: Double,
         override val endTime: Double,
     ) : ResourceRequirement
@@ -124,7 +125,7 @@ class IncrementalConflictDetectorImpl(trainRequirements: List<TrainRequirements>
     )
 
     data class RoutingZoneRequirement(
-        val trainId: Long,
+        override val trainId: Long,
         val route: String,
         override val beginTime: Double,
         override val endTime: Double,
@@ -158,6 +159,27 @@ class IncrementalConflictDetectorImpl(trainRequirements: List<TrainRequirements>
         }
     }
 
+    /**
+     * Adds the conflict group to the result list. If `ignoreGroupWithoutSTDCMTrain` is set to true,
+     * we only report conflict that happen with the new train (id=-1).
+     */
+    private fun registerGroup(
+        res: MutableList<Conflict>,
+        conflictGroup: List<ResourceRequirement>,
+        ignoreGroupWithoutSTDCMTrain: Boolean,
+        conflictType: ConflictType,
+    ) {
+        if (ignoreGroupWithoutSTDCMTrain && conflictGroup.none { it.trainId == -1L })
+            return // don't report timetable conflicts to STDCM
+        val filteredConflictGroup =
+            if (ignoreGroupWithoutSTDCMTrain) conflictGroup.filter { it.trainId != -1L }
+            else conflictGroup
+        val trains = filteredConflictGroup.map { it.trainId }
+        val beginTime = filteredConflictGroup.minBy { it.beginTime }.beginTime
+        val endTime = filteredConflictGroup.maxBy { it.endTime }.endTime
+        res.add(Conflict(trains, beginTime, endTime, conflictType))
+    }
+
     override fun checkConflicts(): List<Conflict> {
         val res = mutableListOf<Conflict>()
         res.addAll(detectSpacingConflicts())
@@ -171,10 +193,7 @@ class IncrementalConflictDetectorImpl(trainRequirements: List<TrainRequirements>
         val res = mutableListOf<Conflict>()
         for (requirements in spacingZoneRequirements.values) {
             for (conflictGroup in detectRequirementConflicts(requirements) { _, _ -> true }) {
-                val trains = conflictGroup.map { it.trainId }
-                val beginTime = conflictGroup.minBy { it.beginTime }.beginTime
-                val endTime = conflictGroup.maxBy { it.endTime }.endTime
-                res.add(Conflict(trains, beginTime, endTime, ConflictType.SPACING))
+                registerGroup(res, conflictGroup, false, ConflictType.SPACING)
             }
         }
         return res
@@ -186,10 +205,7 @@ class IncrementalConflictDetectorImpl(trainRequirements: List<TrainRequirements>
         for (requirements in routingZoneRequirements.values) {
             for (conflictGroup in
                 detectRequirementConflicts(requirements) { a, b -> a.config != b.config }) {
-                val trains = conflictGroup.map { it.trainId }
-                val beginTime = conflictGroup.minBy { it.beginTime }.beginTime
-                val endTime = conflictGroup.maxBy { it.endTime }.endTime
-                res.add(Conflict(trains, beginTime, endTime, ConflictType.ROUTING))
+                registerGroup(res, conflictGroup, false, ConflictType.ROUTING)
             }
         }
         return res
@@ -215,13 +231,7 @@ class IncrementalConflictDetectorImpl(trainRequirements: List<TrainRequirements>
 
         val res = mutableListOf<Conflict>()
         for (conflictGroup in detectRequirementConflicts(requirements) { _, _ -> true }) {
-            if (conflictGroup.none { it.trainId == -1L })
-                continue // don't report timetable conflicts to STDCM
-            val filteredConflictGroup = conflictGroup.filter { it.trainId != -1L }
-            val trains = filteredConflictGroup.map { it.trainId }
-            val beginTime = filteredConflictGroup.minBy { it.beginTime }.beginTime
-            val endTime = filteredConflictGroup.maxBy { it.endTime }.endTime
-            res.add(Conflict(trains, beginTime, endTime, ConflictType.SPACING))
+            registerGroup(res, conflictGroup, true, ConflictType.SPACING)
         }
 
         return res
@@ -247,13 +257,7 @@ class IncrementalConflictDetectorImpl(trainRequirements: List<TrainRequirements>
 
             for (conflictGroup in
                 detectRequirementConflicts(requirements) { a, b -> a.config != b.config }) {
-                if (conflictGroup.none { it.trainId == -1L })
-                    continue // don't report timetable conflicts to STDCM
-                val filteredConflictGroup = conflictGroup.filter { it.trainId != -1L }
-                val trains = filteredConflictGroup.map { it.trainId }
-                val beginTime = filteredConflictGroup.minBy { it.beginTime }.beginTime
-                val endTime = filteredConflictGroup.maxBy { it.endTime }.endTime
-                res.add(Conflict(trains, beginTime, endTime, ConflictType.ROUTING))
+                registerGroup(res, conflictGroup, true, ConflictType.ROUTING)
             }
         }
         return res
