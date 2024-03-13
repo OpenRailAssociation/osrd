@@ -44,7 +44,7 @@ class STDCMGraph(
     val standardAllowance: AllowanceValue?
 
     // min 4 minutes between two edges, determined empirically
-    val visitedNodes = VisitedNodes(4 * 60.0)
+    private val visitedNodes = VisitedNodes(4 * 60.0)
 
     /** Constructor */
     init {
