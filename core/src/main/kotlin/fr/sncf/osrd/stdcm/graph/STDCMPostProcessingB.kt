@@ -23,15 +23,14 @@ import java.util.*
  * This class contains all the static methods used to turn the raw pathfinding result into a full
  * response. This includes creating the final envelope (merging the parts + applying the allowances)
  */
-class STDCMPostProcessing(private val graph: STDCMGraph) {
+class STDCMPostProcessingB(private val graph: STDCMGraph) {
     /**
      * Builds the STDCM result object from the raw pathfinding result. This is the only non-private
      * method of this class, the rest is implementation detail.
      */
     fun makeResult(
         infra: RawSignalingInfra?,
-        // TODO: probably change this to our own result type
-        path: Pathfinding.Result<STDCMEdge, STDCMEdge>,
+        path: Result,
         startTime: Double,
         standardAllowance: AllowanceValue?,
         rollingStock: RollingStock?,
@@ -85,9 +84,7 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
 }
 
 /** Creates the list of waypoints on the path */
-private fun makeBlockWaypoints(
-    path: Pathfinding.Result<STDCMEdge, STDCMEdge>
-): List<PathfindingEdgeLocationId<Block>> {
+private fun makeBlockWaypoints(path: Result): List<PathfindingEdgeLocationId<Block>> {
     val res = ArrayList<PathfindingEdgeLocationId<Block>>()
     for (waypoint in path.waypoints) {
         val blockOffset = convertOffsetToBlock(waypoint.offset, waypoint.edge.envelopeStartOffset)
@@ -100,12 +97,15 @@ private fun makeBlockWaypoints(
  * Builds the actual list of EdgeRange given the raw result of the pathfinding. We can't use the
  * pathfinding result directly because we use our own method to keep track of previous nodes/edges.
  */
-private fun makeEdgeRange(
-    raw: Pathfinding.Result<STDCMEdge, STDCMEdge>
-): List<EdgeRange<STDCMEdge, STDCMEdge>> {
+private fun makeEdgeRange(raw: Result): List<EdgeRange<STDCMEdge, STDCMEdge>> {
     val orderedEdges = ArrayDeque<STDCMEdge>()
-    var firstRange = raw.ranges[0]
-    var lastRange = raw.ranges[raw.ranges.size - 1]
+    var firstRange = EdgeRange(raw.edges[0], Offset(0.meters), raw.edges[0].length)
+    var lastRange =
+        EdgeRange(
+            raw.edges[raw.edges.size - 1],
+            Offset(0.meters),
+            raw.edges[raw.edges.size - 1].length
+        )
     var current = lastRange.edge
     while (true) {
         orderedEdges.addFirst(current)
@@ -120,13 +120,6 @@ private fun makeEdgeRange(
     for (edge in orderedEdges) res.add(EdgeRange(edge, Offset(0.meters), edge.length))
     if (firstRange.edge !== lastRange.edge) res.add(lastRange)
     return res
-}
-
-/** Computes the departure time, made of the sum of all delays added over the path */
-fun computeDepartureTime(ranges: List<EdgeRange<STDCMEdge, STDCMEdge>>, startTime: Double): Double {
-    var mutStartTime = startTime
-    for (range in ranges) mutStartTime += range.edge.addedDelay
-    return mutStartTime
 }
 
 /** Builds the list of stops from the ranges */

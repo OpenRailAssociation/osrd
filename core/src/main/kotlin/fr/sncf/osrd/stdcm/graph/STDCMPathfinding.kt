@@ -25,7 +25,7 @@ import fr.sncf.osrd.utils.units.meters
  * Given an infra, a rolling stock and a collection of unavailable time for each block, find a path
  * made of a sequence of block ranges with a matching envelope. Returns null if no path is found.
  */
-fun findPath(
+fun findPathOld(
     fullInfra: FullInfra,
     rollingStock: RollingStock,
     comfort: Comfort?,
@@ -40,6 +40,7 @@ fun findPath(
     pathfindingTimeout: Double
 ): STDCMResult? {
     assert(steps.size >= 2) { "Not enough steps have been set to find a path" }
+
     val graph =
         STDCMGraph(
             fullInfra,
@@ -54,38 +55,17 @@ fun findPath(
             standardAllowance
         )
 
-    // Initializes the constraints
-    /* val loadingGaugeConstraints = // contraintes gérées par l'infra explorer
-        LoadingGaugeConstraints(fullInfra.blockInfra, fullInfra.rawInfra, listOf(rollingStock))
-    val electrificationConstraints =
-        ElectrificationConstraints(fullInfra.blockInfra, fullInfra.rawInfra, listOf(rollingStock))
-    val signalingSystemConstraints =
-        makeSignalingSystemConstraints(
-            fullInfra.blockInfra,
-            fullInfra.signalingSimulator,
-            listOf(rollingStock)
-        )*/
-
     // Initialize the A* heuristic
     val locations = steps.stream().map(STDCMStep::locations).toList()
     val remainingDistanceEstimators = makeHeuristics(fullInfra, locations)
     val endBlocks = steps.last().locations.map { it.edge }
+
     val path =
         Pathfinding(graph)
-            .setEdgeToLength { edge -> edge.infraExplorer.getCurrentBlockLength().cast() }
             .setRemainingDistanceEstimator(
                 makeAStarHeuristic(remainingDistanceEstimators, rollingStock)
             )
-            .setEdgeToLength { edge -> edge.length.cast() } // bye
-            /* .addBlockedRangeOnEdges { edge: STDCMEdge ->
-                convertRanges(loadingGaugeConstraints.apply(edge.block))
-            }
-            .addBlockedRangeOnEdges { edge: STDCMEdge ->
-                convertRanges(electrificationConstraints.apply(edge.block))
-            }
-            .addBlockedRangeOnEdges { edge: STDCMEdge ->
-                convertRanges(signalingSystemConstraints.apply(edge.block))
-            }*/
+            .setEdgeToLength { edge -> edge.length.cast() }
             .setTotalCostUntilEdgeLocation { range ->
                 totalCostUntilEdgeLocation(range, maxDepartureDelay)
             }
@@ -101,6 +81,7 @@ fun findPath(
                 ),
                 makeObjectiveFunction(steps)
             ) ?: return null
+
     return STDCMPostProcessing(graph)
         .makeResult(
             fullInfra.rawInfra,
@@ -113,13 +94,6 @@ fun findPath(
             maxRunTime,
             blockAvailability
         )
-}
-
-/** Converts ranges with block offsets to ranges with STDCMEdge offset */
-fun convertRanges(
-    ranges: Collection<Pathfinding.Range<Block>>
-): Collection<Pathfinding.Range<STDCMEdge>> {
-    return ranges.map { range -> Pathfinding.Range(range.start.cast(), range.end.cast()) }
 }
 
 /** Make the objective function from the edge locations */
@@ -209,13 +183,11 @@ private fun convertLocations(
 ): Set<EdgeLocation<STDCMEdge, STDCMEdge>> {
     val res = HashSet<EdgeLocation<STDCMEdge, STDCMEdge>>()
     val fullInfra = graph.fullInfra
-    // Initializes the constraints
+
     val loadingGaugeConstraints =
         LoadingGaugeConstraints(fullInfra.blockInfra, fullInfra.rawInfra, listOf(rollingStock))
-
     val electrificationConstraints =
         ElectrificationConstraints(fullInfra.blockInfra, fullInfra.rawInfra, listOf(rollingStock))
-
     val signalingSystemConstraints =
         makeSignalingSystemConstraints(
             fullInfra.blockInfra,

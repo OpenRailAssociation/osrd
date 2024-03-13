@@ -208,7 +208,12 @@ class InfraExplorerTests {
 
         // a --> b
         val firstExplorers =
-            initInfraExplorer(infra, infra, PathfindingEdgeLocationId(blocks[0], Offset(0.meters)), blockedRangesOnEdge = combiner)
+            initInfraExplorer(
+                infra,
+                infra,
+                PathfindingEdgeLocationId(blocks[0], Offset(0.meters)),
+                blockedRangesOnEdge = combiner
+            )
         assertEquals(1, firstExplorers.size)
         val firstExplorer = firstExplorers.first()
 
@@ -216,10 +221,12 @@ class InfraExplorerTests {
         val firstExplorerExtended = firstExplorer.cloneAndExtendLookahead().toList()
         assertEquals(1, firstExplorerExtended.size)
 
-        val firstExplorerExtended2 = firstExplorerExtended.first().cloneAndExtendLookahead().toList()
+        val firstExplorerExtended2 =
+            firstExplorerExtended.first().cloneAndExtendLookahead().toList()
         assertEquals(1, firstExplorerExtended2.size)
 
-        val firstExplorerExtended3 = firstExplorerExtended2.first().cloneAndExtendLookahead().toList()
+        val firstExplorerExtended3 =
+            firstExplorerExtended2.first().cloneAndExtendLookahead().toList()
         assertEquals(1, firstExplorerExtended3.size)
 
         firstExplorerExtended3.first().moveForward()
