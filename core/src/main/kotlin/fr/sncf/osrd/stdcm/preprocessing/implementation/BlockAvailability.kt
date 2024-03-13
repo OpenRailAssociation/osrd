@@ -50,27 +50,23 @@ data class BlockAvailability(
                 .filter { it.beginTime < it.endTime }
         val conflicts =
             incrementalConflictDetector.checkConflicts(shiftedSpacingRequirements, listOf())
+        val conflictProperties =
+            incrementalConflictDetector.analyseConflicts(shiftedSpacingRequirements, listOf())
         if (conflicts.isEmpty()) {
-            val maximumDelay =
-                incrementalConflictDetector.maxDelayWithoutConflicts(
-                    shiftedSpacingRequirements,
-                    listOf()
-                )
-            val timeOfNextConflict =
-                incrementalConflictDetector.timeOfNextConflict(shiftedSpacingRequirements, listOf())
-            return BlockAvailabilityInterface.Available(maximumDelay, timeOfNextConflict)
+            return BlockAvailabilityInterface.Available(
+                conflictProperties.maxDelayWithoutConflicts,
+                conflictProperties.timeOfNextConflict
+            )
         } else {
-            val minimumDelay =
-                incrementalConflictDetector.minDelayWithoutConflicts(
-                    shiftedSpacingRequirements,
-                    listOf()
-                )
             val firstConflictOffset =
                 getEnvelopeOffsetFromTime(
                     infraExplorer,
                     conflicts.first().startTime - pathStartTime
                 )
-            return BlockAvailabilityInterface.Unavailable(minimumDelay, firstConflictOffset)
+            return BlockAvailabilityInterface.Unavailable(
+                conflictProperties.minDelayWithoutConflicts,
+                firstConflictOffset
+            )
         }
     }
 
