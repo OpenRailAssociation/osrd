@@ -39,73 +39,80 @@ const SelectorItem = <T extends string | null>({
     };
     updateData: (newData: { [key: string]: string }) => void;
   };
-}) => (
-  <div className={cx({ 'd-flex ml-1': extraColumn })} key={`selector-${title}-${index}`}>
-    <div
-      className={cx('selector-item', 'd-flex', 'mb-1', borderClass, {
-        'with-extra-column': extraColumn,
-        selected: isSelected,
-        hovered: isHovered,
-      })}
-      role="button"
-      tabIndex={0}
-      onClick={() => {
-        if (onItemSelected) onItemSelected(item.id);
-      }}
-      onMouseOver={() => {
-        onItemHovered(item.id);
-      }}
-      onFocus={() => {
-        onItemHovered(item.id);
-      }}
-      onMouseOut={() => {
-        onItemHovered(null as T);
-      }}
-      onBlur={() => {
-        onItemHovered(null as T);
-      }}
-      key={`selector-${title}-${index}`}
-    >
-      <div className="selector-item-name pt-1 pl-3" title={item.label}>
-        {item.label}
+}) => {
+  const inputValue = extraColumn?.data[item.id as string] || '';
+  const isDisabled = isDefaultItem || !extraColumn;
+  const isWarning = inputValue === '' && !isDisabled;
+
+  return (
+    <div className={cx({ 'd-flex ml-1': extraColumn })} key={`selector-${title}-${index}`}>
+      <div
+        className={cx('selector-item', 'd-flex', 'mb-1', borderClass, {
+          'with-extra-column': extraColumn,
+          selected: isSelected,
+          hovered: isHovered,
+        })}
+        role="button"
+        tabIndex={0}
+        onClick={() => {
+          if (onItemSelected) onItemSelected(item.id);
+        }}
+        onMouseOver={() => {
+          onItemHovered(item.id);
+        }}
+        onFocus={() => {
+          onItemHovered(item.id);
+        }}
+        onMouseOut={() => {
+          onItemHovered(null as T);
+        }}
+        onBlur={() => {
+          onItemHovered(null as T);
+        }}
+        key={`selector-${title}-${index}`}
+      >
+        <div className="selector-item-name pt-1 pl-3" title={item.label}>
+          {item.label}
+        </div>
+        {canBeRemoved && onItemRemoved && (
+          <button
+            type="button"
+            tabIndex={0}
+            onClick={() => onItemRemoved(item.id)}
+            className="selector-trash-icon"
+            aria-label="Delete item"
+          >
+            <Trash />
+          </button>
+        )}
       </div>
-      {canBeRemoved && onItemRemoved && (
-        <button
-          type="button"
-          tabIndex={0}
-          onClick={() => onItemRemoved(item.id)}
-          className="selector-trash-icon"
-          aria-label="Delete item"
+      {extraColumn && (
+        <div
+          className={cx('extra-column', 'mb-1', 'ml-3', {
+            disabled: isDefaultItem,
+            isWarning,
+          })}
         >
-          <Trash />
-        </button>
+          <InputSNCF
+            id={`selector-${title}-${index}`}
+            type="string"
+            whiteBG
+            sm
+            noMargin
+            disabled={isDefaultItem}
+            value={isDefaultItem ? extraColumn.defaultValue : extraColumn.data[item.id as string]}
+            onChange={(e) =>
+              extraColumn.updateData({
+                ...extraColumn.data,
+                [item.id as string]: e.target.value,
+              })
+            }
+          />
+        </div>
       )}
     </div>
-    {extraColumn && (
-      <div
-        className={cx('extra-column', 'mb-1', 'ml-3', {
-          disabled: isDefaultItem,
-        })}
-      >
-        <InputSNCF
-          id={`selector-${title}-${index}`}
-          type="string"
-          whiteBG
-          sm
-          noMargin
-          disabled={isDefaultItem}
-          value={isDefaultItem ? extraColumn.defaultValue : extraColumn.data[item.id as string]}
-          onChange={(e) =>
-            extraColumn.updateData({
-              ...extraColumn.data,
-              [item.id as string]: e.target.value,
-            })
-          }
-        />
-      </div>
-    )}
-  </div>
-);
+  );
+};
 
 const Selector = <
   T extends string | null,
@@ -148,7 +155,7 @@ const Selector = <
   }>
 ) => {
   const {
-    borderClass = 'selector-pink',
+    borderClass = 'selector-blue',
     title,
     displayedItems,
     permanentItems,

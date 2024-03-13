@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
 
+import { Alert } from '@osrd-project/ui-icons';
 import { compact, isEmpty } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
@@ -243,6 +244,11 @@ const CurveParamSelectors = ({
     );
   };
 
+  const isWarningNb = Object.values(extraColumnData.data).reduce(
+    (count, value) => count + (value === '' ? 1 : 0),
+    0
+  );
+
   useEffect(() => {
     if (powerRestrictionCodes) setPowerRestrictionList(powerRestrictionCodes);
   }, [powerRestrictionCodes]);
@@ -251,7 +257,6 @@ const CurveParamSelectors = ({
     <div className="rollingstock-editor-effort-speed-curves">
       <div className="selector-container">
         <Selector
-          borderClass="selector-blue"
           title={t('comfortLevels')}
           displayedItems={translateItemsList(t, rollingstockParams.comfortLevels, 'comfortTypes')}
           selectedItem={selectedComfortLvl}
@@ -338,6 +343,16 @@ const CurveParamSelectors = ({
               }}
               dataTestId="power-restriction-selector"
             />
+            {isWarningNb > 0 && (
+              <div className="warning-message text-secondary">
+                <div className="pl-3 d-flex align-items-center">
+                  <div className="mr-2 warning-icon">
+                    <Alert />
+                  </div>
+                  <span>{t('missingPowerClass', { count: isWarningNb })}</span>
+                </div>
+              </div>
+            )}
           </div>
         </>
       )}

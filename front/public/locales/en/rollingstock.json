@@ -75,6 +75,8 @@
     "rollingStockNotDeleted": "Rolling stock not deleted",
     "invalidEffortCurves": "Invalid curves: {{invalidEffortCurves}}. Each curve must have at least 2 combinations of speed / effort values (with no duplication of speed values). Combinations with at least one empty field are ignored. A speed can't exceed 600km/h and an effort can't exceed 1000kN."
   },
+  "missingPowerClass_one": "Missing power class",
+  "missingPowerClass_other": "Missing power classes",
   "name": "Name",
   "no": "No",
   "noCompatibleVoltages": "No one",

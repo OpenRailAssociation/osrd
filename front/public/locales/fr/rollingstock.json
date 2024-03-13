@@ -76,6 +76,8 @@
     "rollingStockNotDeleted": "Le matériel roulant n'a pas été supprimé.",
     "invalidEffortCurves": "Courbes invalides : {{invalidEffortCurves}}. Chaque courbe doit posséder au moins 2 combinaisons de valeurs vitesse / effort (sans doublon sur les valeurs de vitesse). Les combinaisons ayant au moins un champs vide sont ignorées. Une vitesse ne peut pas excéder 600km/h et un effort ne peut pas excéder 1000kN."
   },
+  "missingPowerClass_one": "Classe de puissance manquante",
+  "missingPowerClass_other": "Classes de puissance manquantes",
   "name": "Nom",
   "no": "Non",
   "noCompatibleVoltages": "Aucun",
