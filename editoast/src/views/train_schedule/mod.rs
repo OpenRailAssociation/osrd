@@ -235,7 +235,18 @@ async fn patch_multiple(
             let mut train_schedules = Vec::new();
             for train_patch in train_schedules_changesets {
                 let id = train_patch.id;
-                let changeset = TrainScheduleChangeset::from(train_patch);
+                let rs_id = train_patch.rolling_stock_id;
+                let mut changeset = TrainScheduleChangeset::from(train_patch);
+
+                // Update the rolling stock version if needed
+                if let Some(rs_id) = rs_id {
+                    changeset.rollingstock_version = Some(
+                        LightRollingStockModel::retrieve_conn(conn, rs_id)
+                            .await?
+                            .unwrap()
+                            .version,
+                    );
+                };
                 let train_schedule: TrainSchedule = match changeset.update_conn(conn, id).await? {
                     Some(ts) => ts,
                     None => {
