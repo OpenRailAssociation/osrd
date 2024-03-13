@@ -330,9 +330,7 @@ class Pathfinding<NodeT : Any, EdgeT : Any, OffsetType>(
         nPassedTargets: Int,
         targets: List<EdgeLocation<EdgeT, OffsetType>> = listOf()
     ) {
-        val filteredRange =
-            filterRange(range)
-                ?: return // --> plus besoin coté stdcm (filtre fait dans infraExplorer)
+        val filteredRange = filterRange(range) ?: return
         val totalDistance =
             if (totalCostUntilEdgeLocation != null)
                 totalCostUntilEdgeLocation!!.apply(
@@ -344,6 +342,7 @@ class Pathfinding<NodeT : Any, EdgeT : Any, OffsetType>(
             distanceLeftEstimation =
                 estimateRemainingDistance!![nPassedTargets].apply(
                     filteredRange.edge,
+                    // TODO: this is inconsistent with above, should probably be end instead
                     filteredRange.start
                 )
         queue.add(

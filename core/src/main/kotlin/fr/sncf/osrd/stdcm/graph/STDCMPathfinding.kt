@@ -22,7 +22,7 @@ import fr.sncf.osrd.utils.units.meters
  * Given an infra, a rolling stock and a collection of unavailable time for each block, find a path
  * made of a sequence of block ranges with a matching envelope. Returns null if no path is found.
  */
-fun findPath(
+fun findPathOld(
     fullInfra: FullInfra,
     rollingStock: RollingStock,
     comfort: Comfort?,
@@ -37,6 +37,7 @@ fun findPath(
     pathfindingTimeout: Double
 ): STDCMResult? {
     assert(steps.size >= 2) { "Not enough steps have been set to find a path" }
+
     val graph =
         STDCMGraph(
             fullInfra,
@@ -55,6 +56,7 @@ fun findPath(
     val locations = steps.stream().map(STDCMStep::locations).toList()
     val remainingDistanceEstimators = makeHeuristics(fullInfra, locations)
     val endBlocks = steps.last().locations.map { it.edge }
+
     val path =
         Pathfinding(graph)
             .setRemainingDistanceEstimator(
@@ -64,8 +66,8 @@ fun findPath(
             .setTotalCostUntilEdgeLocation { range ->
                 totalCostUntilEdgeLocation(range, maxDepartureDelay)
             }
-            .setTimeout(pathfindingTimeout) // a recup direct depuis la classe ?
-            .runPathfinding( // à faire T-T
+            .setTimeout(pathfindingTimeout)
+            .runPathfinding(
                 convertLocations(
                     graph,
                     steps[0].locations,
@@ -76,6 +78,7 @@ fun findPath(
                 ),
                 makeObjectiveFunction(steps)
             ) ?: return null
+
     return STDCMPostProcessing(graph)
         .makeResult(
             fullInfra.rawInfra,
@@ -124,7 +127,7 @@ private fun makeObjectiveFunction(
  * - the second one leaves at 9:00 and lasts for 20:01 min. As we are looking for the fastest train,
  *   the first train should have the lightest weight, which is the case with the formula above.
  */
-private fun totalCostUntilEdgeLocation( // duree totale du chemin parcouru
+private fun totalCostUntilEdgeLocation(
     range: EdgeLocation<STDCMEdge, STDCMEdge>,
     searchTimeRange: Double
 ): Double {
@@ -146,7 +149,7 @@ private fun totalCostUntilEdgeLocation( // duree totale du chemin parcouru
  * Converts the "raw" heuristics based on physical blocks, returning the most optimistic distance,
  * into heuristics based on stdcm edges, returning the most optimistic time
  */
-private fun makeAStarHeuristic( // estimation de la duree restante
+private fun makeAStarHeuristic(
     baseBlockHeuristics: ArrayList<AStarHeuristicId<Block>>,
     rollingStock: RollingStock
 ): List<AStarHeuristic<STDCMEdge, STDCMEdge>> {

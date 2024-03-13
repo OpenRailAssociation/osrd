@@ -40,8 +40,9 @@ data class STDCMEdge(
     val standardAllowanceSpeedFactor: Double, // Speed factor used to account for standard allowance
     // e.g. if we have a 5% standard allowance, this value is 1/1.05.
     val waypointIndex: Int, // Index of the last waypoint passed by this train
-    val endAtStop: Boolean // True if the edge end is a stop
-) {
+    val endAtStop: Boolean, // True if the edge end is a stop
+    var weight: Double? = null // Weight (total distance from start + estimation to end) of the edge
+) : Comparable<STDCMEdge> {
     override fun equals(other: Any?): Boolean {
         if (other == null || other.javaClass != STDCMEdge::class.java) return false
         val otherEdge = other as STDCMEdge
@@ -59,6 +60,14 @@ data class STDCMEdge(
         // We handle it by discretizing the start time of the edge: we round the time down to the
         // minute and compare
         // this value.
+    }
+
+    override fun compareTo(other: STDCMEdge): Int {
+        return if (weight != other.weight) weight!!.compareTo(other.weight!!)
+        else {
+            // If the weights are equal, we prioritize the highest number of reached targets
+            other.waypointIndex - waypointIndex
+        }
     }
 
     override fun hashCode(): Int {

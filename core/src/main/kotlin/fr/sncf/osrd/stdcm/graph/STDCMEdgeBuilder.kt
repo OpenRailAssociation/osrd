@@ -134,6 +134,7 @@ internal constructor(
      * specified.
      */
     fun makeAllEdges(): Collection<STDCMEdge> {
+        println("makeAllEdges")
         try {
             if (getEnvelope() == null || hasDuplicateBlocks()) {
                 return listOf()

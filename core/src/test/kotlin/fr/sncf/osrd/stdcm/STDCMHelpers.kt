@@ -3,10 +3,6 @@ package fr.sncf.osrd.stdcm
 import com.google.common.collect.ImmutableMultimap
 import fr.sncf.osrd.DriverBehaviour
 import fr.sncf.osrd.api.FullInfra
-import fr.sncf.osrd.api.pathfinding.constraints.ConstraintCombiner
-import fr.sncf.osrd.api.pathfinding.constraints.ElectrificationConstraints
-import fr.sncf.osrd.api.pathfinding.constraints.LoadingGaugeConstraints
-import fr.sncf.osrd.api.pathfinding.constraints.makeSignalingSystemConstraints
 import fr.sncf.osrd.api.pathfinding.makeChunkPath
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath
 import fr.sncf.osrd.graph.GraphAdapter
@@ -168,31 +164,4 @@ fun infraExplorerFromBlock(
             PathfindingEdgeLocationId(block, Offset(0.meters))
         )
         .elementAt(0)
-}
-
-fun createConstraintCombiner(
-    fullInfra: FullInfra,
-    rollingStockList: ArrayList<RollingStock>
-): ConstraintCombiner<BlockId, Block> {
-
-    // Initializes the constraints
-    val loadingGaugeConstraints =
-        LoadingGaugeConstraints(fullInfra.blockInfra, fullInfra.rawInfra, rollingStockList)
-
-    val electrificationConstraints =
-        ElectrificationConstraints(fullInfra.blockInfra, fullInfra.rawInfra, rollingStockList)
-
-    val signalingSystemConstraints =
-        makeSignalingSystemConstraints(
-            fullInfra.blockInfra,
-            fullInfra.signalingSimulator,
-            rollingStockList
-        )
-
-    val combiner = ConstraintCombiner<BlockId, Block>()
-    combiner.functions.addAll(
-        arrayListOf(loadingGaugeConstraints, electrificationConstraints, signalingSystemConstraints)
-    )
-
-    return combiner
 }

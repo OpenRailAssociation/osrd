@@ -2,7 +2,6 @@ package fr.sncf.osrd.stdcm.infra_exploration
 
 import fr.sncf.osrd.api.pathfinding.constraints.ElectrificationConstraints
 import fr.sncf.osrd.graph.PathfindingEdgeLocationId
-import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.sim_infra.api.DirDetectorId
 import fr.sncf.osrd.sim_infra.utils.routesOnBlock
