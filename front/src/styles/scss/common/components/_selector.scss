@@ -20,6 +20,11 @@
           background-color: var(--coolgray1) !important;
         }
       }
+      &.isWarning {
+        input {
+          outline: solid 2px var(--yellow);
+        }
+      }
     }
   }
 
@@ -43,18 +48,10 @@
       flex: 1;
     }
     &.selected {
-      &.selector-blue {
-        outline: 0.13rem solid var(--blue);
-      }
-      &.selector-pink {
-        outline: 0.13rem solid #fd2f7e;
-      }
+      box-shadow: inset 0 0 0 0.13rem var(--blue);
     }
     &.hovered {
-      outline: 0.13rem solid #fd2f7e80;
-      &.selector-blue {
-        outline: 0.13rem solid #30338380;
-      }
+      box-shadow: inset 0 0 0 0.13rem #30338380;
       .selector-trash-icon {
         color: var(--red);
         visibility: visible;
