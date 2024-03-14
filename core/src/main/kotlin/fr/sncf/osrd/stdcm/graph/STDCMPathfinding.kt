@@ -5,6 +5,7 @@ import fr.sncf.osrd.api.pathfinding.constraints.ElectrificationConstraints
 import fr.sncf.osrd.api.pathfinding.constraints.LoadingGaugeConstraints
 import fr.sncf.osrd.api.pathfinding.constraints.makeSignalingSystemConstraints
 import fr.sncf.osrd.api.pathfinding.makeHeuristics
+import fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.areTimesEqual
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue
 import fr.sncf.osrd.graph.*
 import fr.sncf.osrd.graph.Pathfinding.EdgeLocation
@@ -166,6 +167,8 @@ private fun totalCostUntilEdgeLocation(
             range.edge.timeStart,
             range.edge.standardAllowanceSpeedFactor
         )
+    if (areTimesEqual(searchTimeRange, 0.0))
+        return timeEnd // Avoid multiplying by 0, we can't have time shift anyway
     val pathDuration = timeEnd - range.edge.totalDepartureTimeShift
     return pathDuration * searchTimeRange + range.edge.totalDepartureTimeShift
 }
