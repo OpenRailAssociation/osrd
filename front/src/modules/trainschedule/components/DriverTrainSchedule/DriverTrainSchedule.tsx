@@ -14,10 +14,16 @@ export default function DriverTrainSchedule({
   train: Train;
   rollingStock: LightRollingStock;
 }) {
-  const [baseOrEco, setBaseOrEco] = useState<BaseOrEcoType>(BaseOrEco.base);
+  const [baseOrEco, setBaseOrEco] = useState<BaseOrEcoType>(
+    train.eco ? BaseOrEco.eco : BaseOrEco.base
+  );
 
   useEffect(() => {
-    if (baseOrEco === BaseOrEco.eco && !train[baseOrEco]) setBaseOrEco(BaseOrEco.base);
+    if (baseOrEco === BaseOrEco.eco && !train[baseOrEco]) {
+      setBaseOrEco(BaseOrEco.base);
+    } else {
+      setBaseOrEco(BaseOrEco.eco);
+    }
   }, [train]);
 
   return (
