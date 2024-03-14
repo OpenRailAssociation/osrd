@@ -112,12 +112,6 @@ impl Timetable {
 
                 let result_train = &simulation_output.base_simulation.0;
                 let result_train_eco = &simulation_output.eco_simulation;
-                let arrival_time = result_train
-                    .head_positions
-                    .last()
-                    .expect("Train should have at least one position")
-                    .time
-                    + train_schedule.departure_time;
                 let eco = result_train_eco
                     .as_ref()
                     .map(|eco| eco.0.mechanical_energy_consumed);
@@ -125,6 +119,16 @@ impl Timetable {
                     base: result_train.mechanical_energy_consumed,
                     eco,
                 };
+
+                let arrival_time = if let Some(eco) = result_train_eco {
+                    eco.0.head_positions.last()
+                } else {
+                    result_train.head_positions.last()
+                }
+                .expect("Train should have at least one position")
+                .time
+                    + train_schedule.departure_time;
+
                 let path_length = result_train.stops.last().unwrap().position;
                 let stops_count = result_train
                     .stops
