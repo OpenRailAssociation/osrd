@@ -6,21 +6,31 @@ import type { EditorEntity } from 'applications/editor/typesEditorEntity';
 import type { NullGeometry } from 'types';
 
 export type SignalingSystem = {
-  next_signaling_systems?: Array<string | undefined>;
+  next_signaling_systems: Array<string | undefined>;
 } & (
   | {
-      signaling_system?: 'BAL';
-      settings?: { Nf: 'true' | 'false' };
+      signaling_system: 'BAL';
+      settings: { Nf: 'true' | 'false' };
+      default_parameters?: { jaune_cli: 'true' | 'false' };
+      conditional_parameters: {
+        on_route: string;
+        parameters: { jaune_cli: 'true' | 'false' };
+      }[];
     }
   | {
-      signaling_system?: 'BAPR';
-      settings?: { Nf: 'true' | 'false'; distant: 'true' | 'false' };
+      signaling_system: 'BAPR';
+      settings: { Nf: 'true' | 'false'; distant: 'true' | 'false' };
+      default_parameters?: object;
+      conditional_parameters: [];
     }
   | {
-      signaling_system?: 'TVM';
-      settings?: { is_430: 'true' | 'false' };
+      signaling_system: 'TVM';
+      settings: { is_430: 'true' | 'false'; Nf: 'true' | 'false' };
+      default_parameters?: object;
+      conditional_parameters: [];
     }
 );
+
 export type SignalEntity = EditorEntity<
   Point | NullGeometry,
   {

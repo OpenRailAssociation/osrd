@@ -32,6 +32,13 @@
       },
       "settings": {
         "description": "Automatic colour-light block parameters"
+      },
+      "conditional_parameters": {
+        "description": "BAL signal parameters for specific routes",
+        "title": "Conditional Parameters"
+      },
+      "default_parameters": {
+        "description": "BAL signal parameters"
       }
     },
     "title": "Automatic colour-light block signaling system"
@@ -586,6 +593,26 @@
       }
     },
     "title": "Signalisation TVM"
+  },
+  "__main____BalSystem__ConditionalParameters": {
+    "properties": {
+      "on_route": {
+        "description": "Route for which those parameters are active",
+        "title": "On Route"
+      },
+      "parameters": {
+        "description": "BAL signal parameters"
+      }
+    },
+    "title": "Conditional Parameters"
+  },
+  "__main____BalSystem__Parameters": {
+    "properties": {
+      "jaune_cli": {
+        "description": "Is the signal yellow blinking"
+      }
+    },
+    "title": "Parameters"
   },
   "__main____BalSystem__Settings": {
     "properties": {
