@@ -14,7 +14,6 @@ import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.sim_infra.api.Path
 import fr.sncf.osrd.standalone_sim.result.ResultTrain
-import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.utils.appendOnlyLinkedListOf
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
@@ -76,7 +75,7 @@ fun initInfraExplorerWithEnvelope(
     fullInfra: FullInfra,
     location: PathfindingEdgeLocationId<Block>,
     endBlocks: Collection<BlockId> = setOf(),
-    rollingStock: RollingStock,
+    rollingStock: PhysicsRollingStock,
     constraints: List<PathfindingConstraint<Block>> = listOf()
 ): Collection<InfraExplorerWithEnvelope> {
     return initInfraExplorer(

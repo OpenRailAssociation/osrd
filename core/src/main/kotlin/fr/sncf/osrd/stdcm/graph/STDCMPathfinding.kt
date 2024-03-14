@@ -2,7 +2,6 @@ package fr.sncf.osrd.stdcm.graph
 
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.api.pathfinding.constraints.*
-import fr.sncf.osrd.api.pathfinding.makeHeuristics
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue
 import fr.sncf.osrd.graph.*
 import fr.sncf.osrd.reporting.exceptions.ErrorType
@@ -12,6 +11,7 @@ import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.stdcm.STDCMResult
 import fr.sncf.osrd.stdcm.STDCMStep
 import fr.sncf.osrd.stdcm.infra_exploration.initInfraExplorerWithEnvelope
+import fr.sncf.osrd.stdcm.makeSTDCMHeuristics
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.utils.units.Offset
@@ -95,9 +95,15 @@ class STDCMPathfinding(
         assert(steps.size >= 2) { "Not enough steps have been set to find a path" }
 
         // Initialize the A* heuristic
-        val locations = steps.stream().map(STDCMStep::locations).toList()
-        val remainingDistanceEstimators = makeHeuristics(fullInfra, locations)
-        estimateRemainingDistance = makeAStarHeuristic(remainingDistanceEstimators, rollingStock)
+        estimateRemainingDistance =
+            makeSTDCMHeuristics(
+                fullInfra.blockInfra,
+                fullInfra.rawInfra,
+                steps,
+                maxRunTime,
+                rollingStock,
+                maxDepartureDelay
+            )
 
         val constraints =
             ConstraintCombiner(initConstraints(fullInfra, listOf(rollingStock)).toMutableList())
@@ -199,30 +205,6 @@ class STDCMPathfinding(
         val timeEnd = edge.getApproximateTimeAtLocation(edge.length)
         val pathDuration = timeEnd - edge.totalDepartureTimeShift
         return pathDuration * maxDepartureDelay + edge.totalDepartureTimeShift
-    }
-
-    /**
-     * Converts the "raw" heuristics based on physical blocks, returning the most optimistic
-     * distance, into heuristics based on stdcm edges, returning the most optimistic time
-     */
-    private fun makeAStarHeuristic(
-        baseBlockHeuristics: ArrayList<AStarHeuristicId<Block>>,
-        rollingStock: RollingStock
-    ): List<AStarHeuristic<STDCMEdge, STDCMEdge>> {
-        val res = ArrayList<AStarHeuristic<STDCMEdge, STDCMEdge>>()
-        for (baseBlockHeuristic in baseBlockHeuristics) {
-            res.add(
-                AStarHeuristic { edge, offset ->
-                    val distance =
-                        baseBlockHeuristic.apply(
-                            edge.block,
-                            convertOffsetToBlock(offset, edge.envelopeStartOffset)
-                        )
-                    distance / rollingStock.maxSpeed
-                }
-            )
-        }
-        return res
     }
 
     /** Converts locations on a block id into a location on a STDCMGraph.Edge. */
