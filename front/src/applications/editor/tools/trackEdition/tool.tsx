@@ -3,7 +3,6 @@ import React from 'react';
 import { NoEntry, PlusCircle, Trash, XCircle } from '@osrd-project/ui-icons';
 import { featureCollection } from '@turf/helpers';
 import getNearestPoint from '@turf/nearest-point';
-import nearestPointOnLine, { type NearestPointOnLine } from '@turf/nearest-point-on-line';
 import type { Feature, LineString } from 'geojson';
 import { cloneDeep, isEmpty, isEqual } from 'lodash';
 import { AiFillSave } from 'react-icons/ai';
@@ -16,6 +15,7 @@ import type { Tool } from 'applications/editor/types';
 import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { entityDoUpdate, getLineStringDistance } from 'common/IntervalsDataViz/data';
 import { save } from 'reducers/editor/thunkActions';
+import { nearestPointOnLine, type NearestPointOnLine } from 'utils/geometry';
 import { getMapMouseEventNearestFeature } from 'utils/mapHelper';
 
 import { TrackEditionLayers, TrackEditionLeftPanel, TrackEditionMessages } from './components';
@@ -293,10 +293,12 @@ const TrackEditionTool: Tool<TrackEditionState> = {
         const closestPosition = closest.geometry.coordinates;
 
         if (track.geometry.coordinates.every((point) => !isEqual(point, closestPosition))) {
-          closest.properties = {
-            sectionIndex: closest.properties.index,
+          newState.nearestPoint = {
+            ...closest,
+            properties: {
+              sectionIndex: closest.properties.index,
+            },
           };
-          newState.nearestPoint = closest;
         }
       }
     }

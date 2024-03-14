@@ -1,6 +1,17 @@
 import { point, lineString, featureCollection } from '@turf/helpers';
+import type { Feature, Point } from 'geojson';
 
-import { getTangent, getCurrentBearing } from 'utils/geometry';
+import type { LineString } from 'common/api/osrdEditoastApi';
+import { getTangent, getCurrentBearing, nearestPointOnLine } from 'utils/geometry';
+
+import lineNorthenLatitude from './assets/line-northern-latitude.json';
+import linePointOnLeft from './assets/line-point-on-left.json';
+import linePointOnRight from './assets/line-point-on-right.json';
+import linePointOnVertexUp from './assets/line-point-on-vertex-up.json';
+import linePointOnVertex from './assets/line-point-on-vertex.json';
+import line1 from './assets/line1.json';
+import route1 from './assets/route1.json';
+import route2 from './assets/route2.json';
 
 describe('getTangent', () => {
   describe('2 points segment', () => {
@@ -69,5 +80,27 @@ describe('getCurrentBearing', () => {
     const line = lineString(l);
     const result = getCurrentBearing(line);
     expect(result).toBeCloseTo(expected, 2);
+  });
+});
+
+describe('nearestPointOnLine', () => {
+  it('should work', () => {
+    [
+      linePointOnLeft,
+      linePointOnRight,
+      lineNorthenLatitude,
+      linePointOnVertex,
+      linePointOnVertexUp,
+      line1,
+      route1,
+      route2,
+    ].forEach((features) => {
+      const line = features.features[0] as Feature<LineString>;
+      const pt = features.features[1] as Feature<Point>;
+      const expected = features.features[2] as Feature<Point>;
+
+      const result = nearestPointOnLine(line, pt);
+      expect(result).toEqual(expected);
+    });
   });
 });

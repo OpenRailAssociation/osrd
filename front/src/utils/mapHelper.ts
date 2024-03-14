@@ -8,7 +8,6 @@ import { type BBox, type Coord, featureCollection, lineString } from '@turf/help
 import lineIntersect from '@turf/line-intersect';
 import lineSlice from '@turf/line-slice';
 import nearestPoint, { type NearestPoint } from '@turf/nearest-point';
-import nearestPointOnLine from '@turf/nearest-point-on-line';
 import type {
   Feature,
   FeatureCollection,
@@ -27,6 +26,7 @@ import WebMercatorViewport from 'viewport-mercator-project';
 import type { Layer } from 'applications/editor/consts';
 import { getAngle } from 'applications/editor/data/utils';
 import type { Zone } from 'types';
+import { nearestPointOnLine } from 'utils/geometry';
 
 /**
  * This helpers transforms a given Zone object to the related Feature object (mainly to use with
@@ -268,32 +268,13 @@ export function getLineGeoJSON(points: Position[]): Feature {
  * Given a list of lines or multilines and a specific position, returns the nearest point to that
  * position on any of those lines.
  */
-export function getNearestPoint(
-  lines: Feature<LineString | MultiLineString>[],
-  coord: Coord
-): NearestPoint {
+export function getNearestPoint(lines: Feature<LineString>[], coord: Coord): NearestPoint {
   const nearestPoints: Feature<Point>[] = lines.map((line) => {
     const point = nearestPointOnLine(line, coord, { units: 'meters' });
-    let angle = 0;
-    if (line.geometry.type === 'LineString') {
-      angle = getAngle(
-        line.geometry.coordinates[point.properties.index as number],
-        line.geometry.coordinates[(point.properties.index as number) + 1]
-      );
-    }
-    if (line.geometry.type === 'MultiLineString' && line.geometry.coordinates.length > 0) {
-      const linesOrderdByDistance = sortBy(line.geometry.coordinates, (lineA) => {
-        const distA = nearestPointOnLine(
-          { type: 'LineString', coordinates: lineA },
-          point.geometry.coordinates
-        );
-        return distA.properties.dist;
-      });
-      angle = getAngle(
-        linesOrderdByDistance[0][point.properties.index as number],
-        linesOrderdByDistance[0][(point.properties.index as number) + 1]
-      );
-    }
+    const angle = getAngle(
+      line.geometry.coordinates[point.properties.index as number],
+      line.geometry.coordinates[(point.properties.index as number) + 1]
+    );
     return {
       ...point,
       properties: {

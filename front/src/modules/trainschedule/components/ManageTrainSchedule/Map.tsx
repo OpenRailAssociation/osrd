@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import type { NearestPointOnLine } from '@turf/nearest-point-on-line';
+import type { Feature, Point } from 'geojson';
 import type { MapLayerMouseEvent } from 'maplibre-gl';
 import ReactMapGL, { AttributionControl, ScaleControl } from 'react-map-gl/maplibre';
 import type { MapRef } from 'react-map-gl/maplibre';
@@ -55,7 +55,7 @@ const Map = () => {
   const { viewport, mapSearchMarker, mapStyle, showOSM, layersSettings } = useSelector(getMap);
 
   const [mapIsLoaded, setMapIsLoaded] = useState(false);
-  const [snappedPoint, setSnappedPoint] = useState<NearestPointOnLine>();
+  const [snappedPoint, setSnappedPoint] = useState<Feature<Point> | undefined>();
   const { urlLat = '', urlLon = '', urlZoom = '', urlBearing = '', urlPitch = '' } = useParams();
   const dispatch = useAppDispatch();
   const updateViewportChange = useCallback(
