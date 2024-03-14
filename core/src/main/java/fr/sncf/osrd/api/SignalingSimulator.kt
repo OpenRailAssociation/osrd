@@ -2,9 +2,7 @@ package fr.sncf.osrd.api
 
 import fr.sncf.osrd.signaling.SignalingSimulator
 import fr.sncf.osrd.signaling.bal.*
-import fr.sncf.osrd.signaling.bapr.BAPR
-import fr.sncf.osrd.signaling.bapr.BAPRtoBAL
-import fr.sncf.osrd.signaling.bapr.BAPRtoBAPR
+import fr.sncf.osrd.signaling.bapr.*
 import fr.sncf.osrd.signaling.impl.SigSystemManagerImpl
 import fr.sncf.osrd.signaling.impl.SignalingSimulatorImpl
 import fr.sncf.osrd.signaling.tvm300.*
@@ -23,16 +21,20 @@ fun makeSignalingSimulator(): SignalingSimulator {
 
     sigSystemManager.addSignalDriver(BALtoBAL)
     sigSystemManager.addSignalDriver(BALtoBAPR)
-    sigSystemManager.addSignalDriver(BAPRtoBAPR)
-    sigSystemManager.addSignalDriver(BAPRtoBAL)
-    sigSystemManager.addSignalDriver(TVM300toTVM300)
-    sigSystemManager.addSignalDriver(TVM300toBAL)
-    sigSystemManager.addSignalDriver(TVM300toTVM430)
     sigSystemManager.addSignalDriver(BALtoTVM300)
-    sigSystemManager.addSignalDriver(TVM430toTVM430)
-    sigSystemManager.addSignalDriver(TVM430toBAL)
     sigSystemManager.addSignalDriver(BALtoTVM430)
+    sigSystemManager.addSignalDriver(BAPRtoBAL)
+    sigSystemManager.addSignalDriver(BAPRtoBAPR)
+    sigSystemManager.addSignalDriver(BAPRtoTVM300)
+    sigSystemManager.addSignalDriver(BAPRtoTVM430)
+    sigSystemManager.addSignalDriver(TVM300toBAL)
+    sigSystemManager.addSignalDriver(TVM300toBAPR)
+    sigSystemManager.addSignalDriver(TVM300toTVM300)
+    sigSystemManager.addSignalDriver(TVM300toTVM430)
+    sigSystemManager.addSignalDriver(TVM430toBAL)
+    sigSystemManager.addSignalDriver(TVM430toBAPR)
     sigSystemManager.addSignalDriver(TVM430toTVM300)
+    sigSystemManager.addSignalDriver(TVM430toTVM430)
 
     return SignalingSimulatorImpl(sigSystemManager)
 }

@@ -1,13 +1,13 @@
-package fr.sncf.osrd.signaling.tvm300
+package fr.sncf.osrd.signaling.bapr
 
 import fr.sncf.osrd.signaling.*
 import fr.sncf.osrd.sim_infra.api.SigSettings
 import fr.sncf.osrd.sim_infra.api.SigState
 import fr.sncf.osrd.sim_infra.api.SigStateSchema
 
-object BALtoTVM300 : SignalDriver {
-    override val name = "BAL-TVM300"
-    override val inputSignalingSystem = "BAL"
+object BAPRtoTVM300 : SignalDriver {
+    override val name = "BAPR-TVM300"
+    override val inputSignalingSystem = "BAPR"
     override val outputSignalingSystem = "TVM300"
 
     override fun evalSignal(

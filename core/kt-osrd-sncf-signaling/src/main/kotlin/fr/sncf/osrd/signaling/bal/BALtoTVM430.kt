@@ -1,4 +1,4 @@
-package fr.sncf.osrd.signaling.tvm430
+package fr.sncf.osrd.signaling.bal
 
 import fr.sncf.osrd.signaling.*
 import fr.sncf.osrd.sim_infra.api.SigSettings
