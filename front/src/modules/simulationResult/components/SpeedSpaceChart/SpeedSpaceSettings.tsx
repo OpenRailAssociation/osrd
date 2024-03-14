@@ -92,14 +92,12 @@ const SpeedSpaceSettings = ({
       {getCheckboxRadio(SPEED_SPACE_SETTINGS_KEYS.CURVES, settings.curves)}
       {getCheckboxRadio(SPEED_SPACE_SETTINGS_KEYS.MAX_SPEED, settings.maxSpeed)}
       {getCheckboxRadio(SPEED_SPACE_SETTINGS_KEYS.SLOPES, settings.slopes)}
+      {getCheckboxRadio(SPEED_SPACE_SETTINGS_KEYS.POWER_RESTRICTION, settings.powerRestriction)}
       {trainRollingStock &&
         getCheckboxRadio(
           SPEED_SPACE_SETTINGS_KEYS.ELECTRICAL_PROFILES,
-          settings.electricalProfiles,
-          isOnlyThermal(trainRollingStock.effort_curves.modes) ||
-            runsOnlyThermal(electrificationRanges)
+          settings.electricalProfiles
         )}
-      {getCheckboxRadio(SPEED_SPACE_SETTINGS_KEYS.POWER_RESTRICTION, settings.powerRestriction)}
     </div>
   );
 };
