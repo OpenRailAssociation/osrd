@@ -1,7 +1,6 @@
 import React, { type ComponentType } from 'react';
 
 import { PlusCircle, Trash } from '@osrd-project/ui-icons';
-import nearestPointOnLine from '@turf/nearest-point-on-line';
 import type { Feature, LineString, Point } from 'geojson';
 import { cloneDeep, isEqual, omit } from 'lodash';
 import type { Map } from 'maplibre-gl';
@@ -19,6 +18,7 @@ import type { Tool } from 'applications/editor/types';
 import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { save } from 'reducers/editor/thunkActions';
 import { NULL_GEOMETRY } from 'types';
+import { nearestPointOnLine } from 'utils/geometry';
 import { getNearestPoint } from 'utils/mapHelper';
 
 import { PointEditionMessages, getPointEditionLeftPanel } from './components';
@@ -35,11 +35,7 @@ type PointEditionToolParams<T extends EditorPoint> = {
 };
 
 function calculateDistanceAlongTrack(track: Feature<LineString>, point: Point) {
-  const wrongPointOnTrack = nearestPointOnLine(track.geometry, point, { units: 'meters' });
-  return approximateDistanceWithEditoastData(
-    track as TrackSectionEntity,
-    wrongPointOnTrack.geometry
-  );
+  return approximateDistanceWithEditoastData(track as TrackSectionEntity, point);
 }
 
 function getPointEditionTool<T extends EditorPoint>({

@@ -2,7 +2,6 @@ import turfBbox from '@turf/bbox';
 import { featureCollection } from '@turf/helpers';
 import type { BBox2d } from '@turf/helpers/dist/js/lib/geojson';
 import length from '@turf/length';
-import lineSlice from '@turf/line-slice';
 import type { NearestPoint } from '@turf/nearest-point';
 import type { Feature, LineString, Point } from 'geojson';
 import { uniq } from 'lodash';
@@ -33,6 +32,7 @@ import type { EditorEntity } from 'applications/editor/typesEditorEntity';
 import { type EditorState, editorSliceActions } from 'reducers/editor';
 import type { AppDispatch } from 'store';
 import type { Bbox } from 'types';
+import { nearestPointOnLine } from 'utils/geometry';
 
 /**
  * Since Turf and Editoast do not compute the lengths the same way (see #1751)
@@ -43,11 +43,11 @@ import type { Bbox } from 'types';
  * This approximation is not good if the track is long.
  */
 export function approximateDistanceWithEditoastData(track: TrackSectionEntity, point: Point) {
-  const wrongDistanceAlongTrack = length(lineSlice(track.geometry.coordinates[0], point, track));
-  const wrongTrackLength = length(track);
+  const pointOnLine = nearestPointOnLine(track.geometry, point, { units: 'meters' });
+  const wrongDistanceAlongTrack = pointOnLine.properties.location;
+  const wrongTrackLength = length(track, { units: 'meters' });
   const realTrackLength = track.properties.length;
-
-  const distanceAlongTrack = (wrongDistanceAlongTrack * realTrackLength) / wrongTrackLength;
+  const distanceAlongTrack = wrongDistanceAlongTrack * (realTrackLength / wrongTrackLength);
 
   if (Math.abs(distanceAlongTrack - realTrackLength) < 0.1) return realTrackLength;
   return Math.round(distanceAlongTrack * 100) / 100;
