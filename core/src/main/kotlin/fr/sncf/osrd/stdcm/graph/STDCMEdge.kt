@@ -134,4 +134,8 @@ data class STDCMEdge(
         val offsetRatio = offset.distance.meters / length.distance.meters
         return timeStart + (totalTime * offsetRatio)
     }
+
+    override fun toString(): String {
+        return "STDCMEdge(timeStart=$timeStart, block=$block)"
+    }
 }

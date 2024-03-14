@@ -8,8 +8,8 @@ import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope.MRSPEnvelopeBuilder;
 import fr.sncf.osrd.envelope.part.EnvelopePart;
 import fr.sncf.osrd.envelope_sim.EnvelopeProfile;
+import fr.sncf.osrd.envelope_sim.PhysicsRollingStock;
 import fr.sncf.osrd.sim_infra.api.PathProperties;
-import fr.sncf.osrd.train.RollingStock;
 import java.util.List;
 
 /** MRSP = most restrictive speed profile: maximum speed allowed at any given point. */
@@ -26,7 +26,7 @@ public class MRSP {
      * @return the corresponding MRSP as an Envelope.
      */
     public static Envelope computeMRSP(
-            PathProperties path, RollingStock rollingStock, boolean addRollingStockLength, String trainTag) {
+            PathProperties path, PhysicsRollingStock rollingStock, boolean addRollingStockLength, String trainTag) {
         var builder = new MRSPEnvelopeBuilder();
         var pathLength = toMeters(path.getLength());
 
@@ -34,9 +34,9 @@ public class MRSP {
         builder.addPart(EnvelopePart.generateTimes(
                 List.of(EnvelopeProfile.CONSTANT_SPEED, MRSPEnvelopeBuilder.LimitKind.TRAIN_LIMIT),
                 new double[] {0, pathLength},
-                new double[] {rollingStock.maxSpeed, rollingStock.maxSpeed}));
+                new double[] {rollingStock.getMaxSpeed(), rollingStock.getMaxSpeed()}));
 
-        var offset = addRollingStockLength ? rollingStock.length : 0.;
+        var offset = addRollingStockLength ? rollingStock.getLength() : 0.;
         var speedLimits = path.getSpeedLimits(trainTag);
         for (var speedLimit : speedLimits) {
             // Compute where this limit is active from and to
