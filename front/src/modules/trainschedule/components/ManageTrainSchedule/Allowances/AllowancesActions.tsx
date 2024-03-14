@@ -64,26 +64,29 @@ const AllowancesActions = <T extends RangeAllowanceForm | EngineeringAllowanceFo
   const { t } = useTranslation('operationalStudies/allowances');
   const { openModal } = useModal();
 
-  const distributionsList = [
-    {
-      label: (
-        <>
-          <span className="bullet-linear">●</span>
-          {t('distribution.linear')}
-        </>
-      ),
-      value: 'LINEAR',
-    },
-    {
-      label: (
-        <>
-          <span className="bullet-mareco">●</span>
-          {t('distribution.mareco')}
-        </>
-      ),
-      value: 'MARECO',
-    },
-  ];
+  const distributionsList = useMemo(
+    () => [
+      {
+        label: (
+          <>
+            <span className="bullet-linear">●</span>
+            {t('distribution.linear')}
+          </>
+        ),
+        value: 'LINEAR',
+      },
+      {
+        label: (
+          <>
+            <span className="bullet-mareco">●</span>
+            {t('distribution.mareco')}
+          </>
+        ),
+        value: 'MARECO',
+      },
+    ],
+    [t]
+  );
 
   const roundedPathLength = useMemo(() => Math.round(pathLength), [pathLength]);
   const [isMarginDefinedEverywhere, setIsMarginDefinedEverywhere] = useState(false);
@@ -107,7 +110,7 @@ const AllowancesActions = <T extends RangeAllowanceForm | EngineeringAllowanceFo
     [isMarginDefinedEverywhere, allowanceSelectedIndex]
   );
 
-  function checkValidity() {
+  const checkValidity = () => {
     if (isMarginDefinedEverywhere && allowanceSelectedIndex === undefined) {
       setOverlapAllowancesIndexes([false, false]);
       return;
@@ -124,7 +127,7 @@ const AllowancesActions = <T extends RangeAllowanceForm | EngineeringAllowanceFo
       return;
     }
     setIsValid(!!allowanceValue && beginPosition < endPosition && endPosition <= roundedPathLength);
-  }
+  };
 
   const handleInputFrom = (value: number) => {
     setBeginPosition(value);
@@ -245,6 +248,10 @@ const AllowancesActions = <T extends RangeAllowanceForm | EngineeringAllowanceFo
   useEffect(() => {
     updateInputRangeExtremities();
   }, [allowances, allowanceSelectedIndex, isDisabled, defaultAllowance]);
+
+  useEffect(() => {
+    setAllowanceLength(endPosition - beginPosition);
+  }, [endPosition, beginPosition]);
 
   return (
     <div className="allowances-actions">
