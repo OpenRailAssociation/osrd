@@ -8,6 +8,8 @@ import fr.sncf.osrd.sim_infra.api.DirTrackSectionId
 import fr.sncf.osrd.sim_infra.api.RawInfra
 import fr.sncf.osrd.sim_infra.api.TrackNode
 import fr.sncf.osrd.sim_infra.api.TrackNodeConfigId
+import fr.sncf.osrd.sim_infra.api.decreasing
+import fr.sncf.osrd.sim_infra.api.increasing
 import fr.sncf.osrd.utils.Direction
 import fr.sncf.osrd.utils.DistanceRangeMapImpl
 import fr.sncf.osrd.utils.Helpers
@@ -177,5 +179,33 @@ class RawInfraAdapterTest {
         assert(rawInfra.getNextTrackSection(tf0Decreasing, configIdx).asIndex() == te0Decreasing)
         assert(rawInfra.getNextTrackSection(td0Increasing, configIdx).asIndex() == td2Increasing)
         assert(rawInfra.getNextTrackSection(td2Decreasing, configIdx).asIndex() == td0Decreasing)
+    }
+
+    @Test
+    fun loadSmallInfraCrossingZone() {
+        val rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")
+        val rawInfra = adaptRawInfra(Helpers.infraFromRJS(rjsInfra)).simInfra
+
+        // Check that for crossing nodes, only one zone is generated.
+        // In small_infra, PD0 and PD1 are crossings, linked by track-section TF0 (no detector on
+        // TF0) so PD0 and PD1 are in the same detection zone (bounded by the 6 detectors below)
+        val detectorNameToIdx = rawInfra.detectors.associateBy { rawInfra.getDetectorName(it) }
+        val de0inc = detectorNameToIdx["DE0"]!!.increasing
+        val dd2inc = detectorNameToIdx["DD2"]!!.increasing
+        val dd3inc = detectorNameToIdx["DD3"]!!.increasing
+        val dd4dec = detectorNameToIdx["DD4"]!!.decreasing
+        val dd5dec = detectorNameToIdx["DD5"]!!.decreasing
+        val df0dec = detectorNameToIdx["DF0"]!!.decreasing
+        val expectedBounds = setOf(de0inc, dd2inc, dd3inc, dd4dec, dd5dec, df0dec)
+
+        val zoneCrossings = rawInfra.getNextZone(de0inc)!!
+        assert(rawInfra.getZoneBounds(zoneCrossings).toSet() == expectedBounds)
+        val zoneCrossingsName = rawInfra.getZoneName(zoneCrossings)
+        for (dirDet in expectedBounds) {
+            assert(rawInfra.getNextZone(dirDet) == zoneCrossings)
+            assert(
+                "${rawInfra.getDetectorName(dirDet.value)}:${dirDet.direction}" in zoneCrossingsName
+            )
+        }
     }
 }

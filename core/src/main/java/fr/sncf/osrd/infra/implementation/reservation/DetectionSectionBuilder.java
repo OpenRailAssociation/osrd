@@ -13,6 +13,7 @@ import fr.sncf.osrd.infra.api.tracks.directed.DiTrackInfra;
 import fr.sncf.osrd.infra.api.tracks.undirected.Switch;
 import fr.sncf.osrd.infra.api.tracks.undirected.TrackEdge;
 import fr.sncf.osrd.infra.implementation.tracks.undirected.DetectorImpl;
+import fr.sncf.osrd.infra.implementation.tracks.undirected.SwitchBranchImpl;
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeEndpoint;
 import fr.sncf.osrd.utils.UnionFind;
 import java.util.ArrayList;
@@ -70,12 +71,18 @@ public class DetectionSectionBuilder {
     private void createSectionsOverSeveralTracks() {
         // Keep track of what detection section each endpoint belongs to
         var uf = new UnionFind(infra.getTrackGraph().edges().size() * 2);
+        var nodeToUnionGroup = new HashMap<Switch, Integer>();
 
         // run an union find to associate each track endpoint to a detection section identifier
         for (var track : infra.getTrackGraph().edges()) {
             var beginIndex = getEndpointIndex(track, EdgeEndpoint.BEGIN);
             var endIndex = getEndpointIndex(track, EdgeEndpoint.END);
             if (track.getDetectors().size() == 0) uf.union(beginIndex, endIndex);
+
+            Switch node = null;
+            if (track.getClass() == SwitchBranchImpl.class) {
+                node = ((SwitchBranchImpl) track).switchRef;
+            }
 
             for (var neighbor : infra.getTrackGraph().adjacentEdges(track)) {
                 assert neighbor != track;
@@ -85,6 +92,14 @@ public class DetectionSectionBuilder {
                     if (getDirectionFromEndpoint(infra.getTrackGraph(), track, commonNode) == BACKWARD)
                         linkIndex = endIndex;
                     uf.union(linkIndex, getEndpointIndex(neighbor, Direction.startEndpoint(neighborDir)));
+
+                    if (node != null) {
+                        if (!nodeToUnionGroup.containsKey(node)) {
+                            nodeToUnionGroup.put(node, linkIndex);
+                        } else {
+                            uf.union(linkIndex, nodeToUnionGroup.get(node));
+                        }
+                    }
                 }
             }
         }
