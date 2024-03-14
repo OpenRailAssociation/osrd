@@ -17,12 +17,13 @@ use async_trait::async_trait;
 use colored::{ColoredString, Colorize};
 use editoast_derive::EditoastError;
 pub use http_client::{HttpClient, HttpClientBuilder};
-use reqwest::Url;
+use reqwest::{header::HeaderMap, Url};
 use serde::{de::DeserializeOwned, Serialize};
 use serde_derive::Deserialize;
 use serde_json::Value;
 use thiserror::Error;
 use tracing::{debug, error, info};
+use tracing_opentelemetry::OpenTelemetrySpanExt as _;
 
 #[cfg(test)]
 use crate::core::mocking::MockingError;
@@ -99,7 +100,15 @@ impl CoreClient {
             CoreClient::Direct(client) => {
                 let mut i_try = 0;
                 let response = loop {
-                    let mut request = client.request(method.clone(), path);
+                    let mut header_map = HeaderMap::new();
+                    opentelemetry::global::get_text_map_propagator(|propagator| {
+                        propagator.inject_context(
+                            &tracing::Span::current().context(),
+                            &mut opentelemetry_http::HeaderInjector(&mut header_map),
+                        );
+                    });
+                    let mut request = client.request(method.clone(), path).headers(header_map);
+
                     if let Some(body) = body {
                         request = request.json(body);
                     }
