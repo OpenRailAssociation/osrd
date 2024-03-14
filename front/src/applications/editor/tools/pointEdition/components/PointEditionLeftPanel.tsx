@@ -107,6 +107,22 @@ const PointEditionLeftPanel = <Entity extends EditorEntity>({
               signaling_system: {
                 'ui:widget': 'hidden',
               },
+              default_parameters: {
+                jaune_cli: {
+                  'ui:description': ' ',
+                  'ui:widget': CustomFlagSignalCheckbox,
+                },
+              },
+              conditional_parameters: {
+                items: {
+                  parameters: {
+                    jaune_cli: {
+                      'ui:description': ' ',
+                      'ui:widget': CustomFlagSignalCheckbox,
+                    },
+                  },
+                },
+              },
               settings: {
                 'ui:description': ' ',
                 Nf: {
@@ -187,6 +203,7 @@ const PointEditionLeftPanel = <Entity extends EditorEntity>({
               entity as SignalEntity
             );
           }
+
           setState({
             ...state,
             entity: {

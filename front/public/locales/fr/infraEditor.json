@@ -32,6 +32,13 @@
       },
       "settings": {
         "description": "Paramètres du BAL"
+      },
+      "conditional_parameters": {
+        "description": "Paramètres des signaux BAL pour des itinéraires spécifiques",
+        "title": "Paramètres conditionnels"
+      },
+      "default_parameters": {
+        "description": "Paramètres du signal BAL"
       }
     },
     "title": "Signalisation BAL"
@@ -586,6 +593,26 @@
       }
     },
     "title": "Signalisation TVM"
+  },
+  "__main____BalSystem__ConditionalParameters": {
+    "properties": {
+      "on_route": {
+        "description": "Itinéraire pour lequel ces paramètres sont actifs",
+        "title": "Itinéraire"
+      },
+      "parameters": {
+        "description": "Paramètres du signal BAL"
+      }
+    },
+    "title": "Paramètres conditionnels"
+  },
+  "__main____BalSystem__Parameters": {
+    "properties": {
+      "jaune_cli": {
+        "description": "Feu jaune clignotant"
+      }
+    },
+    "title": "Paramètres"
   },
   "__main____BalSystem__Settings": {
     "properties": {
