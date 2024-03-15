@@ -31,10 +31,14 @@ export default function IGN_SCAN25(props: IGN_SCAN25_Props) {
       id="ignscan25"
       type="raster"
       tiles={[
-        // 'https://wxs.ign.fr/d2lkke4ru7ermncm52c97k51/geoportail/r/wms?bbox={bbox-epsg-3857}&styles=normal&SERVICE=WMS&VERSION=1.3.0&format=image/jpeg&service=WMS&REQUEST=GetMap&CRS=EPSG:3857&width=256&height=256&layers=SCAN25TOUR_PYR-JPEG_WLD_WM',
-        'https://wxs.ign.fr/d2lkke4ru7ermncm52c97k51/geoportail/r/wms?bbox={bbox-epsg-3857}&styles=normal&SERVICE=WMS&VERSION=1.3.0&format=image/jpeg&service=WMS&REQUEST=GetMap&CRS=EPSG:3857&width=256&height=256&layers=GEOGRAPHICALGRIDSYSTEMS.MAPS',
+        /**
+         * WARNING: When new IGN's authorization system will be available (current 2024), we'll have to get a dedicated token to use this endpoint
+         * https://geoservices.ign.fr/actualites/2023-11-20-acces-donnesnonlibres-gpf
+         */
+        'https://data.geopf.fr/private/wmts?SERVICE=WMTS&VERSION=1.0.0&REQUEST=GetTile&apikey=ign_scan_ws&STYLE=normal&TILEMATRIXSET=PM&FORMAT=image/jpeg&LAYER=GEOGRAPHICALGRIDSYSTEMS.MAPS&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}',
       ]}
       tileSize={256}
+      attribution="© IGN"
     >
       <OrderedLayer {...IGN_SCAN25_Params} layerOrder={layerOrder} />
     </Source>
