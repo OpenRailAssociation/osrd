@@ -14,6 +14,7 @@
     "unableToRetrievePathfinding": "Impossible to create a path",
     "unableToCreateTrainSchedule": "Impossible to perform running time calculations (path {{pathId}}) {{trainIndex}}/{{trainsCount}}"
   },
+  "failure": "Operation failed",
   "from": "Origin",
   "generatePaths": "Generate the route",
   "generatePathsAuto": "Complete and generate routes automatically",
@@ -48,6 +49,7 @@
     "searchingPath": "{{pathFindingsDoneCount}}/{{pathFindingsDoneCount}} Generate routes {{pathRef}}",
     "uicComplete": "All locations have been completed."
   },
+  "success": "Operation successful",
   "to": "Destination",
   "trainsFound": "train(s) found"
 }

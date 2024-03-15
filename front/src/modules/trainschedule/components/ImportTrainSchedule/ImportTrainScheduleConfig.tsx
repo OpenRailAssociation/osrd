@@ -111,7 +111,7 @@ export default function ImportTrainScheduleConfig({
       dispatch(
         setFailure({
           name: t('errorMessages.error'),
-          message: t('errorMessage.errorImport'),
+          message: t('errorMessages.errorImport'),
         })
       );
       return null;

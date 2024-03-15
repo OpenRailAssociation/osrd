@@ -14,6 +14,7 @@
     "unableToRetrievePathfinding": "Impossible de créer un chemin",
     "unableToCreateTrainSchedule": "Impossible de réaliser les calculs de marche (path {{pathId}}) {{trainIndex}}/{{trainsCount}}"
   },
+  "failure": "Opération échouée",
   "from": "Origine",
   "generatePaths": "Générer les itinéraires",
   "generatePathsAuto": "Compléter et générer les itinéraires automatiquement",
@@ -48,6 +49,7 @@
     "searchingPath": "{{pathFindingsDoneCount}}/{{pathFindingsDoneCount}} Génération des itinéraires {{pathRef}}",
     "uicComplete": "Tous les lieux ont été renseignés."
   },
+  "success": "Opération réussie",
   "to": "Destination",
   "trainsFound": "trains trouvé(s)"
 }

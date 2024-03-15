@@ -44,6 +44,7 @@
     "@turf/nearest-point": "^6.5.0",
     "@turf/simplify": "^6.5.0",
     "@turf/transform-translate": "^6.5.0",
+    "@types/vinyl-fs": "^3.0.5",
     "@vitejs/plugin-react-swc": "^3.6.0",
     "@vitest/coverage-v8": "^1.2.2",
     "ajv": "^8.12.0",
@@ -67,6 +68,7 @@
     "history": "^5.3.0",
     "i18next": "^23.8.2",
     "i18next-browser-languagedetector": "^7.2.0",
+    "i18next-parser": "^8.13.0",
     "i18next-xhr-backend": "^3.2.2",
     "immer": "^10.0.3",
     "js-file-download": "^0.4.12",
@@ -167,7 +169,10 @@
     "eslint-plugin-react": "^7.33.2",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-vitest": "^0.3.21",
+    "glob": "^10.3.10",
     "happy-dom": "^13.3.8",
+    "i18next-fs-backend": "^2.3.1",
+    "json-key-path-list": "^2.0.3",
     "prettier": "^3.2.5",
     "storybook": "^7.6.12",
     "typescript": "~5.3.3",
@@ -198,7 +203,8 @@
     "build-storybook": "storybook build",
     "generate-licenses": "license-checker-rseidelsohn --json --production --direct --excludePackagesStartingWith '@types' --excludePrivatePackages --customPath src/common/ReleaseInformations/json/licenseCustomFormat.json > src/common/ReleaseInformations/json/licenses.json",
     "e2e-tests": "yarn playwright test",
-    "api-errors-i18n": "tsx ./scripts/api-errors-i18n.ts"
+    "i18n-api-errors": "tsx ./scripts/i18n-api-errors.ts",
+    "i18n-checker": "tsx ./scripts/i18n-checker.ts"
   },
   "browserslist": {
     "production": [
