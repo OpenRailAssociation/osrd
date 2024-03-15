@@ -25,8 +25,8 @@
   },
   "delete": {
     "comfort": "Êtes-vous sûr de vouloir supprimer ce niveau de confort ? Toutes les courbes associées seront perdues.",
-    "electricalProfile": "Êtes-vous sûr de vouloir supprimer ce profil électrique ? Toutes les courbes associées seront perdues.",
-    "powerRestriction": "Êtes-vous sûr de vouloir supprimer la courbe correspondant à ce code de restriction ?",
+    "electrical_profile_level": "Êtes-vous sûr de vouloir supprimer ce profil électrique ? Toutes les courbes associées seront perdues.",
+    "power_restriction_code": "Êtes-vous sûr de vouloir supprimer la courbe correspondant à ce code de restriction ?",
     "tractionMode": "Êtes-vous sûr de vouloir supprimer ce mode de traction ? Toutes les courbes associées seront perdues."
   },
   "deleteRollingStock": "Voulez-vous supprimer ce matériel roulant ?",
