@@ -22,6 +22,8 @@
   "geremiCode": "GEREMI code",
   "updatedOn": "Updated on",
   "modifyProject": "Update project",
+  "noImage": "No image",
+  "noImageInvalid": "Invalid image",
   "objectives": "goals",
   "openStudy": "Open",
   "projectBudget": "Estimated budget",
