@@ -19,8 +19,8 @@ export default function formatStdcmConf(
     error = true;
     dispatch(
       setFailure({
-        name: t('osrdconf:errorMessages.trainScheduleTitle'),
-        message: t('osrdconf:errorMessages.noOrigin'),
+        name: t('operationalStudies/manageTrainSchedule:errorMessages.trainScheduleTitle'),
+        message: t('operationalStudies/manageTrainSchedule:errorMessages.noOrigin'),
       })
     );
   }
@@ -28,8 +28,8 @@ export default function formatStdcmConf(
     error = true;
     dispatch(
       setFailure({
-        name: t('osrdconf:errorMessages.trainScheduleTitle'),
-        message: t('osrdconf:errorMessages.noOriginTime'),
+        name: t('operationalStudies/manageTrainSchedule:errorMessages.trainScheduleTitle'),
+        message: t('operationalStudies/manageTrainSchedule:errorMessages.noOriginTime'),
       })
     );
   }
@@ -37,8 +37,8 @@ export default function formatStdcmConf(
     error = true;
     dispatch(
       setFailure({
-        name: t('osrdconf:errorMessages.trainScheduleTitle'),
-        message: t('osrdconf:errorMessages.noDestination'),
+        name: t('operationalStudies/manageTrainSchedule:errorMessages.trainScheduleTitle'),
+        message: t('operationalStudies/manageTrainSchedule:errorMessages.noDestination'),
       })
     );
   }
@@ -46,8 +46,8 @@ export default function formatStdcmConf(
     error = true;
     dispatch(
       setFailure({
-        name: t('osrdconf:errorMessages.trainScheduleTitle'),
-        message: t('osrdconf:errorMessages.noRollingStock'),
+        name: t('operationalStudies/manageTrainSchedule:errorMessages.trainScheduleTitle'),
+        message: t('operationalStudies/manageTrainSchedule:errorMessages.noRollingStock'),
       })
     );
   }
@@ -55,8 +55,8 @@ export default function formatStdcmConf(
     error = true;
     dispatch(
       setFailure({
-        name: t('osrdconf:errorMessages.trainScheduleTitle'),
-        message: t('osrdconf:errorMessages.noName'),
+        name: t('operationalStudies/manageTrainSchedule:errorMessages.trainScheduleTitle'),
+        message: t('operationalStudies/manageTrainSchedule:errorMessages.noName'),
       })
     );
   }
@@ -64,8 +64,8 @@ export default function formatStdcmConf(
     error = true;
     dispatch(
       setFailure({
-        name: t('osrdconf:errorMessages.trainScheduleTitle'),
-        message: t('osrdconf:errorMessages.noTimetable'),
+        name: t('operationalStudies/manageTrainSchedule:errorMessages.trainScheduleTitle'),
+        message: t('operationalStudies/manageTrainSchedule:errorMessages.noTimetable'),
       })
     );
   }

@@ -17,5 +17,6 @@
     "goHome": "Go to home page"
   },
   "begin": "Start",
-  "end": "End"
+  "end": "End",
+  "value": "value"
 }
