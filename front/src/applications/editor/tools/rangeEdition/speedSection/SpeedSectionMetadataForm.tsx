@@ -140,8 +140,8 @@ const SpeedSectionMetadataForm: FC = () => {
                 <button
                   type="button"
                   className="btn btn-primary btn-sm px-2 ml-2"
-                  aria-label={t('commons.delete')}
-                  title={t('commons.delete')}
+                  aria-label={t('common.delete')}
+                  title={t('common.delete')}
                   onClick={() => {
                     setTagSpeedLimits((state) => state.filter((_, i) => i !== currentIndex));
                   }}

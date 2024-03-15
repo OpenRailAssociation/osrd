@@ -418,6 +418,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+     - name: Check for i18n missing keys
+        run: |
+          docker run --name=front-i18n-checker --net=host \
+              ${{ fromJSON(needs.build.outputs.stable_tags).front-build }} \
+              yarn i18n-checker
+          exit $(docker wait front-i18n-checker)
+
       - name: Execute tests within container
         run: |
           docker run --rm --net=host \
@@ -501,10 +508,10 @@ jobs:
 
       - name: Check for i18n API errors
         run: |
-          docker run --name=front-error-i18n --net=host -v $PWD/output/openapi.yaml:/editoast/openapi.yaml \
+          docker run --name=front-i18n-api-error --net=host -v $PWD/output/openapi.yaml:/editoast/openapi.yaml \
               ${{ fromJSON(needs.build.outputs.stable_tags).front-build }} \
-              yarn api-errors-i18n
-          exit $(docker wait front-error-i18n)
+              yarn i18n-api-errors
+          exit $(docker wait front-i18n-api-error)
 
   check_gateway:
     runs-on: ubuntu-latest
