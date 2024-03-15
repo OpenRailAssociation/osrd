@@ -15,14 +15,17 @@ import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
+import java.lang.ref.SoftReference
 
 data class InfraExplorerWithEnvelopeImpl(
     private val infraExplorer: InfraExplorer,
     private val envelopes: AppendOnlyLinkedList<LocatedEnvelope>,
     private val spacingRequirementAutomaton: SpacingRequirementAutomaton,
     private val rollingStock: PhysicsRollingStock,
-    private var spacingRequirementsCache: List<SpacingRequirement>? = null,
-    private var envelopeCache: EnvelopeTimeInterpolate? = null,
+
+    // Soft references tell the JVM that the values may be cleared when running out of memory
+    private var spacingRequirementsCache: SoftReference<List<SpacingRequirement>>? = null,
+    private var envelopeCache: SoftReference<EnvelopeTimeInterpolate>? = null,
 ) : InfraExplorer by infraExplorer, InfraExplorerWithEnvelope {
 
     override fun cloneAndExtendLookahead(): Collection<InfraExplorerWithEnvelope> {
@@ -32,14 +35,17 @@ data class InfraExplorerWithEnvelopeImpl(
                 envelopes.shallowCopy(),
                 spacingRequirementAutomaton.clone(),
                 rollingStock,
-                spacingRequirementsCache?.toList(),
+                spacingRequirementsCache,
             )
         }
     }
 
     override fun getFullEnvelope(): EnvelopeTimeInterpolate {
-        if (envelopeCache == null) envelopeCache = EnvelopeConcat.fromLocated(envelopes.toList())
-        return envelopeCache!!
+        val cached = envelopeCache?.get()
+        if (cached != null) return cached
+        val res = EnvelopeConcat.fromLocated(envelopes.toList())
+        envelopeCache = SoftReference(res)
+        return res
     }
 
     override fun addEnvelope(envelope: EnvelopeTimeInterpolate): InfraExplorerWithEnvelope {
@@ -63,22 +69,22 @@ data class InfraExplorerWithEnvelopeImpl(
     }
 
     override fun getSpacingRequirements(): List<SpacingRequirement> {
-        if (spacingRequirementsCache == null) {
-            spacingRequirementAutomaton.incrementalPath = getIncrementalPath()
-            // Path is complete and has been completely simulated
-            val simulationComplete = getIncrementalPath().pathComplete && getLookahead().size == 0
-            spacingRequirementAutomaton.callbacks =
-                IncrementalRequirementEnvelopeAdapter(
-                    rollingStock,
-                    getFullEnvelope(),
-                    simulationComplete
-                )
-            val updatedRequirements =
-                spacingRequirementAutomaton.processPathUpdate() as? SpacingRequirements
-                    ?: throw BlockAvailabilityInterface.NotEnoughLookaheadError()
-            spacingRequirementsCache = updatedRequirements.requirements
-        }
-        return spacingRequirementsCache!!
+        val cached = spacingRequirementsCache?.get()
+        if (cached != null) return cached
+        spacingRequirementAutomaton.incrementalPath = getIncrementalPath()
+        // Path is complete and has been completely simulated
+        val simulationComplete = getIncrementalPath().pathComplete && getLookahead().size == 0
+        spacingRequirementAutomaton.callbacks =
+            IncrementalRequirementEnvelopeAdapter(
+                rollingStock,
+                getFullEnvelope(),
+                simulationComplete
+            )
+        val updatedRequirements =
+            spacingRequirementAutomaton.processPathUpdate() as? SpacingRequirements
+                ?: throw BlockAvailabilityInterface.NotEnoughLookaheadError()
+        spacingRequirementsCache = SoftReference(updatedRequirements.requirements)
+        return updatedRequirements.requirements
     }
 
     override fun getFullSpacingRequirements(): List<SpacingRequirement> {
@@ -122,7 +128,7 @@ data class InfraExplorerWithEnvelopeImpl(
             envelopes.shallowCopy(),
             spacingRequirementAutomaton.clone(),
             rollingStock,
-            spacingRequirementsCache?.toList()
+            spacingRequirementsCache
         )
     }
 }
