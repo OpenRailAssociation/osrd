@@ -6,7 +6,7 @@ import type { EditorEntity } from 'applications/editor/typesEditorEntity';
 import type { NullGeometry } from 'types';
 
 export type SignalingSystem = {
-  next_signaling_systems: Array<string | undefined>;
+  next_signaling_systems: string[];
 } & (
   | {
       signaling_system: 'BAL';
@@ -30,6 +30,17 @@ export type SignalingSystem = {
       conditional_parameters: [];
     }
 );
+
+export type SignalingSystemForm = {
+  next_signaling_systems: Array<string | undefined>;
+  signaling_system: 'BAL' | 'BAPR' | 'TVM';
+  settings?: { Nf?: 'true' | 'false'; distant?: 'true' | 'false'; is_430?: 'true' | 'false' };
+  default_parameters?: { jaune_cli: 'true' | 'false' };
+  conditional_parameters: {
+    on_route?: string;
+    parameters?: { jaune_cli: 'true' | 'false' };
+  }[];
+};
 
 export type SignalEntity = EditorEntity<
   Point | NullGeometry,

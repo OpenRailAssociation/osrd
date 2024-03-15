@@ -3,7 +3,13 @@ import { isEmpty } from 'lodash';
 import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
 import { NULL_GEOMETRY } from 'types';
 
-import type { BufferStopEntity, DetectorEntity, SignalEntity, SignalingSystem } from './types';
+import type {
+  BufferStopEntity,
+  DetectorEntity,
+  SignalingSystemForm,
+  SignalEntity,
+  SignalingSystem,
+} from './types';
 
 export function getNewSignal(point?: [number, number]): SignalEntity {
   return {
@@ -59,7 +65,7 @@ export function getNewDetector(point?: [number, number]): DetectorEntity {
 /**
  * Given a signaling system, returns its default settings
  */
-function getLogicalSignalSettings(signalingSystem: SignalingSystem) {
+function getLogicalSignalSettings(signalingSystem: SignalingSystemForm) {
   const { settings, signaling_system } = signalingSystem;
   switch (signaling_system) {
     case 'TVM':
@@ -78,41 +84,34 @@ function getLogicalSignalSettings(signalingSystem: SignalingSystem) {
   }
 }
 
-export function formatSignalingSystems(
-  entity: SignalEntity
-): SignalEntity['properties']['logical_signals'] {
-  if (!entity.properties.logical_signals) return [];
+export function formatSignalingSystem(logicalSignal: SignalingSystemForm): SignalingSystem {
+  const next_signaling_systems = logicalSignal.next_signaling_systems.map(
+    (nextSignalingSystem) => nextSignalingSystem || 'BAL'
+  );
 
-  return entity.properties.logical_signals.map((logicalSignal) => {
-    const next_signaling_systems = logicalSignal.next_signaling_systems.map(
-      (nextSignalingSystem) => nextSignalingSystem || 'BAL'
-    );
+  const settings = getLogicalSignalSettings(logicalSignal);
 
-    const settings = getLogicalSignalSettings(logicalSignal);
-
-    if (logicalSignal.signaling_system !== 'BAL') {
-      return {
-        signaling_system: logicalSignal.signaling_system,
-        next_signaling_systems,
-        settings,
-        default_parameters: {},
-        conditional_parameters: [],
-      } as SignalingSystem;
-    }
-
-    const conditional_parameters = logicalSignal.conditional_parameters.map(
-      (conditionalParameter) =>
-        isEmpty(conditionalParameter)
-          ? { on_route: '', parameters: { jaune_cli: 'false' } }
-          : conditionalParameter
-    );
-
+  if (logicalSignal.signaling_system !== 'BAL') {
     return {
-      signaling_system: 'BAL',
+      signaling_system: logicalSignal.signaling_system,
       next_signaling_systems,
       settings,
-      default_parameters: { jaune_cli: logicalSignal.default_parameters?.jaune_cli || 'false' },
-      conditional_parameters,
+      default_parameters: {},
+      conditional_parameters: [],
     } as SignalingSystem;
-  });
+  }
+
+  const conditional_parameters = logicalSignal.conditional_parameters.map((conditionalParameter) =>
+    isEmpty(conditionalParameter)
+      ? { on_route: '', parameters: { jaune_cli: 'false' } }
+      : conditionalParameter
+  );
+
+  return {
+    signaling_system: 'BAL',
+    next_signaling_systems,
+    settings,
+    default_parameters: { jaune_cli: logicalSignal.default_parameters?.jaune_cli || 'false' },
+    conditional_parameters,
+  } as SignalingSystem;
 }

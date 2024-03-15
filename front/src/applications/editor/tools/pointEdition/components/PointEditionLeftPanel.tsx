@@ -13,10 +13,11 @@ import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
 import type {
   BufferStopEntity,
   DetectorEntity,
+  SignalingSystemForm,
   PointEditionState,
   SignalEntity,
 } from 'applications/editor/tools/pointEdition/types';
-import { formatSignalingSystems } from 'applications/editor/tools/pointEdition/utils';
+import { formatSignalingSystem } from 'applications/editor/tools/pointEdition/utils';
 import type { ExtendedEditorContextType } from 'applications/editor/types';
 import type { EditorEntity } from 'applications/editor/typesEditorEntity';
 import { useInfraID } from 'common/osrdContext';
@@ -199,9 +200,9 @@ const PointEditionLeftPanel = <Entity extends EditorEntity>({
             additionalUpdate.geometry = point.geometry;
           }
           if (entity.objType === 'Signal' && entity.properties.logical_signals) {
-            additionalPropertiesUpdate.logical_signals = formatSignalingSystems(
-              entity as SignalEntity
-            );
+            additionalPropertiesUpdate.logical_signals = (
+              entity.properties.logical_signals as SignalingSystemForm[]
+            ).map((logicalSignal) => formatSignalingSystem(logicalSignal));
           }
 
           setState({
