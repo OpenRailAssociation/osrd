@@ -58,22 +58,45 @@ interface PathProperties {
     fun <T> getRangeMapFromUndirected(
         getData: (chunkId: TrackChunkId) -> DistanceRangeMap<T>
     ): DistanceRangeMap<T>
+
+    fun withRoutes(routes: List<RouteId>): PathProperties
 }
 
-/** Build a Path from chunks and offsets, filtering the chunks outside the offsets */
+/**
+ * Build a Path from chunks and offsets, filtering the chunks outside the offsets. A list of
+ * non-overlapping routes along the path can be provided to accommodate with route-dependant speed
+ * sections. This list of routes can be empty because this information is not necessary or not
+ * available in some contexts, such as unit tests. It is, however, required if speed limits are
+ * computed along that path.
+ */
 fun buildPathPropertiesFrom(
-    infra: TrackProperties,
+    infra: RawSignalingInfra,
     chunks: DirStaticIdxList<TrackChunk>,
     pathBeginOffset: Offset<Path>,
     pathEndOffset: Offset<Path>,
+    routes: List<RouteId>? = null
 ): PathProperties {
     val chunkPath = buildChunkPath(infra, chunks, pathBeginOffset, pathEndOffset)
-    return makePathProperties(infra, chunkPath)
+    return makePathProperties(infra, chunkPath, routes)
 }
 
 @JvmName("makePathProperties")
-fun makePathProperties(infra: TrackProperties, chunkPath: ChunkPath): PathProperties {
-    return PathPropertiesImpl(infra, chunkPath)
+fun makePathProperties(
+    infra: RawSignalingInfra,
+    chunkPath: ChunkPath,
+    routes: List<RouteId>? = null
+): PathProperties {
+    return PathPropertiesImpl(infra, chunkPath, routes)
+}
+
+/** For java interoperability purpose */
+@JvmName("makePathPropertiesWithRouteNames")
+fun makePathPropertiesWithRouteNames(
+    infra: RawSignalingInfra,
+    chunkPath: ChunkPath,
+    routes: List<String>
+): PathProperties {
+    return makePathProperties(infra, chunkPath, routes.map { r -> infra.getRouteFromName(r) })
 }
 
 /** For java interoperability purpose */

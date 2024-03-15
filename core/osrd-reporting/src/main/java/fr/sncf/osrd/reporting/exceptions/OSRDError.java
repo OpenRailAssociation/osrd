@@ -396,6 +396,18 @@ public final class OSRDError extends RuntimeException {
     }
 
     /**
+     * Creates a new OSRDError for an inconsistent speed section
+     *
+     * @param speedSection the speed section name
+     * @return a new OSRDError instance
+     */
+    public static OSRDError newInconsistentSpeedSectionError(String speedSection) {
+        var error = new OSRDError(ErrorType.InconsistentSpeedSection);
+        error.context.put("speed_section", speedSection);
+        return error;
+    }
+
+    /**
      * Returns the error message.
      *
      * @return the error message

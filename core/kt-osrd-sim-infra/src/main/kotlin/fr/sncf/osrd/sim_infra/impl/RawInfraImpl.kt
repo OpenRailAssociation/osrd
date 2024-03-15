@@ -16,11 +16,7 @@ import fr.sncf.osrd.utils.indexing.StaticIdxList
 import fr.sncf.osrd.utils.indexing.StaticIdxSortedSet
 import fr.sncf.osrd.utils.indexing.StaticIdxSpace
 import fr.sncf.osrd.utils.indexing.StaticPool
-import fr.sncf.osrd.utils.units.Distance
-import fr.sncf.osrd.utils.units.Length
-import fr.sncf.osrd.utils.units.Offset
-import fr.sncf.osrd.utils.units.OffsetList
-import fr.sncf.osrd.utils.units.Speed
+import fr.sncf.osrd.utils.units.*
 import kotlin.time.Duration
 
 class TrackNodeConfigDescriptor(
@@ -129,7 +125,12 @@ class OperationalPointPartDescriptor(
 class SpeedSection(
     val default: Speed,
     val speedByTrainTag: Map<String, Speed>,
-)
+    val speedByRoute: Map<String, Speed>
+) {
+    override fun toString(): String {
+        return "SpeedSection(default=$default, speedByTrainTag=$speedByTrainTag, speedByRoute=$speedByRoute)"
+    }
+}
 
 class NeutralSection(
     val lowerPantograph: Boolean,
@@ -252,13 +253,21 @@ class RawInfraImpl(
 
     override fun getTrackChunkSpeedSections(
         trackChunk: DirTrackChunkId,
-        trainTag: String?
+        trainTag: String?,
+        route: String?
     ): DistanceRangeMap<Speed> {
         val res = distanceRangeMapOf<Speed>()
         for (entry in trackChunkPool[trackChunk.value].speedSections.get(trackChunk.direction)) {
             val speedSection = entry.value
-            val allowedSpeed =
-                speedSection.speedByTrainTag.getOrDefault(trainTag, speedSection.default)
+            val speedFromTag = speedSection.speedByTrainTag[trainTag]
+            val speedFromRoute = speedSection.speedByRoute[route]
+            // Attempting to use min(speedFrom[Route|Tag], speedSection.default) leads to
+            // confusing results with overlapping speed sections from a user perspective.
+            // We decided that the responsibility of creating speed sections that are
+            // consistent with exploitation rules fallback to the user, for now at least.
+            // The same thing applies to speed limits by train tag.
+            assert(speedFromTag == null || speedFromRoute == null) { "checked at parsing" }
+            val allowedSpeed = speedFromRoute ?: speedFromTag ?: speedSection.default
             res.put(entry.lower, entry.upper, allowedSpeed)
         }
         return res

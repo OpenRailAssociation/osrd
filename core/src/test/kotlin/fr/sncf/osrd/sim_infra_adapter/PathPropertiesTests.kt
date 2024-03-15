@@ -443,7 +443,7 @@ class PathPropertiesTests {
             )
         rjsInfra.speedSections.add(speedSection)
         val infra = Helpers.fullInfraFromRJS(rjsInfra)
-        val path = makePathProps(infra.blockInfra, infra.rawInfra, BlockId(0U))
+        val path = makePathProps(infra.blockInfra, infra.rawInfra, BlockId(0U), routes = listOf())
         val speedLimits = path.getSpeedLimits("trainTag")
         assertThat(speedLimits.asList())
             .containsExactlyElementsOf(

@@ -5,18 +5,29 @@ import com.google.common.collect.Sets;
 import com.squareup.moshi.JsonDataException;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSSpeedSection;
 import fr.sncf.osrd.reporting.exceptions.OSRDError;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 public final class SpeedLimits {
 
     public final double defaultSpeedLimit;
     public final ImmutableMap<String, Double> speedLimitByTag;
+    public final Map<String, Double> speedLimitOnRoute;
 
     /** Constructor */
-    public SpeedLimits(double defaultSpeedLimit, ImmutableMap<String, Double> speedLimitByTag) {
+    public SpeedLimits(
+            double defaultSpeedLimit,
+            ImmutableMap<String, Double> speedLimitByTag,
+            Map<String, Double> speedLimitOnRoute) {
         assert !Double.isNaN(defaultSpeedLimit);
         this.defaultSpeedLimit = defaultSpeedLimit;
         this.speedLimitByTag = speedLimitByTag;
+        this.speedLimitOnRoute = speedLimitOnRoute;
+    }
+
+    public SpeedLimits(double defaultSpeedLimit, ImmutableMap<String, Double> speedLimitByTag) {
+        this(defaultSpeedLimit, speedLimitByTag, ImmutableMap.of());
     }
 
     /** Directly creates a SpeedLimits instance from the railjson dict */
@@ -24,13 +35,25 @@ public final class SpeedLimits {
         double speedLimit = rjsSpeedSection.getSpeedLimit();
         ImmutableMap<String, Double> speedLimitByTag = ImmutableMap.copyOf(rjsSpeedSection.speedLimitByTag);
 
-        validateSpeedLimit(speedLimit);
+        var speedLimitOnRoute = new HashMap<String, Double>();
+        if (rjsSpeedSection.onRoutes != null) {
+            speedLimit = Double.POSITIVE_INFINITY;
+            rjsSpeedSection.onRoutes.forEach(route -> speedLimitOnRoute.put(route, rjsSpeedSection.getSpeedLimit()));
+        }
 
+        if (!speedLimitByTag.isEmpty() && !speedLimitOnRoute.isEmpty()) {
+            throw OSRDError.newInconsistentSpeedSectionError(rjsSpeedSection.id);
+        }
+
+        validateSpeedLimit(speedLimit);
         for (Double limit : speedLimitByTag.values()) {
             validateSpeedLimit(limit);
         }
+        for (Double limit : speedLimitOnRoute.values()) {
+            validateSpeedLimit(limit);
+        }
 
-        return new SpeedLimits(speedLimit, speedLimitByTag);
+        return new SpeedLimits(speedLimit, speedLimitByTag, speedLimitOnRoute);
     }
 
     /** validates that speed limit is greater than 0 */
@@ -65,7 +88,12 @@ public final class SpeedLimits {
             var speed = Double.min(speedA, speedB);
             builder.put(category, speed);
         }
-        return new SpeedLimits(defaultSpeed, builder.build());
+        var speedLimitOnRoute = new HashMap<>(a.speedLimitOnRoute);
+        b.speedLimitOnRoute.forEach((route, speed) -> {
+            var mergedSpeed = Math.min(speed, speedLimitOnRoute.getOrDefault(route, Double.POSITIVE_INFINITY));
+            speedLimitOnRoute.put(route, mergedSpeed);
+        });
+        return new SpeedLimits(defaultSpeed, builder.build(), speedLimitOnRoute);
     }
 
     @Override

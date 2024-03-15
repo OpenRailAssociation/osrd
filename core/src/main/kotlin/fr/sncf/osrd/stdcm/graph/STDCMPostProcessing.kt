@@ -50,7 +50,8 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
         val blockRanges = makeBlockRanges(ranges)
         val blockWaypoints = makeBlockWaypoints(path)
         val chunkPath = makeChunkPathFromRanges(graph, ranges)
-        val trainPath = makePathProperties(infra!!, chunkPath)
+        val routes = ranges.last().edge.infraExplorer.getExploredRoutes()
+        val trainPath = makePathProperties(infra!!, chunkPath, routes)
         val stops = makeStops(ranges)
         val physicsPath = EnvelopeTrainPath.from(infra, trainPath)
         val maxSpeedEnvelope =

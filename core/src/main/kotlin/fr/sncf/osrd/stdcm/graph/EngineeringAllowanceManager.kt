@@ -73,7 +73,8 @@ class EngineeringAllowanceManager(private val graph: STDCMGraph) {
                     it.envelopeStartOffset + it.length.distance
                 )
             }
-        val pathProperties = makePathProps(graph.rawInfra, graph.blockInfra, blockRanges)
+        val routes = edges.last().infraExplorer.getExploredRoutes()
+        val pathProperties = makePathProps(graph.rawInfra, graph.blockInfra, blockRanges, routes)
         val mrsp = computeMRSP(pathProperties, graph.rollingStock, false, graph.tag)
         val envelopePath = EnvelopeTrainPath.from(graph.rawInfra, pathProperties)
         val context = build(graph.rollingStock, envelopePath, graph.timeStep, graph.comfort)

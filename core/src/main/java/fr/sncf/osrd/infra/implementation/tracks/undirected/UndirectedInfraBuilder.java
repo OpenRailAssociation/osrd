@@ -222,7 +222,7 @@ public class UndirectedInfraBuilder {
                 var newMap = TreeRangeMap.<Double, SpeedLimits>create();
                 newMap.put(
                         Range.closed(0., track.getLength()),
-                        new SpeedLimits(Double.POSITIVE_INFINITY, ImmutableMap.of()));
+                        new SpeedLimits(Double.POSITIVE_INFINITY, ImmutableMap.of(), ImmutableMap.of()));
                 trackSpeedSections.put(dir, newMap);
             }
             track.speedSections = trackSpeedSections;

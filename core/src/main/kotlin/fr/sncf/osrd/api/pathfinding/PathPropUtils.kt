@@ -23,13 +23,15 @@ fun makePathProps(
     rawInfra: RawSignalingInfra,
     blockIdx: BlockId,
     beginOffset: Offset<Block> = Offset(0.meters),
-    endOffset: Offset<Block> = blockInfra.getBlockLength(blockIdx)
+    endOffset: Offset<Block> = blockInfra.getBlockLength(blockIdx),
+    routes: List<String>? = null
 ): PathProperties {
     return buildPathPropertiesFrom(
         rawInfra,
         blockInfra.getTrackChunksFromBlock(blockIdx),
         beginOffset.cast(),
-        endOffset.cast()
+        endOffset.cast(),
+        routes?.map { r -> rawInfra.getRouteFromName(r) }
     )
 }
 
@@ -40,13 +42,15 @@ fun makePathProps(
  * @param blockInfra BlockInfra
  * @param blockIds the blocks in the order they are encountered
  * @param offsetFirstBlock the path offset on the first block in millimeters
+ * @param routes non-overlapping list of routes the path follows
  * @return corresponding path
  */
 fun makePathProps(
     rawInfra: RawSignalingInfra,
     blockInfra: BlockInfra,
     blockIds: List<BlockId>,
-    offsetFirstBlock: Length<Path>
+    offsetFirstBlock: Length<Path>,
+    routes: List<RouteId>? = null
 ): PathProperties {
     val chunks = MutableDirStaticIdxArrayList<TrackChunk>()
     var totalLength: Length<Path> = Length(0.meters)
@@ -56,17 +60,18 @@ fun makePathProps(
             totalLength += rawInfra.getZonePathLength(zoneId).distance
         }
     }
-    return buildPathPropertiesFrom(rawInfra, chunks, offsetFirstBlock, totalLength)
+    return buildPathPropertiesFrom(rawInfra, chunks, offsetFirstBlock, totalLength, routes)
 }
 
 /** Creates a `Path` instance from a list of block ranges */
 fun makePathProps(
     rawInfra: RawSignalingInfra,
     blockInfra: BlockInfra,
-    blockRanges: List<PathfindingEdgeRangeId<Block>>
+    blockRanges: List<PathfindingEdgeRangeId<Block>>,
+    routes: List<RouteId>? = null
 ): PathProperties {
     val chunkPath = makeChunkPath(rawInfra, blockInfra, blockRanges)
-    return makePathProperties(rawInfra, chunkPath)
+    return makePathProperties(rawInfra, chunkPath, routes = routes)
 }
 
 /** Builds a PathProperties from an RJSTrainPath */

@@ -66,6 +66,17 @@ class AppendOnlyLinkedList<T>(private var lastNode: Node<T>? = null, var size: I
         return res.reversed()
     }
 
+    /** Converts the linked list into a set. */
+    fun toSet(): Set<T> {
+        val res = mutableSetOf<T>()
+        var node = lastNode
+        while (node != null) {
+            res.add(node.element)
+            node = node.prev
+        }
+        return res
+    }
+
     /** Returns the last element of the list */
     fun last(): T {
         return lastNode!!.element
