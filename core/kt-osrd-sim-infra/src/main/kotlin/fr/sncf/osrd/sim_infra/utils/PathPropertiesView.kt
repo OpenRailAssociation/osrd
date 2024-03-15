@@ -94,4 +94,8 @@ data class PathPropertiesView(
         res.truncate(0.meters, length)
         return res
     }
+
+    override fun withRoutes(routes: List<RouteId>): PathProperties {
+        return PathPropertiesView(base.withRoutes(routes), startOffset, endOffset)
+    }
 }

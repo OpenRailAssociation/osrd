@@ -7,7 +7,7 @@ import fr.sncf.osrd.utils.units.Length
 
 /** Build a path from track ids */
 fun pathFromTracks(
-    infra: LocationInfra,
+    infra: RawInfra,
     trackIds: List<String>,
     dir: Direction,
     start: Distance,

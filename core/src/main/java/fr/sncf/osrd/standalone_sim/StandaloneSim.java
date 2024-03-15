@@ -1,7 +1,7 @@
 package fr.sncf.osrd.standalone_sim;
 
 import static fr.sncf.osrd.api.pathfinding.PathPropUtilsKt.makeChunkPath;
-import static fr.sncf.osrd.sim_infra.api.PathPropertiesKt.makePathProperties;
+import static fr.sncf.osrd.sim_infra.api.PathPropertiesKt.makePathPropertiesWithRouteNames;
 
 import fr.sncf.osrd.DriverBehaviour;
 import fr.sncf.osrd.api.FullInfra;
@@ -129,7 +129,10 @@ public class StandaloneSim {
             double timeStep) {
         // Parse trainPath
         var chunkPath = makeChunkPath(infra.rawInfra(), rjsTrainPath);
-        var trainPath = makePathProperties(infra.rawInfra(), chunkPath);
+        var trainPath = makePathPropertiesWithRouteNames(
+                infra.rawInfra(),
+                chunkPath,
+                rjsTrainPath.routePath.stream().map(rp -> rp.route).toList());
         var envelopePath = EnvelopeTrainPath.from(infra.rawInfra(), trainPath, electricalProfileMap);
 
         // Parse train schedules

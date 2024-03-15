@@ -140,7 +140,11 @@ public enum ErrorType {
             "path_with_repeated_tracks", "the path goes over the same track multiple times", ErrorCause.USER),
     AllowanceRangeOutOfBounds("allowance_range", "Allowance ranges are out of bounds", ErrorCause.USER),
     AllowanceOutOfBounds("allowance", "Allowance is out of bounds", ErrorCause.USER),
-    InvalidSpeedLimitValue("speed_limit_value", "Speed limit must be greater than 0", ErrorCause.USER);
+    InvalidSpeedLimitValue("speed_limit_value", "Speed limit must be greater than 0", ErrorCause.USER),
+    InconsistentSpeedSection(
+            "speed_section",
+            "Speed section definition is nonsensical and cannot be used for simulation",
+            ErrorCause.USER);
 
     public final String type;
     public final String message;

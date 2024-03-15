@@ -33,7 +33,7 @@ fun makeRequirementsFromPath(
     departureTime: Double
 ): List<SpacingRequirement> {
     val chunkPath = makeChunkPath(infra, startLocations, endLocations)
-    val trainPath = makePathProperties(infra.rawInfra, chunkPath)
+    val trainPath = makePathProperties(infra.rawInfra, chunkPath, routes = listOf())
     val result =
         StandaloneSim.run(
             infra,

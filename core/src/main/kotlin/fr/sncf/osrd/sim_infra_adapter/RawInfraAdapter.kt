@@ -357,15 +357,21 @@ private fun makeChunk(
     fun makeSpeedSections(range: TrackRangeView): DistanceRangeMap<SpeedSection> {
         val res = distanceRangeMapOf<SpeedSection>()
         for (entry in range.speedSections.asMapOfRanges()) {
-            val legacySpeedLimit = entry.value
+            val legacySpeedLimits = entry.value
             val map =
-                legacySpeedLimit.speedLimitByTag.mapValues { mapEntry ->
+                legacySpeedLimits.speedLimitByTag.mapValues { mapEntry ->
                     mapEntry.value!!.metersPerSecond
                 }
             res.put(
                 Distance.fromMeters(entry.key.lowerEndpoint()),
                 Distance.fromMeters(entry.key.upperEndpoint()),
-                SpeedSection(legacySpeedLimit.defaultSpeedLimit.metersPerSecond, map)
+                SpeedSection(
+                    legacySpeedLimits.defaultSpeedLimit.metersPerSecond,
+                    map,
+                    legacySpeedLimits.speedLimitOnRoute.mapValues { speed ->
+                        speed.value!!.metersPerSecond
+                    }
+                )
             )
         }
         return res

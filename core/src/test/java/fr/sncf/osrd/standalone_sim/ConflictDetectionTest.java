@@ -57,7 +57,7 @@ public class ConflictDetectionTest {
                 List.of("rt.buffer_stop.1->DA0", "rt.DA0->DA5", "rt.DA5->DC5"),
                 makeTrackLocation(getTrackSectionFromNameOrThrow("TA1", rawInfra), fromMeters(146.6269028126681)),
                 makeTrackLocation(getTrackSectionFromNameOrThrow("TC1", rawInfra), fromMeters(444.738508351214)));
-        var pathProps = makePathProperties(rawInfra, chunkPath);
+        var pathProps = makePathProperties(rawInfra, chunkPath, null);
 
         var simResult = simpleSim(fullInfra, pathProps, chunkPath, 0, Double.POSITIVE_INFINITY);
         var spacingRequirements = simResult.train.spacingRequirements;
@@ -113,13 +113,13 @@ public class ConflictDetectionTest {
                 List.of("rt.buffer_stop.0->DA2", "rt.DA2->DA5"),
                 makeTrackLocation(ta0, fromMeters(1795)),
                 makeTrackLocation(ta0, fromMeters(1825)));
-        var pathPropsA = makePathProperties(rawInfra, chunkPathA);
+        var pathPropsA = makePathProperties(rawInfra, chunkPathA, null);
         var chunkPathB = chunkPathFromRoutes(
                 rawInfra,
                 List.of("rt.DD0->DC0", "rt.DC0->DA3"),
                 makeTrackLocation(tc0, fromMeters(205)),
                 makeTrackLocation(tc0, fromMeters(175)));
-        var pathPropsB = makePathProperties(rawInfra, chunkPathB);
+        var pathPropsB = makePathProperties(rawInfra, chunkPathB, null);
 
         var simResultA = simpleSim(fullInfra, pathPropsA, chunkPathA, 0, Double.POSITIVE_INFINITY);
         var simResultB = simpleSim(fullInfra, pathPropsB, chunkPathB, 0, Double.POSITIVE_INFINITY);
@@ -163,14 +163,14 @@ public class ConflictDetectionTest {
                 List.of("rt.DA2->DA5", "rt.DA5->DC4"),
                 makeTrackLocation(ta6, 0),
                 makeTrackLocation(tc0, fromMeters(600)));
-        var pathPropsA = makePathProperties(rawInfra, chunkPathA);
+        var pathPropsA = makePathProperties(rawInfra, chunkPathA, null);
         // path that continues on
         var chunkPathB = chunkPathFromRoutes(
                 rawInfra,
                 List.of("rt.DA2->DA5", "rt.DA5->DC5", "rt.DC5->DD2"),
                 makeTrackLocation(ta6, 0),
                 makeTrackLocation(td0, fromMeters(8500)));
-        var pathPropsB = makePathProperties(rawInfra, chunkPathB);
+        var pathPropsB = makePathProperties(rawInfra, chunkPathB, null);
 
         var simResultA =
                 simpleSim(fullInfra, pathPropsA, chunkPathA, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY);

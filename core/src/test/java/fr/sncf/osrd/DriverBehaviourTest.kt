@@ -20,7 +20,7 @@ class DriverBehaviourTest {
                 infra.addBlock("b", "c", 100.meters, 10.0),
                 infra.addBlock("c", "d", 100.meters, 20.0)
             )
-        val path: PathProperties = makePathProps(infra, infra, blocks, Length(0.meters))
+        val path: PathProperties = makePathProps(infra, infra, blocks, Length(0.meters), listOf())
         val testRollingStock = TestTrains.VERY_SHORT_FAST_TRAIN
         val driverBehaviour = DriverBehaviour(2.0, 3.0)
         var mrsp = MRSP.computeMRSP(path, testRollingStock, true, null)

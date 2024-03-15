@@ -39,7 +39,7 @@ public class ScheduleMetadataExtractorTests {
                         "rt.tde.switch_foo-track->buffer_stop_a"),
                 makeTrackLocation(barA, 200),
                 makeTrackLocation(fooA, 0));
-        var pathProps = makePathProperties(infra.rawInfra(), chunkPath);
+        var pathProps = makePathProperties(infra.rawInfra(), chunkPath, null);
         var testContext = SimpleContextBuilder.makeSimpleContext(Distance.toMeters(pathProps.getLength()), 0);
         var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
         var envelope = makeSimpleMaxEffortEnvelope(testContext, testRollingStock.maxSpeed, new double[] {});
@@ -60,7 +60,7 @@ public class ScheduleMetadataExtractorTests {
                         "rt.tde.switch_foo-track->buffer_stop_a"),
                 makeTrackLocation(barA, 100),
                 makeTrackLocation(fooA, 100));
-        var pathProps = makePathProperties(infra.rawInfra(), chunkPath);
+        var pathProps = makePathProperties(infra.rawInfra(), chunkPath, null);
         var testContext = SimpleContextBuilder.makeSimpleContext(Distance.toMeters(pathProps.getLength()), 0);
         var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
         var envelope = makeSimpleMaxEffortEnvelope(testContext, testRollingStock.maxSpeed, new double[] {});
@@ -82,7 +82,7 @@ public class ScheduleMetadataExtractorTests {
                         "rt.tde.switch_foo-track->buffer_stop_a"),
                 makeTrackLocation(barA, 100),
                 makeTrackLocation(fooA, 100));
-        var pathProps = makePathProperties(infra.rawInfra(), chunkPath);
+        var pathProps = makePathProperties(infra.rawInfra(), chunkPath, null);
         var testContext = SimpleContextBuilder.makeSimpleContext(Distance.toMeters(pathProps.getLength()), 0);
         var testRollingStock = TestTrains.VERY_LONG_FAST_TRAIN;
         var envelope = makeSimpleMaxEffortEnvelope(testContext, testRollingStock.maxSpeed, new double[] {});
@@ -103,7 +103,7 @@ public class ScheduleMetadataExtractorTests {
                 routes,
                 makeTrackLocation(TrackInfraKt.getTrackSectionFromNameOrThrow("track.0", infra.rawInfra()), 0),
                 makeTrackLocation(TrackInfraKt.getTrackSectionFromNameOrThrow("track.9", infra.rawInfra()), 0));
-        var pathProps = makePathProperties(infra.rawInfra(), chunkPath);
+        var pathProps = makePathProperties(infra.rawInfra(), chunkPath, null);
         var testContext = SimpleContextBuilder.makeSimpleContext(Distance.toMeters(pathProps.getLength()), 0);
         var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
         var envelope = makeSimpleMaxEffortEnvelope(testContext, testRollingStock.maxSpeed, new double[] {});
@@ -124,7 +124,7 @@ public class ScheduleMetadataExtractorTests {
                 routes,
                 makeTrackLocation(TrackInfraKt.getTrackSectionFromNameOrThrow("track.0", infra.rawInfra()), 0),
                 makeTrackLocation(TrackInfraKt.getTrackSectionFromNameOrThrow("track.9", infra.rawInfra()), 0));
-        var pathProps = makePathProperties(infra.rawInfra(), chunkPath);
+        var pathProps = makePathProperties(infra.rawInfra(), chunkPath, null);
         var testContext = SimpleContextBuilder.makeSimpleContext(Distance.toMeters(pathProps.getLength()), 0);
         var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
         var envelope = makeSimpleMaxEffortEnvelope(testContext, testRollingStock.maxSpeed, new double[] {});
@@ -155,7 +155,7 @@ public class ScheduleMetadataExtractorTests {
                 routes,
                 makeTrackLocation(TrackInfraKt.getTrackSectionFromNameOrThrow("track.0", infra.rawInfra()), 0),
                 makeTrackLocation(TrackInfraKt.getTrackSectionFromNameOrThrow("track.0", infra.rawInfra()), 10));
-        var pathProps = makePathProperties(infra.rawInfra(), chunkPath);
+        var pathProps = makePathProperties(infra.rawInfra(), chunkPath, null);
         var testContext = SimpleContextBuilder.makeSimpleContext(Distance.toMeters(pathProps.getLength()), 0);
         var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
         var envelope = makeSimpleMaxEffortEnvelope(testContext, testRollingStock.maxSpeed, new double[] {});

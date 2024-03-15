@@ -1,6 +1,5 @@
 package fr.sncf.osrd.stdcm.infra_exploration
 
-import fr.sncf.osrd.api.pathfinding.constraints.*
 import fr.sncf.osrd.api.pathfinding.makePathProps
 import fr.sncf.osrd.conflicts.IncrementalPath
 import fr.sncf.osrd.conflicts.PathFragment
@@ -88,6 +87,9 @@ interface InfraExplorer {
 
     /** Returns a copy of the current instance. */
     fun clone(): InfraExplorer
+
+    /** Returns the list of routes that are the current exploration follows. */
+    fun getExploredRoutes(): List<RouteId>
 }
 
 /** Used to identify an edge */
@@ -122,6 +124,7 @@ fun initInfraExplorer(
                 blockInfra,
                 appendOnlyLinkedListOf(),
                 appendOnlyLinkedListOf(),
+                mutableMapOf(),
                 incrementalPath,
                 blockToPathProperties,
                 endBlocks = endBlocks,
@@ -138,6 +141,7 @@ private class InfraExplorerImpl(
     private val blockInfra: BlockInfra,
     private var blocks: AppendOnlyLinkedList<BlockId>,
     private var routes: AppendOnlyLinkedList<RouteId>,
+    private var blockRoutes: MutableMap<BlockId, MutableSet<RouteId>>,
     private var incrementalPath: IncrementalPath,
     private var pathPropertiesCache: MutableMap<BlockId, PathProperties>,
     private var currentIndex: Int = 0,
@@ -155,10 +159,24 @@ private class InfraExplorerImpl(
         offset: Offset<Block>,
         length: Distance?
     ): PathProperties {
-        val blockPathProperties =
-            pathPropertiesCache.computeIfAbsent(getCurrentBlock()) {
-                makePathProps(blockInfra, rawInfra, it)
+        // We re-compute the routes of the current path since the cache may be incorrect
+        // because of a previous iteration.
+        // We also can't set a first route for sure in initInfraExplorer, but we set the first cache
+        // entry.
+        // So we have to correct that here now that we now which route we're on.
+        val path =
+            pathPropertiesCache.getOrElse(getCurrentBlock()) {
+                makePathProps(
+                    blockInfra,
+                    rawInfra,
+                    getCurrentBlock(),
+                )
             }
+        val nonOverlappingRoutesOnBlock =
+            blockRoutes[getCurrentBlock()]!!.intersect(routes.toSet()).toList()
+        val blockPathProperties = path.withRoutes(nonOverlappingRoutesOnBlock)
+        pathPropertiesCache[getCurrentBlock()] = blockPathProperties
+
         val blockLength = Length<Path>(blockInfra.getBlockLength(getCurrentBlock()).distance)
         val endOffset = if (length == null) blockLength else offset.plus(length).cast()
         if (offset.distance == 0.meters && endOffset == blockLength) {
@@ -229,6 +247,7 @@ private class InfraExplorerImpl(
             this.blockInfra,
             this.blocks.shallowCopy(),
             this.routes.shallowCopy(),
+            this.blockRoutes,
             this.incrementalPath.clone(),
             this.pathPropertiesCache,
             this.currentIndex,
@@ -236,6 +255,10 @@ private class InfraExplorerImpl(
             this.predecessorLength,
             this.constraints
         )
+    }
+
+    override fun getExploredRoutes(): List<RouteId> {
+        return routes.toList()
     }
 
     /**
@@ -275,6 +298,7 @@ private class InfraExplorerImpl(
                         travelledPathEnd = Distance.ZERO
                     )
                 )
+                blockRoutes.getOrPut(block) { mutableSetOf() }.add(route)
                 pathStarted = true
                 if (endPath) break // Can't extend any further
             }

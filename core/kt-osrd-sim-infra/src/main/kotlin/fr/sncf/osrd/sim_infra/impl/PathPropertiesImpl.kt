@@ -20,8 +20,11 @@ data class ChunkPath(
     val endOffset: Offset<Path>
 )
 
-data class PathPropertiesImpl(val infra: TrackProperties, val chunkPath: ChunkPath) :
-    PathProperties {
+data class PathPropertiesImpl(
+    val infra: RawSignalingInfra,
+    val chunkPath: ChunkPath,
+    val pathRoutes: List<RouteId>?
+) : PathProperties {
     override fun getSlopes(): DistanceRangeMap<Double> {
         return getRangeMap { dirChunkId -> infra.getTrackChunkSlope(dirChunkId) }
     }
@@ -63,7 +66,20 @@ data class PathPropertiesImpl(val infra: TrackProperties, val chunkPath: ChunkPa
     }
 
     override fun getSpeedLimits(trainTag: String?): DistanceRangeMap<Speed> {
-        return getRangeMap { dirChunkId -> infra.getTrackChunkSpeedSections(dirChunkId, trainTag) }
+        assert(pathRoutes != null) {
+            "the routes on a path should be set when attempting to compute a speed limit"
+        }
+        return getRangeMap { dirChunkId ->
+            val routeOnChunk =
+                infra.getRoutesOnTrackChunk(dirChunkId).filter { route ->
+                    pathRoutes!!.contains(route)
+                }
+            assert(routeOnChunk.size < 2) {
+                "a train cannot follow more than one route at the same time"
+            }
+            val route = routeOnChunk.singleOrNull()?.let { routeId -> infra.getRouteName(routeId) }
+            infra.getTrackChunkSpeedSections(dirChunkId, trainTag, route)
+        }
     }
 
     override fun getLength(): Length<Path> {
@@ -180,6 +196,10 @@ data class PathPropertiesImpl(val infra: TrackProperties, val chunkPath: ChunkPa
             return res
         }
         return getRangeMap { dirChunkId -> projectDirection(dirChunkId) }
+    }
+
+    override fun withRoutes(routes: List<RouteId>): PathProperties {
+        return PathPropertiesImpl(infra, chunkPath, routes)
     }
 
     /**
