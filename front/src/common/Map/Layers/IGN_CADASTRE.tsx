@@ -31,9 +31,10 @@ export default function IGN_CADASTRE(props: IGN_Cadastre_Props) {
       id="igncadastre"
       type="raster"
       tiles={[
-        'https://wxs.ign.fr/essentiels/geoportail/r/wms?bbox={bbox-epsg-3857}&styles=normal&SERVICE=WMS&VERSION=1.3.0&format=image/jpeg&service=WMS&REQUEST=GetMap&CRS=EPSG:3857&width=256&height=256&layers=CADASTRALPARCELS.PARCELLAIRE_EXPRESS',
+        'https://data.geopf.fr/wmts?SERVICE=WMTS&VERSION=1.0.0&REQUEST=GetTile&STYLE=normal&TILEMATRIXSET=PM&FORMAT=image/png&LAYER=CADASTRALPARCELS.PARCELLAIRE_EXPRESS&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}',
       ]}
       tileSize={256}
+      attribution="© IGN"
     >
       <OrderedLayer {...IGN_Cadastre_Params} layerOrder={layerOrder} />
     </Source>

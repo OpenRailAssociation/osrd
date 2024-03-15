@@ -34,9 +34,10 @@ export default function IGN_BD_ORTHO(props: IGN_BD_ORTHO_Props) {
       id="ignbdortho"
       type="raster"
       tiles={[
-        'https://wxs.ign.fr/essentiels/geoportail/r/wms?bbox={bbox-epsg-3857}&styles=normal&SERVICE=WMS&VERSION=1.3.0&format=image/jpeg&service=WMS&REQUEST=GetMap&CRS=EPSG:3857&width=256&height=256&layers=ORTHOIMAGERY.ORTHOPHOTOS',
+        'https://data.geopf.fr/wmts?SERVICE=WMTS&VERSION=1.0.0&REQUEST=GetTile&STYLE=normal&TILEMATRIXSET=PM&FORMAT=image/jpeg&LAYER=ORTHOIMAGERY.ORTHOPHOTOS&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}',
       ]}
       tileSize={256}
+      attribution="© IGN"
     >
       <OrderedLayer {...IGN_BD_ORTHO_Params} layerOrder={layerOrder} />
     </Source>
