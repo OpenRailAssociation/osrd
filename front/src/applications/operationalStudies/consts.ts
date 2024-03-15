@@ -101,14 +101,9 @@ export interface PointOnMap {
   };
 }
 
-export const STUDY_STATES = {
-  started: 'started',
-  inProgress: 'inProgress',
-  finish: 'finish',
-};
+export const STUDY_STATES = ['started', 'inProgress', 'finish'] as const;
 
-export type StudyState = keyof typeof STUDY_STATES;
-export const studyStates = Object.keys(STUDY_STATES) as StudyState[];
+export type StudyState = typeof STUDY_STATES;
 
 export const STUDY_TYPES = [
   'nothingSelected',
