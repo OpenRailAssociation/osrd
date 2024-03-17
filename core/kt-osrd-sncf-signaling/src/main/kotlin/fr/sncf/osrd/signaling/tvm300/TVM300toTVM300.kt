@@ -1,6 +1,9 @@
 package fr.sncf.osrd.signaling.tvm300
 
+import fr.sncf.osrd.reporting.exceptions.ErrorType
+import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.signaling.*
+import fr.sncf.osrd.signaling.bal.BALtoBAL
 import fr.sncf.osrd.sim_infra.api.SigParameters
 import fr.sncf.osrd.sim_infra.api.SigSettings
 import fr.sncf.osrd.sim_infra.api.SigState
@@ -11,6 +14,21 @@ object TVM300toTVM300 : SignalDriver {
     override val inputSignalingSystem = "TVM300"
     override val outputSignalingSystem = "TVM300"
 
+    private fun cascadePrimaryAspect(aspect: String, parameters: SigParameters): String {
+        return when (aspect) {
+            "300VL" -> "300VL"
+            "300(VL)" -> "300VL"
+            "270A" -> "300(VL"
+            "220A" -> "270A"
+            "16OA" -> "220A"
+            "080A" -> "160A"
+            "000" -> "080A"
+            "RRR" -> "000"
+            else -> throw OSRDError.newAspectError(aspect)
+        }
+    }
+
+
     override fun evalSignal(
         signal: SigSettings,
         parameters: SigParameters,
@@ -18,7 +36,23 @@ object TVM300toTVM300 : SignalDriver {
         maView: MovementAuthorityView?,
         limitView: SpeedLimitView?
     ): SigState {
-        return stateSchema { value("aspect", "VL") }
+        return stateSchema {
+            when (maView!!.protectionStatus) {
+                ProtectionStatus.NO_PROTECTED_ZONES -> throw OSRDError(ErrorType.BALUnprotectedZones)
+                ProtectionStatus.INCOMPATIBLE -> value("aspect", "RRR")
+                ProtectionStatus.OCCUPIED -> value("aspect", "RRR")
+                ProtectionStatus.CLEAR -> {
+                    if (!maView.hasNextSignal) {
+                        value("aspect", "000")
+                    } else {
+                        val nextSignalState = maView.nextSignalState
+                        val nextAspect = nextSignalState.getEnum("aspect")
+                        value("aspect", cascadePrimaryAspect(nextAspect, parameters))
+                    }
+                }
+            }
+        }
+
     }
 
     override fun checkSignal(reporter: SignalDiagReporter, signal: SigSettings, block: SigBlock) {}
