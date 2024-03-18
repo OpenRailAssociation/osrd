@@ -5,7 +5,6 @@ use diesel::sql_query;
 use diesel::sql_types::{Array, BigInt, Nullable, Text};
 use diesel_async::AsyncPgConnection as PgConnection;
 use std::collections::HashMap;
-use std::iter::Iterator;
 
 use super::utils::InvolvedObjects;
 use super::GeneratedData;
