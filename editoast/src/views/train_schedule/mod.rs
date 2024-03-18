@@ -605,7 +605,7 @@ async fn standalone_simulation(
                 let mut res_ids = Vec::new();
                 // Save inputs
                 for mut train_schedule in train_schedules {
-                    train_schedule.infra_version = infra.version.clone();
+                    train_schedule.infra_version.clone_from(&infra.version);
                     train_schedule.rollingstock_version = Some(
                         LightRollingStockModel::retrieve(conn, train_schedule.rolling_stock_id)
                             .await?
