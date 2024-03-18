@@ -47,7 +47,7 @@ actix-http = "3.5.1"
 actix-cors = "0.7.0"
 tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
 tracing = { version = "0.1.40", features = ["log"] }
-redis = { version = "0.24.0", features = [
+redis = { version = "0.25.2", features = [
     "tokio-comp",
     "connection-manager",
     "cluster-async",
