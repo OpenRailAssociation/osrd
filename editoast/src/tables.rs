@@ -494,6 +494,25 @@ diesel::table! {
     use diesel::sql_types::*;
     use postgis_diesel::sql_types::*;
 
+    scenario_v2 (id) {
+        id -> Int8,
+        infra_id -> Int8,
+        #[max_length = 128]
+        name -> Varchar,
+        #[max_length = 1024]
+        description -> Varchar,
+        creation_date -> Timestamptz,
+        last_modification -> Timestamptz,
+        tags -> Array<Nullable<Text>>,
+        timetable_id -> Int8,
+        study_id -> Int8,
+    }
+}
+
+diesel::table! {
+    use diesel::sql_types::*;
+    use postgis_diesel::sql_types::*;
+
     search_operational_point (id) {
         id -> Int8,
         #[max_length = 255]
@@ -730,6 +749,9 @@ diesel::joinable!(scenario -> electrical_profile_set (electrical_profile_set_id)
 diesel::joinable!(scenario -> infra (infra_id));
 diesel::joinable!(scenario -> study (study_id));
 diesel::joinable!(scenario -> timetable (timetable_id));
+diesel::joinable!(scenario_v2 -> infra (infra_id));
+diesel::joinable!(scenario_v2 -> study (study_id));
+diesel::joinable!(scenario_v2 -> timetable_v2 (timetable_id));
 diesel::joinable!(search_operational_point -> infra_object_operational_point (id));
 diesel::joinable!(search_project -> project (id));
 diesel::joinable!(search_scenario -> scenario (id));
@@ -776,6 +798,7 @@ diesel::allow_tables_to_appear_in_same_query!(
     rolling_stock_livery,
     rolling_stock_separate_image,
     scenario,
+    scenario_v2,
     search_operational_point,
     search_project,
     search_scenario,
