@@ -55,7 +55,7 @@
       },
       "objects": {
         "DuplicateIdsProvided": "Identifiants d'objet fournis en double",
-        "ObjectIdNotFound": "Objet ID non trouvé"
+        "ObjectIdNotFound": "Objet '{{object_id}}' non trouvé"
       },
       "pathfinding": {
         "EndingTrackLocationNotFound": "Localisation de la fin de la section non trouvé",
@@ -116,7 +116,9 @@
       "RollingStockIsUsed": "Matériel roulant '{{rolling_stock_id}}' est occupé"
     },
     "scenario": {
-      "NotFound": "Scénario non trouvé"
+      "NotFound": "Scénario non trouvé",
+      "InfraNotFound":"Infrastructure {{infra_id}} non trouvée",
+      "TimetableNotFound":"Grille horaire '{{timetable_id}}' non trouvée"
     },
     "search": {
       "ArgMissing": "Argument de type {{expected}} manquant à la position {{arg_pos}}",
@@ -132,7 +134,7 @@
       "UndefinedFunction": "Fonction non définie",
       "UndefinedOverload": "Aucune surcharge appropriée",
       "UnexpectedArg": "Argument inattendu trouvé",
-      "UnexpectedColummn": "Colonne inattendue",
+      "UnexpectedColumn": "Colonne inattendue",
       "UnexpectedErsatz": "Une valeur de type {{expected}} était attendue, mais '{{value}}' trouvé",
       "VariadicArgTypeMismatch": "Un argument variadique de type {{expected}} était attendu, mais {{actual}} trouvé"
     },

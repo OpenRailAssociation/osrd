@@ -194,6 +194,9 @@ type Properties = EnumSet<Property>;
         ("infra_id" = i64, Path, description = "The infra id"),
     ),
     request_body = PathPropertiesInput,
+    params(
+        ("infra_id" = i64, Path, description = "The infra id"),
+    ),
     responses(
         (status = 200, description = "Path properties", body = PathProperties),
     ),

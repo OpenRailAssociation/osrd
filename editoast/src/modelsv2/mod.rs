@@ -7,10 +7,10 @@ pub mod railjson;
 pub mod rolling_stock_image;
 pub mod rolling_stock_livery;
 pub mod rolling_stock_model;
+pub mod scenario;
 pub mod study;
 pub mod timetable;
 pub mod train_schedule;
-pub mode scenario;
 
 pub use documents::Document;
 pub use electrical_profiles::ElectricalProfileSet;

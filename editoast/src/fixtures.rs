@@ -11,13 +11,12 @@ pub mod tests {
     };
     use crate::modelsv2::projects::Tags;
     use crate::modelsv2::rolling_stock_livery::RollingStockLiveryModel;
+    use crate::modelsv2::scenario::Scenario as ScenarioV2;
     use crate::modelsv2::timetable::Timetable as TimetableV2;
     use crate::modelsv2::train_schedule::TrainSchedule as TrainScheduleV2;
     use crate::modelsv2::{
         self, Changeset, Document, ElectricalProfileSet, Model, Project, RollingStockModel, Study,
     };
-    use crate::modelsv2::timetable::Timetable as TimetableV2;
-    use crate::modelsv2::train_schedule::TrainSchedule as TrainScheduleV2;
     use crate::schema::electrical_profiles::{ElectricalProfile, ElectricalProfileSetData};
     use crate::schema::v2::trainschedule::TrainScheduleBase;
     use crate::schema::{RailJson, TrackRange};
@@ -338,6 +337,42 @@ pub mod tests {
             db_pool,
         )
         .await
+    }
+
+    pub struct ScenarioV2FixtureSet {
+        pub project: TestFixture<Project>,
+        pub study: TestFixture<Study>,
+        pub scenario: TestFixture<ScenarioV2>,
+        pub timetable: TestFixture<TimetableV2>,
+        pub infra: TestFixture<Infra>,
+    }
+
+    #[fixture]
+    pub async fn scenario_v2_fixture_set(
+        db_pool: Data<DbPool>,
+        #[future] timetable_v2: TestFixture<TimetableV2>,
+        #[future] project: TestFixture<Project>,
+    ) -> ScenarioV2FixtureSet {
+        let StudyFixtureSet { project, study } = study_fixture_set(db_pool.clone(), project).await;
+        let empty_infra = empty_infra(db_pool.clone()).await;
+        let timetable = timetable_v2.await;
+        let scenario = ScenarioV2::changeset()
+            .name("test_scenario_v2".to_string())
+            .description("test_scenario_v2 description".to_string())
+            .creation_date(Utc::now().naive_utc())
+            .last_modification(Utc::now().naive_utc())
+            .tags(Tags::default())
+            .timetable_id(timetable.model.get_id())
+            .study_id(study.model.get_id())
+            .infra_id(empty_infra.model.get_id());
+        let scenario = TestFixture::create(scenario, db_pool).await;
+        ScenarioV2FixtureSet {
+            project,
+            study,
+            scenario,
+            timetable,
+            infra: empty_infra,
+        }
     }
 
     #[fixture]

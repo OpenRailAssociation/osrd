@@ -18,6 +18,7 @@ export const addTagTypes = [
   'timetable',
   'train_schedule',
   'pathfindingv2',
+  'scenariosv2',
   'timetablev2',
   'train_schedulev2',
 ] as const;
@@ -747,6 +748,61 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['pathfindingv2'],
       }),
+      getV2ProjectsByProjectIdStudiesAndStudyIdScenarios: build.query<
+        GetV2ProjectsByProjectIdStudiesAndStudyIdScenariosApiResponse,
+        GetV2ProjectsByProjectIdStudiesAndStudyIdScenariosApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/v2/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/`,
+          params: {
+            page: queryArg.page,
+            page_size: queryArg.pageSize,
+            ordering: queryArg.ordering,
+          },
+        }),
+        providesTags: ['scenariosv2'],
+      }),
+      postV2ProjectsByProjectIdStudiesAndStudyIdScenarios: build.mutation<
+        PostV2ProjectsByProjectIdStudiesAndStudyIdScenariosApiResponse,
+        PostV2ProjectsByProjectIdStudiesAndStudyIdScenariosApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/v2/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/`,
+          method: 'POST',
+          body: queryArg.scenarioCreateFormV2,
+        }),
+        invalidatesTags: ['scenariosv2'],
+      }),
+      deleteV2ProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId: build.mutation<
+        DeleteV2ProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiResponse,
+        DeleteV2ProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/v2/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/${queryArg.scenarioId}/`,
+          method: 'DELETE',
+        }),
+        invalidatesTags: ['scenariosv2'],
+      }),
+      getV2ProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId: build.query<
+        GetV2ProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiResponse,
+        GetV2ProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/v2/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/${queryArg.scenarioId}/`,
+        }),
+        providesTags: ['scenariosv2'],
+      }),
+      patchV2ProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId: build.mutation<
+        PatchV2ProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiResponse,
+        PatchV2ProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/v2/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/${queryArg.scenarioId}/`,
+          method: 'PATCH',
+          body: queryArg.scenarioPatchFormV2,
+        }),
+        invalidatesTags: ['scenariosv2'],
+      }),
       getV2Timetable: build.query<GetV2TimetableApiResponse, GetV2TimetableApiArg>({
         query: (queryArg) => ({
           url: `/v2/timetable/`,
@@ -1457,6 +1513,49 @@ export type PostV2InfraByInfraIdPathfindingBlocksApiArg = {
   /** The infra id */
   infraId: number;
   pathfindingInputV2: PathfindingInputV2;
+};
+export type GetV2ProjectsByProjectIdStudiesAndStudyIdScenariosApiResponse =
+  /** status 200 The list of scenarios */ PaginatedResponseOfScenarioWithDetails;
+export type GetV2ProjectsByProjectIdStudiesAndStudyIdScenariosApiArg = {
+  /** The id of a project */
+  projectId: number;
+  studyId: number;
+  page?: number;
+  pageSize?: number | null;
+  ordering?: Ordering;
+};
+export type PostV2ProjectsByProjectIdStudiesAndStudyIdScenariosApiResponse =
+  /** status 201 The created scenario */ ScenarioResponseV2;
+export type PostV2ProjectsByProjectIdStudiesAndStudyIdScenariosApiArg = {
+  /** The id of a project */
+  projectId: number;
+  studyId: number;
+  scenarioCreateFormV2: ScenarioCreateFormV2;
+};
+export type DeleteV2ProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiResponse =
+  /** status 204 The scenario was deleted successfully */ void;
+export type DeleteV2ProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg = {
+  /** The id of a project */
+  projectId: number;
+  studyId: number;
+  scenarioId: number;
+};
+export type GetV2ProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiResponse =
+  /** status 200 The requested scenario */ ScenarioResponseV2;
+export type GetV2ProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg = {
+  /** The id of a project */
+  projectId: number;
+  studyId: number;
+  scenarioId: number;
+};
+export type PatchV2ProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiResponse =
+  /** status 204 The scenario was updated successfully */ ScenarioResponseV2;
+export type PatchV2ProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg = {
+  /** The id of a project */
+  projectId: number;
+  studyId: number;
+  scenarioId: number;
+  scenarioPatchFormV2: ScenarioPatchFormV2;
 };
 export type GetV2TimetableApiResponse =
   /** status 200 List timetables */ PaginatedResponseOfTimetable;
@@ -2827,6 +2926,50 @@ export type PathfindingInputV2 = {
   rolling_stock_supported_electrification: string[];
   /** List of supported signaling systems */
   rolling_stock_supported_signaling_systems: string[];
+};
+export type ScenarioV2 = {
+  creation_date: string;
+  description: string;
+  id: number;
+  infra_id: number;
+  last_modification: string;
+  name: string;
+  study_id: number;
+  tags: Tags;
+  timetable_id: number;
+};
+export type ScenarioWithDetailsV2 = ScenarioV2 & {
+  infra_name: string;
+  trains_count: number;
+};
+export type PaginatedResponseOfScenarioWithDetails = {
+  /** The total number of items */
+  count: number;
+  /** The next page number */
+  next: number | null;
+  /** The previous page number */
+  previous: number | null;
+  /** The list of results */
+  results: ScenarioWithDetailsV2[];
+};
+export type ScenarioResponseV2 = ScenarioV2 & {
+  infra_name: string;
+  project: Project;
+  study: Study;
+  trains_count: number;
+};
+export type ScenarioCreateFormV2 = {
+  description?: string;
+  infra_id: number;
+  name: string;
+  tags?: Tags;
+  timetable_id: number;
+};
+export type ScenarioPatchFormV2 = {
+  description?: string | null;
+  infra_id?: number | null;
+  name?: string | null;
+  tags?: Tags | null;
 };
 export type TimetableResult = {
   electrical_profile_set_id?: number | null;
