@@ -308,12 +308,9 @@ pub mod tests {
         db_pool: Data<DbPool>,
     ) -> TestFixture<Pathfinding> {
         let pathfinding = simple_pathfinding(infra_id);
-
-        let pathfinding: Pathfinding = PathfindingChangeset::from(pathfinding)
-            .create(db_pool.clone())
-            .await
-            .unwrap()
-            .into();
+        let mut changeset = PathfindingChangeset::from(pathfinding);
+        changeset.id = None;
+        let pathfinding: Pathfinding = changeset.create(db_pool.clone()).await.unwrap().into();
 
         TestFixture::new(pathfinding, db_pool)
     }
