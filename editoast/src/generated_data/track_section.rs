@@ -5,7 +5,6 @@ use diesel::query_dsl::methods::FilterDsl;
 use diesel::sql_query;
 use diesel::sql_types::{Array, BigInt, Text};
 use diesel_async::{AsyncPgConnection as PgConnection, RunQueryDsl};
-use std::iter::Iterator;
 
 use super::utils::InvolvedObjects;
 use super::GeneratedData;

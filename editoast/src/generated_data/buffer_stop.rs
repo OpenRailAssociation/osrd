@@ -12,7 +12,6 @@ use crate::error::Result;
 use crate::infra_cache::InfraCache;
 use crate::schema::ObjectType;
 use crate::tables::infra_layer_buffer_stop::dsl;
-use std::iter::Iterator;
 
 pub struct BufferStopLayer;
 
