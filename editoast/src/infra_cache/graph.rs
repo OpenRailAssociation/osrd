@@ -50,7 +50,7 @@ impl<'a> Graph<'a> {
 
     /// Check if a track endpoint has neighbours.
     pub fn has_neighbour(&'a self, track_endpoint: &TrackEndpoint) -> bool {
-        self.links.get(&track_endpoint).is_some()
+        self.links.contains_key(&track_endpoint)
     }
 
     /// Return the switch linked to the given endpoint.
