@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 
-use crate::diesel::QueryDsl;
 use crate::error::Result;
 use crate::models::{
     train_schedule::{
@@ -15,7 +14,6 @@ use actix_web::web::Data;
 use derivative::Derivative;
 use diesel::prelude::*;
 use diesel::result::Error as DieselError;
-use diesel::ExpressionMethods;
 use diesel_async::AsyncPgConnection as PgConnection;
 use diesel_async::RunQueryDsl;
 use editoast_derive::Model;
