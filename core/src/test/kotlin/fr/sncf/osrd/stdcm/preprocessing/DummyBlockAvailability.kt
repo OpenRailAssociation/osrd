@@ -118,7 +118,8 @@ class DummyBlockAvailability(
         val resourceUses = generateResourcesForPath(infraExplorer, startOffset, endOffset)
         // startTime refers to the time at startOffset, we need to offset it
         val pathStartTime = startTime - infraExplorer.interpolateTimeClamp(startOffset)
-        val unavailability = findMinimumDelay(infraExplorer, resourceUses, pathStartTime)
+        val unavailability =
+            findMinimumDelay(infraExplorer, resourceUses, pathStartTime, startOffset)
         return unavailability ?: findMaximumDelay(infraExplorer, resourceUses, pathStartTime)
     }
 
@@ -129,7 +130,8 @@ class DummyBlockAvailability(
     private fun findMinimumDelay(
         infraExplorer: InfraExplorerWithEnvelope,
         resourceUses: List<ResourceUse>,
-        pathStartTime: Double
+        pathStartTime: Double,
+        startOffset: Offset<Path>
     ): BlockAvailabilityInterface.Unavailable? {
         var minimumDelay = 0.0
         var conflictOffset = Offset<Path>(0.meters)
@@ -163,13 +165,19 @@ class DummyBlockAvailability(
             // We need to add delay, a recursive call is needed to detect new conflicts
             // that may appear with the added delay
             val recursiveDelay =
-                findMinimumDelay(infraExplorer, resourceUses, pathStartTime + minimumDelay)
+                findMinimumDelay(
+                    infraExplorer,
+                    resourceUses,
+                    pathStartTime + minimumDelay,
+                    startOffset
+                )
             if (
                 recursiveDelay != null
             ) // The recursive call returns null if there is no new conflict
              minimumDelay += recursiveDelay.duration
         }
-        return BlockAvailabilityInterface.Unavailable(minimumDelay, conflictOffset)
+        val conflictTravelledOffset = conflictOffset - startOffset.distance
+        return BlockAvailabilityInterface.Unavailable(minimumDelay, conflictTravelledOffset.cast())
     }
 
     /**

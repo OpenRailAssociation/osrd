@@ -90,7 +90,7 @@ data class STDCMEdge(
                 this,
                 newWaypointIndex,
                 null,
-                -1.0
+                null
             )
         } else {
             // New edge on the same block, after a stop
@@ -107,6 +107,15 @@ data class STDCMEdge(
                 stopDuration
             )
         }
+    }
+
+    /**
+     * Returns the approximate time of the given offset of the edge. Runs a simple linear
+     * interpolation.
+     */
+    fun getApproximateTimeAtLocation(offset: Offset<STDCMEdge>): Double {
+        val offsetRatio = offset.distance.meters / length.distance.meters
+        return timeStart + (totalTime * offsetRatio)
     }
 
     val block = infraExplorer.getCurrentBlock()

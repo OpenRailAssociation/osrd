@@ -86,7 +86,8 @@ fun findPath(
             timeStep,
             comfort,
             maxRunTime,
-            blockAvailability
+            blockAvailability,
+            graph.tag
         )
 }
 
