@@ -342,6 +342,7 @@ class Pathfinding<NodeT : Any, EdgeT : Any, OffsetType>(
             distanceLeftEstimation =
                 estimateRemainingDistance!![nPassedTargets].apply(
                     filteredRange.edge,
+                    // TODO: this is inconsistent with above, should probably be end instead
                     filteredRange.start
                 )
         queue.add(

@@ -121,7 +121,6 @@ class STDCMPathfindingB(
                 rollingStock,
                 endBlocks
             )
-
         val path = findPathImpl() ?: return null
 
         return STDCMPostProcessingB(graph!!)
@@ -141,9 +140,12 @@ class STDCMPathfindingB(
     private fun findPathImpl(): Result? {
         checkParameters()
         for (location in starts) {
+            val len = edgeToLength!!.apply(location)
+            val totalCostUntilEdge = computeTotalCostUntilEdge(location, len)
             val distanceLeftEstimation =
+                // TODO: inconsistent, same as Pathfinding
                 estimateRemainingDistance!![0].apply(location, Offset(0.meters))
-            location.weight = distanceLeftEstimation
+            location.weight = distanceLeftEstimation + totalCostUntilEdge
             queue.add(location)
         }
         val start = Instant.now()
@@ -151,23 +153,23 @@ class STDCMPathfindingB(
             if (Duration.between(start, Instant.now()).toSeconds() >= pathfindingTimeout)
                 throw OSRDError(ErrorType.PathfindingTimeoutError)
             val edge = queue.poll() ?: return null
+            // TODO: we mostly reason in terms of endNode, we should probably change the queue.
             val endNode = edge.getEdgeEnd(graph!!)
-            // TODO: check off-by-one
-            if (seen.getOrDefault(edge, -1) >= edge.waypointIndex) continue
-            seen[edge] = edge.waypointIndex
-            // TODO: check off-by-one
-            if (edge.waypointIndex >= graph!!.steps.size - 1) {
+            if (seen.getOrDefault(edge, -1) >= endNode.waypointIndex) continue
+            seen[edge] = endNode.waypointIndex
+            if (endNode.waypointIndex >= graph!!.steps.size - 1) {
                 return buildResult(edge)
             }
             val neighbors = graph!!.getAdjacentEdges(endNode)
             for (neighbor in neighbors) {
-                val totalCostUntilEdge = computeTotalCostUntilEdge(neighbor)
+                val len = edgeToLength!!.apply(neighbor)
+                val totalCostUntilEdge = computeTotalCostUntilEdge(neighbor, len)
                 var distanceLeftEstimation = 0.0
-                // TODO: check off-by-one
                 if (neighbor.waypointIndex < estimateRemainingDistance!!.size)
                     distanceLeftEstimation =
                         estimateRemainingDistance!![neighbor.waypointIndex].apply(
                             neighbor,
+                            // TODO: inconsistent, same as Pathfinding
                             Offset(0.meters)
                         )
                 neighbor.weight = totalCostUntilEdge + distanceLeftEstimation
@@ -215,15 +217,10 @@ class STDCMPathfindingB(
      *   train, the first train should have the lightest weight, which is the case with the formula
      *   above.
      */
-    private fun computeTotalCostUntilEdge(edge: STDCMEdge): Double {
+    private fun computeTotalCostUntilEdge(edge: STDCMEdge, len: Offset<STDCMEdge>): Double {
         val envelope = edge.envelope
         val timeEnd =
-            interpolateTime(
-                envelope,
-                Offset(0.meters),
-                edge.timeStart,
-                edge.standardAllowanceSpeedFactor
-            )
+            interpolateTime(envelope, len, edge.timeStart, edge.standardAllowanceSpeedFactor)
         val pathDuration = timeEnd - edge.totalDepartureTimeShift
         return pathDuration * maxDepartureDelay + edge.totalDepartureTimeShift
     }
