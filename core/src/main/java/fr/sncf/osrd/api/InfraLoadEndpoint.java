@@ -30,7 +30,8 @@ public class InfraLoadEndpoint implements Take {
             if (request == null) return new RsWithStatus(new RsText("missing request body"), 400);
 
             // load infra
-            infraManager.load(request.infra, request.expectedVersion, recorder);
+            var infra = infraManager.load(request.infra, request.expectedVersion, recorder);
+            
 
             return new RsWithStatus(204);
         } catch (Throwable ex) {

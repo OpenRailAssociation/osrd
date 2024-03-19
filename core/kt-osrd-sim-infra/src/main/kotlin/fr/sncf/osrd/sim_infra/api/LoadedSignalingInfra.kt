@@ -53,6 +53,7 @@ interface InfraSigSystemManager {
     fun getOutputSignalingSystem(driver: SignalDriverId): SignalingSystemId
 
     fun isBlockDelimiter(sigSystem: SignalingSystemId, settings: SigSettings): Boolean
+    fun getSignalingSystemName(sigSystem: SignalingSystemId): String
 }
 
 interface LoadedSignalInfra {

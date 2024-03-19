@@ -48,6 +48,10 @@ class SigSystemManagerImpl : SigSystemManager {
         return sigSystemMap[sigSystem]!!
     }
 
+    override fun getSignalingSystemName(sigSystem: SignalingSystemId): String {
+        return sigSystemPool[sigSystem].id
+    }
+
     override fun getStateSchema(sigSystem: SignalingSystemId): SigStateSchema {
         return sigSystemPool[sigSystem].stateSchema
     }

@@ -72,4 +72,8 @@ class MockSigSystemManager(
     override fun isBlockDelimiter(sigSystem: SignalingSystemId, settings: SigSettings): Boolean {
         return true
     }
+
+    override fun getSignalingSystemName(sigSystem: SignalingSystemId): String {
+        return "BAL"
+    }
 }
