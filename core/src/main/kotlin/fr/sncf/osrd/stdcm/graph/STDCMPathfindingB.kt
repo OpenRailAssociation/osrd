@@ -199,7 +199,6 @@ class STDCMPathfindingB(
     private fun checkParameters() {
         assert(estimateRemainingDistance != null) { "The A* heuristic has not been initialized" }
         assert(edgeToLength != null) { "The edge to length function has not been initialized" }
-        assert(starts.isNotEmpty()) { "No start has been set" }
     }
 
     /**
