@@ -3,6 +3,7 @@ package fr.sncf.osrd.envelope_sim.allowances;
 import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.CEILING;
 import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.FLOOR;
 import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.areSpeedsEqual;
+import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.areTimesEqual;
 import static java.lang.Double.NaN;
 import static java.lang.Math.abs;
 
@@ -152,6 +153,18 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
         imposedTransitionSpeeds[0] = envelopeRegion.getBeginSpeed();
         for (int i = 1; i < ranges.size(); i++) imposedTransitionSpeeds[i] = NaN;
         imposedTransitionSpeeds[ranges.size()] = envelopeRegion.getEndSpeed();
+
+        // Set the transitions speeds on allowance ranges that don't add any time
+        // (the speed at the border of those allowances has to match the base envelope)
+        for (var i = 0; i < ranges.size(); i++) {
+            var range = ranges.get(i);
+            var addedTime = range.value.getAllowanceTime(
+                    envelopeRegion.getTimeBetween(range.beginPos, range.endPos), range.endPos - range.beginPos);
+            if (areTimesEqual(0.0, addedTime)) {
+                imposedTransitionSpeeds[i] = envelopeRegion.interpolateSpeed(range.beginPos);
+                imposedTransitionSpeeds[i + 1] = envelopeRegion.interpolateSpeed(range.endPos);
+            }
+        }
 
         // build an array of (range, baseTime) in order to sort the array rangeOrder by ascending
         // base time

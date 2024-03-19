@@ -3,6 +3,7 @@ package fr.sncf.osrd.stdcm.preprocessing.implementation
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.conflicts.IncrementalConflictDetector
 import fr.sncf.osrd.conflicts.TrainRequirements
+import fr.sncf.osrd.conflicts.TravelledPath
 import fr.sncf.osrd.conflicts.incrementalConflictDetector
 import fr.sncf.osrd.envelope_utils.DoubleBinarySearch
 import fr.sncf.osrd.sim_infra.api.Path
@@ -76,10 +77,10 @@ data class BlockAvailability(
     private fun getEnvelopeOffsetFromTime(
         explorer: InfraExplorerWithEnvelope,
         time: Double
-    ): Offset<Path> {
+    ): Offset<TravelledPath> {
         if (time < 0.0) return Offset(0.meters)
         val envelope = explorer.getFullEnvelope()
-        if (time > envelope.totalTime) return explorer.getSimulatedLength()
+        if (time > envelope.totalTime) return explorer.getSimulatedLength().cast()
         val search = DoubleBinarySearch(envelope.beginPos, envelope.endPos, time, 2.0, false)
 
         // The iteration limit avoids infinite loops when accessing times when the train is stopped
@@ -89,7 +90,7 @@ data class BlockAvailability(
             value = search.input
             search.feedback(envelope.interpolateTotalTimeClamp(search.input))
         }
-        return explorer.getIncrementalPath().fromTravelledPath(Offset(Distance.fromMeters(value)))
+        return Offset(Distance.fromMeters(value))
     }
 }
 
