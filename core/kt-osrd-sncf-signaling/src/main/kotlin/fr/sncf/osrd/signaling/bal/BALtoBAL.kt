@@ -23,12 +23,7 @@ object BALtoBAL : SignalDriver {
                 } else {
                     "VL"
                 }
-            "(A)" ->
-                if (parameters.getFlag("jaune_cli")) {
-                    "(A)"
-                } else {
-                    "VL"
-                }
+            "(A)" -> "VL"
             "S" -> "A"
             "C" -> "A"
             else -> throw OSRDError.newAspectError(aspect)
