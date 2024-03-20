@@ -31,6 +31,26 @@ data class SigEnumField(override val name: String, val values: List<String>, val
     }
 }
 
+data class SigIntField(override val name: String, val default: Int?) : SigField {
+    override val hasDefault
+        get() = default != null
+
+    override val encodedDefault
+        get() = default!!
+
+    override fun encode(value: String): Int {
+        return value.toInt()
+    }
+
+    override fun decode(data: Int): String {
+        return data.toString()
+    }
+
+    fun decodeInt(data: Int): Int {
+        return data
+    }
+}
+
 data class SigFlagField(override val name: String, val default: Boolean?) : SigField {
     override val hasDefault
         get() = default != null
@@ -81,6 +101,10 @@ private fun sigSchemaFields(init: SigSchemaBuilder.() -> Unit): List<SigField> {
             override fun flag(name: String, default: Boolean?) {
                 res.add(SigFlagField(name, default))
             }
+
+            override fun int(name: String, default: Int?) {
+                res.add(SigIntField(name, default))
+            }
         }
     builder.init()
     return res
@@ -121,6 +145,15 @@ class SigSchema<MarkerT>(
                     data[fieldIndex] = field.encode(value)
                     initializedFields[fieldIndex] = true
                 }
+
+                override fun value(name: String, value: Int) {
+                    val fieldIndex =
+                        fieldIndexMap[name] ?: throw OSRDError.newSigSchemaUnknownFieldError(name)
+                    val field = sortedFields[fieldIndex]
+                    assert (field is SigIntField)
+                    data[fieldIndex] = value
+                    initializedFields[fieldIndex] = true
+                }
             }
         builder.init()
 
@@ -144,6 +177,11 @@ interface SigSchemaBuilder {
 
     fun flag(name: String, default: Boolean?)
 
+    fun int(name: String, default: Int?)
+    fun int(name: String) {
+        int(name, null)
+    }
+
     fun flag(name: String) {
         flag(name, null)
     }
@@ -155,6 +193,7 @@ interface SigSchemaBuilder {
 
 interface SigDataBuilder {
     fun value(name: String, value: String)
+    fun value(name: String, value: Int)
 }
 
 data class SigData<MarkerT>(val schema: SigSchema<MarkerT>, private val data: IntArray) {
@@ -174,6 +213,15 @@ data class SigData<MarkerT>(val schema: SigSchema<MarkerT>, private val data: In
         if (field !is SigEnumField)
             throw OSRDError.newSigSchemaInvalidFieldError(fieldName, "expected an enum")
         return field.decode(data[fieldIndex])
+    }
+
+    fun getInt(fieldName: String): Int {
+        val fieldIndex = schema.find(fieldName)
+        if (fieldIndex == -1) throw OSRDError.newSigSchemaUnknownFieldError(fieldName)
+        val field = schema.sortedFields[fieldIndex]
+        if (field !is SigIntField)
+            throw OSRDError.newSigSchemaInvalidFieldError(fieldName, "expected an int")
+        return field.decodeInt(data[fieldIndex])
     }
 
     override fun equals(other: Any?): Boolean {

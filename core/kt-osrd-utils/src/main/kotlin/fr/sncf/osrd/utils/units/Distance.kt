@@ -74,6 +74,8 @@ val Double.meters: Distance
     get() = Distance.fromMeters(this)
 val Int.meters: Distance
     get() = Distance(this.toLong() * 1000)
+val Int.millimeters: Distance
+    get() = Distance(this.toLong())
 
 @JvmInline
 value class Offset<T>(val distance: Distance) : Comparable<Offset<T>> {

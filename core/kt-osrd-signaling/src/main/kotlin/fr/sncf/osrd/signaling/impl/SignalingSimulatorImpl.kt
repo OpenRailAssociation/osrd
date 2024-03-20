@@ -158,16 +158,18 @@ class SignalingSimulatorImpl(override val sigModuleManager: SigSystemManager) : 
         data class SignalEvalTask(
             val signal: LogicalSignalId,
             val protectionStatus: ProtectionStatus,
+            val invertedPathOffset: Distance
         )
 
         val signalEvalSequence = ArrayDeque<SignalEvalTask>()
         val lastBlock = fullPath[evaluatedPathEnd - 1]
         val lastBlockEndsAtBufferStop = blocks.blockStopAtBufferStop(lastBlock)
+        var invertedPathOffset = Distance(0)
         if (!lastBlockEndsAtBufferStop) {
             val blockSignals = blocks.getBlockSignals(lastBlock)
             val lastSignal = blockSignals[blockSignals.size - 1]
             signalEvalSequence.add(
-                SignalEvalTask(lastSignal, followingZoneState.toProtectionStatus())
+                SignalEvalTask(lastSignal, followingZoneState.toProtectionStatus(), invertedPathOffset)
             )
         }
 
@@ -176,14 +178,18 @@ class SignalingSimulatorImpl(override val sigModuleManager: SigSystemManager) : 
             val startAtBufferStop = blocks.blockStartAtBufferStop(curBlock)
             val endsAtBufferStop = blocks.blockStopAtBufferStop(curBlock)
             val blockSignals = blocks.getBlockSignals(curBlock)
+            val signalPositions = blocks.getSignalsPositions(curBlock)
+            val blockLength = blocks.getBlockLength(curBlock)
             // the end signal was already processed at the last iteration,
             // or in the last path signal special case
 
             // intermediary signals
             val interRangeStart = if (startAtBufferStop) 0 else 1
             val interRangeEnd = if (endsAtBufferStop) blockSignals.size else blockSignals.size - 1
-            for (signalIndex in (interRangeStart until interRangeEnd).reversed()) signalEvalSequence
-                .add(SignalEvalTask(blockSignals[signalIndex], ProtectionStatus.NO_PROTECTED_ZONES))
+            for (signalIndex in (interRangeStart until interRangeEnd).reversed()) {
+                val offset = invertedPathOffset + (blockLength - signalPositions[signalIndex])
+                signalEvalSequence.add(SignalEvalTask(blockSignals[signalIndex], ProtectionStatus.NO_PROTECTED_ZONES, offset))
+            }
 
             // entry signal
             if (!startAtBufferStop) {
@@ -193,8 +199,10 @@ class SignalingSimulatorImpl(override val sigModuleManager: SigSystemManager) : 
                 var zoneStatus = zoneStates[protectedZonesStart]
                 for (i in protectedZonesStart + 1 until protectedZonesEnd) zoneStatus =
                     zoneStatus.reduce(zoneStates[i])
-                signalEvalSequence.add(SignalEvalTask(entrySignal, zoneStatus.toProtectionStatus()))
+                signalEvalSequence.add(SignalEvalTask(entrySignal, zoneStatus.toProtectionStatus(), invertedPathOffset + blockLength.distance))
             }
+
+            invertedPathOffset += blockLength.distance
         }
         // endregion
 
@@ -202,7 +210,8 @@ class SignalingSimulatorImpl(override val sigModuleManager: SigSystemManager) : 
         class MovementAuthorityViewImpl(
             override val protectionStatus: ProtectionStatus,
             private val _nextSignalState: SigState?,
-            private val _nextSignalSettings: SigSettings?
+            private val _nextSignalSettings: SigSettings?,
+            private val _distanceToNextSignal: Distance?
         ) : MovementAuthorityView {
             init {
                 assert((_nextSignalState == null) == (_nextSignalSettings == null))
@@ -216,17 +225,23 @@ class SignalingSimulatorImpl(override val sigModuleManager: SigSystemManager) : 
 
             override val nextSignalSettings
                 get() = _nextSignalSettings!!
+
+            override val distanceToNextSignal
+                get() = _distanceToNextSignal
         }
 
         val res = mutableMapOf<LogicalSignalId, SigState>()
         var lastSignalState: SigState? = null
         var lastSignalSettings: SigSettings? = null
         var lastSignalSSId: SignalingSystemId? = null
+        var lastSignalOffset: Distance? = null
         for (task in signalEvalSequence) {
             val signal = task.signal
             val protectionStatus = task.protectionStatus
+            val currentSignalOffset = task.invertedPathOffset
+            val nextSignalDistance = if (lastSignalOffset != null) currentSignalOffset - lastSignalOffset else null
             val mav =
-                MovementAuthorityViewImpl(protectionStatus, lastSignalState, lastSignalSettings)
+                MovementAuthorityViewImpl(protectionStatus, lastSignalState, lastSignalSettings, nextSignalDistance)
             val currentSSId = loadedSignalInfra.getSignalingSystem(signal)
             val currentSignalSettings = loadedSignalInfra.getSettings(signal)
             val driver = sigModuleManager.findDriver(currentSSId, lastSignalSSId ?: currentSSId)
@@ -256,6 +271,7 @@ class SignalingSimulatorImpl(override val sigModuleManager: SigSystemManager) : 
             lastSignalState = state
             lastSignalSettings = currentSignalSettings
             lastSignalSSId = currentSSId
+            lastSignalOffset = currentSignalOffset
         }
         // endregion
 

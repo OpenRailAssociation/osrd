@@ -28,6 +28,7 @@ interface MovementAuthorityView {
     val nextSignalState: SigState
     val nextSignalSettings: SigSettings
     val hasNextSignal: Boolean
+    val distanceToNextSignal: Distance?
 }
 
 interface DirectSpeedLimit {
