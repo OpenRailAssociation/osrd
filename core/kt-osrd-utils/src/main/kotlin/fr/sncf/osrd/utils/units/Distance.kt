@@ -87,6 +87,8 @@ val Double.meters: Distance
     get() = Distance.fromMeters(this)
 val Int.meters: Distance
     get() = Distance(this.toLong() * 1000)
+val Int.millimeters: Distance
+    get() = Distance(this.toLong())
 
 /**
  * Describes an offset on a given object. Typing is strictly enforced and mismatches will fail to
