@@ -142,7 +142,7 @@ export default function InputGroupSNCF<U extends string | MultiUnit>({
             >
               {options.map((option) => (
                 <div
-                  key={option.id}
+                  key={`${option.id}-${currentValue.unit}`}
                   onClick={() => {
                     onChange({
                       unit: option.id as U,
