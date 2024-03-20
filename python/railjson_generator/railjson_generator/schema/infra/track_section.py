@@ -4,11 +4,12 @@ from typing import List, Optional, Tuple
 from osrd_schemas import infra
 from pydantic import ValidationError
 
-from railjson_generator.schema.infra.direction import Direction
+from railjson_generator.schema.infra.direction import ApplicableDirection, Direction
 from railjson_generator.schema.infra.endpoint import Endpoint, TrackEndpoint
 from railjson_generator.schema.infra.make_geo_data import make_geo_lines
 from railjson_generator.schema.infra.operational_point import OperationalPointPart
 from railjson_generator.schema.infra.range_elements import (
+    ApplicableDirectionsTrackRange,
     Curve,
     LoadingGaugeLimit,
     Slope,
@@ -54,6 +55,22 @@ class TrackSection:
 
     def end(self):
         return TrackEndpoint(self, Endpoint.END)
+
+    def forwards(self, begin: Optional[float] = None, end: Optional[float] = None) -> ApplicableDirectionsTrackRange:
+        return ApplicableDirectionsTrackRange(
+            begin=begin or 0.0,
+            end=end or self.length,
+            track=self,
+            applicable_directions=ApplicableDirection.START_TO_STOP,
+        )
+
+    def backwards(self, begin: Optional[float] = None, end: Optional[float] = None) -> ApplicableDirectionsTrackRange:
+        return ApplicableDirectionsTrackRange(
+            begin=begin or 0.0,
+            end=end or self.length,
+            track=self,
+            applicable_directions=ApplicableDirection.STOP_TO_START,
+        )
 
     def add_buffer_stop(self, *args, **wargs):
         bs = BufferStop(*args, **wargs)

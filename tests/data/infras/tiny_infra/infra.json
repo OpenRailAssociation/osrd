@@ -440,7 +440,8 @@
                     "end": 6000.0,
                     "applicable_directions": "BOTH"
                 }
-            ]
+            ],
+            "on_routes": null
         }
     ],
     "electrifications": [],

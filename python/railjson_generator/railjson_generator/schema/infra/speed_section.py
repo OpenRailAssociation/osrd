@@ -36,10 +36,14 @@ class SpeedSection:
             )
         )
 
+    def add_applicable_track_ranges(self, *track_ranges: ApplicableDirectionsTrackRange):
+        self.track_ranges += track_ranges
+
     def to_rjs(self):
         return infra.SpeedSection(
             id=self.label,
             speed_limit=self.speed_limit,
             speed_limit_by_tag=self.speed_limit_by_tag,
             track_ranges=[track.to_rjs() for track in self.track_ranges],
+            on_routes=self.on_routes,
         )
