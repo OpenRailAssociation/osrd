@@ -57,4 +57,6 @@ interface SignalingSimulator {
         zoneStates: List<ZoneStatus>,
         followingZoneState: ZoneStatus,
     ): Map<LogicalSignalId, SigState>
+
+    fun isConstraining(signalingSystem: SignalingSystemId, signalState: SigState, trainState: SignalingTrainState): Boolean
 }

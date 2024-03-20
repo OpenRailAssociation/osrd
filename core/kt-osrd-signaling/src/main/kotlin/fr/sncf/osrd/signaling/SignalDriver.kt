@@ -85,6 +85,11 @@ interface BlockDiagReporter {
     fun reportSignal(sigIndex: Int, errorType: String)
 }
 
+
+interface SignalingTrainState {
+    val speed: Int // FIXME: add a speed class
+}
+
 interface SignalingSystemDriver {
     val parametersSchema: SigParametersSchema
     val id: String
@@ -93,4 +98,5 @@ interface SignalingSystemDriver {
     val isBlockDelimiterExpr: String
 
     fun checkBlock(reporter: BlockDiagReporter, block: SigBlock)
+    fun isCompatibleWithTrainState(signalState: SigState, trainState: SignalingTrainState): Boolean
 }

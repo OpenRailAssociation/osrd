@@ -24,6 +24,7 @@ object TVM300toTVM300 : SignalDriver {
             "080A" -> "160A"
             "000" -> "080A"
             "RRR" -> "000"
+            "OCCUPIED" -> "RRR"
             else -> throw OSRDError.newAspectError(aspect)
         }
     }
@@ -39,8 +40,8 @@ object TVM300toTVM300 : SignalDriver {
         return stateSchema {
             when (maView!!.protectionStatus) {
                 ProtectionStatus.NO_PROTECTED_ZONES -> throw OSRDError(ErrorType.BALUnprotectedZones)
-                ProtectionStatus.INCOMPATIBLE -> value("aspect", "RRR")
-                ProtectionStatus.OCCUPIED -> value("aspect", "RRR")
+                ProtectionStatus.INCOMPATIBLE -> value("aspect", "OCCUPIED")
+                ProtectionStatus.OCCUPIED -> value("aspect", "OCCUPIED")
                 ProtectionStatus.CLEAR -> {
                     if (!maView.hasNextSignal) {
                         value("aspect", "000")

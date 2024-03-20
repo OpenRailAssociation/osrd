@@ -216,6 +216,7 @@ class SpacingRequirementAutomaton(
         val signalState = simulatedSignalStates[pathSignal.signal]!!
 
         // FIXME: Have a better way to check if the signal is constraining
+        return simulator.sigModuleManager.isConstraining(loadedSignalInfra.getSignalingSystem(pathSignal.signal), signalState, trainState)
         return signalState.getEnum("aspect") != "VL"
     }
 
