@@ -31,9 +31,9 @@ use crate::DbPool;
 pub struct Study {
     pub id: i64,
     pub name: String,
-    pub description: String,
-    pub business_code: String,
-    pub service_code: String,
+    pub description: Option<String>,
+    pub business_code: Option<String>,
+    pub service_code: Option<String>,
     pub creation_date: NaiveDateTime,
     pub last_modification: NaiveDateTime,
     pub start_date: Option<NaiveDate>,
@@ -43,7 +43,7 @@ pub struct Study {
     #[model(remote = "Vec<Option<String>>")]
     pub tags: Tags,
     pub state: String,
-    pub study_type: String,
+    pub study_type: Option<String>,
     pub project_id: i64,
 }
 

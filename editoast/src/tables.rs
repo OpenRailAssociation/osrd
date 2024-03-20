@@ -397,11 +397,11 @@ diesel::table! {
         #[max_length = 128]
         name -> Varchar,
         #[max_length = 4096]
-        objectives -> Varchar,
+        objectives -> Nullable<Varchar>,
         #[max_length = 1024]
-        description -> Varchar,
+        description -> Nullable<Varchar>,
         #[max_length = 255]
-        funders -> Varchar,
+        funders -> Nullable<Varchar>,
         budget -> Nullable<Int4>,
         creation_date -> Timestamptz,
         last_modification -> Timestamptz,
@@ -620,11 +620,11 @@ diesel::table! {
         #[max_length = 128]
         name -> Varchar,
         #[max_length = 1024]
-        description -> Varchar,
+        description -> Nullable<Varchar>,
         #[max_length = 128]
-        business_code -> Varchar,
+        business_code -> Nullable<Varchar>,
         #[max_length = 128]
-        service_code -> Varchar,
+        service_code -> Nullable<Varchar>,
         creation_date -> Timestamptz,
         last_modification -> Timestamptz,
         start_date -> Nullable<Date>,
@@ -635,7 +635,7 @@ diesel::table! {
         #[max_length = 16]
         state -> Varchar,
         #[max_length = 100]
-        study_type -> Varchar,
+        study_type -> Nullable<Varchar>,
         project_id -> Int8,
     }
 }

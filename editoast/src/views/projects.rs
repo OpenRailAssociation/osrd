@@ -80,15 +80,12 @@ pub struct QueryParams {
 struct ProjectCreateForm {
     #[schema(max_length = 128)]
     pub name: String,
-    #[serde(default)]
     #[schema(max_length = 1024)]
-    pub description: String,
-    #[serde(default)]
+    pub description: Option<String>,
     #[schema(max_length = 4096)]
-    pub objectives: String,
-    #[serde(default)]
+    pub objectives: Option<String>,
     #[schema(max_length = 1024)]
-    pub funders: String,
+    pub funders: Option<String>,
     pub budget: Option<i32>,
     /// The id of the image document
     pub image: Option<i64>,
@@ -278,9 +275,9 @@ impl From<ProjectPatchForm> for Changeset<Project> {
     fn from(project: ProjectPatchForm) -> Self {
         Project::changeset()
             .flat_name(project.name)
-            .flat_description(project.description)
-            .flat_objectives(project.objectives)
-            .flat_funders(project.funders)
+            .description(project.description)
+            .objectives(project.objectives)
+            .funders(project.funders)
             .flat_budget(Some(project.budget))
             .flat_image(Some(project.image))
             .flat_tags(project.tags)
@@ -350,7 +347,12 @@ pub mod test {
         let app = create_test_service().await;
         let req = TestRequest::post()
             .uri("/projects")
-            .set_json(json!({ "name": "test_project","description": "", "objectives":"" }))
+            .set_json(json!({
+                "name": "test_project",
+                "description": "",
+                "objectives": "",
+                "funders": "",
+            }))
             .to_request();
         let response = call_service(&app, req).await;
         assert_eq!(response.status(), StatusCode::OK);

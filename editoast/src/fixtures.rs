@@ -323,16 +323,12 @@ pub mod tests {
         let project = project.await;
         let study_model = Study::changeset()
             .name("test_study".into())
-            .description("test".into())
             .creation_date(Utc::now().naive_utc())
-            .business_code("AAA".into())
-            .service_code("BBB".into())
             .creation_date(Utc::now().naive_utc())
             .last_modification(Utc::now().naive_utc())
             .budget(Some(0))
             .tags(Tags::default())
             .state("some_state".into())
-            .study_type("some_type".into())
             .project_id(project.id());
         StudyFixtureSet {
             project,
@@ -344,9 +340,6 @@ pub mod tests {
     pub async fn project(db_pool: Data<DbPool>) -> TestFixture<Project> {
         let project_model = Project::changeset()
             .name("test_project".to_owned())
-            .objectives("".to_owned())
-            .description("".to_owned())
-            .funders("".to_owned())
             .budget(Some(0))
             .creation_date(Utc::now().naive_utc())
             .last_modification(Utc::now().naive_utc())

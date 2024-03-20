@@ -38,9 +38,9 @@ editoast_common::schemas! {
 pub struct Project {
     pub id: i64,
     pub name: String,
-    pub objectives: String,
-    pub description: String,
-    pub funders: String,
+    pub objectives: Option<String>,
+    pub description: Option<String>,
+    pub funders: Option<String>,
     pub budget: Option<i32>,
     pub creation_date: NaiveDateTime,
     pub last_modification: NaiveDateTime,

@@ -80,21 +80,17 @@ pub enum StudyError {
 #[derivative(Default)]
 struct StudyCreateForm {
     pub name: String,
-    #[serde(default)]
-    pub description: String,
+    pub description: Option<String>,
     pub start_date: Option<NaiveDate>,
     pub expected_end_date: Option<NaiveDate>,
     pub actual_end_date: Option<NaiveDate>,
-    #[serde(default)]
-    pub business_code: String,
-    #[serde(default)]
-    pub service_code: String,
+    pub business_code: Option<String>,
+    pub service_code: Option<String>,
     pub budget: Option<i32>,
     #[serde(default)]
     pub tags: Tags,
     pub state: String,
-    #[serde(default)]
-    pub study_type: String,
+    pub study_type: Option<String>,
 }
 
 impl StudyCreateForm {
@@ -336,16 +332,16 @@ impl StudyPatchForm {
     pub fn into_study_changeset(self) -> Result<Changeset<Study>> {
         let study_changeset = Study::changeset()
             .flat_name(self.name)
-            .flat_description(self.description)
-            .flat_business_code(self.business_code)
-            .flat_service_code(self.service_code)
+            .description(self.description)
+            .business_code(self.business_code)
+            .service_code(self.service_code)
             .flat_start_date(Some(self.start_date))
             .flat_expected_end_date(Some(self.expected_end_date))
             .flat_actual_end_date(Some(self.actual_end_date))
             .flat_budget(Some(self.budget))
             .flat_tags(self.tags)
             .flat_state(self.state)
-            .flat_study_type(self.study_type);
+            .study_type(self.study_type);
         Study::validate(&study_changeset)?;
         Ok(study_changeset)
     }
@@ -456,7 +452,14 @@ pub mod test {
         let project = project.await;
         let req = TestRequest::post()
             .uri(format!("/projects/{}/studies/", project.id()).as_str())
-            .set_json(json!({ "name": "study_test", "state": "Starting" }))
+            .set_json(json!({
+                "name": "study_test",
+                "description": "Study description",
+                "state": "Starting",
+                "business_code": "",
+                "service_code": "",
+                "study_type": "",
+            }))
             .to_request();
         let response = call_service(&app, req).await;
         assert_eq!(response.status(), StatusCode::OK);
