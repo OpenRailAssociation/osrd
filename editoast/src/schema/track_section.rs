@@ -13,6 +13,7 @@ use crate::map::BoundingBox;
 use derivative::Derivative;
 use geos::geojson::{Geometry, Value::LineString};
 use serde::{Deserialize, Serialize};
+use strum_macros::FromRepr;
 use utoipa::ToSchema;
 
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq)]
@@ -95,7 +96,7 @@ pub struct Slope {
     pub end: f64,
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq, ToSchema, Hash)]
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq, ToSchema, Hash, FromRepr)]
 pub enum LoadingGaugeType {
     G1,
     G2,

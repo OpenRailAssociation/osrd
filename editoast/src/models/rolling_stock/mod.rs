@@ -55,8 +55,9 @@ impl From<RollingStockModel> for RollingStock {
 pub mod tests {
     use crate::error::InternalError;
     use crate::fixtures::tests::{
-        db_pool, get_other_rolling_stock, named_fast_rolling_stock, named_other_rolling_stock,
+        db_pool, get_other_rolling_stock_form, named_fast_rolling_stock, named_other_rolling_stock,
     };
+    use crate::modelsv2::Changeset;
     use crate::views::rolling_stocks::{map_diesel_error, RollingStockError};
     use crate::DbPool;
     use rstest::*;
@@ -99,7 +100,8 @@ pub mod tests {
                 .await;
         let rolling_stock_id = rolling_stock.id();
 
-        let updated_rolling_stock = get_other_rolling_stock(other_rs_name);
+        let updated_rolling_stock: Changeset<RollingStockModel> =
+            get_other_rolling_stock_form(other_rs_name).into();
         // updated_rolling_stock.id = rolling_stock_id;
 
         // WHEN

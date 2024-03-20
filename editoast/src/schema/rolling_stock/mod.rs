@@ -12,6 +12,8 @@ use crate::schema::rolling_stock::rolling_stock_livery::{
     RollingStockLivery, RollingStockLiveryMetadata,
 };
 
+use crate::schema::track_section::LoadingGaugeType;
+
 crate::schemas! {
     RollingStockComfortType,
     RollingStockCommon,
@@ -52,8 +54,7 @@ pub struct RollingStockCommon {
     pub inertia_coefficient: f64,
     pub mass: f64,
     pub rolling_resistance: RollingResistance,
-    #[schema(value_type = LoadingGaugeType)]
-    pub loading_gauge: String,
+    pub loading_gauge: LoadingGaugeType,
     /// Mapping of power restriction code to power class
     #[serde(default)]
     #[schema(required)]

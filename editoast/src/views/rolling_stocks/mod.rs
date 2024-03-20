@@ -1,4 +1,4 @@
-mod rolling_stock_form;
+pub mod rolling_stock_form;
 
 use crate::error::{InternalError, Result};
 use crate::modelsv2::rolling_stock_livery::RollingStockLiveryModel;
@@ -539,12 +539,13 @@ pub mod tests {
     use super::RollingStockError;
     use super::{retrieve_existing_rolling_stock, RollingStock, TrainScheduleScenarioStudyProject};
     use crate::fixtures::tests::{
-        db_pool, get_fast_rolling_stock, get_other_rolling_stock, named_fast_rolling_stock,
-        named_other_rolling_stock, train_schedule_with_scenario,
+        db_pool, get_fast_rolling_stock_form, get_other_rolling_stock_form,
+        named_fast_rolling_stock, named_other_rolling_stock, train_schedule_with_scenario,
     };
     use crate::models::rolling_stock::tests::get_invalid_effort_curves;
     use crate::modelsv2::rolling_stock_model::RollingStockModel;
     use crate::modelsv2::Changeset;
+    use crate::views::rolling_stocks::rolling_stock_form::RollingStockForm;
     use crate::views::tests::create_test_service;
     use crate::{assert_response_error_type_match, assert_status_and_read, DbPool};
     use actix_http::{Request, StatusCode};
@@ -585,7 +586,7 @@ pub mod tests {
         // GIVEN
         let app = create_test_service().await;
 
-        let rolling_stock: Changeset<RollingStockModel> = get_fast_rolling_stock(
+        let rolling_stock_form = get_fast_rolling_stock_form(
             "fast_rolling_stock_create_and_delete_unlocked_rolling_stock_successfully",
         );
 
@@ -594,7 +595,7 @@ pub mod tests {
             &app,
             TestRequest::post()
                 .uri("/rolling_stock")
-                .set_json(&rolling_stock)
+                .set_json(&rolling_stock_form)
                 .to_request(),
         )
         .await;
@@ -605,7 +606,7 @@ pub mod tests {
         let rolling_stock_id: i64 = response_body.id;
         let response_body: Changeset<RollingStockModel> = response_body.into();
 
-        assert_eq!(response_body.name, rolling_stock.name);
+        assert_eq!(response_body.name, Some(rolling_stock_form.common.name));
 
         // Check rolling_stock deletion
         let delete_request = rolling_stock_delete_request(rolling_stock_id);
@@ -642,17 +643,17 @@ pub mod tests {
     async fn create_rolling_stock_with_base_power_class_empty(db_pool: Data<DbPool>) {
         // GIVEN
         let app = create_test_service().await;
-        let rolling_stock: Changeset<RollingStockModel> = get_fast_rolling_stock(
+        let mut rolling_stock_form = get_fast_rolling_stock_form(
             "fast_rolling_stock_create_rolling_stock_with_base_power_class_empty",
-        )
-        .base_power_class(Some("".to_string()));
+        );
+        rolling_stock_form.common.base_power_class = Some("".to_string());
 
         // WHEN
         let post_response = call_service(
             &app,
             TestRequest::post()
                 .uri("/rolling_stock")
-                .set_json(&rolling_stock)
+                .set_json(&rolling_stock_form)
                 .to_request(),
         )
         .await;
@@ -667,15 +668,15 @@ pub mod tests {
         let name = "fast_rolling_stock_create_rolling_stock_with_duplicate_name";
         let fast_rolling_stock = named_fast_rolling_stock(name, db_pool.clone()).await;
         let app = create_test_service().await;
-        let rolling_stock: Changeset<RollingStockModel> =
-            get_fast_rolling_stock(name).name(fast_rolling_stock.model.name.clone());
+        let mut rolling_stock_form = get_fast_rolling_stock_form(name);
+        rolling_stock_form.common.name = fast_rolling_stock.model.name.clone();
 
         // WHEN
         let post_response = call_service(
             &app,
             TestRequest::post()
                 .uri("/rolling_stock")
-                .set_json(&rolling_stock)
+                .set_json(&rolling_stock_form)
                 .to_request(),
         )
         .await;
@@ -689,7 +690,7 @@ pub mod tests {
         let mut db_conn = db_pool.get().await.expect("Failed to get db connection");
         // GIVEN
         let app = create_test_service().await;
-        let rolling_stock: Changeset<RollingStockModel> = get_fast_rolling_stock(
+        let rolling_stock_form = get_fast_rolling_stock_form(
             "fast_rolling_stock_update_and_delete_locked_rolling_stock_fails",
         );
 
@@ -698,7 +699,7 @@ pub mod tests {
             &app,
             TestRequest::post()
                 .uri("/rolling_stock?locked=true")
-                .set_json(rolling_stock)
+                .set_json(rolling_stock_form)
                 .to_request(),
         )
         .await;
@@ -799,15 +800,16 @@ pub mod tests {
         .await;
         let rolling_stock_id = fast_rolling_stock.id();
 
-        let rolling_stock =
-            get_other_rolling_stock("other_rolling_stock_update_unlocked_rolling_stock");
+        let mut rolling_stock_form: RollingStockForm = fast_rolling_stock.model.clone().into();
+        rolling_stock_form.common.name =
+            "other_rolling_stock_update_unlocked_rolling_stock".to_string();
 
         // WHEN
         let response = call_service(
             &app,
             TestRequest::patch()
                 .uri(format!("/rolling_stock/{}", rolling_stock_id).as_str())
-                .set_json(&rolling_stock)
+                .set_json(&rolling_stock_form)
                 .to_request(),
         )
         .await;
@@ -840,14 +842,14 @@ pub mod tests {
 
         let rolling_stock_id = fast_rolling_stock.id();
 
-        let rolling_stock = get_other_rolling_stock(other_rs_name);
+        let rolling_stock_form = get_other_rolling_stock_form(other_rs_name);
 
         // WHEN
         let response = call_service(
             &app,
             TestRequest::patch()
                 .uri(format!("/rolling_stock/{}", rolling_stock_id).as_str())
-                .set_json(rolling_stock)
+                .set_json(rolling_stock_form)
                 .to_request(),
         )
         .await;
@@ -866,14 +868,15 @@ pub mod tests {
     async fn update_locked_successfully(db_pool: Data<DbPool>) {
         // GIVEN
         let app = create_test_service().await;
-        let rolling_stock = get_fast_rolling_stock("fast_rolling_stock_update_locked_successfully");
+        let rolling_stock_form =
+            get_fast_rolling_stock_form("fast_rolling_stock_update_locked_successfully");
 
         // WHEN
         let post_response = call_service(
             &app,
             TestRequest::post()
                 .uri("/rolling_stock")
-                .set_json(rolling_stock)
+                .set_json(rolling_stock_form)
                 .to_request(),
         )
         .await;

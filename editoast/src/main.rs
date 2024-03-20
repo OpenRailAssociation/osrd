@@ -940,7 +940,7 @@ mod tests {
     use super::*;
 
     use crate::fixtures::tests::{
-        db_pool, electrical_profile_set, get_fast_rolling_stock, get_trainschedule_json_array,
+        db_pool, electrical_profile_set, get_fast_rolling_stock_form, get_trainschedule_json_array,
         TestFixture,
     };
     use crate::modelsv2::RollingStockModel;
@@ -1013,7 +1013,8 @@ mod tests {
         // GIVEN
         let rolling_stock_name =
             "fast_rolling_stock_import_non_electric_rs_without_startup_and_panto_values";
-        let mut non_electric_rs_changeset = get_fast_rolling_stock(rolling_stock_name);
+        let mut non_electric_rs_changeset: Changeset<RollingStockModel> =
+            get_fast_rolling_stock_form(rolling_stock_name).into();
 
         non_electric_rs_changeset.effort_curves.as_mut().map(|ec| {
             ec.0.modes.remove("25000V");
@@ -1048,7 +1049,8 @@ mod tests {
         // GIVEN
         let rolling_stock_name =
             "fast_rolling_stock_import_non_electric_rs_with_startup_and_panto_values";
-        let non_electric_rs_changeset = get_fast_rolling_stock(rolling_stock_name);
+        let non_electric_rs_changeset: Changeset<RollingStockModel> =
+            get_fast_rolling_stock_form(rolling_stock_name).into();
 
         let effort_curves = non_electric_rs_changeset
             .effort_curves
@@ -1091,7 +1093,8 @@ mod tests {
         // GIVEN
         let rolling_stock_name =
             "fast_rolling_stock_import_electric_rs_without_startup_and_panto_values";
-        let electric_rs_changeset = get_fast_rolling_stock(rolling_stock_name);
+        let electric_rs_changeset: Changeset<RollingStockModel> =
+            get_fast_rolling_stock_form(rolling_stock_name).into();
         let electric_rs_changeset = electric_rs_changeset
             .electrical_power_startup_time(None)
             .raise_pantograph_time(None);
@@ -1119,7 +1122,8 @@ mod tests {
         // GIVEN
         let rolling_stock_name =
             "fast_rolling_stock_import_electric_rs_with_startup_and_panto_values";
-        let electric_rolling_stock = get_fast_rolling_stock(rolling_stock_name);
+        let electric_rolling_stock: Changeset<RollingStockModel> =
+            get_fast_rolling_stock_form(rolling_stock_name).into();
         let file = generate_temp_file(&electric_rolling_stock);
         let args = ImportRollingStockArgs {
             rolling_stock_path: vec![file.path().into()],

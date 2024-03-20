@@ -229,10 +229,9 @@ pub mod test {
     use crate::{
         assert_status_and_read,
         fixtures::tests::{
-            db_pool, get_other_rolling_stock, train_with_simulation_output_fixture_set,
+            db_pool, get_other_rolling_stock_form, train_with_simulation_output_fixture_set,
         },
         models::{train_schedule::TrainScheduleValidation, TimetableWithSchedulesDetails},
-        modelsv2::{Changeset, RollingStockModel},
         views::tests::create_test_service,
     };
 
@@ -250,15 +249,15 @@ pub mod test {
             .model
             .rolling_stock_id;
         // patch rolling_stock
-        let patch_rolling_stock: Changeset<RollingStockModel> =
-            get_other_rolling_stock("fast_rolling_stock_newer_rolling_stock_version");
+        let patch_rolling_stock_form =
+            get_other_rolling_stock_form("fast_rolling_stock_newer_rolling_stock_version");
 
         // WHEN
         call_service(
             &app,
             TestRequest::patch()
                 .uri(format!("/rolling_stock/{}", rolling_stock_id).as_str())
-                .set_json(&patch_rolling_stock)
+                .set_json(&patch_rolling_stock_form)
                 .to_request(),
         )
         .await;
