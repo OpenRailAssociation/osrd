@@ -15,9 +15,10 @@ object BAPRtoBAL : SignalDriver {
     private fun cascadePrimaryAspect(aspect: String): String {
         return when (aspect) {
             "VL" -> "VL"
+            "(A)" -> "VL"
+            "A" -> "VL"
             "S" -> "A"
             "C" -> "A"
-            "A" -> "VL"
             else -> throw OSRDError.newAspectError(aspect)
         }
     }
