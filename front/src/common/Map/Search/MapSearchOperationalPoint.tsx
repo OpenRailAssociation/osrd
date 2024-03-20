@@ -74,17 +74,15 @@ const MapSearchOperationalPoint = ({
       query: ['and', searchQuery, infraID !== undefined ? ['=', ['infra_id'], infraID] : true],
     };
 
-    await postSearch({
-      searchPayload: payload,
-      pageSize: 101,
-    })
-      .unwrap()
-      .then((results) => {
-        setSearchResults(results as SearchResultItemOperationalPoint[]);
-      })
-      .catch(() => {
-        setSearchResults([]);
-      });
+    try {
+      const results = await postSearch({
+        searchPayload: payload,
+        pageSize: 101,
+      }).unwrap();
+      setSearchResults(results as SearchResultItemOperationalPoint[]);
+    } catch (error) {
+      setSearchResults([]);
+    }
   };
 
   const onResultClick = (result: SearchResultItemOperationalPoint) => {
@@ -106,6 +104,35 @@ const MapSearchOperationalPoint = ({
     }
   }, [debouncedSearchTerm]);
 
+  const [selectedResultIndex, setSelectedResultIndex] = useState(-1);
+
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    switch (event.key) {
+      case 'ArrowUp':
+        setSelectedResultIndex((prevIndex) => {
+          const newIndex = prevIndex > 0 ? prevIndex - 1 : searchResults.length - 1;
+          const element = document.getElementById(`result-${newIndex}`);
+          if (element) {
+            element.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+          }
+          return newIndex;
+        });
+        break;
+      case 'ArrowDown':
+        setSelectedResultIndex((prevIndex) => {
+          const newIndex = prevIndex < searchResults.length - 1 ? prevIndex + 1 : 0;
+          const element = document.getElementById(`result-${newIndex}`);
+          if (element) {
+            element.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+          }
+          return newIndex;
+        });
+        break;
+      default:
+        break;
+    }
+  };
+
   return (
     <div className="mt-2">
       <div className="d-flex mb-2 flex-column flex-md-row">
@@ -115,9 +142,11 @@ const MapSearchOperationalPoint = ({
             name="map-search-operational-points"
             placeholder={t('placeholdername')}
             title={t('placeholdername')}
+            inputProps={{ onKeyDown: handleKeyDown }}
             type="text"
             value={searchTerm}
             onChange={(e) => {
+              setSelectedResultIndex(-1);
               setSearchTerm(e.target.value);
             }}
             onClear={() => {
@@ -166,12 +195,17 @@ const MapSearchOperationalPoint = ({
       <div className="search-results">
         {searchResults.length > 0 &&
           searchResults.length <= 100 &&
-          sortedResults.map((searchResult) => (
+          sortedResults.map((searchResult, index) => (
             <button
+              id={`result-${index}`}
               type="button"
-              className={cx('search-result-item', { main: searchResult.ch === '' })}
+              className={cx('search-result-item', {
+                main: searchResult.ch === '',
+                selected: index === selectedResultIndex,
+              })}
               key={`mapSearchOperationalPoint-${searchResult.obj_id}`}
               onClick={() => onResultClick(searchResult)}
+              tabIndex={-1}
             >
               <span className="trigram">{searchResult.trigram}</span>
               <span className="name">
