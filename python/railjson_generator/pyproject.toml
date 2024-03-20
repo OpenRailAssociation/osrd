@@ -11,7 +11,7 @@ pytest = "^7.4.3"
 pytest-cov = "^4.1.0"
 
 [tool.poetry.group.dev.dependencies]
-black = "^22.12.0"
+black = "^24.3.0"
 isort = "^5.12.0"
 pyproject-flake8 = "^6.0.0.post1"
 pytype = { platform="linux", version="^2023.10.17" }
