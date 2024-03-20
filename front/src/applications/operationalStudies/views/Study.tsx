@@ -9,7 +9,7 @@ import BreadCrumbs from 'applications/operationalStudies/components/BreadCrumbs'
 import FilterTextField from 'applications/operationalStudies/components/FilterTextField';
 import DateBox from 'applications/operationalStudies/components/Study/DateBox';
 import StateStep from 'applications/operationalStudies/components/Study/StateStep';
-import { type StudyState, studyStates } from 'applications/operationalStudies/consts';
+import { STUDY_STATES } from 'applications/operationalStudies/consts';
 import {
   type PostSearchApiArg,
   type ScenarioWithCountTrains,
@@ -239,7 +239,7 @@ export default function Study() {
                 <div className="study-details-description">{study.description}</div>
                 {study.state && (
                   <div className="study-details-state">
-                    {studyStates.map(
+                    {STUDY_STATES.map(
                       (state, idx) =>
                         study.project.id &&
                         study.id &&
@@ -250,8 +250,11 @@ export default function Study() {
                             studyID={study.id}
                             number={idx + 1}
                             studyName={study.name}
-                            state={state}
-                            done={idx <= studyStates.indexOf(study.state as StudyState)}
+                            state={state as (typeof STUDY_STATES)[number]}
+                            done={
+                              idx <=
+                              STUDY_STATES.indexOf(study.state as (typeof STUDY_STATES)[number])
+                            }
                             tags={study.tags}
                           />
                         )

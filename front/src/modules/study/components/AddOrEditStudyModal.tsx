@@ -7,7 +7,7 @@ import { MdBusinessCenter, MdTitle } from 'react-icons/md';
 import { RiCalendarLine, RiMoneyEuroCircleLine, RiQuestionLine } from 'react-icons/ri';
 import { useNavigate, useParams } from 'react-router-dom';
 
-import { STUDY_STATES, STUDY_TYPES, studyStates } from 'applications/operationalStudies/consts';
+import { STUDY_STATES, STUDY_TYPES } from 'applications/operationalStudies/consts';
 import studyLogo from 'assets/pictures/views/studies.svg';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { StudyCreateForm } from 'common/api/osrdEditoastApi';
@@ -21,7 +21,6 @@ import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
 import TextareaSNCF from 'common/BootstrapSNCF/TextareaSNCF';
 import { useOsrdConfActions } from 'common/osrdContext';
-import { createSelectOptions } from 'modules/study/utils';
 import { setFailure, setSuccess } from 'reducers/main';
 import { useAppDispatch } from 'store';
 import { formatDateForInput, getEarliestDate } from 'utils/date';
@@ -52,7 +51,7 @@ const emptyStudy: StudyForm = {
   name: '',
   service_code: '',
   start_date: null,
-  state: STUDY_STATES.started,
+  state: 'started',
   study_type: '',
   tags: [],
 };
@@ -73,8 +72,6 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
     osrdEditoastApi.usePatchProjectsByProjectIdStudiesAndStudyIdMutation();
   const [deleteStudies, { error: deleteStudyError }] =
     osrdEditoastApi.useDeleteProjectsByProjectIdStudiesAndStudyIdMutation();
-
-  const studyStateOptions = createSelectOptions('studyStates', studyStates);
 
   const initialValuesRef = useRef<StudyForm | null>(null);
 
@@ -281,8 +278,11 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
                       id: currentStudy.state,
                       label: t(`studyStates.${currentStudy.state}`).toString(),
                     }}
-                    options={studyStateOptions}
-                    onChange={(e) => handleStudyInputChange('state', e?.id as StudyForm['state'])}
+                    options={STUDY_STATES.map((studyState) => ({
+                      id: studyState,
+                      label: t(`studyStates.${currentStudy.state}`),
+                    }))}
+                    onChange={(e) => handleStudyInputChange('state', e.id)}
                   />
                 </div>
               </div>

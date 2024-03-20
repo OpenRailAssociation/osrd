@@ -3,7 +3,7 @@ import React from 'react';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
-import type { StudyState } from 'applications/operationalStudies/consts';
+import type { STUDY_STATES } from 'applications/operationalStudies/consts';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { setSuccess } from 'reducers/main';
 import { useAppDispatch } from 'store';
@@ -13,7 +13,7 @@ type Props = {
   studyID: number;
   number: number;
   studyName: string;
-  state: StudyState;
+  state: (typeof STUDY_STATES)[number];
   done: boolean;
   tags: string[];
 };
