@@ -1,4 +1,3 @@
-
 .map-modal {
   .search-results-label {
     cursor: pointer;
@@ -29,7 +28,8 @@
           font-size: 0.9rem;
         }
       }
-      .uic, .line-code {
+      .uic,
+      .line-code {
         margin-left: auto;
         font-size: 0.7rem;
         color: var(--primary);
@@ -63,6 +63,9 @@
       &:hover {
         background-color: #d7d7d7;
       }
+    }
+    .selected {
+      background-color: #d7d7d7;
     }
   }
 }
