@@ -10,6 +10,7 @@ use crate::modelsv2::{
     rolling_stock_livery::RollingStockLiveryMetadataModel,
     rolling_stock_model::RollingStockSupportedSignalingSystems,
 };
+use crate::schema::track_section::LoadingGaugeType;
 
 crate::schemas! {
     LightRollingStock,
@@ -35,8 +36,7 @@ pub struct LightRollingStock {
     pub inertia_coefficient: f64,
     pub mass: f64,
     pub rolling_resistance: RollingResistance,
-    #[schema(value_type = LoadingGaugeType)]
-    pub loading_gauge: String,
+    pub loading_gauge: LoadingGaugeType,
     pub metadata: RollingStockMetadata,
     #[schema(required)]
     pub power_restrictions: HashMap<String, String>,

@@ -6,6 +6,7 @@ use crate::schema::rolling_stock::light_rolling_stock::{
     LightEffortCurves, LightRollingStock, LightRollingStockWithLiveriesModel,
 };
 use crate::schema::rolling_stock::{EnergySource, Gamma, RollingResistance, RollingStockMetadata};
+use crate::schema::track_section::LoadingGaugeType;
 use crate::views::pagination::{Paginate, PaginatedResponse};
 use crate::DbPool;
 use actix_web::web::Data;
@@ -40,8 +41,8 @@ pub struct LightRollingStockModel {
     pub mass: f64,
     #[model(json)]
     pub rolling_resistance: RollingResistance,
-    #[schema(value_type = LoadingGaugeType)]
-    pub loading_gauge: String,
+    #[model(to_enum)]
+    pub loading_gauge: LoadingGaugeType,
     #[model(json)]
     #[schema(required)]
     pub power_restrictions: HashMap<String, String>,

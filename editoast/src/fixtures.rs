@@ -21,6 +21,7 @@ pub mod tests {
     use crate::schema::v2::trainschedule::TrainScheduleBase;
     use crate::schema::{RailJson, TrackRange};
     use crate::views::infra::InfraForm;
+    use crate::views::rolling_stocks::rolling_stock_form::RollingStockForm;
     use crate::views::v2::train_schedule::TrainScheduleForm;
     use crate::DbPool;
 
@@ -120,27 +121,30 @@ pub mod tests {
         Data::new(pool)
     }
 
-    pub fn get_fast_rolling_stock(name: &str) -> Changeset<RollingStockModel> {
-        let rs: Changeset<RollingStockModel> =
+    pub fn get_fast_rolling_stock_form(name: &str) -> RollingStockForm {
+        let mut rolling_stock_form: RollingStockForm =
             serde_json::from_str(include_str!("./tests/example_rolling_stock_1.json"))
                 .expect("Unable to parse");
-        rs.name(name.to_string())
+        rolling_stock_form.common.name = name.to_string();
+        rolling_stock_form
     }
 
     pub async fn named_fast_rolling_stock(
         name: &str,
         db_pool: Data<DbPool>,
     ) -> TestFixture<RollingStockModel> {
-        let rs = get_fast_rolling_stock(name);
+        let mut rs: Changeset<RollingStockModel> = get_fast_rolling_stock_form(name).into();
+        rs = rs.version(0);
         TestFixture::create(rs, db_pool).await
     }
 
-    pub fn get_other_rolling_stock(name: &str) -> Changeset<RollingStockModel> {
-        let rs: Changeset<RollingStockModel> = serde_json::from_str(include_str!(
+    pub fn get_other_rolling_stock_form(name: &str) -> RollingStockForm {
+        let mut rolling_stock_form: RollingStockForm = serde_json::from_str(include_str!(
             "./tests/example_rolling_stock_2_energy_sources.json"
         ))
         .expect("Unable to parse");
-        rs.name(name.to_string())
+        rolling_stock_form.common.name = name.to_string();
+        rolling_stock_form
     }
 
     pub fn get_trainschedule_json_array() -> &'static str {
@@ -151,7 +155,8 @@ pub mod tests {
         name: &str,
         db_pool: Data<DbPool>,
     ) -> TestFixture<RollingStockModel> {
-        let rs = get_other_rolling_stock(name);
+        let mut rs: Changeset<RollingStockModel> = get_other_rolling_stock_form(name).into();
+        rs = rs.version(0);
         TestFixture::create(rs, db_pool).await
     }
 

@@ -15,6 +15,7 @@ use crate::schema::rolling_stock::{
     EffortCurves, EnergySource, Gamma, RollingResistance, RollingStock, RollingStockMetadata,
     RollingStockWithLiveries,
 };
+use crate::schema::track_section::LoadingGaugeType;
 use crate::DbPool;
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize, ToSchema)]
@@ -57,8 +58,8 @@ pub struct RollingStockModel {
     pub mass: f64,
     #[model(json)]
     pub rolling_resistance: RollingResistance,
-    #[schema(value_type = LoadingGaugeType)]
-    pub loading_gauge: String,
+    #[model(to_enum)]
+    pub loading_gauge: LoadingGaugeType,
     #[model(json)]
     #[schema(required)]
     pub power_restrictions: HashMap<String, String>,

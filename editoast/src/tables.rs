@@ -433,8 +433,7 @@ diesel::table! {
         base_power_class -> Nullable<Varchar>,
         mass -> Float8,
         rolling_resistance -> Jsonb,
-        #[max_length = 16]
-        loading_gauge -> Varchar,
+        loading_gauge -> Int2,
         power_restrictions -> Jsonb,
         energy_sources -> Jsonb,
         locked -> Bool,
