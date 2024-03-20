@@ -309,7 +309,7 @@ export default function AddOrEditProjectModal({
                     {t('projectDescription')}
                   </div>
                 }
-                value={currentProject.description}
+                value={currentProject.description ?? undefined}
                 onChange={(e) => handleProjectInputChange('description', e.target.value)}
                 placeholder={t('projectDescriptionPlaceholder')}
                 rows={3}
@@ -330,7 +330,7 @@ export default function AddOrEditProjectModal({
                     {t('projectObjectives')}
                   </div>
                 }
-                value={currentProject.objectives}
+                value={currentProject.objectives ?? undefined}
                 onChange={(e) => handleProjectInputChange('objectives', e.target.value)}
               />
             </div>
@@ -365,7 +365,7 @@ export default function AddOrEditProjectModal({
                   {t('projectFunders')}
                 </div>
               }
-              value={currentProject.funders}
+              value={currentProject.funders ?? undefined}
               onChange={(e) => handleProjectInputChange('funders', e.target.value)}
             />
           </div>

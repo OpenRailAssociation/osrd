@@ -250,7 +250,7 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
                       </div>
                     }
                     value={{
-                      id: currentStudy.study_type,
+                      id: currentStudy.study_type ?? undefined,
                       label: t(
                         `studyCategories.${currentStudy.study_type || 'nothingSelected'}`
                       ).toString(),
@@ -298,7 +298,7 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
                     {t('studyDescription')}
                   </div>
                 }
-                value={currentStudy?.description}
+                value={currentStudy.description ?? undefined}
                 onChange={(e) => handleStudyInputChange('description', e.target.value)}
                 placeholder={t('studyDescriptionPlaceholder')}
               />
