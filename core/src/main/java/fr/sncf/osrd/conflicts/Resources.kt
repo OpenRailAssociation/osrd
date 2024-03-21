@@ -26,6 +26,11 @@ interface IncrementalRequirementCallbacks {
     val simulationComplete: Boolean
 
     fun clone(): IncrementalRequirementCallbacks
+
+    fun maxSpeedInRange(
+        pathBeginOff: Offset<TravelledPath>,
+        pathEndOff: Offset<TravelledPath>
+    ): Double
 }
 
 data class PathSignal(
