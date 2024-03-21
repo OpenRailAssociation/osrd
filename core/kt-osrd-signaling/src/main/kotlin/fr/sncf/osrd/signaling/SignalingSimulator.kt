@@ -35,6 +35,8 @@ interface SigSystemManager : InfraSigSystemManager {
         maView: MovementAuthorityView?,
         limitView: SpeedLimitView?
     ): SigState
+
+    fun isConstraining(signalingSystem: SignalingSystemId, signalState: SigState, trainState: SignalingTrainState): Boolean
 }
 
 interface SignalingSimulator {
@@ -57,6 +59,4 @@ interface SignalingSimulator {
         zoneStates: List<ZoneStatus>,
         followingZoneState: ZoneStatus,
     ): Map<LogicalSignalId, SigState>
-
-    fun isConstraining(signalingSystem: SignalingSystemId, signalState: SigState, trainState: SignalingTrainState): Boolean
 }

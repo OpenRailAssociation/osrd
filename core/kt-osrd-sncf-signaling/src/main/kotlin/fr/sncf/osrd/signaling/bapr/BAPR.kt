@@ -4,9 +4,7 @@ import fr.sncf.osrd.signaling.BlockDiagReporter
 import fr.sncf.osrd.signaling.SigBlock
 import fr.sncf.osrd.signaling.SignalingSystemDriver
 import fr.sncf.osrd.signaling.SignalingTrainState
-import fr.sncf.osrd.sim_infra.api.SigParametersSchema
-import fr.sncf.osrd.sim_infra.api.SigSettingsSchema
-import fr.sncf.osrd.sim_infra.api.SigStateSchema
+import fr.sncf.osrd.sim_infra.api.*
 
 object BAPR : SignalingSystemDriver {
     override val id = "BAPR"
@@ -45,7 +43,7 @@ object BAPR : SignalingSystemDriver {
         }
     }
 
-    override fun isCompatibleWithTrainState(signalState: SigState, trainState: SignalingTrainState): Boolean {
-        return signalState.getEnum("aspect") == "VL"
+    override fun isConstraining(signalState: SigData<SignalStateMarker>, trainState: SignalingTrainState): Boolean {
+        return signalState.getEnum("aspect") != "VL"
     }
 }

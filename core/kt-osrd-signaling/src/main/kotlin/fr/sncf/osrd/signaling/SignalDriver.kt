@@ -87,7 +87,7 @@ interface BlockDiagReporter {
 
 
 interface SignalingTrainState {
-    val speed: Int // FIXME: add a speed class
+    val speed: Speed
 }
 
 interface SignalingSystemDriver {
@@ -98,5 +98,5 @@ interface SignalingSystemDriver {
     val isBlockDelimiterExpr: String
 
     fun checkBlock(reporter: BlockDiagReporter, block: SigBlock)
-    fun isCompatibleWithTrainState(signalState: SigState, trainState: SignalingTrainState): Boolean
+    fun isConstraining(signalState: SigData<SignalStateMarker>, trainState: SignalingTrainState): Boolean
 }

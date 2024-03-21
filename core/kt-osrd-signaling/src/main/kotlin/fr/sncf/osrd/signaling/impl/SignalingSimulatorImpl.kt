@@ -261,12 +261,4 @@ class SignalingSimulatorImpl(override val sigModuleManager: SigSystemManager) : 
 
         return res
     }
-
-    override fun isConstraining(
-        signalingSystem: SignalingSystemId,
-        signalState: SigState,
-        trainState: SignalingTrainState
-    ): Boolean {
-        
-    }
 }
