@@ -302,6 +302,7 @@ pub struct MrspPoint {
 #[utoipa::path(
     tag = "train_schedulev2",
     params(
+        ("id" = i64, Path, description = "The timetable id"),
         ("infra_id" = i64, Path, description = "The infra id"),
     ),
     responses(
@@ -411,7 +412,6 @@ pub struct SignalUpdate {
 /// Params are the infra_id and a list of train_ids
 #[utoipa::path(
     tag = "train_schedulev2",
-    params(ProjectPathParams),
     responses(
         (status = 200, description = "Project Path Output", body = HashMap<Identifier, ProjectPathResult>),
     ),
@@ -451,8 +451,6 @@ enum SimulationSummaryResultResponse {
 /// Useful for finding out whether pathfinding/simulation was successful.
 #[utoipa::path(
     tag = "train_schedulev2",
-    params(ProjectPathParams,
-    ("infra_id" = i64, Path, description = "The infra id")),
     responses(
         (status = 200, description = "Project Path Output", body = HashMap<Identifier, SimulationSummaryResultResponse>),
     ),
