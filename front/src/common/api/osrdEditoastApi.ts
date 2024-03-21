@@ -837,6 +837,16 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['timetablev2'],
       }),
+      getV2TimetableByIdConflicts: build.query<
+        GetV2TimetableByIdConflictsApiResponse,
+        GetV2TimetableByIdConflictsApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/v2/timetable/${queryArg.id}/conflicts/`,
+          params: { infra_id: queryArg.infraId },
+        }),
+        providesTags: ['timetablev2'],
+      }),
       deleteV2TrainSchedule: build.mutation<
         DeleteV2TrainScheduleApiResponse,
         DeleteV2TrainScheduleApiArg
@@ -855,6 +865,20 @@ const injectedRtkApi = api
         query: (queryArg) => ({ url: `/v2/train_schedule/`, method: 'POST', body: queryArg.body }),
         invalidatesTags: ['train_schedulev2'],
       }),
+      postV2TrainScheduleProjectPath: build.mutation<
+        PostV2TrainScheduleProjectPathApiResponse,
+        PostV2TrainScheduleProjectPathApiArg
+      >({
+        query: () => ({ url: `/v2/train_schedule/project_path/`, method: 'POST' }),
+        invalidatesTags: ['train_schedulev2'],
+      }),
+      getV2TrainScheduleSimulationSummary: build.query<
+        GetV2TrainScheduleSimulationSummaryApiResponse,
+        GetV2TrainScheduleSimulationSummaryApiArg
+      >({
+        query: () => ({ url: `/v2/train_schedule/simulation_summary/` }),
+        providesTags: ['train_schedulev2'],
+      }),
       getV2TrainScheduleById: build.query<
         GetV2TrainScheduleByIdApiResponse,
         GetV2TrainScheduleByIdApiArg
@@ -872,6 +896,13 @@ const injectedRtkApi = api
           body: queryArg.trainScheduleForm,
         }),
         invalidatesTags: ['train_schedulev2', 'timetable'],
+      }),
+      getV2TrainScheduleByIdSimulation: build.query<
+        GetV2TrainScheduleByIdSimulationApiResponse,
+        GetV2TrainScheduleByIdSimulationApiArg
+      >({
+        query: (queryArg) => ({ url: `/v2/train_schedule/${queryArg.id}/simulation/` }),
+        providesTags: ['train_schedulev2'],
       }),
       getVersion: build.query<GetVersionApiResponse, GetVersionApiArg>({
         query: () => ({ url: `/version/` }),
@@ -1586,6 +1617,14 @@ export type PutV2TimetableByIdApiArg = {
   id: number;
   timetableForm: TimetableForm;
 };
+export type GetV2TimetableByIdConflictsApiResponse =
+  /** status 200 list of conflict */ ConflictV2[];
+export type GetV2TimetableByIdConflictsApiArg = {
+  /** The timetable id */
+  id: number;
+  /** The infra id */
+  infraId: number;
+};
 export type DeleteV2TrainScheduleApiResponse = unknown;
 export type DeleteV2TrainScheduleApiArg = {
   body: {
@@ -1597,6 +1636,14 @@ export type PostV2TrainScheduleApiResponse =
 export type PostV2TrainScheduleApiArg = {
   body: TrainScheduleForm[];
 };
+export type PostV2TrainScheduleProjectPathApiResponse = /** status 200 Project Path Output */ {
+  [key: string]: ProjectPathResult;
+};
+export type PostV2TrainScheduleProjectPathApiArg = void;
+export type GetV2TrainScheduleSimulationSummaryApiResponse = /** status 200 Project Path Output */ {
+  [key: string]: SimulationSummaryResultResponse;
+};
+export type GetV2TrainScheduleSimulationSummaryApiArg = void;
 export type GetV2TrainScheduleByIdApiResponse =
   /** status 200 The train schedule */ TrainScheduleResult;
 export type GetV2TrainScheduleByIdApiArg = {
@@ -1609,6 +1656,14 @@ export type PutV2TrainScheduleByIdApiArg = {
   /** A train schedule ID */
   id: number;
   trainScheduleForm: TrainScheduleForm;
+};
+export type GetV2TrainScheduleByIdSimulationApiResponse =
+  /** status 200 Simulation Output */ SimulationOutput;
+export type GetV2TrainScheduleByIdSimulationApiArg = {
+  /** The timetable id */
+  id: number;
+  /** The infra id */
+  infraId: number;
 };
 export type GetVersionApiResponse = /** status 200 Return the service version */ Version;
 export type GetVersionApiArg = void;
@@ -2994,6 +3049,13 @@ export type TimetableDetailedResult = {
 } & {
   train_ids: number[];
 };
+export type ConflictV2 = {
+  conflict_type: ConflictType;
+  end_time: string;
+  start_time: string;
+  train_ids: number[];
+  train_names: string[];
+};
 export type Distribution = 'STANDARD' | 'MARECO';
 export type TrainScheduleBase = {
   comfort: 'STANDARD' | 'AIR_CONDITIONING' | 'HEATING';
@@ -3054,6 +3116,34 @@ export type TrainScheduleResult = TrainScheduleBase & {
 };
 export type TrainScheduleForm = TrainScheduleBase & {
   timetable_id: number;
+};
+export type ProjectPathResult = {
+  blocks: SignalUpdate[];
+  positions: number[];
+  times: number[];
+};
+export type SimulationSummaryResultResponse =
+  | {
+      Success: {
+        energy_consumption: number;
+        length: number;
+        time: number;
+      };
+    }
+  | 'PathfindingNotFound'
+  | 'RunningTimeNotFound';
+export type CompleteReportTrain = ReportTrain & {
+  routing_requirements: RoutingRequirement[];
+  signal_sightings: SignalSighting[];
+  spacing_requirements: SpacingRequirement[];
+  zone_updates: ZoneUpdate[];
+};
+export type SimulationOutput = {
+  base: ReportTrain;
+  final_output: CompleteReportTrain;
+  mrsp: Mrsp;
+  power_restriction: string;
+  provisional: ReportTrain;
 };
 export type Version = {
   git_describe: string | null;

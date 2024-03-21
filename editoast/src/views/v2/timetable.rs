@@ -240,6 +240,7 @@ pub struct Conflict {
 #[utoipa::path(
     tag = "timetablev2",
     params(
+        ("id" = i64, Path, description = "The timetable id"),
         ("infra_id" = i64, Query, description = "The infra id"),
     ),
     responses(

@@ -10178,6 +10178,13 @@ paths:
     get:
       description: Retrieve the list of conflict of the timetable (invalid trains are ignored)
       parameters:
+      - description: The timetable id
+        in: path
+        name: id
+        required: true
+        schema:
+          format: int64
+          type: integer
       - description: The infra id
         in: query
         name: infra_id
@@ -10248,21 +10255,6 @@ paths:
       description: |-
         Projects the space time curves and paths of a number of train schedules onto a given path
         Params are the infra_id and a list of train_ids
-      parameters:
-      - in: path
-        name: infra
-        required: true
-        schema:
-          format: int64
-          type: integer
-      - in: path
-        name: train_ids
-        required: true
-        schema:
-          items:
-            format: int64
-            type: integer
-          type: array
       responses:
         '200':
           content:
@@ -10280,28 +10272,6 @@ paths:
       description: |-
         Retrieve simulation information for a given train list.
         Useful for finding out whether pathfinding/simulation was successful.
-      parameters:
-      - in: path
-        name: infra
-        required: true
-        schema:
-          format: int64
-          type: integer
-      - in: path
-        name: train_ids
-        required: true
-        schema:
-          items:
-            format: int64
-            type: integer
-          type: array
-      - description: The infra id
-        in: path
-        name: infra_id
-        required: true
-        schema:
-          format: int64
-          type: integer
       responses:
         '200':
           content:
@@ -10366,6 +10336,13 @@ paths:
     get:
       description: Retrieve the space, speed and time curve of a given train
       parameters:
+      - description: The timetable id
+        in: path
+        name: id
+        required: true
+        schema:
+          format: int64
+          type: integer
       - description: The infra id
         in: path
         name: infra_id
