@@ -26,8 +26,9 @@ export function dateTimeFormatting(date: Date, withoutTime: boolean = false) {
     default:
       dayjs.locale('en-gb');
   }
+  const dateToUTC = dayjs(`${date}Z`); // The 'Z' is to ensure we have an UTC date
   const dateFormat = withoutTime ? 'D MMM YYYY' : 'D MMM YYYY HH:mm';
-  return dayjs.utc(date).tz(dayjs.tz.guess()).format(dateFormat).replace(/\./gi, '');
+  return dateToUTC.tz(dayjs.tz.guess()).format(dateFormat).replace(/\./gi, '');
 }
 
 /** check whether a date is included in the range or not */
