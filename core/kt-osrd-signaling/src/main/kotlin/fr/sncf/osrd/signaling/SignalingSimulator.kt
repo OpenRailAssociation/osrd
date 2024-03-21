@@ -44,7 +44,7 @@ interface SigSystemManager : InfraSigSystemManager {
 }
 
 interface SignalingSimulator {
-    val sigModuleManager: InfraSigSystemManager
+    val sigModuleManager: SigSystemManager
 
     fun loadSignals(unloadedSignalInfra: RawSignalingInfra): LoadedSignalInfra
 
