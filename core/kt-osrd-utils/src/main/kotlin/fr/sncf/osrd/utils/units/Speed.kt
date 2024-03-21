@@ -34,3 +34,6 @@ value class Speed(val millimetersPerSecond: ULong) : Comparable<Speed> {
 
 val Double.metersPerSecond: Speed
     get() = Speed.fromMetersPerSecond(this)
+
+val Int.kilometersPerHour: Speed
+    get() = Speed.fromMetersPerSecond(this * 1000.0 / 3600.0)
