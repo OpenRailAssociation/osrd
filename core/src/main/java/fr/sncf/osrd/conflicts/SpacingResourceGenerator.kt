@@ -1,11 +1,14 @@
 package fr.sncf.osrd.conflicts
 
 import fr.sncf.osrd.signaling.SignalingSimulator
+import fr.sncf.osrd.signaling.SignalingTrainState
 import fr.sncf.osrd.signaling.ZoneStatus
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.standalone_sim.result.ResultTrain.SpacingRequirement
 import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
 import fr.sncf.osrd.utils.units.Offset
+import fr.sncf.osrd.utils.units.Speed
+import fr.sncf.osrd.utils.units.metersPerSecond
 import kotlin.math.min
 import mu.KotlinLogging
 
@@ -216,8 +219,14 @@ class SpacingRequirementAutomaton(
         val signalState = simulatedSignalStates[pathSignal.signal]!!
 
         // FIXME: Have a better way to check if the signal is constraining
+        val zoneEntryOffset = incrementalPath.toTravelledPath(incrementalPath.getZonePathStartOffset(probedZoneIndex))
+        val zoneExitOffset = incrementalPath.toTravelledPath(incrementalPath.getZonePathEndOffset(probedZoneIndex))
+        val maxSpeedInZone = callbacks.maxSpeedInRange(zoneEntryOffset, zoneExitOffset)
+
+        class SignalingTrainStateImpl(override val speed: Speed) : SignalingTrainState
+
+        val trainState = SignalingTrainStateImpl(speed = maxSpeedInZone.metersPerSecond)
         return simulator.sigModuleManager.isConstraining(loadedSignalInfra.getSignalingSystem(pathSignal.signal), signalState, trainState)
-        return signalState.getEnum("aspect") != "VL"
     }
 
     // Returns the index of the first zone that isn't required for the given signal,
