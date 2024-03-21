@@ -67,7 +67,7 @@ const MapSearchOperationalPoint = ({
       : [
           'or',
           ['search', ['name'], debouncedSearchTerm],
-          ['like', ['to_string', ['ci']], `%${debouncedSearchTerm}%`],
+          ['like', ['to_string', ['uic']], `%${debouncedSearchTerm}%`],
         ];
     const payload = {
       object: 'operationalpoint',
@@ -178,7 +178,7 @@ const MapSearchOperationalPoint = ({
                 {searchResult.name}
                 <span className="ch">{searchResult.ch}</span>
               </span>
-              <span className="uic">{searchResult.uic}</span>
+              <span className="uic">{searchResult.ci}</span>
             </button>
           ))}
       </div>
