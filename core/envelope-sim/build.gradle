@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'java-test-fixtures'
     id 'jacoco'
+    id 'org.jetbrains.kotlin.jvm'
 }
 
 repositories {
@@ -44,6 +45,20 @@ dependencies {
     compileOnly libs.spotbugs.annotations
     testCompileOnly libs.jcip.annotations
     testCompileOnly libs.spotbugs.annotations
+    implementation libs.kotlin.logging
+    implementation libs.kotlin.stdlib
+    testImplementation libs.kotlin.test
+}
+
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+    kotlinOptions {
+        freeCompilerArgs += [
+                "-opt-in=kotlin.RequiresOptIn",
+                "-opt-in=kotlin.ExperimentalUnsignedTypes",
+                "-opt-in=kotlin.time.ExperimentalTime",
+                "-opt-in=kotlin.contracts.ExperimentalContracts",
+        ]
+    }
 }
 
 test {
