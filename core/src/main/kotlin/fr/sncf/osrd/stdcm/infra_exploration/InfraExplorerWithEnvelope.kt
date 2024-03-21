@@ -4,6 +4,7 @@ import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.conflicts.IncrementalRequirementEnvelopeAdapter
 import fr.sncf.osrd.conflicts.SpacingRequirementAutomaton
 import fr.sncf.osrd.envelope.EnvelopeConcat
+import fr.sncf.osrd.envelope.EnvelopeInterpolate
 import fr.sncf.osrd.envelope.EnvelopeTimeInterpolate
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock
 import fr.sncf.osrd.graph.PathfindingEdgeLocationId
@@ -41,7 +42,7 @@ interface InfraExplorerWithEnvelope : InfraExplorer {
     fun getFullEnvelope(): EnvelopeTimeInterpolate
 
     /** Adds an envelope. This is done in-place. */
-    fun addEnvelope(envelope: EnvelopeTimeInterpolate): InfraExplorerWithEnvelope
+    fun addEnvelope(envelope: EnvelopeInterpolate): InfraExplorerWithEnvelope
 
     /**
      * Calls `InterpolateTotalTimeClamp` on the underlying envelope, taking the travelled path
@@ -100,7 +101,7 @@ fun initInfraExplorerWithEnvelope(
 
 /** Add an envelope to a simple InfraExplorer. */
 fun InfraExplorer.withEnvelope(
-    envelope: EnvelopeTimeInterpolate,
+    envelope: EnvelopeInterpolate,
     fullInfra: FullInfra,
     rollingStock: PhysicsRollingStock,
     isSimulationComplete: Boolean = false,

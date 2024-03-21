@@ -12,7 +12,7 @@ import java.util.NoSuchElementException;
 import java.util.stream.Stream;
 
 @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
-public final class Envelope implements Iterable<EnvelopePart>, SearchableEnvelope, EnvelopeTimeInterpolate {
+public final class Envelope implements Iterable<EnvelopePart>, SearchableEnvelope, EnvelopeInterpolate {
     private final EnvelopePart[] parts;
     public final boolean continuous;
 
@@ -160,6 +160,24 @@ public final class Envelope implements Iterable<EnvelopePart>, SearchableEnvelop
     public double interpolateSpeedRightDir(double position, double direction) {
         var partIndex = findRightDir(position, direction);
         return get(partIndex).interpolateSpeed(position);
+    }
+
+    /**
+     * Return the maximum speed in the range [beginPos, endPos]. Assumes the envelope is continuous.
+     */
+    public double maxSpeedInRange(double beginPos, double endPos) {
+        var beginPartIndex = findLeft(beginPos);
+        var endPartIndex = findRight(endPos);
+        var maxSpeed = get(beginPartIndex).interpolateSpeed(beginPos);
+        for (int i = beginPartIndex + 1; i < endPartIndex; i++) {
+            var part = get(i);
+            var partMaxSpeed = part.getMaxSpeed();
+            if (partMaxSpeed > maxSpeed) maxSpeed = partMaxSpeed;
+        }
+        var endSpeed = get(endPartIndex).interpolateSpeed(endPos);
+        if (endSpeed > maxSpeed) maxSpeed = endSpeed;
+
+        return maxSpeed;
     }
 
     /** Computes the time required to get to a given point of the envelope */

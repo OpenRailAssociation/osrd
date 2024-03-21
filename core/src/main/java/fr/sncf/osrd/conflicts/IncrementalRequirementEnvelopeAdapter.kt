@@ -1,6 +1,6 @@
 package fr.sncf.osrd.conflicts
 
-import fr.sncf.osrd.envelope.EnvelopeTimeInterpolate
+import fr.sncf.osrd.envelope.EnvelopeInterpolate
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
@@ -9,9 +9,20 @@ import kotlin.math.min
 
 class IncrementalRequirementEnvelopeAdapter(
     private val rollingStock: PhysicsRollingStock,
-    private val envelopeWithStops: EnvelopeTimeInterpolate?,
+    private val envelopeWithStops: EnvelopeInterpolate?,
     override var simulationComplete: Boolean,
 ) : IncrementalRequirementCallbacks {
+    override fun maxSpeedInRange(
+        pathBeginOff: Offset<TravelledPath>,
+        pathEndOff: Offset<TravelledPath>
+    ): Double {
+        if (envelopeWithStops == null) return Double.POSITIVE_INFINITY
+        val begin = pathBeginOff.distance.meters
+        val end = pathEndOff.distance.meters
+        if (max(0.0, begin) >= min(envelopeWithStops.endPos, end)) return Double.POSITIVE_INFINITY // no overlap
+        return envelopeWithStops.maxSpeedInRange(max(begin, 0.0), min(end, envelopeWithStops.endPos))
+    }
+
     override fun arrivalTimeInRange(
         pathBeginOff: Offset<TravelledPath>,
         pathEndOff: Offset<TravelledPath>

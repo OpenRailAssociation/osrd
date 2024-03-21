@@ -7,7 +7,7 @@ import java.util.List;
  * This class is used to concatenate envelopes without a deep copy of all the underlying data. All
  * envelopes are expected to start at position 0.
  */
-public class EnvelopeConcat implements EnvelopeTimeInterpolate {
+public class EnvelopeConcat implements EnvelopeInterpolate {
 
     private final List<LocatedEnvelope> envelopes;
     private final double endPos;
@@ -18,7 +18,7 @@ public class EnvelopeConcat implements EnvelopeTimeInterpolate {
     }
 
     /** Creates an instance from a list of envelopes */
-    public static EnvelopeConcat from(List<? extends EnvelopeTimeInterpolate> envelopes) {
+    public static EnvelopeConcat from(List<? extends EnvelopeInterpolate> envelopes) {
         var locatedEnvelopes = initLocatedEnvelopes(envelopes);
         var lastEnvelope = locatedEnvelopes.get(locatedEnvelopes.size() - 1);
         var endPos = lastEnvelope.startOffset + lastEnvelope.envelope.getEndPos();
@@ -34,7 +34,7 @@ public class EnvelopeConcat implements EnvelopeTimeInterpolate {
     }
 
     /** Place all envelopes in a record containing the offset on which they start */
-    private static List<LocatedEnvelope> initLocatedEnvelopes(List<? extends EnvelopeTimeInterpolate> envelopes) {
+    private static List<LocatedEnvelope> initLocatedEnvelopes(List<? extends EnvelopeInterpolate> envelopes) {
         double currentOffset = 0.0;
         double currentTime = 0.0;
         var res = new ArrayList<LocatedEnvelope>();
@@ -95,7 +95,15 @@ public class EnvelopeConcat implements EnvelopeTimeInterpolate {
      * Returns the envelope at the given position.
      */
     private LocatedEnvelope findEnvelopeAt(double position) {
-        if (position < 0) return null;
+        var index = findEnvelopeIndexAt(position);
+        return index == -1 ? null : envelopes.get(index);
+    }
+
+    /**
+     * Returns the index of the envelope at the given position.
+     */
+    private int findEnvelopeIndexAt(double position) {
+        if (position < 0) return -1;
         var lowerBound = 0; // included
         var upperBound = envelopes.size(); // excluded
         while (lowerBound < upperBound) {
@@ -106,11 +114,34 @@ public class EnvelopeConcat implements EnvelopeTimeInterpolate {
             } else if (position > envelope.startOffset + envelope.envelope.getEndPos()) {
                 lowerBound = i + 1;
             } else {
-                return envelope;
+                return i;
             }
         }
-        return null;
+        return -1;
     }
 
-    public record LocatedEnvelope(EnvelopeTimeInterpolate envelope, double startOffset, double startTime) {}
+    @Override
+    public double maxSpeedInRange(double beginPos, double endPos) {
+        var firstEnvelopeIndex = findEnvelopeIndexAt(beginPos);
+        assert firstEnvelopeIndex != -1 : "Trying to interpolate time outside of the envelope";
+        var firstEnvelope = envelopes.get(firstEnvelopeIndex);
+        var beginSpeed = firstEnvelope.envelope.maxSpeedInRange(beginPos - firstEnvelope.startOffset, firstEnvelope.envelope.getEndPos());
+
+        var lastEnvelopeIndex = findEnvelopeIndexAt(endPos);
+        assert lastEnvelopeIndex != -1 : "Trying to interpolate time outside of the envelope";
+        var lastEnvelope = envelopes.get(lastEnvelopeIndex);
+        var endSpeed = lastEnvelope.envelope.maxSpeedInRange(0, endPos - lastEnvelope.startOffset);
+
+        var maxSpeed = beginSpeed;
+        for (var i = firstEnvelopeIndex + 1; i < lastEnvelopeIndex; i++) {
+            var envelope = envelopes.get(i);
+            var speed = envelope.envelope.maxSpeedInRange(0, envelope.envelope.getEndPos());
+            if (speed > maxSpeed) maxSpeed = speed;
+        }
+
+        if (endSpeed > maxSpeed) maxSpeed = endSpeed;
+        return maxSpeed;
+    }
+
+    public record LocatedEnvelope(EnvelopeInterpolate envelope, double startOffset, double startTime) {}
 }

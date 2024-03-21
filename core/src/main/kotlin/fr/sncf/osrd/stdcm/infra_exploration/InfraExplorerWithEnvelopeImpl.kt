@@ -5,6 +5,7 @@ import fr.sncf.osrd.conflicts.SpacingRequirementAutomaton
 import fr.sncf.osrd.conflicts.SpacingRequirements
 import fr.sncf.osrd.envelope.EnvelopeConcat
 import fr.sncf.osrd.envelope.EnvelopeConcat.LocatedEnvelope
+import fr.sncf.osrd.envelope.EnvelopeInterpolate
 import fr.sncf.osrd.envelope.EnvelopeTimeInterpolate
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock
 import fr.sncf.osrd.sim_infra.api.Path
@@ -25,7 +26,7 @@ data class InfraExplorerWithEnvelopeImpl(
 
     // Soft references tell the JVM that the values may be cleared when running out of memory
     private var spacingRequirementsCache: SoftReference<List<SpacingRequirement>>? = null,
-    private var envelopeCache: SoftReference<EnvelopeTimeInterpolate>? = null,
+    private var envelopeCache: SoftReference<EnvelopeInterpolate>? = null,
 ) : InfraExplorer by infraExplorer, InfraExplorerWithEnvelope {
 
     override fun cloneAndExtendLookahead(): Collection<InfraExplorerWithEnvelope> {
@@ -40,7 +41,7 @@ data class InfraExplorerWithEnvelopeImpl(
         }
     }
 
-    override fun getFullEnvelope(): EnvelopeTimeInterpolate {
+    override fun getFullEnvelope(): EnvelopeInterpolate {
         val cached = envelopeCache?.get()
         if (cached != null) return cached
         val res = EnvelopeConcat.fromLocated(envelopes.toList())
@@ -48,7 +49,7 @@ data class InfraExplorerWithEnvelopeImpl(
         return res
     }
 
-    override fun addEnvelope(envelope: EnvelopeTimeInterpolate): InfraExplorerWithEnvelope {
+    override fun addEnvelope(envelope: EnvelopeInterpolate): InfraExplorerWithEnvelope {
         var prevEndOffset = 0.0
         var prevEndTime = 0.0
         if (envelopes.isNotEmpty()) {
