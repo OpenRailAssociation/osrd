@@ -2,18 +2,18 @@ package fr.sncf.osrd.standalone_sim;
 
 import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.arePositionsEqual;
 
-import fr.sncf.osrd.envelope.EnvelopeTimeInterpolate;
+import fr.sncf.osrd.envelope.EnvelopeInterpolate;
 import fr.sncf.osrd.train.TrainStop;
 import java.util.ArrayList;
 import java.util.List;
 
 /** Wraps an envelope with stops, to include the stop durations when getting the time at any point.
  * When getting the time at an exact stop location, the stop *is included*. */
-public class EnvelopeStopWrapper implements EnvelopeTimeInterpolate {
-    public final EnvelopeTimeInterpolate envelope;
+public class EnvelopeStopWrapper implements EnvelopeInterpolate {
+    public final EnvelopeInterpolate envelope;
     public final List<TrainStop> stops;
 
-    public EnvelopeStopWrapper(EnvelopeTimeInterpolate envelope, List<TrainStop> stops) {
+    public EnvelopeStopWrapper(EnvelopeInterpolate envelope, List<TrainStop> stops) {
         this.envelope = envelope;
         this.stops = stops;
     }
@@ -71,5 +71,10 @@ public class EnvelopeStopWrapper implements EnvelopeTimeInterpolate {
             }
         }
         return res;
+    }
+
+    @Override
+    public double maxSpeedInRange(double beginPos, double endPos) {
+        return envelope.maxSpeedInRange(beginPos, endPos);
     }
 }
