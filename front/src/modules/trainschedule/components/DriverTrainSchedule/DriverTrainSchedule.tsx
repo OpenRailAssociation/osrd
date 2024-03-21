@@ -19,12 +19,8 @@ export default function DriverTrainSchedule({
   );
 
   useEffect(() => {
-    if (baseOrEco === BaseOrEco.eco && !train[baseOrEco]) {
-      setBaseOrEco(BaseOrEco.base);
-    } else {
-      setBaseOrEco(BaseOrEco.eco);
-    }
-  }, [train]);
+    setBaseOrEco(train.eco ? BaseOrEco.eco : BaseOrEco.base);
+  }, [train.id]);
 
   return (
     <div className="simulation-driver-train-schedule">
