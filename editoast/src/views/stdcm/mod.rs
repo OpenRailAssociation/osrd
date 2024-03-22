@@ -17,9 +17,10 @@ use crate::{
     },
     error::Result,
     models::{
-        Create, Infra, Pathfinding, PathfindingChangeset, PathfindingPayload, Retrieve,
-        SpacingRequirement, TrainSchedule,
+        Infra, Pathfinding, PathfindingChangeset, PathfindingPayload, SpacingRequirement,
+        TrainSchedule,
     },
+    modelsv2::prelude::*,
     schema::rolling_stock::RollingStockComfortType,
     views::rolling_stocks::retrieve_existing_rolling_stock,
     DbPool,
@@ -153,18 +154,17 @@ async fn call_core_stdcm(
     core: &Data<CoreClient>,
     data: &Json<STDCMRequestPayload>,
 ) -> Result<STDCMCoreResponse> {
-    let infra = Infra::retrieve(db_pool.clone(), data.infra_id)
-        .await?
-        .ok_or(StdcmError::InfraNotFound {
-            infra_id: data.infra_id,
-        })?;
-    let infra_version = infra.clone().version.unwrap();
+    let conn = &mut db_pool.get().await?;
+    let infra = Infra::retrieve_or_fail(conn, data.infra_id, || StdcmError::InfraNotFound {
+        infra_id: data.infra_id,
+    })
+    .await?;
     let rolling_stock = retrieve_existing_rolling_stock(&db_pool, data.rolling_stock_id).await?;
     let steps = parse_stdcm_steps(db_pool.clone(), data, &infra).await?;
     let spacing_requirements = make_spacing_requirements(db_pool, data.timetable_id).await?;
     STDCMCoreRequest {
-        infra: infra.id.unwrap().to_string(),
-        expected_version: infra_version,
+        infra: infra.id.to_string(),
+        expected_version: infra.version,
         rolling_stock,
         comfort: data.comfort.clone(),
         steps,
@@ -195,10 +195,8 @@ async fn parse_stdcm_steps(
     infra: &Infra,
 ) -> Result<Vec<STDCMCoreStep>> {
     let steps = data.steps.clone();
-    let infra_id = infra.id.unwrap();
-
     let conn = &mut db_pool.get().await?;
-    let track_map = fetch_pathfinding_payload_track_map(conn, infra_id, &steps).await?;
+    let track_map = fetch_pathfinding_payload_track_map(conn, infra.id, &steps).await?;
     let waypoints = parse_pathfinding_payload_waypoints(&steps, &track_map);
     Ok(waypoints
         .unwrap()
@@ -249,6 +247,7 @@ async fn create_path_from_core_response(
     core_output: &STDCMCoreResponse,
     data: &Json<STDCMRequestPayload>,
 ) -> Result<Pathfinding> {
+    use crate::models::Create;
     let core_path_response = core_output.path.clone();
     let steps_duration = data.steps.iter().map(|step| step.duration).collect();
     let infra_id = data.infra_id;

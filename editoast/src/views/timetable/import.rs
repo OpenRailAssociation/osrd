@@ -13,12 +13,10 @@ use crate::core::pathfinding::{PathfindingRequest, PathfindingWaypoints, Waypoin
 use crate::core::simulation::{CoreTrainSchedule, SimulationRequest, TrainStop};
 use crate::core::AsCoreRequest;
 use crate::error::{InternalError, Result};
-use crate::models::{
-    Create, Infra, Pathfinding, Retrieve, ScheduledPoint, Timetable, TrainSchedule,
-};
-use crate::modelsv2::RollingStockModel;
+use crate::models::{Infra, Pathfinding, ScheduledPoint, Timetable, TrainSchedule};
+use crate::modelsv2::{prelude::*, RollingStockModel};
 use crate::schema::rolling_stock::{RollingStock, RollingStockComfortType};
-use crate::views::infra::{call_core_infra_state, InfraState};
+use crate::views::infra::{call_core_infra_state, InfraApiError, InfraState};
 use crate::views::pathfinding::save_core_pathfinding;
 use crate::views::train_schedule::process_simulation_response;
 use actix_web::web::Json;
@@ -175,14 +173,18 @@ pub async fn post_timetable(
     let mut conn = db_pool.get().await?;
 
     // Retrieve the timetable
-    let Some(timetable) = Timetable::retrieve_conn(&mut conn, timetable_id).await? else {
-        return Err(TimetableError::NotFound { timetable_id }.into());
+    let timetable = {
+        use crate::models::Retrieve;
+        Timetable::retrieve_conn(&mut conn, timetable_id)
+            .await?
+            .ok_or_else(|| Into::<InternalError>::into(TimetableError::NotFound { timetable_id }))?
     };
 
     let scenario = timetable.get_scenario_conn(&mut conn).await?;
     let infra_id = scenario.infra_id.expect("Scenario should have an infra id");
-    let infra = Infra::retrieve_conn(&mut conn, infra_id).await?.unwrap();
-    let (infra_id, infra_version) = (infra.id.unwrap(), infra.version.unwrap());
+    let infra =
+        Infra::retrieve_or_fail(&mut conn, infra_id, || InfraApiError::NotFound { infra_id })
+            .await?;
 
     // Check infra is loaded
     let mut infra_state =
@@ -200,7 +202,7 @@ pub async fn post_timetable(
     for item in data.into_inner() {
         item_futures.push(import_item(
             infra_id,
-            &infra_version,
+            &infra.version,
             db_pool.clone(),
             item,
             timetable_id,
@@ -235,7 +237,7 @@ async fn import_item(
 ) -> Result<HashMap<String, TrainImportReport>> {
     let mut conn = db_pool.get().await?;
     let mut timings = ImportTimings::default();
-    use crate::modelsv2::Retrieve;
+
     let Some(rolling_stock_model) =
         RollingStockModel::retrieve(&mut conn, import_item.rolling_stock.clone()).await?
     else {
@@ -343,6 +345,7 @@ async fn import_item(
 
     // Save train schedules
     for (import_train, mut sim_output) in import_item.trains.iter().zip(simulation_outputs) {
+        use crate::models::Create;
         let train_id = TrainSchedule {
             train_name: import_train.name.clone(),
             departure_time: import_train.departure_time.num_seconds_from_midnight() as f64,

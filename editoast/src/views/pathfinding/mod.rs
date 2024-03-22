@@ -33,7 +33,10 @@ use crate::{
         Create, Curve, Delete, Infra, PathWaypoint, Pathfinding, PathfindingChangeset,
         PathfindingPayload, Retrieve, Slope, Update,
     },
-    modelsv2::{infra_objects::TrackSectionModel, OperationalPointModel, RollingStockModel},
+    modelsv2::{
+        infra_objects::TrackSectionModel, OperationalPointModel, Retrieve as RetrieveV2,
+        RollingStockModel,
+    },
     schema::{
         rolling_stock::RollingStock,
         utils::geometry::{diesel_linestring_to_geojson, geojson_to_diesel_linestring},
@@ -422,24 +425,25 @@ async fn call_core_pf_and_save_result(
     core: Data<CoreClient>,
     update_id: Option<i64>,
 ) -> Result<Pathfinding> {
+    let conn = &mut db_pool.get().await?;
+
     // Checks that the pf to update exists in the first place in order to fail early and avoid unnecessary core requests
     if let Some(id) = update_id {
-        if Pathfinding::retrieve(db_pool.clone(), id).await?.is_none() {
+        if Pathfinding::retrieve_conn(conn, id).await?.is_none() {
             return Err(PathfindingError::NotFound { pathfinding_id: id }.into());
         }
     }
     let payload = payload.into_inner();
     let infra_id = payload.infra;
-    let infra = Infra::retrieve(db_pool.clone(), infra_id)
-        .await?
-        .ok_or(PathfindingError::InfraNotFound { infra_id })?;
+    let infra = <Infra as RetrieveV2<_>>::retrieve_or_fail(conn, infra_id, || {
+        PathfindingError::InfraNotFound { infra_id }
+    })
+    .await?;
 
-    let conn = &mut db_pool.get().await?;
     let track_map = payload.fetch_track_map(conn).await?;
     let mut waypoints = payload.parse_waypoints(&track_map)?;
     let mut rolling_stocks = payload.parse_rolling_stocks(conn).await?;
-    let mut path_request =
-        CorePathfindingRequest::new(infra.id.unwrap(), infra.version.unwrap(), None);
+    let mut path_request = CorePathfindingRequest::new(infra.id, infra.version, None);
     path_request
         .with_waypoints(&mut waypoints)
         .with_rolling_stocks(&mut rolling_stocks);
@@ -629,16 +633,13 @@ mod test {
         let rs = &named_fast_rolling_stock("fast_rolling_stock_test_post_ok", db_pool())
             .await
             .model;
-        let small_infra = small_infra(db_pool()).await;
-        let infra = &small_infra.model;
-        let rs_id = rs.id;
-        let infra_id = infra.id.unwrap();
+        let infra = small_infra(db_pool()).await;
         let mut payload: serde_json::Value = serde_json::from_str(include_str!(
             "../../tests/small_infra/pathfinding_post_payload.json"
         ))
         .unwrap();
-        *payload.get_mut("infra").unwrap() = json!(infra_id);
-        *payload.get_mut("rolling_stocks").unwrap() = json!([rs_id]);
+        *payload.get_mut("infra").unwrap() = json!(infra.id);
+        *payload.get_mut("rolling_stocks").unwrap() = json!([rs.id]);
 
         let mut core = MockingClient::new();
         core.stub("/pathfinding/routes")
@@ -670,16 +671,13 @@ mod test {
             &named_fast_rolling_stock("fast_rolling_stock_test_multiple_waypoints_ok", db_pool())
                 .await
                 .model;
-        let small_infra = small_infra(db_pool()).await;
-        let infra = &small_infra.model;
-        let rs_id = rs.id;
-        let infra_id = infra.id.unwrap();
+        let infra = small_infra(db_pool()).await;
         let mut payload: serde_json::Value = serde_json::from_str(include_str!(
             "../../tests/small_infra/pathfinding_post_multiple_waypoints_payload.json"
         ))
         .unwrap();
-        *payload.get_mut("infra").unwrap() = json!(infra_id);
-        *payload.get_mut("rolling_stocks").unwrap() = json!([rs_id]);
+        *payload.get_mut("infra").unwrap() = json!(infra.id);
+        *payload.get_mut("rolling_stocks").unwrap() = json!([rs.id]);
 
         let mut core = MockingClient::new();
         core.stub("/pathfinding/routes")
@@ -724,12 +722,12 @@ mod test {
 
     #[rstest::rstest]
     async fn test_rolling_stock_not_found(#[future] small_infra: TestFixture<Infra>) {
-        let infra = &small_infra.await.model;
+        let infra = small_infra.await;
         let mut payload: serde_json::Value = serde_json::from_str(include_str!(
             "../../tests/small_infra/pathfinding_post_payload.json"
         ))
         .unwrap();
-        *payload.get_mut("infra").unwrap() = json!(infra.id.unwrap());
+        *payload.get_mut("infra").unwrap() = json!(infra.id);
         let app = create_test_service().await;
         let req = TestRequest::post()
             .uri("/pathfinding")
@@ -747,12 +745,12 @@ mod test {
 
     #[rstest::rstest]
     async fn test_track_section_not_found(#[future] empty_infra: TestFixture<Infra>) {
-        let infra = &empty_infra.await.model;
+        let infra = empty_infra.await;
         let mut payload: serde_json::Value = serde_json::from_str(include_str!(
             "../../tests/small_infra/pathfinding_post_payload.json"
         ))
         .unwrap();
-        *payload.get_mut("infra").unwrap() = json!(infra.id.unwrap());
+        *payload.get_mut("infra").unwrap() = json!(infra.id);
         let app = create_test_service().await;
         let req = TestRequest::post()
             .uri("/pathfinding")

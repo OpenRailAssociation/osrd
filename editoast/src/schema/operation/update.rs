@@ -140,7 +140,7 @@ mod tests {
     #[actix_test]
     async fn valid_update_track() {
         test_infra_transaction(|conn, infra| async move {
-            let track = create_track(conn, infra.id.unwrap(), Default::default()).await;
+            let track = create_track(conn, infra.id, Default::default()).await;
 
             let update_track = UpdateOperation {
                 obj_id: track.get_id().clone(),
@@ -153,12 +153,12 @@ mod tests {
                 .unwrap(),
             };
 
-            assert!(update_track.apply(infra.id.unwrap(), conn).await.is_ok());
+            assert!(update_track.apply(infra.id, conn).await.is_ok());
 
             let updated_length = sql_query(format!(
                 "SELECT (data->>'length')::float as val FROM infra_object_track_section WHERE obj_id = '{}' AND infra_id = {}",
                 track.get_id(),
-                infra.id.unwrap()
+                infra.id
             ))
             .get_result::<Value>(conn).await.unwrap();
 
@@ -170,7 +170,7 @@ mod tests {
     async fn invalid_update_track() {
         test_infra_transaction(|conn, infra| {
             async move {
-                let track = create_track(conn, infra.id.unwrap(), Default::default()).await;
+                let track = create_track(conn, infra.id, Default::default()).await;
 
                 let update_track = UpdateOperation {
                     obj_id: track.get_id().clone(),
@@ -183,7 +183,7 @@ mod tests {
                     .unwrap(),
                 };
 
-                let res = update_track.apply(infra.id.unwrap(), conn).await;
+                let res = update_track.apply(infra.id, conn).await;
 
                 assert!(res.is_err());
                 assert_eq!(
@@ -199,7 +199,7 @@ mod tests {
     #[actix_test]
     async fn valid_update_signal() {
         test_infra_transaction(|conn, infra| async move {
-            let signal = create_signal(conn, infra.id.unwrap(), Default::default()).await;
+            let signal = create_signal(conn, infra.id, Default::default()).await;
 
             let update_signal = UpdateOperation {
                 obj_id: signal.get_id().clone(),
@@ -212,12 +212,12 @@ mod tests {
                 .unwrap(),
             };
 
-            assert!(update_signal.apply(infra.id.unwrap(), conn).await.is_ok());
+            assert!(update_signal.apply(infra.id, conn).await.is_ok());
 
             let updated_length = sql_query(format!(
                 "SELECT (data->>'sight_distance')::float as val FROM infra_object_signal WHERE obj_id = '{}' AND infra_id = {}",
                 signal.get_id(),
-                infra.id.unwrap()
+                infra.id
             ))
             .get_result::<Value>(conn).await.unwrap();
 
@@ -228,7 +228,7 @@ mod tests {
     #[actix_test]
     async fn valid_update_switch_extension() {
         test_infra_transaction(|conn, infra| async move {
-            let switch = create_switch(conn, infra.id.unwrap(), Default::default()).await;
+            let switch = create_switch(conn, infra.id, Default::default()).await;
 
             let update_switch = UpdateOperation {
                 obj_id: switch.get_id().clone(),
@@ -241,12 +241,12 @@ mod tests {
                 .unwrap(),
             };
 
-            assert!(update_switch.apply(infra.id.unwrap(), conn).await.is_ok());
+            assert!(update_switch.apply(infra.id, conn).await.is_ok());
 
             let updated_comment = sql_query(format!(
                 "SELECT (data->'extensions'->'sncf'->>'label') as label FROM infra_object_switch WHERE obj_id = '{}' AND infra_id = {}",
                 switch.get_id(),
-                infra.id.unwrap()
+                infra.id
             ))
             .get_result::<Label>(conn).await.unwrap();
 
@@ -257,7 +257,7 @@ mod tests {
     #[actix_test]
     async fn valid_update_speed() {
         test_infra_transaction(|conn, infra| async move {
-            let speed = create_speed(conn, infra.id.unwrap(), Default::default()).await;
+            let speed = create_speed(conn, infra.id, Default::default()).await;
 
             let update_speed = UpdateOperation {
                 obj_id: speed.get_id().clone(),
@@ -270,12 +270,12 @@ mod tests {
                 .unwrap(),
             };
 
-            assert!(update_speed.apply(infra.id.unwrap(), conn).await.is_ok());
+            assert!(update_speed.apply(infra.id, conn).await.is_ok());
 
             let updated_speed = sql_query(format!(
                 "SELECT (data->>'speed_limit')::float as val FROM infra_object_speed_section WHERE obj_id = '{}' AND infra_id = {}",
                 speed.get_id(),
-                infra.id.unwrap()
+                infra.id
             ))
             .get_result::<Value>(conn).await.unwrap();
 
@@ -298,14 +298,14 @@ mod tests {
                     .unwrap(),
                 };
 
-                let res = update_track.apply(infra.id.unwrap(), conn).await;
+                let res = update_track.apply(infra.id, conn).await;
 
                 assert!(res.is_err());
                 assert_eq!(
                     res.unwrap_err().get_type(),
                     OperationError::ObjectNotFound {
                         obj_id: "non_existent_id".to_string(),
-                        infra_id: infra.id.unwrap()
+                        infra_id: infra.id
                     }
                     .get_type()
                 );

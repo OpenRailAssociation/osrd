@@ -7,6 +7,7 @@ use super::electrical_profiles::ElectricalProfilesError;
 use crate::modelsv2::{Retrieve as RetrieveV2, RetrieveBatch, RollingStockModel};
 use crate::schema::rolling_stock::RollingStock;
 use crate::tables;
+use crate::views::infra::InfraApiError;
 use crate::{
     core::{
         simulation::{CoreTrainSchedule, SimulationRequest, SimulationResponse, TrainStop},
@@ -588,8 +589,13 @@ async fn standalone_simulation(
         })?;
 
     let scenario = timetable.get_scenario(db_pool.clone()).await?;
+
     let infra_id = scenario.infra_id.unwrap();
-    let infra = Infra::retrieve(db_pool.clone(), infra_id).await?.unwrap();
+    let mut conn = db_pool.get().await?;
+    let infra =
+        Infra::retrieve_or_fail(&mut conn, infra_id, || InfraApiError::NotFound { infra_id })
+            .await?;
+
     let request_payload =
         create_backend_request_payload(&train_schedules, &scenario, db_pool.clone()).await?;
     let response_payload = request_payload.fetch(&core).await?;
@@ -597,7 +603,6 @@ async fn standalone_simulation(
 
     assert_eq!(train_schedules.len(), simulation_outputs.len());
 
-    let mut conn = db_pool.get().await?;
     // Start a transaction
     let res_ids = conn
         .transaction::<_, InternalError, _>(|conn| {
@@ -605,7 +610,7 @@ async fn standalone_simulation(
                 let mut res_ids = Vec::new();
                 // Save inputs
                 for mut train_schedule in train_schedules {
-                    train_schedule.infra_version.clone_from(&infra.version);
+                    train_schedule.infra_version = Some(infra.version.clone());
                     train_schedule.rollingstock_version = Some(
                         LightRollingStockModel::retrieve(conn, train_schedule.rolling_stock_id)
                             .await?

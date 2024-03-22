@@ -12,6 +12,7 @@ use utoipa::{IntoParams, ToSchema};
 use crate::error::Result;
 use crate::infra_cache::{Graph, InfraCache};
 use crate::models::Infra;
+use crate::modelsv2::prelude::*;
 use crate::schema::utils::Identifier;
 use crate::schema::{Direction, DirectionalTrackRange, Endpoint, ObjectType, TrackEndpoint};
 use crate::views::infra::InfraApiError;
@@ -102,9 +103,10 @@ async fn pathfinding_view(
     }
 
     let mut conn = db_pool.get().await?;
-    let infra = Infra::retrieve_for_update(&mut conn, infra_id)
-        .await
-        .map_err(|_| InfraApiError::NotFound { infra_id })?;
+    // TODO: lock for share
+    let infra =
+        Infra::retrieve_or_fail(&mut conn, infra_id, || InfraApiError::NotFound { infra_id })
+            .await?;
     let infra_cache = InfraCache::get_or_load(&mut conn, &infra_caches, &infra).await?;
 
     // Check that the starting and ending track locations are valid

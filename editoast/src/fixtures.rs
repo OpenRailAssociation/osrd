@@ -1,6 +1,7 @@
 #[cfg(test)]
 pub mod tests {
     use std::io::Cursor;
+    use std::ops::{Deref, DerefMut};
 
     use crate::client::PostgresConfig;
     use crate::models::train_schedule::Mrsp;
@@ -20,8 +21,6 @@ pub mod tests {
     use crate::schema::electrical_profiles::{ElectricalProfile, ElectricalProfileSetData};
     use crate::schema::v2::trainschedule::TrainScheduleBase;
     use crate::schema::{RailJson, TrackRange};
-    use crate::views::infra::InfraForm;
-    use crate::views::rolling_stocks::rolling_stock_form::RollingStockForm;
     use crate::views::v2::train_schedule::TrainScheduleForm;
     use crate::DbPool;
 
@@ -92,10 +91,8 @@ pub mod tests {
             let mut conn = executor::block_on(self.db_pool.get()).unwrap();
             let _ = executor::block_on(T::delete_static(&mut conn, self.id()));
             if let Some(infra) = &self.infra {
-                let _ = executor::block_on(<Infra as models::Delete>::delete_conn(
-                    &mut conn,
-                    infra.id.unwrap(),
-                ));
+                use modelsv2::Delete;
+                let _ = executor::block_on(infra.delete(&mut conn));
             }
         }
     }
@@ -107,6 +104,34 @@ pub mod tests {
             id: i64,
         ) -> crate::error::Result<bool> {
             T::delete_conn(conn, id).await
+        }
+    }
+
+    pub trait IntoFixture: modelsv2::DeleteStatic<i64> + Identifiable + Send {
+        fn into_fixture(self, db_pool: Data<DbPool>) -> TestFixture<Self> {
+            TestFixture::new(self, db_pool)
+        }
+    }
+
+    impl<T> IntoFixture for T where T: modelsv2::DeleteStatic<i64> + Identifiable + Send {}
+
+    impl<T> Deref for TestFixture<T>
+    where
+        T: modelsv2::DeleteStatic<i64> + Identifiable + Send,
+    {
+        type Target = T;
+
+        fn deref(&self) -> &Self::Target {
+            &self.model
+        }
+    }
+
+    impl<T> DerefMut for TestFixture<T>
+    where
+        T: modelsv2::DeleteStatic<i64> + Identifiable + Send,
+    {
+        fn deref_mut(&mut self) -> &mut Self::Target {
+            &mut self.model
         }
     }
 
@@ -459,10 +484,13 @@ pub mod tests {
 
     #[fixture]
     pub async fn empty_infra(db_pool: Data<DbPool>) -> TestFixture<Infra> {
-        let infra_form = InfraForm {
-            name: String::from("test_infra"),
-        };
-        TestFixture::create_legacy(Infra::from(infra_form), db_pool).await
+        TestFixture::create(
+            Infra::changeset()
+                .name("test_infra".to_owned())
+                .last_railjson_version(),
+            db_pool,
+        )
+        .await
     }
 
     async fn make_small_infra(db_pool: Data<DbPool>) -> Infra {
@@ -470,10 +498,12 @@ pub mod tests {
             "../../tests/data/infras/small_infra/infra.json"
         ))
         .unwrap();
-        let infra = Infra::from(InfraForm {
-            name: "small_infra".to_owned(),
-        });
-        infra.persist(railjson, db_pool).await.unwrap()
+        Infra::changeset()
+            .name("small_infra".to_owned())
+            .last_railjson_version()
+            .persist(railjson, db_pool)
+            .await
+            .unwrap()
     }
 
     /// Provides an [Infra] based on small_infra
@@ -495,7 +525,7 @@ pub mod tests {
     pub async fn pathfinding(db_pool: Data<DbPool>) -> TestFixture<Pathfinding> {
         let small_infra = make_small_infra(db_pool.clone()).await;
         let pf_cs = PathfindingChangeset {
-            infra_id: small_infra.id,
+            infra_id: Some(small_infra.id),
             payload: Some(
                 serde_json::from_str(include_str!(
                     "tests/small_infra/pathfinding_fixture_payload.json"

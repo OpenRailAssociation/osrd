@@ -369,7 +369,7 @@ impl InfraCache {
 
     /// Given an infra id load infra cache from database
     pub async fn load(conn: &mut PgConnection, infra: &Infra) -> Result<InfraCache> {
-        let infra_id = infra.id.unwrap();
+        let infra_id = infra.id;
         let mut infra_cache = Self::default();
 
         // Load track sections list
@@ -472,12 +472,12 @@ impl InfraCache {
         infra: &Infra,
     ) -> Result<ReadGuard<'a, i64, InfraCache>> {
         // Cache hit
-        if let Some(infra_cache) = infra_caches.get(&infra.id.unwrap()) {
+        if let Some(infra_cache) = infra_caches.get(&infra.id) {
             return Ok(infra_cache);
         }
         // Cache miss
-        infra_caches.insert_new(infra.id.unwrap(), InfraCache::load(conn, infra).await?);
-        Ok(infra_caches.get(&infra.id.unwrap()).unwrap())
+        infra_caches.insert_new(infra.id, InfraCache::load(conn, infra).await?);
+        Ok(infra_caches.get(&infra.id).unwrap())
     }
 
     /// This function tries to get the infra from the cache, if it fails, it loads it from the database
@@ -488,12 +488,12 @@ impl InfraCache {
         infra: &Infra,
     ) -> Result<WriteGuard<'a, i64, InfraCache>> {
         // Cache hit
-        if let Some(infra_cache) = infra_caches.get_mut(&infra.id.unwrap()) {
+        if let Some(infra_cache) = infra_caches.get_mut(&infra.id) {
             return Ok(infra_cache);
         }
         // Cache miss
-        infra_caches.insert_new(infra.id.unwrap(), InfraCache::load(conn, infra).await?);
-        Ok(infra_caches.get_mut(&infra.id.unwrap()).unwrap())
+        infra_caches.insert_new(infra.id, InfraCache::load(conn, infra).await?);
+        Ok(infra_caches.get_mut(&infra.id).unwrap())
     }
 
     /// Get all track sections references of a given track and type
@@ -734,7 +734,7 @@ pub mod tests {
     async fn load_track_section() {
         test_infra_transaction(|conn, infra| {
             async move {
-                let track = create_track(conn, infra.id.unwrap(), Default::default()).await;
+                let track = create_track(conn, infra.id, Default::default()).await;
                 let infra_cache = InfraCache::load(conn, &infra).await.unwrap();
                 assert_eq!(infra_cache.track_sections().len(), 1);
                 assert!(infra_cache.track_sections().contains_key(track.get_id()));
@@ -749,7 +749,7 @@ pub mod tests {
         test_infra_transaction(|conn, infra| {
             {
                 async move {
-                    let signal = create_signal(conn, infra.id.unwrap(), Default::default()).await;
+                    let signal = create_signal(conn, infra.id, Default::default()).await;
                     let infra_cache = InfraCache::load(conn, &infra).await.unwrap();
                     assert!(infra_cache.signals().contains_key(signal.get_id()));
                     let refs = infra_cache.track_sections_refs;
@@ -767,7 +767,7 @@ pub mod tests {
             async move {
                 let speed = create_speed(
                     conn,
-                    infra.id.unwrap(),
+                    infra.id,
                     SpeedSection {
                         track_ranges: vec![Default::default()],
                         ..Default::default()
@@ -788,7 +788,7 @@ pub mod tests {
     async fn load_route() {
         test_infra_transaction(|conn, infra| {
             async move {
-                let route = create_route(conn, infra.id.unwrap(), Default::default()).await;
+                let route = create_route(conn, infra.id, Default::default()).await;
                 let infra_cache = InfraCache::load(conn, &infra).await.unwrap();
                 assert!(infra_cache.routes().contains_key(route.get_id()));
             }
@@ -803,7 +803,7 @@ pub mod tests {
             async move {
                 let op = create_op(
                     conn,
-                    infra.id.unwrap(),
+                    infra.id,
                     OperationalPoint {
                         parts: vec![Default::default()],
                         ..Default::default()
@@ -828,7 +828,7 @@ pub mod tests {
             async move {
                 let switch = create_switch(
                     conn,
-                    infra.id.unwrap(),
+                    infra.id,
                     Switch {
                         ports: HashMap::from([("port".into(), Default::default())]),
                         ..Default::default()
@@ -847,7 +847,7 @@ pub mod tests {
     async fn load_switch_type() {
         test_infra_transaction(|conn, infra| {
             async move {
-                let s_type = create_switch_type(conn, infra.id.unwrap(), Default::default()).await;
+                let s_type = create_switch_type(conn, infra.id, Default::default()).await;
                 let infra_cache = InfraCache::load(conn, &infra).await.unwrap();
                 assert!(infra_cache.switch_types().contains_key(s_type.get_id()));
             }
@@ -860,7 +860,7 @@ pub mod tests {
     async fn load_detector() {
         test_infra_transaction(|conn, infra| {
             async move {
-                let detector = create_detector(conn, infra.id.unwrap(), Default::default()).await;
+                let detector = create_detector(conn, infra.id, Default::default()).await;
 
                 let infra_cache = InfraCache::load(conn, &infra).await.unwrap();
 
@@ -877,7 +877,7 @@ pub mod tests {
     async fn load_buffer_stop() {
         test_infra_transaction(|conn, infra| {
             async move {
-                let bs = create_buffer_stop(conn, infra.id.unwrap(), Default::default()).await;
+                let bs = create_buffer_stop(conn, infra.id, Default::default()).await;
 
                 let infra_cache = InfraCache::load(conn, &infra).await.unwrap();
 
@@ -896,7 +896,7 @@ pub mod tests {
             async move {
                 let electrification = create_electrification(
                     conn,
-                    infra.id.unwrap(),
+                    infra.id,
                     Electrification {
                         track_ranges: vec![Default::default()],
                         ..Default::default()

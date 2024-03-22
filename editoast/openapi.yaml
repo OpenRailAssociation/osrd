@@ -680,7 +680,6 @@ components:
       - $ref: '#/components/schemas/EditoastGetObjectsErrorsObjectIdNotFound'
       - $ref: '#/components/schemas/EditoastInfraApiErrorNotFound'
       - $ref: '#/components/schemas/EditoastInfraCacheEditoastErrorObjectNotFound'
-      - $ref: '#/components/schemas/EditoastInfraErrorNotFound'
       - $ref: '#/components/schemas/EditoastLayersErrorLayerNotFound'
       - $ref: '#/components/schemas/EditoastLayersErrorViewNotFound'
       - $ref: '#/components/schemas/EditoastLinesErrorsLineNotFound'
@@ -877,30 +876,6 @@ components:
         type:
           enum:
           - editoast:infra_cache:ObjectNotFound
-          type: string
-      required:
-      - type
-      - status
-      - message
-      type: object
-    EditoastInfraErrorNotFound:
-      properties:
-        context:
-          properties:
-            infra_id:
-              type: integer
-          required:
-          - infra_id
-          type: object
-        message:
-          type: string
-        status:
-          enum:
-          - 400
-          type: integer
-        type:
-          enum:
-          - editoast:infra:NotFound
           type: string
       required:
       - type

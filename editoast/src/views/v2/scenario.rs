@@ -4,9 +4,7 @@ use crate::models::train_schedule::LightTrainSchedule;
 use crate::models::{Infra, List};
 use crate::modelsv2::scenario::{Scenario, ScenarioWithDetails};
 use crate::modelsv2::timetable::Timetable;
-use crate::modelsv2::{
-    Changeset, Create, DeleteStatic, Model, Project, Retrieve, Study, Tags, Update,
-};
+use crate::modelsv2::{prelude::*, Project, Study, Tags};
 use crate::views::pagination::{PaginatedResponse, PaginationQueryParam};
 use crate::views::projects::{ProjectIdParam, QueryParams};
 use crate::views::scenario::{check_project_study, check_project_study_conn, ScenarioIdParam};
@@ -163,10 +161,9 @@ async fn create(
                 .await?;
 
                 // Check if the infra exists
-                use crate::models::Retrieve;
-                let _ = Infra::retrieve_conn(conn, infra_id)
-                    .await?
-                    .ok_or(ScenarioError::InfraNotFound { infra_id })?;
+                if !Infra::exists(conn, infra_id).await? {
+                    return Err(ScenarioError::InfraNotFound { infra_id }.into());
+                }
 
                 // Create Scenario
                 let scenario = scenario.study_id(study_id).create(conn).await?;
@@ -292,10 +289,9 @@ async fn patch(
 
                 // Check if the infra exists
                 if let Some(infra_id) = data.0.infra_id {
-                    use crate::models::Retrieve;
-                    let _ = Infra::retrieve_conn(conn, infra_id)
-                        .await?
-                        .ok_or(ScenarioError::InfraNotFound { infra_id })?;
+                    if !Infra::exists(conn, infra_id).await? {
+                        return Err(ScenarioError::InfraNotFound { infra_id }.into());
+                    }
                 }
 
                 // Update the scenario
@@ -457,8 +453,12 @@ mod tests {
 
         assert!(!response.results.is_empty());
         assert_eq!(
-            response.results.pop().map(|r| r.infra_name),
-            fixtures.infra.model.name
+            response
+                .results
+                .pop()
+                .expect("a fixture scenario should exist")
+                .infra_name,
+            fixtures.infra.name
         );
     }
 

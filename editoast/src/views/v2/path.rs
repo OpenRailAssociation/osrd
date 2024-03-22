@@ -7,7 +7,7 @@ use utoipa::ToSchema;
 
 use crate::error::Result;
 use crate::models::Infra;
-use crate::models::Retrieve;
+use crate::modelsv2::prelude::*;
 use crate::schema::utils::Identifier;
 use crate::schema::Direction;
 use editoast_derive::EditoastError;
@@ -45,8 +45,9 @@ enum PathfindingError {
 }
 
 async fn retrieve_infra_version(conn: &mut PgConnection, infra_id: i64) -> Result<String> {
-    let infra = Infra::retrieve_conn(conn, infra_id)
-        .await?
-        .ok_or(PathfindingError::InfraNotFound { infra_id })?;
-    Ok(infra.version.unwrap())
+    let infra = Infra::retrieve_or_fail(conn, infra_id, || PathfindingError::InfraNotFound {
+        infra_id,
+    })
+    .await?;
+    Ok(infra.version)
 }

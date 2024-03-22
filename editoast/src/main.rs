@@ -23,7 +23,6 @@ use crate::error::InternalError;
 use crate::models::Infra;
 use crate::schema::electrical_profiles::ElectricalProfileSetData;
 use crate::schema::RailJson;
-use crate::views::infra::InfraForm;
 use crate::views::OpenApiRoot;
 use actix_cors::Cors;
 use actix_web::dev::{Service, ServiceRequest};
@@ -40,8 +39,7 @@ use client::{
 };
 use modelsv2::{
     timetable::Timetable, timetable::TimetableWithTrains, train_schedule::TrainSchedule,
-    train_schedule::TrainScheduleChangeset, Create as CreateV2, CreateBatch, DeleteStatic, Model,
-    Retrieve as RetrieveV2, RetrieveBatch,
+    train_schedule::TrainScheduleChangeset,
 };
 use modelsv2::{Changeset, RollingStockModel};
 use opentelemetry_datadog::DatadogPropagator;
@@ -62,9 +60,8 @@ use futures_util::future::BoxFuture;
 use futures_util::FutureExt;
 use infra_cache::InfraCache;
 use map::MapLayers;
-use models::infra::InfraError;
-use models::Retrieve;
 use modelsv2::electrical_profiles::ElectricalProfileSet;
+use modelsv2::prelude::*;
 use openssl::ssl::{SslConnector, SslMethod, SslVerifyMode};
 use opentelemetry::KeyValue;
 use opentelemetry_otlp::WithExportConfig as _;
@@ -511,6 +508,28 @@ async fn build_redis_pool_and_invalidate_all_cache(
     })?)
 }
 
+async fn batch_retrieve_infras(
+    conn: &mut diesel_async::AsyncPgConnection,
+    ids: &[u64],
+) -> Result<Vec<Infra>, Box<dyn Error + Send + Sync>> {
+    let (infras, missing) = Infra::retrieve_batch(conn, ids.iter().map(|id| *id as i64)).await?;
+    if !missing.is_empty() {
+        let error = CliError::new(
+            1,
+            format!(
+                "❌ Infrastructures not found: {missing}",
+                missing = missing
+                    .iter()
+                    .map(|id| id.to_string())
+                    .collect::<Vec<_>>()
+                    .join(", ")
+            ),
+        );
+        return Err(Box::new(error));
+    }
+    Ok(infras)
+}
+
 /// Run the generate sub command
 /// This command refresh all infra given as input (if no infra given then refresh all of them)
 async fn generate_infra(
@@ -527,41 +546,26 @@ async fn generate_infra(
         }
     } else {
         // Retrieve given infras
-        for id in args.infra_ids {
-            match Infra::retrieve(db_pool.clone(), id as i64).await? {
-                Some(infra) => infras.push(infra),
-                None => {
-                    let error = CliError::new(1, format!("❌ Infrastructure not found, ID: {id}"));
-                    return Err(Box::new(error));
-                }
-            };
-        }
-    };
-
-    // Refresh each infras
-    for infra in infras {
+        infras = batch_retrieve_infras(&mut conn, &args.infra_ids).await?;
+    }
+    for mut infra in infras {
         println!(
             "🍞 Infra {}[{}] is generating:",
-            infra.name.clone().unwrap().bold(),
-            infra.id.unwrap()
+            infra.name.clone().bold(),
+            infra.id
         );
         let infra_cache = InfraCache::load(&mut conn, &infra).await?;
         if infra
             .refresh(db_pool.clone(), args.force, &infra_cache)
             .await?
         {
-            build_redis_pool_and_invalidate_all_cache(redis_config.clone(), infra.id.unwrap())
-                .await?;
-            println!(
-                "✅ Infra {}[{}] generated!",
-                infra.name.unwrap().bold(),
-                infra.id.unwrap()
-            );
+            build_redis_pool_and_invalidate_all_cache(redis_config.clone(), infra.id).await?;
+            println!("✅ Infra {}[{}] generated!", infra.name.bold(), infra.id);
         } else {
             println!(
                 "✅ Infra {}[{}] already generated!",
-                infra.name.unwrap().bold(),
-                infra.id.unwrap()
+                infra.name.bold(),
+                infra.id
             );
         }
     }
@@ -590,7 +594,6 @@ async fn import_rolling_stock(
                         .map(|n| n.bold())
                         .unwrap_or("rolling stock witout name".bold())
                 );
-                use crate::modelsv2::prelude::*;
                 let conn = &mut db_pool.get().await?;
                 let rolling_stock = rolling_stock.locked(false).version(0).create(conn).await?;
                 println!(
@@ -626,27 +629,23 @@ async fn clone_infra(
     infra_args: InfraCloneArgs,
     db_pool: Data<DbPool>,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
-    match Infra::clone(infra_args.id as i64, db_pool, infra_args.new_name).await {
-        Ok(cloned_infra) => println!(
-            "✅ Infra {} (ID: {}) was successfully cloned",
-            cloned_infra.name.unwrap(),
-            cloned_infra.id.unwrap()
-        ),
-        Err(e) => {
-            if e == (InfraError::NotFound {
-                infra_id: infra_args.id as i64,
-            })
-            .into()
-            {
-                let error = CliError::new(
-                    1,
-                    format!("❌ Infrastructure not found, ID: {}", infra_args.id),
-                );
-                return Err(Box::new(error));
-            }
-            return Err(e.message.into());
-        }
-    }
+    let conn = &mut db_pool.get().await?;
+    let infra = Infra::retrieve(conn, infra_args.id as i64)
+        .await?
+        .ok_or_else(|| {
+            // When EditoastError will be removed from the models crate,
+            // this can become a retrieve_or_fail
+            CliError::new(
+                1,
+                format!("❌ Infrastructure not found, ID: {}", infra_args.id),
+            )
+        })?;
+    let cloned_infra = infra.clone(db_pool, infra_args.new_name).await?;
+    println!(
+        "✅ Infra {} (ID: {}) was successfully cloned",
+        cloned_infra.name.bold(),
+        cloned_infra.id
+    );
     Ok(())
 }
 
@@ -668,35 +667,30 @@ async fn import_railjson(
         }
     };
 
-    let infra: Infra = InfraForm {
-        name: args.infra_name,
-    }
-    .into();
+    let infra_name = args.infra_name.clone().bold();
+
+    let infra = Infra::changeset()
+        .name(args.infra_name)
+        .last_railjson_version();
     let railjson: RailJson = serde_json::from_reader(BufReader::new(railjson_file))?;
 
-    println!("🍞 Importing infra {}", infra.name.clone().unwrap().bold());
-    let infra = infra.persist(railjson, db_pool.clone()).await?;
-    let infra_id = infra.id.unwrap();
+    println!("🍞 Importing infra {infra_name}");
+    let mut infra = infra.persist(railjson, db_pool.clone()).await?;
 
     let mut conn = db_pool.get().await?;
-    let infra = infra
+    infra
         .bump_version(&mut conn)
         .await
-        .map_err(|_| InfraApiError::NotFound { infra_id })?;
+        .map_err(|_| InfraApiError::NotFound { infra_id: infra.id })?;
 
-    println!(
-        "✅ Infra {}[{}] saved!",
-        infra.name.clone().unwrap().bold(),
-        infra.id.unwrap()
-    );
+    println!("✅ Infra {infra_name}[{}] saved!", infra.id);
     // Generate only if the was set
     if args.generate {
         let infra_cache = InfraCache::load(&mut conn, &infra).await?;
         infra.refresh(db_pool, true, &infra_cache).await?;
         println!(
-            "✅ Infra {}[{}] generated data refreshed!",
-            infra.name.unwrap().bold(),
-            infra.id.unwrap()
+            "✅ Infra {infra_name}[{}] generated data refreshed!",
+            infra.id
         );
     };
     Ok(())
@@ -714,7 +708,6 @@ async fn electrical_profile_set_import(
         .name(args.name)
         .data(electrical_profile_set_data);
 
-    use crate::modelsv2::Create;
     let conn = &mut db_pool.get().await?;
     let created_ep_set = ep_set.create(conn).await?;
     println!("✅ Electrical profile set {} created", created_ep_set.id);
@@ -773,30 +766,18 @@ async fn clear_infra(
         }
     } else {
         // Retrieve given infras
-        for id in args.infra_ids {
-            match Infra::retrieve(db_pool.clone(), id as i64).await? {
-                Some(infra) => infras.push(infra),
-                None => {
-                    let error = CliError::new(1, format!("❌ Infrastructure not found, ID: {id}"));
-                    return Err(Box::new(error));
-                }
-            };
-        }
+        infras = batch_retrieve_infras(&mut conn, &args.infra_ids).await?;
     };
 
-    for infra in infras {
+    for mut infra in infras {
         println!(
             "🍞 Infra {}[{}] is clearing:",
-            infra.name.clone().unwrap().bold(),
-            infra.id.unwrap()
+            infra.name.clone().bold(),
+            infra.id
         );
-        build_redis_pool_and_invalidate_all_cache(redis_config.clone(), infra.id.unwrap()).await?;
+        build_redis_pool_and_invalidate_all_cache(redis_config.clone(), infra.id).await?;
         infra.clear(&mut conn).await?;
-        println!(
-            "✅ Infra {}[{}] cleared!",
-            infra.name.unwrap().bold(),
-            infra.id.unwrap()
-        );
+        println!("✅ Infra {}[{}] cleared!", infra.name.bold(), infra.id);
     }
     Ok(())
 }

@@ -296,7 +296,7 @@ mod test_persist {
                     crate::models::infra::tests::test_infra_transaction(|conn, infra| {
                         async move {
                             let schemas = (0..10).map(|_| Default::default());
-                            let changesets = $obj::from_infra_schemas(infra.id.unwrap(), schemas);
+                            let changesets = $obj::from_infra_schemas(infra.id, schemas);
                             assert!($obj::create_batch::<_, Vec<_>>(conn, changesets).await.is_ok());
                         }.scope_boxed()
                     }).await;
