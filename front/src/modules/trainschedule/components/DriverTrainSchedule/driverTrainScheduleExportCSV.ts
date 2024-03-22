@@ -6,6 +6,7 @@ import type {
   SpeedPosition,
   Train,
 } from 'reducers/osrdsimulation/types';
+import { timestampToHHMMSS } from 'utils/date';
 
 import type { BaseOrEcoType } from './DriverTrainScheduleTypes';
 
@@ -24,6 +25,7 @@ enum CSVKeys {
   position = 'position',
   speed = 'speed',
   speedLimit = 'speedLimit',
+  seconds = 'seconds',
   time = 'time',
 }
 
@@ -141,12 +143,13 @@ export default function driverTrainScheduleExportCSV(train: Train, baseOrEco: Ba
       ch: speed.ch || '',
       lineCode: speed.lineCode || '',
       trackName: speed.trackName || '',
-      position: pointToComma(speed.position / 1000),
-      speed: pointToComma(speed.speed * 3.6),
+      position: pointToComma(+(speed.position / 1000).toFixed(3)),
+      speed: pointToComma(+(speed.speed * 3.6).toFixed(3)),
       speedLimit: pointToComma(
         Math.round((speed.speedLimit ?? getStepSpeedLimit(speed.position, train.vmax)) * 3.6)
       ),
-      time: pointToComma(speed.time),
+      seconds: pointToComma(+speed.time.toFixed(1)),
+      time: timestampToHHMMSS(speed.time),
     }));
     if (steps) createFakeLinkWithData(train, baseOrEco, spreadTrackAndLineNames(steps));
   }

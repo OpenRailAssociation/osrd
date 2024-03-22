@@ -9,6 +9,11 @@ dayjs.locale('fr');
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
+export function timestampToHHMMSS(timestamp: number) {
+  const date = new Date(timestamp * 1000);
+  return date.toISOString().substring(11, 19);
+}
+
 export function formatIsoDate(date: Date) {
   return date.toISOString().substring(0, 10);
 }
