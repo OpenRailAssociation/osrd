@@ -1,6 +1,7 @@
 use crate::error::{InternalError, Result};
 use crate::infra_cache::InfraCache;
 use crate::models::{pathfinding::Pathfinding, Infra, Retrieve};
+use crate::modelsv2::Retrieve as RetrieveV2;
 use crate::schema::ObjectType;
 use crate::views::pathfinding::path_rangemap::{make_path_range_map, TrackMap};
 use crate::views::pathfinding::{PathfindingError, PathfindingIdParam};
@@ -97,19 +98,19 @@ async fn electrifications_on_path(
     db_pool: Data<DbPool>,
     infra_caches: Data<CHashMap<i64, InfraCache>>,
 ) -> Result<Json<ElectrificationsOnPathResponse>> {
+    let mut conn = db_pool.get().await?;
+
     let pathfinding_id = params.pathfinding_id;
-    let pathfinding = match Pathfinding::retrieve(db_pool.clone(), pathfinding_id).await? {
+    let pathfinding = match Pathfinding::retrieve_conn(&mut conn, pathfinding_id).await? {
         Some(pf) => pf,
         None => return Err(PathfindingError::NotFound { pathfinding_id }.into()),
     };
 
-    let infra = Infra::retrieve(db_pool.clone(), pathfinding.infra_id)
+    let infra = <Infra as RetrieveV2<_>>::retrieve(&mut conn, pathfinding.infra_id)
         .await?
         .expect("Foreign key constraint not respected");
 
     let track_section_ids = pathfinding.track_section_ids();
-
-    let mut conn = db_pool.get().await?;
 
     let infra_cache = InfraCache::get_or_load(&mut conn, &infra_caches, &infra).await?;
     let (electrification_mode_map, warnings) =

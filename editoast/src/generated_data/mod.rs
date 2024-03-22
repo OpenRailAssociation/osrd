@@ -154,18 +154,17 @@ pub async fn update_all(
 
 #[cfg(test)]
 pub mod tests {
+    use crate::fixtures::tests::db_pool;
     use crate::generated_data::{clear_all, refresh_all, update_all};
-    use crate::models::infra::tests::{test_infra_and_delete, test_infra_transaction};
-    use crate::models::Infra;
+    use crate::models::infra::tests::test_infra_transaction;
     use actix_web::test as actix_test;
     use diesel_async::scoped_futures::ScopedFutureExt;
-    use diesel_async::AsyncPgConnection as PgConnection;
 
     #[actix_test] // Slow test
     async fn refresh_all_test() {
-        test_infra_and_delete(|pool, infra: Infra| {
+        test_infra_transaction(|_conn, infra| {
             async move {
-                assert!(refresh_all(pool, infra.id.unwrap(), &Default::default())
+                assert!(refresh_all(db_pool(), infra.id, &Default::default())
                     .await
                     .is_ok());
             }
@@ -176,13 +175,11 @@ pub mod tests {
 
     #[actix_test]
     async fn update_all_test() {
-        test_infra_transaction(|conn: &mut PgConnection, infra: Infra| {
+        test_infra_transaction(|conn, infra| {
             async move {
-                assert!(
-                    update_all(conn, infra.id.unwrap(), &[], &Default::default())
-                        .await
-                        .is_ok()
-                );
+                assert!(update_all(conn, infra.id, &[], &Default::default())
+                    .await
+                    .is_ok());
             }
             .scope_boxed()
         })
@@ -191,9 +188,10 @@ pub mod tests {
 
     #[actix_test]
     async fn clear_all_test() {
-        test_infra_transaction(|conn: &mut PgConnection, infra: Infra| {
+        test_infra_transaction(|conn, infra| {
             async move {
-                assert!(clear_all(conn, infra.id.unwrap()).await.is_ok());
+                let res = clear_all(conn, infra.id).await;
+                assert!(res.is_ok());
             }
             .scope_boxed()
         })

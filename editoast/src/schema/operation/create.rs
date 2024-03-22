@@ -348,7 +348,7 @@ pub mod tests {
     async fn create_track_test() {
         test_infra_transaction(|conn, infra| {
             async move {
-                create_track(conn, infra.id.unwrap(), Default::default()).await;
+                create_track(conn, infra.id, Default::default()).await;
             }
             .scope_boxed()
         })
@@ -359,7 +359,7 @@ pub mod tests {
     async fn create_signal_test() {
         test_infra_transaction(|conn, infra| {
             async move {
-                create_signal(conn, infra.id.unwrap(), Default::default()).await;
+                create_signal(conn, infra.id, Default::default()).await;
             }
             .scope_boxed()
         })
@@ -370,7 +370,7 @@ pub mod tests {
     async fn create_speed_test() {
         test_infra_transaction(|conn, infra| {
             async move {
-                create_speed(conn, infra.id.unwrap(), Default::default()).await;
+                create_speed(conn, infra.id, Default::default()).await;
             }
             .scope_boxed()
         })
@@ -381,7 +381,7 @@ pub mod tests {
     async fn create_switch_test() {
         test_infra_transaction(|conn, infra| {
             async move {
-                create_switch(conn, infra.id.unwrap(), Default::default()).await;
+                create_switch(conn, infra.id, Default::default()).await;
             }
             .scope_boxed()
         })
@@ -392,7 +392,7 @@ pub mod tests {
     async fn create_detector_test() {
         test_infra_transaction(|conn, infra| {
             async move {
-                create_detector(conn, infra.id.unwrap(), Default::default()).await;
+                create_detector(conn, infra.id, Default::default()).await;
             }
             .scope_boxed()
         })
@@ -403,7 +403,7 @@ pub mod tests {
     async fn create_buffer_stop_test() {
         test_infra_transaction(|conn, infra| {
             async move {
-                create_buffer_stop(conn, infra.id.unwrap(), Default::default()).await;
+                create_buffer_stop(conn, infra.id, Default::default()).await;
             }
             .scope_boxed()
         })
@@ -414,7 +414,7 @@ pub mod tests {
     async fn create_route_test() {
         test_infra_transaction(|conn, infra| {
             async move {
-                create_route(conn, infra.id.unwrap(), Default::default()).await;
+                create_route(conn, infra.id, Default::default()).await;
             }
             .scope_boxed()
         })
@@ -425,7 +425,7 @@ pub mod tests {
     async fn create_op_test() {
         test_infra_transaction(|conn, infra| {
             async move {
-                create_op(conn, infra.id.unwrap(), Default::default()).await;
+                create_op(conn, infra.id, Default::default()).await;
             }
             .scope_boxed()
         })
@@ -436,7 +436,7 @@ pub mod tests {
     async fn create_switch_type_test() {
         test_infra_transaction(|conn, infra| {
             async move {
-                create_switch_type(conn, infra.id.unwrap(), Default::default()).await;
+                create_switch_type(conn, infra.id, Default::default()).await;
             }
             .scope_boxed()
         })
@@ -447,7 +447,7 @@ pub mod tests {
     async fn create_electrification_test() {
         test_infra_transaction(|conn, infra| {
             async move {
-                create_electrification(conn, infra.id.unwrap(), Default::default()).await;
+                create_electrification(conn, infra.id, Default::default()).await;
             }
             .scope_boxed()
         })

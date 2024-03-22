@@ -1,6 +1,6 @@
 use crate::{
-    error::Result, infra_cache::InfraCache, models::Infra, schema::ObjectType,
-    views::infra::InfraApiError, DbPool,
+    error::Result, infra_cache::InfraCache, models::Infra, modelsv2::prelude::*,
+    schema::ObjectType, views::infra::InfraApiError, DbPool,
 };
 use actix_web::{
     get,
@@ -59,15 +59,12 @@ async fn attached(
     infra_caches: Data<CHashMap<i64, InfraCache>>,
     db_pool: Data<DbPool>,
 ) -> Result<Json<HashMap<ObjectType, Vec<String>>>> {
-    let InfraAttachedParams {
-        infra_id: infra,
-        track_id,
-    } = params.into_inner();
+    let InfraAttachedParams { infra_id, track_id } = params.into_inner();
     let mut conn = db_pool.get().await?;
-    let infra = match Infra::retrieve_for_update(&mut conn, infra).await {
-        Ok(infra) => infra,
-        Err(_) => return Err(InfraApiError::NotFound { infra_id: infra }.into()),
-    };
+    // TODO: lock for share
+    let infra =
+        Infra::retrieve_or_fail(&mut conn, infra_id, || InfraApiError::NotFound { infra_id })
+            .await?;
     let infra_cache = InfraCache::get_or_load(&mut conn, &infra_caches, &infra).await?;
     // Check track existence
     if !infra_cache.track_sections().contains_key(&track_id) {

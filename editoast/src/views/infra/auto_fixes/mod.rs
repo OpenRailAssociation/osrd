@@ -1,12 +1,13 @@
 use crate::error::{InternalError, Result};
 use crate::generated_data::generate_infra_errors;
 use crate::infra_cache::{InfraCache, ObjectCache};
-use crate::models::{self, Infra, Retrieve};
+use crate::models::Infra;
+use crate::modelsv2::prelude::*;
 use crate::schema::operation::{
     CacheOperation, DeleteOperation, Operation, RailjsonObject, UpdateOperation,
 };
 use crate::schema::{InfraError, OSRDIdentified as _, OSRDObject, ObjectRef, ObjectType};
-use crate::views::infra::InfraIdParam;
+use crate::views::infra::{InfraApiError, InfraIdParam};
 use crate::DbPool;
 use actix_web::get;
 use actix_web::web::{Data, Json as WebJson, Path};
@@ -72,10 +73,10 @@ async fn list_auto_fixes(
     db_pool: Data<DbPool>,
 ) -> Result<WebJson<Vec<Operation>>> {
     let infra_id = infra.into_inner();
-    let infra = Infra::retrieve(db_pool.clone(), infra_id)
-        .await?
-        .ok_or(models::infra::InfraError::NotFound { infra_id })?;
     let mut conn = db_pool.get().await?;
+    let infra =
+        Infra::retrieve_or_fail(&mut conn, infra_id, || InfraApiError::NotFound { infra_id })
+            .await?;
 
     // accepting the early release of ReadGuard as it's anyway released when sending the suggestions (so before edit)
     let mut infra_cache_clone = InfraCache::get_or_load(&mut conn, &infra_caches, &infra)
@@ -324,7 +325,7 @@ mod tests {
             .unwrap()
     }
 
-    async fn force_refresh(infra: &Infra) {
+    async fn force_refresh(infra: &mut Infra) {
         infra
             .refresh(db_pool(), true, &get_infra_cache(infra).await)
             .await
@@ -360,9 +361,9 @@ mod tests {
     async fn test_fix_invalid_ref_puntual_objects() {
         // GIVEN
         let app = create_test_service().await;
-        let small_infra = small_infra(db_pool()).await;
+        let mut small_infra = small_infra(db_pool()).await;
         let small_infra_id = small_infra.id();
-        force_refresh(&small_infra.model).await;
+        force_refresh(&mut small_infra).await;
 
         // Check the only initial issues are "overlapping_speed_sections" warnings
         let infra_errors_before_all: PaginatedResponse<crate::views::infra::errors::InfraError> =

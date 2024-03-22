@@ -3,7 +3,8 @@ use std::collections::HashMap;
 use crate::{
     error::Result,
     infra_cache::{Graph, InfraCache},
-    models::{Infra, Retrieve},
+    models::Infra,
+    modelsv2::prelude::*,
     schema::DirectionalTrackRange,
     views::{
         infra::{InfraApiError, InfraIdParam},
@@ -135,13 +136,11 @@ async fn get_routes_track_ranges<'a>(
     db_pool: Data<DbPool>,
 ) -> Result<Json<Vec<RouteTrackRangesResult>>> {
     let infra_id = infra.into_inner();
-    let infra = match Infra::retrieve(db_pool.clone(), infra_id).await? {
-        Some(infra) => infra,
-        None => return Err(InfraApiError::NotFound { infra_id }.into()),
-    };
-    let mut conn = db_pool.get().await?;
+    let conn = &mut db_pool.get().await?;
+    let infra =
+        Infra::retrieve_or_fail(conn, infra_id, || InfraApiError::NotFound { infra_id }).await?;
 
-    let infra_cache = InfraCache::get_or_load(&mut conn, &infra_caches, &infra).await?;
+    let infra_cache = InfraCache::get_or_load(conn, &infra_caches, &infra).await?;
     let graph = Graph::load(&infra_cache);
     let routes_cache = infra_cache.routes();
     let result = params
@@ -182,22 +181,17 @@ async fn get_routes_nodes(
     db_pool: Data<DbPool>,
     Json(node_states): Json<HashMap<String, Option<String>>>,
 ) -> Result<Json<Vec<String>>> {
-    let infra = match Infra::retrieve(db_pool.clone(), params.infra_id).await? {
-        Some(infra) => infra,
-        None => {
-            return Err(InfraApiError::NotFound {
-                infra_id: params.infra_id,
-            }
-            .into())
-        }
-    };
+    let conn = &mut db_pool.get().await?;
+    let infra = Infra::retrieve_or_fail(conn, params.infra_id, || InfraApiError::NotFound {
+        infra_id: params.infra_id,
+    })
+    .await?;
 
     if node_states.is_empty() {
         return Ok(Json(vec![]));
     }
 
-    let mut conn = db_pool.get().await?;
-    let infra_cache = InfraCache::get_or_load(&mut conn, &infra_caches, &infra).await?;
+    let infra_cache = InfraCache::get_or_load(conn, &infra_caches, &infra).await?;
     let routes_cache = infra_cache.routes();
 
     let result = routes_cache

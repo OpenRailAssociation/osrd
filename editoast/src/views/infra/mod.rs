@@ -16,9 +16,9 @@ use crate::core::{AsCoreRequest, CoreClient};
 use crate::error::Result;
 use crate::infra_cache::{InfraCache, ObjectCache};
 use crate::map::{self, MapLayers};
-use crate::models::infra::INFRA_VERSION;
-use crate::models::{Create, Delete, Infra, List as ModelList, NoParams, Retrieve, Update};
-use crate::schema::{SwitchType, RAILJSON_VERSION};
+use crate::models::{Infra, List as ModelList, NoParams};
+use crate::modelsv2::prelude::*;
+use crate::schema::SwitchType;
 use crate::views::pagination::{PaginatedResponse, PaginationQueryParam};
 use crate::DbPool;
 use crate::RedisClient;
@@ -27,16 +27,14 @@ use actix_web::dev::HttpServiceFactory;
 use actix_web::web::{scope, Data, Json, Path, Query};
 use actix_web::{delete, get, post, put, Either, HttpResponse, Responder};
 use chashmap::CHashMap;
-use chrono::Utc;
 use diesel::sql_types::{BigInt, Text};
 use diesel::{sql_query, QueryableByName};
-use diesel_async::RunQueryDsl;
 use editoast_derive::EditoastError;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use std::sync::Arc;
 use thiserror::Error;
 use utoipa::IntoParams;
-use uuid::Uuid;
 
 crate::routes! {
     "/infra" => {
@@ -107,18 +105,9 @@ pub struct InfraForm {
     pub name: String,
 }
 
-impl From<InfraForm> for Infra {
+impl From<InfraForm> for Changeset<Infra> {
     fn from(infra: InfraForm) -> Self {
-        Infra {
-            name: Some(infra.name),
-            owner: Some(Uuid::nil()),
-            created: Some(Utc::now().naive_utc()),
-            railjson_version: Some(RAILJSON_VERSION.into()),
-            version: Some(INFRA_VERSION.into()),
-            generated_version: Some(Some(INFRA_VERSION.into())),
-            locked: Some(false),
-            ..Default::default()
-        }
+        Self::default().name(infra.name).last_railjson_version()
     }
 }
 
@@ -152,40 +141,35 @@ struct RefreshResponse {
 async fn refresh(
     db_pool: Data<DbPool>,
     redis_client: Data<RedisClient>,
-    query_params: Query<RefreshQueryParams>,
+    Query(query_params): Query<RefreshQueryParams>,
     infra_caches: Data<CHashMap<i64, InfraCache>>,
     map_layers: Data<MapLayers>,
 ) -> Result<Json<RefreshResponse>> {
     let mut conn = db_pool.get().await?;
     // Use a transaction to give scope to infra list lock
-    let mut infras_list = vec![];
-    let infras = &query_params.infras.0;
+    let RefreshQueryParams {
+        force,
+        infras: List(infras),
+    } = query_params;
 
-    if infras.is_empty() {
+    let infras_list = if infras.is_empty() {
         // Retrieve all available infra
-        for infra in Infra::list_for_update(&mut conn).await {
-            infras_list.push(infra);
-        }
+        Infra::all(&mut conn).await
     } else {
         // Retrieve given infras
-        for id in infras.iter() {
-            let infra = Infra::retrieve_for_update(&mut conn, *id)
-                .await
-                .map_err(|_| InfraApiError::NotFound { infra_id: *id })?;
-            infras_list.push(infra);
-        }
-    }
+        Infra::retrieve_batch_or_fail(&mut conn, infras, |missing| InfraApiError::NotFound {
+            infra_id: missing.into_iter().next().unwrap(),
+        })
+        .await?
+    };
 
     // Refresh each infras
     let mut infra_refreshed = vec![];
 
-    for infra in infras_list {
+    for mut infra in infras_list {
         let infra_cache = InfraCache::get_or_load(&mut conn, &infra_caches, &infra).await?;
-        if infra
-            .refresh(db_pool.clone(), query_params.force, &infra_cache)
-            .await?
-        {
-            infra_refreshed.push(infra.id.unwrap());
+        if infra.refresh(db_pool.clone(), force, &infra_cache).await? {
+            infra_refreshed.push(infra.id);
         }
     }
 
@@ -219,7 +203,7 @@ async fn list(
         .results
         .into_iter()
         .map(|infra| {
-            let infra_id = infra.id.unwrap();
+            let infra_id = infra.id;
             let state = infra_state
                 .get(&infra_id.to_string())
                 .unwrap_or(&InfraStateResponse::default())
@@ -276,11 +260,9 @@ async fn get(
     core: Data<CoreClient>,
 ) -> Result<Json<InfraWithState>> {
     let infra_id = infra.into_inner();
-
-    let infra = match Infra::retrieve(db_pool.clone(), infra_id).await? {
-        Some(infra) => infra,
-        None => return Err(InfraApiError::NotFound { infra_id }.into()),
-    };
+    let conn = &mut db_pool.get().await?;
+    let infra =
+        Infra::retrieve_or_fail(conn, infra_id, || InfraApiError::NotFound { infra_id }).await?;
     let infra_state = call_core_infra_state(Some(infra_id), db_pool, core).await?;
     let state = infra_state
         .get(&infra_id.to_string())
@@ -292,9 +274,16 @@ async fn get(
 /// Create an infra
 #[post("")]
 async fn create(db_pool: Data<DbPool>, data: Json<InfraForm>) -> Result<impl Responder> {
-    let infra: Infra = data.into_inner().into();
-    let infra = infra.create(db_pool).await?;
+    let infra: Changeset<Infra> = data.into_inner().into();
+    let conn = &mut db_pool.get().await?;
+    let infra = infra.create(conn).await?;
     Ok(HttpResponse::Created().json(infra))
+}
+
+#[derive(Deserialize)]
+struct CloneQuery {
+    /// The name of the new infra
+    name: Option<String>,
 }
 
 /// Duplicate an infra
@@ -302,12 +291,15 @@ async fn create(db_pool: Data<DbPool>, data: Json<InfraForm>) -> Result<impl Res
 async fn clone(
     infra_id: Path<i64>,
     db_pool: Data<DbPool>,
-    new_name: Query<InfraForm>,
+    Query(CloneQuery { name }): Query<CloneQuery>,
 ) -> Result<Json<i64>> {
-    let infra_id = infra_id.into_inner();
-    let name = Some(new_name.name.clone());
-    let cloned_infra = Infra::clone(infra_id, db_pool.clone(), name).await?;
-    Ok(Json(cloned_infra.id.unwrap()))
+    let conn = &mut db_pool.get().await?;
+    let infra = Infra::retrieve_or_fail(conn, *infra_id, || InfraApiError::NotFound {
+        infra_id: infra_id.into_inner(),
+    })
+    .await?;
+    let cloned_infra = infra.clone(db_pool.clone(), name).await?;
+    Ok(Json(cloned_infra.id))
 }
 
 /// Delete an infra
@@ -317,8 +309,8 @@ async fn delete(
     db_pool: Data<DbPool>,
     infra_caches: Data<CHashMap<i64, InfraCache>>,
 ) -> Result<HttpResponse> {
-    let infra = infra.into_inner();
-    if Infra::delete(db_pool.clone(), infra).await? {
+    let conn = &mut db_pool.get().await?;
+    if Infra::delete_static(conn, *infra).await? {
         infra_caches.remove(&infra);
         Ok(HttpResponse::NoContent().finish())
     } else {
@@ -332,13 +324,9 @@ struct InfraPatchForm {
     pub name: Option<String>,
 }
 
-impl InfraPatchForm {
-    fn into_infra(self, infra_id: i64) -> Infra {
-        Infra {
-            id: Some(infra_id),
-            name: self.name,
-            ..Default::default()
-        }
+impl From<InfraPatchForm> for Changeset<Infra> {
+    fn from(patch: InfraPatchForm) -> Self {
+        Infra::changeset().flat_name(patch.name)
     }
 }
 
@@ -347,14 +335,15 @@ impl InfraPatchForm {
 async fn rename(
     db_pool: Data<DbPool>,
     infra: Path<i64>,
-    new_name: Json<InfraPatchForm>,
+    Json(patch): Json<InfraPatchForm>,
 ) -> Result<Json<Infra>> {
-    let infra_id = infra.into_inner();
-    let infra = new_name.into_inner().into_infra(infra_id);
-    let infra = match infra.update(db_pool.clone(), infra_id).await? {
-        Some(infra) => infra,
-        None => return Err(InfraApiError::NotFound { infra_id }.into()),
-    };
+    let infra_cs: Changeset<Infra> = patch.into();
+    let conn = &mut db_pool.get().await?;
+    let infra = infra_cs
+        .update_or_fail(conn, *infra, || InfraApiError::NotFound {
+            infra_id: *infra,
+        })
+        .await?;
     Ok(Json(infra))
 }
 
@@ -365,13 +354,13 @@ async fn get_switch_types(
     db_pool: Data<DbPool>,
     infra_caches: Data<CHashMap<i64, InfraCache>>,
 ) -> Result<Json<Vec<SwitchType>>> {
-    let infra_id = infra.into_inner();
-    let infra = Infra::retrieve(db_pool.clone(), infra_id)
-        .await?
-        .ok_or(InfraApiError::NotFound { infra_id })?;
+    let conn = &mut db_pool.get().await?;
+    let infra = Infra::retrieve_or_fail(conn, *infra, || InfraApiError::NotFound {
+        infra_id: *infra,
+    })
+    .await?;
 
-    let mut conn = db_pool.get().await?;
-    let infra = InfraCache::get_or_load(&mut conn, &infra_caches, &infra).await?;
+    let infra = InfraCache::get_or_load(conn, &infra_caches, &infra).await?;
     Ok(Json(
         infra
             .switch_types()
@@ -388,6 +377,7 @@ async fn get_speed_limit_tags(
     infra: Path<i64>,
     db_pool: Data<DbPool>,
 ) -> Result<Json<Vec<String>>> {
+    use diesel_async::RunQueryDsl;
     let infra = infra.into_inner();
     let mut conn = db_pool.get().await?;
     let speed_limits_tags: Vec<SpeedLimitTags> = sql_query(
@@ -418,6 +408,7 @@ async fn get_voltages(
     param: Query<GetVoltagesQueryParams>,
     db_pool: Data<DbPool>,
 ) -> Result<Json<Vec<String>>> {
+    use diesel_async::RunQueryDsl;
     let infra = infra.into_inner();
     let include_rolling_stock_modes = param.into_inner().include_rolling_stock_modes;
     let mut conn = db_pool.get().await?;
@@ -436,35 +427,33 @@ async fn get_voltages(
 /// Returns the set of voltages for all infras and rolling_stocks modes.
 #[get("/voltages")]
 async fn get_all_voltages(db_pool: Data<DbPool>) -> Result<Json<Vec<String>>> {
+    use diesel_async::RunQueryDsl;
     let mut conn = db_pool.get().await?;
     let query = include_str!("sql/get_all_voltages_and_modes.sql");
     let voltages: Vec<Voltage> = sql_query(query).load(&mut conn).await?;
     Ok(Json(voltages.into_iter().map(|el| (el.voltage)).collect()))
 }
 
+async fn set_locked(infra: i64, locked: bool, db_pool: Arc<DbPool>) -> Result<()> {
+    let conn = &mut db_pool.get().await?;
+    let mut infra =
+        Infra::retrieve_or_fail(conn, infra, || InfraApiError::NotFound { infra_id: infra })
+            .await?;
+    infra.locked = locked;
+    infra.save(conn).await
+}
+
 /// Lock an infra
 #[post("/lock")]
 async fn lock(infra: Path<i64>, db_pool: Data<DbPool>) -> Result<HttpResponse> {
-    let infra_id = infra.into_inner();
-    let mut conn = db_pool.get().await?;
-    let mut infra = Infra::retrieve_for_update(&mut conn, infra_id)
-        .await
-        .map_err(|_| InfraApiError::NotFound { infra_id })?;
-    infra.locked = Some(true);
-    infra.update_conn(&mut conn, infra_id).await?;
+    set_locked(*infra, true, db_pool.into_inner()).await?;
     Ok(HttpResponse::NoContent().finish())
 }
 
 /// Unlock an infra
 #[post("/unlock")]
 async fn unlock(infra: Path<i64>, db_pool: Data<DbPool>) -> Result<HttpResponse> {
-    let infra_id = infra.into_inner();
-    let mut conn = db_pool.get().await?;
-    let mut infra = Infra::retrieve_for_update(&mut conn, infra_id)
-        .await
-        .map_err(|_| InfraApiError::NotFound { infra_id })?;
-    infra.locked = Some(false);
-    infra.update_conn(&mut conn, infra_id).await?;
+    set_locked(*infra, false, db_pool.into_inner()).await?;
     Ok(HttpResponse::NoContent().finish())
 }
 
@@ -480,12 +469,12 @@ async fn call_core_infra_load(
     db_pool: Data<DbPool>,
     core: Data<CoreClient>,
 ) -> Result<()> {
-    let infra = Infra::retrieve(db_pool, infra_id)
-        .await?
-        .ok_or(InfraApiError::NotFound { infra_id })?;
+    let conn = &mut db_pool.get().await?;
+    let infra =
+        Infra::retrieve_or_fail(conn, infra_id, || InfraApiError::NotFound { infra_id }).await?;
     let infra_request = InfraLoadRequest {
-        infra: infra.id.unwrap(),
-        expected_version: infra.version.unwrap(),
+        infra: infra.id,
+        expected_version: infra.version,
     };
     infra_request.fetch(core.as_ref()).await?;
     Ok(())
@@ -497,8 +486,7 @@ async fn load(
     db_pool: Data<DbPool>,
     core: Data<CoreClient>,
 ) -> Result<HttpResponse> {
-    let infra_id = infra.into_inner();
-    call_core_infra_load(infra_id, db_pool, core).await?;
+    call_core_infra_load(*infra, db_pool, core).await?;
     Ok(HttpResponse::NoContent().finish())
 }
 
@@ -509,10 +497,11 @@ pub async fn call_core_infra_state(
     core: Data<CoreClient>,
 ) -> Result<HashMap<String, InfraStateResponse>> {
     if let Some(infra_id) = infra_id {
-        Infra::retrieve(db_pool.clone(), infra_id)
-            .await?
-            .ok_or(InfraApiError::NotFound { infra_id })?;
-    };
+        let conn = &mut db_pool.get().await?;
+        if !Infra::exists(conn, infra_id).await? {
+            return Err(InfraApiError::NotFound { infra_id }.into());
+        }
+    }
     let infra_request = InfraStateRequest { infra: infra_id };
     let response = infra_request.fetch(core.as_ref()).await?;
     Ok(response)
@@ -535,21 +524,21 @@ async fn cache_status(
 #[cfg(test)]
 pub mod tests {
     use super::*;
-    use crate::client::PostgresConfig;
     use crate::core::mocking::MockingClient;
     use crate::fixtures::tests::{
-        db_pool, empty_infra, named_other_rolling_stock, small_infra, TestFixture,
+        db_pool, empty_infra, named_other_rolling_stock, small_infra, IntoFixture, TestFixture,
     };
-    use crate::generated_data;
+    use crate::models::infra::DEFAULT_INFRA_VERSION;
     use crate::modelsv2::{get_geometry_layer_table, get_table};
     use crate::schema::operation::{Operation, RailjsonObject};
-    use crate::schema::{Electrification, ObjectType, SpeedSection, SwitchType};
+    use crate::schema::{Electrification, ObjectType, SpeedSection, SwitchType, RAILJSON_VERSION};
     use crate::views::tests::{create_test_service, create_test_service_with_core_client};
+    use crate::{assert_status_and_read, generated_data};
     use actix_http::Request;
     use actix_web::http::StatusCode;
     use actix_web::test as actix_test;
     use actix_web::test::{call_and_read_body_json, call_service, read_body_json, TestRequest};
-    use diesel_async::{AsyncConnection, AsyncPgConnection as PgConnection};
+    use diesel_async::RunQueryDsl;
     use rstest::*;
     use serde_json::json;
     use strum::IntoEnumIterator;
@@ -569,21 +558,21 @@ pub mod tests {
     }
 
     #[rstest]
-    async fn infra_clone_empty(db_pool: Data<DbPool>, #[future] empty_infra: TestFixture<Infra>) {
+    async fn infra_clone_empty(db_pool: Data<DbPool>) {
+        let conn = &mut db_pool.get().await.unwrap();
+        let infra = empty_infra(db_pool.clone()).await;
         let app = create_test_service().await;
-        let infra = empty_infra.await;
         let req = TestRequest::post()
-            .uri(format!("/infra/{}/clone/?name=cloned_infra", infra.id()).as_str())
+            .uri(format!("/infra/{}/clone/?name=cloned_infra", infra.id).as_str())
             .to_request();
         let response = call_service(&app, req).await;
-        assert_eq!(response.status(), StatusCode::OK);
-        let cloned_infra_id: i64 = read_body_json(response).await;
-        let cloned_infra = Infra::retrieve(db_pool.clone(), cloned_infra_id)
+        let cloned_infra_id: i64 = assert_status_and_read!(response, StatusCode::OK);
+        let cloned_infra = Infra::retrieve(conn, cloned_infra_id)
             .await
             .unwrap()
-            .unwrap();
-        assert_eq!(cloned_infra.name.unwrap(), "cloned_infra");
-        assert!(Infra::delete(db_pool, cloned_infra_id).await.unwrap());
+            .expect("infra was not cloned")
+            .into_fixture(db_pool);
+        assert_eq!(cloned_infra.name, "cloned_infra");
     }
 
     #[derive(QueryableByName)]
@@ -595,16 +584,10 @@ pub mod tests {
     #[rstest] // Slow test
     async fn infra_clone(db_pool: Data<DbPool>) {
         let app = create_test_service().await;
-        let small_infra = &small_infra(db_pool.clone()).await.model;
-        let small_infra_id = small_infra.id.unwrap();
-
-        let pg_config = PostgresConfig::default();
-        let pg_config_url = pg_config.url().expect("cannot get postgres config url");
-        let mut conn = PgConnection::establish(pg_config_url.as_str())
-            .await
-            .expect("Error while connecting DB");
-
-        let infra_cache = InfraCache::load(&mut conn, small_infra).await.unwrap();
+        let small_infra = small_infra(db_pool.clone()).await;
+        let small_infra_id = small_infra.id;
+        let conn = &mut db_pool.get().await.unwrap();
+        let infra_cache = InfraCache::load(conn, &small_infra).await.unwrap();
 
         generated_data::refresh_all(db_pool.clone(), small_infra_id, &infra_cache)
             .await
@@ -633,6 +616,11 @@ pub mod tests {
         assert_eq!(response.status(), StatusCode::OK);
 
         let cloned_infra_id: i64 = read_body_json(response).await;
+        let _cloned_infra = Infra::retrieve(conn, cloned_infra_id)
+            .await
+            .unwrap()
+            .expect("infra was not cloned")
+            .into_fixture(db_pool);
 
         let mut tables = vec!["infra_layer_error"];
         for object in ObjectType::iter() {
@@ -651,7 +639,7 @@ pub mod tests {
                     table
                 ))
                 .bind::<BigInt, _>(inf_id)
-                .get_result::<Count>(&mut conn)
+                .get_result::<Count>(conn)
                 .await
                 .unwrap();
 
@@ -670,8 +658,6 @@ pub mod tests {
             // check that we have the same number of objects in each table for both infras
             assert_eq!(val[0], val[1]);
         }
-
-        assert!(Infra::delete(db_pool, cloned_infra_id).await.unwrap());
     }
 
     #[rstest]
@@ -709,14 +695,14 @@ pub mod tests {
             .to_request();
         let response = call_service(&app, req).await;
         assert_eq!(response.status(), StatusCode::CREATED);
-        let infra: Infra = read_body_json(response).await;
-        assert_eq!(infra.name.unwrap(), "create_infra_test");
-        assert_eq!(infra.railjson_version.unwrap(), RAILJSON_VERSION);
-        assert_eq!(infra.version.unwrap(), INFRA_VERSION);
-        assert_eq!(infra.generated_version.unwrap().unwrap(), INFRA_VERSION);
-        assert!(!infra.locked.unwrap());
-
-        assert!(Infra::delete(db_pool, infra.id.unwrap()).await.unwrap());
+        let infra = read_body_json::<Infra, _>(response)
+            .await
+            .into_fixture(db_pool);
+        assert_eq!(infra.name, "create_infra_test");
+        assert_eq!(infra.railjson_version, RAILJSON_VERSION);
+        assert_eq!(infra.version, DEFAULT_INFRA_VERSION);
+        assert_eq!(infra.generated_version, None);
+        assert!(!infra.locked);
     }
 
     #[rstest]
@@ -736,7 +722,8 @@ pub mod tests {
         let response = call_service(&app, req).await;
         assert_eq!(response.status(), StatusCode::OK);
 
-        Infra::delete(db_pool, empty_infra.id()).await.unwrap();
+        let conn = &mut db_pool.get().await.unwrap();
+        empty_infra.delete(conn).await.unwrap();
 
         let req = TestRequest::get()
             .uri(format!("/infra/{}", empty_infra.id()).as_str())
@@ -756,7 +743,7 @@ pub mod tests {
         let response = call_service(&app, req).await;
         assert_eq!(response.status(), StatusCode::OK);
         let infra: Infra = read_body_json(response).await;
-        assert_eq!(infra.name.unwrap(), "rename_test");
+        assert_eq!(infra.name, "rename_test");
     }
 
     #[derive(Deserialize)]
@@ -768,14 +755,13 @@ pub mod tests {
     async fn infra_refresh(#[future] empty_infra: TestFixture<Infra>) {
         let empty_infra = empty_infra.await;
         let app = create_test_service().await;
-
         let req = TestRequest::post()
-            .uri(format!("/infra/refresh/?infras={}", empty_infra.id()).as_str())
+            .uri(format!("/infra/refresh/?infras={}", empty_infra.id).as_str())
             .to_request();
         let response = call_service(&app, req).await;
         assert_eq!(response.status(), StatusCode::OK);
         let refreshed_infras: InfraRefreshedResponse = read_body_json(response).await;
-        assert!(refreshed_infras.infra_refreshed.is_empty());
+        assert_eq!(refreshed_infras.infra_refreshed, vec![empty_infra.id]);
     }
 
     #[rstest] // Slow test
@@ -916,7 +902,7 @@ pub mod tests {
             .body("{}")
             .finish();
         let app = create_test_service_with_core_client(core).await;
-        assert!(!empty_infra.model.locked.unwrap());
+        assert!(!empty_infra.locked);
 
         let infra_id = empty_infra.id();
 
@@ -932,7 +918,7 @@ pub mod tests {
             .uri(format!("/infra/{}", infra_id).as_str())
             .to_request();
         let infra: Infra = call_and_read_body_json(&app, req).await;
-        assert!(infra.locked.unwrap());
+        assert!(infra.locked);
 
         // Unlock infra
         let req = TestRequest::post()
@@ -946,7 +932,7 @@ pub mod tests {
             .uri(format!("/infra/{}", infra_id).as_str())
             .to_request();
         let infra: Infra = call_and_read_body_json(&app, req).await;
-        assert!(!infra.locked.unwrap());
+        assert!(!infra.locked);
     }
 
     #[rstest]

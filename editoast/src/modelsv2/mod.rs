@@ -115,7 +115,7 @@ pub type Changeset<M> = <M as Model>::Changeset;
 #[allow(unused)]
 pub struct Patch<'a, T: Model> {
     model: &'a mut T,
-    changeset: T::Changeset,
+    pub changeset: T::Changeset,
 }
 
 #[allow(unused)]

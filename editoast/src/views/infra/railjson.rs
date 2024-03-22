@@ -1,10 +1,11 @@
 use crate::error::Result;
 use crate::infra_cache::InfraCache;
-use crate::models::{Infra, Retrieve};
-use crate::modelsv2::get_table;
+use crate::models::Infra;
+use crate::modelsv2::{get_table, prelude::*};
 use crate::schema::{ObjectType, RailJson, RAILJSON_VERSION};
-use crate::views::infra::{InfraApiError, InfraForm};
+use crate::views::infra::InfraApiError;
 use crate::DbPool;
+
 use actix_web::dev::HttpServiceFactory;
 use actix_web::http::header::ContentType;
 use actix_web::web::{Data, Json, Path, Query};
@@ -41,8 +42,10 @@ enum ListErrorsRailjson {
 /// Serialize an infra
 #[get("/{infra}/railjson")]
 async fn get_railjson(infra: Path<i64>, db_pool: Data<DbPool>) -> Result<impl Responder> {
-    let infra = infra.into_inner();
-    let infra_meta = Infra::retrieve(db_pool.clone(), infra).await?.unwrap();
+    let infra_id = infra.into_inner();
+    let conn = &mut db_pool.get().await?;
+    let infra_meta =
+        Infra::retrieve_or_fail(conn, infra_id, || InfraApiError::NotFound { infra_id }).await?;
 
     let futures: Vec<_> = ObjectType::iter()
         .map(|object_type| (object_type, db_pool.get()))
@@ -55,7 +58,7 @@ async fn get_railjson(infra: Path<i64>, db_pool: Data<DbPool>) -> Result<impl Re
             let result: Result<_> = Ok((
                 object_type,
                 sql_query(query)
-                    .bind::<BigInt, _>(infra)
+                    .bind::<BigInt, _>(infra_id)
                     .load::<RailJsonData>(&mut conn)
                     .await?,
             ));
@@ -94,7 +97,7 @@ async fn get_railjson(infra: Path<i64>, db_pool: Data<DbPool>) -> Result<impl Re
             "electrifications": {electrifications},
             "neutral_sections": {neutral_sections}
         }}"#,
-        version = infra_meta.railjson_version.unwrap(),
+        version = infra_meta.railjson_version,
         track_sections = res[ObjectType::TrackSection],
         signals = res[ObjectType::Signal],
         speed_sections = res[ObjectType::SpeedSection],
@@ -110,7 +113,7 @@ async fn get_railjson(infra: Path<i64>, db_pool: Data<DbPool>) -> Result<impl Re
 
     Ok(HttpResponse::Ok()
         .content_type(ContentType::json())
-        .append_header(("x-infra-version", infra_meta.version.unwrap()))
+        .append_header(("x-infra-version", infra_meta.version))
         .body(railjson))
 }
 
@@ -137,18 +140,17 @@ async fn post_railjson(
     if railjson.version != RAILJSON_VERSION {
         return Err(ListErrorsRailjson::WrongRailjsonVersionProvided.into());
     }
-
-    let infra: Infra = InfraForm {
-        name: params.name.clone(),
-    }
-    .into();
     let railjson = railjson.into_inner();
 
-    let infra = infra.persist(railjson, db_pool.clone()).await?;
-    let infra_id = infra.id.unwrap();
+    let mut infra = Infra::changeset()
+        .name(params.name.clone())
+        .last_railjson_version()
+        .persist(railjson, db_pool.clone())
+        .await?;
+    let infra_id = infra.id;
 
     let mut conn = db_pool.get().await?;
-    let infra = infra
+    infra
         .bump_version(&mut conn)
         .await
         .map_err(|_| InfraApiError::NotFound { infra_id })?;
@@ -157,9 +159,7 @@ async fn post_railjson(
         infra.refresh(db_pool, true, &infra_cache).await?;
     }
 
-    Ok(Json(PostRailjsonResponse {
-        infra: infra.id.unwrap(),
-    }))
+    Ok(Json(PostRailjsonResponse { infra: infra.id }))
 }
 
 #[cfg(test)]
@@ -170,7 +170,6 @@ mod tests {
     use actix_web::test::{call_service, read_body_json};
 
     use crate::fixtures::tests::{db_pool, empty_infra, TestFixture};
-    use crate::models::Delete;
     use crate::schema::SwitchType;
     use crate::views::infra::tests::create_object_request;
     use crate::views::tests::create_test_service;
@@ -221,8 +220,9 @@ mod tests {
             .to_request();
         let response = call_service(&app, req).await;
         assert_eq!(response.status(), StatusCode::OK);
-        let infra: PostRailjsonResponse = read_body_json(response).await;
+        let res: PostRailjsonResponse = read_body_json(response).await;
 
-        assert!(Infra::delete(db_pool, infra.infra).await.unwrap());
+        let conn = &mut db_pool.get().await.unwrap();
+        assert!(Infra::delete_static(conn, res.infra).await.unwrap());
     }
 }

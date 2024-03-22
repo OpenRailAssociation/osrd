@@ -9,7 +9,8 @@ use thiserror::Error;
 
 use crate::infra_cache::{InfraCache, ObjectCache};
 use crate::map::{self, MapLayers};
-use crate::models::{Infra, Update};
+use crate::models::Infra;
+use crate::modelsv2::prelude::*;
 use crate::schema::operation::{CacheOperation, Operation, RailjsonObject};
 use crate::{generated_data, DbPool};
 use editoast_derive::EditoastError;
@@ -27,11 +28,13 @@ pub async fn edit<'a>(
     let infra_id = infra.into_inner();
 
     let mut conn = db_pool.get().await?;
-    let infra = Infra::retrieve_for_update(&mut conn, infra_id)
-        .await
-        .map_err(|_| InfraApiError::NotFound { infra_id })?;
+    // TODO: lock for update
+    let mut infra =
+        Infra::retrieve_or_fail(&mut conn, infra_id, || InfraApiError::NotFound { infra_id })
+            .await?;
     let mut infra_cache = InfraCache::get_or_load_mut(&mut conn, &infra_caches, &infra).await?;
-    let operation_results = apply_edit(&mut conn, &infra, &operations, &mut infra_cache).await?;
+    let operation_results =
+        apply_edit(&mut conn, &mut infra, &operations, &mut infra_cache).await?;
 
     let mut conn = redis_client.get_connection().await?;
     map::invalidate_all(
@@ -46,24 +49,21 @@ pub async fn edit<'a>(
 
 async fn apply_edit(
     conn: &mut PgConnection,
-    infra: &Infra,
+    infra: &mut Infra,
     operations: &[Operation],
     infra_cache: &mut InfraCache,
 ) -> Result<Vec<RailjsonObject>> {
-    let infra_id = infra.id.unwrap();
+    let infra_id = infra.id;
     // Check if the infra is locked
-    if infra.locked.unwrap() {
-        return Err(EditionError::InfraIsLocked {
-            infra_id: infra.id.unwrap(),
-        }
-        .into());
+    if infra.locked {
+        return Err(EditionError::InfraIsLocked { infra_id }.into());
     }
 
     // Apply modifications
     let mut railjsons = vec![];
     let mut cache_operations = vec![];
     for operation in operations {
-        let railjson = operation.apply(infra.id.unwrap(), conn).await?;
+        let railjson = operation.apply(infra_id, conn).await?;
         match (operation, railjson) {
             (Operation::Create(_), Some(railjson)) => {
                 railjsons.push(railjson.clone());
@@ -81,25 +81,18 @@ async fn apply_edit(
     }
 
     // Bump version
-    let infra = infra
-        .bump_version(conn)
-        .await
-        .map_err(|_| InfraApiError::NotFound { infra_id })?;
+    infra.bump_version(conn).await?;
 
     // Apply operations to infra cache
     infra_cache.apply_operations(&cache_operations)?;
+
     // Refresh layers if needed
     generated_data::update_all(conn, infra_id, &cache_operations, infra_cache)
         .await
         .expect("Update generated data failed");
 
     // Bump infra generated version to the infra version
-    let mut infra_bump = infra.clone();
-    infra_bump.generated_version = Some(Some(infra.version.unwrap()));
-    infra_bump
-        .update_conn(conn, infra_id)
-        .await
-        .map_err(|_| InfraApiError::NotFound { infra_id })?;
+    infra.bump_generated_version(conn).await?;
 
     Ok(railjsons)
 }
