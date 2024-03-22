@@ -7,7 +7,7 @@ import PlaywrightScenarioPage from './pages/scenario-page-model';
 let scenarioName: string;
 let scenarioPage: PlaywrightScenarioPage;
 
-test.describe('Testing if all mandatory elements simulation configuration are loaded in operationnal studies app (enabled)', () => {
+test.describe('Testing if all mandatory elements simulation configuration are loaded in operationnal studies app', () => {
   test.beforeEach(async ({ page }) => {
     scenarioPage = new PlaywrightScenarioPage(page);
     scenarioName = `Train_Schedule_${uuidv4().slice(0, 5)}`;

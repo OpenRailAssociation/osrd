@@ -58,6 +58,6 @@ async function createDataForTests() {
   });
 }
 
-setup('setup (enabled)', async () => {
+setup('setup', async () => {
   await createDataForTests();
 });

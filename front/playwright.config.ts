@@ -64,8 +64,4 @@ export default defineConfig({
       dependencies: ['setup'],
     },
   ],
-
-  /* select tags to run specific tests */
-  // TODO: remove grep when every tests are refactored
-  grep: [/(enabled)/],
 });

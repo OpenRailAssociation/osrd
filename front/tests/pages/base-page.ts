@@ -35,4 +35,8 @@ export default class BasePage {
   async checkLastToastTitle(text: string | RegExp) {
     await expect(this.lastToast.getByTestId('toast-SNCF-title')).toHaveText(text);
   }
+
+  async clickBtnByName(name: string) {
+    await this.page.getByRole('button', { name }).click();
+  }
 }

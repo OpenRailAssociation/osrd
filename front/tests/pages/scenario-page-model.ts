@@ -5,6 +5,7 @@ import manageTrainScheduleTranslation from '../../public/locales/fr/operationalS
 
 const trainAddedTranslation = manageTrainScheduleTranslation.trainAdded;
 
+// TODO: extends simulation-conf-page
 class PlaywrightScenarioPage extends BasePage {
   readonly getScenarioUpdateBtn: Locator;
 

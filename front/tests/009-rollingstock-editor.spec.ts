@@ -6,7 +6,7 @@ import { deleteApiRequest } from './assets/utils';
 import { PlaywrightRollingstockEditorPage } from './pages/rollingstock-editor-page-model';
 
 test.describe('Rollingstock editor page', () => {
-  test('should correctly create a new rolling stock (enabled)', async ({ page }) => {
+  test('should correctly create a new rolling stock', async ({ page }) => {
     const playwrightRollingstockEditorPage = new PlaywrightRollingstockEditorPage(page);
 
     await playwrightRollingstockEditorPage.navigateToPage();
@@ -150,7 +150,7 @@ test.describe('Rollingstock editor page', () => {
     await deleteApiRequest(`/api/rolling_stock/${responseJSON.id}/`);
   });
 
-  test('should correctly duplicate and modify a rolling stock (enabled)', async ({ page }) => {
+  test('should correctly duplicate and modify a rolling stock', async ({ page }) => {
     const playwrightRollingstockEditorPage = new PlaywrightRollingstockEditorPage(page);
 
     await playwrightRollingstockEditorPage.navigateToPage();
