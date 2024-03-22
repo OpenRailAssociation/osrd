@@ -31,8 +31,7 @@ test.beforeEach(async () => {
   });
 });
 
-// TODO: remove (enabled) when every tests are refactored
-test.describe('Testing if all mandatory elements simulation configuration are loaded in operationnal studies app (enabled)', () => {
+test.describe('Testing if all mandatory elements simulation configuration are loaded in operationnal studies app', () => {
   test('Testing pathfinding with rollingstock and composition code', async ({ page }) => {
     const playwrightHomePage = new PlaywrightHomePage(page);
     const scenarioPage = new PlaywrightScenarioPage(page);

@@ -4,7 +4,7 @@ import type { Infra, Project, RollingStock } from 'common/api/osrdEditoastApi';
 
 import { deleteApiRequest, getApiRequest } from './assets/utils';
 
-setup('teardown (enabled)', async () => {
+setup('teardown', async () => {
   const infras = await getApiRequest(`/api/infra/`);
   const infra = infras.results.find((i: Infra) => i.name === 'small_infra_test_e2e');
 

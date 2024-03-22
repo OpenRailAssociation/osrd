@@ -1,8 +1,8 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
-import RollingStockSelectorPage from './rolling-stock-selector-page';
+import SimulationConfPage from './simulation-conf-page';
 
-export default class StdcmPage extends RollingStockSelectorPage {
+export default class StdcmPage extends SimulationConfPage {
   readonly missingParams: Locator;
 
   // Scenario Explorator

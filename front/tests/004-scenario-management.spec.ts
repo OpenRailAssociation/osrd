@@ -29,8 +29,7 @@ test.beforeEach(async () => {
   });
 });
 
-// TODO: remove (enabled) when every tests are refactored
-test.describe('Test if operationnal study : scenario creation workflow is working properly  (enabled)', () => {
+test.describe('Test if operationnal study : scenario creation workflow is working properly', () => {
   test('Create a new scenario', async ({ page }) => {
     const playwrightHomePage = new PlaywrightHomePage(page);
     const scenarioPage = new ScenarioPage(page);

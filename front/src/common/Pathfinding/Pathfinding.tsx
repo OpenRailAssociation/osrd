@@ -548,17 +548,21 @@ const Pathfinding = ({ zoomToFeature, path }: PathfindingProps) => {
           ? displayInfraSoftError()
           : infra.state === 'ERROR' && displayInfraHardError())}
 
-      {!pathfindingState.error && !pathfindingState.running && path && origin && destination && (
-        <div className="content pathfinding-done">
-          <span className="lead" data-testid="result-pathfinding-done">
-            <CheckCircle />
-          </span>
-          <span className="flex-grow-1">{t('pathfindingDone')}</span>
-          <small className="text-secondary" data-testid="result-pathfinding-distance">
-            {geojson?.length && formatKmValue(geojson?.length / 1000, 3)}
-          </small>
-        </div>
-      )}
+      {!pathfindingState.error &&
+        !pathfindingState.running &&
+        pathfindingState.done &&
+        origin &&
+        destination && (
+          <div className="content pathfinding-done">
+            <span className="lead" data-testid="result-pathfinding-done">
+              <CheckCircle />
+            </span>
+            <span className="flex-grow-1">{t('pathfindingDone')}</span>
+            <small className="text-secondary" data-testid="result-pathfinding-distance">
+              {geojson?.length && formatKmValue(geojson?.length / 1000, 3)}
+            </small>
+          </div>
+        )}
 
       {!path && isPathFindingActive ? (
         <div className={`content pathfinding-none ${infra && infra.state !== 'CACHED' && 'mt-2'}`}>

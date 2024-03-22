@@ -13,8 +13,8 @@ const rollingStockName = 'rollingstock_1500_25000_test_e2e';
 
 const rollingStockTranslation = manageTrainScheduleTranslation.rollingstock;
 
-test.describe('STDCM page (enabled)', () => {
-  test('should correctly display the rolling stock list and select one', async ({ page }) => {
+test.describe('STDCM page', () => {
+  test('should configure and launch a stdcm', async ({ page }) => {
     const stdcmPage = new StdcmPage(page);
 
     await stdcmPage.navigateToPage();
@@ -39,6 +39,11 @@ test.describe('STDCM page (enabled)', () => {
     await expect(stdcmPage.rollingStockSelectorModal).not.toBeVisible();
     await expect(stdcmPage.missingParams).not.toContainText(rollingStockTranslation);
 
-    await stdcmPage.backToHomePage();
+    await stdcmPage.selectPathByTrigram('MWS', 'NES');
+    await stdcmPage.checkPathfindingDistance('33.950 km');
+
+    await stdcmPage.setOriginTime('081500');
+    await stdcmPage.clickBtnByName('Appliquer');
+    await stdcmPage.page.waitForSelector('.chart-container');
   });
 });
