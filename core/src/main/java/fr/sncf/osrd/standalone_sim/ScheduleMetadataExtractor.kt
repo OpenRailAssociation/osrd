@@ -5,10 +5,13 @@ package fr.sncf.osrd.standalone_sim
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.conflicts.*
 import fr.sncf.osrd.envelope.Envelope
+import fr.sncf.osrd.envelope.EnvelopeInterpolate
 import fr.sncf.osrd.envelope.EnvelopePhysics
 import fr.sncf.osrd.envelope.EnvelopeTimeInterpolate
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath
+import fr.sncf.osrd.signaling.SigSystemManager
 import fr.sncf.osrd.signaling.SignalingSimulator
+import fr.sncf.osrd.signaling.SignalingTrainState
 import fr.sncf.osrd.signaling.ZoneStatus
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.impl.ChunkPath
@@ -27,9 +30,7 @@ import fr.sncf.osrd.utils.CurveSimplification
 import fr.sncf.osrd.utils.indexing.MutableStaticIdxArrayList
 import fr.sncf.osrd.utils.indexing.StaticIdxList
 import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
-import fr.sncf.osrd.utils.units.Distance
-import fr.sncf.osrd.utils.units.MutableDistanceArray
-import fr.sncf.osrd.utils.units.meters
+import fr.sncf.osrd.utils.units.*
 import kotlin.collections.set
 import kotlin.math.abs
 import kotlin.math.max
@@ -220,7 +221,7 @@ private fun routingRequirements(
     detailedBlockPath: List<BlockPathElement>,
     loadedSignalInfra: LoadedSignalInfra,
     blockInfra: BlockInfra,
-    envelope: EnvelopeTimeInterpolate,
+    envelope: EnvelopeInterpolate,
     rawInfra: RawInfra,
     rollingStock: RollingStock,
 ): List<RoutingRequirement> {
@@ -246,10 +247,32 @@ private fun routingRequirements(
         curOffset += blockLength.distance
     }
 
+    // compute the signaling train state for each signal
+    data class SignalingTrainStateImpl(override val speed: Speed) : SignalingTrainState
+
+    var signalingTrainStates = mutableMapOf<LogicalSignalId, SignalingTrainState>()
+    for (i in 0 until blockPath.size) {
+        val block = blockPath[i]
+        val blockOffset = blockOffsets[i]
+        val blockEndOffset = blockOffset + blockInfra.getBlockLength(block).distance - startOffset
+        val signals = blockInfra.getBlockSignals(blockPath[i])
+        val consideredSignals = if (blockInfra.blockStopAtBufferStop(block)) signals.size else signals.size - 1
+        for (signalIndex in 0 until consideredSignals) {
+            val signal = signals[signalIndex]
+            val signalOffset = blockInfra.getSignalsPositions(block)[signalIndex].distance
+            val signalPathOffset = (blockOffset + signalOffset) - startOffset
+            val sightDistance = rawInfra.getSignalSightDistance(rawInfra.getPhysicalSignal(signal))
+            val sightOffset = signalPathOffset - sightDistance
+            val maxSpeed = envelope.maxSpeedInRange(sightOffset.meters, blockEndOffset.meters).metersPerSecond
+            val state = SignalingTrainStateImpl(speed = maxSpeed)
+            signalingTrainStates[signal] = state
+        }
+    }
+
     fun findRouteSetDeadline(routeIndex: Int): Double? {
         if (routeIndex == 0)
         // TODO: this isn't quite true when the path starts with a stop
-        return 0.0
+            return 0.0
 
         // find the first block of the route
         val routeStartBlockIndex = routeBlockBounds[routeIndex]
@@ -284,8 +307,15 @@ private fun routingRequirements(
         // find the first non-open signal on the path
         // iterate backwards on blocks from blockIndex to 0, and on signals
         val limitingSignalSpec =
-            findLimitingSignal(blockInfra, simulatedSignalStates, blockPath, routeStartBlockIndex)
-                ?: return null
+            findLimitingSignal(
+                loadedSignalInfra,
+                blockInfra,
+                simulator.sigModuleManager,
+                simulatedSignalStates,
+                blockPath,
+                routeStartBlockIndex,
+                signalingTrainStates
+            ) ?: return null
         val limitingBlock = blockPath[limitingSignalSpec.blockIndex]
         val signal = blockInfra.getBlockSignals(limitingBlock)[limitingSignalSpec.signalIndex]
         val signalOffset =
@@ -370,10 +400,13 @@ data class LimitingSignal(val blockIndex: Int, val signalIndex: Int)
  * signal is the limiting signal.
  */
 private fun findLimitingSignal(
+    loadedSignalInfra: LoadedSignalInfra,
     blockInfra: BlockInfra,
+    sigSystemManager: SigSystemManager,
     simulatedSignalStates: Map<LogicalSignalId, SigState>,
     blockPath: StaticIdxList<Block>,
-    routeStartBlockIndex: Int
+    routeStartBlockIndex: Int,
+    signalingTrainStates: Map<LogicalSignalId, SignalingTrainState>
 ): LimitingSignal? {
     var lastSignalBlockIndex = -1
     var lastSignalIndex = -1
@@ -383,9 +416,10 @@ private fun findLimitingSignal(
         val signalIndexStart = if (curBlockIndex == 0) 0 else 1
         for (curSignalIndex in (signalIndexStart until blockSignals.size).reversed()) {
             val signal = blockSignals[curSignalIndex]
+            val ssid = loadedSignalInfra.getSignalingSystem(signal)
             val signalState = simulatedSignalStates[signal]!!
-            // TODO: make this generic
-            if (signalState.getEnum("aspect") == "VL") break
+            val trainState = signalingTrainStates[signal]!!
+            if (!sigSystemManager.isConstraining(ssid, signalState, trainState)) break
             lastSignalBlockIndex = curBlockIndex
             lastSignalIndex = curSignalIndex
         }
@@ -532,29 +566,27 @@ fun trainPathBlockOffset(
 }
 
 private fun simplifyPositions(positions: ArrayList<ResultPosition>): ArrayList<ResultPosition> {
-    return CurveSimplification.rdp(positions, 5.0) {
-        point: ResultPosition,
-        start: ResultPosition,
-        end: ResultPosition ->
+    return CurveSimplification.rdp(positions, 5.0) { point: ResultPosition,
+                                                     start: ResultPosition,
+                                                     end: ResultPosition ->
         if (abs(start.time - end.time) < 0.000001)
             return@rdp abs(point.pathOffset - start.pathOffset)
         val proj =
             start.pathOffset +
-                (point.time - start.time) * (end.pathOffset - start.pathOffset) /
+                    (point.time - start.time) * (end.pathOffset - start.pathOffset) /
                     (end.time - start.time)
         abs(point.pathOffset - proj)
     }
 }
 
 private fun simplifySpeeds(speeds: ArrayList<ResultSpeed>): ArrayList<ResultSpeed> {
-    return CurveSimplification.rdp(speeds, 0.2) {
-        point: ResultSpeed,
-        start: ResultSpeed,
-        end: ResultSpeed ->
+    return CurveSimplification.rdp(speeds, 0.2) { point: ResultSpeed,
+                                                  start: ResultSpeed,
+                                                  end: ResultSpeed ->
         if (abs(start.position - end.position) < 0.000001) return@rdp abs(point.speed - start.speed)
         val proj =
             start.speed +
-                (point.position - start.position) * (end.speed - start.speed) /
+                    (point.position - start.position) * (end.speed - start.speed) /
                     (end.position - start.position)
         abs(point.speed - proj)
     }
