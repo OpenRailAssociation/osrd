@@ -75,8 +75,8 @@ class SpacingRequirementAutomaton(
                 // skip block transition signals
                 if (
                     signalBlockIndex == 0 &&
-                        pendingSignals.isNotEmpty() &&
-                        pendingSignals.last().signal == signal
+                    pendingSignals.isNotEmpty() &&
+                    pendingSignals.last().signal == signal
                 )
                     continue
 
@@ -86,7 +86,7 @@ class SpacingRequirementAutomaton(
                 if (signalPathOffset < incrementalPath.travelledPathBegin) continue
                 if (
                     incrementalPath.pathComplete &&
-                        signalPathOffset >= incrementalPath.travelledPathEnd
+                    signalPathOffset >= incrementalPath.travelledPathEnd
                 )
                     continue
                 pendingSignals.addLast(PathSignal(signal, signalPathOffset, blockIndex))
@@ -166,7 +166,7 @@ class SpacingRequirementAutomaton(
 
         // emit requirements for zones protected by this signal
         for (requiredZoneIndex in
-            lastEmittedZone + 1 until endZoneIndex + 1) addZonePendingRequirement(
+        lastEmittedZone + 1 until endZoneIndex + 1) addZonePendingRequirement(
             requiredZoneIndex,
             sightTime
         )
@@ -179,6 +179,7 @@ class SpacingRequirementAutomaton(
         probedZoneIndex: Int,
         pathSignal: PathSignal,
         routes: List<RouteId>,
+        trainState: SignalingTrainState
     ): Boolean {
         val firstBlockIndex = pathSignal.minBlockPathIndex
 
@@ -218,20 +219,16 @@ class SpacingRequirementAutomaton(
             )
         val signalState = simulatedSignalStates[pathSignal.signal]!!
 
-        // FIXME: Have a better way to check if the signal is constraining
-        val zoneEntryOffset = incrementalPath.toTravelledPath(incrementalPath.getZonePathStartOffset(probedZoneIndex))
-        val zoneExitOffset = incrementalPath.toTravelledPath(incrementalPath.getZonePathEndOffset(probedZoneIndex))
-        val maxSpeedInZone = callbacks.maxSpeedInRange(zoneEntryOffset, zoneExitOffset)
-
-        class SignalingTrainStateImpl(override val speed: Speed) : SignalingTrainState
-
-        val trainState = SignalingTrainStateImpl(speed = maxSpeedInZone.metersPerSecond)
-        return simulator.sigModuleManager.isConstraining(loadedSignalInfra.getSignalingSystem(pathSignal.signal), signalState, trainState)
+        return simulator.sigModuleManager.isConstraining(
+            loadedSignalInfra.getSignalingSystem(pathSignal.signal),
+            signalState,
+            trainState
+        )
     }
 
     // Returns the index of the first zone that isn't required for the given signal,
     // or null if we need more path to determine it
-    private fun findFirstNonRequiredZoneIndex(pathSignal: PathSignal, routes: List<RouteId>): Int? {
+    private fun findFirstNonRequiredZoneIndex(pathSignal: PathSignal, routes: List<RouteId>, trainState: SignalingTrainState): Int? {
         // We are looking for the index `i` where `isZoneIndexRequiredForSignal` returns
         // true at `i-1` and false at `i`. We could just iterate starting at 0, but
         // because `i` is not that small (20 on average) and the signaling
@@ -250,7 +247,7 @@ class SpacingRequirementAutomaton(
         while (true) {
             if (lowerBound == upperBound) break
             val probedZoneIndex = (upperBound + lowerBound) / 2
-            val required = isZoneIndexRequiredForSignal(probedZoneIndex, pathSignal, routes)
+            val required = isZoneIndexRequiredForSignal(probedZoneIndex, pathSignal, routes, trainState)
             if (required) {
                 lowerBound = probedZoneIndex + 1
             } else {
@@ -261,14 +258,14 @@ class SpacingRequirementAutomaton(
         // Handle the case where the result is higher than the initial upper bound
         while (
             lowerBound >= initialUpperBound &&
-                isZoneIndexRequiredForSignal(lowerBound, pathSignal, routes)
+                isZoneIndexRequiredForSignal(lowerBound, pathSignal, routes, trainState)
         ) lowerBound++
 
         // Check if more path is needed for a valid solution
         // (i.e. the first zone that is not required is out of bounds)
         if (
             lowerBound >= incrementalPath.getBlockEndZone(incrementalPath.endBlockIndex - 1) &&
-                !incrementalPath.pathComplete
+            !incrementalPath.pathComplete
         ) {
             return null
         }
@@ -299,12 +296,27 @@ class SpacingRequirementAutomaton(
             val sightTime = callbacks.arrivalTimeInRange(sightOffset, signalOffset)
             assert(sightTime.isFinite())
 
+            // Build the train state. We need to have the position of the next signal or to have a complete path.
+            val nextSignalOffset = if (pendingSignals.size > 1) {
+                incrementalPath.toTravelledPath(pendingSignals[1].pathOffset)
+            } else if (incrementalPath.pathComplete) {
+                incrementalPath.toTravelledPath(incrementalPath.travelledPathEnd)
+            } else {
+                return NotEnoughPath
+            }
+            val maxSpeedInSignalArea = callbacks.maxSpeedInRange(sightOffset, nextSignalOffset)
+
+            class SignalingTrainStateImpl(override val speed: Speed) : SignalingTrainState
+            val trainState = SignalingTrainStateImpl(speed = maxSpeedInSignalArea.metersPerSecond)
+
+            // Find the first and last zone required by the signal
             val firstRequiredZone = getSignalProtectedZone(pathSignal)
             val firstNonRequiredZone =
-                findFirstNonRequiredZoneIndex(pathSignal, routes) ?: return NotEnoughPath
+                findFirstNonRequiredZoneIndex(pathSignal, routes, trainState) ?: return NotEnoughPath
             for (i in firstRequiredZone until firstNonRequiredZone) {
                 addSignalRequirements(firstRequiredZone, i, sightTime)
             }
+
             pendingSignals.removeFirst()
         }
 
