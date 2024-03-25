@@ -11,8 +11,8 @@ use utoipa::{IntoParams, ToSchema};
 
 use crate::error::Result;
 use crate::infra_cache::{Graph, InfraCache};
-use crate::models::Infra;
 use crate::modelsv2::prelude::*;
+use crate::modelsv2::Infra;
 use crate::schema::utils::Identifier;
 use crate::schema::{Direction, DirectionalTrackRange, Endpoint, ObjectType, TrackEndpoint};
 use crate::views::infra::InfraApiError;

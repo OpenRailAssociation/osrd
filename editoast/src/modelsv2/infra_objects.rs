@@ -293,7 +293,7 @@ mod test_persist {
             paste::paste! {
                 #[rstest::rstest]
                 async fn [<test_persist_ $obj:snake>]() {
-                    crate::models::infra::tests::test_infra_transaction(|conn, infra| {
+                    crate::modelsv2::infra::tests::test_infra_transaction(|conn, infra| {
                         async move {
                             let schemas = (0..10).map(|_| Default::default());
                             let changesets = $obj::from_infra_schemas(infra.id, schemas);

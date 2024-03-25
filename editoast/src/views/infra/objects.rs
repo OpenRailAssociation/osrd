@@ -126,7 +126,7 @@ mod tests {
     use serde_json::{json, Value as JsonValue};
 
     use crate::fixtures::tests::{db_pool, empty_infra, TestFixture};
-    use crate::models::Infra;
+    use crate::modelsv2::Infra;
     use crate::schema::operation::Operation;
     use crate::schema::OSRDIdentified;
     use crate::schema::{Switch, SwitchType};

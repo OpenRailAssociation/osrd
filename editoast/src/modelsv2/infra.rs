@@ -1,6 +1,6 @@
 use std::pin::Pin;
 
-use super::{List, NoParams};
+use crate::models::{List, NoParams};
 use crate::{
     error::Result,
     generated_data,
@@ -234,7 +234,7 @@ pub mod tests {
     use crate::{
         error::EditoastError,
         fixtures::tests::{db_pool, small_infra, TestFixture},
-        models::infra::DEFAULT_INFRA_VERSION,
+        modelsv2::infra::DEFAULT_INFRA_VERSION,
         modelsv2::{
             prelude::*,
             railjson::{find_all_schemas, RailJsonError},

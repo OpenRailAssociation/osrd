@@ -1,10 +1,13 @@
 use crate::decl_paginated_response;
 use crate::error::{InternalError, Result};
 use crate::models::train_schedule::LightTrainSchedule;
-use crate::models::{Infra, List};
-use crate::modelsv2::scenario::{Scenario, ScenarioWithDetails};
-use crate::modelsv2::timetable::Timetable;
-use crate::modelsv2::{prelude::*, Project, Study, Tags};
+use crate::models::List;
+use crate::modelsv2::{
+    prelude::*,
+    scenario::{Scenario, ScenarioWithDetails},
+    timetable::Timetable,
+    Infra, Project, Study, Tags,
+};
 use crate::views::pagination::{PaginatedResponse, PaginationQueryParam};
 use crate::views::projects::{ProjectIdParam, QueryParams};
 use crate::views::scenario::{check_project_study, check_project_study_conn, ScenarioIdParam};
@@ -404,9 +407,7 @@ mod tests {
         db_pool, scenario_v2_fixture_set, small_infra, timetable_v2, ScenarioV2FixtureSet,
         TestFixture,
     };
-    use crate::models::Infra;
-    use crate::modelsv2::timetable::Timetable as TimetableV2;
-    use crate::modelsv2::*;
+    use crate::modelsv2::{timetable::Timetable as TimetableV2, Infra};
     use crate::views::tests::create_test_service;
     use actix_web::http::StatusCode;
     use actix_web::test::{call_and_read_body_json, call_service, TestRequest};

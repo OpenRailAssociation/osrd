@@ -156,7 +156,7 @@ pub async fn update_all(
 pub mod tests {
     use crate::fixtures::tests::db_pool;
     use crate::generated_data::{clear_all, refresh_all, update_all};
-    use crate::models::infra::tests::test_infra_transaction;
+    use crate::modelsv2::infra::tests::test_infra_transaction;
     use actix_web::test as actix_test;
     use diesel_async::scoped_futures::ScopedFutureExt;
 

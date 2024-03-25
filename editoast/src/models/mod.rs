@@ -1,4 +1,3 @@
-pub mod infra;
 pub mod pathfinding;
 pub mod rolling_stock;
 mod scenario;
@@ -14,7 +13,6 @@ use async_trait::async_trait;
 use diesel_async::AsyncPgConnection as PgConnection;
 
 pub use self::pathfinding::*;
-pub use infra::Infra;
 pub use scenario::{Scenario, ScenarioWithCountTrains, ScenarioWithDetails};
 pub use text_array::TextArray;
 pub use timetable::{check_train_validity, Timetable, TimetableWithSchedulesDetails};

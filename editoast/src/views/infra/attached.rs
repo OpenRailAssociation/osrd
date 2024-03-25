@@ -1,5 +1,5 @@
 use crate::{
-    error::Result, infra_cache::InfraCache, models::Infra, modelsv2::prelude::*,
+    error::Result, infra_cache::InfraCache, modelsv2::prelude::*, modelsv2::Infra,
     schema::ObjectType, views::infra::InfraApiError, DbPool,
 };
 use actix_web::{
@@ -98,7 +98,7 @@ mod tests {
     use actix_web::test::{call_and_read_body_json, call_service, TestRequest};
 
     use crate::fixtures::tests::{empty_infra, TestFixture};
-    use crate::models::Infra;
+    use crate::modelsv2::Infra;
     use crate::schema::operation::RailjsonObject;
     use crate::schema::{Detector, OSRDIdentified, ObjectType, TrackSection};
     use crate::views::infra::tests::create_object_request;

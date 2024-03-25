@@ -1,7 +1,7 @@
 use crate::error::{InternalError, Result};
 use crate::infra_cache::InfraCache;
-use crate::models::{pathfinding::Pathfinding, Infra, Retrieve};
-use crate::modelsv2::Retrieve as RetrieveV2;
+use crate::models::{pathfinding::Pathfinding, Retrieve};
+use crate::modelsv2::{Infra, Retrieve as RetrieveV2};
 use crate::schema::ObjectType;
 use crate::views::pathfinding::path_rangemap::{make_path_range_map, TrackMap};
 use crate::views::pathfinding::{PathfindingError, PathfindingIdParam};

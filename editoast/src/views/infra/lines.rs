@@ -1,8 +1,8 @@
 use crate::error::Result;
 use crate::infra_cache::{InfraCache, ObjectCache};
 use crate::map::Zone;
-use crate::models::Infra;
 use crate::modelsv2::prelude::*;
+use crate::modelsv2::Infra;
 
 use crate::views::infra::InfraApiError;
 use crate::{views::infra::InfraIdParam, DbPool};

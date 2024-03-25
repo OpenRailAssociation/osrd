@@ -13,8 +13,8 @@ use crate::core::pathfinding::{PathfindingRequest, PathfindingWaypoints, Waypoin
 use crate::core::simulation::{CoreTrainSchedule, SimulationRequest, TrainStop};
 use crate::core::AsCoreRequest;
 use crate::error::{InternalError, Result};
-use crate::models::{Infra, Pathfinding, ScheduledPoint, Timetable, TrainSchedule};
-use crate::modelsv2::{prelude::*, RollingStockModel};
+use crate::models::{Pathfinding, ScheduledPoint, Timetable, TrainSchedule};
+use crate::modelsv2::{prelude::*, Infra, RollingStockModel};
 use crate::schema::rolling_stock::{RollingStock, RollingStockComfortType};
 use crate::views::infra::{call_core_infra_state, InfraApiError, InfraState};
 use crate::views::pathfinding::save_core_pathfinding;

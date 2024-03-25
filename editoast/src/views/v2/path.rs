@@ -6,8 +6,7 @@ use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
 use crate::error::Result;
-use crate::models::Infra;
-use crate::modelsv2::prelude::*;
+use crate::modelsv2::{prelude::*, Infra};
 use crate::schema::utils::Identifier;
 use crate::schema::Direction;
 use editoast_derive::EditoastError;

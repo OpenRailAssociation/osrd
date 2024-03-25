@@ -3,26 +3,30 @@ pub mod tests {
     use std::io::Cursor;
     use std::ops::{Deref, DerefMut};
 
-    use crate::client::PostgresConfig;
-    use crate::models::train_schedule::Mrsp;
-    use crate::models::{
-        self, Identifiable, Infra, Pathfinding, PathfindingChangeset, ResultPosition, ResultStops,
-        ResultTrain, Scenario, SimulationOutput, SimulationOutputChangeset, Timetable,
-        TrainSchedule,
+    use crate::{
+        client::PostgresConfig,
+        models::{
+            self, train_schedule::Mrsp, Identifiable, Pathfinding, PathfindingChangeset,
+            ResultPosition, ResultStops, ResultTrain, Scenario, SimulationOutput,
+            SimulationOutputChangeset, Timetable, TrainSchedule,
+        },
+        modelsv2::{
+            self, projects::Tags, rolling_stock_livery::RollingStockLiveryModel,
+            scenario::Scenario as ScenarioV2, timetable::Timetable as TimetableV2,
+            train_schedule::TrainSchedule as TrainScheduleV2, Changeset, Document,
+            ElectricalProfileSet, Infra, Model, Project, RollingStockModel, Study,
+        },
+        schema::{
+            electrical_profiles::{ElectricalProfile, ElectricalProfileSetData},
+            v2::trainschedule::TrainScheduleBase,
+            RailJson, TrackRange,
+        },
+        views::{
+            rolling_stocks::rolling_stock_form::RollingStockForm,
+            v2::train_schedule::TrainScheduleForm,
+        },
+        DbPool,
     };
-    use crate::modelsv2::projects::Tags;
-    use crate::modelsv2::rolling_stock_livery::RollingStockLiveryModel;
-    use crate::modelsv2::scenario::Scenario as ScenarioV2;
-    use crate::modelsv2::timetable::Timetable as TimetableV2;
-    use crate::modelsv2::train_schedule::TrainSchedule as TrainScheduleV2;
-    use crate::modelsv2::{
-        self, Changeset, Document, ElectricalProfileSet, Model, Project, RollingStockModel, Study,
-    };
-    use crate::schema::electrical_profiles::{ElectricalProfile, ElectricalProfileSetData};
-    use crate::schema::v2::trainschedule::TrainScheduleBase;
-    use crate::schema::{RailJson, TrackRange};
-    use crate::views::v2::train_schedule::TrainScheduleForm;
-    use crate::DbPool;
 
     use actix_web::web::Data;
     use chrono::Utc;
