@@ -17,10 +17,9 @@ use crate::{
     },
     error::Result,
     models::{
-        Infra, Pathfinding, PathfindingChangeset, PathfindingPayload, SpacingRequirement,
-        TrainSchedule,
+        Pathfinding, PathfindingChangeset, PathfindingPayload, SpacingRequirement, TrainSchedule,
     },
-    modelsv2::prelude::*,
+    modelsv2::{prelude::*, Infra},
     schema::rolling_stock::RollingStockComfortType,
     views::rolling_stocks::retrieve_existing_rolling_stock,
     DbPool,

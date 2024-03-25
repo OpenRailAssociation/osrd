@@ -131,8 +131,8 @@ async fn electrical_profiles_on_path(
 mod tests {
     use super::*;
     use crate::fixtures::tests::{db_pool, empty_infra, named_fast_rolling_stock, TestFixture};
-    use crate::models::{pathfinding::tests::simple_pathfinding_fixture, Infra};
-    use crate::modelsv2::Model;
+    use crate::models::pathfinding::tests::simple_pathfinding_fixture;
+    use crate::modelsv2::{prelude::*, Infra};
     use crate::schema::{electrical_profiles::ElectricalProfile, TrackRange};
     use crate::views::tests::create_test_service;
     use actix_http::StatusCode;

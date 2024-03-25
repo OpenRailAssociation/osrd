@@ -1,8 +1,8 @@
 use crate::error::{InternalError, Result};
 use crate::generated_data::generate_infra_errors;
 use crate::infra_cache::{InfraCache, ObjectCache};
-use crate::models::Infra;
 use crate::modelsv2::prelude::*;
+use crate::modelsv2::Infra;
 use crate::schema::operation::{
     CacheOperation, DeleteOperation, Operation, RailjsonObject, UpdateOperation,
 };

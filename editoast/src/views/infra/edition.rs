@@ -9,8 +9,8 @@ use thiserror::Error;
 
 use crate::infra_cache::{InfraCache, ObjectCache};
 use crate::map::{self, MapLayers};
-use crate::models::Infra;
 use crate::modelsv2::prelude::*;
+use crate::modelsv2::Infra;
 use crate::schema::operation::{CacheOperation, Operation, RailjsonObject};
 use crate::{generated_data, DbPool};
 use editoast_derive::EditoastError;

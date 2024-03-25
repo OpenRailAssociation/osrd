@@ -58,7 +58,7 @@ impl From<ObjectRef> for DeleteOperation {
 
 #[cfg(test)]
 mod tests {
-    use crate::models::infra::tests::test_infra_transaction;
+    use crate::modelsv2::infra::tests::test_infra_transaction;
     use crate::schema::operation::create::tests::{
         create_buffer_stop, create_detector, create_electrification, create_op, create_route,
         create_signal, create_speed, create_switch, create_track,

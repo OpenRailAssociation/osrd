@@ -3,8 +3,8 @@ use std::collections::HashMap;
 use crate::{
     error::Result,
     infra_cache::{Graph, InfraCache},
-    models::Infra,
     modelsv2::prelude::*,
+    modelsv2::Infra,
     schema::DirectionalTrackRange,
     views::{
         infra::{InfraApiError, InfraIdParam},

@@ -16,8 +16,8 @@ use crate::core::{AsCoreRequest, CoreClient};
 use crate::error::Result;
 use crate::infra_cache::{InfraCache, ObjectCache};
 use crate::map::{self, MapLayers};
-use crate::models::{Infra, List as ModelList, NoParams};
-use crate::modelsv2::prelude::*;
+use crate::models::{List as ModelList, NoParams};
+use crate::modelsv2::{prelude::*, Infra};
 use crate::schema::SwitchType;
 use crate::views::pagination::{PaginatedResponse, PaginationQueryParam};
 use crate::DbPool;
@@ -528,7 +528,7 @@ pub mod tests {
     use crate::fixtures::tests::{
         db_pool, empty_infra, named_other_rolling_stock, small_infra, IntoFixture, TestFixture,
     };
-    use crate::models::infra::DEFAULT_INFRA_VERSION;
+    use crate::modelsv2::infra::DEFAULT_INFRA_VERSION;
     use crate::modelsv2::{get_geometry_layer_table, get_table};
     use crate::schema::operation::{Operation, RailjsonObject};
     use crate::schema::{Electrification, ObjectType, SpeedSection, SwitchType, RAILJSON_VERSION};

@@ -1,7 +1,6 @@
 use crate::error::Result;
 use crate::infra_cache::InfraCache;
-use crate::models::Infra;
-use crate::modelsv2::{get_table, prelude::*};
+use crate::modelsv2::{get_table, prelude::*, Infra};
 use crate::schema::{ObjectType, RailJson, RAILJSON_VERSION};
 use crate::views::infra::InfraApiError;
 use crate::DbPool;

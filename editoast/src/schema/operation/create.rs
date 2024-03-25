@@ -233,7 +233,7 @@ pub mod tests {
     use diesel_async::scoped_futures::ScopedFutureExt;
     use diesel_async::AsyncPgConnection as PgConnection;
 
-    use crate::models::infra::tests::test_infra_transaction;
+    use crate::modelsv2::infra::tests::test_infra_transaction;
     use crate::schema::operation::create::{apply_create_operation, RailjsonObject};
     use crate::schema::{
         BufferStop, Detector, Electrification, OperationalPoint, Route, Signal, SpeedSection,

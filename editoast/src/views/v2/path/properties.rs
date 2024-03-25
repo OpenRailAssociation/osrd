@@ -358,7 +358,7 @@ fn path_elec_property_input_hash(
 mod tests {
     use super::PathProperties;
     use crate::fixtures::tests::{small_infra, TestFixture};
-    use crate::models::infra::Infra;
+    use crate::modelsv2::infra::Infra;
     use crate::views::tests::create_test_service;
     use actix_web::test::{call_and_read_body_json, TestRequest};
     use rstest::rstest;

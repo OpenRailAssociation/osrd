@@ -30,11 +30,11 @@ use crate::{
     },
     error::Result,
     models::{
-        Create, Curve, Delete, Infra, PathWaypoint, Pathfinding, PathfindingChangeset,
-        PathfindingPayload, Retrieve, Slope, Update,
+        Create, Curve, Delete, PathWaypoint, Pathfinding, PathfindingChangeset, PathfindingPayload,
+        Retrieve, Slope, Update,
     },
     modelsv2::{
-        infra_objects::TrackSectionModel, OperationalPointModel, Retrieve as RetrieveV2,
+        infra_objects::TrackSectionModel, Infra, OperationalPointModel, Retrieve as RetrieveV2,
         RollingStockModel,
     },
     schema::{
@@ -579,7 +579,8 @@ mod test {
     use crate::fixtures::tests::{
         db_pool, empty_infra, named_fast_rolling_stock, pathfinding, small_infra, TestFixture,
     };
-    use crate::models::{Infra, Pathfinding, Retrieve};
+    use crate::models::{Pathfinding, Retrieve};
+    use crate::modelsv2::Infra;
     use crate::views::pathfinding::{PathResponse, PathfindingError};
     use crate::views::tests::create_test_service;
     use crate::views::tests::create_test_service_with_core_client;

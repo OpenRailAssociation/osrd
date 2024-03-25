@@ -2,8 +2,8 @@ mod graph;
 
 use crate::error::Result;
 use crate::map::BoundingBox;
-use crate::models::Infra;
 use crate::modelsv2::railjson::find_all_schemas;
+use crate::modelsv2::Infra;
 use crate::schema::operation::{CacheOperation, RailjsonObject};
 use crate::schema::*;
 use chashmap::{CHashMap, ReadGuard, WriteGuard};
@@ -711,7 +711,7 @@ pub mod tests {
 
     use crate::infra_cache::{InfraCache, SwitchCache};
     use crate::map::BoundingBox;
-    use crate::models::infra::tests::test_infra_transaction;
+    use crate::modelsv2::infra::tests::test_infra_transaction;
     use crate::schema::operation::create::tests::{
         create_buffer_stop, create_detector, create_electrification, create_op, create_route,
         create_signal, create_speed, create_switch, create_switch_type, create_track,

@@ -380,7 +380,7 @@ mod test {
         StudyFixtureSet, TestFixture,
     };
 
-    use crate::models::Infra;
+    use crate::modelsv2::Infra;
     use crate::views::tests::create_test_service;
     use actix_http::Request;
     use actix_web::http::StatusCode;
