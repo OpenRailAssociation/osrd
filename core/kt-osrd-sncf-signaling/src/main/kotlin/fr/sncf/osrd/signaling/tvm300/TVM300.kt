@@ -10,7 +10,7 @@ import fr.sncf.osrd.utils.units.kilometersPerHour
 
 object TVM300 : SignalingSystemDriver {
     override val id = "TVM300"
-    override val stateSchema = SigStateSchema { enum("aspect", listOf("300VL", "300(VL)", "270A", "220A", "16OA", "080A", "000", "RRR", "OCCUPIED")) }
+    override val stateSchema = SigStateSchema { enum("aspect", listOf("300VL", "300(VL)", "270A", "220A", "160A", "080A", "000", "RRR", "OCCUPIED")) }
     override val settingsSchema = SigSettingsSchema { flag("Nf") }
     override val parametersSchema = SigParametersSchema {}
     override val isBlockDelimiterExpr = "true"
@@ -21,7 +21,7 @@ object TVM300 : SignalingSystemDriver {
             "300(VL)" -> 315.kilometersPerHour
             "270A" -> 315.kilometersPerHour
             "220A" -> 285.kilometersPerHour
-            "16OA" -> 235.kilometersPerHour
+            "160A" -> 235.kilometersPerHour
             "080A" -> 170.kilometersPerHour
             "000" -> 80.kilometersPerHour
             "RRR" -> 0.kilometersPerHour
