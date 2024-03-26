@@ -18,7 +18,7 @@ object TVM300toTVM300 : SignalDriver {
         return when (aspect) {
             "300VL" -> "300VL"
             "300(VL)" -> "300VL"
-            "270A" -> "300(VL"
+            "270A" -> "300(VL)"
             "220A" -> "270A"
             "160A" -> "220A"
             "080A" -> "160A"
