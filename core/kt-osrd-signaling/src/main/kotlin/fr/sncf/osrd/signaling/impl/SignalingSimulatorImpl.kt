@@ -138,6 +138,8 @@ class SignalingSimulatorImpl(override val sigModuleManager: SigSystemManager) : 
         evaluatedPathEnd: Int,
         zoneStates: List<ZoneStatus>,
         followingZoneState: ZoneStatus,
+        followingSignalState: SigState?,
+        followingSignalSettings: SigSettings?,
     ): Map<LogicalSignalId, SigState> {
         assert(evaluatedPathEnd > 0)
         assert(evaluatedPathEnd <= fullPath.size)
@@ -204,10 +206,6 @@ class SignalingSimulatorImpl(override val sigModuleManager: SigSystemManager) : 
             private val _nextSignalState: SigState?,
             private val _nextSignalSettings: SigSettings?
         ) : MovementAuthorityView {
-            init {
-                assert((_nextSignalState == null) == (_nextSignalSettings == null))
-            }
-
             override val hasNextSignal
                 get() = _nextSignalState != null
 
@@ -219,7 +217,7 @@ class SignalingSimulatorImpl(override val sigModuleManager: SigSystemManager) : 
         }
 
         val res = mutableMapOf<LogicalSignalId, SigState>()
-        var lastSignalState: SigState? = null
+        var lastSignalState: SigState? = followingSignalState
         var lastSignalSettings: SigSettings? = null
         var lastSignalSSId: SignalingSystemId? = null
         for (task in signalEvalSequence) {

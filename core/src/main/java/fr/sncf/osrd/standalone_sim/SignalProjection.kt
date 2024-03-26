@@ -46,6 +46,12 @@ fun project(
     leastConstrainingStates[tvm300] = (sigModuleManager.getStateSchema(tvm300)) { value("aspect", "300VL")}
     leastConstrainingStates[tvm430] = (sigModuleManager.getStateSchema(tvm430)) { value("aspect", "VL")} // FIXME: when TVM 430 is implemented
 
+//    val leastConstrainingSettings = mutableMapOf<SignalingSystemId, SigSettings>()
+//    leastConstrainingSettings[bal] = (sigModuleManager.getSettingsSchema(bal)) { value("Nf", "false"); value("jaune_cli", "false")}
+//    leastConstrainingSettings[bapr] = (sigModuleManager.getSettingsSchema(bapr)) { value("Nf", "false")}
+//    leastConstrainingSettings[tvm300] = (sigModuleManager.getSettingsSchema(tvm300)) { value("Nf", "false")}
+//    leastConstrainingSettings[tvm430] = (sigModuleManager.getSettingsSchema(tvm430)) { value("Nf", "false")} // FIXME: when TVM 430 is implemented
+
     // Recover blocks from the route path
     val routePath = toRouteIdList(routePathIds)
     val detailedBlockPath = recoverBlockPath(simulator, fullInfra, routePath)

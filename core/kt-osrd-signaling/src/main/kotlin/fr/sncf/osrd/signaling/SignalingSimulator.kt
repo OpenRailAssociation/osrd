@@ -58,5 +58,7 @@ interface SignalingSimulator {
         evaluatedPathEnd: Int,
         zoneStates: List<ZoneStatus>,
         followingZoneState: ZoneStatus,
+        followingSignalState: SigState? = null,
+        followingSignalSettings: SigSettings? = null
     ): Map<LogicalSignalId, SigState>
 }
