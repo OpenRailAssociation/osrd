@@ -254,7 +254,7 @@ private fun routingRequirements(
     for (i in 0 until blockPath.size) {
         val block = blockPath[i]
         val blockOffset = blockOffsets[i]
-        val blockEndOffset = blockOffset + blockInfra.getBlockLength(block).distance - startOffset
+        val blockEndOffset = Distance.min(envelope.endPos.meters, blockOffset + blockInfra.getBlockLength(block).distance - startOffset)
         val signals = blockInfra.getBlockSignals(blockPath[i])
         val consideredSignals = if (blockInfra.blockStopAtBufferStop(block)) signals.size else signals.size - 1
         for (signalIndex in 0 until consideredSignals) {
@@ -262,7 +262,7 @@ private fun routingRequirements(
             val signalOffset = blockInfra.getSignalsPositions(block)[signalIndex].distance
             val signalPathOffset = (blockOffset + signalOffset) - startOffset
             val sightDistance = rawInfra.getSignalSightDistance(rawInfra.getPhysicalSignal(signal))
-            val sightOffset = signalPathOffset - sightDistance
+            val sightOffset = Distance.max(0.meters, signalPathOffset - sightDistance)
             val maxSpeed = envelope.maxSpeedInRange(sightOffset.meters, blockEndOffset.meters).metersPerSecond
             val state = SignalingTrainStateImpl(speed = maxSpeed)
             signalingTrainStates[signal] = state
