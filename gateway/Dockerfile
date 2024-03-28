@@ -28,7 +28,7 @@ RUN cargo install --locked --path .
 FROM chef AS testing_env
 RUN rustup component add llvm-tools && \
     rustup component add rustfmt && \
-    cargo install grcov
+    cargo install --locked grcov
 COPY --from=planner /app/recipe.json recipe.json
 
 ENV RUSTFLAGS="-Cinstrument-coverage"

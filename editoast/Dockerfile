@@ -27,7 +27,7 @@ FROM base_builder AS test_builder
 RUN rustup component add llvm-tools && \
     rustup component add rustfmt && \
     rustup component add clippy && \
-    cargo install grcov
+    cargo install --locked grcov
 COPY --from=planner /app/recipe.json recipe.json
 COPY --from=planner /app/editoast_derive/ editoast_derive
 COPY --from=test_data . /tests/data

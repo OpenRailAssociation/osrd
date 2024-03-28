@@ -10,17 +10,17 @@ edition = "2021"
 [dependencies]
 
 # common dependencies
-log.workspace = true
-actix-web.workspace = true
 actix-session.workspace = true
-serde.workspace = true
-thiserror.workspace = true
+actix-web.workspace = true
 dyn-clone.workspace = true
 futures-util.workspace = true
+log.workspace = true
+serde.workspace = true
+thiserror.workspace = true
 
 # oidc
+openidconnect = { workspace = true, features = ["jwk-alg", "reqwest"] }
 reqwest = { workspace = true, features = ["json"] }
-openidconnect = { workspace = true, features = ["reqwest", "jwk-alg"] }
 url.workspace = true
 
 # bearer

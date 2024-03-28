@@ -9,20 +9,20 @@ edition = "2021"
 
 [dependencies]
 # common dependencies
-log.workspace = true
-futures-util.workspace = true
 dyn-clone.workspace = true
 either.workspace = true
+futures-util.workspace = true
+log.workspace = true
 
 # common proxying infrastructure
 actix-web.workspace = true
+awc.workspace = true # the http / ws client
 ipnet.workspace = true
-awc.workspace = true  # the http / ws client
 percent-encoding.workspace = true
 
 # header classifier
-smallvec.workspace = true
 phf = { workspace = true, features = ["macros"] } # static hop-by-hop header map
+smallvec.workspace = true
 
 # websocket proxy
 actix.workspace = true
@@ -30,6 +30,6 @@ actix-web-actors.workspace = true
 bytestring.workspace = true
 
 # tracing / metrics
-opentelemetry.workspace = true
 actix-web-opentelemetry.workspace = true
+opentelemetry.workspace = true
 opentelemetry_sdk.workspace = true
