@@ -1195,7 +1195,7 @@
                 },
                 "sight_distance": {
                     "description": "Visibility distance of the signal in meters",
-                    "exclusiveMinimum": 0.0,
+                    "minimum": 0.0,
                     "title": "Sight Distance",
                     "type": "number"
                 },
