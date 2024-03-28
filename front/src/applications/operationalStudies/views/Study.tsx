@@ -3,6 +3,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Pencil } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 import nextId from 'react-id-generator';
+import { useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
 import BreadCrumbs from 'applications/operationalStudies/components/BreadCrumbs';
@@ -22,6 +23,7 @@ import { Loader, Spinner } from 'common/Loaders';
 import ScenarioCard from 'modules/scenario/components/ScenarioCard';
 import ScenarioCardEmpty from 'modules/scenario/components/ScenarioCardEmpty';
 import AddOrEditStudyModal from 'modules/study/components/AddOrEditStudyModal';
+import { getTrainScheduleV2Activated } from 'reducers/user/userSelectors';
 import { budgetFormat } from 'utils/numbers';
 
 type SortOptions =
@@ -40,11 +42,13 @@ type studyParams = {
 export default function Study() {
   const { t } = useTranslation('operationalStudies/study');
   const { openModal } = useModal();
+  const { projectId: urlProjectId, studyId: urlStudyId } = useParams() as studyParams;
+  const trainScheduleV2Activated = useSelector(getTrainScheduleV2Activated);
+
   const [scenariosList, setScenariosList] = useState<ScenarioWithCountTrains[]>([]);
   const [filter, setFilter] = useState('');
   const [filterChips, setFilterChips] = useState('');
   const [sortOption, setSortOption] = useState<SortOptions>('LastModifiedDesc');
-  const { projectId: urlProjectId, studyId: urlStudyId } = useParams() as studyParams;
   const [isLoading, setIsLoading] = useState(true);
 
   const { projectId, studyId } = useMemo(
@@ -61,8 +65,8 @@ export default function Study() {
     error: studyError,
   } = osrdEditoastApi.endpoints.getProjectsByProjectIdStudiesAndStudyId.useQuery(
     {
-      projectId: +projectId!,
-      studyId: +studyId!,
+      projectId: projectId!,
+      studyId: studyId!,
     },
     {
       skip: !projectId || !studyId,
@@ -70,8 +74,20 @@ export default function Study() {
   );
 
   const [postSearch] = osrdEditoastApi.endpoints.postSearch.useMutation();
-  const { data: studyScenarios } =
+
+  const { data: scenariosV1 } =
     osrdEditoastApi.endpoints.getProjectsByProjectIdStudiesAndStudyIdScenarios.useQuery(
+      {
+        projectId: projectId!,
+        studyId: studyId!,
+        ordering: sortOption,
+        pageSize: 1000,
+      },
+      { skip: !projectId || !studyId }
+    );
+
+  const { data: scenariosV2 } =
+    osrdEditoastApi.endpoints.getV2ProjectsByProjectIdStudiesAndStudyIdScenarios.useQuery(
       {
         projectId: projectId!,
         studyId: studyId!,
@@ -138,10 +154,12 @@ export default function Study() {
           console.error(error);
         }
       } else {
-        setScenariosList(studyScenarios?.results || []);
+        const scenarios = trainScheduleV2Activated ? scenariosV2?.results : scenariosV1?.results;
+        setScenariosList(scenarios || []);
       }
       setIsLoading(false);
     }
+    setIsLoading(false);
   };
 
   function displayScenariosList() {
@@ -168,7 +186,7 @@ export default function Study() {
 
   useEffect(() => {
     getScenarioList();
-  }, [sortOption, filter, studyScenarios]);
+  }, [sortOption, filter, scenariosV1, scenariosV2, trainScheduleV2Activated]);
 
   return (
     <>

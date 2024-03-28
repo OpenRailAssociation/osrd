@@ -7,6 +7,7 @@ import {
   logoutSuccess,
   type UserState,
   updateUserPreferences,
+  switchTrainScheduleV2Activated,
 } from 'reducers/user';
 import { createStoreWithoutMiddleware } from 'store';
 
@@ -27,11 +28,9 @@ describe('userReducer', () => {
     store.dispatch(loginSuccess({ username: 'Test userSlice' }));
     const userState = store.getState().user;
     expect(userState).toEqual({
+      ...userInitialState,
       isLogged: true,
-      loginError: undefined,
       username: 'Test userSlice',
-      userPreferences: { safeWord: '' },
-      account: {},
     });
   });
 
@@ -48,11 +47,8 @@ describe('userReducer', () => {
     store.dispatch(loginError(error));
     const userState = store.getState().user;
     expect(userState).toEqual({
-      isLogged: false,
+      ...userInitialState,
       loginError: error,
-      username: '',
-      userPreferences: { safeWord: '' },
-      account: {},
     });
   });
 
@@ -74,11 +70,15 @@ describe('userReducer', () => {
     store.dispatch(action);
     const userState = store.getState().user;
     expect(userState).toEqual({
-      isLogged: false,
-      loginError: undefined,
-      username: '',
+      ...userInitialState,
       userPreferences: { safeWord: 'Test userSlice' },
-      account: {},
     });
+  });
+
+  it('should handle switchTrainScheduleV2Activated', () => {
+    const store = createStore(userInitialState);
+    store.dispatch(switchTrainScheduleV2Activated());
+    const userState = store.getState().user;
+    expect(userState.trainScheduleV2Activated).toBe(true);
   });
 });

@@ -7,13 +7,15 @@ import { useSelector } from 'react-redux';
 
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { ModalBodySNCF, ModalHeaderSNCF } from 'common/BootstrapSNCF/ModalSNCF';
-import { updateUserPreferences } from 'reducers/user';
-import { getUserPreferences } from 'reducers/user/userSelectors';
+import SwitchSNCF, { SWITCH_TYPES } from 'common/BootstrapSNCF/SwitchSNCF/SwitchSNCF';
+import { updateUserPreferences, switchTrainScheduleV2Activated } from 'reducers/user';
+import { getTrainScheduleV2Activated, getUserPreferences } from 'reducers/user/userSelectors';
 import { useAppDispatch } from 'store';
 import { useDebounce } from 'utils/helpers';
 
 export default function UserSettings() {
   const userPreferences = useSelector(getUserPreferences);
+  const trainScheduleV2Activated = useSelector(getTrainScheduleV2Activated);
   const [safeWordText, setSafeWordText] = useState(userPreferences.safeWord);
   const dispatch = useAppDispatch();
 
@@ -55,6 +57,18 @@ export default function UserSettings() {
         <small id="safeWordHelpBlock" className="form-text text-muted">
           {t('safeWordHelp')}
         </small>
+        <div className="col-lg-6">
+          <div className="d-flex align-items-center mt-3">
+            <SwitchSNCF
+              id="train-schedule-version-switch"
+              type={SWITCH_TYPES.switch}
+              name="train-schedule-version-switch"
+              onChange={() => dispatch(switchTrainScheduleV2Activated())}
+              checked={trainScheduleV2Activated}
+            />
+            <p className="ml-3">TrainSchedule V2</p>
+          </div>
+        </div>
       </ModalBodySNCF>
     </>
   );
