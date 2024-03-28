@@ -97,7 +97,7 @@ export default function Timetable({
 
   // We fetch all RS to get the data we need for the advanced filters
   const { data: { results: rollingStocks } = { results: [] } } =
-    enhancedEditoastApi.useGetLightRollingStockQuery({ pageSize: 1000 });
+    enhancedEditoastApi.endpoints.getLightRollingStock.useQuery({ pageSize: 1000 });
 
   // Filter RS by their names and labels
   const keepTrain = (train: ScheduledTrain, searchString: string): boolean => {

@@ -23,11 +23,11 @@ export default function ActionsBar({ infra, isFocused, setIsFocused, inputValue 
   const [isWaiting, setIsWaiting] = useState(false);
   const dispatch = useAppDispatch();
 
-  const [lockInfra] = osrdEditoastApi.usePostInfraByIdLockMutation();
-  const [unlockInfra] = osrdEditoastApi.usePostInfraByIdUnlockMutation();
-  const [getRailjson] = osrdEditoastApi.useLazyGetInfraByIdRailjsonQuery();
-  const [cloneInfra] = osrdEditoastApi.usePostInfraByIdCloneMutation();
-  const [updateInfra] = osrdEditoastApi.usePutInfraByIdMutation();
+  const [lockInfra] = osrdEditoastApi.endpoints.postInfraByIdLock.useMutation();
+  const [unlockInfra] = osrdEditoastApi.endpoints.postInfraByIdUnlock.useMutation();
+  const [getRailjson] = osrdEditoastApi.endpoints.getInfraByIdRailjson.useLazyQuery();
+  const [cloneInfra] = osrdEditoastApi.endpoints.postInfraByIdClone.useMutation();
+  const [updateInfra] = osrdEditoastApi.endpoints.putInfraById.useMutation();
 
   async function handleLockedState(action: InfraLockState) {
     if (!isWaiting) {

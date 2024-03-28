@@ -294,7 +294,7 @@ const Pathfinding = ({ zoomToFeature, path }: PathfindingProps) => {
       pollingInterval: !isInfraLoaded ? 1000 : undefined,
     }
   );
-  const [reloadInfra] = osrdEditoastApi.usePostInfraByIdLoadMutation();
+  const [reloadInfra] = osrdEditoastApi.endpoints.postInfraByIdLoad.useMutation();
 
   const {
     replaceVias,

@@ -50,7 +50,7 @@ const ScenarioExplorer = ({
       { skip: !globalProjectId && !globalStudyId && !globalScenarioId }
     );
 
-  const { data: timetable } = osrdEditoastApi.useGetTimetableByIdQuery(
+  const { data: timetable } = osrdEditoastApi.endpoints.getTimetableById.useQuery(
     { id: timetableID as number },
     { skip: !timetableID }
   );

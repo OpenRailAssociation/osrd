@@ -38,7 +38,7 @@ const FormatSwitch = ({ name, icon: IconComponent, color = '', disabled }: Forma
     data: tagsList,
     isError: isGetSpeedLimitTagsError,
     error: getSpeedLimitTagsError,
-  } = osrdEditoastApi.useGetInfraByIdSpeedLimitTagsQuery(
+  } = osrdEditoastApi.endpoints.getInfraByIdSpeedLimitTags.useQuery(
     { id: infraID as number },
     {
       skip: !infraID,

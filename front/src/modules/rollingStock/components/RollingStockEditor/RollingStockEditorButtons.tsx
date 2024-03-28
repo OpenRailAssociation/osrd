@@ -32,8 +32,9 @@ const RollingStockEditorButtons = ({
   const dispatch = useAppDispatch();
   const { t } = useTranslation(['rollingstock', 'translation']);
   const { openModal } = useModal();
-  const [deleteRollingStockById] = osrdEditoastApi.useDeleteRollingStockByRollingStockIdMutation();
-  const [postRollingstock] = osrdEditoastApi.usePostRollingStockMutation();
+  const [deleteRollingStockById] =
+    osrdEditoastApi.endpoints.deleteRollingStockByRollingStockId.useMutation();
+  const [postRollingstock] = osrdEditoastApi.endpoints.postRollingStock.useMutation();
 
   const deleteRollingStock = () => {
     setOpenedRollingStockCardId(undefined);

@@ -44,7 +44,7 @@ export default function Allowances() {
   const dispatch = useAppDispatch();
   const { getAllowances, getPathfindingID } = useOsrdConfSelectors();
   const pathFindingID = useSelector(getPathfindingID);
-  const { data: pathFinding } = osrdEditoastApi.useGetPathfindingByPathfindingIdQuery(
+  const { data: pathFinding } = osrdEditoastApi.endpoints.getPathfindingByPathfindingId.useQuery(
     { pathfindingId: pathFindingID as number },
     { skip: !pathFindingID }
   );

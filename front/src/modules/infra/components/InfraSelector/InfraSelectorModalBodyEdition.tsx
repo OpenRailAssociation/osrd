@@ -26,8 +26,8 @@ const InfraSelectorModalBodyEdition = ({
   const [errorMessage, setErrorMessage] = useState<string | undefined>('');
   const [selectedFile, setSelectedFile] = useState<File | undefined>(undefined);
   const { t } = useTranslation(['translation', 'infraManagement']);
-  const [postInfraRailjson] = osrdEditoastApi.usePostInfraRailjsonMutation();
-  const [postInfra] = osrdEditoastApi.usePostInfraMutation();
+  const [postInfraRailjson] = osrdEditoastApi.endpoints.postInfraRailjson.useMutation();
+  const [postInfra] = osrdEditoastApi.endpoints.postInfra.useMutation();
 
   const validateFile = async (fileToValidate: File) => {
     if (fileToValidate.type !== 'application/json') {

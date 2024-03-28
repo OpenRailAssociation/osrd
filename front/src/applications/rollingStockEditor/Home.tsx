@@ -12,7 +12,7 @@ const HomeRollingStockEditor: FC = () => {
   const { t } = useTranslation(['home/home', 'referenceMap']);
 
   const { data: { results: rollingStocks } = { results: [] } } =
-    enhancedEditoastApi.useGetLightRollingStockQuery({
+    enhancedEditoastApi.endpoints.getLightRollingStock.useQuery({
       pageSize: 1000,
     });
 

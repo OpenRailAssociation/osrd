@@ -29,7 +29,8 @@ export default function StateStep({
 }: Props) {
   const { t } = useTranslation('operationalStudies/study');
   const dispatch = useAppDispatch();
-  const [patchStudy] = osrdEditoastApi.usePatchProjectsByProjectIdStudiesAndStudyIdMutation();
+  const [patchStudy] =
+    osrdEditoastApi.endpoints.patchProjectsByProjectIdStudiesAndStudyId.useMutation();
 
   const changeStudyState = async () => {
     try {
