@@ -46,7 +46,7 @@ const mapWhiteList = [
   'terrain3DExaggeration',
 ];
 
-const userWhiteList = ['account', 'userPreferences'];
+const userWhiteList = ['account', 'userPreferences', 'trainScheduleV2Activated'];
 
 const mainWhiteList = ['lastInterfaceVersion'];
 
