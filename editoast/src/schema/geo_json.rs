@@ -1,6 +1,6 @@
 use mvt::GeomType;
-
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
+use serde::Serialize;
 
 /// GeoJson representation
 #[derive(Clone, Serialize, Deserialize, Debug, PartialEq)]

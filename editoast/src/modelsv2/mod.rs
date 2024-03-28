@@ -13,31 +13,70 @@ pub mod study;
 pub mod timetable;
 pub mod train_schedule;
 
+use async_trait::async_trait;
+use diesel::pg::Pg;
+use diesel::result::Error::NotFound;
+use diesel::AsChangeset;
+use diesel::QueryableByName;
 pub use documents::Document;
 pub use electrical_profiles::ElectricalProfileSet;
 pub use infra::Infra;
 pub use infra_objects::*;
 pub use light_rolling_stock::LightRollingStockModel;
-pub use projects::{Ordering, Project, Tags};
+pub use projects::Ordering;
+pub use projects::Project;
+pub use projects::Tags;
 pub use rolling_stock_image::RollingStockSeparatedImageModel;
 pub use rolling_stock_model::RollingStockModel;
 pub use study::Study;
 
-use async_trait::async_trait;
-use diesel::{pg::Pg, result::Error::NotFound, AsChangeset, QueryableByName};
-
-use crate::error::{EditoastError, Result};
-
-pub use crate::models::{Identifiable, PreferredId};
+use crate::error::EditoastError;
+use crate::error::Result;
+pub use crate::models::Identifiable;
+pub use crate::models::PreferredId;
 
 /// A module that exposes all the ModelV2 traits and utils, but not the models themselves
 pub mod prelude {
     #[allow(unused_imports)]
-    pub use super::{
-        Changeset, Create, CreateBatch, CreateBatchWithKey, Delete, DeleteBatch, DeleteStatic,
-        Exists, Model, ModelBackedSchema, Patch, Retrieve, RetrieveBatch, RetrieveBatchUnchecked,
-        Row, Save, SchemaModel, Update, UpdateBatch, UpdateBatchUnchecked,
-    };
+    pub use super::Changeset;
+    #[allow(unused_imports)]
+    pub use super::Create;
+    #[allow(unused_imports)]
+    pub use super::CreateBatch;
+    #[allow(unused_imports)]
+    pub use super::CreateBatchWithKey;
+    #[allow(unused_imports)]
+    pub use super::Delete;
+    #[allow(unused_imports)]
+    pub use super::DeleteBatch;
+    #[allow(unused_imports)]
+    pub use super::DeleteStatic;
+    #[allow(unused_imports)]
+    pub use super::Exists;
+    #[allow(unused_imports)]
+    pub use super::Model;
+    #[allow(unused_imports)]
+    pub use super::ModelBackedSchema;
+    #[allow(unused_imports)]
+    pub use super::Patch;
+    #[allow(unused_imports)]
+    pub use super::Retrieve;
+    #[allow(unused_imports)]
+    pub use super::RetrieveBatch;
+    #[allow(unused_imports)]
+    pub use super::RetrieveBatchUnchecked;
+    #[allow(unused_imports)]
+    pub use super::Row;
+    #[allow(unused_imports)]
+    pub use super::Save;
+    #[allow(unused_imports)]
+    pub use super::SchemaModel;
+    #[allow(unused_imports)]
+    pub use super::Update;
+    #[allow(unused_imports)]
+    pub use super::UpdateBatch;
+    #[allow(unused_imports)]
+    pub use super::UpdateBatchUnchecked;
 }
 
 /// A struct that can be saved to and read from the database using diesel's interface
@@ -929,11 +968,14 @@ where
 
 #[cfg(test)]
 mod tests {
-    use super::prelude::*;
-    use crate::fixtures::tests::{db_pool, TestFixture};
+    use std::collections::HashSet;
+
     use editoast_derive::ModelV2;
     use itertools::Itertools;
-    use std::collections::HashSet;
+
+    use super::prelude::*;
+    use crate::fixtures::tests::db_pool;
+    use crate::fixtures::tests::TestFixture;
 
     #[derive(Debug, Default, Clone, ModelV2)]
     #[model(table = crate::tables::document)]

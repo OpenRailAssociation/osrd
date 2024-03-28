@@ -1,24 +1,35 @@
 mod graph;
 
+use std::collections::hash_map::Entry;
+use std::collections::HashMap;
+use std::collections::HashSet;
+
+use chashmap::CHashMap;
+use chashmap::ReadGuard;
+use chashmap::WriteGuard;
+use diesel::sql_query;
+use diesel::sql_types::BigInt;
+use diesel::sql_types::Double;
+use diesel::sql_types::Integer;
+use diesel::sql_types::Nullable;
+use diesel::sql_types::Text;
+use diesel::QueryableByName;
+use diesel_async::AsyncPgConnection as PgConnection;
+use diesel_async::RunQueryDsl;
+use editoast_derive::EditoastError;
+use enum_map::EnumMap;
+use geos::geojson::Geometry;
+pub use graph::Graph;
+use itertools::Itertools as _;
+use thiserror::Error;
+
 use crate::error::Result;
 use crate::map::BoundingBox;
 use crate::modelsv2::railjson::find_all_schemas;
 use crate::modelsv2::Infra;
-use crate::schema::operation::{CacheOperation, RailjsonObject};
+use crate::schema::operation::CacheOperation;
+use crate::schema::operation::RailjsonObject;
 use crate::schema::*;
-use chashmap::{CHashMap, ReadGuard, WriteGuard};
-use diesel::sql_types::{BigInt, Double, Integer, Nullable, Text};
-use diesel::{sql_query, QueryableByName};
-use diesel_async::{AsyncPgConnection as PgConnection, RunQueryDsl};
-use editoast_derive::EditoastError;
-use enum_map::EnumMap;
-use geos::geojson::Geometry;
-use itertools::Itertools as _;
-use std::collections::hash_map::Entry;
-use std::collections::{HashMap, HashSet};
-use thiserror::Error;
-
-pub use graph::Graph;
 
 /// Contains infra cached data used to generate layers and errors
 #[derive(Debug, Default, Clone)]
@@ -709,26 +720,46 @@ pub enum InfraCacheEditoastError {
 pub mod tests {
     use std::collections::HashMap;
 
-    use crate::infra_cache::{InfraCache, SwitchCache};
-    use crate::map::BoundingBox;
-    use crate::modelsv2::infra::tests::test_infra_transaction;
-    use crate::schema::operation::create::tests::{
-        create_buffer_stop, create_detector, create_electrification, create_op, create_route,
-        create_signal, create_speed, create_switch, create_switch_type, create_track,
-    };
-    use crate::schema::utils::{Identifier, NonBlankString};
-    use crate::schema::{
-        ApplicableDirections, ApplicableDirectionsTrackRange, Direction, Electrification, Endpoint,
-        OSRDIdentified, OperationalPoint, OperationalPointPartCache, Route, SpeedSection, Switch,
-        SwitchPortConnection, SwitchType, TrackEndpoint, Waypoint,
-    };
     use actix_web::test as actix_test;
     use chashmap::CHashMap;
     use diesel_async::scoped_futures::ScopedFutureExt;
 
-    use super::{
-        BufferStopCache, DetectorCache, OperationalPointCache, SignalCache, TrackSectionCache,
-    };
+    use super::BufferStopCache;
+    use super::DetectorCache;
+    use super::OperationalPointCache;
+    use super::SignalCache;
+    use super::TrackSectionCache;
+    use crate::infra_cache::InfraCache;
+    use crate::infra_cache::SwitchCache;
+    use crate::map::BoundingBox;
+    use crate::modelsv2::infra::tests::test_infra_transaction;
+    use crate::schema::operation::create::tests::create_buffer_stop;
+    use crate::schema::operation::create::tests::create_detector;
+    use crate::schema::operation::create::tests::create_electrification;
+    use crate::schema::operation::create::tests::create_op;
+    use crate::schema::operation::create::tests::create_route;
+    use crate::schema::operation::create::tests::create_signal;
+    use crate::schema::operation::create::tests::create_speed;
+    use crate::schema::operation::create::tests::create_switch;
+    use crate::schema::operation::create::tests::create_switch_type;
+    use crate::schema::operation::create::tests::create_track;
+    use crate::schema::utils::Identifier;
+    use crate::schema::utils::NonBlankString;
+    use crate::schema::ApplicableDirections;
+    use crate::schema::ApplicableDirectionsTrackRange;
+    use crate::schema::Direction;
+    use crate::schema::Electrification;
+    use crate::schema::Endpoint;
+    use crate::schema::OSRDIdentified;
+    use crate::schema::OperationalPoint;
+    use crate::schema::OperationalPointPartCache;
+    use crate::schema::Route;
+    use crate::schema::SpeedSection;
+    use crate::schema::Switch;
+    use crate::schema::SwitchPortConnection;
+    use crate::schema::SwitchType;
+    use crate::schema::TrackEndpoint;
+    use crate::schema::Waypoint;
 
     #[actix_test]
     async fn load_track_section() {
@@ -1240,21 +1271,22 @@ pub mod tests {
         use std::collections::HashMap;
 
         use super::create_track_section_cache;
-        use crate::{
-            infra_cache::{
-                tests::{
-                    create_buffer_stop_cache, create_detector_cache, create_electrification_cache,
-                    create_operational_point_cache, create_route_cache, create_signal_cache,
-                    create_speed_section_cache, create_switch_cache_point,
-                    create_switch_type_cache,
-                },
-                InfraCache, InfraCacheEditoastError,
-            },
-            schema::{
-                utils::Identifier, Direction::StartToStop, ObjectType, TrackEndpoint,
-                Waypoint::BufferStop,
-            },
-        };
+        use crate::infra_cache::tests::create_buffer_stop_cache;
+        use crate::infra_cache::tests::create_detector_cache;
+        use crate::infra_cache::tests::create_electrification_cache;
+        use crate::infra_cache::tests::create_operational_point_cache;
+        use crate::infra_cache::tests::create_route_cache;
+        use crate::infra_cache::tests::create_signal_cache;
+        use crate::infra_cache::tests::create_speed_section_cache;
+        use crate::infra_cache::tests::create_switch_cache_point;
+        use crate::infra_cache::tests::create_switch_type_cache;
+        use crate::infra_cache::InfraCache;
+        use crate::infra_cache::InfraCacheEditoastError;
+        use crate::schema::utils::Identifier;
+        use crate::schema::Direction::StartToStop;
+        use crate::schema::ObjectType;
+        use crate::schema::TrackEndpoint;
+        use crate::schema::Waypoint::BufferStop;
 
         #[test]
         fn track_section() {

@@ -9,25 +9,34 @@ pub mod switch_types;
 pub mod switches;
 pub mod track_sections;
 
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
+use std::collections::HashSet;
+use std::pin::Pin;
 
 use async_trait::async_trait;
 use diesel::prelude::*;
 use diesel::sql_query;
-use diesel::sql_types::{Array, BigInt, Json, Text};
-use diesel_async::{AsyncPgConnection as PgConnection, RunQueryDsl};
+use diesel::sql_types::Array;
+use diesel::sql_types::BigInt;
+use diesel::sql_types::Json;
+use diesel::sql_types::Text;
+use diesel_async::AsyncPgConnection as PgConnection;
+use diesel_async::RunQueryDsl;
 use futures_util::Future;
 use itertools::Itertools;
 use serde_json::to_value;
-use sha1::{Digest, Sha1};
-use std::pin::Pin;
+use sha1::Digest;
+use sha1::Sha1;
 use tracing::warn;
 
 use super::GeneratedData;
 use crate::error::Result;
 use crate::infra_cache::Graph;
-use crate::infra_cache::{InfraCache, ObjectCache};
-use crate::schema::{InfraError, OSRDObject, ObjectType};
+use crate::infra_cache::InfraCache;
+use crate::infra_cache::ObjectCache;
+use crate::schema::InfraError;
+use crate::schema::OSRDObject;
+use crate::schema::ObjectType;
 
 /// Empty context used when no context is needed
 #[derive(Debug, Default)]
@@ -416,13 +425,20 @@ impl GeneratedData for ErrorLayer {
 mod test {
     use rstest::rstest;
 
-    use super::{
-        buffer_stops, detectors, electrifications, generate_errors, operational_points, routes,
-        signals, speed_sections, switch_types, switches, track_sections, Graph,
-    };
-
-    use crate::infra_cache::tests::{create_buffer_stop_cache, create_small_infra_cache};
-
+    use super::buffer_stops;
+    use super::detectors;
+    use super::electrifications;
+    use super::generate_errors;
+    use super::operational_points;
+    use super::routes;
+    use super::signals;
+    use super::speed_sections;
+    use super::switch_types;
+    use super::switches;
+    use super::track_sections;
+    use super::Graph;
+    use crate::infra_cache::tests::create_buffer_stop_cache;
+    use crate::infra_cache::tests::create_small_infra_cache;
     use crate::schema::ObjectType;
 
     #[rstest]

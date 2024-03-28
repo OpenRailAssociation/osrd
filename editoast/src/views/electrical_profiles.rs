@@ -1,19 +1,30 @@
-use crate::error::Result;
-use crate::modelsv2::electrical_profiles::{ElectricalProfileSet, LightElectricalProfileSet};
-use crate::modelsv2::{Create, DeleteStatic, Model, Retrieve};
-use crate::schema::electrical_profiles::{
-    ElectricalProfile, ElectricalProfileSetData, LevelValues,
-};
-use crate::schema::TrackRange;
-use crate::DbPool;
+use std::collections::HashMap;
 
-use actix_web::web::{Data, Json, Path, Query};
-use actix_web::{delete, get, post, HttpResponse};
+use actix_web::delete;
+use actix_web::get;
+use actix_web::post;
+use actix_web::web::Data;
+use actix_web::web::Json;
+use actix_web::web::Path;
+use actix_web::web::Query;
+use actix_web::HttpResponse;
 use editoast_derive::EditoastError;
 use serde::Deserialize;
-use std::collections::HashMap;
 use thiserror::Error;
 use utoipa::IntoParams;
+
+use crate::error::Result;
+use crate::modelsv2::electrical_profiles::ElectricalProfileSet;
+use crate::modelsv2::electrical_profiles::LightElectricalProfileSet;
+use crate::modelsv2::Create;
+use crate::modelsv2::DeleteStatic;
+use crate::modelsv2::Model;
+use crate::modelsv2::Retrieve;
+use crate::schema::electrical_profiles::ElectricalProfile;
+use crate::schema::electrical_profiles::ElectricalProfileSetData;
+use crate::schema::electrical_profiles::LevelValues;
+use crate::schema::TrackRange;
+use crate::DbPool;
 
 crate::routes! {
     "/electrical_profile_set" => {
@@ -173,19 +184,21 @@ pub enum ElectricalProfilesError {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::fixtures::tests::{
-        db_pool, dummy_electrical_profile_set, electrical_profile_set, TestFixture,
-    };
-    use crate::schema::electrical_profiles::ElectricalProfile;
-    use crate::views::tests::create_test_service;
     use actix_http::StatusCode;
     use actix_web::test as actix_test;
+    use actix_web::test::call_service;
+    use actix_web::test::read_body_json;
     use actix_web::test::TestRequest;
-    use actix_web::test::{call_service, read_body_json};
-
-    use crate::schema::TrackRange;
     use rstest::rstest;
+
+    use super::*;
+    use crate::fixtures::tests::db_pool;
+    use crate::fixtures::tests::dummy_electrical_profile_set;
+    use crate::fixtures::tests::electrical_profile_set;
+    use crate::fixtures::tests::TestFixture;
+    use crate::schema::electrical_profiles::ElectricalProfile;
+    use crate::schema::TrackRange;
+    use crate::views::tests::create_test_service;
 
     #[rstest]
     async fn test_list(

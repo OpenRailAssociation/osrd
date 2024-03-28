@@ -1,9 +1,11 @@
 use std::collections::HashSet;
 
-use crate::{
-    infra_cache::{InfraCache, ObjectCache},
-    schema::{operation::CacheOperation, OSRDIdentified, OSRDObject, ObjectType},
-};
+use crate::infra_cache::InfraCache;
+use crate::infra_cache::ObjectCache;
+use crate::schema::operation::CacheOperation;
+use crate::schema::OSRDIdentified;
+use crate::schema::OSRDObject;
+use crate::schema::ObjectType;
 
 /// This struct gives a set of objects that needs to be updated or deleted given a list of operations.
 #[derive(Debug, Clone, Default)]
@@ -61,11 +63,13 @@ mod test {
     use std::collections::HashSet;
 
     use super::InvolvedObjects;
-
     use crate::infra_cache::tests::create_small_infra_cache;
     use crate::infra_cache::ObjectCache;
     use crate::schema::operation::CacheOperation;
-    use crate::schema::{DetectorCache, ObjectRef, ObjectType, TrackSectionCache};
+    use crate::schema::DetectorCache;
+    use crate::schema::ObjectRef;
+    use crate::schema::ObjectType;
+    use crate::schema::TrackSectionCache;
 
     #[test]
     fn track_section_deleted() {

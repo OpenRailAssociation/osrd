@@ -1,9 +1,10 @@
-use crate::error::Result;
 use clap::Args;
 use derivative::Derivative;
 use editoast_derive::EditoastError;
 use thiserror::Error;
 use url::Url;
+
+use crate::error::Result;
 
 #[derive(Args, Debug, Derivative, Clone)]
 #[derivative(Default)]

@@ -1,10 +1,13 @@
-use super::{OSRDIdentified, OSRDTyped, ObjectType, Sign};
+use derivative::Derivative;
+use serde::Deserialize;
+use serde::Serialize;
 
 use super::utils::Identifier;
 use super::DirectionalTrackRange;
-
-use derivative::Derivative;
-use serde::{Deserialize, Serialize};
+use super::OSRDIdentified;
+use super::OSRDTyped;
+use super::ObjectType;
+use super::Sign;
 
 /// Neutral sections are portions of track where trains aren't allowed to pull power from electrifications. They have to rely on inertia to cross such sections.
 ///

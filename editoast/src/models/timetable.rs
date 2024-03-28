@@ -1,15 +1,5 @@
 use std::collections::HashMap;
 
-use crate::error::Result;
-use crate::models::{
-    train_schedule::{
-        LightTrainSchedule, MechanicalEnergyConsumedBaseEco, TrainSchedule, TrainScheduleSummary,
-    },
-    SimulationOutput,
-};
-use crate::modelsv2::{LightRollingStockModel, Retrieve};
-use crate::tables::timetable;
-use crate::DbPool;
 use actix_web::web::Data;
 use derivative::Derivative;
 use diesel::prelude::*;
@@ -18,11 +8,22 @@ use diesel_async::AsyncPgConnection as PgConnection;
 use diesel_async::RunQueryDsl;
 use editoast_derive::Model;
 use futures::future::try_join_all;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
+use serde::Serialize;
 use utoipa::ToSchema;
 
 use super::train_schedule::TrainScheduleValidation;
 use super::Scenario;
+use crate::error::Result;
+use crate::models::train_schedule::LightTrainSchedule;
+use crate::models::train_schedule::MechanicalEnergyConsumedBaseEco;
+use crate::models::train_schedule::TrainSchedule;
+use crate::models::train_schedule::TrainScheduleSummary;
+use crate::models::SimulationOutput;
+use crate::modelsv2::LightRollingStockModel;
+use crate::modelsv2::Retrieve;
+use crate::tables::timetable;
+use crate::DbPool;
 
 crate::schemas! {
     Timetable,

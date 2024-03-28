@@ -1,17 +1,26 @@
-use crate::error::Result;
-use crate::schema::InfraErrorType;
-use crate::views::pagination::{Paginate, PaginatedResponse, PaginationQueryParam};
-use crate::DbPool;
 use actix_web::dev::HttpServiceFactory;
 use actix_web::get;
-use actix_web::web::{Data, Json as WebJson, Path, Query};
+use actix_web::web::Data;
+use actix_web::web::Json as WebJson;
+use actix_web::web::Path;
+use actix_web::web::Query;
 use diesel::sql_query;
-use diesel::sql_types::{BigInt, Json, Text};
+use diesel::sql_types::BigInt;
+use diesel::sql_types::Json;
+use diesel::sql_types::Text;
 use editoast_derive::EditoastError;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
+use serde::Serialize;
 use serde_json::Value as JsonValue;
 use strum::VariantNames;
 use thiserror::Error;
+
+use crate::error::Result;
+use crate::schema::InfraErrorType;
+use crate::views::pagination::Paginate;
+use crate::views::pagination::PaginatedResponse;
+use crate::views::pagination::PaginationQueryParam;
+use crate::DbPool;
 
 /// Return `/infra/<infra_id>/errors` routes
 pub fn routes() -> impl HttpServiceFactory {
@@ -113,13 +122,16 @@ async fn get_paginated_infra_errors(
 
 #[cfg(test)]
 mod tests {
-    use crate::fixtures::tests::{empty_infra, TestFixture};
+    use actix_http::StatusCode;
+    use actix_web::test::call_service;
+    use actix_web::test::TestRequest;
+    use rstest::rstest;
+
+    use crate::fixtures::tests::empty_infra;
+    use crate::fixtures::tests::TestFixture;
     use crate::modelsv2::Infra;
     use crate::views::infra::errors::check_error_type_query;
     use crate::views::tests::create_test_service;
-    use actix_http::StatusCode;
-    use actix_web::test::{call_service, TestRequest};
-    use rstest::rstest;
 
     #[test]
     fn check_error_type() {

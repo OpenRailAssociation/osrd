@@ -1,11 +1,20 @@
-use super::{new_ref_fix_create_pair, Fix};
-use crate::schema::{
-    operation::RailjsonObject, utils::Identifier, BufferStop, Endpoint, InfraError, InfraErrorType,
-    OSRDIdentified as _, OSRDObject as _, ObjectRef, TrackSectionCache,
-};
 use std::collections::HashMap;
+
 use tracing::debug;
 use uuid::Uuid;
+
+use super::new_ref_fix_create_pair;
+use super::Fix;
+use crate::schema::operation::RailjsonObject;
+use crate::schema::utils::Identifier;
+use crate::schema::BufferStop;
+use crate::schema::Endpoint;
+use crate::schema::InfraError;
+use crate::schema::InfraErrorType;
+use crate::schema::OSRDIdentified as _;
+use crate::schema::OSRDObject as _;
+use crate::schema::ObjectRef;
+use crate::schema::TrackSectionCache;
 
 pub fn fix_track_section(
     track_section: &TrackSectionCache,
@@ -42,13 +51,10 @@ mod tests {
     use std::ops::Deref;
 
     use super::*;
-    use crate::{
-        infra_cache::ObjectCache,
-        schema::{
-            operation::{CacheOperation, Operation},
-            TrackSection,
-        },
-    };
+    use crate::infra_cache::ObjectCache;
+    use crate::schema::operation::CacheOperation;
+    use crate::schema::operation::Operation;
+    use crate::schema::TrackSection;
 
     #[test]
     fn missing_buffer_stop() {

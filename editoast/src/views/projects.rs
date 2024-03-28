@@ -1,23 +1,36 @@
-use crate::decl_paginated_response;
-use crate::error::Result;
-use crate::models::List;
-use crate::modelsv2::{
-    projects::Tags, Changeset, Create, Document, Model, Ordering, Project, Retrieve,
-};
-use crate::views::pagination::{PaginatedResponse, PaginationQueryParam};
-use crate::DbPool;
-
-use actix_web::web::{Data, Json, Path, Query};
-use actix_web::{delete, get, patch, post, HttpResponse};
+use actix_web::delete;
+use actix_web::get;
+use actix_web::patch;
+use actix_web::post;
+use actix_web::web::Data;
+use actix_web::web::Json;
+use actix_web::web::Path;
+use actix_web::web::Query;
+use actix_web::HttpResponse;
 use chrono::Utc;
 use derivative::Derivative;
 use editoast_derive::EditoastError;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
+use serde::Serialize;
 use thiserror::Error;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
 use super::study;
+use crate::decl_paginated_response;
+use crate::error::Result;
+use crate::models::List;
+use crate::modelsv2::projects::Tags;
+use crate::modelsv2::Changeset;
+use crate::modelsv2::Create;
+use crate::modelsv2::Document;
+use crate::modelsv2::Model;
+use crate::modelsv2::Ordering;
+use crate::modelsv2::Project;
+use crate::modelsv2::Retrieve;
+use crate::views::pagination::PaginatedResponse;
+use crate::views::pagination::PaginationQueryParam;
+use crate::DbPool;
 
 crate::routes! {
     "/projects" => {
@@ -310,16 +323,21 @@ async fn patch(
 
 #[cfg(test)]
 pub mod test {
-    use super::*;
-    use crate::fixtures::tests::{db_pool, project, TestFixture};
-    use crate::modelsv2::DeleteStatic;
-    use crate::views::tests::create_test_service;
     use actix_http::Request;
     use actix_web::http::StatusCode;
     use actix_web::test as actix_test;
-    use actix_web::test::{call_service, read_body_json, TestRequest};
+    use actix_web::test::call_service;
+    use actix_web::test::read_body_json;
+    use actix_web::test::TestRequest;
     use rstest::rstest;
     use serde_json::json;
+
+    use super::*;
+    use crate::fixtures::tests::db_pool;
+    use crate::fixtures::tests::project;
+    use crate::fixtures::tests::TestFixture;
+    use crate::modelsv2::DeleteStatic;
+    use crate::views::tests::create_test_service;
 
     fn delete_project_request(project_id: i64) -> Request {
         TestRequest::delete()

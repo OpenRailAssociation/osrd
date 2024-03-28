@@ -2,13 +2,14 @@
 
 use std::rc::Rc;
 
-use super::{
-    context::{ProcessingError, QueryContext, TypedAst},
-    dsl,
-    searchast::SearchAst,
-    sqlquery::SqlQuery,
-    typing::{AstType, TypeSpec},
-};
+use super::context::ProcessingError;
+use super::context::QueryContext;
+use super::context::TypedAst;
+use super::dsl;
+use super::searchast::SearchAst;
+use super::sqlquery::SqlQuery;
+use super::typing::AstType;
+use super::typing::TypeSpec;
 use crate::error::Result;
 
 impl QueryContext {
@@ -213,8 +214,10 @@ pub fn create_processing_context() -> QueryContext {
 mod tests {
     use std::rc::Rc;
 
+    use serde_json::json;
+    use serde_json::Value;
+
     use super::*;
-    use serde_json::{json, Value};
 
     fn test_env() -> QueryContext {
         let mut env = create_processing_context();

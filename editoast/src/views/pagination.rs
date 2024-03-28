@@ -1,19 +1,20 @@
-use crate::error::Result;
 use diesel::pg::Pg;
 use diesel::query_builder::*;
 use diesel::sql_types::BigInt;
 use diesel::sql_types::Untyped;
-use diesel::{QueryResult, QueryableByName};
+use diesel::QueryResult;
+use diesel::QueryableByName;
 use diesel_async::methods::LoadQuery;
 use diesel_async::AsyncPgConnection as PgConnection;
+use editoast_derive::EditoastError;
 use itertools::Itertools;
 use serde::Deserialize;
 use serde::Serialize;
 use thiserror::Error;
 use tracing::warn;
-
-use editoast_derive::EditoastError;
 use utoipa::IntoParams;
+
+use crate::error::Result;
 
 const DEFAULT_PAGE_SIZE: i64 = 25;
 

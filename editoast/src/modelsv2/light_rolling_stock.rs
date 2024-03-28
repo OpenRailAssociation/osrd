@@ -1,23 +1,31 @@
+use std::collections::HashMap;
+
+use actix_web::web::Data;
+use diesel::sql_query;
+use diesel::ExpressionMethods;
+use diesel::QueryDsl;
+use diesel::SelectableHelper;
+use diesel_async::RunQueryDsl;
+use editoast_derive::ModelV2;
+use serde::Serialize;
+use utoipa::ToSchema;
+
+use super::Row;
 use crate::error::Result;
 use crate::modelsv2::rolling_stock_livery::RollingStockLiveryMetadataModel;
 use crate::modelsv2::rolling_stock_model::RollingStockSupportedSignalingSystems;
 use crate::modelsv2::Model;
-use crate::schema::rolling_stock::light_rolling_stock::{
-    LightEffortCurves, LightRollingStock, LightRollingStockWithLiveriesModel,
-};
-use crate::schema::rolling_stock::{EnergySource, Gamma, RollingResistance, RollingStockMetadata};
+use crate::schema::rolling_stock::light_rolling_stock::LightEffortCurves;
+use crate::schema::rolling_stock::light_rolling_stock::LightRollingStock;
+use crate::schema::rolling_stock::light_rolling_stock::LightRollingStockWithLiveriesModel;
+use crate::schema::rolling_stock::EnergySource;
+use crate::schema::rolling_stock::Gamma;
+use crate::schema::rolling_stock::RollingResistance;
+use crate::schema::rolling_stock::RollingStockMetadata;
 use crate::schema::track_section::LoadingGaugeType;
-use crate::views::pagination::{Paginate, PaginatedResponse};
+use crate::views::pagination::Paginate;
+use crate::views::pagination::PaginatedResponse;
 use crate::DbPool;
-use actix_web::web::Data;
-use diesel::{sql_query, ExpressionMethods, QueryDsl, SelectableHelper};
-use diesel_async::RunQueryDsl;
-use editoast_derive::ModelV2;
-use serde::Serialize;
-use std::collections::HashMap;
-use utoipa::ToSchema;
-
-use super::Row;
 
 #[derive(Debug, Clone, ModelV2, Serialize, ToSchema)]
 #[model(table = crate::tables::rolling_stock)]
@@ -136,13 +144,14 @@ impl From<LightRollingStockModel> for LightRollingStock {
 
 #[cfg(test)]
 pub mod tests {
-    use crate::fixtures::tests::{db_pool, named_fast_rolling_stock};
-    use crate::modelsv2::Retrieve;
-    use crate::DbPool;
     use actix_web::web::Data;
     use rstest::*;
 
     use super::LightRollingStockModel;
+    use crate::fixtures::tests::db_pool;
+    use crate::fixtures::tests::named_fast_rolling_stock;
+    use crate::modelsv2::Retrieve;
+    use crate::DbPool;
 
     #[rstest]
     async fn get_light_rolling_stock(db_pool: Data<DbPool>) {

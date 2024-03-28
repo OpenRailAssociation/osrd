@@ -204,29 +204,37 @@ pub mod searchast;
 pub mod sqlquery;
 pub mod typing;
 
-pub use self::search_object::*;
+use actix_web::post;
+use actix_web::web::Data;
+use actix_web::web::Json;
+use actix_web::web::Query;
+use actix_web::HttpResponse;
+use actix_web::Responder;
+use diesel::pg::Pg;
+use diesel::query_builder::BoxedSqlQuery;
+use diesel::sql_query;
+use diesel::sql_types::Jsonb;
+use diesel::sql_types::Text;
+use diesel::QueryableByName;
+use diesel_async::RunQueryDsl;
+use editoast_derive::EditoastError;
 pub use objects::SearchConfigFinder;
+use serde::Deserialize;
+use serde::Serialize;
+use serde_json::value::Value as JsonValue;
+use thiserror::Error;
 use utoipa::ToSchema;
 
+use self::context::QueryContext;
+use self::context::TypedAst;
+use self::process::create_processing_context;
+pub use self::search_object::*;
+use self::searchast::SearchAst;
+use self::typing::AstType;
+use self::typing::TypeSpec;
 use crate::error::Result;
 use crate::views::pagination::PaginationQueryParam;
 use crate::DbPool;
-use actix_web::web::{Data, Json, Query};
-use actix_web::{post, HttpResponse, Responder};
-use diesel::pg::Pg;
-use diesel::query_builder::BoxedSqlQuery;
-use diesel::sql_types::{Jsonb, Text};
-use diesel::{sql_query, QueryableByName};
-use diesel_async::RunQueryDsl;
-use editoast_derive::EditoastError;
-use serde::{Deserialize, Serialize};
-use serde_json::value::Value as JsonValue;
-use thiserror::Error;
-
-use self::context::{QueryContext, TypedAst};
-use self::process::create_processing_context;
-use self::searchast::SearchAst;
-use self::typing::{AstType, TypeSpec};
 
 crate::routes! {
     search

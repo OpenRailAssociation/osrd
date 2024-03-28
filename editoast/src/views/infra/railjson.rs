@@ -1,24 +1,37 @@
-use crate::error::Result;
-use crate::infra_cache::InfraCache;
-use crate::modelsv2::{get_table, prelude::*, Infra};
-use crate::schema::{ObjectType, RailJson, RAILJSON_VERSION};
-use crate::views::infra::InfraApiError;
-use crate::DbPool;
-
 use actix_web::dev::HttpServiceFactory;
+use actix_web::get;
 use actix_web::http::header::ContentType;
-use actix_web::web::{Data, Json, Path, Query};
-use actix_web::{get, post, services, HttpResponse, Responder};
+use actix_web::post;
+use actix_web::services;
+use actix_web::web::Data;
+use actix_web::web::Json;
+use actix_web::web::Path;
+use actix_web::web::Query;
+use actix_web::HttpResponse;
+use actix_web::Responder;
 use chashmap::CHashMap;
 use diesel::sql_query;
-use diesel::sql_types::{BigInt, Text};
+use diesel::sql_types::BigInt;
+use diesel::sql_types::Text;
 use diesel_async::RunQueryDsl;
 use editoast_derive::EditoastError;
 use enum_map::EnumMap;
 use futures::future::try_join_all;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
+use serde::Serialize;
 use strum::IntoEnumIterator;
 use thiserror::Error;
+
+use crate::error::Result;
+use crate::infra_cache::InfraCache;
+use crate::modelsv2::get_table;
+use crate::modelsv2::prelude::*;
+use crate::modelsv2::Infra;
+use crate::schema::ObjectType;
+use crate::schema::RailJson;
+use crate::schema::RAILJSON_VERSION;
+use crate::views::infra::InfraApiError;
+use crate::DbPool;
 
 /// Return `/infra/<infra_id>/railjson` routes
 pub fn routes() -> impl HttpServiceFactory {
@@ -163,16 +176,19 @@ async fn post_railjson(
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use actix_http::StatusCode;
     use actix_web::test as actix_test;
-    use actix_web::test::{call_service, read_body_json};
+    use actix_web::test::call_service;
+    use actix_web::test::read_body_json;
+    use rstest::*;
 
-    use crate::fixtures::tests::{db_pool, empty_infra, TestFixture};
+    use super::*;
+    use crate::fixtures::tests::db_pool;
+    use crate::fixtures::tests::empty_infra;
+    use crate::fixtures::tests::TestFixture;
     use crate::schema::SwitchType;
     use crate::views::infra::tests::create_object_request;
     use crate::views::tests::create_test_service;
-    use rstest::*;
 
     #[rstest]
     #[serial_test::serial]

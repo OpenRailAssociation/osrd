@@ -1,9 +1,11 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
+use std::collections::HashSet;
 
 use super::NoContext;
 use crate::generated_data::error::ObjectErrorGenerator;
 use crate::infra_cache::Graph;
-use crate::infra_cache::{InfraCache, ObjectCache};
+use crate::infra_cache::InfraCache;
+use crate::infra_cache::ObjectCache;
 use crate::schema::InfraError;
 
 pub const OBJECT_GENERATORS: [ObjectErrorGenerator<NoContext>; 1] =
@@ -60,7 +62,8 @@ mod tests {
     use super::check_switch_types;
     use super::InfraError;
     use crate::infra_cache;
-    use crate::infra_cache::tests::{create_switch_connection, create_switch_type_cache};
+    use crate::infra_cache::tests::create_switch_connection;
+    use crate::infra_cache::tests::create_switch_type_cache;
     use crate::infra_cache::Graph;
 
     #[test]

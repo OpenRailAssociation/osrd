@@ -5,23 +5,37 @@ mod text_array;
 mod timetable;
 pub mod train_schedule;
 
-use crate::modelsv2::projects;
-use crate::DbPool;
-use crate::{error::Result, views::pagination::PaginatedResponse};
 use actix_web::web::Data;
 use async_trait::async_trait;
 use diesel_async::AsyncPgConnection as PgConnection;
+pub use scenario::Scenario;
+pub use scenario::ScenarioWithCountTrains;
+pub use scenario::ScenarioWithDetails;
+pub use text_array::TextArray;
+pub use timetable::check_train_validity;
+pub use timetable::Timetable;
+pub use timetable::TimetableWithSchedulesDetails;
+pub use train_schedule::Allowance;
+pub use train_schedule::FullResultStops;
+pub use train_schedule::ResultPosition;
+pub use train_schedule::ResultSpeed;
+pub use train_schedule::ResultStops;
+pub use train_schedule::ResultTrain;
+pub use train_schedule::RoutingRequirement;
+pub use train_schedule::ScheduledPoint;
+pub use train_schedule::SignalSighting;
+pub use train_schedule::SimulationOutput;
+pub use train_schedule::SimulationOutputChangeset;
+pub use train_schedule::SpacingRequirement;
+pub use train_schedule::TrainSchedule;
+pub use train_schedule::TrainScheduleChangeset;
+pub use train_schedule::ZoneUpdate;
 
 pub use self::pathfinding::*;
-pub use scenario::{Scenario, ScenarioWithCountTrains, ScenarioWithDetails};
-pub use text_array::TextArray;
-pub use timetable::{check_train_validity, Timetable, TimetableWithSchedulesDetails};
-pub use train_schedule::{
-    Allowance, FullResultStops, ResultPosition, ResultSpeed, ResultStops, ResultTrain,
-    RoutingRequirement, ScheduledPoint, SignalSighting, SimulationOutput,
-    SimulationOutputChangeset, SpacingRequirement, TrainSchedule, TrainScheduleChangeset,
-    ZoneUpdate,
-};
+use crate::error::Result;
+use crate::modelsv2::projects;
+use crate::views::pagination::PaginatedResponse;
+use crate::DbPool;
 
 crate::schemas! {
     projects::schemas(),

@@ -1,29 +1,48 @@
-use crate::modelsv2::{OperationalPointModel, RetrieveBatch};
-use crate::schema::OperationalPointPart;
-use crate::views::timetable::TimetableError;
-use crate::{core::CoreClient, views::timetable::Path, DbPool};
-use actix_web::{post, web::Data};
-use chrono::{DateTime, Utc};
-use diesel_async::AsyncPgConnection;
-use serde::{Deserialize, Serialize};
 use std::cmp::Ordering;
 use std::collections::HashMap;
 
-use crate::core::pathfinding::{PathfindingRequest, PathfindingWaypoints, Waypoint};
-use crate::core::simulation::{CoreTrainSchedule, SimulationRequest, TrainStop};
-use crate::core::AsCoreRequest;
-use crate::error::{InternalError, Result};
-use crate::models::{Pathfinding, ScheduledPoint, Timetable, TrainSchedule};
-use crate::modelsv2::{prelude::*, Infra, RollingStockModel};
-use crate::schema::rolling_stock::{RollingStock, RollingStockComfortType};
-use crate::views::infra::{call_core_infra_state, InfraApiError, InfraState};
-use crate::views::pathfinding::save_core_pathfinding;
-use crate::views::train_schedule::process_simulation_response;
+use actix_web::post;
+use actix_web::web::Data;
 use actix_web::web::Json;
+use chrono::DateTime;
 use chrono::Timelike;
+use chrono::Utc;
+use diesel_async::AsyncPgConnection;
 use futures::future::try_join_all;
-
+use serde::Deserialize;
+use serde::Serialize;
 use utoipa::ToSchema;
+
+use crate::core::pathfinding::PathfindingRequest;
+use crate::core::pathfinding::PathfindingWaypoints;
+use crate::core::pathfinding::Waypoint;
+use crate::core::simulation::CoreTrainSchedule;
+use crate::core::simulation::SimulationRequest;
+use crate::core::simulation::TrainStop;
+use crate::core::AsCoreRequest;
+use crate::core::CoreClient;
+use crate::error::InternalError;
+use crate::error::Result;
+use crate::models::Pathfinding;
+use crate::models::ScheduledPoint;
+use crate::models::Timetable;
+use crate::models::TrainSchedule;
+use crate::modelsv2::prelude::*;
+use crate::modelsv2::Infra;
+use crate::modelsv2::OperationalPointModel;
+use crate::modelsv2::RetrieveBatch;
+use crate::modelsv2::RollingStockModel;
+use crate::schema::rolling_stock::RollingStock;
+use crate::schema::rolling_stock::RollingStockComfortType;
+use crate::schema::OperationalPointPart;
+use crate::views::infra::call_core_infra_state;
+use crate::views::infra::InfraApiError;
+use crate::views::infra::InfraState;
+use crate::views::pathfinding::save_core_pathfinding;
+use crate::views::timetable::Path;
+use crate::views::timetable::TimetableError;
+use crate::views::train_schedule::process_simulation_response;
+use crate::DbPool;
 
 crate::routes! {
     post_timetable,
@@ -560,9 +579,8 @@ fn build_simulation_request(
 
 #[cfg(test)]
 mod tests {
-    use crate::schema::utils::Identifier;
-
     use super::*;
+    use crate::schema::utils::Identifier;
 
     #[test]
     fn test_waypoints_from_steps() {

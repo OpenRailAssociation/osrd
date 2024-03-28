@@ -2,7 +2,8 @@ use std::collections::HashMap;
 
 use crate::infra_cache::InfraCache;
 use crate::schema::utils::Identifier;
-use crate::schema::{SwitchCache, TrackEndpoint};
+use crate::schema::SwitchCache;
+use crate::schema::TrackEndpoint;
 
 #[derive(Default, Clone, Debug)]
 pub struct Graph<'a> {
@@ -87,16 +88,12 @@ impl<'a> Graph<'a> {
 mod tests {
     use std::collections::HashMap;
 
-    use crate::schema::Endpoint;
-    use crate::{
-        infra_cache::{
-            tests::{create_small_infra_cache, create_track_endpoint},
-            InfraCache,
-        },
-        schema::utils::Identifier,
-    };
-
     use super::Graph;
+    use crate::infra_cache::tests::create_small_infra_cache;
+    use crate::infra_cache::tests::create_track_endpoint;
+    use crate::infra_cache::InfraCache;
+    use crate::schema::utils::Identifier;
+    use crate::schema::Endpoint;
 
     #[test]
     fn create_empty_graph() {

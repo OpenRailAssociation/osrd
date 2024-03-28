@@ -5,16 +5,21 @@
 //! - If a user requests only the slopes, the core will only compute the slopes and editoast will cache the result.
 //! - Then if the user requests the gradients and slopes, editoast will retrieve the slopes from the cache and ask the core to compute the gradients.
 
+use std::collections::hash_map::DefaultHasher;
+use std::hash::Hash;
+use std::hash::Hasher;
+
 use actix_web::post;
-use actix_web::web::{Data, Json, Path};
+use actix_web::web::Data;
+use actix_web::web::Json;
+use actix_web::web::Path;
 use derivative::Derivative;
 use enumset::EnumSet;
 use enumset::EnumSetType;
 use itertools::Itertools;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
+use serde::Serialize;
 use serde_qs::actix::QsQuery;
-use std::collections::hash_map::DefaultHasher;
-use std::hash::{Hash, Hasher};
 use utoipa::ToSchema;
 
 use super::CACHE_PATH_EXPIRATION;
@@ -23,9 +28,12 @@ use crate::error::Result;
 use crate::schema::utils::geometry::GeoJsonLineString;
 use crate::schema::OperationalPointExtensions;
 use crate::schema::OperationalPointPart;
+use crate::views::v2::path::retrieve_infra_version;
 use crate::views::v2::path::Identifier;
-use crate::views::v2::path::{retrieve_infra_version, TrackRange};
-use crate::{DbPool, RedisClient, RedisConnection};
+use crate::views::v2::path::TrackRange;
+use crate::DbPool;
+use crate::RedisClient;
+use crate::RedisConnection;
 
 crate::routes! {
     "/v2/infra/{infra_id}/path_properties" => {post},
@@ -356,13 +364,16 @@ fn path_elec_property_input_hash(
 
 #[cfg(test)]
 mod tests {
-    use super::PathProperties;
-    use crate::fixtures::tests::{small_infra, TestFixture};
-    use crate::modelsv2::infra::Infra;
-    use crate::views::tests::create_test_service;
-    use actix_web::test::{call_and_read_body_json, TestRequest};
+    use actix_web::test::call_and_read_body_json;
+    use actix_web::test::TestRequest;
     use rstest::rstest;
     use serde_json::json;
+
+    use super::PathProperties;
+    use crate::fixtures::tests::small_infra;
+    use crate::fixtures::tests::TestFixture;
+    use crate::modelsv2::infra::Infra;
+    use crate::views::tests::create_test_service;
 
     #[rstest]
     async fn path_properties_small_infra(#[future] small_infra: TestFixture<Infra>) {
@@ -371,7 +382,7 @@ mod tests {
         let url = format!("/v2/infra/{}/path_properties?props[]=slopes&props[]=gradients&props[]=electrifications&props[]=geometry&props[]=operational_points", infra.id());
 
         // Should succeed
-        let request = TestRequest::post().uri(&url).set_json(json!( 
+        let request = TestRequest::post().uri(&url).set_json(json!(
             {"track_ranges": [{ "track_section": "TD0", "begin": 0, "end": 20000, "direction": "START_TO_STOP" }]})
         ).to_request();
         let response: PathProperties = call_and_read_body_json(&service, request).await;

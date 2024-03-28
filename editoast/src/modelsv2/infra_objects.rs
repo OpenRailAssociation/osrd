@@ -1,10 +1,14 @@
+use std::ops::Deref;
+use std::ops::DerefMut;
+
+use editoast_derive::ModelV2;
+use serde::Deserialize;
+use serde::Serialize;
+
 use crate::modelsv2::prelude::*;
 use crate::schema;
 use crate::schema::ObjectType;
 use crate::tables::*;
-use editoast_derive::ModelV2;
-use serde::{Deserialize, Serialize};
-use std::ops::{Deref, DerefMut};
 
 pub trait ModelBackedSchema: Sized {
     type Model: SchemaModel + Into<Self>;
@@ -243,7 +247,8 @@ impl OperationalPointModel {
         uic: &[i64],
     ) -> crate::error::Result<Vec<Self>> {
         use diesel::sql_query;
-        use diesel::sql_types::{Array, BigInt};
+        use diesel::sql_types::Array;
+        use diesel::sql_types::BigInt;
         use diesel_async::RunQueryDsl;
         let query = {
             "SELECT * FROM infra_object_operational_point
@@ -265,7 +270,9 @@ impl OperationalPointModel {
         trigrams: &[String],
     ) -> crate::error::Result<Vec<Self>> {
         use diesel::sql_query;
-        use diesel::sql_types::{Array, BigInt, Text};
+        use diesel::sql_types::Array;
+        use diesel::sql_types::BigInt;
+        use diesel::sql_types::Text;
         use diesel_async::RunQueryDsl;
         let query = {
             "SELECT * FROM infra_object_operational_point
@@ -285,8 +292,9 @@ impl OperationalPointModel {
 
 #[cfg(test)]
 mod test_persist {
-    use super::*;
     use diesel_async::scoped_futures::ScopedFutureExt;
+
+    use super::*;
 
     macro_rules! test_persist {
         ($obj:ident) => {

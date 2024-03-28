@@ -2,12 +2,13 @@ use std::sync::Arc;
 
 use editoast_derive::EditoastError;
 
-use crate::{
-    error::{InternalError, Result},
-    modelsv2::{infra_objects::*, prelude::*},
-    schema::{RailJson, RAILJSON_VERSION},
-    DbPool,
-};
+use crate::error::InternalError;
+use crate::error::Result;
+use crate::modelsv2::infra_objects::*;
+use crate::modelsv2::prelude::*;
+use crate::schema::RailJson;
+use crate::schema::RAILJSON_VERSION;
+use crate::DbPool;
 
 #[derive(Debug, thiserror::Error, EditoastError)]
 #[editoast_error(base_id = "railjson")]

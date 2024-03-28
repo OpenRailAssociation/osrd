@@ -1,7 +1,9 @@
-use super::{AsCoreRequest, Json};
-use crate::views::Version;
 use derivative::Derivative;
 use serde::Serialize;
+
+use super::AsCoreRequest;
+use super::Json;
+use crate::views::Version;
 
 /// A Core infra load request
 #[derive(Debug, Serialize, Derivative)]

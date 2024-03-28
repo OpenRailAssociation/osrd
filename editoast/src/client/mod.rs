@@ -2,16 +2,23 @@ mod postgres_config;
 mod redis_config;
 mod telemetry_config;
 
-use crate::error::Result;
-use clap::{Args, Parser, Subcommand, ValueEnum};
+use std::env;
+use std::path::PathBuf;
+
+use clap::Args;
+use clap::Parser;
+use clap::Subcommand;
+use clap::ValueEnum;
 use derivative::Derivative;
 use editoast_derive::EditoastError;
 pub use postgres_config::PostgresConfig;
 pub use redis_config::RedisConfig;
-use std::{env, path::PathBuf};
-pub use telemetry_config::{TelemetryConfig, TelemetryKind};
+pub use telemetry_config::TelemetryConfig;
+pub use telemetry_config::TelemetryKind;
 use thiserror::Error;
 use url::Url;
+
+use crate::error::Result;
 
 #[derive(Parser, Debug)]
 #[command(author, version)]

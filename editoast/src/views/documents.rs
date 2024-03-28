@@ -1,14 +1,21 @@
-use crate::error::Result;
-use crate::modelsv2::*;
-use crate::DbPool;
 use actix_http::StatusCode;
+use actix_web::delete;
+use actix_web::get;
 use actix_web::http::header::ContentType;
-use actix_web::web::{Bytes, Data, Header, Path};
-use actix_web::{delete, get, post, HttpResponse};
+use actix_web::post;
+use actix_web::web::Bytes;
+use actix_web::web::Data;
+use actix_web::web::Header;
+use actix_web::web::Path;
+use actix_web::HttpResponse;
 use editoast_derive::EditoastError;
 use serde_derive::Serialize;
 use thiserror::Error;
 use utoipa::ToSchema;
+
+use crate::error::Result;
+use crate::modelsv2::*;
+use crate::DbPool;
 
 crate::routes! {
     "/documents" => {
@@ -117,12 +124,16 @@ async fn delete(db_pool: Data<DbPool>, document_key: Path<i64>) -> Result<HttpRe
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use actix_web::test::{call_and_read_body_json, call_service, TestRequest};
+    use actix_web::test::call_and_read_body_json;
+    use actix_web::test::call_service;
+    use actix_web::test::TestRequest;
     use rstest::rstest;
     use serde::Deserialize;
 
-    use crate::fixtures::tests::{db_pool, document_example, TestFixture};
+    use super::*;
+    use crate::fixtures::tests::db_pool;
+    use crate::fixtures::tests::document_example;
+    use crate::fixtures::tests::TestFixture;
     use crate::views::tests::create_test_service;
 
     #[rstest]

@@ -1,22 +1,37 @@
-use crate::error::{InternalError, Result};
-use crate::generated_data::generate_infra_errors;
-use crate::infra_cache::{InfraCache, ObjectCache};
-use crate::modelsv2::prelude::*;
-use crate::modelsv2::Infra;
-use crate::schema::operation::{
-    CacheOperation, DeleteOperation, Operation, RailjsonObject, UpdateOperation,
-};
-use crate::schema::{InfraError, OSRDIdentified as _, OSRDObject, ObjectRef, ObjectType};
-use crate::views::infra::{InfraApiError, InfraIdParam};
-use crate::DbPool;
+use std::collections::hash_map::Entry;
+use std::collections::hash_map::HashMap;
+
 use actix_web::get;
-use actix_web::web::{Data, Json as WebJson, Path};
+use actix_web::web::Data;
+use actix_web::web::Json as WebJson;
+use actix_web::web::Path;
 use chashmap::CHashMap;
 use editoast_derive::EditoastError;
 use itertools::Itertools as _;
-use std::collections::hash_map::{Entry, HashMap};
 use thiserror::Error;
-use tracing::{debug, error};
+use tracing::debug;
+use tracing::error;
+
+use crate::error::InternalError;
+use crate::error::Result;
+use crate::generated_data::generate_infra_errors;
+use crate::infra_cache::InfraCache;
+use crate::infra_cache::ObjectCache;
+use crate::modelsv2::prelude::*;
+use crate::modelsv2::Infra;
+use crate::schema::operation::CacheOperation;
+use crate::schema::operation::DeleteOperation;
+use crate::schema::operation::Operation;
+use crate::schema::operation::RailjsonObject;
+use crate::schema::operation::UpdateOperation;
+use crate::schema::InfraError;
+use crate::schema::OSRDIdentified as _;
+use crate::schema::OSRDObject;
+use crate::schema::ObjectRef;
+use crate::schema::ObjectType;
+use crate::views::infra::InfraApiError;
+use crate::views::infra::InfraIdParam;
+use crate::DbPool;
 
 mod buffer_stop;
 mod detector;
@@ -301,23 +316,47 @@ pub enum AutoFixesEditoastError {
 
 #[cfg(test)]
 mod tests {
+    use std::collections::HashMap;
+
+    use actix_http::Request;
+    use actix_http::StatusCode;
+    use actix_web::test::call_service;
+    use actix_web::test::read_body_json;
+    use actix_web::test::TestRequest;
+    use serde_json::json;
+
     use super::*;
-    use crate::fixtures::tests::{db_pool, empty_infra, small_infra};
+    use crate::fixtures::tests::db_pool;
+    use crate::fixtures::tests::empty_infra;
+    use crate::fixtures::tests::small_infra;
     use crate::infra_cache::InfraCacheEditoastError;
-    use crate::schema::operation::{DeleteOperation, Operation, RailjsonObject};
+    use crate::schema::operation::DeleteOperation;
+    use crate::schema::operation::Operation;
+    use crate::schema::operation::RailjsonObject;
     use crate::schema::utils::Identifier;
-    use crate::schema::{
-        ApplicableDirectionsTrackRange, BufferStop, BufferStopCache, BufferStopExtension, Detector,
-        DetectorCache, Electrification, Endpoint, ObjectRef, ObjectType, OperationalPoint,
-        OperationalPointPart, Route, Signal, SignalCache, Slope, SpeedSection, Switch,
-        TrackEndpoint, TrackSection, Waypoint,
-    };
+    use crate::schema::ApplicableDirectionsTrackRange;
+    use crate::schema::BufferStop;
+    use crate::schema::BufferStopCache;
+    use crate::schema::BufferStopExtension;
+    use crate::schema::Detector;
+    use crate::schema::DetectorCache;
+    use crate::schema::Electrification;
+    use crate::schema::Endpoint;
+    use crate::schema::ObjectRef;
+    use crate::schema::ObjectType;
+    use crate::schema::OperationalPoint;
+    use crate::schema::OperationalPointPart;
+    use crate::schema::Route;
+    use crate::schema::Signal;
+    use crate::schema::SignalCache;
+    use crate::schema::Slope;
+    use crate::schema::SpeedSection;
+    use crate::schema::Switch;
+    use crate::schema::TrackEndpoint;
+    use crate::schema::TrackSection;
+    use crate::schema::Waypoint;
     use crate::views::pagination::PaginatedResponse;
     use crate::views::tests::create_test_service;
-    use actix_http::{Request, StatusCode};
-    use actix_web::test::{call_service, read_body_json, TestRequest};
-    use serde_json::json;
-    use std::collections::HashMap;
 
     async fn get_infra_cache(infra: &Infra) -> InfraCache {
         InfraCache::load(&mut db_pool().get().await.unwrap(), infra)

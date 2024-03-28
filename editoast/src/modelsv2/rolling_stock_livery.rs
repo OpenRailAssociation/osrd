@@ -1,16 +1,16 @@
 use derivative::Derivative;
-use diesel::sql_types::{BigInt, Text};
+use diesel::sql_types::BigInt;
+use diesel::sql_types::Text;
 use diesel_async::AsyncPgConnection;
 use editoast_derive::ModelV2;
-use serde::{Deserialize, Serialize};
-
-use crate::error::Result;
-use crate::schema::rolling_stock::rolling_stock_livery::{
-    RollingStockLivery, RollingStockLiveryMetadata,
-};
-use crate::tables::rolling_stock_livery;
+use serde::Deserialize;
+use serde::Serialize;
 
 use super::Document;
+use crate::error::Result;
+use crate::schema::rolling_stock::rolling_stock_livery::RollingStockLivery;
+use crate::schema::rolling_stock::rolling_stock_livery::RollingStockLiveryMetadata;
+use crate::tables::rolling_stock_livery;
 
 /// Rolling Stock Livery
 ///
@@ -82,11 +82,13 @@ impl From<RollingStockLiveryMetadataModel> for RollingStockLiveryMetadata {
 
 #[cfg(test)]
 pub mod tests {
-    use super::RollingStockLiveryModel;
-    use crate::fixtures::tests::{db_pool, rolling_stock_livery};
-    use crate::modelsv2::Document;
     use actix_web::web::Data;
     use rstest::*;
+
+    use super::RollingStockLiveryModel;
+    use crate::fixtures::tests::db_pool;
+    use crate::fixtures::tests::rolling_stock_livery;
+    use crate::modelsv2::Document;
 
     #[rstest]
     async fn create_get_delete_rolling_stock_livery(db_pool: Data<crate::DbPool>) {

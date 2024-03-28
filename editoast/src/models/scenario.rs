@@ -1,25 +1,34 @@
+use actix_web::web::Data;
+use async_trait::async_trait;
+use chrono::NaiveDateTime;
+use chrono::Utc;
+use derivative::Derivative;
+use diesel::delete;
+use diesel::result::Error as DieselError;
+use diesel::sql_query;
+use diesel::sql_types::Array;
+use diesel::sql_types::BigInt;
+use diesel::sql_types::Nullable;
+use diesel::sql_types::Text;
+use diesel::ExpressionMethods;
+use diesel::QueryDsl;
+use diesel_async::AsyncPgConnection as PgConnection;
+use diesel_async::RunQueryDsl;
+use editoast_derive::Model;
+use serde::Deserialize;
+use serde::Serialize;
+use utoipa::ToSchema;
+
+use super::List;
 use crate::error::Result;
 use crate::models::train_schedule::LightTrainSchedule;
-use crate::models::{Delete, TextArray};
+use crate::models::Delete;
+use crate::models::TextArray;
+use crate::modelsv2::projects::Ordering;
 use crate::tables::scenario;
 use crate::views::pagination::Paginate;
 use crate::views::pagination::PaginatedResponse;
 use crate::DbPool;
-use actix_web::web::Data;
-use async_trait::async_trait;
-use chrono::{NaiveDateTime, Utc};
-use derivative::Derivative;
-use diesel::result::Error as DieselError;
-use diesel::sql_query;
-use diesel::sql_types::{Array, BigInt, Nullable, Text};
-use diesel::{delete, ExpressionMethods, QueryDsl};
-use diesel_async::{AsyncPgConnection as PgConnection, RunQueryDsl};
-use editoast_derive::Model;
-use serde::{Deserialize, Serialize};
-use utoipa::ToSchema;
-
-use super::List;
-use crate::modelsv2::projects::Ordering;
 
 #[derive(
     Clone,
@@ -210,14 +219,18 @@ impl List<(i64, Ordering)> for ScenarioWithCountTrains {
 
 #[cfg(test)]
 pub mod test {
+    use rstest::rstest;
+
     use super::*;
-    use crate::fixtures::tests::{db_pool, scenario_fixture_set, ScenarioFixtureSet, TestFixture};
+    use crate::fixtures::tests::db_pool;
+    use crate::fixtures::tests::scenario_fixture_set;
+    use crate::fixtures::tests::ScenarioFixtureSet;
+    use crate::fixtures::tests::TestFixture;
     use crate::models::Delete;
     use crate::models::List;
     use crate::models::Retrieve;
     use crate::models::Timetable;
     use crate::modelsv2::Ordering;
-    use rstest::rstest;
 
     #[rstest]
     async fn create_delete_scenario(db_pool: Data<DbPool>) {

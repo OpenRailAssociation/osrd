@@ -1,17 +1,19 @@
 pub mod light_rolling_stock;
 pub mod rolling_stock_livery;
 
-use derivative::Derivative;
-use serde::{Deserialize, Deserializer, Serialize};
 use std::collections::HashMap;
-use strum_macros::{Display, EnumString};
+
+use derivative::Derivative;
+use serde::Deserialize;
+use serde::Deserializer;
+use serde::Serialize;
+use strum_macros::Display;
+use strum_macros::EnumString;
 use utoipa::ToSchema;
 
 use crate::modelsv2::rolling_stock_model::RollingStockSupportedSignalingSystems;
-use crate::schema::rolling_stock::rolling_stock_livery::{
-    RollingStockLivery, RollingStockLiveryMetadata,
-};
-
+use crate::schema::rolling_stock::rolling_stock_livery::RollingStockLivery;
+use crate::schema::rolling_stock::rolling_stock_livery::RollingStockLiveryMetadata;
 use crate::schema::track_section::LoadingGaugeType;
 
 crate::schemas! {
@@ -303,8 +305,10 @@ pub enum EnergySource {
 
 #[cfg(test)]
 mod tests {
+    use serde_json::from_value;
+    use serde_json::json;
+
     use crate::schema::rolling_stock::EffortCurve;
-    use serde_json::{from_value, json};
 
     #[test]
     fn test_de_effort_curve_valid() {

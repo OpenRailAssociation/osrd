@@ -1,16 +1,25 @@
+use diesel::result::Error as DieselError;
+use diesel::sql_query;
+use diesel::sql_types::BigInt;
+use diesel::sql_types::Json;
+use diesel::sql_types::Jsonb;
+use diesel::sql_types::Text;
+use diesel::QueryableByName;
+use diesel_async::AsyncPgConnection as PgConnection;
+use diesel_async::RunQueryDsl;
+use json_patch::Patch;
+use serde::Deserialize;
+use serde::Serialize;
+use serde_json::from_value;
+use serde_json::json;
+use serde_json::Value;
+
+use super::OperationError;
 use crate::error::Result;
 use crate::modelsv2::get_table;
 use crate::schema::operation::RailjsonObject;
-use crate::schema::{OSRDIdentified, ObjectType};
-use diesel::result::Error as DieselError;
-use diesel::sql_types::{BigInt, Json, Jsonb, Text};
-use diesel::{sql_query, QueryableByName};
-use diesel_async::{AsyncPgConnection as PgConnection, RunQueryDsl};
-use json_patch::Patch;
-use serde::{Deserialize, Serialize};
-use serde_json::{from_value, json, Value};
-
-use super::OperationError;
+use crate::schema::OSRDIdentified;
+use crate::schema::ObjectType;
 
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
@@ -110,20 +119,24 @@ impl DataObject {
 
 #[cfg(test)]
 mod tests {
-    use super::UpdateOperation;
-    use crate::error::EditoastError;
-    use crate::modelsv2::infra::tests::test_infra_transaction;
-    use crate::schema::operation::create::tests::{
-        create_signal, create_speed, create_switch, create_track,
-    };
-    use crate::schema::operation::OperationError;
-    use crate::schema::{OSRDIdentified, ObjectType};
     use actix_web::test as actix_test;
     use diesel::sql_query;
-    use diesel::sql_types::{Double, Text};
+    use diesel::sql_types::Double;
+    use diesel::sql_types::Text;
     use diesel_async::scoped_futures::ScopedFutureExt;
     use diesel_async::RunQueryDsl;
     use serde_json::from_str;
+
+    use super::UpdateOperation;
+    use crate::error::EditoastError;
+    use crate::modelsv2::infra::tests::test_infra_transaction;
+    use crate::schema::operation::create::tests::create_signal;
+    use crate::schema::operation::create::tests::create_speed;
+    use crate::schema::operation::create::tests::create_switch;
+    use crate::schema::operation::create::tests::create_track;
+    use crate::schema::operation::OperationError;
+    use crate::schema::OSRDIdentified;
+    use crate::schema::ObjectType;
 
     #[derive(QueryableByName)]
     struct Value {

@@ -1,11 +1,13 @@
+use actix_files::NamedFile;
+use actix_web::get;
+use actix_web::web::Json;
+use actix_web::web::Path;
+use editoast_derive::EditoastError;
+use thiserror::Error;
+
 use crate::client::get_assets_path;
 use crate::error::Result;
 use crate::schema::sprite_config::SpriteConfig;
-use actix_files::NamedFile;
-use actix_web::get;
-use actix_web::web::{Json, Path};
-use editoast_derive::EditoastError;
-use thiserror::Error;
 
 crate::routes! {
     "/sprites" => {

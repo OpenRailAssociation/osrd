@@ -1,9 +1,14 @@
-use crate::infra_cache::Graph;
-
-use super::{GlobalErrorGenerator, NoContext};
+use super::GlobalErrorGenerator;
+use super::NoContext;
 use crate::generated_data::error::ObjectErrorGenerator;
-use crate::infra_cache::{InfraCache, ObjectCache};
-use crate::schema::{Endpoint, InfraError, ObjectRef, ObjectType, TrackEndpoint};
+use crate::infra_cache::Graph;
+use crate::infra_cache::InfraCache;
+use crate::infra_cache::ObjectCache;
+use crate::schema::Endpoint;
+use crate::schema::InfraError;
+use crate::schema::ObjectRef;
+use crate::schema::ObjectType;
+use crate::schema::TrackEndpoint;
 
 // TODO: Use a macro instead to force order and priority continuity
 // Example: `static_priority_array![[check_invalid_ref], [check_out_of_range]]`
@@ -156,17 +161,20 @@ fn check_missing(infra_cache: &InfraCache, graph: &Graph) -> Vec<InfraError> {
 
 #[cfg(test)]
 pub mod tests {
+    use rstest::rstest;
+
     use super::check_invalid_ref;
     use super::check_out_of_range;
     use super::InfraError;
     use crate::generated_data::error::buffer_stops::check_missing;
     use crate::generated_data::error::buffer_stops::check_odd_location;
+    use crate::infra_cache::tests::create_buffer_stop_cache;
+    use crate::infra_cache::tests::create_small_infra_cache;
     use crate::infra_cache::tests::create_track_section_cache;
-    use crate::infra_cache::tests::{create_buffer_stop_cache, create_small_infra_cache};
     use crate::infra_cache::Graph;
     use crate::schema::Endpoint;
-    use crate::schema::{ObjectRef, ObjectType};
-    use rstest::rstest;
+    use crate::schema::ObjectRef;
+    use crate::schema::ObjectType;
 
     #[test]
     fn invalid_ref() {

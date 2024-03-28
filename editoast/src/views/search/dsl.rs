@@ -1,16 +1,16 @@
 //! Defines the trait [Type] and the functions [QueryContext::def_function_1()]
 //! and [QueryContext::def_function_2()] that allows inserting new functions
 //! into the context more easily
-use std::{marker::PhantomData, rc::Rc};
+use std::marker::PhantomData;
+use std::rc::Rc;
 
+use super::context::ProcessingError;
+use super::context::QueryContext;
+use super::typing::TypeSpec;
+use super::AstType;
+use super::TypedAst;
 use crate::error::Result;
 use crate::views::search::sqlquery::SqlQuery;
-
-use super::{
-    context::{ProcessingError, QueryContext},
-    typing::TypeSpec,
-    AstType, TypedAst,
-};
 
 /// Trait that should be implemented by all DSL specifiers types to provide
 /// the required compile-time information to the [QueryContext::def_function_1()]-like

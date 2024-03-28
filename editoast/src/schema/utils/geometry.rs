@@ -1,6 +1,9 @@
-use geos::geojson::{self, Geometry};
-use postgis_diesel::types::{LineString, Point};
-use serde_derive::{Deserialize, Serialize};
+use geos::geojson::Geometry;
+use geos::geojson::{self};
+use postgis_diesel::types::LineString;
+use postgis_diesel::types::Point;
+use serde_derive::Deserialize;
+use serde_derive::Serialize;
 use utoipa::ToSchema;
 
 use crate::schemas;

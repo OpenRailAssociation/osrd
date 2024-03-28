@@ -1,12 +1,22 @@
-use derivative::Derivative;
-use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-use super::{
-    Direction, DirectionalTrackRange, Endpoint, Identifier, OSRDIdentified, OSRDTyped, ObjectType,
-    TrackEndpoint, Waypoint,
-};
-use crate::infra_cache::{Cache, Graph, InfraCache, ObjectCache};
+use derivative::Derivative;
+use serde::Deserialize;
+use serde::Serialize;
+
+use super::Direction;
+use super::DirectionalTrackRange;
+use super::Endpoint;
+use super::Identifier;
+use super::OSRDIdentified;
+use super::OSRDTyped;
+use super::ObjectType;
+use super::TrackEndpoint;
+use super::Waypoint;
+use crate::infra_cache::Cache;
+use crate::infra_cache::Graph;
+use crate::infra_cache::InfraCache;
+use crate::infra_cache::ObjectCache;
 
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
@@ -159,7 +169,8 @@ impl Route {
 mod test {
 
     use super::Route;
-    use crate::infra_cache::{tests::create_small_infra_cache, Graph};
+    use crate::infra_cache::tests::create_small_infra_cache;
+    use crate::infra_cache::Graph;
 
     #[test]
     fn test_compute_track_ranges_1() {

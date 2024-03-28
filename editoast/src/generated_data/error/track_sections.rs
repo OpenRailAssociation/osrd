@@ -1,7 +1,8 @@
 use super::NoContext;
 use crate::generated_data::error::ObjectErrorGenerator;
 use crate::infra_cache::Graph;
-use crate::infra_cache::{InfraCache, ObjectCache};
+use crate::infra_cache::InfraCache;
+use crate::infra_cache::ObjectCache;
 use crate::schema::InfraError;
 
 pub const OBJECT_GENERATORS: [ObjectErrorGenerator<NoContext>; 2] = [
@@ -51,12 +52,16 @@ pub fn check_curve_out_of_range(track: &ObjectCache, _: &InfraCache, _: &Graph) 
 
 #[cfg(test)]
 mod tests {
-    use super::InfraError;
-    use super::{check_curve_out_of_range, check_slope_out_of_range};
-    use crate::infra_cache::tests::{create_small_infra_cache, create_track_section_cache};
-    use crate::infra_cache::Graph;
-    use crate::schema::{Curve, Slope};
     use rstest::rstest;
+
+    use super::check_curve_out_of_range;
+    use super::check_slope_out_of_range;
+    use super::InfraError;
+    use crate::infra_cache::tests::create_small_infra_cache;
+    use crate::infra_cache::tests::create_track_section_cache;
+    use crate::infra_cache::Graph;
+    use crate::schema::Curve;
+    use crate::schema::Slope;
 
     #[rstest]
     #[case(50., false)]

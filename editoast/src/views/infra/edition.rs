@@ -1,19 +1,26 @@
-use crate::error::Result;
-use crate::views::infra::InfraApiError;
-use crate::RedisClient;
 use actix_web::post;
-use actix_web::web::{Data, Json, Path};
+use actix_web::web::Data;
+use actix_web::web::Json;
+use actix_web::web::Path;
 use chashmap::CHashMap;
 use diesel_async::AsyncPgConnection as PgConnection;
+use editoast_derive::EditoastError;
 use thiserror::Error;
 
-use crate::infra_cache::{InfraCache, ObjectCache};
-use crate::map::{self, MapLayers};
+use crate::error::Result;
+use crate::generated_data;
+use crate::infra_cache::InfraCache;
+use crate::infra_cache::ObjectCache;
+use crate::map::MapLayers;
+use crate::map::{self};
 use crate::modelsv2::prelude::*;
 use crate::modelsv2::Infra;
-use crate::schema::operation::{CacheOperation, Operation, RailjsonObject};
-use crate::{generated_data, DbPool};
-use editoast_derive::EditoastError;
+use crate::schema::operation::CacheOperation;
+use crate::schema::operation::Operation;
+use crate::schema::operation::RailjsonObject;
+use crate::views::infra::InfraApiError;
+use crate::DbPool;
+use crate::RedisClient;
 
 /// CRUD for edit an infrastructure. Takes a batch of operations.
 #[post("")]

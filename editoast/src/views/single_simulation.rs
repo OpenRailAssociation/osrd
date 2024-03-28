@@ -1,23 +1,36 @@
-use crate::core::simulation::{
-    CoreTrainSchedule, SimulationRequest, SimulationResponse, TrainStop,
-};
-use crate::core::{AsCoreRequest, CoreClient};
-use crate::error::{InternalError, Result};
-use crate::models::train_schedule::{
-    Allowance, ElectrificationRange, Mrsp, ResultTrain, RjsPowerRestrictionRange, ScheduledPoint,
-    SimulationPowerRestrictionRange, TrainScheduleOptions,
-};
-use crate::models::{Pathfinding, Retrieve};
-use crate::modelsv2::electrical_profiles::ElectricalProfileSet;
-use crate::modelsv2::{Exists, RollingStockModel};
-use crate::schema::rolling_stock::RollingStockComfortType;
-use crate::{schemas, DbPool};
 use actix_web::post;
-use actix_web::web::{Data, Json};
+use actix_web::web::Data;
+use actix_web::web::Json;
 use editoast_derive::EditoastError;
-use serde_derive::{Deserialize, Serialize};
+use serde_derive::Deserialize;
+use serde_derive::Serialize;
 use thiserror::Error;
 use utoipa::ToSchema;
+
+use crate::core::simulation::CoreTrainSchedule;
+use crate::core::simulation::SimulationRequest;
+use crate::core::simulation::SimulationResponse;
+use crate::core::simulation::TrainStop;
+use crate::core::AsCoreRequest;
+use crate::core::CoreClient;
+use crate::error::InternalError;
+use crate::error::Result;
+use crate::models::train_schedule::Allowance;
+use crate::models::train_schedule::ElectrificationRange;
+use crate::models::train_schedule::Mrsp;
+use crate::models::train_schedule::ResultTrain;
+use crate::models::train_schedule::RjsPowerRestrictionRange;
+use crate::models::train_schedule::ScheduledPoint;
+use crate::models::train_schedule::SimulationPowerRestrictionRange;
+use crate::models::train_schedule::TrainScheduleOptions;
+use crate::models::Pathfinding;
+use crate::models::Retrieve;
+use crate::modelsv2::electrical_profiles::ElectricalProfileSet;
+use crate::modelsv2::Exists;
+use crate::modelsv2::RollingStockModel;
+use crate::schema::rolling_stock::RollingStockComfortType;
+use crate::schemas;
+use crate::DbPool;
 
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "single_simulation")]
@@ -186,19 +199,23 @@ async fn standalone_simulation(
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-
-    use crate::core::mocking::MockingClient;
-    use crate::fixtures::tests::{
-        db_pool, electrical_profile_set, named_fast_rolling_stock, pathfinding,
-    };
-    use crate::views::tests::create_test_service_with_core_client;
-    use crate::{assert_response_error_type_match, assert_status_and_read};
-    use actix_web::test::{call_service, TestRequest};
+    use actix_web::test::call_service;
+    use actix_web::test::TestRequest;
     use pretty_assertions::assert_eq;
-    use reqwest::{Method, StatusCode};
+    use reqwest::Method;
+    use reqwest::StatusCode;
     use rstest::rstest;
     use serde_json::json;
+
+    use super::*;
+    use crate::assert_response_error_type_match;
+    use crate::assert_status_and_read;
+    use crate::core::mocking::MockingClient;
+    use crate::fixtures::tests::db_pool;
+    use crate::fixtures::tests::electrical_profile_set;
+    use crate::fixtures::tests::named_fast_rolling_stock;
+    use crate::fixtures::tests::pathfinding;
+    use crate::views::tests::create_test_service_with_core_client;
 
     fn create_core_client() -> (MockingClient, SimulationResponse) {
         let mut core_client = MockingClient::new();

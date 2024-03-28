@@ -2,18 +2,22 @@ pub mod create;
 mod delete;
 mod update;
 
-use super::{OSRDObject as _, ObjectRef};
-use crate::{error::Result, infra_cache::ObjectCache};
+use std::ops::Deref as _;
+
+pub use create::RailjsonObject;
 use diesel_async::AsyncPgConnection as PgConnection;
 use editoast_derive::EditoastError;
-use serde::{Deserialize, Serialize};
-use std::ops::Deref as _;
+use serde::Deserialize;
+use serde::Serialize;
 use thiserror::Error;
+pub use update::UpdateOperation;
 use utoipa::ToSchema;
 
 pub use self::delete::DeleteOperation;
-pub use create::RailjsonObject;
-pub use update::UpdateOperation;
+use super::OSRDObject as _;
+use super::ObjectRef;
+use crate::error::Result;
+use crate::infra_cache::ObjectCache;
 
 crate::schemas! { Operation, }
 

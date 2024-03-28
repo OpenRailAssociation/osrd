@@ -4,8 +4,10 @@
 //! - part 2: build the graph
 //! - part 3: compute the routes
 
-use crate::schema::{utils::Identifier, *};
 use std::collections::HashMap;
+
+use crate::schema::utils::Identifier;
+use crate::schema::*;
 
 /* Part 1: type definitions */
 // When building the graph, a node can be a trackEndPoint, a detector or a buffer stop

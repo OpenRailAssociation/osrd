@@ -1,20 +1,29 @@
+use std::collections::HashMap;
+
 use actix_web::web::Data;
 use derivative::Derivative;
-use diesel::{ExpressionMethods, QueryDsl, SelectableHelper};
+use diesel::ExpressionMethods;
+use diesel::QueryDsl;
+use diesel::SelectableHelper;
 use diesel_async::RunQueryDsl;
 use editoast_derive::ModelV2;
-use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use serde::Deserialize;
+use serde::Serialize;
 use utoipa::ToSchema;
-use validator::{Validate, ValidationError, ValidationErrors};
+use validator::Validate;
+use validator::ValidationError;
+use validator::ValidationErrors;
 
 use crate::error::Result;
 use crate::modelsv2::prelude::*;
 use crate::modelsv2::rolling_stock_livery::RollingStockLiveryMetadataModel;
-use crate::schema::rolling_stock::{
-    EffortCurves, EnergySource, Gamma, RollingResistance, RollingStock, RollingStockMetadata,
-    RollingStockWithLiveries,
-};
+use crate::schema::rolling_stock::EffortCurves;
+use crate::schema::rolling_stock::EnergySource;
+use crate::schema::rolling_stock::Gamma;
+use crate::schema::rolling_stock::RollingResistance;
+use crate::schema::rolling_stock::RollingStock;
+use crate::schema::rolling_stock::RollingStockMetadata;
+use crate::schema::rolling_stock::RollingStockWithLiveries;
 use crate::schema::track_section::LoadingGaugeType;
 use crate::DbPool;
 

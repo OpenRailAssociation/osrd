@@ -9,23 +9,31 @@ pub mod simulation;
 pub mod stdcm;
 pub mod version;
 
-use std::{collections::HashMap, fmt::Display, marker::PhantomData};
+use std::collections::HashMap;
+use std::fmt::Display;
+use std::marker::PhantomData;
 
-use crate::error::{InternalError, Result};
 use actix_http::StatusCode;
 use async_trait::async_trait;
-use colored::{ColoredString, Colorize};
+use colored::ColoredString;
+use colored::Colorize;
 use editoast_derive::EditoastError;
-pub use http_client::{HttpClient, HttpClientBuilder};
+pub use http_client::HttpClient;
+pub use http_client::HttpClientBuilder;
 use reqwest::Url;
-use serde::{de::DeserializeOwned, Serialize};
+use serde::de::DeserializeOwned;
+use serde::Serialize;
 use serde_derive::Deserialize;
 use serde_json::Value;
 use thiserror::Error;
-use tracing::{debug, error, info};
+use tracing::debug;
+use tracing::error;
+use tracing::info;
 
 #[cfg(test)]
 use crate::core::mocking::MockingError;
+use crate::error::InternalError;
+use crate::error::Result;
 
 crate::schemas! {
     simulation::schemas(),
@@ -376,10 +384,10 @@ mod test {
     use serde_derive::Serialize;
     use serde_json::json;
 
-    use crate::{
-        core::{mocking::MockingClient, AsCoreRequest, Bytes},
-        error::InternalError,
-    };
+    use crate::core::mocking::MockingClient;
+    use crate::core::AsCoreRequest;
+    use crate::core::Bytes;
+    use crate::error::InternalError;
 
     #[rstest::rstest]
     async fn test_expected_empty_response() {

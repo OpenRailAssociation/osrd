@@ -1,16 +1,20 @@
-use crate::error::Result;
-use crate::infra_cache::{InfraCache, ObjectCache};
-use crate::map::Zone;
-use crate::modelsv2::prelude::*;
-use crate::modelsv2::Infra;
-
-use crate::views::infra::InfraApiError;
-use crate::{views::infra::InfraIdParam, DbPool};
 use actix_web::get;
-use actix_web::web::{Data, Json, Path};
+use actix_web::web::Data;
+use actix_web::web::Json;
+use actix_web::web::Path;
 use chashmap::CHashMap;
 use editoast_derive::EditoastError;
 use thiserror::Error;
+
+use crate::error::Result;
+use crate::infra_cache::InfraCache;
+use crate::infra_cache::ObjectCache;
+use crate::map::Zone;
+use crate::modelsv2::prelude::*;
+use crate::modelsv2::Infra;
+use crate::views::infra::InfraApiError;
+use crate::views::infra::InfraIdParam;
+use crate::DbPool;
 
 crate::routes! {
     "/lines/{line_code}/bbox" => {

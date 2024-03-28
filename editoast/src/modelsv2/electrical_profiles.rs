@@ -1,11 +1,14 @@
+use diesel_async::AsyncPgConnection as PgConnection;
+use diesel_async::RunQueryDsl;
+use editoast_derive::ModelV2;
+use serde::Deserialize;
+use serde::Serialize;
+use utoipa::ToSchema;
+
 use crate::diesel::QueryDsl;
 use crate::error::Result;
 use crate::schema::electrical_profiles::ElectricalProfileSetData;
 use crate::tables::electrical_profile_set;
-use diesel_async::{AsyncPgConnection as PgConnection, RunQueryDsl};
-use editoast_derive::ModelV2;
-use serde::{Deserialize, Serialize};
-use utoipa::ToSchema;
 
 #[derive(Clone, Debug, Serialize, Deserialize, ModelV2, ToSchema)]
 #[model(table = crate::tables::electrical_profile_set)]
@@ -34,13 +37,15 @@ pub struct LightElectricalProfileSet {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::fixtures::tests::{
-        db_pool, dummy_electrical_profile_set, electrical_profile_set, TestFixture,
-    };
-    use crate::DbPool;
     use actix_web::web::Data;
     use rstest::rstest;
+
+    use super::*;
+    use crate::fixtures::tests::db_pool;
+    use crate::fixtures::tests::dummy_electrical_profile_set;
+    use crate::fixtures::tests::electrical_profile_set;
+    use crate::fixtures::tests::TestFixture;
+    use crate::DbPool;
 
     #[rstest]
     async fn test_list_light(

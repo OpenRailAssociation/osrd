@@ -1,16 +1,20 @@
+use async_trait::async_trait;
+use diesel::sql_query;
+use diesel::sql_types::Array;
+use diesel::sql_types::BigInt;
+use diesel::sql_types::Nullable;
+use diesel_async::AsyncPgConnection as PgConnection;
+use editoast_derive::ModelV2;
+
 use crate::diesel::query_dsl::methods::DistinctDsl;
 use crate::error::Result;
 use crate::models::List;
 use crate::models::NoParams;
-use crate::modelsv2::{Retrieve, Row};
+use crate::modelsv2::Retrieve;
+use crate::modelsv2::Row;
 use crate::tables::timetable_v2::dsl;
 use crate::views::pagination::Paginate;
 use crate::views::pagination::PaginatedResponse;
-use async_trait::async_trait;
-use diesel::sql_query;
-use diesel::sql_types::{Array, BigInt, Nullable};
-use diesel_async::AsyncPgConnection as PgConnection;
-use editoast_derive::ModelV2;
 
 #[derive(Debug, Default, Clone, ModelV2)]
 #[model(table = crate::tables::timetable_v2)]

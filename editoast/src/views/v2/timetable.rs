@@ -1,25 +1,39 @@
+use actix_web::delete;
+use actix_web::get;
+use actix_web::post;
+use actix_web::put;
+use actix_web::web::Data;
+use actix_web::web::Json;
+use actix_web::web::Path;
+use actix_web::web::Query;
+use actix_web::HttpResponse;
+use chrono::DateTime;
+use chrono::Utc;
+use derivative::Derivative;
+use editoast_derive::EditoastError;
+use serde::Deserialize;
+use serde::Serialize;
+use thiserror::Error;
+use utoipa::IntoParams;
+use utoipa::ToSchema;
+
 use crate::decl_paginated_response;
 use crate::error::Result;
 use crate::models::List;
 use crate::models::NoParams;
-use crate::modelsv2::timetable::{Timetable, TimetableWithTrains};
-use crate::modelsv2::{Create, DeleteStatic, Model, Retrieve, Update};
+use crate::modelsv2::timetable::Timetable;
+use crate::modelsv2::timetable::TimetableWithTrains;
+use crate::modelsv2::Create;
+use crate::modelsv2::DeleteStatic;
+use crate::modelsv2::Model;
+use crate::modelsv2::Retrieve;
+use crate::modelsv2::Update;
 use crate::views::pagination::PaginatedResponse;
 use crate::views::pagination::PaginationQueryParam;
 use crate::views::timetable::ConflictType;
 use crate::CoreClient;
 use crate::DbPool;
 use crate::RedisClient;
-
-use actix_web::web::{Data, Json, Path, Query};
-use actix_web::{delete, get, post, put, HttpResponse};
-use chrono::DateTime;
-use chrono::Utc;
-use derivative::Derivative;
-use editoast_derive::EditoastError;
-use serde::{Deserialize, Serialize};
-use thiserror::Error;
-use utoipa::{IntoParams, ToSchema};
 
 crate::routes! {
     "/v2/timetable" => {
@@ -268,13 +282,18 @@ pub async fn conflicts(
 #[cfg(test)]
 mod tests {
 
-    use super::*;
-    use crate::fixtures::tests::{db_pool, timetable_v2, TestFixture};
-    use crate::modelsv2::Delete;
-    use crate::views::tests::create_test_service;
-    use actix_web::test::{call_and_read_body_json, call_service, TestRequest};
+    use actix_web::test::call_and_read_body_json;
+    use actix_web::test::call_service;
+    use actix_web::test::TestRequest;
     use rstest::rstest;
     use serde_json::json;
+
+    use super::*;
+    use crate::fixtures::tests::db_pool;
+    use crate::fixtures::tests::timetable_v2;
+    use crate::fixtures::tests::TestFixture;
+    use crate::modelsv2::Delete;
+    use crate::views::tests::create_test_service;
 
     #[rstest]
     async fn get_timetable(#[future] timetable_v2: TestFixture<Timetable>, db_pool: Data<DbPool>) {

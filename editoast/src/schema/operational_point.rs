@@ -1,18 +1,17 @@
-use super::OSRDIdentified;
+use derivative::Derivative;
+use serde::Deserialize;
+use serde::Serialize;
+use utoipa::ToSchema;
 
 use super::utils::Identifier;
 use super::utils::NonBlankString;
+use super::OSRDIdentified;
 use super::OSRDTyped;
 use super::ObjectType;
-
 use crate::infra_cache::Cache;
 use crate::infra_cache::ObjectCache;
 use crate::modelsv2::OperationalPointModel;
 use crate::schema::TrackOffset;
-use derivative::Derivative;
-use utoipa::ToSchema;
-
-use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, ToSchema)]
 #[serde(deny_unknown_fields)]
@@ -168,8 +167,9 @@ impl From<OperationalPointPart> for OperationalPointPartCache {
 
 #[cfg(test)]
 mod test {
-    use super::OperationalPointExtensions;
     use serde_json::from_str;
+
+    use super::OperationalPointExtensions;
 
     #[test]
     fn test_op_extensions_deserialization() {

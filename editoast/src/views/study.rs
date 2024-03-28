@@ -1,28 +1,43 @@
-use crate::decl_paginated_response;
-use crate::error::InternalError;
-use crate::error::Result;
-use crate::models::List;
-use crate::modelsv2::{Changeset, Create, DeleteStatic, Model, Project, Study, Tags, Update};
-use crate::views::pagination::{PaginatedResponse, PaginationQueryParam};
-use crate::views::projects::ProjectError;
-use crate::views::projects::ProjectIdParam;
-use crate::views::projects::QueryParams;
-use crate::DbPool;
+use actix_web::delete;
+use actix_web::get;
 use actix_web::patch;
-use actix_web::web::{Data, Json, Path, Query};
-use actix_web::{delete, get, post, HttpResponse};
+use actix_web::post;
+use actix_web::web::Data;
+use actix_web::web::Json;
+use actix_web::web::Path;
+use actix_web::web::Query;
+use actix_web::HttpResponse;
 use chrono::NaiveDate;
 use chrono::Utc;
 use derivative::Derivative;
 use diesel_async::scoped_futures::ScopedFutureExt;
 use diesel_async::AsyncConnection;
 use editoast_derive::EditoastError;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
+use serde::Serialize;
 use thiserror::Error;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
 use super::scenario;
+use crate::decl_paginated_response;
+use crate::error::InternalError;
+use crate::error::Result;
+use crate::models::List;
+use crate::modelsv2::Changeset;
+use crate::modelsv2::Create;
+use crate::modelsv2::DeleteStatic;
+use crate::modelsv2::Model;
+use crate::modelsv2::Project;
+use crate::modelsv2::Study;
+use crate::modelsv2::Tags;
+use crate::modelsv2::Update;
+use crate::views::pagination::PaginatedResponse;
+use crate::views::pagination::PaginationQueryParam;
+use crate::views::projects::ProjectError;
+use crate::views::projects::ProjectIdParam;
+use crate::views::projects::QueryParams;
+use crate::DbPool;
 
 crate::routes! {
     "/studies" => {
@@ -390,17 +405,24 @@ async fn patch(
 
 #[cfg(test)]
 pub mod test {
-    use super::*;
-    use crate::fixtures::tests::{
-        db_pool, project, study_fixture_set, StudyFixtureSet, TestFixture,
-    };
-    use crate::modelsv2::{DeleteStatic, Project, Study};
-    use crate::views::tests::create_test_service;
     use actix_http::Request;
     use actix_web::http::StatusCode;
-    use actix_web::test::{call_service, read_body_json, TestRequest};
+    use actix_web::test::call_service;
+    use actix_web::test::read_body_json;
+    use actix_web::test::TestRequest;
     use rstest::rstest;
     use serde_json::json;
+
+    use super::*;
+    use crate::fixtures::tests::db_pool;
+    use crate::fixtures::tests::project;
+    use crate::fixtures::tests::study_fixture_set;
+    use crate::fixtures::tests::StudyFixtureSet;
+    use crate::fixtures::tests::TestFixture;
+    use crate::modelsv2::DeleteStatic;
+    use crate::modelsv2::Project;
+    use crate::modelsv2::Study;
+    use crate::views::tests::create_test_service;
 
     fn easy_study_url(study_fixture_set: &StudyFixtureSet, detail: bool) -> String {
         format!(

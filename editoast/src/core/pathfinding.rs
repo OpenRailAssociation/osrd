@@ -1,13 +1,17 @@
 use derivative::Derivative;
-use geos::geojson::{Geometry, Value::LineString};
-use serde::{Deserialize, Serialize};
+use geos::geojson::Geometry;
+use geos::geojson::Value::LineString;
+use serde::Deserialize;
+use serde::Serialize;
 
-use crate::models::{CurveGraph, SlopeGraph};
+use super::AsCoreRequest;
+use super::Json;
+use crate::models::CurveGraph;
+use crate::models::RoutePath;
+use crate::models::SlopeGraph;
 use crate::schema::rolling_stock::RollingStock;
+use crate::schema::Direction;
 use crate::schema::TrackLocation;
-use crate::{models::RoutePath, schema::Direction};
-
-use super::{AsCoreRequest, Json};
 
 pub type PathfindingWaypoints = Vec<Vec<Waypoint>>;
 

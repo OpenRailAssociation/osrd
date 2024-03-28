@@ -1,20 +1,22 @@
 use std::collections::HashMap;
 
-use super::Direction;
-use super::OSRDIdentified;
+use derivative::Derivative;
+use diesel::sql_types::Double;
+use diesel::sql_types::Jsonb;
+use diesel::sql_types::Text;
+use diesel_json::Json as DieselJson;
+use serde::Deserialize;
+use serde::Serialize;
 
 use super::utils::Identifier;
 use super::utils::NonBlankString;
+use super::Direction;
+use super::OSRDIdentified;
 use super::OSRDTyped;
 use super::ObjectType;
 use super::Side;
-
 use crate::infra_cache::Cache;
 use crate::infra_cache::ObjectCache;
-use derivative::Derivative;
-use diesel::sql_types::{Double, Jsonb, Text};
-use diesel_json::Json as DieselJson;
-use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
@@ -137,8 +139,9 @@ impl From<Signal> for SignalCache {
 
 #[cfg(test)]
 mod test {
-    use super::SignalExtensions;
     use serde_json::from_str;
+
+    use super::SignalExtensions;
 
     #[test]
     fn test_signal_extensions_deserialization() {

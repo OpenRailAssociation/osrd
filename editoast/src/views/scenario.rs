@@ -1,34 +1,47 @@
-use crate::decl_paginated_response;
-use crate::error::{InternalError, Result};
-use crate::models::train_schedule::LightTrainSchedule;
-use crate::models::{
-    Create, Delete, List, Retrieve, ScenarioWithCountTrains, ScenarioWithDetails, Timetable, Update,
-};
-use crate::modelsv2::{Project, Study};
-use crate::views::pagination::{PaginatedResponse, PaginationQueryParam};
-use crate::views::projects::{ProjectError, ProjectIdParam};
-use crate::views::study::{StudyError, StudyIdParam};
-use crate::{models::Scenario, DbPool};
-use actix_web::{delete, HttpResponse};
-
+use actix_web::delete;
 use actix_web::get;
 use actix_web::patch;
+use actix_web::post;
+use actix_web::web::Data;
+use actix_web::web::Json;
+use actix_web::web::Path;
 use actix_web::web::Query;
-use actix_web::{
-    post,
-    web::{Data, Json, Path},
-};
+use actix_web::HttpResponse;
 use chrono::Utc;
 use derivative::Derivative;
 use diesel_async::scoped_futures::ScopedFutureExt;
 use diesel_async::AsyncConnection;
 use diesel_async::AsyncPgConnection as PgConnection;
 use editoast_derive::EditoastError;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
+use serde::Serialize;
 use thiserror::Error;
-use utoipa::{IntoParams, ToSchema};
+use utoipa::IntoParams;
+use utoipa::ToSchema;
 
 use super::projects::QueryParams;
+use crate::decl_paginated_response;
+use crate::error::InternalError;
+use crate::error::Result;
+use crate::models::train_schedule::LightTrainSchedule;
+use crate::models::Create;
+use crate::models::Delete;
+use crate::models::List;
+use crate::models::Retrieve;
+use crate::models::Scenario;
+use crate::models::ScenarioWithCountTrains;
+use crate::models::ScenarioWithDetails;
+use crate::models::Timetable;
+use crate::models::Update;
+use crate::modelsv2::Project;
+use crate::modelsv2::Study;
+use crate::views::pagination::PaginatedResponse;
+use crate::views::pagination::PaginationQueryParam;
+use crate::views::projects::ProjectError;
+use crate::views::projects::ProjectIdParam;
+use crate::views::study::StudyError;
+use crate::views::study::StudyIdParam;
+use crate::DbPool;
 
 crate::routes! {
     "/scenarios" => {
@@ -374,19 +387,24 @@ async fn list(
 
 #[cfg(test)]
 mod test {
-    use super::*;
-    use crate::fixtures::tests::{
-        db_pool, empty_infra, scenario_fixture_set, study_fixture_set, ScenarioFixtureSet,
-        StudyFixtureSet, TestFixture,
-    };
-
-    use crate::modelsv2::Infra;
-    use crate::views::tests::create_test_service;
     use actix_http::Request;
     use actix_web::http::StatusCode;
-    use actix_web::test::{call_service, read_body_json, TestRequest};
+    use actix_web::test::call_service;
+    use actix_web::test::read_body_json;
+    use actix_web::test::TestRequest;
     use rstest::rstest;
     use serde_json::json;
+
+    use super::*;
+    use crate::fixtures::tests::db_pool;
+    use crate::fixtures::tests::empty_infra;
+    use crate::fixtures::tests::scenario_fixture_set;
+    use crate::fixtures::tests::study_fixture_set;
+    use crate::fixtures::tests::ScenarioFixtureSet;
+    use crate::fixtures::tests::StudyFixtureSet;
+    use crate::fixtures::tests::TestFixture;
+    use crate::modelsv2::Infra;
+    use crate::views::tests::create_test_service;
 
     pub fn easy_scenario_url(scenario_fixture_set: &ScenarioFixtureSet, detail: bool) -> String {
         scenario_url(

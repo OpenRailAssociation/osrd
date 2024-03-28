@@ -1,15 +1,17 @@
 //! Defines the low-level structures used by typecheking operations
-use std::{
-    collections::{hash_map::DefaultHasher, VecDeque},
-    fmt::Display,
-    hash::{self, Hash, Hasher},
-    ops::Shr,
-};
+use std::collections::hash_map::DefaultHasher;
+use std::collections::VecDeque;
+use std::fmt::Display;
+use std::hash::Hash;
+use std::hash::Hasher;
+use std::hash::{self};
+use std::ops::Shr;
 
-use crate::error::Result;
 use editoast_derive::EditoastError;
 use serde::Deserialize;
 use thiserror::Error;
+
+use crate::error::Result;
 
 #[derive(Debug, PartialEq, Error, EditoastError)]
 #[editoast_error(base_id = "search")]
@@ -338,9 +340,9 @@ impl Eq for TypeSpec {}
 #[cfg(test)]
 mod tests {
 
-    use crate::views::search::typing::{hash_eq, TypeSpec};
-
     use super::AstType;
+    use crate::views::search::typing::hash_eq;
+    use crate::views::search::typing::TypeSpec;
 
     #[test]
     fn test_rhs_function_signature() {

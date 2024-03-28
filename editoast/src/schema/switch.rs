@@ -1,17 +1,17 @@
-use super::OSRDIdentified;
+use std::collections::HashMap;
+
+use derivative::Derivative;
+use serde::Deserialize;
+use serde::Serialize;
 
 use super::utils::Identifier;
 use super::utils::NonBlankString;
+use super::OSRDIdentified;
 use super::OSRDTyped;
 use super::ObjectType;
 use super::TrackEndpoint;
-
 use crate::infra_cache::Cache;
 use crate::infra_cache::ObjectCache;
-use derivative::Derivative;
-
-use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]

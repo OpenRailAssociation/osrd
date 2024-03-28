@@ -1,8 +1,14 @@
-use super::utils::*;
-use crate::{converters::generate_routes, schema::*};
-use tracing::{debug, error, info};
+use std::collections::HashMap;
+use std::error::Error;
+use std::path::PathBuf;
 
-use std::{collections::HashMap, error::Error, path::PathBuf};
+use tracing::debug;
+use tracing::error;
+use tracing::info;
+
+use super::utils::*;
+use crate::converters::generate_routes;
+use crate::schema::*;
 /// Run the osm-to-railjson subcommand
 /// Converts OpenStreetMap pbf file to railjson
 pub fn osm_to_railjson(
@@ -121,13 +127,12 @@ pub fn parse_osm(osm_pbf_in: PathBuf) -> Result<RailJson, Box<dyn Error + Send +
 
 #[cfg(test)]
 mod tests {
-    use crate::{
-        converters::*,
-        schema::{utils::Identifier, *},
-    };
     use std::collections::HashMap;
 
     use super::parse_osm;
+    use crate::converters::*;
+    use crate::schema::utils::Identifier;
+    use crate::schema::*;
     #[test]
     fn convert_osm_to_railjson() {
         let output = tempfile::NamedTempFile::new().unwrap();

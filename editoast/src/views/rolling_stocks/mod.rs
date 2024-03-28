@@ -1,36 +1,57 @@
 pub mod rolling_stock_form;
 
-use crate::error::{InternalError, Result};
-use crate::modelsv2::rolling_stock_livery::RollingStockLiveryModel;
-use crate::modelsv2::rolling_stock_model::RollingStockSupportedSignalingSystems;
-use crate::modelsv2::{
-    Changeset, Create, DeleteStatic, Document, Exists, Model, Retrieve, RollingStockModel,
-    RollingStockSeparatedImageModel, Update,
-};
-use crate::schema::rolling_stock::rolling_stock_livery::RollingStockLivery;
-use crate::schema::rolling_stock::{RollingStock, RollingStockWithLiveries};
-use crate::DbPool;
+use std::io::BufReader;
+use std::io::Cursor;
+use std::io::Read;
+
+use actix_multipart::form::tempfile::TempFile;
 use actix_multipart::form::text::Text;
-use actix_web::web::{Data, Json, Path, Query};
-use actix_web::{delete, get, patch, post, HttpResponse};
-use diesel::{
-    sql_query,
-    sql_types::{BigInt, Text as SqlText},
-};
+use actix_multipart::form::MultipartForm;
+use actix_web::delete;
+use actix_web::get;
+use actix_web::patch;
+use actix_web::post;
+use actix_web::web::Data;
+use actix_web::web::Json;
+use actix_web::web::Path;
+use actix_web::web::Query;
+use actix_web::HttpResponse;
+use diesel::sql_query;
+use diesel::sql_types::BigInt;
+use diesel::sql_types::Text as SqlText;
 use diesel_async::RunQueryDsl;
 use editoast_derive::EditoastError;
 use image::io::Reader as ImageReader;
-use image::{DynamicImage, GenericImage, ImageBuffer, ImageOutputFormat};
+use image::DynamicImage;
+use image::GenericImage;
+use image::ImageBuffer;
+use image::ImageOutputFormat;
 use rolling_stock_form::RollingStockForm;
-
-use serde_derive::{Deserialize, Serialize};
-use std::io::{BufReader, Cursor, Read};
+use serde_derive::Deserialize;
+use serde_derive::Serialize;
 use thiserror::Error;
+use utoipa::IntoParams;
+use utoipa::ToSchema;
 use validator::Validate;
 
-use actix_multipart::form::{tempfile::TempFile, MultipartForm};
-
-use utoipa::{IntoParams, ToSchema};
+use crate::error::InternalError;
+use crate::error::Result;
+use crate::modelsv2::rolling_stock_livery::RollingStockLiveryModel;
+use crate::modelsv2::rolling_stock_model::RollingStockSupportedSignalingSystems;
+use crate::modelsv2::Changeset;
+use crate::modelsv2::Create;
+use crate::modelsv2::DeleteStatic;
+use crate::modelsv2::Document;
+use crate::modelsv2::Exists;
+use crate::modelsv2::Model;
+use crate::modelsv2::Retrieve;
+use crate::modelsv2::RollingStockModel;
+use crate::modelsv2::RollingStockSeparatedImageModel;
+use crate::modelsv2::Update;
+use crate::schema::rolling_stock::rolling_stock_livery::RollingStockLivery;
+use crate::schema::rolling_stock::RollingStock;
+use crate::schema::rolling_stock::RollingStockWithLiveries;
+use crate::DbPool;
 
 crate::routes! {
     "/rolling_stock" => {
@@ -536,25 +557,35 @@ async fn create_compound_image(
 pub mod tests {
     use std::vec;
 
+    use actix_http::Request;
+    use actix_http::StatusCode;
+    use actix_web::dev::ServiceResponse;
+    use actix_web::http::header::ContentType;
+    use actix_web::test::call_service;
+    use actix_web::test::read_body_json;
+    use actix_web::test::TestRequest;
+    use actix_web::web::Data;
+    use rstest::rstest;
+    use serde_json::json;
+
+    use super::retrieve_existing_rolling_stock;
+    use super::RollingStock;
     use super::RollingStockError;
-    use super::{retrieve_existing_rolling_stock, RollingStock, TrainScheduleScenarioStudyProject};
-    use crate::fixtures::tests::{
-        db_pool, get_fast_rolling_stock_form, get_other_rolling_stock_form,
-        named_fast_rolling_stock, named_other_rolling_stock, train_schedule_with_scenario,
-    };
+    use super::TrainScheduleScenarioStudyProject;
+    use crate::assert_response_error_type_match;
+    use crate::assert_status_and_read;
+    use crate::fixtures::tests::db_pool;
+    use crate::fixtures::tests::get_fast_rolling_stock_form;
+    use crate::fixtures::tests::get_other_rolling_stock_form;
+    use crate::fixtures::tests::named_fast_rolling_stock;
+    use crate::fixtures::tests::named_other_rolling_stock;
+    use crate::fixtures::tests::train_schedule_with_scenario;
     use crate::models::rolling_stock::tests::get_invalid_effort_curves;
     use crate::modelsv2::rolling_stock_model::RollingStockModel;
     use crate::modelsv2::Changeset;
     use crate::views::rolling_stocks::rolling_stock_form::RollingStockForm;
     use crate::views::tests::create_test_service;
-    use crate::{assert_response_error_type_match, assert_status_and_read, DbPool};
-    use actix_http::{Request, StatusCode};
-    use actix_web::dev::ServiceResponse;
-    use actix_web::http::header::ContentType;
-    use actix_web::test::{call_service, read_body_json, TestRequest};
-    use actix_web::web::Data;
-    use rstest::rstest;
-    use serde_json::json;
+    use crate::DbPool;
 
     #[rstest]
     async fn get_returns_corresponding_rolling_stock(db_pool: Data<DbPool>) {

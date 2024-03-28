@@ -1,8 +1,9 @@
-use crate::modelsv2::rolling_stock_model::{
-    RollingStockModel, RollingStockSupportedSignalingSystems,
-};
+use crate::modelsv2::rolling_stock_model::RollingStockModel;
+use crate::modelsv2::rolling_stock_model::RollingStockSupportedSignalingSystems;
 use crate::schema::rolling_stock::rolling_stock_livery::RollingStockLiveryMetadata;
-use crate::schema::rolling_stock::{RollingStock, RollingStockCommon, RollingStockWithLiveries};
+use crate::schema::rolling_stock::RollingStock;
+use crate::schema::rolling_stock::RollingStockCommon;
+use crate::schema::rolling_stock::RollingStockWithLiveries;
 use crate::schema::track_section::LoadingGaugeType;
 
 crate::schemas! {
@@ -53,18 +54,20 @@ impl From<RollingStockModel> for RollingStock {
 
 #[cfg(test)]
 pub mod tests {
-    use crate::error::InternalError;
-    use crate::fixtures::tests::{
-        db_pool, get_other_rolling_stock_form, named_fast_rolling_stock, named_other_rolling_stock,
-    };
-    use crate::modelsv2::Changeset;
-    use crate::views::rolling_stocks::{map_diesel_error, RollingStockError};
-    use crate::DbPool;
+    use actix_web::web::Data;
     use rstest::*;
     use serde_json::to_value;
 
     use super::RollingStockModel;
-    use actix_web::web::Data;
+    use crate::error::InternalError;
+    use crate::fixtures::tests::db_pool;
+    use crate::fixtures::tests::get_other_rolling_stock_form;
+    use crate::fixtures::tests::named_fast_rolling_stock;
+    use crate::fixtures::tests::named_other_rolling_stock;
+    use crate::modelsv2::Changeset;
+    use crate::views::rolling_stocks::map_diesel_error;
+    use crate::views::rolling_stocks::RollingStockError;
+    use crate::DbPool;
 
     pub fn get_invalid_effort_curves() -> &'static str {
         include_str!("../../tests/example_rolling_stock_3.json")

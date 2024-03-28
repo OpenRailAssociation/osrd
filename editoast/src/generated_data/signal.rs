@@ -1,18 +1,24 @@
+use std::collections::HashMap;
+
 use async_trait::async_trait;
 use diesel::delete;
 use diesel::query_dsl::methods::FilterDsl;
 use diesel::sql_query;
-use diesel::sql_types::{Array, BigInt, Nullable, Text};
+use diesel::sql_types::Array;
+use diesel::sql_types::BigInt;
+use diesel::sql_types::Nullable;
+use diesel::sql_types::Text;
 use diesel_async::AsyncPgConnection as PgConnection;
-use std::collections::HashMap;
 
 use super::utils::InvolvedObjects;
 use super::GeneratedData;
 use crate::diesel::ExpressionMethods;
 use crate::error::Result;
 use crate::infra_cache::InfraCache;
-use crate::schema::sprite_config::{SpriteConfig, SpriteConfigs};
-use crate::schema::{LogicalSignal, ObjectType};
+use crate::schema::sprite_config::SpriteConfig;
+use crate::schema::sprite_config::SpriteConfigs;
+use crate::schema::LogicalSignal;
+use crate::schema::ObjectType;
 use crate::tables::infra_layer_signal::dsl;
 
 pub struct SignalLayer;

@@ -1,8 +1,15 @@
-use crate::infra_cache::{Graph, InfraCache, ObjectCache};
-use crate::schema::{InfraError, OSRDIdentified, ObjectRef, ObjectType, TrackEndpoint};
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
+use std::collections::HashSet;
 
 use super::ObjectErrorGenerator;
+use crate::infra_cache::Graph;
+use crate::infra_cache::InfraCache;
+use crate::infra_cache::ObjectCache;
+use crate::schema::InfraError;
+use crate::schema::OSRDIdentified;
+use crate::schema::ObjectRef;
+use crate::schema::ObjectType;
+use crate::schema::TrackEndpoint;
 
 pub const OBJECT_GENERATORS: [ObjectErrorGenerator<Context>; 5] = [
     ObjectErrorGenerator::new(1, check_invalid_ref_ports),
@@ -126,17 +133,20 @@ fn check_overlapping(
 
 #[cfg(test)]
 mod tests {
-    use crate::generated_data::error::switches::{check_endpoints_unicity, Context};
-    use crate::infra_cache::tests::{
-        create_small_infra_cache, create_switch_cache_point, create_track_endpoint,
-    };
-    use crate::schema::{Endpoint, OSRDIdentified, ObjectRef, ObjectType};
-
     use super::check_invalid_ref_ports;
     use super::check_invalid_ref_switch_type;
     use super::check_match_ports_type;
     use super::check_overlapping;
     use super::InfraError;
+    use crate::generated_data::error::switches::check_endpoints_unicity;
+    use crate::generated_data::error::switches::Context;
+    use crate::infra_cache::tests::create_small_infra_cache;
+    use crate::infra_cache::tests::create_switch_cache_point;
+    use crate::infra_cache::tests::create_track_endpoint;
+    use crate::schema::Endpoint;
+    use crate::schema::OSRDIdentified;
+    use crate::schema::ObjectRef;
+    use crate::schema::ObjectType;
 
     #[test]
     fn invalid_ref_track() {

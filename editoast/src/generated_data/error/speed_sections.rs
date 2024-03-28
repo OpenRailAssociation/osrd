@@ -1,14 +1,20 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
+use std::collections::HashSet;
 
 use rangemap::RangeMap;
 
-use super::{GlobalErrorGenerator, NoContext};
+use super::GlobalErrorGenerator;
+use super::NoContext;
 use crate::generated_data::error::ObjectErrorGenerator;
 use crate::infra_cache::Graph;
-use crate::infra_cache::{InfraCache, ObjectCache};
-use crate::schema::{
-    ApplicableDirections, Direction, InfraError, OSRDIdentified, ObjectRef, ObjectType,
-};
+use crate::infra_cache::InfraCache;
+use crate::infra_cache::ObjectCache;
+use crate::schema::ApplicableDirections;
+use crate::schema::Direction;
+use crate::schema::InfraError;
+use crate::schema::OSRDIdentified;
+use crate::schema::ObjectRef;
+use crate::schema::ObjectType;
 
 pub const OBJECT_GENERATORS: [ObjectErrorGenerator<NoContext>; 2] = [
     ObjectErrorGenerator::new(1, check_empty),
@@ -141,10 +147,12 @@ mod tests {
     use super::check_speed_section_track_ranges;
     use super::InfraError;
     use crate::generated_data::error::speed_sections::check_overlapping;
-    use crate::infra_cache::tests::{create_small_infra_cache, create_speed_section_cache};
+    use crate::infra_cache::tests::create_small_infra_cache;
+    use crate::infra_cache::tests::create_speed_section_cache;
     use crate::infra_cache::Graph;
+    use crate::schema::ObjectRef;
+    use crate::schema::ObjectType;
     use crate::schema::Speed;
-    use crate::schema::{ObjectRef, ObjectType};
 
     #[test]
     fn invalid_ref() {

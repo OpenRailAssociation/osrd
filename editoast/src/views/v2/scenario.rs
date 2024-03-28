@@ -1,29 +1,45 @@
-use crate::decl_paginated_response;
-use crate::error::{InternalError, Result};
-use crate::models::train_schedule::LightTrainSchedule;
-use crate::models::List;
-use crate::modelsv2::{
-    prelude::*,
-    scenario::{Scenario, ScenarioWithDetails},
-    timetable::Timetable,
-    Infra, Project, Study, Tags,
-};
-use crate::views::pagination::{PaginatedResponse, PaginationQueryParam};
-use crate::views::projects::{ProjectIdParam, QueryParams};
-use crate::views::scenario::{check_project_study, check_project_study_conn, ScenarioIdParam};
-use crate::views::study::StudyIdParam;
-use crate::DbPool;
-
-use actix_web::web::{Data, Json, Path, Query};
-use actix_web::{delete, get, patch, post, HttpResponse};
+use actix_web::delete;
+use actix_web::get;
+use actix_web::patch;
+use actix_web::post;
+use actix_web::web::Data;
+use actix_web::web::Json;
+use actix_web::web::Path;
+use actix_web::web::Query;
+use actix_web::HttpResponse;
 use chrono::Utc;
 use derivative::Derivative;
 use diesel_async::scoped_futures::ScopedFutureExt;
 use diesel_async::AsyncConnection;
 use editoast_derive::EditoastError;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
+use serde::Serialize;
 use thiserror::Error;
-use utoipa::{IntoParams, ToSchema};
+use utoipa::IntoParams;
+use utoipa::ToSchema;
+
+use crate::decl_paginated_response;
+use crate::error::InternalError;
+use crate::error::Result;
+use crate::models::train_schedule::LightTrainSchedule;
+use crate::models::List;
+use crate::modelsv2::prelude::*;
+use crate::modelsv2::scenario::Scenario;
+use crate::modelsv2::scenario::ScenarioWithDetails;
+use crate::modelsv2::timetable::Timetable;
+use crate::modelsv2::Infra;
+use crate::modelsv2::Project;
+use crate::modelsv2::Study;
+use crate::modelsv2::Tags;
+use crate::views::pagination::PaginatedResponse;
+use crate::views::pagination::PaginationQueryParam;
+use crate::views::projects::ProjectIdParam;
+use crate::views::projects::QueryParams;
+use crate::views::scenario::check_project_study;
+use crate::views::scenario::check_project_study_conn;
+use crate::views::scenario::ScenarioIdParam;
+use crate::views::study::StudyIdParam;
+use crate::DbPool;
 
 crate::routes! {
     "/v2/projects/{project_id}/studies/{study_id}/scenarios" => {
@@ -402,17 +418,23 @@ async fn list(
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::fixtures::tests::{
-        db_pool, scenario_v2_fixture_set, small_infra, timetable_v2, ScenarioV2FixtureSet,
-        TestFixture,
-    };
-    use crate::modelsv2::{timetable::Timetable as TimetableV2, Infra};
-    use crate::views::tests::create_test_service;
     use actix_web::http::StatusCode;
-    use actix_web::test::{call_and_read_body_json, call_service, TestRequest};
+    use actix_web::test::call_and_read_body_json;
+    use actix_web::test::call_service;
+    use actix_web::test::TestRequest;
     use rstest::rstest;
     use serde_json::json;
+
+    use super::*;
+    use crate::fixtures::tests::db_pool;
+    use crate::fixtures::tests::scenario_v2_fixture_set;
+    use crate::fixtures::tests::small_infra;
+    use crate::fixtures::tests::timetable_v2;
+    use crate::fixtures::tests::ScenarioV2FixtureSet;
+    use crate::fixtures::tests::TestFixture;
+    use crate::modelsv2::timetable::Timetable as TimetableV2;
+    use crate::modelsv2::Infra;
+    use crate::views::tests::create_test_service;
 
     pub fn scenario_url(project_id: i64, study_id: i64, scenario_id: Option<i64>) -> String {
         format!(
