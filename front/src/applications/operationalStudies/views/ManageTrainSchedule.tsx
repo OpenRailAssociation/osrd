@@ -47,7 +47,7 @@ export default function ManageTrainSchedule() {
     useStoreDataForRollingStockSelector();
 
   // Details for tabs
-  const { data: pathFinding } = osrdEditoastApi.useGetPathfindingByPathfindingIdQuery(
+  const { data: pathFinding } = osrdEditoastApi.endpoints.getPathfindingByPathfindingId.useQuery(
     { pathfindingId: pathFindingID as number },
     {
       skip: !pathFindingID,

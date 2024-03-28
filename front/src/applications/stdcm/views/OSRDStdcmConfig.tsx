@@ -49,7 +49,7 @@ export default function OSRDConfig({
 
   const { t } = useTranslation(['translation', 'stdcm', 'simulation']);
 
-  const { data: infra } = osrdEditoastApi.useGetInfraByIdQuery(
+  const { data: infra } = osrdEditoastApi.endpoints.getInfraById.useQuery(
     { id: infraID as number },
     {
       skip: !infraID,

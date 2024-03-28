@@ -15,8 +15,8 @@ import LicenseAttributions from './LicenseAttributions';
 
 function ReleaseInformations() {
   const { t } = useTranslation('home/navbar');
-  const { data: editoastVersion } = osrdEditoastApi.useGetVersionQuery();
-  const { data: coreVersion } = osrdEditoastApi.useGetVersionCoreQuery();
+  const { data: editoastVersion } = osrdEditoastApi.endpoints.getVersion.useQuery();
+  const { data: coreVersion } = osrdEditoastApi.endpoints.getVersionCore.useQuery();
 
   const osrdWebSite = 'https://osrd.fr/';
 

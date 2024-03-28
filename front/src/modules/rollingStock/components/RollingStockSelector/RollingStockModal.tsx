@@ -33,7 +33,7 @@ function RollingStockModal({ ref2scroll }: RollingStockModal) {
     isSuccess,
     isError,
     error,
-  } = enhancedEditoastApi.useGetLightRollingStockQuery({
+  } = enhancedEditoastApi.endpoints.getLightRollingStock.useQuery({
     pageSize: 1000,
   });
   const [filteredRollingStockList, setFilteredRollingStockList] =

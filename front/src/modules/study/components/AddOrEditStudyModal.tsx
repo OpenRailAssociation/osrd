@@ -68,11 +68,11 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
   const navigate = useNavigate();
 
   const [createStudies, { error: createStudyError }] =
-    osrdEditoastApi.usePostProjectsByProjectIdStudiesMutation();
+    osrdEditoastApi.endpoints.postProjectsByProjectIdStudies.useMutation();
   const [patchStudies, { error: patchStudyError }] =
-    osrdEditoastApi.usePatchProjectsByProjectIdStudiesAndStudyIdMutation();
+    osrdEditoastApi.endpoints.patchProjectsByProjectIdStudiesAndStudyId.useMutation();
   const [deleteStudies, { error: deleteStudyError }] =
-    osrdEditoastApi.useDeleteProjectsByProjectIdStudiesAndStudyIdMutation();
+    osrdEditoastApi.endpoints.deleteProjectsByProjectIdStudiesAndStudyId.useMutation();
 
   const studyStateOptions = createSelectOptions('studyStates', studyStates);
 

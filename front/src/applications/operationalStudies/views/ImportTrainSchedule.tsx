@@ -25,7 +25,7 @@ export default function ImportTrainSchedule({
   const [isLoading, setIsLoading] = useState(false);
 
   const { data: { results: rollingStocks } = { results: [] }, isError } =
-    enhancedEditoastApi.useGetLightRollingStockQuery({
+    enhancedEditoastApi.endpoints.getLightRollingStock.useQuery({
       pageSize: 1000,
     });
 

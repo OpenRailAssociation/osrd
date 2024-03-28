@@ -59,7 +59,7 @@ export default function Study() {
     data: study,
     isError: isCurrentStudyError,
     error: studyError,
-  } = osrdEditoastApi.useGetProjectsByProjectIdStudiesAndStudyIdQuery(
+  } = osrdEditoastApi.endpoints.getProjectsByProjectIdStudiesAndStudyId.useQuery(
     {
       projectId: +projectId!,
       studyId: +studyId!,
@@ -69,9 +69,17 @@ export default function Study() {
     }
   );
 
-  const [postSearch] = osrdEditoastApi.usePostSearchMutation();
-  const [getScenarios] =
-    osrdEditoastApi.useLazyGetProjectsByProjectIdStudiesAndStudyIdScenariosQuery();
+  const [postSearch] = osrdEditoastApi.endpoints.postSearch.useMutation();
+  const { data: studyScenarios } =
+    osrdEditoastApi.endpoints.getProjectsByProjectIdStudiesAndStudyIdScenarios.useQuery(
+      {
+        projectId: projectId!,
+        studyId: studyId!,
+        ordering: sortOption,
+        pageSize: 1000,
+      },
+      { skip: !projectId || !studyId }
+    );
 
   useEffect(() => {
     if (!projectId || !studyId) throw new Error('Missing projectId or studyId in url');
@@ -128,24 +136,11 @@ export default function Study() {
           setScenariosList(filteredScenarios as ScenarioWithCountTrains[]);
         } catch (error) {
           console.error(error);
-        } finally {
-          setIsLoading(false);
         }
       } else {
-        try {
-          const { data } = await getScenarios({
-            projectId: +projectId,
-            studyId: +studyId,
-            ordering: sortOption,
-            pageSize: 1000,
-          });
-          if (data?.results) setScenariosList(data.results);
-        } catch (error) {
-          console.error(error);
-        } finally {
-          setIsLoading(false);
-        }
+        setScenariosList(studyScenarios?.results || []);
       }
+      setIsLoading(false);
     }
   };
 
@@ -172,9 +167,8 @@ export default function Study() {
   }
 
   useEffect(() => {
-    if (studyId) getScenarioList();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sortOption, filter]);
+    getScenarioList();
+  }, [sortOption, filter, studyScenarios]);
 
   return (
     <>

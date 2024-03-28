@@ -106,7 +106,7 @@ export default function Scenario() {
     }
   }, [scenario]);
 
-  const { data: infra } = osrdEditoastApi.useGetInfraByIdQuery(
+  const { data: infra } = osrdEditoastApi.endpoints.getInfraById.useQuery(
     { id: infraId as number },
     {
       skip: !infraId,
@@ -114,7 +114,7 @@ export default function Scenario() {
       pollingInterval: !isInfraLoaded ? 1000 : undefined,
     }
   );
-  const [reloadInfra] = osrdEditoastApi.usePostInfraByIdLoadMutation();
+  const [reloadInfra] = osrdEditoastApi.endpoints.postInfraByIdLoad.useMutation();
 
   useEffect(() => {
     if (reloadCount <= 5 && infra && infra.state === 'TRANSIENT_ERROR') {

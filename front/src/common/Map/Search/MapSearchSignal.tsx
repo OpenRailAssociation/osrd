@@ -95,7 +95,7 @@ const MapSearchSignal = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchSi
     asc: true,
   });
   const dispatch = useAppDispatch();
-  const [postSearch] = osrdEditoastApi.usePostSearchMutation();
+  const [postSearch] = osrdEditoastApi.endpoints.postSearch.useMutation();
 
   const getPayload = (
     lineSearch: string,

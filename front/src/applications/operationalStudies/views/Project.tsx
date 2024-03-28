@@ -45,8 +45,7 @@ export default function Project() {
   const [sortOption, setSortOption] = useState<SortOptions>('LastModifiedDesc');
   const [imageUrl, setImageUrl] = useState('');
   const { projectId: urlProjectId } = useParams() as ProjectParams;
-  const [postSearch] = osrdEditoastApi.usePostSearchMutation();
-  const [getStudies] = osrdEditoastApi.useLazyGetProjectsByProjectIdStudiesQuery();
+  const [postSearch] = osrdEditoastApi.endpoints.postSearch.useMutation();
   const [isLoading, setIsLoading] = useState(true);
 
   const { projectId } = useMemo(
@@ -76,6 +75,15 @@ export default function Project() {
     {
       skip: !projectId,
     }
+  );
+
+  const { data: projectStudies } = osrdEditoastApi.endpoints.getProjectsByProjectIdStudies.useQuery(
+    {
+      projectId: Number(projectId),
+      ordering: sortOption,
+      pageSize: 1000,
+    },
+    { skip: !projectId }
   );
 
   const updateImage = async () => {
@@ -117,24 +125,12 @@ export default function Project() {
           setStudiesList(filteredStudies);
         } catch (error) {
           console.error(error);
-        } finally {
-          setIsLoading(false);
         }
       } else {
-        try {
-          const { data } = await getStudies({
-            projectId: Number(projectId),
-            ordering: sortOption,
-            pageSize: 1000,
-          });
-          if (data?.results) setStudiesList(data.results);
-        } catch (error) {
-          console.error(error);
-        } finally {
-          setIsLoading(false);
-        }
+        setStudiesList(projectStudies?.results || []);
       }
     }
+    setIsLoading(false);
   };
 
   function displayStudiesList() {
@@ -176,8 +172,8 @@ export default function Project() {
   }, [isProjectError, projectError]);
 
   useEffect(() => {
-    if (projectId) getStudiesList();
-  }, [sortOption, filter]);
+    getStudiesList();
+  }, [sortOption, filter, projectStudies]);
 
   return (
     <>

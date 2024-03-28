@@ -37,7 +37,11 @@ export default function HomeOperationalStudies() {
   const [filter, setFilter] = useState('');
   const [filterChips, setFilterChips] = useState('');
   const [postSearch] = osrdEditoastApi.endpoints.postSearch.useMutation();
-  const [getProjects] = osrdEditoastApi.endpoints.getProjects.useLazyQuery();
+
+  const { data: allProjects } = osrdEditoastApi.endpoints.getProjects.useQuery({
+    ordering: sortOption,
+    pageSize: 1000,
+  });
   const [isLoading, setIsLoading] = useState(true);
 
   const sortOptions = [
@@ -82,21 +86,11 @@ export default function HomeOperationalStudies() {
         setProjectsList(filteredData);
       } catch (error) {
         console.error('filter projetcs error : ', error);
-      } finally {
-        setIsLoading(false);
       }
     } else {
-      try {
-        const projects = await getProjects({ ordering: sortOption, pageSize: 1000 });
-        if (projects.data?.results) {
-          setProjectsList(projects.data.results);
-        }
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setIsLoading(false);
-      }
+      setProjectsList(allProjects?.results || []);
     }
+    setIsLoading(false);
   };
 
   const handleSortOptions = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -142,7 +136,7 @@ export default function HomeOperationalStudies() {
 
   useEffect(() => {
     getProjectList();
-  }, [sortOption, filter, safeWord]);
+  }, [sortOption, filter, safeWord, allProjects]);
 
   return (
     <>

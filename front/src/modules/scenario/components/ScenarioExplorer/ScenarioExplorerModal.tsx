@@ -44,7 +44,7 @@ const ScenarioExplorerModal = ({
     projectsList,
     isError: isProjectsError,
     error: projectsError,
-  } = osrdEditoastApi.useGetProjectsQuery(
+  } = osrdEditoastApi.endpoints.getProjects.useQuery(
     { ordering: 'NameAsc', pageSize: 1000 },
     {
       selectFromResult: (response) => ({
