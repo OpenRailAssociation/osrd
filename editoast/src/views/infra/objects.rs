@@ -7,13 +7,14 @@ use diesel::sql_types::{Array, BigInt, Jsonb, Nullable, Text};
 use diesel::{sql_query, QueryableByName};
 use diesel_async::RunQueryDsl;
 use diesel_json::Json as DieselJson;
+use editoast_schemas::geo_json::GeoJson;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 use thiserror::Error;
 
 use crate::error::Result;
 use crate::modelsv2::{get_geometry_layer_table, get_table};
-use crate::schema::{GeoJson, ObjectType};
+use crate::schema::ObjectType;
 use crate::DbPool;
 use editoast_derive::EditoastError;
 

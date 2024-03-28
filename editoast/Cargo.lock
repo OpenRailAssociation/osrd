@@ -1297,6 +1297,7 @@ dependencies = [
  "diesel-async",
  "diesel_json",
  "editoast_derive",
+ "editoast_schemas",
  "enum-map",
  "enumset",
  "futures 0.3.30",
@@ -1362,6 +1363,14 @@ dependencies = [
  "quote",
  "serde_json",
  "syn 2.0.55",
+]
+
+[[package]]
+name = "editoast_schemas"
+version = "0.1.0"
+dependencies = [
+ "mvt",
+ "serde",
 ]
 
 [[package]]

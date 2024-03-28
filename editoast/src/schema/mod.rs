@@ -3,7 +3,6 @@ mod detector;
 pub mod electrical_profiles;
 mod electrification;
 mod errors;
-mod geo_json;
 mod neutral_section;
 pub mod operation;
 pub mod operational_point;
@@ -23,7 +22,6 @@ pub use buffer_stop::{BufferStop, BufferStopCache};
 pub use detector::{Detector, DetectorCache};
 pub use electrification::Electrification;
 pub use errors::{InfraError, InfraErrorType};
-pub use geo_json::GeoJson;
 pub use neutral_section::NeutralSection;
 pub use operational_point::{
     OperationalPoint, OperationalPointCache, OperationalPointExtensions,

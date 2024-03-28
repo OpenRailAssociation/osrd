@@ -5,7 +5,7 @@ edition = "2021"
 license = "LGPL-3.0"
 
 [workspace]
-members = [".", "editoast_derive", "osrd_containers"]
+members = [".", "editoast_derive", "editoast_schemas", "osrd_containers"]
 
 [workspace.dependencies]
 rangemap = "1.4.0"
@@ -13,6 +13,7 @@ serde = "1.0.195"
 serde_derive = "1.0.195"
 serde_json = "1.0.115"
 utoipa = { version = "4.2.0", features = ["actix_extras", "chrono", "uuid"] }
+mvt = "0.9.0"
 
 [dependencies]
 # For batch dependcy updates see https://osrd.fr/en/docs/guides/contribute/batch-updating-dependencies/
@@ -66,7 +67,8 @@ thiserror = "1.0.56"
 enum-map = "2.7.3"
 editoast_derive = { path = "./editoast_derive" }
 osrd_containers = { path = "./osrd_containers" }
-mvt = "0.9.0"
+editoast_schemas = { path = "./editoast_schemas" }
+mvt.workspace = true
 futures = "0.3.30"
 postgis_diesel = { version = "2.3.0", features = ["serde"] }
 geos = { version = "8.3.0", features = ["json"] }

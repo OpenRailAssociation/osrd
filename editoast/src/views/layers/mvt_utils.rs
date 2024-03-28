@@ -1,9 +1,10 @@
 use diesel::sql_types::{Jsonb, Text};
+use editoast_schemas::geo_json::GeoJson;
 use mvt::{Feature, GeomData, GeomEncoder, Tile as MvtTile};
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 
-use crate::{map::View, schema::GeoJson};
+use crate::map::View;
 
 #[derive(Clone, QueryableByName, Queryable, Debug, Serialize, Deserialize)]
 pub struct GeoJsonAndData {
