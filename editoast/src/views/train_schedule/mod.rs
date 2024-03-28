@@ -1,46 +1,70 @@
 pub mod projection;
 pub mod simulation_report;
 
-use self::projection::Projection;
-use super::electrical_profiles::ElectricalProfilesError;
+use std::collections::HashMap;
+use std::collections::HashSet;
 
-use crate::modelsv2::{Retrieve as RetrieveV2, RetrieveBatch, RollingStockModel};
-use crate::schema::rolling_stock::RollingStock;
-use crate::tables;
-use crate::views::infra::InfraApiError;
-use crate::{
-    core::{
-        simulation::{CoreTrainSchedule, SimulationRequest, SimulationResponse, TrainStop},
-        AsCoreRequest, CoreClient,
-    },
-    error::{InternalError, Result},
-    models::{
-        train_schedule::{
-            filter_invalid_trains, Allowance, RjsPowerRestrictionRange, ScheduledPoint,
-            TrainScheduleOptions,
-        },
-        Create, Delete, Pathfinding, Retrieve, Scenario, SimulationOutputChangeset, Timetable,
-        TrainSchedule, TrainScheduleChangeset, Update,
-    },
-    modelsv2::{ElectricalProfileSet, Infra, LightRollingStockModel},
-    schema::rolling_stock::RollingStockComfortType,
-    views::train_schedule::simulation_report::fetch_simulation_output,
-    DbPool, DieselJson,
-};
-
-use actix_web::web::{Data, Json, Path, Query};
-use actix_web::{delete, get, patch, post, HttpResponse};
-use diesel::{ExpressionMethods, QueryDsl};
+use actix_web::delete;
+use actix_web::get;
+use actix_web::patch;
+use actix_web::post;
+use actix_web::web::Data;
+use actix_web::web::Json;
+use actix_web::web::Path;
+use actix_web::web::Query;
+use actix_web::HttpResponse;
+use diesel::ExpressionMethods;
+use diesel::QueryDsl;
 use diesel_async::scoped_futures::ScopedFutureExt;
-use diesel_async::{AsyncConnection, RunQueryDsl};
+use diesel_async::AsyncConnection;
+use diesel_async::RunQueryDsl;
 use editoast_derive::EditoastError;
 use itertools::izip;
 use serde::Serialize;
 use serde_derive::Deserialize;
 use simulation_report::SimulationReport;
-use std::collections::{HashMap, HashSet};
 use thiserror::Error;
-use utoipa::{IntoParams, ToSchema};
+use utoipa::IntoParams;
+use utoipa::ToSchema;
+
+use self::projection::Projection;
+use super::electrical_profiles::ElectricalProfilesError;
+use crate::core::simulation::CoreTrainSchedule;
+use crate::core::simulation::SimulationRequest;
+use crate::core::simulation::SimulationResponse;
+use crate::core::simulation::TrainStop;
+use crate::core::AsCoreRequest;
+use crate::core::CoreClient;
+use crate::error::InternalError;
+use crate::error::Result;
+use crate::models::train_schedule::filter_invalid_trains;
+use crate::models::train_schedule::Allowance;
+use crate::models::train_schedule::RjsPowerRestrictionRange;
+use crate::models::train_schedule::ScheduledPoint;
+use crate::models::train_schedule::TrainScheduleOptions;
+use crate::models::Create;
+use crate::models::Delete;
+use crate::models::Pathfinding;
+use crate::models::Retrieve;
+use crate::models::Scenario;
+use crate::models::SimulationOutputChangeset;
+use crate::models::Timetable;
+use crate::models::TrainSchedule;
+use crate::models::TrainScheduleChangeset;
+use crate::models::Update;
+use crate::modelsv2::ElectricalProfileSet;
+use crate::modelsv2::Infra;
+use crate::modelsv2::LightRollingStockModel;
+use crate::modelsv2::Retrieve as RetrieveV2;
+use crate::modelsv2::RetrieveBatch;
+use crate::modelsv2::RollingStockModel;
+use crate::schema::rolling_stock::RollingStock;
+use crate::schema::rolling_stock::RollingStockComfortType;
+use crate::tables;
+use crate::views::infra::InfraApiError;
+use crate::views::train_schedule::simulation_report::fetch_simulation_output;
+use crate::DbPool;
+use crate::DieselJson;
 
 crate::routes! {
     "/train_schedule" => {
@@ -793,17 +817,16 @@ pub fn process_simulation_response(
 #[cfg(test)]
 pub mod tests {
     use actix_http::StatusCode;
-    use actix_web::test::{call_service, read_body_json, TestRequest};
+    use actix_web::test::call_service;
+    use actix_web::test::read_body_json;
+    use actix_web::test::TestRequest;
     use rstest::rstest;
 
-    use crate::{
-        fixtures::tests::db_pool,
-        fixtures::tests::pathfinding,
-        views::{
-            tests::create_test_service,
-            train_schedule::{TrainSimulationResponse, TrainsSimulationRequest},
-        },
-    };
+    use crate::fixtures::tests::db_pool;
+    use crate::fixtures::tests::pathfinding;
+    use crate::views::tests::create_test_service;
+    use crate::views::train_schedule::TrainSimulationResponse;
+    use crate::views::train_schedule::TrainsSimulationRequest;
 
     #[rstest]
     async fn empty_timetable() {

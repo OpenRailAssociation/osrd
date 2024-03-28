@@ -32,7 +32,10 @@ pub fn get_cache_tile_key(view_prefix: &str, tile: &Tile) -> String {
 #[cfg(test)]
 mod tests {
 
-    use super::{get_cache_tile_key, get_layer_cache_prefix, get_view_cache_prefix, Tile};
+    use super::get_cache_tile_key;
+    use super::get_layer_cache_prefix;
+    use super::get_view_cache_prefix;
+    use super::Tile;
 
     #[test]
     fn test_get_layer_cache_prefix() {

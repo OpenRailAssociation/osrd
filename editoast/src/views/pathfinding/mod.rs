@@ -2,48 +2,61 @@ mod electrical_profiles;
 mod electrifications;
 mod path_rangemap;
 
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
+use std::collections::HashSet;
 
-use actix_web::{
-    delete, get, post, put,
-    web::{Data, Json, Path},
-    HttpResponse, Responder,
-};
-use chrono::{DateTime, Utc};
+use actix_web::delete;
+use actix_web::get;
+use actix_web::post;
+use actix_web::put;
+use actix_web::web::Data;
+use actix_web::web::Json;
+use actix_web::web::Path;
+use actix_web::HttpResponse;
+use actix_web::Responder;
+use chrono::DateTime;
+use chrono::Utc;
 use derivative::Derivative;
 use diesel_async::AsyncPgConnection as PgConnection;
 use editoast_derive::EditoastError;
-use geos::geojson::{self, Geometry};
+use geos::geojson::Geometry;
+use geos::geojson::{self};
 use geos::Geom;
-
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
+use serde::Serialize;
 use thiserror::Error;
 use utoipa::ToSchema;
 
-use crate::{
-    core::{
-        pathfinding::{
-            PathfindingRequest as CorePathfindingRequest, PathfindingResponse,
-            PathfindingWaypoints, Waypoint as CoreWaypoint,
-        },
-        AsCoreRequest, CoreClient,
-    },
-    error::Result,
-    models::{
-        Create, Curve, Delete, PathWaypoint, Pathfinding, PathfindingChangeset, PathfindingPayload,
-        Retrieve, Slope, Update,
-    },
-    modelsv2::{
-        infra_objects::TrackSectionModel, Infra, OperationalPointModel, Retrieve as RetrieveV2,
-        RollingStockModel,
-    },
-    schema::{
-        rolling_stock::RollingStock,
-        utils::geometry::{diesel_linestring_to_geojson, geojson_to_diesel_linestring},
-        ApplicableDirectionsTrackRange, OperationalPoint, TrackRange, TrackSection,
-    },
-    DbPool,
-};
+use crate::core::pathfinding::PathfindingRequest as CorePathfindingRequest;
+use crate::core::pathfinding::PathfindingResponse;
+use crate::core::pathfinding::PathfindingWaypoints;
+use crate::core::pathfinding::Waypoint as CoreWaypoint;
+use crate::core::AsCoreRequest;
+use crate::core::CoreClient;
+use crate::error::Result;
+use crate::models::Create;
+use crate::models::Curve;
+use crate::models::Delete;
+use crate::models::PathWaypoint;
+use crate::models::Pathfinding;
+use crate::models::PathfindingChangeset;
+use crate::models::PathfindingPayload;
+use crate::models::Retrieve;
+use crate::models::Slope;
+use crate::models::Update;
+use crate::modelsv2::infra_objects::TrackSectionModel;
+use crate::modelsv2::Infra;
+use crate::modelsv2::OperationalPointModel;
+use crate::modelsv2::Retrieve as RetrieveV2;
+use crate::modelsv2::RollingStockModel;
+use crate::schema::rolling_stock::RollingStock;
+use crate::schema::utils::geometry::diesel_linestring_to_geojson;
+use crate::schema::utils::geometry::geojson_to_diesel_linestring;
+use crate::schema::ApplicableDirectionsTrackRange;
+use crate::schema::OperationalPoint;
+use crate::schema::TrackRange;
+use crate::schema::TrackSection;
+use crate::DbPool;
 
 crate::routes! {
     "/pathfinding" => {
@@ -572,19 +585,26 @@ async fn del_pf(params: Path<PathfindingIdParam>, db_pool: Data<DbPool>) -> Resu
 #[cfg(test)]
 mod test {
     use actix_http::StatusCode;
-    use actix_web::test::{call_service, TestRequest};
+    use actix_web::test::call_service;
+    use actix_web::test::TestRequest;
     use serde_json::json;
 
+    use crate::assert_response_error_type_match;
+    use crate::assert_status_and_read;
     use crate::core::mocking::MockingClient;
-    use crate::fixtures::tests::{
-        db_pool, empty_infra, named_fast_rolling_stock, pathfinding, small_infra, TestFixture,
-    };
-    use crate::models::{Pathfinding, Retrieve};
+    use crate::fixtures::tests::db_pool;
+    use crate::fixtures::tests::empty_infra;
+    use crate::fixtures::tests::named_fast_rolling_stock;
+    use crate::fixtures::tests::pathfinding;
+    use crate::fixtures::tests::small_infra;
+    use crate::fixtures::tests::TestFixture;
+    use crate::models::Pathfinding;
+    use crate::models::Retrieve;
     use crate::modelsv2::Infra;
-    use crate::views::pathfinding::{PathResponse, PathfindingError};
+    use crate::views::pathfinding::PathResponse;
+    use crate::views::pathfinding::PathfindingError;
     use crate::views::tests::create_test_service;
     use crate::views::tests::create_test_service_with_core_client;
-    use crate::{assert_response_error_type_match, assert_status_and_read};
 
     #[rstest::rstest]
     async fn test_get_pf(#[future] pathfinding: TestFixture<Pathfinding>) {

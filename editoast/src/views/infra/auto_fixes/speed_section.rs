@@ -1,12 +1,25 @@
-use super::{Fix, OrderedOperation};
-use crate::schema::{
-    operation::{CacheOperation, DeleteOperation, Operation, RailjsonObject, UpdateOperation},
-    InfraError, InfraErrorType, OSRDIdentified as _, OSRDObject as _, ObjectRef, SpeedSection,
-};
-use itertools::Itertools as _;
-use json_patch::{Patch, PatchOperation, RemoveOperation};
 use std::collections::HashMap;
-use tracing::{debug, error};
+
+use itertools::Itertools as _;
+use json_patch::Patch;
+use json_patch::PatchOperation;
+use json_patch::RemoveOperation;
+use tracing::debug;
+use tracing::error;
+
+use super::Fix;
+use super::OrderedOperation;
+use crate::schema::operation::CacheOperation;
+use crate::schema::operation::DeleteOperation;
+use crate::schema::operation::Operation;
+use crate::schema::operation::RailjsonObject;
+use crate::schema::operation::UpdateOperation;
+use crate::schema::InfraError;
+use crate::schema::InfraErrorType;
+use crate::schema::OSRDIdentified as _;
+use crate::schema::OSRDObject as _;
+use crate::schema::ObjectRef;
+use crate::schema::SpeedSection;
 
 fn invalid_reference_to_ordered_operation(
     speed_section: &SpeedSection,
@@ -78,15 +91,17 @@ pub fn fix_speed_section(
 mod tests {
     use json_patch::Patch;
 
-    use crate::{
-        infra_cache::ObjectCache,
-        schema::{
-            operation::{CacheOperation, Operation},
-            utils::Identifier,
-            ApplicableDirections, ApplicableDirectionsTrackRange, InfraError, OSRDObject as _,
-            ObjectRef, ObjectType, SpeedSection,
-        },
-    };
+    use crate::infra_cache::ObjectCache;
+    use crate::schema::operation::CacheOperation;
+    use crate::schema::operation::Operation;
+    use crate::schema::utils::Identifier;
+    use crate::schema::ApplicableDirections;
+    use crate::schema::ApplicableDirectionsTrackRange;
+    use crate::schema::InfraError;
+    use crate::schema::OSRDObject as _;
+    use crate::schema::ObjectRef;
+    use crate::schema::ObjectType;
+    use crate::schema::SpeedSection;
 
     #[test]
     fn invalid_refs_ordered_speed_section() {

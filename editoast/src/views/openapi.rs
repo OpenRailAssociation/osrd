@@ -2,20 +2,23 @@
 //! OpenAPI with the new generated one incrementally in order to avoid protential
 //! breaking changes.
 
-use std::{
-    collections::{BTreeMap, VecDeque},
-    path::Path,
-};
+use std::collections::BTreeMap;
+use std::collections::VecDeque;
+use std::path::Path;
 
 use actix_web::dev::HttpServiceFactory;
 use serde_json::Value as Json;
 use tracing::warn;
-use utoipa::{
-    openapi::{
-        path::PathItemBuilder, schema::AnyOf, AllOf, Array, Object, OneOf, PathItem, RefOr, Schema,
-    },
-    ToSchema,
-};
+use utoipa::openapi::path::PathItemBuilder;
+use utoipa::openapi::schema::AnyOf;
+use utoipa::openapi::AllOf;
+use utoipa::openapi::Array;
+use utoipa::openapi::Object;
+use utoipa::openapi::OneOf;
+use utoipa::openapi::PathItem;
+use utoipa::openapi::RefOr;
+use utoipa::openapi::Schema;
+use utoipa::ToSchema;
 
 pub struct Routes<F: HttpServiceFactory> {
     pub service: F,
@@ -653,8 +656,10 @@ impl OpenApiMerger {
 #[cfg(test)]
 mod test {
     use pretty_assertions::assert_eq;
-    use rstest::{fixture, rstest};
-    use serde_json::{json, Value};
+    use rstest::fixture;
+    use rstest::rstest;
+    use serde_json::json;
+    use serde_json::Value;
 
     use super::OpenApiMerger;
 

@@ -1,24 +1,34 @@
 use std::collections::HashMap;
 
 use actix_web::post;
-use actix_web::web::{Data, Json, Path, Query};
+use actix_web::web::Data;
+use actix_web::web::Json;
+use actix_web::web::Path;
+use actix_web::web::Query;
 use chashmap::CHashMap;
 use derivative::Derivative;
+use editoast_derive::EditoastError;
 use pathfinding::prelude::yen;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
+use serde::Serialize;
 use thiserror::Error;
-use utoipa::{IntoParams, ToSchema};
+use utoipa::IntoParams;
+use utoipa::ToSchema;
 
 use crate::error::Result;
-use crate::infra_cache::{Graph, InfraCache};
+use crate::infra_cache::Graph;
+use crate::infra_cache::InfraCache;
 use crate::modelsv2::prelude::*;
 use crate::modelsv2::Infra;
 use crate::schema::utils::Identifier;
-use crate::schema::{Direction, DirectionalTrackRange, Endpoint, ObjectType, TrackEndpoint};
+use crate::schema::Direction;
+use crate::schema::DirectionalTrackRange;
+use crate::schema::Endpoint;
+use crate::schema::ObjectType;
+use crate::schema::TrackEndpoint;
 use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraIdParam;
 use crate::DbPool;
-use editoast_derive::EditoastError;
 
 crate::routes! {
     "/pathfinding" => {
@@ -402,8 +412,10 @@ mod tests {
     use crate::infra_cache::tests::create_small_infra_cache;
     use crate::infra_cache::Graph;
     use crate::schema::utils::Identifier;
-    use crate::schema::{Direction, DirectionalTrackRange};
-    use crate::views::infra::pathfinding::{PathfindingInput, PathfindingTrackLocationInput};
+    use crate::schema::Direction;
+    use crate::schema::DirectionalTrackRange;
+    use crate::views::infra::pathfinding::PathfindingInput;
+    use crate::views::infra::pathfinding::PathfindingTrackLocationInput;
 
     fn expected_path() -> Vec<DirectionalTrackRange> {
         vec![

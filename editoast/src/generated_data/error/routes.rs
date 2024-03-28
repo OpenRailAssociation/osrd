@@ -1,10 +1,17 @@
-use std::collections::{HashMap, HashSet};
-
-use crate::generated_data::error::ObjectErrorGenerator;
-use crate::infra_cache::{Graph, InfraCache, ObjectCache};
-use crate::schema::{InfraError, OSRDIdentified, OSRDObject, ObjectRef, ObjectType, Waypoint};
+use std::collections::HashMap;
+use std::collections::HashSet;
 
 use super::GlobalErrorGenerator;
+use crate::generated_data::error::ObjectErrorGenerator;
+use crate::infra_cache::Graph;
+use crate::infra_cache::InfraCache;
+use crate::infra_cache::ObjectCache;
+use crate::schema::InfraError;
+use crate::schema::OSRDIdentified;
+use crate::schema::OSRDObject;
+use crate::schema::ObjectRef;
+use crate::schema::ObjectType;
+use crate::schema::Waypoint;
 
 pub const OBJECT_GENERATORS: [ObjectErrorGenerator<Context>; 5] = [
     ObjectErrorGenerator::new(1, check_entry_point_ref),
@@ -206,17 +213,22 @@ fn check_missing(
 
 #[cfg(test)]
 mod tests {
-    use crate::generated_data::error::routes::{
-        check_entry_point_ref, check_exit_point_ref, check_missing, check_path,
-        check_release_detectors_ref, check_switches_directions_ref,
-    };
-    use crate::infra_cache::tests::{
-        create_detector_cache, create_route_cache, create_small_infra_cache,
-    };
-    use crate::infra_cache::Graph;
-    use crate::schema::{Direction, OSRDObject, ObjectRef, ObjectType, Waypoint};
-
     use super::InfraError;
+    use crate::generated_data::error::routes::check_entry_point_ref;
+    use crate::generated_data::error::routes::check_exit_point_ref;
+    use crate::generated_data::error::routes::check_missing;
+    use crate::generated_data::error::routes::check_path;
+    use crate::generated_data::error::routes::check_release_detectors_ref;
+    use crate::generated_data::error::routes::check_switches_directions_ref;
+    use crate::infra_cache::tests::create_detector_cache;
+    use crate::infra_cache::tests::create_route_cache;
+    use crate::infra_cache::tests::create_small_infra_cache;
+    use crate::infra_cache::Graph;
+    use crate::schema::Direction;
+    use crate::schema::OSRDObject;
+    use crate::schema::ObjectRef;
+    use crate::schema::ObjectType;
+    use crate::schema::Waypoint;
 
     #[test]
     fn invalid_ref_entry_point() {

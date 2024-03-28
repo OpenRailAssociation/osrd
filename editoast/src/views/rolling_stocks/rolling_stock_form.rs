@@ -1,14 +1,17 @@
 use derivative::Derivative;
-use serde_derive::{Deserialize, Serialize};
+use serde_derive::Deserialize;
+use serde_derive::Serialize;
 use utoipa::ToSchema;
-use validator::{Validate, ValidationError};
+use validator::Validate;
+use validator::ValidationError;
 
-use crate::{
-    modelsv2::{rolling_stock_model::validate_rolling_stock, Changeset, Model, RollingStockModel},
-    schema::rolling_stock::{
-        RollingStockCommon, RollingStockMetadata, ROLLING_STOCK_RAILJSON_VERSION,
-    },
-};
+use crate::modelsv2::rolling_stock_model::validate_rolling_stock;
+use crate::modelsv2::Changeset;
+use crate::modelsv2::Model;
+use crate::modelsv2::RollingStockModel;
+use crate::schema::rolling_stock::RollingStockCommon;
+use crate::schema::rolling_stock::RollingStockMetadata;
+use crate::schema::rolling_stock::ROLLING_STOCK_RAILJSON_VERSION;
 
 #[derive(Debug, Clone, Deserialize, Serialize, ToSchema, Validate, Derivative)]
 #[derivative(PartialEq)]

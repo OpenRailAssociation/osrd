@@ -1,10 +1,12 @@
 //! Defines [SearchAst]
 
-use crate::error::Result;
+use std::fmt::Debug;
+
 use editoast_derive::EditoastError;
 use serde_json::Value;
-use std::fmt::Debug;
 use thiserror::Error;
+
+use crate::error::Result;
 
 #[derive(Debug, PartialEq, Error, EditoastError)]
 #[editoast_error(base_id = "search")]
@@ -101,8 +103,9 @@ impl SearchAst {
 #[cfg(test)]
 mod tests {
 
-    use super::*;
     use serde_json::json;
+
+    use super::*;
 
     #[test]
     fn from_null() {

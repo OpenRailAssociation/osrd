@@ -19,28 +19,39 @@ pub mod timetable;
 pub mod train_schedule;
 pub mod v2;
 
-use self::openapi::{merge_path_items, remove_discriminator, OpenApiMerger, Routes};
-use crate::client::get_app_version;
-use crate::core::version::CoreVersionRequest;
-use crate::core::{self, AsCoreRequest, CoreClient};
-use crate::error::{self, ErrorDefinition, Result};
-use crate::map;
-use crate::models;
-use crate::schema;
-use crate::RedisClient;
-use crate::{schemas, DbPool};
 use actix_web::dev::HttpServiceFactory;
-use actix_web::web::{Data, Json};
-use actix_web::{get, services};
+use actix_web::get;
+use actix_web::services;
+use actix_web::web::Data;
+use actix_web::web::Json;
 use diesel::sql_query;
 use itertools::Itertools;
 use redis::cmd;
-use serde_derive::{Deserialize, Serialize};
+use serde_derive::Deserialize;
+use serde_derive::Serialize;
 use tracing::debug;
-use utoipa::{
-    openapi::RefOr,
-    {OpenApi, ToSchema},
-};
+use utoipa::openapi::RefOr;
+use utoipa::OpenApi;
+use utoipa::ToSchema;
+
+use self::openapi::merge_path_items;
+use self::openapi::remove_discriminator;
+use self::openapi::OpenApiMerger;
+use self::openapi::Routes;
+use crate::client::get_app_version;
+use crate::core::version::CoreVersionRequest;
+use crate::core::AsCoreRequest;
+use crate::core::CoreClient;
+use crate::core::{self};
+use crate::error::ErrorDefinition;
+use crate::error::Result;
+use crate::error::{self};
+use crate::map;
+use crate::models;
+use crate::schema;
+use crate::schemas;
+use crate::DbPool;
+use crate::RedisClient;
 
 // This function is only temporary while our migration to using utoipa is
 // still going
@@ -343,27 +354,37 @@ async fn core_version(core: Data<CoreClient>) -> Json<Version> {
 mod tests {
     use std::collections::HashMap;
 
-    use crate::client::{MapLayersConfig, PostgresConfig, RedisConfig};
+    use actix_http::body::BoxBody;
+    use actix_http::Request;
+    use actix_http::StatusCode;
+    use actix_web::dev::Service;
+    use actix_web::dev::ServiceResponse;
+    use actix_web::middleware::NormalizePath;
+    use actix_web::test as actix_test;
+    use actix_web::test::call_and_read_body_json;
+    use actix_web::test::call_service;
+    use actix_web::test::init_service;
+    use actix_web::test::TestRequest;
+    use actix_web::web::Data;
+    use actix_web::web::JsonConfig;
+    use actix_web::App;
+    use actix_web::Error;
+    use chashmap::CHashMap;
+    use diesel_async::pooled_connection::deadpool::Pool;
+    use diesel_async::pooled_connection::AsyncDieselConnectionManager as ConnectionManager;
+    use diesel_async::AsyncPgConnection as PgConnection;
+
+    use super::routes;
+    use super::OpenApiRoot;
+    use crate::client::MapLayersConfig;
+    use crate::client::PostgresConfig;
+    use crate::client::RedisConfig;
     use crate::core::mocking::MockingClient;
     use crate::core::CoreClient;
     use crate::error::InternalError;
     use crate::infra_cache::InfraCache;
     use crate::map::MapLayers;
     use crate::RedisClient;
-
-    use super::{routes, OpenApiRoot};
-    use actix_http::body::BoxBody;
-    use actix_http::{Request, StatusCode};
-    use actix_web::dev::{Service, ServiceResponse};
-    use actix_web::middleware::NormalizePath;
-    use actix_web::test as actix_test;
-    use actix_web::test::{call_and_read_body_json, call_service, init_service, TestRequest};
-    use actix_web::web::{Data, JsonConfig};
-    use actix_web::{App, Error};
-    use chashmap::CHashMap;
-    use diesel_async::pooled_connection::deadpool::Pool;
-    use diesel_async::pooled_connection::AsyncDieselConnectionManager as ConnectionManager;
-    use diesel_async::AsyncPgConnection as PgConnection;
 
     /// Asserts the status code of a simulated response and deserializes its body,
     /// with a nice failure message should the something fail

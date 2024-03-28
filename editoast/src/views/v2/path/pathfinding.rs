@@ -1,25 +1,34 @@
+use std::collections::hash_map::DefaultHasher;
+use std::collections::HashMap;
+use std::hash::Hash;
+use std::hash::Hasher;
+
+use actix_web::post;
+use actix_web::web::Data;
+use actix_web::web::Json;
+use actix_web::web::Path;
+use diesel_async::AsyncPgConnection as PgConnection;
+use serde::Deserialize;
+use serde::Serialize;
+use utoipa::ToSchema;
+
 use super::CACHE_PATH_EXPIRATION;
 use crate::error::Result;
-use crate::modelsv2::{
-    OperationalPointModel, RetrieveBatch, RetrieveBatchUnchecked, TrackSectionModel,
-};
-use crate::redis_utils::{RedisClient, RedisConnection};
+use crate::modelsv2::OperationalPointModel;
+use crate::modelsv2::RetrieveBatch;
+use crate::modelsv2::RetrieveBatchUnchecked;
+use crate::modelsv2::TrackSectionModel;
+use crate::redis_utils::RedisClient;
+use crate::redis_utils::RedisConnection;
 use crate::schema::operational_point::OperationalPoint;
 use crate::schema::track_section::LoadingGaugeType;
 use crate::schema::utils::Identifier;
 use crate::schema::v2::trainschedule::PathItemLocation;
 use crate::schema::TrackOffset;
 use crate::views::get_app_version;
-use crate::views::v2::path::{retrieve_infra_version, TrackRange};
+use crate::views::v2::path::retrieve_infra_version;
+use crate::views::v2::path::TrackRange;
 use crate::DbPool;
-use actix_web::post;
-use actix_web::web::{Data, Json, Path};
-use diesel_async::AsyncPgConnection as PgConnection;
-use serde::{Deserialize, Serialize};
-use std::collections::hash_map::DefaultHasher;
-use std::collections::HashMap;
-use std::hash::{Hash, Hasher};
-use utoipa::ToSchema;
 
 type TrackOffsetResult = std::result::Result<Vec<Vec<TrackOffset>>, PathfindingResult>;
 

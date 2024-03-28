@@ -13,12 +13,15 @@ mod speed_section;
 mod switch;
 mod track_section;
 
-pub use error::generate_infra_errors;
-
 use async_trait::async_trait;
 use buffer_stop::BufferStopLayer;
 use detector::DetectorLayer;
+use diesel::sql_query;
+use diesel::sql_types::BigInt;
+use diesel_async::AsyncPgConnection as PgConnection;
+use diesel_async::RunQueryDsl;
 use electrification::ElectrificationLayer;
+pub use error::generate_infra_errors;
 use error::ErrorLayer;
 use neutral_section::NeutralSectionLayer;
 use neutral_sign::NeutralSignLayer;
@@ -33,9 +36,6 @@ use track_section::TrackSectionLayer;
 use crate::error::Result;
 use crate::infra_cache::InfraCache;
 use crate::schema::operation::CacheOperation;
-use diesel::sql_query;
-use diesel::sql_types::BigInt;
-use diesel_async::{AsyncPgConnection as PgConnection, RunQueryDsl};
 
 /// This trait define how a generated data table should be handled
 #[async_trait]
@@ -154,11 +154,14 @@ pub async fn update_all(
 
 #[cfg(test)]
 pub mod tests {
-    use crate::fixtures::tests::db_pool;
-    use crate::generated_data::{clear_all, refresh_all, update_all};
-    use crate::modelsv2::infra::tests::test_infra_transaction;
     use actix_web::test as actix_test;
     use diesel_async::scoped_futures::ScopedFutureExt;
+
+    use crate::fixtures::tests::db_pool;
+    use crate::generated_data::clear_all;
+    use crate::generated_data::refresh_all;
+    use crate::generated_data::update_all;
+    use crate::modelsv2::infra::tests::test_infra_transaction;
 
     #[actix_test] // Slow test
     async fn refresh_all_test() {

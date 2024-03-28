@@ -1,5 +1,6 @@
-use super::AsCoreRequest;
 use serde::Serialize;
+
+use super::AsCoreRequest;
 
 /// A Core infra load request
 #[derive(Debug, Serialize)]

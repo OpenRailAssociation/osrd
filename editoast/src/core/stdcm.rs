@@ -1,13 +1,15 @@
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
+use serde::Serialize;
 
-use crate::core::{pathfinding::Waypoint, simulation::SimulationResponse};
+use super::pathfinding::PathfindingResponse;
+use super::AsCoreRequest;
+use super::Json;
+use crate::core::pathfinding::Waypoint;
+use crate::core::simulation::SimulationResponse;
 use crate::models::SpacingRequirement;
 use crate::modelsv2::RollingStockModel;
 use crate::schema::rolling_stock::RollingStockComfortType;
 use crate::views::stdcm::AllowanceValue;
-
-use super::pathfinding::PathfindingResponse;
-use super::{AsCoreRequest, Json};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct STDCMCoreRequest {

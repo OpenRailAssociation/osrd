@@ -2,14 +2,18 @@ mod bounding_box;
 mod layer_cache;
 mod layers;
 
-use crate::error::Result;
-pub use bounding_box::{BoundingBox, Zone};
-pub use layers::{Layer, MapLayers, View};
+pub use bounding_box::BoundingBox;
+pub use bounding_box::Zone;
+pub use layers::Layer;
+pub use layers::MapLayers;
+pub use layers::View;
 use redis::AsyncCommands;
 
-pub use self::layer_cache::{
-    get_cache_tile_key, get_layer_cache_prefix, get_view_cache_prefix, Tile,
-};
+pub use self::layer_cache::get_cache_tile_key;
+pub use self::layer_cache::get_layer_cache_prefix;
+pub use self::layer_cache::get_view_cache_prefix;
+pub use self::layer_cache::Tile;
+use crate::error::Result;
 use crate::RedisConnection;
 
 crate::schemas! {

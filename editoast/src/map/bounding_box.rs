@@ -1,6 +1,9 @@
 use editoast_derive::EditoastError;
-use geos::geojson::{self, Geometry, Value::LineString};
-use serde::{Deserialize, Serialize};
+use geos::geojson::Geometry;
+use geos::geojson::Value::LineString;
+use geos::geojson::{self};
+use serde::Deserialize;
+use serde::Serialize;
 use thiserror::Error;
 use utoipa::ToSchema;
 

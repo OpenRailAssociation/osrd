@@ -1,8 +1,11 @@
 use std::collections::HashMap;
 
+use serde::Deserialize;
+use serde::Serialize;
+
 use crate::models::PathfindingPayload;
-use crate::schema::{utils::Identifier, DirectionalTrackRange};
-use serde::{Deserialize, Serialize};
+use crate::schema::utils::Identifier;
+use crate::schema::DirectionalTrackRange;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Projection {

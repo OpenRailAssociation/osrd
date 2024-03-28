@@ -2,10 +2,9 @@
 
 use std::fmt::Display;
 
-use super::{
-    context::TypedAst,
-    typing::{AstType, TypeSpec},
-};
+use super::context::TypedAst;
+use super::typing::AstType;
+use super::typing::TypeSpec;
 
 /// A small wrapper around SQL expression syntax that is more convenient
 /// and reliable to use (as opposed to multiple string interpolations)
@@ -172,9 +171,9 @@ fn value_to_sql(value: &TypedAst, string_bindings: &mut Vec<String>) -> String {
 #[cfg(test)]
 mod test {
 
-    use crate::views::search::{context::TypedAst, typing::AstType};
-
     use super::SqlQuery;
+    use crate::views::search::context::TypedAst;
+    use crate::views::search::typing::AstType;
 
     #[test]
     fn render_literal() {

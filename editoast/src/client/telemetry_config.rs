@@ -1,4 +1,5 @@
-use clap::{Args, ValueEnum};
+use clap::Args;
+use clap::ValueEnum;
 use derivative::Derivative;
 use url::Url;
 

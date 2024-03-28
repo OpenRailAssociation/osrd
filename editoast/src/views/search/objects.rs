@@ -1,5 +1,6 @@
 use chrono::NaiveDateTime;
-use editoast_derive::{Search, SearchConfigStore};
+use editoast_derive::Search;
+use editoast_derive::SearchConfigStore;
 use serde_derive::Serialize;
 use utoipa::ToSchema;
 

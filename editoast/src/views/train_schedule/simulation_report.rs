@@ -1,30 +1,40 @@
-use crate::{
-    core::{
-        simulation::{SignalProjectionRequest, SignalUpdate},
-        AsCoreRequest, CoreClient,
-    },
-    error,
-    models::{
-        train_schedule::{ElectrificationRange, Mrsp, SimulationPowerRestrictionRange},
-        Curve, FullResultStops, PathWaypoint, Pathfinding, PathfindingPayload, ResultPosition,
-        ResultSpeed, ResultStops, ResultTrain, Retrieve, SimulationOutput,
-        SimulationOutputChangeset, Slope, TrainSchedule,
-    },
-    modelsv2::RollingStockModel,
-    schema::utils::Identifier,
-    views::{
-        pathfinding::make_track_map,
-        train_schedule::{projection::Projection, TrainScheduleError::UnsimulatedTrainSchedule},
-    },
-    DbPool,
-};
-
 use actix_web::web::Data;
-use diesel::{ExpressionMethods, QueryDsl};
+use diesel::ExpressionMethods;
+use diesel::QueryDsl;
 use diesel_async::RunQueryDsl;
 use futures::future::OptionFuture;
-use serde_derive::{Deserialize, Serialize};
+use serde_derive::Deserialize;
+use serde_derive::Serialize;
 use utoipa::ToSchema;
+
+use crate::core::simulation::SignalProjectionRequest;
+use crate::core::simulation::SignalUpdate;
+use crate::core::AsCoreRequest;
+use crate::core::CoreClient;
+use crate::error;
+use crate::models::train_schedule::ElectrificationRange;
+use crate::models::train_schedule::Mrsp;
+use crate::models::train_schedule::SimulationPowerRestrictionRange;
+use crate::models::Curve;
+use crate::models::FullResultStops;
+use crate::models::PathWaypoint;
+use crate::models::Pathfinding;
+use crate::models::PathfindingPayload;
+use crate::models::ResultPosition;
+use crate::models::ResultSpeed;
+use crate::models::ResultStops;
+use crate::models::ResultTrain;
+use crate::models::Retrieve;
+use crate::models::SimulationOutput;
+use crate::models::SimulationOutputChangeset;
+use crate::models::Slope;
+use crate::models::TrainSchedule;
+use crate::modelsv2::RollingStockModel;
+use crate::schema::utils::Identifier;
+use crate::views::pathfinding::make_track_map;
+use crate::views::train_schedule::projection::Projection;
+use crate::views::train_schedule::TrainScheduleError::UnsimulatedTrainSchedule;
+use crate::DbPool;
 
 crate::schemas! {
     SimulationReport,

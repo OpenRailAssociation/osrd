@@ -1,3 +1,11 @@
+use derivative::Derivative;
+use geos::geojson::Geometry;
+use geos::geojson::Value::LineString;
+use serde::Deserialize;
+use serde::Serialize;
+use strum_macros::FromRepr;
+use utoipa::ToSchema;
+
 use super::utils::Identifier;
 use super::utils::NonBlankString;
 use super::Endpoint;
@@ -5,16 +13,9 @@ use super::OSRDIdentified;
 use super::OSRDTyped;
 use super::ObjectType;
 use super::TrackEndpoint;
-
 use crate::infra_cache::Cache;
 use crate::infra_cache::ObjectCache;
 use crate::map::BoundingBox;
-
-use derivative::Derivative;
-use geos::geojson::{Geometry, Value::LineString};
-use serde::{Deserialize, Serialize};
-use strum_macros::FromRepr;
-use utoipa::ToSchema;
 
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
@@ -192,10 +193,11 @@ impl Cache for TrackSectionCache {
 
 #[cfg(test)]
 mod test {
-    use super::TrackSectionExtensions;
-    use crate::map::BoundingBox;
     use geos::geojson;
     use serde_json::from_str;
+
+    use super::TrackSectionExtensions;
+    use crate::map::BoundingBox;
 
     /// Test bounding box from linestring
     #[test]

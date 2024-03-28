@@ -19,26 +19,41 @@ pub mod track_section;
 pub mod utils;
 pub mod v2;
 
-pub use buffer_stop::{BufferStop, BufferStopCache};
-pub use detector::{Detector, DetectorCache};
+pub use buffer_stop::BufferStop;
+pub use buffer_stop::BufferStopCache;
+pub use detector::Detector;
+pub use detector::DetectorCache;
 pub use electrification::Electrification;
-pub use errors::{InfraError, InfraErrorType};
+pub use errors::InfraError;
+pub use errors::InfraErrorType;
 pub use geo_json::GeoJson;
 pub use neutral_section::NeutralSection;
-pub use operational_point::{
-    OperationalPoint, OperationalPointCache, OperationalPointExtensions,
-    OperationalPointIdentifierExtension, OperationalPointPart,
-};
-pub use railjson::{RailJson, RAILJSON_VERSION};
+pub use operational_point::OperationalPoint;
+pub use operational_point::OperationalPointCache;
+pub use operational_point::OperationalPointExtensions;
+pub use operational_point::OperationalPointIdentifierExtension;
+pub use operational_point::OperationalPointPart;
+pub use railjson::RailJson;
+pub use railjson::RAILJSON_VERSION;
 pub use route::Route;
-pub use signal::{LogicalSignal, Signal, SignalCache, SignalExtensions, SignalSncfExtension};
-pub use speed_section::{Speed, SpeedSection};
-pub use switch::{Switch, SwitchCache};
-pub use switch_type::{
-    builtin_node_types_list, Crossing, DoubleSlipSwitch, Link, PointSwitch, SingleSlipSwitch,
-    SwitchType,
-};
-pub use track_section::{TrackSection, TrackSectionCache};
+pub use signal::LogicalSignal;
+pub use signal::Signal;
+pub use signal::SignalCache;
+pub use signal::SignalExtensions;
+pub use signal::SignalSncfExtension;
+pub use speed_section::Speed;
+pub use speed_section::SpeedSection;
+pub use switch::Switch;
+pub use switch::SwitchCache;
+pub use switch_type::builtin_node_types_list;
+pub use switch_type::Crossing;
+pub use switch_type::DoubleSlipSwitch;
+pub use switch_type::Link;
+pub use switch_type::PointSwitch;
+pub use switch_type::SingleSlipSwitch;
+pub use switch_type::SwitchType;
+pub use track_section::TrackSection;
+pub use track_section::TrackSectionCache;
 
 cfg_if! {
     if #[cfg(test)] {
@@ -49,13 +64,16 @@ cfg_if! {
     }
 }
 
-use self::utils::{Identifier, NonBlankString};
-
 use derivative::Derivative;
 use enum_map::Enum;
-use serde::{Deserialize, Serialize};
-use strum_macros::{Display, EnumIter};
+use serde::Deserialize;
+use serde::Serialize;
+use strum_macros::Display;
+use strum_macros::EnumIter;
 use utoipa::ToSchema;
+
+use self::utils::Identifier;
+use self::utils::NonBlankString;
 
 crate::schemas! {
     ObjectType,

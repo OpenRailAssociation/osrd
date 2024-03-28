@@ -1,16 +1,15 @@
 //! Defines [QueryContext] and operations to enrich or exploring it
 
-use std::{collections::HashMap, rc::Rc};
+use std::collections::HashMap;
+use std::rc::Rc;
 
-use crate::error::Result;
 use editoast_derive::EditoastError;
-
-use super::{
-    sqlquery::SqlQuery,
-    typing::{AstType, TypeSpec},
-};
-
 use thiserror::Error;
+
+use super::sqlquery::SqlQuery;
+use super::typing::AstType;
+use super::typing::TypeSpec;
+use crate::error::Result;
 
 /// Represents a [super::searchast::SearchAst] that also carries valid type information
 ///

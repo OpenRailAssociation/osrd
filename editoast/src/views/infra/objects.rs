@@ -1,21 +1,32 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
+use std::collections::HashSet;
 
 use actix_web::dev::HttpServiceFactory;
 use actix_web::post;
-use actix_web::web::{Data, Json, Path};
-use diesel::sql_types::{Array, BigInt, Jsonb, Nullable, Text};
-use diesel::{sql_query, QueryableByName};
+use actix_web::web::Data;
+use actix_web::web::Json;
+use actix_web::web::Path;
+use diesel::sql_query;
+use diesel::sql_types::Array;
+use diesel::sql_types::BigInt;
+use diesel::sql_types::Jsonb;
+use diesel::sql_types::Nullable;
+use diesel::sql_types::Text;
+use diesel::QueryableByName;
 use diesel_async::RunQueryDsl;
 use diesel_json::Json as DieselJson;
-use serde::{Deserialize, Serialize};
+use editoast_derive::EditoastError;
+use serde::Deserialize;
+use serde::Serialize;
 use serde_json::Value as JsonValue;
 use thiserror::Error;
 
 use crate::error::Result;
-use crate::modelsv2::{get_geometry_layer_table, get_table};
-use crate::schema::{GeoJson, ObjectType};
+use crate::modelsv2::get_geometry_layer_table;
+use crate::modelsv2::get_table;
+use crate::schema::GeoJson;
+use crate::schema::ObjectType;
 use crate::DbPool;
-use editoast_derive::EditoastError;
 
 /// Return `/infra/<infra_id>/objects` routes
 pub fn routes() -> impl HttpServiceFactory {
@@ -122,18 +133,24 @@ async fn get_objects(
 #[cfg(test)]
 mod tests {
     use actix_web::http::StatusCode;
-    use actix_web::test::{call_service, read_body_json, TestRequest};
-    use serde_json::{json, Value as JsonValue};
+    use actix_web::test::call_service;
+    use actix_web::test::read_body_json;
+    use actix_web::test::TestRequest;
+    use rstest::*;
+    use serde_json::json;
+    use serde_json::Value as JsonValue;
 
-    use crate::fixtures::tests::{db_pool, empty_infra, TestFixture};
+    use crate::fixtures::tests::db_pool;
+    use crate::fixtures::tests::empty_infra;
+    use crate::fixtures::tests::TestFixture;
     use crate::modelsv2::Infra;
     use crate::schema::operation::Operation;
     use crate::schema::OSRDIdentified;
-    use crate::schema::{Switch, SwitchType};
+    use crate::schema::Switch;
+    use crate::schema::SwitchType;
     use crate::views::infra::objects::ObjectQueryable;
     use crate::views::infra::tests::create_object_request;
     use crate::views::tests::create_test_service;
-    use rstest::*;
 
     #[rstest]
     async fn check_invalid_ids(#[future] empty_infra: TestFixture<Infra>) {

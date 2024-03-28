@@ -8,33 +8,54 @@ mod pathfinding;
 mod railjson;
 mod routes;
 
+use std::collections::HashMap;
+use std::sync::Arc;
+
+use actix_web::delete;
+use actix_web::dev::HttpServiceFactory;
+use actix_web::get;
+use actix_web::post;
+use actix_web::put;
+use actix_web::web::scope;
+use actix_web::web::Data;
+use actix_web::web::Json;
+use actix_web::web::Path;
+use actix_web::web::Query;
+use actix_web::Either;
+use actix_web::HttpResponse;
+use actix_web::Responder;
+use chashmap::CHashMap;
+use diesel::sql_query;
+use diesel::sql_types::BigInt;
+use diesel::sql_types::Text;
+use diesel::QueryableByName;
+use editoast_derive::EditoastError;
+use serde::Deserialize;
+use serde::Serialize;
+use thiserror::Error;
+use utoipa::IntoParams;
+
 use self::edition::edit;
 use super::params::List;
 use crate::core::infra_loading::InfraLoadRequest;
-use crate::core::infra_state::{InfraStateRequest, InfraStateResponse};
-use crate::core::{AsCoreRequest, CoreClient};
+use crate::core::infra_state::InfraStateRequest;
+use crate::core::infra_state::InfraStateResponse;
+use crate::core::AsCoreRequest;
+use crate::core::CoreClient;
 use crate::error::Result;
-use crate::infra_cache::{InfraCache, ObjectCache};
-use crate::map::{self, MapLayers};
-use crate::models::{List as ModelList, NoParams};
-use crate::modelsv2::{prelude::*, Infra};
+use crate::infra_cache::InfraCache;
+use crate::infra_cache::ObjectCache;
+use crate::map::MapLayers;
+use crate::map::{self};
+use crate::models::List as ModelList;
+use crate::models::NoParams;
+use crate::modelsv2::prelude::*;
+use crate::modelsv2::Infra;
 use crate::schema::SwitchType;
-use crate::views::pagination::{PaginatedResponse, PaginationQueryParam};
+use crate::views::pagination::PaginatedResponse;
+use crate::views::pagination::PaginationQueryParam;
 use crate::DbPool;
 use crate::RedisClient;
-
-use actix_web::dev::HttpServiceFactory;
-use actix_web::web::{scope, Data, Json, Path, Query};
-use actix_web::{delete, get, post, put, Either, HttpResponse, Responder};
-use chashmap::CHashMap;
-use diesel::sql_types::{BigInt, Text};
-use diesel::{sql_query, QueryableByName};
-use editoast_derive::EditoastError;
-use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
-use std::sync::Arc;
-use thiserror::Error;
-use utoipa::IntoParams;
 
 crate::routes! {
     "/infra" => {
@@ -523,25 +544,40 @@ async fn cache_status(
 
 #[cfg(test)]
 pub mod tests {
-    use super::*;
-    use crate::core::mocking::MockingClient;
-    use crate::fixtures::tests::{
-        db_pool, empty_infra, named_other_rolling_stock, small_infra, IntoFixture, TestFixture,
-    };
-    use crate::modelsv2::infra::DEFAULT_INFRA_VERSION;
-    use crate::modelsv2::{get_geometry_layer_table, get_table};
-    use crate::schema::operation::{Operation, RailjsonObject};
-    use crate::schema::{Electrification, ObjectType, SpeedSection, SwitchType, RAILJSON_VERSION};
-    use crate::views::tests::{create_test_service, create_test_service_with_core_client};
-    use crate::{assert_status_and_read, generated_data};
     use actix_http::Request;
     use actix_web::http::StatusCode;
     use actix_web::test as actix_test;
-    use actix_web::test::{call_and_read_body_json, call_service, read_body_json, TestRequest};
+    use actix_web::test::call_and_read_body_json;
+    use actix_web::test::call_service;
+    use actix_web::test::read_body_json;
+    use actix_web::test::TestRequest;
     use diesel_async::RunQueryDsl;
     use rstest::*;
     use serde_json::json;
     use strum::IntoEnumIterator;
+
+    use super::*;
+    use crate::assert_status_and_read;
+    use crate::core::mocking::MockingClient;
+    use crate::fixtures::tests::db_pool;
+    use crate::fixtures::tests::empty_infra;
+    use crate::fixtures::tests::named_other_rolling_stock;
+    use crate::fixtures::tests::small_infra;
+    use crate::fixtures::tests::IntoFixture;
+    use crate::fixtures::tests::TestFixture;
+    use crate::generated_data;
+    use crate::modelsv2::get_geometry_layer_table;
+    use crate::modelsv2::get_table;
+    use crate::modelsv2::infra::DEFAULT_INFRA_VERSION;
+    use crate::schema::operation::Operation;
+    use crate::schema::operation::RailjsonObject;
+    use crate::schema::Electrification;
+    use crate::schema::ObjectType;
+    use crate::schema::SpeedSection;
+    use crate::schema::SwitchType;
+    use crate::schema::RAILJSON_VERSION;
+    use crate::views::tests::create_test_service;
+    use crate::views::tests::create_test_service_with_core_client;
 
     fn delete_infra_request(infra_id: i64) -> Request {
         TestRequest::delete()

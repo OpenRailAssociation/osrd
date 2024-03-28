@@ -1,9 +1,11 @@
 use std::sync::Arc;
 
-use super::{CoreClient, CoreResponse};
 use actix_http::StatusCode;
 use reqwest::Body;
 use serde::Serialize;
+
+use super::CoreClient;
+use super::CoreResponse;
 
 /// A mocking core client maintaining a list of stub requests to simulate
 ///

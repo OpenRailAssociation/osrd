@@ -1,8 +1,11 @@
 use super::NoContext;
 use crate::generated_data::error::ObjectErrorGenerator;
 use crate::infra_cache::Graph;
-use crate::infra_cache::{InfraCache, ObjectCache};
-use crate::schema::{InfraError, ObjectRef, ObjectType};
+use crate::infra_cache::InfraCache;
+use crate::infra_cache::ObjectCache;
+use crate::schema::InfraError;
+use crate::schema::ObjectRef;
+use crate::schema::ObjectType;
 
 pub const OBJECT_GENERATORS: [ObjectErrorGenerator<NoContext>; 2] = [
     ObjectErrorGenerator::new(1, check_empty),
@@ -55,12 +58,13 @@ pub fn check_op_parts(op: &ObjectCache, infra_cache: &InfraCache, _: &Graph) -> 
 
 #[cfg(test)]
 mod tests {
-    use crate::infra_cache::tests::{create_operational_point_cache, create_small_infra_cache};
-    use crate::schema::{ObjectRef, ObjectType};
-
     use super::check_op_parts;
     use super::InfraError;
+    use crate::infra_cache::tests::create_operational_point_cache;
+    use crate::infra_cache::tests::create_small_infra_cache;
     use crate::infra_cache::Graph;
+    use crate::schema::ObjectRef;
+    use crate::schema::ObjectType;
 
     #[test]
     fn invalid_ref() {

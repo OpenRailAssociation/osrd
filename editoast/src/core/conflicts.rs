@@ -1,7 +1,10 @@
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
+use serde::Serialize;
 
-use super::{AsCoreRequest, Json};
-use crate::models::{RoutingRequirement, SpacingRequirement};
+use super::AsCoreRequest;
+use super::Json;
+use crate::models::RoutingRequirement;
+use crate::models::SpacingRequirement;
 use crate::views::timetable::ConflictType;
 
 #[derive(Debug, Serialize)]

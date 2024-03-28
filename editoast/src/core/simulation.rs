@@ -1,16 +1,25 @@
-use super::{AsCoreRequest, Json};
-use crate::models::train_schedule::{
-    ElectrificationRange, Mrsp, RjsPowerRestrictionRange, SimulationPowerRestrictionRange,
-    TrainScheduleOptions,
-};
-use crate::models::{
-    Allowance, Pathfinding, PathfindingPayload, ResultTrain, RoutePath, ScheduledPoint,
-    SignalSighting, ZoneUpdate,
-};
-use crate::schema::rolling_stock::{RollingStock, RollingStockComfortType};
-use crate::schema::TrackLocation;
-use serde_derive::{Deserialize, Serialize};
+use serde_derive::Deserialize;
+use serde_derive::Serialize;
 use utoipa::ToSchema;
+
+use super::AsCoreRequest;
+use super::Json;
+use crate::models::train_schedule::ElectrificationRange;
+use crate::models::train_schedule::Mrsp;
+use crate::models::train_schedule::RjsPowerRestrictionRange;
+use crate::models::train_schedule::SimulationPowerRestrictionRange;
+use crate::models::train_schedule::TrainScheduleOptions;
+use crate::models::Allowance;
+use crate::models::Pathfinding;
+use crate::models::PathfindingPayload;
+use crate::models::ResultTrain;
+use crate::models::RoutePath;
+use crate::models::ScheduledPoint;
+use crate::models::SignalSighting;
+use crate::models::ZoneUpdate;
+use crate::schema::rolling_stock::RollingStock;
+use crate::schema::rolling_stock::RollingStockComfortType;
+use crate::schema::TrackLocation;
 
 crate::schemas! {
     SignalUpdate,

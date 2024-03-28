@@ -1,12 +1,18 @@
-use super::{
-    utils::{Identifier, NonBlankString},
-    ApplicableDirectionsTrackRange, OSRDIdentified, OSRDTyped, ObjectType, Sign,
-};
-use crate::infra_cache::{Cache, ObjectCache};
+use std::collections::HashMap;
 
 use derivative::Derivative;
-use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use serde::Deserialize;
+use serde::Serialize;
+
+use super::utils::Identifier;
+use super::utils::NonBlankString;
+use super::ApplicableDirectionsTrackRange;
+use super::OSRDIdentified;
+use super::OSRDTyped;
+use super::ObjectType;
+use super::Sign;
+use crate::infra_cache::Cache;
+use crate::infra_cache::ObjectCache;
 
 #[derive(Debug, Derivative, Clone, Serialize, PartialEq, Copy)]
 pub struct Speed(pub f64);
@@ -87,8 +93,12 @@ impl Cache for SpeedSection {
 
 #[cfg(test)]
 mod test {
-    use super::{SpeedSection, SpeedSectionExtensions};
-    use serde_json::{from_str, from_value, json};
+    use serde_json::from_str;
+    use serde_json::from_value;
+    use serde_json::json;
+
+    use super::SpeedSection;
+    use super::SpeedSectionExtensions;
 
     #[test]
     fn test_speed_section_extensions_deserialization() {

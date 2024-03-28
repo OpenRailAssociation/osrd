@@ -1,18 +1,31 @@
-use crate::error::Result;
-use crate::modelsv2::{Changeset, DeleteStatic, Document, Model, Retrieve, Row, Save, Update};
-use crate::views::pagination::{Paginate, PaginatedResponse};
-use crate::views::projects::ProjectError;
-use crate::DbPool;
 use actix_web::web::Data;
 use async_trait::async_trait;
-use chrono::{NaiveDateTime, Utc};
-use diesel::{sql_query, ExpressionMethods, QueryDsl};
-use diesel_async::{AsyncPgConnection as PgConnection, RunQueryDsl};
+use chrono::NaiveDateTime;
+use chrono::Utc;
+use diesel::sql_query;
+use diesel::ExpressionMethods;
+use diesel::QueryDsl;
+use diesel_async::AsyncPgConnection as PgConnection;
+use diesel_async::RunQueryDsl;
 use editoast_derive::ModelV2;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
+use serde::Serialize;
 use utoipa::ToSchema;
 
+use crate::error::Result;
 use crate::models::List;
+use crate::modelsv2::Changeset;
+use crate::modelsv2::DeleteStatic;
+use crate::modelsv2::Document;
+use crate::modelsv2::Model;
+use crate::modelsv2::Retrieve;
+use crate::modelsv2::Row;
+use crate::modelsv2::Save;
+use crate::modelsv2::Update;
+use crate::views::pagination::Paginate;
+use crate::views::pagination::PaginatedResponse;
+use crate::views::projects::ProjectError;
+use crate::DbPool;
 
 crate::schemas! {
     Ordering,
@@ -173,12 +186,18 @@ impl List<Ordering> for Project {
 
 #[cfg(test)]
 pub mod test {
-    use super::*;
-    use crate::fixtures::tests::{db_pool, project, TestFixture};
-    use crate::models::List;
-    use crate::modelsv2::{DeleteStatic, Model, Ordering, Retrieve};
     use actix_web::web::Data;
     use rstest::rstest;
+
+    use super::*;
+    use crate::fixtures::tests::db_pool;
+    use crate::fixtures::tests::project;
+    use crate::fixtures::tests::TestFixture;
+    use crate::models::List;
+    use crate::modelsv2::DeleteStatic;
+    use crate::modelsv2::Model;
+    use crate::modelsv2::Ordering;
+    use crate::modelsv2::Retrieve;
 
     #[rstest]
     async fn create_delete_project(#[future] project: TestFixture<Project>, db_pool: Data<DbPool>) {

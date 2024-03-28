@@ -1,15 +1,16 @@
-use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+
+use serde::Deserialize;
+use serde::Serialize;
 use utoipa::ToSchema;
 
-use super::{
-    rolling_stock_livery::RollingStockLiveryMetadata, EnergySource, Gamma, RollingResistance,
-    RollingStockMetadata,
-};
-use crate::modelsv2::{
-    rolling_stock_livery::RollingStockLiveryMetadataModel,
-    rolling_stock_model::RollingStockSupportedSignalingSystems,
-};
+use super::rolling_stock_livery::RollingStockLiveryMetadata;
+use super::EnergySource;
+use super::Gamma;
+use super::RollingResistance;
+use super::RollingStockMetadata;
+use crate::modelsv2::rolling_stock_livery::RollingStockLiveryMetadataModel;
+use crate::modelsv2::rolling_stock_model::RollingStockSupportedSignalingSystems;
 use crate::schema::track_section::LoadingGaugeType;
 
 crate::schemas! {

@@ -1,39 +1,41 @@
-use super::{
-    pathfinding::{
-        fetch_pathfinding_payload_track_map, parse_pathfinding_payload_waypoints, PathResponse,
-        PathfindingStep,
-    },
-    timetable::get_simulated_schedules_from_timetable,
-    train_schedule::{
-        process_simulation_response,
-        projection::Projection,
-        simulation_report::{create_simulation_report, SimulationReport},
-    },
-};
-use crate::{
-    core::{
-        stdcm::{STDCMCoreRequest, STDCMCoreResponse, STDCMCoreStep},
-        AsCoreRequest, CoreClient,
-    },
-    error::Result,
-    models::{
-        Pathfinding, PathfindingChangeset, PathfindingPayload, SpacingRequirement, TrainSchedule,
-    },
-    modelsv2::{prelude::*, Infra},
-    schema::rolling_stock::RollingStockComfortType,
-    views::rolling_stocks::retrieve_existing_rolling_stock,
-    DbPool,
-};
-
-pub use crate::models::train_schedule::AllowanceValue;
-
-use actix_web::web::{Data, Json};
-use actix_web::{post, HttpResponse, Responder};
+use actix_web::post;
+use actix_web::web::Data;
+use actix_web::web::Json;
+use actix_web::HttpResponse;
+use actix_web::Responder;
 use derivative::Derivative;
 use editoast_derive::EditoastError;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
+use serde::Serialize;
 use thiserror::Error;
 use utoipa::ToSchema;
+
+use super::pathfinding::fetch_pathfinding_payload_track_map;
+use super::pathfinding::parse_pathfinding_payload_waypoints;
+use super::pathfinding::PathResponse;
+use super::pathfinding::PathfindingStep;
+use super::timetable::get_simulated_schedules_from_timetable;
+use super::train_schedule::process_simulation_response;
+use super::train_schedule::projection::Projection;
+use super::train_schedule::simulation_report::create_simulation_report;
+use super::train_schedule::simulation_report::SimulationReport;
+use crate::core::stdcm::STDCMCoreRequest;
+use crate::core::stdcm::STDCMCoreResponse;
+use crate::core::stdcm::STDCMCoreStep;
+use crate::core::AsCoreRequest;
+use crate::core::CoreClient;
+use crate::error::Result;
+pub use crate::models::train_schedule::AllowanceValue;
+use crate::models::Pathfinding;
+use crate::models::PathfindingChangeset;
+use crate::models::PathfindingPayload;
+use crate::models::SpacingRequirement;
+use crate::models::TrainSchedule;
+use crate::modelsv2::prelude::*;
+use crate::modelsv2::Infra;
+use crate::schema::rolling_stock::RollingStockComfortType;
+use crate::views::rolling_stocks::retrieve_existing_rolling_stock;
+use crate::DbPool;
 
 crate::routes! {
     "/stdcm" => {
@@ -300,21 +302,28 @@ async fn create_simulation_from_core_response(
 
 #[cfg(test)]
 mod tests {
+    use actix_http::StatusCode;
+    use actix_web::test::call_service;
+    use actix_web::test::TestRequest;
+    use pretty_assertions::assert_eq;
+    use serde_derive::Deserialize;
+    use serde_json::from_str;
+    use serde_json::json;
+    use serde_json::Value;
+
     use super::STDCMResponse;
     use crate::assert_status_and_read;
     use crate::core::mocking::MockingClient;
-    use crate::fixtures::tests::{
-        db_pool, named_fast_rolling_stock, small_infra, timetable, TestFixture,
-    };
+    use crate::fixtures::tests::db_pool;
+    use crate::fixtures::tests::named_fast_rolling_stock;
+    use crate::fixtures::tests::small_infra;
+    use crate::fixtures::tests::timetable;
+    use crate::fixtures::tests::TestFixture;
     use crate::models::Timetable;
     use crate::views::pathfinding::PathResponse;
-    use crate::views::tests::{create_test_service, create_test_service_with_core_client};
+    use crate::views::tests::create_test_service;
+    use crate::views::tests::create_test_service_with_core_client;
     use crate::views::train_schedule::simulation_report::SimulationReport;
-    use actix_http::StatusCode;
-    use actix_web::test::{call_service, TestRequest};
-    use pretty_assertions::assert_eq;
-    use serde_derive::Deserialize;
-    use serde_json::{from_str, json, Value};
 
     /// conditions: one train scheduled for 8:00
     /// stdcm looks for a spot between 8:00 and 10:00

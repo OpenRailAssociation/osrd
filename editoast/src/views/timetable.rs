@@ -1,23 +1,27 @@
 use std::collections::HashMap;
 
-use crate::core::conflicts::{ConflicDetectionRequest, TrainRequirement};
-
-use crate::core::{AsCoreRequest, CoreClient};
-use crate::error::Result;
-
-use crate::models::{
-    Retrieve, SimulationOutput, Timetable, TimetableWithSchedulesDetails, TrainSchedule,
-};
-
-use crate::views::train_schedule::TrainScheduleError;
-use crate::DbPool;
 use actix_web::get;
-use actix_web::web::{Data, Json, Path};
-
+use actix_web::web::Data;
+use actix_web::web::Json;
+use actix_web::web::Path;
 use editoast_derive::EditoastError;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
+use serde::Serialize;
 use thiserror::Error;
 use utoipa::ToSchema;
+
+use crate::core::conflicts::ConflicDetectionRequest;
+use crate::core::conflicts::TrainRequirement;
+use crate::core::AsCoreRequest;
+use crate::core::CoreClient;
+use crate::error::Result;
+use crate::models::Retrieve;
+use crate::models::SimulationOutput;
+use crate::models::Timetable;
+use crate::models::TimetableWithSchedulesDetails;
+use crate::models::TrainSchedule;
+use crate::views::train_schedule::TrainScheduleError;
+use crate::DbPool;
 
 mod import;
 
@@ -94,9 +98,13 @@ pub async fn get_simulated_schedules_from_timetable(
     db_pool: Data<DbPool>,
 ) -> Result<(Vec<TrainSchedule>, Vec<SimulationOutput>)> {
     let mut conn = db_pool.get().await?;
-    use crate::tables::train_schedule;
-    use diesel::{BelongingToDsl, ExpressionMethods, GroupedBy, QueryDsl};
+    use diesel::BelongingToDsl;
+    use diesel::ExpressionMethods;
+    use diesel::GroupedBy;
+    use diesel::QueryDsl;
     use diesel_async::RunQueryDsl;
+
+    use crate::tables::train_schedule;
 
     let train_schedules = train_schedule::table
         .filter(train_schedule::timetable_id.eq(timetable_id))
@@ -223,17 +231,17 @@ async fn get_conflicts(
 pub mod test {
 
     use actix_http::StatusCode;
-    use actix_web::test::{call_service, TestRequest};
+    use actix_web::test::call_service;
+    use actix_web::test::TestRequest;
     use rstest::rstest;
 
-    use crate::{
-        assert_status_and_read,
-        fixtures::tests::{
-            db_pool, get_other_rolling_stock_form, train_with_simulation_output_fixture_set,
-        },
-        models::{train_schedule::TrainScheduleValidation, TimetableWithSchedulesDetails},
-        views::tests::create_test_service,
-    };
+    use crate::assert_status_and_read;
+    use crate::fixtures::tests::db_pool;
+    use crate::fixtures::tests::get_other_rolling_stock_form;
+    use crate::fixtures::tests::train_with_simulation_output_fixture_set;
+    use crate::models::train_schedule::TrainScheduleValidation;
+    use crate::models::TimetableWithSchedulesDetails;
+    use crate::views::tests::create_test_service;
 
     #[rstest]
     async fn newer_rolling_stock_version() {

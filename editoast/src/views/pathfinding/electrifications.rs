@@ -1,22 +1,31 @@
-use crate::error::{InternalError, Result};
-use crate::infra_cache::InfraCache;
-use crate::models::{pathfinding::Pathfinding, Retrieve};
-use crate::modelsv2::{Infra, Retrieve as RetrieveV2};
-use crate::schema::ObjectType;
-use crate::views::pathfinding::path_rangemap::{make_path_range_map, TrackMap};
-use crate::views::pathfinding::{PathfindingError, PathfindingIdParam};
-use crate::DbPool;
-use actix_web::{
-    get,
-    web::{Data, Json, Path},
-};
+use std::collections::HashMap;
+use std::collections::HashSet;
+use std::fmt::Debug;
+
+use actix_web::get;
+use actix_web::web::Data;
+use actix_web::web::Json;
+use actix_web::web::Path;
 use chashmap::CHashMap;
 use osrd_containers::rangemap_utils::RangedValue;
 use rangemap::RangeMap;
-use serde::{Deserialize, Serialize};
-use std::collections::{HashMap, HashSet};
-use std::fmt::Debug;
+use serde::Deserialize;
+use serde::Serialize;
 use utoipa::ToSchema;
+
+use crate::error::InternalError;
+use crate::error::Result;
+use crate::infra_cache::InfraCache;
+use crate::models::pathfinding::Pathfinding;
+use crate::models::Retrieve;
+use crate::modelsv2::Infra;
+use crate::modelsv2::Retrieve as RetrieveV2;
+use crate::schema::ObjectType;
+use crate::views::pathfinding::path_rangemap::make_path_range_map;
+use crate::views::pathfinding::path_rangemap::TrackMap;
+use crate::views::pathfinding::PathfindingError;
+use crate::views::pathfinding::PathfindingIdParam;
+use crate::DbPool;
 
 crate::routes! {
     electrifications_on_path,
@@ -125,23 +134,26 @@ async fn electrifications_on_path(
 
 #[cfg(test)]
 pub mod tests {
-    use super::*;
-    use crate::{
-        fixtures::tests::{db_pool, empty_infra, TestFixture},
-        models::pathfinding::tests::simple_pathfinding_fixture,
-        modelsv2::{prelude::*, ElectrificationModel},
-        schema::{
-            ApplicableDirections, ApplicableDirectionsTrackRange,
-            Electrification as ElectrificationSchema,
-        },
-        views::tests::create_test_service,
-    };
     use actix_http::StatusCode;
-    use actix_web::test::{call_service, read_body_json, TestRequest};
+    use actix_web::test::call_service;
+    use actix_web::test::read_body_json;
+    use actix_web::test::TestRequest;
     use osrd_containers::range_map;
     use rstest::*;
     use serde_json::from_value;
     use ApplicableDirections::*;
+
+    use super::*;
+    use crate::fixtures::tests::db_pool;
+    use crate::fixtures::tests::empty_infra;
+    use crate::fixtures::tests::TestFixture;
+    use crate::models::pathfinding::tests::simple_pathfinding_fixture;
+    use crate::modelsv2::prelude::*;
+    use crate::modelsv2::ElectrificationModel;
+    use crate::schema::ApplicableDirections;
+    use crate::schema::ApplicableDirectionsTrackRange;
+    use crate::schema::Electrification as ElectrificationSchema;
+    use crate::views::tests::create_test_service;
 
     #[fixture]
     fn simple_mode_map() -> TrackMap<String> {

@@ -1,7 +1,8 @@
 use async_trait::async_trait;
 use diesel::sql_query;
 use diesel::sql_types::BigInt;
-use diesel_async::{AsyncPgConnection as PgConnection, RunQueryDsl};
+use diesel_async::AsyncPgConnection as PgConnection;
+use diesel_async::RunQueryDsl;
 
 use super::GeneratedData;
 use crate::error::Result;

@@ -1,16 +1,15 @@
-use super::OSRDIdentified;
-
-use super::utils::Identifier;
-use super::OSRDTyped;
-use super::ObjectType;
-
-use crate::infra_cache::Cache;
-use crate::infra_cache::ObjectCache;
+use std::collections::HashMap;
 
 use derivative::Derivative;
+use serde::Deserialize;
+use serde::Serialize;
 
-use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use super::utils::Identifier;
+use super::OSRDIdentified;
+use super::OSRDTyped;
+use super::ObjectType;
+use crate::infra_cache::Cache;
+use crate::infra_cache::ObjectCache;
 
 type StaticPortConnection = (&'static str, &'static str);
 type StaticMap = (&'static str, &'static [StaticPortConnection]);

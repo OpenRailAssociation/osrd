@@ -1,7 +1,12 @@
-use super::{Endpoint, OSRDIdentified, OSRDObject, ObjectType};
-use crate::schema::ObjectRef;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
+use serde::Serialize;
 use strum_macros::EnumVariantNames;
+
+use super::Endpoint;
+use super::OSRDIdentified;
+use super::OSRDObject;
+use super::ObjectType;
+use crate::schema::ObjectRef;
 
 #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
 #[serde(deny_unknown_fields)]

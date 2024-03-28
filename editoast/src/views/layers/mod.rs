@@ -2,22 +2,36 @@ mod mvt_utils;
 
 use std::collections::HashMap;
 
-use crate::client::{get_root_url, MapLayersConfig};
-use crate::error::Result;
-use crate::map::{get_cache_tile_key, get_view_cache_prefix, Layer, MapLayers, Tile};
-use crate::DbPool;
-use crate::RedisClient;
-use actix_web::web::{Data, Json, Path, Query};
-use actix_web::{get, HttpResponse};
+use actix_web::get;
+use actix_web::web::Data;
+use actix_web::web::Json;
+use actix_web::web::Path;
+use actix_web::web::Query;
+use actix_web::HttpResponse;
 use diesel::sql_query;
 use diesel::sql_types::Integer;
 use diesel_async::RunQueryDsl;
 use editoast_derive::EditoastError;
-use mvt_utils::{create_and_fill_mvt_tile, get_geo_json_sql_query, GeoJsonAndData};
+use mvt_utils::create_and_fill_mvt_tile;
+use mvt_utils::get_geo_json_sql_query;
+use mvt_utils::GeoJsonAndData;
 use redis::AsyncCommands;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
+use serde::Serialize;
 use thiserror::Error;
-use utoipa::{IntoParams, ToSchema};
+use utoipa::IntoParams;
+use utoipa::ToSchema;
+
+use crate::client::get_root_url;
+use crate::client::MapLayersConfig;
+use crate::error::Result;
+use crate::map::get_cache_tile_key;
+use crate::map::get_view_cache_prefix;
+use crate::map::Layer;
+use crate::map::MapLayers;
+use crate::map::Tile;
+use crate::DbPool;
+use crate::RedisClient;
 
 crate::routes! {
      "/layers" => {
@@ -220,18 +234,19 @@ async fn cache_and_get_mvt_tile(
 mod tests {
     use std::collections::HashMap;
 
-    use crate::map::MapLayers;
-    use crate::views::tests::create_test_service;
-    use crate::{error::InternalError, views::layers::ViewMetadata};
-    use actix_web::{
-        http::StatusCode,
-        test::{call_service, read_body_json, TestRequest},
-    };
+    use actix_web::http::StatusCode;
+    use actix_web::test::call_service;
+    use actix_web::test::read_body_json;
+    use actix_web::test::TestRequest;
     use rstest::rstest;
     use serde::de::DeserializeOwned;
     use serde_json::to_value;
 
     use super::LayersError;
+    use crate::error::InternalError;
+    use crate::map::MapLayers;
+    use crate::views::layers::ViewMetadata;
+    use crate::views::tests::create_test_service;
 
     /// Run a simple get query on `uri` and check the status code and json body
     async fn test_get_query<T: DeserializeOwned + PartialEq + std::fmt::Debug>(

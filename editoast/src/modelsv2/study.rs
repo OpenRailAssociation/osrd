@@ -1,22 +1,30 @@
-use crate::error::Result;
-use crate::models::List;
-use crate::modelsv2::{Changeset, Model, Row, Save};
-use crate::views::pagination::{Paginate, PaginatedResponse};
-use crate::DbPool;
 use actix_web::web::Data;
 use async_trait::async_trait;
 use chrono::NaiveDate;
-use chrono::{NaiveDateTime, Utc};
+use chrono::NaiveDateTime;
+use chrono::Utc;
 use diesel::sql_query;
 use diesel::sql_types::BigInt;
 use diesel::ExpressionMethods;
 use diesel::QueryDsl;
-use diesel_async::{AsyncPgConnection as PgConnection, RunQueryDsl};
+use diesel_async::AsyncPgConnection as PgConnection;
+use diesel_async::RunQueryDsl;
 use editoast_derive::ModelV2;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
+use serde::Serialize;
 use utoipa::ToSchema;
 
-use crate::modelsv2::projects::{Ordering, Tags};
+use crate::error::Result;
+use crate::models::List;
+use crate::modelsv2::projects::Ordering;
+use crate::modelsv2::projects::Tags;
+use crate::modelsv2::Changeset;
+use crate::modelsv2::Model;
+use crate::modelsv2::Row;
+use crate::modelsv2::Save;
+use crate::views::pagination::Paginate;
+use crate::views::pagination::PaginatedResponse;
+use crate::DbPool;
 
 #[derive(Clone, Debug, Serialize, Deserialize, ModelV2, ToSchema)]
 #[model(table = crate::tables::study)]
@@ -108,11 +116,18 @@ impl List<(i64, Ordering)> for Study {
 
 #[cfg(test)]
 pub mod test {
-    use super::*;
-    use crate::fixtures::tests::{db_pool, study_fixture_set, StudyFixtureSet, TestFixture};
-    use crate::models::List;
-    use crate::modelsv2::{DeleteStatic, Model, Ordering, Retrieve};
     use rstest::rstest;
+
+    use super::*;
+    use crate::fixtures::tests::db_pool;
+    use crate::fixtures::tests::study_fixture_set;
+    use crate::fixtures::tests::StudyFixtureSet;
+    use crate::fixtures::tests::TestFixture;
+    use crate::models::List;
+    use crate::modelsv2::DeleteStatic;
+    use crate::modelsv2::Model;
+    use crate::modelsv2::Ordering;
+    use crate::modelsv2::Retrieve;
 
     #[rstest]
     async fn create_delete_study(

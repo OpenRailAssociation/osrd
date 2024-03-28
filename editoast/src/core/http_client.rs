@@ -1,4 +1,8 @@
-use reqwest::{Client, ClientBuilder, Method, RequestBuilder, Url};
+use reqwest::Client;
+use reqwest::ClientBuilder;
+use reqwest::Method;
+use reqwest::RequestBuilder;
+use reqwest::Url;
 
 pub trait HttpClientBuilder {
     fn build_base_url(self, base_url: Url) -> HttpClient;

@@ -21,10 +21,13 @@
 //! assert!(serde_json::from_str::<MyStruct>(err_s).is_err());
 //! ```
 
+use std::ops::Deref;
+use std::str::FromStr;
+
 use chrono::Duration as ChronoDuration;
 use iso8601::Duration as IsoDuration;
-use serde::{Deserialize, Serialize};
-use std::{ops::Deref, str::FromStr};
+use serde::Deserialize;
+use serde::Serialize;
 
 /// Wrapper for `chrono::Duration` to use with Serde.
 /// This is useful to serialize `chrono::Duration` using the ISO 8601 duration format.
@@ -135,9 +138,12 @@ where
 
 #[cfg(test)]
 mod tests {
+    use serde::Deserialize;
+    use serde::Serialize;
+    use serde_json::from_str;
+    use serde_json::to_string;
+
     use super::Duration;
-    use serde::{Deserialize, Serialize};
-    use serde_json::{from_str, to_string};
 
     #[derive(Serialize, Deserialize)]
     struct MyStruct {

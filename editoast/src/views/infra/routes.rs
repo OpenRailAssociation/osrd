@@ -1,31 +1,32 @@
 use std::collections::HashMap;
 
-use crate::{
-    error::Result,
-    infra_cache::{Graph, InfraCache},
-    modelsv2::prelude::*,
-    modelsv2::Infra,
-    schema::DirectionalTrackRange,
-    views::{
-        infra::{InfraApiError, InfraIdParam},
-        params::List,
-    },
-    DbPool,
-};
-use actix_web::{
-    get, post,
-    web::{Data, Json, Path, Query},
-};
+use actix_web::get;
+use actix_web::post;
+use actix_web::web::Data;
+use actix_web::web::Json;
+use actix_web::web::Path;
+use actix_web::web::Query;
 use chashmap::CHashMap;
-use diesel::{
-    sql_query,
-    sql_types::{BigInt, Bool, Text},
-};
+use diesel::sql_query;
+use diesel::sql_types::BigInt;
+use diesel::sql_types::Bool;
+use diesel::sql_types::Text;
 use diesel_async::RunQueryDsl;
-
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
+use serde::Serialize;
 use strum_macros::Display;
 use utoipa::ToSchema;
+
+use crate::error::Result;
+use crate::infra_cache::Graph;
+use crate::infra_cache::InfraCache;
+use crate::modelsv2::prelude::*;
+use crate::modelsv2::Infra;
+use crate::schema::DirectionalTrackRange;
+use crate::views::infra::InfraApiError;
+use crate::views::infra::InfraIdParam;
+use crate::views::params::List;
+use crate::DbPool;
 
 crate::routes! {
     "/routes" => {
@@ -224,20 +225,26 @@ async fn get_routes_nodes(
 #[cfg(test)]
 mod tests {
     use actix_http::StatusCode;
-    use actix_web::test::{call_service, read_body_json, TestRequest};
+    use actix_web::test::call_service;
+    use actix_web::test::read_body_json;
+    use actix_web::test::TestRequest;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
     use serde_json::json;
 
-    use crate::{
-        assert_status_and_read,
-        fixtures::tests::{db_pool, empty_infra, small_infra},
-        schema::{operation::Operation, BufferStop, Detector, Route, TrackSection, Waypoint},
-        views::{
-            infra::routes::{RoutesResponse, WaypointType},
-            tests::create_test_service,
-        },
-    };
+    use crate::assert_status_and_read;
+    use crate::fixtures::tests::db_pool;
+    use crate::fixtures::tests::empty_infra;
+    use crate::fixtures::tests::small_infra;
+    use crate::schema::operation::Operation;
+    use crate::schema::BufferStop;
+    use crate::schema::Detector;
+    use crate::schema::Route;
+    use crate::schema::TrackSection;
+    use crate::schema::Waypoint;
+    use crate::views::infra::routes::RoutesResponse;
+    use crate::views::infra::routes::WaypointType;
+    use crate::views::tests::create_test_service;
 
     #[rstest]
     async fn get_routes_nodes() {

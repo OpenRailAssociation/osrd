@@ -1,32 +1,42 @@
 use std::pin::Pin;
 
-use crate::models::{List, NoParams};
-use crate::{
-    error::Result,
-    generated_data,
-    infra_cache::InfraCache,
-    modelsv2::{
-        get_geometry_layer_table, get_table, prelude::*, railjson::persist_railjson, Create,
-    },
-    schema::{ObjectType, RailJson, RAILJSON_VERSION},
-    tables::infra::dsl,
-    views::pagination::{Paginate, PaginatedResponse},
-    DbPool,
-};
-
 use actix_web::web::Data;
 use async_trait::async_trait;
-use chrono::{NaiveDateTime, Utc};
+use chrono::NaiveDateTime;
+use chrono::Utc;
 use derivative::Derivative;
-use diesel::{sql_query, sql_types::BigInt, QueryDsl};
-use diesel_async::{AsyncPgConnection as PgConnection, RunQueryDsl};
+use diesel::sql_query;
+use diesel::sql_types::BigInt;
+use diesel::QueryDsl;
+use diesel_async::AsyncPgConnection as PgConnection;
+use diesel_async::RunQueryDsl;
 use editoast_derive::ModelV2;
 use futures::future::try_join_all;
 use futures::Future;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
+use serde::Serialize;
 use strum::IntoEnumIterator;
-use tracing::{debug, error};
+use tracing::debug;
+use tracing::error;
 use uuid::Uuid;
+
+use crate::error::Result;
+use crate::generated_data;
+use crate::infra_cache::InfraCache;
+use crate::models::List;
+use crate::models::NoParams;
+use crate::modelsv2::get_geometry_layer_table;
+use crate::modelsv2::get_table;
+use crate::modelsv2::prelude::*;
+use crate::modelsv2::railjson::persist_railjson;
+use crate::modelsv2::Create;
+use crate::schema::ObjectType;
+use crate::schema::RailJson;
+use crate::schema::RAILJSON_VERSION;
+use crate::tables::infra::dsl;
+use crate::views::pagination::Paginate;
+use crate::views::pagination::PaginatedResponse;
+use crate::DbPool;
 
 /// The default version of a newly created infrastructure
 ///
@@ -230,25 +240,26 @@ impl List<NoParams> for Infra {
 
 #[cfg(test)]
 pub mod tests {
-    use super::Infra;
-    use crate::{
-        error::EditoastError,
-        fixtures::tests::{db_pool, small_infra, IntoFixture},
-        modelsv2::{
-            infra::DEFAULT_INFRA_VERSION,
-            prelude::*,
-            railjson::{find_all_schemas, RailJsonError},
-        },
-        schema::{RailJson, RAILJSON_VERSION},
-    };
     use actix_web::test as actix_test;
     use diesel::result::Error;
-    use diesel_async::{
-        scoped_futures::{ScopedBoxFuture, ScopedFutureExt},
-        AsyncConnection, AsyncPgConnection as PgConnection,
-    };
+    use diesel_async::scoped_futures::ScopedBoxFuture;
+    use diesel_async::scoped_futures::ScopedFutureExt;
+    use diesel_async::AsyncConnection;
+    use diesel_async::AsyncPgConnection as PgConnection;
     use rstest::rstest;
     use uuid::Uuid;
+
+    use super::Infra;
+    use crate::error::EditoastError;
+    use crate::fixtures::tests::db_pool;
+    use crate::fixtures::tests::small_infra;
+    use crate::fixtures::tests::IntoFixture;
+    use crate::modelsv2::infra::DEFAULT_INFRA_VERSION;
+    use crate::modelsv2::prelude::*;
+    use crate::modelsv2::railjson::find_all_schemas;
+    use crate::modelsv2::railjson::RailJsonError;
+    use crate::schema::RailJson;
+    use crate::schema::RAILJSON_VERSION;
 
     pub async fn test_infra_transaction<'a, F>(fn_test: F)
     where

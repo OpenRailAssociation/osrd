@@ -1,11 +1,12 @@
 use std::collections::HashMap;
 
-use crate::views::infra::InfraState;
-
-use super::{AsCoreRequest, Json};
 use derivative::Derivative;
 use serde::Serialize;
 use serde_derive::Deserialize;
+
+use super::AsCoreRequest;
+use super::Json;
+use crate::views::infra::InfraState;
 
 /// A Core infra load request
 #[derive(Debug, Serialize, Derivative)]

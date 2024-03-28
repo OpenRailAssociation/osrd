@@ -1,7 +1,10 @@
-use crate::schema::TrackRange;
-use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+
+use serde::Deserialize;
+use serde::Serialize;
 use utoipa::ToSchema;
+
+use crate::schema::TrackRange;
 
 #[derive(Debug, Serialize, Deserialize, PartialEq, Clone, ToSchema)]
 pub struct ElectricalProfile {

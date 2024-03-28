@@ -1,16 +1,21 @@
-use crate::{
-    error::Result, infra_cache::InfraCache, modelsv2::prelude::*, modelsv2::Infra,
-    schema::ObjectType, views::infra::InfraApiError, DbPool,
-};
-use actix_web::{
-    get,
-    web::{Data, Json, Path},
-};
+use std::collections::HashMap;
+
+use actix_web::get;
+use actix_web::web::Data;
+use actix_web::web::Json;
+use actix_web::web::Path;
 use chashmap::CHashMap;
 use editoast_derive::EditoastError;
 use serde_derive::Deserialize;
-use std::collections::HashMap;
 use thiserror::Error;
+
+use crate::error::Result;
+use crate::infra_cache::InfraCache;
+use crate::modelsv2::prelude::*;
+use crate::modelsv2::Infra;
+use crate::schema::ObjectType;
+use crate::views::infra::InfraApiError;
+use crate::DbPool;
 
 crate::routes! { attached }
 
@@ -95,15 +100,21 @@ mod tests {
     use std::collections::HashMap;
 
     use actix_http::StatusCode;
-    use actix_web::test::{call_and_read_body_json, call_service, TestRequest};
+    use actix_web::test::call_and_read_body_json;
+    use actix_web::test::call_service;
+    use actix_web::test::TestRequest;
+    use rstest::rstest;
 
-    use crate::fixtures::tests::{empty_infra, TestFixture};
+    use crate::fixtures::tests::empty_infra;
+    use crate::fixtures::tests::TestFixture;
     use crate::modelsv2::Infra;
     use crate::schema::operation::RailjsonObject;
-    use crate::schema::{Detector, OSRDIdentified, ObjectType, TrackSection};
+    use crate::schema::Detector;
+    use crate::schema::OSRDIdentified;
+    use crate::schema::ObjectType;
+    use crate::schema::TrackSection;
     use crate::views::infra::tests::create_object_request;
     use crate::views::tests::create_test_service;
-    use rstest::rstest;
 
     #[rstest]
     async fn get_attached_detector(#[future] empty_infra: TestFixture<Infra>) {

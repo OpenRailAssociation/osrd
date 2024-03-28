@@ -1,5 +1,7 @@
-use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+
+use serde::Deserialize;
+use serde::Serialize;
 
 pub type SpriteConfigs = HashMap<String, SpriteConfig>;
 

@@ -2,15 +2,17 @@ mod pathfinding;
 mod properties;
 
 use diesel_async::AsyncPgConnection as PgConnection;
-use serde::{Deserialize, Serialize};
+use editoast_derive::EditoastError;
+use serde::Deserialize;
+use serde::Serialize;
+use thiserror::Error;
 use utoipa::ToSchema;
 
 use crate::error::Result;
-use crate::modelsv2::{prelude::*, Infra};
+use crate::modelsv2::prelude::*;
+use crate::modelsv2::Infra;
 use crate::schema::utils::Identifier;
 use crate::schema::Direction;
-use editoast_derive::EditoastError;
-use thiserror::Error;
 
 /// Expiration time for the cache of the pathfinding and path properties.
 /// Note: 604800 seconds = 1 week

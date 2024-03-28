@@ -1,17 +1,31 @@
-use crate::error::Result;
-use crate::modelsv2::get_table;
-use crate::schema::{
-    BufferStop, Detector, Electrification, NeutralSection, OSRDIdentified, OSRDObject, ObjectType,
-    OperationalPoint, Route, Signal, SpeedSection, Switch, SwitchType, TrackSection,
-};
 use diesel::sql_query;
-use diesel::sql_types::{BigInt, Json, Text};
-use diesel_async::{AsyncPgConnection as PgConnection, RunQueryDsl};
+use diesel::sql_types::BigInt;
+use diesel::sql_types::Json;
+use diesel::sql_types::Text;
+use diesel_async::AsyncPgConnection as PgConnection;
+use diesel_async::RunQueryDsl;
 use json_patch::Patch;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
+use serde::Serialize;
 use serde_json::Value;
 
 use super::OperationError;
+use crate::error::Result;
+use crate::modelsv2::get_table;
+use crate::schema::BufferStop;
+use crate::schema::Detector;
+use crate::schema::Electrification;
+use crate::schema::NeutralSection;
+use crate::schema::OSRDIdentified;
+use crate::schema::OSRDObject;
+use crate::schema::ObjectType;
+use crate::schema::OperationalPoint;
+use crate::schema::Route;
+use crate::schema::Signal;
+use crate::schema::SpeedSection;
+use crate::schema::Switch;
+use crate::schema::SwitchType;
+use crate::schema::TrackSection;
 
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(tag = "obj_type", deny_unknown_fields)]
@@ -234,11 +248,18 @@ pub mod tests {
     use diesel_async::AsyncPgConnection as PgConnection;
 
     use crate::modelsv2::infra::tests::test_infra_transaction;
-    use crate::schema::operation::create::{apply_create_operation, RailjsonObject};
-    use crate::schema::{
-        BufferStop, Detector, Electrification, OperationalPoint, Route, Signal, SpeedSection,
-        Switch, SwitchType, TrackSection,
-    };
+    use crate::schema::operation::create::apply_create_operation;
+    use crate::schema::operation::create::RailjsonObject;
+    use crate::schema::BufferStop;
+    use crate::schema::Detector;
+    use crate::schema::Electrification;
+    use crate::schema::OperationalPoint;
+    use crate::schema::Route;
+    use crate::schema::Signal;
+    use crate::schema::SpeedSection;
+    use crate::schema::Switch;
+    use crate::schema::SwitchType;
+    use crate::schema::TrackSection;
 
     pub async fn create_track(
         conn: &mut PgConnection,

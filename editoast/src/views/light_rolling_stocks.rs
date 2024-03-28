@@ -1,11 +1,19 @@
-use crate::error::Result;
-use crate::modelsv2::{LightRollingStockModel, Retrieve};
-use crate::schema::rolling_stock::light_rolling_stock::LightRollingStockWithLiveries;
-use crate::views::pagination::{PaginatedResponse, PaginationQueryParam};
-use crate::views::rolling_stocks::{RollingStockError, RollingStockIdParam};
-use crate::{decl_paginated_response, DbPool};
 use actix_web::get;
-use actix_web::web::{Data, Json, Path, Query};
+use actix_web::web::Data;
+use actix_web::web::Json;
+use actix_web::web::Path;
+use actix_web::web::Query;
+
+use crate::decl_paginated_response;
+use crate::error::Result;
+use crate::modelsv2::LightRollingStockModel;
+use crate::modelsv2::Retrieve;
+use crate::schema::rolling_stock::light_rolling_stock::LightRollingStockWithLiveries;
+use crate::views::pagination::PaginatedResponse;
+use crate::views::pagination::PaginationQueryParam;
+use crate::views::rolling_stocks::RollingStockError;
+use crate::views::rolling_stocks::RollingStockIdParam;
+use crate::DbPool;
 
 crate::routes! {
     "/light_rolling_stock" => {
@@ -80,18 +88,25 @@ async fn get(
 
 #[cfg(test)]
 mod tests {
-    use crate::fixtures::tests::{db_pool, named_fast_rolling_stock, rolling_stock_livery};
-    use crate::schema::rolling_stock::light_rolling_stock::LightRollingStockWithLiveries;
-    use crate::views::pagination::{PaginatedResponse, PaginationError};
-    use crate::views::tests::create_test_service;
-    use crate::DbPool;
-    use crate::{assert_response_error_type_match, assert_status_and_read};
+    use std::collections::HashSet;
+
     use actix_http::StatusCode;
     use actix_web::test as actix_test;
-    use actix_web::test::{call_service, TestRequest};
+    use actix_web::test::call_service;
+    use actix_web::test::TestRequest;
     use actix_web::web::Data;
     use rstest::*;
-    use std::collections::HashSet;
+
+    use crate::assert_response_error_type_match;
+    use crate::assert_status_and_read;
+    use crate::fixtures::tests::db_pool;
+    use crate::fixtures::tests::named_fast_rolling_stock;
+    use crate::fixtures::tests::rolling_stock_livery;
+    use crate::schema::rolling_stock::light_rolling_stock::LightRollingStockWithLiveries;
+    use crate::views::pagination::PaginatedResponse;
+    use crate::views::pagination::PaginationError;
+    use crate::views::tests::create_test_service;
+    use crate::DbPool;
 
     #[actix_test]
     async fn list_light_rolling_stock() {

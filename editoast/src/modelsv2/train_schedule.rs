@@ -1,9 +1,14 @@
-use crate::schema::v2::trainschedule::{
-    Comfort, Distribution, Margins, PathItem, PowerRestrictionItem, ScheduleItem,
-    TrainScheduleOptions,
-};
-use chrono::{DateTime, Utc};
+use chrono::DateTime;
+use chrono::Utc;
 use editoast_derive::ModelV2;
+
+use crate::schema::v2::trainschedule::Comfort;
+use crate::schema::v2::trainschedule::Distribution;
+use crate::schema::v2::trainschedule::Margins;
+use crate::schema::v2::trainschedule::PathItem;
+use crate::schema::v2::trainschedule::PowerRestrictionItem;
+use crate::schema::v2::trainschedule::ScheduleItem;
+use crate::schema::v2::trainschedule::TrainScheduleOptions;
 
 #[derive(Debug, Default, Clone, ModelV2)]
 #[model(table = crate::tables::train_schedule_v2)]

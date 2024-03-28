@@ -1,12 +1,14 @@
 use std::collections::HashMap;
 
+use osrd_containers::rangemap_utils::clip_range_map;
+use osrd_containers::rangemap_utils::extend_range_map;
+use osrd_containers::rangemap_utils::travel_range_map;
+use osrd_containers::rangemap_utils::Float;
+use osrd_containers::rangemap_utils::TravelDir;
+use rangemap::RangeMap;
+
 use crate::models::pathfinding::Pathfinding;
 use crate::schema::Direction;
-
-use osrd_containers::rangemap_utils::{
-    clip_range_map, extend_range_map, travel_range_map, Float, TravelDir,
-};
-use rangemap::RangeMap;
 
 /// A map of track IDs to range maps
 pub type TrackMap<T> = HashMap<String, RangeMap<Float, T>>;
@@ -47,9 +49,10 @@ pub fn make_path_range_map<T: Eq + Clone>(
 
 #[cfg(test)]
 mod tests {
+    use osrd_containers::range_map;
+
     use super::*;
     use crate::models::pathfinding::tests::simple_pathfinding;
-    use osrd_containers::range_map;
 
     #[test]
     fn test_make_path_range_map() {

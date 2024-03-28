@@ -1,9 +1,15 @@
-use diesel::sql_types::{Jsonb, Text};
-use mvt::{Feature, GeomData, GeomEncoder, Tile as MvtTile};
-use serde::{Deserialize, Serialize};
+use diesel::sql_types::Jsonb;
+use diesel::sql_types::Text;
+use mvt::Feature;
+use mvt::GeomData;
+use mvt::GeomEncoder;
+use mvt::Tile as MvtTile;
+use serde::Deserialize;
+use serde::Serialize;
 use serde_json::Value as JsonValue;
 
-use crate::{map::View, schema::GeoJson};
+use crate::map::View;
+use crate::schema::GeoJson;
 
 #[derive(Clone, QueryableByName, Queryable, Debug, Serialize, Deserialize)]
 pub struct GeoJsonAndData {
@@ -167,9 +173,10 @@ pub fn get_geo_json_sql_query(table_name: &str, view: &View) -> String {
 mod tests {
     use serde_json::json;
 
+    use super::create_and_fill_mvt_tile;
+    use super::get_geo_json_sql_query;
+    use super::GeoJsonAndData;
     use crate::map::MapLayers;
-
-    use super::{create_and_fill_mvt_tile, get_geo_json_sql_query, GeoJsonAndData};
 
     #[test]
     fn test_query_creation() {

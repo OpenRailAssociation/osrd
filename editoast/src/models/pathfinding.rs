@@ -2,20 +2,25 @@
 
 use std::collections::HashSet;
 
+use chrono::NaiveDateTime;
+use chrono::Utc;
+use derivative::Derivative;
+use diesel::result::Error as DieselError;
+use diesel::ExpressionMethods;
+use diesel::QueryDsl;
+use diesel_async::RunQueryDsl;
+use editoast_derive::Model;
+use geos::geojson;
+use postgis_diesel::types::*;
+use serde::Deserialize;
+use serde::Serialize;
+use utoipa::ToSchema;
+
 use crate::models::Identifiable;
 use crate::schema::Direction;
 use crate::schema::DirectionalTrackRange;
 use crate::schema::TrackLocation;
 use crate::tables::pathfinding;
-use chrono::{NaiveDateTime, Utc};
-use derivative::Derivative;
-use diesel::{result::Error as DieselError, ExpressionMethods, QueryDsl};
-use diesel_async::RunQueryDsl;
-use editoast_derive::Model;
-use geos::geojson;
-use postgis_diesel::types::*;
-use serde::{Deserialize, Serialize};
-use utoipa::ToSchema;
 
 crate::schemas! {
     Slope,
@@ -245,12 +250,12 @@ impl Identifiable for Pathfinding {
 
 #[cfg(test)]
 pub mod tests {
-    use crate::fixtures::tests::TestFixture;
-    use crate::models::Create;
-    use crate::DbPool;
     use actix_web::web::Data;
 
     use super::*;
+    use crate::fixtures::tests::TestFixture;
+    use crate::models::Create;
+    use crate::DbPool;
 
     pub fn simple_pathfinding(infra_id: i64) -> Pathfinding {
         //    T1       T2        T3       T4      T5

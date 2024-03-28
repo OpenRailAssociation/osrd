@@ -1,23 +1,36 @@
+use std::collections::HashMap;
+use std::collections::HashSet;
+
+use actix_web::delete;
+use actix_web::get;
+use actix_web::post;
+use actix_web::put;
+use actix_web::web::Data;
+use actix_web::web::Json;
+use actix_web::web::Path;
+use actix_web::web::Query;
+use actix_web::HttpResponse;
+use editoast_derive::EditoastError;
+use itertools::Itertools;
+use serde::Deserialize;
+use serde::Serialize;
+use serde_qs::actix::QsQuery;
+use thiserror::Error;
+use utoipa::IntoParams;
+use utoipa::ToSchema;
+
 use crate::core::CoreClient;
 use crate::error::Result;
 use crate::models::RoutingRequirement;
 use crate::models::SpacingRequirement;
-use crate::modelsv2::train_schedule::{TrainSchedule, TrainScheduleChangeset};
+use crate::modelsv2::train_schedule::TrainSchedule;
+use crate::modelsv2::train_schedule::TrainScheduleChangeset;
 use crate::modelsv2::Model;
 use crate::schema::utils::Identifier;
 use crate::schema::v2::trainschedule::Distribution;
 use crate::schema::v2::trainschedule::TrainScheduleBase;
-
-use crate::{DbPool, RedisClient};
-use actix_web::web::{Data, Json, Path, Query};
-use actix_web::{delete, get, post, put, HttpResponse};
-use editoast_derive::EditoastError;
-use itertools::Itertools;
-use serde::{Deserialize, Serialize};
-use serde_qs::actix::QsQuery;
-use std::collections::{HashMap, HashSet};
-use thiserror::Error;
-use utoipa::{IntoParams, ToSchema};
+use crate::DbPool;
+use crate::RedisClient;
 
 crate::routes! {
     "/v2/train_schedule" => {
@@ -471,16 +484,22 @@ pub async fn simulations_summary(
 #[cfg(test)]
 mod tests {
 
-    use super::*;
-    use crate::fixtures::tests::{
-        db_pool, timetable_v2, train_schedule_v2, TestFixture, TrainScheduleV2FixtureSet,
-    };
-    use crate::modelsv2::timetable::Timetable;
-    use crate::modelsv2::{Delete, DeleteStatic};
-    use crate::views::tests::create_test_service;
-    use actix_web::test::{call_and_read_body_json, call_service, TestRequest};
+    use actix_web::test::call_and_read_body_json;
+    use actix_web::test::call_service;
+    use actix_web::test::TestRequest;
     use rstest::rstest;
     use serde_json::json;
+
+    use super::*;
+    use crate::fixtures::tests::db_pool;
+    use crate::fixtures::tests::timetable_v2;
+    use crate::fixtures::tests::train_schedule_v2;
+    use crate::fixtures::tests::TestFixture;
+    use crate::fixtures::tests::TrainScheduleV2FixtureSet;
+    use crate::modelsv2::timetable::Timetable;
+    use crate::modelsv2::Delete;
+    use crate::modelsv2::DeleteStatic;
+    use crate::views::tests::create_test_service;
 
     #[rstest]
     async fn get_trainschedule(

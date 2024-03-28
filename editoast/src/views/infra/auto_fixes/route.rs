@@ -1,9 +1,16 @@
-use super::{new_ref_fix_delete_pair, Fix};
-use crate::schema::{
-    InfraError, InfraErrorType, OSRDIdentified as _, OSRDObject as _, ObjectRef, ObjectType, Route,
-};
 use std::collections::HashMap;
+
 use tracing::debug;
+
+use super::new_ref_fix_delete_pair;
+use super::Fix;
+use crate::schema::InfraError;
+use crate::schema::InfraErrorType;
+use crate::schema::OSRDIdentified as _;
+use crate::schema::OSRDObject as _;
+use crate::schema::ObjectRef;
+use crate::schema::ObjectType;
+use crate::schema::Route;
 
 pub fn fix_route(
     route: &Route,

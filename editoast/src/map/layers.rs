@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
+use serde::Serialize;
 
 // select C.stuff from A inner join B C on C.id = C.id;
 //                       \___________________________/

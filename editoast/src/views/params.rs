@@ -1,5 +1,8 @@
-use serde::{de::Error, Deserialize, Deserializer};
 use std::str::FromStr;
+
+use serde::de::Error;
+use serde::Deserialize;
+use serde::Deserializer;
 
 /// This parameter is used to deserialized a list of `T`
 #[derive(Debug, Default, Clone)]

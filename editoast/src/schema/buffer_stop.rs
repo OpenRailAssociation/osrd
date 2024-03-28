@@ -1,10 +1,15 @@
-use super::{OSRDIdentified, OSRDTyped, ObjectType};
+use derivative::Derivative;
+use diesel::sql_types::Double;
+use diesel::sql_types::Text;
+use serde::Deserialize;
+use serde::Serialize;
 
 use super::utils::Identifier;
-use crate::infra_cache::{Cache, ObjectCache};
-use derivative::Derivative;
-use diesel::sql_types::{Double, Text};
-use serde::{Deserialize, Serialize};
+use super::OSRDIdentified;
+use super::OSRDTyped;
+use super::ObjectType;
+use crate::infra_cache::Cache;
+use crate::infra_cache::ObjectCache;
 
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]

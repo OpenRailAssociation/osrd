@@ -1,6 +1,9 @@
 use diesel::backend::Backend;
-use diesel::deserialize::{FromSql, Queryable};
-use diesel::sql_types::{Array, Nullable, Text};
+use diesel::deserialize::FromSql;
+use diesel::deserialize::Queryable;
+use diesel::sql_types::Array;
+use diesel::sql_types::Nullable;
+use diesel::sql_types::Text;
 
 /// This type is used to represent a postgresql array of text.
 /// It is used to handle nullability of the array elements.

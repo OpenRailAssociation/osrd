@@ -1,24 +1,32 @@
-use crate::error::{InternalError, Result};
-use crate::models::{pathfinding::Pathfinding, Retrieve};
-use crate::modelsv2::{electrical_profiles::ElectricalProfileSet, LightRollingStockModel};
-use crate::schema::electrical_profiles::ElectricalProfileSetData;
-use crate::views::electrical_profiles::ElectricalProfilesError;
-use crate::views::pathfinding::PathfindingIdParam;
-use crate::views::pathfinding::{
-    path_rangemap::{make_path_range_map, TrackMap},
-    PathfindingError,
-};
-use crate::DbPool;
-use actix_web::{
-    get,
-    web::{Data, Json, Path, Query},
-};
+use std::collections::HashMap;
+use std::collections::HashSet;
+use std::fmt::Debug;
+
+use actix_web::get;
+use actix_web::web::Data;
+use actix_web::web::Json;
+use actix_web::web::Path;
+use actix_web::web::Query;
 use osrd_containers::rangemap_utils::RangedValue;
 use rangemap::RangeMap;
-use serde::{Deserialize, Serialize};
-use std::collections::{HashMap, HashSet};
-use std::fmt::Debug;
-use utoipa::{IntoParams, ToSchema};
+use serde::Deserialize;
+use serde::Serialize;
+use utoipa::IntoParams;
+use utoipa::ToSchema;
+
+use crate::error::InternalError;
+use crate::error::Result;
+use crate::models::pathfinding::Pathfinding;
+use crate::models::Retrieve;
+use crate::modelsv2::electrical_profiles::ElectricalProfileSet;
+use crate::modelsv2::LightRollingStockModel;
+use crate::schema::electrical_profiles::ElectricalProfileSetData;
+use crate::views::electrical_profiles::ElectricalProfilesError;
+use crate::views::pathfinding::path_rangemap::make_path_range_map;
+use crate::views::pathfinding::path_rangemap::TrackMap;
+use crate::views::pathfinding::PathfindingError;
+use crate::views::pathfinding::PathfindingIdParam;
+use crate::DbPool;
 
 crate::routes! {
     electrical_profiles_on_path
@@ -129,16 +137,24 @@ async fn electrical_profiles_on_path(
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::fixtures::tests::{db_pool, empty_infra, named_fast_rolling_stock, TestFixture};
-    use crate::models::pathfinding::tests::simple_pathfinding_fixture;
-    use crate::modelsv2::{prelude::*, Infra};
-    use crate::schema::{electrical_profiles::ElectricalProfile, TrackRange};
-    use crate::views::tests::create_test_service;
     use actix_http::StatusCode;
-    use actix_web::test::{call_service, read_body_json, TestRequest};
+    use actix_web::test::call_service;
+    use actix_web::test::read_body_json;
+    use actix_web::test::TestRequest;
     use osrd_containers::range_map;
     use rstest::*;
+
+    use super::*;
+    use crate::fixtures::tests::db_pool;
+    use crate::fixtures::tests::empty_infra;
+    use crate::fixtures::tests::named_fast_rolling_stock;
+    use crate::fixtures::tests::TestFixture;
+    use crate::models::pathfinding::tests::simple_pathfinding_fixture;
+    use crate::modelsv2::prelude::*;
+    use crate::modelsv2::Infra;
+    use crate::schema::electrical_profiles::ElectricalProfile;
+    use crate::schema::TrackRange;
+    use crate::views::tests::create_test_service;
 
     #[fixture]
     async fn electrical_profile_set(db_pool: Data<DbPool>) -> TestFixture<ElectricalProfileSet> {

@@ -1,11 +1,15 @@
 use std::collections::HashMap;
+use std::str::FromStr;
+
+use osm4routing::Coord;
+use osm4routing::Edge;
+use osm4routing::NodeId;
+use osmpbfreader::Node;
+use tracing::error;
+use tracing::warn;
 
 use crate::schema::utils::Identifier;
 use crate::schema::*;
-use osm4routing::{Coord, Edge, NodeId};
-use osmpbfreader::Node;
-use std::str::FromStr;
-use tracing::{error, warn};
 
 // Given an edge and a coordinate, returns the coordinates used to compute the angle
 // It uses the nearest OpenStreetMap node, and the other as the the rails might do a loop

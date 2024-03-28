@@ -1,11 +1,17 @@
-use std::{
-    fmt::Display,
-    ops::{Deref, DerefMut},
-};
+use std::fmt::Display;
+use std::ops::Deref;
+use std::ops::DerefMut;
 
-use rand::{distributions::Alphanumeric, thread_rng, Rng};
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
-use utoipa::openapi::{ObjectBuilder, RefOr, Schema};
+use rand::distributions::Alphanumeric;
+use rand::thread_rng;
+use rand::Rng;
+use serde::Deserialize;
+use serde::Deserializer;
+use serde::Serialize;
+use serde::Serializer;
+use utoipa::openapi::ObjectBuilder;
+use utoipa::openapi::RefOr;
+use utoipa::openapi::Schema;
 
 /// A wrapper around a String that ensures that the string is not empty.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]

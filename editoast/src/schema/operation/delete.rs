@@ -1,12 +1,16 @@
+use diesel::sql_query;
+use diesel::sql_types::BigInt;
+use diesel::sql_types::Text;
+use diesel_async::AsyncPgConnection as PgConnection;
+use diesel_async::RunQueryDsl;
+use serde::Deserialize;
+use serde::Serialize;
+
 use super::OperationError;
 use crate::error::Result;
 use crate::modelsv2::get_table;
 use crate::schema::ObjectRef;
 use crate::schema::ObjectType;
-use diesel::sql_query;
-use diesel::sql_types::{BigInt, Text};
-use diesel_async::{AsyncPgConnection as PgConnection, RunQueryDsl};
-use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq, Hash)]
 #[serde(deny_unknown_fields)]
@@ -58,18 +62,25 @@ impl From<ObjectRef> for DeleteOperation {
 
 #[cfg(test)]
 mod tests {
-    use crate::modelsv2::infra::tests::test_infra_transaction;
-    use crate::schema::operation::create::tests::{
-        create_buffer_stop, create_detector, create_electrification, create_op, create_route,
-        create_signal, create_speed, create_switch, create_track,
-    };
-    use crate::schema::operation::delete::DeleteOperation;
-    use crate::schema::{OSRDIdentified, OSRDObject};
     use actix_web::test as actix_test;
     use diesel::sql_query;
     use diesel::sql_types::BigInt;
     use diesel_async::scoped_futures::ScopedFutureExt;
     use diesel_async::RunQueryDsl;
+
+    use crate::modelsv2::infra::tests::test_infra_transaction;
+    use crate::schema::operation::create::tests::create_buffer_stop;
+    use crate::schema::operation::create::tests::create_detector;
+    use crate::schema::operation::create::tests::create_electrification;
+    use crate::schema::operation::create::tests::create_op;
+    use crate::schema::operation::create::tests::create_route;
+    use crate::schema::operation::create::tests::create_signal;
+    use crate::schema::operation::create::tests::create_speed;
+    use crate::schema::operation::create::tests::create_switch;
+    use crate::schema::operation::create::tests::create_track;
+    use crate::schema::operation::delete::DeleteOperation;
+    use crate::schema::OSRDIdentified;
+    use crate::schema::OSRDObject;
 
     #[derive(QueryableByName)]
     struct Count {

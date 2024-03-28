@@ -1,24 +1,26 @@
 use std::collections::HashMap;
 
-use crate::error::Result;
-use crate::modelsv2::{LightRollingStockModel, Retrieve};
-use crate::tables::train_schedule;
-use crate::{
-    models::{Identifiable, Timetable},
-    tables::simulation_output,
-};
-use crate::{DbPool, DieselJson};
 use actix_web::web::Data;
 use derivative::Derivative;
 use diesel::result::Error as DieselError;
-use diesel::{ExpressionMethods, QueryDsl};
+use diesel::ExpressionMethods;
+use diesel::QueryDsl;
 use diesel_async::RunQueryDsl;
-
 use editoast_derive::Model;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
+use serde::Serialize;
 use utoipa::ToSchema;
 
 use super::check_train_validity;
+use crate::error::Result;
+use crate::models::Identifiable;
+use crate::models::Timetable;
+use crate::modelsv2::LightRollingStockModel;
+use crate::modelsv2::Retrieve;
+use crate::tables::simulation_output;
+use crate::tables::train_schedule;
+use crate::DbPool;
+use crate::DieselJson;
 
 crate::schemas! {
     TrainSchedule,

@@ -1,16 +1,21 @@
-use crate::schema::utils::{Duration, Identifier, NonBlankString};
-use crate::schema::TrackOffset;
-use chrono::{DateTime, Utc};
+use std::collections::HashMap;
+use std::collections::HashSet;
+use std::hash::Hash;
+use std::str::FromStr;
+
+use chrono::DateTime;
+use chrono::Utc;
 use derivative::Derivative;
 use serde::de::Error as SerdeError;
-use serde::{Deserialize, Serialize};
-use std::hash::Hash;
-use std::{
-    collections::{HashMap, HashSet},
-    str::FromStr,
-};
+use serde::Deserialize;
+use serde::Serialize;
 use strum_macros::FromRepr;
 use utoipa::ToSchema;
+
+use crate::schema::utils::Duration;
+use crate::schema::utils::Identifier;
+use crate::schema::utils::NonBlankString;
+use crate::schema::TrackOffset;
 
 #[derive(Debug, Default, Clone, Serialize, ToSchema)]
 pub struct TrainScheduleBase {
@@ -330,11 +335,16 @@ pub enum Distribution {
 
 #[cfg(test)]
 mod tests {
-    use super::{MarginValue, Margins, PathItem, PathItemLocation};
-    use crate::schema::v2::trainschedule::{ScheduleItem, TrainScheduleBase};
-
     use chrono::Duration;
-    use serde_json::{from_str, to_string};
+    use serde_json::from_str;
+    use serde_json::to_string;
+
+    use super::MarginValue;
+    use super::Margins;
+    use super::PathItem;
+    use super::PathItemLocation;
+    use crate::schema::v2::trainschedule::ScheduleItem;
+    use crate::schema::v2::trainschedule::TrainScheduleBase;
 
     /// Test that the `MarginValue` enum can be deserialized from a string
     #[test]
