@@ -421,7 +421,7 @@ class Signal(BaseObjectTrait, TrackLocationTrait):
     """
 
     direction: Direction = Field(description="Direction of use of the signal")
-    sight_distance: float = Field(description="Visibility distance of the signal in meters", gt=0)
+    sight_distance: float = Field(description="Visibility distance of the signal in meters", ge=0)
     logical_signals: List[LogicalSignal] = Field(
         description="Logical signals bundled into this physical signal", default_factory=list
     )
