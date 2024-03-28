@@ -1,0 +1,24 @@
+[formatting]
+align_comments = false
+reorder_arrays = true
+
+[[rule]]
+include = ["**/Cargo.toml"]
+keys = ["dependencies", "dev-dependencies", "workspace.dependencies"]
+
+[rule.formatting]
+reorder_keys = true
+
+[[rule]]
+include = ["libs.versions.toml"]
+keys = ["librairies", "plugins", "versions"]
+
+[rule.formatting]
+reorder_keys = true
+
+[[rule]]
+include = ["**/pyproject.toml"]
+keys = ["tool.poetry.dependencies", "tool.poetry.group.dev.dependencies"]
+
+[rule.formatting]
+reorder_keys = true

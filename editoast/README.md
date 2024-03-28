@@ -46,6 +46,7 @@ cargo test -- --test-threads=4
 Here a list of components to help you in your development (see CI jobs if necessary):
 
 - [rustfmt](https://github.com/rust-lang/rustfmt): Format the whole code `cargo fmt`
+- [taplo](https://taplo.tamasfe.dev/): Format the TOML files with `taplo fmt`
 - [clippy](https://github.com/rust-lang/rust-clippy): Run a powerful linter `cargo clippy --all-features --all-targets -- -D warnings`
 - [grcov](https://github.com/mozilla/grcov): Check code coverage (see documentation on GitHub)
 
@@ -53,6 +54,12 @@ To install `rustfmt` and `clippy`, simply run:
 
 ```sh
 rustup component add rustfmt clippy
+```
+
+To install `taplo`, run:
+
+```sh
+cargo install --locked taplo-cli
 ```
 
 To setup `grcov`, please see [its documentation](https://github.com/mozilla/grcov#how-to-get-grcov)

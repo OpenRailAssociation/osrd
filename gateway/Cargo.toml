@@ -6,75 +6,80 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [workspace]
-members = [".", "actix_proxy", "actix_auth"]
+members = [".", "actix_auth", "actix_proxy"]
 # used for cargo test, build, fix, package, bench, doc, tree
-default-members = [".", "actix_proxy", "actix_auth"]
+default-members = [".", "actix_auth", "actix_proxy"]
 
 [workspace.dependencies]
 # common utils
-log = "0.4.20"
-env_logger = "0.10.2"
-either = "1.9.0"
-thiserror = "1.0.53"
 dyn-clone = "1.0.16"
-futures-util = "0.3.30"
+either = "1.9.0"
+env_logger = "0.10.2"
 futures = "0.3.29"
+futures-util = "0.3.30"
+log = "0.4.20"
 smallvec = "1.13.1"
+thiserror = "1.0.53"
 
 # main crate
+actix-files = "0.6.5"
+actix-session = "0.8"
+actix-web = "4.4.1"
+actix-web-opentelemetry = { version = "0.16.0", features = ["awc", "metrics"] }
+base64ct = "1.6.0"
 figment = "0.10.14"
-serde = { version = "1.0.196", features = ["derive"] }
-serde_json = "1.0.109"
 humantime = "2.1.0"
 humantime-serde = "1.1.1"
-actix-web = "4.4.1"
-actix-session = "0.8"
-actix-files = "0.6.5"
-base64ct = "1.6.0"
 opentelemetry = "0.21.0"
-opentelemetry_sdk = { version = "0.21.2", features = ["rt-tokio-current-thread", "metrics"] }
 opentelemetry-datadog = { version = "0.9.0", features = ["reqwest-client"] }
 opentelemetry-otlp = "0.14.0"
-actix-web-opentelemetry = { version = "0.16.0", features = ["awc", "metrics"] }
+opentelemetry_sdk = { version = "0.21.2", features = [
+  "metrics",
+  "rt-tokio-current-thread",
+] }
+serde = { version = "1.0.196", features = ["derive"] }
+serde_json = "1.0.109"
 
 # reverse proxy dependencies
-ipnet = "2.9"
-awc = { version = "3.3.0", features = ["rustls"] }  # the http / ws client
 actix = "0.13.3"
 actix-web-actors = "4.2.0"
+awc = { version = "3.3.0", features = ["rustls"] } # the http / ws client
 bytestring = "1.3.1"
-phf = "0.11.2"
+ipnet = "2.9"
 percent-encoding = "2.3.1"
+phf = "0.11.2"
 
 # actix_auth
-reqwest = { version = "0.11.24", default-features = false, features = ["rustls-tls-native-roots"] }
-openidconnect = { version = "3.5.0", default-features = false }
-url = "2.5.0"
 actix-web-httpauth = "0.8"
+openidconnect = { version = "3.5.0", default-features = false }
+reqwest = { version = "0.11.24", default-features = false, features = [
+  "rustls-tls-native-roots",
+] }
+url = "2.5.0"
 
 
 [dependencies]
-log.workspace = true
-env_logger.workspace = true
 either.workspace = true
+env_logger.workspace = true
+log.workspace = true
 
 # configuration parsing
-figment = { workspace = true, features = ["toml", "env"] }
-serde.workspace = true
-base64ct.workspace = true  # to parse the session secret key
+base64ct.workspace = true # to parse the session secret key
+figment = { workspace = true, features = ["env", "toml"] }
 humantime.workspace = true
 humantime-serde.workspace = true
+serde.workspace = true
 
 # web server
-actix-web.workspace = true
 actix-files.workspace = true
 actix-session = { workspace = true, features = ["cookie-session"] }
+actix-web.workspace = true
 actix_auth = { path = "./actix_auth" }
 actix_proxy = { path = "./actix_proxy" }
 
 # tracing / metrics
-opentelemetry.workspace = true
-opentelemetry_sdk.workspace = true
-opentelemetry-otlp.workspace = true
-opentelemetry-datadog.workspace = true
 actix-web-opentelemetry.workspace = true
+opentelemetry.workspace = true
+opentelemetry-datadog.workspace = true
+opentelemetry-otlp.workspace = true
+opentelemetry_sdk.workspace = true
