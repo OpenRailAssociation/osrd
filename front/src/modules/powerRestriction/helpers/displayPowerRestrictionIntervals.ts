@@ -1,7 +1,6 @@
 import type { PowerRestrictionRange } from 'applications/operationalStudies/consts';
 import type { RangedValue } from 'common/api/osrdEditoastApi';
-
-import NO_POWER_RESTRICTION from '../consts';
+import NO_POWER_RESTRICTION from 'modules/powerRestriction/consts';
 
 // Displays power restriction with electrification intervals to make it easier for the user to use the editor.
 export default function displayPowerRestrictionIntervals(

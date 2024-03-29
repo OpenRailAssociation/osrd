@@ -1,9 +1,8 @@
 import { compact, groupBy, reduce, uniq, type Dictionary } from 'lodash';
 
 import type { RangedValue, RollingStock } from 'common/api/osrdEditoastApi';
-
-import NO_POWER_RESTRICTION from '../consts';
-import type { PowerRestrictionWarning } from '../types';
+import NO_POWER_RESTRICTION from 'modules/powerRestriction/consts';
+import type { PowerRestrictionWarning } from 'modules/powerRestriction/types';
 
 /**
  * Return the power restriction codes of the rolling stock by mode

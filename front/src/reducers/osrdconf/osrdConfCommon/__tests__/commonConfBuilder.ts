@@ -3,7 +3,7 @@ import type { Feature } from 'geojson';
 import type { SwitchType } from 'applications/editor/tools/switchEdition/types';
 import type { PointOnMap, PowerRestrictionRange } from 'applications/operationalStudies/consts';
 import type { Allowance, PathResponse, RangedValue } from 'common/api/osrdEditoastApi';
-import NO_POWER_RESTRICTION from 'modules/trainschedule/components/ManageTrainSchedule/consts';
+import NO_POWER_RESTRICTION from 'modules/powerRestriction/consts';
 import type { OsrdConfState } from 'reducers/osrdconf/consts';
 
 export default function commonConfBuilder() {
