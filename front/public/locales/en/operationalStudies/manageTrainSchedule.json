@@ -91,6 +91,7 @@
     "rollingStock": "Rolling stock",
     "pathFinding": "Route",
     "allowances": "Allowances",
+    "timesStops": "Times and stops",
     "simulationSettings": "Simulation settings",
     "addingSettings": "Adding settings"
   },
