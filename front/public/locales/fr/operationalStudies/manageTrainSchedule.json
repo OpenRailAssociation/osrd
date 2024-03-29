@@ -92,6 +92,7 @@
     "pathFinding": "Itinéraire",
     "allowances": "Marges",
     "simulationSettings": "Paramètres de simulation",
+    "timesStops": "Horaires et arrêts",
     "addingSettings": "Paramètres d'ajout"
   },
   "timetable": "Grille horaire",
