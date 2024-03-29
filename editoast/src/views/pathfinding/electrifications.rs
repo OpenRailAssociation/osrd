@@ -7,7 +7,7 @@ use actix_web::web::Data;
 use actix_web::web::Json;
 use actix_web::web::Path;
 use chashmap::CHashMap;
-use osrd_containers::rangemap_utils::RangedValue;
+use editoast_common::rangemap_utils::RangedValue;
 use rangemap::RangeMap;
 use serde::Deserialize;
 use serde::Serialize;
@@ -33,7 +33,7 @@ crate::routes! {
 
 crate::schemas! {
     ElectrificationsOnPathResponse,
-    &osrd_containers::rangemap_utils::RangedValue,
+    &editoast_common::rangemap_utils::RangedValue,
 }
 
 /// Build a rangemap for each track section, giving the voltage for each range
@@ -138,7 +138,7 @@ pub mod tests {
     use actix_web::test::call_service;
     use actix_web::test::read_body_json;
     use actix_web::test::TestRequest;
-    use osrd_containers::range_map;
+    use editoast_common::range_map;
     use rstest::*;
     use serde_json::from_value;
     use ApplicableDirections::*;
