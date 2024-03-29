@@ -1296,6 +1296,7 @@ dependencies = [
  "diesel",
  "diesel-async",
  "diesel_json",
+ "editoast_common",
  "editoast_derive",
  "enum-map",
  "enumset",
@@ -1317,7 +1318,6 @@ dependencies = [
  "opentelemetry_sdk",
  "osm4routing",
  "osmpbfreader",
- "osrd_containers",
  "paste",
  "pathfinding",
  "postgis_diesel",
@@ -1350,6 +1350,17 @@ dependencies = [
  "utoipa",
  "uuid",
  "validator",
+]
+
+[[package]]
+name = "editoast_common"
+version = "0.1.0"
+dependencies = [
+ "rangemap",
+ "serde",
+ "serde_derive",
+ "serde_json",
+ "utoipa",
 ]
 
 [[package]]
@@ -2804,17 +2815,6 @@ dependencies = [
  "self_cell",
  "serde",
  "smartstring",
-]
-
-[[package]]
-name = "osrd_containers"
-version = "0.1.0"
-dependencies = [
- "rangemap",
- "serde",
- "serde_derive",
- "serde_json",
- "utoipa",
 ]
 
 [[package]]

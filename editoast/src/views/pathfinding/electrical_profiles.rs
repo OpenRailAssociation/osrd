@@ -7,7 +7,7 @@ use actix_web::web::Data;
 use actix_web::web::Json;
 use actix_web::web::Path;
 use actix_web::web::Query;
-use osrd_containers::rangemap_utils::RangedValue;
+use editoast_common::rangemap_utils::RangedValue;
 use rangemap::RangeMap;
 use serde::Deserialize;
 use serde::Serialize;
@@ -141,7 +141,7 @@ mod tests {
     use actix_web::test::call_service;
     use actix_web::test::read_body_json;
     use actix_web::test::TestRequest;
-    use osrd_containers::range_map;
+    use editoast_common::range_map;
     use rstest::*;
 
     use super::*;
