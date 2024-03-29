@@ -1,6 +1,6 @@
 import type { Dictionary } from 'lodash';
 
-import type { PowerRestrictionWarning } from 'modules/trainschedule/components/ManageTrainSchedule/types';
+import type { PowerRestrictionWarning } from 'modules/powerRestriction/types';
 
 import {
   pathElectrificationRanges,

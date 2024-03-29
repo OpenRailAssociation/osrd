@@ -12,12 +12,13 @@ import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
 import Pathfinding from 'common/Pathfinding/Pathfinding';
 import TypeAndPath from 'common/Pathfinding/TypeAndPath';
 import Tipped from 'common/Tipped';
-import DisplayItinerary from 'modules/trainschedule/components/ManageTrainSchedule/Itinerary/DisplayItinerary';
-import ModalSuggerredVias from 'modules/trainschedule/components/ManageTrainSchedule/Itinerary/ModalSuggeredVias';
 import type { Viewport } from 'reducers/map';
 import { updateViewport } from 'reducers/map';
 import { getMap } from 'reducers/map/selectors';
 import { useAppDispatch } from 'store';
+
+import DisplayItinerary from './DisplayItinerary';
+import ModalSuggerredVias from './ModalSuggeredVias';
 
 type ItineraryProps = {
   path?: PathResponse;

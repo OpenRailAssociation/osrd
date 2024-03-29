@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import { useOsrdConfSelectors } from 'common/osrdContext';
-import DisplayVias from 'modules/trainschedule/components/ManageTrainSchedule/Itinerary/DisplayVias';
+import DisplayVias from 'modules/pathfinding/components/Itinerary/DisplayVias';
 
 interface ViasProps {
   zoomToFeaturePoint: (lngLat?: Position, id?: string) => void;

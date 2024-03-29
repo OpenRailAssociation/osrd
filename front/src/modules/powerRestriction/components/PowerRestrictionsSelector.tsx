@@ -12,12 +12,14 @@ import IntervalsEditor from 'common/IntervalsEditor/IntervalsEditor';
 import { INTERVAL_TYPES } from 'common/IntervalsEditor/types';
 import type { IntervalItem } from 'common/IntervalsEditor/types';
 import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
+import NO_POWER_RESTRICTION from 'modules/powerRestriction/consts';
+import displayPowerRestrictionIntervals from 'modules/powerRestriction/helpers/displayPowerRestrictionIntervals';
+import {
+  countWarnings,
+  getPowerRestrictionsWarnings,
+} from 'modules/powerRestriction/helpers/powerRestrictionSelector';
+import type { PowerRestrictionWarning } from 'modules/powerRestriction/types';
 import { useAppDispatch } from 'store';
-
-import NO_POWER_RESTRICTION from './consts';
-import displayPowerRestrictionIntervals from './helpers/displayPowerRestrictionIntervals';
-import { countWarnings, getPowerRestrictionsWarnings } from './helpers/powerRestrictionSelector';
-import type { PowerRestrictionWarning } from './types';
 
 /** Arbitrairy default segment length (1km) */
 const DEFAULT_SEGMENT_LENGTH = 1000;

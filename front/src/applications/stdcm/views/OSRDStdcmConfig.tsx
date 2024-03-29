@@ -12,11 +12,12 @@ import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useInfraID, useOsrdConfSelectors } from 'common/osrdContext';
 import SpeedLimitByTagSelector from 'common/SpeedLimitByTagSelector/SpeedLimitByTagSelector';
 import { useStoreDataForSpeedLimitByTagSelector } from 'common/SpeedLimitByTagSelector/useStoreDataForSpeedLimitByTagSelector';
+import Itinerary from 'modules/pathfinding/components/Itinerary/Itinerary';
 import { RollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
 import ScenarioExplorer from 'modules/scenario/components/ScenarioExplorer';
 import StdcmAllowances from 'modules/stdcmAllowances/components/StdcmAllowances';
-import { Itinerary, Map } from 'modules/trainschedule/components/ManageTrainSchedule';
+import { Map } from 'modules/trainschedule/components/ManageTrainSchedule';
 import type { OsrdStdcmConfState } from 'reducers/osrdconf/consts';
 import { getSelectedTrain } from 'reducers/osrdsimulation/selectors';
 
