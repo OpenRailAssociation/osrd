@@ -64,7 +64,7 @@
           nodejs = fixedNode;
         };
 
-        rustChan = pkgs.rust-bin.stable."1.75.0".default.override {
+        rustChan = pkgs.rust-bin.stable."1.77.1".default.override {
           targets = [];
           extensions = [
             "clippy"
