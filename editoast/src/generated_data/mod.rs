@@ -10,6 +10,7 @@ mod operational_point;
 mod psl_sign;
 mod signal;
 mod speed_section;
+pub mod sprite_config;
 mod switch;
 mod track_section;
 
