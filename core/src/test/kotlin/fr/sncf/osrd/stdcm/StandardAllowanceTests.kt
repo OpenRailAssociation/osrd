@@ -506,9 +506,14 @@ class StandardAllowanceTests {
         val occupancyGraph =
             ImmutableMultimap.of(
                 firstBlock,
-                OccupancySegment(2000 + TIME_STEP, Double.POSITIVE_INFINITY, 0.meters, 1000.meters),
+                OccupancySegment(
+                    2000 + 2 * TIME_STEP,
+                    Double.POSITIVE_INFINITY,
+                    0.meters,
+                    1000.meters
+                ),
                 secondBlock,
-                OccupancySegment(0.0, 2000 - TIME_STEP, 0.meters, 1000.meters)
+                OccupancySegment(0.0, 2000 - 2 * TIME_STEP, 0.meters, 1000.meters)
             )
         val res =
             runWithAndWithoutAllowance(

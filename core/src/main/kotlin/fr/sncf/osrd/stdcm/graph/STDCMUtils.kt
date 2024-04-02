@@ -9,6 +9,7 @@ import fr.sncf.osrd.graph.Pathfinding.EdgeRange
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.impl.ChunkPath
 import fr.sncf.osrd.sim_infra.impl.buildChunkPath
+import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
 import fr.sncf.osrd.utils.indexing.MutableDirStaticIdxArrayList
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Length
@@ -112,4 +113,29 @@ fun convertOffsetToEdge(
     envelopeStartOffset: Offset<Block>
 ): Offset<STDCMEdge> {
     return Offset(blockOffset.distance - envelopeStartOffset.distance)
+}
+
+/**
+ * Extends all the given infra explorers until they have the min amount of blocks in lookahead, or
+ * they reach the destination. The min number of blocks is arbitrary, it should aim for the required
+ * lookahead for proper spacing resource generation. If the value is too low, there would be
+ * exceptions thrown and we would try again with an extended path. If it's too large, we would
+ * "fork" too early. Either way the result wouldn't change, it's just a matter of performances.
+ */
+fun extendLookaheadUntil(
+    input: InfraExplorerWithEnvelope,
+    minBlocks: Int
+): Collection<InfraExplorerWithEnvelope> {
+    val res = mutableListOf<InfraExplorerWithEnvelope>()
+    val candidates = mutableListOf(input)
+    while (candidates.isNotEmpty()) {
+        val candidate = candidates.removeFirst()
+        if (
+            candidate.getIncrementalPath().pathComplete ||
+                candidate.getLookahead().size >= minBlocks
+        )
+            res.add(candidate)
+        else candidates.addAll(candidate.cloneAndExtendLookahead())
+    }
+    return res
 }

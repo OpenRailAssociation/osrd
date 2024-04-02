@@ -7,7 +7,6 @@ import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue.FixedTime
 import fr.sncf.osrd.graph.Graph
 import fr.sncf.osrd.stdcm.STDCMStep
-import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.RollingStock.Comfort
@@ -38,7 +37,7 @@ class STDCMGraph(
     var stdcmSimulations: STDCMSimulations = STDCMSimulations()
     val steps: List<STDCMStep>
     val delayManager: DelayManager
-    val allowanceManager: AllowanceManager
+    val allowanceManager: EngineeringAllowanceManager
     val backtrackingManager: BacktrackingManager
     val tag: String?
     val standardAllowance: AllowanceValue?
@@ -51,7 +50,7 @@ class STDCMGraph(
         this.steps = steps
         delayManager =
             DelayManager(minScheduleTimeStart, maxRunTime, blockAvailability, this, timeStep)
-        allowanceManager = AllowanceManager(this)
+        allowanceManager = EngineeringAllowanceManager(this)
         backtrackingManager = BacktrackingManager(this)
         this.tag = tag
         this.standardAllowance = standardAllowance
@@ -104,32 +103,6 @@ class STDCMGraph(
                 visitedNodes.markAsVisited(fingerprint, node.time)
                 res.addAll(STDCMEdgeBuilder.fromNode(this, node, newPath).makeAllEdges())
             }
-        }
-        return res
-    }
-
-    /**
-     * Extends all the given infra explorers until they have the min amount of blocks in lookahead,
-     * or they reach the destination. The min number of blocks is arbitrary, it should aim for the
-     * required lookahead for proper spacing resource generation. If the value is too low, there
-     * would be exceptions thrown and we would try again with an extended path. If it's too large,
-     * we would "fork" too early. Either way the result wouldn't change, it's just a matter of
-     * performances.
-     */
-    private fun extendLookaheadUntil(
-        input: InfraExplorerWithEnvelope,
-        minBlocks: Int
-    ): Collection<InfraExplorerWithEnvelope> {
-        val res = mutableListOf<InfraExplorerWithEnvelope>()
-        val candidates = mutableListOf(input)
-        while (candidates.isNotEmpty()) {
-            val candidate = candidates.removeFirst()
-            if (
-                candidate.getIncrementalPath().pathComplete ||
-                    candidate.getLookahead().size >= minBlocks
-            )
-                res.add(candidate)
-            else candidates.addAll(candidate.cloneAndExtendLookahead())
         }
         return res
     }

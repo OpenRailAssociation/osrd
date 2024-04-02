@@ -58,6 +58,7 @@ data class InfraExplorerWithEnvelopeImpl(
         }
         envelopes.add(LocatedEnvelope(envelope, prevEndOffset, prevEndTime))
         envelopeCache = null
+        spacingRequirementsCache = null
         return this
     }
 

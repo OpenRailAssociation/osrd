@@ -6,6 +6,7 @@ import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
 import fr.sncf.osrd.utils.units.Distance.Companion.fromMeters
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
+import fr.sncf.osrd.utils.units.meters
 import java.util.*
 
 data class STDCMEdge(
@@ -114,6 +115,7 @@ data class STDCMEdge(
      * interpolation.
      */
     fun getApproximateTimeAtLocation(offset: Offset<STDCMEdge>): Double {
+        if (length.distance == 0.meters) return timeStart // Avoids division by 0
         val offsetRatio = offset.distance.meters / length.distance.meters
         return timeStart + (totalTime * offsetRatio)
     }

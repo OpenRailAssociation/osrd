@@ -9,7 +9,6 @@ import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.train.TrainStop
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
-import java.util.*
 import kotlin.math.min
 
 /** This class handles the creation of new edges, handling the many optional parameters. */
@@ -273,18 +272,30 @@ internal constructor(
     /** Creates a single STDCM edge, adding the given amount of delay */
     private fun makeSingleEdge(delayNeeded: Double): STDCMEdge? {
         if (java.lang.Double.isInfinite(delayNeeded)) return null
-        val endStopDuration = getEndStopDuration()
-        val maximumDelay =
-            min(
-                prevMaximumAddedDelay - delayNeeded,
-                graph.delayManager.findMaximumAddedDelay(
-                    getExplorerWithNewEnvelope()!!,
-                    startTime + delayNeeded,
-                    startOffset,
-                    envelope!!,
-                )
-            )
         val actualStartTime = startTime + delayNeeded
+
+        var maximumDelay = 0.0
+        var departureTimeShift = delayNeeded
+        if (delayNeeded > prevMaximumAddedDelay) {
+            // We can't just shift the departure time, we need an engineering allowance
+            // It's not computed yet, we just check that it's possible
+            if (!graph.allowanceManager.checkEngineeringAllowance(prevNode, actualStartTime))
+                return null
+            // We still need to adapt the delay values
+            departureTimeShift = prevMaximumAddedDelay
+        } else {
+            maximumDelay =
+                min(
+                    prevMaximumAddedDelay - delayNeeded,
+                    graph.delayManager.findMaximumAddedDelay(
+                        getExplorerWithNewEnvelope()!!,
+                        startTime + delayNeeded,
+                        startOffset,
+                        envelope!!,
+                    )
+                )
+        }
+        val endStopDuration = getEndStopDuration()
         val endAtStop = endStopDuration != null
         var res: STDCMEdge? =
             STDCMEdge(
@@ -293,14 +304,14 @@ internal constructor(
                 getExplorerWithNewEnvelope()!!,
                 actualStartTime,
                 maximumDelay,
-                delayNeeded,
+                departureTimeShift,
                 graph.delayManager.findNextOccupancy(
                     getExplorerWithNewEnvelope()!!,
                     startTime + delayNeeded,
                     startOffset,
                     envelope!!,
                 ),
-                prevAddedDelay + delayNeeded,
+                prevAddedDelay + departureTimeShift,
                 prevNode,
                 startOffset,
                 (actualStartTime / 60).toInt(),
@@ -308,10 +319,7 @@ internal constructor(
                 waypointIndex,
                 endAtStop
             )
-        if (res!!.maximumAddedDelayAfter < 0)
-            res = graph.allowanceManager.tryEngineeringAllowance(res)
-        if (res == null) return null
-        res = graph.backtrackingManager.backtrack(res)
+        res = graph.backtrackingManager.backtrack(res!!)
         return if (res == null || graph.delayManager.isRunTimeTooLong(res)) null else res
     }
 
