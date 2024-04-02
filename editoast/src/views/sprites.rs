@@ -7,7 +7,7 @@ use thiserror::Error;
 
 use crate::client::get_assets_path;
 use crate::error::Result;
-use crate::schema::sprite_config::SpriteConfig;
+use crate::generated_data::sprite_config::SpriteConfig;
 
 crate::routes! {
     "/sprites" => {
