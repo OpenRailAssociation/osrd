@@ -1360,6 +1360,7 @@ dependencies = [
  "diesel_json",
  "editoast_common",
  "editoast_derive",
+ "editoast_schemas",
  "enum-map",
  "enumset",
  "futures 0.3.30",
@@ -1435,6 +1436,16 @@ dependencies = [
  "quote",
  "serde_json",
  "syn 2.0.57",
+]
+
+[[package]]
+name = "editoast_schemas"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "serde_derive",
+ "serde_json",
+ "utoipa",
 ]
 
 [[package]]

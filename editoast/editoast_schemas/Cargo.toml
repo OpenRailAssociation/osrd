@@ -1,0 +1,11 @@
+[package]
+name = "editoast_schemas"
+version = "0.1.0"
+edition = "2021"
+license = "LGPL-3.0"
+
+[dependencies]
+serde.workspace = true
+serde_derive.workspace = true
+serde_json.workspace = true
+utoipa.workspace = true

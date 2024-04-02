@@ -5,7 +5,7 @@ edition = "2021"
 license = "LGPL-3.0"
 
 [workspace]
-members = [".", "editoast_derive", "editoast_common"]
+members = [".", "editoast_derive", "editoast_common", "editoast_schemas"]
 
 [workspace.dependencies]
 rangemap = "1.4.0"
@@ -65,6 +65,7 @@ strum_macros = "0.25.3"
 thiserror = "1.0.58"
 enum-map = "2.7.3"
 editoast_derive = { path = "./editoast_derive" }
+editoast_schemas = { path = "./editoast_schemas" }
 editoast_common = { path = "./editoast_common" }
 mvt = "0.9.0"
 futures = "0.3.30"
