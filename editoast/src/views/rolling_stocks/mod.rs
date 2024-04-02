@@ -25,7 +25,7 @@ use image::io::Reader as ImageReader;
 use image::DynamicImage;
 use image::GenericImage;
 use image::ImageBuffer;
-use image::ImageOutputFormat;
+use image::ImageFormat;
 use rolling_stock_form::RollingStockForm;
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
@@ -434,7 +434,7 @@ async fn create_livery(
     let FormattedImages { images, .. } = formatted_images;
     for (index, image) in images.into_iter().enumerate() {
         let mut w = Cursor::new(Vec::new());
-        image.write_to(&mut w, ImageOutputFormat::Png).unwrap();
+        image.write_to(&mut w, ImageFormat::Png).unwrap();
 
         use crate::modelsv2::Create;
         let image = Document::changeset()
@@ -540,7 +540,7 @@ async fn create_compound_image(
     // convert compound_image to PNG
     let mut w = Cursor::new(Vec::new());
     DynamicImage::ImageRgba8(compound_image)
-        .write_to(&mut w, ImageOutputFormat::Png)
+        .write_to(&mut w, ImageFormat::Png)
         .unwrap();
 
     // save the compound_image in the db
