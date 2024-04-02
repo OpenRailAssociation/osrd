@@ -6,15 +6,14 @@ import fr.sncf.osrd.sim.interlocking.api.ZoneReservationStatus.*
 import fr.sncf.osrd.sim.interlocking.api.ZoneState
 import fr.sncf.osrd.sim.interlocking.impl.*
 import fr.sncf.osrd.sim_infra.api.*
-import fr.sncf.osrd.sim_infra.impl.RawInfraFromRjsBuilder
+import fr.sncf.osrd.sim_infra.impl.rawInfraBuilder
 import fr.sncf.osrd.utils.indexing.MutableArena
-import fr.sncf.osrd.utils.indexing.StaticPool
 import fr.sncf.osrd.utils.indexing.mutableArenaMap
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.meters
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.time.Duration.Companion.ZERO
+import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.*
 import kotlinx.coroutines.test.currentTime
 import kotlinx.coroutines.test.runTest
@@ -38,9 +37,12 @@ class TestReservation {
             //  <-- reverse     normal -->
 
             // region build the test infrastructure
-            val builder = RawInfraFromRjsBuilder()
-            val switch = builder.node("A", ZERO, StaticPool(), StaticPool())
-
+            val builder = rawInfraBuilder()
+            val switch =
+                builder.movableElement("A", delay = 42L.milliseconds) {
+                    config("a", Pair(TrackNodePortId(0u), TrackNodePortId(1u)))
+                    config("b", Pair(TrackNodePortId(0u), TrackNodePortId(2u)))
+                }
             val zoneA = builder.zone(listOf())
             val zoneB = builder.zone(listOf())
             val zoneC = builder.zone(listOf(switch))

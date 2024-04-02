@@ -1,26 +1,15 @@
-package fr.sncf.osrd.sim_infra.impl
+package fr.sncf.osrd.sim_infra.impl.new_impl
 
 import fr.sncf.osrd.geom.LineString
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.sim_infra.api.*
+import fr.sncf.osrd.utils.Direction
 import fr.sncf.osrd.utils.DirectionalMap
 import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.distanceRangeMapOf
-import fr.sncf.osrd.utils.indexing.DirStaticIdxList
-import fr.sncf.osrd.utils.indexing.IdxMap
-import fr.sncf.osrd.utils.indexing.MutableStaticIdxArrayList
-import fr.sncf.osrd.utils.indexing.OptStaticIdx
-import fr.sncf.osrd.utils.indexing.StaticIdx
-import fr.sncf.osrd.utils.indexing.StaticIdxList
-import fr.sncf.osrd.utils.indexing.StaticIdxSortedSet
-import fr.sncf.osrd.utils.indexing.StaticIdxSpace
-import fr.sncf.osrd.utils.indexing.StaticPool
-import fr.sncf.osrd.utils.units.Distance
-import fr.sncf.osrd.utils.units.Length
-import fr.sncf.osrd.utils.units.Offset
-import fr.sncf.osrd.utils.units.OffsetList
-import fr.sncf.osrd.utils.units.Speed
+import fr.sncf.osrd.utils.indexing.*
+import fr.sncf.osrd.utils.units.*
 import kotlin.collections.HashMap
 import kotlin.time.Duration
 import mu.KotlinLogging
@@ -42,6 +31,8 @@ class TrackNodeDescriptor(
 class TrackSectionDescriptor(
     val name: String,
     val chunks: StaticIdxList<TrackChunk>,
+    val detectors: StaticIdxList<Detector>,
+    val detectorsOffsets: OffsetList<TrackSection>,
 )
 
 class TrackChunkDescriptor(
@@ -65,16 +56,16 @@ class ZoneDescriptor(
     var name: String = "",
 )
 
-interface RouteDescriptor {
-    val name: String?
-    var length: Length<Route>
-    val path: StaticIdxList<ZonePath>
-    val releaseZones: IntArray
-    val speedLimits: StaticIdxList<SpeedLimit>
-    val speedLimitStarts: OffsetList<Route>
-    val speedLimitEnds: OffsetList<Route>
-    val chunks: DirStaticIdxList<TrackChunk>
-}
+class RouteDescriptor(
+    val name: String?,
+    var length: Length<Route>,
+    val path: StaticIdxList<ZonePath>,
+    val releaseZones: IntArray,
+    val speedLimits: StaticIdxList<SpeedLimit>,
+    val speedLimitStarts: OffsetList<Route>,
+    val speedLimitEnds: OffsetList<Route>,
+    val chunks: DirStaticIdxList<TrackChunk>,
+)
 
 class LogicalSignalDescriptor(
     val signalingSystemId: String,
@@ -85,6 +76,8 @@ class LogicalSignalDescriptor(
 
 class PhysicalSignalDescriptor(
     val name: String?,
+    val dirTrackSectionId: DirTrackSectionId,
+    val undirectedTrackOffset: Offset<TrackSection>,
     val logicalSignals: StaticIdxList<LogicalSignal>,
     val sightDistance: Distance,
 )
@@ -115,12 +108,9 @@ open class ZonePathSpec(
 class ZonePathDescriptor(
     entry: DirDetectorId,
     exit: DirDetectorId,
-    val length: Length<ZonePath>,
     movableElements: StaticIdxList<TrackNode>,
     movableElementsConfigs: StaticIdxList<TrackNodeConfig>,
     val movableElementsPositions: OffsetList<ZonePath>,
-    val signals: StaticIdxList<PhysicalSignal>,
-    val signalPositions: OffsetList<ZonePath>,
     val chunks: DirStaticIdxList<TrackChunk>,
 ) : ZonePathSpec(entry, exit, movableElements, movableElementsConfigs)
 
@@ -130,15 +120,32 @@ class OperationalPointPartDescriptor(
     val chunk: TrackChunkId,
 )
 
-class RawInfraImpl(
+class ZonePathCache(
+    val length: Length<ZonePath>,
+    val signals: StaticIdxList<PhysicalSignal>,
+    val signalPositions: OffsetList<ZonePath>,
+)
+
+data class TrackChunkSignal(
+    val directedOffset: Offset<DirTrackChunkId>,
+    val signal: PhysicalSignalId,
+)
+
+class DetectorDescriptor(
+    val trackSection: TrackSectionId,
+    val offset: Offset<TrackSection>,
+    val names: List<String>,
+)
+
+class RawInfraImplFromRjs(
     private val trackNodePool: StaticPool<TrackNode, TrackNodeDescriptor>,
     private val trackSectionPool: StaticPool<TrackSection, TrackSectionDescriptor>,
     private val trackChunkPool: StaticPool<TrackChunk, TrackChunkDescriptor>,
     private val nodeAtEndpoint: IdxMap<EndpointTrackSectionId, TrackNodeId>,
     private val zonePool: StaticPool<Zone, ZoneDescriptor>,
-    private val detectorPool: StaticPool<Detector, String>,
+    private val detectorPool: StaticPool<Detector, DetectorDescriptor>,
     private val nextZones: IdxMap<DirDetectorId, ZoneId>,
-    private val routeDescriptors: StaticPool<Route, RouteDescriptor>,
+    private val routePool: StaticPool<Route, RouteDescriptor>,
     private val logicalSignalPool: StaticPool<LogicalSignal, LogicalSignalDescriptor>,
     private val physicalSignalPool: StaticPool<PhysicalSignal, PhysicalSignalDescriptor>,
     private val zonePathPool: StaticPool<ZonePath, ZonePathDescriptor>,
@@ -149,13 +156,194 @@ class RawInfraImpl(
     private val routeNameMap: Map<String, RouteId>,
     private val dirDetEntryToRouteMap: Map<DirDetectorId, StaticIdxList<Route>>,
     private val dirDetExitToRouteMap: Map<DirDetectorId, StaticIdxList<Route>>,
-    private val zoneNameMap: HashMap<String, ZoneId> = HashMap(),
 ) : RawInfra {
+    private val zoneNameMap: HashMap<String, ZoneId> = HashMap()
+    private val cachePerDirTrackChunk = IdxMap<DirTrackChunkId, MutableList<TrackChunkSignal>>()
+    private val cachePerZonePath: StaticPool<ZonePath, ZonePathCache>
+    private val trackChunksBounds =
+        trackSectionPool.map {
+            val chunkCount = it.chunks.size
+            val bounds = MutableOffsetArray<TrackSection>(chunkCount + 1) { Offset(Distance.ZERO) }
+            var curOffset = Offset<TrackSection>(Distance.ZERO)
+            for (i in 0 until chunkCount) {
+                curOffset += getTrackChunkLength(it.chunks[i]).distance
+                bounds[i + 1] = curOffset
+            }
+            bounds.immutableCopyOf()
+        }
+
     override val trackNodes: StaticIdxSpace<TrackNode>
         get() = trackNodePool.space()
 
     override val trackSections: StaticIdxSpace<TrackSection>
         get() = trackSectionPool.space()
+
+    private val zoneDetectors: IdxMap<ZoneId, MutableList<DirDetectorId>> = IdxMap()
+    private val parentSignalMap: IdxMap<LogicalSignalId, PhysicalSignalId> = IdxMap()
+
+    private fun findChunkIndex(
+        dirTrackSection: DirTrackSectionId,
+        offset: Offset<TrackSection>
+    ): Int {
+        val chunkBounds = trackChunksBounds[dirTrackSection.value]
+        return chunkBounds.findSegment(offset, dirTrackSection.direction)
+    }
+
+    private fun findChunkOffset(
+        trackSection: TrackSectionId,
+        chunkIndex: Int,
+        trackSectionOffset: Offset<TrackSection>
+    ): Offset<TrackChunk> {
+        val chunkBounds = trackChunksBounds[trackSection]
+        assert(chunkIndex < (trackChunksBounds.size.toInt() - 1))
+        val chunkStart = chunkBounds[chunkIndex]
+        val chunkEnd = chunkBounds[chunkIndex + 1]
+        val chunkLen = chunkEnd - chunkStart
+        val chunkOffset = trackSectionOffset - chunkStart
+        assert(chunkOffset >= 0.meters && chunkOffset <= chunkLen)
+        return Offset(chunkOffset)
+    }
+
+    init {
+        // initialize the zone detector map
+        for (zone in zonePool) zoneDetectors[zone] = mutableListOf()
+        for (detector in detectorPool) {
+            val nextZone = getNextZone(detector.increasing)
+            if (nextZone != null) zoneDetectors[nextZone]!!.add(detector.increasing)
+            val prevZone = getNextZone(detector.decreasing)
+            if (prevZone != null) zoneDetectors[prevZone]!!.add(detector.decreasing)
+        }
+
+        // initialize zone names
+        for (zone in zonePool) {
+            val name =
+                getZoneBounds(zone).map { "${getDetectorName(it.value)}:${it.direction}" }.sorted()
+
+            zonePool[zone].name = "zone.${name}"
+            zoneNameMap[zonePool[zone].name] = zone
+        }
+
+        for (zone in zonePool) {
+            if (getZoneBounds(zone).size < 2) {
+                logger.warn {
+                    val detectorNames = getZoneBounds(zone).map { detectorPool[it.value] }
+                    val nodeNames = getMovableElements(zone).map { trackNodePool[it].name }
+                    "Invalid detection zone delimited by detector(s) $detectorNames and containing node(s) $nodeNames"
+                }
+            }
+        }
+
+        // build a map from DirTrackChunk to PhysicalSignal and position
+        for (physicalSignalId in physicalSignalPool) {
+            val physicalSignal = physicalSignalPool[physicalSignalId]
+            val dirTrack = physicalSignal.dirTrackSectionId
+            val trackOffset = physicalSignal.undirectedTrackOffset
+            val signalChunkIndex = findChunkIndex(dirTrack, trackOffset)
+            val undirectedSignalChunkOffset =
+                findChunkOffset(dirTrack.value, signalChunkIndex, trackOffset)
+            val trackChunk = getTrackSectionChunks(dirTrack.value)[signalChunkIndex]
+            val dirTrackChunk = DirTrackChunkId(trackChunk, dirTrack.direction)
+            val trackChunkSignals =
+                cachePerDirTrackChunk.getOrPut(dirTrackChunk) { mutableListOf() }
+            val directedSignalChunkOffset =
+                Offset<DirTrackChunkId>(
+                    when (dirTrackChunk.direction) {
+                        Direction.INCREASING -> undirectedSignalChunkOffset.distance
+                        Direction.DECREASING ->
+                            getTrackChunkLength(trackChunk) - undirectedSignalChunkOffset
+                    }
+                )
+            trackChunkSignals.add(TrackChunkSignal(directedSignalChunkOffset, physicalSignalId))
+        }
+
+        // for each DirTrackChunk, sort signals by position
+        for (trackChunk in trackChunkPool) {
+            cachePerDirTrackChunk[trackChunk.increasing]?.sortBy { it.directedOffset }
+            cachePerDirTrackChunk[trackChunk.decreasing]?.sortBy { it.directedOffset }
+        }
+
+        // for each zone, precompute its length and the offset of signals
+        cachePerZonePath =
+            zonePathPool.map {
+                var zonePathLength = Length<ZonePath>(0.meters)
+                val signals = mutableStaticIdxArrayListOf<PhysicalSignal>()
+                val signalPositions = mutableOffsetArrayListOf<ZonePath>()
+                for (dirChunk in it.chunks) {
+                    val chunkDescriptor = trackChunkPool[dirChunk.value]
+                    val chunkLength = chunkDescriptor.length
+                    val trackChunkSignals = cachePerDirTrackChunk[dirChunk]
+                    if (trackChunkSignals != null)
+                        for (chunkSignal in trackChunkSignals) {
+                            val signalZonePathOffset =
+                                zonePathLength + chunkSignal.directedOffset.distance
+
+                            // skip signals which are at position zero. This hack is related to the
+                            // other hack
+                            // below, and can also be removed once detectors / signals are not
+                            // allowed to be on switches,
+                            // and merging of track sections connected by links is implemented.
+                            assert(signalZonePathOffset >= Offset(0.meters))
+                            if (signalZonePathOffset.distance.millimeters == 0L) continue
+
+                            signals.add(chunkSignal.signal)
+                            signalPositions.add(signalZonePathOffset)
+                        }
+                    zonePathLength += chunkLength.distance
+                }
+
+                // if the zone path switches to a new track section, then ends with a detector at
+                // the exact start of
+                // this track section, fetch signals on the starting chunk aligned with the zone
+                // path.
+                // This hack is required while detectors / signals are allowed to be on switches,
+                // and merging of
+                // track sections connected by links is unimplemented.
+                val lastChunkTrackSection =
+                    trackChunkPool[it.chunks[it.chunks.size - 1].value].track
+                val endDetector = it.exit
+                val endDetectorDescriptor = detectorPool[endDetector.value]
+                val endDetectorTrackSection = endDetectorDescriptor.trackSection
+                if (lastChunkTrackSection != endDetectorTrackSection) {
+                    // this case should only happen if the detector is _just_ where it shouldn't be:
+                    // on a switch
+                    assert(
+                        endDetectorDescriptor.offset ==
+                            when (endDetector.direction) {
+                                Direction.INCREASING -> Offset(0.meters)
+                                Direction.DECREASING ->
+                                    getTrackSectionLength(endDetectorTrackSection)
+                            }
+                    )
+
+                    // find the chunk where the extra signals may be
+                    val chunks = trackSectionPool[endDetectorTrackSection].chunks
+                    val extraTrackChunk =
+                        when (endDetector.direction) {
+                            Direction.INCREASING -> chunks[0].increasing
+                            Direction.DECREASING -> chunks[chunks.size - 1].decreasing
+                        }
+
+                    // add all signals touching the node
+                    val trackChunkSignals = cachePerDirTrackChunk[extraTrackChunk]
+                    if (trackChunkSignals != null) {
+                        for (signal in trackChunkSignals) {
+                            if (signal.directedOffset.distance == 0.meters) {
+                                signals.add(signal.signal)
+                                signalPositions.add(zonePathLength)
+                            }
+                        }
+                    }
+                }
+                ZonePathCache(zonePathLength, signals, signalPositions)
+            }
+
+        // initialize the physical signal to logical signal map
+        for (physicalSignal in physicalSignalPool) {
+            for (child in physicalSignalPool[physicalSignal].logicalSignals) {
+                parentSignalMap[child] = physicalSignal
+            }
+        }
+    }
 
     override fun getTrackSectionName(trackSection: TrackSectionId): String {
         return trackSectionPool[trackSection].name
@@ -170,11 +358,8 @@ class RawInfraImpl(
     }
 
     override fun getTrackSectionLength(trackSection: TrackSectionId): Length<TrackSection> {
-        var length = Distance(0)
-        for (trackChunk in getTrackSectionChunks(trackSection)) {
-            length += getTrackChunkLength(trackChunk).distance
-        }
-        return Length(length)
+        val chunkBounds = trackChunksBounds[trackSection]
+        return chunkBounds[chunkBounds.size - 1]
     }
 
     override fun getTrackChunkLength(trackChunk: TrackChunkId): Length<TrackChunk> {
@@ -277,44 +462,6 @@ class RawInfraImpl(
         return dirDetExitToRouteMap.getOrDefault(dirDetector, MutableStaticIdxArrayList())
     }
 
-    private val zoneDetectors: IdxMap<ZoneId, MutableList<DirDetectorId>> = IdxMap()
-    private val parentSignalMap: IdxMap<LogicalSignalId, PhysicalSignalId> = IdxMap()
-
-    init {
-        // initialize the zone detector map
-        for (zone in zonePool) zoneDetectors[zone] = mutableListOf()
-        for (detector in detectorPool) {
-            val nextZone = getNextZone(detector.increasing)
-            if (nextZone != null) zoneDetectors[nextZone]!!.add(detector.increasing)
-            val prevZone = getNextZone(detector.decreasing)
-            if (prevZone != null) zoneDetectors[prevZone]!!.add(detector.decreasing)
-        }
-
-        // initialize zone names
-        for (zone in zonePool) {
-            val name =
-                getZoneBounds(zone).map { "${getDetectorName(it.value)}:${it.direction}" }.sorted()
-
-            zonePool[zone].name = "zone.${name}"
-            zoneNameMap[zonePool[zone].name] = zone
-        }
-
-        for (zone in zonePool) {
-            if (getZoneBounds(zone).size < 2) {
-                logger.warn {
-                    val detectorNames = getZoneBounds(zone).map { detectorPool[it.value] }
-                    val nodeNames = getMovableElements(zone).map { trackNodePool[it].name }
-                    "Invalid detection zone delimited by detector(s) $detectorNames and containing node(s) $nodeNames"
-                }
-            }
-        }
-
-        // initialize the physical signal to logical signal map
-        for (physicalSignal in physicalSignalPool) for (child in
-            physicalSignalPool[physicalSignal].logicalSignals) parentSignalMap[child] =
-            physicalSignal
-    }
-
     override fun getTrackNodeConfigs(trackNode: TrackNodeId): StaticIdxSpace<TrackNodeConfig> {
         return trackNodePool[trackNode].configs.space()
     }
@@ -378,7 +525,9 @@ class RawInfraImpl(
     }
 
     override fun getDetectorName(det: DetectorId): String {
-        return detectorPool[det]
+        // as duplicate detectors are merged, they can have multiple names.
+        // the list of names has to be sorted, and we just take the first one. it shouldn't matter.
+        return detectorPool[det].names[0]
     }
 
     override fun getNextTrackSection(
@@ -423,23 +572,23 @@ class RawInfraImpl(
     }
 
     override fun getSignals(zonePath: ZonePathId): StaticIdxList<PhysicalSignal> {
-        return zonePathPool[zonePath].signals
+        return cachePerZonePath[zonePath].signals
     }
 
     override fun getSignalPositions(zonePath: ZonePathId): OffsetList<ZonePath> {
-        return zonePathPool[zonePath].signalPositions
+        return cachePerZonePath[zonePath].signalPositions
     }
 
     override fun getSpeedLimits(route: RouteId): StaticIdxList<SpeedLimit> {
-        return routeDescriptors[route].speedLimits
+        return routePool[route].speedLimits
     }
 
     override fun getSpeedLimitStarts(route: RouteId): OffsetList<Route> {
-        return routeDescriptors[route].speedLimitStarts
+        return routePool[route].speedLimitStarts
     }
 
     override fun getSpeedLimitEnds(route: RouteId): OffsetList<Route> {
-        return routeDescriptors[route].speedLimitEnds
+        return routePool[route].speedLimitEnds
     }
 
     override val physicalSignals: StaticIdxSpace<PhysicalSignal>
@@ -501,7 +650,7 @@ class RawInfraImpl(
     }
 
     override fun getZonePathLength(zonePath: ZonePathId): Length<ZonePath> {
-        return zonePathPool[zonePath].length
+        return cachePerZonePath[zonePath].length
     }
 
     override fun getZonePathMovableElements(zonePath: ZonePathId): StaticIdxList<TrackNode> {
@@ -523,18 +672,18 @@ class RawInfraImpl(
     }
 
     override val routes: StaticIdxSpace<Route>
-        get() = routeDescriptors.space()
+        get() = routePool.space()
 
     override fun getRoutePath(route: RouteId): StaticIdxList<ZonePath> {
-        return routeDescriptors[route].path
+        return routePool[route].path
     }
 
     override fun getRouteName(route: RouteId): String? {
-        return routeDescriptors[route].name
+        return routePool[route].name
     }
 
     override fun getRouteLength(route: RouteId): Length<Route> {
-        return routeDescriptors[route].length
+        return routePool[route].length
     }
 
     override fun getRouteFromName(name: String): RouteId {
@@ -542,10 +691,10 @@ class RawInfraImpl(
     }
 
     override fun getRouteReleaseZones(route: RouteId): IntArray {
-        return routeDescriptors[route].releaseZones
+        return routePool[route].releaseZones
     }
 
     override fun getChunksOnRoute(route: RouteId): DirStaticIdxList<TrackChunk> {
-        return routeDescriptors[route].chunks
+        return routePool[route].chunks
     }
 }

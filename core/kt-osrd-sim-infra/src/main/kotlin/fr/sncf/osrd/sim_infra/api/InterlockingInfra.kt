@@ -35,7 +35,7 @@ interface LocationInfra : TrackNetworkInfra, TrackInfra, TrackProperties {
 
     fun getPreviousZone(dirDet: DirDetectorId): ZoneId?
 
-    fun getDetectorName(det: DetectorId): String?
+    fun getDetectorName(det: DetectorId): String
 }
 
 fun LocationInfra.isBufferStop(detector: StaticIdx<Detector>): Boolean {

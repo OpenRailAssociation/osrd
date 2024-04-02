@@ -2,7 +2,6 @@ package fr.sncf.osrd.sim_infra.utils
 
 import fr.sncf.osrd.geom.LineString
 import fr.sncf.osrd.sim_infra.api.*
-import fr.sncf.osrd.sim_infra.impl.NeutralSection
 import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset

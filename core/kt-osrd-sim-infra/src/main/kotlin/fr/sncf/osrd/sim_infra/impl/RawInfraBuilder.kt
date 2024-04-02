@@ -218,9 +218,13 @@ class RouteDescriptorImpl(
 ) : RouteDescriptor
 
 interface RestrictedRawInfraBuilder {
-    fun detector(name: String?): DetectorId
+    fun movableElement(
+        name: String,
+        delay: Duration,
+        init: MovableElementDescriptorBuilder.() -> Unit
+    ): TrackNodeId
 
-    fun linkZones(zoneA: ZoneId, zoneB: ZoneId): DetectorId
+    fun detector(name: String): DetectorId
 
     fun linkZones(detector: DetectorId, zoneA: ZoneId, zoneB: ZoneId)
 
@@ -291,7 +295,7 @@ class RawInfraBuilderImpl : RawInfraBuilder {
     private val trackChunkPool = StaticPool<TrackChunk, TrackChunkDescriptor>()
     private val nodeAtEndpoint = IdxMap<EndpointTrackSectionId, TrackNodeId>()
     private val zonePool = StaticPool<Zone, ZoneDescriptor>()
-    private val detectorPool = StaticPool<Detector, String?>()
+    private val detectorPool = StaticPool<Detector, String>()
     private val nextZones = IdxMap<DirDetectorId, ZoneId>()
     private val routePool = StaticPool<Route, RouteDescriptor>()
     private val logicalSignalPool = StaticPool<LogicalSignal, LogicalSignalDescriptor>()
@@ -301,7 +305,7 @@ class RawInfraBuilderImpl : RawInfraBuilder {
     private val operationalPointPartPool =
         StaticPool<OperationalPointPart, OperationalPointPartDescriptor>()
 
-    fun movableElement(
+    override fun movableElement(
         name: String,
         delay: Duration,
         init: MovableElementDescriptorBuilder.() -> Unit
@@ -312,14 +316,8 @@ class RawInfraBuilderImpl : RawInfraBuilder {
         return trackNodePool.add(movableElement)
     }
 
-    override fun detector(name: String?): DetectorId {
+    override fun detector(name: String): DetectorId {
         return detectorPool.add(name)
-    }
-
-    override fun linkZones(zoneA: ZoneId, zoneB: ZoneId): DetectorId {
-        val det = detector(null)
-        linkZones(det, zoneA, zoneB)
-        return det
     }
 
     override fun linkZones(detector: DetectorId, zoneA: ZoneId, zoneB: ZoneId) {

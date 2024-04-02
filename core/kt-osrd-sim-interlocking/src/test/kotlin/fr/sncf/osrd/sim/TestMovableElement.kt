@@ -3,9 +3,8 @@ package fr.sncf.osrd.sim
 import fr.sncf.osrd.sim.interlocking.api.MovableElementInitPolicy
 import fr.sncf.osrd.sim.interlocking.api.withLock
 import fr.sncf.osrd.sim.interlocking.impl.MovableElementSimImpl
-import fr.sncf.osrd.sim_infra.impl.TrackNodeConfigDescriptor
-import fr.sncf.osrd.sim_infra.impl.rawInfraFromRjs
-import fr.sncf.osrd.utils.indexing.StaticPool
+import fr.sncf.osrd.sim_infra.api.TrackNodePortId
+import fr.sncf.osrd.sim_infra.impl.rawInfra
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.time.Duration.Companion.milliseconds
@@ -18,18 +17,11 @@ class TestMovableElements {
     @Test
     fun lockMoveTest() = runTest {
         // setup test data
-        val infra = rawInfraFromRjs {
-            node(
-                "A",
-                42L.milliseconds,
-                StaticPool(),
-                StaticPool(
-                    mutableListOf(
-                        TrackNodeConfigDescriptor("a", listOf()),
-                        TrackNodeConfigDescriptor("b", listOf())
-                    )
-                )
-            )
+        val infra = rawInfra {
+            movableElement("A", delay = 42L.milliseconds) {
+                config("a", Pair(TrackNodePortId(0u), TrackNodePortId(1u)))
+                config("b", Pair(TrackNodePortId(0u), TrackNodePortId(2u)))
+            }
         }
 
         val sim = MovableElementSimImpl(infra, MovableElementInitPolicy.PESSIMISTIC)

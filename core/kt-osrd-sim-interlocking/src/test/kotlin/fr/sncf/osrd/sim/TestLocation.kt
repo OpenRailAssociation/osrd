@@ -4,23 +4,25 @@ import fr.sncf.osrd.sim.interlocking.api.Train
 import fr.sncf.osrd.sim.interlocking.api.ZoneOccupation
 import fr.sncf.osrd.sim.interlocking.impl.locationSim
 import fr.sncf.osrd.sim_infra.api.*
-import fr.sncf.osrd.sim_infra.impl.rawInfraFromRjs
+import fr.sncf.osrd.sim_infra.impl.rawInfra
 import fr.sncf.osrd.utils.indexing.MutableArena
-import fr.sncf.osrd.utils.indexing.StaticPool
 import fr.sncf.osrd.utils.indexing.dynIdxArraySetOf
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.time.Duration.Companion.ZERO
+import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.*
 
 class TestLocation {
     @Test
     fun lockOccupyLeave() = runBlocking {
         // setup test data
-        val infra = rawInfraFromRjs {
+        val infra = rawInfra {
             // create a test switch
-            val switchA = node("A", ZERO, StaticPool(), StaticPool())
-
+            val switchA =
+                movableElement("A", delay = 42L.milliseconds) {
+                    config("a", Pair(TrackNodePortId(0u), TrackNodePortId(1u)))
+                    config("b", Pair(TrackNodePortId(0u), TrackNodePortId(2u)))
+                }
             val zoneA = zone(listOf(switchA))
 
             val detectorA = detector("A")

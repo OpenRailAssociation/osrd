@@ -19,7 +19,6 @@ import fr.sncf.osrd.utils.Endpoint
 
 @JvmInline
 value class OptStaticIdx<T>(private val data: UInt) {
-
     constructor() : this(UInt.MAX_VALUE)
 
     val isNone: Boolean

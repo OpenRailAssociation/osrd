@@ -3,16 +3,15 @@ package fr.sncf.osrd.signaling
 import fr.sncf.osrd.signaling.impl.MockSigSystemManager
 import fr.sncf.osrd.signaling.impl.SignalingSimulatorImpl
 import fr.sncf.osrd.sim_infra.api.*
-import fr.sncf.osrd.sim_infra.impl.RawInfraFromRjsBuilder
 import fr.sncf.osrd.sim_infra.impl.blockInfraBuilder
+import fr.sncf.osrd.sim_infra.impl.rawInfraBuilder
 import fr.sncf.osrd.utils.indexing.StaticIdx
 import fr.sncf.osrd.utils.indexing.StaticIdxList
-import fr.sncf.osrd.utils.indexing.StaticPool
 import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
 import fr.sncf.osrd.utils.units.*
 import kotlin.test.Test
 import kotlin.test.assertTrue
-import kotlin.time.Duration.Companion.ZERO
+import kotlin.time.Duration.Companion.milliseconds
 
 class BlockBuilderTest {
     @Test
@@ -28,9 +27,13 @@ class BlockBuilderTest {
         //  <-- reverse     normal -->
 
         // region build the test infrastructure
-        val builder = RawInfraFromRjsBuilder()
+        val builder = rawInfraBuilder()
         // region switches
-        val switch = builder.node("S", ZERO, StaticPool(), StaticPool())
+        val switch =
+            builder.movableElement("S", delay = 10L.milliseconds) {
+                config("xy", Pair(TrackNodePortId(0u), TrackNodePortId(1u)))
+                config("vy", Pair(TrackNodePortId(0u), TrackNodePortId(2u)))
+            }
         // endregion
 
         // region zones

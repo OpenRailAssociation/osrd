@@ -17,10 +17,8 @@ import fr.sncf.osrd.infra.implementation.tracks.directed.DiTrackEdgeImpl
 import fr.sncf.osrd.infra.implementation.tracks.directed.TrackRangeView
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSSignal
 import fr.sncf.osrd.sim_infra.api.*
-import fr.sncf.osrd.sim_infra.impl.NeutralSection as SimNeutralSection
 import fr.sncf.osrd.sim_infra.impl.RawInfraBuilder
 import fr.sncf.osrd.sim_infra.impl.RawInfraBuilderImpl
-import fr.sncf.osrd.sim_infra.impl.SpeedSection
 import fr.sncf.osrd.sim_infra.impl.TrackSectionBuilder
 import fr.sncf.osrd.utils.DirectionalMap
 import fr.sncf.osrd.utils.DistanceRangeMap
@@ -333,8 +331,8 @@ private fun makeChunk(
         return res
     }
 
-    fun makeNeutralSection(range: TrackRangeView): DistanceRangeMap<SimNeutralSection> {
-        val res = distanceRangeMapOf<SimNeutralSection>()
+    fun makeNeutralSection(range: TrackRangeView): DistanceRangeMap<NeutralSection> {
+        val res = distanceRangeMapOf<NeutralSection>()
         for ((rangeMap, isAnnouncement) in
             listOf(
                 Pair(range.neutralSections, false),
@@ -345,7 +343,7 @@ private fun makeChunk(
                 res.put(
                     entry.key.lowerEndpoint().meters,
                     entry.key.upperEndpoint().meters,
-                    SimNeutralSection(legacyNeutralSection.lowerPantograph, isAnnouncement)
+                    NeutralSection(legacyNeutralSection.lowerPantograph, isAnnouncement)
                 )
             }
         }
