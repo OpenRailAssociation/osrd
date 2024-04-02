@@ -14,7 +14,7 @@ use diesel::sql_types::Text;
 use diesel_async::RunQueryDsl;
 use serde::Deserialize;
 use serde::Serialize;
-use strum_macros::Display;
+use strum::Display;
 use utoipa::ToSchema;
 
 use crate::error::Result;

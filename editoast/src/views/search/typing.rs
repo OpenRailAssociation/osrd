@@ -40,17 +40,7 @@ enum TypeCheckError {
 /// Defines all the atomic types that are expressible by the search query language
 ///
 /// See [TypeSpec].
-#[derive(
-    Debug,
-    PartialEq,
-    Eq,
-    Clone,
-    Copy,
-    strum_macros::Display,
-    Hash,
-    strum_macros::EnumIter,
-    Deserialize,
-)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy, strum::Display, Hash, strum::EnumIter, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum AstType {
     Null,

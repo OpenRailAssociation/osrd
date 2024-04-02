@@ -68,8 +68,8 @@ use derivative::Derivative;
 use enum_map::Enum;
 use serde::Deserialize;
 use serde::Serialize;
-use strum_macros::Display;
-use strum_macros::EnumIter;
+use strum::Display;
+use strum::EnumIter;
 use utoipa::ToSchema;
 
 use self::utils::Identifier;

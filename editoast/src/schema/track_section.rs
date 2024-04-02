@@ -3,7 +3,7 @@ use geos::geojson::Geometry;
 use geos::geojson::Value::LineString;
 use serde::Deserialize;
 use serde::Serialize;
-use strum_macros::FromRepr;
+use strum::FromRepr;
 use utoipa::ToSchema;
 
 use super::utils::Identifier;

@@ -7,8 +7,8 @@ use derivative::Derivative;
 use serde::Deserialize;
 use serde::Deserializer;
 use serde::Serialize;
-use strum_macros::Display;
-use strum_macros::EnumString;
+use strum::Display;
+use strum::EnumString;
 use utoipa::ToSchema;
 
 use crate::modelsv2::rolling_stock_model::RollingStockSupportedSignalingSystems;
