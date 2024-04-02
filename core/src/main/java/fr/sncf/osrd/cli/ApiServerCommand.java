@@ -49,7 +49,7 @@ public final class ApiServerCommand implements CliCommand {
     @Parameter(
             names = {"-j", "--threads"},
             description = "The number of threads to serve requests from")
-    private int threads = 4;
+    private Integer threads;
 
     private String getEditoastUrl() {
         if (editoastUrl == null) {
@@ -108,7 +108,8 @@ public final class ApiServerCommand implements CliCommand {
                     new FbStatus(404, new RsWithStatus(new RsText("Not found"), 404)), new FbSentry());
 
             var serverConfig = new TkSlf4j(new TkFallback(monitoredRoutes, fallbacks));
-            var serverBack = new BkParallel(new BkSafe(new BkBasic(serverConfig)), threads);
+            var serverSafety = new BkSafe(new BkBasic(serverConfig));
+            var serverBack = threads != null ? new BkParallel(serverSafety, threads) : new BkParallel(serverSafety);
             var serverFront = new FtBasic(serverBack, port);
             serverFront.start(Exit.NEVER);
             return 0;
