@@ -12,9 +12,6 @@ import fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType
 import fr.sncf.osrd.envelope.part.constraints.SpeedConstraint
 import fr.sncf.osrd.envelope_sim.EnvelopeProfile
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext
-import fr.sncf.osrd.envelope_sim.allowances.LinearAllowance
-import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceRange
-import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue.FixedTime
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeDeceleration
 import fr.sncf.osrd.envelope_sim.pipelines.MaxEffortEnvelope
 import fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope
@@ -152,26 +149,6 @@ fun interpolateTime(
     assert(edgeOffset.distance <= fromMeters(envelope.endPos))
     assert(edgeOffset.distance >= 0.meters)
     return startTime + envelope.interpolateTotalTime(edgeOffset.distance.meters) / speedRatio
-}
-
-/** Try to apply an allowance on the given envelope to add the given delay */
-fun findEngineeringAllowance(
-    context: EnvelopeSimContext,
-    oldEnvelope: Envelope,
-    neededDelay: Double
-): Envelope? {
-    var mutNeededDelay = neededDelay
-    mutNeededDelay += context.timeStep // error margin for the dichotomy
-    val ranges = listOf(AllowanceRange(0.0, oldEnvelope.endPos, FixedTime(mutNeededDelay)))
-    val capacitySpeedLimit =
-        1 // We set a minimum because generating curves at very low speed can cause issues
-    // TODO: add a parameter and set a higher default value once we can handle proper stops
-    val allowance = LinearAllowance(0.0, oldEnvelope.endPos, capacitySpeedLimit.toDouble(), ranges)
-    return try {
-        allowance.apply(oldEnvelope, context)
-    } catch (e: OSRDError) {
-        null
-    }
 }
 
 /** returns an envelope for a block that already has an envelope, but with a different end speed */

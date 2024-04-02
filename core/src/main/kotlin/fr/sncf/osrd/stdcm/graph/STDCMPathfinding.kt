@@ -192,7 +192,8 @@ private fun convertLocations(
                 rollingStock,
                 constraints
             )
-        for (explorer in infraExplorers) {
+        val extended = infraExplorers.flatMap { extendLookaheadUntil(it, 4) }
+        for (explorer in extended) {
             val edges =
                 STDCMEdgeBuilder(explorer, graph)
                     .setStartTime(startTime)

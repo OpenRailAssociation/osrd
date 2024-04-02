@@ -125,8 +125,8 @@ class DepartureTimeShiftTests {
     @Test
     fun testEarliestArrivalTimeWithOccupancy() {
         /*
-        Bop path is shorter but is occupied at start
-        Tot path is longer but can be used with no delay
+        Top path is shorter but is occupied at start
+        Bot path is longer but can be used with no delay
         We should use the top path (earlier arrival time)
         First and last blocks are very long for speedup and slowdown
 
