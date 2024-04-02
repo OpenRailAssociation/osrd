@@ -24,7 +24,7 @@ colored = "2.1.0"
 chrono = { version = "0.4.37", features = ["serde"] }
 derivative = "2.2.0"
 uuid = { version = "1.8.0", features = ["v4"] }
-diesel = { version = "2.1.4", features = [
+diesel = { version = "2.1.5", features = [
     "postgres",
     "serde_json",
     "chrono",
