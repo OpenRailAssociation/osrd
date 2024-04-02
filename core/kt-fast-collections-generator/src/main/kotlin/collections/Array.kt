@@ -62,6 +62,46 @@ private fun CollectionItemType.generateArray(context: GeneratorContext, currentF
                     set(index.toInt(), value)
                 }
 
+                /**
+                 * Array must be sorted.
+                 * If the array contains the value, return its index.
+                 * Otherwise returns -(insertion offset) - 1, where insertion offset is
+                 * where to insert the new value to keep the array sorted.
+                 */
+                fun binarySearch(
+                    value: $type,
+                    comparator: ${simpleName}Comparator${paramsUse},
+                    fromIndex: Int,
+                    toIndex: Int,
+                ): Int {
+                    var low = fromIndex
+                    var high = toIndex - 1
+
+                    while (low <= high) {
+                        val mid = (low + high) ushr 1
+                        val midVal = data[mid]
+                        val cmp = comparator.compare(${storageType.fromPrimitive("midVal")}, value)
+
+                        if (cmp < 0)
+                            low = mid + 1
+                        else if (cmp > 0)
+                            high = mid - 1
+                        else
+                            return mid
+                    }
+                    return -(low + 1)
+                }
+
+                /**
+                 * Array must be sorted.
+                 * If the array contains the value, return its index.
+                 * Otherwise returns -(insertion offset) - 1, where insertion offset is
+                 * where to insert the new value to keep the array sorted.
+                 */
+                fun binarySearch(value: $type, comparator: ${simpleName}Comparator${paramsUse}): Int {
+                    return binarySearch(value, comparator, 0, data.size)
+                }
+
                 /** Creates an iterator over the elements of the array. */
                 operator fun iterator(): Iterator<$type> {
                     return object : Iterator<$type> {
@@ -144,6 +184,33 @@ private fun CollectionItemType.generateArray(context: GeneratorContext, currentF
 
                 fun copyOf(size: Int): ${simpleName}Array${paramsUse} {
                     return ${simpleName}Array${paramsUse}(data.copyOf(size))
+                }
+                fun binarySearch(
+                    value: $type,
+                    comparator: ${simpleName}Comparator${paramsUse},
+                    fromIndex: Int,
+                    toIndex: Int,
+                ): Int {
+                    var low = fromIndex
+                    var high = toIndex - 1
+
+                    while (low <= high) {
+                        val mid = (low + high) ushr 1
+                        val midVal = data[mid]
+                        val cmp = comparator.compare(${storageType.fromPrimitive("midVal")}, value)
+
+                        if (cmp < 0)
+                            low = mid + 1
+                        else if (cmp > 0)
+                            high = mid - 1
+                        else
+                            return mid
+                    }
+                    return -(low + 1)
+                }
+
+                fun binarySearch(value: $type, comparator: ${simpleName}Comparator${paramsUse}): Int {
+                    return binarySearch(value, comparator, 0, data.size)
                 }
 
                 /** Creates an iterator over the elements of the array. */

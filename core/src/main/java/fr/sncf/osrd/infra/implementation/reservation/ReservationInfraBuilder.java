@@ -261,7 +261,9 @@ public class ReservationInfraBuilder {
                     }
                 }
                 // We didn't find a next edge
-                if (newEdge == edge) throw newDiscontinuousRouteError(rjsRoute.id);
+                if (newEdge == edge) {
+                    throw newDiscontinuousRouteError(rjsRoute.id);
+                }
             }
             position = edge.getDirection() == FORWARD ? 0 : edge.getEdge().getLength();
         }

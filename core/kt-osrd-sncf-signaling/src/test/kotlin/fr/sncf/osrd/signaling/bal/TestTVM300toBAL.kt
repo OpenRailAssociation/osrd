@@ -5,7 +5,8 @@ import fr.sncf.osrd.signaling.impl.SigSystemManagerImpl
 import fr.sncf.osrd.signaling.impl.SignalingSimulatorImpl
 import fr.sncf.osrd.signaling.tvm300.TVM300
 import fr.sncf.osrd.sim_infra.api.*
-import fr.sncf.osrd.sim_infra.impl.RawInfraBuilder
+import fr.sncf.osrd.sim_infra.impl.rawInfraBuilder
+import fr.sncf.osrd.utils.indexing.StaticIdx
 import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
@@ -25,7 +26,7 @@ class TestTVM300toBAL {
         // N: BAL
 
         // region build the test infrastructure
-        val builder = RawInfraBuilder()
+        val builder = rawInfraBuilder()
 
         // region zones
         val zoneA = builder.zone(listOf())
@@ -48,7 +49,7 @@ class TestTVM300toBAL {
         val balParameters = RawSignalParameters(mapOf(Pair("jaune_cli", "false")), mapOf())
         val tvmParameters = RawSignalParameters(mapOf(), mapOf())
         val signalM =
-            builder.physicalSignal("M", 0.meters) {
+            builder.physicalSignal("M", 0.meters, StaticIdx(0u), Offset(0.meters)) {
                 logicalSignal(
                     "TVM300",
                     listOf("BAL"),
@@ -59,7 +60,7 @@ class TestTVM300toBAL {
                 )
             }
         val signalN =
-            builder.physicalSignal("N", 300.meters) {
+            builder.physicalSignal("N", 300.meters, StaticIdx(0u), Offset(0.meters)) {
                 logicalSignal("BAL", listOf("BAL"), mapOf(Pair("Nf", "true")), balParameters)
             }
 

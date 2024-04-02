@@ -7,8 +7,8 @@ import fr.sncf.osrd.infra.api.Direction
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
+import fr.sncf.osrd.sim_infra.api.NeutralSection
 import fr.sncf.osrd.sim_infra.api.RouteId
-import fr.sncf.osrd.sim_infra.impl.NeutralSection
 import fr.sncf.osrd.train.TestTrains
 import fr.sncf.osrd.utils.DummyInfra
 import java.util.stream.Stream

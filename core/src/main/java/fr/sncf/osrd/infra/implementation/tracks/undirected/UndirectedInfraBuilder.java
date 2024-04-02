@@ -92,9 +92,9 @@ public class UndirectedInfraBuilder {
             return BUILTIN_NODE_TYPES_LIST;
         }
 
-        switchTypeList.addAll(BUILTIN_NODE_TYPES_LIST);
-
-        return switchTypeList;
+        var res = new ArrayList<>(BUILTIN_NODE_TYPES_LIST);
+        res.addAll(switchTypeList);
+        return res;
     }
 
     /** Parse the railjson to build an infra */

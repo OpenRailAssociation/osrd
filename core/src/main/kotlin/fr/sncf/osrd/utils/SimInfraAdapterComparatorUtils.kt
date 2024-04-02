@@ -2,6 +2,7 @@ package fr.sncf.osrd.utils
 
 import fr.sncf.osrd.sim_infra.api.DirDetectorId
 import fr.sncf.osrd.sim_infra.api.DirTrackChunkId
+import fr.sncf.osrd.sim_infra.api.PhysicalSignal
 import fr.sncf.osrd.sim_infra.api.RawInfra
 import fr.sncf.osrd.sim_infra.api.TrackChunk
 import fr.sncf.osrd.sim_infra.api.TrackChunkId
@@ -9,9 +10,13 @@ import fr.sncf.osrd.sim_infra.api.TrackNodeId
 import fr.sncf.osrd.sim_infra.api.TrackNodePortId
 import fr.sncf.osrd.sim_infra.api.TrackSection
 import fr.sncf.osrd.sim_infra.api.ZoneId
+import fr.sncf.osrd.sim_infra.api.ZonePath
+import fr.sncf.osrd.sim_infra.api.ZonePathId
 import fr.sncf.osrd.sim_infra_adapter.SimInfraAdapter
 import fr.sncf.osrd.stdcm.graph.logger
+import fr.sncf.osrd.utils.indexing.StaticIdxList
 import fr.sncf.osrd.utils.units.Offset
+import fr.sncf.osrd.utils.units.OffsetList
 import java.util.Objects
 import kotlin.collections.HashSet
 
@@ -315,6 +320,20 @@ fun assertEqualSimInfra(left: SimInfraAdapter, right: SimInfraAdapter) {
     for ((_, zone) in extraRightDet) {
         assert(zone == null || extraRightZones.contains(zone))
     }
+
+    val leftZonePathToSignal =
+        mutableMapOf<ZonePathId, Pair<OffsetList<ZonePath>, StaticIdxList<PhysicalSignal>>>()
+    for (zonePath in left.zonePaths) {
+        leftZonePathToSignal[zonePath] =
+            Pair(left.getSignalPositions(zonePath), left.getSignals(zonePath))
+    }
+    val rightZonePathToSignal =
+        mutableMapOf<ZonePathId, Pair<OffsetList<ZonePath>, StaticIdxList<PhysicalSignal>>>()
+    for (zonePath in right.zonePaths) {
+        rightZonePathToSignal[zonePath] =
+            Pair(right.getSignalPositions(zonePath), right.getSignals(zonePath))
+    }
+    assert(leftZonePathToSignal == rightZonePathToSignal)
 
     // TODO complete simInfra checks
 

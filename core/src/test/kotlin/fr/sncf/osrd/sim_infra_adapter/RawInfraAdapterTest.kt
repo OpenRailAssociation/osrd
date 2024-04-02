@@ -1,20 +1,24 @@
 package fr.sncf.osrd.sim_infra_adapter
 
 import fr.sncf.osrd.railjson.schema.common.RJSWaypointRef
-import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection
-import fr.sncf.osrd.railjson.schema.infra.RJSRoute
+import fr.sncf.osrd.railjson.schema.common.RJSWaypointRef.RJSWaypointType.BUFFER_STOP
+import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection.START_TO_STOP
+import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection.STOP_TO_START
+import fr.sncf.osrd.railjson.schema.common.graph.EdgeEndpoint
+import fr.sncf.osrd.railjson.schema.geom.RJSLineString
+import fr.sncf.osrd.railjson.schema.infra.*
+import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSBufferStop
+import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSSignal
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSTrainDetector
-import fr.sncf.osrd.sim_infra.api.DirTrackSectionId
-import fr.sncf.osrd.sim_infra.api.RawInfra
-import fr.sncf.osrd.sim_infra.api.TrackNode
-import fr.sncf.osrd.sim_infra.api.TrackNodeConfigId
-import fr.sncf.osrd.sim_infra.api.decreasing
-import fr.sncf.osrd.sim_infra.api.increasing
+import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.utils.Direction
 import fr.sncf.osrd.utils.DistanceRangeMapImpl
 import fr.sncf.osrd.utils.Helpers
 import fr.sncf.osrd.utils.indexing.StaticIdx
+import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
+import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
+import fr.sncf.osrd.utils.units.mutableOffsetArrayListOf
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -22,6 +26,113 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
 
 class RawInfraAdapterTest {
+    // If:
+    //  - the route ends with a signal exactly on its end detector
+    //  - the route ends on a track link
+    //  - both the signal and end detector are just on the other side of this track link
+    // the signal should be part of the route's zone path
+    @ParameterizedTest
+    @ValueSource(strings = ["ll", "lr", "rl", "rr"])
+    fun routeEndsOnTrackLinkWithSignal(detectorSides: String) {
+        val sideX = detectorSides[0]
+        val sideY = detectorSides[1]
+
+        val rjsInfra = RJSInfra()
+        rjsInfra.version = RJSInfra.CURRENT_VERSION
+        //        a           b           c
+        //  ||=========>||<=========||========>||
+        //  begin       x           y          end
+        rjsInfra.speedSections = listOf()
+        rjsInfra.electrifications = listOf()
+        rjsInfra.neutralSections = listOf()
+        rjsInfra.operationalPoints = listOf()
+        rjsInfra.trackSections =
+            listOf(
+                RJSTrackSection("track_a", 10.0),
+                RJSTrackSection("track_b", 10.0),
+                RJSTrackSection("track_c", 10.0),
+            )
+
+        for (trackSection in rjsInfra.trackSections) {
+            trackSection.geo = RJSLineString.make(listOf(0.0, 1.0), listOf(0.0, 1.0))
+            trackSection.sch = RJSLineString.make(listOf(0.0, 1.0), listOf(0.0, 1.0))
+        }
+        rjsInfra.switches =
+            listOf(
+                RJSSwitch(
+                    "link_ab",
+                    "link",
+                    mapOf(
+                        Pair("A", RJSTrackEndpoint("track_a", EdgeEndpoint.END)),
+                        Pair("B", RJSTrackEndpoint("track_b", EdgeEndpoint.END)),
+                    ),
+                    1.0
+                ),
+                RJSSwitch(
+                    "link_bc",
+                    "link",
+                    mapOf(
+                        Pair("A", RJSTrackEndpoint("track_b", EdgeEndpoint.BEGIN)),
+                        Pair("B", RJSTrackEndpoint("track_c", EdgeEndpoint.BEGIN)),
+                    ),
+                    1.0
+                ),
+            )
+        rjsInfra.bufferStops =
+            listOf(
+                RJSBufferStop("begin", 0.0, "track_a"),
+                RJSBufferStop("end", 10.0, "track_c"),
+            )
+
+        val trackX = if (sideX == 'l') "track_a" else "track_b"
+        val directionX = if (sideX == 'l') START_TO_STOP else STOP_TO_START
+        val offsetX = 10.0
+        val trackY = if (sideY == 'l') "track_b" else "track_c"
+        val directionY = if (sideY == 'l') STOP_TO_START else START_TO_STOP
+        val offsetY = 0.0
+        rjsInfra.detectors =
+            listOf(
+                RJSTrainDetector("x", offsetX, trackX),
+                RJSTrainDetector("y", offsetY, trackY),
+            )
+        rjsInfra.signals =
+            listOf(
+                RJSSignal(trackX, offsetX, "U", directionX, 42.0, null),
+                RJSSignal(trackY, offsetY, "V", directionY, 42.0, null),
+            )
+
+        val rjsRoute =
+            RJSRoute(
+                "route",
+                RJSWaypointRef("begin", BUFFER_STOP),
+                START_TO_STOP,
+                RJSWaypointRef("end", BUFFER_STOP)
+            )
+        rjsRoute.switchesDirections = mapOf(Pair("link_ab", "STATIC"), Pair("link_bc", "STATIC"))
+        rjsInfra.routes = listOf(rjsRoute)
+
+        val oldInfra = Helpers.infraFromRJS(rjsInfra)
+        val result = adaptRawInfra(oldInfra, rjsInfra)
+        val infra = result.simInfra
+        val route = infra.getRouteFromName("route")
+        val signalMap = infra.physicalSignals.associateBy { infra.getPhysicalSignalName(it)!! }
+        val signalU = signalMap["U"]!!
+        val signalV = signalMap["V"]!!
+        val routePath = infra.getRoutePath(route)
+        assertEquals(3, routePath.size)
+        assertEquals(mutableStaticIdxArrayListOf(signalU), infra.getSignals(routePath[0]))
+        assertEquals(
+            mutableOffsetArrayListOf(Offset(10.meters)),
+            infra.getSignalPositions(routePath[0])
+        )
+        assertEquals(mutableStaticIdxArrayListOf(signalV), infra.getSignals(routePath[1]))
+        assertEquals(
+            mutableOffsetArrayListOf(Offset(10.meters)),
+            infra.getSignalPositions(routePath[0])
+        )
+        assertEquals(mutableStaticIdxArrayListOf(), infra.getSignals(routePath[2]))
+    }
+
     @Test
     fun smokeAdaptTinyInfra() {
         val rjsInfra = Helpers.getExampleInfra("tiny_infra/infra.json")
@@ -113,7 +224,7 @@ class RawInfraAdapterTest {
             RJSRoute(
                 "new_route",
                 RJSWaypointRef("det_at_transition", RJSWaypointRef.RJSWaypointType.DETECTOR),
-                EdgeDirection.START_TO_STOP,
+                START_TO_STOP,
                 RJSWaypointRef("det_end_new_route", RJSWaypointRef.RJSWaypointType.DETECTOR),
             )
         newRoute.switchesDirections["PA0"] = "A_B1"
