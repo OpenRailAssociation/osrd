@@ -414,10 +414,7 @@ pub mod tests {
         let img = image::open("src/tests/example_rolling_stock_image_1.gif").unwrap();
         let mut img_bytes: Vec<u8> = Vec::new();
         assert!(img
-            .write_to(
-                &mut Cursor::new(&mut img_bytes),
-                image::ImageOutputFormat::Png
-            )
+            .write_to(&mut Cursor::new(&mut img_bytes), image::ImageFormat::Png)
             .is_ok());
         TestFixture::create(
             Document::changeset()
