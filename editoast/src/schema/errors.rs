@@ -1,6 +1,6 @@
 use serde::Deserialize;
 use serde::Serialize;
-use strum_macros::EnumVariantNames;
+use strum::VariantNames;
 
 use super::Endpoint;
 use super::OSRDIdentified;
@@ -19,7 +19,7 @@ pub struct InfraError {
     sub_type: InfraErrorType,
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Debug, EnumVariantNames, Clone)]
+#[derive(Serialize, Deserialize, PartialEq, Debug, VariantNames, Clone)]
 #[strum(serialize_all = "snake_case")]
 #[serde(tag = "error_type", rename_all = "snake_case", deny_unknown_fields)]
 pub enum InfraErrorType {

@@ -9,7 +9,7 @@ use derivative::Derivative;
 use serde::de::Error as SerdeError;
 use serde::Deserialize;
 use serde::Serialize;
-use strum_macros::FromRepr;
+use strum::FromRepr;
 use utoipa::ToSchema;
 
 use crate::schema::utils::Duration;

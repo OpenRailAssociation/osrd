@@ -17,7 +17,7 @@ pub struct TelemetryConfig {
     pub telemetry_endpoint: Url,
 }
 
-#[derive(Default, ValueEnum, Debug, Derivative, Clone, strum_macros::Display)]
+#[derive(Default, ValueEnum, Debug, Derivative, Clone, strum::Display)]
 #[strum(serialize_all = "lowercase")]
 pub enum TelemetryKind {
     #[default]
