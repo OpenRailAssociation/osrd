@@ -19,7 +19,7 @@ crate::schemas! {
     InternalError,
 }
 
-pub type Result<T> = StdResult<T, InternalError>;
+pub type Result<T, E = InternalError> = StdResult<T, E>;
 
 /// Trait for all errors that can be returned by editoast
 pub trait EditoastError: Error + Send + Sync {
