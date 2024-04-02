@@ -82,7 +82,7 @@ url = "2.5.0"
 cfg-if = "1.0.0"
 validator = { version = "0.16.1", features = ["derive"] }
 inventory = "0.3"
-heck = "0.4.1"
+heck = "0.5.0"
 iso8601 = "0.6.1"
 opentelemetry = "0.21.0"
 opentelemetry_sdk = { version = "0.21.0", features = ["rt-tokio", "trace"] }
