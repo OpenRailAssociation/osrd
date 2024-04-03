@@ -8,7 +8,7 @@ import { useSelector } from 'react-redux';
 import STDCM_REQUEST_STATUS from 'applications/stdcm/consts';
 import formatStdcmConf from 'applications/stdcm/formatStdcmConf';
 import type { StdcmRequestStatus } from 'applications/stdcm/types';
-import type { SimulationReport } from 'common/api/osrdEditoastApi';
+import type { PostStdcmApiResponse, SimulationReport } from 'common/api/osrdEditoastApi';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
@@ -31,6 +31,7 @@ import { castErrorToFailure } from 'utils/error';
 type StdcmRequestModalProps = {
   setCurrentStdcmRequestStatus: (currentStdcmRequestStatus: StdcmRequestStatus) => void;
   currentStdcmRequestStatus: StdcmRequestStatus;
+  setStdcmResults: (stdcmResults: PostStdcmApiResponse) => void;
 };
 
 export default function StdcmRequestModal(props: StdcmRequestModalProps) {
@@ -49,7 +50,7 @@ export default function StdcmRequestModal(props: StdcmRequestModalProps) {
 
   // Theses are prop-drilled from OSRDSTDCM Component, which is conductor.
   // Remains fit with one-level limit
-  const { setCurrentStdcmRequestStatus, currentStdcmRequestStatus } = props;
+  const { setCurrentStdcmRequestStatus, currentStdcmRequestStatus, setStdcmResults } = props;
 
   // https://developer.mozilla.org/en-US/docs/Web/API/AbortController
   const controller = new AbortController();
@@ -64,6 +65,7 @@ export default function StdcmRequestModal(props: StdcmRequestModalProps) {
         .then((result) => {
           setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.success);
           if ('path' in result && 'simulation' in result) {
+            setStdcmResults(result);
             dispatch(updateItinerary(result.path));
 
             const fakedNewTrain = {

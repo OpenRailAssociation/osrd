@@ -8,5 +8,6 @@
   "stdcmError": "Erreur de calcul Sillon de dernière minute",
   "stdcmErrorNoPaths": "Incompatibilité avec d'autres sillons.",
   "stdcmNoResults": "Aucun sillon trouvé",
-  "stdcmResults": "Résultats"
+  "stdcmResults": "Résultats",
+  "stdcmSimulationReport": "Fiche simulation"
 }

@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import type { Feature, Point } from 'geojson';
+import html2canvas from 'html2canvas';
 import type { MapLayerMouseEvent } from 'maplibre-gl';
 import ReactMapGL, { AttributionControl, ScaleControl } from 'react-map-gl/maplibre';
 import type { MapRef } from 'react-map-gl/maplibre';
@@ -56,14 +57,17 @@ import ItineraryMarkersV2 from './ManageTrainScheduleMap/ItineraryMarkersV2';
 type MapProps = {
   geometry?: GeoJsonLineString;
   pathProperties?: ManageTrainSchedulePathProperties;
+  setMapCanvas?: (mapCanvas: string) => void;
 };
 
-const Map = ({ geometry, pathProperties }: MapProps) => {
+const Map = ({ geometry, pathProperties, setMapCanvas }: MapProps) => {
   const mapBlankStyle = useMapBlankStyle();
 
   const infraID = useInfraID();
   const terrain3DExaggeration = useSelector(getTerrain3DExaggeration);
   const { viewport, mapSearchMarker, mapStyle, showOSM, layersSettings } = useSelector(getMap);
+  const { getGeojson } = useOsrdConfSelectors();
+  const geoJson = useSelector(getGeojson);
   const trainScheduleV2Activated = useSelector(getTrainScheduleV2Activated);
 
   const [mapIsLoaded, setMapIsLoaded] = useState(false);
@@ -76,6 +80,26 @@ const Map = ({ geometry, pathProperties }: MapProps) => {
   );
 
   const mapRef = useRef<MapRef | null>(null);
+
+  const captureMap = async () => {
+    const mapElement = document.getElementById('map-container');
+    if (!mapElement) {
+      console.error('Map element not found');
+      return;
+    }
+
+    try {
+      const canvas = await html2canvas(mapElement);
+      const imageDataURL = canvas.toDataURL();
+      if (setMapCanvas) setMapCanvas(imageDataURL);
+    } catch (error) {
+      console.error('Error capturing map:', error);
+    }
+  };
+
+  useEffect(() => {
+    captureMap();
+  }, [mapIsLoaded, geoJson]);
 
   const scaleControlStyle = {
     left: 20,
@@ -218,6 +242,8 @@ const Map = ({ geometry, pathProperties }: MapProps) => {
         onLoad={() => {
           setMapIsLoaded(true);
         }}
+        preserveDrawingBuffer
+        id="map-container"
       >
         <VirtualLayers />
         <AttributionControl position="bottom-right" customAttribution={CUSTOM_ATTRIBUTION} />

@@ -8,5 +8,6 @@
   "stdcmError": "Calculation error for last minute train path.",
   "stdcmErrorNoPaths": "Incompatibility with other train paths.",
   "stdcmNoResults": "No path found",
-  "stdcmResults": "Results"
+  "stdcmResults": "Results",
+  "stdcmSimulationReport": "Path simulation report"
 }

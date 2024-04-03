@@ -1,15 +1,29 @@
 import React, { useMemo, useState } from 'react';
 
 import { ChevronDown, ChevronUp } from '@osrd-project/ui-icons';
+import { PDFDownloadLink } from '@react-pdf/renderer';
 import { useTranslation } from 'react-i18next';
 
-import type { SimulationReport } from 'common/api/osrdEditoastApi';
+import type {
+  PostStdcmApiResponse,
+  RollingStockWithLiveries,
+  SimulationReport,
+} from 'common/api/osrdEditoastApi';
 import SpaceTimeChart from 'modules/simulationResult/components/SpaceTimeChart/SpaceTimeChart';
 import { useStoreDataForSpaceTimeChart } from 'modules/simulationResult/components/SpaceTimeChart/useStoreDataForSpaceTimeChart';
 import SpeedSpaceChart from 'modules/simulationResult/components/SpeedSpaceChart/SpeedSpaceChart';
 import type { AllowancesSettings } from 'reducers/osrdsimulation/types';
 
-const OSRDStcdmResults = () => {
+import SimulationReportSheet from '../components/SimulationReportSheet';
+import { generateCodeNumber } from '../utils';
+
+type OSRDStcdmResultsProps = {
+  mapCanvas?: string;
+  stdcmResults: PostStdcmApiResponse;
+  rollingStockData: RollingStockWithLiveries;
+};
+
+const OSRDStcdmResults = ({ mapCanvas, stdcmResults, rollingStockData }: OSRDStcdmResultsProps) => {
   const { t } = useTranslation(['translation', 'stdcm']);
 
   const [showSpeedSpaceChart, setShowSpeedSpaceChart] = useState(false);
@@ -24,6 +38,8 @@ const OSRDStcdmResults = () => {
     dispatchUpdateSelectedTrainId,
     dispatchPersistentUpdateSimulation,
   } = useStoreDataForSpaceTimeChart();
+
+  const codeNumber = generateCodeNumber();
 
   // by default, we show the ecoblocks for stdcm (if existing)
   const allowancesSettings = useMemo(
@@ -92,6 +108,23 @@ const OSRDStcdmResults = () => {
               </div>
             )}
           </div>
+        </div>
+        <div className="osrd-config-item-container">
+          <PDFDownloadLink
+            document={
+              <SimulationReportSheet
+                stdcmData={stdcmResults}
+                rollingStockData={rollingStockData}
+                number={codeNumber}
+                mapCanvas={mapCanvas}
+              />
+            }
+            fileName={`STDCM-${codeNumber}.pdf`}
+          >
+            <button className="btn d-flex align-items-center mb-1 font-weight-bold" type="button">
+              {t('stdcm:stdcmSimulationReport')}
+            </button>
+          </PDFDownloadLink>
         </div>
       </div>
     </main>

@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@ag-media/react-pdf-table": "^1.0.1",
     "@hookform/resolvers": "^3.3.4",
     "@nivo/annotations": "^0.80.0",
     "@nivo/core": "^0.80.0",
@@ -11,6 +12,7 @@
     "@openapi-contrib/openapi-schema-to-json-schema": "^5.1.0",
     "@osrd-project/ui-core": "^0.0.21",
     "@osrd-project/ui-icons": "^0.0.21",
+    "@react-pdf/renderer": "^3.4.2",
     "@redux-devtools/extension": "^3.3.0",
     "@reduxjs/toolkit": "^2.1.0",
     "@rjsf/core": "^5.17.0",
@@ -67,6 +69,7 @@
     "fast-json-patch": "^3.1.1",
     "geojson": "^0.5.0",
     "history": "^5.3.0",
+    "html2canvas": "^1.4.1",
     "i18next": "^23.8.2",
     "i18next-browser-languagedetector": "^7.2.0",
     "i18next-parser": "^8.13.0",
