@@ -53,11 +53,18 @@ editoast_common::schemas! {
 pub enum PathfindingResult {
     Success {
         #[schema(inline)]
+        /// Path description as block ids
         blocks: Vec<Identifier>,
         #[schema(inline)]
+        /// Path description as route ids
         routes: Vec<Identifier>,
+        /// Path description as track ranges
         track_section_ranges: Vec<TrackRange>,
+        /// Length of the path in mm
         length: u64,
+        /// The path offset in mm of each path item given as input of the pathfinding
+        /// The first value is always `0` (beginning of the path) and the last one is always equal to the `length` of the path in mm
+        path_items_positions: Vec<u64>,
     },
     NotFoundInBlocks {
         track_section_ranges: Vec<TrackRange>,
@@ -195,7 +202,8 @@ async fn pathfinding_blocks(
         blocks: vec![],
         routes: vec![],
         track_section_ranges: vec![],
-        length: 0,
+        length: 1000,
+        path_items_positions: vec![0, 1000],
     };
     // 3) Put in cache
     redis_conn
