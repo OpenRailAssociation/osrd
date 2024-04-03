@@ -19,12 +19,12 @@ import { useSwitchTypes } from 'applications/editor/tools/switchEdition/types';
 import type { switchProps } from 'applications/editor/tools/switchProps';
 import type { CommonToolState } from 'applications/editor/tools/types';
 import { centerMapOnObject, selectEntities } from 'applications/editor/tools/utils';
-import type { ObjectType } from 'common/api/osrdEditoastApi';
+import { osrdEditoastApi, type ObjectType } from 'common/api/osrdEditoastApi';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { LoaderState } from 'common/Loaders';
 import MapButtons from 'common/Map/Buttons/MapButtons';
 import MapSearch from 'common/Map/Search/MapSearch';
-import { useInfraID, useOsrdActions } from 'common/osrdContext';
+import { useInfraActions, useInfraID, useOsrdActions } from 'common/osrdContext';
 import Tipped from 'common/Tipped';
 import type { EditorSliceActions } from 'reducers/editor';
 import { getEditorState, getInfraLockStatus } from 'reducers/editor/selectors';
@@ -49,8 +49,8 @@ const Editor = () => {
   const { urlInfra } = useParams();
   const infraID = useInfraID();
   const [searchParams, setSearchParams] = useSearchParams();
-  const isLocked = useSelector(getInfraLockStatus);
   const isLoading = useSelector(getIsLoading);
+  const isLocked = useSelector(getInfraLockStatus);
   const editorState = useSelector(getEditorState);
   const switchTypes = useSwitchTypes(infraID);
   /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -65,6 +65,13 @@ const Editor = () => {
   }, [setRenderingFingerprint]);
 
   const [isFormSubmited, setIsFormSubmited] = useState(false);
+  const { data: infra } = osrdEditoastApi.endpoints.getInfraById.useQuery(
+    { id: infraID as number },
+    {
+      skip: !infraID,
+    }
+  );
+  const { updateInfra } = useInfraActions();
 
   const switchTool = useCallback(
     ({ toolType, toolState }: switchProps) => {
@@ -311,6 +318,12 @@ const Editor = () => {
       }
     }
   }, [toolAndState.state.entity?.properties.id]);
+
+  useEffect(() => {
+    if (infra) {
+      dispatch(updateInfra(infra));
+    }
+  }, [infra]);
 
   return (
     <EditorContext.Provider value={extendedContext as EditorContextType<unknown>}>
