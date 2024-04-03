@@ -80,7 +80,7 @@ utoipa.workspace = true
 paste = "1.0.14"
 url = "2.5.0"
 cfg-if = "1.0.0"
-validator = { version = "0.16.1", features = ["derive"] }
+validator = { version = "0.17.0", features = ["derive"] }
 inventory = "0.3"
 heck = "0.5.0"
 iso8601 = "0.6.1"
