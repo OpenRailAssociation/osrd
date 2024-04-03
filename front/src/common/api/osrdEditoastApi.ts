@@ -911,7 +911,10 @@ const injectedRtkApi = api
         GetV2TrainScheduleByIdSimulationApiResponse,
         GetV2TrainScheduleByIdSimulationApiArg
       >({
-        query: (queryArg) => ({ url: `/v2/train_schedule/${queryArg.id}/simulation/` }),
+        query: (queryArg) => ({
+          url: `/v2/train_schedule/${queryArg.id}/simulation/`,
+          params: { infra_id: queryArg.infraId },
+        }),
         providesTags: ['train_schedulev2'],
       }),
       getVersion: build.query<GetVersionApiResponse, GetVersionApiArg>({
@@ -1674,11 +1677,10 @@ export type GetV2TrainScheduleByIdPathApiArg = {
   infraId: number;
 };
 export type GetV2TrainScheduleByIdSimulationApiResponse =
-  /** status 200 Simulation Output */ SimulationOutput;
+  /** status 200 Simulation Output */ SimulationResult;
 export type GetV2TrainScheduleByIdSimulationApiArg = {
-  /** The timetable id */
+  /** A train schedule ID */
   id: number;
-  /** The infra id */
   infraId: number;
 };
 export type GetVersionApiResponse = /** status 200 Return the service version */ Version;
@@ -2903,10 +2905,17 @@ export type TrackOffset = {
 };
 export type PathfindingResult =
   | {
+      /** Path description as block ids */
       blocks: string[];
+      /** Length of the path in mm */
       length: number;
+      /** The path offset in mm of each path item given as input of the pathfinding
+    The first value is always `0` (beginning of the path) and the last one is always equal to the `length` of the path in mm */
+      path_items_positions: number[];
+      /** Path description as route ids */
       routes: string[];
       status: 'success';
+      /** Path description as track ranges */
       track_section_ranges: TrackRange[];
     }
   | {
@@ -3152,19 +3161,31 @@ export type SimulationSummaryResultResponse =
     }
   | 'PathfindingNotFound'
   | 'RunningTimeNotFound';
-export type CompleteReportTrain = ReportTrain & {
+export type ReportTrainV2 = {
+  energy_consumption: number;
+  positions: number[];
+  speeds: number[];
+  times: number[];
+};
+export type CompleteReportTrain = ReportTrainV2 & {
   routing_requirements: RoutingRequirement[];
   signal_sightings: SignalSighting[];
   spacing_requirements: SpacingRequirement[];
   zone_updates: ZoneUpdate[];
 };
-export type SimulationOutput = {
-  base: ReportTrain;
-  final_output: CompleteReportTrain;
-  mrsp: Mrsp;
-  power_restriction: string;
-  provisional: ReportTrain;
-};
+export type SimulationResult =
+  | {
+      base: ReportTrainV2;
+      final_output: CompleteReportTrain;
+      mrsp: Mrsp;
+      power_restriction: string;
+      provisional: ReportTrainV2;
+      status: 'success';
+    }
+  | {
+      pathfinding_result: PathfindingResult;
+      status: 'pathfinding_failed';
+    };
 export type Version = {
   git_describe: string | null;
 };

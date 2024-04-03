@@ -5,6 +5,8 @@ use utoipa::ToSchema;
 
 #[derive(Clone, Debug, Default, PartialEq, Deserialize, Serialize, ToSchema, Derivative)]
 #[serde(deny_unknown_fields)]
+#[derivative(Hash)]
+
 pub struct Gamma {
     #[serde(rename = "type")]
     gamma_type: String,
