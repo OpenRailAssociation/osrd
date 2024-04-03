@@ -1,15 +1,16 @@
+use derivative::Derivative;
 use serde::Deserialize;
 use serde::Deserializer;
 use serde::Serialize;
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use strum::Display;
 use strum::EnumString;
 use utoipa::ToSchema;
 
-#[derive(Clone, Debug, Default, PartialEq, Deserialize, Serialize, ToSchema)]
+#[derive(Clone, Debug, Default, PartialEq, Deserialize, Serialize, ToSchema, Hash)]
 #[serde(deny_unknown_fields)]
 pub struct EffortCurves {
-    pub modes: HashMap<String, ModeEffortCurves>,
+    pub modes: BTreeMap<String, ModeEffortCurves>,
     default_mode: String,
 }
 
@@ -23,7 +24,7 @@ impl EffortCurves {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Deserialize, Serialize, ToSchema)]
+#[derive(Clone, Debug, PartialEq, Deserialize, Serialize, ToSchema, Hash)]
 #[serde(deny_unknown_fields)]
 pub struct ModeEffortCurves {
     curves: Vec<ConditionalEffortCurve>,
@@ -31,14 +32,14 @@ pub struct ModeEffortCurves {
     pub is_electric: bool,
 }
 
-#[derive(Clone, Debug, PartialEq, Deserialize, Serialize, ToSchema)]
+#[derive(Clone, Debug, PartialEq, Deserialize, Serialize, ToSchema, Hash)]
 #[serde(deny_unknown_fields)]
 pub struct ConditionalEffortCurve {
     cond: EffortCurveConditions,
     curve: EffortCurve,
 }
 
-#[derive(Clone, Debug, PartialEq, Deserialize, Serialize, ToSchema)]
+#[derive(Clone, Debug, PartialEq, Deserialize, Serialize, ToSchema, Hash)]
 #[serde(deny_unknown_fields)]
 pub struct EffortCurveConditions {
     #[schema(required)]
@@ -51,7 +52,7 @@ pub struct EffortCurveConditions {
 
 /// Train comfort that will be used for the simulation
 #[derive(
-    Display, Clone, Default, Debug, EnumString, PartialEq, Deserialize, Serialize, ToSchema,
+    Display, Clone, Default, Debug, EnumString, PartialEq, Deserialize, Serialize, ToSchema, Hash,
 )]
 #[strum(serialize_all = "UPPERCASE")]
 #[serde(rename_all = "UPPERCASE")]
@@ -62,11 +63,14 @@ pub enum RollingStockComfortType {
     Heating,
 }
 
-#[derive(Clone, Debug, PartialEq, Serialize, ToSchema)]
+#[derive(Clone, Debug, PartialEq, Serialize, ToSchema, Derivative)]
+#[derivative(Hash)]
 #[serde(deny_unknown_fields)]
 pub struct EffortCurve {
+    #[derivative(Hash(hash_with = "editoast_common::hash_float_slice::<3,_>"))]
     #[schema(min_items = 2, example = json!([0.0, 2.958, 46.719]))]
     speeds: Vec<f64>,
+    #[derivative(Hash(hash_with = "editoast_common::hash_float_slice::<3,_>"))]
     #[schema(min_items = 2, example = json!([23500.0, 23200.0, 21200.0]))]
     max_efforts: Vec<f64>,
 }

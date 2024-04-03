@@ -155,7 +155,7 @@ pub struct PowerRestrictionItem {
     pub value: String,
 }
 
-#[derive(Debug, Derivative, Clone, Serialize, Deserialize, ToSchema)]
+#[derive(Debug, Derivative, Clone, Serialize, Deserialize, ToSchema, Hash)]
 #[serde(deny_unknown_fields)]
 #[derivative(Default)]
 pub struct TrainScheduleOptions {
@@ -251,12 +251,13 @@ impl<'de> Deserialize<'de> for Margins {
     }
 }
 
-#[derive(Debug, Copy, Clone, Default, PartialEq)]
+#[derive(Debug, Copy, Clone, Default, PartialEq, Derivative)]
+#[derivative(Hash)]
 pub enum MarginValue {
     #[default]
     None,
-    Percentage(f64),
-    MinPerKm(f64),
+    Percentage(#[derivative(Hash(hash_with = "editoast_common::hash_float::<3,_>"))] f64),
+    MinPerKm(#[derivative(Hash(hash_with = "editoast_common::hash_float::<3,_>"))] f64),
 }
 
 impl<'de> Deserialize<'de> for MarginValue {
@@ -316,7 +317,7 @@ impl Serialize for MarginValue {
     }
 }
 
-#[derive(Debug, Default, Clone, Copy, Serialize, Deserialize, FromRepr, ToSchema)]
+#[derive(Debug, Default, Clone, Copy, Serialize, Deserialize, FromRepr, ToSchema, Hash)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Comfort {
     #[default]
@@ -325,7 +326,7 @@ pub enum Comfort {
     Heating,
 }
 
-#[derive(Debug, Default, Clone, Copy, Serialize, Deserialize, FromRepr, ToSchema)]
+#[derive(Debug, Default, Clone, Copy, Serialize, Deserialize, FromRepr, ToSchema, Hash)]
 #[serde(rename_all = "UPPERCASE")]
 pub enum Distribution {
     #[default]
