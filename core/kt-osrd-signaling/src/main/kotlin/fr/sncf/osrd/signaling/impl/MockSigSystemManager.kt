@@ -28,6 +28,14 @@ class MockSigSystemManager(
         TODO("Not yet implemented")
     }
 
+    override fun isConstraining(
+        signalingSystem: SignalingSystemId,
+        signalState: SigState,
+        trainState: SignalingTrainState
+    ): Boolean {
+        TODO("Not yet implemented")
+    }
+
     override val signalingSystems: StaticIdxSpace<SignalingSystem>
         get() = StaticIdxSpace(1u)
 

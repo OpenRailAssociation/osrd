@@ -41,6 +41,15 @@ class SigSystemManagerImpl : SigSystemManager {
         return driver.evalSignal(signal, parameters, stateSchema, maView, limitView)
     }
 
+    override fun isConstraining(
+        signalingSystem: SignalingSystemId,
+        signalState: SigState,
+        trainState: SignalingTrainState
+    ): Boolean {
+        val driver = sigSystemPool[signalingSystem]
+        return driver.isConstraining(signalState, trainState)
+    }
+
     override val signalingSystems: StaticIdxSpace<SignalingSystem>
         get() = sigSystemPool.space()
 
