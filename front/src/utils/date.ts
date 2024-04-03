@@ -65,6 +65,18 @@ export const isoDateToMs = (isoDate: string) => {
   return isoCurrentDate.getTime();
 };
 
+export function formatDay(locale = 'fr') {
+  if (!['en', 'fr'].includes(locale)) {
+    throw new Error('Invalid locale');
+  }
+  dayjs.locale(locale);
+  const currentDate = dayjs();
+  if (locale === 'en') {
+    return currentDate.format('dddd, MMMM D, YYYY');
+  }
+  return currentDate.format('dddd D MMMM YYYY');
+}
+
 /** check whether a date is included in the range or not */
 export function dateIsInRange(date: Date, range: [Date, Date]) {
   return date > range[0] && date < range[1];

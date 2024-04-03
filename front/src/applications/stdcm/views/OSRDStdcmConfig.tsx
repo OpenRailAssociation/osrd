@@ -8,7 +8,7 @@ import RunningTime from 'applications/stdcm/components/RunningTime';
 import STDCM_REQUEST_STATUS from 'applications/stdcm/consts';
 import type { StdcmRequestStatus } from 'applications/stdcm/types';
 import OSRDStdcmResults from 'applications/stdcm/views/OSRDStdcmResults';
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { osrdEditoastApi, type PostStdcmApiResponse } from 'common/api/osrdEditoastApi';
 import { useInfraID, useOsrdConfSelectors } from 'common/osrdContext';
 import SpeedLimitByTagSelector from 'common/SpeedLimitByTagSelector/SpeedLimitByTagSelector';
 import { useStoreDataForSpeedLimitByTagSelector } from 'common/SpeedLimitByTagSelector/useStoreDataForSpeedLimitByTagSelector';
@@ -19,16 +19,17 @@ import ScenarioExplorer from 'modules/scenario/components/ScenarioExplorer';
 import StdcmAllowances from 'modules/stdcmAllowances/components/StdcmAllowances';
 import { Map } from 'modules/trainschedule/components/ManageTrainSchedule';
 import type { OsrdStdcmConfState } from 'reducers/osrdconf/types';
-import { getSelectedTrain } from 'reducers/osrdsimulation/selectors';
 
 type OSRDStdcmConfigProps = {
   currentStdcmRequestStatus: string;
   setCurrentStdcmRequestStatus: (currentStdcmRequestStatus: StdcmRequestStatus) => void;
+  stdcmResults?: PostStdcmApiResponse;
 };
 
 export default function OSRDConfig({
   currentStdcmRequestStatus,
   setCurrentStdcmRequestStatus,
+  stdcmResults,
 }: OSRDStdcmConfigProps) {
   const { getConf, getProjectID, getScenarioID, getStudyID, getTimetableID } =
     useOsrdConfSelectors();
@@ -37,9 +38,10 @@ export default function OSRDConfig({
   const scenarioID = useSelector(getScenarioID);
   const timetableID = useSelector(getTimetableID);
   const infraID = useInfraID();
-  const selectedTrain = useSelector(getSelectedTrain);
   const [showMap, setShowMap] = useState<boolean>(true);
   const [isInfraLoaded, setIsInfraLoaded] = useState<boolean>(false);
+
+  const [mapCanvas, setMapCanvas] = useState<string>();
 
   const osrdconf: OsrdStdcmConfState = useSelector(getConf) as OsrdStdcmConfState;
 
@@ -57,8 +59,6 @@ export default function OSRDConfig({
       pollingInterval: !isInfraLoaded ? 1000 : undefined,
     }
   );
-
-  const shouldDisplayStdcmResult = selectedTrain !== undefined;
 
   const disabledApplyButton = useMemo(
     () =>
@@ -155,13 +155,20 @@ export default function OSRDConfig({
                         : 'stdcm-map-noSimulation'
                     }`}
                   >
-                    <Map />
+                    <Map setMapCanvas={setMapCanvas} />
                   </div>
                 )}
               </div>
             </div>
             {currentStdcmRequestStatus === STDCM_REQUEST_STATUS.success &&
-              shouldDisplayStdcmResult && <OSRDStdcmResults />}
+              rollingStock &&
+              stdcmResults && (
+                <OSRDStdcmResults
+                  mapCanvas={mapCanvas}
+                  stdcmResults={stdcmResults}
+                  rollingStockData={rollingStock}
+                />
+              )}
           </div>
         )}
       </div>
