@@ -12,6 +12,7 @@ pub mod scenario;
 pub mod study;
 pub mod timetable;
 pub mod train_schedule;
+pub mod work_schedules;
 
 use async_trait::async_trait;
 use diesel::pg::Pg;

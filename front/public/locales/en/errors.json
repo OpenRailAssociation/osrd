@@ -175,6 +175,9 @@
     },
     "url": {
       "InvalidUrl": "Invalid url '{{url}}'"
+    },
+    "work_schedule": {
+      "NameAlreadyUsed": "A group of work schedules with '{{name}}' already exists"
     }
   }
 }
