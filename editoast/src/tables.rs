@@ -715,6 +715,34 @@ diesel::table! {
     }
 }
 
+diesel::table! {
+    use diesel::sql_types::*;
+    use postgis_diesel::sql_types::*;
+
+    work_schedule (id) {
+        id -> Int8,
+        start_date_time -> Timestamptz,
+        end_date_time -> Timestamptz,
+        track_ranges -> Jsonb,
+        #[max_length = 255]
+        obj_id -> Varchar,
+        work_schedule_type -> Int2,
+        work_schedule_group_id -> Int8,
+    }
+}
+
+diesel::table! {
+    use diesel::sql_types::*;
+    use postgis_diesel::sql_types::*;
+
+    work_schedule_group (id) {
+        id -> Int8,
+        creation_date -> Timestamptz,
+        #[max_length = 255]
+        name -> Varchar,
+    }
+}
+
 diesel::joinable!(infra_layer_buffer_stop -> infra (infra_id));
 diesel::joinable!(infra_layer_detector -> infra (infra_id));
 diesel::joinable!(infra_layer_electrification -> infra (infra_id));
@@ -763,6 +791,7 @@ diesel::joinable!(train_schedule -> pathfinding (path_id));
 diesel::joinable!(train_schedule -> rolling_stock (rolling_stock_id));
 diesel::joinable!(train_schedule -> timetable (timetable_id));
 diesel::joinable!(train_schedule_v2 -> timetable_v2 (timetable_id));
+diesel::joinable!(work_schedule -> work_schedule_group (work_schedule_group_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
     document,
@@ -810,4 +839,6 @@ diesel::allow_tables_to_appear_in_same_query!(
     timetable_v2,
     train_schedule,
     train_schedule_v2,
+    work_schedule,
+    work_schedule_group,
 );

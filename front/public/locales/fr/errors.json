@@ -177,6 +177,9 @@
     },
     "url": {
       "InvalidUrl": "Url invalide '{{url}}'"
+    },
+    "work_schedule": {
+      "NameAlreadyUsed": "Un groupe de planches travaux avec le nom '{{name}}' existe déjà"
     }
   }
 }

@@ -18,6 +18,7 @@ pub mod study;
 pub mod timetable;
 pub mod train_schedule;
 pub mod v2;
+pub mod work_schedules;
 
 use actix_web::dev::HttpServiceFactory;
 use actix_web::get;
@@ -60,7 +61,7 @@ fn routes_v2() -> Routes<impl HttpServiceFactory> {
         (health, version, core_version),
         (rolling_stocks::routes(), light_rolling_stocks::routes()),
         (pathfinding::routes(), stdcm::routes(), train_schedule::routes()),
-        (projects::routes(),timetable::routes()),
+        (projects::routes(),timetable::routes(), work_schedules::routes()),
         documents::routes(),
         sprites::routes(),
         search::routes(),
@@ -96,6 +97,7 @@ editoast_common::schemas! {
     infra::schemas(),
     single_simulation::schemas(),
     v2::schemas(),
+    work_schedules::schemas(),
 }
 
 #[derive(OpenApi)]

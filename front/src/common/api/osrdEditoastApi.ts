@@ -21,6 +21,7 @@ export const addTagTypes = [
   'scenariosv2',
   'timetablev2',
   'train_schedulev2',
+  'work_schedules',
 ] as const;
 const injectedRtkApi = api
   .enhanceEndpoints({
@@ -923,6 +924,14 @@ const injectedRtkApi = api
       getVersionCore: build.query<GetVersionCoreApiResponse, GetVersionCoreApiArg>({
         query: () => ({ url: `/version/core/` }),
       }),
+      postWorkSchedules: build.mutation<PostWorkSchedulesApiResponse, PostWorkSchedulesApiArg>({
+        query: (queryArg) => ({
+          url: `/work_schedules/`,
+          method: 'POST',
+          body: queryArg.workScheduleCreateForm,
+        }),
+        invalidatesTags: ['work_schedules'],
+      }),
     }),
     overrideExisting: false,
   });
@@ -1687,6 +1696,11 @@ export type GetVersionApiResponse = /** status 200 Return the service version */
 export type GetVersionApiArg = void;
 export type GetVersionCoreApiResponse = /** status 200 Return the core service version */ Version;
 export type GetVersionCoreApiArg = void;
+export type PostWorkSchedulesApiResponse =
+  /** status 201 The id of the created work schedule group */ WorkScheduleCreateResponse;
+export type PostWorkSchedulesApiArg = {
+  workScheduleCreateForm: WorkScheduleCreateForm;
+};
 export type NewDocumentResponse = {
   document_key: number;
 };
@@ -3209,4 +3223,18 @@ export type SimulationResult =
     };
 export type Version = {
   git_describe: string | null;
+};
+export type WorkScheduleCreateResponse = {
+  work_schedule_group_id: number;
+};
+export type WorkScheduleItemForm = {
+  end_date_time: string;
+  obj_id: string;
+  start_date_time: string;
+  track_ranges: TrackRange[];
+  work_schedule_type: 'CATENARY' | 'TRACK';
+};
+export type WorkScheduleCreateForm = {
+  work_schedule_group_name: string;
+  work_schedules: WorkScheduleItemForm[];
 };
