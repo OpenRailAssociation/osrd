@@ -18,7 +18,7 @@ object TVM300toBAPR : SignalDriver {
         maView: MovementAuthorityView?,
         limitView: SpeedLimitView?
     ): SigState {
-        return stateSchema { value("aspect", "VL") }
+        return stateSchema { value("aspect", "VL") } // TODO: find out how these transition work
     }
 
     override fun checkSignal(reporter: SignalDiagReporter, signal: SigSettings, block: SigBlock) {}
