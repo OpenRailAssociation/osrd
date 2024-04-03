@@ -1,29 +1,26 @@
+use std::collections::hash_map::DefaultHasher;
 use std::collections::HashMap;
 use std::collections::HashSet;
+use std::hash::Hash;
+use std::hash::Hasher;
 
-use actix_web::delete;
-use actix_web::get;
-use actix_web::post;
-use actix_web::put;
-use actix_web::web::Data;
-use actix_web::web::Json;
-use actix_web::web::Path;
-use actix_web::web::Query;
-use actix_web::HttpResponse;
+use diesel_async::AsyncPgConnection as PgConnection;
 use editoast_derive::EditoastError;
 use itertools::Itertools;
-use serde::Deserialize;
-use serde::Serialize;
 use serde_qs::actix::QsQuery;
 use thiserror::Error;
-use utoipa::IntoParams;
-use utoipa::ToSchema;
 
+use crate::core::v2::simulation::SimulationMargins;
+use crate::core::v2::simulation::SimulationPath;
+use crate::core::v2::simulation::SimulationPowerRestrictionItem;
+use crate::core::v2::simulation::SimulationRequest;
+use crate::core::v2::simulation::SimulationScheduleItem;
 use crate::core::CoreClient;
 use crate::error::Result;
-use crate::models::RoutingRequirement;
-use crate::models::SpacingRequirement;
+
+use crate::client::get_app_version;
 use crate::modelsv2::infra::Infra;
+use crate::modelsv2::timetable::Timetable;
 use crate::modelsv2::train_schedule::TrainSchedule;
 use crate::modelsv2::train_schedule::TrainScheduleChangeset;
 use crate::modelsv2::Model;
@@ -34,8 +31,18 @@ use crate::schema::v2::trainschedule::TrainScheduleBase;
 use crate::views::v2::path::pathfinding_from_train;
 use crate::views::v2::path::PathfindingError;
 use crate::views::v2::path::PathfindingResult;
+use crate::views::v2::path::TrackRange;
 use crate::DbPool;
 use crate::RedisClient;
+use crate::RollingStockModel;
+
+use actix_web::web::{Data, Json, Path, Query};
+use actix_web::{delete, get, post, put, HttpResponse};
+use serde::{Deserialize, Serialize};
+use tracing::info;
+use utoipa::{IntoParams, ToSchema};
+
+const CACHE_SIMULATION_EXPIRATION: u64 = 604800;
 
 crate::routes! {
     "/v2/train_schedule" => {
@@ -46,7 +53,8 @@ crate::routes! {
         "/{id}" => {
             get,
             put,
-            simulation_output,
+            simulation,
+
             "/path" => {
                 get_path
             }
@@ -60,17 +68,18 @@ editoast_common::schemas! {
     TrainScheduleForm,
     TrainScheduleResult,
     BatchDeletionRequest,
-    SimulationOutput,
+    SimulationResult,
     ProjectPathParams,
     ProjectPathResult,
     SimulationSummaryResultResponse,
     CompleteReportTrain,
     ReportTrain,
-    TrainSchedulePathfindingRequest,
+    InfraIdQueryParam,
 }
 
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "train_schedule_v2")]
+#[allow(clippy::enum_variant_names)] // Variant have the same postfix by chance, it's not a problem
 pub enum TrainScheduleError {
     #[error("Train Schedule '{train_schedule_id}', could not be found")]
     #[editoast_error(status = 404)]
@@ -78,6 +87,9 @@ pub enum TrainScheduleError {
     #[error("{number} train schedule(s) could not be found")]
     #[editoast_error(status = 404)]
     BatchTrainScheduleNotFound { number: usize },
+    #[error("Infra '{infra_id}', could not be found")]
+    #[editoast_error(status = 404)]
+    InfraNotFound { infra_id: i64 },
 }
 
 #[derive(IntoParams, Deserialize)]
@@ -255,19 +267,32 @@ async fn put(
     Ok(Json(ts_result.into()))
 }
 
-#[derive(Deserialize, Serialize, Clone, Debug, ToSchema)]
-struct SimulationOutput {
-    base: ReportTrain,
-    provisional: ReportTrain,
-    final_output: CompleteReportTrain,
-    mrsp: Mrsp,
-    power_restriction: String,
+// TODO: When can the simulation fail ?
+#[derive(Serialize, Deserialize, Clone, Debug, ToSchema)]
+#[serde(tag = "status", rename_all = "snake_case")]
+// We accepted the difference of memory size taken by variants
+// Since there is only on success and others are error cases
+#[allow(clippy::large_enum_variant)]
+enum SimulationResult {
+    Success {
+        #[schema(value_type = ReportTrainV2)]
+        base: ReportTrain,
+        #[schema(value_type = ReportTrainV2)]
+        provisional: ReportTrain,
+        final_output: CompleteReportTrain,
+        mrsp: Mrsp,
+        power_restriction: String,
+    },
+    PathfindingFailed {
+        pathfinding_result: PathfindingResult,
+    },
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
 pub struct SignalSighting {
     pub signal: String,
-    pub time: f64,
+    // Time in ms
+    pub time: u64,
     pub position: u64,
     pub state: String,
 }
@@ -276,9 +301,9 @@ pub struct SignalSighting {
 #[schema(as = ReportTrainV2)]
 pub struct ReportTrain {
     // List of positions of a train
-    // Both positions and times must have the same length
+    // Both positions (in mm) and times (in ms) must have the same length
     positions: Vec<u64>,
-    times: Vec<f64>,
+    times: Vec<u64>,
     // List of speeds associated to a position
     speeds: Vec<f64>,
     energy_consumption: f64,
@@ -287,6 +312,7 @@ pub struct ReportTrain {
 #[derive(Deserialize, Serialize, Clone, Debug, ToSchema)]
 pub struct CompleteReportTrain {
     #[serde(flatten)]
+    #[schema(value_type = ReportTrainV2)]
     report_train: ReportTrain,
     signal_sightings: Vec<SignalSighting>,
     zone_updates: Vec<ZoneUpdate>,
@@ -297,11 +323,39 @@ pub struct CompleteReportTrain {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
 pub struct ZoneUpdate {
     pub zone: String,
-    pub time: f64,
+    // Time in ms
+    pub time: u64,
     pub position: u64,
     // TODO: see https://github.com/DGEXSolutions/osrd/issues/4294
     #[serde(rename = "isEntry")]
     pub is_entry: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
+pub struct SpacingRequirement {
+    pub zone: String,
+    // Time in ms
+    pub begin_time: u64,
+    // Time in ms
+    pub end_time: u64,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
+pub struct RoutingRequirement {
+    pub route: String,
+    // Time in ms
+    pub begin_time: u64,
+    pub zones: Vec<RoutingZoneRequirement>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
+pub struct RoutingZoneRequirement {
+    pub zone: String,
+    pub entry_detector: String,
+    pub exit_detector: String,
+    pub switches: HashMap<String, String>,
+    // Time in ms
+    pub end_time: u64,
 }
 
 /// A MRSP computation result (Most Restrictive Speed Profile)
@@ -318,74 +372,251 @@ pub struct MrspPoint {
     pub speed: f64,
 }
 
+#[derive(Debug, Clone, Hash)]
+struct SimulationInput {
+    blocks: Vec<Identifier>,
+    routes: Vec<Identifier>,
+    track_section_ranges: Vec<TrackRange>,
+}
+
 /// Retrieve the space, speed and time curve of a given train
 #[utoipa::path(
     tag = "train_schedulev2",
-    params(
-        ("id" = i64, Path, description = "The timetable id"),
-        ("infra_id" = i64, Path, description = "The infra id"),
-    ),
+    params(TrainScheduleIdParam, InfraIdQueryParam),
     responses(
-        (status = 200, description = "Simulation Output", body = SimulationOutput),
+        (status = 200, description = "Simulation Output", body = SimulationResult),
     ),
 )]
 #[get("/simulation")]
-pub async fn simulation_output(
-    _db_pool: Data<DbPool>,
-    _redis_client: Data<RedisClient>,
-    _train_schedule_id: Path<i64>,
-    _params: Query<i64>,
-) -> Result<Json<SimulationOutput>> {
-    // IMPLEMENT THIS FUNCTION
-    // issue: https://github.com/osrd-project/osrd/issues/6853
+pub async fn simulation(
+    db_pool: Data<DbPool>,
+    redis_client: Data<RedisClient>,
+    core_client: Data<CoreClient>,
+    train_schedule_id: Path<TrainScheduleIdParam>,
+    query: Query<InfraIdQueryParam>,
+) -> Result<Json<SimulationResult>> {
+    let infra_id = query.into_inner().infra_id;
+    let train_schedule_id = train_schedule_id.into_inner().id;
+    let conn = &mut db_pool.get().await?;
 
-    Ok(Json(SimulationOutput {
+    // Retrieve infra or fail
+    let infra = Infra::retrieve_or_fail(conn, infra_id, || TrainScheduleError::InfraNotFound {
+        infra_id,
+    })
+    .await?;
+
+    // Retrieve train_schedule or fail
+    let train_schedule = TrainSchedule::retrieve_or_fail(conn, train_schedule_id, || {
+        TrainScheduleError::NotFound { train_schedule_id }
+    })
+    .await?;
+
+    Ok(Json(
+        train_simulation(db_pool, core_client, redis_client, &train_schedule, &infra).await?,
+    ))
+}
+
+/// Compute the simulation of a given train schedule
+async fn train_simulation(
+    db_pool: Data<DbPool>,
+    _core_client: Data<CoreClient>,
+    redis_client: Data<RedisClient>,
+    train_schedule: &TrainSchedule,
+    infra: &Infra,
+) -> Result<SimulationResult> {
+    let mut redis_conn = redis_client.get_connection().await?;
+    let conn = &mut db_pool.get().await?;
+    // Compute path
+    let pathfinding_result =
+        pathfinding_from_train(conn, &mut redis_conn, infra, train_schedule.clone()).await?;
+
+    let (path, path_items_positions) = match pathfinding_result {
+        PathfindingResult::Success {
+            blocks,
+            routes,
+            track_section_ranges,
+            path_items_positions,
+            ..
+        } => (
+            SimulationPath {
+                blocks,
+                routes,
+                track_section_ranges,
+            },
+            path_items_positions,
+        ),
+        _ => {
+            return Ok(SimulationResult::PathfindingFailed { pathfinding_result });
+        }
+    };
+
+    // Build simulation request
+    let simulation_request =
+        build_simulation_request(conn, train_schedule, &path_items_positions, path).await?;
+
+    // Compute unique hash of SimulationInput
+    let hash = train_simulation_input_hash(infra.id, &infra.version, &simulation_request);
+
+    let result: Option<SimulationResult> = redis_conn
+        .json_get_ex(&hash, CACHE_SIMULATION_EXPIRATION)
+        .await?;
+    if let Some(simulation_result) = result {
+        info!("Simulation hit cache");
+        return Ok(simulation_result);
+    }
+
+    // Compute simulation from core
+    // TODO: Implement the simulation call
+
+    let res = SimulationResult::Success {
         base: ReportTrain {
             speeds: vec![10.0, 27.0],
             positions: vec![20, 50],
-            times: vec![27.5, 35.5],
+            times: vec![27500, 35500],
             energy_consumption: 100.0,
         },
         provisional: ReportTrain {
             speeds: vec![10.0, 27.0],
             positions: vec![20, 50],
-            times: vec![27.5, 35.5],
+            times: vec![27500, 35500],
             energy_consumption: 100.0,
         },
         final_output: CompleteReportTrain {
             report_train: ReportTrain {
                 speeds: vec![10.0, 27.0],
                 positions: vec![2000, 5000],
-                times: vec![27.5, 35.5],
+                times: vec![27500, 35500],
                 energy_consumption: 100.0,
             },
             signal_sightings: vec![SignalSighting {
                 signal: "signal.0".into(),
-                time: 28.0,
+                time: 28000,
                 position: 3000,
                 state: "VL".into(),
             }],
             zone_updates: vec![ZoneUpdate {
                 zone: "zone.0".into(),
-                time: 28.0,
+                time: 28000,
                 position: 3000,
                 is_entry: true,
             }],
             spacing_requirements: vec![SpacingRequirement {
                 zone: "zone.0".into(),
-                begin_time: 30.0,
-                end_time: 35.5,
+                begin_time: 30000,
+                end_time: 35500,
             }],
             routing_requirements: vec![RoutingRequirement {
                 route: "route.0".into(),
-                begin_time: 32.0,
+                begin_time: 32000,
                 zones: vec![],
             }],
         },
         mrsp: Mrsp(vec![]),
         power_restriction: "".into(),
-    }))
+    };
+
+    // Cache the simulation response
+    redis_conn
+        .json_set_ex(&hash, &res, CACHE_SIMULATION_EXPIRATION)
+        .await?;
+
+    // Return the response
+    Ok(res)
 }
+
+async fn build_simulation_request(
+    conn: &mut PgConnection,
+    train_schedule: &TrainSchedule,
+    path_items_position: &[u64],
+    path: SimulationPath,
+) -> Result<SimulationRequest> {
+    // Get rolling stock
+    let rolling_stock_name = train_schedule.rolling_stock_name.clone();
+    let rolling_stock = RollingStockModel::retrieve(conn, rolling_stock_name.clone())
+        .await?
+        .expect("Rolling stock should exist since the pathfinding succeeded");
+    // Get electrical_profile_set_id
+    let timetable_id = train_schedule.timetable_id;
+    let timetable = Timetable::retrieve(conn, timetable_id)
+        .await?
+        .expect("Timetable should exist since it's a foreign key");
+
+    assert_eq!(path_items_position.len(), train_schedule.path.len());
+
+    // Project path items to path offset
+    let path_items_to_position: HashMap<_, _> = train_schedule
+        .path
+        .iter()
+        .map(|p| &p.id)
+        .zip(path_items_position.iter().copied())
+        .collect();
+
+    let schedule = train_schedule
+        .schedule
+        .iter()
+        .map(|schedule_item| SimulationScheduleItem {
+            path_offset: path_items_to_position[&schedule_item.at],
+            arrival: schedule_item
+                .arrival
+                .as_ref()
+                .map(|t| t.num_seconds() as u64),
+            stop_for: schedule_item
+                .stop_for
+                .as_ref()
+                .map(|t| t.num_seconds() as u64),
+        })
+        .collect();
+
+    let margins = SimulationMargins {
+        boundaries: train_schedule
+            .margins
+            .boundaries
+            .iter()
+            .map(|at| path_items_to_position[at])
+            .collect(),
+        values: train_schedule.margins.values.clone(),
+    };
+
+    let power_restrictions = train_schedule
+        .power_restrictions
+        .iter()
+        .map(|item| SimulationPowerRestrictionItem {
+            from: path_items_to_position[&item.from],
+            to: path_items_to_position[&item.to],
+            value: item.value.clone(),
+        })
+        .collect();
+
+    Ok(SimulationRequest {
+        path,
+        start_time: train_schedule.start_time,
+        schedule,
+        margins,
+        initial_speed: train_schedule.initial_speed,
+        comfort: train_schedule.comfort,
+        constraint_distribution: train_schedule.constraint_distribution,
+        speed_limit_tag: train_schedule.speed_limit_tag.clone(),
+        power_restrictions,
+        options: train_schedule.options.clone(),
+        rolling_stock: rolling_stock.into(),
+        electrical_profile_set_id: timetable.electrical_profile_set_id,
+    })
+}
+
+// Compute hash input of a simulation
+fn train_simulation_input_hash(
+    infra_id: i64,
+    infra_version: &String,
+    simulation_input: &SimulationRequest,
+) -> String {
+    let osrd_version = get_app_version().unwrap_or_default();
+    let mut hasher = DefaultHasher::new();
+    simulation_input.hash(&mut hasher);
+    let hash_simulation_input = hasher.finish();
+    format!("simulation_{osrd_version}.{infra_id}.{infra_version}.{hash_simulation_input}")
+}
+
+// Cache simulation result
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema, IntoParams)]
 struct ProjectPathParams {
@@ -489,14 +720,14 @@ pub async fn simulations_summary(
 }
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize, IntoParams, ToSchema)]
-pub struct TrainSchedulePathfindingRequest {
+pub struct InfraIdQueryParam {
     infra_id: i64,
 }
 
 /// Get a path from a trainschedule given an infrastructure id and a train schedule id
 #[utoipa::path(
     tag = "train_schedulev2,pathfindingv2",
-    params(TrainScheduleIdParam, TrainSchedulePathfindingRequest),
+    params(TrainScheduleIdParam, InfraIdQueryParam),
     responses(
         (status = 200, description = "The path", body = PathfindingResult),
         (status = 404, description = "Infrastructure or Train schedule not found")
@@ -507,7 +738,7 @@ async fn get_path(
     db_pool: Data<DbPool>,
     redis_client: Data<RedisClient>,
     train_schedule_id: Path<TrainScheduleIdParam>,
-    query: Query<TrainSchedulePathfindingRequest>,
+    query: Query<InfraIdQueryParam>,
 ) -> Result<Json<PathfindingResult>> {
     let conn = &mut db_pool.get().await?;
     let mut redis_conn = redis_client.get_connection().await?;
@@ -540,10 +771,13 @@ mod tests {
 
     use super::*;
     use crate::fixtures::tests::db_pool;
+    use crate::fixtures::tests::named_fast_rolling_stock;
+    use crate::fixtures::tests::small_infra;
     use crate::fixtures::tests::timetable_v2;
     use crate::fixtures::tests::train_schedule_v2;
     use crate::fixtures::tests::TestFixture;
     use crate::fixtures::tests::TrainScheduleV2FixtureSet;
+    use crate::modelsv2::infra::Infra;
     use crate::modelsv2::timetable::Timetable;
     use crate::modelsv2::Delete;
     use crate::modelsv2::DeleteStatic;
@@ -653,5 +887,50 @@ mod tests {
 
         let response: TrainScheduleResult = call_and_read_body_json(&service, request).await;
         assert_eq!(response.train_schedule.rolling_stock_name, rs_name)
+    }
+
+    #[rstest]
+    async fn train_schedule_simulation(
+        #[future] timetable_v2: TestFixture<Timetable>,
+        #[future] small_infra: TestFixture<Infra>,
+        db_pool: Data<DbPool>,
+    ) {
+        let timetable = timetable_v2.await;
+        let infra = small_infra.await;
+        let rolling_stock =
+            named_fast_rolling_stock("fast_rolling_stock_update_rolling_stock", db_pool.clone())
+                .await;
+
+        let train_schedule_base: TrainScheduleBase = TrainScheduleBase {
+            rolling_stock_name: rolling_stock.name.clone(),
+            ..serde_json::from_str(include_str!("../../tests/train_schedules/simple.json"))
+                .expect("Unable to parse")
+        };
+        let train_schedule = TrainScheduleForm {
+            timetable_id: timetable.id(),
+            train_schedule: train_schedule_base,
+        };
+        let request = TestRequest::post()
+            .uri("/v2/train_schedule")
+            .set_json(json!(vec![train_schedule]))
+            .to_request();
+
+        let service = create_test_service().await;
+        let train_schedule: Vec<TrainScheduleResult> =
+            call_and_read_body_json(&service, request).await;
+        assert_eq!(train_schedule.len(), 1);
+        let request = TestRequest::get()
+            .uri(
+                format!(
+                    "/v2/train_schedule/{}/simulation/?infra_id={}",
+                    train_schedule[0].id,
+                    infra.id()
+                )
+                .as_str(),
+            )
+            .to_request();
+
+        let response = call_service(&service, request).await;
+        assert!(response.status().is_success());
     }
 }

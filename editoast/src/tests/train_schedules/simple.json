@@ -10,21 +10,21 @@
   "path": [
     {
       "id": "a",
-      "uic": 87210
+      "uic": 1
     },
     {
       "id": "b",
-      "track": "foo",
-      "offset": 10
+      "track": "TC0",
+      "offset": 340
     },
     {
       "id": "c",
       "deleted": true,
-      "trigram": "ABC"
+      "trigram": "MWS"
     },
     {
       "id": "d",
-      "operational_point": "X"
+      "operational_point": "Mid_East_station"
     }
   ],
   "constraint_distribution": "MARECO",

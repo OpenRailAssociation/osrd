@@ -117,8 +117,8 @@
     },
     "scenario": {
       "NotFound": "Scénario non trouvé",
-      "InfraNotFound":"Infrastructure {{infra_id}} non trouvée",
-      "TimetableNotFound":"Grille horaire '{{timetable_id}}' non trouvée"
+      "InfraNotFound": "Infrastructure {{infra_id}} non trouvée",
+      "TimetableNotFound": "Grille horaire '{{timetable_id}}' non trouvée"
     },
     "search": {
       "ArgMissing": "Argument de type {{expected}} manquant à la position {{arg_pos}}",
@@ -172,7 +172,8 @@
     },
     "train_schedule_v2": {
       "BatchTrainScheduleNotFound": "'{{number}}' circulation(s) n'ont pas pu être trouvée(s)",
-      "NotFound": "Circulation '{{train_schedule_id}}' non trouvée"
+      "NotFound": "Circulation '{{train_schedule_id}}' non trouvée",
+      "InfraNotFound": "Infra '{{infra_id}}' non trouvée"
     },
     "url": {
       "InvalidUrl": "Url invalide '{{url}}'"

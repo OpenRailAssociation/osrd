@@ -92,7 +92,7 @@ components:
       type: array
     CompleteReportTrain:
       allOf:
-      - $ref: '#/components/schemas/ReportTrain'
+      - $ref: '#/components/schemas/ReportTrainV2'
       - properties:
           routing_requirements:
             items:
@@ -756,6 +756,7 @@ components:
       - $ref: '#/components/schemas/EditoastTrainScheduleErrorTimetableNotFound'
       - $ref: '#/components/schemas/EditoastTrainScheduleErrorUnsimulatedTrainSchedule'
       - $ref: '#/components/schemas/EditoastTrainScheduleErrorBatchTrainScheduleNotFound'
+      - $ref: '#/components/schemas/EditoastTrainScheduleErrorInfraNotFound'
       - $ref: '#/components/schemas/EditoastTrainScheduleErrorNotFound'
       - $ref: '#/components/schemas/EditoastTypeCheckErrorArgMissing'
       - $ref: '#/components/schemas/EditoastTypeCheckErrorArgTypeMismatch'
@@ -2395,6 +2396,30 @@ components:
       - status
       - message
       type: object
+    EditoastTrainScheduleErrorInfraNotFound:
+      properties:
+        context:
+          properties:
+            infra_id:
+              type: integer
+          required:
+          - infra_id
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 404
+          type: integer
+        type:
+          enum:
+          - editoast:train_schedule_v2:InfraNotFound
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
     EditoastTrainScheduleErrorNoSimulation:
       properties:
         context:
@@ -3254,6 +3279,14 @@ components:
       - unused_port
       - node_endpoints_not_unique
       type: string
+    InfraIdQueryParam:
+      properties:
+        infra_id:
+          format: int64
+          type: integer
+      required:
+      - infra_id
+      type: object
     InternalError:
       properties:
         context:
@@ -4221,16 +4254,28 @@ components:
       oneOf:
       - properties:
           blocks:
+            description: Path description as block ids
             items:
               maxLength: 255
               minLength: 1
               type: string
             type: array
           length:
+            description: Length of the path in mm
             format: int64
             minimum: 0
             type: integer
+          path_items_positions:
+            description: |-
+              The path offset in mm of each path item given as input of the pathfinding
+              The first value is always `0` (beginning of the path) and the last one is always equal to the `length` of the path in mm
+            items:
+              format: int64
+              minimum: 0
+              type: integer
+            type: array
           routes:
+            description: Path description as route ids
             items:
               maxLength: 255
               minLength: 1
@@ -4241,6 +4286,7 @@ components:
             - success
             type: string
           track_section_ranges:
+            description: Path description as track ranges
             items:
               $ref: '#/components/schemas/TrackRange'
             type: array
@@ -4249,6 +4295,7 @@ components:
         - routes
         - track_section_ranges
         - length
+        - path_items_positions
         - status
         type: object
       - properties:
@@ -4909,8 +4956,9 @@ components:
           type: array
         times:
           items:
-            format: double
-            type: number
+            format: int64
+            minimum: 0
+            type: integer
           type: array
       required:
       - positions
@@ -6016,25 +6064,6 @@ components:
       - track
       - track_offset
       type: object
-    SimulationOutput:
-      properties:
-        base:
-          $ref: '#/components/schemas/ReportTrain'
-        final_output:
-          $ref: '#/components/schemas/CompleteReportTrain'
-        mrsp:
-          $ref: '#/components/schemas/Mrsp'
-        power_restriction:
-          type: string
-        provisional:
-          $ref: '#/components/schemas/ReportTrain'
-      required:
-      - base
-      - provisional
-      - final_output
-      - mrsp
-      - power_restriction
-      type: object
     SimulationPowerRestrictionRange:
       properties:
         code:
@@ -6112,6 +6141,42 @@ components:
       - electrification_ranges
       - power_restriction_ranges
       type: object
+    SimulationResult:
+      oneOf:
+      - properties:
+          base:
+            $ref: '#/components/schemas/ReportTrainV2'
+          final_output:
+            $ref: '#/components/schemas/CompleteReportTrain'
+          mrsp:
+            $ref: '#/components/schemas/Mrsp'
+          power_restriction:
+            type: string
+          provisional:
+            $ref: '#/components/schemas/ReportTrainV2'
+          status:
+            enum:
+            - success
+            type: string
+        required:
+        - base
+        - provisional
+        - final_output
+        - mrsp
+        - power_restriction
+        - status
+        type: object
+      - properties:
+          pathfinding_result:
+            $ref: '#/components/schemas/PathfindingResult'
+          status:
+            enum:
+            - pathfinding_failed
+            type: string
+        required:
+        - pathfinding_result
+        - status
+        type: object
     SimulationSummaryResultResponse:
       oneOf:
       - properties:
@@ -7095,14 +7160,6 @@ components:
           type: string
       required:
       - id
-      type: object
-    TrainSchedulePathfindingRequest:
-      properties:
-        infra_id:
-          format: int64
-          type: integer
-      required:
-      - infra_id
       type: object
     TrainScheduleResult:
       allOf:
@@ -10360,15 +10417,14 @@ paths:
     get:
       description: Retrieve the space, speed and time curve of a given train
       parameters:
-      - description: The timetable id
+      - description: A train schedule ID
         in: path
         name: id
         required: true
         schema:
           format: int64
           type: integer
-      - description: The infra id
-        in: path
+      - in: query
         name: infra_id
         required: true
         schema:
@@ -10379,7 +10435,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SimulationOutput'
+                $ref: '#/components/schemas/SimulationResult'
           description: Simulation Output
       summary: Retrieve the space, speed and time curve of a given train
       tags:
