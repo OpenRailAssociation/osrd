@@ -274,7 +274,7 @@ pub struct SignalSighting {
 
 #[derive(Deserialize, Serialize, Clone, Debug, ToSchema)]
 #[schema(as = ReportTrainV2)]
-struct ReportTrain {
+pub struct ReportTrain {
     // List of positions of a train
     // Both positions and times must have the same length
     positions: Vec<u64>,
@@ -285,7 +285,7 @@ struct ReportTrain {
 }
 
 #[derive(Deserialize, Serialize, Clone, Debug, ToSchema)]
-struct CompleteReportTrain {
+pub struct CompleteReportTrain {
     #[serde(flatten)]
     report_train: ReportTrain,
     signal_sightings: Vec<SignalSighting>,
