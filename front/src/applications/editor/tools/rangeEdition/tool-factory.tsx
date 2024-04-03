@@ -97,8 +97,8 @@ function getRangeEditionTool<T extends EditorRange>({
           id: `save-${objectTypeAction}`,
           icon: AiFillSave,
           labelTranslationKey: `Editor.tools.${objectTypeEdition}-edition.actions.save-${objectTypeAction}`,
-          isDisabled({ isLoading, state }) {
-            if (isLoading) return true;
+          isDisabled({ isLoading, isInfraLocked, state }) {
+            if (isLoading || isInfraLocked) return true;
             if (canSave) return !canSave(state);
             return false;
           },

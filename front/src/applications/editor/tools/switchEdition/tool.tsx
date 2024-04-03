@@ -49,7 +49,7 @@ const SwitchEditionTool: Tool<SwitchEditionState> = {
         id: 'save-switch',
         icon: AiFillSave,
         labelTranslationKey: 'Editor.tools.switch-edition.actions.save-switch',
-        isDisabled({ isLoading, state }) {
+        isDisabled({ isLoading, isInfraLocked, state }) {
           const portWithTracks = filter(state.entity?.properties?.ports ?? {}, (p) => !!p?.track);
           const portsKeys = Object.keys(state.entity?.properties?.ports ?? {});
           const detectedDuplicates = filter(
@@ -61,6 +61,7 @@ const SwitchEditionTool: Tool<SwitchEditionState> = {
             portWithTracks.length !== portsKeys.length ||
             !!detectedDuplicates.length ||
             isLoading ||
+            isInfraLocked ||
             false
           );
         },
