@@ -675,7 +675,7 @@ pub async fn project_path(
     _core_client: Data<CoreClient>,
 ) -> Result<Json<HashMap<Identifier, ProjectPathResult>>> {
     // TO DO
-    // issue: https://github.com/osrd-project/osrd/issues/6858
+    // issue: https://github.com/OpenRailAssociation/osrd/issues/6858
     Ok(Json(HashMap::new()))
 }
 
@@ -715,7 +715,7 @@ pub async fn simulations_summary(
     _infra_id: Query<i64>,
 ) -> Result<Json<HashMap<Identifier, SimulationSummaryResultResponse>>> {
     // TO DO
-    // issue:x https://github.com/osrd-project/osrd/issues/6857
+    // issue:x https://github.com/OpenRailAssociation/osrd/issues/6857
     Ok(Json(HashMap::new()))
 }
 

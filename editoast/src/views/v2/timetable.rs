@@ -269,7 +269,7 @@ pub async fn conflicts(
     _infra_id: Query<i64>,
 ) -> Result<Json<Vec<Conflict>>> {
     // TODO
-    // issue: https://github.com/osrd-project/osrd/issues/6854
+    // issue: https://github.com/OpenRailAssociation/osrd/issues/6854
     Ok(Json(vec![Conflict {
         train_ids: vec![0, 1],
         train_names: vec!["train.1".into(), "train.2".into()],
