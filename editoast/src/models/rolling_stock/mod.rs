@@ -1,5 +1,4 @@
 use crate::modelsv2::rolling_stock_model::RollingStockModel;
-use crate::modelsv2::rolling_stock_model::RollingStockSupportedSignalingSystems;
 use crate::schema::rolling_stock::rolling_stock_livery::RollingStockLiveryMetadata;
 use crate::schema::rolling_stock::RollingStock;
 use crate::schema::rolling_stock::RollingStockCommon;
@@ -11,7 +10,6 @@ editoast_common::schemas! {
     RollingStockWithLiveries,
     LoadingGaugeType,
     RollingStockLiveryMetadata,
-    RollingStockSupportedSignalingSystems,
 }
 
 impl From<RollingStockModel> for RollingStockCommon {

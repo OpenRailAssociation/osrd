@@ -11,6 +11,7 @@ use editoast_schemas::rolling_stock::EffortCurves;
 use editoast_schemas::rolling_stock::EnergySource;
 use editoast_schemas::rolling_stock::Gamma;
 use editoast_schemas::rolling_stock::RollingResistance;
+use editoast_schemas::rolling_stock::RollingStockSupportedSignalingSystems;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
@@ -26,20 +27,6 @@ use crate::schema::rolling_stock::RollingStockMetadata;
 use crate::schema::rolling_stock::RollingStockWithLiveries;
 use crate::schema::track_section::LoadingGaugeType;
 use crate::DbPool;
-
-#[derive(Clone, Debug, PartialEq, Deserialize, Serialize, ToSchema)]
-pub struct RollingStockSupportedSignalingSystems(pub Vec<String>);
-
-impl From<Vec<Option<String>>> for RollingStockSupportedSignalingSystems {
-    fn from(features: Vec<Option<String>>) -> Self {
-        Self(features.into_iter().flatten().collect())
-    }
-}
-impl From<RollingStockSupportedSignalingSystems> for Vec<Option<String>> {
-    fn from(features: RollingStockSupportedSignalingSystems) -> Self {
-        features.0.into_iter().map(Some).collect()
-    }
-}
 
 #[derive(Clone, Debug, Deserialize, Serialize, Derivative, ModelV2, ToSchema)]
 #[derivative(PartialEq)]
