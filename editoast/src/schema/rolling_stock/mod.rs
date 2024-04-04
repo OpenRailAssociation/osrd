@@ -10,6 +10,7 @@ use editoast_schemas::rolling_stock::EffortCurveConditions;
 use editoast_schemas::rolling_stock::EffortCurves;
 use editoast_schemas::rolling_stock::Gamma;
 use editoast_schemas::rolling_stock::ModeEffortCurves;
+use editoast_schemas::rolling_stock::RollingResistance;
 use editoast_schemas::rolling_stock::RollingStockComfortType;
 use serde::Deserialize;
 use serde::Serialize;
@@ -91,17 +92,6 @@ pub struct RollingStockWithLiveries {
     #[serde(flatten)]
     pub rolling_stock: RollingStock,
     pub liveries: Vec<RollingStockLiveryMetadata>,
-}
-
-#[derive(Clone, Debug, Default, PartialEq, Deserialize, Serialize, ToSchema)]
-#[serde(deny_unknown_fields)]
-#[allow(non_snake_case)]
-pub struct RollingResistance {
-    #[serde(rename = "type")]
-    rolling_resistance_type: String,
-    A: f64,
-    B: f64,
-    C: f64,
 }
 
 #[derive(Clone, Debug, Default, PartialEq, Deserialize, Serialize, ToSchema)]
