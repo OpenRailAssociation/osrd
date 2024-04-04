@@ -1,3 +1,4 @@
+use editoast_schemas::rolling_stock::RollingStockComfortType;
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
 use utoipa::ToSchema;
@@ -18,7 +19,6 @@ use crate::models::ScheduledPoint;
 use crate::models::SignalSighting;
 use crate::models::ZoneUpdate;
 use crate::schema::rolling_stock::RollingStock;
-use crate::schema::rolling_stock::RollingStockComfortType;
 use crate::schema::TrackLocation;
 
 crate::schemas! {

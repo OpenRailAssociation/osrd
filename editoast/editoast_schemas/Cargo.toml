@@ -8,4 +8,5 @@ license = "LGPL-3.0"
 serde.workspace = true
 serde_derive.workspace = true
 serde_json.workspace = true
+strum.workspace = true
 utoipa.workspace = true

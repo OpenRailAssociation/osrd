@@ -2,6 +2,7 @@ use actix_web::post;
 use actix_web::web::Data;
 use actix_web::web::Json;
 use editoast_derive::EditoastError;
+use editoast_schemas::rolling_stock::RollingStockComfortType;
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
 use thiserror::Error;
@@ -28,7 +29,6 @@ use crate::models::Retrieve;
 use crate::modelsv2::electrical_profiles::ElectricalProfileSet;
 use crate::modelsv2::Exists;
 use crate::modelsv2::RollingStockModel;
-use crate::schema::rolling_stock::RollingStockComfortType;
 use crate::schemas;
 use crate::DbPool;
 

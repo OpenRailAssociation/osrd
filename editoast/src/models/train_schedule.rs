@@ -87,7 +87,7 @@ pub struct TrainSchedule {
     #[schema(value_type = Vec<Allowance>)]
     pub allowances: DieselJson<Vec<Allowance>>,
     #[derivative(Default(
-        value = "crate::schema::rolling_stock::RollingStockComfortType::default().to_string()"
+        value = "editoast_schemas::rolling_stock::RollingStockComfortType::default().to_string()"
     ))]
     #[schema(value_type = RollingStockComfortType)]
     pub comfort: String,

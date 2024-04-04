@@ -5,6 +5,7 @@ use actix_web::HttpResponse;
 use actix_web::Responder;
 use derivative::Derivative;
 use editoast_derive::EditoastError;
+use editoast_schemas::rolling_stock::RollingStockComfortType;
 use serde::Deserialize;
 use serde::Serialize;
 use thiserror::Error;
@@ -33,7 +34,6 @@ use crate::models::SpacingRequirement;
 use crate::models::TrainSchedule;
 use crate::modelsv2::prelude::*;
 use crate::modelsv2::Infra;
-use crate::schema::rolling_stock::RollingStockComfortType;
 use crate::views::rolling_stocks::retrieve_existing_rolling_stock;
 use crate::DbPool;
 
