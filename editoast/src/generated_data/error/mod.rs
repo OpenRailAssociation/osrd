@@ -31,6 +31,7 @@ use tracing::warn;
 
 use super::GeneratedData;
 use crate::error::Result;
+use crate::infra_cache::operation::CacheOperation;
 use crate::infra_cache::Graph;
 use crate::infra_cache::InfraCache;
 use crate::infra_cache::ObjectCache;
@@ -413,7 +414,7 @@ impl GeneratedData for ErrorLayer {
     async fn update(
         conn: &mut PgConnection,
         infra_id: i64,
-        _operations: &[crate::schema::operation::CacheOperation],
+        _operations: &[CacheOperation],
         infra_cache: &InfraCache,
     ) -> Result<()> {
         // Generate already act like an update

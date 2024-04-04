@@ -9,11 +9,11 @@ use tracing::error;
 
 use super::Fix;
 use super::OrderedOperation;
-use crate::schema::operation::CacheOperation;
-use crate::schema::operation::DeleteOperation;
-use crate::schema::operation::Operation;
-use crate::schema::operation::RailjsonObject;
-use crate::schema::operation::UpdateOperation;
+use crate::infra_cache::operation::CacheOperation;
+use crate::infra_cache::operation::DeleteOperation;
+use crate::infra_cache::operation::Operation;
+use crate::infra_cache::operation::RailjsonObject;
+use crate::infra_cache::operation::UpdateOperation;
 use crate::schema::InfraError;
 use crate::schema::InfraErrorType;
 use crate::schema::OSRDIdentified as _;
@@ -91,9 +91,9 @@ pub fn fix_speed_section(
 mod tests {
     use json_patch::Patch;
 
+    use crate::infra_cache::operation::CacheOperation;
+    use crate::infra_cache::operation::Operation;
     use crate::infra_cache::ObjectCache;
-    use crate::schema::operation::CacheOperation;
-    use crate::schema::operation::Operation;
     use crate::schema::utils::Identifier;
     use crate::schema::ApplicableDirections;
     use crate::schema::ApplicableDirectionsTrackRange;

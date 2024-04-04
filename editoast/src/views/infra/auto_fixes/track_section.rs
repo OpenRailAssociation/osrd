@@ -5,7 +5,7 @@ use uuid::Uuid;
 
 use super::new_ref_fix_create_pair;
 use super::Fix;
-use crate::schema::operation::RailjsonObject;
+use crate::infra_cache::operation::RailjsonObject;
 use crate::schema::utils::Identifier;
 use crate::schema::BufferStop;
 use crate::schema::Endpoint;
@@ -51,9 +51,9 @@ mod tests {
     use std::ops::Deref;
 
     use super::*;
+    use crate::infra_cache::operation::CacheOperation;
+    use crate::infra_cache::operation::Operation;
     use crate::infra_cache::ObjectCache;
-    use crate::schema::operation::CacheOperation;
-    use crate::schema::operation::Operation;
     use crate::schema::TrackSection;
 
     #[test]

@@ -566,11 +566,11 @@ pub mod tests {
     use crate::fixtures::tests::IntoFixture;
     use crate::fixtures::tests::TestFixture;
     use crate::generated_data;
+    use crate::infra_cache::operation::Operation;
+    use crate::infra_cache::operation::RailjsonObject;
     use crate::modelsv2::get_geometry_layer_table;
     use crate::modelsv2::get_table;
     use crate::modelsv2::infra::DEFAULT_INFRA_VERSION;
-    use crate::schema::operation::Operation;
-    use crate::schema::operation::RailjsonObject;
     use crate::schema::Electrification;
     use crate::schema::ObjectType;
     use crate::schema::SpeedSection;

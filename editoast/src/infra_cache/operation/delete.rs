@@ -68,17 +68,17 @@ mod tests {
     use diesel_async::scoped_futures::ScopedFutureExt;
     use diesel_async::RunQueryDsl;
 
+    use crate::infra_cache::operation::create::tests::create_buffer_stop;
+    use crate::infra_cache::operation::create::tests::create_detector;
+    use crate::infra_cache::operation::create::tests::create_electrification;
+    use crate::infra_cache::operation::create::tests::create_op;
+    use crate::infra_cache::operation::create::tests::create_route;
+    use crate::infra_cache::operation::create::tests::create_signal;
+    use crate::infra_cache::operation::create::tests::create_speed;
+    use crate::infra_cache::operation::create::tests::create_switch;
+    use crate::infra_cache::operation::create::tests::create_track;
+    use crate::infra_cache::operation::delete::DeleteOperation;
     use crate::modelsv2::infra::tests::test_infra_transaction;
-    use crate::schema::operation::create::tests::create_buffer_stop;
-    use crate::schema::operation::create::tests::create_detector;
-    use crate::schema::operation::create::tests::create_electrification;
-    use crate::schema::operation::create::tests::create_op;
-    use crate::schema::operation::create::tests::create_route;
-    use crate::schema::operation::create::tests::create_signal;
-    use crate::schema::operation::create::tests::create_speed;
-    use crate::schema::operation::create::tests::create_switch;
-    use crate::schema::operation::create::tests::create_track;
-    use crate::schema::operation::delete::DeleteOperation;
     use crate::schema::OSRDIdentified;
     use crate::schema::OSRDObject;
 

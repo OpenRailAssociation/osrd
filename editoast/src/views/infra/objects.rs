@@ -143,8 +143,8 @@ mod tests {
     use crate::fixtures::tests::db_pool;
     use crate::fixtures::tests::empty_infra;
     use crate::fixtures::tests::TestFixture;
+    use crate::infra_cache::operation::Operation;
     use crate::modelsv2::Infra;
-    use crate::schema::operation::Operation;
     use crate::schema::OSRDIdentified;
     use crate::schema::Switch;
     use crate::schema::SwitchType;

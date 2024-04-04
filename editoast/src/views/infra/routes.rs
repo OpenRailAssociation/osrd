@@ -236,7 +236,7 @@ mod tests {
     use crate::fixtures::tests::db_pool;
     use crate::fixtures::tests::empty_infra;
     use crate::fixtures::tests::small_infra;
-    use crate::schema::operation::Operation;
+    use crate::infra_cache::operation::Operation;
     use crate::schema::BufferStop;
     use crate::schema::Detector;
     use crate::schema::Route;

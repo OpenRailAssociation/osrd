@@ -16,6 +16,7 @@ use crate::diesel::ExpressionMethods;
 use crate::error::Result;
 use crate::generated_data::sprite_config::SpriteConfig;
 use crate::generated_data::sprite_config::SpriteConfigs;
+use crate::infra_cache::operation::CacheOperation;
 use crate::infra_cache::InfraCache;
 use crate::schema::LogicalSignal;
 use crate::schema::ObjectType;
@@ -108,8 +109,8 @@ impl GeneratedData for SignalLayer {
     async fn update(
         conn: &mut PgConnection,
         infra: i64,
-        operations: &[crate::schema::operation::CacheOperation],
-        infra_cache: &crate::infra_cache::InfraCache,
+        operations: &[CacheOperation],
+        infra_cache: &InfraCache,
     ) -> Result<()> {
         use diesel_async::RunQueryDsl;
 
