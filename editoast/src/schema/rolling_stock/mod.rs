@@ -8,6 +8,7 @@ use editoast_schemas::rolling_stock::EffortCurves;
 use editoast_schemas::rolling_stock::EnergySource;
 use editoast_schemas::rolling_stock::Gamma;
 use editoast_schemas::rolling_stock::RollingResistance;
+use editoast_schemas::rolling_stock::RollingStockMetadata;
 use editoast_schemas::rolling_stock::RollingStockSupportedSignalingSystems;
 use serde::Deserialize;
 use serde::Serialize;
@@ -22,7 +23,6 @@ editoast_common::schemas! {
     RollingStockLivery,
     RollingStockLiveryMetadata,
     RollingStockWithLiveries,
-    RollingStockMetadata,
     editoast_schemas::rolling_stock::schemas(),
     light_rolling_stock::schemas(),
 }
@@ -77,19 +77,4 @@ pub struct RollingStockWithLiveries {
     #[serde(flatten)]
     pub rolling_stock: RollingStock,
     pub liveries: Vec<RollingStockLiveryMetadata>,
-}
-
-#[derive(Clone, Debug, Default, PartialEq, Deserialize, Serialize, ToSchema)]
-#[serde(deny_unknown_fields)]
-pub struct RollingStockMetadata {
-    detail: String,
-    family: String,
-    #[serde(rename = "type")]
-    rolling_stock_type: String,
-    grouping: String,
-    series: String,
-    subseries: String,
-    unit: String,
-    number: String,
-    reference: String,
 }

@@ -1,4 +1,5 @@
 use derivative::Derivative;
+use editoast_schemas::rolling_stock::RollingStockMetadata;
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
 use utoipa::ToSchema;
@@ -10,7 +11,6 @@ use crate::modelsv2::Changeset;
 use crate::modelsv2::Model;
 use crate::modelsv2::RollingStockModel;
 use crate::schema::rolling_stock::RollingStockCommon;
-use crate::schema::rolling_stock::RollingStockMetadata;
 use crate::schema::rolling_stock::ROLLING_STOCK_RAILJSON_VERSION;
 
 #[derive(Debug, Clone, Deserialize, Serialize, ToSchema, Validate, Derivative)]
