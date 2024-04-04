@@ -47,3 +47,11 @@ target "base-gateway-test" {
 target "base-gateway-front" {
   tags = tags("gateway-front")
 }
+
+target "base-core_controller" {
+  tags = tags("core_controller")
+}
+
+target "base-core_controller-test" {
+  tags = tags("core_controller")
+}

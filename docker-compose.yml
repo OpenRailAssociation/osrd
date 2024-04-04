@@ -3,6 +3,7 @@ version: '3'
 volumes:
   psql_data:
   redis_data:
+  rabbitmq_data:
 
 services:
   postgres:
@@ -35,29 +36,29 @@ services:
       start_period: 4s
       interval: 5s
 
-  core:
-    image: ghcr.io/openrailassociation/osrd-edge/osrd-core:${TAG-dev}
-    container_name: osrd-core
-    build:
-      context: core
-      dockerfile: Dockerfile
-      additional_contexts:
-        test_data: tests/data
-    restart: unless-stopped
-    ports: ["8080:8080"]
-    command: "java -ea -jar /app/osrd_core.jar api -p 8080"
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
     environment:
-      CORE_EDITOAST_URL: "http://osrd-editoast"
-      JAVA_TOOL_OPTIONS: "-javaagent:/app/opentelemetry-javaagent.jar"
-      CORE_MONITOR_TYPE: "opentelemetry"
-      OTEL_EXPORTER_OTLP_TRACES_PROTOCOL: "grpc"
-      OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: "http://jaeger:4317"
-      OTEL_METRICS_EXPORTER: "none"
-      OTEL_LOGS_EXPORTER: "none"
+      RABBITMQ_DEFAULT_USER: osrd
+      RABBITMQ_DEFAULT_PASS: password
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
-      start_period: 4s
-      interval: 5s
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 30s
+      timeout: 30s
+      retries: 3
+
+  core_controller:
+    image: ghcr.io/osrd-project/edge/osrd-core_controller:${TAG-dev}
+    container_name: osrd-core_controller
+    build:
+      context: core_controller
+      dockerfile: Dockerfile
+    restart: unless-stopped
 
   front:
     image: ghcr.io/openrailassociation/osrd-edge/osrd-front:${TAG-dev}-${OSRD_FRONT_MODE-devel}
@@ -99,7 +100,6 @@ services:
       EDITOAST_PORT: 80
       PSQL_HOST: "postgres"
       REDIS_URL: "redis://redis"
-      OSRD_BACKEND_URL: "http://osrd-core:8080"
       DATABASE_URL: "postgres://osrd:password@postgres/osrd"
       TELEMETRY_KIND: "opentelemetry"
       TELEMETRY_ENDPOINT: "http://jaeger:4317"

@@ -1,0 +1,21 @@
+[package]
+name = "osrd_core_controller"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+uuid = { version = "1.8", features = ["v4", "serde"] }
+bollard = "0.16"
+kube = { version = "0.89", features = ["client"] }
+figment = { version = "0.10", features = ["yaml", "env"] }
+tokio = { version = "1.36", features = ["full"] }
+k8s-openapi = { version = "0.21", features = ["v1_29"] }
+serde = { version = "1", features = ["derive"] }
+reqwest = { version = "0.12", features = ["json"] }
+serde_json = "1.0"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+redis = { version = "0.25", features = ["tokio-comp"] }
+chrono = "0.4"
+axum = { version = "0.7", features = ["macros"] }
+axum-extra = { version = "0.9", features = ["typed-header"] }

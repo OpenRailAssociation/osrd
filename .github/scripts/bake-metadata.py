@@ -34,15 +34,21 @@ class Target:
 TARGETS = [
     Target(name="core", image="core", release=True),
     Target(name="core-build", image="core", variant="build"),
+
     Target(name="editoast", image="editoast", release=True),
     Target(name="editoast-test", image="editoast", variant="test"),
+
     Target(name="front-devel", image="front", variant="devel"),
     Target(name="front-nginx", image="front", variant="nginx"),
     Target(name="front-build", image="front", variant="build"),
     Target(name="front-tests", image="front", variant="tests"),
+
     Target(name="gateway-standalone", image="gateway", variant="standalone"),
     Target(name="gateway-test", image="gateway", variant="test"),
     Target(name="gateway-front", image="gateway", variant="front", release=True),
+
+    Target(name="core_controller", image="core_controller", release=True),
+    Target(name="core_controller-test", image="core_controller", variant="test"),
 ]
 
 

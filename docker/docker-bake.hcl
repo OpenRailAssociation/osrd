@@ -13,6 +13,8 @@ group "default" {
     "gateway-standalone",
     "gateway-test",
     "gateway-front",
+    "core_controller",
+    "core_controller-test"
   ]
 }
 
@@ -151,4 +153,24 @@ target "gateway-front" {
     gateway_build = "target:gateway-standalone"
     front_build = "target:front-build"
   }
+}
+
+###################
+# Core Controller #
+###################
+
+target "base-core_controller" {}
+target "core_controller" {
+  inherits = ["base", "base-core_controller"]
+  context = "core_controller"
+  dockerfile = "Dockerfile"
+  target = "running_env"
+}
+
+target "base-core_controller-test" {}
+target "core_controller-test" {
+  inherits = ["base", "base-core_controller-test"]
+  context = "core_controller"
+  dockerfile = "Dockerfile"
+  target = "testing_env"
 }

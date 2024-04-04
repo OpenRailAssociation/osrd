@@ -11,12 +11,16 @@ services:
     ports: []
     network_mode: host
 
-  core:
+  rabbitmq:
+    ports: []
+    network_mode: host
+
+  core_controller:
     ports: []
     network_mode: host
     environment:
-      CORE_EDITOAST_URL: "http://localhost:8090"
-      OTEL_EXPORTER_OTLP_ENDPOINT: "http://localhost:4317"
+      - DEFAULT_CC_RMQ_HOST=localhost
+      - DEFAULT_CC_REDIS_HOST=localhost
 
   editoast:
     ports: []
