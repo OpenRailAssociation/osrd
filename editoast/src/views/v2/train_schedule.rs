@@ -25,6 +25,7 @@ use crate::modelsv2::train_schedule::TrainSchedule;
 use crate::modelsv2::train_schedule::TrainScheduleChangeset;
 use crate::modelsv2::Model;
 use crate::modelsv2::Retrieve;
+use crate::modelsv2::RetrieveBatch;
 use crate::schema::v2::trainschedule::Distribution;
 use crate::schema::v2::trainschedule::TrainScheduleBase;
 use crate::views::v2::path::pathfinding_from_train;
@@ -48,7 +49,7 @@ crate::routes! {
     "/v2/train_schedule" => {
         post,
         delete,
-        simulations_summary,
+        simulation_summary,
         project_path,
         "/{id}" => {
             get,
@@ -69,7 +70,6 @@ editoast_common::schemas! {
     TrainScheduleResult,
     BatchDeletionRequest,
     SimulationResult,
-    ProjectPathParams,
     ProjectPathResult,
     SimulationSummaryResultResponse,
     CompleteReportTrain,
@@ -616,12 +616,11 @@ fn train_simulation_input_hash(
     format!("simulation_{osrd_version}.{infra_id}.{infra_version}.{hash_simulation_input}")
 }
 
-// Cache simulation result
-
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema, IntoParams)]
-struct ProjectPathParams {
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, IntoParams)]
+struct SimulationBatchParams {
     infra: i64,
-    train_ids: Vec<i64>,
+    // list of train ids
+    ids: Vec<i64>,
 }
 
 /// Project path output is described by time-space points and blocks
@@ -671,7 +670,7 @@ pub struct SignalUpdate {
 pub async fn project_path(
     _db_pool: Data<DbPool>,
     _redis_client: Data<RedisClient>,
-    _params: QsQuery<ProjectPathParams>,
+    _params: QsQuery<SimulationBatchParams>,
     _core_client: Data<CoreClient>,
 ) -> Result<Json<HashMap<Identifier, ProjectPathResult>>> {
     // TO DO
@@ -682,20 +681,18 @@ pub async fn project_path(
 #[derive(Debug, Serialize, ToSchema)]
 enum SimulationSummaryResultResponse {
     // Minimal information on a simulation's result
-    #[allow(dead_code)]
     Success {
-        // Length of a path
+        // Length of a path in mm
         length: u64,
-        // travel time
-        time: f64,
+        // Travel time in ms
+        time: u64,
+        // Total energy consumption of a train in kWh
         energy_consumption: f64,
     },
-    // Pathfinding not found for a train id
-    #[allow(dead_code)]
-    PathfindingNotFound,
-    // Running time not found or a train id
-    #[allow(dead_code)]
-    RunningTimeNotFound,
+    // Pathfinding fails for a train id
+    PathfindingFailed,
+    // Running time fails or a train id
+    RunningTimeFailed,
 }
 
 /// Retrieve simulation information for a given train list.
@@ -703,20 +700,83 @@ enum SimulationSummaryResultResponse {
 #[utoipa::path(
     tag = "train_schedulev2",
     responses(
-        (status = 200, description = "Project Path Output", body = HashMap<Identifier, SimulationSummaryResultResponse>),
+        (status = 200, description = "Project Path Output", body = HashMap<i64, SimulationSummaryResultResponse>),
     ),
 )]
 #[get("/simulation_summary")]
-pub async fn simulations_summary(
-    _db_pool: Data<DbPool>,
-    _redis_client: Data<RedisClient>,
-    _params: QsQuery<ProjectPathParams>,
-    _core_client: Data<CoreClient>,
-    _infra_id: Query<i64>,
-) -> Result<Json<HashMap<Identifier, SimulationSummaryResultResponse>>> {
-    // TO DO
-    // issue:x https://github.com/OpenRailAssociation/osrd/issues/6857
-    Ok(Json(HashMap::new()))
+pub async fn simulation_summary(
+    db_pool: Data<DbPool>,
+    redis_client: Data<RedisClient>,
+    params: QsQuery<SimulationBatchParams>,
+    core_client: Data<CoreClient>,
+) -> Result<Json<HashMap<i64, SimulationSummaryResultResponse>>> {
+    let query_props = params.into_inner();
+    let infra_id = query_props.infra;
+    let conn = &mut db_pool.clone().get().await?;
+
+    let infra = Infra::retrieve_or_fail(conn, infra_id, || TrainScheduleError::InfraNotFound {
+        infra_id,
+    })
+    .await?;
+    let train_ids = query_props.ids;
+    let train_schedule_batch: Vec<TrainSchedule> =
+        TrainSchedule::retrieve_batch_or_fail(conn, train_ids, |missing| {
+            TrainScheduleError::BatchTrainScheduleNotFound {
+                number: missing.len(),
+            }
+        })
+        .await?;
+    Ok(Json(
+        build_simulation_summary_map(
+            db_pool,
+            core_client,
+            redis_client,
+            &train_schedule_batch,
+            &infra,
+        )
+        .await,
+    ))
+}
+
+/// Associate each train id with its simulation summary response
+/// If the simulation fails, it associates the reason: pathfinding failed or running time failed
+async fn build_simulation_summary_map(
+    db_pool: Data<DbPool>,
+    core_client: Data<CoreClient>,
+    redis_client: Data<RedisClient>,
+    train_schedule_batch: &[TrainSchedule],
+    infra: &Infra,
+) -> HashMap<i64, SimulationSummaryResultResponse> {
+    let mut simulation_summary_hashmap: HashMap<i64, SimulationSummaryResultResponse> =
+        HashMap::new();
+    for train_schedule in train_schedule_batch.iter() {
+        let simulation_result = train_simulation(
+            db_pool.clone(),
+            core_client.clone(),
+            redis_client.clone(),
+            train_schedule,
+            infra,
+        )
+        .await;
+        let simulation_summary_result = if let Ok(train_simulation) = simulation_result {
+            match train_simulation {
+                SimulationResult::Success { final_output, .. } => {
+                    SimulationSummaryResultResponse::Success {
+                        length: *final_output.report_train.positions.last().unwrap(),
+                        time: *final_output.report_train.times.last().unwrap(),
+                        energy_consumption: final_output.report_train.energy_consumption,
+                    }
+                }
+                SimulationResult::PathfindingFailed { .. } => {
+                    SimulationSummaryResultResponse::PathfindingFailed
+                }
+            }
+        } else {
+            SimulationSummaryResultResponse::RunningTimeFailed
+        };
+        simulation_summary_hashmap.insert(train_schedule.id, simulation_summary_result);
+    }
+    simulation_summary_hashmap
 }
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize, IntoParams, ToSchema)]
@@ -926,6 +986,51 @@ mod tests {
                     "/v2/train_schedule/{}/simulation/?infra_id={}",
                     train_schedule[0].id,
                     infra.id()
+                )
+                .as_str(),
+            )
+            .to_request();
+
+        let response = call_service(&service, request).await;
+        assert!(response.status().is_success());
+    }
+
+    #[rstest]
+    #[ignore] // TODO: This test should be rewritten using mocks
+    async fn train_schedule_simulation_summary(
+        #[future] timetable_v2: TestFixture<Timetable>,
+        #[future] small_infra: TestFixture<Infra>,
+        db_pool: Data<DbPool>,
+    ) {
+        let timetable = timetable_v2.await;
+        let infra = small_infra.await;
+        let rolling_stock =
+            named_fast_rolling_stock("simulation_summary_rolling_stock", db_pool.clone()).await;
+
+        let train_schedule_base: TrainScheduleBase = TrainScheduleBase {
+            rolling_stock_name: rolling_stock.name.clone(),
+            ..serde_json::from_str(include_str!("../../tests/train_schedules/simple.json"))
+                .expect("Unable to parse")
+        };
+        let train_schedule = TrainScheduleForm {
+            timetable_id: timetable.id(),
+            train_schedule: train_schedule_base,
+        };
+        let request = TestRequest::post()
+            .uri("/v2/train_schedule")
+            .set_json(json!(vec![train_schedule]))
+            .to_request();
+
+        let service = create_test_service().await;
+        let train_schedule: Vec<TrainScheduleResult> =
+            call_and_read_body_json(&service, request).await;
+        assert_eq!(train_schedule.len(), 1);
+        let request = TestRequest::get()
+            .uri(
+                format!(
+                    "/v2/train_schedule/simulation_summary/?infra={}&ids[]={}",
+                    infra.id(),
+                    train_schedule[0].id,
                 )
                 .as_str(),
             )

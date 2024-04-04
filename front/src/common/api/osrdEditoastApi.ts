@@ -3194,8 +3194,8 @@ export type SimulationSummaryResultResponse =
         time: number;
       };
     }
-  | 'PathfindingNotFound'
-  | 'RunningTimeNotFound';
+  | 'PathfindingFailed'
+  | 'RunningTimeFailed';
 export type ReportTrainV2 = {
   energy_consumption: number;
   positions: number[];
