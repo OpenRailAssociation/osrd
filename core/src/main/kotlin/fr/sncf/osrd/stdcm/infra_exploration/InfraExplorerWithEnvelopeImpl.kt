@@ -71,6 +71,10 @@ data class InfraExplorerWithEnvelopeImpl(
     override fun getSpacingRequirements(): List<SpacingRequirement> {
         val cached = spacingRequirementsCache?.get()
         if (cached != null) return cached
+        if (getFullEnvelope().endPos == 0.0) {
+            // This case can happen when we start right at the end of a block
+            return listOf()
+        }
         spacingRequirementAutomaton.incrementalPath = getIncrementalPath()
         // Path is complete and has been completely simulated
         val simulationComplete = getIncrementalPath().pathComplete && getLookahead().size == 0
