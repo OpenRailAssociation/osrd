@@ -8,10 +8,14 @@ use editoast_schemas::rolling_stock::ConditionalEffortCurve;
 use editoast_schemas::rolling_stock::EffortCurve;
 use editoast_schemas::rolling_stock::EffortCurveConditions;
 use editoast_schemas::rolling_stock::EffortCurves;
+use editoast_schemas::rolling_stock::EnergySource;
+use editoast_schemas::rolling_stock::EnergyStorage;
 use editoast_schemas::rolling_stock::Gamma;
 use editoast_schemas::rolling_stock::ModeEffortCurves;
+use editoast_schemas::rolling_stock::RefillLaw;
 use editoast_schemas::rolling_stock::RollingResistance;
 use editoast_schemas::rolling_stock::RollingStockComfortType;
+use editoast_schemas::rolling_stock::SpeedDependantPower;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
@@ -107,67 +111,4 @@ pub struct RollingStockMetadata {
     unit: String,
     number: String,
     reference: String,
-}
-
-// Energy sources schema
-
-/// physical law defining how the storage can be refilled
-#[derive(Clone, Debug, PartialEq, Deserialize, Serialize, ToSchema)]
-#[serde(deny_unknown_fields)]
-pub struct RefillLaw {
-    #[schema(minimum = 0)]
-    tau: f64,
-    #[schema(minimum = 0, maximum = 1)]
-    soc_ref: f64,
-}
-
-/// energy storage of an energy source (of a rolling stock, can be a electrical battery or a hydrogen/fuel powerPack)
-#[derive(Clone, Debug, PartialEq, Deserialize, Serialize, ToSchema)]
-#[serde(deny_unknown_fields)]
-pub struct EnergyStorage {
-    capacity: f64,
-    #[schema(minimum = 0, maximum = 1)]
-    soc: f64,
-    #[schema(minimum = 0, maximum = 1)]
-    soc_min: f64,
-    #[schema(minimum = 0, maximum = 1)]
-    soc_max: f64,
-    #[schema(required)]
-    refill_law: Option<RefillLaw>,
-}
-
-/// power-speed curve (in an energy source)
-#[derive(Clone, Debug, PartialEq, Deserialize, Serialize, ToSchema)]
-#[serde(deny_unknown_fields)]
-pub struct SpeedDependantPower {
-    speeds: Vec<f64>,
-    powers: Vec<f64>,
-}
-
-/// energy source of a rolling stock
-#[derive(Clone, Debug, PartialEq, Deserialize, Serialize, ToSchema)]
-#[serde(tag = "energy_source_type", deny_unknown_fields)]
-pub enum EnergySource {
-    /// energy source for a rolling stock representing a electrification
-    Electrification {
-        max_input_power: SpeedDependantPower,
-        max_output_power: SpeedDependantPower,
-        #[schema(minimum = 0, maximum = 1)]
-        efficiency: f64,
-    },
-    PowerPack {
-        max_input_power: SpeedDependantPower,
-        max_output_power: SpeedDependantPower,
-        energy_storage: EnergyStorage,
-        #[schema(minimum = 0, maximum = 1)]
-        efficiency: f64,
-    },
-    /// energy source for a rolling stock representing a battery
-    Battery {
-        max_input_power: SpeedDependantPower,
-        max_output_power: SpeedDependantPower,
-        energy_storage: EnergyStorage,
-        #[schema(minimum = 0, maximum = 1)]
-        efficiency: f64,
-    },
 }
