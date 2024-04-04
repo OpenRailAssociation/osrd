@@ -80,7 +80,7 @@ crate::routes! {
     },
 }
 
-crate::schemas! {
+editoast_common::schemas! {
     TrainScheduleBatchItem,
     TrainSchedulePatch,
     TrainSimulationResponse,

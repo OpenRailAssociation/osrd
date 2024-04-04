@@ -6,7 +6,7 @@ use crate::schema::rolling_stock::RollingStockCommon;
 use crate::schema::rolling_stock::RollingStockWithLiveries;
 use crate::schema::track_section::LoadingGaugeType;
 
-crate::schemas! {
+editoast_common::schemas! {
     RollingStock,
     RollingStockWithLiveries,
     LoadingGaugeType,

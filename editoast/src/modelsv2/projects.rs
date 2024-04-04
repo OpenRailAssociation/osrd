@@ -27,7 +27,7 @@ use crate::views::pagination::PaginatedResponse;
 use crate::views::projects::ProjectError;
 use crate::DbPool;
 
-crate::schemas! {
+editoast_common::schemas! {
     Ordering,
     Project,
     Tags,

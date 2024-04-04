@@ -48,7 +48,7 @@ crate::routes! {
     },
 }
 
-crate::schemas! {
+editoast_common::schemas! {
     PaginatedResponseOfTimetable,
     TimetableForm,
     TimetableResult,

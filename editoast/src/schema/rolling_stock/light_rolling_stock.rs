@@ -13,7 +13,7 @@ use crate::modelsv2::rolling_stock_livery::RollingStockLiveryMetadataModel;
 use crate::modelsv2::rolling_stock_model::RollingStockSupportedSignalingSystems;
 use crate::schema::track_section::LoadingGaugeType;
 
-crate::schemas! {
+editoast_common::schemas! {
     LightRollingStock,
     LightRollingStockWithLiveries,
     LightModeEffortCurves,

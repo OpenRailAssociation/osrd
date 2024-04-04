@@ -22,7 +22,7 @@ use crate::tables::train_schedule;
 use crate::DbPool;
 use crate::DieselJson;
 
-crate::schemas! {
+editoast_common::schemas! {
     TrainSchedule,
     RjsPowerRestrictionRange,
     LightTrainSchedule,

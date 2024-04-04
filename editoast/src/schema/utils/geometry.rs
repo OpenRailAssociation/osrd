@@ -6,9 +6,7 @@ use serde_derive::Deserialize;
 use serde_derive::Serialize;
 use utoipa::ToSchema;
 
-use crate::schemas;
-
-schemas! {
+editoast_common::schemas! {
     GeoJson,
     GeoJsonPoint,
     GeoJsonMultiPoint,

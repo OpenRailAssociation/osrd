@@ -19,7 +19,7 @@ use super::ObjectRef;
 use crate::error::Result;
 use crate::infra_cache::ObjectCache;
 
-crate::schemas! { Operation, }
+editoast_common::schemas! { Operation, }
 
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, ToSchema)]
 #[serde(tag = "operation_type", deny_unknown_fields)]

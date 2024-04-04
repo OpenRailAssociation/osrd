@@ -16,7 +16,7 @@ pub use self::layer_cache::Tile;
 use crate::error::Result;
 use crate::RedisConnection;
 
-crate::schemas! {
+editoast_common::schemas! {
     bounding_box::schemas(),
 }
 

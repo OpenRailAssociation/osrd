@@ -29,7 +29,7 @@ decl_paginated_response!(
     LightRollingStockWithLiveries
 );
 
-crate::schemas! {
+editoast_common::schemas! {
     PaginatedResponseOfLightRollingStockWithLiveries,
 }
 

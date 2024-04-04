@@ -42,7 +42,7 @@ crate::routes! {
     },
 }
 
-crate::schemas! {
+editoast_common::schemas! {
     PathfindingInput,
     PathfindingResult,
     TrackRange,

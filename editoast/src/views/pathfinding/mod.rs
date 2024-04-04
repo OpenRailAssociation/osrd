@@ -71,7 +71,7 @@ crate::routes! {
     }
 }
 
-crate::schemas! {
+editoast_common::schemas! {
     PathResponse,
     PathfindingRequest,
     PathfindingStep,

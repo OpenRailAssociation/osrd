@@ -73,7 +73,7 @@ crate::routes! {
     }
 }
 
-crate::schemas! {
+editoast_common::schemas! {
     RollingStockForm,
     DeleteRollingStockQueryParams,
     RollingStockLockedUpdateForm,

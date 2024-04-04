@@ -7,6 +7,6 @@ pub use duration::Duration;
 pub use identifier::Identifier;
 pub use non_blank_string::NonBlankString;
 
-crate::schemas! {
+editoast_common::schemas! {
     geometry::schemas(),
 }

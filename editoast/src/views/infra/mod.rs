@@ -69,7 +69,7 @@ crate::routes! {
     },
 }
 
-crate::schemas! {
+editoast_common::schemas! {
     pathfinding::schemas(),
 }
 

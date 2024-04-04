@@ -29,7 +29,6 @@ use crate::models::Retrieve;
 use crate::modelsv2::electrical_profiles::ElectricalProfileSet;
 use crate::modelsv2::Exists;
 use crate::modelsv2::RollingStockModel;
-use crate::schemas;
 use crate::DbPool;
 
 #[derive(Debug, Error, EditoastError)]
@@ -55,7 +54,7 @@ crate::routes! {
     }
 }
 
-schemas! {
+editoast_common::schemas! {
     SingleSimulationResponse,
     SingleSimulationRequest,
 }

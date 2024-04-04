@@ -32,7 +32,7 @@ crate::routes! {
     electrical_profiles_on_path
 }
 
-crate::schemas! {
+editoast_common::schemas! {
     ProfilesOnPathResponse,
 }
 

@@ -39,7 +39,7 @@ crate::routes! {
     "/v2/infra/{infra_id}/path_properties" => {post},
 }
 
-crate::schemas! {
+editoast_common::schemas! {
     PathProperties,
     PathPropertiesInput,
     OperationalPointPart,

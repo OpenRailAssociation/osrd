@@ -36,7 +36,7 @@ crate::routes! {
     },
 }
 
-crate::schemas! {
+editoast_common::schemas! {
     PathfindingTrackLocationInput,
     PathfindingInput,
     PathfindingOutput,
