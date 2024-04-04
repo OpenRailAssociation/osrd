@@ -45,7 +45,7 @@ crate::routes! {
     }
 }
 
-crate::schemas! {
+editoast_common::schemas! {
     PaginatedResponseOfProjectWithStudies,
     ProjectCreateForm,
     ProjectPatchForm,

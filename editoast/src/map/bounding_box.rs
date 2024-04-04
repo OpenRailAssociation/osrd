@@ -9,7 +9,7 @@ use utoipa::ToSchema;
 
 use crate::error::Result;
 
-crate::schemas! {
+editoast_common::schemas! {
     Zone,
     BoundingBox,
 }

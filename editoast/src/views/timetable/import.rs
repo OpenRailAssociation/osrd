@@ -48,7 +48,7 @@ crate::routes! {
     post_timetable,
 }
 
-crate::schemas! {
+editoast_common::schemas! {
     TimetableImportItem,
     TimetableImportPathStep,
     TimetableImportPathSchedule,

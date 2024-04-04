@@ -55,7 +55,7 @@ crate::routes! {
     }
 }
 
-crate::schemas! {
+editoast_common::schemas! {
     Scenario,
     ScenarioCreateForm,
     ScenarioPatchForm,

@@ -74,7 +74,7 @@ use utoipa::ToSchema;
 use self::utils::Identifier;
 use self::utils::NonBlankString;
 
-crate::schemas! {
+editoast_common::schemas! {
     ObjectType,
     TrackLocation,
     TrackOffset,

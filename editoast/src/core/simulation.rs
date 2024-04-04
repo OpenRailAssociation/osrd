@@ -21,7 +21,7 @@ use crate::models::ZoneUpdate;
 use crate::schema::rolling_stock::RollingStock;
 use crate::schema::TrackLocation;
 
-crate::schemas! {
+editoast_common::schemas! {
     SignalUpdate,
     TrainStop,
 }

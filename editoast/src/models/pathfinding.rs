@@ -22,7 +22,7 @@ use crate::schema::DirectionalTrackRange;
 use crate::schema::TrackLocation;
 use crate::tables::pathfinding;
 
-crate::schemas! {
+editoast_common::schemas! {
     Slope,
     Curve,
     PathfindingPayload,

@@ -35,7 +35,7 @@ use crate::core::mocking::MockingError;
 use crate::error::InternalError;
 use crate::error::Result;
 
-crate::schemas! {
+editoast_common::schemas! {
     simulation::schemas(),
 }
 

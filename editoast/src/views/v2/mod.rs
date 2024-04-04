@@ -10,7 +10,7 @@ crate::routes! {
             scenario::routes(),
 }
 
-crate::schemas! {
+editoast_common::schemas! {
     train_schedule::schemas(),
     timetable::schemas(),
     path::schemas(),

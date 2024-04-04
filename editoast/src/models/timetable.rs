@@ -25,7 +25,7 @@ use crate::modelsv2::Retrieve;
 use crate::tables::timetable;
 use crate::DbPool;
 
-crate::schemas! {
+editoast_common::schemas! {
     Timetable,
     TimetableWithSchedulesDetails,
 }

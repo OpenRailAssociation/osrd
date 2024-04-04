@@ -31,7 +31,7 @@ crate::routes! {
     electrifications_on_path,
 }
 
-crate::schemas! {
+editoast_common::schemas! {
     ElectrificationsOnPathResponse,
     &editoast_common::rangemap_utils::RangedValue,
 }

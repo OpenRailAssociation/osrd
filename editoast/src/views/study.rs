@@ -52,7 +52,7 @@ crate::routes! {
     }
 }
 
-crate::schemas! {
+editoast_common::schemas! {
     Study,
     StudyCreateForm,
     StudyPatchForm,

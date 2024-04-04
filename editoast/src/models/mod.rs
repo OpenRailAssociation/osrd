@@ -37,7 +37,7 @@ use crate::modelsv2::projects;
 use crate::views::pagination::PaginatedResponse;
 use crate::DbPool;
 
-crate::schemas! {
+editoast_common::schemas! {
     projects::schemas(),
     train_schedule::schemas(),
     timetable::schemas(),

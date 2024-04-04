@@ -36,7 +36,7 @@ use crate::views::train_schedule::projection::Projection;
 use crate::views::train_schedule::TrainScheduleError::UnsimulatedTrainSchedule;
 use crate::DbPool;
 
-crate::schemas! {
+editoast_common::schemas! {
     SimulationReport,
     ReportTrain,
     GetCurvePoint,

@@ -25,7 +25,7 @@ crate::routes! {
     pathfinding::routes(),
 }
 
-crate::schemas! {
+editoast_common::schemas! {
     pathfinding::schemas(),
     properties::schemas(),
 }

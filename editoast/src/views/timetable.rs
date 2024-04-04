@@ -33,7 +33,7 @@ crate::routes! {
     },
 }
 
-crate::schemas! {
+editoast_common::schemas! {
     Conflict,
     ConflictType,
     import::schemas(),

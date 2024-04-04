@@ -344,7 +344,7 @@ pub fn expand_store(input: &DeriveInput) -> Result<TokenStream> {
         }
 
         impl SearchResultItem {
-            crate::schemas! {
+            editoast_common::schemas! {
                 #(#ident),*,
                 SearchResultItem,
             }

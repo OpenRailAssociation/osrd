@@ -240,7 +240,7 @@ crate::routes! {
     search
 }
 
-crate::schemas! {
+editoast_common::schemas! {
     SearchPayload,
     SearchQuery,
     objects::SearchResultItem::schemas(),

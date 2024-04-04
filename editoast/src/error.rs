@@ -15,7 +15,7 @@ use tracing::error;
 use utoipa::ToSchema;
 use validator::{ValidationErrors, ValidationErrorsKind};
 
-crate::schemas! {
+editoast_common::schemas! {
     InternalError,
 }
 

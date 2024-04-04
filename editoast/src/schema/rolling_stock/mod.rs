@@ -20,7 +20,7 @@ use crate::schema::rolling_stock::rolling_stock_livery::RollingStockLivery;
 use crate::schema::rolling_stock::rolling_stock_livery::RollingStockLiveryMetadata;
 use crate::schema::track_section::LoadingGaugeType;
 
-crate::schemas! {
+editoast_common::schemas! {
     RollingStockComfortType,
     RollingStockCommon,
     RollingStockLivery,
