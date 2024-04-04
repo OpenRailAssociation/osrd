@@ -12,6 +12,7 @@ use super::utils::InvolvedObjects;
 use super::GeneratedData;
 use crate::diesel::ExpressionMethods;
 use crate::error::Result;
+use crate::infra_cache::operation::CacheOperation;
 use crate::infra_cache::InfraCache;
 use crate::schema::ObjectType;
 use crate::tables::infra_layer_speed_section::dsl;
@@ -35,8 +36,8 @@ impl GeneratedData for SpeedSectionLayer {
     async fn update(
         conn: &mut PgConnection,
         infra: i64,
-        operations: &[crate::schema::operation::CacheOperation],
-        infra_cache: &crate::infra_cache::InfraCache,
+        operations: &[CacheOperation],
+        infra_cache: &InfraCache,
     ) -> Result<()> {
         let involved_objects =
             InvolvedObjects::from_operations(operations, infra_cache, ObjectType::SpeedSection);

@@ -107,8 +107,8 @@ mod tests {
 
     use crate::fixtures::tests::empty_infra;
     use crate::fixtures::tests::TestFixture;
+    use crate::infra_cache::operation::RailjsonObject;
     use crate::modelsv2::Infra;
-    use crate::schema::operation::RailjsonObject;
     use crate::schema::Detector;
     use crate::schema::OSRDIdentified;
     use crate::schema::ObjectType;

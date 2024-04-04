@@ -5,7 +5,6 @@ mod electrification;
 mod errors;
 mod geo_json;
 mod neutral_section;
-pub mod operation;
 pub mod operational_point;
 mod railjson;
 pub mod rolling_stock;
@@ -63,6 +62,7 @@ cfg_if! {
     }
 }
 
+use crate::infra_cache::operation;
 use derivative::Derivative;
 use enum_map::Enum;
 use serde::Deserialize;

@@ -1,4 +1,5 @@
 mod graph;
+pub mod operation;
 
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
@@ -24,11 +25,11 @@ use itertools::Itertools as _;
 use thiserror::Error;
 
 use crate::error::Result;
+use crate::infra_cache::operation::CacheOperation;
+use crate::infra_cache::operation::RailjsonObject;
 use crate::map::BoundingBox;
 use crate::modelsv2::railjson::find_all_schemas;
 use crate::modelsv2::Infra;
-use crate::schema::operation::CacheOperation;
-use crate::schema::operation::RailjsonObject;
 use crate::schema::*;
 
 /// Contains infra cached data used to generate layers and errors
@@ -729,20 +730,20 @@ pub mod tests {
     use super::OperationalPointCache;
     use super::SignalCache;
     use super::TrackSectionCache;
+    use crate::infra_cache::operation::create::tests::create_buffer_stop;
+    use crate::infra_cache::operation::create::tests::create_detector;
+    use crate::infra_cache::operation::create::tests::create_electrification;
+    use crate::infra_cache::operation::create::tests::create_op;
+    use crate::infra_cache::operation::create::tests::create_route;
+    use crate::infra_cache::operation::create::tests::create_signal;
+    use crate::infra_cache::operation::create::tests::create_speed;
+    use crate::infra_cache::operation::create::tests::create_switch;
+    use crate::infra_cache::operation::create::tests::create_switch_type;
+    use crate::infra_cache::operation::create::tests::create_track;
     use crate::infra_cache::InfraCache;
     use crate::infra_cache::SwitchCache;
     use crate::map::BoundingBox;
     use crate::modelsv2::infra::tests::test_infra_transaction;
-    use crate::schema::operation::create::tests::create_buffer_stop;
-    use crate::schema::operation::create::tests::create_detector;
-    use crate::schema::operation::create::tests::create_electrification;
-    use crate::schema::operation::create::tests::create_op;
-    use crate::schema::operation::create::tests::create_route;
-    use crate::schema::operation::create::tests::create_signal;
-    use crate::schema::operation::create::tests::create_speed;
-    use crate::schema::operation::create::tests::create_switch;
-    use crate::schema::operation::create::tests::create_switch_type;
-    use crate::schema::operation::create::tests::create_track;
     use crate::schema::utils::Identifier;
     use crate::schema::utils::NonBlankString;
     use crate::schema::ApplicableDirections;

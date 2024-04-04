@@ -35,8 +35,8 @@ use tracing::debug;
 use track_section::TrackSectionLayer;
 
 use crate::error::Result;
+use crate::infra_cache::operation::CacheOperation;
 use crate::infra_cache::InfraCache;
-use crate::schema::operation::CacheOperation;
 
 /// This trait define how a generated data table should be handled
 #[async_trait]

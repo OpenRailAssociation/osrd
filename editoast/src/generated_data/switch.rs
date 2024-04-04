@@ -9,6 +9,7 @@ use diesel_async::RunQueryDsl;
 use super::utils::InvolvedObjects;
 use super::GeneratedData;
 use crate::error::Result;
+use crate::infra_cache::operation::CacheOperation;
 use crate::infra_cache::InfraCache;
 use crate::schema::ObjectType;
 
@@ -31,8 +32,8 @@ impl GeneratedData for SwitchLayer {
     async fn update(
         conn: &mut PgConnection,
         infra: i64,
-        operations: &[crate::schema::operation::CacheOperation],
-        infra_cache: &crate::infra_cache::InfraCache,
+        operations: &[CacheOperation],
+        infra_cache: &InfraCache,
     ) -> Result<()> {
         let involved_objects =
             InvolvedObjects::from_operations(operations, infra_cache, ObjectType::Switch);

@@ -1,8 +1,8 @@
 use std::collections::HashSet;
 
+use crate::infra_cache::operation::CacheOperation;
 use crate::infra_cache::InfraCache;
 use crate::infra_cache::ObjectCache;
-use crate::schema::operation::CacheOperation;
 use crate::schema::OSRDIdentified;
 use crate::schema::OSRDObject;
 use crate::schema::ObjectType;
@@ -63,9 +63,9 @@ mod test {
     use std::collections::HashSet;
 
     use super::InvolvedObjects;
+    use crate::infra_cache::operation::CacheOperation;
     use crate::infra_cache::tests::create_small_infra_cache;
     use crate::infra_cache::ObjectCache;
-    use crate::schema::operation::CacheOperation;
     use crate::schema::DetectorCache;
     use crate::schema::ObjectRef;
     use crate::schema::ObjectType;

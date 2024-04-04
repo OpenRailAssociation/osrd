@@ -16,8 +16,8 @@ use serde_json::Value;
 
 use super::OperationError;
 use crate::error::Result;
+use crate::infra_cache::operation::RailjsonObject;
 use crate::modelsv2::get_table;
-use crate::schema::operation::RailjsonObject;
 use crate::schema::OSRDIdentified;
 use crate::schema::ObjectType;
 
@@ -129,12 +129,12 @@ mod tests {
 
     use super::UpdateOperation;
     use crate::error::EditoastError;
+    use crate::infra_cache::operation::create::tests::create_signal;
+    use crate::infra_cache::operation::create::tests::create_speed;
+    use crate::infra_cache::operation::create::tests::create_switch;
+    use crate::infra_cache::operation::create::tests::create_track;
+    use crate::infra_cache::operation::OperationError;
     use crate::modelsv2::infra::tests::test_infra_transaction;
-    use crate::schema::operation::create::tests::create_signal;
-    use crate::schema::operation::create::tests::create_speed;
-    use crate::schema::operation::create::tests::create_switch;
-    use crate::schema::operation::create::tests::create_track;
-    use crate::schema::operation::OperationError;
     use crate::schema::OSRDIdentified;
     use crate::schema::ObjectType;
 

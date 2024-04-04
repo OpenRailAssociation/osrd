@@ -9,15 +9,15 @@ use thiserror::Error;
 
 use crate::error::Result;
 use crate::generated_data;
+use crate::infra_cache::operation::CacheOperation;
+use crate::infra_cache::operation::Operation;
+use crate::infra_cache::operation::RailjsonObject;
 use crate::infra_cache::InfraCache;
 use crate::infra_cache::ObjectCache;
 use crate::map::MapLayers;
 use crate::map::{self};
 use crate::modelsv2::prelude::*;
 use crate::modelsv2::Infra;
-use crate::schema::operation::CacheOperation;
-use crate::schema::operation::Operation;
-use crate::schema::operation::RailjsonObject;
 use crate::views::infra::InfraApiError;
 use crate::DbPool;
 use crate::RedisClient;

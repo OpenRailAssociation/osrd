@@ -247,9 +247,9 @@ pub mod tests {
     use diesel_async::scoped_futures::ScopedFutureExt;
     use diesel_async::AsyncPgConnection as PgConnection;
 
+    use crate::infra_cache::operation::create::apply_create_operation;
+    use crate::infra_cache::operation::create::RailjsonObject;
     use crate::modelsv2::infra::tests::test_infra_transaction;
-    use crate::schema::operation::create::apply_create_operation;
-    use crate::schema::operation::create::RailjsonObject;
     use crate::schema::BufferStop;
     use crate::schema::Detector;
     use crate::schema::Electrification;
