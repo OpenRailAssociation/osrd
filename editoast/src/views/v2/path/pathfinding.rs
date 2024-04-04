@@ -197,7 +197,7 @@ async fn pathfinding_blocks(
 
     // 2) compute path from core
     // TODO : a function that call the pathfinding core endpoint will be soon implemented
-    // issue: https://github.com/osrd-project/osrd/issues/6741
+    // issue: https://github.com/OpenRailAssociation/osrd/issues/6741
     let pathfinding_result = PathfindingResult::Success {
         blocks: vec![],
         routes: vec![],

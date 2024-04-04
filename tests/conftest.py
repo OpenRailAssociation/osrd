@@ -89,7 +89,7 @@ def get_rolling_stock(editoast_url: str, rolling_stock_name: str) -> int:
     """
     page = 1
     while page is not None:
-        # TODO: feel free to reduce page_size when https://github.com/osrd-project/osrd/issues/5350 is fixed
+        # TODO: feel free to reduce page_size when https://github.com/OpenRailAssociation/osrd/issues/5350 is fixed
         r = requests.get(editoast_url + "light_rolling_stock/", params={"page": page, "page_size": 1_000})
         if r.status_code // 100 != 2:
             raise RuntimeError(f"Rolling stock error {r.status_code}: {r.content}")

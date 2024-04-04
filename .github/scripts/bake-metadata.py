@@ -13,8 +13,8 @@ from typing import Optional, Union, List, Tuple, Callable, TypeAlias
 from abc import ABC, abstractmethod
 
 
-EDGE_PREFIX = "ghcr.io/osrd-project/edge/"
-RELEASE_PREFIX = "ghcr.io/osrd-project/stable/"
+EDGE_PREFIX = "ghcr.io/openrailassociation/osrd-edge/"
+RELEASE_PREFIX = "ghcr.io/openrailassociation/osrd-stable/"
 
 
 PROTECTED_BRANCHES = {"dev", "staging", "prod"}

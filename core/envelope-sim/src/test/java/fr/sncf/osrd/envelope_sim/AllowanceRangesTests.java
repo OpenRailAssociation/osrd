@@ -310,7 +310,7 @@ public class AllowanceRangesTests {
     }
 
     /**
-     * Regression test: reproduces <a href="https://github.com/osrd-project/osrd/issues/3199">this
+     * Regression test: reproduces <a href="https://github.com/OpenRailAssociation/osrd/issues/3199">this
      * bug</a>. This is an extreme corner case. The last section computed is the section between the
      * stop at 300m and the transition at 301. Because it's after a stop, the speed is very low. The
      * capacity speed limit sets a binary search bound that is higher than the max speed on that

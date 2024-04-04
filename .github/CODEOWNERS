@@ -1,33 +1,33 @@
 # --- CI - CODEOWNERS - Dependabot - Template ---
-/.github                                                 @osrd-project/devops
-/.github/CODEOWNERS                                      @flomonster @bloussou @nicolaswurtz
+/.github                                                 @openrailassociation/OSRD-DevOps
+/.github/CODEOWNERS                                      @openrailassociation/OSRD-Admins
 
 # --- NIX ---
-/nix                                                     @osrd-project/devops
-/flake.lock                                              @osrd-project/devops
-*.nix                                                    @osrd-project/devops
+/nix                                                     @openrailassociation/OSRD-DevOps
+/flake.lock                                              @openrailassociation/OSRD-DevOps
+*.nix                                                    @openrailassociation/OSRD-DevOps
 
 # --- FRONT ---
-/front                                                   @osrd-project/front-maintainers
+/front                                                   @openrailassociation/OSRD-Front
 /front/src/common/api/osrdEditoastApi.ts
 /front/src/common/api/osrdMiddlewareApi.ts
 /front/src/reducers/osrdconf/infra_schema.json
 
 # --- EDITOAST ---
-/editoast                                                @osrd-project/editoast-maintainers
+/editoast                                                @openrailassociation/OSRD-Editoast
 /editoast/openapi.yaml
-/chartos                                                 @osrd-project/editoast-maintainers
-/python                                                  @osrd-project/editoast-maintainers
+/chartos                                                 @openrailassociation/OSRD-Editoast
+/python                                                  @openrailassociation/OSRD-Editoast
 
 # --- INTEGRATION TESTS  ---
-/tests                                                   @osrd-project/test-maintainers
+/tests                                                   @openrailassociation/OSRD-Tests
 
 # --- CORE ---
-/core                                                    @osrd-project/core-maintainers
+/core                                                    @openrailassociation/OSRD-Core
 
 # --- CORE PHYSICS ---
-/core/*Physics*.java                                     @osrd-project/physics
-/core/*Integration*.java                                 @osrd-project/physics
+/core/*Physics*.java                                     @openrailassociation/OSRD-Physics
+/core/*Integration*.java                                 @openrailassociation/OSRD-Physics
 
 # --- GATEWAY ---
-/gateway                                                 @osrd-project/devops
+/gateway                                                 @openrailassociation/OSRD-DevOps
