@@ -1076,7 +1076,7 @@ fn test_construction() {
         struct Document {
             #[model(column = "id", preferred, primary)]
             id_: i64,
-            #[model(identifier, json, geo)]
+            #[model(identifier, json)]
             content_type: String,
             data: Vec<u8>,
         }
