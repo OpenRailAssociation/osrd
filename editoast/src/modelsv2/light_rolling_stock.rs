@@ -8,6 +8,7 @@ use diesel::SelectableHelper;
 use diesel_async::RunQueryDsl;
 use editoast_derive::ModelV2;
 use editoast_schemas::rolling_stock::Gamma;
+use editoast_schemas::rolling_stock::RollingResistance;
 use serde::Serialize;
 use utoipa::ToSchema;
 
@@ -20,7 +21,6 @@ use crate::schema::rolling_stock::light_rolling_stock::LightEffortCurves;
 use crate::schema::rolling_stock::light_rolling_stock::LightRollingStock;
 use crate::schema::rolling_stock::light_rolling_stock::LightRollingStockWithLiveriesModel;
 use crate::schema::rolling_stock::EnergySource;
-use crate::schema::rolling_stock::RollingResistance;
 use crate::schema::rolling_stock::RollingStockMetadata;
 use crate::schema::track_section::LoadingGaugeType;
 use crate::views::pagination::Paginate;
