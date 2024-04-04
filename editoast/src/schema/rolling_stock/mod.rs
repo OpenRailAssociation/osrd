@@ -4,6 +4,7 @@ pub mod rolling_stock_livery;
 use std::collections::HashMap;
 
 use derivative::Derivative;
+use editoast_schemas::rolling_stock::Gamma;
 use serde::Deserialize;
 use serde::Deserializer;
 use serde::Serialize;
@@ -88,14 +89,6 @@ pub struct RollingStockWithLiveries {
     #[serde(flatten)]
     pub rolling_stock: RollingStock,
     pub liveries: Vec<RollingStockLiveryMetadata>,
-}
-
-#[derive(Clone, Debug, Default, PartialEq, Deserialize, Serialize, ToSchema)]
-#[serde(deny_unknown_fields)]
-pub struct Gamma {
-    #[serde(rename = "type")]
-    gamma_type: String,
-    value: f64,
 }
 
 #[derive(Clone, Debug, Default, PartialEq, Deserialize, Serialize, ToSchema)]
