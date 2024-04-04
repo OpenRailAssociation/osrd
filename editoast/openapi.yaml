@@ -4888,20 +4888,6 @@ components:
           - $ref: '#/components/schemas/Tags'
           nullable: true
       type: object
-    ProjectPathParams:
-      properties:
-        infra:
-          format: int64
-          type: integer
-        train_ids:
-          items:
-            format: int64
-            type: integer
-          type: array
-      required:
-      - infra
-      - train_ids
-      type: object
     ProjectPathResult:
       description: Project path output is described by time-space points and blocks
       properties:
@@ -6426,8 +6412,9 @@ components:
                 minimum: 0
                 type: integer
               time:
-                format: double
-                type: number
+                format: int64
+                minimum: 0
+                type: integer
             required:
             - length
             - time
@@ -6437,10 +6424,10 @@ components:
         - Success
         type: object
       - enum:
-        - PathfindingNotFound
+        - PathfindingFailed
         type: string
       - enum:
-        - RunningTimeNotFound
+        - RunningTimeFailed
         type: string
     SingleSimulationRequest:
       allOf:
