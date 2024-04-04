@@ -10,13 +10,13 @@ use editoast_derive::ModelV2;
 use editoast_schemas::rolling_stock::EnergySource;
 use editoast_schemas::rolling_stock::Gamma;
 use editoast_schemas::rolling_stock::RollingResistance;
+use editoast_schemas::rolling_stock::RollingStockSupportedSignalingSystems;
 use serde::Serialize;
 use utoipa::ToSchema;
 
 use super::Row;
 use crate::error::Result;
 use crate::modelsv2::rolling_stock_livery::RollingStockLiveryMetadataModel;
-use crate::modelsv2::rolling_stock_model::RollingStockSupportedSignalingSystems;
 use crate::modelsv2::Model;
 use crate::schema::rolling_stock::light_rolling_stock::LightEffortCurves;
 use crate::schema::rolling_stock::light_rolling_stock::LightRollingStock;

@@ -18,6 +18,9 @@ pub use energy_source::EnergyStorage;
 pub use energy_source::RefillLaw;
 pub use energy_source::SpeedDependantPower;
 
+mod supported_signaling_systems;
+pub use supported_signaling_systems::RollingStockSupportedSignalingSystems;
+
 editoast_common::schemas! {
     Gamma,
     ConditionalEffortCurve,
@@ -31,4 +34,5 @@ editoast_common::schemas! {
     EnergyStorage,
     RefillLaw,
     SpeedDependantPower,
+    RollingStockSupportedSignalingSystems,
 }

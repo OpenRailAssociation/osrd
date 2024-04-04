@@ -37,7 +37,6 @@ use validator::Validate;
 use crate::error::InternalError;
 use crate::error::Result;
 use crate::modelsv2::rolling_stock_livery::RollingStockLiveryModel;
-use crate::modelsv2::rolling_stock_model::RollingStockSupportedSignalingSystems;
 use crate::modelsv2::Changeset;
 use crate::modelsv2::Create;
 use crate::modelsv2::DeleteStatic;
@@ -81,7 +80,6 @@ editoast_common::schemas! {
     PowerRestriction,
     RollingStockError,
     TrainScheduleScenarioStudyProject,
-    RollingStockSupportedSignalingSystems,
 }
 
 #[derive(Debug, Error, EditoastError, ToSchema)]
