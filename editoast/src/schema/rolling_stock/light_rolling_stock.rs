@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use editoast_schemas::rolling_stock::LoadingGaugeType;
 use editoast_schemas::rolling_stock::RollingStockSupportedSignalingSystems;
 use serde::Deserialize;
 use serde::Serialize;
@@ -11,7 +12,6 @@ use super::Gamma;
 use super::RollingResistance;
 use super::RollingStockMetadata;
 use crate::modelsv2::rolling_stock_livery::RollingStockLiveryMetadataModel;
-use crate::schema::track_section::LoadingGaugeType;
 
 editoast_common::schemas! {
     LightRollingStock,

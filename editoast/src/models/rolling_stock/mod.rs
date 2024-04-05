@@ -3,12 +3,10 @@ use crate::schema::rolling_stock::rolling_stock_livery::RollingStockLiveryMetada
 use crate::schema::rolling_stock::RollingStock;
 use crate::schema::rolling_stock::RollingStockCommon;
 use crate::schema::rolling_stock::RollingStockWithLiveries;
-use crate::schema::track_section::LoadingGaugeType;
 
 editoast_common::schemas! {
     RollingStock,
     RollingStockWithLiveries,
-    LoadingGaugeType,
     RollingStockLiveryMetadata,
 }
 
