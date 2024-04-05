@@ -4,18 +4,10 @@ pub mod rolling_stock_livery;
 use std::collections::HashMap;
 
 use derivative::Derivative;
-use editoast_schemas::rolling_stock::ConditionalEffortCurve;
-use editoast_schemas::rolling_stock::EffortCurve;
-use editoast_schemas::rolling_stock::EffortCurveConditions;
 use editoast_schemas::rolling_stock::EffortCurves;
 use editoast_schemas::rolling_stock::EnergySource;
-use editoast_schemas::rolling_stock::EnergyStorage;
 use editoast_schemas::rolling_stock::Gamma;
-use editoast_schemas::rolling_stock::ModeEffortCurves;
-use editoast_schemas::rolling_stock::RefillLaw;
 use editoast_schemas::rolling_stock::RollingResistance;
-use editoast_schemas::rolling_stock::RollingStockComfortType;
-use editoast_schemas::rolling_stock::SpeedDependantPower;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
@@ -26,23 +18,12 @@ use crate::schema::rolling_stock::rolling_stock_livery::RollingStockLiveryMetada
 use crate::schema::track_section::LoadingGaugeType;
 
 editoast_common::schemas! {
-    RollingStockComfortType,
     RollingStockCommon,
     RollingStockLivery,
     RollingStockLiveryMetadata,
     RollingStockWithLiveries,
-    RollingResistance,
     RollingStockMetadata,
-    Gamma,
-    EffortCurve,
-    EffortCurves,
-    EffortCurveConditions,
-    ConditionalEffortCurve,
-    ModeEffortCurves,
-    EnergySource,
-    SpeedDependantPower,
-    EnergyStorage,
-    RefillLaw,
+    editoast_schemas::rolling_stock::schemas(),
     light_rolling_stock::schemas(),
 }
 
