@@ -88,7 +88,7 @@ thiserror = "1.0.58"
 tokio = "*"
 tokio-postgres = "*"
 tracing = { version = "0.1.40", features = ["log"] }
-tracing-opentelemetry = "0.22.0"
+tracing-opentelemetry = "0.23.0"
 tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
 url = "2.5.0"
 utoipa.workspace = true
