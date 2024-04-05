@@ -52,7 +52,7 @@ phf = "0.11.2"
 # actix_auth
 actix-web-httpauth = "0.8"
 openidconnect = { version = "3.5.0", default-features = false }
-reqwest = { version = "0.11.24", default-features = false, features = [
+reqwest = { version = "0.11.27", default-features = false, features = [
   "rustls-tls-native-roots",
 ] }
 url = "2.5.0"
