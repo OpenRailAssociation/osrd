@@ -27,7 +27,7 @@ actix-session = "0.8"
 actix-web = "4.4.1"
 actix-web-opentelemetry = { version = "0.16.0", features = ["awc", "metrics"] }
 base64ct = "1.6.0"
-figment = "0.10.14"
+figment = "0.10.15"
 humantime = "2.1.0"
 humantime-serde = "1.1.1"
 opentelemetry = "0.21.0"
