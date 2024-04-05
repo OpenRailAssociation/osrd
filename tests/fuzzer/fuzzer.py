@@ -230,6 +230,7 @@ def make_stdcm_payload(scenario: Scenario, path: List[Tuple[str, float]], rollin
             "percentage": 0,
         },
     }
+    res["steps"][-1]["duration"] = 1  # Force a stop at the end
     allowance_value = make_random_allowance_value(0)
     if allowance_value["value_type"] != "time" and random.randint(0, 2) == 0:
         res["standard_allowance"] = allowance_value
