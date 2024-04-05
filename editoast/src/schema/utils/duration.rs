@@ -28,17 +28,24 @@ use chrono::Duration as ChronoDuration;
 use iso8601::Duration as IsoDuration;
 use serde::Deserialize;
 use serde::Serialize;
+use thiserror::Error;
+
+#[derive(Debug, Error)]
+pub enum PositiveDurationError {
+    #[error("Negative duration provided")]
+    NegativeDuration,
+}
 
 /// Wrapper for `chrono::Duration` to use with Serde.
 /// This is useful to serialize `chrono::Duration` using the ISO 8601 duration format.
 ///
 /// ```
 /// use serde::{Serialize, Deserialize};
-/// use crate::schema::utils::duration::Duration;
+/// use crate::schema::utils::duration::PositiveDuration;
 ///
 /// #[derive(Serialize, Deserialize)]
 /// struct MyStruct {
-///     duration: Duration
+///     duration: PositiveDuration
 /// }
 ///
 /// let s = r#"{"duration":"PT1H"}"#; // 1 hour
@@ -50,21 +57,29 @@ use serde::Serialize;
 /// assert!(serde_json::from_str::<MyStruct>(err_s).is_err());
 /// ```
 #[derive(Debug, Clone)]
-pub struct Duration(ChronoDuration);
+pub struct PositiveDuration(ChronoDuration);
 
-impl From<ChronoDuration> for Duration {
-    fn from(duration: ChronoDuration) -> Self {
-        Duration(duration)
+impl TryFrom<ChronoDuration> for PositiveDuration {
+    type Error = PositiveDurationError;
+    /// Create PositiveDuration from `chrono::Duration``
+    /// This function errors when the given duration is negative
+    /// The created PositiveDuration is limited to 1 millisecond
+    fn try_from(duration: ChronoDuration) -> Result<Self, PositiveDurationError> {
+        let milli_sec = duration.num_milliseconds();
+        if milli_sec < 0 {
+            return Err(PositiveDurationError::NegativeDuration);
+        }
+        Ok(PositiveDuration(ChronoDuration::milliseconds(milli_sec)))
     }
 }
 
-impl From<Duration> for ChronoDuration {
-    fn from(duration: Duration) -> Self {
+impl From<PositiveDuration> for ChronoDuration {
+    fn from(duration: PositiveDuration) -> Self {
         duration.0
     }
 }
 
-impl Deref for Duration {
+impl Deref for PositiveDuration {
     type Target = ChronoDuration;
 
     fn deref(&self) -> &Self::Target {
@@ -72,7 +87,7 @@ impl Deref for Duration {
     }
 }
 
-impl Serialize for Duration {
+impl Serialize for PositiveDuration {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: serde::Serializer,
@@ -81,12 +96,12 @@ impl Serialize for Duration {
     }
 }
 
-impl<'de> Deserialize<'de> for Duration {
-    fn deserialize<D>(deserializer: D) -> Result<Duration, D::Error>
+impl<'de> Deserialize<'de> for PositiveDuration {
+    fn deserialize<D>(deserializer: D) -> Result<PositiveDuration, D::Error>
     where
         D: serde::Deserializer<'de>,
     {
-        deserialize(deserializer).map(Duration)
+        deserialize(deserializer).map(PositiveDuration)
     }
 }
 
@@ -143,11 +158,11 @@ mod tests {
     use serde_json::from_str;
     use serde_json::to_string;
 
-    use super::Duration;
+    use super::PositiveDuration;
 
     #[derive(Serialize, Deserialize)]
     struct MyStruct {
-        duration: Duration,
+        duration: PositiveDuration,
     }
 
     /// Test the deserialization
@@ -163,7 +178,7 @@ mod tests {
     fn test_serialize() {
         let s = r#"{"duration":"PT3600S"}"#; // 1 hour
         let my_struct = MyStruct {
-            duration: Duration::from(chrono::Duration::try_hours(1).unwrap()),
+            duration: chrono::Duration::hours(1).try_into().unwrap(),
         };
         assert_eq!(s, to_string(&my_struct).unwrap());
     }
