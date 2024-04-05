@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useReducer } from 'react';
+import React, { useState, useEffect, useReducer, useMemo } from 'react';
 
 import { Alert, CheckCircle, Stop } from '@osrd-project/ui-icons';
 import cx from 'classnames';
@@ -23,7 +23,7 @@ import type { PathfindingActionV2, PathfindingState } from 'modules/pathfinding/
 import {
   formatSuggestedOperationalPoints,
   getPathfindingQuery,
-  insertViasInOPs,
+  upsertViasInOPs,
 } from 'modules/pathfinding/utils';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
@@ -192,6 +192,8 @@ const Pathfinding = ({ pathProperties, setPathProperties }: PathfindingProps) =>
       pollingInterval: !isInfraLoaded ? 1000 : undefined,
     }
   );
+  const pathfindingAlReadyInitialized = useMemo(() => infra?.state === 'CACHED', []);
+
   const [reloadInfra] = osrdEditoastApi.endpoints.postInfraByInfraIdLoad.useMutation();
 
   const {
@@ -225,14 +227,16 @@ const Pathfinding = ({ pathProperties, setPathProperties }: PathfindingProps) =>
         case 'CACHED': {
           setIsInfraLoaded(true);
           if (isInfraError) setIsInfraError(false);
-          pathfindingDispatch({
-            type: 'INFRA_CHANGED',
-            params: {
-              origin,
-              destination,
-              rollingStock,
-            },
-          });
+          if (!pathfindingAlReadyInitialized) {
+            pathfindingDispatch({
+              type: 'INFRA_CHANGED',
+              params: {
+                origin,
+                destination,
+                rollingStock,
+              },
+            });
+          }
           break;
         }
         default:
@@ -308,15 +312,13 @@ const Pathfinding = ({ pathProperties, setPathProperties }: PathfindingProps) =>
                 pathfindingResult.length
               );
 
-              const updatedSuggestedOPs = insertViasInOPs(
-                suggestedOperationalPoints,
-                pathStepsWihPosition
-              );
+              const allVias = upsertViasInOPs(suggestedOperationalPoints, pathStepsWihPosition);
 
               setPathProperties({
                 electrifications,
                 geometry,
-                suggestedOperationalPoints: updatedSuggestedOPs,
+                suggestedOperationalPoints,
+                allVias,
                 length: pathfindingResult.length,
               });
 

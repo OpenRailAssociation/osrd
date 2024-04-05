@@ -221,6 +221,7 @@ const TypeAndPathV2 = ({ setPathProperties }: PathfindingProps) => {
               electrifications,
               geometry,
               suggestedOperationalPoints,
+              allVias: suggestedOperationalPoints,
               length: pathfindingResult.length,
             });
           }

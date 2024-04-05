@@ -9,7 +9,7 @@ import {
   type PostV2InfraByInfraIdPathfindingBlocksApiArg,
 } from 'common/api/osrdEditoastApi';
 import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
-import { formatSuggestedOperationalPoints, insertViasInOPs } from 'modules/pathfinding/utils';
+import { formatSuggestedOperationalPoints, upsertViasInOPs } from 'modules/pathfinding/utils';
 import { getSupportedElectrification, isThermal } from 'modules/rollingStock/helpers/electric';
 import { adjustConfWithTrainToModifyV2 } from 'modules/trainschedule/components/ManageTrainSchedule/helpers/adjustConfWithTrainToModify';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
@@ -99,16 +99,14 @@ export const useSetupItineraryForTrainUpdate = (
                 geometry,
                 pathfindingResult.length
               );
-              // TODO TS2 : update operational_points property with vias added on map included in trainSchedule.path
-              const updatedSuggestedOPs = insertViasInOPs(
-                suggestedOperationalPoints,
-                formatedPathSteps
-              );
+
+              const allVias = upsertViasInOPs(suggestedOperationalPoints, formatedPathSteps);
 
               setPathProperties({
                 electrifications,
                 geometry,
-                suggestedOperationalPoints: updatedSuggestedOPs,
+                suggestedOperationalPoints,
+                allVias,
                 length: pathfindingResult.length,
               });
 

@@ -1,0 +1,19 @@
+.activeRow {
+  font-weight: bold;
+  background-color: var(--coolgray1);
+  --dsg-cell-background-color: var(--coolgray1);
+  --dsg-cell-disabled-background-color: var(--coolgray1);
+  .dsg-cell {
+    font-weight: bold;
+  }
+}
+
+.invalidCell {
+  color: red !important;
+}
+
+.dsg-cell-sticky-right {
+  button {
+    margin: auto;
+  }
+}

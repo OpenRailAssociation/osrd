@@ -102,6 +102,7 @@ function RenderPopup({ pathProperties }: RenderPopupProps) {
     coordinates,
     track: trackProperties.id,
     offset: Math.round(trackOffset), // offset needs to be an integer
+    kp: trackProperties.kp,
     metadata: {
       lineCode: trackProperties.extensions_sncf_line_code,
       lineName: trackProperties.extensions_sncf_line_name,

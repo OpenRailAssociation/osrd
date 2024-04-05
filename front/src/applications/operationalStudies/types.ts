@@ -80,7 +80,8 @@ export type TrainScheduleImportConfig = {
 export type ManageTrainSchedulePathProperties = {
   electrifications: NonNullable<PathProperties['electrifications']>;
   geometry: NonNullable<PathProperties['geometry']>;
-  /** Operational points along the path and vias added by clicking on map */
   suggestedOperationalPoints: SuggestedOP[];
+  /** Operational points along the path and vias added by clicking on map */
+  allVias: SuggestedOP[];
   length: number;
 };

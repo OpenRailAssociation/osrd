@@ -16,7 +16,7 @@ import type {
   PostV2InfraByInfraIdPathPropertiesApiArg,
 } from 'common/api/osrdEditoastApi';
 import { useInfraID, useOsrdConfSelectors } from 'common/osrdContext';
-import { formatSuggestedOperationalPoints, insertViasInOPs } from 'modules/pathfinding/utils';
+import { formatSuggestedOperationalPoints, upsertViasInOPs } from 'modules/pathfinding/utils';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
 import { updateSelectedTrainId, updateSelectedProjection } from 'reducers/osrdsimulation/actions';
 import { useAppDispatch } from 'store';
@@ -61,7 +61,7 @@ const StdcmView = () => {
           path.length
         );
 
-        const updatedSuggestedOPs = insertViasInOPs(
+        const updatedSuggestedOPs = upsertViasInOPs(
           suggestedOperationalPoints,
           pathStepsWihPosition
         );
@@ -70,6 +70,7 @@ const StdcmView = () => {
           electrifications,
           geometry,
           suggestedOperationalPoints: updatedSuggestedOPs,
+          allVias: updatedSuggestedOPs,
           length: path.length,
         });
       }

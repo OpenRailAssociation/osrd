@@ -2,11 +2,13 @@
 import { compact } from 'lodash';
 import type { Dispatch } from 'redux';
 
+import type { ValidConfig } from 'modules/trainschedule/components/ManageTrainSchedule/types';
 import { setFailure } from 'reducers/main';
 import type { OsrdConfState } from 'reducers/osrdconf/types';
 import { kmhToMs } from 'utils/physics';
 
-import type { ValidConfig } from '../types';
+import formatMargin from './formatMargin';
+import formatSchedule from './formatSchedule';
 
 const checkCurrentConfig = (
   osrdconf: OsrdConfState,
@@ -118,7 +120,6 @@ const checkCurrentConfig = (
   }
 
   if (error) return null;
-
   return {
     rollingStockName: rollingStockName as string,
     baseTrainName: trainName,
@@ -134,19 +135,24 @@ const checkCurrentConfig = (
       const {
         arrival,
         locked,
-        stop_for,
+        stopFor,
         positionOnPath,
         coordinates,
         name,
         ch,
         metadata,
+        kp,
+        onStopSignal,
+        theoreticalMargin,
         ...path
       } = step;
       return { ...path, secondary_code: ch };
     }),
-    // TODO TS2 : adapt this for times and stops / power restrictions issues
-    // margins: formatMargin(pathSteps)
-    // schedule: formatSchedule(pathSteps)
+
+    margins: formatMargin(compact(pathSteps)),
+    schedule: formatSchedule(compact(pathSteps), startTime),
+
+    // TODO TS2 : adapt this for power restrictions issue
     // powerRestrictions: formatPowerRestrictions(pathSteps)
     firstStartTime: startTime,
     speedLimitByTag,

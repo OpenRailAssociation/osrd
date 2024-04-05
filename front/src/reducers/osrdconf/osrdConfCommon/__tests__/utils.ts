@@ -456,7 +456,7 @@ const testCommonConfReducers = (slice: OperationalStudiesConfSlice | StdcmConfSl
 
     store.dispatch(slice.actions.updateViaStopTimeV2({ via, duration: 'PT60S' }));
     const state = store.getState()[slice.name];
-    expect(state.pathSteps[1]?.stop_for).toEqual('PT60S');
+    expect(state.pathSteps[1]?.stopFor).toEqual('PT60S');
   });
 
   it('should handle permuteVias', () => {
@@ -809,7 +809,7 @@ const testCommonConfReducers = (slice: OperationalStudiesConfSlice | StdcmConfSl
         positionOnPath: 200,
         track: '60ca8dda-6667-11e3-81ff-01f464e0362d',
         offset: 426.443,
-        stop_for: 'PT5M',
+        stopFor: 'PT5M',
         coordinates: [47.99542250806296, 0.1918181738752042],
         arrival: newVia.arrival,
         locked: newVia.locked,
