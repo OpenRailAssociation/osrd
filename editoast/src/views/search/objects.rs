@@ -4,7 +4,7 @@ use editoast_derive::SearchConfigStore;
 use serde_derive::Serialize;
 use utoipa::ToSchema;
 
-use crate::schema::utils::geometry::GeoJsonPoint;
+use editoast_common::geometry::GeoJsonPoint;
 
 // NOTE: every structure deriving `Search` here might have to `#[allow(unused)]`
 // because while the name and type information of the fields are read by the macro,
