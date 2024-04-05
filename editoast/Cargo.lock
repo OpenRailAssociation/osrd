@@ -1374,7 +1374,7 @@ dependencies = [
  "json-patch",
  "mvt",
  "openssl",
- "opentelemetry 0.21.0",
+ "opentelemetry 0.22.0",
  "opentelemetry-datadog",
  "opentelemetry-otlp",
  "opentelemetry-semantic-conventions 0.14.0",
