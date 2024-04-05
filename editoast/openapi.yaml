@@ -6874,12 +6874,11 @@ components:
     TrainScheduleBase:
       properties:
         comfort:
-          allOf:
-          - enum:
-            - STANDARD
-            - AIR_CONDITIONING
-            - HEATING
-            type: string
+          enum:
+          - STANDARD
+          - AIR_CONDITIONING
+          - HEATING
+          type: string
         constraint_distribution:
           $ref: '#/components/schemas/Distribution'
         initial_speed:
@@ -6890,39 +6889,34 @@ components:
             type: string
           type: array
         margins:
-          allOf:
-          - additionalProperties: false
-            properties:
-              boundaries:
-                items:
-                  minLength: 1
-                  type: string
-                type: array
-              values:
-                description: |-
-                  The values of the margins. Must contains one more element than the boundaries
-                  Can be a percentage `X%`, a time in minutes per kilometer `Xmin/km` or `0`
-                example:
-                - none
-                - 5%
-                - 2min/km
-                items:
-                  type: string
-                type: array
-            required:
-            - boundaries
-            - values
-            type: object
+          additionalProperties: false
+          properties:
+            boundaries:
+              items:
+                minLength: 1
+                type: string
+              type: array
+            values:
+              description: |-
+                The values of the margins. Must contains one more element than the boundaries
+                Can be a percentage `X%`, a time in minutes per kilometer `Xmin/km` or `none`
+              example:
+              - none
+              - 5%
+              - 2min/km
+              items:
+                type: string
+              type: array
+          required:
+          - boundaries
+          - values
+          type: object
         options:
-          allOf:
-          - additionalProperties: false
-            properties:
-              use_electrical_profiles:
-                default: 'true'
-                type: boolean
-            required:
-            - use_electrical_profiles
-            type: object
+          additionalProperties: false
+          properties:
+            use_electrical_profiles:
+              type: boolean
+          type: object
         path:
           items:
             allOf:
@@ -7027,17 +7021,10 @@ components:
           type: string
       required:
       - train_name
-      - labels
       - rolling_stock_name
       - start_time
       - path
-      - schedule
-      - margins
-      - initial_speed
-      - comfort
       - constraint_distribution
-      - power_restrictions
-      - options
       type: object
     TrainScheduleBatchItem:
       properties:

@@ -3087,18 +3087,18 @@ export type ConflictV2 = {
 };
 export type Distribution = 'STANDARD' | 'MARECO';
 export type TrainScheduleBase = {
-  comfort: 'STANDARD' | 'AIR_CONDITIONING' | 'HEATING';
+  comfort?: 'STANDARD' | 'AIR_CONDITIONING' | 'HEATING';
   constraint_distribution: Distribution;
-  initial_speed: number;
-  labels: string[];
-  margins: {
+  initial_speed?: number;
+  labels?: string[];
+  margins?: {
     boundaries: string[];
     /** The values of the margins. Must contains one more element than the boundaries
-        Can be a percentage `X%`, a time in minutes per kilometer `Xmin/km` or `0` */
+        Can be a percentage `X%`, a time in minutes per kilometer `Xmin/km` or `none` */
     values: string[];
   };
-  options: {
-    use_electrical_profiles: boolean;
+  options?: {
+    use_electrical_profiles?: boolean;
   };
   path: ((
     | TrackOffset
@@ -3123,13 +3123,13 @@ export type TrainScheduleBase = {
     deleted?: boolean;
     id: string;
   })[];
-  power_restrictions: {
+  power_restrictions?: {
     from: string;
     to: string;
     value: string;
   }[];
   rolling_stock_name: string;
-  schedule: {
+  schedule?: {
     arrival?: string | null;
     at: string;
     locked?: boolean;
