@@ -96,8 +96,10 @@ public final class OSRDError extends RuntimeException {
      */
     public static OSRDError newAssertionWrapper(AssertionError assertionError) {
         var error = new OSRDError(ErrorType.AssertionError);
-        error.context.put("message", assertionError.getMessage());
-        error.context.put("stack_trace", convertStackTrace(assertionError.getStackTrace()));
+        var stackTrace = convertStackTrace(assertionError.getStackTrace());
+        error.context.put("assert_message", assertionError.getMessage());
+        error.context.put("stack_trace", stackTrace);
+        error.context.put("file_location", stackTrace.get(0));
         return error;
     }
 
