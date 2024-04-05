@@ -112,8 +112,7 @@ class RawInfraAdapterTest {
         rjsInfra.routes = listOf(rjsRoute)
 
         val oldInfra = Helpers.infraFromRJS(rjsInfra)
-        val result = adaptRawInfra(oldInfra, rjsInfra)
-        val infra = result.simInfra
+        val infra = adaptRawInfra(oldInfra, rjsInfra)
         val route = infra.getRouteFromName("route")
         val signalMap = infra.physicalSignals.associateBy { infra.getPhysicalSignalName(it)!! }
         val signalU = signalMap["U"]!!
@@ -257,7 +256,7 @@ class RawInfraAdapterTest {
     @Test
     fun loadSmallInfraNodes() {
         val rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")
-        val rawInfra = adaptRawInfra(Helpers.infraFromRJS(rjsInfra), rjsInfra).simInfra
+        val rawInfra = adaptRawInfra(Helpers.infraFromRJS(rjsInfra), rjsInfra)
         val nodeNameToIdxMap =
             rawInfra.trackNodes
                 .map { nodeIdx -> Pair(rawInfra.getTrackNodeName(nodeIdx), nodeIdx) }
@@ -295,7 +294,7 @@ class RawInfraAdapterTest {
     @Test
     fun loadSmallInfraCrossingZone() {
         val rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")
-        val rawInfra = adaptRawInfra(Helpers.infraFromRJS(rjsInfra), rjsInfra).simInfra
+        val rawInfra = adaptRawInfra(Helpers.infraFromRJS(rjsInfra), rjsInfra)
 
         // Check that for crossing nodes, only one zone is generated.
         // In small_infra, PD0 and PD1 are crossings, linked by track-section TF0 (no detector on

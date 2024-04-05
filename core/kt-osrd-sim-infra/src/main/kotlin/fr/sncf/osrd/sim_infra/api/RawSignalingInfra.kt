@@ -4,6 +4,7 @@ import fr.sncf.osrd.utils.indexing.StaticIdx
 import fr.sncf.osrd.utils.indexing.StaticIdxList
 import fr.sncf.osrd.utils.indexing.StaticIdxSpace
 import fr.sncf.osrd.utils.units.Distance
+import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.OffsetList
 
 /** A fixed size signaling block */
@@ -45,6 +46,11 @@ interface RawSignalingInfra : RoutingInfra {
     fun getLogicalSignals(signal: PhysicalSignalId): StaticIdxList<LogicalSignal>
 
     fun getPhysicalSignal(signal: LogicalSignalId): PhysicalSignalId
+
+    fun getPhysicalSignalTrack(signal: PhysicalSignalId): TrackSectionId
+
+    /** This offset is undirected */
+    fun getPhysicalSignalTrackOffset(signal: PhysicalSignalId): Offset<TrackSection>
 
     fun getPhysicalSignalName(signal: PhysicalSignalId): String?
 

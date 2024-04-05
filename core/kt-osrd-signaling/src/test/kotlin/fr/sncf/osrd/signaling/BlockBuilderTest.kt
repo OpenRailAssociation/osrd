@@ -60,13 +60,14 @@ class BlockBuilderTest {
         // endregion
 
         // region signals
+        // TODO: add actual track sections
         val parameters = RawSignalParameters(mapOf(Pair("jaune_cli", "false")), mapOf())
         val signalX =
-            builder.physicalSignal("X", 300.meters) {
+            builder.physicalSignal("X", 300.meters, StaticIdx(42u), Offset(42.meters)) {
                 logicalSignal("BAL", listOf("BAL"), mapOf(Pair("Nf", "true")), parameters)
             }
         val signalV =
-            builder.physicalSignal("Y", 300.meters) {
+            builder.physicalSignal("Y", 300.meters, StaticIdx(42u), Offset(42.meters)) {
                 logicalSignal("BAL", listOf("BAL"), mapOf(Pair("Nf", "true")), parameters)
             }
         // endregion

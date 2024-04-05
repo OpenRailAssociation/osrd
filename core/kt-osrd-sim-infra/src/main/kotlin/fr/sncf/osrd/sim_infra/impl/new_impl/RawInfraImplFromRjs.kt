@@ -605,6 +605,14 @@ class RawInfraImplFromRjs(
         return parentSignalMap[signal]!!
     }
 
+    override fun getPhysicalSignalTrack(signal: PhysicalSignalId): TrackSectionId {
+        return physicalSignalPool[signal].dirTrackSectionId.value
+    }
+
+    override fun getPhysicalSignalTrackOffset(signal: PhysicalSignalId): Offset<TrackSection> {
+        return physicalSignalPool[signal].undirectedTrackOffset
+    }
+
     override fun getPhysicalSignalName(signal: PhysicalSignalId): String? {
         return physicalSignalPool[signal].name
     }

@@ -7,7 +7,6 @@ import com.google.common.primitives.Doubles
 import fr.sncf.osrd.geom.LineString
 import fr.sncf.osrd.infra.api.Direction
 import fr.sncf.osrd.infra.api.reservation.DiDetector
-import fr.sncf.osrd.infra.api.reservation.ReservationRoute
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra
 import fr.sncf.osrd.infra.api.tracks.undirected.Detector
 import fr.sncf.osrd.infra.api.tracks.undirected.Switch
@@ -22,7 +21,6 @@ import fr.sncf.osrd.railjson.schema.infra.RJSInfra
 import fr.sncf.osrd.railjson.schema.infra.RJSSwitchType
 import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSRouteWaypoint
-import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSSignal
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSNeutralSection
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSOperationalPointPart
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSSpeedSection
@@ -323,17 +321,13 @@ private fun buildZones(builder: RawInfraFromRjsBuilder) {
     }
 }
 
-fun adaptRawInfra(infra: SignalingInfra, rjsInfra: RJSInfra): SimInfraAdapter {
+fun adaptRawInfra(infra: SignalingInfra, rjsInfra: RJSInfra): RawInfra {
     val builder = RawInfraFromRjsBuilder()
-    // TODO: remove this once stitching is useless
     val oldDetectorMap = HashBiMap.create<Detector, DetectorId>()
     val trackNodeMap = HashBiMap.create<Switch, TrackNodeId>()
     // TODO: remove this once stitching is useless
     val oldTrackSectionMap = HashBiMap.create<TrackEdge, TrackSectionId>()
     val trackNodeGroupsMap = mutableMapOf<Switch, Map<String, TrackNodeConfigId>>()
-    val signalMap = HashBiMap.create<String, PhysicalSignalId>()
-    val rjsSignalMap = HashBiMap.create<String, RJSSignal>()
-    val routeMap = HashBiMap.create<ReservationRoute, RouteId>()
     // TODO: remove this once stitching is useless
     val oldTrackChunkMap = mutableMapOf<UndirectedTrackSection, Map<Distance, TrackChunkId>>()
 
@@ -655,20 +649,18 @@ fun adaptRawInfra(infra: SignalingInfra, rjsInfra: RJSInfra): SimInfraAdapter {
     // TODO: remove this stitching between new way of loading infra directly from railjson and
     // previous way of loading infra
     for (edge in infra.trackGraph.edges()) {
-        val track = edge as? UndirectedTrackSection
-        if (track != null) {
-            oldTrackSectionMap[track] = builder.getTrackSectionByName(track.id)
+        val track = edge as? UndirectedTrackSection ?: continue
+        oldTrackSectionMap[track] = builder.getTrackSectionByName(track.id)
 
-            val chunkMap = mutableMapOf<Distance, TrackChunkId>()
-            for (entry in
-                builder.getTrackSectionDistanceSortedChunkMap()[oldTrackSectionMap[track]]!!) {
-                chunkMap[entry.key] = entry.value
-            }
-            oldTrackChunkMap[track] = chunkMap
+        val chunkMap = mutableMapOf<Distance, TrackChunkId>()
+        for (entry in
+            builder.getTrackSectionDistanceSortedChunkMap()[oldTrackSectionMap[track]]!!) {
+            chunkMap[entry.key] = entry.value
+        }
+        oldTrackChunkMap[track] = chunkMap
 
-            for (detector in track.detectors) {
-                oldDetectorMap[detector] = detectorNameIndex[detector.id]
-            }
+        for (detector in track.detectors) {
+            oldDetectorMap[detector] = detectorNameIndex[detector.id]
         }
     }
     for (switchEntry in infra.switches) {
@@ -705,7 +697,6 @@ fun adaptRawInfra(infra: SignalingInfra, rjsInfra: RJSInfra): SimInfraAdapter {
 
     // parse signals
     for (rjsSignal in rjsInfra.signals) {
-        rjsSignalMap[rjsSignal.id] = rjsSignal
         val trackSectionId = builder.getTrackSectionByName(rjsSignal.track)
         val direction =
             when (rjsSignal.direction!!) {
@@ -713,56 +704,50 @@ fun adaptRawInfra(infra: SignalingInfra, rjsInfra: RJSInfra): SimInfraAdapter {
                 EdgeDirection.STOP_TO_START -> DECREASING
             }
         val undirectedTrackOffset = Offset<TrackSection>(rjsSignal.position.meters)
-        val signalId =
-            builder.physicalSignal(
-                rjsSignal.id,
-                rjsSignal.sightDistance.meters,
-                DirTrackSectionId(trackSectionId, direction),
-                undirectedTrackOffset
-            ) {
-                if (rjsSignal.logicalSignals == null) return@physicalSignal
-                for (rjsLogicalSignal in rjsSignal.logicalSignals) {
-                    assert(
-                        rjsLogicalSignal.signalingSystem != null &&
-                            rjsLogicalSignal.signalingSystem.isNotEmpty()
+        builder.physicalSignal(
+            rjsSignal.id,
+            rjsSignal.sightDistance.meters,
+            DirTrackSectionId(trackSectionId, direction),
+            undirectedTrackOffset
+        ) {
+            if (rjsSignal.logicalSignals == null) return@physicalSignal
+            for (rjsLogicalSignal in rjsSignal.logicalSignals) {
+                assert(
+                    rjsLogicalSignal.signalingSystem != null &&
+                        rjsLogicalSignal.signalingSystem.isNotEmpty()
+                )
+                assert(rjsLogicalSignal.nextSignalingSystems != null)
+                assert(rjsLogicalSignal.settings != null)
+                for (sigSystem in rjsLogicalSignal.nextSignalingSystems) assert(
+                    sigSystem.isNotEmpty()
+                )
+                val conditionalParameters = mutableMapOf<RouteId, Map<String, String>>()
+                /*
+                TODO: implement conditional parameters directly
+                rjsLogicalSignal.conditionalParameters.associate {
+                    Pair(routeNameToID[it.onRoute]!!, it.parameters)
+                }*/
+                val rawParameters =
+                    RawSignalParameters(
+                        rjsLogicalSignal.defaultParameters,
+                        conditionalParameters,
                     )
-                    assert(rjsLogicalSignal.nextSignalingSystems != null)
-                    assert(rjsLogicalSignal.settings != null)
-                    for (sigSystem in rjsLogicalSignal.nextSignalingSystems) assert(
-                        sigSystem.isNotEmpty()
-                    )
-                    val conditionalParameters = mutableMapOf<RouteId, Map<String, String>>()
-                    /*
-                    TODO: implement conditional parameters directly
-                    rjsLogicalSignal.conditionalParameters.associate {
-                        Pair(routeNameToID[it.onRoute]!!, it.parameters)
-                    }*/
-                    val rawParameters =
-                        RawSignalParameters(
-                            rjsLogicalSignal.defaultParameters,
-                            conditionalParameters,
-                        )
-                    for (conditionalParameter in rjsLogicalSignal.conditionalParameters) {
-                        val routeParams =
-                            delayedConditionalParameters.computeIfAbsent(
-                                conditionalParameter.onRoute
-                            ) {
-                                mutableListOf()
-                            }
-                        routeParams.add(
-                            Pair(conditionalParameter.parameters, conditionalParameters)
-                        )
-                    }
-
-                    logicalSignal(
-                        rjsLogicalSignal.signalingSystem,
-                        rjsLogicalSignal.nextSignalingSystems,
-                        rjsLogicalSignal.settings,
-                        rawParameters
-                    )
+                for (conditionalParameter in rjsLogicalSignal.conditionalParameters) {
+                    val routeParams =
+                        delayedConditionalParameters.computeIfAbsent(conditionalParameter.onRoute) {
+                            mutableListOf()
+                        }
+                    routeParams.add(Pair(conditionalParameter.parameters, conditionalParameters))
                 }
+
+                logicalSignal(
+                    rjsLogicalSignal.signalingSystem,
+                    rjsLogicalSignal.nextSignalingSystems,
+                    rjsLogicalSignal.settings,
+                    rawParameters
+                )
             }
-        signalMap[rjsSignal.id] = signalId
+        }
     }
 
     fun getOrCreateDet(oldDiDetector: DiDetector): DirDetectorId {
@@ -825,7 +810,6 @@ fun adaptRawInfra(infra: SignalingInfra, rjsInfra: RJSInfra): SimInfraAdapter {
                     releaseZone(oldPath.size - 2)
                 }
             }
-        routeMap[route] = routeId
 
         // TODO: remove this hack once signals are parsed after routes
         val routeCondParams = delayedConditionalParameters[route.id] ?: continue
@@ -834,19 +818,7 @@ fun adaptRawInfra(infra: SignalingInfra, rjsInfra: RJSInfra): SimInfraAdapter {
         }
     }
 
-    // TODO: check the length of built routes is the same as on the base infra
-    // assert(route.length.meters == routeLength)
-
-    val rawInfra =
-        SimInfraAdapter(
-            builder.build(),
-            oldDetectorMap,
-            trackNodeMap,
-            trackNodeGroupsMap,
-            routeMap,
-            signalMap,
-            rjsSignalMap
-        )
+    val rawInfra = builder.build()
     val controlInfra = adaptRawInfra(infra)
     assertEqualSimInfra(rawInfra, controlInfra)
     return rawInfra

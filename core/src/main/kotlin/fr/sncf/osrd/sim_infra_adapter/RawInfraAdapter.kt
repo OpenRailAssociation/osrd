@@ -1,6 +1,5 @@
 package fr.sncf.osrd.sim_infra_adapter
 
-import com.google.common.collect.BiMap
 import com.google.common.collect.HashBiMap
 import com.google.common.collect.ImmutableList
 import fr.sncf.osrd.infra.api.Direction
@@ -38,16 +37,6 @@ import fr.sncf.osrd.utils.units.metersPerSecond
 import kotlin.collections.set
 import kotlin.time.Duration.Companion.seconds
 
-class SimInfraAdapter(
-    val simInfra: RawInfra,
-    val detectorMap: BiMap<Detector, DetectorId>,
-    val trackNodeMap: BiMap<Switch, TrackNodeId>,
-    val trackNodeGroupsMap: Map<Switch, Map<String, TrackNodeConfigId>>,
-    val routeMap: BiMap<ReservationRoute, RouteId>,
-    val signalMap: BiMap<String, PhysicalSignalId>,
-    val rjsSignalMap: BiMap<String, RJSSignal>
-) : RawInfra by simInfra
-
 class TrackRangeViewIterator(private val views: ImmutableList<TrackRangeView>) {
     private var index: Int = 0
     val view: TrackRangeView
@@ -64,11 +53,12 @@ data class TrackSignal(
     val signal: PhysicalSignalId
 )
 
-fun adaptRawInfra(infra: SignalingInfra): SimInfraAdapter {
+fun adaptRawInfra(infra: SignalingInfra): RawInfra {
     val builder = RawInfraBuilderImpl()
     val detectorMap = HashBiMap.create<Detector, DetectorId>()
     val trackNodeMap = HashBiMap.create<Switch, TrackNodeId>()
     val trackSectionMap = HashBiMap.create<TrackEdge, TrackSectionId>()
+    val trackSectionNameIndex = mutableMapOf<String, TrackSectionId>()
     val trackNodeGroupsMap = mutableMapOf<Switch, Map<String, TrackNodeConfigId>>()
     val signalsPerTrack: MutableMap<String, MutableList<TrackSignal>> = mutableMapOf()
     val signalMap = HashBiMap.create<String, PhysicalSignalId>()
@@ -91,7 +81,7 @@ fun adaptRawInfra(infra: SignalingInfra): SimInfraAdapter {
         if (track != null) {
             val trackLength = track.length.meters
             var lastOffset = 0.meters
-            trackSectionMap[track] =
+            val trackSectionId =
                 builder.trackSection(track.id) {
                     val chunkMap = mutableMapOf<Distance, TrackChunkId>()
                     for (d in track.detectors) {
@@ -111,6 +101,8 @@ fun adaptRawInfra(infra: SignalingInfra): SimInfraAdapter {
                     makeChunk(builder, track, lastOffset, trackLength, this@trackSection, chunkMap)
                     trackChunkMap[track] = chunkMap
                 }
+            trackSectionMap[track] = trackSectionId
+            trackSectionNameIndex[track.id!!] = trackSectionId
         }
     }
 
@@ -174,10 +166,18 @@ fun adaptRawInfra(infra: SignalingInfra): SimInfraAdapter {
 
     // parse signals
     for (rjsSignal in infra.signalMap.keys()) {
+        val signalTrackName = rjsSignal.track!!
+        val signalTrackId = trackSectionNameIndex[signalTrackName]!!
+        val signalTrackOffset = rjsSignal.position.meters
         rjsSignalMap[rjsSignal.id] = rjsSignal
-        val trackSignals = signalsPerTrack.getOrPut(rjsSignal.track!!) { mutableListOf() }
+        val trackSignals = signalsPerTrack.getOrPut(signalTrackName) { mutableListOf() }
         val signalId =
-            builder.physicalSignal(rjsSignal.id, rjsSignal.sightDistance.meters) {
+            builder.physicalSignal(
+                rjsSignal.id,
+                rjsSignal.sightDistance.meters,
+                signalTrackId,
+                Offset(signalTrackOffset)
+            ) {
                 if (rjsSignal.logicalSignals == null) return@physicalSignal
                 for (rjsLogicalSignal in rjsSignal.logicalSignals) {
                     assert(
@@ -208,11 +208,7 @@ fun adaptRawInfra(infra: SignalingInfra): SimInfraAdapter {
             }
         signalMap[rjsSignal.id] = signalId
         trackSignals.add(
-            TrackSignal(
-                rjsSignal.position.meters,
-                Direction.fromEdgeDir(rjsSignal.direction),
-                signalId
-            )
+            TrackSignal(signalTrackOffset, Direction.fromEdgeDir(rjsSignal.direction), signalId)
         )
     }
 
@@ -277,15 +273,7 @@ fun adaptRawInfra(infra: SignalingInfra): SimInfraAdapter {
     // TODO: check the length of built routes is the same as on the base infra
     // assert(route.length.meters == routeLength)
 
-    return SimInfraAdapter(
-        builder.build(),
-        detectorMap,
-        trackNodeMap,
-        trackNodeGroupsMap,
-        routeMap,
-        signalMap,
-        rjsSignalMap
-    )
+    return builder.build()
 }
 
 private fun makeChunk(
