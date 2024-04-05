@@ -501,7 +501,7 @@ mod tests {
             path: vec![path_item.clone(), path_item.clone()],
             schedule: vec![ScheduleItem {
                 at: "a".into(),
-                arrival: Some(Duration::try_minutes(5).unwrap().into()),
+                arrival: Some(Duration::minutes(5).into()),
                 stop_for: None,
                 locked: false,
             }],
