@@ -17,3 +17,18 @@ pub use energy_source::EnergySource;
 pub use energy_source::EnergyStorage;
 pub use energy_source::RefillLaw;
 pub use energy_source::SpeedDependantPower;
+
+editoast_common::schemas! {
+    Gamma,
+    ConditionalEffortCurve,
+    EffortCurve,
+    EffortCurves,
+    EffortCurveConditions,
+    ModeEffortCurves,
+    RollingStockComfortType,
+    RollingResistance,
+    EnergySource,
+    EnergyStorage,
+    RefillLaw,
+    SpeedDependantPower,
+}
