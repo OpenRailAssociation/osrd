@@ -9,7 +9,7 @@ use serde::Serialize;
 use serde_json::Value as JsonValue;
 
 use crate::map::View;
-use crate::schema::GeoJson;
+use editoast_common::geo_json::GeoJson;
 
 #[derive(Clone, QueryableByName, Queryable, Debug, Serialize, Deserialize)]
 pub struct GeoJsonAndData {

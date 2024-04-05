@@ -1440,6 +1440,9 @@ dependencies = [
 name = "editoast_common"
 version = "0.1.0"
 dependencies = [
+ "geos",
+ "mvt",
+ "postgis_diesel",
  "rangemap",
  "serde",
  "serde_derive",

@@ -24,9 +24,9 @@ use thiserror::Error;
 use crate::error::Result;
 use crate::modelsv2::get_geometry_layer_table;
 use crate::modelsv2::get_table;
-use crate::schema::GeoJson;
 use crate::schema::ObjectType;
 use crate::DbPool;
+use editoast_common::geo_json::GeoJson;
 
 /// Return `/infra/<infra_id>/objects` routes
 pub fn routes() -> impl HttpServiceFactory {
