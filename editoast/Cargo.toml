@@ -56,7 +56,7 @@ json-patch = "1.2.0"
 mvt = "0.9.0"
 openssl = "*"
 opentelemetry = "0.21.0"
-opentelemetry-datadog = { version = "0.9.0", features = ["reqwest-client"] }
+opentelemetry-datadog = { version = "0.10.0", features = ["reqwest-client"] }
 opentelemetry-otlp = "0.14.0"
 opentelemetry-semantic-conventions = "0.14.0"
 opentelemetry_sdk = { version = "0.21.0", features = ["rt-tokio", "trace"] }
