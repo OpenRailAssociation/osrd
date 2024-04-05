@@ -19,7 +19,7 @@ futures = "0.3.29"
 futures-util = "0.3.30"
 log = "0.4.20"
 smallvec = "1.13.1"
-thiserror = "1.0.53"
+thiserror = "1.0.58"
 
 # main crate
 actix-files = "0.6.5"
