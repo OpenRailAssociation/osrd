@@ -102,6 +102,7 @@
                 openssl
                 pkg-config
                 postgresql
+                taplo
 
                 # API
                 (python311.withPackages pythonPackages)
