@@ -12,9 +12,9 @@ use serde::Serialize;
 use strum::FromRepr;
 use utoipa::ToSchema;
 
-use crate::schema::utils::Duration;
 use crate::schema::utils::Identifier;
 use crate::schema::utils::NonBlankString;
+use crate::schema::utils::PositiveDuration;
 use crate::schema::TrackOffset;
 
 #[derive(Debug, Default, Clone, Serialize, ToSchema)]
@@ -169,8 +169,10 @@ pub struct TrainScheduleOptions {
 pub struct ScheduleItem {
     #[schema(inline)]
     pub at: NonBlankString,
-    pub arrival: Option<Duration>,
-    pub stop_for: Option<Duration>,
+    #[schema(value_type = Option<chrono::Duration>)]
+    pub arrival: Option<PositiveDuration>,
+    #[schema(value_type = Option<chrono::Duration>)]
+    pub stop_for: Option<PositiveDuration>,
     #[serde(default)]
     pub locked: bool,
 }
@@ -502,7 +504,7 @@ mod tests {
             path: vec![path_item.clone(), path_item.clone()],
             schedule: vec![ScheduleItem {
                 at: "a".into(),
-                arrival: Some(Duration::try_minutes(5).unwrap().into()),
+                arrival: Some(Duration::minutes(5).try_into().unwrap()),
                 stop_for: None,
                 locked: false,
             }],
