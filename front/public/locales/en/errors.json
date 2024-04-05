@@ -8,6 +8,9 @@
   "504": "The server did not respond.",
   "default": "An error has occurred.",
   "pageNotFound": "The page you are looking for does not exist.",
+  "core": {
+    "assert_error": "Assert error at {{file_location}}: {{assert_message}}"
+  },
   "editoast": {
     "attached": {
       "TrackNotFound": "Track {{track_id}} not found"

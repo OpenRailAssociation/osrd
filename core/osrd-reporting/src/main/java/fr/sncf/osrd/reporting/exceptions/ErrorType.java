@@ -147,7 +147,7 @@ public enum ErrorType {
     public final ErrorCause cause;
 
     ErrorType(String type, String message, ErrorCause cause) {
-        this.type = type;
+        this.type = "core:" + type;
         this.message = message;
         this.cause = cause;
     }
