@@ -7,6 +7,7 @@ use derivative::Derivative;
 use editoast_schemas::rolling_stock::EffortCurves;
 use editoast_schemas::rolling_stock::EnergySource;
 use editoast_schemas::rolling_stock::Gamma;
+use editoast_schemas::rolling_stock::LoadingGaugeType;
 use editoast_schemas::rolling_stock::RollingResistance;
 use editoast_schemas::rolling_stock::RollingStockMetadata;
 use editoast_schemas::rolling_stock::RollingStockSupportedSignalingSystems;
@@ -16,7 +17,6 @@ use utoipa::ToSchema;
 
 use crate::schema::rolling_stock::rolling_stock_livery::RollingStockLivery;
 use crate::schema::rolling_stock::rolling_stock_livery::RollingStockLiveryMetadata;
-use crate::schema::track_section::LoadingGaugeType;
 
 editoast_common::schemas! {
     RollingStockCommon,

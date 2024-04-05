@@ -10,6 +10,7 @@ use editoast_derive::ModelV2;
 use editoast_schemas::rolling_stock::EffortCurves;
 use editoast_schemas::rolling_stock::EnergySource;
 use editoast_schemas::rolling_stock::Gamma;
+use editoast_schemas::rolling_stock::LoadingGaugeType;
 use editoast_schemas::rolling_stock::RollingResistance;
 use editoast_schemas::rolling_stock::RollingStockMetadata;
 use editoast_schemas::rolling_stock::RollingStockSupportedSignalingSystems;
@@ -25,7 +26,6 @@ use crate::modelsv2::prelude::*;
 use crate::modelsv2::rolling_stock_livery::RollingStockLiveryMetadataModel;
 use crate::schema::rolling_stock::RollingStock;
 use crate::schema::rolling_stock::RollingStockWithLiveries;
-use crate::schema::track_section::LoadingGaugeType;
 use crate::DbPool;
 
 #[derive(Clone, Debug, Deserialize, Serialize, Derivative, ModelV2, ToSchema)]

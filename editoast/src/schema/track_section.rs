@@ -1,10 +1,9 @@
 use derivative::Derivative;
+use editoast_schemas::rolling_stock::LoadingGaugeType;
 use geos::geojson::Geometry;
 use geos::geojson::Value::LineString;
 use serde::Deserialize;
 use serde::Serialize;
-use strum::FromRepr;
-use utoipa::ToSchema;
 
 use super::utils::Identifier;
 use super::utils::NonBlankString;
@@ -95,22 +94,6 @@ pub struct Slope {
     pub gradient: f64,
     pub begin: f64,
     pub end: f64,
-}
-
-#[derive(Debug, Clone, Copy, Deserialize, Serialize, PartialEq, Eq, ToSchema, Hash, FromRepr)]
-pub enum LoadingGaugeType {
-    G1,
-    G2,
-    GA,
-    GB,
-    GB1,
-    GC,
-    #[serde(rename = "FR3.3")]
-    Fr3_3,
-    #[serde(rename = "FR3.3/GB/G2")]
-    Fr3_3GbG2,
-    #[serde(rename = "GLOTT")]
-    Glott,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
