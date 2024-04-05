@@ -15,12 +15,15 @@ object TVM300toBAL : SignalDriver {
 
     private fun cascadePrimaryAspect(aspect: String): String {
         return when (aspect) {
-            // TODO: should really be an execution aspect (160) but we can't have that since trains
-            // don't react to signaling yet
-            "VL" -> "300VL"
-            "A" -> "300VL"
-            "S" -> "000"
-            "C" -> "000"
+            "300VL" -> "VL"
+            "300(VL)" -> "VL"
+            "270A" -> "VL"
+            "220A" -> "VL"
+            "160A" -> "VL"
+            "080A" -> "VL"
+            "000" -> "A"
+            "RRR" -> "C"
+            "OCCUPIED" -> "C"
             else -> throw OSRDError.newAspectError(aspect)
         }
     }
@@ -33,19 +36,16 @@ object TVM300toBAL : SignalDriver {
         limitView: SpeedLimitView?
     ): SigState {
         return stateSchema {
-            when (maView!!.protectionStatus) {
+            assert(maView!!.hasNextSignal)
+            when (maView.protectionStatus) {
                 ProtectionStatus.NO_PROTECTED_ZONES ->
                     throw OSRDError(ErrorType.BALUnprotectedZones)
-                ProtectionStatus.INCOMPATIBLE -> value("aspect", "OCCUPIED")
-                ProtectionStatus.OCCUPIED -> value("aspect", "OCCUPIED")
+                ProtectionStatus.INCOMPATIBLE -> value("aspect", "C")
+                ProtectionStatus.OCCUPIED -> value("aspect", "S")
                 ProtectionStatus.CLEAR -> {
-                    if (!maView.hasNextSignal) {
-                        value("aspect", "000")
-                    } else {
-                        val nextSignalState = maView.nextSignalState
-                        val nextAspect = nextSignalState.getEnum("aspect")
-                        value("aspect", cascadePrimaryAspect(nextAspect))
-                    }
+                    val nextSignalState = maView.nextSignalState
+                    val nextAspect = nextSignalState.getEnum("aspect")
+                    value("aspect", cascadePrimaryAspect(nextAspect))
                 }
             }
         }
