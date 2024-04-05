@@ -20,25 +20,32 @@ use crate::schema::TrackOffset;
 #[derive(Debug, Default, Clone, Serialize, ToSchema)]
 pub struct TrainScheduleBase {
     pub train_name: String,
+    #[serde(default)]
     pub labels: Vec<String>,
     pub rolling_stock_name: String,
     pub start_time: DateTime<Utc>,
     #[schema(inline)]
     pub path: Vec<PathItem>,
-    #[schema(default, inline)]
+    #[schema(inline)]
+    #[serde(default)]
     pub schedule: Vec<ScheduleItem>,
-    #[schema(default, inline)]
+    #[schema(inline)]
+    #[serde(default)]
     pub margins: Margins,
-    #[schema(default)]
+    #[serde(default)]
     pub initial_speed: f64,
-    #[schema(default, inline)]
+    #[schema(inline)]
+    #[serde(default)]
     pub comfort: Comfort,
     pub constraint_distribution: Distribution,
-    #[schema(default, inline)]
+    #[schema(inline)]
+    #[serde(default)]
     pub speed_limit_tag: Option<NonBlankString>,
-    #[schema(default, inline)]
+    #[schema(inline)]
+    #[serde(default)]
     pub power_restrictions: Vec<PowerRestrictionItem>,
-    #[schema(default, inline)]
+    #[schema(inline)]
+    #[serde(default)]
     pub options: TrainScheduleOptions,
 }
 
@@ -51,6 +58,7 @@ impl<'de> Deserialize<'de> for TrainScheduleBase {
         #[serde(deny_unknown_fields)]
         struct Internal {
             train_name: String,
+            #[serde(default)]
             labels: Vec<String>,
             rolling_stock_name: String,
             start_time: DateTime<Utc>,
@@ -160,8 +168,12 @@ pub struct PowerRestrictionItem {
 #[derivative(Default)]
 pub struct TrainScheduleOptions {
     #[derivative(Default(value = "true"))]
-    #[schema(default = "true")]
+    #[serde(default = "default_use_electrical_profiles")]
     use_electrical_profiles: bool,
+}
+
+fn default_use_electrical_profiles() -> bool {
+    true
 }
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize, ToSchema)]
@@ -227,7 +239,7 @@ pub struct Margins {
     pub boundaries: Vec<NonBlankString>,
     #[derivative(Default(value = "vec![MarginValue::None]"))]
     /// The values of the margins. Must contains one more element than the boundaries
-    /// Can be a percentage `X%`, a time in minutes per kilometer `Xmin/km` or `0`
+    /// Can be a percentage `X%`, a time in minutes per kilometer `Xmin/km` or `none`
     #[schema(value_type = Vec<String>, example = json!(["none", "5%", "2min/km"]))]
     pub values: Vec<MarginValue>,
 }
