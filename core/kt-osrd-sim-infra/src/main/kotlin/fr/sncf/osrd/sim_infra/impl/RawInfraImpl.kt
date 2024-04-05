@@ -87,6 +87,8 @@ class PhysicalSignalDescriptor(
     val name: String?,
     val logicalSignals: StaticIdxList<LogicalSignal>,
     val sightDistance: Distance,
+    val trackSection: TrackSectionId,
+    val offset: Offset<TrackSection>,
 )
 
 open class ZonePathSpec(
@@ -454,6 +456,14 @@ class RawInfraImpl(
 
     override fun getPhysicalSignal(signal: LogicalSignalId): PhysicalSignalId {
         return parentSignalMap[signal]!!
+    }
+
+    override fun getPhysicalSignalTrack(signal: PhysicalSignalId): TrackSectionId {
+        return physicalSignalPool[signal].trackSection
+    }
+
+    override fun getPhysicalSignalTrackOffset(signal: PhysicalSignalId): Offset<TrackSection> {
+        return physicalSignalPool[signal].offset
     }
 
     override fun getPhysicalSignalName(signal: PhysicalSignalId): String? {

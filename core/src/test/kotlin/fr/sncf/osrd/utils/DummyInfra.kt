@@ -119,6 +119,14 @@ class DummyInfra : RawInfra, BlockInfra {
         return convertId(signal)
     }
 
+    override fun getPhysicalSignalTrack(signal: PhysicalSignalId): TrackSectionId {
+        TODO("Not yet implemented")
+    }
+
+    override fun getPhysicalSignalTrackOffset(signal: PhysicalSignalId): Offset<TrackSection> {
+        TODO("Not yet implemented")
+    }
+
     override fun getPhysicalSignalName(signal: PhysicalSignalId): String {
         return "BAL"
     }

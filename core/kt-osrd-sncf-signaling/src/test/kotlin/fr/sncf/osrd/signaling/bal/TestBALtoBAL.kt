@@ -63,12 +63,13 @@ class TestBALtoBAL {
         // region signals
         val parameters = RawSignalParameters(mapOf(Pair("jaune_cli", "false")), mapOf())
 
+        // TODO: add an actual track graph
         val signalX =
-            builder.physicalSignal("X", 300.meters) {
+            builder.physicalSignal("X", 300.meters, StaticIdx(42u), Offset(42.meters)) {
                 logicalSignal("BAL", listOf("BAL"), mapOf(Pair("Nf", "true")), parameters)
             }
         val signalV =
-            builder.physicalSignal("V", 300.meters) {
+            builder.physicalSignal("V", 300.meters, StaticIdx(42u), Offset(42.meters)) {
                 logicalSignal("BAL", listOf("BAL"), mapOf(Pair("Nf", "true")), parameters)
             }
         // endregion

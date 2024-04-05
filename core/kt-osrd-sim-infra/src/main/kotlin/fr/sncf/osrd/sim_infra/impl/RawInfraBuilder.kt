@@ -81,6 +81,8 @@ interface PhysicalSignalBuilder {
 class PhysicalSignalBuilderImpl(
     private val name: String?,
     private val sightDistance: Distance,
+    private val trackSection: TrackSectionId,
+    private val offset: Offset<TrackSection>,
     private val globalPool: StaticPool<LogicalSignal, LogicalSignalDescriptor>,
 ) : PhysicalSignalBuilder {
     private val children: MutableStaticIdxList<LogicalSignal> = MutableStaticIdxArrayList()
@@ -100,7 +102,7 @@ class PhysicalSignalBuilderImpl(
     }
 
     fun build(): PhysicalSignalDescriptor {
-        return PhysicalSignalDescriptor(name, children, sightDistance)
+        return PhysicalSignalDescriptor(name, children, sightDistance, trackSection, offset)
     }
 }
 
@@ -258,6 +260,8 @@ interface RestrictedRawInfraBuilder {
     fun physicalSignal(
         name: String?,
         sightDistance: Distance,
+        trackSection: TrackSectionId,
+        offset: Offset<TrackSection>,
         init: PhysicalSignalBuilder.() -> Unit
     ): PhysicalSignalId
 }
@@ -395,9 +399,12 @@ class RawInfraBuilderImpl : RawInfraBuilder {
     override fun physicalSignal(
         name: String?,
         sightDistance: Distance,
+        trackSection: TrackSectionId,
+        offset: Offset<TrackSection>,
         init: PhysicalSignalBuilder.() -> Unit
     ): PhysicalSignalId {
-        val builder = PhysicalSignalBuilderImpl(name, sightDistance, logicalSignalPool)
+        val builder =
+            PhysicalSignalBuilderImpl(name, sightDistance, trackSection, offset, logicalSignalPool)
         builder.init()
         return physicalSignalPool.add(builder.build())
     }
