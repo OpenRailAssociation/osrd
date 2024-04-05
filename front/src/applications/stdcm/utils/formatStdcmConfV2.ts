@@ -129,7 +129,7 @@ export const checkStdcmConf = (
         id,
         arrival,
         locked,
-        stop_for,
+        stopFor,
         positionOnPath,
         coordinates,
         name,
@@ -138,7 +138,7 @@ export const checkStdcmConf = (
         ...path
       } = step;
       return {
-        duration: stop_for ? sec2ms(ISO8601Duration2sec(stop_for)) : 0,
+        duration: stopFor ? sec2ms(ISO8601Duration2sec(stopFor)) : 0,
         location: { ...path, secondary_code: ch },
       };
     }),

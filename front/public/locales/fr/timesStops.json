@@ -1,0 +1,9 @@
+{
+  "name": "Nom",
+  "stopTime": "Temps d'arrêt (s)",
+  "arrivalTime": "Heure d'arrivée",
+  "receptionOnClosedSignal": "Réception sur signal fermé",
+  "theoreticalMargin": "Marge théorique",
+  "theoreticalMarginPlaceholder": "% ou min/100km",
+  "waypoint": "Via {{id}}"
+}

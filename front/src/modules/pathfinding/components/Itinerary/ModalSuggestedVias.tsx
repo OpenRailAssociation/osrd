@@ -16,10 +16,10 @@ import { useAppDispatch } from 'store';
 import { formatUicToCi } from 'utils/strings';
 
 type ModalSuggestedViasProps = {
-  suggestedOps: SuggestedOP[];
+  suggestedVias: SuggestedOP[];
 };
 
-const ModalSuggestedVias = ({ suggestedOps }: ModalSuggestedViasProps) => {
+const ModalSuggestedVias = ({ suggestedVias }: ModalSuggestedViasProps) => {
   const { updatePathSteps, upsertViaFromSuggestedOP, clearViasV2 } = useOsrdConfActions();
   const { getViasV2, getDestinationV2, getPathSteps } = useOsrdConfSelectors();
   const dispatch = useAppDispatch();
@@ -97,11 +97,11 @@ const ModalSuggestedVias = ({ suggestedOps }: ModalSuggestedViasProps) => {
       </ModalHeaderSNCF>
       <ModalBodySNCF>
         <div className="suggested-vias">
-          {suggestedOps.map((op, idx) => {
-            if (!isOriginOrDestination(op)) {
+          {suggestedVias.map((via, idx) => {
+            if (!isOriginOrDestination(via)) {
               // If name is undefined, we know the op/via has been added by clicking on map
-              if (isVia(vias, op)) idxTrueVia += 1;
-              return formatOP(op, idx, idxTrueVia);
+              if (isVia(vias, via)) idxTrueVia += 1;
+              return formatOP(via, idx, idxTrueVia);
             }
             return null;
           })}

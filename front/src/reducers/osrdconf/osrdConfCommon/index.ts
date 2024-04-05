@@ -273,7 +273,7 @@ export function buildCommonConfReducers<S extends OsrdConfState>(): CommonConfRe
       } = action;
       state.pathSteps = state.pathSteps.map((pathStep) => {
         if (pathStep && pathStep.id === via.id) {
-          return { ...pathStep, stop_for: duration };
+          return { ...pathStep, stopFor: duration };
         }
         return pathStep;
       });
@@ -404,10 +404,13 @@ export function buildCommonConfReducers<S extends OsrdConfState>(): CommonConfRe
         positionOnPath: action.payload.positionOnPath,
         name: action.payload.name,
         ch: action.payload.ch,
-        stop_for: action.payload.stopFor,
+        kp: action.payload.kp,
+        stopFor: action.payload.stopFor,
         arrival: action.payload.arrival,
         locked: action.payload.locked,
         deleted: action.payload.deleted,
+        onStopSignal: action.payload.onStopSignal,
+        theoreticalMargin: action.payload.theoreticalMargin,
         ...(action.payload.uic
           ? { uic: action.payload.uic }
           : {

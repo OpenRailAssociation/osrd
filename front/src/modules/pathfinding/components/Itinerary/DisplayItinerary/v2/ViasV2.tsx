@@ -47,7 +47,7 @@ const ViasV2 = ({ zoomToFeaturePoint, shouldManageStopDuration }: DisplayViasV2P
                     {...providedDraggable.draggableProps}
                     {...providedDraggable.dragHandleProps}
                     className={cx('place via', {
-                      'is-a-stop': via.arrival || via.stop_for,
+                      'is-a-stop': via.arrival || via.stopFor,
                     })}
                   >
                     <div className="ring" />

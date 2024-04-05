@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
+import { compact } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
@@ -13,9 +14,11 @@ import SpeedLimitByTagSelector from 'common/SpeedLimitByTagSelector/SpeedLimitBy
 import { useStoreDataForSpeedLimitByTagSelector } from 'common/SpeedLimitByTagSelector/useStoreDataForSpeedLimitByTagSelector';
 import Tabs from 'common/Tabs';
 import ItineraryV2 from 'modules/pathfinding/components/Itinerary/ItineraryV2';
+import { upsertViasInOPs } from 'modules/pathfinding/utils';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import { RollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
+import TimesStops from 'modules/timesStops/TimesStops';
 import { Map } from 'modules/trainschedule/components/ManageTrainSchedule';
 import ElectricalProfiles from 'modules/trainschedule/components/ManageTrainSchedule/ElectricalProfiles';
 import TrainSettings from 'modules/trainschedule/components/ManageTrainSchedule/TrainSettings';
@@ -23,9 +26,10 @@ import { formatKmValue } from 'utils/strings';
 
 const ManageTrainScheduleV2 = () => {
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
-  const { getOriginV2, getDestinationV2 } = useOsrdConfSelectors();
+  const { getOriginV2, getDestinationV2, getPathSteps } = useOsrdConfSelectors();
   const origin = useSelector(getOriginV2);
   const destination = useSelector(getDestinationV2);
+  const pathSteps = useSelector(getPathSteps);
 
   const [pathProperties, setPathProperties] = useState<ManageTrainSchedulePathProperties>();
 
@@ -34,6 +38,19 @@ const ManageTrainScheduleV2 = () => {
 
   const { rollingStockId, rollingStockComfort, rollingStock } =
     useStoreDataForRollingStockSelector();
+
+  useEffect(() => {
+    if (pathProperties) {
+      const allVias = upsertViasInOPs(
+        pathProperties.suggestedOperationalPoints,
+        compact(pathSteps)
+      );
+      setPathProperties({
+        ...pathProperties,
+        allVias,
+      });
+    }
+  }, [pathSteps]);
 
   // TODO TS2 : test this hook in simulation results issue
   // useSetupItineraryForTrainUpdate(setPathProperties);
@@ -105,7 +122,7 @@ const ManageTrainScheduleV2 = () => {
       </div>
     ),
     label: t('tabs.timesStops'),
-    content: null,
+    content: pathProperties && <TimesStops pathProperties={pathProperties} pathSteps={pathSteps} />,
   };
 
   const tabSimulationSettings = {

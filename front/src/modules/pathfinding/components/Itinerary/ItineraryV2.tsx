@@ -65,6 +65,7 @@ const ItineraryV2 = ({
   };
 
   const resetPathfinding = () => {
+    setPathProperties(undefined);
     dispatch(updatePathSteps([null, null]));
   };
 
@@ -111,9 +112,7 @@ const ItineraryV2 = ({
               className="col my-1 text-white btn bg-info btn-sm"
               type="button"
               onClick={() =>
-                openModal(
-                  <ModalSuggestedVias suggestedOps={pathProperties.suggestedOperationalPoints} />
-                )
+                openModal(<ModalSuggestedVias suggestedVias={pathProperties.allVias} />)
               }
             >
               <span className="mr-1">{t('addVias')}</span>

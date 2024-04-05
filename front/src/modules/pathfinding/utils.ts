@@ -23,6 +23,7 @@ export const formatSuggestedOperationalPoints = (
     name: op.extensions?.identifier?.name,
     uic: op.extensions?.identifier?.uic,
     ch: op.extensions?.sncf?.ch,
+    kp: op.part.extensions?.sncf?.kp,
     chLongLabel: op.extensions?.sncf?.ch_long_label,
     chShortLabel: op.extensions?.sncf?.ch_short_label,
     ci: op.extensions?.sncf?.ci,
@@ -84,7 +85,7 @@ export const getPathfindingQuery = ({
   return null;
 };
 
-export const insertViasInOPs = (ops: SuggestedOP[], pathSteps: PathStep[]): SuggestedOP[] => {
+export const upsertViasInOPs = (ops: SuggestedOP[], pathSteps: PathStep[]): SuggestedOP[] => {
   let updatedOPs = [...ops];
   const vias = pathSteps.slice(1, -1);
   if (vias.length > 0) {
@@ -105,6 +106,19 @@ export const insertViasInOPs = (ops: SuggestedOP[], pathSteps: PathStep[]): Sugg
           (op) => step.positionOnPath && op.positionOnPath >= step.positionOnPath
         );
         updatedOPs = addElementAtIndex(updatedOPs, index, formattedStep);
+      } else if ('uic' in step) {
+        updatedOPs = updatedOPs.map((op) => {
+          if (op.uic === step.uic && op.ch === step.ch && op.kp === step.kp) {
+            return {
+              ...op,
+              stopFor: step.stopFor,
+              arrival: step.arrival,
+              onStopSignal: step.onStopSignal,
+              theoreticalMargin: step.theoreticalMargin,
+            };
+          }
+          return op;
+        });
       }
     });
   }
@@ -120,5 +134,6 @@ export const insertViasInOPs = (ops: SuggestedOP[], pathSteps: PathStep[]): Sugg
 export const isVia = (vias: PathStep[], op: SuggestedOP) =>
   vias.some(
     (via) =>
-      ('uic' in via && 'ch' in via && via.uic === op.uic && via.ch === op.ch) || via.id === op.opId
+      ('uic' in via && 'ch' in via && via.uic === op.uic && via.ch === op.ch && via.kp === op.kp) ||
+      via.id === op.opId
   );

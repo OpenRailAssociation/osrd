@@ -10,6 +10,7 @@ export type SuggestedOP = {
   chLongLabel?: string;
   chShortLabel?: string;
   ci?: number;
+  kp?: string;
   trigram?: string;
   offsetOnTrack: number;
   track: string;
@@ -23,6 +24,8 @@ export type SuggestedOP = {
   arrival?: string | null;
   locked?: boolean;
   stopFor?: string | null;
+  theoreticalMargin?: string;
+  onStopSignal?: boolean;
   // Metadatas given by ManageTrainScheduleMap click event to add origin/destination/via
   metadata?: {
     lineCode: number;
@@ -30,6 +33,11 @@ export type SuggestedOP = {
     trackName: string;
     trackNumber: number;
   };
+};
+
+export type Margin = {
+  boundaries: string[];
+  values: string[];
 };
 
 export type ValidConfig = {
@@ -45,8 +53,8 @@ export type ValidConfig = {
   usingElectricalProfiles: boolean;
   path: TrainScheduleBase['path'];
   // TODO TS2 : adapt this for times and stops / power restrictions issues
-  // margins: TrainScheduleBase['margins']
-  // schedule: TrainScheduleBase['schedule']
+  margins: TrainScheduleBase['margins'];
+  schedule: TrainScheduleBase['schedule'];
   // powerRestrictions: TrainScheduleBase['power_restrictions']
   firstStartTime: string;
   speedLimitByTag?: string;

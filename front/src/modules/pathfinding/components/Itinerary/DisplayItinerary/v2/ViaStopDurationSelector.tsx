@@ -19,7 +19,7 @@ const ViaStopDurationSelector = ({
   const dispatch = useAppDispatch();
   const { updateViaStopTimeV2 } = useOsrdConfActions();
 
-  const currentStopTime = via.stop_for ? ISO8601Duration2sec(via.stop_for) : 0;
+  const currentStopTime = via.stopFor ? ISO8601Duration2sec(via.stopFor) : 0;
 
   const [stopTime, setStopTime] = useState(currentStopTime);
   const debouncedStopTime = useDebounce(stopTime, 2000);
