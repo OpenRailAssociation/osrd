@@ -4,6 +4,7 @@ pub mod infra_loading;
 pub mod infra_state;
 #[cfg(test)]
 pub mod mocking;
+pub mod mq_client;
 pub mod pathfinding;
 pub mod simulation;
 pub mod stdcm;
