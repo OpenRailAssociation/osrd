@@ -2287,7 +2287,37 @@ export type EffortCurves = {
     [key: string]: ModeEffortCurves;
   };
 };
-export type RollingStockCommon = {
+export type RollingStock = {
+  base_power_class: string | null;
+  comfort_acceleration: number;
+  effort_curves: EffortCurves;
+  /** The time the train takes before actually using electrical power (in seconds). Is null if the train is not electric. */
+  electrical_power_startup_time?: number | null;
+  energy_sources?: EnergySource[];
+  gamma: Gamma;
+  id: number;
+  inertia_coefficient: number;
+  length: number;
+  loading_gauge: LoadingGaugeType;
+  /** Whether the rolling stock can be edited/deleted or not. */
+  locked: boolean;
+  mass: number;
+  max_speed: number;
+  metadata: RollingStockMetadata;
+  name: string;
+  /** Mapping of power restriction code to power class */
+  power_restrictions: {
+    [key: string]: string;
+  };
+  railjson_version: string;
+  /** The time it takes to raise this train's pantograph in seconds. Is null if the train is not electric. */
+  raise_pantograph_time?: number | null;
+  rolling_resistance: RollingResistance;
+  startup_acceleration: number;
+  startup_time: number;
+  supported_signaling_systems: RollingStockSupportedSignalingSystems;
+};
+export type RollingStockForm = {
   base_power_class: string | null;
   comfort_acceleration: number;
   effort_curves: EffortCurves;
@@ -2298,8 +2328,10 @@ export type RollingStockCommon = {
   inertia_coefficient: number;
   length: number;
   loading_gauge: LoadingGaugeType;
+  locked?: boolean | null;
   mass: number;
   max_speed: number;
+  metadata: RollingStockMetadata;
   name: string;
   /** Mapping of power restriction code to power class */
   power_restrictions: {
@@ -2311,17 +2343,6 @@ export type RollingStockCommon = {
   startup_acceleration: number;
   startup_time: number;
   supported_signaling_systems: RollingStockSupportedSignalingSystems;
-};
-export type RollingStock = RollingStockCommon & {
-  id: number;
-  /** Whether the rolling stock can be edited/deleted or not. */
-  locked: boolean;
-  metadata: RollingStockMetadata;
-  railjson_version: string;
-};
-export type RollingStockForm = RollingStockCommon & {
-  locked?: boolean | null;
-  metadata: RollingStockMetadata;
 };
 export type TrainScheduleScenarioStudyProject = {
   project_id: number;

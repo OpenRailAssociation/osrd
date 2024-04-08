@@ -1,10 +1,14 @@
-use editoast_schemas::rolling_stock::{RollingStock, RollingStockCommon};
+use editoast_schemas::rolling_stock::RollingStock;
 
 use crate::modelsv2::rolling_stock_model::RollingStockModel;
 
-impl From<RollingStockModel> for RollingStockCommon {
+impl From<RollingStockModel> for RollingStock {
     fn from(rolling_stock_model: RollingStockModel) -> Self {
-        RollingStockCommon {
+        RollingStock {
+            railjson_version: rolling_stock_model.railjson_version,
+            id: rolling_stock_model.id,
+            metadata: rolling_stock_model.metadata,
+            locked: rolling_stock_model.locked,
             name: rolling_stock_model.name,
             effort_curves: rolling_stock_model.effort_curves,
             base_power_class: rolling_stock_model.base_power_class,
@@ -23,19 +27,6 @@ impl From<RollingStockModel> for RollingStockCommon {
             electrical_power_startup_time: rolling_stock_model.electrical_power_startup_time,
             raise_pantograph_time: rolling_stock_model.raise_pantograph_time,
             supported_signaling_systems: rolling_stock_model.supported_signaling_systems,
-        }
-    }
-}
-
-impl From<RollingStockModel> for RollingStock {
-    fn from(rolling_stock_model: RollingStockModel) -> Self {
-        let rolling_stock_common: RollingStockCommon = rolling_stock_model.clone().into();
-        RollingStock {
-            id: rolling_stock_model.id,
-            common: rolling_stock_common,
-            railjson_version: rolling_stock_model.railjson_version,
-            locked: rolling_stock_model.locked,
-            metadata: rolling_stock_model.metadata,
         }
     }
 }

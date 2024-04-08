@@ -2,7 +2,7 @@ import type {
   EffortCurveConditions,
   LoadingGaugeType,
   RollingStockComfortType,
-  RollingStockCommon,
+  RollingStock,
 } from 'common/api/osrdEditoastApi';
 
 export type RollingStockParametersValidValues = {
@@ -11,7 +11,7 @@ export type RollingStockParametersValidValues = {
     | string
     | number
     | null
-    | RollingStockCommon['power_restrictions']
+    | RollingStock['power_restrictions']
     | string[]
     | MultiUnitsParameter;
   railjsonVersion: string;
@@ -40,7 +40,7 @@ export type RollingStockParametersValidValues = {
   electricalPowerStartupTime: number | null;
   raisePantographTime: number | null;
   basePowerClass: string | null;
-  powerRestrictions: RollingStockCommon['power_restrictions'];
+  powerRestrictions: RollingStock['power_restrictions'];
   supportedSignalingSystems: string[];
 };
 
@@ -50,7 +50,7 @@ export type RollingStockParametersValues = {
     | string
     | number
     | null
-    | RollingStockCommon['power_restrictions']
+    | RollingStock['power_restrictions']
     | undefined
     | string[]
     | MultiUnitsParameter;
@@ -80,7 +80,7 @@ export type RollingStockParametersValues = {
   electricalPowerStartupTime: number | null;
   raisePantographTime: number | null;
   basePowerClass: string | null;
-  powerRestrictions: RollingStockCommon['power_restrictions'];
+  powerRestrictions: RollingStock['power_restrictions'];
   supportedSignalingSystems: string[];
 };
 
