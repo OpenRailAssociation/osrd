@@ -22,9 +22,7 @@ use validator::ValidationError;
 use validator::ValidationErrors;
 
 use crate::error::Result;
-use crate::modelsv2::prelude::*;
 use crate::modelsv2::rolling_stock_livery::RollingStockLiveryMetadataModel;
-use crate::schema::rolling_stock::RollingStock;
 use crate::schema::rolling_stock::RollingStockWithLiveries;
 use crate::DbPool;
 
@@ -149,31 +147,4 @@ pub fn validate_rolling_stock(
         return Err(error);
     }
     Ok(())
-}
-
-// TODO remove it after refactor tests
-impl From<RollingStock> for Changeset<RollingStockModel> {
-    fn from(value: RollingStock) -> Self {
-        RollingStockModel::changeset()
-            .railjson_version(value.railjson_version)
-            .name(value.common.name)
-            .effort_curves(value.common.effort_curves)
-            .metadata(value.metadata)
-            .length(value.common.length)
-            .max_speed(value.common.max_speed)
-            .startup_time(value.common.startup_time)
-            .startup_acceleration(value.common.startup_acceleration)
-            .comfort_acceleration(value.common.comfort_acceleration)
-            .gamma(value.common.gamma)
-            .inertia_coefficient(value.common.inertia_coefficient)
-            .base_power_class(value.common.base_power_class)
-            .mass(value.common.mass)
-            .rolling_resistance(value.common.rolling_resistance)
-            .loading_gauge(value.common.loading_gauge)
-            .power_restrictions(value.common.power_restrictions)
-            .energy_sources(value.common.energy_sources)
-            .electrical_power_startup_time(value.common.electrical_power_startup_time)
-            .raise_pantograph_time(value.common.raise_pantograph_time)
-            .supported_signaling_systems(value.common.supported_signaling_systems)
-    }
 }

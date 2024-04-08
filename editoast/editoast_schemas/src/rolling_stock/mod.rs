@@ -34,7 +34,12 @@ mod rolling_stock_livery;
 pub use rolling_stock_livery::RollingStockLivery;
 pub use rolling_stock_livery::RollingStockLiveryMetadata;
 
+use serde::Deserialize;
+use serde::Serialize;
+use utoipa::ToSchema;
+
 editoast_common::schemas! {
+    RollingStock,
     Gamma,
     ConditionalEffortCurve,
     EffortCurve,
@@ -53,4 +58,15 @@ editoast_common::schemas! {
     RollingStockCommon,
     RollingStockLivery,
     RollingStockLiveryMetadata,
+}
+
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize, ToSchema)]
+pub struct RollingStock {
+    pub id: i64,
+    #[serde(flatten)]
+    pub common: RollingStockCommon,
+    pub railjson_version: String,
+    /// Whether the rolling stock can be edited/deleted or not.
+    pub locked: bool,
+    pub metadata: RollingStockMetadata,
 }

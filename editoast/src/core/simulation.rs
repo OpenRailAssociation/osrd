@@ -1,3 +1,4 @@
+use editoast_schemas::rolling_stock::RollingStock;
 use editoast_schemas::rolling_stock::RollingStockComfortType;
 use editoast_schemas::train_schedule::Allowance;
 use editoast_schemas::train_schedule::RjsPowerRestrictionRange;
@@ -18,7 +19,6 @@ use crate::models::RoutePath;
 use crate::models::ScheduledPoint;
 use crate::models::SignalSighting;
 use crate::models::ZoneUpdate;
-use crate::schema::rolling_stock::RollingStock;
 use crate::schema::TrackLocation;
 
 editoast_common::schemas! {

@@ -21,6 +21,7 @@ use diesel::sql_types::BigInt;
 use diesel::sql_types::Text as SqlText;
 use diesel_async::RunQueryDsl;
 use editoast_derive::EditoastError;
+use editoast_schemas::rolling_stock::RollingStock;
 use editoast_schemas::rolling_stock::RollingStockLivery;
 use image::io::Reader as ImageReader;
 use image::DynamicImage;
@@ -48,7 +49,6 @@ use crate::modelsv2::Retrieve;
 use crate::modelsv2::RollingStockModel;
 use crate::modelsv2::RollingStockSeparatedImageModel;
 use crate::modelsv2::Update;
-use crate::schema::rolling_stock::RollingStock;
 use crate::schema::rolling_stock::RollingStockWithLiveries;
 use crate::DbPool;
 
@@ -580,7 +580,7 @@ pub mod tests {
     use crate::fixtures::tests::train_schedule_with_scenario;
     use crate::models::rolling_stock::tests::get_invalid_effort_curves;
     use crate::modelsv2::rolling_stock_model::RollingStockModel;
-    use crate::modelsv2::Changeset;
+    use crate::modelsv2::Model;
     use crate::views::rolling_stocks::rolling_stock_form::RollingStockForm;
     use crate::views::tests::create_test_service;
     use crate::DbPool;
@@ -633,7 +633,28 @@ pub mod tests {
         // Check rolling_stock creation
         let response_body: RollingStock = assert_status_and_read!(post_response, StatusCode::OK);
         let rolling_stock_id: i64 = response_body.id;
-        let response_body: Changeset<RollingStockModel> = response_body.into();
+
+        let response_body = RollingStockModel::changeset()
+            .railjson_version(response_body.railjson_version)
+            .name(response_body.common.name)
+            .effort_curves(response_body.common.effort_curves)
+            .metadata(response_body.metadata)
+            .length(response_body.common.length)
+            .max_speed(response_body.common.max_speed)
+            .startup_time(response_body.common.startup_time)
+            .startup_acceleration(response_body.common.startup_acceleration)
+            .comfort_acceleration(response_body.common.comfort_acceleration)
+            .gamma(response_body.common.gamma)
+            .inertia_coefficient(response_body.common.inertia_coefficient)
+            .base_power_class(response_body.common.base_power_class)
+            .mass(response_body.common.mass)
+            .rolling_resistance(response_body.common.rolling_resistance)
+            .loading_gauge(response_body.common.loading_gauge)
+            .power_restrictions(response_body.common.power_restrictions)
+            .energy_sources(response_body.common.energy_sources)
+            .electrical_power_startup_time(response_body.common.electrical_power_startup_time)
+            .raise_pantograph_time(response_body.common.raise_pantograph_time)
+            .supported_signaling_systems(response_body.common.supported_signaling_systems);
 
         assert_eq!(response_body.name, Some(rolling_stock_form.common.name));
 
