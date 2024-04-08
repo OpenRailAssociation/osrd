@@ -1391,7 +1391,6 @@ dependencies = [
  "heck 0.5.0",
  "image",
  "inventory",
- "iso8601",
  "itertools 0.12.1",
  "json-patch",
  "mvt",
@@ -1440,13 +1439,16 @@ dependencies = [
 name = "editoast_common"
 version = "0.1.0"
 dependencies = [
+ "chrono",
  "geos",
+ "iso8601",
  "mvt",
  "postgis_diesel",
  "rangemap",
  "serde",
  "serde_derive",
  "serde_json",
+ "thiserror",
  "utoipa",
 ]
 

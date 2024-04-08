@@ -14,8 +14,8 @@ use utoipa::ToSchema;
 
 use crate::schema::utils::Identifier;
 use crate::schema::utils::NonBlankString;
-use crate::schema::utils::PositiveDuration;
 use crate::schema::TrackOffset;
+use editoast_common::PositiveDuration;
 
 #[derive(Debug, Default, Clone, Serialize, ToSchema)]
 pub struct TrainScheduleBase {

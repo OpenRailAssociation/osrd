@@ -5,10 +5,11 @@
 //! ```
 //! use chrono::Duration;
 //! use serde::{Serialize, Deserialize};
+//! use editoast_common::duration;
 //!
 //! #[derive(Serialize, Deserialize)]
 //! struct MyStruct {
-//!     #[serde(with = "crate::schema::utils::duration")] // <- Add this line
+//!     #[serde(with = "editoast_common::duration")] // <- Add this line
 //!     duration: Duration
 //! }
 //!
@@ -41,7 +42,7 @@ pub enum PositiveDurationError {
 ///
 /// ```
 /// use serde::{Serialize, Deserialize};
-/// use crate::schema::utils::duration::PositiveDuration;
+/// use editoast_common::PositiveDuration;
 ///
 /// #[derive(Serialize, Deserialize)]
 /// struct MyStruct {

@@ -6,11 +6,14 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+chrono.workspace = true
 geos.workspace = true
+iso8601 = "0.6.1"
 mvt.workspace = true
 postgis_diesel.workspace = true
 rangemap.workspace = true
 serde.workspace = true
 serde_derive.workspace = true
 serde_json.workspace = true
+thiserror.workspace = true
 utoipa.workspace = true
