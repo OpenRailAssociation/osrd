@@ -26,13 +26,13 @@ use crate::modelsv2::TrackSectionModel;
 use crate::redis_utils::RedisClient;
 use crate::redis_utils::RedisConnection;
 use crate::schema::operational_point::OperationalPoint;
-use crate::schema::utils::Identifier;
 use crate::schema::v2::trainschedule::PathItemLocation;
 use crate::schema::TrackOffset;
 use crate::views::get_app_version;
 use crate::views::v2::path::PathfindingError;
 use crate::views::v2::path::TrackRange;
 use crate::DbPool;
+use editoast_common::Identifier;
 
 type TrackOffsetResult = std::result::Result<Vec<Vec<TrackOffset>>, PathfindingResult>;
 

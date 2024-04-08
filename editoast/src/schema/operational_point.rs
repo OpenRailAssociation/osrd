@@ -3,7 +3,6 @@ use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
-use super::utils::Identifier;
 use super::utils::NonBlankString;
 use super::OSRDIdentified;
 use super::OSRDTyped;
@@ -12,6 +11,7 @@ use crate::infra_cache::Cache;
 use crate::infra_cache::ObjectCache;
 use crate::modelsv2::OperationalPointModel;
 use crate::schema::TrackOffset;
+use editoast_common::Identifier;
 
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, ToSchema)]
 #[serde(deny_unknown_fields)]

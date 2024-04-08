@@ -14,8 +14,8 @@ use utoipa::ToSchema;
 use crate::error::Result;
 use crate::modelsv2::prelude::*;
 use crate::modelsv2::Infra;
-use crate::schema::utils::Identifier;
 use crate::schema::Direction;
+use editoast_common::Identifier;
 
 /// Expiration time for the cache of the pathfinding and path properties.
 /// Note: 604800 seconds = 1 week

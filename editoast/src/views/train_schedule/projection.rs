@@ -4,8 +4,8 @@ use serde::Deserialize;
 use serde::Serialize;
 
 use crate::models::PathfindingPayload;
-use crate::schema::utils::Identifier;
 use crate::schema::DirectionalTrackRange;
+use editoast_common::Identifier;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Projection {

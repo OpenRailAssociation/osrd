@@ -28,12 +28,12 @@ use crate::error::Result;
 use crate::schema::OperationalPointExtensions;
 use crate::schema::OperationalPointPart;
 use crate::views::v2::path::retrieve_infra_version;
-use crate::views::v2::path::Identifier;
 use crate::views::v2::path::TrackRange;
 use crate::DbPool;
 use crate::RedisClient;
 use crate::RedisConnection;
 use editoast_common::geometry::GeoJsonLineString;
+use editoast_common::Identifier;
 
 crate::routes! {
     "/v2/infra/{infra_id}/path_properties" => {post},

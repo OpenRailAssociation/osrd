@@ -6,7 +6,6 @@ use uuid::Uuid;
 use super::new_ref_fix_create_pair;
 use super::Fix;
 use crate::infra_cache::operation::RailjsonObject;
-use crate::schema::utils::Identifier;
 use crate::schema::BufferStop;
 use crate::schema::Endpoint;
 use crate::schema::InfraError;
@@ -15,6 +14,7 @@ use crate::schema::OSRDIdentified as _;
 use crate::schema::OSRDObject as _;
 use crate::schema::ObjectRef;
 use crate::schema::TrackSectionCache;
+use editoast_common::Identifier;
 
 pub fn fix_track_section(
     track_section: &TrackSectionCache,

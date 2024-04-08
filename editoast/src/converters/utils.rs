@@ -8,8 +8,8 @@ use osmpbfreader::Node;
 use tracing::error;
 use tracing::warn;
 
-use crate::schema::utils::Identifier;
 use crate::schema::*;
+use editoast_common::Identifier;
 
 // Given an edge and a coordinate, returns the coordinates used to compute the angle
 // It uses the nearest OpenStreetMap node, and the other as the the rails might do a loop

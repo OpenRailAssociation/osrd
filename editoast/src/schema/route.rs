@@ -7,7 +7,6 @@ use serde::Serialize;
 use super::Direction;
 use super::DirectionalTrackRange;
 use super::Endpoint;
-use super::Identifier;
 use super::OSRDIdentified;
 use super::OSRDTyped;
 use super::ObjectType;
@@ -17,6 +16,7 @@ use crate::infra_cache::Cache;
 use crate::infra_cache::Graph;
 use crate::infra_cache::InfraCache;
 use crate::infra_cache::ObjectCache;
+use editoast_common::Identifier;
 
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]

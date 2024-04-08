@@ -12,9 +12,9 @@ use serde::Serialize;
 use strum::FromRepr;
 use utoipa::ToSchema;
 
-use crate::schema::utils::Identifier;
 use crate::schema::utils::NonBlankString;
 use crate::schema::TrackOffset;
+use editoast_common::Identifier;
 use editoast_common::PositiveDuration;
 
 #[derive(Debug, Default, Clone, Serialize, ToSchema)]

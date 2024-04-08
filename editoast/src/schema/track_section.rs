@@ -5,7 +5,6 @@ use geos::geojson::Value::LineString;
 use serde::Deserialize;
 use serde::Serialize;
 
-use super::utils::Identifier;
 use super::utils::NonBlankString;
 use super::Endpoint;
 use super::OSRDIdentified;
@@ -15,6 +14,7 @@ use super::TrackEndpoint;
 use crate::infra_cache::Cache;
 use crate::infra_cache::ObjectCache;
 use crate::map::BoundingBox;
+use editoast_common::Identifier;
 
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]

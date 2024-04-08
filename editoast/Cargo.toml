@@ -14,6 +14,7 @@ editoast_common = { path = "./editoast_common" }
 geos = { version = "8.3.1", features = ["json"] }
 mvt = "0.9.0"
 postgis_diesel = { version = "2.3.0", features = ["serde"] }
+rand = "0.8.5"
 rangemap = "1.5.1"
 serde = "1.0.195"
 serde_derive = "1.0.195"
@@ -21,6 +22,7 @@ serde_json = "1.0.115"
 strum = { version = "0.26.2", features = ["derive"] }
 thiserror = "1.0.58"
 utoipa = { version = "4.2.0", features = ["actix_extras", "chrono", "uuid"] }
+uuid = { version = "1.8.0", features = ["v4"] }
 
 [dependencies]
 # For batch dependcy updates see https://osrd.fr/en/docs/guides/contribute/batch-updating-dependencies/
@@ -72,7 +74,7 @@ paste = "1.0.14"
 pathfinding = "4.9.1"
 postgis_diesel.workspace = true
 postgres-openssl = "0.5.0"
-rand = "0.8.5"
+rand.workspace = true
 rangemap.workspace = true
 redis = { version = "0.25.3", features = [
   "cluster-async",
@@ -98,7 +100,7 @@ tracing-opentelemetry = "0.23.0"
 tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
 url = "2.5.0"
 utoipa.workspace = true
-uuid = { version = "1.8.0", features = ["v4"] }
+uuid.workspace = true
 validator = { version = "0.17.0", features = ["derive"] }
 
 [dev-dependencies]
