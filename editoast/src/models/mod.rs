@@ -40,7 +40,6 @@ editoast_common::schemas! {
     projects::schemas(),
     train_schedule::schemas(),
     timetable::schemas(),
-    rolling_stock::schemas(),
     pathfinding::schemas(),
 }
 
