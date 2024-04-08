@@ -80,6 +80,7 @@ editoast_common::schemas! {
     Direction,
     utils::schemas(),
     rolling_stock::schemas(),
+    editoast_schemas::schemas(),
     operation::schemas(),
 }
 

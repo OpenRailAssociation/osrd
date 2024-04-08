@@ -1,4 +1,5 @@
 use editoast_schemas::rolling_stock::RollingStockComfortType;
+use editoast_schemas::train_schedule::AllowanceValue;
 use serde::Deserialize;
 use serde::Serialize;
 
@@ -9,7 +10,6 @@ use crate::core::pathfinding::Waypoint;
 use crate::core::simulation::SimulationResponse;
 use crate::models::SpacingRequirement;
 use crate::modelsv2::RollingStockModel;
-use crate::views::stdcm::AllowanceValue;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct STDCMCoreRequest {
