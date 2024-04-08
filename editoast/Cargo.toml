@@ -8,6 +8,7 @@ license = "LGPL-3.0"
 members = [".", "editoast_common", "editoast_derive", "editoast_schemas"]
 
 [workspace.dependencies]
+chrono = { version = "0.4.37", features = ["serde"] }
 derivative = "2.2.0"
 editoast_common = { path = "./editoast_common" }
 geos = { version = "8.3.1", features = ["json"] }
@@ -18,6 +19,7 @@ serde = "1.0.195"
 serde_derive = "1.0.195"
 serde_json = "1.0.115"
 strum = { version = "0.26.2", features = ["derive"] }
+thiserror = "1.0.58"
 utoipa = { version = "4.2.0", features = ["actix_extras", "chrono", "uuid"] }
 
 [dependencies]
@@ -32,7 +34,7 @@ actix-web-opentelemetry = { version = "0.17.0", features = ["awc"] }
 async-trait = "0.1.79"
 cfg-if = "1.0.0"
 chashmap = "2.2.2"
-chrono = { version = "0.4.37", features = ["serde"] }
+chrono.workspace = true
 clap = { version = "4.5.4", features = ["derive", "env"] }
 colored = "2.1.0"
 derivative.workspace = true
@@ -55,7 +57,6 @@ geos.workspace = true
 heck = "0.5.0"
 image = "0.25.1"
 inventory = "0.3"
-iso8601 = "0.6.1"
 itertools = "0.12.1"
 json-patch = "1.2.0"
 mvt.workspace = true
@@ -89,7 +90,7 @@ serde_qs = { version = "0.12.0", features = ["actix4"] }
 serde_yaml = "0.9.34"
 sha1 = "0.10"
 strum.workspace = true
-thiserror = "1.0.58"
+thiserror.workspace = true
 tokio = "*"
 tokio-postgres = "*"
 tracing = { version = "0.1.40", features = ["log"] }
