@@ -23,7 +23,7 @@ use validator::ValidationErrors;
 
 use crate::error::Result;
 use crate::modelsv2::rolling_stock_livery::RollingStockLiveryMetadataModel;
-use crate::schema::rolling_stock::RollingStockWithLiveries;
+use crate::views::rolling_stocks::RollingStockWithLiveries;
 use crate::DbPool;
 
 #[derive(Clone, Debug, Deserialize, Serialize, Derivative, ModelV2, ToSchema)]

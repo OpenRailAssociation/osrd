@@ -1,11 +1,6 @@
 use editoast_schemas::rolling_stock::{RollingStock, RollingStockCommon};
 
 use crate::modelsv2::rolling_stock_model::RollingStockModel;
-use crate::schema::rolling_stock::RollingStockWithLiveries;
-
-editoast_common::schemas! {
-    RollingStockWithLiveries,
-}
 
 impl From<RollingStockModel> for RollingStockCommon {
     fn from(rolling_stock_model: RollingStockModel) -> Self {

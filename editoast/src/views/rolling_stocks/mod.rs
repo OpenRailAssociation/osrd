@@ -23,6 +23,7 @@ use diesel_async::RunQueryDsl;
 use editoast_derive::EditoastError;
 use editoast_schemas::rolling_stock::RollingStock;
 use editoast_schemas::rolling_stock::RollingStockLivery;
+use editoast_schemas::rolling_stock::RollingStockLiveryMetadata;
 use image::io::Reader as ImageReader;
 use image::DynamicImage;
 use image::GenericImage;
@@ -49,7 +50,6 @@ use crate::modelsv2::Retrieve;
 use crate::modelsv2::RollingStockModel;
 use crate::modelsv2::RollingStockSeparatedImageModel;
 use crate::modelsv2::Update;
-use crate::schema::rolling_stock::RollingStockWithLiveries;
 use crate::DbPool;
 
 crate::routes! {
@@ -80,6 +80,14 @@ editoast_common::schemas! {
     PowerRestriction,
     RollingStockError,
     TrainScheduleScenarioStudyProject,
+    RollingStockWithLiveries,
+}
+
+#[derive(Debug, Serialize, ToSchema)]
+pub struct RollingStockWithLiveries {
+    #[serde(flatten)]
+    pub rolling_stock: RollingStock,
+    pub liveries: Vec<RollingStockLiveryMetadata>,
 }
 
 #[derive(Debug, Error, EditoastError, ToSchema)]
