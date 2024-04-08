@@ -25,7 +25,6 @@ use crate::modelsv2::train_schedule::TrainSchedule;
 use crate::modelsv2::train_schedule::TrainScheduleChangeset;
 use crate::modelsv2::Model;
 use crate::modelsv2::Retrieve;
-use crate::schema::utils::Identifier;
 use crate::schema::v2::trainschedule::Distribution;
 use crate::schema::v2::trainschedule::TrainScheduleBase;
 use crate::views::v2::path::pathfinding_from_train;
@@ -35,6 +34,7 @@ use crate::views::v2::path::TrackRange;
 use crate::DbPool;
 use crate::RedisClient;
 use crate::RollingStockModel;
+use editoast_common::Identifier;
 
 use actix_web::web::{Data, Json, Path, Query};
 use actix_web::{delete, get, post, put, HttpResponse};

@@ -4,7 +4,6 @@ use derivative::Derivative;
 use serde::Deserialize;
 use serde::Serialize;
 
-use super::utils::Identifier;
 use super::utils::NonBlankString;
 use super::ApplicableDirectionsTrackRange;
 use super::OSRDIdentified;
@@ -13,6 +12,7 @@ use super::ObjectType;
 use super::Sign;
 use crate::infra_cache::Cache;
 use crate::infra_cache::ObjectCache;
+use editoast_common::Identifier;
 
 #[derive(Debug, Derivative, Clone, Serialize, PartialEq, Copy)]
 pub struct Speed(pub f64);

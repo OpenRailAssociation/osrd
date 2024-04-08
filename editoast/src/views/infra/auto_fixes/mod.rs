@@ -333,7 +333,6 @@ mod tests {
     use crate::infra_cache::operation::Operation;
     use crate::infra_cache::operation::RailjsonObject;
     use crate::infra_cache::InfraCacheEditoastError;
-    use crate::schema::utils::Identifier;
     use crate::schema::ApplicableDirectionsTrackRange;
     use crate::schema::BufferStop;
     use crate::schema::BufferStopCache;
@@ -357,6 +356,7 @@ mod tests {
     use crate::schema::Waypoint;
     use crate::views::pagination::PaginatedResponse;
     use crate::views::tests::create_test_service;
+    use editoast_common::Identifier;
 
     async fn get_infra_cache(infra: &Infra) -> InfraCache {
         InfraCache::load(&mut db_pool().get().await.unwrap(), infra)

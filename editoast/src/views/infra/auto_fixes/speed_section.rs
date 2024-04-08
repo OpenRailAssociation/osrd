@@ -94,7 +94,6 @@ mod tests {
     use crate::infra_cache::operation::CacheOperation;
     use crate::infra_cache::operation::Operation;
     use crate::infra_cache::ObjectCache;
-    use crate::schema::utils::Identifier;
     use crate::schema::ApplicableDirections;
     use crate::schema::ApplicableDirectionsTrackRange;
     use crate::schema::InfraError;
@@ -102,6 +101,7 @@ mod tests {
     use crate::schema::ObjectRef;
     use crate::schema::ObjectType;
     use crate::schema::SpeedSection;
+    use editoast_common::Identifier;
 
     #[test]
     fn invalid_refs_ordered_speed_section() {

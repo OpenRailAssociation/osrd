@@ -69,8 +69,8 @@ use strum::Display;
 use strum::EnumIter;
 use utoipa::ToSchema;
 
-use self::utils::Identifier;
 use self::utils::NonBlankString;
+use editoast_common::Identifier;
 
 editoast_common::schemas! {
     ObjectType,

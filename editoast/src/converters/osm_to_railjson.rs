@@ -131,8 +131,8 @@ mod tests {
 
     use super::parse_osm;
     use crate::converters::*;
-    use crate::schema::utils::Identifier;
     use crate::schema::*;
+    use editoast_common::Identifier;
     #[test]
     fn convert_osm_to_railjson() {
         let output = tempfile::NamedTempFile::new().unwrap();

@@ -1444,12 +1444,14 @@ dependencies = [
  "iso8601",
  "mvt",
  "postgis_diesel",
+ "rand 0.8.5",
  "rangemap",
  "serde",
  "serde_derive",
  "serde_json",
  "thiserror",
  "utoipa",
+ "uuid",
 ]
 
 [[package]]

@@ -20,7 +20,6 @@ use crate::infra_cache::Graph;
 use crate::infra_cache::InfraCache;
 use crate::modelsv2::prelude::*;
 use crate::modelsv2::Infra;
-use crate::schema::utils::Identifier;
 use crate::schema::Direction;
 use crate::schema::DirectionalTrackRange;
 use crate::schema::Endpoint;
@@ -29,6 +28,7 @@ use crate::schema::TrackEndpoint;
 use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraIdParam;
 use crate::DbPool;
+use editoast_common::Identifier;
 
 crate::routes! {
     "/pathfinding" => {
@@ -411,11 +411,11 @@ mod tests {
     use super::compute_path;
     use crate::infra_cache::tests::create_small_infra_cache;
     use crate::infra_cache::Graph;
-    use crate::schema::utils::Identifier;
     use crate::schema::Direction;
     use crate::schema::DirectionalTrackRange;
     use crate::views::infra::pathfinding::PathfindingInput;
     use crate::views::infra::pathfinding::PathfindingTrackLocationInput;
+    use editoast_common::Identifier;
 
     fn expected_path() -> Vec<DirectionalTrackRange> {
         vec![

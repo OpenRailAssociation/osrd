@@ -1,9 +1,9 @@
 use std::collections::HashMap;
 
 use crate::infra_cache::InfraCache;
-use crate::schema::utils::Identifier;
 use crate::schema::SwitchCache;
 use crate::schema::TrackEndpoint;
+use editoast_common::Identifier;
 
 #[derive(Default, Clone, Debug)]
 pub struct Graph<'a> {
@@ -92,8 +92,8 @@ mod tests {
     use crate::infra_cache::tests::create_small_infra_cache;
     use crate::infra_cache::tests::create_track_endpoint;
     use crate::infra_cache::InfraCache;
-    use crate::schema::utils::Identifier;
     use crate::schema::Endpoint;
+    use editoast_common::Identifier;
 
     #[test]
     fn create_empty_graph() {
