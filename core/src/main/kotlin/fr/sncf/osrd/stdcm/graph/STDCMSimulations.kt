@@ -27,7 +27,6 @@ import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorer
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.RollingStock.Comfort
 import fr.sncf.osrd.utils.units.Distance
-import fr.sncf.osrd.utils.units.Distance.Companion.fromMeters
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 
@@ -137,18 +136,6 @@ private fun makeSinglePointEnvelope(speed: Double): Envelope {
             doubleArrayOf()
         )
     )
-}
-
-/** Returns the time at which the offset on the given edge is reached */
-fun interpolateTime(
-    envelope: Envelope,
-    edgeOffset: Offset<STDCMEdge>,
-    startTime: Double,
-    speedRatio: Double
-): Double {
-    assert(edgeOffset.distance <= fromMeters(envelope.endPos))
-    assert(edgeOffset.distance >= 0.meters)
-    return startTime + envelope.interpolateTotalTime(edgeOffset.distance.meters) / speedRatio
 }
 
 /** returns an envelope for a block that already has an envelope, but with a different end speed */

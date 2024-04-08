@@ -7,6 +7,8 @@ import fr.sncf.osrd.standalone_sim.EnvelopeStopWrapper
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.train.TrainStop
+import fr.sncf.osrd.utils.units.Distance.Companion.fromMeters
+import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import kotlin.math.min
@@ -297,10 +299,10 @@ internal constructor(
         }
         val endStopDuration = getEndStopDuration()
         val endAtStop = endStopDuration != null
+        val standardAllowanceSpeedRatio = graph.getStandardAllowanceSpeedRatio(envelope!!)
         var res: STDCMEdge? =
             STDCMEdge(
                 infraExplorer,
-                envelope!!,
                 getExplorerWithNewEnvelope()!!,
                 actualStartTime,
                 maximumDelay,
@@ -315,11 +317,15 @@ internal constructor(
                 prevNode,
                 startOffset,
                 (actualStartTime / 60).toInt(),
-                graph.getStandardAllowanceSpeedRatio(envelope!!),
+                standardAllowanceSpeedRatio,
                 waypointIndex,
-                endAtStop
+                endAtStop,
+                envelope!!.beginSpeed,
+                envelope!!.endSpeed,
+                Length(fromMeters(envelope!!.endPos)),
+                envelope!!.totalTime / standardAllowanceSpeedRatio,
             )
-        res = graph.backtrackingManager.backtrack(res!!)
+        res = graph.backtrackingManager.backtrack(res!!, envelope!!)
         return if (res == null || graph.delayManager.isRunTimeTooLong(res)) null else res
     }
 

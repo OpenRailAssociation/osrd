@@ -63,8 +63,8 @@ class EngineeringAllowanceManager(private val graph: STDCMGraph) {
      * actual simulations.
      */
     private fun getSlowestRunningTime(edges: List<STDCMEdge>): Double {
-        val beginSpeed = edges.first().envelope.beginSpeed
-        val endSpeed = edges.last().envelope.endSpeed
+        val beginSpeed = edges.first().beginSpeed
+        val endSpeed = edges.last().endSpeed
         val blockRanges =
             edges.map {
                 PathfindingEdgeRangeId(
