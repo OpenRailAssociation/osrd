@@ -62,7 +62,7 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
                 timeStep,
                 comfort,
                 trainTag,
-                areSpeedsEqual(0.0, ranges.last().edge.envelope.endSpeed)
+                areSpeedsEqual(0.0, ranges.last().edge.endSpeed)
             )
         val departureTime = computeDepartureTime(ranges, startTime)
         val withAllowance =

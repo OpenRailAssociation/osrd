@@ -1,9 +1,7 @@
 package fr.sncf.osrd.stdcm.graph
 
-import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
-import fr.sncf.osrd.utils.units.Distance.Companion.fromMeters
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
@@ -13,9 +11,6 @@ data class STDCMEdge(
     val infraExplorer:
         InfraExplorerWithEnvelope, // Instance used to explore the infra, contains the current
     // underlying edge (block)
-    val envelope:
-        Envelope, // Envelope of the train going through the block (starts at t=0). Does not account
-    // for allowances.
     val infraExplorerWithNewEnvelope: InfraExplorerWithEnvelope, // Includes this edge's envelope
     val timeStart: Double, // Time at which the train enters the block
     val maximumAddedDelayAfter:
@@ -41,8 +36,16 @@ data class STDCMEdge(
     val standardAllowanceSpeedFactor: Double, // Speed factor used to account for standard allowance
     // e.g. if we have a 5% standard allowance, this value is 1/1.05.
     val waypointIndex: Int, // Index of the last waypoint passed by this train
-    val endAtStop: Boolean // True if the edge end is a stop
+    val endAtStop: Boolean, // True if the edge end is a stop
+    val beginSpeed: Double, // Speed at the beginning of the edge
+    val endSpeed: Double, // Speed at the end of the edge
+    val length: Length<STDCMEdge>, // Edge length
+    val totalTime:
+        Double // How long it takes to go from the beginning to the end of the block, taking the
+    // standard allowance into account
 ) {
+    val block = infraExplorer.getCurrentBlock()
+
     override fun equals(other: Any?): Boolean {
         if (other == null || other.javaClass != STDCMEdge::class.java) return false
         val otherEdge = other as STDCMEdge
@@ -84,7 +87,7 @@ data class STDCMEdge(
             // We move on to the next block
             STDCMNode(
                 totalTime + timeStart,
-                envelope.endSpeed,
+                endSpeed,
                 infraExplorerWithNewEnvelope,
                 totalDepartureTimeShift,
                 maximumAddedDelayAfter,
@@ -98,7 +101,7 @@ data class STDCMEdge(
             val stopDuration = graph.steps[waypointIndex + 1].duration!!
             STDCMNode(
                 totalTime + timeStart + stopDuration,
-                envelope.endSpeed,
+                endSpeed,
                 infraExplorerWithNewEnvelope,
                 totalDepartureTimeShift,
                 maximumAddedDelayAfter,
@@ -119,16 +122,4 @@ data class STDCMEdge(
         val offsetRatio = offset.distance.meters / length.distance.meters
         return timeStart + (totalTime * offsetRatio)
     }
-
-    val block = infraExplorer.getCurrentBlock()
-    val totalTime: Double
-        /**
-         * Returns how long it takes to go from the start to the end of the block, accounting
-         * standard allowance.
-         */
-        get() = envelope.totalTime / standardAllowanceSpeedFactor
-
-    val length: Length<STDCMEdge>
-        /** Returns the length of the edge */
-        get() = Length(fromMeters(envelope.endPos))
 }

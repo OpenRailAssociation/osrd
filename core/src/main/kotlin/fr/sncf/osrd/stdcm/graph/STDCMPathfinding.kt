@@ -129,14 +129,7 @@ private fun totalCostUntilEdgeLocation(
     range: EdgeLocation<STDCMEdge, STDCMEdge>,
     searchTimeRange: Double
 ): Double {
-    val envelope = range.edge.envelope
-    val timeEnd =
-        interpolateTime(
-            envelope,
-            range.offset,
-            range.edge.timeStart,
-            range.edge.standardAllowanceSpeedFactor
-        )
+    val timeEnd = range.edge.getApproximateTimeAtLocation(range.offset)
     if (areTimesEqual(searchTimeRange, 0.0))
         return timeEnd // Avoid multiplying by 0, we can't have time shift anyway
     val pathDuration = timeEnd - range.edge.totalDepartureTimeShift

@@ -1,5 +1,7 @@
 package fr.sncf.osrd.stdcm.graph
 
+import fr.sncf.osrd.envelope.Envelope
+
 /**
  * This class contains all the methods used to backtrack in the graph. We need to backtrack to
  * remove any kind of speed discontinuity, generally because of deceleration spanning over several
@@ -17,29 +19,29 @@ class BacktrackingManager(private val graph: STDCMGraph) {
      * envelope. If no backtracking is needed, nothing is done and the edge is returned as it is. If
      * the new edge is invalid (for example if it would cause conflicts), returns null.
      */
-    fun backtrack(e: STDCMEdge): STDCMEdge? {
-        if (e.previousNode == null) {
+    fun backtrack(edge: STDCMEdge, envelope: Envelope): STDCMEdge? {
+        if (edge.previousNode == null) {
             // First edge of the path
-            assert(e.envelope.beginSpeed == 0.0)
-            return e
+            assert(edge.beginSpeed == 0.0)
+            return edge
         }
-        if (e.previousNode.speed == e.envelope.beginSpeed) {
+        if (edge.previousNode.speed == edge.beginSpeed) {
             // No need to backtrack any further
-            return e
+            return edge
         }
 
         // We try to create a new previous edge with the end speed we need
-        val previousEdge = e.previousNode.previousEdge
+        val previousEdge = edge.previousNode.previousEdge
         val newPreviousEdge =
-            rebuildEdgeBackward(previousEdge, e.envelope.beginSpeed)
+            rebuildEdgeBackward(previousEdge, edge.beginSpeed)
                 ?: return null // No valid result was found
 
         // Create the new edge
         val newNode = newPreviousEdge.getEdgeEnd(graph)
-        return STDCMEdgeBuilder.fromNode(graph, newNode, e.infraExplorer)
-            .setStartOffset(e.envelopeStartOffset)
-            .setEnvelope(e.envelope)
-            .findEdgeSameNextOccupancy(e.timeNextOccupancy)
+        return STDCMEdgeBuilder.fromNode(graph, newNode, edge.infraExplorer)
+            .setStartOffset(edge.envelopeStartOffset)
+            .setEnvelope(envelope)
+            .findEdgeSameNextOccupancy(edge.timeNextOccupancy)
     }
 
     /**
@@ -51,13 +53,28 @@ class BacktrackingManager(private val graph: STDCMGraph) {
      * will be updated accordingly.
      */
     private fun rebuildEdgeBackward(old: STDCMEdge, endSpeed: Double): STDCMEdge? {
+        val oldEnvelope =
+            graph.stdcmSimulations.simulateBlock(
+                graph.rawInfra,
+                graph.rollingStock,
+                graph.comfort,
+                graph.timeStep,
+                graph.tag,
+                old.infraExplorer,
+                BlockSimulationParameters(
+                    old.infraExplorer.getCurrentBlock(),
+                    old.beginSpeed,
+                    old.envelopeStartOffset,
+                    getStopOnBlock(graph, old.block, old.envelopeStartOffset, old.waypointIndex)
+                )
+            )
         val newEnvelope =
             simulateBackwards(
                 graph.rawInfra,
                 old.infraExplorer,
                 endSpeed,
                 old.envelopeStartOffset,
-                old.envelope,
+                oldEnvelope!!,
                 graph
             )
         val prevNode = old.previousNode
