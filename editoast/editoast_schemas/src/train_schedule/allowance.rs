@@ -2,6 +2,15 @@ use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
+editoast_common::schemas! {
+    Allowance,
+    AllowanceValue,
+    AllowanceDistribution,
+    RangeAllowance,
+    EngineeringAllowance,
+    StandardAllowance,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
 #[serde(tag = "allowance_type", rename_all = "lowercase")]
 pub enum Allowance {
