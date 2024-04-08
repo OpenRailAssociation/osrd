@@ -60,6 +60,8 @@ editoast_common::schemas! {
     RollingStockLiveryMetadata,
 }
 
+pub const ROLLING_STOCK_RAILJSON_VERSION: &str = "3.2";
+
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize, ToSchema)]
 pub struct RollingStock {
     pub id: i64,
