@@ -1,12 +1,12 @@
 use std::collections::HashMap;
 
 use editoast_schemas::rolling_stock::LoadingGaugeType;
+use editoast_schemas::rolling_stock::RollingStockLiveryMetadata;
 use editoast_schemas::rolling_stock::RollingStockSupportedSignalingSystems;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
-use super::rolling_stock_livery::RollingStockLiveryMetadata;
 use super::EnergySource;
 use super::Gamma;
 use super::RollingResistance;

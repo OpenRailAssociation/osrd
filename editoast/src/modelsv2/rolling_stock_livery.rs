@@ -3,13 +3,13 @@ use diesel::sql_types::BigInt;
 use diesel::sql_types::Text;
 use diesel_async::AsyncPgConnection;
 use editoast_derive::ModelV2;
+use editoast_schemas::rolling_stock::RollingStockLivery;
+use editoast_schemas::rolling_stock::RollingStockLiveryMetadata;
 use serde::Deserialize;
 use serde::Serialize;
 
 use super::Document;
 use crate::error::Result;
-use crate::schema::rolling_stock::rolling_stock_livery::RollingStockLivery;
-use crate::schema::rolling_stock::rolling_stock_livery::RollingStockLiveryMetadata;
 use crate::tables::rolling_stock_livery;
 
 /// Rolling Stock Livery

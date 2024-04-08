@@ -30,6 +30,10 @@ pub use loading_gauge_type::LoadingGaugeType;
 mod rolling_stock_common;
 pub use rolling_stock_common::RollingStockCommon;
 
+mod rolling_stock_livery;
+pub use rolling_stock_livery::RollingStockLivery;
+pub use rolling_stock_livery::RollingStockLiveryMetadata;
+
 editoast_common::schemas! {
     Gamma,
     ConditionalEffortCurve,
@@ -47,4 +51,6 @@ editoast_common::schemas! {
     RollingStockMetadata,
     LoadingGaugeType,
     RollingStockCommon,
+    RollingStockLivery,
+    RollingStockLiveryMetadata,
 }

@@ -1,14 +1,12 @@
 use editoast_schemas::rolling_stock::RollingStockCommon;
 
 use crate::modelsv2::rolling_stock_model::RollingStockModel;
-use crate::schema::rolling_stock::rolling_stock_livery::RollingStockLiveryMetadata;
 use crate::schema::rolling_stock::RollingStock;
 use crate::schema::rolling_stock::RollingStockWithLiveries;
 
 editoast_common::schemas! {
     RollingStock,
     RollingStockWithLiveries,
-    RollingStockLiveryMetadata,
 }
 
 impl From<RollingStockModel> for RollingStockCommon {
