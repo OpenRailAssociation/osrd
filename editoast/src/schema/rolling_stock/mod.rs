@@ -12,7 +12,6 @@ use utoipa::ToSchema;
 
 editoast_common::schemas! {
     RollingStockWithLiveries,
-    editoast_schemas::rolling_stock::schemas(),
     light_rolling_stock::schemas(),
 }
 

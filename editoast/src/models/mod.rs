@@ -15,7 +15,6 @@ pub use text_array::TextArray;
 pub use timetable::check_train_validity;
 pub use timetable::Timetable;
 pub use timetable::TimetableWithSchedulesDetails;
-pub use train_schedule::Allowance;
 pub use train_schedule::FullResultStops;
 pub use train_schedule::ResultPosition;
 pub use train_schedule::ResultSpeed;
