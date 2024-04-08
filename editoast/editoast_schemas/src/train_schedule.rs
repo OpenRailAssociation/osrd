@@ -6,11 +6,10 @@ pub use allowance::EngineeringAllowance;
 pub use allowance::RangeAllowance;
 pub use allowance::StandardAllowance;
 
+mod rjs_power_restriction_range;
+pub use rjs_power_restriction_range::RjsPowerRestrictionRange;
+
 editoast_common::schemas! {
-    Allowance,
-    AllowanceValue,
-    AllowanceDistribution,
-    RangeAllowance,
-    EngineeringAllowance,
-    StandardAllowance,
+    allowance::schemas(),
+    rjs_power_restriction_range::schemas(),
 }
