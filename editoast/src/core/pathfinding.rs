@@ -1,4 +1,5 @@
 use derivative::Derivative;
+use editoast_schemas::rolling_stock::RollingStock;
 use geos::geojson::Geometry;
 use geos::geojson::Value::LineString;
 use serde::Deserialize;
@@ -9,7 +10,6 @@ use super::Json;
 use crate::models::CurveGraph;
 use crate::models::RoutePath;
 use crate::models::SlopeGraph;
-use crate::schema::rolling_stock::RollingStock;
 use crate::schema::Direction;
 use crate::schema::TrackLocation;
 
