@@ -1,6 +1,6 @@
 use derivative::Derivative;
-use editoast_schemas::rolling_stock::RollingStockMetadata;
 use editoast_schemas::rolling_stock::RollingStockCommon;
+use editoast_schemas::rolling_stock::RollingStockMetadata;
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
 use utoipa::ToSchema;

@@ -1,21 +1,16 @@
 pub mod light_rolling_stock;
-pub mod rolling_stock_livery;
 
 use editoast_schemas::rolling_stock::EnergySource;
 use editoast_schemas::rolling_stock::Gamma;
 use editoast_schemas::rolling_stock::RollingResistance;
-use editoast_schemas::rolling_stock::RollingStockMetadata;
 use editoast_schemas::rolling_stock::RollingStockCommon;
+use editoast_schemas::rolling_stock::RollingStockLiveryMetadata;
+use editoast_schemas::rolling_stock::RollingStockMetadata;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
-use crate::schema::rolling_stock::rolling_stock_livery::RollingStockLivery;
-use crate::schema::rolling_stock::rolling_stock_livery::RollingStockLiveryMetadata;
-
 editoast_common::schemas! {
-    RollingStockLivery,
-    RollingStockLiveryMetadata,
     RollingStockWithLiveries,
     editoast_schemas::rolling_stock::schemas(),
     light_rolling_stock::schemas(),
