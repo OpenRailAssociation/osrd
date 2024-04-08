@@ -1,6 +1,13 @@
+use std::collections::HashMap;
+
 use derivative::Derivative;
-use editoast_schemas::rolling_stock::RollingStockCommon;
+use editoast_schemas::rolling_stock::EffortCurves;
+use editoast_schemas::rolling_stock::EnergySource;
+use editoast_schemas::rolling_stock::Gamma;
+use editoast_schemas::rolling_stock::LoadingGaugeType;
+use editoast_schemas::rolling_stock::RollingResistance;
 use editoast_schemas::rolling_stock::RollingStockMetadata;
+use editoast_schemas::rolling_stock::RollingStockSupportedSignalingSystems;
 use editoast_schemas::rolling_stock::ROLLING_STOCK_RAILJSON_VERSION;
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
@@ -17,8 +24,33 @@ use crate::modelsv2::RollingStockModel;
 #[derivative(PartialEq)]
 #[validate(schema(function = "validate_rolling_stock_form"))]
 pub struct RollingStockForm {
-    #[serde(flatten)]
-    pub common: RollingStockCommon,
+    pub name: String,
+    pub effort_curves: EffortCurves,
+    #[schema(example = "5", required)]
+    pub base_power_class: Option<String>,
+    pub length: f64,
+    pub max_speed: f64,
+    pub startup_time: f64,
+    pub startup_acceleration: f64,
+    pub comfort_acceleration: f64,
+    pub gamma: Gamma,
+    pub inertia_coefficient: f64,
+    pub mass: f64,
+    pub rolling_resistance: RollingResistance,
+    pub loading_gauge: LoadingGaugeType,
+    /// Mapping of power restriction code to power class
+    #[serde(default)]
+    #[schema(required)]
+    pub power_restrictions: HashMap<String, String>,
+    #[serde(default)]
+    pub energy_sources: Vec<EnergySource>,
+    /// The time the train takes before actually using electrical power (in seconds). Is null if the train is not electric.
+    #[schema(example = 5.0)]
+    pub electrical_power_startup_time: Option<f64>,
+    /// The time it takes to raise this train's pantograph in seconds. Is null if the train is not electric.
+    #[schema(example = 15.0)]
+    pub raise_pantograph_time: Option<f64>,
+    pub supported_signaling_systems: RollingStockSupportedSignalingSystems,
     #[derivative(PartialEq = "ignore")]
     pub locked: Option<bool>,
     #[derivative(PartialEq = "ignore")]
@@ -28,26 +60,24 @@ pub struct RollingStockForm {
 impl From<RollingStockModel> for RollingStockForm {
     fn from(value: RollingStockModel) -> Self {
         RollingStockForm {
-            common: RollingStockCommon {
-                name: value.name,
-                effort_curves: value.effort_curves,
-                base_power_class: value.base_power_class,
-                length: value.length,
-                max_speed: value.max_speed,
-                startup_time: value.startup_time,
-                startup_acceleration: value.startup_acceleration,
-                comfort_acceleration: value.comfort_acceleration,
-                gamma: value.gamma,
-                inertia_coefficient: value.inertia_coefficient,
-                mass: value.mass,
-                rolling_resistance: value.rolling_resistance,
-                loading_gauge: value.loading_gauge,
-                power_restrictions: value.power_restrictions,
-                energy_sources: value.energy_sources,
-                electrical_power_startup_time: value.electrical_power_startup_time,
-                raise_pantograph_time: value.raise_pantograph_time,
-                supported_signaling_systems: value.supported_signaling_systems,
-            },
+            name: value.name,
+            effort_curves: value.effort_curves,
+            base_power_class: value.base_power_class,
+            length: value.length,
+            max_speed: value.max_speed,
+            startup_time: value.startup_time,
+            startup_acceleration: value.startup_acceleration,
+            comfort_acceleration: value.comfort_acceleration,
+            gamma: value.gamma,
+            inertia_coefficient: value.inertia_coefficient,
+            mass: value.mass,
+            rolling_resistance: value.rolling_resistance,
+            loading_gauge: value.loading_gauge,
+            power_restrictions: value.power_restrictions,
+            energy_sources: value.energy_sources,
+            electrical_power_startup_time: value.electrical_power_startup_time,
+            raise_pantograph_time: value.raise_pantograph_time,
+            supported_signaling_systems: value.supported_signaling_systems,
             locked: Some(value.locked),
             metadata: value.metadata,
         }
@@ -60,24 +90,24 @@ impl From<RollingStockForm> for Changeset<RollingStockModel> {
             .railjson_version(ROLLING_STOCK_RAILJSON_VERSION.to_string())
             .flat_locked(rolling_stock.locked)
             .metadata(rolling_stock.metadata)
-            .name(rolling_stock.common.name)
-            .effort_curves(rolling_stock.common.effort_curves)
-            .base_power_class(rolling_stock.common.base_power_class)
-            .length(rolling_stock.common.length)
-            .max_speed(rolling_stock.common.max_speed)
-            .startup_time(rolling_stock.common.startup_time)
-            .startup_acceleration(rolling_stock.common.startup_acceleration)
-            .comfort_acceleration(rolling_stock.common.comfort_acceleration)
-            .gamma(rolling_stock.common.gamma)
-            .inertia_coefficient(rolling_stock.common.inertia_coefficient)
-            .mass(rolling_stock.common.mass)
-            .rolling_resistance(rolling_stock.common.rolling_resistance)
-            .loading_gauge(rolling_stock.common.loading_gauge)
-            .power_restrictions(rolling_stock.common.power_restrictions)
-            .energy_sources(rolling_stock.common.energy_sources)
-            .electrical_power_startup_time(rolling_stock.common.electrical_power_startup_time)
-            .raise_pantograph_time(rolling_stock.common.raise_pantograph_time)
-            .supported_signaling_systems(rolling_stock.common.supported_signaling_systems)
+            .name(rolling_stock.name)
+            .effort_curves(rolling_stock.effort_curves)
+            .base_power_class(rolling_stock.base_power_class)
+            .length(rolling_stock.length)
+            .max_speed(rolling_stock.max_speed)
+            .startup_time(rolling_stock.startup_time)
+            .startup_acceleration(rolling_stock.startup_acceleration)
+            .comfort_acceleration(rolling_stock.comfort_acceleration)
+            .gamma(rolling_stock.gamma)
+            .inertia_coefficient(rolling_stock.inertia_coefficient)
+            .mass(rolling_stock.mass)
+            .rolling_resistance(rolling_stock.rolling_resistance)
+            .loading_gauge(rolling_stock.loading_gauge)
+            .power_restrictions(rolling_stock.power_restrictions)
+            .energy_sources(rolling_stock.energy_sources)
+            .electrical_power_startup_time(rolling_stock.electrical_power_startup_time)
+            .raise_pantograph_time(rolling_stock.raise_pantograph_time)
+            .supported_signaling_systems(rolling_stock.supported_signaling_systems)
     }
 }
 
@@ -85,8 +115,8 @@ fn validate_rolling_stock_form(
     rolling_stock_form: &RollingStockForm,
 ) -> std::result::Result<(), ValidationError> {
     validate_rolling_stock(
-        &rolling_stock_form.common.effort_curves,
-        rolling_stock_form.common.electrical_power_startup_time,
-        rolling_stock_form.common.raise_pantograph_time,
+        &rolling_stock_form.effort_curves,
+        rolling_stock_form.electrical_power_startup_time,
+        rolling_stock_form.raise_pantograph_time,
     )
 }

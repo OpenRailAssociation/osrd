@@ -154,7 +154,7 @@ pub mod tests {
         let mut rolling_stock_form: RollingStockForm =
             serde_json::from_str(include_str!("./tests/example_rolling_stock_1.json"))
                 .expect("Unable to parse");
-        rolling_stock_form.common.name = name.to_string();
+        rolling_stock_form.name = name.to_string();
         rolling_stock_form
     }
 
@@ -172,7 +172,7 @@ pub mod tests {
             "./tests/example_rolling_stock_2_energy_sources.json"
         ))
         .expect("Unable to parse");
-        rolling_stock_form.common.name = name.to_string();
+        rolling_stock_form.name = name.to_string();
         rolling_stock_form
     }
 

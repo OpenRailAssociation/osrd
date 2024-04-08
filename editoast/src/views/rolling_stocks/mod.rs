@@ -204,7 +204,7 @@ async fn create(
 ) -> Result<Json<RollingStock>> {
     rolling_stock_form.validate()?;
     let mut db_conn = db_pool.get().await?;
-    let rolling_stock_name = rolling_stock_form.common.name.clone();
+    let rolling_stock_name = rolling_stock_form.name.clone();
     let rolling_stock_changeset: Changeset<RollingStockModel> = rolling_stock_form.into();
 
     let rolling_stock = rolling_stock_changeset
@@ -247,7 +247,7 @@ async fn update(
     let existing_rs_version = existing_rs.version;
     assert_rolling_stock_unlocked(existing_rs.clone())?;
 
-    let rolling_stock_name = rolling_stock_form.common.name.clone();
+    let rolling_stock_name = rolling_stock_form.name.clone();
 
     let existing_rs_form: RollingStockForm = existing_rs.into();
 
@@ -606,7 +606,7 @@ pub mod tests {
 
         // THEN
         let response_body: RollingStock = assert_status_and_read!(response, StatusCode::OK);
-        assert_eq!(response_body.common.name, name);
+        assert_eq!(response_body.name, name);
     }
 
     #[rstest]
@@ -644,27 +644,27 @@ pub mod tests {
 
         let response_body = RollingStockModel::changeset()
             .railjson_version(response_body.railjson_version)
-            .name(response_body.common.name)
-            .effort_curves(response_body.common.effort_curves)
+            .name(response_body.name)
+            .effort_curves(response_body.effort_curves)
             .metadata(response_body.metadata)
-            .length(response_body.common.length)
-            .max_speed(response_body.common.max_speed)
-            .startup_time(response_body.common.startup_time)
-            .startup_acceleration(response_body.common.startup_acceleration)
-            .comfort_acceleration(response_body.common.comfort_acceleration)
-            .gamma(response_body.common.gamma)
-            .inertia_coefficient(response_body.common.inertia_coefficient)
-            .base_power_class(response_body.common.base_power_class)
-            .mass(response_body.common.mass)
-            .rolling_resistance(response_body.common.rolling_resistance)
-            .loading_gauge(response_body.common.loading_gauge)
-            .power_restrictions(response_body.common.power_restrictions)
-            .energy_sources(response_body.common.energy_sources)
-            .electrical_power_startup_time(response_body.common.electrical_power_startup_time)
-            .raise_pantograph_time(response_body.common.raise_pantograph_time)
-            .supported_signaling_systems(response_body.common.supported_signaling_systems);
+            .length(response_body.length)
+            .max_speed(response_body.max_speed)
+            .startup_time(response_body.startup_time)
+            .startup_acceleration(response_body.startup_acceleration)
+            .comfort_acceleration(response_body.comfort_acceleration)
+            .gamma(response_body.gamma)
+            .inertia_coefficient(response_body.inertia_coefficient)
+            .base_power_class(response_body.base_power_class)
+            .mass(response_body.mass)
+            .rolling_resistance(response_body.rolling_resistance)
+            .loading_gauge(response_body.loading_gauge)
+            .power_restrictions(response_body.power_restrictions)
+            .energy_sources(response_body.energy_sources)
+            .electrical_power_startup_time(response_body.electrical_power_startup_time)
+            .raise_pantograph_time(response_body.raise_pantograph_time)
+            .supported_signaling_systems(response_body.supported_signaling_systems);
 
-        assert_eq!(response_body.name, Some(rolling_stock_form.common.name));
+        assert_eq!(response_body.name, Some(rolling_stock_form.name));
 
         // Check rolling_stock deletion
         let delete_request = rolling_stock_delete_request(rolling_stock_id);
@@ -704,7 +704,7 @@ pub mod tests {
         let mut rolling_stock_form = get_fast_rolling_stock_form(
             "fast_rolling_stock_create_rolling_stock_with_base_power_class_empty",
         );
-        rolling_stock_form.common.base_power_class = Some("".to_string());
+        rolling_stock_form.base_power_class = Some("".to_string());
 
         // WHEN
         let post_response = call_service(
@@ -727,7 +727,7 @@ pub mod tests {
         let fast_rolling_stock = named_fast_rolling_stock(name, db_pool.clone()).await;
         let app = create_test_service().await;
         let mut rolling_stock_form = get_fast_rolling_stock_form(name);
-        rolling_stock_form.common.name = fast_rolling_stock.model.name.clone();
+        rolling_stock_form.name = fast_rolling_stock.model.name.clone();
 
         // WHEN
         let post_response = call_service(
@@ -859,8 +859,7 @@ pub mod tests {
         let rolling_stock_id = fast_rolling_stock.id();
 
         let mut rolling_stock_form: RollingStockForm = fast_rolling_stock.model.clone().into();
-        rolling_stock_form.common.name =
-            "other_rolling_stock_update_unlocked_rolling_stock".to_string();
+        rolling_stock_form.name = "other_rolling_stock_update_unlocked_rolling_stock".to_string();
 
         // WHEN
         let response = call_service(

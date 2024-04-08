@@ -5111,33 +5111,6 @@ components:
       - C
       type: object
     RollingStock:
-      allOf:
-      - $ref: '#/components/schemas/RollingStockCommon'
-      - properties:
-          id:
-            format: int64
-            type: integer
-          locked:
-            description: Whether the rolling stock can be edited/deleted or not.
-            type: boolean
-          metadata:
-            $ref: '#/components/schemas/RollingStockMetadata'
-          railjson_version:
-            type: string
-        required:
-        - id
-        - railjson_version
-        - locked
-        - metadata
-        type: object
-    RollingStockComfortType:
-      description: Train comfort that will be used for the simulation
-      enum:
-      - STANDARD
-      - AC
-      - HEATING
-      type: string
-    RollingStockCommon:
       properties:
         base_power_class:
           example: '5'
@@ -5160,6 +5133,9 @@ components:
           type: array
         gamma:
           $ref: '#/components/schemas/Gamma'
+        id:
+          format: int64
+          type: integer
         inertia_coefficient:
           format: double
           type: number
@@ -5168,12 +5144,17 @@ components:
           type: number
         loading_gauge:
           $ref: '#/components/schemas/LoadingGaugeType'
+        locked:
+          description: Whether the rolling stock can be edited/deleted or not.
+          type: boolean
         mass:
           format: double
           type: number
         max_speed:
           format: double
           type: number
+        metadata:
+          $ref: '#/components/schemas/RollingStockMetadata'
         name:
           type: string
         power_restrictions:
@@ -5181,6 +5162,8 @@ components:
             type: string
           description: Mapping of power restriction code to power class
           type: object
+        railjson_version:
+          type: string
         raise_pantograph_time:
           description: The time it takes to raise this train's pantograph in seconds. Is null if the train is not electric.
           example: 15.0
@@ -5198,6 +5181,7 @@ components:
         supported_signaling_systems:
           $ref: '#/components/schemas/RollingStockSupportedSignalingSystems'
       required:
+      - id
       - name
       - effort_curves
       - base_power_class
@@ -5213,7 +5197,17 @@ components:
       - loading_gauge
       - power_restrictions
       - supported_signaling_systems
+      - railjson_version
+      - locked
+      - metadata
       type: object
+    RollingStockComfortType:
+      description: Train comfort that will be used for the simulation
+      enum:
+      - STANDARD
+      - AC
+      - HEATING
+      type: string
     RollingStockError:
       oneOf:
       - enum:
@@ -5278,17 +5272,88 @@ components:
         - BasePowerClassEmpty
         type: string
     RollingStockForm:
-      allOf:
-      - $ref: '#/components/schemas/RollingStockCommon'
-      - properties:
-          locked:
-            nullable: true
-            type: boolean
-          metadata:
-            $ref: '#/components/schemas/RollingStockMetadata'
-        required:
-        - metadata
-        type: object
+      properties:
+        base_power_class:
+          example: '5'
+          nullable: true
+          type: string
+        comfort_acceleration:
+          format: double
+          type: number
+        effort_curves:
+          $ref: '#/components/schemas/EffortCurves'
+        electrical_power_startup_time:
+          description: The time the train takes before actually using electrical power (in seconds). Is null if the train is not electric.
+          example: 5.0
+          format: double
+          nullable: true
+          type: number
+        energy_sources:
+          items:
+            $ref: '#/components/schemas/EnergySource'
+          type: array
+        gamma:
+          $ref: '#/components/schemas/Gamma'
+        inertia_coefficient:
+          format: double
+          type: number
+        length:
+          format: double
+          type: number
+        loading_gauge:
+          $ref: '#/components/schemas/LoadingGaugeType'
+        locked:
+          nullable: true
+          type: boolean
+        mass:
+          format: double
+          type: number
+        max_speed:
+          format: double
+          type: number
+        metadata:
+          $ref: '#/components/schemas/RollingStockMetadata'
+        name:
+          type: string
+        power_restrictions:
+          additionalProperties:
+            type: string
+          description: Mapping of power restriction code to power class
+          type: object
+        raise_pantograph_time:
+          description: The time it takes to raise this train's pantograph in seconds. Is null if the train is not electric.
+          example: 15.0
+          format: double
+          nullable: true
+          type: number
+        rolling_resistance:
+          $ref: '#/components/schemas/RollingResistance'
+        startup_acceleration:
+          format: double
+          type: number
+        startup_time:
+          format: double
+          type: number
+        supported_signaling_systems:
+          $ref: '#/components/schemas/RollingStockSupportedSignalingSystems'
+      required:
+      - name
+      - effort_curves
+      - base_power_class
+      - length
+      - max_speed
+      - startup_time
+      - startup_acceleration
+      - comfort_acceleration
+      - gamma
+      - inertia_coefficient
+      - mass
+      - rolling_resistance
+      - loading_gauge
+      - power_restrictions
+      - supported_signaling_systems
+      - metadata
+      type: object
     RollingStockLivery:
       properties:
         compound_image_id:
