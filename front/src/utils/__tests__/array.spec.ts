@@ -1,4 +1,4 @@
-import { isEmptyArray, splitArrayByFirstLetter } from 'utils/array';
+import { addElementAtIndex, isEmptyArray, splitArrayByFirstLetter } from 'utils/array';
 
 describe('isEmptyArray', () => {
   it('should return true', () => {
@@ -35,5 +35,23 @@ describe('splitArrayByFirstLetter', () => {
     const [digitArray, letterArray] = splitArrayByFirstLetter(array);
     expect(digitArray).toEqual(['%LUNC', '0POIUY', '3MDPC', '5QSDF']);
     expect(letterArray).toEqual(['C1UM', 'USMDI']);
+  });
+});
+
+describe('addElementAtIndex', () => {
+  it('should add the element at the specified index', () => {
+    const array = [1, 3, 4];
+    const updatedArray = addElementAtIndex(array, 1, 2);
+    expect(updatedArray).toEqual([1, 2, 3, 4]);
+  });
+  it('should add the element at the specified index with a negative index', () => {
+    const array = [1, 2, 4];
+    const updatedArray = addElementAtIndex(array, -1, 3);
+    expect(updatedArray).toEqual([1, 2, 3, 4]);
+  });
+  it('should add the new element at the end of the array if index is larger than the length of the array', () => {
+    const array = [1, 2, 3];
+    const updatedArray = addElementAtIndex(array, 5, 4);
+    expect(updatedArray).toEqual([1, 2, 3, 4]);
   });
 });

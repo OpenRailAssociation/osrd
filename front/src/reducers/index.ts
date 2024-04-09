@@ -15,7 +15,6 @@ import mapReducer, { mapInitialState, mapSlice } from 'reducers/map';
 import type { MapState } from 'reducers/map';
 import type { MapViewerState, MapViewerSlice } from 'reducers/mapViewer';
 import mapViewerReducer, { mapViewerInitialState, mapViewerSlice } from 'reducers/mapViewer';
-import type { OsrdConfState, OsrdStdcmConfState } from 'reducers/osrdconf/consts';
 import operationalStudiesConfReducer, {
   operationalStudiesConfSlice,
 } from 'reducers/osrdconf/operationalStudiesConf';
@@ -23,6 +22,7 @@ import stdcmConfReducer, {
   stdcmConfInitialState,
   stdcmConfSlice,
 } from 'reducers/osrdconf/stdcmConf';
+import type { OsrdConfState, OsrdStdcmConfState } from 'reducers/osrdconf/types';
 import osrdsimulationReducer, {
   initialState as osrdSimulationInitialState,
 } from 'reducers/osrdsimulation';

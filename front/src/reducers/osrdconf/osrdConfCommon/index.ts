@@ -1,11 +1,12 @@
 import type { CaseReducer, PayloadAction, PrepareAction } from '@reduxjs/toolkit';
 import type { Draft } from 'immer';
-import { omit } from 'lodash';
+import { compact, omit } from 'lodash';
+import nextId from 'react-id-generator';
 
 import type { PointOnMap } from 'applications/operationalStudies/consts';
+import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
 import { type InfraStateReducers, buildInfraStateReducers, infraState } from 'reducers/infra';
-import type { OsrdConfState } from 'reducers/osrdconf/consts';
-import { computeLinkedOriginTimes, insertVia } from 'reducers/osrdconf/helpers';
+import { computeLinkedOriginTimes, insertVia, insertViaFromMap } from 'reducers/osrdconf/helpers';
 import type {
   OperationalStudiesConfSlice,
   OperationalStudiesConfSliceActions,
@@ -13,7 +14,10 @@ import type {
 import type { OperationalStudiesConfSelectors } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import type { StdcmConfSlice, StdcmConfSliceActions } from 'reducers/osrdconf/stdcmConf';
 import type { StdcmConfSelectors } from 'reducers/osrdconf/stdcmConf/selectors';
+import type { OsrdConfState, PathStep } from 'reducers/osrdconf/types';
+import { addElementAtIndex, removeElementAtIndex, replaceElementAtIndex } from 'utils/array';
 import { formatIsoDate } from 'utils/date';
+import type { ArrayElement } from 'utils/types';
 
 export const defaultCommonConf: OsrdConfState = {
   name: '',
@@ -51,6 +55,8 @@ export const defaultCommonConf: OsrdConfState = {
   trainScheduleIDsToModify: [],
   ...infraState,
   featureInfoClick: { displayPopup: false },
+  // Corresponds to origin and destination not defined
+  pathSteps: [null, null],
 };
 
 interface CommonConfReducers<S extends OsrdConfState> extends InfraStateReducers<S> {
@@ -100,6 +106,17 @@ interface CommonConfReducers<S extends OsrdConfState> extends InfraStateReducers
   ['updatePowerRestrictionRanges']: CaseReducer<S, PayloadAction<S['powerRestrictionRanges']>>;
   ['updateTrainScheduleIDsToModify']: CaseReducer<S, PayloadAction<S['trainScheduleIDsToModify']>>;
   ['updateFeatureInfoClick']: CaseReducer<S, PayloadAction<S['featureInfoClick']>>;
+  ['updateOriginV2']: CaseReducer<S, PayloadAction<ArrayElement<S['pathSteps']>>>;
+  ['updateDestinationV2']: CaseReducer<S, PayloadAction<ArrayElement<S['pathSteps']>>>;
+  ['deleteItineraryV2']: CaseReducer<S>;
+  ['clearViasV2']: CaseReducer<S>;
+  ['deleteViaV2']: CaseReducer<S, PayloadAction<number>>;
+  ['addViaV2']: CaseReducer<S, PayloadAction<PointOnMap>>;
+  ['moveVia']: {
+    reducer: CaseReducer<S, PayloadAction<S['pathSteps']>>;
+    prepare: PrepareAction<S['pathSteps']>;
+  };
+  ['upsertViaFromSuggestedOP']: CaseReducer<S, PayloadAction<SuggestedOP>>;
 }
 
 export function buildCommonConfReducers<S extends OsrdConfState>(): CommonConfReducers<S> {
@@ -295,6 +312,71 @@ export function buildCommonConfReducers<S extends OsrdConfState>(): CommonConfRe
     updateFeatureInfoClick(state: Draft<S>, action: PayloadAction<S['featureInfoClick']>) {
       const feature = omit(action.payload.feature, ['_vectorTileFeature']);
       state.featureInfoClick = { ...action.payload, feature };
+    },
+    updateOriginV2(state: Draft<S>, action: PayloadAction<ArrayElement<S['pathSteps']>>) {
+      state.pathSteps = replaceElementAtIndex(state.pathSteps, 0, action.payload);
+    },
+    updateDestinationV2(state: Draft<S>, action: PayloadAction<ArrayElement<S['pathSteps']>>) {
+      state.pathSteps = replaceElementAtIndex(
+        state.pathSteps,
+        state.pathSteps.length - 1,
+        action.payload
+      );
+    },
+    deleteItineraryV2(state: Draft<S>) {
+      state.pathSteps = [null, null];
+    },
+    clearViasV2(state: Draft<S>) {
+      state.pathSteps = [state.pathSteps[0], state.pathSteps[state.pathSteps.length - 1]];
+    },
+    deleteViaV2(state: Draft<S>, action: PayloadAction<number>) {
+      // Index takes count of the origin in the array
+      state.pathSteps = removeElementAtIndex(state.pathSteps, action.payload + 1);
+    },
+    addViaV2(state: Draft<S>, action: PayloadAction<PointOnMap>) {
+      state.pathSteps = insertViaFromMap(state.pathSteps, action.payload);
+    },
+    moveVia: {
+      reducer: (state: Draft<S>, action: PayloadAction<S['pathSteps']>) => {
+        state.pathSteps = action.payload;
+      },
+      prepare: (vias: S['pathSteps'], from: number, to: number) => {
+        const newVias = Array.from(vias);
+        // Index takes count of the origin in the array
+        const itemToPermute = newVias.slice(from + 1, from + 2);
+        newVias.splice(from + 1, 1); // Remove it from array
+        newVias.splice(to + 1, 0, itemToPermute[0]); // Replace to right position
+        return { payload: newVias };
+      },
+    },
+    upsertViaFromSuggestedOP(state: Draft<S>, action: PayloadAction<SuggestedOP>) {
+      // We know that, at this point, origin and destination are defined because pathfinding has been done
+      const index = compact(state.pathSteps).findIndex(
+        (step) => step.positionOnPath! >= action.payload.positionOnPath
+      );
+
+      const newVia: PathStep = {
+        coordinates: action.payload.coordinates,
+        id: action.payload.stepId || nextId(),
+        positionOnPath: action.payload.positionOnPath,
+        stop_for: action.payload.stopFor,
+        arrival: action.payload.arrival,
+        locked: action.payload.locked,
+        deleted: action.payload.deleted,
+        ...(action.payload.uic
+          ? { uic: action.payload.uic }
+          : {
+              track: action.payload.track,
+              offset: action.payload.offsetOnTrack,
+            }),
+      };
+
+      // StepId is undefined if the suggestedOP isn't a via yet
+      if (action.payload.stepId) {
+        state.pathSteps = replaceElementAtIndex(state.pathSteps, index, newVia);
+      } else {
+        state.pathSteps = addElementAtIndex(state.pathSteps, index, newVia);
+      }
     },
   };
 }

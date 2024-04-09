@@ -2,7 +2,7 @@ import type { Dispatch } from 'redux';
 
 import { formatAllowances } from 'modules/trainschedule/components/ManageTrainSchedule/Allowances/helpers';
 import { setFailure } from 'reducers/main';
-import type { OsrdConfState } from 'reducers/osrdconf/consts';
+import type { OsrdConfState } from 'reducers/osrdconf/types';
 import { kmhToMs } from 'utils/physics';
 import { time2sec } from 'utils/timeManipulation';
 

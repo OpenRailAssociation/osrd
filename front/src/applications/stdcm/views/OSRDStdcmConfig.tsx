@@ -18,7 +18,7 @@ import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/compon
 import ScenarioExplorer from 'modules/scenario/components/ScenarioExplorer';
 import StdcmAllowances from 'modules/stdcmAllowances/components/StdcmAllowances';
 import { Map } from 'modules/trainschedule/components/ManageTrainSchedule';
-import type { OsrdStdcmConfState } from 'reducers/osrdconf/consts';
+import type { OsrdStdcmConfState } from 'reducers/osrdconf/types';
 import { getSelectedTrain } from 'reducers/osrdsimulation/selectors';
 
 type OSRDStdcmConfigProps = {

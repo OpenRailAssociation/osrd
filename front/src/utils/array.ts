@@ -44,3 +44,9 @@ export function replaceElementAtIndex<T, K extends Readonly<T[]>>(
 }
 
 export const removeDuplicates = <T>(array: T[]) => [...new Set(array)];
+
+export const addElementAtIndex = <T>(array: T[], indexToAdd: number, newElement: T) => {
+  const result = [...array];
+  result.splice(indexToAdd, 0, newElement);
+  return result;
+};

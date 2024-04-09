@@ -1,8 +1,8 @@
 import type { RootState } from 'reducers';
 import buildInfraStateSelectors from 'reducers/infra/selectors';
-import type { OsrdConfState } from 'reducers/osrdconf/consts';
 import type { OperationalStudiesConfSlice } from 'reducers/osrdconf/operationalStudiesConf';
 import type { StdcmConfSlice } from 'reducers/osrdconf/stdcmConf';
+import type { OsrdConfState } from 'reducers/osrdconf/types';
 import { makeSubSelector } from 'utils/selectors';
 
 const buildCommonConfSelectors = <ConfState extends OsrdConfState>(
@@ -10,6 +10,9 @@ const buildCommonConfSelectors = <ConfState extends OsrdConfState>(
 ) => {
   const getConf = (state: RootState) => state[slice.name] as ConfState;
   const makeOsrdConfSelector = makeSubSelector<ConfState>(getConf);
+
+  const getPathSteps = makeOsrdConfSelector('pathSteps');
+
   return {
     ...buildInfraStateSelectors(slice),
     getConf,
@@ -47,6 +50,21 @@ const buildCommonConfSelectors = <ConfState extends OsrdConfState>(
     getPowerRestrictionRanges: makeOsrdConfSelector('powerRestrictionRanges'),
     getTrainScheduleIDsToModify: makeOsrdConfSelector('trainScheduleIDsToModify'),
     getFeatureInfoClick: makeOsrdConfSelector('featureInfoClick'),
+    getPathSteps,
+    getOriginV2: (state: RootState) => {
+      const pathSteps = getPathSteps(state);
+      return pathSteps[0];
+    },
+    getDestinationV2: (state: RootState) => {
+      const pathSteps = getPathSteps(state);
+      return pathSteps[pathSteps.length - 1];
+    },
+    getViasV2: (state: RootState) => {
+      const pathSteps = getPathSteps(state);
+      pathSteps.shift();
+      pathSteps.pop();
+      return pathSteps;
+    },
   };
 };
 
