@@ -4,7 +4,7 @@ use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
-use crate::schema::TrackRange;
+use editoast_schemas::infra::TrackRange;
 
 #[derive(Debug, Serialize, Deserialize, PartialEq, Clone, ToSchema)]
 pub struct ElectricalProfile {

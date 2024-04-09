@@ -25,13 +25,13 @@ use crate::infra_cache::ObjectCache;
 use crate::modelsv2::prelude::*;
 use crate::modelsv2::Infra;
 use crate::schema::InfraError;
-use crate::schema::OSRDIdentified as _;
-use crate::schema::OSRDObject;
-use crate::schema::ObjectRef;
-use crate::schema::ObjectType;
 use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraIdParam;
 use crate::DbPool;
+use editoast_schemas::primitives::OSRDIdentified as _;
+use editoast_schemas::primitives::OSRDObject;
+use editoast_schemas::primitives::ObjectRef;
+use editoast_schemas::primitives::ObjectType;
 
 mod buffer_stop;
 mod detector;
@@ -333,16 +333,12 @@ mod tests {
     use crate::infra_cache::operation::Operation;
     use crate::infra_cache::operation::RailjsonObject;
     use crate::infra_cache::InfraCacheEditoastError;
-    use crate::schema::ApplicableDirectionsTrackRange;
     use crate::schema::BufferStop;
     use crate::schema::BufferStopCache;
     use crate::schema::BufferStopExtension;
     use crate::schema::Detector;
     use crate::schema::DetectorCache;
     use crate::schema::Electrification;
-    use crate::schema::Endpoint;
-    use crate::schema::ObjectRef;
-    use crate::schema::ObjectType;
     use crate::schema::OperationalPoint;
     use crate::schema::OperationalPointPart;
     use crate::schema::Route;
@@ -351,12 +347,16 @@ mod tests {
     use crate::schema::Slope;
     use crate::schema::SpeedSection;
     use crate::schema::Switch;
-    use crate::schema::TrackEndpoint;
     use crate::schema::TrackSection;
-    use crate::schema::Waypoint;
     use crate::views::pagination::PaginatedResponse;
     use crate::views::tests::create_test_service;
     use editoast_common::Identifier;
+    use editoast_schemas::infra::ApplicableDirectionsTrackRange;
+    use editoast_schemas::infra::Endpoint;
+    use editoast_schemas::infra::TrackEndpoint;
+    use editoast_schemas::infra::Waypoint;
+    use editoast_schemas::primitives::ObjectRef;
+    use editoast_schemas::primitives::ObjectType;
 
     async fn get_infra_cache(infra: &Infra) -> InfraCache {
         InfraCache::load(&mut db_pool().get().await.unwrap(), infra)

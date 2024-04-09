@@ -22,11 +22,11 @@ use crate::infra_cache::Graph;
 use crate::infra_cache::InfraCache;
 use crate::modelsv2::prelude::*;
 use crate::modelsv2::Infra;
-use crate::schema::DirectionalTrackRange;
 use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraIdParam;
 use crate::views::params::List;
 use crate::DbPool;
+use editoast_schemas::infra::DirectionalTrackRange;
 
 crate::routes! {
     "/routes" => {
@@ -241,10 +241,10 @@ mod tests {
     use crate::schema::Detector;
     use crate::schema::Route;
     use crate::schema::TrackSection;
-    use crate::schema::Waypoint;
     use crate::views::infra::routes::RoutesResponse;
     use crate::views::infra::routes::WaypointType;
     use crate::views::tests::create_test_service;
+    use editoast_schemas::infra::Waypoint;
 
     #[rstest]
     async fn get_routes_nodes() {

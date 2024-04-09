@@ -4,23 +4,13 @@ use editoast_common::rangemap_utils::clip_range_map;
 use editoast_common::rangemap_utils::extend_range_map;
 use editoast_common::rangemap_utils::travel_range_map;
 use editoast_common::rangemap_utils::Float;
-use editoast_common::rangemap_utils::TravelDir;
 use rangemap::RangeMap;
 
 use crate::models::pathfinding::Pathfinding;
-use crate::schema::Direction;
+use editoast_schemas::infra::Direction;
 
 /// A map of track IDs to range maps
 pub type TrackMap<T> = HashMap<String, RangeMap<Float, T>>;
-
-impl From<Direction> for TravelDir {
-    fn from(val: Direction) -> TravelDir {
-        match val {
-            Direction::StartToStop => TravelDir::StartToStop,
-            Direction::StopToStart => TravelDir::StopToStart,
-        }
-    }
-}
 
 pub fn make_path_range_map<T: Eq + Clone>(
     value_maps_by_track: &TrackMap<T>,

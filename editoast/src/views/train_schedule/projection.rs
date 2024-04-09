@@ -4,8 +4,8 @@ use serde::Deserialize;
 use serde::Serialize;
 
 use crate::models::PathfindingPayload;
-use crate::schema::DirectionalTrackRange;
 use editoast_common::Identifier;
+use editoast_schemas::infra::DirectionalTrackRange;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Projection {
@@ -184,7 +184,7 @@ pub mod tests {
 
     use super::*;
     use crate::models::RoutePath;
-    use crate::schema::Direction;
+    use editoast_schemas::infra::Direction;
 
     #[test]
     fn test_intersect() {

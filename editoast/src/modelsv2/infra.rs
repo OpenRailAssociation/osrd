@@ -30,13 +30,13 @@ use crate::modelsv2::get_table;
 use crate::modelsv2::prelude::*;
 use crate::modelsv2::railjson::persist_railjson;
 use crate::modelsv2::Create;
-use crate::schema::ObjectType;
 use crate::schema::RailJson;
 use crate::schema::RAILJSON_VERSION;
 use crate::tables::infra::dsl;
 use crate::views::pagination::Paginate;
 use crate::views::pagination::PaginatedResponse;
 use crate::DbPool;
+use editoast_schemas::primitives::ObjectType;
 
 /// The default version of a newly created infrastructure
 ///
@@ -246,6 +246,7 @@ pub mod tests {
     use diesel_async::scoped_futures::ScopedFutureExt;
     use diesel_async::AsyncConnection;
     use diesel_async::AsyncPgConnection as PgConnection;
+    use editoast_schemas::primitives::OSRDIdentified;
     use rstest::rstest;
     use uuid::Uuid;
 

@@ -4,19 +4,19 @@ use derivative::Derivative;
 use serde::Deserialize;
 use serde::Serialize;
 
-use super::Direction;
-use super::DirectionalTrackRange;
-use super::Endpoint;
-use super::OSRDIdentified;
-use super::OSRDTyped;
-use super::ObjectType;
-use super::TrackEndpoint;
-use super::Waypoint;
 use crate::infra_cache::Cache;
 use crate::infra_cache::Graph;
 use crate::infra_cache::InfraCache;
 use crate::infra_cache::ObjectCache;
 use editoast_common::Identifier;
+use editoast_schemas::infra::Direction;
+use editoast_schemas::infra::DirectionalTrackRange;
+use editoast_schemas::infra::Endpoint;
+use editoast_schemas::infra::TrackEndpoint;
+use editoast_schemas::infra::Waypoint;
+use editoast_schemas::primitives::OSRDIdentified;
+use editoast_schemas::primitives::OSRDTyped;
+use editoast_schemas::primitives::ObjectType;
 
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]

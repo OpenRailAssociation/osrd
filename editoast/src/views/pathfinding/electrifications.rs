@@ -20,12 +20,12 @@ use crate::models::pathfinding::Pathfinding;
 use crate::models::Retrieve;
 use crate::modelsv2::Infra;
 use crate::modelsv2::Retrieve as RetrieveV2;
-use crate::schema::ObjectType;
 use crate::views::pathfinding::path_rangemap::make_path_range_map;
 use crate::views::pathfinding::path_rangemap::TrackMap;
 use crate::views::pathfinding::PathfindingError;
 use crate::views::pathfinding::PathfindingIdParam;
 use crate::DbPool;
+use editoast_schemas::primitives::ObjectType;
 
 crate::routes! {
     electrifications_on_path,
@@ -150,10 +150,10 @@ pub mod tests {
     use crate::models::pathfinding::tests::simple_pathfinding_fixture;
     use crate::modelsv2::prelude::*;
     use crate::modelsv2::ElectrificationModel;
-    use crate::schema::ApplicableDirections;
-    use crate::schema::ApplicableDirectionsTrackRange;
     use crate::schema::Electrification as ElectrificationSchema;
     use crate::views::tests::create_test_service;
+    use editoast_schemas::infra::ApplicableDirections;
+    use editoast_schemas::infra::ApplicableDirectionsTrackRange;
 
     #[fixture]
     fn simple_mode_map() -> TrackMap<String> {

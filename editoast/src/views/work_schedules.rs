@@ -21,8 +21,8 @@ use crate::modelsv2::Changeset;
 use crate::modelsv2::Create;
 use crate::modelsv2::CreateBatch;
 use crate::modelsv2::Model;
-use crate::schema::TrackRange;
 use crate::DbPool;
+use editoast_schemas::infra::TrackRange;
 
 crate::routes! {
     "/work_schedules" => {

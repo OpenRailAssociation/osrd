@@ -6,9 +6,9 @@ use super::new_ref_fix_delete_pair;
 use super::Fix;
 use crate::schema::InfraError;
 use crate::schema::InfraErrorType;
-use crate::schema::OSRDObject as _;
-use crate::schema::ObjectRef;
 use crate::schema::OperationalPointCache;
+use editoast_schemas::primitives::OSRDObject as _;
+use editoast_schemas::primitives::ObjectRef;
 
 pub fn fix_operational_point(
     operational_point: &OperationalPointCache,

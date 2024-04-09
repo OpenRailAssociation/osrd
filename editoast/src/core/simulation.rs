@@ -19,7 +19,7 @@ use crate::models::RoutePath;
 use crate::models::ScheduledPoint;
 use crate::models::SignalSighting;
 use crate::models::ZoneUpdate;
-use crate::schema::TrackLocation;
+use editoast_schemas::infra::TrackLocation;
 
 editoast_common::schemas! {
     SignalUpdate,

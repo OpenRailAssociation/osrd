@@ -4,14 +4,14 @@ use derivative::Derivative;
 use serde::Deserialize;
 use serde::Serialize;
 
-use super::OSRDIdentified;
-use super::OSRDTyped;
-use super::ObjectType;
-use super::TrackEndpoint;
 use crate::infra_cache::Cache;
 use crate::infra_cache::ObjectCache;
 use editoast_common::Identifier;
 use editoast_common::NonBlankString;
+use editoast_schemas::infra::TrackEndpoint;
+use editoast_schemas::primitives::OSRDIdentified;
+use editoast_schemas::primitives::OSRDTyped;
+use editoast_schemas::primitives::ObjectType;
 
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]

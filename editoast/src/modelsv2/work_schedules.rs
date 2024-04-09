@@ -1,6 +1,6 @@
-use crate::schema::TrackRange;
 use chrono::NaiveDateTime;
 use editoast_derive::ModelV2;
+use editoast_schemas::infra::TrackRange;
 use strum::FromRepr;
 
 use serde::Deserialize;

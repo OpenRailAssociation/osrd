@@ -8,9 +8,7 @@ use actix_web::web::Data;
 use actix_web::web::Json;
 use actix_web::web::Path;
 use diesel_async::AsyncPgConnection as PgConnection;
-use editoast_common::Identifier;
 use editoast_schemas::rolling_stock::LoadingGaugeType;
-use editoast_schemas::track_offset::TrackOffset;
 use editoast_schemas::train_schedule::PathItemLocation;
 use serde::Deserialize;
 use serde::Serialize;
@@ -33,6 +31,8 @@ use crate::views::get_app_version;
 use crate::views::v2::path::PathfindingError;
 use crate::views::v2::path::TrackRange;
 use crate::DbPool;
+use editoast_common::Identifier;
+use editoast_schemas::infra::TrackOffset;
 
 type TrackOffsetResult = std::result::Result<Vec<Vec<TrackOffset>>, PathfindingResult>;
 

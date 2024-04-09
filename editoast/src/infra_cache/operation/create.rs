@@ -16,9 +16,6 @@ use crate::schema::BufferStop;
 use crate::schema::Detector;
 use crate::schema::Electrification;
 use crate::schema::NeutralSection;
-use crate::schema::OSRDIdentified;
-use crate::schema::OSRDObject;
-use crate::schema::ObjectType;
 use crate::schema::OperationalPoint;
 use crate::schema::Route;
 use crate::schema::Signal;
@@ -26,6 +23,9 @@ use crate::schema::SpeedSection;
 use crate::schema::Switch;
 use crate::schema::SwitchType;
 use crate::schema::TrackSection;
+use editoast_schemas::primitives::OSRDIdentified;
+use editoast_schemas::primitives::OSRDObject;
+use editoast_schemas::primitives::ObjectType;
 
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(tag = "obj_type", deny_unknown_fields)]

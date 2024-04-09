@@ -4,11 +4,11 @@ use crate::generated_data::error::ObjectErrorGenerator;
 use crate::infra_cache::Graph;
 use crate::infra_cache::InfraCache;
 use crate::infra_cache::ObjectCache;
-use crate::schema::Endpoint;
 use crate::schema::InfraError;
-use crate::schema::ObjectRef;
-use crate::schema::ObjectType;
-use crate::schema::TrackEndpoint;
+use editoast_schemas::infra::Endpoint;
+use editoast_schemas::infra::TrackEndpoint;
+use editoast_schemas::primitives::ObjectRef;
+use editoast_schemas::primitives::ObjectType;
 
 // TODO: Use a macro instead to force order and priority continuity
 // Example: `static_priority_array![[check_invalid_ref], [check_out_of_range]]`
@@ -172,9 +172,9 @@ pub mod tests {
     use crate::infra_cache::tests::create_small_infra_cache;
     use crate::infra_cache::tests::create_track_section_cache;
     use crate::infra_cache::Graph;
-    use crate::schema::Endpoint;
-    use crate::schema::ObjectRef;
-    use crate::schema::ObjectType;
+    use editoast_schemas::infra::Endpoint;
+    use editoast_schemas::primitives::ObjectRef;
+    use editoast_schemas::primitives::ObjectType;
 
     #[test]
     fn invalid_ref() {

@@ -4,8 +4,8 @@ use crate::infra_cache::Graph;
 use crate::infra_cache::InfraCache;
 use crate::infra_cache::ObjectCache;
 use crate::schema::InfraError;
-use crate::schema::ObjectRef;
-use crate::schema::ObjectType;
+use editoast_schemas::primitives::ObjectRef;
+use editoast_schemas::primitives::ObjectType;
 
 pub const OBJECT_GENERATORS: [ObjectErrorGenerator<NoContext>; 2] = [
     ObjectErrorGenerator::new(1, check_invalid_ref),
@@ -59,8 +59,8 @@ mod tests {
     use crate::infra_cache::tests::create_signal_cache;
     use crate::infra_cache::tests::create_small_infra_cache;
     use crate::infra_cache::Graph;
-    use crate::schema::ObjectRef;
-    use crate::schema::ObjectType;
+    use editoast_schemas::primitives::ObjectRef;
+    use editoast_schemas::primitives::ObjectType;
 
     #[test]
     fn invalid_ref() {

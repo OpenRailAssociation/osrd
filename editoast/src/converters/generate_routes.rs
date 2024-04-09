@@ -8,6 +8,11 @@ use std::collections::HashMap;
 
 use crate::schema::*;
 use editoast_common::Identifier;
+use editoast_schemas::infra::Direction;
+use editoast_schemas::infra::Endpoint;
+use editoast_schemas::infra::TrackEndpoint;
+use editoast_schemas::infra::Waypoint;
+use editoast_schemas::primitives::OSRDIdentified;
 
 /* Part 1: type definitions */
 // When building the graph, a node can be a trackEndPoint, a detector or a buffer stop
@@ -293,6 +298,8 @@ pub fn routes(railjson: &RailJson) -> Vec<Route> {
 
 #[cfg(test)]
 mod tests {
+    use editoast_schemas::infra::Endpoint;
+
     use super::*;
     fn min_infra() -> RailJson {
         let track = TrackSection {

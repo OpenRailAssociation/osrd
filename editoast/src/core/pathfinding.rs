@@ -1,4 +1,5 @@
 use derivative::Derivative;
+use editoast_schemas::infra::TrackLocation;
 use editoast_schemas::rolling_stock::RollingStock;
 use geos::geojson::Geometry;
 use geos::geojson::Value::LineString;
@@ -10,8 +11,7 @@ use super::Json;
 use crate::models::CurveGraph;
 use crate::models::RoutePath;
 use crate::models::SlopeGraph;
-use crate::schema::Direction;
-use crate::schema::TrackLocation;
+use editoast_schemas::infra::Direction;
 
 pub type PathfindingWaypoints = Vec<Vec<Waypoint>>;
 

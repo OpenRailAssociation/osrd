@@ -153,8 +153,8 @@ mod tests {
     use crate::modelsv2::prelude::*;
     use crate::modelsv2::Infra;
     use crate::schema::electrical_profiles::ElectricalProfile;
-    use crate::schema::TrackRange;
     use crate::views::tests::create_test_service;
+    use editoast_schemas::infra::TrackRange;
 
     #[fixture]
     async fn electrical_profile_set(db_pool: Data<DbPool>) -> TestFixture<ElectricalProfileSet> {

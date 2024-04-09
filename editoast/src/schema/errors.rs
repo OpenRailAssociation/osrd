@@ -2,11 +2,11 @@ use serde::Deserialize;
 use serde::Serialize;
 use strum::VariantNames;
 
-use super::Endpoint;
-use super::OSRDIdentified;
-use super::OSRDObject;
-use super::ObjectType;
-use crate::schema::ObjectRef;
+use editoast_schemas::infra::Endpoint;
+use editoast_schemas::primitives::OSRDIdentified;
+use editoast_schemas::primitives::OSRDObject;
+use editoast_schemas::primitives::ObjectRef;
+use editoast_schemas::primitives::ObjectType;
 
 #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
 #[serde(deny_unknown_fields)]

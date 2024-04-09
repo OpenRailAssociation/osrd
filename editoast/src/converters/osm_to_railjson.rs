@@ -133,6 +133,8 @@ mod tests {
     use crate::converters::*;
     use crate::schema::*;
     use editoast_common::Identifier;
+    use editoast_schemas::infra::ApplicableDirections;
+    use editoast_schemas::infra::TrackEndpoint;
     #[test]
     fn convert_osm_to_railjson() {
         let output = tempfile::NamedTempFile::new().unwrap();
