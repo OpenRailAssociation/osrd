@@ -13,7 +13,7 @@ derivative = "2.2.0"
 editoast_common = { path = "./editoast_common" }
 geos = { version = "8.3.1", features = ["json"] }
 mvt = "0.9.0"
-postgis_diesel = { version = "2.3.0", features = ["serde"] }
+postgis_diesel = { version = "2.3.1", features = ["serde"] }
 rand = "0.8.5"
 rangemap = "1.5.1"
 serde = "1.0.195"
