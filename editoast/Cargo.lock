@@ -3207,9 +3207,9 @@ dependencies = [
 
 [[package]]
 name = "postgis_diesel"
-version = "2.3.0"
+version = "2.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "21a7e0d1732f933a84e97cde01aa34369aab5ef312245547e614b1d6fb07c04b"
+checksum = "d69a45c13765c7c6dce8e0fc3d976e669d4de545529c769f44e55b59a4d76c69"
 dependencies = [
  "byteorder",
  "diesel",
