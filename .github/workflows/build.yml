@@ -637,7 +637,7 @@ jobs:
       - uses: actions/upload-artifact@v3
         if: always()
         with:
-          name: intregration-videos
+          name: integration-videos
           path: front/test-results/
           retention-days: 30
 
@@ -648,6 +648,6 @@ jobs:
       - uses: actions/upload-artifact@v3
         if: always()
         with:
-          name: intregration-container-logs
+          name: integration-container-logs
           path: container-logs
           retention-days: 30
