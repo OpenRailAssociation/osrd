@@ -49,8 +49,8 @@ fun project(
         value("aspect", "300VL")
     }
     leastConstrainingStates[tvm430] = (sigModuleManager.getStateSchema(tvm430)) {
-        value("aspect", "VL")
-    } // FIXME: when TVM 430 is implemented
+        value("aspect", "300VL")
+    }
 
     // Recover blocks from the route path
     val routePath = toRouteIdList(routePathIds)
