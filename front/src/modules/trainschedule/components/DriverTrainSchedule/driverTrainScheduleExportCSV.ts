@@ -1,5 +1,6 @@
 import * as d3 from 'd3';
 
+import type { ElectrificationRange } from 'common/api/osrdEditoastApi';
 import type {
   PositionSpeedTime,
   Regime,
@@ -20,28 +21,36 @@ import type { BaseOrEcoType } from './DriverTrainScheduleTypes';
 enum CSVKeys {
   op = 'op',
   ch = 'ch',
-  lineCode = 'lineCode',
   trackName = 'trackName',
+  time = 'time',
+  seconds = 'seconds',
   position = 'position',
   speed = 'speed',
   speedLimit = 'speedLimit',
-  seconds = 'seconds',
-  time = 'time',
+  lineCode = 'lineCode',
+  electrificationType = 'electrificationType',
+  electrificationMode = 'electrificationMode',
+  electrificationProfile = 'electrificationProfile',
 }
 
 type CSVData = {
-  [key in keyof typeof CSVKeys]: string;
+  [key in keyof typeof CSVKeys]?: string;
 };
 
 type PositionSpeedTimeOP = PositionSpeedTime & {
   speedLimit?: number;
-  op?: '';
-  ch?: '';
-  lineCode?: '';
-  trackName?: '';
+  op?: string;
+  ch?: string;
+  lineCode?: string;
+  trackName?: string;
+  electrificationType?: string;
+  electrificationMode?: string;
+  electrificationProfile?: string;
 };
 
 const pointToComma = (number: number) => number.toString().replace('.', ',');
+const compareOldActualValues = (old?: string, actual?: string) =>
+  old !== undefined && actual === undefined ? old : actual;
 
 const interpolateValue = (
   position: number,
@@ -72,10 +81,12 @@ const getStepSpeedLimit = (position: number, speedLimitList: Train['vmax']) => {
   return speedLimitList[bisector].speed || 0;
 };
 
-// Add OPs inside speedsteps array, gather speedlimit with stop position, and sort the array along position before return
-const overloadWithOPsAndSpeedLimits = (
+// Add OPs inside speedsteps array, gather speedlimit with stop position, add electrification ranges,
+// and sort the array along position before return
+const overloadSteps = (
   trainRegime: Regime,
-  speedLimits: SpeedPosition[]
+  speedLimits: SpeedPosition[],
+  electrificationRanges: ElectrificationRange[]
 ): PositionSpeedTimeOP[] => {
   const speedsAtOps = trainRegime.stops.map((stop) => ({
     position: stop.position,
@@ -92,30 +103,89 @@ const overloadWithOPsAndSpeedLimits = (
     speedLimit: speedLimit.speed,
     time: interpolateValue(speedLimit.position, trainRegime.speeds, 'time'),
   }));
+  const speedsAtElectrificationRanges: PositionSpeedTimeOP[] = [];
+  electrificationRanges.forEach((electrification, idx) => {
+    const electrificationType = electrification.electrificationUsage.object_type;
+    const electrificationMode =
+      electrificationType === 'Electrified' ? electrification.electrificationUsage.mode : '';
+    const electrificationProfile =
+      electrificationType === 'Electrified' && electrification.electrificationUsage.profile
+        ? electrification.electrificationUsage.profile
+        : '';
+    const electrificationStart = electrification.start;
+
+    speedsAtElectrificationRanges.push({
+      position: electrificationStart,
+      speed: interpolateValue(electrificationStart, trainRegime.speeds, 'speed'),
+      electrificationType,
+      electrificationMode,
+      electrificationProfile,
+      time: interpolateValue(electrificationStart, trainRegime.speeds, 'time'),
+    });
+
+    // ElectrificationRanges could not be continuous, so we've to handle the case of
+    // empty ranges: when previousStop isn't equal to nextStart, we add a one-meter away
+    // step with empty values to ensure correct spread of information along all steps
+    if (
+      electrificationRanges[idx + 1] &&
+      electrification.stop < electrificationRanges[idx + 1].start
+    ) {
+      speedsAtElectrificationRanges.push({
+        position: electrification.stop + 1,
+        speed: interpolateValue(electrification.stop + 1, trainRegime.speeds, 'speed'),
+        electrificationType: '',
+        electrificationMode: '',
+        electrificationProfile: '',
+        time: interpolateValue(electrification.stop + 1, trainRegime.speeds, 'time'),
+      });
+    }
+  });
 
   const speedsWithOPsAndSpeedLimits = trainRegime.speeds.concat(
     speedsAtOps,
-    speedsAtSpeedLimitChange
+    speedsAtSpeedLimitChange,
+    speedsAtElectrificationRanges
   );
 
   return speedsWithOPsAndSpeedLimits.sort((stepA, stepB) => stepA.position - stepB.position);
 };
 
-function spreadTrackAndLineNames(steps: CSVData[]): CSVData[] {
-  let oldTrackName = '';
-  let oldLineCode = '';
+// Complete empty cells of data between steps for specific columns
+function spreadDataBetweenSteps(steps: CSVData[]): CSVData[] {
+  let oldTrackName: string | undefined;
+  let oldLineCode: string | undefined;
+  let oldElectrificationType: string | undefined;
+  let odlElectrificationMode: string | undefined;
+  let oldElectrificationProfile: string | undefined;
   const newSteps: CSVData[] = [];
   steps.forEach((step) => {
-    const newTrackName =
-      oldTrackName !== '' && step.trackName === '' ? oldTrackName : step.trackName;
-    const newLineCode = oldLineCode !== '' && step.lineCode === '' ? oldLineCode : step.lineCode;
+    const newTrackName = compareOldActualValues(oldTrackName, step.trackName);
+    const newLineCode = compareOldActualValues(oldLineCode, step.lineCode);
+    const newElectrificationType = compareOldActualValues(
+      oldElectrificationType,
+      step.electrificationType
+    );
+    const newElectrificationMode = compareOldActualValues(
+      odlElectrificationMode,
+      step.electrificationMode
+    );
+    const newElectrificationProfile = compareOldActualValues(
+      oldElectrificationProfile,
+      step.electrificationProfile
+    );
     newSteps.push({
       ...step,
       trackName: newTrackName,
       lineCode: newLineCode,
+      electrificationType: newElectrificationType,
+      electrificationMode: newElectrificationMode,
+      electrificationProfile: newElectrificationProfile,
     });
     oldTrackName = newTrackName;
     oldLineCode = newLineCode;
+    oldElectrificationType = newElectrificationType;
+    odlElectrificationMode = newElectrificationMode;
+    oldElectrificationProfile = newElectrificationProfile;
   });
   return newSteps;
 }
@@ -137,20 +207,27 @@ function createFakeLinkWithData(train: Train, baseOrEco: BaseOrEcoType, csvData:
 export default function driverTrainScheduleExportCSV(train: Train, baseOrEco: BaseOrEcoType) {
   const trainRegime = train[baseOrEco];
   if (trainRegime) {
-    const speedsWithOPsAndSpeedLimits = overloadWithOPsAndSpeedLimits(trainRegime, train.vmax);
+    const speedsWithOPsAndSpeedLimits = overloadSteps(
+      trainRegime,
+      train.vmax,
+      train.electrification_ranges
+    );
     const steps = speedsWithOPsAndSpeedLimits.map((speed) => ({
       op: speed.op || '',
       ch: speed.ch || '',
-      lineCode: speed.lineCode || '',
-      trackName: speed.trackName || '',
+      trackName: speed.trackName,
+      time: timestampToHHMMSS(speed.time),
+      seconds: pointToComma(+speed.time.toFixed(1)),
       position: pointToComma(+(speed.position / 1000).toFixed(3)),
       speed: pointToComma(+(speed.speed * 3.6).toFixed(3)),
       speedLimit: pointToComma(
         Math.round((speed.speedLimit ?? getStepSpeedLimit(speed.position, train.vmax)) * 3.6)
       ),
-      seconds: pointToComma(+speed.time.toFixed(1)),
-      time: timestampToHHMMSS(speed.time),
+      lineCode: speed.lineCode,
+      electrificationType: speed.electrificationType,
+      electrificationMode: speed.electrificationMode,
+      electrificationProfile: speed.electrificationProfile,
     }));
-    if (steps) createFakeLinkWithData(train, baseOrEco, spreadTrackAndLineNames(steps));
+    if (steps) createFakeLinkWithData(train, baseOrEco, spreadDataBetweenSteps(steps));
   }
 }
