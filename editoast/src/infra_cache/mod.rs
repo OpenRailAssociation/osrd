@@ -744,7 +744,6 @@ pub mod tests {
     use crate::infra_cache::SwitchCache;
     use crate::map::BoundingBox;
     use crate::modelsv2::infra::tests::test_infra_transaction;
-    use crate::schema::utils::NonBlankString;
     use crate::schema::ApplicableDirections;
     use crate::schema::ApplicableDirectionsTrackRange;
     use crate::schema::Direction;
@@ -761,6 +760,7 @@ pub mod tests {
     use crate::schema::TrackEndpoint;
     use crate::schema::Waypoint;
     use editoast_common::Identifier;
+    use editoast_common::NonBlankString;
 
     #[actix_test]
     async fn load_track_section() {
