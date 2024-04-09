@@ -38,23 +38,14 @@ use utoipa::ToSchema;
 
 editoast_common::schemas! {
     RollingStock,
-    Gamma,
-    ConditionalEffortCurve,
-    EffortCurve,
-    EffortCurves,
-    EffortCurveConditions,
-    ModeEffortCurves,
-    RollingStockComfortType,
-    RollingResistance,
-    EnergySource,
-    EnergyStorage,
-    RefillLaw,
-    SpeedDependantPower,
-    RollingStockSupportedSignalingSystems,
-    RollingStockMetadata,
-    LoadingGaugeType,
-    RollingStockLivery,
-    RollingStockLiveryMetadata,
+    gamma::schemas(),
+    effort_curves::schemas(),
+    energy_source::schemas(),
+    rolling_stock_livery::schemas(),
+    rolling_resistance::schemas(),
+    supported_signaling_systems::schemas(),
+    rolling_stock_metadata::schemas(),
+    loading_gauge_type::schemas(),
 }
 
 pub const ROLLING_STOCK_RAILJSON_VERSION: &str = "3.2";

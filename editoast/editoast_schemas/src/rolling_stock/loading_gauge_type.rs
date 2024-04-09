@@ -3,6 +3,10 @@ use serde::Serialize;
 use strum::FromRepr;
 use utoipa::ToSchema;
 
+editoast_common::schemas! {
+    LoadingGaugeType,
+}
+
 #[derive(Debug, Clone, Copy, Deserialize, Serialize, PartialEq, Eq, ToSchema, Hash, FromRepr)]
 pub enum LoadingGaugeType {
     G1,

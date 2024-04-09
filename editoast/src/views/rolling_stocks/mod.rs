@@ -588,7 +588,6 @@ pub mod tests {
     use crate::fixtures::tests::train_schedule_with_scenario;
     use crate::models::rolling_stock::tests::get_invalid_effort_curves;
     use crate::modelsv2::rolling_stock_model::RollingStockModel;
-    use crate::modelsv2::Model;
     use crate::views::rolling_stocks::rolling_stock_form::RollingStockForm;
     use crate::views::tests::create_test_service;
     use crate::DbPool;
@@ -642,29 +641,7 @@ pub mod tests {
         let response_body: RollingStock = assert_status_and_read!(post_response, StatusCode::OK);
         let rolling_stock_id: i64 = response_body.id;
 
-        let response_body = RollingStockModel::changeset()
-            .railjson_version(response_body.railjson_version)
-            .name(response_body.name)
-            .effort_curves(response_body.effort_curves)
-            .metadata(response_body.metadata)
-            .length(response_body.length)
-            .max_speed(response_body.max_speed)
-            .startup_time(response_body.startup_time)
-            .startup_acceleration(response_body.startup_acceleration)
-            .comfort_acceleration(response_body.comfort_acceleration)
-            .gamma(response_body.gamma)
-            .inertia_coefficient(response_body.inertia_coefficient)
-            .base_power_class(response_body.base_power_class)
-            .mass(response_body.mass)
-            .rolling_resistance(response_body.rolling_resistance)
-            .loading_gauge(response_body.loading_gauge)
-            .power_restrictions(response_body.power_restrictions)
-            .energy_sources(response_body.energy_sources)
-            .electrical_power_startup_time(response_body.electrical_power_startup_time)
-            .raise_pantograph_time(response_body.raise_pantograph_time)
-            .supported_signaling_systems(response_body.supported_signaling_systems);
-
-        assert_eq!(response_body.name, Some(rolling_stock_form.name));
+        assert_eq!(response_body.name, rolling_stock_form.name);
 
         // Check rolling_stock deletion
         let delete_request = rolling_stock_delete_request(rolling_stock_id);

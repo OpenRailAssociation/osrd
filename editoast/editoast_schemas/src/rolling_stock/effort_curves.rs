@@ -7,6 +7,15 @@ use strum::Display;
 use strum::EnumString;
 use utoipa::ToSchema;
 
+editoast_common::schemas! {
+    ConditionalEffortCurve,
+    EffortCurve,
+    EffortCurves,
+    EffortCurveConditions,
+    ModeEffortCurves,
+    RollingStockComfortType,
+}
+
 #[derive(Clone, Debug, Default, PartialEq, Deserialize, Serialize, ToSchema, Hash)]
 #[serde(deny_unknown_fields)]
 pub struct EffortCurves {
