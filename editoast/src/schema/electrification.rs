@@ -2,7 +2,6 @@ use derivative::Derivative;
 use serde::Deserialize;
 use serde::Serialize;
 
-use super::utils::NonBlankString;
 use super::ApplicableDirectionsTrackRange;
 use super::OSRDIdentified;
 use super::OSRDTyped;
@@ -10,6 +9,7 @@ use super::ObjectType;
 use crate::infra_cache::Cache;
 use crate::infra_cache::ObjectCache;
 use editoast_common::Identifier;
+use editoast_common::NonBlankString;
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 #[derivative(Default)]
