@@ -101,7 +101,7 @@ class EngineeringAllowanceManager(private val graph: STDCMGraph) {
                 -1.0
             )
             val builder = OverlayEnvelopeBuilder.backward(maxEffort)
-            builder.addPart(speedupPartBuilder.build())
+            if (speedupPartBuilder.stepCount() > 1) builder.addPart(speedupPartBuilder.build())
             val withSpeedup = builder.build()
 
             val slowdownPartBuilder = EnvelopePartBuilder()
@@ -114,7 +114,8 @@ class EngineeringAllowanceManager(private val graph: STDCMGraph) {
                 )
             EnvelopeDeceleration.decelerate(context, 0.0, beginSpeed, slowdownOverlayBuilder, 1.0)
             val slowdownBuilder = OverlayEnvelopeBuilder.backward(withSpeedup)
-            slowdownBuilder.addPart(slowdownPartBuilder.build())
+            if (slowdownPartBuilder.stepCount() > 1)
+                slowdownBuilder.addPart(slowdownPartBuilder.build())
             val slowestEnvelope = slowdownBuilder.build()
             if (slowestEnvelope.minSpeed == 0.0) return Double.POSITIVE_INFINITY
             return slowestEnvelope.totalTime
