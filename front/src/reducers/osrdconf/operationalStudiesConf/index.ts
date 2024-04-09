@@ -1,7 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
 
-import type { OsrdConfState } from 'reducers/osrdconf/consts';
 import { defaultCommonConf, buildCommonConfReducers } from 'reducers/osrdconf/osrdConfCommon';
+import type { OsrdConfState } from 'reducers/osrdconf/types';
 
 export type OperationalStudiesConfState = OsrdConfState;
 

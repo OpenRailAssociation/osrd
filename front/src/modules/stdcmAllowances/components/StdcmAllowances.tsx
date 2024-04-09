@@ -9,9 +9,9 @@ import type { InputGroupSNCFValue } from 'common/BootstrapSNCF/InputGroupSNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
 import { ALLOWANCE_UNITS_KEYS } from 'modules/stdcmAllowances/allowancesConsts';
-import type { StandardAllowance } from 'reducers/osrdconf/consts';
 import type { StdcmConfSliceActions } from 'reducers/osrdconf/stdcmConf';
 import type { StdcmConfSelectors } from 'reducers/osrdconf/stdcmConf/selectors';
+import type { StandardAllowance } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { convertInputStringToNumber } from 'utils/strings';
 

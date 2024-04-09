@@ -6,7 +6,7 @@ import { getPathfindingQuery } from 'common/Pathfinding/Pathfinding';
 import { createAllowanceValue } from 'modules/stdcmAllowances/allowancesConsts';
 import type { InfraState } from 'reducers/infra';
 import { setFailure } from 'reducers/main';
-import type { OsrdStdcmConfState } from 'reducers/osrdconf/consts';
+import type { OsrdStdcmConfState } from 'reducers/osrdconf/types';
 import { time2sec } from 'utils/timeManipulation';
 
 export default function formatStdcmConf(

@@ -1,16 +1,18 @@
-import { omit } from 'lodash';
+import { last, omit } from 'lodash';
 
 import type { PointOnMap } from 'applications/operationalStudies/consts';
 import type { Allowance, Infra } from 'common/api/osrdEditoastApi';
 import NO_POWER_RESTRICTION from 'modules/powerRestriction/consts';
 import displayPowerRestrictionIntervals from 'modules/powerRestriction/helpers/displayPowerRestrictionIntervals';
 import mergePowerRestrictionRanges from 'modules/trainschedule/components/ManageTrainSchedule/helpers/mergePowerRestrictionRanges';
-import type { OsrdConfState } from 'reducers/osrdconf/consts';
+import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
 import type { OperationalStudiesConfSlice } from 'reducers/osrdconf/operationalStudiesConf';
 import { defaultCommonConf } from 'reducers/osrdconf/osrdConfCommon';
 import commonConfBuilder from 'reducers/osrdconf/osrdConfCommon/__tests__/commonConfBuilder';
 import type { StdcmConfSlice } from 'reducers/osrdconf/stdcmConf';
+import type { OsrdConfState, PathStep } from 'reducers/osrdconf/types';
 import { createStoreWithoutMiddleware } from 'store';
+import { removeElementAtIndex } from 'utils/array';
 
 function createStore(
   slice: OperationalStudiesConfSlice | StdcmConfSlice,
@@ -599,6 +601,224 @@ const testCommonConfReducers = (slice: OperationalStudiesConfSlice | StdcmConfSl
     );
     const state = defaultStore.getState()[slice.name];
     expect(state.trainScheduleIDsToModify).toStrictEqual(newTrainScheduleIDsToModify);
+  });
+
+  it('should handle updateOriginV2', () => {
+    const newOrigin = testDataBuilder.buildPathSteps()[0];
+    defaultStore.dispatch(slice.actions.updateOriginV2(newOrigin));
+    const state = defaultStore.getState()[slice.name];
+    expect(state.pathSteps[0]).toEqual(newOrigin);
+  });
+
+  it('should handle updateDestinationV2', () => {
+    const newDestination = testDataBuilder.buildPathSteps()[2];
+    defaultStore.dispatch(slice.actions.updateDestinationV2(newDestination));
+    const state = defaultStore.getState()[slice.name];
+    expect(last(state.pathSteps)).toEqual(newDestination);
+  });
+
+  it('should handle deleteItineraryV2', () => {
+    const pathSteps = testDataBuilder.buildPathSteps();
+    const store = createStore(slice, {
+      pathSteps,
+    });
+    store.dispatch(slice.actions.deleteItineraryV2());
+    const state = store.getState()[slice.name];
+    expect(state.pathSteps).toEqual([null, null]);
+  });
+
+  it('should handle clearViasV2', () => {
+    const pathSteps = testDataBuilder.buildPathSteps();
+    const store = createStore(slice, {
+      pathSteps,
+    });
+    store.dispatch(slice.actions.clearViasV2());
+    const state = store.getState()[slice.name];
+    expect(state.pathSteps).toEqual([pathSteps[0], last(pathSteps)]);
+  });
+
+  it('should handle deleteViaV2', () => {
+    const pathSteps = testDataBuilder.buildPathSteps();
+    const store = createStore(slice, {
+      pathSteps,
+    });
+    store.dispatch(slice.actions.deleteViaV2(0));
+    const state = store.getState()[slice.name];
+    expect(state.pathSteps).toEqual(removeElementAtIndex(pathSteps, 1));
+  });
+
+  describe('should handle addViaV2', () => {
+    const pathStepsData = testDataBuilder.buildPathSteps();
+    const [brest, rennes, lemans, paris, strasbourg] = pathStepsData;
+
+    const rennesVia = testDataBuilder.buildPointOnMap({
+      id: 'rennes',
+      coordinates: [48.10326700633057, -1.6719908615098822],
+      location: {
+        track_section: '697841c6-6667-11e3-81ff-01f464e0362d',
+        offset: 233.404,
+      },
+    });
+    const lemansVia = testDataBuilder.buildPointOnMap({
+      id: 'lemans',
+      coordinates: [47.99542250806296, 0.1918181738752042],
+      location: {
+        track_section: '60ca8dda-6667-11e3-81ff-01f464e0362d',
+        offset: 426.443,
+      },
+    });
+    const parisVia = testDataBuilder.buildPointOnMap({
+      id: 'paris',
+      coordinates: [48.904852473668086, 2.4369545094357736],
+      location: {
+        track_section: '63c905ee-6667-11e3-81ff-01f464e0362d',
+        offset: 719.258,
+      },
+    });
+
+    it('should handle insertion for a route with no existing via and no origin', () => {
+      const pathSteps = [null, strasbourg];
+      const store = createStore(slice, {
+        pathSteps,
+      });
+
+      store.dispatch(slice.actions.addViaV2(parisVia));
+      const state = store.getState()[slice.name];
+      expect(state.pathSteps).toStrictEqual([null, paris, strasbourg]);
+    });
+
+    it('should handle insertion for a route with no existing via and no destination', () => {
+      const pathSteps = [brest, null];
+      const store = createStore(slice, {
+        pathSteps,
+      });
+
+      store.dispatch(slice.actions.addViaV2(rennesVia));
+      const state = store.getState()[slice.name];
+      expect(state.pathSteps).toStrictEqual([brest, rennes, null]);
+    });
+
+    it('should handle insertion for a route with no existing via', () => {
+      const pathSteps = [brest, strasbourg];
+      const store = createStore(slice, {
+        pathSteps,
+      });
+
+      store.dispatch(slice.actions.addViaV2(lemansVia));
+      const state = store.getState()[slice.name];
+      expect(state.pathSteps).toStrictEqual([brest, lemans, strasbourg]);
+    });
+
+    it('should correctly append a new via point when the existing via is closer to the origin', () => {
+      const pathSteps = [brest, rennes, strasbourg];
+      const store = createStore(slice, {
+        pathSteps,
+      });
+
+      store.dispatch(slice.actions.addViaV2(lemansVia));
+      const state = store.getState()[slice.name];
+      expect(state.pathSteps).toStrictEqual([brest, rennes, lemans, strasbourg]);
+    });
+
+    it('should insert a via between two existing ones based on distance from origin', () => {
+      const pathSteps = [brest, rennes, paris, strasbourg];
+      const store = createStore(slice, {
+        pathSteps,
+      });
+
+      store.dispatch(slice.actions.addViaV2(lemansVia));
+      const state = store.getState()[slice.name];
+      expect(state.pathSteps).toStrictEqual([brest, rennes, lemans, paris, strasbourg]);
+    });
+
+    it('should insert a via at the end of the route', () => {
+      const pathSteps = [brest, rennes, lemans, strasbourg];
+      const store = createStore(slice, {
+        pathSteps,
+      });
+
+      store.dispatch(slice.actions.addViaV2(parisVia));
+      const state = store.getState()[slice.name];
+      expect(state.pathSteps).toStrictEqual([brest, rennes, lemans, paris, strasbourg]);
+    });
+  });
+
+  it('should handle moveVia', () => {
+    const pathSteps = testDataBuilder.buildPathSteps();
+    const [brest, rennes, lemans, paris, strasbourg] = pathSteps;
+
+    const store = createStore(slice, { pathSteps: [brest, rennes, lemans, paris, strasbourg] });
+
+    store.dispatch(slice.actions.moveVia(pathSteps, 0, 2));
+    const state = store.getState()[slice.name];
+    expect(state.pathSteps).toStrictEqual([brest, lemans, paris, rennes, strasbourg]);
+  });
+
+  describe('should handle upsertViaFromSuggestedOP', () => {
+    // For this action pathfinding has already been made so we know
+    // all steps will have a positionOnPath
+    const pathStepsData = testDataBuilder
+      .buildPathSteps()
+      .map((step, i) => step && { ...step, positionOnPath: i * 100 });
+
+    const [brest, rennes, lemans, paris, strasbourg] = pathStepsData;
+
+    it('should insert a new via if it comes from the suggested vias modal', () => {
+      const pathSteps = [brest, rennes, paris, strasbourg];
+      const store = createStore(slice, {
+        pathSteps,
+      });
+
+      const newVia: SuggestedOP = {
+        prId: 'lemans',
+        track: '60ca8dda-6667-11e3-81ff-01f464e0362d',
+        offsetOnTrack: 426.443,
+        positionOnPath: 200,
+        uic: 396002,
+        coordinates: [47.99542250806296, 0.1918181738752042],
+      };
+
+      const insertedVia: PathStep = {
+        id: 'id1', // the id generated by nextId()
+        positionOnPath: 200,
+        uic: 396002,
+        coordinates: [47.99542250806296, 0.1918181738752042],
+      };
+
+      store.dispatch(slice.actions.upsertViaFromSuggestedOP(newVia));
+      const state = store.getState()[slice.name];
+      expect(state.pathSteps).toEqual([brest, rennes, insertedVia, paris, strasbourg]);
+    });
+
+    it('should update an existing via if it comes from the "times and step" table and has been added by slecting it on the map', () => {
+      const pathSteps = [brest, rennes, lemans, paris, strasbourg];
+      const store = createStore(slice, {
+        pathSteps,
+      });
+
+      const newVia: SuggestedOP = {
+        prId: 'lemans',
+        stepId: 'lemans',
+        track: '60ca8dda-6667-11e3-81ff-01f464e0362d',
+        offsetOnTrack: 426.443,
+        positionOnPath: 200,
+        stopFor: 'PT5M',
+        coordinates: [47.99542250806296, 0.1918181738752042],
+      };
+
+      const updatedVia: PathStep = {
+        id: 'lemans',
+        positionOnPath: 200,
+        track: '60ca8dda-6667-11e3-81ff-01f464e0362d',
+        offset: 426.443,
+        stop_for: 'PT5M',
+        coordinates: [47.99542250806296, 0.1918181738752042],
+      };
+
+      store.dispatch(slice.actions.upsertViaFromSuggestedOP(newVia));
+      const state = store.getState()[slice.name];
+      expect(state.pathSteps).toEqual([brest, rennes, updatedVia, paris, strasbourg]);
+    });
   });
 };
 

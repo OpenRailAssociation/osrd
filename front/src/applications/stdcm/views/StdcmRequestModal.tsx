@@ -17,7 +17,7 @@ import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
 import createTrain from 'modules/simulationResult/components/SpaceTimeChart/createTrain';
 import { CHART_AXES } from 'modules/simulationResult/consts';
 import { setFailure } from 'reducers/main';
-import type { OsrdStdcmConfState } from 'reducers/osrdconf/consts';
+import type { OsrdStdcmConfState } from 'reducers/osrdconf/types';
 import {
   updateConsolidatedSimulation,
   updateSelectedTrainId,
