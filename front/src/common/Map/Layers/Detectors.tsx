@@ -35,13 +35,13 @@ export function getDetectorsNameLayerProps(params: {
     type: 'symbol',
     minzoom: 8,
     layout: {
-      'text-field': '{extensions_sncf_kp}',
+      'text-field': '{id}',
       'text-font': ['Roboto Condensed'],
       'text-size': 10,
       'text-anchor': 'left',
       'text-allow-overlap': false,
       'text-ignore-placement': false,
-      'text-offset': [0.5, 0.2],
+      'text-offset': [0.5, 0.9],
       visibility: 'visible',
     },
     paint: {
