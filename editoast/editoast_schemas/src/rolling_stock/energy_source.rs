@@ -2,6 +2,13 @@ use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
+editoast_common::schemas! {
+    EnergySource,
+    EnergyStorage,
+    RefillLaw,
+    SpeedDependantPower,
+}
+
 // Energy sources schema
 
 /// energy source of a rolling stock

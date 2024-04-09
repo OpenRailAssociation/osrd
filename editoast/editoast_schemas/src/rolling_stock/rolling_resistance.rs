@@ -3,6 +3,10 @@ use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
+editoast_common::schemas! {
+    RollingResistance,
+}
+
 #[derive(Clone, Debug, Default, PartialEq, Deserialize, Serialize, ToSchema, Derivative)]
 #[derivative(Hash)]
 #[serde(deny_unknown_fields)]

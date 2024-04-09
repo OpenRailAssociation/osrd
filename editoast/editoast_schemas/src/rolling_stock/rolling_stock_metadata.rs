@@ -2,6 +2,10 @@ use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
+editoast_common::schemas! {
+    RollingStockMetadata,
+}
+
 #[derive(Clone, Debug, Default, PartialEq, Deserialize, Serialize, ToSchema)]
 #[serde(deny_unknown_fields)]
 pub struct RollingStockMetadata {
