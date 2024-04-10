@@ -6,13 +6,13 @@ use std::str::FromStr;
 use chrono::DateTime;
 use chrono::Utc;
 use derivative::Derivative;
+use editoast_schemas::track_offset::TrackOffset;
 use serde::de::Error as SerdeError;
 use serde::Deserialize;
 use serde::Serialize;
 use strum::FromRepr;
 use utoipa::ToSchema;
 
-use crate::schema::TrackOffset;
 use editoast_common::Identifier;
 use editoast_common::NonBlankString;
 use editoast_common::PositiveDuration;

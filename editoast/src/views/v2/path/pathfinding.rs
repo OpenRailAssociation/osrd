@@ -8,7 +8,9 @@ use actix_web::web::Data;
 use actix_web::web::Json;
 use actix_web::web::Path;
 use diesel_async::AsyncPgConnection as PgConnection;
+use editoast_common::Identifier;
 use editoast_schemas::rolling_stock::LoadingGaugeType;
+use editoast_schemas::track_offset::TrackOffset;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
@@ -27,12 +29,10 @@ use crate::redis_utils::RedisClient;
 use crate::redis_utils::RedisConnection;
 use crate::schema::operational_point::OperationalPoint;
 use crate::schema::v2::trainschedule::PathItemLocation;
-use crate::schema::TrackOffset;
 use crate::views::get_app_version;
 use crate::views::v2::path::PathfindingError;
 use crate::views::v2::path::TrackRange;
 use crate::DbPool;
-use editoast_common::Identifier;
 
 type TrackOffsetResult = std::result::Result<Vec<Vec<TrackOffset>>, PathfindingResult>;
 
