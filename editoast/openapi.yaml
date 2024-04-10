@@ -3475,6 +3475,48 @@ components:
       - FR3.3/GB/G2
       - GLOTT
       type: string
+    MarginValue:
+      oneOf:
+      - enum:
+        - None
+        type: string
+      - properties:
+          Percentage:
+            format: double
+            type: number
+        required:
+        - Percentage
+        type: object
+      - properties:
+          MinPerKm:
+            format: double
+            type: number
+        required:
+        - MinPerKm
+        type: object
+    Margins:
+      additionalProperties: false
+      properties:
+        boundaries:
+          items:
+            minLength: 1
+            type: string
+          type: array
+        values:
+          description: |-
+            The values of the margins. Must contains one more element than the boundaries
+            Can be a percentage `X%`, a time in minutes per kilometer `Xmin/km` or `none`
+          example:
+          - none
+          - 5%
+          - 2min/km
+          items:
+            type: string
+          type: array
+      required:
+      - boundaries
+      - values
+      type: object
     MechanicalEnergyConsumedBaseEco:
       properties:
         base:
@@ -3907,6 +3949,93 @@ components:
       items:
         $ref: '#/components/schemas/Patch'
       type: array
+    PathItem:
+      allOf:
+      - description: The location of a path waypoint
+        oneOf:
+        - $ref: '#/components/schemas/TrackOffset'
+        - properties:
+            operational_point:
+              maxLength: 255
+              minLength: 1
+              type: string
+          required:
+          - operational_point
+          type: object
+        - properties:
+            secondary_code:
+              description: An optional secondary code to identify a more specific location
+              nullable: true
+              type: string
+            trigram:
+              minLength: 1
+              type: string
+          required:
+          - trigram
+          type: object
+        - properties:
+            secondary_code:
+              description: An optional secondary code to identify a more specific location
+              nullable: true
+              type: string
+            uic:
+              description: The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point
+              format: int32
+              minimum: 0
+              type: integer
+          required:
+          - uic
+          type: object
+      - properties:
+          deleted:
+            description: |-
+              Metadata given to mark a point as wishing to be deleted by the user.
+              It's useful for soft deleting the point (waiting to fix / remove all references)
+              If true, the train schedule is consider as invalid and must be edited
+            type: boolean
+          id:
+            minLength: 1
+            type: string
+        required:
+        - id
+        type: object
+      description: A location on the path of a train
+    PathItemLocation:
+      description: The location of a path waypoint
+      oneOf:
+      - $ref: '#/components/schemas/TrackOffset'
+      - properties:
+          operational_point:
+            maxLength: 255
+            minLength: 1
+            type: string
+        required:
+        - operational_point
+        type: object
+      - properties:
+          secondary_code:
+            description: An optional secondary code to identify a more specific location
+            nullable: true
+            type: string
+          trigram:
+            minLength: 1
+            type: string
+        required:
+        - trigram
+        type: object
+      - properties:
+          secondary_code:
+            description: An optional secondary code to identify a more specific location
+            nullable: true
+            type: string
+          uic:
+            description: The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point
+            format: int32
+            minimum: 0
+            type: integer
+        required:
+        - uic
+        type: object
     PathProperties:
       description: Properties along a path. Each property is optional since it depends on what the user requests.
       properties:
@@ -5759,6 +5888,23 @@ components:
         - infra_name
         - trains_count
         type: object
+    ScheduleItem:
+      additionalProperties: false
+      properties:
+        arrival:
+          nullable: true
+          type: string
+        at:
+          minLength: 1
+          type: string
+        locked:
+          type: boolean
+        stop_for:
+          nullable: true
+          type: string
+      required:
+      - at
+      type: object
     ScheduledPoint:
       properties:
         path_offset:
