@@ -26,24 +26,44 @@ class TrackNodeDescriptor(
     val delay: Duration,
     val ports: StaticPool<TrackNodePort, EndpointTrackSectionId>,
     val configs: StaticPool<TrackNodeConfig, TrackNodeConfigDescriptor>,
-)
+) {
+    fun getTrackNodeExitPort(
+        config: TrackNodeConfigId,
+        entryPort: TrackNodePortId
+    ): OptStaticIdx<TrackNodePort> {
+        for (link in configs[config].portLinks) {
+            if (link.first == entryPort) return OptStaticIdx(link.second.index)
+            if (link.second == entryPort) return OptStaticIdx(link.first.index)
+        }
+        return OptStaticIdx()
+    }
+
+    fun getPort(trackEndpoint: EndpointTrackSectionId): OptStaticIdx<TrackNodePort> {
+        for (i in 0u until ports.size) {
+            val id = StaticIdx<TrackNodePort>(i)
+            if (ports[id] == trackEndpoint) {
+                return OptStaticIdx(id.index)
+            }
+        }
+        return OptStaticIdx()
+    }
+}
 
 class TrackSectionDescriptor(
     val name: String,
     val chunks: StaticIdxList<TrackChunk>,
     val detectors: StaticIdxList<Detector>,
-    val detectorsOffsets: OffsetList<TrackSection>,
 )
 
 class TrackChunkDescriptor(
+    var track: StaticIdx<TrackSection>,
+    val offset: Offset<TrackSection>,
+    val length: Length<TrackChunk>,
     val geo: LineString,
     val slopes: DirectionalMap<DistanceRangeMap<Double>>,
     val curves: DirectionalMap<DistanceRangeMap<Double>>,
     val gradients: DirectionalMap<DistanceRangeMap<Double>>,
-    val length: Length<TrackChunk>,
     val routes: DirectionalMap<StaticIdxList<Route>>,
-    var track: StaticIdx<TrackSection>,
-    val offset: Offset<TrackSection>,
     var operationalPointParts: StaticIdxList<OperationalPointPart>,
     val loadingGaugeConstraints: DistanceRangeMap<LoadingGaugeConstraint>,
     val electrificationVoltage: DistanceRangeMap<String>,
@@ -133,7 +153,7 @@ data class TrackChunkSignal(
 
 class DetectorDescriptor(
     val trackSection: TrackSectionId,
-    val offset: Offset<TrackSection>,
+    val chunkBoundaryIndex: Int,
     val names: List<String>,
 )
 
@@ -187,6 +207,19 @@ class RawInfraImplFromRjs(
     ): Int {
         val chunkBounds = trackChunksBounds[dirTrackSection.value]
         return chunkBounds.findSegment(offset, dirTrackSection.direction)
+    }
+
+    private fun getDetectorTrackOffset(detector: DetectorId): Offset<TrackSection> {
+        val detectorDescriptor = detectorPool[detector]
+        val chunkBoundaryIndex = detectorDescriptor.chunkBoundaryIndex
+        val trackDescriptor = trackSectionPool[detectorDescriptor.trackSection]
+        if (chunkBoundaryIndex == 0) {
+            assert(trackChunkPool[trackDescriptor.chunks[0]].offset.distance == 0.meters)
+            return Offset(0.meters)
+        }
+        val chunk = trackDescriptor.chunks[chunkBoundaryIndex - 1]
+        val chunkDescriptor = trackChunkPool[chunk]
+        return chunkDescriptor.offset + chunkDescriptor.length.distance
     }
 
     private fun findChunkOffset(
@@ -292,12 +325,10 @@ class RawInfraImplFromRjs(
                 }
 
                 // if the zone path switches to a new track section, then ends with a detector at
-                // the exact start of
-                // this track section, fetch signals on the starting chunk aligned with the zone
-                // path.
+                // the exact start of this track section, fetch signals on the starting chunk
+                // aligned with the zone path.
                 // This hack is required while detectors / signals are allowed to be on switches,
-                // and merging of
-                // track sections connected by links is unimplemented.
+                // and merging of track sections connected by links is unimplemented.
                 val lastChunkTrackSection =
                     trackChunkPool[it.chunks[it.chunks.size - 1].value].track
                 val endDetector = it.exit
@@ -307,7 +338,7 @@ class RawInfraImplFromRjs(
                     // this case should only happen if the detector is _just_ where it shouldn't be:
                     // on a switch
                     assert(
-                        endDetectorDescriptor.offset ==
+                        getDetectorTrackOffset(endDetector.value) ==
                             when (endDetector.direction) {
                                 Direction.INCREASING -> Offset(0.meters)
                                 Direction.DECREASING ->
@@ -475,11 +506,7 @@ class RawInfraImplFromRjs(
         config: TrackNodeConfigId,
         entryPort: TrackNodePortId
     ): OptStaticIdx<TrackNodePort> {
-        for (link in trackNodePool[trackNode].configs[config].portLinks) {
-            if (link.first == entryPort) return OptStaticIdx(link.second.index)
-            if (link.second == entryPort) return OptStaticIdx(link.first.index)
-        }
-        return OptStaticIdx()
+        return trackNodePool[trackNode].getTrackNodeExitPort(config, entryPort)
     }
 
     override fun getTrackNodeDelay(trackNode: TrackNodeId): Duration {
@@ -555,13 +582,7 @@ class RawInfraImplFromRjs(
     ): OptStaticIdx<TrackNodePort> {
         val node = getNextTrackNode(trackSection)
         if (node.isNone) return OptStaticIdx()
-        val nodeDescriptor = trackNodePool[node.asIndex()]
-        val trackEndpoint = trackSection.toEndpoint
-        for (i in 0u until nodeDescriptor.ports.size) {
-            val id = StaticIdx<TrackNodePort>(i)
-            if (nodeDescriptor.ports[id] == trackEndpoint) return OptStaticIdx(id.index)
-        }
-        return OptStaticIdx()
+        return trackNodePool[node.asIndex()].getPort(trackSection.toEndpoint)
     }
 
     override fun getPortConnection(

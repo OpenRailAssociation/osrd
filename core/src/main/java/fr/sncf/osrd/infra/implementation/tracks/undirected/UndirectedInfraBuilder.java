@@ -10,6 +10,7 @@ import static fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType.GB;
 import static fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType.GB1;
 import static fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType.GC;
 import static fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType.GLOTT;
+import static fr.sncf.osrd.sim_infra.api.LoadingGaugeConstraintKt.fromAllowedSet;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
@@ -290,8 +291,8 @@ public class UndirectedInfraBuilder {
             for (var range : limits)
                 if (range.begin <= begin && range.end >= end)
                     allowedTypes.addAll(getCompatibleGaugeTypes(range.category));
-            var blockedTypes = Sets.difference(Sets.newHashSet(RJSLoadingGaugeType.values()), allowedTypes);
-            builder.put(Range.open(begin, end), new LoadingGaugeConstraintImpl(ImmutableSet.copyOf(blockedTypes)));
+
+            builder.put(Range.open(begin, end), fromAllowedSet(allowedTypes));
         }
         return builder.build();
     }

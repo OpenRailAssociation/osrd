@@ -53,7 +53,7 @@ data class TrackSignal(
     val signal: PhysicalSignalId
 )
 
-fun adaptRawInfra(infra: SignalingInfra): RawInfra {
+fun legacyAdaptRawInfra(infra: SignalingInfra): RawInfra {
     val builder = RawInfraBuilderImpl()
     val detectorMap = HashBiMap.create<Detector, DetectorId>()
     val trackNodeMap = HashBiMap.create<Switch, TrackNodeId>()

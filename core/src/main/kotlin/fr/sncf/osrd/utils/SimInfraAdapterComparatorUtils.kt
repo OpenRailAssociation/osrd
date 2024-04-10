@@ -1,21 +1,10 @@
 package fr.sncf.osrd.utils
 
-import fr.sncf.osrd.sim_infra.api.DirDetectorId
-import fr.sncf.osrd.sim_infra.api.DirTrackChunkId
-import fr.sncf.osrd.sim_infra.api.PhysicalSignal
-import fr.sncf.osrd.sim_infra.api.RawInfra
-import fr.sncf.osrd.sim_infra.api.TrackChunk
-import fr.sncf.osrd.sim_infra.api.TrackChunkId
-import fr.sncf.osrd.sim_infra.api.TrackNodeId
-import fr.sncf.osrd.sim_infra.api.TrackNodePortId
-import fr.sncf.osrd.sim_infra.api.TrackSection
-import fr.sncf.osrd.sim_infra.api.ZoneId
-import fr.sncf.osrd.sim_infra.api.ZonePath
-import fr.sncf.osrd.sim_infra.api.ZonePathId
+import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.stdcm.graph.logger
-import fr.sncf.osrd.utils.indexing.StaticIdxList
+import fr.sncf.osrd.utils.indexing.StaticIdx
+import fr.sncf.osrd.utils.indexing.StaticIdxSpace
 import fr.sncf.osrd.utils.units.Offset
-import fr.sncf.osrd.utils.units.OffsetList
 import java.util.Objects
 import kotlin.collections.HashSet
 
@@ -193,6 +182,17 @@ class ComparableNode(simInfra: RawInfra, nodeIdx: TrackNodeId) {
 data class ComparableZone(val name: String, val nodes: Set<String>)
 
 fun assertEqualSimInfra(left: RawInfra, right: RawInfra) {
+    fun <T> compareIndices(f: RawInfra.() -> StaticIdxSpace<T>): StaticIdxSpace<T> {
+        val leftSpace = left.f()
+        val rightSpace = right.f()
+        assert(leftSpace == rightSpace)
+        return leftSpace
+    }
+
+    fun <T, U> compareResult(index: StaticIdx<T>, f: RawInfra.(StaticIdx<T>) -> U) {
+        assert(left.f(index) == right.f(index))
+    }
+
     // detectors
     val leftDetectors = mutableSetOf<String>()
     for (d in left.detectors) {
@@ -312,19 +312,37 @@ fun assertEqualSimInfra(left: RawInfra, right: RawInfra) {
         assert(zone == null || extraRightZones.contains(zone))
     }
 
-    val leftZonePathToSignal =
-        mutableMapOf<ZonePathId, Pair<OffsetList<ZonePath>, StaticIdxList<PhysicalSignal>>>()
-    for (zonePath in left.zonePaths) {
-        leftZonePathToSignal[zonePath] =
-            Pair(left.getSignalPositions(zonePath), left.getSignals(zonePath))
+    for (routeIndex in compareIndices { routes }) {
+        compareResult(routeIndex) { getRouteName(it) }
+        compareResult(routeIndex) { getRouteLength(it) }
+        compareResult(routeIndex) { getChunksOnRoute(it) }
+        compareResult(routeIndex) { getRouteEntry(it) }
+        compareResult(routeIndex) { getRouteExit(it) }
+        compareResult(routeIndex) { getRoutePath(it) }
+        compareResult(routeIndex) { getSpeedLimits(it) }
+        compareResult(routeIndex) { getSpeedLimitStarts(it) }
+        compareResult(routeIndex) { getSpeedLimitEnds(it) }
+        compareResult(routeIndex) { getRouteReleaseZones(it).toList() }
     }
-    val rightZonePathToSignal =
-        mutableMapOf<ZonePathId, Pair<OffsetList<ZonePath>, StaticIdxList<PhysicalSignal>>>()
-    for (zonePath in right.zonePaths) {
-        rightZonePathToSignal[zonePath] =
-            Pair(right.getSignalPositions(zonePath), right.getSignals(zonePath))
-    }
-    assert(leftZonePathToSignal == rightZonePathToSignal)
 
-    // TODO complete simInfra checks
+    for (zonePathIndex in compareIndices { zonePaths }) {
+        compareResult(zonePathIndex) { getZonePathEntry(it) }
+        compareResult(zonePathIndex) { getZonePathExit(it) }
+        compareResult(zonePathIndex) { getZonePathLength(it) }
+        compareResult(zonePathIndex) { getZonePathChunks(it) }
+        compareResult(zonePathIndex) { getSignals(it) }
+        compareResult(zonePathIndex) { getSignalPositions(it) }
+        compareResult(zonePathIndex) { getZonePathMovableElements(it) }
+        compareResult(zonePathIndex) { getZonePathMovableElementsConfigs(it) }
+        compareResult(zonePathIndex) { getZonePathMovableElementsPositions(it) }
+        compareResult(zonePathIndex) { findZonePath(getZonePathEntry(it), getZonePathExit(it)) }
+        compareResult(zonePathIndex) {
+            findZonePath(
+                getZonePathEntry(it),
+                getZonePathExit(it),
+                getZonePathMovableElements(it),
+                getZonePathMovableElementsConfigs(it)
+            )
+        }
+    }
 }

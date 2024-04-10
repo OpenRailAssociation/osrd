@@ -36,6 +36,9 @@ value class OptStaticIdx<T>(private val data: UInt) {
             onSome(asIndex())
         }
     }
+
+    val orNull: StaticIdx<T>?
+        get() = if (isNone) null else asIndex()
 }
 
 @JvmInline
