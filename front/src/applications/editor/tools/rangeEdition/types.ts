@@ -39,6 +39,7 @@ export type SpeedSectionEntity = EditorEntity<
     extensions?: {
       psl_sncf: null | PSLExtension;
     };
+    on_routes?: string[];
   }
 > & {
   objType: 'SpeedSection';

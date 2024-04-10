@@ -118,6 +118,7 @@ const RangeEditionLeftPanel = () => {
       });
       const newEntity = cloneDeep(entity) as SpeedSectionEntity;
       newEntity.properties.track_ranges = trackRanges;
+      newEntity.properties.on_routes = [routeId];
       setState({
         optionsState: { type: 'idle' },
       });
