@@ -1,4 +1,5 @@
 use derivative::Derivative;
+use editoast_schemas::track_offset::TrackOffset;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
@@ -9,7 +10,6 @@ use super::ObjectType;
 use crate::infra_cache::Cache;
 use crate::infra_cache::ObjectCache;
 use crate::modelsv2::OperationalPointModel;
-use crate::schema::TrackOffset;
 use editoast_common::Identifier;
 use editoast_common::NonBlankString;
 
