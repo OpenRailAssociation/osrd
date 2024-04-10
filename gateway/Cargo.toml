@@ -12,22 +12,22 @@ default-members = [".", "actix_auth", "actix_proxy"]
 
 [workspace.dependencies]
 # common utils
-dyn-clone = "1"
+dyn-clone = "1.0.10"
 either = "1"
 env_logger = "0.10"
 futures = "0.3"
-futures-util = "0.3"
-log = "0.4"
-smallvec = "1"
-thiserror = "1"
+futures-util = "0.3.17"
+log = "0.4.8"
+smallvec = "1.10.0"
+thiserror = "1.0.7"
 
 # main crate
 actix-files = "0.6"
 actix-session = "0.8"
-actix-web = "4"
+actix-web = "4.2"
 actix-web-opentelemetry = { version = "0.16.0", features = ["awc", "metrics"] }
-base64ct = "1"
-figment = "0.10"
+base64ct = "1.4"
+figment = "0.10.1"
 humantime = "2"
 humantime-serde = "1"
 opentelemetry = "0.21"
@@ -37,25 +37,25 @@ opentelemetry_sdk = { version = "0.21.2", features = [
   "metrics",
   "rt-tokio-current-thread",
 ] }
-serde = { version = "1", features = ["derive"] }
+serde = { version = "1.0.157", features = ["derive"] }
 serde_json = "1"
 
 # reverse proxy dependencies
 actix = "0.13"
-actix-web-actors = "4"
+actix-web-actors = "4.1"
 awc = { version = "3", features = ["rustls"] } # the http / ws client
 bytestring = "1"
-ipnet = "2"
-percent-encoding = "2"
+ipnet = "2.3"
+percent-encoding = "2.3"
 phf = "0.11"
 
 # actix_auth
 actix-web-httpauth = "0.8"
-openidconnect = { version = "3", default-features = false }
+openidconnect = { version = "3.4", default-features = false }
 reqwest = { version = "0.11", default-features = false, features = [
   "rustls-tls-native-roots",
 ] }
-url = "2"
+url = "2.4"
 
 
 [dependencies]
