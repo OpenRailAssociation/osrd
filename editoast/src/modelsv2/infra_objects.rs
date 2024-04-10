@@ -276,7 +276,7 @@ impl OperationalPointModel {
         use diesel_async::RunQueryDsl;
         let query = {
             "SELECT * FROM infra_object_operational_point
-                WHERE infra_id = $1 AND (data->'extensions'->'sncf'->'trigram')::text = ANY($2)"
+                WHERE infra_id = $1 AND (data->'extensions'->'sncf'->>'trigram')::text = ANY($2)"
         }
         .to_string();
         Ok(sql_query(query)
@@ -291,7 +291,7 @@ impl OperationalPointModel {
 }
 
 #[cfg(test)]
-mod test_persist {
+mod tests_persist {
     use diesel_async::scoped_futures::ScopedFutureExt;
 
     use super::*;
@@ -324,4 +324,36 @@ mod test_persist {
     test_persist!(SpeedSectionModel);
     test_persist!(SwitchTypeModel);
     test_persist!(NeutralSectionModel);
+}
+
+#[cfg(test)]
+mod tests_retrieve {
+    use super::*;
+    use crate::fixtures::tests::db_pool;
+    use crate::fixtures::tests::small_infra;
+
+    #[rstest::rstest]
+    async fn from_trigrams() {
+        let pg_db_pool = db_pool();
+        let small_infra = small_infra(pg_db_pool.clone()).await;
+        let mut conn = pg_db_pool.get().await.unwrap();
+        let trigrams = vec!["MES".to_string(), "WS".to_string()];
+        let res =
+            OperationalPointModel::retrieve_from_trigrams(&mut conn, small_infra.id, &trigrams)
+                .await
+                .expect("Failed to retrieve operational points");
+        assert_eq!(res.len(), 2);
+    }
+
+    #[rstest::rstest]
+    async fn from_uic() {
+        let pg_db_pool = db_pool();
+        let small_infra = small_infra(pg_db_pool.clone()).await;
+        let mut conn = pg_db_pool.get().await.unwrap();
+        let uic = vec![1, 2];
+        let res = OperationalPointModel::retrieve_from_uic(&mut conn, small_infra.id, &uic)
+            .await
+            .expect("Failed to retrieve operational points");
+        assert_eq!(res.len(), 2);
+    }
 }
