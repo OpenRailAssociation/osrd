@@ -69,7 +69,7 @@ export default function StudyCard({ setFilterChips, scenario }: StudyCardProps) 
       </div>
       <div className="scenario-card-footer">
         <div className="scenario-card-infra">
-          <img src={infraLogo} alt="infra logo" />
+          <img src={infraLogo} alt="infra logo" className="infra-logo" />
           {scenario.infra_name}
         </div>
         <div className="scenario-card-trains-count ml-auto">

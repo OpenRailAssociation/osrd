@@ -230,7 +230,7 @@ function TimetableTrainCard({
                   className="mr-1 scenario-timetable-train-invalid-icons"
                   title={invalidTrainValues.NewerInfra}
                 >
-                  <img src={invalidInfra} alt="Invalid infra logo" />
+                  <img src={invalidInfra} alt="Invalid infra logo" className="infra-logo" />
                 </div>
               )}
               {train.invalid_reasons && train.invalid_reasons.includes('NewerRollingStock') && (

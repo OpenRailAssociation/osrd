@@ -33,7 +33,7 @@ export default function StudyCard({ setFilterChips, study }: StudyCardProps) {
     <div className="study-card">
       <div className="study-card-name" data-testid={study.name}>
         <span className="mr-2">
-          <img src={studyLogo} alt="study logo" height="24" />
+          <img className="study-card-img" src={studyLogo} alt="study logo" />
         </span>
         <span className="study-card-name-text" title={study.name}>
           {study.name}
