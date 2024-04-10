@@ -143,7 +143,7 @@ class SignalingSimulatorImpl(override val sigModuleManager: SigSystemManager) : 
     ): Map<LogicalSignalId, SigState> {
         assert(evaluatedPathEnd > 0)
         assert(evaluatedPathEnd <= fullPath.size)
-        val routeSet = routes.toSet()
+        val routeSet by lazy { routes.toSet() }
 
         // compute the offset of each block's first zone inside the partial path
         val blockZoneMap = IntArray(evaluatedPathEnd + 1)
