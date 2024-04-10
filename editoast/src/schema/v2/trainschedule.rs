@@ -5,17 +5,16 @@ use std::hash::Hash;
 use chrono::DateTime;
 use chrono::Utc;
 use derivative::Derivative;
+use editoast_common::Identifier;
 use editoast_common::NonBlankString;
 use editoast_schemas::track_offset::TrackOffset;
 use editoast_schemas::train_schedule::Margins;
+use editoast_schemas::train_schedule::ScheduleItem;
 use serde::de::Error as SerdeError;
 use serde::Deserialize;
 use serde::Serialize;
 use strum::FromRepr;
 use utoipa::ToSchema;
-
-use editoast_common::Identifier;
-use editoast_common::PositiveDuration;
 
 #[derive(Debug, Default, Clone, Serialize, ToSchema)]
 pub struct TrainScheduleBase {
@@ -176,19 +175,6 @@ fn default_use_electrical_profiles() -> bool {
     true
 }
 
-#[derive(Debug, Default, Clone, Serialize, Deserialize, ToSchema)]
-#[serde(deny_unknown_fields)]
-pub struct ScheduleItem {
-    #[schema(inline)]
-    pub at: NonBlankString,
-    #[schema(value_type = Option<chrono::Duration>)]
-    pub arrival: Option<PositiveDuration>,
-    #[schema(value_type = Option<chrono::Duration>)]
-    pub stop_for: Option<PositiveDuration>,
-    #[serde(default)]
-    pub locked: bool,
-}
-
 /// The location of a path waypoint
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema, Hash)]
 #[serde(untagged, deny_unknown_fields)]
@@ -253,14 +239,12 @@ mod tests {
     use chrono::Duration;
     use editoast_schemas::train_schedule::MarginValue;
     use editoast_schemas::train_schedule::Margins;
-    use editoast_schemas::train_schedule::PathItemLocation;
     use editoast_schemas::train_schedule::ScheduleItem;
     use serde_json::from_str;
     use serde_json::to_string;
 
     use super::PathItem;
     use super::PathItemLocation;
-    use crate::schema::v2::trainschedule::ScheduleItem;
     use crate::schema::v2::trainschedule::TrainScheduleBase;
 
     /// Test that the `MarginValue` enum can be deserialized from a string
