@@ -4,7 +4,7 @@ import cx from 'classnames';
 import nextId from 'react-id-generator';
 import { LazyLoadComponent } from 'react-lazy-load-image-component';
 
-import type { TrainSchedule } from 'applications/operationalStudies/types';
+import type { TrainSchedule, TrainScheduleV2 } from 'applications/operationalStudies/types';
 import type {
   LightRollingStockWithLiveries,
   RollingStockWithLiveries,
@@ -13,7 +13,7 @@ import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import { seconds2hhmmss } from 'modules/trainschedule/components/ImportTrainSchedule/ImportTrainScheduleHelpers';
 
 type Props = {
-  trainData: TrainSchedule;
+  trainData: TrainSchedule | TrainScheduleV2;
   idx: number;
   rollingStock?: LightRollingStockWithLiveries | RollingStockWithLiveries;
 };

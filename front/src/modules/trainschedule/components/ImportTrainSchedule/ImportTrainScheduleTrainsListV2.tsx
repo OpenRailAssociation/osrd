@@ -4,17 +4,17 @@ import { Rocket } from '@osrd-project/ui-icons';
 import type { TFunction } from 'i18next';
 import { keyBy } from 'lodash';
 import { useTranslation } from 'react-i18next';
-import nextId from 'react-id-generator';
 
-import type { TrainSchedule } from 'applications/operationalStudies/types';
-import type { LightRollingStockWithLiveries } from 'common/api/osrdEditoastApi';
-import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
+import type { TrainScheduleV2 } from 'applications/operationalStudies/types';
+import { osrdEditoastApi, type LightRollingStockWithLiveries } from 'common/api/osrdEditoastApi';
 import { Loader } from 'common/Loaders';
 // eslint-disable-next-line import/no-cycle
 import { ImportTrainScheduleTrainDetail } from 'modules/trainschedule/components/ImportTrainSchedule';
 import rollingstockOpenData2OSRD from 'modules/trainschedule/components/ImportTrainSchedule/rollingstock_opendata2osrd.json';
+import { setFailure, setSuccess } from 'reducers/main';
+import { useAppDispatch } from 'store';
 
-import ImportTrainScheduleModalV2 from './ImportTrainScheduleModalV2';
+import { generateV2TrainSchedulesPayloads } from './generateTrainSchedulesPayloads';
 
 function LoadingIfSearching({ isLoading, t }: { isLoading: boolean; t: TFunction }) {
   return (
@@ -25,9 +25,8 @@ function LoadingIfSearching({ isLoading, t }: { isLoading: boolean; t: TFunction
 }
 
 type ImportTrainScheduleTrainsListProps = {
-  trainsList: TrainSchedule[];
+  trainsList: TrainScheduleV2[];
   rollingStocks: LightRollingStockWithLiveries[];
-  infraId: number;
   isLoading: boolean;
   timetableId: number;
 };
@@ -35,20 +34,64 @@ type ImportTrainScheduleTrainsListProps = {
 const ImportTrainScheduleTrainsListV2 = ({
   trainsList,
   rollingStocks,
-  infraId,
   isLoading,
   timetableId,
 }: ImportTrainScheduleTrainsListProps) => {
   const { t } = useTranslation(['operationalStudies/importTrainSchedule']);
-  const { openModal } = useModal();
 
   const rollingStockDict = useMemo(
     () => keyBy(rollingStocks, (rollingStock) => rollingStock.name),
     [rollingStocks]
   );
 
+  const { refetch: refetchTimetable } =
+    osrdEditoastApi.endpoints.getV2TimetableById.useQuerySubscription({ id: timetableId });
+  const [postTrainSchedule] = osrdEditoastApi.endpoints.postV2TrainSchedule.useMutation();
+
+  const dispatch = useAppDispatch();
+
+  async function generateV2TrainSchedules() {
+    const payloads = generateV2TrainSchedulesPayloads(trainsList, timetableId);
+
+    const trainsCount = payloads.length;
+    let successfulTrainsCount = 0;
+    let errorsNb = 0;
+    // eslint-disable-next-line no-restricted-syntax
+    for await (const payload of payloads) {
+      try {
+        await postTrainSchedule({ body: [payload] }).unwrap();
+        successfulTrainsCount += 1;
+      } catch (error) {
+        errorsNb += 1;
+      }
+    }
+    if (errorsNb > 0) {
+      dispatch(
+        setFailure({
+          name: t('failure'),
+          message: t('status.calculatingTrainScheduleCompleteFailure', {
+            trainsCount,
+            errorsNb,
+            count: trainsCount - errorsNb,
+          }),
+        })
+      );
+      refetchTimetable();
+    } else {
+      dispatch(
+        setSuccess({
+          title: t('success'),
+          text: t('status.calculatingTrainScheduleCompleteAllSuccess', {
+            successfulTrainsCount,
+            count: successfulTrainsCount,
+          }),
+        })
+      );
+    }
+  }
+
   return trainsList.length > 0 ? (
-    <div className="osrd-config-item mb-2">
+    <div className="container-fluid mb-2">
       <div className="osrd-config-item-container import-train-schedule-trainlist">
         <div className="import-train-schedule-trainlist-launchbar">
           <span className="import-train-schedule-trainlist-launchbar-nbresults">
@@ -57,16 +100,7 @@ const ImportTrainScheduleTrainsListV2 = ({
           <button
             className="btn btn-primary btn-sm ml-auto"
             type="button"
-            onClick={() =>
-              openModal(
-                <ImportTrainScheduleModalV2
-                  infraId={infraId}
-                  rollingStocks={rollingStocks}
-                  trains={trainsList}
-                  timetableId={timetableId}
-                />
-              )
-            }
+            onClick={generateV2TrainSchedules}
           >
             <Rocket />
             <span className="ml-3">{t('launchImport')}</span>
@@ -77,7 +111,7 @@ const ImportTrainScheduleTrainsListV2 = ({
             <ImportTrainScheduleTrainDetail
               trainData={train}
               idx={idx}
-              key={nextId()}
+              key={train.trainNumber}
               rollingStock={
                 rollingStockDict[
                   rollingstockOpenData2OSRD[
@@ -91,7 +125,7 @@ const ImportTrainScheduleTrainsListV2 = ({
       </div>
     </div>
   ) : (
-    <div className="osrd-config-item mb-2">
+    <div className="container-fluid pb-2">
       <div className="osrd-config-item-container">
         <LoadingIfSearching isLoading={isLoading} t={t} />
       </div>

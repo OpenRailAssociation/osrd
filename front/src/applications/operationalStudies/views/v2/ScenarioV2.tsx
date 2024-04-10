@@ -9,7 +9,6 @@ import { useParams } from 'react-router-dom';
 import BreadCrumbs from 'applications/operationalStudies/components/BreadCrumbs';
 import InfraLoadingState from 'applications/operationalStudies/components/Scenario/InfraLoadingState';
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
-import ImportTrainSchedule from 'applications/operationalStudies/views/ImportTrainSchedule';
 import infraLogo from 'assets/pictures/components/tracks.svg';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
@@ -24,6 +23,7 @@ import { updateSelectedProjection, updateSimulation } from 'reducers/osrdsimulat
 import { getPresentSimulation, getSelectedTrainId } from 'reducers/osrdsimulation/selectors';
 import { useAppDispatch } from 'store';
 
+import ImportTrainScheduleV2 from './ImportTrainScheduleV2';
 import ManageTrainScheduleV2 from './ManageTrainScheduleV2';
 import SimulationResultsV2 from './SimulationResultsV2';
 
@@ -331,7 +331,7 @@ const ScenarioV2 = () => {
               )}
               {displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.import && (
                 <div className="scenario-managetrainschedule">
-                  <ImportTrainSchedule infraId={infraId} timetableId={timetableId} />
+                  <ImportTrainScheduleV2 timetableId={timetableId} />
                 </div>
               )}
               <div className="scenario-results">

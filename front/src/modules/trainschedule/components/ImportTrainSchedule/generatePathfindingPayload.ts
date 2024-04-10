@@ -65,7 +65,7 @@ const generateAutocompleteWaypoints = (step: Step) => {
   if (isEmpty(step.tracks)) {
     return [];
   }
-  return step.tracks.map((trackPosition) => ({
+  return step.tracks?.map((trackPosition) => ({
     track_section: trackPosition.track,
     offset: trackPosition.position,
   }));

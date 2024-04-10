@@ -6,41 +6,29 @@ import { useTranslation } from 'react-i18next';
 
 import type {
   ImportedTrainSchedule,
-  TrainSchedule,
+  TrainScheduleV2,
   TrainScheduleImportConfig,
 } from 'applications/operationalStudies/types';
 import { getGraouTrainSchedules } from 'common/api/graouApi';
-import {
-  type SearchResultItemOperationalPoint,
-  type PostSearchApiArg,
-  osrdEditoastApi,
-} from 'common/api/osrdEditoastApi';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import StationCard, { type ImportStation } from 'common/StationCard';
 import UploadFileModal from 'common/uploadFileModal';
-import { RollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector';
-import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
 import StationSelector from 'modules/trainschedule/components/ImportTrainSchedule/ImportTrainScheduleStationSelector';
 import { setFailure } from 'reducers/main';
 import { useAppDispatch } from 'store';
 import { formatIsoDate } from 'utils/date';
 
 interface ImportTrainScheduleConfigProps {
-  infraId: number;
-  setTrainsList: (trainsList: TrainSchedule[]) => void;
+  setTrainsList: (trainsList: TrainScheduleV2[]) => void;
   setIsLoading: (isLoading: boolean) => void;
 }
 
-type SearchConstraintType = (string | number | string[])[];
-
 const ImportTrainScheduleConfigV2 = ({
   setTrainsList,
-  infraId,
   setIsLoading,
 }: ImportTrainScheduleConfigProps) => {
   const { t } = useTranslation(['operationalStudies/importTrainSchedule']);
-  const [postSearch] = osrdEditoastApi.endpoints.postSearch.useMutation();
   const [from, setFrom] = useState<ImportStation | undefined>();
   const [fromSearchString, setFromSearchString] = useState('');
   const [to, setTo] = useState<ImportStation | undefined>();
@@ -50,43 +38,6 @@ const ImportTrainScheduleConfigV2 = ({
   const [endTime, setEndTime] = useState('23:59');
   const dispatch = useAppDispatch();
   const { openModal, closeModal } = useContext(ModalContext);
-  const { rollingStockComfort, rollingStock } = useStoreDataForRollingStockSelector();
-
-  async function importTrackSections(opIds: number[]): Promise<
-    Record<
-      number,
-      {
-        position: number;
-        track: string;
-      }[]
-    >
-  > {
-    const uniqueOpIds = Array.from(new Set(opIds));
-    const constraint = uniqueOpIds.reduce((res, uic) => [...res, ['=', ['uic'], Number(uic)]], [
-      'or',
-    ] as (string | SearchConstraintType)[]);
-    const payload: PostSearchApiArg = {
-      searchPayload: {
-        object: 'operationalpoint',
-        query: ['and', constraint, ['=', ['infra_id'], infraId]],
-      },
-      pageSize: 1000,
-    };
-    const operationalPoints = (await postSearch(
-      payload
-    ).unwrap()) as SearchResultItemOperationalPoint[];
-
-    return operationalPoints.reduce(
-      (res, operationalPoint) =>
-        operationalPoint.uic
-          ? {
-              ...res,
-              [operationalPoint.uic]: operationalPoint.track_sections,
-            }
-          : res,
-      {}
-    );
-  }
 
   function validateImportedTrainSchedules(
     importedTrainSchedules: Record<string, unknown>[]
@@ -119,12 +70,7 @@ const ImportTrainScheduleConfigV2 = ({
     return importedTrainSchedules as ImportedTrainSchedule[];
   }
 
-  async function updateTrainSchedules(importedTrainSchedules: ImportedTrainSchedule[]) {
-    const opIds = importedTrainSchedules.flatMap((trainSchedule) =>
-      trainSchedule.steps.map((step) => step.uic)
-    );
-    const trackSectionsByOp = await importTrackSections(opIds);
-
+  function updateTrainSchedules(importedTrainSchedules: ImportedTrainSchedule[]) {
     // For each train schedule, we add the duration and tracks of each step
     const trainsSchedules = importedTrainSchedules.map((trainSchedule) => {
       const stepsWithDuration = trainSchedule.steps.map((step) => {
@@ -137,7 +83,6 @@ const ImportTrainScheduleConfigV2 = ({
         return {
           ...step,
           duration,
-          tracks: trackSectionsByOp[Number(step.uic)] || [],
         };
       });
       return {
@@ -156,7 +101,7 @@ const ImportTrainScheduleConfigV2 = ({
     const result = await getGraouTrainSchedules(config);
     const importedTrainSchedules = validateImportedTrainSchedules(result);
     if (importedTrainSchedules && !isEmpty(importedTrainSchedules)) {
-      await updateTrainSchedules(importedTrainSchedules);
+      updateTrainSchedules(importedTrainSchedules);
     }
 
     setIsLoading(false);
@@ -211,9 +156,9 @@ const ImportTrainScheduleConfigV2 = ({
 
   return (
     <>
-      <div className="row no-gutters">
+      <div className="container-fluid row no-gutters mb-2">
         <div className="col-lg-6 station-selector sm-gutters">
-          <div className="osrd-config-item mb-2">
+          <div className="mb-2">
             <div className="osrd-config-item-container osrd-config-item-from">
               <h2>{t('from')}</h2>
               {from ? (
@@ -238,7 +183,7 @@ const ImportTrainScheduleConfigV2 = ({
           </div>
         </div>
         <div className="col-lg-6 station-selector sm-gutters">
-          <div className="osrd-config-item mb-2">
+          <div className="mb-2">
             <div className="osrd-config-item-container osrd-config-item-to">
               <h2>{t('to')}</h2>
               {to ? (
@@ -264,15 +209,9 @@ const ImportTrainScheduleConfigV2 = ({
         </div>
       </div>
 
-      <div className="row no-gutters">
-        <div className="col-lg-6 sm-gutters">
-          <RollingStockSelector
-            rollingStockSelected={rollingStock}
-            rollingStockComfort={rollingStockComfort}
-          />
-        </div>
-        <div className="col-lg-5 col-9 sm-gutters">
-          <div className="osrd-config-item">
+      <div className="container-fluid mb-2">
+        <div className="row no-gutters">
+          <div className="col-lg-10 col-10">
             <div className="osrd-config-item-container osrd-config-item-datetime">
               <h2>{t('datetime')}</h2>
               <div className="mb-2">
@@ -288,7 +227,7 @@ const ImportTrainScheduleConfigV2 = ({
                 />
               </div>
               <div className="row no-gutters">
-                <span className="col-6 sm-gutters">
+                <div className="col-6 sm-gutters">
                   <InputSNCF
                     id="startTime"
                     type="time"
@@ -301,8 +240,8 @@ const ImportTrainScheduleConfigV2 = ({
                     step={0}
                     unit={t('startTime')}
                   />
-                </span>
-                <span className="col-6 sm-gutters">
+                </div>
+                <div className="col-6 sm-gutters">
                   <InputSNCF
                     id="endTime"
                     type="time"
@@ -315,30 +254,30 @@ const ImportTrainScheduleConfigV2 = ({
                     step={0}
                     unit={t('endTime')}
                   />
-                </span>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-        <div className="col-lg-1 col-3 d-flex flex-column sm-gutters pb-lg-2">
-          <button
-            type="button"
-            className="btn btn-sm btn-primary btn-block h-100"
-            aria-label={t('searchTimetable')}
-            title={t('searchTimetable')}
-            onClick={defineConfig}
-          >
-            <Search />
-          </button>
-          <button
-            type="button"
-            className="btn btn-sm btn-secondary btn-block h-100"
-            aria-label={t('importTimetable')}
-            title={t('importTimetable')}
-            onClick={() => openModal(<UploadFileModal handleSubmit={importFile} />)}
-          >
-            <Download />
-          </button>
+          <div className="col-lg-2 col-2 d-flex flex-column no-gutters pl-1">
+            <button
+              type="button"
+              className="btn btn-sm btn-primary btn-block h-100"
+              aria-label={t('searchTimetable')}
+              title={t('searchTimetable')}
+              onClick={defineConfig}
+            >
+              <Search />
+            </button>
+            <button
+              type="button"
+              className="btn btn-sm btn-secondary btn-block h-100"
+              aria-label={t('importTimetable')}
+              title={t('importTimetable')}
+              onClick={() => openModal(<UploadFileModal handleSubmit={importFile} />)}
+            >
+              <Download />
+            </button>
+          </div>
         </div>
       </div>
     </>
