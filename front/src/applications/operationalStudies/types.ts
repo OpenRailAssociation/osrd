@@ -18,14 +18,29 @@ export interface Step extends Destination {
     track: string;
   }[];
 }
+export interface StepV2 extends Destination {
+  arrivalTime: string;
+  departureTime: string;
+  duration?: number;
+}
 
 export type TrainSchedule = {
   trainNumber: string;
-  rollingStock: string;
+  rollingStock: string | null;
   departureTime: string;
   arrivalTime: string;
   departure: string;
   steps: Step[];
+  transilienName?: string;
+};
+
+export type TrainScheduleV2 = {
+  trainNumber: string;
+  rollingStock: string | null;
+  departureTime: string;
+  arrivalTime: string;
+  departure: string;
+  steps: StepV2[];
   transilienName?: string;
 };
 
@@ -41,7 +56,7 @@ export interface TrainScheduleWithPath extends TrainScheduleWithPathRef {
 
 export type ImportedTrainSchedule = {
   trainNumber: string;
-  rollingStock: string;
+  rollingStock: string | null;
   departureTime: string;
   arrivalTime: string;
   departure: string;

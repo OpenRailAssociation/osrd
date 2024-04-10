@@ -24,7 +24,7 @@ import {
   initialStatus,
 } from 'modules/trainschedule/components/ImportTrainSchedule/consts';
 import generatePathfindingPayload from 'modules/trainschedule/components/ImportTrainSchedule/generatePathfindingPayload';
-import generateTrainSchedulesPayload from 'modules/trainschedule/components/ImportTrainSchedule/generateTrainSchedulesPayload';
+import generateTrainSchedulesPayloads from 'modules/trainschedule/components/ImportTrainSchedule/generateTrainSchedulesPayloads';
 import { refactorUniquePaths } from 'modules/trainschedule/components/ImportTrainSchedule/ImportTrainScheduleHelpers';
 import ImportTrainScheduleModalFooter from 'modules/trainschedule/components/ImportTrainSchedule/ImportTrainScheduleModalFooter';
 import Map from 'modules/trainschedule/components/ImportTrainSchedule/Map';
@@ -282,7 +282,7 @@ const ImportTrainScheduleModal = ({
   }
 
   async function generateTrainSchedules() {
-    const payloads = generateTrainSchedulesPayload(trainsWithPath, timetableId);
+    const payloads = generateTrainSchedulesPayloads(trainsWithPath, timetableId);
     const trainsCount = payloads.reduce((result, payload) => result + payload.schedules.length, 0);
     updateImportStatus(IMPORT_STATUS.CREATING_TRAINS, t('status.calculatingTrainSchedule'));
     const messages = [];
@@ -314,6 +314,7 @@ const ImportTrainScheduleModal = ({
           count: successfulTrainsCount,
           successfulTrainsCount,
           trainsCount,
+          errorsNb: trainsCount - successfulTrainsCount,
         })
       );
       refetchTimetable();
