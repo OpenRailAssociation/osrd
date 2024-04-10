@@ -1,3 +1,7 @@
+mod margins;
+pub use margins::MarginValue;
+pub use margins::Margins;
+
 mod allowance;
 pub use allowance::Allowance;
 pub use allowance::AllowanceDistribution;
@@ -10,6 +14,8 @@ mod rjs_power_restriction_range;
 pub use rjs_power_restriction_range::RjsPowerRestrictionRange;
 
 editoast_common::schemas! {
+    margins::schemas(),
+    // TODO TrainSchedule V1 (it will be removed)
     allowance::schemas(),
     rjs_power_restriction_range::schemas(),
 }

@@ -5,11 +5,11 @@ use chrono::Utc;
 use editoast_schemas::rolling_stock::EffortCurves;
 use editoast_schemas::rolling_stock::Gamma;
 use editoast_schemas::rolling_stock::RollingResistance;
+use editoast_schemas::train_schedule::MarginValue;
 use serde::Deserialize;
 use serde::Serialize;
 
 use crate::core::{AsCoreRequest, Json};
-use crate::schema::v2::trainschedule::MarginValue;
 use crate::schema::v2::trainschedule::TrainScheduleOptions;
 use crate::schema::v2::trainschedule::{Comfort, Distribution};
 use crate::views::v2::path::TrackRange;
