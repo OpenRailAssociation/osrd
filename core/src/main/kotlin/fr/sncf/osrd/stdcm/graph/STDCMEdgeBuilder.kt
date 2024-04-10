@@ -52,12 +52,6 @@ internal constructor(
      */
     private var explorerWithNewEnvelope: InfraExplorerWithEnvelope? = null,
 
-    /**
-     * If set to true, we add the maximum amount of delay allowed by shifting the departure time.
-     * Used when computing allowances
-     */
-    private var forceMaxDelay: Boolean = false,
-
     /** Index of the last waypoint passed by the train */
     private var waypointIndex: Int = 0
 ) {
@@ -108,15 +102,6 @@ internal constructor(
      */
     fun setEnvelope(envelope: Envelope?): STDCMEdgeBuilder {
         this.envelope = envelope
-        return this
-    }
-
-    /**
-     * If set to true, we add the maximum amount of delay allowed by shifting the departure time.
-     * Used when computing allowances
-     */
-    fun setForceMaxDelay(forceMaxDelay: Boolean): STDCMEdgeBuilder {
-        this.forceMaxDelay = forceMaxDelay
         return this
     }
 
@@ -225,40 +210,11 @@ internal constructor(
      * returns the maximum delay that can be used without allowance.
      */
     private fun getDelaysPerOpening(): Set<Double> {
-        return if (forceMaxDelay) findMaxDelay()
-        else
-            graph.delayManager.minimumDelaysPerOpening(
-                getExplorerWithNewEnvelope()!!,
-                startTime,
-                envelope!!,
-                startOffset,
-            )
-    }
-
-    /**
-     * Finds the maximum amount of delay that can be added by simply shifting the departure time (no
-     * engineering allowance)
-     */
-    private fun findMaxDelay(): Set<Double> {
-        val allDelays =
-            graph.delayManager.minimumDelaysPerOpening(
-                getExplorerWithNewEnvelope()!!,
-                startTime,
-                envelope!!,
-                startOffset,
-            )
-        val lastOpeningDelay = allDelays.floor(prevMaximumAddedDelay) ?: return setOf()
-        return mutableSetOf(
-            min(
-                prevMaximumAddedDelay,
-                lastOpeningDelay +
-                    graph.delayManager.findMaximumAddedDelay(
-                        getExplorerWithNewEnvelope()!!,
-                        startTime + lastOpeningDelay,
-                        startOffset,
-                        envelope!!,
-                    )
-            )
+        return graph.delayManager.minimumDelaysPerOpening(
+            getExplorerWithNewEnvelope()!!,
+            startTime,
+            envelope!!,
+            startOffset,
         )
     }
 
