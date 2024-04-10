@@ -1,10 +1,10 @@
 use chrono::DateTime;
 use chrono::Utc;
 use editoast_derive::ModelV2;
+use editoast_schemas::train_schedule::Margins;
 
 use crate::schema::v2::trainschedule::Comfort;
 use crate::schema::v2::trainschedule::Distribution;
-use crate::schema::v2::trainschedule::Margins;
 use crate::schema::v2::trainschedule::PathItem;
 use crate::schema::v2::trainschedule::PowerRestrictionItem;
 use crate::schema::v2::trainschedule::ScheduleItem;
