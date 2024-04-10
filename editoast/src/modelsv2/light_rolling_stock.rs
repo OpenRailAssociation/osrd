@@ -13,6 +13,7 @@ use editoast_schemas::rolling_stock::LoadingGaugeType;
 use editoast_schemas::rolling_stock::RollingResistance;
 use editoast_schemas::rolling_stock::RollingStockMetadata;
 use editoast_schemas::rolling_stock::RollingStockSupportedSignalingSystems;
+use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
@@ -20,11 +21,10 @@ use super::Row;
 use crate::error::Result;
 use crate::modelsv2::rolling_stock_livery::RollingStockLiveryMetadataModel;
 use crate::modelsv2::Model;
-use crate::schema::rolling_stock::light_rolling_stock::LightEffortCurves;
-use crate::schema::rolling_stock::light_rolling_stock::LightRollingStock;
-use crate::schema::rolling_stock::light_rolling_stock::LightRollingStockWithLiveriesModel;
 use crate::views::pagination::Paginate;
 use crate::views::pagination::PaginatedResponse;
+use crate::views::rolling_stocks::light_rolling_stock::LightEffortCurves;
+use crate::views::rolling_stocks::light_rolling_stock::LightRollingStock;
 use crate::DbPool;
 
 #[derive(Debug, Clone, ModelV2, Serialize, ToSchema)]
@@ -140,6 +140,13 @@ impl From<LightRollingStockModel> for LightRollingStock {
             supported_signaling_systems: rolling_stock_model.supported_signaling_systems,
         }
     }
+}
+
+#[derive(Debug, Deserialize)]
+pub struct LightRollingStockWithLiveriesModel {
+    #[serde(flatten)]
+    pub rolling_stock: LightRollingStock,
+    pub liveries: Vec<RollingStockLiveryMetadataModel>,
 }
 
 #[cfg(test)]

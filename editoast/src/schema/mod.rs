@@ -6,7 +6,6 @@ mod errors;
 mod neutral_section;
 pub mod operational_point;
 mod railjson;
-pub mod rolling_stock;
 mod route;
 mod signal;
 mod speed_section;
@@ -79,7 +78,6 @@ editoast_common::schemas! {
     DirectionalTrackRange,
     Direction,
     utils::schemas(),
-    rolling_stock::schemas(),
     editoast_schemas::schemas(),
     operation::schemas(),
 }

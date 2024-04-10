@@ -44,7 +44,6 @@ editoast_common::schemas! {
     ElectrificationUsage,
     ElectrificationRange,
     SimulationPowerRestrictionRange,
-    Allowance,
     ScheduledPoint,
     ResultTrain,
     ResultPosition,

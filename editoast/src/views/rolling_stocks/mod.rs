@@ -1,3 +1,4 @@
+pub mod light_rolling_stock;
 pub mod rolling_stock_form;
 
 use std::io::BufReader;
@@ -81,6 +82,7 @@ editoast_common::schemas! {
     RollingStockError,
     TrainScheduleScenarioStudyProject,
     RollingStockWithLiveries,
+    light_rolling_stock::schemas(),
 }
 
 #[derive(Debug, Serialize, ToSchema)]
@@ -586,7 +588,7 @@ pub mod tests {
     use crate::fixtures::tests::named_fast_rolling_stock;
     use crate::fixtures::tests::named_other_rolling_stock;
     use crate::fixtures::tests::train_schedule_with_scenario;
-    use crate::models::rolling_stock::tests::get_invalid_effort_curves;
+    use crate::modelsv2::rolling_stock_model::tests::get_invalid_effort_curves;
     use crate::modelsv2::rolling_stock_model::RollingStockModel;
     use crate::views::rolling_stocks::rolling_stock_form::RollingStockForm;
     use crate::views::tests::create_test_service;

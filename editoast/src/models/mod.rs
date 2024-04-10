@@ -1,5 +1,4 @@
 pub mod pathfinding;
-pub mod rolling_stock;
 mod scenario;
 mod text_array;
 mod timetable;
