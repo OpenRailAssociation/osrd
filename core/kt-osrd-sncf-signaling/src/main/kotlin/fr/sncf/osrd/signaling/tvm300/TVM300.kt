@@ -39,7 +39,12 @@ object TVM300 : SignalingSystemDriver {
     }
 
     override fun isConstraining(signalState: SigState, trainState: SignalingTrainState): Boolean {
-        return trainState.speed <= maxSpeedForState(signalState)
+        if (signalState.getEnum("aspect").contains("VL")) {
+            // VL should never be considered constraining,
+            // it would cause infinite loops in spacing resource generation
+            return false
+        }
+        return trainState.speed > maxSpeedForState(signalState)
     }
 
     override fun checkBlock(reporter: BlockDiagReporter, block: SigBlock) {
