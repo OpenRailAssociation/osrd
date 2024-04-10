@@ -165,12 +165,19 @@ class IncrementalConflictDetectorImpl(trainRequirements: List<TrainRequirements>
         return res
     }
 
+    private fun <ReqT : ResourceRequirement> isRequirementTimeOverlaps(a: ReqT, b: ReqT) =
+        a.beginTime < b.endTime && a.endTime > b.beginTime
+
     private fun detectSpacingConflicts(): List<Conflict> {
         // look for requirement times overlaps.
         // as spacing requirements are exclusive, any overlap is a conflict
         val res = mutableListOf<Conflict>()
         for (requirements in spacingZoneRequirements.values) {
-            for (conflictGroup in detectRequirementConflicts(requirements) { _, _ -> true }) {
+            for (conflictGroup in
+                detectRequirementConflicts<SpacingZoneRequirement>(
+                    requirements,
+                    ::isRequirementTimeOverlaps
+                )) {
                 val trains = conflictGroup.map { it.trainId }
                 val beginTime = conflictGroup.minBy { it.beginTime }.beginTime
                 val endTime = conflictGroup.maxBy { it.endTime }.endTime
@@ -185,7 +192,9 @@ class IncrementalConflictDetectorImpl(trainRequirements: List<TrainRequirements>
         val res = mutableListOf<Conflict>()
         for (requirements in routingZoneRequirements.values) {
             for (conflictGroup in
-                detectRequirementConflicts(requirements) { a, b -> a.config != b.config }) {
+                detectRequirementConflicts(requirements) { a, b ->
+                    a.config != b.config || isRequirementTimeOverlaps(a, b)
+                }) {
                 val trains = conflictGroup.map { it.trainId }
                 val beginTime = conflictGroup.minBy { it.beginTime }.beginTime
                 val endTime = conflictGroup.maxBy { it.endTime }.endTime
@@ -398,14 +407,13 @@ private fun <ReqT : ResourceRequirement> detectRequirementConflicts(
     for (requirementIndex in 0 until requirements.size) {
         val requirement = requirements[requirementIndex]
         // remove inactive requirements
-        activeRequirements.removeAll { requirements[it].endTime <= requirement.beginTime }
+        activeRequirements.removeAll { !conflicting(requirement, requirements[it]) }
 
         // check compatibility with active requirements
         val conflictingGroups = IntArrayList()
         for (activeRequirementCursor in activeRequirements) {
             val activeRequirementIndex = activeRequirementCursor.value
             val activeRequirement = requirements[activeRequirementIndex]
-            if (!conflicting(activeRequirement, requirement)) continue
 
             val conflictGroup = conflictGroupMap[activeRequirementIndex]
             // if there is no conflict group for this active requirement, create one
