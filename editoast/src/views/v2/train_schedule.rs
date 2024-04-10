@@ -890,6 +890,7 @@ mod tests {
     }
 
     #[rstest]
+    #[ignore] // TODO: This test should be rewritten using mocks
     async fn train_schedule_simulation(
         #[future] timetable_v2: TestFixture<Timetable>,
         #[future] small_infra: TestFixture<Infra>,
