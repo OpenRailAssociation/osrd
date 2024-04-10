@@ -361,33 +361,29 @@ async fn extract_location_from_path_items(
                 trigram,
                 secondary_code,
             } => {
-                let ops = trigrams_to_ops.get(&trigram.0).cloned();
+                let ops = trigrams_to_ops.get(&trigram.0).cloned().unwrap_or_default();
                 let ops = secondary_code_filter(secondary_code, ops);
-                match ops {
-                    Some(ops) if !ops.is_empty() => track_offsets_from_ops(&ops),
-                    _ => {
-                        return Ok(Err(PathfindingResult::InvalidPathItem {
-                            index,
-                            path_item: path_item.clone(),
-                        }))
-                    }
+                if ops.is_empty() {
+                    return Ok(Err(PathfindingResult::InvalidPathItem {
+                        index,
+                        path_item: path_item.clone(),
+                    }));
                 }
+                track_offsets_from_ops(&ops)
             }
             PathItemLocation::OperationalPointUic {
                 uic,
                 secondary_code,
             } => {
-                let mut ops = uic_to_ops.get(&(*uic as i64)).cloned();
-                ops = secondary_code_filter(secondary_code, ops);
-                match ops {
-                    Some(ops) if !ops.is_empty() => track_offsets_from_ops(&ops),
-                    _ => {
-                        return Ok(Err(PathfindingResult::InvalidPathItem {
-                            index,
-                            path_item: path_item.clone(),
-                        }))
-                    }
+                let ops = uic_to_ops.get(&(*uic as i64)).cloned().unwrap_or_default();
+                let ops = secondary_code_filter(secondary_code, ops);
+                if ops.is_empty() {
+                    return Ok(Err(PathfindingResult::InvalidPathItem {
+                        index,
+                        path_item: path_item.clone(),
+                    }));
                 }
+                track_offsets_from_ops(&ops)
             }
         };
         result.push(track_offsets);
@@ -418,17 +414,17 @@ fn track_offsets_from_ops(ops: &[OperationalPointModel]) -> Vec<TrackOffset> {
         .collect()
 }
 
+/// Filter operational points by secondary code
+/// If the secondary code is not provided, the original list is returned
 fn secondary_code_filter(
     secondary_code: &Option<String>,
-    ops: Option<Vec<OperationalPointModel>>,
-) -> Option<Vec<OperationalPointModel>> {
+    ops: Vec<OperationalPointModel>,
+) -> Vec<OperationalPointModel> {
     if let Some(secondary_code) = secondary_code {
-        ops.map(|ops| {
-            ops.into_iter()
-                .filter(|op| &op.extensions.sncf.as_ref().unwrap().ch == secondary_code)
-                .collect()
-        })
+        ops.into_iter()
+            .filter(|op| &op.extensions.sncf.as_ref().unwrap().ch == secondary_code)
+            .collect()
     } else {
-        None
+        ops
     }
 }
