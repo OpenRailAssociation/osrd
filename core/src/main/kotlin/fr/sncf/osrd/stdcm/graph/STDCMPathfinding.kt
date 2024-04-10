@@ -174,7 +174,8 @@ private fun convertLocations(
 ): Set<EdgeLocation<STDCMEdge, STDCMEdge>> {
     val res = HashSet<EdgeLocation<STDCMEdge, STDCMEdge>>()
     val fullInfra = graph.fullInfra
-    val constraints = initConstraints(fullInfra, listOf(rollingStock))
+    val constraints =
+        ConstraintCombiner(initConstraints(fullInfra, listOf(rollingStock)).toMutableList())
 
     for (location in locations) {
         val infraExplorers =
@@ -183,7 +184,7 @@ private fun convertLocations(
                 location,
                 endBlocks,
                 rollingStock,
-                constraints
+                listOf(constraints)
             )
         val extended = infraExplorers.flatMap { extendLookaheadUntil(it, 4) }
         for (explorer in extended) {
