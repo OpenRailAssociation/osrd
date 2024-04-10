@@ -109,3 +109,57 @@ impl Serialize for MarginValue {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use serde_json::from_str;
+    use serde_json::to_string;
+
+    use crate::train_schedule::MarginValue;
+    use crate::train_schedule::Margins;
+
+    /// Test that the `MarginValue` enum can be deserialized from a string
+    #[test]
+    fn deserialize_margin_value() {
+        let none: MarginValue = from_str(r#""none""#).unwrap();
+        assert_eq!(none, MarginValue::None);
+
+        let percentage: MarginValue = from_str(r#""10%""#).unwrap();
+        assert_eq!(percentage, MarginValue::Percentage(10.0));
+
+        let min_per_km: MarginValue = from_str(r#""5.3min/km""#).unwrap();
+        assert_eq!(min_per_km, MarginValue::MinPerKm(5.3));
+    }
+
+    /// Test invalid `MarginValue` deserialization
+    #[test]
+    fn deserialize_invalid_margin_value() {
+        assert!(from_str::<MarginValue>(r#""3.5""#).is_err());
+        assert!(from_str::<MarginValue>(r#""-5%""#).is_err());
+        assert!(from_str::<MarginValue>(r#""-0.4min/km""#).is_err());
+    }
+
+    /// Test that the `MarginValue` enum can be serialized to a string
+    #[test]
+    fn serialize_margin_value() {
+        let none = to_string(&MarginValue::None).unwrap();
+        assert_eq!(none, r#""none""#);
+
+        let percentage = to_string(&MarginValue::Percentage(10.0)).unwrap();
+        assert_eq!(percentage, r#""10%""#);
+
+        let min_per_km = to_string(&MarginValue::MinPerKm(5.3)).unwrap();
+        assert_eq!(min_per_km, r#""5.3min/km""#);
+    }
+
+    /// Test that Margins deserialization checks works
+    #[test]
+    fn deserialize_margins() {
+        let valid_margins = r#"{"boundaries":["a", "b"],"values":["none","10%","20min/km"]}"#;
+        assert!(from_str::<Margins>(valid_margins).is_ok());
+        let invalid_margins = r#"{"boundaries":["a"],"values":["none","10%","20min/km"]}"#;
+        assert!(from_str::<Margins>(invalid_margins).is_err());
+        let invalid_margins = r#"{"boundaries":["a", "b"],"values":["none","10%"]}"#;
+        assert!(from_str::<Margins>(invalid_margins).is_err());
+    }
+}
