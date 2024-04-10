@@ -86,7 +86,7 @@ impl ControlLoop {
         for core in cores {
             let last_seen: Option<i64> = redis::cmd("GET")
                 .arg(format!(
-                    "{}/{}",
+                    "{}.{}",
                     &self.config.redis.core_last_seen_prefix, core.infra_id
                 ))
                 .query_async(&mut redis_conn)

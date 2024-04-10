@@ -32,17 +32,12 @@ pub struct Config {
 
 impl Default for Config {
     fn default() -> Config {
-        // if env DEFAULT_CC_RMQ_HOST is not set, use rabbitmq (container name) otherwise use the env value
+        // if env DEFAULT_CC_*_HOST are not set, use rabbitmq (container name) otherwise use the env value
         // Used for local development, making easier to seperate host mode to docker network mode
-        let default_rmq_host = match std::env::var("DEFAULT_CC_RMQ_HOST") {
-            Ok(val) => val,
-            Err(_) => "rabbitmq".to_string(),
-        };
-
-        let default_redis_host: String = match std::env::var("DEFAULT_CC_REDIS_HOST") {
-            Ok(val) => val,
-            Err(_) => "redis".to_string(),
-        };
+        let default_rmq_host =
+            std::env::var("DEFAULT_CC_RMQ_HOST").unwrap_or("rabbitmq".to_string());
+        let default_redis_host: String =
+            std::env::var("DEFAULT_CC_REDIS_HOST").unwrap_or("redis".to_string());
 
         Config {
             loop_interval: 3,
@@ -53,7 +48,8 @@ impl Default for Config {
                 core_last_seen_prefix: "core/last_seen_msg".to_string(),
             },
             provider: Provider::Docker(DockerDriverOptions {
-                core_image_name: "ghcr.io/osrd-project/edge/osrd-core".to_string(),
+                core_image_name: "ghcr.io/openrail/openrailassociation/osrd-edge/osrd-core"
+                    .to_string(),
                 core_image_tag: "dev".to_string(),
                 container_prefix: "dyn-osrd".to_string(),
                 default_env: vec![],
