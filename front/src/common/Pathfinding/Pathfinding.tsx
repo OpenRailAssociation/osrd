@@ -537,7 +537,7 @@ const Pathfinding = ({ zoomToFeature, path }: PathfindingProps) => {
     <div className="pathfinding-state-main-container flex-grow-1">
       {infra && infra.state !== 'CACHED' && (
         <div className="content infra-loading">
-          <img src={infraLogo} alt="Infra logo" className="mr-2" />
+          <img src={infraLogo} alt="Infra logo" className="infra-logo mr-2" />
           <div>{t('infraLoading')}</div>
           <InfraLoadingState infra={infra} />
         </div>

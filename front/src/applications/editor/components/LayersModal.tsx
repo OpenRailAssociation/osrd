@@ -150,7 +150,7 @@ const LayersModal: FC<LayersModalProps> = ({
                     disabled={disabled}
                   />
                   {isString(icon) ? (
-                    <img className="mx-2" src={icon} alt="" height="20" />
+                    <img className="layer-modal-img mx-2" src={icon} alt="" />
                   ) : (
                     <div>{icon}</div>
                   )}

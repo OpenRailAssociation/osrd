@@ -58,7 +58,7 @@ export const FormatSwitch: FC<FormatSwitchProps> = ({ name, icon, color, disable
 };
 
 export const Icon2SVG: FC<{ file: string; altName?: string }> = ({ file, altName }) => (
-  <img src={file} alt={altName} height="16" />
+  <img className="icon-to-svg" src={file} alt={altName} />
 );
 
 const MapSettingsLayers: FC<unknown> = () => (

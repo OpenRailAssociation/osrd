@@ -46,7 +46,7 @@ const FormatSwitch: FC<{
         checked={state}
         disabled={disabled}
       />
-      <img className="ml-2 rounded" src={icon} alt="" height="24" />
+      <img className="map-format-switch-img ml-2 rounded" src={icon} alt="" />
       <span className="ml-2">{t(label)}</span>
     </div>
   );

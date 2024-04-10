@@ -264,7 +264,7 @@ const ScenarioV1 = () => {
                     <div className="row">
                       <div className="col-md-6">
                         <div className="scenario-details-infra-name">
-                          <img src={infraLogo} alt="Infra logo" className="mr-2" />
+                          <img src={infraLogo} alt="Infra logo" className="infra-logo mr-2" />
                           {infra && <InfraLoadingState infra={infra} />}
                           <span className="scenario-infra-name">{scenario.infra_name}</span>
                           <small className="ml-auto text-muted">ID {scenario.infra_id}</small>
@@ -355,7 +355,7 @@ const ScenarioV1 = () => {
                     </button>
                     <div className="lead ml-2">{scenario.name}</div>
                     <div className="d-flex align-items-center ml-auto">
-                      <img src={infraLogo} alt="Infra logo" className="mr-2" height="16" />
+                      <img src={infraLogo} alt="Infra logo" className="infra-logo mr-2" />
                       {scenario.infra_name}
                     </div>
                     <div className="d-flex align-items-center ml-4">
