@@ -5,10 +5,9 @@ use std::hash::Hash;
 use chrono::DateTime;
 use chrono::Utc;
 use derivative::Derivative;
-use editoast_common::Identifier;
 use editoast_common::NonBlankString;
-use editoast_schemas::track_offset::TrackOffset;
 use editoast_schemas::train_schedule::Margins;
+use editoast_schemas::train_schedule::PathItem;
 use editoast_schemas::train_schedule::ScheduleItem;
 use serde::de::Error as SerdeError;
 use serde::Deserialize;
@@ -175,48 +174,6 @@ fn default_use_electrical_profiles() -> bool {
     true
 }
 
-/// The location of a path waypoint
-#[derive(Debug, Clone, Serialize, Deserialize, ToSchema, Hash)]
-#[serde(untagged, deny_unknown_fields)]
-pub enum PathItemLocation {
-    TrackOffset(#[schema(inline)] TrackOffset),
-    OperationalPointId {
-        /// The object id of an operational point
-        #[schema(inline)]
-        operational_point: Identifier,
-    },
-    OperationalPointDescription {
-        /// The operational point trigram
-        #[schema(inline)]
-        trigram: NonBlankString,
-        /// An optional secondary code to identify a more specific location
-        secondary_code: Option<String>,
-    },
-    OperationalPointUic {
-        /// The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point
-        uic: u32,
-        /// An optional secondary code to identify a more specific location
-        secondary_code: Option<String>,
-    },
-}
-
-/// A location on the path of a train
-#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
-pub struct PathItem {
-    /// The unique identifier of the path item.
-    /// This is used to reference path items in the train schedule.
-    #[schema(inline)]
-    pub id: NonBlankString,
-    /// Metadata given to mark a point as wishing to be deleted by the user.
-    /// It's useful for soft deleting the point (waiting to fix / remove all references)
-    /// If true, the train schedule is consider as invalid and must be edited
-    #[serde(default)]
-    pub deleted: bool,
-    #[serde(flatten)]
-    #[schema(inline)]
-    pub location: PathItemLocation,
-}
-
 #[derive(Debug, Default, Clone, Copy, Serialize, Deserialize, FromRepr, ToSchema, Hash)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Comfort {
@@ -239,12 +196,12 @@ mod tests {
     use chrono::Duration;
     use editoast_schemas::train_schedule::MarginValue;
     use editoast_schemas::train_schedule::Margins;
+    use editoast_schemas::train_schedule::PathItemLocation;
     use editoast_schemas::train_schedule::ScheduleItem;
     use serde_json::from_str;
     use serde_json::to_string;
 
     use super::PathItem;
-    use super::PathItemLocation;
     use crate::schema::v2::trainschedule::TrainScheduleBase;
 
     /// Test that the `MarginValue` enum can be deserialized from a string
