@@ -8,12 +8,13 @@ use crate::decl_paginated_response;
 use crate::error::Result;
 use crate::modelsv2::LightRollingStockModel;
 use crate::modelsv2::Retrieve;
-use crate::schema::rolling_stock::light_rolling_stock::LightRollingStockWithLiveries;
 use crate::views::pagination::PaginatedResponse;
 use crate::views::pagination::PaginationQueryParam;
 use crate::views::rolling_stocks::RollingStockError;
 use crate::views::rolling_stocks::RollingStockIdParam;
 use crate::DbPool;
+
+use super::rolling_stocks::light_rolling_stock::LightRollingStockWithLiveries;
 
 crate::routes! {
     "/light_rolling_stock" => {
@@ -31,6 +32,7 @@ decl_paginated_response!(
 
 editoast_common::schemas! {
     PaginatedResponseOfLightRollingStockWithLiveries,
+    LightRollingStockWithLiveries,
 }
 
 /// Paginated list of rolling stock with a lighter response
@@ -97,12 +99,12 @@ mod tests {
     use actix_web::web::Data;
     use rstest::*;
 
+    use super::LightRollingStockWithLiveries;
     use crate::assert_response_error_type_match;
     use crate::assert_status_and_read;
     use crate::fixtures::tests::db_pool;
     use crate::fixtures::tests::named_fast_rolling_stock;
     use crate::fixtures::tests::rolling_stock_livery;
-    use crate::schema::rolling_stock::light_rolling_stock::LightRollingStockWithLiveries;
     use crate::views::pagination::PaginatedResponse;
     use crate::views::pagination::PaginationError;
     use crate::views::tests::create_test_service;

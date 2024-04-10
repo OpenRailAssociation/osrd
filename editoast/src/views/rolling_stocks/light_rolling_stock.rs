@@ -1,21 +1,21 @@
 use std::collections::HashMap;
 
-use editoast_schemas::rolling_stock::EnergySource;
-use editoast_schemas::rolling_stock::Gamma;
-use editoast_schemas::rolling_stock::LoadingGaugeType;
-use editoast_schemas::rolling_stock::RollingResistance;
 use editoast_schemas::rolling_stock::RollingStockLiveryMetadata;
-use editoast_schemas::rolling_stock::RollingStockMetadata;
-use editoast_schemas::rolling_stock::RollingStockSupportedSignalingSystems;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
-use crate::modelsv2::rolling_stock_livery::RollingStockLiveryMetadataModel;
+use editoast_schemas::rolling_stock::EnergySource;
+use editoast_schemas::rolling_stock::Gamma;
+use editoast_schemas::rolling_stock::LoadingGaugeType;
+use editoast_schemas::rolling_stock::RollingResistance;
+use editoast_schemas::rolling_stock::RollingStockMetadata;
+use editoast_schemas::rolling_stock::RollingStockSupportedSignalingSystems;
+
+use crate::modelsv2::light_rolling_stock::LightRollingStockWithLiveriesModel;
 
 editoast_common::schemas! {
     LightRollingStock,
-    LightRollingStockWithLiveries,
     LightModeEffortCurves,
     LightEffortCurves,
 }
@@ -47,11 +47,17 @@ pub struct LightRollingStock {
     pub supported_signaling_systems: RollingStockSupportedSignalingSystems,
 }
 
-#[derive(Debug, Deserialize)]
-pub struct LightRollingStockWithLiveriesModel {
-    #[serde(flatten)]
-    pub rolling_stock: LightRollingStock,
-    pub liveries: Vec<RollingStockLiveryMetadataModel>,
+// Light effort curves schema for LightRollingStock
+#[derive(Debug, Clone, Deserialize, Serialize, ToSchema)]
+pub struct LightModeEffortCurves {
+    is_electric: bool,
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize, ToSchema)]
+#[serde(deny_unknown_fields)]
+pub struct LightEffortCurves {
+    modes: HashMap<String, LightModeEffortCurves>,
+    default_mode: String,
 }
 
 #[derive(Debug, Serialize, Deserialize, ToSchema)]
@@ -72,17 +78,4 @@ impl From<LightRollingStockWithLiveriesModel> for LightRollingStockWithLiveries 
                 .collect(),
         }
     }
-}
-
-// Light effort curves schema for LightRollingStock
-#[derive(Debug, Clone, Deserialize, Serialize, ToSchema)]
-pub struct LightModeEffortCurves {
-    is_electric: bool,
-}
-
-#[derive(Debug, Clone, Deserialize, Serialize, ToSchema)]
-#[serde(deny_unknown_fields)]
-pub struct LightEffortCurves {
-    modes: HashMap<String, LightModeEffortCurves>,
-    default_mode: String,
 }
