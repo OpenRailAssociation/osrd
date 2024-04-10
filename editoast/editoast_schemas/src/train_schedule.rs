@@ -5,6 +5,10 @@ pub use margins::Margins;
 mod schedule_item;
 pub use schedule_item::ScheduleItem;
 
+mod path_item;
+pub use path_item::PathItem;
+pub use path_item::PathItemLocation;
+
 mod allowance;
 pub use allowance::Allowance;
 pub use allowance::AllowanceDistribution;
@@ -19,6 +23,7 @@ pub use rjs_power_restriction_range::RjsPowerRestrictionRange;
 editoast_common::schemas! {
     margins::schemas(),
     schedule_item::schemas(),
+    path_item::schemas(),
     // TODO TrainSchedule V1 (it will be removed)
     allowance::schemas(),
     rjs_power_restriction_range::schemas(),
