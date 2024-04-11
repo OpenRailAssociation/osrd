@@ -1,10 +1,10 @@
 use std::collections::HashMap;
 use std::collections::HashSet;
-use std::hash::Hash;
 
 use chrono::DateTime;
 use chrono::Utc;
 use editoast_common::NonBlankString;
+use editoast_schemas::train_schedule::Comfort;
 use editoast_schemas::train_schedule::Distribution;
 use editoast_schemas::train_schedule::Margins;
 use editoast_schemas::train_schedule::PathItem;
@@ -14,7 +14,6 @@ use editoast_schemas::train_schedule::TrainScheduleOptions;
 use serde::de::Error as SerdeError;
 use serde::Deserialize;
 use serde::Serialize;
-use strum::FromRepr;
 use utoipa::ToSchema;
 
 #[derive(Debug, Default, Clone, Serialize, ToSchema)]
@@ -151,15 +150,6 @@ impl<'de> Deserialize<'de> for TrainScheduleBase {
             options: internal.options,
         })
     }
-}
-
-#[derive(Debug, Default, Clone, Copy, Serialize, Deserialize, FromRepr, ToSchema, Hash)]
-#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
-pub enum Comfort {
-    #[default]
-    Standard,
-    AirConditioning,
-    Heating,
 }
 
 #[cfg(test)]

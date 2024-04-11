@@ -18,6 +18,9 @@ pub use power_restriction_item::PowerRestrictionItem;
 mod distribution;
 pub use distribution::Distribution;
 
+mod comfort;
+pub use comfort::Comfort;
+
 mod allowance;
 pub use allowance::Allowance;
 pub use allowance::AllowanceDistribution;
@@ -36,6 +39,7 @@ editoast_common::schemas! {
     train_schedule_options::schemas(),
     power_restriction_item::schemas(),
     distribution::schemas(),
+    comfort::schemas(),
     // TODO TrainSchedule V1 (it will be removed)
     allowance::schemas(),
     rjs_power_restriction_range::schemas(),

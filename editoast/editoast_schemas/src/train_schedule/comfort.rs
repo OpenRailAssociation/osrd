@@ -1,0 +1,17 @@
+use serde::Deserialize;
+use serde::Serialize;
+use strum::FromRepr;
+use utoipa::ToSchema;
+
+editoast_common::schemas! {
+    Comfort,
+}
+
+#[derive(Debug, Default, Clone, Copy, Serialize, Deserialize, FromRepr, ToSchema, Hash)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum Comfort {
+    #[default]
+    Standard,
+    AirConditioning,
+    Heating,
+}
