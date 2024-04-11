@@ -4770,6 +4770,22 @@ components:
       required:
       - power_restriction
       type: object
+    PowerRestrictionItem:
+      additionalProperties: false
+      properties:
+        from:
+          minLength: 1
+          type: string
+        to:
+          minLength: 1
+          type: string
+        value:
+          type: string
+      required:
+      - from
+      - to
+      - value
+      type: object
     ProfilesOnPathResponse:
       description: |-
         A list of ranges associated to electrical profile values. When a profile overlapping another is found,
