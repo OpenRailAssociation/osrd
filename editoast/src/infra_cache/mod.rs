@@ -18,6 +18,10 @@ use diesel::QueryableByName;
 use diesel_async::AsyncPgConnection as PgConnection;
 use diesel_async::RunQueryDsl;
 use editoast_derive::EditoastError;
+use editoast_schemas::primitives::OSRDIdentified;
+use editoast_schemas::primitives::OSRDObject;
+use editoast_schemas::primitives::ObjectRef;
+use editoast_schemas::primitives::ObjectType;
 use enum_map::EnumMap;
 use geos::geojson::Geometry;
 pub use graph::Graph;
@@ -749,7 +753,6 @@ pub mod tests {
     use crate::schema::Direction;
     use crate::schema::Electrification;
     use crate::schema::Endpoint;
-    use crate::schema::OSRDIdentified;
     use crate::schema::OperationalPoint;
     use crate::schema::OperationalPointPartCache;
     use crate::schema::Route;
@@ -761,6 +764,7 @@ pub mod tests {
     use crate::schema::Waypoint;
     use editoast_common::Identifier;
     use editoast_common::NonBlankString;
+    use editoast_schemas::primitives::OSRDIdentified;
 
     #[actix_test]
     async fn load_track_section() {
@@ -1284,10 +1288,10 @@ pub mod tests {
         use crate::infra_cache::InfraCache;
         use crate::infra_cache::InfraCacheEditoastError;
         use crate::schema::Direction::StartToStop;
-        use crate::schema::ObjectType;
         use crate::schema::TrackEndpoint;
         use crate::schema::Waypoint::BufferStop;
         use editoast_common::Identifier;
+        use editoast_schemas::primitives::ObjectType;
 
         #[test]
         fn track_section() {

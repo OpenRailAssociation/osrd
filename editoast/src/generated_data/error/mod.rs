@@ -36,8 +36,8 @@ use crate::infra_cache::Graph;
 use crate::infra_cache::InfraCache;
 use crate::infra_cache::ObjectCache;
 use crate::schema::InfraError;
-use crate::schema::OSRDObject;
-use crate::schema::ObjectType;
+use editoast_schemas::primitives::OSRDObject;
+use editoast_schemas::primitives::ObjectType;
 
 /// Empty context used when no context is needed
 #[derive(Debug, Default)]
@@ -440,7 +440,7 @@ mod test {
     use super::Graph;
     use crate::infra_cache::tests::create_buffer_stop_cache;
     use crate::infra_cache::tests::create_small_infra_cache;
-    use crate::schema::ObjectType;
+    use editoast_schemas::primitives::ObjectType;
 
     #[rstest]
     async fn small_infra_cache_validation() {

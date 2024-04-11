@@ -1472,6 +1472,7 @@ version = "0.1.0"
 dependencies = [
  "derivative",
  "editoast_common",
+ "enum-map",
  "serde",
  "serde_derive",
  "serde_json",

@@ -10,11 +10,11 @@ use crate::schema::BufferStop;
 use crate::schema::Endpoint;
 use crate::schema::InfraError;
 use crate::schema::InfraErrorType;
-use crate::schema::OSRDIdentified as _;
-use crate::schema::OSRDObject as _;
-use crate::schema::ObjectRef;
 use crate::schema::TrackSectionCache;
 use editoast_common::Identifier;
+use editoast_schemas::primitives::OSRDIdentified as _;
+use editoast_schemas::primitives::OSRDObject as _;
+use editoast_schemas::primitives::ObjectRef;
 
 pub fn fix_track_section(
     track_section: &TrackSectionCache,

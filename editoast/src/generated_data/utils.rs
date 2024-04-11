@@ -3,9 +3,9 @@ use std::collections::HashSet;
 use crate::infra_cache::operation::CacheOperation;
 use crate::infra_cache::InfraCache;
 use crate::infra_cache::ObjectCache;
-use crate::schema::OSRDIdentified;
-use crate::schema::OSRDObject;
-use crate::schema::ObjectType;
+use editoast_schemas::primitives::OSRDIdentified;
+use editoast_schemas::primitives::OSRDObject;
+use editoast_schemas::primitives::ObjectType;
 
 /// This struct gives a set of objects that needs to be updated or deleted given a list of operations.
 #[derive(Debug, Clone, Default)]
@@ -67,9 +67,9 @@ mod test {
     use crate::infra_cache::tests::create_small_infra_cache;
     use crate::infra_cache::ObjectCache;
     use crate::schema::DetectorCache;
-    use crate::schema::ObjectRef;
-    use crate::schema::ObjectType;
     use crate::schema::TrackSectionCache;
+    use editoast_schemas::primitives::ObjectRef;
+    use editoast_schemas::primitives::ObjectType;
 
     #[test]
     fn track_section_deleted() {

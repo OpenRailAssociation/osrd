@@ -9,8 +9,8 @@ use serde::Serialize;
 use super::OperationError;
 use crate::error::Result;
 use crate::modelsv2::get_table;
-use crate::schema::ObjectRef;
-use crate::schema::ObjectType;
+use editoast_schemas::primitives::ObjectRef;
+use editoast_schemas::primitives::ObjectType;
 
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq, Hash)]
 #[serde(deny_unknown_fields)]
@@ -79,8 +79,8 @@ mod tests {
     use crate::infra_cache::operation::create::tests::create_track;
     use crate::infra_cache::operation::delete::DeleteOperation;
     use crate::modelsv2::infra::tests::test_infra_transaction;
-    use crate::schema::OSRDIdentified;
-    use crate::schema::OSRDObject;
+    use editoast_schemas::primitives::OSRDIdentified;
+    use editoast_schemas::primitives::OSRDObject;
 
     #[derive(QueryableByName)]
     struct Count {

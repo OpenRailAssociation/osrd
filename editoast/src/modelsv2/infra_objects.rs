@@ -7,8 +7,8 @@ use serde::Serialize;
 
 use crate::modelsv2::prelude::*;
 use crate::schema;
-use crate::schema::ObjectType;
 use crate::tables::*;
+use editoast_schemas::primitives::ObjectType;
 
 pub trait ModelBackedSchema: Sized {
     type Model: SchemaModel + Into<Self>;
@@ -62,7 +62,7 @@ macro_rules! infra_model {
             fn new_from_schema(schema: Self::Schema) -> Changeset<Self> {
                 // TODO: remove the `id` field of the schemas and replace it by
                 // a `modelsv2::ObjectId` type, whose `Default` yields a new UUID
-                use crate::schema::OSRDIdentified;
+                use editoast_schemas::primitives::OSRDIdentified;
                 let obj_id = schema.get_id().clone();
                 Self::changeset().schema(schema).obj_id(obj_id)
             }
