@@ -21,8 +21,8 @@ object TVM300toBAL : SignalDriver {
             "220A" -> "VL"
             "160A" -> "VL"
             "080A" -> "VL"
-            "000" -> "A"
-            "RRR" -> "C"
+            "000" -> "VL"
+            "RRR" -> "A"
             "OCCUPIED" -> "C"
             else -> throw OSRDError.newAspectError(aspect)
         }
