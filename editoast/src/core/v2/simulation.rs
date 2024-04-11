@@ -5,13 +5,14 @@ use chrono::Utc;
 use editoast_schemas::rolling_stock::EffortCurves;
 use editoast_schemas::rolling_stock::Gamma;
 use editoast_schemas::rolling_stock::RollingResistance;
+use editoast_schemas::train_schedule::Distribution;
 use editoast_schemas::train_schedule::MarginValue;
 use editoast_schemas::train_schedule::TrainScheduleOptions;
 use serde::Deserialize;
 use serde::Serialize;
 
 use crate::core::{AsCoreRequest, Json};
-use crate::schema::v2::trainschedule::{Comfort, Distribution};
+use crate::schema::v2::trainschedule::Comfort;
 use crate::views::v2::path::TrackRange;
 use crate::views::v2::train_schedule::CompleteReportTrain;
 use crate::views::v2::train_schedule::Mrsp;

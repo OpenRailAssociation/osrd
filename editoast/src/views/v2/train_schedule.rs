@@ -26,7 +26,6 @@ use crate::modelsv2::train_schedule::TrainScheduleChangeset;
 use crate::modelsv2::Model;
 use crate::modelsv2::Retrieve;
 use crate::modelsv2::RetrieveBatch;
-use crate::schema::v2::trainschedule::Distribution;
 use crate::schema::v2::trainschedule::TrainScheduleBase;
 use crate::views::v2::path::pathfinding_from_train;
 use crate::views::v2::path::PathfindingError;
@@ -64,7 +63,6 @@ crate::routes! {
 }
 
 editoast_common::schemas! {
-    Distribution,
     TrainScheduleBase,
     TrainScheduleForm,
     TrainScheduleResult,
