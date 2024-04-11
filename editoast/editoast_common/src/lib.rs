@@ -1,5 +1,4 @@
 pub mod duration;
-pub mod geo_json;
 pub mod geometry;
 mod hash_rounded_float;
 mod identifier;
