@@ -90,6 +90,12 @@ components:
       maxItems: 2
       minItems: 2
       type: array
+    Comfort:
+      enum:
+      - STANDARD
+      - AIR_CONDITIONING
+      - HEATING
+      type: string
     CompleteReportTrain:
       allOf:
       - $ref: '#/components/schemas/ReportTrainV2'
