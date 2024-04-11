@@ -19,6 +19,7 @@ pub use buffer_stop::BufferStop;
 pub use buffer_stop::BufferStopCache;
 pub use detector::Detector;
 pub use detector::DetectorCache;
+use editoast_schemas::infra::Direction;
 use editoast_schemas::primitives::OSRDIdentified;
 use editoast_schemas::primitives::OSRDObject;
 use editoast_schemas::primitives::ObjectType;
@@ -74,7 +75,6 @@ use editoast_common::NonBlankString;
 editoast_common::schemas! {
     TrackLocation,
     DirectionalTrackRange,
-    Direction,
     utils::schemas(),
     editoast_schemas::schemas(),
     operation::schemas(),
@@ -235,13 +235,6 @@ impl ApplicableDirectionsTrackRange {
             applicable_directions,
         }
     }
-}
-
-#[derive(Debug, Clone, Copy, Deserialize, Serialize, PartialEq, Eq, Hash, ToSchema)]
-#[serde(deny_unknown_fields, rename_all = "SCREAMING_SNAKE_CASE")]
-pub enum Direction {
-    StartToStop,
-    StopToStart,
 }
 
 #[derive(Debug, Derivative, Copy, Clone, Deserialize, Serialize, PartialEq, Eq)]

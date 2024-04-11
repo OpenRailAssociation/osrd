@@ -56,22 +56,22 @@ pub fn clip_range_map<T: Eq + Clone>(
     res
 }
 
-pub enum TravelDir {
-    StartToStop,
-    StopToStart,
+pub enum Direction {
+    StartToEnd,
+    EndToStart,
 }
 
 // Transforms a range map as though it was traveled from point `entry` in the given direction.
-pub fn travel_range_map<T: Eq + Clone>(
+pub fn shift_range_map<T: Eq + Clone>(
     track_range_map: &RangeMap<Float, T>,
     entry: f64,
-    direction: TravelDir,
+    direction: Direction,
 ) -> RangeMap<Float, T> {
     let mut res = RangeMap::new();
     for (range, value) in track_range_map.iter() {
         let (start, end) = match direction {
-            TravelDir::StartToStop => (range.start.0, range.end.0),
-            TravelDir::StopToStart => (range.end.0, range.start.0),
+            Direction::StartToEnd => (range.start.0, range.end.0),
+            Direction::EndToStart => (range.end.0, range.start.0),
         };
 
         let range = (start - entry).abs().into()..(end - entry).abs().into();
@@ -130,10 +130,10 @@ mod tests {
     }
 
     #[test]
-    fn test_travel_range_map_start_to_stop() {
+    fn test_shift_range_map_start_to_stop() {
         let range_map = range_map!(5.0, 10.0 => "a", 10.0, 20.0 => "b", 20.0, 30.0 => "c");
 
-        let traveled = travel_range_map(&range_map, 5.0, TravelDir::StartToStop);
+        let traveled = shift_range_map(&range_map, 5.0, Direction::StartToEnd);
         assert_eq!(
             traveled,
             range_map!(0.0, 5.0 => "a", 5.0, 15.0 => "b", 15.0, 25.0 => "c")
@@ -141,10 +141,10 @@ mod tests {
     }
 
     #[test]
-    fn test_travel_range_map_stop_to_start() {
+    fn test_shift_range_map_stop_to_start() {
         let range_map = range_map!(0.0, 10.0 => "a", 10.0, 22.0 => "b", 22.0, 25.0 => "c");
 
-        let traveled = travel_range_map(&range_map, 25.0, TravelDir::StopToStart);
+        let traveled = shift_range_map(&range_map, 25.0, Direction::EndToStart);
         assert_eq!(
             traveled,
             range_map!(0.0, 3.0 => "c", 3.0, 15.0 => "b", 15.0, 25.0 => "a")

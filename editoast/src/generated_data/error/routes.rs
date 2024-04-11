@@ -224,8 +224,8 @@ mod tests {
     use crate::infra_cache::tests::create_route_cache;
     use crate::infra_cache::tests::create_small_infra_cache;
     use crate::infra_cache::Graph;
-    use crate::schema::Direction;
     use crate::schema::Waypoint;
+    use editoast_schemas::infra::Direction;
     use editoast_schemas::primitives::OSRDObject;
     use editoast_schemas::primitives::ObjectRef;
     use editoast_schemas::primitives::ObjectType;

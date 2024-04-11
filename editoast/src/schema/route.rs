@@ -4,7 +4,6 @@ use derivative::Derivative;
 use serde::Deserialize;
 use serde::Serialize;
 
-use super::Direction;
 use super::DirectionalTrackRange;
 use super::Endpoint;
 use super::OSRDIdentified;
@@ -16,6 +15,7 @@ use crate::infra_cache::Graph;
 use crate::infra_cache::InfraCache;
 use crate::infra_cache::ObjectCache;
 use editoast_common::Identifier;
+use editoast_schemas::infra::Direction;
 use editoast_schemas::primitives::OSRDTyped;
 
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, Eq)]

@@ -750,7 +750,6 @@ pub mod tests {
     use crate::modelsv2::infra::tests::test_infra_transaction;
     use crate::schema::ApplicableDirections;
     use crate::schema::ApplicableDirectionsTrackRange;
-    use crate::schema::Direction;
     use crate::schema::Electrification;
     use crate::schema::Endpoint;
     use crate::schema::OperationalPoint;
@@ -764,6 +763,7 @@ pub mod tests {
     use crate::schema::Waypoint;
     use editoast_common::Identifier;
     use editoast_common::NonBlankString;
+    use editoast_schemas::infra::Direction;
     use editoast_schemas::primitives::OSRDIdentified;
 
     #[actix_test]
@@ -1287,10 +1287,10 @@ pub mod tests {
         use crate::infra_cache::tests::create_switch_type_cache;
         use crate::infra_cache::InfraCache;
         use crate::infra_cache::InfraCacheEditoastError;
-        use crate::schema::Direction::StartToStop;
         use crate::schema::TrackEndpoint;
         use crate::schema::Waypoint::BufferStop;
         use editoast_common::Identifier;
+        use editoast_schemas::infra::Direction::StartToStop;
         use editoast_schemas::primitives::ObjectType;
 
         #[test]

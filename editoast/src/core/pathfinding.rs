@@ -10,8 +10,8 @@ use super::Json;
 use crate::models::CurveGraph;
 use crate::models::RoutePath;
 use crate::models::SlopeGraph;
-use crate::schema::Direction;
 use crate::schema::TrackLocation;
+use editoast_schemas::infra::Direction;
 
 pub type PathfindingWaypoints = Vec<Vec<Waypoint>>;
 

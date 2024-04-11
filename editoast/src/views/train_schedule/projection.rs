@@ -184,7 +184,7 @@ pub mod tests {
 
     use super::*;
     use crate::models::RoutePath;
-    use crate::schema::Direction;
+    use editoast_schemas::infra::Direction;
 
     #[test]
     fn test_intersect() {
