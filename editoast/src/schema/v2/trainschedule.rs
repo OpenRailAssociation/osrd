@@ -4,11 +4,11 @@ use std::hash::Hash;
 
 use chrono::DateTime;
 use chrono::Utc;
-use derivative::Derivative;
 use editoast_common::NonBlankString;
 use editoast_schemas::train_schedule::Margins;
 use editoast_schemas::train_schedule::PathItem;
 use editoast_schemas::train_schedule::ScheduleItem;
+use editoast_schemas::train_schedule::TrainScheduleOptions;
 use serde::de::Error as SerdeError;
 use serde::Deserialize;
 use serde::Serialize;
@@ -159,19 +159,6 @@ pub struct PowerRestrictionItem {
     #[schema(inline)]
     pub to: NonBlankString,
     pub value: String,
-}
-
-#[derive(Debug, Derivative, Clone, Serialize, Deserialize, ToSchema, Hash)]
-#[serde(deny_unknown_fields)]
-#[derivative(Default)]
-pub struct TrainScheduleOptions {
-    #[derivative(Default(value = "true"))]
-    #[serde(default = "default_use_electrical_profiles")]
-    use_electrical_profiles: bool,
-}
-
-fn default_use_electrical_profiles() -> bool {
-    true
 }
 
 #[derive(Debug, Default, Clone, Copy, Serialize, Deserialize, FromRepr, ToSchema, Hash)]

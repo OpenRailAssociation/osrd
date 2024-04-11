@@ -7312,6 +7312,12 @@ components:
           nullable: true
           type: boolean
       type: object
+    TrainScheduleOptionsV2:
+      additionalProperties: false
+      properties:
+        use_electrical_profiles:
+          type: boolean
+      type: object
     TrainSchedulePatch:
       description: A patch of a train schedule
       properties:
