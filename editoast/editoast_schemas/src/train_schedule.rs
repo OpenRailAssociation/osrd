@@ -15,6 +15,9 @@ pub use train_schedule_options::TrainScheduleOptions;
 mod power_restriction_item;
 pub use power_restriction_item::PowerRestrictionItem;
 
+mod distribution;
+pub use distribution::Distribution;
+
 mod allowance;
 pub use allowance::Allowance;
 pub use allowance::AllowanceDistribution;
@@ -32,6 +35,7 @@ editoast_common::schemas! {
     path_item::schemas(),
     train_schedule_options::schemas(),
     power_restriction_item::schemas(),
+    distribution::schemas(),
     // TODO TrainSchedule V1 (it will be removed)
     allowance::schemas(),
     rjs_power_restriction_range::schemas(),

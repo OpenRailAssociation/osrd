@@ -5,6 +5,7 @@ use std::hash::Hash;
 use chrono::DateTime;
 use chrono::Utc;
 use editoast_common::NonBlankString;
+use editoast_schemas::train_schedule::Distribution;
 use editoast_schemas::train_schedule::Margins;
 use editoast_schemas::train_schedule::PathItem;
 use editoast_schemas::train_schedule::PowerRestrictionItem;
@@ -159,14 +160,6 @@ pub enum Comfort {
     Standard,
     AirConditioning,
     Heating,
-}
-
-#[derive(Debug, Default, Clone, Copy, Serialize, Deserialize, FromRepr, ToSchema, Hash)]
-#[serde(rename_all = "UPPERCASE")]
-pub enum Distribution {
-    #[default]
-    Standard,
-    Mareco,
 }
 
 #[cfg(test)]
