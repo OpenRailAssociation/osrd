@@ -2,25 +2,15 @@ use std::collections::HashMap;
 
 use editoast_common::rangemap_utils::clip_range_map;
 use editoast_common::rangemap_utils::extend_range_map;
-use editoast_common::rangemap_utils::travel_range_map;
+use editoast_common::rangemap_utils::shift_range_map;
 use editoast_common::rangemap_utils::Float;
-use editoast_common::rangemap_utils::TravelDir;
 use rangemap::RangeMap;
 
 use crate::models::pathfinding::Pathfinding;
-use crate::schema::Direction;
+use editoast_schemas::infra::Direction;
 
 /// A map of track IDs to range maps
 pub type TrackMap<T> = HashMap<String, RangeMap<Float, T>>;
-
-impl From<Direction> for TravelDir {
-    fn from(val: Direction) -> TravelDir {
-        match val {
-            Direction::StartToStop => TravelDir::StartToStop,
-            Direction::StopToStart => TravelDir::StopToStart,
-        }
-    }
-}
 
 pub fn make_path_range_map<T: Eq + Clone>(
     value_maps_by_track: &TrackMap<T>,
@@ -38,7 +28,7 @@ pub fn make_path_range_map<T: Eq + Clone>(
                 Direction::StartToStop => track_range.begin,
                 Direction::StopToStart => track_range.end,
             };
-            let value_map = travel_range_map(&value_map, range_entry, track_range.direction.into());
+            let value_map = shift_range_map(&value_map, range_entry, track_range.direction.into());
             extend_range_map(&mut res, value_map, offset);
         }
         offset += track_range.end - track_range.begin;
