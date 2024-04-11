@@ -3,12 +3,12 @@ use chrono::Utc;
 use editoast_derive::ModelV2;
 use editoast_schemas::train_schedule::Margins;
 use editoast_schemas::train_schedule::PathItem;
+use editoast_schemas::train_schedule::PowerRestrictionItem;
 use editoast_schemas::train_schedule::ScheduleItem;
 use editoast_schemas::train_schedule::TrainScheduleOptions;
 
 use crate::schema::v2::trainschedule::Comfort;
 use crate::schema::v2::trainschedule::Distribution;
-use crate::schema::v2::trainschedule::PowerRestrictionItem;
 
 #[derive(Debug, Default, Clone, ModelV2)]
 #[model(table = crate::tables::train_schedule_v2)]
