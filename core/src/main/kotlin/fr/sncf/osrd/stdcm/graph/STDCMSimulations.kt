@@ -29,10 +29,12 @@ import fr.sncf.osrd.train.RollingStock.Comfort
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
+import java.lang.ref.SoftReference
 
 /** This class contains all the methods used to simulate the train behavior. */
 class STDCMSimulations {
-    private var simulatedEnvelopes: HashMap<BlockSimulationParameters, Envelope?> = HashMap()
+    private var simulatedEnvelopes: HashMap<BlockSimulationParameters, SoftReference<Envelope>?> =
+        HashMap()
 
     /**
      * Returns the corresponding envelope if the block's envelope has already been computed in
@@ -47,24 +49,22 @@ class STDCMSimulations {
         infraExplorer: InfraExplorer,
         blockParams: BlockSimulationParameters
     ): Envelope? {
-        return if (simulatedEnvelopes.containsKey(blockParams)) {
-            simulatedEnvelopes[blockParams]
-        } else {
-            val simulatedEnvelope =
-                simulateBlock(
-                    rawInfra,
-                    infraExplorer,
-                    blockParams.initialSpeed,
-                    blockParams.start,
-                    rollingStock,
-                    comfort,
-                    timeStep,
-                    blockParams.stop,
-                    trainTag
-                )
-            simulatedEnvelopes[blockParams] = simulatedEnvelope
-            simulatedEnvelope
-        }
+        val cached = simulatedEnvelopes.getOrDefault(blockParams, null)?.get()
+        if (cached != null) return cached
+        val simulatedEnvelope =
+            simulateBlock(
+                rawInfra,
+                infraExplorer,
+                blockParams.initialSpeed,
+                blockParams.start,
+                rollingStock,
+                comfort,
+                timeStep,
+                blockParams.stop,
+                trainTag
+            )
+        simulatedEnvelopes[blockParams] = SoftReference(simulatedEnvelope)
+        return simulatedEnvelope
     }
 }
 
