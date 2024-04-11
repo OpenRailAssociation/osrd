@@ -129,7 +129,7 @@ private fun CollectionItemType.generateArraySortedSet(
                 }
 
                 private fun binarySearch(value: $type): Int {
-                    return binarySearch(value, 0, buffer.size)
+                    return binarySearch(value, 0, size)
                 }
 
                 private fun internalAdd(newElement: $type): Boolean {
@@ -218,9 +218,9 @@ private fun CollectionItemType.generateArraySortedSet(
                 }
 
                 override fun toString(): String {
-                    val builder = StringBuilder(2 + usedElements * 6)
+                    val builder = StringBuilder(2 + size * 6)
                     builder.append('{')
-                    for (i in 0 until usedElements) {
+                    for (i in 0 until size) {
                         if (i != 0)
                             builder.append(", ")
                         builder.append(buffer[i].toString())
@@ -309,7 +309,7 @@ private fun CollectionItemType.generateArraySortedSet(
                 }
 
                 private fun binarySearch(value: $type): Int {
-                    return binarySearch(value, 0, buffer.size)
+                    return binarySearch(value, 0, size)
                 }
 
                 override fun getAtIndex(index: Int): $type {
@@ -347,9 +347,9 @@ private fun CollectionItemType.generateArraySortedSet(
                 }
 
                 override fun toString(): String {
-                    val builder = StringBuilder(2 + buffer.size * 6)
+                    val builder = StringBuilder(2 + size * 6)
                     builder.append('{')
-                    for (i in 0 until buffer.size) {
+                    for (i in 0 until size) {
                         if (i != 0)
                             builder.append(", ")
                         builder.append(buffer[i].toString())
