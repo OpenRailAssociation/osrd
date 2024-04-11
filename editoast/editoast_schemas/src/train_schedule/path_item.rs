@@ -4,7 +4,7 @@ use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
-use crate::track_offset::TrackOffset;
+use crate::infra::TrackOffset;
 
 editoast_common::schemas! {
     PathItem,

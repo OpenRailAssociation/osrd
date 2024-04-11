@@ -1,5 +1,5 @@
 use derivative::Derivative;
-use editoast_schemas::track_offset::TrackOffset;
+use editoast_schemas::infra::TrackOffset;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
