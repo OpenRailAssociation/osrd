@@ -17,9 +17,9 @@ use crate::infra_cache::operation::UpdateOperation;
 use crate::schema::Electrification;
 use crate::schema::InfraError;
 use crate::schema::InfraErrorType;
-use crate::schema::OSRDIdentified as _;
-use crate::schema::OSRDObject as _;
-use crate::schema::ObjectRef;
+use editoast_schemas::primitives::OSRDIdentified as _;
+use editoast_schemas::primitives::OSRDObject as _;
+use editoast_schemas::primitives::ObjectRef;
 
 fn invalid_reference_to_ordered_operation(
     electrification: &Electrification,
@@ -98,10 +98,10 @@ mod tests {
     use crate::schema::ApplicableDirectionsTrackRange;
     use crate::schema::Electrification;
     use crate::schema::InfraError;
-    use crate::schema::OSRDObject as _;
-    use crate::schema::ObjectRef;
-    use crate::schema::ObjectType;
     use editoast_common::Identifier;
+    use editoast_schemas::primitives::OSRDObject as _;
+    use editoast_schemas::primitives::ObjectRef;
+    use editoast_schemas::primitives::ObjectType;
 
     #[test]
     fn invalid_refs_ordered_electrification() {

@@ -10,13 +10,13 @@ use serde::Serialize;
 
 use super::Direction;
 use super::OSRDIdentified;
-use super::OSRDTyped;
 use super::ObjectType;
 use super::Side;
 use crate::infra_cache::Cache;
 use crate::infra_cache::ObjectCache;
 use editoast_common::Identifier;
 use editoast_common::NonBlankString;
+use editoast_schemas::primitives::OSRDTyped;
 
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]

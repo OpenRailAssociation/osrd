@@ -14,10 +14,10 @@ pub use update::UpdateOperation;
 use utoipa::ToSchema;
 
 pub use self::delete::DeleteOperation;
-use super::OSRDObject as _;
-use super::ObjectRef;
 use crate::error::Result;
 use crate::infra_cache::ObjectCache;
+use editoast_schemas::primitives::OSRDObject as _;
+use editoast_schemas::primitives::ObjectRef;
 
 editoast_common::schemas! { Operation, }
 

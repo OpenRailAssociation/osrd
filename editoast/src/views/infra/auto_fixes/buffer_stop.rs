@@ -7,9 +7,9 @@ use super::Fix;
 use crate::schema::BufferStopCache;
 use crate::schema::InfraError;
 use crate::schema::InfraErrorType;
-use crate::schema::OSRDObject as _;
-use crate::schema::ObjectRef;
-use crate::schema::ObjectType;
+use editoast_schemas::primitives::OSRDObject as _;
+use editoast_schemas::primitives::ObjectRef;
+use editoast_schemas::primitives::ObjectType;
 
 pub fn fix_buffer_stop(
     buffer_stop: &BufferStopCache,

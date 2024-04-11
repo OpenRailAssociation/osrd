@@ -8,6 +8,7 @@ use std::collections::HashMap;
 
 use crate::schema::*;
 use editoast_common::Identifier;
+use editoast_schemas::primitives::OSRDIdentified;
 
 /* Part 1: type definitions */
 // When building the graph, a node can be a trackEndPoint, a detector or a buffer stop

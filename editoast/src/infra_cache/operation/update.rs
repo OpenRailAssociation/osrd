@@ -18,8 +18,8 @@ use super::OperationError;
 use crate::error::Result;
 use crate::infra_cache::operation::RailjsonObject;
 use crate::modelsv2::get_table;
-use crate::schema::OSRDIdentified;
-use crate::schema::ObjectType;
+use editoast_schemas::primitives::OSRDIdentified;
+use editoast_schemas::primitives::ObjectType;
 
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
@@ -135,8 +135,8 @@ mod tests {
     use crate::infra_cache::operation::create::tests::create_track;
     use crate::infra_cache::operation::OperationError;
     use crate::modelsv2::infra::tests::test_infra_transaction;
-    use crate::schema::OSRDIdentified;
-    use crate::schema::ObjectType;
+    use editoast_schemas::primitives::OSRDIdentified;
+    use editoast_schemas::primitives::ObjectType;
 
     #[derive(QueryableByName)]
     struct Value {

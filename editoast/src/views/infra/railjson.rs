@@ -27,11 +27,11 @@ use crate::infra_cache::InfraCache;
 use crate::modelsv2::get_table;
 use crate::modelsv2::prelude::*;
 use crate::modelsv2::Infra;
-use crate::schema::ObjectType;
 use crate::schema::RailJson;
 use crate::schema::RAILJSON_VERSION;
 use crate::views::infra::InfraApiError;
 use crate::DbPool;
+use editoast_schemas::primitives::ObjectType;
 
 /// Return `/infra/<infra_id>/railjson` routes
 pub fn routes() -> impl HttpServiceFactory {

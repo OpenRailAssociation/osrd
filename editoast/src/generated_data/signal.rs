@@ -19,8 +19,8 @@ use crate::generated_data::sprite_config::SpriteConfigs;
 use crate::infra_cache::operation::CacheOperation;
 use crate::infra_cache::InfraCache;
 use crate::schema::LogicalSignal;
-use crate::schema::ObjectType;
 use crate::tables::infra_layer_signal::dsl;
+use editoast_schemas::primitives::ObjectType;
 
 pub struct SignalLayer;
 

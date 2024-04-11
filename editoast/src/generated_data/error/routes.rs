@@ -7,11 +7,11 @@ use crate::infra_cache::Graph;
 use crate::infra_cache::InfraCache;
 use crate::infra_cache::ObjectCache;
 use crate::schema::InfraError;
-use crate::schema::OSRDIdentified;
-use crate::schema::OSRDObject;
-use crate::schema::ObjectRef;
-use crate::schema::ObjectType;
 use crate::schema::Waypoint;
+use editoast_schemas::primitives::OSRDIdentified;
+use editoast_schemas::primitives::OSRDObject;
+use editoast_schemas::primitives::ObjectRef;
+use editoast_schemas::primitives::ObjectType;
 
 pub const OBJECT_GENERATORS: [ObjectErrorGenerator<Context>; 5] = [
     ObjectErrorGenerator::new(1, check_entry_point_ref),
@@ -225,10 +225,10 @@ mod tests {
     use crate::infra_cache::tests::create_small_infra_cache;
     use crate::infra_cache::Graph;
     use crate::schema::Direction;
-    use crate::schema::OSRDObject;
-    use crate::schema::ObjectRef;
-    use crate::schema::ObjectType;
     use crate::schema::Waypoint;
+    use editoast_schemas::primitives::OSRDObject;
+    use editoast_schemas::primitives::ObjectRef;
+    use editoast_schemas::primitives::ObjectType;
 
     #[test]
     fn invalid_ref_entry_point() {

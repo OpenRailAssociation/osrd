@@ -4,10 +4,10 @@ use serde::Serialize;
 
 use super::DirectionalTrackRange;
 use super::OSRDIdentified;
-use super::OSRDTyped;
 use super::ObjectType;
 use super::Sign;
 use editoast_common::Identifier;
+use editoast_schemas::primitives::OSRDTyped;
 
 /// Neutral sections are portions of track where trains aren't allowed to pull power from electrifications. They have to rely on inertia to cross such sections.
 ///

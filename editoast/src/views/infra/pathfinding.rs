@@ -23,12 +23,12 @@ use crate::modelsv2::Infra;
 use crate::schema::Direction;
 use crate::schema::DirectionalTrackRange;
 use crate::schema::Endpoint;
-use crate::schema::ObjectType;
 use crate::schema::TrackEndpoint;
 use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraIdParam;
 use crate::DbPool;
 use editoast_common::Identifier;
+use editoast_schemas::primitives::ObjectType;
 
 crate::routes! {
     "/pathfinding" => {

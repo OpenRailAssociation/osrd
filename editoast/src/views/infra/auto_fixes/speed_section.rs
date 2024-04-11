@@ -16,10 +16,10 @@ use crate::infra_cache::operation::RailjsonObject;
 use crate::infra_cache::operation::UpdateOperation;
 use crate::schema::InfraError;
 use crate::schema::InfraErrorType;
-use crate::schema::OSRDIdentified as _;
-use crate::schema::OSRDObject as _;
-use crate::schema::ObjectRef;
 use crate::schema::SpeedSection;
+use editoast_schemas::primitives::OSRDIdentified as _;
+use editoast_schemas::primitives::OSRDObject as _;
+use editoast_schemas::primitives::ObjectRef;
 
 fn invalid_reference_to_ordered_operation(
     speed_section: &SpeedSection,
@@ -97,11 +97,11 @@ mod tests {
     use crate::schema::ApplicableDirections;
     use crate::schema::ApplicableDirectionsTrackRange;
     use crate::schema::InfraError;
-    use crate::schema::OSRDObject as _;
-    use crate::schema::ObjectRef;
-    use crate::schema::ObjectType;
     use crate::schema::SpeedSection;
     use editoast_common::Identifier;
+    use editoast_schemas::primitives::OSRDObject as _;
+    use editoast_schemas::primitives::ObjectRef;
+    use editoast_schemas::primitives::ObjectType;
 
     #[test]
     fn invalid_refs_ordered_speed_section() {

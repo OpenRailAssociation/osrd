@@ -13,9 +13,9 @@ use crate::error::Result;
 use crate::infra_cache::InfraCache;
 use crate::modelsv2::prelude::*;
 use crate::modelsv2::Infra;
-use crate::schema::ObjectType;
 use crate::views::infra::InfraApiError;
 use crate::DbPool;
+use editoast_schemas::primitives::ObjectType;
 
 crate::routes! { attached }
 
@@ -110,11 +110,11 @@ mod tests {
     use crate::infra_cache::operation::RailjsonObject;
     use crate::modelsv2::Infra;
     use crate::schema::Detector;
-    use crate::schema::OSRDIdentified;
-    use crate::schema::ObjectType;
     use crate::schema::TrackSection;
     use crate::views::infra::tests::create_object_request;
     use crate::views::tests::create_test_service;
+    use editoast_schemas::primitives::OSRDIdentified;
+    use editoast_schemas::primitives::ObjectType;
 
     #[rstest]
     async fn get_attached_detector(#[future] empty_infra: TestFixture<Infra>) {

@@ -14,8 +14,8 @@ use crate::diesel::ExpressionMethods;
 use crate::error::Result;
 use crate::infra_cache::operation::CacheOperation;
 use crate::infra_cache::InfraCache;
-use crate::schema::ObjectType;
 use crate::tables::infra_layer_electrification::dsl;
+use editoast_schemas::primitives::ObjectType;
 
 pub struct ElectrificationLayer;
 

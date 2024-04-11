@@ -24,9 +24,9 @@ use thiserror::Error;
 use crate::error::Result;
 use crate::modelsv2::get_geometry_layer_table;
 use crate::modelsv2::get_table;
-use crate::schema::ObjectType;
 use crate::DbPool;
 use editoast_common::geo_json::GeoJson;
+use editoast_schemas::primitives::ObjectType;
 
 /// Return `/infra/<infra_id>/objects` routes
 pub fn routes() -> impl HttpServiceFactory {
@@ -145,12 +145,12 @@ mod tests {
     use crate::fixtures::tests::TestFixture;
     use crate::infra_cache::operation::Operation;
     use crate::modelsv2::Infra;
-    use crate::schema::OSRDIdentified;
     use crate::schema::Switch;
     use crate::schema::SwitchType;
     use crate::views::infra::objects::ObjectQueryable;
     use crate::views::infra::tests::create_object_request;
     use crate::views::tests::create_test_service;
+    use editoast_schemas::primitives::OSRDIdentified;
 
     #[rstest]
     async fn check_invalid_ids(#[future] empty_infra: TestFixture<Infra>) {

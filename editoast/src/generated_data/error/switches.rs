@@ -6,10 +6,10 @@ use crate::infra_cache::Graph;
 use crate::infra_cache::InfraCache;
 use crate::infra_cache::ObjectCache;
 use crate::schema::InfraError;
-use crate::schema::OSRDIdentified;
-use crate::schema::ObjectRef;
-use crate::schema::ObjectType;
 use crate::schema::TrackEndpoint;
+use editoast_schemas::primitives::OSRDIdentified;
+use editoast_schemas::primitives::ObjectRef;
+use editoast_schemas::primitives::ObjectType;
 
 pub const OBJECT_GENERATORS: [ObjectErrorGenerator<Context>; 5] = [
     ObjectErrorGenerator::new(1, check_invalid_ref_ports),
@@ -144,9 +144,9 @@ mod tests {
     use crate::infra_cache::tests::create_switch_cache_point;
     use crate::infra_cache::tests::create_track_endpoint;
     use crate::schema::Endpoint;
-    use crate::schema::OSRDIdentified;
-    use crate::schema::ObjectRef;
-    use crate::schema::ObjectType;
+    use editoast_schemas::primitives::OSRDIdentified;
+    use editoast_schemas::primitives::ObjectRef;
+    use editoast_schemas::primitives::ObjectType;
 
     #[test]
     fn invalid_ref_track() {
