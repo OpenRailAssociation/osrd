@@ -4,6 +4,8 @@ group "default" {
   targets = [
     "core",
     "core-build",
+    "train-sim-rust-test",
+    "train-sim-bindings-test",
     "editoast",
     "editoast-test",
     "front-tests",
@@ -44,6 +46,7 @@ target "core-build" {
   contexts = {
     test_data = "./tests/data"
     static_assets = "./assets"
+    train_sim_dir = "./train-sim"
   }
 }
 
@@ -57,6 +60,37 @@ target "core" {
   contexts = {
     test_data = "./tests/data"
     static_assets = "./assets"
+    train_sim_dir = "./train-sim"
+  }
+}
+
+#############
+# Train-sim #
+#############
+
+target "base-train-sim-rust-test" {}
+
+target "train-sim-rust-test" {
+  inherits = ["base", "base-train-sim-rust-test"]
+  context = "core"
+  dockerfile = "Dockerfile"
+  target = "train_sim_rust_env"
+  contexts = {
+    test_data = "./tests/data"
+    train_sim_dir = "./train-sim"
+  }
+}
+
+target "base-train-sim-bindings-test" {}
+
+target "train-sim-bindings-test" {
+  inherits = ["base", "base-train-sim-bindings-test"]
+  context = "core"
+  dockerfile = "Dockerfile"
+  target = "train_sim_gradle_env"
+  contexts = {
+    test_data = "./tests/data"
+    train_sim_dir = "./train-sim"
   }
 }
 

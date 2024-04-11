@@ -1,0 +1,29 @@
+import org.gradle.api.tasks.testing.logging.TestLogEvent
+
+plugins {
+    id 'org.jetbrains.kotlin.jvm' version '1.9.23'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation group: 'net.java.dev.jna', name: 'jna', version: '5.14.0'
+    testImplementation group: 'org.jetbrains.kotlin', name: 'kotlin-test', version: '1.9.23'
+}
+
+sourceSets {
+    test {
+        resources {
+            srcDirs = ["../cross_language_tests/"]
+        }
+    }
+}
+
+test {
+    systemProperty "jna.library.path", System.getProperty("jna.library.path")
+    testLogging {
+        events TestLogEvent.FAILED, TestLogEvent.PASSED, TestLogEvent.SKIPPED
+    }
+}
