@@ -14,8 +14,10 @@ use diesel::sql_types::Nullable;
 use diesel::sql_types::Text;
 use diesel::QueryableByName;
 use diesel_async::RunQueryDsl;
-use diesel_json::Json as DieselJson;
 use editoast_derive::EditoastError;
+use postgis_diesel::sql_types::Geometry;
+use postgis_diesel::types::GeometryContainer;
+use postgis_diesel::types::Point;
 use serde::Deserialize;
 use serde::Serialize;
 use serde_json::Value as JsonValue;
@@ -25,7 +27,6 @@ use crate::error::Result;
 use crate::modelsv2::get_geometry_layer_table;
 use crate::modelsv2::get_table;
 use crate::DbPool;
-use editoast_common::geo_json::GeoJson;
 use editoast_schemas::primitives::ObjectType;
 
 /// Return `/infra/<infra_id>/objects` routes
@@ -53,10 +54,10 @@ struct ObjectQueryable {
     obj_id: String,
     #[diesel(sql_type = Jsonb)]
     railjson: JsonValue,
-    #[diesel(sql_type = Nullable<Jsonb>)]
-    geographic: Option<DieselJson<GeoJson>>,
-    #[diesel(sql_type = Nullable<Jsonb>)]
-    schematic: Option<DieselJson<GeoJson>>,
+    #[diesel(sql_type = Nullable<Geometry>)]
+    geographic: Option<GeometryContainer<Point>>,
+    #[diesel(sql_type = Nullable<Geometry>)]
+    schematic: Option<GeometryContainer<Point>>,
 }
 
 /// Return the railjson list of a specific OSRD object
@@ -75,7 +76,7 @@ async fn get_objects(
     let query = if [ObjectType::SwitchType, ObjectType::Route].contains(&obj_type) {
         format!(
             "SELECT obj_id as obj_id, data as railjson, NULL as geographic, NULL as schematic
-                FROM {} WHERE infra_id = $1 AND obj_id = ANY($2) ",
+                FROM {} WHERE infra_id = $1 AND obj_id = ANY($2)",
             get_table(&obj_type)
         )
     } else {
@@ -83,8 +84,8 @@ async fn get_objects(
             SELECT
                 object_table.obj_id as obj_id,
                 object_table.data as railjson,
-                ST_AsGeoJSON(ST_Transform(geographic, 4326))::jsonb as geographic,
-                ST_AsGeoJSON(ST_Transform(schematic, 4326))::jsonb as schematic
+                ST_Transform(geographic, 4326) as geographic,
+                ST_Transform(schematic, 4326) as schematic
             FROM {} AS object_table
             LEFT JOIN {} AS geometry_table ON object_table.obj_id = geometry_table.obj_id AND object_table.infra_id = geometry_table.infra_id
             WHERE object_table.infra_id = $1 AND object_table.obj_id = ANY($2)

@@ -1,15 +1,17 @@
 use diesel::sql_types::Jsonb;
 use diesel::sql_types::Text;
+use geos::geojson::Geometry;
+use geos::geojson::Value as GeoJsonValue;
 use mvt::Feature;
 use mvt::GeomData;
 use mvt::GeomEncoder;
+use mvt::GeomType;
 use mvt::Tile as MvtTile;
 use serde::Deserialize;
 use serde::Serialize;
 use serde_json::Value as JsonValue;
 
 use crate::map::View;
-use editoast_common::geo_json::GeoJson;
 
 #[derive(Clone, QueryableByName, Queryable, Debug, Serialize, Deserialize)]
 pub struct GeoJsonAndData {
@@ -19,33 +21,45 @@ pub struct GeoJsonAndData {
     pub data: JsonValue,
 }
 
+fn geometry_into_mvt_geom_type(geometry: &Geometry) -> GeomType {
+    match geometry.value {
+        GeoJsonValue::Point { .. } => GeomType::Point,
+        GeoJsonValue::MultiPoint { .. } => GeomType::Point,
+        GeoJsonValue::LineString { .. } => GeomType::Linestring,
+        GeoJsonValue::MultiLineString { .. } => GeomType::Linestring,
+        _ => panic!("geometry type unsupported by editoast tiling system"),
+    }
+}
+
 impl GeoJsonAndData {
     /// Converts GeoJsonAndData as mvt GeomData
     pub fn as_geom_data(&self) -> GeomData {
-        let geo_json = serde_json::from_str::<GeoJson>(&self.geo_json).unwrap();
-        let mut encoder = GeomEncoder::new(geo_json.get_geom_type());
-        match geo_json {
-            GeoJson::Point { coordinates } => {
-                encoder.add_point(coordinates.0, coordinates.1).unwrap();
+        let geo_json = serde_json::from_str::<Geometry>(&self.geo_json).unwrap();
+        let geom_type = geometry_into_mvt_geom_type(&geo_json);
+        let mut encoder = GeomEncoder::new(geom_type);
+        match geo_json.value {
+            GeoJsonValue::Point(point) => {
+                encoder.add_point(point[0], point[1]).unwrap();
             }
-            GeoJson::MultiPoint { coordinates } => {
-                for (x, y) in coordinates {
-                    encoder.add_point(x, y).unwrap();
+            GeoJsonValue::MultiPoint(points) => {
+                for point in points {
+                    encoder.add_point(point[0], point[1]).unwrap();
                 }
             }
-            GeoJson::LineString { coordinates } => {
-                for (x, y) in coordinates {
-                    encoder.add_point(x, y).unwrap();
+            GeoJsonValue::LineString(linestring) => {
+                for point in linestring {
+                    encoder.add_point(point[0], point[1]).unwrap();
                 }
             }
-            GeoJson::MultiLineString { coordinates } => {
-                for line in coordinates {
-                    for (x, y) in line.iter() {
-                        encoder.add_point(*x, *y).unwrap();
+            GeoJsonValue::MultiLineString(linestrings) => {
+                for linestring in linestrings {
+                    for point in linestring.iter() {
+                        encoder.add_point(point[0], point[1]).unwrap();
                     }
                     encoder.complete_geom().unwrap();
                 }
             }
+            _ => panic!("geometry type unsupported by editoast tiling system"),
         };
         encoder.complete().unwrap().encode().unwrap()
     }
