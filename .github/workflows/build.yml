@@ -634,7 +634,7 @@ jobs:
 
             exit $(docker wait playwright-test)
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: integration-videos
@@ -645,7 +645,7 @@ jobs:
         run: docker compose logs > container-logs
         if: always()
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: integration-container-logs
