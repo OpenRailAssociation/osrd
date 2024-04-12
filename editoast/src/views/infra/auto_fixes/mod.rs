@@ -333,7 +333,6 @@ mod tests {
     use crate::infra_cache::operation::Operation;
     use crate::infra_cache::operation::RailjsonObject;
     use crate::infra_cache::InfraCacheEditoastError;
-    use crate::schema::ApplicableDirectionsTrackRange;
     use crate::schema::BufferStop;
     use crate::schema::BufferStopCache;
     use crate::schema::BufferStopExtension;
@@ -352,6 +351,7 @@ mod tests {
     use crate::views::pagination::PaginatedResponse;
     use crate::views::tests::create_test_service;
     use editoast_common::Identifier;
+    use editoast_schemas::infra::ApplicableDirectionsTrackRange;
     use editoast_schemas::infra::Endpoint;
     use editoast_schemas::infra::TrackEndpoint;
     use editoast_schemas::infra::Waypoint;

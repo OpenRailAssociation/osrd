@@ -4,13 +4,13 @@ use derivative::Derivative;
 use serde::Deserialize;
 use serde::Serialize;
 
-use super::ApplicableDirectionsTrackRange;
 use super::OSRDIdentified;
 use super::ObjectType;
 use crate::infra_cache::Cache;
 use crate::infra_cache::ObjectCache;
 use editoast_common::Identifier;
 use editoast_common::NonBlankString;
+use editoast_schemas::infra::ApplicableDirectionsTrackRange;
 use editoast_schemas::infra::Sign;
 use editoast_schemas::primitives::OSRDTyped;
 

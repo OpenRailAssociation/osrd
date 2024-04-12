@@ -94,11 +94,11 @@ mod tests {
     use crate::infra_cache::operation::CacheOperation;
     use crate::infra_cache::operation::Operation;
     use crate::infra_cache::ObjectCache;
-    use crate::schema::ApplicableDirectionsTrackRange;
     use crate::schema::InfraError;
     use crate::schema::SpeedSection;
     use editoast_common::Identifier;
     use editoast_schemas::infra::ApplicableDirections;
+    use editoast_schemas::infra::ApplicableDirectionsTrackRange;
     use editoast_schemas::primitives::OSRDObject as _;
     use editoast_schemas::primitives::ObjectRef;
     use editoast_schemas::primitives::ObjectType;

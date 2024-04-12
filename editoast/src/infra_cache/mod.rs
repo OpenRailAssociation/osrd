@@ -749,7 +749,6 @@ pub mod tests {
     use crate::infra_cache::SwitchCache;
     use crate::map::BoundingBox;
     use crate::modelsv2::infra::tests::test_infra_transaction;
-    use crate::schema::ApplicableDirectionsTrackRange;
     use crate::schema::Electrification;
     use crate::schema::OperationalPoint;
     use crate::schema::OperationalPointPartCache;
@@ -761,6 +760,7 @@ pub mod tests {
     use editoast_common::Identifier;
     use editoast_common::NonBlankString;
     use editoast_schemas::infra::ApplicableDirections;
+    use editoast_schemas::infra::ApplicableDirectionsTrackRange;
     use editoast_schemas::infra::Direction;
     use editoast_schemas::infra::Endpoint;
     use editoast_schemas::infra::TrackEndpoint;
