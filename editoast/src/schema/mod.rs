@@ -20,6 +20,7 @@ pub use buffer_stop::BufferStopCache;
 pub use detector::Detector;
 pub use detector::DetectorCache;
 use editoast_schemas::infra::Direction;
+use editoast_schemas::infra::Side;
 use editoast_schemas::primitives::OSRDIdentified;
 use editoast_schemas::primitives::ObjectType;
 pub use electrification::Electrification;
@@ -151,16 +152,6 @@ impl TrackEndpoint {
             endpoint,
         }
     }
-}
-
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, Eq)]
-#[derivative(Default)]
-#[serde(rename_all = "UPPERCASE")]
-pub enum Side {
-    Left,
-    Right,
-    #[derivative(Default)]
-    Center,
 }
 
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq)]
