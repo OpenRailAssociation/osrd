@@ -18,9 +18,9 @@ use utoipa::ToSchema;
 
 use crate::models::Identifiable;
 use crate::schema::DirectionalTrackRange;
-use crate::schema::TrackLocation;
 use crate::tables::pathfinding;
 use editoast_schemas::infra::Direction;
+use editoast_schemas::infra::TrackLocation;
 
 editoast_common::schemas! {
     Slope,
