@@ -7,7 +7,7 @@ use crate::infra_cache::Graph;
 use crate::infra_cache::InfraCache;
 use crate::infra_cache::ObjectCache;
 use crate::schema::InfraError;
-use crate::schema::Waypoint;
+use editoast_schemas::infra::Waypoint;
 use editoast_schemas::primitives::OSRDIdentified;
 use editoast_schemas::primitives::OSRDObject;
 use editoast_schemas::primitives::ObjectRef;
@@ -224,8 +224,8 @@ mod tests {
     use crate::infra_cache::tests::create_route_cache;
     use crate::infra_cache::tests::create_small_infra_cache;
     use crate::infra_cache::Graph;
-    use crate::schema::Waypoint;
     use editoast_schemas::infra::Direction;
+    use editoast_schemas::infra::Waypoint;
     use editoast_schemas::primitives::OSRDObject;
     use editoast_schemas::primitives::ObjectRef;
     use editoast_schemas::primitives::ObjectType;

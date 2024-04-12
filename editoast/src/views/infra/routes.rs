@@ -241,10 +241,10 @@ mod tests {
     use crate::schema::Detector;
     use crate::schema::Route;
     use crate::schema::TrackSection;
-    use crate::schema::Waypoint;
     use crate::views::infra::routes::RoutesResponse;
     use crate::views::infra::routes::WaypointType;
     use crate::views::tests::create_test_service;
+    use editoast_schemas::infra::Waypoint;
 
     #[rstest]
     async fn get_routes_nodes() {

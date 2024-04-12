@@ -351,10 +351,10 @@ mod tests {
     use crate::schema::Switch;
     use crate::schema::TrackEndpoint;
     use crate::schema::TrackSection;
-    use crate::schema::Waypoint;
     use crate::views::pagination::PaginatedResponse;
     use crate::views::tests::create_test_service;
     use editoast_common::Identifier;
+    use editoast_schemas::infra::Waypoint;
     use editoast_schemas::primitives::ObjectRef;
     use editoast_schemas::primitives::ObjectType;
 
