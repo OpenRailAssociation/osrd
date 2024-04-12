@@ -1442,7 +1442,6 @@ dependencies = [
  "chrono",
  "geos",
  "iso8601",
- "postgis_diesel",
  "rand 0.8.5",
  "rangemap",
  "serde",

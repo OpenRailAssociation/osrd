@@ -9,7 +9,6 @@ edition = "2021"
 chrono.workspace = true
 geos.workspace = true
 iso8601 = "0.6.1"
-postgis_diesel.workspace = true
 rand.workspace = true
 rangemap.workspace = true
 serde.workspace = true
