@@ -1,3 +1,4 @@
+mod applicable_directions;
 mod direction;
 mod directional_track_range;
 mod side;
@@ -6,6 +7,7 @@ mod track_offset;
 mod track_range;
 mod waypoint;
 
+pub use applicable_directions::ApplicableDirections;
 pub use direction::Direction;
 pub use directional_track_range::DirectionalTrackRange;
 pub use side::Side;
