@@ -15,9 +15,6 @@ use diesel::sql_types::Text;
 use diesel::QueryableByName;
 use diesel_async::RunQueryDsl;
 use editoast_derive::EditoastError;
-use postgis_diesel::sql_types::Geometry;
-use postgis_diesel::types::GeometryContainer;
-use postgis_diesel::types::Point;
 use serde::Deserialize;
 use serde::Serialize;
 use serde_json::Value as JsonValue;
@@ -54,10 +51,10 @@ struct ObjectQueryable {
     obj_id: String,
     #[diesel(sql_type = Jsonb)]
     railjson: JsonValue,
-    #[diesel(sql_type = Nullable<Geometry>)]
-    geographic: Option<GeometryContainer<Point>>,
-    #[diesel(sql_type = Nullable<Geometry>)]
-    schematic: Option<GeometryContainer<Point>>,
+    #[diesel(sql_type = Nullable<Jsonb>)]
+    geographic: Option<diesel_json::Json<geos::geojson::Geometry>>,
+    #[diesel(sql_type = Nullable<Jsonb>)]
+    schematic: Option<diesel_json::Json<geos::geojson::Geometry>>,
 }
 
 /// Return the railjson list of a specific OSRD object
@@ -84,8 +81,8 @@ async fn get_objects(
             SELECT
                 object_table.obj_id as obj_id,
                 object_table.data as railjson,
-                ST_Transform(geographic, 4326) as geographic,
-                ST_Transform(schematic, 4326) as schematic
+                ST_AsGeoJSON(ST_Transform(geographic, 4326))::jsonb as geographic,
+                ST_AsGeoJSON(ST_Transform(schematic, 4326))::jsonb as schematic
             FROM {} AS object_table
             LEFT JOIN {} AS geometry_table ON object_table.obj_id = geometry_table.obj_id AND object_table.infra_id = geometry_table.infra_id
             WHERE object_table.infra_id = $1 AND object_table.obj_id = ANY($2)
