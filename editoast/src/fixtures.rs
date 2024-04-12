@@ -19,7 +19,7 @@ pub mod tests {
         schema::{
             electrical_profiles::{ElectricalProfile, ElectricalProfileSetData},
             v2::trainschedule::TrainScheduleBase,
-            RailJson, TrackRange,
+            RailJson,
         },
         views::{
             rolling_stocks::rolling_stock_form::RollingStockForm,
@@ -31,6 +31,7 @@ pub mod tests {
     use actix_web::web::Data;
     use chrono::Utc;
     use diesel_async::pooled_connection::AsyncDieselConnectionManager;
+    use editoast_schemas::infra::TrackRange;
     use futures::executor;
     use postgis_diesel::types::LineString;
     use rstest::*;

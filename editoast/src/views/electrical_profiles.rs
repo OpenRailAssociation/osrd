@@ -23,8 +23,8 @@ use crate::modelsv2::Retrieve;
 use crate::schema::electrical_profiles::ElectricalProfile;
 use crate::schema::electrical_profiles::ElectricalProfileSetData;
 use crate::schema::electrical_profiles::LevelValues;
-use crate::schema::TrackRange;
 use crate::DbPool;
+use editoast_schemas::infra::TrackRange;
 
 crate::routes! {
     "/electrical_profile_set" => {
@@ -197,8 +197,8 @@ mod tests {
     use crate::fixtures::tests::electrical_profile_set;
     use crate::fixtures::tests::TestFixture;
     use crate::schema::electrical_profiles::ElectricalProfile;
-    use crate::schema::TrackRange;
     use crate::views::tests::create_test_service;
+    use editoast_schemas::infra::TrackRange;
 
     #[rstest]
     async fn test_list(
