@@ -209,7 +209,13 @@ fun runPathfinding(
         waypoints.add(allStarts)
     }
     val constraints = initConstraints(infra, rollingStocks!!)
-    val remainingDistanceEstimators = makeHeuristics(infra, waypoints)
+
+    // The heuristic is temporarily disabled, its implementation
+    // is currently too slow and the requests are actually slower.
+    // See https://github.com/OpenRailAssociation/osrd/issues/7200
+    // val remainingDistanceEstimators = makeHeuristics(infra, waypoints)
+    val nullHeuristic: AStarHeuristicId<Block> = AStarHeuristic() { _, _ -> 0.0 }
+    val remainingDistanceEstimators = List(waypoints.size - 1) { nullHeuristic }
 
     // Compute the paths from the entry waypoint to the exit waypoint
     return computePaths(infra, waypoints, constraints, remainingDistanceEstimators, timeout)
