@@ -20,7 +20,6 @@ pub use buffer_stop::BufferStopCache;
 pub use detector::Detector;
 pub use detector::DetectorCache;
 use editoast_schemas::infra::Direction;
-use editoast_schemas::infra::Side;
 use editoast_schemas::primitives::OSRDIdentified;
 use editoast_schemas::primitives::ObjectType;
 pub use electrification::Electrification;
@@ -69,7 +68,6 @@ use serde::Deserialize;
 use serde::Serialize;
 
 use editoast_common::Identifier;
-use editoast_common::NonBlankString;
 
 editoast_common::schemas! {
     utils::schemas(),
@@ -152,20 +150,4 @@ impl TrackEndpoint {
             endpoint,
         }
     }
-}
-
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq)]
-#[derivative(Default)]
-#[serde(deny_unknown_fields)]
-pub struct Sign {
-    #[derivative(Default(value = r#""InvalidRef".into()"#))]
-    pub track: Identifier,
-    pub position: f64,
-    pub side: Side,
-    #[derivative(Default(value = r#"Direction::StartToStop"#))]
-    pub direction: Direction,
-    #[serde(rename = "type")]
-    pub sign_type: NonBlankString,
-    pub value: String,
-    pub kp: String,
 }
