@@ -3,9 +3,9 @@ use serde::Deserialize;
 use serde::Serialize;
 use strum::VariantNames;
 
-use super::Endpoint;
 use super::OSRDIdentified;
 use super::ObjectType;
+use editoast_schemas::infra::Endpoint;
 use editoast_schemas::primitives::ObjectRef;
 
 #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]

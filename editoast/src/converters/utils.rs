@@ -3,7 +3,9 @@ use editoast_schemas::infra::Direction;
 use std::collections::HashMap;
 use std::str::FromStr;
 
+use editoast_schemas::infra::Endpoint;
 use editoast_schemas::infra::Side;
+use editoast_schemas::infra::TrackEndpoint;
 use osm4routing::Coord;
 use osm4routing::Edge;
 use osm4routing::NodeId;

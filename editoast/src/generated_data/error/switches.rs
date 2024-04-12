@@ -6,7 +6,7 @@ use crate::infra_cache::Graph;
 use crate::infra_cache::InfraCache;
 use crate::infra_cache::ObjectCache;
 use crate::schema::InfraError;
-use crate::schema::TrackEndpoint;
+use editoast_schemas::infra::TrackEndpoint;
 use editoast_schemas::primitives::OSRDIdentified;
 use editoast_schemas::primitives::ObjectRef;
 use editoast_schemas::primitives::ObjectType;
@@ -143,7 +143,7 @@ mod tests {
     use crate::infra_cache::tests::create_small_infra_cache;
     use crate::infra_cache::tests::create_switch_cache_point;
     use crate::infra_cache::tests::create_track_endpoint;
-    use crate::schema::Endpoint;
+    use editoast_schemas::infra::Endpoint;
     use editoast_schemas::primitives::OSRDIdentified;
     use editoast_schemas::primitives::ObjectRef;
     use editoast_schemas::primitives::ObjectType;

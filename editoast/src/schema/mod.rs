@@ -20,7 +20,6 @@ pub use buffer_stop::BufferStopCache;
 pub use detector::Detector;
 pub use detector::DetectorCache;
 use editoast_schemas::infra::ApplicableDirections;
-use editoast_schemas::infra::Direction;
 use editoast_schemas::primitives::OSRDIdentified;
 use editoast_schemas::primitives::ObjectType;
 pub use electrification::Electrification;
@@ -100,45 +99,6 @@ impl ApplicableDirectionsTrackRange {
             begin,
             end,
             applicable_directions,
-        }
-    }
-}
-
-#[derive(Debug, Clone, Copy, Deserialize, Serialize, PartialEq, Eq, Hash)]
-#[serde(rename_all = "UPPERCASE")]
-pub enum Endpoint {
-    Begin,
-    End,
-}
-
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, Eq, Hash)]
-#[derivative(Default)]
-#[serde(deny_unknown_fields)]
-pub struct TrackEndpoint {
-    #[derivative(Default(value = "Endpoint::Begin"))]
-    pub endpoint: Endpoint,
-    #[derivative(Default(value = r#""InvalidRef".into()"#))]
-    pub track: Identifier,
-}
-
-impl TrackEndpoint {
-    /// Create a new `TrackEndpoint` from a track id and an endpoint.
-    pub fn new<T: AsRef<str>>(track: T, endpoint: Endpoint) -> Self {
-        TrackEndpoint {
-            track: track.as_ref().into(),
-            endpoint,
-        }
-    }
-
-    /// Create a `TrackEndpoint` from a track id and a direction.
-    pub fn from_track_and_direction<T: AsRef<str>>(track: T, dir: Direction) -> TrackEndpoint {
-        let endpoint = match dir {
-            Direction::StartToStop => Endpoint::End,
-            Direction::StopToStart => Endpoint::Begin,
-        };
-        TrackEndpoint {
-            track: track.as_ref().into(),
-            endpoint,
         }
     }
 }
