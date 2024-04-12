@@ -17,9 +17,9 @@ use serde::Serialize;
 use utoipa::ToSchema;
 
 use crate::models::Identifiable;
-use crate::schema::DirectionalTrackRange;
 use crate::tables::pathfinding;
 use editoast_schemas::infra::Direction;
+use editoast_schemas::infra::DirectionalTrackRange;
 use editoast_schemas::infra::TrackLocation;
 
 editoast_common::schemas! {
