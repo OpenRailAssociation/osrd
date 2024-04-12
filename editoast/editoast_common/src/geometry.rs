@@ -1,7 +1,3 @@
-use geos::geojson::Geometry;
-use geos::geojson::{self};
-use postgis_diesel::types::LineString;
-use postgis_diesel::types::Point;
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
 use utoipa::ToSchema;
@@ -22,29 +18,7 @@ crate::schemas! {
     GeoJsonMultiPolygonValue,
 }
 
-pub fn geojson_to_diesel_linestring(geo: &Geometry) -> LineString<Point> {
-    match &geo.value {
-        geojson::Value::LineString(ls) => LineString {
-            points: ls
-                .iter()
-                .map(|p| {
-                    let [x, y] = p.as_slice() else { panic!("no") };
-                    Point::new(*x, *y, None)
-                })
-                .collect(),
-            srid: None,
-        },
-        _ => panic!("not implemented"),
-    }
-}
-
-pub fn diesel_linestring_to_geojson(ls: LineString<Point>) -> Geometry {
-    Geometry::new(geojson::Value::LineString(
-        ls.points.into_iter().map(|p| vec![p.x, p.y]).collect(),
-    ))
-}
-
-// Schema of a geometry value meant made exclusively for utoipa annotations
+// Schema of a GeoJson value meant to be used **exclusively** in the OpenApi
 /// A GeoJSON geometry item
 #[derive(Serialize, ToSchema)]
 #[serde(untagged)]

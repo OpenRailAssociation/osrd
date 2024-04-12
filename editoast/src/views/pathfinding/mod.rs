@@ -19,10 +19,13 @@ use chrono::Utc;
 use derivative::Derivative;
 use diesel_async::AsyncPgConnection as PgConnection;
 use editoast_derive::EditoastError;
+use editoast_schemas::infra::TrackRange;
 use editoast_schemas::rolling_stock::RollingStock;
 use geos::geojson::Geometry;
 use geos::geojson::{self};
 use geos::Geom;
+use postgis_diesel::types::LineString;
+use postgis_diesel::types::Point;
 use serde::Deserialize;
 use serde::Serialize;
 use thiserror::Error;
@@ -54,9 +57,6 @@ use crate::schema::ApplicableDirectionsTrackRange;
 use crate::schema::OperationalPoint;
 use crate::schema::TrackSection;
 use crate::DbPool;
-use editoast_common::geometry::diesel_linestring_to_geojson;
-use editoast_common::geometry::geojson_to_diesel_linestring;
-use editoast_schemas::infra::TrackRange;
 
 crate::routes! {
     "/pathfinding" => {
@@ -580,6 +580,28 @@ async fn del_pf(params: Path<PathfindingIdParam>, db_pool: Data<DbPool>) -> Resu
     } else {
         Err(PathfindingError::NotFound { pathfinding_id }.into())
     }
+}
+
+fn geojson_to_diesel_linestring(geo: &Geometry) -> LineString<Point> {
+    match &geo.value {
+        geojson::Value::LineString(ls) => LineString {
+            points: ls
+                .iter()
+                .map(|p| {
+                    let [x, y] = p.as_slice() else { panic!("no") };
+                    Point::new(*x, *y, None)
+                })
+                .collect(),
+            srid: None,
+        },
+        _ => panic!("not implemented"),
+    }
+}
+
+fn diesel_linestring_to_geojson(ls: LineString<Point>) -> Geometry {
+    Geometry::new(geojson::Value::LineString(
+        ls.points.into_iter().map(|p| vec![p.x, p.y]).collect(),
+    ))
 }
 
 #[cfg(test)]
