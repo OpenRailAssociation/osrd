@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
 import { useTranslation } from 'react-i18next';
 import { MdTrain } from 'react-icons/md';
@@ -13,6 +13,7 @@ import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { TrainScheduleSummary } from 'common/api/osrdEditoastApi';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
+import { getTrainScheduleV2Activated } from 'reducers/user/userSelectors';
 import { useAppDispatch } from 'store';
 
 import ScenarioExplorerModal, { type ScenarioExplorerProps } from './ScenarioExplorerModal';
@@ -28,7 +29,8 @@ const ScenarioExplorer = ({
   const { getTimetableID } = useOsrdConfSelectors();
   const timetableID = useSelector(getTimetableID);
   const [imageUrl, setImageUrl] = useState<string>();
-
+  const trainScheduleV2Activated = useSelector(getTrainScheduleV2Activated);
+  const { updateInfraID, updateTimetableID } = useOsrdConfActions();
   const { data: projectDetails } = osrdEditoastApi.endpoints.getProjectsByProjectId.useQuery(
     { projectId: globalProjectId as number },
     { skip: !globalProjectId }
@@ -40,22 +42,39 @@ const ScenarioExplorer = ({
       { skip: !globalProjectId && !globalStudyId }
     );
 
-  const { data: scenarioDetails } =
+  const { data: scenarioV1 } =
     osrdEditoastApi.endpoints.getProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId.useQuery(
       {
         projectId: globalProjectId as number,
         studyId: globalStudyId as number,
         scenarioId: globalScenarioId as number,
       },
-      { skip: !globalProjectId && !globalStudyId && !globalScenarioId }
+      {
+        skip: !globalProjectId || !globalStudyId || !globalScenarioId || trainScheduleV2Activated,
+      }
+    );
+
+  const { data: scenarioV2 } =
+    osrdEditoastApi.endpoints.getV2ProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId.useQuery(
+      {
+        projectId: globalProjectId as number,
+        studyId: globalStudyId as number,
+        scenarioId: globalScenarioId as number,
+      },
+      {
+        skip: !trainScheduleV2Activated || !globalProjectId || !globalStudyId || !globalScenarioId,
+      }
     );
 
   const { data: timetable } = osrdEditoastApi.endpoints.getTimetableById.useQuery(
     { id: timetableID as number },
-    { skip: !timetableID }
+    { skip: !timetableID || trainScheduleV2Activated }
   );
 
-  const { updateInfraID, updateTimetableID } = useOsrdConfActions();
+  const { data: timetableV2 } = osrdEditoastApi.endpoints.getV2TimetableById.useQuery(
+    { id: timetableID as number },
+    { skip: !trainScheduleV2Activated || !timetableID }
+  );
 
   const getProjectImage = async (imageId: number) => {
     try {
@@ -73,12 +92,19 @@ const ScenarioExplorer = ({
     return validTrains.length;
   };
 
+  const v2TrainCount = (trainIds: number[]) => trainIds.length;
+
+  const scenario = useMemo(
+    () => (trainScheduleV2Activated ? scenarioV2 : scenarioV1),
+    [trainScheduleV2Activated, scenarioV2, scenarioV1]
+  );
+
   useEffect(() => {
-    if (scenarioDetails?.timetable_id) {
-      dispatch(updateTimetableID(scenarioDetails.timetable_id));
-      dispatch(updateInfraID(scenarioDetails.infra_id));
+    if (scenario) {
+      dispatch(updateTimetableID(scenario.timetable_id));
+      dispatch(updateInfraID(scenario.infra_id));
     }
-  }, [scenarioDetails]);
+  }, [scenario]);
 
   useEffect(() => {
     if (projectDetails?.image) {
@@ -105,12 +131,7 @@ const ScenarioExplorer = ({
       role="button"
       tabIndex={0}
     >
-      {globalProjectId &&
-      projectDetails &&
-      globalStudyId &&
-      studyDetails &&
-      globalScenarioId &&
-      scenarioDetails ? (
+      {globalProjectId && projectDetails && studyDetails && scenario ? (
         <div className="scenario-explorator-card-head">
           {imageUrl && (
             <div className="scenario-explorator-card-head-img">
@@ -140,23 +161,28 @@ const ScenarioExplorer = ({
               <img src={scenarioIcon} alt="scenario icon" />
               <span className="scenario-explorator-card-head-legend">{t('scenarioLegend')}</span>
               <div className="scenario-explorator-card-head-scenario">
-                <span className="text-truncate" title={scenarioDetails.name}>
-                  {scenarioDetails.name}
+                <span className="text-truncate" title={scenario.name}>
+                  {scenario.name}
                 </span>
-                {timetable && (
+                {trainScheduleV2Activated ? (
                   <span className="scenario-explorator-card-head-scenario-traincount">
-                    {validTrainCount(timetable.train_schedule_summaries)}
+                    {timetableV2 && v2TrainCount(timetableV2.train_ids)}
                     <MdTrain />
                   </span>
+                ) : (
+                  timetable && (
+                    <span className="scenario-explorator-card-head-scenario-traincount">
+                      {validTrainCount(timetable.train_schedule_summaries)}
+                      <MdTrain />
+                    </span>
+                  )
                 )}
               </div>
             </div>
             <div className="scenario-explorator-card-head-content-item">
               <img src={infraIcon} alt="infra icon" />
               <span className="scenario-explorator-card-head-legend">{t('infraLegend')}</span>
-              <div className="scenario-explorator-card-head-infra">
-                {scenarioDetails.infra_name}
-              </div>
+              <div className="scenario-explorator-card-head-infra">{scenario.infra_name}</div>
             </div>
           </div>
         </div>

@@ -13,6 +13,8 @@ import { getTrainScheduleV2Activated, getUserPreferences } from 'reducers/user/u
 import { useAppDispatch } from 'store';
 import { useDebounce } from 'utils/helpers';
 
+import { useOsrdConfActions } from './osrdContext';
+
 export default function UserSettings() {
   const userPreferences = useSelector(getUserPreferences);
   const trainScheduleV2Activated = useSelector(getTrainScheduleV2Activated);
@@ -20,6 +22,7 @@ export default function UserSettings() {
   const dispatch = useAppDispatch();
 
   const debouncedSafeWord = useDebounce(safeWordText, 500);
+  const { updateScenarioID, updateTimetableID } = useOsrdConfActions();
 
   useEffect(() => {
     dispatch(updateUserPreferences({ ...userPreferences, safeWord: debouncedSafeWord }));
@@ -63,7 +66,11 @@ export default function UserSettings() {
               id="train-schedule-version-switch"
               type={SWITCH_TYPES.switch}
               name="train-schedule-version-switch"
-              onChange={() => dispatch(switchTrainScheduleV2Activated())}
+              onChange={() => {
+                dispatch(switchTrainScheduleV2Activated());
+                dispatch(updateScenarioID(undefined));
+                dispatch(updateTimetableID(undefined));
+              }}
               checked={trainScheduleV2Activated}
             />
             <p className="ml-3">TrainSchedule V2</p>
