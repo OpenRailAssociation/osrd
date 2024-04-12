@@ -105,7 +105,7 @@ impl TracingTelemetry {
                 let used_endpoint = match endpoint {
                     Endpoint::Kube { kube_node_ip_env } => format!(
                         "http://{}:8126",
-                        std::env::var(kube_node_ip_env).expect(&format!(
+                        std::env::var(kube_node_ip_env).unwrap_or_else(|_| panic!(
                             "Missing environment variable {}",
                             kube_node_ip_env
                         ))
