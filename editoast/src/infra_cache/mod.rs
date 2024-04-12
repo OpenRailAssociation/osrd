@@ -751,7 +751,6 @@ pub mod tests {
     use crate::modelsv2::infra::tests::test_infra_transaction;
     use crate::schema::ApplicableDirectionsTrackRange;
     use crate::schema::Electrification;
-    use crate::schema::Endpoint;
     use crate::schema::OperationalPoint;
     use crate::schema::OperationalPointPartCache;
     use crate::schema::Route;
@@ -759,11 +758,12 @@ pub mod tests {
     use crate::schema::Switch;
     use crate::schema::SwitchPortConnection;
     use crate::schema::SwitchType;
-    use crate::schema::TrackEndpoint;
     use editoast_common::Identifier;
     use editoast_common::NonBlankString;
     use editoast_schemas::infra::ApplicableDirections;
     use editoast_schemas::infra::Direction;
+    use editoast_schemas::infra::Endpoint;
+    use editoast_schemas::infra::TrackEndpoint;
     use editoast_schemas::primitives::OSRDIdentified;
 
     #[actix_test]
@@ -1287,9 +1287,9 @@ pub mod tests {
         use crate::infra_cache::tests::create_switch_type_cache;
         use crate::infra_cache::InfraCache;
         use crate::infra_cache::InfraCacheEditoastError;
-        use crate::schema::TrackEndpoint;
         use editoast_common::Identifier;
         use editoast_schemas::infra::Direction::StartToStop;
+        use editoast_schemas::infra::TrackEndpoint;
         use editoast_schemas::infra::Waypoint::BufferStop;
         use editoast_schemas::primitives::ObjectType;
 

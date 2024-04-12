@@ -340,7 +340,6 @@ mod tests {
     use crate::schema::Detector;
     use crate::schema::DetectorCache;
     use crate::schema::Electrification;
-    use crate::schema::Endpoint;
     use crate::schema::OperationalPoint;
     use crate::schema::OperationalPointPart;
     use crate::schema::Route;
@@ -349,11 +348,12 @@ mod tests {
     use crate::schema::Slope;
     use crate::schema::SpeedSection;
     use crate::schema::Switch;
-    use crate::schema::TrackEndpoint;
     use crate::schema::TrackSection;
     use crate::views::pagination::PaginatedResponse;
     use crate::views::tests::create_test_service;
     use editoast_common::Identifier;
+    use editoast_schemas::infra::Endpoint;
+    use editoast_schemas::infra::TrackEndpoint;
     use editoast_schemas::infra::Waypoint;
     use editoast_schemas::primitives::ObjectRef;
     use editoast_schemas::primitives::ObjectType;

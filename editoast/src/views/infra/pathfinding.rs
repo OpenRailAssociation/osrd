@@ -20,14 +20,14 @@ use crate::infra_cache::Graph;
 use crate::infra_cache::InfraCache;
 use crate::modelsv2::prelude::*;
 use crate::modelsv2::Infra;
-use crate::schema::Endpoint;
-use crate::schema::TrackEndpoint;
 use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraIdParam;
 use crate::DbPool;
 use editoast_common::Identifier;
 use editoast_schemas::infra::Direction;
 use editoast_schemas::infra::DirectionalTrackRange;
+use editoast_schemas::infra::Endpoint;
+use editoast_schemas::infra::TrackEndpoint;
 use editoast_schemas::primitives::ObjectType;
 
 crate::routes! {

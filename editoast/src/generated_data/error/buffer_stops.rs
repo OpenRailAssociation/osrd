@@ -4,9 +4,9 @@ use crate::generated_data::error::ObjectErrorGenerator;
 use crate::infra_cache::Graph;
 use crate::infra_cache::InfraCache;
 use crate::infra_cache::ObjectCache;
-use crate::schema::Endpoint;
 use crate::schema::InfraError;
-use crate::schema::TrackEndpoint;
+use editoast_schemas::infra::Endpoint;
+use editoast_schemas::infra::TrackEndpoint;
 use editoast_schemas::primitives::ObjectRef;
 use editoast_schemas::primitives::ObjectType;
 
@@ -172,7 +172,7 @@ pub mod tests {
     use crate::infra_cache::tests::create_small_infra_cache;
     use crate::infra_cache::tests::create_track_section_cache;
     use crate::infra_cache::Graph;
-    use crate::schema::Endpoint;
+    use editoast_schemas::infra::Endpoint;
     use editoast_schemas::primitives::ObjectRef;
     use editoast_schemas::primitives::ObjectType;
 
