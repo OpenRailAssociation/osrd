@@ -66,142 +66,14 @@ use crate::infra_cache::operation;
 use derivative::Derivative;
 use serde::Deserialize;
 use serde::Serialize;
-use utoipa::ToSchema;
 
 use editoast_common::Identifier;
 use editoast_common::NonBlankString;
 
 editoast_common::schemas! {
-    DirectionalTrackRange,
     utils::schemas(),
     editoast_schemas::schemas(),
     operation::schemas(),
-}
-
-<<<<<<< HEAD
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, ToSchema)]
-#[serde(deny_unknown_fields)]
-#[derivative(Default)]
-pub struct DirectionalTrackRange {
-    #[derivative(Default(value = r#""InvalidRef".into()"#))]
-    #[schema(inline)]
-=======
-#[derive(Deserialize, Serialize, Clone, Debug, PartialEq, Eq, Hash)]
-#[serde(tag = "type", deny_unknown_fields)]
-pub enum Waypoint {
-    BufferStop { id: Identifier },
-    Detector { id: Identifier },
-}
-
-impl Waypoint {
-    /// Create a new detector stop waypoint
-    pub fn new_detector<T: AsRef<str>>(detector: T) -> Self {
-        Self::Detector {
-            id: detector.as_ref().into(),
-        }
-    }
-
-    /// Create a new buffer stop waypoint
-    pub fn new_buffer_stop<T: AsRef<str>>(bf: T) -> Self {
-        Self::BufferStop {
-            id: bf.as_ref().into(),
-        }
-    }
-
-    /// Return whether the waypoint is a detector
-    pub fn is_detector(&self) -> bool {
-        matches!(self, Waypoint::Detector { .. })
-    }
-
-    // Return whether the waypoint is a buffer stop
-    pub fn is_buffer_stop(&self) -> bool {
-        matches!(self, Waypoint::BufferStop { .. })
-    }
-}
-
-impl Default for Waypoint {
-    fn default() -> Self {
-        Self::Detector {
-            id: "InvalidRef".into(),
-        }
-    }
-}
-
-impl OSRDIdentified for Waypoint {
-    fn get_id(&self) -> &String {
-        match self {
-            Waypoint::BufferStop { id } => id,
-            Waypoint::Detector { id } => id,
-        }
-    }
-}
-
-impl OSRDObject for Waypoint {
-    fn get_type(&self) -> ObjectType {
-        match self {
-            Waypoint::BufferStop { .. } => ObjectType::BufferStop,
-            Waypoint::Detector { .. } => ObjectType::Detector,
-        }
-    }
-}
-
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, ToSchema)]
-#[serde(deny_unknown_fields)]
-#[derivative(Default)]
-pub struct TrackRange {
-    #[schema(value_type=String, example="01234567-89ab-cdef-0123-456789abcdef")]
-    #[derivative(Default(value = r#""InvalidRef".into()"#))]
->>>>>>> b663a33e9 (editoast: move directional_track_range to editoast_schemas)
-    pub track: Identifier,
-    pub begin: f64,
-    #[derivative(Default(value = "100."))]
-    pub end: f64,
-<<<<<<< HEAD
-    #[derivative(Default(value = "Direction::StartToStop"))]
-    pub direction: Direction,
-}
-
-impl DirectionalTrackRange {
-    pub fn entry_bound(&self) -> f64 {
-        match self.direction {
-            Direction::StartToStop => self.begin,
-            Direction::StopToStart => self.end,
-        }
-    }
-
-    pub fn get_begin(&self) -> f64 {
-        if self.direction == Direction::StartToStop {
-            self.begin
-        } else {
-            self.end
-        }
-    }
-
-    pub fn get_end(&self) -> f64 {
-        if self.direction == Direction::StartToStop {
-            self.end
-        } else {
-            self.begin
-        }
-    }
-
-    pub fn new<T: AsRef<str>>(track: T, begin: f64, end: f64, direction: Direction) -> Self {
-=======
-}
-
-impl TrackRange {
-    pub fn new<T: AsRef<str>>(track: T, begin: f64, end: f64) -> Self {
->>>>>>> b663a33e9 (editoast: move directional_track_range to editoast_schemas)
-        Self {
-            track: track.as_ref().into(),
-            begin,
-            end,
-<<<<<<< HEAD
-            direction,
-=======
->>>>>>> b663a33e9 (editoast: move directional_track_range to editoast_schemas)
-        }
-    }
 }
 
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq)]
