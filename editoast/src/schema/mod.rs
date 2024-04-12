@@ -19,6 +19,7 @@ pub use buffer_stop::BufferStop;
 pub use buffer_stop::BufferStopCache;
 pub use detector::Detector;
 pub use detector::DetectorCache;
+use editoast_schemas::infra::ApplicableDirections;
 use editoast_schemas::infra::Direction;
 use editoast_schemas::infra::Side;
 use editoast_schemas::primitives::OSRDIdentified;
@@ -103,16 +104,6 @@ impl ApplicableDirectionsTrackRange {
             applicable_directions,
         }
     }
-}
-
-#[derive(Debug, Derivative, Copy, Clone, Deserialize, Serialize, PartialEq, Eq)]
-#[derivative(Default)]
-#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
-pub enum ApplicableDirections {
-    StartToStop,
-    StopToStart,
-    #[derivative(Default)]
-    Both,
 }
 
 #[derive(Debug, Clone, Copy, Deserialize, Serialize, PartialEq, Eq, Hash)]

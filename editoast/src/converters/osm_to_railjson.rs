@@ -127,6 +127,7 @@ pub fn parse_osm(osm_pbf_in: PathBuf) -> Result<RailJson, Box<dyn Error + Send +
 
 #[cfg(test)]
 mod tests {
+    use editoast_schemas::infra::ApplicableDirections;
     use std::collections::HashMap;
 
     use super::parse_osm;
