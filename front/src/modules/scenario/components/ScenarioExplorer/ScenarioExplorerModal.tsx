@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 
 import { useTranslation } from 'react-i18next';
 import { MdArrowRight } from 'react-icons/md';
+import { useSelector } from 'react-redux';
 
 import projectsLogo from 'assets/pictures/views/projects.svg';
 import scenarioExploratorLogo from 'assets/pictures/views/scenarioExplorator.svg';
@@ -15,6 +16,7 @@ import {
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import { setFailure } from 'reducers/main';
+import { getTrainScheduleV2Activated } from 'reducers/user/userSelectors';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 
@@ -39,6 +41,7 @@ const ScenarioExplorerModal = ({
   const [scenarioID, setScenarioID] = useState<number | undefined>(globalScenarioId);
   const [studiesList, setStudiesList] = useState<StudyWithScenarios[]>();
   const [scenariosList, setScenariosList] = useState<ScenarioWithCountTrains[]>();
+  const trainScheduleV2Activated = useSelector(getTrainScheduleV2Activated);
 
   const {
     projectsList,
@@ -57,6 +60,8 @@ const ScenarioExplorerModal = ({
   const [getStudiesList] = osrdEditoastApi.endpoints.getProjectsByProjectIdStudies.useLazyQuery();
   const [getScenariosList] =
     osrdEditoastApi.endpoints.getProjectsByProjectIdStudiesAndStudyIdScenarios.useLazyQuery();
+  const [getV2ScenariosList] =
+    osrdEditoastApi.endpoints.getV2ProjectsByProjectIdStudiesAndStudyIdScenarios.useLazyQuery();
 
   useEffect(() => {
     if (isProjectsError) {
@@ -80,17 +85,29 @@ const ScenarioExplorerModal = ({
 
   useEffect(() => {
     if (projectID && studyID && !isProjectsError) {
-      getScenariosList({
-        projectId: projectID,
-        studyId: studyID,
-        ordering: 'NameAsc',
-        pageSize: 1000,
-      })
-        .unwrap()
-        .then(({ results }) => setScenariosList(results))
-        .catch((error) => console.error(error));
+      if (trainScheduleV2Activated) {
+        getV2ScenariosList({
+          projectId: projectID,
+          studyId: studyID,
+          ordering: 'LastModifiedDesc',
+          pageSize: 1000,
+        })
+          .unwrap()
+          .then(({ results }) => setScenariosList(results))
+          .catch((error) => console.error(error));
+      } else {
+        getScenariosList({
+          projectId: projectID,
+          studyId: studyID,
+          ordering: 'LastModifiedDesc',
+          pageSize: 1000,
+        })
+          .unwrap()
+          .then(({ results }) => setScenariosList(results))
+          .catch((error) => console.error(error));
+      }
     }
-  }, [studyID]);
+  }, [projectID, studyID, trainScheduleV2Activated, isProjectsError]);
 
   return (
     <div className="scenario-explorator-modal">
