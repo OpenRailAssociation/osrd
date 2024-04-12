@@ -728,6 +728,7 @@ pub mod tests {
     use actix_web::test as actix_test;
     use chashmap::CHashMap;
     use diesel_async::scoped_futures::ScopedFutureExt;
+    use editoast_schemas::infra::Waypoint;
 
     use super::BufferStopCache;
     use super::DetectorCache;
@@ -760,7 +761,6 @@ pub mod tests {
     use crate::schema::SwitchPortConnection;
     use crate::schema::SwitchType;
     use crate::schema::TrackEndpoint;
-    use crate::schema::Waypoint;
     use editoast_common::Identifier;
     use editoast_common::NonBlankString;
     use editoast_schemas::infra::Direction;
@@ -1288,9 +1288,9 @@ pub mod tests {
         use crate::infra_cache::InfraCache;
         use crate::infra_cache::InfraCacheEditoastError;
         use crate::schema::TrackEndpoint;
-        use crate::schema::Waypoint::BufferStop;
         use editoast_common::Identifier;
         use editoast_schemas::infra::Direction::StartToStop;
+        use editoast_schemas::infra::Waypoint::BufferStop;
         use editoast_schemas::primitives::ObjectType;
 
         #[test]
