@@ -329,12 +329,12 @@ mod tests {
     use crate::fixtures::tests::db_pool;
     use crate::fixtures::tests::empty_infra;
     use crate::fixtures::tests::small_infra;
+    use crate::infra_cache::object_cache::BufferStopCache;
     use crate::infra_cache::operation::DeleteOperation;
     use crate::infra_cache::operation::Operation;
     use crate::infra_cache::operation::RailjsonObject;
     use crate::infra_cache::InfraCacheEditoastError;
     use crate::schema::BufferStop;
-    use crate::schema::BufferStopCache;
     use crate::schema::BufferStopExtension;
     use crate::schema::Detector;
     use crate::schema::DetectorCache;
