@@ -34,7 +34,6 @@ pub use signal::SignalSncfExtension;
 pub use speed_section::Speed;
 pub use speed_section::SpeedSection;
 pub use switch::Switch;
-pub use switch::SwitchCache;
 pub use switch_type::builtin_node_types_list;
 pub use switch_type::Crossing;
 pub use switch_type::DoubleSlipSwitch;
