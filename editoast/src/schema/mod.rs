@@ -21,7 +21,6 @@ pub use electrification::Electrification;
 pub use errors::InfraError;
 pub use errors::InfraErrorType;
 pub use operational_point::OperationalPoint;
-pub use operational_point::OperationalPointCache;
 pub use operational_point::OperationalPointExtensions;
 pub use operational_point::OperationalPointIdentifierExtension;
 pub use operational_point::OperationalPointPart;
@@ -49,7 +48,6 @@ pub use track_section::TrackSectionCache;
 
 cfg_if! {
     if #[cfg(test)] {
-        pub use operational_point::OperationalPointPartCache;
         pub use switch_type::SwitchPortConnection;
         pub use track_section::{Curve, Slope};
         pub use buffer_stop::BufferStopExtension;
