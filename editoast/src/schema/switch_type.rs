@@ -6,8 +6,6 @@ use serde::Serialize;
 
 use super::OSRDIdentified;
 use super::ObjectType;
-use crate::infra_cache::Cache;
-use crate::infra_cache::ObjectCache;
 use editoast_common::Identifier;
 use editoast_schemas::primitives::OSRDTyped;
 
@@ -52,16 +50,6 @@ impl From<&StaticPortConnection> for SwitchPortConnection {
             src: connections.0.into(),
             dst: connections.1.into(),
         }
-    }
-}
-
-impl Cache for SwitchType {
-    fn get_track_referenced_id(&self) -> Vec<&String> {
-        vec![]
-    }
-
-    fn get_object_cache(&self) -> ObjectCache {
-        ObjectCache::SwitchType(self.clone())
     }
 }
 
