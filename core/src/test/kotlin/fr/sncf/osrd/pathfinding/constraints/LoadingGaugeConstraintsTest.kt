@@ -39,7 +39,7 @@ class LoadingGaugeConstraintsTest {
             LoadingGaugeConstraints(
                 infra.blockInfra,
                 infra.rawInfra,
-                listOf(TestTrains.FAST_TRAIN_LARGE_GAUGE)
+                TestTrains.FAST_TRAIN_LARGE_GAUGE.loadingGaugeType
             )
         val ta0 = infra.rawInfra.getTrackSectionFromName("TA0")!!
         val ta0Chunks = infra.rawInfra.getTrackSectionChunks(ta0)

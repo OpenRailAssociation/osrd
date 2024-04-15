@@ -30,7 +30,7 @@ class ElectrificationConstraintsTest {
             ElectrificationConstraints(
                 infra.blockInfra,
                 infra.rawInfra,
-                listOf(TestTrains.FAST_ELECTRIC_TRAIN)
+                TestTrains.FAST_ELECTRIC_TRAIN.modeNames
             )
         chunk0Length = infra.rawInfra.getTrackChunkLength(TrackChunkId(0U))
     }

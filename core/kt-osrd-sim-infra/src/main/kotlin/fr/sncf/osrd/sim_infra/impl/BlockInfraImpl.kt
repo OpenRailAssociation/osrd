@@ -50,8 +50,8 @@ class BlockInfraImpl(
     private val zoneToBlockMap = IdxMap<ZoneId, MutableStaticIdxList<Block>>()
 
     // Maps to/from block names, may be undefined (null) in some unit tests if names would conflict
-    private var nameToBlockMap: MutableMap<String, BlockId>? = mutableMapOf()
-    private val blockToNameMap: Map<BlockId, String>?
+    private var nameToBlockMap: MutableMap<String, BlockId> = mutableMapOf()
+    private val blockToNameMap: Map<BlockId, String>
 
     init {
         for (blockId in blockPool.space()) {
@@ -95,16 +95,10 @@ class BlockInfraImpl(
 
             // Build the block identifier maps
             val name = buildBlockName(rawInfra, blockId, blockPool)
-            if (nameToBlockMap?.contains(name) != false) {
-                // Conflicts can happen in tests that don't provide track elements,
-                // in that case the maps are undefined and the error only happens
-                // when they're accessed
-                nameToBlockMap = null
-            } else {
-                nameToBlockMap!![name] = blockId
-            }
+            assert(!nameToBlockMap.containsKey(name)) { "duplicate in generated block ID ($name)" }
+            nameToBlockMap[name] = blockId
         }
-        blockToNameMap = nameToBlockMap?.entries?.associate { (k, v) -> v to k }
+        blockToNameMap = nameToBlockMap.entries.associate { (k, v) -> v to k }
     }
 
     override val blocks: StaticIdxSpace<Block>
@@ -167,11 +161,11 @@ class BlockInfraImpl(
     }
 
     override fun getBlockName(block: BlockId): String {
-        return blockToNameMap!![block]!!
+        return blockToNameMap[block]!!
     }
 
     override fun getBlockFromName(name: String): BlockId? {
-        return nameToBlockMap!![name]
+        return nameToBlockMap[name]
     }
 }
 
@@ -184,10 +178,12 @@ private fun buildBlockName(
     block: BlockId,
     blockPool: StaticPool<Block, BlockDescriptor>
 ): String {
-    // Two different must differ in *either* track path or signal / signaling system.
-    // We must include both in the ID to make sure there's no collision.
-    // Tracks are encoded as their string IDs
+    // Two different blocks must differ in *either* detectors, signal / signaling system, or switch
+    // config.
+    // We must include all 3 in the ID to make sure there's no collision.
+    // Detectors are encoded as "detectorId", the direction isn't necessary
     // Signals are encoded as "signalId-signalingSystem".
+    // Switch configs are encoded as "nodeId-configName"
     // It is fairly heavyweight for an ID, but there's no way around it without making this ID
     // part of the railjson file format and stable during the import process.
     val descriptor = blockPool[block]
@@ -196,11 +192,30 @@ private fun buildBlockName(
             "${rawInfra.getLogicalSignalName(it)}-${rawInfra.getSignalingSystemId(it)}"
         }
     val tracks = mutableListOf<String>()
+    val trackIds = mutableListOf<DirTrackSectionId>()
     for (zonePath in descriptor.path) {
         for (chunk in rawInfra.getZonePathChunks(zonePath)) {
             val trackName = rawInfra.getTrackSectionName(rawInfra.getTrackFromChunk(chunk.value))
-            if (tracks.isEmpty() || tracks[tracks.size - 1] != trackName) tracks.add(trackName)
+            if (tracks.isNotEmpty() && tracks[tracks.size - 1] == trackName) continue
+            tracks.add(trackName)
+            trackIds.add(
+                DirTrackSectionId(rawInfra.getTrackFromChunk(chunk.value), chunk.direction)
+            )
         }
     }
-    return "block.($signals;$tracks)"
+    val trackNodes = descriptor.path.flatMap { rawInfra.getZonePathMovableElements(it) }
+    val trackNodeConfig = descriptor.path.flatMap { rawInfra.getZonePathMovableElementsConfigs(it) }
+    val trackNodeConfigNames = mutableListOf<String>()
+    for ((node, config) in trackNodes zip trackNodeConfig) {
+        if (rawInfra.getTrackNodeConfigs(node).size == 1U) continue // Track link, can be skipped
+        trackNodeConfigNames.add(
+            "${rawInfra.getTrackNodeName(node)}-${rawInfra.getTrackNodeConfigName(node, config)}"
+        )
+    }
+
+    val detectors = mutableListOf<DirDetectorId>()
+    detectors.add(rawInfra.getZonePathEntry(descriptor.path[0]))
+    detectors.add(rawInfra.getZonePathExit(descriptor.path.last()))
+    val detectorStr = detectors.map { "${rawInfra.getDetectorName(it.value)}" }
+    return "block.($signals;$detectorStr;$trackNodeConfigNames)"
 }

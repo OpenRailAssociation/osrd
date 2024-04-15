@@ -27,11 +27,16 @@ fun initConstraints(
     fullInfra: FullInfra,
     rollingStockList: Collection<RollingStock>
 ): List<PathfindingConstraint<Block>> {
+    if (rollingStockList.isEmpty()) return listOf()
+    assert(rollingStockList.size == 1)
+    val rollingStock = rollingStockList.first()
 
     val loadingGaugeConstraints =
-        LoadingGaugeConstraints(fullInfra.blockInfra, fullInfra.rawInfra, rollingStockList)
-    val electrificationConstraints =
-        ElectrificationConstraints(fullInfra.blockInfra, fullInfra.rawInfra, rollingStockList)
+        LoadingGaugeConstraints(
+            fullInfra.blockInfra,
+            fullInfra.rawInfra,
+            rollingStock.loadingGaugeType
+        )
     val signalisationSystemConstraints =
         makeSignalingSystemConstraints(
             fullInfra.blockInfra,
@@ -39,9 +44,14 @@ fun initConstraints(
             rollingStockList
         )
 
-    return listOf(
-        loadingGaugeConstraints,
-        electrificationConstraints,
-        signalisationSystemConstraints
-    )
+    val res = mutableListOf(loadingGaugeConstraints, signalisationSystemConstraints)
+    if (!rollingStock.isThermal)
+        res.add(
+            ElectrificationConstraints(
+                fullInfra.blockInfra,
+                fullInfra.rawInfra,
+                rollingStock.modeNames
+            )
+        )
+    return res
 }

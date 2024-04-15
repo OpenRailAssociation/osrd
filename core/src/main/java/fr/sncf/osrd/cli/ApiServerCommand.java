@@ -3,6 +3,7 @@ package fr.sncf.osrd.cli;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import fr.sncf.osrd.api.*;
+import fr.sncf.osrd.api.api_v2.pathfinding.PathfindingBlocksEndpointV2;
 import fr.sncf.osrd.api.pathfinding.PathfindingBlocksEndpoint;
 import fr.sncf.osrd.api.stdcm.STDCMEndpoint;
 import io.sentry.Sentry;
@@ -82,6 +83,7 @@ public final class ApiServerCommand implements CliCommand {
             var routes = new TkFork(
                     new FkRegex("/health", ""),
                     new FkRegex("/pathfinding/routes", new PathfindingBlocksEndpoint(infraManager)),
+                    new FkRegex("/v2/pathfinding/blocks", new PathfindingBlocksEndpointV2(infraManager)),
                     new FkRegex(
                             "/standalone_simulation",
                             new StandaloneSimulationEndpoint(infraManager, electricalProfileSetManager)),

@@ -192,7 +192,7 @@ private fun <T> generateChartPoints(
 }
 
 /** Returns the route path, from the raw block pathfinding result */
-private fun makeRoutePath(
+fun makeRoutePath(
     blockInfra: BlockInfra,
     rawInfra: RawSignalingInfra,
     ranges: List<PathfindingEdgeRangeId<Block>>
