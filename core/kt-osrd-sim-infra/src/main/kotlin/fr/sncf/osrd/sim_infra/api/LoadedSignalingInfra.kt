@@ -106,4 +106,10 @@ interface BlockInfra {
     fun getTrackChunksFromBlock(block: BlockId): DirStaticIdxList<TrackChunk>
 
     @JvmName("getBlockLength") fun getBlockLength(block: BlockId): Length<Block>
+
+    /** Returns a unique and stable string identifier for the given block. */
+    fun getBlockName(block: BlockId): String
+
+    /** Find the block with the given string identifier, or null if not found. */
+    fun getBlockFromName(name: String): BlockId?
 }

@@ -513,6 +513,14 @@ class DummyInfra : RawInfra, BlockInfra {
     override fun getBlockLength(block: BlockId): Length<Block> {
         return Length(blockPool[block.index].length)
     }
+
+    override fun getBlockName(block: BlockId): String {
+        return block.index.toString() // We don't actually need persistence here
+    }
+
+    override fun getBlockFromName(name: String): BlockId {
+        return BlockId(name.toUInt()) // We don't actually need persistence here
+    }
     // endregion
 
     // region utils

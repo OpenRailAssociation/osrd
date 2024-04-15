@@ -49,6 +49,10 @@ class BlockInfraImpl(
         IdxMap<StaticIdx<Block>, MutableDirStaticIdxList<TrackChunk>>()
     private val zoneToBlockMap = IdxMap<ZoneId, MutableStaticIdxList<Block>>()
 
+    // Maps to/from block names, may be undefined (null) in some unit tests if names would conflict
+    private var nameToBlockMap: MutableMap<String, BlockId>? = mutableMapOf()
+    private val blockToNameMap: Map<BlockId, String>?
+
     init {
         for (blockId in blockPool.space()) {
             val block = blockPool[blockId]
@@ -88,7 +92,19 @@ class BlockInfraImpl(
                     .getOrPut(rawInfra.getZonePathZone(zonePath)) { mutableStaticIdxArrayListOf() }
                     .add(blockId)
             }
+
+            // Build the block identifier maps
+            val name = buildBlockName(rawInfra, blockId, blockPool)
+            if (nameToBlockMap?.contains(name) != false) {
+                // Conflicts can happen in tests that don't provide track elements,
+                // in that case the maps are undefined and the error only happens
+                // when they're accessed
+                nameToBlockMap = null
+            } else {
+                nameToBlockMap!![name] = blockId
+            }
         }
+        blockToNameMap = nameToBlockMap?.entries?.associate { (k, v) -> v to k }
     }
 
     override val blocks: StaticIdxSpace<Block>
@@ -149,4 +165,42 @@ class BlockInfraImpl(
     override fun getBlockLength(block: BlockId): Length<Block> {
         return blockPool[block].length
     }
+
+    override fun getBlockName(block: BlockId): String {
+        return blockToNameMap!![block]!!
+    }
+
+    override fun getBlockFromName(name: String): BlockId? {
+        return nameToBlockMap!![name]
+    }
+}
+
+/**
+ * Build the persistent unique string identifiers for a given block. The identifiers can follow any
+ * format we want, but should be as stable as possible across versions and infra changes.
+ */
+private fun buildBlockName(
+    rawInfra: RawInfra,
+    block: BlockId,
+    blockPool: StaticPool<Block, BlockDescriptor>
+): String {
+    // Two different must differ in *either* track path or signal / signaling system.
+    // We must include both in the ID to make sure there's no collision.
+    // Tracks are encoded as their string IDs
+    // Signals are encoded as "signalId-signalingSystem".
+    // It is fairly heavyweight for an ID, but there's no way around it without making this ID
+    // part of the railjson file format and stable during the import process.
+    val descriptor = blockPool[block]
+    val signals =
+        descriptor.signals.map {
+            "${rawInfra.getLogicalSignalName(it)}-${rawInfra.getSignalingSystemId(it)}"
+        }
+    val tracks = mutableListOf<String>()
+    for (zonePath in descriptor.path) {
+        for (chunk in rawInfra.getZonePathChunks(zonePath)) {
+            val trackName = rawInfra.getTrackSectionName(rawInfra.getTrackFromChunk(chunk.value))
+            if (tracks.isEmpty() || tracks[tracks.size - 1] != trackName) tracks.add(trackName)
+        }
+    }
+    return "block.($signals;$tracks)"
 }
