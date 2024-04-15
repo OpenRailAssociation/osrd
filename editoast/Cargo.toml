@@ -34,7 +34,7 @@ actix-http = "3.6.0"
 actix-multipart = "0.6.1"
 actix-web = "4.5.1"
 actix-web-opentelemetry = { version = "0.17.0", features = ["awc"] }
-async-trait = "0.1.79"
+async-trait = "0.1.80"
 cfg-if = "1.0.0"
 chashmap = "2.2.2"
 chrono.workspace = true
