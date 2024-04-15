@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
+use crate::infra_cache::object_cache::SwitchCache;
 use crate::infra_cache::InfraCache;
-use crate::schema::SwitchCache;
 use editoast_common::Identifier;
 use editoast_schemas::infra::TrackEndpoint;
 
