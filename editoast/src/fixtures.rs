@@ -16,11 +16,7 @@ pub mod tests {
             train_schedule::TrainSchedule as TrainScheduleV2, Changeset, Document,
             ElectricalProfileSet, Infra, Model, Project, RollingStockModel, Study,
         },
-        schema::{
-            electrical_profiles::{ElectricalProfile, ElectricalProfileSetData},
-            v2::trainschedule::TrainScheduleBase,
-            RailJson,
-        },
+        schema::{v2::trainschedule::TrainScheduleBase, RailJson},
         views::{
             rolling_stocks::rolling_stock_form::RollingStockForm,
             v2::train_schedule::TrainScheduleForm,
@@ -31,6 +27,8 @@ pub mod tests {
     use actix_web::web::Data;
     use chrono::Utc;
     use diesel_async::pooled_connection::AsyncDieselConnectionManager;
+    use editoast_schemas::infra::ElectricalProfile;
+    use editoast_schemas::infra::ElectricalProfileSetData;
     use editoast_schemas::infra::TrackRange;
     use futures::executor;
     use postgis_diesel::types::LineString;

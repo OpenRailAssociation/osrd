@@ -20,13 +20,13 @@ use crate::models::pathfinding::Pathfinding;
 use crate::models::Retrieve;
 use crate::modelsv2::electrical_profiles::ElectricalProfileSet;
 use crate::modelsv2::LightRollingStockModel;
-use crate::schema::electrical_profiles::ElectricalProfileSetData;
 use crate::views::electrical_profiles::ElectricalProfilesError;
 use crate::views::pathfinding::path_rangemap::make_path_range_map;
 use crate::views::pathfinding::path_rangemap::TrackMap;
 use crate::views::pathfinding::PathfindingError;
 use crate::views::pathfinding::PathfindingIdParam;
 use crate::DbPool;
+use editoast_schemas::infra::ElectricalProfileSetData;
 
 crate::routes! {
     electrical_profiles_on_path
@@ -152,8 +152,8 @@ mod tests {
     use crate::models::pathfinding::tests::simple_pathfinding_fixture;
     use crate::modelsv2::prelude::*;
     use crate::modelsv2::Infra;
-    use crate::schema::electrical_profiles::ElectricalProfile;
     use crate::views::tests::create_test_service;
+    use editoast_schemas::infra::ElectricalProfile;
     use editoast_schemas::infra::TrackRange;
 
     #[fixture]

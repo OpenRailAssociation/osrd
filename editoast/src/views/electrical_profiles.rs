@@ -20,10 +20,10 @@ use crate::modelsv2::Create;
 use crate::modelsv2::DeleteStatic;
 use crate::modelsv2::Model;
 use crate::modelsv2::Retrieve;
-use crate::schema::electrical_profiles::ElectricalProfile;
-use crate::schema::electrical_profiles::ElectricalProfileSetData;
-use crate::schema::electrical_profiles::LevelValues;
 use crate::DbPool;
+use editoast_schemas::infra::ElectricalProfile;
+use editoast_schemas::infra::ElectricalProfileSetData;
+use editoast_schemas::infra::LevelValues;
 use editoast_schemas::infra::TrackRange;
 
 crate::routes! {
@@ -196,8 +196,8 @@ mod tests {
     use crate::fixtures::tests::dummy_electrical_profile_set;
     use crate::fixtures::tests::electrical_profile_set;
     use crate::fixtures::tests::TestFixture;
-    use crate::schema::electrical_profiles::ElectricalProfile;
     use crate::views::tests::create_test_service;
+    use editoast_schemas::infra::ElectricalProfile;
     use editoast_schemas::infra::TrackRange;
 
     #[rstest]

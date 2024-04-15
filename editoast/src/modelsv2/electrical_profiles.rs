@@ -7,8 +7,8 @@ use utoipa::ToSchema;
 
 use crate::diesel::QueryDsl;
 use crate::error::Result;
-use crate::schema::electrical_profiles::ElectricalProfileSetData;
 use crate::tables::electrical_profile_set;
+use editoast_schemas::infra::ElectricalProfileSetData;
 
 #[derive(Clone, Debug, Serialize, Deserialize, ModelV2, ToSchema)]
 #[model(table = crate::tables::electrical_profile_set)]
