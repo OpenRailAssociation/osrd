@@ -4,8 +4,6 @@ use serde::Serialize;
 
 use super::OSRDIdentified;
 use super::ObjectType;
-use crate::infra_cache::Cache;
-use crate::infra_cache::ObjectCache;
 use editoast_common::Identifier;
 use editoast_common::NonBlankString;
 use editoast_schemas::infra::ApplicableDirectionsTrackRange;
@@ -28,15 +26,5 @@ impl OSRDTyped for Electrification {
 impl OSRDIdentified for Electrification {
     fn get_id(&self) -> &String {
         &self.id
-    }
-}
-
-impl Cache for Electrification {
-    fn get_track_referenced_id(&self) -> Vec<&String> {
-        self.track_ranges.iter().map(|tr| &*tr.track).collect()
-    }
-
-    fn get_object_cache(&self) -> ObjectCache {
-        ObjectCache::Electrification(self.clone())
     }
 }
