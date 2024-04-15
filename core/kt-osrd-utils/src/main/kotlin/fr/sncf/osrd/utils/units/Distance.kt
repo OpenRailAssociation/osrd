@@ -111,3 +111,13 @@ value class Offset<T>(val distance: Distance) : Comparable<Offset<T>> {
 }
 
 typealias Length<T> = Offset<T>
+
+/** Utility method to sum distances streams */
+fun Collection<Distance>.sumDistances(): Distance {
+    return Distance(millimeters = sumOf { it.millimeters })
+}
+
+/** Utility method to sum offset streams */
+fun <T> Collection<Offset<T>>.sumOffsets(): Offset<T> {
+    return Offset(Distance(millimeters = sumOf { it.distance.millimeters }))
+}

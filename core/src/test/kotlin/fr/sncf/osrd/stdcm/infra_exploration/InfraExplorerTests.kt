@@ -203,7 +203,7 @@ class InfraExplorerTests {
         infra.blockPool[1].voltage = ""
 
         val electrificationConstraints =
-            ElectrificationConstraints(infra, infra, listOf(TestTrains.FAST_ELECTRIC_TRAIN))
+            ElectrificationConstraints(infra, infra, TestTrains.FAST_ELECTRIC_TRAIN.modeNames)
         val constraints = listOf(electrificationConstraints)
 
         // a --> b

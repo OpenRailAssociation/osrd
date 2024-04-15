@@ -20,6 +20,10 @@ dependencies {
     ksp project(':kt-fast-collections-generator')
     api project(':osrd-reporting')
 
+    // JSON parsing
+    implementation libs.moshi
+    implementation libs.moshi.adapters
+
     api libs.kotlinx.coroutines.core
     implementation libs.guava
     implementation libs.kotlin.stdlib
