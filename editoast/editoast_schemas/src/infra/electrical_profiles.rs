@@ -1,10 +1,9 @@
-use std::collections::HashMap;
-
 use serde::Deserialize;
 use serde::Serialize;
+use std::collections::HashMap;
 use utoipa::ToSchema;
 
-use editoast_schemas::infra::TrackRange;
+use super::TrackRange;
 
 #[derive(Debug, Serialize, Deserialize, PartialEq, Clone, ToSchema)]
 pub struct ElectricalProfile {

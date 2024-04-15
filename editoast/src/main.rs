@@ -21,7 +21,6 @@ mod views;
 use crate::core::CoreClient;
 use crate::error::InternalError;
 use crate::modelsv2::Infra;
-use crate::schema::electrical_profiles::ElectricalProfileSetData;
 use crate::schema::RailJson;
 use crate::views::OpenApiRoot;
 use actix_cors::Cors;
@@ -37,6 +36,7 @@ use client::{
     ImportRollingStockArgs, ImportTimetableArgs, InfraCloneArgs, InfraCommands, ListProfileSetArgs,
     MakeMigrationArgs, RedisConfig, RefreshArgs, RunserverArgs, SearchCommands, TimetablesCommands,
 };
+use editoast_schemas::infra::ElectricalProfileSetData;
 use modelsv2::{
     timetable::Timetable, timetable::TimetableWithTrains, train_schedule::TrainSchedule,
     train_schedule::TrainScheduleChangeset,

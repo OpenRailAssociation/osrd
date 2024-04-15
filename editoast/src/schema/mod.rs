@@ -1,6 +1,5 @@
 mod buffer_stop;
 mod detector;
-pub mod electrical_profiles;
 mod electrification;
 mod errors;
 mod neutral_section;
