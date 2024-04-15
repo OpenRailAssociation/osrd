@@ -63,10 +63,10 @@ mod test {
     use std::collections::HashSet;
 
     use super::InvolvedObjects;
+    use crate::infra_cache::object_cache::DetectorCache;
     use crate::infra_cache::operation::CacheOperation;
     use crate::infra_cache::tests::create_small_infra_cache;
     use crate::infra_cache::ObjectCache;
-    use crate::schema::DetectorCache;
     use crate::schema::TrackSectionCache;
     use editoast_schemas::primitives::ObjectRef;
     use editoast_schemas::primitives::ObjectType;
