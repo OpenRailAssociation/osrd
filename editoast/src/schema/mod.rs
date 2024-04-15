@@ -29,7 +29,6 @@ pub use railjson::RAILJSON_VERSION;
 pub use route::Route;
 pub use signal::LogicalSignal;
 pub use signal::Signal;
-pub use signal::SignalCache;
 pub use signal::SignalExtensions;
 pub use signal::SignalSncfExtension;
 pub use speed_section::Speed;

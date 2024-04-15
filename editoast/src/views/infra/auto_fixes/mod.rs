@@ -331,6 +331,7 @@ mod tests {
     use crate::fixtures::tests::small_infra;
     use crate::infra_cache::object_cache::BufferStopCache;
     use crate::infra_cache::object_cache::DetectorCache;
+    use crate::infra_cache::object_cache::SignalCache;
     use crate::infra_cache::operation::DeleteOperation;
     use crate::infra_cache::operation::Operation;
     use crate::infra_cache::operation::RailjsonObject;
@@ -343,7 +344,6 @@ mod tests {
     use crate::schema::OperationalPointPart;
     use crate::schema::Route;
     use crate::schema::Signal;
-    use crate::schema::SignalCache;
     use crate::schema::Slope;
     use crate::schema::SpeedSection;
     use crate::schema::Switch;
