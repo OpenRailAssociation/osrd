@@ -8,7 +8,7 @@ license = "LGPL-3.0"
 members = [".", "editoast_common", "editoast_derive", "editoast_schemas"]
 
 [workspace.dependencies]
-chrono = { version = "0.4.37", features = ["serde"] }
+chrono = { version = "0.4.38", features = ["serde"] }
 derivative = "2.2.0"
 editoast_common = { path = "./editoast_common" }
 enum-map = "2.7.3"
