@@ -201,7 +201,7 @@ infra_model!(
 infra_model!(
     NeutralSectionModel,
     infra_object_neutral_section,
-    schema::NeutralSection
+    editoast_schemas::infra::NeutralSection
 );
 
 pub fn get_table(object_type: &ObjectType) -> &'static str {

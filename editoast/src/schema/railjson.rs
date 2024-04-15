@@ -5,7 +5,6 @@ use serde::Serialize;
 use super::BufferStop;
 use super::Detector;
 use super::Electrification;
-use super::NeutralSection;
 use super::OperationalPoint;
 use super::Route;
 use super::Signal;
@@ -13,6 +12,7 @@ use super::SpeedSection;
 use super::Switch;
 use super::SwitchType;
 use super::TrackSection;
+use editoast_schemas::infra::NeutralSection;
 
 pub const RAILJSON_VERSION: &str = "3.4.11";
 
