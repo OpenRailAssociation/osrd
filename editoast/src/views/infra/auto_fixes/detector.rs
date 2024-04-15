@@ -4,7 +4,7 @@ use tracing::debug;
 
 use super::new_ref_fix_delete_pair;
 use super::Fix;
-use crate::schema::DetectorCache;
+use crate::infra_cache::object_cache::DetectorCache;
 use crate::schema::InfraError;
 use crate::schema::InfraErrorType;
 use editoast_schemas::primitives::OSRDObject as _;

@@ -15,7 +15,6 @@ pub mod v2;
 
 pub use buffer_stop::BufferStop;
 pub use detector::Detector;
-pub use detector::DetectorCache;
 use editoast_schemas::primitives::OSRDIdentified;
 use editoast_schemas::primitives::ObjectType;
 pub use electrification::Electrification;

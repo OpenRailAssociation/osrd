@@ -7,11 +7,11 @@ use editoast_schemas::primitives::ObjectType;
 
 use crate::infra_cache::Cache;
 use crate::infra_cache::ObjectCache;
-use crate::schema::BufferStop;
+use crate::schema::Detector;
 
 #[derive(QueryableByName, Debug, Clone, Derivative)]
 #[derivative(Hash, PartialEq)]
-pub struct BufferStopCache {
+pub struct DetectorCache {
     #[diesel(sql_type = Text)]
     pub obj_id: String,
     #[derivative(Hash = "ignore", PartialEq = "ignore")]
@@ -22,29 +22,7 @@ pub struct BufferStopCache {
     pub position: f64,
 }
 
-impl OSRDTyped for BufferStopCache {
-    fn get_type() -> ObjectType {
-        ObjectType::BufferStop
-    }
-}
-
-impl OSRDIdentified for BufferStopCache {
-    fn get_id(&self) -> &String {
-        &self.obj_id
-    }
-}
-
-impl Cache for BufferStopCache {
-    fn get_track_referenced_id(&self) -> Vec<&String> {
-        vec![&self.track]
-    }
-
-    fn get_object_cache(&self) -> ObjectCache {
-        ObjectCache::BufferStop(self.clone())
-    }
-}
-
-impl BufferStopCache {
+impl DetectorCache {
     pub fn new(obj_id: String, track: String, position: f64) -> Self {
         Self {
             obj_id,
@@ -54,8 +32,30 @@ impl BufferStopCache {
     }
 }
 
-impl From<BufferStop> for BufferStopCache {
-    fn from(stop: BufferStop) -> Self {
-        Self::new(stop.id.0, stop.track.0, stop.position)
+impl From<Detector> for DetectorCache {
+    fn from(detector: Detector) -> Self {
+        Self::new(detector.id.0, detector.track.0, detector.position)
+    }
+}
+
+impl OSRDTyped for DetectorCache {
+    fn get_type() -> ObjectType {
+        ObjectType::Detector
+    }
+}
+
+impl OSRDIdentified for DetectorCache {
+    fn get_id(&self) -> &String {
+        &self.obj_id
+    }
+}
+
+impl Cache for DetectorCache {
+    fn get_track_referenced_id(&self) -> Vec<&String> {
+        vec![&self.track]
+    }
+
+    fn get_object_cache(&self) -> ObjectCache {
+        ObjectCache::Detector(self.clone())
     }
 }
