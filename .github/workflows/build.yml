@@ -368,7 +368,7 @@ jobs:
           directory: ./core/build/reports/jacoco/testCodeCoverageReport
           files: testCodeCoverageReport.xml
           token: ${{ secrets.CODECOV_TOKEN }}
-          fail_ci_if_error: true
+          fail_ci_if_error: false
           verbose: true
 
       - name: Report JUnit failures
@@ -437,7 +437,7 @@ jobs:
         with:
           name: codecov
           flags: editoast
-          fail_ci_if_error: true
+          fail_ci_if_error: false
           verbose: true
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./output/lcov.info
@@ -528,7 +528,7 @@ jobs:
         with:
           name: codecov
           flags: gateway
-          fail_ci_if_error: true
+          fail_ci_if_error: false
           verbose: true
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./output/lcov.info
@@ -571,7 +571,7 @@ jobs:
         with:
           name: codecov
           flags: front
-          fail_ci_if_error: true
+          fail_ci_if_error: false
           verbose: true
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./output/coverage/clover.xml
