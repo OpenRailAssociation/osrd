@@ -14,7 +14,6 @@ pub mod utils;
 pub mod v2;
 
 pub use buffer_stop::BufferStop;
-pub use buffer_stop::BufferStopCache;
 pub use detector::Detector;
 pub use detector::DetectorCache;
 use editoast_schemas::primitives::OSRDIdentified;

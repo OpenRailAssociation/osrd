@@ -1,4 +1,5 @@
 mod graph;
+pub mod object_cache;
 pub mod operation;
 
 use std::collections::hash_map::Entry;
@@ -29,6 +30,7 @@ use itertools::Itertools as _;
 use thiserror::Error;
 
 use crate::error::Result;
+use crate::infra_cache::object_cache::BufferStopCache;
 use crate::infra_cache::operation::CacheOperation;
 use crate::infra_cache::operation::RailjsonObject;
 use crate::map::BoundingBox;
@@ -730,11 +732,11 @@ pub mod tests {
     use diesel_async::scoped_futures::ScopedFutureExt;
     use editoast_schemas::infra::Waypoint;
 
-    use super::BufferStopCache;
     use super::DetectorCache;
     use super::OperationalPointCache;
     use super::SignalCache;
     use super::TrackSectionCache;
+    use crate::infra_cache::object_cache::BufferStopCache;
     use crate::infra_cache::operation::create::tests::create_buffer_stop;
     use crate::infra_cache::operation::create::tests::create_detector;
     use crate::infra_cache::operation::create::tests::create_electrification;
