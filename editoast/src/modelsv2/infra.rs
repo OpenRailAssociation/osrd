@@ -246,6 +246,7 @@ pub mod tests {
     use diesel_async::scoped_futures::ScopedFutureExt;
     use diesel_async::AsyncConnection;
     use diesel_async::AsyncPgConnection as PgConnection;
+    use editoast_schemas::infra::NeutralSection;
     use editoast_schemas::primitives::OSRDIdentified;
     use rstest::rstest;
     use uuid::Uuid;
