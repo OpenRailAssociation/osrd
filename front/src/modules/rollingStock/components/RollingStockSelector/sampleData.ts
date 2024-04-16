@@ -2,6 +2,7 @@ import type { RollingStockWithLiveries } from 'common/api/osrdEditoastApi';
 
 const ROLLING_STOCK_SAMPLE_DATA: RollingStockWithLiveries = {
   id: 9,
+  version: 1,
   name: 'TC64700',
   effort_curves: {
     modes: {

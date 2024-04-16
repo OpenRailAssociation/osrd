@@ -3408,7 +3408,9 @@ components:
           format: double
           type: number
         metadata:
-          $ref: '#/components/schemas/RollingStockMetadata'
+          allOf:
+          - $ref: '#/components/schemas/RollingStockMetadata'
+          nullable: true
         name:
           type: string
         power_restrictions:
@@ -3443,7 +3445,6 @@ components:
       - mass
       - rolling_resistance
       - loading_gauge
-      - metadata
       - power_restrictions
       - energy_sources
       - supported_signaling_systems
@@ -5296,27 +5297,7 @@ components:
       - end_position
       - power_restriction_code
       type: object
-    RollingResistance:
-      additionalProperties: false
-      properties:
-        A:
-          format: double
-          type: number
-        B:
-          format: double
-          type: number
-        C:
-          format: double
-          type: number
-        type:
-          type: string
-      required:
-      - type
-      - A
-      - B
-      - C
-      type: object
-    RollingStock:
+    RjsRollingStock:
       properties:
         base_power_class:
           example: '5'
@@ -5339,9 +5320,6 @@ components:
           type: array
         gamma:
           $ref: '#/components/schemas/Gamma'
-        id:
-          format: int64
-          type: integer
         inertia_coefficient:
           format: double
           type: number
@@ -5350,9 +5328,6 @@ components:
           type: number
         loading_gauge:
           $ref: '#/components/schemas/LoadingGaugeType'
-        locked:
-          description: Whether the rolling stock can be edited/deleted or not.
-          type: boolean
         mass:
           format: double
           type: number
@@ -5360,7 +5335,9 @@ components:
           format: double
           type: number
         metadata:
-          $ref: '#/components/schemas/RollingStockMetadata'
+          allOf:
+          - $ref: '#/components/schemas/RollingStockMetadata'
+          nullable: true
         name:
           type: string
         power_restrictions:
@@ -5387,7 +5364,6 @@ components:
         supported_signaling_systems:
           $ref: '#/components/schemas/RollingStockSupportedSignalingSystems'
       required:
-      - id
       - name
       - effort_curves
       - base_power_class
@@ -5404,8 +5380,121 @@ components:
       - power_restrictions
       - supported_signaling_systems
       - railjson_version
-      - locked
+      type: object
+    RollingResistance:
+      additionalProperties: false
+      properties:
+        A:
+          format: double
+          type: number
+        B:
+          format: double
+          type: number
+        C:
+          format: double
+          type: number
+        type:
+          type: string
+      required:
+      - type
+      - A
+      - B
+      - C
+      type: object
+    RollingStock:
+      properties:
+        base_power_class:
+          nullable: true
+          type: string
+        comfort_acceleration:
+          format: double
+          type: number
+        effort_curves:
+          $ref: '#/components/schemas/EffortCurves'
+        electrical_power_startup_time:
+          format: double
+          nullable: true
+          type: number
+        energy_sources:
+          items:
+            $ref: '#/components/schemas/EnergySource'
+          type: array
+        gamma:
+          $ref: '#/components/schemas/Gamma'
+        id:
+          format: int64
+          type: integer
+        inertia_coefficient:
+          format: double
+          type: number
+        length:
+          format: double
+          type: number
+        loading_gauge:
+          $ref: '#/components/schemas/LoadingGaugeType'
+        locked:
+          type: boolean
+        mass:
+          format: double
+          type: number
+        max_speed:
+          format: double
+          type: number
+        metadata:
+          allOf:
+          - $ref: '#/components/schemas/RollingStockMetadata'
+          nullable: true
+        name:
+          type: string
+        power_restrictions:
+          additionalProperties:
+            type: string
+          type: object
+        railjson_version:
+          type: string
+        raise_pantograph_time:
+          format: double
+          nullable: true
+          type: number
+        rolling_resistance:
+          $ref: '#/components/schemas/RollingResistance'
+        startup_acceleration:
+          format: double
+          type: number
+        startup_time:
+          format: double
+          type: number
+        supported_signaling_systems:
+          items:
+            type: string
+          type: array
+        version:
+          format: int64
+          type: integer
+      required:
+      - id
+      - railjson_version
+      - name
+      - effort_curves
       - metadata
+      - length
+      - max_speed
+      - startup_time
+      - startup_acceleration
+      - comfort_acceleration
+      - gamma
+      - inertia_coefficient
+      - base_power_class
+      - mass
+      - rolling_resistance
+      - loading_gauge
+      - power_restrictions
+      - energy_sources
+      - locked
+      - electrical_power_startup_time
+      - raise_pantograph_time
+      - version
+      - supported_signaling_systems
       type: object
     RollingStockComfortType:
       description: Train comfort that will be used for the simulation
@@ -5517,7 +5606,9 @@ components:
           format: double
           type: number
         metadata:
-          $ref: '#/components/schemas/RollingStockMetadata'
+          allOf:
+          - $ref: '#/components/schemas/RollingStockMetadata'
+          nullable: true
         name:
           type: string
         power_restrictions:
@@ -5557,7 +5648,6 @@ components:
       - loading_gauge
       - power_restrictions
       - supported_signaling_systems
-      - metadata
       type: object
     RollingStockKey:
       oneOf:
@@ -9690,7 +9780,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RollingStock'
+                $ref: '#/components/schemas/RollingStockWithLiveries'
           description: The created rolling stock
       summary: Patch a rolling stock
       tags:

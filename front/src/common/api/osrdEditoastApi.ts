@@ -1442,7 +1442,7 @@ export type GetRollingStockByRollingStockIdApiArg = {
   rollingStockId: number;
 };
 export type PatchRollingStockByRollingStockIdApiResponse =
-  /** status 200 The created rolling stock */ RollingStock;
+  /** status 200 The created rolling stock */ RollingStockWithLiveries;
 export type PatchRollingStockByRollingStockIdApiArg = {
   rollingStockId: number;
   rollingStockForm: RollingStockForm;
@@ -2028,7 +2028,7 @@ export type LightRollingStock = {
   locked: boolean;
   mass: number;
   max_speed: number;
-  metadata: RollingStockMetadata;
+  metadata?: RollingStockMetadata | null;
   name: string;
   power_restrictions: {
     [key: string]: string;
@@ -2332,31 +2332,28 @@ export type RollingStock = {
   base_power_class: string | null;
   comfort_acceleration: number;
   effort_curves: EffortCurves;
-  /** The time the train takes before actually using electrical power (in seconds). Is null if the train is not electric. */
-  electrical_power_startup_time?: number | null;
-  energy_sources?: EnergySource[];
+  electrical_power_startup_time: number | null;
+  energy_sources: EnergySource[];
   gamma: Gamma;
   id: number;
   inertia_coefficient: number;
   length: number;
   loading_gauge: LoadingGaugeType;
-  /** Whether the rolling stock can be edited/deleted or not. */
   locked: boolean;
   mass: number;
   max_speed: number;
-  metadata: RollingStockMetadata;
+  metadata: RollingStockMetadata | null;
   name: string;
-  /** Mapping of power restriction code to power class */
   power_restrictions: {
     [key: string]: string;
   };
   railjson_version: string;
-  /** The time it takes to raise this train's pantograph in seconds. Is null if the train is not electric. */
-  raise_pantograph_time?: number | null;
+  raise_pantograph_time: number | null;
   rolling_resistance: RollingResistance;
   startup_acceleration: number;
   startup_time: number;
-  supported_signaling_systems: RollingStockSupportedSignalingSystems;
+  supported_signaling_systems: string[];
+  version: number;
 };
 export type RollingStockForm = {
   base_power_class: string | null;
@@ -2372,7 +2369,7 @@ export type RollingStockForm = {
   locked?: boolean | null;
   mass: number;
   max_speed: number;
-  metadata: RollingStockMetadata;
+  metadata?: RollingStockMetadata | null;
   name: string;
   /** Mapping of power restriction code to power class */
   power_restrictions: {

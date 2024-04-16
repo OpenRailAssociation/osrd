@@ -31,6 +31,10 @@ pub use study::Study;
 
 pub use crate::models::PreferredId;
 
+editoast_common::schemas! {
+    rolling_stock_model::schemas(),
+}
+
 #[cfg(test)]
 mod tests {
     use std::collections::HashSet;

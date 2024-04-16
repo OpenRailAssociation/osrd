@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 
-use derivative::Derivative;
 use editoast_schemas::rolling_stock::EffortCurves;
 use editoast_schemas::rolling_stock::EnergySource;
 use editoast_schemas::rolling_stock::Gamma;
@@ -20,8 +19,7 @@ use crate::modelsv2::Changeset;
 use crate::modelsv2::Model;
 use crate::modelsv2::RollingStockModel;
 
-#[derive(Debug, Clone, Deserialize, Serialize, ToSchema, Validate, Derivative)]
-#[derivative(PartialEq)]
+#[derive(Debug, Clone, Deserialize, Serialize, ToSchema, Validate)]
 #[validate(schema(function = "validate_rolling_stock_form"))]
 pub struct RollingStockForm {
     pub name: String,
@@ -51,37 +49,8 @@ pub struct RollingStockForm {
     #[schema(example = 15.0)]
     pub raise_pantograph_time: Option<f64>,
     pub supported_signaling_systems: RollingStockSupportedSignalingSystems,
-    #[derivative(PartialEq = "ignore")]
     pub locked: Option<bool>,
-    #[derivative(PartialEq = "ignore")]
-    pub metadata: RollingStockMetadata,
-}
-
-impl From<RollingStockModel> for RollingStockForm {
-    fn from(value: RollingStockModel) -> Self {
-        RollingStockForm {
-            name: value.name,
-            effort_curves: value.effort_curves,
-            base_power_class: value.base_power_class,
-            length: value.length,
-            max_speed: value.max_speed,
-            startup_time: value.startup_time,
-            startup_acceleration: value.startup_acceleration,
-            comfort_acceleration: value.comfort_acceleration,
-            gamma: value.gamma,
-            inertia_coefficient: value.inertia_coefficient,
-            mass: value.mass,
-            rolling_resistance: value.rolling_resistance,
-            loading_gauge: value.loading_gauge,
-            power_restrictions: value.power_restrictions,
-            energy_sources: value.energy_sources,
-            electrical_power_startup_time: value.electrical_power_startup_time,
-            raise_pantograph_time: value.raise_pantograph_time,
-            supported_signaling_systems: value.supported_signaling_systems,
-            locked: Some(value.locked),
-            metadata: value.metadata,
-        }
-    }
+    pub metadata: Option<RollingStockMetadata>,
 }
 
 impl From<RollingStockForm> for Changeset<RollingStockModel> {
@@ -119,4 +88,33 @@ fn validate_rolling_stock_form(
         rolling_stock_form.electrical_power_startup_time,
         rolling_stock_form.raise_pantograph_time,
     )
+}
+
+// Used in some tests where we import a rolling stock as a fixture
+#[cfg(test)]
+impl From<RollingStockModel> for RollingStockForm {
+    fn from(value: RollingStockModel) -> Self {
+        RollingStockForm {
+            name: value.name,
+            effort_curves: value.effort_curves,
+            base_power_class: value.base_power_class,
+            length: value.length,
+            max_speed: value.max_speed,
+            startup_time: value.startup_time,
+            startup_acceleration: value.startup_acceleration,
+            comfort_acceleration: value.comfort_acceleration,
+            gamma: value.gamma,
+            inertia_coefficient: value.inertia_coefficient,
+            mass: value.mass,
+            rolling_resistance: value.rolling_resistance,
+            loading_gauge: value.loading_gauge,
+            power_restrictions: value.power_restrictions,
+            energy_sources: value.energy_sources,
+            electrical_power_startup_time: value.electrical_power_startup_time,
+            raise_pantograph_time: value.raise_pantograph_time,
+            supported_signaling_systems: value.supported_signaling_systems,
+            locked: Some(value.locked),
+            metadata: value.metadata,
+        }
+    }
 }
