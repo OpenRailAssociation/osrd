@@ -1,5 +1,5 @@
 import turfBbox from '@turf/bbox';
-import { featureCollection } from '@turf/helpers';
+import { featureCollection, type Units } from '@turf/helpers';
 import type { BBox2d } from '@turf/helpers/dist/js/lib/geojson';
 import length from '@turf/length';
 import type { NearestPoint } from '@turf/nearest-point';
@@ -42,15 +42,27 @@ import { nearestPointOnLine } from 'utils/geometry';
  *
  * This approximation is not good if the track is long.
  */
-export function approximateDistanceWithEditoastData(track: TrackSectionEntity, point: Point) {
-  const pointOnLine = nearestPointOnLine(track.geometry, point, { units: 'meters' });
-  const wrongDistanceAlongTrack = pointOnLine.properties.location;
-  const wrongTrackLength = length(track, { units: 'meters' });
-  const realTrackLength = track.properties.length;
-  const distanceAlongTrack = wrongDistanceAlongTrack * (realTrackLength / wrongTrackLength);
+export function approximateDistanceWithEditoastData(
+  track: TrackSectionEntity,
+  point: Point,
+  units: Units = 'meters'
+) {
+  const pointOnLine = nearestPointOnLine(track.geometry, point, { units });
+  const geometryDistanceAlongTrack = pointOnLine.properties.location;
+  const geometryTrackLength = length(track, { units });
+  const infraTrackLength = track.properties.length;
+  const distanceAlongTrack = geometryDistanceAlongTrack * (infraTrackLength / geometryTrackLength);
 
-  if (Math.abs(distanceAlongTrack - realTrackLength) < 0.1) return realTrackLength;
+  if (Math.abs(distanceAlongTrack - infraTrackLength) < 0.1) return infraTrackLength;
   return Math.round(distanceAlongTrack * 100) / 100;
+}
+
+export function calculateDistanceAlongTrack(
+  track: Feature<LineString>,
+  point: Point,
+  units: Units = 'meters'
+) {
+  return approximateDistanceWithEditoastData(track as TrackSectionEntity, point, units);
 }
 
 /** return the trackRanges near the mouse thanks to the hover event */

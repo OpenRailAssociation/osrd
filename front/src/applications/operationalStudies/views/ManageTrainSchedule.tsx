@@ -95,7 +95,7 @@ export default function ManageTrainSchedule() {
           {t('tabs.pathFinding')}
           {pathFinding?.length && !Number.isNaN(pathFinding.length) && (
             <small className="ml-auto pl-1">
-              {pathFinding.length && formatKmValue(pathFinding.length / 1000, 3)}
+              {pathFinding.length && formatKmValue(pathFinding.length)}
             </small>
           )}
         </span>

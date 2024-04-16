@@ -37,6 +37,7 @@
     top: 1rem;
     left: 1rem;
     max-height: calc(100% - 2rem);
+    max-width: 75%; // if the pathfinding error msg is too long
   }
 
   // à creuser
@@ -165,8 +166,18 @@
 }
 
 svg text {
-  font-family: Avenir, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue',
-    Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+  font-family:
+    Avenir,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    Roboto,
+    'Helvetica Neue',
+    Arial,
+    sans-serif,
+    'Apple Color Emoji',
+    'Segoe UI Emoji',
+    'Segoe UI Symbol';
 }
 
 select.sm {

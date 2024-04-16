@@ -1,14 +1,14 @@
-import React, { useEffect } from 'react';
+import React, { useState } from 'react';
 
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
+import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
 import allowancesPic from 'assets/pictures/components/allowances.svg';
 import pahtFindingPic from 'assets/pictures/components/pathfinding.svg';
 import simulationSettings from 'assets/pictures/components/simulationSettings.svg';
 import rollingStockPic from 'assets/pictures/components/train.svg';
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
+import { useOsrdConfSelectors } from 'common/osrdContext';
 import SpeedLimitByTagSelector from 'common/SpeedLimitByTagSelector/SpeedLimitByTagSelector';
 import { useStoreDataForSpeedLimitByTagSelector } from 'common/SpeedLimitByTagSelector/useStoreDataForSpeedLimitByTagSelector';
 import Tabs from 'common/Tabs';
@@ -18,24 +18,16 @@ import { RollingStockSelector } from 'modules/rollingStock/components/RollingSto
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
 import { Map } from 'modules/trainschedule/components/ManageTrainSchedule';
 import ElectricalProfiles from 'modules/trainschedule/components/ManageTrainSchedule/ElectricalProfiles';
-import adjustConfWithTrainToModify from 'modules/trainschedule/components/ManageTrainSchedule/helpers/adjustConfWithTrainToModify';
 import TrainSettings from 'modules/trainschedule/components/ManageTrainSchedule/TrainSettings';
-import { useAppDispatch } from 'store';
 import { formatKmValue } from 'utils/strings';
 
 const ManageTrainScheduleV2 = () => {
-  const dispatch = useAppDispatch();
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
-  const { getPathfindingID, getTrainScheduleIDsToModify, getUsingElectricalProfiles } =
-    useOsrdConfSelectors();
-  const pathFindingID = useSelector(getPathfindingID);
-  const trainScheduleIDsToModify = useSelector(getTrainScheduleIDsToModify);
-  const usingElectricalProfiles = useSelector(getUsingElectricalProfiles);
-  const [getTrainScheduleById] = osrdEditoastApi.endpoints.getTrainScheduleById.useLazyQuery({});
-  const [getPathfindingById] = osrdEditoastApi.endpoints.getPathfindingByPathfindingId.useLazyQuery(
-    {}
-  );
-  const osrdActions = useOsrdConfActions();
+  const { getOriginV2, getDestinationV2 } = useOsrdConfSelectors();
+  const origin = useSelector(getOriginV2);
+  const destination = useSelector(getDestinationV2);
+
+  const [pathProperties, setPathProperties] = useState<ManageTrainSchedulePathProperties>();
 
   const { speedLimitByTag, speedLimitsByTags, dispatchUpdateSpeedLimitByTag } =
     useStoreDataForSpeedLimitByTagSelector();
@@ -43,13 +35,8 @@ const ManageTrainScheduleV2 = () => {
   const { rollingStockId, rollingStockComfort, rollingStock } =
     useStoreDataForRollingStockSelector();
 
-  // Details for tabs
-  const { data: pathFinding } = osrdEditoastApi.endpoints.getPathfindingByPathfindingId.useQuery(
-    { pathfindingId: pathFindingID as number },
-    {
-      skip: !pathFindingID,
-    }
-  );
+  // TODO TS2 : test this hook in simulation results issue
+  // useSetupItineraryForTrainUpdate(setPathProperties);
 
   // const { data: pathWithElectrifications = { electrification_ranges: [] as RangedValue[] } } =
   //   osrdEditoastApi.endpoints.getPathfindingByPathfindingIdElectrifications.useQuery(
@@ -89,22 +76,22 @@ const ManageTrainScheduleV2 = () => {
         <img src={pahtFindingPic} alt="path finding" />
         <span className="ml-2 d-flex align-items-center flex-grow-1 w-100">
           {t('tabs.pathFinding')}
-          {pathFinding?.length && !Number.isNaN(pathFinding.length) && (
+          {destination && destination.positionOnPath && (
             <small className="ml-auto pl-1">
-              {pathFinding.length && formatKmValue(pathFinding.length / 1000, 3)}
+              {formatKmValue(destination.positionOnPath, 'millimeters')}
             </small>
           )}
         </span>
       </div>
     ),
-    withWarning: pathFindingID === undefined,
+    withWarning: !origin || !destination,
     label: t('tabs.pathFinding'),
     content: (
       <div className="osrd-config-item-container-map" data-testid="map">
         <div className="floating-itinerary">
-          <ItineraryV2 path={pathFinding} />
+          <ItineraryV2 pathProperties={pathProperties} setPathProperties={setPathProperties} />
         </div>
-        <Map />
+        <Map geometry={pathProperties?.geometry} pathProperties={pathProperties} />
       </div>
     ),
   };
@@ -152,27 +139,6 @@ const ManageTrainScheduleV2 = () => {
       </div>
     ),
   };
-
-  useEffect(() => {
-    if (trainScheduleIDsToModify.length > 0)
-      getTrainScheduleById({ id: trainScheduleIDsToModify[0] })
-        .unwrap()
-        .then((trainSchedule) => {
-          if (trainSchedule.path_id) {
-            getPathfindingById({ pathfindingId: trainSchedule.path_id })
-              .unwrap()
-              .then((path) => {
-                adjustConfWithTrainToModify(
-                  trainSchedule,
-                  path,
-                  dispatch,
-                  usingElectricalProfiles,
-                  osrdActions
-                );
-              });
-          }
-        });
-  }, [trainScheduleIDsToModify]);
 
   return (
     <>

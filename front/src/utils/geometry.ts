@@ -1,3 +1,4 @@
+import along from '@turf/along';
 import bearing from '@turf/bearing';
 import turfDistance from '@turf/distance';
 import { point, type Position, featureCollection, lineString, type Units } from '@turf/helpers';
@@ -5,6 +6,8 @@ import { getCoord } from '@turf/invariant';
 import length from '@turf/length';
 import type { Feature, Point, FeatureCollection, LineString } from 'geojson';
 import { minBy } from 'lodash';
+
+import type { GeoJsonLineString } from 'common/api/osrdEditoastApi';
 
 // eslint-disable-next-line import/prefer-default-export
 export function getTangent(
@@ -125,4 +128,18 @@ export function nearestPointOnLine(
     index: result.index,
     location: length(lineString([...lineCoords.slice(0, result.index + 1), result.point]), options),
   });
+}
+
+export function getPointCoordinates(
+  geometry: GeoJsonLineString,
+  pathLength: number,
+  infraPositionOnPath: number
+): Position {
+  const pathLineString = lineString(geometry.coordinates);
+  const geometryTrackLength = length(pathLineString, { units: 'millimeters' });
+  const infraTrackLength = pathLength;
+  // TODO TS2 : when adapting train update check that this computation works properly
+  const geometryDistanceAlongTrack = infraPositionOnPath * (geometryTrackLength / infraTrackLength);
+  return along(pathLineString, geometryDistanceAlongTrack, { units: 'millimeters' }).geometry
+    .coordinates;
 }

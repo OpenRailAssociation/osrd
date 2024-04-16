@@ -1,15 +1,16 @@
-import { lineString, point } from '@turf/helpers';
+import { feature, lineString, point } from '@turf/helpers';
 import length from '@turf/length';
-import { compact, last } from 'lodash';
-import nextId from 'react-id-generator';
+import { last } from 'lodash';
 
+import { calculateDistanceAlongTrack } from 'applications/editor/tools/utils';
 import type { PointOnMap } from 'applications/operationalStudies/consts';
+import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
 import { addElementAtIndex } from 'utils/array';
 import { formatIsoDate } from 'utils/date';
 import { nearestPointOnLine } from 'utils/geometry';
 import { sec2time, time2sec } from 'utils/timeManipulation';
 
-import type { OsrdConfState } from './types';
+import type { OsrdConfState, PathStep } from './types';
 
 /** 2 hours in ms */
 const ORIGIN_TIME_BOUND_DEFAULT_DIFFERENCE = 7200;
@@ -111,23 +112,18 @@ export const insertVia = (
 
 export const insertViaFromMap = (
   pathSteps: OsrdConfState['pathSteps'],
-  newVia: PointOnMap
+  newVia: PathStep,
+  pathProperties: ManageTrainSchedulePathProperties
 ): OsrdConfState['pathSteps'] => {
-  // If one of these is missing, via is not valid and we return the same array
-  if (
-    !newVia.location ||
-    !newVia.location.track_section ||
-    !newVia.location.offset ||
-    !newVia.coordinates
-  )
-    return pathSteps;
+  // If one of these is missing, via is not valid (it hasn't been added via click on map) and we return the same array
+  if (!('track' in newVia) || !newVia.coordinates) return pathSteps;
 
   const origin = pathSteps[0];
   const destination = last(pathSteps);
   const newStep = {
-    track: newVia.location.track_section,
-    offset: newVia.location.offset,
-    id: newVia.id || nextId(),
+    track: newVia.track,
+    offset: newVia.offset,
+    id: newVia.id,
     coordinates: newVia.coordinates,
   };
 
@@ -136,16 +132,15 @@ export const insertViaFromMap = (
   // we project the new via on the current path and add it at the most relevant index
   if (origin && destination && pathSteps.length > 2) {
     const newViaPoint = point(newVia.coordinates);
-    const fullRouteCoordinates = compact(pathSteps).map((pathInput) => pathInput.coordinates);
-    const nearestPointOnPath = nearestPointOnLine(lineString(fullRouteCoordinates), newViaPoint);
+    const positionOnPath = calculateDistanceAlongTrack(
+      feature(pathProperties.geometry, { length: pathProperties.length }),
+      newViaPoint.geometry,
+      'millimeters'
+    );
 
-    newViaIndex = fullRouteCoordinates.findIndex((_, index) => {
-      if (index === 0) return false;
-      if (index === fullRouteCoordinates.length - 1) return true;
-      // Makes the function imperfect as insert might fail in a curvy path
-      const segmentToPoint = lineString(fullRouteCoordinates.slice(0, index + 1));
-      return nearestPointOnPath.properties.location <= length(segmentToPoint);
-    });
+    newViaIndex = pathSteps.findIndex(
+      (pathStep) => pathStep?.positionOnPath && pathStep.positionOnPath >= positionOnPath
+    );
   }
 
   return addElementAtIndex(pathSteps, newViaIndex, newStep);

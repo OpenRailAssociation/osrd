@@ -1,4 +1,6 @@
-import { reducer, initialState } from '../Pathfinding';
+import { initialState } from 'modules/pathfinding/consts';
+
+import { reducer } from '../Pathfinding';
 
 describe('reducer', () => {
   test('pathfinding got started', () => {

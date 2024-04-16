@@ -1,3 +1,5 @@
+import type { Unit } from './types';
+
 export const NARROW_NO_BREAK_SPACE = '\u202f';
 export const NO_BREAK_SPACE = '\xa0';
 
@@ -11,11 +13,12 @@ export function conditionalStringConcat<Condition>(
   return elements.reduce<string[]>((acc, el) => [...acc, ...elementString(el)], []).join(separator);
 }
 
-export function formatKmValue(value?: number, digits = 0) {
-  if (!value) {
-    return '';
+export function formatKmValue(value: number, unit: Unit = 'meters', digits = 3) {
+  let divider = 1000;
+  if (unit === 'millimeters') {
+    divider = 1000000;
   }
-  return `${value.toFixed(digits)}${NO_BREAK_SPACE}km`;
+  return `${(value / divider).toFixed(digits)}${NO_BREAK_SPACE}km`;
 }
 
 export function language2flag(lng: string) {

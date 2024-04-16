@@ -2,8 +2,14 @@ import { compact } from 'lodash';
 import type { Dispatch } from 'redux';
 
 import type { PointOnMap } from 'applications/operationalStudies/consts';
-import type { Allowance, PathResponse, TrainSchedule } from 'common/api/osrdEditoastApi';
+import type {
+  Allowance,
+  PathResponse,
+  TrainSchedule,
+  TrainScheduleResult,
+} from 'common/api/osrdEditoastApi';
 import type { ConfSliceActions } from 'reducers/osrdconf/osrdConfCommon';
+import type { PathStep } from 'reducers/osrdconf/types';
 import { msToKmh } from 'utils/physics';
 import { sec2time } from 'utils/timeManipulation';
 import type { ArrayElement } from 'utils/types';
@@ -100,6 +106,63 @@ export default function adjustConfWithTrainToModify(
           begin: powerRestrictionRange.begin_position as number,
           end: powerRestrictionRange.end_position as number,
           value: powerRestrictionRange.power_restriction_code as string,
+        }))
+      )
+    );
+  }
+}
+
+export function adjustConfWithTrainToModifyV2(
+  trainSchedule: TrainScheduleResult,
+  pathSteps: PathStep[],
+  rollingStockId: number,
+  dispatch: Dispatch,
+  usingElectricalProfiles: boolean,
+  osrdActions: ConfSliceActions
+) {
+  const {
+    updateRollingStockID,
+    toggleUsingElectricalProfiles,
+    updateSpeedLimitByTag,
+    updateLabels,
+    updateName,
+    updateDepartureTime,
+    updateInitialSpeed,
+    updatePowerRestrictionRanges,
+    updatePathSteps,
+  } = osrdActions;
+
+  const {
+    options,
+    speed_limit_tag,
+    labels,
+    train_name,
+    start_time,
+    initial_speed,
+    power_restrictions,
+  } = trainSchedule;
+
+  dispatch(updateRollingStockID(rollingStockId));
+  dispatch(updateName(train_name));
+  dispatch(updateDepartureTime(start_time));
+  dispatch(updatePathSteps(pathSteps));
+  dispatch(updateInitialSpeed(initial_speed ? msToKmh(initial_speed) : 0));
+
+  if (options?.use_electrical_profiles === usingElectricalProfiles)
+    dispatch(toggleUsingElectricalProfiles());
+
+  if (speed_limit_tag) dispatch(updateSpeedLimitByTag(speed_limit_tag));
+
+  if (labels) dispatch(updateLabels(labels));
+
+  if (power_restrictions) {
+    // TODO TS2 : check that this format is still the one we need
+    dispatch(
+      updatePowerRestrictionRanges(
+        power_restrictions.map(({ from, to, value }) => ({
+          begin: +from,
+          end: +to,
+          value,
         }))
       )
     );

@@ -14,6 +14,8 @@ import type { PathResponse, PathfindingRequest, PathfindingStep } from 'common/a
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { Spinner } from 'common/Loaders';
 import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
+import { initialState } from 'modules/pathfinding/consts';
+import type { PathfindingAction, PathfindingState } from 'modules/pathfinding/types';
 import { setFailure, setWarning } from 'reducers/main';
 import { useAppDispatch } from 'store';
 import { isEmptyArray } from 'utils/array';
@@ -21,39 +23,7 @@ import { castErrorToFailure } from 'utils/error';
 import { conditionalStringConcat, formatKmValue } from 'utils/strings';
 import type { ArrayElement } from 'utils/types';
 
-interface PathfindingState {
-  running: boolean;
-  done: boolean;
-  error: string;
-  missingParam: boolean;
-  mustBeLaunched: boolean;
-  mustBeLaunchedManually: boolean;
-  cancelled: boolean;
-}
-
-export const initialState: PathfindingState = {
-  running: false,
-  done: false,
-  error: '',
-  missingParam: false,
-  mustBeLaunched: false,
-  mustBeLaunchedManually: false,
-  cancelled: false,
-};
-
-interface Action {
-  type: string;
-  message?: string;
-  params?: {
-    origin?: Partial<PointOnMap>;
-    destination?: Partial<PointOnMap>;
-    rollingStockID?: number;
-    vias?: Partial<PointOnMap>[];
-    pathfindingId?: number;
-  };
-}
-
-export function reducer(state: PathfindingState, action: Action): PathfindingState {
+export function reducer(state: PathfindingState, action: PathfindingAction): PathfindingState {
   switch (action.type) {
     case 'PATHFINDING_STARTED': {
       return {
@@ -559,7 +529,7 @@ const Pathfinding = ({ zoomToFeature, path }: PathfindingProps) => {
             </span>
             <span className="flex-grow-1">{t('pathfindingDone')}</span>
             <small className="text-secondary" data-testid="result-pathfinding-distance">
-              {geojson?.length && formatKmValue(geojson?.length / 1000, 3)}
+              {geojson?.length && formatKmValue(geojson?.length)}
             </small>
           </div>
         )}

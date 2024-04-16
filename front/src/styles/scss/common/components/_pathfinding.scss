@@ -129,6 +129,11 @@
       color: var(--secondary);
     }
 
+    &.pathfinding-loading {
+      background-color: var(--primary);
+      border-color: var(--primary);
+    }
+
     &.infra-loading {
       color: var(--orange);
       border-color: #e2ae92;

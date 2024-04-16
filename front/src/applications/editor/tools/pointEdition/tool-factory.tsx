@@ -13,7 +13,7 @@ import { getEntity } from 'applications/editor/data/api';
 import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
 import { DEFAULT_COMMON_TOOL_STATE } from 'applications/editor/tools/consts';
 import type { TrackSectionEntity } from 'applications/editor/tools/trackEdition/types';
-import { approximateDistanceWithEditoastData } from 'applications/editor/tools/utils';
+import { calculateDistanceAlongTrack } from 'applications/editor/tools/utils';
 import type { Tool } from 'applications/editor/types';
 import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { save } from 'reducers/editor/thunkActions';
@@ -33,10 +33,6 @@ type PointEditionToolParams<T extends EditorPoint> = {
   layersComponent: ComponentType<{ map: Map }>;
   requiresAngle?: boolean;
 };
-
-function calculateDistanceAlongTrack(track: Feature<LineString>, point: Point) {
-  return approximateDistanceWithEditoastData(track as TrackSectionEntity, point);
-}
 
 function getPointEditionTool<T extends EditorPoint>({
   layer,
