@@ -183,7 +183,7 @@ class RawInfraImplFromRjs(
     private val trackChunksBounds =
         trackSectionPool.map {
             val chunkCount = it.chunks.size
-            val bounds = MutableOffsetArray<TrackSection>(chunkCount + 1) { Offset(Distance.ZERO) }
+            val bounds = MutableOffsetArray<TrackSection>(chunkCount + 1) { Offset.zero() }
             var curOffset = Offset<TrackSection>(Distance.ZERO)
             for (i in 0 until chunkCount) {
                 curOffset += getTrackChunkLength(it.chunks[i]).distance

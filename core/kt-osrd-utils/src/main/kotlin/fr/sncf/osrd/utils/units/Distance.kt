@@ -105,8 +105,12 @@ value class Offset<T>(val distance: Distance) : Comparable<Offset<T>> {
     fun <U> cast(): Offset<U> = Offset(distance)
 
     companion object {
+        @JvmStatic fun <T> zero() = Offset<T>(Distance.ZERO)
+
+        @JvmStatic
         fun <T> min(a: Offset<T>, b: Offset<T>) = Offset<T>(Distance.min(a.distance, b.distance))
 
+        @JvmStatic
         fun <T> max(a: Offset<T>, b: Offset<T>) = Offset<T>(Distance.max(a.distance, b.distance))
     }
 }

@@ -328,7 +328,7 @@ fun parseRJSInfra(rjsInfra: RJSInfra): RawInfra {
         val trackSectionCurves = getCurves(rjsTrack)
         val trackSectionBlockedGauges = getBlockedGauge(rjsTrack)
 
-        val chunkBoundariesOffsets = mutableOffsetArrayListOf<TrackSection>(Offset(Distance.ZERO))
+        val chunkBoundariesOffsets = mutableOffsetArrayListOf<TrackSection>(Offset.zero())
         val chunkBoundariesDetectors = mutableListOf<List<String>?>(null)
 
         // add all detectors
@@ -336,7 +336,7 @@ fun parseRJSInfra(rjsInfra: RJSInfra): RawInfra {
         if (trackSectionDetectors != null) {
             for (detector in trackSectionDetectors) {
                 val detectorOffset = detector.key
-                if (detectorOffset > trackSectionLength || detectorOffset < Offset(Distance.ZERO)) {
+                if (detectorOffset > trackSectionLength || detectorOffset < Offset.zero()) {
                     throw OSRDError.newInfraLoadingError(
                         ErrorType.InfraHardLoadingError,
                         "Detector out of range at offset $detectorOffset on trackSection ${rjsTrack.id}"
