@@ -1,4 +1,3 @@
-mod electrification;
 mod errors;
 pub mod operational_point;
 mod railjson;
@@ -13,7 +12,6 @@ pub mod v2;
 
 use editoast_schemas::primitives::OSRDIdentified;
 use editoast_schemas::primitives::ObjectType;
-pub use electrification::Electrification;
 pub use errors::InfraError;
 pub use errors::InfraErrorType;
 pub use operational_point::OperationalPoint;

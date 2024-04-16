@@ -338,7 +338,6 @@ mod tests {
     use crate::infra_cache::operation::Operation;
     use crate::infra_cache::operation::RailjsonObject;
     use crate::infra_cache::InfraCacheEditoastError;
-    use crate::schema::Electrification;
     use crate::schema::OperationalPoint;
     use crate::schema::OperationalPointPart;
     use crate::schema::Route;
@@ -352,6 +351,7 @@ mod tests {
     use editoast_common::Identifier;
     use editoast_schemas::infra::ApplicableDirectionsTrackRange;
     use editoast_schemas::infra::Detector;
+    use editoast_schemas::infra::Electrification;
     use editoast_schemas::infra::Endpoint;
     use editoast_schemas::infra::TrackEndpoint;
     use editoast_schemas::infra::Waypoint;

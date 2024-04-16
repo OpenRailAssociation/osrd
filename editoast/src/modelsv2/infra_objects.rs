@@ -152,7 +152,7 @@ infra_model!(
     ElectrificationModel,
     infra_object_electrification,
     infra_layer_electrification,
-    schema::Electrification
+    editoast_schemas::infra::Electrification
 );
 
 infra_model!(
