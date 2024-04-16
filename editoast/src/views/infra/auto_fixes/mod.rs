@@ -341,7 +341,6 @@ mod tests {
     use crate::schema::OperationalPoint;
     use crate::schema::OperationalPointPart;
     use crate::schema::Route;
-    use crate::schema::Signal;
     use crate::schema::Slope;
     use crate::schema::SpeedSection;
     use crate::schema::Switch;
@@ -353,6 +352,7 @@ mod tests {
     use editoast_schemas::infra::Detector;
     use editoast_schemas::infra::Electrification;
     use editoast_schemas::infra::Endpoint;
+    use editoast_schemas::infra::Signal;
     use editoast_schemas::infra::TrackEndpoint;
     use editoast_schemas::infra::Waypoint;
     use editoast_schemas::primitives::ObjectRef;

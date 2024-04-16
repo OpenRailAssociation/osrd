@@ -4,6 +4,10 @@ use editoast_schemas::infra::BufferStop;
 use editoast_schemas::infra::Detector;
 use editoast_schemas::infra::Direction;
 use editoast_schemas::infra::Electrification;
+use editoast_schemas::infra::LogicalSignal;
+use editoast_schemas::infra::Signal;
+use editoast_schemas::infra::SignalExtensions;
+use editoast_schemas::infra::SignalSncfExtension;
 use std::collections::HashMap;
 use std::str::FromStr;
 
