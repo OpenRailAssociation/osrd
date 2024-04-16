@@ -195,7 +195,7 @@ infra_model!(
 infra_model!(
     SwitchTypeModel,
     infra_object_extended_switch_type,
-    schema::SwitchType
+    editoast_schemas::infra::SwitchType
 );
 
 infra_model!(

@@ -186,9 +186,9 @@ mod tests {
     use crate::fixtures::tests::db_pool;
     use crate::fixtures::tests::empty_infra;
     use crate::fixtures::tests::TestFixture;
-    use crate::schema::SwitchType;
     use crate::views::infra::tests::create_object_request;
     use crate::views::tests::create_test_service;
+    use editoast_schemas::infra::SwitchType;
 
     #[rstest]
     #[serial_test::serial]

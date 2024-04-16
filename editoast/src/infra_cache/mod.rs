@@ -19,7 +19,13 @@ use diesel::QueryableByName;
 use diesel_async::AsyncPgConnection as PgConnection;
 use diesel_async::RunQueryDsl;
 use editoast_derive::EditoastError;
+use editoast_schemas::infra::Crossing;
+use editoast_schemas::infra::DoubleSlipSwitch;
 use editoast_schemas::infra::Electrification;
+use editoast_schemas::infra::Link;
+use editoast_schemas::infra::PointSwitch;
+use editoast_schemas::infra::SingleSlipSwitch;
+use editoast_schemas::infra::SwitchType;
 use editoast_schemas::primitives::OSRDIdentified;
 use editoast_schemas::primitives::OSRDObject;
 use editoast_schemas::primitives::ObjectRef;
@@ -762,8 +768,6 @@ pub mod tests {
     use crate::schema::Route;
     use crate::schema::SpeedSection;
     use crate::schema::Switch;
-    use crate::schema::SwitchPortConnection;
-    use crate::schema::SwitchType;
     use editoast_common::Identifier;
     use editoast_common::NonBlankString;
     use editoast_schemas::infra::ApplicableDirections;
@@ -771,6 +775,8 @@ pub mod tests {
     use editoast_schemas::infra::Direction;
     use editoast_schemas::infra::Electrification;
     use editoast_schemas::infra::Endpoint;
+    use editoast_schemas::infra::SwitchPortConnection;
+    use editoast_schemas::infra::SwitchType;
     use editoast_schemas::infra::TrackEndpoint;
     use editoast_schemas::primitives::OSRDIdentified;
 
