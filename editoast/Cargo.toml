@@ -19,7 +19,7 @@ rand = "0.8.5"
 rangemap = "1.5.1"
 serde = "1.0.195"
 serde_derive = "1.0.195"
-serde_json = "1.0.115"
+serde_json = "1.0.116"
 strum = { version = "0.26.2", features = ["derive"] }
 thiserror = "1.0.58"
 utoipa = { version = "4.2.0", features = ["actix_extras", "chrono", "uuid"] }
