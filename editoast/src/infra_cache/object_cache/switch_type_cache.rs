@@ -1,6 +1,6 @@
 use crate::infra_cache::Cache;
 use crate::infra_cache::ObjectCache;
-use crate::schema::SwitchType;
+use editoast_schemas::infra::SwitchType;
 
 impl Cache for SwitchType {
     fn get_track_referenced_id(&self) -> Vec<&String> {

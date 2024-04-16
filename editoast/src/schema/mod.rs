@@ -4,7 +4,6 @@ mod railjson;
 mod route;
 mod speed_section;
 mod switch;
-mod switch_type;
 pub mod track_section;
 pub mod utils;
 pub mod v2;
@@ -23,18 +22,10 @@ pub use route::Route;
 pub use speed_section::Speed;
 pub use speed_section::SpeedSection;
 pub use switch::Switch;
-pub use switch_type::builtin_node_types_list;
-pub use switch_type::Crossing;
-pub use switch_type::DoubleSlipSwitch;
-pub use switch_type::Link;
-pub use switch_type::PointSwitch;
-pub use switch_type::SingleSlipSwitch;
-pub use switch_type::SwitchType;
 pub use track_section::TrackSection;
 
 cfg_if! {
     if #[cfg(test)] {
-        pub use switch_type::SwitchPortConnection;
         pub use track_section::{Curve, Slope};
     }
 }

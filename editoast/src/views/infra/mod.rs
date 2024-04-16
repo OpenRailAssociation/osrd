@@ -51,11 +51,11 @@ use crate::models::List as ModelList;
 use crate::models::NoParams;
 use crate::modelsv2::prelude::*;
 use crate::modelsv2::Infra;
-use crate::schema::SwitchType;
 use crate::views::pagination::PaginatedResponse;
 use crate::views::pagination::PaginationQueryParam;
 use crate::DbPool;
 use crate::RedisClient;
+use editoast_schemas::infra::SwitchType;
 
 crate::routes! {
     "/infra" => {
@@ -572,11 +572,11 @@ pub mod tests {
     use crate::modelsv2::get_table;
     use crate::modelsv2::infra::DEFAULT_INFRA_VERSION;
     use crate::schema::SpeedSection;
-    use crate::schema::SwitchType;
     use crate::schema::RAILJSON_VERSION;
     use crate::views::tests::create_test_service;
     use crate::views::tests::create_test_service_with_core_client;
     use editoast_schemas::infra::Electrification;
+    use editoast_schemas::infra::SwitchType;
     use editoast_schemas::primitives::ObjectType;
 
     fn delete_infra_request(infra_id: i64) -> Request {
