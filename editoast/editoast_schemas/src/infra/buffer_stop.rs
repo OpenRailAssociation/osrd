@@ -1,11 +1,11 @@
 use derivative::Derivative;
+use editoast_common::Identifier;
 use serde::Deserialize;
 use serde::Serialize;
 
-use super::OSRDIdentified;
-use super::ObjectType;
-use editoast_common::Identifier;
-use editoast_schemas::primitives::OSRDTyped;
+use crate::primitives::OSRDIdentified;
+use crate::primitives::OSRDTyped;
+use crate::primitives::ObjectType;
 
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]

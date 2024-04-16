@@ -323,6 +323,8 @@ mod tests {
     use actix_web::test::call_service;
     use actix_web::test::read_body_json;
     use actix_web::test::TestRequest;
+    use editoast_schemas::infra::BufferStop;
+    use editoast_schemas::infra::BufferStopExtension;
     use serde_json::json;
 
     use super::*;
@@ -336,8 +338,6 @@ mod tests {
     use crate::infra_cache::operation::Operation;
     use crate::infra_cache::operation::RailjsonObject;
     use crate::infra_cache::InfraCacheEditoastError;
-    use crate::schema::BufferStop;
-    use crate::schema::BufferStopExtension;
     use crate::schema::Detector;
     use crate::schema::Electrification;
     use crate::schema::OperationalPoint;

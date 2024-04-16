@@ -1,5 +1,6 @@
 use editoast_schemas::infra::ApplicableDirections;
 use editoast_schemas::infra::ApplicableDirectionsTrackRange;
+use editoast_schemas::infra::BufferStop;
 use editoast_schemas::infra::Direction;
 use std::collections::HashMap;
 use std::str::FromStr;
