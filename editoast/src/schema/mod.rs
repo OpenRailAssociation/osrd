@@ -42,7 +42,6 @@ pub use switch_type::PointSwitch;
 pub use switch_type::SingleSlipSwitch;
 pub use switch_type::SwitchType;
 pub use track_section::TrackSection;
-pub use track_section::TrackSectionCache;
 
 cfg_if! {
     if #[cfg(test)] {

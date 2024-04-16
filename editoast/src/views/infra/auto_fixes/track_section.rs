@@ -5,11 +5,11 @@ use uuid::Uuid;
 
 use super::new_ref_fix_create_pair;
 use super::Fix;
+use crate::infra_cache::object_cache::TrackSectionCache;
 use crate::infra_cache::operation::RailjsonObject;
 use crate::schema::BufferStop;
 use crate::schema::InfraError;
 use crate::schema::InfraErrorType;
-use crate::schema::TrackSectionCache;
 use editoast_common::Identifier;
 use editoast_schemas::infra::Endpoint;
 use editoast_schemas::primitives::OSRDIdentified as _;
