@@ -2,7 +2,7 @@ use diesel::result::Error::NotFound;
 
 use crate::error::EditoastError;
 use crate::error::Result;
-use crate::models::Identifiable;
+use crate::models::PreferredId;
 
 use super::Model;
 
@@ -45,7 +45,7 @@ impl<'a, M: Model> Patch<'a, M> {
     async fn apply<K>(self, conn: &mut diesel_async::AsyncPgConnection) -> Result<()>
     where
         for<'b> K: Send + Clone + 'b,
-        M: Model + Identifiable<K> + Send,
+        M: Model + PreferredId<K> + Send,
         <M as Model>::Changeset: Update<K, M> + Send,
     {
         let id: K = self.model.get_id();
@@ -110,7 +110,7 @@ pub trait Save<K: Send>: Sized {
 impl<'a, K, M> Save<K> for M
 where
     for<'async_trait> K: Send + Clone + 'async_trait,
-    M: Model + Identifiable<K> + Clone + Send + 'a,
+    M: Model + PreferredId<K> + Clone + Send + 'a,
     <M as Model>::Changeset: Update<K, M> + Send,
 {
     async fn save(&mut self, conn: &mut diesel_async::AsyncPgConnection) -> Result<()> {
