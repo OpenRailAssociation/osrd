@@ -6,6 +6,7 @@ use std::hash::Hasher;
 
 use diesel_async::AsyncPgConnection as PgConnection;
 use editoast_derive::EditoastError;
+use editoast_schemas::train_schedule::TrainScheduleBase;
 use itertools::Itertools;
 use serde_qs::actix::QsQuery;
 use thiserror::Error;
@@ -27,7 +28,6 @@ use crate::modelsv2::train_schedule::TrainScheduleChangeset;
 use crate::modelsv2::Model;
 use crate::modelsv2::Retrieve;
 use crate::modelsv2::RetrieveBatch;
-use crate::schema::v2::trainschedule::TrainScheduleBase;
 use crate::views::v2::path::pathfinding_from_train;
 use crate::views::v2::path::PathfindingError;
 use crate::views::v2::path::TrackRange;

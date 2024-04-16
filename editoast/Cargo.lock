@@ -1474,6 +1474,7 @@ dependencies = [
 name = "editoast_schemas"
 version = "0.1.0"
 dependencies = [
+ "chrono",
  "derivative",
  "editoast_common",
  "enum-map",

@@ -38,6 +38,7 @@ use client::{
 };
 use editoast_schemas::infra::ElectricalProfileSetData;
 use editoast_schemas::rolling_stock::RollingStock;
+use editoast_schemas::train_schedule::TrainScheduleBase;
 use modelsv2::{
     timetable::Timetable, timetable::TimetableWithTrains, train_schedule::TrainSchedule,
     train_schedule::TrainScheduleChangeset,
@@ -45,7 +46,6 @@ use modelsv2::{
 use modelsv2::{Changeset, RollingStockModel};
 use opentelemetry_datadog::DatadogPropagator;
 use opentelemetry_sdk::propagation::TraceContextPropagator;
-use schema::v2::trainschedule::TrainScheduleBase;
 use views::v2::train_schedule::{TrainScheduleForm, TrainScheduleResult};
 
 use colored::*;

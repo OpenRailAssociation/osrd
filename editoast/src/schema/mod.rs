@@ -1,7 +1,6 @@
 mod errors;
 mod railjson;
 pub mod track_section;
-pub mod v2;
 
 pub use errors::InfraError;
 pub use errors::InfraErrorType;

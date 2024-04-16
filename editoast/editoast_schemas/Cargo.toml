@@ -5,6 +5,7 @@ edition = "2021"
 license = "LGPL-3.0"
 
 [dependencies]
+chrono.workspace = true
 derivative.workspace = true
 editoast_common.workspace = true
 enum-map.workspace = true

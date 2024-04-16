@@ -21,6 +21,9 @@ pub use distribution::Distribution;
 mod comfort;
 pub use comfort::Comfort;
 
+mod train_schedule_base;
+pub use train_schedule_base::TrainScheduleBase;
+
 mod allowance;
 pub use allowance::Allowance;
 pub use allowance::AllowanceDistribution;
@@ -33,6 +36,7 @@ mod rjs_power_restriction_range;
 pub use rjs_power_restriction_range::RjsPowerRestrictionRange;
 
 editoast_common::schemas! {
+    train_schedule_base::schemas(),
     margins::schemas(),
     schedule_item::schemas(),
     path_item::schemas(),
