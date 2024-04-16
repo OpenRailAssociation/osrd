@@ -5,6 +5,12 @@ use utoipa::ToSchema;
 
 use super::TrackRange;
 
+editoast_common::schemas! {
+    ElectricalProfile,
+    ElectricalProfileSetData,
+    LevelValues,
+}
+
 #[derive(Debug, Serialize, Deserialize, PartialEq, Clone, ToSchema)]
 pub struct ElectricalProfile {
     #[schema(example = "A")]
