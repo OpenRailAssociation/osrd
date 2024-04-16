@@ -1,4 +1,7 @@
-use std::{collections::HashMap, time::Duration};
+use std::{
+    collections::{HashMap, HashSet},
+    time::Duration,
+};
 
 use figment::{
     providers::{Env, Format, Serialized, Toml},
@@ -180,6 +183,7 @@ pub enum AuthProvider {
         client_id: String,
         client_secret: String,
         profile_scope_override: Option<String>,
+        username_whitelist: Option<HashSet<String>>,
     },
 }
 

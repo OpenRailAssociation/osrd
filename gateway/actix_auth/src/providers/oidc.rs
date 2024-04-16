@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use actix_web::http::header::{self, LanguageTag, Preference};
 use actix_web::{http::StatusCode, web, FromRequest, HttpRequest, HttpResponse};
 use futures_util::future::LocalBoxFuture;
@@ -22,6 +24,7 @@ pub struct OidcConfig {
     pub client_id: ClientId,
     pub client_secret: Option<ClientSecret>,
     pub profile_scope_override: Option<String>,
+    pub username_whitelist: Option<HashSet<String>>,
 }
 
 impl OidcConfig {
@@ -32,6 +35,7 @@ impl OidcConfig {
         client_id: String,
         client_secret: String,
         profile_scope_override: Option<String>,
+        username_whitelist: Option<HashSet<String>>,
     ) -> Self {
         Self {
             issuer_url,
@@ -40,6 +44,7 @@ impl OidcConfig {
             client_id: ClientId::new(client_id),
             client_secret: Some(ClientSecret::new(client_secret)),
             profile_scope_override,
+            username_whitelist,
         }
     }
 }
@@ -49,6 +54,7 @@ pub struct OidcProvider {
     pub client: Box<CoreClient>,
     pub post_login_url: Box<url::Url>,
     pub profile_scope_override: Option<String>,
+    pub username_whitelist: Option<HashSet<String>>,
 }
 
 impl OidcProvider {
@@ -74,6 +80,7 @@ impl OidcProvider {
             client,
             post_login_url: config.post_login_url.clone(),
             profile_scope_override: config.profile_scope_override.clone(),
+            username_whitelist: config.username_whitelist.clone(),
         })
     }
 }
@@ -217,6 +224,13 @@ impl SessionProvider for OidcProvider {
             // if there's no name, use the subject as a placeholder
             let name = name.unwrap_or_else(|| subject.clone());
 
+            // If there is a whitelist, check that the user is part of it
+            if let Some(whitelist) = &self.username_whitelist {
+                if !whitelist.contains(&name) {
+                    return Err(CallbackError::UserNotAuthorized.into());
+                }
+            }
+
             ctx.login(OidcSessionState::LoggedIn {
                 id: subject,
                 username: name,
@@ -274,6 +288,8 @@ pub enum CallbackError {
     InvalidIDTokenSignature,
     #[error("access token signature verification failed")]
     InvalidAccessTokenSignature,
+    #[error("User not authorized")]
+    UserNotAuthorized,
 }
 
 impl actix_web::ResponseError for CallbackError {
@@ -285,6 +301,7 @@ impl actix_web::ResponseError for CallbackError {
             CallbackError::MissingIDToken => StatusCode::INTERNAL_SERVER_ERROR,
             CallbackError::InvalidIDTokenSignature => StatusCode::INTERNAL_SERVER_ERROR,
             CallbackError::InvalidAccessTokenSignature => StatusCode::INTERNAL_SERVER_ERROR,
+            CallbackError::UserNotAuthorized => StatusCode::FORBIDDEN,
         }
     }
 }
