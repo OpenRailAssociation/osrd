@@ -58,7 +58,7 @@ struct PathProperties {
     gradients: Option<PropertyValuesF64>,
     /// Electrification modes and neutral section along the path
     #[schema(inline)]
-    electrifications: Option<PropertyValuesString>,
+    electrifications: Option<PropertyElectrificationValues>,
     /// Geometry of the path
     geometry: Option<GeoJsonLineString>,
     /// Operational points along the path
@@ -129,18 +129,26 @@ struct PropertyValuesF64 {
     values: Vec<f64>,
 }
 
-/// Property string values along a path. Each value is associated to a range of the path.
-#[derive(Debug, Clone, Serialize, Deserialize, ToSchema, Derivative)]
-#[derivative(Default)]
-struct PropertyValuesString {
+/// Electrification property along a path. Each value is associated to a range of the path.
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+struct PropertyElectrificationValues {
     /// List of `n` boundaries of the ranges.
     /// A boundary is a distance from the beginning of the path in mm.
-    #[derivative(Default(value = "vec![1000]"))]
     boundaries: Vec<u64>,
     #[schema(inline)]
     /// List of `n+1` values associated to the ranges
-    #[derivative(Default(value = r#"vec!["1500V".into(), "25000V".into()]"#))]
-    values: Vec<String>,
+    values: Vec<PropertyElectrificationValue>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+#[serde(tag = "type", rename_all = "snake_case")]
+enum PropertyElectrificationValue {
+    /// Elecrtified section with a given voltage
+    Electrification { voltage: String },
+    /// Neutral section with a lower pantograph instruction or just a dead section
+    NeutralSection { lower_pantograph: bool },
+    /// Non electrified section
+    NonElectrified,
 }
 
 /// Operational point along a path.
@@ -164,7 +172,7 @@ struct PathPropertiesInput {
     /// List of supported electrification modes.
     /// Empty if does not support any electrification
     #[serde(default)]
-    rolling_stock_supported_electrification: Vec<String>,
+    rolling_stock_supported_electrifications: Vec<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
@@ -243,7 +251,15 @@ pub async fn post(
         let computed_path_properties = PathProperties {
             slopes: Some(Default::default()),
             gradients: Some(Default::default()),
-            electrifications: Some(Default::default()),
+            electrifications: Some(PropertyElectrificationValues {
+                boundaries: vec![1000],
+                values: vec![
+                    PropertyElectrificationValue::Electrification {
+                        voltage: "25kV".to_string(),
+                    },
+                    PropertyElectrificationValue::NonElectrified,
+                ],
+            }),
             geometry: Some(
                 serde_json::from_str(r#"{"type":"LineString","coordinates":[[0,0],[1,1]]}"#)
                     .unwrap(),
@@ -290,7 +306,7 @@ async fn retrieve_path_properties(
         .await?
         .unwrap_or_default();
 
-    let elec_property: Option<PropertyValuesString> = redis_conn
+    let elec_property: Option<PropertyElectrificationValues> = redis_conn
         .json_get_ex(&path_elec_property_hash, CACHE_PATH_EXPIRATION)
         .await?;
 

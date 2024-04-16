@@ -2899,7 +2899,19 @@ export type PathProperties = {
         A boundary is a distance from the beginning of the path in mm. */
     boundaries: number[];
     /** List of `n+1` values associated to the ranges */
-    values: string[];
+    values: (
+      | {
+          type: 'electrification';
+          voltage: string;
+        }
+      | {
+          lower_pantograph: boolean;
+          type: 'neutral_section';
+        }
+      | {
+          type: 'non_electrified';
+        }
+    )[];
   } | null;
   geometry?: GeoJsonLineString | null;
   gradients?: {
@@ -2930,7 +2942,7 @@ export type PathProperties = {
 export type PathPropertiesInput = {
   /** List of supported electrification modes.
     Empty if does not support any electrification */
-  rolling_stock_supported_electrification?: string[];
+  rolling_stock_supported_electrifications?: string[];
   /** list of track sections */
   track_ranges: TrackRange[];
 };

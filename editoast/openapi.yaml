@@ -4072,7 +4072,7 @@ components:
       properties:
         electrifications:
           allOf:
-          - description: Property string values along a path. Each value is associated to a range of the path.
+          - description: Electrification property along a path. Each value is associated to a range of the path.
             properties:
               boundaries:
                 description: |-
@@ -4086,7 +4086,39 @@ components:
               values:
                 description: List of `n+1` values associated to the ranges
                 items:
-                  type: string
+                  oneOf:
+                  - description: Elecrtified section with a given voltage
+                    properties:
+                      type:
+                        enum:
+                        - electrification
+                        type: string
+                      voltage:
+                        type: string
+                    required:
+                    - voltage
+                    - type
+                    type: object
+                  - description: Neutral section with a lower pantograph instruction or just a dead section
+                    properties:
+                      lower_pantograph:
+                        type: boolean
+                      type:
+                        enum:
+                        - neutral_section
+                        type: string
+                    required:
+                    - lower_pantograph
+                    - type
+                    type: object
+                  - properties:
+                      type:
+                        enum:
+                        - non_electrified
+                        type: string
+                    required:
+                    - type
+                    type: object
                 type: array
             required:
             - boundaries
@@ -4173,7 +4205,7 @@ components:
       type: object
     PathPropertiesInput:
       properties:
-        rolling_stock_supported_electrification:
+        rolling_stock_supported_electrifications:
           description: |-
             List of supported electrification modes.
             Empty if does not support any electrification
