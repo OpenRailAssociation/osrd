@@ -16,7 +16,7 @@ pub mod tests {
             train_schedule::TrainSchedule as TrainScheduleV2, Changeset, Document,
             ElectricalProfileSet, Infra, Model, Project, RollingStockModel, Study,
         },
-        schema::{v2::trainschedule::TrainScheduleBase, RailJson},
+        schema::RailJson,
         views::{
             rolling_stocks::rolling_stock_form::RollingStockForm,
             v2::train_schedule::TrainScheduleForm,
@@ -31,6 +31,7 @@ pub mod tests {
     use editoast_schemas::infra::ElectricalProfileSetData;
     use editoast_schemas::infra::TrackRange;
     use editoast_schemas::rolling_stock::RollingStock;
+    use editoast_schemas::train_schedule::TrainScheduleBase;
     use futures::executor;
     use postgis_diesel::types::LineString;
     use rstest::*;

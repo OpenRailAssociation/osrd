@@ -4,17 +4,22 @@ use std::collections::HashSet;
 use chrono::DateTime;
 use chrono::Utc;
 use editoast_common::NonBlankString;
-use editoast_schemas::train_schedule::Comfort;
-use editoast_schemas::train_schedule::Distribution;
-use editoast_schemas::train_schedule::Margins;
-use editoast_schemas::train_schedule::PathItem;
-use editoast_schemas::train_schedule::PowerRestrictionItem;
-use editoast_schemas::train_schedule::ScheduleItem;
-use editoast_schemas::train_schedule::TrainScheduleOptions;
 use serde::de::Error as SerdeError;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
+
+use super::Comfort;
+use super::Distribution;
+use super::Margins;
+use super::PathItem;
+use super::PowerRestrictionItem;
+use super::ScheduleItem;
+use super::TrainScheduleOptions;
+
+editoast_common::schemas! {
+    TrainScheduleBase,
+}
 
 #[derive(Debug, Default, Clone, Serialize, ToSchema)]
 pub struct TrainScheduleBase {
@@ -155,19 +160,20 @@ impl<'de> Deserialize<'de> for TrainScheduleBase {
 #[cfg(test)]
 mod tests {
     use chrono::Duration;
-    use editoast_schemas::train_schedule::Margins;
-    use editoast_schemas::train_schedule::PathItemLocation;
-    use editoast_schemas::train_schedule::ScheduleItem;
     use serde_json::from_str;
     use serde_json::to_string;
 
+    use crate::train_schedule::Margins;
+    use crate::train_schedule::PathItemLocation;
+    use crate::train_schedule::ScheduleItem;
+    use crate::train_schedule::TrainScheduleBase;
+
     use super::PathItem;
-    use crate::schema::v2::trainschedule::TrainScheduleBase;
 
     /// Test deserialize a valid train schedule example
     #[test]
     fn deserialize_train_schedule() {
-        let train_schedule = include_str!("../../tests/train_schedules/simple.json");
+        let train_schedule = include_str!("../tests/train_schedule_simple.json");
         assert!(from_str::<TrainScheduleBase>(train_schedule).is_ok());
     }
 
