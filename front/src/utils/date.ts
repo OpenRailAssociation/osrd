@@ -31,6 +31,40 @@ export function dateTimeFormatting(date: Date, withoutTime: boolean = false) {
   return dateToUTC.tz(dayjs.tz.guess()).format(dateFormat).replace(/\./gi, '');
 }
 
+/**
+ * Transform a date from a datetime-local input format to an
+ * ISO 8601 date with the user timezone
+ * @param inputDate e.g. 2024-04-25T08:30
+ * @return an ISO 8601 date (e.g. 2024-04-25T08:30:00+02:00) or null
+ */
+export const dateTimeToIso = (inputDateTime: string) => {
+  // Regex to check format 1234-56-78T12:00:00(:00)
+  const inputDateTimeRegex = /^\d{4}-\d{2}-\d{2}[T\s]\d{2}:\d{2}(?::\d{2}){0,1}$/;
+  if (inputDateTimeRegex.test(inputDateTime)) {
+    const userTimeZone = dayjs.tz.guess(); // Format : 'Europe/Paris'
+    return dayjs.tz(inputDateTime, userTimeZone).format();
+  }
+  return null;
+};
+
+/**
+ * Transform a milliseconds date to an ISO 8601 date with the user timezone
+ * @param msDate milliseconds date (elapsed from January 1st 1970)
+ * @return an ISO 8601 date (e.g. 2024-04-25T08:30:00+02:00)
+ */
+export const msToIsoDate = (msDate: number) => {
+  const userTimeZone = dayjs.tz.guess(); // Format : 'Europe/Paris'
+  return dayjs.tz(msDate, userTimeZone).format();
+};
+
+/**
+ * Transform a date format ISO 8601 to a milliseconds date (elapsed from January 1st 1970)
+ */
+export const isoDateToMs = (isoDate: string) => {
+  const isoCurrentDate = new Date(isoDate);
+  return isoCurrentDate.getTime();
+};
+
 /** check whether a date is included in the range or not */
 export function dateIsInRange(date: Date, range: [Date, Date]) {
   return date > range[0] && date < range[1];

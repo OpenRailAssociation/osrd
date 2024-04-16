@@ -2,7 +2,7 @@ import type { TFunction } from 'i18next';
 import type { Dispatch } from 'redux';
 
 import type { PathfindingRequest, PostStdcmApiArg } from 'common/api/osrdEditoastApi';
-import { getPathfindingQuery } from 'common/Pathfinding/Pathfinding';
+import { getPathfindingQuery } from 'modules/pathfinding/components/Pathfinding/Pathfinding';
 import { createAllowanceValue } from 'modules/stdcmAllowances/allowancesConsts';
 import type { InfraState } from 'reducers/infra';
 import { setFailure } from 'reducers/main';

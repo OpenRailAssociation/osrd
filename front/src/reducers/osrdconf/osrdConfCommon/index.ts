@@ -4,6 +4,8 @@ import { compact, omit } from 'lodash';
 import nextId from 'react-id-generator';
 
 import type { PointOnMap } from 'applications/operationalStudies/consts';
+import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
+import { isVia } from 'modules/pathfinding/utils';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
 import { type InfraStateReducers, buildInfraStateReducers, infraState } from 'reducers/infra';
 import { computeLinkedOriginTimes, insertVia, insertViaFromMap } from 'reducers/osrdconf/helpers';
@@ -57,6 +59,8 @@ export const defaultCommonConf: OsrdConfState = {
   featureInfoClick: { displayPopup: false },
   // Corresponds to origin and destination not defined
   pathSteps: [null, null],
+  rollingStockComfortV2: 'STANDARD',
+  startTime: new Date().toISOString(),
 };
 
 interface CommonConfReducers<S extends OsrdConfState> extends InfraStateReducers<S> {
@@ -106,17 +110,23 @@ interface CommonConfReducers<S extends OsrdConfState> extends InfraStateReducers
   ['updatePowerRestrictionRanges']: CaseReducer<S, PayloadAction<S['powerRestrictionRanges']>>;
   ['updateTrainScheduleIDsToModify']: CaseReducer<S, PayloadAction<S['trainScheduleIDsToModify']>>;
   ['updateFeatureInfoClick']: CaseReducer<S, PayloadAction<S['featureInfoClick']>>;
+  ['updatePathSteps']: CaseReducer<S, PayloadAction<S['pathSteps']>>;
   ['updateOriginV2']: CaseReducer<S, PayloadAction<ArrayElement<S['pathSteps']>>>;
   ['updateDestinationV2']: CaseReducer<S, PayloadAction<ArrayElement<S['pathSteps']>>>;
   ['deleteItineraryV2']: CaseReducer<S>;
   ['clearViasV2']: CaseReducer<S>;
   ['deleteViaV2']: CaseReducer<S, PayloadAction<number>>;
-  ['addViaV2']: CaseReducer<S, PayloadAction<PointOnMap>>;
+  ['addViaV2']: CaseReducer<
+    S,
+    PayloadAction<{ newVia: PathStep; pathProperties: ManageTrainSchedulePathProperties }>
+  >;
   ['moveVia']: {
     reducer: CaseReducer<S, PayloadAction<S['pathSteps']>>;
     prepare: PrepareAction<S['pathSteps']>;
   };
   ['upsertViaFromSuggestedOP']: CaseReducer<S, PayloadAction<SuggestedOP>>;
+  ['updateRollingStockComfortV2']: CaseReducer<S, PayloadAction<S['rollingStockComfortV2']>>;
+  ['updateStartTime']: CaseReducer<S, PayloadAction<S['startTime']>>;
 }
 
 export function buildCommonConfReducers<S extends OsrdConfState>(): CommonConfReducers<S> {
@@ -313,6 +323,9 @@ export function buildCommonConfReducers<S extends OsrdConfState>(): CommonConfRe
       const feature = omit(action.payload.feature, ['_vectorTileFeature']);
       state.featureInfoClick = { ...action.payload, feature };
     },
+    updatePathSteps(state: Draft<S>, action: PayloadAction<S['pathSteps']>) {
+      state.pathSteps = action.payload;
+    },
     updateOriginV2(state: Draft<S>, action: PayloadAction<ArrayElement<S['pathSteps']>>) {
       state.pathSteps = replaceElementAtIndex(state.pathSteps, 0, action.payload);
     },
@@ -329,12 +342,24 @@ export function buildCommonConfReducers<S extends OsrdConfState>(): CommonConfRe
     clearViasV2(state: Draft<S>) {
       state.pathSteps = [state.pathSteps[0], state.pathSteps[state.pathSteps.length - 1]];
     },
+    // Use this action in the via list, not the suggested op list
     deleteViaV2(state: Draft<S>, action: PayloadAction<number>) {
       // Index takes count of the origin in the array
       state.pathSteps = removeElementAtIndex(state.pathSteps, action.payload + 1);
     },
-    addViaV2(state: Draft<S>, action: PayloadAction<PointOnMap>) {
-      state.pathSteps = insertViaFromMap(state.pathSteps, action.payload);
+    // Use this action only to via added by click on map
+    addViaV2(
+      state: Draft<S>,
+      action: PayloadAction<{
+        newVia: PathStep;
+        pathProperties: ManageTrainSchedulePathProperties;
+      }>
+    ) {
+      state.pathSteps = insertViaFromMap(
+        state.pathSteps,
+        action.payload.newVia,
+        action.payload.pathProperties
+      );
     },
     moveVia: {
       reducer: (state: Draft<S>, action: PayloadAction<S['pathSteps']>) => {
@@ -349,16 +374,21 @@ export function buildCommonConfReducers<S extends OsrdConfState>(): CommonConfRe
         return { payload: newVias };
       },
     },
+    // Use this action to transform an op to via from times and stop table or
+    // from the suggested via modal
     upsertViaFromSuggestedOP(state: Draft<S>, action: PayloadAction<SuggestedOP>) {
       // We know that, at this point, origin and destination are defined because pathfinding has been done
-      const index = compact(state.pathSteps).findIndex(
+      const pathSteps = compact(state.pathSteps);
+      const index = pathSteps.findIndex(
         (step) => step.positionOnPath! >= action.payload.positionOnPath
       );
 
       const newVia: PathStep = {
         coordinates: action.payload.coordinates,
-        id: action.payload.stepId || nextId(),
+        id: nextId(),
         positionOnPath: action.payload.positionOnPath,
+        name: action.payload.name,
+        ch: action.payload.ch,
         stop_for: action.payload.stopFor,
         arrival: action.payload.arrival,
         locked: action.payload.locked,
@@ -371,12 +401,21 @@ export function buildCommonConfReducers<S extends OsrdConfState>(): CommonConfRe
             }),
       };
 
-      // StepId is undefined if the suggestedOP isn't a via yet
-      if (action.payload.stepId) {
+      const isInVias = isVia(pathSteps, action.payload);
+      if (isInVias) {
         state.pathSteps = replaceElementAtIndex(state.pathSteps, index, newVia);
       } else {
         state.pathSteps = addElementAtIndex(state.pathSteps, index, newVia);
       }
+    },
+    updateRollingStockComfortV2(
+      state: Draft<S>,
+      action: PayloadAction<S['rollingStockComfortV2']>
+    ) {
+      state.rollingStockComfortV2 = action.payload;
+    },
+    updateStartTime(state: Draft<S>, action: PayloadAction<S['startTime']>) {
+      state.startTime = action.payload;
     },
   };
 }

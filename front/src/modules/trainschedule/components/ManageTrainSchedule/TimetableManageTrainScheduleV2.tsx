@@ -10,7 +10,7 @@ import DotsLoader from 'common/DotsLoader/DotsLoader';
 import { useOsrdConfActions } from 'common/osrdContext';
 import TrainAddingSettings from 'modules/trainschedule/components/ManageTrainSchedule/TrainAddingSettings';
 
-import SubmitConfAddTrainScheduleV2 from './SubmitConfAddTrainScheduleV2';
+import AddTrainScheduleV2Button from './AddTrainScheduleV2Button';
 import SubmitConfUpdateTrainSchedulesV2 from './SubmitConfUpdateTrainSchedulesV2';
 
 type TimetableManageTrainScheduleProps = {
@@ -63,7 +63,7 @@ const TimetableManageTrainScheduleV2 = ({
                 <DotsLoader />
               </button>
             ) : (
-              <SubmitConfAddTrainScheduleV2
+              <AddTrainScheduleV2Button
                 infraState={infraState}
                 // refetchTimetable={refetchTimetable}
                 setIsWorking={setIsWorking}

@@ -2,6 +2,7 @@ import type { Feature } from 'geojson';
 
 import type { SwitchType } from 'applications/editor/tools/switchEdition/types';
 import type { PointOnMap, PowerRestrictionRange } from 'applications/operationalStudies/consts';
+import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
 import type { Allowance, PathResponse, RangedValue } from 'common/api/osrdEditoastApi';
 import NO_POWER_RESTRICTION from 'modules/powerRestriction/consts';
 import type { OsrdConfState } from 'reducers/osrdconf/types';
@@ -185,21 +186,24 @@ export default function commonConfBuilder() {
       },
       {
         track: '697841c6-6667-11e3-81ff-01f464e0362d',
-        offset: 233.404,
+        offset: 233404,
         id: 'rennes',
         coordinates: [48.10326700633057, -1.6719908615098822],
+        positionOnPath: 249234823,
       },
       {
         track: '60ca8dda-6667-11e3-81ff-01f464e0362d',
-        offset: 426.443,
+        offset: 416345,
         id: 'lemans',
         coordinates: [47.99542250806296, 0.1918181738752042],
+        positionOnPath: 411716565,
       },
       {
         track: '63c905ee-6667-11e3-81ff-01f464e0362d',
-        offset: 719.258,
+        offset: 719258,
         id: 'paris',
         coordinates: [48.904852473668086, 2.4369545094357736],
+        positionOnPath: 671401971,
       },
       {
         operational_point: 'strasbourg',
@@ -208,5 +212,38 @@ export default function commonConfBuilder() {
         coordinates: [48.58505541984412, 7.73387081978364],
       },
     ],
+
+    buildPathProperties: (): ManageTrainSchedulePathProperties => ({
+      electrifications: {
+        boundaries: [84015000],
+        values: [
+          {
+            type: 'electrification',
+            voltage: '25000V',
+          },
+        ],
+      },
+      geometry: {
+        type: 'LineString',
+        coordinates: [
+          [48.38819835024553, -4.478289762812405],
+          [48.10326700633057, -1.6719908615098822],
+          [48.209531, 0.151248],
+          [48.904852473668086, 2.4369545094357736],
+          [48.58505541984412, 7.73387081978364],
+        ],
+      },
+      suggestedOperationalPoints: [
+        {
+          opId: 'd9acb48e-6667-11e3-89ff-01f464e0362d',
+
+          track: '69c04314-6667-11e3-81ff-01f464e0362d',
+          offsetOnTrack: 310,
+          positionOnPath: 0,
+          coordinates: [-4.4785379, 48.3878704],
+        },
+      ],
+      length: 1169926000,
+    }),
   };
 }

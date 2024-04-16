@@ -1,7 +1,9 @@
 import type { Position } from 'geojson';
 
+import type { TrainScheduleBase } from 'common/api/osrdEditoastApi';
+
 export type SuggestedOP = {
-  prId: string;
+  opId: string;
   name?: string;
   uic?: number;
   ch?: string;
@@ -14,8 +16,6 @@ export type SuggestedOP = {
   /** Distance from the beginning of the path in mm */
   positionOnPath: number;
   coordinates: Position;
-  /** Id of the path step which will be defined only when the OP is transformed into a via */
-  stepId?: string;
   /** Metadata given to mark a point as wishing to be deleted by the user.
         It's useful for soft deleting the point (waiting to fix / remove all references)
         If true, the train schedule is consider as invalid and must be edited */
@@ -23,4 +23,31 @@ export type SuggestedOP = {
   arrival?: string | null;
   locked?: boolean;
   stopFor?: string | null;
+  // Metadatas given by ManageTrainScheduleMap click event to add origin/destination/via
+  metadata?: {
+    lineCode: number;
+    lineName: string;
+    trackName: string;
+    trackNumber: number;
+  };
+};
+
+export type ValidConfig = {
+  rollingStockName: string;
+  baseTrainName: string;
+  timetableId: number;
+  trainCount: number;
+  trainStep: number;
+  trainDelta: number;
+  labels: string[];
+  rollingStockComfort: TrainScheduleBase['comfort'];
+  initialSpeed: number;
+  usingElectricalProfiles: boolean;
+  path: TrainScheduleBase['path'];
+  // TODO TS2 : adapt this for times and stops / power restrictions issues
+  // margins: TrainScheduleBase['margins']
+  // schedule: TrainScheduleBase['schedule']
+  // powerRestrictions: TrainScheduleBase['power_restrictions']
+  firstStartTime: string;
+  speedLimitByTag?: string;
 };

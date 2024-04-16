@@ -1,37 +1,37 @@
 import React, { useEffect, useState } from 'react';
 
 import { ArrowSwitch, Plus, Rocket, Trash } from '@osrd-project/ui-icons';
+import bbox from '@turf/bbox';
 import type { Position } from 'geojson';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
-import type { PathResponse } from 'common/api/osrdEditoastApi';
+import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { zoomToFeature } from 'common/Map/WarpedMap/core/helpers';
 import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
-import Pathfinding from 'common/Pathfinding/Pathfinding';
-import TypeAndPath from 'common/Pathfinding/TypeAndPath';
 import Tipped from 'common/Tipped';
+import PathfindingV2 from 'modules/pathfinding/components/Pathfinding/PathfindingV2';
+import TypeAndPathV2 from 'modules/pathfinding/components/Pathfinding/TypeAndPathV2';
 import type { Viewport } from 'reducers/map';
 import { updateViewport } from 'reducers/map';
 import { getMap } from 'reducers/map/selectors';
 import { useAppDispatch } from 'store';
 
-import DisplayItinerary from './DisplayItinerary';
-import ModalSuggerredVias from './ModalSuggeredVias';
+import DisplayItineraryV2 from './DisplayItinerary/v2/DisplayItineraryV2';
+import ModalSuggestedVias from './ModalSuggestedVias';
 
-type ItineraryProps = {
-  path?: PathResponse;
+type ItineraryV2Props = {
+  pathProperties?: ManageTrainSchedulePathProperties;
+  setPathProperties: (pathProperties?: ManageTrainSchedulePathProperties) => void;
 };
 
-const ItineraryV2 = ({ path }: ItineraryProps) => {
-  const { getOrigin, getDestination, getVias, getGeojson } = useOsrdConfSelectors();
-  const { replaceVias, updateDestination, updateOrigin, updatePathfindingID, clearVias } =
-    useOsrdConfActions();
-  const origin = useSelector(getOrigin);
-  const destination = useSelector(getDestination);
-  const vias = useSelector(getVias);
-  const geojson = useSelector(getGeojson);
+const ItineraryV2 = ({ pathProperties, setPathProperties }: ItineraryV2Props) => {
+  const { getPathSteps, getOriginV2, getDestinationV2 } = useOsrdConfSelectors();
+  const { updatePathSteps } = useOsrdConfActions();
+  const origin = useSelector(getOriginV2);
+  const destination = useSelector(getDestinationV2);
+  const pathSteps = useSelector(getPathSteps);
 
   const [extViewport, setExtViewport] = useState<Viewport>();
   const [displayTypeAndPath, setDisplayTypeAndPath] = useState(false);
@@ -39,10 +39,6 @@ const ItineraryV2 = ({ path }: ItineraryProps) => {
   const map = useSelector(getMap);
   const { t } = useTranslation('operationalStudies/manageTrainSchedule');
   const { openModal } = useModal();
-
-  const zoomToFeatureInItinerary = (boundingBox: Position) => {
-    zoomToFeature(boundingBox, map.viewport, setExtViewport);
-  };
 
   const zoomToFeaturePoint = (lngLat?: Position) => {
     if (lngLat) {
@@ -57,29 +53,13 @@ const ItineraryV2 = ({ path }: ItineraryProps) => {
   };
 
   const inverseOD = () => {
-    if (origin && destination) {
-      const newOrigin = { ...origin };
-      dispatch(updateOrigin(destination));
-      dispatch(updateDestination(newOrigin));
-      if (vias && vias.length > 1) {
-        const newVias = Array.from(vias);
-        dispatch(replaceVias(newVias.reverse()));
-      }
-    }
-  };
-
-  const removeAllVias = () => {
-    dispatch(clearVias());
+    const revertedPathSteps = [...pathSteps].reverse();
+    dispatch(updatePathSteps(revertedPathSteps));
   };
 
   const resetPathfinding = () => {
-    dispatch(clearVias());
-    dispatch(updateOrigin(undefined));
-    dispatch(updateDestination(undefined));
-    dispatch(updatePathfindingID(undefined));
+    dispatch(updatePathSteps([null, null]));
   };
-
-  const viaModalContent = <ModalSuggerredVias removeAllVias={removeAllVias} />;
 
   useEffect(() => {
     if (extViewport !== undefined) {
@@ -91,10 +71,16 @@ const ItineraryV2 = ({ path }: ItineraryProps) => {
     }
   }, [extViewport]);
 
+  useEffect(() => {
+    if (pathProperties) {
+      zoomToFeature(bbox(pathProperties.geometry), map.viewport, setExtViewport);
+    }
+  }, [pathProperties]);
+
   return (
     <div className="osrd-config-item">
       <div className="mb-2 d-flex">
-        <Pathfinding zoomToFeature={zoomToFeatureInItinerary} path={path} />
+        <PathfindingV2 pathProperties={pathProperties} setPathProperties={setPathProperties} />
         <button
           type="button"
           className="btn btn-sm btn-only-icon btn-white px-3 ml-2"
@@ -108,16 +94,20 @@ const ItineraryV2 = ({ path }: ItineraryProps) => {
       </div>
       {displayTypeAndPath && (
         <div className="mb-2">
-          <TypeAndPath zoomToFeature={zoomToFeatureInItinerary} />
+          <TypeAndPathV2 setPathProperties={setPathProperties} />
         </div>
       )}
       {origin && destination && (
         <div className="d-flex flex-row">
-          {geojson && (
+          {pathProperties && pathProperties.suggestedOperationalPoints && (
             <button
               className="col my-1 text-white btn bg-info btn-sm"
               type="button"
-              onClick={() => openModal(viaModalContent)}
+              onClick={() =>
+                openModal(
+                  <ModalSuggestedVias suggestedOps={pathProperties.suggestedOperationalPoints} />
+                )
+              }
             >
               <span className="mr-1">{t('addVias')}</span>
               <Plus />
@@ -141,7 +131,7 @@ const ItineraryV2 = ({ path }: ItineraryProps) => {
         </div>
       )}
       <div className="osrd-config-item-container pathfinding-details" data-testid="itinerary">
-        <DisplayItinerary zoomToFeaturePoint={zoomToFeaturePoint} />
+        <DisplayItineraryV2 zoomToFeaturePoint={zoomToFeaturePoint} />
       </div>
     </div>
   );

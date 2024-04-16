@@ -16,7 +16,7 @@ import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import { useInfraID, useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
 import AddAndEditScenarioModal from 'modules/scenario/components/AddOrEditScenarioModal';
 import ScenarioLoaderMessage from 'modules/scenario/components/ScenarioLoaderMessage';
-import TimetableManageTrainScheduleV2 from 'modules/trainschedule/components/TimetableV2/TimetableManageTrainScheduleV2';
+import TimetableManageTrainScheduleV2 from 'modules/trainschedule/components/ManageTrainSchedule/TimetableManageTrainScheduleV2';
 import TimetableV2 from 'modules/trainschedule/components/TimetableV2/TimetableV2';
 import type { RootState } from 'reducers';
 import { updateSelectedProjection, updateSimulation } from 'reducers/osrdsimulation/actions';

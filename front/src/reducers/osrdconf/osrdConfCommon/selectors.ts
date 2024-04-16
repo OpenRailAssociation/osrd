@@ -1,3 +1,6 @@
+import { compact } from 'lodash';
+import { createSelector } from 'reselect';
+
 import type { RootState } from 'reducers';
 import buildInfraStateSelectors from 'reducers/infra/selectors';
 import type { OperationalStudiesConfSlice } from 'reducers/osrdconf/operationalStudiesConf';
@@ -12,6 +15,14 @@ const buildCommonConfSelectors = <ConfState extends OsrdConfState>(
   const makeOsrdConfSelector = makeSubSelector<ConfState>(getConf);
 
   const getPathSteps = makeOsrdConfSelector('pathSteps');
+
+  // If createSelector is not used and we return directly : pathSteps.slice(1, -1), we get this rtk warning :
+  // Selector getViasV2 returned a different result when called with the same parameters. This can lead to unnecessary rerenders.
+  // Selectors that return a new reference (such as an object or an array) should be memoized: https://redux.js.org/usage/deriving-data-selectors#optimizing-selectors-with-memoization
+  const viasSelector = createSelector(
+    (state: RootState) => state.operationalStudiesConf.pathSteps,
+    (pathSteps) => compact(pathSteps.slice(1, -1)) // a via can't be null
+  );
 
   return {
     ...buildInfraStateSelectors(slice),
@@ -59,12 +70,10 @@ const buildCommonConfSelectors = <ConfState extends OsrdConfState>(
       const pathSteps = getPathSteps(state);
       return pathSteps[pathSteps.length - 1];
     },
-    getViasV2: (state: RootState) => {
-      const pathSteps = getPathSteps(state);
-      pathSteps.shift();
-      pathSteps.pop();
-      return pathSteps;
-    },
+    /** To use this action, do useSelector(getViasV2()) */
+    getViasV2: () => viasSelector,
+    getRollingStockComfortV2: makeOsrdConfSelector('rollingStockComfortV2'),
+    getStartTime: makeOsrdConfSelector('startTime'),
   };
 };
 

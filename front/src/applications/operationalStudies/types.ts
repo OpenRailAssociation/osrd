@@ -1,4 +1,5 @@
-import type { PathResponse } from 'common/api/osrdEditoastApi';
+import type { PathProperties, PathResponse } from 'common/api/osrdEditoastApi';
+import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
 
 export interface Destination {
   uic: number;
@@ -73,4 +74,13 @@ export type TrainScheduleImportConfig = {
   date: string;
   startTime: string;
   endTime: string;
+};
+
+// Extraction of some required and non nullable properties from osrdEditoastApi's PathProperties type
+export type ManageTrainSchedulePathProperties = {
+  electrifications: NonNullable<PathProperties['electrifications']>;
+  geometry: NonNullable<PathProperties['geometry']>;
+  /** Operational points along the path and vias added by clicking on map */
+  suggestedOperationalPoints: SuggestedOP[];
+  length: number;
 };

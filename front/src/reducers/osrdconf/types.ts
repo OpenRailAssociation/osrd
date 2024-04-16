@@ -6,6 +6,7 @@ import type {
   PathResponse,
   AllowanceValue,
   TrackOffset,
+  TrainScheduleBase,
 } from 'common/api/osrdEditoastApi';
 import type { AllowanceForm } from 'modules/trainschedule/components/ManageTrainSchedule/Allowances/types';
 import type { InfraState } from 'reducers/infra';
@@ -30,6 +31,7 @@ export interface OsrdConfState extends InfraState {
   powerRestrictionRanges: PowerRestrictionRange[];
   origin?: PointOnMap;
   initialSpeed?: number;
+  // TODO TS2 : remove this property from store when drop v1
   departureTime: string;
   destination?: PointOnMap;
   vias: PointOnMap[];
@@ -47,6 +49,9 @@ export interface OsrdConfState extends InfraState {
   trainScheduleIDsToModify: number[];
   featureInfoClick: { displayPopup: boolean; feature?: Feature; coordinates?: number[] };
   pathSteps: (PathStep | null)[];
+  rollingStockComfortV2?: TrainScheduleBase['comfort'];
+  // Format ISO 8601
+  startTime: string;
 }
 
 export interface StandardAllowance {
@@ -83,6 +88,17 @@ export type PathStep = (
   arrival?: string | null;
   locked?: boolean;
   stop_for?: string | null;
+  /** Distance from the beginning of the path in mm */
   positionOnPath?: number;
   coordinates: Position;
+  // Metadatas given by the search endpoint in TypeAndPath (name)
+  name?: string;
+  ch?: string; // can be used to difference two steps from each other when they have same uic
+  // Metadatas given by ManageTrainScheduleMap click event to add origin/destination/via
+  metadata?: {
+    lineCode: number;
+    lineName: string;
+    trackName: string;
+    trackNumber: number;
+  };
 };
