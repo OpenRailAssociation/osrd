@@ -35,6 +35,7 @@ use crate::infra_cache::object_cache::DetectorCache;
 use crate::infra_cache::object_cache::OperationalPointCache;
 use crate::infra_cache::object_cache::SignalCache;
 use crate::infra_cache::object_cache::SwitchCache;
+use crate::infra_cache::object_cache::TrackSectionCache;
 use crate::infra_cache::operation::CacheOperation;
 use crate::infra_cache::operation::RailjsonObject;
 use crate::map::BoundingBox;
@@ -737,11 +738,11 @@ pub mod tests {
     use editoast_schemas::infra::Waypoint;
 
     use super::OperationalPointCache;
-    use super::TrackSectionCache;
     use crate::infra_cache::object_cache::BufferStopCache;
     use crate::infra_cache::object_cache::DetectorCache;
     use crate::infra_cache::object_cache::OperationalPointPartCache;
     use crate::infra_cache::object_cache::SignalCache;
+    use crate::infra_cache::object_cache::TrackSectionCache;
     use crate::infra_cache::operation::create::tests::create_buffer_stop;
     use crate::infra_cache::operation::create::tests::create_detector;
     use crate::infra_cache::operation::create::tests::create_electrification;
