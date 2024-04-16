@@ -6,8 +6,6 @@ use serde::Serialize;
 
 use super::OSRDIdentified;
 use super::ObjectType;
-use crate::infra_cache::Cache;
-use crate::infra_cache::ObjectCache;
 use editoast_common::Identifier;
 use editoast_common::NonBlankString;
 use editoast_schemas::infra::ApplicableDirectionsTrackRange;
@@ -63,6 +61,20 @@ pub struct SpeedSectionPslSncfExtension {
     r: Vec<Sign>,
 }
 
+impl SpeedSectionPslSncfExtension {
+    pub fn announcement(&self) -> &Vec<Sign> {
+        &self.announcement
+    }
+
+    pub fn z(&self) -> &Sign {
+        &self.z
+    }
+
+    pub fn r(&self) -> &Vec<Sign> {
+        &self.r
+    }
+}
+
 impl OSRDTyped for SpeedSection {
     fn get_type() -> ObjectType {
         ObjectType::SpeedSection
@@ -72,22 +84,6 @@ impl OSRDTyped for SpeedSection {
 impl OSRDIdentified for SpeedSection {
     fn get_id(&self) -> &String {
         &self.id
-    }
-}
-
-impl Cache for SpeedSection {
-    fn get_track_referenced_id(&self) -> Vec<&String> {
-        let mut res: Vec<_> = self.track_ranges.iter().map(|tr| &*tr.track).collect();
-        if let Some(psl) = &self.extensions.psl_sncf {
-            res.extend(psl.announcement.iter().map(|sign| &*sign.track));
-            res.extend(psl.r.iter().map(|sign| &*sign.track));
-            res.push(&*psl.z.track);
-        }
-        res
-    }
-
-    fn get_object_cache(&self) -> ObjectCache {
-        ObjectCache::SpeedSection(self.clone())
     }
 }
 
