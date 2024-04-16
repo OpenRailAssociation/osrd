@@ -19,6 +19,7 @@ use diesel::QueryableByName;
 use diesel_async::AsyncPgConnection as PgConnection;
 use diesel_async::RunQueryDsl;
 use editoast_derive::EditoastError;
+use editoast_schemas::infra::Electrification;
 use editoast_schemas::primitives::OSRDIdentified;
 use editoast_schemas::primitives::OSRDObject;
 use editoast_schemas::primitives::ObjectRef;
@@ -757,7 +758,6 @@ pub mod tests {
     use crate::infra_cache::SwitchCache;
     use crate::map::BoundingBox;
     use crate::modelsv2::infra::tests::test_infra_transaction;
-    use crate::schema::Electrification;
     use crate::schema::OperationalPoint;
     use crate::schema::Route;
     use crate::schema::SpeedSection;
@@ -769,6 +769,7 @@ pub mod tests {
     use editoast_schemas::infra::ApplicableDirections;
     use editoast_schemas::infra::ApplicableDirectionsTrackRange;
     use editoast_schemas::infra::Direction;
+    use editoast_schemas::infra::Electrification;
     use editoast_schemas::infra::Endpoint;
     use editoast_schemas::infra::TrackEndpoint;
     use editoast_schemas::primitives::OSRDIdentified;

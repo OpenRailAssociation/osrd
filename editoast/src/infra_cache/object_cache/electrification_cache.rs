@@ -1,6 +1,6 @@
 use crate::infra_cache::Cache;
 use crate::infra_cache::ObjectCache;
-use crate::schema::Electrification;
+use editoast_schemas::infra::Electrification;
 
 impl Cache for Electrification {
     fn get_track_referenced_id(&self) -> Vec<&String> {

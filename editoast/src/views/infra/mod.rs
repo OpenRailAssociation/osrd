@@ -571,12 +571,12 @@ pub mod tests {
     use crate::modelsv2::get_geometry_layer_table;
     use crate::modelsv2::get_table;
     use crate::modelsv2::infra::DEFAULT_INFRA_VERSION;
-    use crate::schema::Electrification;
     use crate::schema::SpeedSection;
     use crate::schema::SwitchType;
     use crate::schema::RAILJSON_VERSION;
     use crate::views::tests::create_test_service;
     use crate::views::tests::create_test_service_with_core_client;
+    use editoast_schemas::infra::Electrification;
     use editoast_schemas::primitives::ObjectType;
 
     fn delete_infra_request(infra_id: i64) -> Request {
