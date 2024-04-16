@@ -2,6 +2,7 @@ mod buffer_stop_cache;
 mod detector_cache;
 mod electrification_cache;
 mod operational_point_cache;
+mod route_cache;
 mod signal_cache;
 mod switch_cache;
 mod switch_type_cache;
