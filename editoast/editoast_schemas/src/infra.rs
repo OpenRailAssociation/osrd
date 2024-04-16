@@ -1,6 +1,7 @@
 mod applicable_directions;
 mod applicable_directions_track_range;
 mod buffer_stop;
+mod detector;
 mod direction;
 mod directional_track_range;
 mod electrical_profiles;
@@ -18,6 +19,7 @@ pub use applicable_directions::ApplicableDirections;
 pub use applicable_directions_track_range::ApplicableDirectionsTrackRange;
 pub use buffer_stop::BufferStop;
 pub use buffer_stop::BufferStopExtension;
+pub use detector::Detector;
 pub use direction::Direction;
 pub use directional_track_range::DirectionalTrackRange;
 pub use electrical_profiles::ElectricalProfile;
