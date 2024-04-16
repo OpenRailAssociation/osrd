@@ -300,6 +300,7 @@ pub fn routes(railjson: &RailJson) -> Vec<Route> {
 mod tests {
     use super::*;
     use editoast_schemas::infra::BufferStop;
+    use editoast_schemas::infra::Detector;
 
     fn min_infra() -> RailJson {
         let track = TrackSection {

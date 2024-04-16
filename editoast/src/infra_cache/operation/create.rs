@@ -12,7 +12,6 @@ use serde_json::Value;
 use super::OperationError;
 use crate::error::Result;
 use crate::modelsv2::get_table;
-use crate::schema::Detector;
 use crate::schema::Electrification;
 use crate::schema::OperationalPoint;
 use crate::schema::Route;
@@ -22,6 +21,7 @@ use crate::schema::Switch;
 use crate::schema::SwitchType;
 use crate::schema::TrackSection;
 use editoast_schemas::infra::BufferStop;
+use editoast_schemas::infra::Detector;
 use editoast_schemas::infra::NeutralSection;
 use editoast_schemas::primitives::OSRDIdentified;
 use editoast_schemas::primitives::OSRDObject;
@@ -250,7 +250,6 @@ pub mod tests {
     use crate::infra_cache::operation::create::apply_create_operation;
     use crate::infra_cache::operation::create::RailjsonObject;
     use crate::modelsv2::infra::tests::test_infra_transaction;
-    use crate::schema::Detector;
     use crate::schema::Electrification;
     use crate::schema::OperationalPoint;
     use crate::schema::Route;
@@ -260,6 +259,7 @@ pub mod tests {
     use crate::schema::SwitchType;
     use crate::schema::TrackSection;
     use editoast_schemas::infra::BufferStop;
+    use editoast_schemas::infra::Detector;
 
     pub async fn create_track(
         conn: &mut PgConnection,

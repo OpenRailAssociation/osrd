@@ -7,7 +7,7 @@ use editoast_schemas::primitives::ObjectType;
 
 use crate::infra_cache::Cache;
 use crate::infra_cache::ObjectCache;
-use crate::schema::Detector;
+use editoast_schemas::infra::Detector;
 
 #[derive(QueryableByName, Debug, Clone, Derivative)]
 #[derivative(Hash, PartialEq)]

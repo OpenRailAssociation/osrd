@@ -1,4 +1,3 @@
-mod detector;
 mod electrification;
 mod errors;
 pub mod operational_point;
@@ -12,7 +11,6 @@ pub mod track_section;
 pub mod utils;
 pub mod v2;
 
-pub use detector::Detector;
 use editoast_schemas::primitives::OSRDIdentified;
 use editoast_schemas::primitives::ObjectType;
 pub use electrification::Electrification;

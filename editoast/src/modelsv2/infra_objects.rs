@@ -159,7 +159,7 @@ infra_model!(
     DetectorModel,
     infra_object_detector,
     infra_layer_detector,
-    schema::Detector
+    editoast_schemas::infra::Detector
 );
 
 infra_model!(
