@@ -21,10 +21,8 @@ use crate::modelsv2::DeleteStatic;
 use crate::modelsv2::Model;
 use crate::modelsv2::Retrieve;
 use crate::DbPool;
-use editoast_schemas::infra::ElectricalProfile;
 use editoast_schemas::infra::ElectricalProfileSetData;
 use editoast_schemas::infra::LevelValues;
-use editoast_schemas::infra::TrackRange;
 
 crate::routes! {
     "/electrical_profile_set" => {
@@ -42,11 +40,7 @@ crate::routes! {
 
 editoast_common::schemas! {
     LightElectricalProfileSet,
-    ElectricalProfile,
-    ElectricalProfileSetData,
     ElectricalProfileSet,
-    LevelValues,
-    TrackRange,
 }
 
 #[derive(IntoParams)]
