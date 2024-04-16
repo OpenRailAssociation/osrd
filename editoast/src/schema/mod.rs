@@ -18,6 +18,7 @@ pub use operational_point::OperationalPointPart;
 pub use railjson::RailJson;
 pub use railjson::RAILJSON_VERSION;
 pub use route::Route;
+pub use route::RoutePath;
 pub use speed_section::Speed;
 pub use speed_section::SpeedSection;
 pub use track_section::TrackSection;
