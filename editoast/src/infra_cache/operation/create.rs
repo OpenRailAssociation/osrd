@@ -14,7 +14,6 @@ use crate::error::Result;
 use crate::modelsv2::get_table;
 use crate::schema::OperationalPoint;
 use crate::schema::Route;
-use crate::schema::Signal;
 use crate::schema::SpeedSection;
 use crate::schema::Switch;
 use crate::schema::SwitchType;
@@ -23,6 +22,7 @@ use editoast_schemas::infra::BufferStop;
 use editoast_schemas::infra::Detector;
 use editoast_schemas::infra::Electrification;
 use editoast_schemas::infra::NeutralSection;
+use editoast_schemas::infra::Signal;
 use editoast_schemas::primitives::OSRDIdentified;
 use editoast_schemas::primitives::OSRDObject;
 use editoast_schemas::primitives::ObjectType;
@@ -252,7 +252,6 @@ pub mod tests {
     use crate::modelsv2::infra::tests::test_infra_transaction;
     use crate::schema::OperationalPoint;
     use crate::schema::Route;
-    use crate::schema::Signal;
     use crate::schema::SpeedSection;
     use crate::schema::Switch;
     use crate::schema::SwitchType;
@@ -260,6 +259,7 @@ pub mod tests {
     use editoast_schemas::infra::BufferStop;
     use editoast_schemas::infra::Detector;
     use editoast_schemas::infra::Electrification;
+    use editoast_schemas::infra::Signal;
 
     pub async fn create_track(
         conn: &mut PgConnection,

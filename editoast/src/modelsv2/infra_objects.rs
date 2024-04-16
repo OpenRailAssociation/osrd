@@ -175,7 +175,7 @@ infra_model!(
     SignalModel,
     infra_object_signal,
     infra_layer_signal,
-    schema::Signal
+    editoast_schemas::infra::Signal
 );
 
 infra_model!(
