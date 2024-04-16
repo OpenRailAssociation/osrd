@@ -8,6 +8,7 @@ use editoast_schemas::infra::LogicalSignal;
 use editoast_schemas::infra::Signal;
 use editoast_schemas::infra::SignalExtensions;
 use editoast_schemas::infra::SignalSncfExtension;
+use editoast_schemas::infra::Switch;
 use std::collections::HashMap;
 use std::str::FromStr;
 

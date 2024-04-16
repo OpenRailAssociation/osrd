@@ -251,6 +251,7 @@ pub mod tests {
     use editoast_schemas::infra::Electrification;
     use editoast_schemas::infra::NeutralSection;
     use editoast_schemas::infra::Signal;
+    use editoast_schemas::infra::Switch;
     use editoast_schemas::infra::SwitchType;
     use editoast_schemas::primitives::OSRDIdentified;
     use rstest::rstest;

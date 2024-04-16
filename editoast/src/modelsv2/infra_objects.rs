@@ -182,7 +182,7 @@ infra_model!(
     SwitchModel,
     infra_object_switch,
     infra_layer_switch,
-    schema::Switch
+    editoast_schemas::infra::Switch
 );
 
 infra_model!(

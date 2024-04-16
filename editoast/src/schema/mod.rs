@@ -3,7 +3,6 @@ pub mod operational_point;
 mod railjson;
 mod route;
 mod speed_section;
-mod switch;
 pub mod track_section;
 pub mod utils;
 pub mod v2;
@@ -21,7 +20,6 @@ pub use railjson::RAILJSON_VERSION;
 pub use route::Route;
 pub use speed_section::Speed;
 pub use speed_section::SpeedSection;
-pub use switch::Switch;
 pub use track_section::TrackSection;
 
 cfg_if! {
