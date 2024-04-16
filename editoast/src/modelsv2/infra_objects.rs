@@ -145,7 +145,7 @@ infra_model!(
     BufferStopModel,
     infra_object_buffer_stop,
     infra_layer_buffer_stop,
-    schema::BufferStop
+    editoast_schemas::infra::BufferStop
 );
 
 infra_model!(

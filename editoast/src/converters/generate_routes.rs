@@ -299,6 +299,8 @@ pub fn routes(railjson: &RailJson) -> Vec<Route> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use editoast_schemas::infra::BufferStop;
+
     fn min_infra() -> RailJson {
         let track = TrackSection {
             id: "track".into(),

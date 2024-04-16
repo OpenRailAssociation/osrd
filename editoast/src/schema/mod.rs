@@ -1,4 +1,3 @@
-mod buffer_stop;
 mod detector;
 mod electrification;
 mod errors;
@@ -13,7 +12,6 @@ pub mod track_section;
 pub mod utils;
 pub mod v2;
 
-pub use buffer_stop::BufferStop;
 pub use detector::Detector;
 use editoast_schemas::primitives::OSRDIdentified;
 use editoast_schemas::primitives::ObjectType;
@@ -47,7 +45,6 @@ cfg_if! {
     if #[cfg(test)] {
         pub use switch_type::SwitchPortConnection;
         pub use track_section::{Curve, Slope};
-        pub use buffer_stop::BufferStopExtension;
     }
 }
 
