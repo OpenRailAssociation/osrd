@@ -38,7 +38,7 @@ pub struct LightRollingStock {
     pub mass: f64,
     pub rolling_resistance: RollingResistance,
     pub loading_gauge: LoadingGaugeType,
-    pub metadata: RollingStockMetadata,
+    pub metadata: Option<RollingStockMetadata>,
     #[schema(required)]
     pub power_restrictions: HashMap<String, String>,
     pub energy_sources: Vec<EnergySource>,

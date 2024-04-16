@@ -30,6 +30,7 @@ pub mod tests {
     use editoast_schemas::infra::ElectricalProfile;
     use editoast_schemas::infra::ElectricalProfileSetData;
     use editoast_schemas::infra::TrackRange;
+    use editoast_schemas::rolling_stock::RollingStock;
     use futures::executor;
     use postgis_diesel::types::LineString;
     use rstest::*;
@@ -151,6 +152,14 @@ pub mod tests {
 
     pub fn get_fast_rolling_stock_form(name: &str) -> RollingStockForm {
         let mut rolling_stock_form: RollingStockForm =
+            serde_json::from_str(include_str!("./tests/example_rolling_stock_1.json"))
+                .expect("Unable to parse");
+        rolling_stock_form.name = name.to_string();
+        rolling_stock_form
+    }
+
+    pub fn get_fast_rolling_stock_schema(name: &str) -> RollingStock {
+        let mut rolling_stock_form: RollingStock =
             serde_json::from_str(include_str!("./tests/example_rolling_stock_1.json"))
                 .expect("Unable to parse");
         rolling_stock_form.name = name.to_string();

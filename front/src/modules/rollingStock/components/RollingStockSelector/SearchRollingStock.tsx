@@ -46,7 +46,7 @@ function rollingStockPassesSearchedStringFilter(
   if (!filters.text) {
     return true;
   }
-  function includesSearchedString(str: string) {
+  function includesSearchedString(str: string | undefined) {
     return str && str.toLowerCase().includes(filters.text);
   }
   return [

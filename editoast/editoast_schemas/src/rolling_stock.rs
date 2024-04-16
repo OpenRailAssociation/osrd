@@ -51,8 +51,8 @@ editoast_common::schemas! {
 pub const ROLLING_STOCK_RAILJSON_VERSION: &str = "3.2";
 
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize, ToSchema)]
+#[schema(as = RjsRollingStock)]
 pub struct RollingStock {
-    pub id: i64,
     pub name: String,
     pub effort_curves: EffortCurves,
     #[schema(example = "5", required)]
@@ -77,11 +77,11 @@ pub struct RollingStock {
     #[schema(example = 5.0)]
     pub electrical_power_startup_time: Option<f64>,
     /// The time it takes to raise this train's pantograph in seconds. Is null if the train is not electric.
+    #[serde(default)]
     #[schema(example = 15.0)]
     pub raise_pantograph_time: Option<f64>,
     pub supported_signaling_systems: RollingStockSupportedSignalingSystems,
     pub railjson_version: String,
-    /// Whether the rolling stock can be edited/deleted or not.
-    pub locked: bool,
-    pub metadata: RollingStockMetadata,
+    #[serde(default)]
+    pub metadata: Option<RollingStockMetadata>,
 }

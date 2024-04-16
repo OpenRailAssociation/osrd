@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 
 use actix_web::web::Data;
-use derivative::Derivative;
 use diesel::ExpressionMethods;
 use diesel::QueryDsl;
 use diesel::SelectableHelper;
@@ -23,24 +22,29 @@ use validator::ValidationError;
 use validator::ValidationErrors;
 
 use crate::error::Result;
+use crate::modelsv2::prelude::*;
 use crate::modelsv2::rolling_stock_livery::RollingStockLiveryMetadataModel;
 use crate::views::rolling_stocks::RollingStockWithLiveries;
 use crate::DbPool;
 
-#[derive(Clone, Debug, Deserialize, Serialize, Derivative, ModelV2, ToSchema)]
-#[derivative(PartialEq)]
+editoast_common::schemas! {
+    RollingStockModel,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, ModelV2, ToSchema)]
 #[model(table = crate::tables::rolling_stock)]
-#[model(changeset(derive(Deserialize, Serialize, Debug, Validate, PartialEq), public))]
+#[model(changeset(derive(Validate), public))]
+#[schema(as = RollingStock)]
 pub struct RollingStockModel {
     pub id: i64,
     pub railjson_version: String,
     #[model(identifier)]
-    #[derivative(PartialEq = "ignore")]
     pub name: String,
     #[model(json)]
     pub effort_curves: EffortCurves,
     #[model(json)]
-    pub metadata: RollingStockMetadata,
+    #[schema(required)]
+    pub metadata: Option<RollingStockMetadata>,
     pub length: f64,
     pub max_speed: f64,
     pub startup_time: f64,
@@ -49,6 +53,7 @@ pub struct RollingStockModel {
     #[model(json)]
     pub gamma: Gamma,
     pub inertia_coefficient: f64,
+    #[schema(required)]
     pub base_power_class: Option<String>,
     pub mass: f64,
     #[model(json)]
@@ -56,12 +61,13 @@ pub struct RollingStockModel {
     #[model(to_enum)]
     pub loading_gauge: LoadingGaugeType,
     #[model(json)]
-    #[schema(required)]
     pub power_restrictions: HashMap<String, String>,
     #[model(json)]
     pub energy_sources: Vec<EnergySource>,
     pub locked: bool,
+    #[schema(required)]
     pub electrical_power_startup_time: Option<f64>,
+    #[schema(required)]
     pub raise_pantograph_time: Option<f64>,
     pub version: i64,
     #[schema(value_type = Vec<String>)]
@@ -79,7 +85,7 @@ impl RollingStockModel {
             .load(&mut conn)
             .await?;
         Ok(RollingStockWithLiveries {
-            rolling_stock: self.into(),
+            rolling_stock: self,
             liveries: liveries.into_iter().map(|livery| livery.into()).collect(),
         })
     }
@@ -154,9 +160,7 @@ impl From<RollingStockModel> for RollingStock {
     fn from(rolling_stock_model: RollingStockModel) -> Self {
         RollingStock {
             railjson_version: rolling_stock_model.railjson_version,
-            id: rolling_stock_model.id,
             metadata: rolling_stock_model.metadata,
-            locked: rolling_stock_model.locked,
             name: rolling_stock_model.name,
             effort_curves: rolling_stock_model.effort_curves,
             base_power_class: rolling_stock_model.base_power_class,
@@ -176,6 +180,32 @@ impl From<RollingStockModel> for RollingStock {
             raise_pantograph_time: rolling_stock_model.raise_pantograph_time,
             supported_signaling_systems: rolling_stock_model.supported_signaling_systems,
         }
+    }
+}
+
+impl From<RollingStock> for RollingStockModelChangeset {
+    fn from(rolling_stock: RollingStock) -> Self {
+        RollingStockModel::changeset()
+            .railjson_version(rolling_stock.railjson_version)
+            .metadata(rolling_stock.metadata)
+            .name(rolling_stock.name)
+            .effort_curves(rolling_stock.effort_curves)
+            .base_power_class(rolling_stock.base_power_class)
+            .length(rolling_stock.length)
+            .max_speed(rolling_stock.max_speed)
+            .startup_time(rolling_stock.startup_time)
+            .startup_acceleration(rolling_stock.startup_acceleration)
+            .comfort_acceleration(rolling_stock.comfort_acceleration)
+            .gamma(rolling_stock.gamma)
+            .inertia_coefficient(rolling_stock.inertia_coefficient)
+            .mass(rolling_stock.mass)
+            .rolling_resistance(rolling_stock.rolling_resistance)
+            .loading_gauge(rolling_stock.loading_gauge)
+            .power_restrictions(rolling_stock.power_restrictions)
+            .energy_sources(rolling_stock.energy_sources)
+            .electrical_power_startup_time(rolling_stock.electrical_power_startup_time)
+            .raise_pantograph_time(rolling_stock.raise_pantograph_time)
+            .supported_signaling_systems(rolling_stock.supported_signaling_systems)
     }
 }
 

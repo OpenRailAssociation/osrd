@@ -49,6 +49,7 @@ use crate::error::Result;
 use crate::error::{self};
 use crate::map;
 use crate::models;
+use crate::modelsv2;
 use crate::schema;
 use crate::DbPool;
 use crate::RedisClient;
@@ -81,6 +82,7 @@ pub fn routes() -> impl HttpServiceFactory {
 editoast_common::schemas! {
     error::schemas(),
     models::schemas(),
+    modelsv2::schemas(),
     schema::schemas(),
     core::schemas(),
     map::schemas(),

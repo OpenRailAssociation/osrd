@@ -22,7 +22,6 @@ use diesel::sql_types::BigInt;
 use diesel::sql_types::Text as SqlText;
 use diesel_async::RunQueryDsl;
 use editoast_derive::EditoastError;
-use editoast_schemas::rolling_stock::RollingStock;
 use editoast_schemas::rolling_stock::RollingStockLivery;
 use editoast_schemas::rolling_stock::RollingStockLiveryMetadata;
 use image::io::Reader as ImageReader;
@@ -41,17 +40,11 @@ use validator::Validate;
 
 use crate::error::InternalError;
 use crate::error::Result;
+use crate::modelsv2::prelude::*;
 use crate::modelsv2::rolling_stock_livery::RollingStockLiveryModel;
-use crate::modelsv2::Changeset;
-use crate::modelsv2::Create;
-use crate::modelsv2::DeleteStatic;
 use crate::modelsv2::Document;
-use crate::modelsv2::Exists;
-use crate::modelsv2::Model;
-use crate::modelsv2::Retrieve;
 use crate::modelsv2::RollingStockModel;
 use crate::modelsv2::RollingStockSeparatedImageModel;
-use crate::modelsv2::Update;
 use crate::DbPool;
 
 crate::routes! {
@@ -93,7 +86,8 @@ editoast_common::schemas! {
 #[derive(Debug, Serialize, ToSchema)]
 pub struct RollingStockWithLiveries {
     #[serde(flatten)]
-    pub rolling_stock: RollingStock,
+    #[schema(value_type = RollingStock)]
+    pub rolling_stock: RollingStockModel,
     pub liveries: Vec<RollingStockLiveryMetadata>,
 }
 
@@ -244,7 +238,7 @@ async fn create(
     db_pool: Data<DbPool>,
     Json(rolling_stock_form): Json<RollingStockForm>,
     query_params: Query<PostRollingStockQueryParams>,
-) -> Result<Json<RollingStock>> {
+) -> Result<Json<RollingStockModel>> {
     rolling_stock_form.validate()?;
     let mut db_conn = db_pool.get().await?;
     let rolling_stock_name = rolling_stock_form.name.clone();
@@ -254,11 +248,8 @@ async fn create(
         .locked(query_params.locked)
         .version(0)
         .create(&mut db_conn)
-        .await;
-
-    let rolling_stock: RollingStock = rolling_stock
-        .map_err(|e| map_diesel_error(e, rolling_stock_name))?
-        .into();
+        .await
+        .map_err(|e| map_diesel_error(e, rolling_stock_name))?;
 
     Ok(Json(rolling_stock))
 }
@@ -268,7 +259,7 @@ async fn create(
     params(RollingStockIdParam),
     request_body = RollingStockForm,
     responses(
-        (status = 200, description = "The created rolling stock", body = RollingStock)
+        (status = 200, description = "The created rolling stock", body = RollingStockWithLiveries)
     )
 )]
 #[patch("")]
@@ -278,46 +269,37 @@ async fn update(
     Json(rolling_stock_form): Json<RollingStockForm>,
 ) -> Result<Json<RollingStockWithLiveries>> {
     rolling_stock_form.validate()?;
-    let mut db_conn = db_pool.get().await?;
+    let mut conn = db_pool.get().await?;
 
     let rolling_stock_id = path.into_inner();
+    let name = rolling_stock_form.name.clone();
 
-    let existing_rs = RollingStockModel::retrieve_or_fail(&mut db_conn, rolling_stock_id, || {
-        RollingStockError::KeyNotFound {
-            rolling_stock_key: RollingStockKey::Id(rolling_stock_id),
-        }
-    })
-    .await?;
+    let previous_rolling_stock =
+        RollingStockModel::retrieve_or_fail(&mut conn, rolling_stock_id, || {
+            RollingStockError::KeyNotFound {
+                rolling_stock_key: RollingStockKey::Id(rolling_stock_id),
+            }
+        })
+        .await?;
+    assert_rolling_stock_unlocked(&previous_rolling_stock)?;
 
-    let existing_rs_version = existing_rs.version;
-    assert_rolling_stock_unlocked(existing_rs.clone())?;
-
-    let rolling_stock_name = rolling_stock_form.name.clone();
-
-    let existing_rs_form: RollingStockForm = existing_rs.into();
-
-    let new_rs_version = if existing_rs_form != rolling_stock_form {
-        existing_rs_version + 1
-    } else {
-        existing_rs_version
-    };
-
-    let rs_changeset: Changeset<RollingStockModel> = rolling_stock_form.into();
-    let rs_updated = rs_changeset
-        .version(new_rs_version)
-        .update(&mut db_conn, rolling_stock_id)
+    let mut new_rolling_stock = Into::<Changeset<RollingStockModel>>::into(rolling_stock_form)
+        .update(&mut conn, rolling_stock_id)
         .await
-        .map_err(|e| map_diesel_error(e, rolling_stock_name))?;
-
-    if let Some(rolling_stock) = rs_updated {
-        let rolling_stock_with_liveries = rolling_stock.with_liveries(db_pool).await?;
-        Ok(Json(rolling_stock_with_liveries))
-    } else {
-        Err(RollingStockError::KeyNotFound {
+        .map_err(|e| map_diesel_error(e, name.clone()))?
+        .ok_or(RollingStockError::KeyNotFound {
             rolling_stock_key: RollingStockKey::Id(rolling_stock_id),
-        }
-        .into())
+        })?;
+
+    if new_rolling_stock != previous_rolling_stock {
+        new_rolling_stock.version += 1;
+        new_rolling_stock
+            .save(&mut conn)
+            .await
+            .map_err(|err| map_diesel_error(err, name))?;
     }
+
+    Ok(Json(new_rolling_stock.with_liveries(db_pool).await?))
 }
 
 #[derive(Deserialize, IntoParams, ToSchema)]
@@ -345,7 +327,7 @@ async fn delete(
 ) -> Result<HttpResponse> {
     let rolling_stock_id = path.into_inner();
     assert_rolling_stock_unlocked(
-        retrieve_existing_rolling_stock(&db_pool, RollingStockKey::Id(rolling_stock_id)).await?,
+        &retrieve_existing_rolling_stock(&db_pool, RollingStockKey::Id(rolling_stock_id)).await?,
     )?;
 
     if params.force {
@@ -402,6 +384,7 @@ async fn update_locked(
     let rolling_stock_locked_update_form = data.into_inner();
     let rolling_stock_id = rolling_stock_id.into_inner();
 
+    // FIXME: check that the rolling stock exists (the Option<RollingSrtockModel> is ignored here)
     RollingStockModel::changeset()
         .locked(rolling_stock_locked_update_form.locked)
         .update(&mut db_conn, rolling_stock_id)
@@ -534,7 +517,7 @@ pub async fn retrieve_existing_rolling_stock(
     }
 }
 
-fn assert_rolling_stock_unlocked(rolling_stock: RollingStockModel) -> Result<()> {
+fn assert_rolling_stock_unlocked(rolling_stock: &RollingStockModel) -> Result<()> {
     if rolling_stock.locked {
         return Err(RollingStockError::RollingStockIsLocked {
             rolling_stock_id: rolling_stock.id,
@@ -638,7 +621,6 @@ pub mod tests {
     use serde_json::json;
 
     use super::retrieve_existing_rolling_stock;
-    use super::RollingStock;
     use super::RollingStockError;
     use super::TrainScheduleScenarioStudyProject;
     use crate::assert_response_error_type_match;
@@ -649,6 +631,7 @@ pub mod tests {
     use crate::fixtures::tests::named_fast_rolling_stock;
     use crate::fixtures::tests::named_other_rolling_stock;
     use crate::fixtures::tests::train_schedule_with_scenario;
+    use crate::modelsv2::prelude::*;
     use crate::modelsv2::rolling_stock_model::tests::get_invalid_effort_curves;
     use crate::modelsv2::rolling_stock_model::RollingStockModel;
     use crate::views::rolling_stocks::rolling_stock_form::RollingStockForm;
@@ -669,7 +652,7 @@ pub mod tests {
         let response = call_service(&app, req).await;
 
         // THEN
-        let response_body: RollingStock = assert_status_and_read!(response, StatusCode::OK);
+        let response_body: RollingStockModel = assert_status_and_read!(response, StatusCode::OK);
         assert_eq!(response_body.name, name);
     }
 
@@ -686,7 +669,7 @@ pub mod tests {
         let response = call_service(&app, req).await;
 
         // THEN
-        let response_body: RollingStock = assert_status_and_read!(response, StatusCode::OK);
+        let response_body: RollingStockModel = assert_status_and_read!(response, StatusCode::OK);
         assert_eq!(response_body.name, name);
     }
 
@@ -735,8 +718,9 @@ pub mod tests {
 
         // THEN
         // Check rolling_stock creation
-        let response_body: RollingStock = assert_status_and_read!(post_response, StatusCode::OK);
-        let rolling_stock_id: i64 = response_body.id;
+        let response_body: RollingStockModel =
+            assert_status_and_read!(post_response, StatusCode::OK);
+        let rolling_stock_id = response_body.id;
 
         assert_eq!(response_body.name, rolling_stock_form.name);
 
@@ -752,14 +736,10 @@ pub mod tests {
     }
 
     async fn check_create_gave_400(db_pool: Data<DbPool>, response: ServiceResponse) {
-        use crate::modelsv2::DeleteStatic;
         let mut db_conn = db_pool.get().await.expect("Failed to get db connection");
         if response.status() == StatusCode::OK {
-            let rolling_stock: RollingStock = read_body_json(response).await;
-            let rolling_stock_id = rolling_stock.id;
-            RollingStockModel::delete_static(&mut db_conn, rolling_stock_id)
-                .await
-                .unwrap();
+            let rolling_stock: RollingStockModel = read_body_json(response).await;
+            rolling_stock.delete(&mut db_conn).await.unwrap();
             panic!("Rolling stock created but should not have been");
         } else {
             assert_eq!(
@@ -837,7 +817,7 @@ pub mod tests {
         .await;
 
         // THEN
-        let locked_rolling_stock: RollingStock =
+        let locked_rolling_stock: RollingStockModel =
             assert_status_and_read!(post_response, StatusCode::OK);
         let rolling_stock_id = locked_rolling_stock.id;
 
@@ -952,18 +932,14 @@ pub mod tests {
         .await;
 
         // THEN
-        let response_body: RollingStock = assert_status_and_read!(response, StatusCode::OK);
-
+        let response_body: RollingStockModel = assert_status_and_read!(response, StatusCode::OK);
         let rolling_stock =
             retrieve_existing_rolling_stock(&db_pool, RollingStockKey::Id(rolling_stock_id))
                 .await
                 .unwrap();
 
-        // Assert rolling_stock version is 1
+        assert_eq!(response_body, rolling_stock);
         assert_eq!(rolling_stock.version, 1);
-
-        let expected_body = RollingStock::from(rolling_stock);
-        assert_eq!(response_body, expected_body);
     }
 
     #[rstest]
@@ -1020,7 +996,8 @@ pub mod tests {
         .await;
 
         // THEN
-        let response_body: RollingStock = assert_status_and_read!(post_response, StatusCode::OK);
+        let response_body: RollingStockModel =
+            assert_status_and_read!(post_response, StatusCode::OK);
         let rolling_stock_id = response_body.id;
         assert!(!response_body.locked);
 

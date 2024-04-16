@@ -37,7 +37,7 @@ pub struct LightRollingStockModel {
     #[model(json)]
     pub effort_curves: LightEffortCurves,
     #[model(json)]
-    pub metadata: RollingStockMetadata,
+    pub metadata: Option<RollingStockMetadata>,
     pub length: f64,
     pub max_speed: f64,
     pub startup_time: f64,
