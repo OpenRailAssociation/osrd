@@ -7,7 +7,7 @@ use std::collections::HashMap;
 
 use crate::infra_cache::Cache;
 use crate::infra_cache::ObjectCache;
-use crate::schema::Switch;
+use editoast_schemas::infra::Switch;
 
 #[derive(Debug, Clone, Derivative)]
 #[derivative(Hash, PartialEq)]

@@ -15,13 +15,13 @@ use crate::modelsv2::get_table;
 use crate::schema::OperationalPoint;
 use crate::schema::Route;
 use crate::schema::SpeedSection;
-use crate::schema::Switch;
 use crate::schema::TrackSection;
 use editoast_schemas::infra::BufferStop;
 use editoast_schemas::infra::Detector;
 use editoast_schemas::infra::Electrification;
 use editoast_schemas::infra::NeutralSection;
 use editoast_schemas::infra::Signal;
+use editoast_schemas::infra::Switch;
 use editoast_schemas::infra::SwitchType;
 use editoast_schemas::primitives::OSRDIdentified;
 use editoast_schemas::primitives::OSRDObject;
@@ -253,12 +253,12 @@ pub mod tests {
     use crate::schema::OperationalPoint;
     use crate::schema::Route;
     use crate::schema::SpeedSection;
-    use crate::schema::Switch;
     use crate::schema::TrackSection;
     use editoast_schemas::infra::BufferStop;
     use editoast_schemas::infra::Detector;
     use editoast_schemas::infra::Electrification;
     use editoast_schemas::infra::Signal;
+    use editoast_schemas::infra::Switch;
     use editoast_schemas::infra::SwitchType;
 
     pub async fn create_track(

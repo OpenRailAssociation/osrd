@@ -143,10 +143,10 @@ mod tests {
     use crate::fixtures::tests::TestFixture;
     use crate::infra_cache::operation::Operation;
     use crate::modelsv2::Infra;
-    use crate::schema::Switch;
     use crate::views::infra::objects::ObjectQueryable;
     use crate::views::infra::tests::create_object_request;
     use crate::views::tests::create_test_service;
+    use editoast_schemas::infra::Switch;
     use editoast_schemas::infra::SwitchType;
     use editoast_schemas::primitives::OSRDIdentified;
 
