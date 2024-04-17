@@ -149,7 +149,9 @@ class DummyInfra : RawInfra, BlockInfra {
     }
 
     private fun getSignalingSystemIdfromName(signalingSystemName: String): SignalingSystemId {
-        return this.signalingSimulator.sigModuleManager.findSignalingSystem(signalingSystemName)
+        return this.signalingSimulator.sigModuleManager.findSignalingSystemOrThrow(
+            signalingSystemName
+        )
     }
 
     override fun getRawSettings(signal: LogicalSignalId): Map<String, String> {

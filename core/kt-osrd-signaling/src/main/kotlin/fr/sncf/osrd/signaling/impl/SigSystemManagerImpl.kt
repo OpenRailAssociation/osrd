@@ -23,8 +23,8 @@ class SigSystemManagerImpl : SigSystemManager {
         val res = driverPool.add(sigDriver)
         driverMap[
             Pair(
-                findSignalingSystem(sigDriver.outputSignalingSystem),
-                findSignalingSystem(sigDriver.inputSignalingSystem)
+                findSignalingSystemOrThrow(sigDriver.outputSignalingSystem),
+                findSignalingSystemOrThrow(sigDriver.inputSignalingSystem)
             )] = res
         return res
     }
@@ -53,9 +53,8 @@ class SigSystemManagerImpl : SigSystemManager {
     override val signalingSystems: StaticIdxSpace<SignalingSystem>
         get() = sigSystemPool.space()
 
-    override fun findSignalingSystem(sigSystem: String): SignalingSystemId {
+    override fun findSignalingSystem(sigSystem: String): SignalingSystemId? {
         return sigSystemMap[sigSystem]
-            ?: throw RuntimeException("Can't find signaling system $sigSystem")
     }
 
     override fun getStateSchema(sigSystem: SignalingSystemId): SigStateSchema {
@@ -81,11 +80,11 @@ class SigSystemManagerImpl : SigSystemManager {
     }
 
     override fun getInputSignalingSystem(driver: SignalDriverId): SignalingSystemId {
-        return findSignalingSystem(driverPool[driver].inputSignalingSystem)
+        return findSignalingSystemOrThrow(driverPool[driver].inputSignalingSystem)
     }
 
     override fun getOutputSignalingSystem(driver: SignalDriverId): SignalingSystemId {
-        return findSignalingSystem(driverPool[driver].outputSignalingSystem)
+        return findSignalingSystemOrThrow(driverPool[driver].outputSignalingSystem)
     }
 
     override fun isBlockDelimiter(sigSystem: SignalingSystemId, settings: SigSettings): Boolean {

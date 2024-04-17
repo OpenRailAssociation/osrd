@@ -1,5 +1,6 @@
 package fr.sncf.osrd.sim_infra.api
 
+import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.sim_infra.impl.SignalParameters
 import fr.sncf.osrd.utils.Direction
 import fr.sncf.osrd.utils.indexing.*
@@ -36,7 +37,7 @@ typealias SigStateSchema = SigSchema<SignalStateMarker>
 interface InfraSigSystemManager {
     val signalingSystems: StaticIdxSpace<SignalingSystem>
 
-    fun findSignalingSystem(sigSystem: String): SignalingSystemId
+    fun findSignalingSystem(sigSystem: String): SignalingSystemId?
 
     fun getStateSchema(sigSystem: SignalingSystemId): SigStateSchema
 
@@ -112,4 +113,8 @@ interface BlockInfra {
 
     /** Find the block with the given string identifier, or null if not found. */
     fun getBlockFromName(name: String): BlockId?
+}
+
+fun InfraSigSystemManager.findSignalingSystemOrThrow(sigSystem: String): SignalingSystemId {
+    return findSignalingSystem(sigSystem) ?: throw OSRDError.newSignalingError(sigSystem)
 }

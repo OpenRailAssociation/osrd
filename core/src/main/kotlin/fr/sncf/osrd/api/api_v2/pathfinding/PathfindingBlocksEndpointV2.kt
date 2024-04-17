@@ -103,7 +103,7 @@ private fun initConstraintsFromRSProps(
     }
     res.add(LoadingGaugeConstraints(infra.blockInfra, infra.rawInfra, rollingStockLoadingGauge))
     val sigSystemIds =
-        rollingStockSupportedSignalingSystems.map {
+        rollingStockSupportedSignalingSystems.mapNotNull {
             infra.signalingSimulator.sigModuleManager.findSignalingSystem(it)
         }
     res.add(SignalingSystemConstraints(infra.blockInfra, listOf(sigSystemIds)))
