@@ -1168,7 +1168,12 @@ export type PostInfraByInfraIdPathfindingApiArg = {
   pathfindingInput: PathfindingInput;
 };
 export type PostInfraByInfraIdRoutesNodesApiResponse =
-  /** status 200 A list of routes IDs */ string[];
+  /** status 200 A list of route IDs along with available positions for each specified node */ {
+    available_node_positions: {
+      [key: string]: string[];
+    };
+    routes: string[];
+  };
 export type PostInfraByInfraIdRoutesNodesApiArg = {
   /** The ID of the infra to fix */
   infraId: number;

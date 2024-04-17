@@ -8521,7 +8521,7 @@ paths:
       - pathfinding
   /infra/{infra_id}/routes/nodes/:
     post:
-      description: Return all routes that depend on the position of the specified nodes
+      description: Returns the list of routes crossing the specified nodes, along with the available positions for each of them.
       parameters:
       - description: The ID of the infra to fix
         in: path
@@ -8545,11 +8545,23 @@ paths:
           content:
             application/json:
               schema:
-                items:
-                  type: string
-                type: array
-          description: A list of routes IDs
-      summary: Return all routes that depend on the position of the specified nodes
+                properties:
+                  available_node_positions:
+                    additionalProperties:
+                      items:
+                        type: string
+                      type: array
+                    type: object
+                  routes:
+                    items:
+                      type: string
+                    type: array
+                required:
+                - routes
+                - available_node_positions
+                type: object
+          description: A list of route IDs along with available positions for each specified node
+      summary: Returns the list of routes crossing the specified nodes, along with the available positions for each of them.
       tags:
       - infra
       - routes
