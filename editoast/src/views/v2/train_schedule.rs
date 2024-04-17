@@ -19,6 +19,7 @@ use crate::core::CoreClient;
 use crate::error::Result;
 
 use crate::client::get_app_version;
+use crate::core::v2::pathfinding::PathfindingResult;
 use crate::modelsv2::infra::Infra;
 use crate::modelsv2::timetable::Timetable;
 use crate::modelsv2::train_schedule::TrainSchedule;
@@ -29,7 +30,6 @@ use crate::modelsv2::RetrieveBatch;
 use crate::schema::v2::trainschedule::TrainScheduleBase;
 use crate::views::v2::path::pathfinding_from_train;
 use crate::views::v2::path::PathfindingError;
-use crate::views::v2::path::PathfindingResult;
 use crate::views::v2::path::TrackRange;
 use crate::DbPool;
 use crate::RedisClient;
@@ -410,15 +410,15 @@ pub async fn simulation(
     .await?;
 
     Ok(Json(
-        train_simulation(db_pool, core_client, redis_client, &train_schedule, &infra).await?,
+        train_simulation(db_pool, redis_client, core_client, &train_schedule, &infra).await?,
     ))
 }
 
 /// Compute the simulation of a given train schedule
 async fn train_simulation(
     db_pool: Data<DbPool>,
-    _core_client: Data<CoreClient>,
     redis_client: Data<RedisClient>,
+    core: Data<CoreClient>,
     train_schedule: &TrainSchedule,
     infra: &Infra,
 ) -> Result<SimulationResult> {
@@ -426,7 +426,7 @@ async fn train_simulation(
     let conn = &mut db_pool.get().await?;
     // Compute path
     let pathfinding_result =
-        pathfinding_from_train(conn, &mut redis_conn, infra, train_schedule.clone()).await?;
+        pathfinding_from_train(conn, &mut redis_conn, core, infra, train_schedule.clone()).await?;
 
     let (path, path_items_positions) = match pathfinding_result {
         PathfindingResult::Success {
@@ -706,7 +706,7 @@ pub async fn simulation_summary(
     db_pool: Data<DbPool>,
     redis_client: Data<RedisClient>,
     params: QsQuery<SimulationBatchParams>,
-    core_client: Data<CoreClient>,
+    core: Data<CoreClient>,
 ) -> Result<Json<HashMap<i64, SimulationSummaryResultResponse>>> {
     let query_props = params.into_inner();
     let infra_id = query_props.infra;
@@ -725,14 +725,8 @@ pub async fn simulation_summary(
         })
         .await?;
     Ok(Json(
-        build_simulation_summary_map(
-            db_pool,
-            core_client,
-            redis_client,
-            &train_schedule_batch,
-            &infra,
-        )
-        .await,
+        build_simulation_summary_map(db_pool, redis_client, core, &train_schedule_batch, &infra)
+            .await,
     ))
 }
 
@@ -740,8 +734,8 @@ pub async fn simulation_summary(
 /// If the simulation fails, it associates the reason: pathfinding failed or running time failed
 async fn build_simulation_summary_map(
     db_pool: Data<DbPool>,
-    core_client: Data<CoreClient>,
     redis_client: Data<RedisClient>,
+    core_client: Data<CoreClient>,
     train_schedule_batch: &[TrainSchedule],
     infra: &Infra,
 ) -> HashMap<i64, SimulationSummaryResultResponse> {
@@ -750,8 +744,8 @@ async fn build_simulation_summary_map(
     for train_schedule in train_schedule_batch.iter() {
         let simulation_result = train_simulation(
             db_pool.clone(),
-            core_client.clone(),
             redis_client.clone(),
+            core_client.clone(),
             train_schedule,
             infra,
         )
@@ -795,6 +789,7 @@ pub struct InfraIdQueryParam {
 async fn get_path(
     db_pool: Data<DbPool>,
     redis_client: Data<RedisClient>,
+    core: Data<CoreClient>,
     train_schedule_id: Path<TrainScheduleIdParam>,
     query: Query<InfraIdQueryParam>,
 ) -> Result<Json<PathfindingResult>> {
@@ -814,7 +809,7 @@ async fn get_path(
     })
     .await?;
     Ok(Json(
-        pathfinding_from_train(conn, &mut redis_conn, &infra, train_schedule).await?,
+        pathfinding_from_train(conn, &mut redis_conn, core, &infra, train_schedule).await?,
     ))
 }
 

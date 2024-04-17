@@ -2,7 +2,6 @@ mod pathfinding;
 mod properties;
 
 pub use pathfinding::pathfinding_from_train;
-pub use pathfinding::PathfindingResult;
 
 use diesel_async::AsyncPgConnection as PgConnection;
 use editoast_derive::EditoastError;
