@@ -33,6 +33,7 @@ use image::ImageFormat;
 use rolling_stock_form::RollingStockForm;
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
+use strum::Display;
 use thiserror::Error;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
@@ -59,6 +60,9 @@ crate::routes! {
         "/power_restrictions" => {
             get_power_restrictions,
         },
+        "/name/{rolling_stock_name}" => {
+            get_by_name,
+        },
         "/{rolling_stock_id}" => {
             get,
             update,
@@ -80,6 +84,7 @@ editoast_common::schemas! {
     RollingStockLiveryCreateForm,
     PowerRestriction,
     RollingStockError,
+    RollingStockKey,
     TrainScheduleScenarioStudyProject,
     RollingStockWithLiveries,
     light_rolling_stock::schemas(),
@@ -92,6 +97,13 @@ pub struct RollingStockWithLiveries {
     pub liveries: Vec<RollingStockLiveryMetadata>,
 }
 
+#[derive(Debug, Clone, Serialize, PartialEq, Display, ToSchema)]
+#[serde(tag = "type", content = "key")]
+pub enum RollingStockKey {
+    Id(i64),
+    Name(String),
+}
+
 #[derive(Debug, Error, EditoastError, ToSchema)]
 #[editoast_error(base_id = "rollingstocks")]
 pub enum RollingStockError {
@@ -101,9 +113,9 @@ pub enum RollingStockError {
     #[error("Impossible to copy the separated image on the compound image")]
     #[editoast_error(status = 500)]
     CannotCreateCompoundImage,
-    #[error("Rolling stock '{rolling_stock_id}' could not be found")]
+    #[error("Rolling stock '{rolling_stock_key}' could not be found", )]
     #[editoast_error(status = 404)]
-    NotFound { rolling_stock_id: i64 },
+    KeyNotFound { rolling_stock_key: RollingStockKey },
     #[error("Name '{name}' already used")]
     #[editoast_error(status = 400)]
     NameAlreadyUsed { name: String },
@@ -139,18 +151,47 @@ pub struct RollingStockIdParam {
     rolling_stock_id: i64,
 }
 
+#[derive(IntoParams)]
+#[allow(unused)]
+pub struct RollingStockNameParam {
+    rolling_stock_name: String,
+}
+
 /// Get a rolling stock by Id
 #[utoipa::path(
     tag = "rolling_stock",
     params(RollingStockIdParam),
     responses(
-        (status = 201, body = RollingStockWithLiveries, description = "The requested rolling stock"),
+        (status = 200, body = RollingStockWithLiveries, description = "The requested rolling stock"),
     )
 )]
 #[get("")]
 async fn get(db_pool: Data<DbPool>, path: Path<i64>) -> Result<Json<RollingStockWithLiveries>> {
     let rolling_stock_id = path.into_inner();
-    let rolling_stock = retrieve_existing_rolling_stock(&db_pool, rolling_stock_id).await?;
+
+    let rolling_stock =
+        retrieve_existing_rolling_stock(&db_pool, RollingStockKey::Id(rolling_stock_id)).await?;
+    let rolling_stock_with_liveries = rolling_stock.with_liveries(db_pool).await?;
+    Ok(Json(rolling_stock_with_liveries))
+}
+
+/// Get a rolling stock by name
+#[utoipa::path(
+    tag = "rolling_stock",
+    params(RollingStockNameParam),
+    responses(
+        (status = 200, body = RollingStockWithLiveries, description = "The requested rolling stock"),
+    )
+)]
+#[get("")]
+async fn get_by_name(
+    db_pool: Data<DbPool>,
+    path: Path<String>,
+) -> Result<Json<RollingStockWithLiveries>> {
+    let rolling_stock_name = path.into_inner();
+    let rolling_stock =
+        retrieve_existing_rolling_stock(&db_pool, RollingStockKey::Name(rolling_stock_name))
+            .await?;
     let rolling_stock_with_liveries = rolling_stock.with_liveries(db_pool).await?;
     Ok(Json(rolling_stock_with_liveries))
 }
@@ -242,7 +283,9 @@ async fn update(
     let rolling_stock_id = path.into_inner();
 
     let existing_rs = RollingStockModel::retrieve_or_fail(&mut db_conn, rolling_stock_id, || {
-        RollingStockError::NotFound { rolling_stock_id }
+        RollingStockError::KeyNotFound {
+            rolling_stock_key: RollingStockKey::Id(rolling_stock_id),
+        }
     })
     .await?;
 
@@ -270,7 +313,10 @@ async fn update(
         let rolling_stock_with_liveries = rolling_stock.with_liveries(db_pool).await?;
         Ok(Json(rolling_stock_with_liveries))
     } else {
-        Err(RollingStockError::NotFound { rolling_stock_id }.into())
+        Err(RollingStockError::KeyNotFound {
+            rolling_stock_key: RollingStockKey::Id(rolling_stock_id),
+        }
+        .into())
     }
 }
 
@@ -299,7 +345,7 @@ async fn delete(
 ) -> Result<HttpResponse> {
     let rolling_stock_id = path.into_inner();
     assert_rolling_stock_unlocked(
-        retrieve_existing_rolling_stock(&db_pool, rolling_stock_id).await?,
+        retrieve_existing_rolling_stock(&db_pool, RollingStockKey::Id(rolling_stock_id)).await?,
     )?;
 
     if params.force {
@@ -323,7 +369,9 @@ async fn delete_rolling_stock(
 ) -> Result<HttpResponse> {
     let mut db_conn = db_pool.get().await?;
     RollingStockModel::delete_static_or_fail(&mut db_conn, rolling_stock_id, || {
-        RollingStockError::NotFound { rolling_stock_id }
+        RollingStockError::KeyNotFound {
+            rolling_stock_key: RollingStockKey::Id(rolling_stock_id),
+        }
     })
     .await?;
     Ok(HttpResponse::NoContent().finish())
@@ -462,15 +510,28 @@ async fn create_livery(
     Ok(Json(rolling_stock_livery))
 }
 
+/// Retrieve a rolling stock by id or by name
 pub async fn retrieve_existing_rolling_stock(
     db_pool: &Data<DbPool>,
-    rolling_stock_id: i64,
+    rolling_stock_key: RollingStockKey,
 ) -> Result<RollingStockModel> {
     let mut db_conn = db_pool.get().await?;
-    RollingStockModel::retrieve_or_fail(&mut db_conn, rolling_stock_id, || {
-        RollingStockError::NotFound { rolling_stock_id }
-    })
-    .await
+    match rolling_stock_key.clone() {
+        RollingStockKey::Id(id) => {
+            RollingStockModel::retrieve_or_fail(&mut db_conn, id, || {
+                RollingStockError::KeyNotFound {
+                    rolling_stock_key: rolling_stock_key.clone(),
+                }
+            })
+            .await
+        }
+        RollingStockKey::Name(name) => {
+            RollingStockModel::retrieve_or_fail(&mut db_conn, name, || {
+                RollingStockError::KeyNotFound { rolling_stock_key }
+            })
+            .await
+        }
+    }
 }
 
 fn assert_rolling_stock_unlocked(rolling_stock: RollingStockModel) -> Result<()> {
@@ -591,6 +652,7 @@ pub mod tests {
     use crate::modelsv2::rolling_stock_model::tests::get_invalid_effort_curves;
     use crate::modelsv2::rolling_stock_model::RollingStockModel;
     use crate::views::rolling_stocks::rolling_stock_form::RollingStockForm;
+    use crate::views::rolling_stocks::RollingStockKey;
     use crate::views::tests::create_test_service;
     use crate::DbPool;
 
@@ -600,6 +662,7 @@ pub mod tests {
         let name = "fast_rolling_stock_get_returns_corresponding_rolling_stock";
         let app = create_test_service().await;
         let rolling_stock = named_fast_rolling_stock(name, db_pool).await;
+
         let req = rolling_stock_get_request(rolling_stock.id());
 
         // WHEN
@@ -611,11 +674,43 @@ pub mod tests {
     }
 
     #[rstest]
+    async fn get_returns_corresponding_rolling_stock_by_name(db_pool: Data<DbPool>) {
+        // GIVEN
+        let name = "fast_rolling_stock_get_returns_corresponding_rolling_stock";
+        let app = create_test_service().await;
+        let rolling_stock = named_fast_rolling_stock(name, db_pool).await;
+
+        let req = rolling_stock_get_by_name_request(rolling_stock.name.clone());
+
+        // WHEN
+        let response = call_service(&app, req).await;
+
+        // THEN
+        let response_body: RollingStock = assert_status_and_read!(response, StatusCode::OK);
+        assert_eq!(response_body.name, name);
+    }
+
+    #[rstest]
     async fn get_unexisting_rolling_stock_returns_not_found() {
+        // get by id
         let app = create_test_service().await;
         let get_request = rolling_stock_get_request(0);
         let get_response = call_service(&app, get_request).await;
 
+        assert_eq!(get_response.status(), StatusCode::NOT_FOUND);
+        // get by name
+        let app = create_test_service().await;
+        let get_request = rolling_stock_get_by_name_request("unexisting_rolling_stock".into());
+        let get_response = call_service(&app, get_request).await;
+
+        assert_eq!(get_response.status(), StatusCode::NOT_FOUND);
+    }
+
+    #[rstest]
+    async fn get_unexisting_rolling_stock_by_name_returns_not_found() {
+        let app = create_test_service().await;
+        let get_request = rolling_stock_get_by_name_request("unexisting_rolling_stock".into());
+        let get_response = call_service(&app, get_request).await;
         assert_eq!(get_response.status(), StatusCode::NOT_FOUND);
     }
 
@@ -795,6 +890,12 @@ pub mod tests {
             .to_request()
     }
 
+    fn rolling_stock_get_by_name_request(rolling_stock_name: String) -> Request {
+        TestRequest::get()
+            .uri(format!("/rolling_stock/name/{rolling_stock_name}").as_str())
+            .to_request()
+    }
+
     pub fn rolling_stock_delete_request(rolling_stock_id: i64) -> Request {
         TestRequest::delete()
             .uri(format!("/rolling_stock/{rolling_stock_id}").as_str())
@@ -853,9 +954,10 @@ pub mod tests {
         // THEN
         let response_body: RollingStock = assert_status_and_read!(response, StatusCode::OK);
 
-        let rolling_stock = retrieve_existing_rolling_stock(&db_pool, rolling_stock_id)
-            .await
-            .unwrap();
+        let rolling_stock =
+            retrieve_existing_rolling_stock(&db_pool, RollingStockKey::Id(rolling_stock_id))
+                .await
+                .unwrap();
 
         // Assert rolling_stock version is 1
         assert_eq!(rolling_stock.version, 1);
@@ -927,9 +1029,10 @@ pub mod tests {
         let response = call_service(&app, request).await;
         assert_eq!(response.status(), StatusCode::NO_CONTENT);
         // Assert rolling_stock is locked
-        let rolling_stock = retrieve_existing_rolling_stock(&db_pool, rolling_stock_id)
-            .await
-            .unwrap();
+        let rolling_stock =
+            retrieve_existing_rolling_stock(&db_pool, RollingStockKey::Id(rolling_stock_id))
+                .await
+                .unwrap();
         assert!(rolling_stock.locked);
 
         // Unlock rolling_stock
@@ -937,9 +1040,10 @@ pub mod tests {
         let response = call_service(&app, request).await;
         assert_eq!(response.status(), StatusCode::NO_CONTENT);
         // Assert rolling_stock is unlocked
-        let rolling_stock = retrieve_existing_rolling_stock(&db_pool, rolling_stock_id)
-            .await
-            .unwrap();
+        let rolling_stock =
+            retrieve_existing_rolling_stock(&db_pool, RollingStockKey::Id(rolling_stock_id))
+                .await
+                .unwrap();
         assert!(!rolling_stock.locked);
 
         // Delete rolling_stock
