@@ -1,5 +1,4 @@
 mod errors;
-pub mod operational_point;
 mod railjson;
 pub mod track_section;
 pub mod utils;
@@ -9,10 +8,6 @@ use editoast_schemas::primitives::OSRDIdentified;
 use editoast_schemas::primitives::ObjectType;
 pub use errors::InfraError;
 pub use errors::InfraErrorType;
-pub use operational_point::OperationalPoint;
-pub use operational_point::OperationalPointExtensions;
-pub use operational_point::OperationalPointIdentifierExtension;
-pub use operational_point::OperationalPointPart;
 pub use railjson::RailJson;
 pub use railjson::RAILJSON_VERSION;
 pub use track_section::TrackSection;

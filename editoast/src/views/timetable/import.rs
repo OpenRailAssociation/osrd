@@ -34,7 +34,6 @@ use crate::modelsv2::Infra;
 use crate::modelsv2::OperationalPointModel;
 use crate::modelsv2::RetrieveBatch;
 use crate::modelsv2::RollingStockModel;
-use crate::schema::OperationalPointPart;
 use crate::views::infra::call_core_infra_state;
 use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraState;
@@ -43,6 +42,7 @@ use crate::views::timetable::Path;
 use crate::views::timetable::TimetableError;
 use crate::views::train_schedule::process_simulation_response;
 use crate::DbPool;
+use editoast_schemas::infra::OperationalPointPart;
 
 crate::routes! {
     post_timetable,

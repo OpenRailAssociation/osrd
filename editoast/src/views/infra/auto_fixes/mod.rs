@@ -338,8 +338,6 @@ mod tests {
     use crate::infra_cache::operation::Operation;
     use crate::infra_cache::operation::RailjsonObject;
     use crate::infra_cache::InfraCacheEditoastError;
-    use crate::schema::OperationalPoint;
-    use crate::schema::OperationalPointPart;
     use crate::schema::Slope;
     use crate::schema::TrackSection;
     use crate::views::pagination::PaginatedResponse;
@@ -349,6 +347,8 @@ mod tests {
     use editoast_schemas::infra::Detector;
     use editoast_schemas::infra::Electrification;
     use editoast_schemas::infra::Endpoint;
+    use editoast_schemas::infra::OperationalPoint;
+    use editoast_schemas::infra::OperationalPointPart;
     use editoast_schemas::infra::Route;
     use editoast_schemas::infra::Signal;
     use editoast_schemas::infra::SpeedSection;

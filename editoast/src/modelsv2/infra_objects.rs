@@ -166,7 +166,7 @@ infra_model!(
     OperationalPointModel,
     infra_object_operational_point,
     infra_layer_operational_point,
-    schema::OperationalPoint
+    editoast_schemas::infra::OperationalPoint
 );
 
 infra_model!(

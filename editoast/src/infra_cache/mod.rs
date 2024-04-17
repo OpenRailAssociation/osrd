@@ -26,6 +26,7 @@ use editoast_schemas::infra::DoubleSlipSwitch;
 use editoast_schemas::infra::Electrification;
 use editoast_schemas::infra::Endpoint;
 use editoast_schemas::infra::Link;
+use editoast_schemas::infra::OperationalPointPart;
 use editoast_schemas::infra::PointSwitch;
 use editoast_schemas::infra::Route;
 use editoast_schemas::infra::RoutePath;
@@ -56,7 +57,6 @@ use crate::infra_cache::operation::RailjsonObject;
 use crate::map::BoundingBox;
 use crate::modelsv2::railjson::find_all_schemas;
 use crate::modelsv2::Infra;
-use crate::schema::*;
 
 /// Contains infra cached data used to generate layers and errors
 #[derive(Debug, Default, Clone)]
@@ -863,7 +863,6 @@ pub mod tests {
     use crate::infra_cache::SwitchCache;
     use crate::map::BoundingBox;
     use crate::modelsv2::infra::tests::test_infra_transaction;
-    use crate::schema::OperationalPoint;
     use editoast_common::Identifier;
     use editoast_common::NonBlankString;
     use editoast_schemas::infra::ApplicableDirections;
@@ -871,6 +870,7 @@ pub mod tests {
     use editoast_schemas::infra::Direction;
     use editoast_schemas::infra::Electrification;
     use editoast_schemas::infra::Endpoint;
+    use editoast_schemas::infra::OperationalPoint;
     use editoast_schemas::infra::Route;
     use editoast_schemas::infra::SpeedSection;
     use editoast_schemas::infra::Switch;
