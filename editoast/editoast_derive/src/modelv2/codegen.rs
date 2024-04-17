@@ -1,5 +1,7 @@
 mod changeset_decl;
+mod identifiable_impl;
 mod model_impl;
+mod preferred_id_impl;
 mod row_decl;
 
 use proc_macro2::{Span, TokenStream};
@@ -10,6 +12,9 @@ use crate::modelv2::codegen::changeset_decl::ChangesetFieldDecl;
 use crate::modelv2::codegen::model_impl::ModelImpl;
 use crate::modelv2::codegen::row_decl::RowDecl;
 use crate::modelv2::codegen::row_decl::RowFieldDecl;
+
+use self::identifiable_impl::IdentifiableImpl;
+use self::preferred_id_impl::PreferredIdImpl;
 
 use super::utils::np;
 use super::Identifier;
@@ -120,22 +125,21 @@ impl ModelConfig {
         }
     }
 
-    pub fn make_identifiers_impls(&self) -> TokenStream {
-        let model = &self.model;
-        let (idents, ty): (Vec<_>, Vec<_>) = self
-            .identifiers
+    pub(crate) fn identifiable_impls(&self) -> Vec<IdentifiableImpl> {
+        self.identifiers
             .iter()
-            .map(|id| (id.get_idents(), id.type_expr(self)))
-            .unzip();
-        let prefer_ty = self.preferred_identifier.type_expr(self);
-        quote! {
-            #(#[automatically_derived] impl crate::models::Identifiable<#ty> for #model {
-                fn get_id(&self) -> #ty {
-                    (#(self.#idents.clone()),*)
-                }
-            })*
-            #[automatically_derived]
-            impl crate::models::PreferredId<#prefer_ty> for #model {}
+            .map(|identifier| IdentifiableImpl {
+                model: self.model.clone(),
+                ty: identifier.type_expr(self),
+                fields: identifier.get_idents(),
+            })
+            .collect()
+    }
+
+    pub(crate) fn preferred_id_impl(&self) -> PreferredIdImpl {
+        PreferredIdImpl {
+            model: self.model.clone(),
+            ty: self.preferred_identifier.type_expr(self),
         }
     }
 

@@ -75,17 +75,14 @@ impl Identifier {
         }
     }
 
-    pub fn type_expr(&self, config: &ModelConfig) -> TokenStream {
+    pub fn type_expr(&self, config: &ModelConfig) -> syn::Type {
         match self {
-            Self::Field(_) => {
-                let ty = &self.get_field(config).unwrap().ty;
-                quote! { #ty }
-            }
+            Self::Field(_) => self.get_field(config).unwrap().ty.clone(),
             Self::Compound(idents) => {
                 let ty = idents
                     .iter()
                     .map(|ident| &config.fields.get(ident).unwrap().ty);
-                quote! { (#(#ty),*) }
+                syn::parse_quote! { (#(#ty),*) } // tuple type
             }
         }
     }
