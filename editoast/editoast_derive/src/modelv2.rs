@@ -1,3 +1,4 @@
+mod args;
 mod identifier;
 
 use std::{
@@ -5,15 +6,13 @@ use std::{
     ops::{Deref, DerefMut},
 };
 
-use darling::{
-    ast,
-    util::{self, PathList},
-    Error, FromDeriveInput, FromField, FromMeta, Result,
-};
+use darling::Result;
+use darling::{Error, FromDeriveInput as _};
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::quote;
 use syn::DeriveInput;
 
+use args::{GeneratedTypeArgs, ModelArgs, ModelFieldArgs};
 use identifier::Identifier;
 
 impl Identifier {
@@ -38,64 +37,6 @@ impl Identifier {
             }
         }
     }
-}
-
-#[derive(FromDeriveInput, Debug)]
-#[darling(
-    attributes(model),
-    forward_attrs(allow, doc, cfg),
-    supports(struct_named)
-)]
-struct ModelArgs {
-    table: syn::Path,
-    #[darling(default)]
-    row: GeneratedTypeArgs,
-    #[darling(default)]
-    changeset: GeneratedTypeArgs,
-    #[darling(multiple, rename = "identifier")]
-    identifiers: Vec<Identifier>,
-    #[darling(default)]
-    preferred: Option<Identifier>,
-    data: ast::Data<util::Ignored, ModelFieldArgs>,
-}
-
-#[derive(FromMeta, Default, Debug, PartialEq)]
-struct GeneratedTypeArgs {
-    #[darling(default)]
-    type_name: Option<String>,
-    #[darling(default)]
-    derive: PathList,
-    #[darling(default)]
-    public: bool,
-}
-
-#[derive(FromField, Debug)]
-#[darling(attributes(model), forward_attrs(allow, doc, cfg))]
-struct ModelFieldArgs {
-    ident: Option<syn::Ident>,
-    ty: syn::Type,
-    #[darling(default)]
-    builder_fn: Option<syn::Ident>,
-    #[darling(default)]
-    column: Option<String>,
-    #[darling(default)]
-    builder_skip: bool,
-    #[darling(default)]
-    identifier: bool,
-    #[darling(default)]
-    preferred: bool,
-    #[darling(default)]
-    primary: bool,
-    #[darling(default)]
-    json: bool,
-    #[darling(default)]
-    geo: bool,
-    #[darling(default)]
-    to_string: bool,
-    #[darling(default)]
-    to_enum: bool,
-    #[darling(default)]
-    remote: Option<syn::Type>,
 }
 
 #[derive(Debug, PartialEq)]
