@@ -1,6 +1,6 @@
 use crate::infra_cache::Cache;
 use crate::infra_cache::ObjectCache;
-use crate::schema::SpeedSection;
+use editoast_schemas::infra::SpeedSection;
 
 impl Cache for SpeedSection {
     fn get_track_referenced_id(&self) -> Vec<&String> {

@@ -28,6 +28,7 @@ use editoast_schemas::infra::Endpoint;
 use editoast_schemas::infra::Link;
 use editoast_schemas::infra::PointSwitch;
 use editoast_schemas::infra::SingleSlipSwitch;
+use editoast_schemas::infra::SpeedSection;
 use editoast_schemas::infra::SwitchType;
 use editoast_schemas::infra::TrackEndpoint;
 use editoast_schemas::infra::Waypoint;
@@ -862,7 +863,6 @@ pub mod tests {
     use crate::modelsv2::infra::tests::test_infra_transaction;
     use crate::schema::OperationalPoint;
     use crate::schema::Route;
-    use crate::schema::SpeedSection;
     use editoast_common::Identifier;
     use editoast_common::NonBlankString;
     use editoast_schemas::infra::ApplicableDirections;
@@ -870,6 +870,7 @@ pub mod tests {
     use editoast_schemas::infra::Direction;
     use editoast_schemas::infra::Electrification;
     use editoast_schemas::infra::Endpoint;
+    use editoast_schemas::infra::SpeedSection;
     use editoast_schemas::infra::Switch;
     use editoast_schemas::infra::SwitchPortConnection;
     use editoast_schemas::infra::SwitchType;

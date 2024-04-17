@@ -150,7 +150,7 @@ mod tests {
     use crate::infra_cache::tests::create_small_infra_cache;
     use crate::infra_cache::tests::create_speed_section_cache;
     use crate::infra_cache::Graph;
-    use crate::schema::Speed;
+    use editoast_schemas::infra::Speed;
     use editoast_schemas::primitives::ObjectRef;
     use editoast_schemas::primitives::ObjectType;
 
