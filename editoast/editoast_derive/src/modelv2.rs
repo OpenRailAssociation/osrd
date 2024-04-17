@@ -3,6 +3,7 @@ mod codegen;
 mod config;
 mod identifier;
 mod parsing;
+mod utils;
 
 use darling::FromDeriveInput as _;
 use darling::Result;
