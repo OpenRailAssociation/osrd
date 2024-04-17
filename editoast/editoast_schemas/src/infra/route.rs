@@ -1,16 +1,16 @@
 use std::collections::HashMap;
 
 use derivative::Derivative;
+use editoast_common::Identifier;
 use serde::Deserialize;
 use serde::Serialize;
 
-use super::OSRDIdentified;
-use super::ObjectType;
-use editoast_common::Identifier;
-use editoast_schemas::infra::Direction;
-use editoast_schemas::infra::DirectionalTrackRange;
-use editoast_schemas::infra::Waypoint;
-use editoast_schemas::primitives::OSRDTyped;
+use super::Direction;
+use super::DirectionalTrackRange;
+use super::Waypoint;
+use crate::primitives::OSRDIdentified;
+use crate::primitives::OSRDTyped;
+use crate::primitives::ObjectType;
 
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]

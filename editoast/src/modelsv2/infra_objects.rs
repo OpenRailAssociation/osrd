@@ -169,7 +169,11 @@ infra_model!(
     schema::OperationalPoint
 );
 
-infra_model!(RouteModel, infra_object_route, schema::Route);
+infra_model!(
+    RouteModel,
+    infra_object_route,
+    editoast_schemas::infra::Route
+);
 
 infra_model!(
     SignalModel,
