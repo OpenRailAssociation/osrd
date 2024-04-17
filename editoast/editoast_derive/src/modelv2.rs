@@ -1,74 +1,19 @@
 mod args;
 mod config;
 mod identifier;
+mod parsing;
 
-use std::collections::{HashMap, HashSet};
-
+use darling::FromDeriveInput as _;
 use darling::Result;
-use darling::{Error, FromDeriveInput as _};
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::quote;
 use syn::DeriveInput;
 
-use args::{GeneratedTypeArgs, ModelArgs, ModelFieldArgs};
+use args::{GeneratedTypeArgs, ModelArgs};
 use config::*;
 use identifier::Identifier;
 
-impl FieldTransformation {
-    fn from_args(
-        remote: Option<syn::Type>,
-        json: bool,
-        geo: bool,
-        to_string: bool,
-        to_enum: Option<syn::Type>,
-    ) -> Result<Option<Self>> {
-        match (remote, json, geo, to_string, to_enum) {
-            (Some(ty), false, false, false, None) => Ok(Some(Self::Remote(ty))),
-            (None, true, false, false, None) => Ok(Some(Self::Json)),
-            (None, false, true, false, None) => Ok(Some(Self::Geo)),
-            (None, false, false, true, None) => Ok(Some(Self::ToString)),
-            (None, false, false, false, Some(ty)) => Ok(Some(Self::ToEnum(ty))),
-            (None, false, false, false, None) => Ok(None),
-            _ => Err(Error::custom(
-                "Model: remote, json, geo, to_string and to_enum attributes are mutually exclusive",
-            )),
-        }
-    }
-}
-
 impl ModelField {
-    fn from_macro_args(value: ModelFieldArgs) -> Result<Self> {
-        let ident = value
-            .ident
-            .ok_or(Error::custom("Model: only works for named structs"))?;
-        let column = value.column.unwrap_or_else(|| ident.to_string());
-        let builder_ident = value.builder_fn.unwrap_or_else(|| ident.clone());
-        let to_enum = match value.to_enum {
-            true => Some(value.ty.clone()),
-            false => None,
-        };
-
-        let transform = FieldTransformation::from_args(
-            value.remote,
-            value.json,
-            value.geo,
-            value.to_string,
-            to_enum,
-        )
-        .map_err(|e| e.with_span(&ident))?;
-        Ok(Self {
-            ident,
-            builder_ident,
-            column,
-            ty: value.ty,
-            builder_skip: value.builder_skip,
-            identifier: value.identifier,
-            preferred: value.preferred,
-            primary: value.primary,
-            transform,
-        })
-    }
-
     #[allow(clippy::wrong_self_convention)]
     fn into_transformed(&self, expr: TokenStream) -> TokenStream {
         match self.transform {
@@ -129,110 +74,6 @@ macro_rules! np {
 }
 
 impl ModelConfig {
-    fn from_macro_args(options: ModelArgs, model_name: syn::Ident) -> Result<Self> {
-        let row = GeneratedTypeArgs {
-            type_name: options.row.type_name.or(Some(format!("{}Row", model_name))),
-            ..options.row
-        };
-        let changeset = GeneratedTypeArgs {
-            type_name: options
-                .changeset
-                .type_name
-                .or(Some(format!("{}Changeset", model_name))),
-            ..options.changeset
-        };
-
-        // transform fields
-        let fields = {
-            let mut acc = Error::accumulator();
-            let fields = options
-                .data
-                .take_struct()
-                .ok_or(Error::custom("Model: only named structs are supported"))?
-                .fields
-                .into_iter()
-                .filter_map(|field| acc.handle(ModelField::from_macro_args(field)))
-                .collect();
-            acc.finish_with(fields)
-        }?;
-        let fields = Fields(fields);
-        let first_field = &fields
-            .first()
-            .ok_or(Error::custom("Model: at least one field is required"))?
-            .ident;
-        let field_map: HashMap<_, _> = fields
-            .iter()
-            .map(|field| (field.ident.clone(), field.clone()))
-            .collect();
-
-        // collect identifiers from struct-level annotations...
-        let mut identifiers: HashSet<_> = options
-            .identifiers
-            .iter()
-            .cloned()
-            .chain(
-                // ... and those at the field-level
-                field_map
-                    .values()
-                    .filter(|field| field.identifier)
-                    .map(|field| Identifier::Field(field.ident.clone())),
-            )
-            .collect();
-
-        // collect of infer the primary key field
-        let primary_field = match field_map
-            .values()
-            .filter(|field| field.primary)
-            .collect::<Vec<_>>()
-            .as_slice()
-        {
-            [pf] => Identifier::Field(pf.ident.clone()),
-            [] => {
-                let id = Ident::new("id", Span::call_site());
-                Identifier::Field(
-                    field_map
-                        .get(&id)
-                        .map(|f| f.ident.clone())
-                        .unwrap_or_else(|| first_field.clone()),
-                )
-            }
-            _ => return Err(Error::custom("Model: multiple primary fields found")),
-        };
-
-        // collect or infer the preferred identifier field
-        let preferred_identifier = match (
-            options.preferred.as_ref(),
-            field_map
-                .values()
-                .filter(|field| field.primary)
-                .collect::<Vec<_>>()
-                .as_slice(),
-        ) {
-            (Some(id), []) => id.clone(),
-            (None, [field]) => Identifier::Field(field.ident.clone()),
-            (None, []) => primary_field.clone(),
-            _ => {
-                return Err(Error::custom(
-                    "Model: conflicting preferred field declarations",
-                ))
-            }
-        };
-
-        identifiers.insert(primary_field.clone());
-        identifiers.insert(preferred_identifier.clone());
-
-        Ok(Self {
-            model: model_name,
-            table: options.table,
-            fields,
-            identifiers,
-            preferred_identifier,
-            primary_field,
-            row,
-            changeset,
-        })
-    }
-
     fn iter_fields(&self) -> impl Iterator<Item = &ModelField> {
         self.fields.iter()
     }
