@@ -45,7 +45,7 @@ interface TrackProperties {
     fun getTrackChunkSpeedSections(
         trackChunk: DirTrackChunkId,
         trainTag: String?,
-        route: String?
+        route: RouteId?
     ): DistanceRangeMap<Speed>
 
     fun getTrackChunkGeom(trackChunk: TrackChunkId): LineString

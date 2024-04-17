@@ -111,11 +111,20 @@ fun adaptRawInfra(infra: SignalingInfra): SimInfraAdapter {
                             lastOffset,
                             endOffset,
                             this@trackSection,
-                            chunkMap
+                            chunkMap,
+                            routeNameToID
                         )
                         lastOffset = endOffset
                     }
-                    makeChunk(builder, track, lastOffset, trackLength, this@trackSection, chunkMap)
+                    makeChunk(
+                        builder,
+                        track,
+                        lastOffset,
+                        trackLength,
+                        this@trackSection,
+                        chunkMap,
+                        routeNameToID
+                    )
                     trackChunkMap[track] = chunkMap
                 }
         }
@@ -334,7 +343,8 @@ private fun makeChunk(
     startOffset: Distance,
     endOffset: Distance,
     trackSectionBuilder: TrackSectionBuilder,
-    chunkMap: MutableMap<Distance, TrackChunkId>
+    chunkMap: MutableMap<Distance, TrackChunkId>,
+    routeNameToID: MutableMap<String, RouteId>,
 ) {
     if (startOffset == endOffset) return
     val rangeViewForward =
@@ -368,9 +378,9 @@ private fun makeChunk(
                 SpeedSection(
                     legacySpeedLimits.defaultSpeedLimit.metersPerSecond,
                     map,
-                    legacySpeedLimits.speedLimitOnRoute.mapValues { speed ->
-                        speed.value!!.metersPerSecond
-                    }
+                    legacySpeedLimits.speedLimitOnRoute
+                        .mapValues { speed -> speed.value!!.metersPerSecond }
+                        .mapKeys { (route, _) -> routeNameToID[route]!! }
                 )
             )
         }
