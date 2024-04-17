@@ -1,6 +1,5 @@
 package fr.sncf.osrd.signaling.impl
 
-import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.signaling.*
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.api.SignalDriver
@@ -39,8 +38,8 @@ class MockSigSystemManager(
     override val signalingSystems: StaticIdxSpace<SignalingSystem>
         get() = StaticIdxSpace(1u)
 
-    override fun findSignalingSystem(sigSystem: String): SignalingSystemId {
-        if (sigSystem != this.sigSystem) throw OSRDError.newSignalingError(sigSystem)
+    override fun findSignalingSystem(sigSystem: String): SignalingSystemId? {
+        if (sigSystem != this.sigSystem) return null
         return SignalingSystemId(0u)
     }
 

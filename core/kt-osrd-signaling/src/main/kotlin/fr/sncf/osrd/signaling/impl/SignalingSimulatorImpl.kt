@@ -52,7 +52,7 @@ class SignalingSimulatorImpl(override val sigModuleManager: SigSystemManager) : 
                             val oldSignalingSystemId =
                                 unloadedSignalInfra.getSignalingSystemId(oldLogicalSignal)
                             val signalingSystemId =
-                                sigModuleManager.findSignalingSystem(oldSignalingSystemId)
+                                sigModuleManager.findSignalingSystemOrThrow(oldSignalingSystemId)
                             signalingSystemId(signalingSystemId)
 
                             val settingsSchema =
@@ -67,7 +67,8 @@ class SignalingSimulatorImpl(override val sigModuleManager: SigSystemManager) : 
 
                             for (oldNextSS in
                                 unloadedSignalInfra.getNextSignalingSystemIds(oldLogicalSignal)) {
-                                val oldNextSSId = sigModuleManager.findSignalingSystem(oldNextSS)
+                                val oldNextSSId =
+                                    sigModuleManager.findSignalingSystemOrThrow(oldNextSS)
                                 driver(sigModuleManager.findDriver(signalingSystemId, oldNextSSId))
                             }
                         }

@@ -48,12 +48,8 @@ fun makeSignalingSystemConstraints(
 ): SignalingSystemConstraints {
     val rsSupportedSigSystems =
         rollingStocks.map { stock ->
-            stock.supportedSignalingSystems.mapNotNull { s ->
-                try {
-                    signalingSimulator.sigModuleManager.findSignalingSystem(s)
-                } catch (e: Exception) {
-                    null
-                }
+            stock.supportedSignalingSystems.mapNotNull {
+                signalingSimulator.sigModuleManager.findSignalingSystem(it)
             }
         }
     return SignalingSystemConstraints(blockInfra, rsSupportedSigSystems)

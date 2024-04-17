@@ -45,10 +45,10 @@ fun recoverBlockPath(
 ): List<BlockPathElement> {
     // TODO: the allowed signaling systems should depend on the type of train
     val sigSystemManager = simulator.sigModuleManager
-    val bal = sigSystemManager.findSignalingSystem("BAL")
-    val bapr = sigSystemManager.findSignalingSystem("BAPR")
-    val tvm300 = sigSystemManager.findSignalingSystem("TVM300")
-    val tvm430 = sigSystemManager.findSignalingSystem("TVM430")
+    val bal = sigSystemManager.findSignalingSystemOrThrow("BAL")
+    val bapr = sigSystemManager.findSignalingSystemOrThrow("BAPR")
+    val tvm300 = sigSystemManager.findSignalingSystemOrThrow("TVM300")
+    val tvm430 = sigSystemManager.findSignalingSystemOrThrow("TVM430")
 
     val blockPaths =
         recoverBlocks(

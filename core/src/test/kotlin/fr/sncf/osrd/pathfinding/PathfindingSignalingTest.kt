@@ -8,6 +8,7 @@ import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
+import fr.sncf.osrd.sim_infra.api.findSignalingSystemOrThrow
 import fr.sncf.osrd.train.TestTrains
 import fr.sncf.osrd.utils.DummyInfra
 import fr.sncf.osrd.utils.units.Offset
@@ -28,7 +29,7 @@ class PathfindingSignalingTest {
                 .fullInfra()
                 .signalingSimulator
                 .sigModuleManager
-                .findSignalingSystem(signalingSystemName)
+                .findSignalingSystemOrThrow(signalingSystemName)
         list.forEach { infra.blockPool[it.index.toInt()].signalingSystemId = id }
     }
 
