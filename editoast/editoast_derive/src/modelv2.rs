@@ -1,10 +1,8 @@
 mod args;
+mod config;
 mod identifier;
 
-use std::{
-    collections::{HashMap, HashSet},
-    ops::{Deref, DerefMut},
-};
+use std::collections::{HashMap, HashSet};
 
 use darling::Result;
 use darling::{Error, FromDeriveInput as _};
@@ -13,65 +11,8 @@ use quote::quote;
 use syn::DeriveInput;
 
 use args::{GeneratedTypeArgs, ModelArgs, ModelFieldArgs};
+use config::*;
 use identifier::Identifier;
-
-impl Identifier {
-    fn get_field<'a>(&self, config: &'a ModelConfig) -> Option<&'a ModelField> {
-        match self {
-            Self::Field(ident) => config.fields.get(ident),
-            Self::Compound(_) => None,
-        }
-    }
-
-    fn type_expr(&self, config: &ModelConfig) -> TokenStream {
-        match self {
-            Self::Field(_) => {
-                let ty = &self.get_field(config).unwrap().ty;
-                quote! { #ty }
-            }
-            Self::Compound(idents) => {
-                let ty = idents
-                    .iter()
-                    .map(|ident| &config.fields.get(ident).unwrap().ty);
-                quote! { (#(#ty),*) }
-            }
-        }
-    }
-}
-
-#[derive(Debug, PartialEq)]
-struct ModelConfig {
-    model: syn::Ident,
-    table: syn::Path,
-    fields: Fields,
-    row: GeneratedTypeArgs,
-    changeset: GeneratedTypeArgs,
-    identifiers: HashSet<Identifier>, // identifiers ⊆ fields
-    preferred_identifier: Identifier, // preferred_identifier ∈ identifiers
-    primary_field: Identifier,        // primary_field ∈ identifiers
-}
-
-#[derive(Debug, PartialEq, Clone)]
-struct ModelField {
-    ident: syn::Ident,
-    column: String,
-    builder_ident: syn::Ident,
-    ty: syn::Type,
-    builder_skip: bool,
-    identifier: bool,
-    preferred: bool,
-    primary: bool,
-    transform: Option<FieldTransformation>,
-}
-
-#[derive(Debug, PartialEq, Clone)]
-enum FieldTransformation {
-    Remote(syn::Type),
-    Json,
-    Geo,
-    ToString,
-    ToEnum(syn::Type),
-}
 
 impl FieldTransformation {
     fn from_args(
@@ -166,29 +107,6 @@ impl ModelField {
             Some(FieldTransformation::ToEnum(_)) => quote! { i16 },
             None => quote! { #ty },
         }
-    }
-}
-
-#[derive(Debug, PartialEq)]
-struct Fields(Vec<ModelField>);
-
-impl Deref for Fields {
-    type Target = Vec<ModelField>;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-impl DerefMut for Fields {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0
-    }
-}
-
-impl Fields {
-    fn get(&self, ident: &syn::Ident) -> Option<&ModelField> {
-        self.iter().find(|field| &field.ident == ident)
     }
 }
 
