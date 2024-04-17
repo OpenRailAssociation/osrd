@@ -7047,6 +7047,7 @@ components:
     TrackOffset:
       properties:
         offset:
+          description: Offset in mm
           format: int64
           minimum: 0
           type: integer

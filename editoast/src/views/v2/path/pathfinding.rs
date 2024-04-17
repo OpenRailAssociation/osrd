@@ -8,15 +8,18 @@ use actix_web::web::Data;
 use actix_web::web::Json;
 use actix_web::web::Path;
 use diesel_async::AsyncPgConnection as PgConnection;
-use editoast_common::Identifier;
 use editoast_schemas::infra::TrackOffset;
 use editoast_schemas::rolling_stock::LoadingGaugeType;
 use editoast_schemas::train_schedule::PathItemLocation;
 use serde::Deserialize;
-use serde::Serialize;
+use tracing::info;
 use utoipa::ToSchema;
 
 use super::CACHE_PATH_EXPIRATION;
+use crate::core::v2::pathfinding::PathfindingRequest;
+use crate::core::v2::pathfinding::PathfindingResult;
+use crate::core::AsCoreRequest;
+use crate::core::CoreClient;
 use crate::error::Result;
 use crate::modelsv2::train_schedule::TrainSchedule;
 use crate::modelsv2::Infra;
@@ -46,71 +49,6 @@ editoast_common::schemas! {
     PathfindingInput,
     PathfindingResult,
     TrackRange,
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug, ToSchema)]
-#[serde(tag = "status", rename_all = "snake_case")]
-pub enum PathfindingResult {
-    Success {
-        #[schema(inline)]
-        /// Path description as block ids
-        blocks: Vec<Identifier>,
-        #[schema(inline)]
-        /// Path description as route ids
-        routes: Vec<Identifier>,
-        /// Path description as track ranges
-        track_section_ranges: Vec<TrackRange>,
-        /// Length of the path in mm
-        length: u64,
-        /// The path offset in mm of each path item given as input of the pathfinding
-        /// The first value is always `0` (beginning of the path) and the last one is always equal to the `length` of the path in mm
-        path_items_positions: Vec<u64>,
-    },
-    NotFoundInBlocks {
-        track_section_ranges: Vec<TrackRange>,
-        length: u64,
-    },
-    NotFoundInRoutes {
-        track_section_ranges: Vec<TrackRange>,
-        length: u64,
-    },
-    NotFoundInTracks,
-    IncompatibleElectrification {
-        #[schema(inline)]
-        blocks: Vec<Identifier>,
-        #[schema(inline)]
-        routes: Vec<Identifier>,
-        track_section_ranges: Vec<TrackRange>,
-        length: u64,
-        incompatible_ranges: Vec<(u64, u64)>,
-    },
-    IncompatibleLoadingGauge {
-        #[schema(inline)]
-        blocks: Vec<Identifier>,
-        #[schema(inline)]
-        routes: Vec<Identifier>,
-        track_section_ranges: Vec<TrackRange>,
-        length: u64,
-        incompatible_ranges: Vec<(u64, u64)>,
-    },
-    IncompatibleSignalingSystem {
-        #[schema(inline)]
-        blocks: Vec<Identifier>,
-        #[schema(inline)]
-        routes: Vec<Identifier>,
-        track_section_ranges: Vec<TrackRange>,
-        length: u64,
-        incompatible_ranges: Vec<(u64, u64)>,
-    },
-    InvalidPathItem {
-        index: usize,
-        #[schema(inline)]
-        path_item: PathItemLocation,
-    },
-    NotEnoughPathItems,
-    RollingStockNotFound {
-        rolling_stock_name: String,
-    },
 }
 
 /// Path input is described by some rolling stock information
@@ -147,6 +85,7 @@ struct PathfindingInput {
 pub async fn post(
     db_pool: Data<DbPool>,
     redis_client: Data<RedisClient>,
+    core: Data<CoreClient>,
     infra_id: Path<i64>,
     data: Json<PathfindingInput>,
 ) -> Result<Json<PathfindingResult>> {
@@ -158,13 +97,14 @@ pub async fn post(
     })
     .await?;
     Ok(Json(
-        pathfinding_blocks(conn, &mut redis_conn, &infra, &path_input).await?,
+        pathfinding_blocks(conn, &mut redis_conn, core, &infra, &path_input).await?,
     ))
 }
 
 async fn pathfinding_blocks(
     conn: &mut PgConnection,
     redis_conn: &mut RedisConnection,
+    core: Data<CoreClient>,
     infra: &Infra,
     path_input: &PathfindingInput,
 ) -> Result<PathfindingResult> {
@@ -174,6 +114,7 @@ async fn pathfinding_blocks(
     let result: Option<PathfindingResult> =
         redis_conn.json_get_ex(&hash, CACHE_PATH_EXPIRATION).await?;
     if let Some(pathfinding) = result {
+        info!("Hit cache");
         return Ok(pathfinding);
     }
     // If miss cache:
@@ -190,21 +131,27 @@ async fn pathfinding_blocks(
 
     // Check if tracks exist
     if let Err(pathfinding_result) =
-        check_tracks_from_path_items(conn, infra.id, track_offsets).await?
+        check_tracks_from_path_items(conn, infra.id, &track_offsets).await?
     {
         return Ok(pathfinding_result);
     }
 
-    // 2) compute path from core
-    // TODO : a function that call the pathfinding core endpoint will be soon implemented
-    // issue: https://github.com/OpenRailAssociation/osrd/issues/6741
-    let pathfinding_result = PathfindingResult::Success {
-        blocks: vec![],
-        routes: vec![],
-        track_section_ranges: vec![],
-        length: 1000,
-        path_items_positions: vec![0, 1000],
+    // 2) Compute path from core
+    let pathfinding_request = PathfindingRequest {
+        infra: infra.id,
+        expected_version: infra.version.clone(),
+        path_items: track_offsets,
+        rolling_stock_loading_gauge: path_input.rolling_stock_loading_gauge,
+        rolling_stock_is_thermal: path_input.rolling_stock_is_thermal,
+        rolling_stock_supported_electrification: path_input
+            .rolling_stock_supported_electrification
+            .clone(),
+        rolling_stock_supported_signaling_systems: path_input
+            .rolling_stock_supported_signaling_systems
+            .clone(),
     };
+    let pathfinding_result = pathfinding_request.fetch(core.as_ref()).await?;
+
     // 3) Put in cache
     redis_conn
         .json_set_ex(&hash, &pathfinding_result, CACHE_PATH_EXPIRATION)
@@ -217,6 +164,7 @@ async fn pathfinding_blocks(
 pub async fn pathfinding_from_train(
     conn: &mut PgConnection,
     redis: &mut RedisConnection,
+    core: Data<CoreClient>,
     infra: &Infra,
     train_schedule: TrainSchedule,
 ) -> Result<PathfindingResult> {
@@ -240,7 +188,7 @@ pub async fn pathfinding_from_train(
             .collect(),
     };
 
-    pathfinding_blocks(conn, redis, infra, &path_input).await
+    pathfinding_blocks(conn, redis, core, infra, &path_input).await
 }
 
 /// Generates a unique hash based on the pathfinding entries.
@@ -394,9 +342,9 @@ async fn extract_location_from_path_items(
 async fn check_tracks_from_path_items(
     conn: &mut PgConnection,
     infra_id: i64,
-    track_offsets: Vec<Vec<TrackOffset>>,
+    track_offsets: &[Vec<TrackOffset>],
 ) -> Result<std::result::Result<(), PathfindingResult>> {
-    for tracks in track_offsets.clone() {
+    for tracks in track_offsets {
         let ids = tracks
             .iter()
             .map(|track_offset| (infra_id, track_offset.track.0.clone()));

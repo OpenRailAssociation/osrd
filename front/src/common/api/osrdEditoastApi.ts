@@ -2947,6 +2947,7 @@ export type PathPropertiesInput = {
   track_ranges: TrackRange[];
 };
 export type TrackOffset = {
+  /** Offset in mm */
   offset: number;
   track: string;
 };
