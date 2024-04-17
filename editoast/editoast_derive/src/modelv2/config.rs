@@ -3,8 +3,6 @@ use std::{
     ops::{Deref, DerefMut},
 };
 
-use proc_macro2::TokenStream;
-use quote::quote;
 use syn::parse_quote;
 
 use super::{args::GeneratedTypeArgs, identifier::Identifier};
@@ -112,16 +110,16 @@ impl ModelConfig {
 
 impl ModelField {
     #[allow(clippy::wrong_self_convention)]
-    pub fn into_transformed(&self, expr: TokenStream) -> TokenStream {
+    pub fn into_transformed(&self, expr: syn::Expr) -> syn::Expr {
         match self.transform {
-            Some(FieldTransformation::Remote(_)) => quote! { #expr.into() },
-            Some(FieldTransformation::Json) => quote! { diesel_json::Json(#expr) },
+            Some(FieldTransformation::Remote(_)) => parse_quote! { #expr.into() },
+            Some(FieldTransformation::Json) => parse_quote! { diesel_json::Json(#expr) },
             Some(FieldTransformation::Geo) => unimplemented!("to be designed"),
-            Some(FieldTransformation::ToString) => quote! { #expr.to_string() },
+            Some(FieldTransformation::ToString) => parse_quote! { #expr.to_string() },
             Some(FieldTransformation::ToEnum(_)) => {
-                quote! { #expr as i16 }
+                parse_quote! { #expr as i16 }
             }
-            None => quote! { #expr },
+            None => parse_quote! { #expr },
         }
     }
 

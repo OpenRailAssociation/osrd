@@ -1,4 +1,5 @@
 mod changeset_decl;
+mod changeset_from_model;
 mod identifiable_impl;
 mod model_from_row_impl;
 mod model_impl;
@@ -7,6 +8,7 @@ mod row_decl;
 
 use proc_macro2::{Span, TokenStream};
 use quote::quote;
+use syn::parse_quote;
 
 use crate::modelv2::codegen::changeset_decl::ChangesetDecl;
 use crate::modelv2::codegen::changeset_decl::ChangesetFieldDecl;
@@ -14,6 +16,7 @@ use crate::modelv2::codegen::model_impl::ModelImpl;
 use crate::modelv2::codegen::row_decl::RowDecl;
 use crate::modelv2::codegen::row_decl::RowFieldDecl;
 
+use self::changeset_from_model::ChangesetFromModelImpl;
 use self::identifiable_impl::IdentifiableImpl;
 use self::model_from_row_impl::ModelFromRowImpl;
 use self::preferred_id_impl::PreferredIdImpl;
@@ -75,7 +78,7 @@ impl ModelConfig {
             .filter(|field| !field.builder_skip)
             .map(|field| {
                 let ident = &field.ident;
-                let expr = field.into_transformed(quote! { #ident });
+                let expr = field.into_transformed(parse_quote! { #ident });
                 let body = if changeset {
                     quote! { self.#ident = Some(#expr) }
                 } else {
@@ -153,26 +156,16 @@ impl ModelConfig {
         }
     }
 
-    pub fn make_from_impls(&self) -> TokenStream {
-        let model = &self.model;
-        let (cs_field, cs_value): (Vec<_>, Vec<_>) = self
-            .iter_fields()
-            .filter(|f| !self.is_primary(f))
-            .map(|field| {
-                let ident = &field.ident;
-                (ident, field.into_transformed(quote! { model.#ident }))
-            })
-            .unzip();
-        let cs_ident = self.changeset.ident();
-        quote! {
-            #[automatically_derived]
-            impl From<#model> for #cs_ident {
-                fn from(model: #model) -> Self {
-                    Self {
-                        #( #cs_field: Some(#cs_value) ),*
-                    }
-                }
-            }
+    pub(crate) fn changeset_from_model_impl(&self) -> ChangesetFromModelImpl {
+        ChangesetFromModelImpl {
+            model: self.model.clone(),
+            changeset: self.changeset.ident(),
+            fields: self
+                .fields
+                .iter()
+                .filter(|f| !self.is_primary(f))
+                .cloned()
+                .collect(),
         }
     }
 
