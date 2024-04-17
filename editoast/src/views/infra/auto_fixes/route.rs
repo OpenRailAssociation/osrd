@@ -6,7 +6,7 @@ use super::new_ref_fix_delete_pair;
 use super::Fix;
 use crate::schema::InfraError;
 use crate::schema::InfraErrorType;
-use crate::schema::Route;
+use editoast_schemas::infra::Route;
 use editoast_schemas::primitives::OSRDIdentified as _;
 use editoast_schemas::primitives::OSRDObject as _;
 use editoast_schemas::primitives::ObjectRef;
