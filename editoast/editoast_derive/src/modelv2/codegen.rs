@@ -16,20 +16,19 @@ use super::Identifier;
 use super::ModelConfig;
 
 impl ModelConfig {
-    pub fn make_model_decl(&self, vis: &syn::Visibility) -> TokenStream {
-        let model = &self.model;
-        let table = &self.table;
-
-        let model_impl = ModelImpl {
-            model: model.clone(),
+    pub(crate) fn model_impl(&self) -> ModelImpl {
+        ModelImpl {
+            model: self.model.clone(),
             row: self.row.ident(),
             changeset: self.changeset.ident(),
-        };
+        }
+    }
 
-        let row_decl = RowDecl {
-            vis: vis.clone(),
+    pub(crate) fn row_decl(&self) -> RowDecl {
+        RowDecl {
+            vis: self.visibility.clone(),
             ident: self.row.ident(),
-            table: table.clone(),
+            table: self.table.clone(),
             additional_derives: self.row.derive.clone(),
             fields: self
                 .iter_fields()
@@ -40,12 +39,14 @@ impl ModelConfig {
                     column: field.column.clone(),
                 })
                 .collect(),
-        };
+        }
+    }
 
-        let cs_decl = ChangesetDecl {
-            vis: vis.clone(),
+    pub(crate) fn changeset_decl(&self) -> ChangesetDecl {
+        ChangesetDecl {
+            vis: self.visibility.clone(),
             ident: self.changeset.ident(),
-            table: table.clone(),
+            table: self.table.clone(),
             additional_derives: self.changeset.derive.clone(),
             fields: self
                 .iter_fields()
@@ -57,12 +58,6 @@ impl ModelConfig {
                     column: field.column.clone(),
                 })
                 .collect(),
-        };
-
-        quote! {
-            #model_impl
-            #row_decl
-            #cs_decl
         }
     }
 
