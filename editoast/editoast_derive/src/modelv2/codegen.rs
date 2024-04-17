@@ -1,5 +1,15 @@
+mod changeset_decl;
+mod model_impl;
+mod row_decl;
+
 use proc_macro2::{Span, TokenStream};
 use quote::quote;
+
+use crate::modelv2::codegen::changeset_decl::ChangesetDecl;
+use crate::modelv2::codegen::changeset_decl::ChangesetFieldDecl;
+use crate::modelv2::codegen::model_impl::ModelImpl;
+use crate::modelv2::codegen::row_decl::RowDecl;
+use crate::modelv2::codegen::row_decl::RowFieldDecl;
 
 use super::utils::np;
 use super::Identifier;
@@ -9,47 +19,50 @@ impl ModelConfig {
     pub fn make_model_decl(&self, vis: &syn::Visibility) -> TokenStream {
         let model = &self.model;
         let table = &self.table;
-        let np!(field, ty, column): np!(vec3) = self
-            .iter_fields()
-            .map(|field| np!(&field.ident, field.transform_type(), &field.column))
-            .unzip();
-        let np!(cs_field, cs_ty, cs_column): np!(vec3) = self
-            .iter_fields()
-            .filter(|f| !self.is_primary(f))
-            .map(|field| np!(&field.ident, field.transform_type(), &field.column))
-            .unzip();
-        let cs_ident = self.changeset.ident();
-        let cs_derive = &self.changeset.derive;
-        let cs_pub = if self.changeset.public {
-            quote! { pub }
-        } else {
-            quote! {}
+
+        let model_impl = ModelImpl {
+            model: model.clone(),
+            row: self.row.ident(),
+            changeset: self.changeset.ident(),
         };
-        let row_ident = self.row.ident();
-        let row_derive = &self.row.derive;
-        let row_pub = if self.row.public {
-            quote! { pub }
-        } else {
-            quote! {}
+
+        let row_decl = RowDecl {
+            vis: vis.clone(),
+            ident: self.row.ident(),
+            table: table.clone(),
+            additional_derives: self.row.derive.clone(),
+            fields: self
+                .iter_fields()
+                .map(|field| RowFieldDecl {
+                    vis: self.row.visibility(),
+                    name: field.ident.clone(),
+                    ty: field.transform_type(),
+                    column: field.column.clone(),
+                })
+                .collect(),
         };
+
+        let cs_decl = ChangesetDecl {
+            vis: vis.clone(),
+            ident: self.changeset.ident(),
+            table: table.clone(),
+            additional_derives: self.changeset.derive.clone(),
+            fields: self
+                .iter_fields()
+                .filter(|f| !self.is_primary(f))
+                .map(|field| ChangesetFieldDecl {
+                    vis: self.changeset.visibility(),
+                    name: field.ident.clone(),
+                    ty: field.transform_type(),
+                    column: field.column.clone(),
+                })
+                .collect(),
+        };
+
         quote! {
-            #[automatically_derived]
-            impl crate::modelsv2::Model for #model {
-                type Row = #row_ident;
-                type Changeset = #cs_ident;
-            }
-
-            #[derive(Queryable, QueryableByName, #(#row_derive),*)]
-            #[diesel(table_name = #table)]
-            #vis struct #row_ident {
-                #(#[diesel(column_name = #column)] #row_pub #field: #ty),*
-            }
-
-            #[derive(Default, Queryable, AsChangeset, Insertable, #(#cs_derive),*)]
-            #[diesel(table_name = #table)]
-            #vis struct #cs_ident {
-                #(#[diesel(deserialize_as = #cs_ty, column_name = #cs_column)] #cs_pub #cs_field: Option<#cs_ty>),*
-            }
+            #model_impl
+            #row_decl
+            #cs_decl
         }
     }
 
