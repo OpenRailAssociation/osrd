@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::collections::HashSet;
 
 use actix_web::get;
 use actix_web::post;
@@ -26,6 +27,7 @@ use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraIdParam;
 use crate::views::params::List;
 use crate::DbPool;
+
 use editoast_schemas::infra::DirectionalTrackRange;
 
 crate::routes! {
@@ -121,6 +123,14 @@ struct RouteTrackRangesParams {
     routes: List<String>,
 }
 
+#[derive(Default, Debug, Serialize, Deserialize, PartialEq, ToSchema)]
+struct RoutesFromNodesPositions {
+    /// List of route ids crossing a selection of nodes
+    routes: Vec<String>,
+    /// List of available positions for each node on the corresponding routes
+    available_node_positions: HashMap<String, HashSet<String>>,
+}
+
 /// Compute the track ranges through which routes passes.
 #[utoipa::path(
     tag = "infra,routes",
@@ -166,13 +176,13 @@ async fn get_routes_track_ranges<'a>(
     Ok(Json(result))
 }
 
-/// Return all routes that depend on the position of the specified nodes
+/// Returns the list of routes crossing the specified nodes, along with the available positions for each of them.
 #[utoipa::path(
     tag = "infra,routes",
     params(InfraIdParam),
     request_body(content = HashMap<String, Option<String>>, description = "A mapping node_id -> node_state | null"),
     responses(
-        (status = 200, body = inline(Vec<String>), description = "A list of routes IDs")
+        (status = 200, body = inline(RoutesFromNodesPositions), description = "A list of route IDs along with available positions for each specified node")
     ),
 )]
 #[post("/nodes")]
@@ -181,7 +191,7 @@ async fn get_routes_nodes(
     infra_caches: Data<CHashMap<i64, InfraCache>>,
     db_pool: Data<DbPool>,
     Json(node_states): Json<HashMap<String, Option<String>>>,
-) -> Result<Json<Vec<String>>> {
+) -> Result<Json<RoutesFromNodesPositions>> {
     let conn = &mut db_pool.get().await?;
     let infra = Infra::retrieve_or_fail(conn, params.infra_id, || InfraApiError::NotFound {
         infra_id: params.infra_id,
@@ -189,20 +199,20 @@ async fn get_routes_nodes(
     .await?;
 
     if node_states.is_empty() {
-        return Ok(Json(vec![]));
+        return Ok(Json(RoutesFromNodesPositions::default()));
     }
 
     let infra_cache = InfraCache::get_or_load(conn, &infra_caches, &infra).await?;
     let routes_cache = infra_cache.routes();
 
-    let result = routes_cache
-        .iter()
+    let filtered_routes = routes_cache
+        .values()
+        .map(|object_cache| object_cache.unwrap_route())
         // We're only interested in routes that depend on specific node positions
-        .filter(|(_, route)| !route.unwrap_route().switches_directions.is_empty())
-        .filter(|(_, route)| {
-            let route = route.unwrap_route();
+        .filter(|route| !route.switches_directions.is_empty())
+        .filter(|route| {
             node_states.iter().all(|(node_id, node_state)| {
-                match route.switches_directions.get(&node_id.clone().into()) {
+                match route.switches_directions.get(&node_id.as_str().into()) {
                     // The route crosses the requested node
                     Some(node_state_in_route) => {
                         if let Some(required_state) = node_state {
@@ -216,8 +226,32 @@ async fn get_routes_nodes(
                 }
             })
         })
-        .map(|(route_id, _)| route_id.clone())
         .collect::<Vec<_>>();
+
+    let available_node_positions: HashMap<String, HashSet<String>> =
+        filtered_routes
+            .iter()
+            .fold(HashMap::new(), |mut acc, route| {
+                for (node_id, _) in node_states.iter() {
+                    let node_direction = route
+                        .switches_directions
+                        .get(&node_id.clone().into())
+                        .unwrap()
+                        .to_string();
+
+                    let current_node_positions = acc.entry(node_id.to_string()).or_default();
+                    current_node_positions.insert(node_direction);
+                }
+                acc
+            });
+
+    let result = RoutesFromNodesPositions {
+        routes: filtered_routes
+            .iter()
+            .map(|route| route.id.to_string())
+            .collect(),
+        available_node_positions,
+    };
 
     Ok(Json(result))
 }
@@ -231,12 +265,15 @@ mod tests {
     use pretty_assertions::assert_eq;
     use rstest::rstest;
     use serde_json::json;
+    use std::collections::HashMap;
+    use std::collections::HashSet;
 
     use crate::assert_status_and_read;
     use crate::fixtures::tests::db_pool;
     use crate::fixtures::tests::empty_infra;
     use crate::fixtures::tests::small_infra;
     use crate::infra_cache::operation::Operation;
+    use crate::views::infra::routes::RoutesFromNodesPositions;
     use crate::views::infra::routes::RoutesResponse;
     use crate::views::infra::routes::WaypointType;
     use crate::views::tests::create_test_service;
@@ -249,57 +286,116 @@ mod tests {
     #[rstest]
     async fn get_routes_nodes() {
         let tests = vec![
-            (json!({}), vec![]),
+            (json!({}), (vec![], vec![])),
             (
                 json!({ "PA2": "A_B2" }), // point_switch
-                vec!["rt.DA2->DA5", "rt.DA3->buffer_stop.0"],
+                (
+                    vec!["rt.DA2->DA5", "rt.DA3->buffer_stop.0"],
+                    vec![("PA2".to_string(), HashSet::from(["A_B2".to_string()]))],
+                ),
             ),
             (
                 json!({ "PD0": "STATIC" }), // crossing
-                vec![
-                    "rt.DD2->DD6",
-                    "rt.DD4->DD0",
-                    "rt.DD5->DE1",
-                    "rt.DE0->buffer_stop.4",
-                ],
+                (
+                    vec![
+                        "rt.DD2->DD6",
+                        "rt.DD4->DD0",
+                        "rt.DD5->DE1",
+                        "rt.DE0->buffer_stop.4",
+                    ],
+                    vec![("PD0".to_string(), HashSet::from(["STATIC".to_string()]))],
+                ),
             ),
             (
                 json!({ "PH0": "A1_B1" }), // double_slip_switch
-                vec!["rt.DG0->DG3", "rt.DG1->DD7"],
+                (
+                    vec!["rt.DG0->DG3", "rt.DG1->DD7"],
+                    vec![("PH0".to_string(), HashSet::from(["A1_B1".to_string()]))],
+                ),
             ),
             (
                 json!({ "PH1": null }), // all routes crossing PH1
-                vec![
-                    "rt.DG2->DH1",
-                    "rt.DH2->DG4",
-                    "rt.DH2->buffer_stop.7",
-                    "rt.DH3->DH1",
-                ],
+                (
+                    vec![
+                        "rt.DG2->DH1",
+                        "rt.DH2->DG4",
+                        "rt.DH2->buffer_stop.7",
+                        "rt.DH3->DH1",
+                    ],
+                    vec![(
+                        "PH1".to_string(),
+                        HashSet::from(["A_B1".to_string(), "A_B2".to_string()]),
+                    )],
+                ),
             ),
             (
                 json!({ "PA0": "A_B1", "PA2": "A_B1" }),
-                vec!["rt.DA0->DA5", "rt.DA3->buffer_stop.1"],
+                (
+                    vec!["rt.DA0->DA5", "rt.DA3->buffer_stop.1"],
+                    vec![
+                        ("PA0".to_string(), HashSet::from(["A_B1".to_string()])),
+                        ("PA2".to_string(), HashSet::from(["A_B1".to_string()])),
+                    ],
+                ),
             ),
             (
                 json!({ "PA0": "A_B1", "PA2": null }),
-                vec!["rt.DA0->DA5", "rt.DA3->buffer_stop.1"],
+                (
+                    vec!["rt.DA0->DA5", "rt.DA3->buffer_stop.1"],
+                    vec![
+                        ("PA0".to_string(), HashSet::from(["A_B1".to_string()])),
+                        ("PA2".to_string(), HashSet::from(["A_B1".to_string()])),
+                    ],
+                ),
             ),
         ];
 
         let app = create_test_service().await;
         let small_infra = small_infra(db_pool()).await;
 
-        for (params, mut expected) in tests {
+        fn compare_result(got: RoutesFromNodesPositions, expected: RoutesFromNodesPositions) {
+            let mut got_routes = got.routes;
+            let mut expected_routes = expected.routes;
+            got_routes.sort();
+            expected_routes.sort();
+            assert_eq!(got_routes, expected_routes);
+
+            fn process_available_positions(
+                positions: &HashMap<String, HashSet<String>>,
+            ) -> Vec<(String, Vec<String>)> {
+                let mut sorted_positions = positions
+                    .iter()
+                    .map(|(key, value)| {
+                        let mut sorted_node_positions = Vec::from_iter(value.clone());
+                        sorted_node_positions.sort();
+                        (key.clone(), sorted_node_positions)
+                    })
+                    .collect::<Vec<_>>();
+                sorted_positions.sort();
+                sorted_positions
+            }
+
+            let got_available_positions: Vec<_> =
+                process_available_positions(&got.available_node_positions);
+            let expected_available_positions: Vec<_> =
+                process_available_positions(&expected.available_node_positions);
+
+            assert_eq!(got_available_positions, expected_available_positions);
+        }
+
+        for (params, expected) in tests {
+            let expected_result = RoutesFromNodesPositions {
+                routes: expected.0.iter().map(|s| s.to_string()).collect(),
+                available_node_positions: expected.1.into_iter().collect::<HashMap<_, _>>(),
+            };
             let request = TestRequest::post()
                 .uri(&format!("/infra/{}/routes/nodes", small_infra.id()))
                 .set_json(&params)
                 .to_request();
             println!("{request:?}  body:\n    {params}");
             let response = call_service(&app, request).await;
-            let mut got: Vec<String> = assert_status_and_read!(response, StatusCode::OK);
-            expected.sort();
-            got.sort();
-            assert_eq!(got, expected);
+            let got: RoutesFromNodesPositions = assert_status_and_read!(response, StatusCode::OK);
+            compare_result(got, expected_result)
         }
     }
 
