@@ -91,11 +91,11 @@ const RangeEditionLeftPanel = () => {
     setState({
       optionsState: { type: 'loading' },
     });
-    const routeCandidates = await getRoutesFromSwitch({
+    const routesAndNodesPositions = await getRoutesFromSwitch({
       infraId: infraID as number,
       body,
     }).unwrap();
-    setSwitchesRouteCandidates(routeCandidates);
+    setSwitchesRouteCandidates(routesAndNodesPositions.routes);
     setState({
       optionsState: { type: 'idle' },
     });
