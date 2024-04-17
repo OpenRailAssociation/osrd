@@ -561,6 +561,12 @@ class TrackSectionSncfExtension(BaseModel):
     track_name: NonBlankStr = Field(description="Name corresponding to the track used")
 
 
+@register_extension(object=TrackSection, name="source")
+class TrackSectionSourceExtension(BaseModel):
+    name: str = Field(description="Name of the source")
+    id: str = Field(description="ID used for the line in the source")
+
+
 @register_extension(object=OperationalPoint, name="sncf")
 class OperationalPointSncfExtension(BaseModel):
     ci: int = Field(description="THOR immutable code of the operational point")
