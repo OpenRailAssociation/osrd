@@ -25,7 +25,9 @@ pub fn model(input: &DeriveInput) -> Result<TokenStream> {
     let row_decl = config.row_decl();
     let changeset_decl = config.changeset_decl();
 
-    let identifiers_impls = config.make_identifiers_impls();
+    let identifiable_impls = config.identifiable_impls();
+    let preferred_id_impl = config.preferred_id_impl();
+
     let from_impls = config.make_from_impls();
 
     let cs_builder = config.make_builder(true);
@@ -38,7 +40,9 @@ pub fn model(input: &DeriveInput) -> Result<TokenStream> {
         #row_decl
         #changeset_decl
 
-        #identifiers_impls
+        #(#identifiable_impls)*
+        #preferred_id_impl
+
         #from_impls
         #cs_builder
         #patch_builder
