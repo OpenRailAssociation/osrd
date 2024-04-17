@@ -66,7 +66,7 @@ class ZoneDescriptor(
 )
 
 interface RouteDescriptor {
-    val name: String?
+    val name: String
     var length: Length<Route>
     val path: StaticIdxList<ZonePath>
     val releaseZones: IntArray
@@ -539,7 +539,7 @@ class RawInfraImpl(
         return routeDescriptors[route].path
     }
 
-    override fun getRouteName(route: RouteId): String? {
+    override fun getRouteName(route: RouteId): String {
         return routeDescriptors[route].name
     }
 

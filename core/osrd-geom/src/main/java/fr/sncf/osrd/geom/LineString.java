@@ -280,4 +280,16 @@ public final class LineString {
 
         return LineString.make(newBufferX.toArray(), newBufferY.toArray());
     }
+
+    @Override
+    public boolean equals(Object o) {
+        return equalsWithTolerance(o, 0.00001);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Arrays.hashCode(bufferX);
+        result = 31 * result + Arrays.hashCode(bufferY);
+        return result;
+    }
 }

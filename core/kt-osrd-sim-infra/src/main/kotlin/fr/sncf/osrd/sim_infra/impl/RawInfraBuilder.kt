@@ -167,7 +167,7 @@ interface RouteBuilder {
     fun trackChunk(chunkId: DirTrackChunkId)
 }
 
-class RouteBuilderImpl(private val name: String?) : RouteBuilder {
+class RouteBuilderImpl(private val name: String) : RouteBuilder {
     private val path: MutableStaticIdxList<ZonePath> = mutableStaticIdxArrayListOf()
     private val releaseZones = mutableIntArrayListOf()
     private val speedLimits = mutableStaticIdxArrayListOf<SpeedLimit>()
@@ -209,7 +209,7 @@ class RouteBuilderImpl(private val name: String?) : RouteBuilder {
 }
 
 class RouteDescriptorImpl(
-    override val name: String?,
+    override val name: String,
     override var length: Length<Route>,
     override val path: StaticIdxList<ZonePath>,
     override val releaseZones: IntArray,
@@ -255,7 +255,7 @@ interface RestrictedRawInfraBuilder {
 
     fun zonePath(entry: DirDetectorId, exit: DirDetectorId, length: Length<ZonePath>): ZonePathId
 
-    fun route(name: String?, init: RouteBuilder.() -> Unit): RouteId
+    fun route(name: String, init: RouteBuilder.() -> Unit): RouteId
 
     fun physicalSignal(
         name: String?,
@@ -390,7 +390,7 @@ class RawInfraBuilderImpl : RawInfraBuilder {
         return zonePathMap.getOrPut(zonePathDesc) { zonePathPool.add(zonePathDesc) }
     }
 
-    override fun route(name: String?, init: RouteBuilder.() -> Unit): RouteId {
+    override fun route(name: String, init: RouteBuilder.() -> Unit): RouteId {
         val builder = RouteBuilderImpl(name)
         builder.init()
         return routePool.add(builder.build())

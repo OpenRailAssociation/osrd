@@ -87,7 +87,7 @@ interface RoutingInfra : ReservationInfra {
 
     fun getRoutePath(route: RouteId): StaticIdxList<ZonePath>
 
-    fun getRouteName(route: RouteId): String?
+    fun getRouteName(route: RouteId): String
 
     fun getRouteLength(route: RouteId): Length<Route>
 

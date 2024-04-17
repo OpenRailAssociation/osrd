@@ -77,7 +77,7 @@ class ZoneDescriptor(
 )
 
 class RouteDescriptor(
-    val name: String?,
+    val name: String,
     var length: Length<Route>,
     val path: StaticIdxList<ZonePath>,
     val releaseZones: IntArray,
@@ -707,7 +707,7 @@ class RawInfraImplFromRjs(
         return routePool[route].path
     }
 
-    override fun getRouteName(route: RouteId): String? {
+    override fun getRouteName(route: RouteId): String {
         return routePool[route].name
     }
 

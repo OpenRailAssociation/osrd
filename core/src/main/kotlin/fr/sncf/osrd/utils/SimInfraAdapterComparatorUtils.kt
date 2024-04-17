@@ -1,348 +1,177 @@
 package fr.sncf.osrd.utils
 
 import fr.sncf.osrd.sim_infra.api.*
-import fr.sncf.osrd.stdcm.graph.logger
-import fr.sncf.osrd.utils.indexing.StaticIdx
-import fr.sncf.osrd.utils.indexing.StaticIdxSpace
-import fr.sncf.osrd.utils.units.Offset
-import java.util.Objects
-import kotlin.collections.HashSet
+import fr.sncf.osrd.utils.indexing.*
 
-data class ComparableOperationalPointPart(
-    val name: String,
-    val track: String,
-    val trackOffset: Offset<TrackSection>,
-    val chunkOffset: Offset<TrackChunk>
+private data class ComparableZone(
+    val bounds: Set<DirDetectorId>,
+    val nodes: StaticIdxSortedSet<TrackNode>
 )
 
-class ComparableChunk(simInfra: RawInfra, chunkId: TrackChunkId) {
-    val geo = simInfra.getTrackChunkGeom(chunkId)
-    val slopes =
-        DirectionalMap(
-            simInfra.getTrackChunkSlope(DirTrackChunkId(chunkId, Direction.INCREASING)),
-            simInfra.getTrackChunkSlope(DirTrackChunkId(chunkId, Direction.DECREASING))
-        )
-    val curves =
-        DirectionalMap(
-            simInfra.getTrackChunkCurve(DirTrackChunkId(chunkId, Direction.INCREASING)),
-            simInfra.getTrackChunkCurve(DirTrackChunkId(chunkId, Direction.DECREASING))
-        )
-    val gradients =
-        DirectionalMap(
-            simInfra.getTrackChunkGradient(DirTrackChunkId(chunkId, Direction.INCREASING)),
-            simInfra.getTrackChunkGradient(DirTrackChunkId(chunkId, Direction.DECREASING))
-        )
-    val length = simInfra.getTrackChunkLength(chunkId)
-    val routes =
-        DirectionalMap(
-            simInfra.getRoutesOnTrackChunk(DirTrackChunkId(chunkId, Direction.INCREASING)),
-            simInfra.getRoutesOnTrackChunk(DirTrackChunkId(chunkId, Direction.DECREASING))
-        )
-    val track = simInfra.getTrackSectionName(simInfra.getTrackFromChunk(chunkId))
-    val offset = simInfra.getTrackChunkOffset(chunkId)
-
-    val operationalPointParts = HashSet<ComparableOperationalPointPart>()
-
-    init {
-        for (opp in simInfra.getTrackChunkOperationalPointParts(chunkId)) {
-            val incomingOpp =
-                ComparableOperationalPointPart(
-                    simInfra.getOperationalPointPartName(opp),
-                    simInfra.getTrackSectionName(
-                        simInfra.getTrackFromChunk(simInfra.getOperationalPointPartChunk(opp))
-                    ),
-                    simInfra.getTrackChunkOffset(simInfra.getOperationalPointPartChunk(opp)),
-                    simInfra.getOperationalPointPartChunkOffset(opp)
-                )
-            if (operationalPointParts.contains(incomingOpp)) {
-                logger.warn("Duplicate operational point part: $incomingOpp")
-            } else {
-                operationalPointParts.add(incomingOpp)
-            }
-        }
-
-        for (opp in simInfra.getTrackChunkOperationalPointParts(chunkId)) {
-            assert(simInfra.getOperationalPointPartChunk(opp) == chunkId)
-        }
-    }
-
-    val loadingGaugeConstraints = simInfra.getTrackChunkLoadingGaugeConstraints(chunkId)
-    val electrificationVoltage = simInfra.getTrackChunkElectrificationVoltage(chunkId)
-    val neutralSections =
-        DirectionalMap(
-            simInfra.getTrackChunkNeutralSections(DirTrackChunkId(chunkId, Direction.INCREASING)),
-            simInfra.getTrackChunkNeutralSections(DirTrackChunkId(chunkId, Direction.DECREASING))
-        )
-    val speedSections =
-        DirectionalMap(
-            simInfra.getTrackChunkSpeedSections(DirTrackChunkId(chunkId, Direction.INCREASING)),
-            simInfra.getTrackChunkSpeedSections(DirTrackChunkId(chunkId, Direction.DECREASING))
-        )
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other !is ComparableChunk) return false
-        if (!geo.equalsWithTolerance(other.geo, 1E-8)) return false
-        if (slopes != other.slopes) return false
-        if (curves != other.curves) return false
-        if (gradients != other.gradients) return false
-        if (length != other.length) return false
-        if (routes != other.routes) return false
-        if (track != other.track) return false
-        if (offset != other.offset) return false
-        if (operationalPointParts != other.operationalPointParts) return false
-        if (loadingGaugeConstraints != other.loadingGaugeConstraints) return false
-        if (electrificationVoltage != other.electrificationVoltage) return false
-        if (neutralSections != other.neutralSections) return false
-        if (speedSections != other.speedSections) return false
-        return true
-    }
-
-    override fun hashCode(): Int {
-        return Objects.hash(
-            geo,
-            slopes,
-            curves,
-            gradients,
-            length,
-            routes,
-            track,
-            offset,
-            operationalPointParts,
-            loadingGaugeConstraints,
-            electrificationVoltage,
-            neutralSections,
-            speedSections
-        )
-    }
+private enum class Side {
+    Left,
+    Right
 }
 
-data class ComparableSectionEndpoint(val trackSectionName: String, val endpoint: Endpoint)
-
-data class ComparableConfig(
-    val name: String,
-    val connections: Map<ComparableSectionEndpoint, ComparableSectionEndpoint?>
-)
-
-class ComparableNode(simInfra: RawInfra, nodeIdx: TrackNodeId) {
-    val name = simInfra.getTrackNodeName(nodeIdx)
-    val delay = simInfra.getTrackNodeDelay(nodeIdx)
-    val portEndpoints = mutableSetOf<ComparableSectionEndpoint>()
-    val configs = mutableSetOf<ComparableConfig>()
-
-    init {
-        val portMap = mutableMapOf<TrackNodePortId, ComparableSectionEndpoint>()
-        // construct portEndpoints
-        for (portIdx in simInfra.getTrackNodePorts(nodeIdx)) {
-            val sectionEndpointIdx = simInfra.getPortConnection(nodeIdx, portIdx)
-            portMap[portIdx] =
-                ComparableSectionEndpoint(
-                    simInfra.getTrackSectionName(sectionEndpointIdx.value),
-                    sectionEndpointIdx.endpoint
-                )
-            portEndpoints.add(portMap[portIdx]!!)
-        }
-        // construct configs
-        for (configIdx in simInfra.getTrackNodeConfigs(nodeIdx)) {
-            // construct config's connections
-            val connections = mutableMapOf<ComparableSectionEndpoint, ComparableSectionEndpoint?>()
-            for ((portIdx, port) in portMap) {
-                val outPort = simInfra.getTrackNodeExitPort(nodeIdx, configIdx, portIdx)
-                if (outPort.isNone) connections[port] = null
-                else {
-                    val outEndpointIdx = simInfra.getPortConnection(nodeIdx, outPort.asIndex())
-                    connections[port] =
-                        ComparableSectionEndpoint(
-                            simInfra.getTrackSectionName(outEndpointIdx.value),
-                            outEndpointIdx.endpoint
-                        )
-                }
-            }
-            configs.add(
-                ComparableConfig(simInfra.getTrackNodeConfigName(nodeIdx, configIdx), connections)
-            )
+private class SideValue<T>(val left: T, val right: T) : Iterable<T> {
+    operator fun get(side: Side): T {
+        return when (side) {
+            Side.Left -> left
+            Side.Right -> right
         }
     }
 
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other !is ComparableNode) return false
-        if (name != other.name) return false
-        if (delay != other.delay) return false
-        if (portEndpoints != other.portEndpoints) return false
-        if (configs != other.configs) return false
-        return true
-    }
-
-    override fun hashCode(): Int {
-        return Objects.hash(name, delay, portEndpoints, configs)
+    override fun iterator(): Iterator<T> {
+        return listOf(left, right).iterator()
     }
 }
-
-data class ComparableZone(val name: String, val nodes: Set<String>)
 
 fun assertEqualSimInfra(left: RawInfra, right: RawInfra) {
-    fun <T> compareIndices(f: RawInfra.() -> StaticIdxSpace<T>): StaticIdxSpace<T> {
-        val leftSpace = left.f()
-        val rightSpace = right.f()
-        assert(leftSpace == rightSpace)
-        return leftSpace
+    fun <T> map(f: RawInfra.(Side) -> T): SideValue<T> {
+        return SideValue(left.f(Side.Left), right.f(Side.Right))
     }
 
-    fun <T, U> compareResult(index: StaticIdx<T>, f: RawInfra.(StaticIdx<T>) -> U) {
-        assert(left.f(index) == right.f(index))
+    fun <T> compare(f: RawInfra.(Side) -> T): T {
+        val l = left.f(Side.Left)
+        val r = right.f(Side.Right)
+        assert(l == r)
+        return l
     }
 
-    // detectors
-    val leftDetectors = mutableSetOf<String>()
-    for (d in left.detectors) {
-        leftDetectors.add(left.getDetectorName(d))
-    }
-    assert(left.detectors.size.toInt() == leftDetectors.size)
-    val rightDetectors = mutableSetOf<String>()
-    for (d in right.detectors) {
-        rightDetectors.add(left.getDetectorName(d))
-    }
-    assert(right.detectors.size.toInt() == rightDetectors.size)
-    assert(leftDetectors == rightDetectors)
-
-    // track-sections
-    assert(left.trackSections.size == right.trackSections.size)
-    val leftTrackChunks = mutableMapOf<Pair<String, Offset<TrackSection>>, ComparableChunk>()
-    for (t in left.trackSections) {
-        for (c in left.getTrackSectionChunks(t)) {
-            assert(t == left.getTrackFromChunk(c))
-            val chunkKey = Pair(left.getTrackSectionName(t), left.getTrackChunkOffset(c))
-            assert(!leftTrackChunks.containsKey(chunkKey))
-            leftTrackChunks[chunkKey] = ComparableChunk(left, c)
-        }
-    }
-    val rightTrackChunks = mutableMapOf<Pair<String, Offset<TrackSection>>, ComparableChunk>()
-    for (t in right.trackSections) {
-        for (c in right.getTrackSectionChunks(t)) {
-            assert(t == right.getTrackFromChunk(c))
-            val chunkKey = Pair(right.getTrackSectionName(t), right.getTrackChunkOffset(c))
-            assert(!rightTrackChunks.containsKey(chunkKey))
-            rightTrackChunks[chunkKey] = ComparableChunk(right, c)
-        }
-    }
-    assert(leftTrackChunks == rightTrackChunks)
-
-    // nodes
-    val leftNodes = mutableSetOf<ComparableNode>()
-    for (n in left.trackNodes) {
-        val leftNode = ComparableNode(left, n)
-        assert(!leftNodes.contains(leftNode))
-        leftNodes.add(leftNode)
-    }
-    val rightNodes = mutableSetOf<ComparableNode>()
-    for (n in right.trackNodes) {
-        val rightNode = ComparableNode(right, n)
-        assert(!rightNodes.contains(rightNode))
-        rightNodes.add(rightNode)
-    }
-    assert(leftNodes == rightNodes)
-
-    // zones
-    val leftZones = mutableMapOf<ZoneId, ComparableZone>()
-    for (z in left.zones) {
-        leftZones[z] =
-            ComparableZone(
-                left.getZoneName(z),
-                left.getMovableElements(z).map { left.getTrackNodeName(it) }.toSet()
-            )
-    }
-    val rightZones = mutableMapOf<ZoneId, ComparableZone>()
-    for (z in right.zones) {
-        rightZones[z] =
-            ComparableZone(
-                right.getZoneName(z),
-                right.getMovableElements(z).map { right.getTrackNodeName(it) }.toSet()
-            )
-    }
-
-    val leftDetToNextZone = mutableMapOf<String, ComparableZone?>()
-    val leftZoneToDet = mutableMapOf<ComparableZone, MutableSet<DirDetectorId>>()
-    for (detIdx in left.detectors) {
+    for (trackSectionId in compare { trackSections }) {
+        compare { getTrackSectionName(trackSectionId) }
+        compare { getTrackSectionLength(trackSectionId) }
         for (dir in Direction.entries) {
-            val dirDet = DirDetectorId(detIdx, dir)
-            val nextZoneIdx = left.getNextZone(dirDet)
-            leftDetToNextZone["${left.getDetectorName(dirDet.value)}.${dirDet.direction}"] =
-                if (nextZoneIdx != null) leftZones[nextZoneIdx] else null
-            if (nextZoneIdx != null) {
-                if (!leftZoneToDet.containsKey(leftZones[nextZoneIdx]))
-                    leftZoneToDet[leftZones[nextZoneIdx]!!] = mutableSetOf()
-                leftZoneToDet[leftZones[nextZoneIdx]]!!.add(dirDet)
+            val dirTrack = trackSectionId.withDirection(dir)
+            val node = compare { getNextTrackNode(dirTrack) }
+            val port = compare { getNextTrackNodePort(dirTrack) }
+            assert(node.isNone == port.isNone)
+            if (node.isNone) continue
+            assert(
+                compare { getPortConnection(node.asIndex(), port.asIndex()) == dirTrack.toEndpoint }
+            )
+        }
+        for (chunkId in compare { getTrackSectionChunks(trackSectionId) }) {
+            assert(compare { getTrackFromChunk(chunkId) } == trackSectionId)
+            compare { getTrackChunkLength(chunkId) }
+            compare { getTrackChunkOffset(chunkId) }
+            compare { getTrackChunkGeom(chunkId) }
+            compare { getTrackChunkElectrificationVoltage(chunkId) }
+            compare { getTrackChunkLoadingGaugeConstraints(chunkId) }
+            // operational points aren't created in the same order, se we can't compare IDs
+            val operationalPoints = map { getTrackChunkOperationalPointParts(chunkId) }
+            for (i in 0 until compare { operationalPoints[it].size }) {
+                compare { getOperationalPointPartName(operationalPoints[it][i]) }
+                compare { getOperationalPointPartChunkOffset(operationalPoints[it][i]) }
+                assert(
+                    compare { getOperationalPointPartChunk(operationalPoints[it][i]) } == chunkId
+                )
             }
-        }
-    }
-    val rightDetToNextZone = mutableMapOf<String, ComparableZone?>()
-    val rightZoneToDet = mutableMapOf<ComparableZone, MutableSet<DirDetectorId>>()
-    for (detIdx in right.detectors) {
-        for (dir in Direction.entries) {
-            val dirDet = DirDetectorId(detIdx, dir)
-            val nextZoneIdx = right.getNextZone(dirDet)
-            rightDetToNextZone["${right.getDetectorName(dirDet.value)}.${dirDet.direction}"] =
-                if (nextZoneIdx != null) rightZones[nextZoneIdx] else null
-            if (nextZoneIdx != null) {
-                if (!rightZoneToDet.containsKey(rightZones[nextZoneIdx]))
-                    rightZoneToDet[rightZones[nextZoneIdx]!!] = mutableSetOf()
-                rightZoneToDet[rightZones[nextZoneIdx]]!!.add(dirDet)
+            for (dir in Direction.entries) {
+                val dirChunkId = chunkId.withDirection(dir)
+                compare { getRoutesOnTrackChunk(dirChunkId) }
+                compare { getTrackChunkCurve(dirChunkId) }
+                compare { getTrackChunkSlope(dirChunkId) }
+                compare { getTrackChunkGradient(dirChunkId) }
+                compare { getTrackChunkNeutralSections(dirChunkId) }
+                compare { getTrackChunkSpeedSections(dirChunkId) }
             }
         }
     }
 
-    val extraLeftZones = leftZones.values.toSet().minus(rightZones.values.toSet())
-    val extraRightZones = rightZones.values.toSet().minus(leftZones.values.toSet())
-    // check that different zones are only the "suspect" ones with 0 or 1 detector bound
-    for (zone in extraLeftZones) {
-        assert(!leftZoneToDet.containsKey(zone) || leftZoneToDet[zone]!!.size < 2)
-    }
-    for (zone in extraRightZones) {
-        assert(!rightZoneToDet.containsKey(zone) || rightZoneToDet[zone]!!.size < 2)
-    }
-
-    val extraLeftDet = leftDetToNextZone.entries.minus(rightDetToNextZone.entries)
-    val extraRightDet = rightDetToNextZone.entries.minus(leftDetToNextZone.entries)
-    // check that different detectors are bounding only "suspect" zones
-    for ((_, zone) in extraLeftDet) {
-        assert(zone == null || extraLeftZones.contains(zone))
-    }
-    for ((_, zone) in extraRightDet) {
-        assert(zone == null || extraRightZones.contains(zone))
+    for (nodeId in compare { trackNodes }) {
+        compare { getTrackNodeName(nodeId) }
+        compare { getTrackNodeDelay(nodeId) }
+        val ports = compare { getTrackNodePorts(nodeId) }
+        for (portId in ports) {
+            compare { getPortConnection(nodeId, portId) }
+        }
+        for (configId in compare { getTrackNodeConfigs(nodeId) }) {
+            compare { getTrackNodeConfigName(nodeId, configId) }
+            for (portId in ports) {
+                compare { getTrackNodeExitPort(nodeId, configId, portId) }
+            }
+        }
     }
 
-    for (routeIndex in compareIndices { routes }) {
-        compareResult(routeIndex) { getRouteName(it) }
-        compareResult(routeIndex) { getRouteLength(it) }
-        compareResult(routeIndex) { getChunksOnRoute(it) }
-        compareResult(routeIndex) { getRouteEntry(it) }
-        compareResult(routeIndex) { getRouteExit(it) }
-        compareResult(routeIndex) { getRoutePath(it) }
-        compareResult(routeIndex) { getSpeedLimits(it) }
-        compareResult(routeIndex) { getSpeedLimitStarts(it) }
-        compareResult(routeIndex) { getSpeedLimitEnds(it) }
-        compareResult(routeIndex) { getRouteReleaseZones(it).toList() }
+    // prepare to compare zones
+    val zones = map {
+        zones.associateWith {
+            ComparableZone(
+                getZoneBounds(it).toSet(),
+                getMovableElements(it),
+            )
+        }
     }
 
-    for (zonePathIndex in compareIndices { zonePaths }) {
-        compareResult(zonePathIndex) { getZonePathEntry(it) }
-        compareResult(zonePathIndex) { getZonePathExit(it) }
-        compareResult(zonePathIndex) { getZonePathLength(it) }
-        compareResult(zonePathIndex) { getZonePathChunks(it) }
-        compareResult(zonePathIndex) { getSignals(it) }
-        compareResult(zonePathIndex) { getSignalPositions(it) }
-        compareResult(zonePathIndex) { getZonePathMovableElements(it) }
-        compareResult(zonePathIndex) { getZonePathMovableElementsConfigs(it) }
-        compareResult(zonePathIndex) { getZonePathMovableElementsPositions(it) }
-        compareResult(zonePathIndex) { findZonePath(getZonePathEntry(it), getZonePathExit(it)) }
-        compareResult(zonePathIndex) {
+    fun compareNextZone(dirDetectorId: DirDetectorId) {
+        val nextZone = map { getNextZone(dirDetectorId) }
+        val boundsCount = map { side -> nextZone[side]?.let { getZoneBounds(it).size } ?: 0 }
+        // ignore zones with from 0 to 1 bounds (loops and dead ends)
+        if (boundsCount.all { it < 2 }) return
+        compare { zones[it][nextZone[it]] }
+    }
+
+    // compare detectors
+    for (detectorId in compare { detectors }) {
+        // there must be the exact same detectors
+        compare { getDetectorName(detectorId) }
+        for (dir in Direction.entries) {
+            val dirDetectorId = detectorId.withDirection(dir)
+            compare { getRoutesStartingAtDet(dirDetectorId) }
+            compare { getRoutesEndingAtDet(dirDetectorId) }
+            compareNextZone(dirDetectorId)
+        }
+    }
+
+    for (routeIndex in compare { routes }) {
+        val routeName = compare { getRouteName(routeIndex) }
+        assert(compare { getRouteFromName(routeName) } == routeIndex)
+        compare { getRouteLength(routeIndex) }
+        compare { getChunksOnRoute(routeIndex) }
+        compare { getRouteEntry(routeIndex) }
+        compare { getRouteExit(routeIndex) }
+        compare { getRoutePath(routeIndex) }
+        compare { getSpeedLimits(routeIndex) }
+        compare { getSpeedLimitStarts(routeIndex) }
+        compare { getSpeedLimitEnds(routeIndex) }
+        compare { getRouteReleaseZones(routeIndex).toList() }
+    }
+
+    for (zonePathIndex in compare { zonePaths }) {
+        compare { getZonePathEntry(zonePathIndex) }
+        compare { getZonePathExit(zonePathIndex) }
+        compare { getZonePathLength(zonePathIndex) }
+        compare { getZonePathChunks(zonePathIndex) }
+        compare { getZonePathMovableElements(zonePathIndex) }
+        compare { getZonePathMovableElementsConfigs(zonePathIndex) }
+        compare { getZonePathMovableElementsPositions(zonePathIndex) }
+        compare { findZonePath(getZonePathEntry(zonePathIndex), getZonePathExit(zonePathIndex)) }
+        compare { getSignalPositions(zonePathIndex) }
+        compare { getSignals(zonePathIndex) }
+        compare {
             findZonePath(
-                getZonePathEntry(it),
-                getZonePathExit(it),
-                getZonePathMovableElements(it),
-                getZonePathMovableElementsConfigs(it)
+                getZonePathEntry(zonePathIndex),
+                getZonePathExit(zonePathIndex),
+                getZonePathMovableElements(zonePathIndex),
+                getZonePathMovableElementsConfigs(zonePathIndex)
             )
         }
+    }
+
+    for (physicalSignalId in compare { physicalSignals }) {
+        compare { getPhysicalSignalName(physicalSignalId) }
+        compare { getPhysicalSignalTrack(physicalSignalId) }
+        compare { getPhysicalSignalTrackOffset(physicalSignalId) }
+        compare { getLogicalSignals(physicalSignalId) }
+        compare { getSignalSightDistance(physicalSignalId) }
+    }
+
+    for (logicalSignalId in compare { logicalSignals }) {
+        compare { getPhysicalSignal(logicalSignalId) }
+        compare { getSignalingSystemId(logicalSignalId) }
+        compare { getRawSettings(logicalSignalId) }
+        compare { getRawParameters(logicalSignalId) }
+        compare { getNextSignalingSystemIds(logicalSignalId) }
     }
 }
