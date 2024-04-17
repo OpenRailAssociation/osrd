@@ -35,6 +35,7 @@ pub struct TrackSection {
 #[serde(deny_unknown_fields)]
 pub struct TrackSectionExtensions {
     pub sncf: Option<TrackSectionSncfExtension>,
+    pub source: Option<TrackSectionSourceExtension>,
 }
 
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, Eq)]
@@ -47,6 +48,14 @@ pub struct TrackSectionSncfExtension {
     pub track_number: i32,
     #[derivative(Default(value = r#""track_test".into()"#))]
     pub track_name: NonBlankString,
+}
+
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(deny_unknown_fields)]
+#[derivative(Default)]
+pub struct TrackSectionSourceExtension {
+    pub name: NonBlankString,
+    pub id: NonBlankString,
 }
 
 impl OSRDTyped for TrackSection {
