@@ -10,7 +10,11 @@ use super::{
 };
 
 impl ModelConfig {
-    pub fn from_macro_args(options: ModelArgs, model_name: syn::Ident) -> darling::Result<Self> {
+    pub fn from_macro_args(
+        options: ModelArgs,
+        model_name: syn::Ident,
+        visibility: syn::Visibility,
+    ) -> darling::Result<Self> {
         let row = GeneratedTypeArgs {
             type_name: options.row.type_name.or(Some(format!("{}Row", model_name))),
             ..options.row
@@ -104,6 +108,7 @@ impl ModelConfig {
 
         Ok(Self {
             model: model_name,
+            visibility,
             table: options.table,
             fields,
             identifiers,

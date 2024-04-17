@@ -19,10 +19,13 @@ pub fn model(input: &DeriveInput) -> Result<TokenStream> {
     let model_name = &input.ident;
     let model_vis = &input.vis;
     let options = ModelArgs::from_derive_input(input)?;
-    let config = ModelConfig::from_macro_args(options, model_name.clone())?;
+    let config = ModelConfig::from_macro_args(options, model_name.clone(), model_vis.clone())?;
+
+    let model_impl = config.model_impl();
+    let row_decl = config.row_decl();
+    let changeset_decl = config.changeset_decl();
 
     let identifiers_impls = config.make_identifiers_impls();
-    let model_decl = config.make_model_decl(model_vis);
     let from_impls = config.make_from_impls();
 
     let cs_builder = config.make_builder(true);
@@ -31,8 +34,11 @@ pub fn model(input: &DeriveInput) -> Result<TokenStream> {
     let model_impls = config.make_model_traits_impl();
 
     Ok(quote! {
+        #model_impl
+        #row_decl
+        #changeset_decl
+
         #identifiers_impls
-        #model_decl
         #from_impls
         #cs_builder
         #patch_builder

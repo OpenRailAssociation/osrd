@@ -12,6 +12,7 @@ use super::{args::GeneratedTypeArgs, identifier::Identifier};
 #[derive(Debug, PartialEq)]
 pub struct ModelConfig {
     pub model: syn::Ident,
+    pub visibility: syn::Visibility,
     pub table: syn::Path,
     pub fields: Fields,
     pub row: GeneratedTypeArgs,
