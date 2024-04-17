@@ -4,6 +4,7 @@ use darling::{
     util::{self, PathList},
     FromDeriveInput, FromField, FromMeta,
 };
+use proc_macro2::Span;
 
 #[derive(FromDeriveInput, Debug)]
 #[darling(
@@ -61,4 +62,10 @@ pub struct ModelFieldArgs {
     pub to_enum: bool,
     #[darling(default)]
     pub remote: Option<syn::Type>,
+}
+
+impl GeneratedTypeArgs {
+    pub fn ident(&self) -> syn::Ident {
+        syn::Ident::new(self.type_name.as_ref().unwrap(), Span::call_site())
+    }
 }

@@ -88,3 +88,67 @@ impl Identifier {
         }
     }
 }
+
+impl ModelConfig {
+    pub fn iter_fields(&self) -> impl Iterator<Item = &ModelField> {
+        self.fields.iter()
+    }
+
+    pub fn is_primary(&self, field: &ModelField) -> bool {
+        match &self.primary_field {
+            Identifier::Field(ident) => ident == &field.ident,
+            Identifier::Compound(_) => false,
+        }
+    }
+
+    pub fn table_name(&self) -> syn::Ident {
+        let table = self
+            .table
+            .segments
+            .last()
+            .expect("Model: invalid table value");
+        table.ident.clone()
+    }
+}
+
+impl ModelField {
+    #[allow(clippy::wrong_self_convention)]
+    pub fn into_transformed(&self, expr: TokenStream) -> TokenStream {
+        match self.transform {
+            Some(FieldTransformation::Remote(_)) => quote! { #expr.into() },
+            Some(FieldTransformation::Json) => quote! { diesel_json::Json(#expr) },
+            Some(FieldTransformation::Geo) => unimplemented!("to be designed"),
+            Some(FieldTransformation::ToString) => quote! { #expr.to_string() },
+            Some(FieldTransformation::ToEnum(_)) => {
+                quote! { #expr as i16 }
+            }
+            None => quote! { #expr },
+        }
+    }
+
+    #[allow(clippy::wrong_self_convention)]
+    pub fn from_transformed(&self, expr: TokenStream) -> TokenStream {
+        match self.transform {
+            Some(FieldTransformation::Remote(_)) => quote! { #expr.into() },
+            Some(FieldTransformation::Json) => quote! { #expr.0 },
+            Some(FieldTransformation::Geo) => unimplemented!("to be designed"),
+            Some(FieldTransformation::ToString) => quote! { String::from(#expr.parse()) },
+            Some(FieldTransformation::ToEnum(ref ty)) => {
+                quote! { #ty::from_repr(#expr as usize).expect("Invalid variant repr") }
+            }
+            None => quote! { #expr },
+        }
+    }
+
+    pub fn transform_type(&self) -> TokenStream {
+        let ty = &self.ty;
+        match self.transform {
+            Some(FieldTransformation::Remote(ref ty)) => quote! { #ty },
+            Some(FieldTransformation::Json) => quote! { diesel_json::Json<#ty> },
+            Some(FieldTransformation::Geo) => unimplemented!("to be designed"),
+            Some(FieldTransformation::ToString) => quote! { String },
+            Some(FieldTransformation::ToEnum(_)) => quote! { i16 },
+            None => quote! { #ty },
+        }
+    }
+}

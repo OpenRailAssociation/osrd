@@ -9,51 +9,9 @@ use proc_macro2::{Ident, Span, TokenStream};
 use quote::quote;
 use syn::DeriveInput;
 
-use args::{GeneratedTypeArgs, ModelArgs};
+use args::ModelArgs;
 use config::*;
 use identifier::Identifier;
-
-impl ModelField {
-    #[allow(clippy::wrong_self_convention)]
-    fn into_transformed(&self, expr: TokenStream) -> TokenStream {
-        match self.transform {
-            Some(FieldTransformation::Remote(_)) => quote! { #expr.into() },
-            Some(FieldTransformation::Json) => quote! { diesel_json::Json(#expr) },
-            Some(FieldTransformation::Geo) => unimplemented!("to be designed"),
-            Some(FieldTransformation::ToString) => quote! { #expr.to_string() },
-            Some(FieldTransformation::ToEnum(_)) => {
-                quote! { #expr as i16 }
-            }
-            None => quote! { #expr },
-        }
-    }
-
-    #[allow(clippy::wrong_self_convention)]
-    fn from_transformed(&self, expr: TokenStream) -> TokenStream {
-        match self.transform {
-            Some(FieldTransformation::Remote(_)) => quote! { #expr.into() },
-            Some(FieldTransformation::Json) => quote! { #expr.0 },
-            Some(FieldTransformation::Geo) => unimplemented!("to be designed"),
-            Some(FieldTransformation::ToString) => quote! { String::from(#expr.parse()) },
-            Some(FieldTransformation::ToEnum(ref ty)) => {
-                quote! { #ty::from_repr(#expr as usize).expect("Invalid variant repr") }
-            }
-            None => quote! { #expr },
-        }
-    }
-
-    fn transform_type(&self) -> TokenStream {
-        let ty = &self.ty;
-        match self.transform {
-            Some(FieldTransformation::Remote(ref ty)) => quote! { #ty },
-            Some(FieldTransformation::Json) => quote! { diesel_json::Json<#ty> },
-            Some(FieldTransformation::Geo) => unimplemented!("to be designed"),
-            Some(FieldTransformation::ToString) => quote! { String },
-            Some(FieldTransformation::ToEnum(_)) => quote! { i16 },
-            None => quote! { #ty },
-        }
-    }
-}
 
 /// Nested pair macro
 ///
@@ -74,26 +32,6 @@ macro_rules! np {
 }
 
 impl ModelConfig {
-    fn iter_fields(&self) -> impl Iterator<Item = &ModelField> {
-        self.fields.iter()
-    }
-
-    fn is_primary(&self, field: &ModelField) -> bool {
-        match &self.primary_field {
-            Identifier::Field(ident) => ident == &field.ident,
-            Identifier::Compound(_) => false,
-        }
-    }
-
-    fn table_name(&self) -> syn::Ident {
-        let table = self
-            .table
-            .segments
-            .last()
-            .expect("Model: invalid table value");
-        table.ident.clone()
-    }
-
     fn make_model_decl(&self, vis: &syn::Visibility) -> TokenStream {
         let model = &self.model;
         let table = &self.table;
@@ -676,12 +614,6 @@ impl ModelConfig {
                 }
             )*
         }
-    }
-}
-
-impl GeneratedTypeArgs {
-    fn ident(&self) -> Ident {
-        Ident::new(self.type_name.as_ref().unwrap(), Span::call_site())
     }
 }
 
