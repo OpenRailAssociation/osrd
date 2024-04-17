@@ -5,6 +5,7 @@ use std::{
 
 use proc_macro2::TokenStream;
 use quote::quote;
+use syn::parse_quote;
 
 use super::{args::GeneratedTypeArgs, identifier::Identifier};
 
@@ -140,15 +141,15 @@ impl ModelField {
         }
     }
 
-    pub fn transform_type(&self) -> TokenStream {
+    pub fn transform_type(&self) -> syn::Type {
         let ty = &self.ty;
         match self.transform {
-            Some(FieldTransformation::Remote(ref ty)) => quote! { #ty },
-            Some(FieldTransformation::Json) => quote! { diesel_json::Json<#ty> },
+            Some(FieldTransformation::Remote(ref ty)) => parse_quote! { #ty },
+            Some(FieldTransformation::Json) => parse_quote! { diesel_json::Json<#ty> },
             Some(FieldTransformation::Geo) => unimplemented!("to be designed"),
-            Some(FieldTransformation::ToString) => quote! { String },
-            Some(FieldTransformation::ToEnum(_)) => quote! { i16 },
-            None => quote! { #ty },
+            Some(FieldTransformation::ToString) => parse_quote! { String },
+            Some(FieldTransformation::ToEnum(_)) => parse_quote! { i16 },
+            None => ty.clone(),
         }
     }
 }

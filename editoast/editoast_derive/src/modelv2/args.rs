@@ -68,4 +68,12 @@ impl GeneratedTypeArgs {
     pub fn ident(&self) -> syn::Ident {
         syn::Ident::new(self.type_name.as_ref().unwrap(), Span::call_site())
     }
+
+    pub fn visibility(&self) -> syn::Visibility {
+        if self.public {
+            syn::Visibility::Public(Default::default())
+        } else {
+            syn::Visibility::Inherited
+        }
+    }
 }
