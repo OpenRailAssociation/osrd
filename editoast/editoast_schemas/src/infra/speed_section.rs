@@ -1,16 +1,16 @@
 use std::collections::HashMap;
 
 use derivative::Derivative;
+use editoast_common::Identifier;
+use editoast_common::NonBlankString;
 use serde::Deserialize;
 use serde::Serialize;
 
-use super::OSRDIdentified;
-use super::ObjectType;
-use editoast_common::Identifier;
-use editoast_common::NonBlankString;
-use editoast_schemas::infra::ApplicableDirectionsTrackRange;
-use editoast_schemas::infra::Sign;
-use editoast_schemas::primitives::OSRDTyped;
+use super::ApplicableDirectionsTrackRange;
+use super::Sign;
+use crate::primitives::OSRDIdentified;
+use crate::primitives::OSRDTyped;
+use crate::primitives::ObjectType;
 
 #[derive(Debug, Derivative, Clone, Serialize, PartialEq, Copy)]
 pub struct Speed(pub f64);

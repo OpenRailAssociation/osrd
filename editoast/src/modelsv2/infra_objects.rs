@@ -189,7 +189,7 @@ infra_model!(
     SpeedSectionModel,
     infra_object_speed_section,
     infra_layer_speed_section,
-    schema::SpeedSection
+    editoast_schemas::infra::SpeedSection
 );
 
 infra_model!(

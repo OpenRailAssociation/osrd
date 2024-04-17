@@ -4,13 +4,13 @@ use serde::Serialize;
 
 use super::OperationalPoint;
 use super::Route;
-use super::SpeedSection;
 use super::TrackSection;
 use editoast_schemas::infra::BufferStop;
 use editoast_schemas::infra::Detector;
 use editoast_schemas::infra::Electrification;
 use editoast_schemas::infra::NeutralSection;
 use editoast_schemas::infra::Signal;
+use editoast_schemas::infra::SpeedSection;
 use editoast_schemas::infra::Switch;
 use editoast_schemas::infra::SwitchType;
 
