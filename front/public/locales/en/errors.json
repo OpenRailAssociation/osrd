@@ -114,7 +114,7 @@
       "CannotCreateCompoundImage": "Impossible to copy the separated image on the compound image",
       "CannotReadImage": "Impossible to read the separated image",
       "NameAlreadyUsed": "Name '{{name}}' already used",
-      "NotFound": "Rolling stock '{{rolling_stock_id}}' could not be found",
+      "KeyNotFound": "Rolling stock '{{rolling_stock_key.key}}' could not be found",
       "RollingStockIsLocked": "RollingStock '{{rolling_stock_id}}' is locked",
       "RollingStockIsUsed": "RollingStock '{{rolling_stock_id}}' is used"
     },

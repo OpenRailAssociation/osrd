@@ -16,6 +16,7 @@ use super::pathfinding::fetch_pathfinding_payload_track_map;
 use super::pathfinding::parse_pathfinding_payload_waypoints;
 use super::pathfinding::PathResponse;
 use super::pathfinding::PathfindingStep;
+use super::rolling_stocks::RollingStockKey;
 use super::timetable::get_simulated_schedules_from_timetable;
 use super::train_schedule::process_simulation_response;
 use super::train_schedule::projection::Projection;
@@ -160,7 +161,9 @@ async fn call_core_stdcm(
         infra_id: data.infra_id,
     })
     .await?;
-    let rolling_stock = retrieve_existing_rolling_stock(&db_pool, data.rolling_stock_id).await?;
+    let rolling_stock =
+        retrieve_existing_rolling_stock(&db_pool, RollingStockKey::Id(data.rolling_stock_id))
+            .await?;
     let steps = parse_stdcm_steps(db_pool.clone(), data, &infra).await?;
     let spacing_requirements = make_spacing_requirements(db_pool, data.timetable_id).await?;
     STDCMCoreRequest {

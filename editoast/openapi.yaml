@@ -725,8 +725,8 @@ components:
       - $ref: '#/components/schemas/EditoastRollingStockErrorBasePowerClassEmpty'
       - $ref: '#/components/schemas/EditoastRollingStockErrorCannotCreateCompoundImage'
       - $ref: '#/components/schemas/EditoastRollingStockErrorCannotReadImage'
+      - $ref: '#/components/schemas/EditoastRollingStockErrorKeyNotFound'
       - $ref: '#/components/schemas/EditoastRollingStockErrorNameAlreadyUsed'
-      - $ref: '#/components/schemas/EditoastRollingStockErrorNotFound'
       - $ref: '#/components/schemas/EditoastRollingStockErrorRollingStockIsLocked'
       - $ref: '#/components/schemas/EditoastRollingStockErrorRollingStockIsUsed'
       - $ref: '#/components/schemas/EditoastScenarioErrorInfraNotFound'
@@ -1772,6 +1772,30 @@ components:
       - status
       - message
       type: object
+    EditoastRollingStockErrorKeyNotFound:
+      properties:
+        context:
+          properties:
+            rolling_stock_key:
+              type: object
+          required:
+          - rolling_stock_key
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 404
+          type: integer
+        type:
+          enum:
+          - editoast:rollingstocks:KeyNotFound
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
     EditoastRollingStockErrorNameAlreadyUsed:
       properties:
         context:
@@ -1790,30 +1814,6 @@ components:
         type:
           enum:
           - editoast:rollingstocks:NameAlreadyUsed
-          type: string
-      required:
-      - type
-      - status
-      - message
-      type: object
-    EditoastRollingStockErrorNotFound:
-      properties:
-        context:
-          properties:
-            rolling_stock_id:
-              type: integer
-          required:
-          - rolling_stock_id
-          type: object
-        message:
-          type: string
-        status:
-          enum:
-          - 404
-          type: integer
-        type:
-          enum:
-          - editoast:rollingstocks:NotFound
           type: string
       required:
       - type
@@ -5414,16 +5414,15 @@ components:
         - CannotCreateCompoundImage
         type: string
       - properties:
-          NotFound:
+          KeyNotFound:
             properties:
-              rolling_stock_id:
-                format: int64
-                type: integer
+              rolling_stock_key:
+                $ref: '#/components/schemas/RollingStockKey'
             required:
-            - rolling_stock_id
+            - rolling_stock_key
             type: object
         required:
-        - NotFound
+        - KeyNotFound
         type: object
       - properties:
           NameAlreadyUsed:
@@ -5551,6 +5550,31 @@ components:
       - supported_signaling_systems
       - metadata
       type: object
+    RollingStockKey:
+      oneOf:
+      - properties:
+          key:
+            format: int64
+            type: integer
+          type:
+            enum:
+            - Id
+            type: string
+        required:
+        - type
+        - key
+        type: object
+      - properties:
+          key:
+            type: string
+          type:
+            enum:
+            - Name
+            type: string
+        required:
+        - type
+        - key
+        type: object
     RollingStockLivery:
       properties:
         compound_image_id:
@@ -9534,6 +9558,25 @@ paths:
       summary: Create a rolling stock
       tags:
       - rolling_stock
+  /rolling_stock/name/{rolling_stock_name}/:
+    get:
+      description: Get a rolling stock by name
+      parameters:
+      - in: path
+        name: rolling_stock_name
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RollingStockWithLiveries'
+          description: The requested rolling stock
+      summary: Get a rolling stock by name
+      tags:
+      - rolling_stock
   /rolling_stock/power_restrictions/:
     get:
       description: Returns the set of power restrictions for all rolling_stocks modes.
@@ -9589,7 +9632,7 @@ paths:
           format: int64
           type: integer
       responses:
-        '201':
+        '200':
           content:
             application/json:
               schema:

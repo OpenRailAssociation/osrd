@@ -554,6 +554,13 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['rolling_stock'],
       }),
+      getRollingStockNameByRollingStockName: build.query<
+        GetRollingStockNameByRollingStockNameApiResponse,
+        GetRollingStockNameByRollingStockNameApiArg
+      >({
+        query: (queryArg) => ({ url: `/rolling_stock/name/${queryArg.rollingStockName}/` }),
+        providesTags: ['rolling_stock'],
+      }),
       getRollingStockPowerRestrictions: build.query<
         GetRollingStockPowerRestrictionsApiResponse,
         GetRollingStockPowerRestrictionsApiArg
@@ -1401,6 +1408,11 @@ export type PostRollingStockApiArg = {
   locked?: boolean;
   rollingStockForm: RollingStockForm;
 };
+export type GetRollingStockNameByRollingStockNameApiResponse =
+  /** status 200 The requested rolling stock */ RollingStockWithLiveries;
+export type GetRollingStockNameByRollingStockNameApiArg = {
+  rollingStockName: string;
+};
 export type GetRollingStockPowerRestrictionsApiResponse =
   /** status 200 Retrieve the power restrictions list */ string[];
 export type GetRollingStockPowerRestrictionsApiArg = void;
@@ -1412,7 +1424,7 @@ export type DeleteRollingStockByRollingStockIdApiArg = {
   force?: boolean;
 };
 export type GetRollingStockByRollingStockIdApiResponse =
-  /** status 201 The requested rolling stock */ RollingStockWithLiveries;
+  /** status 200 The requested rolling stock */ RollingStockWithLiveries;
 export type GetRollingStockByRollingStockIdApiArg = {
   rollingStockId: number;
 };
@@ -2358,6 +2370,18 @@ export type RollingStockForm = {
   startup_time: number;
   supported_signaling_systems: RollingStockSupportedSignalingSystems;
 };
+export type RollingStockWithLiveries = RollingStock & {
+  liveries: RollingStockLiveryMetadata[];
+};
+export type RollingStockKey =
+  | {
+      key: number;
+      type: 'Id';
+    }
+  | {
+      key: string;
+      type: 'Name';
+    };
 export type TrainScheduleScenarioStudyProject = {
   project_id: number;
   project_name: string;
@@ -2372,8 +2396,8 @@ export type RollingStockError =
   | 'CannotReadImage'
   | 'CannotCreateCompoundImage'
   | {
-      NotFound: {
-        rolling_stock_id: number;
+      KeyNotFound: {
+        rolling_stock_key: RollingStockKey;
       };
     }
   | {
@@ -2393,9 +2417,6 @@ export type RollingStockError =
       };
     }
   | 'BasePowerClassEmpty';
-export type RollingStockWithLiveries = RollingStock & {
-  liveries: RollingStockLiveryMetadata[];
-};
 export type RollingStockLivery = {
   compound_image_id?: number | null;
   id: number;

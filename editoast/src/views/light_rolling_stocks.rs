@@ -12,6 +12,7 @@ use crate::views::pagination::PaginatedResponse;
 use crate::views::pagination::PaginationQueryParam;
 use crate::views::rolling_stocks::RollingStockError;
 use crate::views::rolling_stocks::RollingStockIdParam;
+use crate::views::rolling_stocks::RollingStockKey;
 use crate::DbPool;
 
 use super::rolling_stocks::light_rolling_stock::LightRollingStockWithLiveries;
@@ -80,7 +81,9 @@ async fn get(
     let rolling_stock_id = rolling_stock_id.into_inner();
     let conn = &mut db_pool.get().await?;
     let rolling_stock = LightRollingStockModel::retrieve_or_fail(conn, rolling_stock_id, || {
-        RollingStockError::NotFound { rolling_stock_id }
+        RollingStockError::KeyNotFound {
+            rolling_stock_key: RollingStockKey::Id(rolling_stock_id),
+        }
     })
     .await?;
     let rollig_stock_with_liveries: LightRollingStockWithLiveries =
@@ -130,6 +133,27 @@ mod tests {
 
         let req = TestRequest::get()
             .uri(format!("/light_rolling_stock/{}", rolling_stock.id()).as_str())
+            .to_request();
+
+        // WHEN
+        let response = call_service(&app, req).await;
+
+        // THEN
+        assert_eq!(response.status(), StatusCode::OK);
+    }
+
+    #[rstest]
+    async fn get_light_rolling_stock_by_name(db_pool: Data<DbPool>) {
+        // GIVEN
+        let app = create_test_service().await;
+        let rolling_stock = named_fast_rolling_stock(
+            "fast_rolling_stock_get_light_rolling_stock_",
+            db_pool.clone(),
+        )
+        .await;
+
+        let req = TestRequest::get()
+            .uri(format!("/light_rolling_stock/{}", rolling_stock.name).as_str())
             .to_request();
 
         // WHEN

@@ -114,7 +114,7 @@
       "CannotCreateCompoundImage": "Impossible de créer l'image composée",
       "CannotReadImage": "Impossible de lire l'image",
       "NameAlreadyUsed": "Un matériel roulant avec le nom '{{name}}' existe déjà",
-      "NotFound": "Matériel roulant '{{rolling_stock_id}}' non trouvé",
+      "KeyNotFound": "Matériel roulant '{{rolling_stock_key.key}}' non trouvé",
       "RollingStockIsLocked": "Matériel roulant '{{rolling_stock_id}}' est verrouillé",
       "RollingStockIsUsed": "Matériel roulant '{{rolling_stock_id}}' est occupé"
     },
