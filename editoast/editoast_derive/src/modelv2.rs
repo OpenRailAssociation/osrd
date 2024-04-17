@@ -29,7 +29,7 @@ pub fn model(input: &DeriveInput) -> Result<TokenStream> {
     let preferred_id_impl = config.preferred_id_impl();
 
     let model_from_row_impl = config.model_from_row_impl();
-    let from_impls = config.make_from_impls();
+    let changeset_from_model_impl = config.changeset_from_model_impl();
 
     let cs_builder = config.make_builder(true);
     let patch_builder = config.make_builder(false);
@@ -45,8 +45,8 @@ pub fn model(input: &DeriveInput) -> Result<TokenStream> {
         #preferred_id_impl
 
         #model_from_row_impl
+        #changeset_from_model_impl
 
-        #from_impls
         #cs_builder
         #patch_builder
         #model_impls
