@@ -31,8 +31,8 @@ pub fn model(input: &DeriveInput) -> Result<TokenStream> {
     let model_from_row_impl = config.model_from_row_impl();
     let changeset_from_model_impl = config.changeset_from_model_impl();
 
-    let cs_builder = config.make_builder(true);
-    let patch_builder = config.make_builder(false);
+    let changeset_builder = config.changeset_builder_impl_block();
+    let patch_builder = config.patch_builder_impl_block();
 
     let model_impls = config.make_model_traits_impl();
 
@@ -47,8 +47,9 @@ pub fn model(input: &DeriveInput) -> Result<TokenStream> {
         #model_from_row_impl
         #changeset_from_model_impl
 
-        #cs_builder
+        #changeset_builder
         #patch_builder
+
         #model_impls
     })
 }
