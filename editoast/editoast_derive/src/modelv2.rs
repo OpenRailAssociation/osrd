@@ -46,21 +46,21 @@ impl Identifier {
     forward_attrs(allow, doc, cfg),
     supports(struct_named)
 )]
-struct ModelOptions {
+struct ModelArgs {
     table: syn::Path,
     #[darling(default)]
-    row: GeneratedType,
+    row: GeneratedTypeArgs,
     #[darling(default)]
-    changeset: GeneratedType,
+    changeset: GeneratedTypeArgs,
     #[darling(multiple, rename = "identifier")]
     identifiers: Vec<Identifier>,
     #[darling(default)]
     preferred: Option<Identifier>,
-    data: ast::Data<util::Ignored, ModelFieldOption>,
+    data: ast::Data<util::Ignored, ModelFieldArgs>,
 }
 
 #[derive(FromMeta, Default, Debug, PartialEq)]
-struct GeneratedType {
+struct GeneratedTypeArgs {
     #[darling(default)]
     type_name: Option<String>,
     #[darling(default)]
@@ -71,7 +71,7 @@ struct GeneratedType {
 
 #[derive(FromField, Debug)]
 #[darling(attributes(model), forward_attrs(allow, doc, cfg))]
-struct ModelFieldOption {
+struct ModelFieldArgs {
     ident: Option<syn::Ident>,
     ty: syn::Type,
     #[darling(default)]
@@ -103,8 +103,8 @@ struct ModelConfig {
     model: syn::Ident,
     table: syn::Path,
     fields: Fields,
-    row: GeneratedType,
-    changeset: GeneratedType,
+    row: GeneratedTypeArgs,
+    changeset: GeneratedTypeArgs,
     identifiers: HashSet<Identifier>, // identifiers ⊆ fields
     preferred_identifier: Identifier, // preferred_identifier ∈ identifiers
     primary_field: Identifier,        // primary_field ∈ identifiers
@@ -155,7 +155,7 @@ impl FieldTransformation {
 }
 
 impl ModelField {
-    fn from_macro_args(value: ModelFieldOption) -> Result<Self> {
+    fn from_macro_args(value: ModelFieldArgs) -> Result<Self> {
         let ident = value
             .ident
             .ok_or(Error::custom("Model: only works for named structs"))?;
@@ -270,12 +270,12 @@ macro_rules! np {
 }
 
 impl ModelConfig {
-    fn from_macro_args(options: ModelOptions, model_name: syn::Ident) -> Result<Self> {
-        let row = GeneratedType {
+    fn from_macro_args(options: ModelArgs, model_name: syn::Ident) -> Result<Self> {
+        let row = GeneratedTypeArgs {
             type_name: options.row.type_name.or(Some(format!("{}Row", model_name))),
             ..options.row
         };
-        let changeset = GeneratedType {
+        let changeset = GeneratedTypeArgs {
             type_name: options
                 .changeset
                 .type_name
@@ -979,7 +979,7 @@ impl ModelConfig {
     }
 }
 
-impl GeneratedType {
+impl GeneratedTypeArgs {
     fn ident(&self) -> Ident {
         Ident::new(self.type_name.as_ref().unwrap(), Span::call_site())
     }
@@ -988,7 +988,7 @@ impl GeneratedType {
 pub fn model(input: &DeriveInput) -> Result<TokenStream> {
     let model_name = &input.ident;
     let model_vis = &input.vis;
-    let options = ModelOptions::from_derive_input(input)?;
+    let options = ModelArgs::from_derive_input(input)?;
     let config = ModelConfig::from_macro_args(options, model_name.clone())?;
 
     let identifiers_impls = config.make_identifiers_impls();
