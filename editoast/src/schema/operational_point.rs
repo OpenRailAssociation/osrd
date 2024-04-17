@@ -6,7 +6,6 @@ use utoipa::ToSchema;
 
 use super::OSRDIdentified;
 use super::ObjectType;
-use crate::modelsv2::OperationalPointModel;
 use editoast_common::Identifier;
 use editoast_common::NonBlankString;
 use editoast_schemas::primitives::OSRDTyped;
@@ -90,7 +89,7 @@ impl OSRDIdentified for OperationalPoint {
 }
 
 impl OperationalPoint {
-    pub fn track_offset(op: &OperationalPointModel) -> Vec<TrackOffset> {
+    pub fn track_offset(op: &OperationalPoint) -> Vec<TrackOffset> {
         op.parts
             .clone()
             .into_iter()

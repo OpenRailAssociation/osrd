@@ -410,7 +410,7 @@ async fn check_tracks_from_path_items(
 
 fn track_offsets_from_ops(ops: &[OperationalPointModel]) -> Vec<TrackOffset> {
     ops.iter()
-        .flat_map(OperationalPoint::track_offset)
+        .flat_map(|op| OperationalPoint::track_offset(op.as_ref()))
         .collect()
 }
 
