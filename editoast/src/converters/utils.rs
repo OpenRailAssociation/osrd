@@ -5,6 +5,10 @@ use editoast_schemas::infra::Detector;
 use editoast_schemas::infra::Direction;
 use editoast_schemas::infra::Electrification;
 use editoast_schemas::infra::LogicalSignal;
+use editoast_schemas::infra::OperationalPoint;
+use editoast_schemas::infra::OperationalPointExtensions;
+use editoast_schemas::infra::OperationalPointIdentifierExtension;
+use editoast_schemas::infra::OperationalPointPart;
 use editoast_schemas::infra::Signal;
 use editoast_schemas::infra::SignalExtensions;
 use editoast_schemas::infra::SignalSncfExtension;
@@ -14,6 +18,7 @@ use editoast_schemas::infra::Switch;
 use std::collections::HashMap;
 use std::str::FromStr;
 
+use editoast_common::Identifier;
 use editoast_schemas::infra::Endpoint;
 use editoast_schemas::infra::Side;
 use editoast_schemas::infra::TrackEndpoint;
@@ -23,9 +28,6 @@ use osm4routing::NodeId;
 use osmpbfreader::Node;
 use tracing::error;
 use tracing::warn;
-
-use crate::schema::*;
-use editoast_common::Identifier;
 
 // Given an edge and a coordinate, returns the coordinates used to compute the angle
 // It uses the nearest OpenStreetMap node, and the other as the the rails might do a loop

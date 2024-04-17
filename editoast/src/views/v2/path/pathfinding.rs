@@ -28,11 +28,11 @@ use crate::modelsv2::RollingStockModel;
 use crate::modelsv2::TrackSectionModel;
 use crate::redis_utils::RedisClient;
 use crate::redis_utils::RedisConnection;
-use crate::schema::operational_point::OperationalPoint;
 use crate::views::get_app_version;
 use crate::views::v2::path::PathfindingError;
 use crate::views::v2::path::TrackRange;
 use crate::DbPool;
+use editoast_schemas::infra::OperationalPoint;
 
 type TrackOffsetResult = std::result::Result<Vec<Vec<TrackOffset>>, PathfindingResult>;
 

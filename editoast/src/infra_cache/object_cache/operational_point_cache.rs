@@ -8,8 +8,8 @@ use serde::Serialize;
 
 use crate::infra_cache::Cache;
 use crate::infra_cache::ObjectCache;
-use crate::schema::OperationalPoint;
-use crate::schema::OperationalPointPart;
+use editoast_schemas::infra::OperationalPoint;
+use editoast_schemas::infra::OperationalPointPart;
 
 #[derive(Debug, Clone, Derivative)]
 #[derivative(Hash, PartialEq)]
