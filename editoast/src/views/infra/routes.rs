@@ -151,7 +151,7 @@ async fn get_routes_track_ranges<'a>(
         .map(|route| {
             if let Some(route) = routes_cache.get(route) {
                 let route = route.unwrap_route();
-                let route_path = route.compute_track_ranges(&infra_cache, &graph);
+                let route_path = infra_cache.compute_track_ranges_on_route(route, &graph);
                 if let Some(route_path) = route_path {
                     RouteTrackRangesResult::Computed(route_path.track_ranges)
                 } else {

@@ -142,7 +142,7 @@ fn check_path(
 ) -> (Vec<InfraError>, Context) {
     let route = route.unwrap_route();
 
-    let route_path = match route.compute_track_ranges(infra_cache, graph) {
+    let route_path = match infra_cache.compute_track_ranges_on_route(route, graph) {
         Some(path) => path,
         None => return (vec![InfraError::new_invalid_path(route)], context),
     };
