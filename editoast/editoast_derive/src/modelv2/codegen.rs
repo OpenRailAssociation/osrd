@@ -1,26 +1,9 @@
 use proc_macro2::{Span, TokenStream};
 use quote::quote;
 
+use super::utils::np;
 use super::Identifier;
 use super::ModelConfig;
-
-/// Nested pair macro
-///
-/// Helps when using `unzip()` on lot of values.
-macro_rules! np {
-    (vec2) => { np!(Vec<_>, Vec<_>) };
-    (vec3) => { np!(Vec<_>, Vec<_>, Vec<_>) };
-    (vec4) => { np!(Vec<_>, Vec<_>, Vec<_>, Vec<_>) };
-    (vec5) => { np!(Vec<_>, Vec<_>, Vec<_>, Vec<_>, Vec<_>) };
-    (vec6) => { np!(Vec<_>, Vec<_>, Vec<_>, Vec<_>, Vec<_>, Vec<_>) };
-    (vec7) => { np!(Vec<_>, Vec<_>, Vec<_>, Vec<_>, Vec<_>, Vec<_>, Vec<_>) };
-    ($id:ident, $($rest:ident),+) => { ($id, np!($($rest),+)) };
-    ($id:ident) => { $id };
-    ($t:ty, $($rest:ty),+) => { ($t, np!($($rest),+)) };
-    ($t:ty) => { $t };
-    ($e:expr, $($rest:expr),+) => { ($e, np!($($rest),+)) };
-    ($e:expr) => { $e };
-}
 
 impl ModelConfig {
     pub fn make_model_decl(&self, vis: &syn::Visibility) -> TokenStream {
