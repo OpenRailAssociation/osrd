@@ -1,3 +1,4 @@
+mod changeset_builder_impl_block;
 mod changeset_decl;
 mod changeset_from_model;
 mod identifiable_impl;
@@ -8,7 +9,6 @@ mod row_decl;
 
 use proc_macro2::{Span, TokenStream};
 use quote::quote;
-use syn::parse_quote;
 
 use crate::modelv2::codegen::changeset_decl::ChangesetDecl;
 use crate::modelv2::codegen::changeset_decl::ChangesetFieldDecl;
@@ -16,6 +16,8 @@ use crate::modelv2::codegen::model_impl::ModelImpl;
 use crate::modelv2::codegen::row_decl::RowDecl;
 use crate::modelv2::codegen::row_decl::RowFieldDecl;
 
+use self::changeset_builder_impl_block::BuilderType;
+use self::changeset_builder_impl_block::ChangesetBuilderImplBlock;
 use self::changeset_from_model::ChangesetFromModelImpl;
 use self::identifiable_impl::IdentifiableImpl;
 use self::model_from_row_impl::ModelFromRowImpl;
@@ -71,63 +73,24 @@ impl ModelConfig {
         }
     }
 
-    pub fn make_builder(&self, changeset: bool) -> TokenStream {
-        let np!(fields, fns, flat_fns, types, bodies, flat_bodies): np!(vec6) = self
-            .iter_fields()
-            .filter(|f| !self.is_primary(f))
-            .filter(|field| !field.builder_skip)
-            .map(|field| {
-                let ident = &field.ident;
-                let expr = field.into_transformed(parse_quote! { #ident });
-                let body = if changeset {
-                    quote! { self.#ident = Some(#expr) }
-                } else {
-                    quote! { self.changeset.#ident = Some(#expr) }
-                };
-                let flat_body = if changeset {
-                    quote! { self.#ident = #ident.map(|#ident| #expr) }
-                } else {
-                    quote! { self.changeset.#ident = #ident.map(|#ident| #expr) }
-                };
-                np!(
-                    ident,
-                    &field.builder_ident,
-                    syn::Ident::new(&format!("flat_{}", &field.builder_ident), Span::call_site()),
-                    &field.ty,
-                    body,
-                    flat_body
-                )
-            })
-            .unzip();
-
-        let impl_decl = if changeset {
-            let tn = self.changeset.ident();
-            quote! { impl #tn }
-        } else {
-            let tn = &self.model;
-            quote! { impl<'a> crate::modelsv2::Patch<'a, #tn> }
-        };
-
-        quote! {
-            #[automatically_derived]
-            #impl_decl {
-                #(
-                    #[allow(unused)]
-                    #[must_use = "builder methods are intended to be chained"]
-                    pub fn #fns(mut self, #fields: #types) -> Self {
-                        #bodies;
-                        self
-                    }
-
-                    #[allow(unused)]
-                    #[must_use = "builder methods are intended to be chained"]
-                    pub fn #flat_fns(mut self, #fields: Option<#types>) -> Self {
-                        #flat_bodies;
-                        self
-                    }
-                )*
-            }
+    pub(crate) fn changeset_builder_impl_block(&self) -> ChangesetBuilderImplBlock {
+        ChangesetBuilderImplBlock {
+            builder_type: BuilderType::Changeset,
+            model: self.model.clone(),
+            changeset: self.changeset.ident(),
+            fields: self
+                .iter_fields()
+                .filter(|field| !self.is_primary(field))
+                .filter(|field| !field.builder_skip)
+                .cloned()
+                .collect(),
         }
+    }
+
+    pub(crate) fn patch_builder_impl_block(&self) -> ChangesetBuilderImplBlock {
+        let mut builder = self.changeset_builder_impl_block();
+        builder.builder_type = BuilderType::Patch;
+        builder
     }
 
     pub(crate) fn identifiable_impls(&self) -> Vec<IdentifiableImpl> {
