@@ -54,7 +54,8 @@ class SigSystemManagerImpl : SigSystemManager {
         get() = sigSystemPool.space()
 
     override fun findSignalingSystem(sigSystem: String): SignalingSystemId {
-        return sigSystemMap[sigSystem]!!
+        return sigSystemMap[sigSystem]
+            ?: throw RuntimeException("Can't find signaling system $sigSystem")
     }
 
     override fun getStateSchema(sigSystem: SignalingSystemId): SigStateSchema {
