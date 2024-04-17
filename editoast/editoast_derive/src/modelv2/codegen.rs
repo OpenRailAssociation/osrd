@@ -1,5 +1,6 @@
 mod changeset_decl;
 mod identifiable_impl;
+mod model_from_row_impl;
 mod model_impl;
 mod preferred_id_impl;
 mod row_decl;
@@ -14,6 +15,7 @@ use crate::modelv2::codegen::row_decl::RowDecl;
 use crate::modelv2::codegen::row_decl::RowFieldDecl;
 
 use self::identifiable_impl::IdentifiableImpl;
+use self::model_from_row_impl::ModelFromRowImpl;
 use self::preferred_id_impl::PreferredIdImpl;
 
 use super::utils::np;
@@ -143,15 +145,16 @@ impl ModelConfig {
         }
     }
 
+    pub(crate) fn model_from_row_impl(&self) -> ModelFromRowImpl {
+        ModelFromRowImpl {
+            model: self.model.clone(),
+            row: self.row.ident(),
+            fields: self.fields.clone(),
+        }
+    }
+
     pub fn make_from_impls(&self) -> TokenStream {
         let model = &self.model;
-        let (row_field, row_value): (Vec<_>, Vec<_>) = self
-            .iter_fields()
-            .map(|field| {
-                let ident = &field.ident;
-                (ident, field.from_transformed(quote! { row.#ident }))
-            })
-            .unzip();
         let (cs_field, cs_value): (Vec<_>, Vec<_>) = self
             .iter_fields()
             .filter(|f| !self.is_primary(f))
@@ -160,18 +163,8 @@ impl ModelConfig {
                 (ident, field.into_transformed(quote! { model.#ident }))
             })
             .unzip();
-        let row_ident = self.row.ident();
         let cs_ident = self.changeset.ident();
         quote! {
-            #[automatically_derived]
-            impl From<#row_ident> for #model {
-                fn from(row: #row_ident) -> Self {
-                    Self {
-                        #( #row_field: #row_value ),*
-                    }
-                }
-            }
-
             #[automatically_derived]
             impl From<#model> for #cs_ident {
                 fn from(model: #model) -> Self {

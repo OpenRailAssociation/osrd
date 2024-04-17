@@ -28,6 +28,7 @@ pub fn model(input: &DeriveInput) -> Result<TokenStream> {
     let identifiable_impls = config.identifiable_impls();
     let preferred_id_impl = config.preferred_id_impl();
 
+    let model_from_row_impl = config.model_from_row_impl();
     let from_impls = config.make_from_impls();
 
     let cs_builder = config.make_builder(true);
@@ -42,6 +43,8 @@ pub fn model(input: &DeriveInput) -> Result<TokenStream> {
 
         #(#identifiable_impls)*
         #preferred_id_impl
+
+        #model_from_row_impl
 
         #from_impls
         #cs_builder

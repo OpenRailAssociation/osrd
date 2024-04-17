@@ -126,16 +126,16 @@ impl ModelField {
     }
 
     #[allow(clippy::wrong_self_convention)]
-    pub fn from_transformed(&self, expr: TokenStream) -> TokenStream {
+    pub fn from_transformed(&self, expr: syn::Expr) -> syn::Expr {
         match self.transform {
-            Some(FieldTransformation::Remote(_)) => quote! { #expr.into() },
-            Some(FieldTransformation::Json) => quote! { #expr.0 },
+            Some(FieldTransformation::Remote(_)) => parse_quote! { #expr.into() },
+            Some(FieldTransformation::Json) => parse_quote! { #expr.0 },
             Some(FieldTransformation::Geo) => unimplemented!("to be designed"),
-            Some(FieldTransformation::ToString) => quote! { String::from(#expr.parse()) },
+            Some(FieldTransformation::ToString) => parse_quote! { String::from(#expr.parse()) },
             Some(FieldTransformation::ToEnum(ref ty)) => {
-                quote! { #ty::from_repr(#expr as usize).expect("Invalid variant repr") }
+                parse_quote! { #ty::from_repr(#expr as usize).expect("Invalid variant repr") }
             }
-            None => quote! { #expr },
+            None => parse_quote! { #expr },
         }
     }
 
