@@ -5,6 +5,8 @@ import fr.sncf.osrd.utils.Direction
 import fr.sncf.osrd.utils.indexing.*
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.OffsetList
+import java.math.BigInteger
+import java.security.MessageDigest
 
 class BlockDescriptor(
     val length: Length<Block>,
@@ -217,5 +219,15 @@ private fun buildBlockName(
     detectors.add(rawInfra.getZonePathEntry(descriptor.path[0]))
     detectors.add(rawInfra.getZonePathExit(descriptor.path.last()))
     val detectorStr = detectors.map { "${rawInfra.getDetectorName(it.value)}" }
-    return "block.($signals;$detectorStr;$trackNodeConfigNames)"
+    val rawStringId = "$signals;$detectorStr;$trackNodeConfigNames"
+
+    // We need to hash the result, these strings are way too long for identifiers
+
+    // Stackoverflow:
+    // https://stackoverflow.com/questions/64171624/how-to-generate-an-md5-hash-in-kotlin
+    fun md5(input: String): String {
+        val md = MessageDigest.getInstance("MD5")
+        return BigInteger(1, md.digest(input.toByteArray())).toString(16).padStart(32, '0')
+    }
+    return "block.${md5(rawStringId)}"
 }
