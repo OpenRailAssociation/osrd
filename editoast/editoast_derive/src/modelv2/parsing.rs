@@ -122,14 +122,9 @@ impl ModelConfig {
             fields,
             row,
             changeset,
-
             typed_identifiers,
             preferred_typed_identifier,
             primary_typed_identifier,
-
-            identifiers: raw_identfiers,
-            preferred_identifier,
-            primary_field,
         })
     }
 }
