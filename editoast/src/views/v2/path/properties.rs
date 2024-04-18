@@ -42,6 +42,7 @@ crate::routes! {
 editoast_common::schemas! {
     PathProperties,
     PathPropertiesInput,
+    Property,
     OperationalPointPart,
     OperationalPointExtensions,
 }
@@ -143,7 +144,7 @@ struct PropertyElectrificationValues {
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 #[serde(tag = "type", rename_all = "snake_case")]
 enum PropertyElectrificationValue {
-    /// Elecrtified section with a given voltage
+    /// Electrified section with a given voltage
     Electrification { voltage: String },
     /// Neutral section with a lower pantograph instruction or just a dead section
     NeutralSection { lower_pantograph: bool },
@@ -175,7 +176,7 @@ struct PathPropertiesInput {
     rolling_stock_supported_electrifications: Vec<String>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 struct Props {
     props: Vec<Property>,
 }
@@ -206,12 +207,10 @@ type Properties = EnumSet<Property>;
 /// Compute path properties
 #[utoipa::path(
     tag = "pathfindingv2",
-    params(
-        ("infra_id" = i64, Path, description = "The infra id"),
-    ),
     request_body = PathPropertiesInput,
     params(
         ("infra_id" = i64, Path, description = "The infra id"),
+        ("props" = Vec<Property>, Query, description = "Path properties"),
     ),
     responses(
         (status = 200, description = "Path properties", body = PathProperties),

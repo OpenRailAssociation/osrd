@@ -62,7 +62,7 @@ struct PathfindingInput {
     rolling_stock_is_thermal: bool,
     /// List of supported electrification modes.
     /// Empty if does not support any electrification
-    rolling_stock_supported_electrification: Vec<String>,
+    rolling_stock_supported_electrifications: Vec<String>,
     /// List of supported signaling systems
     rolling_stock_supported_signaling_systems: Vec<String>,
     /// List of waypoints given to the pathfinding
@@ -143,8 +143,8 @@ async fn pathfinding_blocks(
         path_items: track_offsets,
         rolling_stock_loading_gauge: path_input.rolling_stock_loading_gauge,
         rolling_stock_is_thermal: path_input.rolling_stock_is_thermal,
-        rolling_stock_supported_electrification: path_input
-            .rolling_stock_supported_electrification
+        rolling_stock_supported_electrifications: path_input
+            .rolling_stock_supported_electrifications
             .clone(),
         rolling_stock_supported_signaling_systems: path_input
             .rolling_stock_supported_signaling_systems
@@ -179,7 +179,7 @@ pub async fn pathfinding_from_train(
     let path_input = PathfindingInput {
         rolling_stock_loading_gauge: rolling_stock.loading_gauge,
         rolling_stock_is_thermal: rolling_stock.has_thermal_curves(),
-        rolling_stock_supported_electrification: rolling_stock.supported_electrification(),
+        rolling_stock_supported_electrifications: rolling_stock.supported_electrification(),
         rolling_stock_supported_signaling_systems: rolling_stock.supported_signaling_systems.0,
         path_items: train_schedule
             .path

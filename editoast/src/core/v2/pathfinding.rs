@@ -23,7 +23,7 @@ pub struct PathfindingRequest {
     pub rolling_stock_is_thermal: bool,
     /// List of supported electrification modes.
     /// Empty if does not support any electrification
-    pub rolling_stock_supported_electrification: Vec<String>,
+    pub rolling_stock_supported_electrifications: Vec<String>,
     /// List of supported signaling systems
     pub rolling_stock_supported_signaling_systems: Vec<String>,
 }
