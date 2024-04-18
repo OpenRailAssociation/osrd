@@ -69,6 +69,5 @@ editoast_common::schemas! {
     direction::schemas(),
     track_location::schemas(),
     directional_track_range::schemas(),
-    track_range::schemas(),
     electrical_profiles::schemas(),
 }

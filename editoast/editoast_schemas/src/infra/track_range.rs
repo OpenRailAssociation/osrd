@@ -4,10 +4,6 @@ use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
-editoast_common::schemas! {
-    TrackRange,
-}
-
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, ToSchema)]
 #[serde(deny_unknown_fields)]
 #[derivative(Default)]

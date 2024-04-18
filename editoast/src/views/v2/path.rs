@@ -28,6 +28,7 @@ crate::routes! {
 editoast_common::schemas! {
     pathfinding::schemas(),
     properties::schemas(),
+    TrackRange,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, ToSchema, Hash)]
