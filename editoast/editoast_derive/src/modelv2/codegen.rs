@@ -14,6 +14,7 @@ mod preferred_id_impl;
 mod retrieve_batch_impl;
 mod retrieve_impl;
 mod row_decl;
+mod update_batch_impl;
 mod update_impl;
 
 use proc_macro2::{Span, TokenStream};
@@ -40,6 +41,7 @@ use self::model_from_row_impl::ModelFromRowImpl;
 use self::preferred_id_impl::PreferredIdImpl;
 use self::retrieve_batch_impl::RetrieveBatchImpl;
 use self::retrieve_impl::RetrieveImpl;
+use self::update_batch_impl::UpdateBatchImpl;
 use self::update_impl::UpdateImpl;
 
 use super::identifier::TypedIdentifier;
@@ -289,20 +291,25 @@ impl ModelConfig {
             .collect()
     }
 
+    pub(crate) fn update_batch_impls(&self) -> Vec<UpdateBatchImpl> {
+        self.typed_identifiers
+            .iter()
+            .map(|identifier| UpdateBatchImpl {
+                model: self.model.clone(),
+                table_name: self.table_name(),
+                table_mod: self.table.clone(),
+                row: self.row.ident(),
+                changeset: self.changeset.ident(),
+                identifier: identifier.clone(),
+                primary_key_column: self.get_primary_field_column(),
+            })
+            .collect()
+    }
+
     pub fn make_model_traits_impl(&self) -> TokenStream {
         let model = &self.model;
         let table_mod = &self.table;
         let table_name = self.table_name();
-        let row_ident = self.row.ident();
-        let cs_ident = self.changeset.ident();
-        let pk_column = match &self.primary_field {
-            Identifier::Field(ident) => {
-                syn::Ident::new(&self.fields.get(ident).unwrap().column, Span::call_site())
-            }
-            Identifier::Compound(_) => {
-                unreachable!("primary annotation is always put on a single field")
-            }
-        };
 
         let np!(ty, ident, batch_filter, batch_param_count): np!(vec4) = self
             .identifiers
@@ -340,84 +347,6 @@ impl ModelConfig {
 
         quote! {
             #(
-                #[automatically_derived]
-                #[async_trait::async_trait]
-                impl crate::modelsv2::UpdateBatchUnchecked<#model, #ty> for #cs_ident {
-                    async fn update_batch_unchecked<
-                        I: std::iter::IntoIterator<Item = #ty> + Send + 'async_trait,
-                        C: Default + std::iter::Extend<#model> + Send,
-                    >(
-                        self,
-                        conn: &mut diesel_async::AsyncPgConnection,
-                        ids: I,
-                    ) -> crate::error::Result<C> {
-                        use crate::modelsv2::Model;
-                        use #table_mod::dsl;
-                        use diesel::prelude::*;
-                        use diesel_async::RunQueryDsl;
-                        use futures_util::stream::TryStreamExt;
-                        Ok(crate::chunked_for_libpq! {
-                            #batch_param_count,
-                            ids,
-                            C::default(),
-                            chunk => {
-                                // We have to do it this way because we can't .or_filter() on a boxed update statement
-                                let mut query = dsl::#table_name.select(dsl::#pk_column).into_boxed();
-                                for #ident in chunk.into_iter() {
-                                    query = query.or_filter(#batch_filter);
-                                }
-                                diesel::update(dsl::#table_name)
-                                    .filter(dsl::#pk_column.eq_any(query))
-                                    .set(&self)
-                                    .load_stream::<#row_ident>(conn)
-                                    .await
-                                    .map(|s| s.map_ok(<#model as Model>::from_row).try_collect::<Vec<_>>())?
-                                    .await?
-                            }
-                        })
-                    }
-
-                    async fn update_batch_with_key_unchecked<
-                        I: std::iter::IntoIterator<Item = #ty> + Send + 'async_trait,
-                        C: Default + std::iter::Extend<(#ty, #model)> + Send,
-                    >(
-                        self,
-                        conn: &mut diesel_async::AsyncPgConnection,
-                        ids: I,
-                    ) -> crate::error::Result<C> {
-                        use crate::models::Identifiable;
-                        use crate::modelsv2::Model;
-                        use #table_mod::dsl;
-                        use diesel::prelude::*;
-                        use diesel_async::RunQueryDsl;
-                        use futures_util::stream::TryStreamExt;
-                        Ok(crate::chunked_for_libpq! {
-                            #batch_param_count,
-                            ids,
-                            C::default(),
-                            chunk => {
-                                let mut query = dsl::#table_name.select(dsl::#pk_column).into_boxed();
-                                for #ident in chunk.into_iter() {
-                                    query = query.or_filter(#batch_filter);
-                                }
-                                diesel::update(dsl::#table_name)
-                                    .filter(dsl::#pk_column.eq_any(query))
-                                    .set(&self)
-                                    .load_stream::<#row_ident>(conn)
-                                    .await
-                                    .map(|s| {
-                                        s.map_ok(|row| {
-                                            let model = <#model as Model>::from_row(row);
-                                            (model.get_id(), model)
-                                        })
-                                        .try_collect::<Vec<_>>()
-                                    })?
-                                    .await?
-                            }
-                        })
-                    }
-                }
-
                 #[automatically_derived]
                 #[async_trait::async_trait]
                 impl crate::modelsv2::DeleteBatch<#ty> for #model {
