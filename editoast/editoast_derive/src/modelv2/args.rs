@@ -12,64 +12,64 @@ use proc_macro2::Span;
     forward_attrs(allow, doc, cfg),
     supports(struct_named)
 )]
-pub struct ModelArgs {
-    pub table: syn::Path,
+pub(super) struct ModelArgs {
+    pub(super) table: syn::Path,
     #[darling(default)]
-    pub row: GeneratedTypeArgs,
+    pub(super) row: GeneratedTypeArgs,
     #[darling(default)]
-    pub changeset: GeneratedTypeArgs,
+    pub(super) changeset: GeneratedTypeArgs,
     #[darling(multiple, rename = "identifier")]
-    pub identifiers: Vec<RawIdentifier>,
+    pub(super) identifiers: Vec<RawIdentifier>,
     #[darling(default)]
-    pub preferred: Option<RawIdentifier>,
-    pub data: ast::Data<util::Ignored, ModelFieldArgs>,
+    pub(super) preferred: Option<RawIdentifier>,
+    pub(super) data: ast::Data<util::Ignored, ModelFieldArgs>,
 }
 
 #[derive(FromMeta, Default, Debug, PartialEq)]
-pub struct GeneratedTypeArgs {
+pub(super) struct GeneratedTypeArgs {
     #[darling(default)]
-    pub type_name: Option<String>,
+    pub(super) type_name: Option<String>,
     #[darling(default)]
-    pub derive: PathList,
+    pub(super) derive: PathList,
     #[darling(default)]
-    pub public: bool,
+    pub(super) public: bool,
 }
 
 #[derive(FromField, Debug)]
 #[darling(attributes(model), forward_attrs(allow, doc, cfg))]
-pub struct ModelFieldArgs {
-    pub ident: Option<syn::Ident>,
-    pub ty: syn::Type,
+pub(super) struct ModelFieldArgs {
+    pub(super) ident: Option<syn::Ident>,
+    pub(super) ty: syn::Type,
     #[darling(default)]
-    pub builder_fn: Option<syn::Ident>,
+    pub(super) builder_fn: Option<syn::Ident>,
     #[darling(default)]
-    pub column: Option<String>,
+    pub(super) column: Option<String>,
     #[darling(default)]
-    pub builder_skip: bool,
+    pub(super) builder_skip: bool,
     #[darling(default)]
-    pub identifier: bool,
+    pub(super) identifier: bool,
     #[darling(default)]
-    pub preferred: bool,
+    pub(super) preferred: bool,
     #[darling(default)]
-    pub primary: bool,
+    pub(super) primary: bool,
     #[darling(default)]
-    pub json: bool,
+    pub(super) json: bool,
     #[darling(default)]
-    pub geo: bool,
+    pub(super) geo: bool,
     #[darling(default)]
-    pub to_string: bool,
+    pub(super) to_string: bool,
     #[darling(default)]
-    pub to_enum: bool,
+    pub(super) to_enum: bool,
     #[darling(default)]
-    pub remote: Option<syn::Type>,
+    pub(super) remote: Option<syn::Type>,
 }
 
 impl GeneratedTypeArgs {
-    pub fn ident(&self) -> syn::Ident {
+    pub(super) fn ident(&self) -> syn::Ident {
         syn::Ident::new(self.type_name.as_ref().unwrap(), Span::call_site())
     }
 
-    pub fn visibility(&self) -> syn::Visibility {
+    pub(super) fn visibility(&self) -> syn::Visibility {
         if self.public {
             syn::Visibility::Public(Default::default())
         } else {

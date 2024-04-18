@@ -10,7 +10,7 @@ use super::{
 };
 
 impl ModelConfig {
-    pub fn from_macro_args(
+    pub(crate) fn from_macro_args(
         options: ModelArgs,
         model_name: syn::Ident,
         visibility: syn::Visibility,

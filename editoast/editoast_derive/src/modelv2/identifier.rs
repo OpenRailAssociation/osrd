@@ -1,13 +1,13 @@
 use super::Fields;
 
 #[derive(Debug, Clone, PartialEq, Hash, Eq)]
-pub enum RawIdentifier {
+pub(crate) enum RawIdentifier {
     Field(syn::Ident),
     Compound(Vec<syn::Ident>),
 }
 
 impl RawIdentifier {
-    pub fn get_idents(&self) -> Vec<syn::Ident> {
+    pub(crate) fn get_idents(&self) -> Vec<syn::Ident> {
         match self {
             Self::Field(ident) => vec![ident.clone()],
             Self::Compound(idents) => idents.clone(),
