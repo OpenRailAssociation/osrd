@@ -47,6 +47,7 @@ use crate::core::{self};
 use crate::error::ErrorDefinition;
 use crate::error::Result;
 use crate::error::{self};
+use crate::infra_cache::operation;
 use crate::map;
 use crate::models;
 use crate::modelsv2;
@@ -101,6 +102,7 @@ editoast_common::schemas! {
     v2::schemas(),
     work_schedules::schemas(),
     editoast_common::schemas(),
+    operation::schemas(),
 }
 
 #[derive(OpenApi)]
