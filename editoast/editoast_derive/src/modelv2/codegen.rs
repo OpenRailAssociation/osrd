@@ -1,6 +1,7 @@
 mod changeset_builder_impl_block;
 mod changeset_decl;
 mod changeset_from_model;
+mod delete_static_impl;
 mod exists_impl;
 mod identifiable_impl;
 mod model_from_row_impl;
@@ -23,6 +24,7 @@ use crate::modelv2::codegen::row_decl::RowFieldDecl;
 use self::changeset_builder_impl_block::BuilderType;
 use self::changeset_builder_impl_block::ChangesetBuilderImplBlock;
 use self::changeset_from_model::ChangesetFromModelImpl;
+use self::delete_static_impl::DeleteStaticImpl;
 use self::exists_impl::ExistsImpl;
 use self::identifiable_impl::IdentifiableImpl;
 use self::model_from_row_impl::ModelFromRowImpl;
@@ -209,6 +211,18 @@ impl ModelConfig {
             .collect()
     }
 
+    pub(crate) fn delete_static_impls(&self) -> Vec<DeleteStaticImpl> {
+        self.typed_identifiers
+            .iter()
+            .map(|identifier| DeleteStaticImpl {
+                model: self.model.clone(),
+                table_name: self.table_name(),
+                table_mod: self.table.clone(),
+                identifier: identifier.clone(),
+            })
+            .collect()
+    }
+
     pub fn make_model_traits_impl(&self) -> TokenStream {
         let model = &self.model;
         let table_mod = &self.table;
@@ -226,7 +240,7 @@ impl ModelConfig {
             }
         };
 
-        let np!(ty, ident, filter, batch_filter, batch_param_count): np!(vec5) = self
+        let np!(ty, ident, batch_filter, batch_param_count): np!(vec4) = self
             .identifiers
             .iter()
             .map(|id| {
@@ -243,9 +257,6 @@ impl ModelConfig {
                     })
                     .unzip();
 
-                // Single row access
-                let filters = quote! { #(filter(dsl::#column.eq(#ident))).* };
-
                 // Batched row access (batch_filter is the argument of a .or_filter())
                 let batch_filter = {
                     let mut idents = ident.iter().zip(column.iter()).rev();
@@ -259,31 +270,11 @@ impl ModelConfig {
                 };
                 let param_count = ident.len();
 
-                np!(type_expr, lvalue, filters, batch_filter, param_count)
+                np!(type_expr, lvalue, batch_filter, param_count)
             })
             .unzip();
 
         quote! {
-            #(
-                #[automatically_derived]
-                #[async_trait::async_trait]
-                impl crate::modelsv2::DeleteStatic<#ty> for #model {
-                    async fn delete_static(
-                        conn: &mut diesel_async::AsyncPgConnection,
-                        #ident: #ty,
-                    ) -> crate::error::Result<bool> {
-                        use diesel::prelude::*;
-                        use diesel_async::RunQueryDsl;
-                        use #table_mod::dsl;
-                        diesel::delete(dsl::#table_name.#filter)
-                            .execute(conn)
-                            .await
-                            .map(|n| n == 1)
-                            .map_err(Into::into)
-                    }
-                }
-            )*
-
             #[automatically_derived]
             #[async_trait::async_trait]
             impl crate::modelsv2::Create<#model> for #cs_ident {
