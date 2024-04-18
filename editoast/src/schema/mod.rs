@@ -14,7 +14,3 @@ cfg_if! {
         pub use track_section::{Curve, Slope};
     }
 }
-
-editoast_common::schemas! {
-    editoast_schemas::schemas(),
-}
