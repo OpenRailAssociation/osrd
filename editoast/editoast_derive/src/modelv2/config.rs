@@ -5,7 +5,10 @@ use std::{
 
 use syn::parse_quote;
 
-use super::{args::GeneratedTypeArgs, identifier::Identifier};
+use super::{
+    args::GeneratedTypeArgs,
+    identifier::{Identifier, TypedIdentifier},
+};
 
 #[derive(Debug, PartialEq)]
 pub struct ModelConfig {
@@ -18,6 +21,11 @@ pub struct ModelConfig {
     pub identifiers: HashSet<Identifier>, // identifiers ⊆ fields
     pub preferred_identifier: Identifier, // preferred_identifier ∈ identifiers
     pub primary_field: Identifier,        // primary_field ∈ identifiers
+    // NOTE: duplication is temporary, will replace plain identifers once
+    // the ToTokens refactoring is complete
+    pub(crate) typed_identifiers: HashSet<TypedIdentifier>,
+    pub(crate) preferred_typed_identifier: TypedIdentifier,
+    pub(crate) primary_typed_identifier: TypedIdentifier,
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -147,5 +155,9 @@ impl ModelField {
             Some(FieldTransformation::ToEnum(_)) => parse_quote! { i16 },
             None => ty.clone(),
         }
+    }
+
+    pub(super) fn column_ident(&self) -> syn::Ident {
+        syn::Ident::new(&self.column, self.ident.span())
     }
 }

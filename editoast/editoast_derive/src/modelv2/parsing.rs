@@ -5,7 +5,7 @@ use proc_macro2::Span;
 
 use super::{
     args::{GeneratedTypeArgs, ModelArgs, ModelFieldArgs},
-    identifier::Identifier,
+    identifier::{Identifier, TypedIdentifier},
     FieldTransformation, Fields, ModelConfig, ModelField,
 };
 
@@ -51,7 +51,7 @@ impl ModelConfig {
             .collect();
 
         // collect identifiers from struct-level annotations...
-        let mut identifiers: HashSet<_> = options
+        let mut raw_identfiers: HashSet<_> = options
             .identifiers
             .iter()
             .cloned()
@@ -64,7 +64,7 @@ impl ModelConfig {
             )
             .collect();
 
-        // collect of infer the primary key field
+        // collect or infer the primary key field
         let primary_field = match field_map
             .values()
             .filter(|field| field.primary)
@@ -103,19 +103,33 @@ impl ModelConfig {
             }
         };
 
-        identifiers.insert(primary_field.clone());
-        identifiers.insert(preferred_identifier.clone());
+        raw_identfiers.insert(primary_field.clone());
+        raw_identfiers.insert(preferred_identifier.clone());
+
+        let typed_identifiers = raw_identfiers
+            .iter()
+            .cloned()
+            .map(|id| TypedIdentifier::new(id, &fields))
+            .collect();
+        let preferred_typed_identifier =
+            TypedIdentifier::new(preferred_identifier.clone(), &fields);
+        let primary_typed_identifier = TypedIdentifier::new(primary_field.clone(), &fields);
 
         Ok(Self {
             model: model_name,
             visibility,
             table: options.table,
             fields,
-            identifiers,
-            preferred_identifier,
-            primary_field,
             row,
             changeset,
+
+            typed_identifiers,
+            preferred_typed_identifier,
+            primary_typed_identifier,
+
+            identifiers: raw_identfiers,
+            preferred_identifier,
+            primary_field,
         })
     }
 }

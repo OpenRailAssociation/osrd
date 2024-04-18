@@ -9,6 +9,7 @@ mod row_decl;
 
 use proc_macro2::{Span, TokenStream};
 use quote::quote;
+use syn::parse_quote;
 
 use crate::modelv2::codegen::changeset_decl::ChangesetDecl;
 use crate::modelv2::codegen::changeset_decl::ChangesetFieldDecl;
@@ -23,9 +24,40 @@ use self::identifiable_impl::IdentifiableImpl;
 use self::model_from_row_impl::ModelFromRowImpl;
 use self::preferred_id_impl::PreferredIdImpl;
 
+use super::identifier::TypedIdentifier;
 use super::utils::np;
 use super::Identifier;
 use super::ModelConfig;
+
+impl Identifier {
+    fn get_ident_lvalue(&self) -> syn::Expr {
+        match self {
+            Self::Field(ident) => parse_quote! { #ident },
+            Self::Compound(idents) => {
+                parse_quote! { (#(#idents),*) }
+            }
+        }
+    }
+}
+
+impl TypedIdentifier {
+    fn get_type(&self) -> syn::Type {
+        let ty = self.field_types.iter();
+        syn::parse_quote! { (#(#ty),*) } // tuple type
+    }
+
+    fn get_lvalue(&self) -> syn::Expr {
+        self.identifier.get_ident_lvalue()
+    }
+
+    fn get_diesel_eqs(&self) -> Vec<syn::Expr> {
+        self.get_idents()
+            .iter()
+            .zip(&self.columns)
+            .map(|(ident, column)| parse_quote! { dsl::#column.eq(#ident) })
+            .collect()
+    }
+}
 
 impl ModelConfig {
     pub(crate) fn model_impl(&self) -> ModelImpl {
@@ -94,11 +126,11 @@ impl ModelConfig {
     }
 
     pub(crate) fn identifiable_impls(&self) -> Vec<IdentifiableImpl> {
-        self.identifiers
+        self.typed_identifiers
             .iter()
             .map(|identifier| IdentifiableImpl {
                 model: self.model.clone(),
-                ty: identifier.type_expr(self),
+                ty: identifier.get_type(),
                 fields: identifier.get_idents(),
             })
             .collect()
@@ -107,7 +139,7 @@ impl ModelConfig {
     pub(crate) fn preferred_id_impl(&self) -> PreferredIdImpl {
         PreferredIdImpl {
             model: self.model.clone(),
-            ty: self.preferred_identifier.type_expr(self),
+            ty: self.preferred_typed_identifier.get_type(),
         }
     }
 
