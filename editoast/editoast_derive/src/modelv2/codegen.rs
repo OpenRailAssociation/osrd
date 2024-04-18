@@ -2,6 +2,7 @@ mod changeset_builder_impl_block;
 mod changeset_decl;
 mod changeset_from_model;
 mod create_impl;
+mod delete_impl;
 mod delete_static_impl;
 mod exists_impl;
 mod identifiable_impl;
@@ -26,6 +27,7 @@ use self::changeset_builder_impl_block::BuilderType;
 use self::changeset_builder_impl_block::ChangesetBuilderImplBlock;
 use self::changeset_from_model::ChangesetFromModelImpl;
 use self::create_impl::CreateImpl;
+use self::delete_impl::DeleteImpl;
 use self::delete_static_impl::DeleteStaticImpl;
 use self::exists_impl::ExistsImpl;
 use self::identifiable_impl::IdentifiableImpl;
@@ -234,6 +236,14 @@ impl ModelConfig {
         }
     }
 
+    pub(crate) fn delete_impl(&self) -> DeleteImpl {
+        DeleteImpl {
+            model: self.model.clone(),
+            table_mod: self.table.clone(),
+            primary_key: self.get_primary_field_ident(),
+        }
+    }
+
     pub fn make_model_traits_impl(&self) -> TokenStream {
         let model = &self.model;
         let table_mod = &self.table;
@@ -241,11 +251,10 @@ impl ModelConfig {
         let row_ident = self.row.ident();
         let cs_ident = self.changeset.ident();
         let field_count = self.fields.len();
-        let (pk_ident, pk_column) = match &self.primary_field {
-            Identifier::Field(ident) => (
-                ident,
-                syn::Ident::new(&self.fields.get(ident).unwrap().column, Span::call_site()),
-            ),
+        let pk_column = match &self.primary_field {
+            Identifier::Field(ident) => {
+                syn::Ident::new(&self.fields.get(ident).unwrap().column, Span::call_site())
+            }
             Identifier::Compound(_) => {
                 unreachable!("primary annotation is always put on a single field")
             }
@@ -286,25 +295,6 @@ impl ModelConfig {
             .unzip();
 
         quote! {
-            #[automatically_derived]
-            #[async_trait::async_trait]
-            impl crate::modelsv2::Delete for #model {
-                async fn delete(
-                    &self,
-                    conn: &mut diesel_async::AsyncPgConnection,
-                ) -> crate::error::Result<bool> {
-                    use diesel::prelude::*;
-                    use diesel_async::RunQueryDsl;
-                    use #table_mod::dsl;
-                    let id = self.#pk_ident;
-                    diesel::delete(#table_mod::table.find(id))
-                        .execute(conn)
-                        .await
-                        .map(|n| n == 1)
-                        .map_err(Into::into)
-                }
-            }
-
             #[automatically_derived]
             #[async_trait::async_trait]
             impl crate::modelsv2::CreateBatch<#cs_ident> for #model {

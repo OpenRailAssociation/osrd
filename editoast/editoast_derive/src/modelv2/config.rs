@@ -114,6 +114,13 @@ impl ModelConfig {
             .expect("Model: invalid table value");
         table.ident.clone()
     }
+
+    pub(super) fn get_primary_field_ident(&self) -> syn::Ident {
+        match &self.primary_typed_identifier.identifier {
+            Identifier::Field(ident) => ident.clone(),
+            Identifier::Compound(_) => panic!("Model: compound primary field should be impossible"),
+        }
+    }
 }
 
 impl ModelField {
