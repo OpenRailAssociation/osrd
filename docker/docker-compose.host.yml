@@ -16,6 +16,7 @@ services:
     network_mode: host
     environment:
       CORE_EDITOAST_URL: "http://localhost:8090"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://localhost:4317"
 
   editoast:
     ports: []
@@ -26,6 +27,7 @@ services:
       OSRD_BACKEND_URL: "http://localhost:8080"
       REDIS_URL: "redis://localhost"
       DATABASE_URL: "postgres://osrd:password@localhost:5432/osrd"
+      TELEMETRY_ENDPOINT: "http://localhost:4317"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8090/health"]
 
