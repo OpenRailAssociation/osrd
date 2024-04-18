@@ -1,15 +1,13 @@
 package fr.sncf.osrd.sim_infra_adapter
 
 import fr.sncf.osrd.parseRJSInfra
+import fr.sncf.osrd.railjson.builder.begin
+import fr.sncf.osrd.railjson.builder.buildParseRJSInfra
+import fr.sncf.osrd.railjson.builder.end
 import fr.sncf.osrd.railjson.schema.common.RJSWaypointRef
-import fr.sncf.osrd.railjson.schema.common.RJSWaypointRef.RJSWaypointType.BUFFER_STOP
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection.START_TO_STOP
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection.STOP_TO_START
-import fr.sncf.osrd.railjson.schema.common.graph.EdgeEndpoint
-import fr.sncf.osrd.railjson.schema.geom.RJSLineString
 import fr.sncf.osrd.railjson.schema.infra.*
-import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSBufferStop
-import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSSignal
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSTrainDetector
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.utils.Direction
@@ -36,81 +34,41 @@ class RawInfraAdapterTest {
         val sideX = detectorSides[0]
         val sideY = detectorSides[1]
 
-        val rjsInfra = RJSInfra()
-        rjsInfra.version = RJSInfra.CURRENT_VERSION
         //        a           b           c
         //  ||=========>||<=========||========>||
         //  begin       x           y          end
-        rjsInfra.speedSections = listOf()
-        rjsInfra.electrifications = listOf()
-        rjsInfra.neutralSections = listOf()
-        rjsInfra.operationalPoints = listOf()
-        rjsInfra.trackSections =
-            listOf(
-                RJSTrackSection("track_a", 10.0),
-                RJSTrackSection("track_b", 10.0),
-                RJSTrackSection("track_c", 10.0),
-            )
+        val infra = buildParseRJSInfra {
+            val trackA = trackSection("track_a", 10.0)
+            val trackB = trackSection("track_b", 10.0)
+            val trackC = trackSection("track_c", 10.0)
 
-        for (trackSection in rjsInfra.trackSections) {
-            trackSection.geo = RJSLineString.make(listOf(0.0, 1.0), listOf(0.0, 1.0))
-            trackSection.sch = RJSLineString.make(listOf(0.0, 1.0), listOf(0.0, 1.0))
+            val linkAb = link("link_ab", trackA.end, trackB.end)
+            val linkBc = link("link_bc", trackB.begin, trackC.begin)
+
+            val bufferStopBegin = bufferStop("begin", trackA.begin)
+            val bufferStopEnd = bufferStop("end", trackC.end)
+
+            val trackX = if (sideX == 'l') trackA else trackB
+            val directionX = if (sideX == 'l') START_TO_STOP else STOP_TO_START
+            val locationX = trackX.at(10.0)
+            val trackY = if (sideY == 'l') trackB else trackC
+            val directionY = if (sideY == 'l') STOP_TO_START else START_TO_STOP
+            val locationY = trackY.at(0.0)
+
+            detector("x", locationX)
+            detector("y", locationY)
+            defaultSightDistance = 42.0
+            physicalSignal("U", locationX, directionX)
+            physicalSignal("V", locationY, directionY)
+
+            route("route", bufferStopBegin, START_TO_STOP, bufferStopEnd) {
+                // FIXME: the parser shouldn't require configurations for nodes which have a
+                // single config
+                addSwitchDirection(linkAb, "STATIC")
+                addSwitchDirection(linkBc, "STATIC")
+            }
         }
-        rjsInfra.switches =
-            listOf(
-                RJSSwitch(
-                    "link_ab",
-                    "link",
-                    mapOf(
-                        Pair("A", RJSTrackEndpoint("track_a", EdgeEndpoint.END)),
-                        Pair("B", RJSTrackEndpoint("track_b", EdgeEndpoint.END)),
-                    ),
-                    1.0
-                ),
-                RJSSwitch(
-                    "link_bc",
-                    "link",
-                    mapOf(
-                        Pair("A", RJSTrackEndpoint("track_b", EdgeEndpoint.BEGIN)),
-                        Pair("B", RJSTrackEndpoint("track_c", EdgeEndpoint.BEGIN)),
-                    ),
-                    1.0
-                ),
-            )
-        rjsInfra.bufferStops =
-            listOf(
-                RJSBufferStop("begin", 0.0, "track_a"),
-                RJSBufferStop("end", 10.0, "track_c"),
-            )
 
-        val trackX = if (sideX == 'l') "track_a" else "track_b"
-        val directionX = if (sideX == 'l') START_TO_STOP else STOP_TO_START
-        val offsetX = 10.0
-        val trackY = if (sideY == 'l') "track_b" else "track_c"
-        val directionY = if (sideY == 'l') STOP_TO_START else START_TO_STOP
-        val offsetY = 0.0
-        rjsInfra.detectors =
-            listOf(
-                RJSTrainDetector("x", offsetX, trackX),
-                RJSTrainDetector("y", offsetY, trackY),
-            )
-        rjsInfra.signals =
-            listOf(
-                RJSSignal(trackX, offsetX, "U", directionX, 42.0, null),
-                RJSSignal(trackY, offsetY, "V", directionY, 42.0, null),
-            )
-
-        val rjsRoute =
-            RJSRoute(
-                "route",
-                RJSWaypointRef("begin", BUFFER_STOP),
-                START_TO_STOP,
-                RJSWaypointRef("end", BUFFER_STOP)
-            )
-        rjsRoute.switchesDirections = mapOf(Pair("link_ab", "STATIC"), Pair("link_bc", "STATIC"))
-        rjsInfra.routes = listOf(rjsRoute)
-
-        val infra = parseRJSInfra(rjsInfra)
         val route = infra.getRouteFromName("route")
         val signalMap = infra.physicalSignals.associateBy { infra.getPhysicalSignalName(it)!! }
         val signalU = signalMap["U"]!!
