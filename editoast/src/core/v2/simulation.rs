@@ -84,9 +84,9 @@ impl From<RollingStockModel> for PhysicRollingStock {
 pub struct SimulationScheduleItem {
     /// Position on the path in mm
     pub path_offset: u64,
-    /// Time in s since the departure of the train
+    /// Time in ms since the departure of the train
     pub arrival: Option<u64>,
-    /// Duration of the stop in s
+    /// Duration of the stop in ms
     pub stop_for: Option<u64>,
 }
 
