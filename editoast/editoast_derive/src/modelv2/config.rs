@@ -122,6 +122,14 @@ impl ModelConfig {
         }
     }
 
+    pub(super) fn get_primary_field_column(&self) -> syn::Ident {
+        match self.primary_typed_identifier.columns.as_slice() {
+            [column] => column.clone(),
+            [] => panic!("Model: primary field should have exactly one column"),
+            _ => panic!("Model: compound primary field should be impossible"),
+        }
+    }
+
     pub(super) fn changeset_fields(&self) -> impl Iterator<Item = &ModelField> {
         self.fields
             .iter()
