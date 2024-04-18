@@ -13,7 +13,7 @@
     "unableToDuplicateATrain": "Impossible de dupliquer le train"
   },
   "filterPlaceholder": "Filtre, étiquettes",
-  "infraLoadingState": "{{step}}/8",
+  "infraLoadingState": "{{step}}/7",
   "modifyScenario": "Modifier le scénario",
   "noElectricalProfileSet": "Pas de profils électriques",
   "scenarioCancel": "Annuler",

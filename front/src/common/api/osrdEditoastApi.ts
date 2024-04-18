@@ -1781,7 +1781,6 @@ export type Infra = {
     | 'DOWNLOADING'
     | 'PARSING_JSON'
     | 'PARSING_INFRA'
-    | 'ADAPTING_KOTLIN'
     | 'LOADING_SIGNALS'
     | 'BUILDING_BLOCKS'
     | 'CACHED'
