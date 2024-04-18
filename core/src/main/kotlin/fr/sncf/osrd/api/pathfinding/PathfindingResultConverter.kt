@@ -109,16 +109,16 @@ fun makeOperationalPoints(
 private fun makePendingOPWaypoint(
     infra: RawSignalingInfra,
     pathOffset: Offset<Path>,
-    opId: OperationalPointPartId
+    opPartId: OperationalPointPartId
 ): PathWaypointResult {
-    val partChunk = infra.getOperationalPointPartChunk(opId)
-    val partChunkOffset = infra.getOperationalPointPartChunkOffset(opId)
-    val opName = infra.getOperationalPointPartName(opId)
+    val partChunk = infra.getOperationalPointPartChunk(opPartId)
+    val partChunkOffset = infra.getOperationalPointPartChunkOffset(opPartId)
+    val opId = infra.getOperationalPointPartOpId(opPartId)
     val trackId = infra.getTrackFromChunk(partChunk)
     val trackOffset = partChunkOffset + infra.getTrackChunkOffset(partChunk).distance
     val trackName = infra.getTrackSectionName(trackId)
     val location = PathWaypointLocation(trackName, trackOffset.distance.meters)
-    return PathWaypointResult(location, pathOffset.distance.meters, true, opName)
+    return PathWaypointResult(location, pathOffset.distance.meters, true, opId)
 }
 
 /** Creates a pending waypoint from a path and its offset */

@@ -446,18 +446,24 @@ class DummyInfra : RawInfra, BlockInfra {
     }
 
     override fun getOperationalPointPartChunk(
-        operationalPoint: OperationalPointPartId
+        operationalPointPart: OperationalPointPartId
     ): TrackChunkId {
         TODO("Not yet implemented")
     }
 
     override fun getOperationalPointPartChunkOffset(
-        operationalPoint: OperationalPointPartId
+        operationalPointPart: OperationalPointPartId
     ): Offset<TrackChunk> {
         TODO("Not yet implemented")
     }
 
-    override fun getOperationalPointPartName(operationalPoint: OperationalPointPartId): String {
+    override fun getOperationalPointPartOpId(operationalPointPart: OperationalPointPartId): String {
+        TODO("Not yet implemented")
+    }
+
+    override fun getOperationalPointPartProps(
+        operationalPointPart: OperationalPointPartId
+    ): Map<String, String> {
         TODO("Not yet implemented")
     }
 

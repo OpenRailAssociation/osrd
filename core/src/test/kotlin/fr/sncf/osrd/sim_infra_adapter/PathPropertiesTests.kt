@@ -7,6 +7,8 @@ import fr.sncf.osrd.parseRJSInfra
 import fr.sncf.osrd.railjson.schema.common.graph.ApplicableDirection
 import fr.sncf.osrd.railjson.schema.geom.RJSLineString
 import fr.sncf.osrd.railjson.schema.infra.RJSOperationalPoint
+import fr.sncf.osrd.railjson.schema.infra.RJSOperationalPointExtensions
+import fr.sncf.osrd.railjson.schema.infra.RJSOperationalPointSncfExtension
 import fr.sncf.osrd.railjson.schema.infra.trackranges.*
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType
 import fr.sncf.osrd.sim_infra.api.BlockId
@@ -109,16 +111,39 @@ class PathPropertiesTests {
                 RJSOperationalPoint(
                     "point1",
                     listOf(
-                        RJSOperationalPointPart("TA0", 1_000.0),
-                        RJSOperationalPointPart("TA0", 1_500.0),
+                        RJSOperationalPointPart(
+                            "TA0",
+                            1_000.0,
+                            RJSOperationalPointPartExtensions(
+                                RJSOperationalPointPartSncfExtension("kp1")
+                            )
+                        ),
+                        RJSOperationalPointPart(
+                            "TA0",
+                            1_500.0,
+                            RJSOperationalPointPartExtensions(
+                                RJSOperationalPointPartSncfExtension("kp2")
+                            )
+                        ),
+                    ),
+                    RJSOperationalPointExtensions(
+                        RJSOperationalPointSncfExtension(0, "BV", "B", "0", "TRI"),
+                        null
                     )
                 ),
                 RJSOperationalPoint(
                     "point2",
                     listOf(
-                        RJSOperationalPointPart("TA1", 0.0),
-                        RJSOperationalPointPart("TA1", 1_950.0),
-                    )
+                        RJSOperationalPointPart(
+                            "TA1",
+                            0.0,
+                            RJSOperationalPointPartExtensions(
+                                RJSOperationalPointPartSncfExtension("kp3")
+                            )
+                        ),
+                        RJSOperationalPointPart("TA1", 1_950.0, null),
+                    ),
+                    null
                 )
             )
         val infra = parseRJSInfra(rjsInfra)
@@ -132,7 +157,7 @@ class PathPropertiesTests {
             )
         val opIdsIdxWithOffset =
             path.getOperationalPointParts().map { op ->
-                Pair(infra.getOperationalPointPartName(op.value), op.offset)
+                Pair(infra.getOperationalPointPartOpId(op.value), op.offset)
             }
         assertEquals(
             listOf(
@@ -153,7 +178,7 @@ class PathPropertiesTests {
             )
         val opIdsIdxWithOffsetBackward =
             pathBackward.getOperationalPointParts().map { op ->
-                Pair(infra.getOperationalPointPartName(op.value), op.offset)
+                Pair(infra.getOperationalPointPartOpId(op.value), op.offset)
             }
         assertEquals(
             listOf(

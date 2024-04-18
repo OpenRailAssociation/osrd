@@ -162,9 +162,11 @@ class ZonePathDescriptor(
 ) : ZonePathSpec(entry, exit, movableElements, movableElementsConfigs)
 
 class OperationalPointPartDescriptor(
-    val name: String,
+    // Multiple OperationalPointParts can have the same operationalPointId
+    val operationalPointId: String,
     val chunkOffset: Offset<TrackChunk>,
     val chunk: TrackChunkId,
+    val props: Map<String, String>,
 )
 
 class ZonePathCache(
@@ -439,19 +441,25 @@ class RawInfraImplFromRjs(
     }
 
     override fun getOperationalPointPartChunk(
-        operationalPoint: OperationalPointPartId
+        operationalPointPart: OperationalPointPartId
     ): TrackChunkId {
-        return operationalPointPartPool[operationalPoint].chunk
+        return operationalPointPartPool[operationalPointPart].chunk
     }
 
     override fun getOperationalPointPartChunkOffset(
-        operationalPoint: OperationalPointPartId
+        operationalPointPart: OperationalPointPartId
     ): Offset<TrackChunk> {
-        return operationalPointPartPool[operationalPoint].chunkOffset
+        return operationalPointPartPool[operationalPointPart].chunkOffset
     }
 
-    override fun getOperationalPointPartName(operationalPoint: OperationalPointPartId): String {
-        return operationalPointPartPool[operationalPoint].name
+    override fun getOperationalPointPartOpId(operationalPointPart: OperationalPointPartId): String {
+        return operationalPointPartPool[operationalPointPart].operationalPointId
+    }
+
+    override fun getOperationalPointPartProps(
+        operationalPointPart: OperationalPointPartId
+    ): Map<String, String> {
+        return operationalPointPartPool[operationalPointPart].props
     }
 
     override fun getTrackChunkGeom(trackChunk: TrackChunkId): LineString {
