@@ -1,5 +1,4 @@
-use proc_macro2::TokenStream;
-use quote::quote;
+use super::Fields;
 
 #[derive(Debug, Clone, PartialEq, Hash, Eq)]
 pub enum Identifier {
@@ -14,14 +13,46 @@ impl Identifier {
             Self::Compound(idents) => idents.clone(),
         }
     }
+}
 
-    pub fn get_ident_lvalue(&self) -> TokenStream {
-        match self {
-            Self::Field(ident) => quote! { #ident },
-            Self::Compound(idents) => {
-                quote! { (#(#idents),*) }
-            }
+#[derive(Debug, Clone, PartialEq, Hash, Eq)]
+pub(crate) struct TypedIdentifier {
+    pub(crate) identifier: Identifier,
+    pub(crate) field_types: Vec<syn::Type>,
+    pub(crate) columns: Vec<syn::Ident>,
+}
+
+impl TypedIdentifier {
+    pub(crate) fn new(identifier: Identifier, fields: &Fields) -> Self {
+        let (field_types, columns) = {
+            let fields = match &identifier {
+                Identifier::Field(ident) => {
+                    vec![fields
+                        .get(ident)
+                        .expect("identifier should exist in the provided config")]
+                }
+                Identifier::Compound(idents) => idents
+                    .iter()
+                    .map(|ident| {
+                        fields
+                            .get(ident)
+                            .expect("identifier should exist in the provided config")
+                    })
+                    .collect(),
+            };
+            let field_types = fields.iter().map(|field| field.ty.clone()).collect();
+            let columns = fields.iter().map(|field| field.column_ident()).collect();
+            (field_types, columns)
+        };
+        Self {
+            identifier,
+            field_types,
+            columns,
         }
+    }
+
+    pub(crate) fn get_idents(&self) -> Vec<syn::Ident> {
+        self.identifier.get_idents()
     }
 }
 
