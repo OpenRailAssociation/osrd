@@ -11,3 +11,7 @@ pub use hash_rounded_float::hash_float;
 pub use hash_rounded_float::hash_float_slice;
 pub use identifier::Identifier;
 pub use non_blank_string::NonBlankString;
+
+schemas! {
+    geometry::schemas(),
+}

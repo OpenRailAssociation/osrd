@@ -100,6 +100,7 @@ editoast_common::schemas! {
     single_simulation::schemas(),
     v2::schemas(),
     work_schedules::schemas(),
+    editoast_common::schemas(),
 }
 
 #[derive(OpenApi)]
