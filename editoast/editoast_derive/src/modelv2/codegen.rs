@@ -20,14 +20,10 @@ mod update_impl;
 
 use syn::parse_quote;
 
-use crate::modelv2::codegen::changeset_decl::ChangesetDecl;
-use crate::modelv2::codegen::changeset_decl::ChangesetFieldDecl;
-use crate::modelv2::codegen::model_impl::ModelImpl;
-use crate::modelv2::codegen::row_decl::RowDecl;
-use crate::modelv2::codegen::row_decl::RowFieldDecl;
-
 use self::changeset_builder_impl_block::BuilderType;
 use self::changeset_builder_impl_block::ChangesetBuilderImplBlock;
+use self::changeset_decl::ChangesetDecl;
+use self::changeset_decl::ChangesetFieldDecl;
 use self::changeset_from_model::ChangesetFromModelImpl;
 use self::create_batch_impl::CreateBatchImpl;
 use self::create_batch_with_key_impl::CreateBatchWithKeyImpl;
@@ -38,9 +34,12 @@ use self::delete_static_impl::DeleteStaticImpl;
 use self::exists_impl::ExistsImpl;
 use self::identifiable_impl::IdentifiableImpl;
 use self::model_from_row_impl::ModelFromRowImpl;
+use self::model_impl::ModelImpl;
 use self::preferred_id_impl::PreferredIdImpl;
 use self::retrieve_batch_impl::RetrieveBatchImpl;
 use self::retrieve_impl::RetrieveImpl;
+use self::row_decl::RowDecl;
+use self::row_decl::RowFieldDecl;
 use self::update_batch_impl::UpdateBatchImpl;
 use self::update_impl::UpdateImpl;
 
