@@ -3,8 +3,6 @@ mod railjson;
 pub mod track_section;
 pub mod v2;
 
-use editoast_schemas::primitives::OSRDIdentified;
-use editoast_schemas::primitives::ObjectType;
 pub use errors::InfraError;
 pub use errors::InfraErrorType;
 pub use railjson::RailJson;

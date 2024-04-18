@@ -1,15 +1,15 @@
 use derivative::Derivative;
 use editoast_common::Identifier;
 use editoast_common::NonBlankString;
+use editoast_schemas::primitives::OSRDIdentified;
 use editoast_schemas::primitives::OSRDTyped;
+use editoast_schemas::primitives::ObjectType;
 use editoast_schemas::rolling_stock::LoadingGaugeType;
 use geos::geojson::Geometry;
 use geos::geojson::Value::LineString;
 use serde::Deserialize;
 use serde::Serialize;
 
-use super::OSRDIdentified;
-use super::ObjectType;
 use crate::map::BoundingBox;
 
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq)]
