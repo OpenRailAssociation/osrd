@@ -14,7 +14,7 @@
   },
   "filterPlaceholder": "Filter, tags",
   "advancedFiltersPlaceholder": "Filter by family, serie, detail",
-  "infraLoadingState": "{{step}}/8",
+  "infraLoadingState": "{{step}}/7",
   "modifyScenario": "Modify scenario",
   "noElectricalProfileSet": "No electrical profile",
   "scenarioCancel": "Cancel",
