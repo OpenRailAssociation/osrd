@@ -1,6 +1,7 @@
 use derivative::Derivative;
 use editoast_common::Identifier;
 use editoast_common::NonBlankString;
+use editoast_schemas::primitives::BoundingBox;
 use editoast_schemas::primitives::OSRDIdentified;
 use editoast_schemas::primitives::OSRDTyped;
 use editoast_schemas::primitives::ObjectType;
@@ -9,8 +10,6 @@ use geos::geojson::Geometry;
 use geos::geojson::Value::LineString;
 use serde::Deserialize;
 use serde::Serialize;
-
-use crate::map::BoundingBox;
 
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
@@ -115,7 +114,7 @@ mod test {
     use serde_json::from_str;
 
     use super::TrackSectionExtensions;
-    use crate::map::BoundingBox;
+    use editoast_schemas::primitives::BoundingBox;
 
     /// Test bounding box from linestring
     #[test]

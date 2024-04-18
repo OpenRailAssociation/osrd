@@ -48,7 +48,6 @@ use crate::error::ErrorDefinition;
 use crate::error::Result;
 use crate::error::{self};
 use crate::infra_cache::operation;
-use crate::map;
 use crate::models;
 use crate::modelsv2;
 use crate::DbPool;
@@ -84,7 +83,6 @@ editoast_common::schemas! {
     models::schemas(),
     modelsv2::schemas(),
     core::schemas(),
-    map::schemas(),
     Version,
     timetable::schemas(),
     documents::schemas(),

@@ -54,9 +54,9 @@ use crate::infra_cache::object_cache::SwitchCache;
 use crate::infra_cache::object_cache::TrackSectionCache;
 use crate::infra_cache::operation::CacheOperation;
 use crate::infra_cache::operation::RailjsonObject;
-use crate::map::BoundingBox;
 use crate::modelsv2::railjson::find_all_schemas;
 use crate::modelsv2::Infra;
+use editoast_schemas::primitives::BoundingBox;
 
 /// Contains infra cached data used to generate layers and errors
 #[derive(Debug, Default, Clone)]
@@ -861,7 +861,6 @@ pub mod tests {
     use crate::infra_cache::operation::create::tests::create_track;
     use crate::infra_cache::InfraCache;
     use crate::infra_cache::SwitchCache;
-    use crate::map::BoundingBox;
     use crate::modelsv2::infra::tests::test_infra_transaction;
     use editoast_common::Identifier;
     use editoast_common::NonBlankString;
@@ -877,6 +876,7 @@ pub mod tests {
     use editoast_schemas::infra::SwitchPortConnection;
     use editoast_schemas::infra::SwitchType;
     use editoast_schemas::infra::TrackEndpoint;
+    use editoast_schemas::primitives::BoundingBox;
     use editoast_schemas::primitives::OSRDIdentified;
 
     #[actix_test]

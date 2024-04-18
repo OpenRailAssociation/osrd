@@ -220,6 +220,30 @@ impl EditoastError for json_patch::PatchError {
     }
 }
 
+inventory::submit! {
+    crate::error::ErrorDefinition::new("editoast:geometry:UnexpectedGeometry", "UnexpectedGeometry", "GeometryError", 404u16, r#"{"expected":"String","actual":"String"}"#)
+}
+impl EditoastError for editoast_schemas::errors::GeometryError {
+    fn get_status(&self) -> StatusCode {
+        StatusCode::INTERNAL_SERVER_ERROR
+    }
+
+    fn get_type(&self) -> &str {
+        "editoast:geometry:UnexpectedGeometry"
+    }
+
+    fn context(&self) -> HashMap<String, Value> {
+        match self {
+            Self::UnexpectedGeometry { expected, actual } => {
+                let mut context = HashMap::new();
+                context.insert("expected".to_string(), json!(expected));
+                context.insert("actual".to_string(), json!(actual));
+                context
+            }
+        }
+    }
+}
+
 // error definition : uses by the macro EditoastError to generate
 // the list of error and share it with the openAPI generator
 #[derive(Debug)]

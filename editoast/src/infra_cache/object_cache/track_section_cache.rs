@@ -7,10 +7,10 @@ use editoast_schemas::primitives::ObjectType;
 
 use crate::infra_cache::Cache;
 use crate::infra_cache::ObjectCache;
-use crate::map::BoundingBox;
 use crate::schema::track_section::Curve;
 use crate::schema::track_section::Slope;
 use crate::schema::TrackSection;
+use editoast_schemas::primitives::BoundingBox;
 
 #[derive(Debug, Clone, Derivative)]
 #[derivative(Hash, PartialEq, Default)]

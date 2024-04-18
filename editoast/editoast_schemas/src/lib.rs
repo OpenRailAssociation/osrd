@@ -1,3 +1,4 @@
+pub mod errors;
 pub mod infra;
 pub mod primitives;
 pub mod rolling_stock;
