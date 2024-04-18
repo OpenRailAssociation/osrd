@@ -36,6 +36,7 @@ pub fn model(input: &DeriveInput) -> Result<TokenStream> {
 
     let model_impls = config.make_model_traits_impl();
     let exist_impls = config.exists_impls();
+    let retrieve_impls = config.retrieve_impls();
 
     Ok(quote! {
         #model_impl
@@ -53,6 +54,7 @@ pub fn model(input: &DeriveInput) -> Result<TokenStream> {
 
         #model_impls
         #(#exist_impls)*
+        #(#retrieve_impls)*
     })
 }
 
