@@ -1,7 +1,6 @@
 mod errors;
 mod railjson;
 pub mod track_section;
-pub mod utils;
 pub mod v2;
 
 use editoast_schemas::primitives::OSRDIdentified;
@@ -21,7 +20,6 @@ cfg_if! {
 use crate::infra_cache::operation;
 
 editoast_common::schemas! {
-    utils::schemas(),
     editoast_schemas::schemas(),
     operation::schemas(),
 }
