@@ -51,7 +51,6 @@ use crate::infra_cache::operation;
 use crate::map;
 use crate::models;
 use crate::modelsv2;
-use crate::schema;
 use crate::DbPool;
 use crate::RedisClient;
 
@@ -84,7 +83,6 @@ editoast_common::schemas! {
     error::schemas(),
     models::schemas(),
     modelsv2::schemas(),
-    schema::schemas(),
     core::schemas(),
     map::schemas(),
     Version,
@@ -103,6 +101,7 @@ editoast_common::schemas! {
     work_schedules::schemas(),
     editoast_common::schemas(),
     operation::schemas(),
+    editoast_schemas::schemas(),
 }
 
 #[derive(OpenApi)]
