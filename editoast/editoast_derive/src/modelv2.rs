@@ -35,6 +35,7 @@ pub fn model(input: &DeriveInput) -> Result<TokenStream> {
     let patch_builder = config.patch_builder_impl_block();
 
     let model_impls = config.make_model_traits_impl();
+    let exist_impls = config.exists_impls();
 
     Ok(quote! {
         #model_impl
@@ -51,6 +52,7 @@ pub fn model(input: &DeriveInput) -> Result<TokenStream> {
         #patch_builder
 
         #model_impls
+        #(#exist_impls)*
     })
 }
 
