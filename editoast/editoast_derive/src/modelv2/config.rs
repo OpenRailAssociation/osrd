@@ -73,27 +73,6 @@ impl Fields {
     }
 }
 
-impl Identifier {
-    pub fn get_field<'a>(&self, config: &'a ModelConfig) -> Option<&'a ModelField> {
-        match self {
-            Self::Field(ident) => config.fields.get(ident),
-            Self::Compound(_) => None,
-        }
-    }
-
-    pub fn type_expr(&self, config: &ModelConfig) -> syn::Type {
-        match self {
-            Self::Field(_) => self.get_field(config).unwrap().ty.clone(),
-            Self::Compound(idents) => {
-                let ty = idents
-                    .iter()
-                    .map(|ident| &config.fields.get(ident).unwrap().ty);
-                syn::parse_quote! { (#(#ty),*) } // tuple type
-            }
-        }
-    }
-}
-
 impl ModelConfig {
     pub fn iter_fields(&self) -> impl Iterator<Item = &ModelField> {
         self.fields.iter()

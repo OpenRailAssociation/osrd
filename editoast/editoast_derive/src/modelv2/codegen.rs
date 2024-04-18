@@ -4,6 +4,7 @@ mod changeset_from_model;
 mod create_batch_impl;
 mod create_batch_with_key_impl;
 mod create_impl;
+mod delete_batch_impl;
 mod delete_impl;
 mod delete_static_impl;
 mod exists_impl;
@@ -17,8 +18,6 @@ mod row_decl;
 mod update_batch_impl;
 mod update_impl;
 
-use proc_macro2::{Span, TokenStream};
-use quote::quote;
 use syn::parse_quote;
 
 use crate::modelv2::codegen::changeset_decl::ChangesetDecl;
@@ -33,6 +32,7 @@ use self::changeset_from_model::ChangesetFromModelImpl;
 use self::create_batch_impl::CreateBatchImpl;
 use self::create_batch_with_key_impl::CreateBatchWithKeyImpl;
 use self::create_impl::CreateImpl;
+use self::delete_batch_impl::DeleteBatchImpl;
 use self::delete_impl::DeleteImpl;
 use self::delete_static_impl::DeleteStaticImpl;
 use self::exists_impl::ExistsImpl;
@@ -306,72 +306,15 @@ impl ModelConfig {
             .collect()
     }
 
-    pub fn make_model_traits_impl(&self) -> TokenStream {
-        let model = &self.model;
-        let table_mod = &self.table;
-        let table_name = self.table_name();
-
-        let np!(ty, ident, batch_filter, batch_param_count): np!(vec4) = self
-            .identifiers
+    pub(crate) fn delete_batch_impls(&self) -> Vec<DeleteBatchImpl> {
+        self.typed_identifiers
             .iter()
-            .map(|id| {
-                let type_expr = id.type_expr(self);
-                let lvalue = id.get_ident_lvalue();
-
-                let (ident, column): (Vec<_>, Vec<_>) = id
-                    .get_idents()
-                    .into_iter()
-                    .map(|ident| {
-                        let field = self.fields.get(&ident).unwrap();
-                        let column = syn::Ident::new(&field.column, Span::call_site());
-                        (ident, column)
-                    })
-                    .unzip();
-
-                // Batched row access (batch_filter is the argument of a .or_filter())
-                let batch_filter = {
-                    let mut idents = ident.iter().zip(column.iter()).rev();
-                    let (first_ident, first_column) = idents.next().unwrap();
-                    idents.fold(
-                        quote! { dsl::#first_column.eq(#first_ident) },
-                        |acc, (ident, column)| {
-                            quote! { dsl::#column.eq(#ident).and(#acc) }
-                        },
-                    )
-                };
-                let param_count = ident.len();
-
-                np!(type_expr, lvalue, batch_filter, param_count)
+            .map(|identifier| DeleteBatchImpl {
+                model: self.model.clone(),
+                table_name: self.table_name(),
+                table_mod: self.table.clone(),
+                identifier: identifier.clone(),
             })
-            .unzip();
-
-        quote! {
-            #(
-                #[automatically_derived]
-                #[async_trait::async_trait]
-                impl crate::modelsv2::DeleteBatch<#ty> for #model {
-                    async fn delete_batch<I: std::iter::IntoIterator<Item = #ty> + Send + 'async_trait>(
-                        conn: &mut diesel_async::AsyncPgConnection,
-                        ids: I,
-                    ) -> crate::error::Result<usize> {
-                        use #table_mod::dsl;
-                        use diesel::prelude::*;
-                        use diesel_async::RunQueryDsl;
-                        let counts = crate::chunked_for_libpq! {
-                            #batch_param_count,
-                            ids,
-                            chunk => {
-                                let mut query = diesel::delete(dsl::#table_name).into_boxed();
-                                for #ident in chunk.into_iter() {
-                                    query = query.or_filter(#batch_filter);
-                                }
-                                query.execute(conn).await?
-                            }
-                        };
-                        Ok(counts.into_iter().sum())
-                    }
-                }
-            )*
-        }
+            .collect()
     }
 }

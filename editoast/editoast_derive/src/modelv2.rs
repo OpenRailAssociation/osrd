@@ -34,7 +34,6 @@ pub fn model(input: &DeriveInput) -> Result<TokenStream> {
     let changeset_builder = config.changeset_builder_impl_block();
     let patch_builder = config.patch_builder_impl_block();
 
-    let model_impls = config.make_model_traits_impl();
     let exist_impls = config.exists_impls();
     let retrieve_impls = config.retrieve_impls();
     let update_impls = config.update_impls();
@@ -45,6 +44,7 @@ pub fn model(input: &DeriveInput) -> Result<TokenStream> {
     let create_batch_with_key_impls = config.create_batch_with_key_impls();
     let retrieve_batch_impls = config.retrieve_batch_impls();
     let update_batch_impls = config.update_batch_impls();
+    let delete_batch_impls = config.delete_batch_impls();
 
     Ok(quote! {
         #model_impl
@@ -60,7 +60,6 @@ pub fn model(input: &DeriveInput) -> Result<TokenStream> {
         #changeset_builder
         #patch_builder
 
-        #model_impls
         #(#exist_impls)*
         #(#retrieve_impls)*
         #(#update_impls)*
@@ -71,6 +70,7 @@ pub fn model(input: &DeriveInput) -> Result<TokenStream> {
         #(#create_batch_with_key_impls)*
         #(#retrieve_batch_impls)*
         #(#update_batch_impls)*
+        #(#delete_batch_impls)*
     })
 }
 
