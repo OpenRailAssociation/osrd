@@ -18,14 +18,11 @@ pub struct ModelConfig {
     pub fields: Fields,
     pub row: GeneratedTypeArgs,
     pub changeset: GeneratedTypeArgs,
-    pub identifiers: HashSet<Identifier>, // identifiers ⊆ fields
-    pub preferred_identifier: Identifier, // preferred_identifier ∈ identifiers
-    pub primary_field: Identifier,        // primary_field ∈ identifiers
     // NOTE: duplication is temporary, will replace plain identifers once
     // the ToTokens refactoring is complete
-    pub(crate) typed_identifiers: HashSet<TypedIdentifier>,
-    pub(crate) preferred_typed_identifier: TypedIdentifier,
-    pub(crate) primary_typed_identifier: TypedIdentifier,
+    pub(crate) typed_identifiers: HashSet<TypedIdentifier>, // identifiers ⊆ fields
+    pub(crate) preferred_typed_identifier: TypedIdentifier, // preferred_identifier ∈ identifiers
+    pub(crate) primary_typed_identifier: TypedIdentifier,   // primary_field ∈ identifiers
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -79,10 +76,7 @@ impl ModelConfig {
     }
 
     pub fn is_primary(&self, field: &ModelField) -> bool {
-        match &self.primary_field {
-            Identifier::Field(ident) => ident == &field.ident,
-            Identifier::Compound(_) => false,
-        }
+        field.ident == self.get_primary_field_ident()
     }
 
     pub fn table_name(&self) -> syn::Ident {
