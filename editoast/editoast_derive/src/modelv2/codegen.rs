@@ -1,6 +1,7 @@
 mod changeset_builder_impl_block;
 mod changeset_decl;
 mod changeset_from_model;
+mod create_impl;
 mod delete_static_impl;
 mod exists_impl;
 mod identifiable_impl;
@@ -24,6 +25,7 @@ use crate::modelv2::codegen::row_decl::RowFieldDecl;
 use self::changeset_builder_impl_block::BuilderType;
 use self::changeset_builder_impl_block::ChangesetBuilderImplBlock;
 use self::changeset_from_model::ChangesetFromModelImpl;
+use self::create_impl::CreateImpl;
 use self::delete_static_impl::DeleteStaticImpl;
 use self::exists_impl::ExistsImpl;
 use self::identifiable_impl::IdentifiableImpl;
@@ -223,6 +225,15 @@ impl ModelConfig {
             .collect()
     }
 
+    pub(crate) fn create_impl(&self) -> CreateImpl {
+        CreateImpl {
+            model: self.model.clone(),
+            table_mod: self.table.clone(),
+            row: self.row.ident(),
+            changeset: self.changeset.ident(),
+        }
+    }
+
     pub fn make_model_traits_impl(&self) -> TokenStream {
         let model = &self.model;
         let table_mod = &self.table;
@@ -275,23 +286,6 @@ impl ModelConfig {
             .unzip();
 
         quote! {
-            #[automatically_derived]
-            #[async_trait::async_trait]
-            impl crate::modelsv2::Create<#model> for #cs_ident {
-                async fn create(
-                    self,
-                    conn: &mut diesel_async::AsyncPgConnection,
-                ) -> crate::error::Result<#model> {
-                    use diesel_async::RunQueryDsl;
-                    diesel::insert_into(#table_mod::table)
-                        .values(&self)
-                        .get_result::<#row_ident>(conn)
-                        .await
-                        .map(Into::into)
-                        .map_err(Into::into)
-                }
-            }
-
             #[automatically_derived]
             #[async_trait::async_trait]
             impl crate::modelsv2::Delete for #model {

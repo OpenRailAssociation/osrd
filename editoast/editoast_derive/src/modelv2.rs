@@ -39,6 +39,7 @@ pub fn model(input: &DeriveInput) -> Result<TokenStream> {
     let retrieve_impls = config.retrieve_impls();
     let update_impls = config.update_impls();
     let delete_static_impls = config.delete_static_impls();
+    let create_impl = config.create_impl();
 
     Ok(quote! {
         #model_impl
@@ -59,6 +60,7 @@ pub fn model(input: &DeriveInput) -> Result<TokenStream> {
         #(#retrieve_impls)*
         #(#update_impls)*
         #(#delete_static_impls)*
+        #create_impl
     })
 }
 
