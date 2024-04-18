@@ -6,6 +6,7 @@ mod identifiable_impl;
 mod model_from_row_impl;
 mod model_impl;
 mod preferred_id_impl;
+mod retrieve_impl;
 mod row_decl;
 
 use proc_macro2::{Span, TokenStream};
@@ -25,6 +26,7 @@ use self::exists_impl::ExistsImpl;
 use self::identifiable_impl::IdentifiableImpl;
 use self::model_from_row_impl::ModelFromRowImpl;
 use self::preferred_id_impl::PreferredIdImpl;
+use self::retrieve_impl::RetrieveImpl;
 
 use super::identifier::TypedIdentifier;
 use super::utils::np;
@@ -166,6 +168,19 @@ impl ModelConfig {
         }
     }
 
+    pub(crate) fn retrieve_impls(&self) -> Vec<RetrieveImpl> {
+        self.typed_identifiers
+            .iter()
+            .map(|identifier| RetrieveImpl {
+                model: self.model.clone(),
+                table_name: self.table_name(),
+                table_mod: self.table.clone(),
+                row: self.row.ident(),
+                identifier: identifier.clone(),
+            })
+            .collect()
+    }
+
     pub(crate) fn exists_impls(&self) -> Vec<ExistsImpl> {
         self.typed_identifiers
             .iter()
@@ -234,26 +249,6 @@ impl ModelConfig {
 
         quote! {
             #(
-                #[automatically_derived]
-                #[async_trait::async_trait]
-                impl crate::modelsv2::Retrieve<#ty> for #model {
-                    async fn retrieve(
-                        conn: &mut diesel_async::AsyncPgConnection,
-                        #ident: #ty,
-                    ) -> crate::error::Result<Option<#model>> {
-                        use diesel::prelude::*;
-                        use diesel_async::RunQueryDsl;
-                        use #table_mod::dsl;
-                        dsl::#table_name
-                            .#filter
-                            .first::<#row_ident>(conn)
-                            .await
-                            .map(Into::into)
-                            .optional()
-                            .map_err(Into::into)
-                    }
-                }
-
                 #[automatically_derived]
                 #[async_trait::async_trait]
                 impl crate::modelsv2::Update<#ty, #model> for #cs_ident {
