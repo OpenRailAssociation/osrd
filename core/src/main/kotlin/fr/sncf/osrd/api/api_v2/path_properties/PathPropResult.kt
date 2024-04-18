@@ -7,8 +7,7 @@ import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import fr.sncf.osrd.railjson.schema.geom.RJSLineString
 import fr.sncf.osrd.sim_infra.api.Path
-import fr.sncf.osrd.utils.json.DistanceAdapterFactory
-import fr.sncf.osrd.utils.json.OffsetAdapterFactory
+import fr.sncf.osrd.utils.json.UnitAdapterFactory
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Offset
 
@@ -71,8 +70,7 @@ val polymorphicAdapter: PolymorphicJsonAdapterFactory<Electrification> =
 val pathPropResultAdapter: JsonAdapter<PathPropResult> =
     Moshi.Builder()
         .add(polymorphicAdapter)
-        .addLast(DistanceAdapterFactory())
-        .addLast(OffsetAdapterFactory())
+        .addLast(UnitAdapterFactory())
         .addLast(KotlinJsonAdapterFactory())
         .build()
         .adapter(PathPropResult::class.java)

@@ -1,6 +1,7 @@
 package fr.sncf.osrd.pathfinding
 
 import fr.sncf.osrd.api.ApiTest
+import fr.sncf.osrd.api.api_v2.TrackRange
 import fr.sncf.osrd.api.api_v2.pathfinding.*
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType

@@ -1,6 +1,7 @@
 package fr.sncf.osrd.api.api_v2.pathfinding
 
 import fr.sncf.osrd.api.FullInfra
+import fr.sncf.osrd.api.api_v2.TrackRange
 import fr.sncf.osrd.api.pathfinding.makeRoutePath
 import fr.sncf.osrd.graph.Pathfinding
 import fr.sncf.osrd.graph.PathfindingEdgeLocationId
