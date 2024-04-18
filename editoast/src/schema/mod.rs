@@ -17,9 +17,6 @@ cfg_if! {
     }
 }
 
-use crate::infra_cache::operation;
-
 editoast_common::schemas! {
     editoast_schemas::schemas(),
-    operation::schemas(),
 }
