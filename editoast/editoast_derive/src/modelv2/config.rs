@@ -121,6 +121,13 @@ impl ModelConfig {
             Identifier::Compound(_) => panic!("Model: compound primary field should be impossible"),
         }
     }
+
+    pub(super) fn changeset_fields(&self) -> impl Iterator<Item = &ModelField> {
+        self.fields
+            .iter()
+            .filter(|field| !self.is_primary(field))
+            .filter(|field| !field.builder_skip)
+    }
 }
 
 impl ModelField {
