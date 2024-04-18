@@ -8,6 +8,7 @@ mod model_impl;
 mod preferred_id_impl;
 mod retrieve_impl;
 mod row_decl;
+mod update_impl;
 
 use proc_macro2::{Span, TokenStream};
 use quote::quote;
@@ -27,6 +28,7 @@ use self::identifiable_impl::IdentifiableImpl;
 use self::model_from_row_impl::ModelFromRowImpl;
 use self::preferred_id_impl::PreferredIdImpl;
 use self::retrieve_impl::RetrieveImpl;
+use self::update_impl::UpdateImpl;
 
 use super::identifier::TypedIdentifier;
 use super::utils::np;
@@ -193,6 +195,20 @@ impl ModelConfig {
             .collect()
     }
 
+    pub(crate) fn update_impls(&self) -> Vec<UpdateImpl> {
+        self.typed_identifiers
+            .iter()
+            .map(|identifier| UpdateImpl {
+                model: self.model.clone(),
+                table_name: self.table_name(),
+                table_mod: self.table.clone(),
+                row: self.row.ident(),
+                changeset: self.changeset.ident(),
+                identifier: identifier.clone(),
+            })
+            .collect()
+    }
+
     pub fn make_model_traits_impl(&self) -> TokenStream {
         let model = &self.model;
         let table_mod = &self.table;
@@ -249,27 +265,6 @@ impl ModelConfig {
 
         quote! {
             #(
-                #[automatically_derived]
-                #[async_trait::async_trait]
-                impl crate::modelsv2::Update<#ty, #model> for #cs_ident {
-                    async fn update(
-                        self,
-                        conn: &mut diesel_async::AsyncPgConnection,
-                        #ident: #ty,
-                    ) -> crate::error::Result<Option<#model>> {
-                        use diesel::prelude::*;
-                        use diesel_async::RunQueryDsl;
-                        use #table_mod::dsl;
-                        diesel::update(dsl::#table_name.#filter)
-                            .set(&self)
-                            .get_result::<#row_ident>(conn)
-                            .await
-                            .map(Into::into)
-                            .optional()
-                            .map_err(Into::into)
-                    }
-                }
-
                 #[automatically_derived]
                 #[async_trait::async_trait]
                 impl crate::modelsv2::DeleteStatic<#ty> for #model {
