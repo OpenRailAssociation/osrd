@@ -1,9 +1,6 @@
-mod bounding_box;
 mod layer_cache;
 mod layers;
 
-pub use bounding_box::BoundingBox;
-pub use bounding_box::Zone;
 pub use layers::Layer;
 pub use layers::MapLayers;
 pub use layers::View;
@@ -15,10 +12,6 @@ pub use self::layer_cache::get_view_cache_prefix;
 pub use self::layer_cache::Tile;
 use crate::error::Result;
 use crate::RedisConnection;
-
-editoast_common::schemas! {
-    bounding_box::schemas(),
-}
 
 /// Invalidates layer cache for a specific infra and view if provided
 ///

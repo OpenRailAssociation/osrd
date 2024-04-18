@@ -1478,10 +1478,12 @@ dependencies = [
  "derivative",
  "editoast_common",
  "enum-map",
+ "geojson",
  "serde",
  "serde_derive",
  "serde_json",
  "strum",
+ "thiserror",
  "utoipa",
 ]
 
