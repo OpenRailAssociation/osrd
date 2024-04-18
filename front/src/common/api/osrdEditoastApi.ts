@@ -735,6 +735,7 @@ const injectedRtkApi = api
           url: `/v2/infra/${queryArg.infraId}/path_properties/`,
           method: 'POST',
           body: queryArg.pathPropertiesInput,
+          params: { props: queryArg.props },
         }),
         invalidatesTags: ['pathfindingv2'],
       }),
@@ -1558,6 +1559,8 @@ export type PostV2InfraByInfraIdPathPropertiesApiResponse =
 export type PostV2InfraByInfraIdPathPropertiesApiArg = {
   /** The infra id */
   infraId: number;
+  /** Path properties */
+  props: Property[];
   pathPropertiesInput: PathPropertiesInput;
 };
 export type PostV2InfraByInfraIdPathfindingBlocksApiResponse =
@@ -2939,6 +2942,12 @@ export type PathProperties = {
     values: number[];
   } | null;
 };
+export type Property =
+  | 'slopes'
+  | 'gradients'
+  | 'electrifications'
+  | 'geometry'
+  | 'operational_points';
 export type PathPropertiesInput = {
   /** List of supported electrification modes.
     Empty if does not support any electrification */
@@ -3055,7 +3064,7 @@ export type PathfindingInputV2 = {
   rolling_stock_loading_gauge: LoadingGaugeType;
   /** List of supported electrification modes.
     Empty if does not support any electrification */
-  rolling_stock_supported_electrification: string[];
+  rolling_stock_supported_electrifications: string[];
   /** List of supported signaling systems */
   rolling_stock_supported_signaling_systems: string[];
 };

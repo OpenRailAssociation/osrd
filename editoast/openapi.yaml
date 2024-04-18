@@ -4087,7 +4087,7 @@ components:
                 description: List of `n+1` values associated to the ranges
                 items:
                   oneOf:
-                  - description: Elecrtified section with a given voltage
+                  - description: Electrified section with a given voltage
                     properties:
                       type:
                         enum:
@@ -4361,7 +4361,7 @@ components:
           type: boolean
         rolling_stock_loading_gauge:
           $ref: '#/components/schemas/LoadingGaugeType'
-        rolling_stock_supported_electrification:
+        rolling_stock_supported_electrifications:
           description: |-
             List of supported electrification modes.
             Empty if does not support any electrification
@@ -4376,7 +4376,7 @@ components:
       required:
       - rolling_stock_loading_gauge
       - rolling_stock_is_thermal
-      - rolling_stock_supported_electrification
+      - rolling_stock_supported_electrifications
       - rolling_stock_supported_signaling_systems
       - path_items
       type: object
@@ -4978,6 +4978,15 @@ components:
         required:
         - studies_count
         type: object
+    Property:
+      description: Enum representing the various associated properties that can be returned
+      enum:
+      - slopes
+      - gradients
+      - electrifications
+      - geometry
+      - operational_points
+      type: string
     Railjson:
       additionalProperties: true
       description: This field follows railjson format
@@ -10188,6 +10197,14 @@ paths:
         schema:
           format: int64
           type: integer
+      - description: Path properties
+        in: query
+        name: props
+        required: true
+        schema:
+          items:
+            $ref: '#/components/schemas/Property'
+          type: array
       requestBody:
         content:
           application/json:
