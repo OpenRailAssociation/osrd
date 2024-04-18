@@ -32,6 +32,7 @@ use crate::DbPool;
 pub struct LightRollingStockModel {
     pub id: i64,
     pub railjson_version: String,
+    #[model(identifier)]
     pub name: String,
     #[model(json)]
     pub effort_curves: LightEffortCurves,

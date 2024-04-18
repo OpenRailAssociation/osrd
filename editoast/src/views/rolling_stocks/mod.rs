@@ -113,7 +113,7 @@ pub enum RollingStockError {
     #[error("Impossible to copy the separated image on the compound image")]
     #[editoast_error(status = 500)]
     CannotCreateCompoundImage,
-    #[error("Rolling stock '{rolling_stock_key}' could not be found", )]
+    #[error("Rolling stock '{rolling_stock_key}' could not be found")]
     #[editoast_error(status = 404)]
     KeyNotFound { rolling_stock_key: RollingStockKey },
     #[error("Name '{name}' already used")]
