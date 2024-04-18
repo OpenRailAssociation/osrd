@@ -1,6 +1,7 @@
 mod changeset_builder_impl_block;
 mod changeset_decl;
 mod changeset_from_model;
+mod exists_impl;
 mod identifiable_impl;
 mod model_from_row_impl;
 mod model_impl;
@@ -20,6 +21,7 @@ use crate::modelv2::codegen::row_decl::RowFieldDecl;
 use self::changeset_builder_impl_block::BuilderType;
 use self::changeset_builder_impl_block::ChangesetBuilderImplBlock;
 use self::changeset_from_model::ChangesetFromModelImpl;
+use self::exists_impl::ExistsImpl;
 use self::identifiable_impl::IdentifiableImpl;
 use self::model_from_row_impl::ModelFromRowImpl;
 use self::preferred_id_impl::PreferredIdImpl;
@@ -164,6 +166,18 @@ impl ModelConfig {
         }
     }
 
+    pub(crate) fn exists_impls(&self) -> Vec<ExistsImpl> {
+        self.typed_identifiers
+            .iter()
+            .map(|identifier| ExistsImpl {
+                model: self.model.clone(),
+                table_name: self.table_name(),
+                table_mod: self.table.clone(),
+                identifier: identifier.clone(),
+            })
+            .collect()
+    }
+
     pub fn make_model_traits_impl(&self) -> TokenStream {
         let model = &self.model;
         let table_mod = &self.table;
@@ -275,23 +289,6 @@ impl ModelConfig {
                             .execute(conn)
                             .await
                             .map(|n| n == 1)
-                            .map_err(Into::into)
-                    }
-                }
-
-                #[automatically_derived]
-                #[async_trait::async_trait]
-                impl crate::modelsv2::Exists<#ty> for #model {
-                    async fn exists(
-                        conn: &mut diesel_async::AsyncPgConnection,
-                        #ident: #ty,
-                    ) -> crate::error::Result<bool> {
-                        use diesel::prelude::*;
-                        use diesel_async::RunQueryDsl;
-                        use #table_mod::dsl;
-                        diesel::select(diesel::dsl::exists(dsl::#table_name.#filter))
-                            .get_result(conn)
-                            .await
                             .map_err(Into::into)
                     }
                 }
