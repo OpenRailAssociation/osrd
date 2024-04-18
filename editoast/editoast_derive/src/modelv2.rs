@@ -41,6 +41,7 @@ pub fn model(input: &DeriveInput) -> Result<TokenStream> {
     let delete_static_impls = config.delete_static_impls();
     let create_impl = config.create_impl();
     let delete_impl = config.delete_impl();
+    let create_batch_impl = config.create_batch_impl();
 
     Ok(quote! {
         #model_impl
@@ -63,6 +64,7 @@ pub fn model(input: &DeriveInput) -> Result<TokenStream> {
         #(#delete_static_impls)*
         #create_impl
         #delete_impl
+        #create_batch_impl
     })
 }
 

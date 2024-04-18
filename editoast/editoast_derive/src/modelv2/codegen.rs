@@ -1,6 +1,7 @@
 mod changeset_builder_impl_block;
 mod changeset_decl;
 mod changeset_from_model;
+mod create_batch_impl;
 mod create_impl;
 mod delete_impl;
 mod delete_static_impl;
@@ -26,6 +27,7 @@ use crate::modelv2::codegen::row_decl::RowFieldDecl;
 use self::changeset_builder_impl_block::BuilderType;
 use self::changeset_builder_impl_block::ChangesetBuilderImplBlock;
 use self::changeset_from_model::ChangesetFromModelImpl;
+use self::create_batch_impl::CreateBatchImpl;
 use self::create_impl::CreateImpl;
 use self::delete_impl::DeleteImpl;
 use self::delete_static_impl::DeleteStaticImpl;
@@ -105,8 +107,7 @@ impl ModelConfig {
             table: self.table.clone(),
             additional_derives: self.changeset.derive.clone(),
             fields: self
-                .iter_fields()
-                .filter(|f| !self.is_primary(f))
+                .changeset_fields()
                 .map(|field| ChangesetFieldDecl {
                     vis: self.changeset.visibility(),
                     name: field.ident.clone(),
@@ -122,12 +123,7 @@ impl ModelConfig {
             builder_type: BuilderType::Changeset,
             model: self.model.clone(),
             changeset: self.changeset.ident(),
-            fields: self
-                .iter_fields()
-                .filter(|field| !self.is_primary(field))
-                .filter(|field| !field.builder_skip)
-                .cloned()
-                .collect(),
+            fields: self.changeset_fields().cloned().collect(),
         }
     }
 
@@ -167,12 +163,7 @@ impl ModelConfig {
         ChangesetFromModelImpl {
             model: self.model.clone(),
             changeset: self.changeset.ident(),
-            fields: self
-                .fields
-                .iter()
-                .filter(|f| !self.is_primary(f))
-                .cloned()
-                .collect(),
+            fields: self.changeset_fields().cloned().collect(),
         }
     }
 
@@ -244,6 +235,17 @@ impl ModelConfig {
         }
     }
 
+    pub(crate) fn create_batch_impl(&self) -> CreateBatchImpl {
+        CreateBatchImpl {
+            model: self.model.clone(),
+            table_name: self.table_name(),
+            table_mod: self.table.clone(),
+            row: self.row.ident(),
+            changeset: self.changeset.ident(),
+            field_count: self.changeset_fields().count(),
+        }
+    }
+
     pub fn make_model_traits_impl(&self) -> TokenStream {
         let model = &self.model;
         let table_mod = &self.table;
@@ -295,37 +297,6 @@ impl ModelConfig {
             .unzip();
 
         quote! {
-            #[automatically_derived]
-            #[async_trait::async_trait]
-            impl crate::modelsv2::CreateBatch<#cs_ident> for #model {
-                async fn create_batch<
-                    I: std::iter::IntoIterator<Item = #cs_ident> + Send + 'async_trait,
-                    C: Default + std::iter::Extend<Self> + Send,
-                >(
-                    conn: &mut diesel_async::AsyncPgConnection,
-                    values: I,
-                ) -> crate::error::Result<C> {
-                    use crate::modelsv2::Model;
-                    use #table_mod::dsl;
-                    use diesel::prelude::*;
-                    use diesel_async::RunQueryDsl;
-                    use futures_util::stream::TryStreamExt;
-                    Ok(crate::chunked_for_libpq! {
-                        #field_count,
-                        values,
-                        C::default(),
-                        chunk => {
-                            diesel::insert_into(dsl::#table_name)
-                                .values(chunk)
-                                .load_stream::<#row_ident>(conn)
-                                .await
-                                .map(|s| s.map_ok(<#model as Model>::from_row).try_collect::<Vec<_>>())?
-                                .await?
-                        }
-                    })
-                }
-            }
-
             #(
                 #[automatically_derived]
                 #[async_trait::async_trait]
