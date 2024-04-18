@@ -331,6 +331,13 @@ const injectedRtkApi = api
         }),
         providesTags: ['rolling_stock'],
       }),
+      getLightRollingStockNameByRollingStockName: build.query<
+        GetLightRollingStockNameByRollingStockNameApiResponse,
+        GetLightRollingStockNameByRollingStockNameApiArg
+      >({
+        query: (queryArg) => ({ url: `/light_rolling_stock/name/${queryArg.rollingStockName}/` }),
+        providesTags: ['rolling_stock'],
+      }),
       getLightRollingStockByRollingStockId: build.query<
         GetLightRollingStockByRollingStockIdApiResponse,
         GetLightRollingStockByRollingStockIdApiArg
@@ -1249,6 +1256,11 @@ export type GetLightRollingStockApiResponse =
 export type GetLightRollingStockApiArg = {
   page?: number;
   pageSize?: number | null;
+};
+export type GetLightRollingStockNameByRollingStockNameApiResponse =
+  /** status 200 The rolling stock with their simplified effort curves */ LightRollingStockWithLiveries;
+export type GetLightRollingStockNameByRollingStockNameApiArg = {
+  rollingStockName: string;
 };
 export type GetLightRollingStockByRollingStockIdApiResponse =
   /** status 200 The rolling stock with their simplified effort curves */ LightRollingStockWithLiveries;

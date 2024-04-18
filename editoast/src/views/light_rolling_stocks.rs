@@ -13,6 +13,7 @@ use crate::views::pagination::PaginationQueryParam;
 use crate::views::rolling_stocks::RollingStockError;
 use crate::views::rolling_stocks::RollingStockIdParam;
 use crate::views::rolling_stocks::RollingStockKey;
+use crate::views::rolling_stocks::RollingStockNameParam;
 use crate::DbPool;
 
 use super::rolling_stocks::light_rolling_stock::LightRollingStockWithLiveries;
@@ -20,6 +21,9 @@ use super::rolling_stocks::light_rolling_stock::LightRollingStockWithLiveries;
 crate::routes! {
     "/light_rolling_stock" => {
         list,
+        "/name/{rolling_stock_name}" => {
+            get_by_name,
+        },
         "/{rolling_stock_id}" => {
             get,
         },
@@ -65,7 +69,7 @@ async fn list(
     Ok(Json(result))
 }
 
-/// Retrieve a rolling stock's light representation
+/// Retrieve a rolling stock's light representation by its id
 #[utoipa::path(
     tag = "rolling_stock",
     params(RollingStockIdParam),
@@ -86,6 +90,33 @@ async fn get(
         }
     })
     .await?;
+    let rollig_stock_with_liveries: LightRollingStockWithLiveries =
+        rolling_stock.with_liveries(db_pool).await?.into();
+    Ok(Json(rollig_stock_with_liveries))
+}
+
+/// Retrieve a rolling stock's light representation by its name
+#[utoipa::path(
+    tag = "rolling_stock",
+    params(RollingStockNameParam),
+    responses(
+        (status = 200, body = LightRollingStockWithLiveries, description = "The rolling stock with their simplified effort curves"),
+    )
+)]
+#[get("")]
+async fn get_by_name(
+    db_pool: Data<DbPool>,
+    rolling_stock_name: Path<String>,
+) -> Result<Json<LightRollingStockWithLiveries>> {
+    let rolling_stock_name = rolling_stock_name.into_inner();
+    let conn = &mut db_pool.get().await?;
+    let rolling_stock =
+        LightRollingStockModel::retrieve_or_fail(conn, rolling_stock_name.clone(), || {
+            RollingStockError::KeyNotFound {
+                rolling_stock_key: RollingStockKey::Name(rolling_stock_name),
+            }
+        })
+        .await?;
     let rollig_stock_with_liveries: LightRollingStockWithLiveries =
         rolling_stock.with_liveries(db_pool).await?.into();
     Ok(Json(rollig_stock_with_liveries))
@@ -153,7 +184,7 @@ mod tests {
         .await;
 
         let req = TestRequest::get()
-            .uri(format!("/light_rolling_stock/{}", rolling_stock.name).as_str())
+            .uri(format!("/light_rolling_stock/name/{}", rolling_stock.name).as_str())
             .to_request();
 
         // WHEN

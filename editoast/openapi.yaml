@@ -8886,9 +8886,28 @@ paths:
       summary: Paginated list of rolling stock with a lighter response
       tags:
       - rolling_stock
+  /light_rolling_stock/name/{rolling_stock_name}/:
+    get:
+      description: Retrieve a rolling stock's light representation by its name
+      parameters:
+      - in: path
+        name: rolling_stock_name
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LightRollingStockWithLiveries'
+          description: The rolling stock with their simplified effort curves
+      summary: Retrieve a rolling stock's light representation by its name
+      tags:
+      - rolling_stock
   /light_rolling_stock/{rolling_stock_id}/:
     get:
-      description: Retrieve a rolling stock's light representation
+      description: Retrieve a rolling stock's light representation by its id
       parameters:
       - in: path
         name: rolling_stock_id
@@ -8903,7 +8922,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/LightRollingStockWithLiveries'
           description: The rolling stock with their simplified effort curves
-      summary: Retrieve a rolling stock's light representation
+      summary: Retrieve a rolling stock's light representation by its id
       tags:
       - rolling_stock
   /pathfinding/:
