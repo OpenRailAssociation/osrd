@@ -17,16 +17,9 @@ export function Platforms(props: PlatformsProps) {
   const { colors, layerOrder } = props;
 
   const platformsParams: LayerProps = {
-    id: 'osm/platforms',
     type: 'fill',
-    source: 'openmaptiles',
     'source-layer': 'transportation',
-    filter: [
-      'all',
-      ['==', ['get', '$type'], 'Polygon'],
-      ['==', ['get', 'class'], 'path'],
-      ['==', ['get', 'subclass'], 'platform'],
-    ],
+    filter: ['all', ['==', ['get', 'class'], 'path'], ['==', ['get', 'subclass'], 'platform']],
     paint: {
       'fill-color': colors.platform.fill,
     },
