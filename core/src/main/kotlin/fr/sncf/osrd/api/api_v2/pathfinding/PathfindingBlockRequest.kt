@@ -6,8 +6,7 @@ import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType
 import fr.sncf.osrd.sim_infra.api.TrackSection
-import fr.sncf.osrd.utils.json.DistanceAdapterFactory
-import fr.sncf.osrd.utils.json.OffsetAdapterFactory
+import fr.sncf.osrd.utils.json.UnitAdapterFactory
 import fr.sncf.osrd.utils.units.Offset
 
 class PathfindingBlockRequest(
@@ -29,8 +28,7 @@ class PathfindingBlockRequest(
 
 val pathfindingRequestAdapter: JsonAdapter<PathfindingBlockRequest> =
     Moshi.Builder()
-        .addLast(DistanceAdapterFactory())
-        .addLast(OffsetAdapterFactory())
+        .addLast(UnitAdapterFactory())
         .addLast(KotlinJsonAdapterFactory())
         .build()
         .adapter(PathfindingBlockRequest::class.java)

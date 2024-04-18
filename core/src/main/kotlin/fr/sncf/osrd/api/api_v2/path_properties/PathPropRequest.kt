@@ -4,9 +4,8 @@ import com.squareup.moshi.Json
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-import fr.sncf.osrd.api.api_v2.pathfinding.TrackRange
-import fr.sncf.osrd.utils.json.DistanceAdapterFactory
-import fr.sncf.osrd.utils.json.OffsetAdapterFactory
+import fr.sncf.osrd.api.api_v2.TrackRange
+import fr.sncf.osrd.utils.json.UnitAdapterFactory
 
 class PathPropRequest(
     @Json(name = "track_section_ranges") val trackSectionRanges: List<TrackRange>,
@@ -17,8 +16,7 @@ class PathPropRequest(
 
 val pathPropRequestAdapter: JsonAdapter<PathPropRequest> =
     Moshi.Builder()
-        .addLast(DistanceAdapterFactory())
-        .addLast(OffsetAdapterFactory())
+        .addLast(UnitAdapterFactory())
         .addLast(KotlinJsonAdapterFactory())
         .build()
         .adapter(PathPropRequest::class.java)

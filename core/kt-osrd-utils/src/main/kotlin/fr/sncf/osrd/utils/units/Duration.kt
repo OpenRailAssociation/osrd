@@ -43,3 +43,5 @@ val Double.seconds: Duration
     get() = Duration(Math.round(this * 1000))
 val Int.seconds: Duration
     get() = Duration(this.toLong() * 1000)
+
+typealias TimeDelta = Duration

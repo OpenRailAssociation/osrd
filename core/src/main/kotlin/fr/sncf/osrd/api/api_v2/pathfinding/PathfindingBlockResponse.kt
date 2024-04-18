@@ -5,20 +5,11 @@ import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection
+import fr.sncf.osrd.api.api_v2.TrackRange
 import fr.sncf.osrd.sim_infra.api.Path
-import fr.sncf.osrd.sim_infra.api.TrackSection
-import fr.sncf.osrd.utils.json.DistanceAdapterFactory
-import fr.sncf.osrd.utils.json.OffsetAdapterFactory
+import fr.sncf.osrd.utils.json.UnitAdapterFactory
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
-
-data class TrackRange(
-    @Json(name = "track_section") val trackSection: String,
-    var begin: Offset<TrackSection>,
-    var end: Offset<TrackSection>,
-    val direction: EdgeDirection,
-)
 
 interface PathfindingBlockResponse
 
@@ -99,8 +90,7 @@ val polymorphicAdapter: PolymorphicJsonAdapterFactory<PathfindingBlockResponse> 
 val pathfindingResponseAdapter: JsonAdapter<PathfindingBlockResponse> =
     Moshi.Builder()
         .add(polymorphicAdapter)
-        .addLast(DistanceAdapterFactory())
-        .addLast(OffsetAdapterFactory())
+        .addLast(UnitAdapterFactory())
         .addLast(KotlinJsonAdapterFactory())
         .build()
         .adapter(PathfindingBlockResponse::class.java)
