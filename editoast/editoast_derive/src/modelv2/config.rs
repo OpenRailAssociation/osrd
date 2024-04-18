@@ -7,7 +7,7 @@ use syn::parse_quote;
 
 use super::{
     args::GeneratedTypeArgs,
-    identifier::{Identifier, TypedIdentifier},
+    identifier::{Identifier, RawIdentifier},
 };
 
 #[derive(Debug, PartialEq)]
@@ -18,11 +18,9 @@ pub struct ModelConfig {
     pub fields: Fields,
     pub row: GeneratedTypeArgs,
     pub changeset: GeneratedTypeArgs,
-    // NOTE: duplication is temporary, will replace plain identifers once
-    // the ToTokens refactoring is complete
-    pub(crate) typed_identifiers: HashSet<TypedIdentifier>, // identifiers ⊆ fields
-    pub(crate) preferred_typed_identifier: TypedIdentifier, // preferred_identifier ∈ identifiers
-    pub(crate) primary_typed_identifier: TypedIdentifier,   // primary_field ∈ identifiers
+    pub(crate) identifiers: HashSet<Identifier>, // identifiers ⊆ fields
+    pub(crate) preferred_identifier: Identifier, // preferred_identifier ∈ identifiers
+    pub(crate) primary_identifier: Identifier,   // primary_identifier ∈ identifiers
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -89,14 +87,16 @@ impl ModelConfig {
     }
 
     pub(super) fn get_primary_field_ident(&self) -> syn::Ident {
-        match &self.primary_typed_identifier.identifier {
-            Identifier::Field(ident) => ident.clone(),
-            Identifier::Compound(_) => panic!("Model: compound primary field should be impossible"),
+        match &self.primary_identifier.raw {
+            RawIdentifier::Field(ident) => ident.clone(),
+            RawIdentifier::Compound(_) => {
+                panic!("Model: compound primary field should be impossible")
+            }
         }
     }
 
     pub(super) fn get_primary_field_column(&self) -> syn::Ident {
-        match self.primary_typed_identifier.columns.as_slice() {
+        match self.primary_identifier.columns.as_slice() {
             [column] => column.clone(),
             [] => panic!("Model: primary field should have exactly one column"),
             _ => panic!("Model: compound primary field should be impossible"),

@@ -1,14 +1,14 @@
 use quote::quote;
 use quote::ToTokens;
 
-use crate::modelv2::identifier::TypedIdentifier;
+use crate::modelv2::identifier::Identifier;
 
 pub(crate) struct RetrieveBatchImpl {
     pub(super) model: syn::Ident,
     pub(super) table_name: syn::Ident,
     pub(super) table_mod: syn::Path,
     pub(super) row: syn::Ident,
-    pub(super) identifier: TypedIdentifier,
+    pub(super) identifier: Identifier,
 }
 
 impl ToTokens for RetrieveBatchImpl {

@@ -13,7 +13,7 @@ use syn::DeriveInput;
 
 use args::ModelArgs;
 use config::*;
-use identifier::Identifier;
+use identifier::RawIdentifier;
 
 pub fn model(input: &DeriveInput) -> Result<TokenStream> {
     let model_name = &input.ident;

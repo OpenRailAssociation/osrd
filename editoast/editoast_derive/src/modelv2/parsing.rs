@@ -5,7 +5,7 @@ use proc_macro2::Span;
 
 use super::{
     args::{GeneratedTypeArgs, ModelArgs, ModelFieldArgs},
-    identifier::{Identifier, TypedIdentifier},
+    identifier::{Identifier, RawIdentifier},
     FieldTransformation, Fields, ModelConfig, ModelField,
 };
 
@@ -60,7 +60,7 @@ impl ModelConfig {
                 field_map
                     .values()
                     .filter(|field| field.identifier)
-                    .map(|field| Identifier::Field(field.ident.clone())),
+                    .map(|field| RawIdentifier::Field(field.ident.clone())),
             )
             .collect();
 
@@ -71,10 +71,10 @@ impl ModelConfig {
             .collect::<Vec<_>>()
             .as_slice()
         {
-            [pf] => Identifier::Field(pf.ident.clone()),
+            [pf] => RawIdentifier::Field(pf.ident.clone()),
             [] => {
                 let id = syn::Ident::new("id", Span::call_site());
-                Identifier::Field(
+                RawIdentifier::Field(
                     field_map
                         .get(&id)
                         .map(|f| f.ident.clone())
@@ -94,7 +94,7 @@ impl ModelConfig {
                 .as_slice(),
         ) {
             (Some(id), []) => id.clone(),
-            (None, [field]) => Identifier::Field(field.ident.clone()),
+            (None, [field]) => RawIdentifier::Field(field.ident.clone()),
             (None, []) => primary_field.clone(),
             _ => {
                 return Err(Error::custom(
@@ -109,11 +109,10 @@ impl ModelConfig {
         let typed_identifiers = raw_identfiers
             .iter()
             .cloned()
-            .map(|id| TypedIdentifier::new(id, &fields))
+            .map(|id| Identifier::new(id, &fields))
             .collect();
-        let preferred_typed_identifier =
-            TypedIdentifier::new(preferred_identifier.clone(), &fields);
-        let primary_typed_identifier = TypedIdentifier::new(primary_field.clone(), &fields);
+        let preferred_typed_identifier = Identifier::new(preferred_identifier.clone(), &fields);
+        let primary_typed_identifier = Identifier::new(primary_field.clone(), &fields);
 
         Ok(Self {
             model: model_name,
@@ -122,9 +121,9 @@ impl ModelConfig {
             fields,
             row,
             changeset,
-            typed_identifiers,
-            preferred_typed_identifier,
-            primary_typed_identifier,
+            identifiers: typed_identifiers,
+            preferred_identifier: preferred_typed_identifier,
+            primary_identifier: primary_typed_identifier,
         })
     }
 }

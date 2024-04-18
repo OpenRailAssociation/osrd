@@ -44,12 +44,12 @@ use self::retrieve_impl::RetrieveImpl;
 use self::update_batch_impl::UpdateBatchImpl;
 use self::update_impl::UpdateImpl;
 
-use super::identifier::TypedIdentifier;
+use super::identifier::Identifier;
 use super::utils::np;
-use super::Identifier;
 use super::ModelConfig;
+use super::RawIdentifier;
 
-impl Identifier {
+impl RawIdentifier {
     fn get_ident_lvalue(&self) -> syn::Expr {
         match self {
             Self::Field(ident) => parse_quote! { #ident },
@@ -60,14 +60,14 @@ impl Identifier {
     }
 }
 
-impl TypedIdentifier {
+impl Identifier {
     fn get_type(&self) -> syn::Type {
         let ty = self.field_types.iter();
         syn::parse_quote! { (#(#ty),*) } // tuple type
     }
 
     fn get_lvalue(&self) -> syn::Expr {
-        self.identifier.get_ident_lvalue()
+        self.raw.get_ident_lvalue()
     }
 
     fn get_diesel_eqs(&self) -> Vec<syn::Expr> {
@@ -151,7 +151,7 @@ impl ModelConfig {
     }
 
     pub(crate) fn identifiable_impls(&self) -> Vec<IdentifiableImpl> {
-        self.typed_identifiers
+        self.identifiers
             .iter()
             .map(|identifier| IdentifiableImpl {
                 model: self.model.clone(),
@@ -164,7 +164,7 @@ impl ModelConfig {
     pub(crate) fn preferred_id_impl(&self) -> PreferredIdImpl {
         PreferredIdImpl {
             model: self.model.clone(),
-            ty: self.preferred_typed_identifier.get_type(),
+            ty: self.preferred_identifier.get_type(),
         }
     }
 
@@ -185,7 +185,7 @@ impl ModelConfig {
     }
 
     pub(crate) fn retrieve_impls(&self) -> Vec<RetrieveImpl> {
-        self.typed_identifiers
+        self.identifiers
             .iter()
             .map(|identifier| RetrieveImpl {
                 model: self.model.clone(),
@@ -198,7 +198,7 @@ impl ModelConfig {
     }
 
     pub(crate) fn exists_impls(&self) -> Vec<ExistsImpl> {
-        self.typed_identifiers
+        self.identifiers
             .iter()
             .map(|identifier| ExistsImpl {
                 model: self.model.clone(),
@@ -210,7 +210,7 @@ impl ModelConfig {
     }
 
     pub(crate) fn update_impls(&self) -> Vec<UpdateImpl> {
-        self.typed_identifiers
+        self.identifiers
             .iter()
             .map(|identifier| UpdateImpl {
                 model: self.model.clone(),
@@ -224,7 +224,7 @@ impl ModelConfig {
     }
 
     pub(crate) fn delete_static_impls(&self) -> Vec<DeleteStaticImpl> {
-        self.typed_identifiers
+        self.identifiers
             .iter()
             .map(|identifier| DeleteStaticImpl {
                 model: self.model.clone(),
@@ -264,7 +264,7 @@ impl ModelConfig {
     }
 
     pub(crate) fn create_batch_with_key_impls(&self) -> Vec<CreateBatchWithKeyImpl> {
-        self.typed_identifiers
+        self.identifiers
             .iter()
             .map(|identifier| CreateBatchWithKeyImpl {
                 model: self.model.clone(),
@@ -279,7 +279,7 @@ impl ModelConfig {
     }
 
     pub(crate) fn retrieve_batch_impls(&self) -> Vec<RetrieveBatchImpl> {
-        self.typed_identifiers
+        self.identifiers
             .iter()
             .map(|identifier| RetrieveBatchImpl {
                 model: self.model.clone(),
@@ -292,7 +292,7 @@ impl ModelConfig {
     }
 
     pub(crate) fn update_batch_impls(&self) -> Vec<UpdateBatchImpl> {
-        self.typed_identifiers
+        self.identifiers
             .iter()
             .map(|identifier| UpdateBatchImpl {
                 model: self.model.clone(),
@@ -307,7 +307,7 @@ impl ModelConfig {
     }
 
     pub(crate) fn delete_batch_impls(&self) -> Vec<DeleteBatchImpl> {
-        self.typed_identifiers
+        self.identifiers
             .iter()
             .map(|identifier| DeleteBatchImpl {
                 model: self.model.clone(),

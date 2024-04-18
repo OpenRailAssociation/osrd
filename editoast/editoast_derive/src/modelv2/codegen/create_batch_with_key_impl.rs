@@ -1,7 +1,7 @@
 use quote::quote;
 use quote::ToTokens;
 
-use crate::modelv2::identifier::TypedIdentifier;
+use crate::modelv2::identifier::Identifier;
 
 pub(crate) struct CreateBatchWithKeyImpl {
     pub(super) model: syn::Ident,
@@ -10,7 +10,7 @@ pub(crate) struct CreateBatchWithKeyImpl {
     pub(super) row: syn::Ident,
     pub(super) changeset: syn::Ident,
     pub(super) field_count: usize,
-    pub(super) identifier: TypedIdentifier,
+    pub(super) identifier: Identifier,
 }
 
 impl ToTokens for CreateBatchWithKeyImpl {
