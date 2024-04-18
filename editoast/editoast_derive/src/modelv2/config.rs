@@ -11,33 +11,33 @@ use super::{
 };
 
 #[derive(Debug, PartialEq)]
-pub struct ModelConfig {
-    pub model: syn::Ident,
-    pub visibility: syn::Visibility,
-    pub table: syn::Path,
-    pub fields: Fields,
-    pub row: GeneratedTypeArgs,
-    pub changeset: GeneratedTypeArgs,
+pub(crate) struct ModelConfig {
+    pub(crate) model: syn::Ident,
+    pub(crate) visibility: syn::Visibility,
+    pub(crate) table: syn::Path,
+    pub(crate) fields: Fields,
+    pub(crate) row: GeneratedTypeArgs,
+    pub(crate) changeset: GeneratedTypeArgs,
     pub(crate) identifiers: HashSet<Identifier>, // identifiers ⊆ fields
     pub(crate) preferred_identifier: Identifier, // preferred_identifier ∈ identifiers
     pub(crate) primary_identifier: Identifier,   // primary_identifier ∈ identifiers
 }
 
 #[derive(Debug, PartialEq, Clone)]
-pub struct ModelField {
-    pub ident: syn::Ident,
-    pub column: String,
-    pub builder_ident: syn::Ident,
-    pub ty: syn::Type,
-    pub builder_skip: bool,
-    pub identifier: bool,
-    pub preferred: bool,
-    pub primary: bool,
-    pub transform: Option<FieldTransformation>,
+pub(crate) struct ModelField {
+    pub(crate) ident: syn::Ident,
+    pub(crate) column: String,
+    pub(crate) builder_ident: syn::Ident,
+    pub(crate) ty: syn::Type,
+    pub(crate) builder_skip: bool,
+    pub(crate) identifier: bool,
+    pub(crate) preferred: bool,
+    pub(crate) primary: bool,
+    pub(crate) transform: Option<FieldTransformation>,
 }
 
 #[derive(Debug, PartialEq, Clone)]
-pub enum FieldTransformation {
+pub(crate) enum FieldTransformation {
     Remote(syn::Type),
     Json,
     Geo,
@@ -46,7 +46,7 @@ pub enum FieldTransformation {
 }
 
 #[derive(Debug, PartialEq)]
-pub struct Fields(pub Vec<ModelField>);
+pub(crate) struct Fields(pub(crate) Vec<ModelField>);
 
 impl Deref for Fields {
     type Target = Vec<ModelField>;
@@ -63,21 +63,21 @@ impl DerefMut for Fields {
 }
 
 impl Fields {
-    pub fn get(&self, ident: &syn::Ident) -> Option<&ModelField> {
+    pub(crate) fn get(&self, ident: &syn::Ident) -> Option<&ModelField> {
         self.iter().find(|field| &field.ident == ident)
     }
 }
 
 impl ModelConfig {
-    pub fn iter_fields(&self) -> impl Iterator<Item = &ModelField> {
+    pub(crate) fn iter_fields(&self) -> impl Iterator<Item = &ModelField> {
         self.fields.iter()
     }
 
-    pub fn is_primary(&self, field: &ModelField) -> bool {
+    pub(crate) fn is_primary(&self, field: &ModelField) -> bool {
         field.ident == self.get_primary_field_ident()
     }
 
-    pub fn table_name(&self) -> syn::Ident {
+    pub(crate) fn table_name(&self) -> syn::Ident {
         let table = self
             .table
             .segments
@@ -113,7 +113,7 @@ impl ModelConfig {
 
 impl ModelField {
     #[allow(clippy::wrong_self_convention)]
-    pub fn into_transformed(&self, expr: syn::Expr) -> syn::Expr {
+    pub(crate) fn into_transformed(&self, expr: syn::Expr) -> syn::Expr {
         match self.transform {
             Some(FieldTransformation::Remote(_)) => parse_quote! { #expr.into() },
             Some(FieldTransformation::Json) => parse_quote! { diesel_json::Json(#expr) },
@@ -127,7 +127,7 @@ impl ModelField {
     }
 
     #[allow(clippy::wrong_self_convention)]
-    pub fn from_transformed(&self, expr: syn::Expr) -> syn::Expr {
+    pub(crate) fn from_transformed(&self, expr: syn::Expr) -> syn::Expr {
         match self.transform {
             Some(FieldTransformation::Remote(_)) => parse_quote! { #expr.into() },
             Some(FieldTransformation::Json) => parse_quote! { #expr.0 },
@@ -140,7 +140,7 @@ impl ModelField {
         }
     }
 
-    pub fn transform_type(&self) -> syn::Type {
+    pub(crate) fn transform_type(&self) -> syn::Type {
         let ty = &self.ty;
         match self.transform {
             Some(FieldTransformation::Remote(ref ty)) => parse_quote! { #ty },
@@ -152,7 +152,7 @@ impl ModelField {
         }
     }
 
-    pub(super) fn column_ident(&self) -> syn::Ident {
+    pub(crate) fn column_ident(&self) -> syn::Ident {
         syn::Ident::new(&self.column, self.ident.span())
     }
 }
