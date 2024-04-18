@@ -203,16 +203,15 @@ async fn get_routes_nodes(
 
     let infra_cache = InfraCache::get_or_load(conn, &infra_caches, &infra).await?;
     let routes_cache = infra_cache.routes();
-    let mut available_node_positions: HashMap<String, Vec<String>> = HashMap::new();
 
     let filtered_routes = routes_cache
-        .iter()
+        .values()
+        .map(|object_cache| object_cache.unwrap_route())
         // We're only interested in routes that depend on specific node positions
-        .filter(|(_, route)| !route.unwrap_route().switches_directions.is_empty())
-        .filter(|(_, route)| {
-            let route = route.unwrap_route();
-            let route_passes_nodes = node_states.iter().all(|(node_id, node_state)| {
-                match route.switches_directions.get(&node_id.clone().into()) {
+        .filter(|route| !route.switches_directions.is_empty())
+        .filter(|route| {
+            node_states.iter().all(|(node_id, node_state)| {
+                match route.switches_directions.get(&node_id.as_str().into()) {
                     // The route crosses the requested node
                     Some(node_state_in_route) => {
                         if let Some(required_state) = node_state {
@@ -224,27 +223,29 @@ async fn get_routes_nodes(
                     // The route doesn't cross the requested node
                     None => false,
                 }
-            });
-
-            if route_passes_nodes {
+            })
+        })
+        .collect::<Vec<_>>();
+    let available_node_positions: HashMap<String, Vec<String>> =
+        filtered_routes
+            .iter()
+            .fold(HashMap::new(), |mut acc, route| {
                 for (switch_id, switch_state) in route.switches_directions.iter() {
                     if node_states.contains_key(&switch_id.to_string()) {
-                        let current_node_positions = available_node_positions
-                            .entry(switch_id.to_string())
-                            .or_default();
+                        let current_node_positions = acc.entry(switch_id.to_string()).or_default();
                         if !current_node_positions.contains(switch_state) {
                             current_node_positions.push(switch_state.to_string());
                         }
                     }
                 }
-            }
-            route_passes_nodes
-        })
-        .map(|(route_id, _)| route_id.clone())
-        .collect::<Vec<_>>();
+                acc
+            });
 
     let result = RoutesFromNodesPositions {
-        routes: filtered_routes,
+        routes: filtered_routes
+            .iter()
+            .map(|route| route.id.to_string())
+            .collect(),
         available_node_positions,
     };
 
