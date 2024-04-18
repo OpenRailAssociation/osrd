@@ -11,6 +11,7 @@ mod identifiable_impl;
 mod model_from_row_impl;
 mod model_impl;
 mod preferred_id_impl;
+mod retrieve_batch_impl;
 mod retrieve_impl;
 mod row_decl;
 mod update_impl;
@@ -37,6 +38,7 @@ use self::exists_impl::ExistsImpl;
 use self::identifiable_impl::IdentifiableImpl;
 use self::model_from_row_impl::ModelFromRowImpl;
 use self::preferred_id_impl::PreferredIdImpl;
+use self::retrieve_batch_impl::RetrieveBatchImpl;
 use self::retrieve_impl::RetrieveImpl;
 use self::update_impl::UpdateImpl;
 
@@ -72,6 +74,17 @@ impl TypedIdentifier {
             .zip(&self.columns)
             .map(|(ident, column)| parse_quote! { dsl::#column.eq(#ident) })
             .collect()
+    }
+
+    fn get_diesel_eq_and_fold(&self) -> syn::Expr {
+        let mut idents = self.get_idents().into_iter().zip(&self.columns).rev();
+        let (first_ident, first_column) = idents.next().expect("Identifiers cannot be empty");
+        idents.fold(
+            parse_quote! { dsl::#first_column.eq(#first_ident) },
+            |acc, (ident, column)| {
+                parse_quote! { dsl::#column.eq(#ident).and(#acc) }
+            },
+        )
     }
 }
 
@@ -263,6 +276,19 @@ impl ModelConfig {
             .collect()
     }
 
+    pub(crate) fn retrieve_batch_impls(&self) -> Vec<RetrieveBatchImpl> {
+        self.typed_identifiers
+            .iter()
+            .map(|identifier| RetrieveBatchImpl {
+                model: self.model.clone(),
+                table_name: self.table_name(),
+                table_mod: self.table.clone(),
+                row: self.row.ident(),
+                identifier: identifier.clone(),
+            })
+            .collect()
+    }
+
     pub fn make_model_traits_impl(&self) -> TokenStream {
         let model = &self.model;
         let table_mod = &self.table;
@@ -314,80 +340,6 @@ impl ModelConfig {
 
         quote! {
             #(
-                #[automatically_derived]
-                #[async_trait::async_trait]
-                impl crate::modelsv2::RetrieveBatchUnchecked<#ty> for #model {
-                    async fn retrieve_batch_unchecked<
-                        I: std::iter::IntoIterator<Item = #ty> + Send + 'async_trait,
-                        C: Default + std::iter::Extend<#model> + Send,
-                    >(
-                        conn: &mut diesel_async::AsyncPgConnection,
-                        ids: I,
-                    ) -> crate::error::Result<C> {
-                        use crate::modelsv2::Model;
-                        use #table_mod::dsl;
-                        use diesel::prelude::*;
-                        use diesel_async::RunQueryDsl;
-                        use futures_util::stream::TryStreamExt;
-                        Ok(crate::chunked_for_libpq! {
-                            #batch_param_count,
-                            ids,
-                            C::default(),
-                            chunk => {
-                                // Diesel doesn't allow `(col1, col2).eq_any(iterator<(&T, &U)>)` because it imposes restrictions
-                                // on tuple usage. Doing it this way is the suggested workaround (https://github.com/diesel-rs/diesel/issues/3222#issuecomment-1177433434).
-                                // eq_any reallocates its argument anyway so the additional cost with this method are the boxing and the diesel wrappers.
-                                let mut query = dsl::#table_name.into_boxed();
-                                for #ident in chunk.into_iter() {
-                                    query = query.or_filter(#batch_filter);
-                                }
-                                query
-                                    .load_stream::<#row_ident>(conn)
-                                    .await
-                                    .map(|s| s.map_ok(<#model as Model>::from_row).try_collect::<Vec<_>>())?
-                                    .await?
-                            }
-                        })
-                    }
-
-                    async fn retrieve_batch_with_key_unchecked<
-                        I: std::iter::IntoIterator<Item = #ty> + Send + 'async_trait,
-                        C: Default + std::iter::Extend<(#ty, #model)> + Send,
-                    >(
-                        conn: &mut diesel_async::AsyncPgConnection,
-                        ids: I,
-                    ) -> crate::error::Result<C> {
-                        use crate::models::Identifiable;
-                        use crate::modelsv2::Model;
-                        use #table_mod::dsl;
-                        use diesel::prelude::*;
-                        use diesel_async::RunQueryDsl;
-                        use futures_util::stream::TryStreamExt;
-                        Ok(crate::chunked_for_libpq! {
-                            #batch_param_count,
-                            ids,
-                            C::default(),
-                            chunk => {
-                                let mut query = dsl::#table_name.into_boxed();
-                                for #ident in chunk.into_iter() {
-                                    query = query.or_filter(#batch_filter);
-                                }
-                                query
-                                    .load_stream::<#row_ident>(conn)
-                                    .await
-                                    .map(|s| {
-                                        s.map_ok(|row| {
-                                            let model = <#model as Model>::from_row(row);
-                                            (model.get_id(), model)
-                                        })
-                                        .try_collect::<Vec<_>>()
-                                    })?
-                                    .await?
-                            }
-                        })
-                    }
-                }
-
                 #[automatically_derived]
                 #[async_trait::async_trait]
                 impl crate::modelsv2::UpdateBatchUnchecked<#model, #ty> for #cs_ident {
