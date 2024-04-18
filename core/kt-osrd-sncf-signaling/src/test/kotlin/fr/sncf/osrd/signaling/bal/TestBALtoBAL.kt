@@ -1,18 +1,16 @@
 package fr.sncf.osrd.signaling.bal
 
+import fr.sncf.osrd.railjson.builder.begin
+import fr.sncf.osrd.railjson.builder.buildParseRJSInfra
+import fr.sncf.osrd.railjson.builder.end
+import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection
 import fr.sncf.osrd.signaling.ZoneStatus
 import fr.sncf.osrd.signaling.impl.SigSystemManagerImpl
 import fr.sncf.osrd.signaling.impl.SignalingSimulatorImpl
 import fr.sncf.osrd.sim_infra.api.*
-import fr.sncf.osrd.sim_infra.impl.RawInfraBuilder
-import fr.sncf.osrd.utils.indexing.StaticIdx
 import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
-import fr.sncf.osrd.utils.units.Length
-import fr.sncf.osrd.utils.units.Offset
-import fr.sncf.osrd.utils.units.meters
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.time.Duration.Companion.milliseconds
 
 class TestBALtoBAL {
     @Test
@@ -28,95 +26,49 @@ class TestBALtoBAL {
         //  <-- reverse     normal -->
 
         // region build the test infrastructure
-        val builder = RawInfraBuilder()
-        // region switches
-        val switch =
-            builder.movableElement("S", delay = 10L.milliseconds) {
-                config("xy", Pair(TrackNodePortId(0u), TrackNodePortId(1u)))
-                config("vy", Pair(TrackNodePortId(0u), TrackNodePortId(1u)))
-            }
-        // endregion
+        val infra = buildParseRJSInfra {
+            val lowerLeftTrack = trackSection("lower_left", 15.0)
+            val upperLeftTrack = trackSection("upper_left", 15.0)
+            val rightTrack = trackSection("right", 15.0)
+            val switch =
+                pointSwitch("S", rightTrack.begin, lowerLeftTrack.begin, upperLeftTrack.begin, 0.01)
+            val detU = bufferStop("U", upperLeftTrack.end)
+            detector("V", upperLeftTrack.at(5.0))
+            val detW = bufferStop("W", lowerLeftTrack.end)
+            detector("X", lowerLeftTrack.at(5.0))
+            val detY = detector("Y", rightTrack.at(5.0))
+            val detZ = bufferStop("Z", rightTrack.end)
 
-        // region zones
-        val zoneA = builder.zone(listOf())
-        val zoneB = builder.zone(listOf())
-        val zoneC = builder.zone(listOf(switch))
-        val zoneD = builder.zone(listOf())
+            val logicalSignalTemplate =
+                logicalSignal("BAL") {
+                    nextSignalingSystem("BAL")
+                    setting("Nf", "true")
+                    defaultParameter("jaune_cli", "false")
+                }
 
-        val detectorU = builder.detector("U")
-        builder.setNextZone(detectorU.increasing, zoneA)
-        val detectorV = builder.detector("V")
-        builder.setNextZone(detectorV.increasing, zoneC)
-        builder.setNextZone(detectorV.decreasing, zoneA)
-        val detectorW = builder.detector("W")
-        builder.setNextZone(detectorW.increasing, zoneB)
-        val detectorX = builder.detector("X")
-        builder.setNextZone(detectorX.increasing, zoneC)
-        builder.setNextZone(detectorX.decreasing, zoneB)
-        val detectorY = builder.detector("Y")
-        builder.setNextZone(detectorY.increasing, zoneD)
-        builder.setNextZone(detectorY.decreasing, zoneC)
-        val detectorZ = builder.detector("Z")
-        builder.setNextZone(detectorZ.decreasing, zoneD)
-        // endregion
+            defaultSightDistance = 300.0
+            physicalSignal("X", lowerLeftTrack.at(7.0), EdgeDirection.STOP_TO_START) {
+                logicalSignal(logicalSignalTemplate)
+            }
 
-        // region signals
-        val parameters = RawSignalParameters(mapOf(Pair("jaune_cli", "false")), mapOf())
+            physicalSignal("V", upperLeftTrack.at(7.0), EdgeDirection.STOP_TO_START) {
+                logicalSignal(logicalSignalTemplate)
+            }
 
-        // TODO: add an actual track graph
-        val signalX =
-            builder.physicalSignal("X", 300.meters, StaticIdx(42u), Offset(42.meters)) {
-                logicalSignal("BAL", listOf("BAL"), mapOf(Pair("Nf", "true")), parameters)
+            route("U-Z", detU, EdgeDirection.STOP_TO_START, detZ) {
+                addSwitchDirection(switch, "A_B2")
             }
-        val signalV =
-            builder.physicalSignal("V", 300.meters, StaticIdx(42u), Offset(42.meters)) {
-                logicalSignal("BAL", listOf("BAL"), mapOf(Pair("Nf", "true")), parameters)
+            route("W-Z", detW, EdgeDirection.STOP_TO_START, detZ) {
+                addReleaseDetector(detY)
+                addSwitchDirection(switch, "A_B1")
             }
-        // endregion
-
-        // region zone paths
-        val zonePathWX =
-            builder.zonePath(detectorW.increasing, detectorX.increasing, Length(10.meters)) {
-                signal(signalX, Offset(8.meters))
-            }
-        val zonePathXY =
-            builder.zonePath(detectorX.increasing, detectorY.increasing, Length(10.meters)) {
-                movableElement(switch, StaticIdx(0u), Offset(5.meters))
-            }
-        val zonePathYZ =
-            builder.zonePath(detectorY.increasing, detectorZ.increasing, Length(10.meters))
-        val zonePathUV =
-            builder.zonePath(detectorU.increasing, detectorV.increasing, Length(10.meters)) {
-                signal(signalV, Offset(8.meters))
-            }
-        val zonePathVY =
-            builder.zonePath(detectorV.increasing, detectorY.increasing, Length(10.meters)) {
-                movableElement(switch, StaticIdx(1u), Offset(5.meters))
-            }
-        // endregion
-
-        // region routes
-        // create a route from W to Z, releasing at Y and Z
-        builder.route("W-Z") {
-            zonePath(zonePathWX) // zone B
-            zonePath(zonePathXY) // zone C
-            zonePath(zonePathYZ) // zone D
-            // release at zone C and D
-            releaseZone(1)
-            releaseZone(2)
         }
 
-        // create a route from U to Z, releasing at Z
-        builder.route("U-Z") {
-            zonePath(zonePathUV) // zone A
-            zonePath(zonePathVY) // zone C
-            zonePath(zonePathYZ) // zone D
-            // release at zone D
-            releaseZone(2)
-        }
-        // endregion
-        val infra = builder.build()
-        // endregion
+        val detectors = infra.detectors.associateBy { infra.getDetectorName(it) }
+        val detU = detectors["U"]!!
+        val detV = detectors["V"]!!
+        val signals = infra.physicalSignals.associateBy { infra.getPhysicalSignalName(it) }
+        val signalV = signals["V"]!!
 
         val sigSystemManager = SigSystemManagerImpl()
         sigSystemManager.addSignalingSystem(BAL)
@@ -125,8 +77,8 @@ class TestBALtoBAL {
         val loadedSignalInfra = simulator.loadSignals(infra)
         val blockInfra = simulator.buildBlocks(infra, loadedSignalInfra)
         val fullPath = mutableStaticIdxArrayListOf<Block>()
-        fullPath.add(blockInfra.getBlocksStartingAtDetector(detectorU.increasing).first())
-        fullPath.add(blockInfra.getBlocksStartingAtDetector(detectorV.increasing).first())
+        fullPath.add(blockInfra.getBlocksStartingAtDetector(detU.decreasing).first())
+        fullPath.add(blockInfra.getBlocksStartingAtDetector(detV.decreasing).first())
         val zoneStates = mutableListOf(ZoneStatus.CLEAR, ZoneStatus.CLEAR, ZoneStatus.CLEAR)
         val res =
             simulator.evaluate(

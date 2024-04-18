@@ -1,13 +1,13 @@
 package fr.sncf.osrd.sim
 
+import fr.sncf.osrd.railjson.builder.begin
+import fr.sncf.osrd.railjson.builder.buildParseRJSInfra
+import fr.sncf.osrd.railjson.builder.end
 import fr.sncf.osrd.sim.interlocking.api.MovableElementInitPolicy
 import fr.sncf.osrd.sim.interlocking.api.withLock
 import fr.sncf.osrd.sim.interlocking.impl.MovableElementSimImpl
-import fr.sncf.osrd.sim_infra.api.TrackNodePortId
-import fr.sncf.osrd.sim_infra.impl.rawInfra
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.test.currentTime
@@ -17,11 +17,12 @@ class TestMovableElements {
     @Test
     fun lockMoveTest() = runTest {
         // setup test data
-        val infra = rawInfra {
-            movableElement("A", delay = 42L.milliseconds) {
-                config("a", Pair(TrackNodePortId(0u), TrackNodePortId(1u)))
-                config("b", Pair(TrackNodePortId(0u), TrackNodePortId(2u)))
-            }
+        val infra = buildParseRJSInfra {
+            defaultSwitchDelay = 0.042
+            val trackA = trackSection("a", 10.0)
+            val trackB = trackSection("b", 10.0)
+            val trackC = trackSection("c", 10.0)
+            pointSwitch("s", trackA.end, trackB.begin, trackC.begin)
         }
 
         val sim = MovableElementSimImpl(infra, MovableElementInitPolicy.PESSIMISTIC)

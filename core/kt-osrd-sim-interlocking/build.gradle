@@ -20,11 +20,14 @@ dependencies {
     api project(':kt-osrd-sim-infra')
     api libs.kotlinx.coroutines.core
     api project(":osrd-reporting")
+    implementation project(":kt-osrd-rjs-parser")
 
     implementation libs.kotlin.logging
     implementation libs.kotlin.stdlib
     implementation libs.kotlinx.coroutines.test
     testImplementation libs.kotlin.test
+    testImplementation project(":kt-railjson-builder")
+
 
     // the logging API implementation is only needed during testing, as this is a library
     testRuntimeOnly libs.logback.core

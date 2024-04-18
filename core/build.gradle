@@ -21,6 +21,7 @@ dependencies {
     // PLEASE ADD AND UPDATE DEPENDENCIES USING libs.versions.toml
 
     implementation project(':osrd-railjson')
+    implementation project(':kt-railjson-builder')
     implementation project(':osrd-reporting')
     implementation project(':envelope-sim')
     implementation project(':osrd-geom')

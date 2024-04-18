@@ -18,6 +18,7 @@ dependencies {
     // PLEASE ADD AND UPDATE DEPENDENCIES USING libs.versions.toml
     api project(":kt-osrd-utils")
     api project(':kt-osrd-sim-infra')
+    api project(':kt-railjson-builder')
     api project(":osrd-railjson")
     api project(":osrd-reporting")
 

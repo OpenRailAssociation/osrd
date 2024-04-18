@@ -1,19 +1,19 @@
 package fr.sncf.osrd.sim
 
+import fr.sncf.osrd.railjson.builder.begin
+import fr.sncf.osrd.railjson.builder.buildParseRJSInfra
+import fr.sncf.osrd.railjson.builder.end
+import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection
 import fr.sncf.osrd.sim.interlocking.api.Train
 import fr.sncf.osrd.sim.interlocking.api.ZoneReservation
 import fr.sncf.osrd.sim.interlocking.api.ZoneReservationStatus.*
 import fr.sncf.osrd.sim.interlocking.api.ZoneState
 import fr.sncf.osrd.sim.interlocking.impl.*
 import fr.sncf.osrd.sim_infra.api.*
-import fr.sncf.osrd.sim_infra.impl.RawInfraBuilder
 import fr.sncf.osrd.utils.indexing.MutableArena
 import fr.sncf.osrd.utils.indexing.mutableArenaMap
-import fr.sncf.osrd.utils.units.Length
-import fr.sncf.osrd.utils.units.meters
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.*
 import kotlinx.coroutines.test.currentTime
 import kotlinx.coroutines.test.runTest
@@ -36,40 +36,35 @@ class TestReservation {
             //
             //  <-- reverse     normal -->
 
-            // region build the test infrastructure
-            val builder = RawInfraBuilder()
-            val switch =
-                builder.movableElement("A", delay = 42L.milliseconds) {
-                    config("a", Pair(TrackNodePortId(0u), TrackNodePortId(1u)))
-                    config("b", Pair(TrackNodePortId(0u), TrackNodePortId(2u)))
+            val infra = buildParseRJSInfra {
+                val lowerLeftTrack = trackSection("lower_left", 15.0)
+                val upperLeftTrack = trackSection("upper_left", 15.0)
+                val rightTrack = trackSection("right", 15.0)
+                val switch =
+                    pointSwitch(
+                        "S",
+                        rightTrack.begin,
+                        lowerLeftTrack.begin,
+                        upperLeftTrack.begin,
+                        0.01
+                    )
+                val detU = bufferStop("U", upperLeftTrack.end)
+                detector("V", upperLeftTrack.at(5.0))
+                bufferStop("W", lowerLeftTrack.end)
+                detector("X", lowerLeftTrack.at(5.0))
+                detector("Y", rightTrack.at(5.0))
+                val detZ = bufferStop("Z", rightTrack.end)
+
+                route("U-Z", detU, EdgeDirection.STOP_TO_START, detZ) {
+                    addSwitchDirection(switch, "A_B2")
                 }
+            }
 
-            val zoneA = builder.zone(listOf())
-            val zoneB = builder.zone(listOf())
-            val zoneC = builder.zone(listOf(switch))
-            val zoneD = builder.zone(listOf())
-
-            val detectorU = builder.detector("U")
-            builder.setNextZone(detectorU.increasing, zoneA)
-            val detectorV = builder.detector("V")
-            builder.setNextZone(detectorV.increasing, zoneC)
-            builder.setNextZone(detectorV.decreasing, zoneA)
-            val detectorW = builder.detector("W")
-            builder.setNextZone(detectorW.increasing, zoneB)
-            val detectorX = builder.detector("X")
-            builder.setNextZone(detectorX.increasing, zoneC)
-            builder.setNextZone(detectorX.decreasing, zoneB)
-            val detectorY = builder.detector("Y")
-            builder.setNextZone(detectorY.increasing, zoneD)
-            builder.setNextZone(detectorY.decreasing, zoneC)
-            val detectorZ = builder.detector("Z")
-            builder.setNextZone(detectorZ.decreasing, zoneD)
-
-            val testZonePath =
-                builder.zonePath(detectorU.increasing, detectorV.increasing, Length(42.meters)) {}
-
-            val infra = builder.build()
-            // endregion
+            val detectors = infra.detectors.associateBy { infra.getDetectorName(it) }
+            val detU = detectors["U"]!!
+            val detV = detectors["V"]!!
+            val testZonePath = infra.findZonePath(detU.decreasing, detV.decreasing)!!
+            val zoneA = infra.getNextZone(detV.increasing)!!
 
             // allocate train IDs
             val trainArena = MutableArena<Train>(2)
@@ -127,7 +122,7 @@ class TestReservation {
             reference.add(ZoneEvent(0L, zoneState(arena.clone())))
 
             // pre-reservation at time 0
-            val requirements = zoneRequirements(detectorU.increasing, detectorV.increasing, mapOf())
+            val requirements = zoneRequirements(detU.decreasing, detV.decreasing, mapOf())
             val reservationId = arena.allocate(zoneReservation(trainA, requirements, PRE_RESERVED))
             reference.add(ZoneEvent(0L, zoneState(arena.clone())))
 
