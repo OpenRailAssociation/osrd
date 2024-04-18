@@ -557,11 +557,11 @@ async fn build_simulation_request(
             arrival: schedule_item
                 .arrival
                 .as_ref()
-                .map(|t| t.num_seconds() as u64),
+                .map(|t| t.num_milliseconds() as u64),
             stop_for: schedule_item
                 .stop_for
                 .as_ref()
-                .map(|t| t.num_seconds() as u64),
+                .map(|t| t.num_milliseconds() as u64),
         })
         .collect();
 
