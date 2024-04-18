@@ -202,9 +202,21 @@ private fun getBlockedGauge(
                 }
             }
         }
-        res.put(begin.meters, end.meters, fromAllowedSet(allowedTypes))
+        res.put(begin.meters, end.meters, buildBlockedGaugeTypesLoadingConstraint(allowedTypes))
     }
     return res
+}
+
+private fun buildBlockedGaugeTypesLoadingConstraint(
+    allowedTypes: Set<RJSLoadingGaugeType>
+): LoadingGaugeConstraint {
+    val blockedTypes = mutableStaticIdxArraySetOf<LoadingGaugeType>()
+    for (gaugeType in RJSLoadingGaugeType.entries) {
+        if (!allowedTypes.contains(gaugeType)) {
+            blockedTypes.add(StaticIdx(gaugeType.ordinal.toUInt()))
+        }
+    }
+    return LoadingGaugeConstraint(blockedTypes)
 }
 
 private fun buildCompatibleGaugeTypesMap(): Map<RJSLoadingGaugeType, Set<RJSLoadingGaugeType>> {
@@ -754,12 +766,31 @@ fun parseRJSInfra(rjsInfra: RJSInfra): RawInfra {
         for (opPart in operationalPoint.parts) {
             // ignore duplicates
             if (distinctParts.contains(opPart)) continue
-
             distinctParts.add(opPart)
+
+            val operationalPointId = operationalPoint.id
+            val trackSectionName = opPart.track
+            val trackSectionOffset = Offset<TrackSection>(opPart.position.meters)
+            val props = mutableMapOf<String, String>()
+            if (operationalPoint.extensions?.identifier != null) {
+                val identifier = operationalPoint.extensions!!.identifier!!
+                props["identifier"] = identifier.name
+                props["uic"] = identifier.uic.toString()
+            }
+            if (operationalPoint.extensions?.sncf != null) {
+                val sncf = operationalPoint.extensions!!.sncf!!
+                props["ci"] = sncf.ci.toString()
+                props["ch"] = sncf.ch
+                props["chShortLabel"] = sncf.chShortLabel
+                props["chLongLabel"] = sncf.chLongLabel
+                props["trigram"] = sncf.trigram
+            }
+            if (opPart.extensions?.sncf != null) props["kp"] = opPart.extensions!!.sncf!!.kp
             builder.operationalPointPart(
-                operationalPoint.id,
-                opPart.track,
-                Offset(opPart.position.meters)
+                operationalPointId,
+                trackSectionName,
+                trackSectionOffset,
+                props
             )
         }
     }

@@ -522,18 +522,20 @@ class RawInfraFromRjsBuilder {
     }
 
     fun operationalPointPart(
-        operationalPointName: String,
+        operationalPointId: String,
         trackSectionName: String,
-        trackSectionOffset: Offset<TrackSection>
+        trackSectionOffset: Offset<TrackSection>,
+        props: Map<String, String>
     ): OperationalPointPartId {
         val trackSectionChunks = getTrackSectionDistanceSortedChunks(trackSectionName)
         val chunkDistanceIdx = trackSectionChunks.floorEntry(trackSectionOffset.distance)
         val opPartIdx =
             operationalPointPartPool.add(
                 OperationalPointPartDescriptor(
-                    operationalPointName,
+                    operationalPointId,
                     Offset(trackSectionOffset.distance - chunkDistanceIdx.key),
-                    chunkDistanceIdx.value
+                    chunkDistanceIdx.value,
+                    props
                 )
             )
         val oppList =

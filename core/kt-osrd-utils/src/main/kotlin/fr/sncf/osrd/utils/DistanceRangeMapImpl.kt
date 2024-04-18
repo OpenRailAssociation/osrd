@@ -1,6 +1,8 @@
 package fr.sncf.osrd.utils
 
+import com.google.common.collect.Range
 import com.google.common.collect.RangeMap
+import com.google.common.collect.TreeRangeMap
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.MutableDistanceArrayList
 import java.util.PriorityQueue
@@ -276,14 +278,22 @@ data class DistanceRangeMapImpl<T>(
     }
 
     companion object {
-        fun <T> from(map: RangeMap<Double, T>): DistanceRangeMap<T> {
+        fun <T> from(map: RangeMap<Distance, T>): DistanceRangeMap<T> {
             val res = distanceRangeMapOf<T>()
             for (entry in map.asMapOfRanges()) res.put(
-                Distance.fromMeters(entry.key.lowerEndpoint()),
-                Distance.fromMeters(entry.key.upperEndpoint()),
+                entry.key.lowerEndpoint(),
+                entry.key.upperEndpoint(),
                 entry.value
             )
             return res
+        }
+
+        fun <T> toRangeMap(distanceRangeMap: DistanceRangeMap<T>): RangeMap<Distance, T> {
+            val rangeMap = TreeRangeMap.create<Distance, T>()
+            for (entry in distanceRangeMap.asList()) {
+                rangeMap.put(Range.closed(entry.lower, entry.upper), entry.value!!)
+            }
+            return rangeMap
         }
     }
 }

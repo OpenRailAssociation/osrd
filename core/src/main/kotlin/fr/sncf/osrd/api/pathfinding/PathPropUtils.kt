@@ -1,6 +1,7 @@
 package fr.sncf.osrd.api.pathfinding
 
 import com.google.common.collect.Iterables
+import fr.sncf.osrd.api.api_v2.pathfinding.TrackRange
 import fr.sncf.osrd.graph.PathfindingEdgeRangeId
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSDirectionalTrackRange
@@ -80,6 +81,12 @@ fun makePathProps(rawInfra: RawSignalingInfra, rjsPath: RJSTrainPath): PathPrope
     return makePathProperties(rawInfra, chunkPath)
 }
 
+/** Builds a PathProperties from a List<TrackRange> */
+fun makePathProps(rawInfra: RawSignalingInfra, trackRanges: List<TrackRange>): PathProperties {
+    val chunkPath = makeChunkPath(rawInfra, trackRanges)
+    return makePathProperties(rawInfra, chunkPath)
+}
+
 /** Creates a ChunkPath from a list of block ranges */
 fun makeChunkPath(
     rawInfra: RawSignalingInfra,
@@ -150,4 +157,27 @@ fun makeChunkPath(rawInfra: RawSignalingInfra, rjsPath: RJSTrainPath): ChunkPath
                     .sum()
             )
     return buildChunkPath(rawInfra, chunks, Length(startOffset), Length(endOffset))
+}
+
+fun makeChunkPath(rawInfra: RawSignalingInfra, trackRanges: List<TrackRange>): ChunkPath {
+    val chunks = MutableDirStaticIdxArrayList<TrackChunk>()
+    val firstRange = trackRanges[0]
+    var startOffset = firstRange.begin.distance
+    if (firstRange.direction == EdgeDirection.STOP_TO_START) {
+        val firstTrackId = getTrackSectionFromNameOrThrow(firstRange.trackSection, rawInfra)
+        startOffset = rawInfra.getTrackSectionLength(firstTrackId) - firstRange.end
+    }
+    var endOffset = startOffset
+    for (trackRange in trackRanges) {
+        endOffset += trackRange.end - trackRange.begin
+        val trackId = getTrackSectionFromNameOrThrow(trackRange.trackSection, rawInfra)
+        val dir =
+            if (trackRange.direction == EdgeDirection.START_TO_STOP) Direction.INCREASING
+            else Direction.DECREASING
+        val chunksOnTrack =
+            if (dir == Direction.INCREASING) rawInfra.getTrackSectionChunks(trackId)
+            else rawInfra.getTrackSectionChunks(trackId).reversed()
+        for (chunk in chunksOnTrack) chunks.add(DirStaticIdx(chunk, dir))
+    }
+    return buildChunkPath(rawInfra, chunks, Offset(startOffset), Offset(endOffset))
 }

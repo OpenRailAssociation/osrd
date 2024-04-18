@@ -59,11 +59,15 @@ interface TrackProperties {
         trackChunk: TrackChunkId
     ): StaticIdxList<OperationalPointPart>
 
-    fun getOperationalPointPartChunk(operationalPoint: OperationalPointPartId): TrackChunkId
+    fun getOperationalPointPartChunk(operationalPointPart: OperationalPointPartId): TrackChunkId
 
     fun getOperationalPointPartChunkOffset(
-        operationalPoint: OperationalPointPartId
+        operationalPointPart: OperationalPointPartId
     ): Offset<TrackChunk>
 
-    fun getOperationalPointPartName(operationalPoint: OperationalPointPartId): String
+    fun getOperationalPointPartOpId(operationalPointPart: OperationalPointPartId): String
+
+    fun getOperationalPointPartProps(
+        operationalPointPart: OperationalPointPartId
+    ): Map<String, String>
 }

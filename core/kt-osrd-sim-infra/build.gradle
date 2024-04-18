@@ -20,8 +20,8 @@ dependencies {
     implementation project(path: ':osrd-geom')
     ksp project(':kt-fast-collections-generator')
 
+    // WARNING: this module should not depend on osrd-railjson
     api project(":kt-osrd-utils")
-    api project(":osrd-railjson")
     api project(":osrd-reporting")
     implementation libs.kotlin.stdlib
     implementation libs.kotlin.logging

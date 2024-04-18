@@ -1,6 +1,7 @@
 package fr.sncf.osrd.api.api_v2.pathfinding
 
 import com.squareup.moshi.Json
+import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
@@ -95,7 +96,7 @@ val polymorphicAdapter: PolymorphicJsonAdapterFactory<PathfindingBlockResponse> 
         .withSubtype(IncompatibleSignalingSystem::class.java, "incompatible_signaling_system")
         .withSubtype(NotEnoughPathItems::class.java, "not_enough_path_items")
 
-val pathfindingResponseAdapter =
+val pathfindingResponseAdapter: JsonAdapter<PathfindingBlockResponse> =
     Moshi.Builder()
         .add(polymorphicAdapter)
         .addLast(DistanceAdapterFactory())

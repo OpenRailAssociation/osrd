@@ -24,6 +24,7 @@ dependencies {
     implementation libs.kotlin.logging
 
     api project(':kt-osrd-sim-infra')
+    api project(":osrd-railjson")
     api project(":kt-osrd-utils")
     testImplementation libs.kotlin.test
 
