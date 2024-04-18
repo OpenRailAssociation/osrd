@@ -33,7 +33,10 @@ public class TestRollingStock {
                                 EnvelopeSimPathBuilder.withElectricalProfiles25000(40),
                                 EnvelopeSimPathBuilder.withElectricalProfiles25000(60),
                                 EnvelopeSimPathBuilder.withModes(50)),
-                        List.of(RollingStock.Comfort.STANDARD, RollingStock.Comfort.AC, RollingStock.Comfort.HEATING),
+                        List.of(
+                                RollingStock.Comfort.STANDARD,
+                                RollingStock.Comfort.AIR_CONDITIONING,
+                                RollingStock.Comfort.HEATING),
                         Arrays.asList(powerRestrictionMap, emptyPowerRestrictionMap))
                 .stream()
                 .map(args -> Arguments.of(args.get(0), args.get(1), args.get(2)));

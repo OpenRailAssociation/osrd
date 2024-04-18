@@ -1,46 +1,87 @@
 package fr.sncf.osrd.api.api_v2.standalone_sim
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonAdapter
-import com.squareup.moshi.Moshi
-import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory
+import com.squareup.moshi.*
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import fr.sncf.osrd.api.api_v2.RangeValues
 import fr.sncf.osrd.api.api_v2.TrackRange
-import fr.sncf.osrd.api.api_v2.pathfinding.PathfindingBlockResponse
-import fr.sncf.osrd.envelope_sim.PhysicsRollingStock
+import fr.sncf.osrd.envelope_sim.PhysicsRollingStock.GammaType
+import fr.sncf.osrd.railjson.schema.rollingstock.RJSEffortCurves.RJSModeEffortCurve
+import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingResistance
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowanceDistribution
 import fr.sncf.osrd.sim_infra.api.Path
+import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.RollingStock.Comfort
 import fr.sncf.osrd.utils.json.UnitAdapterFactory
 import fr.sncf.osrd.utils.units.Duration
+import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
-import java.time.LocalDateTime
+import fr.sncf.osrd.utils.units.TimeDelta
 
 class SimulationRequest(
+    val infra: String,
+    @Json(name = "expected_version") val expectedVersion: String,
     val path: SimulationPath,
-    @Json(name = "start_time") val startTime: LocalDateTime,
     val schedule: List<SimulationScheduleItem>,
     val margins: RangeValues<MarginValue>,
     @Json(name = "initial_speed") val initialSpeed: Double,
     val comfort: Comfort,
-    @Json(name = "constraint_distribution") val constraintDistribution: RJSAllowanceDistribution,
+    @Json(name = "constraint_distribution") val constraintDistribution: AllowanceDistribution,
     @Json(name = "speed_limit_tag") val speedLimitTag: String?,
     @Json(name = "power_restrictions") val powerRestrictions: List<SimulationPowerRestrictionItem>,
     val options: TrainScheduleOptions,
-    @Json(name = "rolling_stock") val rollingStock: PhysicsRollingStock,
-    @Json(name = "electrical_profile_set_id") val electricalProfileSetId: Long?
+    @Json(name = "rolling_stock") val rollingStock: PhysicsRollingStockModel,
+    @Json(name = "electrical_profile_set_id") val electricalProfileSetId: String?
 ) {
     companion object {
-        val adapter: JsonAdapter<PathfindingBlockResponse> =
+        val adapter: JsonAdapter<SimulationRequest> =
             Moshi.Builder()
-                .add(MarginValue.adapter)
+                .add(MarginValueAdapter())
+                .add(RJSRollingResistance.adapter)
                 .addLast(UnitAdapterFactory())
                 .addLast(KotlinJsonAdapterFactory())
                 .build()
-                .adapter(PathfindingBlockResponse::class.java)
+                .adapter(SimulationRequest::class.java)
     }
 }
+
+enum class AllowanceDistribution {
+    MARECO,
+    STANDARD;
+
+    fun toRJS(): RJSAllowanceDistribution {
+        return when (this) {
+            MARECO -> RJSAllowanceDistribution.MARECO
+            STANDARD -> RJSAllowanceDistribution.LINEAR
+        }
+    }
+}
+
+class PhysicsRollingStockModel(
+    @Json(name = "effort_curves") val effortCurves: EffortCurve,
+    @Json(name = "base_power_class") val basePowerClass: String?,
+    val length: Length<RollingStock>,
+    @Json(name = "max_speed") val maxSpeed: Double,
+    @Json(name = "startup_time") val startupTime: Duration,
+    @Json(name = "startup_acceleration") val startupAcceleration: Double,
+    @Json(name = "comfort_acceleration") val comfortAcceleration: Double,
+    val gamma: Gamma,
+    @Json(name = "inertia_coefficient") val inertiaCoefficient: Double,
+    val mass: Long, // kg
+    @Json(name = "rolling_resistance") val rollingResistance: RJSRollingResistance,
+    @Json(name = "power_restrictions") val powerRestrictions: Map<String, String>,
+    @Json(name = "electrical_power_startup_time") val electricalPowerStartupTime: Duration?,
+    @Json(name = "raise_pantograph_time") val raisePantographTime: Duration?,
+)
+
+class Gamma(
+    @Json(name = "type") val gammaType: GammaType,
+    val value: Double,
+)
+
+class EffortCurve(
+    val modes: Map<String, RJSModeEffortCurve>,
+    @Json(name = "default_mode") val defaultMode: String,
+)
 
 class SimulationPath(
     val blocks: List<String>,
@@ -49,21 +90,49 @@ class SimulationPath(
 )
 
 class SimulationScheduleItem(
-    val pathOffset: Offset<Path>,
-    val arrival: Duration?,
+    @Json(name = "path_offset") val pathOffset: Offset<Path>,
+    val arrival: TimeDelta?,
     @Json(name = "stop_for") val stopFor: Duration?,
 )
 
-open class MarginValue {
+sealed class MarginValue {
     class MinPerKm(var value: Double) : MarginValue()
 
     class Percentage(var percentage: Double) : MarginValue()
 
-    companion object {
-        val adapter: PolymorphicJsonAdapterFactory<MarginValue> =
-            (PolymorphicJsonAdapterFactory.of(MarginValue::class.java, "type")
-                .withSubtype(MinPerKm::class.java, "min_per_km")
-                .withSubtype(Percentage::class.java, "percentage"))
+    class None() : MarginValue()
+}
+
+class MarginValueAdapter {
+    @ToJson
+    fun toJson(value: MarginValue): String {
+        return when (value) {
+            is MarginValue.MinPerKm -> {
+                "${value.value}min/km"
+            }
+            is MarginValue.Percentage -> {
+                "${value.percentage}%"
+            }
+            else -> {
+                "none"
+            }
+        }
+    }
+
+    @FromJson
+    fun fromJson(marginValue: String): MarginValue {
+        if (marginValue == "none") {
+            return MarginValue.None()
+        }
+        if (marginValue.endsWith("%")) {
+            val percentage = marginValue.split("%")[0].toDouble()
+            return MarginValue.Percentage(percentage)
+        }
+        if (marginValue.endsWith("min/km")) {
+            val minPerKm = marginValue.split("min/km")[0].toDouble()
+            return MarginValue.MinPerKm(minPerKm)
+        }
+        throw JsonDataException("Margin value type not recognized $marginValue")
     }
 }
 

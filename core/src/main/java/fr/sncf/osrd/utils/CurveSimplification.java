@@ -2,6 +2,7 @@ package fr.sncf.osrd.utils;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.List;
 
 public class CurveSimplification {
     public interface RDPDist<PointT> {
@@ -29,8 +30,7 @@ public class CurveSimplification {
      *     deviating one
      * @return a simplified curve
      */
-    public static <PointT> ArrayList<PointT> rdp(
-            ArrayList<PointT> points, double epsilon, RDPDist<PointT> distFunction) {
+    public static <PointT> ArrayList<PointT> rdp(List<PointT> points, double epsilon, RDPDist<PointT> distFunction) {
         var deleted = new boolean[points.size()];
 
         var stack = new ArrayDeque<PendingRange>();

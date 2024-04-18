@@ -14,7 +14,7 @@ class SimulationResponse(
     val provisional: ReportTrain,
     @Json(name = "final_output") val finalOutput: CompleteReportTrain,
     val mrsp: List<MRSPPoint>,
-    @Json(name = "power_restriction") val powerRestriction: String,
+    @Json(name = "power_restrictions") val powerRestrictions: List<PowerRestriction>,
 ) {
     companion object {
         val adapter: JsonAdapter<SimulationResponse> =
@@ -32,12 +32,15 @@ class MRSPPoint(
 )
 
 class CompleteReportTrain(
-    @Json(name = "report_train") val reportTrain: ReportTrain,
+    positions: List<Offset<Path>>,
+    times: List<TimeDelta>, // Times are compared to the departure time
+    speeds: List<Double>,
+    @Json(name = "energy_consumption") energyConsumption: Double,
     @Json(name = "signal_sightings") val signalSightings: List<SignalSighting>,
-    @Json(name = "zone_update") val zoneUpdate: List<ZoneUpdate>,
+    @Json(name = "zone_updates") val zoneUpdates: List<ZoneUpdate>,
     @Json(name = "spacing_requirements") val spacingRequirements: List<SpacingRequirement>,
     @Json(name = "routing_requirements") val routingRequirements: List<RoutingRequirement>
-)
+) : ReportTrain(positions, times, speeds, energyConsumption)
 
 class SpacingRequirement(
     val zone: String,
@@ -73,9 +76,16 @@ class SignalSighting(
     val state: String,
 )
 
-class ReportTrain(
+open class ReportTrain(
     val positions: List<Offset<Path>>,
     val times: List<TimeDelta>, // Times are compared to the departure time
     val speeds: List<Double>,
     @Json(name = "energy_consumption") val energyConsumption: Double,
+)
+
+class PowerRestriction(
+    val begin: Offset<Path>,
+    val end: Offset<Path>,
+    val code: String,
+    val handled: Boolean
 )

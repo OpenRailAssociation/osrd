@@ -69,6 +69,13 @@ value class Distance(val millimeters: Long) : Comparable<Distance> {
         if (decimal == 0L) return String.format("%sm", meters)
         else return String.format("%s.%sm", meters, decimal)
     }
+
+    operator fun div(d: Double): Distance = Distance(Math.round(millimeters / d))
+
+    operator fun div(distance: Distance): Double =
+        millimeters.toDouble() / distance.millimeters.toDouble()
+
+    operator fun times(d: Double): Distance = Distance(Math.round(millimeters * d))
 }
 
 val Double.meters: Distance
@@ -103,6 +110,10 @@ value class Offset<T>(val distance: Distance) : Comparable<Offset<T>> {
      * explicitly, but avoids verbose syntaxes on conversions
      */
     fun <U> cast(): Offset<U> = Offset(distance)
+
+    operator fun div(d: Double): Offset<T> = Offset(distance / d)
+
+    operator fun times(d: Double): Offset<T> = Offset(distance * d)
 
     companion object {
         @JvmStatic fun <T> zero() = Offset<T>(Distance.ZERO)

@@ -1,7 +1,7 @@
 package fr.sncf.osrd.api.pathfinding
 
 import com.google.common.collect.Iterables
-import fr.sncf.osrd.api.api_v2.pathfinding.TrackRange
+import fr.sncf.osrd.api.api_v2.TrackRange
 import fr.sncf.osrd.graph.PathfindingEdgeRangeId
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSDirectionalTrackRange
