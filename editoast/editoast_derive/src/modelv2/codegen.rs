@@ -2,6 +2,7 @@ mod changeset_builder_impl_block;
 mod changeset_decl;
 mod changeset_from_model;
 mod create_batch_impl;
+mod create_batch_with_key_impl;
 mod create_impl;
 mod delete_impl;
 mod delete_static_impl;
@@ -28,6 +29,7 @@ use self::changeset_builder_impl_block::BuilderType;
 use self::changeset_builder_impl_block::ChangesetBuilderImplBlock;
 use self::changeset_from_model::ChangesetFromModelImpl;
 use self::create_batch_impl::CreateBatchImpl;
+use self::create_batch_with_key_impl::CreateBatchWithKeyImpl;
 use self::create_impl::CreateImpl;
 use self::delete_impl::DeleteImpl;
 use self::delete_static_impl::DeleteStaticImpl;
@@ -246,13 +248,27 @@ impl ModelConfig {
         }
     }
 
+    pub(crate) fn create_batch_with_key_impls(&self) -> Vec<CreateBatchWithKeyImpl> {
+        self.typed_identifiers
+            .iter()
+            .map(|identifier| CreateBatchWithKeyImpl {
+                model: self.model.clone(),
+                table_name: self.table_name(),
+                table_mod: self.table.clone(),
+                row: self.row.ident(),
+                changeset: self.changeset.ident(),
+                identifier: identifier.clone(),
+                field_count: self.changeset_fields().count(),
+            })
+            .collect()
+    }
+
     pub fn make_model_traits_impl(&self) -> TokenStream {
         let model = &self.model;
         let table_mod = &self.table;
         let table_name = self.table_name();
         let row_ident = self.row.ident();
         let cs_ident = self.changeset.ident();
-        let field_count = self.fields.len();
         let pk_column = match &self.primary_field {
             Identifier::Field(ident) => {
                 syn::Ident::new(&self.fields.get(ident).unwrap().column, Span::call_site())
@@ -298,44 +314,6 @@ impl ModelConfig {
 
         quote! {
             #(
-                #[automatically_derived]
-                #[async_trait::async_trait]
-                impl crate::modelsv2::CreateBatchWithKey<#cs_ident, #ty> for #model {
-                    async fn create_batch_with_key<
-                        I: std::iter::IntoIterator<Item = #cs_ident> + Send + 'async_trait,
-                        C: Default + std::iter::Extend<(#ty, Self)> + Send,
-                    >(
-                        conn: &mut diesel_async::AsyncPgConnection,
-                        values: I,
-                    ) -> crate::error::Result<C> {
-                        use crate::models::Identifiable;
-                        use crate::modelsv2::Model;
-                        use #table_mod::dsl;
-                        use diesel::prelude::*;
-                        use diesel_async::RunQueryDsl;
-                        use futures_util::stream::TryStreamExt;
-                        Ok(crate::chunked_for_libpq! {
-                            #field_count,
-                            values,
-                            C::default(),
-                            chunk => {
-                                diesel::insert_into(dsl::#table_name)
-                                    .values(chunk)
-                                    .load_stream::<#row_ident>(conn)
-                                    .await
-                                    .map(|s| {
-                                        s.map_ok(|row| {
-                                            let model = <#model as Model>::from_row(row);
-                                            (model.get_id(), model)
-                                        })
-                                        .try_collect::<Vec<_>>()
-                                    })?
-                                    .await?
-                            }
-                        })
-                    }
-                }
-
                 #[automatically_derived]
                 #[async_trait::async_trait]
                 impl crate::modelsv2::RetrieveBatchUnchecked<#ty> for #model {
