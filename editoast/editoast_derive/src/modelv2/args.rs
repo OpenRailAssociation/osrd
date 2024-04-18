@@ -1,4 +1,4 @@
-use super::Identifier;
+use super::RawIdentifier;
 use darling::{
     ast,
     util::{self, PathList},
@@ -19,9 +19,9 @@ pub struct ModelArgs {
     #[darling(default)]
     pub changeset: GeneratedTypeArgs,
     #[darling(multiple, rename = "identifier")]
-    pub identifiers: Vec<Identifier>,
+    pub identifiers: Vec<RawIdentifier>,
     #[darling(default)]
-    pub preferred: Option<Identifier>,
+    pub preferred: Option<RawIdentifier>,
     pub data: ast::Data<util::Ignored, ModelFieldArgs>,
 }
 

@@ -1,7 +1,7 @@
 use quote::quote;
 use quote::ToTokens;
 
-use crate::modelv2::identifier::TypedIdentifier;
+use crate::modelv2::identifier::Identifier;
 
 pub(crate) struct UpdateBatchImpl {
     pub(super) model: syn::Ident,
@@ -9,7 +9,7 @@ pub(crate) struct UpdateBatchImpl {
     pub(super) table_mod: syn::Path,
     pub(super) row: syn::Ident,
     pub(super) changeset: syn::Ident,
-    pub(super) identifier: TypedIdentifier,
+    pub(super) identifier: Identifier,
     pub(super) primary_key_column: syn::Ident,
 }
 
