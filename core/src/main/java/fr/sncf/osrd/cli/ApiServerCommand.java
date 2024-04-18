@@ -5,6 +5,7 @@ import com.beust.jcommander.Parameters;
 import fr.sncf.osrd.api.*;
 import fr.sncf.osrd.api.api_v2.path_properties.PathPropEndpoint;
 import fr.sncf.osrd.api.api_v2.pathfinding.PathfindingBlocksEndpointV2;
+import fr.sncf.osrd.api.api_v2.standalone_sim.SimulationEndpoint;
 import fr.sncf.osrd.api.pathfinding.PathfindingBlocksEndpoint;
 import fr.sncf.osrd.api.stdcm.STDCMEndpoint;
 import io.sentry.Sentry;
@@ -89,6 +90,9 @@ public final class ApiServerCommand implements CliCommand {
                     new FkRegex(
                             "/standalone_simulation",
                             new StandaloneSimulationEndpoint(infraManager, electricalProfileSetManager)),
+                    new FkRegex(
+                            "/v2/standalone_simulation",
+                            new SimulationEndpoint(infraManager, electricalProfileSetManager)),
                     new FkRegex("/project_signals", new SignalProjectionEndpoint(infraManager)),
                     new FkRegex("/detect_conflicts", new ConflictDetectionEndpoint()),
                     new FkRegex("/cache_status", new InfraCacheStatusEndpoint(infraManager)),

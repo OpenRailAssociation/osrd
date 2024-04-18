@@ -1,8 +1,6 @@
 package fr.sncf.osrd.train;
 
-import static fr.sncf.osrd.envelope_sim.SimpleRollingStock.CurveShape;
 import static fr.sncf.osrd.envelope_sim.SimpleRollingStock.createEffortSpeedCurve;
-import static fr.sncf.osrd.train.RollingStock.Comfort;
 
 import com.google.common.collect.Lists;
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock;
@@ -47,7 +45,7 @@ public class TestTrains {
                 var speed = modeSpeed;
                 switch (condition.comfort()) {
                     case HEATING -> speed *= 0.91;
-                    case AC -> speed *= .81;
+                    case AIR_CONDITIONING -> speed *= .81;
                     default -> {}
                 }
                 if (condition.electricalProfile() != null)
@@ -88,14 +86,14 @@ public class TestTrains {
                 Map.of(
                         "thermal",
                         new RollingStock.EffortCurveConditions[] {
-                            new RollingStock.EffortCurveConditions(Comfort.AC, null, null),
+                            new RollingStock.EffortCurveConditions(Comfort.AIR_CONDITIONING, null, null),
                             new RollingStock.EffortCurveConditions(Comfort.HEATING, null, null)
                         },
                         "1500V",
                         new RollingStock.EffortCurveConditions[0],
                         "25000V",
                         Lists.cartesianProduct(
-                                        List.of(Comfort.STANDARD, Comfort.AC, Comfort.HEATING),
+                                        List.of(Comfort.STANDARD, Comfort.AIR_CONDITIONING, Comfort.HEATING),
                                         List.of("25000V", "22500V", "20000V", "null"),
                                         List.of("Restrict1", "Restrict2", "null"))
                                 .stream()

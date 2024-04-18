@@ -125,7 +125,7 @@ fun run(
         zoneOccupationChangeEvents.map {
             ResultTrain.ZoneUpdate(
                 rawInfra.getZoneName(it.zone),
-                it.time / 1000.0,
+                it.time.seconds,
                 it.offset.meters,
                 it.isEntry
             )
@@ -211,7 +211,7 @@ fun run(
     )
 }
 
-private fun routingRequirements(
+fun routingRequirements(
     // the start offset is the distance from the start of the first route to the start location
     startOffset: Distance,
     simulator: SignalingSimulator,
@@ -448,8 +448,8 @@ fun EnvelopeTimeInterpolate.clampInterpolate(position: Distance): Double {
     return interpolateTotalTime(criticalPos)
 }
 
-private data class ZoneOccupationChangeEvent(
-    val time: Long,
+data class ZoneOccupationChangeEvent(
+    val time: TimeDelta,
     val offset: Distance,
     val zoneIndexInPath: Int,
     val isEntry: Boolean,
@@ -457,7 +457,7 @@ private data class ZoneOccupationChangeEvent(
     val zone: ZoneId,
 )
 
-private fun zoneOccupationChangeEvents(
+fun zoneOccupationChangeEvents(
     startOffset: Distance,
     blockPath: StaticIdxList<Block>,
     blockInfra: BlockInfra,
@@ -473,7 +473,7 @@ private fun zoneOccupationChangeEvents(
             // Compute occupation change event
             if (currentOffset > envelope.endPos.meters) break
             val entryOffset = maxOf(0.meters, currentOffset)
-            val entryTime = envelope.interpolateTotalTimeMS(entryOffset.meters)
+            val entryTime = TimeDelta(envelope.interpolateTotalTimeMS(entryOffset.meters))
             val zone = rawInfra.getNextZone(rawInfra.getZonePathEntry(zonePath))!!
             zoneOccupationChangeEvents.add(
                 ZoneOccupationChangeEvent(entryTime, entryOffset, zoneCount, true, blockIdx, zone)
@@ -485,7 +485,7 @@ private fun zoneOccupationChangeEvents(
             }
             val exitOffset = maxOf(0.meters, currentOffset + trainLength.meters)
             if (exitOffset <= envelope.endPos.meters) {
-                val exitTime = envelope.interpolateTotalTimeMS(exitOffset.meters)
+                val exitTime = TimeDelta(envelope.interpolateTotalTimeMS(exitOffset.meters))
                 zoneOccupationChangeEvents.add(
                     ZoneOccupationChangeEvent(
                         exitTime,
@@ -541,7 +541,7 @@ fun pathSignals(
 // This doesn't generate path signals outside the envelope
 // The reason being that even if a train see a red signal, it won't
 // matter since the train was going to stop before it anyway
-private fun pathSignalsInEnvelope(
+fun pathSignalsInEnvelope(
     startOffset: Distance,
     blockPath: StaticIdxList<Block>,
     blockInfra: BlockInfra,
@@ -575,7 +575,7 @@ fun trainPathBlockOffset(
     throw RuntimeException("Couldn't find first chunk on the block path")
 }
 
-private fun simplifyPositions(positions: ArrayList<ResultPosition>): ArrayList<ResultPosition> {
+fun simplifyPositions(positions: ArrayList<ResultPosition>): ArrayList<ResultPosition> {
     return CurveSimplification.rdp(positions, 5.0) {
         point: ResultPosition,
         start: ResultPosition,
@@ -590,7 +590,7 @@ private fun simplifyPositions(positions: ArrayList<ResultPosition>): ArrayList<R
     }
 }
 
-private fun simplifySpeeds(speeds: ArrayList<ResultSpeed>): ArrayList<ResultSpeed> {
+fun simplifySpeeds(speeds: ArrayList<ResultSpeed>): ArrayList<ResultSpeed> {
     return CurveSimplification.rdp(speeds, 0.2) {
         point: ResultSpeed,
         start: ResultSpeed,

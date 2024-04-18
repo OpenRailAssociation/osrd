@@ -157,7 +157,7 @@ public final class RollingStock implements PhysicsRollingStock {
     public enum Comfort {
         STANDARD,
         HEATING,
-        AC,
+        AIR_CONDITIONING,
     }
 
     protected record CurveAndCondition(TractiveEffortPoint[] curve, InfraConditions cond) {}

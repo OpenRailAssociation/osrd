@@ -14,8 +14,8 @@ import fr.sncf.osrd.train.TestTrains
 import fr.sncf.osrd.utils.Direction.INCREASING
 import fr.sncf.osrd.utils.Helpers
 import fr.sncf.osrd.utils.indexing.StaticIdx
-import fr.sncf.osrd.utils.indexing.StaticIdxList
 import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
+import fr.sncf.osrd.utils.toIdxList
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
@@ -294,10 +294,4 @@ private fun makeCallbacks(
             )
         )
     return IncrementalRequirementEnvelopeAdapter(rollingStock, envelope, complete)
-}
-
-fun <T> List<StaticIdx<T>>.toIdxList(): StaticIdxList<T> {
-    val res = mutableStaticIdxArrayListOf<T>()
-    res.addAll(this)
-    return res
 }

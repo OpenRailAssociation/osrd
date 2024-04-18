@@ -8,6 +8,7 @@ import fr.sncf.osrd.sim_infra.api.PathProperties
 import fr.sncf.osrd.sim_infra.api.RawSignalingInfra
 import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.DistanceRangeMapImpl
+import fr.sncf.osrd.utils.units.Distance
 
 fun makePathPropResult(
     pathProperties: PathProperties,
@@ -109,12 +110,13 @@ private fun <T> makeRangeValues(distanceRangeMap: DistanceRangeMap<T>): RangeVal
 }
 
 private fun <T> makeRangeValues(entries: List<DistanceRangeMap.RangeMapEntry<T>>): RangeValues<T> {
-    val boundaries = mutableListOf(entries[0].lower)
+    val boundaries = mutableListOf<Distance>()
     val values = mutableListOf<T>()
     for (entry in entries) {
         boundaries.add(entry.upper)
         values.add(entry.value)
     }
+    boundaries.removeLast()
     return RangeValues(boundaries, values)
 }
 

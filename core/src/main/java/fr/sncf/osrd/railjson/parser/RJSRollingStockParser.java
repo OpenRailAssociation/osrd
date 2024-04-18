@@ -116,7 +116,7 @@ public class RJSRollingStockParser {
                 rjsRollingStock.supportedSignalingSystems);
     }
 
-    private static RJSRollingResistance.Davis parseRollingResistance(RJSRollingResistance rjsRollingResistance)
+    public static RJSRollingResistance.Davis parseRollingResistance(RJSRollingResistance rjsRollingResistance)
             throws OSRDError {
         if (rjsRollingResistance == null) throw OSRDError.newMissingRollingStockFieldError("rolling_resistance");
         if (rjsRollingResistance.getClass() != RJSRollingResistance.Davis.class)
@@ -136,13 +136,13 @@ public class RJSRollingStockParser {
     /** Parse rjsComfort into a RollingStock comfort */
     public static RollingStock.Comfort parseComfort(RJSComfortType rjsComfort) {
         if (rjsComfort == null) return null;
-        if (rjsComfort == RJSComfortType.AC) return RollingStock.Comfort.AC;
+        if (rjsComfort == RJSComfortType.AC) return RollingStock.Comfort.AIR_CONDITIONING;
         if (rjsComfort == RJSComfortType.HEATING) return RollingStock.Comfort.HEATING;
         return RollingStock.Comfort.STANDARD;
     }
 
     /** Parse RJSModeEffortCurve into a ModeEffortCurve */
-    private static RollingStock.ModeEffortCurves parseModeEffortCurves(
+    public static RollingStock.ModeEffortCurves parseModeEffortCurves(
             RJSEffortCurves.RJSModeEffortCurve rjsMode, String fieldKey) {
         var defaultCurve = parseEffortCurve(rjsMode.defaultCurve, fieldKey + ".default_curve");
         var curves = new RollingStock.ConditionalEffortCurve[rjsMode.curves.size()];

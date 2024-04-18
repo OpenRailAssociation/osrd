@@ -16,10 +16,7 @@ import fr.sncf.osrd.sim_infra.impl.getOffsetOfTrackLocationOnChunks
 import fr.sncf.osrd.sim_infra.utils.BlockPathElement
 import fr.sncf.osrd.sim_infra.utils.recoverBlocks
 import fr.sncf.osrd.sim_infra.utils.toList
-import fr.sncf.osrd.utils.indexing.MutableDirStaticIdxArrayList
-import fr.sncf.osrd.utils.indexing.MutableStaticIdxArrayList
-import fr.sncf.osrd.utils.indexing.StaticIdx
-import fr.sncf.osrd.utils.indexing.StaticIdxList
+import fr.sncf.osrd.utils.indexing.*
 import fr.sncf.osrd.utils.moshi.MoshiUtils
 import fr.sncf.osrd.utils.units.Offset
 import java.io.File
@@ -182,4 +179,10 @@ object Helpers {
         val endOffset = getOffsetOfTrackLocationOnChunks(infra, end, chunks)
         return buildChunkPath(infra, chunks, startOffset!!, endOffset!!)
     }
+}
+
+fun <T> List<StaticIdx<T>>.toIdxList(): StaticIdxList<T> {
+    val res = mutableStaticIdxArrayListOf<T>()
+    res.addAll(this)
+    return res
 }
