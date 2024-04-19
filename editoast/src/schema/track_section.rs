@@ -4,6 +4,7 @@ use editoast_common::NonBlankString;
 use editoast_schemas::infra::Curve;
 use editoast_schemas::infra::LoadingGaugeLimit;
 use editoast_schemas::infra::Slope;
+use editoast_schemas::infra::TrackSectionSourceExtension;
 use editoast_schemas::primitives::BoundingBox;
 use editoast_schemas::primitives::OSRDIdentified;
 use editoast_schemas::primitives::OSRDTyped;
@@ -49,14 +50,6 @@ pub struct TrackSectionSncfExtension {
     pub track_number: i32,
     #[derivative(Default(value = r#""track_test".into()"#))]
     pub track_name: NonBlankString,
-}
-
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, Eq)]
-#[serde(deny_unknown_fields)]
-#[derivative(Default)]
-pub struct TrackSectionSourceExtension {
-    pub name: NonBlankString,
-    pub id: NonBlankString,
 }
 
 impl OSRDTyped for TrackSection {
