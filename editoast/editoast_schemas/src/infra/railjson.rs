@@ -2,17 +2,17 @@ use derivative::Derivative;
 use serde::Deserialize;
 use serde::Serialize;
 
-use editoast_schemas::infra::BufferStop;
-use editoast_schemas::infra::Detector;
-use editoast_schemas::infra::Electrification;
-use editoast_schemas::infra::NeutralSection;
-use editoast_schemas::infra::OperationalPoint;
-use editoast_schemas::infra::Route;
-use editoast_schemas::infra::Signal;
-use editoast_schemas::infra::SpeedSection;
-use editoast_schemas::infra::Switch;
-use editoast_schemas::infra::SwitchType;
-use editoast_schemas::infra::TrackSection;
+use super::BufferStop;
+use super::Detector;
+use super::Electrification;
+use super::NeutralSection;
+use super::OperationalPoint;
+use super::Route;
+use super::Signal;
+use super::SpeedSection;
+use super::Switch;
+use super::SwitchType;
+use super::TrackSection;
 
 pub const RAILJSON_VERSION: &str = "3.4.11";
 
