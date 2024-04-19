@@ -143,7 +143,7 @@ public class StandaloneSimulationCommand implements CliCommand {
     private FullInfra loadInfra() throws IOException {
         try (var source = Okio.buffer(FileSystem.SYSTEM.source(okio.Path.get(infraFilePath)))) {
             var rjsInfra = RJSInfra.adapter.fromJson(source);
-            return FullInfra.fromRJSInfra(rjsInfra, diagnosticRecorder, signalingSimulator);
+            return FullInfra.fromRJSInfra(rjsInfra, signalingSimulator);
         }
     }
 

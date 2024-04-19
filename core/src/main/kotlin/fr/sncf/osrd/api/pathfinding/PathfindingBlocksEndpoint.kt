@@ -9,7 +9,6 @@ import fr.sncf.osrd.api.pathfinding.request.PathfindingWaypoint
 import fr.sncf.osrd.api.pathfinding.response.PathfindingResult
 import fr.sncf.osrd.graph.*
 import fr.sncf.osrd.graph.Pathfinding.EdgeLocation
-import fr.sncf.osrd.infra.api.Direction
 import fr.sncf.osrd.railjson.parser.RJSRollingStockParser
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection
 import fr.sncf.osrd.railjson.schema.infra.RJSRoutePath
@@ -20,6 +19,7 @@ import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.utils.getNextTrackSections
+import fr.sncf.osrd.toDirection
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.utils.indexing.*
 import fr.sncf.osrd.utils.units.Distance.Companion.fromMeters
@@ -335,7 +335,7 @@ fun findWaypointBlocks(
             ?: throw OSRDError.newUnknownTrackSectionError(waypoint.trackSection)
     val trackChunkOnWaypoint =
         getTrackSectionChunkOnWaypoint(trackSectionId, waypoint.offset, infra.rawInfra)
-    val waypointDirection = Direction.fromEdgeDir(waypoint.direction).toKtDirection()
+    val waypointDirection = waypoint.direction.toDirection()
     val blocksOnWaypoint =
         infra.blockInfra.getBlocksFromTrackChunk(trackChunkOnWaypoint, waypointDirection).toSet()
     for (block in blocksOnWaypoint) {
