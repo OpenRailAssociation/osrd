@@ -14,14 +14,12 @@ mod map;
 mod models;
 mod modelsv2;
 mod redis_utils;
-mod schema;
 mod tables;
 mod views;
 
 use crate::core::CoreClient;
 use crate::error::InternalError;
 use crate::modelsv2::Infra;
-use crate::schema::RailJson;
 use crate::views::OpenApiRoot;
 use actix_cors::Cors;
 use actix_web::dev::{Service, ServiceRequest};
@@ -57,6 +55,7 @@ use diesel_async::pooled_connection::{
 use diesel_async::AsyncPgConnection as PgConnection;
 use diesel_async::{AsyncPgConnection, RunQueryDsl};
 use diesel_json::Json as DieselJson;
+use editoast_schemas::infra::RailJson;
 use futures_util::future::BoxFuture;
 use futures_util::FutureExt;
 use infra_cache::InfraCache;

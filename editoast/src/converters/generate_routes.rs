@@ -6,11 +6,11 @@
 
 use std::collections::HashMap;
 
-use crate::schema::*;
 use editoast_common::Identifier;
 use editoast_schemas::infra::builtin_node_types_list;
 use editoast_schemas::infra::Direction;
 use editoast_schemas::infra::Endpoint;
+use editoast_schemas::infra::RailJson;
 use editoast_schemas::infra::Route;
 use editoast_schemas::infra::TrackEndpoint;
 use editoast_schemas::infra::Waypoint;

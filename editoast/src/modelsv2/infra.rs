@@ -30,12 +30,12 @@ use crate::modelsv2::get_table;
 use crate::modelsv2::prelude::*;
 use crate::modelsv2::railjson::persist_railjson;
 use crate::modelsv2::Create;
-use crate::schema::RailJson;
-use crate::schema::RAILJSON_VERSION;
 use crate::tables::infra::dsl;
 use crate::views::pagination::Paginate;
 use crate::views::pagination::PaginatedResponse;
 use crate::DbPool;
+use editoast_schemas::infra::RailJson;
+use editoast_schemas::infra::RAILJSON_VERSION;
 use editoast_schemas::primitives::ObjectType;
 
 /// The default version of a newly created infrastructure
@@ -251,12 +251,14 @@ pub mod tests {
     use editoast_schemas::infra::Electrification;
     use editoast_schemas::infra::NeutralSection;
     use editoast_schemas::infra::OperationalPoint;
+    use editoast_schemas::infra::RailJson;
     use editoast_schemas::infra::Route;
     use editoast_schemas::infra::Signal;
     use editoast_schemas::infra::SpeedSection;
     use editoast_schemas::infra::Switch;
     use editoast_schemas::infra::SwitchType;
     use editoast_schemas::infra::TrackSection;
+    use editoast_schemas::infra::RAILJSON_VERSION;
     use editoast_schemas::primitives::OSRDIdentified;
     use rstest::rstest;
     use uuid::Uuid;
@@ -270,8 +272,6 @@ pub mod tests {
     use crate::modelsv2::prelude::*;
     use crate::modelsv2::railjson::find_all_schemas;
     use crate::modelsv2::railjson::RailJsonError;
-    use crate::schema::RailJson;
-    use crate::schema::RAILJSON_VERSION;
 
     pub async fn test_infra_transaction<'a, F>(fn_test: F)
     where
@@ -399,7 +399,6 @@ pub mod tests {
         // THEN
         assert_eq!(infra.railjson_version, railjson.version);
 
-        use crate::schema::*;
         fn sort<T: OSRDIdentified>(mut objects: Vec<T>) -> Vec<T> {
             objects.sort_by(|a, b| a.get_id().cmp(b.get_id()));
             objects
