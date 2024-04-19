@@ -1,9 +1,9 @@
 use derivative::Derivative;
 use editoast_common::Identifier;
-use editoast_common::NonBlankString;
 use editoast_schemas::infra::Curve;
 use editoast_schemas::infra::LoadingGaugeLimit;
 use editoast_schemas::infra::Slope;
+use editoast_schemas::infra::TrackSectionSncfExtension;
 use editoast_schemas::infra::TrackSectionSourceExtension;
 use editoast_schemas::primitives::BoundingBox;
 use editoast_schemas::primitives::OSRDIdentified;
@@ -38,18 +38,6 @@ pub struct TrackSection {
 pub struct TrackSectionExtensions {
     pub sncf: Option<TrackSectionSncfExtension>,
     pub source: Option<TrackSectionSourceExtension>,
-}
-
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, Eq)]
-#[serde(deny_unknown_fields)]
-#[derivative(Default)]
-pub struct TrackSectionSncfExtension {
-    pub line_code: i32,
-    #[derivative(Default(value = r#""line_test".into()"#))]
-    pub line_name: NonBlankString,
-    pub track_number: i32,
-    #[derivative(Default(value = r#""track_test".into()"#))]
-    pub track_name: NonBlankString,
 }
 
 impl OSRDTyped for TrackSection {
