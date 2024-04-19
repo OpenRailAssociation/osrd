@@ -77,7 +77,7 @@ data class PathPropertiesImpl(
             assert(routeOnChunk.size < 2) {
                 "a train cannot follow more than one route at the same time"
             }
-            val route = routeOnChunk.singleOrNull()?.let { routeId -> infra.getRouteName(routeId) }
+            val route = routeOnChunk.singleOrNull()
             infra.getTrackChunkSpeedSections(dirChunkId, trainTag, route)
         }
     }

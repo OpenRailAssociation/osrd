@@ -125,7 +125,7 @@ class OperationalPointPartDescriptor(
 class SpeedSection(
     val default: Speed,
     val speedByTrainTag: Map<String, Speed>,
-    val speedByRoute: Map<String, Speed>
+    val speedByRoute: Map<RouteId, Speed>
 ) {
     override fun toString(): String {
         return "SpeedSection(default=$default, speedByTrainTag=$speedByTrainTag, speedByRoute=$speedByRoute)"
@@ -254,7 +254,7 @@ class RawInfraImpl(
     override fun getTrackChunkSpeedSections(
         trackChunk: DirTrackChunkId,
         trainTag: String?,
-        route: String?
+        route: RouteId?
     ): DistanceRangeMap<Speed> {
         val res = distanceRangeMapOf<Speed>()
         for (entry in trackChunkPool[trackChunk.value].speedSections.get(trackChunk.direction)) {
