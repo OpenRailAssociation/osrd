@@ -3,13 +3,13 @@ package fr.sncf.osrd.pathfinding
 import fr.sncf.osrd.api.ApiTest
 import fr.sncf.osrd.api.pathfinding.request.PathfindingWaypoint
 import fr.sncf.osrd.api.pathfinding.runPathfinding
-import fr.sncf.osrd.infra.api.Direction
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.sim_infra.api.NeutralSection
 import fr.sncf.osrd.sim_infra.api.RouteId
 import fr.sncf.osrd.train.TestTrains
+import fr.sncf.osrd.utils.Direction
 import fr.sncf.osrd.utils.DummyInfra
 import java.util.stream.Stream
 import org.junit.jupiter.api.Assertions
@@ -133,7 +133,7 @@ class PathfindingElectrificationTest : ApiTest() {
         }
         if (withNeutralSection) {
             // Add a neutral section in the middle of the path
-            if (neutralSectionDirection == Direction.FORWARD)
+            if (neutralSectionDirection == Direction.INCREASING)
                 infra.blockPool[secondBlock.index.toInt()].neutralSectionForward =
                     NeutralSection(lowerPantograph = false, isAnnouncement = false)
             else
@@ -142,7 +142,7 @@ class PathfindingElectrificationTest : ApiTest() {
         }
         if (
             withElectrification ||
-                withNeutralSection && neutralSectionDirection == Direction.FORWARD
+                withNeutralSection && neutralSectionDirection == Direction.INCREASING
         ) {
             // Run another pathfinding with an electric train
             val electricPath =
@@ -175,11 +175,11 @@ class PathfindingElectrificationTest : ApiTest() {
         fun testNeutralSectionArgs(): Stream<Arguments> {
             return Stream
                 .of( // With electrification, with neutral section, neutral section direction
-                    Arguments.of(true, true, Direction.FORWARD),
-                    Arguments.of(true, true, Direction.BACKWARD),
+                    Arguments.of(true, true, Direction.INCREASING),
+                    Arguments.of(true, true, Direction.DECREASING),
                     Arguments.of(true, false, null),
-                    Arguments.of(false, true, Direction.FORWARD),
-                    Arguments.of(false, true, Direction.BACKWARD),
+                    Arguments.of(false, true, Direction.INCREASING),
+                    Arguments.of(false, true, Direction.DECREASING),
                     Arguments.of(false, false, null)
                 )
         }

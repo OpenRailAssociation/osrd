@@ -3,6 +3,7 @@ package fr.sncf.osrd.sim_infra_adapter
 import fr.sncf.osrd.api.pathfinding.makePathProps
 import fr.sncf.osrd.geom.LineString
 import fr.sncf.osrd.geom.Point
+import fr.sncf.osrd.parseRJSInfra
 import fr.sncf.osrd.railjson.schema.common.graph.ApplicableDirection
 import fr.sncf.osrd.railjson.schema.geom.RJSLineString
 import fr.sncf.osrd.railjson.schema.infra.RJSOperationalPoint
@@ -51,8 +52,7 @@ class PathPropertiesTests {
                         RJSSlope(1_000.0, 1_950.0, -5.0),
                     )
         }
-        val oldInfra = Helpers.infraFromRJS(rjsInfra)
-        val infra = adaptRawInfra(oldInfra, rjsInfra)
+        val infra = parseRJSInfra(rjsInfra)
 
         val path =
             pathFromTracks(
@@ -121,8 +121,7 @@ class PathPropertiesTests {
                     )
                 )
             )
-        val oldInfra = Helpers.infraFromRJS(rjsInfra)
-        val infra = adaptRawInfra(oldInfra, rjsInfra)
+        val infra = parseRJSInfra(rjsInfra)
         val path =
             pathFromTracks(
                 infra,
@@ -188,8 +187,7 @@ class PathPropertiesTests {
                     RJSCurve(0.0, 1_000.0, 5_000.0),
                     RJSCurve(1_000.0, 2_000.0, 10_000.0),
                 )
-        val oldInfra = Helpers.infraFromRJS(rjsInfra)
-        val infra = adaptRawInfra(oldInfra, rjsInfra)
+        val infra = parseRJSInfra(rjsInfra)
         val pathBackward =
             pathFromTracks(infra, listOf("TA0"), Direction.DECREASING, 500.meters, 1_500.meters)
         val slopesBackward = pathBackward.getCurves()
@@ -229,8 +227,7 @@ class PathPropertiesTests {
                     RJSCurve(0.0, 1_000.0, 5_000.0),
                 )
         }
-        val oldInfra = Helpers.infraFromRJS(rjsInfra)
-        val infra = adaptRawInfra(oldInfra, rjsInfra)
+        val infra = parseRJSInfra(rjsInfra)
         val pathBackward =
             pathFromTracks(infra, listOf("TA0"), Direction.DECREASING, 500.meters, 1_500.meters)
         val slopesBackward = pathBackward.getGradients()
@@ -262,8 +259,7 @@ class PathPropertiesTests {
             if (track.id.equals("TA1"))
                 track.geo = RJSLineString.make(listOf(1.0, 2.0, 2.0), listOf(1.0, 1.0, 1.95))
         }
-        val oldInfra = Helpers.infraFromRJS(rjsInfra)
-        val infra = adaptRawInfra(oldInfra, rjsInfra)
+        val infra = parseRJSInfra(rjsInfra)
 
         val path =
             pathFromTracks(
@@ -343,8 +339,7 @@ class PathPropertiesTests {
                     )
                 )
             )
-        val oldInfra = Helpers.infraFromRJS(rjsInfra)
-        val infra = adaptRawInfra(oldInfra, rjsInfra)
+        val infra = parseRJSInfra(rjsInfra)
 
         val path =
             pathFromTracks(
@@ -404,8 +399,7 @@ class PathPropertiesTests {
                         RJSLoadingGaugeLimit(1_000.0, 1_950.0, RJSLoadingGaugeType.GC),
                     )
         }
-        val oldInfra = Helpers.infraFromRJS(rjsInfra)
-        val infra = adaptRawInfra(oldInfra, rjsInfra)
+        val infra = parseRJSInfra(rjsInfra)
 
         val pathBackward =
             pathFromTracks(

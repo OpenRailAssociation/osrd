@@ -5,15 +5,10 @@ import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.api.makeSignalingSimulator
 import fr.sncf.osrd.graph.Pathfinding.EdgeLocation
 import fr.sncf.osrd.graph.PathfindingEdgeLocationId
-import fr.sncf.osrd.infra.api.signaling.SignalingInfra
-import fr.sncf.osrd.infra.api.signaling.SignalingModule
-import fr.sncf.osrd.infra.implementation.signaling.SignalingInfraBuilder
-import fr.sncf.osrd.infra.implementation.signaling.modules.bal3.BAL3
 import fr.sncf.osrd.railjson.schema.external_generated_inputs.RJSElectricalProfileSet
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingStock
 import fr.sncf.osrd.reporting.exceptions.OSRDError
-import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.impl.ChunkPath
 import fr.sncf.osrd.sim_infra.impl.buildChunkPath
@@ -102,19 +97,11 @@ object Helpers {
         }
     }
 
-    /** Generates a signaling infra from rjs data */
-    @JvmStatic
-    fun infraFromRJS(rjs: RJSInfra?): SignalingInfra {
-        val wr = DiagnosticRecorderImpl(true)
-        return SignalingInfraBuilder.fromRJSInfra(rjs, setOf<SignalingModule>(BAL3(wr)), wr)
-    }
-
     /** Generates a full infra from rjs data */
     @JvmStatic
     fun fullInfraFromRJS(rjs: RJSInfra?): FullInfra {
-        val diagnosticRecorder = DiagnosticRecorderImpl(true)
         val signalingSimulator = makeSignalingSimulator()
-        return FullInfra.fromRJSInfra(rjs, diagnosticRecorder, signalingSimulator)
+        return FullInfra.fromRJSInfra(rjs, signalingSimulator)
     }
 
     val smallInfra: FullInfra
