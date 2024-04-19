@@ -1,6 +1,7 @@
 use itertools::Itertools;
-use serde_json::from_value;
-use serde_json::json;
+use json_patch::Patch;
+use json_patch::PatchOperation;
+use json_patch::RemoveOperation;
 use std::collections::HashMap;
 use tracing::debug;
 use tracing::error;
@@ -53,11 +54,9 @@ pub fn fix_speed_section(
                 Operation::Update(UpdateOperation {
                     obj_id: speed_section.get_id().clone(),
                     obj_type: speed_section.get_type(),
-                    railjson_patch: from_value(json!([{
-                        "op": "remove",
-                        "path": format!("/track_ranges/{track_range_idx}"),
-                    }]))
-                    .unwrap(),
+                    railjson_patch: Patch(vec![PatchOperation::Remove(RemoveOperation {
+                        path: format!("/track_ranges/{track_range_idx}").parse().unwrap(),
+                    })]),
                 })
             }
             OrderedOperation::Delete => {

@@ -18,7 +18,7 @@
     "auto_fixes": {
       "ConflictingFixesOnSameObject": "Correctifs conflictuels pour le même objet sur la même itération de correctif",
       "FixTrialFailure": "Echec de l'application des correctifs",
-      "MaximumIterationReached": "Nombre maximum d'itérations atteint pour corriger l'infra sans fournir tous les correctifs possibles",
+      "MaximumIterationReached": "Nombre maximum d'itérations atteint pour corriger l'infrastructure sans fournir tous les correctifs possibles",
       "MissingErrorObject": "Impossible de trouver l'objet de l'erreur"
     },
     "cache_operation": {
@@ -49,7 +49,8 @@
     "infra": {
       "NotFound": "",
       "edition": {
-        "InfraIsLocked": "Infrastructure verrouillée"
+        "InfraIsLocked": "Infrastructure verrouillée",
+        "SplitTrackSectionBadOffset": "La distance pour scinder la section de ligne '{{tracksection_id}}' de l'infrastructure '{{infra_id}}' est invalide. La valeur doit être comprise entre 0 et {{tracksection_length}} mètres."
       },
       "errors": {
         "WrongErrorTypeProvided": "Mauvais type d'erreur fourni"
@@ -87,10 +88,10 @@
     "pathfinding": {
       "ElectricalProfilesOverlap": "Des profils électriques se chevauchent",
       "ElectrificationOverlap": "Electrification {{electrification_id}} se supperpose avec d'autres",
-      "InfraNotFound": "Infrastructure {{infra_id}} non trouvée",
-      "NotFound": "Itinéraire {{pathfinding_id}} non trouvé",
+      "InfraNotFound": "Infrastructure '{{infra_id}}' non trouvée",
+      "NotFound": "Itinéraire '{{pathfinding_id}}' non trouvé",
       "OperationalPointsNotFound": "Points opérationnels {{operational_points}} non trouvés",
-      "RollingStockNotFound": "Matériel roulant {{rolling_stock_id}} non trouvé",
+      "RollingStockNotFound": "Matériel roulant '{{rolling_stock_id}}' non trouvé",
       "TrackSectionsNotFound": "Section de ligne {{track_sections}} non trouvée"
     },
     "postgres": {
@@ -167,7 +168,7 @@
     },
     "timetable": {
       "InfraNotLoaded": "L'infrastructure '{{infra_id}}' n'est pas chargée",
-      "InfraNotFound": "Infra '{{infra_id}}' non trouvée",
+      "InfraNotFound": "Infrastructure '{{infra_id}}' non trouvée",
       "NotFound": "Grille horaire '{{timetable_id}}' non trouvée"
     },
     "train_schedule": {
@@ -184,7 +185,7 @@
     "train_schedule_v2": {
       "BatchTrainScheduleNotFound": "'{{number}}' circulation(s) n'ont pas pu être trouvée(s)",
       "NotFound": "Circulation '{{train_schedule_id}}' non trouvée",
-      "InfraNotFound": "Infra '{{infra_id}}' non trouvée"
+      "InfraNotFound": "Infrastructure '{{infra_id}}' non trouvée"
     },
     "url": {
       "InvalidUrl": "Url invalide '{{url}}'"

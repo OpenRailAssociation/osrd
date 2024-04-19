@@ -43,10 +43,10 @@ pub struct NeutralSectionExtensions {
 #[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq, ToSchema)]
 #[serde(deny_unknown_fields)]
 pub struct NeutralSectionNeutralSncfExtension {
-    announcement: Vec<Sign>,
-    exe: Sign,
-    end: Vec<Sign>,
-    rev: Vec<Sign>,
+    pub announcement: Vec<Sign>,
+    pub exe: Sign,
+    pub end: Vec<Sign>,
+    pub rev: Vec<Sign>,
 }
 
 impl OSRDTyped for NeutralSection {

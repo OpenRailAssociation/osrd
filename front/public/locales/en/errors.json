@@ -18,7 +18,7 @@
     "auto_fixes": {
       "ConflictingFixesOnSameObject": "Conflicting fixes for the same object on the same fix-iteration",
       "FixTrialFailure": "Failed trying to apply fixes",
-      "MaximumIterationReached": "Reached maximum number of iterations to fix infra without providing every possible fixes",
+      "MaximumIterationReached": "Reached maximum number of iterations to fix infrastructure without providing every possible fixes",
       "MissingErrorObject": "Failed to find the error's object"
     },
     "cache_operation": {
@@ -49,7 +49,8 @@
     "infra": {
       "NotFound": "",
       "edition": {
-        "InfraIsLocked": "Infra is locked"
+        "InfraIsLocked": "Infrastructure is locked",
+        "SplitTrackSectionBadOffset": "Distance to split track section '{{tracksection_id}}' in infrastructure '{{infra_id}}' is invalid. It must be between 0 and {{tracksection_length}} meters."
       },
       "errors": {
         "WrongErrorTypeProvided": "Wrong Error type provided"
@@ -86,11 +87,11 @@
     },
     "pathfinding": {
       "ElectricalProfilesOverlap": "Electrical Profile overlaps with others",
-      "ElectrificationOverlap": "Electrification {{electrification_id}} overlaps with other electrifications",
-      "InfraNotFound": "Infra {{infra_id}} does not exist",
+      "ElectrificationOverlap": "Electrification '{{electrification_id}}' overlaps with other electrifications",
+      "InfraNotFound": "Infrastructure '{{infra_id}}' does not exist",
       "NotFound": "Pathfinding {{pathfinding_id}} does not exist",
       "OperationalPointsNotFound": "Operational points do not exist: {{operational_points}}",
-      "RollingStockNotFound": "Rolling stock with id {{rolling_stock_id}} does not exist",
+      "RollingStockNotFound": "Rolling stock with id '{{rolling_stock_id}}' does not exist",
       "TrackSectionsNotFound": "Track sections do not exist: {{track_sections}}"
     },
     "postgres": {
@@ -151,7 +152,7 @@
       "UnknownSignalingSystem": "Unknown signaling system"
     },
     "stdcm": {
-      "InfraNotFound": "Infra {{infra_id}} does not exist"
+      "InfraNotFound": "Infrastructure '{{infra_id}}' does not exist"
     },
     "stdcm_v2": {
       "InfraNotFound": "Infrastructure '{{infra_id}}' does not exist",
@@ -164,8 +165,8 @@
       "StartDateAfterEndDate": "The study start date must be before the end date"
     },
     "timetable": {
-      "InfraNotLoaded": "Infra '{{infra_id}}' is not loaded",
-      "InfraNotFound": "Infra {{infra_id}} does not exist",
+      "InfraNotLoaded": "Infrastructure '{{infra_id}}' is not loaded",
+      "InfraNotFound": "Infrastructure '{{infra_id}}' does not exist",
       "NotFound": "Timetable '{{timetable_id}}' could not be found"
     },
     "train_schedule": {
@@ -182,7 +183,7 @@
     "train_schedule_v2": {
       "BatchTrainScheduleNotFound": "'{{number}}' train schedule(s) could not be found",
       "NotFound": "Train Schedule '{{train_schedule_id}}' could not be found",
-      "InfraNotFound": "Infra '{{infra_id}}' could not be found"
+      "InfraNotFound": "Infrastructure '{{infra_id}}' could not be found"
     },
     "url": {
       "InvalidUrl": "Invalid url '{{url}}'"

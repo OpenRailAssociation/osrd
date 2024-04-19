@@ -199,6 +199,14 @@ impl From<SpeedSection> for RailjsonObject {
     }
 }
 
+impl From<NeutralSection> for RailjsonObject {
+    fn from(neutralsection: NeutralSection) -> Self {
+        RailjsonObject::NeutralSection {
+            railjson: neutralsection,
+        }
+    }
+}
+
 impl From<Switch> for RailjsonObject {
     fn from(switch: Switch) -> Self {
         RailjsonObject::Switch { railjson: switch }

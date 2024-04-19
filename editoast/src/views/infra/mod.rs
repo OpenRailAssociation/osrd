@@ -8,9 +8,6 @@ mod pathfinding;
 mod railjson;
 mod routes;
 
-use std::collections::HashMap;
-use std::sync::Arc;
-
 use actix_web::delete;
 use actix_web::dev::HttpServiceFactory;
 use actix_web::get;
@@ -32,10 +29,13 @@ use diesel::QueryableByName;
 use editoast_derive::EditoastError;
 use serde::Deserialize;
 use serde::Serialize;
+use std::collections::HashMap;
+use std::sync::Arc;
 use thiserror::Error;
 use utoipa::IntoParams;
 
 use self::edition::edit;
+use self::edition::split_track_section;
 use super::params::List;
 use crate::core::infra_loading::InfraLoadRequest;
 use crate::core::infra_state::InfraStateRequest;
@@ -45,8 +45,8 @@ use crate::core::CoreClient;
 use crate::error::Result;
 use crate::infra_cache::InfraCache;
 use crate::infra_cache::ObjectCache;
+use crate::map;
 use crate::map::MapLayers;
-use crate::map::{self};
 use crate::models::List as ModelList;
 use crate::models::NoParams;
 use crate::modelsv2::prelude::*;
@@ -65,6 +65,7 @@ crate::routes! {
             auto_fixes::routes(),
             pathfinding::routes(),
             attached::routes(),
+            edition::routes(),
             lock,
             unlock,
             get_speed_limit_tags,
@@ -99,6 +100,7 @@ pub fn infra_routes() -> impl HttpServiceFactory {
                     delete,
                     clone,
                     edit,
+                    split_track_section,
                     rename,
                     lock,
                     unlock,

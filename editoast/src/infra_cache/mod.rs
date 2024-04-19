@@ -25,6 +25,7 @@ use editoast_schemas::infra::DoubleSlipSwitch;
 use editoast_schemas::infra::Electrification;
 use editoast_schemas::infra::Endpoint;
 use editoast_schemas::infra::Link;
+use editoast_schemas::infra::NeutralSection;
 use editoast_schemas::infra::OperationalPointPart;
 use editoast_schemas::infra::PointSwitch;
 use editoast_schemas::infra::Route;
@@ -89,6 +90,7 @@ pub enum ObjectCache {
     OperationalPoint(OperationalPointCache),
     SwitchType(SwitchType),
     Electrification(Electrification),
+    NeutralSection(NeutralSection),
 }
 
 impl From<RailjsonObject> for ObjectCache {
@@ -96,7 +98,7 @@ impl From<RailjsonObject> for ObjectCache {
         match railjson {
             RailjsonObject::TrackSection { railjson } => ObjectCache::TrackSection(railjson.into()),
             RailjsonObject::Signal { railjson } => ObjectCache::Signal(railjson.into()),
-            RailjsonObject::NeutralSection { .. } => unimplemented!(),
+            RailjsonObject::NeutralSection { railjson } => ObjectCache::NeutralSection(railjson),
             RailjsonObject::SpeedSection { railjson } => ObjectCache::SpeedSection(railjson),
             RailjsonObject::Switch { railjson } => ObjectCache::Switch(railjson.into()),
             RailjsonObject::SwitchType { railjson } => ObjectCache::SwitchType(railjson),
@@ -130,6 +132,7 @@ impl OSRDIdentified for ObjectCache {
             ObjectCache::OperationalPoint(obj) => obj.get_id(),
             ObjectCache::SwitchType(obj) => obj.get_id(),
             ObjectCache::Electrification(obj) => obj.get_id(),
+            ObjectCache::NeutralSection(obj) => obj.get_id(),
         }
     }
 }
@@ -147,6 +150,7 @@ impl OSRDObject for ObjectCache {
             ObjectCache::OperationalPoint(_) => ObjectType::OperationalPoint,
             ObjectCache::SwitchType(_) => ObjectType::SwitchType,
             ObjectCache::Electrification(_) => ObjectType::Electrification,
+            ObjectCache::NeutralSection(_) => ObjectType::NeutralSection,
         }
     }
 }
@@ -165,6 +169,9 @@ impl ObjectCache {
             ObjectCache::SwitchType(switch_type) => switch_type.get_track_referenced_id(),
             ObjectCache::Electrification(electrification) => {
                 electrification.get_track_referenced_id()
+            }
+            ObjectCache::NeutralSection(neutral_section) => {
+                neutral_section.get_track_referenced_id()
             }
         }
     }
@@ -246,6 +253,14 @@ impl ObjectCache {
         match self {
             ObjectCache::Electrification(electrification) => electrification,
             _ => panic!("ObjectCache is not a Electrification"),
+        }
+    }
+
+    /// Unwrap a neutral section from the object cache
+    pub fn unwrap_neutral_section(&self) -> &NeutralSection {
+        match self {
+            ObjectCache::NeutralSection(neutral_section) => neutral_section,
+            _ => panic!("ObjectCache is not a NeutralSection"),
         }
     }
 }
@@ -376,6 +391,11 @@ impl InfraCache {
         &self.objects[ObjectType::SpeedSection]
     }
 
+    /// Retrieve the cache of neutral sections
+    pub fn neutral_sections(&self) -> &HashMap<String, ObjectCache> {
+        &self.objects[ObjectType::NeutralSection]
+    }
+
     /// Retrieve the cache of routes
     pub fn routes(&self) -> &HashMap<String, ObjectCache> {
         &self.objects[ObjectType::Route]
@@ -441,6 +461,12 @@ impl InfraCache {
             .await?
             .into_iter()
             .try_for_each(|speed| infra_cache.add(speed))?;
+
+        // Load speed sections tracks references
+        find_all_schemas::<NeutralSection, Vec<_>>(conn, infra_id)
+            .await?
+            .into_iter()
+            .try_for_each(|neutralsection| infra_cache.add(neutralsection))?;
 
         // Load routes tracks references
         find_all_schemas::<_, Vec<Route>>(conn, infra_id)
@@ -594,6 +620,9 @@ impl InfraCache {
             ObjectCache::Electrification(electrification) => {
                 self.add::<Electrification>(electrification)?
             }
+            ObjectCache::NeutralSection(neutral_section) => {
+                self.add::<NeutralSection>(neutral_section)?
+            }
         }
         Ok(())
     }
@@ -641,6 +670,17 @@ impl InfraCache {
                 obj_id: speed_section_id.to_string(),
             })?
             .unwrap_speed_section())
+    }
+
+    pub fn get_neutral_section(&self, neutral_section_id: &str) -> Result<&NeutralSection> {
+        Ok(self
+            .neutral_sections()
+            .get(neutral_section_id)
+            .ok_or_else(|| InfraCacheEditoastError::ObjectNotFound {
+                obj_type: ObjectType::NeutralSection.to_string(),
+                obj_id: neutral_section_id.to_string(),
+            })?
+            .unwrap_neutral_section())
     }
 
     pub fn get_detector(&self, detector_id: &str) -> Result<&DetectorCache> {
