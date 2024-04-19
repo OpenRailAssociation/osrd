@@ -27,7 +27,7 @@ class PathfindingV2Test : ApiTest() {
                 PathfindingBlockRequest(
                     rollingStockLoadingGauge = RJSLoadingGaugeType.G1,
                     rollingStockIsThermal = true,
-                    rollingStockSupportedElectrification = listOf(),
+                    rollingStockSupportedElectrifications = listOf(),
                     rollingStockSupportedSignalingSystems = listOf("BAL"),
                     timeout = null,
                     infra = "tiny_infra/infra.json",
@@ -85,7 +85,7 @@ class PathfindingV2Test : ApiTest() {
                 PathfindingBlockRequest(
                     rollingStockLoadingGauge = RJSLoadingGaugeType.G1,
                     rollingStockIsThermal = false,
-                    rollingStockSupportedElectrification = listOf("nonexistent_electrification"),
+                    rollingStockSupportedElectrifications = listOf("nonexistent_electrification"),
                     rollingStockSupportedSignalingSystems = listOf("BAL"),
                     timeout = null,
                     infra = "tiny_infra/infra.json",

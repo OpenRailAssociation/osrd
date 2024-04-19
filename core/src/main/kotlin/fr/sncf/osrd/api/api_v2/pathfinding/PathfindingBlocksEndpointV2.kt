@@ -77,7 +77,7 @@ fun runPathfinding(
             infra,
             request.rollingStockIsThermal,
             request.rollingStockLoadingGauge,
-            request.rollingStockSupportedElectrification,
+            request.rollingStockSupportedElectrifications,
             request.rollingStockSupportedSignalingSystems,
         )
     // Compute the paths from the entry waypoint to the exit waypoint
