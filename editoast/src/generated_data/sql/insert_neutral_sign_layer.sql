@@ -19,7 +19,7 @@ WITH signs AS (
     FROM infra_object_neutral_section
     WHERE infra_id = $1
         AND obj_id = ANY($2)
-        AND infra_object_neutral_section.data @ ? '$.extensions.neutral_sncf.announcement'
+        AND infra_object_neutral_section.data @? '$.extensions.neutral_sncf.announcement'
     UNION
     SELECT obj_id AS sc_id,
         (
@@ -41,7 +41,7 @@ WITH signs AS (
     FROM infra_object_neutral_section
     WHERE infra_id = $1
         AND obj_id = ANY($2)
-        AND infra_object_neutral_section.data @ ? '$.extensions.neutral_sncf.rev'
+        AND infra_object_neutral_section.data @? '$.extensions.neutral_sncf.rev'
     UNION
     SELECT obj_id AS sc_id,
         (
@@ -57,7 +57,7 @@ WITH signs AS (
     FROM infra_object_neutral_section
     WHERE infra_id = $1
         AND obj_id = ANY($2)
-        AND infra_object_neutral_section.data @ ? '$.extensions.neutral_sncf.end'
+        AND infra_object_neutral_section.data @? '$.extensions.neutral_sncf.end'
     UNION
     SELECT obj_id AS sc_id,
         (
@@ -71,7 +71,7 @@ WITH signs AS (
     FROM infra_object_neutral_section
     WHERE infra_id = $1
         AND obj_id = ANY($2)
-        AND infra_object_neutral_section.data @ ? '$.extensions.neutral_sncf.exe'
+        AND infra_object_neutral_section.data @? '$.extensions.neutral_sncf.exe'
 ),
 collect AS (
     SELECT signs.sc_id,

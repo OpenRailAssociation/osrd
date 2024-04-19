@@ -280,6 +280,17 @@ const injectedRtkApi = api
         query: (queryArg) => ({ url: `/infra/${queryArg.infraId}/speed_limit_tags/` }),
         providesTags: ['infra'],
       }),
+      postInfraByInfraIdSplitTrackSection: build.mutation<
+        PostInfraByInfraIdSplitTrackSectionApiResponse,
+        PostInfraByInfraIdSplitTrackSectionApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/infra/${queryArg.infraId}/split_track_section/`,
+          method: 'POST',
+          body: queryArg.trackOffset,
+        }),
+        invalidatesTags: ['infra'],
+      }),
       getInfraByInfraIdSwitchTypes: build.query<
         GetInfraByInfraIdSwitchTypesApiResponse,
         GetInfraByInfraIdSwitchTypesApiArg
@@ -1245,6 +1256,13 @@ export type GetInfraByInfraIdSpeedLimitTagsApiResponse =
 export type GetInfraByInfraIdSpeedLimitTagsApiArg = {
   /** An existing infra ID */
   infraId: number;
+};
+export type PostInfraByInfraIdSplitTrackSectionApiResponse =
+  /** status 200 ID of the trackSections created */ string[];
+export type PostInfraByInfraIdSplitTrackSectionApiArg = {
+  /** An existing infra ID */
+  infraId: number;
+  trackOffset: TrackOffset;
 };
 export type GetInfraByInfraIdSwitchTypesApiResponse =
   /** status 200 A list of switch types */ SwitchType[];
@@ -2274,6 +2292,11 @@ export type PathfindingInput = {
   ending: PathfindingTrackLocationInput;
   starting: PathfindingTrackLocationInput;
 };
+export type TrackOffset = {
+  /** Offset in mm */
+  offset: number;
+  track: string;
+};
 export type LightModeEffortCurves = {
   is_electric: boolean;
 };
@@ -3291,11 +3314,6 @@ export type PathfindingResultSuccess = {
   routes: string[];
   /** Path description as track ranges */
   track_section_ranges: TrackRange[];
-};
-export type TrackOffset = {
-  /** Offset in mm */
-  offset: number;
-  track: string;
 };
 export type PathfindingResult =
   | (PathfindingResultSuccess & {

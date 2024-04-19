@@ -759,6 +759,36 @@ components:
       - status
       - message
       type: object
+    EditoastEditionErrorSplitTrackSectionBadOffset:
+      properties:
+        context:
+          properties:
+            infra_id:
+              type: integer
+            tracksection_id:
+              type: string
+            tracksection_length:
+              type: number
+          required:
+          - infra_id
+          - tracksection_id
+          - tracksection_length
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:infra:edition:SplitTrackSectionBadOffset
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
     EditoastEditoastUrlErrorInvalidUrl:
       properties:
         context:
@@ -828,6 +858,7 @@ components:
       - $ref: '#/components/schemas/EditoastCoreErrorUnparsableErrorOutput'
       - $ref: '#/components/schemas/EditoastDocumentErrorsNotFound'
       - $ref: '#/components/schemas/EditoastEditionErrorInfraIsLocked'
+      - $ref: '#/components/schemas/EditoastEditionErrorSplitTrackSectionBadOffset'
       - $ref: '#/components/schemas/EditoastEditoastUrlErrorInvalidUrl'
       - $ref: '#/components/schemas/EditoastElectricalProfilesErrorNotFound'
       - $ref: '#/components/schemas/EditoastGeometryErrorUnexpectedGeometry'
@@ -9987,6 +10018,33 @@ paths:
         '404':
           description: The infra was not found
       summary: Returns the set of speed limit tags for a given infra
+      tags:
+      - infra
+  /infra/{infra_id}/split_track_section/:
+    post:
+      parameters:
+      - description: An existing infra ID
+        in: path
+        name: infra_id
+        required: true
+        schema:
+          format: int64
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TrackOffset'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                items:
+                  type: string
+                type: array
+          description: ID of the trackSections created
       tags:
       - infra
   /infra/{infra_id}/switch_types/:

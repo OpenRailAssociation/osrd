@@ -1,7 +1,5 @@
 #[macro_use]
 extern crate diesel;
-#[macro_use]
-extern crate cfg_if;
 
 mod client;
 mod core;
