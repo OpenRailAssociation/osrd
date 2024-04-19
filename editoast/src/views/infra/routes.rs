@@ -237,13 +237,13 @@ mod tests {
     use crate::fixtures::tests::empty_infra;
     use crate::fixtures::tests::small_infra;
     use crate::infra_cache::operation::Operation;
-    use crate::schema::TrackSection;
     use crate::views::infra::routes::RoutesResponse;
     use crate::views::infra::routes::WaypointType;
     use crate::views::tests::create_test_service;
     use editoast_schemas::infra::BufferStop;
     use editoast_schemas::infra::Detector;
     use editoast_schemas::infra::Route;
+    use editoast_schemas::infra::TrackSection;
     use editoast_schemas::infra::Waypoint;
 
     #[rstest]

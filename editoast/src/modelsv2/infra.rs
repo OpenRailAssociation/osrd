@@ -256,6 +256,7 @@ pub mod tests {
     use editoast_schemas::infra::SpeedSection;
     use editoast_schemas::infra::Switch;
     use editoast_schemas::infra::SwitchType;
+    use editoast_schemas::infra::TrackSection;
     use editoast_schemas::primitives::OSRDIdentified;
     use rstest::rstest;
     use uuid::Uuid;

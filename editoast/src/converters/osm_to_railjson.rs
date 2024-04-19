@@ -9,6 +9,7 @@ use tracing::info;
 use super::utils::*;
 use crate::converters::generate_routes;
 use crate::schema::*;
+use editoast_schemas::infra::TrackSection;
 /// Run the osm-to-railjson subcommand
 /// Converts OpenStreetMap pbf file to railjson
 pub fn osm_to_railjson(

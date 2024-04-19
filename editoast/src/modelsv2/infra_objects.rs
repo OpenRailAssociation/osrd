@@ -6,7 +6,6 @@ use serde::Deserialize;
 use serde::Serialize;
 
 use crate::modelsv2::prelude::*;
-use crate::schema;
 use crate::tables::*;
 use editoast_schemas::primitives::ObjectType;
 
@@ -138,7 +137,7 @@ infra_model!(
     TrackSectionModel,
     infra_object_track_section,
     infra_layer_track_section,
-    schema::TrackSection
+    editoast_schemas::infra::TrackSection
 );
 
 infra_model!(
