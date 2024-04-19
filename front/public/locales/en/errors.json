@@ -26,6 +26,7 @@
       "ObjectNotFound": "{{obj_type}} {{obj_id}} could not be found everywhere in the infrastructure cache"
     },
     "coreclient": {
+      "BrokenPipe": "Core connection broken pipe. Should retry.",
       "CannotExtractResponseBody": "Cannot extract Core response body: {{msg}}",
       "ConnectionClosedBeforeMessageCompleted": "Core connection closed before message completed. Should retry.",
       "ConnectionResetByPeer": "Core connection reset by peer. Should retry.",
