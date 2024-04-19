@@ -7,6 +7,6 @@ pub use track_section::TrackSection;
 
 cfg_if! {
     if #[cfg(test)] {
-        pub use track_section::{Curve, Slope};
+        pub use track_section::{Slope};
     }
 }
