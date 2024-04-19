@@ -60,8 +60,8 @@ mod tests {
     use crate::infra_cache::tests::create_small_infra_cache;
     use crate::infra_cache::tests::create_track_section_cache;
     use crate::infra_cache::Graph;
-    use crate::schema::Slope;
     use editoast_schemas::infra::Curve;
+    use editoast_schemas::infra::Slope;
 
     #[rstest]
     #[case(50., false)]
