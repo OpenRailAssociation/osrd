@@ -1,5 +1,6 @@
 package fr.sncf.osrd.sim_infra_adapter
 
+import fr.sncf.osrd.parseRJSInfra
 import fr.sncf.osrd.signaling.impl.MockSigSystemManager
 import fr.sncf.osrd.signaling.impl.SignalingSimulatorImpl
 import fr.sncf.osrd.sim_infra.api.SigParametersSchema
@@ -18,8 +19,7 @@ class SignalLoadingTest {
     @Test
     fun smokeLoadSignalTinyInfra() {
         val rjsInfra = Helpers.getExampleInfra("tiny_infra/infra.json")
-        val oldInfra = Helpers.infraFromRJS(rjsInfra)
-        val infra = adaptRawInfra(oldInfra, rjsInfra)
+        val infra = parseRJSInfra(rjsInfra)
 
         val simulator = SignalingSimulatorImpl(balSigSystemManager)
         val loadedSignalInfra = simulator.loadSignals(infra)
@@ -29,8 +29,7 @@ class SignalLoadingTest {
     @Test
     fun smokeLoadSignalSmallInfra() {
         val rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")
-        val oldInfra = Helpers.infraFromRJS(rjsInfra)
-        val infra = adaptRawInfra(oldInfra, rjsInfra)
+        val infra = parseRJSInfra(rjsInfra)
 
         val simulator = SignalingSimulatorImpl(balSigSystemManager)
         val loadedSignalInfra = simulator.loadSignals(infra)

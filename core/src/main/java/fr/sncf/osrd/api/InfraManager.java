@@ -1,12 +1,10 @@
 package fr.sncf.osrd.api;
 
+import static fr.sncf.osrd.RawInfraRJSParserKt.parseRJSInfra;
 import static fr.sncf.osrd.api.SignalingSimulatorKt.makeSignalingSimulator;
-import static fr.sncf.osrd.sim_infra_adapter.RawInfraAdapterKt.adaptRawInfra;
 
 import com.squareup.moshi.JsonDataException;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.infra.implementation.signaling.SignalingInfraBuilder;
-import fr.sncf.osrd.infra.implementation.signaling.modules.bal3.BAL3;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.reporting.exceptions.ErrorType;
 import fr.sncf.osrd.reporting.exceptions.OSRDError;
@@ -14,7 +12,6 @@ import fr.sncf.osrd.reporting.warnings.DiagnosticRecorder;
 import fr.sncf.osrd.signaling.SignalingSimulator;
 import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
 import java.io.IOException;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
 import okhttp3.OkHttpClient;
@@ -37,7 +34,6 @@ public class InfraManager extends APIClient {
         DOWNLOADING(false),
         PARSING_JSON(false),
         PARSING_INFRA(false),
-        ADAPTING_KOTLIN(false),
         LOADING_SIGNALS(false),
         BUILDING_BLOCKS(false),
         CACHED(true),
@@ -49,8 +45,7 @@ public class InfraManager extends APIClient {
             INITIALIZING.transitions = new InfraStatus[] {DOWNLOADING};
             DOWNLOADING.transitions = new InfraStatus[] {PARSING_JSON, ERROR, TRANSIENT_ERROR};
             PARSING_JSON.transitions = new InfraStatus[] {PARSING_INFRA, ERROR, TRANSIENT_ERROR};
-            PARSING_INFRA.transitions = new InfraStatus[] {ADAPTING_KOTLIN, ERROR, TRANSIENT_ERROR};
-            ADAPTING_KOTLIN.transitions = new InfraStatus[] {LOADING_SIGNALS, ERROR, TRANSIENT_ERROR};
+            PARSING_INFRA.transitions = new InfraStatus[] {LOADING_SIGNALS, ERROR, TRANSIENT_ERROR};
             LOADING_SIGNALS.transitions = new InfraStatus[] {BUILDING_BLOCKS, ERROR, TRANSIENT_ERROR};
             BUILDING_BLOCKS.transitions = new InfraStatus[] {CACHED, ERROR, TRANSIENT_ERROR};
             // if a new version appears
@@ -133,12 +128,7 @@ public class InfraManager extends APIClient {
             // Parse railjson into a proper infra
             logger.info("parsing the infra of {}", request.url());
             cacheEntry.transitionTo(InfraStatus.PARSING_INFRA);
-            final var infra = SignalingInfraBuilder.fromRJSInfra(
-                    rjsInfra, Set.of(new BAL3(diagnosticRecorder)), diagnosticRecorder);
-
-            logger.info("adaptation to kotlin of {}", request.url());
-            cacheEntry.transitionTo(InfraStatus.ADAPTING_KOTLIN);
-            var rawInfra = adaptRawInfra(infra, rjsInfra);
+            var rawInfra = parseRJSInfra(rjsInfra);
             logger.info("loading signals of {}", request.url());
             cacheEntry.transitionTo(InfraStatus.LOADING_SIGNALS);
             var loadedSignalInfra = signalingSimulator.loadSignals(rawInfra);
