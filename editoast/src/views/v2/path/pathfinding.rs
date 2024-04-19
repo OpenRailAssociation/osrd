@@ -18,6 +18,7 @@ use utoipa::ToSchema;
 use super::CACHE_PATH_EXPIRATION;
 use crate::core::v2::pathfinding::PathfindingRequest;
 use crate::core::v2::pathfinding::PathfindingResult;
+use crate::core::v2::pathfinding::TrackRange;
 use crate::core::AsCoreRequest;
 use crate::core::CoreClient;
 use crate::error::Result;
@@ -33,7 +34,6 @@ use crate::redis_utils::RedisClient;
 use crate::redis_utils::RedisConnection;
 use crate::views::get_app_version;
 use crate::views::v2::path::PathfindingError;
-use crate::views::v2::path::TrackRange;
 use crate::DbPool;
 use editoast_schemas::infra::OperationalPoint;
 
