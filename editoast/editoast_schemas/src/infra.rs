@@ -23,6 +23,7 @@ mod track_endpoint;
 mod track_location;
 mod track_offset;
 mod track_range;
+mod track_section_sncf_extension;
 mod track_section_source_extension;
 mod waypoint;
 
@@ -69,6 +70,7 @@ pub use track_endpoint::TrackEndpoint;
 pub use track_location::TrackLocation;
 pub use track_offset::TrackOffset;
 pub use track_range::TrackRange;
+pub use track_section_sncf_extension::TrackSectionSncfExtension;
 pub use track_section_source_extension::TrackSectionSourceExtension;
 pub use waypoint::Waypoint;
 
