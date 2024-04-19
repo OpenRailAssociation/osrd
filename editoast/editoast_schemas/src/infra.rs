@@ -1,6 +1,7 @@
 mod applicable_directions;
 mod applicable_directions_track_range;
 mod buffer_stop;
+mod curve;
 mod detector;
 mod direction;
 mod directional_track_range;
@@ -26,6 +27,7 @@ pub use applicable_directions::ApplicableDirections;
 pub use applicable_directions_track_range::ApplicableDirectionsTrackRange;
 pub use buffer_stop::BufferStop;
 pub use buffer_stop::BufferStopExtension;
+pub use curve::Curve;
 pub use detector::Detector;
 pub use direction::Direction;
 pub use directional_track_range::DirectionalTrackRange;

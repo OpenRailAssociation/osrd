@@ -1,4 +1,5 @@
 use derivative::Derivative;
+use editoast_schemas::infra::Curve;
 use editoast_schemas::infra::Endpoint;
 use editoast_schemas::infra::TrackEndpoint;
 use editoast_schemas::primitives::OSRDIdentified;
@@ -7,7 +8,6 @@ use editoast_schemas::primitives::ObjectType;
 
 use crate::infra_cache::Cache;
 use crate::infra_cache::ObjectCache;
-use crate::schema::track_section::Curve;
 use crate::schema::track_section::Slope;
 use crate::schema::TrackSection;
 use editoast_schemas::primitives::BoundingBox;
