@@ -3,10 +3,10 @@ use std::collections::HashSet;
 
 use super::NoContext;
 use crate::generated_data::error::ObjectErrorGenerator;
+use crate::generated_data::infra_error::InfraError;
 use crate::infra_cache::Graph;
 use crate::infra_cache::InfraCache;
 use crate::infra_cache::ObjectCache;
-use crate::schema::InfraError;
 
 pub const OBJECT_GENERATORS: [ObjectErrorGenerator<NoContext>; 1] =
     [ObjectErrorGenerator::new(1, check_switch_types)];

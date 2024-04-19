@@ -16,7 +16,7 @@ use strum::VariantNames;
 use thiserror::Error;
 
 use crate::error::Result;
-use crate::schema::InfraErrorType;
+use crate::generated_data::infra_error::InfraErrorType;
 use crate::views::pagination::Paginate;
 use crate::views::pagination::PaginatedResponse;
 use crate::views::pagination::PaginationQueryParam;

@@ -1,6 +1,7 @@
 pub mod buffer_stops;
 pub mod detectors;
 pub mod electrifications;
+pub mod infra_error;
 pub mod operational_points;
 pub mod routes;
 pub mod signals;
@@ -31,11 +32,11 @@ use tracing::warn;
 
 use super::GeneratedData;
 use crate::error::Result;
+use crate::generated_data::infra_error::InfraError;
 use crate::infra_cache::operation::CacheOperation;
 use crate::infra_cache::Graph;
 use crate::infra_cache::InfraCache;
 use crate::infra_cache::ObjectCache;
-use crate::schema::InfraError;
 use editoast_schemas::primitives::OSRDObject;
 use editoast_schemas::primitives::ObjectType;
 

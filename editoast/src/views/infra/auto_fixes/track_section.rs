@@ -5,10 +5,10 @@ use uuid::Uuid;
 
 use super::new_ref_fix_create_pair;
 use super::Fix;
+use crate::generated_data::infra_error::InfraError;
+use crate::generated_data::infra_error::InfraErrorType;
 use crate::infra_cache::object_cache::TrackSectionCache;
 use crate::infra_cache::operation::RailjsonObject;
-use crate::schema::InfraError;
-use crate::schema::InfraErrorType;
 use editoast_common::Identifier;
 use editoast_schemas::infra::BufferStop;
 use editoast_schemas::infra::Endpoint;
