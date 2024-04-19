@@ -2,7 +2,6 @@ use derivative::Derivative;
 use serde::Deserialize;
 use serde::Serialize;
 
-use super::TrackSection;
 use editoast_schemas::infra::BufferStop;
 use editoast_schemas::infra::Detector;
 use editoast_schemas::infra::Electrification;
@@ -13,6 +12,7 @@ use editoast_schemas::infra::Signal;
 use editoast_schemas::infra::SpeedSection;
 use editoast_schemas::infra::Switch;
 use editoast_schemas::infra::SwitchType;
+use editoast_schemas::infra::TrackSection;
 
 pub const RAILJSON_VERSION: &str = "3.4.11";
 

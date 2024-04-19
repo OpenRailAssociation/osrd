@@ -338,7 +338,6 @@ mod tests {
     use crate::infra_cache::operation::Operation;
     use crate::infra_cache::operation::RailjsonObject;
     use crate::infra_cache::InfraCacheEditoastError;
-    use crate::schema::TrackSection;
     use crate::views::pagination::PaginatedResponse;
     use crate::views::tests::create_test_service;
     use editoast_common::Identifier;
@@ -354,6 +353,7 @@ mod tests {
     use editoast_schemas::infra::SpeedSection;
     use editoast_schemas::infra::Switch;
     use editoast_schemas::infra::TrackEndpoint;
+    use editoast_schemas::infra::TrackSection;
     use editoast_schemas::infra::Waypoint;
     use editoast_schemas::primitives::ObjectRef;
     use editoast_schemas::primitives::ObjectType;

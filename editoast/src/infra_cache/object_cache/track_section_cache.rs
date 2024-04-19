@@ -9,7 +9,7 @@ use editoast_schemas::primitives::ObjectType;
 
 use crate::infra_cache::Cache;
 use crate::infra_cache::ObjectCache;
-use crate::schema::TrackSection;
+use editoast_schemas::infra::TrackSection;
 use editoast_schemas::primitives::BoundingBox;
 
 #[derive(Debug, Clone, Derivative)]

@@ -109,10 +109,10 @@ mod tests {
     use crate::fixtures::tests::TestFixture;
     use crate::infra_cache::operation::RailjsonObject;
     use crate::modelsv2::Infra;
-    use crate::schema::TrackSection;
     use crate::views::infra::tests::create_object_request;
     use crate::views::tests::create_test_service;
     use editoast_schemas::infra::Detector;
+    use editoast_schemas::infra::TrackSection;
     use editoast_schemas::primitives::OSRDIdentified;
     use editoast_schemas::primitives::ObjectType;
 

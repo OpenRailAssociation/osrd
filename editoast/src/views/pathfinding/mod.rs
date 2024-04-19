@@ -53,10 +53,10 @@ use crate::modelsv2::Infra;
 use crate::modelsv2::OperationalPointModel;
 use crate::modelsv2::Retrieve as RetrieveV2;
 use crate::modelsv2::RollingStockModel;
-use crate::schema::TrackSection;
 use crate::DbPool;
 use editoast_schemas::infra::ApplicableDirectionsTrackRange;
 use editoast_schemas::infra::OperationalPoint;
+use editoast_schemas::infra::TrackSection;
 
 crate::routes! {
     "/pathfinding" => {

@@ -1,17 +1,18 @@
 use derivative::Derivative;
 use editoast_common::Identifier;
-use editoast_schemas::infra::Curve;
-use editoast_schemas::infra::LoadingGaugeLimit;
-use editoast_schemas::infra::Slope;
-use editoast_schemas::infra::TrackSectionExtensions;
-use editoast_schemas::primitives::BoundingBox;
-use editoast_schemas::primitives::OSRDIdentified;
-use editoast_schemas::primitives::OSRDTyped;
-use editoast_schemas::primitives::ObjectType;
-use geos::geojson::Geometry;
-use geos::geojson::Value::LineString;
+use geojson::Geometry;
+use geojson::Value::LineString;
 use serde::Deserialize;
 use serde::Serialize;
+
+use super::Curve;
+use super::LoadingGaugeLimit;
+use super::Slope;
+use super::TrackSectionExtensions;
+use crate::primitives::BoundingBox;
+use crate::primitives::OSRDIdentified;
+use crate::primitives::OSRDTyped;
+use crate::primitives::ObjectType;
 
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
@@ -61,11 +62,11 @@ impl TrackSection {
 
 #[cfg(test)]
 mod test {
-    use geos::geojson;
+    use geojson;
     use serde_json::from_str;
 
     use super::TrackSectionExtensions;
-    use editoast_schemas::primitives::BoundingBox;
+    use crate::primitives::BoundingBox;
 
     /// Test bounding box from linestring
     #[test]

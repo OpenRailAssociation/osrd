@@ -303,6 +303,7 @@ mod tests {
     use super::*;
     use editoast_schemas::infra::BufferStop;
     use editoast_schemas::infra::Detector;
+    use editoast_schemas::infra::TrackSection;
 
     fn min_infra() -> RailJson {
         let track = TrackSection {

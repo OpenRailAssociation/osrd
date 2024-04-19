@@ -54,7 +54,7 @@ mod tests {
     use crate::infra_cache::operation::CacheOperation;
     use crate::infra_cache::operation::Operation;
     use crate::infra_cache::ObjectCache;
-    use crate::schema::TrackSection;
+    use editoast_schemas::infra::TrackSection;
 
     #[test]
     fn missing_buffer_stop() {
