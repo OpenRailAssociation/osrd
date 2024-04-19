@@ -26,6 +26,7 @@
       "ObjectNotFound": "{{obj_type}} {{obj_id}} n'a pu être trouvé nulle part dans le cache de l'infrastructure"
     },
     "coreclient": {
+      "BrokenPipe": "Core: connexion interrompue. Nouvelle tentative.",
       "CannotExtractResponseBody": "Core: Impossible d'extraire le corps de la réponse : {{msg}}",
       "ConnectionClosedBeforeMessageCompleted": "Core: connexion fermée avant la fin du message. Nouvelle tentative.",
       "ConnectionResetByPeer": "Core: réinitialisation de la connexion. Nouvelle tentative.",

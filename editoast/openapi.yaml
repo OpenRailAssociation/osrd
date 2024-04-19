@@ -428,6 +428,25 @@ components:
       - status
       - message
       type: object
+    EditoastCoreErrorBrokenPipe:
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 500
+          type: integer
+        type:
+          enum:
+          - editoast:coreclient:BrokenPipe
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
     EditoastCoreErrorCannotExtractResponseBody:
       properties:
         context:
@@ -671,6 +690,7 @@ components:
       - $ref: '#/components/schemas/EditoastAutoFixesEditoastErrorMissingErrorObject'
       - $ref: '#/components/schemas/EditoastCacheOperationErrorDuplicateIdsProvided'
       - $ref: '#/components/schemas/EditoastCacheOperationErrorObjectNotFound'
+      - $ref: '#/components/schemas/EditoastCoreErrorBrokenPipe'
       - $ref: '#/components/schemas/EditoastCoreErrorCannotExtractResponseBody'
       - $ref: '#/components/schemas/EditoastCoreErrorConnectionClosedBeforeMessageCompleted'
       - $ref: '#/components/schemas/EditoastCoreErrorConnectionResetByPeer'

@@ -115,10 +115,12 @@ impl CoreClient {
                     match request.send().await.map_err(Into::<CoreError>::into) {
                         // This error occurs quite often in the CI.
                         // It's linked to this issue https://github.com/hyperium/hyper/issues/2136.
-                        // This is why we retry the request here
+                        // This is why we retry the request here.
+                        // We also retry on broken pipe.
                         Err(
                             CoreError::ConnectionResetByPeer
-                            | CoreError::ConnectionClosedBeforeMessageCompleted,
+                            | CoreError::ConnectionClosedBeforeMessageCompleted
+                            | CoreError::BrokenPipe,
                         ) if i_try < MAX_RETRIES => {
                             i_try += 1;
                             info!("Core request '{}: {}': Connection closed before message completed. Retry [{}/{}]", method, path, i_try, MAX_RETRIES);
@@ -314,6 +316,9 @@ enum CoreError {
     #[error("Core connection reset by peer. Should retry.")]
     #[editoast_error(status = 500)]
     ConnectionResetByPeer,
+    #[error("Core connection broken. Should retry.")]
+    #[editoast_error(status = 500)]
+    BrokenPipe,
 
     #[cfg(test)]
     #[error("The mocked response had no body configured - check out StubResponseBuilder::body if this is unexpected")]
@@ -363,6 +368,12 @@ impl From<reqwest::Error> for CoreError {
         }
         if value.to_string().contains("Connection reset by peer") {
             return Self::ConnectionResetByPeer;
+        }
+        if value
+            .to_string()
+            .contains("error writing a body to connection: Broken pipe")
+        {
+            return Self::BrokenPipe;
         }
 
         // Convert the reqwest error
