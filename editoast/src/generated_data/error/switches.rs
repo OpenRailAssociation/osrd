@@ -2,10 +2,10 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 
 use super::ObjectErrorGenerator;
+use crate::generated_data::infra_error::InfraError;
 use crate::infra_cache::Graph;
 use crate::infra_cache::InfraCache;
 use crate::infra_cache::ObjectCache;
-use crate::schema::InfraError;
 use editoast_schemas::infra::TrackEndpoint;
 use editoast_schemas::primitives::OSRDIdentified;
 use editoast_schemas::primitives::ObjectRef;

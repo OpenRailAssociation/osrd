@@ -23,6 +23,7 @@ use diesel_async::AsyncPgConnection as PgConnection;
 use diesel_async::RunQueryDsl;
 use electrification::ElectrificationLayer;
 pub use error::generate_infra_errors;
+pub use error::infra_error;
 use error::ErrorLayer;
 use neutral_section::NeutralSectionLayer;
 use neutral_sign::NeutralSignLayer;

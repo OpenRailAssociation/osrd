@@ -6,9 +6,9 @@ use tracing::debug;
 
 use super::new_ref_fix_delete_pair;
 use super::Fix;
+use crate::generated_data::infra_error::InfraError;
+use crate::generated_data::infra_error::InfraErrorType;
 use crate::infra_cache::object_cache::OperationalPointCache;
-use crate::schema::InfraError;
-use crate::schema::InfraErrorType;
 
 pub fn fix_operational_point(
     operational_point: &OperationalPointCache,

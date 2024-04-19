@@ -9,13 +9,13 @@ use tracing::error;
 
 use super::Fix;
 use super::OrderedOperation;
+use crate::generated_data::infra_error::InfraError;
+use crate::generated_data::infra_error::InfraErrorType;
 use crate::infra_cache::operation::CacheOperation;
 use crate::infra_cache::operation::DeleteOperation;
 use crate::infra_cache::operation::Operation;
 use crate::infra_cache::operation::RailjsonObject;
 use crate::infra_cache::operation::UpdateOperation;
-use crate::schema::InfraError;
-use crate::schema::InfraErrorType;
 use editoast_schemas::infra::SpeedSection;
 use editoast_schemas::primitives::OSRDIdentified as _;
 use editoast_schemas::primitives::OSRDObject as _;
@@ -91,10 +91,10 @@ pub fn fix_speed_section(
 mod tests {
     use json_patch::Patch;
 
+    use crate::generated_data::infra_error::InfraError;
     use crate::infra_cache::operation::CacheOperation;
     use crate::infra_cache::operation::Operation;
     use crate::infra_cache::ObjectCache;
-    use crate::schema::InfraError;
     use editoast_common::Identifier;
     use editoast_schemas::infra::ApplicableDirections;
     use editoast_schemas::infra::ApplicableDirectionsTrackRange;
