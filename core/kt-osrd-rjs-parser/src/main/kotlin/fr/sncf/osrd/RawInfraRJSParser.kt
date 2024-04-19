@@ -260,15 +260,22 @@ private fun buildZones(builder: RawInfraFromRjsBuilder) {
     // 2. now that union-find is complete, create zones
     val rootToZoneMap = mutableMapOf<Int, ZoneId>()
 
-    // this lookup table keeps track of which nodes were already added to a zone
-    val nodeHasZone = BooleanArray(builder.getTrackNodes().size.toInt()) { false }
+    // 2.a. start by adding track nodes, creating zones along the way
+    for (nodeIdx in trackNodePool) {
+        val ports = builder.getTrackNodePorts(nodeIdx)
+        if (ports.size == 0u) continue
+        // get any track section endpoint the node is connected to
+        val endpoint = ports[StaticIdx(0u)]
+        // find the zone root index
+        val zoneRoot = uf.findRoot(endpoint.index.toInt())
+        val zoneIdx = rootToZoneMap.computeIfAbsent(zoneRoot) { builder.zone(listOf()) }
+        builder.zoneAddNode(zoneIdx, nodeIdx)
+    }
 
-    // TODO: change this algorithm to add all nodes to zones separately from iterating on track
-    // sections
     for (trackSectionIdx in builder.getTrackSections()) {
         val detectors = builder.getTrackSectionDetectors(trackSectionIdx)
 
-        // 2.a. create zones between consecutive detector pairs within the track section
+        // 2.b. create zones between consecutive detector pairs within the track section
         for (detectorIndex in 0 until detectors.size - 1) {
             val leftDetector = detectors[detectorIndex]
             val rightDetector = detectors[detectorIndex + 1]
@@ -277,28 +284,19 @@ private fun buildZones(builder: RawInfraFromRjsBuilder) {
             builder.setNextZone(rightDetector.decreasing, zoneIdx)
         }
 
-        // 2.b. add the first and last detectors and nodes to their zones, creating them if needed
+        // 2.c. add the first and last detectors to their zones, creating them if needed
+        if (detectors.size == 0) continue
         for (endpoint in Endpoint.entries) {
-            val trackSectionEndpoint = EndpointTrackSectionId(trackSectionIdx, endpoint)
-            val node = builder.getNodeAtEndpoint(trackSectionEndpoint) ?: continue
-
             // find which zone the track section end belongs to, creating it if necessary
+            val trackSectionEndpoint = EndpointTrackSectionId(trackSectionIdx, endpoint)
             val zoneRoot = uf.findRoot(trackSectionEndpoint.index.toInt())
             val zoneIdx = rootToZoneMap.computeIfAbsent(zoneRoot) { builder.zone(listOf()) }
 
-            // add the node at the end of the track section to the zone
-            if (!nodeHasZone[node.index.toInt()]) {
-                builder.zoneAddNode(zoneIdx, node)
-                nodeHasZone[node.index.toInt()] = true
-            }
-
             // if the track section has detectors, they are zone bounds
-            if (detectors.size != 0) {
-                val dirDetector =
-                    if (endpoint == Endpoint.START) detectors[0].decreasing
-                    else detectors[detectors.size - 1].increasing
-                builder.setNextZone(dirDetector, zoneIdx)
-            }
+            val dirDetector =
+                if (endpoint == Endpoint.START) detectors[0].decreasing
+                else detectors[detectors.size - 1].increasing
+            builder.setNextZone(dirDetector, zoneIdx)
         }
     }
 }
