@@ -27,6 +27,7 @@ import fr.sncf.osrd.standalone_sim.result.ResultTrain;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.train.StandaloneTrainSchedule;
 import fr.sncf.osrd.train.TestTrains;
+import fr.sncf.osrd.train.TrainStop;
 import fr.sncf.osrd.utils.Helpers;
 import java.util.ArrayList;
 import java.util.List;
@@ -59,7 +60,7 @@ public class ConflictDetectionTest {
                 makeTrackLocation(getTrackSectionFromNameOrThrow("TC1", rawInfra), fromMeters(444.738508351214)));
         var pathProps = makePathProperties(rawInfra, chunkPath, null);
 
-        var simResult = simpleSim(fullInfra, pathProps, chunkPath, 0, Double.POSITIVE_INFINITY);
+        var simResult = simpleSim(fullInfra, pathProps, chunkPath, 0, Double.POSITIVE_INFINITY, List.of());
         var spacingRequirements = simResult.train.spacingRequirements;
 
         // ensure spacing requirements span the entire trip duration
@@ -121,8 +122,8 @@ public class ConflictDetectionTest {
                 makeTrackLocation(tc0, fromMeters(175)));
         var pathPropsB = makePathProperties(rawInfra, chunkPathB, null);
 
-        var simResultA = simpleSim(fullInfra, pathPropsA, chunkPathA, 0, Double.POSITIVE_INFINITY);
-        var simResultB = simpleSim(fullInfra, pathPropsB, chunkPathB, 0, Double.POSITIVE_INFINITY);
+        var simResultA = simpleSim(fullInfra, pathPropsA, chunkPathA, 0, Double.POSITIVE_INFINITY, List.of());
+        var simResultB = simpleSim(fullInfra, pathPropsB, chunkPathB, 0, Double.POSITIVE_INFINITY, List.of());
 
         // if both trains runs at the same time, there should be a conflict
         {
@@ -172,10 +173,10 @@ public class ConflictDetectionTest {
                 makeTrackLocation(td0, fromMeters(8500)));
         var pathPropsB = makePathProperties(rawInfra, chunkPathB, null);
 
-        var simResultA =
-                simpleSim(fullInfra, pathPropsA, chunkPathA, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY);
-        var simResultB =
-                simpleSim(fullInfra, pathPropsB, chunkPathB, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY);
+        var simResultA = simpleSim(
+                fullInfra, pathPropsA, chunkPathA, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, List.of());
+        var simResultB = simpleSim(
+                fullInfra, pathPropsB, chunkPathB, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, List.of());
 
         record ConflictStatus(boolean spacing, boolean routing) {}
 
@@ -199,6 +200,64 @@ public class ConflictDetectionTest {
         assertIterableEquals(expectedStatusHist, statusHist);
     }
 
+    @Test
+    public void arrivalOnStopSignalAvoidsConflict() throws Exception {
+        /*
+        Ideally, when a train stops on a platform, some other train might be able to pass it on another parallel route.
+        In practice, the stop train will require the route in front of him (zone and switch positions)
+        which will make the route unavailable for the other train.
+        However, it's possible to configure the stop with a stop signal.
+        In this case, the stop train should not require what's in front of him,
+        until the stop signal goes green.
+         */
+        var rjsInfra = Helpers.getExampleInfra("small_infra/infra.json");
+        var fullInfra = fullInfraFromRJS(rjsInfra);
+        var rawInfra = fullInfra.rawInfra();
+        var tc0 = getTrackSectionFromNameOrThrow("TC0", rawInfra);
+        var tc1 = getTrackSectionFromNameOrThrow("TC1", rawInfra);
+        var td0 = getTrackSectionFromNameOrThrow("TD0", rawInfra);
+
+        // these paths are fairly distant from each other, but require passing a signal which protects
+        // a very long route. As the routes for pathA and pathB are incompatible with each other,
+        // a conflict should occur.
+        var chunkPathA = chunkPathFromRoutes(
+                rawInfra,
+                List.of("rt.DA5->DC5", "rt.DC5->DD2"),
+                makeTrackLocation(tc1, fromMeters(185)), // cut path after PC0
+                makeTrackLocation(td0, fromMeters(24820)));
+        var pathPropsA = makePathProperties(rawInfra, chunkPathA, null);
+        var chunkPathB = chunkPathFromRoutes(
+                rawInfra,
+                List.of("rt.DA5->DC4", "rt.DC4->DD2"),
+                makeTrackLocation(tc0, fromMeters(185)), // cut path after PC0
+                makeTrackLocation(td0, fromMeters(24820)));
+        var pathPropsB = makePathProperties(rawInfra, chunkPathB, null);
+
+        var simResultA = simpleSim(fullInfra, pathPropsA, chunkPathA, 0, Double.POSITIVE_INFINITY, List.of());
+        var simResultB = simpleSim(fullInfra, pathPropsB, chunkPathB, 0, Double.POSITIVE_INFINITY, List.of());
+
+        // if both trains runs at the same time, there should be a conflict
+        {
+            var conflicts = ConflictsKt.detectConflicts(List.of(
+                    convertRequirements(0L, 0.0, simResultA.train), convertRequirements(1L, 0.0, simResultB.train)));
+            assertTrue(conflicts.stream().anyMatch((conflict) -> conflict.conflictType == ROUTING));
+            assertTrue(conflicts.stream().anyMatch((conflict) -> conflict.conflictType == SPACING));
+        }
+        // if both trains runs at the same time, but first one has an arrival on stop signal (before PC2 switch)
+        // with a stop long enough for the other train to get out, there is no conflict
+        {
+            var stop = new TrainStop(500, 600);
+            var simResultAWithStop =
+                    simpleSim(fullInfra, pathPropsA, chunkPathA, 0, Double.POSITIVE_INFINITY, List.of(stop));
+
+            var conflicts = ConflictsKt.detectConflicts(List.of(
+                    convertRequirements(0L, 0.0, simResultAWithStop.train),
+                    convertRequirements(1L, 0.0, simResultB.train)));
+            assertTrue(conflicts.stream().anyMatch((conflict) -> conflict.conflictType == ROUTING));
+            assertTrue(conflicts.stream().anyMatch((conflict) -> conflict.conflictType == SPACING));
+        }
+    }
+
     private static TrainRequirements convertRequirements(long trainId, double offset, ResultTrain train) {
         var spacingRequirements = new ArrayList<ResultTrain.SpacingRequirement>();
         for (var req : train.spacingRequirements)
@@ -220,7 +279,12 @@ public class ConflictDetectionTest {
     }
 
     private static SimResult simpleSim(
-            FullInfra fullInfra, PathProperties path, ChunkPath chunkPath, double initialSpeed, double maxSpeed) {
+            FullInfra fullInfra,
+            PathProperties path,
+            ChunkPath chunkPath,
+            double initialSpeed,
+            double maxSpeed,
+            List<TrainStop> intermediateStops) {
         var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
         if (maxSpeed > testRollingStock.maxSpeed) maxSpeed = testRollingStock.maxSpeed;
 
@@ -238,7 +302,7 @@ public class ConflictDetectionTest {
                 testRollingStock,
                 initialSpeed,
                 List.of(),
-                List.of(),
+                intermediateStops,
                 List.of(),
                 "test",
                 RollingStock.Comfort.STANDARD,
