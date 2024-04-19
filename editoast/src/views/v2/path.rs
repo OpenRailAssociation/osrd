@@ -5,16 +5,12 @@ pub use pathfinding::pathfinding_from_train;
 
 use diesel_async::AsyncPgConnection as PgConnection;
 use editoast_derive::EditoastError;
-use serde::Deserialize;
-use serde::Serialize;
 use thiserror::Error;
-use utoipa::ToSchema;
 
+use crate::core::v2::pathfinding::TrackRange;
 use crate::error::Result;
 use crate::modelsv2::prelude::*;
 use crate::modelsv2::Infra;
-use editoast_common::Identifier;
-use editoast_schemas::infra::Direction;
 
 /// Expiration time for the cache of the pathfinding and path properties.
 /// Note: 604800 seconds = 1 week
@@ -29,15 +25,6 @@ editoast_common::schemas! {
     pathfinding::schemas(),
     properties::schemas(),
     TrackRange,
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug, ToSchema, Hash)]
-pub struct TrackRange {
-    #[schema(inline)]
-    track_section: Identifier,
-    begin: u64,
-    end: u64,
-    direction: Direction,
 }
 
 #[derive(Debug, Error, EditoastError)]

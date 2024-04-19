@@ -1,3 +1,4 @@
+use editoast_schemas::infra::Direction;
 use editoast_schemas::infra::TrackOffset;
 use editoast_schemas::rolling_stock::LoadingGaugeType;
 use editoast_schemas::train_schedule::PathItemLocation;
@@ -5,7 +6,6 @@ use serde::Deserialize;
 use serde::Serialize;
 
 use crate::core::{AsCoreRequest, Json};
-use crate::views::v2::path::TrackRange;
 use editoast_common::Identifier;
 use utoipa::ToSchema;
 
@@ -91,6 +91,15 @@ pub enum PathfindingResult {
     RollingStockNotFound {
         rolling_stock_name: String,
     },
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, ToSchema, Hash)]
+pub struct TrackRange {
+    #[schema(inline)]
+    track_section: Identifier,
+    begin: u64,
+    end: u64,
+    direction: Direction,
 }
 
 impl AsCoreRequest<Json<PathfindingResult>> for PathfindingRequest {

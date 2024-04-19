@@ -2979,11 +2979,8 @@ export type Property =
   | 'geometry'
   | 'operational_points';
 export type PathPropertiesInput = {
-  /** List of supported electrification modes.
-    Empty if does not support any electrification */
-  rolling_stock_supported_electrifications?: string[];
-  /** list of track sections */
-  track_ranges: TrackRange[];
+  /** List of track sections */
+  track_section_ranges: TrackRange[];
 };
 export type TrackOffset = {
   /** Offset in mm */

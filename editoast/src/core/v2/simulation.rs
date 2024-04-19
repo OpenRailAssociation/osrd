@@ -12,8 +12,8 @@ use editoast_schemas::train_schedule::TrainScheduleOptions;
 use serde::Deserialize;
 use serde::Serialize;
 
+use super::pathfinding::TrackRange;
 use crate::core::{AsCoreRequest, Json};
-use crate::views::v2::path::TrackRange;
 use crate::views::v2::train_schedule::CompleteReportTrain;
 use crate::views::v2::train_schedule::Mrsp;
 use crate::views::v2::train_schedule::ReportTrain;

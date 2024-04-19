@@ -21,6 +21,7 @@ use crate::error::Result;
 
 use crate::client::get_app_version;
 use crate::core::v2::pathfinding::PathfindingResult;
+use crate::core::v2::pathfinding::TrackRange;
 use crate::modelsv2::infra::Infra;
 use crate::modelsv2::timetable::Timetable;
 use crate::modelsv2::train_schedule::TrainSchedule;
@@ -30,7 +31,6 @@ use crate::modelsv2::Retrieve;
 use crate::modelsv2::RetrieveBatch;
 use crate::views::v2::path::pathfinding_from_train;
 use crate::views::v2::path::PathfindingError;
-use crate::views::v2::path::TrackRange;
 use crate::DbPool;
 use crate::RedisClient;
 use crate::RollingStockModel;

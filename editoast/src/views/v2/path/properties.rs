@@ -5,33 +5,37 @@
 //! - If a user requests only the slopes, the core will only compute the slopes and editoast will cache the result.
 //! - Then if the user requests the gradients and slopes, editoast will retrieve the slopes from the cache and ask the core to compute the gradients.
 
-use std::collections::hash_map::DefaultHasher;
-use std::hash::Hash;
-use std::hash::Hasher;
-
 use actix_web::post;
 use actix_web::web::Data;
 use actix_web::web::Json;
 use actix_web::web::Path;
-use derivative::Derivative;
 use enumset::EnumSet;
 use enumset::EnumSetType;
 use itertools::Itertools;
 use serde::Deserialize;
 use serde::Serialize;
 use serde_qs::actix::QsQuery;
+use std::collections::hash_map::DefaultHasher;
+use std::hash::Hash;
+use std::hash::Hasher;
+use tracing::info;
 use utoipa::ToSchema;
 
 use super::CACHE_PATH_EXPIRATION;
 use crate::client::get_app_version;
+use crate::core::v2::path_properties::OperationalPointOnPath;
+use crate::core::v2::path_properties::PathPropertiesRequest;
+use crate::core::v2::path_properties::PropertyElectrificationValues;
+use crate::core::v2::path_properties::PropertyValuesF64;
+use crate::core::v2::pathfinding::TrackRange;
+use crate::core::AsCoreRequest;
+use crate::core::CoreClient;
 use crate::error::Result;
 use crate::views::v2::path::retrieve_infra_version;
-use crate::views::v2::path::TrackRange;
 use crate::DbPool;
 use crate::RedisClient;
 use crate::RedisConnection;
 use editoast_common::geometry::GeoJsonLineString;
-use editoast_common::Identifier;
 use editoast_schemas::infra::OperationalPointExtensions;
 use editoast_schemas::infra::OperationalPointPart;
 
@@ -47,9 +51,14 @@ editoast_common::schemas! {
     OperationalPointExtensions,
 }
 
+#[derive(Debug, Serialize, Deserialize, ToSchema, Hash)]
+pub struct PathPropertiesInput {
+    /// List of track sections
+    pub track_section_ranges: Vec<TrackRange>,
+}
+
 /// Properties along a path. Each property is optional since it depends on what the user requests.
-#[derive(Debug, Clone, Serialize, Deserialize, ToSchema, Derivative)]
-#[derivative(Default)]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema, Default)]
 struct PathProperties {
     #[schema(inline)]
     /// Slopes along the path
@@ -90,17 +99,6 @@ impl PathProperties {
         properties
     }
 
-    /// Merge another path properties into this one
-    fn merge(self, other: PathProperties) -> Self {
-        Self {
-            slopes: self.slopes.or(other.slopes),
-            gradients: self.gradients.or(other.gradients),
-            electrifications: self.electrifications.or(other.electrifications),
-            geometry: self.geometry.or(other.geometry),
-            operational_points: self.operational_points.or(other.operational_points),
-        }
-    }
-
     /// Filter properties not requested
     pub fn filter_properties(mut self, properties: Properties) -> Self {
         let to_clear = properties.complement();
@@ -115,65 +113,6 @@ impl PathProperties {
         }
         self
     }
-}
-
-/// Property f64 values along a path. Each value is associated to a range of the path.
-#[derive(Debug, Clone, Serialize, Deserialize, ToSchema, Derivative)]
-#[derivative(Default)]
-struct PropertyValuesF64 {
-    /// List of `n` boundaries of the ranges.
-    /// A boundary is a distance from the beginning of the path in mm.
-    #[derivative(Default(value = "vec![1000]"))]
-    boundaries: Vec<u64>,
-    /// List of `n+1` values associated to the ranges
-    #[derivative(Default(value = "vec![0.5, 1.5]"))]
-    values: Vec<f64>,
-}
-
-/// Electrification property along a path. Each value is associated to a range of the path.
-#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
-struct PropertyElectrificationValues {
-    /// List of `n` boundaries of the ranges.
-    /// A boundary is a distance from the beginning of the path in mm.
-    boundaries: Vec<u64>,
-    #[schema(inline)]
-    /// List of `n+1` values associated to the ranges
-    values: Vec<PropertyElectrificationValue>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
-#[serde(tag = "type", rename_all = "snake_case")]
-enum PropertyElectrificationValue {
-    /// Electrified section with a given voltage
-    Electrification { voltage: String },
-    /// Neutral section with a lower pantograph instruction or just a dead section
-    NeutralSection { lower_pantograph: bool },
-    /// Non electrified section
-    NonElectrified,
-}
-
-/// Operational point along a path.
-#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
-struct OperationalPointOnPath {
-    /// Id of the operational point
-    #[schema(inline)]
-    id: Identifier,
-    /// The part along the path
-    part: OperationalPointPart,
-    /// Extensions associated to the operational point
-    #[serde(default)]
-    extensions: OperationalPointExtensions,
-    /// Distance from the beginning of the path in mm
-    position: u64,
-}
-#[derive(Debug, Serialize, Deserialize, ToSchema, Hash)]
-struct PathPropertiesInput {
-    /// list of track sections
-    track_ranges: Vec<TrackRange>,
-    /// List of supported electrification modes.
-    /// Empty if does not support any electrification
-    #[serde(default)]
-    rolling_stock_supported_electrifications: Vec<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -220,6 +159,7 @@ type Properties = EnumSet<Property>;
 pub async fn post(
     db_pool: Data<DbPool>,
     redis_client: Data<RedisClient>,
+    core_client: Data<CoreClient>,
     infra_id: Path<i64>,
     params: QsQuery<Props>,
     data: Json<PathPropertiesInput>,
@@ -233,7 +173,7 @@ pub async fn post(
     let mut redis_conn = redis_client.get_connection().await?;
 
     // 1) Try to retrieve all the informations from Redis
-    let path_properties = retrieve_path_properties(
+    let mut path_properties = retrieve_path_properties(
         &mut redis_conn,
         infra_id,
         &infra_version,
@@ -246,27 +186,20 @@ pub async fn post(
 
     // 3) Compute missing properties
     if !missing_props.is_empty() {
-        // TODO : create function that return missing path properties by calling core
-        let computed_path_properties = PathProperties {
-            slopes: Some(Default::default()),
-            gradients: Some(Default::default()),
-            electrifications: Some(PropertyElectrificationValues {
-                boundaries: vec![1000],
-                values: vec![
-                    PropertyElectrificationValue::Electrification {
-                        voltage: "25kV".to_string(),
-                    },
-                    PropertyElectrificationValue::NonElectrified,
-                ],
-            }),
-            geometry: Some(
-                serde_json::from_str(r#"{"type":"LineString","coordinates":[[0,0],[1,1]]}"#)
-                    .unwrap(),
-            ),
-            operational_points: Some(vec![]),
+        let request = PathPropertiesRequest {
+            track_section_ranges: &path_properties_input.track_section_ranges,
+            infra: infra_id,
+            expected_version: infra_version.clone(),
         };
-        let path_properties =
-            path_properties.merge(computed_path_properties.filter_properties(missing_props));
+        let computed_path_properties = request.fetch(&core_client).await?;
+
+        path_properties = PathProperties {
+            slopes: Some(computed_path_properties.slopes),
+            gradients: Some(computed_path_properties.gradients),
+            electrifications: Some(computed_path_properties.electrifications),
+            geometry: Some(computed_path_properties.geometry),
+            operational_points: Some(computed_path_properties.operational_points),
+        };
 
         // Cache new properties
         cache_path_properties(
@@ -277,46 +210,35 @@ pub async fn post(
             &path_properties,
         )
         .await?;
-        return Ok(Json(path_properties));
+    } else {
+        info!("Hit cache");
     }
 
     // 4) Filter queried properties
-    let path_properties = path_properties.filter_properties(query_props);
+    let filtered_path_properties = path_properties.filter_properties(query_props);
 
-    Ok(Json(path_properties))
+    Ok(Json(filtered_path_properties))
 }
 
-/// Retrieves path properties from cache
-/// The electrifications property is cached separately because it depends on the rolling stock supported electrifications.
-/// This split allows us to avoid miss cache when the rolling stock supported electrifications change.
+/// Retrieves path properties from cache.
 async fn retrieve_path_properties(
     redis_conn: &mut RedisConnection,
     infra: i64,
     infra_version: &String,
     path_properties_input: &PathPropertiesInput,
 ) -> Result<PathProperties> {
-    let track_ranges = &path_properties_input.track_ranges;
-    let path_properties_hash = path_properties_input_hash(infra, infra_version, track_ranges);
-    let path_elec_property_hash =
-        path_elec_property_input_hash(infra, infra_version, path_properties_input);
+    let track_ranges = &path_properties_input.track_section_ranges;
+    let hash = path_properties_input_hash(infra, infra_version, track_ranges);
 
-    let mut path_properties: PathProperties = redis_conn
-        .json_get_ex(&path_properties_hash, CACHE_PATH_EXPIRATION)
+    let path_properties: PathProperties = redis_conn
+        .json_get_ex(&hash, CACHE_PATH_EXPIRATION)
         .await?
         .unwrap_or_default();
-
-    let elec_property: Option<PropertyElectrificationValues> = redis_conn
-        .json_get_ex(&path_elec_property_hash, CACHE_PATH_EXPIRATION)
-        .await?;
-
-    path_properties.electrifications = elec_property;
 
     Ok(path_properties)
 }
 
 /// Set the cache of path properties.
-/// The electrifications property is cached separately because it depends on the rolling stock supported electrifications.
-/// This split allows us to avoid miss cache when the rolling stock supported electrifications change.
 async fn cache_path_properties(
     redis_conn: &mut RedisConnection,
     infra: i64,
@@ -324,29 +246,14 @@ async fn cache_path_properties(
     path_properties_input: &PathPropertiesInput,
     path_properties: &PathProperties,
 ) -> Result<()> {
-    // Compute hashes
-    let track_ranges = &path_properties_input.track_ranges;
-    let full_hash = path_properties_input_hash(infra, infra_version, track_ranges);
-    let elec_hash = path_elec_property_input_hash(infra, infra_version, path_properties_input);
+    // Compute hash
+    let track_ranges = &path_properties_input.track_section_ranges;
+    let hash = path_properties_input_hash(infra, infra_version, track_ranges);
 
     // Cache all properties except electrifications
     redis_conn
-        .json_set_ex(
-            &full_hash,
-            &PathProperties {
-                electrifications: None,
-                ..path_properties.clone()
-            },
-            CACHE_PATH_EXPIRATION,
-        )
+        .json_set_ex(&hash, &path_properties, CACHE_PATH_EXPIRATION)
         .await?;
-
-    // Cache electrifications if computed
-    if let Some(electrifications) = &path_properties.electrifications {
-        redis_conn
-            .json_set_ex(&elec_hash, electrifications, CACHE_PATH_EXPIRATION)
-            .await?;
-    };
 
     Ok(())
 }
@@ -364,19 +271,6 @@ fn path_properties_input_hash(
     format!("path_properties.{osrd_version}.{infra}.{infra_version}.{hash_track_ranges}")
 }
 
-/// Compute path properties input hash including electrifications
-fn path_elec_property_input_hash(
-    infra: i64,
-    infra_version: &String,
-    path_properties: &PathPropertiesInput,
-) -> String {
-    let osrd_version = get_app_version().unwrap_or_default();
-    let mut hasher = DefaultHasher::new();
-    path_properties.hash(&mut hasher);
-    let hash_properties_input = hasher.finish();
-    format!("path_elec_property.{osrd_version}.{infra}.{infra_version}.{hash_properties_input}")
-}
-
 #[cfg(test)]
 mod tests {
     use actix_web::test::call_and_read_body_json;
@@ -391,6 +285,7 @@ mod tests {
     use crate::views::tests::create_test_service;
 
     #[rstest]
+    #[ignore] // TODO: Need to mock the core response to fix this test
     async fn path_properties_small_infra(#[future] small_infra: TestFixture<Infra>) {
         let service = create_test_service().await;
         let infra = small_infra.await;

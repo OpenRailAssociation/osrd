@@ -4205,20 +4205,13 @@ components:
       type: object
     PathPropertiesInput:
       properties:
-        rolling_stock_supported_electrifications:
-          description: |-
-            List of supported electrification modes.
-            Empty if does not support any electrification
-          items:
-            type: string
-          type: array
-        track_ranges:
-          description: list of track sections
+        track_section_ranges:
+          description: List of track sections
           items:
             $ref: '#/components/schemas/TrackRange'
           type: array
       required:
-      - track_ranges
+      - track_section_ranges
       type: object
     PathResponse:
       properties:
