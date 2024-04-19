@@ -2,6 +2,7 @@ use derivative::Derivative;
 use editoast_common::Identifier;
 use editoast_common::NonBlankString;
 use editoast_schemas::infra::Curve;
+use editoast_schemas::infra::Slope;
 use editoast_schemas::primitives::BoundingBox;
 use editoast_schemas::primitives::OSRDIdentified;
 use editoast_schemas::primitives::OSRDTyped;
@@ -83,14 +84,6 @@ impl TrackSection {
     pub fn sch_bbox(&self) -> BoundingBox {
         Self::bbox(&self.sch)
     }
-}
-
-#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
-#[serde(deny_unknown_fields)]
-pub struct Slope {
-    pub gradient: f64,
-    pub begin: f64,
-    pub end: f64,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
