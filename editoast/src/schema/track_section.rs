@@ -3,8 +3,7 @@ use editoast_common::Identifier;
 use editoast_schemas::infra::Curve;
 use editoast_schemas::infra::LoadingGaugeLimit;
 use editoast_schemas::infra::Slope;
-use editoast_schemas::infra::TrackSectionSncfExtension;
-use editoast_schemas::infra::TrackSectionSourceExtension;
+use editoast_schemas::infra::TrackSectionExtensions;
 use editoast_schemas::primitives::BoundingBox;
 use editoast_schemas::primitives::OSRDIdentified;
 use editoast_schemas::primitives::OSRDTyped;
@@ -31,13 +30,6 @@ pub struct TrackSection {
     pub sch: Geometry,
     #[serde(default)]
     pub extensions: TrackSectionExtensions,
-}
-
-#[derive(Debug, Clone, Default, Deserialize, Serialize, PartialEq, Eq)]
-#[serde(deny_unknown_fields)]
-pub struct TrackSectionExtensions {
-    pub sncf: Option<TrackSectionSncfExtension>,
-    pub source: Option<TrackSectionSourceExtension>,
 }
 
 impl OSRDTyped for TrackSection {
