@@ -2484,7 +2484,8 @@ export type SearchResultItemProject = {
   tags: string[];
 };
 export type SearchResultItemStudy = {
-  description: string;
+  budget: number | null;
+  description: string | null;
   id: number;
   last_modification: string;
   name: string;

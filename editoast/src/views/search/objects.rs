@@ -121,10 +121,10 @@ pub(super) struct SearchResultItemOperationalPointTrackSections {
         src_table = "infra_object_signal",
         query_joins = "
             INNER JOIN infra_object_track_section AS track_section
-            ON track_section.infra_id = infra_object_signal.infra_id 
+            ON track_section.infra_id = infra_object_signal.infra_id
                 AND track_section.obj_id = infra_object_signal.data->>'track'
             INNER JOIN infra_layer_signal AS layer
-            ON layer.infra_id = infra_object_signal.infra_id 
+            ON layer.infra_id = infra_object_signal.infra_id
                 AND layer.obj_id = infra_object_signal.obj_id",
     ),
     column(
@@ -236,12 +236,16 @@ pub(super) struct SearchResultItemProject {
 #[search(
     name = "study",
     table = "search_study",
+    migration(src_table = "study"),
     joins = "INNER JOIN study ON study.id = search_study.id",
-    column(name = "id", data_type = "integer"),
-    column(name = "name", data_type = "string"),
-    column(name = "description", data_type = "string"),
-    column(name = "tags", data_type = "string"),
-    column(name = "project_id", data_type = "integer")
+    column(name = "name", data_type = "TEXT", sql = "study.name"),
+    column(name = "description", data_type = "TEXT", sql = "study.description"),
+    column(
+        name = "tags",
+        data_type = "TEXT",
+        sql = "osrd_prepare_for_search_tags(study.tags)"
+    ),
+    column(name = "project_id", data_type = "INTEGER", sql = "study.project_id")
 )]
 #[allow(unused)]
 /// A search result item for a query with `object = "study"`
@@ -257,11 +261,15 @@ pub(super) struct SearchResultItemStudy {
     )]
     scenarios_count: u64,
     #[search(sql = "study.description")]
-    description: String,
+    #[schema(required)]
+    description: Option<String>,
     #[search(sql = "study.last_modification")]
     last_modification: NaiveDateTime,
     #[search(sql = "study.tags")]
     tags: Vec<String>,
+    #[search(sql = "study.budget")]
+    #[schema(required)]
+    budget: Option<u32>,
 }
 
 #[derive(Search, Serialize, ToSchema)]
