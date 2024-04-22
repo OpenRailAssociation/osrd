@@ -251,6 +251,9 @@ pub struct MakeMigrationArgs {
     #[arg(short, long)]
     /// Overwrites the existing up.sql and down.sql files' content
     pub force: bool,
+    #[arg(long)]
+    /// Skips the default generation of down.sql to have smarter rollbacks
+    pub skip_down: bool,
 }
 
 #[derive(Args, Debug)]

@@ -802,6 +802,7 @@ fn make_search_migration(args: MakeMigrationArgs) -> Result<(), Box<dyn Error + 
         object,
         migration,
         force,
+        skip_down,
     } = args;
     let Some(search_config) = SearchConfigFinder::find(&object) else {
         let error = format!("❌ No search object found for {object}");
@@ -844,11 +845,13 @@ fn make_search_migration(args: MakeMigrationArgs) -> Result<(), Box<dyn Error + 
         return Err(Box::new(CliError::new(2, error)));
     }
     println!("➡️  Wrote to {up_path_str}");
-    if let Err(err) = fs::write(down_path, down) {
-        let error = format!("❌ Failed to write to {down_path_str}: {err}");
-        return Err(Box::new(CliError::new(2, error)));
+    if !skip_down {
+        if let Err(err) = fs::write(down_path, down) {
+            let error = format!("❌ Failed to write to {down_path_str}: {err}");
+            return Err(Box::new(CliError::new(2, error)));
+        }
+        println!("➡️  Wrote to {down_path_str}");
     }
-    println!("➡️  Wrote to {down_path_str}");
     println!(
         "✅ Migration {} generated!\n🚨 Don't forget to run {} or {} to apply it",
         migration.to_str().unwrap_or("<unprintable path>"),
