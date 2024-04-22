@@ -30,6 +30,7 @@ import fr.sncf.osrd.utils.indexing.MutableStaticIdxArrayList
 import fr.sncf.osrd.utils.indexing.StaticIdxList
 import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
 import fr.sncf.osrd.utils.units.*
+import io.opentelemetry.instrumentation.annotations.WithSpan
 import kotlin.collections.set
 import kotlin.math.abs
 import kotlin.math.max
@@ -37,6 +38,7 @@ import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 
+@WithSpan
 fun recoverBlockPath(
     simulator: SignalingSimulator,
     fullInfra: FullInfra,
@@ -61,6 +63,7 @@ fun recoverBlockPath(
 }
 
 /** Use an already computed envelope to extract various metadata about a trip. */
+@WithSpan
 fun run(
     envelope: Envelope,
     trainPath: PathProperties,
@@ -88,10 +91,15 @@ fun run(
     val trainLength = schedule.rollingStock.length
     var speeds = ArrayList<ResultSpeed>()
     var headPositions = ArrayList<ResultPosition>()
-    for (point in envelopeWithStops.iteratePoints()) {
-        speeds.add(ResultSpeed(point.time, point.speed, point.position))
-        headPositions.add(ResultPosition.from(point.time, point.position, trainPath, rawInfra))
+
+    @WithSpan
+    fun speedAndPositions() {
+        for (point in envelopeWithStops.iteratePoints()) {
+            speeds.add(ResultSpeed(point.time, point.speed, point.position))
+            headPositions.add(ResultPosition.from(point.time, point.position, trainPath, rawInfra))
+        }
     }
+    speedAndPositions()
 
     // Simplify data
     speeds = simplifySpeeds(speeds)
@@ -160,30 +168,19 @@ fun run(
     val mechanicalEnergyConsumed =
         EnvelopePhysics.getMechanicalEnergyConsumed(envelope, envelopePath, schedule.rollingStock)
 
-    val incrementalPath = incrementalPathOf(rawInfra, blockInfra)
-    val envelopeAdapter =
-        IncrementalRequirementEnvelopeAdapter(schedule.rollingStock, envelopeWithStops, true)
-    val spacingGenerator =
-        SpacingRequirementAutomaton(
+    val spacingRequirements =
+        spacingRequirements(
             rawInfra,
-            loadedSignalInfra,
             blockInfra,
+            schedule,
+            envelopeWithStops,
+            loadedSignalInfra,
             simulator,
-            envelopeAdapter,
-            incrementalPath
-        )
-    incrementalPath.extend(
-        PathFragment(
             routePath,
             blockPath,
-            containsStart = true,
-            containsEnd = true,
             startOffset,
             endOffset
         )
-    )
-    // as the provided path is complete, the resource generator should never return NotEnoughPath
-    val spacingRequirements = spacingGenerator.processPathUpdate() as SpacingRequirements
 
     val routingRequirements =
         routingRequirements(
@@ -211,6 +208,47 @@ fun run(
     )
 }
 
+@WithSpan
+private fun spacingRequirements(
+    rawInfra: RawSignalingInfra,
+    blockInfra: BlockInfra,
+    schedule: StandaloneTrainSchedule,
+    envelopeWithStops: EnvelopeStopWrapper,
+    loadedSignalInfra: LoadedSignalInfra,
+    simulator: SignalingSimulator,
+    routePath: StaticIdxList<Route>,
+    blockPath: MutableStaticIdxArrayList<Block>,
+    startOffset: Distance,
+    endOffset: Distance
+): SpacingRequirements {
+    val incrementalPath = incrementalPathOf(rawInfra, blockInfra)
+    val envelopeAdapter =
+        IncrementalRequirementEnvelopeAdapter(schedule.rollingStock, envelopeWithStops, true)
+    val spacingGenerator =
+        SpacingRequirementAutomaton(
+            rawInfra,
+            loadedSignalInfra,
+            blockInfra,
+            simulator,
+            envelopeAdapter,
+            incrementalPath
+        )
+    incrementalPath.extend(
+        PathFragment(
+            routePath,
+            blockPath,
+            containsStart = true,
+            containsEnd = true,
+            startOffset,
+            endOffset
+        )
+    )
+    // as the provided path is complete, the resource generator should never return NotEnoughPath
+    val spacingRequirements = spacingGenerator.processPathUpdate() as SpacingRequirements
+    return spacingRequirements
+}
+
+@WithSpan
 private fun routingRequirements(
     // the start offset is the distance from the start of the first route to the start location
     startOffset: Distance,
@@ -457,6 +495,7 @@ private data class ZoneOccupationChangeEvent(
     val zone: ZoneId,
 )
 
+@WithSpan
 private fun zoneOccupationChangeEvents(
     startOffset: Distance,
     blockPath: StaticIdxList<Block>,
@@ -514,6 +553,7 @@ data class PathSignal(
 )
 
 // Returns all the signals on the path
+@WithSpan
 fun pathSignals(
     startOffset: Distance,
     blockPath: StaticIdxList<Block>,
@@ -541,6 +581,7 @@ fun pathSignals(
 // This doesn't generate path signals outside the envelope
 // The reason being that even if a train see a red signal, it won't
 // matter since the train was going to stop before it anyway
+@WithSpan
 private fun pathSignalsInEnvelope(
     startOffset: Distance,
     blockPath: StaticIdxList<Block>,
@@ -575,6 +616,7 @@ fun trainPathBlockOffset(
     throw RuntimeException("Couldn't find first chunk on the block path")
 }
 
+@WithSpan
 private fun simplifyPositions(positions: ArrayList<ResultPosition>): ArrayList<ResultPosition> {
     return CurveSimplification.rdp(positions, 5.0) {
         point: ResultPosition,
@@ -590,6 +632,7 @@ private fun simplifyPositions(positions: ArrayList<ResultPosition>): ArrayList<R
     }
 }
 
+@WithSpan
 private fun simplifySpeeds(speeds: ArrayList<ResultSpeed>): ArrayList<ResultSpeed> {
     return CurveSimplification.rdp(speeds, 0.2) {
         point: ResultSpeed,

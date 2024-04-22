@@ -14,11 +14,13 @@ import fr.sncf.osrd.standalone_sim.result.SignalUpdate
 import fr.sncf.osrd.utils.indexing.StaticIdxList
 import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
 import fr.sncf.osrd.utils.toRouteIdList
+import io.opentelemetry.instrumentation.annotations.WithSpan
 import java.awt.Color
 import kotlin.math.abs
 
 data class SignalAspectChangeEvent(val newAspect: String, val time: Long)
 
+@WithSpan
 fun project(
     fullInfra: FullInfra,
     chunkPath: ChunkPath,
@@ -107,6 +109,7 @@ fun project(
     return SignalProjectionResult(signalUpdates)
 }
 
+@WithSpan
 private fun computeSignalAspectChangeEvents(
     blockPath: StaticIdxList<Block>,
     routePath: StaticIdxList<Route>,
@@ -180,6 +183,7 @@ private fun computeSignalAspectChangeEvents(
     return signalAspectChangeEvents
 }
 
+@WithSpan
 private fun signalUpdates(
     signalsOnPath: List<PathSignal>,
     signalAspectChangeEvents: Map<PathSignal, MutableList<SignalAspectChangeEvent>>,

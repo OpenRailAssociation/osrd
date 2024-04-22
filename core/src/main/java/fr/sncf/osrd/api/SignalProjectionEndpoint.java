@@ -18,6 +18,10 @@ import fr.sncf.osrd.standalone_sim.result.ResultTrain;
 import fr.sncf.osrd.standalone_sim.result.SignalUpdate;
 import java.util.ArrayList;
 import java.util.List;
+
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.context.Context;
+import io.opentelemetry.instrumentation.annotations.WithSpan;
 import org.takes.Request;
 import org.takes.Response;
 import org.takes.Take;
@@ -45,6 +49,7 @@ public class SignalProjectionEndpoint implements Take {
                     .adapter(SignalProjectionEndpoint.SignalProjectionRequest.class);
 
     @Override
+    @WithSpan
     public Response act(Request req) throws Exception {
         var recorder = new DiagnosticRecorderImpl(false);
         try {
@@ -58,9 +63,13 @@ public class SignalProjectionEndpoint implements Take {
 
             // Parse trainPath
             var chunkPath = makeChunkPath(infra.rawInfra(), request.trainPath);
-            var routePath = request.trainPath.routePath.stream()
-                    .map(rjsRoutePath -> infra.rawInfra().getRouteFromName(rjsRoutePath.route))
-                    .toList();
+            try {
+                var routePath = request.trainPath.routePath.stream()
+                        .map(rjsRoutePath -> infra.rawInfra().getRouteFromName(rjsRoutePath.route))
+                        .toList();
+            } finally {
+
+            }
             var result = SignalProjectionKt.project(
                     infra, chunkPath, routePath, request.signalSightings, request.zoneUpdates);
 

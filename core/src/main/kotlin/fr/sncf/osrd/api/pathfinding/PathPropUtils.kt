@@ -16,6 +16,7 @@ import fr.sncf.osrd.utils.units.Distance.Companion.fromMeters
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
+import io.opentelemetry.instrumentation.annotations.WithSpan
 
 /** Creates the path from a given block id */
 @JvmName("makePathProps")
@@ -112,6 +113,7 @@ fun makeChunkPath(
 }
 
 /** Builds a ChunkPath from an RJSTrainPath */
+@WithSpan
 fun makeChunkPath(rawInfra: RawSignalingInfra, rjsPath: RJSTrainPath): ChunkPath {
     val trackRanges = ArrayList<RJSDirectionalTrackRange?>()
     for (routePath in rjsPath.routePath) {
