@@ -6345,7 +6345,13 @@ components:
     SearchResultItemStudy:
       description: A search result item for a query with `object = "study"`
       properties:
+        budget:
+          format: int32
+          minimum: 0
+          nullable: true
+          type: integer
         description:
+          nullable: true
           type: string
         id:
           format: int64
@@ -6376,6 +6382,7 @@ components:
       - description
       - last_modification
       - tags
+      - budget
       type: object
     SearchResultItemTrack:
       description: A search result item for a query with `object = "track"`
