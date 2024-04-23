@@ -659,7 +659,7 @@ pub mod tests {
     #[rstest]
     async fn get_returns_corresponding_rolling_stock_by_name(db_pool: Data<DbPool>) {
         // GIVEN
-        let name = "fast_rolling_stock_get_returns_corresponding_rolling_stock";
+        let name = "fast_rolling_stock_get_returns_corresponding_rolling_stock_by_name";
         let app = create_test_service().await;
         let rolling_stock = named_fast_rolling_stock(name, db_pool).await;
 
