@@ -43,7 +43,7 @@ impl<'a, M: Model> Patch<'a, M> {
     ///
     /// If this method is not implemented for your model for whatever reason, just
     /// use [Save::save].
-    async fn apply<K>(self, conn: &mut DbConnection) -> Result<()>
+    pub async fn apply<K>(self, conn: &mut DbConnection) -> Result<()>
     where
         for<'b> K: Send + Clone + 'b,
         M: Model + PreferredId<K> + Send,
