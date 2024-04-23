@@ -30,6 +30,7 @@ use diesel::QueryableByName;
 pub trait Model: Clone + Sized + Send {
     type Row: QueryableByName<Pg> + Into<Self> + Send;
     type Changeset: AsChangeset + Default + From<Self> + Send;
+    type Table: diesel::Table + Send;
 
     /// Returns an empty changeset for this model
     fn changeset() -> Self::Changeset {
