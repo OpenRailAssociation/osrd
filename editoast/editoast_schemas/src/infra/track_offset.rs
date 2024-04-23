@@ -1,4 +1,4 @@
-use editoast_common::Identifier;
+use crate::primitives::Identifier;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;

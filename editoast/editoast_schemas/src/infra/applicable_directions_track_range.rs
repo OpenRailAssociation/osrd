@@ -1,9 +1,9 @@
 use derivative::Derivative;
-use editoast_common::Identifier;
 use serde::Deserialize;
 use serde::Serialize;
 
 use super::ApplicableDirections;
+use crate::primitives::Identifier;
 
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]

@@ -1,5 +1,5 @@
 use derivative::Derivative;
-use editoast_common::Identifier;
+use editoast_schemas::primitives::Identifier;
 use editoast_schemas::primitives::OSRDIdentified;
 use editoast_schemas::primitives::OSRDTyped;
 use editoast_schemas::primitives::ObjectType;

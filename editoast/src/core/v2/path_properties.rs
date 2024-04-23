@@ -1,7 +1,7 @@
 use editoast_common::geometry::GeoJsonLineString;
-use editoast_common::Identifier;
 use editoast_schemas::infra::OperationalPointExtensions;
 use editoast_schemas::infra::OperationalPointPart;
+use editoast_schemas::primitives::Identifier;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;

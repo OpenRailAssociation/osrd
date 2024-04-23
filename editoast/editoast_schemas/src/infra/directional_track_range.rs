@@ -1,10 +1,10 @@
 use derivative::Derivative;
-use editoast_common::Identifier;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
 use super::Direction;
+use crate::primitives::Identifier;
 
 editoast_common::schemas! {
     DirectionalTrackRange,

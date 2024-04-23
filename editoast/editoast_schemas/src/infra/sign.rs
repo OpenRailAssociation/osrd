@@ -1,5 +1,5 @@
+use crate::primitives::Identifier;
 use derivative::Derivative;
-use editoast_common::Identifier;
 use editoast_common::NonBlankString;
 use serde::Deserialize;
 use serde::Serialize;

@@ -862,7 +862,6 @@ pub mod tests {
     use crate::infra_cache::InfraCache;
     use crate::infra_cache::SwitchCache;
     use crate::modelsv2::infra::tests::test_infra_transaction;
-    use editoast_common::Identifier;
     use editoast_common::NonBlankString;
     use editoast_schemas::infra::ApplicableDirections;
     use editoast_schemas::infra::ApplicableDirectionsTrackRange;
@@ -877,6 +876,7 @@ pub mod tests {
     use editoast_schemas::infra::SwitchType;
     use editoast_schemas::infra::TrackEndpoint;
     use editoast_schemas::primitives::BoundingBox;
+    use editoast_schemas::primitives::Identifier;
     use editoast_schemas::primitives::OSRDIdentified;
 
     #[actix_test]
@@ -1400,10 +1400,10 @@ pub mod tests {
         use crate::infra_cache::tests::create_switch_type_cache;
         use crate::infra_cache::InfraCache;
         use crate::infra_cache::InfraCacheEditoastError;
-        use editoast_common::Identifier;
         use editoast_schemas::infra::Direction::StartToStop;
         use editoast_schemas::infra::TrackEndpoint;
         use editoast_schemas::infra::Waypoint::BufferStop;
+        use editoast_schemas::primitives::Identifier;
         use editoast_schemas::primitives::ObjectType;
 
         #[test]

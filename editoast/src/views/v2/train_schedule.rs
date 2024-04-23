@@ -34,7 +34,7 @@ use crate::views::v2::path::PathfindingError;
 use crate::DbPool;
 use crate::RedisClient;
 use crate::RollingStockModel;
-use editoast_common::Identifier;
+use editoast_schemas::primitives::Identifier;
 
 use actix_web::web::{Data, Json, Path, Query};
 use actix_web::{delete, get, post, put, HttpResponse};

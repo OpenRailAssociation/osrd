@@ -1454,7 +1454,6 @@ dependencies = [
  "serde_json",
  "thiserror",
  "utoipa",
- "uuid",
 ]
 
 [[package]]
@@ -1479,12 +1478,15 @@ dependencies = [
  "enum-map",
  "geojson",
  "iso8601",
+ "rand 0.8.5",
+ "rangemap",
  "serde",
  "serde_derive",
  "serde_json",
  "strum",
  "thiserror",
  "utoipa",
+ "uuid",
 ]
 
 [[package]]

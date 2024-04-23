@@ -4,8 +4,8 @@ use serde::Deserialize;
 use serde::Serialize;
 
 use crate::models::PathfindingPayload;
-use editoast_common::Identifier;
 use editoast_schemas::infra::DirectionalTrackRange;
+use editoast_schemas::primitives::Identifier;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Projection {

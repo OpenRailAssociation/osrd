@@ -19,7 +19,7 @@ use crate::views::v2::train_schedule::Mrsp;
 use crate::views::v2::train_schedule::ReportTrain;
 use crate::RollingStockModel;
 use derivative::Derivative;
-use editoast_common::Identifier;
+use editoast_schemas::primitives::Identifier;
 use std::hash::Hash;
 
 #[derive(Debug, Serialize, Derivative)]

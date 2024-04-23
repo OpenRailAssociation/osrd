@@ -128,10 +128,10 @@ pub fn parse_osm(osm_pbf_in: PathBuf) -> Result<RailJson, Box<dyn Error + Send +
 
 #[cfg(test)]
 mod tests {
-    use editoast_common::Identifier;
     use editoast_schemas::infra::ApplicableDirections;
     use editoast_schemas::infra::RailJson;
     use editoast_schemas::infra::TrackEndpoint;
+    use editoast_schemas::primitives::Identifier;
     use std::collections::HashMap;
 
     use super::parse_osm;

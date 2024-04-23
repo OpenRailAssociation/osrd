@@ -1,13 +1,13 @@
 use editoast_schemas::infra::Direction;
 use editoast_schemas::infra::TrackOffset;
+use editoast_schemas::primitives::Identifier;
 use editoast_schemas::rolling_stock::LoadingGaugeType;
 use editoast_schemas::train_schedule::PathItemLocation;
 use serde::Deserialize;
 use serde::Serialize;
+use utoipa::ToSchema;
 
 use crate::core::{AsCoreRequest, Json};
-use editoast_common::Identifier;
-use utoipa::ToSchema;
 
 #[derive(Debug, Serialize)]
 pub struct PathfindingRequest {
