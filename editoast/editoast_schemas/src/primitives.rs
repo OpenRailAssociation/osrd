@@ -1,9 +1,11 @@
 mod bounding_box;
+pub mod duration;
 mod object_ref;
 mod object_type;
 mod zone;
 
 pub use bounding_box::BoundingBox;
+pub use duration::PositiveDuration;
 pub use object_ref::ObjectRef;
 pub use object_type::ObjectType;
 pub use zone::Zone;

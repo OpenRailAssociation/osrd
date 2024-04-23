@@ -10,6 +10,7 @@ derivative.workspace = true
 editoast_common.workspace = true
 enum-map.workspace = true
 geojson.workspace = true
+iso8601 = "0.6.1"
 serde.workspace = true
 serde_derive.workspace = true
 serde_json.workspace = true
