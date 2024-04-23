@@ -1,8 +1,9 @@
 use editoast_common::NonBlankString;
-use editoast_common::PositiveDuration;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
+
+use crate::primitives::PositiveDuration;
 
 editoast_common::schemas! {
     ScheduleItem,
