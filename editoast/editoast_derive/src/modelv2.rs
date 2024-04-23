@@ -22,6 +22,7 @@ pub fn model(input: &DeriveInput) -> Result<TokenStream> {
     let config = ModelConfig::from_macro_args(options, model_name.clone(), model_vis.clone())?;
 
     let model_impl = config.model_impl();
+    let model_fields_impl_block = config.model_fields_impl_block();
     let row_decl = config.row_decl();
     let changeset_decl = config.changeset_decl();
 
@@ -48,6 +49,7 @@ pub fn model(input: &DeriveInput) -> Result<TokenStream> {
 
     Ok(quote! {
         #model_impl
+        #model_fields_impl_block
         #row_decl
         #changeset_decl
 
