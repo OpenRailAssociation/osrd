@@ -1,19 +1,17 @@
 mod bounding_box;
 mod zone;
+mod object_type;
 
 pub use bounding_box::BoundingBox;
 pub use zone::Zone;
+pub use object_type::ObjectType;
 
 use derivative::Derivative;
-use enum_map::Enum;
 use serde::Deserialize;
 use serde::Serialize;
-use strum::Display;
-use strum::EnumIter;
-use utoipa::ToSchema;
 
 editoast_common::schemas! {
-    ObjectType,
+    object_type::schemas(),
     zone::schemas(),
     bounding_box::schemas(),
 }
@@ -41,35 +39,6 @@ impl<T: OSRDIdentified + OSRDTyped> OSRDObject for T {
     fn get_type(&self) -> ObjectType {
         T::get_type()
     }
-}
-
-#[derive(
-    Debug,
-    Clone,
-    Copy,
-    Deserialize,
-    Hash,
-    Eq,
-    PartialEq,
-    Serialize,
-    Enum,
-    EnumIter,
-    Display,
-    ToSchema,
-)]
-#[serde(deny_unknown_fields)]
-pub enum ObjectType {
-    TrackSection,
-    Signal,
-    SpeedSection,
-    Detector,
-    NeutralSection,
-    Switch,
-    SwitchType,
-    BufferStop,
-    Route,
-    OperationalPoint,
-    Electrification,
 }
 
 #[derive(Deserialize, Derivative, Serialize, Clone, Debug, PartialEq, Eq, Hash)]
