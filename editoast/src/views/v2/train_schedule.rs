@@ -279,7 +279,8 @@ enum SimulationResult {
         provisional: ReportTrain,
         final_output: CompleteReportTrain,
         mrsp: Mrsp,
-        power_restriction: String,
+        #[schema(inline)]
+        power_restrictions: Vec<SimulationPowerRestrictionRange>,
     },
     PathfindingFailed {
         pathfinding_result: PathfindingResult,
@@ -341,7 +342,7 @@ pub struct SpacingRequirement {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
 pub struct RoutingRequirement {
     pub route: String,
-    // Time in ms
+    /// Time in ms
     pub begin_time: u64,
     pub zones: Vec<RoutingZoneRequirement>,
 }
@@ -352,12 +353,22 @@ pub struct RoutingZoneRequirement {
     pub entry_detector: String,
     pub exit_detector: String,
     pub switches: HashMap<String, String>,
-    // Time in ms
+    /// Time in ms
     pub end_time: u64,
 }
 
-/// A MRSP computation result (Most Restrictive Speed Profile)
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
+pub struct SimulationPowerRestrictionRange {
+    /// Start position in the path in mm
+    begin: u64,
+    /// End position in the path in mm
+    end: u64,
+    code: String,
+    /// Is power restriction handled during simulation
+    handled: bool,
+}
 
+/// A MRSP computation result (Most Restrictive Speed Profile)
 #[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, ToSchema)]
 pub struct Mrsp(pub Vec<MrspPoint>);
 
@@ -510,7 +521,7 @@ async fn train_simulation(
             }],
         },
         mrsp: Mrsp(vec![]),
-        power_restriction: "".into(),
+        power_restrictions: vec![],
     };
 
     // Cache the simulation response

@@ -3265,7 +3265,15 @@ export type SimulationResult =
       base: ReportTrainV2;
       final_output: CompleteReportTrain;
       mrsp: Mrsp;
-      power_restriction: string;
+      power_restrictions: {
+        /** Start position in the path in mm */
+        begin: number;
+        code: string;
+        /** End position in the path in mm */
+        end: number;
+        /** Is power restriction handled during simulation */
+        handled: boolean;
+      }[];
       provisional: ReportTrainV2;
       status: 'success';
     }
