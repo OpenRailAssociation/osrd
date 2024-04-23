@@ -95,6 +95,7 @@ impl ModelConfig {
             model: self.model.clone(),
             row: self.row.ident(),
             changeset: self.changeset.ident(),
+            table: self.table.clone(),
         }
     }
 
