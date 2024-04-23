@@ -34,7 +34,7 @@ use crate::views::pathfinding::make_track_map;
 use crate::views::train_schedule::projection::Projection;
 use crate::views::train_schedule::TrainScheduleError::UnsimulatedTrainSchedule;
 use crate::DbPool;
-use editoast_common::Identifier;
+use editoast_schemas::primitives::Identifier;
 
 editoast_common::schemas! {
     SimulationReport,

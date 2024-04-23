@@ -1,8 +1,8 @@
 use derivative::Derivative;
-use editoast_common::Identifier;
 use serde::Deserialize;
 use serde::Serialize;
 
+use crate::primitives::Identifier;
 use crate::primitives::OSRDIdentified;
 use crate::primitives::OSRDTyped;
 use crate::primitives::ObjectType;

@@ -1,5 +1,5 @@
+use crate::primitives::Identifier;
 use derivative::Derivative;
-use editoast_common::Identifier;
 use geojson::Geometry;
 use geojson::Value::LineString;
 use serde::Deserialize;

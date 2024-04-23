@@ -580,7 +580,7 @@ fn build_simulation_request(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use editoast_common::Identifier;
+    use editoast_schemas::primitives::Identifier;
 
     #[test]
     fn test_waypoints_from_steps() {

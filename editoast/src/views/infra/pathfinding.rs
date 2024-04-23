@@ -23,11 +23,11 @@ use crate::modelsv2::Infra;
 use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraIdParam;
 use crate::DbPool;
-use editoast_common::Identifier;
 use editoast_schemas::infra::Direction;
 use editoast_schemas::infra::DirectionalTrackRange;
 use editoast_schemas::infra::Endpoint;
 use editoast_schemas::infra::TrackEndpoint;
+use editoast_schemas::primitives::Identifier;
 use editoast_schemas::primitives::ObjectType;
 
 crate::routes! {
@@ -413,9 +413,9 @@ mod tests {
     use crate::infra_cache::Graph;
     use crate::views::infra::pathfinding::PathfindingInput;
     use crate::views::infra::pathfinding::PathfindingTrackLocationInput;
-    use editoast_common::Identifier;
     use editoast_schemas::infra::Direction;
     use editoast_schemas::infra::DirectionalTrackRange;
+    use editoast_schemas::primitives::Identifier;
 
     fn expected_path() -> Vec<DirectionalTrackRange> {
         vec![

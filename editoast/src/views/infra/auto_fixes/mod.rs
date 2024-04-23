@@ -340,7 +340,6 @@ mod tests {
     use crate::infra_cache::InfraCacheEditoastError;
     use crate::views::pagination::PaginatedResponse;
     use crate::views::tests::create_test_service;
-    use editoast_common::Identifier;
     use editoast_schemas::infra::ApplicableDirectionsTrackRange;
     use editoast_schemas::infra::Detector;
     use editoast_schemas::infra::Electrification;
@@ -355,6 +354,7 @@ mod tests {
     use editoast_schemas::infra::TrackEndpoint;
     use editoast_schemas::infra::TrackSection;
     use editoast_schemas::infra::Waypoint;
+    use editoast_schemas::primitives::Identifier;
     use editoast_schemas::primitives::ObjectRef;
     use editoast_schemas::primitives::ObjectType;
 
