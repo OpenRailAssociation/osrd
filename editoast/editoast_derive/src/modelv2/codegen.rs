@@ -9,6 +9,7 @@ mod delete_impl;
 mod delete_static_impl;
 mod exists_impl;
 mod identifiable_impl;
+mod model_fields_impl_block;
 mod model_from_row_impl;
 mod model_impl;
 mod preferred_id_impl;
@@ -33,6 +34,8 @@ use self::delete_impl::DeleteImpl;
 use self::delete_static_impl::DeleteStaticImpl;
 use self::exists_impl::ExistsImpl;
 use self::identifiable_impl::IdentifiableImpl;
+use self::model_fields_impl_block::ModelFieldDecl;
+use self::model_fields_impl_block::ModelFieldsImplBlock;
 use self::model_from_row_impl::ModelFromRowImpl;
 use self::model_impl::ModelImpl;
 use self::preferred_id_impl::PreferredIdImpl;
@@ -96,6 +99,20 @@ impl ModelConfig {
             row: self.row.ident(),
             changeset: self.changeset.ident(),
             table: self.table.clone(),
+        }
+    }
+
+    pub(crate) fn model_fields_impl_block(&self) -> ModelFieldsImplBlock {
+        ModelFieldsImplBlock {
+            model: self.model.clone(),
+            fields: self
+                .iter_fields()
+                .map(|field| ModelFieldDecl {
+                    name: field.ident.clone(),
+                    ty: field.ty.clone(),
+                    column: field.column.clone(),
+                })
+                .collect(),
         }
     }
 

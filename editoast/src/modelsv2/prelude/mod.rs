@@ -2,11 +2,15 @@
 
 mod create;
 mod delete;
+mod list;
 mod retrieve;
 mod update;
 
+use std::marker::PhantomData;
+
 pub use create::*;
 pub use delete::*;
+pub use list::*;
 pub use retrieve::*;
 pub use update::*;
 
@@ -65,6 +69,19 @@ pub type Row<M> = <M as Model>::Row;
 /// Helps silent compiler errors about type amibiguity.
 #[allow(unused)]
 pub type Changeset<M> = <M as Model>::Changeset;
+
+/// A struct persisting the column and type information of each model field
+///
+/// This struct is instanciated by the `Model` derive macro and shouldn't be
+/// used manually. The macro expansion also provides a few methods such as
+/// `eq` or `asc` that can be used in conjunction with `ListSettings`.
+pub(in crate::modelsv2) struct ModelField<M, T, Column>(PhantomData<(M, T, Column)>);
+
+impl<M, T, Column> ModelField<M, T, Column> {
+    pub(in crate::modelsv2) const fn new() -> Self {
+        Self(PhantomData)
+    }
+}
 
 /// Splits a query into chunks to accommodate libpq's maximum number of parameters
 ///
