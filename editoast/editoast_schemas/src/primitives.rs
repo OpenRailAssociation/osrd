@@ -1,6 +1,8 @@
 mod bounding_box;
+mod zone;
 
 pub use bounding_box::BoundingBox;
+pub use zone::Zone;
 
 use derivative::Derivative;
 use enum_map::Enum;
@@ -12,7 +14,7 @@ use utoipa::ToSchema;
 
 editoast_common::schemas! {
     ObjectType,
-    Zone,
+    zone::schemas(),
     bounding_box::schemas(),
 }
 
@@ -85,20 +87,5 @@ impl ObjectRef {
     pub fn new<T: AsRef<str>>(obj_type: ObjectType, obj_id: T) -> Self {
         let obj_id: String = obj_id.as_ref().to_string();
         ObjectRef { obj_type, obj_id }
-    }
-}
-
-/// Geographic and Schematic bounding box zone impacted by a list of operations.
-/// Zones use the coordinate system [epsg:4326](https://epsg.io/4326).
-#[derive(Debug, Clone, Default, Serialize, ToSchema)]
-pub struct Zone {
-    pub geo: BoundingBox,
-    pub sch: BoundingBox,
-}
-
-impl Zone {
-    pub fn union(&mut self, other: &Self) {
-        self.geo.union(&other.geo);
-        self.sch.union(&other.sch);
     }
 }
