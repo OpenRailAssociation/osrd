@@ -247,7 +247,7 @@ private class InfraExplorerImpl(
             this.blockInfra,
             this.blocks.shallowCopy(),
             this.routes.shallowCopy(),
-            this.blockRoutes,
+            this.blockRoutes.toMutableMap(),
             this.incrementalPath.clone(),
             this.pathPropertiesCache,
             this.currentIndex,
@@ -263,7 +263,8 @@ private class InfraExplorerImpl(
 
     /**
      * Updates `incrementalPath`, `routes`, `blocks` and returns true if route can be explored.
-     * Otherwise, it returns false and keeps the states as is
+     * Otherwise, it returns false and keeps the states as is. `blockRoutes` is updated to keep
+     * track of the route used for each block.
      */
     fun extend(route: RouteId, firstLocation: PathfindingEdgeLocationId<Block>? = null): Boolean {
         val routeBlocks = blockInfra.getRouteBlocks(rawInfra, route)
@@ -271,8 +272,10 @@ private class InfraExplorerImpl(
         var nBlocksToSkip = 0
         val pathFragments = arrayListOf<PathFragment>()
         var pathStarted = incrementalPath.pathStarted
+        val addedBlocks = mutableListOf<BlockId>()
 
         for (block in routeBlocks) {
+            addedBlocks.add(block)
             if (block == firstLocation?.edge) {
                 seenFirstBlock = true
             }
@@ -298,14 +301,14 @@ private class InfraExplorerImpl(
                         travelledPathEnd = Distance.ZERO
                     )
                 )
-                blockRoutes.getOrPut(block) { mutableSetOf() }.add(route)
                 pathStarted = true
                 if (endPath) break // Can't extend any further
             }
         }
         assert(seenFirstBlock)
-        blocks.addAll(routeBlocks)
+        blocks.addAll(addedBlocks)
         routes.add(route)
+        for (block in addedBlocks) blockRoutes.getOrPut(block) { mutableSetOf() }.add(route)
         for (i in 0 ..< nBlocksToSkip) moveForward()
         for (pathFragment in pathFragments) incrementalPath.extend(pathFragment)
 
