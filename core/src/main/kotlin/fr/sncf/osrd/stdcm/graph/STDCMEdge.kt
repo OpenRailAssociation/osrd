@@ -88,7 +88,10 @@ data class STDCMEdge(
         while (newWaypointIndex + 1 < graph.steps.size) {
             val nextStep = graph.steps[newWaypointIndex + 1]
             val endOffset = envelopeStartOffset + length.distance
-            val pass = nextStep.locations.any { it.edge == block && it.offset <= endOffset }
+            val pass =
+                nextStep.locations.any {
+                    it.edge == block && it.offset <= endOffset && it.offset >= envelopeStartOffset
+                }
             if (!pass) break
             newWaypointIndex++
         }
