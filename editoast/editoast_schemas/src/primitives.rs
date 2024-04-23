@@ -1,14 +1,12 @@
 mod bounding_box;
-mod zone;
+mod object_ref;
 mod object_type;
+mod zone;
 
 pub use bounding_box::BoundingBox;
-pub use zone::Zone;
+pub use object_ref::ObjectRef;
 pub use object_type::ObjectType;
-
-use derivative::Derivative;
-use serde::Deserialize;
-use serde::Serialize;
+pub use zone::Zone;
 
 editoast_common::schemas! {
     object_type::schemas(),
@@ -38,23 +36,5 @@ pub trait OSRDObject: OSRDIdentified {
 impl<T: OSRDIdentified + OSRDTyped> OSRDObject for T {
     fn get_type(&self) -> ObjectType {
         T::get_type()
-    }
-}
-
-#[derive(Deserialize, Derivative, Serialize, Clone, Debug, PartialEq, Eq, Hash)]
-#[derivative(Default)]
-#[serde(deny_unknown_fields)]
-pub struct ObjectRef {
-    #[serde(rename = "type")]
-    #[derivative(Default(value = "ObjectType::TrackSection"))]
-    pub obj_type: ObjectType,
-    #[derivative(Default(value = r#""InvalidRef".into()"#))]
-    pub obj_id: String,
-}
-
-impl ObjectRef {
-    pub fn new<T: AsRef<str>>(obj_type: ObjectType, obj_id: T) -> Self {
-        let obj_id: String = obj_id.as_ref().to_string();
-        ObjectRef { obj_type, obj_id }
     }
 }
