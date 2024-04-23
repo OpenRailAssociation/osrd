@@ -43,7 +43,7 @@ pub(super) struct ModelFieldArgs {
     #[darling(default)]
     pub(super) builder_fn: Option<syn::Ident>,
     #[darling(default)]
-    pub(super) column: Option<String>,
+    pub(super) column: Option<syn::Path>,
     #[darling(default)]
     pub(super) builder_skip: bool,
     #[darling(default)]

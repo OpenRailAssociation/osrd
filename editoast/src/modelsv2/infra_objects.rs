@@ -44,7 +44,7 @@ macro_rules! infra_model {
         pub struct $name {
             pub id: i64,
             pub obj_id: String,
-            #[model(json, column = "data")]
+            #[model(json, column = $table::data)]
             pub schema: $data,
             pub infra_id: i64,
         }

@@ -111,7 +111,7 @@ impl ModelConfig {
                     vis: self.row.visibility(),
                     name: field.ident.clone(),
                     ty: field.transform_type(),
-                    column: field.column.clone(),
+                    column_name: field.column_ident().to_string(),
                 })
                 .collect(),
         }
@@ -129,7 +129,7 @@ impl ModelConfig {
                     vis: self.changeset.visibility(),
                     name: field.ident.clone(),
                     ty: field.transform_type(),
-                    column: field.column.clone(),
+                    column_name: field.column_ident().to_string(),
                 })
                 .collect(),
         }
