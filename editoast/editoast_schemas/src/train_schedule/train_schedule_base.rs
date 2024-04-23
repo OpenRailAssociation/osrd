@@ -1,9 +1,9 @@
 use std::collections::HashMap;
 use std::collections::HashSet;
 
+use crate::primitives::NonBlankString;
 use chrono::DateTime;
 use chrono::Utc;
-use editoast_common::NonBlankString;
 use serde::de::Error as SerdeError;
 use serde::Deserialize;
 use serde::Serialize;

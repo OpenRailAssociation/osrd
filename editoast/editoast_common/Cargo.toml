@@ -8,7 +8,6 @@ edition = "2021"
 [dependencies]
 chrono.workspace = true
 geos.workspace = true
-rand.workspace = true
 rangemap.workspace = true
 serde.workspace = true
 serde_derive.workspace = true

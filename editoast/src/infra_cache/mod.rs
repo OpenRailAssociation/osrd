@@ -862,7 +862,6 @@ pub mod tests {
     use crate::infra_cache::InfraCache;
     use crate::infra_cache::SwitchCache;
     use crate::modelsv2::infra::tests::test_infra_transaction;
-    use editoast_common::NonBlankString;
     use editoast_schemas::infra::ApplicableDirections;
     use editoast_schemas::infra::ApplicableDirectionsTrackRange;
     use editoast_schemas::infra::Direction;
@@ -877,6 +876,7 @@ pub mod tests {
     use editoast_schemas::infra::TrackEndpoint;
     use editoast_schemas::primitives::BoundingBox;
     use editoast_schemas::primitives::Identifier;
+    use editoast_schemas::primitives::NonBlankString;
     use editoast_schemas::primitives::OSRDIdentified;
 
     #[actix_test]

@@ -1,7 +1,7 @@
 use std::str::FromStr;
 
+use crate::primitives::NonBlankString;
 use derivative::Derivative;
-use editoast_common::NonBlankString;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
