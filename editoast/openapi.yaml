@@ -6551,8 +6551,31 @@ components:
             $ref: '#/components/schemas/CompleteReportTrain'
           mrsp:
             $ref: '#/components/schemas/Mrsp'
-          power_restriction:
-            type: string
+          power_restrictions:
+            items:
+              properties:
+                begin:
+                  description: Start position in the path in mm
+                  format: int64
+                  minimum: 0
+                  type: integer
+                code:
+                  type: string
+                end:
+                  description: End position in the path in mm
+                  format: int64
+                  minimum: 0
+                  type: integer
+                handled:
+                  description: Is power restriction handled during simulation
+                  type: boolean
+              required:
+              - begin
+              - end
+              - code
+              - handled
+              type: object
+            type: array
           provisional:
             $ref: '#/components/schemas/ReportTrainV2'
           status:
@@ -6564,7 +6587,7 @@ components:
         - provisional
         - final_output
         - mrsp
-        - power_restriction
+        - power_restrictions
         - status
         type: object
       - properties:
