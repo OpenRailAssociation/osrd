@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 
 use crate::primitives::Identifier;
+use crate::primitives::NonBlankString;
 use derivative::Derivative;
-use editoast_common::NonBlankString;
 use serde::Deserialize;
 use serde::Serialize;
 

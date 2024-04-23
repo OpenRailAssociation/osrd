@@ -1,4 +1,4 @@
-use editoast_common::NonBlankString;
+use crate::primitives::NonBlankString;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
