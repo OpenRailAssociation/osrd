@@ -46,7 +46,7 @@ pub struct Project {
     pub last_modification: NaiveDateTime,
     #[model(remote = "Vec<Option<String>>")]
     pub tags: Tags,
-    #[model(column = "image_id")]
+    #[model(column = crate::tables::project::image_id)]
     pub image: Option<i64>,
 }
 

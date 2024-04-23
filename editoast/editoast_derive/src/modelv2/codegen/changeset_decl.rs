@@ -14,7 +14,7 @@ pub(crate) struct ChangesetFieldDecl {
     pub(super) vis: syn::Visibility,
     pub(super) name: syn::Ident,
     pub(super) ty: syn::Type,
-    pub(super) column: String,
+    pub(super) column_name: String,
 }
 
 impl ToTokens for ChangesetDecl {
@@ -33,9 +33,9 @@ impl ToTokens for ChangesetDecl {
                     vis,
                     name,
                     ty,
-                    column,
+                    column_name,
                 } = field;
-                np!(column, vis, name, ty)
+                np!(column_name, vis, name, ty)
             })
             .unzip();
         tokens.extend(quote! {

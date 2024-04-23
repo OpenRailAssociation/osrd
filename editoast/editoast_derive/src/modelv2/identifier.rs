@@ -41,7 +41,11 @@ impl Identifier {
                     .collect(),
             };
             let field_types = fields.iter().map(|field| field.ty.clone()).collect();
-            let columns = fields.iter().map(|field| field.column_ident()).collect();
+            let columns = fields
+                .iter()
+                .map(|field| field.column_ident())
+                .cloned()
+                .collect();
             (field_types, columns)
         };
         Self {

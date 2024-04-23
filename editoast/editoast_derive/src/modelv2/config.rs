@@ -26,7 +26,7 @@ pub(crate) struct ModelConfig {
 #[derive(Debug, PartialEq, Clone)]
 pub(crate) struct ModelField {
     pub(crate) ident: syn::Ident,
-    pub(crate) column: String,
+    pub(crate) column: syn::Path,
     pub(crate) builder_ident: syn::Ident,
     pub(crate) ty: syn::Type,
     pub(crate) builder_skip: bool,
@@ -152,7 +152,12 @@ impl ModelField {
         }
     }
 
-    pub(crate) fn column_ident(&self) -> syn::Ident {
-        syn::Ident::new(&self.column, self.ident.span())
+    pub(crate) fn column_ident(&self) -> &syn::Ident {
+        &self
+            .column
+            .segments
+            .last()
+            .expect("Model: invalid empty column")
+            .ident
     }
 }

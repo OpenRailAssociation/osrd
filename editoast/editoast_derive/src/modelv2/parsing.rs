@@ -36,7 +36,7 @@ impl ModelConfig {
                 .ok_or(Error::custom("Model: only named structs are supported"))?
                 .fields
                 .into_iter()
-                .filter_map(|field| acc.handle(ModelField::from_macro_args(field)))
+                .filter_map(|field| acc.handle(ModelField::from_macro_args(field, &options.table)))
                 .collect();
             acc.finish_with(fields)
         }?;
@@ -129,11 +129,13 @@ impl ModelConfig {
 }
 
 impl ModelField {
-    fn from_macro_args(value: ModelFieldArgs) -> darling::Result<Self> {
+    fn from_macro_args(value: ModelFieldArgs, table_mod: &syn::Path) -> darling::Result<Self> {
         let ident = value
             .ident
             .ok_or(Error::custom("Model: only works for named structs"))?;
-        let column = value.column.unwrap_or_else(|| ident.to_string());
+        let column = value
+            .column
+            .unwrap_or_else(|| syn::parse_quote! { #table_mod::#ident });
         let builder_ident = value.builder_fn.unwrap_or_else(|| ident.clone());
         let to_enum = match value.to_enum {
             true => Some(value.ty.clone()),
