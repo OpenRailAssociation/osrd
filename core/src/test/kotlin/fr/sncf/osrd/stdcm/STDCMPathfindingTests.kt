@@ -10,8 +10,7 @@ import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
 class STDCMPathfindingTests {
@@ -500,5 +499,21 @@ class STDCMPathfindingTests {
                 )
                 .run()
         Assertions.assertNull(res)
+    }
+    /** Start and end are on the same block, but reversed */
+    @Test
+    fun singleBlockReversed() {
+        /*
+        a --> b
+         */
+        val infra = DummyInfra()
+        val block = infra.addBlock("a", "b")
+        val res =
+            STDCMPathfindingBuilder()
+                .setInfra(infra.fullInfra())
+                .setStartLocations(setOf(EdgeLocation(block, Offset(42.meters))))
+                .setEndLocations(setOf(EdgeLocation(block, Offset(21.meters))))
+                .run()
+        assertNull(res)
     }
 }
