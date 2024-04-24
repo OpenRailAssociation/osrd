@@ -1,9 +1,14 @@
 use serde::Deserialize;
 use serde::Serialize;
+use utoipa::ToSchema;
 
 use crate::rolling_stock::LoadingGaugeType;
 
-#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+editoast_common::schemas! {
+    LoadingGaugeLimit,
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, ToSchema)]
 #[serde(deny_unknown_fields)]
 pub struct LoadingGaugeLimit {
     pub category: LoadingGaugeType,

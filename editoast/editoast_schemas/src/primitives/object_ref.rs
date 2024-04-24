@@ -1,10 +1,15 @@
 use derivative::Derivative;
 use serde::Deserialize;
 use serde::Serialize;
+use utoipa::ToSchema;
 
 use super::ObjectType;
 
-#[derive(Deserialize, Derivative, Serialize, Clone, Debug, PartialEq, Eq, Hash)]
+editoast_common::schemas! {
+    ObjectRef,
+}
+
+#[derive(Deserialize, Derivative, Serialize, Clone, Debug, PartialEq, Eq, Hash, ToSchema)]
 #[derivative(Default)]
 #[serde(deny_unknown_fields)]
 pub struct ObjectRef {

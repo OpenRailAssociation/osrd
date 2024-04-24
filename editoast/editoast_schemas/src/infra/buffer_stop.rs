@@ -1,21 +1,29 @@
 use derivative::Derivative;
 use serde::Deserialize;
 use serde::Serialize;
+use utoipa::ToSchema;
 
 use crate::primitives::Identifier;
 use crate::primitives::OSRDIdentified;
 use crate::primitives::OSRDTyped;
 use crate::primitives::ObjectType;
 
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq)]
+editoast_common::schemas! {
+    BufferStop,
+}
+
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, ToSchema)]
 #[serde(deny_unknown_fields)]
 #[derivative(Default)]
 pub struct BufferStop {
+    #[schema(inline)]
     pub id: Identifier,
     #[derivative(Default(value = r#""InvalidRef".into()"#))]
+    #[schema(inline)]
     pub track: Identifier,
     pub position: f64,
     #[serde(default)]
+    #[schema(inline)]
     pub extensions: BufferStopExtension,
 }
 
@@ -31,13 +39,14 @@ impl OSRDIdentified for BufferStop {
     }
 }
 
-#[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq, Eq, ToSchema)]
 #[serde(deny_unknown_fields)]
 pub struct BufferStopExtension {
+    #[schema(inline)]
     pub sncf: Option<BufferStopSncfExtension>,
 }
 
-#[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq, Eq, ToSchema)]
 #[serde(deny_unknown_fields)]
 pub struct BufferStopSncfExtension {
     pub kp: String,

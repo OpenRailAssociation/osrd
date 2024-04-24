@@ -10,6 +10,11 @@ use crate::primitives::OSRDIdentified;
 use crate::primitives::OSRDTyped;
 use crate::primitives::ObjectType;
 
+editoast_common::schemas! {
+    OperationalPoint,
+    OperationalPointPart,
+}
+
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, ToSchema)]
 #[serde(deny_unknown_fields)]
 #[derivative(Default)]
@@ -18,6 +23,7 @@ pub struct OperationalPoint {
     pub id: Identifier,
     pub parts: Vec<OperationalPointPart>,
     #[serde(default)]
+    #[schema(inline)]
     pub extensions: OperationalPointExtensions,
 }
 

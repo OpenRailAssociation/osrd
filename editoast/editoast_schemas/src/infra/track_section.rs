@@ -1,23 +1,29 @@
-use crate::primitives::Identifier;
 use derivative::Derivative;
 use geojson::Geometry;
 use geojson::Value::LineString;
 use serde::Deserialize;
 use serde::Serialize;
+use utoipa::ToSchema;
 
 use super::Curve;
 use super::LoadingGaugeLimit;
 use super::Slope;
 use super::TrackSectionExtensions;
 use crate::primitives::BoundingBox;
+use crate::primitives::Identifier;
 use crate::primitives::OSRDIdentified;
 use crate::primitives::OSRDTyped;
 use crate::primitives::ObjectType;
 
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq)]
+editoast_common::schemas! {
+    TrackSection,
+}
+
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, ToSchema)]
 #[serde(deny_unknown_fields)]
 #[derivative(Default)]
 pub struct TrackSection {
+    #[schema(inline)]
     pub id: Identifier,
     #[derivative(Default(value = "100."))]
     pub length: f64,
@@ -30,6 +36,7 @@ pub struct TrackSection {
     #[derivative(Default(value = "Geometry::new(LineString(vec![]))"))]
     pub sch: Geometry,
     #[serde(default)]
+    #[schema(inline)]
     pub extensions: TrackSectionExtensions,
 }
 

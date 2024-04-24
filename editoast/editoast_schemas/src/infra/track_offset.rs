@@ -1,7 +1,8 @@
-use crate::primitives::Identifier;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
+
+use crate::primitives::Identifier;
 
 editoast_common::schemas! {
     TrackOffset,

@@ -1,10 +1,11 @@
 use std::collections::HashMap;
 
-use crate::primitives::Identifier;
 use derivative::Derivative;
 use serde::Deserialize;
 use serde::Serialize;
+use utoipa::ToSchema;
 
+use crate::primitives::Identifier;
 use crate::primitives::OSRDIdentified;
 use crate::primitives::OSRDTyped;
 use crate::primitives::ObjectType;
@@ -15,11 +16,18 @@ type NodeType = &'static str;
 type NodePorts = &'static [&'static str];
 type NodeGroups = &'static [&'static [StaticMap]];
 
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, Eq)]
+editoast_common::schemas! {
+    SwitchType,
+    SwitchPortConnection,
+}
+
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, Eq, ToSchema)]
 #[serde(deny_unknown_fields)]
 #[derivative(Default)]
 pub struct SwitchType {
+    #[schema(inline)]
     pub id: Identifier,
+    #[schema(inline)]
     pub ports: Vec<Identifier>,
     pub groups: HashMap<Identifier, Vec<SwitchPortConnection>>,
 }
@@ -36,11 +44,13 @@ impl OSRDIdentified for SwitchType {
     }
 }
 
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, Eq, Hash)]
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, Eq, Hash, ToSchema)]
 #[serde(deny_unknown_fields)]
 #[derivative(Default)]
 pub struct SwitchPortConnection {
+    #[schema(inline)]
     pub src: Identifier,
+    #[schema(inline)]
     pub dst: Identifier,
 }
 

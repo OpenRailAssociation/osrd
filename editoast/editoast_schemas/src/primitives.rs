@@ -18,6 +18,7 @@ editoast_common::schemas! {
     object_type::schemas(),
     zone::schemas(),
     bounding_box::schemas(),
+    object_ref::schemas(),
 }
 
 /// This trait should be implemented by all struct that represents an OSRD type.
