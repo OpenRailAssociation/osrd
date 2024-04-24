@@ -1,18 +1,24 @@
-use crate::primitives::Identifier;
 use derivative::Derivative;
 use serde::Deserialize;
 use serde::Serialize;
+use utoipa::ToSchema;
 
 use super::Direction;
 use super::Endpoint;
+use crate::primitives::Identifier;
 
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, Eq, Hash)]
+editoast_common::schemas! {
+    TrackEndpoint,
+}
+
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, Eq, Hash, ToSchema)]
 #[derivative(Default)]
 #[serde(deny_unknown_fields)]
 pub struct TrackEndpoint {
     #[derivative(Default(value = "Endpoint::Begin"))]
     pub endpoint: Endpoint,
     #[derivative(Default(value = r#""InvalidRef".into()"#))]
+    #[schema(inline)]
     pub track: Identifier,
 }
 

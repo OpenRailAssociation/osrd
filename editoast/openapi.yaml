@@ -65,6 +65,33 @@ components:
         - percentage
         - value_type
         type: object
+    ApplicableDirections:
+      enum:
+      - START_TO_STOP
+      - STOP_TO_START
+      - BOTH
+      type: string
+    ApplicableDirectionsTrackRange:
+      additionalProperties: false
+      properties:
+        applicable_directions:
+          $ref: '#/components/schemas/ApplicableDirections'
+        begin:
+          format: double
+          type: number
+        end:
+          format: double
+          type: number
+        track:
+          maxLength: 255
+          minLength: 1
+          type: string
+      required:
+      - track
+      - begin
+      - end
+      - applicable_directions
+      type: object
     BatchDeletionRequest:
       properties:
         ids:
@@ -90,6 +117,39 @@ components:
       maxItems: 2
       minItems: 2
       type: array
+    BufferStop:
+      additionalProperties: false
+      properties:
+        extensions:
+          additionalProperties: false
+          properties:
+            sncf:
+              allOf:
+              - additionalProperties: false
+                properties:
+                  kp:
+                    type: string
+                required:
+                - kp
+                type: object
+              nullable: true
+          type: object
+        id:
+          maxLength: 255
+          minLength: 1
+          type: string
+        position:
+          format: double
+          type: number
+        track:
+          maxLength: 255
+          minLength: 1
+          type: string
+      required:
+      - id
+      - track
+      - position
+      type: object
     Comfort:
       enum:
       - STANDARD
@@ -224,6 +284,39 @@ components:
         force:
           description: force the deletion even if it’s used
           type: boolean
+      type: object
+    Detector:
+      additionalProperties: false
+      properties:
+        extensions:
+          additionalProperties: false
+          properties:
+            sncf:
+              additionalProperties: false
+              properties:
+                kp:
+                  type: string
+              required:
+              - kp
+              type: object
+          required:
+          - sncf
+          type: object
+        id:
+          maxLength: 255
+          minLength: 1
+          type: string
+        position:
+          format: double
+          type: number
+        track:
+          maxLength: 255
+          minLength: 1
+          type: string
+      required:
+      - id
+      - track
+      - position
       type: object
     Direction:
       enum:
@@ -2840,6 +2933,25 @@ components:
       - levels
       - level_order
       type: object
+    Electrification:
+      additionalProperties: false
+      properties:
+        id:
+          maxLength: 255
+          minLength: 1
+          type: string
+        track_ranges:
+          items:
+            $ref: '#/components/schemas/ApplicableDirectionsTrackRange'
+          type: array
+        voltage:
+          minLength: 1
+          type: string
+      required:
+      - id
+      - voltage
+      - track_ranges
+      type: object
     ElectrificationRange:
       properties:
         electrificationUsage:
@@ -2913,6 +3025,11 @@ components:
       - electrification_ranges
       - warnings
       type: object
+    Endpoint:
+      enum:
+      - BEGIN
+      - END
+      type: string
     EnergySource:
       description: energy source of a rolling stock
       oneOf:
@@ -3514,6 +3631,22 @@ components:
       - type
       - coordinates
       type: object
+    LoadingGaugeLimit:
+      additionalProperties: false
+      properties:
+        begin:
+          format: double
+          type: number
+        category:
+          $ref: '#/components/schemas/LoadingGaugeType'
+        end:
+          format: double
+          type: number
+      required:
+      - category
+      - begin
+      - end
+      type: object
     LoadingGaugeType:
       enum:
       - G1
@@ -3667,6 +3800,64 @@ components:
       - type
       - coordinates
       type: object
+    NeutralSection:
+      additionalProperties: false
+      description: |-
+        Neutral sections are portions of track where trains aren't allowed to pull power from electrifications. They have to rely on inertia to cross such sections.
+
+        In practice, neutral sections are delimited by signs. In OSRD, neutral sections are directional to allow accounting for different sign placement depending on the direction.
+
+        For more details see [the documentation](https://osrd.fr/en/docs/explanation/neutral_sections/).
+      properties:
+        announcement_track_ranges:
+          items:
+            $ref: '#/components/schemas/DirectionalTrackRange'
+          type: array
+        extensions:
+          additionalProperties: false
+          properties:
+            neutral_sncf:
+              allOf:
+              - additionalProperties: false
+                properties:
+                  announcement:
+                    items:
+                      $ref: '#/components/schemas/Sign'
+                    type: array
+                  end:
+                    items:
+                      $ref: '#/components/schemas/Sign'
+                    type: array
+                  exe:
+                    $ref: '#/components/schemas/Sign'
+                  rev:
+                    items:
+                      $ref: '#/components/schemas/Sign'
+                    type: array
+                required:
+                - announcement
+                - exe
+                - end
+                - rev
+                type: object
+              nullable: true
+          type: object
+        id:
+          maxLength: 255
+          minLength: 1
+          type: string
+        lower_pantograph:
+          type: boolean
+        track_ranges:
+          items:
+            $ref: '#/components/schemas/DirectionalTrackRange'
+          type: array
+      required:
+      - id
+      - announcement_track_ranges
+      - track_ranges
+      - lower_pantograph
+      type: object
     NewDocumentResponse:
       properties:
         document_key:
@@ -3674,6 +3865,17 @@ components:
           type: integer
       required:
       - document_key
+      type: object
+    ObjectRef:
+      additionalProperties: false
+      properties:
+        obj_id:
+          type: string
+        type:
+          $ref: '#/components/schemas/ObjectType'
+      required:
+      - type
+      - obj_id
       type: object
     ObjectType:
       enum:
@@ -3721,6 +3923,65 @@ components:
           required:
           - operation_type
           type: object
+    OperationalPoint:
+      additionalProperties: false
+      properties:
+        extensions:
+          additionalProperties: false
+          properties:
+            identifier:
+              allOf:
+              - additionalProperties: false
+                properties:
+                  name:
+                    minLength: 1
+                    type: string
+                  uic:
+                    format: int64
+                    type: integer
+                required:
+                - name
+                - uic
+                type: object
+              nullable: true
+            sncf:
+              allOf:
+              - additionalProperties: false
+                properties:
+                  ch:
+                    type: string
+                  ch_long_label:
+                    minLength: 1
+                    type: string
+                  ch_short_label:
+                    minLength: 1
+                    type: string
+                  ci:
+                    format: int64
+                    type: integer
+                  trigram:
+                    type: string
+                required:
+                - ci
+                - ch
+                - ch_short_label
+                - ch_long_label
+                - trigram
+                type: object
+              nullable: true
+          type: object
+        id:
+          maxLength: 255
+          minLength: 1
+          type: string
+        parts:
+          items:
+            $ref: '#/components/schemas/OperationalPointPart'
+          type: array
+      required:
+      - id
+      - parts
+      type: object
     OperationalPointExtensions:
       additionalProperties: false
       properties:
@@ -5892,6 +6153,39 @@ components:
         required:
         - liveries
         type: object
+    Route:
+      additionalProperties: false
+      properties:
+        entry_point:
+          $ref: '#/components/schemas/Waypoint'
+        entry_point_direction:
+          $ref: '#/components/schemas/Direction'
+        exit_point:
+          $ref: '#/components/schemas/Waypoint'
+        id:
+          maxLength: 255
+          minLength: 1
+          type: string
+        release_detectors:
+          items:
+            maxLength: 255
+            minLength: 1
+            type: string
+          type: array
+        switches_directions:
+          additionalProperties:
+            maxLength: 255
+            minLength: 1
+            type: string
+          type: object
+      required:
+      - id
+      - entry_point
+      - entry_point_direction
+      - exit_point
+      - release_detectors
+      - switches_directions
+      type: object
     RoutePath:
       properties:
         route:
@@ -6529,6 +6823,131 @@ components:
       - line_name
       - line_code
       type: object
+    Side:
+      enum:
+      - LEFT
+      - RIGHT
+      - CENTER
+      type: string
+    Sign:
+      additionalProperties: false
+      properties:
+        direction:
+          $ref: '#/components/schemas/Direction'
+        kp:
+          type: string
+        position:
+          format: double
+          type: number
+        side:
+          $ref: '#/components/schemas/Side'
+        track:
+          maxLength: 255
+          minLength: 1
+          type: string
+        type:
+          minLength: 1
+          type: string
+        value:
+          type: string
+      required:
+      - track
+      - position
+      - side
+      - direction
+      - type
+      - value
+      - kp
+      type: object
+    Signal:
+      additionalProperties: false
+      properties:
+        direction:
+          $ref: '#/components/schemas/Direction'
+        extensions:
+          additionalProperties: false
+          properties:
+            sncf:
+              allOf:
+              - additionalProperties: false
+                properties:
+                  kp:
+                    type: string
+                  label:
+                    type: string
+                  side:
+                    $ref: '#/components/schemas/Side'
+                required:
+                - label
+                - side
+                - kp
+                type: object
+              nullable: true
+          type: object
+        id:
+          maxLength: 255
+          minLength: 1
+          type: string
+        logical_signals:
+          items:
+            properties:
+              conditional_parameters:
+                items:
+                  properties:
+                    on_route:
+                      minLength: 1
+                      type: string
+                    parameters:
+                      additionalProperties:
+                        minLength: 1
+                        type: string
+                      type: object
+                  required:
+                  - on_route
+                  - parameters
+                  type: object
+                type: array
+              default_parameters:
+                additionalProperties:
+                  minLength: 1
+                  type: string
+                type: object
+              next_signaling_systems:
+                items:
+                  type: string
+                type: array
+              settings:
+                additionalProperties:
+                  minLength: 1
+                  type: string
+                type: object
+              signaling_system:
+                type: string
+            required:
+            - signaling_system
+            - next_signaling_systems
+            - settings
+            - default_parameters
+            - conditional_parameters
+            type: object
+          type: array
+        position:
+          format: double
+          type: number
+        sight_distance:
+          format: double
+          type: number
+        track:
+          maxLength: 255
+          minLength: 1
+          type: string
+      required:
+      - id
+      - track
+      - position
+      - direction
+      - sight_distance
+      type: object
     SignalSighting:
       properties:
         offset:
@@ -6961,6 +7380,63 @@ components:
       - speeds
       - powers
       type: object
+    SpeedSection:
+      additionalProperties: false
+      properties:
+        extensions:
+          additionalProperties: false
+          properties:
+            psl_sncf:
+              allOf:
+              - additionalProperties: false
+                properties:
+                  announcement:
+                    items:
+                      $ref: '#/components/schemas/Sign'
+                    type: array
+                  r:
+                    items:
+                      $ref: '#/components/schemas/Sign'
+                    type: array
+                  z:
+                    $ref: '#/components/schemas/Sign'
+                required:
+                - announcement
+                - z
+                - r
+                type: object
+              nullable: true
+          type: object
+        id:
+          maxLength: 255
+          minLength: 1
+          type: string
+        on_routes:
+          items:
+            maxLength: 255
+            minLength: 1
+            type: string
+          nullable: true
+          type: array
+        speed_limit:
+          allOf:
+          - format: double
+            type: number
+          nullable: true
+        speed_limit_by_tag:
+          additionalProperties:
+            format: double
+            type: number
+          type: object
+        track_ranges:
+          items:
+            $ref: '#/components/schemas/ApplicableDirectionsTrackRange'
+          type: array
+      required:
+      - id
+      - speed_limit_by_tag
+      - track_ranges
+      type: object
     StandardAllowance:
       properties:
         capacity_speed_limit:
@@ -7142,6 +7618,84 @@ components:
         required:
         - scenarios_count
         type: object
+    Switch:
+      additionalProperties: false
+      properties:
+        extensions:
+          additionalProperties: false
+          properties:
+            sncf:
+              allOf:
+              - additionalProperties: false
+                properties:
+                  label:
+                    minLength: 1
+                    type: string
+                required:
+                - label
+                type: object
+              nullable: true
+          type: object
+        group_change_delay:
+          format: double
+          type: number
+        id:
+          maxLength: 255
+          minLength: 1
+          type: string
+        ports:
+          additionalProperties:
+            $ref: '#/components/schemas/TrackEndpoint'
+          type: object
+        switch_type:
+          maxLength: 255
+          minLength: 1
+          type: string
+      required:
+      - id
+      - switch_type
+      - group_change_delay
+      - ports
+      type: object
+    SwitchPortConnection:
+      additionalProperties: false
+      properties:
+        dst:
+          maxLength: 255
+          minLength: 1
+          type: string
+        src:
+          maxLength: 255
+          minLength: 1
+          type: string
+      required:
+      - src
+      - dst
+      type: object
+    SwitchType:
+      additionalProperties: false
+      properties:
+        groups:
+          additionalProperties:
+            items:
+              $ref: '#/components/schemas/SwitchPortConnection'
+            type: array
+          type: object
+        id:
+          maxLength: 255
+          minLength: 1
+          type: string
+        ports:
+          items:
+            maxLength: 255
+            minLength: 1
+            type: string
+          type: array
+      required:
+      - id
+      - ports
+      - groups
+      type: object
     Tags:
       items:
         type: string
@@ -7369,6 +7923,19 @@ components:
         required:
         - train_schedule_summaries
         type: object
+    TrackEndpoint:
+      additionalProperties: false
+      properties:
+        endpoint:
+          $ref: '#/components/schemas/Endpoint'
+        track:
+          maxLength: 255
+          minLength: 1
+          type: string
+      required:
+      - endpoint
+      - track
+      type: object
     TrackLocation:
       description: A track location is a track section and an offset
       properties:
@@ -7425,6 +7992,82 @@ components:
       - begin
       - end
       - direction
+      type: object
+    TrackSection:
+      additionalProperties: false
+      properties:
+        curves:
+          items:
+            $ref: '#/components/schemas/Curve'
+          type: array
+        extensions:
+          additionalProperties: false
+          properties:
+            sncf:
+              allOf:
+              - additionalProperties: false
+                properties:
+                  line_code:
+                    format: int32
+                    type: integer
+                  line_name:
+                    minLength: 1
+                    type: string
+                  track_name:
+                    minLength: 1
+                    type: string
+                  track_number:
+                    format: int32
+                    type: integer
+                required:
+                - line_code
+                - line_name
+                - track_number
+                - track_name
+                type: object
+              nullable: true
+            source:
+              allOf:
+              - additionalProperties: false
+                properties:
+                  id:
+                    minLength: 1
+                    type: string
+                  name:
+                    minLength: 1
+                    type: string
+                required:
+                - name
+                - id
+                type: object
+              nullable: true
+          type: object
+        geo:
+          $ref: '#/components/schemas/Geometry'
+        id:
+          maxLength: 255
+          minLength: 1
+          type: string
+        length:
+          format: double
+          type: number
+        loading_gauge_limits:
+          items:
+            $ref: '#/components/schemas/LoadingGaugeLimit'
+          type: array
+        sch:
+          $ref: '#/components/schemas/Geometry'
+        slopes:
+          items:
+            $ref: '#/components/schemas/Slope'
+          type: array
+      required:
+      - id
+      - length
+      - slopes
+      - curves
+      - geo
+      - sch
       type: object
     TrainImportReport:
       properties:
