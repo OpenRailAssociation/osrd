@@ -4,6 +4,12 @@ use reqwest::Method;
 use reqwest::RequestBuilder;
 use reqwest::Url;
 
+use opentelemetry::global as otel;
+use opentelemetry_http::HeaderInjector;
+
+use tracing::Span;
+use tracing_opentelemetry::OpenTelemetrySpanExt;
+
 pub trait HttpClientBuilder {
     fn build_base_url(self, base_url: Url) -> HttpClient;
 }
