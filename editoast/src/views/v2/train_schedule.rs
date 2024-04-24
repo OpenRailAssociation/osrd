@@ -1,27 +1,42 @@
+mod projection;
+
 use std::collections::hash_map::DefaultHasher;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::hash::Hash;
 use std::hash::Hasher;
+use std::sync::Arc;
 
+use actix_web::web::{Data, Json, Path, Query};
+use actix_web::{delete, get, post, put, HttpResponse};
 use diesel_async::AsyncPgConnection as PgConnection;
 use editoast_derive::EditoastError;
 use editoast_schemas::train_schedule::TrainScheduleBase;
 use itertools::Itertools;
+use serde::Deserialize;
+use serde::Serialize;
 use serde_qs::actix::QsQuery;
 use thiserror::Error;
-
-use crate::core::v2::simulation::SimulationMargins;
-use crate::core::v2::simulation::SimulationPath;
-use crate::core::v2::simulation::SimulationPowerRestrictionItem;
-use crate::core::v2::simulation::SimulationRequest;
-use crate::core::v2::simulation::SimulationScheduleItem;
-use crate::core::CoreClient;
-use crate::error::Result;
+use tracing::info;
+use utoipa::IntoParams;
+use utoipa::ToSchema;
 
 use crate::client::get_app_version;
 use crate::core::v2::pathfinding::PathfindingResult;
-use crate::core::v2::pathfinding::TrackRange;
+use crate::core::v2::simulation::CompleteReportTrain;
+use crate::core::v2::simulation::Mrsp;
+use crate::core::v2::simulation::ReportTrain;
+use crate::core::v2::simulation::SignalSighting;
+use crate::core::v2::simulation::SimulationMargins;
+use crate::core::v2::simulation::SimulationPath;
+use crate::core::v2::simulation::SimulationPowerRestrictionItem;
+use crate::core::v2::simulation::SimulationPowerRestrictionRange;
+use crate::core::v2::simulation::SimulationRequest;
+use crate::core::v2::simulation::SimulationScheduleItem;
+use crate::core::v2::simulation::ZoneUpdate;
+use crate::core::AsCoreRequest;
+use crate::core::CoreClient;
+use crate::error::Result;
 use crate::modelsv2::infra::Infra;
 use crate::modelsv2::timetable::Timetable;
 use crate::modelsv2::train_schedule::TrainSchedule;
@@ -34,22 +49,15 @@ use crate::views::v2::path::PathfindingError;
 use crate::DbPool;
 use crate::RedisClient;
 use crate::RollingStockModel;
-use editoast_schemas::primitives::Identifier;
 
-use actix_web::web::{Data, Json, Path, Query};
-use actix_web::{delete, get, post, put, HttpResponse};
-use serde::{Deserialize, Serialize};
-use tracing::info;
-use utoipa::{IntoParams, ToSchema};
-
-const CACHE_SIMULATION_EXPIRATION: u64 = 604800;
+const CACHE_SIMULATION_EXPIRATION: u64 = 604800; // 1 week
 
 crate::routes! {
     "/v2/train_schedule" => {
         post,
         delete,
         simulation_summary,
-        project_path,
+        projection::routes(),
         "/{id}" => {
             get,
             put,
@@ -68,11 +76,9 @@ editoast_common::schemas! {
     TrainScheduleResult,
     BatchDeletionRequest,
     SimulationResult,
-    ProjectPathResult,
-    SimulationSummaryResultResponse,
-    CompleteReportTrain,
-    ReportTrain,
+    SimulationSummaryResult,
     InfraIdQueryParam,
+    projection::schemas(),
 }
 
 #[derive(Debug, Error, EditoastError)]
@@ -189,7 +195,7 @@ async fn post(
     Ok(Json(train_schedule.into_iter().map_into().collect()))
 }
 
-/// Return a specific timetable with its associated schedules
+/// Return a specific train schedule
 #[utoipa::path(
     tag = "train_schedulev2",
     params(TrainScheduleIdParam),
@@ -277,7 +283,9 @@ enum SimulationResult {
         base: ReportTrain,
         #[schema(value_type = ReportTrainV2)]
         provisional: ReportTrain,
+        #[schema(inline)]
         final_output: CompleteReportTrain,
+        #[schema(inline)]
         mrsp: Mrsp,
         #[schema(inline)]
         power_restrictions: Vec<SimulationPowerRestrictionRange>,
@@ -285,107 +293,7 @@ enum SimulationResult {
     PathfindingFailed {
         pathfinding_result: PathfindingResult,
     },
-}
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
-pub struct SignalSighting {
-    pub signal: String,
-    // Time in ms
-    pub time: u64,
-    pub position: u64,
-    pub state: String,
-}
-
-#[derive(Deserialize, Serialize, Clone, Debug, ToSchema)]
-#[schema(as = ReportTrainV2)]
-pub struct ReportTrain {
-    // List of positions of a train
-    // Both positions (in mm) and times (in ms) must have the same length
-    positions: Vec<u64>,
-    times: Vec<u64>,
-    // List of speeds associated to a position
-    speeds: Vec<f64>,
-    energy_consumption: f64,
-}
-
-#[derive(Deserialize, Serialize, Clone, Debug, ToSchema)]
-pub struct CompleteReportTrain {
-    #[serde(flatten)]
-    #[schema(value_type = ReportTrainV2)]
-    report_train: ReportTrain,
-    signal_sightings: Vec<SignalSighting>,
-    zone_updates: Vec<ZoneUpdate>,
-    spacing_requirements: Vec<SpacingRequirement>,
-    routing_requirements: Vec<RoutingRequirement>,
-}
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
-pub struct ZoneUpdate {
-    pub zone: String,
-    // Time in ms
-    pub time: u64,
-    pub position: u64,
-    // TODO: see https://github.com/DGEXSolutions/osrd/issues/4294
-    #[serde(rename = "isEntry")]
-    pub is_entry: bool,
-}
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
-pub struct SpacingRequirement {
-    pub zone: String,
-    // Time in ms
-    pub begin_time: u64,
-    // Time in ms
-    pub end_time: u64,
-}
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
-pub struct RoutingRequirement {
-    pub route: String,
-    /// Time in ms
-    pub begin_time: u64,
-    pub zones: Vec<RoutingZoneRequirement>,
-}
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
-pub struct RoutingZoneRequirement {
-    pub zone: String,
-    pub entry_detector: String,
-    pub exit_detector: String,
-    pub switches: HashMap<String, String>,
-    /// Time in ms
-    pub end_time: u64,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
-pub struct SimulationPowerRestrictionRange {
-    /// Start position in the path in mm
-    begin: u64,
-    /// End position in the path in mm
-    end: u64,
-    code: String,
-    /// Is power restriction handled during simulation
-    handled: bool,
-}
-
-/// A MRSP computation result (Most Restrictive Speed Profile)
-#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, ToSchema)]
-pub struct Mrsp(pub Vec<MrspPoint>);
-
-/// An MRSP point
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
-pub struct MrspPoint {
-    /// Relative position of the point on its path (in milimeters)
-    pub position: u64,
-    /// Speed limit at this point (in m/s)
-    pub speed: f64,
-}
-
-#[derive(Debug, Clone, Hash)]
-struct SimulationInput {
-    blocks: Vec<Identifier>,
-    routes: Vec<Identifier>,
-    track_section_ranges: Vec<TrackRange>,
+    SimulationFailed,
 }
 
 /// Retrieve the space, speed and time curve of a given train
@@ -407,6 +315,9 @@ pub async fn simulation(
     let infra_id = query.into_inner().infra_id;
     let train_schedule_id = train_schedule_id.into_inner().id;
     let conn = &mut db_pool.get().await?;
+    let db_pool = db_pool.into_inner();
+    let redis_client = redis_client.into_inner();
+    let core_client = core_client.into_inner();
 
     // Retrieve infra or fail
     let infra = Infra::retrieve_or_fail(conn, infra_id, || TrainScheduleError::InfraNotFound {
@@ -427,17 +338,23 @@ pub async fn simulation(
 
 /// Compute the simulation of a given train schedule
 async fn train_simulation(
-    db_pool: Data<DbPool>,
-    redis_client: Data<RedisClient>,
-    core: Data<CoreClient>,
+    db_pool: Arc<DbPool>,
+    redis_client: Arc<RedisClient>,
+    core: Arc<CoreClient>,
     train_schedule: &TrainSchedule,
     infra: &Infra,
 ) -> Result<SimulationResult> {
     let mut redis_conn = redis_client.get_connection().await?;
     let conn = &mut db_pool.get().await?;
     // Compute path
-    let pathfinding_result =
-        pathfinding_from_train(conn, &mut redis_conn, core, infra, train_schedule.clone()).await?;
+    let pathfinding_result = pathfinding_from_train(
+        conn,
+        &mut redis_conn,
+        core.clone(),
+        infra,
+        train_schedule.clone(),
+    )
+    .await?;
 
     let (path, path_items_positions) = match pathfinding_result {
         PathfindingResult::Success {
@@ -461,9 +378,9 @@ async fn train_simulation(
 
     // Build simulation request
     let simulation_request =
-        build_simulation_request(conn, train_schedule, &path_items_positions, path).await?;
+        build_simulation_request(conn, infra, train_schedule, &path_items_positions, path).await?;
 
-    // Compute unique hash of SimulationInput
+    // Compute unique hash of the simulation input
     let hash = train_simulation_input_hash(infra.id, &infra.version, &simulation_request);
 
     let result: Option<SimulationResult> = redis_conn
@@ -475,66 +392,31 @@ async fn train_simulation(
     }
 
     // Compute simulation from core
-    // TODO: Implement the simulation call
-
-    let res = SimulationResult::Success {
-        base: ReportTrain {
-            speeds: vec![10.0, 27.0],
-            positions: vec![20, 50],
-            times: vec![27500, 35500],
-            energy_consumption: 100.0,
+    let result = match simulation_request.fetch(core.as_ref()).await {
+        Ok(response) => SimulationResult::Success {
+            base: response.base,
+            provisional: response.provisional,
+            final_output: response.final_output,
+            mrsp: response.mrsp,
+            power_restrictions: response.power_restrictions,
         },
-        provisional: ReportTrain {
-            speeds: vec![10.0, 27.0],
-            positions: vec![20, 50],
-            times: vec![27500, 35500],
-            energy_consumption: 100.0,
-        },
-        final_output: CompleteReportTrain {
-            report_train: ReportTrain {
-                speeds: vec![10.0, 27.0],
-                positions: vec![2000, 5000],
-                times: vec![27500, 35500],
-                energy_consumption: 100.0,
-            },
-            signal_sightings: vec![SignalSighting {
-                signal: "signal.0".into(),
-                time: 28000,
-                position: 3000,
-                state: "VL".into(),
-            }],
-            zone_updates: vec![ZoneUpdate {
-                zone: "zone.0".into(),
-                time: 28000,
-                position: 3000,
-                is_entry: true,
-            }],
-            spacing_requirements: vec![SpacingRequirement {
-                zone: "zone.0".into(),
-                begin_time: 30000,
-                end_time: 35500,
-            }],
-            routing_requirements: vec![RoutingRequirement {
-                route: "route.0".into(),
-                begin_time: 32000,
-                zones: vec![],
-            }],
-        },
-        mrsp: Mrsp(vec![]),
-        power_restrictions: vec![],
+        // TODO: Handle simulation failure
+        Err(err) if err.status.as_u16() / 100 == 5 => SimulationResult::SimulationFailed,
+        Err(err) => return Err(err),
     };
 
     // Cache the simulation response
     redis_conn
-        .json_set_ex(&hash, &res, CACHE_SIMULATION_EXPIRATION)
+        .json_set_ex(&hash, &result, CACHE_SIMULATION_EXPIRATION)
         .await?;
 
     // Return the response
-    Ok(res)
+    Ok(result)
 }
 
 async fn build_simulation_request(
     conn: &mut PgConnection,
+    infa: &Infra,
     train_schedule: &TrainSchedule,
     path_items_position: &[u64],
     path: SimulationPath,
@@ -597,8 +479,9 @@ async fn build_simulation_request(
         .collect();
 
     Ok(SimulationRequest {
+        infra: infa.id,
+        expected_version: infa.version.clone(),
         path,
-        start_time: train_schedule.start_time,
         schedule,
         margins,
         initial_speed: train_schedule.initial_speed,
@@ -632,63 +515,8 @@ struct SimulationBatchParams {
     ids: Vec<i64>,
 }
 
-/// Project path output is described by time-space points and blocks
-#[derive(Debug, Deserialize, Serialize, ToSchema)]
-pub struct ProjectPathResult {
-    // List of positions of a train
-    // Both positions and times must have the same length
-    positions: Vec<u64>,
-    // List of times associated to a position
-    times: Vec<f64>,
-    // List of blocks that are in the path
-    blocks: Vec<SignalUpdate>,
-}
-
-#[derive(Debug, Serialize, Deserialize, PartialEq, ToSchema)]
-pub struct SignalUpdate {
-    /// The id of the updated signal
-    pub signal_id: String,
-    /// The aspects start being displayed at this time (number of seconds since 1970-01-01T00:00:00)
-    pub time_start: f64,
-    /// The aspects stop being displayed at this time (number of seconds since 1970-01-01T00:00:00)
-    #[schema(required)]
-    pub time_end: Option<f64>,
-    /// The route starts at this position on the train path
-    pub position_start: u64,
-    /// The route ends at this position on the train path
-    #[schema(required)]
-    pub position_end: Option<u64>,
-    /// The color of the aspect
-    /// (Bits 24-31 are alpha, 16-23 are red, 8-15 are green, 0-7 are blue)
-    pub color: i32,
-    /// Whether the signal is blinking
-    pub blinking: bool,
-    /// The labels of the new aspect
-    pub aspect_label: String,
-}
-
-/// Projects the space time curves and paths of a number of train schedules onto a given path
-/// Params are the infra_id and a list of train_ids
-#[utoipa::path(
-    tag = "train_schedulev2",
-    responses(
-        (status = 200, description = "Project Path Output", body = HashMap<Identifier, ProjectPathResult>),
-    ),
-)]
-#[post("/project_path")]
-pub async fn project_path(
-    _db_pool: Data<DbPool>,
-    _redis_client: Data<RedisClient>,
-    _params: QsQuery<SimulationBatchParams>,
-    _core_client: Data<CoreClient>,
-) -> Result<Json<HashMap<Identifier, ProjectPathResult>>> {
-    // TO DO
-    // issue: https://github.com/OpenRailAssociation/osrd/issues/6858
-    Ok(Json(HashMap::new()))
-}
-
 #[derive(Debug, Serialize, ToSchema)]
-enum SimulationSummaryResultResponse {
+enum SimulationSummaryResult {
     // Minimal information on a simulation's result
     Success {
         // Length of a path in mm
@@ -698,18 +526,22 @@ enum SimulationSummaryResultResponse {
         // Total energy consumption of a train in kWh
         energy_consumption: f64,
     },
-    // Pathfinding fails for a train id
+    // Pathfinding failed
     PathfindingFailed,
-    // Running time fails or a train id
-    RunningTimeFailed,
+    // Simulation failed
+    SimulationFailed,
 }
 
 /// Retrieve simulation information for a given train list.
 /// Useful for finding out whether pathfinding/simulation was successful.
 #[utoipa::path(
     tag = "train_schedulev2",
+    params(
+        ("infra" = i64, Query, description = "The infra id"),
+        ("ids" = Vec<i64>, Query, description = "Ids of train schedule"),
+    ),
     responses(
-        (status = 200, description = "Project Path Output", body = HashMap<i64, SimulationSummaryResultResponse>),
+        (status = 200, description = "Project Path Output", body = HashMap<i64, SimulationSummaryResult>),
     ),
 )]
 #[get("/simulation_summary")]
@@ -718,10 +550,13 @@ pub async fn simulation_summary(
     redis_client: Data<RedisClient>,
     params: QsQuery<SimulationBatchParams>,
     core: Data<CoreClient>,
-) -> Result<Json<HashMap<i64, SimulationSummaryResultResponse>>> {
+) -> Result<Json<HashMap<i64, SimulationSummaryResult>>> {
     let query_props = params.into_inner();
     let infra_id = query_props.infra;
     let conn = &mut db_pool.clone().get().await?;
+    let db_pool = db_pool.into_inner();
+    let redis_client = redis_client.into_inner();
+    let core = core.into_inner();
 
     let infra = Infra::retrieve_or_fail(conn, infra_id, || TrainScheduleError::InfraNotFound {
         infra_id,
@@ -735,23 +570,24 @@ pub async fn simulation_summary(
             }
         })
         .await?;
+
+    // Build a HashMap with train_ids as keys and the corresponding simulation response as values
     Ok(Json(
         build_simulation_summary_map(db_pool, redis_client, core, &train_schedule_batch, &infra)
-            .await,
+            .await?,
     ))
 }
 
 /// Associate each train id with its simulation summary response
 /// If the simulation fails, it associates the reason: pathfinding failed or running time failed
 async fn build_simulation_summary_map(
-    db_pool: Data<DbPool>,
-    redis_client: Data<RedisClient>,
-    core_client: Data<CoreClient>,
+    db_pool: Arc<DbPool>,
+    redis_client: Arc<RedisClient>,
+    core_client: Arc<CoreClient>,
     train_schedule_batch: &[TrainSchedule],
     infra: &Infra,
-) -> HashMap<i64, SimulationSummaryResultResponse> {
-    let mut simulation_summary_hashmap: HashMap<i64, SimulationSummaryResultResponse> =
-        HashMap::new();
+) -> Result<HashMap<i64, SimulationSummaryResult>> {
+    let mut simulation_summary_hashmap = HashMap::new();
     for train_schedule in train_schedule_batch.iter() {
         let simulation_result = train_simulation(
             db_pool.clone(),
@@ -760,26 +596,24 @@ async fn build_simulation_summary_map(
             train_schedule,
             infra,
         )
-        .await;
-        let simulation_summary_result = if let Ok(train_simulation) = simulation_result {
-            match train_simulation {
-                SimulationResult::Success { final_output, .. } => {
-                    SimulationSummaryResultResponse::Success {
-                        length: *final_output.report_train.positions.last().unwrap(),
-                        time: *final_output.report_train.times.last().unwrap(),
-                        energy_consumption: final_output.report_train.energy_consumption,
-                    }
-                }
-                SimulationResult::PathfindingFailed { .. } => {
-                    SimulationSummaryResultResponse::PathfindingFailed
+        .await?;
+        let simulation_summary_result = match simulation_result {
+            SimulationResult::Success { final_output, .. } => {
+                let report = final_output.report_train;
+                SimulationSummaryResult::Success {
+                    length: *report.positions.last().unwrap(),
+                    time: *report.times.last().unwrap(),
+                    energy_consumption: report.energy_consumption,
                 }
             }
-        } else {
-            SimulationSummaryResultResponse::RunningTimeFailed
+            SimulationResult::PathfindingFailed { .. } => {
+                SimulationSummaryResult::PathfindingFailed
+            }
+            SimulationResult::SimulationFailed => SimulationSummaryResult::SimulationFailed,
         };
         simulation_summary_hashmap.insert(train_schedule.id, simulation_summary_result);
     }
-    simulation_summary_hashmap
+    Ok(simulation_summary_hashmap)
 }
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize, IntoParams, ToSchema)]
@@ -806,6 +640,7 @@ async fn get_path(
 ) -> Result<Json<PathfindingResult>> {
     let conn = &mut db_pool.get().await?;
     let mut redis_conn = redis_client.get_connection().await?;
+    let core = core.into_inner();
 
     let inner_query = query.into_inner();
     let infra_id = inner_query.infra_id;
