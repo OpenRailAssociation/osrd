@@ -16,10 +16,9 @@ import fr.sncf.osrd.reporting.warnings.Warning;
 import fr.sncf.osrd.standalone_sim.SignalProjectionKt;
 import fr.sncf.osrd.standalone_sim.result.ResultTrain;
 import fr.sncf.osrd.standalone_sim.result.SignalUpdate;
+import io.opentelemetry.instrumentation.annotations.WithSpan;
 import java.util.ArrayList;
 import java.util.List;
-
-import io.opentelemetry.instrumentation.annotations.WithSpan;
 import org.jetbrains.annotations.NotNull;
 import org.takes.Request;
 import org.takes.Response;
