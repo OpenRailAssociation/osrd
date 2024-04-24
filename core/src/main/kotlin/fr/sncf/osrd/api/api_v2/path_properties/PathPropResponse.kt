@@ -11,12 +11,12 @@ import fr.sncf.osrd.utils.json.UnitAdapterFactory
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Offset
 
-class PathPropResult(
+class PathPropResponse(
     val slopes: RangeValues<Double>,
     val gradients: RangeValues<Double>,
     val electrifications: RangeValues<Electrification>,
     val geometry: RJSLineString,
-    @Json(name = "operational_points") val operationalPoints: List<OperationalPointResult>
+    @Json(name = "operational_points") val operationalPoints: List<OperationalPointResponse>
 )
 
 data class RangeValues<T>(val boundaries: List<Distance>, val values: List<T>)
@@ -29,25 +29,25 @@ data class Neutral(@Json(name = "lower_pantograph") val lowerPantograph: Boolean
 
 class NonElectrified : Electrification
 
-class OperationalPointResult(
+data class OperationalPointResponse(
     val id: String,
-    val part: OperationalPointPartResult,
+    val part: OperationalPointPartResponse,
     val extensions: OperationalPointExtensions?,
     val position: Offset<Path>
 )
 
-class OperationalPointPartResult(
+data class OperationalPointPartResponse(
     val track: String,
     val position: Double,
     val extensions: OperationalPointPartExtension?
 )
 
-class OperationalPointExtensions(
+data class OperationalPointExtensions(
     val sncf: OperationalPointSncfExtension?,
     val identifier: OperationalPointIdentifierExtension?
 )
 
-class OperationalPointSncfExtension(
+data class OperationalPointSncfExtension(
     val ci: Long,
     val ch: String,
     @Json(name = "ch_short_label") val chShortLabel: String,
@@ -55,11 +55,11 @@ class OperationalPointSncfExtension(
     val trigram: String
 )
 
-class OperationalPointIdentifierExtension(val name: String, val uic: Long)
+data class OperationalPointIdentifierExtension(val name: String, val uic: Long)
 
-class OperationalPointPartExtension(val sncf: OperationalPointPartSncfExtension?)
+data class OperationalPointPartExtension(val sncf: OperationalPointPartSncfExtension?)
 
-class OperationalPointPartSncfExtension(val kp: String)
+data class OperationalPointPartSncfExtension(val kp: String)
 
 val polymorphicAdapter: PolymorphicJsonAdapterFactory<Electrification> =
     PolymorphicJsonAdapterFactory.of(Electrification::class.java, "type")
@@ -67,10 +67,10 @@ val polymorphicAdapter: PolymorphicJsonAdapterFactory<Electrification> =
         .withSubtype(Neutral::class.java, "neutral_section")
         .withSubtype(NonElectrified::class.java, "non_electrified")
 
-val pathPropResultAdapter: JsonAdapter<PathPropResult> =
+val pathPropResponseAdapter: JsonAdapter<PathPropResponse> =
     Moshi.Builder()
         .add(polymorphicAdapter)
         .addLast(UnitAdapterFactory())
         .addLast(KotlinJsonAdapterFactory())
         .build()
-        .adapter(PathPropResult::class.java)
+        .adapter(PathPropResponse::class.java)

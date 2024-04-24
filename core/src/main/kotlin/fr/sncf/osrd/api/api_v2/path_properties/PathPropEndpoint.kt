@@ -26,9 +26,9 @@ class PathPropEndpoint(private val infraManager: InfraManager) : Take {
             val infra = infraManager.getInfra(request.infra, request.expectedVersion, recorder)
 
             val pathProps = makePathProps(infra.rawInfra, request.trackSectionRanges)
-            val res = makePathPropResult(pathProps, infra.rawInfra)
+            val res = makePathPropResponse(pathProps, infra.rawInfra)
 
-            RsJson(RsWithBody(pathPropResultAdapter.toJson(res)))
+            RsJson(RsWithBody(pathPropResponseAdapter.toJson(res)))
         } catch (ex: Throwable) {
             ExceptionHandler.handle(ex)
         }

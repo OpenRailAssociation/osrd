@@ -10,11 +10,11 @@ import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.DistanceRangeMapImpl
 import fr.sncf.osrd.utils.units.Distance
 
-fun makePathPropResult(
+fun makePathPropResponse(
     pathProperties: PathProperties,
     rawInfra: RawSignalingInfra
-): PathPropResult {
-    return PathPropResult(
+): PathPropResponse {
+    return PathPropResponse(
         makeSlopes(pathProperties),
         makeGradients(pathProperties),
         makeElectrifications(pathProperties),
@@ -54,8 +54,8 @@ private fun makeGeographic(path: PathProperties): RJSLineString {
 private fun makeOperationalPoints(
     path: PathProperties,
     rawInfra: RawSignalingInfra
-): List<OperationalPointResult> {
-    val res = mutableListOf<OperationalPointResult>()
+): List<OperationalPointResponse> {
+    val res = mutableListOf<OperationalPointResponse>()
     for ((opPartId, offset) in path.getOperationalPointParts()) {
         val operationalPointId = rawInfra.getOperationalPointPartOpId(opPartId)
         val trackSection =
@@ -67,7 +67,7 @@ private fun makeOperationalPoints(
                 chunkOffset.distance
         val opPartProps = rawInfra.getOperationalPointPartProps(opPartId)
         val opPartResult =
-            OperationalPointPartResult(
+            OperationalPointPartResponse(
                 trackSectionName,
                 opPartTrackSectionOffset.meters,
                 if (opPartProps["kp"] == null) null
@@ -99,7 +99,7 @@ private fun makeOperationalPoints(
             if (opSncfExtension == null && opIdExtension == null) null
             else OperationalPointExtensions(opSncfExtension, opIdExtension)
         val opResult =
-            OperationalPointResult(operationalPointId, opPartResult, opExtensions, offset)
+            OperationalPointResponse(operationalPointId, opPartResult, opExtensions, offset)
         res.add(opResult)
     }
     return res

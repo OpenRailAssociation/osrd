@@ -19,15 +19,15 @@ class PathPropEndpointTest : ApiTest() {
         val trackSectionRanges =
             listOf(
                 TrackRange(
-                    "TG0",
+                    "TA0",
                     Offset(50.meters),
-                    Offset(1000.meters),
+                    Offset(2000.meters),
                     EdgeDirection.START_TO_STOP
                 ),
                 TrackRange(
-                    "TG1",
+                    "TA1",
                     Offset(0.meters),
-                    Offset(4000.meters),
+                    Offset(1950.meters),
                     EdgeDirection.START_TO_STOP
                 )
             )
@@ -42,16 +42,40 @@ class PathPropEndpointTest : ApiTest() {
         val rawResponse =
             PathPropEndpoint(infraManager).act(RqFake("POST", "v2/path_properties", requestBody))
         val response = TakesUtils.readBodyResponse(rawResponse)
-        val parsed = pathPropResultAdapter.fromJson(response)!!
+        val parsed = pathPropResponseAdapter.fromJson(response)!!
 
         assertNotNull(parsed)
         assertEquals(parsed.slopes, RangeValues(listOf(), listOf(0.0)))
         assertEquals(parsed.gradients, RangeValues(listOf(), listOf(0.0)))
         assertEquals(
             parsed.electrifications,
-            RangeValues(listOf(4450.meters), listOf(Electrified("25000V"), Neutral(true)))
+            RangeValues(
+                listOf(1800.meters, 1950.meters),
+                listOf(Electrified("1500V"), Neutral(true), Electrified("25000V"))
+            )
         )
-        assertEquals(parsed.geometry.coordinates.size, 14)
-        assertEquals(parsed.operationalPoints.size, 0)
+        assertEquals(parsed.geometry.coordinates.size, 6)
+        val oPs =
+            listOf(
+                OperationalPointResponse(
+                    "West_station",
+                    OperationalPointPartResponse("TA0", 700.0, null),
+                    OperationalPointExtensions(
+                        OperationalPointSncfExtension(0, "BV", "BV", "0", "WS"),
+                        OperationalPointIdentifierExtension("West_station", 2)
+                    ),
+                    Offset(650.meters)
+                ),
+                OperationalPointResponse(
+                    "West_station",
+                    OperationalPointPartResponse("TA1", 500.0, null),
+                    OperationalPointExtensions(
+                        OperationalPointSncfExtension(0, "BV", "BV", "0", "WS"),
+                        OperationalPointIdentifierExtension("West_station", 2)
+                    ),
+                    Offset(2450.meters)
+                )
+            )
+        assertEquals(parsed.operationalPoints, oPs)
     }
 }
