@@ -1,4 +1,5 @@
 mod pathfinding;
+pub mod projection;
 mod properties;
 
 pub use pathfinding::pathfinding_from_train;
