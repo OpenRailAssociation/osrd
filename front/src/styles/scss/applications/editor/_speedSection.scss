@@ -1,0 +1,15 @@
+.speed-section {
+  .switch-list {
+
+    .incompatible-configuration-switch {
+      label::before {
+        border-color: var(--yellow);
+      }
+    }
+
+    .incompatible-tooltip {
+      text-wrap: balance;
+      width: 12rem;
+    }
+  }
+}

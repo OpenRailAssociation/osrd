@@ -7,12 +7,15 @@ import cx from 'classnames';
  * You HAVE TO use same name for all radio components that need to work together
  */
 
-type CheckboxRadioProps = InputHTMLAttributes<HTMLInputElement> & { label: ReactNode };
+type CheckboxRadioProps = InputHTMLAttributes<HTMLInputElement> & {
+  label: ReactNode;
+  containerClassName?: string;
+};
 
 const CheckboxInput: FC<CheckboxRadioProps> = (props) => {
-  const { id, label, className, ...inputProps } = props;
+  const { id, label, className, containerClassName, ...inputProps } = props;
   return (
-    <div className="custom-control custom-checkbox">
+    <div className={`custom-control custom-checkbox ${containerClassName}`}>
       <input
         {...inputProps}
         id={id}
@@ -27,9 +30,9 @@ const CheckboxInput: FC<CheckboxRadioProps> = (props) => {
 };
 
 const RadioInput: FC<CheckboxRadioProps> = (props) => {
-  const { id, label, className, ...inputProps } = props;
+  const { id, label, className, containerClassName, ...inputProps } = props;
   return (
-    <div className="custom-control custom-radio">
+    <div className={`custom-control custom-radio ${containerClassName}`}>
       <input
         {...inputProps}
         id={id}

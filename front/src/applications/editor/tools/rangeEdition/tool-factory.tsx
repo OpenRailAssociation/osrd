@@ -28,6 +28,7 @@ import type {
   SpeedSectionPslEntity,
   SpeedSectionEntity,
   ElectrificationEntity,
+  InteractionState,
 } from './types';
 import {
   getPslSignNewPosition,
@@ -39,8 +40,9 @@ import {
   getObjTypeEdition,
   isNew,
 } from './utils';
+import type { OptionsStateType } from '../routeEdition/types';
 
-type EditorRange = SpeedSectionEntity | ElectrificationEntity;
+export type EditorRange = SpeedSectionEntity | ElectrificationEntity;
 type RangeEditionToolParams<T extends EditorRange> = {
   id: T['objType'];
   icon: IconType;
@@ -70,10 +72,12 @@ function getRangeEditionTool<T extends EditorRange>({
       entity,
       initialEntity: entity,
       hoveredItem: null,
-      interactionState: { type: 'idle' },
+      interactionState: { type: 'idle' } as InteractionState,
       trackSectionsCache: {},
-      selectedSwitches: [],
-      optionsState: { type: 'idle' },
+      optionsState: { type: 'idle' } as OptionsStateType,
+      selectedSwitches: {},
+      highlightedRoutes: [],
+      routeElements: {},
     };
   }
 
@@ -208,13 +212,22 @@ function getRangeEditionTool<T extends EditorRange>({
 
       if (interactionState.type === 'selectSwitch') {
         if (feature && feature.sourceLayer === 'switches') {
-          if (selectedSwitches.includes(feature.properties.id)) {
+          if (Object.keys(selectedSwitches).includes(feature.properties.id)) {
             setState({
-              selectedSwitches: selectedSwitches.filter(
-                (switchId: string) => switchId !== feature.properties.id
+              selectedSwitches: Object.fromEntries(
+                Object.entries(selectedSwitches).filter(([key]) => key !== feature.properties.id)
               ),
             });
-          } else setState({ selectedSwitches: [...selectedSwitches, feature.properties.id] });
+          } else
+            setState({
+              selectedSwitches: {
+                ...selectedSwitches,
+                [feature.properties.id]: {
+                  position: null,
+                  type: feature.properties.switch_type,
+                },
+              },
+            });
         }
       } else if (isOnModeMove(interactionState.type)) {
         if (interactionState.type === 'moveRangeExtremity' && entity.properties.track_ranges) {

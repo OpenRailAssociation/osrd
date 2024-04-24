@@ -50,3 +50,10 @@ export const addElementAtIndex = <T>(array: T[], indexToAdd: number, newElement:
   result.splice(indexToAdd, 0, newElement);
   return result;
 };
+
+export function toggleElement<T>(array: T[], element: T) {
+  if (array.includes(element)) {
+    return removeElementAtIndex(array, array.indexOf(element));
+  }
+  return [...array, element];
+}
