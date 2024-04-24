@@ -9,6 +9,11 @@ use utoipa::ToSchema;
 
 use crate::core::{AsCoreRequest, Json};
 
+editoast_common::schemas! {
+    PathfindingResult,
+    TrackRange,
+}
+
 #[derive(Debug, Serialize)]
 pub struct PathfindingRequest {
     /// Infrastructure id
@@ -93,13 +98,88 @@ pub enum PathfindingResult {
     },
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, ToSchema, Hash)]
+/// An oriented range on a track section.
+/// `begin` is always less than `end`.
+#[derive(Serialize, Deserialize, Clone, Debug, ToSchema, Hash, PartialEq, Eq)]
 pub struct TrackRange {
+    /// The track section identifier.
     #[schema(inline)]
-    track_section: Identifier,
-    begin: u64,
-    end: u64,
-    direction: Direction,
+    pub track_section: Identifier,
+    /// The beginning of the range in mm.
+    pub begin: u64,
+    /// The end of the range in mm.
+    pub end: u64,
+    /// The direction of the range.
+    pub direction: Direction,
+}
+
+impl TrackRange {
+    #[cfg(test)]
+    /// Creates a new `TrackRange`.
+    pub fn new<T: AsRef<str>>(
+        track_section: T,
+        begin: u64,
+        end: u64,
+        direction: Direction,
+    ) -> Self {
+        Self {
+            track_section: track_section.as_ref().into(),
+            begin,
+            end,
+            direction,
+        }
+    }
+
+    /// Returns the starting offset of the range (depending on the direction).
+    pub fn start(&self) -> u64 {
+        if self.direction == Direction::StartToStop {
+            self.begin
+        } else {
+            self.end
+        }
+    }
+
+    /// Returns the ending offset of the range (depending on the direction).
+    pub fn stop(&self) -> u64 {
+        if self.direction == Direction::StartToStop {
+            self.end
+        } else {
+            self.begin
+        }
+    }
+
+    /// Computes a TrackRangeOffset location on this track range following its direction
+    pub fn offset(&self, offset: u64) -> TrackRangeOffset<'_> {
+        assert!(offset <= self.length(), "offset out of track range bounds");
+        TrackRangeOffset {
+            track_range: self,
+            offset,
+        }
+    }
+
+    pub fn length(&self) -> u64 {
+        self.end - self.begin
+    }
+}
+
+pub struct TrackRangeOffset<'a> {
+    track_range: &'a TrackRange,
+    pub offset: u64,
+}
+
+impl TrackRangeOffset<'_> {
+    pub fn as_track_offset(&self) -> TrackOffset {
+        if self.track_range.direction == Direction::StartToStop {
+            return TrackOffset::new(
+                &self.track_range.track_section,
+                self.offset + self.track_range.begin,
+            );
+        }
+        TrackOffset::new(
+            &self.track_range.track_section,
+            self.track_range.end - self.offset,
+        )
+    }
 }
 
 impl AsCoreRequest<Json<PathfindingResult>> for PathfindingRequest {
