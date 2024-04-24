@@ -1,6 +1,7 @@
 package fr.sncf.osrd.api;
 
 import static fr.sncf.osrd.api.pathfinding.PathPropUtilsKt.makeChunkPath;
+import static fr.sncf.osrd.utils.JavaInteroperabilityToolsKt.toRouteIdList;
 
 import com.squareup.moshi.Json;
 import com.squareup.moshi.JsonAdapter;
@@ -62,7 +63,7 @@ public class SignalProjectionEndpoint implements Take {
                     .map(rjsRoutePath -> infra.rawInfra().getRouteFromName(rjsRoutePath.route))
                     .toList();
             var result = SignalProjectionKt.project(
-                    infra, chunkPath, routePath, request.signalSightings, request.zoneUpdates);
+                    infra, chunkPath, toRouteIdList(routePath), request.signalSightings, request.zoneUpdates);
 
             result.warnings = recorder.warnings;
 

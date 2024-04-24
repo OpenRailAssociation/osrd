@@ -547,8 +547,18 @@ fun pathSignalsInEnvelope(
     blockInfra: BlockInfra,
     envelope: EnvelopeTimeInterpolate,
 ): List<PathSignal> {
+    return pathSignalsInRange(startOffset, blockPath, blockInfra, 0.meters, envelope.endPos.meters)
+}
+
+fun pathSignalsInRange(
+    startOffset: Distance,
+    blockPath: StaticIdxList<Block>,
+    blockInfra: BlockInfra,
+    rangeStart: Distance,
+    rangeEnd: Distance,
+): List<PathSignal> {
     return pathSignals(startOffset, blockPath, blockInfra).filter { signal ->
-        signal.pathOffset >= 0.meters && signal.pathOffset <= envelope.endPos.meters
+        signal.pathOffset in rangeStart..rangeEnd
     }
 }
 

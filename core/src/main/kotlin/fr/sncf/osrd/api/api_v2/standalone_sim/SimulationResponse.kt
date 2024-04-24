@@ -4,6 +4,8 @@ import com.squareup.moshi.Json
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import fr.sncf.osrd.api.api_v2.SignalSighting
+import fr.sncf.osrd.api.api_v2.ZoneUpdate
 import fr.sncf.osrd.sim_infra.api.Path
 import fr.sncf.osrd.utils.json.UnitAdapterFactory
 import fr.sncf.osrd.utils.units.Offset
@@ -60,20 +62,6 @@ class RoutingZoneRequirement(
     @Json(name = "exit_detector") val exitDetector: String,
     val switches: Map<String, String>,
     @Json(name = "end_time") val endTime: TimeDelta,
-)
-
-class ZoneUpdate(
-    val zone: String,
-    val time: TimeDelta,
-    val position: Offset<Path>,
-    @Json(name = "is_entry") val isEntry: Boolean,
-)
-
-class SignalSighting(
-    val signal: String,
-    val time: TimeDelta,
-    val position: Offset<Path>,
-    val state: String,
 )
 
 open class ReportTrain(
