@@ -120,4 +120,10 @@ fun RoutingInfra.getRouteExit(route: RouteId): DirDetectorId {
     return getZonePathExit(getRoutePath(route).last())
 }
 
+fun RoutingInfra.convertRoutePath(routes: List<String>): StaticIdxList<Route> {
+    val res = mutableStaticIdxArrayListOf<Route>()
+    for (route in routes) res.add(getRouteFromName(route))
+    return res
+}
+
 typealias InterlockingInfra = RoutingInfra
