@@ -4958,29 +4958,123 @@ components:
           - $ref: '#/components/schemas/Tags'
           nullable: true
       type: object
-    ProjectPathResult:
-      description: Project path output is described by time-space points and blocks
+    ProjectPathInput:
+      description: Project path input is described by a list of routes and a list of track range
       properties:
-        blocks:
+        routes:
+          description: List of route ids
           items:
-            $ref: '#/components/schemas/SignalUpdate'
+            maxLength: 255
+            minLength: 1
+            type: string
+          minItems: 1
           type: array
-        positions:
+        track_section_ranges:
+          description: List of track ranges
           items:
+            $ref: '#/components/schemas/TrackRange'
+          minItems: 1
+          type: array
+      required:
+      - routes
+      - track_section_ranges
+      type: object
+    ProjectPathTrainResult:
+      allOf:
+      - description: Project path output is described by time-space points and blocks
+        properties:
+          signal_updates:
+            description: List of signal updates along the path
+            items:
+              properties:
+                aspect_label:
+                  description: The labels of the new aspect
+                  type: string
+                blinking:
+                  description: Whether the signal is blinking
+                  type: boolean
+                color:
+                  description: |-
+                    The color of the aspect
+                    (Bits 24-31 are alpha, 16-23 are red, 8-15 are green, 0-7 are blue)
+                  format: int32
+                  type: integer
+                position_end:
+                  description: The route ends at this position in mm on the train path
+                  format: int64
+                  minimum: 0
+                  type: integer
+                position_start:
+                  description: The route starts at this position in mm on the train path
+                  format: int64
+                  minimum: 0
+                  type: integer
+                signal_id:
+                  description: The id of the updated signal
+                  type: string
+                time_end:
+                  description: The aspects stop being displayed at this time (number of seconds since `departure_time`)
+                  format: int64
+                  minimum: 0
+                  type: integer
+                time_start:
+                  description: The aspects start being displayed at this time (number of mseconds since `departure_time`)
+                  format: int64
+                  minimum: 0
+                  type: integer
+              required:
+              - signal_id
+              - time_start
+              - time_end
+              - position_start
+              - position_end
+              - color
+              - blinking
+              - aspect_label
+              type: object
+            type: array
+          space_time_curves:
+            description: List of space-time curves sections along the path
+            items:
+              properties:
+                positions:
+                  items:
+                    format: int64
+                    minimum: 0
+                    type: integer
+                  minItems: 2
+                  type: array
+                times:
+                  items:
+                    format: int64
+                    minimum: 0
+                    type: integer
+                  minItems: 2
+                  type: array
+              required:
+              - positions
+              - times
+              type: object
+            type: array
+        required:
+        - space_time_curves
+        - signal_updates
+        type: object
+      - properties:
+          departure_time:
+            description: Departure time of the train
+            format: date-time
+            type: string
+          rolling_stock_length:
+            description: Rolling stock length in mm
             format: int64
             minimum: 0
             type: integer
-          type: array
-        times:
-          items:
-            format: double
-            type: number
-          type: array
-      required:
-      - positions
-      - times
-      - blocks
-      type: object
+        required:
+        - departure_time
+        - rolling_stock_length
+        type: object
+      description: Project path output is described by time-space points and blocks
     ProjectWithStudies:
       allOf:
       - $ref: '#/components/schemas/Project'
@@ -6568,9 +6662,49 @@ components:
           base:
             $ref: '#/components/schemas/ReportTrainV2'
           final_output:
-            $ref: '#/components/schemas/CompleteReportTrain'
+            allOf:
+            - $ref: '#/components/schemas/ReportTrainV2'
+            - properties:
+                routing_requirements:
+                  items:
+                    $ref: '#/components/schemas/RoutingRequirement'
+                  type: array
+                signal_sightings:
+                  items:
+                    $ref: '#/components/schemas/SignalSighting'
+                  type: array
+                spacing_requirements:
+                  items:
+                    $ref: '#/components/schemas/SpacingRequirement'
+                  type: array
+                zone_updates:
+                  items:
+                    $ref: '#/components/schemas/ZoneUpdate'
+                  type: array
+              required:
+              - signal_sightings
+              - zone_updates
+              - spacing_requirements
+              - routing_requirements
+              type: object
           mrsp:
-            $ref: '#/components/schemas/Mrsp'
+            description: A MRSP computation result (Most Restrictive Speed Profile)
+            properties:
+              positions:
+                items:
+                  format: int64
+                  minimum: 0
+                  type: integer
+                type: array
+              speeds:
+                items:
+                  format: double
+                  type: number
+                type: array
+            required:
+            - positions
+            - speeds
+            type: object
           power_restrictions:
             items:
               properties:
@@ -6621,7 +6755,15 @@ components:
         - pathfinding_result
         - status
         type: object
-    SimulationSummaryResultResponse:
+      - properties:
+          status:
+            enum:
+            - simulation_failed
+            type: string
+        required:
+        - status
+        type: object
+    SimulationSummaryResult:
       oneOf:
       - properties:
           Success:
@@ -6649,7 +6791,7 @@ components:
         - PathfindingFailed
         type: string
       - enum:
-        - RunningTimeFailed
+        - SimulationFailed
         type: string
     SingleSimulationRequest:
       allOf:
@@ -7225,14 +7367,19 @@ components:
       - offset
       type: object
     TrackRange:
+      description: |-
+        An oriented range on a track section.
+        `begin` is always less than `end`.
       properties:
         begin:
+          description: The beginning of the range in mm.
           format: int64
           minimum: 0
           type: integer
         direction:
           $ref: '#/components/schemas/Direction'
         end:
+          description: The end of the range in mm.
           format: int64
           minimum: 0
           type: integer
@@ -10856,14 +11003,42 @@ paths:
     post:
       description: |-
         Projects the space time curves and paths of a number of train schedules onto a given path
-        Params are the infra_id and a list of train_ids
+
+        - Returns 404 if the infra or any of the train schedules are not found
+        - Returns 200 with a hashmap of train_id to ProjectPathTrainResult
+
+        Train schedules that are invalid (pathfinding or simulation failed) are not included in the result
+      parameters:
+      - description: The infra id
+        in: query
+        name: infra
+        required: true
+        schema:
+          format: int64
+          type: integer
+      - description: Ids of train schedule
+        in: query
+        name: ids
+        required: true
+        schema:
+          items:
+            format: int64
+            type: integer
+          type: array
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectPathInput'
+        description: ''
+        required: true
       responses:
         '200':
           content:
             application/json:
               schema:
                 additionalProperties:
-                  $ref: '#/components/schemas/ProjectPathResult'
+                  $ref: '#/components/schemas/ProjectPathTrainResult'
                 type: object
           description: Project Path Output
       summary: Projects the space time curves and paths of a number of train schedules onto a given path
@@ -10874,13 +11049,30 @@ paths:
       description: |-
         Retrieve simulation information for a given train list.
         Useful for finding out whether pathfinding/simulation was successful.
+      parameters:
+      - description: The infra id
+        in: query
+        name: infra
+        required: true
+        schema:
+          format: int64
+          type: integer
+      - description: Ids of train schedule
+        in: query
+        name: ids
+        required: true
+        schema:
+          items:
+            format: int64
+            type: integer
+          type: array
       responses:
         '200':
           content:
             application/json:
               schema:
                 additionalProperties:
-                  $ref: '#/components/schemas/SimulationSummaryResultResponse'
+                  $ref: '#/components/schemas/SimulationSummaryResult'
                 type: object
           description: Project Path Output
       summary: Retrieve simulation information for a given train list.
@@ -10888,7 +11080,7 @@ paths:
       - train_schedulev2
   /v2/train_schedule/{id}/:
     get:
-      description: Return a specific timetable with its associated schedules
+      description: Return a specific train schedule
       parameters:
       - description: A train schedule ID
         in: path
@@ -10904,7 +11096,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/TrainScheduleResult'
           description: The train schedule
-      summary: Return a specific timetable with its associated schedules
+      summary: Return a specific train schedule
       tags:
       - train_schedulev2
     put:

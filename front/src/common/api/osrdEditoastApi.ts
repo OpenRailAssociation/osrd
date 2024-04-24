@@ -885,14 +885,22 @@ const injectedRtkApi = api
         PostV2TrainScheduleProjectPathApiResponse,
         PostV2TrainScheduleProjectPathApiArg
       >({
-        query: () => ({ url: `/v2/train_schedule/project_path/`, method: 'POST' }),
+        query: (queryArg) => ({
+          url: `/v2/train_schedule/project_path/`,
+          method: 'POST',
+          body: queryArg.projectPathInput,
+          params: { infra: queryArg.infra, ids: queryArg.ids },
+        }),
         invalidatesTags: ['train_schedulev2'],
       }),
       getV2TrainScheduleSimulationSummary: build.query<
         GetV2TrainScheduleSimulationSummaryApiResponse,
         GetV2TrainScheduleSimulationSummaryApiArg
       >({
-        query: () => ({ url: `/v2/train_schedule/simulation_summary/` }),
+        query: (queryArg) => ({
+          url: `/v2/train_schedule/simulation_summary/`,
+          params: { infra: queryArg.infra, ids: queryArg.ids },
+        }),
         providesTags: ['train_schedulev2'],
       }),
       getV2TrainScheduleById: build.query<
@@ -1693,13 +1701,24 @@ export type PostV2TrainScheduleApiArg = {
   body: TrainScheduleForm[];
 };
 export type PostV2TrainScheduleProjectPathApiResponse = /** status 200 Project Path Output */ {
-  [key: string]: ProjectPathResult;
+  [key: string]: ProjectPathTrainResult;
 };
-export type PostV2TrainScheduleProjectPathApiArg = void;
+export type PostV2TrainScheduleProjectPathApiArg = {
+  /** The infra id */
+  infra: number;
+  /** Ids of train schedule */
+  ids: number[];
+  projectPathInput: ProjectPathInput;
+};
 export type GetV2TrainScheduleSimulationSummaryApiResponse = /** status 200 Project Path Output */ {
-  [key: string]: SimulationSummaryResultResponse;
+  [key: string]: SimulationSummaryResult;
 };
-export type GetV2TrainScheduleSimulationSummaryApiArg = void;
+export type GetV2TrainScheduleSimulationSummaryApiArg = {
+  /** The infra id */
+  infra: number;
+  /** Ids of train schedule */
+  ids: number[];
+};
 export type GetV2TrainScheduleByIdApiResponse =
   /** status 200 The train schedule */ TrainScheduleResult;
 export type GetV2TrainScheduleByIdApiArg = {
@@ -1753,8 +1772,10 @@ export type LightElectricalProfileSet = {
 export type LevelValues = string[];
 export type Direction = 'START_TO_STOP' | 'STOP_TO_START';
 export type TrackRange = {
+  /** The beginning of the range in mm. */
   begin: number;
   direction: Direction;
+  /** The end of the range in mm. */
   end: number;
   track_section: string;
 };
@@ -3237,12 +3258,45 @@ export type TrainScheduleResult = TrainScheduleBase & {
 export type TrainScheduleForm = TrainScheduleBase & {
   timetable_id: number;
 };
-export type ProjectPathResult = {
-  blocks: SignalUpdate[];
-  positions: number[];
-  times: number[];
+export type ProjectPathTrainResult = {
+  /** List of signal updates along the path */
+  signal_updates: {
+    /** The labels of the new aspect */
+    aspect_label: string;
+    /** Whether the signal is blinking */
+    blinking: boolean;
+    /** The color of the aspect
+        (Bits 24-31 are alpha, 16-23 are red, 8-15 are green, 0-7 are blue) */
+    color: number;
+    /** The route ends at this position in mm on the train path */
+    position_end: number;
+    /** The route starts at this position in mm on the train path */
+    position_start: number;
+    /** The id of the updated signal */
+    signal_id: string;
+    /** The aspects stop being displayed at this time (number of seconds since `departure_time`) */
+    time_end: number;
+    /** The aspects start being displayed at this time (number of mseconds since `departure_time`) */
+    time_start: number;
+  }[];
+  /** List of space-time curves sections along the path */
+  space_time_curves: {
+    positions: number[];
+    times: number[];
+  }[];
+} & {
+  /** Departure time of the train */
+  departure_time: string;
+  /** Rolling stock length in mm */
+  rolling_stock_length: number;
 };
-export type SimulationSummaryResultResponse =
+export type ProjectPathInput = {
+  /** List of route ids */
+  routes: string[];
+  /** List of track ranges */
+  track_section_ranges: TrackRange[];
+};
+export type SimulationSummaryResult =
   | {
       Success: {
         energy_consumption: number;
@@ -3251,24 +3305,27 @@ export type SimulationSummaryResultResponse =
       };
     }
   | 'PathfindingFailed'
-  | 'RunningTimeFailed';
+  | 'SimulationFailed';
 export type ReportTrainV2 = {
   energy_consumption: number;
   positions: number[];
   speeds: number[];
   times: number[];
 };
-export type CompleteReportTrain = ReportTrainV2 & {
-  routing_requirements: RoutingRequirement[];
-  signal_sightings: SignalSighting[];
-  spacing_requirements: SpacingRequirement[];
-  zone_updates: ZoneUpdate[];
-};
 export type SimulationResult =
   | {
       base: ReportTrainV2;
-      final_output: CompleteReportTrain;
-      mrsp: Mrsp;
+      final_output: ReportTrainV2 & {
+        routing_requirements: RoutingRequirement[];
+        signal_sightings: SignalSighting[];
+        spacing_requirements: SpacingRequirement[];
+        zone_updates: ZoneUpdate[];
+      };
+      /** A MRSP computation result (Most Restrictive Speed Profile) */
+      mrsp: {
+        positions: number[];
+        speeds: number[];
+      };
       power_restrictions: {
         /** Start position in the path in mm */
         begin: number;
@@ -3284,6 +3341,9 @@ export type SimulationResult =
   | {
       pathfinding_result: PathfindingResult;
       status: 'pathfinding_failed';
+    }
+  | {
+      status: 'simulation_failed';
     };
 export type Version = {
   git_describe: string | null;

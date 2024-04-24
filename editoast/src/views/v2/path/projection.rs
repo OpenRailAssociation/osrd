@@ -41,7 +41,7 @@ impl<'a> PathProjection<'a> {
                 .insert(&track_range.track_section, index)
                 .is_none());
             map_position.insert(&track_range.track_section, pos);
-            pos += track_range.end - track_range.begin;
+            pos += track_range.length();
         }
         Self {
             path,
@@ -101,14 +101,15 @@ impl<'a> PathProjection<'a> {
         let mut has_next = false;
         let mut has_prev = false;
         let first_track_loc = {
-            let offset_loc = found_track_range.offset(position - found_position);
-            if offset_loc.offset == 0 && index > 0 {
+            let track_range_offset = found_track_range.offset(position - found_position);
+            if track_range_offset.offset == 0 && index > 0 {
                 has_prev = true;
-            } else if offset_loc.offset == found_track_range.length() && index < self.path.len() - 1
+            } else if track_range_offset.offset == found_track_range.length()
+                && index < self.path.len() - 1
             {
                 has_next = true;
             }
-            offset_loc.as_track_offset()
+            track_range_offset.as_track_offset()
         };
 
         // Position on a single location
@@ -145,7 +146,7 @@ impl<'a> PathProjection<'a> {
         for track_range in track_ranges {
             // Handle current position
             current_pos = next_pos;
-            next_pos += track_range.end - track_range.begin;
+            next_pos += track_range.length();
 
             // When a track is not part of self
             let Some(proj_track_range) = self.get_track_range(&track_range.track_section) else {
