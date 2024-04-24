@@ -38,6 +38,8 @@ use crate::error::Result;
 
 editoast_common::schemas! {
     simulation::schemas(),
+    v2::simulation::schemas(),
+    v2::pathfinding::schemas(),
 }
 
 const MAX_RETRIES: u8 = 5;

@@ -2,6 +2,7 @@ use std::collections::hash_map::DefaultHasher;
 use std::collections::HashMap;
 use std::hash::Hash;
 use std::hash::Hasher;
+use std::sync::Arc;
 
 use actix_web::post;
 use actix_web::web::Data;
@@ -18,7 +19,6 @@ use utoipa::ToSchema;
 use super::CACHE_PATH_EXPIRATION;
 use crate::core::v2::pathfinding::PathfindingRequest;
 use crate::core::v2::pathfinding::PathfindingResult;
-use crate::core::v2::pathfinding::TrackRange;
 use crate::core::AsCoreRequest;
 use crate::core::CoreClient;
 use crate::error::Result;
@@ -47,8 +47,6 @@ crate::routes! {
 
 editoast_common::schemas! {
     PathfindingInput,
-    PathfindingResult,
-    TrackRange,
 }
 
 /// Path input is described by some rolling stock information
@@ -92,6 +90,7 @@ pub async fn post(
     let path_input = data.into_inner();
     let conn = &mut db_pool.get().await?;
     let mut redis_conn = redis_client.get_connection().await?;
+    let core = core.into_inner();
     let infra = Infra::retrieve_or_fail(conn, *infra_id, || PathfindingError::InfraNotFound {
         infra_id: *infra_id,
     })
@@ -104,7 +103,7 @@ pub async fn post(
 async fn pathfinding_blocks(
     conn: &mut PgConnection,
     redis_conn: &mut RedisConnection,
-    core: Data<CoreClient>,
+    core: Arc<CoreClient>,
     infra: &Infra,
     path_input: &PathfindingInput,
 ) -> Result<PathfindingResult> {
@@ -160,11 +159,11 @@ async fn pathfinding_blocks(
     Ok(pathfinding_result)
 }
 
-/// Compute a path given a trainschedule and an infrastructure
+/// Compute a path given a batch of trainschedule and an infrastructure
 pub async fn pathfinding_from_train(
     conn: &mut PgConnection,
     redis: &mut RedisConnection,
-    core: Data<CoreClient>,
+    core: Arc<CoreClient>,
     infra: &Infra,
     train_schedule: TrainSchedule,
 ) -> Result<PathfindingResult> {

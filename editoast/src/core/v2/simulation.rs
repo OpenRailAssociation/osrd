@@ -1,7 +1,6 @@
 use std::collections::BTreeMap;
+use std::collections::HashMap;
 
-use chrono::DateTime;
-use chrono::Utc;
 use editoast_schemas::rolling_stock::EffortCurves;
 use editoast_schemas::rolling_stock::Gamma;
 use editoast_schemas::rolling_stock::RollingResistance;
@@ -11,20 +10,23 @@ use editoast_schemas::train_schedule::MarginValue;
 use editoast_schemas::train_schedule::TrainScheduleOptions;
 use serde::Deserialize;
 use serde::Serialize;
+use utoipa::ToSchema;
 
 use super::pathfinding::TrackRange;
 use crate::core::{AsCoreRequest, Json};
-use crate::views::v2::train_schedule::CompleteReportTrain;
-use crate::views::v2::train_schedule::Mrsp;
-use crate::views::v2::train_schedule::ReportTrain;
 use crate::RollingStockModel;
 use derivative::Derivative;
 use editoast_schemas::primitives::Identifier;
 use std::hash::Hash;
 
+editoast_common::schemas! {
+    CompleteReportTrain,
+    ReportTrain,
+}
+
 #[derive(Debug, Serialize, Derivative)]
 #[derivative(Hash)]
-pub struct PhysicRollingStock {
+pub struct PhysicsRollingStock {
     pub effort_curves: EffortCurves,
     pub base_power_class: Option<String>,
     /// Length of the rolling stock in mm
@@ -55,7 +57,7 @@ pub struct PhysicRollingStock {
     pub raise_pantograph_time: Option<u64>,
 }
 
-impl From<RollingStockModel> for PhysicRollingStock {
+impl From<RollingStockModel> for PhysicsRollingStock {
     fn from(value: RollingStockModel) -> Self {
         Self {
             effort_curves: value.effort_curves,
@@ -78,6 +80,22 @@ impl From<RollingStockModel> for PhysicRollingStock {
                 .map(|v| (v * 1000.0).round() as u64),
         }
     }
+}
+
+#[derive(Debug, Clone, Hash, PartialEq, Serialize, Deserialize)]
+pub struct ZoneUpdate {
+    pub zone: String,
+    // Time in ms
+    pub time: u64,
+    pub position: u64,
+    pub is_entry: bool,
+}
+
+/// A MRSP computation result (Most Restrictive Speed Profile)
+#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, ToSchema)]
+pub struct Mrsp {
+    positions: Vec<u64>,
+    speeds: Vec<f64>,
 }
 
 #[derive(Debug, Serialize, Hash)]
@@ -114,11 +132,83 @@ pub struct SimulationPath {
     pub track_section_ranges: Vec<TrackRange>,
 }
 
+#[derive(Deserialize, Serialize, Clone, Debug, ToSchema)]
+#[schema(as = ReportTrainV2)]
+pub struct ReportTrain {
+    // List of positions of a train
+    // Both positions (in mm) and times (in ms) must have the same length
+    pub positions: Vec<u64>,
+    pub times: Vec<u64>,
+    // List of speeds associated to a position
+    pub speeds: Vec<f64>,
+    pub energy_consumption: f64,
+}
+
+#[derive(Deserialize, Serialize, Clone, Debug, ToSchema)]
+pub struct CompleteReportTrain {
+    #[serde(flatten)]
+    #[schema(value_type = ReportTrainV2)]
+    pub report_train: ReportTrain,
+    pub signal_sightings: Vec<SignalSighting>,
+    pub zone_updates: Vec<ZoneUpdate>,
+    pub spacing_requirements: Vec<SpacingRequirement>,
+    pub routing_requirements: Vec<RoutingRequirement>,
+}
+
+#[derive(Debug, Clone, PartialEq, Hash, Serialize, Deserialize)]
+pub struct SignalSighting {
+    pub signal: String,
+    /// Time in ms
+    pub time: u64,
+    /// Position in mm
+    pub position: u64,
+    pub state: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
+pub struct SpacingRequirement {
+    pub zone: String,
+    // Time in ms
+    pub begin_time: u64,
+    // Time in ms
+    pub end_time: u64,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
+pub struct RoutingRequirement {
+    pub route: String,
+    /// Time in ms
+    pub begin_time: u64,
+    pub zones: Vec<RoutingZoneRequirement>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
+pub struct RoutingZoneRequirement {
+    pub zone: String,
+    pub entry_detector: String,
+    pub exit_detector: String,
+    pub switches: HashMap<String, String>,
+    /// Time in ms
+    pub end_time: u64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
+pub struct SimulationPowerRestrictionRange {
+    /// Start position in the path in mm
+    begin: u64,
+    /// End position in the path in mm
+    end: u64,
+    code: String,
+    /// Is power restriction handled during simulation
+    handled: bool,
+}
+
 #[derive(Debug, Serialize, Derivative)]
 #[derivative(Hash)]
 pub struct SimulationRequest {
+    pub infra: i64,
+    pub expected_version: String,
     pub path: SimulationPath,
-    pub start_time: DateTime<Utc>,
     pub schedule: Vec<SimulationScheduleItem>,
     pub margins: SimulationMargins,
     #[derivative(Hash(hash_with = "editoast_common::hash_float::<3,_>"))]
@@ -128,20 +218,20 @@ pub struct SimulationRequest {
     pub speed_limit_tag: Option<String>,
     pub power_restrictions: Vec<SimulationPowerRestrictionItem>,
     pub options: TrainScheduleOptions,
-    pub rolling_stock: PhysicRollingStock,
+    pub rolling_stock: PhysicsRollingStock,
     pub electrical_profile_set_id: Option<i64>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct SimulationResponse {
-    base: ReportTrain,
-    provisional: ReportTrain,
-    final_output: CompleteReportTrain,
-    mrsp: Mrsp,
-    power_restriction: String,
+    pub base: ReportTrain,
+    pub provisional: ReportTrain,
+    pub final_output: CompleteReportTrain,
+    pub mrsp: Mrsp,
+    pub power_restrictions: Vec<SimulationPowerRestrictionRange>,
 }
 
 impl AsCoreRequest<Json<SimulationResponse>> for SimulationRequest {
     const METHOD: reqwest::Method = reqwest::Method::POST;
-    const URL_PATH: &'static str = "/simulation";
+    const URL_PATH: &'static str = "/v2/standalone_simulation";
 }
