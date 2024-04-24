@@ -14,9 +14,14 @@ import {
   getTrackSectionEntityFromNearestPoint,
 } from 'applications/editor/tools/utils';
 import type { PartialOrReducer } from 'applications/editor/types';
+import type {
+  ApplicableDirections,
+  GetInfraByInfraIdRoutesTrackRangesApiResponse,
+} from 'common/api/osrdEditoastApi';
 import { getNearestPoint } from 'utils/mapHelper';
 
 import type {
+  ApplicableTrackRange,
   ElectrificationEntity,
   PSLExtension,
   PSLSign,
@@ -24,6 +29,7 @@ import type {
   PslSignFeature,
   PslSignInformation,
   RangeEditionState,
+  RouteElements,
   SpeedSectionEntity,
   SpeedSectionPslEntity,
   TrackRangeExtremityFeature,
@@ -351,3 +357,71 @@ export const getObjTypeAction = (objType: 'SpeedSection' | 'Electrification') =>
 
 export const isNew = (entity: SpeedSectionEntity | ElectrificationEntity) =>
   entity.properties.id === NEW_ENTITY_ID;
+
+export const DEFAULT_EXTRA_TRACK_RANGE_LENGTH = 10;
+export const makeSpeedRestrictionTrackRanges = (
+  trackRanges: ApplicableTrackRange[],
+  switches: string[],
+  selectedSwitches: Record<string, object>,
+  extraMeters?: boolean
+): [ApplicableTrackRange[], boolean] => {
+  const indices = Object.keys(selectedSwitches).map(
+    (selectedSwitch) => switches.findIndex((s) => s === selectedSwitch) + 1
+  );
+  const lowerBound = Math.min(...indices);
+  const upperBound = Math.max(...indices);
+  const zoneTrackRanges = trackRanges.slice(lowerBound, upperBound);
+  let returnedExtra = false;
+  if (extraMeters) {
+    const extraTrackRange = { ...trackRanges[upperBound] };
+    const trackLength = extraTrackRange.end - extraTrackRange.begin;
+    if (extraTrackRange.applicable_directions === 'STOP_TO_START') {
+      extraTrackRange.begin = trackLength - DEFAULT_EXTRA_TRACK_RANGE_LENGTH;
+    } else {
+      extraTrackRange.end = extraTrackRange.begin + DEFAULT_EXTRA_TRACK_RANGE_LENGTH;
+    }
+    zoneTrackRanges.push(extraTrackRange);
+    returnedExtra = true;
+  }
+  const trackRangesWithRenamedDirections = zoneTrackRanges.map((tr) => ({
+    ...tr,
+    applicable_directions: 'BOTH' as ApplicableDirections,
+  }));
+  return [trackRangesWithRenamedDirections, returnedExtra];
+};
+
+function renameDirection(trackRange: TrackRange) {
+  const { begin, end, track } = trackRange;
+  return {
+    begin,
+    end,
+    track,
+    applicable_directions: trackRange.direction,
+  };
+}
+
+export const makeRouteElements = (
+  trackRangesResults: GetInfraByInfraIdRoutesTrackRangesApiResponse,
+  routes: string[]
+): RouteElements =>
+  trackRangesResults.reduce((acc, cur, index) => {
+    if (cur.type === 'Computed') {
+      const trackRanges = cur.track_ranges.map((trackRange) => renameDirection(trackRange));
+      const switches = cur.switches_directions.map((sw) => sw[0]);
+      return {
+        ...acc,
+        [routes[index]]: {
+          trackRanges,
+          switches,
+        },
+      };
+    }
+    return acc;
+  }, {});
+
+export const compareTrackRange =
+  (a: ApplicableTrackRange) => (b: ApplicableTrackRange | undefined) =>
+    a.track === b?.track &&
+    a.begin === b?.begin &&
+    a.end === b?.end &&
+    a.applicable_directions === b?.applicable_directions;

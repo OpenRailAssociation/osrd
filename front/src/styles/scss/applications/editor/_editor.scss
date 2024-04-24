@@ -1,4 +1,5 @@
 @import './editorForm';
+@import './speedSection';
 
 .editor-root {
   $blue: var(--primary);
@@ -102,13 +103,13 @@
   }
 
   .infra-locked {
-    width: 400px;
+    width: 32.25rem;
     overflow-y: auto;
     height: auto;
   }
 
   .panel-box {
-    width: 400px;
+    width: 32.25rem;
     height: 100%;
     overflow-y: auto;
     overflow-x: hidden;

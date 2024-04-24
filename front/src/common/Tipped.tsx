@@ -8,10 +8,11 @@ interface TippedProps extends HTMLAttributes<unknown> {
   tag?: keyof JSX.IntrinsicElements;
   rootTag?: keyof JSX.IntrinsicElements;
   mode?: 'bottom' | 'right' | 'left' | 'top';
+  disableTooltip?: boolean;
 }
 
 const Tipped: FC<TippedProps> = (props) => {
-  const { children, tag, rootTag, mode = 'bottom', ...attributes } = props;
+  const { children, tag, rootTag, mode = 'bottom', disableTooltip, ...attributes } = props;
   const [target, tooltip] = children;
   const [showTip, setShowTip] = useState<boolean>(false);
   const Tag = tag || 'div';
@@ -33,12 +34,14 @@ const Tipped: FC<TippedProps> = (props) => {
       >
         {target}
       </Tag>
-      <CSSTransition unmountOnExit in={showTip} timeout={400} classNames="transition">
-        <div role="tooltip" className={cx('tooltip', 'show', `bs-tooltip-${mode}`)}>
-          <div className="arrow" />
-          <div className="tooltip-inner">{tooltip}</div>
-        </div>
-      </CSSTransition>
+      {!disableTooltip && (
+        <CSSTransition unmountOnExit in={showTip} timeout={400} classNames="transition">
+          <div role="tooltip" className={cx('tooltip', 'show', `bs-tooltip-${mode}`)}>
+            <div className="arrow" />
+            <div className="tooltip-inner">{tooltip}</div>
+          </div>
+        </CSSTransition>
+      )}
     </RootTag>
   );
 };

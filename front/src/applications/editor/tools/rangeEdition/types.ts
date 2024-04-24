@@ -6,6 +6,7 @@ import type { CommonToolState } from 'applications/editor/tools/types';
 import type { EditorEntity } from 'applications/editor/typesEditorEntity';
 
 import type { APPLICABLE_DIRECTIONS } from './consts';
+import type { EditorRange } from './tool-factory';
 import type { OptionsStateType } from '../routeEdition/types';
 
 export type ApplicableDirection = (typeof APPLICABLE_DIRECTIONS)[number];
@@ -25,17 +26,30 @@ export type PSLExtension = {
   r: PSLSign[];
 };
 
+export type ApplicableTrackRange = {
+  applicable_directions: ApplicableDirection;
+  begin: number;
+  end: number;
+  track: string;
+};
+
+export type RouteElements = {
+  [key: string]: {
+    trackRanges: ApplicableTrackRange[];
+    switches: string[];
+  };
+};
+
+export type RouteExtra = {
+  [key: string]: ApplicableTrackRange;
+};
+
 export type SpeedSectionEntity = EditorEntity<
   MultiLineString,
   {
     speed_limit?: number;
     speed_limit_by_tag?: Record<string, number | undefined>;
-    track_ranges?: {
-      applicable_directions: ApplicableDirection;
-      begin: number;
-      end: number;
-      track: string;
-    }[];
+    track_ranges?: ApplicableTrackRange[];
     extensions?: {
       psl_sncf: null | PSLExtension;
     };
@@ -49,12 +63,7 @@ export type ElectrificationEntity = EditorEntity<
   MultiLineString,
   {
     id: string;
-    track_ranges?: {
-      applicable_directions: ApplicableDirection;
-      begin: number;
-      end: number;
-      track: string;
-    }[];
+    track_ranges?: ApplicableTrackRange[];
     voltage?: string;
   }
 > & {
@@ -146,22 +155,44 @@ export type PslSignInformation =
   | { signType: PSL_SIGN_TYPES.ANNOUNCEMENT | PSL_SIGN_TYPES.R; signIndex: number }
   | { signType: PSL_SIGN_TYPES.Z };
 
-export type RangeEditionState<E extends EditorEntity> = CommonToolState & {
+export type HoveredItem =
+  | null
+  | HoveredExtremityState
+  | HoveredRangeState
+  | HoveredSignState
+  | (NonNullable<CommonToolState['hovered']> & { itemType?: undefined });
+
+export type InteractionState =
+  | { type: 'idle' }
+  | { type: 'moveRangeExtremity'; rangeIndex: number; extremity: 'BEGIN' | 'END' }
+  | ({ type: 'moveSign' } & PslSignInformation)
+  | { type: 'selectSwitch' };
+
+export type RangeEditionState<E extends EditorRange> = CommonToolState & {
   error?: string;
   initialEntity: E;
   entity: E;
-  hoveredItem:
-    | null
-    | HoveredExtremityState
-    | HoveredRangeState
-    | HoveredSignState
-    | (NonNullable<CommonToolState['hovered']> & { itemType?: undefined });
-  interactionState:
-    | { type: 'idle' }
-    | { type: 'moveRangeExtremity'; rangeIndex: number; extremity: 'BEGIN' | 'END' }
-    | ({ type: 'moveSign' } & PslSignInformation)
-    | { type: 'selectSwitch' };
+  hoveredItem: HoveredItem;
+  interactionState: InteractionState;
   trackSectionsCache: Record<string, TrackState>;
-  selectedSwitches: string[];
+  selectedSwitches: SwitchSelection;
   optionsState?: OptionsStateType;
+  highlightedRoutes: string[];
+  routeElements: RouteElements;
+  routeExtra?: RouteExtra;
+};
+
+export type SwitchPosition = {
+  [key: string]: string | null;
+};
+
+export type AvailableSwitchPositions = {
+  [key: string]: string[];
+};
+
+export type SwitchSelection = {
+  [key: string]: {
+    position: string | null;
+    type: string;
+  };
 };

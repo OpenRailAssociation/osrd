@@ -58,7 +58,9 @@ export function getEditSpeedSectionState(
     trackSectionsCache: {},
     interactionState: { type: 'idle' },
     hoveredItem: null,
-    selectedSwitches: [],
+    selectedSwitches: {},
+    highlightedRoutes: [],
+    routeElements: {},
   };
 }
 
@@ -72,6 +74,8 @@ export function getEditElectrificationState(
     trackSectionsCache: {},
     interactionState: { type: 'idle' },
     hoveredItem: null,
-    selectedSwitches: [],
+    selectedSwitches: {},
+    highlightedRoutes: [],
+    routeElements: {},
   };
 }
