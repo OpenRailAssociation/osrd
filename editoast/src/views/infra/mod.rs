@@ -65,6 +65,7 @@ crate::routes! {
             auto_fixes::routes(),
             pathfinding::routes(),
             attached::routes(),
+            lock,
         },
     },
 }
@@ -269,7 +270,7 @@ struct InfraWithState {
 #[derive(IntoParams, Deserialize)]
 #[allow(unused)]
 struct InfraIdParam {
-    /// The ID of the infra to fix
+    /// An existing infra ID
     infra_id: i64,
 }
 
@@ -455,19 +456,26 @@ async fn get_all_voltages(db_pool: Data<DbPool>) -> Result<Json<Vec<String>>> {
     Ok(Json(voltages.into_iter().map(|el| (el.voltage)).collect()))
 }
 
-async fn set_locked(infra: i64, locked: bool, db_pool: Arc<DbPool>) -> Result<()> {
+async fn set_locked(infra_id: i64, locked: bool, db_pool: Arc<DbPool>) -> Result<()> {
     let conn = &mut db_pool.get().await?;
     let mut infra =
-        Infra::retrieve_or_fail(conn, infra, || InfraApiError::NotFound { infra_id: infra })
-            .await?;
+        Infra::retrieve_or_fail(conn, infra_id, || InfraApiError::NotFound { infra_id }).await?;
     infra.locked = locked;
     infra.save(conn).await
 }
 
 /// Lock an infra
+#[utoipa::path(
+    tag = "infra",
+    params(InfraIdParam),
+    responses(
+        (status = 204, description = "The infra was locked successfully"),
+        (status = 404, description = "The infra was not found",),
+    )
+)]
 #[post("/lock")]
-async fn lock(infra: Path<i64>, db_pool: Data<DbPool>) -> Result<HttpResponse> {
-    set_locked(*infra, true, db_pool.into_inner()).await?;
+async fn lock(infra: Path<InfraIdParam>, db_pool: Data<DbPool>) -> Result<HttpResponse> {
+    set_locked(infra.infra_id, true, db_pool.into_inner()).await?;
     Ok(HttpResponse::NoContent().finish())
 }
 
