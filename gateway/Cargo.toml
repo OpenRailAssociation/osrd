@@ -51,8 +51,12 @@ phf = "0.11"
 
 # actix_auth
 actix-web-httpauth = "0.8"
-openidconnect = { version = "3.4", default-features = false }
-reqwest = { version = "0.11", default-features = false, features = [
+
+# switch to https://github.com/ramosbugs/openidconnect-rs/pull/165 if it ever lands
+openidconnect = { git = "https://github.com/multun/openidconnect-rs.git", branch = "updated-at-string", features = [
+  "accept-string-epoch",
+] }
+reqwest = { version = "0.12", default-features = false, features = [
   "rustls-tls-native-roots",
 ] }
 url = "2.4"
