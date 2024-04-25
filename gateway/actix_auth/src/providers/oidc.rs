@@ -5,11 +5,11 @@ use actix_web::{http::StatusCode, web, FromRequest, HttpRequest, HttpResponse};
 use futures_util::future::LocalBoxFuture;
 use log::error;
 use openidconnect::core::{CoreAuthenticationFlow, CoreClient, CoreProviderMetadata};
-use openidconnect::reqwest::async_http_client;
 use openidconnect::{
     AccessTokenHash, AuthorizationCode, ClientId, ClientSecret, CsrfToken, DiscoveryError,
     IssuerUrl, LocalizedClaim, Nonce, OAuth2TokenResponse, RedirectUrl, Scope, TokenResponse,
 };
+use openidconnect::{EndpointMaybeSet, EndpointNotSet, EndpointSet, HttpClientError};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
@@ -51,7 +51,16 @@ impl OidcConfig {
 
 #[derive(Clone)]
 pub struct OidcProvider {
-    pub client: Box<CoreClient>,
+    pub client: Box<
+        CoreClient<
+            EndpointSet,
+            EndpointNotSet,
+            EndpointNotSet,
+            EndpointNotSet,
+            EndpointMaybeSet,
+            EndpointMaybeSet,
+        >,
+    >,
     pub post_login_url: Box<url::Url>,
     pub profile_scope_override: Option<String>,
     pub username_whitelist: Option<HashSet<String>>,
@@ -60,11 +69,11 @@ pub struct OidcProvider {
 impl OidcProvider {
     pub async fn from_config(
         config: &OidcConfig,
-    ) -> Result<Self, DiscoveryError<openidconnect::reqwest::Error<reqwest::Error>>> {
+    ) -> Result<Self, DiscoveryError<HttpClientError<reqwest::Error>>> {
+        let client = reqwest::Client::new();
         // Use OpenID Connect Discovery to fetch the provider metadata.
         let provider_metadata =
-            CoreProviderMetadata::discover_async(*config.issuer_url.clone(), async_http_client)
-                .await?;
+            CoreProviderMetadata::discover_async(*config.issuer_url.clone(), &client).await?;
 
         let client = Box::new(
             CoreClient::from_provider_metadata(
@@ -167,10 +176,15 @@ impl SessionProvider for OidcProvider {
             }
 
             // Now you can exchange it for an access token and ID token.
+            let client = reqwest::Client::new();
             let token_response = self
                 .client
                 .exchange_code(AuthorizationCode::new(info.code.clone()))
-                .request_async(async_http_client)
+                .map_err(|err| {
+                    error!("invalid configuration state during code exchange: {err:?}");
+                    CallbackError::CodeExchangeError
+                })?
+                .request_async(&client)
                 .await
                 .map_err(|err| {
                     error!("unable to exchange code: {err:?}");
@@ -181,23 +195,30 @@ impl SessionProvider for OidcProvider {
             let id_token = token_response
                 .id_token()
                 .ok_or(CallbackError::MissingIDToken)?;
-            let claims = id_token
-                .claims(&self.client.id_token_verifier(), nonce)
-                .map_err(|err| {
-                    error!("unable to verify ID token signature: {err:?}");
-                    CallbackError::InvalidIDTokenSignature
-                })?;
+            let id_token_verifier = self.client.id_token_verifier();
+            let claims = id_token.claims(&id_token_verifier, nonce).map_err(|err| {
+                error!("unable to verify ID token signature: {err:?}");
+                CallbackError::InvalidIDTokenSignature
+            })?;
 
             // Verify the access token hash to ensure that the access token hasn't been substituted for
             // another user's.
             if let Some(expected_access_token_hash) = claims.access_token_hash() {
                 // this should never fail, as claims verification alreay validates the signing alg
-                let signing_alg = &id_token
-                    .signing_alg()
-                    .expect("failed to get the signing alg");
-                let actual_access_token_hash =
-                    AccessTokenHash::from_token(token_response.access_token(), signing_alg)
-                        .map_err(|_| CallbackError::InvalidAccessTokenSignature)?;
+                let signing_alg = id_token.signing_alg().map_err(|err| {
+                    error!("cannot fetch ID token signing alg: {err:?}");
+                    CallbackError::InvalidIDTokenSignature
+                })?;
+                let signing_key = id_token.signing_key(&id_token_verifier).map_err(|err| {
+                    error!("cannot fetch ID token signing key: {err:?}");
+                    CallbackError::InvalidIDTokenSignature
+                })?;
+                let actual_access_token_hash = AccessTokenHash::from_token(
+                    token_response.access_token(),
+                    signing_alg,
+                    signing_key,
+                )
+                .map_err(|_| CallbackError::InvalidAccessTokenSignature)?;
                 if actual_access_token_hash != *expected_access_token_hash {
                     return Err(CallbackError::InvalidAccessTokenSignature.into());
                 }

@@ -19,7 +19,7 @@ serde.workspace = true
 thiserror.workspace = true
 
 # oidc
-openidconnect = { workspace = true, features = ["jwk-alg", "reqwest"] }
+openidconnect = { workspace = true, features = ["reqwest"] }
 reqwest = { workspace = true, features = ["json"] }
 url.workspace = true
 
