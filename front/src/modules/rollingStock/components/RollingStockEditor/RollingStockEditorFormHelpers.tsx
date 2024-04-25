@@ -30,6 +30,18 @@ type RollingStockMetadataFormProps = {
   ) => void;
 };
 
+const mandatoryFields = [
+  'name',
+  'length',
+  'startupAcceleration',
+  'comfortAcceleration',
+  'startupTime',
+  'gammaValue',
+  'inertiaCoefficient',
+  'electricalPowerStartupTime',
+  'raisePantographTime',
+];
+
 const RollingStockEditorMetadataFormColumn = ({
   propertiesList,
   rollingStockValues,
@@ -44,7 +56,9 @@ const RollingStockEditorMetadataFormColumn = ({
           containerClass="col-6 px-0"
           id={property.title}
           name={property.title}
-          label={t(property.title)}
+          label={
+            mandatoryFields.includes(property.title) ? `${t(property.title)} *` : t(property.title)
+          }
           type={property.type}
           value={rollingStockValues[property.title] as string | number}
           onChange={(e) =>
@@ -218,7 +232,11 @@ const RollingStockEditorParameterFormColumn = ({
             noMargin={isLast}
             id={property.title}
             name={property.title}
-            label={t(property.title)}
+            label={
+              mandatoryFields.includes(property.title)
+                ? `${t(property.title)} *`
+                : t(property.title)
+            }
             type={property.type}
             step="any"
             min={property.min}
