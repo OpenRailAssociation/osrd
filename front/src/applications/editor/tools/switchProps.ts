@@ -14,10 +14,12 @@ import type { RouteEditionState } from './routeEdition/types';
 import type { SelectionState } from './selection/types';
 import type { SwitchEditionState } from './switchEdition/types';
 import type { TrackEditionState } from './trackEdition/types';
+import type { TrackSplitState } from './trackSplit/types';
 
 export type switchProps =
   | { toolType: TOOL_NAMES.SELECTION; toolState: Partial<SelectionState> }
   | { toolType: TOOL_NAMES.TRACK_EDITION; toolState: Partial<TrackEditionState> }
+  | { toolType: TOOL_NAMES.TRACK_SPLIT; toolState: Partial<TrackSplitState> }
   | {
       toolType: TOOL_NAMES.SPEED_SECTION_EDITION;
       toolState: Partial<RangeEditionState<SpeedSectionEntity>>;

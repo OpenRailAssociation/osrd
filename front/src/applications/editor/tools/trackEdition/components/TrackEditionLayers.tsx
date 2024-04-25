@@ -14,8 +14,8 @@ import GeoJSONs from 'common/Map/Layers/GeoJSONs';
 import { useInfraID } from 'common/osrdContext';
 import { getMap } from 'reducers/map/selectors';
 
-const TRACK_COLOR = '#666';
-const TRACK_STYLE = { 'line-color': TRACK_COLOR, 'line-dasharray': [2, 1], 'line-width': 2 };
+export const TRACK_COLOR = '#666';
+export const TRACK_STYLE = { 'line-color': TRACK_COLOR, 'line-dasharray': [2, 1], 'line-width': 2 };
 
 const TrackEditionLayers = () => {
   const {

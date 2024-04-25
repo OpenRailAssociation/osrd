@@ -548,7 +548,7 @@
         "title": "Curves"
       },
       "length": {
-        "description": "Longueur du TIV (en mètres)",
+        "description": "Length of the track section (in meters)",
         "title": "Length"
       },
       "loading_gauge_limits": {

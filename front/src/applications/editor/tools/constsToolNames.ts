@@ -3,6 +3,7 @@
 enum TOOL_NAMES {
   SELECTION = 'select-items',
   TRACK_EDITION = 'track-edition',
+  TRACK_SPLIT = 'track-split',
   SPEED_SECTION_EDITION = 'speed-edition',
   ELECTRIFICATION_EDITION = 'electrification',
   SWITCH_EDITION = 'switch-edition',

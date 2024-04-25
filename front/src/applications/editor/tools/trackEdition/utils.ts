@@ -1,6 +1,5 @@
 import { cloneDeep } from 'lodash';
 
-import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
 import { DEFAULT_COMMON_TOOL_STATE } from 'applications/editor/tools/consts';
 import type {
   ElectrificationEntity,
@@ -10,25 +9,8 @@ import type {
 import type { EditorEntity } from 'applications/editor/typesEditorEntity';
 import type { LinearMetadataItem } from 'common/IntervalsDataViz/types';
 
-import type { TrackEditionState, TrackSectionEntity } from './types';
-
-function getNewLine(points: [number, number][]): TrackSectionEntity {
-  return {
-    type: 'Feature',
-    objType: 'TrackSection',
-    geometry: {
-      type: 'LineString',
-      coordinates: points,
-    },
-    properties: {
-      id: NEW_ENTITY_ID,
-      length: 0,
-      slopes: [],
-      curves: [],
-      loading_gauge_limits: [],
-    },
-  };
-}
+import type { TrackEditionState } from './types';
+import { getNewLine } from '../utils';
 
 export function getInitialState(): TrackEditionState {
   const track = getNewLine([]);

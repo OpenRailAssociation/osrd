@@ -11,7 +11,7 @@ import { LAYER_TO_EDITOAST_DICT, LAYERS_SET, type Layer } from 'applications/edi
 import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
 import { DEFAULT_COMMON_TOOL_STATE } from 'applications/editor/tools/consts';
 import type { TrackSectionEntity } from 'applications/editor/tools/trackEdition/types';
-import { approximateDistanceWithEditoastData } from 'applications/editor/tools/utils';
+import { approximatePointDistanceForEditoast } from 'applications/editor/tools/utils';
 import type { PartialOrReducer, ReadOnlyEditorContextType, Tool } from 'applications/editor/types';
 import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { save } from 'reducers/editor/thunkActions';
@@ -403,7 +403,7 @@ function getRangeEditionTool<T extends EditorRange>({
         const newEntity = cloneDeep(entity);
         const newRange = (newEntity.properties?.track_ranges || [])[interactionState.rangeIndex];
 
-        const distanceAlongTrack = approximateDistanceWithEditoastData(
+        const distanceAlongTrack = approximatePointDistanceForEditoast(
           track,
           nearestPoint.geometry
         );

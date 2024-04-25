@@ -9,7 +9,7 @@ import type { MapLayerMouseEvent } from 'maplibre-gl';
 import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
 import type { TrackRange, TrackSectionEntity } from 'applications/editor/tools/trackEdition/types';
 import {
-  approximateDistanceWithEditoastData,
+  approximatePointDistanceForEditoast,
   getHoveredTrackRanges,
   getTrackSectionEntityFromNearestPoint,
 } from 'applications/editor/tools/utils';
@@ -74,7 +74,7 @@ export function getPslSignNewPosition(
   if (!trackSection) {
     return null;
   }
-  const distanceAlongTrack = approximateDistanceWithEditoastData(
+  const distanceAlongTrack = approximatePointDistanceForEditoast(
     trackSection,
     nearestPoint.geometry
   );

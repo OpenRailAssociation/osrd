@@ -186,7 +186,7 @@ const Editor = () => {
           group.filter((action) => !action.isHidden || !action.isHidden(extendedContext))
         )
         .filter((group) => group.length),
-    [toolAndState.tool]
+    [toolAndState.tool, extendedContext]
   );
   /**
    * When the component mounts
@@ -212,8 +212,8 @@ const Editor = () => {
       if (!params && searchParams.size !== 0) {
         dispatch(
           setFailure({
-            name: t('translation:Editor.tools.select-items.errors.unable-to-select'),
-            message: t('translation:Editor.tools.select-items.errors.invalid-url'),
+            name: t('Editor.tools.select-items.errors.unable-to-select'),
+            message: t('Editor.tools.select-items.errors.invalid-url'),
           })
         );
         navigate(`/editor/${urlInfra}`);
@@ -250,8 +250,8 @@ const Editor = () => {
             dispatch(
               setFailure(
                 castErrorToFailure(e, {
-                  name: t('translation:Editor.tools.select-items.errors.unable-to-select'),
-                  message: t('translation:Editor.tools.select-items.errors.invalid-url'),
+                  name: t('Editor.tools.select-items.errors.unable-to-select'),
+                  message: t('Editor.tools.select-items.errors.invalid-url'),
                 })
               )
             );
@@ -337,6 +337,7 @@ const Editor = () => {
               const { id, icon: IconComponent, labelTranslationKey } = tool;
               const label = t(labelTranslationKey);
 
+              if (tool.isHidden && tool.isHidden(extendedContext)) return null;
               return (
                 <Tipped key={id} mode="right">
                   <button
@@ -347,7 +348,11 @@ const Editor = () => {
                       'editor-btn'
                     )}
                     onClick={() => {
-                      switchTool({ toolType, toolState: {} });
+                      if (tool.onClick) {
+                        tool.onClick(extendedContext);
+                      } else {
+                        switchTool({ toolType, toolState: {} });
+                      }
                     }}
                   >
                     <span className="sr-only">{label}</span>
@@ -393,7 +398,6 @@ const Editor = () => {
                   </Tipped>
                 );
               });
-
               return i < a.length - 1
                 ? [...actions, <div key={`separator-${i}`} className="separator" />]
                 : actions;

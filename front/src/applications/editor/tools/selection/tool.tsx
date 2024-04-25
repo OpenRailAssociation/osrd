@@ -6,6 +6,7 @@ import type { PointLike } from 'maplibre-gl';
 import { BiLoader, BiSelection } from 'react-icons/bi';
 import { BsCursor } from 'react-icons/bs';
 import { FaDrawPolygon } from 'react-icons/fa';
+import { FaScissors } from 'react-icons/fa6';
 import { FiEdit } from 'react-icons/fi';
 
 import { LAYER_TO_EDITOAST_DICT, type Layer } from 'applications/editor/consts';
@@ -19,6 +20,8 @@ import { selectInZone } from 'utils/mapHelper';
 
 import { SelectionLayers, SelectionMessages, SelectionLeftPanel } from './components';
 import type { SelectionState } from './types';
+import TOOL_NAMES from '../constsToolNames';
+import type { TrackSectionEntity } from '../trackEdition/types';
 
 const SelectionTool: Tool<SelectionState> = {
   id: 'select-items',
@@ -89,6 +92,28 @@ const SelectionTool: Tool<SelectionState> = {
           if (state.selection.length === 1) {
             const selectedElement = state.selection[0];
             openEntityEditionPanel(selectedElement, { switchTool });
+          }
+        },
+      },
+    ],
+    [
+      {
+        id: 'split-track-section',
+        icon: FaScissors,
+        labelTranslationKey: 'Editor.tools.select-items.actions.split-track-section',
+        isHidden({ state }) {
+          return !(state.selection.length === 1 && state.selection[0].objType === 'TrackSection');
+        },
+        onClick({ state, switchTool }) {
+          if (state.selection.length === 1) {
+            const selectedElement = state.selection[0] as TrackSectionEntity;
+            switchTool({
+              toolType: TOOL_NAMES.TRACK_SPLIT,
+              toolState: {
+                track: selectedElement,
+                offset: Math.round((selectedElement.properties.length * 1000) / 2),
+              },
+            });
           }
         },
       },

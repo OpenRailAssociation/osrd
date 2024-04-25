@@ -215,3 +215,45 @@ export function save(
   ];
   return saveOperations(infraID, payload);
 }
+
+export function saveSplitTrackSection(
+  infraId: number | undefined,
+  trackId: string,
+  offset: number
+) {
+  return async (dispatch: AppDispatch): Promise<string[]> => {
+    dispatch(setLoading());
+    try {
+      if (isNil(infraId)) throw new Error('No infrastructure');
+      const response = await dispatch(
+        osrdEditoastApi.endpoints.postInfraByInfraIdSplitTrackSection.initiate({
+          infraId,
+          trackOffset: { track: trackId, offset },
+        })
+      );
+      if ('data' in response) {
+        // success message
+        dispatch(
+          setSuccess({
+            title: i18next.t('common.success.save.title'),
+            text: i18next.t('common.success.save.text'),
+          })
+        );
+        return response.data;
+      }
+      throw response.error;
+    } catch (e) {
+      dispatch(
+        setFailure(
+          castErrorToFailure(e, {
+            name: i18next.t('common.failure.save.title'),
+            message: i18next.t('common.failure.save.text'),
+          })
+        )
+      );
+      throw e;
+    } finally {
+      dispatch(updateTotalsIssue(infraId));
+    }
+  };
+}
