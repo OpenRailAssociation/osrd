@@ -1,4 +1,5 @@
 {
+    "timetable_version": 1,
     "error_type": "SCHEDULE",
     "code": 500,
     "error": "{\"status\":500,\"type\":\"allowance_convergence\",\"context\":{\"trace\":[{\"index\":0}],\"url\":\"http://localhost:8080/standalone_simulation\"},\"message\":\"We could not go fast enough in this setting to match the given allowance time\"}",

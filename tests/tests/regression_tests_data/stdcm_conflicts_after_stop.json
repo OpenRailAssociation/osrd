@@ -1,4 +1,5 @@
 {
+    "timetable_version": 1,
     "error_type": "STDCM",
     "code": 500,
     "error": "{\"status\":500,\"type\":\"unknown_error\",\"context\":{\"url\":\"http://localhost:8080/stdcm\",\"stack_trace\":[\"PostProcessingSimulation.kt:125\",\"PostProcessingSimulation.kt:130\",\"PostProcessingSimulation.kt:55\",\"STDCMPostProcessing.kt:69\",\"STDCMPathfinding.kt:80\",\"STDCMEndpoint.kt:66\",\"FkRegex.java:153\",\"FkRegex.java:217\",\"FkChain.java:72\",\"TkFork.java:98\",\"TkFallback.java:84\",\"TkFallback.java:66\",\"TkWrap.java:58\",\"TkSlf4j.java:110\",\"BkBasic.java:123\",\"BkBasic.java:99\",\"BkSafe.java:46\",\"BkWrap.java:51\",\"BkParallel.java:81\",\"ThreadPoolExecutor.java:1136\",\"ThreadPoolExecutor.java:635\",\"Thread.java:840\"],\"message\":\"Failed to compute a standard allowance that wouldn't cause conflicts\",\"exception_type\":\"class java.lang.RuntimeException\"},\"message\":\"An unknown exception was thrown\"}",

@@ -1,4 +1,5 @@
 {
+    "timetable_version": 1,
     "error_type": "SCHEDULE",
     "code": 500,
     "error": "{\"type\":\"\",\"context\":{\"trace\":[{\"index\":1}]},\"message\":\"Failed to converge when computing allowances because of a discontinuity in the search space\"}",

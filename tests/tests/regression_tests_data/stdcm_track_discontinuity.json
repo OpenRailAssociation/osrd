@@ -1,4 +1,5 @@
 {
+  "timetable_version": 1,
   "error_type": "STDCM",
   "code": 500,
   "error": "[very_long_html]",
