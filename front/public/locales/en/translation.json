@@ -371,6 +371,7 @@
           "polygon": "Polygon select",
           "rectangle": "Rectangle select",
           "single": "Simple select",
+          "split-track-section": "Split the track section",
           "unselect-all": "Deselect all"
         },
         "errors": {
@@ -498,6 +499,23 @@
         "only-show-n": "Only show the first {{count}} results",
         "show-more-ranges_one": "Show one more result",
         "show-more-ranges_other": "Show {{count}} more results"
+      },
+      "track-split": {
+        "title": "Split",
+        "label": "Track tool",
+        "offset": {
+          "label": "Position",
+          "description": "Offset of the point in meters to the beginning of the track section",
+          "error": "The offset of the split point to the beginning must be greater than 0 and smaller than {{max}}"
+        },
+        "actions": {
+          "save": "Save the split"
+        },
+        "help": {
+          "move": "Click to validate the move, or press 'esc' to cancel",
+          "hover": "Click on the point to be able to move it",
+          "split": "Click on the track section to split it at this location"
+        }
       }
     }
   },

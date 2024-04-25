@@ -21,6 +21,7 @@ use serde_json::json;
 use std::collections::HashMap;
 use thiserror::Error;
 use tracing::error;
+use tracing::info;
 use uuid::Uuid;
 
 use crate::error::Result;
@@ -98,6 +99,11 @@ pub async fn split_track_section<'a>(
 ) -> Result<Json<Vec<String>>> {
     let payload = payload.into_inner();
     let infra_id = infra.into_inner();
+    info!(
+        track_id = payload.track.as_str(),
+        offset = payload.offset,
+        "Splitting track section"
+    );
     let conn = &mut db_pool.get().await?;
 
     // Check the infra
@@ -109,7 +115,7 @@ pub async fn split_track_section<'a>(
     let tracksection_cached = infra_cache.get_track_section(&payload.track)?.clone();
 
     // Check if the distance is compatible with the length of the TrackSection
-    let distance = (payload.offset / 1000) as f64;
+    let distance = payload.offset as f64 / 1000.0;
     let distance_fraction = distance / tracksection_cached.length;
     if distance <= 0.0 || distance >= tracksection_cached.length {
         return Err(EditionError::SplitTrackSectionBadOffset {
@@ -326,11 +332,11 @@ fn get_splitted_operations_for_impacted(
     right_tracksection_id: Uuid,
 ) -> Vec<Operation> {
     let mut operations: Vec<Operation> = Vec::<Operation>::new();
-    for obj in infra_cache
-        .track_sections_refs
-        .get(tracksection.get_id())
-        .unwrap()
-    {
+    let impacted = infra_cache.track_sections_refs.get(tracksection.get_id());
+    let Some(objs) = impacted else {
+        return vec![];
+    };
+    for obj in objs {
         match obj.obj_type {
             ObjectType::Signal => {
                 let ponctual_item = infra_cache.get_signal(&obj.obj_id).unwrap();
@@ -465,7 +471,7 @@ fn get_splitted_operations_for_impacted(
                         distance,
                         left_tracksection_id,
                         right_tracksection_id,
-                        "/extensions/psl_sncf/z/track".to_string(),
+                        "/extensions/psl_sncf/z".to_string(),
                         psl.z(),
                     ));
                     // check for `announcement`
@@ -595,7 +601,6 @@ fn get_splitted_operations_for_impacted(
             ObjectType::SwitchType => (),
         }
     }
-
     operations
 }
 

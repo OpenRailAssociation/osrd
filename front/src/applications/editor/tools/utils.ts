@@ -12,6 +12,7 @@ import type { Dispatch } from 'redux';
 import { EDITOAST_TO_LAYER_DICT } from 'applications/editor/consts';
 import type { EditoastType } from 'applications/editor/consts';
 import { getEntity } from 'applications/editor/data/api';
+import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
 import TOOL_NAMES from 'applications/editor/tools/constsToolNames';
 import type {
   BufferStopEntity,
@@ -41,14 +42,15 @@ import { nearestPointOnLine } from 'utils/geometry';
  * approximate it with a rule of Three.
  *
  * This approximation is not good if the track is long.
+ * /!\ You can define the unit, be it MUST be the same as the one used in `track.properties.length`,
+ * and of course the same as the offset
  */
-export function approximateDistanceWithEditoastData(
+export function approximateDistanceForEditoast(
   track: TrackSectionEntity,
-  point: Point,
+  offset: number,
   units: Units = 'meters'
 ) {
-  const pointOnLine = nearestPointOnLine(track.geometry, point, { units });
-  const geometryDistanceAlongTrack = pointOnLine.properties.location;
+  const geometryDistanceAlongTrack = offset;
   const geometryTrackLength = length(track, { units });
   const infraTrackLength = track.properties.length;
   const distanceAlongTrack = geometryDistanceAlongTrack * (infraTrackLength / geometryTrackLength);
@@ -57,12 +59,29 @@ export function approximateDistanceWithEditoastData(
   return Math.round(distanceAlongTrack * 100) / 100;
 }
 
+/**
+ * Compute the distance for editoast from the beginning of the track till the point.
+ * /!\ You can define the unit, be it MUST be the same as the one used in `track.properties.length`
+ */
+export function approximatePointDistanceForEditoast(
+  track: TrackSectionEntity,
+  point: Point,
+  units: Units = 'meters'
+) {
+  const pointOnLine = nearestPointOnLine(track.geometry, point, { units });
+  const geometryDistanceAlongTrack = pointOnLine.properties.location;
+  return approximateDistanceForEditoast(track, geometryDistanceAlongTrack, units);
+}
+
+/**
+ * /!\ You can define the unit, be it MUST be the same as the one used in `track.properties.length`
+ */
 export function calculateDistanceAlongTrack(
   track: Feature<LineString>,
   point: Point,
   units: Units = 'meters'
 ) {
-  return approximateDistanceWithEditoastData(track as TrackSectionEntity, point, units);
+  return approximatePointDistanceForEditoast(track as TrackSectionEntity, point, units);
 }
 
 /** return the trackRanges near the mouse thanks to the hover event */
@@ -291,4 +310,22 @@ export async function centerMapOnObject(
     // make a zoom out to have some kind of "margin" around the bbox
     mapRef.zoomOut();
   }
+}
+
+export function getNewLine(points: [number, number][]): TrackSectionEntity {
+  return {
+    type: 'Feature',
+    objType: 'TrackSection',
+    geometry: {
+      type: 'LineString',
+      coordinates: points,
+    },
+    properties: {
+      id: NEW_ENTITY_ID,
+      length: 0,
+      slopes: [],
+      curves: [],
+      loading_gauge_limits: [],
+    },
+  };
 }

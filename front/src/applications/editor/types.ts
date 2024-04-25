@@ -12,6 +12,7 @@ import type { AppDispatch } from 'store';
 
 import type { Layer } from './consts';
 import type { switchProps } from './tools/switchProps';
+import type { CommonToolState } from './tools/types';
 import type { EditorEntity } from './typesEditorEntity';
 
 export type Reducer<T> = (value: T) => T;
@@ -85,8 +86,11 @@ export type Tool<S> = {
     infraID: number | undefined;
     switchTypes: SwitchType[] | undefined;
   }) => S;
+  // When user click on tool button on the side bar.
+  onClick?: (context: ReadOnlyEditorContextType<CommonToolState>) => void;
   requiredLayers?: Set<Layer>;
   isDisabled?: (context: ReadOnlyEditorContextType<S>) => boolean;
+  isHidden?: (context: ReadOnlyEditorContextType<CommonToolState>) => boolean;
 
   // Interactions with MapLibre:
   onMount?: (context: ExtendedEditorContextType<S>) => void;

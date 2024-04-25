@@ -22,6 +22,7 @@ import { TrackEditionLayers, TrackEditionLeftPanel, TrackEditionMessages } from 
 import { POINTS_LAYER_ID, TRACK_LAYER_ID } from './consts';
 import type { TrackEditionState } from './types';
 import { getInitialState } from './utils';
+import TOOL_NAMES from '../constsToolNames';
 
 const TrackEditionTool: Tool<TrackEditionState> = {
   id: 'track-edition',
@@ -30,6 +31,9 @@ const TrackEditionTool: Tool<TrackEditionState> = {
   requiredLayers: new Set(['track_sections']),
   isDisabled({ editorState }) {
     return !editorState.editorLayers.has('track_sections');
+  },
+  isHidden({ activeTool }) {
+    return activeTool.id === TOOL_NAMES.TRACK_SPLIT;
   },
   getInitialState,
   actions: [

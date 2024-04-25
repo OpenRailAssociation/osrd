@@ -354,6 +354,7 @@
           "polygon": "Sélection polygone",
           "rectangle": "Sélection rectangle",
           "single": "Sélection simple",
+          "split-track-section": "Diviser le tronçon d'itinéraire de voie",
           "unselect-all": "Tout désélectionner"
         },
         "errors": {
@@ -481,6 +482,23 @@
         "only-show-n": "Ne montrer que les {{count}} premiers résultats",
         "show-more-ranges_one": "Voir un résultat de plus",
         "show-more-ranges_other": "Voir {{count}} résultats de plus"
+      },
+      "track-split": {
+        "title": "Découpe",
+        "label": "Outil de division de TIV",
+        "offset": {
+          "label": "Position",
+          "description": "Distance entre le point et le début du TIV (en mètres)",
+          "error": "La position doit être un nombre compris entre 0 et {{max}}"
+        },
+        "actions": {
+          "save": "Sauvegarder la division"
+        },
+        "help": {
+          "move": "Cliquer pour valider le déplacement, ou appuyer sur 'esc' pour annuler",
+          "hover": "Cliquer sur le point pour pouvoir le déplacer",
+          "split": "Cliquer sur la TIV pour la diviser à cette localisation"
+        }
       }
     }
   },

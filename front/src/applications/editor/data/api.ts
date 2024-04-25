@@ -32,7 +32,7 @@ export async function getEntities<T extends EditorEntity = EditorEntity>(
   const uniqIDs = uniq(ids);
   const results = await dispatch(
     osrdEditoastApi.endpoints.postInfraByIdObjectsAndObjectType.initiate({
-      id: infraId as number,
+      id: infraId,
       objectType: type,
       body: uniqIDs,
     })
