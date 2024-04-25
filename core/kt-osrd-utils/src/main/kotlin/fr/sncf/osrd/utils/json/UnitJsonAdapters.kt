@@ -11,9 +11,13 @@ import java.lang.reflect.Type
  * Utility class, used to put Distances directly in json-adaptable classes. A value of type `long`
  * will be expected, representing millimeters.
  */
-class DistanceAdapter : JsonAdapter<Distance>() {
+class DistanceAdapter : JsonAdapter<Distance?>() {
     @FromJson
-    override fun fromJson(reader: JsonReader): Distance {
+    override fun fromJson(reader: JsonReader): Distance? {
+        if (reader.peek() == JsonReader.Token.NULL) {
+            reader.skipValue()
+            return null
+        }
         return Distance(millimeters = reader.nextLong())
     }
 
@@ -27,9 +31,13 @@ class DistanceAdapter : JsonAdapter<Distance>() {
  * Utility class, used to put Offsets and Lengths directly in json-adaptable classes. A value of
  * type `long` will be expected, representing millimeters.
  */
-class OffsetAdapter<T> : JsonAdapter<Offset<T>>() {
+class OffsetAdapter<T> : JsonAdapter<Offset<T>?>() {
     @FromJson
-    override fun fromJson(reader: JsonReader): Offset<T> {
+    override fun fromJson(reader: JsonReader): Offset<T>? {
+        if (reader.peek() == JsonReader.Token.NULL) {
+            reader.skipValue()
+            return null
+        }
         return Offset(Distance(millimeters = reader.nextLong()))
     }
 
@@ -43,9 +51,13 @@ class OffsetAdapter<T> : JsonAdapter<Offset<T>>() {
  * Utility class, used to put Durations directly in json-adaptable classes. A value of type `long`
  * will be expected, representing milliseconds.
  */
-class DurationAdapter : JsonAdapter<Duration>() {
+class DurationAdapter : JsonAdapter<Duration?>() {
     @FromJson
-    override fun fromJson(reader: JsonReader): Duration {
+    override fun fromJson(reader: JsonReader): Duration? {
+        if (reader.peek() == JsonReader.Token.NULL) {
+            reader.skipValue()
+            return null
+        }
         return Duration(milliseconds = reader.nextLong())
     }
 
