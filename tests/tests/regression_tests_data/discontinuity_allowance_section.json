@@ -1,4 +1,5 @@
 {
+  "timetable_version": 1,
   "error_type": "SCHEDULE",
   "code": 500,
   "error": "{\"type\":\"core:assert_error\",\"cause\":\"INTERNAL\",\"message\":\"Discontinuity in allowance section\",\"stackTrace\":[\"AbstractAllowanceWithRanges.java:333\",\"AbstractAllowanceWithRanges.java:280\",\"AbstractAllowanceWithRanges.java:257\",\"AbstractAllowanceWithRanges.java:187\",\"AbstractAllowanceWithRanges.java:129\",\"StandaloneSim.java:95\",\"StandaloneSim.java:58\",\"StandaloneSimulationEndpoint.java:85\",\"FkRegex.java:157\",\"FkRegex.java:228\",\"FkChain.java:72\",\"TkFork.java:98\",\"TkFallback.java:89\",\"TkFallback.java:57\",\"TkFallback.java:69\",\"TkWrap.java:58\",\"TkSlf4j.java:110\",\"BkBasic.java:127\",\"BkBasic.java:102\",\"BkSafe.java:49\",\"BkWrap.java:51\",\"BkParallel.java:87\",\"ThreadPoolExecutor.java:1136\",\"ThreadPoolExecutor.java:635\",\"Thread.java:833\"],\"trace\":[]}",
