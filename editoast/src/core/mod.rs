@@ -30,6 +30,7 @@ use thiserror::Error;
 use tracing::debug;
 use tracing::error;
 use tracing::info;
+use tracing::instrument;
 
 #[cfg(test)]
 use crate::core::mocking::MockingError;
@@ -95,6 +96,7 @@ impl CoreClient {
         CoreError::UnparsableErrorOutput.into()
     }
 
+    #[instrument(name = "coreclient::fetch", skip(self, body))]
     async fn fetch<B: Serialize, R: CoreResponse>(
         &self,
         method: reqwest::Method,
@@ -106,13 +108,36 @@ impl CoreClient {
         debug!(target: "editoast::coreclient", "Request content: {body}", body = body.and_then(|b| serde_json::to_string_pretty(b).ok()).unwrap_or_default());
         match self {
             CoreClient::Direct(client) => {
+                use opentelemetry::global as otel;
+                use opentelemetry_http::HeaderInjector;
+
+                use tracing::Span;
+                use tracing_opentelemetry::OpenTelemetrySpanExt;
+
+                let ctx = Span::current().context();
+
                 let mut i_try = 0;
                 let response = loop {
                     let mut request = client.request(method.clone(), path);
                     if let Some(body) = body {
                         request = request.json(body);
                     }
-                    match request.send().await.map_err(Into::<CoreError>::into) {
+
+                    let mut request = request.build()?;
+
+                    dbg!(&ctx);
+
+                    otel::get_text_map_propagator(|propagator| {
+                        propagator.inject_context(&ctx, &mut HeaderInjector(request.headers_mut()));
+                    });
+
+                    dbg!(request.headers());
+
+                    match client
+                        .execute(request)
+                        .await
+                        .map_err(Into::<CoreError>::into)
+                    {
                         // This error occurs quite often in the CI.
                         // It's linked to this issue https://github.com/hyperium/hyper/issues/2136.
                         // This is why we retry the request here.
