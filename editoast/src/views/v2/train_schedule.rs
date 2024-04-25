@@ -455,6 +455,7 @@ async fn build_simulation_request(
                 .stop_for
                 .as_ref()
                 .map(|t| t.num_milliseconds() as u64),
+            on_stop_signal: None,
         })
         .collect();
 

@@ -113,19 +113,22 @@ class StandaloneSimulationTest {
                     thirdDistance,
                     maxEffortEnvelope.interpolateTotalTime(thirdDistance.distance.meters).seconds +
                         60.seconds,
-                    null
+                    null,
+                    false
                 ),
                 SimulationScheduleItem(
                     halfDistance,
                     maxEffortEnvelope.interpolateTotalTime(halfDistance.distance.meters).seconds +
                         120.seconds,
-                    15.seconds
+                    15.seconds,
+                    false
                 ),
-                SimulationScheduleItem(twoThirdDistance, null, 30.seconds),
+                SimulationScheduleItem(twoThirdDistance, null, 30.seconds, false),
                 SimulationScheduleItem(
                     pathLength,
                     maxEffortEnvelope.totalTime.seconds + 300.seconds,
-                    0.seconds
+                    0.seconds,
+                    false
                 ),
             )
 

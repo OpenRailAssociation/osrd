@@ -106,6 +106,8 @@ pub struct SimulationScheduleItem {
     pub arrival: Option<u64>,
     /// Duration of the stop in ms
     pub stop_for: Option<u64>,
+    /// Whether the next signal is expected to be blocking while stopping
+    pub on_stop_signal: Option<bool>,
 }
 
 #[derive(Debug, Serialize, Hash)]

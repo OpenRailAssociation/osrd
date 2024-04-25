@@ -93,6 +93,7 @@ class SimulationScheduleItem(
     @Json(name = "path_offset") val pathOffset: Offset<Path>,
     val arrival: TimeDelta?,
     @Json(name = "stop_for") val stopFor: Duration?,
+    @Json(name = "on_stop_signal") val onStopSignal: Boolean,
 )
 
 sealed class MarginValue {
