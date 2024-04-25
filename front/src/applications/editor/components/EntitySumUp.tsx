@@ -1,4 +1,4 @@
-import React, { type FC, useEffect, useState } from 'react';
+import React, { type FC, useEffect, useState, Fragment } from 'react';
 
 import cx from 'classnames';
 import type { TFunction } from 'i18next';
@@ -113,6 +113,7 @@ function getSumUpContent(
   let text = '';
   const subtexts: (string | JSX.Element)[] = [];
   const classes = { ...DEFAULT_CLASSES, ...(classesOverride || {}) };
+  const sources: string[] = [];
 
   switch (entity.objType) {
     case 'TrackSection': {
@@ -125,6 +126,10 @@ function getSumUpContent(
         text = trackSection.properties.id;
       }
       if (attrs.line_name) subtexts.unshift(attrs.line_name);
+      const source = trackSection.properties.extensions?.source;
+      if (source) {
+        sources.push(`${source.name} ${source.id}`);
+      }
       break;
     }
     // @ts-expect-error: Here we only deal with the installation_type, the rest is handled with BufferStop and Detector.
@@ -280,6 +285,14 @@ function getSumUpContent(
           {s}
         </div>
       ))}
+      {sources.length > 0 && (
+        <div>
+          <span className={cx(classes.strong, 'mr-2')}>
+            {t(`Editor.tools.select-items.sources`)}
+          </span>
+          {sources.join(', ')}
+        </div>
+      )}
     </div>
   );
 }

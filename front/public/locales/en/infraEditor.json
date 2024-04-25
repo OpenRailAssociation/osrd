@@ -582,6 +582,18 @@
       }
     }
   },
+  "TrackSectionSourceExtension": {
+    "properties": {
+      "name": {
+        "title": "Source",
+        "description": "Name of the source"
+      },
+      "id": {
+        "title": "Source ID",
+        "description": "ID of the element within the source"
+      }
+    }
+  },
   "TvmSystem": {
     "properties": {
       "next_signaling_systems": {

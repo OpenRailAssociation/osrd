@@ -377,6 +377,7 @@
         "of-type": "de type",
         "selection": "{{count}} élément sélectionné",
         "selection_plural": "{{count}} éléments sélectionnés",
+        "sources": "Sources",
         "title": "Sélection",
         "unselect": "Désélectionner"
       },

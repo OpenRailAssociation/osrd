@@ -1,12 +1,17 @@
-import React, { useContext, useEffect, useRef } from 'react';
+import React, { useContext, useEffect, useRef, useMemo } from 'react';
 
 import type { WidgetProps } from '@rjsf/utils';
+import { isNil, omit } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
 import EditorForm from 'applications/editor/components/EditorForm';
 import EntityError from 'applications/editor/components/EntityError';
 import EditorContext from 'applications/editor/context';
-import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
+import {
+  NEW_ENTITY_ID,
+  getJsonSchemaForLayer,
+  getLayerForObjectType,
+} from 'applications/editor/data/utils';
 import type {
   TrackEditionState,
   TrackSectionEntity,
@@ -32,7 +37,7 @@ const TrackEditionLeftPanel: React.FC = () => {
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
   const infraID = useInfraID();
-  const { state, setState, isFormSubmited, setIsFormSubmited } = useContext(
+  const { state, setState, isFormSubmited, setIsFormSubmited, editorState } = useContext(
     EditorContext
   ) as ExtendedEditorContextType<TrackEditionState>;
   const submitBtnRef = useRef<HTMLButtonElement>(null);
@@ -49,13 +54,39 @@ const TrackEditionLeftPanel: React.FC = () => {
     }
   }, [isFormSubmited]);
 
+  const schema = useMemo(
+    () =>
+      getJsonSchemaForLayer(
+        editorState.editorSchema,
+        getLayerForObjectType(editorState.editorSchema, track.objType) || ''
+      ),
+    [editorState.editorSchema, track.objType]
+  );
+
   return (
     <>
       <EditorForm
         data={track}
+        // Remove the source from schema if there is no source in the object
+        // To avoid to display it on the form
+        overrideSchema={
+          isNil(track.properties.extensions?.source)
+            ? omit(schema, ['$defs.TrackSectionExtensions.properties.source'])
+            : schema
+        }
         overrideUiSchema={{
           length: {
             'ui:widget': CustomLengthInput,
+          },
+          extensions: {
+            source: {
+              id: {
+                'ui:readonly': true,
+              },
+              name: {
+                'ui:readonly': true,
+              },
+            },
           },
         }}
         onSubmit={async (savedEntity) => {
