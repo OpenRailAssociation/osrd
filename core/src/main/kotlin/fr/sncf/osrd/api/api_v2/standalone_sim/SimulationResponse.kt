@@ -13,7 +13,7 @@ class SimulationResponse(
     val base: ReportTrain,
     val provisional: ReportTrain,
     @Json(name = "final_output") val finalOutput: CompleteReportTrain,
-    val mrsp: List<MRSPPoint>,
+    val mrsp: MRSPResponse,
     @Json(name = "power_restrictions") val powerRestrictions: List<PowerRestriction>,
 ) {
     companion object {
@@ -26,9 +26,9 @@ class SimulationResponse(
     }
 }
 
-class MRSPPoint(
-    val position: Offset<Path>,
-    val speed: Double,
+class MRSPResponse(
+    val positions: List<Offset<Path>>,
+    val speeds: List<Double>,
 )
 
 class CompleteReportTrain(

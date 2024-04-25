@@ -129,15 +129,23 @@ fun runStandaloneSimulation(
             schedule
         )
 
-    val mrspResponse =
-        speedLimits.iteratePoints().map { MRSPPoint(Offset(it.position.meters), it.speed) }
     return SimulationResponse(
         base = maxEffortResult,
         provisional = provisionalResult,
         finalOutput = finalEnvelopeResult,
-        mrsp = mrspResponse,
+        mrsp = makeMRSPResponse(speedLimits),
         powerRestrictions = makePowerRestrictions(curvesAndConditions, powerRestrictionsLegacyMap)
     )
+}
+
+fun makeMRSPResponse(speedLimits: Envelope): MRSPResponse {
+    val positions = mutableListOf<Offset<Path>>()
+    val speeds = mutableListOf<Double>()
+    for (point in speedLimits.iteratePoints()) {
+        positions.add(Offset(point.position.meters))
+        speeds.add(point.speed)
+    }
+    return MRSPResponse(positions, speeds)
 }
 
 /** Build the power restriction map */
