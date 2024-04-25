@@ -21,6 +21,10 @@ export type TrackSectionEntity = EditorEntity<
         track_name?: string;
         track_number?: number;
       };
+      source?: {
+        id: string;
+        name: string;
+      };
     };
   }
 > & {

@@ -394,6 +394,7 @@
         "of-type": "of type",
         "selection": "{{count}} item selected",
         "selection_plural": "{{count}} items selected",
+        "sources": "Sources",
         "title": "Select",
         "unselect": "Deselect"
       },
