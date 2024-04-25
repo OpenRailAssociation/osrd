@@ -183,10 +183,6 @@ const injectedRtkApi = api
         query: (queryArg) => ({ url: `/infra/${queryArg.id}/load/`, method: 'POST' }),
         invalidatesTags: ['infra'],
       }),
-      postInfraByIdLock: build.mutation<PostInfraByIdLockApiResponse, PostInfraByIdLockApiArg>({
-        query: (queryArg) => ({ url: `/infra/${queryArg.id}/lock/`, method: 'POST' }),
-        invalidatesTags: ['infra'],
-      }),
       postInfraByIdObjectsAndObjectType: build.mutation<
         PostInfraByIdObjectsAndObjectTypeApiResponse,
         PostInfraByIdObjectsAndObjectTypeApiArg
@@ -258,6 +254,13 @@ const injectedRtkApi = api
           url: `/infra/${queryArg.infraId}/lines/${queryArg.lineCode}/bbox/`,
         }),
         providesTags: ['infra'],
+      }),
+      postInfraByInfraIdLock: build.mutation<
+        PostInfraByInfraIdLockApiResponse,
+        PostInfraByInfraIdLockApiArg
+      >({
+        query: (queryArg) => ({ url: `/infra/${queryArg.infraId}/lock/`, method: 'POST' }),
+        invalidatesTags: ['infra'],
       }),
       postInfraByInfraIdPathfinding: build.mutation<
         PostInfraByInfraIdPathfindingApiResponse,
@@ -1101,11 +1104,6 @@ export type PostInfraByIdLoadApiArg = {
   /** infra id */
   id: number;
 };
-export type PostInfraByIdLockApiResponse = unknown;
-export type PostInfraByIdLockApiArg = {
-  /** infra id */
-  id: number;
-};
 export type PostInfraByIdObjectsAndObjectTypeApiResponse = /** status 200 No content */ {
   /** object's geographic in geojson format */
   geographic: Geometry;
@@ -1163,21 +1161,26 @@ export type GetInfraByInfraIdAttachedAndTrackIdApiArg = {
 export type GetInfraByInfraIdAutoFixesApiResponse =
   /** status 200 The list of suggested operations */ Operation[];
 export type GetInfraByInfraIdAutoFixesApiArg = {
-  /** The ID of the infra to fix */
+  /** An existing infra ID */
   infraId: number;
 };
 export type GetInfraByInfraIdLinesAndLineCodeBboxApiResponse =
   /** status 200 The BBox of the line */ Zone;
 export type GetInfraByInfraIdLinesAndLineCodeBboxApiArg = {
-  /** The ID of the infra to fix */
+  /** An existing infra ID */
   infraId: number;
   /** A line code */
   lineCode: number;
 };
+export type PostInfraByInfraIdLockApiResponse = unknown;
+export type PostInfraByInfraIdLockApiArg = {
+  /** An existing infra ID */
+  infraId: number;
+};
 export type PostInfraByInfraIdPathfindingApiResponse =
   /** status 200 A list of shortest paths between starting and ending track locations */ PathfindingOutput[];
 export type PostInfraByInfraIdPathfindingApiArg = {
-  /** The ID of the infra to fix */
+  /** An existing infra ID */
   infraId: number;
   number?: number | null;
   pathfindingInput: PathfindingInput;
@@ -1192,7 +1195,7 @@ export type PostInfraByInfraIdRoutesNodesApiResponse =
     routes: string[];
   };
 export type PostInfraByInfraIdRoutesNodesApiArg = {
-  /** The ID of the infra to fix */
+  /** An existing infra ID */
   infraId: number;
   /** A mapping node_id -> node_state | null */
   body: {
@@ -1213,7 +1216,7 @@ export type GetInfraByInfraIdRoutesTrackRangesApiResponse =
       }
   )[];
 export type GetInfraByInfraIdRoutesTrackRangesApiArg = {
-  /** The ID of the infra to fix */
+  /** An existing infra ID */
   infraId: number;
   /** A list of comma-separated route ids */
   routes: string;

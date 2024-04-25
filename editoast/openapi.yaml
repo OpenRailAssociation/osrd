@@ -8415,21 +8415,6 @@ paths:
       summary: Load an infra if not loaded
       tags:
       - infra
-  /infra/{id}/lock/:
-    post:
-      parameters:
-      - description: infra id
-        in: path
-        name: id
-        required: true
-        schema:
-          type: integer
-      responses:
-        '204':
-          description: No content
-      summary: Lock an infra from edition
-      tags:
-      - infra
   /infra/{id}/objects/{object_type}/:
     post:
       parameters:
@@ -8639,7 +8624,7 @@ paths:
     get:
       description: Retrieve a list of operations to fix infra issues
       parameters:
-      - description: The ID of the infra to fix
+      - description: An existing infra ID
         in: path
         name: infra_id
         required: true
@@ -8662,7 +8647,7 @@ paths:
     get:
       description: Returns the BBoxes (geo and schematic) of a line
       parameters:
-      - description: The ID of the infra to fix
+      - description: An existing infra ID
         in: path
         name: infra_id
         required: true
@@ -8686,11 +8671,30 @@ paths:
       summary: Returns the BBoxes (geo and schematic) of a line
       tags:
       - infra
+  /infra/{infra_id}/lock/:
+    post:
+      description: Lock an infra
+      parameters:
+      - description: An existing infra ID
+        in: path
+        name: infra_id
+        required: true
+        schema:
+          format: int64
+          type: integer
+      responses:
+        '204':
+          description: The infra was locked successfully
+        '404':
+          description: The infra was not found
+      summary: Lock an infra
+      tags:
+      - infra
   /infra/{infra_id}/pathfinding/:
     post:
       description: This endpoint search path between starting and ending track locations
       parameters:
-      - description: The ID of the infra to fix
+      - description: An existing infra ID
         in: path
         name: infra_id
         required: true
@@ -8728,7 +8732,7 @@ paths:
     post:
       description: Returns the list of routes crossing the specified nodes, along with the available positions for each of them.
       parameters:
-      - description: The ID of the infra to fix
+      - description: An existing infra ID
         in: path
         name: infra_id
         required: true
@@ -8777,7 +8781,7 @@ paths:
     get:
       description: Compute the track ranges through which routes passes.
       parameters:
-      - description: The ID of the infra to fix
+      - description: An existing infra ID
         in: path
         name: infra_id
         required: true
