@@ -76,7 +76,9 @@ impl OidcProvider {
             .set_redirect_uri(*config.callback_url.clone()),
         );
 
-        log::debug!("username_whitelist: {config.username_whitelist:?}");
+        let username_list = config.username_whitelist.clone();
+
+        log::debug!("username_whitelist: {username_list:?}");
 
         Ok(Self {
             client,
