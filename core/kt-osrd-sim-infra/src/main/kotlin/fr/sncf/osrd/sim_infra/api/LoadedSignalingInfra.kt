@@ -118,3 +118,9 @@ interface BlockInfra {
 fun InfraSigSystemManager.findSignalingSystemOrThrow(sigSystem: String): SignalingSystemId {
     return findSignalingSystem(sigSystem) ?: throw OSRDError.newSignalingError(sigSystem)
 }
+
+fun BlockInfra.convertBlockPath(blocks: List<String>): StaticIdxList<Block> {
+    val res = mutableStaticIdxArrayListOf<Block>()
+    for (block in blocks) res.add(getBlockFromName(block)!!)
+    return res
+}
