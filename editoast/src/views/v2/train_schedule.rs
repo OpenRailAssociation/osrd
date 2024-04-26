@@ -36,6 +36,7 @@ use crate::core::v2::simulation::SimulationScheduleItem;
 use crate::core::v2::simulation::ZoneUpdate;
 use crate::core::AsCoreRequest;
 use crate::core::CoreClient;
+use crate::error::InternalError;
 use crate::error::Result;
 use crate::modelsv2::infra::Infra;
 use crate::modelsv2::timetable::Timetable;
@@ -293,7 +294,9 @@ enum SimulationResult {
     PathfindingFailed {
         pathfinding_result: PathfindingResult,
     },
-    SimulationFailed,
+    SimulationFailed {
+        core_error: InternalError,
+    },
 }
 
 /// Retrieve the space, speed and time curve of a given train
@@ -401,7 +404,9 @@ async fn train_simulation(
             power_restrictions: response.power_restrictions,
         },
         // TODO: Handle simulation failure
-        Err(err) if err.status.as_u16() / 100 == 5 => SimulationResult::SimulationFailed,
+        Err(err) if err.status.as_u16() / 100 == 5 => {
+            SimulationResult::SimulationFailed { core_error: err }
+        }
         Err(err) => return Err(err),
     };
 
@@ -530,7 +535,9 @@ enum SimulationSummaryResult {
     // Pathfinding failed
     PathfindingFailed,
     // Simulation failed
-    SimulationFailed,
+    SimulationFailed {
+        error_type: String,
+    },
 }
 
 /// Retrieve simulation information for a given train list.
@@ -610,7 +617,11 @@ async fn build_simulation_summary_map(
             SimulationResult::PathfindingFailed { .. } => {
                 SimulationSummaryResult::PathfindingFailed
             }
-            SimulationResult::SimulationFailed => SimulationSummaryResult::SimulationFailed,
+            SimulationResult::SimulationFailed { core_error } => {
+                SimulationSummaryResult::SimulationFailed {
+                    error_type: core_error.get_type().into(),
+                }
+            }
         };
         simulation_summary_hashmap.insert(train_schedule.id, simulation_summary_result);
     }

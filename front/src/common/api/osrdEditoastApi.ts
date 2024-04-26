@@ -3305,7 +3305,11 @@ export type SimulationSummaryResult =
       };
     }
   | 'PathfindingFailed'
-  | 'SimulationFailed';
+  | {
+      SimulationFailed: {
+        error_type: string;
+      };
+    };
 export type ReportTrainV2 = {
   energy_consumption: number;
   positions: number[];
@@ -3343,6 +3347,7 @@ export type SimulationResult =
       status: 'pathfinding_failed';
     }
   | {
+      core_error: InternalError;
       status: 'simulation_failed';
     };
 export type Version = {

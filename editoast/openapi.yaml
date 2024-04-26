@@ -6756,11 +6756,14 @@ components:
         - status
         type: object
       - properties:
+          core_error:
+            $ref: '#/components/schemas/InternalError'
           status:
             enum:
             - simulation_failed
             type: string
         required:
+        - core_error
         - status
         type: object
     SimulationSummaryResult:
@@ -6790,9 +6793,17 @@ components:
       - enum:
         - PathfindingFailed
         type: string
-      - enum:
+      - properties:
+          SimulationFailed:
+            properties:
+              error_type:
+                type: string
+            required:
+            - error_type
+            type: object
+        required:
         - SimulationFailed
-        type: string
+        type: object
     SingleSimulationRequest:
       allOf:
       - properties:
