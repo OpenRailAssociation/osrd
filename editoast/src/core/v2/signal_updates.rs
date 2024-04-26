@@ -20,6 +20,8 @@ pub struct SignalUpdatesRequest<'a> {
     pub track_section_ranges: &'a Vec<TrackRange>,
     /// Path description as route ids
     pub routes: &'a Vec<Identifier>,
+    /// Path description as block ids
+    pub blocks: &'a Vec<Identifier>,
     /// List of signal sightings and zone updates for each train
     pub train_simulations: HashMap<i64, TrainSimulation<'a>>,
 }
