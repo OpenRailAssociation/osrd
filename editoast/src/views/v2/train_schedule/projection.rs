@@ -59,12 +59,15 @@ crate::routes! {
 /// Project path input is described by a list of routes and a list of track range
 #[derive(Debug, Deserialize, Serialize, ToSchema)]
 struct ProjectPathInput {
-    /// List of route ids
-    #[schema(inline, min_items = 1)]
-    routes: Vec<Identifier>,
     /// List of track ranges
     #[schema(min_items = 1)]
     track_section_ranges: Vec<TrackRange>,
+    /// List of route ids
+    #[schema(inline, min_items = 1)]
+    routes: Vec<Identifier>,
+    /// Path description as block ids
+    #[schema(inline, min_items = 1)]
+    blocks: Vec<Identifier>,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize, ToSchema)]
@@ -128,6 +131,7 @@ async fn project_path(
     let ProjectPathInput {
         track_section_ranges: path_track_ranges,
         routes: path_routes,
+        blocks: path_blocks,
     } = data.into_inner();
     let path_projection = PathProjection::new(&path_track_ranges);
     let query_props = params.into_inner();
@@ -208,6 +212,7 @@ async fn project_path(
             &train_details,
             &path_track_ranges,
             &path_routes,
+            &path_blocks,
         );
         let projection: Option<CachedProjectPathTrainResult> = redis_conn
             .json_get_ex(&hash, CACHE_PROJECTION_EXPIRATION)
@@ -232,6 +237,7 @@ async fn project_path(
             &infra,
             &path_track_ranges,
             &path_routes,
+            &path_blocks,
             &miss_cache
         )
     );
@@ -245,6 +251,7 @@ async fn project_path(
             &train_details,
             &path_track_ranges,
             &path_routes,
+            &path_blocks,
         );
         let cached = CachedProjectPathTrainResult {
             space_time_curves: space_time_curves
@@ -308,15 +315,17 @@ struct TrainSimulationDetails {
 async fn compute_batch_signal_updates<'a>(
     core: Arc<CoreClient>,
     infra: &Infra,
-    track_section_ranges: &'a Vec<TrackRange>,
-    routes: &'a Vec<Identifier>,
+    path_track_ranges: &'a Vec<TrackRange>,
+    path_routes: &'a Vec<Identifier>,
+    path_blocks: &'a Vec<Identifier>,
     trains_details: &'a HashMap<i64, TrainSimulationDetails>,
 ) -> Result<HashMap<i64, Vec<SignalUpdate>>> {
     let request = SignalUpdatesRequest {
         infra: infra.id,
         expected_version: infra.version.clone(),
-        track_section_ranges,
-        routes,
+        track_section_ranges: path_track_ranges,
+        routes: path_routes,
+        blocks: path_blocks,
         train_simulations: trains_details
             .iter()
             .map(|(id, details)| {
@@ -489,12 +498,14 @@ fn train_projection_input_hash(
     project_path_input: &TrainSimulationDetails,
     path_projection_tracks: &[TrackRange],
     path_routes: &[Identifier],
+    path_blocks: &[Identifier],
 ) -> String {
     let osrd_version = get_app_version().unwrap_or_default();
     let mut hasher = DefaultHasher::new();
     project_path_input.hash(&mut hasher);
     path_projection_tracks.hash(&mut hasher);
     path_routes.hash(&mut hasher);
+    path_blocks.hash(&mut hasher);
     let hash_simulation_input = hasher.finish();
     format!("projection_{osrd_version}.{infra_id}.{infra_version}.{hash_simulation_input}")
 }

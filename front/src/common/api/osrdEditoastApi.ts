@@ -3300,6 +3300,8 @@ export type ProjectPathTrainResult = {
   rolling_stock_length: number;
 };
 export type ProjectPathInput = {
+  /** Path description as block ids */
+  blocks: string[];
   /** List of route ids */
   routes: string[];
   /** List of track ranges */

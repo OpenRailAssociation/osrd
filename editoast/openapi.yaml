@@ -4961,6 +4961,14 @@ components:
     ProjectPathInput:
       description: Project path input is described by a list of routes and a list of track range
       properties:
+        blocks:
+          description: Path description as block ids
+          items:
+            maxLength: 255
+            minLength: 1
+            type: string
+          minItems: 1
+          type: array
         routes:
           description: List of route ids
           items:
@@ -4976,8 +4984,9 @@ components:
           minItems: 1
           type: array
       required:
-      - routes
       - track_section_ranges
+      - routes
+      - blocks
       type: object
     ProjectPathTrainResult:
       allOf:
