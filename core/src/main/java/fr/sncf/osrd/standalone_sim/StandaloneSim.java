@@ -30,6 +30,7 @@ import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.train.ScheduledPoint;
 import fr.sncf.osrd.train.StandaloneTrainSchedule;
 import fr.sncf.osrd.train.TrainStop;
+import io.opentelemetry.instrumentation.annotations.WithSpan;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -41,6 +42,7 @@ public class StandaloneSim {
      * Runs a batch of standalone simulations for multiple trains. Interactions between trains are
      * ignored.
      */
+    @WithSpan
     public static StandaloneSimResult run(
             FullInfra infra,
             PathProperties trainPath,

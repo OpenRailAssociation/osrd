@@ -16,8 +16,10 @@ import fr.sncf.osrd.reporting.warnings.Warning;
 import fr.sncf.osrd.standalone_sim.SignalProjectionKt;
 import fr.sncf.osrd.standalone_sim.result.ResultTrain;
 import fr.sncf.osrd.standalone_sim.result.SignalUpdate;
+import io.opentelemetry.instrumentation.annotations.WithSpan;
 import java.util.ArrayList;
 import java.util.List;
+import org.jetbrains.annotations.NotNull;
 import org.takes.Request;
 import org.takes.Response;
 import org.takes.Take;
@@ -45,6 +47,7 @@ public class SignalProjectionEndpoint implements Take {
                     .adapter(SignalProjectionEndpoint.SignalProjectionRequest.class);
 
     @Override
+    @WithSpan
     public Response act(Request req) throws Exception {
         var recorder = new DiagnosticRecorderImpl(false);
         try {
@@ -58,9 +61,8 @@ public class SignalProjectionEndpoint implements Take {
 
             // Parse trainPath
             var chunkPath = makeChunkPath(infra.rawInfra(), request.trainPath);
-            var routePath = request.trainPath.routePath.stream()
-                    .map(rjsRoutePath -> infra.rawInfra().getRouteFromName(rjsRoutePath.route))
-                    .toList();
+            var routePath = makeRoutePath(infra, request.trainPath);
+
             var result = SignalProjectionKt.project(
                     infra, chunkPath, routePath, request.signalSightings, request.zoneUpdates);
 
@@ -71,6 +73,13 @@ public class SignalProjectionEndpoint implements Take {
             // TODO: include warnings in the response
             return ExceptionHandler.handle(ex);
         }
+    }
+
+    @WithSpan
+    private static @NotNull List<Integer> makeRoutePath(FullInfra infra, RJSTrainPath trainPath) {
+        return trainPath.routePath.stream()
+                .map(rjsRoutePath -> infra.rawInfra().getRouteFromName(rjsRoutePath.route))
+                .toList();
     }
 
     @SuppressFBWarnings("UWF_UNWRITTEN_PUBLIC_OR_PROTECTED_FIELD")
