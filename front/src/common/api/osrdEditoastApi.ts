@@ -3242,9 +3242,18 @@ export type TrainScheduleBase = {
   }[];
   rolling_stock_name: string;
   schedule?: {
+    /** The expected arrival time at the stop.
+        This will be used to compute the final simulation time. */
     arrival?: string | null;
     at: string;
+    /** Whether the schedule item is locked (only for display purposes) */
     locked?: boolean;
+    /** Whether the next signal is expected to be blocking while stopping
+        Can be true only if `stop_for` is `Some` */
+    on_stop_signal?: boolean;
+    /** Duration of the stop.
+        Can be `None` if the train does not stop.
+        `Some("PT0S")` means the train stops for 0 seconds. */
     stop_for?: string | null;
   }[];
   speed_limit_tag?: string | null;

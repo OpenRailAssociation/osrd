@@ -251,12 +251,14 @@ mod tests {
                     arrival: None,
                     stop_for: None,
                     locked: false,
+                    on_stop_signal: false,
                 },
                 ScheduleItem {
                     at: "a".into(),
                     arrival: None,
                     stop_for: None,
                     locked: false,
+                    on_stop_signal: false,
                 },
             ],
             ..Default::default()
@@ -283,6 +285,7 @@ mod tests {
                 arrival: Some(Duration::minutes(5).try_into().unwrap()),
                 stop_for: None,
                 locked: false,
+                on_stop_signal: false,
             }],
             ..Default::default()
         };
