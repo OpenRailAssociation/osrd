@@ -11,7 +11,6 @@ import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.impl.ChunkPath
 import fr.sncf.osrd.standalone_sim.*
 import fr.sncf.osrd.utils.indexing.StaticIdxList
-import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
 import fr.sncf.osrd.utils.units.*
 import java.awt.Color
 
@@ -20,6 +19,7 @@ data class SignalAspectChangeEventV2(val newAspect: String, val time: TimeDelta)
 fun projectSignals(
     fullInfra: FullInfra,
     chunkPath: ChunkPath,
+    blockPath: StaticIdxList<Block>,
     routePath: StaticIdxList<Route>,
     signalSightings: Collection<SignalSighting>,
     zoneUpdates: Collection<ZoneUpdate>,
@@ -49,11 +49,6 @@ fun projectSignals(
     leastConstrainingStates[tvm430] = (sigModuleManager.getStateSchema(tvm430)) {
         value("aspect", "300VL")
     }
-
-    // Recover blocks from the route path
-    val detailedBlockPath = recoverBlockPath(simulator, fullInfra, routePath)
-    val blockPath = mutableStaticIdxArrayListOf<Block>()
-    for (block in detailedBlockPath) blockPath.add(block.block)
 
     val zoneMap = mutableMapOf<String, Int>()
     var zoneCount = 0

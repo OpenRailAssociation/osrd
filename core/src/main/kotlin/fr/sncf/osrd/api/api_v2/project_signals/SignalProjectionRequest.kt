@@ -11,6 +11,7 @@ import fr.sncf.osrd.utils.json.UnitAdapterFactory
 import fr.sncf.osrd.utils.units.TimeDelta
 
 class SignalProjectionRequest(
+    val blocks: List<String>,
     @Json(name = "track_section_ranges") var trackSectionRanges: List<TrackRange>,
     var routes: List<String>,
     @Json(name = "train_simulations") var trainSimulations: Map<Long, TrainSimulation>,

@@ -26,7 +26,6 @@ import fr.sncf.osrd.standalone_sim.result.ResultTrain.SignalSighting
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.StandaloneTrainSchedule
 import fr.sncf.osrd.utils.CurveSimplification
-import fr.sncf.osrd.utils.indexing.MutableStaticIdxArrayList
 import fr.sncf.osrd.utils.indexing.StaticIdxList
 import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
 import fr.sncf.osrd.utils.units.*
@@ -249,7 +248,7 @@ fun routingRequirements(
     // compute the signaling train state for each signal
     data class SignalingTrainStateImpl(override val speed: Speed) : SignalingTrainState
 
-    var signalingTrainStates = mutableMapOf<LogicalSignalId, SignalingTrainState>()
+    val signalingTrainStates = mutableMapOf<LogicalSignalId, SignalingTrainState>()
     for (i in 0 until blockPath.size) {
         val block = blockPath[i]
         val blockOffset = blockOffsets[i]
@@ -569,7 +568,7 @@ fun pathSignalsInRange(
 fun trainPathBlockOffset(
     infra: RawInfra,
     blockInfra: BlockInfra,
-    blockPath: MutableStaticIdxArrayList<Block>,
+    blockPath: StaticIdxList<Block>,
     chunkPath: ChunkPath
 ): Distance {
     val firstChunk = chunkPath.chunks[0]

@@ -5,6 +5,7 @@ import fr.sncf.osrd.api.InfraManager
 import fr.sncf.osrd.api.pathfinding.makeChunkPath
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl
 import fr.sncf.osrd.signal_projection.projectSignals
+import fr.sncf.osrd.sim_infra.api.convertBlockPath
 import fr.sncf.osrd.sim_infra.api.convertRoutePath
 import org.takes.Request
 import org.takes.Response
@@ -29,6 +30,7 @@ class SignalProjectionEndpointV2(private val infraManager: InfraManager) : Take 
 
             // Parse path
             val chunkPath = makeChunkPath(infra.rawInfra, request.trackSectionRanges)
+            val blockPath = infra.blockInfra.convertBlockPath(request.blocks)
             val routePath = infra.rawInfra.convertRoutePath(request.routes)
 
             val signalProjections = mutableMapOf<Long, List<SignalUpdate>>()
@@ -37,6 +39,7 @@ class SignalProjectionEndpointV2(private val infraManager: InfraManager) : Take 
                     projectSignals(
                         infra,
                         chunkPath,
+                        blockPath,
                         routePath,
                         trainSimulation.signalSightings,
                         trainSimulation.zoneUpdates,
