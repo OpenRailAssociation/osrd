@@ -219,10 +219,10 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
         var baseDistance = envelopeRange.getTotalDistance();
         var addedTime = value.getAllowanceTime(baseTime, baseDistance);
         // if no time is added, just return the base envelope without performing binary search
-        if (addedTime == 0.0) {
+        if (areTimesEqual(0.0, addedTime)) {
             return envelopeRange;
         }
-        assert addedTime > 0;
+        assert addedTime > 0 : String.format("Adding negative time from allowance %s (%s seconds)", value, addedTime);
 
         // compute the slowest running time, given the capacity speed limit,
         // to make sure the user asked for a margin that is actually possible
