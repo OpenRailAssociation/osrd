@@ -6189,14 +6189,27 @@ components:
       additionalProperties: false
       properties:
         arrival:
+          description: |-
+            The expected arrival time at the stop.
+            This will be used to compute the final simulation time.
           nullable: true
           type: string
         at:
           minLength: 1
           type: string
         locked:
+          description: Whether the schedule item is locked (only for display purposes)
+          type: boolean
+        on_stop_signal:
+          description: |-
+            Whether the next signal is expected to be blocking while stopping
+            Can be true only if `stop_for` is `Some`
           type: boolean
         stop_for:
+          description: |-
+            Duration of the stop.
+            Can be `None` if the train does not stop.
+            `Some("PT0S")` means the train stops for 0 seconds.
           nullable: true
           type: string
       required:
@@ -7603,14 +7616,27 @@ components:
             additionalProperties: false
             properties:
               arrival:
+                description: |-
+                  The expected arrival time at the stop.
+                  This will be used to compute the final simulation time.
                 nullable: true
                 type: string
               at:
                 minLength: 1
                 type: string
               locked:
+                description: Whether the schedule item is locked (only for display purposes)
+                type: boolean
+              on_stop_signal:
+                description: |-
+                  Whether the next signal is expected to be blocking while stopping
+                  Can be true only if `stop_for` is `Some`
                 type: boolean
               stop_for:
+                description: |-
+                  Duration of the stop.
+                  Can be `None` if the train does not stop.
+                  `Some("PT0S")` means the train stops for 0 seconds.
                 nullable: true
                 type: string
             required:
