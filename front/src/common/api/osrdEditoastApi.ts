@@ -201,13 +201,6 @@ const injectedRtkApi = api
         query: (queryArg) => ({ url: `/infra/${queryArg.id}/railjson/` }),
         providesTags: ['infra'],
       }),
-      getInfraByIdSpeedLimitTags: build.query<
-        GetInfraByIdSpeedLimitTagsApiResponse,
-        GetInfraByIdSpeedLimitTagsApiArg
-      >({
-        query: (queryArg) => ({ url: `/infra/${queryArg.id}/speed_limit_tags/` }),
-        providesTags: ['infra'],
-      }),
       getInfraByIdSwitchTypes: build.query<
         GetInfraByIdSwitchTypesApiResponse,
         GetInfraByIdSwitchTypesApiArg
@@ -296,6 +289,13 @@ const injectedRtkApi = api
           url: `/infra/${queryArg.infraId}/routes/${queryArg.waypointType}/${queryArg.waypointId}/`,
         }),
         providesTags: ['infra', 'routes'],
+      }),
+      getInfraByInfraIdSpeedLimitTags: build.query<
+        GetInfraByInfraIdSpeedLimitTagsApiResponse,
+        GetInfraByInfraIdSpeedLimitTagsApiArg
+      >({
+        query: (queryArg) => ({ url: `/infra/${queryArg.infraId}/speed_limit_tags/` }),
+        providesTags: ['infra'],
       }),
       postInfraByInfraIdUnlock: build.mutation<
         PostInfraByInfraIdUnlockApiResponse,
@@ -1134,11 +1134,6 @@ export type GetInfraByIdRailjsonApiArg = {
   /** Infra ID */
   id: number;
 };
-export type GetInfraByIdSpeedLimitTagsApiResponse = /** status 200 Tags list */ string[];
-export type GetInfraByIdSpeedLimitTagsApiArg = {
-  /** Infra id */
-  id: number;
-};
 export type GetInfraByIdSwitchTypesApiResponse = /** status 200 A list of switch types */ object[];
 export type GetInfraByIdSwitchTypesApiArg = {
   /** infra id */
@@ -1236,6 +1231,12 @@ export type GetInfraByInfraIdRoutesAndWaypointTypeWaypointIdApiArg = {
   waypointType: 'Detector' | 'BufferStop';
   /** Waypoint ID */
   waypointId: string;
+};
+export type GetInfraByInfraIdSpeedLimitTagsApiResponse =
+  /** status 200 List all speed limit tags */ string[];
+export type GetInfraByInfraIdSpeedLimitTagsApiArg = {
+  /** An existing infra ID */
+  infraId: number;
 };
 export type PostInfraByInfraIdUnlockApiResponse = unknown;
 export type PostInfraByInfraIdUnlockApiArg = {

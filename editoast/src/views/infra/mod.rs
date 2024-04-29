@@ -67,6 +67,7 @@ crate::routes! {
             attached::routes(),
             lock,
             unlock,
+            get_speed_limit_tags,
         },
     },
 }
@@ -395,13 +396,20 @@ async fn get_switch_types(
 }
 
 /// Returns the set of speed limit tags for a given infra
+#[utoipa::path(
+    tag = "infra",
+    params(InfraIdParam),
+    responses(
+        (status = 200, description = "List all speed limit tags", body = Vec<String>,  example = json!(["freight", "heavy_load"])),
+        (status = 404, description = "The infra was not found"),
+    )
+)]
 #[get("/speed_limit_tags")]
 async fn get_speed_limit_tags(
-    infra: Path<i64>,
+    infra: Path<InfraIdParam>,
     db_pool: Data<DbConnectionPool>,
 ) -> Result<Json<Vec<String>>> {
     use diesel_async::RunQueryDsl;
-    let infra = infra.into_inner();
     let mut conn = db_pool.get().await?;
     let speed_limits_tags: Vec<SpeedLimitTags> = sql_query(
         "SELECT DISTINCT jsonb_object_keys(data->'speed_limit_by_tag') AS tag
@@ -409,7 +417,7 @@ async fn get_speed_limit_tags(
         WHERE infra_id = $1
         ORDER BY tag",
     )
-    .bind::<BigInt, _>(infra)
+    .bind::<BigInt, _>(infra.infra_id)
     .load(&mut conn)
     .await?;
     Ok(Json(

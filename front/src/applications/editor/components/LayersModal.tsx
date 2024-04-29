@@ -60,10 +60,11 @@ const LayersModal: FC<LayersModalProps> = ({
   const [selectedLayers, setSelectedLayers] = useState<Set<Layer>>(initialLayers);
   const infraID = useInfraID();
 
-  const { data: speedLimitTags } = osrdEditoastApi.endpoints.getInfraByIdSpeedLimitTags.useQuery(
-    { id: infraID as number },
-    { skip: isNil(infraID) }
-  );
+  const { data: speedLimitTags } =
+    osrdEditoastApi.endpoints.getInfraByInfraIdSpeedLimitTags.useQuery(
+      { infraId: infraID as number },
+      { skip: isNil(infraID) }
+    );
   const DEFAULT_SPEED_LIMIT_TAG = useMemo(() => t('map-settings:noSpeedLimitByTag'), [t]);
   const selectionCounts = useMemo(
     () =>

@@ -9320,30 +9320,6 @@ paths:
       summary: Serialize an infra to railjson
       tags:
       - infra
-  /infra/{id}/speed_limit_tags/:
-    get:
-      parameters:
-      - description: Infra id
-        in: path
-        name: id
-        required: true
-        schema:
-          type: integer
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                example:
-                - freight
-                - heavy_load
-                items:
-                  type: string
-                type: array
-          description: Tags list
-      summary: List all speed limit tags
-      tags:
-      - infra
   /infra/{id}/switch_types/:
     get:
       parameters:
@@ -9706,6 +9682,34 @@ paths:
       tags:
       - infra
       - routes
+  /infra/{infra_id}/speed_limit_tags/:
+    get:
+      description: Returns the set of speed limit tags for a given infra
+      parameters:
+      - description: An existing infra ID
+        in: path
+        name: infra_id
+        required: true
+        schema:
+          format: int64
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              example:
+              - freight
+              - heavy_load
+              schema:
+                items:
+                  type: string
+                type: array
+          description: List all speed limit tags
+        '404':
+          description: The infra was not found
+      summary: Returns the set of speed limit tags for a given infra
+      tags:
+      - infra
   /infra/{infra_id}/unlock/:
     post:
       description: Unlock an infra
