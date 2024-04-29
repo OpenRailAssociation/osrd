@@ -74,7 +74,7 @@ export default function ProjectCard({ setFilterChips, project, isSelected, toggl
           <span className="mr-1">
             <Calendar />
           </span>
-          {dateTimeFormatting(new Date(project.last_modification))}
+          {dateTimeFormatting(project.last_modification)}
         </div>
         <div>
           <span className="mr-1">
