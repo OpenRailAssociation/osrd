@@ -37,7 +37,7 @@ impl<'de> Deserialize<'de> for Margins {
         let InternalMargins { boundaries, values } = InternalMargins::deserialize(deserializer)?;
         if boundaries.len() + 1 != values.len() {
             return Err(serde::de::Error::custom(
-                "The number of boudaries and values must be the same",
+                "It's expected to have one more value than boundaries",
             ));
         }
         Ok(Margins { boundaries, values })
