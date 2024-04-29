@@ -388,22 +388,6 @@ paths:
                   type: string
                 example: ["750V", "1500V", "2500.5V"]
 
-  /infra/{id}/unlock/:
-    post:
-      tags:
-        - infra
-      summary: Unlock an infra from edition
-      parameters:
-        - in: path
-          name: id
-          schema:
-            type: integer
-          description: infra id
-          required: true
-      responses:
-        204:
-          description: No content
-
   /infra/{id}/speed_limit_tags/:
     get:
       tags:

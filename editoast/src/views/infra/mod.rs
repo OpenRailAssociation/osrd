@@ -66,6 +66,7 @@ crate::routes! {
             pathfinding::routes(),
             attached::routes(),
             lock,
+            unlock,
         },
     },
 }
@@ -480,9 +481,17 @@ async fn lock(infra: Path<InfraIdParam>, db_pool: Data<DbPool>) -> Result<HttpRe
 }
 
 /// Unlock an infra
+#[utoipa::path(
+    tag = "infra",
+    params(InfraIdParam),
+    responses(
+        (status = 204, description = "The infra was unlocked successfully"),
+        (status = 404, description = "The infra was not found",),
+    )
+)]
 #[post("/unlock")]
-async fn unlock(infra: Path<i64>, db_pool: Data<DbPool>) -> Result<HttpResponse> {
-    set_locked(*infra, false, db_pool.into_inner()).await?;
+async fn unlock(infra: Path<InfraIdParam>, db_pool: Data<DbPool>) -> Result<HttpResponse> {
+    set_locked(infra.infra_id, false, db_pool.into_inner()).await?;
     Ok(HttpResponse::NoContent().finish())
 }
 

@@ -215,13 +215,6 @@ const injectedRtkApi = api
         query: (queryArg) => ({ url: `/infra/${queryArg.id}/switch_types/` }),
         providesTags: ['infra'],
       }),
-      postInfraByIdUnlock: build.mutation<
-        PostInfraByIdUnlockApiResponse,
-        PostInfraByIdUnlockApiArg
-      >({
-        query: (queryArg) => ({ url: `/infra/${queryArg.id}/unlock/`, method: 'POST' }),
-        invalidatesTags: ['infra'],
-      }),
       getInfraByIdVoltages: build.query<
         GetInfraByIdVoltagesApiResponse,
         GetInfraByIdVoltagesApiArg
@@ -303,6 +296,13 @@ const injectedRtkApi = api
           url: `/infra/${queryArg.infraId}/routes/${queryArg.waypointType}/${queryArg.waypointId}/`,
         }),
         providesTags: ['infra', 'routes'],
+      }),
+      postInfraByInfraIdUnlock: build.mutation<
+        PostInfraByInfraIdUnlockApiResponse,
+        PostInfraByInfraIdUnlockApiArg
+      >({
+        query: (queryArg) => ({ url: `/infra/${queryArg.infraId}/unlock/`, method: 'POST' }),
+        invalidatesTags: ['infra'],
       }),
       getLayersLayerByLayerSlugMvtAndViewSlug: build.query<
         GetLayersLayerByLayerSlugMvtAndViewSlugApiResponse,
@@ -1144,11 +1144,6 @@ export type GetInfraByIdSwitchTypesApiArg = {
   /** infra id */
   id: number;
 };
-export type PostInfraByIdUnlockApiResponse = unknown;
-export type PostInfraByIdUnlockApiArg = {
-  /** infra id */
-  id: number;
-};
 export type GetInfraByIdVoltagesApiResponse = /** status 200 Voltages list */ string[];
 export type GetInfraByIdVoltagesApiArg = {
   /** Infra ID */
@@ -1241,6 +1236,11 @@ export type GetInfraByInfraIdRoutesAndWaypointTypeWaypointIdApiArg = {
   waypointType: 'Detector' | 'BufferStop';
   /** Waypoint ID */
   waypointId: string;
+};
+export type PostInfraByInfraIdUnlockApiResponse = unknown;
+export type PostInfraByInfraIdUnlockApiArg = {
+  /** An existing infra ID */
+  infraId: number;
 };
 export type GetLayersLayerByLayerSlugMvtAndViewSlugApiResponse =
   /** status 200 Successful Response */ {
