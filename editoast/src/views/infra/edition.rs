@@ -3,7 +3,6 @@ use actix_web::web::Data;
 use actix_web::web::Json;
 use actix_web::web::Path;
 use chashmap::CHashMap;
-use diesel_async::AsyncPgConnection as PgConnection;
 use editoast_derive::EditoastError;
 use thiserror::Error;
 
@@ -17,6 +16,7 @@ use crate::infra_cache::ObjectCache;
 use crate::map::MapLayers;
 use crate::map::{self};
 use crate::modelsv2::prelude::*;
+use crate::modelsv2::Connection;
 use crate::modelsv2::Infra;
 use crate::views::infra::InfraApiError;
 use crate::DbPool;
@@ -55,7 +55,7 @@ pub async fn edit<'a>(
 }
 
 async fn apply_edit(
-    conn: &mut PgConnection,
+    conn: &mut Connection,
     infra: &mut Infra,
     operations: &[Operation],
     infra_cache: &mut InfraCache,

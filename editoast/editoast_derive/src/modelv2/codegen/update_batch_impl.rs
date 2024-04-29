@@ -38,7 +38,7 @@ impl ToTokens for UpdateBatchImpl {
                     C: Default + std::iter::Extend<#model> + Send,
                 >(
                     self,
-                    conn: &mut diesel_async::AsyncPgConnection,
+                    conn: &mut crate::modelsv2::Connection,
                     ids: I,
                 ) -> crate::error::Result<C> {
                     use crate::modelsv2::Model;
@@ -74,7 +74,7 @@ impl ToTokens for UpdateBatchImpl {
                     C: Default + std::iter::Extend<(#ty, #model)> + Send,
                 >(
                     self,
-                    conn: &mut diesel_async::AsyncPgConnection,
+                    conn: &mut crate::modelsv2::Connection,
                     ids: I,
                 ) -> crate::error::Result<C> {
                     use crate::models::Identifiable;

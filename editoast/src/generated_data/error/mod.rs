@@ -21,7 +21,6 @@ use diesel::sql_types::Array;
 use diesel::sql_types::BigInt;
 use diesel::sql_types::Json;
 use diesel::sql_types::Text;
-use diesel_async::AsyncPgConnection as PgConnection;
 use diesel_async::RunQueryDsl;
 use futures_util::Future;
 use itertools::Itertools;
@@ -37,6 +36,7 @@ use crate::infra_cache::operation::CacheOperation;
 use crate::infra_cache::Graph;
 use crate::infra_cache::InfraCache;
 use crate::infra_cache::ObjectCache;
+use crate::modelsv2::Connection;
 use editoast_schemas::primitives::OSRDObject;
 use editoast_schemas::primitives::ObjectType;
 
@@ -297,7 +297,7 @@ fn dispatch_errors_by_object_type(
 
 /// Retrieve the current errors hash for a given infra
 async fn retrieve_current_errors_hash(
-    conn: &mut PgConnection,
+    conn: &mut Connection,
     infra_id: i64,
 ) -> Result<Vec<ErrorHash>> {
     use crate::tables::infra_layer_error::dsl;
@@ -310,7 +310,7 @@ async fn retrieve_current_errors_hash(
 
 /// Remove a list of errors given an infra and a list of error hashes
 async fn remove_errors_from_hashes(
-    conn: &mut PgConnection,
+    conn: &mut Connection,
     infra_id: i64,
     errors_hash: &Vec<&ErrorHash>,
 ) -> Result<()> {
@@ -328,7 +328,7 @@ async fn remove_errors_from_hashes(
 
 /// Remove a list of errors given an infra and a list of error hashes
 async fn create_errors(
-    conn: &mut PgConnection,
+    conn: &mut Connection,
     infra_id: i64,
     errors: Vec<ErrorWithHash>,
 ) -> Result<()> {
@@ -356,7 +356,7 @@ async fn create_errors(
 /// This function retrieve the existing errors in DB, compare them with the new ones and insert only
 /// the new ones. It also remove the errors that are not present anymore.
 async fn update_errors(
-    conn: &mut PgConnection,
+    conn: &mut Connection,
     infra_id: i64,
     errors: Vec<InfraError>,
 ) -> Result<()> {
@@ -401,7 +401,7 @@ impl GeneratedData for ErrorLayer {
     }
 
     async fn generate(
-        conn: &mut PgConnection,
+        conn: &mut Connection,
         infra_id: i64,
         infra_cache: &InfraCache,
     ) -> Result<()> {
@@ -413,7 +413,7 @@ impl GeneratedData for ErrorLayer {
     }
 
     async fn update(
-        conn: &mut PgConnection,
+        conn: &mut Connection,
         infra_id: i64,
         _operations: &[CacheOperation],
         infra_cache: &InfraCache,

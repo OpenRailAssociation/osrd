@@ -19,7 +19,6 @@ use buffer_stop::BufferStopLayer;
 use detector::DetectorLayer;
 use diesel::sql_query;
 use diesel::sql_types::BigInt;
-use diesel_async::AsyncPgConnection as PgConnection;
 use diesel_async::RunQueryDsl;
 use electrification::ElectrificationLayer;
 pub use error::generate_infra_errors;
@@ -38,14 +37,15 @@ use track_section::TrackSectionLayer;
 use crate::error::Result;
 use crate::infra_cache::operation::CacheOperation;
 use crate::infra_cache::InfraCache;
+use crate::modelsv2::Connection;
 
 /// This trait define how a generated data table should be handled
 #[async_trait]
 pub trait GeneratedData {
     fn table_name() -> &'static str;
-    async fn generate(conn: &mut PgConnection, infra: i64, infra_cache: &InfraCache) -> Result<()>;
+    async fn generate(conn: &mut Connection, infra: i64, infra_cache: &InfraCache) -> Result<()>;
 
-    async fn clear(conn: &mut PgConnection, infra: i64) -> Result<()> {
+    async fn clear(conn: &mut Connection, infra: i64) -> Result<()> {
         sql_query(format!(
             "DELETE FROM {} WHERE infra_id = $1",
             Self::table_name()
@@ -56,7 +56,7 @@ pub trait GeneratedData {
         Ok(())
     }
 
-    async fn refresh(conn: &mut PgConnection, infra: i64, infra_cache: &InfraCache) -> Result<()> {
+    async fn refresh(conn: &mut Connection, infra: i64, infra_cache: &InfraCache) -> Result<()> {
         Self::clear(conn, infra).await?;
         Self::generate(conn, infra, infra_cache).await
     }
@@ -73,7 +73,7 @@ pub trait GeneratedData {
 
     /// Search and update all objects that needs to be refreshed given a list of operation.
     async fn update(
-        conn: &mut PgConnection,
+        conn: &mut Connection,
         infra: i64,
         operations: &[CacheOperation],
         infra_cache: &InfraCache,
@@ -116,7 +116,7 @@ pub async fn refresh_all(
 }
 
 /// Clear all the generated data of a given infra
-pub async fn clear_all(conn: &mut PgConnection, infra: i64) -> Result<()> {
+pub async fn clear_all(conn: &mut Connection, infra: i64) -> Result<()> {
     TrackSectionLayer::clear(conn, infra).await?;
     SpeedSectionLayer::clear(conn, infra).await?;
     SignalLayer::clear(conn, infra).await?;
@@ -134,7 +134,7 @@ pub async fn clear_all(conn: &mut PgConnection, infra: i64) -> Result<()> {
 
 /// Clear all the generated data of a given infra
 pub async fn update_all(
-    conn: &mut PgConnection,
+    conn: &mut Connection,
     infra: i64,
     operations: &[CacheOperation],
     infra_cache: &InfraCache,

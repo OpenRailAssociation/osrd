@@ -1,5 +1,6 @@
 use crate::error::EditoastError;
 use crate::error::Result;
+use crate::modelsv2::Connection;
 
 /// Describes how a [Model](super::Model) can be deleted from the database
 ///
@@ -10,14 +11,10 @@ pub trait Delete: Sized {
     /// Deletes the row corresponding to this model instance
     ///
     /// Returns `true` if the row was deleted, `false` if it didn't exist
-    async fn delete(&self, conn: &mut diesel_async::AsyncPgConnection) -> Result<bool>;
+    async fn delete(&self, conn: &mut Connection) -> Result<bool>;
 
     /// Just like [Delete::delete] but returns `Err(fail())` if the row didn't exist
-    async fn delete_or_fail<E, F>(
-        &self,
-        conn: &mut diesel_async::AsyncPgConnection,
-        fail: F,
-    ) -> Result<()>
+    async fn delete_or_fail<E, F>(&self, conn: &mut Connection, fail: F) -> Result<()>
     where
         E: EditoastError,
         F: FnOnce() -> E + Send + 'async_trait,
@@ -43,14 +40,10 @@ where
     for<'async_trait> K: Send + 'async_trait,
 {
     /// Deletes the row #`id` from the database
-    async fn delete_static(conn: &mut diesel_async::AsyncPgConnection, id: K) -> Result<bool>;
+    async fn delete_static(conn: &mut Connection, id: K) -> Result<bool>;
 
     /// Just like [DeleteStatic::delete_static] but returns `Err(fail())` if the row didn't exist
-    async fn delete_static_or_fail<E, F>(
-        conn: &mut diesel_async::AsyncPgConnection,
-        id: K,
-        fail: F,
-    ) -> Result<()>
+    async fn delete_static_or_fail<E, F>(conn: &mut Connection, id: K, fail: F) -> Result<()>
     where
         E: EditoastError,
         F: FnOnce() -> E + Send + 'async_trait,
@@ -76,17 +69,13 @@ where
     ///
     /// Returns the number of rows deleted.
     async fn delete_batch<I: IntoIterator<Item = K> + Send + 'async_trait>(
-        conn: &mut diesel_async::AsyncPgConnection,
+        conn: &mut Connection,
         ids: I,
     ) -> Result<usize>;
 
     /// Just like [DeleteBatch::delete_batch] but returns `Err(fail(missing))` where `missing`
     /// is the number of rows that were not deleted
-    async fn delete_batch_or_fail<I, E, F>(
-        conn: &mut diesel_async::AsyncPgConnection,
-        ids: I,
-        fail: F,
-    ) -> Result<()>
+    async fn delete_batch_or_fail<I, E, F>(conn: &mut Connection, ids: I, fail: F) -> Result<()>
     where
         I: Send + IntoIterator<Item = K> + 'async_trait,
         E: EditoastError,

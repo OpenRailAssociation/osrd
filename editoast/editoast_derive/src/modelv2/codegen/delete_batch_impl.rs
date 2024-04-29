@@ -28,7 +28,7 @@ impl ToTokens for DeleteBatchImpl {
             #[async_trait::async_trait]
             impl crate::modelsv2::DeleteBatch<#ty> for #model {
                 async fn delete_batch<I: std::iter::IntoIterator<Item = #ty> + Send + 'async_trait>(
-                    conn: &mut diesel_async::AsyncPgConnection,
+                    conn: &mut crate::modelsv2::Connection,
                     ids: I,
                 ) -> crate::error::Result<usize> {
                     use #table_mod::dsl;

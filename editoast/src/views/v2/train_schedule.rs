@@ -9,7 +9,6 @@ use std::sync::Arc;
 
 use actix_web::web::{Data, Json, Path, Query};
 use actix_web::{delete, get, post, put, HttpResponse};
-use diesel_async::AsyncPgConnection as PgConnection;
 use editoast_derive::EditoastError;
 use editoast_schemas::train_schedule::TrainScheduleBase;
 use itertools::Itertools;
@@ -42,6 +41,7 @@ use crate::modelsv2::infra::Infra;
 use crate::modelsv2::timetable::Timetable;
 use crate::modelsv2::train_schedule::TrainSchedule;
 use crate::modelsv2::train_schedule::TrainScheduleChangeset;
+use crate::modelsv2::Connection;
 use crate::modelsv2::Model;
 use crate::modelsv2::Retrieve;
 use crate::modelsv2::RetrieveBatch;
@@ -420,7 +420,7 @@ async fn train_simulation(
 }
 
 async fn build_simulation_request(
-    conn: &mut PgConnection,
+    conn: &mut Connection,
     infa: &Infra,
     train_schedule: &TrainSchedule,
     path_items_position: &[u64],

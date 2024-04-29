@@ -7,7 +7,6 @@ use diesel::sql_query;
 use diesel::sql_types::BigInt;
 use diesel::ExpressionMethods;
 use diesel::QueryDsl;
-use diesel_async::AsyncPgConnection as PgConnection;
 use diesel_async::RunQueryDsl;
 use editoast_derive::ModelV2;
 use serde::Deserialize;
@@ -19,6 +18,7 @@ use crate::models::List;
 use crate::modelsv2::projects::Ordering;
 use crate::modelsv2::projects::Tags;
 use crate::modelsv2::Changeset;
+use crate::modelsv2::Connection;
 use crate::modelsv2::Model;
 use crate::modelsv2::Row;
 use crate::modelsv2::Save;
@@ -48,7 +48,7 @@ pub struct Study {
 }
 
 impl Study {
-    pub async fn update_last_modified(&mut self, conn: &mut PgConnection) -> Result<()> {
+    pub async fn update_last_modified(&mut self, conn: &mut Connection) -> Result<()> {
         self.last_modification = Utc::now().naive_utc();
         self.save(conn).await?;
         Ok(())
@@ -88,7 +88,7 @@ fn dates_in_order(a: Option<Option<NaiveDate>>, b: Option<Option<NaiveDate>>) ->
 #[async_trait]
 impl List<(i64, Ordering)> for Study {
     async fn list_conn(
-        conn: &mut PgConnection,
+        conn: &mut Connection,
         page: i64,
         page_size: i64,
         params: (i64, Ordering),

@@ -1,5 +1,6 @@
 use crate::error::EditoastError;
 use crate::error::Result;
+use crate::modelsv2::Connection;
 
 /// Describes how a [Model](super::Model) can be created in the database
 ///
@@ -9,12 +10,12 @@ use crate::error::Result;
 pub trait Create<Row: Send>: Sized {
     /// Creates a new row in the database with the values of the changeset and
     /// returns the created model instance
-    async fn create(self, conn: &mut diesel_async::AsyncPgConnection) -> Result<Row>;
+    async fn create(self, conn: &mut Connection) -> Result<Row>;
 
     /// Just like [Create::create] but discards the error if any and returns `Err(fail())` instead
     async fn create_or_fail<E: EditoastError, F: FnOnce() -> E + Send>(
         self,
-        conn: &'async_trait mut diesel_async::AsyncPgConnection,
+        conn: &'async_trait mut Connection,
         fail: F,
     ) -> Result<Row> {
         match self.create(conn).await {
@@ -49,7 +50,7 @@ where
         I: IntoIterator<Item = Cs> + Send + 'async_trait,
         C: Default + std::iter::Extend<Self> + Send,
     >(
-        conn: &mut diesel_async::AsyncPgConnection,
+        conn: &mut Connection,
         values: I,
     ) -> Result<C>;
 }
@@ -73,7 +74,7 @@ where
         I: IntoIterator<Item = Cs> + Send + 'async_trait,
         C: Default + std::iter::Extend<(K, Self)> + Send,
     >(
-        conn: &mut diesel_async::AsyncPgConnection,
+        conn: &mut Connection,
         values: I,
     ) -> Result<C>;
 }

@@ -105,7 +105,7 @@ pub mod tests {
     #[async_trait::async_trait]
     impl<T: models::Delete> modelsv2::DeleteStatic<i64> for T {
         async fn delete_static(
-            conn: &mut diesel_async::AsyncPgConnection,
+            conn: &mut crate::modelsv2::Connection,
             id: i64,
         ) -> crate::error::Result<bool> {
             T::delete_conn(conn, id).await

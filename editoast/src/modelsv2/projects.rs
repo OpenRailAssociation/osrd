@@ -5,7 +5,6 @@ use chrono::Utc;
 use diesel::sql_query;
 use diesel::ExpressionMethods;
 use diesel::QueryDsl;
-use diesel_async::AsyncPgConnection as PgConnection;
 use diesel_async::RunQueryDsl;
 use editoast_derive::ModelV2;
 use serde::Deserialize;
@@ -15,6 +14,7 @@ use utoipa::ToSchema;
 use crate::error::Result;
 use crate::models::List;
 use crate::modelsv2::Changeset;
+use crate::modelsv2::Connection;
 use crate::modelsv2::DeleteStatic;
 use crate::modelsv2::Document;
 use crate::modelsv2::Model;
@@ -97,7 +97,7 @@ impl Ordering {
 
 impl Project {
     /// This function takes a filled project and update to now the last_modification field
-    pub async fn update_last_modified(&mut self, conn: &mut PgConnection) -> Result<()> {
+    pub async fn update_last_modified(&mut self, conn: &mut Connection) -> Result<()> {
         self.last_modification = Utc::now().naive_utc();
         self.save(conn).await?;
         Ok(())
@@ -115,7 +115,7 @@ impl Project {
     }
 
     pub async fn update_and_prune_document(
-        conn: &mut PgConnection,
+        conn: &mut Connection,
         project_changeset: Changeset<Self>,
         project_id: i64,
     ) -> Result<Project> {
@@ -137,10 +137,7 @@ impl Project {
         Ok(project)
     }
 
-    pub async fn delete_and_prune_document(
-        conn: &mut PgConnection,
-        project_id: i64,
-    ) -> Result<bool> {
+    pub async fn delete_and_prune_document(conn: &mut Connection, project_id: i64) -> Result<bool> {
         let project_obj =
             Project::retrieve_or_fail(conn, project_id, || ProjectError::NotFound { project_id })
                 .await?;
@@ -158,7 +155,7 @@ impl Project {
 #[async_trait]
 impl List<Ordering> for Project {
     async fn list_conn(
-        conn: &mut PgConnection,
+        conn: &mut Connection,
         page: i64,
         page_size: i64,
         ordering: Ordering,

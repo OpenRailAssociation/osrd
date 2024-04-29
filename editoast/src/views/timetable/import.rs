@@ -7,7 +7,6 @@ use actix_web::web::Json;
 use chrono::DateTime;
 use chrono::Timelike;
 use chrono::Utc;
-use diesel_async::AsyncPgConnection;
 use editoast_schemas::rolling_stock::RollingStock;
 use editoast_schemas::rolling_stock::RollingStockComfortType;
 use futures::future::try_join_all;
@@ -30,6 +29,7 @@ use crate::models::ScheduledPoint;
 use crate::models::Timetable;
 use crate::models::TrainSchedule;
 use crate::modelsv2::prelude::*;
+use crate::modelsv2::Connection;
 use crate::modelsv2::Infra;
 use crate::modelsv2::OperationalPointModel;
 use crate::modelsv2::RetrieveBatch;
@@ -391,7 +391,7 @@ async fn find_operation_points(
     ops_uic: &[i64],
     ops_id: &[String],
     infra_id: i64,
-    conn: &mut AsyncPgConnection,
+    conn: &mut Connection,
 ) -> Result<std::result::Result<OperationalPointsToParts, TimetableImportError>> {
     // Retrieve operational points
     let ops_from_uic = OperationalPointModel::retrieve_from_uic(conn, infra_id, ops_uic).await?;

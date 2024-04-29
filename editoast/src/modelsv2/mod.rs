@@ -1,3 +1,4 @@
+pub mod connection_pool;
 pub mod documents;
 pub mod electrical_profiles;
 pub mod infra;
@@ -17,6 +18,7 @@ pub mod work_schedules;
 
 pub use prelude::*;
 
+pub use connection_pool::Connection;
 pub use documents::Document;
 pub use electrical_profiles::ElectricalProfileSet;
 pub use infra::Infra;

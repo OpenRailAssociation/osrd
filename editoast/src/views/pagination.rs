@@ -5,7 +5,6 @@ use diesel::sql_types::Untyped;
 use diesel::QueryResult;
 use diesel::QueryableByName;
 use diesel_async::methods::LoadQuery;
-use diesel_async::AsyncPgConnection as PgConnection;
 use editoast_derive::EditoastError;
 use itertools::Itertools;
 use serde::Deserialize;
@@ -15,6 +14,7 @@ use tracing::warn;
 use utoipa::IntoParams;
 
 use crate::error::Result;
+use crate::modelsv2::Connection;
 
 const DEFAULT_PAGE_SIZE: i64 = 25;
 
@@ -147,12 +147,9 @@ pub struct InternalPaginatedResult<T: QueryableByName<Pg>> {
 }
 
 impl<T> Paginated<T> {
-    pub async fn load_and_count<'a, R>(
-        self,
-        conn: &mut PgConnection,
-    ) -> Result<PaginatedResponse<R>>
+    pub async fn load_and_count<'a, R>(self, conn: &mut Connection) -> Result<PaginatedResponse<R>>
     where
-        Self: LoadQuery<'a, PgConnection, InternalPaginatedResult<R>>,
+        Self: LoadQuery<'a, Connection, InternalPaginatedResult<R>>,
         R: QueryableByName<Pg> + Send + 'static,
         T: Send + 'static,
     {

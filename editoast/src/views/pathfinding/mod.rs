@@ -17,7 +17,6 @@ use actix_web::Responder;
 use chrono::DateTime;
 use chrono::Utc;
 use derivative::Derivative;
-use diesel_async::AsyncPgConnection as PgConnection;
 use editoast_derive::EditoastError;
 use editoast_schemas::infra::TrackRange;
 use editoast_schemas::rolling_stock::RollingStock;
@@ -49,6 +48,7 @@ use crate::models::Retrieve;
 use crate::models::Slope;
 use crate::models::Update;
 use crate::modelsv2::infra_objects::TrackSectionModel;
+use crate::modelsv2::Connection;
 use crate::modelsv2::Infra;
 use crate::modelsv2::OperationalPointModel;
 use crate::modelsv2::Retrieve as RetrieveV2;
@@ -220,7 +220,7 @@ type OpMap = HashMap<String, OperationalPoint>;
 
 /// Computes a hash map (obj_id => TrackSection) for each obj_id in an iterator
 pub(in crate::views) async fn make_track_map<I: Iterator<Item = String> + Send>(
-    conn: &mut PgConnection,
+    conn: &mut Connection,
     infra_id: i64,
     it: I,
 ) -> Result<TrackMap> {
@@ -239,7 +239,7 @@ pub(in crate::views) async fn make_track_map<I: Iterator<Item = String> + Send>(
 }
 
 async fn make_op_map<I: Iterator<Item = String> + Send>(
-    conn: &mut PgConnection,
+    conn: &mut Connection,
     infra_id: i64,
     it: I,
 ) -> Result<OpMap> {
@@ -260,7 +260,7 @@ async fn make_op_map<I: Iterator<Item = String> + Send>(
 
 impl PathfindingRequest {
     /// Queries all track sections of the payload and builds a track hash map
-    async fn fetch_track_map(&self, conn: &mut PgConnection) -> Result<TrackMap> {
+    async fn fetch_track_map(&self, conn: &mut Connection) -> Result<TrackMap> {
         fetch_pathfinding_payload_track_map(conn, self.infra, &self.steps).await
     }
 
@@ -270,7 +270,7 @@ impl PathfindingRequest {
     }
 
     /// Fetches all payload's rolling stocks
-    async fn parse_rolling_stocks(&self, conn: &mut PgConnection) -> Result<Vec<RollingStock>> {
+    async fn parse_rolling_stocks(&self, conn: &mut Connection) -> Result<Vec<RollingStock>> {
         use crate::modelsv2::RetrieveBatch;
         let rolling_stock_batch: Vec<RollingStockModel> =
             RollingStockModel::retrieve_batch_or_fail(
@@ -296,7 +296,7 @@ impl PathfindingRequest {
 }
 
 pub async fn fetch_pathfinding_payload_track_map(
-    conn: &mut PgConnection,
+    conn: &mut Connection,
     infra: i64,
     steps: &[PathfindingStep],
 ) -> Result<TrackMap> {
@@ -328,7 +328,7 @@ pub fn parse_pathfinding_payload_waypoints(
 }
 
 impl PathfindingResponse {
-    pub async fn fetch_track_map(&self, infra: i64, conn: &mut PgConnection) -> Result<TrackMap> {
+    pub async fn fetch_track_map(&self, infra: i64, conn: &mut Connection) -> Result<TrackMap> {
         make_track_map(
             conn,
             infra,
@@ -339,7 +339,7 @@ impl PathfindingResponse {
         .await
     }
 
-    pub async fn fetch_op_map(&self, infra: i64, conn: &mut PgConnection) -> Result<OpMap> {
+    pub async fn fetch_op_map(&self, infra: i64, conn: &mut Connection) -> Result<OpMap> {
         make_op_map(
             conn,
             infra,
@@ -469,7 +469,7 @@ async fn call_core_pf_and_save_result(
 /// If `update_id` is provided then update the corresponding path instead of creating a new one
 pub async fn save_core_pathfinding(
     core_response: PathfindingResponse,
-    conn: &mut PgConnection,
+    conn: &mut Connection,
     infra_id: i64,
     update_id: Option<i64>,
     steps_duration: Vec<f64>,
