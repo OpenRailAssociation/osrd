@@ -109,5 +109,5 @@ validator = { version = "0.18.1", features = ["derive"] }
 async-std = { version = "1.12.0", features = ["attributes", "tokio1"] }
 pretty_assertions = "1.4.0"
 rstest = "0.18.2"
-serial_test = "3.0.0"
+serial_test = "3.1.1"
 tempfile = "3.10.1"
