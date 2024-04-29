@@ -88,8 +88,8 @@ pub mod tests {
     use super::RollingStockLiveryModel;
     use crate::fixtures::tests::db_pool;
     use crate::fixtures::tests::rolling_stock_livery;
-    use crate::modelsv2::Document;
     use crate::modelsv2::ConnectionPool;
+    use crate::modelsv2::Document;
 
     #[rstest]
     async fn create_get_delete_rolling_stock_livery(db_pool: Data<ConnectionPool>) {

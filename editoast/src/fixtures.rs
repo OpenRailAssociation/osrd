@@ -3,6 +3,7 @@ pub mod tests {
     use std::io::Cursor;
     use std::ops::{Deref, DerefMut};
 
+    use crate::modelsv2::connection_pool::ConnectionConfig;
     use crate::{
         client::PostgresConfig,
         models::{
@@ -26,7 +27,6 @@ pub mod tests {
 
     use actix_web::web::Data;
     use chrono::Utc;
-    use diesel_async::pooled_connection::AsyncDieselConnectionManager;
     use editoast_schemas::infra::ElectricalProfile;
     use editoast_schemas::infra::ElectricalProfileSetData;
     use editoast_schemas::infra::RailJson;
@@ -143,8 +143,7 @@ pub mod tests {
         let pg_config_url = PostgresConfig::default()
             .url()
             .expect("cannot get postgres config url");
-        let config =
-            AsyncDieselConnectionManager::<diesel_async::AsyncPgConnection>::new(pg_config_url);
+        let config = ConnectionConfig::new(pg_config_url);
         let pool = ConnectionPool::builder(config).build().unwrap();
         Data::new(pool)
     }
