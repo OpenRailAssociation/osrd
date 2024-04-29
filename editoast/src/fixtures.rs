@@ -228,7 +228,7 @@ pub mod tests {
             serde_json::from_str(include_str!("./tests/train_schedules/simple.json"))
                 .expect("Unable to parse");
         let train_schedule_form = TrainScheduleForm {
-            timetable_id: timetable.id(),
+            timetable_id: Some(timetable.id()),
             train_schedule: train_schedule_base,
         };
 

@@ -8450,10 +8450,10 @@ components:
       - $ref: '#/components/schemas/TrainScheduleBase'
       - properties:
           timetable_id:
+            description: Timetable attached to the train schedule
             format: int64
+            nullable: true
             type: integer
-        required:
-        - timetable_id
         type: object
     TrainScheduleOptions:
       description: Options for the standalone simulation
@@ -11601,7 +11601,7 @@ paths:
       - scenariosv2
   /v2/timetable/:
     get:
-      description: Return all timetables
+      description: Retrieve paginated timetables
       parameters:
       - in: query
         name: page
@@ -11627,11 +11627,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedResponseOfTimetable'
           description: List timetables
-      summary: Return all timetables
+      summary: Retrieve paginated timetables
       tags:
       - timetablev2
     post:
-      description: Return a specific timetable with its associated schedules
+      description: Create a timetable
       requestBody:
         content:
           application/json:
@@ -11647,12 +11647,12 @@ paths:
           description: Timetable with train schedules ids
         '404':
           description: Timetable not found
-      summary: Return a specific timetable with its associated schedules
+      summary: Create a timetable
       tags:
       - timetablev2
   /v2/timetable/{id}/:
     delete:
-      description: Return a specific timetable with its associated schedules
+      description: Delete a timetable
       parameters:
       - description: A timetable ID
         in: path
@@ -11666,7 +11666,7 @@ paths:
           description: No content
         '404':
           description: Timetable not found
-      summary: Return a specific timetable with its associated schedules
+      summary: Delete a timetable
       tags:
       - timetablev2
     get:
@@ -11692,7 +11692,7 @@ paths:
       tags:
       - timetablev2
     put:
-      description: Update a specific timetable with its associated schedules
+      description: Update a specific timetable
       parameters:
       - description: A timetable ID
         in: path
@@ -11717,7 +11717,7 @@ paths:
           description: Timetable with train schedules ids
         '404':
           description: Timetable not found
-      summary: Update a specific timetable with its associated schedules
+      summary: Update a specific timetable
       tags:
       - timetablev2
   /v2/timetable/{id}/conflicts/:
@@ -11749,6 +11749,37 @@ paths:
       summary: Retrieve the list of conflict of the timetable (invalid trains are ignored)
       tags:
       - timetablev2
+  /v2/timetable/{id}/train_schedule/:
+    post:
+      description: Create train schedule by batch
+      parameters:
+      - description: A timetable ID
+        in: path
+        name: id
+        required: true
+        schema:
+          format: int64
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              items:
+                $ref: '#/components/schemas/TrainScheduleBase'
+              type: array
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/TrainScheduleResult'
+                type: array
+          description: The created train schedules
+      summary: Create train schedule by batch
+      tags:
+      - train_schedulev2
   /v2/train_schedule/:
     delete:
       description: Delete a train schedule and its result
@@ -11771,28 +11802,6 @@ paths:
         '204':
           description: All train schedules have been deleted
       summary: Delete a train schedule and its result
-      tags:
-      - train_schedulev2
-    post:
-      description: Create train schedule by batch
-      requestBody:
-        content:
-          application/json:
-            schema:
-              items:
-                $ref: '#/components/schemas/TrainScheduleForm'
-              type: array
-        required: true
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                items:
-                  $ref: '#/components/schemas/TrainScheduleResult'
-                type: array
-          description: The train schedule
-      summary: Create train schedule by batch
       tags:
       - train_schedulev2
   /v2/train_schedule/project_path/:

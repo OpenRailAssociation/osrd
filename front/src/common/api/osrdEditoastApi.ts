@@ -866,6 +866,17 @@ const injectedRtkApi = api
         }),
         providesTags: ['timetablev2'],
       }),
+      postV2TimetableByIdTrainSchedule: build.mutation<
+        PostV2TimetableByIdTrainScheduleApiResponse,
+        PostV2TimetableByIdTrainScheduleApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/v2/timetable/${queryArg.id}/train_schedule/`,
+          method: 'POST',
+          body: queryArg.body,
+        }),
+        invalidatesTags: ['train_schedulev2'],
+      }),
       deleteV2TrainSchedule: build.mutation<
         DeleteV2TrainScheduleApiResponse,
         DeleteV2TrainScheduleApiArg
@@ -875,13 +886,6 @@ const injectedRtkApi = api
           method: 'DELETE',
           body: queryArg.body,
         }),
-        invalidatesTags: ['train_schedulev2'],
-      }),
-      postV2TrainSchedule: build.mutation<
-        PostV2TrainScheduleApiResponse,
-        PostV2TrainScheduleApiArg
-      >({
-        query: (queryArg) => ({ url: `/v2/train_schedule/`, method: 'POST', body: queryArg.body }),
         invalidatesTags: ['train_schedulev2'],
       }),
       postV2TrainScheduleProjectPath: build.mutation<
@@ -1691,16 +1695,18 @@ export type GetV2TimetableByIdConflictsApiArg = {
   id: number;
   infraId: number;
 };
+export type PostV2TimetableByIdTrainScheduleApiResponse =
+  /** status 200 The created train schedules */ TrainScheduleResult[];
+export type PostV2TimetableByIdTrainScheduleApiArg = {
+  /** A timetable ID */
+  id: number;
+  body: TrainScheduleBase[];
+};
 export type DeleteV2TrainScheduleApiResponse = unknown;
 export type DeleteV2TrainScheduleApiArg = {
   body: {
     ids: number[];
   };
-};
-export type PostV2TrainScheduleApiResponse =
-  /** status 200 The train schedule */ TrainScheduleResult[];
-export type PostV2TrainScheduleApiArg = {
-  body: TrainScheduleForm[];
 };
 export type PostV2TrainScheduleProjectPathApiResponse = /** status 200 Project Path Output */ {
   [key: string]: ProjectPathTrainResult;
@@ -3273,9 +3279,6 @@ export type TrainScheduleResult = TrainScheduleBase & {
   id: number;
   timetable_id: number;
 };
-export type TrainScheduleForm = TrainScheduleBase & {
-  timetable_id: number;
-};
 export type ProjectPathTrainResult = {
   /** List of signal updates along the path */
   signal_updates: {
@@ -3334,6 +3337,10 @@ export type SimulationSummaryResult =
       error_type: string;
       status: 'simulation_failed';
     };
+export type TrainScheduleForm = TrainScheduleBase & {
+  /** Timetable attached to the train schedule */
+  timetable_id?: number | null;
+};
 export type ReportTrainV2 = {
   energy_consumption: number;
   positions: number[];
