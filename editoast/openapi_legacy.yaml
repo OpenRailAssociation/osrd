@@ -388,29 +388,6 @@ paths:
                   type: string
                 example: ["750V", "1500V", "2500.5V"]
 
-  /infra/{id}/speed_limit_tags/:
-    get:
-      tags:
-        - infra
-      summary: List all speed limit tags
-      parameters:
-        - in: path
-          name: id
-          schema:
-            type: integer
-          description: Infra id
-          required: true
-      responses:
-        200:
-          description: Tags list
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: string
-                example: ["freight", "heavy_load"]
-
   /infra/{id}/voltages/:
     get:
       tags:
