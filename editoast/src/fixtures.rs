@@ -3,7 +3,9 @@ pub mod tests {
     use std::io::Cursor;
     use std::ops::{Deref, DerefMut};
 
+    use crate::modelsv2::connection_pool::Connection;
     use crate::modelsv2::connection_pool::ConnectionConfig;
+    use crate::modelsv2::connection_pool::ConnectionPool;
     use crate::{
         client::PostgresConfig,
         models::{
@@ -11,8 +13,6 @@ pub mod tests {
             ResultPosition, ResultStops, ResultTrain, Scenario, SimulationOutput,
             SimulationOutputChangeset, Timetable, TrainSchedule,
         },
-        modelsv2::Connection,
-        modelsv2::ConnectionPool,
         modelsv2::{
             self, projects::Tags, rolling_stock_livery::RollingStockLiveryModel,
             scenario::Scenario as ScenarioV2, timetable::Timetable as TimetableV2,
