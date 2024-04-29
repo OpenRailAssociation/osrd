@@ -47,13 +47,12 @@ use opentelemetry_datadog::DatadogPropagator;
 use opentelemetry_sdk::propagation::TraceContextPropagator;
 use views::v2::train_schedule::{TrainScheduleForm, TrainScheduleResult};
 
+use crate::modelsv2::ConnectionConfig;
 use crate::modelsv2::Connection;
 use colored::*;
 use diesel::{sql_query, ConnectionError, ConnectionResult};
 use diesel_async::pooled_connection::deadpool::Pool;
-use diesel_async::pooled_connection::{
-    AsyncDieselConnectionManager as ConnectionManager, ManagerConfig,
-};
+use diesel_async::pooled_connection::ManagerConfig;
 use diesel_async::RunQueryDsl;
 use diesel_json::Json as DieselJson;
 use editoast_schemas::infra::RailJson;
@@ -393,7 +392,7 @@ fn establish_connection(config: &str) -> BoxFuture<ConnectionResult<Connection>>
 fn get_pool(url: Url, max_size: usize) -> ConnectionPool {
     let mut manager_config = ManagerConfig::default();
     manager_config.custom_setup = Box::new(establish_connection);
-    let manager = ConnectionManager::new_with_config(url, manager_config);
+    let manager = ConnectionConfig::new_with_config(url, manager_config);
     Pool::builder(manager)
         .max_size(max_size)
         .build()

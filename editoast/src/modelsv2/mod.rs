@@ -20,6 +20,7 @@ pub use prelude::*;
 
 pub use connection_pool::Connection;
 pub use connection_pool::ConnectionPool;
+pub use connection_pool::ConnectionConfig;
 pub use documents::Document;
 pub use electrical_profiles::ElectricalProfileSet;
 pub use infra::Infra;
