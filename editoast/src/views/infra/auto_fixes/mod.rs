@@ -24,10 +24,10 @@ use crate::infra_cache::operation::UpdateOperation;
 use crate::infra_cache::InfraCache;
 use crate::infra_cache::ObjectCache;
 use crate::modelsv2::prelude::*;
+use crate::modelsv2::ConnectionPool;
 use crate::modelsv2::Infra;
 use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraIdParam;
-use crate::DbPool;
 use editoast_schemas::primitives::OSRDIdentified as _;
 use editoast_schemas::primitives::OSRDObject;
 use editoast_schemas::primitives::ObjectRef;
@@ -85,7 +85,7 @@ crate::routes! {
 async fn list_auto_fixes(
     infra: Path<i64>,
     infra_caches: Data<CHashMap<i64, InfraCache>>,
-    db_pool: Data<DbPool>,
+    db_pool: Data<ConnectionPool>,
 ) -> Result<WebJson<Vec<Operation>>> {
     let infra_id = infra.into_inner();
     let mut conn = db_pool.get().await?;

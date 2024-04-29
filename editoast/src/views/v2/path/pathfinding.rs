@@ -23,6 +23,7 @@ use crate::core::CoreClient;
 use crate::error::Result;
 use crate::modelsv2::train_schedule::TrainSchedule;
 use crate::modelsv2::Connection;
+use crate::modelsv2::ConnectionPool;
 use crate::modelsv2::Infra;
 use crate::modelsv2::OperationalPointModel;
 use crate::modelsv2::Retrieve;
@@ -34,7 +35,6 @@ use crate::redis_utils::RedisClient;
 use crate::redis_utils::RedisConnection;
 use crate::views::get_app_version;
 use crate::views::v2::path::PathfindingError;
-use crate::DbPool;
 use editoast_schemas::infra::OperationalPoint;
 
 type TrackOffsetResult = std::result::Result<Vec<Vec<TrackOffset>>, PathfindingResult>;
@@ -81,7 +81,7 @@ struct PathfindingInput {
 )]
 #[post("")]
 pub async fn post(
-    db_pool: Data<DbPool>,
+    db_pool: Data<ConnectionPool>,
     redis_client: Data<RedisClient>,
     core: Data<CoreClient>,
     infra_id: Path<i64>,

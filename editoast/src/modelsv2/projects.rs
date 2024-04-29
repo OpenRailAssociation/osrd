@@ -15,6 +15,7 @@ use crate::error::Result;
 use crate::models::List;
 use crate::modelsv2::Changeset;
 use crate::modelsv2::Connection;
+use crate::modelsv2::ConnectionPool;
 use crate::modelsv2::DeleteStatic;
 use crate::modelsv2::Document;
 use crate::modelsv2::Model;
@@ -25,7 +26,6 @@ use crate::modelsv2::Update;
 use crate::views::pagination::Paginate;
 use crate::views::pagination::PaginatedResponse;
 use crate::views::projects::ProjectError;
-use crate::DbPool;
 
 editoast_common::schemas! {
     Ordering,
@@ -103,7 +103,7 @@ impl Project {
         Ok(())
     }
 
-    pub async fn studies_count(&self, db_pool: Data<DbPool>) -> Result<i64> {
+    pub async fn studies_count(&self, db_pool: Data<ConnectionPool>) -> Result<i64> {
         use crate::tables::study::dsl as study_dsl;
         let conn = &mut db_pool.get().await?;
         let studies_count = study_dsl::study
@@ -197,7 +197,10 @@ pub mod test {
     use crate::modelsv2::Retrieve;
 
     #[rstest]
-    async fn create_delete_project(#[future] project: TestFixture<Project>, db_pool: Data<DbPool>) {
+    async fn create_delete_project(
+        #[future] project: TestFixture<Project>,
+        db_pool: Data<ConnectionPool>,
+    ) {
         let project = project.await;
         let conn = &mut db_pool.get().await.unwrap();
         // Delete the project
@@ -207,7 +210,7 @@ pub mod test {
     }
 
     #[rstest]
-    async fn get_project(#[future] project: TestFixture<Project>, db_pool: Data<DbPool>) {
+    async fn get_project(#[future] project: TestFixture<Project>, db_pool: Data<ConnectionPool>) {
         let fixture_project = &project.await.model;
         let conn = &mut db_pool.get().await.unwrap();
 
@@ -225,7 +228,7 @@ pub mod test {
     }
 
     #[rstest]
-    async fn sort_project(#[future] project: TestFixture<Project>, db_pool: Data<DbPool>) {
+    async fn sort_project(#[future] project: TestFixture<Project>, db_pool: Data<ConnectionPool>) {
         let project = project.await;
         let project_2 = project
             .model
@@ -248,7 +251,10 @@ pub mod test {
     }
 
     #[rstest]
-    async fn update_project(#[future] project: TestFixture<Project>, db_pool: Data<DbPool>) {
+    async fn update_project(
+        #[future] project: TestFixture<Project>,
+        db_pool: Data<ConnectionPool>,
+    ) {
         let project_fixture = project.await;
         let conn = &mut db_pool.get().await.unwrap();
 

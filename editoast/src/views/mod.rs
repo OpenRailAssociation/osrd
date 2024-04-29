@@ -50,7 +50,7 @@ use crate::error::{self};
 use crate::infra_cache::operation;
 use crate::models;
 use crate::modelsv2;
-use crate::DbPool;
+use crate::modelsv2::ConnectionPool;
 use crate::RedisClient;
 
 // This function is only temporary while our migration to using utoipa is
@@ -313,7 +313,10 @@ impl OpenApiRoot {
     )
 )]
 #[get("/health")]
-async fn health(db_pool: Data<DbPool>, redis_client: Data<RedisClient>) -> Result<&'static str> {
+async fn health(
+    db_pool: Data<ConnectionPool>,
+    redis_client: Data<RedisClient>,
+) -> Result<&'static str> {
     use diesel_async::RunQueryDsl;
     let mut conn = db_pool.get().await?;
     sql_query("SELECT 1").execute(&mut conn).await?;

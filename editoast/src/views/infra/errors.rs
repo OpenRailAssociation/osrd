@@ -17,10 +17,10 @@ use thiserror::Error;
 
 use crate::error::Result;
 use crate::generated_data::infra_error::InfraErrorType;
+use crate::modelsv2::ConnectionPool;
 use crate::views::pagination::Paginate;
 use crate::views::pagination::PaginatedResponse;
 use crate::views::pagination::PaginationQueryParam;
-use crate::DbPool;
 
 /// Return `/infra/<infra_id>/errors` routes
 pub fn routes() -> impl HttpServiceFactory {
@@ -38,7 +38,7 @@ struct QueryParams {
 /// Return the list of errors of an infra
 #[get("/errors")]
 async fn list_errors(
-    db_pool: Data<DbPool>,
+    db_pool: Data<ConnectionPool>,
     infra: Path<i64>,
     pagination_params: Query<PaginationQueryParam>,
     params: Query<QueryParams>,
@@ -89,7 +89,7 @@ pub enum Level {
 }
 
 async fn get_paginated_infra_errors(
-    db_pool: Data<DbPool>,
+    db_pool: Data<ConnectionPool>,
     infra: i64,
     page: i64,
     per_page: i64,

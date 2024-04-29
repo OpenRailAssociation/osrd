@@ -28,9 +28,9 @@ use crate::error::Result;
 use crate::infra_cache::InfraCache;
 use crate::modelsv2::get_table;
 use crate::modelsv2::prelude::*;
+use crate::modelsv2::ConnectionPool;
 use crate::modelsv2::Infra;
 use crate::views::infra::InfraApiError;
-use crate::DbPool;
 use editoast_schemas::primitives::ObjectType;
 
 /// Return `/infra/<infra_id>/railjson` routes
@@ -53,7 +53,7 @@ enum ListErrorsRailjson {
 
 /// Serialize an infra
 #[get("/{infra}/railjson")]
-async fn get_railjson(infra: Path<i64>, db_pool: Data<DbPool>) -> Result<impl Responder> {
+async fn get_railjson(infra: Path<i64>, db_pool: Data<ConnectionPool>) -> Result<impl Responder> {
     let infra_id = infra.into_inner();
     let conn = &mut db_pool.get().await?;
     let infra_meta =
@@ -146,7 +146,7 @@ struct PostRailjsonResponse {
 async fn post_railjson(
     params: Query<PostRailjsonQueryParams>,
     railjson: Json<RailJson>,
-    db_pool: Data<DbPool>,
+    db_pool: Data<ConnectionPool>,
     infra_caches: Data<CHashMap<i64, InfraCache>>,
 ) -> Result<Json<PostRailjsonResponse>> {
     if railjson.version != RAILJSON_VERSION {
@@ -212,7 +212,7 @@ mod tests {
 
     #[rstest]
     #[serial_test::serial]
-    async fn test_post_railjson(db_pool: Data<DbPool>) {
+    async fn test_post_railjson(db_pool: Data<ConnectionPool>) {
         let app = create_test_service().await;
 
         let railjson = RailJson {

@@ -29,11 +29,11 @@ use crate::models::SimulationOutput;
 use crate::models::SimulationOutputChangeset;
 use crate::models::Slope;
 use crate::models::TrainSchedule;
+use crate::modelsv2::ConnectionPool;
 use crate::modelsv2::RollingStockModel;
 use crate::views::pathfinding::make_track_map;
 use crate::views::train_schedule::projection::Projection;
 use crate::views::train_schedule::TrainScheduleError::UnsimulatedTrainSchedule;
-use crate::DbPool;
 use editoast_schemas::primitives::Identifier;
 
 editoast_common::schemas! {
@@ -91,7 +91,7 @@ pub async fn create_simulation_report(
     projection: &Projection,
     projection_path_payload: &PathfindingPayload,
     simulation_output_cs: SimulationOutputChangeset,
-    db_pool: Data<DbPool>,
+    db_pool: Data<ConnectionPool>,
     core: &CoreClient,
 ) -> error::Result<SimulationReport> {
     let train_path = Pathfinding::retrieve(db_pool.clone(), train_schedule.path_id)
@@ -162,7 +162,7 @@ pub async fn create_simulation_report(
 
 pub async fn fetch_simulation_output(
     train_schedule: &TrainSchedule,
-    db_pool: Data<DbPool>,
+    db_pool: Data<ConnectionPool>,
 ) -> error::Result<SimulationOutput> {
     use crate::tables::simulation_output::dsl::*;
     let ts_id = train_schedule.id.unwrap();
@@ -191,7 +191,7 @@ async fn project_simulation_results(
     departure_time: f64,
     train_length: f64,
     core: &CoreClient,
-    db_pool: Data<DbPool>,
+    db_pool: Data<ConnectionPool>,
 ) -> error::Result<ReportTrain> {
     let arrival_time = simulation_result
         .head_positions
@@ -243,7 +243,7 @@ async fn add_stops_additional_information(
     stops: Vec<ResultStops>,
     infra_id: i64,
     path_waypoints: Vec<PathWaypoint>,
-    db_pool: Data<DbPool>,
+    db_pool: Data<ConnectionPool>,
 ) -> error::Result<Vec<FullResultStops>> {
     let mut conn = db_pool.get().await?;
     let track_sections_map = make_track_map(

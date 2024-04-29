@@ -25,10 +25,10 @@ use crate::models::Delete;
 use crate::models::TextArray;
 use crate::modelsv2::projects::Ordering;
 use crate::modelsv2::Connection;
+use crate::modelsv2::ConnectionPool;
 use crate::tables::scenario;
 use crate::views::pagination::Paginate;
 use crate::views::pagination::PaginatedResponse;
-use crate::DbPool;
 
 #[derive(
     Clone,
@@ -117,7 +117,7 @@ pub struct ScenarioWithCountTrains {
 }
 
 impl Scenario {
-    pub async fn with_details(self, db_pool: Data<DbPool>) -> Result<ScenarioWithDetails> {
+    pub async fn with_details(self, db_pool: Data<ConnectionPool>) -> Result<ScenarioWithDetails> {
         let mut conn = db_pool.get().await?;
         self.with_details_conn(&mut conn).await
     }
@@ -233,7 +233,7 @@ pub mod test {
     use crate::modelsv2::Ordering;
 
     #[rstest]
-    async fn create_delete_scenario(db_pool: Data<DbPool>) {
+    async fn create_delete_scenario(db_pool: Data<ConnectionPool>) {
         let ScenarioFixtureSet { scenario, .. } = scenario_fixture_set().await;
 
         // Delete the scenario
@@ -248,7 +248,7 @@ pub mod test {
     }
 
     #[rstest]
-    async fn get_study(db_pool: Data<DbPool>) {
+    async fn get_study(db_pool: Data<ConnectionPool>) {
         let ScenarioFixtureSet { study, .. } = scenario_fixture_set().await;
 
         // Get a scenario
@@ -266,7 +266,7 @@ pub mod test {
     }
 
     #[rstest]
-    async fn sort_scenario(db_pool: Data<DbPool>) {
+    async fn sort_scenario(db_pool: Data<ConnectionPool>) {
         let ScenarioFixtureSet {
             scenario,
             study,

@@ -29,11 +29,11 @@ use crate::modelsv2::get_table;
 use crate::modelsv2::prelude::*;
 use crate::modelsv2::railjson::persist_railjson;
 use crate::modelsv2::Connection;
+use crate::modelsv2::ConnectionPool;
 use crate::modelsv2::Create;
 use crate::tables::infra::dsl;
 use crate::views::pagination::Paginate;
 use crate::views::pagination::PaginatedResponse;
-use crate::DbPool;
 use editoast_schemas::infra::RailJson;
 use editoast_schemas::infra::RAILJSON_VERSION;
 use editoast_schemas::primitives::ObjectType;
@@ -63,7 +63,7 @@ pub struct Infra {
 }
 
 impl InfraChangeset {
-    pub async fn persist(self, railjson: RailJson, db_pool: Data<DbPool>) -> Result<Infra> {
+    pub async fn persist(self, railjson: RailJson, db_pool: Data<ConnectionPool>) -> Result<Infra> {
         let conn = &mut db_pool.get().await?;
         let infra = self.create(conn).await?;
         // TODO: lock infra for update
@@ -109,7 +109,11 @@ impl Infra {
         self.save(conn).await
     }
 
-    pub async fn clone(&self, db_pool: Data<DbPool>, new_name: Option<String>) -> Result<Infra> {
+    pub async fn clone(
+        &self,
+        db_pool: Data<ConnectionPool>,
+        new_name: Option<String>,
+    ) -> Result<Infra> {
         // Duplicate infra shell
         let new_name = new_name.unwrap_or_else(|| format!("{} (copy)", self.name));
         let mut conn = db_pool.get().await?;
@@ -177,7 +181,7 @@ impl Infra {
     /// If refreshed you need to call `invalidate_after_refresh` to invalidate layer cache
     pub async fn refresh(
         &mut self,
-        db_pool: Data<DbPool>,
+        db_pool: Data<ConnectionPool>,
         force: bool,
         infra_cache: &InfraCache,
     ) -> Result<bool> {

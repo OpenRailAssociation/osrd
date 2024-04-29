@@ -49,11 +49,11 @@ use crate::models::Slope;
 use crate::models::Update;
 use crate::modelsv2::infra_objects::TrackSectionModel;
 use crate::modelsv2::Connection;
+use crate::modelsv2::ConnectionPool;
 use crate::modelsv2::Infra;
 use crate::modelsv2::OperationalPointModel;
 use crate::modelsv2::Retrieve as RetrieveV2;
 use crate::modelsv2::RollingStockModel;
-use crate::DbPool;
 use editoast_schemas::infra::ApplicableDirectionsTrackRange;
 use editoast_schemas::infra::OperationalPoint;
 use editoast_schemas::infra::TrackSection;
@@ -434,7 +434,7 @@ impl Pathfinding {
 /// Builds a Core pathfinding request, runs it, post-processes the response and stores it in the DB
 async fn call_core_pf_and_save_result(
     payload: Json<PathfindingRequest>,
-    db_pool: Data<DbPool>,
+    db_pool: Data<ConnectionPool>,
     core: Data<CoreClient>,
     update_id: Option<i64>,
 ) -> Result<Pathfinding> {
@@ -510,7 +510,7 @@ pub async fn save_core_pathfinding(
 #[post("")]
 async fn create_pf(
     payload: Json<PathfindingRequest>,
-    db_pool: Data<DbPool>,
+    db_pool: Data<ConnectionPool>,
     core: Data<CoreClient>,
 ) -> Result<Json<PathResponse>> {
     let pathfinding = call_core_pf_and_save_result(payload, db_pool, core, None).await?;
@@ -536,7 +536,7 @@ struct PathfindingIdParam {
 async fn update_pf(
     params: Path<PathfindingIdParam>,
     payload: Json<PathfindingRequest>,
-    db_pool: Data<DbPool>,
+    db_pool: Data<ConnectionPool>,
     core: Data<CoreClient>,
 ) -> Result<Json<PathResponse>> {
     let pathfinding =
@@ -555,7 +555,7 @@ async fn update_pf(
 #[get("")]
 async fn get_pf(
     params: Path<PathfindingIdParam>,
-    db_pool: Data<DbPool>,
+    db_pool: Data<ConnectionPool>,
 ) -> Result<Json<PathResponse>> {
     let pathfinding_id = params.pathfinding_id;
     match Pathfinding::retrieve(db_pool, pathfinding_id).await? {
@@ -573,7 +573,10 @@ async fn get_pf(
     )
 )]
 #[delete("")]
-async fn del_pf(params: Path<PathfindingIdParam>, db_pool: Data<DbPool>) -> Result<impl Responder> {
+async fn del_pf(
+    params: Path<PathfindingIdParam>,
+    db_pool: Data<ConnectionPool>,
+) -> Result<impl Responder> {
     let pathfinding_id = params.pathfinding_id;
     if Pathfinding::delete(db_pool, pathfinding_id).await? {
         Ok(HttpResponse::NoContent())

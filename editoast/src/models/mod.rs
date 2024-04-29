@@ -32,8 +32,8 @@ pub use self::pathfinding::*;
 use crate::error::Result;
 use crate::modelsv2::projects;
 use crate::modelsv2::Connection;
+use crate::modelsv2::ConnectionPool;
 use crate::views::pagination::PaginatedResponse;
-use crate::DbPool;
 
 editoast_common::schemas! {
     projects::schemas(),
@@ -84,7 +84,7 @@ pub trait Create: Sized + 'static {
     /// let created_obj = obj.create(db_pool).await?;
     /// let obj_id = created_obj.id.unwrap();
     /// ```
-    async fn create(self, db_pool: Data<DbPool>) -> Result<Self> {
+    async fn create(self, db_pool: Data<ConnectionPool>) -> Result<Self> {
         let mut conn = db_pool.get().await?;
         Self::create_conn(self, &mut conn).await
     }
@@ -108,7 +108,7 @@ pub trait Delete {
     /// ```
     /// assert!(Model::delete(db_pool, 42).await?);
     /// ```
-    async fn delete(db_pool: Data<DbPool>, id: i64) -> Result<bool> {
+    async fn delete(db_pool: Data<ConnectionPool>, id: i64) -> Result<bool> {
         let mut conn = db_pool.get().await?;
         Self::delete_conn(&mut conn, id).await
     }
@@ -134,7 +134,7 @@ pub trait Retrieve: Sized + 'static {
     ///     // do something with obj
     /// }
     /// ```
-    async fn retrieve(db_pool: Data<DbPool>, id: i64) -> Result<Option<Self>> {
+    async fn retrieve(db_pool: Data<ConnectionPool>, id: i64) -> Result<Option<Self>> {
         let mut conn = db_pool.get().await?;
         Self::retrieve_conn(&mut conn, id).await
     }
@@ -159,7 +159,7 @@ pub trait Update: Sized + 'static {
     /// let patch_model = ...;
     /// let new_obj = patch_model.update(db_pool).await?.expect("Object not found");
     /// ```
-    async fn update(self, db_pool: Data<DbPool>, id: i64) -> Result<Option<Self>> {
+    async fn update(self, db_pool: Data<ConnectionPool>, id: i64) -> Result<Option<Self>> {
         let mut conn = db_pool.get().await?;
         self.update_conn(&mut conn, id).await
     }
@@ -192,7 +192,7 @@ pub trait List<T: Send + 'static>: Sized + 'static {
     /// let new_obj = patch_model.update(db_pool).await?.expect("Object not found");
     /// ```
     async fn list(
-        db_pool: Data<DbPool>,
+        db_pool: Data<ConnectionPool>,
         page: i64,
         page_size: i64,
         params: T,

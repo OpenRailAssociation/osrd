@@ -50,10 +50,10 @@ use crate::map::{self};
 use crate::models::List as ModelList;
 use crate::models::NoParams;
 use crate::modelsv2::prelude::*;
+use crate::modelsv2::ConnectionPool;
 use crate::modelsv2::Infra;
 use crate::views::pagination::PaginatedResponse;
 use crate::views::pagination::PaginationQueryParam;
-use crate::DbPool;
 use crate::RedisClient;
 use editoast_schemas::infra::SwitchType;
 
@@ -162,7 +162,7 @@ struct RefreshResponse {
 /// Refresh infra generated data
 #[post("/refresh")]
 async fn refresh(
-    db_pool: Data<DbPool>,
+    db_pool: Data<ConnectionPool>,
     redis_client: Data<RedisClient>,
     Query(query_params): Query<RefreshQueryParams>,
     infra_caches: Data<CHashMap<i64, InfraCache>>,
@@ -212,7 +212,7 @@ async fn refresh(
 /// Return a list of infras
 #[get("")]
 async fn list(
-    db_pool: Data<DbPool>,
+    db_pool: Data<ConnectionPool>,
     core: Data<CoreClient>,
     pagination_params: Query<PaginationQueryParam>,
 ) -> Result<Json<PaginatedResponse<InfraWithState>>> {
@@ -278,7 +278,7 @@ struct InfraIdParam {
 /// Return a specific infra
 #[get("")]
 async fn get(
-    db_pool: Data<DbPool>,
+    db_pool: Data<ConnectionPool>,
     infra: Path<i64>,
     core: Data<CoreClient>,
 ) -> Result<Json<InfraWithState>> {
@@ -296,7 +296,7 @@ async fn get(
 
 /// Create an infra
 #[post("")]
-async fn create(db_pool: Data<DbPool>, data: Json<InfraForm>) -> Result<impl Responder> {
+async fn create(db_pool: Data<ConnectionPool>, data: Json<InfraForm>) -> Result<impl Responder> {
     let infra: Changeset<Infra> = data.into_inner().into();
     let conn = &mut db_pool.get().await?;
     let infra = infra.create(conn).await?;
@@ -313,7 +313,7 @@ struct CloneQuery {
 #[post("/clone")]
 async fn clone(
     infra_id: Path<i64>,
-    db_pool: Data<DbPool>,
+    db_pool: Data<ConnectionPool>,
     Query(CloneQuery { name }): Query<CloneQuery>,
 ) -> Result<Json<i64>> {
     let conn = &mut db_pool.get().await?;
@@ -329,7 +329,7 @@ async fn clone(
 #[delete("")]
 async fn delete(
     infra: Path<i64>,
-    db_pool: Data<DbPool>,
+    db_pool: Data<ConnectionPool>,
     infra_caches: Data<CHashMap<i64, InfraCache>>,
 ) -> Result<HttpResponse> {
     let conn = &mut db_pool.get().await?;
@@ -356,7 +356,7 @@ impl From<InfraPatchForm> for Changeset<Infra> {
 /// Update an infra name
 #[put("")]
 async fn rename(
-    db_pool: Data<DbPool>,
+    db_pool: Data<ConnectionPool>,
     infra: Path<i64>,
     Json(patch): Json<InfraPatchForm>,
 ) -> Result<Json<Infra>> {
@@ -374,7 +374,7 @@ async fn rename(
 #[get("/switch_types")]
 async fn get_switch_types(
     infra: Path<i64>,
-    db_pool: Data<DbPool>,
+    db_pool: Data<ConnectionPool>,
     infra_caches: Data<CHashMap<i64, InfraCache>>,
 ) -> Result<Json<Vec<SwitchType>>> {
     let conn = &mut db_pool.get().await?;
@@ -398,7 +398,7 @@ async fn get_switch_types(
 #[get("/speed_limit_tags")]
 async fn get_speed_limit_tags(
     infra: Path<i64>,
-    db_pool: Data<DbPool>,
+    db_pool: Data<ConnectionPool>,
 ) -> Result<Json<Vec<String>>> {
     use diesel_async::RunQueryDsl;
     let infra = infra.into_inner();
@@ -429,7 +429,7 @@ struct GetVoltagesQueryParams {
 async fn get_voltages(
     infra: Path<i64>,
     param: Query<GetVoltagesQueryParams>,
-    db_pool: Data<DbPool>,
+    db_pool: Data<ConnectionPool>,
 ) -> Result<Json<Vec<String>>> {
     use diesel_async::RunQueryDsl;
     let infra = infra.into_inner();
@@ -449,7 +449,7 @@ async fn get_voltages(
 
 /// Returns the set of voltages for all infras and rolling_stocks modes.
 #[get("/voltages")]
-async fn get_all_voltages(db_pool: Data<DbPool>) -> Result<Json<Vec<String>>> {
+async fn get_all_voltages(db_pool: Data<ConnectionPool>) -> Result<Json<Vec<String>>> {
     use diesel_async::RunQueryDsl;
     let mut conn = db_pool.get().await?;
     let query = include_str!("sql/get_all_voltages_and_modes.sql");
@@ -457,7 +457,7 @@ async fn get_all_voltages(db_pool: Data<DbPool>) -> Result<Json<Vec<String>>> {
     Ok(Json(voltages.into_iter().map(|el| (el.voltage)).collect()))
 }
 
-async fn set_locked(infra_id: i64, locked: bool, db_pool: Arc<DbPool>) -> Result<()> {
+async fn set_locked(infra_id: i64, locked: bool, db_pool: Arc<ConnectionPool>) -> Result<()> {
     let conn = &mut db_pool.get().await?;
     let mut infra =
         Infra::retrieve_or_fail(conn, infra_id, || InfraApiError::NotFound { infra_id }).await?;
@@ -475,7 +475,7 @@ async fn set_locked(infra_id: i64, locked: bool, db_pool: Arc<DbPool>) -> Result
     )
 )]
 #[post("/lock")]
-async fn lock(infra: Path<InfraIdParam>, db_pool: Data<DbPool>) -> Result<HttpResponse> {
+async fn lock(infra: Path<InfraIdParam>, db_pool: Data<ConnectionPool>) -> Result<HttpResponse> {
     set_locked(infra.infra_id, true, db_pool.into_inner()).await?;
     Ok(HttpResponse::NoContent().finish())
 }
@@ -490,7 +490,7 @@ async fn lock(infra: Path<InfraIdParam>, db_pool: Data<DbPool>) -> Result<HttpRe
     )
 )]
 #[post("/unlock")]
-async fn unlock(infra: Path<InfraIdParam>, db_pool: Data<DbPool>) -> Result<HttpResponse> {
+async fn unlock(infra: Path<InfraIdParam>, db_pool: Data<ConnectionPool>) -> Result<HttpResponse> {
     set_locked(infra.infra_id, false, db_pool.into_inner()).await?;
     Ok(HttpResponse::NoContent().finish())
 }
@@ -504,7 +504,7 @@ pub struct StatePayload {
 /// Builds a Core infra load request, runs it
 async fn call_core_infra_load(
     infra_id: i64,
-    db_pool: Data<DbPool>,
+    db_pool: Data<ConnectionPool>,
     core: Data<CoreClient>,
 ) -> Result<()> {
     let conn = &mut db_pool.get().await?;
@@ -521,7 +521,7 @@ async fn call_core_infra_load(
 #[post("/load")]
 async fn load(
     infra: Path<i64>,
-    db_pool: Data<DbPool>,
+    db_pool: Data<ConnectionPool>,
     core: Data<CoreClient>,
 ) -> Result<HttpResponse> {
     call_core_infra_load(*infra, db_pool, core).await?;
@@ -531,7 +531,7 @@ async fn load(
 /// Builds a Core cache_status request, runs it
 pub async fn call_core_infra_state(
     infra_id: Option<i64>,
-    db_pool: Data<DbPool>,
+    db_pool: Data<ConnectionPool>,
     core: Data<CoreClient>,
 ) -> Result<HashMap<String, InfraStateResponse>> {
     if let Some(infra_id) = infra_id {
@@ -548,7 +548,7 @@ pub async fn call_core_infra_state(
 #[get("/cache_status")]
 async fn cache_status(
     payload: Either<Json<StatePayload>, ()>,
-    db_pool: Data<DbPool>,
+    db_pool: Data<ConnectionPool>,
     core: Data<CoreClient>,
 ) -> Result<Json<HashMap<String, InfraStateResponse>>> {
     let payload = match payload {
@@ -611,7 +611,7 @@ pub mod tests {
     }
 
     #[rstest]
-    async fn infra_clone_empty(db_pool: Data<DbPool>) {
+    async fn infra_clone_empty(db_pool: Data<ConnectionPool>) {
         let conn = &mut db_pool.get().await.unwrap();
         let infra = empty_infra(db_pool.clone()).await;
         let app = create_test_service().await;
@@ -635,7 +635,7 @@ pub mod tests {
     }
 
     #[rstest] // Slow test
-    async fn infra_clone(db_pool: Data<DbPool>) {
+    async fn infra_clone(db_pool: Data<ConnectionPool>) {
         let app = create_test_service().await;
         let small_infra = small_infra(db_pool.clone()).await;
         let small_infra_id = small_infra.id;
@@ -740,7 +740,7 @@ pub mod tests {
     }
 
     #[rstest]
-    async fn default_infra_create(db_pool: Data<DbPool>) {
+    async fn default_infra_create(db_pool: Data<ConnectionPool>) {
         let app = create_test_service().await;
         let req = TestRequest::post()
             .uri("/infra")
@@ -759,7 +759,7 @@ pub mod tests {
     }
 
     #[rstest]
-    async fn infra_get(#[future] empty_infra: TestFixture<Infra>, db_pool: Data<DbPool>) {
+    async fn infra_get(#[future] empty_infra: TestFixture<Infra>, db_pool: Data<ConnectionPool>) {
         let empty_infra = empty_infra.await;
         let mut core = MockingClient::new();
         core.stub("/cache_status")

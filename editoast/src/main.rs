@@ -19,6 +19,7 @@ mod views;
 
 use crate::core::CoreClient;
 use crate::error::InternalError;
+use crate::modelsv2::ConnectionPool;
 use crate::modelsv2::Infra;
 use crate::views::OpenApiRoot;
 use actix_cors::Cors;
@@ -80,8 +81,6 @@ use url::Url;
 use validator::ValidationErrorsKind;
 use views::infra::InfraApiError;
 use views::search::{SearchConfig, SearchConfigFinder, SearchConfigStore};
-
-type DbPool = Pool<Connection>;
 
 /// The mode editoast is running in
 ///
@@ -246,7 +245,7 @@ async fn run() -> Result<(), Box<dyn Error + Send + Sync>> {
 
 async fn trains_export(
     args: ExportTimetableArgs,
-    db_pool: Data<DbPool>,
+    db_pool: Data<ConnectionPool>,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
     let conn = &mut db_pool.get().await?;
     let train_ids = match TimetableWithTrains::retrieve(conn, args.id).await? {
@@ -280,7 +279,7 @@ async fn trains_export(
 
 async fn trains_import(
     args: ImportTimetableArgs,
-    db_pool: Data<DbPool>,
+    db_pool: Data<ConnectionPool>,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
     let train_file = match File::open(args.path.clone()) {
         Ok(file) => file,
@@ -391,7 +390,7 @@ fn establish_connection(config: &str) -> BoxFuture<ConnectionResult<Connection>>
     fut.boxed()
 }
 
-fn get_pool(url: Url, max_size: usize) -> DbPool {
+fn get_pool(url: Url, max_size: usize) -> ConnectionPool {
     let mut manager_config = ManagerConfig::default();
     manager_config.custom_setup = Box::new(establish_connection);
     let manager = ConnectionManager::new_with_config(url, manager_config);
@@ -404,7 +403,7 @@ fn get_pool(url: Url, max_size: usize) -> DbPool {
 /// Create and run the server
 async fn runserver(
     args: RunserverArgs,
-    db_pool: Data<DbPool>,
+    db_pool: Data<ConnectionPool>,
     redis_config: RedisConfig,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
     info!("Building server...");
@@ -509,7 +508,7 @@ async fn build_redis_pool_and_invalidate_all_cache(
 }
 
 async fn batch_retrieve_infras(
-    conn: &mut crate::modelsv2::Connection,
+    conn: &mut Connection,
     ids: &[u64],
 ) -> Result<Vec<Infra>, Box<dyn Error + Send + Sync>> {
     let (infras, missing) = Infra::retrieve_batch(conn, ids.iter().map(|id| *id as i64)).await?;
@@ -534,7 +533,7 @@ async fn batch_retrieve_infras(
 /// This command refresh all infra given as input (if no infra given then refresh all of them)
 async fn generate_infra(
     args: GenerateArgs,
-    db_pool: Data<DbPool>,
+    db_pool: Data<ConnectionPool>,
     redis_config: RedisConfig,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
     let mut conn = db_pool.get().await?;
@@ -578,7 +577,7 @@ async fn generate_infra(
 
 async fn import_rolling_stock(
     args: ImportRollingStockArgs,
-    db_pool: Data<DbPool>,
+    db_pool: Data<ConnectionPool>,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
     for rolling_stock_path in args.rolling_stock_path {
         let rolling_stock_file = File::open(rolling_stock_path)?;
@@ -628,7 +627,7 @@ async fn import_rolling_stock(
 
 async fn clone_infra(
     infra_args: InfraCloneArgs,
-    db_pool: Data<DbPool>,
+    db_pool: Data<ConnectionPool>,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
     let conn = &mut db_pool.get().await?;
     let infra = Infra::retrieve(conn, infra_args.id as i64)
@@ -652,7 +651,7 @@ async fn clone_infra(
 
 async fn import_railjson(
     args: ImportRailjsonArgs,
-    db_pool: Data<DbPool>,
+    db_pool: Data<ConnectionPool>,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
     let railjson_file = match File::open(args.railjson_path.clone()) {
         Ok(file) => file,
@@ -699,7 +698,7 @@ async fn import_railjson(
 
 async fn electrical_profile_set_import(
     args: ImportProfileSetArgs,
-    db_pool: Data<DbPool>,
+    db_pool: Data<ConnectionPool>,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
     let electrical_profile_set_file = File::open(args.electrical_profile_set_path)?;
 
@@ -717,7 +716,7 @@ async fn electrical_profile_set_import(
 
 async fn electrical_profile_set_list(
     args: ListProfileSetArgs,
-    db_pool: Data<DbPool>,
+    db_pool: Data<ConnectionPool>,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
     let mut conn = db_pool.get().await?;
     let electrical_profile_sets = ElectricalProfileSet::list_light(&mut conn).await.unwrap();
@@ -735,7 +734,7 @@ async fn electrical_profile_set_list(
 
 async fn electrical_profile_set_delete(
     args: DeleteProfileSetArgs,
-    db_pool: Data<DbPool>,
+    db_pool: Data<ConnectionPool>,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
     for profile_set_id in args.profile_set_ids {
         let conn = &mut db_pool.get().await?;
@@ -755,7 +754,7 @@ async fn electrical_profile_set_delete(
 /// This command clear all generated data for the given infra
 async fn clear_infra(
     args: ClearArgs,
-    db_pool: Data<DbPool>,
+    db_pool: Data<ConnectionPool>,
     redis_config: RedisConfig,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
     let mut conn = db_pool.get().await?;
@@ -863,7 +862,7 @@ fn make_search_migration(args: MakeMigrationArgs) -> Result<(), Box<dyn Error + 
 
 async fn refresh_search_tables(
     args: RefreshArgs,
-    db_pool: Data<DbPool>,
+    db_pool: Data<ConnectionPool>,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
     let objects = if args.objects.is_empty() {
         SearchConfigFinder::all()
@@ -941,7 +940,7 @@ mod tests {
     use tempfile::NamedTempFile;
 
     #[rstest]
-    async fn import_export_timetable_schedule_v2(db_pool: Data<DbPool>) {
+    async fn import_export_timetable_schedule_v2(db_pool: Data<ConnectionPool>) {
         let conn = &mut db_pool.get().await.unwrap();
 
         let changeset = Timetable::changeset();
@@ -980,7 +979,7 @@ mod tests {
     }
 
     #[rstest]
-    async fn import_rolling_stock_ko_file_not_found(db_pool: Data<DbPool>) {
+    async fn import_rolling_stock_ko_file_not_found(db_pool: Data<ConnectionPool>) {
         // GIVEN
         let args = ImportRollingStockArgs {
             rolling_stock_path: vec!["non/existing/railjson/file/location".into()],
@@ -994,7 +993,9 @@ mod tests {
     }
 
     #[rstest]
-    async fn import_non_electric_rs_without_startup_and_panto_values(db_pool: Data<DbPool>) {
+    async fn import_non_electric_rs_without_startup_and_panto_values(
+        db_pool: Data<ConnectionPool>,
+    ) {
         // GIVEN
         let rolling_stock_name =
             "fast_rolling_stock_import_non_electric_rs_without_startup_and_panto_values";
@@ -1024,7 +1025,7 @@ mod tests {
     }
 
     #[rstest]
-    async fn import_non_electric_rs_with_startup_and_panto_values(db_pool: Data<DbPool>) {
+    async fn import_non_electric_rs_with_startup_and_panto_values(db_pool: Data<ConnectionPool>) {
         // GIVEN
         let rolling_stock_name =
             "fast_rolling_stock_import_non_electric_rs_with_startup_and_panto_values";
@@ -1058,7 +1059,7 @@ mod tests {
     }
 
     #[rstest]
-    async fn import_electric_rs_without_startup_and_panto_values(db_pool: Data<DbPool>) {
+    async fn import_electric_rs_without_startup_and_panto_values(db_pool: Data<ConnectionPool>) {
         // GIVEN
         let rolling_stock_name =
             "fast_rolling_stock_import_electric_rs_without_startup_and_panto_values";
@@ -1087,7 +1088,7 @@ mod tests {
     }
 
     #[rstest]
-    async fn import_electric_rs_with_startup_and_panto_values(db_pool: Data<DbPool>) {
+    async fn import_electric_rs_with_startup_and_panto_values(db_pool: Data<ConnectionPool>) {
         // GIVEN
         let rolling_stock_name =
             "fast_rolling_stock_import_electric_rs_with_startup_and_panto_values";
@@ -1125,7 +1126,7 @@ mod tests {
     }
 
     #[rstest]
-    async fn import_railjson_ko_file_not_found(db_pool: Data<DbPool>) {
+    async fn import_railjson_ko_file_not_found(db_pool: Data<ConnectionPool>) {
         // GIVEN
         let railjson_path = "non/existing/railjson/file/location";
         let args: ImportRailjsonArgs = ImportRailjsonArgs {
@@ -1150,7 +1151,7 @@ mod tests {
     }
 
     #[rstest]
-    async fn import_railjson_ok(db_pool: Data<DbPool>) {
+    async fn import_railjson_ok(db_pool: Data<ConnectionPool>) {
         // GIVEN
         let railjson = Default::default();
         let file = generate_temp_file::<RailJson>(&railjson);
@@ -1191,7 +1192,7 @@ mod tests {
     #[rstest]
     async fn test_electrical_profile_set_delete(
         #[future] electrical_profile_set: TestFixture<ElectricalProfileSet>,
-        db_pool: Data<DbPool>,
+        db_pool: Data<ConnectionPool>,
     ) {
         // GIVEN
         let electrical_profile_set = electrical_profile_set.await;
@@ -1218,7 +1219,7 @@ mod tests {
     #[rstest]
     async fn test_electrical_profile_set_list_doesnt_fail(
         #[future] electrical_profile_set: TestFixture<ElectricalProfileSet>,
-        db_pool: Data<DbPool>,
+        db_pool: Data<ConnectionPool>,
     ) {
         let _electrical_profile_set = electrical_profile_set.await;
         for quiet in [true, false] {

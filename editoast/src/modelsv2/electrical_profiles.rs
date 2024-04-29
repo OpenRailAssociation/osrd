@@ -45,11 +45,11 @@ mod tests {
     use crate::fixtures::tests::dummy_electrical_profile_set;
     use crate::fixtures::tests::electrical_profile_set;
     use crate::fixtures::tests::TestFixture;
-    use crate::DbPool;
+    use crate::modelsv2::ConnectionPool;
 
     #[rstest]
     async fn test_list_light(
-        db_pool: Data<DbPool>,
+        db_pool: Data<ConnectionPool>,
         #[future] electrical_profile_set: TestFixture<ElectricalProfileSet>,
         #[future] dummy_electrical_profile_set: TestFixture<ElectricalProfileSet>,
     ) {

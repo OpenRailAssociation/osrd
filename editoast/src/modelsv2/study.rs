@@ -19,12 +19,12 @@ use crate::modelsv2::projects::Ordering;
 use crate::modelsv2::projects::Tags;
 use crate::modelsv2::Changeset;
 use crate::modelsv2::Connection;
+use crate::modelsv2::ConnectionPool;
 use crate::modelsv2::Model;
 use crate::modelsv2::Row;
 use crate::modelsv2::Save;
 use crate::views::pagination::Paginate;
 use crate::views::pagination::PaginatedResponse;
-use crate::DbPool;
 
 #[derive(Clone, Debug, Serialize, Deserialize, ModelV2, ToSchema)]
 #[model(table = crate::tables::study)]
@@ -54,7 +54,7 @@ impl Study {
         Ok(())
     }
 
-    pub async fn scenarios_count(&self, db_pool: Data<DbPool>) -> Result<i64> {
+    pub async fn scenarios_count(&self, db_pool: Data<ConnectionPool>) -> Result<i64> {
         use crate::tables::scenario::dsl as scenario_dsl;
         let conn = &mut db_pool.get().await?;
         let scenarios_count = scenario_dsl::scenario
@@ -132,7 +132,7 @@ pub mod test {
     #[rstest]
     async fn create_delete_study(
         #[future] study_fixture_set: StudyFixtureSet,
-        db_pool: Data<DbPool>,
+        db_pool: Data<ConnectionPool>,
     ) {
         let StudyFixtureSet { study, .. } = study_fixture_set.await;
 
@@ -145,7 +145,10 @@ pub mod test {
     }
 
     #[rstest]
-    async fn get_study(#[future] study_fixture_set: StudyFixtureSet, db_pool: Data<DbPool>) {
+    async fn get_study(
+        #[future] study_fixture_set: StudyFixtureSet,
+        db_pool: Data<ConnectionPool>,
+    ) {
         let StudyFixtureSet { study, project } = study_fixture_set.await;
 
         // Get a study
@@ -162,7 +165,10 @@ pub mod test {
     }
 
     #[rstest]
-    async fn sort_study(#[future] study_fixture_set: StudyFixtureSet, db_pool: Data<DbPool>) {
+    async fn sort_study(
+        #[future] study_fixture_set: StudyFixtureSet,
+        db_pool: Data<ConnectionPool>,
+    ) {
         let StudyFixtureSet { study, project } = study_fixture_set.await;
 
         // Create second study

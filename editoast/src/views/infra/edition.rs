@@ -17,9 +17,9 @@ use crate::map::MapLayers;
 use crate::map::{self};
 use crate::modelsv2::prelude::*;
 use crate::modelsv2::Connection;
+use crate::modelsv2::ConnectionPool;
 use crate::modelsv2::Infra;
 use crate::views::infra::InfraApiError;
-use crate::DbPool;
 use crate::RedisClient;
 
 /// CRUD for edit an infrastructure. Takes a batch of operations.
@@ -27,7 +27,7 @@ use crate::RedisClient;
 pub async fn edit<'a>(
     infra: Path<i64>,
     operations: Json<Vec<Operation>>,
-    db_pool: Data<DbPool>,
+    db_pool: Data<ConnectionPool>,
     infra_caches: Data<CHashMap<i64, InfraCache>>,
     redis_client: Data<RedisClient>,
     map_layers: Data<MapLayers>,
