@@ -11007,6 +11007,37 @@ paths:
       summary: Retrieve the list of conflict of the timetable (invalid trains are ignored)
       tags:
       - timetablev2
+  /v2/timetable/{id}/train_schedule/:
+    post:
+      description: Create train schedule by batch
+      parameters:
+      - description: A timetable ID
+        in: path
+        name: id
+        required: true
+        schema:
+          format: int64
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              items:
+                $ref: '#/components/schemas/TrainScheduleForm'
+              type: array
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/TrainScheduleResult'
+                type: array
+          description: The created train schedules
+      summary: Create train schedule by batch
+      tags:
+      - train_schedulev2
   /v2/train_schedule/:
     delete:
       description: Delete a train schedule and its result
@@ -11029,28 +11060,6 @@ paths:
         '204':
           description: All train schedules have been deleted
       summary: Delete a train schedule and its result
-      tags:
-      - train_schedulev2
-    post:
-      description: Create train schedule by batch
-      requestBody:
-        content:
-          application/json:
-            schema:
-              items:
-                $ref: '#/components/schemas/TrainScheduleForm'
-              type: array
-        required: true
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                items:
-                  $ref: '#/components/schemas/TrainScheduleResult'
-                type: array
-          description: The train schedule
-      summary: Create train schedule by batch
       tags:
       - train_schedulev2
   /v2/train_schedule/project_path/:

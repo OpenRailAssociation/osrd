@@ -11,6 +11,8 @@ use chrono::DateTime;
 use chrono::Utc;
 use derivative::Derivative;
 use editoast_derive::EditoastError;
+use editoast_schemas::train_schedule::TrainScheduleBase;
+use itertools::Itertools;
 use serde::Deserialize;
 use serde::Serialize;
 use thiserror::Error;
@@ -23,6 +25,8 @@ use crate::models::List;
 use crate::models::NoParams;
 use crate::modelsv2::timetable::Timetable;
 use crate::modelsv2::timetable::TimetableWithTrains;
+use crate::modelsv2::train_schedule::TrainSchedule;
+use crate::modelsv2::train_schedule::TrainScheduleChangeset;
 use crate::modelsv2::Create;
 use crate::modelsv2::DeleteStatic;
 use crate::modelsv2::Model;
@@ -31,6 +35,8 @@ use crate::modelsv2::Update;
 use crate::views::pagination::PaginatedResponse;
 use crate::views::pagination::PaginationQueryParam;
 use crate::views::timetable::ConflictType;
+use crate::views::v2::train_schedule::TrainScheduleForm;
+use crate::views::v2::train_schedule::TrainScheduleResult;
 use crate::CoreClient;
 use crate::DbPool;
 use crate::RedisClient;
@@ -44,6 +50,7 @@ crate::routes! {
             get,
             put,
             conflicts,
+            train_schedule
         }
     },
 }
@@ -238,6 +245,46 @@ async fn delete(
     })
     .await?;
     Ok(HttpResponse::NoContent().finish())
+}
+
+/// Create train schedule by batch
+#[utoipa::path(
+    tag = "train_schedulev2",
+    params(TimetableIdParam),
+    request_body = Vec<TrainScheduleForm>,
+    responses(
+        (status = 200, description = "The created train schedules", body = Vec<TrainScheduleResult>)
+    )
+)]
+#[post("train_schedule")]
+async fn train_schedule(
+    db_pool: Data<DbPool>,
+    timetable_id: Path<TimetableIdParam>,
+    data: Json<Vec<TrainScheduleBase>>,
+) -> Result<Json<Vec<TrainScheduleResult>>> {
+    use crate::modelsv2::CreateBatch;
+
+    let conn = &mut db_pool.get().await?;
+
+    let timetable_id = timetable_id.id;
+    TimetableWithTrains::retrieve_or_fail(conn, timetable_id, || TimetableError::NotFound {
+        timetable_id,
+    })
+    .await?;
+
+    let changesets: Vec<TrainScheduleChangeset> = data
+        .into_inner()
+        .into_iter()
+        .map(|ts| TrainScheduleForm {
+            timetable_id: Some(timetable_id),
+            train_schedule: ts,
+        })
+        .map_into()
+        .collect();
+
+    // Create a batch of train_schedule
+    let train_schedule: Vec<_> = TrainSchedule::create_batch(conn, changesets).await?;
+    Ok(Json(train_schedule.into_iter().map_into().collect()))
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]

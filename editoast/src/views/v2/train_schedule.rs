@@ -8,11 +8,10 @@ use std::hash::Hasher;
 use std::sync::Arc;
 
 use actix_web::web::{Data, Json, Path, Query};
-use actix_web::{delete, get, post, put, HttpResponse};
+use actix_web::{delete, get, put, HttpResponse};
 use diesel_async::AsyncPgConnection as PgConnection;
 use editoast_derive::EditoastError;
 use editoast_schemas::train_schedule::TrainScheduleBase;
-use itertools::Itertools;
 use serde::Deserialize;
 use serde::Serialize;
 use serde_qs::actix::QsQuery;
@@ -55,7 +54,6 @@ const CACHE_SIMULATION_EXPIRATION: u64 = 604800; // 1 week
 
 crate::routes! {
     "/v2/train_schedule" => {
-        post,
         delete,
         simulation_summary,
         projection::routes(),
@@ -63,7 +61,6 @@ crate::routes! {
             get,
             put,
             simulation,
-
             "/path" => {
                 get_path
             }
@@ -137,7 +134,8 @@ impl From<TrainSchedule> for TrainScheduleResult {
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize, ToSchema)]
 pub struct TrainScheduleForm {
-    pub timetable_id: i64,
+    /// Timetable attached to the train schedule
+    pub timetable_id: Option<i64>,
     #[serde(flatten)]
     pub train_schedule: TrainScheduleBase,
 }
@@ -150,7 +148,7 @@ impl From<TrainScheduleForm> for TrainScheduleChangeset {
         } = value;
 
         TrainSchedule::changeset()
-            .timetable_id(timetable_id)
+            .flat_timetable_id(timetable_id)
             .comfort(ts.comfort)
             .constraint_distribution(ts.constraint_distribution)
             .initial_speed(ts.initial_speed)
@@ -170,30 +168,6 @@ impl From<TrainScheduleForm> for TrainScheduleChangeset {
 #[derive(Debug, Deserialize, ToSchema)]
 struct BatchDeletionRequest {
     ids: HashSet<i64>,
-}
-
-/// Create train schedule by batch
-#[utoipa::path(
-    tag = "train_schedulev2",
-    request_body = Vec<TrainScheduleForm>,
-    responses(
-        (status = 200, description = "The train schedule", body = Vec<TrainScheduleResult>)
-    )
-)]
-#[post("")]
-async fn post(
-    db_pool: Data<DbPool>,
-    data: Json<Vec<TrainScheduleForm>>,
-) -> Result<Json<Vec<TrainScheduleResult>>> {
-    use crate::modelsv2::CreateBatch;
-
-    let changesets: Vec<TrainScheduleChangeset> =
-        data.into_inner().into_iter().map_into().collect();
-    let conn = &mut db_pool.get().await?;
-
-    // Create a batch of train_schedule
-    let train_schedule: Vec<_> = TrainSchedule::create_batch(conn, changesets).await?;
-    Ok(Json(train_schedule.into_iter().map_into().collect()))
 }
 
 /// Return a specific train schedule
@@ -731,15 +705,11 @@ mod tests {
 
         let timetable = timetable_v2.await;
         // Insert train_schedule
-        let train_schedule_base: TrainScheduleBase =
+        let train_schedule: TrainScheduleBase =
             serde_json::from_str(include_str!("../../tests/train_schedules/simple.json"))
                 .expect("Unable to parse");
-        let train_schedule = TrainScheduleForm {
-            timetable_id: timetable.id(),
-            train_schedule: train_schedule_base,
-        };
         let request = TestRequest::post()
-            .uri("/v2/train_schedule")
+            .uri(format!("/v2/timetable/{}/train_schedule", timetable.id()).as_str())
             .set_json(json!(vec![train_schedule]))
             .to_request();
         let response: Vec<TrainScheduleResult> = call_and_read_body_json(&service, request).await;
@@ -788,7 +758,7 @@ mod tests {
                 .expect("Unable to parse")
         };
         let train_schedule_form = TrainScheduleForm {
-            timetable_id: timetable.id(),
+            timetable_id: Some(timetable.id()),
             train_schedule: train_schedule_base,
         };
         let request = TestRequest::put()
@@ -819,7 +789,7 @@ mod tests {
                 .expect("Unable to parse")
         };
         let train_schedule = TrainScheduleForm {
-            timetable_id: timetable.id(),
+            timetable_id: Some(timetable.id()),
             train_schedule: train_schedule_base,
         };
         let request = TestRequest::post()
@@ -858,17 +828,13 @@ mod tests {
         let rolling_stock =
             named_fast_rolling_stock("simulation_summary_rolling_stock", db_pool.clone()).await;
 
-        let train_schedule_base: TrainScheduleBase = TrainScheduleBase {
+        let train_schedule: TrainScheduleBase = TrainScheduleBase {
             rolling_stock_name: rolling_stock.name.clone(),
             ..serde_json::from_str(include_str!("../../tests/train_schedules/simple.json"))
                 .expect("Unable to parse")
         };
-        let train_schedule = TrainScheduleForm {
-            timetable_id: timetable.id(),
-            train_schedule: train_schedule_base,
-        };
         let request = TestRequest::post()
-            .uri("/v2/train_schedule")
+            .uri(format!("/v2/timetable/{}/train_schedule", timetable.id()).as_str())
             .set_json(json!(vec![train_schedule]))
             .to_request();
 
