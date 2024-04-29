@@ -306,7 +306,7 @@ async fn trains_import(
         .into_iter()
         .map(|train_schedule| {
             TrainScheduleForm {
-                timetable_id: timetable.id,
+                timetable_id: Some(timetable.id),
                 train_schedule,
             }
             .into()

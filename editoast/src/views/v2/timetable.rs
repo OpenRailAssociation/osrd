@@ -11,6 +11,8 @@ use actix_web::web::Query;
 use actix_web::HttpResponse;
 use derivative::Derivative;
 use editoast_derive::EditoastError;
+use editoast_schemas::train_schedule::TrainScheduleBase;
+use itertools::Itertools;
 use serde::Deserialize;
 use serde::Serialize;
 use thiserror::Error;
@@ -29,6 +31,7 @@ use crate::models::NoParams;
 use crate::modelsv2::timetable::Timetable;
 use crate::modelsv2::timetable::TimetableWithTrains;
 use crate::modelsv2::train_schedule::TrainSchedule;
+use crate::modelsv2::train_schedule::TrainScheduleChangeset;
 use crate::modelsv2::Create;
 use crate::modelsv2::DbConnectionPool;
 use crate::modelsv2::DeleteStatic;
@@ -39,6 +42,8 @@ use crate::modelsv2::Update;
 use crate::views::pagination::PaginatedResponse;
 use crate::views::pagination::PaginationQueryParam;
 use crate::views::v2::train_schedule::train_simulation_batch;
+use crate::views::v2::train_schedule::TrainScheduleForm;
+use crate::views::v2::train_schedule::TrainScheduleResult;
 use crate::CoreClient;
 use crate::RedisClient;
 use crate::RetrieveBatch;
@@ -52,6 +57,7 @@ crate::routes! {
             get,
             put,
             conflicts,
+            train_schedule
         }
     },
 }
@@ -152,7 +158,8 @@ async fn get(
 }
 
 decl_paginated_response!(PaginatedResponseOfTimetable, TimetableResult);
-/// Return all timetables
+
+/// Retrieve paginated timetables
 #[utoipa::path(
     tag = "timetablev2",
     params(PaginationQueryParam),
@@ -174,7 +181,7 @@ async fn list(
     Ok(Json(timetable.into()))
 }
 
-/// Return a specific timetable with its associated schedules
+/// Create a timetable
 #[utoipa::path(
     tag = "timetablev2",
     request_body = TimetableForm,
@@ -197,7 +204,7 @@ async fn post(
     Ok(Json(timetable.into()))
 }
 
-/// Update a specific timetable with its associated schedules
+/// Update a specific timetable
 #[utoipa::path(
     tag = "timetablev2",
     params(TimetableIdParam),
@@ -230,7 +237,7 @@ async fn put(
     Ok(Json(timetable.into()))
 }
 
-/// Return a specific timetable with its associated schedules
+/// Delete a timetable
 #[utoipa::path(
     tag = "timetablev2",
     params(TimetableIdParam),
@@ -251,6 +258,46 @@ async fn delete(
     })
     .await?;
     Ok(HttpResponse::NoContent().finish())
+}
+
+/// Create train schedule by batch
+#[utoipa::path(
+    tag = "train_schedulev2",
+    params(TimetableIdParam),
+    request_body = Vec<TrainScheduleBase>,
+    responses(
+        (status = 200, description = "The created train schedules", body = Vec<TrainScheduleResult>)
+    )
+)]
+#[post("train_schedule")]
+async fn train_schedule(
+    db_pool: Data<DbConnectionPool>,
+    timetable_id: Path<TimetableIdParam>,
+    data: Json<Vec<TrainScheduleBase>>,
+) -> Result<Json<Vec<TrainScheduleResult>>> {
+    use crate::modelsv2::CreateBatch;
+
+    let conn = &mut db_pool.get().await?;
+
+    let timetable_id = timetable_id.id;
+    TimetableWithTrains::retrieve_or_fail(conn, timetable_id, || TimetableError::NotFound {
+        timetable_id,
+    })
+    .await?;
+
+    let changesets: Vec<TrainScheduleChangeset> = data
+        .into_inner()
+        .into_iter()
+        .map(|ts| TrainScheduleForm {
+            timetable_id: Some(timetable_id),
+            train_schedule: ts,
+        })
+        .map_into()
+        .collect();
+
+    // Create a batch of train_schedule
+    let train_schedule: Vec<_> = TrainSchedule::create_batch(conn, changesets).await?;
+    Ok(Json(train_schedule.into_iter().map_into().collect()))
 }
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize, IntoParams, ToSchema)]
