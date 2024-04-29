@@ -2,6 +2,8 @@ package fr.sncf.osrd.stdcm
 
 import com.google.common.collect.HashMultimap
 import fr.sncf.osrd.api.FullInfra
+import fr.sncf.osrd.api.api_v2.UndirectedTrackRange
+import fr.sncf.osrd.api.api_v2.stdcm.WorkSchedule
 import fr.sncf.osrd.api.stdcm.makeTrainSchedule
 import fr.sncf.osrd.railjson.parser.RJSRollingStockParser
 import fr.sncf.osrd.standalone_sim.result.ResultTrain.SpacingRequirement
@@ -10,11 +12,14 @@ import fr.sncf.osrd.stdcm.preprocessing.implementation.makeBlockAvailability
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.TestTrains
 import fr.sncf.osrd.utils.Helpers
+import fr.sncf.osrd.utils.Helpers.smallInfra
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
+import fr.sncf.osrd.utils.units.seconds
 import java.io.IOException
 import java.net.URISyntaxException
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class FullSTDCMTests {
@@ -141,6 +146,39 @@ class FullSTDCMTests {
                 .setBlockAvailability(makeBlockAvailability(infra, requirements))
                 .run()!!
         checkNoConflict(infra, requirements, res)
+    }
+
+    /** Test that we properly account for work schedules */
+    @Test
+    fun testWorkSchedules() {
+        /*
+        We look for a path starting on the track TB0, which has a work schedule from t=0 to t=3600
+         */
+        val blockAvailability =
+            makeBlockAvailability(
+                smallInfra,
+                listOf(),
+                listOf(
+                    WorkSchedule(
+                        listOf(UndirectedTrackRange("TB0", Offset(0.meters), Offset(2000.meters))),
+                        0.seconds,
+                        3600.seconds
+                    )
+                )
+            )
+        val infra = Helpers.fullInfraFromRJS(Helpers.getExampleInfra("small_infra/infra.json"))
+        val start =
+            setOf(Helpers.convertRouteLocation(infra, "rt.buffer_stop.3->DB0", Offset(0.meters)))
+        val end =
+            setOf(Helpers.convertRouteLocation(infra, "rt.DH2->buffer_stop.7", Offset(0.meters)))
+        val res =
+            STDCMPathfindingBuilder()
+                .setInfra(infra)
+                .setStartLocations(start)
+                .setEndLocations(end)
+                .setBlockAvailability(blockAvailability)
+                .run()!!
+        assertTrue(res.departureTime >= 3600)
     }
 
     /** Check that the result we find doesn't cause a conflict */

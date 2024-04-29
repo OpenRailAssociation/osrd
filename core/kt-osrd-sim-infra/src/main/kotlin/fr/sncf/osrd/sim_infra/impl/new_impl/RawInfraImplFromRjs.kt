@@ -220,6 +220,12 @@ class RawInfraImplFromRjs(
             }
             bounds.immutableCopyOf()
         }
+    private val chunkToZoneMap =
+        zonePathPool
+            .flatMap { zonePathId ->
+                zonePathPool[zonePathId].chunks.map { Pair(it.value, getZonePathZone(zonePathId)) }
+            }
+            .toMap()
 
     override val trackNodes: StaticIdxSpace<TrackNode>
         get() = trackNodePool.space()
@@ -592,6 +598,10 @@ class RawInfraImplFromRjs(
         // as duplicate detectors are merged, they can have multiple names.
         // the list of names has to be sorted, and we just take the first one. it shouldn't matter.
         return detectorPool[det].names[0]
+    }
+
+    override fun getTrackChunkZone(chunk: TrackChunkId): ZoneId {
+        return chunkToZoneMap[chunk]!!
     }
 
     override fun getNextTrackSection(

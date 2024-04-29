@@ -500,6 +500,7 @@ class BlockAvailabilityTests {
                     SpacingRequirement(zoneNames[0], 0.0, endFirstConflict, true),
                     SpacingRequirement(zoneNames[0], startSecondConflict, POSITIVE_INFINITY, true),
                 ),
+                listOf(),
                 marginBefore,
                 marginAfter
             )

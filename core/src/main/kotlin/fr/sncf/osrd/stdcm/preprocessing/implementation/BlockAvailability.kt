@@ -1,12 +1,15 @@
 package fr.sncf.osrd.stdcm.preprocessing.implementation
 
 import fr.sncf.osrd.api.FullInfra
+import fr.sncf.osrd.api.api_v2.stdcm.WorkSchedule
 import fr.sncf.osrd.conflicts.IncrementalConflictDetector
 import fr.sncf.osrd.conflicts.TrainRequirements
 import fr.sncf.osrd.conflicts.TravelledPath
 import fr.sncf.osrd.conflicts.incrementalConflictDetector
 import fr.sncf.osrd.envelope_utils.DoubleBinarySearch
 import fr.sncf.osrd.sim_infra.api.Path
+import fr.sncf.osrd.sim_infra.api.RawSignalingInfra
+import fr.sncf.osrd.sim_infra.api.getTrackSectionFromNameOrThrow
 import fr.sncf.osrd.standalone_sim.result.ResultTrain.SpacingRequirement
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
@@ -97,13 +100,15 @@ data class BlockAvailability(
 fun makeBlockAvailability(
     infra: FullInfra,
     requirements: Collection<SpacingRequirement>,
+    workSchedules: Collection<WorkSchedule> = listOf(),
     gridMarginBeforeTrain: Double = 0.0,
     gridMarginAfterTrain: Double = 0.0,
 ): BlockAvailabilityInterface {
-    var reqWithGridMargin = requirements
+    val convertedWorkSchedules = convertWorkSchedules(infra.rawInfra, workSchedules)
+    var allRequirements = requirements + convertedWorkSchedules
     if (gridMarginAfterTrain != 0.0 || gridMarginBeforeTrain != 0.0) {
         // The margin expected *after* the new train is added *before* the other train resource uses
-        reqWithGridMargin =
+        allRequirements =
             requirements.map {
                 SpacingRequirement(
                     it.zone,
@@ -113,11 +118,42 @@ fun makeBlockAvailability(
                 )
             }
     }
-    val trainRequirements = listOf(TrainRequirements(0L, reqWithGridMargin, listOf()))
+    val trainRequirements = listOf(TrainRequirements(0L, allRequirements, listOf()))
     return BlockAvailability(
         infra,
         incrementalConflictDetector(trainRequirements),
         gridMarginBeforeTrain,
         gridMarginAfterTrain,
     )
+}
+
+/**
+ * Convert work schedules into timetable spacing requirements This is not entirely semantically
+ * correct, but it lets us avoid work schedules like any other kind of time-bound constraint
+ */
+private fun convertWorkSchedules(
+    infra: RawSignalingInfra,
+    workSchedules: Collection<WorkSchedule>
+): List<SpacingRequirement> {
+    val res = mutableListOf<SpacingRequirement>()
+    for (entry in workSchedules) {
+        for (range in entry.trackRanges) {
+            val track = getTrackSectionFromNameOrThrow(range.trackSection, infra)
+            for (chunk in infra.getTrackSectionChunks(track)) {
+                val chunkStartOffset = infra.getTrackChunkOffset(chunk)
+                val chunkEndOffset = chunkStartOffset + infra.getTrackChunkLength(chunk).distance
+                if (chunkStartOffset > range.end || chunkEndOffset < range.begin) continue
+                val zone = infra.getTrackChunkZone(chunk)
+                res.add(
+                    SpacingRequirement(
+                        infra.getZoneName(zone),
+                        entry.startTime.seconds,
+                        entry.endTime.seconds,
+                        true
+                    )
+                )
+            }
+        }
+    }
+    return res
 }
