@@ -1,11 +1,6 @@
 package fr.sncf.osrd.sim_infra.api
 
-import fr.sncf.osrd.utils.indexing.DirStaticIdxList
-import fr.sncf.osrd.utils.indexing.StaticIdx
-import fr.sncf.osrd.utils.indexing.StaticIdxList
-import fr.sncf.osrd.utils.indexing.StaticIdxSortedSet
-import fr.sncf.osrd.utils.indexing.StaticIdxSpace
-import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
+import fr.sncf.osrd.utils.indexing.*
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.OffsetList
 
@@ -36,6 +31,8 @@ interface LocationInfra : TrackNetworkInfra, TrackInfra, TrackProperties {
     fun getPreviousZone(dirDet: DirDetectorId): ZoneId?
 
     fun getDetectorName(det: DetectorId): String
+
+    fun getTrackChunkZone(chunk: TrackChunkId): ZoneId
 }
 
 fun LocationInfra.isBufferStop(detector: StaticIdx<Detector>): Boolean {

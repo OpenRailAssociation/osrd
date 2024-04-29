@@ -5,15 +5,18 @@ import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import fr.sncf.osrd.api.api_v2.TrackLocation
+import fr.sncf.osrd.api.api_v2.UndirectedTrackRange
 import fr.sncf.osrd.api.api_v2.conflicts.TrainRequirementsRequest
 import fr.sncf.osrd.api.api_v2.standalone_sim.MarginValue
 import fr.sncf.osrd.api.api_v2.standalone_sim.MarginValueAdapter
 import fr.sncf.osrd.api.api_v2.standalone_sim.PhysicsRollingStockModel
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingResistance
+import fr.sncf.osrd.sim_infra.api.TrackSection
 import fr.sncf.osrd.train.RollingStock.Comfort
 import fr.sncf.osrd.utils.json.UnitAdapterFactory
 import fr.sncf.osrd.utils.units.Duration
+import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.TimeDelta
 import fr.sncf.osrd.utils.units.seconds
 import java.time.ZonedDateTime
@@ -51,11 +54,21 @@ class STDCMRequestV2(
     @Json(name = "time_gap_after") val timeGapAfter: TimeDelta,
     /// Margin to apply to the whole train.
     val margin: MarginValue,
+    @Json(name = "work_schedules") val workSchedules: Collection<WorkSchedule> = listOf(),
 )
 
 class STDCMPathItem(
     val locations: List<TrackLocation>,
     @Json(name = "stop_duration") val stopDuration: Duration?,
+)
+
+class TrackOffset(val track: String, val offset: Offset<TrackSection>)
+
+data class WorkSchedule(
+    /** List of affected track ranges */
+    @Json(name = "track_ranges") val trackRanges: Collection<UndirectedTrackRange> = listOf(),
+    @Json(name = "start_time") val startTime: TimeDelta,
+    @Json(name = "end_time") val endTime: TimeDelta,
 )
 
 val stdcmRequestAdapter: JsonAdapter<STDCMRequestV2> =

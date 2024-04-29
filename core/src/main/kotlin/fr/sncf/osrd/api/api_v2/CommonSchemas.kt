@@ -1,6 +1,6 @@
 package fr.sncf.osrd.api.api_v2
 
-import com.squareup.moshi.*
+import com.squareup.moshi.Json
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection
 import fr.sncf.osrd.sim_infra.api.Path
 import fr.sncf.osrd.sim_infra.api.TrackSection
@@ -13,6 +13,12 @@ data class TrackRange(
     var begin: Offset<TrackSection>,
     var end: Offset<TrackSection>,
     val direction: EdgeDirection,
+)
+
+data class UndirectedTrackRange(
+    @Json(name = "track_section") val trackSection: String,
+    var begin: Offset<TrackSection>,
+    var end: Offset<TrackSection>,
 )
 
 class RangeValues<T>(val boundaries: List<Distance> = listOf(), val values: List<T> = listOf())

@@ -296,6 +296,10 @@ class DummyInfra : RawInfra, BlockInfra {
         return detectorMap.inverse()[DirDetectorId(det, Direction.INCREASING)]!!
     }
 
+    override fun getTrackChunkZone(chunk: TrackChunkId): ZoneId {
+        return convertId(chunk)
+    }
+
     private fun getOrCreateDetectorId(name: String): DirDetectorId {
         return detectorMap.computeIfAbsent(name) { DirDetectorId(detectorMap.size.toUInt() * 2u) }
     }
