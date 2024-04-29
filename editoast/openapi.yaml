@@ -8736,21 +8736,6 @@ paths:
       summary: Retrieve a list of switch types
       tags:
       - infra
-  /infra/{id}/unlock/:
-    post:
-      parameters:
-      - description: infra id
-        in: path
-        name: id
-        required: true
-        schema:
-          type: integer
-      responses:
-        '204':
-          description: No content
-      summary: Unlock an infra from edition
-      tags:
-      - infra
   /infra/{id}/voltages/:
     get:
       parameters:
@@ -9078,6 +9063,25 @@ paths:
       tags:
       - infra
       - routes
+  /infra/{infra_id}/unlock/:
+    post:
+      description: Unlock an infra
+      parameters:
+      - description: An existing infra ID
+        in: path
+        name: infra_id
+        required: true
+        schema:
+          format: int64
+          type: integer
+      responses:
+        '204':
+          description: The infra was unlocked successfully
+        '404':
+          description: The infra was not found
+      summary: Unlock an infra
+      tags:
+      - infra
   /layers/layer/{layer_slug}/mvt/{view_slug}/:
     get:
       description: Returns layer view metadata to query tiles
