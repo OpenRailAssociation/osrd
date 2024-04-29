@@ -6,7 +6,6 @@ pub mod train_schedule;
 
 use actix_web::web::Data;
 use async_trait::async_trait;
-use diesel_async::AsyncPgConnection as PgConnection;
 pub use scenario::Scenario;
 pub use scenario::ScenarioWithCountTrains;
 pub use scenario::ScenarioWithDetails;
@@ -32,6 +31,7 @@ pub use train_schedule::ZoneUpdate;
 pub use self::pathfinding::*;
 use crate::error::Result;
 use crate::modelsv2::projects;
+use crate::modelsv2::Connection;
 use crate::views::pagination::PaginatedResponse;
 use crate::DbPool;
 
@@ -72,7 +72,7 @@ impl<T: diesel::Identifiable<Id = i64> + Clone> Identifiable for T {
 pub trait Create: Sized + 'static {
     /// Same as [create](Self::create) but takes a single postgres connection.
     /// Useful when you are in a transaction.
-    async fn create_conn(self, conn: &mut PgConnection) -> Result<Self>;
+    async fn create_conn(self, conn: &mut Connection) -> Result<Self>;
 
     /// Create a new Object in the database.
     /// Returns the created object with its default values filled (like the id).
@@ -98,7 +98,7 @@ pub trait Create: Sized + 'static {
 pub trait Delete {
     /// Same as [delete](Self::delete) but takes a single postgres connection.
     /// Useful when you are in a transaction.
-    async fn delete_conn(conn: &mut PgConnection, id: i64) -> Result<bool>;
+    async fn delete_conn(conn: &mut Connection, id: i64) -> Result<bool>;
 
     /// Delete an object given its ID (primary key).
     /// Return `false` if not found.
@@ -122,7 +122,7 @@ pub trait Delete {
 pub trait Retrieve: Sized + 'static {
     /// Same as [retrieve](Self::retrieve) but takes a single postgres connection.
     /// Useful when you are in a transaction.
-    async fn retrieve_conn(conn: &mut PgConnection, id: i64) -> Result<Option<Self>>;
+    async fn retrieve_conn(conn: &mut Connection, id: i64) -> Result<Option<Self>>;
 
     /// Retrieve an object given its ID (primary key).
     /// Return 'None' if not found.
@@ -148,7 +148,7 @@ pub trait Retrieve: Sized + 'static {
 pub trait Update: Sized + 'static {
     /// Same as [update](Self::update) but takes a single postgres connection.
     /// Useful when you are in a transaction.
-    async fn update_conn(self, conn: &mut PgConnection, id: i64) -> Result<Option<Self>>;
+    async fn update_conn(self, conn: &mut Connection, id: i64) -> Result<Option<Self>>;
 
     /// Update an object given its ID (primary key).
     /// Return 'None' if not found.
@@ -177,7 +177,7 @@ pub trait List<T: Send + 'static>: Sized + 'static {
     /// Same as [list](Self::list) but takes a single postgres connection.
     /// Useful when you are in a transaction.
     async fn list_conn(
-        conn: &mut PgConnection,
+        conn: &mut Connection,
         page: i64,
         page_size: i64,
         params: T,

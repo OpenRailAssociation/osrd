@@ -4,7 +4,6 @@ use actix_web::web::Data;
 use derivative::Derivative;
 use diesel::prelude::*;
 use diesel::result::Error as DieselError;
-use diesel_async::AsyncPgConnection as PgConnection;
 use diesel_async::RunQueryDsl;
 use editoast_derive::Model;
 use futures::future::try_join_all;
@@ -20,6 +19,7 @@ use crate::models::train_schedule::MechanicalEnergyConsumedBaseEco;
 use crate::models::train_schedule::TrainSchedule;
 use crate::models::train_schedule::TrainScheduleSummary;
 use crate::models::SimulationOutput;
+use crate::modelsv2::Connection;
 use crate::modelsv2::LightRollingStockModel;
 use crate::modelsv2::Retrieve;
 use crate::tables::timetable;
@@ -180,7 +180,7 @@ impl Timetable {
     }
 
     /// Retrieve the associated scenario
-    pub async fn get_scenario_conn(&self, conn: &mut PgConnection) -> Result<Scenario> {
+    pub async fn get_scenario_conn(&self, conn: &mut Connection) -> Result<Scenario> {
         use crate::tables::scenario::dsl::*;
         let self_id = self.id.expect("Timetable should have an id");
         match scenario

@@ -8,7 +8,6 @@ use derivative::Derivative;
 use diesel::sql_query;
 use diesel::sql_types::BigInt;
 use diesel::QueryDsl;
-use diesel_async::AsyncPgConnection as PgConnection;
 use diesel_async::RunQueryDsl;
 use editoast_derive::ModelV2;
 use futures::future::try_join_all;
@@ -29,6 +28,7 @@ use crate::modelsv2::get_geometry_layer_table;
 use crate::modelsv2::get_table;
 use crate::modelsv2::prelude::*;
 use crate::modelsv2::railjson::persist_railjson;
+use crate::modelsv2::Connection;
 use crate::modelsv2::Create;
 use crate::tables::infra::dsl;
 use crate::views::pagination::Paginate;
@@ -84,7 +84,7 @@ impl InfraChangeset {
 }
 
 impl Infra {
-    pub async fn all(conn: &mut PgConnection) -> Vec<Infra> {
+    pub async fn all(conn: &mut Connection) -> Vec<Infra> {
         dsl::infra
             .load(conn)
             .await
@@ -94,7 +94,7 @@ impl Infra {
             .collect()
     }
 
-    pub async fn bump_version(&mut self, conn: &mut PgConnection) -> Result<()> {
+    pub async fn bump_version(&mut self, conn: &mut Connection) -> Result<()> {
         let new_version = self
             .version
             .parse::<u32>()
@@ -104,7 +104,7 @@ impl Infra {
         self.save(conn).await
     }
 
-    pub async fn bump_generated_version(&mut self, conn: &mut PgConnection) -> Result<()> {
+    pub async fn bump_generated_version(&mut self, conn: &mut Connection) -> Result<()> {
         self.generated_version = Some(self.version.clone());
         self.save(conn).await
     }
@@ -202,7 +202,7 @@ impl Infra {
 
     /// Clear generated data of the infra
     /// This function will update `generated_version` acordingly.
-    pub async fn clear(&mut self, conn: &mut PgConnection) -> Result<bool> {
+    pub async fn clear(&mut self, conn: &mut Connection) -> Result<bool> {
         // TODO: lock self for update
         generated_data::clear_all(conn, self.id).await?;
         self.generated_version = None;
@@ -214,7 +214,7 @@ impl Infra {
 #[async_trait]
 impl List<NoParams> for Infra {
     async fn list_conn(
-        conn: &mut PgConnection,
+        conn: &mut Connection,
         page: i64,
         page_size: i64,
         _: NoParams,
@@ -245,7 +245,6 @@ pub mod tests {
     use diesel_async::scoped_futures::ScopedBoxFuture;
     use diesel_async::scoped_futures::ScopedFutureExt;
     use diesel_async::AsyncConnection;
-    use diesel_async::AsyncPgConnection as PgConnection;
     use editoast_schemas::infra::BufferStop;
     use editoast_schemas::infra::Detector;
     use editoast_schemas::infra::Electrification;
@@ -272,10 +271,11 @@ pub mod tests {
     use crate::modelsv2::prelude::*;
     use crate::modelsv2::railjson::find_all_schemas;
     use crate::modelsv2::railjson::RailJsonError;
+    use crate::modelsv2::Connection;
 
     pub async fn test_infra_transaction<'a, F>(fn_test: F)
     where
-        F: for<'r> FnOnce(&'r mut PgConnection, Infra) -> ScopedBoxFuture<'a, 'r, ()> + Send + 'a,
+        F: for<'r> FnOnce(&'r mut Connection, Infra) -> ScopedBoxFuture<'a, 'r, ()> + Send + 'a,
     {
         let pool = db_pool();
         let mut conn = pool.get().await.unwrap();

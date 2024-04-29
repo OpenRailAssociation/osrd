@@ -375,7 +375,6 @@ mod tests {
     use chashmap::CHashMap;
     use diesel_async::pooled_connection::deadpool::Pool;
     use diesel_async::pooled_connection::AsyncDieselConnectionManager as ConnectionManager;
-    use diesel_async::AsyncPgConnection as PgConnection;
 
     use super::routes;
     use super::OpenApiRoot;
@@ -387,6 +386,7 @@ mod tests {
     use crate::error::InternalError;
     use crate::infra_cache::InfraCache;
     use crate::map::MapLayers;
+    use crate::modelsv2::Connection;
     use crate::RedisClient;
 
     /// Asserts the status code of a simulated response and deserializes its body,
@@ -441,7 +441,7 @@ mod tests {
         let pg_config_url = PostgresConfig::default()
             .url()
             .expect("cannot get postgres config url");
-        let manager = ConnectionManager::<PgConnection>::new(pg_config_url.as_str());
+        let manager = ConnectionManager::<Connection>::new(pg_config_url.as_str());
         let pool = Pool::builder(manager)
             .build()
             .expect("Failed to create pool.");

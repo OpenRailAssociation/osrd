@@ -11,7 +11,6 @@ use chrono::Utc;
 use derivative::Derivative;
 use diesel_async::scoped_futures::ScopedFutureExt;
 use diesel_async::AsyncConnection;
-use diesel_async::AsyncPgConnection as PgConnection;
 use editoast_derive::EditoastError;
 use serde::Deserialize;
 use serde::Serialize;
@@ -33,6 +32,7 @@ use crate::models::ScenarioWithCountTrains;
 use crate::models::ScenarioWithDetails;
 use crate::models::Timetable;
 use crate::models::Update;
+use crate::modelsv2::Connection;
 use crate::modelsv2::Project;
 use crate::modelsv2::Study;
 use crate::views::pagination::PaginatedResponse;
@@ -147,7 +147,7 @@ pub async fn check_project_study(
 }
 
 pub async fn check_project_study_conn(
-    conn: &mut PgConnection,
+    conn: &mut Connection,
     project_id: i64,
     study_id: i64,
 ) -> Result<(Project, Study)> {

@@ -23,7 +23,7 @@ impl ToTokens for CreateImpl {
             impl crate::modelsv2::Create<#model> for #changeset {
                 async fn create(
                     self,
-                    conn: &mut diesel_async::AsyncPgConnection,
+                    conn: &mut crate::modelsv2::Connection,
                 ) -> crate::error::Result<#model> {
                     use diesel_async::RunQueryDsl;
                     diesel::insert_into(#table_mod::table)

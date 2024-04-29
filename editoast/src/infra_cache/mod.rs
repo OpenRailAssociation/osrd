@@ -16,7 +16,6 @@ use diesel::sql_types::Integer;
 use diesel::sql_types::Nullable;
 use diesel::sql_types::Text;
 use diesel::QueryableByName;
-use diesel_async::AsyncPgConnection as PgConnection;
 use diesel_async::RunQueryDsl;
 use editoast_derive::EditoastError;
 use editoast_schemas::infra::Crossing;
@@ -55,6 +54,7 @@ use crate::infra_cache::object_cache::TrackSectionCache;
 use crate::infra_cache::operation::CacheOperation;
 use crate::infra_cache::operation::RailjsonObject;
 use crate::modelsv2::railjson::find_all_schemas;
+use crate::modelsv2::Connection;
 use crate::modelsv2::Infra;
 use editoast_schemas::primitives::BoundingBox;
 
@@ -406,7 +406,7 @@ impl InfraCache {
     }
 
     /// Given an infra id load infra cache from database
-    pub async fn load(conn: &mut PgConnection, infra: &Infra) -> Result<InfraCache> {
+    pub async fn load(conn: &mut Connection, infra: &Infra) -> Result<InfraCache> {
         let infra_id = infra.id;
         let mut infra_cache = Self::default();
 
@@ -505,7 +505,7 @@ impl InfraCache {
     /// This function tries to get the infra from the cache, if it fails, it loads it from the database
     /// If the infra is not found in the database, it returns `None`
     pub async fn get_or_load<'a>(
-        conn: &mut PgConnection,
+        conn: &mut Connection,
         infra_caches: &'a CHashMap<i64, InfraCache>,
         infra: &Infra,
     ) -> Result<ReadGuard<'a, i64, InfraCache>> {
@@ -521,7 +521,7 @@ impl InfraCache {
     /// This function tries to get the infra from the cache, if it fails, it loads it from the database
     /// If the infra is not found in the database, it returns `None`
     pub async fn get_or_load_mut<'a>(
-        conn: &mut PgConnection,
+        conn: &mut Connection,
         infra_caches: &'a CHashMap<i64, InfraCache>,
         infra: &Infra,
     ) -> Result<WriteGuard<'a, i64, InfraCache>> {

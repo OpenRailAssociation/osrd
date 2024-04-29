@@ -8,6 +8,7 @@ use crate::error::InternalError;
 use crate::error::Result;
 use crate::modelsv2::infra_objects::*;
 use crate::modelsv2::prelude::*;
+use crate::modelsv2::Connection;
 use crate::DbPool;
 
 #[derive(Debug, thiserror::Error, EditoastError)]
@@ -78,10 +79,7 @@ pub async fn persist_railjson(
     .map(|_| ())
 }
 
-pub async fn find_all_schemas<T, C>(
-    conn: &mut diesel_async::AsyncPgConnection,
-    infra_id: i64,
-) -> Result<C>
+pub async fn find_all_schemas<T, C>(conn: &mut Connection, infra_id: i64) -> Result<C>
 where
     T: ModelBackedSchema,
     C: FromIterator<T>,

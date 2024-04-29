@@ -5,7 +5,6 @@ mod update;
 use std::ops::Deref as _;
 
 pub use create::RailjsonObject;
-use diesel_async::AsyncPgConnection as PgConnection;
 use editoast_derive::EditoastError;
 use serde::Deserialize;
 use serde::Serialize;
@@ -16,6 +15,7 @@ use utoipa::ToSchema;
 pub use self::delete::DeleteOperation;
 use crate::error::Result;
 use crate::infra_cache::ObjectCache;
+use crate::modelsv2::Connection;
 use editoast_schemas::primitives::OSRDObject as _;
 use editoast_schemas::primitives::ObjectRef;
 
@@ -68,7 +68,7 @@ impl Operation {
     pub async fn apply(
         &self,
         infra_id: i64,
-        conn: &mut PgConnection,
+        conn: &mut Connection,
     ) -> Result<Option<RailjsonObject>> {
         match self {
             Operation::Delete(deletion) => {

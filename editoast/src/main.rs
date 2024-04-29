@@ -46,14 +46,14 @@ use opentelemetry_datadog::DatadogPropagator;
 use opentelemetry_sdk::propagation::TraceContextPropagator;
 use views::v2::train_schedule::{TrainScheduleForm, TrainScheduleResult};
 
+use crate::modelsv2::Connection;
 use colored::*;
 use diesel::{sql_query, ConnectionError, ConnectionResult};
 use diesel_async::pooled_connection::deadpool::Pool;
 use diesel_async::pooled_connection::{
     AsyncDieselConnectionManager as ConnectionManager, ManagerConfig,
 };
-use diesel_async::AsyncPgConnection as PgConnection;
-use diesel_async::{AsyncPgConnection, RunQueryDsl};
+use diesel_async::RunQueryDsl;
 use diesel_json::Json as DieselJson;
 use editoast_schemas::infra::RailJson;
 use futures_util::future::BoxFuture;
@@ -81,7 +81,7 @@ use validator::ValidationErrorsKind;
 use views::infra::InfraApiError;
 use views::search::{SearchConfig, SearchConfigFinder, SearchConfigStore};
 
-type DbPool = Pool<PgConnection>;
+type DbPool = Pool<Connection>;
 
 /// The mode editoast is running in
 ///
@@ -371,7 +371,7 @@ fn log_received_request(req: &ServiceRequest) {
     info!(target: "actix_logger", "{} RECEIVED", request_line);
 }
 
-fn establish_connection(config: &str) -> BoxFuture<ConnectionResult<AsyncPgConnection>> {
+fn establish_connection(config: &str) -> BoxFuture<ConnectionResult<Connection>> {
     let fut = async {
         let mut connector_builder = SslConnector::builder(SslMethod::tls()).unwrap();
         connector_builder.set_verify(SslVerifyMode::NONE);
@@ -386,7 +386,7 @@ fn establish_connection(config: &str) -> BoxFuture<ConnectionResult<AsyncPgConne
                 error!("connection error: {}", e);
             }
         });
-        AsyncPgConnection::try_from(client).await
+        Connection::try_from(client).await
     };
     fut.boxed()
 }
@@ -509,7 +509,7 @@ async fn build_redis_pool_and_invalidate_all_cache(
 }
 
 async fn batch_retrieve_infras(
-    conn: &mut diesel_async::AsyncPgConnection,
+    conn: &mut crate::modelsv2::Connection,
     ids: &[u64],
 ) -> Result<Vec<Infra>, Box<dyn Error + Send + Sync>> {
     let (infras, missing) = Infra::retrieve_batch(conn, ids.iter().map(|id| *id as i64)).await?;

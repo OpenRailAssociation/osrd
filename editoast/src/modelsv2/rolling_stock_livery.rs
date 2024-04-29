@@ -1,7 +1,6 @@
 use derivative::Derivative;
 use diesel::sql_types::BigInt;
 use diesel::sql_types::Text;
-use diesel_async::AsyncPgConnection;
 use editoast_derive::ModelV2;
 use editoast_schemas::rolling_stock::RollingStockLivery;
 use editoast_schemas::rolling_stock::RollingStockLiveryMetadata;
@@ -10,6 +9,7 @@ use serde::Serialize;
 
 use super::Document;
 use crate::error::Result;
+use crate::modelsv2::Connection;
 use crate::tables::rolling_stock_livery;
 
 /// Rolling Stock Livery
@@ -45,7 +45,7 @@ impl From<RollingStockLiveryModel> for RollingStockLivery {
 }
 
 impl RollingStockLiveryModel {
-    pub async fn delete_with_compound_image(&self, conn: &mut AsyncPgConnection) -> Result<bool> {
+    pub async fn delete_with_compound_image(&self, conn: &mut Connection) -> Result<bool> {
         use crate::modelsv2::DeleteStatic;
         let livery = RollingStockLiveryModel::delete_static(conn, self.id).await?;
         if let Some(image_id) = self.compound_image_id {

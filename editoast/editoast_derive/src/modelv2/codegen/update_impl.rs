@@ -32,7 +32,7 @@ impl ToTokens for UpdateImpl {
             impl crate::modelsv2::Update<#ty, #model> for #changeset {
                 async fn update(
                     self,
-                    conn: &mut diesel_async::AsyncPgConnection,
+                    conn: &mut crate::modelsv2::Connection,
                     #id_ident: #ty,
                 ) -> crate::error::Result<Option<#model>> {
                     use diesel::prelude::*;

@@ -27,7 +27,7 @@ impl ToTokens for ExistsImpl {
             #[async_trait::async_trait]
             impl crate::modelsv2::Exists<#ty> for #model {
                 async fn exists(
-                    conn: &mut diesel_async::AsyncPgConnection,
+                    conn: &mut crate::modelsv2::Connection,
                     #id_ident: #ty,
                 ) -> crate::error::Result<bool> {
                     use diesel::prelude::*;

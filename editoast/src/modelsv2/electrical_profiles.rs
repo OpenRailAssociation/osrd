@@ -1,4 +1,3 @@
-use diesel_async::AsyncPgConnection as PgConnection;
 use diesel_async::RunQueryDsl;
 use editoast_derive::ModelV2;
 use serde::Deserialize;
@@ -7,6 +6,7 @@ use utoipa::ToSchema;
 
 use crate::diesel::QueryDsl;
 use crate::error::Result;
+use crate::modelsv2::Connection;
 use crate::tables::electrical_profile_set;
 use editoast_schemas::infra::ElectricalProfileSetData;
 
@@ -21,7 +21,7 @@ pub struct ElectricalProfileSet {
 }
 
 impl ElectricalProfileSet {
-    pub async fn list_light(conn: &mut PgConnection) -> Result<Vec<LightElectricalProfileSet>> {
+    pub async fn list_light(conn: &mut Connection) -> Result<Vec<LightElectricalProfileSet>> {
         use crate::tables::electrical_profile_set::dsl::*;
         let result = electrical_profile_set.select((id, name)).load(conn).await?;
         Ok(result)

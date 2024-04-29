@@ -27,7 +27,7 @@ impl ToTokens for DeleteStaticImpl {
             #[async_trait::async_trait]
             impl crate::modelsv2::DeleteStatic<#ty> for #model {
                 async fn delete_static(
-                    conn: &mut diesel_async::AsyncPgConnection,
+                    conn: &mut crate::modelsv2::Connection,
                     #id_ident: #ty,
                 ) -> crate::error::Result<bool> {
                     use diesel::prelude::*;

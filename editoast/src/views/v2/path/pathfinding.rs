@@ -8,7 +8,6 @@ use actix_web::post;
 use actix_web::web::Data;
 use actix_web::web::Json;
 use actix_web::web::Path;
-use diesel_async::AsyncPgConnection as PgConnection;
 use editoast_schemas::infra::TrackOffset;
 use editoast_schemas::rolling_stock::LoadingGaugeType;
 use editoast_schemas::train_schedule::PathItemLocation;
@@ -23,6 +22,7 @@ use crate::core::AsCoreRequest;
 use crate::core::CoreClient;
 use crate::error::Result;
 use crate::modelsv2::train_schedule::TrainSchedule;
+use crate::modelsv2::Connection;
 use crate::modelsv2::Infra;
 use crate::modelsv2::OperationalPointModel;
 use crate::modelsv2::Retrieve;
@@ -101,7 +101,7 @@ pub async fn post(
 }
 
 async fn pathfinding_blocks(
-    conn: &mut PgConnection,
+    conn: &mut Connection,
     redis_conn: &mut RedisConnection,
     core: Arc<CoreClient>,
     infra: &Infra,
@@ -161,7 +161,7 @@ async fn pathfinding_blocks(
 
 /// Compute a path given a batch of trainschedule and an infrastructure
 pub async fn pathfinding_from_train(
-    conn: &mut PgConnection,
+    conn: &mut Connection,
     redis: &mut RedisConnection,
     core: Arc<CoreClient>,
     infra: &Infra,
@@ -229,7 +229,7 @@ fn collect_path_item_ids(path_items: &[PathItemLocation]) -> (Vec<String>, Vec<i
 }
 
 async fn retrieve_op_from_locations(
-    conn: &mut PgConnection,
+    conn: &mut Connection,
     infra_id: i64,
     ops_uic: &[i64],
     trigrams: &[String],
@@ -275,7 +275,7 @@ async fn retrieve_op_from_locations(
 
 /// extract locations from path items
 async fn extract_location_from_path_items(
-    conn: &mut PgConnection,
+    conn: &mut Connection,
     infra_id: i64,
     path_items: &[PathItemLocation],
 ) -> Result<TrackOffsetResult> {
@@ -339,7 +339,7 @@ async fn extract_location_from_path_items(
 }
 
 async fn check_tracks_from_path_items(
-    conn: &mut PgConnection,
+    conn: &mut Connection,
     infra_id: i64,
     track_offsets: &[Vec<TrackOffset>],
 ) -> Result<std::result::Result<(), PathfindingResult>> {

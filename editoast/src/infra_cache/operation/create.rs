@@ -2,7 +2,6 @@ use diesel::sql_query;
 use diesel::sql_types::BigInt;
 use diesel::sql_types::Json;
 use diesel::sql_types::Text;
-use diesel_async::AsyncPgConnection as PgConnection;
 use diesel_async::RunQueryDsl;
 use json_patch::Patch;
 use serde::Deserialize;
@@ -12,6 +11,7 @@ use serde_json::Value;
 use super::OperationError;
 use crate::error::Result;
 use crate::modelsv2::get_table;
+use crate::modelsv2::Connection;
 use editoast_schemas::infra::BufferStop;
 use editoast_schemas::infra::Detector;
 use editoast_schemas::infra::Electrification;
@@ -46,7 +46,7 @@ pub enum RailjsonObject {
 pub async fn apply_create_operation<'r>(
     railjson_object: &'r RailjsonObject,
     infra_id: i64,
-    conn: &mut PgConnection,
+    conn: &mut Connection,
 ) -> Result<(usize, &'r RailjsonObject)> {
     if railjson_object.get_id().is_empty() {
         return Err(OperationError::EmptyId.into());
@@ -245,11 +245,11 @@ impl From<OperationalPoint> for RailjsonObject {
 pub mod tests {
     use actix_web::test as actix_test;
     use diesel_async::scoped_futures::ScopedFutureExt;
-    use diesel_async::AsyncPgConnection as PgConnection;
 
     use crate::infra_cache::operation::create::apply_create_operation;
     use crate::infra_cache::operation::create::RailjsonObject;
     use crate::modelsv2::infra::tests::test_infra_transaction;
+    use crate::modelsv2::Connection;
     use editoast_schemas::infra::BufferStop;
     use editoast_schemas::infra::Detector;
     use editoast_schemas::infra::Electrification;
@@ -262,7 +262,7 @@ pub mod tests {
     use editoast_schemas::infra::TrackSection;
 
     pub async fn create_track(
-        conn: &mut PgConnection,
+        conn: &mut Connection,
         infra_id: i64,
         track: TrackSection,
     ) -> RailjsonObject {
@@ -272,7 +272,7 @@ pub mod tests {
     }
 
     pub async fn create_signal(
-        conn: &mut PgConnection,
+        conn: &mut Connection,
         infra_id: i64,
         signal: Signal,
     ) -> RailjsonObject {
@@ -282,7 +282,7 @@ pub mod tests {
     }
 
     pub async fn create_speed(
-        conn: &mut PgConnection,
+        conn: &mut Connection,
         infra_id: i64,
         speed: SpeedSection,
     ) -> RailjsonObject {
@@ -292,7 +292,7 @@ pub mod tests {
     }
 
     pub async fn create_switch(
-        conn: &mut PgConnection,
+        conn: &mut Connection,
         infra_id: i64,
         switch: Switch,
     ) -> RailjsonObject {
@@ -302,7 +302,7 @@ pub mod tests {
     }
 
     pub async fn create_detector(
-        conn: &mut PgConnection,
+        conn: &mut Connection,
         infra_id: i64,
         detector: Detector,
     ) -> RailjsonObject {
@@ -312,7 +312,7 @@ pub mod tests {
     }
 
     pub async fn create_buffer_stop(
-        conn: &mut PgConnection,
+        conn: &mut Connection,
         infra_id: i64,
         buffer_stop: BufferStop,
     ) -> RailjsonObject {
@@ -324,7 +324,7 @@ pub mod tests {
     }
 
     pub async fn create_route(
-        conn: &mut PgConnection,
+        conn: &mut Connection,
         infra_id: i64,
         route: Route,
     ) -> RailjsonObject {
@@ -334,7 +334,7 @@ pub mod tests {
     }
 
     pub async fn create_op(
-        conn: &mut PgConnection,
+        conn: &mut Connection,
         infra_id: i64,
         op: OperationalPoint,
     ) -> RailjsonObject {
@@ -344,7 +344,7 @@ pub mod tests {
     }
 
     pub async fn create_switch_type(
-        conn: &mut PgConnection,
+        conn: &mut Connection,
         infra_id: i64,
         st: SwitchType,
     ) -> RailjsonObject {
@@ -354,7 +354,7 @@ pub mod tests {
     }
 
     pub async fn create_electrification(
-        conn: &mut PgConnection,
+        conn: &mut Connection,
         infra_id: i64,
         electrification: Electrification,
     ) -> RailjsonObject {
