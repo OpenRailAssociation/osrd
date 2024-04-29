@@ -20,12 +20,12 @@ use utoipa::ToSchema;
 use super::Row;
 use crate::error::Result;
 use crate::modelsv2::rolling_stock_livery::RollingStockLiveryMetadataModel;
+use crate::modelsv2::ConnectionPool;
 use crate::modelsv2::Model;
 use crate::views::pagination::Paginate;
 use crate::views::pagination::PaginatedResponse;
 use crate::views::rolling_stocks::light_rolling_stock::LightEffortCurves;
 use crate::views::rolling_stocks::light_rolling_stock::LightRollingStock;
-use crate::DbPool;
 
 #[derive(Debug, Clone, ModelV2, Serialize, ToSchema)]
 #[model(table = crate::tables::rolling_stock)]
@@ -68,7 +68,7 @@ pub struct LightRollingStockModel {
 impl LightRollingStockModel {
     pub async fn with_liveries(
         self,
-        db_pool: Data<DbPool>,
+        db_pool: Data<ConnectionPool>,
     ) -> Result<LightRollingStockWithLiveriesModel> {
         use crate::tables::rolling_stock_livery::dsl as livery_dsl;
         let mut conn = db_pool.get().await?;
@@ -85,7 +85,7 @@ impl LightRollingStockModel {
 
     /// List the rolling stocks with their simplified effort curves
     pub async fn list(
-        db_pool: Data<DbPool>,
+        db_pool: Data<ConnectionPool>,
         page: i64,
         per_page: i64,
     ) -> Result<PaginatedResponse<LightRollingStockWithLiveriesModel>> {
@@ -158,11 +158,11 @@ pub mod tests {
     use super::LightRollingStockModel;
     use crate::fixtures::tests::db_pool;
     use crate::fixtures::tests::named_fast_rolling_stock;
+    use crate::modelsv2::ConnectionPool;
     use crate::modelsv2::Retrieve;
-    use crate::DbPool;
 
     #[rstest]
-    async fn get_light_rolling_stock(db_pool: Data<DbPool>) {
+    async fn get_light_rolling_stock(db_pool: Data<ConnectionPool>) {
         // GIVEN
         let rolling_stock = named_fast_rolling_stock(
             "fast_rolling_stock_get_light_rolling_stock",
@@ -179,7 +179,7 @@ pub mod tests {
     }
 
     #[rstest]
-    async fn list_light_rolling_stock(db_pool: Data<DbPool>) {
+    async fn list_light_rolling_stock(db_pool: Data<ConnectionPool>) {
         // GIVEN
         let rolling_stock = named_fast_rolling_stock(
             "fast_rolling_stock_list_light_rolling_stock",

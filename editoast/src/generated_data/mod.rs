@@ -38,6 +38,7 @@ use crate::error::Result;
 use crate::infra_cache::operation::CacheOperation;
 use crate::infra_cache::InfraCache;
 use crate::modelsv2::Connection;
+use crate::modelsv2::ConnectionPool;
 
 /// This trait define how a generated data table should be handled
 #[async_trait]
@@ -62,7 +63,7 @@ pub trait GeneratedData {
     }
 
     async fn refresh_pool(
-        pool: crate::Data<crate::DbPool>,
+        pool: crate::Data<ConnectionPool>,
         infra: i64,
         infra_cache: &InfraCache,
     ) -> Result<()> {
@@ -82,7 +83,7 @@ pub trait GeneratedData {
 
 /// Refresh all the generated data of a given infra
 pub async fn refresh_all(
-    db_pool: crate::Data<crate::DbPool>,
+    db_pool: crate::Data<ConnectionPool>,
     infra: i64,
     infra_cache: &InfraCache,
 ) -> Result<()> {

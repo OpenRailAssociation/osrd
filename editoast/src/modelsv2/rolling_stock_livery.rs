@@ -89,9 +89,10 @@ pub mod tests {
     use crate::fixtures::tests::db_pool;
     use crate::fixtures::tests::rolling_stock_livery;
     use crate::modelsv2::Document;
+    use crate::modelsv2::ConnectionPool;
 
     #[rstest]
-    async fn create_get_delete_rolling_stock_livery(db_pool: Data<crate::DbPool>) {
+    async fn create_get_delete_rolling_stock_livery(db_pool: Data<ConnectionPool>) {
         use crate::modelsv2::prelude::*;
         let mut conn = db_pool.get().await.unwrap();
         let rolling_stock_livery = rolling_stock_livery("", db_pool.clone()).await;

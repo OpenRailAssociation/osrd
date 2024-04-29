@@ -233,8 +233,8 @@ use self::searchast::SearchAst;
 use self::typing::AstType;
 use self::typing::TypeSpec;
 use crate::error::Result;
+use crate::modelsv2::ConnectionPool;
 use crate::views::pagination::PaginationQueryParam;
-use crate::DbPool;
 
 crate::routes! {
     search
@@ -408,7 +408,7 @@ struct SearchDBResult {
 pub async fn search(
     query_params: Query<PaginationQueryParam>,
     payload: Json<SearchPayload>,
-    db_pool: Data<DbPool>,
+    db_pool: Data<ConnectionPool>,
 ) -> Result<impl Responder> {
     let (page, per_page) = query_params.validate(1000)?.warn_page_size(100).unpack();
     let Json(SearchPayload { object, query, dry }) = payload;

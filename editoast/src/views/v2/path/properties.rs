@@ -31,8 +31,8 @@ use crate::core::v2::pathfinding::TrackRange;
 use crate::core::AsCoreRequest;
 use crate::core::CoreClient;
 use crate::error::Result;
+use crate::modelsv2::ConnectionPool;
 use crate::views::v2::path::retrieve_infra_version;
-use crate::DbPool;
 use crate::RedisClient;
 use crate::RedisConnection;
 use editoast_common::geometry::GeoJsonLineString;
@@ -157,7 +157,7 @@ type Properties = EnumSet<Property>;
 )]
 #[post("")]
 pub async fn post(
-    db_pool: Data<DbPool>,
+    db_pool: Data<ConnectionPool>,
     redis_client: Data<RedisClient>,
     core_client: Data<CoreClient>,
     infra_id: Path<i64>,

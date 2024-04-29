@@ -33,6 +33,7 @@ use crate::models::ScenarioWithDetails;
 use crate::models::Timetable;
 use crate::models::Update;
 use crate::modelsv2::Connection;
+use crate::modelsv2::ConnectionPool;
 use crate::modelsv2::Project;
 use crate::modelsv2::Study;
 use crate::views::pagination::PaginatedResponse;
@@ -41,7 +42,6 @@ use crate::views::projects::ProjectError;
 use crate::views::projects::ProjectIdParam;
 use crate::views::study::StudyError;
 use crate::views::study::StudyIdParam;
-use crate::DbPool;
 
 crate::routes! {
     "/scenarios" => {
@@ -138,7 +138,7 @@ impl ScenarioResponse {
 
 /// Check if project and study exist given a study ID and a project ID
 pub async fn check_project_study(
-    db_pool: Data<DbPool>,
+    db_pool: Data<ConnectionPool>,
     project_id: i64,
     study_id: i64,
 ) -> Result<(Project, Study)> {
@@ -175,7 +175,7 @@ pub async fn check_project_study_conn(
 )]
 #[post("")]
 async fn create(
-    db_pool: Data<DbPool>,
+    db_pool: Data<ConnectionPool>,
     data: Json<ScenarioCreateForm>,
     path: Path<(i64, i64)>,
 ) -> Result<Json<ScenarioResponse>> {
@@ -233,7 +233,10 @@ pub struct ScenarioIdParam {
     )
 )]
 #[delete("")]
-async fn delete(path: Path<(i64, i64, i64)>, db_pool: Data<DbPool>) -> Result<HttpResponse> {
+async fn delete(
+    path: Path<(i64, i64, i64)>,
+    db_pool: Data<ConnectionPool>,
+) -> Result<HttpResponse> {
     let (project_id, study_id, scenario_id) = path.into_inner();
 
     // Check if the project and the study exist
@@ -290,7 +293,7 @@ impl From<ScenarioPatchForm> for Scenario {
 async fn patch(
     data: Json<ScenarioPatchForm>,
     path: Path<(i64, i64, i64)>,
-    db_pool: Data<DbPool>,
+    db_pool: Data<ConnectionPool>,
 ) -> Result<Json<ScenarioResponse>> {
     let (project_id, study_id, scenario_id) = path.into_inner();
 
@@ -333,7 +336,10 @@ async fn patch(
     )
 )]
 #[get("")]
-async fn get(db_pool: Data<DbPool>, path: Path<(i64, i64, i64)>) -> Result<Json<ScenarioResponse>> {
+async fn get(
+    db_pool: Data<ConnectionPool>,
+    path: Path<(i64, i64, i64)>,
+) -> Result<Json<ScenarioResponse>> {
     let (project_id, study_id, scenario_id) = path.into_inner();
     let (project, study) = check_project_study(db_pool.clone(), project_id, study_id).await?;
 
@@ -367,7 +373,7 @@ decl_paginated_response!(
 )]
 #[get("")]
 async fn list(
-    db_pool: Data<DbPool>,
+    db_pool: Data<ConnectionPool>,
     pagination_params: Query<PaginationQueryParam>,
     path: Path<(i64, i64)>,
     params: Query<QueryParams>,
@@ -430,7 +436,7 @@ mod test {
 
     #[rstest]
     async fn scenario_create(
-        db_pool: Data<DbPool>,
+        db_pool: Data<ConnectionPool>,
         #[future] study_fixture_set: StudyFixtureSet,
         #[future] empty_infra: TestFixture<Infra>,
     ) {

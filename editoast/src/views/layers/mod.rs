@@ -30,7 +30,7 @@ use crate::map::get_view_cache_prefix;
 use crate::map::Layer;
 use crate::map::MapLayers;
 use crate::map::Tile;
-use crate::DbPool;
+use crate::modelsv2::ConnectionPool;
 use crate::RedisClient;
 
 crate::routes! {
@@ -179,7 +179,7 @@ async fn cache_and_get_mvt_tile(
     path: Path<(String, String, u64, u64, u64)>,
     params: Query<InfraQueryParam>,
     map_layers: Data<MapLayers>,
-    db_pool: Data<DbPool>,
+    db_pool: Data<ConnectionPool>,
     redis_client: Data<RedisClient>,
 ) -> Result<HttpResponse> {
     let (layer_slug, view_slug, z, x, y) = path.into_inner();

@@ -22,11 +22,11 @@ use crate::error::Result;
 use crate::infra_cache::Graph;
 use crate::infra_cache::InfraCache;
 use crate::modelsv2::prelude::*;
+use crate::modelsv2::ConnectionPool;
 use crate::modelsv2::Infra;
 use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraIdParam;
 use crate::views::params::List;
-use crate::DbPool;
 
 use editoast_schemas::infra::DirectionalTrackRange;
 
@@ -80,7 +80,7 @@ struct RoutesResponse {
 #[get("/{waypoint_type}/{waypoint_id}")]
 async fn get_routes_from_waypoint(
     path: Path<RoutesFromWaypointParams>,
-    db_pool: Data<DbPool>,
+    db_pool: Data<ConnectionPool>,
 ) -> Result<Json<RoutesResponse>> {
     let mut conn = db_pool.get().await?;
     let routes: Vec<RouteFromWaypointResult> =
@@ -144,7 +144,7 @@ async fn get_routes_track_ranges<'a>(
     infra: Path<i64>,
     params: Query<RouteTrackRangesParams>,
     infra_caches: Data<CHashMap<i64, InfraCache>>,
-    db_pool: Data<DbPool>,
+    db_pool: Data<ConnectionPool>,
 ) -> Result<Json<Vec<RouteTrackRangesResult>>> {
     let infra_id = infra.into_inner();
     let conn = &mut db_pool.get().await?;
@@ -189,7 +189,7 @@ async fn get_routes_track_ranges<'a>(
 async fn get_routes_nodes(
     params: Path<InfraIdParam>,
     infra_caches: Data<CHashMap<i64, InfraCache>>,
-    db_pool: Data<DbPool>,
+    db_pool: Data<ConnectionPool>,
     Json(node_states): Json<HashMap<String, Option<String>>>,
 ) -> Result<Json<RoutesFromNodesPositions>> {
     let conn = &mut db_pool.get().await?;

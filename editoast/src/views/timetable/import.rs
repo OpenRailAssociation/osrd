@@ -30,6 +30,7 @@ use crate::models::Timetable;
 use crate::models::TrainSchedule;
 use crate::modelsv2::prelude::*;
 use crate::modelsv2::Connection;
+use crate::modelsv2::ConnectionPool;
 use crate::modelsv2::Infra;
 use crate::modelsv2::OperationalPointModel;
 use crate::modelsv2::RetrieveBatch;
@@ -41,7 +42,6 @@ use crate::views::pathfinding::save_core_pathfinding;
 use crate::views::timetable::Path;
 use crate::views::timetable::TimetableError;
 use crate::views::train_schedule::process_simulation_response;
-use crate::DbPool;
 use editoast_schemas::infra::OperationalPointPart;
 
 crate::routes! {
@@ -183,7 +183,7 @@ struct OperationalPointsToParts {
 )]
 #[post("")]
 pub async fn post_timetable(
-    db_pool: Data<DbPool>,
+    db_pool: Data<ConnectionPool>,
     timetable_id: Path<i64>,
     core_client: Data<CoreClient>,
     data: Json<Vec<TimetableImportItem>>,
@@ -249,7 +249,7 @@ macro_rules! time_execution {
 async fn import_item(
     infra_id: i64,
     infra_version: &str,
-    db_pool: Data<DbPool>,
+    db_pool: Data<ConnectionPool>,
     import_item: TimetableImportItem,
     timetable_id: i64,
     core_client: &CoreClient,

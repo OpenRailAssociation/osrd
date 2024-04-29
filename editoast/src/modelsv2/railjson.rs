@@ -9,7 +9,7 @@ use crate::error::Result;
 use crate::modelsv2::infra_objects::*;
 use crate::modelsv2::prelude::*;
 use crate::modelsv2::Connection;
-use crate::DbPool;
+use crate::modelsv2::ConnectionPool;
 
 #[derive(Debug, thiserror::Error, EditoastError)]
 #[editoast_error(base_id = "railjson")]
@@ -24,7 +24,7 @@ pub enum RailJsonError {
 ///
 /// #### `/!\ ATTENTION /!\` On failure this function does NOT rollback the insertions!
 pub async fn persist_railjson(
-    db_pool: Arc<DbPool>,
+    db_pool: Arc<ConnectionPool>,
     infra_id: i64,
     railjson: RailJson,
 ) -> Result<()> {

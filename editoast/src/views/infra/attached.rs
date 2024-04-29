@@ -12,9 +12,9 @@ use thiserror::Error;
 use crate::error::Result;
 use crate::infra_cache::InfraCache;
 use crate::modelsv2::prelude::*;
+use crate::modelsv2::ConnectionPool;
 use crate::modelsv2::Infra;
 use crate::views::infra::InfraApiError;
-use crate::DbPool;
 use editoast_schemas::primitives::ObjectType;
 
 crate::routes! { attached }
@@ -62,7 +62,7 @@ struct InfraAttachedParams {
 async fn attached(
     params: Path<InfraAttachedParams>,
     infra_caches: Data<CHashMap<i64, InfraCache>>,
-    db_pool: Data<DbPool>,
+    db_pool: Data<ConnectionPool>,
 ) -> Result<Json<HashMap<ObjectType, Vec<String>>>> {
     let InfraAttachedParams { infra_id, track_id } = params.into_inner();
     let mut conn = db_pool.get().await?;

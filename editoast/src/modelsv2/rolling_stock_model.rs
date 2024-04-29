@@ -24,8 +24,8 @@ use validator::ValidationErrors;
 use crate::error::Result;
 use crate::modelsv2::prelude::*;
 use crate::modelsv2::rolling_stock_livery::RollingStockLiveryMetadataModel;
+use crate::modelsv2::ConnectionPool;
 use crate::views::rolling_stocks::RollingStockWithLiveries;
-use crate::DbPool;
 
 editoast_common::schemas! {
     RollingStockModel,
@@ -76,7 +76,10 @@ pub struct RollingStockModel {
 }
 
 impl RollingStockModel {
-    pub async fn with_liveries(self, db_pool: Data<DbPool>) -> Result<RollingStockWithLiveries> {
+    pub async fn with_liveries(
+        self,
+        db_pool: Data<ConnectionPool>,
+    ) -> Result<RollingStockWithLiveries> {
         use crate::tables::rolling_stock_livery::dsl as livery_dsl;
         let mut conn = db_pool.get().await?;
         let liveries = livery_dsl::rolling_stock_livery
@@ -222,16 +225,16 @@ pub mod tests {
     use crate::fixtures::tests::named_fast_rolling_stock;
     use crate::fixtures::tests::named_other_rolling_stock;
     use crate::modelsv2::Changeset;
+    use crate::modelsv2::ConnectionPool;
     use crate::views::rolling_stocks::map_diesel_error;
     use crate::views::rolling_stocks::RollingStockError;
-    use crate::DbPool;
 
     pub fn get_invalid_effort_curves() -> &'static str {
         include_str!("../tests/example_rolling_stock_3.json")
     }
 
     #[rstest]
-    async fn create_delete_rolling_stock(db_pool: Data<DbPool>) {
+    async fn create_delete_rolling_stock(db_pool: Data<ConnectionPool>) {
         use crate::modelsv2::Retrieve;
         let mut db_conn = db_pool.get().await.expect("Failed to get db connection");
         let name = "fast_rolling_stock_create_delete_rolling_stock";
@@ -250,7 +253,7 @@ pub mod tests {
     }
 
     #[rstest]
-    async fn update_rolling_stock(db_pool: Data<DbPool>) {
+    async fn update_rolling_stock(db_pool: Data<ConnectionPool>) {
         use crate::modelsv2::Update;
         let mut db_conn = db_pool.get().await.expect("Failed to get db connection");
         // GIVEN
@@ -276,7 +279,7 @@ pub mod tests {
     }
 
     #[rstest]
-    async fn update_rolling_stock_failure_name_already_used(db_pool: Data<DbPool>) {
+    async fn update_rolling_stock_failure_name_already_used(db_pool: Data<ConnectionPool>) {
         use crate::modelsv2::*;
         let mut db_conn = db_pool.get().await.expect("Failed to get db connection");
         // GIVEN
