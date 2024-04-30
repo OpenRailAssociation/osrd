@@ -46,47 +46,37 @@ const ImportTrainScheduleTrainsListV2 = ({
 
   const { refetch: refetchTimetable } =
     osrdEditoastApi.endpoints.getV2TimetableById.useQuerySubscription({ id: timetableId });
-  const [postTrainSchedule] = osrdEditoastApi.endpoints.postV2TrainSchedule.useMutation();
+  const [postTrainSchedule] =
+    osrdEditoastApi.endpoints.postV2TimetableByIdTrainSchedule.useMutation();
 
   const dispatch = useAppDispatch();
 
   async function generateV2TrainSchedules() {
-    const payloads = generateV2TrainSchedulesPayloads(trainsList, timetableId);
+    try {
+      const payloads = generateV2TrainSchedulesPayloads(trainsList);
 
-    const trainsCount = payloads.length;
-    let successfulTrainsCount = 0;
-    let errorsNb = 0;
-    // eslint-disable-next-line no-restricted-syntax
-    for await (const payload of payloads) {
-      try {
-        await postTrainSchedule({ body: [payload] }).unwrap();
-        successfulTrainsCount += 1;
-      } catch (error) {
-        errorsNb += 1;
-      }
-    }
-    if (errorsNb > 0) {
-      dispatch(
-        setFailure({
-          name: t('failure'),
-          message: t('status.calculatingTrainScheduleCompleteFailure', {
-            trainsCount,
-            errorsNb,
-            count: trainsCount - errorsNb,
-          }),
-        })
-      );
+      await postTrainSchedule({ id: timetableId, body: payloads }).unwrap();
       refetchTimetable();
-    } else {
       dispatch(
         setSuccess({
           title: t('success'),
           text: t('status.calculatingTrainScheduleCompleteAllSuccess', {
-            successfulTrainsCount,
-            count: successfulTrainsCount,
+            trainsList,
+            count: trainsList.length,
           }),
         })
       );
+    } catch (error) {
+      dispatch(
+        setFailure({
+          name: t('failure'),
+          message: t('status.calculatingTrainScheduleCompleteAllFailure', {
+            trainsList,
+            count: trainsList.length,
+          }),
+        })
+      );
+      throw error;
     }
   }
 
