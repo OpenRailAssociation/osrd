@@ -54,7 +54,7 @@ use crate::models::Timetable;
 use crate::models::TrainSchedule;
 use crate::models::TrainScheduleChangeset;
 use crate::models::Update;
-use crate::modelsv2::ConnectionPool;
+use crate::modelsv2::DbConnectionPool;
 use crate::modelsv2::ElectricalProfileSet;
 use crate::modelsv2::Infra;
 use crate::modelsv2::LightRollingStockModel;
@@ -136,7 +136,7 @@ struct TrainScheduleIdParam {
 )]
 #[get("")]
 async fn get(
-    db_pool: Data<ConnectionPool>,
+    db_pool: Data<DbConnectionPool>,
     train_schedule_id: Path<i64>,
 ) -> Result<Json<TrainSchedule>> {
     let train_schedule_id = train_schedule_id.into_inner();
@@ -159,7 +159,7 @@ async fn get(
 )]
 #[delete("")]
 async fn delete(
-    db_pool: Data<ConnectionPool>,
+    db_pool: Data<DbConnectionPool>,
     train_schedule_id: Path<i64>,
 ) -> Result<HttpResponse> {
     let train_schedule_id = train_schedule_id.into_inner();
@@ -185,7 +185,7 @@ struct BatchDeletionRequest {
 )]
 #[delete("")]
 async fn delete_multiple(
-    db_pool: Data<ConnectionPool>,
+    db_pool: Data<DbConnectionPool>,
     request: Json<BatchDeletionRequest>,
 ) -> Result<HttpResponse> {
     use crate::tables::train_schedule::dsl::*;
@@ -251,7 +251,7 @@ struct PatchMultiplePayload(#[schema(min_items = 1)] Vec<TrainSchedulePatch>);
 )]
 #[patch("")]
 async fn patch_multiple(
-    db_pool: Data<ConnectionPool>,
+    db_pool: Data<DbConnectionPool>,
     train_schedules_changesets: Json<PatchMultiplePayload>,
     core: Data<CoreClient>,
 ) -> Result<HttpResponse> {
@@ -367,7 +367,7 @@ struct GetResultQuery {
 )]
 #[get("/result")]
 async fn get_result(
-    db_pool: Data<ConnectionPool>,
+    db_pool: Data<DbConnectionPool>,
     id: Path<i64>,
     query: Query<GetResultQuery>,
     core: Data<CoreClient>,
@@ -447,7 +447,7 @@ struct TrainSimulationResponse {
 )]
 #[post("/results")]
 async fn get_results(
-    db_pool: Data<ConnectionPool>,
+    db_pool: Data<DbConnectionPool>,
     request: Json<TrainsSimulationRequest>,
     core: Data<CoreClient>,
 ) -> Result<Json<TrainSimulationResponse>> {
@@ -598,7 +598,7 @@ impl From<TrainScheduleBatch> for Vec<TrainSchedule> {
 )]
 #[post("/standalone_simulation")]
 async fn standalone_simulation(
-    db_pool: Data<ConnectionPool>,
+    db_pool: Data<DbConnectionPool>,
     request: Json<TrainScheduleBatch>,
     core: Data<CoreClient>,
 ) -> Result<Json<Vec<i64>>> {
@@ -670,7 +670,7 @@ async fn standalone_simulation(
 async fn create_backend_request_payload(
     train_schedules: &[TrainSchedule],
     scenario: &Scenario,
-    db_pool: Data<ConnectionPool>,
+    db_pool: Data<DbConnectionPool>,
 ) -> Result<SimulationRequest> {
     let mut db_conn = db_pool.get().await?;
 

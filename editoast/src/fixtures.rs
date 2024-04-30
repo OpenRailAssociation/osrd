@@ -3,9 +3,9 @@ pub mod tests {
     use std::io::Cursor;
     use std::ops::{Deref, DerefMut};
 
-    use crate::modelsv2::connection_pool::Connection;
-    use crate::modelsv2::connection_pool::ConnectionConfig;
-    use crate::modelsv2::connection_pool::ConnectionPool;
+    use crate::modelsv2::connection_pool::DbConnectionConfig;
+    use crate::modelsv2::connection_pool::DbConnectionPool;
+    use crate::modelsv2::DbConnection;
     use crate::{
         client::PostgresConfig,
         models::{
@@ -40,7 +40,7 @@ pub mod tests {
 
     pub struct TestFixture<T: modelsv2::DeleteStatic<i64> + Identifiable + Send> {
         pub model: T,
-        pub db_pool: Data<ConnectionPool>,
+        pub db_pool: Data<DbConnectionPool>,
         pub infra: Option<Infra>,
     }
 
@@ -57,7 +57,7 @@ pub mod tests {
             self.model.get_id()
         }
 
-        pub fn new(model: T, db_pool: Data<ConnectionPool>) -> Self {
+        pub fn new(model: T, db_pool: Data<DbConnectionPool>) -> Self {
             TestFixture {
                 model,
                 db_pool,
@@ -67,7 +67,7 @@ pub mod tests {
     }
 
     impl<T: modelsv2::DeleteStatic<i64> + models::Create + Identifiable + Send> TestFixture<T> {
-        pub async fn create_legacy(model: T, db_pool: Data<ConnectionPool>) -> Self {
+        pub async fn create_legacy(model: T, db_pool: Data<DbConnectionPool>) -> Self {
             TestFixture {
                 model: model.create(db_pool.clone()).await.unwrap(),
                 db_pool,
@@ -81,7 +81,7 @@ pub mod tests {
         T: modelsv2::Model + modelsv2::DeleteStatic<i64> + Identifiable + Send,
         T::Changeset: modelsv2::Create<T> + Send,
     {
-        pub async fn create(cs: T::Changeset, db_pool: Data<ConnectionPool>) -> Self {
+        pub async fn create(cs: T::Changeset, db_pool: Data<DbConnectionPool>) -> Self {
             use modelsv2::Create;
             let conn = &mut db_pool.get().await.unwrap();
             TestFixture {
@@ -105,13 +105,13 @@ pub mod tests {
 
     #[async_trait::async_trait]
     impl<T: models::Delete> modelsv2::DeleteStatic<i64> for T {
-        async fn delete_static(conn: &mut Connection, id: i64) -> crate::error::Result<bool> {
+        async fn delete_static(conn: &mut DbConnection, id: i64) -> crate::error::Result<bool> {
             T::delete_conn(conn, id).await
         }
     }
 
     pub trait IntoFixture: modelsv2::DeleteStatic<i64> + Identifiable + Send {
-        fn into_fixture(self, db_pool: Data<ConnectionPool>) -> TestFixture<Self> {
+        fn into_fixture(self, db_pool: Data<DbConnectionPool>) -> TestFixture<Self> {
             TestFixture::new(self, db_pool)
         }
     }
@@ -139,12 +139,12 @@ pub mod tests {
     }
 
     #[fixture]
-    pub fn db_pool() -> Data<ConnectionPool> {
+    pub fn db_pool() -> Data<DbConnectionPool> {
         let pg_config_url = PostgresConfig::default()
             .url()
             .expect("cannot get postgres config url");
-        let config = ConnectionConfig::new(pg_config_url);
-        let pool = ConnectionPool::builder(config).build().unwrap();
+        let config = DbConnectionConfig::new(pg_config_url);
+        let pool = DbConnectionPool::builder(config).build().unwrap();
         Data::new(pool)
     }
 
@@ -166,7 +166,7 @@ pub mod tests {
 
     pub async fn named_fast_rolling_stock(
         name: &str,
-        db_pool: Data<ConnectionPool>,
+        db_pool: Data<DbConnectionPool>,
     ) -> TestFixture<RollingStockModel> {
         let mut rs: Changeset<RollingStockModel> = get_fast_rolling_stock_form(name).into();
         rs = rs.version(0);
@@ -188,7 +188,7 @@ pub mod tests {
 
     pub async fn named_other_rolling_stock(
         name: &str,
-        db_pool: Data<ConnectionPool>,
+        db_pool: Data<DbConnectionPool>,
     ) -> TestFixture<RollingStockModel> {
         let mut rs: Changeset<RollingStockModel> = get_other_rolling_stock_form(name).into();
         rs = rs.version(0);
@@ -196,7 +196,7 @@ pub mod tests {
     }
 
     async fn make_train_schedule(
-        db_pool: Data<ConnectionPool>,
+        db_pool: Data<DbConnectionPool>,
         path_id: i64,
         timetable_id: i64,
         rolling_stock_id: i64,
@@ -221,7 +221,7 @@ pub mod tests {
     #[fixture]
     pub async fn train_schedule_v2(
         #[future] timetable_v2: TestFixture<TimetableV2>,
-        db_pool: Data<ConnectionPool>,
+        db_pool: Data<DbConnectionPool>,
     ) -> TrainScheduleV2FixtureSet {
         let timetable = timetable_v2.await;
         let train_schedule_base: TrainScheduleBase =
@@ -324,7 +324,7 @@ pub mod tests {
 
     #[fixture]
     pub async fn study_fixture_set(
-        db_pool: Data<ConnectionPool>,
+        db_pool: Data<DbConnectionPool>,
         #[future] project: TestFixture<Project>,
     ) -> StudyFixtureSet {
         let project = project.await;
@@ -344,7 +344,7 @@ pub mod tests {
     }
 
     #[fixture]
-    pub async fn project(db_pool: Data<ConnectionPool>) -> TestFixture<Project> {
+    pub async fn project(db_pool: Data<DbConnectionPool>) -> TestFixture<Project> {
         let project_model = Project::changeset()
             .name("test_project".to_owned())
             .budget(Some(0))
@@ -355,7 +355,7 @@ pub mod tests {
     }
 
     #[fixture]
-    pub async fn timetable(db_pool: Data<ConnectionPool>) -> TestFixture<Timetable> {
+    pub async fn timetable(db_pool: Data<DbConnectionPool>) -> TestFixture<Timetable> {
         let timetable_model = Timetable {
             id: None,
             name: Some(String::from("with_electrical_profiles")),
@@ -364,7 +364,7 @@ pub mod tests {
     }
 
     #[fixture]
-    pub async fn timetable_v2(db_pool: Data<ConnectionPool>) -> TestFixture<TimetableV2> {
+    pub async fn timetable_v2(db_pool: Data<DbConnectionPool>) -> TestFixture<TimetableV2> {
         TestFixture::create(
             TimetableV2::changeset().electrical_profile_set_id(None),
             db_pool,
@@ -382,7 +382,7 @@ pub mod tests {
 
     #[fixture]
     pub async fn scenario_v2_fixture_set(
-        db_pool: Data<ConnectionPool>,
+        db_pool: Data<DbConnectionPool>,
         #[future] timetable_v2: TestFixture<TimetableV2>,
         #[future] project: TestFixture<Project>,
     ) -> ScenarioV2FixtureSet {
@@ -409,7 +409,7 @@ pub mod tests {
     }
 
     #[fixture]
-    pub async fn document_example(db_pool: Data<ConnectionPool>) -> TestFixture<Document> {
+    pub async fn document_example(db_pool: Data<DbConnectionPool>) -> TestFixture<Document> {
         let img = image::open("src/tests/example_rolling_stock_image_1.gif").unwrap();
         let mut img_bytes: Vec<u8> = Vec::new();
         assert!(img
@@ -431,7 +431,7 @@ pub mod tests {
 
     pub async fn rolling_stock_livery(
         name: &str,
-        db_pool: Data<ConnectionPool>,
+        db_pool: Data<DbConnectionPool>,
     ) -> RollingStockLiveryFixture {
         let mut rs_name = "fast_rolling_stock_".to_string();
         rs_name.push_str(name);
@@ -452,7 +452,7 @@ pub mod tests {
 
     #[fixture]
     pub async fn electrical_profile_set(
-        db_pool: Data<ConnectionPool>,
+        db_pool: Data<DbConnectionPool>,
     ) -> TestFixture<ElectricalProfileSet> {
         TestFixture::create(
             serde_json::from_str::<Changeset<ElectricalProfileSet>>(include_str!(
@@ -466,7 +466,7 @@ pub mod tests {
 
     #[fixture]
     pub async fn dummy_electrical_profile_set(
-        db_pool: Data<ConnectionPool>,
+        db_pool: Data<DbConnectionPool>,
     ) -> TestFixture<ElectricalProfileSet> {
         let ep_set_data = ElectricalProfileSetData {
             levels: vec![ElectricalProfile {
@@ -483,7 +483,7 @@ pub mod tests {
     }
 
     #[fixture]
-    pub async fn empty_infra(db_pool: Data<ConnectionPool>) -> TestFixture<Infra> {
+    pub async fn empty_infra(db_pool: Data<DbConnectionPool>) -> TestFixture<Infra> {
         TestFixture::create(
             Infra::changeset()
                 .name("test_infra".to_owned())
@@ -493,7 +493,7 @@ pub mod tests {
         .await
     }
 
-    async fn make_small_infra(db_pool: Data<ConnectionPool>) -> Infra {
+    async fn make_small_infra(db_pool: Data<DbConnectionPool>) -> Infra {
         let railjson: RailJson = serde_json::from_str(include_str!(
             "../../tests/data/infras/small_infra/infra.json"
         ))
@@ -517,12 +517,12 @@ pub mod tests {
     /// is made, the `editoast/tests/small_infra/small_infra.json` file should be updated
     /// to the latest infra description.
     #[fixture]
-    pub async fn small_infra(db_pool: Data<ConnectionPool>) -> TestFixture<Infra> {
+    pub async fn small_infra(db_pool: Data<DbConnectionPool>) -> TestFixture<Infra> {
         TestFixture::new(make_small_infra(db_pool.clone()).await, db_pool)
     }
 
     #[fixture]
-    pub async fn pathfinding(db_pool: Data<ConnectionPool>) -> TestFixture<Pathfinding> {
+    pub async fn pathfinding(db_pool: Data<DbConnectionPool>) -> TestFixture<Pathfinding> {
         let small_infra = make_small_infra(db_pool.clone()).await;
         let pf_cs = PathfindingChangeset {
             infra_id: Some(small_infra.id),
@@ -564,7 +564,7 @@ pub mod tests {
 
     pub async fn train_with_simulation_output_fixture_set(
         name: &str,
-        db_pool: Data<ConnectionPool>,
+        db_pool: Data<DbConnectionPool>,
     ) -> TrainScheduleWithSimulationOutputFixtureSet {
         let ScenarioFixtureSet {
             project,

@@ -23,7 +23,7 @@ use thiserror::Error;
 use crate::error::Result;
 use crate::modelsv2::get_geometry_layer_table;
 use crate::modelsv2::get_table;
-use crate::modelsv2::ConnectionPool;
+use crate::modelsv2::DbConnectionPool;
 use editoast_schemas::primitives::ObjectType;
 
 /// Return `/infra/<infra_id>/objects` routes
@@ -62,7 +62,7 @@ struct ObjectQueryable {
 async fn get_objects(
     path_params: Path<(i64, ObjectType)>,
     obj_ids: Json<Vec<String>>,
-    db_pool: Data<ConnectionPool>,
+    db_pool: Data<DbConnectionPool>,
 ) -> Result<Json<Vec<ObjectQueryable>>> {
     let (infra, obj_type) = path_params.into_inner();
     if !has_unique_ids(&obj_ids) {

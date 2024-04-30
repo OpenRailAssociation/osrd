@@ -29,8 +29,8 @@ use crate::models::ScheduledPoint;
 use crate::models::Timetable;
 use crate::models::TrainSchedule;
 use crate::modelsv2::prelude::*;
-use crate::modelsv2::Connection;
-use crate::modelsv2::ConnectionPool;
+use crate::modelsv2::DbConnection;
+use crate::modelsv2::DbConnectionPool;
 use crate::modelsv2::Infra;
 use crate::modelsv2::OperationalPointModel;
 use crate::modelsv2::RetrieveBatch;
@@ -183,7 +183,7 @@ struct OperationalPointsToParts {
 )]
 #[post("")]
 pub async fn post_timetable(
-    db_pool: Data<ConnectionPool>,
+    db_pool: Data<DbConnectionPool>,
     timetable_id: Path<i64>,
     core_client: Data<CoreClient>,
     data: Json<Vec<TimetableImportItem>>,
@@ -249,7 +249,7 @@ macro_rules! time_execution {
 async fn import_item(
     infra_id: i64,
     infra_version: &str,
-    db_pool: Data<ConnectionPool>,
+    db_pool: Data<DbConnectionPool>,
     import_item: TimetableImportItem,
     timetable_id: i64,
     core_client: &CoreClient,
@@ -391,7 +391,7 @@ async fn find_operation_points(
     ops_uic: &[i64],
     ops_id: &[String],
     infra_id: i64,
-    conn: &mut Connection,
+    conn: &mut DbConnection,
 ) -> Result<std::result::Result<OperationalPointsToParts, TimetableImportError>> {
     // Retrieve operational points
     let ops_from_uic = OperationalPointModel::retrieve_from_uic(conn, infra_id, ops_uic).await?;

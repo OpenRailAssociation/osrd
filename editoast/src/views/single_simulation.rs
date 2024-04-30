@@ -27,7 +27,7 @@ use crate::models::train_schedule::TrainScheduleOptions;
 use crate::models::Pathfinding;
 use crate::models::Retrieve;
 use crate::modelsv2::electrical_profiles::ElectricalProfileSet;
-use crate::modelsv2::ConnectionPool;
+use crate::modelsv2::DbConnectionPool;
 use crate::modelsv2::Exists;
 use crate::modelsv2::RollingStockModel;
 
@@ -151,7 +151,7 @@ impl TryFrom<SimulationResponse> for SingleSimulationResponse {
 #[post("")]
 /// Runs a simulation with a single train, does not write anything to the database
 async fn standalone_simulation(
-    db_pool: Data<ConnectionPool>,
+    db_pool: Data<DbConnectionPool>,
     request: Json<SingleSimulationRequest>,
     core: Data<CoreClient>,
 ) -> Result<Json<SingleSimulationResponse>> {
@@ -241,7 +241,7 @@ mod tests {
     #[case::invalid_path_id(Some(SingleSimulationError::PathNotFound { path_id: -666 }), "case_3")]
     #[case::invalid_ep_set_id(Some(SingleSimulationError::ElectricalProfileSetNotFound { electrical_profile_set_id: -666 }), "case_4")]
     async fn test_single_simulation(
-        db_pool: Data<ConnectionPool>,
+        db_pool: Data<DbConnectionPool>,
         #[case] expected_error: Option<SingleSimulationError>,
         #[case] case_id: &str,
     ) {
@@ -316,7 +316,7 @@ mod tests {
     }
 
     #[rstest]
-    async fn test_single_simulation_bare_minimum_payload(db_pool: Data<ConnectionPool>) {
+    async fn test_single_simulation_bare_minimum_payload(db_pool: Data<DbConnectionPool>) {
         // GIVEN
         let (core_client, mock_response) = create_core_client();
         let app = create_test_service_with_core_client(core_client).await;

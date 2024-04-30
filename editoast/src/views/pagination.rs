@@ -14,7 +14,7 @@ use tracing::warn;
 use utoipa::IntoParams;
 
 use crate::error::Result;
-use crate::modelsv2::Connection;
+use crate::modelsv2::DbConnection;
 
 const DEFAULT_PAGE_SIZE: i64 = 25;
 
@@ -147,9 +147,12 @@ pub struct InternalPaginatedResult<T: QueryableByName<Pg>> {
 }
 
 impl<T> Paginated<T> {
-    pub async fn load_and_count<'a, R>(self, conn: &mut Connection) -> Result<PaginatedResponse<R>>
+    pub async fn load_and_count<'a, R>(
+        self,
+        conn: &mut DbConnection,
+    ) -> Result<PaginatedResponse<R>>
     where
-        Self: LoadQuery<'a, Connection, InternalPaginatedResult<R>>,
+        Self: LoadQuery<'a, DbConnection, InternalPaginatedResult<R>>,
         R: QueryableByName<Pg> + Send + 'static,
         T: Send + 'static,
     {

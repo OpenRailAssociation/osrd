@@ -42,7 +42,7 @@ use crate::error::InternalError;
 use crate::error::Result;
 use crate::modelsv2::prelude::*;
 use crate::modelsv2::rolling_stock_livery::RollingStockLiveryModel;
-use crate::modelsv2::ConnectionPool;
+use crate::modelsv2::DbConnectionPool;
 use crate::modelsv2::Document;
 use crate::modelsv2::RollingStockModel;
 use crate::modelsv2::RollingStockSeparatedImageModel;
@@ -161,7 +161,7 @@ pub struct RollingStockNameParam {
 )]
 #[get("")]
 async fn get(
-    db_pool: Data<ConnectionPool>,
+    db_pool: Data<DbConnectionPool>,
     path: Path<i64>,
 ) -> Result<Json<RollingStockWithLiveries>> {
     let rolling_stock_id = path.into_inner();
@@ -182,7 +182,7 @@ async fn get(
 )]
 #[get("")]
 async fn get_by_name(
-    db_pool: Data<ConnectionPool>,
+    db_pool: Data<DbConnectionPool>,
     path: Path<String>,
 ) -> Result<Json<RollingStockWithLiveries>> {
     let rolling_stock_name = path.into_inner();
@@ -206,7 +206,7 @@ struct PowerRestriction {
     )
 )]
 #[get("")]
-async fn get_power_restrictions(db_pool: Data<ConnectionPool>) -> Result<Json<Vec<String>>> {
+async fn get_power_restrictions(db_pool: Data<DbConnectionPool>) -> Result<Json<Vec<String>>> {
     let mut conn = db_pool.get().await?;
     let power_restrictions: Vec<PowerRestriction> = sql_query(
         "SELECT DISTINCT jsonb_object_keys(power_restrictions) AS power_restriction
@@ -238,7 +238,7 @@ struct PostRollingStockQueryParams {
 )]
 #[post("")]
 async fn create(
-    db_pool: Data<ConnectionPool>,
+    db_pool: Data<DbConnectionPool>,
     Json(rolling_stock_form): Json<RollingStockForm>,
     query_params: Query<PostRollingStockQueryParams>,
 ) -> Result<Json<RollingStockModel>> {
@@ -267,7 +267,7 @@ async fn create(
 )]
 #[patch("")]
 async fn update(
-    db_pool: Data<ConnectionPool>,
+    db_pool: Data<DbConnectionPool>,
     path: Path<i64>,
     Json(rolling_stock_form): Json<RollingStockForm>,
 ) -> Result<Json<RollingStockWithLiveries>> {
@@ -324,7 +324,7 @@ struct DeleteRollingStockQueryParams {
 )]
 #[delete("")]
 async fn delete(
-    db_pool: Data<ConnectionPool>,
+    db_pool: Data<DbConnectionPool>,
     path: Path<i64>,
     params: Query<DeleteRollingStockQueryParams>,
 ) -> Result<HttpResponse> {
@@ -349,7 +349,7 @@ async fn delete(
 }
 
 async fn delete_rolling_stock(
-    db_pool: Data<ConnectionPool>,
+    db_pool: Data<DbConnectionPool>,
     rolling_stock_id: i64,
 ) -> Result<HttpResponse> {
     let mut db_conn = db_pool.get().await?;
@@ -379,7 +379,7 @@ struct RollingStockLockedUpdateForm {
 )]
 #[patch("")]
 async fn update_locked(
-    db_pool: Data<ConnectionPool>,
+    db_pool: Data<DbConnectionPool>,
     rolling_stock_id: Path<i64>,
     data: Json<RollingStockLockedUpdateForm>,
 ) -> Result<HttpResponse> {
@@ -425,7 +425,7 @@ pub struct TrainScheduleScenarioStudyProject {
 }
 
 async fn get_rolling_stock_usage(
-    db_pool: Data<ConnectionPool>,
+    db_pool: Data<DbConnectionPool>,
     rolling_stock_id: i64,
 ) -> Result<Vec<TrainScheduleScenarioStudyProject>> {
     let mut db_conn = db_pool.get().await?;
@@ -449,7 +449,7 @@ async fn get_rolling_stock_usage(
 )]
 #[post("")]
 async fn create_livery(
-    db_pool: Data<ConnectionPool>,
+    db_pool: Data<DbConnectionPool>,
     rolling_stock_id: Path<i64>,
     MultipartForm(form): MultipartForm<RollingStockLiveryCreateForm>,
 ) -> Result<Json<RollingStockLivery>> {
@@ -498,7 +498,7 @@ async fn create_livery(
 
 /// Retrieve a rolling stock by id or by name
 pub async fn retrieve_existing_rolling_stock(
-    db_pool: &Data<ConnectionPool>,
+    db_pool: &Data<DbConnectionPool>,
     rolling_stock_key: RollingStockKey,
 ) -> Result<RollingStockModel> {
     let mut db_conn = db_pool.get().await?;
@@ -572,7 +572,7 @@ fn format_images(mut tmp_images: Vec<TempFile>) -> Result<FormattedImages> {
 }
 
 async fn create_compound_image(
-    db_pool: Data<ConnectionPool>,
+    db_pool: Data<DbConnectionPool>,
     formatted_images: FormattedImages,
 ) -> Result<Document> {
     let FormattedImages {
@@ -637,13 +637,13 @@ pub mod tests {
     use crate::modelsv2::prelude::*;
     use crate::modelsv2::rolling_stock_model::tests::get_invalid_effort_curves;
     use crate::modelsv2::rolling_stock_model::RollingStockModel;
-    use crate::modelsv2::ConnectionPool;
+    use crate::modelsv2::DbConnectionPool;
     use crate::views::rolling_stocks::rolling_stock_form::RollingStockForm;
     use crate::views::rolling_stocks::RollingStockKey;
     use crate::views::tests::create_test_service;
 
     #[rstest]
-    async fn get_returns_corresponding_rolling_stock(db_pool: Data<ConnectionPool>) {
+    async fn get_returns_corresponding_rolling_stock(db_pool: Data<DbConnectionPool>) {
         // GIVEN
         let name = "fast_rolling_stock_get_returns_corresponding_rolling_stock";
         let app = create_test_service().await;
@@ -660,7 +660,7 @@ pub mod tests {
     }
 
     #[rstest]
-    async fn get_returns_corresponding_rolling_stock_by_name(db_pool: Data<ConnectionPool>) {
+    async fn get_returns_corresponding_rolling_stock_by_name(db_pool: Data<DbConnectionPool>) {
         // GIVEN
         let name = "fast_rolling_stock_get_returns_corresponding_rolling_stock_by_name";
         let app = create_test_service().await;
@@ -738,7 +738,7 @@ pub mod tests {
         assert_eq!(get_response.status(), StatusCode::NOT_FOUND);
     }
 
-    async fn check_create_gave_400(db_pool: Data<ConnectionPool>, response: ServiceResponse) {
+    async fn check_create_gave_400(db_pool: Data<DbConnectionPool>, response: ServiceResponse) {
         let mut db_conn = db_pool.get().await.expect("Failed to get db connection");
         if response.status() == StatusCode::OK {
             let rolling_stock: RollingStockModel = read_body_json(response).await;
@@ -755,7 +755,7 @@ pub mod tests {
     }
 
     #[rstest]
-    async fn create_rolling_stock_with_base_power_class_empty(db_pool: Data<ConnectionPool>) {
+    async fn create_rolling_stock_with_base_power_class_empty(db_pool: Data<DbConnectionPool>) {
         // GIVEN
         let app = create_test_service().await;
         let mut rolling_stock_form = get_fast_rolling_stock_form(
@@ -778,7 +778,7 @@ pub mod tests {
     }
 
     #[rstest]
-    async fn create_rolling_stock_with_duplicate_name(db_pool: Data<ConnectionPool>) {
+    async fn create_rolling_stock_with_duplicate_name(db_pool: Data<DbConnectionPool>) {
         // GIVEN
         let name = "fast_rolling_stock_create_rolling_stock_with_duplicate_name";
         let fast_rolling_stock = named_fast_rolling_stock(name, db_pool.clone()).await;
@@ -801,7 +801,7 @@ pub mod tests {
     }
 
     #[rstest]
-    async fn update_and_delete_locked_rolling_stock_fails(db_pool: Data<ConnectionPool>) {
+    async fn update_and_delete_locked_rolling_stock_fails(db_pool: Data<DbConnectionPool>) {
         let mut db_conn = db_pool.get().await.expect("Failed to get db connection");
         // GIVEN
         let app = create_test_service().await;
@@ -911,7 +911,7 @@ pub mod tests {
     }
 
     #[rstest]
-    async fn update_unlocked_rolling_stock(db_pool: Data<ConnectionPool>) {
+    async fn update_unlocked_rolling_stock(db_pool: Data<DbConnectionPool>) {
         // GIVEN
         let app = create_test_service().await;
         let fast_rolling_stock = named_fast_rolling_stock(
@@ -946,7 +946,7 @@ pub mod tests {
     }
 
     #[rstest]
-    async fn update_rolling_stock_failure_name_already_used(db_pool: Data<ConnectionPool>) {
+    async fn update_rolling_stock_failure_name_already_used(db_pool: Data<DbConnectionPool>) {
         // GIVEN
         let other_rs_name = "other_rolling_stock_update_rolling_stock_failure_name_already_used";
         let app = create_test_service().await;
@@ -982,7 +982,7 @@ pub mod tests {
     }
 
     #[rstest]
-    async fn update_locked_successfully(db_pool: Data<ConnectionPool>) {
+    async fn update_locked_successfully(db_pool: Data<DbConnectionPool>) {
         // GIVEN
         let app = create_test_service().await;
         let rolling_stock_form =
@@ -1093,7 +1093,7 @@ pub mod tests {
     }
 
     #[rstest]
-    async fn get_power_restrictions_list(db_pool: Data<ConnectionPool>) {
+    async fn get_power_restrictions_list(db_pool: Data<DbConnectionPool>) {
         // GIVEN
         let app = create_test_service().await;
         let rolling_stock =

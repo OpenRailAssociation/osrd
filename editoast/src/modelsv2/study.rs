@@ -18,8 +18,8 @@ use crate::models::List;
 use crate::modelsv2::projects::Ordering;
 use crate::modelsv2::projects::Tags;
 use crate::modelsv2::Changeset;
-use crate::modelsv2::Connection;
-use crate::modelsv2::ConnectionPool;
+use crate::modelsv2::DbConnection;
+use crate::modelsv2::DbConnectionPool;
 use crate::modelsv2::Model;
 use crate::modelsv2::Row;
 use crate::modelsv2::Save;
@@ -48,13 +48,13 @@ pub struct Study {
 }
 
 impl Study {
-    pub async fn update_last_modified(&mut self, conn: &mut Connection) -> Result<()> {
+    pub async fn update_last_modified(&mut self, conn: &mut DbConnection) -> Result<()> {
         self.last_modification = Utc::now().naive_utc();
         self.save(conn).await?;
         Ok(())
     }
 
-    pub async fn scenarios_count(&self, db_pool: Data<ConnectionPool>) -> Result<i64> {
+    pub async fn scenarios_count(&self, db_pool: Data<DbConnectionPool>) -> Result<i64> {
         use crate::tables::scenario::dsl as scenario_dsl;
         let conn = &mut db_pool.get().await?;
         let scenarios_count = scenario_dsl::scenario
@@ -88,7 +88,7 @@ fn dates_in_order(a: Option<Option<NaiveDate>>, b: Option<Option<NaiveDate>>) ->
 #[async_trait]
 impl List<(i64, Ordering)> for Study {
     async fn list_conn(
-        conn: &mut Connection,
+        conn: &mut DbConnection,
         page: i64,
         page_size: i64,
         params: (i64, Ordering),
@@ -132,7 +132,7 @@ pub mod test {
     #[rstest]
     async fn create_delete_study(
         #[future] study_fixture_set: StudyFixtureSet,
-        db_pool: Data<ConnectionPool>,
+        db_pool: Data<DbConnectionPool>,
     ) {
         let StudyFixtureSet { study, .. } = study_fixture_set.await;
 
@@ -147,7 +147,7 @@ pub mod test {
     #[rstest]
     async fn get_study(
         #[future] study_fixture_set: StudyFixtureSet,
-        db_pool: Data<ConnectionPool>,
+        db_pool: Data<DbConnectionPool>,
     ) {
         let StudyFixtureSet { study, project } = study_fixture_set.await;
 
@@ -167,7 +167,7 @@ pub mod test {
     #[rstest]
     async fn sort_study(
         #[future] study_fixture_set: StudyFixtureSet,
-        db_pool: Data<ConnectionPool>,
+        db_pool: Data<DbConnectionPool>,
     ) {
         let StudyFixtureSet { study, project } = study_fixture_set.await;
 

@@ -20,7 +20,7 @@ use crate::models::SimulationOutput;
 use crate::models::Timetable;
 use crate::models::TimetableWithSchedulesDetails;
 use crate::models::TrainSchedule;
-use crate::modelsv2::ConnectionPool;
+use crate::modelsv2::DbConnectionPool;
 use crate::views::train_schedule::TrainScheduleError;
 
 mod import;
@@ -63,7 +63,7 @@ enum TimetableError {
 )]
 #[get("")]
 async fn get(
-    db_pool: Data<ConnectionPool>,
+    db_pool: Data<DbConnectionPool>,
     timetable_id: Path<i64>,
 ) -> Result<Json<TimetableWithSchedulesDetails>> {
     let timetable_id = timetable_id.into_inner();
@@ -95,7 +95,7 @@ struct Conflict {
 
 pub async fn get_simulated_schedules_from_timetable(
     timetable_id: i64,
-    db_pool: Data<ConnectionPool>,
+    db_pool: Data<DbConnectionPool>,
 ) -> Result<(Vec<TrainSchedule>, Vec<SimulationOutput>)> {
     let mut conn = db_pool.get().await?;
     use diesel::BelongingToDsl;
@@ -144,7 +144,7 @@ pub async fn get_simulated_schedules_from_timetable(
 )]
 #[get("conflicts")]
 async fn get_conflicts(
-    db_pool: Data<ConnectionPool>,
+    db_pool: Data<DbConnectionPool>,
     timetable_id: Path<i64>,
     core_client: Data<CoreClient>,
 ) -> Result<Json<Vec<Conflict>>> {

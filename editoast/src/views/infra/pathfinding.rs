@@ -19,7 +19,7 @@ use crate::error::Result;
 use crate::infra_cache::Graph;
 use crate::infra_cache::InfraCache;
 use crate::modelsv2::prelude::*;
-use crate::modelsv2::ConnectionPool;
+use crate::modelsv2::DbConnectionPool;
 use crate::modelsv2::Infra;
 use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraIdParam;
@@ -99,7 +99,7 @@ async fn pathfinding_view(
     params: Query<QueryParam>,
     input: Json<PathfindingInput>,
     infra_caches: Data<CHashMap<i64, InfraCache>>,
-    db_pool: Data<ConnectionPool>,
+    db_pool: Data<DbConnectionPool>,
 ) -> Result<Json<Vec<PathfindingOutput>>> {
     // Parse and check input
     let infra_id = infra.into_inner().infra_id;

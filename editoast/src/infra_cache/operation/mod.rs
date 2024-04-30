@@ -15,7 +15,7 @@ use utoipa::ToSchema;
 pub use self::delete::DeleteOperation;
 use crate::error::Result;
 use crate::infra_cache::ObjectCache;
-use crate::modelsv2::Connection;
+use crate::modelsv2::DbConnection;
 use editoast_schemas::primitives::OSRDObject as _;
 use editoast_schemas::primitives::ObjectRef;
 
@@ -68,7 +68,7 @@ impl Operation {
     pub async fn apply(
         &self,
         infra_id: i64,
-        conn: &mut Connection,
+        conn: &mut DbConnection,
     ) -> Result<Option<RailjsonObject>> {
         match self {
             Operation::Delete(deletion) => {

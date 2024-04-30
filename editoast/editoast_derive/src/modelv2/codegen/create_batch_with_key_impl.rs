@@ -34,7 +34,7 @@ impl ToTokens for CreateBatchWithKeyImpl {
                     I: std::iter::IntoIterator<Item = #changeset> + Send + 'async_trait,
                     C: Default + std::iter::Extend<(#ty, Self)> + Send,
                 >(
-                    conn: &mut crate::modelsv2::Connection,
+                    conn: &mut crate::modelsv2::DbConnection,
                     values: I,
                 ) -> crate::error::Result<C> {
                     use crate::models::Identifiable;

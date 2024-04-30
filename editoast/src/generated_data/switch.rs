@@ -10,7 +10,7 @@ use super::GeneratedData;
 use crate::error::Result;
 use crate::infra_cache::operation::CacheOperation;
 use crate::infra_cache::InfraCache;
-use crate::modelsv2::Connection;
+use crate::modelsv2::DbConnection;
 use editoast_schemas::primitives::ObjectType;
 
 pub struct SwitchLayer;
@@ -21,7 +21,7 @@ impl GeneratedData for SwitchLayer {
         "infra_layer_switch"
     }
 
-    async fn generate(conn: &mut Connection, infra: i64, _cache: &InfraCache) -> Result<()> {
+    async fn generate(conn: &mut DbConnection, infra: i64, _cache: &InfraCache) -> Result<()> {
         sql_query(include_str!("sql/generate_switch_layer.sql"))
             .bind::<BigInt, _>(infra)
             .execute(conn)
@@ -30,7 +30,7 @@ impl GeneratedData for SwitchLayer {
     }
 
     async fn update(
-        conn: &mut Connection,
+        conn: &mut DbConnection,
         infra: i64,
         operations: &[CacheOperation],
         infra_cache: &InfraCache,

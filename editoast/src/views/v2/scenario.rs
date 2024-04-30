@@ -27,7 +27,7 @@ use crate::modelsv2::prelude::*;
 use crate::modelsv2::scenario::Scenario;
 use crate::modelsv2::scenario::ScenarioWithDetails;
 use crate::modelsv2::timetable::Timetable;
-use crate::modelsv2::ConnectionPool;
+use crate::modelsv2::DbConnectionPool;
 use crate::modelsv2::Infra;
 use crate::modelsv2::Project;
 use crate::modelsv2::Study;
@@ -155,7 +155,7 @@ impl ScenarioResponse {
 )]
 #[post("")]
 async fn create(
-    db_pool: Data<ConnectionPool>,
+    db_pool: Data<DbConnectionPool>,
     data: Json<ScenarioCreateForm>,
     path: Path<(i64, i64)>,
 ) -> Result<Json<ScenarioResponse>> {
@@ -220,7 +220,7 @@ async fn create(
 #[delete("")]
 async fn delete(
     path: Path<ScenarioPathParam>,
-    db_pool: Data<ConnectionPool>,
+    db_pool: Data<DbConnectionPool>,
 ) -> Result<HttpResponse> {
     let ScenarioPathParam {
         project_id,
@@ -292,7 +292,7 @@ impl From<ScenarioPatchForm> for <Scenario as crate::modelsv2::Model>::Changeset
 async fn patch(
     data: Json<ScenarioPatchForm>,
     path: Path<ScenarioPathParam>,
-    db_pool: Data<ConnectionPool>,
+    db_pool: Data<DbConnectionPool>,
 ) -> Result<Json<ScenarioResponse>> {
     let ScenarioPathParam {
         project_id,
@@ -356,7 +356,7 @@ async fn patch(
 )]
 #[get("")]
 async fn get(
-    db_pool: Data<ConnectionPool>,
+    db_pool: Data<DbConnectionPool>,
     path: Path<ScenarioPathParam>,
 ) -> Result<Json<ScenarioResponse>> {
     use crate::modelsv2::Retrieve;
@@ -401,7 +401,7 @@ decl_paginated_response!(
 )]
 #[get("")]
 async fn list(
-    db_pool: Data<ConnectionPool>,
+    db_pool: Data<DbConnectionPool>,
     pagination_params: Query<PaginationQueryParam>,
     path: Path<(i64, i64)>,
     params: Query<QueryParams>,
@@ -511,7 +511,7 @@ mod tests {
     async fn post_scenario(
         #[future] scenario_v2_fixture_set: ScenarioV2FixtureSet,
         #[future] timetable_v2: TestFixture<TimetableV2>,
-        db_pool: Data<ConnectionPool>,
+        db_pool: Data<DbConnectionPool>,
     ) {
         let service = create_test_service().await;
         let fixtures = scenario_v2_fixture_set.await;

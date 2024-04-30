@@ -7,7 +7,7 @@ use super::GeneratedData;
 use crate::error::Result;
 use crate::infra_cache::operation::CacheOperation;
 use crate::infra_cache::InfraCache;
-use crate::modelsv2::Connection;
+use crate::modelsv2::DbConnection;
 
 pub struct NeutralSectionLayer;
 
@@ -17,7 +17,7 @@ impl GeneratedData for NeutralSectionLayer {
         "infra_layer_neutral_section"
     }
 
-    async fn generate(conn: &mut Connection, infra: i64, _cache: &InfraCache) -> Result<()> {
+    async fn generate(conn: &mut DbConnection, infra: i64, _cache: &InfraCache) -> Result<()> {
         sql_query(include_str!("sql/generate_neutral_section_layer.sql"))
             .bind::<BigInt, _>(infra)
             .execute(conn)
@@ -26,7 +26,7 @@ impl GeneratedData for NeutralSectionLayer {
     }
 
     async fn update(
-        _conn: &mut Connection,
+        _conn: &mut DbConnection,
         _infra: i64,
         _operations: &[CacheOperation],
         _infra_cache: &InfraCache,

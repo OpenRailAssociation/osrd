@@ -14,7 +14,7 @@ use thiserror::Error;
 use utoipa::ToSchema;
 
 use crate::error::Result;
-use crate::modelsv2::ConnectionPool;
+use crate::modelsv2::DbConnectionPool;
 use crate::modelsv2::*;
 
 crate::routes! {
@@ -49,7 +49,7 @@ pub enum DocumentErrors {
     )
 )]
 #[get("/{document_key}")]
-async fn get(db_pool: Data<ConnectionPool>, document_key: Path<i64>) -> Result<HttpResponse> {
+async fn get(db_pool: Data<DbConnectionPool>, document_key: Path<i64>) -> Result<HttpResponse> {
     let document_key = document_key.into_inner();
     let conn = &mut db_pool.get().await?;
     let doc = Document::retrieve_or_fail(conn, document_key, || DocumentErrors::NotFound {
@@ -79,7 +79,7 @@ struct NewDocumentResponse {
 )]
 #[post("")]
 async fn post(
-    db_pool: Data<ConnectionPool>,
+    db_pool: Data<DbConnectionPool>,
     content_type: Header<ContentType>,
     bytes: Bytes,
 ) -> Result<HttpResponse> {
@@ -112,7 +112,7 @@ async fn post(
     )
 )]
 #[delete("/{document_key}")]
-async fn delete(db_pool: Data<ConnectionPool>, document_key: Path<i64>) -> Result<HttpResponse> {
+async fn delete(db_pool: Data<DbConnectionPool>, document_key: Path<i64>) -> Result<HttpResponse> {
     let document_key = document_key.into_inner();
     let conn = &mut db_pool.get().await?;
     Document::delete_static_or_fail(conn, document_key, || DocumentErrors::NotFound {
@@ -139,7 +139,7 @@ mod tests {
     #[rstest]
     async fn get_document(
         #[future] document_example: TestFixture<Document>,
-        db_pool: Data<ConnectionPool>,
+        db_pool: Data<DbConnectionPool>,
     ) {
         let service = create_test_service().await;
         let doc = document_example.await;
@@ -171,7 +171,7 @@ mod tests {
     }
 
     #[rstest]
-    async fn document_post(db_pool: Data<ConnectionPool>) {
+    async fn document_post(db_pool: Data<DbConnectionPool>) {
         let service = create_test_service().await;
 
         // Insert document

@@ -9,7 +9,7 @@ use crate::diesel::query_dsl::methods::DistinctDsl;
 use crate::error::Result;
 use crate::models::List;
 use crate::models::NoParams;
-use crate::modelsv2::Connection;
+use crate::modelsv2::DbConnection;
 use crate::modelsv2::Retrieve;
 use crate::modelsv2::Row;
 use crate::tables::timetable_v2::dsl;
@@ -26,7 +26,7 @@ pub struct Timetable {
 #[async_trait]
 impl List<NoParams> for Timetable {
     async fn list_conn(
-        conn: &mut Connection,
+        conn: &mut DbConnection,
         page: i64,
         page_size: i64,
         _: NoParams,
@@ -54,7 +54,7 @@ pub struct TimetableWithTrains {
 
 #[async_trait::async_trait]
 impl Retrieve<i64> for TimetableWithTrains {
-    async fn retrieve(conn: &mut Connection, timetable_id: i64) -> Result<Option<Self>> {
+    async fn retrieve(conn: &mut DbConnection, timetable_id: i64) -> Result<Option<Self>> {
         use diesel_async::RunQueryDsl;
         let result = sql_query(
             "SELECT timetable_v2.*,

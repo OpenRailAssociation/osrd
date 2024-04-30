@@ -6,7 +6,7 @@ use serde::Deserialize;
 use serde::Serialize;
 
 use crate::modelsv2::prelude::*;
-use crate::modelsv2::Connection;
+use crate::modelsv2::DbConnection;
 use crate::tables::*;
 use editoast_schemas::primitives::ObjectType;
 
@@ -25,7 +25,7 @@ pub trait SchemaModel: Model {
 
     /// Retrieve all objects of this type from the database for a given infra
     async fn find_all<C: Default + std::iter::Extend<Self> + Send>(
-        conn: &mut Connection,
+        conn: &mut DbConnection,
         infra_id: i64,
     ) -> crate::error::Result<C>;
 }
@@ -68,7 +68,7 @@ macro_rules! infra_model {
             }
 
             async fn find_all<C: Default + std::iter::Extend<Self> + Send>(
-                conn: &mut Connection,
+                conn: &mut DbConnection,
                 infra_id: i64,
             ) -> crate::error::Result<C> {
                 use diesel::prelude::*;
@@ -246,7 +246,7 @@ pub fn get_geometry_layer_table(object_type: &ObjectType) -> Option<&'static str
 impl OperationalPointModel {
     /// Retrieve a list of operational points from the database
     pub async fn retrieve_from_uic(
-        conn: &mut Connection,
+        conn: &mut DbConnection,
         infra_id: i64,
         uic: &[i64],
     ) -> crate::error::Result<Vec<Self>> {
@@ -269,7 +269,7 @@ impl OperationalPointModel {
     }
 
     pub async fn retrieve_from_trigrams(
-        conn: &mut Connection,
+        conn: &mut DbConnection,
         infra_id: i64,
         trigrams: &[String],
     ) -> crate::error::Result<Vec<Self>> {

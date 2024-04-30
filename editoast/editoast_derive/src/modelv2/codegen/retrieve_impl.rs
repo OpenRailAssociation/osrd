@@ -29,7 +29,7 @@ impl ToTokens for RetrieveImpl {
             #[async_trait::async_trait]
             impl crate::modelsv2::Retrieve<#ty> for #model {
                 async fn retrieve(
-                    conn: &mut crate::modelsv2::Connection,
+                    conn: &mut crate::modelsv2::DbConnection,
                     #id_ident: #ty,
                 ) -> crate::error::Result<Option<#model>> {
                     use diesel::prelude::*;

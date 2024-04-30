@@ -255,7 +255,7 @@ pub mod tests {
     use super::*;
     use crate::fixtures::tests::TestFixture;
     use crate::models::Create;
-    use crate::modelsv2::ConnectionPool;
+    use crate::modelsv2::DbConnectionPool;
 
     pub fn simple_pathfinding(infra_id: i64) -> Pathfinding {
         //    T1       T2        T3       T4      T5
@@ -310,7 +310,7 @@ pub mod tests {
 
     pub async fn simple_pathfinding_fixture(
         infra_id: i64,
-        db_pool: Data<ConnectionPool>,
+        db_pool: Data<DbConnectionPool>,
     ) -> TestFixture<Pathfinding> {
         let pathfinding = simple_pathfinding(infra_id);
         let mut changeset = PathfindingChangeset::from(pathfinding);

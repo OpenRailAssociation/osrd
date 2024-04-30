@@ -10,7 +10,7 @@ use crate::error::Result;
 use crate::infra_cache::InfraCache;
 use crate::infra_cache::ObjectCache;
 use crate::modelsv2::prelude::*;
-use crate::modelsv2::ConnectionPool;
+use crate::modelsv2::DbConnectionPool;
 use crate::modelsv2::Infra;
 use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraIdParam;
@@ -44,7 +44,7 @@ enum LinesErrors {
 async fn get_line_bbox(
     path: Path<(i64, i64)>,
     infra_caches: Data<CHashMap<i64, InfraCache>>,
-    db_pool: Data<ConnectionPool>,
+    db_pool: Data<DbConnectionPool>,
 ) -> Result<Json<Zone>> {
     let (infra_id, line_code) = path.into_inner();
     let line_code: i32 = line_code.try_into().unwrap();

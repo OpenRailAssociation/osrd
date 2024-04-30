@@ -19,7 +19,7 @@ use crate::error::Result;
 use crate::models::pathfinding::Pathfinding;
 use crate::models::Retrieve;
 use crate::modelsv2::electrical_profiles::ElectricalProfileSet;
-use crate::modelsv2::ConnectionPool;
+use crate::modelsv2::DbConnectionPool;
 use crate::modelsv2::LightRollingStockModel;
 use crate::views::electrical_profiles::ElectricalProfilesError;
 use crate::views::pathfinding::path_rangemap::make_path_range_map;
@@ -97,7 +97,7 @@ struct ProfilesOnPathResponse {
 async fn electrical_profiles_on_path(
     params: Path<PathfindingIdParam>,
     request: Query<ProfilesOnPathQuery>,
-    db_pool: Data<ConnectionPool>,
+    db_pool: Data<DbConnectionPool>,
 ) -> Result<Json<ProfilesOnPathResponse>> {
     let pathfinding_id = params.pathfinding_id;
     let pathfinding = match Pathfinding::retrieve(db_pool.clone(), pathfinding_id).await? {
@@ -158,7 +158,7 @@ mod tests {
 
     #[fixture]
     async fn electrical_profile_set(
-        db_pool: Data<ConnectionPool>,
+        db_pool: Data<DbConnectionPool>,
     ) -> TestFixture<ElectricalProfileSet> {
         let ep_data = ElectricalProfileSetData {
             levels: vec![
@@ -253,7 +253,7 @@ mod tests {
     #[rstest]
     #[serial_test::serial]
     async fn test_view_electrical_profiles_on_path(
-        db_pool: Data<ConnectionPool>,
+        db_pool: Data<DbConnectionPool>,
         #[future] empty_infra: TestFixture<Infra>,
         #[future] electrical_profile_set: TestFixture<ElectricalProfileSet>,
     ) {

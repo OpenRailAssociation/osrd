@@ -21,7 +21,7 @@ impl ToTokens for DeleteImpl {
             impl crate::modelsv2::Delete for #model {
                 async fn delete(
                     &self,
-                    conn: &mut crate::modelsv2::Connection,
+                    conn: &mut crate::modelsv2::DbConnection,
                 ) -> crate::error::Result<bool> {
                     use diesel::prelude::*;
                     use diesel_async::RunQueryDsl;

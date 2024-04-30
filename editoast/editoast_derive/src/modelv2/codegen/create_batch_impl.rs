@@ -29,7 +29,7 @@ impl ToTokens for CreateBatchImpl {
                     I: std::iter::IntoIterator<Item = #changeset> + Send + 'async_trait,
                     C: Default + std::iter::Extend<Self> + Send,
                 >(
-                    conn: &mut crate::modelsv2::Connection,
+                    conn: &mut crate::modelsv2::DbConnection,
                     values: I,
                 ) -> crate::error::Result<C> {
                     use crate::modelsv2::Model;

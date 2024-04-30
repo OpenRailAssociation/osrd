@@ -1,6 +1,6 @@
 use crate::error::EditoastError;
 use crate::error::Result;
-use crate::modelsv2::Connection;
+use crate::modelsv2::DbConnection;
 
 /// Describes how a [Model](super::Model) can be retrieved from the database
 ///
@@ -12,11 +12,11 @@ where
     for<'async_trait> K: Send + 'async_trait,
 {
     /// Retrieves the row #`id` and deserializes it as a model instance
-    async fn retrieve(conn: &mut Connection, id: K) -> Result<Option<Self>>;
+    async fn retrieve(conn: &mut DbConnection, id: K) -> Result<Option<Self>>;
 
     /// Just like [Retrieve::retrieve] but returns `Err(fail())` if the row was not found
     async fn retrieve_or_fail<E, F>(
-        conn: &'async_trait mut Connection,
+        conn: &'async_trait mut DbConnection,
         id: K,
         fail: F,
     ) -> Result<Self>
@@ -42,7 +42,7 @@ where
     for<'async_trait> K: Send + 'async_trait,
 {
     /// Returns whether the row #`id` exists in the database
-    async fn exists(conn: &mut Connection, id: K) -> Result<bool>;
+    async fn exists(conn: &mut DbConnection, id: K) -> Result<bool>;
 }
 
 /// Unchecked batch retrieval of a [Model](super::Model) from the database
@@ -68,7 +68,7 @@ where
         I: IntoIterator<Item = K> + Send + 'async_trait,
         C: Default + std::iter::Extend<Self> + Send,
     >(
-        conn: &mut Connection,
+        conn: &mut DbConnection,
         ids: I,
     ) -> Result<C>;
 
@@ -83,7 +83,7 @@ where
         I: IntoIterator<Item = K> + Send + 'async_trait,
         C: Default + std::iter::Extend<(K, Self)> + Send,
     >(
-        conn: &mut Connection,
+        conn: &mut DbConnection,
         ids: I,
     ) -> Result<C>;
 }
@@ -114,7 +114,7 @@ where
     /// assert_eq!(docs.len(), 5);
     /// ```
     async fn retrieve_batch<I, C>(
-        conn: &mut Connection,
+        conn: &mut DbConnection,
         ids: I,
     ) -> Result<(C, std::collections::HashSet<K>)>
     where
@@ -150,7 +150,7 @@ where
     /// assert!(docs.contains(&1));
     /// ```
     async fn retrieve_batch_with_key<I, C>(
-        conn: &mut Connection,
+        conn: &mut DbConnection,
         ids: I,
     ) -> Result<(C, std::collections::HashSet<K>)>
     where
@@ -189,7 +189,11 @@ where
     ///    MyErrorType::DocumentsNotFound(missing)
     /// }).await?;
     /// ```
-    async fn retrieve_batch_or_fail<I, C, E, F>(conn: &mut Connection, ids: I, fail: F) -> Result<C>
+    async fn retrieve_batch_or_fail<I, C, E, F>(
+        conn: &mut DbConnection,
+        ids: I,
+        fail: F,
+    ) -> Result<C>
     where
         I: Send + IntoIterator<Item = K> + 'async_trait,
         C: Send
@@ -217,7 +221,7 @@ where
     /// }).await?;
     /// ```
     async fn retrieve_batch_with_key_or_fail<I, C, E, F>(
-        conn: &mut Connection,
+        conn: &mut DbConnection,
         ids: I,
         fail: F,
     ) -> Result<C>

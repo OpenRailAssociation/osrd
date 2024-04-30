@@ -3,7 +3,7 @@ use diesel::result::Error::NotFound;
 use crate::error::EditoastError;
 use crate::error::Result;
 use crate::models::PreferredId;
-use crate::modelsv2::Connection;
+use crate::modelsv2::DbConnection;
 
 use super::Model;
 
@@ -43,7 +43,7 @@ impl<'a, M: Model> Patch<'a, M> {
     ///
     /// If this method is not implemented for your model for whatever reason, just
     /// use [Save::save].
-    async fn apply<K>(self, conn: &mut Connection) -> Result<()>
+    async fn apply<K>(self, conn: &mut DbConnection) -> Result<()>
     where
         for<'b> K: Send + Clone + 'b,
         M: Model + PreferredId<K> + Send,
@@ -70,12 +70,12 @@ where
     Row: Send,
 {
     /// Updates the row #`id` with the changeset values and returns the updated model
-    async fn update(self, conn: &mut Connection, id: K) -> Result<Option<Row>>;
+    async fn update(self, conn: &mut DbConnection, id: K) -> Result<Option<Row>>;
 
     /// Just like [Update::update] but returns `Err(fail())` if the row was not found
     async fn update_or_fail<E: EditoastError, F: FnOnce() -> E + Send>(
         self,
-        conn: &'async_trait mut Connection,
+        conn: &'async_trait mut DbConnection,
         id: K,
         fail: F,
     ) -> Result<Row> {
@@ -103,7 +103,7 @@ pub trait Save<K: Send>: Sized {
     /// doc.save(&mut conn).await?;
     /// assert_eq!(doc.title, "new title");
     /// ```
-    async fn save(&mut self, conn: &mut Connection) -> Result<()>;
+    async fn save(&mut self, conn: &mut DbConnection) -> Result<()>;
 }
 
 #[async_trait::async_trait]
@@ -113,7 +113,7 @@ where
     M: Model + PreferredId<K> + Clone + Send + 'a,
     <M as Model>::Changeset: Update<K, M> + Send,
 {
-    async fn save(&mut self, conn: &mut Connection) -> Result<()> {
+    async fn save(&mut self, conn: &mut DbConnection) -> Result<()> {
         let id = self.get_id();
         let changeset = <M as Model>::Changeset::from(self.clone()); // FIXME: I don't like that clone, maybe a ChangesetOwned/Changeset pair would work?
         *self = changeset.update_or_fail(conn, id, || NotFound).await?;
@@ -146,7 +146,7 @@ where
         C: Default + std::iter::Extend<M> + Send,
     >(
         self,
-        conn: &mut Connection,
+        conn: &mut DbConnection,
         ids: I,
     ) -> Result<C>;
 
@@ -162,7 +162,7 @@ where
         C: Default + std::iter::Extend<(K, M)> + Send,
     >(
         self,
-        conn: &mut Connection,
+        conn: &mut DbConnection,
         ids: I,
     ) -> Result<C>;
 }
@@ -200,7 +200,7 @@ where
     /// ```
     async fn update_batch<I, C>(
         self,
-        conn: &mut Connection,
+        conn: &mut DbConnection,
         ids: I,
     ) -> Result<(C, std::collections::HashSet<K>)>
     where
@@ -237,7 +237,7 @@ where
     /// ```
     async fn update_batch_with_key<I, C>(
         self,
-        conn: &mut Connection,
+        conn: &mut DbConnection,
         ids: I,
     ) -> Result<(C, std::collections::HashSet<K>)>
     where
@@ -276,7 +276,7 @@ where
     /// ```
     async fn update_batch_or_fail<I, C, E, F>(
         self,
-        conn: &mut Connection,
+        conn: &mut DbConnection,
         ids: I,
         fail: F,
     ) -> Result<C>
@@ -309,7 +309,7 @@ where
     /// ```
     async fn update_batch_with_key_or_fail<I, C, E, F>(
         self,
-        conn: &mut Connection,
+        conn: &mut DbConnection,
         ids: I,
         fail: F,
     ) -> Result<C>

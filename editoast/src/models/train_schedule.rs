@@ -17,7 +17,7 @@ use super::check_train_validity;
 use crate::error::Result;
 use crate::models::Identifiable;
 use crate::models::Timetable;
-use crate::modelsv2::ConnectionPool;
+use crate::modelsv2::DbConnectionPool;
 use crate::modelsv2::LightRollingStockModel;
 use crate::modelsv2::Retrieve;
 use crate::tables::simulation_output;
@@ -477,7 +477,7 @@ pub struct ScheduledPoint {
 }
 
 pub async fn filter_invalid_trains(
-    db_pool: Data<ConnectionPool>,
+    db_pool: Data<DbConnectionPool>,
     schedules: Vec<TrainSchedule>,
     infra_version: String,
 ) -> Result<(Vec<TrainSchedule>, Vec<i64>)> {
