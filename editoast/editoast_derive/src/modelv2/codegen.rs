@@ -9,6 +9,7 @@ mod delete_impl;
 mod delete_static_impl;
 mod exists_impl;
 mod identifiable_impl;
+mod model_field_api_impl_block;
 mod model_fields_impl_block;
 mod model_from_row_impl;
 mod model_impl;
@@ -34,6 +35,7 @@ use self::delete_impl::DeleteImpl;
 use self::delete_static_impl::DeleteStaticImpl;
 use self::exists_impl::ExistsImpl;
 use self::identifiable_impl::IdentifiableImpl;
+use self::model_field_api_impl_block::ModelFieldApiImplBlock;
 use self::model_fields_impl_block::ModelFieldDecl;
 use self::model_fields_impl_block::ModelFieldsImplBlock;
 use self::model_from_row_impl::ModelFromRowImpl;
@@ -114,6 +116,15 @@ impl ModelConfig {
                 })
                 .collect(),
         }
+    }
+
+    pub(crate) fn model_field_api_impl_blocks(&self) -> Vec<ModelFieldApiImplBlock> {
+        self.iter_fields()
+            .map(|field| ModelFieldApiImplBlock {
+                model: self.model.clone(),
+                field: field.clone(),
+            })
+            .collect()
     }
 
     pub(crate) fn row_decl(&self) -> RowDecl {
