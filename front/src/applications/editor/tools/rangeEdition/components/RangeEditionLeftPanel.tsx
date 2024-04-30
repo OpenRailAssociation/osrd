@@ -61,9 +61,9 @@ const RangeEditionLeftPanel = () => {
   const isPSL = speedSectionIsPsl(entity as SpeedSectionEntity);
   const infraID = useInfraID();
 
-  const { data: voltages } = osrdEditoastApi.endpoints.getInfraByIdVoltages.useQuery(
+  const { data: voltages } = osrdEditoastApi.endpoints.getInfraByInfraIdVoltages.useQuery(
     {
-      id: infraID as number,
+      infraId: infraID as number,
     },
     { skip: !infraID }
   );

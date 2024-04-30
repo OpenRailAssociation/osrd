@@ -68,6 +68,7 @@ crate::routes! {
             lock,
             unlock,
             get_speed_limit_tags,
+            get_voltages,
         },
     },
 }
@@ -425,7 +426,7 @@ async fn get_speed_limit_tags(
     ))
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, IntoParams)]
 struct GetVoltagesQueryParams {
     #[serde(default)]
     include_rolling_stock_modes: bool,
@@ -433,14 +434,21 @@ struct GetVoltagesQueryParams {
 
 /// Returns the set of voltages for a given infra and/or rolling_stocks modes.
 /// If include_rolling_stocks_modes is true, it returns also rolling_stocks modes.
+#[utoipa::path(
+    tag = "infra",
+    params(InfraIdParam, GetVoltagesQueryParams),
+    responses(
+        (status = 200,  description = "Voltages list", body = Vec<String>, example = json!(["750V", "1500V", "2500.5V"])),
+        (status = 404, description = "The infra was not found",),
+    )
+)]
 #[get("/voltages")]
 async fn get_voltages(
-    infra: Path<i64>,
+    infra: Path<InfraIdParam>,
     param: Query<GetVoltagesQueryParams>,
     db_pool: Data<DbConnectionPool>,
 ) -> Result<Json<Vec<String>>> {
     use diesel_async::RunQueryDsl;
-    let infra = infra.into_inner();
     let include_rolling_stock_modes = param.into_inner().include_rolling_stock_modes;
     let mut conn = db_pool.get().await?;
     let query = if !include_rolling_stock_modes {
@@ -449,7 +457,7 @@ async fn get_voltages(
         include_str!("sql/get_voltages_with_rolling_stocks_modes.sql")
     };
     let voltages: Vec<Voltage> = sql_query(query)
-        .bind::<BigInt, _>(infra)
+        .bind::<BigInt, _>(infra.infra_id)
         .load(&mut conn)
         .await?;
     Ok(Json(voltages.into_iter().map(|el| (el.voltage)).collect()))
