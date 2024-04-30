@@ -23,8 +23,8 @@ use crate::models::List;
 use crate::models::NoParams;
 use crate::modelsv2::timetable::Timetable;
 use crate::modelsv2::timetable::TimetableWithTrains;
-use crate::modelsv2::ConnectionPool;
 use crate::modelsv2::Create;
+use crate::modelsv2::DbConnectionPool;
 use crate::modelsv2::DeleteStatic;
 use crate::modelsv2::Model;
 use crate::modelsv2::Retrieve;
@@ -126,7 +126,7 @@ struct TimetableIdParam {
 )]
 #[get("")]
 async fn get(
-    db_pool: Data<ConnectionPool>,
+    db_pool: Data<DbConnectionPool>,
     timetable_id: Path<TimetableIdParam>,
 ) -> Result<Json<TimetableDetailedResult>> {
     let timetable_id = timetable_id.id;
@@ -152,7 +152,7 @@ decl_paginated_response!(PaginatedResponseOfTimetable, TimetableResult);
 )]
 #[get("")]
 async fn list(
-    db_pool: Data<ConnectionPool>,
+    db_pool: Data<DbConnectionPool>,
     pagination_params: Query<PaginationQueryParam>,
 ) -> Result<Json<PaginatedResponse<TimetableResult>>> {
     let (page, per_page) = pagination_params
@@ -175,7 +175,7 @@ async fn list(
 )]
 #[post("")]
 async fn post(
-    db_pool: Data<ConnectionPool>,
+    db_pool: Data<DbConnectionPool>,
     data: Json<TimetableForm>,
 ) -> Result<Json<TimetableResult>> {
     let conn = &mut db_pool.get().await?;
@@ -198,7 +198,7 @@ async fn post(
 )]
 #[put("")]
 async fn put(
-    db_pool: Data<ConnectionPool>,
+    db_pool: Data<DbConnectionPool>,
     timetable_id: Path<TimetableIdParam>,
     data: Json<TimetableForm>,
 ) -> Result<Json<TimetableDetailedResult>> {
@@ -231,7 +231,7 @@ async fn put(
 )]
 #[delete("")]
 async fn delete(
-    db_pool: Data<ConnectionPool>,
+    db_pool: Data<DbConnectionPool>,
     timetable_id: Path<TimetableIdParam>,
 ) -> Result<HttpResponse> {
     let timetable_id = timetable_id.id;
@@ -266,7 +266,7 @@ pub struct Conflict {
 )]
 #[get("/conflicts")]
 pub async fn conflicts(
-    _db_pool: Data<ConnectionPool>,
+    _db_pool: Data<DbConnectionPool>,
     _redis_client: Data<RedisClient>,
     _core_client: Data<CoreClient>,
     _infra_id: Query<i64>,
@@ -301,7 +301,7 @@ mod tests {
     #[rstest]
     async fn get_timetable(
         #[future] timetable_v2: TestFixture<Timetable>,
-        db_pool: Data<ConnectionPool>,
+        db_pool: Data<DbConnectionPool>,
     ) {
         let service = create_test_service().await;
         let timetable = timetable_v2.await;
@@ -327,7 +327,7 @@ mod tests {
     }
 
     #[rstest]
-    async fn timetable_post(db_pool: Data<ConnectionPool>) {
+    async fn timetable_post(db_pool: Data<DbConnectionPool>) {
         let service = create_test_service().await;
 
         // Insert timetable

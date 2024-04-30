@@ -18,7 +18,7 @@ use crate::error::Result;
 use crate::infra_cache::InfraCache;
 use crate::models::pathfinding::Pathfinding;
 use crate::models::Retrieve;
-use crate::modelsv2::ConnectionPool;
+use crate::modelsv2::DbConnectionPool;
 use crate::modelsv2::Infra;
 use crate::modelsv2::Retrieve as RetrieveV2;
 use crate::views::pathfinding::path_rangemap::make_path_range_map;
@@ -104,7 +104,7 @@ struct ElectrificationsOnPathResponse {
 /// Retrieve the electrification modes along a path, as seen by the rolling stock specified
 async fn electrifications_on_path(
     params: Path<PathfindingIdParam>,
-    db_pool: Data<ConnectionPool>,
+    db_pool: Data<DbConnectionPool>,
     infra_caches: Data<CHashMap<i64, InfraCache>>,
 ) -> Result<Json<ElectrificationsOnPathResponse>> {
     let mut conn = db_pool.get().await?;
@@ -175,7 +175,7 @@ pub mod tests {
 
     #[fixture]
     async fn infra_with_electrifications(
-        db_pool: Data<ConnectionPool>,
+        db_pool: Data<DbConnectionPool>,
         #[future] empty_infra: TestFixture<Infra>,
     ) -> TestFixture<Infra> {
         let infra = empty_infra.await;
@@ -218,7 +218,7 @@ pub mod tests {
 
     #[rstest]
     async fn test_map_electrification_modes(
-        db_pool: Data<ConnectionPool>,
+        db_pool: Data<DbConnectionPool>,
         #[future] infra_with_electrifications: TestFixture<Infra>,
         simple_mode_map: TrackMap<String>,
     ) {
@@ -240,7 +240,7 @@ pub mod tests {
 
     #[rstest]
     async fn test_map_electrification_modes_with_warnings(
-        db_pool: Data<ConnectionPool>,
+        db_pool: Data<DbConnectionPool>,
         #[future] infra_with_electrifications: TestFixture<Infra>,
     ) {
         let mut conn = db_pool.get().await.unwrap();
@@ -300,7 +300,7 @@ pub mod tests {
 
     #[rstest]
     async fn test_view_electrifications_on_path(
-        db_pool: Data<ConnectionPool>,
+        db_pool: Data<DbConnectionPool>,
         #[future] infra_with_electrifications: TestFixture<Infra>,
     ) {
         let infra_with_electrifications = infra_with_electrifications.await;

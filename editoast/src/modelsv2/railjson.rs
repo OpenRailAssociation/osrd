@@ -8,8 +8,8 @@ use crate::error::InternalError;
 use crate::error::Result;
 use crate::modelsv2::infra_objects::*;
 use crate::modelsv2::prelude::*;
-use crate::modelsv2::Connection;
-use crate::modelsv2::ConnectionPool;
+use crate::modelsv2::DbConnection;
+use crate::modelsv2::DbConnectionPool;
 
 #[derive(Debug, thiserror::Error, EditoastError)]
 #[editoast_error(base_id = "railjson")]
@@ -24,7 +24,7 @@ pub enum RailJsonError {
 ///
 /// #### `/!\ ATTENTION /!\` On failure this function does NOT rollback the insertions!
 pub async fn persist_railjson(
-    db_pool: Arc<ConnectionPool>,
+    db_pool: Arc<DbConnectionPool>,
     infra_id: i64,
     railjson: RailJson,
 ) -> Result<()> {
@@ -79,7 +79,7 @@ pub async fn persist_railjson(
     .map(|_| ())
 }
 
-pub async fn find_all_schemas<T, C>(conn: &mut Connection, infra_id: i64) -> Result<C>
+pub async fn find_all_schemas<T, C>(conn: &mut DbConnection, infra_id: i64) -> Result<C>
 where
     T: ModelBackedSchema,
     C: FromIterator<T>,

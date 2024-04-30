@@ -34,7 +34,7 @@ use crate::models::PathfindingPayload;
 use crate::models::SpacingRequirement;
 use crate::models::TrainSchedule;
 use crate::modelsv2::prelude::*;
-use crate::modelsv2::ConnectionPool;
+use crate::modelsv2::DbConnectionPool;
 use crate::modelsv2::Infra;
 use crate::views::rolling_stocks::retrieve_existing_rolling_stock;
 
@@ -131,7 +131,7 @@ enum StdcmError {
 )]
 #[post("")]
 async fn create(
-    db_pool: Data<ConnectionPool>,
+    db_pool: Data<DbConnectionPool>,
     core: Data<CoreClient>,
     data: Json<STDCMRequestPayload>,
 ) -> Result<impl Responder> {
@@ -140,7 +140,7 @@ async fn create(
 }
 
 async fn compute_stdcm(
-    db_pool: Data<ConnectionPool>,
+    db_pool: Data<DbConnectionPool>,
     core: Data<CoreClient>,
     data: Json<STDCMRequestPayload>,
 ) -> Result<STDCMResponse> {
@@ -152,7 +152,7 @@ async fn compute_stdcm(
 }
 
 async fn call_core_stdcm(
-    db_pool: Data<ConnectionPool>,
+    db_pool: Data<DbConnectionPool>,
     core: &Data<CoreClient>,
     data: &Json<STDCMRequestPayload>,
 ) -> Result<STDCMCoreResponse> {
@@ -194,7 +194,7 @@ async fn call_core_stdcm(
 
 /// create steps from track_map and waypoints
 async fn parse_stdcm_steps(
-    db_pool: Data<ConnectionPool>,
+    db_pool: Data<DbConnectionPool>,
     data: &Json<STDCMRequestPayload>,
     infra: &Infra,
 ) -> Result<Vec<STDCMCoreStep>> {
@@ -217,7 +217,7 @@ async fn parse_stdcm_steps(
 /// Create route occupancies, adjusted by simulation departure time.
 /// uses base_simulation by default, or eco_simulation if given
 async fn make_spacing_requirements(
-    db_pool: Data<ConnectionPool>,
+    db_pool: Data<DbConnectionPool>,
     timetable_id: i64,
 ) -> Result<Vec<SpacingRequirement>> {
     let (schedules, simulations) =
@@ -247,7 +247,7 @@ async fn make_spacing_requirements(
 
 /// Creates a Pathfinding using the same function used with core /pathfinding response
 async fn create_path_from_core_response(
-    db_pool: Data<ConnectionPool>,
+    db_pool: Data<DbConnectionPool>,
     core_output: &STDCMCoreResponse,
     data: &Json<STDCMRequestPayload>,
 ) -> Result<Pathfinding> {
@@ -273,7 +273,7 @@ async fn create_path_from_core_response(
 
 /// processes the stdcm simulation and create a simulation report
 async fn create_simulation_from_core_response(
-    db_pool: Data<ConnectionPool>,
+    db_pool: Data<DbConnectionPool>,
     core: &Data<CoreClient>,
     data: &Json<STDCMRequestPayload>,
     core_output: &STDCMCoreResponse,

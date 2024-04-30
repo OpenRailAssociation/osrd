@@ -16,8 +16,8 @@ use crate::infra_cache::ObjectCache;
 use crate::map::MapLayers;
 use crate::map::{self};
 use crate::modelsv2::prelude::*;
-use crate::modelsv2::Connection;
-use crate::modelsv2::ConnectionPool;
+use crate::modelsv2::DbConnection;
+use crate::modelsv2::DbConnectionPool;
 use crate::modelsv2::Infra;
 use crate::views::infra::InfraApiError;
 use crate::RedisClient;
@@ -27,7 +27,7 @@ use crate::RedisClient;
 pub async fn edit<'a>(
     infra: Path<i64>,
     operations: Json<Vec<Operation>>,
-    db_pool: Data<ConnectionPool>,
+    db_pool: Data<DbConnectionPool>,
     infra_caches: Data<CHashMap<i64, InfraCache>>,
     redis_client: Data<RedisClient>,
     map_layers: Data<MapLayers>,
@@ -55,7 +55,7 @@ pub async fn edit<'a>(
 }
 
 async fn apply_edit(
-    conn: &mut Connection,
+    conn: &mut DbConnection,
     infra: &mut Infra,
     operations: &[Operation],
     infra_cache: &mut InfraCache,

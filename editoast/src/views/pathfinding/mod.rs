@@ -48,8 +48,8 @@ use crate::models::Retrieve;
 use crate::models::Slope;
 use crate::models::Update;
 use crate::modelsv2::infra_objects::TrackSectionModel;
-use crate::modelsv2::Connection;
-use crate::modelsv2::ConnectionPool;
+use crate::modelsv2::DbConnection;
+use crate::modelsv2::DbConnectionPool;
 use crate::modelsv2::Infra;
 use crate::modelsv2::OperationalPointModel;
 use crate::modelsv2::Retrieve as RetrieveV2;
@@ -220,7 +220,7 @@ type OpMap = HashMap<String, OperationalPoint>;
 
 /// Computes a hash map (obj_id => TrackSection) for each obj_id in an iterator
 pub(in crate::views) async fn make_track_map<I: Iterator<Item = String> + Send>(
-    conn: &mut Connection,
+    conn: &mut DbConnection,
     infra_id: i64,
     it: I,
 ) -> Result<TrackMap> {
@@ -239,7 +239,7 @@ pub(in crate::views) async fn make_track_map<I: Iterator<Item = String> + Send>(
 }
 
 async fn make_op_map<I: Iterator<Item = String> + Send>(
-    conn: &mut Connection,
+    conn: &mut DbConnection,
     infra_id: i64,
     it: I,
 ) -> Result<OpMap> {
@@ -260,7 +260,7 @@ async fn make_op_map<I: Iterator<Item = String> + Send>(
 
 impl PathfindingRequest {
     /// Queries all track sections of the payload and builds a track hash map
-    async fn fetch_track_map(&self, conn: &mut Connection) -> Result<TrackMap> {
+    async fn fetch_track_map(&self, conn: &mut DbConnection) -> Result<TrackMap> {
         fetch_pathfinding_payload_track_map(conn, self.infra, &self.steps).await
     }
 
@@ -270,7 +270,7 @@ impl PathfindingRequest {
     }
 
     /// Fetches all payload's rolling stocks
-    async fn parse_rolling_stocks(&self, conn: &mut Connection) -> Result<Vec<RollingStock>> {
+    async fn parse_rolling_stocks(&self, conn: &mut DbConnection) -> Result<Vec<RollingStock>> {
         use crate::modelsv2::RetrieveBatch;
         let rolling_stock_batch: Vec<RollingStockModel> =
             RollingStockModel::retrieve_batch_or_fail(
@@ -296,7 +296,7 @@ impl PathfindingRequest {
 }
 
 pub async fn fetch_pathfinding_payload_track_map(
-    conn: &mut Connection,
+    conn: &mut DbConnection,
     infra: i64,
     steps: &[PathfindingStep],
 ) -> Result<TrackMap> {
@@ -328,7 +328,7 @@ pub fn parse_pathfinding_payload_waypoints(
 }
 
 impl PathfindingResponse {
-    pub async fn fetch_track_map(&self, infra: i64, conn: &mut Connection) -> Result<TrackMap> {
+    pub async fn fetch_track_map(&self, infra: i64, conn: &mut DbConnection) -> Result<TrackMap> {
         make_track_map(
             conn,
             infra,
@@ -339,7 +339,7 @@ impl PathfindingResponse {
         .await
     }
 
-    pub async fn fetch_op_map(&self, infra: i64, conn: &mut Connection) -> Result<OpMap> {
+    pub async fn fetch_op_map(&self, infra: i64, conn: &mut DbConnection) -> Result<OpMap> {
         make_op_map(
             conn,
             infra,
@@ -434,7 +434,7 @@ impl Pathfinding {
 /// Builds a Core pathfinding request, runs it, post-processes the response and stores it in the DB
 async fn call_core_pf_and_save_result(
     payload: Json<PathfindingRequest>,
-    db_pool: Data<ConnectionPool>,
+    db_pool: Data<DbConnectionPool>,
     core: Data<CoreClient>,
     update_id: Option<i64>,
 ) -> Result<Pathfinding> {
@@ -469,7 +469,7 @@ async fn call_core_pf_and_save_result(
 /// If `update_id` is provided then update the corresponding path instead of creating a new one
 pub async fn save_core_pathfinding(
     core_response: PathfindingResponse,
-    conn: &mut Connection,
+    conn: &mut DbConnection,
     infra_id: i64,
     update_id: Option<i64>,
     steps_duration: Vec<f64>,
@@ -510,7 +510,7 @@ pub async fn save_core_pathfinding(
 #[post("")]
 async fn create_pf(
     payload: Json<PathfindingRequest>,
-    db_pool: Data<ConnectionPool>,
+    db_pool: Data<DbConnectionPool>,
     core: Data<CoreClient>,
 ) -> Result<Json<PathResponse>> {
     let pathfinding = call_core_pf_and_save_result(payload, db_pool, core, None).await?;
@@ -536,7 +536,7 @@ struct PathfindingIdParam {
 async fn update_pf(
     params: Path<PathfindingIdParam>,
     payload: Json<PathfindingRequest>,
-    db_pool: Data<ConnectionPool>,
+    db_pool: Data<DbConnectionPool>,
     core: Data<CoreClient>,
 ) -> Result<Json<PathResponse>> {
     let pathfinding =
@@ -555,7 +555,7 @@ async fn update_pf(
 #[get("")]
 async fn get_pf(
     params: Path<PathfindingIdParam>,
-    db_pool: Data<ConnectionPool>,
+    db_pool: Data<DbConnectionPool>,
 ) -> Result<Json<PathResponse>> {
     let pathfinding_id = params.pathfinding_id;
     match Pathfinding::retrieve(db_pool, pathfinding_id).await? {
@@ -575,7 +575,7 @@ async fn get_pf(
 #[delete("")]
 async fn del_pf(
     params: Path<PathfindingIdParam>,
-    db_pool: Data<ConnectionPool>,
+    db_pool: Data<DbConnectionPool>,
 ) -> Result<impl Responder> {
     let pathfinding_id = params.pathfinding_id;
     if Pathfinding::delete(db_pool, pathfinding_id).await? {

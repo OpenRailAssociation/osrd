@@ -25,8 +25,8 @@ use crate::error::InternalError;
 use crate::error::Result;
 use crate::models::List;
 use crate::modelsv2::Changeset;
-use crate::modelsv2::ConnectionPool;
 use crate::modelsv2::Create;
+use crate::modelsv2::DbConnectionPool;
 use crate::modelsv2::DeleteStatic;
 use crate::modelsv2::Model;
 use crate::modelsv2::Project;
@@ -159,7 +159,7 @@ impl StudyResponse {
 )]
 #[post("")]
 async fn create(
-    db_pool: Data<ConnectionPool>,
+    db_pool: Data<DbConnectionPool>,
     data: Json<StudyCreateForm>,
     project: Path<i64>,
 ) -> Result<Json<StudyResponse>> {
@@ -219,7 +219,7 @@ pub struct StudyIdParam {
     )
 )]
 #[delete("")]
-async fn delete(path: Path<(i64, i64)>, db_pool: Data<ConnectionPool>) -> Result<HttpResponse> {
+async fn delete(path: Path<(i64, i64)>, db_pool: Data<DbConnectionPool>) -> Result<HttpResponse> {
     let (project_id, study_id) = path.into_inner();
     // Check if project exists
     let conn = &mut db_pool.get().await?;
@@ -249,7 +249,7 @@ decl_paginated_response!(PaginatedResponseOfStudyWithScenarios, StudyWithScenari
 )]
 #[get("")]
 async fn list(
-    db_pool: Data<ConnectionPool>,
+    db_pool: Data<DbConnectionPool>,
     pagination_params: Query<PaginationQueryParam>,
     project: Path<i64>,
     params: Query<QueryParams>,
@@ -286,7 +286,10 @@ async fn list(
     )
 )]
 #[get("")]
-async fn get(db_pool: Data<ConnectionPool>, path: Path<(i64, i64)>) -> Result<Json<StudyResponse>> {
+async fn get(
+    db_pool: Data<DbConnectionPool>,
+    path: Path<(i64, i64)>,
+) -> Result<Json<StudyResponse>> {
     let (project_id, study_id) = path.into_inner();
 
     // Check if project exists
@@ -364,7 +367,7 @@ impl StudyPatchForm {
 async fn patch(
     data: Json<StudyPatchForm>,
     path: Path<(i64, i64)>,
-    db_pool: Data<ConnectionPool>,
+    db_pool: Data<DbConnectionPool>,
 ) -> Result<Json<StudyResponse>> {
     let (project_id, study_id) = path.into_inner();
     let conn = &mut db_pool.get().await?;
@@ -447,7 +450,10 @@ pub mod test {
     }
 
     #[rstest]
-    async fn study_create(#[future] project: TestFixture<Project>, db_pool: Data<ConnectionPool>) {
+    async fn study_create(
+        #[future] project: TestFixture<Project>,
+        db_pool: Data<DbConnectionPool>,
+    ) {
         let app = create_test_service().await;
         let project = project.await;
         let req = TestRequest::post()
@@ -496,7 +502,7 @@ pub mod test {
     #[rstest]
     async fn study_get(
         #[future] study_fixture_set: StudyFixtureSet,
-        db_pool: Data<ConnectionPool>,
+        db_pool: Data<DbConnectionPool>,
     ) {
         let app = create_test_service().await;
         let study_fixture_set = study_fixture_set.await;

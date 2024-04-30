@@ -18,9 +18,9 @@ use crate::modelsv2::work_schedules::WorkSchedule;
 use crate::modelsv2::work_schedules::WorkScheduleGroup;
 use crate::modelsv2::work_schedules::WorkScheduleType;
 use crate::modelsv2::Changeset;
-use crate::modelsv2::ConnectionPool;
 use crate::modelsv2::Create;
 use crate::modelsv2::CreateBatch;
+use crate::modelsv2::DbConnectionPool;
 use crate::modelsv2::Model;
 use editoast_schemas::infra::TrackRange;
 
@@ -137,7 +137,7 @@ struct WorkScheduleCreateResponse {
 )]
 #[post("")]
 async fn create(
-    db_pool: Data<ConnectionPool>,
+    db_pool: Data<DbConnectionPool>,
     data: Json<WorkScheduleCreateForm>,
 ) -> Result<Json<WorkScheduleCreateResponse>> {
     let conn = &mut db_pool.get().await?;
@@ -181,7 +181,7 @@ pub mod test {
     use crate::views::tests::create_test_service;
 
     async fn create_work_schedule_group_fixture(
-        db_pool: Data<ConnectionPool>,
+        db_pool: Data<DbConnectionPool>,
         work_schedule_response: WorkScheduleCreateResponse,
     ) -> TestFixture<WorkScheduleGroup> {
         let mut conn = db_pool.get().await.unwrap();
@@ -194,7 +194,7 @@ pub mod test {
     }
 
     #[rstest]
-    async fn work_schedule_create(db_pool: Data<ConnectionPool>) {
+    async fn work_schedule_create(db_pool: Data<DbConnectionPool>) {
         // GIVEN
         let app = create_test_service().await;
         let req = TestRequest::post()
@@ -247,7 +247,7 @@ pub mod test {
     }
 
     #[rstest]
-    async fn work_schedule_create_fail_name_already_used(db_pool: Data<ConnectionPool>) {
+    async fn work_schedule_create_fail_name_already_used(db_pool: Data<DbConnectionPool>) {
         // GIVEN
         let app = create_test_service().await;
         let payload = json!({

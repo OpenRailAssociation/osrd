@@ -50,7 +50,7 @@ use crate::error::{self};
 use crate::infra_cache::operation;
 use crate::models;
 use crate::modelsv2;
-use crate::modelsv2::ConnectionPool;
+use crate::modelsv2::DbConnectionPool;
 use crate::RedisClient;
 
 // This function is only temporary while our migration to using utoipa is
@@ -314,7 +314,7 @@ impl OpenApiRoot {
 )]
 #[get("/health")]
 async fn health(
-    db_pool: Data<ConnectionPool>,
+    db_pool: Data<DbConnectionPool>,
     redis_client: Data<RedisClient>,
 ) -> Result<&'static str> {
     use diesel_async::RunQueryDsl;
@@ -389,7 +389,7 @@ mod tests {
     use crate::error::InternalError;
     use crate::infra_cache::InfraCache;
     use crate::map::MapLayers;
-    use crate::modelsv2::Connection;
+    use crate::modelsv2::DbConnection;
     use crate::RedisClient;
 
     /// Asserts the status code of a simulated response and deserializes its body,
@@ -444,7 +444,7 @@ mod tests {
         let pg_config_url = PostgresConfig::default()
             .url()
             .expect("cannot get postgres config url");
-        let manager = ConnectionManager::<Connection>::new(pg_config_url.as_str());
+        let manager = ConnectionManager::<DbConnection>::new(pg_config_url.as_str());
         let pool = Pool::builder(manager)
             .build()
             .expect("Failed to create pool.");

@@ -9,7 +9,7 @@ use serde::Serialize;
 
 use super::Document;
 use crate::error::Result;
-use crate::modelsv2::Connection;
+use crate::modelsv2::DbConnection;
 use crate::tables::rolling_stock_livery;
 
 /// Rolling Stock Livery
@@ -45,7 +45,7 @@ impl From<RollingStockLiveryModel> for RollingStockLivery {
 }
 
 impl RollingStockLiveryModel {
-    pub async fn delete_with_compound_image(&self, conn: &mut Connection) -> Result<bool> {
+    pub async fn delete_with_compound_image(&self, conn: &mut DbConnection) -> Result<bool> {
         use crate::modelsv2::DeleteStatic;
         let livery = RollingStockLiveryModel::delete_static(conn, self.id).await?;
         if let Some(image_id) = self.compound_image_id {
@@ -88,11 +88,11 @@ pub mod tests {
     use super::RollingStockLiveryModel;
     use crate::fixtures::tests::db_pool;
     use crate::fixtures::tests::rolling_stock_livery;
-    use crate::modelsv2::ConnectionPool;
+    use crate::modelsv2::DbConnectionPool;
     use crate::modelsv2::Document;
 
     #[rstest]
-    async fn create_get_delete_rolling_stock_livery(db_pool: Data<ConnectionPool>) {
+    async fn create_get_delete_rolling_stock_livery(db_pool: Data<DbConnectionPool>) {
         use crate::modelsv2::prelude::*;
         let mut conn = db_pool.get().await.unwrap();
         let rolling_stock_livery = rolling_stock_livery("", db_pool.clone()).await;

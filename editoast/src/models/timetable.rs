@@ -19,8 +19,8 @@ use crate::models::train_schedule::MechanicalEnergyConsumedBaseEco;
 use crate::models::train_schedule::TrainSchedule;
 use crate::models::train_schedule::TrainScheduleSummary;
 use crate::models::SimulationOutput;
-use crate::modelsv2::Connection;
-use crate::modelsv2::ConnectionPool;
+use crate::modelsv2::DbConnection;
+use crate::modelsv2::DbConnectionPool;
 use crate::modelsv2::LightRollingStockModel;
 use crate::modelsv2::Retrieve;
 use crate::tables::timetable;
@@ -80,7 +80,7 @@ impl Timetable {
     /// some information about the simulation result
     pub async fn with_detailed_train_schedules(
         self,
-        db_pool: Data<ConnectionPool>,
+        db_pool: Data<DbConnectionPool>,
     ) -> Result<TimetableWithSchedulesDetails> {
         use crate::tables::infra::dsl as infra_dsl;
         use crate::tables::scenario::dsl as scenario_dsl;
@@ -162,13 +162,13 @@ impl Timetable {
     /// Retrieves the associated train schedules
     pub async fn get_train_schedules(
         &self,
-        db_pool: Data<ConnectionPool>,
+        db_pool: Data<DbConnectionPool>,
     ) -> Result<Vec<TrainSchedule>> {
         get_timetable_train_schedules(self.id.unwrap(), db_pool).await
     }
 
     /// Get infra_version from timetable
-    pub async fn infra_version_from_timetable(&self, db_pool: Data<ConnectionPool>) -> String {
+    pub async fn infra_version_from_timetable(&self, db_pool: Data<DbConnectionPool>) -> String {
         use crate::tables::infra::dsl as infra_dsl;
         use crate::tables::scenario::dsl as scenario_dsl;
         let timetable_id = self.id.unwrap();
@@ -183,7 +183,7 @@ impl Timetable {
     }
 
     /// Retrieve the associated scenario
-    pub async fn get_scenario_conn(&self, conn: &mut Connection) -> Result<Scenario> {
+    pub async fn get_scenario_conn(&self, conn: &mut DbConnection) -> Result<Scenario> {
         use crate::tables::scenario::dsl::*;
         let self_id = self.id.expect("Timetable should have an id");
         match scenario
@@ -198,7 +198,7 @@ impl Timetable {
     }
 
     /// Retrieve the associated scenario
-    pub async fn get_scenario(&self, db_pool: Data<ConnectionPool>) -> Result<Scenario> {
+    pub async fn get_scenario(&self, db_pool: Data<DbConnectionPool>) -> Result<Scenario> {
         let mut conn = db_pool.get().await.unwrap();
         self.get_scenario_conn(&mut conn).await
     }
@@ -206,7 +206,7 @@ impl Timetable {
 
 pub async fn get_timetable_train_schedules(
     timetable_id: i64,
-    db_pool: Data<ConnectionPool>,
+    db_pool: Data<DbConnectionPool>,
 ) -> Result<Vec<TrainSchedule>> {
     use crate::tables::train_schedule;
     let mut conn = db_pool.get().await?;
@@ -219,7 +219,7 @@ pub async fn get_timetable_train_schedules(
 
 pub async fn get_timetable_train_schedules_with_simulations(
     timetable_id: i64,
-    db_pool: Data<ConnectionPool>,
+    db_pool: Data<DbConnectionPool>,
 ) -> Result<Vec<(TrainSchedule, SimulationOutput)>> {
     let train_schedules = get_timetable_train_schedules(timetable_id, db_pool.clone()).await?;
 

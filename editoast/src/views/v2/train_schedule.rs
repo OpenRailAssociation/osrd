@@ -41,8 +41,8 @@ use crate::modelsv2::infra::Infra;
 use crate::modelsv2::timetable::Timetable;
 use crate::modelsv2::train_schedule::TrainSchedule;
 use crate::modelsv2::train_schedule::TrainScheduleChangeset;
-use crate::modelsv2::Connection;
-use crate::modelsv2::ConnectionPool;
+use crate::modelsv2::DbConnection;
+use crate::modelsv2::DbConnectionPool;
 use crate::modelsv2::Model;
 use crate::modelsv2::Retrieve;
 use crate::modelsv2::RetrieveBatch;
@@ -182,7 +182,7 @@ struct BatchDeletionRequest {
 )]
 #[post("")]
 async fn post(
-    db_pool: Data<ConnectionPool>,
+    db_pool: Data<DbConnectionPool>,
     data: Json<Vec<TrainScheduleForm>>,
 ) -> Result<Json<Vec<TrainScheduleResult>>> {
     use crate::modelsv2::CreateBatch;
@@ -206,7 +206,7 @@ async fn post(
 )]
 #[get("")]
 async fn get(
-    db_pool: Data<ConnectionPool>,
+    db_pool: Data<DbConnectionPool>,
     train_schedule_id: Path<TrainScheduleIdParam>,
 ) -> Result<Json<TrainScheduleResult>> {
     let train_schedule_id = train_schedule_id.id;
@@ -230,7 +230,7 @@ async fn get(
 )]
 #[delete("")]
 async fn delete(
-    db_pool: Data<ConnectionPool>,
+    db_pool: Data<DbConnectionPool>,
     data: Json<BatchDeletionRequest>,
 ) -> Result<HttpResponse> {
     use crate::modelsv2::DeleteBatch;
@@ -256,7 +256,7 @@ async fn delete(
 )]
 #[put("")]
 async fn put(
-    db_pool: Data<ConnectionPool>,
+    db_pool: Data<DbConnectionPool>,
     train_schedule_id: Path<TrainScheduleIdParam>,
     data: Json<TrainScheduleForm>,
 ) -> Result<Json<TrainScheduleResult>> {
@@ -312,7 +312,7 @@ enum SimulationResult {
 )]
 #[get("/simulation")]
 pub async fn simulation(
-    db_pool: Data<ConnectionPool>,
+    db_pool: Data<DbConnectionPool>,
     redis_client: Data<RedisClient>,
     core_client: Data<CoreClient>,
     train_schedule_id: Path<TrainScheduleIdParam>,
@@ -344,7 +344,7 @@ pub async fn simulation(
 
 /// Compute the simulation of a given train schedule
 async fn train_simulation(
-    db_pool: Arc<ConnectionPool>,
+    db_pool: Arc<DbConnectionPool>,
     redis_client: Arc<RedisClient>,
     core: Arc<CoreClient>,
     train_schedule: &TrainSchedule,
@@ -423,7 +423,7 @@ async fn train_simulation(
 }
 
 async fn build_simulation_request(
-    conn: &mut Connection,
+    conn: &mut DbConnection,
     infa: &Infra,
     train_schedule: &TrainSchedule,
     path_items_position: &[u64],
@@ -557,7 +557,7 @@ enum SimulationSummaryResult {
 )]
 #[get("/simulation_summary")]
 pub async fn simulation_summary(
-    db_pool: Data<ConnectionPool>,
+    db_pool: Data<DbConnectionPool>,
     redis_client: Data<RedisClient>,
     params: QsQuery<SimulationBatchParams>,
     core: Data<CoreClient>,
@@ -592,7 +592,7 @@ pub async fn simulation_summary(
 /// Associate each train id with its simulation summary response
 /// If the simulation fails, it associates the reason: pathfinding failed or running time failed
 async fn build_simulation_summary_map(
-    db_pool: Arc<ConnectionPool>,
+    db_pool: Arc<DbConnectionPool>,
     redis_client: Arc<RedisClient>,
     core_client: Arc<CoreClient>,
     train_schedule_batch: &[TrainSchedule],
@@ -647,7 +647,7 @@ pub struct InfraIdQueryParam {
 )]
 #[get("")]
 async fn get_path(
-    db_pool: Data<ConnectionPool>,
+    db_pool: Data<DbConnectionPool>,
     redis_client: Data<RedisClient>,
     core: Data<CoreClient>,
     train_schedule_id: Path<TrainScheduleIdParam>,
@@ -700,7 +700,7 @@ mod tests {
     #[rstest]
     async fn get_trainschedule(
         #[future] train_schedule_v2: TrainScheduleV2FixtureSet,
-        db_pool: Data<ConnectionPool>,
+        db_pool: Data<DbConnectionPool>,
     ) {
         let service = create_test_service().await;
         let fixture = train_schedule_v2.await;
@@ -728,7 +728,7 @@ mod tests {
     #[rstest]
     async fn train_schedule_post(
         #[future] timetable_v2: TestFixture<Timetable>,
-        db_pool: Data<ConnectionPool>,
+        db_pool: Data<DbConnectionPool>,
     ) {
         let service = create_test_service().await;
 
@@ -808,7 +808,7 @@ mod tests {
     async fn train_schedule_simulation(
         #[future] timetable_v2: TestFixture<Timetable>,
         #[future] small_infra: TestFixture<Infra>,
-        db_pool: Data<ConnectionPool>,
+        db_pool: Data<DbConnectionPool>,
     ) {
         let timetable = timetable_v2.await;
         let infra = small_infra.await;
@@ -854,7 +854,7 @@ mod tests {
     async fn train_schedule_simulation_summary(
         #[future] timetable_v2: TestFixture<Timetable>,
         #[future] small_infra: TestFixture<Infra>,
-        db_pool: Data<ConnectionPool>,
+        db_pool: Data<DbConnectionPool>,
     ) {
         let timetable = timetable_v2.await;
         let infra = small_infra.await;

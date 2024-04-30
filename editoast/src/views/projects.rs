@@ -22,8 +22,8 @@ use crate::error::Result;
 use crate::models::List;
 use crate::modelsv2::projects::Tags;
 use crate::modelsv2::Changeset;
-use crate::modelsv2::ConnectionPool;
 use crate::modelsv2::Create;
+use crate::modelsv2::DbConnectionPool;
 use crate::modelsv2::Document;
 use crate::modelsv2::Model;
 use crate::modelsv2::Ordering;
@@ -109,7 +109,7 @@ impl From<ProjectCreateForm> for Changeset<Project> {
     }
 }
 
-async fn check_image_content(db_pool: Data<ConnectionPool>, document_key: i64) -> Result<()> {
+async fn check_image_content(db_pool: Data<DbConnectionPool>, document_key: i64) -> Result<()> {
     let conn = &mut db_pool.get().await?;
     let doc = Document::retrieve_or_fail(conn, document_key, || ProjectError::ImageNotFound {
         document_key,
@@ -151,7 +151,7 @@ impl ProjectWithStudies {
 )]
 #[post("")]
 async fn create(
-    db_pool: Data<ConnectionPool>,
+    db_pool: Data<DbConnectionPool>,
     data: Json<ProjectCreateForm>,
 ) -> Result<Json<ProjectWithStudies>> {
     let project_create_form = data.into_inner();
@@ -178,7 +178,7 @@ decl_paginated_response!(PaginatedResponseOfProjectWithStudies, ProjectWithStudi
 )]
 #[get("")]
 async fn list(
-    db_pool: Data<ConnectionPool>,
+    db_pool: Data<DbConnectionPool>,
     pagination_params: Query<PaginationQueryParam>,
     params: Query<QueryParams>,
 ) -> Result<Json<PaginatedResponse<ProjectWithStudies>>> {
@@ -221,7 +221,7 @@ pub struct ProjectIdParam {
 )]
 #[get("")]
 async fn get(
-    db_pool: Data<ConnectionPool>,
+    db_pool: Data<DbConnectionPool>,
     project: Path<i64>,
 ) -> Result<Json<ProjectWithStudies>> {
     let project_id = project.into_inner();
@@ -246,7 +246,7 @@ async fn get(
     )
 )]
 #[delete("")]
-async fn delete(project: Path<i64>, db_pool: Data<ConnectionPool>) -> Result<HttpResponse> {
+async fn delete(project: Path<i64>, db_pool: Data<DbConnectionPool>) -> Result<HttpResponse> {
     let project_id = project.into_inner();
     let conn = &mut db_pool.get().await?;
     if Project::delete_and_prune_document(conn, project_id).await? {
@@ -304,7 +304,7 @@ impl From<ProjectPatchForm> for Changeset<Project> {
 async fn patch(
     data: Json<ProjectPatchForm>,
     project_id: Path<i64>,
-    db_pool: Data<ConnectionPool>,
+    db_pool: Data<DbConnectionPool>,
 ) -> Result<Json<ProjectWithStudies>> {
     let data = data.into_inner();
     let project_id = project_id.into_inner();
@@ -346,7 +346,7 @@ pub mod test {
     }
 
     #[rstest]
-    async fn project_create_delete(db_pool: Data<ConnectionPool>) {
+    async fn project_create_delete(db_pool: Data<DbConnectionPool>) {
         let app = create_test_service().await;
         let req = TestRequest::post()
             .uri("/projects")

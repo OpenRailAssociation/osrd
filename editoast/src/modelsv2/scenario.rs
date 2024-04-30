@@ -13,7 +13,7 @@ use utoipa::ToSchema;
 
 use crate::error::Result;
 use crate::models::List;
-use crate::modelsv2::Connection;
+use crate::modelsv2::DbConnection;
 use crate::modelsv2::Model;
 use crate::modelsv2::Ordering;
 use crate::modelsv2::Row;
@@ -73,7 +73,7 @@ impl From<ScenarioWithDetailsRow> for ScenarioWithDetails {
 }
 
 impl ScenarioWithDetails {
-    pub async fn from_scenario(scenario: Scenario, conn: &mut Connection) -> Result<Self> {
+    pub async fn from_scenario(scenario: Scenario, conn: &mut DbConnection) -> Result<Self> {
         Ok(Self {
             infra_name: scenario.infra_name(conn).await?,
             trains_count: scenario.trains_count(conn).await?,
@@ -83,7 +83,7 @@ impl ScenarioWithDetails {
 }
 
 impl Scenario {
-    pub async fn infra_name(&self, conn: &mut Connection) -> Result<String> {
+    pub async fn infra_name(&self, conn: &mut DbConnection) -> Result<String> {
         use crate::tables::infra::dsl as infra_dsl;
         let infra_name = infra_dsl::infra
             .filter(infra_dsl::id.eq(self.infra_id))
@@ -93,7 +93,7 @@ impl Scenario {
         Ok(infra_name)
     }
 
-    pub async fn trains_count(&self, conn: &mut Connection) -> Result<i64> {
+    pub async fn trains_count(&self, conn: &mut DbConnection) -> Result<i64> {
         use crate::tables::train_schedule_v2::dsl::*;
         let trains_count = train_schedule_v2
             .filter(timetable_id.eq(self.timetable_id))
@@ -108,7 +108,7 @@ impl Scenario {
 impl List<(i64, Ordering)> for ScenarioWithDetails {
     /// List all scenarios with the number of trains and infra name.
     async fn list_conn(
-        conn: &mut Connection,
+        conn: &mut DbConnection,
         page: i64,
         page_size: i64,
         params: (i64, Ordering),
@@ -154,7 +154,7 @@ impl List<(i64, Ordering)> for Scenario {
     /// List all scenarios with the number of trains.
     /// This functions takes a study_id to filter scenarios.
     async fn list_conn(
-        conn: &mut Connection,
+        conn: &mut DbConnection,
         page: i64,
         page_size: i64,
         params: (i64, Ordering),

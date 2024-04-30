@@ -33,7 +33,7 @@ impl ToTokens for RetrieveBatchImpl {
                     I: std::iter::IntoIterator<Item = #ty> + Send + 'async_trait,
                     C: Default + std::iter::Extend<#model> + Send,
                 >(
-                    conn: &mut crate::modelsv2::Connection,
+                    conn: &mut crate::modelsv2::DbConnection,
                     ids: I,
                 ) -> crate::error::Result<C> {
                     use crate::modelsv2::Model;
@@ -66,7 +66,7 @@ impl ToTokens for RetrieveBatchImpl {
                     I: std::iter::IntoIterator<Item = #ty> + Send + 'async_trait,
                     C: Default + std::iter::Extend<(#ty, #model)> + Send,
                 >(
-                    conn: &mut crate::modelsv2::Connection,
+                    conn: &mut crate::modelsv2::DbConnection,
                     ids: I,
                 ) -> crate::error::Result<C> {
                     use crate::models::Identifiable;

@@ -28,9 +28,9 @@ use crate::modelsv2::get_geometry_layer_table;
 use crate::modelsv2::get_table;
 use crate::modelsv2::prelude::*;
 use crate::modelsv2::railjson::persist_railjson;
-use crate::modelsv2::Connection;
-use crate::modelsv2::ConnectionPool;
 use crate::modelsv2::Create;
+use crate::modelsv2::DbConnection;
+use crate::modelsv2::DbConnectionPool;
 use crate::tables::infra::dsl;
 use crate::views::pagination::Paginate;
 use crate::views::pagination::PaginatedResponse;
@@ -63,7 +63,11 @@ pub struct Infra {
 }
 
 impl InfraChangeset {
-    pub async fn persist(self, railjson: RailJson, db_pool: Data<ConnectionPool>) -> Result<Infra> {
+    pub async fn persist(
+        self,
+        railjson: RailJson,
+        db_pool: Data<DbConnectionPool>,
+    ) -> Result<Infra> {
         let conn = &mut db_pool.get().await?;
         let infra = self.create(conn).await?;
         // TODO: lock infra for update
@@ -84,7 +88,7 @@ impl InfraChangeset {
 }
 
 impl Infra {
-    pub async fn all(conn: &mut Connection) -> Vec<Infra> {
+    pub async fn all(conn: &mut DbConnection) -> Vec<Infra> {
         dsl::infra
             .load(conn)
             .await
@@ -94,7 +98,7 @@ impl Infra {
             .collect()
     }
 
-    pub async fn bump_version(&mut self, conn: &mut Connection) -> Result<()> {
+    pub async fn bump_version(&mut self, conn: &mut DbConnection) -> Result<()> {
         let new_version = self
             .version
             .parse::<u32>()
@@ -104,14 +108,14 @@ impl Infra {
         self.save(conn).await
     }
 
-    pub async fn bump_generated_version(&mut self, conn: &mut Connection) -> Result<()> {
+    pub async fn bump_generated_version(&mut self, conn: &mut DbConnection) -> Result<()> {
         self.generated_version = Some(self.version.clone());
         self.save(conn).await
     }
 
     pub async fn clone(
         &self,
-        db_pool: Data<ConnectionPool>,
+        db_pool: Data<DbConnectionPool>,
         new_name: Option<String>,
     ) -> Result<Infra> {
         // Duplicate infra shell
@@ -181,7 +185,7 @@ impl Infra {
     /// If refreshed you need to call `invalidate_after_refresh` to invalidate layer cache
     pub async fn refresh(
         &mut self,
-        db_pool: Data<ConnectionPool>,
+        db_pool: Data<DbConnectionPool>,
         force: bool,
         infra_cache: &InfraCache,
     ) -> Result<bool> {
@@ -206,7 +210,7 @@ impl Infra {
 
     /// Clear generated data of the infra
     /// This function will update `generated_version` acordingly.
-    pub async fn clear(&mut self, conn: &mut Connection) -> Result<bool> {
+    pub async fn clear(&mut self, conn: &mut DbConnection) -> Result<bool> {
         // TODO: lock self for update
         generated_data::clear_all(conn, self.id).await?;
         self.generated_version = None;
@@ -218,7 +222,7 @@ impl Infra {
 #[async_trait]
 impl List<NoParams> for Infra {
     async fn list_conn(
-        conn: &mut Connection,
+        conn: &mut DbConnection,
         page: i64,
         page_size: i64,
         _: NoParams,
@@ -275,11 +279,11 @@ pub mod tests {
     use crate::modelsv2::prelude::*;
     use crate::modelsv2::railjson::find_all_schemas;
     use crate::modelsv2::railjson::RailJsonError;
-    use crate::modelsv2::Connection;
+    use crate::modelsv2::DbConnection;
 
     pub async fn test_infra_transaction<'a, F>(fn_test: F)
     where
-        F: for<'r> FnOnce(&'r mut Connection, Infra) -> ScopedBoxFuture<'a, 'r, ()> + Send + 'a,
+        F: for<'r> FnOnce(&'r mut DbConnection, Infra) -> ScopedBoxFuture<'a, 'r, ()> + Send + 'a,
     {
         let pool = db_pool();
         let mut conn = pool.get().await.unwrap();

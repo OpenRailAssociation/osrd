@@ -9,21 +9,21 @@ use openssl::ssl::{SslConnector, SslMethod, SslVerifyMode};
 use tracing::error;
 use url::Url;
 
-pub type ConnectionConfig = AsyncDieselConnectionManager<AsyncPgConnection>;
-pub type ConnectionPool = Pool<Connection>;
-pub type Connection = AsyncPgConnection;
+pub type DbConnection = AsyncPgConnection;
+pub type DbConnectionPool = Pool<DbConnection>;
+pub type DbConnectionConfig = AsyncDieselConnectionManager<AsyncPgConnection>;
 
-pub fn create_connection_pool(url: Url, max_size: usize) -> ConnectionPool {
+pub fn create_connection_pool(url: Url, max_size: usize) -> DbConnectionPool {
     let mut manager_config = ManagerConfig::default();
     manager_config.custom_setup = Box::new(establish_connection);
-    let manager = ConnectionConfig::new_with_config(url, manager_config);
+    let manager = DbConnectionConfig::new_with_config(url, manager_config);
     Pool::builder(manager)
         .max_size(max_size)
         .build()
         .expect("Failed to create pool.")
 }
 
-fn establish_connection(config: &str) -> BoxFuture<ConnectionResult<Connection>> {
+fn establish_connection(config: &str) -> BoxFuture<ConnectionResult<DbConnection>> {
     let fut = async {
         let mut connector_builder = SslConnector::builder(SslMethod::tls()).unwrap();
         connector_builder.set_verify(SslVerifyMode::NONE);
@@ -38,7 +38,7 @@ fn establish_connection(config: &str) -> BoxFuture<ConnectionResult<Connection>>
                 error!("connection error: {}", e);
             }
         });
-        Connection::try_from(client).await
+        DbConnection::try_from(client).await
     };
     fut.boxed()
 }

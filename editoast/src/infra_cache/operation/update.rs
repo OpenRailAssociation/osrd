@@ -17,7 +17,7 @@ use super::OperationError;
 use crate::error::Result;
 use crate::infra_cache::operation::RailjsonObject;
 use crate::modelsv2::get_table;
-use crate::modelsv2::Connection;
+use crate::modelsv2::DbConnection;
 use editoast_schemas::primitives::OSRDIdentified;
 use editoast_schemas::primitives::ObjectType;
 
@@ -30,7 +30,7 @@ pub struct UpdateOperation {
 }
 
 impl UpdateOperation {
-    pub async fn apply(&self, infra_id: i64, conn: &mut Connection) -> Result<RailjsonObject> {
+    pub async fn apply(&self, infra_id: i64, conn: &mut DbConnection) -> Result<RailjsonObject> {
         // Load object
 
         let mut obj: DataObject = match sql_query(format!(

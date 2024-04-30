@@ -16,8 +16,8 @@ use utoipa::IntoParams;
 use crate::error::Result;
 use crate::modelsv2::electrical_profiles::ElectricalProfileSet;
 use crate::modelsv2::electrical_profiles::LightElectricalProfileSet;
-use crate::modelsv2::ConnectionPool;
 use crate::modelsv2::Create;
+use crate::modelsv2::DbConnectionPool;
 use crate::modelsv2::DeleteStatic;
 use crate::modelsv2::Model;
 use crate::modelsv2::Retrieve;
@@ -57,7 +57,7 @@ pub struct ElectricalProfileSetId {
     )
 )]
 #[get("")]
-async fn list(db_pool: Data<ConnectionPool>) -> Result<Json<Vec<LightElectricalProfileSet>>> {
+async fn list(db_pool: Data<DbConnectionPool>) -> Result<Json<Vec<LightElectricalProfileSet>>> {
     let mut conn = db_pool.get().await?;
     Ok(Json(ElectricalProfileSet::list_light(&mut conn).await?))
 }
@@ -73,7 +73,7 @@ async fn list(db_pool: Data<ConnectionPool>) -> Result<Json<Vec<LightElectricalP
 )]
 #[get("")]
 async fn get(
-    db_pool: Data<ConnectionPool>,
+    db_pool: Data<DbConnectionPool>,
     electrical_profile_set: Path<i64>,
 ) -> Result<Json<ElectricalProfileSetData>> {
     let electrical_profile_set_id = electrical_profile_set.into_inner();
@@ -105,7 +105,7 @@ async fn get(
 )]
 #[get("")]
 async fn get_level_order(
-    db_pool: Data<ConnectionPool>,
+    db_pool: Data<DbConnectionPool>,
     electrical_profile_set: Path<i64>,
 ) -> Result<Json<HashMap<String, LevelValues>>> {
     let electrical_profile_set_id = electrical_profile_set.into_inner();
@@ -130,7 +130,7 @@ async fn get_level_order(
 )]
 #[delete("")]
 async fn delete(
-    db_pool: Data<ConnectionPool>,
+    db_pool: Data<DbConnectionPool>,
     electrical_profile_set: Path<i64>,
 ) -> Result<HttpResponse> {
     let electrical_profile_set_id = electrical_profile_set.into_inner();
@@ -159,7 +159,7 @@ struct ElectricalProfileQueryArgs {
 )]
 #[post("")]
 async fn post_electrical_profile(
-    db_pool: Data<ConnectionPool>,
+    db_pool: Data<DbConnectionPool>,
     ep_set_name: Query<ElectricalProfileQueryArgs>,
     data: Json<ElectricalProfileSetData>,
 ) -> Result<Json<ElectricalProfileSet>> {
@@ -306,7 +306,7 @@ mod tests {
     }
 
     #[rstest]
-    async fn test_post(db_pool: Data<ConnectionPool>) {
+    async fn test_post(db_pool: Data<DbConnectionPool>) {
         let app = create_test_service().await;
         let ep_set = ElectricalProfileSetData {
             levels: vec![ElectricalProfile {

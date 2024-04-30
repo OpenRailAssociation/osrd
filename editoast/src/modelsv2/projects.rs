@@ -14,8 +14,8 @@ use utoipa::ToSchema;
 use crate::error::Result;
 use crate::models::List;
 use crate::modelsv2::Changeset;
-use crate::modelsv2::Connection;
-use crate::modelsv2::ConnectionPool;
+use crate::modelsv2::DbConnection;
+use crate::modelsv2::DbConnectionPool;
 use crate::modelsv2::DeleteStatic;
 use crate::modelsv2::Document;
 use crate::modelsv2::Model;
@@ -97,13 +97,13 @@ impl Ordering {
 
 impl Project {
     /// This function takes a filled project and update to now the last_modification field
-    pub async fn update_last_modified(&mut self, conn: &mut Connection) -> Result<()> {
+    pub async fn update_last_modified(&mut self, conn: &mut DbConnection) -> Result<()> {
         self.last_modification = Utc::now().naive_utc();
         self.save(conn).await?;
         Ok(())
     }
 
-    pub async fn studies_count(&self, db_pool: Data<ConnectionPool>) -> Result<i64> {
+    pub async fn studies_count(&self, db_pool: Data<DbConnectionPool>) -> Result<i64> {
         use crate::tables::study::dsl as study_dsl;
         let conn = &mut db_pool.get().await?;
         let studies_count = study_dsl::study
@@ -115,7 +115,7 @@ impl Project {
     }
 
     pub async fn update_and_prune_document(
-        conn: &mut Connection,
+        conn: &mut DbConnection,
         project_changeset: Changeset<Self>,
         project_id: i64,
     ) -> Result<Project> {
@@ -137,7 +137,10 @@ impl Project {
         Ok(project)
     }
 
-    pub async fn delete_and_prune_document(conn: &mut Connection, project_id: i64) -> Result<bool> {
+    pub async fn delete_and_prune_document(
+        conn: &mut DbConnection,
+        project_id: i64,
+    ) -> Result<bool> {
         let project_obj =
             Project::retrieve_or_fail(conn, project_id, || ProjectError::NotFound { project_id })
                 .await?;
@@ -155,7 +158,7 @@ impl Project {
 #[async_trait]
 impl List<Ordering> for Project {
     async fn list_conn(
-        conn: &mut Connection,
+        conn: &mut DbConnection,
         page: i64,
         page_size: i64,
         ordering: Ordering,
@@ -199,7 +202,7 @@ pub mod test {
     #[rstest]
     async fn create_delete_project(
         #[future] project: TestFixture<Project>,
-        db_pool: Data<ConnectionPool>,
+        db_pool: Data<DbConnectionPool>,
     ) {
         let project = project.await;
         let conn = &mut db_pool.get().await.unwrap();
@@ -210,7 +213,7 @@ pub mod test {
     }
 
     #[rstest]
-    async fn get_project(#[future] project: TestFixture<Project>, db_pool: Data<ConnectionPool>) {
+    async fn get_project(#[future] project: TestFixture<Project>, db_pool: Data<DbConnectionPool>) {
         let fixture_project = &project.await.model;
         let conn = &mut db_pool.get().await.unwrap();
 
@@ -228,7 +231,10 @@ pub mod test {
     }
 
     #[rstest]
-    async fn sort_project(#[future] project: TestFixture<Project>, db_pool: Data<ConnectionPool>) {
+    async fn sort_project(
+        #[future] project: TestFixture<Project>,
+        db_pool: Data<DbConnectionPool>,
+    ) {
         let project = project.await;
         let project_2 = project
             .model
@@ -253,7 +259,7 @@ pub mod test {
     #[rstest]
     async fn update_project(
         #[future] project: TestFixture<Project>,
-        db_pool: Data<ConnectionPool>,
+        db_pool: Data<DbConnectionPool>,
     ) {
         let project_fixture = project.await;
         let conn = &mut db_pool.get().await.unwrap();

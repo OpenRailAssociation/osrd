@@ -13,7 +13,7 @@ use crate::diesel::ExpressionMethods;
 use crate::error::Result;
 use crate::infra_cache::operation::CacheOperation;
 use crate::infra_cache::InfraCache;
-use crate::modelsv2::Connection;
+use crate::modelsv2::DbConnection;
 use crate::tables::infra_layer_electrification::dsl;
 use editoast_schemas::primitives::ObjectType;
 
@@ -25,7 +25,11 @@ impl GeneratedData for ElectrificationLayer {
         "infra_layer_electrification"
     }
 
-    async fn generate(conn: &mut Connection, infra: i64, _infra_cache: &InfraCache) -> Result<()> {
+    async fn generate(
+        conn: &mut DbConnection,
+        infra: i64,
+        _infra_cache: &InfraCache,
+    ) -> Result<()> {
         sql_query(include_str!("sql/generate_electrification_layer.sql"))
             .bind::<BigInt, _>(infra)
             .execute(conn)
@@ -34,7 +38,7 @@ impl GeneratedData for ElectrificationLayer {
     }
 
     async fn update(
-        conn: &mut Connection,
+        conn: &mut DbConnection,
         infra: i64,
         operations: &[CacheOperation],
         infra_cache: &InfraCache,

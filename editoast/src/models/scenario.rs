@@ -24,8 +24,8 @@ use crate::models::train_schedule::LightTrainSchedule;
 use crate::models::Delete;
 use crate::models::TextArray;
 use crate::modelsv2::projects::Ordering;
-use crate::modelsv2::Connection;
-use crate::modelsv2::ConnectionPool;
+use crate::modelsv2::DbConnection;
+use crate::modelsv2::DbConnectionPool;
 use crate::tables::scenario;
 use crate::views::pagination::Paginate;
 use crate::views::pagination::PaginatedResponse;
@@ -117,12 +117,15 @@ pub struct ScenarioWithCountTrains {
 }
 
 impl Scenario {
-    pub async fn with_details(self, db_pool: Data<ConnectionPool>) -> Result<ScenarioWithDetails> {
+    pub async fn with_details(
+        self,
+        db_pool: Data<DbConnectionPool>,
+    ) -> Result<ScenarioWithDetails> {
         let mut conn = db_pool.get().await?;
         self.with_details_conn(&mut conn).await
     }
 
-    pub async fn with_details_conn(self, conn: &mut Connection) -> Result<ScenarioWithDetails> {
+    pub async fn with_details_conn(self, conn: &mut DbConnection) -> Result<ScenarioWithDetails> {
         use crate::tables::electrical_profile_set::dsl as elec_dsl;
         use crate::tables::infra::dsl as infra_dsl;
         use crate::tables::train_schedule::dsl::*;
@@ -166,7 +169,7 @@ impl Scenario {
 /// When we delete a scenario, the associated timetable is deleted too.
 #[async_trait]
 impl Delete for Scenario {
-    async fn delete_conn(conn: &mut Connection, scenario_id: i64) -> Result<bool> {
+    async fn delete_conn(conn: &mut DbConnection, scenario_id: i64) -> Result<bool> {
         use crate::tables::scenario::dsl as scenario_dsl;
         use crate::tables::timetable::dsl as timetable_dsl;
 
@@ -195,7 +198,7 @@ impl List<(i64, Ordering)> for ScenarioWithCountTrains {
     /// List all scenarios with the number of trains.
     /// This functions takes a study_id to filter scenarios.
     async fn list_conn(
-        conn: &mut Connection,
+        conn: &mut DbConnection,
         page: i64,
         page_size: i64,
         params: (i64, Ordering),
@@ -233,7 +236,7 @@ pub mod test {
     use crate::modelsv2::Ordering;
 
     #[rstest]
-    async fn create_delete_scenario(db_pool: Data<ConnectionPool>) {
+    async fn create_delete_scenario(db_pool: Data<DbConnectionPool>) {
         let ScenarioFixtureSet { scenario, .. } = scenario_fixture_set().await;
 
         // Delete the scenario
@@ -248,7 +251,7 @@ pub mod test {
     }
 
     #[rstest]
-    async fn get_study(db_pool: Data<ConnectionPool>) {
+    async fn get_study(db_pool: Data<DbConnectionPool>) {
         let ScenarioFixtureSet { study, .. } = scenario_fixture_set().await;
 
         // Get a scenario
@@ -266,7 +269,7 @@ pub mod test {
     }
 
     #[rstest]
-    async fn sort_scenario(db_pool: Data<ConnectionPool>) {
+    async fn sort_scenario(db_pool: Data<DbConnectionPool>) {
         let ScenarioFixtureSet {
             scenario,
             study,

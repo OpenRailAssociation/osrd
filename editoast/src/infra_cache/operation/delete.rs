@@ -8,7 +8,7 @@ use serde::Serialize;
 use super::OperationError;
 use crate::error::Result;
 use crate::modelsv2::get_table;
-use crate::modelsv2::Connection;
+use crate::modelsv2::DbConnection;
 use editoast_schemas::primitives::ObjectRef;
 use editoast_schemas::primitives::ObjectType;
 
@@ -21,7 +21,7 @@ pub struct DeleteOperation {
 }
 
 impl DeleteOperation {
-    pub async fn apply(&self, infra_id: i64, conn: &mut Connection) -> Result<()> {
+    pub async fn apply(&self, infra_id: i64, conn: &mut DbConnection) -> Result<()> {
         match sql_query(format!(
             "DELETE FROM {} WHERE obj_id = $1 AND infra_id = $2",
             get_table(&self.obj_type)

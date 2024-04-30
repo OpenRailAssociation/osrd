@@ -13,7 +13,7 @@ use crate::diesel::ExpressionMethods;
 use crate::error::Result;
 use crate::infra_cache::operation::CacheOperation;
 use crate::infra_cache::InfraCache;
-use crate::modelsv2::Connection;
+use crate::modelsv2::DbConnection;
 use crate::tables::infra_layer_buffer_stop::dsl;
 use editoast_schemas::primitives::ObjectType;
 
@@ -25,7 +25,7 @@ impl GeneratedData for BufferStopLayer {
         "infra_layer_buffer_stop"
     }
 
-    async fn generate(conn: &mut Connection, infra: i64, _cache: &InfraCache) -> Result<()> {
+    async fn generate(conn: &mut DbConnection, infra: i64, _cache: &InfraCache) -> Result<()> {
         let _res = sql_query(include_str!("sql/generate_buffer_stop_layer.sql"))
             .bind::<BigInt, _>(infra)
             .execute(conn)
@@ -34,7 +34,7 @@ impl GeneratedData for BufferStopLayer {
     }
 
     async fn update(
-        conn: &mut Connection,
+        conn: &mut DbConnection,
         infra: i64,
         operations: &[CacheOperation],
         infra_cache: &InfraCache,

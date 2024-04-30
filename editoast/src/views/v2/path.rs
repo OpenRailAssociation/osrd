@@ -10,7 +10,7 @@ use thiserror::Error;
 use crate::core::v2::pathfinding::TrackRange;
 use crate::error::Result;
 use crate::modelsv2::prelude::*;
-use crate::modelsv2::Connection;
+use crate::modelsv2::DbConnection;
 use crate::modelsv2::Infra;
 
 /// Expiration time for the cache of the pathfinding and path properties.
@@ -36,7 +36,7 @@ pub enum PathfindingError {
     InfraNotFound { infra_id: i64 },
 }
 
-async fn retrieve_infra_version(conn: &mut Connection, infra_id: i64) -> Result<String> {
+async fn retrieve_infra_version(conn: &mut DbConnection, infra_id: i64) -> Result<String> {
     let infra = Infra::retrieve_or_fail(conn, infra_id, || PathfindingError::InfraNotFound {
         infra_id,
     })

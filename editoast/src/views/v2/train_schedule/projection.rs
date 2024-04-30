@@ -42,7 +42,7 @@ use crate::views::v2::train_schedule::ReportTrain;
 use crate::views::v2::train_schedule::SignalSighting;
 use crate::views::v2::train_schedule::ZoneUpdate;
 
-use crate::modelsv2::ConnectionPool;
+use crate::modelsv2::DbConnectionPool;
 use crate::RedisClient;
 use crate::RollingStockModel;
 
@@ -122,7 +122,7 @@ struct CachedProjectPathTrainResult {
 )]
 #[post("/project_path")]
 async fn project_path(
-    db_pool: Data<ConnectionPool>,
+    db_pool: Data<DbConnectionPool>,
     redis_client: Data<RedisClient>,
     core_client: Data<CoreClient>,
     params: QsQuery<SimulationBatchParams>,
