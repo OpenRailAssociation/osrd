@@ -63,10 +63,7 @@ export default function generateTrainSchedulesPayloads(
   return Object.values(trainSchedulesByPathID);
 }
 
-export function generateV2TrainSchedulesPayloads(
-  trains: TrainScheduleV2[],
-  timetableID: number
-): TrainScheduleForm[] {
+export function generateV2TrainSchedulesPayloads(trains: TrainScheduleV2[]): TrainScheduleBase[] {
   return trains.map((train) => {
     const { path, schedule } = train.steps.reduce(
       (acc, step, index) => {
@@ -93,7 +90,6 @@ export function generateV2TrainSchedulesPayloads(
       }
     );
     return {
-      timetable_id: timetableID,
       path,
       train_name: train.trainNumber,
       rolling_stock_name: train.rollingStock || '',
