@@ -23,6 +23,7 @@ pub fn model(input: &DeriveInput) -> Result<TokenStream> {
 
     let model_impl = config.model_impl();
     let model_fields_impl_block = config.model_fields_impl_block();
+    let model_field_api_impl_blocks = config.model_field_api_impl_blocks();
     let row_decl = config.row_decl();
     let changeset_decl = config.changeset_decl();
 
@@ -50,6 +51,7 @@ pub fn model(input: &DeriveInput) -> Result<TokenStream> {
     Ok(quote! {
         #model_impl
         #model_fields_impl_block
+        #(#model_field_api_impl_blocks)*
         #row_decl
         #changeset_decl
 

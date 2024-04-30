@@ -112,6 +112,10 @@ impl ModelConfig {
 }
 
 impl ModelField {
+    pub(crate) fn has_transformation(&self) -> bool {
+        self.transform.is_some()
+    }
+
     #[allow(clippy::wrong_self_convention)]
     pub(crate) fn into_transformed(&self, expr: syn::Expr) -> syn::Expr {
         match self.transform {
