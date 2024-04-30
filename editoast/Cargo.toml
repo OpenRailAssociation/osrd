@@ -42,7 +42,7 @@ chrono.workspace = true
 clap = { version = "4.5.4", features = ["derive", "env"] }
 colored = "2.1.0"
 derivative.workspace = true
-diesel = { version = "2.1.5", features = [
+diesel = { version = "2.1.6", features = [
   "chrono",
   "postgres",
   "serde_json",
