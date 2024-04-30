@@ -21,6 +21,7 @@ use super::SimulationBatchParams;
 use super::TrainScheduleError;
 use crate::client::get_app_version;
 use crate::core::v2::pathfinding::PathfindingResult;
+use crate::core::v2::pathfinding::PathfindingResultSuccess;
 use crate::core::v2::pathfinding::TrackRange;
 use crate::core::v2::signal_projection::SignalUpdate;
 use crate::core::v2::signal_projection::SignalUpdatesRequest;
@@ -174,10 +175,10 @@ async fn project_path(
                 .await?;
 
         let track_ranges = match pathfinding_result {
-            PathfindingResult::Success {
+            PathfindingResult::Success(PathfindingResultSuccess {
                 track_section_ranges,
                 ..
-            } => track_section_ranges,
+            }) => track_section_ranges,
             _ => continue,
         };
 

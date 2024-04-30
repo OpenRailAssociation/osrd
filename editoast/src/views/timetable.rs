@@ -11,7 +11,7 @@ use thiserror::Error;
 use utoipa::ToSchema;
 
 use crate::core::conflicts::ConflicDetectionRequest;
-use crate::core::conflicts::TrainRequirement;
+use crate::core::conflicts::TrainRequirements;
 use crate::core::v2::conflict_detection::ConflictType;
 use crate::core::AsCoreRequest;
 use crate::core::CoreClient;
@@ -183,7 +183,7 @@ async fn get_conflicts(
             })
             .collect();
 
-        trains_requirements.push(TrainRequirement {
+        trains_requirements.push(TrainRequirements {
             train_id: schedule.id.expect("TrainSchedule should have an id"),
             spacing_requirements,
             routing_requirements,

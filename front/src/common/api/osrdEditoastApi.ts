@@ -866,6 +866,18 @@ const injectedRtkApi = api
         }),
         providesTags: ['timetablev2'],
       }),
+      postV2TimetableByIdStdcm: build.mutation<
+        PostV2TimetableByIdStdcmApiResponse,
+        PostV2TimetableByIdStdcmApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/v2/timetable/${queryArg.id}/stdcm/`,
+          method: 'POST',
+          body: queryArg.body,
+          params: { infra: queryArg.infra },
+        }),
+        invalidatesTags: ['stdcm'],
+      }),
       postV2TimetableByIdTrainSchedule: build.mutation<
         PostV2TimetableByIdTrainScheduleApiResponse,
         PostV2TimetableByIdTrainScheduleApiArg
@@ -1699,6 +1711,46 @@ export type GetV2TimetableByIdConflictsApiArg = {
   /** A timetable ID */
   id: number;
   infraId: number;
+};
+export type PostV2TimetableByIdStdcmApiResponse =
+  /** status 201 The simulation result */
+  | {
+      departure_time: string;
+      path: PathfindingResultSuccess;
+      simulation: SimulationResponse;
+      status: 'success';
+    }
+  | {
+      status: 'path_not_found';
+    };
+export type PostV2TimetableByIdStdcmApiArg = {
+  /** The infra id */
+  infra: number;
+  /** timetable_id */
+  id: number;
+  body: {
+    comfort: Comfort;
+    margin?: MarginValue | null;
+    /** By how long we can shift the departure time in milliseconds */
+    maximum_departure_delay?: number;
+    /** Specifies how long the total run time can be in milliseconds */
+    maximum_run_time?: number;
+    rolling_stock_id: number;
+    /** Train categories for speed limits */
+    speed_limit_tags?: string | null;
+    start_time: string;
+    steps: PathfindingItem[];
+    /** Margin after the train passage in milliseconds
+        
+        Enforces that the path used by the train should be free and
+        available at least that many milliseconds after its passage. */
+    time_gap_after?: number;
+    /** Margin before the train passage in seconds
+        
+        Enforces that the path used by the train should be free and
+        available at least that many milliseconds before its passage. */
+    time_gap_before?: number;
+  };
 };
 export type PostV2TimetableByIdTrainScheduleApiResponse =
   /** status 200 The created train schedules */ TrainScheduleResult[];
@@ -3227,26 +3279,28 @@ export type PathPropertiesInput = {
   /** List of track sections */
   track_section_ranges: TrackRange[];
 };
+export type PathfindingResultSuccess = {
+  /** Path description as block ids */
+  blocks: string[];
+  /** Length of the path in mm */
+  length: number;
+  /** The path offset in mm of each path item given as input of the pathfinding
+    The first value is always `0` (beginning of the path) and the last one is always equal to the `length` of the path in mm */
+  path_items_positions: number[];
+  /** Path description as route ids */
+  routes: string[];
+  /** Path description as track ranges */
+  track_section_ranges: TrackRange[];
+};
 export type TrackOffset = {
   /** Offset in mm */
   offset: number;
   track: string;
 };
 export type PathfindingResult =
-  | {
-      /** Path description as block ids */
-      blocks: string[];
-      /** Length of the path in mm */
-      length: number;
-      /** The path offset in mm of each path item given as input of the pathfinding
-    The first value is always `0` (beginning of the path) and the last one is always equal to the `length` of the path in mm */
-      path_items_positions: number[];
-      /** Path description as route ids */
-      routes: string[];
+  | (PathfindingResultSuccess & {
       status: 'success';
-      /** Path description as track ranges */
-      track_section_ranges: TrackRange[];
-    }
+    })
   | {
       length: number;
       status: 'not_found_in_blocks';
@@ -3420,6 +3474,76 @@ export type ConflictV2 = {
   /** List of train ids involved in the conflict */
   train_ids: number[];
 };
+export type ReportTrainV2 = {
+  energy_consumption: number;
+  positions: number[];
+  speeds: number[];
+  times: number[];
+};
+export type SimulationResponse =
+  | {
+      base: ReportTrainV2;
+      final_output: ReportTrainV2 & {
+        routing_requirements: RoutingRequirement[];
+        signal_sightings: SignalSighting[];
+        spacing_requirements: SpacingRequirement[];
+        zone_updates: ZoneUpdate[];
+      };
+      /** A MRSP computation result (Most Restrictive Speed Profile) */
+      mrsp: {
+        positions: number[];
+        speeds: number[];
+      };
+      power_restrictions: {
+        /** Start position in the path in mm */
+        begin: number;
+        code: string;
+        /** End position in the path in mm */
+        end: number;
+        /** Is power restriction handled during simulation */
+        handled: boolean;
+      }[];
+      provisional: ReportTrainV2;
+      status: 'success';
+    }
+  | {
+      pathfinding_result: PathfindingResult;
+      status: 'pathfinding_failed';
+    }
+  | {
+      core_error: InternalError;
+      status: 'simulation_failed';
+    };
+export type Comfort = 'STANDARD' | 'AIR_CONDITIONING' | 'HEATING';
+export type MarginValue =
+  | 'None'
+  | {
+      Percentage: number;
+    }
+  | {
+      MinPerKm: number;
+    };
+export type PathItemLocation =
+  | TrackOffset
+  | {
+      operational_point: string;
+    }
+  | {
+      /** An optional secondary code to identify a more specific location */
+      secondary_code?: string | null;
+      trigram: string;
+    }
+  | {
+      /** An optional secondary code to identify a more specific location */
+      secondary_code?: string | null;
+      /** The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point */
+      uic: number;
+    };
+export type PathfindingItem = {
+  /** The stop duration in milliseconds, None if the train does not stop. */
+  duration?: number | null;
+  location: PathItemLocation;
+};
 export type Distribution = 'STANDARD' | 'MARECO';
 export type TrainScheduleBase = {
   comfort?: 'STANDARD' | 'AIR_CONDITIONING' | 'HEATING';
@@ -3556,46 +3680,6 @@ export type TrainScheduleForm = TrainScheduleBase & {
   /** Timetable attached to the train schedule */
   timetable_id?: number | null;
 };
-export type ReportTrainV2 = {
-  energy_consumption: number;
-  positions: number[];
-  speeds: number[];
-  times: number[];
-};
-export type SimulationResponse =
-  | {
-      base: ReportTrainV2;
-      final_output: ReportTrainV2 & {
-        routing_requirements: RoutingRequirement[];
-        signal_sightings: SignalSighting[];
-        spacing_requirements: SpacingRequirement[];
-        zone_updates: ZoneUpdate[];
-      };
-      /** A MRSP computation result (Most Restrictive Speed Profile) */
-      mrsp: {
-        positions: number[];
-        speeds: number[];
-      };
-      power_restrictions: {
-        /** Start position in the path in mm */
-        begin: number;
-        code: string;
-        /** End position in the path in mm */
-        end: number;
-        /** Is power restriction handled during simulation */
-        handled: boolean;
-      }[];
-      provisional: ReportTrainV2;
-      status: 'success';
-    }
-  | {
-      pathfinding_result: PathfindingResult;
-      status: 'pathfinding_failed';
-    }
-  | {
-      core_error: InternalError;
-      status: 'simulation_failed';
-    };
 export type Version = {
   git_describe: string | null;
 };

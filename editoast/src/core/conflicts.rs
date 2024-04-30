@@ -9,11 +9,11 @@ use crate::models::SpacingRequirement;
 
 #[derive(Debug, Serialize)]
 pub struct ConflicDetectionRequest {
-    pub trains_requirements: Vec<TrainRequirement>,
+    pub trains_requirements: Vec<TrainRequirements>,
 }
 
 #[derive(Debug, Serialize)]
-pub struct TrainRequirement {
+pub struct TrainRequirements {
     pub train_id: i64,
     pub spacing_requirements: Vec<SpacingRequirement>,
     pub routing_requirements: Vec<RoutingRequirement>,
