@@ -6,6 +6,8 @@ import fr.sncf.osrd.utils.units.Duration
 import fr.sncf.osrd.utils.units.Offset
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 
 /**
  * Utility class, used to put Distances directly in json-adaptable classes. A value of type `long`
@@ -67,12 +69,29 @@ class DurationAdapter : JsonAdapter<Duration?>() {
     }
 }
 
+/**
+ * Dates can be typed as `ZonedDateTime` in json compatible types, with this adapter it will be
+ * converted to/from ISO8601 strings
+ */
+class DateAdapter : JsonAdapter<ZonedDateTime>() {
+    @FromJson
+    override fun fromJson(reader: JsonReader): ZonedDateTime {
+        return ZonedDateTime.parse(reader.nextString())
+    }
+
+    @ToJson
+    override fun toJson(writer: JsonWriter, value: ZonedDateTime?) {
+        writer.value(value?.format(DateTimeFormatter.ISO_INSTANT))
+    }
+}
+
 /** Adapter factory, to be added in moshi builder */
 class UnitAdapterFactory : JsonAdapter.Factory {
     override fun create(type: Type, annotations: Set<Annotation>, moshi: Moshi): JsonAdapter<*>? {
         if (annotations.isNotEmpty()) return null
         if (type === Duration::class.java) return DurationAdapter()
         if (type === Distance::class.java) return DistanceAdapter()
+        if (type === ZonedDateTime::class.java) return DateAdapter()
         val rawType = Types.getRawType(type)
         if (rawType == Offset::class.java && type is ParameterizedType) {
             return OffsetAdapter<Any>()

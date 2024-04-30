@@ -4,7 +4,9 @@ import com.squareup.moshi.Json
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import fr.sncf.osrd.api.api_v2.RoutingRequirement
 import fr.sncf.osrd.api.api_v2.SignalSighting
+import fr.sncf.osrd.api.api_v2.SpacingRequirement
 import fr.sncf.osrd.api.api_v2.ZoneUpdate
 import fr.sncf.osrd.sim_infra.api.Path
 import fr.sncf.osrd.utils.json.UnitAdapterFactory
@@ -43,26 +45,6 @@ class CompleteReportTrain(
     @Json(name = "spacing_requirements") val spacingRequirements: List<SpacingRequirement>,
     @Json(name = "routing_requirements") val routingRequirements: List<RoutingRequirement>
 ) : ReportTrain(positions, times, speeds, energyConsumption)
-
-class SpacingRequirement(
-    val zone: String,
-    @Json(name = "begin_time") val beginTime: TimeDelta,
-    @Json(name = "end_time") val endTime: TimeDelta,
-)
-
-class RoutingRequirement(
-    val route: String,
-    @Json(name = "begin_time") val beginTime: TimeDelta,
-    val zones: List<RoutingZoneRequirement>
-)
-
-class RoutingZoneRequirement(
-    val zone: String,
-    @Json(name = "entry_detector") val entryDetector: String,
-    @Json(name = "exit_detector") val exitDetector: String,
-    val switches: Map<String, String>,
-    @Json(name = "end_time") val endTime: TimeDelta,
-)
 
 open class ReportTrain(
     val positions: List<Offset<Path>>,

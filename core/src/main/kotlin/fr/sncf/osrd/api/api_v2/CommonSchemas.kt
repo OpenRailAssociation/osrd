@@ -30,3 +30,23 @@ class SignalSighting(
     val position: Offset<Path>,
     val state: String,
 )
+
+class RoutingRequirement(
+    val route: String,
+    @Json(name = "begin_time") val beginTime: TimeDelta,
+    val zones: List<RoutingZoneRequirement>
+)
+
+class RoutingZoneRequirement(
+    val zone: String,
+    @Json(name = "entry_detector") val entryDetector: String,
+    @Json(name = "exit_detector") val exitDetector: String,
+    val switches: Map<String, String>,
+    @Json(name = "end_time") val endTime: TimeDelta,
+)
+
+class SpacingRequirement(
+    val zone: String,
+    @Json(name = "begin_time") val beginTime: TimeDelta,
+    @Json(name = "end_time") val endTime: TimeDelta,
+)
