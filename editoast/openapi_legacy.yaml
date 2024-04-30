@@ -388,35 +388,6 @@ paths:
                   type: string
                 example: ["750V", "1500V", "2500.5V"]
 
-  /infra/{id}/voltages/:
-    get:
-      tags:
-        - infra
-      summary: List all voltages
-      parameters:
-        - in: path
-          name: id
-          schema:
-            type: integer
-          description: Infra ID
-          required: true
-        - in: query
-          name: include_rolling_stock_modes
-          schema:
-            type: boolean
-          description: include rolling stocks modes or not
-          required: false
-      responses:
-        200:
-          description: Voltages list
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: string
-                example: ["750V", "1500V", "2500.5V"]
-
   /infra/{id}/objects/{object_type}/:
     post:
       tags:

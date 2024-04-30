@@ -9355,37 +9355,6 @@ paths:
       summary: Retrieve a list of switch types
       tags:
       - infra
-  /infra/{id}/voltages/:
-    get:
-      parameters:
-      - description: Infra ID
-        in: path
-        name: id
-        required: true
-        schema:
-          type: integer
-      - description: include rolling stocks modes or not
-        in: query
-        name: include_rolling_stock_modes
-        required: false
-        schema:
-          type: boolean
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                example:
-                - 750V
-                - 1500V
-                - 2500.5V
-                items:
-                  type: string
-                type: array
-          description: Voltages list
-      summary: List all voltages
-      tags:
-      - infra
   /infra/{infra_id}/attached/{track_id}/:
     get:
       description: Retrieve all objects attached to a given track
@@ -9727,6 +9696,42 @@ paths:
         '404':
           description: The infra was not found
       summary: Unlock an infra
+      tags:
+      - infra
+  /infra/{infra_id}/voltages/:
+    get:
+      description: |-
+        Returns the set of voltages for a given infra and/or rolling_stocks modes.
+        If include_rolling_stocks_modes is true, it returns also rolling_stocks modes.
+      parameters:
+      - description: An existing infra ID
+        in: path
+        name: infra_id
+        required: true
+        schema:
+          format: int64
+          type: integer
+      - in: query
+        name: include_rolling_stock_modes
+        required: false
+        schema:
+          type: boolean
+      responses:
+        '200':
+          content:
+            application/json:
+              example:
+              - 750V
+              - 1500V
+              - 2500.5V
+              schema:
+                items:
+                  type: string
+                type: array
+          description: Voltages list
+        '404':
+          description: The infra was not found
+      summary: Returns the set of voltages for a given infra and/or rolling_stocks modes.
       tags:
       - infra
   /layers/layer/{layer_slug}/mvt/{view_slug}/:

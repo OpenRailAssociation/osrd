@@ -208,16 +208,6 @@ const injectedRtkApi = api
         query: (queryArg) => ({ url: `/infra/${queryArg.id}/switch_types/` }),
         providesTags: ['infra'],
       }),
-      getInfraByIdVoltages: build.query<
-        GetInfraByIdVoltagesApiResponse,
-        GetInfraByIdVoltagesApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/infra/${queryArg.id}/voltages/`,
-          params: { include_rolling_stock_modes: queryArg.includeRollingStockModes },
-        }),
-        providesTags: ['infra'],
-      }),
       getInfraByInfraIdAttachedAndTrackId: build.query<
         GetInfraByInfraIdAttachedAndTrackIdApiResponse,
         GetInfraByInfraIdAttachedAndTrackIdApiArg
@@ -303,6 +293,16 @@ const injectedRtkApi = api
       >({
         query: (queryArg) => ({ url: `/infra/${queryArg.infraId}/unlock/`, method: 'POST' }),
         invalidatesTags: ['infra'],
+      }),
+      getInfraByInfraIdVoltages: build.query<
+        GetInfraByInfraIdVoltagesApiResponse,
+        GetInfraByInfraIdVoltagesApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/infra/${queryArg.infraId}/voltages/`,
+          params: { include_rolling_stock_modes: queryArg.includeRollingStockModes },
+        }),
+        providesTags: ['infra'],
       }),
       getLayersLayerByLayerSlugMvtAndViewSlug: build.query<
         GetLayersLayerByLayerSlugMvtAndViewSlugApiResponse,
@@ -1139,13 +1139,6 @@ export type GetInfraByIdSwitchTypesApiArg = {
   /** infra id */
   id: number;
 };
-export type GetInfraByIdVoltagesApiResponse = /** status 200 Voltages list */ string[];
-export type GetInfraByIdVoltagesApiArg = {
-  /** Infra ID */
-  id: number;
-  /** include rolling stocks modes or not */
-  includeRollingStockModes?: boolean;
-};
 export type GetInfraByInfraIdAttachedAndTrackIdApiResponse =
   /** status 200 All objects attached to the given track (arranged by types) */ {
     [key: string]: string[];
@@ -1242,6 +1235,12 @@ export type PostInfraByInfraIdUnlockApiResponse = unknown;
 export type PostInfraByInfraIdUnlockApiArg = {
   /** An existing infra ID */
   infraId: number;
+};
+export type GetInfraByInfraIdVoltagesApiResponse = /** status 200 Voltages list */ string[];
+export type GetInfraByInfraIdVoltagesApiArg = {
+  /** An existing infra ID */
+  infraId: number;
+  includeRollingStockModes?: boolean;
 };
 export type GetLayersLayerByLayerSlugMvtAndViewSlugApiResponse =
   /** status 200 Successful Response */ {
