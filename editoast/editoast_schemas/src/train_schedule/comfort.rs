@@ -7,7 +7,9 @@ editoast_common::schemas! {
     Comfort,
 }
 
-#[derive(Debug, Default, Clone, Copy, Serialize, Deserialize, FromRepr, ToSchema, Hash)]
+#[derive(
+    Debug, Default, PartialEq, Clone, Copy, Serialize, Deserialize, FromRepr, ToSchema, Hash,
+)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Comfort {
     #[default]

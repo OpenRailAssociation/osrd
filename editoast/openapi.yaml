@@ -896,6 +896,10 @@ components:
       - $ref: '#/components/schemas/EditoastSpriteErrorsFileNotFound'
       - $ref: '#/components/schemas/EditoastSpriteErrorsUnknownSignalingSystem'
       - $ref: '#/components/schemas/EditoastStdcmErrorInfraNotFound'
+      - $ref: '#/components/schemas/EditoastStdcmErrorInfraNotFound'
+      - $ref: '#/components/schemas/EditoastStdcmErrorInvalidPathItem'
+      - $ref: '#/components/schemas/EditoastStdcmErrorRollingStockNotFound'
+      - $ref: '#/components/schemas/EditoastStdcmErrorTimetableNotFound'
       - $ref: '#/components/schemas/EditoastStudyErrorNotFound'
       - $ref: '#/components/schemas/EditoastStudyErrorStartDateAfterEndDate'
       - $ref: '#/components/schemas/EditoastTimetableErrorInfraNotFound'
@@ -2408,11 +2412,86 @@ components:
           type: string
         status:
           enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:stdcm_v2:InfraNotFound
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastStdcmErrorInvalidPathItem:
+      properties:
+        context:
+          properties:
+            index:
+              type: integer
+            path_item:
+              type: object
+          required:
+          - index
+          - path_item
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:stdcm_v2:InvalidPathItem
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastStdcmErrorRollingStockNotFound:
+      properties:
+        context:
+          properties:
+            rolling_stock_id:
+              type: integer
+          required:
+          - rolling_stock_id
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:stdcm_v2:RollingStockNotFound
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastStdcmErrorTimetableNotFound:
+      properties:
+        context:
+          properties:
+            timetable_id:
+              type: integer
+          required:
+          - timetable_id
+          type: object
+        message:
+          type: string
+        status:
+          enum:
           - 404
           type: integer
         type:
           enum:
-          - editoast:stdcm:InfraNotFound
+          - editoast:stdcm_v2:TimetableNotFound
           type: string
       required:
       - type
@@ -4715,6 +4794,19 @@ components:
       - rolling_stock_supported_signaling_systems
       - path_items
       type: object
+    PathfindingItem:
+      properties:
+        duration:
+          description: The stop duration in milliseconds, None if the train does not stop.
+          format: int64
+          minimum: 0
+          nullable: true
+          type: integer
+        location:
+          $ref: '#/components/schemas/PathItemLocation'
+      required:
+      - location
+      type: object
     PathfindingOutput:
       properties:
         detectors:
@@ -4779,52 +4871,16 @@ components:
       type: object
     PathfindingResult:
       oneOf:
-      - properties:
-          blocks:
-            description: Path description as block ids
-            items:
-              maxLength: 255
-              minLength: 1
+      - allOf:
+        - $ref: '#/components/schemas/PathfindingResultSuccess'
+        - properties:
+            status:
+              enum:
+              - success
               type: string
-            type: array
-          length:
-            description: Length of the path in mm
-            format: int64
-            minimum: 0
-            type: integer
-          path_items_positions:
-            description: |-
-              The path offset in mm of each path item given as input of the pathfinding
-              The first value is always `0` (beginning of the path) and the last one is always equal to the `length` of the path in mm
-            items:
-              format: int64
-              minimum: 0
-              type: integer
-            type: array
-          routes:
-            description: Path description as route ids
-            items:
-              maxLength: 255
-              minLength: 1
-              type: string
-            type: array
-          status:
-            enum:
-            - success
-            type: string
-          track_section_ranges:
-            description: Path description as track ranges
-            items:
-              $ref: '#/components/schemas/TrackRange'
-            type: array
-        required:
-        - blocks
-        - routes
-        - track_section_ranges
-        - length
-        - path_items_positions
-        - status
-        type: object
+          required:
+          - status
+          type: object
       - properties:
           length:
             format: int64
@@ -5083,6 +5139,49 @@ components:
         - core_error
         - status
         type: object
+    PathfindingResultSuccess:
+      description: A successful pathfinding result. This is also used for STDCM response.
+      properties:
+        blocks:
+          description: Path description as block ids
+          items:
+            maxLength: 255
+            minLength: 1
+            type: string
+          type: array
+        length:
+          description: Length of the path in mm
+          format: int64
+          minimum: 0
+          type: integer
+        path_items_positions:
+          description: |-
+            The path offset in mm of each path item given as input of the pathfinding
+            The first value is always `0` (beginning of the path) and the last one is always equal to the `length` of the path in mm
+          items:
+            format: int64
+            minimum: 0
+            type: integer
+          type: array
+        routes:
+          description: Path description as route ids
+          items:
+            maxLength: 255
+            minLength: 1
+            type: string
+          type: array
+        track_section_ranges:
+          description: Path description as track ranges
+          items:
+            $ref: '#/components/schemas/TrackRange'
+          type: array
+      required:
+      - blocks
+      - routes
+      - track_section_ranges
+      - length
+      - path_items_positions
+      type: object
     PathfindingStep:
       properties:
         duration:
@@ -6362,6 +6461,65 @@ components:
       - exit_detector
       - switches
       - end_time
+      type: object
+    STDCMRequestPayload:
+      description: An STDCM request
+      properties:
+        comfort:
+          $ref: '#/components/schemas/Comfort'
+        margin:
+          allOf:
+          - $ref: '#/components/schemas/MarginValue'
+          nullable: true
+        maximum_departure_delay:
+          default: 432000
+          description: By how long we can shift the departure time in milliseconds
+          format: int64
+          minimum: 0
+          type: integer
+        maximum_run_time:
+          default: 2592000
+          description: Specifies how long the total run time can be in milliseconds
+          format: int64
+          minimum: 0
+          type: integer
+        rolling_stock_id:
+          format: int64
+          type: integer
+        speed_limit_tags:
+          description: Train categories for speed limits
+          nullable: true
+          type: string
+        start_time:
+          format: date-time
+          type: string
+        steps:
+          items:
+            $ref: '#/components/schemas/PathfindingItem'
+          type: array
+        time_gap_after:
+          description: |-
+            Margin after the train passage in milliseconds
+
+            Enforces that the path used by the train should be free and
+            available at least that many milliseconds after its passage.
+          format: int64
+          minimum: 0
+          type: integer
+        time_gap_before:
+          description: |-
+            Margin before the train passage in seconds
+
+            Enforces that the path used by the train should be free and
+            available at least that many milliseconds before its passage.
+          format: int64
+          minimum: 0
+          type: integer
+      required:
+      - start_time
+      - steps
+      - rolling_stock_id
+      - comfort
       type: object
     Scenario:
       additionalProperties: false
@@ -11743,6 +11901,122 @@ paths:
       summary: Retrieve the list of conflict of the timetable (invalid trains are ignored)
       tags:
       - timetablev2
+  /v2/timetable/{id}/stdcm/:
+    post:
+      parameters:
+      - description: The infra id
+        in: query
+        name: infra
+        required: true
+        schema:
+          format: int64
+          type: integer
+      - description: timetable_id
+        in: path
+        name: id
+        required: true
+        schema:
+          format: int64
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              description: An STDCM request
+              properties:
+                comfort:
+                  $ref: '#/components/schemas/Comfort'
+                margin:
+                  allOf:
+                  - $ref: '#/components/schemas/MarginValue'
+                  nullable: true
+                maximum_departure_delay:
+                  default: 432000
+                  description: By how long we can shift the departure time in milliseconds
+                  format: int64
+                  minimum: 0
+                  type: integer
+                maximum_run_time:
+                  default: 2592000
+                  description: Specifies how long the total run time can be in milliseconds
+                  format: int64
+                  minimum: 0
+                  type: integer
+                rolling_stock_id:
+                  format: int64
+                  type: integer
+                speed_limit_tags:
+                  description: Train categories for speed limits
+                  nullable: true
+                  type: string
+                start_time:
+                  format: date-time
+                  type: string
+                steps:
+                  items:
+                    $ref: '#/components/schemas/PathfindingItem'
+                  type: array
+                time_gap_after:
+                  description: |-
+                    Margin after the train passage in milliseconds
+
+                    Enforces that the path used by the train should be free and
+                    available at least that many milliseconds after its passage.
+                  format: int64
+                  minimum: 0
+                  type: integer
+                time_gap_before:
+                  description: |-
+                    Margin before the train passage in seconds
+
+                    Enforces that the path used by the train should be free and
+                    available at least that many milliseconds before its passage.
+                  format: int64
+                  minimum: 0
+                  type: integer
+              required:
+              - start_time
+              - steps
+              - rolling_stock_id
+              - comfort
+              type: object
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - properties:
+                    departure_time:
+                      format: date-time
+                      type: string
+                    path:
+                      $ref: '#/components/schemas/PathfindingResultSuccess'
+                    simulation:
+                      $ref: '#/components/schemas/SimulationResponse'
+                    status:
+                      enum:
+                      - success
+                      type: string
+                  required:
+                  - simulation
+                  - path
+                  - departure_time
+                  - status
+                  type: object
+                - properties:
+                    status:
+                      enum:
+                      - path_not_found
+                      type: string
+                  required:
+                  - status
+                  type: object
+          description: The simulation result
+      summary: Compute a STDCM and return the simulation result
+      tags:
+      - stdcm
   /v2/timetable/{id}/train_schedule/:
     post:
       parameters:

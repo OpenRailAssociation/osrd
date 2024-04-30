@@ -239,6 +239,7 @@ pub enum SimulationResponse {
         #[schema(value_type = ReportTrainV2)]
         provisional: ReportTrain,
         #[schema(inline)]
+        /// User-selected simulation: can be base or provisional
         final_output: CompleteReportTrain,
         #[schema(inline)]
         mrsp: Mrsp,

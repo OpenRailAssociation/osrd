@@ -1,4 +1,4 @@
-mod pathfinding;
+pub mod pathfinding;
 pub mod projection;
 mod properties;
 

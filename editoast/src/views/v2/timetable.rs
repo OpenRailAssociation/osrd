@@ -1,3 +1,5 @@
+pub mod stdcm;
+
 use std::collections::HashMap;
 
 use actix_web::delete;
@@ -57,7 +59,8 @@ crate::routes! {
             get,
             put,
             conflicts,
-            train_schedule
+            train_schedule,
+            stdcm::routes(),
         }
     },
 }
@@ -67,6 +70,7 @@ editoast_common::schemas! {
     TimetableForm,
     TimetableResult,
     TimetableDetailedResult,
+    stdcm::schemas(),
 }
 
 #[derive(Debug, Error, EditoastError)]
@@ -351,7 +355,7 @@ pub async fn conflicts(
     .await?;
 
     // 2. Build core request
-    let mut trains_requirements = HashMap::new();
+    let mut trains_requirements = HashMap::with_capacity(trains.len());
     for (train, sim) in trains.into_iter().zip(simulations) {
         let final_output = match sim {
             SimulationResponse::Success { final_output, .. } => final_output,

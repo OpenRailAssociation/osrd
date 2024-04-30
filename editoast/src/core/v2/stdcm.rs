@@ -1,9 +1,12 @@
 use std::collections::HashMap;
 
+use crate::core::v2::simulation::RoutingRequirement;
+use crate::core::v2::simulation::SpacingRequirement;
 use chrono::DateTime;
 use chrono::Utc;
 use editoast_schemas::infra::TrackOffset;
 use editoast_schemas::rolling_stock::LoadingGaugeType;
+use editoast_schemas::rolling_stock::RollingStockSupportedSignalingSystems;
 use editoast_schemas::train_schedule::Comfort;
 use editoast_schemas::train_schedule::MarginValue;
 use serde::Deserialize;
@@ -12,7 +15,7 @@ use utoipa::ToSchema;
 
 use super::pathfinding::PathfindingResultSuccess;
 use super::simulation::PhysicsRollingStock;
-use crate::core::simulation::SimulationResponse;
+use super::simulation::SimulationResponse;
 use crate::core::{AsCoreRequest, Json};
 
 #[derive(Debug, Serialize)]
@@ -27,13 +30,8 @@ pub struct STDCMRequest {
     pub path_items: Vec<STDCMPathItem>,
     /// The loading gauge of the rolling stock
     pub rolling_stock_loading_gauge: LoadingGaugeType,
-    /// Can the rolling stock run on non-electrified tracks
-    pub rolling_stock_is_thermal: bool,
-    /// List of supported electrification modes.
-    /// Empty if does not support any electrification
-    pub rolling_stock_supported_electrifications: Vec<String>,
     /// List of supported signaling systems
-    pub rolling_stock_supported_signaling_systems: Vec<String>,
+    pub rolling_stock_supported_signaling_systems: RollingStockSupportedSignalingSystems,
 
     // Simulation inputs
     /// The comfort of the train
@@ -42,7 +40,7 @@ pub struct STDCMRequest {
     pub rolling_stock: PhysicsRollingStock,
 
     // STDCM search parameters
-    pub train_requirements: HashMap<i64, TrainRequirement>,
+    pub trains_requirements: HashMap<i64, TrainRequirement>,
     /// Numerical integration time step in milliseconds. Use default value if not specified.
     pub time_step: Option<u64>,
     pub start_time: DateTime<Utc>,
@@ -55,16 +53,18 @@ pub struct STDCMRequest {
     /// Gap between the created train and following trains in milliseconds
     pub time_gap_after: u64,
     /// Margin to apply to the whole train
-    pub margin: MarginValue,
+    pub margin: Option<MarginValue>,
 }
 
+#[derive(Debug, Serialize)]
 pub struct STDCMPathItem {
     /// The track offsets of the path item
-    locations: Vec<TrackOffset>,
+    pub locations: Vec<TrackOffset>,
     /// Stop duration in milliseconds. None if the train does not stop at this path item.
-    stop_duration: Option<u64>,
+    pub stop_duration: Option<u64>,
 }
 
+#[derive(Debug, Serialize)]
 pub struct TrainRequirement {
     /// The start datetime of the train
     pub start_time: DateTime<Utc>,
@@ -74,12 +74,16 @@ pub struct TrainRequirement {
 
 #[derive(Serialize, Deserialize, Clone, Debug, ToSchema)]
 #[serde(tag = "status", rename_all = "snake_case")]
+// We accepted the difference of memory size taken by variants
+// Since there is only on success and others are error cases
+#[allow(clippy::large_enum_variant)]
 pub enum STDCMResponse {
     Success {
         simulation: SimulationResponse,
-        pathfinding: PathfindingResultSuccess,
+        path: PathfindingResultSuccess,
+        departure_time: DateTime<Utc>,
     },
-    NotFound,
+    PathNotFound,
 }
 
 impl AsCoreRequest<Json<STDCMResponse>> for STDCMRequest {

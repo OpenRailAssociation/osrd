@@ -22,6 +22,7 @@ use utoipa::ToSchema;
 
 use crate::client::get_app_version;
 use crate::core::v2::pathfinding::PathfindingResult;
+use crate::core::v2::pathfinding::PathfindingResultSuccess;
 use crate::core::v2::simulation::CompleteReportTrain;
 use crate::core::v2::simulation::ReportTrain;
 use crate::core::v2::simulation::SignalSighting;
@@ -321,7 +322,7 @@ pub async fn simulation(
 }
 
 /// Compute the simulation of a given train schedule
-async fn train_simulation(
+pub async fn train_simulation(
     db_pool: Arc<DbConnectionPool>,
     redis_client: Arc<RedisClient>,
     core: Arc<CoreClient>,
@@ -341,13 +342,13 @@ async fn train_simulation(
     .await?;
 
     let (path, path_items_positions) = match pathfinding_result {
-        PathfindingResult::Success {
+        PathfindingResult::Success(PathfindingResultSuccess {
             blocks,
             routes,
             track_section_ranges,
             path_items_positions,
             ..
-        } => (
+        }) => (
             SimulationPath {
                 blocks,
                 routes,

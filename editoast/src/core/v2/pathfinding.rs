@@ -12,6 +12,7 @@ use crate::error::InternalError;
 
 editoast_common::schemas! {
     PathfindingResult,
+    PathfindingResultSuccess,
     TrackRange,
 }
 
@@ -37,10 +38,7 @@ pub struct PathfindingRequest {
 #[derive(Serialize, Deserialize, Clone, Debug, ToSchema)]
 #[serde(tag = "status", rename_all = "snake_case")]
 pub enum PathfindingResult {
-    Success {
-        #[serde(flatten)]
-        success: PathfindingResultSuccess,
-    },
+    Success(PathfindingResultSuccess),
     NotFoundInBlocks {
         track_section_ranges: Vec<TrackRange>,
         length: u64,
@@ -91,21 +89,22 @@ pub enum PathfindingResult {
     },
 }
 
+/// A successful pathfinding result. This is also used for STDCM response.
 #[derive(Serialize, Deserialize, Clone, Debug, ToSchema)]
 pub struct PathfindingResultSuccess {
     #[schema(inline)]
     /// Path description as block ids
-    blocks: Vec<Identifier>,
+    pub blocks: Vec<Identifier>,
     #[schema(inline)]
     /// Path description as route ids
-    routes: Vec<Identifier>,
+    pub routes: Vec<Identifier>,
     /// Path description as track ranges
-    track_section_ranges: Vec<TrackRange>,
+    pub track_section_ranges: Vec<TrackRange>,
     /// Length of the path in mm
-    length: u64,
+    pub length: u64,
     /// The path offset in mm of each path item given as input of the pathfinding
     /// The first value is always `0` (beginning of the path) and the last one is always equal to the `length` of the path in mm
-    path_items_positions: Vec<u64>,
+    pub path_items_positions: Vec<u64>,
 }
 
 /// An oriented range on a track section.

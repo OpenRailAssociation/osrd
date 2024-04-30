@@ -29,7 +29,7 @@ pub struct PathItem {
 }
 
 /// The location of a path waypoint
-#[derive(Debug, Clone, Serialize, Deserialize, ToSchema, Hash)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema, Hash)]
 #[serde(untagged, deny_unknown_fields)]
 pub enum PathItemLocation {
     TrackOffset(#[schema(inline)] TrackOffset),

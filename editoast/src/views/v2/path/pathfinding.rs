@@ -37,7 +37,7 @@ use crate::views::get_app_version;
 use crate::views::v2::path::PathfindingError;
 use editoast_schemas::infra::OperationalPoint;
 
-type TrackOffsetResult = std::result::Result<Vec<Vec<TrackOffset>>, PathfindingResult>;
+type TrackOffsetResult = std::result::Result<Vec<Vec<TrackOffset>>, TrackOffsetExtractionError>;
 
 crate::routes! {
     "/v2/infra/{infra_id}/pathfinding/blocks" => {
@@ -125,7 +125,7 @@ async fn pathfinding_blocks(
     let result = extract_location_from_path_items(conn, infra.id, &path_items).await?;
     let track_offsets = match result {
         Ok(track_offsets) => track_offsets,
-        Err(e) => return Ok(e),
+        Err(e) => return Ok(e.into()),
     };
 
     // Check if tracks exist
@@ -273,8 +273,25 @@ async fn retrieve_op_from_locations(
     Ok((uic_to_ops, trigrams_to_ops, ids_to_ops))
 }
 
+/// Error when extracting track offsets from path items
+pub struct TrackOffsetExtractionError {
+    /// The index of the path item that caused the error
+    pub index: usize,
+    /// The path item that caused the error
+    pub path_item: PathItemLocation,
+}
+
+impl From<TrackOffsetExtractionError> for PathfindingResult {
+    fn from(error: TrackOffsetExtractionError) -> Self {
+        PathfindingResult::InvalidPathItem {
+            index: error.index,
+            path_item: error.path_item,
+        }
+    }
+}
+
 /// extract locations from path items
-async fn extract_location_from_path_items(
+pub async fn extract_location_from_path_items(
     conn: &mut DbConnection,
     infra_id: i64,
     path_items: &[PathItemLocation],
@@ -297,10 +314,10 @@ async fn extract_location_from_path_items(
                 match ids_to_ops.get(&operational_point.0) {
                     Some(op) => OperationalPoint::track_offset(op),
                     None => {
-                        return Ok(Err(PathfindingResult::InvalidPathItem {
+                        return Ok(Err(TrackOffsetExtractionError {
                             index,
                             path_item: path_item.clone(),
-                        }))
+                        }));
                     }
                 }
             }
@@ -311,7 +328,7 @@ async fn extract_location_from_path_items(
                 let ops = trigrams_to_ops.get(&trigram.0).cloned().unwrap_or_default();
                 let ops = secondary_code_filter(secondary_code, ops);
                 if ops.is_empty() {
-                    return Ok(Err(PathfindingResult::InvalidPathItem {
+                    return Ok(Err(TrackOffsetExtractionError {
                         index,
                         path_item: path_item.clone(),
                     }));
@@ -325,7 +342,7 @@ async fn extract_location_from_path_items(
                 let ops = uic_to_ops.get(&(*uic as i64)).cloned().unwrap_or_default();
                 let ops = secondary_code_filter(secondary_code, ops);
                 if ops.is_empty() {
-                    return Ok(Err(PathfindingResult::InvalidPathItem {
+                    return Ok(Err(TrackOffsetExtractionError {
                         index,
                         path_item: path_item.clone(),
                     }));
