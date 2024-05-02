@@ -70,6 +70,7 @@ crate::routes! {
             get_speed_limit_tags,
             get_voltages,
         },
+        get_all_voltages,
     },
 }
 
@@ -464,6 +465,13 @@ async fn get_voltages(
 }
 
 /// Returns the set of voltages for all infras and rolling_stocks modes.
+#[utoipa::path(
+    tag = "infra,rolling_stock",
+    responses(
+        (status = 200,  description = "Voltages list", body = Vec<String>, example = json!(["750V", "1500V", "2500.5V"])),
+        (status = 404, description = "The infra was not found",),
+    )
+)]
 #[get("/voltages")]
 async fn get_all_voltages(db_pool: Data<DbConnectionPool>) -> Result<Json<Vec<String>>> {
     use diesel_async::RunQueryDsl;
