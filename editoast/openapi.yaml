@@ -5436,6 +5436,69 @@ components:
       - geometry
       - operational_points
       type: string
+    RailJson:
+      additionalProperties: false
+      properties:
+        buffer_stops:
+          items:
+            $ref: '#/components/schemas/BufferStop'
+          type: array
+        detectors:
+          items:
+            $ref: '#/components/schemas/Detector'
+          type: array
+        electrifications:
+          items:
+            $ref: '#/components/schemas/Electrification'
+          type: array
+        extended_switch_types:
+          items:
+            $ref: '#/components/schemas/SwitchType'
+          type: array
+        neutral_sections:
+          items:
+            $ref: '#/components/schemas/NeutralSection'
+          type: array
+        operational_points:
+          items:
+            $ref: '#/components/schemas/OperationalPoint'
+          type: array
+        routes:
+          items:
+            $ref: '#/components/schemas/Route'
+          type: array
+        signals:
+          items:
+            $ref: '#/components/schemas/Signal'
+          type: array
+        speed_sections:
+          items:
+            $ref: '#/components/schemas/SpeedSection'
+          type: array
+        switches:
+          items:
+            $ref: '#/components/schemas/Switch'
+          type: array
+        track_sections:
+          items:
+            $ref: '#/components/schemas/TrackSection'
+          type: array
+        version:
+          type: string
+      required:
+      - version
+      - operational_points
+      - routes
+      - extended_switch_types
+      - switches
+      - track_sections
+      - speed_sections
+      - neutral_sections
+      - electrifications
+      - signals
+      - buffer_stops
+      - detectors
+      type: object
     Railjson:
       additionalProperties: true
       description: This field follows railjson format
