@@ -1,10 +1,12 @@
 package fr.sncf.osrd.reporting.exceptions;
 
-import com.squareup.moshi.*;
 import com.squareup.moshi.JsonAdapter;
+import com.squareup.moshi.Moshi;
+import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory;
 import fr.sncf.osrd.reporting.ErrorContext;
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorder;
 import fr.sncf.osrd.reporting.warnings.Warning;
+import fr.sncf.osrd.utils.json.UnitAdapterFactory;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serial;
@@ -456,7 +458,10 @@ public final class OSRDError extends RuntimeException {
     public static final JsonAdapter<OSRDError> adapter;
 
     static {
-        Moshi moshi = new Moshi.Builder().build();
+        Moshi moshi = new Moshi.Builder()
+                .addLast(new UnitAdapterFactory())
+                .addLast(new KotlinJsonAdapterFactory())
+                .build();
         adapter = moshi.adapter(OSRDError.class);
     }
 
