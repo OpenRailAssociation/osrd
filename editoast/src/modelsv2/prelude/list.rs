@@ -24,6 +24,7 @@ impl<M: Model> FilterSetting<M> {
     /// both from a `Bool` and `Nullable<Bool>` query by `COALESCE`ing the expression
     /// to `FALSE`. That way the `Model` derive macro doesn't have to infer the type
     /// of each field (as `column.eq(value)` is a `Nullable<Bool>` if `column` is a `Nullable<T>`).
+    #[allow(unused)] // FIXME: rmove this attribute asap
     pub(in crate::modelsv2) fn new<T, Q>(filter: Q) -> Self
     where
         Q: AsExpression<T>,
@@ -65,29 +66,34 @@ impl<M: Model> Default for SelectionSettings<M> {
 
 impl<M: Model> SelectionSettings<M> {
     /// Initializes a settings builder with no constraints
+    #[allow(unused)] // FIXME: rmove this attribute asap
     pub fn new() -> Self {
         Self::default()
     }
 
     /// Apply some filters
+    #[allow(unused)] // FIXME: rmove this attribute asap
     pub fn filter(mut self, filter: FilterSetting<M>) -> Self {
         self.filters.push(filter);
         self
     }
 
     /// Apply some ordering criteria
+    #[allow(unused)] // FIXME: rmove this attribute asap
     pub fn order_by(mut self, sort: SortSetting<M>) -> Self {
         self.sorts.push(sort);
         self
     }
 
     /// Limit the number of results
+    #[allow(unused)] // FIXME: rmove this attribute asap
     pub fn limit(mut self, limit: u64) -> Self {
         self.limit = Some(limit.try_into().expect("limit is too large"));
         self
     }
 
     /// Offset the results by an amount
+    #[allow(unused)] // FIXME: rmove this attribute asap
     pub fn offset(mut self, offset: u64) -> Self {
         self.offset = Some(offset.try_into().expect("offset is too large"));
         self
