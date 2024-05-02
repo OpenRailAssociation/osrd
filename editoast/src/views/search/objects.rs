@@ -100,8 +100,6 @@ pub(super) struct SearchResultItemOperationalPoint {
     ci: u64,
     #[search(sql = "ST_AsGeoJSON(ST_Transform(lay.geographic, 4326))::json")]
     geographic: GeoJsonPoint,
-    #[search(sql = "ST_AsGeoJSON(ST_Transform(lay.schematic, 4326))::json")]
-    schematic: GeoJsonPoint,
     #[search(sql = "OP.data->'parts'")]
     #[schema(inline)]
     track_sections: Vec<SearchResultItemOperationalPointTrackSections>,
@@ -192,8 +190,6 @@ pub(super) struct SearchResultItemSignal {
     line_name: String,
     #[search(sql = "ST_AsGeoJSON(ST_Transform(lay.geographic, 4326))::json")]
     geographic: GeoJsonPoint,
-    #[search(sql = "ST_AsGeoJSON(ST_Transform(lay.schematic, 4326))::json")]
-    schematic: GeoJsonPoint,
     #[search(sql = "search_signal.sprite_signaling_system")]
     sprite_signaling_system: Option<String>,
     #[search(sql = "search_signal.sprite")]

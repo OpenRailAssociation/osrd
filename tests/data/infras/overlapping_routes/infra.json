@@ -1,5 +1,5 @@
 {
-    "version": "3.4.11",
+    "version": "3.4.12",
     "operational_points": [
         {
             "id": "op.a1",
@@ -390,19 +390,6 @@
                     ]
                 ]
             },
-            "sch": {
-                "type": "LineString",
-                "coordinates": [
-                    [
-                        -0.12,
-                        50.0
-                    ],
-                    [
-                        -0.1,
-                        49.98
-                    ]
-                ]
-            },
             "id": "t_a1",
             "length": 1000.0,
             "slopes": [],
@@ -419,19 +406,6 @@
         },
         {
             "geo": {
-                "type": "LineString",
-                "coordinates": [
-                    [
-                        0.1,
-                        49.98
-                    ],
-                    [
-                        0.12,
-                        50.0
-                    ]
-                ]
-            },
-            "sch": {
                 "type": "LineString",
                 "coordinates": [
                     [
@@ -472,19 +446,6 @@
                     ]
                 ]
             },
-            "sch": {
-                "type": "LineString",
-                "coordinates": [
-                    [
-                        -0.12,
-                        49.98
-                    ],
-                    [
-                        -0.1,
-                        49.98
-                    ]
-                ]
-            },
             "id": "t_a2",
             "length": 1000.0,
             "slopes": [],
@@ -513,19 +474,6 @@
                     ]
                 ]
             },
-            "sch": {
-                "type": "LineString",
-                "coordinates": [
-                    [
-                        0.1,
-                        49.98
-                    ],
-                    [
-                        0.12,
-                        49.98
-                    ]
-                ]
-            },
             "id": "t_b2",
             "length": 1000.0,
             "slopes": [],
@@ -542,19 +490,6 @@
         },
         {
             "geo": {
-                "type": "LineString",
-                "coordinates": [
-                    [
-                        -0.1,
-                        49.98
-                    ],
-                    [
-                        0.1,
-                        49.98
-                    ]
-                ]
-            },
-            "sch": {
                 "type": "LineString",
                 "coordinates": [
                     [

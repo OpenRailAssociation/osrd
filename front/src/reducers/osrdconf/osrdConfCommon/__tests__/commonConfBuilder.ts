@@ -75,13 +75,6 @@ export default function commonConfBuilder() {
       id: 1,
       length: 10,
       owner: 'test',
-      schematic: {
-        coordinates: [
-          [1, 2],
-          [3, 4],
-        ],
-        type: 'LineString',
-      },
       slopes: [
         {
           gradient: 5,
@@ -102,10 +95,6 @@ export default function commonConfBuilder() {
           },
           name: 'test',
           path_offset: 42,
-          sch: {
-            coordinates: [1, 2],
-            type: 'Point',
-          },
           suggestion: true,
           ch: null,
           uic: null,

@@ -201,17 +201,17 @@ mod tests {
             SELECT TileBBox($1, $2, $3, 3857) AS geom
         ), matches AS (
              SELECT
-                 ST_AsGeoJson(ST_AsMVTGeom(schematic, bbox.geom)) AS geo_json,
+                 ST_AsGeoJson(ST_AsMVTGeom(geographic, bbox.geom)) AS geo_json,
              layer.id AS id
              FROM infra_layer_track_section layer
              CROSS JOIN bbox
              WHERE layer.infra_id = $4
-                   AND schematic && bbox.geom
-                   AND ST_GeometryType(schematic) != 'ST_GeometryCollection'
+                   AND geographic && bbox.geom
+                   AND ST_GeometryType(geographic) != 'ST_GeometryCollection'
         )
         SELECT
             matches.geo_json as geo_json,
-            track_section.data - 'geo' - 'sch' AS data
+            track_section.data - 'geo' AS data
         FROM matches
         INNER JOIN infra_layer_track_section layer on matches.id = layer.id
         inner join infra_object_track_section track_section on track_section.obj_id = layer.obj_id and track_section.infra_id = layer.infra_id
@@ -222,13 +222,13 @@ mod tests {
             SELECT TileBBox($1, $2, $3, 3857) AS geom
         ), matches AS (
              SELECT
-                 ST_AsGeoJson(ST_AsMVTGeom(schematic, bbox.geom)) AS geo_json,
+                 ST_AsGeoJson(ST_AsMVTGeom(geographic, bbox.geom)) AS geo_json,
              layer.id AS id
              FROM infra_layer_speed_section layer
              CROSS JOIN bbox
              WHERE layer.infra_id = $4
-                   AND schematic && bbox.geom
-                   AND ST_GeometryType(schematic) != 'ST_GeometryCollection'
+                   AND geographic && bbox.geom
+                   AND ST_GeometryType(geographic) != 'ST_GeometryCollection'
         )
         SELECT
             matches.geo_json as geo_json,
@@ -243,7 +243,7 @@ mod tests {
             let track_sections = map_layers.layers.get(*layer_name).unwrap();
             let query = get_geo_json_sql_query(
                 &track_sections.table_name,
-                track_sections.views.get("sch").unwrap(),
+                track_sections.views.get("geo").unwrap(),
             );
             assert_eq!(expected_queries[i].trim(), query.trim());
         }

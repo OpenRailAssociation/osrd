@@ -2,8 +2,7 @@ WITH collect AS (
     SELECT detectors.obj_id AS detector_id,
         (detectors.data->>'position')::float AS detector_position,
         (tracks.data->>'length')::float AS track_length,
-        tracks_layer.geographic AS track_geo,
-        tracks_layer.schematic AS track_sch
+        tracks_layer.geographic AS track_geo
     FROM infra_object_detector AS detectors
         INNER JOIN infra_object_track_section AS tracks ON tracks.obj_id = detectors.data->>'track'
         AND tracks.infra_id = detectors.infra_id
@@ -20,13 +19,11 @@ collect2 AS (
         ) AS norm_pos
     FROM collect
 )
-INSERT INTO infra_layer_detector (obj_id, infra_id, geographic, schematic)
+INSERT INTO infra_layer_detector (obj_id, infra_id, geographic)
 SELECT collect.detector_id,
     $1,
-    ST_LineInterpolatePoint(track_geo, norm_pos),
-    ST_LineInterpolatePoint(track_sch, norm_pos)
+    ST_LineInterpolatePoint(track_geo, norm_pos)
 FROM collect
     INNER JOIN collect2 ON collect.detector_id = collect2.detector_id ON CONFLICT (infra_id, obj_id) DO
 UPDATE
-SET geographic = EXCLUDED.geographic,
-    schematic = EXCLUDED.schematic
+SET geographic = EXCLUDED.geographic

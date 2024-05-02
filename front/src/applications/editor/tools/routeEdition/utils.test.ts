@@ -30,17 +30,9 @@ const ts1: TrackSectionEntity = editoastToEditorEntity(
       id: 'ts1',
       length: l1,
       loading_gauge_limits: [],
-      sch: {
-        coordinates: [p1, p2, p3],
-        type: 'LineString',
-      },
       slopes: [{ begin: 0.0, end: l1, gradient: 0.0 }],
     },
     geographic: {
-      coordinates: [p1, p2, p3],
-      type: 'LineString',
-    },
-    schematic: {
       coordinates: [p1, p2, p3],
       type: 'LineString',
     },
@@ -59,17 +51,9 @@ const ts2: TrackSectionEntity = editoastToEditorEntity(
       id: 'ts2',
       length: l2,
       loading_gauge_limits: [],
-      sch: {
-        coordinates: [p3, p4, p5],
-        type: 'LineString',
-      },
       slopes: [{ begin: 0.0, end: l2, gradient: 0.0 }],
     },
     geographic: {
-      coordinates: [p3, p4, p5],
-      type: 'LineString',
-    },
-    schematic: {
       coordinates: [p3, p4, p5],
       type: 'LineString',
     },
@@ -85,7 +69,6 @@ const d1: DetectorEntity<Point> = editoastToEditorEntity(
       track: 'ts1',
     },
     geographic: { coordinates: p1, type: 'Point' },
-    schematic: { coordinates: p1, type: 'Point' },
   },
   'Detector'
 );
@@ -98,7 +81,6 @@ const d2: DetectorEntity<Point> = editoastToEditorEntity(
       track: 'ts1',
     },
     geographic: { coordinates: p3, type: 'Point' },
-    schematic: { coordinates: p3, type: 'Point' },
   },
   'Detector'
 );
@@ -111,7 +93,6 @@ const d3: DetectorEntity<Point> = editoastToEditorEntity(
       track: 'ts2',
     },
     geographic: { coordinates: p5, type: 'Point' },
-    schematic: { coordinates: p5, type: 'Point' },
   },
   'Detector'
 );

@@ -53,8 +53,6 @@ struct ObjectQueryable {
     railjson: JsonValue,
     #[diesel(sql_type = Nullable<Jsonb>)]
     geographic: Option<diesel_json::Json<geos::geojson::Geometry>>,
-    #[diesel(sql_type = Nullable<Jsonb>)]
-    schematic: Option<diesel_json::Json<geos::geojson::Geometry>>,
 }
 
 /// Return the railjson list of a specific OSRD object
@@ -72,7 +70,7 @@ async fn get_objects(
     // Prepare query
     let query = if [ObjectType::SwitchType, ObjectType::Route].contains(&obj_type) {
         format!(
-            "SELECT obj_id as obj_id, data as railjson, NULL as geographic, NULL as schematic
+            "SELECT obj_id as obj_id, data as railjson, NULL as geographic
                 FROM {} WHERE infra_id = $1 AND obj_id = ANY($2)",
             get_table(&obj_type)
         )
@@ -81,8 +79,7 @@ async fn get_objects(
             SELECT
                 object_table.obj_id as obj_id,
                 object_table.data as railjson,
-                ST_AsGeoJSON(ST_Transform(geographic, 4326))::jsonb as geographic,
-                ST_AsGeoJSON(ST_Transform(schematic, 4326))::jsonb as schematic
+                ST_AsGeoJSON(ST_Transform(geographic, 4326))::jsonb as geographic
             FROM {} AS object_table
             LEFT JOIN {} AS geometry_table ON object_table.obj_id = geometry_table.obj_id AND object_table.infra_id = geometry_table.infra_id
             WHERE object_table.infra_id = $1 AND object_table.obj_id = ANY($2)
@@ -218,7 +215,6 @@ mod tests {
                 "switch_type": switch.switch_type
             }),
             geographic: None,
-            schematic: None,
         }];
         assert_eq!(switch_object, expected_switch_object);
     }

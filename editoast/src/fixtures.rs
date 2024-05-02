@@ -543,7 +543,6 @@ pub mod tests {
             slopes: Some(diesel_json::Json(vec![])),
             curves: Some(diesel_json::Json(vec![])),
             geographic: Some(LineString::new(None)),
-            schematic: Some(LineString::new(None)),
             owner: Some(Default::default()),
             created: Some(Default::default()),
             ..Default::default()

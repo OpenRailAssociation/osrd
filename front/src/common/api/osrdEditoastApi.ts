@@ -1148,8 +1148,6 @@ export type PostInfraByIdObjectsAndObjectTypeApiResponse = /** status 200 No con
   geographic: Geometry;
   /** Object properties in railjson format */
   railjson: Railjson;
-  /** object's schematic in geojson format */
-  schematic: Geometry;
 }[];
 export type PostInfraByIdObjectsAndObjectTypeApiArg = {
   /** Infra id */
@@ -2160,7 +2158,6 @@ export type TrackSection = {
   id: string;
   length: number;
   loading_gauge_limits?: LoadingGaugeLimit[];
-  sch: Geometry;
   slopes: Slope[];
 };
 export type RailJson = {
@@ -2270,13 +2267,10 @@ export type InfraError = {
     obj_id: string;
     obj_type: 'TrackSection' | 'Signal' | 'BufferStop' | 'Detector' | 'Switch' | 'Route';
   };
-  /** Geojson of the schematic geometry of the error */
-  schematic?: object | null;
 };
 export type BoundingBox = (number & number)[][];
 export type Zone = {
   geo: BoundingBox;
-  sch: BoundingBox;
 };
 export type PathfindingOutput = {
   detectors: string[];
@@ -2430,7 +2424,6 @@ export type PathWaypoint = {
   location: TrackLocation;
   name: string | null;
   path_offset: number;
-  sch: GeoJsonPoint;
   suggestion: boolean;
   uic: number | null;
 };
@@ -2441,7 +2434,6 @@ export type PathResponse = {
   id: number;
   length: number;
   owner: string;
-  schematic: GeoJsonLineString;
   slopes: Slope[];
   steps: PathWaypoint[];
 };
@@ -2784,7 +2776,6 @@ export type SearchResultItemOperationalPoint = {
   infra_id: number;
   name: string;
   obj_id: string;
-  schematic: GeoJsonPoint;
   track_sections: {
     position: number;
     track: string;
@@ -2798,7 +2789,6 @@ export type SearchResultItemSignal = {
   label: string;
   line_code: number;
   line_name: string;
-  schematic: GeoJsonPoint;
   settings: string[];
   signaling_systems: string[];
   sprite?: string | null;

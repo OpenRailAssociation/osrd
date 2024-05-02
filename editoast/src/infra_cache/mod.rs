@@ -279,16 +279,12 @@ pub struct TrackQueryable {
     pub slopes: String,
     #[diesel(sql_type = Text)]
     pub geo: String,
-    #[diesel(sql_type = Text)]
-    pub sch: String,
 }
 
 impl From<TrackQueryable> for TrackSectionCache {
     fn from(track: TrackQueryable) -> Self {
         let geo: Geometry =
             serde_json::from_str(&track.geo).expect("invalid track section geometry");
-        let sch: Geometry =
-            serde_json::from_str(&track.sch).expect("invalid track section geometry");
         Self {
             obj_id: track.obj_id,
             length: track.length,
@@ -296,8 +292,6 @@ impl From<TrackQueryable> for TrackSectionCache {
             slopes: serde_json::from_str(&track.slopes).unwrap(),
             line_code: track.line_code,
             bbox_geo: BoundingBox::from_geometry(geo)
-                .expect("tracksections' geometry must be LineStrings"),
-            bbox_sch: BoundingBox::from_geometry(sch)
                 .expect("tracksections' geometry must be LineStrings"),
         }
     }
@@ -438,8 +432,7 @@ impl InfraCache {
                 (data->>'length')::float as length,
                 data->>'curves' as curves,
                 data->>'slopes' as slopes,
-                data->>'geo' as geo,
-                data->>'sch' as sch
+                data->>'geo' as geo
             FROM infra_object_track_section WHERE infra_id = $1",
         )
         .bind::<BigInt, _>(infra_id)
@@ -1112,7 +1105,6 @@ pub mod tests {
             length,
             line_code: None,
             bbox_geo: BoundingBox::default(),
-            bbox_sch: BoundingBox::default(),
             ..Default::default()
         }
     }

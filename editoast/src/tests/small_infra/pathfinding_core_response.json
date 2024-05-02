@@ -84,52 +84,52 @@
             "id": null,
             "name": null,
             "location": {
-              "offset": 819.0899794930589,
-              "track_section": "TB0"
+                "offset": 819.0899794930589,
+                "track_section": "TB0"
             },
             "path_offset": 0,
             "suggestion": false
-          },
-          {
+        },
+        {
             "id": "Mid_West_station",
             "name": "Mid_West_station",
             "location": {
-              "offset": 450,
-              "track_section": "TC2"
+                "offset": 450,
+                "track_section": "TC2"
             },
             "path_offset": 12680.91002050694,
             "suggestion": true
-          },
-          {
+        },
+        {
             "id": "Mid_East_station",
             "name": "Mid_East_station",
             "location": {
-              "offset": 14000,
-              "track_section": "TD1"
+                "offset": 14000,
+                "track_section": "TD1"
             },
             "path_offset": 27230.91002050694,
             "suggestion": true
-          },
-          {
+        },
+        {
             "id": "South_East_station",
             "name": "South_East_station",
             "location": {
-              "offset": 4400,
-              "track_section": "TH1"
+                "offset": 4400,
+                "track_section": "TH1"
             },
             "path_offset": 46630.91002050694,
             "suggestion": true
-          },
-          {
+        },
+        {
             "id": null,
             "name": null,
             "location": {
-              "offset": 4545.276310898476,
-              "track_section": "TH1"
+                "offset": 4545.276310898476,
+                "track_section": "TH1"
             },
             "path_offset": 46776.18633140542,
             "suggestion": false
-          }
+        }
     ],
     "route_paths": [
         {
@@ -367,75 +367,6 @@
             ]
         }
     ],
-    "schematic": {
-        "type": "LineString",
-        "coordinates": [
-            [
-                -0.38951413259778866,
-                49.49
-            ],
-            [
-                -0.373,
-                49.49
-            ],
-            [
-                -0.37,
-                49.492
-            ],
-            [
-                -0.37,
-                49.49979999999999
-            ],
-            [
-                -0.365,
-                49.4999
-            ],
-            [
-                -0.31,
-                49.4999
-            ],
-            [
-                -0.296,
-                49.4999
-            ],
-            [
-                -0.172,
-                49.4999
-            ],
-            [
-                -0.1354,
-                49.4999
-            ],
-            [
-                -0.135,
-                49.49995
-            ],
-            [
-                -0.1346,
-                49.4999
-            ],
-            [
-                -0.12,
-                49.4999
-            ],
-            [
-                -0.115,
-                49.497
-            ],
-            [
-                -0.115,
-                49.487
-            ],
-            [
-                -0.11,
-                49.484
-            ],
-            [
-                -0.09378430969788595,
-                49.484
-            ]
-        ]
-    },
     "slopes": [
         {
             "gradient": 0.0,

@@ -1593,7 +1593,7 @@
             "type": "object"
         },
         "TrackSection": {
-            "description": "A track section is a piece of track and is the tracking system used in OSRD to locate a point.\nA track section is identified by his unique id and its coordinates (geographic or schematic).",
+            "description": "A track section is a piece of track and is the tracking system used in OSRD to locate a point.\nA track section is identified by his unique id and its coordinates (geographic).",
             "properties": {
                 "curves": {
                     "description": "List of curves of corresponding track section",
@@ -1640,14 +1640,6 @@
                     "title": "Loading Gauge Limits",
                     "type": "array"
                 },
-                "sch": {
-                    "allOf": [
-                        {
-                            "$ref": "#/$defs/LineString"
-                        }
-                    ],
-                    "description": "Schematic coordinates of the corresponding object"
-                },
                 "slopes": {
                     "description": "List of slopes of corresponding track section",
                     "items": {
@@ -1659,7 +1651,6 @@
             },
             "required": [
                 "geo",
-                "sch",
                 "id",
                 "length",
                 "slopes",
@@ -2141,8 +2132,8 @@
             "type": "array"
         },
         "version": {
-            "const": "3.4.11",
-            "default": "3.4.11",
+            "const": "3.4.12",
+            "default": "3.4.12",
             "description": "Version of the schema",
             "title": "Version"
         }

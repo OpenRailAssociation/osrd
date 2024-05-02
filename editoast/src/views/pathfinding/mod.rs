@@ -122,9 +122,6 @@ pub(super) struct PathResponse {
     #[schema(value_type = GeoJsonLineString)]
     // #[derivative(Default(value = "Geometry::new(LineString(Default::default()))"))]
     pub(super) geographic: Geometry,
-    #[schema(value_type = GeoJsonLineString)]
-    // #[derivative(Default(value = "Geometry::new(LineString(Default::default()))"))]
-    pub(super) schematic: Geometry,
     pub(super) steps: Vec<PathWaypoint>,
 }
 
@@ -138,7 +135,6 @@ impl From<Pathfinding> for PathResponse {
             slopes,
             curves,
             geographic,
-            schematic,
             payload,
             ..
         } = value;
@@ -150,7 +146,6 @@ impl From<Pathfinding> for PathResponse {
             slopes: slopes.0,
             curves: curves.0,
             geographic: diesel_linestring_to_geojson(geographic),
-            schematic: diesel_linestring_to_geojson(schematic),
             steps: payload.0.path_waypoints,
         }
     }
@@ -360,7 +355,6 @@ impl Pathfinding {
         let PathfindingResponse {
             length,
             geographic,
-            schematic,
             route_paths,
             path_waypoints,
             slopes,
@@ -396,12 +390,7 @@ impl Pathfinding {
                     .unwrap()
                     .interpolate_normalized(normalized_offset)
                     .unwrap();
-                let sch = geos::Geometry::try_from(&track.sch)
-                    .unwrap()
-                    .interpolate_normalized(normalized_offset)
-                    .unwrap();
                 let geo = geos::geojson::Geometry::try_from(geo).unwrap();
-                let sch = geos::geojson::Geometry::try_from(sch).unwrap();
                 PathWaypoint {
                     id: waypoint.id.clone(),
                     name,
@@ -410,7 +399,6 @@ impl Pathfinding {
                     path_offset: waypoint.path_offset,
                     suggestion: waypoint.suggestion,
                     geo,
-                    sch,
                     uic,
                     ch,
                 }
@@ -425,7 +413,6 @@ impl Pathfinding {
             slopes: diesel_json::Json(slopes.to_vec()),
             curves: diesel_json::Json(curves.to_vec()),
             geographic: geojson_to_diesel_linestring(&geographic),
-            schematic: geojson_to_diesel_linestring(&schematic),
             ..Default::default() // creation date, uuid, id, infra_id
         })
     }

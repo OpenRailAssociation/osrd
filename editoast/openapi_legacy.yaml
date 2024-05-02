@@ -325,16 +325,12 @@ paths:
                   required:
                     - railjson
                     - geographic
-                    - schematic
                   properties:
                     railjson:
                       description: Object properties in railjson format
                       $ref: "#/components/schemas/Railjson"
                     geographic:
                       description: object's geographic in geojson format
-                      $ref: "#/components/schemas/Geometry"
-                    schematic:
-                      description: object's schematic in geojson format
                       $ref: "#/components/schemas/Geometry"
 
   /infra/{id}/clone/:
@@ -511,13 +507,6 @@ components:
               - 41.0
             - - 2.0
               - 42.0
-        sch:
-          type: LineString
-          coordinates:
-            - - 1.0
-              - 41.0
-            - - 2.0
-              - 42.0
         curves: []
         length: 1000
         slopes:
@@ -561,10 +550,6 @@ components:
           nullable: true
           description: Geojson of the geographic geometry of the error
           $ref: "#/components/schemas/Geometry"
-        schematic:
-          nullable: true
-          type: object
-          description: Geojson of the schematic geometry of the error
         information:
           type: object
           description: Information about the error (check schema documentation for more details)

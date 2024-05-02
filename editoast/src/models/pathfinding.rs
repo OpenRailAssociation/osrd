@@ -65,8 +65,6 @@ pub struct Pathfinding {
     pub curves: diesel_json::Json<CurveGraph>,
     #[derivative(Default(value = "LineString { points: vec![], srid: None }"))]
     pub geographic: LineString<Point>,
-    #[derivative(Default(value = "LineString { points: vec![], srid: None }"))]
-    pub schematic: LineString<Point>,
     pub infra_id: i64,
     pub length: f64,
 }
@@ -91,8 +89,6 @@ pub struct PathfindingChangeset {
     pub curves: Option<diesel_json::Json<CurveGraph>>,
     #[diesel(deserialize_as=LineString<Point>)]
     pub geographic: Option<LineString<Point>>,
-    #[diesel(deserialize_as=LineString<Point>)]
-    pub schematic: Option<LineString<Point>>,
     #[diesel(deserialize_as=i64)]
     pub infra_id: Option<i64>,
     #[diesel(deserialize_as=f64)]
@@ -110,7 +106,6 @@ impl From<Pathfinding> for PathfindingChangeset {
             slopes: Some(value.slopes),
             curves: Some(value.curves),
             geographic: Some(value.geographic),
-            schematic: Some(value.schematic),
             infra_id: Some(value.infra_id),
         }
     }
@@ -127,7 +122,6 @@ impl From<PathfindingChangeset> for Pathfinding {
             slopes: value.slopes.expect("invalid changeset result"),
             curves: value.curves.expect("invalid changeset result"),
             geographic: value.geographic.expect("invalid changeset result"),
-            schematic: value.schematic.expect("invalid changeset result"),
             infra_id: value.infra_id.expect("invalid changeset result"),
         }
     }
@@ -152,7 +146,7 @@ pub struct Curve {
 ///
 /// It contains the route paths and the path waypoints that the simulation returned,
 /// but enhanced using data from the infra. Notably, path waypoints are reprojected
-/// onto their track section to obtain their geographic and schematic representations
+/// onto their track section to obtain their geographic representations
 /// back.
 #[derive(Debug, Clone, PartialEq, Derivative, Deserialize, Serialize, ToSchema)]
 #[derivative(Default)]
@@ -185,11 +179,6 @@ pub struct PathWaypoint {
     ))]
     #[schema(value_type = GeoJsonPoint)]
     pub geo: geojson::Geometry,
-    #[derivative(Default(
-        value = "geojson::Geometry::new(geojson::Value::Point(Default::default()))"
-    ))]
-    #[schema(value_type = GeoJsonPoint)]
-    pub sch: geojson::Geometry,
     #[schema(required)]
     pub uic: Option<i64>,
     #[schema(required)]

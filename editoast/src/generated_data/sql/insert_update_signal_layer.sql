@@ -3,8 +3,7 @@ WITH collect AS (
         (signals.data->>'position')::float AS signal_position,
         signals.data->>'direction' AS signal_direction,
         (tracks.data->>'length')::float AS track_length,
-        tracks_layer.geographic AS track_geo,
-        tracks_layer.schematic AS track_sch
+        tracks_layer.geographic AS track_geo
     FROM infra_object_signal AS signals
         INNER JOIN infra_object_track_section AS tracks ON tracks.obj_id = signals.data->>'track'
         AND tracks.infra_id = signals.infra_id
@@ -27,9 +26,7 @@ INSERT INTO infra_layer_signal (
         obj_id,
         infra_id,
         angle_geo,
-        angle_sch,
-        geographic,
-        schematic
+        geographic
     )
 SELECT collect.signal_id,
     $1,
@@ -42,21 +39,9 @@ SELECT collect.signal_id,
         ) + angle_direction,
         0.
     ),
-    COALESCE(
-        degrees(
-            ST_Azimuth(
-                ST_LineInterpolatePoint(track_sch, GREATEST(norm_pos - 0.0001, 0.)),
-                ST_LineInterpolatePoint(track_sch, LEAST(norm_pos + 0.0001, 1.))
-            )
-        ) + angle_direction,
-        0.
-    ),
-    ST_LineInterpolatePoint(track_geo, norm_pos),
-    ST_LineInterpolatePoint(track_sch, norm_pos)
+    ST_LineInterpolatePoint(track_geo, norm_pos)
 FROM collect
     INNER JOIN collect2 ON collect.signal_id = collect2.signal_id ON CONFLICT (infra_id, obj_id) DO
 UPDATE
 SET geographic = EXCLUDED.geographic,
-    schematic = EXCLUDED.schematic,
-    angle_geo = EXCLUDED.angle_geo,
-    angle_sch = EXCLUDED.angle_sch
+    angle_geo = EXCLUDED.angle_geo

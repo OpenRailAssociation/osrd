@@ -4,8 +4,7 @@ WITH errors AS (
 ),
 errors_geometry AS (
     SELECT error_hash,
-        ST_Collect(layer.geographic) AS geo,
-        ST_Collect(layer.schematic) AS sch
+        ST_Collect(layer.geographic) AS geo
     FROM errors
         LEFT JOIN infra_layer_operational_point AS layer ON layer.obj_id = information->>'obj_id'
         AND layer.infra_id = $1
@@ -14,13 +13,11 @@ errors_geometry AS (
 INSERT INTO infra_layer_error (
         infra_id,
         geographic,
-        schematic,
         information,
         info_hash
     )
 SELECT $1 AS infra_id,
     err_geom.geo,
-    err_geom.sch,
     information,
     errors.error_hash
 FROM errors

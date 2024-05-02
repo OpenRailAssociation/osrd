@@ -2,8 +2,7 @@ WITH collect AS (
     SELECT buffer_stops.obj_id AS buffer_stop_id,
         (buffer_stops.data->>'position')::float AS buffer_stop_position,
         (tracks.data->>'length')::float AS track_length,
-        tracks_layer.geographic AS track_geo,
-        tracks_layer.schematic AS track_sch
+        tracks_layer.geographic AS track_geo
     FROM infra_object_buffer_stop AS buffer_stops
         INNER JOIN infra_object_track_section AS tracks ON tracks.obj_id = buffer_stops.data->>'track'
         AND tracks.infra_id = buffer_stops.infra_id
@@ -19,10 +18,9 @@ collect2 AS (
         ) AS norm_pos
     FROM collect
 )
-INSERT INTO infra_layer_buffer_stop (obj_id, infra_id, geographic, schematic)
+INSERT INTO infra_layer_buffer_stop (obj_id, infra_id, geographic)
 SELECT collect.buffer_stop_id,
     $1,
-    ST_LineInterpolatePoint(track_geo, norm_pos),
-    ST_LineInterpolatePoint(track_sch, norm_pos)
+    ST_LineInterpolatePoint(track_geo, norm_pos)
 FROM collect
     INNER JOIN collect2 ON collect.buffer_stop_id = collect2.buffer_stop_id

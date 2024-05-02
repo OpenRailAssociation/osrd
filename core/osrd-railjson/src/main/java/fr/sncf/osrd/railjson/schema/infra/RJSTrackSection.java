@@ -21,7 +21,6 @@ public class RJSTrackSection implements Identified {
     public List<RJSLoadingGaugeLimit> loadingGaugeLimits;
 
     public RJSLineString geo;
-    public RJSLineString sch;
 
     public RJSTrackSection(String id, double length) {
         this.id = id;

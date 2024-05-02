@@ -41,7 +41,6 @@ fun convertPathfindingResult(
     result.routePaths = makeRoutePath(blockInfra, rawInfra, rawPath.ranges)
     result.pathWaypoints = makePathWaypoint(path, rawPath, rawInfra, blockInfra)
     result.geographic = makeGeographic(path)
-    result.schematic = makeSchematic(path)
     result.slopes = makeSlopes(path)
     result.curves = makeCurves(path)
     result.warnings = warningRecorder.getWarnings()
@@ -153,11 +152,6 @@ private fun sortAndMergeDuplicates(
 /** Returns the geographic linestring of the path */
 private fun makeGeographic(path: PathProperties): RJSLineString {
     return toRJSLineString(path.getGeo())
-}
-
-/** Returns the schematic linestring of the path */
-private fun makeSchematic(path: PathProperties): RJSLineString {
-    return makeGeographic(path) // TODO: add schematic data to the infra
 }
 
 /** Returns the slopes on the path */

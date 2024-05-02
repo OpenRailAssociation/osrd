@@ -3613,10 +3613,6 @@ components:
           - error_type
           - is_warning
           type: object
-        schematic:
-          description: Geojson of the schematic geometry of the error
-          nullable: true
-          type: object
       required:
       - information
       type: object
@@ -4690,8 +4686,6 @@ components:
         owner:
           format: uuid
           type: string
-        schematic:
-          $ref: '#/components/schemas/GeoJsonLineString'
         slopes:
           items:
             $ref: '#/components/schemas/Slope'
@@ -4708,7 +4702,6 @@ components:
       - slopes
       - curves
       - geographic
-      - schematic
       - steps
       type: object
     PathWaypoint:
@@ -4732,8 +4725,6 @@ components:
         path_offset:
           format: double
           type: number
-        sch:
-          $ref: '#/components/schemas/GeoJsonPoint'
         suggestion:
           type: boolean
         uic:
@@ -4748,7 +4739,6 @@ components:
       - path_offset
       - suggestion
       - geo
-      - sch
       - uic
       - ch
       type: object
@@ -4872,7 +4862,7 @@ components:
 
         It contains the route paths and the path waypoints that the simulation returned,
         but enhanced using data from the infra. Notably, path waypoints are reprojected
-        onto their track section to obtain their geographic and schematic representations
+        onto their track section to obtain their geographic representations
         back.
       properties:
         path_waypoints:
@@ -5664,13 +5654,6 @@ components:
         line_code: 1
         line_name: my line
         navigability: BOTH
-        sch:
-          coordinates:
-          - - 1.0
-            - 41.0
-          - - 2.0
-            - 42.0
-          type: LineString
         slopes:
         - begin: 250
           end: 500
@@ -6928,8 +6911,6 @@ components:
           type: string
         obj_id:
           type: string
-        schematic:
-          $ref: '#/components/schemas/GeoJsonPoint'
         track_sections:
           items:
             properties:
@@ -6957,7 +6938,6 @@ components:
       - ch
       - ci
       - geographic
-      - schematic
       - track_sections
       type: object
     SearchResultItemProject:
@@ -7061,8 +7041,6 @@ components:
           type: integer
         line_name:
           type: string
-        schematic:
-          $ref: '#/components/schemas/GeoJsonPoint'
         settings:
           items:
             type: string
@@ -7085,7 +7063,6 @@ components:
       - line_code
       - line_name
       - geographic
-      - schematic
       type: object
     SearchResultItemStudy:
       description: A search result item for a query with `object = "study"`
@@ -8438,8 +8415,6 @@ components:
           items:
             $ref: '#/components/schemas/LoadingGaugeLimit'
           type: array
-        sch:
-          $ref: '#/components/schemas/Geometry'
         slopes:
           items:
             $ref: '#/components/schemas/Slope'
@@ -8450,7 +8425,6 @@ components:
       - slopes
       - curves
       - geo
-      - sch
       type: object
     TrainImportReport:
       properties:
@@ -9044,16 +9018,13 @@ components:
       type: object
     Zone:
       description: |-
-        Geographic and Schematic bounding box zone impacted by a list of operations.
+        Geographic bounding box zone impacted by a list of operations.
         Zones use the coordinate system [epsg:4326](https://epsg.io/4326).
       properties:
         geo:
           $ref: '#/components/schemas/BoundingBox'
-        sch:
-          $ref: '#/components/schemas/BoundingBox'
       required:
       - geo
-      - sch
       type: object
     ZoneUpdate:
       properties:
@@ -9669,13 +9640,9 @@ paths:
                     railjson:
                       $ref: '#/components/schemas/Railjson'
                       description: Object properties in railjson format
-                    schematic:
-                      $ref: '#/components/schemas/Geometry'
-                      description: object's schematic in geojson format
                   required:
                   - railjson
                   - geographic
-                  - schematic
                   type: object
                 type: array
           description: No content
@@ -9758,7 +9725,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Zone'
           description: The BBox of the line
-      summary: Returns the BBoxes (geo and schematic) of a line
+      summary: Returns the BBoxes of a line
       tags:
       - infra
   /infra/{infra_id}/lock/:

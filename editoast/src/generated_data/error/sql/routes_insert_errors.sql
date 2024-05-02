@@ -5,12 +5,10 @@ WITH errors AS (
 INSERT INTO infra_layer_error (
         infra_id,
         geographic,
-        schematic,
         information,
         info_hash
     )
 SELECT $1 AS infra_id,
-    NULL,
     NULL,
     errors.information,
     error_hash

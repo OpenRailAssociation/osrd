@@ -26,8 +26,6 @@ pub struct TrackSectionCache {
     pub curves: Vec<Curve>,
     #[derivative(Hash = "ignore", PartialEq = "ignore")]
     pub bbox_geo: BoundingBox,
-    #[derivative(Hash = "ignore", PartialEq = "ignore")]
-    pub bbox_sch: BoundingBox,
 }
 
 impl OSRDTyped for TrackSectionCache {
@@ -62,7 +60,6 @@ impl From<TrackSection> for TrackSectionCache {
     fn from(track: TrackSection) -> Self {
         TrackSectionCache {
             bbox_geo: track.geo_bbox(),
-            bbox_sch: track.sch_bbox(),
             obj_id: track.id.0,
             length: track.length,
             curves: track.curves,

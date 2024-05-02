@@ -170,7 +170,6 @@ pub async fn split_track_section<'a>(
         id: Identifier::from(left_tracksection_id),
         length: distance,
         geo: tracksection_data.left_geo.as_ref().clone(),
-        sch: tracksection_data.left_geo.as_ref().clone(),
         slopes: tracksection
             .slopes
             .iter()
@@ -216,7 +215,6 @@ pub async fn split_track_section<'a>(
         id: Identifier::from(right_tracksection_id),
         length: tracksection.length - distance,
         geo: tracksection_data.right_geo.as_ref().clone(),
-        sch: tracksection_data.right_geo.as_ref().clone(),
         slopes: tracksection
             .slopes
             .iter()
@@ -341,7 +339,7 @@ pub async fn split_track_section<'a>(
 
 /// Function used while splitting a track section.
 /// It compute the impacted list of operations in the DB to do, following the split of the tracksection.
-///  
+///
 /// # Example
 /// * On Switch, we change the ports ref
 /// * On electrification, we change the track ranges

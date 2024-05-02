@@ -1,5 +1,5 @@
 {
-    "version": "3.4.11",
+    "version": "3.4.12",
     "operational_points": [],
     "routes": [
         {
@@ -381,19 +381,6 @@
                     ]
                 ]
             },
-            "sch": {
-                "type": "LineString",
-                "coordinates": [
-                    [
-                        0.0,
-                        250.0
-                    ],
-                    [
-                        1000.0,
-                        0.0
-                    ]
-                ]
-            },
             "id": "track.0",
             "length": 1000.0,
             "slopes": [],
@@ -410,19 +397,6 @@
         },
         {
             "geo": {
-                "type": "LineString",
-                "coordinates": [
-                    [
-                        0.0,
-                        -250.0
-                    ],
-                    [
-                        1000.0,
-                        0.0
-                    ]
-                ]
-            },
-            "sch": {
                 "type": "LineString",
                 "coordinates": [
                     [
@@ -463,19 +437,6 @@
                     ]
                 ]
             },
-            "sch": {
-                "type": "LineString",
-                "coordinates": [
-                    [
-                        1000.0,
-                        0.0
-                    ],
-                    [
-                        2030.0,
-                        0.0
-                    ]
-                ]
-            },
             "id": "track.2",
             "length": 1000.0,
             "slopes": [],
@@ -492,19 +453,6 @@
         },
         {
             "geo": {
-                "type": "LineString",
-                "coordinates": [
-                    [
-                        2030.0,
-                        0.0
-                    ],
-                    [
-                        3030.0,
-                        250.0
-                    ]
-                ]
-            },
-            "sch": {
                 "type": "LineString",
                 "coordinates": [
                     [
@@ -545,19 +493,6 @@
                     ]
                 ]
             },
-            "sch": {
-                "type": "LineString",
-                "coordinates": [
-                    [
-                        2030.0,
-                        0.0
-                    ],
-                    [
-                        3030.0,
-                        -250.0
-                    ]
-                ]
-            },
             "id": "track.4",
             "length": 1000.0,
             "slopes": [],
@@ -586,19 +521,6 @@
                     ]
                 ]
             },
-            "sch": {
-                "type": "LineString",
-                "coordinates": [
-                    [
-                        3030.0,
-                        -250.0
-                    ],
-                    [
-                        4030.0,
-                        -500.0
-                    ]
-                ]
-            },
             "id": "track.5",
             "length": 1000.0,
             "slopes": [],
@@ -615,19 +537,6 @@
         },
         {
             "geo": {
-                "type": "LineString",
-                "coordinates": [
-                    [
-                        3030.0,
-                        -250.0
-                    ],
-                    [
-                        4030.0,
-                        0.0
-                    ]
-                ]
-            },
-            "sch": {
                 "type": "LineString",
                 "coordinates": [
                     [

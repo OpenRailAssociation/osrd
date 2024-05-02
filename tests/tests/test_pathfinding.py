@@ -59,7 +59,6 @@ _EXPECTED_WEST_TO_SOUTH_EAST_PATH = Path(
                 "path_offset": 0.0,
                 "suggestion": False,
                 "geo": {"coordinates": [-0.387122554630656, 49.49979999999999], "type": "Point"},
-                "sch": {"coordinates": [-0.387122554630656, 49.49979999999999], "type": "Point"},
                 "ch": None,
                 "uic": None,
             },
@@ -71,7 +70,6 @@ _EXPECTED_WEST_TO_SOUTH_EAST_PATH = Path(
                 "path_offset": 11612.966050992638,
                 "suggestion": True,
                 "geo": {"coordinates": [-0.30369999999999997, 49.4999], "type": "Point"},
-                "sch": {"coordinates": [-0.30369999999999997, 49.4999], "type": "Point"},
                 "ch": "BV",
                 "uic": 3,
             },
@@ -83,7 +81,6 @@ _EXPECTED_WEST_TO_SOUTH_EAST_PATH = Path(
                 "path_offset": 26162.96605099264,
                 "suggestion": True,
                 "geo": {"coordinates": [-0.22656, 49.4999], "type": "Point"},
-                "sch": {"coordinates": [-0.22656, 49.4999], "type": "Point"},
                 "ch": "BV",
                 "uic": 4,
             },
@@ -95,66 +92,11 @@ _EXPECTED_WEST_TO_SOUTH_EAST_PATH = Path(
                 "path_offset": 45549.5653000392,
                 "suggestion": False,
                 "geo": {"coordinates": [-0.095104854807785, 49.484], "type": "Point"},
-                "sch": {"coordinates": [-0.095104854807785, 49.484], "type": "Point"},
                 "ch": None,
                 "uic": None,
             },
         ],
         "geographic": {
-            "coordinates": [
-                [-0.3871225692307692, 49.49979999999999],
-                [-0.37276923076923074, 49.49979999999999],
-                [-0.37, 49.49979999999999],
-                [-0.3675, 49.499849999999995],
-                [-0.365, 49.4999],
-                [-0.36401, 49.4999],
-                [-0.35509999999999997, 49.4999],
-                [-0.3463, 49.4999],
-                [-0.3375, 49.4999],
-                [-0.3287, 49.4999],
-                [-0.3199, 49.4999],
-                [-0.31099, 49.4999],
-                [-0.31, 49.4999],
-                [-0.30748, 49.4999],
-                [-0.29852, 49.4999],
-                [-0.296, 49.4999],
-                [-0.29510719999999996, 49.4999],
-                [-0.28738199999999997, 49.4999],
-                [-0.279756, 49.4999],
-                [-0.27213, 49.4999],
-                [-0.26450399999999996, 49.4999],
-                [-0.256878, 49.4999],
-                [-0.24925199999999997, 49.4999],
-                [-0.241626, 49.4999],
-                [-0.234, 49.4999],
-                [-0.226374, 49.4999],
-                [-0.218748, 49.4999],
-                [-0.211122, 49.4999],
-                [-0.203496, 49.4999],
-                [-0.19587, 49.4999],
-                [-0.18824399999999997, 49.4999],
-                [-0.180618, 49.4999],
-                [-0.1728928, 49.4999],
-                [-0.172, 49.4999],
-                [-0.1697798132267551, 49.4999],
-                [-0.1372170738858298, 49.4999],
-                [-0.1354, 49.4999],
-                [-0.135, 49.49995],
-                [-0.1346, 49.4999],
-                [-0.13230255256768042, 49.4999],
-                [-0.12270056031973472, 49.4999],
-                [-0.12, 49.4999],
-                [-0.11870418392652043, 49.49914842667738],
-                [-0.115, 49.497],
-                [-0.115, 49.487800145898106],
-                [-0.115, 49.487],
-                [-0.11, 49.484],
-                [-0.10331554889647653, 49.484],
-                [-0.09510485688040474, 49.484],
-            ],
-            "type": "LineString",
-        },
-        "schematic": {
             "coordinates": [
                 [-0.3871225692307692, 49.49979999999999],
                 [-0.37276923076923074, 49.49979999999999],
@@ -228,7 +170,6 @@ def assert_steps_are_equals(steps: Sequence[Any], expected_steps: Sequence[Any])
     assert len(steps) == len(expected_steps)
 
     for i in range(len(steps)):
-        assert_points_are_equals(steps[i].pop("sch"), expected_steps[i].pop("sch"))
         assert_points_are_equals(steps[i].pop("geo"), expected_steps[i].pop("geo"))
         recursive_approx(expected_steps[i], steps[i])
 
@@ -241,4 +182,3 @@ def test_west_to_south_east_path(west_to_south_east_path: Path):
     assert_steps_are_equals(west_to_south_east_path.steps, _EXPECTED_WEST_TO_SOUTH_EAST_PATH.steps)
 
     assert_line_strings_are_equals(west_to_south_east_path.geographic, _EXPECTED_WEST_TO_SOUTH_EAST_PATH.geographic)
-    assert_line_strings_are_equals(west_to_south_east_path.schematic, _EXPECTED_WEST_TO_SOUTH_EAST_PATH.schematic)
