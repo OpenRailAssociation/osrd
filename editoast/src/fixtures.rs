@@ -224,20 +224,27 @@ pub mod tests {
         db_pool: Data<DbConnectionPool>,
     ) -> TrainScheduleV2FixtureSet {
         let timetable = timetable_v2.await;
-        let train_schedule_base: TrainScheduleBase =
-            serde_json::from_str(include_str!("./tests/train_schedules/simple.json"))
-                .expect("Unable to parse");
-        let train_schedule_form = TrainScheduleForm {
-            timetable_id: Some(timetable.id()),
-            train_schedule: train_schedule_base,
-        };
-
-        let train_schedule = TestFixture::create(train_schedule_form.into(), db_pool).await;
+        let train_schedule = make_simple_train_schedule_v2(timetable.id(), db_pool).await;
 
         TrainScheduleV2FixtureSet {
             train_schedule,
             timetable,
         }
+    }
+
+    pub async fn make_simple_train_schedule_v2(
+        timetable_id: i64,
+        db_pool: Data<DbConnectionPool>,
+    ) -> TestFixture<TrainScheduleV2> {
+        let train_schedule_base: TrainScheduleBase =
+            serde_json::from_str(include_str!("./tests/train_schedules/simple.json"))
+                .expect("Unable to parse");
+        let train_schedule_form = TrainScheduleForm {
+            timetable_id: Some(timetable_id),
+            train_schedule: train_schedule_base,
+        };
+
+        TestFixture::create(train_schedule_form.into(), db_pool).await
     }
 
     #[derive(Debug)]

@@ -11,6 +11,7 @@ use actix_web::web::{Data, Json, Path, Query};
 use actix_web::{delete, get, put, HttpResponse};
 use editoast_derive::EditoastError;
 use editoast_schemas::train_schedule::TrainScheduleBase;
+use itertools::Itertools;
 use serde::Deserialize;
 use serde::Serialize;
 use serde_qs::actix::QsQuery;
@@ -54,6 +55,7 @@ crate::routes! {
     "/v2/train_schedule" => {
         delete,
         simulation_summary,
+        get_batch,
         projection::routes(),
         "/{id}" => {
             get,
@@ -183,12 +185,44 @@ async fn get(
     let train_schedule_id = train_schedule_id.id;
     let conn = &mut db_pool.get().await?;
 
-    // Return the timetable
     let train_schedule = TrainSchedule::retrieve_or_fail(conn, train_schedule_id, || {
         TrainScheduleError::NotFound { train_schedule_id }
     })
     .await?;
     Ok(Json(train_schedule.into()))
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, IntoParams)]
+struct GetBatchParams {
+    ids: Vec<i64>,
+}
+
+/// Return a specific train schedule
+#[utoipa::path(
+    tag = "train_schedulev2",
+    params(
+        ("ids" = Vec<i64>, Query, description = "Ids of train schedule"),
+    ),
+    responses(
+        (status = 200, description = "Retrieve a list of train schedule", body = Vec<TrainScheduleResult>)
+    )
+)]
+#[get("")]
+async fn get_batch(
+    db_pool: Data<DbConnectionPool>,
+    params: QsQuery<GetBatchParams>,
+) -> Result<Json<Vec<TrainScheduleResult>>> {
+    let conn = &mut db_pool.get().await?;
+    let query_props = params.into_inner();
+    let train_ids = query_props.ids;
+    let trains: Vec<TrainSchedule> =
+        TrainSchedule::retrieve_batch_or_fail(conn, train_ids, |missing| {
+            TrainScheduleError::BatchTrainScheduleNotFound {
+                number: missing.len(),
+            }
+        })
+        .await?;
+    Ok(Json(trains.into_iter().map_into().collect()))
 }
 
 /// Delete a train schedule and its result
@@ -451,7 +485,6 @@ fn train_simulation_input_hash(
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, IntoParams)]
 struct SimulationBatchParams {
     infra: i64,
-    // list of train ids
     ids: Vec<i64>,
 }
 
@@ -636,6 +669,7 @@ mod tests {
 
     use super::*;
     use crate::fixtures::tests::db_pool;
+    use crate::fixtures::tests::make_simple_train_schedule_v2;
     use crate::fixtures::tests::named_fast_rolling_stock;
     use crate::fixtures::tests::small_infra;
     use crate::fixtures::tests::timetable_v2;
@@ -665,6 +699,40 @@ mod tests {
         // Delete the train_schedule
         assert!(fixture
             .train_schedule
+            .model
+            .delete(&mut db_pool.get().await.unwrap())
+            .await
+            .unwrap());
+
+        // Should fail
+        let request = TestRequest::get().uri(&url).to_request();
+        let response = call_service(&service, request).await;
+        assert!(response.status().is_client_error());
+    }
+
+    #[rstest]
+    async fn get_batch_trainschedule(
+        #[future] timetable_v2: TestFixture<Timetable>,
+        db_pool: Data<DbConnectionPool>,
+    ) {
+        let service = create_test_service().await;
+        let timetable = timetable_v2.await;
+        let ts1 = make_simple_train_schedule_v2(timetable.id(), db_pool.clone()).await;
+        let ts2 = make_simple_train_schedule_v2(timetable.id(), db_pool.clone()).await;
+        let ts3 = make_simple_train_schedule_v2(timetable.id(), db_pool.clone()).await;
+
+        let url = format!(
+            "/v2/train_schedule/?ids[]={}&ids[]={}&ids[]={}",
+            ts1.id, ts2.id, ts3.id
+        );
+
+        // Should succeed
+        let request = TestRequest::get().uri(&url).to_request();
+        let res: Vec<TrainScheduleResult> = call_and_read_body_json(&service, request).await;
+        assert_eq!(res.len(), 3);
+
+        // Delete one of the train_schedule
+        assert!(ts1
             .model
             .delete(&mut db_pool.get().await.unwrap())
             .await
