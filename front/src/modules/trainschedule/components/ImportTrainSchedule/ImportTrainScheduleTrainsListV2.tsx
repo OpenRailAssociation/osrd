@@ -6,9 +6,12 @@ import { keyBy } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
 import type { TrainScheduleV2 } from 'applications/operationalStudies/types';
-import { osrdEditoastApi, type LightRollingStockWithLiveries } from 'common/api/osrdEditoastApi';
+import {
+  osrdEditoastApi,
+  type LightRollingStockWithLiveries,
+  type TrainScheduleBase,
+} from 'common/api/osrdEditoastApi';
 import { Loader } from 'common/Loaders';
-// eslint-disable-next-line import/no-cycle
 import { ImportTrainScheduleTrainDetail } from 'modules/trainschedule/components/ImportTrainSchedule';
 import rollingstockOpenData2OSRD from 'modules/trainschedule/components/ImportTrainSchedule/rollingstock_opendata2osrd.json';
 import { setFailure, setSuccess } from 'reducers/main';
@@ -29,6 +32,7 @@ type ImportTrainScheduleTrainsListProps = {
   rollingStocks: LightRollingStockWithLiveries[];
   isLoading: boolean;
   timetableId: number;
+  trainsJsonData: TrainScheduleBase[];
 };
 
 const ImportTrainScheduleTrainsListV2 = ({
@@ -36,6 +40,7 @@ const ImportTrainScheduleTrainsListV2 = ({
   rollingStocks,
   isLoading,
   timetableId,
+  trainsJsonData,
 }: ImportTrainScheduleTrainsListProps) => {
   const { t } = useTranslation(['operationalStudies/importTrainSchedule']);
 
@@ -53,7 +58,8 @@ const ImportTrainScheduleTrainsListV2 = ({
 
   async function generateV2TrainSchedules() {
     try {
-      const payloads = generateV2TrainSchedulesPayloads(trainsList);
+      const payloads =
+        trainsJsonData.length > 0 ? trainsJsonData : generateV2TrainSchedulesPayloads(trainsList);
 
       await postTrainSchedule({ id: timetableId, body: payloads }).unwrap();
       refetchTimetable();
@@ -80,38 +86,40 @@ const ImportTrainScheduleTrainsListV2 = ({
     }
   }
 
-  return trainsList.length > 0 ? (
+  return trainsList.length > 0 || trainsJsonData.length > 0 ? (
     <div className="container-fluid mb-2">
       <div className="osrd-config-item-container import-train-schedule-trainlist">
         <div className="import-train-schedule-trainlist-launchbar">
           <span className="import-train-schedule-trainlist-launchbar-nbresults">
-            {trainsList.length} {t('trainsFound')}
+            {trainsList.length > 0 ? trainsList.length : trainsJsonData.length} {t('trainsFound')}
           </span>
           <button
             className="btn btn-primary btn-sm ml-auto"
             type="button"
-            onClick={generateV2TrainSchedules}
+            onClick={() => generateV2TrainSchedules()}
           >
             <Rocket />
             <span className="ml-3">{t('launchImport')}</span>
           </button>
         </div>
-        <div className="import-train-schedule-trainlist-results">
-          {trainsList.map((train, idx) => (
-            <ImportTrainScheduleTrainDetail
-              trainData={train}
-              idx={idx}
-              key={train.trainNumber}
-              rollingStock={
-                rollingStockDict[
-                  rollingstockOpenData2OSRD[
-                    train.rollingStock as keyof typeof rollingstockOpenData2OSRD
+        {trainsList.length > 0 && (
+          <div className="import-train-schedule-trainlist-results">
+            {trainsList.map((train, idx) => (
+              <ImportTrainScheduleTrainDetail
+                trainData={train}
+                idx={idx}
+                key={train.trainNumber}
+                rollingStock={
+                  rollingStockDict[
+                    rollingstockOpenData2OSRD[
+                      train.rollingStock as keyof typeof rollingstockOpenData2OSRD
+                    ]
                   ]
-                ]
-              }
-            />
-          ))}
-        </div>
+                }
+              />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   ) : (

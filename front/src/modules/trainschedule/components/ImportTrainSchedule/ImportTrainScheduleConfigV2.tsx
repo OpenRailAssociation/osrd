@@ -10,6 +10,7 @@ import type {
   TrainScheduleImportConfig,
 } from 'applications/operationalStudies/types';
 import { getGraouTrainSchedules } from 'common/api/graouApi';
+import type { TrainScheduleBase } from 'common/api/osrdEditoastApi';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import StationCard, { type ImportStation } from 'common/StationCard';
@@ -22,11 +23,13 @@ import { formatIsoDate } from 'utils/date';
 interface ImportTrainScheduleConfigProps {
   setTrainsList: (trainsList: TrainScheduleV2[]) => void;
   setIsLoading: (isLoading: boolean) => void;
+  setTrainsJsonData: (trainsJsonData: TrainScheduleBase[]) => void;
 }
 
 const ImportTrainScheduleConfigV2 = ({
   setTrainsList,
   setIsLoading,
+  setTrainsJsonData,
 }: ImportTrainScheduleConfigProps) => {
   const { t } = useTranslation(['operationalStudies/importTrainSchedule']);
   const [from, setFrom] = useState<ImportStation | undefined>();
@@ -97,6 +100,7 @@ const ImportTrainScheduleConfigV2 = ({
   async function getTrainsFromOpenData(config: TrainScheduleImportConfig) {
     setTrainsList([]);
     setIsLoading(true);
+    setTrainsJsonData([]);
 
     const result = await getGraouTrainSchedules(config);
     const importedTrainSchedules = validateImportedTrainSchedules(result);
@@ -147,10 +151,10 @@ const ImportTrainScheduleConfigV2 = ({
     setTrainsList([]);
 
     const text = await file.text();
-    const importedTrainSchedules = validateImportedTrainSchedules(JSON.parse(text));
+    const importedTrainSchedules: TrainScheduleBase[] = JSON.parse(text);
 
-    if (importedTrainSchedules && !isEmpty(importedTrainSchedules)) {
-      await updateTrainSchedules(importedTrainSchedules);
+    if (!isEmpty(importedTrainSchedules)) {
+      setTrainsJsonData(importedTrainSchedules);
     }
   };
 

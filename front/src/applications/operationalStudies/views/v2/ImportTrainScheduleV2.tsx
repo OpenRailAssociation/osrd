@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 
 import type { TrainScheduleV2 } from 'applications/operationalStudies/types';
 import { enhancedEditoastApi } from 'common/api/enhancedEditoastApi';
+import type { TrainScheduleBase } from 'common/api/osrdEditoastApi';
 import { Loader } from 'common/Loaders';
 import { ImportTrainScheduleConfigV2 } from 'modules/trainschedule/components/ImportTrainSchedule';
 import ImportTrainScheduleTrainsListV2 from 'modules/trainschedule/components/ImportTrainSchedule/ImportTrainScheduleTrainsListV2';
@@ -15,6 +16,7 @@ const ImportTrainScheduleV2 = ({ timetableId }: { timetableId: number }) => {
   const { t } = useTranslation(['rollingstock']);
   const [trainsList, setTrainsList] = useState<TrainScheduleV2[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [trainsJsonData, setTrainsJsonData] = useState<TrainScheduleBase[]>([]);
 
   const { data: { results: rollingStocks } = { results: [] }, isError } =
     enhancedEditoastApi.endpoints.getLightRollingStock.useQuery({
@@ -34,12 +36,17 @@ const ImportTrainScheduleV2 = ({ timetableId }: { timetableId: number }) => {
 
   return rollingStocks ? (
     <main className="import-train-schedule">
-      <ImportTrainScheduleConfigV2 setIsLoading={setIsLoading} setTrainsList={setTrainsList} />
+      <ImportTrainScheduleConfigV2
+        setIsLoading={setIsLoading}
+        setTrainsList={setTrainsList}
+        setTrainsJsonData={setTrainsJsonData}
+      />
       <ImportTrainScheduleTrainsListV2
         isLoading={isLoading}
         rollingStocks={rollingStocks}
         timetableId={timetableId}
         trainsList={trainsList}
+        trainsJsonData={trainsJsonData}
       />
     </main>
   ) : (
