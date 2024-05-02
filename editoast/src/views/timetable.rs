@@ -12,6 +12,7 @@ use utoipa::ToSchema;
 
 use crate::core::conflicts::ConflicDetectionRequest;
 use crate::core::conflicts::TrainRequirement;
+use crate::core::v2::conflict_detection::ConflictType;
 use crate::core::AsCoreRequest;
 use crate::core::CoreClient;
 use crate::error::Result;
@@ -76,12 +77,6 @@ async fn get(
     let timetable_with_schedules = timetable.with_detailed_train_schedules(db_pool).await?;
 
     Ok(Json(timetable_with_schedules))
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
-pub enum ConflictType {
-    Spacing,
-    Routing,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]

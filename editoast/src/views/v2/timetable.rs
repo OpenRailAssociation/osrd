@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use actix_web::delete;
 use actix_web::get;
 use actix_web::post;
@@ -7,8 +9,6 @@ use actix_web::web::Json;
 use actix_web::web::Path;
 use actix_web::web::Query;
 use actix_web::HttpResponse;
-use chrono::DateTime;
-use chrono::Utc;
 use derivative::Derivative;
 use editoast_derive::EditoastError;
 use serde::Deserialize;
@@ -17,23 +17,31 @@ use thiserror::Error;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
+use crate::core::v2::conflict_detection::Conflict;
+use crate::core::v2::conflict_detection::ConflictDetectionRequest;
+use crate::core::v2::conflict_detection::TrainRequirements;
+use crate::core::v2::simulation::SimulationResponse;
+use crate::core::AsCoreRequest;
 use crate::decl_paginated_response;
 use crate::error::Result;
 use crate::models::List;
 use crate::models::NoParams;
 use crate::modelsv2::timetable::Timetable;
 use crate::modelsv2::timetable::TimetableWithTrains;
+use crate::modelsv2::train_schedule::TrainSchedule;
 use crate::modelsv2::Create;
 use crate::modelsv2::DbConnectionPool;
 use crate::modelsv2::DeleteStatic;
+use crate::modelsv2::Infra;
 use crate::modelsv2::Model;
 use crate::modelsv2::Retrieve;
 use crate::modelsv2::Update;
 use crate::views::pagination::PaginatedResponse;
 use crate::views::pagination::PaginationQueryParam;
-use crate::views::timetable::ConflictType;
+use crate::views::v2::train_schedule::train_simulation_batch;
 use crate::CoreClient;
 use crate::RedisClient;
+use crate::RetrieveBatch;
 
 crate::routes! {
     "/v2/timetable" => {
@@ -53,7 +61,6 @@ editoast_common::schemas! {
     TimetableForm,
     TimetableResult,
     TimetableDetailedResult,
-    Conflict,
 }
 
 #[derive(Debug, Error, EditoastError)]
@@ -62,6 +69,9 @@ enum TimetableError {
     #[error("Timetable '{timetable_id}', could not be found")]
     #[editoast_error(status = 404)]
     NotFound { timetable_id: i64 },
+    #[error("Infra '{infra_id}', could not be found")]
+    #[editoast_error(status = 404)]
+    InfraNotFound { infra_id: i64 },
 }
 
 /// Creation form for a Timetable
@@ -243,43 +253,80 @@ async fn delete(
     Ok(HttpResponse::NoContent().finish())
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
-#[schema(as=ConflictV2)]
-pub struct Conflict {
-    pub train_ids: Vec<i64>,
-    pub train_names: Vec<String>,
-    pub start_time: DateTime<Utc>,
-    pub end_time: DateTime<Utc>,
-    pub conflict_type: ConflictType,
+#[derive(Debug, Default, Clone, Serialize, Deserialize, IntoParams, ToSchema)]
+pub struct InfraIdQueryParam {
+    infra_id: i64,
 }
 
 /// Retrieve the list of conflict of the timetable (invalid trains are ignored)
 #[utoipa::path(
     tag = "timetablev2",
-    params(
-        ("id" = i64, Path, description = "The timetable id"),
-        ("infra_id" = i64, Query, description = "The infra id"),
-    ),
+    params(TimetableIdParam, InfraIdQueryParam),
     responses(
-        (status = 200, description = "list of conflict", body = Vec<ConflictV2>),
+        (status = 200, description = "List of conflict", body = Vec<ConflictV2>),
     ),
 )]
 #[get("/conflicts")]
 pub async fn conflicts(
-    _db_pool: Data<DbConnectionPool>,
-    _redis_client: Data<RedisClient>,
-    _core_client: Data<CoreClient>,
-    _infra_id: Query<i64>,
+    db_pool: Data<DbConnectionPool>,
+    redis_client: Data<RedisClient>,
+    core_client: Data<CoreClient>,
+    timetable_id: Path<TimetableIdParam>,
+    query: Query<InfraIdQueryParam>,
 ) -> Result<Json<Vec<Conflict>>> {
-    // TODO
-    // issue: https://github.com/OpenRailAssociation/osrd/issues/6854
-    Ok(Json(vec![Conflict {
-        train_ids: vec![0, 1],
-        train_names: vec!["train.1".into(), "train.2".into()],
-        start_time: DateTime::from_timestamp(1710496800, 0).expect("invalid timestamp"),
-        end_time: DateTime::from_timestamp(1710497400, 0).expect("invalid timestamp"),
-        conflict_type: ConflictType::Routing,
-    }]))
+    let db_pool = db_pool.into_inner();
+    let conn = &mut db_pool.clone().get().await?;
+    let redis_client = redis_client.into_inner();
+    let core_client = core_client.into_inner();
+    let timetable_id = timetable_id.into_inner().id;
+    let infra_id = query.into_inner().infra_id;
+
+    // 1. Retrieve Timetable / Infra / Trains / Simultion
+    let timetable = TimetableWithTrains::retrieve_or_fail(conn, timetable_id, || {
+        TimetableError::NotFound { timetable_id }
+    })
+    .await?;
+
+    let infra = Infra::retrieve_or_fail(conn, infra_id, || TimetableError::InfraNotFound {
+        infra_id,
+    })
+    .await?;
+
+    let (trains, _): (Vec<_>, _) = TrainSchedule::retrieve_batch(conn, timetable.train_ids).await?;
+
+    let simulations = train_simulation_batch(
+        db_pool.clone(),
+        redis_client.clone(),
+        core_client.clone(),
+        &trains,
+        &infra,
+    )
+    .await?;
+
+    // 2. Build core request
+    let mut trains_requirements = HashMap::new();
+    for (train, sim) in trains.into_iter().zip(simulations) {
+        let final_output = match sim {
+            SimulationResponse::Success { final_output, .. } => final_output,
+            _ => continue,
+        };
+        trains_requirements.insert(
+            train.id,
+            TrainRequirements {
+                start_time: train.start_time,
+                spacing_requirements: final_output.spacing_requirements,
+                routing_requirements: final_output.routing_requirements,
+            },
+        );
+    }
+    let conflict_detection_request = ConflictDetectionRequest {
+        trains_requirements,
+    };
+
+    // 3. Call core
+    let conflicts = conflict_detection_request.fetch(&core_client).await?;
+
+    Ok(Json(conflicts.conflicts))
 }
 
 #[cfg(test)]

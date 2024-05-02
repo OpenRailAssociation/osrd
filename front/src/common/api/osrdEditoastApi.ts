@@ -1685,11 +1685,10 @@ export type PutV2TimetableByIdApiArg = {
   timetableForm: TimetableForm;
 };
 export type GetV2TimetableByIdConflictsApiResponse =
-  /** status 200 list of conflict */ ConflictV2[];
+  /** status 200 List of conflict */ ConflictV2[];
 export type GetV2TimetableByIdConflictsApiArg = {
-  /** The timetable id */
+  /** A timetable ID */
   id: number;
-  /** The infra id */
   infraId: number;
 };
 export type DeleteV2TrainScheduleApiResponse = unknown;
@@ -1713,9 +1712,10 @@ export type PostV2TrainScheduleProjectPathApiArg = {
   ids: number[];
   projectPathInput: ProjectPathInput;
 };
-export type GetV2TrainScheduleSimulationSummaryApiResponse = /** status 200 Project Path Output */ {
-  [key: string]: SimulationSummaryResult;
-};
+export type GetV2TrainScheduleSimulationSummaryApiResponse =
+  /** status 200 Associate each train id with its simulation summary */ {
+    [key: string]: SimulationSummaryResult;
+  };
 export type GetV2TrainScheduleSimulationSummaryApiArg = {
   /** The infra id */
   infra: number;
@@ -1742,7 +1742,7 @@ export type GetV2TrainScheduleByIdPathApiArg = {
   infraId: number;
 };
 export type GetV2TrainScheduleByIdSimulationApiResponse =
-  /** status 200 Simulation Output */ SimulationResult;
+  /** status 200 Simulation Output */ SimulationResponse;
 export type GetV2TrainScheduleByIdSimulationApiArg = {
   /** A train schedule ID */
   id: number;
@@ -3097,6 +3097,10 @@ export type PathfindingResult =
   | {
       rolling_stock_name: string;
       status: 'rolling_stock_not_found';
+    }
+  | {
+      core_error: InternalError;
+      status: 'pathfinding_failed';
     };
 export type PathfindingInputV2 = {
   /** List of waypoints given to the pathfinding */
@@ -3194,11 +3198,13 @@ export type TimetableDetailedResult = {
   train_ids: number[];
 };
 export type ConflictV2 = {
-  conflict_type: ConflictType;
+  conflict_type: 'Spacing' | 'Routing';
+  /** Datetime of the end of the conflict */
   end_time: string;
+  /** Datetime of the start of the conflict */
   start_time: string;
+  /** List of train ids involved in the conflict */
   train_ids: number[];
-  train_names: string[];
 };
 export type Distribution = 'STANDARD' | 'MARECO';
 export type TrainScheduleBase = {
@@ -3312,17 +3318,21 @@ export type ProjectPathInput = {
 };
 export type SimulationSummaryResult =
   | {
-      Success: {
-        energy_consumption: number;
-        length: number;
-        time: number;
-      };
+      energy_consumption: number;
+      length: number;
+      status: 'success';
+      time: number;
     }
-  | 'PathfindingFailed'
   | {
-      SimulationFailed: {
-        error_type: string;
-      };
+      status: 'pathfinding_not_found';
+    }
+  | {
+      error_type: string;
+      status: 'pathfinding_failed';
+    }
+  | {
+      error_type: string;
+      status: 'simulation_failed';
     };
 export type ReportTrainV2 = {
   energy_consumption: number;
@@ -3330,7 +3340,7 @@ export type ReportTrainV2 = {
   speeds: number[];
   times: number[];
 };
-export type SimulationResult =
+export type SimulationResponse =
   | {
       base: ReportTrainV2;
       final_output: ReportTrainV2 & {

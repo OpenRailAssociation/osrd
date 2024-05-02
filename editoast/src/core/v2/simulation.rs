@@ -13,7 +13,9 @@ use serde::Serialize;
 use utoipa::ToSchema;
 
 use super::pathfinding::TrackRange;
+use crate::core::v2::pathfinding::PathfindingResult;
 use crate::core::{AsCoreRequest, Json};
+use crate::error::InternalError;
 use crate::RollingStockModel;
 use derivative::Derivative;
 use editoast_schemas::primitives::Identifier;
@@ -22,6 +24,7 @@ use std::hash::Hash;
 editoast_common::schemas! {
     CompleteReportTrain,
     ReportTrain,
+    SimulationResponse,
 }
 
 #[derive(Debug, Serialize, Derivative)]
@@ -224,13 +227,30 @@ pub struct SimulationRequest {
     pub electrical_profile_set_id: Option<i64>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct SimulationResponse {
-    pub base: ReportTrain,
-    pub provisional: ReportTrain,
-    pub final_output: CompleteReportTrain,
-    pub mrsp: Mrsp,
-    pub power_restrictions: Vec<SimulationPowerRestrictionRange>,
+#[derive(Serialize, Deserialize, Clone, Debug, ToSchema)]
+#[serde(tag = "status", rename_all = "snake_case")]
+// We accepted the difference of memory size taken by variants
+// Since there is only on success and others are error cases
+#[allow(clippy::large_enum_variant)]
+pub enum SimulationResponse {
+    Success {
+        #[schema(value_type = ReportTrainV2)]
+        base: ReportTrain,
+        #[schema(value_type = ReportTrainV2)]
+        provisional: ReportTrain,
+        #[schema(inline)]
+        final_output: CompleteReportTrain,
+        #[schema(inline)]
+        mrsp: Mrsp,
+        #[schema(inline)]
+        power_restrictions: Vec<SimulationPowerRestrictionRange>,
+    },
+    PathfindingFailed {
+        pathfinding_result: PathfindingResult,
+    },
+    SimulationFailed {
+        core_error: InternalError,
+    },
 }
 
 impl AsCoreRequest<Json<SimulationResponse>> for SimulationRequest {

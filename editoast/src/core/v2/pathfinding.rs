@@ -8,6 +8,7 @@ use serde::Serialize;
 use utoipa::ToSchema;
 
 use crate::core::{AsCoreRequest, Json};
+use crate::error::InternalError;
 
 editoast_common::schemas! {
     PathfindingResult,
@@ -95,6 +96,9 @@ pub enum PathfindingResult {
     NotEnoughPathItems,
     RollingStockNotFound {
         rolling_stock_name: String,
+    },
+    PathfindingFailed {
+        core_error: InternalError,
     },
 }
 
