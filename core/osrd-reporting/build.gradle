@@ -1,6 +1,7 @@
 plugins {
     id 'java'
     id 'jacoco'
+    alias(libs.plugins.kotlin.jvm)
 }
 
 repositories {
@@ -15,10 +16,14 @@ java {
 
 dependencies {
     // PLEASE ADD AND UPDATE DEPENDENCIES USING libs.versions.toml
+    api project(':kt-osrd-utils')
+
+    implementation libs.kotlin.stdlib
 
     //moshi
     implementation libs.moshi
     implementation libs.moshi.adapters
+    implementation libs.moshi.kotlin
 
     //class-graph
     implementation libs.classgraph
