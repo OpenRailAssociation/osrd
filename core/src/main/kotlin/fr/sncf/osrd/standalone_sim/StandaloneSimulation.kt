@@ -49,7 +49,7 @@ fun runStandaloneSimulation(
     schedule: List<SimulationScheduleItem>,
     initialSpeed: Double,
     margins: RangeValues<MarginValue>,
-): SimulationResponse {
+): SimulationSuccess {
     // MRSP & SpeedLimits
     val mrsp = MRSP.computeMRSP(pathProps, rollingStock, true, speedLimitTag)
     val speedLimits = MRSP.computeMRSP(pathProps, rollingStock, false, speedLimitTag)
@@ -129,7 +129,7 @@ fun runStandaloneSimulation(
             schedule
         )
 
-    return SimulationResponse(
+    return SimulationSuccess(
         base = maxEffortResult,
         provisional = provisionalResult,
         finalOutput = finalEnvelopeResult,

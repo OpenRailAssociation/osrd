@@ -4,6 +4,7 @@ import fr.sncf.osrd.api.ElectricalProfileSetManager
 import fr.sncf.osrd.api.ExceptionHandler
 import fr.sncf.osrd.api.InfraManager
 import fr.sncf.osrd.api.pathfinding.makeChunkPath
+import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl
 import fr.sncf.osrd.sim_infra.api.RawInfra
 import fr.sncf.osrd.sim_infra.api.Route
@@ -68,8 +69,14 @@ class SimulationEndpoint(
                     request.initialSpeed,
                     request.margins,
                 )
-
-            return RsJson(RsWithBody(SimulationResponse.adapter.toJson(res)))
+            return RsJson(RsWithBody(simulationResponseAdapter.toJson(res)))
+        } catch (error: OSRDError) {
+            if (!error.osrdErrorType.isCacheable) {
+                return ExceptionHandler.handle(error)
+            } else {
+                val response = SimulationFailed(error)
+                return RsJson(RsWithBody(simulationResponseAdapter.toJson(response)))
+            }
         } catch (ex: Throwable) {
             return ExceptionHandler.handle(ex)
         }

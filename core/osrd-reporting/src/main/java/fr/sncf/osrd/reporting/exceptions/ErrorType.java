@@ -32,7 +32,7 @@ public enum ErrorType {
     InfraLoadingInvalidStatusException("infra_loading:invalid_status", "Status doesn’t exist", ErrorCause.INTERNAL),
     InfraInvalidStatusWhileWaitingStable(
             "infra_loading:invalid_status_waiting_stable", "invalid status after waitUntilStable", ErrorCause.INTERNAL),
-    InfraNotLoadedException("infra:not_loaded", "Infra not loaded", ErrorCause.USER),
+    InfraNotLoadedException("infra:not_loaded", "Infra not loaded", ErrorCause.USER, false),
     InfraInvalidVersionException("infra:invalid_version", "Invalid infra version", ErrorCause.USER),
     PathfindingGenericError("no_path_found", "No path could be found", ErrorCause.USER),
     PathfindingGaugeError("no_path_found:gauge", "No path could be found with compatible Gauge", ErrorCause.USER),
@@ -138,7 +138,11 @@ public enum ErrorType {
             "Electrical profile set had invalid status after loading",
             ErrorCause.INTERNAL),
     PathWithRepeatedTracks(
-            "path_with_repeated_tracks", "the path goes over the same track multiple times", ErrorCause.USER),
+            "path_with_repeated_tracks", "the path goes over the same track multiple times", ErrorCause.INTERNAL),
+    PathHasInvalidItemPositions(
+            "path_has_invalid_item_positions", "the path has invalid item positions", ErrorCause.INTERNAL),
+    ScheduleMetadataExtractionFailed(
+            "schedule_metadata_extraction_failed", "schedule metadata extraction failed", ErrorCause.INTERNAL),
     AllowanceRangeOutOfBounds("allowance_range", "Allowance ranges are out of bounds", ErrorCause.USER),
     AllowanceOutOfBounds("allowance", "Allowance is out of bounds", ErrorCause.USER),
     InvalidSpeedLimitValue("speed_limit_value", "Speed limit must be greater than 0", ErrorCause.USER),
@@ -150,10 +154,16 @@ public enum ErrorType {
     public final String type;
     public final String message;
     public final ErrorCause cause;
+    public final boolean isCacheable;
 
     ErrorType(String type, String message, ErrorCause cause) {
+        this(type, message, cause, true);
+    }
+
+    ErrorType(String type, String message, ErrorCause cause, boolean isCacheable) {
         this.type = "core:" + type;
         this.message = message;
         this.cause = cause;
+        this.isCacheable = isCacheable;
     }
 }
