@@ -18,8 +18,6 @@ import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath
 import fr.sncf.osrd.envelope_sim_infra.MRSP
 import fr.sncf.osrd.external_generated_inputs.ElectricalProfileMapping
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowanceDistribution
-import fr.sncf.osrd.reporting.exceptions.ErrorType
-import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.sim_infra.api.Path
 import fr.sncf.osrd.sim_infra.api.PathProperties
 import fr.sncf.osrd.sim_infra.api.Route
@@ -183,7 +181,7 @@ fun buildFinalEnvelope(
     var prevFixedPointOffset = Offset<Path>(0.meters)
     var prevFixedPointDepartureTime = 0.0
     val marginRanges = mutableListOf<AllowanceRange>()
-    for ((i, point) in scheduledPoints.withIndex()) {
+    for (point in scheduledPoints) {
         if (point.arrival == null) {
             // No specified arrival time,
             // we account for the stop duration and move on
@@ -193,12 +191,10 @@ fun buildFinalEnvelope(
         val sectionTime =
             getEnvelopeTimeAt(point.pathOffset) - getEnvelopeTimeAt(prevFixedPointOffset)
         val arrivalTime = prevFixedPointDepartureTime + sectionTime
-        val extraTime = point.arrival.seconds - arrivalTime
+        var extraTime = point.arrival.seconds - arrivalTime
         if (extraTime < 0.0) {
-            val error = OSRDError(ErrorType.ImpossibleScheduledPoints)
-            error.context["scheduled_points"] = scheduledPoints
-            error.context["index"] = i
-            throw error
+            // TODO: raise a warning
+            extraTime = 0.0
         }
         marginRanges.addAll(
             distributeAllowance(
@@ -211,7 +207,7 @@ fun buildFinalEnvelope(
             )
         )
         prevFixedPointOffset = point.pathOffset
-        prevFixedPointDepartureTime = point.arrival.seconds + (point.stopFor?.seconds ?: 0.0)
+        prevFixedPointDepartureTime = arrivalTime + extraTime + (point.stopFor?.seconds ?: 0.0)
     }
     val pathEnd = Offset<Path>(maxEffortEnvelope.endPos.meters)
     if (prevFixedPointOffset < pathEnd) {
