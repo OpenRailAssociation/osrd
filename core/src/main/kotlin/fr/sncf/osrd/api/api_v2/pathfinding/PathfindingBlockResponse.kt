@@ -6,6 +6,7 @@ import com.squareup.moshi.Moshi
 import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import fr.sncf.osrd.api.api_v2.TrackRange
+import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.sim_infra.api.Path
 import fr.sncf.osrd.utils.json.UnitAdapterFactory
 import fr.sncf.osrd.utils.units.Length
@@ -74,6 +75,10 @@ class IncompatibleSignalingSystem(
     incompatibleRanges: List<List<Offset<Path>>> // List of pairs
 ) : IncompatibleConstraint(blocks, routes, trackSectionRanges, length, incompatibleRanges)
 
+class PathfindingFailed(
+    @Json(name = "core_error") val coreError: OSRDError,
+) : PathfindingBlockResponse
+
 class NotEnoughPathItems : PathfindingBlockResponse
 
 val polymorphicAdapter: PolymorphicJsonAdapterFactory<PathfindingBlockResponse> =
@@ -86,6 +91,7 @@ val polymorphicAdapter: PolymorphicJsonAdapterFactory<PathfindingBlockResponse> 
         .withSubtype(IncompatibleLoadingGauge::class.java, "incompatible_loading_gauge")
         .withSubtype(IncompatibleSignalingSystem::class.java, "incompatible_signaling_system")
         .withSubtype(NotEnoughPathItems::class.java, "not_enough_path_items")
+        .withSubtype(PathfindingFailed::class.java, "pathfinding_failed")
 
 val pathfindingResponseAdapter: JsonAdapter<PathfindingBlockResponse> =
     Moshi.Builder()

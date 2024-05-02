@@ -9,6 +9,8 @@ import fr.sncf.osrd.envelope.EnvelopeInterpolate
 import fr.sncf.osrd.envelope.EnvelopePhysics
 import fr.sncf.osrd.envelope.EnvelopeTimeInterpolate
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath
+import fr.sncf.osrd.reporting.exceptions.ErrorType
+import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.signaling.SigSystemManager
 import fr.sncf.osrd.signaling.SignalingSimulator
 import fr.sncf.osrd.signaling.SignalingTrainState
@@ -581,7 +583,9 @@ fun trainPathBlockOffset(
             }
         }
     }
-    throw RuntimeException("Couldn't find first chunk on the block path")
+    val error = OSRDError(ErrorType.ScheduleMetadataExtractionFailed)
+    error.context["reason"] = "Couldn't find first chunk on the block path"
+    throw error
 }
 
 fun simplifyPositions(positions: ArrayList<ResultPosition>): ArrayList<ResultPosition> {

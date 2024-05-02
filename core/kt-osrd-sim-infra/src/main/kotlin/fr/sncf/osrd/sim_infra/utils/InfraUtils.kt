@@ -1,5 +1,7 @@
 package fr.sncf.osrd.sim_infra.utils
 
+import fr.sncf.osrd.reporting.exceptions.ErrorType
+import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.utils.indexing.*
 
@@ -116,7 +118,9 @@ private fun findRoute(
             return routeId
         }
     }
-    throw RuntimeException("Couldn't find a route matching the given chunk list")
+    val error = OSRDError(ErrorType.ScheduleMetadataExtractionFailed)
+    error.context["reason"] = "Couldn't find a route matching the given chunk list"
+    throw error
 }
 
 /** Returns false if the route differs from the path */

@@ -45,11 +45,18 @@ class PathfindingBlocksEndpointV2(private val infraManager: InfraManager) : Take
             val infra = infraManager.getInfra(request.infra, request.expectedVersion, recorder)
             val path = runPathfinding(infra, request)
             val res = runPathfindingPostProcessing(infra, path)
+            validatePathfindingResponse(request, res)
             RsJson(RsWithBody(pathfindingResponseAdapter.toJson(res)))
         } catch (error: NoPathFoundException) {
             RsJson(RsWithBody(pathfindingResponseAdapter.toJson(error.response)))
+        } catch (error: OSRDError) {
+            if (!error.osrdErrorType.isCacheable) {
+                ExceptionHandler.handle(error)
+            } else {
+                val response = PathfindingFailed(error)
+                RsJson(RsWithBody(pathfindingResponseAdapter.toJson(response)))
+            }
         } catch (ex: Throwable) {
-            // TODO: include warnings in the response
             ExceptionHandler.handle(ex)
         }
     }
@@ -186,7 +193,7 @@ private fun computePaths(
         }
     }
     // It didn’t fail due to a constraint, no path exists
-    throw OSRDError(ErrorType.PathfindingGenericError)
+    throw NoPathFoundException(NotFoundInBlocks(listOf(), Length(0.meters)))
 }
 
 /**
@@ -276,4 +283,22 @@ private fun getBlockOffset(
     throw AssertionError(
         String.format("getBlockOffset: Track chunk %s not in block %s", trackChunkId, blockId)
     )
+}
+
+fun validatePathfindingResponse(req: PathfindingBlockRequest, res: PathfindingBlockResponse) {
+    if (res !is PathfindingBlockSuccess) return
+
+    val tracks = HashSet<String>()
+    for (track in res.trackSectionRanges) tracks.add(track.trackSection)
+    if (tracks.size != res.trackSectionRanges.size)
+        throw OSRDError(ErrorType.PathWithRepeatedTracks)
+
+    if (res.pathItemPositions.size != req.pathItems.size)
+        throw OSRDError(ErrorType.PathHasInvalidItemPositions)
+
+    if (res.pathItemPositions[0].distance.millimeters != 0L)
+        throw OSRDError(ErrorType.PathHasInvalidItemPositions)
+
+    if (res.pathItemPositions[res.pathItemPositions.size - 1] != res.length)
+        throw OSRDError(ErrorType.PathHasInvalidItemPositions)
 }
