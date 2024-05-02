@@ -371,23 +371,6 @@ paths:
                 items:
                   type: integer
 
-  /infra/voltages/:
-    get:
-      tags:
-        - infra
-        - rolling_stock
-      summary: List all voltages of all infras
-      responses:
-        200:
-          description: Voltages list
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: string
-                example: ["750V", "1500V", "2500.5V"]
-
   /infra/{id}/objects/{object_type}/:
     post:
       tags:

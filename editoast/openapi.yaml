@@ -9032,20 +9032,23 @@ paths:
       - infra
   /infra/voltages/:
     get:
+      description: Returns the set of voltages for all infras and rolling_stocks modes.
       responses:
         '200':
           content:
             application/json:
+              example:
+              - 750V
+              - 1500V
+              - 2500.5V
               schema:
-                example:
-                - 750V
-                - 1500V
-                - 2500.5V
                 items:
                   type: string
                 type: array
           description: Voltages list
-      summary: List all voltages of all infras
+        '404':
+          description: The infra was not found
+      summary: Returns the set of voltages for all infras and rolling_stocks modes.
       tags:
       - infra
       - rolling_stock
