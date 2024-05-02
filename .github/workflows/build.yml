@@ -305,6 +305,17 @@ jobs:
       - name: Check TOML format
         run: taplo fmt --check --diff
 
+
+  check_editoast_utoipa:
+      runs-on: ubuntu-latest
+      steps:
+          - name: Checkout
+            uses: actions/checkout@v4
+          - name: Checking utoipa usage
+            run: |
+                python3 scripts/check-editoast-utoipa.py editoast/{openapi.yaml, editoast_common, editoast_schemas, src}
+
+
   check_infra_schema_sync:
     runs-on: ubuntu-latest
     steps:
