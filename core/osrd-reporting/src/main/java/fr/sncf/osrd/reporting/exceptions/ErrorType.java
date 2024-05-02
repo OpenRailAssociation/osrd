@@ -70,7 +70,6 @@ public enum ErrorType {
     InvalidRollingStockField("invalid_rolling_stock_field", "Invalid rolling stock field", ErrorCause.USER),
     MissingRollingStockField("missing_rolling_stock_field", "missing rolling stock field", ErrorCause.USER),
 
-    ImpossibleScheduledPoints("invalid_schedule", "Impossible to follow scheduled points", ErrorCause.USER),
     InvalidScheduleTrackDoesNotExist(
             "invalid_schedule", "Track %s referenced in path step does not exist", ErrorCause.USER),
     InvalidScheduleTrackLocationNotIncludedInPath(
