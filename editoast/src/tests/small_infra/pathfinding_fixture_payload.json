@@ -245,13 +245,6 @@
           49.49
         ]
       },
-      "sch": {
-        "type": "Point",
-        "coordinates": [
-          -0.4,
-          49.49
-        ]
-      },
       "name": null,
       "duration": 0,
       "location": {
@@ -264,13 +257,6 @@
     {
       "id": "Mid_West_station",
       "geo": {
-        "type": "Point",
-        "coordinates": [
-          -0.296,
-          49.4999
-        ]
-      },
-      "sch": {
         "type": "Point",
         "coordinates": [
           -0.296,
@@ -295,13 +281,6 @@
           49.4999
         ]
       },
-      "sch": {
-        "type": "Point",
-        "coordinates": [
-          -0.172,
-          49.4999
-        ]
-      },
       "name": "Mid_East_station",
       "duration": 0,
       "location": {
@@ -320,13 +299,6 @@
           49.484
         ]
       },
-      "sch": {
-        "type": "Point",
-        "coordinates": [
-          -0.09,
-          49.484
-        ]
-      },
       "name": "South_East_station",
       "duration": 0,
       "location": {
@@ -339,13 +311,6 @@
     {
       "id": null,
       "geo": {
-        "type": "Point",
-        "coordinates": [
-          -0.09,
-          49.484
-        ]
-      },
-      "sch": {
         "type": "Point",
         "coordinates": [
           -0.09,

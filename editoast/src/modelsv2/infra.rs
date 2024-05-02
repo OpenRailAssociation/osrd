@@ -158,11 +158,11 @@ impl Infra {
                 let layer_table = layer_table.to_string();
                 let sql = if layer_table != get_geometry_layer_table(&ObjectType::Signal).unwrap() {
                     format!(
-                    "INSERT INTO {layer_table}(obj_id,geographic,schematic,infra_id) SELECT obj_id,geographic,schematic,$1 FROM {layer_table} WHERE infra_id=$2")
+                    "INSERT INTO {layer_table}(obj_id,geographic,infra_id) SELECT obj_id,geographic,$1 FROM {layer_table} WHERE infra_id=$2")
                 } else {
                     // TODO: we should test this behavior
                     format!(
-                    "INSERT INTO {layer_table}(obj_id,geographic,schematic,infra_id, angle_geo, angle_sch, signaling_system, sprite) SELECT obj_id,geographic,schematic,$1,angle_geo,angle_sch, signaling_system, sprite FROM {layer_table} WHERE infra_id = $2"
+                    "INSERT INTO {layer_table}(obj_id,geographic,infra_id, angle_geo, signaling_system, sprite) SELECT obj_id,geographic,$1,angle_geo, signaling_system, sprite FROM {layer_table} WHERE infra_id = $2"
                 )
                 };
 
@@ -175,7 +175,7 @@ impl Infra {
         }
 
         // Add error layers
-        let error_layer = sql_query("INSERT INTO infra_layer_error(geographic, schematic, information, infra_id, info_hash) SELECT geographic, schematic, information, $1, info_hash FROM infra_layer_error WHERE infra_id = $2")
+        let error_layer = sql_query("INSERT INTO infra_layer_error(geographic, information, infra_id, info_hash) SELECT geographic, information, $1, info_hash FROM infra_layer_error WHERE infra_id = $2")
         .bind::<BigInt, _>(cloned_infra.id)
         .bind::<BigInt, _>(self.id)
         .execute(&mut conn);

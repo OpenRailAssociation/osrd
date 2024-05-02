@@ -114,7 +114,6 @@
 //!       trigram: opm.data#>>'{extensions,sncf,trigram}'
 //!       ch: opm.data#>>'{extensions,sncf,ch}'
 //!       geographic: ST_AsGeoJSON(ST_Transform(opl.geographic, 4326))::json
-//!       schematic: ST_AsGeoJSON(ST_Transform(opl.schematic, 4326))::json
 //! ```
 //!
 //! In order to create the aforementioned search table (or materialized views), check

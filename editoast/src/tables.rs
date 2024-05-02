@@ -54,7 +54,6 @@ diesel::table! {
         #[max_length = 255]
         obj_id -> Varchar,
         geographic -> Geometry,
-        schematic -> Geometry,
         infra_id -> Int8,
     }
 }
@@ -68,7 +67,6 @@ diesel::table! {
         #[max_length = 255]
         obj_id -> Varchar,
         geographic -> Geometry,
-        schematic -> Geometry,
         infra_id -> Int8,
     }
 }
@@ -82,7 +80,6 @@ diesel::table! {
         #[max_length = 255]
         obj_id -> Varchar,
         geographic -> Geometry,
-        schematic -> Geometry,
         infra_id -> Int8,
     }
 }
@@ -94,7 +91,6 @@ diesel::table! {
     infra_layer_error (id) {
         id -> Int8,
         geographic -> Nullable<Geometry>,
-        schematic -> Nullable<Geometry>,
         information -> Jsonb,
         infra_id -> Int8,
         #[max_length = 40]
@@ -111,7 +107,6 @@ diesel::table! {
         #[max_length = 255]
         obj_id -> Varchar,
         geographic -> Geometry,
-        schematic -> Geometry,
         infra_id -> Int8,
     }
 }
@@ -125,9 +120,7 @@ diesel::table! {
         #[max_length = 255]
         obj_id -> Varchar,
         geographic -> Geometry,
-        schematic -> Geometry,
         angle_geo -> Float8,
-        angle_sch -> Float8,
         data -> Jsonb,
         infra_id -> Int8,
     }
@@ -142,7 +135,6 @@ diesel::table! {
         #[max_length = 255]
         obj_id -> Varchar,
         geographic -> Geometry,
-        schematic -> Geometry,
         infra_id -> Int8,
         kp -> Nullable<Text>,
     }
@@ -157,11 +149,9 @@ diesel::table! {
         #[max_length = 255]
         obj_id -> Varchar,
         geographic -> Geometry,
-        schematic -> Geometry,
         data -> Jsonb,
         infra_id -> Int8,
         angle_geo -> Nullable<Float8>,
-        angle_sch -> Nullable<Float8>,
     }
 }
 
@@ -174,10 +164,8 @@ diesel::table! {
         #[max_length = 255]
         obj_id -> Varchar,
         geographic -> Geometry,
-        schematic -> Geometry,
         infra_id -> Int8,
         angle_geo -> Float8,
-        angle_sch -> Float8,
         #[max_length = 255]
         signaling_system -> Nullable<Varchar>,
         #[max_length = 255]
@@ -194,7 +182,6 @@ diesel::table! {
         #[max_length = 255]
         obj_id -> Varchar,
         geographic -> Geometry,
-        schematic -> Geometry,
         infra_id -> Int8,
     }
 }
@@ -208,7 +195,6 @@ diesel::table! {
         #[max_length = 255]
         obj_id -> Varchar,
         geographic -> Geometry,
-        schematic -> Geometry,
         infra_id -> Int8,
     }
 }
@@ -222,7 +208,6 @@ diesel::table! {
         #[max_length = 255]
         obj_id -> Varchar,
         geographic -> Geometry,
-        schematic -> Geometry,
         infra_id -> Int8,
     }
 }
@@ -382,7 +367,6 @@ diesel::table! {
         slopes -> Jsonb,
         curves -> Jsonb,
         geographic -> Geometry,
-        schematic -> Geometry,
         infra_id -> Int8,
         length -> Float8,
     }

@@ -34,7 +34,6 @@ collect AS (
     SELECT signs.sc_id,
         signs.data,
         tracks_layer.geographic AS track_geo,
-        tracks_layer.schematic AS track_sch,
         LEAST(
             GREATEST(position / (tracks.data->>'length')::float, 0.),
             1.
@@ -54,33 +53,20 @@ INSERT INTO infra_layer_psl_sign (
         obj_id,
         infra_id,
         geographic,
-        schematic,
         angle_geo,
-        angle_sch,
         data
     )
 SELECT DISTINCT ON (
         ST_LineInterpolatePoint(track_geo, norm_pos),
-        ST_LineInterpolatePoint(track_sch, norm_pos),
         (data->>'type')::text
     ) collect.sc_id,
     $1,
     ST_LineInterpolatePoint(track_geo, norm_pos),
-    ST_LineInterpolatePoint(track_sch, norm_pos),
     COALESCE(
         degrees(
             ST_Azimuth(
                 ST_LineInterpolatePoint(track_geo, GREATEST(norm_pos - 0.0001, 0.)),
                 ST_LineInterpolatePoint(track_geo, LEAST(norm_pos + 0.0001, 1.))
-            )
-        ) + angle_direction,
-        0.
-    ),
-    COALESCE(
-        degrees(
-            ST_Azimuth(
-                ST_LineInterpolatePoint(track_sch, GREATEST(norm_pos - 0.0001, 0.)),
-                ST_LineInterpolatePoint(track_sch, LEAST(norm_pos + 0.0001, 1.))
             )
         ) + angle_direction,
         0.

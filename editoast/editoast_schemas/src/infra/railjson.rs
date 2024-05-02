@@ -15,7 +15,7 @@ use super::Switch;
 use super::SwitchType;
 use super::TrackSection;
 
-pub const RAILJSON_VERSION: &str = "3.4.11";
+pub const RAILJSON_VERSION: &str = "3.4.12";
 
 editoast_common::schemas! {
     RailJson,

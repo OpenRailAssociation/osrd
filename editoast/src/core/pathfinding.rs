@@ -39,8 +39,6 @@ pub struct PathfindingResponse {
     pub length: f64,
     #[derivative(Default(value = "Geometry::new(LineString(Default::default()))"))]
     pub geographic: Geometry,
-    #[derivative(Default(value = "Geometry::new(LineString(Default::default()))"))]
-    pub schematic: Geometry,
     pub route_paths: Vec<RoutePath>,
     pub path_waypoints: Vec<PathWaypoint>,
     pub slopes: SlopeGraph,

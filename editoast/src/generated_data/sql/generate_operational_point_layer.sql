@@ -20,16 +20,6 @@ collect AS (
                 1.
             )
         ) AS geo,
-        ST_LineInterpolatePoint(
-            tracks_layer.schematic,
-            LEAST(
-                GREATEST(
-                    ops.position / (tracks.data->'length')::float,
-                    0.
-                ),
-                1.
-            )
-        ) AS sch,
         ops.kp AS kp
     FROM ops
         INNER JOIN infra_object_track_section AS tracks ON tracks.obj_id = ops.track_id
@@ -37,10 +27,9 @@ collect AS (
         INNER JOIN infra_layer_track_section AS tracks_layer ON tracks.obj_id = tracks_layer.obj_id
         AND tracks.infra_id = tracks_layer.infra_id
 )
-INSERT INTO infra_layer_operational_point (obj_id, infra_id, geographic, schematic, kp)
+INSERT INTO infra_layer_operational_point (obj_id, infra_id, geographic, kp)
 SELECT op_id,
     $1,
     geo,
-    sch,
     kp
 FROM collect

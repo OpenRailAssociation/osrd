@@ -30,38 +30,17 @@ sliced_tracks AS (
                 ),
                 1.
             )
-        ) AS geo,
-        ST_LineSubstring(
-            tracks_layer.schematic,
-            GREATEST(
-                LEAST(
-                    track_ranges.slice_end / (tracks.data->'length')::float,
-                    track_ranges.slice_begin / (tracks.data->'length')::float,
-                    1.
-                ),
-                0.
-            ),
-            LEAST(
-                GREATEST(
-                    track_ranges.slice_begin / (tracks.data->'length')::float,
-                    track_ranges.slice_end / (tracks.data->'length')::float,
-                    0.
-                ),
-                1.
-            )
-        ) AS sch
+        ) AS geo
     FROM track_ranges
         INNER JOIN infra_object_track_section AS tracks ON tracks.obj_id = track_ranges.track_id
         AND tracks.infra_id = $1
         INNER JOIN infra_layer_track_section AS tracks_layer ON tracks.obj_id = tracks_layer.obj_id
         AND tracks.infra_id = tracks_layer.infra_id
 )
-INSERT INTO infra_layer_electrification (obj_id, infra_id, geographic, schematic)
+INSERT INTO infra_layer_electrification (obj_id, infra_id, geographic)
 SELECT electrification_id,
     $1,
-    St_Collect(geo),
-    St_Collect(sch)
+    St_Collect(geo)
 FROM sliced_tracks
 WHERE GeometryType(sliced_tracks.geo) = 'LINESTRING'
-    AND GeometryType(sliced_tracks.sch) = 'LINESTRING'
 GROUP BY electrification_id

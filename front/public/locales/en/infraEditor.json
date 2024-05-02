@@ -541,7 +541,7 @@
     "title": "Extrémité de voie"
   },
   "TrackSection": {
-    "description": "Un tronçon d’itinéraire de voie (TIV) est un morceau de d’itinéraire de voie. Il s’agit du système de repérage utilisé dans OSRD pour localiser un point. Un TIV est identifié par son id unique et ses coordonnées (géographiques ou schématiques).",
+    "description": "Un tronçon d’itinéraire de voie (TIV) est un morceau de d’itinéraire de voie. Il s’agit du système de repérage utilisé dans OSRD pour localiser un point. Un TIV est identifié par son id unique et ses coordonnées géographiques.",
     "properties": {
       "curves": {
         "description": "Liste des courbes du TIV",

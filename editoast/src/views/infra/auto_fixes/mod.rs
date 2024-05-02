@@ -901,10 +901,6 @@ mod tests {
                 vec![0.0, 0.0],
                 vec![1.0, 1.0],
             ])),
-            sch: geos::geojson::Geometry::new(geos::geojson::Value::LineString(vec![
-                vec![0.0, 0.0],
-                vec![1.0, 1.0],
-            ])),
             ..Default::default()
         }
         .into();

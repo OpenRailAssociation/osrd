@@ -16,8 +16,6 @@ class PathfindingResult(@JvmField val length: Double) {
 
     var geographic: RJSLineString? = null
 
-    var schematic: RJSLineString? = null
-
     var slopes: List<SlopeChartPointResult> = ArrayList()
 
     var curves: List<CurveChartPointResult> = ArrayList()

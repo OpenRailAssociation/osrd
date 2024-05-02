@@ -1,5 +1,5 @@
 {
-    "version": "3.4.11",
+    "version": "3.4.12",
     "operational_points": [],
     "routes": [
         {
@@ -290,19 +290,6 @@
                     ]
                 ]
             },
-            "sch": {
-                "type": "LineString",
-                "coordinates": [
-                    [
-                        -0.375,
-                        49.5
-                    ],
-                    [
-                        -0.365,
-                        49.5
-                    ]
-                ]
-            },
             "id": "T1",
             "length": 2015.0,
             "slopes": [],
@@ -319,19 +306,6 @@
         },
         {
             "geo": {
-                "type": "LineString",
-                "coordinates": [
-                    [
-                        -0.365,
-                        49.5
-                    ],
-                    [
-                        -0.265,
-                        49.5
-                    ]
-                ]
-            },
-            "sch": {
                 "type": "LineString",
                 "coordinates": [
                     [
@@ -372,19 +346,6 @@
                     ]
                 ]
             },
-            "sch": {
-                "type": "LineString",
-                "coordinates": [
-                    [
-                        -0.365,
-                        49.5
-                    ],
-                    [
-                        -0.355,
-                        49.51
-                    ]
-                ]
-            },
             "id": "TD1",
             "length": 500.0,
             "slopes": [],
@@ -401,19 +362,6 @@
         },
         {
             "geo": {
-                "type": "LineString",
-                "coordinates": [
-                    [
-                        -0.355,
-                        49.51
-                    ],
-                    [
-                        -0.265,
-                        49.51
-                    ]
-                ]
-            },
-            "sch": {
                 "type": "LineString",
                 "coordinates": [
                     [
@@ -454,19 +402,6 @@
                     ]
                 ]
             },
-            "sch": {
-                "type": "LineString",
-                "coordinates": [
-                    [
-                        -0.355,
-                        49.51
-                    ],
-                    [
-                        -0.345,
-                        49.52
-                    ]
-                ]
-            },
             "id": "TD2",
             "length": 500.0,
             "slopes": [],
@@ -483,19 +418,6 @@
         },
         {
             "geo": {
-                "type": "LineString",
-                "coordinates": [
-                    [
-                        -0.345,
-                        49.52
-                    ],
-                    [
-                        -0.33499999999999996,
-                        49.52
-                    ]
-                ]
-            },
-            "sch": {
                 "type": "LineString",
                 "coordinates": [
                     [
@@ -536,19 +458,6 @@
                     ]
                 ]
             },
-            "sch": {
-                "type": "LineString",
-                "coordinates": [
-                    [
-                        -0.33499999999999996,
-                        49.52
-                    ],
-                    [
-                        -0.325,
-                        49.52
-                    ]
-                ]
-            },
             "id": "T3bis",
             "length": 3000.0,
             "slopes": [],
@@ -565,19 +474,6 @@
         },
         {
             "geo": {
-                "type": "LineString",
-                "coordinates": [
-                    [
-                        -0.325,
-                        49.52
-                    ],
-                    [
-                        -0.265,
-                        49.52
-                    ]
-                ]
-            },
-            "sch": {
                 "type": "LineString",
                 "coordinates": [
                     [
@@ -618,19 +514,6 @@
                     ]
                 ]
             },
-            "sch": {
-                "type": "LineString",
-                "coordinates": [
-                    [
-                        -0.33499999999999996,
-                        49.52
-                    ],
-                    [
-                        -0.325,
-                        49.53
-                    ]
-                ]
-            },
             "id": "TD3",
             "length": 500.0,
             "slopes": [],
@@ -647,19 +530,6 @@
         },
         {
             "geo": {
-                "type": "LineString",
-                "coordinates": [
-                    [
-                        -0.325,
-                        49.53
-                    ],
-                    [
-                        -0.315,
-                        49.53
-                    ]
-                ]
-            },
-            "sch": {
                 "type": "LineString",
                 "coordinates": [
                     [
@@ -700,19 +570,6 @@
                     ]
                 ]
             },
-            "sch": {
-                "type": "LineString",
-                "coordinates": [
-                    [
-                        -0.325,
-                        49.52
-                    ],
-                    [
-                        -0.315,
-                        49.53
-                    ]
-                ]
-            },
             "id": "TD3bis",
             "length": 500.0,
             "slopes": [],
@@ -729,19 +586,6 @@
         },
         {
             "geo": {
-                "type": "LineString",
-                "coordinates": [
-                    [
-                        -0.315,
-                        49.53
-                    ],
-                    [
-                        -0.265,
-                        49.53
-                    ]
-                ]
-            },
-            "sch": {
                 "type": "LineString",
                 "coordinates": [
                     [

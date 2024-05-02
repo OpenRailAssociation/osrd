@@ -10,7 +10,6 @@ class GeometryPointTrait(BaseModel):
     """This class is used to define coordinates of points present on the path."""
 
     geo: Point = Field(description="Geographic coordinates of a point")
-    sch: Point = Field(description="Schematic coordinates of a point")
 
 
 class RoutePath(BaseModel):

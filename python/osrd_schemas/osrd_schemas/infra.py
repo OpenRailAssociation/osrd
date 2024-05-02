@@ -8,7 +8,7 @@ from pydantic.fields import FieldInfo
 
 ALL_OBJECT_TYPES = []
 
-RAILJSON_INFRA_VERSION_TYPE = Literal["3.4.11"]
+RAILJSON_INFRA_VERSION_TYPE = Literal["3.4.12"]
 RAILJSON_INFRA_VERSION = get_args(RAILJSON_INFRA_VERSION_TYPE)[0]
 
 # Traits
@@ -51,11 +51,9 @@ class BaseObjectTrait(BaseModel):
 class GeometryLineTrait(BaseModel):
     """
     This trait defines a geometric object of continuous line type.
-    There are two representations, geographic and schematic.
     """
 
     geo: LineString = Field(description="Geographic coordinates of the corresponding object")
-    sch: LineString = Field(description="Schematic coordinates of the corresponding object")
 
 
 # Objects and utils used to generate an infra json.
@@ -380,7 +378,7 @@ class LoadingGaugeLimit(BaseModel):
 class TrackSection(BaseObjectTrait, GeometryLineTrait):
     """
     A track section is a piece of track and is the tracking system used in OSRD to locate a point.
-    A track section is identified by his unique id and its coordinates (geographic or schematic).
+    A track section is identified by his unique id and its coordinates (geographic).
     """
 
     length: float = Field(description="Value of the length of the track section in meters", gt=0)

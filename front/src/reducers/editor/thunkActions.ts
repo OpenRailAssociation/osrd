@@ -33,7 +33,7 @@ export function loadDataModel() {
       try {
         const schemaResponse = infra_schema as JSONSchema7;
         // parse the schema
-        const fieldToOmit = ['id', 'geo', 'sch'];
+        const fieldToOmit = ['id', 'geo'];
         const schema = Object.keys(schemaResponse.properties || {})
           .filter((e: string) => {
             const property: JSONSchema7Definition | undefined = schemaResponse?.properties?.[e];

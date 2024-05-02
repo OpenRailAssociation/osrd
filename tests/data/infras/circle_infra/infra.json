@@ -1,5 +1,5 @@
 {
-    "version": "3.4.11",
+    "version": "3.4.12",
     "operational_points": [],
     "routes": [],
     "extended_switch_types": [],
@@ -88,19 +88,6 @@
                     ]
                 ]
             },
-            "sch": {
-                "type": "LineString",
-                "coordinates": [
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ]
-                ]
-            },
             "id": "track_a",
             "length": 200.0,
             "slopes": [],
@@ -117,19 +104,6 @@
         },
         {
             "geo": {
-                "type": "LineString",
-                "coordinates": [
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ]
-                ]
-            },
-            "sch": {
                 "type": "LineString",
                 "coordinates": [
                     [
@@ -170,19 +144,6 @@
                     ]
                 ]
             },
-            "sch": {
-                "type": "LineString",
-                "coordinates": [
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ]
-                ]
-            },
             "id": "track_c",
             "length": 200.0,
             "slopes": [],
@@ -199,19 +160,6 @@
         },
         {
             "geo": {
-                "type": "LineString",
-                "coordinates": [
-                    [
-                        0.0,
-                        0.0
-                    ],
-                    [
-                        0.0,
-                        0.0
-                    ]
-                ]
-            },
-            "sch": {
                 "type": "LineString",
                 "coordinates": [
                     [

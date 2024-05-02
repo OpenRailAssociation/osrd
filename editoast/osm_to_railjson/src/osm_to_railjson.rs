@@ -77,7 +77,6 @@ pub fn parse_osm(osm_pbf_in: PathBuf) -> Result<RailJson, Box<dyn Error + Send +
                 id: e.id.as_str().into(),
                 length: e.length(),
                 geo: geo.clone(),
-                sch: geo,
                 ..Default::default()
             }
         })

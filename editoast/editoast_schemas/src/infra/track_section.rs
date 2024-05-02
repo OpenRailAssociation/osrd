@@ -33,8 +33,6 @@ pub struct TrackSection {
     pub loading_gauge_limits: Vec<LoadingGaugeLimit>,
     #[derivative(Default(value = "Geometry::new(LineString(vec![]))"))]
     pub geo: Geometry,
-    #[derivative(Default(value = "Geometry::new(LineString(vec![]))"))]
-    pub sch: Geometry,
     #[serde(default)]
     #[schema(inline)]
     pub extensions: TrackSectionExtensions,
@@ -60,10 +58,6 @@ impl TrackSection {
 
     pub fn geo_bbox(&self) -> BoundingBox {
         Self::bbox(&self.geo)
-    }
-
-    pub fn sch_bbox(&self) -> BoundingBox {
-        Self::bbox(&self.sch)
     }
 }
 

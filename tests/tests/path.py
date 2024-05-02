@@ -13,4 +13,3 @@ class Path:
     curves: Iterable[Any]
     steps: Sequence[Any]
     geographic: Any
-    schematic: Any

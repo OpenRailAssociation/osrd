@@ -29,7 +29,7 @@ enum LinesErrors {
     LineNotFound { line_code: i32 },
 }
 
-/// Returns the BBoxes (geo and schematic) of a line
+/// Returns the BBoxes of a line
 #[utoipa::path(
     tag = "infra",
     params(
@@ -66,7 +66,6 @@ async fn get_line_bbox(
     tracksections.for_each(|track| {
         zone.union(&Zone {
             geo: track.bbox_geo.clone(),
-            sch: track.bbox_sch.clone(),
         });
     });
 

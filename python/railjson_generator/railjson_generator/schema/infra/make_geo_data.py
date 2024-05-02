@@ -8,4 +8,4 @@ def make_geo_line(*points) -> LineString:
 
 
 def make_geo_lines(*points) -> Mapping[str, LineString]:
-    return {"geo": make_geo_line(*points), "sch": make_geo_line(*points)}
+    return {"geo": make_geo_line(*points)}
