@@ -9,6 +9,7 @@ import org.takes.Response
 import org.takes.Take
 import org.takes.rq.RqHref
 import org.takes.rq.RqMethod
+import org.takes.rq.RqRequestLine
 import org.takes.rs.RsStatus
 import org.takes.tk.TkWrap
 
@@ -18,6 +19,10 @@ class TkOpenTelemetry(take: Take) :
         @WithSpan(value = "endpoint", kind = SpanKind.SERVER)
         private fun opentelemetry(take: Take, request: Request): Response {
             val span = Span.current()
+
+            val uri = RqRequestLine.Base(request).uri()
+            span.updateName(uri)
+            span.setAttribute("http.route", uri)
             val method = RqMethod.Base(request).method()
             span.setAttribute("http.request.method", method)
             val path = RqHref.Base(request).href().path()
