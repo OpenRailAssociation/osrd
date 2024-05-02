@@ -17,16 +17,15 @@ use std::sync::Arc;
 use tracing::info;
 use utoipa::ToSchema;
 
-use super::train_simulation;
 use super::SimulationBatchParams;
-use super::SimulationResult;
 use super::TrainScheduleError;
 use crate::client::get_app_version;
 use crate::core::v2::pathfinding::PathfindingResult;
 use crate::core::v2::pathfinding::TrackRange;
-use crate::core::v2::signal_updates::SignalUpdate;
-use crate::core::v2::signal_updates::SignalUpdatesRequest;
-use crate::core::v2::signal_updates::TrainSimulation;
+use crate::core::v2::signal_projection::SignalUpdate;
+use crate::core::v2::signal_projection::SignalUpdatesRequest;
+use crate::core::v2::signal_projection::TrainSimulation;
+use crate::core::v2::simulation::SimulationResponse;
 use crate::core::AsCoreRequest;
 use crate::core::CoreClient;
 use crate::error::Result;
@@ -37,6 +36,7 @@ use crate::modelsv2::RetrieveBatch;
 use crate::views::v2::path::pathfinding_from_train;
 use crate::views::v2::path::projection::PathProjection;
 use crate::views::v2::path::projection::TrackLocationFromPath;
+use crate::views::v2::train_schedule::train_simulation_batch;
 use crate::views::v2::train_schedule::CompleteReportTrain;
 use crate::views::v2::train_schedule::ReportTrain;
 use crate::views::v2::train_schedule::SignalSighting;
@@ -155,16 +155,20 @@ async fn project_path(
             }
         })
         .await?;
-    let train_map: HashMap<i64, TrainSchedule> = train_schedule_batch
-        .into_iter()
-        .map(|ts| (ts.id, ts))
-        .collect();
+    let simulations = train_simulation_batch(
+        db_pool.clone(),
+        redis_client.clone(),
+        core.clone(),
+        &train_schedule_batch,
+        &infra,
+    )
+    .await?;
 
     // 1. Retrieve cached projection
     let mut hit_cache: HashMap<i64, CachedProjectPathTrainResult> = HashMap::new();
     let mut miss_cache = HashMap::new();
 
-    for (train_id, train) in &train_map {
+    for (train, sim) in train_schedule_batch.iter().zip(simulations) {
         let pathfinding_result =
             pathfinding_from_train(conn, &mut redis_conn, core.clone(), &infra, train.clone())
                 .await?;
@@ -177,21 +181,13 @@ async fn project_path(
             _ => continue,
         };
 
-        let simulation_result = train_simulation(
-            db_pool.clone(),
-            redis_client.clone(),
-            core.clone(),
-            train,
-            &infra,
-        )
-        .await?;
         let CompleteReportTrain {
             report_train,
             signal_sightings,
             zone_updates,
             ..
-        } = match simulation_result {
-            SimulationResult::Success { final_output, .. } => final_output,
+        } = match sim {
+            SimulationResponse::Success { final_output, .. } => final_output,
             _ => continue,
         };
         let ReportTrain {
@@ -218,15 +214,15 @@ async fn project_path(
             .json_get_ex(&hash, CACHE_PROJECTION_EXPIRATION)
             .await?;
         if let Some(cached) = projection {
-            hit_cache.insert(*train_id, cached);
+            hit_cache.insert(train.id, cached);
         } else {
-            miss_cache.insert(*train_id, train_details);
+            miss_cache.insert(train.id, train_details);
         }
     }
     info!(
-        "{}/{} hit cache",
-        hit_cache.len(),
-        hit_cache.len() + miss_cache.len()
+        nb_hit = hit_cache.len(),
+        nb_miss = miss_cache.len(),
+        "Hit cache",
     );
 
     // 2 Compute space time curves and signal updates for all miss cache
@@ -269,11 +265,22 @@ async fn project_path(
         hit_cache.insert(id, cached);
     }
 
+    let train_map: HashMap<i64, TrainSchedule> = train_schedule_batch
+        .into_iter()
+        .map(|ts| (ts.id, ts))
+        .collect();
+
     // 4.1 Fetch rolling stock length
     let mut project_path_result = HashMap::new();
     let rolling_stock_names: HashSet<_> = hit_cache
         .keys()
-        .map(|id| train_map.get(id).unwrap().rolling_stock_name.clone())
+        .map(|id| {
+            train_map
+                .get(id)
+                .expect("Train not found")
+                .rolling_stock_name
+                .clone()
+        })
         .collect();
     let (rs, missing): (Vec<_>, _) =
         RollingStockModel::retrieve_batch(conn, rolling_stock_names).await?;

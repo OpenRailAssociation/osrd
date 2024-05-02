@@ -159,6 +159,7 @@
     },
     "timetable": {
       "InfraNotLoaded": "Infra '{{infra_id}}' is not loaded",
+      "InfraNotFound": "Infra {{infra_id}} does not exist",
       "NotFound": "Timetable '{{timetable_id}}' could not be found"
     },
     "train_schedule": {

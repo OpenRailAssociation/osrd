@@ -1,11 +1,11 @@
 use serde::Deserialize;
 use serde::Serialize;
 
+use super::v2::conflict_detection::ConflictType;
 use super::AsCoreRequest;
 use super::Json;
 use crate::models::RoutingRequirement;
 use crate::models::SpacingRequirement;
-use crate::views::timetable::ConflictType;
 
 #[derive(Debug, Serialize)]
 pub struct ConflicDetectionRequest {

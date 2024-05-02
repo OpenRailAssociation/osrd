@@ -161,6 +161,7 @@
     },
     "timetable": {
       "InfraNotLoaded": "L'infrastructure '{{infra_id}}' n'est pas chargée",
+      "InfraNotFound": "Infra '{{infra_id}}' non trouvée",
       "NotFound": "Grille horaire '{{timetable_id}}' non trouvée"
     },
     "train_schedule": {

@@ -221,6 +221,41 @@ components:
       - end_time
       - conflict_type
       type: object
+    ConflictDetectionResponse:
+      properties:
+        conflicts:
+          description: List of conflicts detected
+          items:
+            properties:
+              conflict_type:
+                enum:
+                - Spacing
+                - Routing
+                type: string
+              end_time:
+                description: Datetime of the end of the conflict
+                format: date-time
+                type: string
+              start_time:
+                description: Datetime of the start of the conflict
+                format: date-time
+                type: string
+              train_ids:
+                description: List of train ids involved in the conflict
+                items:
+                  format: int64
+                  type: integer
+                type: array
+            required:
+            - train_ids
+            - start_time
+            - end_time
+            - conflict_type
+            type: object
+          type: array
+      required:
+      - conflicts
+      type: object
     ConflictType:
       enum:
       - Spacing
@@ -229,25 +264,26 @@ components:
     ConflictV2:
       properties:
         conflict_type:
-          $ref: '#/components/schemas/ConflictType'
+          enum:
+          - Spacing
+          - Routing
+          type: string
         end_time:
+          description: Datetime of the end of the conflict
           format: date-time
           type: string
         start_time:
+          description: Datetime of the start of the conflict
           format: date-time
           type: string
         train_ids:
+          description: List of train ids involved in the conflict
           items:
             format: int64
             type: integer
           type: array
-        train_names:
-          items:
-            type: string
-          type: array
       required:
       - train_ids
-      - train_names
       - start_time
       - end_time
       - conflict_type
@@ -862,6 +898,7 @@ components:
       - $ref: '#/components/schemas/EditoastStdcmErrorInfraNotFound'
       - $ref: '#/components/schemas/EditoastStudyErrorNotFound'
       - $ref: '#/components/schemas/EditoastStudyErrorStartDateAfterEndDate'
+      - $ref: '#/components/schemas/EditoastTimetableErrorInfraNotFound'
       - $ref: '#/components/schemas/EditoastTimetableErrorInfraNotLoaded'
       - $ref: '#/components/schemas/EditoastTimetableErrorNotFound'
       - $ref: '#/components/schemas/EditoastTimetableErrorNotFound'
@@ -2419,6 +2456,30 @@ components:
         type:
           enum:
           - editoast:study:StartDateAfterEndDate
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastTimetableErrorInfraNotFound:
+      properties:
+        context:
+          properties:
+            infra_id:
+              type: integer
+          required:
+          - infra_id
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 404
+          type: integer
+        type:
+          enum:
+          - editoast:timetable:InfraNotFound
           type: string
       required:
       - type
@@ -5011,6 +5072,17 @@ components:
         - rolling_stock_name
         - status
         type: object
+      - properties:
+          core_error:
+            $ref: '#/components/schemas/InternalError'
+          status:
+            enum:
+            - pathfinding_failed
+            type: string
+        required:
+        - core_error
+        - status
+        type: object
     PathfindingStep:
       properties:
         duration:
@@ -7097,7 +7169,7 @@ components:
       - electrification_ranges
       - power_restriction_ranges
       type: object
-    SimulationResult:
+    SimulationResponse:
       oneOf:
       - properties:
           base:
@@ -7210,40 +7282,56 @@ components:
     SimulationSummaryResult:
       oneOf:
       - properties:
-          Success:
-            properties:
-              energy_consumption:
-                format: double
-                type: number
-              length:
-                format: int64
-                minimum: 0
-                type: integer
-              time:
-                format: int64
-                minimum: 0
-                type: integer
-            required:
-            - length
-            - time
-            - energy_consumption
-            type: object
+          energy_consumption:
+            format: double
+            type: number
+          length:
+            format: int64
+            minimum: 0
+            type: integer
+          status:
+            enum:
+            - success
+            type: string
+          time:
+            format: int64
+            minimum: 0
+            type: integer
         required:
-        - Success
+        - length
+        - time
+        - energy_consumption
+        - status
         type: object
-      - enum:
-        - PathfindingFailed
-        type: string
       - properties:
-          SimulationFailed:
-            properties:
-              error_type:
-                type: string
-            required:
-            - error_type
-            type: object
+          status:
+            enum:
+            - pathfinding_not_found
+            type: string
         required:
-        - SimulationFailed
+        - status
+        type: object
+      - properties:
+          error_type:
+            type: string
+          status:
+            enum:
+            - pathfinding_failed
+            type: string
+        required:
+        - error_type
+        - status
+        type: object
+      - properties:
+          error_type:
+            type: string
+          status:
+            enum:
+            - simulation_failed
+            type: string
+        required:
+        - error_type
+        - status
         type: object
     SingleSimulationRequest:
       allOf:
@@ -11636,15 +11724,14 @@ paths:
     get:
       description: Retrieve the list of conflict of the timetable (invalid trains are ignored)
       parameters:
-      - description: The timetable id
+      - description: A timetable ID
         in: path
         name: id
         required: true
         schema:
           format: int64
           type: integer
-      - description: The infra id
-        in: query
+      - in: query
         name: infra_id
         required: true
         schema:
@@ -11658,7 +11745,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/ConflictV2'
                 type: array
-          description: list of conflict
+          description: List of conflict
       summary: Retrieve the list of conflict of the timetable (invalid trains are ignored)
       tags:
       - timetablev2
@@ -11756,8 +11843,8 @@ paths:
   /v2/train_schedule/simulation_summary/:
     get:
       description: |-
-        Retrieve simulation information for a given train list.
-        Useful for finding out whether pathfinding/simulation was successful.
+        Associate each train id with its simulation summary response
+        If the simulation fails, it associates the reason: pathfinding failed or running time failed
       parameters:
       - description: The infra id
         in: query
@@ -11783,8 +11870,8 @@ paths:
                 additionalProperties:
                   $ref: '#/components/schemas/SimulationSummaryResult'
                 type: object
-          description: Project Path Output
-      summary: Retrieve simulation information for a given train list.
+          description: Associate each train id with its simulation summary
+      summary: Associate each train id with its simulation summary response
       tags:
       - train_schedulev2
   /v2/train_schedule/{id}/:
@@ -11887,7 +11974,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SimulationResult'
+                $ref: '#/components/schemas/SimulationResponse'
           description: Simulation Output
       summary: Retrieve the space, speed and time curve of a given train
       tags:

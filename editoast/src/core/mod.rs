@@ -40,6 +40,7 @@ editoast_common::schemas! {
     simulation::schemas(),
     v2::simulation::schemas(),
     v2::pathfinding::schemas(),
+    v2::conflict_detection::schemas(),
 }
 
 const MAX_RETRIES: u8 = 5;

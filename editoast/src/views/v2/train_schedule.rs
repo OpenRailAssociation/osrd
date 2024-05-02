@@ -23,19 +23,17 @@ use utoipa::ToSchema;
 use crate::client::get_app_version;
 use crate::core::v2::pathfinding::PathfindingResult;
 use crate::core::v2::simulation::CompleteReportTrain;
-use crate::core::v2::simulation::Mrsp;
 use crate::core::v2::simulation::ReportTrain;
 use crate::core::v2::simulation::SignalSighting;
 use crate::core::v2::simulation::SimulationMargins;
 use crate::core::v2::simulation::SimulationPath;
 use crate::core::v2::simulation::SimulationPowerRestrictionItem;
-use crate::core::v2::simulation::SimulationPowerRestrictionRange;
 use crate::core::v2::simulation::SimulationRequest;
+use crate::core::v2::simulation::SimulationResponse;
 use crate::core::v2::simulation::SimulationScheduleItem;
 use crate::core::v2::simulation::ZoneUpdate;
 use crate::core::AsCoreRequest;
 use crate::core::CoreClient;
-use crate::error::InternalError;
 use crate::error::Result;
 use crate::modelsv2::infra::Infra;
 use crate::modelsv2::timetable::Timetable;
@@ -76,7 +74,6 @@ editoast_common::schemas! {
     TrainScheduleForm,
     TrainScheduleResult,
     BatchDeletionRequest,
-    SimulationResult,
     SimulationSummaryResult,
     InfraIdQueryParam,
     projection::schemas(),
@@ -275,39 +272,12 @@ async fn put(
     Ok(Json(ts_result.into()))
 }
 
-// TODO: When can the simulation fail ?
-#[derive(Serialize, Deserialize, Clone, Debug, ToSchema)]
-#[serde(tag = "status", rename_all = "snake_case")]
-// We accepted the difference of memory size taken by variants
-// Since there is only on success and others are error cases
-#[allow(clippy::large_enum_variant)]
-enum SimulationResult {
-    Success {
-        #[schema(value_type = ReportTrainV2)]
-        base: ReportTrain,
-        #[schema(value_type = ReportTrainV2)]
-        provisional: ReportTrain,
-        #[schema(inline)]
-        final_output: CompleteReportTrain,
-        #[schema(inline)]
-        mrsp: Mrsp,
-        #[schema(inline)]
-        power_restrictions: Vec<SimulationPowerRestrictionRange>,
-    },
-    PathfindingFailed {
-        pathfinding_result: PathfindingResult,
-    },
-    SimulationFailed {
-        core_error: InternalError,
-    },
-}
-
 /// Retrieve the space, speed and time curve of a given train
 #[utoipa::path(
     tag = "train_schedulev2",
     params(TrainScheduleIdParam, InfraIdQueryParam),
     responses(
-        (status = 200, description = "Simulation Output", body = SimulationResult),
+        (status = 200, description = "Simulation Output", body = SimulationResponse),
     ),
 )]
 #[get("/simulation")]
@@ -317,7 +287,7 @@ pub async fn simulation(
     core_client: Data<CoreClient>,
     train_schedule_id: Path<TrainScheduleIdParam>,
     query: Query<InfraIdQueryParam>,
-) -> Result<Json<SimulationResult>> {
+) -> Result<Json<SimulationResponse>> {
     let infra_id = query.into_inner().infra_id;
     let train_schedule_id = train_schedule_id.into_inner().id;
     let conn = &mut db_pool.get().await?;
@@ -349,7 +319,7 @@ async fn train_simulation(
     core: Arc<CoreClient>,
     train_schedule: &TrainSchedule,
     infra: &Infra,
-) -> Result<SimulationResult> {
+) -> Result<SimulationResponse> {
     let mut redis_conn = redis_client.get_connection().await?;
     let conn = &mut db_pool.get().await?;
     // Compute path
@@ -378,7 +348,7 @@ async fn train_simulation(
             path_items_positions,
         ),
         _ => {
-            return Ok(SimulationResult::PathfindingFailed { pathfinding_result });
+            return Ok(SimulationResponse::PathfindingFailed { pathfinding_result });
         }
     };
 
@@ -389,7 +359,7 @@ async fn train_simulation(
     // Compute unique hash of the simulation input
     let hash = train_simulation_input_hash(infra.id, &infra.version, &simulation_request);
 
-    let result: Option<SimulationResult> = redis_conn
+    let result: Option<SimulationResponse> = redis_conn
         .json_get_ex(&hash, CACHE_SIMULATION_EXPIRATION)
         .await?;
     if let Some(simulation_result) = result {
@@ -398,20 +368,7 @@ async fn train_simulation(
     }
 
     // Compute simulation from core
-    let result = match simulation_request.fetch(core.as_ref()).await {
-        Ok(response) => SimulationResult::Success {
-            base: response.base,
-            provisional: response.provisional,
-            final_output: response.final_output,
-            mrsp: response.mrsp,
-            power_restrictions: response.power_restrictions,
-        },
-        // TODO: Handle simulation failure
-        Err(err) if err.status.as_u16() / 100 == 5 => {
-            SimulationResult::SimulationFailed { core_error: err }
-        }
-        Err(err) => return Err(err),
-    };
+    let result = simulation_request.fetch(core.as_ref()).await?;
 
     // Cache the simulation response
     redis_conn
@@ -525,6 +482,7 @@ struct SimulationBatchParams {
 }
 
 #[derive(Debug, Serialize, ToSchema)]
+#[serde(tag = "status", rename_all = "snake_case")]
 enum SimulationSummaryResult {
     // Minimal information on a simulation's result
     Success {
@@ -535,16 +493,20 @@ enum SimulationSummaryResult {
         // Total energy consumption of a train in kWh
         energy_consumption: f64,
     },
-    // Pathfinding failed
-    PathfindingFailed,
-    // Simulation failed
+    // Pathfinding not found
+    PathfindingNotFound,
+    // An error has occured during pathfinding
+    PathfindingFailed {
+        error_type: String,
+    },
+    // An error has occured during computing
     SimulationFailed {
         error_type: String,
     },
 }
 
-/// Retrieve simulation information for a given train list.
-/// Useful for finding out whether pathfinding/simulation was successful.
+/// Associate each train id with its simulation summary response
+/// If the simulation fails, it associates the reason: pathfinding failed or running time failed
 #[utoipa::path(
     tag = "train_schedulev2",
     params(
@@ -552,7 +514,7 @@ enum SimulationSummaryResult {
         ("ids" = Vec<i64>, Query, description = "Ids of train schedule"),
     ),
     responses(
-        (status = 200, description = "Project Path Output", body = HashMap<i64, SimulationSummaryResult>),
+        (status = 200, description = "Associate each train id with its simulation summary", body = HashMap<i64, SimulationSummaryResult>),
     ),
 )]
 #[get("/simulation_summary")]
@@ -574,7 +536,7 @@ pub async fn simulation_summary(
     })
     .await?;
     let train_ids = query_props.ids;
-    let train_schedule_batch: Vec<TrainSchedule> =
+    let trains: Vec<TrainSchedule> =
         TrainSchedule::retrieve_batch_or_fail(conn, train_ids, |missing| {
             TrainScheduleError::BatchTrainScheduleNotFound {
                 number: missing.len(),
@@ -582,34 +544,13 @@ pub async fn simulation_summary(
         })
         .await?;
 
-    // Build a HashMap with train_ids as keys and the corresponding simulation response as values
-    Ok(Json(
-        build_simulation_summary_map(db_pool, redis_client, core, &train_schedule_batch, &infra)
-            .await?,
-    ))
-}
+    let simulations = train_simulation_batch(db_pool, redis_client, core, &trains, &infra).await?;
 
-/// Associate each train id with its simulation summary response
-/// If the simulation fails, it associates the reason: pathfinding failed or running time failed
-async fn build_simulation_summary_map(
-    db_pool: Arc<DbConnectionPool>,
-    redis_client: Arc<RedisClient>,
-    core_client: Arc<CoreClient>,
-    train_schedule_batch: &[TrainSchedule],
-    infra: &Infra,
-) -> Result<HashMap<i64, SimulationSummaryResult>> {
-    let mut simulation_summary_hashmap = HashMap::new();
-    for train_schedule in train_schedule_batch.iter() {
-        let simulation_result = train_simulation(
-            db_pool.clone(),
-            redis_client.clone(),
-            core_client.clone(),
-            train_schedule,
-            infra,
-        )
-        .await?;
-        let simulation_summary_result = match simulation_result {
-            SimulationResult::Success { final_output, .. } => {
+    // Transform simulations to simulation summary
+    let mut simulation_summaries = HashMap::new();
+    for (train, sim) in trains.iter().zip(simulations) {
+        let simulation_summary_result = match sim {
+            SimulationResponse::Success { final_output, .. } => {
                 let report = final_output.report_train;
                 SimulationSummaryResult::Success {
                     length: *report.positions.last().unwrap(),
@@ -617,18 +558,53 @@ async fn build_simulation_summary_map(
                     energy_consumption: report.energy_consumption,
                 }
             }
-            SimulationResult::PathfindingFailed { .. } => {
-                SimulationSummaryResult::PathfindingFailed
+            SimulationResponse::PathfindingFailed { pathfinding_result } => {
+                match pathfinding_result {
+                    PathfindingResult::PathfindingFailed { core_error } => {
+                        SimulationSummaryResult::PathfindingFailed {
+                            error_type: core_error.get_type().into(),
+                        }
+                    }
+                    _ => SimulationSummaryResult::PathfindingNotFound,
+                }
             }
-            SimulationResult::SimulationFailed { core_error } => {
+            SimulationResponse::SimulationFailed { core_error } => {
                 SimulationSummaryResult::SimulationFailed {
                     error_type: core_error.get_type().into(),
                 }
             }
         };
-        simulation_summary_hashmap.insert(train_schedule.id, simulation_summary_result);
+        simulation_summaries.insert(train.id, simulation_summary_result);
     }
-    Ok(simulation_summary_hashmap)
+
+    Ok(Json(simulation_summaries))
+}
+
+/// Compute train simulation in batch given a list of train schedules.
+///
+/// Note: The order of the returned simulations is the same as the order of the train schedules.
+///
+/// Returns an error if any of the train ids are not found.
+pub async fn train_simulation_batch(
+    db_pool: Arc<DbConnectionPool>,
+    redis_client: Arc<RedisClient>,
+    core_client: Arc<CoreClient>,
+    train_schedules: &[TrainSchedule],
+    infra: &Infra,
+) -> Result<Vec<SimulationResponse>> {
+    let mut pending_simulations = vec![];
+    for train_schedule in train_schedules.iter() {
+        pending_simulations.push(train_simulation(
+            db_pool.clone(),
+            redis_client.clone(),
+            core_client.clone(),
+            train_schedule,
+            infra,
+        ));
+    }
+
+    let simulations = futures::future::join_all(pending_simulations).await;
+    simulations.into_iter().collect()
 }
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize, IntoParams, ToSchema)]
