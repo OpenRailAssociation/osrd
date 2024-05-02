@@ -313,7 +313,8 @@ jobs:
             uses: actions/checkout@v4
           - name: Checking utoipa usage
             run: |
-                python3 .github/scripts/check-editoast-utoipa.py editoast/{openapi.yaml, editoast_common, editoast_schemas, src}
+                cd editoast
+                python3 ../.github/scripts/check-editoast-utoipa.py openapi.yaml editoast_common editoast_schemas src
 
 
   check_infra_schema_sync:
