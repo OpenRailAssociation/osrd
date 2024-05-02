@@ -7281,11 +7281,14 @@ components:
         type: object
     SimulationSummaryResult:
       oneOf:
-      - properties:
+      - description: Minimal information on a simulation's result
+        properties:
           energy_consumption:
+            description: Total energy consumption of a train in kWh
             format: double
             type: number
           length:
+            description: Length of a path in mm
             format: int64
             minimum: 0
             type: integer
@@ -7294,6 +7297,7 @@ components:
             - success
             type: string
           time:
+            description: Travel time in ms
             format: int64
             minimum: 0
             type: integer
@@ -7311,7 +7315,8 @@ components:
         required:
         - status
         type: object
-      - properties:
+      - description: An error has occured during pathfinding
+        properties:
           error_type:
             type: string
           status:
@@ -7322,7 +7327,8 @@ components:
         - error_type
         - status
         type: object
-      - properties:
+      - description: An error has occured during computing
+        properties:
           error_type:
             type: string
           status:
@@ -7331,6 +7337,18 @@ components:
             type: string
         required:
         - error_type
+        - status
+        type: object
+      - description: Rolling stock not found
+        properties:
+          rolling_stock_name:
+            type: string
+          status:
+            enum:
+            - rolling_stock_not_found
+            type: string
+        required:
+        - rolling_stock_name
         - status
         type: object
     SingleSimulationRequest:
