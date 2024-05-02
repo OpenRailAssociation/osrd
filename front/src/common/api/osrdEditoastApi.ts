@@ -3321,9 +3321,12 @@ export type ProjectPathInput = {
 };
 export type SimulationSummaryResult =
   | {
+      /** Total energy consumption of a train in kWh */
       energy_consumption: number;
+      /** Length of a path in mm */
       length: number;
       status: 'success';
+      /** Travel time in ms */
       time: number;
     }
   | {
@@ -3336,6 +3339,10 @@ export type SimulationSummaryResult =
   | {
       error_type: string;
       status: 'simulation_failed';
+    }
+  | {
+      rolling_stock_name: string;
+      status: 'rolling_stock_not_found';
     };
 export type TrainScheduleForm = TrainScheduleBase & {
   /** Timetable attached to the train schedule */

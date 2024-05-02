@@ -458,25 +458,23 @@ struct SimulationBatchParams {
 #[derive(Debug, Serialize, ToSchema)]
 #[serde(tag = "status", rename_all = "snake_case")]
 enum SimulationSummaryResult {
-    // Minimal information on a simulation's result
+    /// Minimal information on a simulation's result
     Success {
-        // Length of a path in mm
+        /// Length of a path in mm
         length: u64,
-        // Travel time in ms
+        /// Travel time in ms
         time: u64,
-        // Total energy consumption of a train in kWh
+        /// Total energy consumption of a train in kWh
         energy_consumption: f64,
     },
-    // Pathfinding not found
+    /// Pathfinding not found
     PathfindingNotFound,
-    // An error has occured during pathfinding
-    PathfindingFailed {
-        error_type: String,
-    },
-    // An error has occured during computing
-    SimulationFailed {
-        error_type: String,
-    },
+    /// An error has occured during pathfinding
+    PathfindingFailed { error_type: String },
+    /// An error has occured during computing
+    SimulationFailed { error_type: String },
+    /// Rolling stock not found
+    RollingStockNotFound { rolling_stock_name: String },
 }
 
 /// Associate each train id with its simulation summary response
@@ -538,6 +536,9 @@ pub async fn simulation_summary(
                         SimulationSummaryResult::PathfindingFailed {
                             error_type: core_error.get_type().into(),
                         }
+                    }
+                    PathfindingResult::RollingStockNotFound { rolling_stock_name } => {
+                        SimulationSummaryResult::RollingStockNotFound { rolling_stock_name }
                     }
                     _ => SimulationSummaryResult::PathfindingNotFound,
                 }
