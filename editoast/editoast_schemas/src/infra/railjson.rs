@@ -1,6 +1,7 @@
 use derivative::Derivative;
 use serde::Deserialize;
 use serde::Serialize;
+use utoipa::ToSchema;
 
 use super::BufferStop;
 use super::Detector;
@@ -16,7 +17,11 @@ use super::TrackSection;
 
 pub const RAILJSON_VERSION: &str = "3.4.11";
 
-#[derive(Deserialize, Derivative, Serialize, Clone, Debug)]
+editoast_common::schemas! {
+    RailJson,
+}
+
+#[derive(Deserialize, Derivative, Serialize, Clone, Debug, ToSchema)]
 #[derivative(Default)]
 #[serde(deny_unknown_fields)]
 pub struct RailJson {

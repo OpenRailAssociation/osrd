@@ -105,4 +105,5 @@ editoast_common::schemas! {
     track_location::schemas(),
     track_offset::schemas(),
     track_section::schemas(),
+    railjson::schemas(),
 }
