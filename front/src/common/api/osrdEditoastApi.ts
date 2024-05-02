@@ -888,6 +888,10 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['train_schedulev2'],
       }),
+      getV2TrainSchedule: build.query<GetV2TrainScheduleApiResponse, GetV2TrainScheduleApiArg>({
+        query: (queryArg) => ({ url: `/v2/train_schedule/`, params: { ids: queryArg.ids } }),
+        providesTags: ['train_schedulev2'],
+      }),
       postV2TrainScheduleProjectPath: build.mutation<
         PostV2TrainScheduleProjectPathApiResponse,
         PostV2TrainScheduleProjectPathApiArg
@@ -1707,6 +1711,12 @@ export type DeleteV2TrainScheduleApiArg = {
   body: {
     ids: number[];
   };
+};
+export type GetV2TrainScheduleApiResponse =
+  /** status 200 Retrieve a list of train schedule */ TrainScheduleResult[];
+export type GetV2TrainScheduleApiArg = {
+  /** Ids of train schedule */
+  ids: number[];
 };
 export type PostV2TrainScheduleProjectPathApiResponse = /** status 200 Project Path Output */ {
   [key: string]: ProjectPathTrainResult;

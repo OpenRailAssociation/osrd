@@ -11822,6 +11822,30 @@ paths:
       summary: Delete a train schedule and its result
       tags:
       - train_schedulev2
+    get:
+      description: Return a specific train schedule
+      parameters:
+      - description: Ids of train schedule
+        in: query
+        name: ids
+        required: true
+        schema:
+          items:
+            format: int64
+            type: integer
+          type: array
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/TrainScheduleResult'
+                type: array
+          description: Retrieve a list of train schedule
+      summary: Return a specific train schedule
+      tags:
+      - train_schedulev2
   /v2/train_schedule/project_path/:
     post:
       description: |-
