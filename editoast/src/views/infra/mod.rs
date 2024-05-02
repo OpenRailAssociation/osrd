@@ -72,6 +72,7 @@ crate::routes! {
             get_switch_types,
         },
         get_all_voltages,
+        railjson::routes(),
     },
 }
 
@@ -88,7 +89,7 @@ pub fn infra_routes() -> impl HttpServiceFactory {
             refresh,
             cache_status,
             get_all_voltages,
-            railjson::routes(),
+            railjson::railjson_routes(),
         ))
         .service(
             scope("/{infra_id}")

@@ -194,13 +194,6 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['infra'],
       }),
-      getInfraByIdRailjson: build.query<
-        GetInfraByIdRailjsonApiResponse,
-        GetInfraByIdRailjsonApiArg
-      >({
-        query: (queryArg) => ({ url: `/infra/${queryArg.id}/railjson/` }),
-        providesTags: ['infra'],
-      }),
       getInfraByInfraIdAttachedAndTrackId: build.query<
         GetInfraByInfraIdAttachedAndTrackIdApiResponse,
         GetInfraByInfraIdAttachedAndTrackIdApiArg
@@ -242,6 +235,13 @@ const injectedRtkApi = api
           params: { number: queryArg.number },
         }),
         invalidatesTags: ['infra', 'pathfinding'],
+      }),
+      getInfraByInfraIdRailjson: build.query<
+        GetInfraByInfraIdRailjsonApiResponse,
+        GetInfraByInfraIdRailjsonApiArg
+      >({
+        query: (queryArg) => ({ url: `/infra/${queryArg.infraId}/railjson/` }),
+        providesTags: ['infra'],
       }),
       postInfraByInfraIdRoutesNodes: build.mutation<
         PostInfraByInfraIdRoutesNodesApiResponse,
@@ -1136,12 +1136,6 @@ export type PostInfraByIdObjectsAndObjectTypeApiArg = {
   /** List of object id's */
   body: string[];
 };
-export type GetInfraByIdRailjsonApiResponse =
-  /** status 200 The infra in railjson format */ RailjsonFile;
-export type GetInfraByIdRailjsonApiArg = {
-  /** Infra ID */
-  id: number;
-};
 export type GetInfraByInfraIdAttachedAndTrackIdApiResponse =
   /** status 200 All objects attached to the given track (arranged by types) */ {
     [key: string]: string[];
@@ -1178,6 +1172,12 @@ export type PostInfraByInfraIdPathfindingApiArg = {
   infraId: number;
   number?: number | null;
   pathfindingInput: PathfindingInput;
+};
+export type GetInfraByInfraIdRailjsonApiResponse =
+  /** status 200 The infra in railjson format */ RailJson;
+export type GetInfraByInfraIdRailjsonApiArg = {
+  /** An existing infra ID */
+  infraId: number;
 };
 export type PostInfraByInfraIdRoutesNodesApiResponse =
   /** status 200 A list of route IDs along with available positions for each specified node */ {
@@ -1985,6 +1985,38 @@ export type PathfindingInput = {
   ending: PathfindingTrackLocationInput;
   starting: PathfindingTrackLocationInput;
 };
+export type BufferStop = {
+  extensions?: {
+    sncf?: {
+      kp: string;
+    } | null;
+  };
+  id: string;
+  position: number;
+  track: string;
+};
+export type Detector = {
+  extensions?: {
+    sncf: {
+      kp: string;
+    };
+  };
+  id: string;
+  position: number;
+  track: string;
+};
+export type ApplicableDirections = 'START_TO_STOP' | 'STOP_TO_START' | 'BOTH';
+export type ApplicableDirectionsTrackRange = {
+  applicable_directions: ApplicableDirections;
+  begin: number;
+  end: number;
+  track: string;
+};
+export type Electrification = {
+  id: string;
+  track_ranges: ApplicableDirectionsTrackRange[];
+  voltage: string;
+};
 export type SwitchPortConnection = {
   dst: string;
   src: string;
@@ -1995,6 +2027,201 @@ export type SwitchType = {
   };
   id: string;
   ports: string[];
+};
+export type Side = 'LEFT' | 'RIGHT' | 'CENTER';
+export type Sign = {
+  direction: Direction;
+  kp: string;
+  position: number;
+  side: Side;
+  track: string;
+  type: string;
+  value: string;
+};
+export type NeutralSection = {
+  announcement_track_ranges: DirectionalTrackRange[];
+  extensions?: {
+    neutral_sncf?: {
+      announcement: Sign[];
+      end: Sign[];
+      exe: Sign;
+      rev: Sign[];
+    } | null;
+  };
+  id: string;
+  lower_pantograph: boolean;
+  track_ranges: DirectionalTrackRange[];
+};
+export type OperationalPointPart = {
+  extensions?: {
+    sncf?: {
+      kp: string;
+    } | null;
+  };
+  position: number;
+  track: string;
+};
+export type OperationalPoint = {
+  extensions?: {
+    identifier?: {
+      name: string;
+      uic: number;
+    } | null;
+    sncf?: {
+      ch: string;
+      ch_long_label: string;
+      ch_short_label: string;
+      ci: number;
+      trigram: string;
+    } | null;
+  };
+  id: string;
+  parts: OperationalPointPart[];
+};
+export type WaypointLocation =
+  | {
+      /** Offset in meters from the start of the waypoint's track section */
+      offset: number;
+    }
+  | {
+      /** A geographic coordinate (lon, lat)/WGS84 that will be projected onto the waypoint's track section */
+      geo_coordinate: (number & number)[];
+    };
+export type Waypoint = WaypointLocation & {
+  /** A track section UUID */
+  track_section: string;
+};
+export type Route = {
+  entry_point: Waypoint;
+  entry_point_direction: Direction;
+  exit_point: Waypoint;
+  id: string;
+  release_detectors: string[];
+  switches_directions: {
+    [key: string]: string;
+  };
+};
+export type Signal = {
+  direction: Direction;
+  extensions?: {
+    sncf?: {
+      kp: string;
+      label: string;
+      side: Side;
+    } | null;
+  };
+  id: string;
+  logical_signals?: {
+    conditional_parameters: {
+      on_route: string;
+      parameters: {
+        [key: string]: string;
+      };
+    }[];
+    default_parameters: {
+      [key: string]: string;
+    };
+    next_signaling_systems: string[];
+    settings: {
+      [key: string]: string;
+    };
+    signaling_system: string;
+  }[];
+  position: number;
+  sight_distance: number;
+  track: string;
+};
+export type SpeedSection = {
+  extensions?: {
+    psl_sncf?: {
+      announcement: Sign[];
+      r: Sign[];
+      z: Sign;
+    } | null;
+  };
+  id: string;
+  on_routes?: string[] | null;
+  speed_limit?: number | null;
+  speed_limit_by_tag: {
+    [key: string]: number;
+  };
+  track_ranges: ApplicableDirectionsTrackRange[];
+};
+export type Endpoint = 'BEGIN' | 'END';
+export type TrackEndpoint = {
+  endpoint: Endpoint;
+  track: string;
+};
+export type Switch = {
+  extensions?: {
+    sncf?: {
+      label: string;
+    } | null;
+  };
+  group_change_delay: number;
+  id: string;
+  ports: {
+    [key: string]: TrackEndpoint;
+  };
+  switch_type: string;
+};
+export type Curve = {
+  position: number;
+  radius: number;
+};
+export type LoadingGaugeType =
+  | 'G1'
+  | 'G2'
+  | 'GA'
+  | 'GB'
+  | 'GB1'
+  | 'GC'
+  | 'FR3.3'
+  | 'FR3.3/GB/G2'
+  | 'GLOTT';
+export type LoadingGaugeLimit = {
+  begin: number;
+  category: LoadingGaugeType;
+  end: number;
+};
+export type Slope = {
+  gradient: number;
+  position: number;
+};
+export type TrackSection = {
+  curves: Curve[];
+  extensions?: {
+    sncf?: {
+      line_code: number;
+      line_name: string;
+      track_name: string;
+      track_number: number;
+    } | null;
+    source?: {
+      id: string;
+      name: string;
+    } | null;
+  };
+  geo: Geometry;
+  id: string;
+  length: number;
+  loading_gauge_limits?: LoadingGaugeLimit[];
+  sch: Geometry;
+  slopes: Slope[];
+};
+export type RailJson = {
+  buffer_stops: BufferStop[];
+  detectors: Detector[];
+  electrifications: Electrification[];
+  extended_switch_types: SwitchType[];
+  neutral_sections: NeutralSection[];
+  operational_points: OperationalPoint[];
+  routes: Route[];
+  signals: Signal[];
+  speed_sections: SpeedSection[];
+  switches: Switch[];
+  track_sections: TrackSection[];
+  version: string;
 };
 export type LightModeEffortCurves = {
   is_electric: boolean;
@@ -2045,16 +2272,6 @@ export type Gamma = {
   type: string;
   value: number;
 };
-export type LoadingGaugeType =
-  | 'G1'
-  | 'G2'
-  | 'GA'
-  | 'GB'
-  | 'GB1'
-  | 'GC'
-  | 'FR3.3'
-  | 'FR3.3/GB/G2'
-  | 'GLOTT';
 export type RollingStockMetadata = {
   detail: string;
   family: string;
@@ -2115,19 +2332,11 @@ export type PaginatedResponseOfLightRollingStockWithLiveries = {
   /** The list of results */
   results: LightRollingStockWithLiveries[];
 };
-export type Curve = {
-  position: number;
-  radius: number;
-};
 export type GeoJsonPointValue = number[];
 export type GeoJsonLineStringValue = GeoJsonPointValue[];
 export type GeoJsonLineString = {
   coordinates: GeoJsonLineStringValue;
   type: 'LineString';
-};
-export type Slope = {
-  gradient: number;
-  position: number;
 };
 export type GeoJsonPoint = {
   coordinates: GeoJsonPointValue;
@@ -2160,19 +2369,6 @@ export type PathResponse = {
   schematic: GeoJsonLineString;
   slopes: Slope[];
   steps: PathWaypoint[];
-};
-export type WaypointLocation =
-  | {
-      /** Offset in meters from the start of the waypoint's track section */
-      offset: number;
-    }
-  | {
-      /** A geographic coordinate (lon, lat)/WGS84 that will be projected onto the waypoint's track section */
-      geo_coordinate: (number & number)[];
-    };
-export type Waypoint = WaypointLocation & {
-  /** A track section UUID */
-  track_section: string;
 };
 export type PathfindingStep = {
   duration: number;
@@ -2975,15 +3171,6 @@ export type OperationalPointExtensions = {
     ci: number;
     trigram: string;
   } | null;
-};
-export type OperationalPointPart = {
-  extensions?: {
-    sncf?: {
-      kp: string;
-    } | null;
-  };
-  position: number;
-  track: string;
 };
 export type PathProperties = {
   electrifications?: {

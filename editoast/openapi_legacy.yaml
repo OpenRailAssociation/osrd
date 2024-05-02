@@ -187,26 +187,6 @@ paths:
         200:
           description: No content
 
-  /infra/{id}/railjson/:
-    get:
-      tags:
-        - infra
-      summary: Serialize an infra to railjson
-      parameters:
-        - in: path
-          name: id
-          schema:
-            type: integer
-          description: Infra ID
-          required: true
-      responses:
-        200:
-          description: The infra in railjson format
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/RailjsonFile"
-
   /infra/railjson/:
     post:
       tags:

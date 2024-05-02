@@ -9486,25 +9486,6 @@ paths:
       summary: Retrieve a list of specific objects in railjson format
       tags:
       - infra
-  /infra/{id}/railjson/:
-    get:
-      parameters:
-      - description: Infra ID
-        in: path
-        name: id
-        required: true
-        schema:
-          type: integer
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RailjsonFile'
-          description: The infra in railjson format
-      summary: Serialize an infra to railjson
-      tags:
-      - infra
   /infra/{infra_id}/attached/{track_id}/:
     get:
       description: Retrieve all objects attached to a given track
@@ -9644,6 +9625,29 @@ paths:
       tags:
       - infra
       - pathfinding
+  /infra/{infra_id}/railjson/:
+    get:
+      description: Serialize an infra
+      parameters:
+      - description: An existing infra ID
+        in: path
+        name: infra_id
+        required: true
+        schema:
+          format: int64
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RailJson'
+          description: The infra in railjson format
+        '404':
+          description: The infra was not found
+      summary: Serialize an infra
+      tags:
+      - infra
   /infra/{infra_id}/routes/nodes/:
     post:
       description: Returns the list of routes crossing the specified nodes, along with the available positions for each of them.
