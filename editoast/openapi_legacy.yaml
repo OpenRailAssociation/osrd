@@ -187,42 +187,6 @@ paths:
         200:
           description: No content
 
-  /infra/railjson/:
-    post:
-      tags:
-        - infra
-      summary: Import an infra from railjson
-      parameters:
-        - in: query
-          name: name
-          schema:
-            type: string
-          description: Infra name
-          required: true
-        - in: query
-          name: generate_data
-          schema:
-            type: boolean
-            description: whether the layer should be generated or no
-            default: false
-      requestBody:
-        description: Railjson infra
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/RailjsonFile"
-        required: true
-      responses:
-        201:
-          description: The imported infra id
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  infra:
-                    type: integer
-
   /infra/{id}/errors/:
     get:
       tags:
@@ -452,31 +416,6 @@ components:
           locked,
           state,
         ]
-
-    RailjsonFile:
-      properties:
-        version:
-          type: string
-        operational_points:
-          type: array
-        routes:
-          type: array
-        switch_types:
-          type: array
-        switches:
-          type: array
-        track_sections:
-          type: array
-        signals:
-          type: array
-        buffer_stops:
-          type: array
-        speed_sections:
-          type: array
-        electrifications:
-          type: array
-        detectors:
-          type: array
 
     RailjsonObject:
       required:

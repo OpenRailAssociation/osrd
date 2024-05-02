@@ -6,7 +6,7 @@ import type {
   Infra,
   PostInfraRailjsonApiResponse,
   ProjectCreateForm,
-  RailjsonFile,
+  RailJson,
   StudyCreateForm,
 } from 'common/api/osrdEditoastApi';
 
@@ -16,7 +16,7 @@ import studyData from './assets/operationStudies/study.json';
 import { getApiRequest, postApiRequest } from './assets/utils';
 
 async function createDataForTests() {
-  const smallInfraRailjson: RailjsonFile = JSON.parse(
+  const smallInfraRailjson: RailJson = JSON.parse(
     fs.readFileSync('../tests/data/infras/small_infra/infra.json', 'utf8')
   );
 

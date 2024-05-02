@@ -23,6 +23,8 @@ use serde::Deserialize;
 use serde::Serialize;
 use strum::IntoEnumIterator;
 use thiserror::Error;
+use utoipa::IntoParams;
+use utoipa::ToSchema;
 
 use crate::error::Result;
 use crate::infra_cache::InfraCache;
@@ -41,6 +43,7 @@ pub fn railjson_routes() -> impl HttpServiceFactory {
 
 crate::routes! {
     get_railjson,
+    post_railjson,
 }
 
 #[derive(QueryableByName, Default)]
@@ -145,19 +148,31 @@ async fn get_railjson(
         .body(railjson))
 }
 
-#[derive(Debug, Clone, Deserialize)]
+/// Represents the query parameters for a `POST /infra/railjson` request
+#[derive(Debug, Clone, Deserialize, IntoParams)]
 struct PostRailjsonQueryParams {
+    /// The name of the infrastructure.
     name: String,
+    /// Flag indicating whether to generate data.
     #[serde(default)]
     generate_data: bool,
 }
 
-#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, ToSchema)]
 struct PostRailjsonResponse {
     pub infra: i64,
 }
 
-/// Import an infra
+/// Import an infra from railjson
+#[utoipa::path(
+    tag = "infra",
+    params(PostRailjsonQueryParams),
+    request_body = RailJson,
+    responses(
+        (status = 201,  description = "The imported infra id", body = inline(PostRailjsonResponse)),
+        (status = 404, description = "The infra was not found"),
+    )
+)]
 #[post("/railjson")]
 async fn post_railjson(
     params: Query<PostRailjsonQueryParams>,

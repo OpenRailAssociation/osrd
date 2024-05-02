@@ -117,7 +117,7 @@ const injectedRtkApi = api
         query: (queryArg) => ({
           url: `/infra/railjson/`,
           method: 'POST',
-          body: queryArg.railjsonFile,
+          body: queryArg.railJson,
           params: { name: queryArg.name, generate_data: queryArg.generateData },
         }),
         invalidatesTags: ['infra'],
@@ -1037,14 +1037,14 @@ export type PostInfraApiArg = {
   };
 };
 export type PostInfraRailjsonApiResponse = /** status 201 The imported infra id */ {
-  infra?: number;
+  infra: number;
 };
 export type PostInfraRailjsonApiArg = {
-  /** Infra name */
+  /** The name of the infrastructure. */
   name: string;
+  /** Flag indicating whether to generate data. */
   generateData?: boolean;
-  /** Railjson infra */
-  railjsonFile: RailjsonFile;
+  railJson: RailJson;
 };
 export type PostInfraRefreshApiResponse =
   /** status 200 A list thats contains the ID of the infras that were refreshed* */ number[];
@@ -1836,155 +1836,6 @@ export type Infra = {
     | 'ERROR';
   version: string;
 };
-export type RailjsonFile = {
-  buffer_stops?: any;
-  detectors?: any;
-  electrifications?: any;
-  operational_points?: any;
-  routes?: any;
-  signals?: any;
-  speed_sections?: any;
-  switch_types?: any;
-  switches?: any;
-  track_sections?: any;
-  version?: string;
-};
-export type ObjectType =
-  | 'TrackSection'
-  | 'Signal'
-  | 'SpeedSection'
-  | 'Detector'
-  | 'NeutralSection'
-  | 'Switch'
-  | 'SwitchType'
-  | 'BufferStop'
-  | 'Route'
-  | 'OperationalPoint'
-  | 'Electrification';
-export type Railjson = {
-  id: string;
-  [key: string]: any;
-};
-export type RailjsonObject = {
-  obj_type: ObjectType;
-  railjson: Railjson;
-};
-export type Patch = {
-  /** A string containing a JSON Pointer value. */
-  from?: string;
-  /** The operation to be performed */
-  op: 'add' | 'remove' | 'replace' | 'move' | 'copy' | 'test';
-  /** A JSON-Pointer */
-  path: string;
-  /** The value to be used within the operations. */
-  value?: object;
-};
-export type Patches = Patch[];
-export type UpdateOperation = {
-  obj_id?: string;
-  obj_type: ObjectType;
-  operation_type: 'UPDATE';
-  railjson_patch: Patches;
-};
-export type DeleteOperation = {
-  obj_id: string;
-  obj_type: ObjectType;
-  operation_type: 'DELETE';
-};
-export type Operation =
-  | (RailjsonObject & {
-      operation_type: 'CREATE';
-    })
-  | (UpdateOperation & {
-      operation_type: 'UPDATE';
-    })
-  | (DeleteOperation & {
-      operation_type: 'DELETE';
-    });
-export type Point3D = number[];
-export type Point = {
-  coordinates: Point3D;
-  type: 'Point';
-};
-export type LineString = {
-  coordinates: Point3D[];
-  type: 'LineString';
-};
-export type Polygon = {
-  coordinates: Point3D[][];
-  type: 'Polygon';
-};
-export type MultiPoint = {
-  coordinates: Point3D[];
-  type: 'MultiPoint';
-};
-export type MultiLineString = {
-  coordinates: Point3D[][];
-  type: 'MultiLineString';
-};
-export type MultiPolygon = {
-  coordinates: Point3D[][][];
-  type: 'MultiPolygon';
-};
-export type Geometry = Point | LineString | Polygon | MultiPoint | MultiLineString | MultiPolygon;
-export type InfraErrorType =
-  | 'duplicated_group'
-  | 'empty_object'
-  | 'invalid_group'
-  | 'invalid_reference'
-  | 'invalid_route'
-  | 'invalid_switch_ports'
-  | 'missing_route'
-  | 'missing_buffer_stop'
-  | 'object_out_of_path'
-  | 'odd_buffer_stop_location'
-  | 'out_of_range'
-  | 'overlapping_speed_sections'
-  | 'overlapping_switches'
-  | 'overlapping_electrifications'
-  | 'unknown_port_name'
-  | 'unused_port'
-  | 'node_endpoints_not_unique';
-export type InfraError = {
-  /** Geojson of the geographic geometry of the error */
-  geographic?: Geometry;
-  /** Information about the error (check schema documentation for more details) */
-  information: {
-    error_type: InfraErrorType;
-    field?: string;
-    is_warning: boolean;
-    obj_id: string;
-    obj_type: 'TrackSection' | 'Signal' | 'BufferStop' | 'Detector' | 'Switch' | 'Route';
-  };
-  /** Geojson of the schematic geometry of the error */
-  schematic?: object | null;
-};
-export type BoundingBox = (number & number)[][];
-export type Zone = {
-  geo: BoundingBox;
-  sch: BoundingBox;
-};
-export type DirectionalTrackRange = {
-  begin: number;
-  direction: Direction;
-  end: number;
-  track: string;
-};
-export type PathfindingOutput = {
-  detectors: string[];
-  switches_directions: {
-    [key: string]: string;
-  };
-  track_ranges: DirectionalTrackRange[];
-};
-export type PathfindingTrackLocationInput = {
-  position: number;
-  track: string;
-};
-export type PathfindingInput = {
-  ending: PathfindingTrackLocationInput;
-  starting: PathfindingTrackLocationInput;
-};
 export type BufferStop = {
   extensions?: {
     sncf?: {
@@ -2027,6 +1878,12 @@ export type SwitchType = {
   };
   id: string;
   ports: string[];
+};
+export type DirectionalTrackRange = {
+  begin: number;
+  direction: Direction;
+  end: number;
+  track: string;
 };
 export type Side = 'LEFT' | 'RIGHT' | 'CENTER';
 export type Sign = {
@@ -2169,6 +2026,32 @@ export type Curve = {
   position: number;
   radius: number;
 };
+export type Point3D = number[];
+export type Point = {
+  coordinates: Point3D;
+  type: 'Point';
+};
+export type LineString = {
+  coordinates: Point3D[];
+  type: 'LineString';
+};
+export type Polygon = {
+  coordinates: Point3D[][];
+  type: 'Polygon';
+};
+export type MultiPoint = {
+  coordinates: Point3D[];
+  type: 'MultiPoint';
+};
+export type MultiLineString = {
+  coordinates: Point3D[][];
+  type: 'MultiLineString';
+};
+export type MultiPolygon = {
+  coordinates: Point3D[][][];
+  type: 'MultiPolygon';
+};
+export type Geometry = Point | LineString | Polygon | MultiPoint | MultiLineString | MultiPolygon;
 export type LoadingGaugeType =
   | 'G1'
   | 'G2'
@@ -2210,18 +2093,134 @@ export type TrackSection = {
   slopes: Slope[];
 };
 export type RailJson = {
+  /** `BufferStops` are obstacles designed to prevent trains from sliding off dead ends. */
   buffer_stops: BufferStop[];
+  /** `Detector` is a device that identifies the presence of a train in a TVD section (Track Vacancy Detection section), indicating when a track area is occupied. */
   detectors: Detector[];
+  /** To allow electric trains to run on our infrastructure, we need to specify which parts of the infrastructure is electrified. */
   electrifications: Electrification[];
+  /** These define the types of switches available for route management. */
   extended_switch_types: SwitchType[];
+  /** `NeutralSections` are designated areas of rail infrastructure where train drivers are instructed to cut the power supply to the train, primarily for safety reasons. */
   neutral_sections: NeutralSection[];
+  /** Operational point is also known in French as "Point Remarquable" (PR). One `OperationalPoint` is a **collection** of points (`OperationalPointParts`) of interest. */
   operational_points: OperationalPoint[];
+  /** A `Route` is an itinerary in the infrastructure. A train path is a sequence of routes. Routes are used to reserve section of path with the interlocking. */
   routes: Route[];
+  /** `Signals` are devices that visually convey information to train drivers about whether it is safe to proceed, stop, or slow down, based on the interlocking system and the specific signaling rules in place. */
   signals: Signal[];
+  /** The `SpeedSections` represent speed limits (in meters per second) that are applied on some parts of the tracks. One `SpeedSection` can span on several track sections, and do not necessarily cover the whole track sections. Speed sections can overlap. */
   speed_sections: SpeedSection[];
+  /** `Switches` allow for route control and redirection of trains. */
   switches: Switch[];
+  /** `TrackSection`` is a segment of rail between switches that serves as a bidirectional path for trains, and can be defined as the longest possible stretch of track within a rail infrastructure. */
   track_sections: TrackSection[];
+  /** The version of the RailJSON format. Defaults to the current version. */
   version: string;
+};
+export type ObjectType =
+  | 'TrackSection'
+  | 'Signal'
+  | 'SpeedSection'
+  | 'Detector'
+  | 'NeutralSection'
+  | 'Switch'
+  | 'SwitchType'
+  | 'BufferStop'
+  | 'Route'
+  | 'OperationalPoint'
+  | 'Electrification';
+export type Railjson = {
+  id: string;
+  [key: string]: any;
+};
+export type RailjsonObject = {
+  obj_type: ObjectType;
+  railjson: Railjson;
+};
+export type Patch = {
+  /** A string containing a JSON Pointer value. */
+  from?: string;
+  /** The operation to be performed */
+  op: 'add' | 'remove' | 'replace' | 'move' | 'copy' | 'test';
+  /** A JSON-Pointer */
+  path: string;
+  /** The value to be used within the operations. */
+  value?: object;
+};
+export type Patches = Patch[];
+export type UpdateOperation = {
+  obj_id?: string;
+  obj_type: ObjectType;
+  operation_type: 'UPDATE';
+  railjson_patch: Patches;
+};
+export type DeleteOperation = {
+  obj_id: string;
+  obj_type: ObjectType;
+  operation_type: 'DELETE';
+};
+export type Operation =
+  | (RailjsonObject & {
+      operation_type: 'CREATE';
+    })
+  | (UpdateOperation & {
+      operation_type: 'UPDATE';
+    })
+  | (DeleteOperation & {
+      operation_type: 'DELETE';
+    });
+export type InfraErrorType =
+  | 'duplicated_group'
+  | 'empty_object'
+  | 'invalid_group'
+  | 'invalid_reference'
+  | 'invalid_route'
+  | 'invalid_switch_ports'
+  | 'missing_route'
+  | 'missing_buffer_stop'
+  | 'object_out_of_path'
+  | 'odd_buffer_stop_location'
+  | 'out_of_range'
+  | 'overlapping_speed_sections'
+  | 'overlapping_switches'
+  | 'overlapping_electrifications'
+  | 'unknown_port_name'
+  | 'unused_port'
+  | 'node_endpoints_not_unique';
+export type InfraError = {
+  /** Geojson of the geographic geometry of the error */
+  geographic?: Geometry;
+  /** Information about the error (check schema documentation for more details) */
+  information: {
+    error_type: InfraErrorType;
+    field?: string;
+    is_warning: boolean;
+    obj_id: string;
+    obj_type: 'TrackSection' | 'Signal' | 'BufferStop' | 'Detector' | 'Switch' | 'Route';
+  };
+  /** Geojson of the schematic geometry of the error */
+  schematic?: object | null;
+};
+export type BoundingBox = (number & number)[][];
+export type Zone = {
+  geo: BoundingBox;
+  sch: BoundingBox;
+};
+export type PathfindingOutput = {
+  detectors: string[];
+  switches_directions: {
+    [key: string]: string;
+  };
+  track_ranges: DirectionalTrackRange[];
+};
+export type PathfindingTrackLocationInput = {
+  position: number;
+  track: string;
+};
+export type PathfindingInput = {
+  ending: PathfindingTrackLocationInput;
+  starting: PathfindingTrackLocationInput;
 };
 export type LightModeEffortCurves = {
   is_electric: boolean;
