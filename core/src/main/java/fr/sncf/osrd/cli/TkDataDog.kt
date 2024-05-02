@@ -8,6 +8,7 @@ import org.takes.Response
 import org.takes.Take
 import org.takes.rq.RqHref
 import org.takes.rq.RqMethod
+import org.takes.rq.RqRequestLine
 import org.takes.rs.RsStatus
 import org.takes.tk.TkWrap
 
@@ -16,6 +17,8 @@ class TkDataDog(take: Take) : TkWrap(Take { request: Request -> datadog(take, re
         @Trace
         private fun datadog(take: Take, request: Request): Response {
             val span = GlobalTracer.get().activeSpan()
+            val uri = RqRequestLine.Base(request).uri()
+            span.setOperationName(uri)
             val method = RqMethod.Base(request).method()
             span.setTag(Tags.HTTP_METHOD, method)
             val path = RqHref.Base(request).href().path()
