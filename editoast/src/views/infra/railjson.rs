@@ -31,11 +31,16 @@ use crate::modelsv2::prelude::*;
 use crate::modelsv2::DbConnectionPool;
 use crate::modelsv2::Infra;
 use crate::views::infra::InfraApiError;
+use crate::views::infra::InfraIdParam;
 use editoast_schemas::primitives::ObjectType;
 
 /// Return `/infra/<infra_id>/railjson` routes
-pub fn routes() -> impl HttpServiceFactory {
+pub fn railjson_routes() -> impl HttpServiceFactory {
     services![get_railjson, post_railjson]
+}
+
+crate::routes! {
+    get_railjson,
 }
 
 #[derive(QueryableByName, Default)]
@@ -52,9 +57,20 @@ enum ListErrorsRailjson {
 }
 
 /// Serialize an infra
-#[get("/{infra}/railjson")]
-async fn get_railjson(infra: Path<i64>, db_pool: Data<DbConnectionPool>) -> Result<impl Responder> {
-    let infra_id = infra.into_inner();
+#[utoipa::path(
+    tag = "infra",
+    params(InfraIdParam),
+    responses(
+        (status = 200,  description = "The infra in railjson format", body = RailJson),
+        (status = 404, description = "The infra was not found"),
+    )
+)]
+#[get("/{infra_id}/railjson")]
+async fn get_railjson(
+    infra: Path<InfraIdParam>,
+    db_pool: Data<DbConnectionPool>,
+) -> Result<impl Responder> {
+    let infra_id = infra.infra_id;
     let conn = &mut db_pool.get().await?;
     let infra_meta =
         Infra::retrieve_or_fail(conn, infra_id, || InfraApiError::NotFound { infra_id }).await?;
