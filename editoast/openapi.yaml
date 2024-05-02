@@ -5438,52 +5438,65 @@ components:
       type: string
     RailJson:
       additionalProperties: false
+      description: An infrastructure description in the RailJson format
       properties:
         buffer_stops:
+          description: '`BufferStops` are obstacles designed to prevent trains from sliding off dead ends.'
           items:
             $ref: '#/components/schemas/BufferStop'
           type: array
         detectors:
+          description: '`Detector` is a device that identifies the presence of a train in a TVD section (Track Vacancy Detection section), indicating when a track area is occupied.'
           items:
             $ref: '#/components/schemas/Detector'
           type: array
         electrifications:
+          description: To allow electric trains to run on our infrastructure, we need to specify which parts of the infrastructure is electrified.
           items:
             $ref: '#/components/schemas/Electrification'
           type: array
         extended_switch_types:
+          description: These define the types of switches available for route management.
           items:
             $ref: '#/components/schemas/SwitchType'
           type: array
         neutral_sections:
+          description: '`NeutralSections` are designated areas of rail infrastructure where train drivers are instructed to cut the power supply to the train, primarily for safety reasons.'
           items:
             $ref: '#/components/schemas/NeutralSection'
           type: array
         operational_points:
+          description: Operational point is also known in French as "Point Remarquable" (PR). One `OperationalPoint` is a **collection** of points (`OperationalPointParts`) of interest.
           items:
             $ref: '#/components/schemas/OperationalPoint'
           type: array
         routes:
+          description: A `Route` is an itinerary in the infrastructure. A train path is a sequence of routes. Routes are used to reserve section of path with the interlocking.
           items:
             $ref: '#/components/schemas/Route'
           type: array
         signals:
+          description: '`Signals` are devices that visually convey information to train drivers about whether it is safe to proceed, stop, or slow down, based on the interlocking system and the specific signaling rules in place.'
           items:
             $ref: '#/components/schemas/Signal'
           type: array
         speed_sections:
+          description: The `SpeedSections` represent speed limits (in meters per second) that are applied on some parts of the tracks. One `SpeedSection` can span on several track sections, and do not necessarily cover the whole track sections. Speed sections can overlap.
           items:
             $ref: '#/components/schemas/SpeedSection'
           type: array
         switches:
+          description: '`Switches` allow for route control and redirection of trains.'
           items:
             $ref: '#/components/schemas/Switch'
           type: array
         track_sections:
+          description: '`TrackSection`` is a segment of rail between switches that serves as a bidirectional path for trains, and can be defined as the longest possible stretch of track within a rail infrastructure.'
           items:
             $ref: '#/components/schemas/TrackSection'
           type: array
         version:
+          description: The version of the RailJSON format. Defaults to the current version.
           type: string
       required:
       - version
@@ -5535,30 +5548,6 @@ components:
       required:
       - id
       type: object
-    RailjsonFile:
-      properties:
-        buffer_stops:
-          type: array
-        detectors:
-          type: array
-        electrifications:
-          type: array
-        operational_points:
-          type: array
-        routes:
-          type: array
-        signals:
-          type: array
-        speed_sections:
-          type: array
-        switch_types:
-          type: array
-        switches:
-          type: array
-        track_sections:
-          type: array
-        version:
-          type: string
     RailjsonObject:
       properties:
         obj_type:
@@ -9150,25 +9139,25 @@ paths:
       - infra
   /infra/railjson/:
     post:
+      description: Import an infra from railjson
       parameters:
-      - description: Infra name
+      - description: The name of the infrastructure.
         in: query
         name: name
         required: true
         schema:
           type: string
-      - in: query
+      - description: Flag indicating whether to generate data.
+        in: query
         name: generate_data
+        required: false
         schema:
-          default: false
-          description: whether the layer should be generated or no
           type: boolean
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RailjsonFile'
-        description: Railjson infra
+              $ref: '#/components/schemas/RailJson'
         required: true
       responses:
         '201':
@@ -9177,9 +9166,14 @@ paths:
               schema:
                 properties:
                   infra:
+                    format: int64
                     type: integer
+                required:
+                - infra
                 type: object
           description: The imported infra id
+        '404':
+          description: The infra was not found
       summary: Import an infra from railjson
       tags:
       - infra

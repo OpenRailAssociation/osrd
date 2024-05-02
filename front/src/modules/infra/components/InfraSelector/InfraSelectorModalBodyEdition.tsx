@@ -66,7 +66,7 @@ const InfraSelectorModalBodyEdition = ({
     if (selectedFile) {
       postInfraRailjson({
         name: nameNewInfra,
-        railjsonFile: JSON.parse(await selectedFile.text()),
+        railJson: JSON.parse(await selectedFile.text()),
         generateData: true,
       })
         .unwrap()
