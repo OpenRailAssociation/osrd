@@ -69,6 +69,7 @@ crate::routes! {
             unlock,
             get_speed_limit_tags,
             get_voltages,
+            get_switch_types,
         },
         get_all_voltages,
     },
@@ -374,15 +375,23 @@ async fn rename(
 }
 
 /// Return the railjson list of switch types
+#[utoipa::path(
+    tag = "infra",
+    params(InfraIdParam),
+    responses(
+        (status = 200, description = "A list of switch types", body = Vec<SwitchType>),
+        (status = 404, description = "The infra was not found"),
+    )
+)]
 #[get("/switch_types")]
 async fn get_switch_types(
-    infra: Path<i64>,
+    infra: Path<InfraIdParam>,
     db_pool: Data<DbConnectionPool>,
     infra_caches: Data<CHashMap<i64, InfraCache>>,
 ) -> Result<Json<Vec<SwitchType>>> {
     let conn = &mut db_pool.get().await?;
-    let infra = Infra::retrieve_or_fail(conn, *infra, || InfraApiError::NotFound {
-        infra_id: *infra,
+    let infra = Infra::retrieve_or_fail(conn, infra.infra_id, || InfraApiError::NotFound {
+        infra_id: infra.infra_id,
     })
     .await?;
 

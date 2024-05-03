@@ -7780,6 +7780,19 @@ components:
       type: object
     SwitchType:
       additionalProperties: false
+      example:
+        groups:
+          LEFT:
+            dst: LEFT
+            src: BASE
+          RIGHT:
+            dst: RIGHT
+            src: BASE
+        id: Point
+        ports:
+        - LEFT
+        - RIGHT
+        - BASE
       properties:
         groups:
           additionalProperties:
@@ -9429,41 +9442,6 @@ paths:
       summary: Serialize an infra to railjson
       tags:
       - infra
-  /infra/{id}/switch_types/:
-    get:
-      parameters:
-      - description: infra id
-        in: path
-        name: id
-        required: true
-        schema:
-          type: integer
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                items:
-                  description: A switch type following Railjson spec
-                  example:
-                    groups:
-                      LEFT:
-                        dst: LEFT
-                        src: BASE
-                      RIGHT:
-                        dst: RIGHT
-                        src: BASE
-                    id: Point
-                    ports:
-                    - LEFT
-                    - RIGHT
-                    - BASE
-                  type: object
-                type: array
-          description: A list of switch types
-      summary: Retrieve a list of switch types
-      tags:
-      - infra
   /infra/{infra_id}/attached/{track_id}/:
     get:
       description: Retrieve all objects attached to a given track
@@ -9786,6 +9764,31 @@ paths:
         '404':
           description: The infra was not found
       summary: Returns the set of speed limit tags for a given infra
+      tags:
+      - infra
+  /infra/{infra_id}/switch_types/:
+    get:
+      description: Return the railjson list of switch types
+      parameters:
+      - description: An existing infra ID
+        in: path
+        name: infra_id
+        required: true
+        schema:
+          format: int64
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/SwitchType'
+                type: array
+          description: A list of switch types
+        '404':
+          description: The infra was not found
+      summary: Return the railjson list of switch types
       tags:
       - infra
   /infra/{infra_id}/unlock/:

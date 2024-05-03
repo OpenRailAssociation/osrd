@@ -24,6 +24,16 @@ editoast_common::schemas! {
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, Eq, ToSchema)]
 #[serde(deny_unknown_fields)]
 #[derivative(Default)]
+#[schema(example = json!(
+    {
+        "id": "Point",
+        "ports": ["LEFT", "RIGHT", "BASE"],
+        "groups": {
+            "LEFT": { "src": "BASE", "dst": "LEFT" },
+            "RIGHT": { "src": "BASE", "dst": "RIGHT" }
+        }
+    }
+))]
 pub struct SwitchType {
     #[schema(inline)]
     pub id: Identifier,
