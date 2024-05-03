@@ -573,8 +573,12 @@ fun trainPathBlockOffset(
     blockPath: StaticIdxList<Block>,
     chunkPath: ChunkPath
 ): Distance {
-    val firstChunk = chunkPath.chunks[0]
+    var firstChunk = chunkPath.chunks[0]
     var prevChunksLength = 0.meters
+    if (infra.getTrackChunkLength(firstChunk.value) == chunkPath.beginOffset) {
+        firstChunk = chunkPath.chunks[1]
+        prevChunksLength = -chunkPath.beginOffset.distance
+    }
     for (block in blockPath) {
         for (zonePath in blockInfra.getBlockPath(block)) {
             for (dirChunk in infra.getZonePathChunks(zonePath)) {
