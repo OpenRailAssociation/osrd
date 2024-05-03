@@ -1,3 +1,4 @@
+use itertools::Itertools;
 use utoipa::ToSchema;
 
 use super::typing::TypeSpec;
@@ -210,10 +211,16 @@ DROP FUNCTION IF EXISTS {update_trigger_function};
             .as_ref()
             .expect("no migration for search config");
         let table = &self.table;
+        let cache_columns = self
+            .criterias
+            .iter()
+            .map(|c| format!("\"{}\"", c.name))
+            .collect_vec()
+            .join(", ");
         let select_terms = self.select_terms();
         format!(
             r#"
-INSERT INTO "{table}"
+INSERT INTO "{table}" (id, {cache_columns})
 SELECT
     "{src_table}"."{pk}" AS id,
     {select_terms}
