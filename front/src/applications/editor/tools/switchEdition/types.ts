@@ -77,8 +77,8 @@ const trackNodeTypeOrder = [
 ];
 
 export const useSwitchTypes = (infraID: number | undefined) => {
-  const { data } = osrdEditoastApi.endpoints.getInfraByIdSwitchTypes.useQuery(
-    { id: infraID as number },
+  const { data } = osrdEditoastApi.endpoints.getInfraByInfraIdSwitchTypes.useQuery(
+    { infraId: infraID as number },
     { skip: !infraID }
   );
   let orderedData = [] as SwitchType[];

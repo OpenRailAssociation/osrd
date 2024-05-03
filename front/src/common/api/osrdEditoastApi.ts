@@ -201,13 +201,6 @@ const injectedRtkApi = api
         query: (queryArg) => ({ url: `/infra/${queryArg.id}/railjson/` }),
         providesTags: ['infra'],
       }),
-      getInfraByIdSwitchTypes: build.query<
-        GetInfraByIdSwitchTypesApiResponse,
-        GetInfraByIdSwitchTypesApiArg
-      >({
-        query: (queryArg) => ({ url: `/infra/${queryArg.id}/switch_types/` }),
-        providesTags: ['infra'],
-      }),
       getInfraByInfraIdAttachedAndTrackId: build.query<
         GetInfraByInfraIdAttachedAndTrackIdApiResponse,
         GetInfraByInfraIdAttachedAndTrackIdApiArg
@@ -285,6 +278,13 @@ const injectedRtkApi = api
         GetInfraByInfraIdSpeedLimitTagsApiArg
       >({
         query: (queryArg) => ({ url: `/infra/${queryArg.infraId}/speed_limit_tags/` }),
+        providesTags: ['infra'],
+      }),
+      getInfraByInfraIdSwitchTypes: build.query<
+        GetInfraByInfraIdSwitchTypesApiResponse,
+        GetInfraByInfraIdSwitchTypesApiArg
+      >({
+        query: (queryArg) => ({ url: `/infra/${queryArg.infraId}/switch_types/` }),
         providesTags: ['infra'],
       }),
       postInfraByInfraIdUnlock: build.mutation<
@@ -1142,11 +1142,6 @@ export type GetInfraByIdRailjsonApiArg = {
   /** Infra ID */
   id: number;
 };
-export type GetInfraByIdSwitchTypesApiResponse = /** status 200 A list of switch types */ object[];
-export type GetInfraByIdSwitchTypesApiArg = {
-  /** infra id */
-  id: number;
-};
 export type GetInfraByInfraIdAttachedAndTrackIdApiResponse =
   /** status 200 All objects attached to the given track (arranged by types) */ {
     [key: string]: string[];
@@ -1236,6 +1231,12 @@ export type GetInfraByInfraIdRoutesAndWaypointTypeWaypointIdApiArg = {
 export type GetInfraByInfraIdSpeedLimitTagsApiResponse =
   /** status 200 List all speed limit tags */ string[];
 export type GetInfraByInfraIdSpeedLimitTagsApiArg = {
+  /** An existing infra ID */
+  infraId: number;
+};
+export type GetInfraByInfraIdSwitchTypesApiResponse =
+  /** status 200 A list of switch types */ SwitchType[];
+export type GetInfraByInfraIdSwitchTypesApiArg = {
   /** An existing infra ID */
   infraId: number;
 };
@@ -1983,6 +1984,17 @@ export type PathfindingTrackLocationInput = {
 export type PathfindingInput = {
   ending: PathfindingTrackLocationInput;
   starting: PathfindingTrackLocationInput;
+};
+export type SwitchPortConnection = {
+  dst: string;
+  src: string;
+};
+export type SwitchType = {
+  groups: {
+    [key: string]: SwitchPortConnection[];
+  };
+  id: string;
+  ports: string[];
 };
 export type LightModeEffortCurves = {
   is_electric: boolean;
