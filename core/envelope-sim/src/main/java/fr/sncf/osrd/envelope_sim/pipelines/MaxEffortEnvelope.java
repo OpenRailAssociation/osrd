@@ -119,7 +119,18 @@ public class MaxEffortEnvelope {
         cursor.findPosition(overlayBuilder.getLastPos());
         if (overlayBuilder.lastIntersection == 0) {
             // The train stopped before reaching the end
-            throw new OSRDError(ErrorType.ImpossibleSimulationError);
+            var err = new OSRDError(ErrorType.ImpossibleSimulationError);
+            var offset = cursor.getPosition();
+            err.context.put("offset", String.format("%.0fm", offset));
+            var headPosition = Math.min(Math.max(0, offset), context.path.getLength());
+            var tailPosition =
+                    Math.min(Math.max(0, headPosition - context.rollingStock.getLength()), context.path.getLength());
+            var grade = context.path.getAverageGrade(headPosition, tailPosition);
+            err.context.put("grade", String.format("%.2fm/km", grade));
+            var map = context.tractiveEffortCurveMap.get(cursor.getPosition());
+            assert map != null;
+            err.context.put("traction_force", String.format("%.2fN", map[0].maxEffort()));
+            throw err;
         }
         builder.addPart(partBuilder.build());
     }
