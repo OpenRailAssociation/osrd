@@ -9,7 +9,11 @@ import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.RollingStock.*
 
 /** Parse the rolling stock model into something the backend can work with */
-fun parseRawRollingStock(rawRollingStock: PhysicsRollingStockModel): RollingStock {
+fun parseRawRollingStock(
+    rawRollingStock: PhysicsRollingStockModel,
+    loadingGaugeType: RJSLoadingGaugeType = RJSLoadingGaugeType.G1,
+    rollingStockSupportedSignalingSystems: List<String> = listOf(),
+): RollingStock {
     // Parse effort_curves
     val rawModes = rawRollingStock.effortCurves.modes
 
@@ -43,13 +47,13 @@ fun parseRawRollingStock(rawRollingStock: PhysicsRollingStockModel): RollingStoc
         rawRollingStock.comfortAcceleration,
         rawRollingStock.gamma.value,
         gammaType,
-        RJSLoadingGaugeType.G1,
+        loadingGaugeType,
         modes,
         rawRollingStock.effortCurves.defaultMode,
         rawRollingStock.basePowerClass,
         rawRollingStock.powerRestrictions,
         rawRollingStock.electricalPowerStartupTime?.seconds,
         rawRollingStock.raisePantographTime?.seconds,
-        arrayOf(),
+        rollingStockSupportedSignalingSystems.toTypedArray(),
     )
 }

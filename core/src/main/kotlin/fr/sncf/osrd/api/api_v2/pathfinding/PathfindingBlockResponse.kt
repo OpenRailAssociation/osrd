@@ -81,7 +81,7 @@ class PathfindingFailed(
 
 class NotEnoughPathItems : PathfindingBlockResponse
 
-val polymorphicAdapter: PolymorphicJsonAdapterFactory<PathfindingBlockResponse> =
+val polymorphicPathfindingResponseAdapter: PolymorphicJsonAdapterFactory<PathfindingBlockResponse> =
     PolymorphicJsonAdapterFactory.of(PathfindingBlockResponse::class.java, "status")
         .withSubtype(PathfindingBlockSuccess::class.java, "success")
         .withSubtype(NotFoundInBlocks::class.java, "not_found_in_blocks")
@@ -95,7 +95,7 @@ val polymorphicAdapter: PolymorphicJsonAdapterFactory<PathfindingBlockResponse> 
 
 val pathfindingResponseAdapter: JsonAdapter<PathfindingBlockResponse> =
     Moshi.Builder()
-        .add(polymorphicAdapter)
+        .add(polymorphicPathfindingResponseAdapter)
         .addLast(UnitAdapterFactory())
         .addLast(KotlinJsonAdapterFactory())
         .build()

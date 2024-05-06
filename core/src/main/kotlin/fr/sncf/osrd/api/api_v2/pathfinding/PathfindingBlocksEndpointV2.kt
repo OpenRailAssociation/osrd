@@ -3,6 +3,7 @@ package fr.sncf.osrd.api.api_v2.pathfinding
 import fr.sncf.osrd.api.ExceptionHandler
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.api.InfraManager
+import fr.sncf.osrd.api.api_v2.TrackLocation
 import fr.sncf.osrd.api.pathfinding.constraints.*
 import fr.sncf.osrd.graph.*
 import fr.sncf.osrd.graph.Pathfinding.EdgeLocation
@@ -205,7 +206,7 @@ private fun computePaths(
  */
 fun findWaypointBlocks(
     infra: FullInfra,
-    waypoint: PathfindingBlockRequest.TrackLocation,
+    waypoint: TrackLocation,
     direction: Direction,
 ): Set<PathfindingEdgeLocationId<Block>> {
     val res = HashSet<PathfindingEdgeLocationId<Block>>()

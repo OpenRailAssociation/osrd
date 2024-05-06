@@ -8,6 +8,7 @@ import fr.sncf.osrd.api.api_v2.path_properties.PathPropEndpoint;
 import fr.sncf.osrd.api.api_v2.pathfinding.PathfindingBlocksEndpointV2;
 import fr.sncf.osrd.api.api_v2.project_signals.SignalProjectionEndpointV2;
 import fr.sncf.osrd.api.api_v2.standalone_sim.SimulationEndpoint;
+import fr.sncf.osrd.api.api_v2.stdcm.STDCMEndpointV2;
 import fr.sncf.osrd.api.pathfinding.PathfindingBlocksEndpoint;
 import fr.sncf.osrd.api.stdcm.STDCMEndpoint;
 import io.sentry.Sentry;
@@ -102,6 +103,7 @@ public final class ApiServerCommand implements CliCommand {
                     new FkRegex("/cache_status", new InfraCacheStatusEndpoint(infraManager)),
                     new FkRegex("/version", new VersionEndpoint()),
                     new FkRegex("/stdcm", new STDCMEndpoint(infraManager)),
+                    new FkRegex("/v2/stdcm", new STDCMEndpointV2(infraManager)),
                     new FkRegex("/infra_load", new InfraLoadEndpoint(infraManager)));
             var monitoringType = System.getenv("CORE_MONITOR_TYPE");
             Take monitoredRoutes = routes;
