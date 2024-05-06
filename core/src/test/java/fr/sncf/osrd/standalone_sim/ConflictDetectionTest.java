@@ -246,15 +246,15 @@ public class ConflictDetectionTest {
         // if both trains runs at the same time, but first one has an arrival on stop signal (before PC2 switch)
         // with a stop long enough for the other train to get out, there is no conflict
         {
-            var stop = new TrainStop(500, 600);
+            var stop = new TrainStop(500, 600, true);
             var simResultAWithStop =
                     simpleSim(fullInfra, pathPropsA, chunkPathA, 0, Double.POSITIVE_INFINITY, List.of(stop));
 
             var conflicts = ConflictsKt.detectConflicts(List.of(
                     convertRequirements(0L, 0.0, simResultAWithStop.train),
                     convertRequirements(1L, 0.0, simResultB.train)));
-            assertTrue(conflicts.stream().anyMatch((conflict) -> conflict.conflictType == ROUTING));
-            assertTrue(conflicts.stream().anyMatch((conflict) -> conflict.conflictType == SPACING));
+            assertFalse(conflicts.stream().anyMatch((conflict) -> conflict.conflictType == ROUTING));
+            assertFalse(conflicts.stream().anyMatch((conflict) -> conflict.conflictType == SPACING));
         }
     }
 

@@ -121,7 +121,6 @@ class STDCMHeuristicTests {
             initInfraExplorerWithEnvelope(
                     infra.fullInfra(),
                     PathfindingEdgeLocationId(block, Offset(0.meters)),
-                    listOf(),
                     SimpleRollingStock.STANDARD_TRAIN
                 )
                 .first()

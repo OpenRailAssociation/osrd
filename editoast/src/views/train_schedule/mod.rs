@@ -733,6 +733,7 @@ async fn create_backend_request_payload(
             position: None,
             duration: waypoint.duration,
             location: Some(waypoint.location.clone()),
+            on_stop_signal: waypoint.duration > 0.,
         };
         stops.push(stop);
     }

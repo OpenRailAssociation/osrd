@@ -37,6 +37,12 @@ data class PendingSpacingRequirement(
     val beginTime: Double
 )
 
+data class ProcessedStop(
+    val offset: Offset<Path>,
+    val nextBlockIdx: Int,
+    val nextZoneIdx: Int,
+)
+
 class SpacingRequirementAutomaton(
     // context
     val rawInfra: RawInfra,
@@ -56,6 +62,9 @@ class SpacingRequirementAutomaton(
 
     // requirements that need to be returned on the next successful pathUpdate
     private val pendingRequirements = ArrayDeque<PendingSpacingRequirement>()
+
+    private var nextStopToProcess = 0
+    private var processedStops = ArrayDeque<ProcessedStop>()
 
     private fun registerPathExtension() {
         // if the path has not yet started, skip signal processing
@@ -91,12 +100,32 @@ class SpacingRequirementAutomaton(
                     continue
                 pendingSignals.addLast(PathSignal(signal, signalPathOffset, blockIndex))
             }
+
+            val blockEndOffset = incrementalPath.getBlockEndOffset(blockIndex)
+            val nextZoneIdx = incrementalPath.getBlockEndZone(blockIndex)
+            while (incrementalPath.stopCount > nextStopToProcess) {
+                val stopOffset = incrementalPath.getStopOffset(nextStopToProcess)
+                if (stopOffset >= blockEndOffset) break
+                if (!incrementalPath.isStopOnClosedSignal(nextStopToProcess)) {
+                    nextStopToProcess++
+                    continue
+                }
+                processedStops.add(
+                    ProcessedStop(
+                        stopOffset,
+                        blockIndex + 1,
+                        nextZoneIdx,
+                    )
+                )
+                nextStopToProcess++
+            }
         }
         nextProcessedBlock = incrementalPath.blockCount
     }
 
     private fun addZonePendingRequirement(zoneIndex: Int, zoneRequirementTime: Double) {
         assert(zoneRequirementTime.isFinite())
+
         val zoneEntryOffset = incrementalPath.getZonePathStartOffset(zoneIndex)
         val zoneExitOffset = incrementalPath.getZonePathEndOffset(zoneIndex)
         val req =
@@ -309,7 +338,7 @@ class SpacingRequirementAutomaton(
             // figure out when the signal is first seen
             val signalOffset = incrementalPath.toTravelledPath(pathSignal.pathOffset)
             val sightOffset = signalOffset - rawInfra.getSignalSightDistance(physicalSignal)
-            // If the train's simulation has reached the point where the signal is seen, bail out
+            // If the train's simulation hasn't reached the point where the signal is seen, bail out
             if (callbacks.currentPathOffset <= sightOffset) {
                 break
             }
@@ -345,34 +374,62 @@ class SpacingRequirementAutomaton(
 
         // serialize requirements and find the index of the first incomplete requirement
         var firstIncompleteReq = pendingRequirements.size
-        val serializedRequirements =
-            pendingRequirements.mapIndexed { index, pendingSpacingRequirement ->
-                val serializedReq = serializeRequirement(pendingSpacingRequirement)
-                if (!serializedReq.isComplete && index < firstIncompleteReq)
-                    firstIncompleteReq = index
-                serializedReq
-            }
+        val spacingRequirements =
+            pendingRequirements
+                .mapIndexed { index, pendingSpacingRequirement ->
+                    val spacingRequirement = postProcessRequirement(pendingSpacingRequirement)
+                    if (
+                        index < firstIncompleteReq &&
+                            (spacingRequirement == null || !spacingRequirement.isComplete)
+                    )
+                        firstIncompleteReq = index
+                    spacingRequirement
+                }
+                .filterNotNull()
 
         // remove complete requirements
         for (i in 0 until firstIncompleteReq) pendingRequirements.removeFirst()
 
-        return SpacingRequirements(serializedRequirements)
+        return SpacingRequirements(spacingRequirements)
     }
 
-    private fun serializeRequirement(
+    private fun postProcessRequirement(
         pendingRequirement: PendingSpacingRequirement
-    ): SpacingRequirement {
+    ): SpacingRequirement? {
         val zonePath = incrementalPath.getZonePath(pendingRequirement.zoneIndex)
         val zone = rawInfra.getZonePathZone(zonePath)
         val zoneName = rawInfra.getZoneName(zone)
-        val zoneEntryOffset =
-            incrementalPath.toTravelledPath(
-                incrementalPath.getZonePathStartOffset(pendingRequirement.zoneIndex)
-            )
+        val zoneEntryPathOffset =
+            incrementalPath.getZonePathStartOffset(pendingRequirement.zoneIndex)
+        val zoneEntryOffset = incrementalPath.toTravelledPath(zoneEntryPathOffset)
         val zoneExitOffset =
             incrementalPath.toTravelledPath(
                 incrementalPath.getZonePathEndOffset(pendingRequirement.zoneIndex)
             )
+
+        var beginTime = pendingRequirement.beginTime
+
+        // TODO: use a lookup table
+        fun findLastStopBeforeZone(): ProcessedStop? {
+            for (i in processedStops.size - 1 downTo 0) {
+                val stop = processedStops[i]
+                if (stop.nextZoneIdx <= pendingRequirement.zoneIndex) {
+                    return stop
+                }
+            }
+            return null
+        }
+
+        val stop = findLastStopBeforeZone()
+        if (stop != null) {
+            val stopOffset = incrementalPath.toTravelledPath(stop.offset)
+            val stopEndTime = callbacks.departureFromStop(stopOffset)
+            if (stopEndTime.isInfinite()) {
+                return null
+            }
+            beginTime = maxOf(beginTime, stopEndTime)
+        }
+
         val departureTime = callbacks.departureTimeFromRange(zoneEntryOffset, zoneExitOffset)
 
         // three cases, to be evaluated **in order**:
@@ -391,7 +448,7 @@ class SpacingRequirementAutomaton(
 
         return SpacingRequirement(
             zoneName,
-            pendingRequirement.beginTime,
+            beginTime,
             endTime,
             isComplete,
         )
@@ -411,6 +468,8 @@ class SpacingRequirementAutomaton(
         res.lastEmittedZone = lastEmittedZone
         res.pendingSignals.addAll(pendingSignals)
         res.pendingRequirements.addAll(pendingRequirements)
+        res.nextStopToProcess = nextStopToProcess
+        res.processedStops.addAll(processedStops)
         return res
     }
 }

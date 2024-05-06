@@ -1,7 +1,6 @@
 package fr.sncf.osrd.stdcm.infra_exploration
 
 import fr.sncf.osrd.api.FullInfra
-import fr.sncf.osrd.api.pathfinding.constraints.*
 import fr.sncf.osrd.conflicts.IncrementalRequirementEnvelopeAdapter
 import fr.sncf.osrd.conflicts.SpacingRequirementAutomaton
 import fr.sncf.osrd.envelope.EnvelopeConcat
@@ -11,7 +10,6 @@ import fr.sncf.osrd.envelope_sim.PhysicsRollingStock
 import fr.sncf.osrd.graph.PathfindingConstraint
 import fr.sncf.osrd.graph.PathfindingEdgeLocationId
 import fr.sncf.osrd.sim_infra.api.Block
-import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.sim_infra.api.Path
 import fr.sncf.osrd.standalone_sim.result.ResultTrain
 import fr.sncf.osrd.utils.appendOnlyLinkedListOf
@@ -74,15 +72,15 @@ interface InfraExplorerWithEnvelope : InfraExplorer {
 fun initInfraExplorerWithEnvelope(
     fullInfra: FullInfra,
     location: PathfindingEdgeLocationId<Block>,
-    endBlocks: Collection<BlockId> = setOf(),
     rollingStock: PhysicsRollingStock,
+    stops: List<Collection<PathfindingEdgeLocationId<Block>>> = listOf(setOf()),
     constraints: List<PathfindingConstraint<Block>> = listOf()
 ): Collection<InfraExplorerWithEnvelope> {
     return initInfraExplorer(
             fullInfra.rawInfra,
             fullInfra.blockInfra,
             location,
-            endBlocks = endBlocks,
+            stops = stops,
             constraints
         )
         .map { explorer ->

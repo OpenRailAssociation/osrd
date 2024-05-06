@@ -70,6 +70,7 @@ pub struct TrainStop {
     #[schema(required)]
     pub location: Option<TrackLocation>,
     pub duration: f64,
+    pub on_stop_signal: bool,
 }
 
 #[derive(Debug, Serialize)]

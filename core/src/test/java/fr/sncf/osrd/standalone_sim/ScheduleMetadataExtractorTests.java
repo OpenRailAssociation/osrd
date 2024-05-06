@@ -133,7 +133,7 @@ public class ScheduleMetadataExtractorTests {
                 testRollingStock,
                 0,
                 new ArrayList<>(),
-                List.of(new TrainStop[] {new TrainStop(500., 1000), new TrainStop(501., 10)}),
+                List.of(new TrainStop[] {new TrainStop(500., 1000, true), new TrainStop(501., 10, true)}),
                 List.of(),
                 "test",
                 RollingStock.Comfort.STANDARD,

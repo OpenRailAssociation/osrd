@@ -113,8 +113,15 @@ class BlockAvailabilityTests {
             initInfraExplorerWithEnvelope(
                     infra,
                     PathfindingEdgeLocationId(blocks[0], Offset(0.meters)),
-                    listOf(blocks.last()),
-                    rollingStock
+                    rollingStock,
+                    listOf(
+                        setOf(
+                            PathfindingEdgeLocationId(
+                                blocks.last(),
+                                infra.blockInfra.getBlockLength(blocks.last())
+                            )
+                        )
+                    )
                 )
                 .find { filterExplorer(it) }!!
         while (infraExplorer.getLookahead().size + 1 < nBlocksInPath) infraExplorer =
@@ -587,8 +594,15 @@ class BlockAvailabilityTests {
             initInfraExplorerWithEnvelope(
                     infra,
                     PathfindingEdgeLocationId(blocks[2], Offset(50.meters)),
-                    listOf(blocks.last()),
-                    REALISTIC_FAST_TRAIN
+                    REALISTIC_FAST_TRAIN,
+                    listOf(
+                        setOf(
+                            PathfindingEdgeLocationId(
+                                blocks.last(),
+                                infra.blockInfra.getBlockLength(blocks.last())
+                            )
+                        )
+                    )
                 )
                 .first { filterExplorer(it) }
         while (true) {

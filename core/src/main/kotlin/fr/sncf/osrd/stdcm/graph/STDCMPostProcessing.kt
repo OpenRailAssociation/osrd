@@ -4,7 +4,7 @@ import fr.sncf.osrd.api.pathfinding.makeOperationalPoints
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope_sim.EnvelopeSimPath
 import fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator
-import fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.areSpeedsEqual
+import fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.*
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue
 import fr.sncf.osrd.envelope_sim.pipelines.MaxEffortEnvelope
 import fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope
@@ -142,7 +142,14 @@ private fun makeStops(edges: List<STDCMEdge>): List<TrainStop> {
     for (edge in edges) {
         val prevNode = edge.previousNode
         if (prevNode?.stopDuration != null && prevNode.stopDuration >= 0)
-            res.add(TrainStop(offset.meters, prevNode.stopDuration))
+            res.add(
+                TrainStop(
+                    offset.meters,
+                    prevNode.stopDuration,
+                    // TODO: forward and use onStopSignal param from request
+                    isTimeStrictlyPositive(prevNode.stopDuration)
+                )
+            )
         offset += edge.length.distance
     }
     return res
@@ -174,7 +181,7 @@ private fun makeOpStops(infra: RawSignalingInfra, trainPath: PathProperties): Li
     val operationalPoints = makeOperationalPoints(infra, trainPath)
     val res = ArrayList<TrainStop>()
     for (op in operationalPoints) {
-        res.add(TrainStop(op.pathOffset, 0.0))
+        res.add(TrainStop(op.pathOffset, 0.0, false))
     }
     return res
 }

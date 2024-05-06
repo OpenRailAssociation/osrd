@@ -38,7 +38,7 @@ utoipa = { version = "4.2.3", features = ["actix_extras", "chrono", "uuid"] }
 uuid = { version = "1.8.0", features = ["serde", "v4"] }
 
 [dependencies]
-# For batch dependcy updates see https://osrd.fr/en/docs/guides/contribute/batch-updating-dependencies/
+# For batch dependency updates, see editoast/README.md
 
 actix-cors = "0.7.0"
 actix-files = "0.6.5"

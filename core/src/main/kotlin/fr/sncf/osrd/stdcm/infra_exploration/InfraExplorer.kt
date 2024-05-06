@@ -3,6 +3,7 @@ package fr.sncf.osrd.stdcm.infra_exploration
 import fr.sncf.osrd.api.pathfinding.makePathProps
 import fr.sncf.osrd.conflicts.IncrementalPath
 import fr.sncf.osrd.conflicts.PathFragment
+import fr.sncf.osrd.conflicts.PathStop
 import fr.sncf.osrd.conflicts.incrementalPathOf
 import fr.sncf.osrd.graph.PathfindingConstraint
 import fr.sncf.osrd.graph.PathfindingEdgeLocationId
@@ -12,6 +13,7 @@ import fr.sncf.osrd.sim_infra.utils.getRouteBlocks
 import fr.sncf.osrd.sim_infra.utils.routesOnBlock
 import fr.sncf.osrd.utils.AppendOnlyLinkedList
 import fr.sncf.osrd.utils.appendOnlyLinkedListOf
+import fr.sncf.osrd.utils.indexing.StaticIdx
 import fr.sncf.osrd.utils.indexing.StaticIdxList
 import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
 import fr.sncf.osrd.utils.units.Distance
@@ -100,14 +102,15 @@ interface EdgeIdentifier {
 }
 
 /**
- * Init all InfraExplorers starting at the given location. `endBlocks` are used to identify when the
- * incremental path is complete. `constraints` are used to determine if a block can be explored
+ * Init all InfraExplorers starting at the given location. The last of `stops` are used to identify
+ * when the incremental path is complete. `constraints` are used to determine if a block can be
+ * explored
  */
 fun initInfraExplorer(
     rawInfra: RawInfra,
     blockInfra: BlockInfra,
     location: PathfindingEdgeLocationId<Block>,
-    endBlocks: Collection<BlockId> = setOf(),
+    stops: List<Collection<PathfindingEdgeLocationId<Block>>> = listOf(setOf()),
     constraints: List<PathfindingConstraint<Block>> = listOf()
 ): Collection<InfraExplorer> {
     val infraExplorers = mutableListOf<InfraExplorer>()
@@ -127,7 +130,7 @@ fun initInfraExplorer(
                 mutableMapOf(),
                 incrementalPath,
                 blockToPathProperties,
-                endBlocks = endBlocks,
+                stops = stops,
                 constraints = constraints
             )
         val infraExtended = infraExplorer.extend(it, location)
@@ -145,8 +148,9 @@ private class InfraExplorerImpl(
     private var incrementalPath: IncrementalPath,
     private var pathPropertiesCache: MutableMap<BlockId, PathProperties>,
     private var currentIndex: Int = 0,
-    private val endBlocks:
-        Collection<BlockId>, // Blocks on which "end of path" should be set to true
+    // TODO: Should evolve into a List of struct that contains duration, onStopSignal and a
+    //       collection of locations
+    private val stops: List<Collection<PathfindingEdgeLocationId<Block>>>,
     private var predecessorLength: Length<Path> = Length(0.meters), // to avoid re-computing it
     private var constraints: List<PathfindingConstraint<Block>>
 ) : InfraExplorer {
@@ -250,7 +254,7 @@ private class InfraExplorerImpl(
             this.incrementalPath.clone(),
             this.pathPropertiesCache,
             this.currentIndex,
-            this.endBlocks,
+            this.stops,
             this.predecessorLength,
             this.constraints
         )
@@ -286,9 +290,15 @@ private class InfraExplorerImpl(
                 val isRouteBlocked =
                     constraints.any { constraint -> constraint.apply(block).isNotEmpty() }
                 if (isRouteBlocked) return false
-                val endPath = endBlocks.contains(block)
+                val endLocationsOnBlock = stops.last().filter { it.edge == block }
+                val endPath = endLocationsOnBlock.isNotEmpty()
+                val endPathBlockLocation = endLocationsOnBlock.maxByOrNull { it.offset }
                 val startPath = !pathStarted
                 val addRoute = block == routeBlocks.first() || startPath
+                val travelledPathBeginBlockOffset =
+                    if (startPath) firstLocation!!.offset else Offset.zero()
+                val travelledPathEndBlockOffset =
+                    endPathBlockLocation?.offset ?: blockInfra.getBlockLength(block)
                 pathFragments.add(
                     PathFragment(
                         if (addRoute) mutableStaticIdxArrayListOf(route)
@@ -296,9 +306,15 @@ private class InfraExplorerImpl(
                         mutableStaticIdxArrayListOf(block),
                         containsStart = startPath,
                         containsEnd = endPath,
-                        travelledPathBegin =
-                            if (startPath) firstLocation!!.offset.distance else Distance.ZERO,
-                        travelledPathEnd = Distance.ZERO
+                        stops =
+                            findStopsInTravelledPathAndOnBlock(
+                                block,
+                                travelledPathBeginBlockOffset,
+                                travelledPathEndBlockOffset
+                            ),
+                        travelledPathBegin = travelledPathBeginBlockOffset.distance,
+                        travelledPathEnd =
+                            blockInfra.getBlockLength(block) - travelledPathEndBlockOffset
                     )
                 )
                 pathStarted = true
@@ -316,6 +332,32 @@ private class InfraExplorerImpl(
         for (pathFragment in pathFragments) incrementalPath.extend(pathFragment)
 
         return true
+    }
+
+    private fun findStopsInTravelledPathAndOnBlock(
+        block: StaticIdx<Block>,
+        travelledPathBeginBlockOffset: Offset<Block>,
+        travelledPathEndBlockOffset: Offset<Block>
+    ): List<PathStop> {
+        val startCurrentBlock =
+            if (incrementalPath.blockCount < 1) {
+                Offset.zero()
+            } else {
+                incrementalPath.getBlockEndOffset(incrementalPath.blockCount - 1)
+            }
+        val pathStops = mutableListOf<PathStop>()
+        for (stop in stops) {
+            for (location in stop) {
+                if (
+                    location.edge == block &&
+                        location.offset in
+                            travelledPathBeginBlockOffset..travelledPathEndBlockOffset
+                ) {
+                    pathStops.add(PathStop(startCurrentBlock + location.offset.distance, true))
+                }
+            }
+        }
+        return pathStops
     }
 
     override fun toString(): String {

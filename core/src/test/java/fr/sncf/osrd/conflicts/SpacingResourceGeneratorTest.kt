@@ -87,6 +87,7 @@ class SpacingResourceGeneratorTest {
             PathFragment(
                 routes.toIdxList(),
                 blocks.toIdxList(),
+                stops = listOf(),
                 containsStart = true,
                 containsEnd = true,
                 0.meters,
@@ -134,6 +135,7 @@ class SpacingResourceGeneratorTest {
                 PathFragment(
                     routeList,
                     mutableStaticIdxArrayListOf(block),
+                    stops = listOf(),
                     containsStart = i == 0,
                     containsEnd = i == blocks.size - 1,
                     0.meters,
@@ -161,6 +163,7 @@ class SpacingResourceGeneratorTest {
             PathFragment(
                 routes.toIdxList(),
                 blocks.toIdxList(),
+                stops = listOf(),
                 containsStart = true,
                 containsEnd = true,
                 0.meters,
@@ -206,6 +209,7 @@ class SpacingResourceGeneratorTest {
             PathFragment(
                 routes.toIdxList(),
                 blocks.toIdxList(),
+                stops = listOf(),
                 containsStart = true,
                 containsEnd = true,
                 0.meters,
@@ -254,6 +258,7 @@ class SpacingResourceGeneratorTest {
             PathFragment(
                 routes.toIdxList(),
                 blocks.toIdxList(),
+                stops = listOf(),
                 containsStart = true,
                 containsEnd = true,
                 0.meters,

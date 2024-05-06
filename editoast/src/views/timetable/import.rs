@@ -328,6 +328,7 @@ async fn import_item(
             position: Some(pw.path_offset),
             location: None,
             duration: 0.,
+            on_stop_signal: false,
         })
         .collect();
 
@@ -517,6 +518,7 @@ fn build_simulation_request(
                     position: Some(*path_offset),
                     location: None,
                     duration,
+                    on_stop_signal: duration > 0.,
                 }
             })
             .collect();
