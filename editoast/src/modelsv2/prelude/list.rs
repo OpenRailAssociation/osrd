@@ -4,6 +4,7 @@ use diesel::expression::{AsExpression, TypedExpressionType};
 use diesel::pg::Pg;
 use diesel::query_builder::{AstPass, Query, QueryFragment};
 use diesel::sql_types::{BigInt, Bool, Nullable, SqlType};
+use std::sync::Arc;
 
 use crate::modelsv2::DbConnection;
 
@@ -43,14 +44,17 @@ impl<M: Model> FilterSetting<M> {
 pub struct SortSetting<M: Model>(pub(in crate::modelsv2) DieselSort<M::Table>);
 type DieselSort<Table> = Box<dyn diesel::BoxableExpression<Table, Pg, SqlType = NotSelectable>>;
 
-/// A builder for model listing settings
+/// A builder struct to accumulate settings that define a
+/// selection of [Model] objects
 ///
-/// See [List]
+/// Used by the [List] and [Count] traits to determine which rows
+/// to consider.
 pub struct SelectionSettings<M: Model> {
-    pub(in crate::modelsv2) filters: Vec<FilterSetting<M>>,
-    pub(in crate::modelsv2) sorts: Vec<SortSetting<M>>,
+    pub(in crate::modelsv2) filters: Vec<Arc<dyn Fn() -> FilterSetting<M> + Send + Sync>>,
+    pub(in crate::modelsv2) sorts: Vec<Arc<dyn Fn() -> SortSetting<M> + Send + Sync>>,
     pub(in crate::modelsv2) limit: Option<i64>,
     pub(in crate::modelsv2) offset: Option<i64>,
+    pub(in crate::modelsv2) paginate_counting: bool,
 }
 
 impl<M: Model> Default for SelectionSettings<M> {
@@ -60,28 +64,73 @@ impl<M: Model> Default for SelectionSettings<M> {
             sorts: Vec::new(),
             limit: None,
             offset: None,
+            paginate_counting: false,
         }
     }
 }
 
-impl<M: Model> SelectionSettings<M> {
+impl<M: Model> Clone for SelectionSettings<M> {
+    fn clone(&self) -> Self {
+        Self {
+            filters: self.filters.clone(),
+            sorts: self.sorts.clone(),
+            limit: self.limit,
+            offset: self.offset,
+            paginate_counting: self.paginate_counting,
+        }
+    }
+}
+
+impl<M: Model + 'static> SelectionSettings<M> {
     /// Initializes a settings builder with no constraints
     #[allow(unused)] // FIXME: rmove this attribute asap
     pub fn new() -> Self {
         Self::default()
     }
 
-    /// Apply some filters
+    /// Add a row filter to the selection settings
+    ///
+    /// The filter is a function that returns a [FilterSetting] object.
+    ///
+    /// This function will be called multiple times if the same settings object
+    /// is used for multiple queries (e.g. with [Count::count] or [List::list]).
+    /// It means that the funciton must be able to produce a valid filter multiple times,
+    /// so if `f` is a closure, its captured variables must be `Clone`d at each call.
+    /// Keep in mind that the function may also be called concurrently if the settings
+    /// object is shared between multiple concurrent tasks.
+    ///
+    /// We want [SelectionSettings] to implement `Clone` to allow it to be used multiple
+    /// times in different queries. However, [FilterSetting] is cannot be cloned as it
+    /// wraps `diesel::BoxableExpression` which is not `Clone`. To work around this, we
+    /// instead clone an `Arc` of functions that are able to produce a new filter every
+    /// time we need it.
     #[allow(unused)] // FIXME: rmove this attribute asap
-    pub fn filter(mut self, filter: FilterSetting<M>) -> Self {
-        self.filters.push(filter);
+    pub fn filter<F: Fn() -> FilterSetting<M> + Send + Sync + 'static>(mut self, f: F) -> Self {
+        self.filters.push(Arc::new(f));
         self
     }
 
-    /// Apply some ordering criteria
+    /// Add a sorting criteria to the selection settings
+    ///
+    /// This parameter is ignored for [Count::count] queries.
+    ///
+    /// The sort is a function that returns a [SortSetting] object.
+    ///
+    /// This function will be called multiple times if the same settings object
+    /// is used for multiple queries (e.g. with [Count::count] or [List::list]).
+    /// It means that the funciton must be able to produce a valid sort multiple times,
+    /// so if `f` is a closure, its captured variables must be `Clone`d at each call.
+    /// Keep in mind that the function may also be called concurrently if the settings
+    /// object is shared between multiple concurrent tasks.
+    ///
+    /// We want [SelectionSettings] to implement `Clone` to allow it to be used multiple
+    /// times in different queries. However, [SortSetting] is cannot be cloned as it
+    /// wraps `diesel::BoxableExpression` which is not `Clone`. To work around this, we
+    /// instead clone an `Arc` of functions that are able to produce a new sort every
+    /// time we need it.
     #[allow(unused)] // FIXME: rmove this attribute asap
-    pub fn order_by(mut self, sort: SortSetting<M>) -> Self {
-        self.sorts.push(sort);
+    pub fn order_by<F: Fn() -> SortSetting<M> + Send + Sync + 'static>(mut self, f: F) -> Self {
+        self.sorts.push(Arc::new(f));
         self
     }
 
@@ -96,6 +145,17 @@ impl<M: Model> SelectionSettings<M> {
     #[allow(unused)] // FIXME: rmove this attribute asap
     pub fn offset(mut self, offset: u64) -> Self {
         self.offset = Some(offset.try_into().expect("offset is too large"));
+        self
+    }
+
+    /// Signals to [Count::count] that the limit and the offset defined in this
+    /// settings should not be ignored (default behavior) and be included in the
+    /// query.
+    ///
+    /// Only useful if you are working with [Count::count].
+    #[allow(unused)] // FIXME: rmove this attribute asap
+    pub fn pagination_on_count(mut self, paginate: bool) -> Self {
+        self.paginate_counting = paginate;
         self
     }
 }

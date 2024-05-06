@@ -208,12 +208,12 @@ mod tests {
     #[rstest::rstest]
     async fn test_list() {
         // GIVEN
-        let (plain, json) = (String::from("text/plain"), String::from("application/json"));
+        let (plain, json) = ("text/plain", "application/json");
         let pool = db_pool();
         let conn = &mut pool.get().await.unwrap();
         let changesets = (0..20).map(|i| {
             Document::changeset()
-                .content_type(plain.clone())
+                .content_type(plain.to_string())
                 .data(vec![i])
         });
         let mut documents = Document::create_batch::<_, Vec<_>>(conn, changesets)
@@ -225,7 +225,7 @@ mod tests {
         let json_doc_idx = 10;
         documents[json_doc_idx]
             .patch()
-            .content_type(json.clone())
+            .content_type(json.to_string())
             .apply(conn)
             .await
             .unwrap();
@@ -234,8 +234,8 @@ mod tests {
         let (list, plain_count) = Document::list_and_count(
             conn,
             SelectionSettings::new()
-                .filter(Document::CONTENT_TYPE.eq(plain))
-                .order_by(Document::ID.desc())
+                .filter(move || Document::CONTENT_TYPE.eq(plain.to_string()))
+                .order_by(|| Document::ID.desc())
                 .limit(10),
         )
         .await
@@ -243,14 +243,14 @@ mod tests {
         let (past_json_index, json_count) = Document::list_and_count(
             conn,
             SelectionSettings::new()
-                .filter(Document::CONTENT_TYPE.eq(json.clone()))
+                .filter(move || Document::CONTENT_TYPE.eq(json.to_string()))
                 .offset(15),
         )
         .await
         .unwrap();
         let (with_json, json_count_bis) = Document::list_and_count(
             conn,
-            SelectionSettings::new().filter(Document::CONTENT_TYPE.eq(json)),
+            SelectionSettings::new().filter(move || Document::CONTENT_TYPE.eq(json.to_string())),
         )
         .await
         .unwrap();

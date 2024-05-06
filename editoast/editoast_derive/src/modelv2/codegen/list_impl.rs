@@ -29,12 +29,14 @@ impl ToTokens for ListImpl {
 
                     let mut query = #table_mod::table.into_boxed();
 
-                    for crate::modelsv2::prelude::FilterSetting(filter) in settings.filters {
+                    for filter_fun in settings.filters {
+                        let crate::modelsv2::prelude::FilterSetting(filter) = (*filter_fun)();
                         query = query.filter(filter);
                     }
 
-                    for crate::modelsv2::prelude::SortSetting(asc_desc) in settings.sorts {
-                        query = query.order_by(asc_desc);
+                    for sort_fun in settings.sorts {
+                        let crate::modelsv2::prelude::SortSetting(sort) = (*sort_fun)();
+                        query = query.order_by(sort);
                     }
 
                     let query = crate::modelsv2::prelude::ListAndCountQuery {
@@ -63,12 +65,14 @@ impl ToTokens for ListImpl {
 
                     let mut query = #table_mod::table.into_boxed();
 
-                    for crate::modelsv2::prelude::FilterSetting(filter) in settings.filters {
+                    for filter_fun in settings.filters {
+                        let crate::modelsv2::prelude::FilterSetting(filter) = (*filter_fun)();
                         query = query.filter(filter);
                     }
 
-                    for crate::modelsv2::prelude::SortSetting(asc_desc) in settings.sorts {
-                        query = query.order_by(asc_desc);
+                    for sort_fun in settings.sorts {
+                        let crate::modelsv2::prelude::SortSetting(sort) = (*sort_fun)();
+                        query = query.order_by(sort);
                     }
 
                     if let Some(limit) = settings.limit {
