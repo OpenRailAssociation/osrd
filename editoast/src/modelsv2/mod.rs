@@ -49,7 +49,7 @@ mod tests {
     use crate::fixtures::tests::db_pool;
     use crate::fixtures::tests::TestFixture;
 
-    #[derive(Debug, Default, Clone, ModelV2)]
+    #[derive(Debug, Default, Clone, ModelV2, PartialEq, Eq)]
     #[model(table = crate::tables::document)]
     struct Document {
         id: i64,
@@ -203,5 +203,74 @@ mod tests {
                 .data,
             Data::Raw(0, 1)
         );
+    }
+
+    #[rstest::rstest]
+    async fn test_list() {
+        // GIVEN
+        let (plain, json) = (String::from("text/plain"), String::from("application/json"));
+        let pool = db_pool();
+        let conn = &mut pool.get().await.unwrap();
+        let changesets = (0..20).map(|i| {
+            Document::changeset()
+                .content_type(plain.clone())
+                .data(vec![i])
+        });
+        let mut documents = Document::create_batch::<_, Vec<_>>(conn, changesets)
+            .await
+            .unwrap()
+            .into_iter()
+            .map(|d| TestFixture::new(d, pool.clone()))
+            .collect::<Vec<_>>();
+        let json_doc_idx = 10;
+        documents[json_doc_idx]
+            .patch()
+            .content_type(json.clone())
+            .apply(conn)
+            .await
+            .unwrap();
+
+        // WHEN
+        let (list, plain_count) = Document::list_and_count(
+            conn,
+            SelectionSettings::new()
+                .filter(Document::CONTENT_TYPE.eq(plain))
+                .order_by(Document::ID.desc())
+                .limit(10),
+        )
+        .await
+        .unwrap();
+        let (past_json_index, json_count) = Document::list_and_count(
+            conn,
+            SelectionSettings::new()
+                .filter(Document::CONTENT_TYPE.eq(json.clone()))
+                .offset(15),
+        )
+        .await
+        .unwrap();
+        let (with_json, json_count_bis) = Document::list_and_count(
+            conn,
+            SelectionSettings::new().filter(Document::CONTENT_TYPE.eq(json)),
+        )
+        .await
+        .unwrap();
+
+        // THEN
+        assert_eq!(plain_count, 19);
+        assert_eq!(list.len(), 10);
+        assert_eq!(
+            list.iter().collect::<Vec<&Document>>(),
+            documents[9..20]
+                .iter()
+                .filter(|&f| f.id != documents[json_doc_idx].id)
+                .map(|f| &f.model)
+                .rev()
+                .collect::<Vec<&Document>>()
+        );
+        assert_eq!(json_count, 1);
+        assert!(past_json_index.is_empty());
+        assert_eq!(json_count_bis, 1);
+        assert_eq!(with_json.len(), 1);
+        assert_eq!(with_json[0], documents[json_doc_idx].model);
     }
 }
