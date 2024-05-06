@@ -43,9 +43,9 @@ interface IncrementalPath {
 
     fun clone(): IncrementalPath
 
-    val endZonePathIndex: Int
-    val endBlockIndex: Int
-    val endRouteIndex: Int
+    val zonePathCount: Int
+    val blockCount: Int
+    val routeCount: Int
 
     val routes: AppendOnlyLinkedList<RouteId>
 
@@ -124,13 +124,13 @@ private class IncrementalPathImpl(
     override val pathComplete
         get() = travelledPathEnd != Offset<Path>((-1).meters)
 
-    override val endZonePathIndex
+    override val zonePathCount
         get() = zonePaths.size
 
-    override val endBlockIndex
+    override val blockCount
         get() = blocks.size
 
-    override val endRouteIndex
+    override val routeCount
         get() = routes.size
 
     override fun extend(fragment: PathFragment) {

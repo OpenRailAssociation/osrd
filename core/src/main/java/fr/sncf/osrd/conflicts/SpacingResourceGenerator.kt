@@ -60,12 +60,12 @@ class SpacingRequirementAutomaton(
     private fun registerPathExtension() {
         // if the path has not yet started, skip signal processing
         if (!incrementalPath.pathStarted) {
-            nextProcessedBlock = incrementalPath.endBlockIndex
+            nextProcessedBlock = incrementalPath.blockCount
             return
         }
 
         // queue signals
-        for (blockIndex in nextProcessedBlock until incrementalPath.endBlockIndex) {
+        for (blockIndex in nextProcessedBlock until incrementalPath.blockCount) {
             val block = incrementalPath.getBlock(blockIndex)
             val signals = blockInfra.getBlockSignals(block)
             val signalBlockPositions = blockInfra.getSignalsPositions(block)
@@ -92,7 +92,7 @@ class SpacingRequirementAutomaton(
                 pendingSignals.addLast(PathSignal(signal, signalPathOffset, blockIndex))
             }
         }
-        nextProcessedBlock = incrementalPath.endBlockIndex
+        nextProcessedBlock = incrementalPath.blockCount
     }
 
     private fun addZonePendingRequirement(zoneIndex: Int, zoneRequirementTime: Double) {
@@ -125,7 +125,7 @@ class SpacingRequirementAutomaton(
         // inside a magic portal until the train entirely moved out of it
         var startZone = -1
         val startingPoint = incrementalPath.travelledPathBegin
-        for (i in 0 until incrementalPath.endZonePathIndex) {
+        for (i in 0 until incrementalPath.zonePathCount) {
             val zonePathStartOffset = incrementalPath.getZonePathStartOffset(i)
             val zonePathEndOffset = incrementalPath.getZonePathEndOffset(i)
             if (startingPoint >= zonePathStartOffset && startingPoint < zonePathEndOffset) {
@@ -210,7 +210,7 @@ class SpacingRequirementAutomaton(
 
         // Add blocks in the block path until the probed zone is covered
         while (probedZoneIndex - firstSimulatedZone + 1 > nSimulatedZones) {
-            if (firstBlockIndex + blocks.size >= incrementalPath.endBlockIndex) {
+            if (firstBlockIndex + blocks.size >= incrementalPath.blockCount) {
                 // exiting, the end of the block path has been reached
                 return false
             }
@@ -259,7 +259,7 @@ class SpacingRequirementAutomaton(
         // on start+20 that rarely exceeds start+40.
         // We run a binary search on that range, and iterate one by one when the solution is above.
         var lowerBound = getSignalProtectedZone(pathSignal)
-        val initialUpperBound = min(lowerBound + 40, incrementalPath.endZonePathIndex)
+        val initialUpperBound = min(lowerBound + 40, incrementalPath.zonePathCount)
         var upperBound = initialUpperBound
 
         // Main loop, binary search
@@ -284,7 +284,7 @@ class SpacingRequirementAutomaton(
         // Check if more path is needed for a valid solution
         // (i.e. the first zone that is not required is out of bounds)
         if (
-            lowerBound >= incrementalPath.getBlockEndZone(incrementalPath.endBlockIndex - 1) &&
+            lowerBound >= incrementalPath.getBlockEndZone(incrementalPath.blockCount - 1) &&
                 !incrementalPath.pathComplete
         ) {
             return null
