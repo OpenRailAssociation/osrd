@@ -148,11 +148,12 @@ public class StandaloneSimulationTest extends ApiTest {
         final var rjsTrainPath = tinyInfraTrainPath();
 
         // build the simulation request
-        var noStops =
-                new RJSTrainStop[] {new RJSTrainStop(2000., 0), new RJSTrainStop(5000., 1), RJSTrainStop.lastStop(0.1)};
-        var stops =
-                new RJSTrainStop[] {new RJSTrainStop(2000., 0), new RJSTrainStop(5000., 121), RJSTrainStop.lastStop(0.1)
-                };
+        var noStops = new RJSTrainStop[] {
+            new RJSTrainStop(2000., 0, false), new RJSTrainStop(5000., 1, true), RJSTrainStop.lastStop(0.1)
+        };
+        var stops = new RJSTrainStop[] {
+            new RJSTrainStop(2000., 0, false), new RJSTrainStop(5000., 121, true), RJSTrainStop.lastStop(0.1)
+        };
         var trains = new ArrayList<RJSStandaloneTrainSchedule>();
         trains.add(new RJSStandaloneTrainSchedule("no_stops", "fast_rolling_stock", 0, null, noStops, null));
         trains.add(new RJSStandaloneTrainSchedule("stops", "fast_rolling_stock", 0, null, stops, null));
@@ -241,7 +242,7 @@ public class StandaloneSimulationTest extends ApiTest {
         final var rjsTrainPath = tinyInfraTrainPath();
 
         // build the simulation request
-        var stops = new RJSTrainStop[] {new RJSTrainStop(2000., 100), RJSTrainStop.lastStop(0.1)};
+        var stops = new RJSTrainStop[] {new RJSTrainStop(2000., 100, true), RJSTrainStop.lastStop(0.1)};
         var scheduledPoints =
                 new RJSSchedulePoint[] {new RJSSchedulePoint(8000., 520.), new RJSSchedulePoint(-1., 800.)};
         var trains = new ArrayList<RJSStandaloneTrainSchedule>();

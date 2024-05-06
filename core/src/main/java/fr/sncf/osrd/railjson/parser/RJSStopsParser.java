@@ -33,7 +33,7 @@ public class RJSStopsParser {
 
             if (positionMM > path.getLength()) throw new OSRDError(ErrorType.InvalidScheduleOutsideTrainStopPosition);
 
-            res.add(new TrainStop(Distance.toMeters(positionMM), stop.duration));
+            res.add(new TrainStop(Distance.toMeters(positionMM), stop.duration, stop.onStopSignal));
         }
         for (var stop : res) if (stop.position < 0) stop.position = Distance.toMeters(path.getLength());
         res.sort(Comparator.comparingDouble(stop -> stop.position));

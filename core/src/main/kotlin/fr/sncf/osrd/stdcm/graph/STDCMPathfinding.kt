@@ -7,7 +7,6 @@ import fr.sncf.osrd.graph.*
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.sim_infra.api.Block
-import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.stdcm.STDCMResult
 import fr.sncf.osrd.stdcm.STDCMStep
 import fr.sncf.osrd.stdcm.infra_exploration.initInfraExplorerWithEnvelope
@@ -108,7 +107,9 @@ class STDCMPathfinding(
         val constraints =
             ConstraintCombiner(initConstraints(fullInfra, listOf(rollingStock)).toMutableList())
 
-        val endBlocks = steps.last().locations.map { it.edge }
+        assert(steps.last().stop) { "The last stop is supposed to be an actual stop" }
+        val stops = steps.filter { it.stop }.map { it.locations }
+        assert(stops.isNotEmpty())
         starts =
             convertLocations(
                 graph,
@@ -116,7 +117,7 @@ class STDCMPathfinding(
                 startTime,
                 maxDepartureDelay,
                 rollingStock,
-                endBlocks,
+                stops,
                 listOf(constraints)
             )
         val path = findPathImpl() ?: return null
@@ -238,20 +239,14 @@ class STDCMPathfinding(
         startTime: Double,
         maxDepartureDelay: Double,
         rollingStock: RollingStock,
-        endBlocks: Collection<BlockId> = setOf(),
+        stops: List<Collection<PathfindingEdgeLocationId<Block>>> = listOf(),
         constraints: List<PathfindingConstraint<Block>>
     ): Set<STDCMEdge> {
         val res = HashSet<STDCMEdge>()
 
         for (location in locations) {
             val infraExplorers =
-                initInfraExplorerWithEnvelope(
-                    fullInfra,
-                    location,
-                    endBlocks,
-                    rollingStock,
-                    constraints
-                )
+                initInfraExplorerWithEnvelope(fullInfra, location, rollingStock, stops, constraints)
             val extended = infraExplorers.flatMap { extendLookaheadUntil(it, 4) }
             for (explorer in extended) {
                 val edges =

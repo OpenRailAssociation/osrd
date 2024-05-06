@@ -4,6 +4,7 @@ import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.api.api_v2.SignalSighting
 import fr.sncf.osrd.api.api_v2.ZoneUpdate
 import fr.sncf.osrd.api.api_v2.project_signals.SignalUpdate
+import fr.sncf.osrd.conflicts.TravelledPath
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.signaling.SignalingSimulator
 import fr.sncf.osrd.signaling.ZoneStatus
@@ -65,9 +66,10 @@ fun projectSignals(
     val startOffset =
         trainPathBlockOffset(fullInfra.rawInfra, fullInfra.blockInfra, blockPath, chunkPath)
     // Compute path signals on path
+    val pathOffsetBuilder = PathOffsetBuilder(startOffset)
     val pathSignals =
         pathSignalsInRange(
-            startOffset,
+            pathOffsetBuilder,
             blockPath,
             blockInfra,
             0.meters,
@@ -180,7 +182,7 @@ private fun signalUpdates(
     loadedSignalInfra: LoadedSignalInfra,
     rawInfra: RawInfra,
     signalSightings: Collection<SignalSighting>,
-    pathLength: Length<Path>,
+    travelledPathLength: Length<TravelledPath>,
     simulationEndTime: TimeDelta,
 ): MutableList<SignalUpdate> {
     val signalUpdates = mutableListOf<SignalUpdate>()
@@ -227,7 +229,7 @@ private fun signalUpdates(
         val positionStart = pathSignal.pathOffset
         val positionEnd =
             if (nextSignal.contains(signal)) nextSignal[signal]!!.pathOffset
-            else pathLength.distance
+            else travelledPathLength
 
         if (events.isEmpty()) continue
 
@@ -245,8 +247,8 @@ private fun signalUpdates(
                         physicalSignalName!!,
                         timeStart,
                         timeEnd,
-                        Offset(positionStart),
-                        Offset(positionEnd),
+                        positionStart,
+                        positionEnd,
                         color("VL"),
                         blinking("VL"),
                         "VL"
@@ -263,8 +265,8 @@ private fun signalUpdates(
                     physicalSignalName!!,
                     event.time,
                     nextEvent.time,
-                    Offset(positionStart),
-                    Offset(positionEnd),
+                    positionStart,
+                    positionEnd,
                     color(event.newAspect),
                     blinking(event.newAspect),
                     event.newAspect
@@ -281,8 +283,8 @@ private fun signalUpdates(
                     physicalSignalName!!,
                     timeStart,
                     simulationEndTime,
-                    Offset(positionStart),
-                    Offset(positionEnd),
+                    positionStart,
+                    positionEnd,
                     color(event.newAspect),
                     blinking(event.newAspect),
                     event.newAspect

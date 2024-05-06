@@ -48,7 +48,7 @@ class StopTests {
         )
 
         // Check that the stop is properly returned
-        Assertions.assertEquals(listOf(TrainStop(expectedOffset, 10000.0)), res.stopResults)
+        Assertions.assertEquals(listOf(TrainStop(expectedOffset, 10000.0, true)), res.stopResults)
     }
 
     /** Test that we can handle several stops in a row, after waypoints that aren't stops */
@@ -109,7 +109,7 @@ class StopTests {
                 )
                 .addStep(STDCMStep(setOf(EdgeLocation(secondBlock, Offset(100.meters))), 0.0, true))
                 .run()!!
-        checkStop(res, listOf(TrainStop(100.0, 10000.0)))
+        checkStop(res, listOf(TrainStop(100.0, 10000.0, true)))
     }
 
     /** Look for a path in an empty timetable, with a stop at the end of a block */
@@ -130,7 +130,7 @@ class StopTests {
                 )
                 .addStep(STDCMStep(setOf(EdgeLocation(secondBlock, Offset(100.meters))), 0.0, true))
                 .run()!!
-        checkStop(res, listOf(TrainStop(100.0, 10000.0)))
+        checkStop(res, listOf(TrainStop(100.0, 10000.0, true)))
     }
 
     /** Checks that we can make a detour to pass by an intermediate step */
@@ -242,7 +242,7 @@ class StopTests {
                 .addStep(STDCMStep(setOf(EdgeLocation(blocks[2], Offset(1.meters))), 0.0, true))
                 .setUnavailableTimes(occupancy)
                 .run()!!
-        checkStop(res, listOf(TrainStop(50.0, 10000.0)))
+        checkStop(res, listOf(TrainStop(50.0, 10000.0, true)))
         occupancyTest(res, occupancy)
     }
 
@@ -294,7 +294,7 @@ class StopTests {
                 .addStep(STDCMStep(setOf(EdgeLocation(blocks[1], Offset(50.meters))), 1000.0, true))
                 .addStep(STDCMStep(setOf(EdgeLocation(blocks[3], Offset(1.meters))), 0.0, true))
                 .run()!!
-        checkStop(res, listOf(TrainStop(51.0, 1000.0)))
+        checkStop(res, listOf(TrainStop(51.0, 1000.0, true)))
         occupancyTest(res, occupancy, 2 * timeStep)
     }
 
@@ -347,7 +347,7 @@ class StopTests {
                     )
                     .addStep(STDCMStep(setOf(EdgeLocation(blocks[3], Offset(1.meters))), 0.0, true))
             )
-        val expectedStops = listOf(TrainStop(51.0, 1000.0))
+        val expectedStops = listOf(TrainStop(51.0, 1000.0, true))
         checkStop(res.withAllowance!!, expectedStops)
         checkStop(res.withoutAllowance!!, expectedStops)
         occupancyTest(res.withAllowance, occupancy, 2 * timeStep)
@@ -408,7 +408,7 @@ class StopTests {
                     )
                     .addStep(STDCMStep(setOf(EdgeLocation(blocks[3], Offset(1.meters))), 0.0, true))
             )
-        val expectedStops = listOf(TrainStop(51.0, 1000.0))
+        val expectedStops = listOf(TrainStop(51.0, 1000.0, true))
         checkStop(res.withAllowance!!, expectedStops)
         checkStop(res.withoutAllowance!!, expectedStops)
         occupancyTest(res.withAllowance, occupancy, 2 * timeStep)

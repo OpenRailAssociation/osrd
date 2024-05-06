@@ -6,10 +6,12 @@ import java.util.Objects;
 public class TrainStop {
     public double position;
     public double duration;
+    public boolean onStopSignal;
 
-    public TrainStop(double position, double duration) {
+    public TrainStop(double position, double duration, boolean onStopSignal) {
         this.position = position;
         this.duration = duration;
+        this.onStopSignal = onStopSignal;
     }
 
     @Override

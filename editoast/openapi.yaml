@@ -8895,6 +8895,8 @@ components:
           allOf:
           - $ref: '#/components/schemas/TrackLocation'
           nullable: true
+        on_stop_signal:
+          type: boolean
         position:
           format: double
           nullable: true
@@ -8903,6 +8905,7 @@ components:
       - position
       - location
       - duration
+      - on_stop_signal
       type: object
     UpdateOperation:
       properties:

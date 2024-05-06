@@ -31,6 +31,9 @@ interface IncrementalRequirementCallbacks {
         pathBeginOff: Offset<TravelledPath>,
         pathEndOff: Offset<TravelledPath>
     ): Double
+
+    // departure time from a given stop. if the train never gets to a stop, +inf is returned
+    fun departureFromStop(stopOffset: Offset<TravelledPath>): Double
 }
 
 data class PathSignal(

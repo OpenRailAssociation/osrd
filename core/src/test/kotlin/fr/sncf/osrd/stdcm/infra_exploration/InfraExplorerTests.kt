@@ -33,7 +33,7 @@ class InfraExplorerTests {
                 infra,
                 infra,
                 PathfindingEdgeLocationId(block, Offset(0.meters)),
-                listOf(block)
+                listOf(setOf(PathfindingEdgeLocationId(block, infra.getBlockLength(block))))
             )
         assertEquals(1, explorers.size)
         val explorer = explorers.first()
@@ -61,7 +61,14 @@ class InfraExplorerTests {
                 infra,
                 infra,
                 PathfindingEdgeLocationId(blocks[0], Offset(0.meters)),
-                listOf(blocks.last())
+                listOf(
+                    setOf(
+                        PathfindingEdgeLocationId(
+                            blocks.last(),
+                            infra.getBlockLength(blocks.last())
+                        )
+                    )
+                )
             )
         assertEquals(1, firstExplorers.size)
         var explorer = firstExplorers.first()

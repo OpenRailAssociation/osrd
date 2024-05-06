@@ -49,13 +49,13 @@ class SimulationScheduleItemsParserTests {
             Arguments.of(
                 listOf(
                     SimulationScheduleItem(Offset(Distance.ZERO), null, null, false),
-                    SimulationScheduleItem(Offset(Distance(1000)), null, TimeDelta(25), false),
-                    SimulationScheduleItem(Offset(Distance(1000)), null, TimeDelta(75), false),
+                    SimulationScheduleItem(Offset(Distance(1000)), null, TimeDelta(25), true),
+                    SimulationScheduleItem(Offset(Distance(1000)), null, TimeDelta(75), true),
                     SimulationScheduleItem(Offset(Distance(1000)), null, null, false),
                 ),
                 listOf(
                     SimulationScheduleItem(Offset(Distance.ZERO), null, null, false),
-                    SimulationScheduleItem(Offset(Distance(1000)), null, TimeDelta(100), false),
+                    SimulationScheduleItem(Offset(Distance(1000)), null, TimeDelta(100), true),
                 )
             ),
             // Parser outputs true if at least one onStopSignal is true for same path offset

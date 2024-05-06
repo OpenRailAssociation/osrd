@@ -135,7 +135,8 @@ fun makeTrainSchedule(
     trainStops: List<TrainStop>
 ): StandaloneTrainSchedule {
     val mutTrainStops = ArrayList(trainStops)
-    mutTrainStops.add(TrainStop(endPos, 0.1)) // Force the train to end its path at speed=0
+    // Force the train to end its path at speed=0 and on closed signal
+    mutTrainStops.add(TrainStop(endPos, 0.1, true))
     return StandaloneTrainSchedule(
         rollingStock,
         0.0,

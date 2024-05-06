@@ -1,6 +1,7 @@
 package fr.sncf.osrd.stdcm.graph
 
 import fr.sncf.osrd.envelope.Envelope
+import fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.isTimeStrictlyPositive
 import fr.sncf.osrd.envelope_sim.allowances.LinearAllowance
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.standalone_sim.EnvelopeStopWrapper
@@ -198,7 +199,14 @@ internal constructor(
                 else
                     EnvelopeStopWrapper(
                         scaledEnvelope,
-                        listOf(TrainStop(envelope.endPos, stopDuration))
+                        listOf(
+                            TrainStop(
+                                envelope.endPos,
+                                stopDuration,
+                                // TODO: forward and use onStopSignal param from request
+                                isTimeStrictlyPositive(stopDuration)
+                            )
+                        )
                     )
             explorerWithNewEnvelope = infraExplorer.clone().addEnvelope(envelopeWithStop)
         }

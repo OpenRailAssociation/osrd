@@ -16,15 +16,34 @@ class IncrementalRequirementEnvelopeAdapter(
         pathBeginOff: Offset<TravelledPath>,
         pathEndOff: Offset<TravelledPath>
     ): Double {
-        if (envelopeWithStops == null) return Double.POSITIVE_INFINITY
+        if (envelopeWithStops == null) {
+            return Double.POSITIVE_INFINITY
+        }
         val begin = pathBeginOff.distance.meters
         val end = pathEndOff.distance.meters
-        if (max(0.0, begin) >= min(envelopeWithStops.endPos, end))
+        if (max(0.0, begin) >= min(envelopeWithStops.endPos, end)) {
             return Double.POSITIVE_INFINITY // no overlap
+        }
         return envelopeWithStops.maxSpeedInRange(
             max(begin, 0.0),
             min(end, envelopeWithStops.endPos)
         )
+    }
+
+    override fun departureFromStop(stopOffset: Offset<TravelledPath>): Double {
+        if (envelopeWithStops == null) {
+            return Double.POSITIVE_INFINITY
+        }
+        val endPos = envelopeWithStops.endPos
+        if (stopOffset.distance.meters > endPos) {
+            return Double.POSITIVE_INFINITY
+        }
+        // stop duration is included in interpolateTotalTime()
+        var pastStop = (stopOffset.distance).meters
+        if (pastStop > endPos) {
+            pastStop = endPos
+        }
+        return envelopeWithStops.interpolateTotalTime(pastStop)
     }
 
     override fun arrivalTimeInRange(

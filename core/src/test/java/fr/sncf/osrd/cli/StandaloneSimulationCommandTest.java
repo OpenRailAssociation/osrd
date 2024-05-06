@@ -23,7 +23,7 @@ public class StandaloneSimulationCommandTest {
         simulationInput.rollingStocks = List.of(getExampleRollingStock("fast_rolling_stock.json"));
         var scheduleGroup = new StandaloneSimulationCommand.TrainScheduleGroup();
         scheduleGroup.id = "test";
-        var stops = new RJSTrainStop[] {new RJSTrainStop(1., -1.)};
+        var stops = new RJSTrainStop[] {new RJSTrainStop(1., -1., false)};
         scheduleGroup.schedules =
                 List.of(new RJSStandaloneTrainSchedule("Test.", "fast_rolling_stock", 0., null, stops));
         scheduleGroup.waypoints = new PathfindingWaypoint[][] {

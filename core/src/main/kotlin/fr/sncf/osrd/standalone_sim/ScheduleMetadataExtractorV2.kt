@@ -33,7 +33,7 @@ fun runScheduleMetadataExtractor(
     val legacyStops =
         schedule
             .filter { it.stopFor != null }
-            .map { TrainStop(it.pathOffset.distance.meters, it.stopFor!!.seconds) }
+            .map { TrainStop(it.pathOffset.distance.meters, it.stopFor!!.seconds, it.onStopSignal) }
 
     val rawInfra = fullInfra.rawInfra
     val loadedSignalInfra = fullInfra.loadedSignalInfra
@@ -66,14 +66,16 @@ fun runScheduleMetadataExtractor(
 
     // Compute signal updates
     val startOffset = trainPathBlockOffset(rawInfra, blockInfra, blockPath, chunkPath)
+    val pathOffsetBuilder = PathOffsetBuilder(startOffset)
     var blockPathLength = 0.meters
     for (block in blockPath) blockPathLength += blockInfra.getBlockLength(block).distance
     val endOffset = blockPathLength - startOffset - (envelope.endPos - envelope.beginPos).meters
 
-    val pathSignals = pathSignalsInEnvelope(startOffset, blockPath, blockInfra, envelopeWithStops)
+    val pathSignals =
+        pathSignalsInEnvelope(pathOffsetBuilder, blockPath, blockInfra, envelopeWithStops)
     val zoneOccupationChangeEvents =
         zoneOccupationChangeEvents(
-            startOffset,
+            pathOffsetBuilder,
             blockPath,
             blockInfra,
             envelopeWithStops,
@@ -83,28 +85,28 @@ fun runScheduleMetadataExtractor(
 
     val zoneUpdates =
         zoneOccupationChangeEvents.map {
-            ZoneUpdate(rawInfra.getZoneName(it.zone), it.time, Offset(it.offset), it.isEntry)
+            ZoneUpdate(rawInfra.getZoneName(it.zone), it.time, it.offset, it.isEntry)
         }
 
     val signalSightings = mutableListOf<SignalSighting>()
     for ((i, pathSignal) in pathSignals.withIndex()) {
         val physicalSignal = loadedSignalInfra.getPhysicalSignal(pathSignal.signal)
         var sightOffset =
-            Distance.max(
-                0.meters,
+            Offset.max(
+                Offset.zero(),
                 pathSignal.pathOffset - rawInfra.getSignalSightDistance(physicalSignal)
             )
         if (i > 0) {
             val previousSignalOffset = pathSignals[i - 1].pathOffset
-            sightOffset = Distance.max(sightOffset, previousSignalOffset)
+            sightOffset = Offset.max(sightOffset, previousSignalOffset)
         }
         signalSightings.add(
             SignalSighting(
                 rawInfra.getPhysicalSignalName(
                     loadedSignalInfra.getPhysicalSignal(pathSignal.signal)
                 )!!,
-                envelopeWithStops.interpolateTotalTime(sightOffset.meters).seconds,
-                Offset(sightOffset),
+                envelopeWithStops.interpolateTotalTime(sightOffset.distance.meters).seconds,
+                sightOffset,
                 "VL" // TODO: find out the real state
             )
         )
@@ -122,10 +124,15 @@ fun runScheduleMetadataExtractor(
             envelopeAdapter,
             incrementalPath
         )
+    val pathStops =
+        schedule.map {
+            PathStop(pathOffsetBuilder.fromTravelledPath(it.pathOffset), it.onStopSignal)
+        }
     incrementalPath.extend(
         PathFragment(
             routePath,
             blockPath,
+            pathStops,
             containsStart = true,
             containsEnd = true,
             startOffset,
@@ -137,11 +144,12 @@ fun runScheduleMetadataExtractor(
 
     val routingRequirements =
         routingRequirements(
-            startOffset,
+            pathOffsetBuilder,
             simulator,
             routePath,
             blockPath,
             detailedBlockPath,
+            pathStops,
             loadedSignalInfra,
             blockInfra,
             envelopeWithStops,
@@ -193,7 +201,7 @@ fun makeSimpleReportTrain(
     val stops =
         schedule
             .filter { it.stopFor != null }
-            .map { TrainStop(it.pathOffset.distance.meters, it.stopFor!!.seconds) }
+            .map { TrainStop(it.pathOffset.distance.meters, it.stopFor!!.seconds, it.onStopSignal) }
     val envelopeStopWrapper = EnvelopeStopWrapper(envelope, stops)
 
     // Iterate over the points and simplify the results

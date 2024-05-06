@@ -120,9 +120,9 @@ class StandaloneSimulationTest {
                     maxEffortEnvelope.interpolateTotalTime(halfDistance.distance.meters).seconds +
                         120.seconds,
                     15.seconds,
-                    false
+                    true
                 ),
-                SimulationScheduleItem(twoThirdDistance, null, 30.seconds, false),
+                SimulationScheduleItem(twoThirdDistance, null, 30.seconds, true),
                 SimulationScheduleItem(
                     Offset<TravelledPath>(pathLength),
                     maxEffortEnvelope.totalTime.seconds + 300.seconds,

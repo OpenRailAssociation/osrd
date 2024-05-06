@@ -3,7 +3,6 @@ package fr.sncf.osrd.api.api_v2
 import com.squareup.moshi.Json
 import fr.sncf.osrd.conflicts.TravelledPath
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection
-import fr.sncf.osrd.sim_infra.api.Path
 import fr.sncf.osrd.sim_infra.api.TrackSection
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.TimeDelta
@@ -31,14 +30,14 @@ class TrackLocation(val track: String, val offset: Offset<TrackSection>)
 class ZoneUpdate(
     val zone: String,
     val time: TimeDelta,
-    val position: Offset<Path>,
+    val position: Offset<TravelledPath>,
     @Json(name = "is_entry") val isEntry: Boolean,
 )
 
 class SignalSighting(
     val signal: String,
     val time: TimeDelta,
-    val position: Offset<Path>,
+    val position: Offset<TravelledPath>,
     val state: String,
 )
 

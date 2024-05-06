@@ -78,7 +78,7 @@ fun project(
     // Compute signal updates
     val startOffset =
         trainPathBlockOffset(fullInfra.rawInfra, fullInfra.blockInfra, blockPath, chunkPath)
-    val pathSignals = pathSignals(startOffset, blockPath, blockInfra)
+    val pathSignals = pathSignals(PathOffsetBuilder(startOffset), blockPath, blockInfra)
     if (pathSignals.isEmpty()) return SignalProjectionResult(listOf())
 
     val signalAspectChangeEvents =
@@ -247,8 +247,8 @@ private fun signalUpdates(
                         physicalSignalName,
                         timeStart,
                         timeEnd,
-                        positionStart.meters,
-                        positionEnd?.meters,
+                        positionStart.distance.meters,
+                        positionEnd?.distance?.meters,
                         color("VL"),
                         blinking("VL"),
                         "VL",
@@ -269,8 +269,8 @@ private fun signalUpdates(
                     physicalSignalName,
                     timeStart.toDouble() / 1000,
                     timeEnd.toDouble() / 1000,
-                    positionStart.meters,
-                    positionEnd?.meters,
+                    positionStart.distance.meters,
+                    positionEnd?.distance?.meters,
                     color(event.newAspect),
                     blinking(event.newAspect),
                     event.newAspect,
@@ -289,8 +289,8 @@ private fun signalUpdates(
                     physicalSignalName,
                     timeStart.toDouble() / 1000,
                     null,
-                    positionStart.meters,
-                    positionEnd?.meters,
+                    positionStart.distance.meters,
+                    positionEnd?.distance?.meters,
                     color(event.newAspect),
                     blinking(event.newAspect),
                     event.newAspect,

@@ -30,8 +30,8 @@ public class EnvelopeStopWrapperTests {
     public void iteratePointsWithStops() {
         var envelopeFloor = Envelope.make(EnvelopeTestUtils.generateTimes(
                 new double[] {0, 1, 2, 3, 4, 5, 6}, new double[] {1, 1, 1, 0, 1, 1, 1}));
-        var envelopeStopWrapper =
-                new EnvelopeStopWrapper(envelopeFloor, List.of(new TrainStop(1.5, 0), new TrainStop(3, 10)));
+        var envelopeStopWrapper = new EnvelopeStopWrapper(
+                envelopeFloor, List.of(new TrainStop(1.5, 0, false), new TrainStop(3, 10, true)));
         Assertions.assertEquals(
                 List.of(
                         new EnvelopeTimeInterpolate.EnvelopePoint(0, 1, 0),

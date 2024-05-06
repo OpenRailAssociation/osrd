@@ -175,6 +175,10 @@ public final class TrainPhysicsIntegrator {
         return areDoublesEqual(a, b, TIME_EPSILON);
     }
 
+    public static boolean isTimeStrictlyPositive(double time) {
+        return time > TIME_EPSILON;
+    }
+
     private static boolean areDoublesEqual(double a, double b, double delta) {
         return Math.abs(a - b) < delta;
     }

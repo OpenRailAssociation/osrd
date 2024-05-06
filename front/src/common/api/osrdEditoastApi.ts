@@ -3004,6 +3004,7 @@ export type ScheduledPoint = {
 export type TrainStop = {
   duration: number;
   location: TrackLocation | null;
+  on_stop_signal: boolean;
   position: number | null;
 };
 export type SingleSimulationRequest = {

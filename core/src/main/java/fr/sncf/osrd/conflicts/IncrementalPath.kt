@@ -1,14 +1,19 @@
 package fr.sncf.osrd.conflicts
 
 import fr.sncf.osrd.sim_infra.api.*
+import fr.sncf.osrd.sim_infra.utils.getBlockEntry
+import fr.sncf.osrd.sim_infra.utils.getBlockExit
 import fr.sncf.osrd.utils.AppendOnlyLinkedList
 import fr.sncf.osrd.utils.appendOnlyLinkedListOf
 import fr.sncf.osrd.utils.indexing.StaticIdxList
 import fr.sncf.osrd.utils.units.*
 
+data class PathStop(val pathOffset: Offset<Path>, val onStopSignal: Boolean)
+
 class PathFragment(
     val routes: StaticIdxList<Route>,
     val blocks: StaticIdxList<Block>,
+    val stops: List<PathStop>,
     val containsStart: Boolean,
     val containsEnd: Boolean,
 
@@ -46,6 +51,7 @@ interface IncrementalPath {
     val zonePathCount: Int
     val blockCount: Int
     val routeCount: Int
+    val stopCount: Int
 
     val routes: AppendOnlyLinkedList<RouteId>
 
@@ -81,22 +87,30 @@ interface IncrementalPath {
 
     fun getBlockEndZone(blockIndex: Int): Int
 
+    fun getStopOffset(stopIndex: Int): Offset<Path>
+
+    fun isStopOnClosedSignal(stopIndex: Int): Boolean
+
     val pathStarted: Boolean
     /** can only be called if pathStarted */
     val travelledPathBegin: Offset<Path>
 
     val pathComplete: Boolean
     /** can only be called if pathComplete */
-    val travelledPathEnd: Offset<Path> //
+    val travelledPathEnd: Offset<Path>
 
     fun toTravelledPath(offset: Offset<Path>): Offset<TravelledPath>
 
     fun fromTravelledPath(offset: Offset<TravelledPath>): Offset<Path>
+
+    fun getBlockPathEnd(): Offset<Path>
 }
 
 fun incrementalPathOf(rawInfra: RawInfra, blockInfra: BlockInfra): IncrementalPath {
     return IncrementalPathImpl(rawInfra, blockInfra)
 }
+
+private class IncrementalStop(val offset: Offset<Path>, val onStopSignal: Boolean)
 
 private class IncrementalPathImpl(
     private val rawInfra: RawInfra,
@@ -106,6 +120,7 @@ private class IncrementalPathImpl(
     private var zonePaths: AppendOnlyLinkedList<ZonePathId> = appendOnlyLinkedListOf(),
     override var routes: AppendOnlyLinkedList<RouteId> = appendOnlyLinkedListOf(),
     private var blocks: AppendOnlyLinkedList<BlockId> = appendOnlyLinkedListOf(),
+    private var stops: AppendOnlyLinkedList<IncrementalStop> = appendOnlyLinkedListOf(),
 
     // lookup tables from blocks and routes to zone path bounds
     private val blockZoneBounds: AppendOnlyLinkedList<Int> = appendOnlyLinkedListOf(),
@@ -133,11 +148,18 @@ private class IncrementalPathImpl(
     override val routeCount
         get() = routes.size
 
+    override val stopCount: Int
+        get() = stops.size
+
     override fun extend(fragment: PathFragment) {
         assert(!pathComplete) { "extending a complete path" }
 
         // add zones and routes
         for (route in fragment.routes) {
+            assert(
+                routes.isEmpty() ||
+                    rawInfra.getRouteEntry(route) == rawInfra.getRouteExit(routes.last())
+            )
             for (zonePath in rawInfra.getRoutePath(route)) {
                 val zonePathLen = rawInfra.getZonePathLength(zonePath)
                 val curEndOffset = zonePathBounds.last()
@@ -182,15 +204,25 @@ private class IncrementalPathImpl(
 
         // find the index of the zone path at which this fragment's blocks start
         val fragmentBlocksStartZoneIndex = blockZoneBounds.last()
+        val fragmentStartOffset = zonePathBounds[fragmentBlocksStartZoneIndex]
 
         if (fragment.containsStart) {
             assert(!pathStarted)
-            val curBlockOffset = zonePathBounds[fragmentBlocksStartZoneIndex]
-            travelledPathBegin = curBlockOffset + fragment.travelledPathBegin
+            travelledPathBegin = fragmentStartOffset + fragment.travelledPathBegin
+        }
+
+        for (stop in fragment.stops) {
+            val offset = fragmentStartOffset + stop.pathOffset.distance
+            stops.add(IncrementalStop(offset, stop.onStopSignal))
         }
 
         var fragBlocksZoneCount = 0
         for (block in fragment.blocks) {
+            assert(
+                blocks.isEmpty() ||
+                    blockInfra.getBlockEntry(rawInfra, block) ==
+                        blockInfra.getBlockExit(rawInfra, blocks.last())
+            )
             val blockPath = blockInfra.getBlockPath(block)
             fragBlocksZoneCount += blockPath.size
             val blockEndZonePathIndex = fragmentBlocksStartZoneIndex + fragBlocksZoneCount
@@ -212,6 +244,7 @@ private class IncrementalPathImpl(
             this.zonePaths.shallowCopy(),
             this.routes.shallowCopy(),
             this.blocks.shallowCopy(),
+            this.stops.shallowCopy(),
             this.blockZoneBounds.shallowCopy(),
             this.routeZoneBounds.shallowCopy(),
             this.zonePathBounds.shallowCopy(),
@@ -284,11 +317,23 @@ private class IncrementalPathImpl(
         return blockZoneBounds[blockIndex + 1]
     }
 
+    override fun getStopOffset(stopIndex: Int): Offset<Path> {
+        return stops[stopIndex].offset
+    }
+
+    override fun isStopOnClosedSignal(stopIndex: Int): Boolean {
+        return stops[stopIndex].onStopSignal
+    }
+
     override fun toTravelledPath(offset: Offset<Path>): Offset<TravelledPath> {
         return Offset(offset.distance - travelledPathBegin.distance)
     }
 
     override fun fromTravelledPath(offset: Offset<TravelledPath>): Offset<Path> {
         return Offset(offset.distance + travelledPathBegin.distance)
+    }
+
+    override fun getBlockPathEnd(): Offset<Path> {
+        return getBlockEndOffset(blocks.size - 1)
     }
 }
