@@ -4,10 +4,9 @@ import com.squareup.moshi.Json
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import fr.sncf.osrd.api.api_v2.TrackLocation
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType
-import fr.sncf.osrd.sim_infra.api.TrackSection
 import fr.sncf.osrd.utils.json.UnitAdapterFactory
-import fr.sncf.osrd.utils.units.Offset
 
 class PathfindingBlockRequest(
     @Json(name = "rolling_stock_loading_gauge") val rollingStockLoadingGauge: RJSLoadingGaugeType,
@@ -22,9 +21,7 @@ class PathfindingBlockRequest(
 
     // One set of location by step, each step must be reached in order
     @Json(name = "path_items") val pathItems: List<Collection<TrackLocation>>
-) {
-    class TrackLocation(val track: String, val offset: Offset<TrackSection>)
-}
+)
 
 val pathfindingRequestAdapter: JsonAdapter<PathfindingBlockRequest> =
     Moshi.Builder()

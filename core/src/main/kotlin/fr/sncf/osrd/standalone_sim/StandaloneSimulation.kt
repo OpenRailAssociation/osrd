@@ -44,7 +44,7 @@ fun runStandaloneSimulation(
     constraintDistribution: RJSAllowanceDistribution,
     speedLimitTag: String?,
     powerRestrictions: DistanceRangeMap<String>,
-    options: TrainScheduleOptions,
+    useElectricalProfiles: Boolean,
     timeStep: Double,
     schedule: List<SimulationScheduleItem>,
     initialSpeed: Double,
@@ -62,7 +62,7 @@ fun runStandaloneSimulation(
             rollingStock.basePowerClass,
             powerRestrictionsLegacyMap,
             rollingStock.powerRestrictions,
-            !options.useElectricalProfiles
+            useElectricalProfiles
         )
     val curvesAndConditions = rollingStock.mapTractiveEffortCurves(electrificationMap, comfort)
     var context =

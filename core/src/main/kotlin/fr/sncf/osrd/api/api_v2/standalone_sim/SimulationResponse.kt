@@ -59,14 +59,14 @@ class SimulationFailed(
     @Json(name = "core_error") val coreError: OSRDError,
 ) : SimulationResponse
 
-val polymorphicAdapter: PolymorphicJsonAdapterFactory<SimulationResponse> =
+val polymorphicSimulationResponseAdapter: PolymorphicJsonAdapterFactory<SimulationResponse> =
     PolymorphicJsonAdapterFactory.of(SimulationResponse::class.java, "status")
         .withSubtype(SimulationSuccess::class.java, "success")
         .withSubtype(SimulationFailed::class.java, "simulation_failed")
 
 val simulationResponseAdapter: JsonAdapter<SimulationResponse> =
     Moshi.Builder()
-        .add(polymorphicAdapter)
+        .add(polymorphicSimulationResponseAdapter)
         .addLast(UnitAdapterFactory())
         .addLast(KotlinJsonAdapterFactory())
         .build()

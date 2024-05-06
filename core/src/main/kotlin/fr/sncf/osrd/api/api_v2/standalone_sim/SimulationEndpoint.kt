@@ -63,7 +63,7 @@ class SimulationEndpoint(
                     request.constraintDistribution.toRJS(),
                     request.speedLimitTag,
                     parsePowerRestrictions(request.powerRestrictions),
-                    request.options,
+                    request.options.useElectricalProfiles,
                     2.0,
                     request.schedule,
                     request.initialSpeed,

@@ -5,7 +5,6 @@ import fr.sncf.osrd.api.api_v2.RangeValues
 import fr.sncf.osrd.api.api_v2.standalone_sim.MarginValue
 import fr.sncf.osrd.api.api_v2.standalone_sim.ReportTrain
 import fr.sncf.osrd.api.api_v2.standalone_sim.SimulationScheduleItem
-import fr.sncf.osrd.api.api_v2.standalone_sim.TrainScheduleOptions
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue.Percentage
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue.TimePerDistance
@@ -81,7 +80,7 @@ class StandaloneSimulationTest {
                 RJSAllowanceDistribution.LINEAR,
                 null,
                 distanceRangeMapOf(),
-                TrainScheduleOptions(false),
+                false,
                 2.0,
                 listOf(),
                 0.0,
@@ -195,7 +194,7 @@ class StandaloneSimulationTest {
                 testCase.allowanceDistribution,
                 null,
                 distanceRangeMapOf(),
-                TrainScheduleOptions(false),
+                false,
                 2.0,
                 testCase.schedule,
                 testCase.startSpeed,

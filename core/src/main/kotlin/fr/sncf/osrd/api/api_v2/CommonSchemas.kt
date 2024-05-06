@@ -17,6 +17,8 @@ data class TrackRange(
 
 class RangeValues<T>(val boundaries: List<Distance> = listOf(), val values: List<T> = listOf())
 
+class TrackLocation(val track: String, val offset: Offset<TrackSection>)
+
 class ZoneUpdate(
     val zone: String,
     val time: TimeDelta,

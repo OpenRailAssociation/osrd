@@ -1,6 +1,7 @@
 package fr.sncf.osrd.pathfinding
 
 import fr.sncf.osrd.api.ApiTest
+import fr.sncf.osrd.api.api_v2.TrackLocation
 import fr.sncf.osrd.api.api_v2.TrackRange
 import fr.sncf.osrd.api.api_v2.pathfinding.*
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection
@@ -16,10 +17,8 @@ import org.takes.rq.RqFake
 class PathfindingV2Test : ApiTest() {
     @Test
     fun simpleTinyInfraTest() {
-        val waypointStart =
-            PathfindingBlockRequest.TrackLocation("ne.micro.foo_b", Offset(50.meters))
-        val waypointEnd =
-            PathfindingBlockRequest.TrackLocation("ne.micro.bar_a", Offset(100.meters))
+        val waypointStart = TrackLocation("ne.micro.foo_b", Offset(50.meters))
+        val waypointEnd = TrackLocation("ne.micro.bar_a", Offset(100.meters))
         val waypointsStart = listOf(waypointStart)
         val waypointsEnd = listOf(waypointEnd)
         val waypoints = listOf(waypointsStart, waypointsEnd)
@@ -74,10 +73,8 @@ class PathfindingV2Test : ApiTest() {
 
     @Test
     fun incompatibleElectrification() {
-        val waypointStart =
-            PathfindingBlockRequest.TrackLocation("ne.micro.foo_b", Offset(50.meters))
-        val waypointEnd =
-            PathfindingBlockRequest.TrackLocation("ne.micro.bar_a", Offset(100.meters))
+        val waypointStart = TrackLocation("ne.micro.foo_b", Offset(50.meters))
+        val waypointEnd = TrackLocation("ne.micro.bar_a", Offset(100.meters))
         val waypointsStart = listOf(waypointStart)
         val waypointsEnd = listOf(waypointEnd)
         val waypoints = listOf(waypointsStart, waypointsEnd)
