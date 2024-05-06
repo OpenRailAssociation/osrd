@@ -4,7 +4,6 @@ extern crate diesel;
 extern crate cfg_if;
 
 mod client;
-mod converters;
 mod core;
 mod error;
 mod fixtures;
@@ -196,7 +195,7 @@ async fn run() -> Result<(), Box<dyn Error + Send + Sync>> {
         Commands::Runserver(args) => runserver(args, create_db_pool()?, redis_config).await,
         Commands::ImportRollingStock(args) => import_rolling_stock(args, create_db_pool()?).await,
         Commands::OsmToRailjson(args) => {
-            converters::osm_to_railjson(args.osm_pbf_in, args.railjson_out)
+            osm_to_railjson::osm_to_railjson(args.osm_pbf_in, args.railjson_out)
         }
         Commands::Openapi => {
             generate_openapi();
