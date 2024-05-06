@@ -6,10 +6,10 @@ use tracing::debug;
 use tracing::error;
 use tracing::info;
 
-use crate::converters::generate_routes;
+use super::utils::*;
+use crate::generate_routes;
 use editoast_schemas::infra::RailJson;
 use editoast_schemas::infra::TrackSection;
-use osm_to_railjson::utils::*;
 /// Run the osm-to-railjson subcommand
 /// Converts OpenStreetMap pbf file to railjson
 pub fn osm_to_railjson(
@@ -134,8 +134,7 @@ mod tests {
     use editoast_schemas::primitives::Identifier;
     use std::collections::HashMap;
 
-    use super::parse_osm;
-    use crate::converters::*;
+    use super::*;
 
     #[test]
     fn convert_osm_to_railjson() {

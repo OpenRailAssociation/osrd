@@ -398,8 +398,7 @@ mod tests {
     */
     fn generate_routes() {
         let railjson =
-            crate::converters::osm_to_railjson::parse_osm("src/tests/routes.osm.pbf".into())
-                .unwrap();
+            crate::osm_to_railjson::parse_osm("src/tests/routes.osm.pbf".into()).unwrap();
         let routes = super::routes(&railjson);
         assert_eq!(6, routes.len());
         let routes_with_switches_count = routes
