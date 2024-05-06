@@ -3027,6 +3027,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "osm_to_railjson"
+version = "0.1.0"
+
+[[package]]
 name = "osmpbfreader"
 version = "0.16.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
