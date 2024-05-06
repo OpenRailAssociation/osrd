@@ -5,6 +5,8 @@ use diesel::pg::Pg;
 use diesel::query_builder::{AstPass, Query, QueryFragment};
 use diesel::sql_types::{BigInt, Bool, Nullable, SqlType};
 
+use crate::modelsv2::DbConnection;
+
 use super::Model;
 
 /// A dynamic container for a filter setting in a [SelectionSettings] context
@@ -101,7 +103,7 @@ impl<M: Model> SelectionSettings<M> {
 pub trait List: Model {
     /// Lists and counts the objects that match the provided settings
     async fn list_and_count(
-        conn: &'async_trait mut diesel_async::AsyncPgConnection,
+        conn: &'async_trait mut DbConnection,
         settings: SelectionSettings<Self>,
     ) -> crate::error::Result<(Vec<Self>, u64)>;
 
@@ -111,10 +113,98 @@ pub trait List: Model {
     /// but it is recommended to override it with a more efficient implementation if possible
     /// as the counting operation can be expensive.
     async fn list(
-        conn: &'async_trait mut diesel_async::AsyncPgConnection,
+        conn: &'async_trait mut DbConnection,
         settings: SelectionSettings<Self>,
     ) -> crate::error::Result<Vec<Self>> {
         let (list, _) = Self::list_and_count(conn, settings).await?;
         Ok(list)
+    }
+}
+
+/// A composite query that returns the count of objects produced by `Q`
+/// and the objects themselves (optionally with a limit and offset applied)
+///
+/// This struct is meant to be used for the implementation of the [List] trait,
+/// which is usually provided by the `Model` derive macro expansion.
+#[derive(diesel::QueryId)]
+pub(in crate::modelsv2) struct ListAndCountQuery<Q> {
+    pub(in crate::modelsv2) query: Q,
+    pub(in crate::modelsv2) limit: Option<i64>,
+    pub(in crate::modelsv2) offset: Option<i64>,
+}
+
+impl<Q: Query> Query for ListAndCountQuery<Q> {
+    type SqlType = (BigInt, Nullable<Q::SqlType>);
+}
+
+impl<Q: QueryFragment<Pg>> QueryFragment<Pg> for ListAndCountQuery<Q> {
+    fn walk_ast<'b>(&'b self, mut out: AstPass<'_, 'b, Pg>) -> diesel::result::QueryResult<()> {
+        // Some explanations on the SQL query:
+        // 1. __unbounded_query is the original query without the limit and offset.
+        //    We use it to count the number of objects that match the settings in the whole table.
+        // 2. __og_query is the original query with the limit and offset applied.
+        // 3. __count_query is a 1-row, 1-column query that counts the number of objects in __unbounded_query.
+        // 4. We aggregate the results of __count_query and __og_query to return the count and the data.
+        //
+        // We use a LEFT JOIN to ensure that the count is always returned, even if there are no objects.
+        // For example, this can happen when the OFFSET overshoots the last row that matches the filters.
+        // In this case, we still want the number of rows behind the OFFSET to be counted,
+        // but we don't wan any row data (since we're beyond that OFFSET).
+        out.push_sql("WITH __unbounded_query AS (");
+        self.query.walk_ast(out.reborrow())?;
+        out.push_sql("), __og_query AS (");
+        self.query.walk_ast(out.reborrow())?;
+        if let Some(ref limit) = self.limit {
+            out.push_sql(" LIMIT ");
+            out.push_bind_param::<BigInt, _>(limit)?;
+        }
+        if let Some(ref offset) = self.offset {
+            out.push_sql(" OFFSET ");
+            out.push_bind_param::<BigInt, _>(offset)?;
+        }
+        out.push_sql(
+            "), __count_query AS (
+                SELECT COUNT(*) FROM __unbounded_query
+            )
+            SELECT __count_query.*, __og_query.*
+            FROM __count_query
+              LEFT JOIN __og_query ON true",
+        );
+        Ok(())
+    }
+}
+
+/// A simple proxy container meant to be used to aggregate the results of a `ListAndCountQuery` query
+///
+/// This struct is meant to be used for the implementation of the [List] trait,
+/// which is usually provided by the `Model` derive macro expansion.
+pub(in crate::modelsv2) struct ListAndCountIntermediateContainer<T> {
+    pub(in crate::modelsv2) count: i64,
+    pub(in crate::modelsv2) data: Vec<T>,
+}
+
+impl<T: Model> Extend<(i64, Option<T::Row>)> for ListAndCountIntermediateContainer<T> {
+    fn extend<I: IntoIterator<Item = (i64, Option<T::Row>)>>(&mut self, iter: I) {
+        for (count, data) in iter {
+            self.count = count;
+            if let Some(row) = data {
+                self.data.push(T::from_row(row));
+            }
+        }
+    }
+}
+
+impl<T> Default for ListAndCountIntermediateContainer<T> {
+    fn default() -> Self {
+        Self {
+            count: 0,
+            data: Vec::new(),
+        }
+    }
+}
+
+impl<T> ListAndCountIntermediateContainer<T> {
+    pub(in crate::modelsv2) fn into_result(self) -> (Vec<T>, u64) {
+        (self.data, self.count as u64)
     }
 }

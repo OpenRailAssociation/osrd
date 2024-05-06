@@ -9,6 +9,7 @@ mod delete_impl;
 mod delete_static_impl;
 mod exists_impl;
 mod identifiable_impl;
+mod list_impl;
 mod model_field_api_impl_block;
 mod model_fields_impl_block;
 mod model_from_row_impl;
@@ -35,6 +36,7 @@ use self::delete_impl::DeleteImpl;
 use self::delete_static_impl::DeleteStaticImpl;
 use self::exists_impl::ExistsImpl;
 use self::identifiable_impl::IdentifiableImpl;
+use self::list_impl::ListImpl;
 use self::model_field_api_impl_block::ModelFieldApiImplBlock;
 use self::model_fields_impl_block::ModelFieldDecl;
 use self::model_fields_impl_block::ModelFieldsImplBlock;
@@ -277,6 +279,14 @@ impl ModelConfig {
             model: self.model.clone(),
             table_mod: self.table.clone(),
             primary_key: self.get_primary_field_ident(),
+        }
+    }
+
+    pub(crate) fn list_impl(&self) -> ListImpl {
+        ListImpl {
+            model: self.model.clone(),
+            table_mod: self.table.clone(),
+            row: self.row.ident(),
         }
     }
 
