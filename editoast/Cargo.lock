@@ -1394,7 +1394,7 @@ dependencies = [
  "opentelemetry-semantic-conventions",
  "opentelemetry_sdk",
  "osm4routing",
- "osmpbfreader",
+ "osm_to_railjson",
  "paste",
  "pathfinding",
  "postgis_diesel",
@@ -3029,6 +3029,13 @@ dependencies = [
 [[package]]
 name = "osm_to_railjson"
 version = "0.1.0"
+dependencies = [
+ "editoast_schemas",
+ "osm4routing",
+ "osmpbfreader",
+ "rstest",
+ "tracing",
+]
 
 [[package]]
 name = "osmpbfreader"

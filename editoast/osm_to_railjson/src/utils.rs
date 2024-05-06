@@ -489,7 +489,7 @@ mod tests {
     use osm4routing::Coord;
     use rstest::rstest;
 
-    use crate::converters::utils::*;
+    use super::*;
 
     #[test]
     fn test_angle() {
