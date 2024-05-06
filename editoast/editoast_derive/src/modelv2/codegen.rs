@@ -1,6 +1,7 @@
 mod changeset_builder_impl_block;
 mod changeset_decl;
 mod changeset_from_model;
+mod count_impl;
 mod create_batch_impl;
 mod create_batch_with_key_impl;
 mod create_impl;
@@ -28,6 +29,7 @@ use self::changeset_builder_impl_block::ChangesetBuilderImplBlock;
 use self::changeset_decl::ChangesetDecl;
 use self::changeset_decl::ChangesetFieldDecl;
 use self::changeset_from_model::ChangesetFromModelImpl;
+use self::count_impl::CountImpl;
 use self::create_batch_impl::CreateBatchImpl;
 use self::create_batch_with_key_impl::CreateBatchWithKeyImpl;
 use self::create_impl::CreateImpl;
@@ -287,6 +289,13 @@ impl ModelConfig {
             model: self.model.clone(),
             table_mod: self.table.clone(),
             row: self.row.ident(),
+        }
+    }
+
+    pub(crate) fn count_impl(&self) -> CountImpl {
+        CountImpl {
+            model: self.model.clone(),
+            table_mod: self.table.clone(),
         }
     }
 

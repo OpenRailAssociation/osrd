@@ -19,42 +19,6 @@ impl ToTokens for ListImpl {
             #[automatically_derived]
             #[async_trait::async_trait]
             impl crate::modelsv2::prelude::List for #model {
-                async fn list_and_count(
-                    conn: &'async_trait mut crate::modelsv2::DbConnection,
-                    settings: crate::modelsv2::prelude::SelectionSettings<Self>,
-                ) -> crate::error::Result<(Vec<Self>, u64)> {
-                    use diesel::QueryDsl;
-                    use diesel_async::RunQueryDsl;
-                    use futures_util::stream::TryStreamExt;
-
-                    let mut query = #table_mod::table.into_boxed();
-
-                    for filter_fun in settings.filters {
-                        let crate::modelsv2::prelude::FilterSetting(filter) = (*filter_fun)();
-                        query = query.filter(filter);
-                    }
-
-                    for sort_fun in settings.sorts {
-                        let crate::modelsv2::prelude::SortSetting(sort) = (*sort_fun)();
-                        query = query.order_by(sort);
-                    }
-
-                    let query = crate::modelsv2::prelude::ListAndCountQuery {
-                        query,
-                        limit: settings.limit,
-                        offset: settings.offset,
-                    };
-
-                    let results: crate::modelsv2::prelude::ListAndCountIntermediateContainer<#model> =
-                        query
-                            .load_stream::<(i64, Option<#row>)>(conn)
-                            .await?
-                            .try_collect()
-                            .await?;
-
-                    Ok(results.into_result())
-                }
-
                 async fn list(
                     conn: &'async_trait mut crate::modelsv2::DbConnection,
                     settings: crate::modelsv2::prelude::SelectionSettings<Self>,

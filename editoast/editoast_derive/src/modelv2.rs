@@ -43,6 +43,7 @@ pub fn model(input: &DeriveInput) -> Result<TokenStream> {
     let create_impl = config.create_impl();
     let delete_impl = config.delete_impl();
     let list_impl = config.list_impl();
+    let count_impl = config.count_impl();
     let create_batch_impl = config.create_batch_impl();
     let create_batch_with_key_impls = config.create_batch_with_key_impls();
     let retrieve_batch_impls = config.retrieve_batch_impls();
@@ -72,6 +73,7 @@ pub fn model(input: &DeriveInput) -> Result<TokenStream> {
         #create_impl
         #delete_impl
         #list_impl
+        #count_impl
         #create_batch_impl
         #(#create_batch_with_key_impls)*
         #(#retrieve_batch_impls)*
