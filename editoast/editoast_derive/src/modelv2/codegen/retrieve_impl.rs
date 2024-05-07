@@ -23,11 +23,13 @@ impl ToTokens for RetrieveImpl {
         let ty = identifier.get_type();
         let id_ident = identifier.get_lvalue();
         let eqs = identifier.get_diesel_eqs();
+        let span_name = format!("model:retrieve<{}>", model);
 
         tokens.extend(quote! {
             #[automatically_derived]
             #[async_trait::async_trait]
             impl crate::modelsv2::Retrieve<#ty> for #model {
+                #[tracing::instrument(name = #span_name, skip(conn))]
                 async fn retrieve(
                     conn: &mut crate::modelsv2::DbConnection,
                     #id_ident: #ty,

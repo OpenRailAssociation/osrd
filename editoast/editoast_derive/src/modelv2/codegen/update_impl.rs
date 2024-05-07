@@ -25,11 +25,13 @@ impl ToTokens for UpdateImpl {
         let ty = identifier.get_type();
         let id_ident = identifier.get_lvalue();
         let eqs = identifier.get_diesel_eqs();
+        let span_name = format!("model:update<{}>", model);
 
         tokens.extend(quote! {
             #[automatically_derived]
             #[async_trait::async_trait]
             impl crate::modelsv2::Update<#ty, #model> for #changeset {
+                #[tracing::instrument(name = #span_name, skip_all)]
                 async fn update(
                     self,
                     conn: &mut crate::modelsv2::DbConnection,

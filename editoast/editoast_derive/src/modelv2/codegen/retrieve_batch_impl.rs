@@ -24,11 +24,14 @@ impl ToTokens for RetrieveBatchImpl {
         let id_ident = identifier.get_lvalue();
         let params_per_row = identifier.get_idents().len();
         let filters = identifier.get_diesel_eq_and_fold();
+        let span_name = format!("model:retrieve_batch_unchecked<{}>", model);
+        let span_name_with_key = format!("model:retrieve_batch_with_key_unchecked<{}>", model);
 
         tokens.extend(quote! {
             #[automatically_derived]
             #[async_trait::async_trait]
             impl crate::modelsv2::RetrieveBatchUnchecked<#ty> for #model {
+                #[tracing::instrument(name = #span_name, skip_all)]
                 async fn retrieve_batch_unchecked<
                     I: std::iter::IntoIterator<Item = #ty> + Send + 'async_trait,
                     C: Default + std::iter::Extend<#model> + Send,
@@ -62,6 +65,7 @@ impl ToTokens for RetrieveBatchImpl {
                     })
                 }
 
+                #[tracing::instrument(name = #span_name_with_key, skip_all)]
                 async fn retrieve_batch_with_key_unchecked<
                     I: std::iter::IntoIterator<Item = #ty> + Send + 'async_trait,
                     C: Default + std::iter::Extend<(#ty, #model)> + Send,

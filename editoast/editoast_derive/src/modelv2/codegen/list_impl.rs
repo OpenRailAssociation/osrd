@@ -14,11 +14,13 @@ impl ToTokens for ListImpl {
             table_mod,
             row,
         } = self;
+        let span_name = format!("model:list<{}>", model);
 
         tokens.extend(quote! {
             #[automatically_derived]
             #[async_trait::async_trait]
             impl crate::modelsv2::prelude::List for #model {
+                #[tracing::instrument(name = #span_name, skip_all, ret, err)]
                 async fn list(
                     conn: &'async_trait mut crate::modelsv2::DbConnection,
                     settings: crate::modelsv2::prelude::SelectionSettings<Self>,

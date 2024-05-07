@@ -22,11 +22,13 @@ impl ToTokens for DeleteBatchImpl {
         let id_ident = identifier.get_lvalue();
         let params_per_row = identifier.get_idents().len();
         let filters = identifier.get_diesel_eq_and_fold();
+        let span_name = format!("model:delete_batch<{}>", model);
 
         tokens.extend(quote! {
             #[automatically_derived]
             #[async_trait::async_trait]
             impl crate::modelsv2::DeleteBatch<#ty> for #model {
+                #[tracing::instrument(name = #span_name, skip_all)]
                 async fn delete_batch<I: std::iter::IntoIterator<Item = #ty> + Send + 'async_trait>(
                     conn: &mut crate::modelsv2::DbConnection,
                     ids: I,
