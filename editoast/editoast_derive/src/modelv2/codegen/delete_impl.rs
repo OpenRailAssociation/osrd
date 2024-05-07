@@ -14,11 +14,13 @@ impl ToTokens for DeleteImpl {
             table_mod,
             primary_key,
         } = self;
+        let span_name = format!("model:delete<{}>", model);
 
         tokens.extend(quote! {
             #[automatically_derived]
             #[async_trait::async_trait]
             impl crate::modelsv2::Delete for #model {
+                #[tracing::instrument(name = #span_name, skip_all)]
                 async fn delete(
                     &self,
                     conn: &mut crate::modelsv2::DbConnection,

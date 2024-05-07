@@ -20,11 +20,13 @@ impl ToTokens for CreateBatchImpl {
             changeset,
             field_count,
         } = self;
+        let span_name = format!("model:create_batch<{}>", model);
 
         tokens.extend(quote! {
             #[automatically_derived]
             #[async_trait::async_trait]
             impl crate::modelsv2::CreateBatch<#changeset> for #model {
+                #[tracing::instrument(name = #span_name, skip_all)]
                 async fn create_batch<
                     I: std::iter::IntoIterator<Item = #changeset> + Send + 'async_trait,
                     C: Default + std::iter::Extend<Self> + Send,

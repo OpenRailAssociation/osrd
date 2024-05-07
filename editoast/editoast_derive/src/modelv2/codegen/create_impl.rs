@@ -16,11 +16,13 @@ impl ToTokens for CreateImpl {
             row,
             changeset,
         } = self;
+        let span_name = format!("model:create<{}>", model);
 
         tokens.extend(quote! {
             #[automatically_derived]
             #[async_trait::async_trait]
             impl crate::modelsv2::Create<#model> for #changeset {
+                #[tracing::instrument(name = #span_name, skip_all)]
                 async fn create(
                     self,
                     conn: &mut crate::modelsv2::DbConnection,
