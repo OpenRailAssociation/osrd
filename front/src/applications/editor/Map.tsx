@@ -18,6 +18,7 @@ import { CUSTOM_ATTRIBUTION } from 'common/Map/const';
 import colors from 'common/Map/Consts/colors';
 import Background from 'common/Map/Layers/Background';
 import { useMapBlankStyle } from 'common/Map/Layers/blankStyle';
+import NeutralSections from 'common/Map/Layers/extensions/SNCF/NeutralSections';
 import Hillshade from 'common/Map/Layers/Hillshade';
 import IGN_BD_ORTHO from 'common/Map/Layers/IGN_BD_ORTHO';
 import IGN_CADASTRE from 'common/Map/Layers/IGN_CADASTRE';
@@ -324,6 +325,14 @@ const MapUnplugged = ({
             colors={colors[mapStyle]}
             layerOrder={LAYER_GROUPS_ORDER[LAYERS.PLATFORMS.GROUP]}
           />
+
+          {editorState.editorLayers.has('neutral_sections') && (
+            <NeutralSections
+              colors={colors[mapStyle]}
+              layerOrder={LAYER_GROUPS_ORDER[LAYERS.DEAD_SECTIONS.GROUP]}
+              infraID={infraID}
+            />
+          )}
 
           {/* Tool specific layers */}
           {!isNil(infraID) && activeTool.layersComponent && mapRef.current && (

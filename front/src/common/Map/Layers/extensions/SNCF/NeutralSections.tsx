@@ -1,12 +1,10 @@
 import React from 'react';
 
 import { type LayerProps, Source } from 'react-map-gl/maplibre';
-import { useSelector } from 'react-redux';
 
 import { MAP_URL } from 'common/Map/const';
 import NeutralSectionSigns from 'common/Map/Layers/extensions/SNCF/NeutralSectionSigns';
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
-import type { RootState } from 'reducers';
 import type { Theme } from 'types';
 
 type NeutralSectionsProps = {
@@ -16,7 +14,6 @@ type NeutralSectionsProps = {
 };
 
 export default ({ colors, layerOrder, infraID }: NeutralSectionsProps) => {
-  const { layersSettings } = useSelector((state: RootState) => state.map);
   const neutralSectionsParams: LayerProps = {
     type: 'line',
     'source-layer': 'neutral_sections',
@@ -39,23 +36,20 @@ export default ({ colors, layerOrder, infraID }: NeutralSectionsProps) => {
     },
   };
 
-  if (layersSettings.neutral_sections) {
-    return (
-      <>
-        <Source
-          id="neutral_sections_geo"
-          type="vector"
-          url={`${MAP_URL}/layer/neutral_sections/mvt/geo/?infra=${infraID}`}
-        >
-          <OrderedLayer
-            {...neutralSectionsParams}
-            id="chartis/neutral_sections/geo"
-            layerOrder={layerOrder}
-          />
-        </Source>
-        <NeutralSectionSigns colors={colors} layerOrder={layerOrder} infraID={infraID} />
-      </>
-    );
-  }
-  return <div />;
+  return (
+    <>
+      <Source
+        id="neutral_sections_geo"
+        type="vector"
+        url={`${MAP_URL}/layer/neutral_sections/mvt/geo/?infra=${infraID}`}
+      >
+        <OrderedLayer
+          {...neutralSectionsParams}
+          id="chartis/neutral_sections/geo"
+          layerOrder={layerOrder}
+        />
+      </Source>
+      <NeutralSectionSigns colors={colors} layerOrder={layerOrder} infraID={infraID} />
+    </>
+  );
 };

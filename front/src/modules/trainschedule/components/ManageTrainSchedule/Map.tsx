@@ -277,11 +277,13 @@ const Map = ({ geometry, pathProperties }: MapProps) => {
           layerOrder={LAYER_GROUPS_ORDER[LAYERS.ELECTRIFICATIONS.GROUP]}
           infraID={infraID}
         />
-        <NeutralSections
-          colors={colors[mapStyle]}
-          layerOrder={LAYER_GROUPS_ORDER[LAYERS.DEAD_SECTIONS.GROUP]}
-          infraID={infraID}
-        />
+        {layersSettings.neutral_sections && (
+          <NeutralSections
+            colors={colors[mapStyle]}
+            layerOrder={LAYER_GROUPS_ORDER[LAYERS.DEAD_SECTIONS.GROUP]}
+            infraID={infraID}
+          />
+        )}
         <BufferStops
           colors={colors[mapStyle]}
           layerOrder={LAYER_GROUPS_ORDER[LAYERS.BUFFER_STOPS.GROUP]}
