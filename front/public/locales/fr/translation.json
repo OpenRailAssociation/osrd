@@ -193,7 +193,8 @@
       "track_sections": "Sections de lignes",
       "speed_sections": "Vitesses limites",
       "platforms": "Quais",
-      "neutral_sections": "BP/CC"
+      "neutral_sections": "BP/CC",
+      "operational_points": "Points remarquables"
     },
     "layers-modal": {
       "frozen-layer": "nécessaire pour l'outil actif",

@@ -57,8 +57,13 @@ export const FormatSwitch: FC<FormatSwitchProps> = ({ name, icon, color, disable
   );
 };
 
-export const Icon2SVG: FC<{ file: string; altName?: string }> = ({ file, altName }) => (
-  <img className="icon-to-svg" src={file} alt={altName} />
+export const Icon2SVG: FC<{
+  file: string;
+  altName?: string;
+  style?: React.CSSProperties;
+  className?: string;
+}> = ({ file, altName, style, className }) => (
+  <img className={className || 'icon-to-svg'} src={file} alt={altName} style={style} />
 );
 
 const MapSettingsLayers: FC<unknown> = () => (

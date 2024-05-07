@@ -16,6 +16,7 @@ const INFRA_EDITOR_LAYERS = [
   'track_sections',
   'platforms',
   'neutral_sections',
+  'operational_points',
 ] as const;
 export const LAYERS_SET: Set<string> = new Set(INFRA_EDITOR_LAYERS);
 export type Layer = (typeof INFRA_EDITOR_LAYERS)[number];
@@ -30,6 +31,7 @@ export const EDITOAST_TYPES = [
   'Switch',
   'TrackSection',
   'NeutralSection',
+  'OperationalPoint',
 ] as const;
 export type EditoastType = (typeof EDITOAST_TYPES)[number];
 
@@ -43,6 +45,7 @@ export const EDITOAST_TO_LAYER_DICT: Record<EditoastType, Layer[]> = {
   Switch: ['switches'],
   TrackSection: ['track_sections'],
   NeutralSection: ['neutral_sections'],
+  OperationalPoint: ['operational_points'],
 };
 export const LAYER_TO_EDITOAST_DICT = flatMap(EDITOAST_TO_LAYER_DICT, (values, key) =>
   values.map((value) => [value, key])

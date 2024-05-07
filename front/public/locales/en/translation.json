@@ -200,7 +200,8 @@
       "track_sections": "Track sections",
       "speed_sections": "Speed limits",
       "platforms": "Platforms",
-      "neutral_sections": "Dead sections"
+      "neutral_sections": "Dead sections",
+      "operational_points": "Operational points"
     },
     "layers-modal": {
       "frozen-layer": "needed for the active tool",

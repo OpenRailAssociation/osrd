@@ -307,11 +307,13 @@ const Map: FC<MapProps> = () => {
           layerOrder={LAYER_GROUPS_ORDER[LAYERS.ROUTES.GROUP]}
           infraID={infraID}
         />
-        <OperationalPoints
-          colors={colors[mapStyle]}
-          layerOrder={LAYER_GROUPS_ORDER[LAYERS.OPERATIONAL_POINTS.GROUP]}
-          infraID={infraID}
-        />
+        {layersSettings.operationalpoints && (
+          <OperationalPoints
+            colors={colors[mapStyle]}
+            layerOrder={LAYER_GROUPS_ORDER[LAYERS.OPERATIONAL_POINTS.GROUP]}
+            infraID={infraID}
+          />
+        )}
         <Electrifications
           colors={colors[mapStyle]}
           layerOrder={LAYER_GROUPS_ORDER[LAYERS.ELECTRIFICATIONS.GROUP]}

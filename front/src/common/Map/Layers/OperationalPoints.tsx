@@ -1,12 +1,10 @@
 import React from 'react';
 
 import { Source, type LayerProps } from 'react-map-gl/maplibre';
-import { useSelector } from 'react-redux';
 
 import { MAP_URL } from 'common/Map/const';
 import getKPLabelLayerProps from 'common/Map/Layers/KPLabel';
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
-import type { RootState } from 'reducers';
 import type { Theme } from 'types';
 
 interface Props {
@@ -16,7 +14,6 @@ interface Props {
 }
 
 export default function OperationalPoints({ colors, layerOrder, infraID }: Props) {
-  const { layersSettings } = useSelector((state: RootState) => state.map);
   const point: LayerProps = {
     type: 'circle',
     'source-layer': 'operational_points',
@@ -119,40 +116,37 @@ export default function OperationalPoints({ colors, layerOrder, infraID }: Props
     },
   };
 
-  if (layersSettings.operationalpoints) {
-    return (
-      <Source
-        id="osrd_operational_point_geo"
-        type="vector"
-        url={`${MAP_URL}/layer/operational_points/mvt/geo/?infra=${infraID}`}
-      >
-        <OrderedLayer {...point} id="chartis/osrd_operational_point/geo" layerOrder={layerOrder} />
-        <OrderedLayer
-          {...yardName}
-          id="chartis/osrd_operational_point_yardname/geo"
-          layerOrder={layerOrder}
-        />
-        <OrderedLayer
-          {...name}
-          id="chartis/osrd_operational_point_name_short/geo"
-          layerOrder={layerOrder}
-        />
-        <OrderedLayer
-          {...trigram}
-          id="chartis/osrd_operational_point_name/geo"
-          layerOrder={layerOrder}
-        />
-        <OrderedLayer
-          {...getKPLabelLayerProps({
-            colors,
-            minzoom: 9.5,
-            sourceTable: 'operational_points',
-          })}
-          id="chartis/osrd_operational_point_kp/geo"
-          layerOrder={layerOrder}
-        />
-      </Source>
-    );
-  }
-  return null;
+  return (
+    <Source
+      id="osrd_operational_point_geo"
+      type="vector"
+      url={`${MAP_URL}/layer/operational_points/mvt/geo/?infra=${infraID}`}
+    >
+      <OrderedLayer {...point} id="chartis/osrd_operational_point/geo" layerOrder={layerOrder} />
+      <OrderedLayer
+        {...yardName}
+        id="chartis/osrd_operational_point_yardname/geo"
+        layerOrder={layerOrder}
+      />
+      <OrderedLayer
+        {...name}
+        id="chartis/osrd_operational_point_name_short/geo"
+        layerOrder={layerOrder}
+      />
+      <OrderedLayer
+        {...trigram}
+        id="chartis/osrd_operational_point_name/geo"
+        layerOrder={layerOrder}
+      />
+      <OrderedLayer
+        {...getKPLabelLayerProps({
+          colors,
+          minzoom: 9.5,
+          sourceTable: 'operational_points',
+        })}
+        id="chartis/osrd_operational_point_kp/geo"
+        layerOrder={layerOrder}
+      />
+    </Source>
+  );
 }
