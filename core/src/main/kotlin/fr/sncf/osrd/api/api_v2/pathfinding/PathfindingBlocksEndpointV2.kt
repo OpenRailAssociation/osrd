@@ -45,7 +45,7 @@ class PathfindingBlocksEndpointV2(private val infraManager: InfraManager) : Take
             val infra = infraManager.getInfra(request.infra, request.expectedVersion, recorder)
             val path = runPathfinding(infra, request)
             val res = runPathfindingPostProcessing(infra, path)
-            validatePathfindingResponse(request, res)
+            validatePathfindingResponse(infra, request, res)
             RsJson(RsWithBody(pathfindingResponseAdapter.toJson(res)))
         } catch (error: NoPathFoundException) {
             RsJson(RsWithBody(pathfindingResponseAdapter.toJson(error.response)))
@@ -285,8 +285,26 @@ private fun getBlockOffset(
     )
 }
 
-fun validatePathfindingResponse(req: PathfindingBlockRequest, res: PathfindingBlockResponse) {
+fun validatePathfindingResponse(
+    infra: FullInfra,
+    req: PathfindingBlockRequest,
+    res: PathfindingBlockResponse
+) {
     if (res !is PathfindingBlockSuccess) return
+
+    for ((i, blockName) in res.blocks.withIndex()) {
+        val block = infra.blockInfra.getBlockFromName(blockName)!!
+        val stopAtBufferStop = infra.blockInfra.blockStopAtBufferStop(block)
+        val isLastBlock = i == res.blocks.size - 1
+        if (stopAtBufferStop && !isLastBlock) {
+            val zonePath = infra.blockInfra.getBlockPath(block).last()
+            val detector = infra.rawInfra.getZonePathExit(zonePath)
+            val detectorName = infra.rawInfra.getDetectorName(detector.value)
+            val err = OSRDError(ErrorType.MissingSignalOnRouteTransition)
+            err.context["detector"] = "detector=$detectorName, dir=${detector.direction}"
+            throw err
+        }
+    }
 
     val tracks = HashSet<String>()
     for (track in res.trackSectionRanges) tracks.add(track.trackSection)

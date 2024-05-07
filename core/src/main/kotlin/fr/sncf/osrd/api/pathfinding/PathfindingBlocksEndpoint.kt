@@ -61,7 +61,7 @@ class PathfindingBlocksEndpoint(private val infraManager: InfraManager) : Take {
             val timeout = request.timeout
             val path = runPathfinding(infra, reqWaypoints, rollingStocks, timeout)
             val res = convertPathfindingResult(infra.blockInfra, infra.rawInfra, path, recorder)
-            validatePathfindingResult(res, reqWaypoints, infra.rawInfra)
+            validatePathfindingResult(path, res, infra.rawInfra, infra.blockInfra)
             RsJson(RsWithBody(PathfindingResult.adapterResult.toJson(res)))
         } catch (ex: Throwable) {
             // TODO: include warnings in the response
@@ -97,10 +97,23 @@ private fun getRouteDirTracks(
 }
 
 fun validatePathfindingResult(
+    path: PathfindingResultId<Block>,
     res: PathfindingResult,
-    reqWaypoints: Array<Array<PathfindingWaypoint>>,
-    rawInfra: RawSignalingInfra
+    rawInfra: RawSignalingInfra,
+    blockInfra: BlockInfra
 ) {
+    for ((i, blockRange) in path.ranges.withIndex()) {
+        val stopAtBufferStop = blockInfra.blockStopAtBufferStop(blockRange.edge)
+        val isLastBlock = i == path.ranges.size - 1
+        if (stopAtBufferStop && !isLastBlock) {
+            val zonePath = blockInfra.getBlockPath(blockRange.edge).last()
+            val detector = rawInfra.getZonePathExit(zonePath)
+            val detectorName = rawInfra.getDetectorName(detector.value)
+            val err = OSRDError(ErrorType.MissingSignalOnRouteTransition)
+            err.context["detector"] = "detector=$detectorName, dir=${detector.direction}"
+            throw err
+        }
+    }
     val routeTracks = MutableDirStaticIdxArrayList<TrackSection>()
     for (routePath in res.routePaths) for (dirTrack in
         getRouteDirTracks(rawInfra, rawInfra.getRouteFromName(routePath.route))) if (
