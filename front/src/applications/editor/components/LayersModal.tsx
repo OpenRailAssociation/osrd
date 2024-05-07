@@ -2,7 +2,7 @@ import React, { type FC, useEffect, useMemo, useState } from 'react';
 
 import { groupBy, mapKeys, mapValues, sum, isString, isArray, uniq, isNil } from 'lodash';
 import { useTranslation } from 'react-i18next';
-import { GiElectric } from 'react-icons/gi';
+import { GiElectric, GiUnplugged } from 'react-icons/gi';
 import { MdSpeed } from 'react-icons/md';
 import { TbRectangleVerticalFilled } from 'react-icons/tb';
 import { useSelector } from 'react-redux';
@@ -39,6 +39,10 @@ export const LAYERS: Array<{ layers: Layer[]; icon: string | JSX.Element }> = [
   {
     layers: ['platforms'],
     icon: <TbRectangleVerticalFilled style={{ width: '20px' }} className="mx-2" />,
+  },
+  {
+    layers: ['neutral_sections'],
+    icon: <GiUnplugged style={{ width: '20px' }} className="mx-2" />,
   },
 ];
 

@@ -192,7 +192,8 @@
       "switches": "Aiguillages",
       "track_sections": "Sections de lignes",
       "speed_sections": "Vitesses limites",
-      "platforms": "Quais"
+      "platforms": "Quais",
+      "neutral_sections": "BP/CC"
     },
     "layers-modal": {
       "frozen-layer": "nécessaire pour l'outil actif",

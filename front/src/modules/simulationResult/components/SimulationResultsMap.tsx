@@ -63,7 +63,7 @@ import VirtualLayers from 'modules/simulationResult/components/SimulationResults
 import type { RootState } from 'reducers';
 import { updateViewport } from 'reducers/map';
 import type { Viewport } from 'reducers/map';
-import { getTerrain3DExaggeration } from 'reducers/map/selectors';
+import { getLayersSettings, getTerrain3DExaggeration } from 'reducers/map/selectors';
 import { getPresentSimulation, getSelectedTrain } from 'reducers/osrdsimulation/selectors';
 import type { Train } from 'reducers/osrdsimulation/types';
 import { useAppDispatch } from 'store';
@@ -86,6 +86,7 @@ const Map: FC<MapProps> = () => {
   const trains = useMemo(() => keyBy(simulation.trains, 'id'), [simulation.trains]);
   const selectedTrain = useSelector(getSelectedTrain);
   const terrain3DExaggeration = useSelector(getTerrain3DExaggeration);
+  const layersSettings = useSelector(getLayersSettings);
 
   const [geojsonPath, setGeojsonPath] = useState<Feature<LineString>>();
   const [selectedTrainHoverPosition, setTrainHoverPosition] = useState<TrainPosition>();
@@ -316,11 +317,13 @@ const Map: FC<MapProps> = () => {
           layerOrder={LAYER_GROUPS_ORDER[LAYERS.ELECTRIFICATIONS.GROUP]}
           infraID={infraID}
         />
-        <NeutralSections
-          colors={colors[mapStyle]}
-          layerOrder={LAYER_GROUPS_ORDER[LAYERS.DEAD_SECTIONS.GROUP]}
-          infraID={infraID}
-        />
+        {layersSettings.neutral_sections && (
+          <NeutralSections
+            colors={colors[mapStyle]}
+            layerOrder={LAYER_GROUPS_ORDER[LAYERS.DEAD_SECTIONS.GROUP]}
+            infraID={infraID}
+          />
+        )}
         <BufferStops
           colors={colors[mapStyle]}
           layerOrder={LAYER_GROUPS_ORDER[LAYERS.BUFFER_STOPS.GROUP]}

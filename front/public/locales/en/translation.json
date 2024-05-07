@@ -199,7 +199,8 @@
       "switches": "Switches",
       "track_sections": "Track sections",
       "speed_sections": "Speed limits",
-      "platforms": "Platforms"
+      "platforms": "Platforms",
+      "neutral_sections": "Dead sections"
     },
     "layers-modal": {
       "frozen-layer": "needed for the active tool",
