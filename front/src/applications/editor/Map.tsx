@@ -24,6 +24,7 @@ import IGN_BD_ORTHO from 'common/Map/Layers/IGN_BD_ORTHO';
 import IGN_CADASTRE from 'common/Map/Layers/IGN_CADASTRE';
 import IGN_SCAN25 from 'common/Map/Layers/IGN_SCAN25';
 import LineSearchLayer from 'common/Map/Layers/LineSearchLayer';
+import OperationalPoints from 'common/Map/Layers/OperationalPoints';
 import OSM from 'common/Map/Layers/OSM';
 import PlatformsLayer from 'common/Map/Layers/Platforms';
 import SearchMarker from 'common/Map/Layers/SearchMarker';
@@ -330,6 +331,14 @@ const MapUnplugged = ({
             <NeutralSections
               colors={colors[mapStyle]}
               layerOrder={LAYER_GROUPS_ORDER[LAYERS.DEAD_SECTIONS.GROUP]}
+              infraID={infraID}
+            />
+          )}
+
+          {editorState.editorLayers.has('operational_points') && (
+            <OperationalPoints
+              colors={colors[mapStyle]}
+              layerOrder={LAYER_GROUPS_ORDER[LAYERS.OPERATIONAL_POINTS.GROUP]}
               infraID={infraID}
             />
           )}

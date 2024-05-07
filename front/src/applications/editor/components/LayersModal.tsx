@@ -15,11 +15,13 @@ import detectorsIcon from 'assets/pictures/layersicons/detectors.svg';
 import trackSectionsIcon from 'assets/pictures/layersicons/layer_adv.svg';
 import signalsIcon from 'assets/pictures/layersicons/layer_signal.svg';
 import pslsIcon from 'assets/pictures/layersicons/layer_tivs.svg';
+import OPsSVGFile from 'assets/pictures/layersicons/ops.svg';
 import switchesIcon from 'assets/pictures/layersicons/switches.svg';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { Modal } from 'common/BootstrapSNCF/ModalSNCF';
 import SwitchSNCF from 'common/BootstrapSNCF/SwitchSNCF/SwitchSNCF';
 import MapSettingsBackgroundSwitches from 'common/Map/Settings/MapSettingsBackgroundSwitches';
+import { Icon2SVG } from 'common/Map/Settings/MapSettingsLayers';
 import MapSettingsMapStyle from 'common/Map/Settings/MapSettingsMapStyle';
 import { useInfraID } from 'common/osrdContext';
 import { editorSliceActions } from 'reducers/editor';
@@ -43,6 +45,10 @@ export const LAYERS: Array<{ layers: Layer[]; icon: string | JSX.Element }> = [
   {
     layers: ['neutral_sections'],
     icon: <GiUnplugged style={{ width: '20px' }} className="mx-2" />,
+  },
+  {
+    layers: ['operational_points'],
+    icon: <Icon2SVG file={OPsSVGFile} style={{ width: '20px' }} className="mx-2" />,
   },
 ];
 
