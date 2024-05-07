@@ -3,14 +3,15 @@ use actix_web::web::Data;
 use actix_web::web::Json;
 use actix_web::web::Path;
 use actix_web::web::Query;
-use chrono::DateTime;
 use chrono::Utc;
+use chrono::{DateTime, NaiveDateTime, TimeZone};
 use editoast_derive::EditoastError;
 use editoast_schemas::train_schedule::Comfort;
 use editoast_schemas::train_schedule::MarginValue;
 use editoast_schemas::train_schedule::PathItemLocation;
 use serde::Deserialize;
 use serde::Serialize;
+use std::cmp::max;
 use std::collections::HashMap;
 use std::sync::Arc;
 use thiserror::Error;
@@ -18,17 +19,18 @@ use utoipa::IntoParams;
 use utoipa::ToSchema;
 
 use crate::core::v2::simulation::SimulationResponse;
-use crate::core::v2::stdcm::STDCMPathItem;
 use crate::core::v2::stdcm::STDCMRequest;
 use crate::core::v2::stdcm::STDCMResponse;
 use crate::core::v2::stdcm::TrainRequirement;
+use crate::core::v2::stdcm::{STDCMPathItem, STDCMWorkSchedule, UndirectedTrackRange};
 use crate::core::AsCoreRequest;
 use crate::core::CoreClient;
 use crate::error::Result;
 use crate::modelsv2::timetable::TimetableWithTrains;
 use crate::modelsv2::train_schedule::TrainSchedule;
-use crate::modelsv2::Infra;
+use crate::modelsv2::work_schedules::WorkSchedule;
 use crate::modelsv2::RollingStockModel;
+use crate::modelsv2::{DbConnection, Infra, List};
 use crate::views::v2::path::pathfinding::extract_location_from_path_items;
 use crate::views::v2::path::pathfinding::TrackOffsetExtractionError;
 use crate::views::v2::train_schedule::train_simulation_batch;
@@ -217,11 +219,53 @@ async fn stdcm(
         time_gap_after: data.time_gap_after,
         margin: data.margin,
         time_step: Some(2000),
+        work_schedules: build_work_schedules(
+            conn,
+            data.start_time,
+            data.maximum_departure_delay,
+            data.maximum_run_time,
+        )
+        .await?,
     }
     .fetch(core_client.as_ref())
     .await?;
 
     Ok(Json(stdcm_response))
+}
+
+async fn build_work_schedules(
+    conn: &mut DbConnection,
+    time: DateTime<Utc>,
+    max_departure_delay: u64,
+    max_run_time: u64,
+) -> Result<Vec<STDCMWorkSchedule>> {
+    let max_simulation_time = max_run_time + max_departure_delay;
+    let res = Ok(WorkSchedule::list(conn, Default::default())
+        .await?
+        .iter()
+        .map(|ws| {
+            let schedule = STDCMWorkSchedule {
+                start_time: elapsed_since_time_ms(&ws.start_date_time, &time),
+                end_time: elapsed_since_time_ms(&ws.end_date_time, &time),
+                track_ranges: ws
+                    .track_ranges
+                    .iter()
+                    .map(|track| UndirectedTrackRange {
+                        track_section: track.track.to_string(),
+                        begin: (track.begin * 1000.0) as u64,
+                        end: (track.end * 1000.0) as u64,
+                    })
+                    .collect(),
+            };
+            schedule
+        })
+        .filter(|ws| ws.end_time > 0 && ws.start_time < max_simulation_time)
+        .collect());
+    res
+}
+
+fn elapsed_since_time_ms(time: &NaiveDateTime, zero: &DateTime<Utc>) -> u64 {
+    max(0, (Utc.from_utc_datetime(time) - zero).num_milliseconds()) as u64
 }
 
 /// Create steps from track_map and waypoints

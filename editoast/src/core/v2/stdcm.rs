@@ -54,6 +54,8 @@ pub struct STDCMRequest {
     pub time_gap_after: u64,
     /// Margin to apply to the whole train
     pub margin: Option<MarginValue>,
+    /// List of planned work schedules
+    pub work_schedules: Vec<STDCMWorkSchedule>,
 }
 
 #[derive(Debug, Serialize)]
@@ -62,6 +64,29 @@ pub struct STDCMPathItem {
     pub locations: Vec<TrackOffset>,
     /// Stop duration in milliseconds. None if the train does not stop at this path item.
     pub stop_duration: Option<u64>,
+}
+
+/// Lighter description of a work schedule, only contains what's relevant
+#[derive(Debug, Serialize)]
+pub struct STDCMWorkSchedule {
+    /// Start time as a time delta from the stdcm start time in ms
+    pub start_time: u64,
+    /// End time as a time delta from the stdcm start time in ms
+    pub end_time: u64,
+    /// List of unavailable track ranges
+    pub track_ranges: Vec<UndirectedTrackRange>,
+}
+
+/// A range on a track section.
+/// `begin` is always less than `end`.
+#[derive(Serialize, Deserialize, Clone, Debug, ToSchema, Hash, PartialEq, Eq)]
+pub struct UndirectedTrackRange {
+    /// The track section identifier.
+    pub track_section: String,
+    /// The beginning of the range in mm.
+    pub begin: u64,
+    /// The end of the range in mm.
+    pub end: u64,
 }
 
 #[derive(Debug, Serialize)]
