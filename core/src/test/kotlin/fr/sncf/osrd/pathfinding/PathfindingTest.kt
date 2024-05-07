@@ -736,7 +736,7 @@ class PathfindingTest : ApiTest() {
                 path,
                 DiagnosticRecorderImpl(true)
             )
-        validatePathfindingResult(res, waypoints, infra.rawInfra)
+        validatePathfindingResult(path, res, infra.rawInfra, infra.blockInfra)
         assertEquals(
             listOf(
                 PathWaypointResult(
