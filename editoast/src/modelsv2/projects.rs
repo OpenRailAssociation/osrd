@@ -14,13 +14,13 @@ use crate::modelsv2::prelude::*;
 use crate::modelsv2::DbConnection;
 use crate::modelsv2::Document;
 use crate::modelsv2::Study;
+use crate::views::operational_studies::Ordering;
 use crate::views::pagination::Paginate;
 use crate::views::pagination::PaginatedResponse;
 use crate::views::projects::ProjectError;
 use crate::SelectionSettings;
 
 editoast_common::schemas! {
-    Ordering,
     Project,
     Tags,
 }
@@ -60,30 +60,6 @@ impl From<Vec<Option<String>>> for Tags {
 impl From<Tags> for Vec<Option<String>> {
     fn from(value: Tags) -> Self {
         value.0.into_iter().map(Some).collect()
-    }
-}
-
-#[derive(Debug, Clone, Deserialize, Default, ToSchema)]
-pub enum Ordering {
-    NameAsc,
-    NameDesc,
-    CreationDateAsc,
-    CreationDateDesc,
-    #[default]
-    LastModifiedDesc,
-    LastModifiedAsc,
-}
-
-impl Ordering {
-    pub fn to_sql(&self) -> &str {
-        match *self {
-            Ordering::NameAsc => "LOWER(t.name) ASC",
-            Ordering::NameDesc => " LOWER(t.name) DESC",
-            Ordering::CreationDateAsc => "creation_date",
-            Ordering::CreationDateDesc => "creation_date DESC",
-            Ordering::LastModifiedAsc => "last_modification",
-            Ordering::LastModifiedDesc => "last_modification DESC",
-        }
     }
 }
 

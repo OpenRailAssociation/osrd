@@ -16,6 +16,7 @@ use thiserror::Error;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
+use super::operational_studies::OperationalStudiesOrderingParam;
 use super::study;
 use crate::decl_paginated_response;
 use crate::error::Result;
@@ -27,7 +28,6 @@ use crate::modelsv2::DbConnection;
 use crate::modelsv2::DbConnectionPool;
 use crate::modelsv2::Document;
 use crate::modelsv2::Model;
-use crate::modelsv2::Ordering;
 use crate::modelsv2::Project;
 use crate::modelsv2::Retrieve;
 use crate::views::pagination::PaginatedResponse;
@@ -67,12 +67,6 @@ pub enum ProjectError {
     // Couldn't found the project with the given id
     #[error("The provided image is not valid : {error}")]
     ImageError { error: String },
-}
-
-#[derive(Debug, Clone, Deserialize, IntoParams)]
-pub struct QueryParams {
-    #[serde(default = "Ordering::default")]
-    pub ordering: Ordering,
 }
 
 /// Creation form for a project
@@ -173,7 +167,7 @@ decl_paginated_response!(PaginatedResponseOfProjectWithStudies, ProjectWithStudy
 /// Returns a paginated list of projects
 #[utoipa::path(
     tag = "projects",
-    params(PaginationQueryParam, QueryParams),
+    params(PaginationQueryParam, OperationalStudiesOrderingParam),
     responses(
         (status = 200, body = PaginatedResponseOfProjectWithStudies, description = "The list of projects"),
     )
@@ -182,7 +176,7 @@ decl_paginated_response!(PaginatedResponseOfProjectWithStudies, ProjectWithStudy
 async fn list(
     db_pool: Data<DbConnectionPool>,
     pagination_params: Query<PaginationQueryParam>,
-    params: Query<QueryParams>,
+    params: Query<OperationalStudiesOrderingParam>,
 ) -> Result<Json<PaginatedResponse<ProjectWithStudyCount>>> {
     let (page, per_page) = pagination_params
         .validate(1000)?

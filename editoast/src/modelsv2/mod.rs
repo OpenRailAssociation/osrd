@@ -27,7 +27,6 @@ pub use electrical_profiles::ElectricalProfileSet;
 pub use infra::Infra;
 pub use infra_objects::*;
 pub use light_rolling_stock::LightRollingStockModel;
-pub use projects::Ordering;
 pub use projects::Project;
 pub use projects::Tags;
 pub use rolling_stock_image::RollingStockSeparatedImageModel;

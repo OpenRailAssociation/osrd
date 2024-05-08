@@ -15,9 +15,9 @@ use crate::error::Result;
 use crate::models::List;
 use crate::modelsv2::DbConnection;
 use crate::modelsv2::Model;
-use crate::modelsv2::Ordering;
 use crate::modelsv2::Row;
 use crate::modelsv2::Tags;
+use crate::views::operational_studies::Ordering;
 use crate::views::pagination::Paginate;
 use crate::views::pagination::PaginatedResponse;
 
