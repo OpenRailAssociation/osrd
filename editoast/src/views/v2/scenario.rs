@@ -32,10 +32,10 @@ use crate::modelsv2::Infra;
 use crate::modelsv2::Project;
 use crate::modelsv2::Study;
 use crate::modelsv2::Tags;
+use crate::views::operational_studies::OperationalStudiesOrderingParam;
 use crate::views::pagination::PaginatedResponse;
 use crate::views::pagination::PaginationQueryParam;
 use crate::views::projects::ProjectIdParam;
-use crate::views::projects::QueryParams;
 use crate::views::scenario::check_project_study;
 use crate::views::scenario::check_project_study_conn;
 use crate::views::scenario::ScenarioIdParam;
@@ -396,7 +396,7 @@ decl_paginated_response!(
 /// Return a list of scenarios
 #[utoipa::path(
     tag = "scenariosv2",
-    params(ProjectIdParam, StudyIdParam, PaginationQueryParam, QueryParams),
+    params(ProjectIdParam, StudyIdParam, PaginationQueryParam, OperationalStudiesOrderingParam),
     responses(
         (status = 200, body = PaginatedResponseOfScenarioWithDetails, description = "The list of scenarios"),
     )
@@ -406,7 +406,7 @@ async fn list(
     db_pool: Data<DbConnectionPool>,
     pagination_params: Query<PaginationQueryParam>,
     path: Path<(i64, i64)>,
-    params: Query<QueryParams>,
+    params: Query<OperationalStudiesOrderingParam>,
 ) -> Result<Json<PaginatedResponse<ScenarioWithDetails>>> {
     let (page, per_page) = pagination_params
         .validate(1000)?

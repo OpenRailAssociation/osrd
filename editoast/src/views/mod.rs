@@ -4,6 +4,7 @@ pub mod infra;
 mod layers;
 pub mod light_rolling_stocks;
 pub mod openapi;
+pub mod operational_studies;
 pub mod pagination;
 pub mod params;
 pub mod pathfinding;
@@ -87,6 +88,7 @@ editoast_common::schemas! {
     timetable::schemas(),
     documents::schemas(),
     pathfinding::schemas(),
+    operational_studies::schemas(),
     projects::schemas(),
     search::schemas(),
     train_schedule::schemas(),

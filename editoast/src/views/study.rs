@@ -19,6 +19,7 @@ use thiserror::Error;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
+use super::operational_studies::OperationalStudiesOrderingParam;
 use super::scenario;
 use crate::decl_paginated_response;
 use crate::error::InternalError;
@@ -37,7 +38,6 @@ use crate::views::pagination::PaginatedResponse;
 use crate::views::pagination::PaginationQueryParam;
 use crate::views::projects::ProjectError;
 use crate::views::projects::ProjectIdParam;
-use crate::views::projects::QueryParams;
 
 crate::routes! {
     "/studies" => {
@@ -242,7 +242,7 @@ decl_paginated_response!(PaginatedResponseOfStudyWithScenarios, StudyWithScenari
 /// Return a list of studies
 #[utoipa::path(
     tag = "studies",
-    params(ProjectIdParam, PaginationQueryParam, QueryParams),
+    params(ProjectIdParam, PaginationQueryParam, OperationalStudiesOrderingParam),
     responses(
         (status = 200, body = PaginatedResponseOfStudyWithScenarios, description = "The list of studies"),
     )
@@ -252,7 +252,7 @@ async fn list(
     db_pool: Data<DbConnectionPool>,
     pagination_params: Query<PaginationQueryParam>,
     project: Path<i64>,
-    params: Query<QueryParams>,
+    params: Query<OperationalStudiesOrderingParam>,
 ) -> Result<Json<PaginatedResponse<StudyWithScenarios>>> {
     let (page, per_page) = pagination_params
         .validate(1000)?
