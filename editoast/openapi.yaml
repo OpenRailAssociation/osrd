@@ -4267,34 +4267,6 @@ components:
       - next
       - results
       type: object
-    PaginatedResponseOfProjectWithStudies:
-      description: A paginated response
-      properties:
-        count:
-          description: The total number of items
-          format: int64
-          type: integer
-        next:
-          description: The next page number
-          format: int64
-          nullable: true
-          type: integer
-        previous:
-          description: The previous page number
-          format: int64
-          nullable: true
-          type: integer
-        results:
-          description: The list of results
-          items:
-            $ref: '#/components/schemas/ProjectWithStudies'
-          type: array
-      required:
-      - count
-      - previous
-      - next
-      - results
-      type: object
     PaginatedResponseOfScenarioWithCountTrains:
       description: A paginated response
       properties:
@@ -4406,6 +4378,70 @@ components:
       - previous
       - next
       - results
+      type: object
+    PaginationStats:
+      description: |-
+        Statistics about a paginated editoast response
+
+        Provides the pagination settings issued in the request alongside
+        a few convenience fields useful to navigate the paginated results.
+
+        # Expected usage
+
+        This struct is meant to be used and flattened in the response of a paginated query.
+
+        ```
+        #[derive(Serialize, ToSchema)]
+        struct MyPaginatedResponse {
+        #[schema(flatten)]
+        pagination: PaginationStats,
+        result: Vec<MyData>,
+        // any other field that makes sense in a paginated response
+        }
+        ```
+
+        We named the data field `result` to cope with the old pagination schema which
+        enforced this name. For new paginated responses, the field name is up to your imagination :)
+      properties:
+        count:
+          description: The total number of items
+          format: int64
+          minimum: 0
+          type: integer
+        current:
+          description: The current page number
+          format: int64
+          minimum: 1
+          type: integer
+        next:
+          description: The next page number, if any
+          format: int64
+          minimum: 1
+          nullable: true
+          type: integer
+        page_count:
+          description: The total number of pages
+          format: int64
+          minimum: 0
+          type: integer
+        page_size:
+          description: The number of items per page
+          format: int64
+          minimum: 1
+          type: integer
+        previous:
+          description: The previous page number, if any
+          format: int64
+          minimum: 1
+          nullable: true
+          type: integer
+      required:
+      - count
+      - page_size
+      - page_count
+      - current
+      - previous
+      - next
       type: object
     Patch:
       description: A JSONPatch document as defined by RFC 6902
@@ -5558,6 +5594,7 @@ components:
       - properties:
           studies_count:
             format: int64
+            minimum: 0
             type: integer
         required:
         - studies_count
@@ -10454,7 +10491,16 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedResponseOfProjectWithStudies'
+                allOf:
+                - $ref: '#/components/schemas/PaginationStats'
+                - properties:
+                    results:
+                      items:
+                        $ref: '#/components/schemas/ProjectWithStudies'
+                      type: array
+                  required:
+                  - results
+                  type: object
           description: The list of projects
       summary: Returns a paginated list of projects
       tags:

@@ -1,22 +1,15 @@
-use async_trait::async_trait;
 use chrono::NaiveDateTime;
 use chrono::Utc;
-use diesel::sql_query;
 use editoast_derive::ModelV2;
 use serde::Deserialize;
 use serde::Serialize;
-use std::sync::Arc;
 use utoipa::ToSchema;
 
 use crate::error::Result;
-use crate::models::List;
 use crate::modelsv2::prelude::*;
 use crate::modelsv2::DbConnection;
 use crate::modelsv2::Document;
 use crate::modelsv2::Study;
-use crate::views::operational_studies::Ordering;
-use crate::views::pagination::Paginate;
-use crate::views::pagination::PaginatedResponse;
 use crate::views::projects::ProjectError;
 use crate::SelectionSettings;
 
@@ -122,35 +115,6 @@ impl Project {
     }
 }
 
-#[async_trait]
-impl List<Ordering> for Project {
-    async fn list_conn(
-        conn: &mut DbConnection,
-        page: i64,
-        page_size: i64,
-        ordering: Ordering,
-    ) -> Result<PaginatedResponse<Self>> {
-        let ordering = ordering.to_sql();
-        let project_rows = sql_query(format!("SELECT t.* FROM project as t ORDER BY {ordering}"))
-            .paginate(page, page_size)
-            .load_and_count::<Row<Project>>(conn)
-            .await?;
-
-        let results: Vec<Project> = project_rows
-            .results
-            .into_iter()
-            .map(Self::from_row)
-            .collect();
-
-        Ok(PaginatedResponse {
-            count: project_rows.count,
-            previous: project_rows.previous,
-            next: project_rows.next,
-            results,
-        })
-    }
-}
-
 #[cfg(test)]
 pub mod test {
     use rstest::rstest;
@@ -160,7 +124,6 @@ pub mod test {
     use crate::fixtures::tests::db_pool;
     use crate::fixtures::tests::project;
     use crate::fixtures::tests::TestFixture;
-    use crate::models::List;
     use crate::modelsv2::DbConnectionPool;
     use crate::modelsv2::DeleteStatic;
     use crate::modelsv2::Model;
@@ -190,11 +153,7 @@ pub mod test {
             .unwrap()
             .unwrap();
         assert_eq!(fixture_project, &project);
-        assert!(
-            Project::list(db_pool.clone(), 1, 25, Ordering::LastModifiedAsc)
-                .await
-                .is_ok()
-        );
+        assert!(Project::list(conn, SelectionSettings::new()).await.is_ok());
     }
 
     #[rstest]
@@ -208,10 +167,13 @@ pub mod test {
 
         let _: TestFixture<Project> = TestFixture::create(project_2, db_pool.clone()).await;
 
-        let projects = Project::list(db_pool.clone(), 1, 25, Ordering::NameDesc)
-            .await
-            .unwrap()
-            .results;
+        let conn = &mut db_pool.get().await.unwrap();
+        let projects = Project::list(
+            conn,
+            SelectionSettings::new().order_by(|| Project::NAME.desc()),
+        )
+        .await
+        .unwrap();
 
         for (p1, p2) in projects.iter().zip(projects.iter().skip(1)) {
             let name_1 = p1.name.to_lowercase();
