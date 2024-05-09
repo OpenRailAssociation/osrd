@@ -2,9 +2,6 @@ use async_trait::async_trait;
 use chrono::NaiveDateTime;
 use chrono::Utc;
 use diesel::sql_query;
-use diesel::ExpressionMethods;
-use diesel::QueryDsl;
-use diesel_async::RunQueryDsl;
 use editoast_derive::ModelV2;
 use serde::Deserialize;
 use serde::Serialize;
@@ -13,19 +10,15 @@ use utoipa::ToSchema;
 
 use crate::error::Result;
 use crate::models::List;
-use crate::modelsv2::Changeset;
+use crate::modelsv2::prelude::*;
 use crate::modelsv2::DbConnection;
 use crate::modelsv2::DbConnectionPool;
-use crate::modelsv2::DeleteStatic;
 use crate::modelsv2::Document;
-use crate::modelsv2::Model;
-use crate::modelsv2::Retrieve;
-use crate::modelsv2::Row;
-use crate::modelsv2::Save;
-use crate::modelsv2::Update;
+use crate::modelsv2::Study;
 use crate::views::pagination::Paginate;
 use crate::views::pagination::PaginatedResponse;
 use crate::views::projects::ProjectError;
+use crate::SelectionSettings;
 
 editoast_common::schemas! {
     Ordering,
@@ -104,14 +97,14 @@ impl Project {
     }
 
     pub async fn studies_count(&self, db_pool: Arc<DbConnectionPool>) -> Result<i64> {
-        use crate::tables::study::dsl as study_dsl;
         let conn = &mut db_pool.get().await?;
-        let studies_count = study_dsl::study
-            .filter(study_dsl::project_id.eq(self.id))
-            .count()
-            .get_result(conn)
-            .await?;
-        Ok(studies_count)
+        let project_id = self.id;
+        let studies_count = Study::count(
+            conn,
+            SelectionSettings::new().filter(move || Study::PROJECT_ID.eq(project_id)),
+        )
+        .await?;
+        Ok(studies_count as i64)
     }
 
     pub async fn update_and_prune_document(
@@ -194,6 +187,7 @@ pub mod test {
     use crate::fixtures::tests::project;
     use crate::fixtures::tests::TestFixture;
     use crate::models::List;
+    use crate::modelsv2::DbConnectionPool;
     use crate::modelsv2::DeleteStatic;
     use crate::modelsv2::Model;
     use crate::modelsv2::Ordering;
