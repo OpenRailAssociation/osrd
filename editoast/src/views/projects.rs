@@ -1,3 +1,5 @@
+use std::ops::DerefMut;
+
 use actix_web::delete;
 use actix_web::get;
 use actix_web::patch;
@@ -17,10 +19,10 @@ use utoipa::IntoParams;
 use utoipa::ToSchema;
 
 use super::operational_studies::OperationalStudiesOrderingParam;
+use super::pagination::PaginatedList;
+use super::pagination::PaginationStats;
 use super::study;
-use crate::decl_paginated_response;
 use crate::error::Result;
-use crate::models::List;
 use crate::modelsv2::projects::Tags;
 use crate::modelsv2::Changeset;
 use crate::modelsv2::Create;
@@ -30,7 +32,6 @@ use crate::modelsv2::Document;
 use crate::modelsv2::Model;
 use crate::modelsv2::Project;
 use crate::modelsv2::Retrieve;
-use crate::views::pagination::PaginatedResponse;
 use crate::views::pagination::PaginationQueryParam;
 
 crate::routes! {
@@ -47,7 +48,6 @@ crate::routes! {
 }
 
 editoast_common::schemas! {
-    PaginatedResponseOfProjectWithStudies,
     ProjectCreateForm,
     ProjectPatchForm,
     study::schemas(),
@@ -121,6 +121,7 @@ async fn check_image_content(db_pool: Data<DbConnectionPool>, document_key: i64)
 }
 
 #[derive(Debug, Clone, Serialize, ToSchema)]
+#[schema(as = ProjectWithStudies)]
 pub struct ProjectWithStudyCount {
     #[serde(flatten)]
     project: Project,
@@ -162,41 +163,44 @@ async fn create(
     Ok(Json(project_with_studies))
 }
 
-decl_paginated_response!(PaginatedResponseOfProjectWithStudies, ProjectWithStudyCount);
+#[derive(serde::Serialize, utoipa::ToSchema)]
+struct ProjectWithStudyCountList {
+    #[schema(value_type = Vec<ProjectWithStudies>)]
+    results: Vec<ProjectWithStudyCount>,
+    #[serde(flatten)]
+    stats: PaginationStats,
+}
 
 /// Returns a paginated list of projects
 #[utoipa::path(
     tag = "projects",
     params(PaginationQueryParam, OperationalStudiesOrderingParam),
     responses(
-        (status = 200, body = PaginatedResponseOfProjectWithStudies, description = "The list of projects"),
+        (status = 200, body = inline(ProjectWithStudyCountList), description = "The list of projects"),
     )
 )]
 #[get("")]
 async fn list(
     db_pool: Data<DbConnectionPool>,
     pagination_params: Query<PaginationQueryParam>,
-    params: Query<OperationalStudiesOrderingParam>,
-) -> Result<Json<PaginatedResponse<ProjectWithStudyCount>>> {
-    let (page, per_page) = pagination_params
+    Query(ordering_params): Query<OperationalStudiesOrderingParam>,
+) -> Result<Json<ProjectWithStudyCountList>> {
+    let ordering = ordering_params.ordering;
+    let settings = pagination_params
         .validate(1000)?
         .warn_page_size(100)
-        .unpack();
-    let ordering = params.ordering.clone();
-    let db_pool = db_pool.into_inner();
-    let projects = Project::list(db_pool.clone(), page, per_page, ordering).await?;
-    let mut results = Vec::new();
-    for project in projects.results.into_iter() {
-        let conn = &mut db_pool.get().await?;
-        results.push(ProjectWithStudyCount::try_fetch(conn, project).await?);
-    }
-
-    Ok(Json(PaginatedResponse {
-        count: projects.count,
-        previous: projects.previous,
-        next: projects.next,
-        results,
-    }))
+        .into_selection_settings()
+        .order_by(move || ordering.as_project_ordering());
+    let (projects, stats) =
+        Project::list_paginated(db_pool.get().await?.deref_mut(), settings).await?;
+    let results = projects
+        .into_iter()
+        .zip(std::iter::repeat(&db_pool).map(|p| p.get()))
+        .map(|(project, conn)| async move {
+            ProjectWithStudyCount::try_fetch(conn.await?.deref_mut(), project).await
+        });
+    let results = futures::future::try_join_all(results).await?;
+    Ok(Json(ProjectWithStudyCountList { results, stats }))
 }
 
 // Documentation struct

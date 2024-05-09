@@ -85,6 +85,7 @@ editoast_common::schemas! {
     modelsv2::schemas(),
     core::schemas(),
     Version,
+    pagination::schemas(),
     timetable::schemas(),
     documents::schemas(),
     pathfinding::schemas(),

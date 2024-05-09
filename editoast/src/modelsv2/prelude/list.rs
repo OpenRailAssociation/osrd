@@ -158,6 +158,28 @@ impl<M: Model + 'static> SelectionSettings<M> {
         self.paginate_counting = paginate;
         self
     }
+
+    /// Returns a new [SelectionSettings] with pre-filled [Self::limit] and
+    /// [Self::offset] based on the provided pagination settings
+    ///
+    /// The page number is 1-based.
+    pub fn from_pagination_settings(page_number: u64, page_size: u64) -> Self {
+        Self::new()
+            .limit(page_size)
+            .offset((page_number - 1) * page_size)
+    }
+
+    /// Returns a tuple `(page_number, page_size)` based on the provided
+    /// [SelectionSettings::limit] and [SelectionSettings::offset] settings
+    ///
+    /// The page number is 1-based.
+    ///
+    /// Returns `None` if the limit or the offset is not set.
+    pub fn get_pagination_settings(&self) -> Option<(u64, u64)> {
+        self.limit
+            .zip(self.offset)
+            .map(|(limit, offset)| (1 + (offset as u64 / limit as u64), limit as u64))
+    }
 }
 
 /// Describes how a [Model](super::Model) can be listed (and counted) in a database

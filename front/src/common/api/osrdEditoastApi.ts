@@ -1360,8 +1360,9 @@ export type GetPathfindingByPathfindingIdElectrificationsApiArg = {
   /** A stored path ID */
   pathfindingId: number;
 };
-export type GetProjectsApiResponse =
-  /** status 200 The list of projects */ PaginatedResponseOfProjectWithStudies;
+export type GetProjectsApiResponse = /** status 200 The list of projects */ PaginationStats & {
+  results: ProjectWithStudies[];
+};
 export type GetProjectsApiArg = {
   page?: number;
   pageSize?: number | null;
@@ -2467,6 +2468,20 @@ export type ElectrificationsOnPathResponse = {
   electrification_ranges: RangedValue[];
   warnings: InternalError[];
 };
+export type PaginationStats = {
+  /** The total number of items */
+  count: number;
+  /** The current page number */
+  current: number;
+  /** The next page number, if any */
+  next: number | null;
+  /** The total number of pages */
+  page_count: number;
+  /** The number of items per page */
+  page_size: number;
+  /** The previous page number, if any */
+  previous: number | null;
+};
 export type Tags = string[];
 export type Project = {
   budget?: number | null;
@@ -2482,16 +2497,6 @@ export type Project = {
 };
 export type ProjectWithStudies = Project & {
   studies_count: number;
-};
-export type PaginatedResponseOfProjectWithStudies = {
-  /** The total number of items */
-  count: number;
-  /** The next page number */
-  next: number | null;
-  /** The previous page number */
-  previous: number | null;
-  /** The list of results */
-  results: ProjectWithStudies[];
 };
 export type Ordering =
   | 'NameAsc'
