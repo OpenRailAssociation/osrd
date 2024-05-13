@@ -42,7 +42,7 @@ export default function StudyCard({ setFilterChips, scenario }: StudyCardProps) 
         </span>
         <button
           data-testid="openScenario"
-          className="btn btn-sm"
+          className="btn btn-primary btn-sm"
           type="button"
           onClick={handleClick}
         >
