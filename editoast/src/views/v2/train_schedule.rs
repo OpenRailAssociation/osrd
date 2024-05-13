@@ -227,7 +227,7 @@ async fn get_batch(
 
 /// Delete a train schedule and its result
 #[utoipa::path(
-    tag = "train_schedulev2",
+    tag = "timetablev2,train_schedulev2",
     request_body = inline(BatchDeletionRequest),
     responses(
         (status = 204, description = "All train schedules have been deleted")
@@ -252,7 +252,7 @@ async fn delete(
 
 /// Update  train schedule at once
 #[utoipa::path(
-    tag = "train_schedulev2,timetable",
+    tag = "train_schedulev2,timetablev2",
     request_body = TrainScheduleForm,
     params(TrainScheduleIdParam),
     responses(

@@ -875,7 +875,7 @@ const injectedRtkApi = api
           method: 'POST',
           body: queryArg.body,
         }),
-        invalidatesTags: ['train_schedulev2'],
+        invalidatesTags: ['timetablev2', 'train_schedulev2'],
       }),
       deleteV2TrainSchedule: build.mutation<
         DeleteV2TrainScheduleApiResponse,
@@ -886,7 +886,7 @@ const injectedRtkApi = api
           method: 'DELETE',
           body: queryArg.body,
         }),
-        invalidatesTags: ['train_schedulev2'],
+        invalidatesTags: ['timetablev2', 'train_schedulev2'],
       }),
       getV2TrainSchedule: build.query<GetV2TrainScheduleApiResponse, GetV2TrainScheduleApiArg>({
         query: (queryArg) => ({ url: `/v2/train_schedule/`, params: { ids: queryArg.ids } }),
@@ -930,7 +930,7 @@ const injectedRtkApi = api
           method: 'PUT',
           body: queryArg.trainScheduleForm,
         }),
-        invalidatesTags: ['train_schedulev2', 'timetable'],
+        invalidatesTags: ['train_schedulev2', 'timetablev2'],
       }),
       getV2TrainScheduleByIdPath: build.query<
         GetV2TrainScheduleByIdPathApiResponse,

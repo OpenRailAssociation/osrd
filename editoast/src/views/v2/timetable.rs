@@ -262,7 +262,7 @@ async fn delete(
 
 /// Create train schedule by batch
 #[utoipa::path(
-    tag = "train_schedulev2",
+    tag = "timetablev2,train_schedulev2",
     params(TimetableIdParam),
     request_body = Vec<TrainScheduleBase>,
     responses(

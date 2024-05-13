@@ -11861,6 +11861,7 @@ paths:
           description: The created train schedules
       summary: Create train schedule by batch
       tags:
+      - timetablev2
       - train_schedulev2
   /v2/train_schedule/:
     delete:
@@ -11885,6 +11886,7 @@ paths:
           description: All train schedules have been deleted
       summary: Delete a train schedule and its result
       tags:
+      - timetablev2
       - train_schedulev2
     get:
       description: Return a specific train schedule
@@ -12036,7 +12038,7 @@ paths:
       summary: Update  train schedule at once
       tags:
       - train_schedulev2
-      - timetable
+      - timetablev2
   /v2/train_schedule/{id}/path/:
     get:
       description: Get a path from a trainschedule given an infrastructure id and a train schedule id
