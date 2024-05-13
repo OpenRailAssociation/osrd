@@ -5,7 +5,7 @@ import type { PointOnMap, PowerRestrictionRange } from 'applications/operational
 import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
 import type { Allowance, PathResponse, RangedValue } from 'common/api/osrdEditoastApi';
 import NO_POWER_RESTRICTION from 'modules/powerRestriction/consts';
-import type { OsrdConfState } from 'reducers/osrdconf/types';
+import type { OsrdConfState, PathStep } from 'reducers/osrdconf/types';
 
 export default function commonConfBuilder() {
   return {
@@ -177,7 +177,7 @@ export default function commonConfBuilder() {
       ...featureInfoClickFields,
     }),
 
-    buildPathSteps: (): OsrdConfState['pathSteps'] => [
+    buildPathSteps: (): PathStep[] => [
       {
         uic: 474007,
         id: 'brest',

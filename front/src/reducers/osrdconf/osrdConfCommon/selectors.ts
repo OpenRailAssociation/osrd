@@ -20,7 +20,7 @@ const buildCommonConfSelectors = <ConfState extends OsrdConfState>(
   // Selector getViasV2 returned a different result when called with the same parameters. This can lead to unnecessary rerenders.
   // Selectors that return a new reference (such as an object or an array) should be memoized: https://redux.js.org/usage/deriving-data-selectors#optimizing-selectors-with-memoization
   const viasSelector = createSelector(
-    (state: RootState) => state.operationalStudiesConf.pathSteps,
+    getPathSteps,
     (pathSteps) => compact(pathSteps.slice(1, -1)) // a via can't be null
   );
 

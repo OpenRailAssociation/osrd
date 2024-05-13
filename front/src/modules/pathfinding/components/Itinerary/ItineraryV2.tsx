@@ -18,15 +18,22 @@ import { updateViewport } from 'reducers/map';
 import { getMap } from 'reducers/map/selectors';
 import { useAppDispatch } from 'store';
 
-import DisplayItineraryV2 from './DisplayItinerary/v2/DisplayItineraryV2';
+import DestinationV2 from './DisplayItinerary/v2/DestinationV2';
+import OriginV2 from './DisplayItinerary/v2/OriginV2';
+import ViasV2 from './DisplayItinerary/v2/ViasV2';
 import ModalSuggestedVias from './ModalSuggestedVias';
 
 type ItineraryV2Props = {
   pathProperties?: ManageTrainSchedulePathProperties;
   setPathProperties: (pathProperties?: ManageTrainSchedulePathProperties) => void;
+  shouldManageStopDuration?: boolean;
 };
 
-const ItineraryV2 = ({ pathProperties, setPathProperties }: ItineraryV2Props) => {
+const ItineraryV2 = ({
+  pathProperties,
+  setPathProperties,
+  shouldManageStopDuration,
+}: ItineraryV2Props) => {
   const { getPathSteps, getOriginV2, getDestinationV2 } = useOsrdConfSelectors();
   const { updatePathSteps } = useOsrdConfActions();
   const origin = useSelector(getOriginV2);
@@ -131,7 +138,20 @@ const ItineraryV2 = ({ pathProperties, setPathProperties }: ItineraryV2Props) =>
         </div>
       )}
       <div className="osrd-config-item-container pathfinding-details" data-testid="itinerary">
-        <DisplayItineraryV2 zoomToFeaturePoint={zoomToFeaturePoint} />
+        <div data-testid="display-itinerary">
+          <OriginV2 zoomToFeaturePoint={zoomToFeaturePoint} />
+          <div className="vias-list mb-2" data-testid="itinerary-vias">
+            {pathSteps.length > 2 ? (
+              <ViasV2
+                zoomToFeaturePoint={zoomToFeaturePoint}
+                shouldManageStopDuration={shouldManageStopDuration}
+              />
+            ) : (
+              <small className="ml-4">{t('noPlaceChosen')}</small>
+            )}
+          </div>
+          <DestinationV2 zoomToFeaturePoint={zoomToFeaturePoint} />
+        </div>
       </div>
     </div>
   );

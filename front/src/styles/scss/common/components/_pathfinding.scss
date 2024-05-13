@@ -51,7 +51,7 @@
           border: unset;
           font-size: 0.7rem;
           border-radius: 4px;
-          &:hover {
+          &:hover, &:focus {
             background-color: var(--primary);
             color: var(--white);
           }
@@ -71,7 +71,7 @@
       .form-control {
         width: 7rem;
       }
-      &:hover {
+      &:hover, &:focus-within {
         background-color: var(--coolgray1);
         .default-durations-button {
           opacity: 1;

@@ -447,6 +447,18 @@ const testCommonConfReducers = (slice: OperationalStudiesConfSlice | StdcmConfSl
     ] as PointOnMap[]);
   });
 
+  it('should handle updateViaStopTimeV2', () => {
+    const pathSteps = testDataBuilder.buildPathSteps();
+    const via = pathSteps[1];
+    const store = createStore(slice, {
+      pathSteps,
+    });
+
+    store.dispatch(slice.actions.updateViaStopTimeV2({ via, duration: 'PT60S' }));
+    const state = store.getState()[slice.name];
+    expect(state.pathSteps[1]?.stop_for).toEqual('PT60S');
+  });
+
   it('should handle permuteVias', () => {
     const via1 = testDataBuilder.buildPointOnMap({ id: 'via-1' });
     const via2 = testDataBuilder.buildPointOnMap({ id: 'via-2' });
