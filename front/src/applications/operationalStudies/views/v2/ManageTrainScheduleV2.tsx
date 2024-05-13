@@ -91,7 +91,7 @@ const ManageTrainScheduleV2 = () => {
         <div className="floating-itinerary">
           <ItineraryV2 pathProperties={pathProperties} setPathProperties={setPathProperties} />
         </div>
-        <Map geometry={pathProperties?.geometry} pathProperties={pathProperties} />
+        <Map pathProperties={pathProperties} />
       </div>
     ),
   };

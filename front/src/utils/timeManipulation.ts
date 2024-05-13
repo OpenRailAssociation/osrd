@@ -2,6 +2,10 @@ import * as d3 from 'd3';
 
 import type { TimeString } from 'common/types';
 
+export function sec2ms(sec: number) {
+  return sec * 1000;
+}
+
 export function datetime2string(ts: string | number | Date): TimeString {
   const datetime = new Date(ts);
   return datetime.toLocaleString();
@@ -65,6 +69,18 @@ export function calculateTimeDifferenceInSeconds(time1: string, time2: string) {
 
 export function formatDurationAsISO8601(seconds: number) {
   return `PT${Math.abs(seconds)}S`;
+}
+
+// parse ISO8601 duration, for instance "PT11H9M8S" (11h, 9min and 8s)
+export function ISO8601Duration2sec(duration: string) {
+  const regex = /PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/;
+  const matches = duration.match(regex);
+  if (!matches) {
+    throw new Error('Invalid ISO 8601 duration format');
+  }
+
+  const [hours, minutes, seconds] = matches.slice(1).map((match) => parseInt(match || '0', 10));
+  return hours * 60 * 60 + minutes * 60 + seconds;
 }
 
 export function getStopTime(sec: number) {

@@ -1,31 +1,99 @@
-import React from 'react';
+import React, { useState } from 'react';
 
+import { XCircle } from '@osrd-project/ui-icons';
+import cx from 'classnames';
 import type { Position } from 'geojson';
-import { useTranslation } from 'react-i18next';
+import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { useSelector } from 'react-redux';
 
-import { useOsrdConfSelectors } from 'common/osrdContext';
-import DisplayViasV2 from 'modules/pathfinding/components/Itinerary/DisplayViasV2';
+import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
+import { useAppDispatch } from 'store';
+import { formatUicToCi } from 'utils/strings';
 
-type ViasProps = {
+import ViaStopDurationSelector from './ViaStopDurationSelector';
+
+type DisplayViasV2Props = {
+  shouldManageStopDuration?: boolean;
   zoomToFeaturePoint: (lngLat?: Position, id?: string) => void;
 };
 
-const ViasV2 = ({ zoomToFeaturePoint }: ViasProps) => {
+const ViasV2 = ({ zoomToFeaturePoint, shouldManageStopDuration }: DisplayViasV2Props) => {
   const { getViasV2 } = useOsrdConfSelectors();
+  const dispatch = useAppDispatch();
   const vias = useSelector(getViasV2());
-  const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
+  const { moveVia, deleteViaV2 } = useOsrdConfActions();
+  const [focusedViaId, setFocusedViaId] = useState<string>();
 
   return (
-    <div data-testid="itinerary-vias">
-      <div className="vias-list mb-2">
-        {vias && vias.length > 0 ? (
-          <DisplayViasV2 zoomToFeaturePoint={zoomToFeaturePoint} />
-        ) : (
-          <small className="ml-4">{t('noPlaceChosen')}</small>
+    <DragDropContext
+      onDragEnd={({ destination, source }) => {
+        if (destination && source.index !== destination.index) {
+          dispatch(moveVia(vias, source.index, destination.index));
+        }
+      }}
+    >
+      <Droppable droppableId="droppableVias">
+        {(provided) => (
+          <div {...provided.droppableProps} ref={provided.innerRef}>
+            {vias.map((via, index) => (
+              <Draggable
+                key={`drag-key-${via.id}-${via.positionOnPath}`}
+                draggableId={`drag-vias-${via.id}`}
+                index={index}
+              >
+                {(providedDraggable) => (
+                  <div
+                    ref={providedDraggable.innerRef}
+                    {...providedDraggable.draggableProps}
+                    {...providedDraggable.dragHandleProps}
+                    className={cx('place via', {
+                      'is-a-stop': via.arrival || via.stop_for,
+                    })}
+                  >
+                    <div className="ring" />
+                    <div className="pl-1 w-100 d-flex align-items-center">
+                      <div
+                        className="flex-grow-1"
+                        onClick={() => zoomToFeaturePoint(via.coordinates, via.id)}
+                        role="button"
+                        tabIndex={0}
+                      >
+                        <small className="font-weight-bold text-muted mr-1">{index + 1}</small>
+                        <small className="mr-1 text-nowrap">
+                          {`${via.name || `KM ${via.positionOnPath && (Math.round(via.positionOnPath) / 1000000).toFixed(3)}`}`}
+                        </small>
+                        {via.ch && <small>{via.ch}</small>}
+                        {'uic' in via && (
+                          <small className="text-muted ml-3">{formatUicToCi(via.uic)}</small>
+                        )}
+                      </div>
+                      {shouldManageStopDuration && (
+                        <ViaStopDurationSelector
+                          via={via}
+                          focusedViaId={focusedViaId}
+                          setFocusedViaId={setFocusedViaId}
+                        />
+                      )}
+                      <button
+                        className="btn btn-sm btn-only-icon btn-white ml-auto"
+                        type="button"
+                        onClick={() => dispatch(deleteViaV2(index))}
+                      >
+                        <XCircle variant="fill" />
+                        <span className="sr-only" aria-hidden="true">
+                          Delete
+                        </span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </Draggable>
+            ))}
+            {provided.placeholder}
+          </div>
         )}
-      </div>
-    </div>
+      </Droppable>
+    </DragDropContext>
   );
 };
 

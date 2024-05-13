@@ -9,7 +9,6 @@ import { useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
 import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
-import type { GeoJsonLineString } from 'common/api/osrdEditoastApi';
 import MapButtons from 'common/Map/Buttons/MapButtons';
 import { CUSTOM_ATTRIBUTION } from 'common/Map/const';
 import colors from 'common/Map/Consts/colors';
@@ -55,12 +54,11 @@ import ItineraryLayer from './ManageTrainScheduleMap/ItineraryLayer';
 import ItineraryMarkersV2 from './ManageTrainScheduleMap/ItineraryMarkersV2';
 
 type MapProps = {
-  geometry?: GeoJsonLineString;
   pathProperties?: ManageTrainSchedulePathProperties;
   setMapCanvas?: (mapCanvas: string) => void;
 };
 
-const Map = ({ geometry, pathProperties, setMapCanvas }: MapProps) => {
+const Map = ({ pathProperties, setMapCanvas }: MapProps) => {
   const mapBlankStyle = useMapBlankStyle();
 
   const infraID = useInfraID();
@@ -356,7 +354,7 @@ const Map = ({ geometry, pathProperties, setMapCanvas }: MapProps) => {
             <>
               <ItineraryLayer
                 layerOrder={LAYER_GROUPS_ORDER[LAYERS.ITINERARY.GROUP]}
-                geometry={geometry}
+                geometry={pathProperties?.geometry}
               />
               {mapRef.current && <ItineraryMarkersV2 map={mapRef.current.getMap()} />}
             </>

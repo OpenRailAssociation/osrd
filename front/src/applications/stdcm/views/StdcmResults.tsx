@@ -17,13 +17,13 @@ import type { AllowancesSettings } from 'reducers/osrdsimulation/types';
 import SimulationReportSheet from '../components/SimulationReportSheet';
 import { generateCodeNumber } from '../utils';
 
-type OSRDStcdmResultsProps = {
+type StcdmResultsProps = {
   mapCanvas?: string;
   stdcmResults: PostStdcmApiResponse;
   rollingStockData: RollingStockWithLiveries;
 };
 
-const OSRDStcdmResults = ({ mapCanvas, stdcmResults, rollingStockData }: OSRDStcdmResultsProps) => {
+const StcdmResults = ({ mapCanvas, stdcmResults, rollingStockData }: StcdmResultsProps) => {
   const { t } = useTranslation(['translation', 'stdcm']);
 
   const [showSpeedSpaceChart, setShowSpeedSpaceChart] = useState(false);
@@ -131,4 +131,4 @@ const OSRDStcdmResults = ({ mapCanvas, stdcmResults, rollingStockData }: OSRDStc
   );
 };
 
-export default OSRDStcdmResults;
+export default StcdmResults;

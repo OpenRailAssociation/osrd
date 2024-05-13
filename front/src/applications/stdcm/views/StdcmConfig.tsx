@@ -4,40 +4,62 @@ import { ChevronDown, ChevronUp } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
+import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
 import RunningTime from 'applications/stdcm/components/RunningTime';
 import STDCM_REQUEST_STATUS from 'applications/stdcm/consts';
-import type { StdcmRequestStatus } from 'applications/stdcm/types';
-import OSRDStdcmResults from 'applications/stdcm/views/OSRDStdcmResults';
+import type { StdcmRequestStatus, StdcmV2SuccessResponse } from 'applications/stdcm/types';
+import StdcmResults from 'applications/stdcm/views/StdcmResults';
 import { osrdEditoastApi, type PostStdcmApiResponse } from 'common/api/osrdEditoastApi';
 import { useInfraID, useOsrdConfSelectors } from 'common/osrdContext';
 import SpeedLimitByTagSelector from 'common/SpeedLimitByTagSelector/SpeedLimitByTagSelector';
 import { useStoreDataForSpeedLimitByTagSelector } from 'common/SpeedLimitByTagSelector/useStoreDataForSpeedLimitByTagSelector';
 import Itinerary from 'modules/pathfinding/components/Itinerary/Itinerary';
+import ItineraryV2 from 'modules/pathfinding/components/Itinerary/ItineraryV2';
 import { RollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
 import ScenarioExplorer from 'modules/scenario/components/ScenarioExplorer';
 import StdcmAllowances from 'modules/stdcmAllowances/components/StdcmAllowances';
 import { Map } from 'modules/trainschedule/components/ManageTrainSchedule';
 import type { OsrdStdcmConfState } from 'reducers/osrdconf/types';
+import { getTrainScheduleV2Activated } from 'reducers/user/userSelectors';
+
+import StdcmResultsV2 from './StdcmResultsV2';
 
 type OSRDStdcmConfigProps = {
   currentStdcmRequestStatus: string;
   setCurrentStdcmRequestStatus: (currentStdcmRequestStatus: StdcmRequestStatus) => void;
   stdcmResults?: PostStdcmApiResponse;
+  stdcmV2Results?: StdcmV2SuccessResponse;
+  pathProperties?: ManageTrainSchedulePathProperties;
+  setPathProperties: (pathProperties?: ManageTrainSchedulePathProperties) => void;
 };
 
-export default function OSRDConfig({
+const StdcmConfig = ({
   currentStdcmRequestStatus,
   setCurrentStdcmRequestStatus,
   stdcmResults,
-}: OSRDStdcmConfigProps) {
-  const { getConf, getProjectID, getScenarioID, getStudyID, getTimetableID } =
-    useOsrdConfSelectors();
+  stdcmV2Results,
+  pathProperties,
+  setPathProperties,
+}: OSRDStdcmConfigProps) => {
+  const {
+    getConf,
+    getProjectID,
+    getScenarioID,
+    getStudyID,
+    getTimetableID,
+    getOriginV2,
+    getDestinationV2,
+  } = useOsrdConfSelectors();
   const projectID = useSelector(getProjectID);
   const studyID = useSelector(getStudyID);
   const scenarioID = useSelector(getScenarioID);
   const timetableID = useSelector(getTimetableID);
+  const trainScheduleV2Activated = useSelector(getTrainScheduleV2Activated);
+  const originV2 = useSelector(getOriginV2);
+  const destinationV2 = useSelector(getDestinationV2);
   const infraID = useInfraID();
+
   const [showMap, setShowMap] = useState<boolean>(true);
   const [isInfraLoaded, setIsInfraLoaded] = useState<boolean>(false);
 
@@ -60,18 +82,22 @@ export default function OSRDConfig({
     }
   );
 
-  const disabledApplyButton = useMemo(
-    () =>
+  const disabledApplyButton = useMemo(() => {
+    if (trainScheduleV2Activated) {
+      if (!originV2 || !destinationV2 || !osrdconf.originDate || !osrdconf.destinationDate)
+        return true;
+    } else if (!osrdconf.origin || !osrdconf.destination) {
+      return true;
+    }
+    return (
       infra?.state !== 'CACHED' ||
-      !osrdconf.origin ||
-      !osrdconf.destination ||
       !(osrdconf.originTime || osrdconf.destinationTime) ||
       (osrdconf.originTime &&
         osrdconf.originUpperBoundTime &&
         osrdconf.originTime > osrdconf.originUpperBoundTime) ||
-      !osrdconf.rollingStockID,
-    [infra, osrdconf]
-  );
+      !osrdconf.rollingStockID
+    );
+  }, [infra, osrdconf, originV2, destinationV2]);
 
   useEffect(() => {
     if (infra && infra.state === 'NOT_LOADED') {
@@ -88,7 +114,6 @@ export default function OSRDConfig({
       className="osrd-config-mastcontainer mastcontainer"
       style={{ paddingLeft: '0', paddingBottom: '0' }}
     >
-      {/* use class from new workflow in future */}
       <div className="row m-0 px-1 py-3 h-100">
         <div className="col-md-7 col-lg-4">
           <ScenarioExplorer
@@ -109,7 +134,15 @@ export default function OSRDConfig({
                 speedLimitsByTags={speedLimitsByTags}
                 dispatchUpdateSpeedLimitByTag={dispatchUpdateSpeedLimitByTag}
               />
-              <Itinerary />
+              {trainScheduleV2Activated ? (
+                <ItineraryV2
+                  pathProperties={pathProperties}
+                  setPathProperties={setPathProperties}
+                  shouldManageStopDuration
+                />
+              ) : (
+                <Itinerary />
+              )}
               <RunningTime />
               <StdcmAllowances />
               <div className="osrd-config-stdcm-apply">
@@ -155,23 +188,30 @@ export default function OSRDConfig({
                         : 'stdcm-map-noSimulation'
                     }`}
                   >
-                    <Map setMapCanvas={setMapCanvas} />
+                    <Map setMapCanvas={setMapCanvas} pathProperties={pathProperties} />
                   </div>
                 )}
               </div>
             </div>
-            {currentStdcmRequestStatus === STDCM_REQUEST_STATUS.success &&
-              rollingStock &&
-              stdcmResults && (
-                <OSRDStdcmResults
-                  mapCanvas={mapCanvas}
-                  stdcmResults={stdcmResults}
-                  rollingStockData={rollingStock}
-                />
-              )}
+            {!trainScheduleV2Activated && rollingStock && stdcmResults && (
+              <StdcmResults
+                mapCanvas={mapCanvas}
+                stdcmResults={stdcmResults}
+                rollingStockData={rollingStock}
+              />
+            )}
+            {trainScheduleV2Activated && rollingStock && stdcmV2Results && (
+              <StdcmResultsV2
+              // mapCanvas={mapCanvas}
+              // stdcmResults={stdcmV2Results}
+              // rollingStockData={rollingStock}
+              />
+            )}
           </div>
         )}
       </div>
     </main>
   );
-}
+};
+
+export default StdcmConfig;

@@ -94,6 +94,7 @@ interface CommonConfReducers<S extends OsrdConfState> extends InfraStateReducers
     reducer: CaseReducer<S, PayloadAction<S['vias']>>;
     prepare: PrepareAction<S['vias']>;
   };
+  ['updateViaStopTimeV2']: CaseReducer<S, PayloadAction<{ via: PathStep; duration: string }>>;
   ['permuteVias']: {
     reducer: CaseReducer<S, PayloadAction<S['vias']>>;
     prepare: PrepareAction<S['vias']>;
@@ -262,6 +263,20 @@ export function buildCommonConfReducers<S extends OsrdConfState>(): CommonConfRe
         newVias[index] = { ...newVias[index], duration: value };
         return { payload: newVias };
       },
+    },
+    updateViaStopTimeV2(
+      state: Draft<S>,
+      action: PayloadAction<{ via: PathStep; duration: string }>
+    ) {
+      const {
+        payload: { via, duration },
+      } = action;
+      state.pathSteps = state.pathSteps.map((pathStep) => {
+        if (pathStep && pathStep.id === via.id) {
+          return { ...pathStep, stop_for: duration };
+        }
+        return pathStep;
+      });
     },
     permuteVias: {
       reducer: (state: Draft<S>, action: PayloadAction<S['vias']>) => {

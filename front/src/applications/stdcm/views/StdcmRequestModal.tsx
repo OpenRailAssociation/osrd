@@ -7,7 +7,7 @@ import { useSelector } from 'react-redux';
 
 import STDCM_REQUEST_STATUS from 'applications/stdcm/consts';
 import formatStdcmConf from 'applications/stdcm/formatStdcmConf';
-import type { StdcmRequestStatus } from 'applications/stdcm/types';
+import type { StdcmRequestStatus, StdcmV2SuccessResponse } from 'applications/stdcm/types';
 import type { PostStdcmApiResponse, SimulationReport } from 'common/api/osrdEditoastApi';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
@@ -25,22 +25,34 @@ import {
   updateSelectedProjection,
 } from 'reducers/osrdsimulation/actions';
 import type { Train } from 'reducers/osrdsimulation/types';
+import { getTrainScheduleV2Activated } from 'reducers/user/userSelectors';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
+
+import { checkStdcmConf, formatStdcmPayload } from '../utils/formatStdcmConfV2';
 
 type StdcmRequestModalProps = {
   setCurrentStdcmRequestStatus: (currentStdcmRequestStatus: StdcmRequestStatus) => void;
   currentStdcmRequestStatus: StdcmRequestStatus;
   setStdcmResults: (stdcmResults: PostStdcmApiResponse) => void;
+  setStdcmV2Results: (stdcmV2Results: StdcmV2SuccessResponse | undefined) => void;
 };
 
-export default function StdcmRequestModal(props: StdcmRequestModalProps) {
+const StdcmRequestModal = ({
+  setCurrentStdcmRequestStatus,
+  currentStdcmRequestStatus,
+  setStdcmResults,
+  setStdcmV2Results,
+}: StdcmRequestModalProps) => {
+  const dispatch = useAppDispatch();
   const { t } = useTranslation(['translation', 'stdcm']);
   const { getConf } = useOsrdConfSelectors();
+  const trainScheduleV2Activated = useSelector(getTrainScheduleV2Activated);
   const osrdconf = useSelector(getConf);
-  const dispatch = useAppDispatch();
 
   const [postStdcm] = osrdEditoastApi.endpoints.postStdcm.useMutation();
+  const [postV2TimetableByIdStdcm] =
+    osrdEditoastApi.endpoints.postV2TimetableByIdStdcm.useMutation();
   const [postTrainScheduleResults] =
     osrdEditoastApi.endpoints.postTrainScheduleResults.useMutation();
 
@@ -48,23 +60,19 @@ export default function StdcmRequestModal(props: StdcmRequestModalProps) {
 
   const { updateItinerary } = useOsrdConfActions();
 
-  // Theses are prop-drilled from OSRDSTDCM Component, which is conductor.
-  // Remains fit with one-level limit
-  const { setCurrentStdcmRequestStatus, currentStdcmRequestStatus, setStdcmResults } = props;
-
   // https://developer.mozilla.org/en-US/docs/Web/API/AbortController
   const controller = new AbortController();
 
   const { timetableID } = osrdconf;
 
   useEffect(() => {
-    const payload = formatStdcmConf(dispatch, t, osrdconf as OsrdStdcmConfState);
-    if (payload && currentStdcmRequestStatus === STDCM_REQUEST_STATUS.pending && timetableID) {
-      postStdcm(payload)
-        .unwrap()
-        .then((result) => {
-          setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.success);
-          if ('path' in result && 'simulation' in result) {
+    const launchStdcmRequest = async () => {
+      const payload = formatStdcmConf(dispatch, t, osrdconf as OsrdStdcmConfState);
+      if (payload && timetableID) {
+        postStdcm(payload)
+          .unwrap()
+          .then((result) => {
+            setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.success);
             setStdcmResults(result);
             dispatch(updateItinerary(result.path));
 
@@ -114,12 +122,45 @@ export default function StdcmRequestModal(props: StdcmRequestModalProps) {
                   );
                 });
             });
+          })
+          .catch((e) => {
+            setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.rejected);
+            dispatch(setFailure(castErrorToFailure(e, { name: t('stdcm:stdcmError') })));
+          });
+      }
+    };
+
+    const launchStdcmRequestV2 = async () => {
+      const validConfig = checkStdcmConf(dispatch, t, osrdconf as OsrdStdcmConfState);
+      if (validConfig) {
+        const payload = formatStdcmPayload(validConfig);
+        try {
+          const response = await postV2TimetableByIdStdcm(payload).unwrap();
+          if (response.status === 'success') {
+            setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.success);
+            setStdcmV2Results(response);
+          } else {
+            setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.rejected);
+            dispatch(
+              setFailure({
+                name: t('stdcm:stdcmError'),
+                message: t('translation:common.error'),
+              })
+            );
           }
-        })
-        .catch((e) => {
+        } catch (e) {
           setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.rejected);
           dispatch(setFailure(castErrorToFailure(e, { name: t('stdcm:stdcmError') })));
-        });
+        }
+      }
+    };
+
+    if (currentStdcmRequestStatus === STDCM_REQUEST_STATUS.pending) {
+      if (trainScheduleV2Activated) {
+        launchStdcmRequestV2();
+      } else {
+        launchStdcmRequest();
+      }
     }
   }, [currentStdcmRequestStatus]);
 
@@ -175,4 +216,6 @@ export default function StdcmRequestModal(props: StdcmRequestModalProps) {
       </div>
     </ReactModal>
   );
-}
+};
+
+export default StdcmRequestModal;
