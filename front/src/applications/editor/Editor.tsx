@@ -445,13 +445,13 @@ const Editor = () => {
               />
 
               {mapRef.current &&
-                editorState.editorLayers.has('errors') &&
-                editorState.issues.total && (
-                  <div className="error-box">
-                    <InfraErrorMapControl mapRef={mapRef.current} switchTool={switchTool} />
-                    <InfraErrorCorrector />
-                  </div>
-                )}
+              editorState.editorLayers.has('errors') &&
+              editorState.issues.total ? (
+                <div className="error-box">
+                  <InfraErrorMapControl mapRef={mapRef.current} switchTool={switchTool} />
+                  <InfraErrorCorrector />
+                </div>
+              ) : null}
             </div>
             <div className="messages-bar border-left">
               <div className="px-1">
