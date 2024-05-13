@@ -34,7 +34,7 @@ strum = { version = "0.26.2", features = ["derive"] }
 tempfile = "3.10.1"
 thiserror = "1.0.60"
 tracing = { version = "0.1.40", features = ["log"] }
-utoipa = { version = "4.2.1", features = ["actix_extras", "chrono", "uuid"] }
+utoipa = { version = "4.2.3", features = ["actix_extras", "chrono", "uuid"] }
 uuid = { version = "1.8.0", features = ["v4"] }
 
 [dependencies]
