@@ -26,10 +26,34 @@ updates:
       interval: "daily"
     commit-message:
       prefix: "front:"
+    # Security updates only:
+    # https://docs.github.com/en/code-security/dependabot/dependabot-security-updates/configuring-dependabot-security-updates#overriding-the-default-behavior-with-a-configuration-file
     open-pull-requests-limit: 0
     labels:
       - "dependencies"
       - "area:front"
+  # Poetry uses the "pip" value:
+  # https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file#configuration-options-for-the-dependabotyml-file
+  - package-ecosystem: "pip"
+    directory: "/python/"
+    schedule:
+      interval: "daily"
+    commit-message:
+      prefix: "python:"
+    open-pull-requests-limit: 0
+    labels:
+      - "dependencies"
+      - "area:railjson"
+  - package-ecosystem: "pip"
+    directory: "/tests/"
+    schedule:
+      interval: "daily"
+    commit-message:
+      prefix: "tests:"
+    open-pull-requests-limit: 0
+    labels:
+      - "dependencies"
+      - "area:integration-tests"
   - package-ecosystem: "gradle"
     directory: "/core/"
     schedule:
