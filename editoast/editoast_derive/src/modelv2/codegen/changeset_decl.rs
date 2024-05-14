@@ -39,7 +39,7 @@ impl ToTokens for ChangesetDecl {
             })
             .unzip();
         tokens.extend(quote! {
-            #[derive(Default, Queryable, AsChangeset, Insertable, #(#additional_derives),*)]
+            #[derive(Debug, Default, Queryable, AsChangeset, Insertable, #(#additional_derives),*)]
             #[diesel(table_name = #table)]
             #vis struct #ident {
                 #(

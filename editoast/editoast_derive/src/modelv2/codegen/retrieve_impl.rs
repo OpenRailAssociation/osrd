@@ -22,6 +22,7 @@ impl ToTokens for RetrieveImpl {
         } = self;
         let ty = identifier.get_type();
         let id_ident = identifier.get_lvalue();
+        let id_ref_ident = identifier.get_ref_lvalue();
         let eqs = identifier.get_diesel_eqs();
         let span_name = format!("model:retrieve<{}>", model);
 
@@ -29,7 +30,7 @@ impl ToTokens for RetrieveImpl {
             #[automatically_derived]
             #[async_trait::async_trait]
             impl crate::modelsv2::Retrieve<#ty> for #model {
-                #[tracing::instrument(name = #span_name, skip(conn))]
+                #[tracing::instrument(name = #span_name, skip_all, ret, err, fields(query_id))]
                 async fn retrieve(
                     conn: &mut crate::modelsv2::DbConnection,
                     #id_ident: #ty,
@@ -37,6 +38,7 @@ impl ToTokens for RetrieveImpl {
                     use diesel::prelude::*;
                     use diesel_async::RunQueryDsl;
                     use #table_mod::dsl;
+                    tracing::Span::current().record("query_id", tracing::field::debug(#id_ref_ident));
                     dsl::#table_name
                         .#(filter(#eqs)).*
                         .first::<#row>(conn)

@@ -66,6 +66,15 @@ impl RawIdentifier {
             }
         }
     }
+
+    fn get_ref_ident_lvalue(&self) -> syn::Expr {
+        match self {
+            Self::Field(ident) => parse_quote! { &#ident },
+            Self::Compound(idents) => {
+                parse_quote! { (#(&#idents),*) }
+            }
+        }
+    }
 }
 
 impl Identifier {
@@ -76,6 +85,10 @@ impl Identifier {
 
     fn get_lvalue(&self) -> syn::Expr {
         self.raw.get_ident_lvalue()
+    }
+
+    fn get_ref_lvalue(&self) -> syn::Expr {
+        self.raw.get_ref_ident_lvalue()
     }
 
     fn get_diesel_eqs(&self) -> Vec<syn::Expr> {

@@ -35,10 +35,10 @@ impl ToTokens for UpdateBatchImpl {
             #[automatically_derived]
             #[async_trait::async_trait]
             impl crate::modelsv2::UpdateBatchUnchecked<#model, #ty> for #changeset {
-                #[tracing::instrument(name = #span_name, skip_all)]
+                #[tracing::instrument(name = #span_name, skip_all, ret, err, fields(query_ids))]
                 async fn update_batch_unchecked<
                     I: std::iter::IntoIterator<Item = #ty> + Send + 'async_trait,
-                    C: Default + std::iter::Extend<#model> + Send,
+                    C: Default + std::iter::Extend<#model> + Send + std::fmt::Debug,
                 >(
                     self,
                     conn: &mut crate::modelsv2::DbConnection,
@@ -49,6 +49,8 @@ impl ToTokens for UpdateBatchImpl {
                     use diesel::prelude::*;
                     use diesel_async::RunQueryDsl;
                     use futures_util::stream::TryStreamExt;
+                    let ids = ids.into_iter().collect::<Vec<_>>();
+                    tracing::Span::current().record("query_ids", tracing::field::debug(&ids));
                     Ok(crate::chunked_for_libpq! {
                         // FIXME: that count is correct for each row, but the maximum buffer size
                         // should be libpq's max MINUS the size of the changeset

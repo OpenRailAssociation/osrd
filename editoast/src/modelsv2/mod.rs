@@ -159,7 +159,7 @@ mod tests {
             }
         }
 
-        #[derive(Clone, ModelV2)]
+        #[derive(Debug, Clone, ModelV2)]
         #[model(table = crate::tables::document)]
         struct Document {
             id: i64,

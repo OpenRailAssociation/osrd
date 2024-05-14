@@ -20,6 +20,7 @@ impl ToTokens for ExistsImpl {
         } = self;
         let ty = identifier.get_type();
         let id_ident = identifier.get_lvalue();
+        let id_ref_ident = identifier.get_ref_lvalue();
         let eqs = identifier.get_diesel_eqs();
         let span_name = format!("model:exists<{}>", model);
 
@@ -27,7 +28,7 @@ impl ToTokens for ExistsImpl {
             #[automatically_derived]
             #[async_trait::async_trait]
             impl crate::modelsv2::Exists<#ty> for #model {
-                #[tracing::instrument(name = #span_name, skip_all)]
+                #[tracing::instrument(name = #span_name, skip_all, ret, err, fields(query_id))]
                 async fn exists(
                     conn: &mut crate::modelsv2::DbConnection,
                     #id_ident: #ty,
@@ -35,6 +36,7 @@ impl ToTokens for ExistsImpl {
                     use diesel::prelude::*;
                     use diesel_async::RunQueryDsl;
                     use #table_mod::dsl;
+                    tracing::Span::current().record("query_id", tracing::field::debug(#id_ref_ident));
                     diesel::select(diesel::dsl::exists(dsl::#table_name.#(filter(#eqs)).*))
                         .get_result(conn)
                         .await

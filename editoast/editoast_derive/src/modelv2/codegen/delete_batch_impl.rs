@@ -28,7 +28,7 @@ impl ToTokens for DeleteBatchImpl {
             #[automatically_derived]
             #[async_trait::async_trait]
             impl crate::modelsv2::DeleteBatch<#ty> for #model {
-                #[tracing::instrument(name = #span_name, skip_all)]
+                #[tracing::instrument(name = #span_name, skip_all, ret, err, fields(query_ids))]
                 async fn delete_batch<I: std::iter::IntoIterator<Item = #ty> + Send + 'async_trait>(
                     conn: &mut crate::modelsv2::DbConnection,
                     ids: I,
@@ -36,6 +36,8 @@ impl ToTokens for DeleteBatchImpl {
                     use #table_mod::dsl;
                     use diesel::prelude::*;
                     use diesel_async::RunQueryDsl;
+                    let ids = ids.into_iter().collect::<Vec<_>>();
+                    tracing::Span::current().record("query_ids", tracing::field::debug(&ids));
                     let counts = crate::chunked_for_libpq! {
                         #params_per_row,
                         ids,

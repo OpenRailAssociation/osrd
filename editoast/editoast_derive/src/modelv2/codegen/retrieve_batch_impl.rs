@@ -31,10 +31,10 @@ impl ToTokens for RetrieveBatchImpl {
             #[automatically_derived]
             #[async_trait::async_trait]
             impl crate::modelsv2::RetrieveBatchUnchecked<#ty> for #model {
-                #[tracing::instrument(name = #span_name, skip_all)]
+                #[tracing::instrument(name = #span_name, skip_all, ret, err, fields(query_id))]
                 async fn retrieve_batch_unchecked<
                     I: std::iter::IntoIterator<Item = #ty> + Send + 'async_trait,
-                    C: Default + std::iter::Extend<#model> + Send,
+                    C: Default + std::iter::Extend<#model> + Send + std::fmt::Debug,
                 >(
                     conn: &mut crate::modelsv2::DbConnection,
                     ids: I,
@@ -44,6 +44,8 @@ impl ToTokens for RetrieveBatchImpl {
                     use diesel::prelude::*;
                     use diesel_async::RunQueryDsl;
                     use futures_util::stream::TryStreamExt;
+                    let ids = ids.into_iter().collect::<Vec<_>>();
+                    tracing::Span::current().record("query_ids", tracing::field::debug(&ids));
                     Ok(crate::chunked_for_libpq! {
                         #params_per_row,
                         ids,
@@ -68,7 +70,7 @@ impl ToTokens for RetrieveBatchImpl {
                 #[tracing::instrument(name = #span_name_with_key, skip_all)]
                 async fn retrieve_batch_with_key_unchecked<
                     I: std::iter::IntoIterator<Item = #ty> + Send + 'async_trait,
-                    C: Default + std::iter::Extend<(#ty, #model)> + Send,
+                    C: Default + std::iter::Extend<(#ty, #model)> + Send + std::fmt::Debug,
                 >(
                     conn: &mut crate::modelsv2::DbConnection,
                     ids: I,
