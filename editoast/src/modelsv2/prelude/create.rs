@@ -1,3 +1,5 @@
+use std::fmt::Debug;
+
 use crate::error::EditoastError;
 use crate::error::Result;
 use crate::modelsv2::DbConnection;
@@ -48,7 +50,7 @@ where
     /// ```
     async fn create_batch<
         I: IntoIterator<Item = Cs> + Send + 'async_trait,
-        C: Default + std::iter::Extend<Self> + Send,
+        C: Default + std::iter::Extend<Self> + Send + Debug,
     >(
         conn: &mut DbConnection,
         values: I,
@@ -72,7 +74,7 @@ where
     /// Just like [CreateBatch::create_batch] but the returned models are paired with their key
     async fn create_batch_with_key<
         I: IntoIterator<Item = Cs> + Send + 'async_trait,
-        C: Default + std::iter::Extend<(K, Self)> + Send,
+        C: Default + std::iter::Extend<(K, Self)> + Send + Debug,
     >(
         conn: &mut DbConnection,
         values: I,

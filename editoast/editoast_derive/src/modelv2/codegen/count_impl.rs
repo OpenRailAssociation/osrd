@@ -15,7 +15,12 @@ impl ToTokens for CountImpl {
             #[automatically_derived]
             #[async_trait::async_trait]
             impl crate::modelsv2::prelude::Count for #model {
-                #[tracing::instrument(name = #span_name, skip_all, ret, err)]
+                #[tracing::instrument(name = #span_name, skip_all, ret, err, fields(
+                    nb_filters = settings.filters.len(),
+                    paginate_counting = settings.paginate_counting,
+                    limit,
+                    offset,
+                ))]
                 async fn count(
                     conn: &'async_trait mut crate::modelsv2::DbConnection,
                     settings: crate::modelsv2::prelude::SelectionSettings<Self>,
@@ -33,10 +38,12 @@ impl ToTokens for CountImpl {
 
                     if settings.paginate_counting {
                         if let Some(limit) = settings.limit {
+                            tracing::Span::current().record("limit", limit);
                             query = query.limit(limit);
                         }
 
                         if let Some(offset) = settings.offset {
+                            tracing::Span::current().record("offset", offset);
                             query = query.offset(offset);
                         }
                     }

@@ -1,3 +1,5 @@
+use std::fmt::Debug;
+
 use diesel::result::Error::NotFound;
 
 use crate::error::EditoastError;
@@ -143,7 +145,7 @@ where
     /// Unless you know what you're doing, you should use these functions instead.
     async fn update_batch_unchecked<
         I: IntoIterator<Item = K> + Send + 'async_trait,
-        C: Default + std::iter::Extend<M> + Send,
+        C: Default + std::iter::Extend<M> + Send + Debug,
     >(
         self,
         conn: &mut DbConnection,

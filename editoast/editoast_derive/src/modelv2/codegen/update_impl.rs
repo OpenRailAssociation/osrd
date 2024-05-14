@@ -24,6 +24,7 @@ impl ToTokens for UpdateImpl {
         } = self;
         let ty = identifier.get_type();
         let id_ident = identifier.get_lvalue();
+        let id_ref_ident = identifier.get_ref_lvalue();
         let eqs = identifier.get_diesel_eqs();
         let span_name = format!("model:update<{}>", model);
 
@@ -31,7 +32,7 @@ impl ToTokens for UpdateImpl {
             #[automatically_derived]
             #[async_trait::async_trait]
             impl crate::modelsv2::Update<#ty, #model> for #changeset {
-                #[tracing::instrument(name = #span_name, skip_all)]
+                #[tracing::instrument(name = #span_name, skip_all, ret, err, fields(query_id))]
                 async fn update(
                     self,
                     conn: &mut crate::modelsv2::DbConnection,
@@ -40,6 +41,7 @@ impl ToTokens for UpdateImpl {
                     use diesel::prelude::*;
                     use diesel_async::RunQueryDsl;
                     use #table_mod::dsl;
+                    tracing::Span::current().record("query_id", tracing::field::debug(#id_ref_ident));
                     diesel::update(dsl::#table_name.#(filter(#eqs)).*)
                         .set(&self)
                         .get_result::<#row>(conn)

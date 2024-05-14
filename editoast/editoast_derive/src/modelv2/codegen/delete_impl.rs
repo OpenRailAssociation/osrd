@@ -20,7 +20,7 @@ impl ToTokens for DeleteImpl {
             #[automatically_derived]
             #[async_trait::async_trait]
             impl crate::modelsv2::Delete for #model {
-                #[tracing::instrument(name = #span_name, skip_all)]
+                #[tracing::instrument(name = #span_name, skip_all, ret, err, fields(query_id = ?self.#primary_key))]
                 async fn delete(
                     &self,
                     conn: &mut crate::modelsv2::DbConnection,

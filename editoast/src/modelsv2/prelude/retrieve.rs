@@ -1,3 +1,5 @@
+use std::fmt::Debug;
+
 use crate::error::EditoastError;
 use crate::error::Result;
 use crate::modelsv2::DbConnection;
@@ -53,9 +55,9 @@ where
 /// You can implement this type manually but its recommended to use the `Model`
 /// derive macro instead.
 #[async_trait::async_trait]
-pub trait RetrieveBatchUnchecked<K>: Sized
+pub trait RetrieveBatchUnchecked<K>: Sized + Debug
 where
-    for<'async_trait> K: Send + 'async_trait,
+    for<'async_trait> K: Send + Debug + 'async_trait,
 {
     /// Retrieves a batch of rows from the database given an iterator of keys
     ///
@@ -66,7 +68,7 @@ where
     /// Unless you know what you're doing, you should use these functions instead.
     async fn retrieve_batch_unchecked<
         I: IntoIterator<Item = K> + Send + 'async_trait,
-        C: Default + std::iter::Extend<Self> + Send,
+        C: Default + std::iter::Extend<Self> + Send + Debug,
     >(
         conn: &mut DbConnection,
         ids: I,
@@ -81,7 +83,7 @@ where
     /// Unless you know what you're doing, you should use these functions instead.
     async fn retrieve_batch_with_key_unchecked<
         I: IntoIterator<Item = K> + Send + 'async_trait,
-        C: Default + std::iter::Extend<(K, Self)> + Send,
+        C: Default + std::iter::Extend<(K, Self)> + Send + Debug,
     >(
         conn: &mut DbConnection,
         ids: I,
@@ -99,7 +101,7 @@ where
 #[async_trait::async_trait]
 pub trait RetrieveBatch<K>: RetrieveBatchUnchecked<K>
 where
-    for<'async_trait> K: Eq + std::hash::Hash + Clone + Send + 'async_trait,
+    for<'async_trait> K: Eq + std::hash::Hash + Clone + Send + Debug + 'async_trait,
 {
     /// Retrieves a batch of rows from the database given an iterator of keys
     ///
@@ -249,6 +251,6 @@ where
 impl<M, K> RetrieveBatch<K> for M
 where
     M: RetrieveBatchUnchecked<K>,
-    for<'async_trait> K: Eq + std::hash::Hash + Clone + Send + 'async_trait,
+    for<'async_trait> K: Eq + std::hash::Hash + Clone + Send + Debug + 'async_trait,
 {
 }

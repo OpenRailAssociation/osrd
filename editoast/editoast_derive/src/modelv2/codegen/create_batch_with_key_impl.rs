@@ -31,10 +31,10 @@ impl ToTokens for CreateBatchWithKeyImpl {
             #[automatically_derived]
             #[async_trait::async_trait]
             impl crate::modelsv2::CreateBatchWithKey<#changeset, #ty> for #model {
-                #[tracing::instrument(name = #span_name, skip_all)]
+                #[tracing::instrument(name = #span_name, skip_all, ret, err, fields(query_id))]
                 async fn create_batch_with_key<
                     I: std::iter::IntoIterator<Item = #changeset> + Send + 'async_trait,
-                    C: Default + std::iter::Extend<(#ty, Self)> + Send,
+                    C: Default + std::iter::Extend<(#ty, Self)> + Send + std::fmt::Debug,
                 >(
                     conn: &mut crate::modelsv2::DbConnection,
                     values: I,
@@ -45,6 +45,8 @@ impl ToTokens for CreateBatchWithKeyImpl {
                     use diesel::prelude::*;
                     use diesel_async::RunQueryDsl;
                     use futures_util::stream::TryStreamExt;
+                    let values = values.into_iter().collect::<Vec<_>>();
+                    tracing::Span::current().record("query_ids", tracing::field::debug(&values));
                     Ok(crate::chunked_for_libpq! {
                         #field_count,
                         values,

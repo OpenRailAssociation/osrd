@@ -20,7 +20,13 @@ impl ToTokens for ListImpl {
             #[automatically_derived]
             #[async_trait::async_trait]
             impl crate::modelsv2::prelude::List for #model {
-                #[tracing::instrument(name = #span_name, skip_all, ret, err)]
+                #[tracing::instrument(name = #span_name, skip_all, ret, err, fields(
+                    nb_filters = settings.filters.len(),
+                    nb_sorts = settings.sorts.len(),
+                    paginate_counting = settings.paginate_counting,
+                    limit,
+                    offset,
+                ))]
                 async fn list(
                     conn: &'async_trait mut crate::modelsv2::DbConnection,
                     settings: crate::modelsv2::prelude::SelectionSettings<Self>,
@@ -42,10 +48,12 @@ impl ToTokens for ListImpl {
                     }
 
                     if let Some(limit) = settings.limit {
+                        tracing::Span::current().record("limit", limit);
                         query = query.limit(limit);
                     }
 
                     if let Some(offset) = settings.offset {
+                        tracing::Span::current().record("offset", offset);
                         query = query.offset(offset);
                     }
 
