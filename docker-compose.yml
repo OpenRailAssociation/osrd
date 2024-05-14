@@ -49,8 +49,10 @@ services:
       CORE_EDITOAST_URL: "http://osrd-editoast"
       JAVA_TOOL_OPTIONS: "-javaagent:/app/opentelemetry-javaagent.jar"
       CORE_MONITOR_TYPE: "opentelemetry"
-      OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
-      OTEL_EXPORTER_OTLP_ENDPOINT: "http://jaeger:4317"
+      OTEL_EXPORTER_OTLP_TRACES_PROTOCOL: "grpc"
+      OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: "http://jaeger:4317"
+      OTEL_METRICS_EXPORTER: "none"
+      OTEL_LOGS_EXPORTER: "none"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
       start_period: 4s
