@@ -1,19 +1,17 @@
-use std::{
-    future::{ready, Ready},
-    rc::Rc,
-};
+use actix_session::SessionExt;
+use actix_web::dev::forward_ready;
+use actix_web::dev::Service;
+use actix_web::dev::ServiceRequest;
+use actix_web::dev::ServiceResponse;
+use actix_web::dev::Transform;
+use actix_web::Error;
+use actix_web::HttpMessage;
+use std::future::ready;
+use std::future::Ready;
+use std::rc::Rc;
 
-use actix_session::{Session, SessionExt};
-use actix_web::{
-    dev::{forward_ready, Service, ServiceRequest, ServiceResponse, Transform},
-    Error, HttpMessage, HttpRequest,
-};
-
-use crate::{AuthContext, RequestAuth};
-
-pub trait AuthGate: Clone {
-    fn filter(&self, req: &HttpRequest, session: Option<Session>) -> Option<actix_web::Error>;
-}
+use crate::AuthContext;
+use crate::RequestAuth;
 
 /// The MandatoryIdentityMiddleware does not directly process requests.
 /// When actix starts, new_transform is called once per worker to create
