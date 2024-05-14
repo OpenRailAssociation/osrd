@@ -224,7 +224,7 @@ internal constructor(
             getStopOnBlock(graph, infraExplorer.getCurrentBlock(), startOffset, waypointIndex) !=
                 null
         if (!endAtStop) return null
-        return graph.steps[waypointIndex + 1].duration!!
+        return graph.getFirstStopAfterIndex(waypointIndex)!!.duration!!
     }
 
     /** Creates a single STDCM edge, adding the given amount of delay */

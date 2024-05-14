@@ -154,10 +154,10 @@
       "InfraNotFound": "Infra {{infra_id}} does not exist"
     },
     "stdcm_v2": {
-      "InfraNotFound": "Infra {{infra_id}} does not exist",
-      "InvalidPathItem": "Path item {{index}} is invalid",
-      "RollingStockNotFound": "Rolling stock {{rolling_stock_id} does not exist",
-      "TimetableNotFound": "Timetable {{timetable_id}} does not exist"
+      "InfraNotFound": "Infrastructure '{{infra_id}}' does not exist",
+      "InvalidPathItem": "Path item '{{index}}' is invalid",
+      "RollingStockNotFound": "Rolling stock '{{rolling_stock_id}}' does not exist",
+      "TimetableNotFound": "Timetable '{{timetable_id}}' does not exist"
     },
     "study": {
       "NotFound": "Study '{{study_id}}' could not be found",
