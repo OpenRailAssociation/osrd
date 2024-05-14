@@ -141,7 +141,7 @@ private class InfraExplorerImpl(
     private val blockInfra: BlockInfra,
     private var blocks: AppendOnlyLinkedList<BlockId>,
     private var routes: AppendOnlyLinkedList<RouteId>,
-    private var blockRoutes: MutableMap<BlockId, MutableSet<RouteId>>,
+    private var blockRoutes: MutableMap<BlockId, RouteId>,
     private var incrementalPath: IncrementalPath,
     private var pathPropertiesCache: MutableMap<BlockId, PathProperties>,
     private var currentIndex: Int = 0,
@@ -172,9 +172,8 @@ private class InfraExplorerImpl(
                     getCurrentBlock(),
                 )
             }
-        val nonOverlappingRoutesOnBlock =
-            blockRoutes[getCurrentBlock()]!!.intersect(routes.toSet()).toList()
-        val blockPathProperties = path.withRoutes(nonOverlappingRoutesOnBlock)
+        val route = blockRoutes[getCurrentBlock()]!!
+        val blockPathProperties = path.withRoutes(listOf(route))
         pathPropertiesCache[getCurrentBlock()] = blockPathProperties
 
         val blockLength = Length<Path>(blockInfra.getBlockLength(getCurrentBlock()).distance)
@@ -275,6 +274,7 @@ private class InfraExplorerImpl(
         val addedBlocks = mutableListOf<BlockId>()
 
         for (block in routeBlocks) {
+            if (blockRoutes.containsKey(block)) return false // We already passed by this block
             addedBlocks.add(block)
             if (block == firstLocation?.edge) {
                 seenFirstBlock = true
@@ -308,7 +308,10 @@ private class InfraExplorerImpl(
         assert(seenFirstBlock)
         blocks.addAll(addedBlocks)
         routes.add(route)
-        for (block in addedBlocks) blockRoutes.getOrPut(block) { mutableSetOf() }.add(route)
+        for (block in addedBlocks) {
+            assert(!blockRoutes.containsKey(block))
+            blockRoutes[block] = route
+        }
         for (i in 0 ..< nBlocksToSkip) moveForward()
         for (pathFragment in pathFragments) incrementalPath.extend(pathFragment)
 
