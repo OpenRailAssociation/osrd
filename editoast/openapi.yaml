@@ -878,6 +878,10 @@ components:
       - $ref: '#/components/schemas/EditoastRollingStockErrorNameAlreadyUsed'
       - $ref: '#/components/schemas/EditoastRollingStockErrorRollingStockIsLocked'
       - $ref: '#/components/schemas/EditoastRollingStockErrorRollingStockIsUsed'
+      - $ref: '#/components/schemas/EditoastSTDCMErrorInfraNotFound'
+      - $ref: '#/components/schemas/EditoastSTDCMErrorInvalidPathItem'
+      - $ref: '#/components/schemas/EditoastSTDCMErrorRollingStockNotFound'
+      - $ref: '#/components/schemas/EditoastSTDCMErrorTimetableNotFound'
       - $ref: '#/components/schemas/EditoastScenarioErrorInfraNotFound'
       - $ref: '#/components/schemas/EditoastScenarioErrorNotFound'
       - $ref: '#/components/schemas/EditoastScenarioErrorNotFound'
@@ -896,10 +900,6 @@ components:
       - $ref: '#/components/schemas/EditoastSpriteErrorsFileNotFound'
       - $ref: '#/components/schemas/EditoastSpriteErrorsUnknownSignalingSystem'
       - $ref: '#/components/schemas/EditoastStdcmErrorInfraNotFound'
-      - $ref: '#/components/schemas/EditoastStdcmErrorInfraNotFound'
-      - $ref: '#/components/schemas/EditoastStdcmErrorInvalidPathItem'
-      - $ref: '#/components/schemas/EditoastStdcmErrorRollingStockNotFound'
-      - $ref: '#/components/schemas/EditoastStdcmErrorTimetableNotFound'
       - $ref: '#/components/schemas/EditoastStudyErrorNotFound'
       - $ref: '#/components/schemas/EditoastStudyErrorStartDateAfterEndDate'
       - $ref: '#/components/schemas/EditoastTimetableErrorInfraNotFound'
@@ -2025,6 +2025,105 @@ components:
       - status
       - message
       type: object
+    EditoastSTDCMErrorInfraNotFound:
+      properties:
+        context:
+          properties:
+            infra_id:
+              type: integer
+          required:
+          - infra_id
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:stdcm_v2:InfraNotFound
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastSTDCMErrorInvalidPathItem:
+      properties:
+        context:
+          properties:
+            index:
+              type: integer
+            path_item:
+              type: object
+          required:
+          - index
+          - path_item
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:stdcm_v2:InvalidPathItem
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastSTDCMErrorRollingStockNotFound:
+      properties:
+        context:
+          properties:
+            rolling_stock_id:
+              type: integer
+          required:
+          - rolling_stock_id
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:stdcm_v2:RollingStockNotFound
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastSTDCMErrorTimetableNotFound:
+      properties:
+        context:
+          properties:
+            timetable_id:
+              type: integer
+          required:
+          - timetable_id
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 404
+          type: integer
+        type:
+          enum:
+          - editoast:stdcm_v2:TimetableNotFound
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
     EditoastScenarioErrorInfraNotFound:
       properties:
         context:
@@ -2412,86 +2511,11 @@ components:
           type: string
         status:
           enum:
-          - 400
-          type: integer
-        type:
-          enum:
-          - editoast:stdcm_v2:InfraNotFound
-          type: string
-      required:
-      - type
-      - status
-      - message
-      type: object
-    EditoastStdcmErrorInvalidPathItem:
-      properties:
-        context:
-          properties:
-            index:
-              type: integer
-            path_item:
-              type: object
-          required:
-          - index
-          - path_item
-          type: object
-        message:
-          type: string
-        status:
-          enum:
-          - 400
-          type: integer
-        type:
-          enum:
-          - editoast:stdcm_v2:InvalidPathItem
-          type: string
-      required:
-      - type
-      - status
-      - message
-      type: object
-    EditoastStdcmErrorRollingStockNotFound:
-      properties:
-        context:
-          properties:
-            rolling_stock_id:
-              type: integer
-          required:
-          - rolling_stock_id
-          type: object
-        message:
-          type: string
-        status:
-          enum:
-          - 400
-          type: integer
-        type:
-          enum:
-          - editoast:stdcm_v2:RollingStockNotFound
-          type: string
-      required:
-      - type
-      - status
-      - message
-      type: object
-    EditoastStdcmErrorTimetableNotFound:
-      properties:
-        context:
-          properties:
-            timetable_id:
-              type: integer
-          required:
-          - timetable_id
-          type: object
-        message:
-          type: string
-        status:
-          enum:
           - 404
           type: integer
         type:
           enum:
-          - editoast:stdcm_v2:TimetableNotFound
+          - editoast:stdcm:InfraNotFound
           type: string
       required:
       - type

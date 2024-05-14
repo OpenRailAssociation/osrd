@@ -156,10 +156,10 @@
       "InfraNotFound": "Infrastructure {{infra_id}} non trouvée"
     },
     "stdcm_v2": {
-      "InfraNotFound": "Infrastructure {{infra_id}} non trouvée",
-      "InvalidPathItem": "Élément {{index}} du chemin non valide",
-      "RollingStockNotFound": "Matériel roulant {{rolling_stock_id} non trouvé",
-      "TimetableNotFound": "Grille horaire {{timetable_id}} non trouvée"
+      "InfraNotFound": "Infrastructure '{{infra_id}}' non trouvée",
+      "InvalidPathItem": "Élément '{{index}}' du chemin non valide",
+      "RollingStockNotFound": "Matériel roulant '{{rolling_stock_id}}' non trouvé",
+      "TimetableNotFound": "Grille horaire '{{timetable_id}}' non trouvée"
     },
     "study": {
       "NotFound": "Etude '{{study_id}}' non trouvée",

@@ -106,4 +106,9 @@ class STDCMGraph(
         }
         return res
     }
+
+    /** Returns the first step with a stop after the given index, if any. */
+    fun getFirstStopAfterIndex(i: Int): STDCMStep? {
+        return steps.withIndex().firstOrNull { it.index > i && it.value.stop }?.value
+    }
 }

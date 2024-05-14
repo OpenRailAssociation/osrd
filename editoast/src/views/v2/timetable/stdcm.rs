@@ -50,9 +50,8 @@ editoast_common::schemas! {
 
 #[derive(Debug, Error, EditoastError, Serialize)]
 #[editoast_error(base_id = "stdcm_v2")]
-#[allow(clippy::enum_variant_names)]
-enum StdcmError {
-    #[error("Infra {infra_id} does not exist")]
+enum STDCMError {
+    #[error("Infrastrcture {infra_id} does not exist")]
     InfraNotFound { infra_id: i64 },
     #[error("Timetable {timetable_id} does not exist")]
     #[editoast_error(status = 404)]
@@ -99,11 +98,11 @@ pub struct STDCMRequestPayload {
 }
 
 #[derive(Debug, Serialize, Deserialize, PartialEq, Clone, ToSchema)]
-pub struct PathfindingItem {
+struct PathfindingItem {
     /// The stop duration in milliseconds, None if the train does not stop.
-    pub duration: Option<u64>,
+    duration: Option<u64>,
     /// The associated location
-    pub location: PathItemLocation,
+    location: PathItemLocation,
 }
 
 const TWO_HOURS_IN_MILLISECONDS: u64 = 2 * 60 * 60 * 60;
@@ -117,7 +116,7 @@ const fn default_maximum_run_time() -> u64 {
 }
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize, IntoParams, ToSchema)]
-pub struct InfraIdQueryParam {
+struct InfraIdQueryParam {
     infra: i64,
 }
 
@@ -150,12 +149,12 @@ async fn stdcm(
 
     // 1. Retrieve Timetable / Infra / Trains / Simulation / Rolling Stock
     let timetable = TimetableWithTrains::retrieve_or_fail(conn, timetable_id, || {
-        StdcmError::TimetableNotFound { timetable_id }
+        STDCMError::TimetableNotFound { timetable_id }
     })
     .await?;
 
     let infra =
-        Infra::retrieve_or_fail(conn, infra_id, || StdcmError::InfraNotFound { infra_id }).await?;
+        Infra::retrieve_or_fail(conn, infra_id, || STDCMError::InfraNotFound { infra_id }).await?;
 
     let (trains, _): (Vec<_>, _) = TrainSchedule::retrieve_batch(conn, timetable.train_ids).await?;
 
@@ -169,7 +168,7 @@ async fn stdcm(
     .await?;
 
     let rolling_stock = RollingStockModel::retrieve_or_fail(conn, data.rolling_stock_id, || {
-        StdcmError::RollingStockNotFound {
+        STDCMError::RollingStockNotFound {
             rolling_stock_id: data.rolling_stock_id,
         }
     })
@@ -238,7 +237,7 @@ async fn parse_stdcm_steps(
 
     let conn = &mut db_pool.get().await?;
     let track_offsets = extract_location_from_path_items(conn, infra.id, &locations).await?;
-    let track_offsets = track_offsets.map_err::<StdcmError, _>(|err| err.into())?;
+    let track_offsets = track_offsets.map_err::<STDCMError, _>(|err| err.into())?;
 
     Ok(track_offsets
         .iter()
@@ -250,9 +249,9 @@ async fn parse_stdcm_steps(
         .collect())
 }
 
-impl From<TrackOffsetExtractionError> for StdcmError {
+impl From<TrackOffsetExtractionError> for STDCMError {
     fn from(error: TrackOffsetExtractionError) -> Self {
-        StdcmError::InvalidPathItem {
+        STDCMError::InvalidPathItem {
             index: error.index,
             path_item: error.path_item,
         }

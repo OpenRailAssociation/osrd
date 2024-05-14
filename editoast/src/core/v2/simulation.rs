@@ -234,8 +234,10 @@ pub struct SimulationRequest {
 #[allow(clippy::large_enum_variant)]
 pub enum SimulationResponse {
     Success {
+        /// Simulation without any regularity margins
         #[schema(value_type = ReportTrainV2)]
         base: ReportTrain,
+        /// Simulation that takes into account the regularity margins
         #[schema(value_type = ReportTrainV2)]
         provisional: ReportTrain,
         #[schema(inline)]

@@ -110,7 +110,7 @@ data class STDCMEdge(
             )
         } else {
             // New edge on the same block, after a stop
-            val stopDuration = graph.steps[waypointIndex + 1].duration!!
+            val stopDuration = graph.getFirstStopAfterIndex(waypointIndex)!!.duration!!
             STDCMNode(
                 totalTime + timeStart + stopDuration,
                 endSpeed,
