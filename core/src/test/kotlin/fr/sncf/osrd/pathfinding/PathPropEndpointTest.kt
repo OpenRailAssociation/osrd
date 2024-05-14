@@ -50,7 +50,7 @@ class PathPropEndpointTest : ApiTest() {
         assertEquals(
             parsed.electrifications,
             RangeValues(
-                listOf(1800.meters, 1950.meters),
+                listOf(1910.meters, 1950.meters),
                 listOf(Electrified("1500V"), Neutral(true), Electrified("25000V"))
             )
         )

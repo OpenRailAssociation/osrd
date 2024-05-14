@@ -233,16 +233,6 @@ public final class RollingStock implements PhysicsRollingStock {
         return new CurvesAndConditions(ImmutableRangeMap.copyOf(res), ImmutableRangeMap.copyOf(conditionsUsed));
     }
 
-    protected Range<Double> computeDeadSectionRange(Range<Double> neutralRange, Neutral n, Envelope maxEffortEnvelope) {
-        var endRange = neutralRange.upperEndpoint();
-        var finalSpeed = maxEffortEnvelope.interpolateSpeedLeftDir(endRange, 1);
-        double additionalRange = finalSpeed * electricalPowerStartUpTime;
-        if (n.lowerPantograph) {
-            additionalRange += finalSpeed * raisePantographTime;
-        }
-        return Range.closed(neutralRange.lowerEndpoint(), neutralRange.upperEndpoint() + additionalRange);
-    }
-
     /**
      * Returns the tractive effort curves corresponding to the electrical conditions map with
      * neutral sections
@@ -268,7 +258,8 @@ public final class RollingStock implements PhysicsRollingStock {
                 // estimate the distance during which the train will be coasting, due to having
                 // respected the
                 // neutral section
-                var deadSectionRange = computeDeadSectionRange(elecCondEntry.getKey(), n, maxSpeedEnvelope);
+                Range<Double> neutralRange = elecCondEntry.getKey();
+                var deadSectionRange = Range.closed(neutralRange.lowerEndpoint(), neutralRange.upperEndpoint());
                 var curveAndCondition = findTractiveEffortCurve(comfort, n);
                 if (curveAndCondition.cond.mode == null) { // The train is effectively coasting
                     newCurves.put(deadSectionRange, curveAndCondition.curve);

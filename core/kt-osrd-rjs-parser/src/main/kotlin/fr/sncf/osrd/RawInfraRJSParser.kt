@@ -753,7 +753,10 @@ fun parseRJSInfra(rjsInfra: RJSInfra): RawInfra {
 
     for (neutralSection in rjsInfra.neutralSections) {
         parseNeutralRanges(builder, false, neutralSection)
-        parseNeutralRanges(builder, true, neutralSection)
+
+        // FIXME: the current implementation of neutral section announcements breaks
+        //  some use cases, see https://github.com/OpenRailAssociation/osrd/issues/7359
+        // parseNeutralRanges(builder, true, neutralSection)
     }
 
     for (speedSection in rjsInfra.speedSections) {
