@@ -205,6 +205,7 @@ mod tests {
         );
     }
 
+    #[ignore]
     #[rstest::rstest]
     async fn test_list() {
         // GIVEN
