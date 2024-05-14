@@ -556,6 +556,13 @@ jobs:
             cargo fmt --check
           exit $(docker wait gateway-format)
 
+      - name: Clippy check
+        run: |
+          docker run --name=gateway-clippy --net=host -v $PWD/output:/output \
+            ${{ fromJSON(needs.build.outputs.stable_tags).gateway-test }} \
+            cargo clippy --all-features --all-targets -- -D warnings
+          exit $(docker wait gateway-clippy)
+
   check_front:
     runs-on: ubuntu-latest
     needs:
