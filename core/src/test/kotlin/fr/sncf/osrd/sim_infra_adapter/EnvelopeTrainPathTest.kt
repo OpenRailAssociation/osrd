@@ -205,16 +205,8 @@ class EnvelopeTrainPathTest {
         putInElectrificationMapByPowerClass(
             expected,
             800.0,
-            850.0,
-            Electrified("1500V"),
-            "A",
-            false
-        )
-        putInElectrificationMapByPowerClass(
-            expected,
-            850.0,
             960.0,
-            Neutral(true, Electrified("1500V"), true),
+            Electrified("1500V"),
             "A",
             false
         )
@@ -310,16 +302,8 @@ class EnvelopeTrainPathTest {
         putInElectrificationMapByPowerClass(
             expectedElectrificationPowerClass1,
             2_600.0,
-            2_900.0,
-            Electrified("1500V"),
-            "B",
-            false
-        )
-        putInElectrificationMapByPowerClass(
-            expectedElectrificationPowerClass1,
-            2_900.0,
             2_910.0,
-            Neutral(false, Electrified("1500V"), true),
+            Electrified("1500V"),
             "B",
             false
         )
@@ -372,16 +356,8 @@ class EnvelopeTrainPathTest {
         putInElectrificationMapByPowerClass(
             expectedElectrificationPowerClass2,
             2_700.0,
-            2_900.0,
-            Electrified("1500V"),
-            "C",
-            false
-        )
-        putInElectrificationMapByPowerClass(
-            expectedElectrificationPowerClass2,
-            2_900.0,
             2_910.0,
-            Neutral(false, Electrified("1500V"), true),
+            Electrified("1500V"),
             "C",
             false
         )
@@ -422,11 +398,7 @@ class EnvelopeTrainPathTest {
                     Direction.INCREASING,
                     ImmutableRangeMap.Builder<Double, Electrification>()
                         .put(Range.closedOpen(0.0, 300.0), NonElectrified())
-                        .put(Range.closedOpen(300.0, 1_350.0), Electrified("1500V"))
-                        .put(
-                            Range.closedOpen(1_350.0, 1_460.0),
-                            Neutral(true, Electrified("1500V"), true)
-                        )
+                        .put(Range.closedOpen(300.0, 1_460.0), Electrified("1500V"))
                         .put(
                             Range.closedOpen(1_460.0, 1_500.0),
                             Neutral(true, Electrified("1500V"), false)
@@ -442,11 +414,7 @@ class EnvelopeTrainPathTest {
                     ImmutableRangeMap.Builder<Double, Electrification>()
                         .put(Range.closedOpen(0.0, 350.0), Electrified("25000V"))
                         .put(Range.closedOpen(350.0, 450.0), NonElectrified())
-                        .put(Range.closedOpen(450.0, 1_450.0), Electrified("1500V"))
-                        .put(
-                            Range.closedOpen(1_450.0, 1_460.0),
-                            Neutral(false, Electrified("1500V"), true)
-                        )
+                        .put(Range.closedOpen(450.0, 1_460.0), Electrified("1500V"))
                         .put(
                             Range.closedOpen(1_460.0, 1_600.0),
                             Neutral(false, Electrified("1500V"), false)

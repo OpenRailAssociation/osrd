@@ -628,6 +628,8 @@ public class StandaloneSimulationTest extends ApiTest {
 
         ElectrificationUsage[] expected = {
             new ElectrifiedUsage("1500V", true, "O", false),
+            // the C2 power restriction reduces the power class, so no electrical profile is found
+            new ElectrifiedUsage("1500V", true, null, true),
             new NeutralUsage(true),
             new ElectrifiedUsage("25000V", true, "25000V", true),
             new ElectrifiedUsage("25000V", true, "20000V", true),
