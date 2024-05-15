@@ -3,6 +3,7 @@ pub mod simulation_report;
 
 use std::collections::HashMap;
 use std::collections::HashSet;
+use std::sync::Arc;
 
 use actix_web::delete;
 use actix_web::get;
@@ -142,10 +143,11 @@ async fn get(
     let train_schedule_id = train_schedule_id.into_inner();
 
     // Return the timetable
-    let train_schedule = match TrainSchedule::retrieve(db_pool.clone(), train_schedule_id).await? {
-        Some(train_schedule) => train_schedule,
-        None => return Err(TrainScheduleError::NotFound { train_schedule_id }.into()),
-    };
+    let train_schedule =
+        match TrainSchedule::retrieve(db_pool.into_inner(), train_schedule_id).await? {
+            Some(train_schedule) => train_schedule,
+            None => return Err(TrainScheduleError::NotFound { train_schedule_id }.into()),
+        };
     Ok(Json(train_schedule))
 }
 
@@ -163,7 +165,7 @@ async fn delete(
     train_schedule_id: Path<i64>,
 ) -> Result<HttpResponse> {
     let train_schedule_id = train_schedule_id.into_inner();
-    if !TrainSchedule::delete(db_pool.clone(), train_schedule_id).await? {
+    if !TrainSchedule::delete(db_pool.into_inner(), train_schedule_id).await? {
         return Err(TrainScheduleError::NotFound { train_schedule_id }.into());
     }
 
@@ -261,6 +263,7 @@ async fn patch_multiple(
     }
 
     let mut conn = db_pool.get().await?;
+    let db_pool = db_pool.into_inner();
     conn.transaction::<_, InternalError, _>(|conn| {
         async {
             let mut train_schedules = Vec::new();
@@ -373,6 +376,7 @@ async fn get_result(
     core: Data<CoreClient>,
 ) -> Result<Json<SimulationReport>> {
     let train_schedule_id = id.into_inner();
+    let db_pool = db_pool.into_inner();
     let train_schedule = match TrainSchedule::retrieve(db_pool.clone(), train_schedule_id).await? {
         Some(train_schedule) => train_schedule,
         None => return Err(TrainScheduleError::NotFound { train_schedule_id }.into()),
@@ -475,6 +479,7 @@ async fn get_results(
         return Err(TrainScheduleError::BatchShouldHaveSameTimetable.into());
     }
 
+    let db_pool = db_pool.into_inner();
     let timetable = Timetable::retrieve(db_pool.clone(), timetable_id)
         .await?
         .ok_or(TrainScheduleError::TimetableNotFound { timetable_id })?;
@@ -612,6 +617,7 @@ async fn standalone_simulation(
         return Err(TrainScheduleError::NoTrainSchedules.into());
     }
 
+    let db_pool = db_pool.into_inner();
     let timetable = Timetable::retrieve(db_pool.clone(), id_timetable)
         .await?
         .ok_or(TrainScheduleError::TimetableNotFound {
@@ -670,7 +676,7 @@ async fn standalone_simulation(
 async fn create_backend_request_payload(
     train_schedules: &[TrainSchedule],
     scenario: &Scenario,
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Arc<DbConnectionPool>,
 ) -> Result<SimulationRequest> {
     let mut db_conn = db_pool.get().await?;
 

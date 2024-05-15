@@ -260,6 +260,7 @@ async fn list(
         .unpack();
     let project = project.into_inner();
     let ordering = params.ordering.clone();
+    let db_pool = db_pool.into_inner();
     let studies = Study::list(db_pool.clone(), page, per_page, (project, ordering)).await?;
 
     let mut results = Vec::new();
@@ -308,7 +309,7 @@ async fn get(
         return Err(StudyError::NotFound { study_id }.into());
     }
 
-    let scenarios_count = study.scenarios_count(db_pool.clone()).await?;
+    let scenarios_count = study.scenarios_count(db_pool.into_inner()).await?;
     let study_scenarios = StudyWithScenarios::new(study, scenarios_count);
     let study_response = StudyResponse::new(study_scenarios, project);
     Ok(Json(study_response))
@@ -387,7 +388,7 @@ async fn patch(
                     .into_study_changeset()?
                     .update_or_fail(conn, study_id, || StudyError::NotFound { study_id })
                     .await?;
-                let scenarios_count = study.scenarios_count(db_pool.clone()).await?;
+                let scenarios_count = study.scenarios_count(db_pool.into_inner()).await?;
                 let study_scenarios = StudyWithScenarios::new(study, scenarios_count);
 
                 // Update project last_modification field
@@ -411,6 +412,7 @@ pub mod test {
     use actix_web::test::TestRequest;
     use rstest::rstest;
     use serde_json::json;
+    use std::sync::Arc;
 
     use super::*;
     use crate::fixtures::tests::db_pool;
@@ -450,10 +452,7 @@ pub mod test {
     }
 
     #[rstest]
-    async fn study_create(
-        #[future] project: TestFixture<Project>,
-        db_pool: Data<DbConnectionPool>,
-    ) {
+    async fn study_create(#[future] project: TestFixture<Project>, db_pool: Arc<DbConnectionPool>) {
         let app = create_test_service().await;
         let project = project.await;
         let req = TestRequest::post()
@@ -502,7 +501,7 @@ pub mod test {
     #[rstest]
     async fn study_get(
         #[future] study_fixture_set: StudyFixtureSet,
-        db_pool: Data<DbConnectionPool>,
+        db_pool: Arc<DbConnectionPool>,
     ) {
         let app = create_test_service().await;
         let study_fixture_set = study_fixture_set.await;

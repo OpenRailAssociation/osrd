@@ -173,6 +173,7 @@ pub mod test {
     use actix_web::test::{call_service, read_body_json, TestRequest};
     use rstest::rstest;
     use serde_json::json;
+    use std::sync::Arc;
 
     use super::*;
     use crate::assert_response_error_type_match;
@@ -181,7 +182,7 @@ pub mod test {
     use crate::views::tests::create_test_service;
 
     async fn create_work_schedule_group_fixture(
-        db_pool: Data<DbConnectionPool>,
+        db_pool: Arc<DbConnectionPool>,
         work_schedule_response: WorkScheduleCreateResponse,
     ) -> TestFixture<WorkScheduleGroup> {
         let mut conn = db_pool.get().await.unwrap();
@@ -194,7 +195,7 @@ pub mod test {
     }
 
     #[rstest]
-    async fn work_schedule_create(db_pool: Data<DbConnectionPool>) {
+    async fn work_schedule_create(db_pool: Arc<DbConnectionPool>) {
         // GIVEN
         let app = create_test_service().await;
         let req = TestRequest::post()
@@ -247,7 +248,7 @@ pub mod test {
     }
 
     #[rstest]
-    async fn work_schedule_create_fail_name_already_used(db_pool: Data<DbConnectionPool>) {
+    async fn work_schedule_create_fail_name_already_used(db_pool: Arc<DbConnectionPool>) {
         // GIVEN
         let app = create_test_service().await;
         let payload = json!({

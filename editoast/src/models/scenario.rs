@@ -1,4 +1,3 @@
-use actix_web::web::Data;
 use async_trait::async_trait;
 use chrono::NaiveDateTime;
 use chrono::Utc;
@@ -16,6 +15,7 @@ use diesel_async::RunQueryDsl;
 use editoast_derive::Model;
 use serde::Deserialize;
 use serde::Serialize;
+use std::sync::Arc;
 use utoipa::ToSchema;
 
 use super::List;
@@ -117,10 +117,7 @@ pub struct ScenarioWithCountTrains {
 }
 
 impl Scenario {
-    pub async fn with_details(
-        self,
-        db_pool: Data<DbConnectionPool>,
-    ) -> Result<ScenarioWithDetails> {
+    pub async fn with_details(self, db_pool: Arc<DbConnectionPool>) -> Result<ScenarioWithDetails> {
         let mut conn = db_pool.get().await?;
         self.with_details_conn(&mut conn).await
     }
@@ -223,6 +220,7 @@ impl List<(i64, Ordering)> for ScenarioWithCountTrains {
 #[cfg(test)]
 pub mod test {
     use rstest::rstest;
+    use std::sync::Arc;
 
     use super::*;
     use crate::fixtures::tests::db_pool;
@@ -236,7 +234,7 @@ pub mod test {
     use crate::modelsv2::Ordering;
 
     #[rstest]
-    async fn create_delete_scenario(db_pool: Data<DbConnectionPool>) {
+    async fn create_delete_scenario(db_pool: Arc<DbConnectionPool>) {
         let ScenarioFixtureSet { scenario, .. } = scenario_fixture_set().await;
 
         // Delete the scenario
@@ -251,7 +249,7 @@ pub mod test {
     }
 
     #[rstest]
-    async fn get_study(db_pool: Data<DbConnectionPool>) {
+    async fn get_study(db_pool: Arc<DbConnectionPool>) {
         let ScenarioFixtureSet { study, .. } = scenario_fixture_set().await;
 
         // Get a scenario
@@ -269,7 +267,7 @@ pub mod test {
     }
 
     #[rstest]
-    async fn sort_scenario(db_pool: Data<DbConnectionPool>) {
+    async fn sort_scenario(db_pool: Arc<DbConnectionPool>) {
         let ScenarioFixtureSet {
             scenario,
             study,

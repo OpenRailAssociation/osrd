@@ -92,7 +92,7 @@ fn create_functions(config: &Config) -> TokenStream {
             }
 
             #[doc = #documentation]
-            async fn create(self, db_pool: actix_web::web::Data<crate::modelsv2::DbConnectionPool>) -> crate::error::Result<Self> {
+            async fn create(self, db_pool: std::sync::Arc<crate::modelsv2::DbConnectionPool>) -> crate::error::Result<Self> {
                 let mut conn = db_pool.get().await?;
                 self.create_conn(&mut conn).await
             }
@@ -142,7 +142,7 @@ fn retrieve_functions(config: &Config) -> TokenStream {
             }
 
             #[doc = #retrieve_documentation]
-            async fn retrieve(db_pool: actix_web::web::Data<crate::modelsv2::DbConnectionPool>, id: i64) -> crate::error::Result<Option<Self>> {
+            async fn retrieve(db_pool: std::sync::Arc<crate::modelsv2::DbConnectionPool>, id: i64) -> crate::error::Result<Option<Self>> {
                 let mut conn = db_pool.get().await?;
                 Self::retrieve_conn(&mut conn, id).await
             }
@@ -188,7 +188,7 @@ fn delete_functions(config: &Config) -> TokenStream {
             }
 
             #[doc = #documentation]
-            async fn delete(db_pool: actix_web::web::Data<crate::modelsv2::DbConnectionPool>, id: i64) -> crate::error::Result<bool> {
+            async fn delete(db_pool: std::sync::Arc<crate::modelsv2::DbConnectionPool>, id: i64) -> crate::error::Result<bool> {
                 let mut conn = db_pool.get().await?;
                 Self::delete_conn(&mut conn, id).await
             }

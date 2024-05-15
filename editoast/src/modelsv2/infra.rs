@@ -1,6 +1,5 @@
 use std::pin::Pin;
 
-use actix_web::web::Data;
 use async_trait::async_trait;
 use chrono::NaiveDateTime;
 use chrono::Utc;
@@ -14,6 +13,7 @@ use futures::future::try_join_all;
 use futures::Future;
 use serde::Deserialize;
 use serde::Serialize;
+use std::sync::Arc;
 use strum::IntoEnumIterator;
 use tracing::debug;
 use tracing::error;
@@ -66,13 +66,13 @@ impl InfraChangeset {
     pub async fn persist(
         self,
         railjson: RailJson,
-        db_pool: Data<DbConnectionPool>,
+        db_pool: Arc<DbConnectionPool>,
     ) -> Result<Infra> {
         let conn = &mut db_pool.get().await?;
         let infra = self.create(conn).await?;
         // TODO: lock infra for update
         debug!("🛤  Begin importing all railjson objects");
-        if let Err(e) = persist_railjson(db_pool.into_inner(), infra.id, railjson).await {
+        if let Err(e) = persist_railjson(db_pool, infra.id, railjson).await {
             error!("Could not import infrastructure {}. Rolling back", infra.id);
             infra.delete(conn).await?;
             return Err(e);
@@ -115,7 +115,7 @@ impl Infra {
 
     pub async fn clone(
         &self,
-        db_pool: Data<DbConnectionPool>,
+        db_pool: Arc<DbConnectionPool>,
         new_name: Option<String>,
     ) -> Result<Infra> {
         // Duplicate infra shell
@@ -185,7 +185,7 @@ impl Infra {
     /// If refreshed you need to call `invalidate_after_refresh` to invalidate layer cache
     pub async fn refresh(
         &mut self,
-        db_pool: Data<DbConnectionPool>,
+        db_pool: Arc<DbConnectionPool>,
         force: bool,
         infra_cache: &InfraCache,
     ) -> Result<bool> {

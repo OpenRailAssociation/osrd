@@ -37,8 +37,8 @@ pub struct LightElectricalProfileSet {
 
 #[cfg(test)]
 mod tests {
-    use actix_web::web::Data;
     use rstest::rstest;
+    use std::sync::Arc;
 
     use super::*;
     use crate::fixtures::tests::db_pool;
@@ -49,7 +49,7 @@ mod tests {
 
     #[rstest]
     async fn test_list_light(
-        db_pool: Data<DbConnectionPool>,
+        db_pool: Arc<DbConnectionPool>,
         #[future] electrical_profile_set: TestFixture<ElectricalProfileSet>,
         #[future] dummy_electrical_profile_set: TestFixture<ElectricalProfileSet>,
     ) {

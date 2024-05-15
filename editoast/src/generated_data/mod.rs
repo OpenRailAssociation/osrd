@@ -30,6 +30,7 @@ use operational_point::OperationalPointLayer;
 use psl_sign::PSLSignLayer;
 use signal::SignalLayer;
 use speed_section::SpeedSectionLayer;
+use std::sync::Arc;
 use switch::SwitchLayer;
 use tracing::debug;
 use track_section::TrackSectionLayer;
@@ -63,7 +64,7 @@ pub trait GeneratedData {
     }
 
     async fn refresh_pool(
-        pool: crate::Data<DbConnectionPool>,
+        pool: Arc<DbConnectionPool>,
         infra: i64,
         infra_cache: &InfraCache,
     ) -> Result<()> {
@@ -82,7 +83,7 @@ pub trait GeneratedData {
 
 /// Refresh all the generated data of a given infra
 pub async fn refresh_all(
-    db_pool: crate::Data<DbConnectionPool>,
+    db_pool: Arc<DbConnectionPool>,
     infra: i64,
     infra_cache: &InfraCache,
 ) -> Result<()> {

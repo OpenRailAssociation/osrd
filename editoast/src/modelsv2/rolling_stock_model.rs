@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 
-use actix_web::web::Data;
 use diesel::ExpressionMethods;
 use diesel::QueryDsl;
 use diesel::SelectableHelper;
@@ -16,6 +15,7 @@ use editoast_schemas::rolling_stock::RollingStockMetadata;
 use editoast_schemas::rolling_stock::RollingStockSupportedSignalingSystems;
 use serde::Deserialize;
 use serde::Serialize;
+use std::sync::Arc;
 use utoipa::ToSchema;
 use validator::Validate;
 use validator::ValidationError;
@@ -78,7 +78,7 @@ pub struct RollingStockModel {
 impl RollingStockModel {
     pub async fn with_liveries(
         self,
-        db_pool: Data<DbConnectionPool>,
+        db_pool: Arc<DbConnectionPool>,
     ) -> Result<RollingStockWithLiveries> {
         use crate::tables::rolling_stock_livery::dsl as livery_dsl;
         let mut conn = db_pool.get().await?;
@@ -214,9 +214,9 @@ impl From<RollingStock> for RollingStockModelChangeset {
 
 #[cfg(test)]
 pub mod tests {
-    use actix_web::web::Data;
     use rstest::*;
     use serde_json::to_value;
+    use std::sync::Arc;
 
     use super::RollingStockModel;
     use crate::error::InternalError;
@@ -234,7 +234,7 @@ pub mod tests {
     }
 
     #[rstest]
-    async fn create_delete_rolling_stock(db_pool: Data<DbConnectionPool>) {
+    async fn create_delete_rolling_stock(db_pool: Arc<DbConnectionPool>) {
         use crate::modelsv2::Retrieve;
         let mut db_conn = db_pool.get().await.expect("Failed to get db connection");
         let name = "fast_rolling_stock_create_delete_rolling_stock";
@@ -253,7 +253,7 @@ pub mod tests {
     }
 
     #[rstest]
-    async fn update_rolling_stock(db_pool: Data<DbConnectionPool>) {
+    async fn update_rolling_stock(db_pool: Arc<DbConnectionPool>) {
         use crate::modelsv2::Update;
         let mut db_conn = db_pool.get().await.expect("Failed to get db connection");
         // GIVEN
@@ -279,7 +279,7 @@ pub mod tests {
     }
 
     #[rstest]
-    async fn update_rolling_stock_failure_name_already_used(db_pool: Data<DbConnectionPool>) {
+    async fn update_rolling_stock_failure_name_already_used(db_pool: Arc<DbConnectionPool>) {
         use crate::modelsv2::*;
         let mut db_conn = db_pool.get().await.expect("Failed to get db connection");
         // GIVEN

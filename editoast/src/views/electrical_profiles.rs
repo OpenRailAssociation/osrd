@@ -187,6 +187,7 @@ mod tests {
     use actix_web::test::read_body_json;
     use actix_web::test::TestRequest;
     use rstest::rstest;
+    use std::sync::Arc;
 
     use super::*;
     use crate::fixtures::tests::db_pool;
@@ -306,7 +307,7 @@ mod tests {
     }
 
     #[rstest]
-    async fn test_post(db_pool: Data<DbConnectionPool>) {
+    async fn test_post(db_pool: Arc<DbConnectionPool>) {
         let app = create_test_service().await;
         let ep_set = ElectricalProfileSetData {
             levels: vec![ElectricalProfile {

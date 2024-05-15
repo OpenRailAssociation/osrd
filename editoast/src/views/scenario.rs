@@ -14,6 +14,7 @@ use diesel_async::AsyncConnection;
 use editoast_derive::EditoastError;
 use serde::Deserialize;
 use serde::Serialize;
+use std::sync::Arc;
 use thiserror::Error;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
@@ -138,7 +139,7 @@ impl ScenarioResponse {
 
 /// Check if project and study exist given a study ID and a project ID
 pub async fn check_project_study(
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Arc<DbConnectionPool>,
     project_id: i64,
     study_id: i64,
 ) -> Result<(Project, Study)> {
@@ -185,6 +186,7 @@ async fn create(
     // Check if the project and the study exist
     let (mut project, mut study) =
         check_project_study_conn(&mut conn, project_id, study_id).await?;
+    let db_pool = db_pool.into_inner();
     let (project, study, scenarios_with_details) = conn
         .transaction::<_, InternalError, _>(|conn| {
             async {
@@ -198,7 +200,7 @@ async fn create(
 
                 // Create Scenario
                 let scenario: Scenario = data.into_inner().into_scenario(study_id, timetable_id);
-                let scenario = scenario.create(db_pool.clone()).await?;
+                let scenario = scenario.create(db_pool).await?;
 
                 // Update study last_modification field
                 study.update_last_modified(conn).await?;
@@ -239,6 +241,7 @@ async fn delete(
 ) -> Result<HttpResponse> {
     let (project_id, study_id, scenario_id) = path.into_inner();
 
+    let db_pool = db_pool.into_inner();
     // Check if the project and the study exist
     let (mut project, mut study) = check_project_study(db_pool.clone(), project_id, study_id)
         .await
@@ -341,6 +344,7 @@ async fn get(
     path: Path<(i64, i64, i64)>,
 ) -> Result<Json<ScenarioResponse>> {
     let (project_id, study_id, scenario_id) = path.into_inner();
+    let db_pool = db_pool.into_inner();
     let (project, study) = check_project_study(db_pool.clone(), project_id, study_id).await?;
 
     // Return the scenarios
@@ -383,6 +387,7 @@ async fn list(
         .warn_page_size(100)
         .unpack();
     let (project_id, study_id) = path.into_inner();
+    let db_pool = db_pool.into_inner();
     let _ = check_project_study(db_pool.clone(), project_id, study_id).await?;
     let ordering = params.ordering.clone();
     let scenarios =
@@ -400,6 +405,7 @@ mod test {
     use actix_web::test::TestRequest;
     use rstest::rstest;
     use serde_json::json;
+    use std::sync::Arc;
 
     use super::*;
     use crate::fixtures::tests::db_pool;
@@ -436,7 +442,7 @@ mod test {
 
     #[rstest]
     async fn scenario_create(
-        db_pool: Data<DbConnectionPool>,
+        db_pool: Arc<DbConnectionPool>,
         #[future] study_fixture_set: StudyFixtureSet,
         #[future] empty_infra: TestFixture<Infra>,
     ) {

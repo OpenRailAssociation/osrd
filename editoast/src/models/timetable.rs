@@ -1,6 +1,3 @@
-use std::collections::HashMap;
-
-use actix_web::web::Data;
 use derivative::Derivative;
 use diesel::prelude::*;
 use diesel::result::Error as DieselError;
@@ -9,6 +6,8 @@ use editoast_derive::Model;
 use futures::future::try_join_all;
 use serde::Deserialize;
 use serde::Serialize;
+use std::collections::HashMap;
+use std::sync::Arc;
 use utoipa::ToSchema;
 
 use super::train_schedule::TrainScheduleValidation;
@@ -80,7 +79,7 @@ impl Timetable {
     /// some information about the simulation result
     pub async fn with_detailed_train_schedules(
         self,
-        db_pool: Data<DbConnectionPool>,
+        db_pool: Arc<DbConnectionPool>,
     ) -> Result<TimetableWithSchedulesDetails> {
         use crate::tables::infra::dsl as infra_dsl;
         use crate::tables::scenario::dsl as scenario_dsl;
@@ -162,13 +161,13 @@ impl Timetable {
     /// Retrieves the associated train schedules
     pub async fn get_train_schedules(
         &self,
-        db_pool: Data<DbConnectionPool>,
+        db_pool: Arc<DbConnectionPool>,
     ) -> Result<Vec<TrainSchedule>> {
         get_timetable_train_schedules(self.id.unwrap(), db_pool).await
     }
 
     /// Get infra_version from timetable
-    pub async fn infra_version_from_timetable(&self, db_pool: Data<DbConnectionPool>) -> String {
+    pub async fn infra_version_from_timetable(&self, db_pool: Arc<DbConnectionPool>) -> String {
         use crate::tables::infra::dsl as infra_dsl;
         use crate::tables::scenario::dsl as scenario_dsl;
         let timetable_id = self.id.unwrap();
@@ -198,7 +197,7 @@ impl Timetable {
     }
 
     /// Retrieve the associated scenario
-    pub async fn get_scenario(&self, db_pool: Data<DbConnectionPool>) -> Result<Scenario> {
+    pub async fn get_scenario(&self, db_pool: Arc<DbConnectionPool>) -> Result<Scenario> {
         let mut conn = db_pool.get().await.unwrap();
         self.get_scenario_conn(&mut conn).await
     }
@@ -206,7 +205,7 @@ impl Timetable {
 
 pub async fn get_timetable_train_schedules(
     timetable_id: i64,
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Arc<DbConnectionPool>,
 ) -> Result<Vec<TrainSchedule>> {
     use crate::tables::train_schedule;
     let mut conn = db_pool.get().await?;
@@ -219,7 +218,7 @@ pub async fn get_timetable_train_schedules(
 
 pub async fn get_timetable_train_schedules_with_simulations(
     timetable_id: i64,
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Arc<DbConnectionPool>,
 ) -> Result<Vec<(TrainSchedule, SimulationOutput)>> {
     let train_schedules = get_timetable_train_schedules(timetable_id, db_pool.clone()).await?;
 

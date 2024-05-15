@@ -185,6 +185,7 @@ async fn post_railjson(
     }
     let railjson = railjson.into_inner();
 
+    let db_pool = db_pool.into_inner();
     let mut infra = Infra::changeset()
         .name(params.name.clone())
         .last_railjson_version()
@@ -212,6 +213,7 @@ mod tests {
     use actix_web::test::call_service;
     use actix_web::test::read_body_json;
     use rstest::*;
+    use std::sync::Arc;
 
     use super::*;
     use crate::fixtures::tests::db_pool;
@@ -243,7 +245,7 @@ mod tests {
 
     #[rstest]
     #[serial_test::serial]
-    async fn test_post_railjson(db_pool: Data<DbConnectionPool>) {
+    async fn test_post_railjson(db_pool: Arc<DbConnectionPool>) {
         let app = create_test_service().await;
 
         let railjson = RailJson {

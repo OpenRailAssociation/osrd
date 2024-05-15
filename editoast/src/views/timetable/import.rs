@@ -1,5 +1,6 @@
 use std::cmp::Ordering;
 use std::collections::HashMap;
+use std::sync::Arc;
 
 use actix_web::post;
 use actix_web::web::Data;
@@ -206,6 +207,7 @@ pub async fn post_timetable(
             .await?;
 
     // Check infra is loaded
+    let db_pool = db_pool.into_inner();
     let mut infra_state =
         call_core_infra_state(Some(infra_id), db_pool.clone(), core_client.clone()).await?;
     let infra_status = infra_state
@@ -249,7 +251,7 @@ macro_rules! time_execution {
 async fn import_item(
     infra_id: i64,
     infra_version: &str,
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Arc<DbConnectionPool>,
     import_item: TimetableImportItem,
     timetable_id: i64,
     core_client: &CoreClient,

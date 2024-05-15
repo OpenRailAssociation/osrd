@@ -1,4 +1,5 @@
-use actix_web::web::Data;
+use std::sync::Arc;
+
 use diesel::ExpressionMethods;
 use diesel::QueryDsl;
 use diesel_async::RunQueryDsl;
@@ -91,7 +92,7 @@ pub async fn create_simulation_report(
     projection: &Projection,
     projection_path_payload: &PathfindingPayload,
     simulation_output_cs: SimulationOutputChangeset,
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Arc<DbConnectionPool>,
     core: &CoreClient,
 ) -> error::Result<SimulationReport> {
     let train_path = Pathfinding::retrieve(db_pool.clone(), train_schedule.path_id)
@@ -99,7 +100,7 @@ pub async fn create_simulation_report(
         .expect("Train Schedule should have a path");
     let train_path_payload = train_path.payload;
     use crate::modelsv2::Retrieve;
-    let mut db_conn = db_pool.get().await?;
+    let mut db_conn = db_pool.clone().get().await?;
     let rolling_stock = RollingStockModel::retrieve(&mut db_conn, train_schedule.rolling_stock_id)
         .await?
         .expect("Train Schedule should have a rolling stock");
@@ -162,7 +163,7 @@ pub async fn create_simulation_report(
 
 pub async fn fetch_simulation_output(
     train_schedule: &TrainSchedule,
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Arc<DbConnectionPool>,
 ) -> error::Result<SimulationOutput> {
     use crate::tables::simulation_output::dsl::*;
     let ts_id = train_schedule.id.unwrap();
@@ -191,7 +192,7 @@ async fn project_simulation_results(
     departure_time: f64,
     train_length: f64,
     core: &CoreClient,
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Arc<DbConnectionPool>,
 ) -> error::Result<ReportTrain> {
     let arrival_time = simulation_result
         .head_positions
@@ -243,7 +244,7 @@ async fn add_stops_additional_information(
     stops: Vec<ResultStops>,
     infra_id: i64,
     path_waypoints: Vec<PathWaypoint>,
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Arc<DbConnectionPool>,
 ) -> error::Result<Vec<FullResultStops>> {
     let mut conn = db_pool.get().await?;
     let track_sections_map = make_track_map(

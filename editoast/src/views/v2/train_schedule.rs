@@ -666,6 +666,7 @@ mod tests {
     use actix_web::test::TestRequest;
     use rstest::rstest;
     use serde_json::json;
+    use std::sync::Arc;
 
     use super::*;
     use crate::fixtures::tests::db_pool;
@@ -685,7 +686,7 @@ mod tests {
     #[rstest]
     async fn get_trainschedule(
         #[future] train_schedule_v2: TrainScheduleV2FixtureSet,
-        db_pool: Data<DbConnectionPool>,
+        db_pool: Arc<DbConnectionPool>,
     ) {
         let service = create_test_service().await;
         let fixture = train_schedule_v2.await;
@@ -713,7 +714,7 @@ mod tests {
     #[rstest]
     async fn get_batch_trainschedule(
         #[future] timetable_v2: TestFixture<Timetable>,
-        db_pool: Data<DbConnectionPool>,
+        db_pool: Arc<DbConnectionPool>,
     ) {
         let service = create_test_service().await;
         let timetable = timetable_v2.await;
@@ -747,7 +748,7 @@ mod tests {
     #[rstest]
     async fn train_schedule_post(
         #[future] timetable_v2: TestFixture<Timetable>,
-        db_pool: Data<DbConnectionPool>,
+        db_pool: Arc<DbConnectionPool>,
     ) {
         let service = create_test_service().await;
 
@@ -823,7 +824,7 @@ mod tests {
     async fn train_schedule_simulation(
         #[future] timetable_v2: TestFixture<Timetable>,
         #[future] small_infra: TestFixture<Infra>,
-        db_pool: Data<DbConnectionPool>,
+        db_pool: Arc<DbConnectionPool>,
     ) {
         let timetable = timetable_v2.await;
         let infra = small_infra.await;
@@ -869,7 +870,7 @@ mod tests {
     async fn train_schedule_simulation_summary(
         #[future] timetable_v2: TestFixture<Timetable>,
         #[future] small_infra: TestFixture<Infra>,
-        db_pool: Data<DbConnectionPool>,
+        db_pool: Arc<DbConnectionPool>,
     ) {
         let timetable = timetable_v2.await;
         let infra = small_infra.await;

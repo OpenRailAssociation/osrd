@@ -192,6 +192,7 @@ async fn refresh(
     };
 
     // Refresh each infras
+    let db_pool = db_pool.into_inner();
     let mut infra_refreshed = vec![];
 
     for mut infra in infras_list {
@@ -225,6 +226,7 @@ async fn list(
         .validate(1000)?
         .warn_page_size(100)
         .unpack();
+    let db_pool = db_pool.into_inner();
     let infras = Infra::list(db_pool.clone(), page, per_page, NoParams).await?;
     let infra_state = call_core_infra_state(None, db_pool, core).await?;
     let infras_with_state: Vec<InfraWithState> = infras
@@ -291,7 +293,7 @@ async fn get(
     let conn = &mut db_pool.get().await?;
     let infra =
         Infra::retrieve_or_fail(conn, infra_id, || InfraApiError::NotFound { infra_id }).await?;
-    let infra_state = call_core_infra_state(Some(infra_id), db_pool, core).await?;
+    let infra_state = call_core_infra_state(Some(infra_id), db_pool.into_inner(), core).await?;
     let state = infra_state
         .get(&infra_id.to_string())
         .unwrap_or(&InfraStateResponse::default())
@@ -326,7 +328,7 @@ async fn clone(
         infra_id: infra_id.into_inner(),
     })
     .await?;
-    let cloned_infra = infra.clone(db_pool.clone(), name).await?;
+    let cloned_infra = infra.clone(db_pool.into_inner(), name).await?;
     Ok(Json(cloned_infra.id))
 }
 
@@ -568,7 +570,7 @@ async fn load(
 /// Builds a Core cache_status request, runs it
 pub async fn call_core_infra_state(
     infra_id: Option<i64>,
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Arc<DbConnectionPool>,
     core: Data<CoreClient>,
 ) -> Result<HashMap<String, InfraStateResponse>> {
     if let Some(infra_id) = infra_id {
@@ -593,7 +595,9 @@ async fn cache_status(
         Either::Right(_) => Default::default(),
     };
     let infra_id = payload.infra;
-    Ok(Json(call_core_infra_state(infra_id, db_pool, core).await?))
+    Ok(Json(
+        call_core_infra_state(infra_id, db_pool.into_inner(), core).await?,
+    ))
 }
 
 #[cfg(test)]
@@ -608,6 +612,7 @@ pub mod tests {
     use diesel_async::RunQueryDsl;
     use rstest::*;
     use serde_json::json;
+    use std::sync::Arc;
     use strum::IntoEnumIterator;
 
     use super::*;
@@ -648,7 +653,7 @@ pub mod tests {
     }
 
     #[rstest]
-    async fn infra_clone_empty(db_pool: Data<DbConnectionPool>) {
+    async fn infra_clone_empty(db_pool: Arc<DbConnectionPool>) {
         let conn = &mut db_pool.get().await.unwrap();
         let infra = empty_infra(db_pool.clone()).await;
         let app = create_test_service().await;
@@ -672,7 +677,7 @@ pub mod tests {
     }
 
     #[rstest] // Slow test
-    async fn infra_clone(db_pool: Data<DbConnectionPool>) {
+    async fn infra_clone(db_pool: Arc<DbConnectionPool>) {
         let app = create_test_service().await;
         let small_infra = small_infra(db_pool.clone()).await;
         let small_infra_id = small_infra.id;
@@ -777,7 +782,7 @@ pub mod tests {
     }
 
     #[rstest]
-    async fn default_infra_create(db_pool: Data<DbConnectionPool>) {
+    async fn default_infra_create(db_pool: Arc<DbConnectionPool>) {
         let app = create_test_service().await;
         let req = TestRequest::post()
             .uri("/infra")
@@ -796,7 +801,7 @@ pub mod tests {
     }
 
     #[rstest]
-    async fn infra_get(#[future] empty_infra: TestFixture<Infra>, db_pool: Data<DbConnectionPool>) {
+    async fn infra_get(#[future] empty_infra: TestFixture<Infra>, db_pool: Arc<DbConnectionPool>) {
         let empty_infra = empty_infra.await;
         let mut core = MockingClient::new();
         core.stub("/cache_status")

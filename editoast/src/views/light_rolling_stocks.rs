@@ -54,7 +54,7 @@ async fn list(
     page_settings: Query<PaginationQueryParam>,
 ) -> Result<Json<PaginatedResponse<LightRollingStockWithLiveries>>> {
     let (page, per_page) = page_settings.validate(1000)?.warn_page_size(100).unpack();
-    let result = LightRollingStockModel::list(db_pool, page, per_page).await?;
+    let result = LightRollingStockModel::list(db_pool.into_inner(), page, per_page).await?;
 
     let results: Vec<LightRollingStockWithLiveries> =
         result.results.into_iter().map(|l| l.into()).collect();
@@ -90,8 +90,10 @@ async fn get(
         }
     })
     .await?;
-    let rollig_stock_with_liveries: LightRollingStockWithLiveries =
-        rolling_stock.with_liveries(db_pool).await?.into();
+    let rollig_stock_with_liveries: LightRollingStockWithLiveries = rolling_stock
+        .with_liveries(db_pool.into_inner())
+        .await?
+        .into();
     Ok(Json(rollig_stock_with_liveries))
 }
 
@@ -117,8 +119,10 @@ async fn get_by_name(
             }
         })
         .await?;
-    let rollig_stock_with_liveries: LightRollingStockWithLiveries =
-        rolling_stock.with_liveries(db_pool).await?.into();
+    let rollig_stock_with_liveries: LightRollingStockWithLiveries = rolling_stock
+        .with_liveries(db_pool.into_inner())
+        .await?
+        .into();
     Ok(Json(rollig_stock_with_liveries))
 }
 
@@ -130,8 +134,8 @@ mod tests {
     use actix_web::test as actix_test;
     use actix_web::test::call_service;
     use actix_web::test::TestRequest;
-    use actix_web::web::Data;
     use rstest::*;
+    use std::sync::Arc;
 
     use super::LightRollingStockWithLiveries;
     use crate::assert_response_error_type_match;
@@ -153,7 +157,7 @@ mod tests {
     }
 
     #[rstest]
-    async fn get_light_rolling_stock(db_pool: Data<DbConnectionPool>) {
+    async fn get_light_rolling_stock(db_pool: Arc<DbConnectionPool>) {
         // GIVEN
         let app = create_test_service().await;
         let rolling_stock = named_fast_rolling_stock(
@@ -174,7 +178,7 @@ mod tests {
     }
 
     #[rstest]
-    async fn get_light_rolling_stock_by_name(db_pool: Data<DbConnectionPool>) {
+    async fn get_light_rolling_stock_by_name(db_pool: Arc<DbConnectionPool>) {
         // GIVEN
         let app = create_test_service().await;
         let rolling_stock = named_fast_rolling_stock(
@@ -215,7 +219,7 @@ mod tests {
     }
 
     #[rstest]
-    async fn list_light_rolling_stock_increasing_ids(db_pool: Data<DbConnectionPool>) {
+    async fn list_light_rolling_stock_increasing_ids(db_pool: Arc<DbConnectionPool>) {
         // Generate some rolling stocks
         let vec_fixtures = (0..10)
             .map(|x| {

@@ -1,4 +1,3 @@
-use actix_web::web::Data;
 use async_trait::async_trait;
 use chrono::NaiveDateTime;
 use chrono::Utc;
@@ -9,6 +8,7 @@ use diesel_async::RunQueryDsl;
 use editoast_derive::ModelV2;
 use serde::Deserialize;
 use serde::Serialize;
+use std::sync::Arc;
 use utoipa::ToSchema;
 
 use crate::error::Result;
@@ -103,7 +103,7 @@ impl Project {
         Ok(())
     }
 
-    pub async fn studies_count(&self, db_pool: Data<DbConnectionPool>) -> Result<i64> {
+    pub async fn studies_count(&self, db_pool: Arc<DbConnectionPool>) -> Result<i64> {
         use crate::tables::study::dsl as study_dsl;
         let conn = &mut db_pool.get().await?;
         let studies_count = study_dsl::study
@@ -186,8 +186,8 @@ impl List<Ordering> for Project {
 
 #[cfg(test)]
 pub mod test {
-    use actix_web::web::Data;
     use rstest::rstest;
+    use std::sync::Arc;
 
     use super::*;
     use crate::fixtures::tests::db_pool;
@@ -202,7 +202,7 @@ pub mod test {
     #[rstest]
     async fn create_delete_project(
         #[future] project: TestFixture<Project>,
-        db_pool: Data<DbConnectionPool>,
+        db_pool: Arc<DbConnectionPool>,
     ) {
         let project = project.await;
         let conn = &mut db_pool.get().await.unwrap();
@@ -213,7 +213,7 @@ pub mod test {
     }
 
     #[rstest]
-    async fn get_project(#[future] project: TestFixture<Project>, db_pool: Data<DbConnectionPool>) {
+    async fn get_project(#[future] project: TestFixture<Project>, db_pool: Arc<DbConnectionPool>) {
         let fixture_project = &project.await.model;
         let conn = &mut db_pool.get().await.unwrap();
 
@@ -231,10 +231,7 @@ pub mod test {
     }
 
     #[rstest]
-    async fn sort_project(
-        #[future] project: TestFixture<Project>,
-        db_pool: Data<DbConnectionPool>,
-    ) {
+    async fn sort_project(#[future] project: TestFixture<Project>, db_pool: Arc<DbConnectionPool>) {
         let project = project.await;
         let project_2 = project
             .model
@@ -259,7 +256,7 @@ pub mod test {
     #[rstest]
     async fn update_project(
         #[future] project: TestFixture<Project>,
-        db_pool: Data<DbConnectionPool>,
+        db_pool: Arc<DbConnectionPool>,
     ) {
         let project_fixture = project.await;
         let conn = &mut db_pool.get().await.unwrap();

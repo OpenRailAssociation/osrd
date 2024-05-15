@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 
-use actix_web::web::Data;
 use derivative::Derivative;
 use diesel::result::Error as DieselError;
 use diesel::ExpressionMethods;
@@ -11,6 +10,7 @@ use editoast_schemas::train_schedule::Allowance;
 use editoast_schemas::train_schedule::RjsPowerRestrictionRange;
 use serde::Deserialize;
 use serde::Serialize;
+use std::sync::Arc;
 use utoipa::ToSchema;
 
 use super::check_train_validity;
@@ -477,7 +477,7 @@ pub struct ScheduledPoint {
 }
 
 pub async fn filter_invalid_trains(
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Arc<DbConnectionPool>,
     schedules: Vec<TrainSchedule>,
     infra_version: String,
 ) -> Result<(Vec<TrainSchedule>, Vec<i64>)> {

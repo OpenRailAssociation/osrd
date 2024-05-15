@@ -4,11 +4,11 @@ mod text_array;
 mod timetable;
 pub mod train_schedule;
 
-use actix_web::web::Data;
 use async_trait::async_trait;
 pub use scenario::Scenario;
 pub use scenario::ScenarioWithCountTrains;
 pub use scenario::ScenarioWithDetails;
+use std::sync::Arc;
 pub use text_array::TextArray;
 pub use timetable::check_train_validity;
 pub use timetable::Timetable;
@@ -84,7 +84,7 @@ pub trait Create: Sized + 'static {
     /// let created_obj = obj.create(db_pool).await?;
     /// let obj_id = created_obj.id.unwrap();
     /// ```
-    async fn create(self, db_pool: Data<DbConnectionPool>) -> Result<Self> {
+    async fn create(self, db_pool: Arc<DbConnectionPool>) -> Result<Self> {
         let mut conn = db_pool.get().await?;
         Self::create_conn(self, &mut conn).await
     }
@@ -108,7 +108,7 @@ pub trait Delete {
     /// ```
     /// assert!(Model::delete(db_pool, 42).await?);
     /// ```
-    async fn delete(db_pool: Data<DbConnectionPool>, id: i64) -> Result<bool> {
+    async fn delete(db_pool: Arc<DbConnectionPool>, id: i64) -> Result<bool> {
         let mut conn = db_pool.get().await?;
         Self::delete_conn(&mut conn, id).await
     }
@@ -134,7 +134,7 @@ pub trait Retrieve: Sized + 'static {
     ///     // do something with obj
     /// }
     /// ```
-    async fn retrieve(db_pool: Data<DbConnectionPool>, id: i64) -> Result<Option<Self>> {
+    async fn retrieve(db_pool: Arc<DbConnectionPool>, id: i64) -> Result<Option<Self>> {
         let mut conn = db_pool.get().await?;
         Self::retrieve_conn(&mut conn, id).await
     }
@@ -185,7 +185,7 @@ pub trait List<T: Send + 'static>: Sized + 'static {
     /// let new_obj = patch_model.update(db_pool).await?.expect("Object not found");
     /// ```
     async fn list(
-        db_pool: Data<DbConnectionPool>,
+        db_pool: Arc<DbConnectionPool>,
         page: i64,
         page_size: i64,
         params: T,

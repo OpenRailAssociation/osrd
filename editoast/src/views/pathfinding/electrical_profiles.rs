@@ -99,6 +99,7 @@ async fn electrical_profiles_on_path(
     request: Query<ProfilesOnPathQuery>,
     db_pool: Data<DbConnectionPool>,
 ) -> Result<Json<ProfilesOnPathResponse>> {
+    let db_pool = db_pool.into_inner();
     let pathfinding_id = params.pathfinding_id;
     let pathfinding = match Pathfinding::retrieve(db_pool.clone(), pathfinding_id).await? {
         Some(pf) => pf,
@@ -143,6 +144,7 @@ mod tests {
     use actix_web::test::TestRequest;
     use editoast_common::range_map;
     use rstest::*;
+    use std::sync::Arc;
 
     use super::*;
     use crate::fixtures::tests::db_pool;
@@ -158,7 +160,7 @@ mod tests {
 
     #[fixture]
     async fn electrical_profile_set(
-        db_pool: Data<DbConnectionPool>,
+        db_pool: Arc<DbConnectionPool>,
     ) -> TestFixture<ElectricalProfileSet> {
         let ep_data = ElectricalProfileSetData {
             levels: vec![
@@ -253,7 +255,7 @@ mod tests {
     #[rstest]
     #[serial_test::serial]
     async fn test_view_electrical_profiles_on_path(
-        db_pool: Data<DbConnectionPool>,
+        db_pool: Arc<DbConnectionPool>,
         #[future] empty_infra: TestFixture<Infra>,
         #[future] electrical_profile_set: TestFixture<ElectricalProfileSet>,
     ) {
