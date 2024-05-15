@@ -14,7 +14,7 @@ use thiserror::Error;
 use utoipa::ToSchema;
 
 use crate::error::Result;
-use crate::modelsv2::DbConnectionPool;
+use crate::modelsv2::DbConnectionPoolV2;
 use crate::modelsv2::*;
 
 crate::routes! {
@@ -49,7 +49,7 @@ pub enum DocumentErrors {
     )
 )]
 #[get("/{document_key}")]
-async fn get(db_pool: Data<DbConnectionPool>, document_key: Path<i64>) -> Result<HttpResponse> {
+async fn get(db_pool: Data<DbConnectionPoolV2>, document_key: Path<i64>) -> Result<HttpResponse> {
     let document_key = document_key.into_inner();
     let conn = &mut db_pool.get().await?;
     let doc = Document::retrieve_or_fail(conn, document_key, || DocumentErrors::NotFound {
@@ -79,7 +79,7 @@ struct NewDocumentResponse {
 )]
 #[post("")]
 async fn post(
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Data<DbConnectionPoolV2>,
     content_type: Header<ContentType>,
     bytes: Bytes,
 ) -> Result<HttpResponse> {
@@ -112,7 +112,10 @@ async fn post(
     )
 )]
 #[delete("/{document_key}")]
-async fn delete(db_pool: Data<DbConnectionPool>, document_key: Path<i64>) -> Result<HttpResponse> {
+async fn delete(
+    db_pool: Data<DbConnectionPoolV2>,
+    document_key: Path<i64>,
+) -> Result<HttpResponse> {
     let document_key = document_key.into_inner();
     let conn = &mut db_pool.get().await?;
     Document::delete_static_or_fail(conn, document_key, || DocumentErrors::NotFound {
@@ -124,47 +127,17 @@ async fn delete(db_pool: Data<DbConnectionPool>, document_key: Path<i64>) -> Res
 
 #[cfg(test)]
 mod tests {
+    use actix_web::test::call_and_read_body;
     use actix_web::test::call_and_read_body_json;
     use actix_web::test::call_service;
     use actix_web::test::TestRequest;
     use rstest::rstest;
     use serde::Deserialize;
-    use std::sync::Arc;
+    use std::ops::DerefMut;
 
     use super::*;
-    use crate::fixtures::tests::db_pool;
-    use crate::fixtures::tests::document_example;
-    use crate::fixtures::tests::TestFixture;
-    use crate::views::tests::create_test_service;
-
-    #[rstest]
-    async fn get_document(
-        #[future] document_example: TestFixture<Document>,
-        db_pool: Arc<DbConnectionPool>,
-    ) {
-        let service = create_test_service().await;
-        let doc = document_example.await;
-
-        let doc_key = doc.id();
-        let url = format!("/documents/{}", doc_key);
-
-        // Should succeed
-        let request = TestRequest::get().uri(&url).to_request();
-        let response = call_service(&service, request).await;
-        assert!(response.status().is_success());
-
-        // Delete the document
-        assert!(doc
-            .model
-            .delete(&mut db_pool.get().await.unwrap())
-            .await
-            .unwrap());
-
-        // Should fail
-        let request = TestRequest::get().uri(&url).to_request();
-        let response = call_service(&service, request).await;
-        assert!(response.status().is_client_error());
-    }
+    use crate::views::tests::create_shared_test_pool;
+    use crate::views::tests::TestApp;
 
     #[derive(Deserialize, Clone, Debug)]
     struct PostDocumentResponse {
@@ -172,32 +145,77 @@ mod tests {
     }
 
     #[rstest]
-    async fn document_post(db_pool: Arc<DbConnectionPool>) {
-        let service = create_test_service().await;
+    async fn document_post() {
+        let pool = create_shared_test_pool().await;
+        let service = TestApp::default().pool(pool.clone()).build().await;
 
-        // Insert document
         let request = TestRequest::post()
             .uri("/documents")
             .insert_header(ContentType::plaintext())
-            .set_payload("Test data".as_bytes().to_vec())
+            .set_payload("Document post test data".as_bytes().to_vec())
             .to_request();
-        let response: PostDocumentResponse = call_and_read_body_json(&service, request).await;
 
-        // Delete the document
-        assert!(
-            Document::delete_static(&mut db_pool.get().await.unwrap(), response.document_key)
-                .await
-                .unwrap()
-        );
+        // Insert document
+        let create_response: PostDocumentResponse =
+            call_and_read_body_json(&service, request).await;
+
+        // Get create document
+        let document = Document::retrieve(pool.get_ok().deref_mut(), create_response.document_key)
+            .await
+            .expect("Failed to retrieve document")
+            .expect("Document not found");
+
+        assert_eq!(document.data, b"Document post test data".to_vec());
     }
 
     #[rstest]
-    async fn document_delete(#[future] document_example: TestFixture<Document>) {
-        let document_example = document_example.await;
-        let service = create_test_service().await;
-        let request = TestRequest::delete()
-            .uri(format!("/documents/{}", document_example.id()).as_str())
+    async fn get_document() {
+        let pool = create_shared_test_pool().await;
+        let service = TestApp::default().pool(pool.clone()).build().await;
+
+        // Insert document test
+        let document = Document::changeset()
+            .data(b"Document post test data".to_vec())
+            .content_type(String::from("text/plain"))
+            .create(pool.get_ok().deref_mut())
+            .await
+            .expect("Failed to create document");
+
+        // Get document test
+        let request = TestRequest::get()
+            .uri(&format!("/documents/{}", document.id))
             .to_request();
-        assert!(call_service(&service, request).await.status().is_success());
+        let response = call_and_read_body(&service, request).await;
+
+        assert_eq!(response.to_vec(), b"Document post test data".to_vec());
+    }
+
+    #[rstest]
+    async fn document_delete() {
+        let pool = create_shared_test_pool().await;
+        let service = TestApp::default().pool(pool.clone()).build().await;
+
+        // Insert document test
+        let document = Document::changeset()
+            .data(b"Document post test data".to_vec())
+            .content_type(String::from("text/plain"))
+            .create(pool.get_ok().deref_mut())
+            .await
+            .expect("Failed to create document");
+
+        // Delete document request
+        let request = TestRequest::delete()
+            .uri(format!("/documents/{}", document.id).as_str())
+            .to_request();
+        let response = call_service(&service, request).await;
+
+        assert!(response.status().is_success());
+
+        // Get create document
+        let document = Document::exists(pool.get_ok().deref_mut(), document.id)
+            .await
+            .expect("Failed to retrieve document");
+
+        assert!(!document);
     }
 }

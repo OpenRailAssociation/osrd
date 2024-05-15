@@ -17,6 +17,7 @@ mod views;
 use crate::core::CoreClient;
 use crate::error::InternalError;
 use crate::modelsv2::DbConnectionPool;
+use crate::modelsv2::DbConnectionPoolV2;
 use crate::modelsv2::Infra;
 use crate::views::OpenApiRoot;
 use actix_cors::Cors;
@@ -26,6 +27,7 @@ use actix_web::web::{scope, Data, JsonConfig, PayloadConfig};
 use actix_web::{App, HttpServer};
 use chashmap::CHashMap;
 use clap::Parser;
+use client::PostgresConfig;
 use client::{
     ClearArgs, Client, Color, Commands, DeleteProfileSetArgs, ElectricalProfilesCommands,
     ExportTimetableArgs, GenerateArgs, ImportProfileSetArgs, ImportRailjsonArgs,
@@ -191,7 +193,7 @@ async fn run() -> Result<(), Box<dyn Error + Send + Sync>> {
     }
 
     match client.command {
-        Commands::Runserver(args) => runserver(args, create_db_pool()?, redis_config).await,
+        Commands::Runserver(args) => runserver(args, pg_config, redis_config).await,
         Commands::ImportRollingStock(args) => {
             import_rolling_stock(args, create_db_pool()?.into_inner()).await
         }
@@ -376,12 +378,15 @@ fn log_received_request(req: &ServiceRequest) {
 /// Create and run the server
 async fn runserver(
     args: RunserverArgs,
-    db_pool: Data<DbConnectionPool>,
+    postgres_config: PostgresConfig,
     redis_config: RedisConfig,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
     info!("Building server...");
     // Config database
     let redis = RedisClient::new(redis_config)?;
+
+    // Create database pool
+    let db_pool = create_connection_pool(postgres_config.url()?, postgres_config.pool_size);
 
     // Custom Json extractor configuration
     let json_cfg = JsonConfig::default()
@@ -437,7 +442,10 @@ async fn runserver(
             .wrap(Logger::new(actix_logger_format).log_target("actix_logger"))
             .app_data(json_cfg.clone())
             .app_data(payload_config.clone())
-            .app_data(db_pool.clone())
+            .app_data(Data::new(db_pool.clone()))
+            .app_data(Data::new(DbConnectionPoolV2::try_from_pool(
+                db_pool.clone(),
+            )))
             .app_data(Data::new(redis.clone()))
             .app_data(infra_caches.clone())
             .app_data(Data::new(MapLayers::parse()))

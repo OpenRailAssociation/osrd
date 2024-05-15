@@ -379,8 +379,6 @@ mod tests {
     use actix_web::App;
     use actix_web::Error;
     use chashmap::CHashMap;
-    use diesel_async::pooled_connection::deadpool::Pool;
-    use diesel_async::pooled_connection::AsyncDieselConnectionManager as ConnectionManager;
 
     use super::routes;
     use super::OpenApiRoot;
@@ -392,8 +390,97 @@ mod tests {
     use crate::error::InternalError;
     use crate::infra_cache::InfraCache;
     use crate::map::MapLayers;
-    use crate::modelsv2::DbConnection;
+    use crate::modelsv2::connection_pool::create_shared_connection_pool_for_tests;
+    use crate::modelsv2::connection_pool::DbConnectionPoolV2;
     use crate::RedisClient;
+
+    pub struct TestApp {
+        default: bool,
+        db_connection_pool: Option<DbConnectionPoolV2>,
+        core_client: Option<CoreClient>,
+    }
+
+    impl TestApp {
+        /// - Create a new TestApp with no default services
+        /// - Use ::default if you want to use the default services
+        #[allow(dead_code)]
+        pub fn new() -> Self {
+            Self {
+                default: false,
+                db_connection_pool: None,
+                core_client: None,
+            }
+        }
+
+        #[allow(dead_code)]
+        pub fn core_client(mut self, client: impl Into<CoreClient>) -> Self {
+            self.core_client = Some(client.into());
+            self
+        }
+
+        pub fn pool(mut self, pool: DbConnectionPoolV2) -> Self {
+            self.db_connection_pool = Some(pool);
+            self
+        }
+
+        pub async fn build(
+            self,
+        ) -> impl Service<Request, Response = ServiceResponse<BoxBody>, Error = Error> {
+            let json_cfg = JsonConfig::default()
+                .limit(250 * 1024 * 1024) // 250MB
+                .error_handler(|err, _| InternalError::from(err).into());
+
+            let redis = RedisClient::new(RedisConfig::default()).expect("cannot get redis client");
+
+            let app = App::new()
+                .wrap(NormalizePath::trim())
+                .app_data(json_cfg)
+                .app_data(Data::new(redis))
+                .app_data(Data::new(CHashMap::<i64, InfraCache>::default()))
+                .app_data(Data::new(MapLayers::parse()))
+                .app_data(Data::new(MapLayersConfig::default()));
+
+            let app = if let Some(db_connection_pool) = self.db_connection_pool {
+                app.app_data(Data::new(db_connection_pool.pool_v1()))
+                    .app_data(Data::new(db_connection_pool))
+            } else if self.default {
+                let pg_config_url = PostgresConfig::default()
+                    .url()
+                    .expect("cannot get postgres config url");
+                let db_connection_pool =
+                    futures::executor::block_on(DbConnectionPoolV2::try_initialize(pg_config_url))
+                        .expect("cannot create test pool");
+
+                app.app_data(Data::new(db_connection_pool.pool_v1()))
+                    .app_data(Data::new(db_connection_pool))
+            } else {
+                panic!("No database connection pool provided");
+            };
+
+            let app = if let Some(core_client) = self.core_client {
+                app.app_data(Data::new(core_client))
+            } else if self.default {
+                app.app_data(Data::new(CoreClient::default()))
+            } else {
+                panic!("No core client provided")
+            };
+
+            let app = app.service(routes());
+
+            init_service(app).await
+        }
+    }
+
+    impl Default for TestApp {
+        /// Create a new TestApp with default services
+        fn default() -> Self {
+            Self {
+                default: true,
+                db_connection_pool: None,
+                core_client: None,
+            }
+        }
+    }
 
     /// Asserts the status code of a simulated response and deserializes its body,
     /// with a nice failure message should the something fail
@@ -445,6 +532,16 @@ mod tests {
         }};
     }
 
+    /// This is a helper function to create a test connection pool, is need to be created for each test
+    pub async fn create_shared_test_pool() -> DbConnectionPoolV2 {
+        let pg_config_url = PostgresConfig::default()
+            .url()
+            .expect("cannot get postgres config url");
+        DbConnectionPoolV2::try_initialize(pg_config_url)
+            .await
+            .expect("cannot create test pool")
+    }
+
     /// Creates a test client with 1 pg connection and a given [CoreClient]
     pub async fn create_test_service_with_core_client<C: Into<CoreClient>>(
         core: C,
@@ -452,10 +549,8 @@ mod tests {
         let pg_config_url = PostgresConfig::default()
             .url()
             .expect("cannot get postgres config url");
-        let manager = ConnectionManager::<DbConnection>::new(pg_config_url.as_str());
-        let pool = Pool::builder(manager)
-            .build()
-            .expect("Failed to create pool.");
+        let pool = create_shared_connection_pool_for_tests(pg_config_url);
+
         let redis = RedisClient::new(RedisConfig::default()).expect("cannot get redis client");
 
         // Custom Json extractor configuration

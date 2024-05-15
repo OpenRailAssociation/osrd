@@ -22,6 +22,7 @@ pub use prelude::*;
 
 pub use connection_pool::DbConnection;
 pub use connection_pool::DbConnectionPool;
+pub use connection_pool::DbConnectionPoolV2;
 pub use documents::Document;
 pub use electrical_profiles::ElectricalProfileSet;
 pub use infra::Infra;

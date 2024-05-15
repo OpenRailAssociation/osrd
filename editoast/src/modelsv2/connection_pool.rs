@@ -1,4 +1,5 @@
-use diesel::{ConnectionError, ConnectionResult};
+use diesel::ConnectionError;
+use diesel::ConnectionResult;
 use diesel_async::pooled_connection::deadpool::Pool;
 use diesel_async::pooled_connection::AsyncDieselConnectionManager;
 use diesel_async::pooled_connection::ManagerConfig;
@@ -8,6 +9,11 @@ use futures_util::FutureExt;
 use openssl::ssl::{SslConnector, SslMethod, SslVerifyMode};
 use tracing::error;
 use url::Url;
+
+mod db_connection_error;
+pub use db_connection_error::DbConnectionError;
+mod db_connection_pool;
+pub use db_connection_pool::DbConnectionPoolV2;
 
 pub type DbConnection = AsyncPgConnection;
 pub type DbConnectionPool = Pool<DbConnection>;
@@ -21,6 +27,14 @@ pub fn create_connection_pool(url: Url, max_size: usize) -> DbConnectionPool {
         .max_size(max_size)
         .build()
         .expect("Failed to create pool.")
+}
+
+#[cfg(test)]
+pub fn create_shared_connection_pool_for_tests(url: Url) -> DbConnectionPool {
+    let config = DbConnectionConfig::new(url);
+    DbConnectionPool::builder(config)
+        .build()
+        .expect("Failed to create pool for tests.")
 }
 
 fn establish_connection(config: &str) -> BoxFuture<ConnectionResult<DbConnection>> {

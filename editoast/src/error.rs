@@ -15,6 +15,8 @@ use tracing::error;
 use utoipa::ToSchema;
 use validator::{ValidationErrors, ValidationErrorsKind};
 
+use crate::modelsv2::connection_pool::DbConnectionError;
+
 editoast_common::schemas! {
     InternalError,
 }
@@ -123,6 +125,16 @@ impl EditoastError for DieselError {
 
     fn get_type(&self) -> &str {
         "editoast:DieselError"
+    }
+}
+
+impl EditoastError for DbConnectionError {
+    fn get_status(&self) -> StatusCode {
+        StatusCode::INTERNAL_SERVER_ERROR
+    }
+
+    fn get_type(&self) -> &str {
+        "editoast:ConnectionPoolError"
     }
 }
 
