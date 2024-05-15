@@ -784,7 +784,9 @@ pub mod tests {
         let fast_rolling_stock = named_fast_rolling_stock(name, db_pool.clone()).await;
         let app = create_test_service().await;
         let mut rolling_stock_form = get_fast_rolling_stock_form(name);
-        rolling_stock_form.name = fast_rolling_stock.model.name.clone();
+        rolling_stock_form
+            .name
+            .clone_from(&fast_rolling_stock.model.name);
 
         // WHEN
         let post_response = call_service(

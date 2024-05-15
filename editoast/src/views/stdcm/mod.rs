@@ -397,7 +397,6 @@ mod tests {
         assert_eq!(stdcm_response.simulation, simulation);
     }
 
-    ///
     #[rstest::rstest]
     async fn stdcm_should_fail_if_infra_doesnt_exist(#[future] timetable: TestFixture<Timetable>) {
         // GIVEN
