@@ -198,11 +198,11 @@ async fn standalone_simulation(
 
 #[cfg(test)]
 mod tests {
+    use actix_http::StatusCode;
     use actix_web::test::call_service;
     use actix_web::test::TestRequest;
     use pretty_assertions::assert_eq;
     use reqwest::Method;
-    use reqwest::StatusCode;
     use rstest::rstest;
     use serde_json::json;
 

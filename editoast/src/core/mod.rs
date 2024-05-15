@@ -91,7 +91,7 @@ impl CoreClient {
         if let Ok(mut core_error) = <Json<StandardCoreError>>::from_bytes(bytes) {
             core_error.context.insert("url".to_owned(), url.into());
             let mut internal_error: InternalError = core_error.into();
-            internal_error.set_status(status);
+            internal_error.set_status(StatusCode::from_u16(status.as_u16()).unwrap());
             return internal_error;
         }
 
@@ -155,9 +155,11 @@ impl CoreClient {
                 match client.fetch_mocked::<_, B, R>(method, path, body) {
                     Ok(Some(response)) => Ok(response),
                     Ok(None) => Err(CoreError::NoResponseContent.into()),
-                    Err(MockingError { bytes, status, url }) => {
-                        Err(self.handle_error(&bytes, status, url))
-                    }
+                    Err(MockingError { bytes, status, url }) => Err(self.handle_error(
+                        &bytes,
+                        reqwest::StatusCode::from_u16(status.as_u16()).unwrap(),
+                        url,
+                    )),
                 }
             }
         }
