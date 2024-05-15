@@ -8869,7 +8869,6 @@ openapi: 3.0.2
 paths:
   /documents/:
     post:
-      description: Post a new document (content_type by header + binary data)
       parameters:
       - description: The document's content type
         in: header
@@ -8896,7 +8895,6 @@ paths:
       - documents
   /documents/{document_key}/:
     delete:
-      description: Delete an existing document
       parameters:
       - description: The document's key
         in: path
@@ -8918,7 +8916,6 @@ paths:
       tags:
       - documents
     get:
-      description: Returns a document of any type
       parameters:
       - description: The document's key
         in: path
@@ -8946,7 +8943,6 @@ paths:
       - documents
   /electrical_profile_set/:
     get:
-      description: Retrieve the list of ids and names of electrical profile sets available
       responses:
         '200':
           content:
@@ -8960,7 +8956,6 @@ paths:
       tags:
       - electrical_profiles
     post:
-      description: import a new electrical profile set
       parameters:
       - in: query
         name: name
@@ -8985,7 +8980,6 @@ paths:
       - electrical_profiles
   /electrical_profile_set/{electrical_profile_set_id}/:
     delete:
-      description: Delete an electrical profile set
       parameters:
       - in: path
         name: electrical_profile_set_id
@@ -9006,7 +9000,6 @@ paths:
       tags:
       - electrical_profiles
     get:
-      description: Return a specific set of electrical profiles
       parameters:
       - in: path
         name: electrical_profile_set_id
@@ -9032,7 +9025,6 @@ paths:
       - electrical_profiles
   /electrical_profile_set/{electrical_profile_set_id}/level_order/:
     get:
-      description: Return the electrical profile value order for this set
       parameters:
       - in: path
         name: electrical_profile_set_id
@@ -9139,7 +9131,6 @@ paths:
       - infra
   /infra/railjson/:
     post:
-      description: Import an infra from railjson
       parameters:
       - description: The name of the infrastructure.
         in: query
@@ -9208,7 +9199,6 @@ paths:
       - infra
   /infra/voltages/:
     get:
-      description: Returns the set of voltages for all infras and rolling_stocks modes.
       responses:
         '200':
           content:
@@ -9482,7 +9472,6 @@ paths:
       - infra
   /infra/{infra_id}/attached/{track_id}/:
     get:
-      description: Retrieve all objects attached to a given track
       parameters:
       - description: An infra ID
         in: path
@@ -9513,7 +9502,6 @@ paths:
       - infra
   /infra/{infra_id}/auto_fixes/:
     get:
-      description: Retrieve a list of operations to fix infra issues
       parameters:
       - description: An existing infra ID
         in: path
@@ -9536,7 +9524,6 @@ paths:
       - infra
   /infra/{infra_id}/lines/{line_code}/bbox/:
     get:
-      description: Returns the BBoxes (geo and schematic) of a line
       parameters:
       - description: An existing infra ID
         in: path
@@ -9564,7 +9551,6 @@ paths:
       - infra
   /infra/{infra_id}/lock/:
     post:
-      description: Lock an infra
       parameters:
       - description: An existing infra ID
         in: path
@@ -9583,7 +9569,6 @@ paths:
       - infra
   /infra/{infra_id}/pathfinding/:
     post:
-      description: This endpoint search path between starting and ending track locations
       parameters:
       - description: An existing infra ID
         in: path
@@ -9621,7 +9606,6 @@ paths:
       - pathfinding
   /infra/{infra_id}/railjson/:
     get:
-      description: Serialize an infra
       parameters:
       - description: An existing infra ID
         in: path
@@ -9644,7 +9628,6 @@ paths:
       - infra
   /infra/{infra_id}/routes/nodes/:
     post:
-      description: Returns the list of routes crossing the specified nodes, along with the available positions for each of them.
       parameters:
       - description: An existing infra ID
         in: path
@@ -9693,7 +9676,6 @@ paths:
       - routes
   /infra/{infra_id}/routes/track_ranges/:
     get:
-      description: Compute the track ranges through which routes passes.
       parameters:
       - description: An existing infra ID
         in: path
@@ -9752,7 +9734,6 @@ paths:
       - routes
   /infra/{infra_id}/routes/{waypoint_type}/{waypoint_id}/:
     get:
-      description: Retrieve all routes that starting and ending by the given waypoint (detector or buffer stop)
       parameters:
       - description: Infra ID
         in: path
@@ -9801,7 +9782,6 @@ paths:
       - routes
   /infra/{infra_id}/speed_limit_tags/:
     get:
-      description: Returns the set of speed limit tags for a given infra
       parameters:
       - description: An existing infra ID
         in: path
@@ -9829,7 +9809,6 @@ paths:
       - infra
   /infra/{infra_id}/switch_types/:
     get:
-      description: Return the railjson list of switch types
       parameters:
       - description: An existing infra ID
         in: path
@@ -9854,7 +9833,6 @@ paths:
       - infra
   /infra/{infra_id}/unlock/:
     post:
-      description: Unlock an infra
       parameters:
       - description: An existing infra ID
         in: path
@@ -9873,9 +9851,7 @@ paths:
       - infra
   /infra/{infra_id}/voltages/:
     get:
-      description: |-
-        Returns the set of voltages for a given infra and/or rolling_stocks modes.
-        If include_rolling_stocks_modes is true, it returns also rolling_stocks modes.
+      description: If include_rolling_stocks_modes is true, it returns also rolling_stocks modes.
       parameters:
       - description: An existing infra ID
         in: path
@@ -9909,7 +9885,6 @@ paths:
       - infra
   /layers/layer/{layer_slug}/mvt/{view_slug}/:
     get:
-      description: Returns layer view metadata to query tiles
       parameters:
       - in: query
         name: infra
@@ -9978,7 +9953,6 @@ paths:
       - layers
   /layers/tile/{layer_slug}/{view_slug}/{z}/{x}/{y}/:
     get:
-      description: Mvt tile from the cache if possible, otherwise gets data from the database and caches it in redis
       parameters:
       - in: query
         name: infra
@@ -10030,7 +10004,6 @@ paths:
       - layers
   /light_rolling_stock/:
     get:
-      description: Paginated list of rolling stock with a lighter response
       parameters:
       - in: query
         name: page
@@ -10061,7 +10034,6 @@ paths:
       - rolling_stock
   /light_rolling_stock/name/{rolling_stock_name}/:
     get:
-      description: Retrieve a rolling stock's light representation by its name
       parameters:
       - in: path
         name: rolling_stock_name
@@ -10080,7 +10052,6 @@ paths:
       - rolling_stock
   /light_rolling_stock/{rolling_stock_id}/:
     get:
-      description: Retrieve a rolling stock's light representation by its id
       parameters:
       - in: path
         name: rolling_stock_id
@@ -10100,7 +10071,6 @@ paths:
       - rolling_stock
   /pathfinding/:
     post:
-      description: Run a pathfinding between waypoints and store the resulting path in the DB
       requestBody:
         content:
           application/json:
@@ -10119,7 +10089,6 @@ paths:
       - pathfinding
   /pathfinding/{pathfinding_id}/:
     delete:
-      description: Deletes a stored path
       parameters:
       - description: A stored path ID
         in: path
@@ -10135,7 +10104,6 @@ paths:
       tags:
       - pathfinding
     get:
-      description: Retrieves a stored path
       parameters:
       - description: A stored path ID
         in: path
@@ -10155,7 +10123,6 @@ paths:
       tags:
       - pathfinding
     put:
-      description: Updates an existing path with the result of a new pathfinding run
       parameters:
       - description: A stored path ID
         in: path
@@ -10182,7 +10149,6 @@ paths:
       - pathfinding
   /pathfinding/{pathfinding_id}/electrical_profiles/:
     get:
-      description: Retrieve the electrical profiles along a path, as seen by the rolling stock specified
       parameters:
       - description: A stored path ID
         in: path
@@ -10215,7 +10181,6 @@ paths:
       - electrical_profiles
   /pathfinding/{pathfinding_id}/electrifications/:
     get:
-      description: Retrieve the electrification modes along a path, as seen by the rolling stock specified
       parameters:
       - description: A stored path ID
         in: path
@@ -10236,7 +10201,6 @@ paths:
       - infra
   /projects/:
     get:
-      description: Returns a paginated list of projects
       parameters:
       - in: query
         name: page
@@ -10271,7 +10235,6 @@ paths:
       tags:
       - projects
     post:
-      description: Create a new project
       requestBody:
         content:
           application/json:
@@ -10290,7 +10253,6 @@ paths:
       - projects
   /projects/{project_id}/:
     delete:
-      description: Delete a project
       parameters:
       - description: The id of a project
         in: path
@@ -10312,7 +10274,6 @@ paths:
       tags:
       - projects
     get:
-      description: Retrieve a project
       parameters:
       - description: The id of a project
         in: path
@@ -10338,7 +10299,6 @@ paths:
       tags:
       - projects
     patch:
-      description: Update a project
       parameters:
       - description: The id of a project
         in: path
@@ -10372,7 +10332,6 @@ paths:
       - projects
   /projects/{project_id}/studies/:
     get:
-      description: Return a list of studies
       parameters:
       - description: The id of a project
         in: path
@@ -10439,7 +10398,6 @@ paths:
       - studies
   /projects/{project_id}/studies/{study_id}/:
     delete:
-      description: Delete a study
       parameters:
       - description: The id of a project
         in: path
@@ -10467,7 +10425,6 @@ paths:
       tags:
       - studies
     get:
-      description: Return a specific study
       parameters:
       - description: The id of a project
         in: path
@@ -10499,7 +10456,6 @@ paths:
       tags:
       - studies
     patch:
-      description: Update a study
       parameters:
       - description: The id of a project
         in: path
@@ -10539,7 +10495,6 @@ paths:
       - studies
   /projects/{project_id}/studies/{study_id}/scenarios/:
     get:
-      description: Return a list of scenarios
       parameters:
       - description: The id of a project
         in: path
@@ -10587,7 +10542,6 @@ paths:
       tags:
       - scenarios
     post:
-      description: Create a scenario
       parameters:
       - description: The id of a project
         in: path
@@ -10620,7 +10574,6 @@ paths:
       - scenarios
   /projects/{project_id}/studies/{study_id}/scenarios/{scenario_id}/:
     delete:
-      description: Delete a scenario
       parameters:
       - description: The id of a project
         in: path
@@ -10654,7 +10607,6 @@ paths:
       tags:
       - scenarios
     get:
-      description: Return a specific scenario
       parameters:
       - description: The id of a project
         in: path
@@ -10692,7 +10644,6 @@ paths:
       tags:
       - scenarios
     patch:
-      description: Update a scenario
       parameters:
       - description: The id of a project
         in: path
@@ -10737,7 +10688,6 @@ paths:
       - scenarios
   /rolling_stock/:
     post:
-      description: Create a rolling stock
       parameters:
       - in: query
         name: locked
@@ -10762,7 +10712,6 @@ paths:
       - rolling_stock
   /rolling_stock/name/{rolling_stock_name}/:
     get:
-      description: Get a rolling stock by name
       parameters:
       - in: path
         name: rolling_stock_name
@@ -10781,7 +10730,6 @@ paths:
       - rolling_stock
   /rolling_stock/power_restrictions/:
     get:
-      description: Returns the set of power restrictions for all rolling_stocks modes.
       responses:
         '200':
           content:
@@ -10796,7 +10744,6 @@ paths:
       - rolling_stock
   /rolling_stock/{rolling_stock_id}/:
     delete:
-      description: Delete a rolling_stock and all entities linked to it
       parameters:
       - in: path
         name: rolling_stock_id
@@ -10825,7 +10772,6 @@ paths:
       tags:
       - rolling_stock
     get:
-      description: Get a rolling stock by Id
       parameters:
       - in: path
         name: rolling_stock_id
@@ -10844,7 +10790,6 @@ paths:
       tags:
       - rolling_stock
     patch:
-      description: Patch a rolling stock
       parameters:
       - in: path
         name: rolling_stock_id
@@ -10870,7 +10815,6 @@ paths:
       - rolling_stock
   /rolling_stock/{rolling_stock_id}/livery/:
     post:
-      description: Create a rolling stock livery
       parameters:
       - in: path
         name: rolling_stock_id
@@ -10899,7 +10843,6 @@ paths:
       - rolling_stock_livery
   /rolling_stock/{rolling_stock_id}/locked/:
     patch:
-      description: Update rolling_stock locked field
       parameters:
       - in: path
         name: rolling_stock_id
@@ -10926,8 +10869,6 @@ paths:
   /search/:
     post:
       description: |-
-        Returns all infra objects of some type according to a hierarchical query.
-
         # Payload
 
         {
@@ -11005,7 +10946,6 @@ paths:
       - search
   /single_simulation/:
     post:
-      description: Runs a simulation with a single train, does not write anything to the database
       requestBody:
         content:
           application/json:
@@ -11022,7 +10962,6 @@ paths:
       summary: Runs a simulation with a single train, does not write anything to the database
   /sprites/signaling_systems/:
     get:
-      description: This endpoint returns the list of supported signaling systems
       responses:
         '200':
           content:
@@ -11040,7 +10979,6 @@ paths:
       - sprites
   /sprites/{signaling_system}/{file_name}/:
     get:
-      description: This endpoint is used by map libre to retrieve the atlas of each signaling system
       parameters:
       - description: Signaling system name
         in: path
@@ -11064,7 +11002,6 @@ paths:
       - sprites
   /stdcm/:
     post:
-      description: Compute a STDCM and return the simulation result
       requestBody:
         content:
           application/json:
@@ -11160,7 +11097,6 @@ paths:
       - stdcm
   /timetable/{id}/:
     get:
-      description: Return a specific timetable with its associated schedules
       parameters:
       - description: Timetable id
         in: path
@@ -11183,9 +11119,7 @@ paths:
       tags:
       - timetable
     post:
-      description: |-
-        Import a timetable
-        Returns data about the import for each train imported
+      description: Returns data about the import for each train imported
       parameters:
       - description: Timetable id
         in: path
@@ -11218,9 +11152,7 @@ paths:
       - timetable
   /timetable/{id}/conflicts/:
     get:
-      description: |-
-        Compute spacing conflicts for a given timetable
-        TODO: This should compute itinary conflicts too
+      description: 'TODO: This should compute itinary conflicts too'
       parameters:
       - description: Timetable id
         in: path
@@ -11244,7 +11176,6 @@ paths:
       - timetable
   /train_schedule/:
     delete:
-      description: Delete multiple train schedules at once
       requestBody:
         content:
           application/json:
@@ -11267,7 +11198,6 @@ paths:
       - train_schedule
       - timetable
     patch:
-      description: Update multiple train schedules at once and re-run simulations accordingly
       requestBody:
         content:
           application/json:
@@ -11285,7 +11215,6 @@ paths:
       - timetable
   /train_schedule/results/:
     post:
-      description: Retrieve the simulation result of multiple train schedules
       requestBody:
         content:
           application/json:
@@ -11318,7 +11247,6 @@ paths:
       - train_schedule
   /train_schedule/standalone_simulation/:
     post:
-      description: Create a batch of train schedule and run simulations accordingly
       requestBody:
         content:
           application/json:
@@ -11357,7 +11285,6 @@ paths:
       - train_schedule
   /train_schedule/{id}/:
     delete:
-      description: Delete a train schedule and its result
       parameters:
       - description: A train schedule ID
         in: path
@@ -11374,7 +11301,6 @@ paths:
       - train_schedule
       - timetable
     get:
-      description: Return a specific timetable with its associated schedules
       parameters:
       - description: A train schedule ID
         in: path
@@ -11395,7 +11321,6 @@ paths:
       - train_schedule
   /train_schedule/{id}/result/:
     get:
-      description: Retrieve a simulation result
       parameters:
       - in: query
         name: path_id
@@ -11423,7 +11348,6 @@ paths:
       - train_schedule
   /v2/infra/{infra_id}/path_properties/:
     post:
-      description: Compute path properties
       parameters:
       - description: The infra id
         in: path
@@ -11458,7 +11382,6 @@ paths:
       - pathfindingv2
   /v2/infra/{infra_id}/pathfinding/blocks/:
     post:
-      description: Compute a pathfinding
       parameters:
       - description: The infra id
         in: path
@@ -11485,7 +11408,6 @@ paths:
       - pathfindingv2
   /v2/projects/{project_id}/studies/{study_id}/scenarios/:
     get:
-      description: Return a list of scenarios
       parameters:
       - description: The id of a project
         in: path
@@ -11533,7 +11455,6 @@ paths:
       tags:
       - scenariosv2
     post:
-      description: Create a scenario
       parameters:
       - description: The id of a project
         in: path
@@ -11566,7 +11487,6 @@ paths:
       - scenariosv2
   /v2/projects/{project_id}/studies/{study_id}/scenarios/{scenario_id}/:
     delete:
-      description: Delete a scenario
       parameters:
       - description: The id of a project
         in: path
@@ -11600,7 +11520,6 @@ paths:
       tags:
       - scenariosv2
     get:
-      description: Return a specific scenario
       parameters:
       - description: The id of a project
         in: path
@@ -11638,7 +11557,6 @@ paths:
       tags:
       - scenariosv2
     patch:
-      description: Update a scenario
       parameters:
       - description: The id of a project
         in: path
@@ -11683,7 +11601,6 @@ paths:
       - scenariosv2
   /v2/timetable/:
     get:
-      description: Retrieve paginated timetables
       parameters:
       - in: query
         name: page
@@ -11713,7 +11630,6 @@ paths:
       tags:
       - timetablev2
     post:
-      description: Create a timetable
       requestBody:
         content:
           application/json:
@@ -11734,7 +11650,6 @@ paths:
       - timetablev2
   /v2/timetable/{id}/:
     delete:
-      description: Delete a timetable
       parameters:
       - description: A timetable ID
         in: path
@@ -11752,7 +11667,6 @@ paths:
       tags:
       - timetablev2
     get:
-      description: Return a specific timetable with its associated schedules
       parameters:
       - description: A timetable ID
         in: path
@@ -11774,7 +11688,6 @@ paths:
       tags:
       - timetablev2
     put:
-      description: Update a specific timetable
       parameters:
       - description: A timetable ID
         in: path
@@ -11804,7 +11717,6 @@ paths:
       - timetablev2
   /v2/timetable/{id}/conflicts/:
     get:
-      description: Retrieve the list of conflict of the timetable (invalid trains are ignored)
       parameters:
       - description: A timetable ID
         in: path
@@ -11833,7 +11745,6 @@ paths:
       - timetablev2
   /v2/timetable/{id}/train_schedule/:
     post:
-      description: Create train schedule by batch
       parameters:
       - description: A timetable ID
         in: path
@@ -11865,7 +11776,6 @@ paths:
       - train_schedulev2
   /v2/train_schedule/:
     delete:
-      description: Delete a train schedule and its result
       requestBody:
         content:
           application/json:
@@ -11889,7 +11799,6 @@ paths:
       - timetablev2
       - train_schedulev2
     get:
-      description: Return a specific train schedule
       parameters:
       - description: Ids of train schedule
         in: query
@@ -11915,8 +11824,6 @@ paths:
   /v2/train_schedule/project_path/:
     post:
       description: |-
-        Projects the space time curves and paths of a number of train schedules onto a given path
-
         - Returns 404 if the infra or any of the train schedules are not found
         - Returns 200 with a hashmap of train_id to ProjectPathTrainResult
 
@@ -11959,9 +11866,7 @@ paths:
       - train_schedulev2
   /v2/train_schedule/simulation_summary/:
     get:
-      description: |-
-        Associate each train id with its simulation summary response
-        If the simulation fails, it associates the reason: pathfinding failed or running time failed
+      description: 'If the simulation fails, it associates the reason: pathfinding failed or running time failed'
       parameters:
       - description: The infra id
         in: query
@@ -11993,7 +11898,6 @@ paths:
       - train_schedulev2
   /v2/train_schedule/{id}/:
     get:
-      description: Return a specific train schedule
       parameters:
       - description: A train schedule ID
         in: path
@@ -12013,7 +11917,6 @@ paths:
       tags:
       - train_schedulev2
     put:
-      description: Update  train schedule at once
       parameters:
       - description: A train schedule ID
         in: path
@@ -12041,7 +11944,6 @@ paths:
       - timetablev2
   /v2/train_schedule/{id}/path/:
     get:
-      description: Get a path from a trainschedule given an infrastructure id and a train schedule id
       parameters:
       - description: A train schedule ID
         in: path
@@ -12071,7 +11973,6 @@ paths:
       - pathfindingv2
   /v2/train_schedule/{id}/simulation/:
     get:
-      description: Retrieve the space, speed and time curve of a given train
       parameters:
       - description: A train schedule ID
         in: path

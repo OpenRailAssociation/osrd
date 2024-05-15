@@ -68,8 +68,7 @@ pub trait GeneratedData {
         infra_cache: &InfraCache,
     ) -> Result<()> {
         let mut conn = pool.get().await?;
-        Self::clear(&mut conn, infra).await?;
-        Self::generate(&mut conn, infra, infra_cache).await
+        Self::refresh(&mut conn, infra, infra_cache).await
     }
 
     /// Search and update all objects that needs to be refreshed given a list of operation.

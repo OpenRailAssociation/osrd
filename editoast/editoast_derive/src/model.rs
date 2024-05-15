@@ -204,20 +204,6 @@ fn update_functions(config: &Config) -> TokenStream {
     let table = &config.table;
 
     let model_name = &config.model_name;
-    let documentation = format!(
-        r#"
-        Update a `{model_name}` given its ID (primary key).
-        Returns None if not found.
-
-        ### Example
-
-        ```
-        let obj_patch: {model_name} = ...;
-        let obj: {model_name} = obj_patch.update(db_pool, 42).await?;
-        ```
-        "#
-    );
-
     quote! {
         #[async_trait::async_trait]
         impl crate::models::Update for #model_name {
@@ -230,12 +216,6 @@ fn update_functions(config: &Config) -> TokenStream {
                     Err(DieselError::NotFound) => Ok(None),
                     Err(e) => Err(e.into()),
                 }
-            }
-
-            #[doc = #documentation]
-            async fn update(self, db_pool: actix_web::web::Data<crate::modelsv2::DbConnectionPool>, id: i64) -> crate::error::Result<Option<Self>> {
-                let mut conn = db_pool.get().await?;
-                self.update_conn(&mut conn, id).await
             }
         }
     }

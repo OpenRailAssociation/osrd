@@ -146,10 +146,6 @@ pub trait Retrieve: Sized + 'static {
 /// You can implement it manually if you want to customize the behavior.
 #[async_trait]
 pub trait Update: Sized + 'static {
-    /// Same as [update](Self::update) but takes a single postgres connection.
-    /// Useful when you are in a transaction.
-    async fn update_conn(self, conn: &mut DbConnection, id: i64) -> Result<Option<Self>>;
-
     /// Update an object given its ID (primary key).
     /// Return 'None' if not found.
     ///
@@ -157,12 +153,9 @@ pub trait Update: Sized + 'static {
     ///
     /// ```
     /// let patch_model = ...;
-    /// let new_obj = patch_model.update(db_pool).await?.expect("Object not found");
+    /// let new_obj = patch_model.update_conn(&mut conn, obj_id).await?.expect("Object not found");
     /// ```
-    async fn update(self, db_pool: Data<DbConnectionPool>, id: i64) -> Result<Option<Self>> {
-        let mut conn = db_pool.get().await?;
-        self.update_conn(&mut conn, id).await
-    }
+    async fn update_conn(self, conn: &mut DbConnection, id: i64) -> Result<Option<Self>>;
 }
 
 /// Use this struct for list when there are no generic parameters
