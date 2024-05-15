@@ -31,7 +31,7 @@ use diesel::QueryableByName;
 /// You can implement this type manually but its recommended to use the `Model`
 /// derive macro instead.
 // FIXME: that Clone requirement is not necessary, see problematic line below
-pub trait Model: Clone + Sized + Send {
+pub trait Model: std::fmt::Debug + Clone + Sized + Send {
     type Row: QueryableByName<Pg> + Into<Self> + Send;
     type Changeset: AsChangeset + Default + From<Self> + Send;
     type Table: diesel::Table + Send;
