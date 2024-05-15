@@ -1,28 +1,33 @@
 use crate::client::RedisConfig;
 use crate::error::Result;
+use futures::future;
+use futures::FutureExt;
 use redis::aio::{ConnectionLike, ConnectionManager};
 use redis::cluster::ClusterClient;
 use redis::cluster_async::ClusterConnection;
+use redis::AsyncCommands;
+use redis::Client;
+use redis::ErrorKind;
+use redis::Expiry;
+use redis::RedisError;
+use redis::RedisFuture;
 use redis::RedisResult;
-use redis::{AsyncCommands, RedisError};
-use redis::{Client, ToRedisArgs};
-use redis::{ErrorKind, Expiry};
+use redis::ToRedisArgs;
 use serde::de::DeserializeOwned;
 use serde::Serialize;
 
 pub enum RedisConnection {
     Cluster(ClusterConnection),
     Tokio(ConnectionManager),
+    NoCache,
 }
 
 impl ConnectionLike for RedisConnection {
-    fn req_packed_command<'a>(
-        &'a mut self,
-        cmd: &'a redis::Cmd,
-    ) -> redis::RedisFuture<'a, redis::Value> {
+    fn req_packed_command<'a>(&'a mut self, cmd: &'a redis::Cmd) -> RedisFuture<'a, redis::Value> {
         match self {
             RedisConnection::Cluster(connection) => connection.req_packed_command(cmd),
             RedisConnection::Tokio(connection) => connection.req_packed_command(cmd),
+            RedisConnection::NoCache => future::ok(redis::Value::Nil).boxed(),
         }
     }
 
@@ -31,7 +36,7 @@ impl ConnectionLike for RedisConnection {
         cmd: &'a redis::Pipeline,
         offset: usize,
         count: usize,
-    ) -> redis::RedisFuture<'a, Vec<redis::Value>> {
+    ) -> RedisFuture<'a, Vec<redis::Value>> {
         match self {
             RedisConnection::Cluster(connection) => {
                 connection.req_packed_commands(cmd, offset, count)
@@ -39,6 +44,7 @@ impl ConnectionLike for RedisConnection {
             RedisConnection::Tokio(connection) => {
                 connection.req_packed_commands(cmd, offset, count)
             }
+            RedisConnection::NoCache => future::ok(vec![]).boxed(),
         }
     }
 
@@ -46,6 +52,7 @@ impl ConnectionLike for RedisConnection {
         match self {
             RedisConnection::Cluster(connection) => connection.get_db(),
             RedisConnection::Tokio(connection) => connection.get_db(),
+            RedisConnection::NoCache => 0,
         }
     }
 }
@@ -112,10 +119,15 @@ impl RedisConnection {
 pub enum RedisClient {
     Cluster(ClusterClient),
     Tokio(Client),
+    /// This doesn't cache anything. It has no backend.
+    NoCache,
 }
 
 impl RedisClient {
     pub fn new(redis_config: RedisConfig) -> Result<RedisClient> {
+        if redis_config.no_cache {
+            return Ok(RedisClient::NoCache);
+        }
         let redis_config_url = redis_config.url()?;
         if redis_config.is_cluster_client {
             return Ok(RedisClient::Cluster(
@@ -135,6 +147,7 @@ impl RedisClient {
             RedisClient::Tokio(client) => Ok(RedisConnection::Tokio(
                 client.get_connection_manager().await?,
             )),
+            RedisClient::NoCache => Ok(RedisConnection::NoCache),
         }
     }
 }

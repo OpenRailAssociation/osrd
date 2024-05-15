@@ -9,6 +9,10 @@ use crate::error::Result;
 #[derive(Args, Debug, Derivative, Clone)]
 #[derivative(Default)]
 pub struct RedisConfig {
+    /// Disable cache. This should not be used in production.
+    #[derivative(Default(value = "false"))]
+    #[clap(long, env, default_value_t = false)]
+    pub no_cache: bool,
     #[derivative(Default(value = "false"))]
     #[clap(long, env, default_value_t = false)]
     pub is_cluster_client: bool,
