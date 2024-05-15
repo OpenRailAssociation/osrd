@@ -250,7 +250,7 @@ impl Identifiable for Pathfinding {
 
 #[cfg(test)]
 pub mod tests {
-    use actix_web::web::Data;
+    use std::sync::Arc;
 
     use super::*;
     use crate::fixtures::tests::TestFixture;
@@ -310,7 +310,7 @@ pub mod tests {
 
     pub async fn simple_pathfinding_fixture(
         infra_id: i64,
-        db_pool: Data<DbConnectionPool>,
+        db_pool: Arc<DbConnectionPool>,
     ) -> TestFixture<Pathfinding> {
         let pathfinding = simple_pathfinding(infra_id);
         let mut changeset = PathfindingChangeset::from(pathfinding);

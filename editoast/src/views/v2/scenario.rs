@@ -229,6 +229,7 @@ async fn delete(
     } = path.into_inner();
     let mut tx = db_pool.get().await?;
 
+    let db_pool = db_pool.into_inner();
     tx.transaction::<_, InternalError, _>(|conn| {
         async {
             // Check if the project and the study exist
@@ -367,6 +368,7 @@ async fn get(
         scenario_id,
     } = path.into_inner();
 
+    let db_pool = db_pool.into_inner();
     let (project, study) = check_project_study(db_pool.clone(), project_id, study_id).await?;
     let conn = &mut db_pool.get().await?;
     // Return the scenarios
@@ -412,10 +414,11 @@ async fn list(
         .unpack();
     let (project_id, study_id) = path.into_inner();
 
+    let db_pool = db_pool.into_inner();
     let _ = check_project_study(db_pool.clone(), project_id, study_id).await?;
     let ordering = params.ordering.clone();
     let scenarios =
-        ScenarioWithDetails::list(db_pool.clone(), page, per_page, (study_id, ordering)).await?;
+        ScenarioWithDetails::list(db_pool, page, per_page, (study_id, ordering)).await?;
     Ok(Json(scenarios))
 }
 
@@ -427,6 +430,7 @@ mod tests {
     use actix_web::test::TestRequest;
     use rstest::rstest;
     use serde_json::json;
+    use std::sync::Arc;
 
     use super::*;
     use crate::fixtures::tests::db_pool;
@@ -511,7 +515,7 @@ mod tests {
     async fn post_scenario(
         #[future] scenario_v2_fixture_set: ScenarioV2FixtureSet,
         #[future] timetable_v2: TestFixture<TimetableV2>,
-        db_pool: Data<DbConnectionPool>,
+        db_pool: Arc<DbConnectionPool>,
     ) {
         let service = create_test_service().await;
         let fixtures = scenario_v2_fixture_set.await;

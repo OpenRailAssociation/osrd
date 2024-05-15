@@ -384,6 +384,7 @@ mod tests {
     use actix_web::test::TestRequest;
     use rstest::rstest;
     use serde_json::json;
+    use std::sync::Arc;
 
     use super::*;
     use crate::fixtures::tests::db_pool;
@@ -395,7 +396,7 @@ mod tests {
     #[rstest]
     async fn get_timetable(
         #[future] timetable_v2: TestFixture<Timetable>,
-        db_pool: Data<DbConnectionPool>,
+        db_pool: Arc<DbConnectionPool>,
     ) {
         let service = create_test_service().await;
         let timetable = timetable_v2.await;
@@ -421,7 +422,7 @@ mod tests {
     }
 
     #[rstest]
-    async fn timetable_post(db_pool: Data<DbConnectionPool>) {
+    async fn timetable_post(db_pool: Arc<DbConnectionPool>) {
         let service = create_test_service().await;
 
         // Insert timetable

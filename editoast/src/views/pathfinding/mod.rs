@@ -558,7 +558,7 @@ async fn get_pf(
     db_pool: Data<DbConnectionPool>,
 ) -> Result<Json<PathResponse>> {
     let pathfinding_id = params.pathfinding_id;
-    match Pathfinding::retrieve(db_pool, pathfinding_id).await? {
+    match Pathfinding::retrieve(db_pool.into_inner(), pathfinding_id).await? {
         Some(pf) => Ok(Json(pf.into())),
         None => Err(PathfindingError::NotFound { pathfinding_id }.into()),
     }
@@ -578,7 +578,7 @@ async fn del_pf(
     db_pool: Data<DbConnectionPool>,
 ) -> Result<impl Responder> {
     let pathfinding_id = params.pathfinding_id;
-    if Pathfinding::delete(db_pool, pathfinding_id).await? {
+    if Pathfinding::delete(db_pool.into_inner(), pathfinding_id).await? {
         Ok(HttpResponse::NoContent())
     } else {
         Err(PathfindingError::NotFound { pathfinding_id }.into())

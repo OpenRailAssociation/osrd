@@ -187,6 +187,7 @@ async fn list(
         .warn_page_size(100)
         .unpack();
     let ordering = params.ordering.clone();
+    let db_pool = db_pool.into_inner();
     let projects = Project::list(db_pool.clone(), page, per_page, ordering).await?;
     let mut results = Vec::new();
     for project in projects.results.into_iter() {
@@ -229,7 +230,7 @@ async fn get(
     let project =
         Project::retrieve_or_fail(conn, project_id, || ProjectError::NotFound { project_id })
             .await?;
-    let studies_count = project.studies_count(db_pool).await?;
+    let studies_count = project.studies_count(db_pool.into_inner()).await?;
     Ok(Json(ProjectWithStudies::new_from_project(
         project,
         studies_count,
@@ -314,7 +315,7 @@ async fn patch(
     let project_changeset: Changeset<Project> = data.into();
     let conn = &mut db_pool.get().await?;
     let project = Project::update_and_prune_document(conn, project_changeset, project_id).await?;
-    let studies_count = project.studies_count(db_pool).await?;
+    let studies_count = project.studies_count(db_pool.into_inner()).await?;
     Ok(Json(ProjectWithStudies::new_from_project(
         project,
         studies_count,
@@ -331,6 +332,7 @@ pub mod test {
     use actix_web::test::TestRequest;
     use rstest::rstest;
     use serde_json::json;
+    use std::sync::Arc;
 
     use super::*;
     use crate::fixtures::tests::db_pool;
@@ -346,7 +348,7 @@ pub mod test {
     }
 
     #[rstest]
-    async fn project_create_delete(db_pool: Data<DbConnectionPool>) {
+    async fn project_create_delete(db_pool: Arc<DbConnectionPool>) {
         let app = create_test_service().await;
         let req = TestRequest::post()
             .uri("/projects")

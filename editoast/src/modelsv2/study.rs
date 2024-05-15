@@ -1,4 +1,3 @@
-use actix_web::web::Data;
 use async_trait::async_trait;
 use chrono::NaiveDate;
 use chrono::NaiveDateTime;
@@ -11,6 +10,7 @@ use diesel_async::RunQueryDsl;
 use editoast_derive::ModelV2;
 use serde::Deserialize;
 use serde::Serialize;
+use std::sync::Arc;
 use utoipa::ToSchema;
 
 use crate::error::Result;
@@ -54,7 +54,7 @@ impl Study {
         Ok(())
     }
 
-    pub async fn scenarios_count(&self, db_pool: Data<DbConnectionPool>) -> Result<i64> {
+    pub async fn scenarios_count(&self, db_pool: Arc<DbConnectionPool>) -> Result<i64> {
         use crate::tables::scenario::dsl as scenario_dsl;
         let conn = &mut db_pool.get().await?;
         let scenarios_count = scenario_dsl::scenario
@@ -117,6 +117,7 @@ impl List<(i64, Ordering)> for Study {
 #[cfg(test)]
 pub mod test {
     use rstest::rstest;
+    use std::sync::Arc;
 
     use super::*;
     use crate::fixtures::tests::db_pool;
@@ -132,7 +133,7 @@ pub mod test {
     #[rstest]
     async fn create_delete_study(
         #[future] study_fixture_set: StudyFixtureSet,
-        db_pool: Data<DbConnectionPool>,
+        db_pool: Arc<DbConnectionPool>,
     ) {
         let StudyFixtureSet { study, .. } = study_fixture_set.await;
 
@@ -147,7 +148,7 @@ pub mod test {
     #[rstest]
     async fn get_study(
         #[future] study_fixture_set: StudyFixtureSet,
-        db_pool: Data<DbConnectionPool>,
+        db_pool: Arc<DbConnectionPool>,
     ) {
         let StudyFixtureSet { study, project } = study_fixture_set.await;
 
@@ -167,7 +168,7 @@ pub mod test {
     #[rstest]
     async fn sort_study(
         #[future] study_fixture_set: StudyFixtureSet,
-        db_pool: Data<DbConnectionPool>,
+        db_pool: Arc<DbConnectionPool>,
     ) {
         let StudyFixtureSet { study, project } = study_fixture_set.await;
 

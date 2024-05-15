@@ -141,6 +141,7 @@ pub mod tests {
     use editoast_common::range_map;
     use rstest::*;
     use serde_json::from_value;
+    use std::sync::Arc;
     use ApplicableDirections::*;
 
     use super::*;
@@ -175,7 +176,7 @@ pub mod tests {
 
     #[fixture]
     async fn infra_with_electrifications(
-        db_pool: Data<DbConnectionPool>,
+        db_pool: Arc<DbConnectionPool>,
         #[future] empty_infra: TestFixture<Infra>,
     ) -> TestFixture<Infra> {
         let infra = empty_infra.await;
@@ -218,7 +219,7 @@ pub mod tests {
 
     #[rstest]
     async fn test_map_electrification_modes(
-        db_pool: Data<DbConnectionPool>,
+        db_pool: Arc<DbConnectionPool>,
         #[future] infra_with_electrifications: TestFixture<Infra>,
         simple_mode_map: TrackMap<String>,
     ) {
@@ -240,7 +241,7 @@ pub mod tests {
 
     #[rstest]
     async fn test_map_electrification_modes_with_warnings(
-        db_pool: Data<DbConnectionPool>,
+        db_pool: Arc<DbConnectionPool>,
         #[future] infra_with_electrifications: TestFixture<Infra>,
     ) {
         let mut conn = db_pool.get().await.unwrap();
@@ -300,7 +301,7 @@ pub mod tests {
 
     #[rstest]
     async fn test_view_electrifications_on_path(
-        db_pool: Data<DbConnectionPool>,
+        db_pool: Arc<DbConnectionPool>,
         #[future] infra_with_electrifications: TestFixture<Infra>,
     ) {
         let infra_with_electrifications = infra_with_electrifications.await;

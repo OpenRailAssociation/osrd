@@ -1,6 +1,6 @@
 use std::collections::HashMap;
+use std::sync::Arc;
 
-use actix_web::web::Data;
 use diesel::sql_query;
 use diesel::ExpressionMethods;
 use diesel::QueryDsl;
@@ -68,7 +68,7 @@ pub struct LightRollingStockModel {
 impl LightRollingStockModel {
     pub async fn with_liveries(
         self,
-        db_pool: Data<DbConnectionPool>,
+        db_pool: Arc<DbConnectionPool>,
     ) -> Result<LightRollingStockWithLiveriesModel> {
         use crate::tables::rolling_stock_livery::dsl as livery_dsl;
         let mut conn = db_pool.get().await?;
@@ -85,7 +85,7 @@ impl LightRollingStockModel {
 
     /// List the rolling stocks with their simplified effort curves
     pub async fn list(
-        db_pool: Data<DbConnectionPool>,
+        db_pool: Arc<DbConnectionPool>,
         page: i64,
         per_page: i64,
     ) -> Result<PaginatedResponse<LightRollingStockWithLiveriesModel>> {
@@ -152,8 +152,8 @@ pub struct LightRollingStockWithLiveriesModel {
 
 #[cfg(test)]
 pub mod tests {
-    use actix_web::web::Data;
     use rstest::*;
+    use std::sync::Arc;
 
     use super::LightRollingStockModel;
     use crate::fixtures::tests::db_pool;
@@ -162,7 +162,7 @@ pub mod tests {
     use crate::modelsv2::Retrieve;
 
     #[rstest]
-    async fn get_light_rolling_stock(db_pool: Data<DbConnectionPool>) {
+    async fn get_light_rolling_stock(db_pool: Arc<DbConnectionPool>) {
         // GIVEN
         let rolling_stock = named_fast_rolling_stock(
             "fast_rolling_stock_get_light_rolling_stock",
@@ -179,7 +179,7 @@ pub mod tests {
     }
 
     #[rstest]
-    async fn list_light_rolling_stock(db_pool: Data<DbConnectionPool>) {
+    async fn list_light_rolling_stock(db_pool: Arc<DbConnectionPool>) {
         // GIVEN
         let rolling_stock = named_fast_rolling_stock(
             "fast_rolling_stock_list_light_rolling_stock",

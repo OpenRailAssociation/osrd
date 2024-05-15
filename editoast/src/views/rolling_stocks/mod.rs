@@ -4,6 +4,7 @@ pub mod rolling_stock_form;
 use std::io::BufReader;
 use std::io::Cursor;
 use std::io::Read;
+use std::sync::Arc;
 
 use actix_multipart::form::tempfile::TempFile;
 use actix_multipart::form::text::Text;
@@ -168,7 +169,7 @@ async fn get(
 
     let rolling_stock =
         retrieve_existing_rolling_stock(&db_pool, RollingStockKey::Id(rolling_stock_id)).await?;
-    let rolling_stock_with_liveries = rolling_stock.with_liveries(db_pool).await?;
+    let rolling_stock_with_liveries = rolling_stock.with_liveries(db_pool.into_inner()).await?;
     Ok(Json(rolling_stock_with_liveries))
 }
 
@@ -189,7 +190,7 @@ async fn get_by_name(
     let rolling_stock =
         retrieve_existing_rolling_stock(&db_pool, RollingStockKey::Name(rolling_stock_name))
             .await?;
-    let rolling_stock_with_liveries = rolling_stock.with_liveries(db_pool).await?;
+    let rolling_stock_with_liveries = rolling_stock.with_liveries(db_pool.into_inner()).await?;
     Ok(Json(rolling_stock_with_liveries))
 }
 
@@ -302,7 +303,11 @@ async fn update(
             .map_err(|err| map_diesel_error(err, name))?;
     }
 
-    Ok(Json(new_rolling_stock.with_liveries(db_pool).await?))
+    Ok(Json(
+        new_rolling_stock
+            .with_liveries(db_pool.into_inner())
+            .await?,
+    ))
 }
 
 #[derive(Deserialize, IntoParams, ToSchema)]
@@ -498,7 +503,7 @@ async fn create_livery(
 
 /// Retrieve a rolling stock by id or by name
 pub async fn retrieve_existing_rolling_stock(
-    db_pool: &Data<DbConnectionPool>,
+    db_pool: &Arc<DbConnectionPool>,
     rolling_stock_key: RollingStockKey,
 ) -> Result<RollingStockModel> {
     let mut db_conn = db_pool.get().await?;
@@ -619,9 +624,9 @@ pub mod tests {
     use actix_web::test::call_service;
     use actix_web::test::read_body_json;
     use actix_web::test::TestRequest;
-    use actix_web::web::Data;
     use rstest::rstest;
     use serde_json::json;
+    use std::sync::Arc;
 
     use super::retrieve_existing_rolling_stock;
     use super::RollingStockError;
@@ -643,7 +648,7 @@ pub mod tests {
     use crate::views::tests::create_test_service;
 
     #[rstest]
-    async fn get_returns_corresponding_rolling_stock(db_pool: Data<DbConnectionPool>) {
+    async fn get_returns_corresponding_rolling_stock(db_pool: Arc<DbConnectionPool>) {
         // GIVEN
         let name = "fast_rolling_stock_get_returns_corresponding_rolling_stock";
         let app = create_test_service().await;
@@ -660,7 +665,7 @@ pub mod tests {
     }
 
     #[rstest]
-    async fn get_returns_corresponding_rolling_stock_by_name(db_pool: Data<DbConnectionPool>) {
+    async fn get_returns_corresponding_rolling_stock_by_name(db_pool: Arc<DbConnectionPool>) {
         // GIVEN
         let name = "fast_rolling_stock_get_returns_corresponding_rolling_stock_by_name";
         let app = create_test_service().await;
@@ -738,7 +743,7 @@ pub mod tests {
         assert_eq!(get_response.status(), StatusCode::NOT_FOUND);
     }
 
-    async fn check_create_gave_400(db_pool: Data<DbConnectionPool>, response: ServiceResponse) {
+    async fn check_create_gave_400(db_pool: Arc<DbConnectionPool>, response: ServiceResponse) {
         let mut db_conn = db_pool.get().await.expect("Failed to get db connection");
         if response.status() == StatusCode::OK {
             let rolling_stock: RollingStockModel = read_body_json(response).await;
@@ -755,7 +760,7 @@ pub mod tests {
     }
 
     #[rstest]
-    async fn create_rolling_stock_with_base_power_class_empty(db_pool: Data<DbConnectionPool>) {
+    async fn create_rolling_stock_with_base_power_class_empty(db_pool: Arc<DbConnectionPool>) {
         // GIVEN
         let app = create_test_service().await;
         let mut rolling_stock_form = get_fast_rolling_stock_form(
@@ -778,7 +783,7 @@ pub mod tests {
     }
 
     #[rstest]
-    async fn create_rolling_stock_with_duplicate_name(db_pool: Data<DbConnectionPool>) {
+    async fn create_rolling_stock_with_duplicate_name(db_pool: Arc<DbConnectionPool>) {
         // GIVEN
         let name = "fast_rolling_stock_create_rolling_stock_with_duplicate_name";
         let fast_rolling_stock = named_fast_rolling_stock(name, db_pool.clone()).await;
@@ -803,7 +808,7 @@ pub mod tests {
     }
 
     #[rstest]
-    async fn update_and_delete_locked_rolling_stock_fails(db_pool: Data<DbConnectionPool>) {
+    async fn update_and_delete_locked_rolling_stock_fails(db_pool: Arc<DbConnectionPool>) {
         let mut db_conn = db_pool.get().await.expect("Failed to get db connection");
         // GIVEN
         let app = create_test_service().await;
@@ -913,7 +918,7 @@ pub mod tests {
     }
 
     #[rstest]
-    async fn update_unlocked_rolling_stock(db_pool: Data<DbConnectionPool>) {
+    async fn update_unlocked_rolling_stock(db_pool: Arc<DbConnectionPool>) {
         // GIVEN
         let app = create_test_service().await;
         let fast_rolling_stock = named_fast_rolling_stock(
@@ -948,7 +953,7 @@ pub mod tests {
     }
 
     #[rstest]
-    async fn update_rolling_stock_failure_name_already_used(db_pool: Data<DbConnectionPool>) {
+    async fn update_rolling_stock_failure_name_already_used(db_pool: Arc<DbConnectionPool>) {
         // GIVEN
         let other_rs_name = "other_rolling_stock_update_rolling_stock_failure_name_already_used";
         let app = create_test_service().await;
@@ -984,7 +989,7 @@ pub mod tests {
     }
 
     #[rstest]
-    async fn update_locked_successfully(db_pool: Data<DbConnectionPool>) {
+    async fn update_locked_successfully(db_pool: Arc<DbConnectionPool>) {
         // GIVEN
         let app = create_test_service().await;
         let rolling_stock_form =
@@ -1095,7 +1100,7 @@ pub mod tests {
     }
 
     #[rstest]
-    async fn get_power_restrictions_list(db_pool: Data<DbConnectionPool>) {
+    async fn get_power_restrictions_list(db_pool: Arc<DbConnectionPool>) {
         // GIVEN
         let app = create_test_service().await;
         let rolling_stock =

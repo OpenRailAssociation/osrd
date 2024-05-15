@@ -165,6 +165,7 @@ async fn standalone_simulation(
     })
     .await?;
 
+    let db_pool = db_pool.into_inner();
     let path_id = request.path_id;
     let pathfinding = Pathfinding::retrieve(db_pool.clone(), path_id).await?;
     let pathfinding = match pathfinding {
@@ -205,6 +206,7 @@ mod tests {
     use reqwest::Method;
     use rstest::rstest;
     use serde_json::json;
+    use std::sync::Arc;
 
     use super::*;
     use crate::assert_response_error_type_match;
@@ -241,7 +243,7 @@ mod tests {
     #[case::invalid_path_id(Some(SingleSimulationError::PathNotFound { path_id: -666 }), "case_3")]
     #[case::invalid_ep_set_id(Some(SingleSimulationError::ElectricalProfileSetNotFound { electrical_profile_set_id: -666 }), "case_4")]
     async fn test_single_simulation(
-        db_pool: Data<DbConnectionPool>,
+        db_pool: Arc<DbConnectionPool>,
         #[case] expected_error: Option<SingleSimulationError>,
         #[case] case_id: &str,
     ) {
@@ -316,7 +318,7 @@ mod tests {
     }
 
     #[rstest]
-    async fn test_single_simulation_bare_minimum_payload(db_pool: Data<DbConnectionPool>) {
+    async fn test_single_simulation_bare_minimum_payload(db_pool: Arc<DbConnectionPool>) {
         // GIVEN
         let (core_client, mock_response) = create_core_client();
         let app = create_test_service_with_core_client(core_client).await;

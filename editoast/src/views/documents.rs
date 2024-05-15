@@ -129,6 +129,7 @@ mod tests {
     use actix_web::test::TestRequest;
     use rstest::rstest;
     use serde::Deserialize;
+    use std::sync::Arc;
 
     use super::*;
     use crate::fixtures::tests::db_pool;
@@ -139,7 +140,7 @@ mod tests {
     #[rstest]
     async fn get_document(
         #[future] document_example: TestFixture<Document>,
-        db_pool: Data<DbConnectionPool>,
+        db_pool: Arc<DbConnectionPool>,
     ) {
         let service = create_test_service().await;
         let doc = document_example.await;
@@ -171,7 +172,7 @@ mod tests {
     }
 
     #[rstest]
-    async fn document_post(db_pool: Data<DbConnectionPool>) {
+    async fn document_post(db_pool: Arc<DbConnectionPool>) {
         let service = create_test_service().await;
 
         // Insert document

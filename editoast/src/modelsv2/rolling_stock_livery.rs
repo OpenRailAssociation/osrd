@@ -82,8 +82,8 @@ impl From<RollingStockLiveryMetadataModel> for RollingStockLiveryMetadata {
 
 #[cfg(test)]
 pub mod tests {
-    use actix_web::web::Data;
     use rstest::*;
+    use std::sync::Arc;
 
     use super::RollingStockLiveryModel;
     use crate::fixtures::tests::db_pool;
@@ -92,7 +92,7 @@ pub mod tests {
     use crate::modelsv2::Document;
 
     #[rstest]
-    async fn create_get_delete_rolling_stock_livery(db_pool: Data<DbConnectionPool>) {
+    async fn create_get_delete_rolling_stock_livery(db_pool: Arc<DbConnectionPool>) {
         use crate::modelsv2::prelude::*;
         let mut conn = db_pool.get().await.unwrap();
         let rolling_stock_livery = rolling_stock_livery("", db_pool.clone()).await;

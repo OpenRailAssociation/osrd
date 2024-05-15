@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::sync::Arc;
 
 use actix_web::get;
 use actix_web::web::Data;
@@ -70,6 +71,7 @@ async fn get(
     let timetable_id = timetable_id.into_inner();
 
     // Return the timetable
+    let db_pool = db_pool.into_inner();
     let timetable = match Timetable::retrieve(db_pool.clone(), timetable_id).await? {
         Some(timetable) => timetable,
         None => return Err(TimetableError::NotFound { timetable_id }.into()),
@@ -90,7 +92,7 @@ struct Conflict {
 
 pub async fn get_simulated_schedules_from_timetable(
     timetable_id: i64,
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Arc<DbConnectionPool>,
 ) -> Result<(Vec<TrainSchedule>, Vec<SimulationOutput>)> {
     let mut conn = db_pool.get().await?;
     use diesel::BelongingToDsl;
@@ -146,7 +148,7 @@ async fn get_conflicts(
     let timetable_id = timetable_id.into_inner();
 
     let (schedules, simulations) =
-        get_simulated_schedules_from_timetable(timetable_id, db_pool).await?;
+        get_simulated_schedules_from_timetable(timetable_id, db_pool.into_inner()).await?;
 
     let mut id_to_name = HashMap::new();
     let mut trains_requirements = Vec::new();
