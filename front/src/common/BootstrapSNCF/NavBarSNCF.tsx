@@ -5,7 +5,7 @@ import getUnicodeFlagIcon from 'country-flag-icons/unicode';
 import i18n from 'i18next';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 import logoOSRD from 'assets/fav-osrd-color.svg';
 import ChangeLanguageModal from 'common/ChangeLanguageModal';
@@ -28,6 +28,7 @@ export default function LegacyNavBarSNCF({ appName, logo = logoOSRD }: Props) {
   const safeWord = useSelector(getUserSafeWord);
   const { t } = useTranslation('home/navbar');
   const { logout, username } = useAuth();
+  const { pathname } = useLocation();
 
   return (
     <div className="mastheader">
@@ -91,9 +92,11 @@ export default function LegacyNavBarSNCF({ appName, logo = logoOSRD }: Props) {
               </button>,
               <button
                 type="button"
-                className="btn-link text-reset"
+                className="user-settings-btn btn-link text-reset"
                 onClick={() => openModal(<UserSettings />)}
                 key="release"
+                // TODO TS v2: remove this disabled
+                disabled={pathname === '/'}
               >
                 <span className="mr-2">
                   <Gear variant="fill" />

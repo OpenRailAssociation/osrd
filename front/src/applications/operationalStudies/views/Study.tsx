@@ -23,7 +23,7 @@ import { Loader, Spinner } from 'common/Loaders';
 import ScenarioCard from 'modules/scenario/components/ScenarioCard';
 import ScenarioCardEmpty from 'modules/scenario/components/ScenarioCardEmpty';
 import AddOrEditStudyModal from 'modules/study/components/AddOrEditStudyModal';
-import { getTrainScheduleV2Activated } from 'reducers/user/userSelectors';
+import { getStdcmV2Activated, getTrainScheduleV2Activated } from 'reducers/user/userSelectors';
 import { budgetFormat } from 'utils/numbers';
 
 type SortOptions =
@@ -44,6 +44,8 @@ export default function Study() {
   const { openModal } = useModal();
   const { projectId: urlProjectId, studyId: urlStudyId } = useParams() as studyParams;
   const trainScheduleV2Activated = useSelector(getTrainScheduleV2Activated);
+  const stdcmV2Activated = useSelector(getStdcmV2Activated);
+  const useTrainScheduleV2 = trainScheduleV2Activated || stdcmV2Activated;
 
   const [scenariosList, setScenariosList] = useState<ScenarioWithCountTrains[]>([]);
   const [filter, setFilter] = useState('');
@@ -154,7 +156,7 @@ export default function Study() {
           console.error(error);
         }
       } else {
-        const scenarios = trainScheduleV2Activated ? scenariosV2?.results : scenariosV1?.results;
+        const scenarios = useTrainScheduleV2 ? scenariosV2?.results : scenariosV1?.results;
         setScenariosList(scenarios || []);
       }
       setIsLoading(false);
@@ -186,7 +188,7 @@ export default function Study() {
 
   useEffect(() => {
     getScenarioList();
-  }, [sortOption, filter, scenariosV1, scenariosV2, trainScheduleV2Activated]);
+  }, [sortOption, filter, scenariosV1, scenariosV2, useTrainScheduleV2]);
 
   return (
     <>

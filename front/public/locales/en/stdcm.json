@@ -1,7 +1,20 @@
 {
   "apply": "Apply",
   "cancelRequest": "Cancel request",
+  "consist": {
+    "consist": "Consist",
+    "tractionEngine": "Traction engine"
+  },
+  "loaderImageLegend": "The TGV Nord line",
+  "notificationTitle": "Phase 1: from D-7 to D-1 5pm, on the Perrigny-Miramas axis.",
   "pleaseWait": "Please wait…",
+  "simulation":{
+    "averageRequestTime": "For your request, the time required is generally 90 seconds.",
+    "calculatingSimulation": "Calculation in progress...",
+    "getSimulation": "Get the simulation",
+    "pendingSimulation": "Simulation in progress",
+    "stopCalculation" : "Stop calculation"
+  },
   "spaceSpeedGraphic": "Space-Velocity graph",
   "spaceTimeGraphic": "Space-Time graph",
   "stdcmComputation": "Search for a train path",
@@ -9,5 +22,14 @@
   "stdcmErrorNoPaths": "Incompatibility with other train paths.",
   "stdcmNoResults": "No path found",
   "stdcmResults": "Results",
-  "stdcmSimulationReport": "Path simulation report"
+  "stdcmSimulationReport": "Path simulation report",
+  "trainPath": {
+    "asSoonAsPossible": "As soon as possible",
+    "ch": "CH",
+    "ci": "CI",
+    "date": "Date",
+    "destination": "Destination",
+    "origin": "Origin",
+    "time": "Time"
+  }
 }

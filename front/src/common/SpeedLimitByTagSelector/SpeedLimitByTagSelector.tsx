@@ -9,6 +9,7 @@ import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
 
 type SpeedLimitByTagSelectorProps = {
   condensed?: boolean;
+  disabled?: boolean;
   selectedSpeedLimitByTag?: string;
   speedLimitsByTags: string[];
   dispatchUpdateSpeedLimitByTag: (newTag: string | null) => void;
@@ -16,6 +17,7 @@ type SpeedLimitByTagSelectorProps = {
 
 export default function SpeedLimitByTagSelector({
   condensed = false,
+  disabled = false,
   selectedSpeedLimitByTag: speedLimitByTag,
   speedLimitsByTags,
   dispatchUpdateSpeedLimitByTag,
@@ -42,6 +44,7 @@ export default function SpeedLimitByTagSelector({
         <span className="text-muted">{t('speedLimitByTag')}</span>
         <SelectImprovedSNCF
           sm
+          disabled={disabled}
           withSearch
           dataTestId="speed-limit-by-tag-selector"
           value={speedLimitByTag || t('noSpeedLimitByTag').toString()}

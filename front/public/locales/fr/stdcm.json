@@ -1,7 +1,20 @@
 {
   "apply": "Appliquer",
   "cancelRequest": "Annuler la requête",
+  "consist": {
+    "consist": "Convoi",
+    "tractionEngine": "Engin de traction"
+  },
+  "loaderImageLegend": "La ligne TGV Nord",
+  "notificationTitle": "Phase 1 : de J-7 à J-1 17h, sur l’axe Perrigny—Miramas.",
   "pleaseWait": "Veuillez patientez…",
+  "simulation":{
+    "averageRequestTime": "Pour votre demande, le temps nécessaire est généralement de 90 secondes.",
+    "calculatingSimulation": "Calcul en cours...",
+    "getSimulation": "Obtenir la simulation",
+    "pendingSimulation": "simulation en cours",
+    "stopCalculation" : "Arrêter le calcul"
+  },
   "spaceSpeedGraphic": "Graphique Espace-Vitesse",
   "spaceTimeGraphic": "Graphique Espace-Temps",
   "stdcmComputation": "Recherche de sillon",
@@ -9,5 +22,14 @@
   "stdcmErrorNoPaths": "Incompatibilité avec d'autres sillons.",
   "stdcmNoResults": "Aucun sillon trouvé",
   "stdcmResults": "Résultats",
-  "stdcmSimulationReport": "Fiche simulation"
+  "stdcmSimulationReport": "Fiche simulation",
+  "trainPath": {
+    "asSoonAsPossible": "Dès que possible",
+    "ch": "CH",
+    "ci": "CI",
+    "date": "Date",
+    "destination": "Destination",
+    "origin": "Origine",
+    "time": "Heure"
+  }
 }

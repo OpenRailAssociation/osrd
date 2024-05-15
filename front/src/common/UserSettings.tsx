@@ -8,27 +8,37 @@ import { useSelector } from 'react-redux';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { ModalBodySNCF, ModalHeaderSNCF } from 'common/BootstrapSNCF/ModalSNCF';
 import SwitchSNCF, { SWITCH_TYPES } from 'common/BootstrapSNCF/SwitchSNCF/SwitchSNCF';
-import { updateUserPreferences, switchTrainScheduleV2Activated } from 'reducers/user';
-import { getTrainScheduleV2Activated, getUserPreferences } from 'reducers/user/userSelectors';
+import {
+  updateUserPreferences,
+  switchTrainScheduleV2Activated,
+  switchStdcmV2Activated,
+} from 'reducers/user';
+import {
+  getTrainScheduleV2Activated,
+  getUserPreferences,
+  getStdcmV2Activated,
+} from 'reducers/user/userSelectors';
 import { useAppDispatch } from 'store';
 import { useDebounce } from 'utils/helpers';
 
-import { useOsrdConfActions } from './osrdContext';
+import { useInfraActions, useOsrdConfActions } from './osrdContext';
 
 export default function UserSettings() {
   const userPreferences = useSelector(getUserPreferences);
   const trainScheduleV2Activated = useSelector(getTrainScheduleV2Activated);
+  const stdcmV2Activated = useSelector(getStdcmV2Activated);
   const [safeWordText, setSafeWordText] = useState(userPreferences.safeWord);
   const dispatch = useAppDispatch();
 
   const debouncedSafeWord = useDebounce(safeWordText, 500);
   const { updateScenarioID, updateTimetableID } = useOsrdConfActions();
+  const { updateInfraID } = useInfraActions();
 
   useEffect(() => {
     dispatch(updateUserPreferences({ ...userPreferences, safeWord: debouncedSafeWord }));
   }, [debouncedSafeWord]);
 
-  const { t } = useTranslation('home/navbar');
+  const { t } = useTranslation(['home/navbar']);
   return (
     <>
       <ModalHeaderSNCF withCloseButton>
@@ -70,10 +80,27 @@ export default function UserSettings() {
                 dispatch(switchTrainScheduleV2Activated());
                 dispatch(updateScenarioID(undefined));
                 dispatch(updateTimetableID(undefined));
+                dispatch(updateInfraID(undefined));
               }}
               checked={trainScheduleV2Activated}
             />
             <p className="ml-3">TrainSchedule V2</p>
+          </div>
+        </div>
+        <div className="col-lg-8">
+          <div className="d-flex align-items-center mt-3">
+            <SwitchSNCF
+              id="stdcm-version-switch"
+              type={SWITCH_TYPES.switch}
+              name="stdcm-version-switch"
+              onChange={() => {
+                dispatch(switchStdcmV2Activated());
+                dispatch(updateScenarioID(undefined));
+                dispatch(updateTimetableID(undefined));
+              }}
+              checked={stdcmV2Activated}
+            />
+            <p className="ml-3">{t('stdcmToggle')}</p>
           </div>
         </div>
       </ModalBodySNCF>

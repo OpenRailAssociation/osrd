@@ -27,7 +27,7 @@ import TextareaSNCF from 'common/BootstrapSNCF/TextareaSNCF';
 import { useInfraID, useOsrdConfActions } from 'common/osrdContext';
 import { InfraSelectorModal } from 'modules/infra/components/InfraSelector';
 import { setFailure, setSuccess } from 'reducers/main';
-import { getTrainScheduleV2Activated } from 'reducers/user/userSelectors';
+import { getStdcmV2Activated, getTrainScheduleV2Activated } from 'reducers/user/userSelectors';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 import useInputChange from 'utils/hooks/useInputChange';
@@ -68,8 +68,10 @@ export default function AddOrEditScenarioModal({
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const infraID = useInfraID();
-  const trainScheduleV2Activated = useSelector(getTrainScheduleV2Activated);
   const { updateScenarioID } = useOsrdConfActions();
+  const trainScheduleV2Activated = useSelector(getTrainScheduleV2Activated);
+  const stdcmV2Activated = useSelector(getStdcmV2Activated);
+  const useTrainScheduleV2 = trainScheduleV2Activated || stdcmV2Activated;
 
   const [currentScenario, setCurrentScenario] = useState<ScenarioForm>(scenario || emptyScenario);
 
@@ -174,7 +176,7 @@ export default function AddOrEditScenarioModal({
     } else if (projectId && studyId && currentScenario) {
       let postScenarioRequest;
       const ids = { projectId, studyId };
-      if (trainScheduleV2Activated) {
+      if (useTrainScheduleV2) {
         const timetable = await postTimetableV2({
           timetableForm: { electrical_profile_set_id: currentScenario.electrical_profile_set_id },
         }).unwrap();
@@ -215,7 +217,7 @@ export default function AddOrEditScenarioModal({
     } else if (scenario && projectId && studyId && scenario.id) {
       const ids = { projectId, studyId, scenarioId: scenario.id };
 
-      const patchScenarioRequest = trainScheduleV2Activated
+      const patchScenarioRequest = useTrainScheduleV2
         ? patchScenarioV2({
             ...ids,
             scenarioPatchFormV2: {
@@ -248,7 +250,7 @@ export default function AddOrEditScenarioModal({
   };
 
   const removeScenario = () => {
-    const deleteScenario = trainScheduleV2Activated ? deleteScenarioV2 : deleteScenarioV1;
+    const deleteScenario = useTrainScheduleV2 ? deleteScenarioV2 : deleteScenarioV1;
     if (projectId && studyId && scenario?.id) {
       deleteScenario({ projectId, studyId, scenarioId: scenario.id })
         .unwrap()

@@ -17,7 +17,11 @@ export const useStoreDataForRollingStockSelector = () => {
     }
   );
 
-  return { rollingStockId, rollingStockComfort, rollingStock };
+  return {
+    rollingStockId,
+    rollingStockComfort: rollingStockId ? rollingStockComfort : 'STANDARD',
+    rollingStock: rollingStockId ? rollingStock : undefined,
+  };
 };
 
 export default useStoreDataForRollingStockSelector;

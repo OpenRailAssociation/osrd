@@ -6,13 +6,12 @@ import { useSelector } from 'react-redux';
 // TODO TS2: rename ManageTrainSchedulePathProperties and move it to /modules/pathfinding
 import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
 import STDCM_REQUEST_STATUS from 'applications/stdcm/consts';
-import type { StdcmRequestStatus, StdcmV2SuccessResponse } from 'applications/stdcm/types';
+import useStdcm from 'applications/stdcm/hooks/useStdcm';
 import StdcmConfig from 'applications/stdcm/views/StdcmConfig';
 import StdcmRequestModal from 'applications/stdcm/views/StdcmRequestModal';
 import { enhancedEditoastApi } from 'common/api/enhancedEditoastApi';
 import type {
   PathfindingResultSuccess,
-  PostStdcmApiResponse,
   PostV2InfraByInfraIdPathPropertiesApiArg,
 } from 'common/api/osrdEditoastApi';
 import { useInfraID, useOsrdConfSelectors } from 'common/osrdContext';
@@ -21,21 +20,24 @@ import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSc
 import { updateSelectedTrainId, updateSelectedProjection } from 'reducers/osrdsimulation/actions';
 import { useAppDispatch } from 'store';
 
-const StdcmView = () => {
+const StdcmViewV1 = () => {
   const dispatch = useAppDispatch();
   const { getPathSteps } = useOsrdConfSelectors();
   const infraId = useInfraID();
   const pathSteps = useSelector(getPathSteps);
 
   const [pathProperties, setPathProperties] = useState<ManageTrainSchedulePathProperties>();
-  const [stdcmResults, setStdcmResults] = useState<PostStdcmApiResponse>();
-  const [stdcmV2Results, setStdcmV2Results] = useState<StdcmV2SuccessResponse>();
-  const [currentStdcmRequestStatus, setCurrentStdcmRequestStatus] = useState<StdcmRequestStatus>(
-    STDCM_REQUEST_STATUS.idle
-  );
 
   const [postPathProperties] =
     enhancedEditoastApi.endpoints.postV2InfraByInfraIdPathProperties.useMutation();
+
+  const {
+    stdcmResults,
+    stdcmV2Results,
+    launchStdcmRequest,
+    currentStdcmRequestStatus,
+    cancelStdcmRequest,
+  } = useStdcm();
 
   useEffect(() => {
     const getPathProperties = async (_infraId: number, path: PathfindingResultSuccess) => {
@@ -94,7 +96,7 @@ const StdcmView = () => {
     <>
       <StdcmConfig
         currentStdcmRequestStatus={currentStdcmRequestStatus}
-        setCurrentStdcmRequestStatus={setCurrentStdcmRequestStatus}
+        launchStdcmRequest={launchStdcmRequest}
         stdcmResults={stdcmResults}
         stdcmV2Results={stdcmV2Results}
         pathProperties={pathProperties}
@@ -102,14 +104,12 @@ const StdcmView = () => {
       />
       {currentStdcmRequestStatus === STDCM_REQUEST_STATUS.pending && (
         <StdcmRequestModal
-          setCurrentStdcmRequestStatus={setCurrentStdcmRequestStatus}
-          currentStdcmRequestStatus={currentStdcmRequestStatus}
-          setStdcmResults={setStdcmResults}
-          setStdcmV2Results={setStdcmV2Results}
+          isOpen={currentStdcmRequestStatus === STDCM_REQUEST_STATUS.pending}
+          cancelStdcmRequest={cancelStdcmRequest}
         />
       )}
     </>
   );
 };
 
-export default StdcmView;
+export default StdcmViewV1;
