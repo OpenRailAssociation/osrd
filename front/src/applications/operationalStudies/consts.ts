@@ -94,6 +94,7 @@ export interface PointOnMap {
   path_offset?: number;
   uic?: number | null;
   ch?: string | null;
+  ci?: number | null;
   location?: {
     track_section?: string;
     offset?: number;

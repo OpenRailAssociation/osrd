@@ -15,7 +15,7 @@ import type { StandardAllowance } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { convertInputStringToNumber } from 'utils/strings';
 
-const StdcmAllowances = () => {
+const StdcmAllowances = ({ disabled = false }: { disabled?: boolean }) => {
   const { t } = useTranslation('allowances');
   const dispatch = useAppDispatch();
   const { getGridMarginBefore, getGridMarginAfter, getStandardStdcmAllowance } =
@@ -56,6 +56,7 @@ const StdcmAllowances = () => {
           onChange={(e) =>
             dispatch(updateGridMarginBefore(Math.abs(convertInputStringToNumber(e.target.value))))
           }
+          disabled={disabled}
           sm
           noMargin
           label={t('allowances:gridMarginBeforeAfter')}
@@ -71,6 +72,7 @@ const StdcmAllowances = () => {
           onChange={(e) =>
             dispatch(updateGridMarginAfter(Math.abs(convertInputStringToNumber(e.target.value))))
           }
+          disabled={disabled}
           sm
           noMargin
           label=" "
@@ -87,6 +89,7 @@ const StdcmAllowances = () => {
             unit: stdcmStandardAllowance?.type || 'percentage',
             value: stdcmStandardAllowance?.value,
           }}
+          disabled={disabled}
         />
       </div>
     </div>

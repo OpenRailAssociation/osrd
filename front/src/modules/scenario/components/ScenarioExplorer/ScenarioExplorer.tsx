@@ -13,7 +13,7 @@ import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { TrainScheduleSummary } from 'common/api/osrdEditoastApi';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
-import { getTrainScheduleV2Activated } from 'reducers/user/userSelectors';
+import { getStdcmV2Activated, getTrainScheduleV2Activated } from 'reducers/user/userSelectors';
 import { useAppDispatch } from 'store';
 
 import ScenarioExplorerModal, { type ScenarioExplorerProps } from './ScenarioExplorerModal';
@@ -30,6 +30,9 @@ const ScenarioExplorer = ({
   const timetableID = useSelector(getTimetableID);
   const [imageUrl, setImageUrl] = useState<string>();
   const trainScheduleV2Activated = useSelector(getTrainScheduleV2Activated);
+  const stdcmV2Activated = useSelector(getStdcmV2Activated);
+  const useTrainScheduleV2 = trainScheduleV2Activated || stdcmV2Activated;
+
   const { updateInfraID, updateTimetableID } = useOsrdConfActions();
   const { data: projectDetails } = osrdEditoastApi.endpoints.getProjectsByProjectId.useQuery(
     { projectId: globalProjectId as number },
@@ -50,7 +53,7 @@ const ScenarioExplorer = ({
         scenarioId: globalScenarioId as number,
       },
       {
-        skip: !globalProjectId || !globalStudyId || !globalScenarioId || trainScheduleV2Activated,
+        skip: !globalProjectId || !globalStudyId || !globalScenarioId || useTrainScheduleV2,
       }
     );
 
@@ -62,18 +65,18 @@ const ScenarioExplorer = ({
         scenarioId: globalScenarioId as number,
       },
       {
-        skip: !trainScheduleV2Activated || !globalProjectId || !globalStudyId || !globalScenarioId,
+        skip: !useTrainScheduleV2 || !globalProjectId || !globalStudyId || !globalScenarioId,
       }
     );
 
   const { data: timetable } = osrdEditoastApi.endpoints.getTimetableById.useQuery(
     { id: timetableID as number },
-    { skip: !timetableID || trainScheduleV2Activated }
+    { skip: !timetableID || useTrainScheduleV2 }
   );
 
   const { data: timetableV2 } = osrdEditoastApi.endpoints.getV2TimetableById.useQuery(
     { id: timetableID as number },
-    { skip: !trainScheduleV2Activated || !timetableID }
+    { skip: !useTrainScheduleV2 || !timetableID }
   );
 
   const getProjectImage = async (imageId: number) => {
@@ -95,8 +98,8 @@ const ScenarioExplorer = ({
   const v2TrainCount = (trainIds: number[]) => trainIds.length;
 
   const scenario = useMemo(
-    () => (trainScheduleV2Activated ? scenarioV2 : scenarioV1),
-    [trainScheduleV2Activated, scenarioV2, scenarioV1]
+    () => (useTrainScheduleV2 ? scenarioV2 : scenarioV1),
+    [useTrainScheduleV2, scenarioV2, scenarioV1]
   );
 
   useEffect(() => {
@@ -164,7 +167,7 @@ const ScenarioExplorer = ({
                 <span className="text-truncate" title={scenario.name}>
                   {scenario.name}
                 </span>
-                {trainScheduleV2Activated ? (
+                {useTrainScheduleV2 ? (
                   <span className="scenario-explorator-card-head-scenario-traincount">
                     {timetableV2 && v2TrainCount(timetableV2.train_ids)}
                     <MdTrain />

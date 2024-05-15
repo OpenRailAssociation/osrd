@@ -1,0 +1,53 @@
+.stdcm-v2-card {
+    border-radius: 8px;
+    box-shadow: 0px 1px 0px rgba(255, 255, 255, 1) inset, 0px 4px 7px -3px rgba(24, 68, 239, 0.19), 0px 1px 3px rgba(49, 46, 43, 0.2);
+    background-color: rgba(255, 255, 255, 1);
+    height: fit-content;
+    position: relative;
+
+    &.has-tip::after {
+        content: "";
+        position: absolute;
+        top: 100%;
+        left: 20px;
+        border-top: 10px solid transparent;
+        border-top-color: rgba(255, 255, 255, 1); 
+        border-left: 15px solid transparent;
+        border-right: 15px solid transparent; 
+        filter: drop-shadow(0px 2px 1px #d0d7e7);
+    }
+
+    .stdcm-v2-card__header {
+        border-radius: 8px 8px 0px 0px;
+        box-shadow: 0px 1px 0px rgba(255, 255, 255, 0.75) inset;
+        background-color: rgba(235, 235, 234, 1);
+        color: rgba(0, 0, 0, 1);
+        font-size: 18px;
+        font-weight: 600;
+        font-style: SemiBold;
+        letter-spacing: 0px;
+        text-align: left;
+        line-height: 24px;
+        padding: 7px 16px 0px 16px;
+        span {
+            padding-bottom: 6px;
+        }
+    }
+
+    .stdcm-v2-card__body {
+        padding: 14px 21px 21px 21px;
+        // TODO: remove this style after ui-core component is implemented
+        .suggestions > div:first-child{
+            padding-left: 0;
+        }
+        .suggestions * label {
+            margin-bottom: 0;
+        }
+    }
+
+    &.disabled {
+        opacity: 0.5;
+        pointer-events: none;
+    }
+
+}

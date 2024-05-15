@@ -3,41 +3,27 @@ import React, { useState, useEffect, useContext, useMemo, type MutableRefObject 
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
-import { enhancedEditoastApi } from 'common/api/enhancedEditoastApi';
-import type { LightRollingStockWithLiveries } from 'common/api/osrdEditoastApi';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { Loader } from 'common/Loaders';
 import { useOsrdConfSelectors } from 'common/osrdContext';
 import RollingStockCard from 'modules/rollingStock/components/RollingStockCard/RollingStockCard';
 import SearchRollingStock from 'modules/rollingStock/components/RollingStockSelector/SearchRollingStock';
-import { setFailure } from 'reducers/main';
-import { useAppDispatch } from 'store';
-import { castErrorToFailure } from 'utils/error';
+import useFilterRollingStock from 'modules/rollingStock/hooks/useFilterRollingStock';
 
 interface RollingStockModal {
   ref2scroll: MutableRefObject<HTMLDivElement | null>;
 }
 
 function RollingStockModal({ ref2scroll }: RollingStockModal) {
-  const dispatch = useAppDispatch();
   const { getRollingStockID } = useOsrdConfSelectors();
   const rollingStockID = useSelector(getRollingStockID);
   const { t } = useTranslation(['translation', 'rollingstock']);
-  const [isLoading, setIsLoading] = useState(true);
   const [openRollingStockCardId, setOpenRollingStockCardId] = useState(rollingStockID);
   const { closeModal } = useContext(ModalContext);
 
-  const {
-    data: { results: rollingStocks } = { results: [] },
-    isSuccess,
-    isError,
-    error,
-  } = enhancedEditoastApi.endpoints.getLightRollingStock.useQuery({
-    pageSize: 1000,
-  });
-  const [filteredRollingStockList, setFilteredRollingStockList] =
-    useState<LightRollingStockWithLiveries[]>(rollingStocks);
+  const { filteredRollingStockList, filters, searchMateriel, toggleFilter, searchIsLoading } =
+    useFilterRollingStock();
 
   useEffect(() => {
     if (openRollingStockCardId !== undefined) {
@@ -48,12 +34,6 @@ function RollingStockModal({ ref2scroll }: RollingStockModal) {
       }, 1000);
     }
   }, [ref2scroll.current]);
-
-  useEffect(() => {
-    if (isError && error) {
-      dispatch(setFailure(castErrorToFailure(error)));
-    }
-  }, [isError]);
 
   const rollingStocksList = useMemo(
     () =>
@@ -82,15 +62,14 @@ function RollingStockModal({ ref2scroll }: RollingStockModal) {
             <span aria-hidden="true">&times;</span>
           </button>
           <SearchRollingStock
-            rollingStocks={rollingStocks}
-            setFilteredRollingStockList={setFilteredRollingStockList}
             filteredRollingStockList={filteredRollingStockList}
-            isSuccess={isSuccess}
-            setIsLoading={setIsLoading}
+            filters={filters}
+            searchMateriel={searchMateriel}
+            toggleFilter={toggleFilter}
           />
         </div>
         <div className="rollingstock-search-list">
-          {isLoading ? <Loader msg={t('rollingstock:waitingLoader')} /> : rollingStocksList}
+          {searchIsLoading ? <Loader msg={t('rollingstock:waitingLoader')} /> : rollingStocksList}
         </div>
       </div>
     </ModalBodySNCF>

@@ -15,7 +15,7 @@ import { castErrorToFailure, getErrorStatus } from 'utils/error';
 type RollingStockEditorButtonsProps = {
   rollingStock: RollingStock;
   setIsEditing: (isEditing: boolean) => void;
-  setIsDuplicating: (isDuplicating: boolean) => void;
+  resetFilters: () => void;
   setOpenedRollingStockCardId: React.Dispatch<React.SetStateAction<number | undefined>>;
   isRollingStockLocked: boolean;
   isCondensed: boolean;
@@ -24,7 +24,7 @@ type RollingStockEditorButtonsProps = {
 const RollingStockEditorButtons = ({
   rollingStock,
   setIsEditing,
-  setIsDuplicating,
+  resetFilters,
   setOpenedRollingStockCardId,
   isRollingStockLocked,
   isCondensed,
@@ -80,7 +80,7 @@ const RollingStockEditorButtons = ({
       .then((res) => {
         setOpenedRollingStockCardId(res.id);
         setIsEditing(true);
-        setIsDuplicating(true);
+        resetFilters();
         dispatch(
           setSuccess({
             title: t('messages.success'),

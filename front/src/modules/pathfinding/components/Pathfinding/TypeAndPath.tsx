@@ -15,6 +15,7 @@ import type {
   SearchResultItemOperationalPoint,
 } from 'common/api/osrdEditoastApi';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { MAIN_OP_CH_CODES } from 'common/Map/Search/useSearchOperationalPoint';
 import { useInfraID, useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
 import { loadPathFinding } from 'modules/trainschedule/components/ManageTrainSchedule/helpers/adjustConfWithTrainToModify';
 import { setFailure } from 'reducers/main';
@@ -79,7 +80,6 @@ export default function TypeAndPath({ zoomToFeature }: PathfindingProps) {
 
   const [searchResults, setSearchResults] = useState<SearchResultItemOperationalPoint[]>([]);
   const [searchState, setSearch] = useState('');
-  const mainOperationalPointsCHCodes = ['', '00', 'BV'];
   const inputRef = useRef<HTMLInputElement>(null);
 
   const debouncedSearchTerm = useDebounce(searchState, 300);
@@ -120,7 +120,7 @@ export default function TypeAndPath({ zoomToFeature }: PathfindingProps) {
       .unwrap()
       .then((results) => {
         const filteredResults = results.filter((result) =>
-          mainOperationalPointsCHCodes.includes((result as SearchResultItemOperationalPoint).ch)
+          MAIN_OP_CH_CODES.includes((result as SearchResultItemOperationalPoint).ch)
         );
         setSearchResults(filteredResults as SearchResultItemOperationalPoint[]);
       })

@@ -16,7 +16,7 @@ import {
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import { setFailure } from 'reducers/main';
-import { getTrainScheduleV2Activated } from 'reducers/user/userSelectors';
+import { getStdcmV2Activated, getTrainScheduleV2Activated } from 'reducers/user/userSelectors';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 
@@ -42,6 +42,8 @@ const ScenarioExplorerModal = ({
   const [studiesList, setStudiesList] = useState<StudyWithScenarios[]>();
   const [scenariosList, setScenariosList] = useState<ScenarioWithCountTrains[]>();
   const trainScheduleV2Activated = useSelector(getTrainScheduleV2Activated);
+  const stdcmV2Activated = useSelector(getStdcmV2Activated);
+  const useTrainScheduleV2 = trainScheduleV2Activated || stdcmV2Activated;
 
   const {
     projectsList,
@@ -85,7 +87,7 @@ const ScenarioExplorerModal = ({
 
   useEffect(() => {
     if (projectID && studyID && !isProjectsError) {
-      if (trainScheduleV2Activated) {
+      if (useTrainScheduleV2) {
         getV2ScenariosList({
           projectId: projectID,
           studyId: studyID,
@@ -107,7 +109,7 @@ const ScenarioExplorerModal = ({
           .catch((error) => console.error(error));
       }
     }
-  }, [projectID, studyID, trainScheduleV2Activated, isProjectsError]);
+  }, [projectID, studyID, useTrainScheduleV2, isProjectsError]);
 
   return (
     <div className="scenario-explorator-modal">

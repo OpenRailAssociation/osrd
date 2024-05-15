@@ -16,6 +16,7 @@ import type {
   SearchResultItemOperationalPoint,
 } from 'common/api/osrdEditoastApi';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { MAIN_OP_CH_CODES } from 'common/Map/Search/useSearchOperationalPoint';
 import { useInfraID, useOsrdConfActions } from 'common/osrdContext';
 import { formatSuggestedOperationalPoints } from 'modules/pathfinding/utils';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
@@ -87,7 +88,6 @@ const TypeAndPathV2 = ({ setPathProperties }: PathfindingProps) => {
 
   const [searchResults, setSearchResults] = useState<SearchResultItemOperationalPoint[]>([]);
   const [searchState, setSearch] = useState('');
-  const mainOperationalPointsCHCodes = ['', '00', 'BV'];
   const inputRef = useRef<HTMLInputElement>(null);
 
   const debouncedSearchTerm = useDebounce(searchState, 300);
@@ -128,7 +128,7 @@ const TypeAndPathV2 = ({ setPathProperties }: PathfindingProps) => {
       .unwrap()
       .then((results) => {
         const filteredResults = results.filter((result) =>
-          mainOperationalPointsCHCodes.includes((result as SearchResultItemOperationalPoint).ch)
+          MAIN_OP_CH_CODES.includes((result as SearchResultItemOperationalPoint).ch)
         );
         setSearchResults(filteredResults as SearchResultItemOperationalPoint[]);
       })

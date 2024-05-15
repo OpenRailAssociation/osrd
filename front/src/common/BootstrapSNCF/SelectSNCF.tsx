@@ -24,6 +24,7 @@ interface SelectProps<T> {
   onChange: (e?: T) => void;
   className?: string;
   sm?: boolean;
+  disabled?: boolean;
 }
 
 function SelectSNCF<T extends string | SelectOptionObject>({
@@ -35,6 +36,7 @@ function SelectSNCF<T extends string | SelectOptionObject>({
   className,
   sm,
   value,
+  disabled,
 }: SelectProps<T>) {
   return (
     <>
@@ -49,6 +51,7 @@ function SelectSNCF<T extends string | SelectOptionObject>({
         }}
         className={cx(className, sm && 'sm')}
         value={isString(value) ? value : value?.id}
+        disabled={disabled}
       >
         {options.map((option) => (
           <option key={getOptionValue(option)} value={getOptionValue(option)}>

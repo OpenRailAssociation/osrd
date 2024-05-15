@@ -7,7 +7,7 @@ import { useSelector } from 'react-redux';
 import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
 import RunningTime from 'applications/stdcm/components/RunningTime';
 import STDCM_REQUEST_STATUS from 'applications/stdcm/consts';
-import type { StdcmRequestStatus, StdcmV2SuccessResponse } from 'applications/stdcm/types';
+import type { StdcmV2SuccessResponse } from 'applications/stdcm/types';
 import StdcmResults from 'applications/stdcm/views/StdcmResults';
 import { osrdEditoastApi, type PostStdcmApiResponse } from 'common/api/osrdEditoastApi';
 import { useInfraID, useOsrdConfSelectors } from 'common/osrdContext';
@@ -27,7 +27,7 @@ import StdcmResultsV2 from './StdcmResultsV2';
 
 type OSRDStdcmConfigProps = {
   currentStdcmRequestStatus: string;
-  setCurrentStdcmRequestStatus: (currentStdcmRequestStatus: StdcmRequestStatus) => void;
+  launchStdcmRequest: () => Promise<void>;
   stdcmResults?: PostStdcmApiResponse;
   stdcmV2Results?: StdcmV2SuccessResponse;
   pathProperties?: ManageTrainSchedulePathProperties;
@@ -36,7 +36,7 @@ type OSRDStdcmConfigProps = {
 
 const StdcmConfig = ({
   currentStdcmRequestStatus,
-  setCurrentStdcmRequestStatus,
+  launchStdcmRequest,
   stdcmResults,
   stdcmV2Results,
   pathProperties,
@@ -104,7 +104,7 @@ const StdcmConfig = ({
   const handleClick = () => {
     const currentDateTime = new Date();
     setCreationDate(currentDateTime);
-    setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.pending);
+    launchStdcmRequest();
   };
 
   useEffect(() => {
