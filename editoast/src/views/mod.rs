@@ -403,7 +403,12 @@ mod tests {
             );
             if let std::result::Result::Ok(body) = body {
                 let fmt_body = format!("{}", body);
-                assert_eq!(status, $status, "unexpected error response: {}", fmt_body);
+                assert_eq!(
+                    status.as_u16(),
+                    $status.as_u16(),
+                    "unexpected error response: {}",
+                    fmt_body
+                );
                 match serde_json::from_value(body) {
                     Ok(response) => response,
                     Err(err) => panic!(
