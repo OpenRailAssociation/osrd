@@ -4,7 +4,7 @@ pub mod tests {
     use std::ops::{Deref, DerefMut};
     use std::sync::Arc;
 
-    use crate::modelsv2::connection_pool::DbConnectionConfig;
+    use crate::modelsv2::connection_pool::create_shared_connection_pool_for_tests;
     use crate::modelsv2::connection_pool::DbConnectionPool;
     use crate::modelsv2::DbConnection;
     use crate::{
@@ -143,9 +143,7 @@ pub mod tests {
         let pg_config_url = PostgresConfig::default()
             .url()
             .expect("cannot get postgres config url");
-        let config = DbConnectionConfig::new(pg_config_url);
-        let pool = DbConnectionPool::builder(config).build().unwrap();
-        Arc::new(pool)
+        Arc::new(create_shared_connection_pool_for_tests(pg_config_url))
     }
 
     pub fn get_fast_rolling_stock_form(name: &str) -> RollingStockForm {
