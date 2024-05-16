@@ -444,7 +444,13 @@ async fn get_voltages(
 ) -> Result<Json<Vec<String>>> {
     let include_rolling_stock_modes = param.into_inner().include_rolling_stock_modes;
     let conn = &mut db_pool.get().await?;
-    let voltages = Infra::get_voltages(conn, infra.infra_id, include_rolling_stock_modes).await?;
+    let infra = Infra::retrieve_or_fail(conn, infra.infra_id, || InfraApiError::NotFound {
+        infra_id: infra.infra_id,
+    })
+    .await?;
+    let voltages = infra
+        .get_voltages(conn, include_rolling_stock_modes)
+        .await?;
     Ok(Json(voltages.into_iter().map(|el| (el.voltage)).collect()))
 }
 

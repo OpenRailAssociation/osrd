@@ -224,8 +224,8 @@ impl Infra {
     }
 
     pub async fn get_voltages(
+        &self,
         conn: &mut DbConnection,
-        infra_id: i64,
         include_rolling_stock_modes: bool,
     ) -> Result<Vec<Voltage>> {
         let query = if !include_rolling_stock_modes {
@@ -234,7 +234,7 @@ impl Infra {
             include_str!("infra/sql/get_voltages_with_rolling_stocks_modes.sql")
         };
         let voltages = sql_query(query)
-            .bind::<BigInt, _>(infra_id)
+            .bind::<BigInt, _>(self.id)
             .load::<Voltage>(conn)
             .await?;
         Ok(voltages)
