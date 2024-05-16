@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import { enhancedEditoastApi } from 'common/api/enhancedEditoastApi';
-import type { Infra, TrainScheduleBase } from 'common/api/osrdEditoastApi';
+import type { InfraState, TrainScheduleBase } from 'common/api/osrdEditoastApi';
 import { useOsrdConfSelectors } from 'common/osrdContext';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
 import trainNameWithNum from 'modules/trainschedule/components/ManageTrainSchedule/helpers/trainNameHelper';
@@ -19,7 +19,7 @@ import checkCurrentConfig from './helpers/checkCurrentConfig';
 import formatTrainSchedulePayload from './helpers/formatTrainSchedulePayload';
 
 type SubmitConfAddTrainScheduleProps = {
-  infraState?: Infra['state'];
+  infraState?: InfraState;
   //   refetchTimetable: () => void;
   //   refetchConflicts: () => void;
   setIsWorking: (isWorking: boolean) => void;

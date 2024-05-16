@@ -3536,50 +3536,35 @@ components:
     Infra:
       properties:
         created:
-          format: date
+          format: date-time
           type: string
         generated_version:
-          example: '1'
           nullable: true
           type: string
         id:
+          format: int64
           type: integer
         locked:
           type: boolean
         modified:
-          format: date
+          format: date-time
           type: string
         name:
           type: string
         railjson_version:
-          example: 3.3.1
-          type: string
-        state:
-          enum:
-          - NOT_LOADED
-          - INITIALIZING
-          - DOWNLOADING
-          - PARSING_JSON
-          - PARSING_INFRA
-          - LOADING_SIGNALS
-          - BUILDING_BLOCKS
-          - CACHED
-          - TRANSIENT_ERROR
-          - ERROR
           type: string
         version:
-          example: '1'
           type: string
       required:
       - id
       - name
-      - version
       - railjson_version
+      - version
       - generated_version
+      - locked
       - created
       - modified
-      - locked
-      - state
+      type: object
     InfraError:
       description: An infra error or warning
       properties:
@@ -3645,6 +3630,29 @@ components:
       required:
       - infra_id
       type: object
+    InfraState:
+      enum:
+      - NOT_LOADED
+      - INITIALIZING
+      - DOWNLOADING
+      - PARSING_JSON
+      - PARSING_INFRA
+      - ADAPTING_KOTLIN
+      - LOADING_SIGNALS
+      - BUILDING_BLOCKS
+      - CACHED
+      - TRANSIENT_ERROR
+      - ERROR
+      type: string
+    InfraWithState:
+      allOf:
+      - $ref: '#/components/schemas/Infra'
+      - properties:
+          state:
+            $ref: '#/components/schemas/InfraState'
+        required:
+        - state
+        type: object
     InternalError:
       properties:
         context:
@@ -9443,24 +9451,6 @@ paths:
       summary: Delete an infra and all entities linked to it
       tags:
       - infra
-    get:
-      parameters:
-      - description: infra id
-        in: path
-        name: id
-        required: true
-        schema:
-          type: integer
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Infra'
-          description: Information about the retrieved infra
-      summary: Retrieve a specific infra
-      tags:
-      - infra
     post:
       parameters:
       - description: infra id
@@ -9674,6 +9664,28 @@ paths:
                 type: array
           description: No content
       summary: Retrieve a list of specific objects in railjson format
+      tags:
+      - infra
+  /infra/{infra_id}/:
+    get:
+      parameters:
+      - description: An existing infra ID
+        in: path
+        name: infra_id
+        required: true
+        schema:
+          format: int64
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InfraWithState'
+          description: The infra
+        '404':
+          description: Infra ID not found
+      summary: Retrieve a specific infra
       tags:
       - infra
   /infra/{infra_id}/attached/{track_id}/:

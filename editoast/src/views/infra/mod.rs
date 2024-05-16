@@ -29,6 +29,7 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use thiserror::Error;
 use utoipa::IntoParams;
+use utoipa::ToSchema;
 
 use self::edition::edit;
 use self::edition::split_track_section;
@@ -62,6 +63,7 @@ crate::routes! {
             pathfinding::routes(),
             attached::routes(),
             edition::routes(),
+            get,
             lock,
             unlock,
             get_speed_limit_tags,
@@ -75,6 +77,8 @@ crate::routes! {
 
 editoast_common::schemas! {
     pathfinding::schemas(),
+    InfraState,
+    InfraWithState,
 }
 
 /// Return `/infra` routes
@@ -237,7 +241,7 @@ async fn list(
     Ok(Json(infras_with_state))
 }
 
-#[derive(Debug, Clone, Copy, Serialize, Default, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, Default, Deserialize, PartialEq, Eq, Serialize, ToSchema)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum InfraState {
     #[default]
@@ -254,7 +258,7 @@ pub enum InfraState {
     Error,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, ToSchema)]
 struct InfraWithState {
     #[serde(flatten)]
     pub infra: Infra,
@@ -268,14 +272,22 @@ struct InfraIdParam {
     infra_id: i64,
 }
 
-/// Return a specific infra
+/// Retrieve a specific infra
+#[utoipa::path(
+    tag = "infra",
+    params(InfraIdParam),
+    responses(
+        (status = 200, description = "The infra", body = InfraWithState),
+        (status = 404, description = "Infra ID not found"),
+    ),
+)]
 #[get("")]
 async fn get(
     db_pool: Data<DbConnectionPool>,
-    infra: Path<i64>,
+    infra: Path<InfraIdParam>,
     core: Data<CoreClient>,
 ) -> Result<Json<InfraWithState>> {
-    let infra_id = infra.into_inner();
+    let infra_id = infra.infra_id;
     let conn = &mut db_pool.get().await?;
     let infra =
         Infra::retrieve_or_fail(conn, infra_id, || InfraApiError::NotFound { infra_id }).await?;

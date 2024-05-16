@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
-import type { Conflict, Infra } from 'common/api/osrdEditoastApi';
+import type { Conflict, InfraState } from 'common/api/osrdEditoastApi';
 import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
 import ConflictsList from 'modules/conflict/components/ConflictsList';
 import { updateSelectedTrainId } from 'reducers/osrdsimulation/actions';
@@ -23,7 +23,7 @@ import { timetableHasInvalidTrain } from './utils';
 type TimetableV2Props = {
   setDisplayTrainScheduleManagement: (mode: string) => void;
   trainsWithDetails: boolean;
-  infraState: Infra['state'];
+  infraState: InfraState;
   trainIds: number[];
   selectedTrainId?: number;
   conflicts?: Conflict[];

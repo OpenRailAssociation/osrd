@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import type { Infra, TrainScheduleBatchItem } from 'common/api/osrdEditoastApi';
+import type { InfraState, TrainScheduleBatchItem } from 'common/api/osrdEditoastApi';
 import { useOsrdConfSelectors } from 'common/osrdContext';
 import formatConf from 'modules/trainschedule/components/ManageTrainSchedule/helpers/formatConf';
 import trainNameWithNum from 'modules/trainschedule/components/ManageTrainSchedule/helpers/trainNameHelper';
@@ -15,7 +15,7 @@ import { castErrorToFailure } from 'utils/error';
 import { time2sec, sec2time } from 'utils/timeManipulation';
 
 type SubmitConfAddTrainScheduleProps = {
-  infraState?: Infra['state'];
+  infraState?: InfraState;
   refetchTimetable: () => void;
   refetchConflicts: () => void;
   setIsWorking: (isWorking: boolean) => void;

@@ -44,6 +44,10 @@ use editoast_schemas::infra::RailJson;
 use editoast_schemas::infra::RAILJSON_VERSION;
 use editoast_schemas::primitives::ObjectType;
 
+editoast_common::schemas! {
+    Infra,
+}
+
 /// The default version of a newly created infrastructure
 ///
 /// This value is set by the database. This constant is used
@@ -51,7 +55,7 @@ use editoast_schemas::primitives::ObjectType;
 #[cfg(test)]
 pub const DEFAULT_INFRA_VERSION: &str = "0";
 
-#[derive(Debug, Clone, Derivative, Serialize, Deserialize, ModelV2)]
+#[derive(Debug, Clone, Derivative, Serialize, Deserialize, ModelV2, utoipa::ToSchema)]
 #[model(table = crate::tables::infra)]
 #[derivative(Default)]
 pub struct Infra {
@@ -61,6 +65,7 @@ pub struct Infra {
     #[serde(skip)]
     pub owner: Uuid,
     pub version: String,
+    #[schema(required)]
     pub generated_version: Option<String>,
     pub locked: bool,
     pub created: NaiveDateTime,

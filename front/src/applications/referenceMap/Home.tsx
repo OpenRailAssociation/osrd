@@ -15,7 +15,8 @@ const HomeReferenceMap = () => {
   const { t } = useTranslation(['home/home', 'referenceMap']);
 
   const infraID = useInfraID();
-  const [getInfraById, { data: infra }] = osrdEditoastApi.endpoints.getInfraById.useLazyQuery({});
+  const [getInfraByInfraId, { data: infra }] =
+    osrdEditoastApi.endpoints.getInfraByInfraId.useLazyQuery({});
 
   /**
    * When infra id changes
@@ -23,9 +24,9 @@ const HomeReferenceMap = () => {
    */
   useEffect(() => {
     if (infraID) {
-      getInfraById({ id: infraID });
+      getInfraByInfraId({ infraId: infraID as number });
     }
-  }, [infraID, getInfraById]);
+  }, [infraID, getInfraByInfraId]);
 
   return (
     <ModalProvider>

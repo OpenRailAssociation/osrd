@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
 
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
-import type { Infra } from 'common/api/osrdEditoastApi';
+import type { InfraState } from 'common/api/osrdEditoastApi';
 import DotsLoader from 'common/DotsLoader/DotsLoader';
 import { useOsrdConfActions } from 'common/osrdContext';
 import TrainAddingSettings from 'modules/trainschedule/components/ManageTrainSchedule/TrainAddingSettings';
@@ -17,7 +17,7 @@ type TimetableManageTrainScheduleProps = {
   displayTrainScheduleManagement: string;
   setDisplayTrainScheduleManagement: (type: string) => void;
   setTrainResultsToFetch: (trainScheduleIds?: number[]) => void;
-  infraState?: Infra['state'];
+  infraState?: InfraState;
   // refetchTimetable: () => void;
   // refetchConflicts: () => void;
 };

@@ -3,7 +3,7 @@ import React from 'react';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
-import type { Infra } from 'common/api/osrdEditoastApi';
+import type { InfraWithState } from 'common/api/osrdEditoastApi';
 
 const STEPS = [
   'INITIALIZING',
@@ -16,7 +16,7 @@ const STEPS = [
 ];
 
 type Props = {
-  infra: Infra;
+  infra: InfraWithState;
 };
 
 export default function InfraLoadingState({ infra }: Props) {

@@ -185,8 +185,8 @@ const Pathfinding = ({ pathProperties, setPathProperties }: PathfindingProps) =>
   const [postPathProperties] =
     enhancedEditoastApi.endpoints.postV2InfraByInfraIdPathProperties.useMutation();
 
-  const { data: infra } = osrdEditoastApi.endpoints.getInfraById.useQuery(
-    { id: infraId as number },
+  const { data: infra } = osrdEditoastApi.endpoints.getInfraByInfraId.useQuery(
+    { infraId: infraId as number },
     {
       refetchOnMountOrArgChange: true,
       pollingInterval: !isInfraLoaded ? 1000 : undefined,

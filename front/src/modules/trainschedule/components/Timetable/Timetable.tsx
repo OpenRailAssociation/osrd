@@ -12,7 +12,7 @@ import { enhancedEditoastApi } from 'common/api/enhancedEditoastApi';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type {
   Conflict,
-  Infra,
+  InfraState,
   SimulationReport,
   TimetableWithSchedulesDetails,
 } from 'common/api/osrdEditoastApi';
@@ -37,7 +37,7 @@ import { durationInSeconds } from 'utils/timeManipulation';
 type TimetableProps = {
   setDisplayTrainScheduleManagement: (mode: string) => void;
   trainsWithDetails: boolean;
-  infraState: Infra['state'];
+  infraState: InfraState;
   timetable: TimetableWithSchedulesDetails | undefined;
   selectedTrainId?: number;
   refetchTimetable: () => void;

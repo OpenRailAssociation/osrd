@@ -17,11 +17,11 @@ type InfraSelectorProps = {
 const InfraSelector = ({ isInEditor }: InfraSelectorProps) => {
   const dispatch = useAppDispatch();
   const infraID = useInfraID();
-  const [getInfraByID] = osrdEditoastApi.endpoints.getInfraById.useLazyQuery({});
+  const [getInfraByInfraId] = osrdEditoastApi.endpoints.getInfraByInfraId.useLazyQuery({});
   const { t } = useTranslation(['infraManagement']);
 
-  const getInfra = async (id: number) => {
-    getInfraByID({ id })
+  const getInfra = async (infraId: number) => {
+    getInfraByInfraId({ infraId })
       .unwrap()
       .catch((e) =>
         dispatch(

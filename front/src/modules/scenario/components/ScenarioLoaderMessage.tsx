@@ -3,12 +3,12 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
-import type { Infra } from 'common/api/osrdEditoastApi';
+import type { InfraState } from 'common/api/osrdEditoastApi';
 import { Loader } from 'common/Loaders';
 import type { RootState } from 'reducers';
 
 type Props = {
-  infraState?: Infra['state'];
+  infraState?: InfraState;
 };
 
 export default function ScenarioLoaderMessage({ infraState }: Props) {
