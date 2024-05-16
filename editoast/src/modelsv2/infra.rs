@@ -1,4 +1,5 @@
 mod speed_limit_tags;
+mod splited_track_section_with_data;
 mod voltage;
 
 use std::pin::Pin;
@@ -9,6 +10,8 @@ use chrono::Utc;
 use derivative::Derivative;
 use diesel::sql_query;
 use diesel::sql_types::BigInt;
+use diesel::sql_types::Double;
+use diesel::sql_types::Text;
 use diesel::QueryDsl;
 use diesel_async::RunQueryDsl;
 use editoast_derive::ModelV2;
@@ -17,6 +20,7 @@ use futures::Future;
 use serde::Deserialize;
 use serde::Serialize;
 use speed_limit_tags::SpeedLimitTags;
+use splited_track_section_with_data::SplitedTrackSectionWithData;
 use std::sync::Arc;
 use strum::IntoEnumIterator;
 use tracing::debug;
@@ -41,6 +45,7 @@ use crate::views::pagination::Paginate;
 use crate::views::pagination::PaginatedResponse;
 use editoast_schemas::infra::RailJson;
 use editoast_schemas::infra::RAILJSON_VERSION;
+use editoast_schemas::primitives::Identifier;
 use editoast_schemas::primitives::ObjectType;
 
 /// The default version of a newly created infrastructure
@@ -256,6 +261,30 @@ impl Infra {
             .load::<SpeedLimitTags>(conn)
             .await?;
         Ok(speed_limits_tags)
+    }
+
+    pub async fn get_splited_track_section_with_data(
+        &self,
+        conn: &mut DbConnection,
+        track: Identifier,
+        distance_fraction: f64,
+    ) -> Result<Vec<SplitedTrackSectionWithData>> {
+        let query = format!("SELECT
+            object_table.obj_id as obj_id,
+            object_table.data as railjson,
+            ST_AsGeoJSON(ST_LineSubstring(ST_GeomFromGeoJSON(object_table.data->'geo'), 0, $3))::jsonb as left_geo,
+	        ST_AsGeoJSON(ST_LineSubstring(ST_GeomFromGeoJSON(object_table.data->'geo'), $3, 1))::jsonb as right_geo
+            FROM {} AS object_table
+            WHERE object_table.infra_id = $1 AND object_table.obj_id = $2",
+            get_table(&ObjectType::TrackSection),
+        );
+        let result = sql_query(query)
+            .bind::<BigInt, _>(self.id)
+            .bind::<Text, _>(track.to_string())
+            .bind::<Double, _>(distance_fraction)
+            .load::<SplitedTrackSectionWithData>(conn)
+            .await?;
+        Ok(result)
     }
 }
 

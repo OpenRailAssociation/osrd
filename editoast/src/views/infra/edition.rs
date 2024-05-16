@@ -3,13 +3,6 @@ use actix_web::web::Data;
 use actix_web::web::Json;
 use actix_web::web::Path;
 use chashmap::CHashMap;
-use diesel::sql_query;
-use diesel::sql_types::BigInt;
-use diesel::sql_types::Double;
-use diesel::sql_types::Jsonb;
-use diesel::sql_types::Text;
-use diesel::QueryableByName;
-use diesel_async::RunQueryDsl;
 use editoast_derive::EditoastError;
 use editoast_schemas::infra::ApplicableDirectionsTrackRange;
 use editoast_schemas::infra::DirectionalTrackRange;
@@ -24,8 +17,6 @@ use editoast_schemas::primitives::OSRDIdentified;
 use editoast_schemas::primitives::ObjectType;
 use itertools::Itertools;
 use json_patch::{AddOperation, Patch, PatchOperation, RemoveOperation, ReplaceOperation};
-use serde::Deserialize;
-use serde::Serialize;
 use serde_json::json;
 use std::collections::HashMap;
 use thiserror::Error;
@@ -44,7 +35,6 @@ use crate::infra_cache::InfraCache;
 use crate::infra_cache::ObjectCache;
 use crate::map;
 use crate::map::MapLayers;
-use crate::modelsv2::get_table;
 use crate::modelsv2::prelude::*;
 use crate::modelsv2::DbConnection;
 use crate::modelsv2::DbConnectionPool;
@@ -89,18 +79,6 @@ pub async fn edit<'a>(
     Ok(Json(operation_results))
 }
 
-#[derive(QueryableByName, Debug, Clone, Serialize, Deserialize)]
-pub struct SplitedTrackSectionWithData {
-    #[diesel(sql_type = Text)]
-    obj_id: String,
-    #[diesel(sql_type = Jsonb)]
-    railjson: diesel_json::Json<TrackSection>,
-    #[diesel(sql_type = Jsonb)]
-    left_geo: diesel_json::Json<geos::geojson::Geometry>,
-    #[diesel(sql_type = Jsonb)]
-    right_geo: diesel_json::Json<geos::geojson::Geometry>,
-}
-
 #[utoipa::path(
     tag = "infra",
     params(InfraIdParam),
@@ -120,13 +98,12 @@ pub async fn split_track_section<'a>(
 ) -> Result<Json<Vec<String>>> {
     let payload = payload.into_inner();
     let infra_id = infra.into_inner();
-    let mut conn = db_pool.get().await?;
+    let conn = &mut db_pool.get().await?;
 
     // Check the infra
     let mut infra =
-        Infra::retrieve_or_fail(&mut conn, infra_id, || InfraApiError::NotFound { infra_id })
-            .await?;
-    let mut infra_cache = InfraCache::get_or_load_mut(&mut conn, &infra_caches, &infra).await?;
+        Infra::retrieve_or_fail(conn, infra_id, || InfraApiError::NotFound { infra_id }).await?;
+    let mut infra_cache = InfraCache::get_or_load_mut(conn, &infra_caches, &infra).await?;
 
     // Get tracks cache if it exists
     let tracksection_cached = infra_cache.get_track_section(&payload.track)?.clone();
@@ -144,20 +121,8 @@ pub async fn split_track_section<'a>(
     }
 
     // Calling the DB to get the full object and also the splitted geo
-    let query = format!("SELECT
-            object_table.obj_id as obj_id,
-            object_table.data as railjson,
-            ST_AsGeoJSON(ST_LineSubstring(ST_GeomFromGeoJSON(object_table.data->'geo'), 0, $3))::jsonb as left_geo,
-	        ST_AsGeoJSON(ST_LineSubstring(ST_GeomFromGeoJSON(object_table.data->'geo'), $3, 1))::jsonb as right_geo
-        FROM {} AS object_table
-        WHERE object_table.infra_id = $1 AND object_table.obj_id = $2",
-        get_table(&ObjectType::TrackSection),
-    );
-    let result: Vec<SplitedTrackSectionWithData> = sql_query(query)
-        .bind::<BigInt, _>(infra_id)
-        .bind::<Text, _>(payload.track.to_string())
-        .bind::<Double, _>(distance_fraction)
-        .load(&mut conn)
+    let result = infra
+        .get_splited_track_section_with_data(conn, payload.track.clone(), distance_fraction)
         .await?;
     let tracksection_data = result[0].clone();
     let tracksection = tracksection_data.railjson.as_ref().clone();
@@ -320,7 +285,7 @@ pub async fn split_track_section<'a>(
     }));
 
     // Apply operations
-    apply_edit(&mut conn, &mut infra, &operations, &mut infra_cache).await?;
+    apply_edit(conn, &mut infra, &operations, &mut infra_cache).await?;
     let mut conn = redis_client.get_connection().await?;
     map::invalidate_all(
         &mut conn,
