@@ -1748,7 +1748,8 @@ export type PostV2TimetableByIdStdcmApiArg = {
   id: number;
   body: {
     comfort: Comfort;
-    margin?: MarginValue | null;
+    /** Can be a percentage `X%`, a time in minutes per 100 kilometer `Xmin/100km` or `None` */
+    margin?: string | null;
     /** By how long we can shift the departure time in milliseconds */
     maximum_departure_delay?: number;
     /** Specifies how long the total run time can be in milliseconds */
@@ -3533,14 +3534,6 @@ export type SimulationResponse =
       status: 'simulation_failed';
     };
 export type Comfort = 'STANDARD' | 'AIR_CONDITIONING' | 'HEATING';
-export type MarginValue =
-  | 'None'
-  | {
-      Percentage: number;
-    }
-  | {
-      MinPerKm: number;
-    };
 export type PathItemLocation =
   | TrackOffset
   | {
@@ -3571,7 +3564,7 @@ export type TrainScheduleBase = {
   margins?: {
     boundaries: string[];
     /** The values of the margins. Must contains one more element than the boundaries
-        Can be a percentage `X%`, a time in minutes per kilometer `Xmin/km` or `none` */
+        Can be a percentage `X%`, a time in minutes per 100 kilometer `Xmin/100km` or `none` */
     values: string[];
   };
   options?: {
