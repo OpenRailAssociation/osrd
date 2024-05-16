@@ -130,8 +130,8 @@ class MarginValueAdapter {
             return MarginValue.Percentage(percentage)
         }
         if (marginValue.endsWith("min/100km")) {
-            val minPerKm = marginValue.split("min/100km")[0].toDouble()
-            return MarginValue.MinPer100Km(minPerKm)
+            val minPer100Km = marginValue.split("min/100km")[0].toDouble()
+            return MarginValue.MinPer100Km(minPer100Km)
         }
         throw JsonDataException("Margin value type not recognized $marginValue")
     }
