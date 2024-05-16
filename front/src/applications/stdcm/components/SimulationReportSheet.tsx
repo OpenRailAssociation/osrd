@@ -1,7 +1,7 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 
 import { Table, TR, TH, TD } from '@ag-media/react-pdf-table';
-import { Page, Text, Image, Document, View } from '@react-pdf/renderer';
+import { Page, Text, Image, Document, View, Link } from '@react-pdf/renderer';
 import { useTranslation } from 'react-i18next';
 
 import iconAlert from 'assets/simulationReportSheet/icon_alert_fill.png';
@@ -31,24 +31,15 @@ const SimulationReportSheet = ({
 
   let renderedIndex = 0;
 
+  // TODO: Add RC information when it becomes avalaible, until that, we use fake ones
   const fakeInformation = {
     rcName: 'Super Fret',
     rcPersonName: 'Jane Smith',
     rcPhoneNumber: '01 23 45 67 89',
     rcMail: 'john.doe@example.com',
-    path_number1: 'n°123456',
-    path_number2: 'n°987654',
+    path_number1: 'n°XXXXXX',
+    path_number2: 'n°YYYYYY',
   };
-
-  const { departureTime, arrivalTime } = useMemo(() => {
-    const dTime = stdcmData.simulation.base.stops[0].time;
-    const aTime = stdcmData.simulation.base.stops[stdcmData.simulation.base.stops.length - 1].time;
-
-    const formattedDepartureTime = getStopTime(dTime);
-    const formattedArrivalTime = getStopTime(aTime);
-
-    return { departureTime: formattedDepartureTime, arrivalTime: formattedArrivalTime };
-  }, [stdcmData]);
 
   return (
     <Document>
@@ -106,7 +97,7 @@ const SimulationReportSheet = ({
                 <Text style={styles.convoyAndRoute.convoyInfoData}>-</Text>
                 <Text style={styles.convoyAndRoute.convoyInfoTitles}>{t('maxSpeed')}</Text>
                 <Text style={styles.convoyAndRoute.convoyInfoData}>
-                  {`${rollingStockData.max_speed * 3.6} km/h`}
+                  {`${Math.floor(rollingStockData.max_speed * 3.6)} km/h`}
                 </Text>
               </View>
               <View style={styles.convoyAndRoute.convoyInfoBox2}>
@@ -127,14 +118,13 @@ const SimulationReportSheet = ({
           </View>
           <View style={styles.convoyAndRoute.route}>
             <Text style={styles.convoyAndRoute.routeTitle}>{t('requestedRoute')}</Text>
+            {/* TODO: Add path number and date from reference path when it becomes avalaible */}
             <View style={styles.convoyAndRoute.fromBanner}>
               <View style={styles.convoyAndRoute.fromBox}>
                 <Text style={styles.convoyAndRoute.from}>{t('from')}</Text>
               </View>
               <Text style={styles.convoyAndRoute.fromNumber}>{fakeInformation.path_number1}</Text>
-              <Text style={styles.convoyAndRoute.fromScheduled}>
-                {`${t('scheduledArrival')} ${arrivalTime}`}
-              </Text>
+              <Text style={styles.convoyAndRoute.fromScheduled} />
             </View>
             <View style={styles.convoyAndRoute.stopTableContainer}>
               <Table style={styles.convoyAndRoute.stopTable}>
@@ -201,10 +191,9 @@ const SimulationReportSheet = ({
                 })}
               </Table>
             </View>
+            {/* TODO: Add path number and date from reference path when it becomes avalaible */}
             <View style={styles.convoyAndRoute.forBanner}>
-              <Text style={styles.convoyAndRoute.forScheduled}>
-                {`${t('scheduledDeparture')} ${departureTime}`}
-              </Text>
+              <Text style={styles.convoyAndRoute.forScheduled} />
               <Text style={styles.convoyAndRoute.forNumber}>{fakeInformation.path_number2}</Text>
               <View style={styles.convoyAndRoute.forBox}>
                 <Text style={styles.convoyAndRoute.for}>{t('for')}</Text>
@@ -215,6 +204,13 @@ const SimulationReportSheet = ({
         <View style={styles.simulation.simulation}>
           <View style={styles.simulation.simulationContainer}>
             <Text style={styles.simulation.simulationUppercase}>{t('simulation')}</Text>
+            <Link
+              href="#simulationMap"
+              src="#simulationMap"
+              style={styles.simulation.viewSimulation}
+            >
+              {t('viewSimulation')}
+            </Link>
             <Text style={styles.simulation.simulationLength}>
               {`${Math.round(stdcmData.path.length / 1000)} km`}
             </Text>
@@ -299,7 +295,7 @@ const SimulationReportSheet = ({
                         style={{
                           ...(step.duration !== 0 && !isLastStep
                             ? {
-                                width: `${step.duration < 600 && step.duration > 60 ? 60 : 70}px`,
+                                width: `${step.duration < 600 && step.duration >= 60 ? 60 : 70}px`,
                                 ...styles.simulation.blueStop,
                               }
                             : styles.simulation.stopColumn),
@@ -345,7 +341,7 @@ const SimulationReportSheet = ({
             <View style={styles.simulation.horizontalBar} />
           </View>
         </View>
-        <View style={styles.map.map}>
+        <View style={styles.map.map} id="simulationMap">
           <Image src={mapCanvas} />
         </View>
         <View style={styles.footer.warrantyBox}>
