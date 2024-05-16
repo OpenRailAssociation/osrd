@@ -9536,21 +9536,6 @@ paths:
       summary: Retrieve a paginated list of errors
       tags:
       - infra
-  /infra/{id}/load/:
-    post:
-      parameters:
-      - description: infra id
-        in: path
-        name: id
-        required: true
-        schema:
-          type: integer
-      responses:
-        '200':
-          description: No content
-      summary: Load an infra if not loaded
-      tags:
-      - infra
   /infra/{id}/objects/{object_type}/:
     post:
       parameters:
@@ -9784,6 +9769,24 @@ paths:
                 $ref: '#/components/schemas/BoundingBox'
           description: The BBox of the line
       summary: Returns the BBoxes of a line
+      tags:
+      - infra
+  /infra/{infra_id}/load/:
+    post:
+      parameters:
+      - description: An existing infra ID
+        in: path
+        name: infra_id
+        required: true
+        schema:
+          format: int64
+          type: integer
+      responses:
+        '204':
+          description: The infra was loaded successfully
+        '404':
+          description: The infra was not found
+      summary: Instructs Core to load an infra
       tags:
       - infra
   /infra/{infra_id}/lock/:

@@ -66,6 +66,7 @@ crate::routes! {
                 edition::routes(),
             ),
             get,
+            load,
             delete,
             put,
             clone,
@@ -568,13 +569,23 @@ pub struct StatePayload {
     infra: Option<i64>,
 }
 
-/// Builds a Core infra load request, runs it
-async fn call_core_infra_load(
-    infra_id: i64,
+/// Instructs Core to load an infra
+#[utoipa::path(
+    tag = "infra",
+    params(InfraIdParam),
+    responses(
+        (status = 204, description = "The infra was loaded successfully"),
+        (status = 404, description = "The infra was not found"),
+    )
+)]
+#[post("/load")]
+async fn load(
+    path: Path<InfraIdParam>,
     db_pool: Data<DbConnectionPool>,
     core: Data<CoreClient>,
-) -> Result<()> {
+) -> Result<HttpResponse> {
     let conn = &mut db_pool.get().await?;
+    let infra_id = path.infra_id;
     let infra =
         Infra::retrieve_or_fail(conn, infra_id, || InfraApiError::NotFound { infra_id }).await?;
     let infra_request = InfraLoadRequest {
@@ -582,16 +593,6 @@ async fn call_core_infra_load(
         expected_version: infra.version,
     };
     infra_request.fetch(core.as_ref()).await?;
-    Ok(())
-}
-
-#[post("/load")]
-async fn load(
-    infra: Path<i64>,
-    db_pool: Data<DbConnectionPool>,
-    core: Data<CoreClient>,
-) -> Result<HttpResponse> {
-    call_core_infra_load(*infra, db_pool, core).await?;
     Ok(HttpResponse::NoContent().finish())
 }
 
