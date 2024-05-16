@@ -81,24 +81,6 @@ paths:
                 $ref: "#/components/schemas/Infra"
 
   /infra/{id}/:
-    get:
-      tags:
-        - infra
-      summary: Retrieve a specific infra
-      parameters:
-        - in: path
-          name: id
-          schema:
-            type: integer
-          description: infra id
-          required: true
-      responses:
-        200:
-          description: Information about the retrieved infra
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Infra"
     delete:
       tags:
         - infra
@@ -363,56 +345,6 @@ paths:
 
 components:
   schemas:
-    Infra:
-      properties:
-        id:
-          type: integer
-        name:
-          type: string
-        version:
-          type: string
-          example: "1"
-        railjson_version:
-          type: string
-          example: "3.3.1"
-        generated_version:
-          type: string
-          nullable: true
-          example: "1"
-        created:
-          type: string
-          format: date
-        modified:
-          type: string
-          format: date
-        locked:
-          type: boolean
-        state:
-          type: string
-          enum:
-            - NOT_LOADED
-            - INITIALIZING
-            - DOWNLOADING
-            - PARSING_JSON
-            - PARSING_INFRA
-            - LOADING_SIGNALS
-            - BUILDING_BLOCKS
-            - CACHED
-            - TRANSIENT_ERROR
-            - ERROR
-      required:
-        [
-          id,
-          name,
-          version,
-          railjson_version,
-          generated_version,
-          created,
-          modified,
-          locked,
-          state,
-        ]
-
     RailjsonObject:
       required:
         - obj_type

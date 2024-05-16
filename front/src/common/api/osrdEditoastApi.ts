@@ -138,10 +138,6 @@ const injectedRtkApi = api
         query: (queryArg) => ({ url: `/infra/${queryArg.id}/`, method: 'DELETE' }),
         invalidatesTags: ['infra'],
       }),
-      getInfraById: build.query<GetInfraByIdApiResponse, GetInfraByIdApiArg>({
-        query: (queryArg) => ({ url: `/infra/${queryArg.id}/` }),
-        providesTags: ['infra'],
-      }),
       postInfraById: build.mutation<PostInfraByIdApiResponse, PostInfraByIdApiArg>({
         query: (queryArg) => ({
           url: `/infra/${queryArg.id}/`,
@@ -193,6 +189,10 @@ const injectedRtkApi = api
           body: queryArg.body,
         }),
         invalidatesTags: ['infra'],
+      }),
+      getInfraByInfraId: build.query<GetInfraByInfraIdApiResponse, GetInfraByInfraIdApiArg>({
+        query: (queryArg) => ({ url: `/infra/${queryArg.infraId}/` }),
+        providesTags: ['infra'],
       }),
       getInfraByInfraIdAttachedAndTrackId: build.query<
         GetInfraByInfraIdAttachedAndTrackIdApiResponse,
@@ -1084,11 +1084,6 @@ export type DeleteInfraByIdApiArg = {
   /** infra id */
   id: number;
 };
-export type GetInfraByIdApiResponse = /** status 200 Information about the retrieved infra */ Infra;
-export type GetInfraByIdApiArg = {
-  /** infra id */
-  id: number;
-};
 export type PostInfraByIdApiResponse =
   /** status 200 An array containing infos about the operations processed */ RailjsonObject[];
 export type PostInfraByIdApiArg = {
@@ -1156,6 +1151,11 @@ export type PostInfraByIdObjectsAndObjectTypeApiArg = {
   objectType: ObjectType;
   /** List of object id's */
   body: string[];
+};
+export type GetInfraByInfraIdApiResponse = /** status 200 The infra */ InfraWithState;
+export type GetInfraByInfraIdApiArg = {
+  /** An existing infra ID */
+  infraId: number;
 };
 export type GetInfraByInfraIdAttachedAndTrackIdApiResponse =
   /** status 200 All objects attached to the given track (arranged by types) */ {
@@ -1893,17 +1893,6 @@ export type Infra = {
   modified: string;
   name: string;
   railjson_version: string;
-  state:
-    | 'NOT_LOADED'
-    | 'INITIALIZING'
-    | 'DOWNLOADING'
-    | 'PARSING_JSON'
-    | 'PARSING_INFRA'
-    | 'LOADING_SIGNALS'
-    | 'BUILDING_BLOCKS'
-    | 'CACHED'
-    | 'TRANSIENT_ERROR'
-    | 'ERROR';
   version: string;
 };
 export type BufferStop = {
@@ -2268,6 +2257,21 @@ export type InfraError = {
     obj_id: string;
     obj_type: 'TrackSection' | 'Signal' | 'BufferStop' | 'Detector' | 'Switch' | 'Route';
   };
+};
+export type InfraState =
+  | 'NOT_LOADED'
+  | 'INITIALIZING'
+  | 'DOWNLOADING'
+  | 'PARSING_JSON'
+  | 'PARSING_INFRA'
+  | 'ADAPTING_KOTLIN'
+  | 'LOADING_SIGNALS'
+  | 'BUILDING_BLOCKS'
+  | 'CACHED'
+  | 'TRANSIENT_ERROR'
+  | 'ERROR';
+export type InfraWithState = Infra & {
+  state: InfraState;
 };
 export type BoundingBox = (number & number)[][];
 export type PathfindingOutput = {

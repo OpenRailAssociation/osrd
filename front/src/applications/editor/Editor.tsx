@@ -65,8 +65,8 @@ const Editor = () => {
   }, [setRenderingFingerprint]);
 
   const [isFormSubmited, setIsFormSubmited] = useState(false);
-  const { data: infra } = osrdEditoastApi.endpoints.getInfraById.useQuery(
-    { id: infraID as number },
+  const { data: infra } = osrdEditoastApi.endpoints.getInfraByInfraId.useQuery(
+    { infraId: infraID as number },
     {
       skip: !infraID,
     }

@@ -37,6 +37,7 @@ pub use study::Study;
 pub use crate::models::PreferredId;
 
 editoast_common::schemas! {
+    infra::schemas(),
     rolling_stock_model::schemas(),
 }
 

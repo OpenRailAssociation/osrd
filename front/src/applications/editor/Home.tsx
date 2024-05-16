@@ -14,7 +14,8 @@ import Editor from './Editor';
 export default function HomeEditorUnplugged() {
   const { t } = useTranslation(['home/home', 'referenceMap']);
   const infraID = useInfraID();
-  const [getInfraById, { data: infra }] = osrdEditoastApi.endpoints.getInfraById.useLazyQuery({});
+  const [getInfraByInfraId, { data: infra }] =
+    osrdEditoastApi.endpoints.getInfraByInfraId.useLazyQuery({});
 
   /**
    * When infra id changes
@@ -22,9 +23,9 @@ export default function HomeEditorUnplugged() {
    */
   useEffect(() => {
     if (infraID) {
-      getInfraById({ id: infraID });
+      getInfraByInfraId({ infraId: infraID });
     }
-  }, [infraID, getInfraById]);
+  }, [infraID, getInfraByInfraId]);
 
   return (
     <ModalProvider>

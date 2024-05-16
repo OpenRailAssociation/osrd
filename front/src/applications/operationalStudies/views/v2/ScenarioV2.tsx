@@ -101,8 +101,8 @@ const ScenarioV2 = () => {
     }
   }, [scenario]);
 
-  const { data: infra } = osrdEditoastApi.endpoints.getInfraById.useQuery(
-    { id: infraId as number },
+  const { data: infra } = osrdEditoastApi.endpoints.getInfraByInfraId.useQuery(
+    { infraId: infraId as number },
     {
       skip: !infraId,
       refetchOnMountOrArgChange: true,
