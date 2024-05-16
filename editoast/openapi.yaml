@@ -3854,25 +3854,6 @@ components:
       - FR3.3/GB/G2
       - GLOTT
       type: string
-    MarginValue:
-      oneOf:
-      - enum:
-        - None
-        type: string
-      - properties:
-          Percentage:
-            format: double
-            type: number
-        required:
-        - Percentage
-        type: object
-      - properties:
-          MinPerKm:
-            format: double
-            type: number
-        required:
-        - MinPerKm
-        type: object
     Margins:
       additionalProperties: false
       properties:
@@ -3884,11 +3865,11 @@ components:
         values:
           description: |-
             The values of the margins. Must contains one more element than the boundaries
-            Can be a percentage `X%`, a time in minutes per kilometer `Xmin/km` or `none`
+            Can be a percentage `X%`, a time in minutes per 100 kilometer `Xmin/100km` or `none`
           example:
           - none
           - 5%
-          - 2min/km
+          - 2min/100km
           items:
             type: string
           type: array
@@ -6523,9 +6504,13 @@ components:
         comfort:
           $ref: '#/components/schemas/Comfort'
         margin:
-          allOf:
-          - $ref: '#/components/schemas/MarginValue'
+          description: Can be a percentage `X%`, a time in minutes per 100 kilometer `Xmin/100km` or `None`
+          example:
+          - None
+          - 5%
+          - 2min/100km
           nullable: true
+          type: string
         maximum_departure_delay:
           default: 432000
           description: By how long we can shift the departure time in milliseconds
@@ -8556,11 +8541,11 @@ components:
             values:
               description: |-
                 The values of the margins. Must contains one more element than the boundaries
-                Can be a percentage `X%`, a time in minutes per kilometer `Xmin/km` or `none`
+                Can be a percentage `X%`, a time in minutes per 100 kilometer `Xmin/100km` or `none`
               example:
               - none
               - 5%
-              - 2min/km
+              - 2min/100km
               items:
                 type: string
               type: array
@@ -12009,9 +11994,13 @@ paths:
                 comfort:
                   $ref: '#/components/schemas/Comfort'
                 margin:
-                  allOf:
-                  - $ref: '#/components/schemas/MarginValue'
+                  description: Can be a percentage `X%`, a time in minutes per 100 kilometer `Xmin/100km` or `None`
+                  example:
+                  - None
+                  - 5%
+                  - 2min/100km
                   nullable: true
+                  type: string
                 maximum_departure_delay:
                   default: 432000
                   description: By how long we can shift the departure time in milliseconds

@@ -7,7 +7,6 @@ use utoipa::ToSchema;
 
 editoast_common::schemas! {
     Margins,
-    MarginValue,
 }
 
 #[derive(Debug, Clone, Serialize, Derivative, ToSchema)]
@@ -18,8 +17,8 @@ pub struct Margins {
     pub boundaries: Vec<NonBlankString>,
     #[derivative(Default(value = "vec![MarginValue::None]"))]
     /// The values of the margins. Must contains one more element than the boundaries
-    /// Can be a percentage `X%`, a time in minutes per kilometer `Xmin/km` or `none`
-    #[schema(value_type = Vec<String>, example = json!(["none", "5%", "2min/km"]))]
+    /// Can be a percentage `X%`, a time in minutes per 100 kilometer `Xmin/100km` or `none`
+    #[schema(value_type = Vec<String>, example = json!(["none", "5%", "2min/100km"]))]
     pub values: Vec<MarginValue>,
 }
 
@@ -44,13 +43,13 @@ impl<'de> Deserialize<'de> for Margins {
     }
 }
 
-#[derive(Debug, Copy, Clone, Default, PartialEq, Derivative, ToSchema)]
+#[derive(Debug, Copy, Clone, Default, PartialEq, Derivative)]
 #[derivative(Hash)]
 pub enum MarginValue {
     #[default]
     None,
     Percentage(#[derivative(Hash(hash_with = "editoast_common::hash_float::<3,_>"))] f64),
-    MinPerKm(#[derivative(Hash(hash_with = "editoast_common::hash_float::<3,_>"))] f64),
+    MinPer100Km(#[derivative(Hash(hash_with = "editoast_common::hash_float::<3,_>"))] f64),
 }
 
 impl<'de> Deserialize<'de> for MarginValue {
@@ -77,9 +76,9 @@ impl<'de> Deserialize<'de> for MarginValue {
             }
             return Ok(Self::Percentage(float_value));
         }
-        if value.ends_with("min/km") {
+        if value.ends_with("min/100km") {
             let float_value: f64 =
-                f64::from_str(value[0..value.len() - 6].trim()).map_err(|_| {
+                f64::from_str(value[0..value.len() - 9].trim()).map_err(|_| {
                     serde::de::Error::invalid_value(
                         serde::de::Unexpected::Str(&value),
                         &"a valid float",
@@ -91,7 +90,7 @@ impl<'de> Deserialize<'de> for MarginValue {
                     &"a strictly positive float",
                 ));
             }
-            return Ok(Self::MinPerKm(float_value));
+            return Ok(Self::MinPer100Km(float_value));
         }
         Err(serde::de::Error::custom("Margin type not recognized"))
     }
@@ -105,7 +104,7 @@ impl Serialize for MarginValue {
         match self {
             MarginValue::None => serializer.serialize_str("none"),
             MarginValue::Percentage(value) => serializer.serialize_str(&format!("{}%", value)),
-            MarginValue::MinPerKm(value) => serializer.serialize_str(&format!("{}min/km", value)),
+            MarginValue::MinPer100Km(value) => serializer.serialize_str(&format!("{}min/100km", value)),
         }
     }
 }
@@ -127,8 +126,8 @@ mod tests {
         let percentage: MarginValue = from_str(r#""10%""#).unwrap();
         assert_eq!(percentage, MarginValue::Percentage(10.0));
 
-        let min_per_km: MarginValue = from_str(r#""5.3min/km""#).unwrap();
-        assert_eq!(min_per_km, MarginValue::MinPerKm(5.3));
+        let min_per_km: MarginValue = from_str(r#""5.3min/100km""#).unwrap();
+        assert_eq!(min_per_km, MarginValue::MinPer100Km(5.3));
     }
 
     /// Test invalid `MarginValue` deserialization
@@ -136,7 +135,7 @@ mod tests {
     fn deserialize_invalid_margin_value() {
         assert!(from_str::<MarginValue>(r#""3.5""#).is_err());
         assert!(from_str::<MarginValue>(r#""-5%""#).is_err());
-        assert!(from_str::<MarginValue>(r#""-0.4min/km""#).is_err());
+        assert!(from_str::<MarginValue>(r#""-0.4min/100km""#).is_err());
     }
 
     /// Test that the `MarginValue` enum can be serialized to a string
@@ -148,16 +147,16 @@ mod tests {
         let percentage = to_string(&MarginValue::Percentage(10.0)).unwrap();
         assert_eq!(percentage, r#""10%""#);
 
-        let min_per_km = to_string(&MarginValue::MinPerKm(5.3)).unwrap();
-        assert_eq!(min_per_km, r#""5.3min/km""#);
+        let min_per_km = to_string(&MarginValue::MinPer100Km(5.3)).unwrap();
+        assert_eq!(min_per_km, r#""5.3min/100km""#);
     }
 
     /// Test that Margins deserialization checks works
     #[test]
     fn deserialize_margins() {
-        let valid_margins = r#"{"boundaries":["a", "b"],"values":["none","10%","20min/km"]}"#;
+        let valid_margins = r#"{"boundaries":["a", "b"],"values":["none","10%","20min/100km"]}"#;
         assert!(from_str::<Margins>(valid_margins).is_ok());
-        let invalid_margins = r#"{"boundaries":["a"],"values":["none","10%","20min/km"]}"#;
+        let invalid_margins = r#"{"boundaries":["a"],"values":["none","10%","20min/100km"]}"#;
         assert!(from_str::<Margins>(invalid_margins).is_err());
         let invalid_margins = r#"{"boundaries":["a", "b"],"values":["none","10%"]}"#;
         assert!(from_str::<Margins>(invalid_margins).is_err());

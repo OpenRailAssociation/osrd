@@ -94,6 +94,9 @@ pub struct STDCMRequestPayload {
     /// available at least that many milliseconds after its passage.
     #[serde(default)]
     time_gap_after: u64,
+    /// Can be a percentage `X%`, a time in minutes per 100 kilometer `Xmin/100km` or `None`
+    #[serde(default)]
+    #[schema(value_type = Option<String>, example = json!(["None", "5%", "2min/100km"]))]
     margin: Option<MarginValue>,
 }
 
