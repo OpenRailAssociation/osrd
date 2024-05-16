@@ -22,11 +22,11 @@ export default function InfraSelectorEditionActionsBarDelete({
   const dispatch = useAppDispatch();
 
   const [deleteInfra, { isLoading: isDeleting }] =
-    osrdEditoastApi.endpoints.deleteInfraById.useMutation();
+    osrdEditoastApi.endpoints.deleteInfraByInfraId.useMutation();
 
   async function handleDeleteInfra() {
     try {
-      await deleteInfra({ id: infra.id });
+      await deleteInfra({ infraId: infra.id });
       setRunningDelete(false);
       dispatch(
         setSuccess({

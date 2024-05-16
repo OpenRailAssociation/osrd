@@ -57,13 +57,16 @@ use editoast_schemas::infra::SwitchType;
 crate::routes! {
     "/infra" => {
         "/{infra_id}" => {
-            routes::routes(),
-            lines::routes(),
-            auto_fixes::routes(),
-            pathfinding::routes(),
-            attached::routes(),
-            edition::routes(),
+            (
+                routes::routes(),
+                lines::routes(),
+                auto_fixes::routes(),
+                pathfinding::routes(),
+                attached::routes(),
+                edition::routes(),
+            ),
             get,
+            delete,
             lock,
             unlock,
             get_speed_limit_tags,
@@ -330,16 +333,33 @@ async fn clone(
     Ok(Json(cloned_infra.id))
 }
 
-/// Delete an infra
+/// Delete an infra and all entities linked to it.
+///
+/// This operation cannot be undone.
+///
+/// So beware.
+///
+/// You've been warned.
+///
+/// This operation may take a while to complete.
+#[utoipa::path(
+    tag = "infra",
+    params(InfraIdParam),
+    responses(
+        (status = 204, description = "The infra has been deleted"),
+        (status = 404, description = "Infra ID not found"),
+    ),
+)]
 #[delete("")]
 async fn delete(
-    infra: Path<i64>,
+    infra: Path<InfraIdParam>,
     db_pool: Data<DbConnectionPool>,
     infra_caches: Data<CHashMap<i64, InfraCache>>,
 ) -> Result<HttpResponse> {
+    let infra_id = infra.infra_id;
     let conn = &mut db_pool.get().await?;
-    if Infra::delete_static(conn, *infra).await? {
-        infra_caches.remove(&infra);
+    if Infra::delete_static(conn, infra_id).await? {
+        infra_caches.remove(&infra_id);
         Ok(HttpResponse::NoContent().finish())
     } else {
         Ok(HttpResponse::NotFound().finish())

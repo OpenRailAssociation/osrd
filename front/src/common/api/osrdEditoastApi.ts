@@ -134,10 +134,6 @@ const injectedRtkApi = api
         query: () => ({ url: `/infra/voltages/` }),
         providesTags: ['infra', 'rolling_stock'],
       }),
-      deleteInfraById: build.mutation<DeleteInfraByIdApiResponse, DeleteInfraByIdApiArg>({
-        query: (queryArg) => ({ url: `/infra/${queryArg.id}/`, method: 'DELETE' }),
-        invalidatesTags: ['infra'],
-      }),
       postInfraById: build.mutation<PostInfraByIdApiResponse, PostInfraByIdApiArg>({
         query: (queryArg) => ({
           url: `/infra/${queryArg.id}/`,
@@ -188,6 +184,13 @@ const injectedRtkApi = api
           method: 'POST',
           body: queryArg.body,
         }),
+        invalidatesTags: ['infra'],
+      }),
+      deleteInfraByInfraId: build.mutation<
+        DeleteInfraByInfraIdApiResponse,
+        DeleteInfraByInfraIdApiArg
+      >({
+        query: (queryArg) => ({ url: `/infra/${queryArg.infraId}/`, method: 'DELETE' }),
         invalidatesTags: ['infra'],
       }),
       getInfraByInfraId: build.query<GetInfraByInfraIdApiResponse, GetInfraByInfraIdApiArg>({
@@ -1079,11 +1082,6 @@ export type PostInfraRefreshApiArg = {
 };
 export type GetInfraVoltagesApiResponse = /** status 200 Voltages list */ string[];
 export type GetInfraVoltagesApiArg = void;
-export type DeleteInfraByIdApiResponse = unknown;
-export type DeleteInfraByIdApiArg = {
-  /** infra id */
-  id: number;
-};
 export type PostInfraByIdApiResponse =
   /** status 200 An array containing infos about the operations processed */ RailjsonObject[];
 export type PostInfraByIdApiArg = {
@@ -1151,6 +1149,11 @@ export type PostInfraByIdObjectsAndObjectTypeApiArg = {
   objectType: ObjectType;
   /** List of object id's */
   body: string[];
+};
+export type DeleteInfraByInfraIdApiResponse = unknown;
+export type DeleteInfraByInfraIdApiArg = {
+  /** An existing infra ID */
+  infraId: number;
 };
 export type GetInfraByInfraIdApiResponse = /** status 200 The infra */ InfraWithState;
 export type GetInfraByInfraIdApiArg = {
