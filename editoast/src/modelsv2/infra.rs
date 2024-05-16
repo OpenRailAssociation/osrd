@@ -1,3 +1,4 @@
+mod speed_limit_tags;
 mod voltage;
 
 use std::pin::Pin;
@@ -15,6 +16,7 @@ use futures::future::try_join_all;
 use futures::Future;
 use serde::Deserialize;
 use serde::Serialize;
+use speed_limit_tags::SpeedLimitTags;
 use std::sync::Arc;
 use strum::IntoEnumIterator;
 use tracing::debug;
@@ -242,6 +244,18 @@ impl Infra {
         let query = include_str!("infra/sql/get_all_voltages_and_modes.sql");
         let voltages = sql_query(query).load::<Voltage>(conn).await?;
         Ok(voltages)
+    }
+
+    pub async fn get_speed_limit_tags(
+        &self,
+        conn: &mut DbConnection,
+    ) -> Result<Vec<SpeedLimitTags>> {
+        let query = include_str!("infra/sql/get_speed_limit_tags.sql");
+        let speed_limits_tags = sql_query(query)
+            .bind::<BigInt, _>(self.id)
+            .load::<SpeedLimitTags>(conn)
+            .await?;
+        Ok(speed_limits_tags)
     }
 }
 

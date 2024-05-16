@@ -22,10 +22,6 @@ use actix_web::Either;
 use actix_web::HttpResponse;
 use actix_web::Responder;
 use chashmap::CHashMap;
-use diesel::sql_query;
-use diesel::sql_types::BigInt;
-use diesel::sql_types::Text;
-use diesel::QueryableByName;
 use editoast_derive::EditoastError;
 use serde::Deserialize;
 use serde::Serialize;
@@ -139,12 +135,6 @@ impl From<InfraForm> for Changeset<Infra> {
     fn from(infra: InfraForm) -> Self {
         Self::default().name(infra.name).last_railjson_version()
     }
-}
-
-#[derive(QueryableByName, Debug, Clone, Serialize, Deserialize)]
-struct SpeedLimitTags {
-    #[diesel(sql_type = Text)]
-    tag: String,
 }
 
 #[derive(Debug, Deserialize)]
@@ -419,17 +409,12 @@ async fn get_speed_limit_tags(
     infra: Path<InfraIdParam>,
     db_pool: Data<DbConnectionPool>,
 ) -> Result<Json<Vec<String>>> {
-    use diesel_async::RunQueryDsl;
-    let mut conn = db_pool.get().await?;
-    let speed_limits_tags: Vec<SpeedLimitTags> = sql_query(
-        "SELECT DISTINCT jsonb_object_keys(data->'speed_limit_by_tag') AS tag
-        FROM infra_object_speed_section
-        WHERE infra_id = $1
-        ORDER BY tag",
-    )
-    .bind::<BigInt, _>(infra.infra_id)
-    .load(&mut conn)
+    let conn = &mut db_pool.get().await?;
+    let infra = Infra::retrieve_or_fail(conn, infra.infra_id, || InfraApiError::NotFound {
+        infra_id: infra.infra_id,
+    })
     .await?;
+    let speed_limits_tags = infra.get_speed_limit_tags(conn).await?;
     Ok(Json(
         speed_limits_tags.into_iter().map(|el| (el.tag)).collect(),
     ))
@@ -594,6 +579,8 @@ pub mod tests {
     use actix_web::test::call_service;
     use actix_web::test::read_body_json;
     use actix_web::test::TestRequest;
+    use diesel::sql_query;
+    use diesel::sql_types::BigInt;
     use diesel_async::RunQueryDsl;
     use rstest::*;
     use serde_json::json;
