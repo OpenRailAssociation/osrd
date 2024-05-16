@@ -140,7 +140,7 @@ private fun parseSteps(infra: FullInfra, pathItems: List<STDCMPathItem>): List<S
 
 private fun parseMarginValue(margin: MarginValue): AllowanceValue? {
     return when (margin) {
-        is MarginValue.MinPerKm -> {
+        is MarginValue.MinPer100Km -> {
             TimePerDistance(margin.value * 100)
         }
         is MarginValue.Percentage -> {

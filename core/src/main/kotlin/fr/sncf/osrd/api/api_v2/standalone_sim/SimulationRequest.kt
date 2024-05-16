@@ -97,7 +97,7 @@ class SimulationScheduleItem(
 )
 
 sealed class MarginValue {
-    class MinPerKm(var value: Double) : MarginValue()
+    class MinPer100Km(var value: Double) : MarginValue()
 
     class Percentage(var percentage: Double) : MarginValue()
 
@@ -108,8 +108,8 @@ class MarginValueAdapter {
     @ToJson
     fun toJson(value: MarginValue): String {
         return when (value) {
-            is MarginValue.MinPerKm -> {
-                "${value.value}min/km"
+            is MarginValue.MinPer100Km -> {
+                "${value.value}min/100km"
             }
             is MarginValue.Percentage -> {
                 "${value.percentage}%"
@@ -129,9 +129,9 @@ class MarginValueAdapter {
             val percentage = marginValue.split("%")[0].toDouble()
             return MarginValue.Percentage(percentage)
         }
-        if (marginValue.endsWith("min/km")) {
-            val minPerKm = marginValue.split("min/km")[0].toDouble()
-            return MarginValue.MinPerKm(minPerKm)
+        if (marginValue.endsWith("min/100km")) {
+            val minPerKm = marginValue.split("min/100km")[0].toDouble()
+            return MarginValue.MinPer100Km(minPerKm)
         }
         throw JsonDataException("Margin value type not recognized $marginValue")
     }

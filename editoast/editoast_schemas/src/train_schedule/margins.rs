@@ -104,7 +104,9 @@ impl Serialize for MarginValue {
         match self {
             MarginValue::None => serializer.serialize_str("none"),
             MarginValue::Percentage(value) => serializer.serialize_str(&format!("{}%", value)),
-            MarginValue::MinPer100Km(value) => serializer.serialize_str(&format!("{}min/100km", value)),
+            MarginValue::MinPer100Km(value) => {
+                serializer.serialize_str(&format!("{}min/100km", value))
+            }
         }
     }
 }

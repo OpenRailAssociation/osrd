@@ -152,7 +152,7 @@ class StandaloneSimulationTest {
                     listOf(pathLength.distance / 2.0),
                     listOf(
                         MarginValue.Percentage(10.0),
-                        MarginValue.MinPerKm(5.0),
+                        MarginValue.MinPer100Km(5.0),
                     ),
                 )
             )
@@ -238,7 +238,7 @@ class StandaloneSimulationTest {
                     getTimeAt(entryOffset, res.provisional, true)
             val value =
                 when (val rawValue = testCase.margins.values[i]) {
-                    is MarginValue.MinPerKm -> TimePerDistance(rawValue.value)
+                    is MarginValue.MinPer100Km -> TimePerDistance(rawValue.value)
                     is MarginValue.Percentage -> Percentage(rawValue.percentage)
                     is MarginValue.None -> Percentage(0.0)
                 }

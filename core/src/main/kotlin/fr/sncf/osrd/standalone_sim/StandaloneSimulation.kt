@@ -310,7 +310,7 @@ fun buildProvisionalEnvelope(
         val end = boundaries[i + 1]
         val value =
             when (val rawValue = rawMargins.values[i]) {
-                is MarginValue.MinPerKm -> TimePerDistance(rawValue.value)
+                is MarginValue.MinPer100Km -> TimePerDistance(rawValue.value)
                 is MarginValue.Percentage -> Percentage(rawValue.percentage)
                 is MarginValue.None -> Percentage(0.0)
             }
