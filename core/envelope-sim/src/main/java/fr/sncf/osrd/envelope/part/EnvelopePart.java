@@ -61,7 +61,7 @@ public final class EnvelopePart implements SearchableEnvelope {
     /** The smallest speed */
     private double minSpeedCache = Double.NaN;
 
-    /** The time from the start of the envelope, in milliseconds. Only read using getTotalTimes. */
+    /** The time from the start of the envelope, in microseconds. Only read using getTotalTimes. */
     private long[] cumulativeMicroSTimesCache = null;
 
     // endregion
