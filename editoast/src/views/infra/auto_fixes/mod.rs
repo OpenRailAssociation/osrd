@@ -120,7 +120,7 @@ fn fix_infra(
     infra_errors: Vec<InfraError>,
 ) -> Result<Vec<Operation>> {
     let mut fixes: HashMap<ObjectRef, Fix> = HashMap::new();
-    for (object_ref, errors) in &infra_errors.into_iter().group_by(OSRDObject::get_ref) {
+    for (object_ref, errors) in &infra_errors.into_iter().chunk_by(OSRDObject::get_ref) {
         let fixes_for_object_errors = match object_ref.obj_type {
             ObjectType::TrackSection => {
                 let track_section = infra_cache
