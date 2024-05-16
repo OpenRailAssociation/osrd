@@ -9437,20 +9437,6 @@ paths:
       - infra
       - rolling_stock
   /infra/{id}/:
-    delete:
-      parameters:
-      - description: infra id
-        in: path
-        name: id
-        required: true
-        schema:
-          type: integer
-      responses:
-        '204':
-          description: No content
-      summary: Delete an infra and all entities linked to it
-      tags:
-      - infra
     post:
       parameters:
       - description: infra id
@@ -9667,6 +9653,31 @@ paths:
       tags:
       - infra
   /infra/{infra_id}/:
+    delete:
+      description: |-
+        This operation cannot be undone.
+
+        So beware.
+
+        You've been warned.
+
+        This operation may take a while to complete.
+      parameters:
+      - description: An existing infra ID
+        in: path
+        name: infra_id
+        required: true
+        schema:
+          format: int64
+          type: integer
+      responses:
+        '204':
+          description: The infra has been deleted
+        '404':
+          description: Infra ID not found
+      summary: Delete an infra and all entities linked to it.
+      tags:
+      - infra
     get:
       parameters:
       - description: An existing infra ID

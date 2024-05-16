@@ -81,21 +81,6 @@ paths:
                 $ref: "#/components/schemas/Infra"
 
   /infra/{id}/:
-    delete:
-      tags:
-        - infra
-      summary: Delete an infra and all entities linked to it
-      parameters:
-        - in: path
-          name: id
-          schema:
-            type: integer
-          description: infra id
-          required: true
-      responses:
-        204:
-          description: No content
-
     post:
       tags:
         - infra
