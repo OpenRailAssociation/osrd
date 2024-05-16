@@ -147,12 +147,6 @@ struct SpeedLimitTags {
     tag: String,
 }
 
-#[derive(QueryableByName, Debug, Clone, Serialize, Deserialize)]
-struct Voltage {
-    #[diesel(sql_type = Text)]
-    voltage: String,
-}
-
 #[derive(Debug, Deserialize)]
 struct RefreshQueryParams {
     #[serde(default)]
@@ -463,18 +457,9 @@ async fn get_voltages(
     param: Query<GetVoltagesQueryParams>,
     db_pool: Data<DbConnectionPool>,
 ) -> Result<Json<Vec<String>>> {
-    use diesel_async::RunQueryDsl;
     let include_rolling_stock_modes = param.into_inner().include_rolling_stock_modes;
-    let mut conn = db_pool.get().await?;
-    let query = if !include_rolling_stock_modes {
-        include_str!("sql/get_voltages_without_rolling_stocks_modes.sql")
-    } else {
-        include_str!("sql/get_voltages_with_rolling_stocks_modes.sql")
-    };
-    let voltages: Vec<Voltage> = sql_query(query)
-        .bind::<BigInt, _>(infra.infra_id)
-        .load(&mut conn)
-        .await?;
+    let conn = &mut db_pool.get().await?;
+    let voltages = Infra::get_voltages(conn, infra.infra_id, include_rolling_stock_modes).await?;
     Ok(Json(voltages.into_iter().map(|el| (el.voltage)).collect()))
 }
 
@@ -488,10 +473,8 @@ async fn get_voltages(
 )]
 #[get("/voltages")]
 async fn get_all_voltages(db_pool: Data<DbConnectionPool>) -> Result<Json<Vec<String>>> {
-    use diesel_async::RunQueryDsl;
-    let mut conn = db_pool.get().await?;
-    let query = include_str!("sql/get_all_voltages_and_modes.sql");
-    let voltages: Vec<Voltage> = sql_query(query).load(&mut conn).await?;
+    let conn = &mut db_pool.get().await?;
+    let voltages = Infra::get_all_voltages(conn).await?;
     Ok(Json(voltages.into_iter().map(|el| (el.voltage)).collect()))
 }
 

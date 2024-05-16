@@ -1,3 +1,5 @@
+mod voltage;
+
 use std::pin::Pin;
 
 use async_trait::async_trait;
@@ -18,6 +20,7 @@ use strum::IntoEnumIterator;
 use tracing::debug;
 use tracing::error;
 use uuid::Uuid;
+use voltage::Voltage;
 
 use crate::error::Result;
 use crate::generated_data;
@@ -216,6 +219,29 @@ impl Infra {
         self.generated_version = None;
         self.save(conn).await?;
         Ok(true)
+    }
+
+    pub async fn get_voltages(
+        conn: &mut DbConnection,
+        infra_id: i64,
+        include_rolling_stock_modes: bool,
+    ) -> Result<Vec<Voltage>> {
+        let query = if !include_rolling_stock_modes {
+            include_str!("infra/sql/get_voltages_without_rolling_stocks_modes.sql")
+        } else {
+            include_str!("infra/sql/get_voltages_with_rolling_stocks_modes.sql")
+        };
+        let voltages = sql_query(query)
+            .bind::<BigInt, _>(infra_id)
+            .load::<Voltage>(conn)
+            .await?;
+        Ok(voltages)
+    }
+
+    pub async fn get_all_voltages(conn: &mut DbConnection) -> Result<Vec<Voltage>> {
+        let query = include_str!("infra/sql/get_all_voltages_and_modes.sql");
+        let voltages = sql_query(query).load::<Voltage>(conn).await?;
+        Ok(voltages)
     }
 }
 
