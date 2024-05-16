@@ -142,14 +142,6 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['infra'],
       }),
-      postInfraByIdClone: build.mutation<PostInfraByIdCloneApiResponse, PostInfraByIdCloneApiArg>({
-        query: (queryArg) => ({
-          url: `/infra/${queryArg.id}/clone/`,
-          method: 'POST',
-          params: { name: queryArg.name },
-        }),
-        invalidatesTags: ['infra'],
-      }),
       getInfraByIdErrors: build.query<GetInfraByIdErrorsApiResponse, GetInfraByIdErrorsApiArg>({
         query: (queryArg) => ({
           url: `/infra/${queryArg.id}/errors/`,
@@ -210,6 +202,17 @@ const injectedRtkApi = api
       >({
         query: (queryArg) => ({ url: `/infra/${queryArg.infraId}/auto_fixes/` }),
         providesTags: ['infra'],
+      }),
+      postInfraByInfraIdClone: build.mutation<
+        PostInfraByInfraIdCloneApiResponse,
+        PostInfraByInfraIdCloneApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/infra/${queryArg.infraId}/clone/`,
+          method: 'POST',
+          params: { name: queryArg.name },
+        }),
+        invalidatesTags: ['infra'],
       }),
       getInfraByInfraIdLinesAndLineCodeBbox: build.query<
         GetInfraByInfraIdLinesAndLineCodeBboxApiResponse,
@@ -1090,15 +1093,6 @@ export type PostInfraByIdApiArg = {
   /** Operations to do on the infra */
   body: Operation[];
 };
-export type PostInfraByIdCloneApiResponse = /** status 201 The duplicated infra id */ {
-  id?: number;
-};
-export type PostInfraByIdCloneApiArg = {
-  /** Infra id */
-  id: number;
-  /** New infra name */
-  name: string;
-};
 export type GetInfraByIdErrorsApiResponse = /** status 200 A paginated list of errors */ {
   /** Total number of elements */
   count?: number;
@@ -1175,6 +1169,13 @@ export type GetInfraByInfraIdAutoFixesApiResponse =
 export type GetInfraByInfraIdAutoFixesApiArg = {
   /** An existing infra ID */
   infraId: number;
+};
+export type PostInfraByInfraIdCloneApiResponse = unknown;
+export type PostInfraByInfraIdCloneApiArg = {
+  /** An existing infra ID */
+  infraId: number;
+  /** The name of the new infra */
+  name: string;
 };
 export type GetInfraByInfraIdLinesAndLineCodeBboxApiResponse =
   /** status 200 The BBox of the line */ BoundingBox;

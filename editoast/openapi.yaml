@@ -9465,34 +9465,6 @@ paths:
       summary: Update/Create/Delete an object of the infra
       tags:
       - infra
-  /infra/{id}/clone/:
-    post:
-      parameters:
-      - description: Infra id
-        in: path
-        name: id
-        required: true
-        schema:
-          type: integer
-      - description: New infra name
-        in: query
-        name: name
-        required: true
-        schema:
-          type: string
-      responses:
-        '201':
-          content:
-            application/json:
-              schema:
-                properties:
-                  id:
-                    type: integer
-                type: object
-          description: The duplicated infra id
-      summary: Duplicate an infra
-      tags:
-      - infra
   /infra/{id}/errors/:
     get:
       parameters:
@@ -9755,6 +9727,36 @@ paths:
                 type: array
           description: The list of suggested operations
       summary: Retrieve a list of operations to fix infra issues
+      tags:
+      - infra
+  /infra/{infra_id}/clone/:
+    post:
+      parameters:
+      - description: An existing infra ID
+        in: path
+        name: infra_id
+        required: true
+        schema:
+          format: int64
+          type: integer
+      - description: The name of the new infra
+        in: query
+        name: name
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            text/plain:
+              schema:
+                format: int64
+                minimum: 0
+                type: integer
+          description: The new infra ID
+        '404':
+          description: Infra ID not found
+      summary: Duplicate an infra
       tags:
       - infra
   /infra/{infra_id}/lines/{line_code}/bbox/:

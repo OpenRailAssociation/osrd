@@ -272,33 +272,6 @@ paths:
                       description: object's geographic in geojson format
                       $ref: "#/components/schemas/Geometry"
 
-  /infra/{id}/clone/:
-    post:
-      tags:
-        - infra
-      summary: Duplicate an infra
-      parameters:
-        - in: path
-          name: id
-          schema:
-            type: integer
-          description: Infra id
-          required: true
-        - in: query
-          name: name
-          schema:
-            type: string
-          description: New infra name
-          required: true
-      responses:
-        201:
-          description: The duplicated infra id
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  id: { type: integer }
 
 components:
   schemas:
