@@ -46,7 +46,7 @@ const MapSearchOperationalPoint = ({
         .map((result) => ({
           ...result,
           // remove CH Code information when it's a main operational point (=== "BV" or "00") to ensure it'll be on top of search results
-          ch: mainOperationalPointsCHCodes.includes(result.ch) ? '' : result.ch,
+          ch: mainOperationalPointsCHCodes.includes(result.ch) ? '' : result.ch ?? '',
         }))
         // Begin to filter with main operational points (CH code = ''), if not checked, filter on chCode input field
         .filter((result) => {
