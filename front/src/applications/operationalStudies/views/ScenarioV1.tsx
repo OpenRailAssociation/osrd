@@ -114,12 +114,12 @@ const ScenarioV1 = () => {
       pollingInterval: !isInfraLoaded ? 1000 : undefined,
     }
   );
-  const [reloadInfra] = osrdEditoastApi.endpoints.postInfraByIdLoad.useMutation();
+  const [reloadInfra] = osrdEditoastApi.endpoints.postInfraByInfraIdLoad.useMutation();
 
   useEffect(() => {
     if (reloadCount <= 5 && infra && infra.state === 'TRANSIENT_ERROR') {
       setTimeout(() => {
-        reloadInfra({ id: infraId as number }).unwrap();
+        reloadInfra({ infraId: infraId as number }).unwrap();
         setReloadCount((count) => count + 1);
       }, 1000);
     }
@@ -140,7 +140,7 @@ const ScenarioV1 = () => {
 
   useEffect(() => {
     if (infraId) {
-      reloadInfra({ id: infraId as number }).unwrap();
+      reloadInfra({ infraId: infraId as number }).unwrap();
     }
   }, [infraId]);
 

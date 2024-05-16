@@ -155,10 +155,6 @@ const injectedRtkApi = api
         }),
         providesTags: ['infra'],
       }),
-      postInfraByIdLoad: build.mutation<PostInfraByIdLoadApiResponse, PostInfraByIdLoadApiArg>({
-        query: (queryArg) => ({ url: `/infra/${queryArg.id}/load/`, method: 'POST' }),
-        invalidatesTags: ['infra'],
-      }),
       postInfraByIdObjectsAndObjectType: build.mutation<
         PostInfraByIdObjectsAndObjectTypeApiResponse,
         PostInfraByIdObjectsAndObjectTypeApiArg
@@ -222,6 +218,13 @@ const injectedRtkApi = api
           url: `/infra/${queryArg.infraId}/lines/${queryArg.lineCode}/bbox/`,
         }),
         providesTags: ['infra'],
+      }),
+      postInfraByInfraIdLoad: build.mutation<
+        PostInfraByInfraIdLoadApiResponse,
+        PostInfraByInfraIdLoadApiArg
+      >({
+        query: (queryArg) => ({ url: `/infra/${queryArg.infraId}/load/`, method: 'POST' }),
+        invalidatesTags: ['infra'],
       }),
       postInfraByInfraIdLock: build.mutation<
         PostInfraByInfraIdLockApiResponse,
@@ -1116,11 +1119,6 @@ export type GetInfraByIdErrorsApiArg = {
   /** Whether the response should include errors or warnings */
   level?: 'errors' | 'warnings' | 'all';
 };
-export type PostInfraByIdLoadApiResponse = unknown;
-export type PostInfraByIdLoadApiArg = {
-  /** infra id */
-  id: number;
-};
 export type PostInfraByIdObjectsAndObjectTypeApiResponse = /** status 200 No content */ {
   /** object's geographic in geojson format */
   geographic: Geometry;
@@ -1184,6 +1182,11 @@ export type GetInfraByInfraIdLinesAndLineCodeBboxApiArg = {
   infraId: number;
   /** A line code */
   lineCode: number;
+};
+export type PostInfraByInfraIdLoadApiResponse = unknown;
+export type PostInfraByInfraIdLoadApiArg = {
+  /** An existing infra ID */
+  infraId: number;
 };
 export type PostInfraByInfraIdLockApiResponse = unknown;
 export type PostInfraByInfraIdLockApiArg = {

@@ -125,7 +125,7 @@ export default function AddOrEditScenarioModal({
         ],
       }),
     });
-  const [loadInfra] = osrdEditoastApi.endpoints.postInfraByIdLoad.useMutation();
+  const [loadInfra] = osrdEditoastApi.endpoints.postInfraByInfraIdLoad.useMutation();
 
   const [displayErrors, setDisplayErrors] = useState(false);
 
@@ -199,7 +199,7 @@ export default function AddOrEditScenarioModal({
         .unwrap()
         .then(({ id }) => {
           dispatch(updateScenarioID(id));
-          loadInfra({ id: infraID as number }).unwrap();
+          loadInfra({ infraId: infraID as number }).unwrap();
           navigate(`projects/${projectId}/studies/${studyId}/scenarios/${id}`);
           closeModal();
         })

@@ -264,7 +264,7 @@ const Pathfinding = ({ zoomToFeature, path }: PathfindingProps) => {
       pollingInterval: !isInfraLoaded ? 1000 : undefined,
     }
   );
-  const [reloadInfra] = osrdEditoastApi.endpoints.postInfraByIdLoad.useMutation();
+  const [reloadInfra] = osrdEditoastApi.endpoints.postInfraByInfraIdLoad.useMutation();
 
   const {
     replaceVias,
@@ -278,7 +278,7 @@ const Pathfinding = ({ zoomToFeature, path }: PathfindingProps) => {
   useEffect(() => {
     if (reloadCount <= 5 && infra && infra.state === 'TRANSIENT_ERROR') {
       setTimeout(() => {
-        reloadInfra({ id: infraID as number }).unwrap();
+        reloadInfra({ infraId: infraID as number }).unwrap();
         setReloadCount((count) => count + 1);
       }, 1000);
     }
@@ -288,7 +288,7 @@ const Pathfinding = ({ zoomToFeature, path }: PathfindingProps) => {
     if (infra) {
       switch (infra.state) {
         case 'NOT_LOADED': {
-          reloadInfra({ id: infraID as number }).unwrap();
+          reloadInfra({ infraId: infraID as number }).unwrap();
           setIsInfraLoaded(false);
           break;
         }
@@ -445,7 +445,7 @@ const Pathfinding = ({ zoomToFeature, path }: PathfindingProps) => {
 
   useEffect(() => {
     if (isInfraError) {
-      reloadInfra({ id: infraID as number }).unwrap();
+      reloadInfra({ infraId: infraID as number }).unwrap();
       setIsInfraLoaded(false);
     }
   }, [isInfraError]);

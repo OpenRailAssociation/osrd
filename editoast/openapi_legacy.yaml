@@ -110,22 +110,6 @@ paths:
                 items:
                   $ref: "#/components/schemas/RailjsonObject"
 
-  /infra/{id}/load/:
-    post:
-      tags:
-        - infra
-      summary: Load an infra if not loaded
-      parameters:
-        - in: path
-          name: id
-          schema:
-            type: integer
-          description: infra id
-          required: true
-      responses:
-        200:
-          description: No content
-
   /infra/{id}/errors/:
     get:
       tags:
