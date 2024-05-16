@@ -30,6 +30,7 @@
     "stdcmSimulationSheet": "Fiche Simulation",
     "towedMaterial": "matériel remorqué",
     "track": "voie",
+    "viewSimulation": "voir la simulation sur la carte",
     "warningMessage": "Cette fiche a été générée par un outil de simulation. Elle ne dispense pas l’horairiste des vérifications inhérentes au tracé de SDM.",
     "weight": "tonnage",
     "withoutWarranty": "Simulation de sillon sans garantie de disponibilité"

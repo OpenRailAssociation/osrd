@@ -410,6 +410,14 @@ const styles = {
       color: '#000000',
       letterSpacing: '-0.22',
     },
+    viewSimulation: {
+      color: '#1844EF',
+      textDecoration: 'none',
+      fontWeight: 'semibold',
+      fontSize: '14',
+      marginTop: '18',
+      marginLeft: '900',
+    },
     simulationLength: {
       fontSize: '21',
       fontWeight: 400,
@@ -496,6 +504,8 @@ const styles = {
       borderRadius: '12',
       padding: '0 8',
       marginLeft: '8',
+      marginTop: '1',
+      marginBottom: '1',
     },
     td: {
       fontSize: '14',

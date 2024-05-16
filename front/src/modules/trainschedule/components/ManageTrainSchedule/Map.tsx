@@ -79,24 +79,24 @@ const Map = ({ pathProperties, setMapCanvas }: MapProps) => {
 
   const mapRef = useRef<MapRef | null>(null);
 
-  const captureMap = async () => {
-    const mapElement = document.getElementById('map-container');
-    if (!mapElement) {
-      console.error('Map element not found');
-      return;
-    }
-
-    try {
-      const canvas = await html2canvas(mapElement);
-      const imageDataURL = canvas.toDataURL();
-      if (setMapCanvas) setMapCanvas(imageDataURL);
-    } catch (error) {
-      console.error('Error capturing map:', error);
-    }
-  };
-
   useEffect(() => {
-    captureMap();
+    const captureMap = async () => {
+      const mapElement = document.getElementById('map-container');
+      if (!mapElement) {
+        console.error('Map element not found');
+        return;
+      }
+      try {
+        if (setMapCanvas) {
+          const canvas = await html2canvas(mapElement);
+          const imageDataURL = canvas.toDataURL();
+          setMapCanvas(imageDataURL);
+        }
+      } catch (error) {
+        console.error('Error capturing map:', error);
+      }
+    };
+    if (mapIsLoaded) captureMap();
   }, [mapIsLoaded, geoJson]);
 
   const scaleControlStyle = {
