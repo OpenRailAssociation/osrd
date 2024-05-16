@@ -56,8 +56,14 @@ private fun makeOperationalPoints(
     rawInfra: RawSignalingInfra
 ): List<OperationalPointResponse> {
     val res = mutableListOf<OperationalPointResponse>()
+    val visitedOpIds = mutableSetOf<String>()
     for ((opPartId, offset) in path.getOperationalPointParts()) {
         val operationalPointId = rawInfra.getOperationalPointPartOpId(opPartId)
+        // We skip the operational point already visited to ensure unicity.
+        if (visitedOpIds.contains(operationalPointId))
+            continue
+        visitedOpIds.add(operationalPointId)
+
         val trackSection =
             rawInfra.getTrackFromChunk(rawInfra.getOperationalPointPartChunk(opPartId))
         val trackSectionName = rawInfra.getTrackSectionName(trackSection)

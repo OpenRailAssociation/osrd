@@ -61,18 +61,23 @@ pub struct PathPropertiesInput {
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema, Default)]
 struct PathProperties {
     #[schema(inline)]
+    #[serde(skip_serializing_if = "Option::is_none")]
     /// Slopes along the path
     slopes: Option<PropertyValuesF64>,
     #[schema(inline)]
+    #[serde(skip_serializing_if = "Option::is_none")]
     /// Gradients along the path
     gradients: Option<PropertyValuesF64>,
     /// Electrification modes and neutral section along the path
     #[schema(inline)]
+    #[serde(skip_serializing_if = "Option::is_none")]
     electrifications: Option<PropertyElectrificationValues>,
     /// Geometry of the path
+    #[serde(skip_serializing_if = "Option::is_none")]
     geometry: Option<GeoJsonLineString>,
     /// Operational points along the path
     #[schema(inline)]
+    #[serde(skip_serializing_if = "Option::is_none")]
     operational_points: Option<Vec<OperationalPointOnPath>>,
 }
 
