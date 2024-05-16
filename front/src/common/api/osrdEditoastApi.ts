@@ -142,14 +142,6 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['infra'],
       }),
-      putInfraById: build.mutation<PutInfraByIdApiResponse, PutInfraByIdApiArg>({
-        query: (queryArg) => ({
-          url: `/infra/${queryArg.id}/`,
-          method: 'PUT',
-          body: queryArg.body,
-        }),
-        invalidatesTags: ['infra'],
-      }),
       postInfraByIdClone: build.mutation<PostInfraByIdCloneApiResponse, PostInfraByIdCloneApiArg>({
         query: (queryArg) => ({
           url: `/infra/${queryArg.id}/clone/`,
@@ -196,6 +188,14 @@ const injectedRtkApi = api
       getInfraByInfraId: build.query<GetInfraByInfraIdApiResponse, GetInfraByInfraIdApiArg>({
         query: (queryArg) => ({ url: `/infra/${queryArg.infraId}/` }),
         providesTags: ['infra'],
+      }),
+      putInfraByInfraId: build.mutation<PutInfraByInfraIdApiResponse, PutInfraByInfraIdApiArg>({
+        query: (queryArg) => ({
+          url: `/infra/${queryArg.infraId}/`,
+          method: 'PUT',
+          body: queryArg.body,
+        }),
+        invalidatesTags: ['infra'],
       }),
       getInfraByInfraIdAttachedAndTrackId: build.query<
         GetInfraByInfraIdAttachedAndTrackIdApiResponse,
@@ -1090,15 +1090,6 @@ export type PostInfraByIdApiArg = {
   /** Operations to do on the infra */
   body: Operation[];
 };
-export type PutInfraByIdApiResponse = /** status 200 The updated infra */ Infra;
-export type PutInfraByIdApiArg = {
-  /** infra id */
-  id: number;
-  /** the name we want to give to the infra */
-  body: {
-    name?: string;
-  };
-};
 export type PostInfraByIdCloneApiResponse = /** status 201 The duplicated infra id */ {
   id?: number;
 };
@@ -1159,6 +1150,15 @@ export type GetInfraByInfraIdApiResponse = /** status 200 The infra */ InfraWith
 export type GetInfraByInfraIdApiArg = {
   /** An existing infra ID */
   infraId: number;
+};
+export type PutInfraByInfraIdApiResponse = /** status 200 The infra has been renamed */ Infra;
+export type PutInfraByInfraIdApiArg = {
+  /** An existing infra ID */
+  infraId: number;
+  body: {
+    /** The new name to give the infra */
+    name: string;
+  };
 };
 export type GetInfraByInfraIdAttachedAndTrackIdApiResponse =
   /** status 200 All objects attached to the given track (arranged by types) */ {
