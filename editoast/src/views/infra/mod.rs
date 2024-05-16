@@ -67,6 +67,7 @@ crate::routes! {
             ),
             get,
             delete,
+            put,
             lock,
             unlock,
             get_speed_limit_tags,
@@ -104,7 +105,7 @@ pub fn infra_routes() -> impl HttpServiceFactory {
                     clone,
                     edit,
                     split_track_section,
-                    rename,
+                    put,
                     lock,
                     unlock,
                     get_speed_limit_tags,
@@ -366,21 +367,30 @@ async fn delete(
     }
 }
 
-/// Patch form for a project
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, ToSchema)]
 struct InfraPatchForm {
-    pub name: Option<String>,
+    /// The new name to give the infra
+    pub name: String,
 }
 
 impl From<InfraPatchForm> for Changeset<Infra> {
     fn from(patch: InfraPatchForm) -> Self {
-        Infra::changeset().flat_name(patch.name)
+        Infra::changeset().name(patch.name)
     }
 }
 
-/// Update an infra name
+/// Rename an infra
+#[utoipa::path(
+    tag = "infra",
+    params(InfraIdParam),
+    request_body = inline(InfraPatchForm),
+    responses(
+        (status = 200, description = "The infra has been renamed", body = Infra),
+        (status = 404, description = "Infra ID not found"),
+    ),
+)]
 #[put("")]
-async fn rename(
+async fn put(
     db_pool: Data<DbConnectionPool>,
     infra: Path<i64>,
     Json(patch): Json<InfraPatchForm>,

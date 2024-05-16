@@ -9465,33 +9465,6 @@ paths:
       summary: Update/Create/Delete an object of the infra
       tags:
       - infra
-    put:
-      parameters:
-      - description: infra id
-        in: path
-        name: id
-        required: true
-        schema:
-          type: integer
-      requestBody:
-        content:
-          application/json:
-            schema:
-              properties:
-                name:
-                  type: string
-              type: object
-        description: the name we want to give to the infra
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Infra'
-          description: The updated infra
-      summary: Update an infrastructure name
-      tags:
-      - infra
   /infra/{id}/clone/:
     post:
       parameters:
@@ -9697,6 +9670,39 @@ paths:
         '404':
           description: Infra ID not found
       summary: Retrieve a specific infra
+      tags:
+      - infra
+    put:
+      parameters:
+      - description: An existing infra ID
+        in: path
+        name: infra_id
+        required: true
+        schema:
+          format: int64
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                name:
+                  description: The new name to give the infra
+                  type: string
+              required:
+              - name
+              type: object
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Infra'
+          description: The infra has been renamed
+        '404':
+          description: Infra ID not found
+      summary: Rename an infra
       tags:
       - infra
   /infra/{infra_id}/attached/{track_id}/:
