@@ -61,8 +61,8 @@ public final class EnvelopePart implements SearchableEnvelope {
     /** The smallest speed */
     private double minSpeedCache = Double.NaN;
 
-    /** The time from the start of the envelope, in milliseconds. Only read using getTotalTimes. */
-    private long[] cumulativeMSTimesCache = null;
+    /** The time from the start of the envelope, in microseconds. Only read using getTotalTimes. */
+    private long[] cumulativeMicroSTimesCache = null;
 
     // endregion
 
@@ -270,28 +270,28 @@ public final class EnvelopePart implements SearchableEnvelope {
 
     /**
      * This method must be private as it returns an array (thus mutable cache). It computes and
-     * caches the time in milliseconds the any point of the envelope part, from the start of the
+     * caches the time in microseconds to reach any point of the envelope part, from the start of the
      * envelope part.
      */
-    private long[] getTotalTimesMS() {
-        if (cumulativeMSTimesCache != null) return cumulativeMSTimesCache;
+    private long[] getTotalTimesMicroseconds() {
+        if (cumulativeMicroSTimesCache != null) return cumulativeMicroSTimesCache;
 
         var totalTimes = new long[positions.length];
         totalTimes[0] = 0;
 
         long totalTime = 0;
         for (int i = 0; i < timeDeltas.length; i++) {
-            totalTime += (long) (timeDeltas[i] * 1000);
+            totalTime += (long) (timeDeltas[i] * 1_000_000);
             totalTimes[i + 1] = totalTime;
         }
-        cumulativeMSTimesCache = totalTimes;
+        cumulativeMicroSTimesCache = totalTimes;
         return totalTimes;
     }
 
     /** Returns the total time of the envelope part, in milliseconds */
     public long getTotalTimeMS() {
-        var totalTimes = getTotalTimesMS();
-        return totalTimes[totalTimes.length - 1];
+        var totalTimes = getTotalTimesMicroseconds();
+        return totalTimes[totalTimes.length - 1] / 1_000;
     }
 
     /**
@@ -299,7 +299,7 @@ public final class EnvelopePart implements SearchableEnvelope {
      * of the envelope part, in milliseconds
      */
     public long getTotalTimeMS(int pointIndex) {
-        return getTotalTimesMS()[pointIndex];
+        return getTotalTimesMicroseconds()[pointIndex] / 1_000;
     }
 
     // endregion
