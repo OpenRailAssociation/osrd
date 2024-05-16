@@ -16,6 +16,8 @@ import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath
 import fr.sncf.osrd.envelope_sim_infra.MRSP.computeMRSP
 import fr.sncf.osrd.graph.PathfindingEdgeRangeId
 import fr.sncf.osrd.reporting.exceptions.OSRDError
+import fr.sncf.osrd.utils.units.meters
+import fr.sncf.osrd.utils.units.sumDistances
 import java.util.*
 
 /**
@@ -35,12 +37,14 @@ class EngineeringAllowanceManager(private val graph: STDCMGraph) {
             findAffectedEdges(prevNode.previousEdge, expectedStartTime - prevNode.time)
         if (affectedEdges.isEmpty()) return false // No space to try the allowance
 
-        if (affectedEdges.sumOf { it.length.distance.meters } > 20_000) {
+        val length = affectedEdges.map { it.length.distance }.sumDistances()
+        if (length > 20_000.meters) {
             // If the allowance area is large enough to reasonably stop and accelerate again, we
             // just accept the solution. This avoids computation on very large paths
             // (which can be quite time expensive)
             return true
         }
+        if (length == 0.meters) return false
 
         // We try to run a simulation with the slowest running time while keeping the end time
         // identical.
