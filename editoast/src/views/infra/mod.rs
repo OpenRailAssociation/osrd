@@ -68,6 +68,7 @@ crate::routes! {
             get,
             delete,
             put,
+            clone,
             lock,
             unlock,
             get_speed_limit_tags,
@@ -312,22 +313,31 @@ async fn create(db_pool: Data<DbConnectionPool>, data: Json<InfraForm>) -> Resul
     Ok(HttpResponse::Created().json(infra))
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, IntoParams)]
+#[into_params(parameter_in = Query)]
 struct CloneQuery {
     /// The name of the new infra
-    name: Option<String>,
+    name: String,
 }
 
 /// Duplicate an infra
+#[utoipa::path(
+    tag = "infra",
+    params(InfraIdParam, CloneQuery),
+    responses(
+        (status = 200, description = "The new infra ID", body = u64),
+        (status = 404, description = "Infra ID not found"),
+    ),
+)]
 #[post("/clone")]
 async fn clone(
-    infra_id: Path<i64>,
+    params: Path<InfraIdParam>,
     db_pool: Data<DbConnectionPool>,
     Query(CloneQuery { name }): Query<CloneQuery>,
 ) -> Result<Json<i64>> {
     let conn = &mut db_pool.get().await?;
-    let infra = Infra::retrieve_or_fail(conn, *infra_id, || InfraApiError::NotFound {
-        infra_id: infra_id.into_inner(),
+    let infra = Infra::retrieve_or_fail(conn, params.infra_id, || InfraApiError::NotFound {
+        infra_id: params.infra_id,
     })
     .await?;
     let cloned_infra = infra.clone(db_pool.into_inner(), name).await?;

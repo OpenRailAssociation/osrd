@@ -124,13 +124,8 @@ impl Infra {
         self.save(conn).await
     }
 
-    pub async fn clone(
-        &self,
-        db_pool: Arc<DbConnectionPool>,
-        new_name: Option<String>,
-    ) -> Result<Infra> {
+    pub async fn clone(&self, db_pool: Arc<DbConnectionPool>, new_name: String) -> Result<Infra> {
         // Duplicate infra shell
-        let new_name = new_name.unwrap_or_else(|| format!("{} (copy)", self.name));
         let mut conn = db_pool.get().await?;
         let cloned_infra = <Self as Clone>::clone(self)
             .into_changeset()
@@ -338,7 +333,7 @@ pub mod tests {
 
         // WHEN
         let result = small_infra
-            .clone(pg_db_pool.clone(), Some(infra_new_name.clone()))
+            .clone(pg_db_pool.clone(), infra_new_name.clone())
             .await;
 
         // THEN
@@ -346,22 +341,6 @@ pub mod tests {
             .expect("could not clone infra")
             .into_fixture(pg_db_pool);
         assert_eq!(infra.name, infra_new_name);
-    }
-
-    #[rstest]
-    async fn clone_infra_without_new_name_returns_new_cloned_infra() {
-        // GIVEN
-        let pg_db_pool = db_pool();
-        let small_infra = small_infra(pg_db_pool.clone()).await;
-
-        // WHEN
-        let result = small_infra.clone(pg_db_pool.clone(), None).await;
-
-        // THEN
-        let infra = result
-            .expect("could not clone infra")
-            .into_fixture(pg_db_pool);
-        assert_eq!(infra.name, format!("{} (copy)", small_infra.name));
     }
 
     #[actix_test]

@@ -26,7 +26,7 @@ export default function ActionsBar({ infra, isFocused, setIsFocused, inputValue 
   const [lockInfra] = osrdEditoastApi.endpoints.postInfraByInfraIdLock.useMutation();
   const [unlockInfra] = osrdEditoastApi.endpoints.postInfraByInfraIdUnlock.useMutation();
   const [getRailjson] = osrdEditoastApi.endpoints.getInfraByInfraIdRailjson.useLazyQuery();
-  const [cloneInfra] = osrdEditoastApi.endpoints.postInfraByIdClone.useMutation();
+  const [cloneInfra] = osrdEditoastApi.endpoints.postInfraByInfraIdClone.useMutation();
   const [updateInfra] = osrdEditoastApi.endpoints.putInfraByInfraId.useMutation();
 
   async function handleLockedState(action: InfraLockState) {
@@ -74,7 +74,7 @@ export default function ActionsBar({ infra, isFocused, setIsFocused, inputValue 
     if (!isWaiting) {
       setIsWaiting(true);
       try {
-        await cloneInfra({ id: infra.id, name: `${infra.name}_copy` });
+        await cloneInfra({ infraId: infra.id, name: `${infra.name}_copy` });
       } catch (e) {
         if (e instanceof Error) {
           dispatch(

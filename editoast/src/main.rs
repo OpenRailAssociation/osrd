@@ -621,7 +621,10 @@ async fn clone_infra(
                 format!("❌ Infrastructure not found, ID: {}", infra_args.id),
             )
         })?;
-    let cloned_infra = infra.clone(db_pool, infra_args.new_name).await?;
+    let new_name = infra_args
+        .new_name
+        .unwrap_or_else(|| format!("{} (clone)", infra.name));
+    let cloned_infra = infra.clone(db_pool, new_name).await?;
     println!(
         "✅ Infra {} (ID: {}) was successfully cloned",
         cloned_infra.name.bold(),
