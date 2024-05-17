@@ -128,9 +128,8 @@ macro_rules! chunked_for_libpq {
         const ASYNC_SUBDIVISION: usize = 2_usize;
         const CHUNK_SIZE: usize = LIBPQ_MAX_PARAMETERS / ASYNC_SUBDIVISION / $parameters_per_row;
         let mut result = Vec::new();
-        let values = $values.into_iter().collect::<Vec<_>>();
-        let chunks = values.chunks(CHUNK_SIZE);
-        for $chunk in chunks.into_iter() {
+        let chunks = $values.chunks(CHUNK_SIZE);
+        for $chunk in chunks {
             let chunk_result = $query;
             result.push(chunk_result);
         }
@@ -143,9 +142,8 @@ macro_rules! chunked_for_libpq {
         const ASYNC_SUBDIVISION: usize = 2_usize;
         const CHUNK_SIZE: usize = LIBPQ_MAX_PARAMETERS / ASYNC_SUBDIVISION / $parameters_per_row;
         let mut result = $result;
-        let values = $values.into_iter().collect::<Vec<_>>();
-        let chunks = values.chunks(CHUNK_SIZE);
-        for $chunk in chunks.into_iter() {
+        let chunks = $values.chunks(CHUNK_SIZE);
+        for $chunk in chunks {
             let chunk_result = $query;
             result.extend(chunk_result);
         }
