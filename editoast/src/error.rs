@@ -15,7 +15,7 @@ use tracing::error;
 use utoipa::ToSchema;
 use validator::{ValidationErrors, ValidationErrorsKind};
 
-use crate::modelsv2::connection_pool::DbConnectionError;
+use crate::modelsv2::database::DbConnectionError;
 
 editoast_common::schemas! {
     InternalError,
