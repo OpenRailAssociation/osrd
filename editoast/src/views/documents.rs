@@ -136,8 +136,7 @@ mod tests {
     use std::ops::DerefMut;
 
     use super::*;
-    use crate::views::tests::create_shared_test_pool;
-    use crate::views::tests::TestApp;
+    use crate::views::test_app::TestAppBuilder;
 
     #[derive(Deserialize, Clone, Debug)]
     struct PostDocumentResponse {
@@ -146,8 +145,8 @@ mod tests {
 
     #[rstest]
     async fn document_post() {
-        let pool = create_shared_test_pool().await;
-        let service = TestApp::default().pool(pool.clone()).build().await;
+        let app = TestAppBuilder::default_app();
+        let pool = app.db_pool();
 
         let request = TestRequest::post()
             .uri("/documents")
@@ -157,7 +156,7 @@ mod tests {
 
         // Insert document
         let create_response: PostDocumentResponse =
-            call_and_read_body_json(&service, request).await;
+            call_and_read_body_json(&app.service, request).await;
 
         // Get create document
         let document = Document::retrieve(pool.get_ok().deref_mut(), create_response.document_key)
@@ -170,8 +169,8 @@ mod tests {
 
     #[rstest]
     async fn get_document() {
-        let pool = create_shared_test_pool().await;
-        let service = TestApp::default().pool(pool.clone()).build().await;
+        let app = TestAppBuilder::default_app();
+        let pool = app.db_pool();
 
         // Insert document test
         let document = Document::changeset()
@@ -185,15 +184,15 @@ mod tests {
         let request = TestRequest::get()
             .uri(&format!("/documents/{}", document.id))
             .to_request();
-        let response = call_and_read_body(&service, request).await;
+        let response = call_and_read_body(&app.service, request).await;
 
         assert_eq!(response.to_vec(), b"Document post test data".to_vec());
     }
 
     #[rstest]
     async fn document_delete() {
-        let pool = create_shared_test_pool().await;
-        let service = TestApp::default().pool(pool.clone()).build().await;
+        let app = TestAppBuilder::default_app();
+        let pool = app.db_pool();
 
         // Insert document test
         let document = Document::changeset()
@@ -207,7 +206,7 @@ mod tests {
         let request = TestRequest::delete()
             .uri(format!("/documents/{}", document.id).as_str())
             .to_request();
-        let response = call_service(&service, request).await;
+        let response = call_service(&app.service, request).await;
 
         assert!(response.status().is_success());
 
