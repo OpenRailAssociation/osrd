@@ -21,8 +21,8 @@ pub struct PathPropertiesRequest<'a> {
 pub struct PathPropertiesResponse {
     /// Slopes along the path
     pub slopes: PropertyValuesF64,
-    /// Gradients along the path
-    pub gradients: PropertyValuesF64,
+    /// Curves along the path
+    pub curves: PropertyValuesF64,
     /// Electrification modes and neutral section along the path
     pub electrifications: PropertyElectrificationValues,
     /// Geometry of the path

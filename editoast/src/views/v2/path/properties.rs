@@ -3,7 +3,7 @@
 //!
 //! The cache system handles partial path properties, meaning that :
 //! - If a user requests only the slopes, the core will only compute the slopes and editoast will cache the result.
-//! - Then if the user requests the gradients and slopes, editoast will retrieve the slopes from the cache and ask the core to compute the gradients.
+//! - Then if the user requests the curves and slopes, editoast will retrieve the slopes from the cache and ask the core to compute the curves.
 
 use actix_web::post;
 use actix_web::web::Data;
@@ -64,8 +64,8 @@ struct PathProperties {
     /// Slopes along the path
     slopes: Option<PropertyValuesF64>,
     #[schema(inline)]
-    /// Gradients along the path
-    gradients: Option<PropertyValuesF64>,
+    /// Curves along the path
+    curves: Option<PropertyValuesF64>,
     /// Electrification modes and neutral section along the path
     #[schema(inline)]
     electrifications: Option<PropertyElectrificationValues>,
@@ -84,8 +84,8 @@ impl PathProperties {
         if self.slopes.is_some() {
             properties.insert(Property::Slopes);
         }
-        if self.gradients.is_some() {
-            properties.insert(Property::Gradients);
+        if self.curves.is_some() {
+            properties.insert(Property::Curves);
         }
         if self.electrifications.is_some() {
             properties.insert(Property::Electrifications);
@@ -105,7 +105,7 @@ impl PathProperties {
         for property in to_clear.iter() {
             match property {
                 Property::Slopes => self.slopes = None,
-                Property::Gradients => self.gradients = None,
+                Property::Curves => self.curves = None,
                 Property::Electrifications => self.electrifications = None,
                 Property::Geometry => self.geometry = None,
                 Property::OperationalPoints => self.operational_points = None,
@@ -135,7 +135,7 @@ impl From<Props> for Properties {
 #[serde(rename_all = "snake_case")]
 enum Property {
     Slopes,
-    Gradients,
+    Curves,
     Electrifications,
     Geometry,
     OperationalPoints,
@@ -195,7 +195,7 @@ pub async fn post(
 
         path_properties = PathProperties {
             slopes: Some(computed_path_properties.slopes),
-            gradients: Some(computed_path_properties.gradients),
+            curves: Some(computed_path_properties.curves),
             electrifications: Some(computed_path_properties.electrifications),
             geometry: Some(computed_path_properties.geometry),
             operational_points: Some(computed_path_properties.operational_points),
@@ -289,7 +289,7 @@ mod tests {
     async fn path_properties_small_infra(#[future] small_infra: TestFixture<Infra>) {
         let service = create_test_service().await;
         let infra = small_infra.await;
-        let url = format!("/v2/infra/{}/path_properties?props[]=slopes&props[]=gradients&props[]=electrifications&props[]=geometry&props[]=operational_points", infra.id());
+        let url = format!("/v2/infra/{}/path_properties?props[]=slopes&props[]=curves&props[]=electrifications&props[]=geometry&props[]=operational_points", infra.id());
 
         // Should succeed
         let request = TestRequest::post().uri(&url).set_json(json!(
@@ -297,7 +297,7 @@ mod tests {
         ).to_request();
         let response: PathProperties = call_and_read_body_json(&service, request).await;
         assert!(response.slopes.is_some());
-        assert!(response.gradients.is_some());
+        assert!(response.curves.is_some());
         assert!(response.electrifications.is_some());
         assert!(response.geometry.is_some());
         assert!(response.operational_points.is_some());
