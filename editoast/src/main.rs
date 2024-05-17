@@ -37,7 +37,6 @@ use client::{
 use editoast_schemas::infra::ElectricalProfileSetData;
 use editoast_schemas::rolling_stock::RollingStock;
 use editoast_schemas::train_schedule::TrainScheduleBase;
-use modelsv2::connection_pool::create_connection_pool;
 use modelsv2::{
     timetable::Timetable, timetable::TimetableWithTrains, train_schedule::TrainSchedule,
     train_schedule::TrainScheduleChangeset,
@@ -176,13 +175,9 @@ async fn main() {
 async fn run() -> Result<(), Box<dyn Error + Send + Sync>> {
     let client = Client::parse();
     init_tracing(EditoastMode::from_client(&client), &client.telemetry_config);
+
     let pg_config = client.postgres_config;
-    let create_db_pool = || {
-        Ok::<_, Box<dyn Error + Send + Sync>>(Data::new(create_connection_pool(
-            pg_config.url()?,
-            pg_config.pool_size,
-        )))
-    };
+    let db_pool = DbConnectionPoolV2::try_initialize(pg_config.url()?, pg_config.pool_size).await?;
 
     let redis_config = client.redis_config;
 
@@ -194,9 +189,7 @@ async fn run() -> Result<(), Box<dyn Error + Send + Sync>> {
 
     match client.command {
         Commands::Runserver(args) => runserver(args, pg_config, redis_config).await,
-        Commands::ImportRollingStock(args) => {
-            import_rolling_stock(args, create_db_pool()?.into_inner()).await
-        }
+        Commands::ImportRollingStock(args) => import_rolling_stock(args, db_pool.pool_v1()).await,
         Commands::OsmToRailjson(args) => {
             osm_to_railjson::osm_to_railjson(args.osm_pbf_in, args.railjson_out)
         }
@@ -206,13 +199,13 @@ async fn run() -> Result<(), Box<dyn Error + Send + Sync>> {
         }
         Commands::ElectricalProfiles(subcommand) => match subcommand {
             ElectricalProfilesCommands::Import(args) => {
-                electrical_profile_set_import(args, create_db_pool()?.into_inner()).await
+                electrical_profile_set_import(args, db_pool.pool_v1()).await
             }
             ElectricalProfilesCommands::List(args) => {
-                electrical_profile_set_list(args, create_db_pool()?.into_inner()).await
+                electrical_profile_set_list(args, db_pool.pool_v1()).await
             }
             ElectricalProfilesCommands::Delete(args) => {
-                electrical_profile_set_delete(args, create_db_pool()?.into_inner()).await
+                electrical_profile_set_delete(args, db_pool.pool_v1()).await
             }
         },
         Commands::Search(subcommand) => match subcommand {
@@ -221,29 +214,19 @@ async fn run() -> Result<(), Box<dyn Error + Send + Sync>> {
                 Ok(())
             }
             SearchCommands::MakeMigration(args) => make_search_migration(args),
-            SearchCommands::Refresh(args) => {
-                refresh_search_tables(args, create_db_pool()?.into_inner()).await
-            }
+            SearchCommands::Refresh(args) => refresh_search_tables(args, db_pool.pool_v1()).await,
         },
         Commands::Infra(subcommand) => match subcommand {
-            InfraCommands::Clone(args) => clone_infra(args, create_db_pool()?.into_inner()).await,
-            InfraCommands::Clear(args) => {
-                clear_infra(args, create_db_pool()?.into_inner(), redis_config).await
-            }
+            InfraCommands::Clone(args) => clone_infra(args, db_pool.pool_v1()).await,
+            InfraCommands::Clear(args) => clear_infra(args, db_pool.pool_v1(), redis_config).await,
             InfraCommands::Generate(args) => {
-                generate_infra(args, create_db_pool()?.into_inner(), redis_config).await
+                generate_infra(args, db_pool.pool_v1(), redis_config).await
             }
-            InfraCommands::ImportRailjson(args) => {
-                import_railjson(args, create_db_pool()?.into_inner()).await
-            }
+            InfraCommands::ImportRailjson(args) => import_railjson(args, db_pool.pool_v1()).await,
         },
         Commands::Timetables(subcommand) => match subcommand {
-            TimetablesCommands::Import(args) => {
-                trains_import(args, create_db_pool()?.into_inner()).await
-            }
-            TimetablesCommands::Export(args) => {
-                trains_export(args, create_db_pool()?.into_inner()).await
-            }
+            TimetablesCommands::Import(args) => trains_import(args, db_pool.pool_v1()).await,
+            TimetablesCommands::Export(args) => trains_export(args, db_pool.pool_v1()).await,
         },
     }
 }
@@ -385,8 +368,27 @@ async fn runserver(
     // Config database
     let redis = RedisClient::new(redis_config)?;
 
-    // Create database pool
-    let db_pool = create_connection_pool(postgres_config.url()?, postgres_config.pool_size);
+    // Create both database pools
+    // NOTE: Okay, this is a bit convoluted because we need both versions
+    // but we don't want to duplicate the underlying connection pool.
+    // 1. We defer the creation of the pool to DbConnectionPoolV2 to avoid code duplication.
+    // 2. We extract a reference to the underlying pool == DbConnectionPoolV1
+    // 3. We drop the DbConnectionPoolV2 so its Arc reference is dropped as well
+    // 4. Since DbConnectionPoolV2 went out of scope, the refcount of the Arc is 1
+    //    and we can extract its inner value.
+    // 5. We wrap it again in an actix_web::web::Data.
+    // 6. Since this new wrapper re-creates an Arc, we can use it to re-create a DbConnectionPoolV2.
+    // 7. All this spaghetti will be removed once we fully migrate to pool v2 :D
+    let db_pool_v1_arc = {
+        let db_pool =
+            DbConnectionPoolV2::try_initialize(postgres_config.url()?, postgres_config.pool_size)
+                .await?;
+        db_pool.pool_v1()
+    };
+    let db_pool_v1 = Arc::into_inner(db_pool_v1_arc).unwrap();
+    let db_pool_v1 = Data::new(db_pool_v1);
+    let db_pool_v2 = DbConnectionPoolV2::try_from_pool(db_pool_v1.clone().into_inner()).await?;
+    let db_pool_v2 = Data::new(db_pool_v2);
 
     // Custom Json extractor configuration
     let json_cfg = JsonConfig::default()
@@ -442,10 +444,8 @@ async fn runserver(
             .wrap(Logger::new(actix_logger_format).log_target("actix_logger"))
             .app_data(json_cfg.clone())
             .app_data(payload_config.clone())
-            .app_data(Data::new(db_pool.clone()))
-            .app_data(Data::new(DbConnectionPoolV2::try_from_pool(
-                db_pool.clone(),
-            )))
+            .app_data(db_pool_v1.clone())
+            .app_data(db_pool_v2.clone())
             .app_data(Data::new(redis.clone()))
             .app_data(infra_caches.clone())
             .app_data(Data::new(MapLayers::parse()))
