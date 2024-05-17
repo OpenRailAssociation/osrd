@@ -15,6 +15,7 @@ use crate::primitives::ObjectType;
 
 editoast_common::schemas! {
     Route,
+    RoutePath,
 }
 
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, Eq, ToSchema)]
@@ -45,8 +46,11 @@ impl OSRDIdentified for Route {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, PartialEq, ToSchema)]
 pub struct RoutePath {
     pub track_ranges: Vec<DirectionalTrackRange>,
-    pub switches_directions: HashMap<Identifier, Identifier>,
+    // ToSchema isn’t derived correctly with tuples (inline doesn’t work)
+    // so we need to specify the value_type
+    #[schema(inline, value_type = Vec<(String, String)>)]
+    pub switches_directions: Vec<(Identifier, Identifier)>,
 }

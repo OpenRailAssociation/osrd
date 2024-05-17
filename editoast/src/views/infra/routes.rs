@@ -8,6 +8,7 @@ use actix_web::web::Json;
 use actix_web::web::Path;
 use actix_web::web::Query;
 use chashmap::CHashMap;
+use editoast_schemas::infra::RoutePath;
 use serde::Deserialize;
 use serde::Serialize;
 use strum::Display;
@@ -22,8 +23,6 @@ use crate::modelsv2::Infra;
 use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraIdParam;
 use crate::views::params::List;
-
-use editoast_schemas::infra::DirectionalTrackRange;
 
 crate::routes! {
     "/routes" => {
@@ -97,9 +96,10 @@ async fn get_routes_from_waypoint(
 }
 
 #[derive(Debug, Clone, Serialize, PartialEq, ToSchema)]
-#[serde(deny_unknown_fields, tag = "type", content = "track_ranges")]
+#[serde(deny_unknown_fields, tag = "type")]
 enum RouteTrackRangesResult {
-    Computed(Vec<DirectionalTrackRange>),
+    /// RoutePath contains N track ranges with the N-1 switches found inbetween, in the order they appear on the route
+    Computed(RoutePath),
     NotFound,
     CantComputePath,
 }
@@ -124,7 +124,11 @@ struct RoutesFromNodesPositions {
     tag = "infra,routes",
     params(InfraIdParam, RouteTrackRangesParams),
     responses(
-        (status = 200, body = inline(Vec<RouteTrackRangesResult>), description = "Foreach route, all the track ranges in it or an error")
+        (
+            status = 200,
+            body = inline(Vec<RouteTrackRangesResult>),
+            description = "Foreach route, either tracks_ranges + switches found on the route, or an error"
+        )
     ),
 )]
 #[get("/track_ranges")]
@@ -151,7 +155,10 @@ async fn get_routes_track_ranges<'a>(
                 let route = route.unwrap_route();
                 let route_path = infra_cache.compute_track_ranges_on_route(route, &graph);
                 if let Some(route_path) = route_path {
-                    RouteTrackRangesResult::Computed(route_path.track_ranges)
+                    RouteTrackRangesResult::Computed(RoutePath {
+                        track_ranges: route_path.track_ranges,
+                        switches_directions: route_path.switches_directions,
+                    })
                 } else {
                     RouteTrackRangesResult::CantComputePath
                 }
