@@ -3248,6 +3248,13 @@ export type OperationalPointExtensions = {
   } | null;
 };
 export type PathProperties = {
+  curves?: {
+    /** List of `n` boundaries of the ranges.
+        A boundary is a distance from the beginning of the path in mm. */
+    boundaries: number[];
+    /** List of `n+1` values associated to the ranges */
+    values: number[];
+  } | null;
   electrifications?: {
     /** List of `n` boundaries of the ranges.
         A boundary is a distance from the beginning of the path in mm. */
@@ -3268,13 +3275,6 @@ export type PathProperties = {
     )[];
   } | null;
   geometry?: GeoJsonLineString | null;
-  gradients?: {
-    /** List of `n` boundaries of the ranges.
-        A boundary is a distance from the beginning of the path in mm. */
-    boundaries: number[];
-    /** List of `n+1` values associated to the ranges */
-    values: number[];
-  } | null;
   /** Operational points along the path */
   operational_points?:
     | {
@@ -3293,12 +3293,7 @@ export type PathProperties = {
     values: number[];
   } | null;
 };
-export type Property =
-  | 'slopes'
-  | 'gradients'
-  | 'electrifications'
-  | 'geometry'
-  | 'operational_points';
+export type Property = 'slopes' | 'curves' | 'electrifications' | 'geometry' | 'operational_points';
 export type PathPropertiesInput = {
   /** List of track sections */
   track_section_ranges: TrackRange[];

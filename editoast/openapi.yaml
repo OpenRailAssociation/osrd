@@ -4527,6 +4527,30 @@ components:
     PathProperties:
       description: Properties along a path. Each property is optional since it depends on what the user requests.
       properties:
+        curves:
+          allOf:
+          - description: Property f64 values along a path. Each value is associated to a range of the path.
+            properties:
+              boundaries:
+                description: |-
+                  List of `n` boundaries of the ranges.
+                  A boundary is a distance from the beginning of the path in mm.
+                items:
+                  format: int64
+                  minimum: 0
+                  type: integer
+                type: array
+              values:
+                description: List of `n+1` values associated to the ranges
+                items:
+                  format: double
+                  type: number
+                type: array
+            required:
+            - boundaries
+            - values
+            type: object
+          nullable: true
         electrifications:
           allOf:
           - description: Electrification property along a path. Each value is associated to a range of the path.
@@ -4585,30 +4609,6 @@ components:
         geometry:
           allOf:
           - $ref: '#/components/schemas/GeoJsonLineString'
-          nullable: true
-        gradients:
-          allOf:
-          - description: Property f64 values along a path. Each value is associated to a range of the path.
-            properties:
-              boundaries:
-                description: |-
-                  List of `n` boundaries of the ranges.
-                  A boundary is a distance from the beginning of the path in mm.
-                items:
-                  format: int64
-                  minimum: 0
-                  type: integer
-                type: array
-              values:
-                description: List of `n+1` values associated to the ranges
-                items:
-                  format: double
-                  type: number
-                type: array
-            required:
-            - boundaries
-            - values
-            type: object
           nullable: true
         operational_points:
           description: Operational points along the path
@@ -5566,7 +5566,7 @@ components:
       description: Enum representing the various associated properties that can be returned
       enum:
       - slopes
-      - gradients
+      - curves
       - electrifications
       - geometry
       - operational_points
