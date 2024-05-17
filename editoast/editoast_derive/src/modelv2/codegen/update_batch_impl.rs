@@ -35,7 +35,7 @@ impl ToTokens for UpdateBatchImpl {
             #[automatically_derived]
             #[async_trait::async_trait]
             impl crate::modelsv2::UpdateBatchUnchecked<#model, #ty> for #changeset {
-                #[tracing::instrument(name = #span_name, skip_all, ret, err, fields(query_ids))]
+                #[tracing::instrument(name = #span_name, skip_all, err, fields(query_ids))]
                 async fn update_batch_unchecked<
                     I: std::iter::IntoIterator<Item = #ty> + Send + 'async_trait,
                     C: Default + std::iter::Extend<#model> + Send + std::fmt::Debug,

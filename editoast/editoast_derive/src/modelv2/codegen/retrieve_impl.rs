@@ -30,7 +30,7 @@ impl ToTokens for RetrieveImpl {
             #[automatically_derived]
             #[async_trait::async_trait]
             impl crate::modelsv2::Retrieve<#ty> for #model {
-                #[tracing::instrument(name = #span_name, skip_all, ret, err, fields(query_id))]
+                #[tracing::instrument(name = #span_name, skip_all, err, fields(query_id))]
                 async fn retrieve(
                     conn: &mut crate::modelsv2::DbConnection,
                     #id_ident: #ty,

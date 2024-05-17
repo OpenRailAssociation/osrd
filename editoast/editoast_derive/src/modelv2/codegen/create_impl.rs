@@ -22,7 +22,7 @@ impl ToTokens for CreateImpl {
             #[automatically_derived]
             #[async_trait::async_trait]
             impl crate::modelsv2::Create<#model> for #changeset {
-                #[tracing::instrument(name = #span_name, skip_all, ret, err)]
+                #[tracing::instrument(name = #span_name, skip_all, err)]
                 async fn create(
                     self,
                     conn: &mut crate::modelsv2::DbConnection,
