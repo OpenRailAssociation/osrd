@@ -1,3 +1,4 @@
+mod route_from_waypoint_result;
 mod speed_limit_tags;
 mod splited_track_section_with_data;
 mod voltage;
@@ -17,6 +18,7 @@ use diesel_async::RunQueryDsl;
 use editoast_derive::ModelV2;
 use futures::future::try_join_all;
 use futures::Future;
+use route_from_waypoint_result::RouteFromWaypointResult;
 use serde::Deserialize;
 use serde::Serialize;
 use speed_limit_tags::SpeedLimitTags;
@@ -285,6 +287,21 @@ impl Infra {
             .load::<SplitedTrackSectionWithData>(conn)
             .await?;
         Ok(result)
+    }
+
+    pub async fn get_routes_from_waypoint(
+        &self,
+        conn: &mut DbConnection,
+        waypoint_id: &String,
+        waypoint_type: String,
+    ) -> Result<Vec<RouteFromWaypointResult>> {
+        let routes = sql_query(include_str!("infra/sql/get_routes_from_waypoint.sql"))
+            .bind::<BigInt, _>(self.id)
+            .bind::<Text, _>(&waypoint_id)
+            .bind::<Text, _>(waypoint_type)
+            .load::<RouteFromWaypointResult>(conn)
+            .await?;
+        Ok(routes)
     }
 }
 
