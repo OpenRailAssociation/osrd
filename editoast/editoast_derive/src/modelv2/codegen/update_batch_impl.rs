@@ -74,7 +74,7 @@ impl ToTokens for UpdateBatchImpl {
                     })
                 }
 
-                #[tracing::instrument(name = #span_name_with_key, skip_all)]
+                #[tracing::instrument(name = #span_name_with_key, skip_all, err, fields(query_ids))]
                 async fn update_batch_with_key_unchecked<
                     I: std::iter::IntoIterator<Item = #ty> + Send + 'async_trait,
                     C: Default + std::iter::Extend<(#ty, #model)> + Send,
@@ -89,6 +89,8 @@ impl ToTokens for UpdateBatchImpl {
                     use diesel::prelude::*;
                     use diesel_async::RunQueryDsl;
                     use futures_util::stream::TryStreamExt;
+                    let ids = ids.into_iter().collect::<Vec<_>>();
+                    tracing::Span::current().record("query_ids", tracing::field::debug(&ids));
                     Ok(crate::chunked_for_libpq! {
                         // FIXME: that count is correct for each row, but the maximum buffer size
                         // should be libpq's max MINUS the size of the changeset
