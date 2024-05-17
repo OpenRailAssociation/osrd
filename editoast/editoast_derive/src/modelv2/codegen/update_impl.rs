@@ -32,7 +32,7 @@ impl ToTokens for UpdateImpl {
             #[automatically_derived]
             #[async_trait::async_trait]
             impl crate::modelsv2::Update<#ty, #model> for #changeset {
-                #[tracing::instrument(name = #span_name, skip_all, ret, err, fields(query_id))]
+                #[tracing::instrument(name = #span_name, skip_all, err, fields(query_id))]
                 async fn update(
                     self,
                     conn: &mut crate::modelsv2::DbConnection,

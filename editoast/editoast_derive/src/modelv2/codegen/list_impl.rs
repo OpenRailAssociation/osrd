@@ -20,7 +20,7 @@ impl ToTokens for ListImpl {
             #[automatically_derived]
             #[async_trait::async_trait]
             impl crate::modelsv2::prelude::List for #model {
-                #[tracing::instrument(name = #span_name, skip_all, ret, err, fields(
+                #[tracing::instrument(name = #span_name, skip_all, err, fields(
                     nb_filters = settings.filters.len(),
                     nb_sorts = settings.sorts.len(),
                     paginate_counting = settings.paginate_counting,
