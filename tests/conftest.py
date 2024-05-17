@@ -10,7 +10,7 @@ from tests.path import Path as TrainPath
 from tests.scenario import Scenario
 from tests.services import EDITOAST_URL
 from tests.test_e2e import FAST_ROLLING_STOCK_JSON_PATH, TestRollingStock
-from tests.utils.timetable import create_scenario
+from tests.utils.timetable import create_scenario, create_scenario_v2
 
 
 def _load_generated_infra(name: str) -> int:
@@ -77,6 +77,12 @@ def tiny_scenario(tiny_infra: Infra, foo_project_id: int, foo_study_id: int) -> 
 @pytest.fixture
 def small_scenario(small_infra: Infra, foo_project_id: int, foo_study_id: int) -> Iterator[Scenario]:
     scenario_id, timetable_id = create_scenario(EDITOAST_URL, small_infra.id, foo_project_id, foo_study_id)
+    yield Scenario(foo_project_id, foo_study_id, scenario_id, small_infra.id, timetable_id)
+
+
+@pytest.fixture
+def small_scenario_v2(small_infra: Infra, foo_project_id: int, foo_study_id: int) -> Iterator[Scenario]:
+    scenario_id, timetable_id = create_scenario_v2(EDITOAST_URL, small_infra.id, foo_project_id, foo_study_id)
     yield Scenario(foo_project_id, foo_study_id, scenario_id, small_infra.id, timetable_id)
 
 
