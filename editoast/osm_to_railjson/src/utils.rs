@@ -280,7 +280,7 @@ pub fn signals(
 }
 
 pub fn speed_sections(edge: &Edge) -> Vec<SpeedSection> {
-    match (
+    let speeds = match (
         edge.tags.get("maxspeed"),
         edge.tags.get("maxspeed:forward"),
         edge.tags.get("maxspeed:backward"),
@@ -311,14 +311,28 @@ pub fn speed_sections(edge: &Edge) -> Vec<SpeedSection> {
             speed_section(edge, forward, ApplicableDirections::StartToStop),
             speed_section(edge, backward, ApplicableDirections::StopToStart),
         ],
-    }
+    };
+    speeds.into_iter().flatten().collect()
 }
 
-fn speed_section(edge: &Edge, limit: &String, dir: ApplicableDirections) -> SpeedSection {
-    // We convert from km/h to m/s
-    let speed_limit = f64::from_str(limit).map(|speed| Speed(speed / 3.6)).ok();
+/// Builds a speed section from a speed limit
+/// Handles both km/h and mph
+/// If the speed limit is invalid, it will log a warning and return None
+fn speed_section(edge: &Edge, limit: &String, dir: ApplicableDirections) -> Option<SpeedSection> {
+    let speed_limit = if limit.ends_with("mph") {
+        // We convert from mph to m/s
+        let limit = limit.split("mph").next().unwrap_or_default().trim();
+        f64::from_str(limit)
+            .map(|speed| Speed(speed / 2.2369362920544))
+            .ok()
+    } else {
+        // We convert from km/h to m/s
+        f64::from_str(limit).map(|speed| Speed(speed / 3.6)).ok()
+    };
+
     if speed_limit.is_none() || speed_limit.unwrap().0 <= 0. {
         warn!("Invalid speed limit '{limit}' for way {}", edge.osm_id.0);
+        return None;
     }
 
     let id = match dir {
@@ -326,7 +340,7 @@ fn speed_section(edge: &Edge, limit: &String, dir: ApplicableDirections) -> Spee
         ApplicableDirections::StartToStop => format!("{}-forward", edge.id).into(),
         ApplicableDirections::StopToStart => format!("{}-backward", edge.id).into(),
     };
-    SpeedSection {
+    Some(SpeedSection {
         id,
         speed_limit,
         track_ranges: vec![ApplicableDirectionsTrackRange::new(
@@ -336,7 +350,7 @@ fn speed_section(edge: &Edge, limit: &String, dir: ApplicableDirections) -> Spee
             dir,
         )],
         ..Default::default()
-    }
+    })
 }
 
 fn sncf_extensions(node: &Node) -> SignalSncfExtension {
