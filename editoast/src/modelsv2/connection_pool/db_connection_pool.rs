@@ -1,17 +1,28 @@
+use diesel::ConnectionError;
+use diesel::ConnectionResult;
 use diesel_async::pooled_connection::deadpool::Object;
 use diesel_async::pooled_connection::deadpool::Pool;
 
+use diesel_async::pooled_connection::ManagerConfig;
 use diesel_async::AsyncPgConnection;
+use futures::future::BoxFuture;
 use futures::Future;
+use futures_util::FutureExt as _;
+use openssl::ssl::SslConnector;
+use openssl::ssl::SslMethod;
+use openssl::ssl::SslVerifyMode;
 use std::sync::Arc;
+use url::Url;
+
 #[cfg(test)]
 use tokio::sync::OwnedRwLockWriteGuard;
 #[cfg(test)]
 use tokio::sync::RwLock;
-#[cfg(test)]
-use url::Url;
 
+use super::DbConnection;
+use super::DbConnectionConfig;
 use super::DbConnectionError;
+use super::DbConnectionPool;
 
 #[cfg(test)]
 pub type DbConnectionV2 = OwnedRwLockWriteGuard<Object<AsyncPgConnection>>;
@@ -37,29 +48,18 @@ pub struct DbConnectionPoolV2 {
 
 #[cfg(test)]
 impl DbConnectionPoolV2 {
-    /// Get inner pool for retro compatibility
-    pub fn pool_v1(&self) -> Arc<Pool<AsyncPgConnection>> {
-        self.pool.clone()
-    }
-
-    pub async fn try_from_pool(pool: Pool<AsyncPgConnection>) -> Result<Self, DbConnectionError> {
+    pub async fn try_from_pool(
+        pool: Arc<Pool<AsyncPgConnection>>,
+    ) -> Result<Self, DbConnectionError> {
         use diesel_async::AsyncConnection;
         let mut conn = pool.get().await?;
         conn.begin_test_transaction().await?;
         let test_connection = Arc::new(RwLock::new(conn));
 
         Ok(Self {
-            pool: Arc::new(pool),
+            pool,
             test_connection: Some(test_connection),
         })
-    }
-
-    /// Creates a connection pool of size 1 from an URL
-    pub async fn try_initialize(url: Url) -> Result<Self, DbConnectionError> {
-        use diesel_async::pooled_connection::AsyncDieselConnectionManager;
-        let manager = AsyncDieselConnectionManager::<AsyncPgConnection>::new(url.as_str());
-        let pool = Pool::builder(manager).max_size(1).build()?;
-        Self::try_from_pool(pool).await
     }
 
     /// Create a connection pool for testing purposes
@@ -69,7 +69,7 @@ impl DbConnectionPoolV2 {
         let url = std::env::var("OSRD_TEST_PG_URL")
             .unwrap_or_else(|_| String::from("postgresql://osrd:password@localhost/osrd"));
         let url = Url::parse(&url).expect("Failed to parse postgresql url");
-        futures::executor::block_on(Self::try_initialize(url))
+        futures::executor::block_on(Self::try_initialize(url, 1))
             .expect("Failed to initialize test connection pool")
     }
 
@@ -86,10 +86,10 @@ impl DbConnectionPoolV2 {
 
 #[cfg(not(test))]
 impl DbConnectionPoolV2 {
-    pub async fn try_from_pool(pool: Pool<AsyncPgConnection>) -> Result<Self, DbConnectionError> {
-        Ok(Self {
-            pool: Arc::new(pool),
-        })
+    pub async fn try_from_pool(
+        pool: Arc<Pool<AsyncPgConnection>>,
+    ) -> Result<Self, DbConnectionError> {
+        Ok(Self { pool })
     }
 }
 
@@ -101,6 +101,19 @@ impl Default for DbConnectionPoolV2 {
 }
 
 impl DbConnectionPoolV2 {
+    /// Get inner pool for retro compatibility
+    pub fn pool_v1(&self) -> Arc<Pool<AsyncPgConnection>> {
+        self.pool.clone()
+    }
+
+    /// Creates a connection pool with the given settings
+    ///
+    /// In a testing environment, you should use `DbConnectionPoolV2::for_tests` instead.
+    pub async fn try_initialize(url: Url, max_size: usize) -> Result<Self, DbConnectionError> {
+        let pool = create_connection_pool(url, max_size)?;
+        Self::try_from_pool(Arc::new(pool)).await
+    }
+
     #[cfg(test)]
     async fn get_test(&self) -> Result<DbConnectionV2, DbConnectionError> {
         if let Some(test_connection) = &self.test_connection {
@@ -229,4 +242,34 @@ impl DbConnectionPoolV2 {
     {
         std::iter::repeat(self).map(|p| p.get())
     }
+}
+
+pub fn create_connection_pool(
+    url: Url,
+    max_size: usize,
+) -> Result<DbConnectionPool, DbConnectionError> {
+    let mut manager_config = ManagerConfig::default();
+    manager_config.custom_setup = Box::new(establish_connection);
+    let manager = DbConnectionConfig::new_with_config(url, manager_config);
+    Ok(Pool::builder(manager).max_size(max_size).build()?)
+}
+
+fn establish_connection(config: &str) -> BoxFuture<ConnectionResult<DbConnection>> {
+    let fut = async {
+        let mut connector_builder = SslConnector::builder(SslMethod::tls()).unwrap();
+        connector_builder.set_verify(SslVerifyMode::NONE);
+        let tls = postgres_openssl::MakeTlsConnector::new(connector_builder.build());
+        let (client, conn) = tokio_postgres::connect(config, tls)
+            .await
+            .map_err(|e| ConnectionError::BadConnection(e.to_string()))?;
+        // The connection object performs the actual communication with the database,
+        // so spawn it off to run on its own.
+        tokio::spawn(async move {
+            if let Err(e) = conn.await {
+                tracing::error!("connection error: {}", e);
+            }
+        });
+        DbConnection::try_from(client).await
+    };
+    fut.boxed()
 }
