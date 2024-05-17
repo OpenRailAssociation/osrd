@@ -5,8 +5,8 @@ pub mod tests {
     use std::sync::Arc;
 
     use crate::client::PostgresConfig;
-    use crate::modelsv2::connection_pool::db_connection_pool::create_connection_pool;
-    use crate::modelsv2::connection_pool::DbConnectionPool;
+    use crate::modelsv2::database::connection_pool::create_connection_pool;
+    use crate::modelsv2::database::DbConnectionPool;
     use crate::modelsv2::DbConnection;
     use crate::{
         models::{

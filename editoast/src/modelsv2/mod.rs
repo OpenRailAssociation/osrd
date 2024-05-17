@@ -1,4 +1,4 @@
-pub mod connection_pool;
+pub mod database;
 pub mod documents;
 pub mod electrical_profiles;
 pub mod infra;
@@ -20,9 +20,9 @@ pub mod work_schedules;
 
 pub use prelude::*;
 
-pub use connection_pool::DbConnection;
-pub use connection_pool::DbConnectionPool;
-pub use connection_pool::DbConnectionPoolV2;
+pub use database::DbConnection;
+pub use database::DbConnectionPool;
+pub use database::DbConnectionPoolV2;
 pub use documents::Document;
 pub use electrical_profiles::ElectricalProfileSet;
 pub use infra::Infra;
