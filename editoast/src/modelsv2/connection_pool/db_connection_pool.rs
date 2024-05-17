@@ -2,6 +2,7 @@ use diesel_async::pooled_connection::deadpool::Object;
 use diesel_async::pooled_connection::deadpool::Pool;
 
 use diesel_async::AsyncPgConnection;
+use futures::Future;
 use std::sync::Arc;
 #[cfg(test)]
 use tokio::sync::OwnedRwLockWriteGuard;
@@ -12,10 +13,21 @@ use url::Url;
 
 use super::DbConnectionError;
 
-/// - Wrapper for connection pooling with support for test connections.
-/// - In test mode, the connection pool will always provide the same test connection for testing purposes.
-/// - This connection will not commit any changes to the database, ensuring the isolation of each test.
-/// The connection pool in test mode will not commit any changes to the database, all data will be deleted after the test
+#[cfg(test)]
+pub type DbConnectionV2 = OwnedRwLockWriteGuard<Object<AsyncPgConnection>>;
+
+#[cfg(not(test))]
+pub type DbConnectionV2 = Object<AsyncPgConnection>;
+
+/// Wrapper for connection pooling with support for test connections on `cfg(test)`
+///
+/// # Testing pool
+///
+/// In test mode, the [DbConnectionPool::get] function will always return the same connection that has
+/// been setup to drop all modification once the test ends.
+/// Since this connection will not commit any changes to the database, we ensure the isolation of each test.
+///
+/// A new pool is expected to be initialized for each test, see `DbConnectionPoolV2::for_tests`.
 #[derive(Clone)]
 pub struct DbConnectionPoolV2 {
     pool: Arc<Pool<AsyncPgConnection>>,
@@ -42,6 +54,7 @@ impl DbConnectionPoolV2 {
         })
     }
 
+    /// Creates a connection pool of size 1 from an URL
     pub async fn try_initialize(url: Url) -> Result<Self, DbConnectionError> {
         use diesel_async::pooled_connection::AsyncDieselConnectionManager;
         let manager = AsyncDieselConnectionManager::<AsyncPgConnection>::new(url.as_str());
@@ -60,34 +73,13 @@ impl DbConnectionPoolV2 {
             .expect("Failed to initialize test connection pool")
     }
 
-    /// # Test creation steps exemple
+    /// Gets a test connection from the pool synchronously, failing if the connection is not available
     ///
-    /// - Create the connection pool in test mode:
-    /// ```
-    /// let pool = create_shared_test_pool().await;
-    /// ```
-    /// - Create the service with the connection pool:
-    /// ```
-    /// let service = create_test_app(pool.clone()).await;
-    /// ```
-    /// - Insert the required data before testing the API service:
-    /// ```
-    /// let document = create_document(&pool).await;
-    /// ```
-    /// - Call the API service
-    /// - Test the API service response
-    pub async fn get(
-        &self,
-    ) -> Result<OwnedRwLockWriteGuard<Object<AsyncPgConnection>>, DbConnectionError> {
-        if let Some(test_connection) = &self.test_connection {
-            let connection = test_connection.clone().write_owned().await;
-            Ok(connection)
-        } else {
-            Err(DbConnectionError::TestConnection)
-        }
-    }
-
-    pub fn get_ok(&self) -> OwnedRwLockWriteGuard<Object<AsyncPgConnection>> {
+    /// In unit tests, this is the preferred way to get a connection
+    ///
+    /// See [DbConnectionPoolV2::get] for more information on how connections should be used
+    /// in tests.
+    pub fn get_ok(&self) -> DbConnectionV2 {
         futures::executor::block_on(self.get()).expect("Failed to get test connection")
     }
 }
@@ -99,30 +91,142 @@ impl DbConnectionPoolV2 {
             pool: Arc::new(pool),
         })
     }
-
-    /// - The connection will be the same for all call to this function, it will not commit any changes to the database
-    /// - For each test case, the pool need to be created again
-    /// - This connection is behind a RwLock to allow multiple tests to use it at the same time,
-    /// - The lock need to be released as soon as possible, you can create a function, use block expressions, `pool.get_ok().deref_mut()``
-    /// ```rust
-    /// let document = {
-    ///     Document::changeset()
-    ///        .data(b"Document post test data".to_vec())
-    ///        .content_type(String::from("text/plain"))
-    ///        .create(pool.get_ok().deref_mut())
-    ///        .await
-    ///        .expect("Failed to create document")
-    /// };
-    /// ```
-    pub async fn get(&self) -> Result<Object<AsyncPgConnection>, DbConnectionError> {
-        let connection = self.pool.get().await?;
-        Ok(connection)
-    }
 }
 
 #[cfg(test)]
 impl Default for DbConnectionPoolV2 {
     fn default() -> Self {
         Self::for_tests()
+    }
+}
+
+impl DbConnectionPoolV2 {
+    #[cfg(test)]
+    async fn get_test(&self) -> Result<DbConnectionV2, DbConnectionError> {
+        if let Some(test_connection) = &self.test_connection {
+            let connection = test_connection.clone().write_owned().await;
+            Ok(connection)
+        } else {
+            Err(DbConnectionError::TestConnection)
+        }
+    }
+
+    #[cfg(not(test))]
+    async fn get_proxy(&self) -> Result<DbConnectionV2, DbConnectionError> {
+        let connection = self.pool.get().await?;
+        Ok(connection)
+    }
+
+    /// Get a connection from the pool
+    ///
+    /// This function behaves differently in test mode.
+    ///
+    /// # Production mode
+    ///
+    /// In production mode, this function will just return a connection from the pool, which may
+    /// hold several opened. This function is intended to be a drop-in replacement for the
+    /// `deadpool`'s `get` function.
+    ///
+    /// # Test mode
+    ///
+    /// In test mode, this function will return the same connection that has been setup to drop all
+    /// modifications once the test ends. This connection is intended to be used in unit tests to
+    /// ensure the isolation of each test.
+    ///
+    /// ## Pitfalls
+    ///
+    /// However, this comes with several limitations on how connections are used globally.
+    ///
+    /// 1. Once a connection is used, it should be dropped **AS SOON AS POSSIBLE**. Failing to do so
+    ///    may lead to deadlocks. Example:
+    ///
+    /// ```rust
+    /// let conn = pool.get_ok();
+    /// // Do something with conn
+    ///
+    /// // This will deadlock because `conn` hasn't been droped yet. Since this function is
+    /// // not async, this is equivalent to an infinite loop.
+    /// let conn2 = pool.get_ok();
+    /// ```
+    ///
+    /// 2. If several futures are spawned and each use their own connection, you should make sure
+    ///    that the connection usage follows its acquisition. Failing to do so is equivalent to
+    ///    the following example:
+    ///
+    /// ```rust
+    /// let conn_futures = (0..10).map(|_| async { pool.get() });
+    /// let deadlock = futures::future::join_all(conn_futures).await;
+    /// ```
+    ///
+    /// ## Guidelines
+    ///
+    /// To prevent these issues, prefer the following patterns:
+    ///
+    /// - Don't declare a variable for a single-use connection:
+    ///
+    /// ```rust
+    /// // do
+    /// my_function_using_conn(pool.get().await?.deref_mut()).await;
+    /// // instead of
+    /// let conn = &mut pool.get().await?;
+    /// my_function_using_conn(conn).await;
+    /// ```
+    ///
+    /// - If a connection is used repeatedly, prefer using explicit scoping:
+    ///
+    /// ```rust
+    /// let my_results = {
+    ///     let conn = &mut pool.get().await?;
+    ///     foo(conn).await + bar(conn).await
+    /// };
+    /// // you may acquire a new connection afterwards
+    /// ```
+    ///
+    /// - If you need to open several connections, then the connection must be
+    ///   acquired just before its usage, and dropped just after, **all in the same future**.
+    ///   And these fututres must all be awaited before attempting to acquire a new connection.
+    ///
+    /// ```rust
+    /// let operations =
+    ///     items.into_iter()
+    ///         .zip(pool.iter_conn())
+    ///         .map(|(item, conn)| async {
+    ///             let conn = conn.await?; // note the await here
+    ///             item.do_something(conn).await
+    ///         });
+    /// let results = futures::future::try_join_all(operations).await?;
+    /// // you may acquire a new connection afterwards
+    /// ```
+    pub async fn get(&self) -> Result<DbConnectionV2, DbConnectionError> {
+        #[cfg(test)]
+        let conn = self.get_test().await;
+        #[cfg(not(test))]
+        let conn = self.get_proxy().await;
+        conn
+    }
+
+    /// Returns an infinite iterator of futures resolving to connections acquired from the pool
+    ///
+    /// Meant to be used in conjunction with `zip` in order instanciate a bunch of tasks to spawn.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// let operations =
+    ///     items.into_iter()
+    ///         .zip(pool.iter_conn())
+    ///         .map(|(item, conn)| async {
+    ///             let conn = conn.await?; // note the await here
+    ///             item.do_something(conn).await
+    ///         });
+    /// let results = futures::future::try_join_all(operations).await?;
+    /// // you may acquire a new connection afterwards
+    /// ```
+    #[allow(unused)] // TEMPORARY
+    pub fn iter_conn(
+        &self,
+    ) -> impl Iterator<Item = impl Future<Output = Result<DbConnectionV2, DbConnectionError>> + '_>
+    {
+        std::iter::repeat(self).map(|p| p.get())
     }
 }
