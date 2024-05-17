@@ -46,7 +46,7 @@ class PathPropEndpointTest : ApiTest() {
 
         assertNotNull(parsed)
         assertEquals(parsed.slopes, RangeValues(listOf(), listOf(0.0)))
-        assertEquals(parsed.gradients, RangeValues(listOf(), listOf(0.0)))
+        assertEquals(parsed.curves, RangeValues(listOf(), listOf(0.0)))
         assertEquals(
             parsed.electrifications,
             RangeValues(

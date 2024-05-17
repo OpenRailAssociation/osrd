@@ -13,7 +13,7 @@ import fr.sncf.osrd.utils.units.Offset
 
 class PathPropResponse(
     val slopes: RangeValues<Double>,
-    val gradients: RangeValues<Double>,
+    val curves: RangeValues<Double>,
     val electrifications: RangeValues<Electrification>,
     val geometry: RJSLineString,
     @Json(name = "operational_points") val operationalPoints: List<OperationalPointResponse>

@@ -16,7 +16,7 @@ fun makePathPropResponse(
 ): PathPropResponse {
     return PathPropResponse(
         makeSlopes(pathProperties),
-        makeGradients(pathProperties),
+        makeCurves(pathProperties),
         makeElectrifications(pathProperties),
         makeGeographic(pathProperties),
         makeOperationalPoints(pathProperties, rawInfra)
@@ -27,8 +27,8 @@ private fun makeSlopes(pathProperties: PathProperties): RangeValues<Double> {
     return makeRangeValues(pathProperties.getSlopes())
 }
 
-private fun makeGradients(pathProperties: PathProperties): RangeValues<Double> {
-    return makeRangeValues(pathProperties.getGradients())
+private fun makeCurves(pathProperties: PathProperties): RangeValues<Double> {
+    return makeRangeValues(pathProperties.getCurves())
 }
 
 private fun makeElectrifications(pathProperties: PathProperties): RangeValues<Electrification> {
