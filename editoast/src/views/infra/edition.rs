@@ -793,7 +793,7 @@ fn get_splitted_patch_operations_for_ranges(
 }
 
 async fn apply_edit(
-    conn: &mut DbConnection,
+    connection: &mut DbConnection,
     infra: &mut Infra,
     operations: &[Operation],
     infra_cache: &mut InfraCache,
@@ -804,42 +804,51 @@ async fn apply_edit(
         return Err(EditionError::InfraIsLocked { infra_id }.into());
     }
 
-    // Apply modifications
-    let mut railjsons = vec![];
-    let mut cache_operations = vec![];
-    for operation in operations {
-        let railjson = operation.apply(infra_id, conn).await?;
-        match (operation, railjson) {
-            (Operation::Create(_), Some(railjson)) => {
-                railjsons.push(railjson.clone());
-                cache_operations.push(CacheOperation::Create(ObjectCache::from(railjson)));
-            }
-            (Operation::Update(_), Some(railjson)) => {
-                railjsons.push(railjson.clone());
-                cache_operations.push(CacheOperation::Update(ObjectCache::from(railjson)));
-            }
-            (Operation::Delete(delete_operation), _) => {
-                cache_operations.push(CacheOperation::Delete(delete_operation.clone().into()));
-            }
-            _ => unreachable!("CREATE and UPDATE always produce a RailJSON"),
-        }
-    }
+    // Apply modifications in one transaction
+    connection
+        .build_transaction()
+        .run(|conn| {
+            Box::pin(async {
+                let mut railjsons = vec![];
+                let mut cache_operations = vec![];
+                for operation in operations {
+                    let railjson = operation.apply(infra_id, conn).await?;
+                    match (operation, railjson) {
+                        (Operation::Create(_), Some(railjson)) => {
+                            railjsons.push(railjson.clone());
+                            cache_operations
+                                .push(CacheOperation::Create(ObjectCache::from(railjson)));
+                        }
+                        (Operation::Update(_), Some(railjson)) => {
+                            railjsons.push(railjson.clone());
+                            cache_operations
+                                .push(CacheOperation::Update(ObjectCache::from(railjson)));
+                        }
+                        (Operation::Delete(delete_operation), _) => {
+                            cache_operations
+                                .push(CacheOperation::Delete(delete_operation.clone().into()));
+                        }
+                        _ => unreachable!("CREATE and UPDATE always produce a RailJSON"),
+                    }
+                }
 
-    // Bump version
-    infra.bump_version(conn).await?;
+                // Bump version
+                infra.bump_version(conn).await?;
+                // Apply operations to infra cache
+                infra_cache.apply_operations(&cache_operations)?;
 
-    // Apply operations to infra cache
-    infra_cache.apply_operations(&cache_operations)?;
+                // Refresh layers if needed
+                generated_data::update_all(conn, infra_id, &cache_operations, infra_cache)
+                    .await
+                    .expect("Update generated data failed");
 
-    // Refresh layers if needed
-    generated_data::update_all(conn, infra_id, &cache_operations, infra_cache)
+                // Bump infra generated version to the infra version
+                infra.bump_generated_version(conn).await?;
+
+                Ok(railjsons)
+            })
+        })
         .await
-        .expect("Update generated data failed");
-
-    // Bump infra generated version to the infra version
-    infra.bump_generated_version(conn).await?;
-
-    Ok(railjsons)
 }
 
 #[derive(Debug, Clone, Error, EditoastError)]
@@ -864,6 +873,7 @@ pub mod tests {
     use actix_web::test::call_service;
     use actix_web::test::TestRequest;
     use rstest::*;
+    use serde_json::Value as JsonValue;
 
     use super::*;
     use crate::fixtures::tests::db_pool;
@@ -982,5 +992,89 @@ pub mod tests {
             })
             .collect();
         assert_eq!(errors_without_routes.len() - init_errors.results.len(), 0);
+    }
+
+    #[rstest]
+    async fn apply_edit_transaction_should_work() {
+        // Init
+        let pg_db_pool = db_pool();
+        let conn = &mut pg_db_pool.get().await.unwrap();
+        let mut small_infra = small_infra(pg_db_pool.clone()).await;
+        let mut infra_cache = InfraCache::load(conn, &small_infra.model).await.unwrap();
+
+        // Calling "apply_edit" with a OK operation
+        let operations: Vec<Operation> = [
+            // Success operation
+            Operation::Update(UpdateOperation {
+                obj_type: ObjectType::TrackSection,
+                obj_id: "TA0".to_string(),
+                railjson_patch: Patch(
+                    [PatchOperation::Replace(ReplaceOperation {
+                        path: "/length".to_string().parse().unwrap(),
+                        value: json!(1234),
+                    })]
+                    .to_vec(),
+                ),
+            }),
+        ]
+        .to_vec();
+        let result: Vec<RailjsonObject> =
+            apply_edit(conn, &mut small_infra.model, &operations, &mut infra_cache)
+                .await
+                .unwrap();
+
+        // Check that the updated track has the new length
+        assert_eq!(1234.0, result[0].get_data()["length"]);
+    }
+
+    #[rstest]
+    async fn apply_edit_transaction_should_rollback() {
+        // Init
+        let pg_db_pool = db_pool();
+        let app = create_test_service().await;
+        let conn = &mut pg_db_pool.get().await.unwrap();
+        let mut small_infra = small_infra(pg_db_pool.clone()).await;
+        let mut infra_cache = InfraCache::load(conn, &small_infra.model).await.unwrap();
+
+        // Calling "apply_edit" with a first OK operation and a KO second one
+        let operations: Vec<Operation> = [
+            // Success operation
+            Operation::Update(UpdateOperation {
+                obj_type: ObjectType::TrackSection,
+                obj_id: "TA0".to_string(),
+                railjson_patch: Patch(
+                    [PatchOperation::Replace(ReplaceOperation {
+                        path: "/length".to_string().parse().unwrap(),
+                        value: json!(1234),
+                    })]
+                    .to_vec(),
+                ),
+            }),
+            // Bad operation
+            Operation::Update(UpdateOperation {
+                obj_type: ObjectType::TrackSection,
+                obj_id: "ID_THAT_DOESNT-EXIST".to_string(),
+                railjson_patch: Patch(
+                    [PatchOperation::Replace(ReplaceOperation {
+                        path: "/length".to_string().parse().unwrap(),
+                        value: json!(1234),
+                    })]
+                    .to_vec(),
+                ),
+            }),
+        ]
+        .to_vec();
+        let result = apply_edit(conn, &mut small_infra.model, &operations, &mut infra_cache).await;
+
+        // Check that we have an error
+        assert!(result.is_err());
+
+        // Check that TA0 length is not changed
+        let req = TestRequest::post()
+            .uri(format!("/infra/{}/objects/TrackSection", small_infra.id()).as_str())
+            .set_json(json!(["TA0"]))
+            .to_request();
+        let res: Vec<JsonValue> = call_and_read_body_json(&app, req).await;
+        assert_eq!(2000.0, res[0]["railjson"]["length"])
     }
 }
