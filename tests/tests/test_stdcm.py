@@ -1,3 +1,4 @@
+import datetime
 import json
 
 import requests
@@ -12,6 +13,10 @@ from .services import EDITOAST_URL
 _START = {"track_section": "TA2", "geo_coordinate": [-0.387122554630656, 49.4998]}
 _MIDDLE = {"track_section": "TA5", "geo_coordinate": [-0.387122554630656, 49.4998]}
 _STOP = {"track_section": "TH1", "geo_coordinate": [-0.095104854807785, 49.484]}
+
+_START_V2 = {"track": "TA2", "offset": 0}
+_MIDDLE_V2 = {"track": "TA5", "offset": 0}
+_STOP_V2 = {"track": "TH1", "offset": 0}
 
 
 def _add_train(editoast_url: str, scenario: Scenario, rolling_stock_id: int, path_id: int, departure_time: int):
@@ -105,3 +110,45 @@ def test_between_trains(small_scenario: Scenario, fast_rolling_stock: int, west_
     r = requests.post(EDITOAST_URL + "stdcm/", json=payload)
     if r.status_code // 100 != 2:
         raise RuntimeError(f"STDCM error {r.status_code}: {r.content}")
+
+
+def test_work_schedules(small_scenario_v2: Scenario, fast_rolling_stock: int):
+    # This test is already using time schedules v2, it's required for work schedules
+    requests.post(EDITOAST_URL + f"infra/{small_scenario_v2.infra}/load")
+    start_time = datetime.datetime(2024, 1, 1, 14, 0, 0)
+    end_time = start_time + datetime.timedelta(days=4)
+    requests.post(
+        EDITOAST_URL + "work_schedules/",
+        json={
+            "work_schedule_group_name": "generic_group",
+            "work_schedules": [
+                {
+                    "start_date_time": start_time.isoformat(),
+                    "end_date_time": end_time.isoformat(),
+                    "obj_id": "string",
+                    "track_ranges": [{"begin": 0, "end": 100000, "track": _START["track_section"]}],
+                    "work_schedule_type": "CATENARY",
+                }
+            ],
+        },
+    )
+    payload = {
+        "rolling_stock_id": fast_rolling_stock,
+        "start_time": "2024-01-05T13:00:00+00:00",
+        "maximum_departure_delay": 7200000,
+        "maximum_run_time": 43200000,
+        "time_gap_before": 0,
+        "time_gap_after": 0,
+        "steps": [
+            {"duration": None, "location": _START_V2},
+            {"duration": 1, "location": _STOP_V2},
+        ],
+        "comfort": "STANDARD",
+        "margin": "None",
+    }
+    url = f"{EDITOAST_URL}v2/timetable/{small_scenario_v2.timetable}/stdcm/?infra={small_scenario_v2.infra}"
+    r = requests.post(url, json=payload)
+    assert r.status_code == 200
+    response = r.json()
+    departure_time = datetime.datetime.fromisoformat(response["departure_time"].replace("Z", "+00:00"))
+    assert departure_time >= end_time.astimezone(departure_time.tzinfo)
