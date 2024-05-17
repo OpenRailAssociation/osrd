@@ -39,6 +39,7 @@ impl ToTokens for CreateBatchImpl {
                     use diesel::prelude::*;
                     use diesel_async::RunQueryDsl;
                     use futures_util::stream::TryStreamExt;
+                    let values = values.into_iter().collect::<Vec<_>>();
                     Ok(crate::chunked_for_libpq! {
                         #field_count,
                         values,
