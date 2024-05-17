@@ -2,12 +2,11 @@ use diesel::sql_types::Jsonb;
 use diesel::sql_types::Text;
 use editoast_schemas::infra::TrackSection;
 use serde::Deserialize;
-use serde::Serialize;
 
-#[derive(QueryableByName, Debug, Clone, Serialize, Deserialize)]
+#[derive(QueryableByName, Debug, Clone, Deserialize)]
 pub struct SplitedTrackSectionWithData {
     #[diesel(sql_type = Text)]
-    obj_id: String,
+    pub obj_id: String,
     #[diesel(sql_type = Jsonb)]
     pub railjson: diesel_json::Json<TrackSection>,
     #[diesel(sql_type = Jsonb)]

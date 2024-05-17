@@ -1,3 +1,4 @@
+mod railjson_data;
 mod route_from_waypoint_result;
 mod speed_limit_tags;
 mod splited_track_section_with_data;
@@ -13,11 +14,13 @@ use diesel::sql_query;
 use diesel::sql_types::BigInt;
 use diesel::sql_types::Double;
 use diesel::sql_types::Text;
+use diesel::OptionalExtension;
 use diesel::QueryDsl;
 use diesel_async::RunQueryDsl;
 use editoast_derive::ModelV2;
 use futures::future::try_join_all;
 use futures::Future;
+use railjson_data::RailJsonData;
 use route_from_waypoint_result::RouteFromWaypointResult;
 use serde::Deserialize;
 use serde::Serialize;
@@ -270,22 +273,15 @@ impl Infra {
         conn: &mut DbConnection,
         track: Identifier,
         distance_fraction: f64,
-    ) -> Result<Vec<SplitedTrackSectionWithData>> {
-        let query = format!("SELECT
-            object_table.obj_id as obj_id,
-            object_table.data as railjson,
-            ST_AsGeoJSON(ST_LineSubstring(ST_GeomFromGeoJSON(object_table.data->'geo'), 0, $3))::jsonb as left_geo,
-	        ST_AsGeoJSON(ST_LineSubstring(ST_GeomFromGeoJSON(object_table.data->'geo'), $3, 1))::jsonb as right_geo
-            FROM {} AS object_table
-            WHERE object_table.infra_id = $1 AND object_table.obj_id = $2",
-            get_table(&ObjectType::TrackSection),
-        );
+    ) -> Result<Option<SplitedTrackSectionWithData>> {
+        let query = include_str!("infra/sql/get_splited_track_section_with_data.sql");
         let result = sql_query(query)
             .bind::<BigInt, _>(self.id)
             .bind::<Text, _>(track.to_string())
             .bind::<Double, _>(distance_fraction)
-            .load::<SplitedTrackSectionWithData>(conn)
-            .await?;
+            .get_result::<SplitedTrackSectionWithData>(conn)
+            .await
+            .optional()?;
         Ok(result)
     }
 
@@ -302,6 +298,20 @@ impl Infra {
             .load::<RouteFromWaypointResult>(conn)
             .await?;
         Ok(routes)
+    }
+
+    pub async fn get_railjson(
+        conn: &mut DbConnection,
+        infra_id: i64,
+        object_type: &ObjectType,
+    ) -> Result<Vec<RailJsonData>> {
+        let table_name = get_table(object_type);
+        let query = format!("SELECT (x.data)::text AS railjson FROM {table_name} x WHERE x.infra_id = $1 ORDER BY x.obj_id");
+        let railjson_data = sql_query(query)
+            .bind::<BigInt, _>(infra_id)
+            .load::<RailJsonData>(conn)
+            .await?;
+        Ok(railjson_data)
     }
 }
 

@@ -10,10 +10,6 @@ use actix_web::web::Query;
 use actix_web::HttpResponse;
 use actix_web::Responder;
 use chashmap::CHashMap;
-use diesel::sql_query;
-use diesel::sql_types::BigInt;
-use diesel::sql_types::Text;
-use diesel_async::RunQueryDsl;
 use editoast_derive::EditoastError;
 use editoast_schemas::infra::RailJson;
 use editoast_schemas::infra::RAILJSON_VERSION;
@@ -28,7 +24,6 @@ use utoipa::ToSchema;
 
 use crate::error::Result;
 use crate::infra_cache::InfraCache;
-use crate::modelsv2::get_table;
 use crate::modelsv2::prelude::*;
 use crate::modelsv2::DbConnectionPool;
 use crate::modelsv2::Infra;
@@ -44,12 +39,6 @@ pub fn railjson_routes() -> impl HttpServiceFactory {
 crate::routes! {
     get_railjson,
     post_railjson,
-}
-
-#[derive(QueryableByName, Default)]
-struct RailJsonData {
-    #[diesel(sql_type = Text)]
-    railjson: String,
 }
 
 #[derive(Debug, Error, EditoastError)]
@@ -81,18 +70,9 @@ async fn get_railjson(
     let futures: Vec<_> = ObjectType::iter()
         .map(|object_type| (object_type, db_pool.get()))
         .map(|(object_type, conn_future)| async move {
-            let mut conn = conn_future.await?;
-            let table = get_table(&object_type);
-            let query =
-                format!("SELECT (x.data)::text AS railjson FROM {table} x WHERE x.infra_id = $1 ORDER BY x.obj_id");
-
-            let result: Result<_> = Ok((
-                object_type,
-                sql_query(query)
-                    .bind::<BigInt, _>(infra_id)
-                    .load::<RailJsonData>(&mut conn)
-                    .await?,
-            ));
+            let conn = &mut conn_future.await?;
+            let railjson_data = Infra::get_railjson(conn, infra_id, &object_type).await?;
+            let result: Result<_> = Ok((object_type, railjson_data));
             result
         })
         .collect();

@@ -124,7 +124,7 @@ pub async fn split_track_section<'a>(
     let result = infra
         .get_splited_track_section_with_data(conn, payload.track.clone(), distance_fraction)
         .await?;
-    let tracksection_data = result[0].clone();
+    let tracksection_data = result.expect("Failed to retrieve splited track section data. Ensure the track ID and distance fraction are valid.").clone();
     let tracksection = tracksection_data.railjson.as_ref().clone();
 
     // Building the two newly tracksections from the splitted one
