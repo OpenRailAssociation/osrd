@@ -6415,18 +6415,21 @@ components:
       type: object
     RoutePath:
       properties:
-        route:
-          type: string
-        signaling_type:
-          type: string
-        track_sections:
+        switches_directions:
+          items:
+            items:
+              allOf:
+              - type: string
+              - type: string
+            type: array
+          type: array
+        track_ranges:
           items:
             $ref: '#/components/schemas/DirectionalTrackRange'
           type: array
       required:
-      - route
-      - signaling_type
-      - track_sections
+      - track_ranges
+      - switches_directions
       type: object
     RoutingRequirement:
       properties:
@@ -9898,19 +9901,16 @@ paths:
               schema:
                 items:
                   oneOf:
-                  - properties:
-                      track_ranges:
-                        items:
-                          $ref: '#/components/schemas/DirectionalTrackRange'
-                        type: array
-                      type:
-                        enum:
-                        - Computed
-                        type: string
-                    required:
-                    - type
-                    - track_ranges
-                    type: object
+                  - allOf:
+                    - $ref: '#/components/schemas/RoutePath'
+                    - properties:
+                        type:
+                          enum:
+                          - Computed
+                          type: string
+                      required:
+                      - type
+                      type: object
                   - properties:
                       type:
                         enum:
@@ -9928,7 +9928,7 @@ paths:
                     - type
                     type: object
                 type: array
-          description: Foreach route, all the track ranges in it or an error
+          description: Foreach route, either tracks_ranges + switches found on the route, or an error
       summary: Compute the track ranges through which routes passes.
       tags:
       - infra

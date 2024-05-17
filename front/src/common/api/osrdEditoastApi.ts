@@ -1223,11 +1223,10 @@ export type PostInfraByInfraIdRoutesNodesApiArg = {
   };
 };
 export type GetInfraByInfraIdRoutesTrackRangesApiResponse =
-  /** status 200 Foreach route, all the track ranges in it or an error */ (
-    | {
-        track_ranges: DirectionalTrackRange[];
+  /** status 200 Foreach route, either tracks_ranges + switches found on the route, or an error */ (
+    | (RoutePath & {
         type: 'Computed';
-      }
+      })
     | {
         type: 'NotFound';
       }
@@ -2312,6 +2311,10 @@ export type PathfindingInput = {
   ending: PathfindingTrackLocationInput;
   starting: PathfindingTrackLocationInput;
 };
+export type RoutePath = {
+  switches_directions: (string & string)[][];
+  track_ranges: DirectionalTrackRange[];
+};
 export type TrackOffset = {
   /** Offset in mm */
   offset: number;
@@ -3016,11 +3019,6 @@ export type SingleSimulationRequest = {
   electrical_profile_set_id?: number | null;
   path_id: number;
   rolling_stock_id: number;
-};
-export type RoutePath = {
-  route: string;
-  signaling_type: string;
-  track_sections: DirectionalTrackRange[];
 };
 export type PathfindingPayload = {
   path_waypoints: PathWaypoint[];

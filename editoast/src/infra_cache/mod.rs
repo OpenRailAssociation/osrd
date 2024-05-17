@@ -771,6 +771,8 @@ impl InfraCache {
 
     /// Compute the track ranges through which the route passes.
     /// If the path cannot be computed (e.g. invalid topology), returns None.
+    /// Route = start_waypoint + end_waypoint
+    /// Waypoint = BufferStop || Detector
     pub fn compute_track_ranges_on_route(&self, route: &Route, graph: &Graph) -> Option<RoutePath> {
         // Check if entry and exit points are the same
         if route.entry_point == route.exit_point {
@@ -786,7 +788,7 @@ impl InfraCache {
 
         // Save track ranges and used switches
         let mut track_ranges = vec![];
-        let mut used_switches = HashMap::new();
+        let mut used_switches = vec![];
 
         // Check path validity
         loop {
@@ -800,12 +802,13 @@ impl InfraCache {
             } else {
                 0.
             };
-            track_ranges.push(DirectionalTrackRange::new(
+            let dir_track_range = DirectionalTrackRange::new(
                 cur_track_id.clone(),
                 cur_offset.min(end_offset),
                 cur_offset.max(end_offset),
                 cur_dir,
-            ));
+            );
+            track_ranges.push(dir_track_range);
 
             // Search for the exit_point
             if cur_track_id == exit_track {
@@ -834,7 +837,7 @@ impl InfraCache {
                 // Check we found the switch in the route
                 route.switches_directions.get(&switch_id.clone().into())?
             };
-            used_switches.insert(switch_id.clone().into(), group.clone());
+            used_switches.push((switch_id.clone().into(), group.clone()));
             let next_endpoint = graph.get_neighbour(&endpoint, group)?;
 
             // Update current track section, offset and direction

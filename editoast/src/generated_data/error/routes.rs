@@ -8,6 +8,7 @@ use crate::infra_cache::Graph;
 use crate::infra_cache::InfraCache;
 use crate::infra_cache::ObjectCache;
 use editoast_schemas::infra::Waypoint;
+use editoast_schemas::primitives::Identifier;
 use editoast_schemas::primitives::OSRDIdentified;
 use editoast_schemas::primitives::OSRDObject;
 use editoast_schemas::primitives::ObjectRef;
@@ -154,10 +155,16 @@ fn check_path(
         .map(|track| (*track.track).clone());
     context.tracks_on_routes.extend(tracks_on_route);
 
+    let switches_hashset: HashSet<Identifier> = HashSet::from_iter(
+        route_path
+            .switches_directions
+            .iter()
+            .map(|(k, _)| k.clone()),
+    );
     // Search for switches out of the path
     let mut res = vec![];
     for switch in route.switches_directions.keys() {
-        if !route_path.switches_directions.contains_key(switch) {
+        if !switches_hashset.contains(switch) {
             res.push(InfraError::new_object_out_of_path(
                 route,
                 format!("switches_directions.{switch}"),
