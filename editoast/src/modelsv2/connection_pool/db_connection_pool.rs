@@ -49,6 +49,17 @@ impl DbConnectionPoolV2 {
         Self::try_from_pool(pool).await
     }
 
+    /// Create a connection pool for testing purposes
+    ///
+    /// You can set the `OSRD_TEST_PG_URL` environment variable to use a custom database url.
+    pub fn for_tests() -> Self {
+        let url = std::env::var("OSRD_TEST_PG_URL")
+            .unwrap_or_else(|_| String::from("postgresql://osrd:password@localhost/osrd"));
+        let url = Url::parse(&url).expect("Failed to parse postgresql url");
+        futures::executor::block_on(Self::try_initialize(url))
+            .expect("Failed to initialize test connection pool")
+    }
+
     /// # Test creation steps exemple
     ///
     /// - Create the connection pool in test mode:
@@ -112,9 +123,6 @@ impl DbConnectionPoolV2 {
 #[cfg(test)]
 impl Default for DbConnectionPoolV2 {
     fn default() -> Self {
-        let default_url = Url::parse("postgresql://osrd:password@localhost/osrd")
-            .expect("Failed to parse default postgresql url");
-        futures::executor::block_on(Self::try_initialize(default_url))
-            .expect("Failed to initialize default connection pool")
+        Self::for_tests()
     }
 }
