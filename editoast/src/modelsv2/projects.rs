@@ -12,7 +12,6 @@ use crate::error::Result;
 use crate::models::List;
 use crate::modelsv2::prelude::*;
 use crate::modelsv2::DbConnection;
-use crate::modelsv2::DbConnectionPool;
 use crate::modelsv2::Document;
 use crate::modelsv2::Study;
 use crate::views::pagination::Paginate;
@@ -96,15 +95,14 @@ impl Project {
         Ok(())
     }
 
-    pub async fn studies_count(&self, db_pool: Arc<DbConnectionPool>) -> Result<i64> {
-        let conn = &mut db_pool.get().await?;
+    pub async fn studies_count(&self, conn: &mut DbConnection) -> Result<u64> {
         let project_id = self.id;
         let studies_count = Study::count(
             conn,
             SelectionSettings::new().filter(move || Study::PROJECT_ID.eq(project_id)),
         )
         .await?;
-        Ok(studies_count as i64)
+        Ok(studies_count)
     }
 
     pub async fn update_and_prune_document(
@@ -190,7 +188,6 @@ pub mod test {
     use crate::modelsv2::DbConnectionPool;
     use crate::modelsv2::DeleteStatic;
     use crate::modelsv2::Model;
-    use crate::modelsv2::Ordering;
     use crate::modelsv2::Retrieve;
 
     #[rstest]
