@@ -8,11 +8,6 @@ use actix_web::web::Json;
 use actix_web::web::Path;
 use actix_web::web::Query;
 use chashmap::CHashMap;
-use diesel::sql_query;
-use diesel::sql_types::BigInt;
-use diesel::sql_types::Bool;
-use diesel::sql_types::Text;
-use diesel_async::RunQueryDsl;
 use serde::Deserialize;
 use serde::Serialize;
 use strum::Display;
@@ -36,14 +31,6 @@ crate::routes! {
         get_routes_from_waypoint,
         get_routes_nodes,
     }
-}
-
-#[derive(QueryableByName)]
-struct RouteFromWaypointResult {
-    #[diesel(sql_type = Text)]
-    route_id: String,
-    #[diesel(sql_type = Bool)]
-    is_entry_point: bool,
 }
 
 #[derive(Debug, Display, Clone, Copy, Deserialize, ToSchema)]
@@ -82,14 +69,15 @@ async fn get_routes_from_waypoint(
     path: Path<RoutesFromWaypointParams>,
     db_pool: Data<DbConnectionPool>,
 ) -> Result<Json<RoutesResponse>> {
-    let mut conn = db_pool.get().await?;
-    let routes: Vec<RouteFromWaypointResult> =
-        sql_query(include_str!("sql/get_routes_from_waypoint.sql"))
-            .bind::<BigInt, _>(&path.infra_id)
-            .bind::<Text, _>(&path.waypoint_id)
-            .bind::<Text, _>(path.waypoint_type.to_string())
-            .load(&mut conn)
-            .await?;
+    let conn = &mut db_pool.get().await?;
+    let infra = Infra::retrieve_or_fail(conn, path.infra_id, || InfraApiError::NotFound {
+        infra_id: path.infra_id,
+    })
+    .await?;
+
+    let routes = infra
+        .get_routes_from_waypoint(conn, &path.waypoint_id, path.waypoint_type.to_string())
+        .await?;
 
     // Split routes depending if they are entry or exit points
     let mut starting_routes = vec![];
