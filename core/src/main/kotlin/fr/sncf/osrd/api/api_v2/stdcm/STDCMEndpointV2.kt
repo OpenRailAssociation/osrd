@@ -6,10 +6,7 @@ import fr.sncf.osrd.api.InfraManager
 import fr.sncf.osrd.api.api_v2.*
 import fr.sncf.osrd.api.api_v2.pathfinding.findWaypointBlocks
 import fr.sncf.osrd.api.api_v2.pathfinding.runPathfindingPostProcessing
-import fr.sncf.osrd.api.api_v2.standalone_sim.MarginValue
-import fr.sncf.osrd.api.api_v2.standalone_sim.SimulationScheduleItem
-import fr.sncf.osrd.api.api_v2.standalone_sim.SimulationSuccess
-import fr.sncf.osrd.api.api_v2.standalone_sim.parseRawRollingStock
+import fr.sncf.osrd.api.api_v2.standalone_sim.*
 import fr.sncf.osrd.conflicts.*
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue.Percentage
@@ -155,9 +152,11 @@ private fun parseMarginValue(margin: MarginValue): AllowanceValue? {
 private fun parseSimulationScheduleItems(
     trainStops: List<TrainStop>
 ): List<SimulationScheduleItem> {
-    return trainStops.map {
-        SimulationScheduleItem(Offset(it.position.meters), null, it.duration.seconds, true)
-    }
+    return parseRawSimulationScheduleItems(
+        trainStops.map {
+            SimulationScheduleItem(Offset(it.position.meters), null, it.duration.seconds, true)
+        }
+    )
 }
 
 /** Sanity check, we assert that the result is not conflicting with the scheduled timetable */

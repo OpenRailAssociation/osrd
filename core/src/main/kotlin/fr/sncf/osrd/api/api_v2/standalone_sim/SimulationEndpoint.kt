@@ -3,6 +3,7 @@ package fr.sncf.osrd.api.api_v2.standalone_sim
 import fr.sncf.osrd.api.ElectricalProfileSetManager
 import fr.sncf.osrd.api.ExceptionHandler
 import fr.sncf.osrd.api.InfraManager
+import fr.sncf.osrd.api.api_v2.parseRawSimulationScheduleItems
 import fr.sncf.osrd.api.pathfinding.makeChunkPath
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl
@@ -65,7 +66,7 @@ class SimulationEndpoint(
                     parsePowerRestrictions(request.powerRestrictions),
                     request.options.useElectricalProfiles,
                     2.0,
-                    request.schedule,
+                    parseRawSimulationScheduleItems(request.schedule),
                     request.initialSpeed,
                     request.margins,
                 )
