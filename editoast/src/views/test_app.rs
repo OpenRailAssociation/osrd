@@ -21,7 +21,7 @@ use crate::{
     error::InternalError,
     infra_cache::InfraCache,
     map::MapLayers,
-    modelsv2::{connection_pool::db_connection_pool::create_connection_pool, DbConnectionPoolV2},
+    modelsv2::{database::connection_pool::create_connection_pool, DbConnectionPoolV2},
     RedisClient,
 };
 
