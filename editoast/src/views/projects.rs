@@ -23,6 +23,7 @@ use crate::models::List;
 use crate::modelsv2::projects::Tags;
 use crate::modelsv2::Changeset;
 use crate::modelsv2::Create;
+use crate::modelsv2::DbConnection;
 use crate::modelsv2::DbConnectionPool;
 use crate::modelsv2::Document;
 use crate::modelsv2::Model;
@@ -50,7 +51,7 @@ editoast_common::schemas! {
     ProjectCreateForm,
     ProjectPatchForm,
     study::schemas(),
-    ProjectWithStudies,
+    ProjectWithStudyCount,
 }
 
 #[derive(Debug, Error, EditoastError)]
@@ -126,18 +127,19 @@ async fn check_image_content(db_pool: Data<DbConnectionPool>, document_key: i64)
 }
 
 #[derive(Debug, Clone, Serialize, ToSchema)]
-pub struct ProjectWithStudies {
+pub struct ProjectWithStudyCount {
     #[serde(flatten)]
     project: Project,
-    studies_count: i64,
+    studies_count: u64,
 }
 
-impl ProjectWithStudies {
-    pub fn new_from_project(project: Project, studies_count: i64) -> Self {
-        Self {
+impl ProjectWithStudyCount {
+    async fn try_fetch(conn: &mut DbConnection, project: Project) -> Result<Self> {
+        let studies_count = project.studies_count(conn).await?;
+        Ok(Self {
             project,
             studies_count,
-        }
+        })
     }
 }
 
@@ -153,7 +155,7 @@ impl ProjectWithStudies {
 async fn create(
     db_pool: Data<DbConnectionPool>,
     data: Json<ProjectCreateForm>,
-) -> Result<Json<ProjectWithStudies>> {
+) -> Result<Json<ProjectWithStudyCount>> {
     let project_create_form = data.into_inner();
     if let Some(image) = project_create_form.image {
         check_image_content(db_pool.clone(), image).await?;
@@ -161,12 +163,12 @@ async fn create(
     let project: Changeset<Project> = project_create_form.into();
     let conn = &mut db_pool.get().await?;
     let project = project.create(conn).await?;
-    let project_with_studies = ProjectWithStudies::new_from_project(project, 0);
+    let project_with_studies = ProjectWithStudyCount::try_fetch(conn, project).await?;
 
     Ok(Json(project_with_studies))
 }
 
-decl_paginated_response!(PaginatedResponseOfProjectWithStudies, ProjectWithStudies);
+decl_paginated_response!(PaginatedResponseOfProjectWithStudies, ProjectWithStudyCount);
 
 /// Returns a paginated list of projects
 #[utoipa::path(
@@ -181,7 +183,7 @@ async fn list(
     db_pool: Data<DbConnectionPool>,
     pagination_params: Query<PaginationQueryParam>,
     params: Query<QueryParams>,
-) -> Result<Json<PaginatedResponse<ProjectWithStudies>>> {
+) -> Result<Json<PaginatedResponse<ProjectWithStudyCount>>> {
     let (page, per_page) = pagination_params
         .validate(1000)?
         .warn_page_size(100)
@@ -191,8 +193,8 @@ async fn list(
     let projects = Project::list(db_pool.clone(), page, per_page, ordering).await?;
     let mut results = Vec::new();
     for project in projects.results.into_iter() {
-        let studies_count = project.studies_count(db_pool.clone()).await?;
-        results.push(ProjectWithStudies::new_from_project(project, studies_count));
+        let conn = &mut db_pool.get().await?;
+        results.push(ProjectWithStudyCount::try_fetch(conn, project).await?);
     }
 
     Ok(Json(PaginatedResponse {
@@ -224,17 +226,13 @@ pub struct ProjectIdParam {
 async fn get(
     db_pool: Data<DbConnectionPool>,
     project: Path<i64>,
-) -> Result<Json<ProjectWithStudies>> {
+) -> Result<Json<ProjectWithStudyCount>> {
     let project_id = project.into_inner();
     let conn = &mut db_pool.get().await?;
     let project =
         Project::retrieve_or_fail(conn, project_id, || ProjectError::NotFound { project_id })
             .await?;
-    let studies_count = project.studies_count(db_pool.into_inner()).await?;
-    Ok(Json(ProjectWithStudies::new_from_project(
-        project,
-        studies_count,
-    )))
+    Ok(Json(ProjectWithStudyCount::try_fetch(conn, project).await?))
 }
 
 /// Delete a project
@@ -306,7 +304,7 @@ async fn patch(
     data: Json<ProjectPatchForm>,
     project_id: Path<i64>,
     db_pool: Data<DbConnectionPool>,
-) -> Result<Json<ProjectWithStudies>> {
+) -> Result<Json<ProjectWithStudyCount>> {
     let data = data.into_inner();
     let project_id = project_id.into_inner();
     if let Some(image) = data.image {
@@ -315,11 +313,7 @@ async fn patch(
     let project_changeset: Changeset<Project> = data.into();
     let conn = &mut db_pool.get().await?;
     let project = Project::update_and_prune_document(conn, project_changeset, project_id).await?;
-    let studies_count = project.studies_count(db_pool.into_inner()).await?;
-    Ok(Json(ProjectWithStudies::new_from_project(
-        project,
-        studies_count,
-    )))
+    Ok(Json(ProjectWithStudyCount::try_fetch(conn, project).await?))
 }
 
 #[cfg(test)]
