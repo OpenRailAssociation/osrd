@@ -66,6 +66,7 @@ export const isoDateToMs = (isoDate: string) => {
   return isoCurrentDate.getTime();
 };
 
+// TODO: This function is only used for V1, so it must be deleted when V1 is abandoned. Also we must rename formatDayV2.
 export function formatDay(locale = 'fr') {
   if (!['en', 'fr'].includes(locale)) {
     throw new Error('Invalid locale');
@@ -77,6 +78,33 @@ export function formatDay(locale = 'fr') {
   }
   return currentDate.format('dddd D MMMM YYYY');
 }
+
+export function formatDayV2(dateString: string, locale: string = 'fr'): string {
+  if (!['en', 'fr'].includes(locale)) {
+    throw new Error('Invalid locale');
+  }
+  const date = dayjs.utc(dateString).locale(locale);
+  if (locale === 'en') {
+    return date.format('dddd, MMMM D, YYYY');
+  }
+  return date.format('dddd D MMMM YYYY');
+}
+
+export const formatDateToString = (date: Date) => {
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+
+  return {
+    day,
+    month,
+    year,
+    hours,
+    minutes,
+  };
+};
 
 /** check whether a date is included in the range or not */
 export function dateIsInRange(date: Date, range: [Date, Date]) {
@@ -97,4 +125,8 @@ export function getEarliestDate(date1: string | null | undefined, dat2: string |
 export function stringToTime(sec: string) {
   const secNum = parseInt(sec, 10);
   return new Date(secNum * 1000).toISOString().substr(11, 8);
+}
+
+export function extractTime(isoDate: string) {
+  return dayjs(isoDate).utc().format('HH:mm');
 }

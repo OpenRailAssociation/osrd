@@ -99,6 +99,14 @@ const StdcmConfig = ({
     );
   }, [infra, osrdconf, originV2, destinationV2]);
 
+  const [creationDate, setCreationDate] = useState<Date>();
+
+  const handleClick = () => {
+    const currentDateTime = new Date();
+    setCreationDate(currentDateTime);
+    setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.pending);
+  };
+
   useEffect(() => {
     if (infra && infra.state === 'NOT_LOADED') {
       setIsInfraLoaded(false);
@@ -152,9 +160,7 @@ const StdcmConfig = ({
                   className="btn btn-sm  btn-primary "
                   type="button"
                   disabled={disabledApplyButton}
-                  onClick={() => {
-                    setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.pending);
-                  }}
+                  onClick={handleClick}
                 >
                   {t('stdcm:apply')}
                   <span className="sr-only" aria-hidden="true">
@@ -203,9 +209,12 @@ const StdcmConfig = ({
             )}
             {trainScheduleV2Activated && rollingStock && stdcmV2Results && (
               <StdcmResultsV2
-              // mapCanvas={mapCanvas}
-              // stdcmResults={stdcmV2Results}
-              // rollingStockData={rollingStock}
+                mapCanvas={mapCanvas}
+                stdcmResults={stdcmV2Results}
+                pathProperties={pathProperties}
+                rollingStockData={rollingStock}
+                speedLimitByTag={speedLimitByTag}
+                creationDate={creationDate}
               />
             )}
           </div>
