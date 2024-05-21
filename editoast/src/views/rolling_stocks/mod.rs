@@ -18,10 +18,6 @@ use actix_web::web::Json;
 use actix_web::web::Path;
 use actix_web::web::Query;
 use actix_web::HttpResponse;
-use diesel::sql_query;
-use diesel::sql_types::BigInt;
-use diesel::sql_types::Text as SqlText;
-use diesel_async::RunQueryDsl;
 use editoast_derive::EditoastError;
 use editoast_schemas::rolling_stock::RollingStockLivery;
 use editoast_schemas::rolling_stock::RollingStockLiveryMetadata;
@@ -43,6 +39,7 @@ use crate::error::InternalError;
 use crate::error::Result;
 use crate::modelsv2::prelude::*;
 use crate::modelsv2::rolling_stock_livery::RollingStockLiveryModel;
+use crate::modelsv2::rolling_stock_model::train_schedule_scenario_study_project::TrainScheduleScenarioStudyProject;
 use crate::modelsv2::DbConnectionPool;
 use crate::modelsv2::Document;
 use crate::modelsv2::RollingStockModel;
@@ -78,7 +75,6 @@ editoast_common::schemas! {
     RollingStockLiveryCreateForm,
     RollingStockError,
     RollingStockKey,
-    TrainScheduleScenarioStudyProject,
     RollingStockWithLiveries,
     light_rolling_stock::schemas(),
 }
@@ -397,38 +393,20 @@ struct RollingStockLiveryCreateForm {
     pub images: Vec<TempFile>,
 }
 
-#[derive(Debug, QueryableByName, Serialize, Deserialize, PartialEq, ToSchema)]
-pub struct TrainScheduleScenarioStudyProject {
-    #[diesel(sql_type = BigInt)]
-    pub train_schedule_id: i64,
-    #[diesel(sql_type = SqlText)]
-    pub train_name: String,
-    #[diesel(sql_type = BigInt)]
-    pub project_id: i64,
-    #[diesel(sql_type = SqlText)]
-    pub project_name: String,
-    #[diesel(sql_type = BigInt)]
-    pub study_id: i64,
-    #[diesel(sql_type = SqlText)]
-    pub study_name: String,
-    #[diesel(sql_type = BigInt)]
-    pub scenario_id: i64,
-    #[diesel(sql_type = SqlText)]
-    pub scenario_name: String,
-}
-
 async fn get_rolling_stock_usage(
     db_pool: Data<DbConnectionPool>,
     rolling_stock_id: i64,
 ) -> Result<Vec<TrainScheduleScenarioStudyProject>> {
-    let mut db_conn = db_pool.get().await?;
-    RollingStockModel::exists(&mut db_conn, rolling_stock_id).await?;
+    let conn = &mut db_pool.get().await?;
 
-    sql_query(include_str!("sql/get_train_schedules_with_scenario.sql"))
-        .bind::<BigInt, _>(rolling_stock_id)
-        .load(&mut db_conn)
-        .await
-        .map_err(|e| e.into())
+    let rolling_stock = RollingStockModel::retrieve_or_fail(conn, rolling_stock_id, || {
+        RollingStockError::KeyNotFound {
+            rolling_stock_key: RollingStockKey::Id(rolling_stock_id),
+        }
+    })
+    .await?;
+
+    rolling_stock.get_rolling_stock_usage(conn).await
 }
 
 /// Create a rolling stock livery
