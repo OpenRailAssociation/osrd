@@ -11,11 +11,12 @@ import { formatDay } from 'utils/date';
 import { getStopDurationTime, getStopTime } from 'utils/timeManipulation';
 
 import styles from './SimulationReportStyleSheet';
-import { formatCreationDate } from '../utils';
+import { extractSpeedLimit, formatCreationDate } from '../utils';
 
 type SimulationReportSheetProps = {
   stdcmData: PostStdcmApiResponse;
   rollingStockData: RollingStockWithLiveries;
+  speedLimitByTag?: string;
   number: string;
   mapCanvas?: string;
 };
@@ -23,6 +24,7 @@ type SimulationReportSheetProps = {
 const SimulationReportSheet = ({
   stdcmData,
   rollingStockData,
+  speedLimitByTag,
   number,
   mapCanvas,
 }: SimulationReportSheetProps) => {
@@ -91,7 +93,7 @@ const SimulationReportSheet = ({
               <View style={styles.convoyAndRoute.convoyInfoBox1}>
                 <Text style={styles.convoyAndRoute.convoyInfoTitles}>{t('speedLimitByTag')}</Text>
                 <Text style={styles.convoyAndRoute.convoyInfoData}>
-                  {stdcmData.simulation.speed_limit_tags || '-'}
+                  {(speedLimitByTag && extractSpeedLimit(speedLimitByTag)) || '-'}
                 </Text>
                 <Text style={styles.convoyAndRoute.convoyInfoTitles}>{t('towedMaterial')}</Text>
                 <Text style={styles.convoyAndRoute.convoyInfoData}>-</Text>
