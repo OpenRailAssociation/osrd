@@ -3,6 +3,7 @@ package fr.sncf.osrd.standalone_sim
 import com.google.common.collect.ImmutableRangeMap
 import com.google.common.collect.Range
 import com.google.common.collect.RangeMap
+import com.google.common.collect.TreeRangeMap
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.api.api_v2.RangeValues
 import fr.sncf.osrd.api.api_v2.standalone_sim.*
@@ -12,6 +13,8 @@ import fr.sncf.osrd.envelope_sim.allowances.LinearAllowance
 import fr.sncf.osrd.envelope_sim.allowances.MarecoAllowance
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceRange
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue.*
+import fr.sncf.osrd.envelope_sim.electrification.Electrification
+import fr.sncf.osrd.envelope_sim.electrification.Electrified
 import fr.sncf.osrd.envelope_sim.pipelines.MaxEffortEnvelope
 import fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath
@@ -22,7 +25,6 @@ import fr.sncf.osrd.sim_infra.api.Path
 import fr.sncf.osrd.sim_infra.api.PathProperties
 import fr.sncf.osrd.sim_infra.api.Route
 import fr.sncf.osrd.sim_infra.impl.ChunkPath
-import fr.sncf.osrd.standalone_sim.result.PowerRestrictionRange
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.indexing.StaticIdxList
@@ -132,8 +134,34 @@ fun runStandaloneSimulation(
         provisional = provisionalResult,
         finalOutput = finalEnvelopeResult,
         mrsp = makeMRSPResponse(speedLimits),
-        powerRestrictions = makePowerRestrictions(curvesAndConditions, powerRestrictionsLegacyMap)
+        electricalProfiles = makeElectricalProfiles(electrificationMap),
     )
+}
+
+fun makeElectricalProfiles(
+    electrifications: ImmutableRangeMap<Double, Electrification>
+): RangeValues<ElectricalProfileValue> {
+    fun profileFromElectrification(electrification: Electrification): ElectricalProfileValue {
+        return when (electrification) {
+            is Electrified -> ElectricalProfileValue.Profile(electrification.mode)
+            else -> ElectricalProfileValue.NoProfile()
+        }
+    }
+
+    // This map is mostly used to coalesce identical values
+    val profileMap = TreeRangeMap.create<Double, ElectricalProfileValue>()
+    for (electrification in electrifications.asMapOfRanges()) {
+        profileMap.putCoalescing(
+            Range.closed(electrification.key.lowerEndpoint(), electrification.key.upperEndpoint()),
+            profileFromElectrification(electrification.value)
+        )
+    }
+
+    val boundaries =
+        profileMap.asMapOfRanges().map { Offset<Path>(it.key.upperEndpoint().meters) }.dropLast(1)
+    val values = profileMap.asMapOfRanges().map { it.value }
+
+    return RangeValues(boundaries = boundaries, values = values)
 }
 
 fun makeMRSPResponse(speedLimits: Envelope): MRSPResponse {
@@ -144,23 +172,6 @@ fun makeMRSPResponse(speedLimits: Envelope): MRSPResponse {
         speeds.add(point.speed)
     }
     return MRSPResponse(positions, speeds)
-}
-
-/** Build the power restriction map */
-fun makePowerRestrictions(
-    curvesAndConditions: RollingStock.CurvesAndConditions,
-    powerRestrictionsLegacyMap: RangeMap<Double, String>
-): List<PowerRestriction> {
-    val rawPowerRestrictions =
-        PowerRestrictionRange.from(curvesAndConditions.conditions, powerRestrictionsLegacyMap)
-    return rawPowerRestrictions.map {
-        PowerRestriction(
-            begin = Offset(it.start.meters),
-            end = Offset(it.stop.meters),
-            code = it.code,
-            handled = it.handled,
-        )
-    }
 }
 
 /**
@@ -259,11 +270,7 @@ fun distributeAllowance(
         val end = envelope.interpolateTotalTimeClamp(to.distance.meters)
         return end - start
     }
-    val rangeEnds =
-        margins.boundaries
-            .map { Offset<Path>(it) }
-            .filter { it > startOffset && it < endOffset }
-            .toMutableList()
+    val rangeEnds = margins.boundaries.filter { it > startOffset && it < endOffset }.toMutableList()
     rangeEnds.add(endOffset)
     val res = mutableListOf<AllowanceRange>()
     val baseTotalTime = rangeTime(startOffset, endOffset)
@@ -297,10 +304,10 @@ fun buildProvisionalEnvelope(
 ): Envelope {
     val marginRanges = mutableListOf<AllowanceRange>()
     // Add path extremities to boundaries
-    val boundaries = mutableListOf<Distance>()
-    boundaries.add(Distance.ZERO)
+    val boundaries = mutableListOf<Offset<Path>>()
+    boundaries.add(Offset(Distance.ZERO))
     boundaries.addAll(rawMargins.boundaries)
-    boundaries.add(Distance.fromMeters(context.path.length))
+    boundaries.add(Offset(Distance.fromMeters(context.path.length)))
     for (i in 0 until rawMargins.values.size) {
         val start = boundaries[i]
         val end = boundaries[i + 1]
@@ -310,7 +317,7 @@ fun buildProvisionalEnvelope(
                 is MarginValue.Percentage -> Percentage(rawValue.percentage)
                 is MarginValue.None -> Percentage(0.0)
             }
-        marginRanges.add(AllowanceRange(start.meters, end.meters, value))
+        marginRanges.add(AllowanceRange(start.distance.meters, end.distance.meters, value))
     }
     val margin =
         if (constraintDistribution == RJSAllowanceDistribution.MARECO)

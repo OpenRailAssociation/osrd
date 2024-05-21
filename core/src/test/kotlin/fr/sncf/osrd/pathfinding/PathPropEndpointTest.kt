@@ -1,6 +1,7 @@
 package fr.sncf.osrd.pathfinding
 
 import fr.sncf.osrd.api.ApiTest
+import fr.sncf.osrd.api.api_v2.RangeValues
 import fr.sncf.osrd.api.api_v2.TrackRange
 import fr.sncf.osrd.api.api_v2.path_properties.*
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection
@@ -50,7 +51,7 @@ class PathPropEndpointTest : ApiTest() {
         assertEquals(
             parsed.electrifications,
             RangeValues(
-                listOf(1910.meters, 1950.meters),
+                listOf(Offset(1910.meters), Offset(1950.meters)),
                 listOf(Electrified("1500V"), Neutral(true), Electrified("25000V"))
             )
         )

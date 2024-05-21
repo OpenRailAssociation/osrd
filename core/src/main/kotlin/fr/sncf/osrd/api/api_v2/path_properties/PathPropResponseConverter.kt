@@ -1,14 +1,16 @@
 package fr.sncf.osrd.api.api_v2.path_properties
 
 import com.google.common.collect.Range
+import fr.sncf.osrd.api.api_v2.RangeValues
 import fr.sncf.osrd.api.pathfinding.toRJSLineString
 import fr.sncf.osrd.railjson.schema.geom.RJSLineString
 import fr.sncf.osrd.sim_infra.api.NeutralSection
+import fr.sncf.osrd.sim_infra.api.Path
 import fr.sncf.osrd.sim_infra.api.PathProperties
 import fr.sncf.osrd.sim_infra.api.RawSignalingInfra
 import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.DistanceRangeMapImpl
-import fr.sncf.osrd.utils.units.Distance
+import fr.sncf.osrd.utils.units.Offset
 
 fun makePathPropResponse(
     pathProperties: PathProperties,
@@ -110,10 +112,10 @@ private fun <T> makeRangeValues(distanceRangeMap: DistanceRangeMap<T>): RangeVal
 }
 
 private fun <T> makeRangeValues(entries: List<DistanceRangeMap.RangeMapEntry<T>>): RangeValues<T> {
-    val boundaries = mutableListOf<Distance>()
+    val boundaries = mutableListOf<Offset<Path>>()
     val values = mutableListOf<T>()
     for (entry in entries) {
-        boundaries.add(entry.upper)
+        boundaries.add(Offset(entry.upper))
         values.add(entry.value)
     }
     boundaries.removeLast()

@@ -8,6 +8,7 @@ import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import fr.sncf.osrd.api.api_v2.pathfinding.PathfindingBlockResponse
 import fr.sncf.osrd.api.api_v2.pathfinding.polymorphicPathfindingResponseAdapter
 import fr.sncf.osrd.api.api_v2.standalone_sim.SimulationResponse
+import fr.sncf.osrd.api.api_v2.standalone_sim.polymorphicElectricalProfileAdapter
 import fr.sncf.osrd.api.api_v2.standalone_sim.polymorphicSimulationResponseAdapter
 import fr.sncf.osrd.utils.json.UnitAdapterFactory
 import java.time.ZonedDateTime
@@ -31,6 +32,7 @@ val stdcmResponseAdapter: JsonAdapter<STDCMResponseV2> =
     Moshi.Builder()
         .addLast(polymorphicSTDCMResponseAdapter)
         .addLast(polymorphicSimulationResponseAdapter)
+        .addLast(polymorphicElectricalProfileAdapter)
         .addLast(polymorphicPathfindingResponseAdapter)
         .addLast(UnitAdapterFactory())
         .addLast(KotlinJsonAdapterFactory())
