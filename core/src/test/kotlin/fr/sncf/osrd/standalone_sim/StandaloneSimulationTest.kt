@@ -149,7 +149,7 @@ class StandaloneSimulationTest {
                 RangeValues(),
                 RangeValues(listOf(), listOf(MarginValue.Percentage(10.0))),
                 RangeValues(
-                    listOf(pathLength.distance / 2.0),
+                    listOf(Offset(pathLength.distance / 2.0)),
                     listOf(
                         MarginValue.Percentage(10.0),
                         MarginValue.MinPer100Km(5.0),
@@ -224,13 +224,13 @@ class StandaloneSimulationTest {
         }
 
         // Test margin values
-        val boundaries = mutableListOf<Distance>()
-        boundaries.add(Distance.ZERO)
+        val boundaries = mutableListOf<Offset<Path>>()
+        boundaries.add(Offset(Distance.ZERO))
         boundaries.addAll(testCase.margins.boundaries)
-        boundaries.add(testCase.pathLength)
+        boundaries.add(Offset(testCase.pathLength))
         for (i in 0 until testCase.margins.values.size) {
-            val entryOffset = Offset<Path>(boundaries[i])
-            val exitOffset = Offset<Path>(boundaries[i + 1])
+            val entryOffset = boundaries[i]
+            val exitOffset = boundaries[i + 1]
             val baseTime =
                 getTimeAt(exitOffset, res.base, false) - getTimeAt(entryOffset, res.base, true)
             val marginTime =

@@ -5,10 +5,7 @@ import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-import fr.sncf.osrd.api.api_v2.RoutingRequirement
-import fr.sncf.osrd.api.api_v2.SignalSighting
-import fr.sncf.osrd.api.api_v2.SpacingRequirement
-import fr.sncf.osrd.api.api_v2.ZoneUpdate
+import fr.sncf.osrd.api.api_v2.*
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.sim_infra.api.Path
 import fr.sncf.osrd.utils.json.UnitAdapterFactory
@@ -22,8 +19,14 @@ class SimulationSuccess(
     val provisional: ReportTrain,
     @Json(name = "final_output") val finalOutput: CompleteReportTrain,
     val mrsp: MRSPResponse,
-    @Json(name = "power_restrictions") val powerRestrictions: List<PowerRestriction>,
+    @Json(name = "electrical_profiles") val electricalProfiles: RangeValues<ElectricalProfileValue>,
 ) : SimulationResponse
+
+sealed class ElectricalProfileValue {
+    data class Profile(var profile: String) : ElectricalProfileValue()
+
+    class NoProfile : ElectricalProfileValue()
+}
 
 class MRSPResponse(
     val positions: List<Offset<Path>>,
@@ -48,13 +51,6 @@ open class ReportTrain(
     @Json(name = "energy_consumption") val energyConsumption: Double,
 )
 
-class PowerRestriction(
-    val begin: Offset<Path>,
-    val end: Offset<Path>,
-    val code: String,
-    val handled: Boolean
-)
-
 class SimulationFailed(
     @Json(name = "core_error") val coreError: OSRDError,
 ) : SimulationResponse
@@ -64,9 +60,15 @@ val polymorphicSimulationResponseAdapter: PolymorphicJsonAdapterFactory<Simulati
         .withSubtype(SimulationSuccess::class.java, "success")
         .withSubtype(SimulationFailed::class.java, "simulation_failed")
 
+val polymorphicElectricalProfileAdapter: PolymorphicJsonAdapterFactory<ElectricalProfileValue> =
+    PolymorphicJsonAdapterFactory.of(ElectricalProfileValue::class.java, "electrical_profile_type")
+        .withSubtype(ElectricalProfileValue.NoProfile::class.java, "no_profile")
+        .withSubtype(ElectricalProfileValue.Profile::class.java, "profile")
+
 val simulationResponseAdapter: JsonAdapter<SimulationResponse> =
     Moshi.Builder()
         .add(polymorphicSimulationResponseAdapter)
+        .add(polymorphicElectricalProfileAdapter)
         .addLast(UnitAdapterFactory())
         .addLast(KotlinJsonAdapterFactory())
         .build()
