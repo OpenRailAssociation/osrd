@@ -50,6 +50,10 @@ xdg-open http://localhost:4000/
 
 (Linux users can use `docker-compose-host.yml` to enable host networking)
 
+## Deployment
+
+To deploy the application on a server, check out the [deployment guide](https://osrd.fr/en/docs/guides/deploy/).
+
 ## Get in touch
 
 - Chat with us on IRC at [libera.chat#osrd](https://web.libera.chat/#osrd)
