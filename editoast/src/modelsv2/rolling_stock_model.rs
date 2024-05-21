@@ -1,5 +1,8 @@
+mod power_restriction;
+
 use std::collections::HashMap;
 
+use diesel::sql_query;
 use diesel::ExpressionMethods;
 use diesel::QueryDsl;
 use diesel::SelectableHelper;
@@ -13,6 +16,7 @@ use editoast_schemas::rolling_stock::RollingResistance;
 use editoast_schemas::rolling_stock::RollingStock;
 use editoast_schemas::rolling_stock::RollingStockMetadata;
 use editoast_schemas::rolling_stock::RollingStockSupportedSignalingSystems;
+use power_restriction::PowerRestriction;
 use serde::Deserialize;
 use serde::Serialize;
 use std::sync::Arc;
@@ -24,11 +28,13 @@ use validator::ValidationErrors;
 use crate::error::Result;
 use crate::modelsv2::prelude::*;
 use crate::modelsv2::rolling_stock_livery::RollingStockLiveryMetadataModel;
+use crate::modelsv2::DbConnection;
 use crate::modelsv2::DbConnectionPool;
 use crate::views::rolling_stocks::RollingStockWithLiveries;
 
 editoast_common::schemas! {
     RollingStockModel,
+    PowerRestriction,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, ModelV2, ToSchema)]
@@ -107,6 +113,15 @@ impl RollingStockModel {
             .filter(|(_, mode)| mode.is_electric)
             .map(|(key, _)| key.clone())
             .collect()
+    }
+
+    pub async fn get_power_restrictions(conn: &mut DbConnection) -> Result<Vec<PowerRestriction>> {
+        let power_restrictions = sql_query(
+            "SELECT DISTINCT jsonb_object_keys(power_restrictions) AS power_restriction FROM rolling_stock",
+        )
+        .load::<PowerRestriction>(conn)
+        .await?;
+        Ok(power_restrictions)
     }
 }
 
