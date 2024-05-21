@@ -76,7 +76,6 @@ editoast_common::schemas! {
     DeleteRollingStockQueryParams,
     RollingStockLockedUpdateForm,
     RollingStockLiveryCreateForm,
-    PowerRestriction,
     RollingStockError,
     RollingStockKey,
     TrainScheduleScenarioStudyProject,
@@ -194,12 +193,6 @@ async fn get_by_name(
     Ok(Json(rolling_stock_with_liveries))
 }
 
-#[derive(QueryableByName, Debug, Clone, Serialize, Deserialize, ToSchema)]
-struct PowerRestriction {
-    #[diesel(sql_type = SqlText)]
-    power_restriction: String,
-}
-
 /// Returns the set of power restrictions for all rolling_stocks modes.
 #[utoipa::path(tag = "rolling_stock",
     responses(
@@ -208,13 +201,8 @@ struct PowerRestriction {
 )]
 #[get("")]
 async fn get_power_restrictions(db_pool: Data<DbConnectionPool>) -> Result<Json<Vec<String>>> {
-    let mut conn = db_pool.get().await?;
-    let power_restrictions: Vec<PowerRestriction> = sql_query(
-        "SELECT DISTINCT jsonb_object_keys(power_restrictions) AS power_restriction
-        FROM rolling_stock",
-    )
-    .load(&mut conn)
-    .await?;
+    let conn = &mut db_pool.get().await?;
+    let power_restrictions = RollingStockModel::get_power_restrictions(conn).await?;
     Ok(Json(
         power_restrictions
             .into_iter()
