@@ -33,3 +33,8 @@ export function formatCreationDate(date: string) {
     minutes: formattedMinutes,
   };
 }
+
+export function extractSpeedLimit(speedLimitByTag: string): string {
+  const parts = speedLimitByTag.split(' - ');
+  return parts.length > 1 ? parts[1] : speedLimitByTag;
+}

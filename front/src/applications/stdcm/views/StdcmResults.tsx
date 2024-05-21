@@ -21,9 +21,15 @@ type StcdmResultsProps = {
   mapCanvas?: string;
   stdcmResults: PostStdcmApiResponse;
   rollingStockData: RollingStockWithLiveries;
+  speedLimitByTag?: string;
 };
 
-const StcdmResults = ({ mapCanvas, stdcmResults, rollingStockData }: StcdmResultsProps) => {
+const StcdmResults = ({
+  mapCanvas,
+  stdcmResults,
+  rollingStockData,
+  speedLimitByTag,
+}: StcdmResultsProps) => {
   const { t } = useTranslation(['translation', 'stdcm']);
 
   const [showSpeedSpaceChart, setShowSpeedSpaceChart] = useState(false);
@@ -115,6 +121,7 @@ const StcdmResults = ({ mapCanvas, stdcmResults, rollingStockData }: StcdmResult
               <SimulationReportSheet
                 stdcmData={stdcmResults}
                 rollingStockData={rollingStockData}
+                speedLimitByTag={speedLimitByTag}
                 number={codeNumber}
                 mapCanvas={mapCanvas}
               />
