@@ -1,8 +1,10 @@
 mod power_restriction;
+pub mod train_schedule_scenario_study_project;
 
 use std::collections::HashMap;
 
 use diesel::sql_query;
+use diesel::sql_types::BigInt;
 use diesel::ExpressionMethods;
 use diesel::QueryDsl;
 use diesel::SelectableHelper;
@@ -20,6 +22,7 @@ use power_restriction::PowerRestriction;
 use serde::Deserialize;
 use serde::Serialize;
 use std::sync::Arc;
+use train_schedule_scenario_study_project::TrainScheduleScenarioStudyProject;
 use utoipa::ToSchema;
 use validator::Validate;
 use validator::ValidationError;
@@ -35,6 +38,7 @@ use crate::views::rolling_stocks::RollingStockWithLiveries;
 editoast_common::schemas! {
     RollingStockModel,
     PowerRestriction,
+    TrainScheduleScenarioStudyProject,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, ModelV2, ToSchema)]
@@ -116,12 +120,25 @@ impl RollingStockModel {
     }
 
     pub async fn get_power_restrictions(conn: &mut DbConnection) -> Result<Vec<PowerRestriction>> {
-        let power_restrictions = sql_query(
-            "SELECT DISTINCT jsonb_object_keys(power_restrictions) AS power_restriction FROM rolling_stock",
-        )
+        let power_restrictions = sql_query(include_str!(
+            "rolling_stock_model/sql/get_power_restrictions.sql"
+        ))
         .load::<PowerRestriction>(conn)
         .await?;
         Ok(power_restrictions)
+    }
+
+    pub async fn get_rolling_stock_usage(
+        &self,
+        conn: &mut DbConnection,
+    ) -> Result<Vec<TrainScheduleScenarioStudyProject>> {
+        let result = sql_query(include_str!(
+            "rolling_stock_model/sql/get_train_schedules_with_scenario.sql"
+        ))
+        .bind::<BigInt, _>(self.id)
+        .load::<TrainScheduleScenarioStudyProject>(conn)
+        .await?;
+        Ok(result)
     }
 }
 

@@ -1,0 +1,2 @@
+SELECT DISTINCT jsonb_object_keys(power_restrictions) AS power_restriction
+FROM rolling_stock
