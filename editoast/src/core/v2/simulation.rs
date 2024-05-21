@@ -197,6 +197,23 @@ pub struct RoutingZoneRequirement {
     pub end_time: u64,
 }
 
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
+pub struct ElectricalProfiles {
+    /// List of `n` boundaries of the ranges.
+    /// A boundary is a distance from the beginning of the path in mm.
+    pub boundaries: Vec<u64>,
+    /// List of `n+1` values associated to the ranges
+    #[schema(inline)]
+    pub values: Vec<ElectricalProfileValue>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
+#[serde(tag = "electrical_profile_type", rename_all = "snake_case")]
+pub enum ElectricalProfileValue {
+    NoProfile,
+    Profile { profile: String },
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
 pub struct SimulationPowerRestrictionRange {
     /// Start position in the path in mm
@@ -246,7 +263,7 @@ pub enum SimulationResponse {
         #[schema(inline)]
         mrsp: Mrsp,
         #[schema(inline)]
-        power_restrictions: Vec<SimulationPowerRestrictionRange>,
+        electrical_profiles: ElectricalProfiles,
     },
     PathfindingFailed {
         pathfinding_result: PathfindingResult,
