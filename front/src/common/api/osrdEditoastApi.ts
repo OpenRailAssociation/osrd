@@ -3497,6 +3497,21 @@ export type ReportTrainV2 = {
 export type SimulationResponse =
   | {
       base: ReportTrainV2;
+      electrical_profiles: {
+        /** List of `n` boundaries of the ranges.
+        A boundary is a distance from the beginning of the path in mm. */
+        boundaries: number[];
+        /** List of `n+1` values associated to the ranges */
+        values: (
+          | {
+              electrical_profile_type: 'no_profile';
+            }
+          | {
+              electrical_profile_type: 'profile';
+              profile: string;
+            }
+        )[];
+      };
       final_output: ReportTrainV2 & {
         routing_requirements: RoutingRequirement[];
         signal_sightings: SignalSighting[];
@@ -3508,15 +3523,6 @@ export type SimulationResponse =
         positions: number[];
         speeds: number[];
       };
-      power_restrictions: {
-        /** Start position in the path in mm */
-        begin: number;
-        code: string;
-        /** End position in the path in mm */
-        end: number;
-        /** Is power restriction handled during simulation */
-        handled: boolean;
-      }[];
       provisional: ReportTrainV2;
       status: 'success';
     }
