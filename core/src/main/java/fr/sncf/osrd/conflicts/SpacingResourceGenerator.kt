@@ -133,11 +133,26 @@ class SpacingRequirementAutomaton(
                 break
             }
         }
-
         assert(startZone != -1)
-        // the simulation start time is 0)
-        addZonePendingRequirement(startZone, 0.0)
-        lastEmittedZone = startZone
+
+        // We need to add a requirement for each zone between the start
+        // and the first required zone
+        val firstSignal = pendingSignals.firstOrNull()
+        val firstProtectedZone =
+            if (firstSignal != null) {
+                getSignalProtectedZone(firstSignal)
+            } else {
+                startZone + 1
+            }
+
+        for (i in startZone until firstProtectedZone) {
+            // The simulation start time is 0.
+            // The zones are not all reached right at the start, but
+            // because they're part of the block the train starts on,
+            // they can be considered as "required" from the beginning.
+            addZonePendingRequirement(i, 0.0)
+            lastEmittedZone = i
+        }
     }
 
     private fun addSignalRequirements(beginZoneIndex: Int, endZoneIndex: Int, sightTime: Double) {
