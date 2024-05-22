@@ -6,24 +6,15 @@ use actix_web::post;
 use actix_web::web::Data;
 use actix_web::web::Json;
 use actix_web::web::Path;
-use diesel::sql_query;
-use diesel::sql_types::Array;
-use diesel::sql_types::BigInt;
-use diesel::sql_types::Jsonb;
-use diesel::sql_types::Nullable;
-use diesel::sql_types::Text;
-use diesel::QueryableByName;
-use diesel_async::RunQueryDsl;
 use editoast_derive::EditoastError;
-use serde::Deserialize;
-use serde::Serialize;
-use serde_json::Value as JsonValue;
 use thiserror::Error;
 
 use crate::error::Result;
-use crate::modelsv2::get_geometry_layer_table;
-use crate::modelsv2::get_table;
+use crate::modelsv2::infra::ObjectQueryable;
 use crate::modelsv2::DbConnectionPool;
+use crate::modelsv2::Infra;
+use crate::views::infra::InfraApiError;
+use crate::Retrieve;
 use editoast_schemas::primitives::ObjectType;
 
 /// Return `/infra/<infra_id>/objects` routes
@@ -45,16 +36,6 @@ fn has_unique_ids(obj_ids: &[String]) -> bool {
     obj_ids.len() == obj_ids.iter().collect::<HashSet<_>>().len()
 }
 
-#[derive(QueryableByName, Debug, Clone, Serialize, Deserialize, PartialEq)]
-struct ObjectQueryable {
-    #[diesel(sql_type = Text)]
-    obj_id: String,
-    #[diesel(sql_type = Jsonb)]
-    railjson: JsonValue,
-    #[diesel(sql_type = Nullable<Jsonb>)]
-    geographic: Option<diesel_json::Json<geos::geojson::Geometry>>,
-}
-
 /// Return the railjson list of a specific OSRD object
 #[post("/objects/{object_type}")]
 async fn get_objects(
@@ -62,41 +43,16 @@ async fn get_objects(
     obj_ids: Json<Vec<String>>,
     db_pool: Data<DbConnectionPool>,
 ) -> Result<Json<Vec<ObjectQueryable>>> {
-    let (infra, obj_type) = path_params.into_inner();
+    let (infra_id, obj_type) = path_params.into_inner();
     if !has_unique_ids(&obj_ids) {
         return Err(GetObjectsErrors::DuplicateIdsProvided.into());
     }
 
-    // Prepare query
-    let query = if [ObjectType::SwitchType, ObjectType::Route].contains(&obj_type) {
-        format!(
-            "SELECT obj_id as obj_id, data as railjson, NULL as geographic
-                FROM {} WHERE infra_id = $1 AND obj_id = ANY($2)",
-            get_table(&obj_type)
-        )
-    } else {
-        format!("
-            SELECT
-                object_table.obj_id as obj_id,
-                object_table.data as railjson,
-                ST_AsGeoJSON(ST_Transform(geographic, 4326))::jsonb as geographic
-            FROM {} AS object_table
-            LEFT JOIN {} AS geometry_table ON object_table.obj_id = geometry_table.obj_id AND object_table.infra_id = geometry_table.infra_id
-            WHERE object_table.infra_id = $1 AND object_table.obj_id = ANY($2)
-            ",
-            get_table(&obj_type),
-            get_geometry_layer_table(&obj_type).unwrap()
-        )
-    };
-
-    // Execute query
-    let obj_ids_dup = obj_ids.clone();
-    let mut conn = db_pool.get().await?;
-    let objects: Vec<ObjectQueryable> = sql_query(query)
-        .bind::<BigInt, _>(infra)
-        .bind::<Array<Text>, _>(obj_ids_dup)
-        .load(&mut conn)
-        .await?;
+    let conn = &mut db_pool.get().await?;
+    let infra =
+        Infra::retrieve_or_fail(conn, infra_id, || InfraApiError::NotFound { infra_id }).await?;
+    let obj_ids = obj_ids.into_inner();
+    let objects = infra.get_objects(conn, obj_type, &obj_ids).await?;
 
     // Build a cache to reorder the result
     let mut objects: HashMap<_, _> = objects
