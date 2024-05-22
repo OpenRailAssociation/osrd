@@ -833,8 +833,14 @@ impl InfraCache {
 
             let switch = graph.get_switch(&endpoint)?;
             let switch_id = switch.get_id();
-            // Check we found the switch in the route
-            let group = route.switches_directions.get(&switch_id.clone().into())?;
+            let switch_type = self.get_switch_type(&switch.switch_type).ok()?;
+            let group = if switch_type.groups.len() == 1 {
+                // Check if switch has one group
+                switch_type.groups.keys().next()?
+            } else {
+                // Check we found the switch in the route
+                route.switches_directions.get(&switch_id.clone().into())?
+            };
             used_switches.insert(switch_id.clone().into(), group.clone());
             let next_endpoint = graph.get_neighbour(&endpoint, group)?;
 

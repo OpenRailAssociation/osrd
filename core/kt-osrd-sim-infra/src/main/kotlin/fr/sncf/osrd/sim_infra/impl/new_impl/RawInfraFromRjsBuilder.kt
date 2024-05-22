@@ -221,6 +221,11 @@ class RawInfraFromRjsBuilder {
         return null
     }
 
+    fun getTrackNodeConfigs(nodeId: TrackNodeId): StaticIdxSpace<TrackNodeConfig> {
+        val nodeDescriptor = trackNodePool[nodeId]
+        return nodeDescriptor.configs.space()
+    }
+
     fun getDetectorTrackSection(detectorId: DetectorId): TrackSectionId {
         return detectorPool[detectorId].trackSection
     }
@@ -702,7 +707,15 @@ fun RawInfraFromRjsBuilder.route(
             // find the next track section
             val endpoint = curTrack.toEndpoint
             val nextNode = getNodeAtEndpoint(endpoint) ?: throw ReachedTrackDeadEnd(endpoint)
-            val nextNodeConfig = nodeConfigs[nextNode] ?: throw MissingNodeConfig(nextNode)
+            val nextNodeConfigs = getTrackNodeConfigs(nextNode)
+            val nextNodeConfig =
+                if (nextNodeConfigs.size == 1u) {
+                    // Check if we have a one config node
+                    nextNodeConfigs[0]
+                } else {
+                    // Lookup the node config using route description
+                    nodeConfigs[nextNode] ?: throw MissingNodeConfig(nextNode)
+                }
             zonePathBuilder.addNode(nextNode, nextNodeConfig)
             curTrack =
                 getNextTrackSection(curTrack, nextNodeConfig)
