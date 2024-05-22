@@ -9,7 +9,7 @@ import type {
 } from 'reducers/osrdsimulation/types';
 import { timestampToHHMMSS } from 'utils/date';
 
-import type { BaseOrEcoType } from './DriverTrainScheduleTypes';
+import type { BaseOrEcoType } from './consts';
 
 /**
  * CSV Export of trainschedule

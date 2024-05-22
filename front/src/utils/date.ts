@@ -122,9 +122,12 @@ export function getEarliestDate(date1: string | null | undefined, dat2: string |
   return formatedDate1 || formatedDate2;
 }
 
-export function stringToTime(sec: string) {
-  const secNum = parseInt(sec, 10);
-  return new Date(secNum * 1000).toISOString().substr(11, 8);
+/**
+ * Converts an UTC date in seconds since 1970 to a local date in seconds since 1970
+ */
+export function convertUTCDateToLocalDate(date: number) {
+  const timeDifferenceMinutes = new Date().getTimezoneOffset();
+  return Math.abs(timeDifferenceMinutes) * 60 + date;
 }
 
 export function extractTime(isoDate: string) {

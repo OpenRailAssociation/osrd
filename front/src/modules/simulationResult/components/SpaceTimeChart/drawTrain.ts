@@ -8,15 +8,17 @@ import drawText from 'modules/simulationResult/components/ChartHelpers/drawText'
 import { CHART_AXES } from 'modules/simulationResult/consts';
 import type { AllowancesSettings, Chart, SimulationTrain } from 'reducers/osrdsimulation/types';
 
+// TODO DROP V1: readapt this function for v2 by removing everything related to base, eco
+// or allowances as there will be only one type of data to display
 export default function drawTrain(
-  allowancesSettings: AllowancesSettings,
   chart: Chart,
   dispatchUpdateSelectedTrainId: (selectedTrainId: number) => void,
   isPathSelected: boolean,
   isSelected: boolean,
   rotate: boolean,
   setDragOffset: React.Dispatch<React.SetStateAction<number>>,
-  trainToDraw: SimulationTrain
+  trainToDraw: SimulationTrain,
+  allowancesSettings?: AllowancesSettings
 ) {
   const groupID = `spaceTime-${trainToDraw.id}`;
 
@@ -73,8 +75,7 @@ export default function drawTrain(
   const currentAllowanceSettings = allowancesSettings
     ? allowancesSettings[trainToDraw.id]
     : undefined;
-
-  if (direction && currentAllowanceSettings) {
+  if (direction) {
     const routeAspects = trainToDraw.eco_routeAspects ?? trainToDraw.routeAspects;
     routeAspects.forEach((routeAspect, index) => {
       drawRect(
@@ -148,6 +149,36 @@ export default function drawTrain(
         )
       );
     }
+  }
+
+  // TrainScheduleV2
+  if (!currentAllowanceSettings) {
+    trainToDraw.headPosition.forEach((headPositionSection) =>
+      drawCurve(
+        chart,
+        `${isSelected && 'selected'} head`,
+        headPositionSection,
+        groupID,
+        'curveLinear',
+        CHART_AXES.SPACE_TIME,
+        'headPosition',
+        rotate,
+        isSelected
+      )
+    );
+    trainToDraw.tailPosition.forEach((tailPositionSection) =>
+      drawCurve(
+        chart,
+        `${isSelected && 'selected'} tail`,
+        tailPositionSection,
+        groupID,
+        'curveLinear',
+        CHART_AXES.SPACE_TIME,
+        'tailPosition',
+        rotate,
+        isSelected
+      )
+    );
   }
 
   const { headPosition } = trainToDraw;

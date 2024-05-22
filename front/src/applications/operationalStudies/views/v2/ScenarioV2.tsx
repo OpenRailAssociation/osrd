@@ -9,11 +9,9 @@ import { useParams } from 'react-router-dom';
 import BreadCrumbs from 'applications/operationalStudies/components/BreadCrumbs';
 import InfraLoadingState from 'applications/operationalStudies/components/Scenario/InfraLoadingState';
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
+import type { TrainSpaceTimeData } from 'applications/operationalStudies/types';
 import infraLogo from 'assets/pictures/components/tracks.svg';
-import {
-  osrdEditoastApi,
-  type PostV2TrainScheduleProjectPathApiResponse,
-} from 'common/api/osrdEditoastApi';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import { useInfraID, useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
@@ -26,9 +24,10 @@ import { updateTrainIdUsedForProjection } from 'reducers/osrdsimulation/actions'
 import { getTrainIdUsedForProjection, getSelectedTrainId } from 'reducers/osrdsimulation/selectors';
 import { useAppDispatch } from 'store';
 
-import { getSimulationResultsV2, selectProjectionV2 } from './getSimulationResultsV2';
+import { getSpaceTimeChartData, selectProjectionV2 } from './getSimulationResultsV2';
 import ImportTrainScheduleV2 from './ImportTrainScheduleV2';
 import ManageTrainScheduleV2 from './ManageTrainScheduleV2';
+import SimulationResultsV2 from './SimulationResultsV2';
 
 type SimulationParams = {
   projectId: string;
@@ -46,8 +45,7 @@ const ScenarioV2 = () => {
   const [collapsedTimetable, setCollapsedTimetable] = useState(false);
   const [isInfraLoaded, setIsInfraLoaded] = useState(false);
   const [reloadCount, setReloadCount] = useState(1);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [spaceTimeData, setSpaceTimeData] = useState<PostV2TrainScheduleProjectPathApiResponse>();
+  const [trainSpaceTimeData, setTrainSpaceTimeData] = useState<TrainSpaceTimeData[]>([]);
   const [trainResultsToFetch, setTrainResultsToFetch] = useState<number[]>();
   const isUpdating = useSelector((state: RootState) => state.osrdsimulation.isUpdating);
 
@@ -161,14 +159,25 @@ const ScenarioV2 = () => {
     if (timetable && infra?.state === 'CACHED' && trainIdUsedForProjection && infraId) {
       // If trainResultsToFetch is undefined that means it's the first load of the scenario
       // and we want to get all timetable trains results
-      getSimulationResultsV2(
+      getSpaceTimeChartData(
         trainResultsToFetch ?? timetable.train_ids,
         trainIdUsedForProjection,
         infraId,
-        setSpaceTimeData
+        setTrainSpaceTimeData
       );
     }
-  }, [timetable, infra, trainIdUsedForProjection]);
+  }, [timetable, infra]);
+
+  useEffect(() => {
+    if (timetable && infra?.state === 'CACHED' && trainIdUsedForProjection && infraId) {
+      getSpaceTimeChartData(
+        timetable.train_ids,
+        trainIdUsedForProjection,
+        infraId,
+        setTrainSpaceTimeData
+      );
+    }
+  }, [trainIdUsedForProjection]);
 
   useEffect(() => {
     if (!projectId || !studyId || !scenarioId) {
@@ -344,13 +353,13 @@ const ScenarioV2 = () => {
                     </div>
                   </div>
                 )}
-                {/* {isInfraLoaded && infra && (
+                {isInfraLoaded && infra && (
                   <SimulationResultsV2
                     collapsedTimetable={collapsedTimetable}
-                    // setTrainResultsToFetch={setTrainResultsToFetch}
-                    spaceTimeData={spaceTimeData}
+                    setTrainResultsToFetch={setTrainResultsToFetch}
+                    spaceTimeData={trainSpaceTimeData}
                   />
-                )} */}
+                )}
               </div>
             </div>
           </div>

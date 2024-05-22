@@ -3,6 +3,10 @@ import React, { useCallback, useEffect, useState } from 'react';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
+import type {
+  ElectrificationRangeV2,
+  PathPropertiesFormatted,
+} from 'applications/operationalStudies/types';
 import type { ElectrificationRange, LightRollingStock } from 'common/api/osrdEditoastApi';
 import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
 import {
@@ -16,7 +20,7 @@ type RollingStockMode = {
   };
 };
 interface SpeedSpaceSettingsProps {
-  electrificationRanges: ElectrificationRange[];
+  electrificationRanges: ElectrificationRange[] | PathPropertiesFormatted['electrifications']; // TODO DROP V1 : remove ElectrificationRange type
   showSettings: boolean;
   speedSpaceSettings: { [key in SPEED_SPACE_SETTINGS_KEYS]: boolean };
   trainRollingStock?: LightRollingStock;
@@ -50,11 +54,14 @@ const SpeedSpaceSettings = ({
    * @param electricRanges all of the different path's ranges.
    * If the range is electrified and the train us the eletrical mode, mode_handled is true
    */
-  const runsOnlyThermal = (electricRanges: ElectrificationRange[]) =>
-    !electricRanges.some(
-      (range) =>
-        range.electrificationUsage.object_type === 'Electrified' &&
-        range.electrificationUsage.mode_handled
+  const runsOnlyThermal = (
+    electricRanges: (ElectrificationRange | ElectrificationRangeV2)[] // TODO DROP V1 : remove ElectrificationRange type
+  ) =>
+    !electricRanges.some((range) =>
+      'object_type' in range.electrificationUsage
+        ? range.electrificationUsage.object_type === 'Electrified' &&
+          range.electrificationUsage.mode_handled
+        : range.electrificationUsage.type === 'electrification'
     );
 
   useEffect(() => {

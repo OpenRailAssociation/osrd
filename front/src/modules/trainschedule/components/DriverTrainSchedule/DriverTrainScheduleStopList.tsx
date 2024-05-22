@@ -4,8 +4,8 @@ import { useTranslation } from 'react-i18next';
 
 import type { Train } from 'reducers/osrdsimulation/types';
 
+import type { BaseOrEcoType } from './consts';
 import DriverTrainScheduleStop from './DriverTrainScheduleStop';
-import type { BaseOrEcoType } from './DriverTrainScheduleTypes';
 
 type Props = {
   train: Train;

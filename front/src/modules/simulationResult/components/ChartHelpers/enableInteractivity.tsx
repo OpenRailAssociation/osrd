@@ -17,9 +17,10 @@ import type { SpaceCurvesSlopesData } from 'modules/simulationResult/components/
 import type {
   AreaBlock,
   GevPreparedData,
-} from 'modules/simulationResult/components/SpeedSpaceChart/prepareData';
+  GevPreparedDataV2,
+} from 'modules/simulationResult/components/SpeedSpaceChart/types';
 import { CHART_AXES, LIST_VALUES, type ChartAxes } from 'modules/simulationResult/consts';
-import type { PositionScaleDomain } from 'modules/simulationResult/types';
+import type { PositionScaleDomain, SpaceCurvesSlopesDataV2 } from 'modules/simulationResult/types';
 import type {
   Chart,
   ConsolidatedRouteAspect,
@@ -55,6 +56,7 @@ export const updatePointers = (
 ) => {
   const xAxis = getAxis(keyValues, 'x', rotate);
   const yAxis = getAxis(keyValues, 'y', rotate);
+
   (Object.entries(positionValues) as typedEntries<PositionsSpeedTimes<Date>>)
     .map<[keyof PositionsSpeedTimes<Date>, ConsolidatedPositionSpeedTime | ConsolidatedSpeedTime]>(
       ([name, positionValue]) => {
@@ -70,7 +72,7 @@ export const updatePointers = (
     .forEach(([name, positionValue]) => {
       type Key = keyof typeof positionValue;
       if (chart?.svg) {
-        chart?.svg
+        chart.svg
           .selectAll(`#pointer-${name}`)
           .attr('cx', chart.x(positionValue[xAxis as Key]))
           .attr('cy', chart.y(positionValue[yAxis as Key]));
@@ -370,7 +372,130 @@ export const enableInteractivity = <
       }
 
       updateTimePosition(timePositionLocal);
+
       if (chart.svg && dateIsInRange(timePositionLocal, chartDimensions)) {
+        const verticalMark = pointer(event, event.currentTarget)[0];
+        const horizontalMark = pointer(event, event.currentTarget)[1];
+        chart.svg.selectAll('#vertical-line').attr('x1', verticalMark).attr('x2', verticalMark);
+        chart.svg
+          .selectAll('#horizontal-line')
+          .attr('y1', horizontalMark)
+          .attr('y2', horizontalMark);
+      }
+    }
+  };
+
+  chart.svg
+    .on('mouseover', () => displayGuide(chart, 1))
+    .on('mousemove', mousemove)
+    .on('wheel', (event) => {
+      if (event.ctrlKey || event.shiftKey) {
+        event.preventDefault();
+      }
+    })
+    .call(zoom);
+
+  drawGuideLines(chart);
+};
+
+export const enableInteractivityV2 = <
+  T extends Chart | SpeedSpaceChart,
+  Data extends SimulationTrain<Date> | GevPreparedDataV2 | SpaceCurvesSlopesDataV2,
+>(
+  chart: T | undefined,
+  selectedTrainData: Data,
+  keyValues: ChartAxes,
+  rotate: boolean,
+  setChart: React.Dispatch<React.SetStateAction<T | undefined>>,
+  simulationIsPlaying: boolean,
+  updateTimePosition: (newTimePositionValues: Date) => void,
+  chartDimensions: [Date, Date],
+  setSharedXScaleDomain?: React.Dispatch<React.SetStateAction<PositionScaleDomain>>,
+  additionalValues: ChartAxes[] = [] // more values to display on the same chart
+) => {
+  if (!chart) return;
+  const zoom = d3zoom<SVGGElement, unknown>()
+    .scaleExtent([0.3, 20]) // This controls how much you can unzoom (x0.3) and zoom (x20)
+    .extent([
+      [0, 0],
+      [chart.width, chart.height],
+    ])
+    .wheelDelta(wheelDelta)
+    // Allows evenements to be triggered on zoom and drag interactions for all graphs
+    .on('zoom', (event) => {
+      event.sourceEvent.preventDefault();
+      const updatedAxis = updateChart(chart, keyValues, additionalValues, rotate, event);
+      // Overide axis with new ones from updated chart
+      const newChart = {
+        ...chart,
+        x: updatedAxis.newX,
+        y: updatedAxis.newY,
+        y2: updatedAxis.newY2,
+      };
+      // Synchronization between SpeedSpaceChart and SpaceCurveSlopes interactions
+      if (setSharedXScaleDomain)
+        setSharedXScaleDomain((prevState) => ({
+          ...prevState,
+          current: newChart.x.domain() as number[],
+          source: keyValues === CHART_AXES.SPACE_SPEED ? 'SpeedSpaceChart' : 'SpaceCurvesSlopes',
+        }));
+      setChart(newChart);
+    })
+    .filter(
+      (event) => (event.button === 0 || event.button === 1) && (event.ctrlKey || event.shiftKey)
+    );
+
+  // Updates in real time the position of the pointer and the vertical/horizontal guidelines
+  const mousemove = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+    if (!simulationIsPlaying) {
+      let immediatePositionsValuesForPointer: ReturnType<ReturnType<typeof interpolateOnTime>>;
+      let timePositionLocal: Date | null;
+      if (isSpaceTimeChart(keyValues)) {
+        // SpaceTimeChart
+        timePositionLocal = (
+          rotate
+            ? chart.y.invert(pointer(event, event.currentTarget)[1])
+            : chart.x.invert(pointer(event, event.currentTarget)[0])
+        ) as Date;
+
+        immediatePositionsValuesForPointer = interpolateOnTime(
+          selectedTrainData,
+          keyValues,
+          LIST_VALUES.SPACE_TIME
+        )(timePositionLocal);
+      } else {
+        // SpeedSpaceChart or SpaceCurvesSlopesChart
+        const positionLocal = chart.x.invert(pointer(event, event.currentTarget)[0]) as number;
+        timePositionLocal = interpolateOnPosition(
+          selectedTrainData as { speed: PositionSpeedTime[] },
+          positionLocal
+        );
+
+        if (!timePositionLocal) {
+          console.error('Interpolation failed');
+          return;
+        }
+
+        immediatePositionsValuesForPointer = interpolateOnTime(
+          selectedTrainData,
+          keyValues,
+          LIST_VALUES.SPACE_SPEED
+        )(timePositionLocal);
+
+        // GEV prepareData func multiply speeds by 3.6. We need to normalize that to make a convenient pointer update
+        LIST_VALUES.SPACE_SPEED.forEach((name) => {
+          if (
+            immediatePositionsValuesForPointer[name] &&
+            !Number.isNaN(immediatePositionsValuesForPointer[name].speed)
+          ) {
+            immediatePositionsValuesForPointer[name].speed /= 3.6;
+          }
+        });
+      }
+
+      updateTimePosition(timePositionLocal);
+      if (chart.svg && dateIsInRange(timePositionLocal, chartDimensions)) {
+        // if (chart.svg) {
         const verticalMark = pointer(event, event.currentTarget)[0];
         const horizontalMark = pointer(event, event.currentTarget)[1];
         chart.svg.selectAll('#vertical-line').attr('x1', verticalMark).attr('x2', verticalMark);

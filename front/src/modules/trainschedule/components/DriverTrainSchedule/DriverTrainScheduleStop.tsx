@@ -9,7 +9,7 @@ import {
   getActualVmax,
   getAverageSpeed,
   getTime,
-} from './DriverTrainScheduleHelpers';
+} from '../DriverTrainScheduleV2/utils';
 
 type Props = {
   stop: Stop;

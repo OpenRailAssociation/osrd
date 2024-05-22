@@ -23,7 +23,7 @@ import {
   updateSelectedTrainId,
 } from 'reducers/osrdsimulation/actions';
 import { useAppDispatch } from 'store';
-import { isoDateToMs, formatToIsoDate } from 'utils/date';
+import { formatToIsoDate, isoDateToMs } from 'utils/date';
 import { castErrorToFailure } from 'utils/error';
 import { sec2time } from 'utils/timeManipulation';
 

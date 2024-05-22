@@ -62,7 +62,7 @@ const TimetableManageTrainScheduleV2 = ({
               <AddTrainScheduleV2Button
                 infraState={infraState}
                 setIsWorking={setIsWorking}
-                // setTrainResultsToFetch={setTrainResultsToFetch}
+                setTrainResultsToFetch={setTrainResultsToFetch}
               />
             )}
             <TrainAddingSettings />

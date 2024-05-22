@@ -1,7 +1,8 @@
 import * as d3 from 'd3';
 
-import type { AreaBlock } from 'modules/simulationResult/components/SpeedSpaceChart/prepareData';
 import type { Chart } from 'reducers/osrdsimulation/types';
+
+import type { AreaBlock } from '../SpeedSpaceChart/types';
 
 /**
  * Draw area for the SpeedSpaceChart or the SpaceCurvesSlopesChart

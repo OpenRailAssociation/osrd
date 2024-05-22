@@ -1,15 +1,19 @@
 import React, { useState } from 'react';
 
+import dayjs from 'dayjs';
 import { useTranslation } from 'react-i18next';
 import { FaBackward, FaPause, FaPlay, FaStop } from 'react-icons/fa';
+import { useSelector } from 'react-redux';
 
 import type { SimulationReport } from 'common/api/osrdEditoastApi';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { updateIsPlaying } from 'reducers/osrdsimulation/actions';
+import { getTrainScheduleV2Activated } from 'reducers/user/userSelectors';
 import { useAppDispatch } from 'store';
 import { datetime2time, sec2datetime, time2datetime } from 'utils/timeManipulation';
 
 import { useChartSynchronizer } from './ChartHelpers/ChartSynchronizer';
+import { useChartSynchronizerV2 } from './ChartHelpers/ChartSynchronizerV2';
 
 // transform a speed ratio (X2 X10 X20, etc.) to interval time & step to bypass
 const factor2ms = (factor: number) => {
@@ -19,12 +23,14 @@ const factor2ms = (factor: number) => {
 };
 
 type TimeButtonsProps = {
-  selectedTrain: SimulationReport;
+  selectedTrain?: SimulationReport;
+  departureTime?: string;
 };
 
-const TimeButtons = ({ selectedTrain }: TimeButtonsProps) => {
+const TimeButtons = ({ selectedTrain, departureTime }: TimeButtonsProps) => {
   const dispatch = useAppDispatch();
   const { t } = useTranslation('simulation');
+  const trainScheduleV2Activated = useSelector(getTrainScheduleV2Activated);
 
   const [playInterval, setPlayInterval] = useState<NodeJS.Timeout | undefined>(undefined);
   const [playReverse, setPlayReverse] = useState(false);
@@ -41,12 +47,23 @@ const TimeButtons = ({ selectedTrain }: TimeButtonsProps) => {
     []
   );
 
+  const { updateTimePosition: updateTimePositionV2 } = useChartSynchronizerV2(
+    (timePosition) => {
+      setLocalTimePosition(timePosition);
+    },
+    'time-buttons',
+    []
+  );
+
   const stop = () => {
     clearInterval(playInterval);
     setPlayInterval(undefined);
-    if (selectedTrain) {
+    if (trainScheduleV2Activated) {
+      if (departureTime) updateTimePositionV2(dayjs(departureTime, 'D/MM/YYYY HH:mm:ss').toDate());
+    } else if (selectedTrain) {
       updateTimePosition(sec2datetime(selectedTrain.base.stops[0].time));
     }
+
     dispatch(updateIsPlaying(false));
   };
 

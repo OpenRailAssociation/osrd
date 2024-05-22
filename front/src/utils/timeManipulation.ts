@@ -6,6 +6,10 @@ export function sec2ms(sec: number) {
   return sec * 1000;
 }
 
+export function ms2sec(ms: number) {
+  return ms / 1000;
+}
+
 export function datetime2string(ts: string | number | Date): TimeString {
   const datetime = new Date(ts);
   return datetime.toLocaleString();
@@ -71,7 +75,9 @@ export function formatDurationAsISO8601(seconds: number) {
   return `PT${Math.abs(seconds)}S`;
 }
 
-// parse ISO8601 duration, for instance "PT11H9M8S" (11h, 9min and 8s)
+/**
+ * Parse ISO8601 duration, for instance "PT11H9M8S" (11h, 9min and 8s) to seconds
+ */
 export function ISO8601Duration2sec(duration: string) {
   const regex = /PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/;
   const matches = duration.match(regex);

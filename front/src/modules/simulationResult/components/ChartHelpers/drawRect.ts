@@ -30,6 +30,7 @@ const drawRect = (
   }
 
   const drawZone = chart.drawZone.select(`#${groupID}`);
+
   drawZone
     .append('rect')
     .attr('id', id)

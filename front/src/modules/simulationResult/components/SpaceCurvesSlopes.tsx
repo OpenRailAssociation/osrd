@@ -12,7 +12,6 @@ import {
 } from 'modules/simulationResult/components/ChartHelpers/ChartHelpers';
 import defineChart from 'modules/simulationResult/components/ChartHelpers/defineChart';
 import drawArea from 'modules/simulationResult/components/ChartHelpers/drawArea';
-import drawCurve from 'modules/simulationResult/components/ChartHelpers/drawCurve';
 import {
   traceVerticalLine,
   enableInteractivity,
@@ -36,60 +35,9 @@ import type {
 import { dateIsInRange } from 'utils/date';
 
 import { useChartSynchronizer } from './ChartHelpers/ChartSynchronizer';
+import { drawAxisTitle, drawSpaceCurvesSlopesChartCurve } from './SpaceCurvesSlopes/utils';
 
 const CHART_ID = 'SpaceCurvesSlopes';
-
-const drawAxisTitle = (chart: Chart, selectedTrain: Train) => {
-  chart.drawZone
-    .append('text')
-    .attr('class', 'axis-unit')
-    .attr('text-anchor', 'end')
-    .attr('transform', 'rotate(-90)')
-    .attr('x', -10)
-    .attr('y', 20)
-    .text('m/km');
-
-  chart.drawZone
-    .append('text')
-    .attr('class', 'axis-unit')
-    .attr('text-anchor', 'end')
-    .attr('transform', 'rotate(0)')
-    .attr('x', chart.width - 10)
-    .attr('y', chart.height - 10)
-    .text('m');
-
-  if (selectedTrain && selectedTrain.slopes) {
-    chart.drawZone
-      .append('text')
-      .attr('class', 'axis-unit')
-      .attr('text-anchor', 'end')
-      .attr('transform', 'rotate(0)')
-      .attr('x', chart.width - 10)
-      .attr('y', 30)
-      .text('m');
-  }
-};
-
-const drawSpaceCurvesSlopesChartCurve = <
-  T extends GradientPosition | RadiusPosition | HeightPosition,
->(
-  chartLocal: SpeedSpaceChart,
-  classes: string,
-  data: T[],
-  interpolation: 'curveLinear' | 'curveMonotoneX',
-  yAxisValue: 'gradient' | 'radius' | 'height',
-  curveName: string
-) => {
-  drawCurve(
-    chartLocal,
-    classes,
-    data,
-    'curvesSlopesChart',
-    interpolation,
-    ['position', yAxisValue],
-    curveName
-  );
-};
 
 export type SpaceCurvesSlopesData = {
   gradients: number[];
@@ -240,7 +188,7 @@ const SpaceCurvesSlopes = ({
   const drawTrain = () => {
     const chartLocal = createChart();
     chartLocal.drawZone.append('g').attr('id', 'curvesSlopesChart').attr('class', 'chartTrain');
-    drawAxisTitle(chartLocal, selectedTrain);
+    drawAxisTitle(chartLocal, selectedTrain.slopes);
     drawSpaceCurvesSlopesChartCurve(
       chartLocal,
       'speed slopesHistogram',
