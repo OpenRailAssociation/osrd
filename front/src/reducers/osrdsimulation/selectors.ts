@@ -27,3 +27,5 @@ export const getSelectedTrain = (state: RootState) => {
     (train) => train.id && train.id === selectedTrainId
   );
 };
+
+export const getTrainIdUsedForProjection = makeOsrdSimulationSelector('trainIdUsedForProjection');

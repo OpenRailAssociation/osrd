@@ -242,4 +242,5 @@ export interface OsrdSimulationState {
     present: SimulationSnapshot;
     future: SimulationHistory;
   };
+  trainIdUsedForProjection?: number;
 }

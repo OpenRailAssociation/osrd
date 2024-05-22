@@ -6,8 +6,8 @@ import { keyBy } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
 import type { TrainScheduleV2 } from 'applications/operationalStudies/types';
+import { enhancedEditoastApi } from 'common/api/enhancedEditoastApi';
 import {
-  osrdEditoastApi,
   type LightRollingStockWithLiveries,
   type TrainScheduleBase,
 } from 'common/api/osrdEditoastApi';
@@ -49,10 +49,8 @@ const ImportTrainScheduleTrainsListV2 = ({
     [rollingStocks]
   );
 
-  const { refetch: refetchTimetable } =
-    osrdEditoastApi.endpoints.getV2TimetableById.useQuerySubscription({ id: timetableId });
   const [postTrainSchedule] =
-    osrdEditoastApi.endpoints.postV2TimetableByIdTrainSchedule.useMutation();
+    enhancedEditoastApi.endpoints.postV2TimetableByIdTrainSchedule.useMutation();
 
   const dispatch = useAppDispatch();
 
@@ -62,7 +60,6 @@ const ImportTrainScheduleTrainsListV2 = ({
         trainsJsonData.length > 0 ? trainsJsonData : generateV2TrainSchedulesPayloads(trainsList);
 
       await postTrainSchedule({ id: timetableId, body: payloads }).unwrap();
-      refetchTimetable();
       dispatch(
         setSuccess({
           title: t('success'),

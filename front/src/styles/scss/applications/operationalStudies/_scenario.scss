@@ -327,6 +327,9 @@
                     font-size: 0.8rem;
                   }
                 }
+                .V2 {
+                  min-width: 40%;
+                }
               }
               .scenario-timetable-train-body {
                 display: flex;
@@ -407,6 +410,9 @@
                 .scenario-timetable-train-header {
                   background-color: var(--secondary);
                   color: var(--white);
+                  .V2 {
+                    min-width: 55%;
+                  }
                 }
               }
             }

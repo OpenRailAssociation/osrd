@@ -25,6 +25,7 @@ import {
   UPDATE_CONSOLIDATED_SIMULATION,
   REDO_SIMULATION,
   UNDO_SIMULATION,
+  UPDATE_TRAIN_ID_USED_FOR_PROJECTION,
 } from './actions';
 import undoableSimulation from './simulation';
 
@@ -52,6 +53,7 @@ export const initialState: OsrdSimulationState = {
     present: { trains: [] },
     future: [],
   },
+  trainIdUsedForProjection: undefined,
 };
 
 // eslint-disable-next-line default-param-last
@@ -100,6 +102,9 @@ export default function reducer(inputState: OsrdSimulationState | undefined, act
         break;
       case UPDATE_CONSOLIDATED_SIMULATION:
         draft.consolidatedSimulation = action.consolidatedSimulation;
+        break;
+      case UPDATE_TRAIN_ID_USED_FOR_PROJECTION:
+        draft.trainIdUsedForProjection = action.trainIdUsedForProjection;
         break;
       default:
         break;

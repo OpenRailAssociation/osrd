@@ -52,9 +52,10 @@ export const dateTimeToIso = (inputDateTime: string) => {
  * @param msDate milliseconds date (elapsed from January 1st 1970)
  * @return an ISO 8601 date (e.g. 2024-04-25T08:30:00+02:00)
  */
-export const msToIsoDate = (msDate: number) => {
+export const msToIsoDate = (msDate: number, formatDate: boolean = false) => {
   const userTimeZone = dayjs.tz.guess(); // Format : 'Europe/Paris'
-  return dayjs.tz(msDate, userTimeZone).format();
+  const format = formatDate ? 'D/MM/YYYY HH:mm:ss' : '';
+  return dayjs.tz(msDate, userTimeZone).format(format);
 };
 
 /**

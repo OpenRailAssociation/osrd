@@ -27,7 +27,9 @@ export function valueToInterval(value?: number, intervals?: number[]) {
   return undefined;
 }
 
-// This helper takes an array of numbers an determinate 3 distributed intervals based upon the numbers from the array
+/**
+ * This helper takes an array of numbers an determinate 3 distributed intervals based upon the numbers from the array
+ */
 export function distributedIntervalsFromArrayOfValues(values: number[]) {
   values.sort((a, b) => a - b);
   const valuesCount = values.length;
