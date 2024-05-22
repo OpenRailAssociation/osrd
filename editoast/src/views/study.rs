@@ -119,11 +119,11 @@ impl StudyCreateForm {
 pub struct StudyWithScenarios {
     #[serde(flatten)]
     pub study: Study,
-    pub scenarios_count: i64,
+    pub scenarios_count: u64,
 }
 
 impl StudyWithScenarios {
-    pub fn new(study: Study, scenarios_count: i64) -> Self {
+    pub fn new(study: Study, scenarios_count: u64) -> Self {
         Self {
             study,
             scenarios_count,
@@ -135,7 +135,7 @@ impl StudyWithScenarios {
 pub struct StudyResponse {
     #[serde(flatten)]
     pub study: Study,
-    pub scenarios_count: i64,
+    pub scenarios_count: u64,
     pub project: Project,
 }
 

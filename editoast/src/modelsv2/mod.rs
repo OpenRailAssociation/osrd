@@ -31,6 +31,7 @@ pub use projects::Project;
 pub use projects::Tags;
 pub use rolling_stock_image::RollingStockSeparatedImageModel;
 pub use rolling_stock_model::RollingStockModel;
+pub use scenario::Scenario;
 pub use study::Study;
 
 pub use crate::models::PreferredId;

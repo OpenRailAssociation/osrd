@@ -4,24 +4,21 @@ use chrono::NaiveDateTime;
 use chrono::Utc;
 use diesel::sql_query;
 use diesel::sql_types::BigInt;
-use diesel::ExpressionMethods;
-use diesel::QueryDsl;
-use diesel_async::RunQueryDsl;
+
 use editoast_derive::ModelV2;
 use serde::Deserialize;
 use serde::Serialize;
+use std::ops::DerefMut;
 use std::sync::Arc;
 use utoipa::ToSchema;
 
 use crate::error::Result;
 use crate::models::List;
+use crate::modelsv2::prelude::*;
 use crate::modelsv2::projects::Tags;
-use crate::modelsv2::Changeset;
 use crate::modelsv2::DbConnection;
 use crate::modelsv2::DbConnectionPool;
-use crate::modelsv2::Model;
-use crate::modelsv2::Row;
-use crate::modelsv2::Save;
+use crate::modelsv2::Scenario;
 use crate::views::operational_studies::Ordering;
 use crate::views::pagination::Paginate;
 use crate::views::pagination::PaginatedResponse;
@@ -54,15 +51,14 @@ impl Study {
         Ok(())
     }
 
-    pub async fn scenarios_count(&self, db_pool: Arc<DbConnectionPool>) -> Result<i64> {
-        use crate::tables::scenario::dsl as scenario_dsl;
-        let conn = &mut db_pool.get().await?;
-        let scenarios_count = scenario_dsl::scenario
-            .filter(scenario_dsl::study_id.eq(self.id))
-            .count()
-            .get_result(conn)
-            .await?;
-        Ok(scenarios_count)
+    pub async fn scenarios_count(&self, db_pool: Arc<DbConnectionPool>) -> Result<u64> {
+        let study_id = self.id;
+        let count = Scenario::count(
+            db_pool.get().await?.deref_mut(),
+            SelectionSettings::new().filter(move || Scenario::STUDY_ID.eq(study_id)),
+        )
+        .await?;
+        Ok(count)
     }
 
     pub fn validate(study_changeset: &Changeset<Self>) -> Result<()> {
