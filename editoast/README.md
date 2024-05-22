@@ -71,7 +71,7 @@ For M1 macs, it requires emulation since it's not compiled for arm platforms, wh
 in a significant slowdown. Define this variable in your environment or in a `.env` file somewhere:
 
 ```sh
-export OSRD_POSTGIS_IMAGE='nickblah/postgis:15-postgis-3'
+export OSRD_POSTGIS_IMAGE='nickblah/postgis:16-postgis-3'
 ```
 
 ## OpenApi generation
@@ -93,7 +93,7 @@ once and review the changes (and avoid flooding `dev` branch with dependency-bum
 Here is the process to update dependencies:
 
 1. Change the versions.
-   - _If you're using VSCode_ you can install the [`serayuzgur.crates`](https://marketplace.visualstudio.com/items?itemName=serayuzgur.crates) extension and run the "update all dependencies" command.  
+   - _If you're using VSCode_ you can install the [`serayuzgur.crates`](https://marketplace.visualstudio.com/items?itemName=serayuzgur.crates) extension and run the "update all dependencies" command.
      Make sure that the new chosen version is stable, and that loose constraints are not overwritten in your commit.
    - _If you're not_, you can go check the versions used by dependabot in [its PRs](https://github.com/OpenRailAssociation/osrd/pulls?q=is%3Aopen+label%3Aarea%3Aeditoast+label%3Adependencies) and update the versions manually.
 2. Run `cargo update` to update the Cargo.lock file (even sub-dependencies).
