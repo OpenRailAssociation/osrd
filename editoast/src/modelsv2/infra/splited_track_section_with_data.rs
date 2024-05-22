@@ -1,7 +1,17 @@
+use diesel::sql_query;
+use diesel::sql_types::BigInt;
+use diesel::sql_types::Double;
 use diesel::sql_types::Jsonb;
 use diesel::sql_types::Text;
+use diesel::OptionalExtension;
+use diesel_async::RunQueryDsl;
 use editoast_schemas::infra::TrackSection;
+use editoast_schemas::primitives::Identifier;
 use serde::Deserialize;
+
+use super::Infra;
+use crate::error::Result;
+use crate::modelsv2::DbConnection;
 
 #[derive(QueryableByName, Debug, Clone, Deserialize)]
 pub struct SplitedTrackSectionWithData {
@@ -13,4 +23,23 @@ pub struct SplitedTrackSectionWithData {
     pub left_geo: diesel_json::Json<geos::geojson::Geometry>,
     #[diesel(sql_type = Jsonb)]
     pub right_geo: diesel_json::Json<geos::geojson::Geometry>,
+}
+
+impl Infra {
+    pub async fn get_splited_track_section_with_data(
+        &self,
+        conn: &mut DbConnection,
+        track: Identifier,
+        distance_fraction: f64,
+    ) -> Result<Option<SplitedTrackSectionWithData>> {
+        let query = include_str!("sql/get_splited_track_section_with_data.sql");
+        let result = sql_query(query)
+            .bind::<BigInt, _>(self.id)
+            .bind::<Text, _>(track.to_string())
+            .bind::<Double, _>(distance_fraction)
+            .get_result::<SplitedTrackSectionWithData>(conn)
+            .await
+            .optional()?;
+        Ok(result)
+    }
 }

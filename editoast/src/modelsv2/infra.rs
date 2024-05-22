@@ -12,26 +12,18 @@ use chrono::Utc;
 use derivative::Derivative;
 use diesel::sql_query;
 use diesel::sql_types::BigInt;
-use diesel::sql_types::Double;
-use diesel::sql_types::Text;
-use diesel::OptionalExtension;
 use diesel::QueryDsl;
 use diesel_async::RunQueryDsl;
 use editoast_derive::ModelV2;
 use futures::future::try_join_all;
 use futures::Future;
-use railjson_data::RailJsonData;
-use route_from_waypoint_result::RouteFromWaypointResult;
 use serde::Deserialize;
 use serde::Serialize;
-use speed_limit_tags::SpeedLimitTags;
-use splited_track_section_with_data::SplitedTrackSectionWithData;
 use std::sync::Arc;
 use strum::IntoEnumIterator;
 use tracing::debug;
 use tracing::error;
 use uuid::Uuid;
-use voltage::Voltage;
 
 use crate::error::Result;
 use crate::generated_data;
@@ -50,7 +42,6 @@ use crate::views::pagination::Paginate;
 use crate::views::pagination::PaginatedResponse;
 use editoast_schemas::infra::RailJson;
 use editoast_schemas::infra::RAILJSON_VERSION;
-use editoast_schemas::primitives::Identifier;
 use editoast_schemas::primitives::ObjectType;
 
 /// The default version of a newly created infrastructure
@@ -231,87 +222,6 @@ impl Infra {
         self.generated_version = None;
         self.save(conn).await?;
         Ok(true)
-    }
-
-    pub async fn get_voltages(
-        &self,
-        conn: &mut DbConnection,
-        include_rolling_stock_modes: bool,
-    ) -> Result<Vec<Voltage>> {
-        let query = if !include_rolling_stock_modes {
-            include_str!("infra/sql/get_voltages_without_rolling_stocks_modes.sql")
-        } else {
-            include_str!("infra/sql/get_voltages_with_rolling_stocks_modes.sql")
-        };
-        let voltages = sql_query(query)
-            .bind::<BigInt, _>(self.id)
-            .load::<Voltage>(conn)
-            .await?;
-        Ok(voltages)
-    }
-
-    pub async fn get_all_voltages(conn: &mut DbConnection) -> Result<Vec<Voltage>> {
-        let query = include_str!("infra/sql/get_all_voltages_and_modes.sql");
-        let voltages = sql_query(query).load::<Voltage>(conn).await?;
-        Ok(voltages)
-    }
-
-    pub async fn get_speed_limit_tags(
-        &self,
-        conn: &mut DbConnection,
-    ) -> Result<Vec<SpeedLimitTags>> {
-        let query = include_str!("infra/sql/get_speed_limit_tags.sql");
-        let speed_limits_tags = sql_query(query)
-            .bind::<BigInt, _>(self.id)
-            .load::<SpeedLimitTags>(conn)
-            .await?;
-        Ok(speed_limits_tags)
-    }
-
-    pub async fn get_splited_track_section_with_data(
-        &self,
-        conn: &mut DbConnection,
-        track: Identifier,
-        distance_fraction: f64,
-    ) -> Result<Option<SplitedTrackSectionWithData>> {
-        let query = include_str!("infra/sql/get_splited_track_section_with_data.sql");
-        let result = sql_query(query)
-            .bind::<BigInt, _>(self.id)
-            .bind::<Text, _>(track.to_string())
-            .bind::<Double, _>(distance_fraction)
-            .get_result::<SplitedTrackSectionWithData>(conn)
-            .await
-            .optional()?;
-        Ok(result)
-    }
-
-    pub async fn get_routes_from_waypoint(
-        &self,
-        conn: &mut DbConnection,
-        waypoint_id: &String,
-        waypoint_type: String,
-    ) -> Result<Vec<RouteFromWaypointResult>> {
-        let routes = sql_query(include_str!("infra/sql/get_routes_from_waypoint.sql"))
-            .bind::<BigInt, _>(self.id)
-            .bind::<Text, _>(&waypoint_id)
-            .bind::<Text, _>(waypoint_type)
-            .load::<RouteFromWaypointResult>(conn)
-            .await?;
-        Ok(routes)
-    }
-
-    pub async fn get_railjson(
-        conn: &mut DbConnection,
-        infra_id: i64,
-        object_type: &ObjectType,
-    ) -> Result<Vec<RailJsonData>> {
-        let table_name = get_table(object_type);
-        let query = format!("SELECT (x.data)::text AS railjson FROM {table_name} x WHERE x.infra_id = $1 ORDER BY x.obj_id");
-        let railjson_data = sql_query(query)
-            .bind::<BigInt, _>(infra_id)
-            .load::<RailJsonData>(conn)
-            .await?;
-        Ok(railjson_data)
     }
 }
 
