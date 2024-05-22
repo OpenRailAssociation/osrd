@@ -24,6 +24,8 @@ export const UPDATE_TIME_POSITION_VALUES = 'osrdsimu/UPDATE_TIME_POSITION_VALUES
 export const UPDATE_CONSOLIDATED_SIMULATION = 'osrdsimu/UPDATE_CONSOLIDATED_SIMULATION';
 export const UNDO_SIMULATION = 'osrdsimu/UNDO_SIMULATION';
 export const REDO_SIMULATION = 'osrdsimu/REDO_SIMULATION';
+export const UPDATE_TRAIN_ID_USED_FOR_PROJECTION = 'osrdsimu/UPDATE_TRAIN_ID_USED_FOR_PROJECTION';
+
 // Functions
 
 export function updateIsPlaying(isPlaying: OsrdSimulationState['isPlaying']) {
@@ -124,6 +126,17 @@ export function redoSimulation() {
   return (dispatch: Dispatch) => {
     dispatch({
       type: REDO_SIMULATION,
+    });
+  };
+}
+
+export function updateTrainIdUsedForProjection(
+  trainIdUsedForProjection: OsrdSimulationState['trainIdUsedForProjection']
+) {
+  return (dispatch: Dispatch) => {
+    dispatch({
+      type: UPDATE_TRAIN_ID_USED_FOR_PROJECTION,
+      trainIdUsedForProjection,
     });
   };
 }

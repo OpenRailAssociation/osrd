@@ -10,7 +10,10 @@ import BreadCrumbs from 'applications/operationalStudies/components/BreadCrumbs'
 import InfraLoadingState from 'applications/operationalStudies/components/Scenario/InfraLoadingState';
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
 import infraLogo from 'assets/pictures/components/tracks.svg';
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import {
+  osrdEditoastApi,
+  type PostV2TrainScheduleProjectPathApiResponse,
+} from 'common/api/osrdEditoastApi';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import { useInfraID, useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
@@ -19,13 +22,13 @@ import ScenarioLoaderMessage from 'modules/scenario/components/ScenarioLoaderMes
 import TimetableManageTrainScheduleV2 from 'modules/trainschedule/components/ManageTrainSchedule/TimetableManageTrainScheduleV2';
 import TimetableV2 from 'modules/trainschedule/components/TimetableV2/TimetableV2';
 import type { RootState } from 'reducers';
-import { updateSelectedProjection, updateSimulation } from 'reducers/osrdsimulation/actions';
-import { getPresentSimulation, getSelectedTrainId } from 'reducers/osrdsimulation/selectors';
+import { updateTrainIdUsedForProjection } from 'reducers/osrdsimulation/actions';
+import { getTrainIdUsedForProjection, getSelectedTrainId } from 'reducers/osrdsimulation/selectors';
 import { useAppDispatch } from 'store';
 
+import { getSimulationResultsV2, selectProjectionV2 } from './getSimulationResultsV2';
 import ImportTrainScheduleV2 from './ImportTrainScheduleV2';
 import ManageTrainScheduleV2 from './ManageTrainScheduleV2';
-import SimulationResultsV2 from './SimulationResultsV2';
 
 type SimulationParams = {
   projectId: string;
@@ -43,7 +46,9 @@ const ScenarioV2 = () => {
   const [collapsedTimetable, setCollapsedTimetable] = useState(false);
   const [isInfraLoaded, setIsInfraLoaded] = useState(false);
   const [reloadCount, setReloadCount] = useState(1);
-  const [, setTrainResultsToFetch] = useState<number[] | undefined>();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [spaceTimeData, setSpaceTimeData] = useState<PostV2TrainScheduleProjectPathApiResponse>();
+  const [trainResultsToFetch, setTrainResultsToFetch] = useState<number[]>();
   const isUpdating = useSelector((state: RootState) => state.osrdsimulation.isUpdating);
 
   const { openModal } = useModal();
@@ -66,9 +71,7 @@ const ScenarioV2 = () => {
   const infraId = useInfraID();
   const timetableId = useSelector(getTimetableID);
   const selectedTrainId = useSelector(getSelectedTrainId);
-  // const selectedProjection = useSelector(getSelectedProjection);
-  // const allowancesSettings = useSelector(getAllowancesSettings);
-  const simulation = useSelector(getPresentSimulation);
+  const trainIdUsedForProjection = useSelector(getTrainIdUsedForProjection);
 
   const {
     data: scenario,
@@ -136,20 +139,12 @@ const ScenarioV2 = () => {
     }
   }, [infraId]);
 
-  /*
-   * Timetable is refetched automatically if a train schedule is updated or deleted
-   * but not if one is created (in importTrainScheduleModal, we don't want to refetch
-   * the timetable each time a train is created), that is why the refetch is needed here
-   */
-  const { data: timetable, refetch: refetchTimetable } =
-    osrdEditoastApi.endpoints.getV2TimetableById.useQuery(
-      { id: timetableId! },
-      {
-        skip: !timetableId,
-        // This forces the refetch of the timetable each time the component mounts
-        refetchOnMountOrArgChange: true,
-      }
-    );
+  const { data: timetable } = osrdEditoastApi.endpoints.getV2TimetableById.useQuery(
+    { id: timetableId! },
+    {
+      skip: !timetableId,
+    }
+  );
 
   // const { refetch: refetchConflicts } =
   //   osrdEditoastApi.endpoints.getV2TimetableByIdConflicts.useQuery(
@@ -157,29 +152,24 @@ const ScenarioV2 = () => {
   //     { skip: !timetable || !infraId }
   //   );
 
-  // useEffect(() => {
-  //   if (timetable && infra?.state === 'CACHED' && timetable.train_schedule_summaries.length > 0) {
-  //     selectProjection(timetable.train_schedule_summaries, selectedProjection, selectedTrainId);
-  //   }
-  // }, [timetable, infra]);
+  useEffect(() => {
+    if (timetable && infra?.state === 'CACHED' && timetable.train_ids.length > 0) {
+      selectProjectionV2(timetable.train_ids, trainIdUsedForProjection, selectedTrainId);
+    }
+  }, [timetable, infra]);
 
-  // useEffect(() => {
-  //   if (timetable && infra?.state === 'CACHED' && selectedProjection) {
-  //     // If trainResultsToFetch is undefined that means it's the first load of the scenario
-  //     // and we want to get all timetable trains results
-  //     if (trainResultsToFetch) {
-  //       getSimulationResults(
-  //         trainResultsToFetch,
-  //         selectedProjection,
-  //         allowancesSettings,
-  //         simulation.trains as SimulationReport[]
-  //       );
-  //     } else {
-  //       const trainScheduleIds = timetable.train_schedule_summaries.map((train) => train.id);
-  //       getSimulationResults(trainScheduleIds, selectedProjection, allowancesSettings);
-  //     }
-  //   }
-  // }, [timetable, infra, selectedProjection]);
+  useEffect(() => {
+    if (timetable && infra?.state === 'CACHED' && trainIdUsedForProjection && infraId) {
+      // If trainResultsToFetch is undefined that means it's the first load of the scenario
+      // and we want to get all timetable trains results
+      getSimulationResultsV2(
+        trainResultsToFetch ?? timetable.train_ids,
+        trainIdUsedForProjection,
+        infraId,
+        setSpaceTimeData
+      );
+    }
+  }, [timetable, infra, trainIdUsedForProjection]);
 
   useEffect(() => {
     if (!projectId || !studyId || !scenarioId) {
@@ -191,8 +181,7 @@ const ScenarioV2 = () => {
     () => () => {
       dispatch(updateTimetableID(undefined));
       dispatch(updateInfraID(undefined));
-      dispatch(updateSimulation({ trains: [] }));
-      dispatch(updateSelectedProjection(undefined));
+      dispatch(updateTrainIdUsedForProjection(undefined));
     },
     []
   );
@@ -298,7 +287,6 @@ const ScenarioV2 = () => {
                     setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
                     setTrainResultsToFetch={setTrainResultsToFetch}
                     infraState={infra.state}
-                    // refetchTimetable={refetchTimetable}
                     // refetchConflicts={() => {}}
                   />
                 )}
@@ -307,12 +295,10 @@ const ScenarioV2 = () => {
                     setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
                     trainsWithDetails={trainsWithDetails}
                     infraState={infra.state}
-                    timetable={undefined}
+                    trainIds={timetable.train_ids}
                     selectedTrainId={selectedTrainId}
-                    refetchTimetable={refetchTimetable}
                     conflicts={[]}
                     setTrainResultsToFetch={setTrainResultsToFetch}
-                    simulation={simulation}
                   />
                 )}
               </div>
@@ -360,7 +346,13 @@ const ScenarioV2 = () => {
                     </div>
                   </div>
                 )}
-                {isInfraLoaded && infra && <SimulationResultsV2 />}
+                {/* {isInfraLoaded && infra && (
+                  <SimulationResultsV2
+                    collapsedTimetable={collapsedTimetable}
+                    // setTrainResultsToFetch={setTrainResultsToFetch}
+                    spaceTimeData={spaceTimeData}
+                  />
+                )} */}
               </div>
             </div>
           </div>

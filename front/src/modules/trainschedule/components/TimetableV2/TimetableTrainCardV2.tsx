@@ -1,7 +1,8 @@
 import React from 'react';
 
-import { Pencil, Trash } from '@osrd-project/ui-icons';
+import { Alert, Pencil, Trash } from '@osrd-project/ui-icons';
 import cx from 'classnames';
+import { omit } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { GiPathDistance } from 'react-icons/gi';
 import { MdAvTimer, MdContentCopy } from 'react-icons/md';
@@ -10,45 +11,36 @@ import nextId from 'react-id-generator';
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
 import invalidInfra from 'assets/pictures/components/missing_tracks.svg';
 import invalidRollingStock from 'assets/pictures/components/missing_train.svg';
+import { enhancedEditoastApi } from 'common/api/enhancedEditoastApi';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import type { SimulationReport, TrainScheduleValidation } from 'common/api/osrdEditoastApi';
+import type { TrainScheduleBase } from 'common/api/osrdEditoastApi';
 import { useOsrdConfActions } from 'common/osrdContext';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import trainNameWithNum from 'modules/trainschedule/components/ManageTrainSchedule/helpers/trainNameHelper';
 import { setFailure, setSuccess } from 'reducers/main';
 import {
-  updateSelectedProjection,
+  updateTrainIdUsedForProjection,
   updateSelectedTrainId,
-  updateSimulation,
 } from 'reducers/osrdsimulation/actions';
-import type { Projection, ScheduledTrain, SimulationSnapshot } from 'reducers/osrdsimulation/types';
 import { useAppDispatch } from 'store';
+import { isoDateToMs, msToIsoDate } from 'utils/date';
 import { castErrorToFailure } from 'utils/error';
-import { jouleToKwh, mToKmOneDecimal } from 'utils/physics';
-import { durationInSeconds, sec2time } from 'utils/timeManipulation';
+import { sec2time } from 'utils/timeManipulation';
 
-const invalidTrainValues: {
-  [key in TrainScheduleValidation]: TrainScheduleValidation;
-} = {
-  NewerInfra: 'NewerInfra',
-  NewerRollingStock: 'NewerRollingStock',
-};
+import type { InvalidReason, TrainScheduleWithDetails } from './types';
 
 type TimetableTrainCardProps = {
   isSelectable: boolean;
   isInSelection: boolean;
-  train: ScheduledTrain;
+  train: TrainScheduleWithDetails;
   intervalPosition?: number;
   isSelected: boolean;
   isModified?: boolean;
   projectionPathIsUsed: boolean;
   idx: number;
-  refetchTimetable: () => void;
-  toggleTrainSelection: (trainId: number) => void;
+  handleSelectTrain: (trainId: number) => void;
   setDisplayTrainScheduleManagement: (arg0: string) => void;
   setTrainResultsToFetch: (trainScheduleIds?: number[]) => void;
-  simulation: SimulationSnapshot;
-  selectedProjection?: Projection;
 };
 
 const TimetableTrainCardV2 = ({
@@ -60,25 +52,18 @@ const TimetableTrainCardV2 = ({
   isModified,
   projectionPathIsUsed,
   idx,
-  refetchTimetable,
   setDisplayTrainScheduleManagement,
-  toggleTrainSelection,
+  handleSelectTrain,
   setTrainResultsToFetch,
-  simulation,
-  selectedProjection,
 }: TimetableTrainCardProps) => {
-  const { data: rollingStock } =
-    osrdEditoastApi.endpoints.getLightRollingStockByRollingStockId.useQuery({
-      rollingStockId: train.rolling_stock_id,
-    });
   const { t } = useTranslation(['operationalStudies/scenario']);
   const dispatch = useAppDispatch();
   const { updateTrainScheduleIDsToModify } = useOsrdConfActions();
 
   const [postTrainSchedule] =
-    osrdEditoastApi.endpoints.postTrainScheduleStandaloneSimulation.useMutation();
-  const [getTrainScheduleById] = osrdEditoastApi.endpoints.getTrainScheduleById.useLazyQuery();
-  const [deleteTrainScheduleById] = osrdEditoastApi.endpoints.deleteTrainScheduleById.useMutation();
+    enhancedEditoastApi.endpoints.postV2TimetableByIdTrainSchedule.useMutation();
+  const [getTrainSchedule] = osrdEditoastApi.endpoints.getV2TrainSchedule.useLazyQuery();
+  const [deleteTrainSchedule] = enhancedEditoastApi.endpoints.deleteV2TrainSchedule.useMutation();
 
   const changeSelectedTrainId = (trainId: number) => {
     dispatch(updateSelectedTrainId(trainId));
@@ -95,30 +80,16 @@ const TimetableTrainCardV2 = ({
       // some unvalid rtk calls are dispatched (see rollingstock request in SimulationResults)
       dispatch(updateSelectedTrainId(undefined));
     }
-    deleteTrainScheduleById({ id: train.id })
+
+    if (projectionPathIsUsed) dispatch(updateTrainIdUsedForProjection(undefined));
+
+    deleteTrainSchedule({ body: { ids: [train.id] } })
       .unwrap()
       .then(() => {
-        const remainingTrains = (simulation.trains as SimulationReport[]).filter(
-          (simulationTrain) => simulationTrain.id !== train.id
-        );
-
-        let trainScheduleIds; // by default we assume that we need to refetch all
-
-        if (remainingTrains.length > 0) {
-          // Check if there is at least one train with the same path as the deleted one
-          const trainWithSamePath = remainingTrains.find(
-            (simulationTrain) => simulationTrain.path === train.path_id
-          );
-
-          if (!projectionPathIsUsed || (trainWithSamePath && projectionPathIsUsed)) {
-            trainScheduleIds = []; // No need to refetch
-          }
-        }
-        setTrainResultsToFetch(trainScheduleIds);
-        dispatch(updateSimulation({ trains: remainingTrains }));
+        setTrainResultsToFetch(undefined);
         dispatch(
           setSuccess({
-            title: t('timetable.trainDeleted', { name: train.train_name }),
+            title: t('timetable.trainDeleted', { name: train.trainName }),
             text: '',
           })
         );
@@ -133,63 +104,55 @@ const TimetableTrainCardV2 = ({
 
   const duplicateTrain = async () => {
     // Static for now, will be dynamic when UI will be ready
-    const trainName = `${train.train_name} (${t('timetable.copy')})`;
+    const trainName = `${train.trainName} (${t('timetable.copy')})`;
     const trainDelta = 5;
     const trainCount = 1;
     const actualTrainCount = 1;
 
-    const trainDetail = await getTrainScheduleById({ id: train.id })
+    const trainsResults = await getTrainSchedule({ ids: [train.id] })
       .unwrap()
       .catch((e) => {
         dispatch(setFailure(castErrorToFailure(e)));
       });
 
-    if (trainDetail) {
-      const newTrain = {
-        ...trainDetail,
-        rolling_stock: trainDetail.rolling_stock_id,
-        timetable: trainDetail.timetable_id,
-        departure_time: train.departure_time + 60 * trainDelta,
+    if (trainsResults) {
+      const trainDetail = trainsResults[0];
+      const formattedStartTimeMs = isoDateToMs(trainDetail.start_time);
+      const newStartTimeString = msToIsoDate(formattedStartTimeMs + 1000 * 60 * trainDelta);
+
+      const newTrain: TrainScheduleBase = {
+        ...omit(trainDetail, ['id', 'timetable_id']),
+        start_time: newStartTimeString,
         train_name: trainNameWithNum(trainName, actualTrainCount, trainCount),
       };
-      await postTrainSchedule({
-        body: {
-          timetable: trainDetail.timetable_id,
-          path: trainDetail.path_id,
-          schedules: [newTrain],
-        },
-      })
-        .unwrap()
-        .then((newTrainId) => {
-          refetchTimetable();
-          setTrainResultsToFetch(newTrainId);
-          dispatch(
-            setSuccess({
-              title: t('timetable.trainAdded'),
-              text: `${trainName}`,
-            })
-          );
-        })
-        .catch((e) => {
-          dispatch(setFailure(castErrorToFailure(e)));
-        });
+
+      try {
+        const trainScheduleResult = await postTrainSchedule({
+          id: trainDetail.timetable_id,
+          body: [newTrain],
+        }).unwrap();
+        setTrainResultsToFetch([trainScheduleResult[0].id]);
+        dispatch(
+          setSuccess({
+            title: t('timetable.trainAdded'),
+            text: `${trainName}`,
+          })
+        );
+      } catch (e) {
+        dispatch(setFailure(castErrorToFailure(e)));
+      }
     }
   };
 
-  const selectPathProjection = async () => {
-    // If the projected path changes, we want to refetch all trains
-    if (selectedProjection && train.path_id !== selectedProjection.path) {
-      setTrainResultsToFetch(undefined);
-    } else {
-      // We don't fetch anything
-      setTrainResultsToFetch([]);
+  const getInvalidIcon = (invalidReason: InvalidReason) => {
+    switch (invalidReason) {
+      case 'rolling_stock_not_found':
+        return <img src={invalidRollingStock} alt="Invalid rollingstock logo" />;
+      case 'pathfinding_failed':
+        return <img src={invalidInfra} alt="Invalid infra logo" className="infra-logo" />;
+      default:
+        return <Alert />;
     }
-    dispatch(
-      updateSelectedProjection({
-        id: train.id,
-        path: train.path_id,
-      })
-    );
   };
 
   return (
@@ -197,11 +160,13 @@ const TimetableTrainCardV2 = ({
       <div
         className={cx(
           'scenario-timetable-train with-colored-border',
-          isSelected && 'selected',
-          isModified && 'modified',
-          train.invalid_reasons && train.invalid_reasons.length > 0 && 'invalid',
-          isInSelection && 'in-selection',
-          `colored-border-${intervalPosition}`
+          `colored-border-${intervalPosition}`,
+          {
+            selected: isSelected,
+            modified: isModified,
+            invalid: train.invalidReason,
+            'in-selection': isInSelection,
+          }
         )}
       >
         {isSelectable && (
@@ -209,7 +174,7 @@ const TimetableTrainCardV2 = ({
             type="checkbox"
             className="mr-2"
             checked={isInSelection}
-            onChange={() => toggleTrainSelection(train.id)}
+            onChange={() => handleSelectTrain(train.id)}
           />
         )}
         <div
@@ -221,113 +186,91 @@ const TimetableTrainCardV2 = ({
           <div className="scenario-timetable-train-header">
             <div className="scenario-timetable-train-name">
               <div
-                className={cx('scenario-timetable-train-idx', projectionPathIsUsed && 'projected')}
+                className={cx('scenario-timetable-train-idx', {
+                  projected: projectionPathIsUsed,
+                })}
               >
                 {idx + 1}
               </div>
-              {train.invalid_reasons && train.invalid_reasons.includes('NewerInfra') && (
+              {train.invalidReason && (
                 <div
                   className="mr-1 scenario-timetable-train-invalid-icons"
-                  title={invalidTrainValues.NewerInfra}
+                  title={train.invalidReason}
                 >
-                  <img src={invalidInfra} alt="Invalid infra logo" className="infra-logo" />
+                  {getInvalidIcon(train.invalidReason)}
                 </div>
               )}
-              {train.invalid_reasons && train.invalid_reasons.includes('NewerRollingStock') && (
-                <div
-                  className="mr-1 scenario-timetable-train-invalid-icons"
-                  title={invalidTrainValues.NewerRollingStock}
-                >
-                  <img src={invalidRollingStock} alt="Invalid rollingstock logo" />
-                </div>
-              )}
-              {train.train_name}
-              {rollingStock && (
+              {train.trainName}
+              {train.rollingStock && (
                 <span className="img-container">
-                  <RollingStock2Img rollingStock={rollingStock} />
+                  <RollingStock2Img rollingStock={train.rollingStock} />
                 </span>
               )}
             </div>
-            <div className="scenario-timetable-train-times">
-              <div className="scenario-timetable-train-departure">
-                {sec2time(train.departure_time)}
-              </div>
-              <div className="scenario-timetable-train-arrival">{sec2time(train.arrival_time)}</div>
+            <div className="scenario-timetable-train-times V2">
+              <div className="scenario-timetable-train-departure">{train.startTime}</div>
+              <div className="scenario-timetable-train-arrival">{train.arrivalTime}</div>
             </div>
           </div>
           <div className="scenario-timetable-train-body">
-            <span className="flex-grow-1">{train.speed_limit_tags}</span>
-            {train.stops_count !== undefined && train.stops_count > 0 && (
-              <span className="mr-3">
-                {t('timetable.stopsCount', { count: train.stops_count })}
-              </span>
-            )}
-            {train.mechanical_energy_consumed?.eco && (
-              <small
-                className="mx-xl-2 mr-lg-1 text-orange font-weight-bold"
-                data-testid="allowance-energy-consumed"
-              >
-                ECO {+jouleToKwh(train.mechanical_energy_consumed.eco, true)}&nbsp;kWh
-              </small>
-            )}
-            {train.mechanical_energy_consumed?.base && (
-              <span className="mr-xl-3 mr-lg-2" data-testid="average-energy-consumed">
-                {jouleToKwh(train.mechanical_energy_consumed.base, true)}
-                <span className="small ml-1">kWh</span>
-              </span>
-            )}
-            {train.path_length && (
-              <span className="mr-xl-3 mr-lg-2">{mToKmOneDecimal(train.path_length)}km</span>
-            )}
+            {train.speedLimitTag && <span className="flex-grow-1">{train.speedLimitTag}</span>}
+            <span className="mr-3">{t('timetable.stopsCount', { count: train.stepsCount })}</span>
+            <small
+              className="mx-xl-2 mr-lg-2 text-orange font-weight-bold"
+              data-testid="allowance-energy-consumed"
+            >
+              {train.mechanicalEnergyConsumed}&nbsp;kWh
+            </small>
+
+            <span className="mr-xl-3 mr-lg-2">{train.pathLength}</span>
+
             <div className="text-nowrap text-right">
               <MdAvTimer />
               <span className="ml-1" data-testid="train-duration">
-                {sec2time(durationInSeconds(train.departure_time, train.arrival_time))}
+                {sec2time(train.duration / 1000)}
               </span>
             </div>
           </div>
-          <div className="scenario-timetable-train-tags">
-            {train.labels.map((tag) => (
-              <div className="scenario-timetable-train-tags-tag" key={nextId()}>
-                {tag}
-              </div>
-            ))}
-          </div>
+          {train.labels.length > 0 && (
+            <div className="scenario-timetable-train-tags">
+              {train.labels.map((tag) => (
+                <div className="scenario-timetable-train-tags-tag" key={nextId()}>
+                  {tag}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="scenario-timetable-train-buttons">
-          {train.invalid_reasons && train.invalid_reasons.length === 0 && (
-            <>
-              <button
-                className="scenario-timetable-train-buttons-selectprojection"
-                type="button"
-                aria-label={t('timetable.choosePath')}
-                title={t('timetable.choosePath')}
-                onClick={selectPathProjection}
-              >
-                <GiPathDistance />
-              </button>
-              <button
-                className="scenario-timetable-train-buttons-duplicate"
-                type="button"
-                aria-label={t('timetable.duplicate')}
-                title={t('timetable.duplicate')}
-                onClick={duplicateTrain}
-              >
-                <MdContentCopy />
-              </button>
-              <button
-                className="scenario-timetable-train-buttons-update"
-                type="button"
-                aria-label={t('timetable.update')}
-                title={t('timetable.update')}
-                onClick={editTrainSchedule}
-                data-testid="edit-train"
-              >
-                <Pencil />
-              </button>
-            </>
-          )}
+          <button
+            className="scenario-timetable-train-buttons-selectprojection"
+            type="button"
+            aria-label={t('timetable.choosePath')}
+            title={t('timetable.choosePath')}
+            onClick={() => dispatch(updateTrainIdUsedForProjection(train.id))}
+          >
+            <GiPathDistance />
+          </button>
+          <button
+            className="scenario-timetable-train-buttons-duplicate"
+            type="button"
+            aria-label={t('timetable.duplicate')}
+            title={t('timetable.duplicate')}
+            onClick={duplicateTrain}
+          >
+            <MdContentCopy />
+          </button>
+          <button
+            className="scenario-timetable-train-buttons-update"
+            type="button"
+            aria-label={t('timetable.update')}
+            title={t('timetable.update')}
+            onClick={editTrainSchedule}
+            data-testid="edit-train"
+          >
+            <Pencil />
+          </button>
           <button
             className="scenario-timetable-train-buttons-delete"
             type="button"
