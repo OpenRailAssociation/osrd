@@ -1174,7 +1174,7 @@ export type GetInfraByInfraIdAutoFixesApiArg = {
   infraId: number;
 };
 export type GetInfraByInfraIdLinesAndLineCodeBboxApiResponse =
-  /** status 200 The BBox of the line */ Zone;
+  /** status 200 The BBox of the line */ BoundingBox;
 export type GetInfraByInfraIdLinesAndLineCodeBboxApiArg = {
   /** An existing infra ID */
   infraId: number;
@@ -2269,9 +2269,6 @@ export type InfraError = {
   };
 };
 export type BoundingBox = (number & number)[][];
-export type Zone = {
-  geo: BoundingBox;
-};
 export type PathfindingOutput = {
   detectors: string[];
   switches_directions: {

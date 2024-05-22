@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import type { Zone, SearchResultItemTrack } from 'common/api/osrdEditoastApi';
+import type { BoundingBox, SearchResultItemTrack } from 'common/api/osrdEditoastApi';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { zoomToFeature } from 'common/Map/WarpedMap/core/helpers';
 import { useInfraID } from 'common/osrdContext';
@@ -61,7 +61,7 @@ const MapSearchLine = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchLine
       });
   };
 
-  const coordinates = (search: Zone) => search.geo;
+  const coordinates = (search: BoundingBox) => search;
 
   const onResultClick = async (searchResultItem: SearchResultItemTrack) => {
     if (map.mapSearchMarker) {
