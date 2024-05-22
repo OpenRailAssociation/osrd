@@ -1,8 +1,14 @@
+use diesel::sql_query;
 use diesel::sql_types::BigInt;
 use diesel::sql_types::Text;
+use diesel_async::RunQueryDsl;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
+
+use super::RollingStockModel;
+use crate::error::Result;
+use crate::modelsv2::DbConnection;
 
 editoast_common::schemas! {
     TrainScheduleScenarioStudyProject,
@@ -26,4 +32,17 @@ pub struct TrainScheduleScenarioStudyProject {
     pub scenario_id: i64,
     #[diesel(sql_type = Text)]
     pub scenario_name: String,
+}
+
+impl RollingStockModel {
+    pub async fn get_rolling_stock_usage(
+        &self,
+        conn: &mut DbConnection,
+    ) -> Result<Vec<TrainScheduleScenarioStudyProject>> {
+        let result = sql_query(include_str!("sql/get_train_schedules_with_scenario.sql"))
+            .bind::<BigInt, _>(self.id)
+            .load::<TrainScheduleScenarioStudyProject>(conn)
+            .await?;
+        Ok(result)
+    }
 }

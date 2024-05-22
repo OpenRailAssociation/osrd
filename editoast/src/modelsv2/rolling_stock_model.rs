@@ -1,10 +1,8 @@
-mod power_restriction;
-pub mod train_schedule_scenario_study_project;
+mod power_restrictions;
+mod rolling_stock_usage;
 
 use std::collections::HashMap;
 
-use diesel::sql_query;
-use diesel::sql_types::BigInt;
 use diesel::ExpressionMethods;
 use diesel::QueryDsl;
 use diesel::SelectableHelper;
@@ -18,11 +16,11 @@ use editoast_schemas::rolling_stock::RollingResistance;
 use editoast_schemas::rolling_stock::RollingStock;
 use editoast_schemas::rolling_stock::RollingStockMetadata;
 use editoast_schemas::rolling_stock::RollingStockSupportedSignalingSystems;
-use power_restriction::PowerRestriction;
+use power_restrictions::PowerRestriction;
+pub use rolling_stock_usage::TrainScheduleScenarioStudyProject;
 use serde::Deserialize;
 use serde::Serialize;
 use std::sync::Arc;
-use train_schedule_scenario_study_project::TrainScheduleScenarioStudyProject;
 use utoipa::ToSchema;
 use validator::Validate;
 use validator::ValidationError;
@@ -31,7 +29,6 @@ use validator::ValidationErrors;
 use crate::error::Result;
 use crate::modelsv2::prelude::*;
 use crate::modelsv2::rolling_stock_livery::RollingStockLiveryMetadataModel;
-use crate::modelsv2::DbConnection;
 use crate::modelsv2::DbConnectionPool;
 use crate::views::rolling_stocks::RollingStockWithLiveries;
 
@@ -117,28 +114,6 @@ impl RollingStockModel {
             .filter(|(_, mode)| mode.is_electric)
             .map(|(key, _)| key.clone())
             .collect()
-    }
-
-    pub async fn get_power_restrictions(conn: &mut DbConnection) -> Result<Vec<PowerRestriction>> {
-        let power_restrictions = sql_query(include_str!(
-            "rolling_stock_model/sql/get_power_restrictions.sql"
-        ))
-        .load::<PowerRestriction>(conn)
-        .await?;
-        Ok(power_restrictions)
-    }
-
-    pub async fn get_rolling_stock_usage(
-        &self,
-        conn: &mut DbConnection,
-    ) -> Result<Vec<TrainScheduleScenarioStudyProject>> {
-        let result = sql_query(include_str!(
-            "rolling_stock_model/sql/get_train_schedules_with_scenario.sql"
-        ))
-        .bind::<BigInt, _>(self.id)
-        .load::<TrainScheduleScenarioStudyProject>(conn)
-        .await?;
-        Ok(result)
     }
 }
 
