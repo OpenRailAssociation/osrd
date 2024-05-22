@@ -9053,16 +9053,6 @@ components:
       - obj_id
       - work_schedule_type
       type: object
-    Zone:
-      description: |-
-        Geographic bounding box zone impacted by a list of operations.
-        Zones use the coordinate system [epsg:4326](https://epsg.io/4326).
-      properties:
-        geo:
-          $ref: '#/components/schemas/BoundingBox'
-      required:
-      - geo
-      type: object
     ZoneUpdate:
       properties:
         isEntry:
@@ -9760,7 +9750,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Zone'
+                $ref: '#/components/schemas/BoundingBox'
           description: The BBox of the line
       summary: Returns the BBoxes of a line
       tags:

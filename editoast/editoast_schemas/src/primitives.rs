@@ -4,7 +4,6 @@ mod identifier;
 mod non_blank_string;
 mod object_ref;
 mod object_type;
-mod zone;
 
 pub use bounding_box::BoundingBox;
 pub use duration::PositiveDuration;
@@ -12,11 +11,9 @@ pub use identifier::Identifier;
 pub use non_blank_string::NonBlankString;
 pub use object_ref::ObjectRef;
 pub use object_type::ObjectType;
-pub use zone::Zone;
 
 editoast_common::schemas! {
     object_type::schemas(),
-    zone::schemas(),
     bounding_box::schemas(),
     object_ref::schemas(),
 }

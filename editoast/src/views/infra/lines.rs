@@ -4,6 +4,7 @@ use actix_web::web::Json;
 use actix_web::web::Path;
 use chashmap::CHashMap;
 use editoast_derive::EditoastError;
+use editoast_schemas::primitives::BoundingBox;
 use thiserror::Error;
 
 use crate::error::Result;
@@ -14,7 +15,6 @@ use crate::modelsv2::DbConnectionPool;
 use crate::modelsv2::Infra;
 use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraIdParam;
-use editoast_schemas::primitives::Zone;
 
 crate::routes! {
     "/lines/{line_code}/bbox" => {
@@ -37,7 +37,7 @@ enum LinesErrors {
         ("line_code" = i64, Path, description = "A line code"),
     ),
     responses(
-        (status = 200, body = Zone, description = "The BBox of the line"),
+        (status = 200, body = BoundingBox, description = "The BBox of the line"),
     )
 )]
 #[get("")]
@@ -45,7 +45,7 @@ async fn get_line_bbox(
     path: Path<(i64, i64)>,
     infra_caches: Data<CHashMap<i64, InfraCache>>,
     db_pool: Data<DbConnectionPool>,
-) -> Result<Json<Zone>> {
+) -> Result<Json<BoundingBox>> {
     let (infra_id, line_code) = path.into_inner();
     let line_code: i32 = line_code.try_into().unwrap();
 
@@ -53,7 +53,7 @@ async fn get_line_bbox(
     let infra =
         Infra::retrieve_or_fail(conn, infra_id, || InfraApiError::NotFound { infra_id }).await?;
     let infra_cache = InfraCache::get_or_load(conn, &infra_caches, &infra).await?;
-    let mut zone = Zone::default();
+    let mut zone = BoundingBox::default();
     let mut tracksections = infra_cache
         .track_sections()
         .values()
@@ -64,9 +64,7 @@ async fn get_line_bbox(
         return Err(LinesErrors::LineNotFound { line_code }.into());
     }
     tracksections.for_each(|track| {
-        zone.union(&Zone {
-            geo: track.bbox_geo.clone(),
-        });
+        zone.union(&track.bbox_geo);
     });
 
     Ok(Json(zone))
