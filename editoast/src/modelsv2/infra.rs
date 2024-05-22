@@ -1,3 +1,4 @@
+mod object_queryable;
 mod railjson_data;
 mod route_from_waypoint_result;
 mod speed_limit_tags;
@@ -43,6 +44,7 @@ use crate::views::pagination::PaginatedResponse;
 use editoast_schemas::infra::RailJson;
 use editoast_schemas::infra::RAILJSON_VERSION;
 use editoast_schemas::primitives::ObjectType;
+pub use object_queryable::ObjectQueryable;
 
 /// The default version of a newly created infrastructure
 ///
