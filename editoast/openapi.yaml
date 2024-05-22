@@ -4323,34 +4323,6 @@ components:
       - next
       - results
       type: object
-    PaginatedResponseOfStudyWithScenarios:
-      description: A paginated response
-      properties:
-        count:
-          description: The total number of items
-          format: int64
-          type: integer
-        next:
-          description: The next page number
-          format: int64
-          nullable: true
-          type: integer
-        previous:
-          description: The previous page number
-          format: int64
-          nullable: true
-          type: integer
-        results:
-          description: The list of results
-          items:
-            $ref: '#/components/schemas/StudyWithScenarios'
-          type: array
-      required:
-      - count
-      - previous
-      - next
-      - results
-      type: object
     PaginatedResponseOfTimetable:
       description: A paginated response
       properties:
@@ -8010,6 +7982,7 @@ components:
             $ref: '#/components/schemas/Project'
           scenarios_count:
             format: int64
+            minimum: 0
             type: integer
         required:
         - scenarios_count
@@ -8021,6 +7994,7 @@ components:
       - properties:
           scenarios_count:
             format: int64
+            minimum: 0
             type: integer
         required:
         - scenarios_count
@@ -10652,7 +10626,16 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedResponseOfStudyWithScenarios'
+                allOf:
+                - $ref: '#/components/schemas/PaginationStats'
+                - properties:
+                    results:
+                      items:
+                        $ref: '#/components/schemas/StudyWithScenarios'
+                      type: array
+                  required:
+                  - results
+                  type: object
           description: The list of studies
       summary: Return a list of studies
       tags:

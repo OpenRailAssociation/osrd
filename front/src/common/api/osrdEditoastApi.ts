@@ -1393,7 +1393,9 @@ export type PatchProjectsByProjectIdApiArg = {
   projectPatchForm: ProjectPatchForm;
 };
 export type GetProjectsByProjectIdStudiesApiResponse =
-  /** status 200 The list of studies */ PaginatedResponseOfStudyWithScenarios;
+  /** status 200 The list of studies */ PaginationStats & {
+    results: StudyWithScenarios[];
+  };
 export type GetProjectsByProjectIdStudiesApiArg = {
   /** The id of a project */
   projectId: number;
@@ -2544,16 +2546,6 @@ export type Study = {
 };
 export type StudyWithScenarios = Study & {
   scenarios_count: number;
-};
-export type PaginatedResponseOfStudyWithScenarios = {
-  /** The total number of items */
-  count: number;
-  /** The next page number */
-  next: number | null;
-  /** The previous page number */
-  previous: number | null;
-  /** The list of results */
-  results: StudyWithScenarios[];
 };
 export type StudyResponse = Study & {
   project: Project;
