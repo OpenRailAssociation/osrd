@@ -39,7 +39,7 @@ use crate::error::InternalError;
 use crate::error::Result;
 use crate::modelsv2::prelude::*;
 use crate::modelsv2::rolling_stock_livery::RollingStockLiveryModel;
-use crate::modelsv2::rolling_stock_model::train_schedule_scenario_study_project::TrainScheduleScenarioStudyProject;
+use crate::modelsv2::rolling_stock_model::TrainScheduleScenarioStudyProject;
 use crate::modelsv2::DbConnectionPool;
 use crate::modelsv2::Document;
 use crate::modelsv2::RollingStockModel;
