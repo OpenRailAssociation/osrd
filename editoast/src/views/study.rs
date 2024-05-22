@@ -54,7 +54,7 @@ editoast_common::schemas! {
     Study,
     StudyCreateForm,
     StudyPatchForm,
-    StudyWithScenarios,
+    StudyWithScenarioCount,
     StudyResponse,
     scenario::schemas(),
 }
@@ -113,13 +113,14 @@ impl StudyCreateForm {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
-pub struct StudyWithScenarios {
+#[schema(as = StudyWithScenarios)]
+pub struct StudyWithScenarioCount {
     #[serde(flatten)]
     pub study: Study,
     pub scenarios_count: u64,
 }
 
-impl StudyWithScenarios {
+impl StudyWithScenarioCount {
     pub async fn try_fetch(conn: &mut DbConnection, study: Study) -> Result<Self> {
         let scenarios_count = study.scenarios_count(conn).await?;
         Ok(Self {
@@ -138,7 +139,7 @@ pub struct StudyResponse {
 }
 
 impl StudyResponse {
-    pub fn new(study_scenarios: StudyWithScenarios, project: Project) -> Self {
+    pub fn new(study_scenarios: StudyWithScenarioCount, project: Project) -> Self {
         Self {
             study: study_scenarios.study,
             scenarios_count: study_scenarios.scenarios_count,
@@ -238,7 +239,7 @@ async fn delete(path: Path<(i64, i64)>, db_pool: Data<DbConnectionPool>) -> Resu
 #[derive(serde::Serialize, utoipa::ToSchema)]
 struct StudyWithScenarioCountList {
     #[schema(value_type = Vec<StudyWithScenarios>)]
-    results: Vec<StudyWithScenarios>,
+    results: Vec<StudyWithScenarioCount>,
     #[serde(flatten)]
     stats: PaginationStats,
 }
@@ -277,7 +278,7 @@ async fn list(
         .into_iter()
         .zip(std::iter::repeat(&db_pool).map(|p| p.get()))
         .map(|(project, conn)| async move {
-            StudyWithScenarios::try_fetch(conn.await?.deref_mut(), project).await
+            StudyWithScenarioCount::try_fetch(conn.await?.deref_mut(), project).await
         });
     let results = futures::future::try_join_all(results).await?;
 
@@ -316,7 +317,7 @@ async fn get(
         return Err(StudyError::NotFound { study_id }.into());
     }
 
-    let study_scenarios = StudyWithScenarios::try_fetch(conn, study).await?;
+    let study_scenarios = StudyWithScenarioCount::try_fetch(conn, study).await?;
     let study_response = StudyResponse::new(study_scenarios, project);
     Ok(Json(study_response))
 }
@@ -394,7 +395,7 @@ async fn patch(
                     .into_study_changeset()?
                     .update_or_fail(conn, study_id, || StudyError::NotFound { study_id })
                     .await?;
-                let study_scenarios = StudyWithScenarios::try_fetch(conn, study).await?;
+                let study_scenarios = StudyWithScenarioCount::try_fetch(conn, study).await?;
 
                 // Update project last_modification field
                 project.update_last_modified(conn).await?;
@@ -549,7 +550,7 @@ pub mod test {
         let response = call_service(&app, req).await;
         assert_eq!(response.status(), StatusCode::OK);
 
-        let StudyWithScenarios { study, .. } = read_body_json(response).await;
+        let StudyWithScenarioCount { study, .. } = read_body_json(response).await;
         assert_eq!(study.name, "rename_test");
     }
 }
