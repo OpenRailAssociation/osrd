@@ -1,4 +1,9 @@
-import type { PathProperties, PathResponse } from 'common/api/osrdEditoastApi';
+import type {
+  PathProperties,
+  PathResponse,
+  ProjectPathTrainResult,
+  SimulationResponse,
+} from 'common/api/osrdEditoastApi';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
 
 export interface Destination {
@@ -85,3 +90,68 @@ export type ManageTrainSchedulePathProperties = {
   allVias: SuggestedOP[];
   length: number;
 };
+
+/**
+ * Properties signal_updates time_end and time_start are in seconds taking count of the departure time
+ */
+export type TrainSpaceTimeData = {
+  id: number;
+  trainName: string;
+  spaceTimeCurves: { time: number; headPosition: number; tailPosition: number }[][];
+} & Omit<ProjectPathTrainResult, 'space_time_curves'>;
+
+export type PositionData<T extends 'gradient' | 'radius'> = {
+  [key in T]: number;
+} & {
+  position: number;
+};
+
+export type ElectrificationRangeV2 = {
+  electrificationUsage: ElectrificationUsageV2;
+  start: number;
+  stop: number;
+};
+
+export type ElectrificationUsageV2 = ElectrificationValue &
+  SimulationResponseSuccess['electrical_profiles']['values'][number];
+
+export type BoundariesData = {
+  /** List of `n` boundaries of the ranges.
+        A boundary is a distance from the beginning of the path in mm. */
+  boundaries: number[];
+  /** List of `n+1` values associated to the ranges */
+  values: number[];
+};
+
+export type ElectricalBoundariesData<T extends ElectrificationValue | ElectricalProfileValue> = {
+  boundaries: number[];
+  values: T[];
+};
+
+export type ElectricalRangesData<T extends ElectrificationValue | ElectricalProfileValue> = {
+  start: number;
+  stop: number;
+  values: T;
+};
+
+export type ElectrificationValue = NonNullable<
+  PathProperties['electrifications']
+>['values'][number];
+
+export type ElectricalProfileValue = Extract<
+  SimulationResponse,
+  { status: 'success' }
+>['electrical_profiles']['values'][number];
+
+/**
+ * Electrifications start and stop are in meters
+ */
+export type PathPropertiesFormatted = {
+  electrifications: ElectrificationRangeV2[];
+  curves: PositionData<'radius'>[];
+  slopes: PositionData<'gradient'>[];
+  operationalPoints: NonNullable<PathProperties['operational_points']>;
+  geometry: NonNullable<PathProperties['geometry']>;
+};
+
+export type SimulationResponseSuccess = Extract<SimulationResponse, { status: 'success' }>;

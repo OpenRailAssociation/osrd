@@ -1,8 +1,7 @@
+import type { TrainSpaceTimeData } from 'applications/operationalStudies/types';
+import { formatSpaceTimeData } from 'applications/operationalStudies/utils';
 import { enhancedEditoastApi } from 'common/api/enhancedEditoastApi';
-import {
-  osrdEditoastApi,
-  type PostV2TrainScheduleProjectPathApiResponse,
-} from 'common/api/osrdEditoastApi';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import i18n from 'i18n';
 import { setFailure } from 'reducers/main';
 import {
@@ -11,6 +10,7 @@ import {
   updateSelectedTrainId,
 } from 'reducers/osrdsimulation/actions';
 import { store } from 'store';
+import { replaceElementAtIndex } from 'utils/array';
 import { castErrorToFailure } from 'utils/error';
 
 export const selectProjectionV2 = (
@@ -42,13 +42,11 @@ export const selectProjectionV2 = (
   store.dispatch(updateSelectedTrainId(trainIds[0]));
 };
 
-export const getSimulationResultsV2 = async (
+export const getSpaceTimeChartData = async (
   trainSchedulesIDs: number[],
   trainIdUsedForProjection: number,
   infraId: number,
-  setSpaceTimeData: React.Dispatch<
-    React.SetStateAction<PostV2TrainScheduleProjectPathApiResponse | undefined>
-  >
+  setSpaceTimeData: React.Dispatch<React.SetStateAction<TrainSpaceTimeData[]>>
 ) => {
   if (trainSchedulesIDs.length > 0) {
     store.dispatch(updateIsUpdating(true));
@@ -61,7 +59,11 @@ export const getSimulationResultsV2 = async (
         })
       );
 
-      if (pathfindingResult && pathfindingResult.status === 'success') {
+      const { data: trainSchedules } = await store.dispatch(
+        osrdEditoastApi.endpoints.getV2TrainSchedule.initiate({ ids: trainSchedulesIDs })
+      );
+
+      if (pathfindingResult && pathfindingResult.status === 'success' && trainSchedules) {
         const { blocks, routes, track_section_ranges } = pathfindingResult;
         const projectPathTrainResult = await store
           .dispatch(
@@ -73,13 +75,36 @@ export const getSimulationResultsV2 = async (
           )
           .unwrap();
 
-        setSpaceTimeData((prev) => {
-          const updatedData = { ...prev };
+        setSpaceTimeData((prevTrains) => {
+          let newSpaceTimeData = [...prevTrains];
+
           // For each key (train id) in projectPathTrainResult, we either add it or update it in the state
-          Object.keys(projectPathTrainResult).forEach((key) => {
-            updatedData[key] = projectPathTrainResult[key];
+          Object.keys(projectPathTrainResult).forEach((trainId) => {
+            const currentProjectedTrain = projectPathTrainResult[trainId];
+
+            const matchingTrain = trainSchedules.find((train) => train.id === +trainId);
+
+            const formattedProjectedPathTrainResult = formatSpaceTimeData(
+              trainId,
+              currentProjectedTrain,
+              matchingTrain?.train_name
+            );
+
+            const foundTrainIndex = newSpaceTimeData.findIndex(
+              (train) => train.id.toString() === trainId
+            );
+            if (foundTrainIndex !== -1) {
+              newSpaceTimeData = replaceElementAtIndex(
+                newSpaceTimeData,
+                foundTrainIndex,
+                formattedProjectedPathTrainResult
+              );
+            } else {
+              newSpaceTimeData.push(formattedProjectedPathTrainResult);
+            }
           });
-          return updatedData;
+
+          return newSpaceTimeData;
         });
       }
     } catch (e) {

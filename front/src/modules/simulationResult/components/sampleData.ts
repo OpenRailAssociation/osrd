@@ -113,6 +113,7 @@ const ORSD_GRAPH_SAMPLE_DATA: OsrdSimulationState = {
     id: 10,
     path: 4,
   },
+  trainIdUsedForProjection: 10,
   selectedTrainId: 10,
   speedSpaceSettings: {
     altitude: false,

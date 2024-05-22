@@ -3,6 +3,8 @@ import * as d3 from 'd3';
 import type { BaseType } from 'd3';
 import { has, last, memoize } from 'lodash';
 
+import type { PositionData } from 'applications/operationalStudies/types';
+import type { ReportTrainData } from 'modules/simulationResult/components/SpeedSpaceChart/types';
 import type { ChartAxes, ListValues, XAxis, Y2Axis, YAxis } from 'modules/simulationResult/consts';
 import type {
   Position,
@@ -104,7 +106,7 @@ export function makeStairCase(data: Array<{ time: number; position: number }>) {
   return newData;
 }
 
-// Time shift a train
+// TODO DROP V1 : remove this
 export const timeShiftTrain = (train: Train, offset: number): Train => ({
   ...train,
   base: {
@@ -225,11 +227,26 @@ export type MergedBlock<Keys extends string> = {
   value1: number;
 };
 
+// TODO DROP V1 : remove this
 // called with keyValues
 // ['position', 'gradient']
 // ['position', 'speed']
 export const mergeDatasAreaConstant = <Keys extends string>(
   data1: Record<Keys, number>[],
+  data2: number,
+  keyValues: Keys[]
+): MergedBlock<Keys>[] =>
+  data1.map((step) => ({
+    [keyValues[0]]: step[keyValues[0]],
+    value0: step[keyValues[1]],
+    value1: data2,
+  })) as MergedBlock<Keys>[];
+
+// called with keyValues
+// ['position', 'gradient']
+// ['position', 'speed']
+export const mergeDatasAreaConstantV2 = <Keys extends 'position' | 'gradient'>(
+  data1: PositionData<'gradient'>[],
   data2: number,
   keyValues: Keys[]
 ): MergedBlock<Keys>[] =>
@@ -263,7 +280,7 @@ export const gridY2 = (axisScale: SimulationD3Scale, width: number) =>
 // Interpolation of cursor based on space position
 // ['position', 'speed']
 export const interpolateOnPosition = (
-  dataSimulation: { speed: PositionSpeedTime[] },
+  dataSimulation: { speed: PositionSpeedTime[] | ReportTrainData[] }, // TODO DROP V1 : remove PositionSpeedTime type
   positionLocal: number
 ) => {
   const bisect = d3.bisector<PositionSpeedTime, number>((d) => d.position).left;
@@ -287,12 +304,13 @@ export const interpolateOnTime = <
 >(
   dataSimulation: SimulationData | undefined,
   keyValues: ChartAxes,
-  listValues: ListValues
+  listValues: ListValues,
+  isTrainScheduleV2: boolean = false
 ) => {
   if (dataSimulation) {
     if (!interpolateCache.has(dataSimulation)) {
       const newInterpolate = memoize(
-        specificInterpolateOnTime(dataSimulation, keyValues, listValues),
+        specificInterpolateOnTime(dataSimulation, keyValues, listValues, isTrainScheduleV2),
         (timePosition: Date | number) => {
           if (typeof timePosition === 'number') {
             return timePosition;
@@ -304,7 +322,7 @@ export const interpolateOnTime = <
     }
     return interpolateCache.get(dataSimulation) as (time: Time) => PositionsSpeedTimes<Time>;
   }
-  return specificInterpolateOnTime(dataSimulation, keyValues, listValues);
+  return specificInterpolateOnTime(dataSimulation, keyValues, listValues, isTrainScheduleV2);
 };
 
 const specificInterpolateOnTime =
@@ -314,7 +332,8 @@ const specificInterpolateOnTime =
   >(
     dataSimulation: SimulationData | undefined,
     keyValues: ChartAxes,
-    listValues: ListValues
+    listValues: ListValues,
+    isTrainScheduleV2: boolean
   ) =>
   (timePositionLocal: Time) => {
     const xAxis = getAxis(keyValues, 'x', false);
@@ -331,9 +350,11 @@ const specificInterpolateOnTime =
       let bisection: [ObjectWithXAxis, ObjectWithXAxis] | undefined;
       if (dataSimulation && has(dataSimulation, listValue)) {
         // not array of array
-        if (listValue === 'speed' || listValue === 'speeds') {
+        // in train schedules v2, all the props are in a array of element
+        if (isTrainScheduleV2 || listValue === 'speed' || listValue === 'speeds') {
           const currentData = dataSimulation[listValue] as ObjectWithXAxis[];
-          if (currentData[0]) {
+
+          if (currentData.length) {
             const timeBisect = d3.bisector<ObjectWithXAxis, Time>((d) => d.time as Time).left;
             const index = timeBisect(currentData, timePositionLocal, 1);
             bisection = [currentData[index - 1], currentData[index]];
@@ -352,10 +373,16 @@ const specificInterpolateOnTime =
         if (bisection && bisection[1] && bisection[1].time) {
           const bisec0 = bisection[0];
           const bisec1 = bisection[1];
-          if (bisec0.time && bisec0.position && bisec1.time && bisec1.position) {
-            const duration = Number(bisec1.time) - Number(bisec0.time);
+          if (
+            bisec0.time !== undefined &&
+            bisec0.position !== undefined &&
+            bisec1.time !== undefined &&
+            bisec1.position !== undefined
+          ) {
+            const duration = Number(bisec1.time) - Number(bisec0.time); // en ms
             const timePositionFromTime = Number(timePositionLocal) - Number(bisec0.time);
             const proportion = timePositionFromTime / duration;
+
             positionInterpolated[listValue] = {
               position: d3.interpolateNumber(bisec0.position, bisec1.position)(proportion),
               speed:

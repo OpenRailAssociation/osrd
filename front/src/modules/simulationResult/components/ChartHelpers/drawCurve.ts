@@ -1,14 +1,17 @@
 import * as d3 from 'd3';
 
-import type { GevPreparedData } from 'modules/simulationResult/components/SpeedSpaceChart/prepareData';
 import type { ChartAxes } from 'modules/simulationResult/consts';
 import type { Chart, ConsolidatedPosition } from 'reducers/osrdsimulation/types';
 import type { ArrayElement } from 'utils/types';
 
 import { getAxis } from './ChartHelpers';
+import type { GevPreparedData, GevPreparedDataV2 } from '../SpeedSpaceChart/types';
 
 const drawCurve = <
-  T extends ArrayElement<GevPreparedData[keyof GevPreparedData]> | ConsolidatedPosition,
+  T extends
+    | ArrayElement<GevPreparedData[keyof GevPreparedData]> // TODO DROP V1: remove this line
+    | ArrayElement<GevPreparedDataV2[keyof GevPreparedDataV2]>
+    | ConsolidatedPosition,
 >(
   chart: Chart,
   classes: string,

@@ -1,34 +1,9 @@
-import { compact, groupBy, reduce, uniq, type Dictionary } from 'lodash';
+import { groupBy, type Dictionary } from 'lodash';
 
 import type { RangedValue, RollingStock } from 'common/api/osrdEditoastApi';
 import NO_POWER_RESTRICTION from 'modules/powerRestriction/consts';
 import type { PowerRestrictionWarning } from 'modules/powerRestriction/types';
-
-/**
- * Return the power restriction codes of the rolling stock by mode
- *
- * ex: { "1500V": ["C1US", "C2US"], "25000V": ["M1US"], "thermal": []}
- */
-const getRollingStockPowerRestrictionsByMode = (
-  rollingStockModes: RollingStock['effort_curves']['modes']
-): { [mode: string]: string[] } => {
-  const curvesModesKey = Object.keys(rollingStockModes);
-
-  return reduce(
-    curvesModesKey,
-    (result, mode) => {
-      const powerCodes = rollingStockModes[mode].curves.map(
-        (curve) => curve.cond.power_restriction_code
-      );
-      compact(uniq(powerCodes));
-      return {
-        ...result,
-        [mode]: powerCodes,
-      };
-    },
-    {}
-  );
-};
+import { getRollingStockPowerRestrictionsByMode } from 'modules/rollingStock/helpers/powerRestrictions';
 
 /**
  * Depending on the electrification on a train's path and the power restriction codes selected by the user,

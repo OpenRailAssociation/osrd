@@ -1,276 +1,263 @@
-// import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
 
-// import { ChevronLeft, ChevronRight } from '@osrd-project/ui-icons';
-// import cx from 'classnames';
-// import { useTranslation } from 'react-i18next';
-// import { useSelector } from 'react-redux';
-// import { Rnd } from 'react-rnd';
+import { ChevronLeft, ChevronRight } from '@osrd-project/ui-icons';
+import cx from 'classnames';
+import { useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
+import { Rnd } from 'react-rnd';
 
-// import { osrdEditoastApi, type SimulationReport } from 'common/api/osrdEditoastApi';
-// import SimulationWarpedMap from 'common/Map/WarpedMap/SimulationWarpedMap';
-// import getScaleDomainFromValues from 'modules/simulationResult/components/ChartHelpers/getScaleDomainFromValues';
-// import SimulationResultsMap from 'modules/simulationResult/components/SimulationResultsMap';
-// import SpaceCurvesSlopes from 'modules/simulationResult/components/SpaceCurvesSlopes';
-// import SpaceTimeChart from 'modules/simulationResult/components/SpaceTimeChart/SpaceTimeChart';
-// import { useStoreDataForSpaceTimeChart } from 'modules/simulationResult/components/SpaceTimeChart/useStoreDataForSpaceTimeChart';
-// import SpeedSpaceChart from 'modules/simulationResult/components/SpeedSpaceChart/SpeedSpaceChart';
-// import TimeButtons from 'modules/simulationResult/components/TimeButtons';
-// import TrainDetails from 'modules/simulationResult/components/TrainDetails';
-// import type { PositionScaleDomain, TimeScaleDomain } from 'modules/simulationResult/types';
-// import DriverTrainSchedule from 'modules/trainschedule/components/DriverTrainSchedule/DriverTrainSchedule';
-// import { updateViewport, type Viewport } from 'reducers/map';
-// import { updateSelectedProjection, updateSimulation } from 'reducers/osrdsimulation/actions';
-// import { getIsUpdating } from 'reducers/osrdsimulation/selectors';
-// import {
-//   persistentRedoSimulation,
-//   persistentUndoSimulation,
-// } from 'reducers/osrdsimulation/simulation';
-// // TIMELINE DISABLED // import TimeLine from 'modules/simulationResult/components/TimeLine/TimeLine';
-// import type { Train } from 'reducers/osrdsimulation/types';
-// import { useAppDispatch } from 'store';
+import { useSimulationResults } from 'applications/operationalStudies/hooks';
+import type { TrainSpaceTimeData } from 'applications/operationalStudies/types';
+import SimulationWarpedMap from 'common/Map/WarpedMap/SimulationWarpedMap';
+import { getScaleDomainFromValuesV2 } from 'modules/simulationResult/components/ChartHelpers/getScaleDomainFromValues';
+import SimulationResultsMapV2 from 'modules/simulationResult/components/SimulationResultsMapV2';
+import SpaceCurvesSlopesV2 from 'modules/simulationResult/components/SpaceCurvesSlopes/SpaceCurvesSlopesV2';
+import SpaceTimeChartV2 from 'modules/simulationResult/components/SpaceTimeChart/SpaceTimeChartV2';
+import { useStoreDataForSpaceTimeChartV2 } from 'modules/simulationResult/components/SpaceTimeChart/useStoreDataForSpaceTimeChart';
+import SpeedSpaceChartV2 from 'modules/simulationResult/components/SpeedSpaceChart/SpeedSpaceChartV2';
+import TimeButtons from 'modules/simulationResult/components/TimeButtons';
+import TrainDetailsV2 from 'modules/simulationResult/components/TrainDetailsV2';
+import type { PositionScaleDomain, TimeScaleDomain } from 'modules/simulationResult/types';
+import DriverTrainScheduleV2 from 'modules/trainschedule/components/DriverTrainScheduleV2/DriverTrainScheduleV2';
+import { updateViewport, type Viewport } from 'reducers/map';
+import { getIsUpdating } from 'reducers/osrdsimulation/selectors';
+// TIMELINE DISABLED // import TimeLine from 'modules/simulationResult/components/TimeLine/TimeLine';
+import { useAppDispatch } from 'store';
 
-// const MAP_MIN_HEIGHT = 450;
+const MAP_MIN_HEIGHT = 450;
 
-// type SimulationResultsProps = {
-//   collapsedTimetable: boolean;
-//   setTrainResultsToFetch: (trainSchedulesIDs?: number[]) => void;
-// };
+type SimulationResultsV2Props = {
+  collapsedTimetable: boolean;
+  setTrainResultsToFetch: (trainSchedulesIDs?: number[]) => void;
+  spaceTimeData: TrainSpaceTimeData[];
+};
 
-// const SimulationResultsV2 = ({
-//   collapsedTimetable,
-//   setTrainResultsToFetch,
-// }: SimulationResultsProps) => {
-//   const { t } = useTranslation('simulation');
-//   const dispatch = useAppDispatch();
+const SimulationResultsV2 = ({
+  collapsedTimetable,
+  setTrainResultsToFetch,
+  spaceTimeData,
+}: SimulationResultsV2Props) => {
+  const { t } = useTranslation('simulation');
+  const dispatch = useAppDispatch();
+  // TIMELINE DISABLED // const { chart } = useSelector(getOsrdSimulation);
+  const isUpdating = useSelector(getIsUpdating);
+  const { infraId, trainIdUsedForProjection, simulationIsPlaying, dispatchUpdateSelectedTrainId } =
+    useStoreDataForSpaceTimeChartV2();
 
-//   // TIMELINE DISABLED // const { chart } = useSelector(getOsrdSimulation);
-//   const isUpdating = useSelector(getIsUpdating);
+  const timeTableRef = useRef<HTMLDivElement | null>(null);
+  const [extViewport, setExtViewport] = useState<Viewport | undefined>(undefined);
+  const [showWarpedMap, setShowWarpedMap] = useState(false);
 
-//   const timeTableRef = useRef<HTMLDivElement | null>(null);
-//   const [extViewport, setExtViewport] = useState<Viewport | undefined>(undefined);
-//   const [showWarpedMap, setShowWarpedMap] = useState(false);
+  const [heightOfSpaceTimeChart, setHeightOfSpaceTimeChart] = useState(600);
+  const [heightOfSpeedSpaceChart, setHeightOfSpeedSpaceChart] = useState(250);
+  const [heightOfSimulationMap] = useState(MAP_MIN_HEIGHT);
+  const [heightOfSpaceCurvesSlopesChart, setHeightOfSpaceCurvesSlopesChart] = useState(150);
+  const [initialHeightOfSpaceCurvesSlopesChart, setInitialHeightOfSpaceCurvesSlopesChart] =
+    useState(heightOfSpaceCurvesSlopesChart);
 
-//   const [heightOfSpaceTimeChart, setHeightOfSpaceTimeChart] = useState(600);
-//   const [heightOfSpeedSpaceChart, setHeightOfSpeedSpaceChart] = useState(250);
-//   const [heightOfSimulationMap] = useState(MAP_MIN_HEIGHT);
-//   const [heightOfSpaceCurvesSlopesChart, setHeightOfSpaceCurvesSlopesChart] = useState(150);
-//   const [initialHeightOfSpaceCurvesSlopesChart, setInitialHeightOfSpaceCurvesSlopesChart] =
-//     useState(heightOfSpaceCurvesSlopesChart);
+  const [timeScaleDomain, setTimeScaleDomain] = useState<TimeScaleDomain>({
+    range: undefined,
+    source: undefined,
+  });
 
-//   const [timeScaleDomain, setTimeScaleDomain] = useState<TimeScaleDomain>({
-//     range: undefined,
-//     source: undefined,
-//   });
+  // X scale domain shared between SpeedSpace and SpaceCurvesSlopes charts.
+  const [positionScaleDomain, setPositionScaleDomain] = useState<PositionScaleDomain>({
+    initial: [],
+    current: [],
+    source: undefined,
+  });
 
-//   // X scale domain shared between SpeedSpace and SpaceCurvesSlopes charts.
-//   const [positionScaleDomain, setPositionScaleDomain] = useState<PositionScaleDomain>({
-//     initial: [],
-//     current: [],
-//     source: undefined,
-//   });
+  const {
+    selectedTrain,
+    selectedTrainRollingStock,
+    selectedTrainPowerRestrictions,
+    trainSimulation,
+    pathProperties,
+  } = useSimulationResults();
 
-//   const {
-//     allowancesSettings,
-//     selectedTrain,
-//     selectedProjection,
-//     simulation,
-//     simulationIsPlaying,
-//     dispatchUpdateSelectedTrainId,
-//     dispatchPersistentUpdateSimulation,
-//   } = useStoreDataForSpaceTimeChart();
+  const trainUsedForProjectionSpaceTimeData = useMemo(
+    () =>
+      selectedTrain ? spaceTimeData.find((_train) => _train.id === selectedTrain.id) : undefined,
+    [selectedTrain, spaceTimeData]
+  );
 
-//   const { data: selectedTrainSchedule } = osrdEditoastApi.endpoints.getTrainScheduleById.useQuery(
-//     {
-//       id: selectedTrain?.id as number,
-//     },
-//     { skip: !selectedTrain }
-//   );
+  useEffect(() => {
+    if (extViewport !== undefined) {
+      dispatch(
+        updateViewport({
+          ...extViewport,
+        })
+      );
+    }
+  }, [extViewport]);
 
-//   const { data: selectedTrainRollingStock } =
-//     osrdEditoastApi.endpoints.getLightRollingStockByRollingStockId.useQuery(
-//       {
-//         rollingStockId: selectedTrainSchedule?.rolling_stock_id as number,
-//       },
-//       { skip: !selectedTrainSchedule }
-//     );
+  useEffect(() => {
+    if (trainSimulation && trainSimulation.status === 'success') {
+      const { positions } = trainSimulation.final_output;
+      const newPositionsScaleDomain = getScaleDomainFromValuesV2(positions);
+      setPositionScaleDomain({
+        initial: newPositionsScaleDomain,
+        current: newPositionsScaleDomain,
+      });
+    }
+  }, [trainSimulation]);
 
-//   const handleKey = (e: KeyboardEvent) => {
-//     if (e.key === 'z' && e.metaKey) {
-//       dispatch(persistentUndoSimulation());
-//     }
-//     if (e.key === 'e' && e.metaKey) {
-//       dispatch(persistentRedoSimulation());
-//     }
-//   };
+  if (!trainSimulation) return null;
 
-//   useEffect(() => {
-//     // Setup the listener to undi /redo
-//     window.addEventListener('keydown', handleKey);
-//     return function cleanup() {
-//       window.removeEventListener('keydown', handleKey);
-//       dispatch(updateSelectedProjection(undefined));
-//       dispatch(updateSimulation({ trains: [] }));
-//     };
-//   }, []);
+  if (trainSimulation.status !== 'success' && !isUpdating) return null;
 
-//   useEffect(() => {
-//     if (extViewport !== undefined) {
-//       dispatch(
-//         updateViewport({
-//           ...extViewport,
-//         })
-//       );
-//     }
-//   }, [extViewport]);
+  return (
+    <div className="simulation-results">
+      {/* SIMULATION : STICKY BAR */}
+      {selectedTrain && (
+        <div
+          className={cx('osrd-simulation-sticky-bar', {
+            'with-collapsed-timetable': collapsedTimetable,
+          })}
+        >
+          <div className="row">
+            <div className="col-xl-4">
+              <TimeButtons departureTime={selectedTrain.start_time} />
+            </div>
+            {trainUsedForProjectionSpaceTimeData && (
+              <TrainDetailsV2 projectedTrain={trainUsedForProjectionSpaceTimeData} />
+            )}
+          </div>
+        </div>
+      )}
 
-//   useEffect(() => {
-//     if (selectedTrain) {
-//       const positions = selectedTrain.base.speeds.map((speed) => speed.position);
-//       const newPositionsScaleDomain = getScaleDomainFromValues(positions);
-//       setPositionScaleDomain({
-//         initial: newPositionsScaleDomain,
-//         current: newPositionsScaleDomain,
-//       });
-//     }
-//   }, [selectedTrain]);
+      {/* SIMULATION: TIMELINE — TEMPORARILY DISABLED
+      {simulation.trains.length && (
+        <TimeLine
+          timeScaleDomain={timeScaleDomain}
+          selectedTrainId={selectedTrain?.id || simulation.trains[0].id}
+          trains={simulation.trains as SimulationReport[]}
+          onTimeScaleDomainChange={setTimeScaleDomain}
+        />
+      )}
+      */}
 
-//   return simulation.trains.length === 0 && !isUpdating ? null : (
-//     <div className="simulation-results">
-//       {/* SIMULATION : STICKY BAR */}
-//       <div
-//         className={cx('osrd-simulation-sticky-bar', {
-//           'with-collapsed-timetable': collapsedTimetable,
-//         })}
-//       >
-//         <div className="row">
-//           <div className="col-xl-4">
-//             {selectedTrain && <TimeButtons selectedTrain={selectedTrain as SimulationReport} />}
-//           </div>
-//           <div className="col-xl-8 d-flex justify-content-end mt-2 mt-xl-0">
-//             <TrainDetails />
-//           </div>
-//         </div>
-//       </div>
+      {/* SIMULATION : SPACE TIME CHART */}
+      {spaceTimeData && selectedTrain && pathProperties && (
+        <div className="simulation-warped-map d-flex flex-row align-items-stretch mb-2 bg-white">
+          <button
+            type="button"
+            className="show-warped-map-button my-3 ml-3 mr-1"
+            aria-label={t('toggleWarpedMap')}
+            title={t('toggleWarpedMap')}
+            onClick={() => setShowWarpedMap(!showWarpedMap)}
+          >
+            {showWarpedMap ? <ChevronLeft /> : <ChevronRight />}
+          </button>
+          <SimulationWarpedMap collapsed={!showWarpedMap} />
 
-//       {/* SIMULATION: TIMELINE — TEMPORARILY DISABLED
-//       {simulation.trains.length && (
-//         <TimeLine
-//           timeScaleDomain={timeScaleDomain}
-//           selectedTrainId={selectedTrain?.id || simulation.trains[0].id}
-//           trains={simulation.trains as SimulationReport[]}
-//           onTimeScaleDomainChange={setTimeScaleDomain}
-//         />
-//       )}
-//       */}
+          <div className="osrd-simulation-container d-flex flex-grow-1 flex-shrink-1">
+            <div className="chart-container" style={{ height: `${heightOfSpaceTimeChart}px` }}>
+              <SpaceTimeChartV2
+                infraId={infraId}
+                inputSelectedTrain={selectedTrain}
+                trainIdUsedForProjection={trainIdUsedForProjection}
+                simulation={spaceTimeData}
+                simulationIsPlaying={simulationIsPlaying}
+                initialHeight={heightOfSpaceTimeChart}
+                onSetBaseHeight={setHeightOfSpaceTimeChart}
+                dispatchUpdateSelectedTrainId={dispatchUpdateSelectedTrainId}
+                setTrainResultsToFetch={setTrainResultsToFetch}
+                timeScaleDomain={timeScaleDomain}
+                setTimeScaleDomain={setTimeScaleDomain}
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
-//       {/* SIMULATION : SPACE TIME CHART */}
-//       <div className="simulation-warped-map d-flex flex-row align-items-stretch mb-2 bg-white">
-//         <button
-//           type="button"
-//           className="show-warped-map-button my-3 ml-3 mr-1"
-//           aria-label={t('toggleWarpedMap')}
-//           title={t('toggleWarpedMap')}
-//           onClick={() => setShowWarpedMap(!showWarpedMap)}
-//         >
-//           {showWarpedMap ? <ChevronLeft /> : <ChevronRight />}
-//         </button>
-//         <SimulationWarpedMap collapsed={!showWarpedMap} />
+      {/* TRAIN : SPACE SPEED CHART */}
+      {selectedTrainRollingStock && trainSimulation && pathProperties && (
+        <div className="osrd-simulation-container d-flex mb-2">
+          <div className="chart-container" style={{ height: `${heightOfSpeedSpaceChart}px` }}>
+            <SpeedSpaceChartV2
+              initialHeight={heightOfSpeedSpaceChart}
+              onSetChartBaseHeight={setHeightOfSpeedSpaceChart}
+              trainRollingStock={selectedTrainRollingStock}
+              trainSimulation={trainSimulation}
+              selectedTrainPowerRestrictions={selectedTrainPowerRestrictions}
+              pathProperties={pathProperties}
+              sharedXScaleDomain={positionScaleDomain}
+              setSharedXScaleDomain={setPositionScaleDomain}
+            />
+          </div>
+        </div>
+      )}
 
-//         <div className="osrd-simulation-container d-flex flex-grow-1 flex-shrink-1">
-//           <div className="chart-container" style={{ height: `${heightOfSpaceTimeChart}px` }}>
-//             {simulation.trains.length > 0 && (
-//               <SpaceTimeChart
-//                 allowancesSettings={allowancesSettings}
-//                 inputSelectedTrain={selectedTrain}
-//                 selectedProjection={selectedProjection}
-//                 simulation={simulation}
-//                 simulationIsPlaying={simulationIsPlaying}
-//                 initialHeight={heightOfSpaceTimeChart}
-//                 onSetBaseHeight={setHeightOfSpaceTimeChart}
-//                 dispatchUpdateSelectedTrainId={dispatchUpdateSelectedTrainId}
-//                 dispatchPersistentUpdateSimulation={dispatchPersistentUpdateSimulation}
-//                 setTrainResultsToFetch={setTrainResultsToFetch}
-//                 timeScaleDomain={timeScaleDomain}
-//                 setTimeScaleDomain={setTimeScaleDomain}
-//               />
-//             )}
-//           </div>
-//         </div>
-//       </div>
+      {/* TRAIN : CURVES & SLOPES */}
+      {trainSimulation.status === 'success' && pathProperties && (
+        <div className="osrd-simulation-container d-flex mb-2">
+          <div
+            className="chart-container"
+            style={{ height: `${heightOfSpaceCurvesSlopesChart}px` }}
+          >
+            <Rnd
+              default={{
+                x: 0,
+                y: 0,
+                width: '100%',
+                height: `${heightOfSpaceCurvesSlopesChart}px`,
+              }}
+              disableDragging
+              enableResizing={{
+                bottom: true,
+              }}
+              onResizeStart={() =>
+                setInitialHeightOfSpaceCurvesSlopesChart(heightOfSpaceCurvesSlopesChart)
+              }
+              onResize={(_e, _dir, _refToElement, delta) => {
+                setHeightOfSpaceCurvesSlopesChart(
+                  initialHeightOfSpaceCurvesSlopesChart + delta.height
+                );
+              }}
+            >
+              <SpaceCurvesSlopesV2
+                initialHeight={heightOfSpaceCurvesSlopesChart}
+                trainSimulation={trainSimulation}
+                pathProperties={pathProperties}
+                sharedXScaleDomain={positionScaleDomain}
+                setSharedXScaleDomain={setPositionScaleDomain}
+              />
+            </Rnd>
+          </div>
+        </div>
+      )}
 
-//       {/* TRAIN : SPACE SPEED CHART */}
-//       {selectedTrain && (
-//         <div className="osrd-simulation-container d-flex mb-2">
-//           <div className="chart-container" style={{ height: `${heightOfSpeedSpaceChart}px` }}>
-//             <SpeedSpaceChart
-//               initialHeight={heightOfSpeedSpaceChart}
-//               onSetChartBaseHeight={setHeightOfSpeedSpaceChart}
-//               selectedTrain={selectedTrain}
-//               trainRollingStock={selectedTrainRollingStock}
-//               sharedXScaleDomain={positionScaleDomain}
-//               setSharedXScaleDomain={setPositionScaleDomain}
-//             />
-//           </div>
-//         </div>
-//       )}
+      {/* SIMULATION : MAP */}
+      <div ref={timeTableRef}>
+        <div className="osrd-simulation-container mb-2">
+          <div className="osrd-simulation-map" style={{ height: `${heightOfSimulationMap}px` }}>
+            <SimulationResultsMapV2
+              setExtViewport={setExtViewport}
+              geometry={pathProperties?.geometry}
+            />
+          </div>
+        </div>
+      </div>
 
-//       {/* TRAIN : CURVES & SLOPES */}
-//       <div className="osrd-simulation-container d-flex mb-2">
-//         <div className="chart-container" style={{ height: `${heightOfSpaceCurvesSlopesChart}px` }}>
-//           {selectedTrain && (
-//             <Rnd
-//               default={{
-//                 x: 0,
-//                 y: 0,
-//                 width: '100%',
-//                 height: `${heightOfSpaceCurvesSlopesChart}px`,
-//               }}
-//               disableDragging
-//               enableResizing={{
-//                 bottom: true,
-//               }}
-//               onResizeStart={() =>
-//                 setInitialHeightOfSpaceCurvesSlopesChart(heightOfSpaceCurvesSlopesChart)
-//               }
-//               onResize={(_e, _dir, _refToElement, delta) => {
-//                 setHeightOfSpaceCurvesSlopesChart(
-//                   initialHeightOfSpaceCurvesSlopesChart + delta.height
-//                 );
-//               }}
-//             >
-//               <SpaceCurvesSlopes
-//                 initialHeight={heightOfSpaceCurvesSlopesChart}
-//                 selectedTrain={selectedTrain as Train} // TODO: remove Train interface
-//                 sharedXScaleDomain={positionScaleDomain}
-//                 setSharedXScaleDomain={setPositionScaleDomain}
-//               />
-//             </Rnd>
-//           )}
-//         </div>
-//       </div>
-
-//       {/* TRAIN : DRIVER TRAIN SCHEDULE */}
-//       {selectedTrain && selectedTrainRollingStock && (
-//         <div className="osrd-simulation-container mb-2">
-//           <DriverTrainSchedule
-//             train={selectedTrain as Train} // TODO: remove Train interface
-//             rollingStock={selectedTrainRollingStock}
-//           />
-//         </div>
-//       )}
-
-//       {/* SIMULATION : MAP */}
-//       <div ref={timeTableRef}>
-//         <div className="osrd-simulation-container mb-2">
-//           <div className="osrd-simulation-map" style={{ height: `${heightOfSimulationMap}px` }}>
-//             <SimulationResultsMap setExtViewport={setExtViewport} />
-//           </div>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// };
-
-const SimulationResultsV2 = () => null;
+      {/* TRAIN : DRIVER TRAIN SCHEDULE */}
+      {selectedTrain &&
+        trainSimulation.status === 'success' &&
+        pathProperties &&
+        selectedTrainRollingStock &&
+        infraId && (
+          <div className="osrd-simulation-container mb-2">
+            <DriverTrainScheduleV2
+              train={selectedTrain}
+              simulatedTrain={trainSimulation}
+              pathProperties={pathProperties}
+              rollingStock={selectedTrainRollingStock}
+              infraId={infraId}
+            />
+          </div>
+        )}
+    </div>
+  );
+};
 
 export default SimulationResultsV2;

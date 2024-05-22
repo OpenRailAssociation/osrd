@@ -9,9 +9,9 @@ import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 import type { Train } from 'reducers/osrdsimulation/types';
 import { jouleToKwh } from 'utils/physics';
 
+import { BaseOrEco, type BaseOrEcoType } from './consts';
 import exportTrainCSV from './driverTrainScheduleExportCSV';
-import { massWithOneDecimal } from './DriverTrainScheduleHelpers';
-import { BaseOrEco, type BaseOrEcoType } from './DriverTrainScheduleTypes';
+import { massWithOneDecimal } from '../DriverTrainScheduleV2/utils';
 
 type Props = {
   train: Train;

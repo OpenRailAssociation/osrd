@@ -11,7 +11,7 @@ import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/compon
 import trainNameWithNum from 'modules/trainschedule/components/ManageTrainSchedule/helpers/trainNameHelper';
 import { setFailure, setSuccess } from 'reducers/main';
 import { useAppDispatch } from 'store';
-import { isoDateToMs, formatToIsoDate } from 'utils/date';
+import { formatToIsoDate, isoDateToMs } from 'utils/date';
 import { castErrorToFailure } from 'utils/error';
 import { sec2time } from 'utils/timeManipulation';
 
@@ -21,13 +21,13 @@ import formatTrainSchedulePayload from './helpers/formatTrainSchedulePayload';
 type SubmitConfAddTrainScheduleProps = {
   infraState?: InfraState;
   setIsWorking: (isWorking: boolean) => void;
-  //   setTrainResultsToFetch: (trainScheduleIds?: number[]) => void;
+  setTrainResultsToFetch: (trainScheduleIds?: number[]) => void;
 };
 
 const AddTrainScheduleV2Button = ({
   infraState,
   setIsWorking,
-  //   setTrainResultsToFetch,
+  setTrainResultsToFetch,
 }: SubmitConfAddTrainScheduleProps) => {
   const [postTrainSchedule] =
     enhancedEditoastApi.endpoints.postV2TimetableByIdTrainSchedule.useMutation();
@@ -69,7 +69,7 @@ const AddTrainScheduleV2Button = ({
       }
 
       try {
-        await postTrainSchedule({
+        const newTrain = await postTrainSchedule({
           id: timetableId,
           body: trainScheduleParams,
         }).unwrap();
@@ -81,7 +81,7 @@ const AddTrainScheduleV2Button = ({
           })
         );
         setIsWorking(false);
-        // setTrainResultsToFetch(newTrainIds);
+        setTrainResultsToFetch(newTrain.map((train) => train.id));
       } catch (e) {
         setIsWorking(false);
         dispatch(setFailure(castErrorToFailure(e)));

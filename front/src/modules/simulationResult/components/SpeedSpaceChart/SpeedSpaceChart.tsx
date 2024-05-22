@@ -15,7 +15,7 @@ import {
   traceVerticalLine,
 } from 'modules/simulationResult/components/ChartHelpers/enableInteractivity';
 import {
-  createChart,
+  createSpeedSpaceChart,
   drawTrain,
 } from 'modules/simulationResult/components/SpeedSpaceChart/d3Helpers';
 import { CHART_AXES, type ChartAxes } from 'modules/simulationResult/consts';
@@ -122,7 +122,7 @@ export default function SpeedSpaceChart({
    */
 
   const createChartAndTrain = () => {
-    const localChart = createChart(
+    const localChart = createSpeedSpaceChart(
       CHART_ID,
       resetChart,
       trainSimulation,

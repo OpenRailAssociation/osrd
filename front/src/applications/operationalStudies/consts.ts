@@ -1,12 +1,9 @@
 import type { Position } from 'geojson';
 
-import type {
-  ElectrificationRange,
-  ElectrificationUsage,
-  SimulationPowerRestrictionRange,
-} from 'common/api/osrdEditoastApi';
+import type { ElectrificationRange, ElectrificationUsage } from 'common/api/osrdEditoastApi';
 import type { LinearMetadataItem } from 'common/IntervalsDataViz/types';
 import i18n from 'i18n';
+import type { Mode } from 'modules/simulationResult/components/SpeedSpaceChart/types';
 import type { HeightPosition } from 'reducers/osrdsimulation/types';
 
 export const BLOCKTYPES = [
@@ -140,6 +137,7 @@ interface Profile {
 export const DRAWING_KEYS: (keyof HeightPosition)[] = ['position', 'height'];
 export type DrawingKeys = typeof DRAWING_KEYS;
 
+// TODO DROP V1: remove this
 export interface ElectricalConditionSegment {
   position_start: number;
   position_end: number;
@@ -160,32 +158,7 @@ export interface ElectricalConditionSegment {
   isIncompatiblePowerRestriction: boolean;
 }
 
-interface AC {
-  '25000V': string;
-  '22500V': string;
-  '20000V': string;
-}
-interface DC {
-  O: string;
-  A: string;
-  A1: string;
-  B: string;
-  B1: string;
-  C: string;
-  D: string;
-  E: string;
-  F: string;
-  G: string;
-}
-
-interface Mode {
-  '25000V': AC | string;
-  '1500V': DC | string;
-  thermal: string;
-  '15000V': string;
-  '3000V': string;
-}
-
+// TODO DROP V1: remove this
 const electricalProfileColorsWithProfile: Mode = {
   '25000V': { '25000V': '#6E1E78', '22500V': '#A453AD', '20000V': '#DD87E5' },
   '1500V': {
@@ -205,6 +178,7 @@ const electricalProfileColorsWithProfile: Mode = {
   '3000V': '#1FBE00',
 };
 
+// TODO DROP V1: remove this
 const electricalProfileColorsWithoutProfile: Mode = {
   '25000V': '#6E1E78',
   '1500V': '#FF0037',
@@ -230,6 +204,7 @@ export const legend: Profile[] = [
   },
 ];
 
+// TODO DROP V1: remove this
 export const createProfileSegment = (
   fullElectrificationRange: ElectrificationRange[],
   electrificationRange: ElectrificationRange
@@ -295,49 +270,6 @@ export const createProfileSegment = (
     segment.color = '#000000';
     segment.textColor = '#000';
   }
-
-  return segment;
-};
-
-export interface PowerRestrictionSegment {
-  position_start: number;
-  position_end: number;
-  position_middle: number;
-  lastPosition: number;
-  height_start: number;
-  height_end: number;
-  height_middle: number;
-  seenRestriction: string;
-  usedRestriction: boolean;
-  isStriped: boolean;
-  isRestriction: boolean;
-  isIncompatiblePowerRestriction: boolean;
-}
-
-export const createPowerRestrictionSegment = (
-  fullPowerRestrictionRange: SimulationPowerRestrictionRange[],
-  powerRestrictionRange: SimulationPowerRestrictionRange
-) => {
-  // figure out if the power restriction is incompatible or missing
-  const isRestriction = powerRestrictionRange.handled;
-  const isIncompatiblePowerRestriction =
-    !!powerRestrictionRange.code && !powerRestrictionRange.handled;
-  const isStriped = !!powerRestrictionRange.code && !powerRestrictionRange.handled;
-
-  const segment: PowerRestrictionSegment = {
-    position_start: powerRestrictionRange.start,
-    position_end: powerRestrictionRange.stop,
-    position_middle: (powerRestrictionRange.start + powerRestrictionRange.stop) / 2,
-    lastPosition: fullPowerRestrictionRange.slice(-1)[0].stop,
-    height_start: 4,
-    height_end: 24,
-    height_middle: 14,
-    seenRestriction: powerRestrictionRange.code || '',
-    usedRestriction: powerRestrictionRange.handled,
-    isStriped,
-    isRestriction,
-    isIncompatiblePowerRestriction,
-  };
 
   return segment;
 };
