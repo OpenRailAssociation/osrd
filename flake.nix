@@ -57,6 +57,15 @@
           ps.progress
           ps.tqdm
           ps.ipywidgets
+
+          # Tests
+          (ps.callPackage (import ./nix/osrd-schemas.nix) {})
+          (ps.callPackage (import ./nix/railjson-generator.nix) {})
+          ps.pytest
+          ps.pytest-cov
+
+          # TOOLS
+          ps.python-lsp-server
         ];
 
         fixedNode = pkgs.nodejs-18_x;
@@ -106,7 +115,8 @@
 
                 # API
                 (python311.withPackages pythonPackages)
-
+                ruff-lsp
+                
                 # Core
                 gradle
                 jdk17
