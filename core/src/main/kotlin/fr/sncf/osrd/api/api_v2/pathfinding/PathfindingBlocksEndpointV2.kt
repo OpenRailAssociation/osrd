@@ -7,6 +7,7 @@ import fr.sncf.osrd.api.api_v2.TrackLocation
 import fr.sncf.osrd.api.pathfinding.constraints.*
 import fr.sncf.osrd.graph.*
 import fr.sncf.osrd.graph.Pathfinding.EdgeLocation
+import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
@@ -307,9 +308,9 @@ fun validatePathfindingResponse(
         }
     }
 
-    val tracks = HashSet<String>()
-    for (track in res.trackSectionRanges) tracks.add(track.trackSection)
-    if (tracks.size != res.trackSectionRanges.size)
+    val dirTracks = HashSet<Pair<String, EdgeDirection>>()
+    for (track in res.trackSectionRanges) dirTracks.add(Pair(track.trackSection, track.direction))
+    if (dirTracks.size != res.trackSectionRanges.size)
         throw OSRDError(ErrorType.PathWithRepeatedTracks)
 
     if (res.pathItemPositions.size != req.pathItems.size)
