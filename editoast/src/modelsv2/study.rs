@@ -1,27 +1,17 @@
-use async_trait::async_trait;
 use chrono::NaiveDate;
 use chrono::NaiveDateTime;
 use chrono::Utc;
-use diesel::sql_query;
-use diesel::sql_types::BigInt;
 
 use editoast_derive::ModelV2;
 use serde::Deserialize;
 use serde::Serialize;
-use std::ops::DerefMut;
-use std::sync::Arc;
 use utoipa::ToSchema;
 
 use crate::error::Result;
-use crate::models::List;
 use crate::modelsv2::prelude::*;
 use crate::modelsv2::projects::Tags;
 use crate::modelsv2::DbConnection;
-use crate::modelsv2::DbConnectionPool;
 use crate::modelsv2::Scenario;
-use crate::views::operational_studies::Ordering;
-use crate::views::pagination::Paginate;
-use crate::views::pagination::PaginatedResponse;
 
 #[derive(Clone, Debug, Serialize, Deserialize, ModelV2, ToSchema)]
 #[model(table = crate::tables::study)]
@@ -51,14 +41,24 @@ impl Study {
         Ok(())
     }
 
-    pub async fn scenarios_count(&self, db_pool: Arc<DbConnectionPool>) -> Result<u64> {
+    pub async fn scenarios_count(&self, conn: &mut DbConnection) -> Result<u64> {
         let study_id = self.id;
         let count = Scenario::count(
-            db_pool.get().await?.deref_mut(),
+            conn,
             SelectionSettings::new().filter(move || Scenario::STUDY_ID.eq(study_id)),
         )
         .await?;
-        Ok(count)
+        // Remove this when train schedule V1 support is dropped
+        let count_tsv1 = {
+            use diesel::prelude::*;
+            use diesel_async::RunQueryDsl;
+            crate::tables::scenario::table
+                .count()
+                .filter(crate::tables::scenario::study_id.eq(study_id))
+                .get_result::<i64>(conn)
+                .await?
+        };
+        Ok(count + count_tsv1 as u64)
     }
 
     pub fn validate(study_changeset: &Changeset<Self>) -> Result<()> {
@@ -81,38 +81,10 @@ fn dates_in_order(a: Option<Option<NaiveDate>>, b: Option<Option<NaiveDate>>) ->
     }
 }
 
-#[async_trait]
-impl List<(i64, Ordering)> for Study {
-    async fn list_conn(
-        conn: &mut DbConnection,
-        page: i64,
-        page_size: i64,
-        params: (i64, Ordering),
-    ) -> Result<PaginatedResponse<Self>> {
-        let project_id = params.0;
-        let ordering = params.1.to_sql();
-        let study_row = sql_query(format!(
-            "SELECT t.* FROM study as t WHERE t.project_id = $1 ORDER BY {ordering}"
-        ))
-        .bind::<BigInt, _>(project_id)
-        .paginate(page, page_size)
-        .load_and_count::<Row<Study>>(conn)
-        .await?;
-
-        let results: Vec<Study> = study_row.results.into_iter().map(Self::from_row).collect();
-
-        Ok(PaginatedResponse {
-            count: study_row.count,
-            previous: study_row.previous,
-            next: study_row.next,
-            results,
-        })
-    }
-}
-
 #[cfg(test)]
 pub mod test {
     use rstest::rstest;
+    use std::ops::DerefMut;
     use std::sync::Arc;
 
     use super::*;
@@ -120,18 +92,17 @@ pub mod test {
     use crate::fixtures::tests::study_fixture_set;
     use crate::fixtures::tests::StudyFixtureSet;
     use crate::fixtures::tests::TestFixture;
-    use crate::models::List;
-    use crate::modelsv2::DeleteStatic;
-    use crate::modelsv2::Model;
-    use crate::modelsv2::Retrieve;
-    use crate::views::operational_studies::Ordering;
+    use crate::modelsv2::DbConnectionPool;
 
     #[rstest]
     async fn create_delete_study(
         #[future] study_fixture_set: StudyFixtureSet,
         db_pool: Arc<DbConnectionPool>,
     ) {
-        let StudyFixtureSet { study, .. } = study_fixture_set.await;
+        let StudyFixtureSet {
+            study,
+            project: _project,
+        } = study_fixture_set.await;
 
         // Delete the study
         let conn = &mut db_pool.get().await.unwrap();
@@ -146,19 +117,15 @@ pub mod test {
         #[future] study_fixture_set: StudyFixtureSet,
         db_pool: Arc<DbConnectionPool>,
     ) {
-        let StudyFixtureSet { study, project } = study_fixture_set.await;
+        let StudyFixtureSet {
+            study,
+            project: _project,
+        } = study_fixture_set.await;
 
         // Get a study
         let conn = &mut db_pool.get().await.unwrap();
         assert!(Study::retrieve(conn, study.id()).await.is_ok());
-        assert!(Study::list(
-            db_pool.clone(),
-            1,
-            25,
-            (project.id(), Ordering::LastModifiedAsc)
-        )
-        .await
-        .is_ok());
+        assert!(Study::list(conn, Default::default()).await.is_ok());
     }
 
     #[rstest]
@@ -166,7 +133,10 @@ pub mod test {
         #[future] study_fixture_set: StudyFixtureSet,
         db_pool: Arc<DbConnectionPool>,
     ) {
-        let StudyFixtureSet { study, project } = study_fixture_set.await;
+        let StudyFixtureSet {
+            study,
+            project: _project,
+        } = study_fixture_set.await;
 
         // Create second study
         let study_2 = study
@@ -177,10 +147,12 @@ pub mod test {
 
         let _: TestFixture<Study> = TestFixture::create(study_2, db_pool.clone()).await;
 
-        let studies = Study::list(db_pool.clone(), 1, 25, (project.id(), Ordering::NameDesc))
-            .await
-            .unwrap()
-            .results;
+        let studies = Study::list(
+            db_pool.get().await.unwrap().deref_mut(),
+            SelectionSettings::new().order_by(|| Study::NAME.desc()),
+        )
+        .await
+        .unwrap();
         for (s1, s2) in studies.iter().zip(studies.iter().skip(1)) {
             let name_1 = s1.name.to_lowercase();
             let name_2 = s2.name.to_lowercase();

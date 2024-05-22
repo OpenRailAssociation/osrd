@@ -1,4 +1,6 @@
-use crate::{modelsv2::Project, SortSetting};
+use crate::modelsv2::prelude::*;
+use crate::modelsv2::Project;
+use crate::modelsv2::Study;
 
 editoast_common::schemas! {
     Ordering,
@@ -41,6 +43,17 @@ impl Ordering {
             Ordering::CreationDateDesc => Project::CREATION_DATE.desc(),
             Ordering::LastModifiedAsc => Project::LAST_MODIFICATION.asc(),
             Ordering::LastModifiedDesc => Project::LAST_MODIFICATION.desc(),
+        }
+    }
+
+    pub fn as_study_ordering(&self) -> SortSetting<Study> {
+        match *self {
+            Ordering::NameAsc => Study::NAME.asc(),
+            Ordering::NameDesc => Study::NAME.desc(),
+            Ordering::CreationDateAsc => Study::CREATION_DATE.asc(),
+            Ordering::CreationDateDesc => Study::CREATION_DATE.desc(),
+            Ordering::LastModifiedAsc => Study::LAST_MODIFICATION.asc(),
+            Ordering::LastModifiedDesc => Study::LAST_MODIFICATION.desc(),
         }
     }
 }

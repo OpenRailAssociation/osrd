@@ -1,3 +1,5 @@
+use std::ops::DerefMut as _;
+
 use actix_web::delete;
 use actix_web::get;
 use actix_web::patch;
@@ -20,21 +22,17 @@ use utoipa::IntoParams;
 use utoipa::ToSchema;
 
 use super::operational_studies::OperationalStudiesOrderingParam;
+use super::pagination::PaginationStats;
 use super::scenario;
-use crate::decl_paginated_response;
 use crate::error::InternalError;
 use crate::error::Result;
-use crate::models::List;
-use crate::modelsv2::Changeset;
-use crate::modelsv2::Create;
+use crate::modelsv2::prelude::*;
+use crate::modelsv2::DbConnection;
 use crate::modelsv2::DbConnectionPool;
-use crate::modelsv2::DeleteStatic;
-use crate::modelsv2::Model;
 use crate::modelsv2::Project;
 use crate::modelsv2::Study;
 use crate::modelsv2::Tags;
-use crate::modelsv2::Update;
-use crate::views::pagination::PaginatedResponse;
+use crate::views::pagination::PaginatedList as _;
 use crate::views::pagination::PaginationQueryParam;
 use crate::views::projects::ProjectError;
 use crate::views::projects::ProjectIdParam;
@@ -57,7 +55,6 @@ editoast_common::schemas! {
     StudyCreateForm,
     StudyPatchForm,
     StudyWithScenarios,
-    PaginatedResponseOfStudyWithScenarios,
     StudyResponse,
     scenario::schemas(),
 }
@@ -123,11 +120,12 @@ pub struct StudyWithScenarios {
 }
 
 impl StudyWithScenarios {
-    pub fn new(study: Study, scenarios_count: u64) -> Self {
-        Self {
+    pub async fn try_fetch(conn: &mut DbConnection, study: Study) -> Result<Self> {
+        let scenarios_count = study.scenarios_count(conn).await?;
+        Ok(Self {
             study,
             scenarios_count,
-        }
+        })
     }
 }
 
@@ -237,44 +235,53 @@ async fn delete(path: Path<(i64, i64)>, db_pool: Data<DbConnectionPool>) -> Resu
     Ok(HttpResponse::NoContent().finish())
 }
 
-decl_paginated_response!(PaginatedResponseOfStudyWithScenarios, StudyWithScenarios);
+#[derive(serde::Serialize, utoipa::ToSchema)]
+struct StudyWithScenarioCountList {
+    #[schema(value_type = Vec<StudyWithScenarios>)]
+    results: Vec<StudyWithScenarios>,
+    #[serde(flatten)]
+    stats: PaginationStats,
+}
 
 /// Return a list of studies
 #[utoipa::path(
     tag = "studies",
     params(ProjectIdParam, PaginationQueryParam, OperationalStudiesOrderingParam),
     responses(
-        (status = 200, body = PaginatedResponseOfStudyWithScenarios, description = "The list of studies"),
+        (status = 200, body = inline(StudyWithScenarioCountList), description = "The list of studies"),
     )
 )]
 #[get("")]
 async fn list(
     db_pool: Data<DbConnectionPool>,
-    pagination_params: Query<PaginationQueryParam>,
     project: Path<i64>,
-    params: Query<OperationalStudiesOrderingParam>,
-) -> Result<Json<PaginatedResponse<StudyWithScenarios>>> {
-    let (page, per_page) = pagination_params
-        .validate(1000)?
-        .warn_page_size(100)
-        .unpack();
-    let project = project.into_inner();
-    let ordering = params.ordering.clone();
-    let db_pool = db_pool.into_inner();
-    let studies = Study::list(db_pool.clone(), page, per_page, (project, ordering)).await?;
-
-    let mut results = Vec::new();
-    for study in studies.results.into_iter() {
-        let scenarios_count = study.scenarios_count(db_pool.clone()).await?;
-        results.push(StudyWithScenarios::new(study, scenarios_count));
+    Query(pagination_params): Query<PaginationQueryParam>,
+    Query(ordering_params): Query<OperationalStudiesOrderingParam>,
+) -> Result<Json<StudyWithScenarioCountList>> {
+    let ordering = ordering_params.ordering;
+    let project_id = project.into_inner();
+    if !Project::exists(db_pool.get().await?.deref_mut(), project_id).await? {
+        return Err(ProjectError::NotFound { project_id }.into());
     }
 
-    Ok(Json(PaginatedResponse {
-        count: studies.count,
-        previous: studies.previous,
-        next: studies.next,
-        results,
-    }))
+    let settings = pagination_params
+        .validate(1000)?
+        .warn_page_size(100)
+        .into_selection_settings()
+        .filter(move || Study::PROJECT_ID.eq(project_id))
+        .order_by(move || ordering.as_study_ordering());
+
+    let (studies, stats) =
+        Study::list_paginated(db_pool.get().await?.deref_mut(), settings).await?;
+    let results = studies
+        .into_iter()
+        .zip(std::iter::repeat(&db_pool).map(|p| p.get()))
+        .map(|(project, conn)| async move {
+            StudyWithScenarios::try_fetch(conn.await?.deref_mut(), project).await
+        });
+    let results = futures::future::try_join_all(results).await?;
+
+    Ok(Json(StudyWithScenarioCountList { results, stats }))
 }
 
 /// Return a specific study
@@ -309,8 +316,7 @@ async fn get(
         return Err(StudyError::NotFound { study_id }.into());
     }
 
-    let scenarios_count = study.scenarios_count(db_pool.into_inner()).await?;
-    let study_scenarios = StudyWithScenarios::new(study, scenarios_count);
+    let study_scenarios = StudyWithScenarios::try_fetch(conn, study).await?;
     let study_response = StudyResponse::new(study_scenarios, project);
     Ok(Json(study_response))
 }
@@ -388,8 +394,7 @@ async fn patch(
                     .into_study_changeset()?
                     .update_or_fail(conn, study_id, || StudyError::NotFound { study_id })
                     .await?;
-                let scenarios_count = study.scenarios_count(db_pool.into_inner()).await?;
-                let study_scenarios = StudyWithScenarios::new(study, scenarios_count);
+                let study_scenarios = StudyWithScenarios::try_fetch(conn, study).await?;
 
                 // Update project last_modification field
                 project.update_last_modified(conn).await?;
@@ -489,9 +494,10 @@ pub mod test {
     #[rstest]
     async fn study_list(#[future] study_fixture_set: StudyFixtureSet) {
         let app = create_test_service().await;
+        let fx_set = study_fixture_set.await;
 
         let req = TestRequest::get()
-            .uri(easy_study_url(&study_fixture_set.await, false).as_str())
+            .uri(easy_study_url(&fx_set, false).as_str())
             .to_request();
 
         let response = call_service(&app, req).await;
