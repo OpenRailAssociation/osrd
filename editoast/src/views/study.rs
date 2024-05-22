@@ -72,6 +72,24 @@ pub enum StudyError {
     StartDateAfterEndDate,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+pub struct StudyResponse {
+    #[serde(flatten)]
+    pub study: Study,
+    pub scenarios_count: u64,
+    pub project: Project,
+}
+
+impl StudyResponse {
+    pub fn new(study_scenarios: StudyWithScenarioCount, project: Project) -> Self {
+        Self {
+            study: study_scenarios.study,
+            scenarios_count: study_scenarios.scenarios_count,
+            project,
+        }
+    }
+}
+
 /// This structure is used by the post endpoint to create a study
 #[derive(Serialize, Deserialize, Derivative, ToSchema)]
 #[derivative(Default)]
@@ -109,42 +127,6 @@ impl StudyCreateForm {
             .project_id(project_id);
         Study::validate(&study_changeset)?;
         Ok(study_changeset)
-    }
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
-#[schema(as = StudyWithScenarios)]
-pub struct StudyWithScenarioCount {
-    #[serde(flatten)]
-    pub study: Study,
-    pub scenarios_count: u64,
-}
-
-impl StudyWithScenarioCount {
-    pub async fn try_fetch(conn: &mut DbConnection, study: Study) -> Result<Self> {
-        let scenarios_count = study.scenarios_count(conn).await?;
-        Ok(Self {
-            study,
-            scenarios_count,
-        })
-    }
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
-pub struct StudyResponse {
-    #[serde(flatten)]
-    pub study: Study,
-    pub scenarios_count: u64,
-    pub project: Project,
-}
-
-impl StudyResponse {
-    pub fn new(study_scenarios: StudyWithScenarioCount, project: Project) -> Self {
-        Self {
-            study: study_scenarios.study,
-            scenarios_count: study_scenarios.scenarios_count,
-            project,
-        }
     }
 }
 
@@ -234,55 +216,6 @@ async fn delete(path: Path<(i64, i64)>, db_pool: Data<DbConnectionPool>) -> Resu
     project.update_last_modified(conn).await?;
 
     Ok(HttpResponse::NoContent().finish())
-}
-
-#[derive(serde::Serialize, utoipa::ToSchema)]
-struct StudyWithScenarioCountList {
-    #[schema(value_type = Vec<StudyWithScenarios>)]
-    results: Vec<StudyWithScenarioCount>,
-    #[serde(flatten)]
-    stats: PaginationStats,
-}
-
-/// Return a list of studies
-#[utoipa::path(
-    tag = "studies",
-    params(ProjectIdParam, PaginationQueryParam, OperationalStudiesOrderingParam),
-    responses(
-        (status = 200, body = inline(StudyWithScenarioCountList), description = "The list of studies"),
-    )
-)]
-#[get("")]
-async fn list(
-    db_pool: Data<DbConnectionPool>,
-    project: Path<i64>,
-    Query(pagination_params): Query<PaginationQueryParam>,
-    Query(ordering_params): Query<OperationalStudiesOrderingParam>,
-) -> Result<Json<StudyWithScenarioCountList>> {
-    let ordering = ordering_params.ordering;
-    let project_id = project.into_inner();
-    if !Project::exists(db_pool.get().await?.deref_mut(), project_id).await? {
-        return Err(ProjectError::NotFound { project_id }.into());
-    }
-
-    let settings = pagination_params
-        .validate(1000)?
-        .warn_page_size(100)
-        .into_selection_settings()
-        .filter(move || Study::PROJECT_ID.eq(project_id))
-        .order_by(move || ordering.as_study_ordering());
-
-    let (studies, stats) =
-        Study::list_paginated(db_pool.get().await?.deref_mut(), settings).await?;
-    let results = studies
-        .into_iter()
-        .zip(std::iter::repeat(&db_pool).map(|p| p.get()))
-        .map(|(project, conn)| async move {
-            StudyWithScenarioCount::try_fetch(conn.await?.deref_mut(), project).await
-        });
-    let results = futures::future::try_join_all(results).await?;
-
-    Ok(Json(StudyWithScenarioCountList { results, stats }))
 }
 
 /// Return a specific study
@@ -407,6 +340,73 @@ async fn patch(
         .await?;
     let study_response = StudyResponse::new(study_scenarios, project);
     Ok(Json(study_response))
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+#[schema(as = StudyWithScenarios)]
+pub struct StudyWithScenarioCount {
+    #[serde(flatten)]
+    pub study: Study,
+    pub scenarios_count: u64,
+}
+
+impl StudyWithScenarioCount {
+    pub async fn try_fetch(conn: &mut DbConnection, study: Study) -> Result<Self> {
+        let scenarios_count = study.scenarios_count(conn).await?;
+        Ok(Self {
+            study,
+            scenarios_count,
+        })
+    }
+}
+
+#[derive(serde::Serialize, utoipa::ToSchema)]
+struct StudyListResponse {
+    #[schema(value_type = Vec<StudyWithScenarios>)]
+    results: Vec<StudyWithScenarioCount>,
+    #[serde(flatten)]
+    stats: PaginationStats,
+}
+
+/// Return a list of studies
+#[utoipa::path(
+    tag = "studies",
+    params(ProjectIdParam, PaginationQueryParam, OperationalStudiesOrderingParam),
+    responses(
+        (status = 200, body = inline(StudyListResponse), description = "The list of studies"),
+    )
+)]
+#[get("")]
+async fn list(
+    db_pool: Data<DbConnectionPool>,
+    project: Path<i64>,
+    Query(pagination_params): Query<PaginationQueryParam>,
+    Query(ordering_params): Query<OperationalStudiesOrderingParam>,
+) -> Result<Json<StudyListResponse>> {
+    let ordering = ordering_params.ordering;
+    let project_id = project.into_inner();
+    if !Project::exists(db_pool.get().await?.deref_mut(), project_id).await? {
+        return Err(ProjectError::NotFound { project_id }.into());
+    }
+
+    let settings = pagination_params
+        .validate(1000)?
+        .warn_page_size(100)
+        .into_selection_settings()
+        .filter(move || Study::PROJECT_ID.eq(project_id))
+        .order_by(move || ordering.as_study_ordering());
+
+    let (studies, stats) =
+        Study::list_paginated(db_pool.get().await?.deref_mut(), settings).await?;
+    let results = studies
+        .into_iter()
+        .zip(std::iter::repeat(&db_pool).map(|p| p.get()))
+        .map(|(project, conn)| async move {
+            StudyWithScenarioCount::try_fetch(conn.await?.deref_mut(), project).await
+        });
+    let results = futures::future::try_join_all(results).await?;
+
+    Ok(Json(StudyListResponse { results, stats }))
 }
 
 #[cfg(test)]
