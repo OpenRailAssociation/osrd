@@ -1,6 +1,7 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 import dayjs from 'dayjs';
+import { uniq } from 'lodash';
 
 import { enhancedEditoastApi } from 'common/api/enhancedEditoastApi';
 import type { SimulationSummaryResult, TrainScheduleResult } from 'common/api/osrdEditoastApi';
@@ -19,6 +20,7 @@ import { extractTagCode, keepTrain } from './utils';
  * @param debouncedRollingstockFilter filter for train's rolling stock metadata
  * @param validityFilter filter for valid train or not
  * @param selectedTags filter for train's speed limit tag
+ * @returns trainschedules unique speedlimit tags
  */
 const useTrainSchedulesDetails = (
   trainIds: number[],
@@ -30,9 +32,8 @@ const useTrainSchedulesDetails = (
 ) => {
   const infraId = useInfraID();
 
-  // TODO : both endpoints are fired because of the provided tags when a train is added or deleted,
-  // resulting in an useless call when trainIds has not changed yet.
-  // This happens even if we use lazyQuery here, we should investigate why.
+  const [uniqueTags, setUniqueTags] = useState<string[]>([]);
+
   const { currentData: trainSchedulesSummary } =
     enhancedEditoastApi.endpoints.getV2TrainScheduleSimulationSummary.useQuery(
       {
@@ -73,11 +74,11 @@ const useTrainSchedulesDetails = (
 
         // Apply tag filter
         if (
-          trainSchedule.speed_limit_tag &&
           selectedTags.size > 0 &&
           !selectedTags.has(extractTagCode(trainSchedule.speed_limit_tag))
-        )
+        ) {
           return false;
+        }
 
         // Apply rolling stock filter
         if (debouncedRollingstockFilter) {
@@ -104,6 +105,7 @@ const useTrainSchedulesDetails = (
 
     if (trainIds.length === 0) {
       setTrainSchedulesDetails([]);
+      setUniqueTags([]);
       return;
     }
 
@@ -156,6 +158,8 @@ const useTrainSchedulesDetails = (
             ...otherProps,
           };
         });
+
+      setUniqueTags(uniq(trainSchedules.map((train) => extractTagCode(train.speed_limit_tag))));
       setTrainSchedulesDetails(formatedTrains);
     }
   }, [
@@ -167,6 +171,8 @@ const useTrainSchedulesDetails = (
     validityFilter,
     selectedTags,
   ]);
+
+  return uniqueTags;
 };
 
 export default useTrainSchedulesDetails;

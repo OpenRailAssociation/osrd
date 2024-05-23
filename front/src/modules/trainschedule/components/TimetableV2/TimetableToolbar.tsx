@@ -1,4 +1,4 @@
-import React, { useContext, useMemo, useState } from 'react';
+import React, { useContext, useState } from 'react';
 
 import { Filter, Trash } from '@osrd-project/ui-icons';
 import cx from 'classnames';
@@ -20,7 +20,6 @@ import { useDebounce } from 'utils/helpers';
 import FilterPanel from './FilterPanel';
 import useTrainSchedulesDetails from './hooks';
 import type { TrainScheduleWithDetails, ValidityFilter } from './types';
-import { extractTagCode } from './utils';
 
 type TimetableToolbarProps = {
   trainIds: number[];
@@ -59,18 +58,13 @@ const TimetableToolbar = ({
 
   const [deleteTrainSchedules] = enhancedEditoastApi.endpoints.deleteV2TrainSchedule.useMutation();
 
-  useTrainSchedulesDetails(
+  const uniqueTags = useTrainSchedulesDetails(
     trainIds,
     setTrainSchedulesDetails,
     debouncedFilter,
     debouncedRollingstockFilter,
     validityFilter,
     selectedTags
-  );
-
-  const uniqueTags = useMemo(
-    () => trainSchedulesDetails.map((train) => extractTagCode(train.speedLimitTag)),
-    [trainSchedulesDetails]
   );
 
   const toggleFilterPanel = () => {

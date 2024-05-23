@@ -18,7 +18,7 @@ export const useStoreDataForSpeedLimitByTagSelector = () => {
   const infraID = useInfraID();
 
   const { updateSpeedLimitByTag } = useOsrdConfActions();
-  const dispatchUpdateSpeedLimitByTag = (newTag: string) => {
+  const dispatchUpdateSpeedLimitByTag = (newTag: string | null) => {
     dispatch(updateSpeedLimitByTag(newTag));
   };
 
