@@ -6,10 +6,6 @@ import type { ExtendedEditorContextType } from 'applications/editor/types';
 
 const TrackSplitMessages = () => {
   const { t, state } = useContext(EditorContext) as ExtendedEditorContextType<TrackSplitState>;
-
-  // Click on the map to end the drag, or press 'esc' to cancel
-  // Click to split the track section at this location
-  // Click on the point to drag it
   switch (state.splitState.type) {
     case 'hoverPoint':
       return t('Editor.tools.track-split.help.hover').toString();
@@ -18,7 +14,7 @@ const TrackSplitMessages = () => {
     case 'movePoint':
       return t('Editor.tools.track-split.help.move').toString();
     default:
-      return null;
+      return t('Editor.tools.track-split.help.default').toString();
   }
 };
 
