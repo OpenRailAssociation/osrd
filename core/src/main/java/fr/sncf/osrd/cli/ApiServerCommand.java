@@ -11,19 +11,16 @@ import fr.sncf.osrd.api.api_v2.standalone_sim.SimulationEndpoint;
 import fr.sncf.osrd.api.api_v2.stdcm.STDCMEndpointV2;
 import fr.sncf.osrd.api.pathfinding.PathfindingBlocksEndpoint;
 import fr.sncf.osrd.api.stdcm.STDCMEndpoint;
-import io.sentry.Sentry;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 import okhttp3.OkHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.takes.Response;
 import org.takes.Take;
 import org.takes.facets.fallback.*;
 import org.takes.facets.fork.FkRegex;
 import org.takes.facets.fork.TkFork;
 import org.takes.http.*;
-import org.takes.misc.Opt;
 import org.takes.rs.RsText;
 import org.takes.rs.RsWithStatus;
 import org.takes.tk.TkSlf4j;
@@ -48,11 +45,6 @@ public final class ApiServerCommand implements CliCommand {
     private String editoastAuthorization;
 
     @Parameter(
-            names = {"--sentry-dsn"},
-            description = "The sentry DSN")
-    private String sentryDsn;
-
-    @Parameter(
             names = {"-j", "--threads"},
             description = "The number of threads to serve requests from")
     private Integer threads;
@@ -73,7 +65,6 @@ public final class ApiServerCommand implements CliCommand {
 
     /** Run the Api Server */
     public int run() {
-        FbSentry.init(sentryDsn);
         var editoastUrl = getEditoastUrl();
         var httpClient =
                 new OkHttpClient.Builder().readTimeout(120, TimeUnit.SECONDS).build();
@@ -119,7 +110,7 @@ public final class ApiServerCommand implements CliCommand {
             // the list of pages which should be displayed on error
             var fallbacks = new FbChain(
                     // if a page isn't found, just return a 404
-                    new FbStatus(404, new RsWithStatus(new RsText("Not found"), 404)), new FbSentry());
+                    new FbStatus(404, new RsWithStatus(new RsText("Not found"), 404)));
 
             var serverConfig = new TkSlf4j(new TkFallback(monitoredRoutes, fallbacks));
             var serverSafety = new BkSafe(new BkBasic(serverConfig));
@@ -130,18 +121,6 @@ public final class ApiServerCommand implements CliCommand {
         } catch (IOException ioException) {
             logger.error("IO error", ioException);
             return 1;
-        }
-    }
-
-    private static final class FbSentry implements Fallback {
-        public static void init(String sentryDsn) {
-            if (sentryDsn != null) Sentry.init(options -> options.setDsn(sentryDsn));
-        }
-
-        @Override
-        public Opt<Response> route(RqFallback req) {
-            Sentry.captureException(req.throwable());
-            return new Opt.Single<>(new RsWithStatus(new RsText(req.throwable().getMessage()), req.code()));
         }
     }
 }

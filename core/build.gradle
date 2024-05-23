@@ -70,9 +70,6 @@ dependencies {
     implementation libs.logback.core
     implementation libs.logback.classic
 
-    // Sentry
-    implementation libs.sentry
-
     // OpenTelemetry
     implementation libs.opentelemetry.api
     implementation libs.opentelemetry.instrumentation.annotations
