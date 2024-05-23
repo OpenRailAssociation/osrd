@@ -256,7 +256,6 @@ pub enum InfraState {
     Downloading,
     ParsingJson,
     ParsingInfra,
-    AdaptingKotlin,
     LoadingSignals,
     BuildingBlocks,
     Cached,
