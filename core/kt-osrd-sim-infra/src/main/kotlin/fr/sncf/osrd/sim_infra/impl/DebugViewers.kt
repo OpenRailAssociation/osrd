@@ -99,7 +99,7 @@ fun makeRoute(
     val ids = MutableStaticIdxArrayList<Route>()
     ids.add(id)
     return RouteViewer(
-        rawInfra.getRouteName(id)!!,
+        rawInfra.getRouteName(id),
         recoverBlocks(rawInfra, blockInfra, ids, null)[0]
             .toList()
             .map { blockPathElement -> blockPathElement.block }
