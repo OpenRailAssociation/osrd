@@ -56,8 +56,7 @@ To deploy the application on a server, check out the [deployment guide](https://
 
 ## Get in touch
 
-- Chat with us on IRC at [libera.chat#osrd](https://web.libera.chat/#osrd)
-- Email us at <contact@osrd.fr>
+Send an email at <contact@osrd.fr>, or [open an issue](https://github.com/OpenRailAssociation/osrd/issues/new?labels=kind%3Aquestion&template=question.yaml)
 
 ## Sponsors
 
