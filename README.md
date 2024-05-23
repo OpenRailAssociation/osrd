@@ -48,7 +48,7 @@ docker compose up -d --build
 xdg-open http://localhost:4000/
 ```
 
-(Linux users can use `docker-compose-host.yml` to enable host networking)
+(Linux or WSL users can use `scripts/osrd-compose.sh` instead of `docker compose` to enable host networking - useful to launch services in a debugger)
 
 ## Deployment
 
