@@ -497,7 +497,8 @@
         "help": {
           "move": "Cliquer pour valider le déplacement, ou appuyer sur 'esc' pour annuler",
           "hover": "Cliquer sur le point pour pouvoir le déplacer",
-          "split": "Cliquer sur la TIV pour la diviser à cette localisation"
+          "split": "Cliquer sur le tronçon d'itinéraire de voie pour le diviser à cette localisation",
+          "default": "Cliquer sur le point de division sur la carte, ou renseigner sa position par rapport au début du tronçon d'itinéraire de voie dans le formulaire"
         }
       }
     }

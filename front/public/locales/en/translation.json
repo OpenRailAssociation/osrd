@@ -514,7 +514,8 @@
         "help": {
           "move": "Click to validate the move, or press 'esc' to cancel",
           "hover": "Click on the point to be able to move it",
-          "split": "Click on the track section to split it at this location"
+          "split": "Click on the track section to split it at this location",
+          "default": "Click on the split point on the map, or enter its offset from the beginning of the track section in the form"
         }
       }
     }
