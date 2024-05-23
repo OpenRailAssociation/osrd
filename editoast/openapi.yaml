@@ -948,6 +948,7 @@ components:
       - $ref: '#/components/schemas/EditoastTrainScheduleErrorUnsimulatedTrainSchedule'
       - $ref: '#/components/schemas/EditoastTrainScheduleErrorBatchTrainScheduleNotFound'
       - $ref: '#/components/schemas/EditoastTrainScheduleErrorInfraNotFound'
+      - $ref: '#/components/schemas/EditoastTrainScheduleErrorInvalidQueryParams'
       - $ref: '#/components/schemas/EditoastTrainScheduleErrorNotFound'
       - $ref: '#/components/schemas/EditoastTypeCheckErrorArgMissing'
       - $ref: '#/components/schemas/EditoastTypeCheckErrorArgTypeMismatch'
@@ -2729,6 +2730,30 @@ components:
         type:
           enum:
           - editoast:train_schedule_v2:InfraNotFound
+          type: string
+      required:
+      - type
+      - status
+      - message
+      type: object
+    EditoastTrainScheduleErrorInvalidQueryParams:
+      properties:
+        context:
+          properties:
+            message:
+              type: string
+          required:
+          - message
+          type: object
+        message:
+          type: string
+        status:
+          enum:
+          - 400
+          type: integer
+        type:
+          enum:
+          - editoast:train_schedule_v2:InvalidQueryParams
           type: string
       required:
       - type
