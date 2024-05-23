@@ -17,7 +17,7 @@ export const keepTrain = (train: TrainScheduleBase, searchString: string): boole
   return true;
 };
 
-export const extractTagCode = (tag: string | null) => {
+export const extractTagCode = (tag?: string | null) => {
   if (!tag) {
     return 'NO CODE';
   }

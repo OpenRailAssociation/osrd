@@ -11,7 +11,7 @@ type SpeedLimitByTagSelectorProps = {
   condensed?: boolean;
   selectedSpeedLimitByTag?: string;
   speedLimitsByTags: string[];
-  dispatchUpdateSpeedLimitByTag: (newTag: string) => void;
+  dispatchUpdateSpeedLimitByTag: (newTag: string | null) => void;
 };
 
 export default function SpeedLimitByTagSelector({
@@ -47,7 +47,11 @@ export default function SpeedLimitByTagSelector({
           value={speedLimitByTag || t('noSpeedLimitByTag').toString()}
           options={speedLimitsTagsList}
           onChange={(e) => {
-            if (e) dispatchUpdateSpeedLimitByTag(e);
+            if (e && e !== t('noSpeedLimitByTag')) {
+              dispatchUpdateSpeedLimitByTag(e);
+            } else {
+              dispatchUpdateSpeedLimitByTag(null);
+            }
           }}
         />
       </div>
