@@ -47,53 +47,6 @@ pub struct DbConnectionPoolV2 {
 }
 
 #[cfg(test)]
-impl DbConnectionPoolV2 {
-    pub async fn try_from_pool(
-        pool: Arc<Pool<AsyncPgConnection>>,
-    ) -> Result<Self, DbConnectionError> {
-        use diesel_async::AsyncConnection;
-        let mut conn = pool.get().await?;
-        conn.begin_test_transaction().await?;
-        let test_connection = Arc::new(RwLock::new(conn));
-
-        Ok(Self {
-            pool,
-            test_connection: Some(test_connection),
-        })
-    }
-
-    /// Create a connection pool for testing purposes
-    ///
-    /// You can set the `OSRD_TEST_PG_URL` environment variable to use a custom database url.
-    pub fn for_tests() -> Self {
-        let url = std::env::var("OSRD_TEST_PG_URL")
-            .unwrap_or_else(|_| String::from("postgresql://osrd:password@localhost/osrd"));
-        let url = Url::parse(&url).expect("Failed to parse postgresql url");
-        futures::executor::block_on(Self::try_initialize(url, 1))
-            .expect("Failed to initialize test connection pool")
-    }
-
-    /// Gets a test connection from the pool synchronously, failing if the connection is not available
-    ///
-    /// In unit tests, this is the preferred way to get a connection
-    ///
-    /// See [DbConnectionPoolV2::get] for more information on how connections should be used
-    /// in tests.
-    pub fn get_ok(&self) -> DbConnectionV2 {
-        futures::executor::block_on(self.get()).expect("Failed to get test connection")
-    }
-}
-
-#[cfg(not(test))]
-impl DbConnectionPoolV2 {
-    pub async fn try_from_pool(
-        pool: Arc<Pool<AsyncPgConnection>>,
-    ) -> Result<Self, DbConnectionError> {
-        Ok(Self { pool })
-    }
-}
-
-#[cfg(test)]
 impl Default for DbConnectionPoolV2 {
     fn default() -> Self {
         Self::for_tests()
@@ -115,7 +68,7 @@ impl DbConnectionPoolV2 {
     }
 
     #[cfg(test)]
-    async fn get_test(&self) -> Result<DbConnectionV2, DbConnectionError> {
+    async fn get_connection(&self) -> Result<DbConnectionV2, DbConnectionError> {
         if let Some(test_connection) = &self.test_connection {
             let connection = test_connection.clone().write_owned().await;
             Ok(connection)
@@ -125,7 +78,7 @@ impl DbConnectionPoolV2 {
     }
 
     #[cfg(not(test))]
-    async fn get_proxy(&self) -> Result<DbConnectionV2, DbConnectionError> {
+    async fn get_connection(&self) -> Result<DbConnectionV2, DbConnectionError> {
         let connection = self.pool.get().await?;
         Ok(connection)
     }
@@ -211,11 +164,18 @@ impl DbConnectionPoolV2 {
     /// // you may acquire a new connection afterwards
     /// ```
     pub async fn get(&self) -> Result<DbConnectionV2, DbConnectionError> {
-        #[cfg(test)]
-        let conn = self.get_test().await;
-        #[cfg(not(test))]
-        let conn = self.get_proxy().await;
-        conn
+        self.get_connection().await
+    }
+
+    /// Gets a test connection from the pool synchronously, failing if the connection is not available
+    ///
+    /// In unit tests, this is the preferred way to get a connection
+    ///
+    /// See [DbConnectionPoolV2::get] for more information on how connections should be used
+    /// in tests.
+    #[cfg(test)]
+    pub fn get_ok(&self) -> DbConnectionV2 {
+        futures::executor::block_on(self.get()).expect("Failed to get test connection")
     }
 
     /// Returns an infinite iterator of futures resolving to connections acquired from the pool
@@ -241,6 +201,40 @@ impl DbConnectionPoolV2 {
     ) -> impl Iterator<Item = impl Future<Output = Result<DbConnectionV2, DbConnectionError>> + '_>
     {
         std::iter::repeat(self).map(|p| p.get())
+    }
+
+    #[cfg(not(test))]
+    pub async fn try_from_pool(
+        pool: Arc<Pool<AsyncPgConnection>>,
+    ) -> Result<Self, DbConnectionError> {
+        Ok(Self { pool })
+    }
+
+    #[cfg(test)]
+    pub async fn try_from_pool(
+        pool: Arc<Pool<AsyncPgConnection>>,
+    ) -> Result<Self, DbConnectionError> {
+        use diesel_async::AsyncConnection;
+        let mut conn = pool.get().await?;
+        conn.begin_test_transaction().await?;
+        let test_connection = Arc::new(RwLock::new(conn));
+
+        Ok(Self {
+            pool,
+            test_connection: Some(test_connection),
+        })
+    }
+
+    /// Create a connection pool for testing purposes
+    ///
+    /// You can set the `OSRD_TEST_PG_URL` environment variable to use a custom database url.
+    #[cfg(test)]
+    pub fn for_tests() -> Self {
+        let url = std::env::var("OSRD_TEST_PG_URL")
+            .unwrap_or_else(|_| String::from("postgresql://osrd:password@localhost/osrd"));
+        let url = Url::parse(&url).expect("Failed to parse postgresql url");
+        futures::executor::block_on(Self::try_initialize(url, 1))
+            .expect("Failed to initialize test connection pool")
     }
 }
 
