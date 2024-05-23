@@ -23,6 +23,12 @@ class ConflictDetectionEndpointV2 : Take {
                 conflictRequestAdapter.fromJson(body)
                     ?: return RsWithStatus(RsText("missing request body"), 400)
 
+            if (request.trainsRequirements.isEmpty()) {
+                return RsJson(
+                    RsWithBody(conflictResponseAdapter.toJson(ConflictDetectionResponse(listOf())))
+                )
+            }
+
             val minStartTime = request.trainsRequirements.values.minBy { it.startTime }.startTime
             val trainRequirements =
                 parseRawTrainsRequirements(request.trainsRequirements, minStartTime)
