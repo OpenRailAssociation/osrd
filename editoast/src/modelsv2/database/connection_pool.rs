@@ -197,7 +197,7 @@ impl DbConnectionPoolV2 {
     ///
     /// - If you need to open several connections, then the connection must be
     ///   acquired just before its usage, and dropped just after, **all in the same future**.
-    ///   And these fututres must all be awaited before attempting to acquire a new connection.
+    ///   And these futures must all be awaited before attempting to acquire a new connection.
     ///
     /// ```rust
     /// let operations =
@@ -220,7 +220,7 @@ impl DbConnectionPoolV2 {
 
     /// Returns an infinite iterator of futures resolving to connections acquired from the pool
     ///
-    /// Meant to be used in conjunction with `zip` in order instanciate a bunch of tasks to spawn.
+    /// Meant to be used in conjunction with `zip` in order to instantiate a bunch of tasks to spawn.
     ///
     /// # Example
     ///
