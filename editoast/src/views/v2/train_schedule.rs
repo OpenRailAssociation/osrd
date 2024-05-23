@@ -8,6 +8,7 @@ use std::hash::Hasher;
 use std::sync::Arc;
 
 use actix_web::web::{Data, Json, Path, Query};
+use actix_web::HttpRequest;
 use actix_web::{delete, get, put, HttpResponse};
 use editoast_derive::EditoastError;
 use editoast_schemas::train_schedule::TrainScheduleBase;
@@ -15,6 +16,7 @@ use itertools::Itertools;
 use serde::Deserialize;
 use serde::Serialize;
 use serde_qs::actix::QsQuery;
+use serde_qs::Config;
 use thiserror::Error;
 use tracing::info;
 use utoipa::IntoParams;
@@ -92,6 +94,9 @@ pub enum TrainScheduleError {
     #[error("Infra '{infra_id}', could not be found")]
     #[editoast_error(status = 404)]
     InfraNotFound { infra_id: i64 },
+    #[error("Invalid query params '{message}'")]
+    #[editoast_error(status = 400)]
+    InvalidQueryParams { message: String },
 }
 
 #[derive(IntoParams, Deserialize)]
@@ -527,10 +532,17 @@ enum SimulationSummaryResult {
 pub async fn simulation_summary(
     db_pool: Data<DbConnectionPool>,
     redis_client: Data<RedisClient>,
-    params: QsQuery<SimulationBatchParams>,
+    req: HttpRequest,
     core: Data<CoreClient>,
 ) -> Result<Json<HashMap<i64, SimulationSummaryResult>>> {
-    let query_props = params.into_inner();
+    // TODO: Stop using serde_qs and move the query params to the body
+    let config = Config::new(5, false);
+    let query_props: SimulationBatchParams =
+        config.deserialize_str(req.query_string()).map_err(|e| {
+            TrainScheduleError::InvalidQueryParams {
+                message: e.to_string(),
+            }
+        })?;
     let infra_id = query_props.infra;
     let conn = &mut db_pool.clone().get().await?;
     let db_pool = db_pool.into_inner();

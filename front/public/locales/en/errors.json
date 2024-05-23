@@ -183,7 +183,8 @@
     "train_schedule_v2": {
       "BatchTrainScheduleNotFound": "'{{number}}' train schedule(s) could not be found",
       "NotFound": "Train Schedule '{{train_schedule_id}}' could not be found",
-      "InfraNotFound": "Infrastructure '{{infra_id}}' could not be found"
+      "InfraNotFound": "Infrastructure '{{infra_id}}' could not be found",
+      "InvalidQueryParams": "Invalid query params '{{message}}'"
     },
     "url": {
       "InvalidUrl": "Invalid url '{{url}}'"

@@ -185,7 +185,8 @@
     "train_schedule_v2": {
       "BatchTrainScheduleNotFound": "'{{number}}' circulation(s) n'ont pas pu être trouvée(s)",
       "NotFound": "Circulation '{{train_schedule_id}}' non trouvée",
-      "InfraNotFound": "Infrastructure '{{infra_id}}' non trouvée"
+      "InfraNotFound": "Infrastructure '{{infra_id}}' non trouvée",
+      "InvalidQueryParams": "Paramètres de la requête invalides '{{message}}'"
     },
     "url": {
       "InvalidUrl": "Url invalide '{{url}}'"
