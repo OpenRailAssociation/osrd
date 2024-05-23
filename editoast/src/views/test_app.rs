@@ -25,6 +25,15 @@ use crate::{
     RedisClient,
 };
 
+/// A builder interface for [TestApp]
+///
+/// It allows configuring some parameters for the app service.
+/// Currently it allows setting the database connection pool (v1 or v2) and the core client.
+///
+/// Use [TestAppBuilder::default_app] to get a default app with a v2 database connection pool
+/// and a default core client (mocking disabled).
+///
+/// The `db_pool_v1` parameter is only relevant while the pool migration is ongoing.
 pub(crate) struct TestAppBuilder {
     db_pool: Option<DbConnectionPoolV2>,
     core_client: Option<CoreClient>,
@@ -47,6 +56,7 @@ impl TestAppBuilder {
         self
     }
 
+    /// For migration purposes, it will be removed when all tests use the V2 version.
     pub fn db_pool_v1(mut self) -> Self {
         assert!(self.db_pool.is_none());
         self.db_pool_v1 = true;
@@ -117,6 +127,10 @@ impl TestAppBuilder {
     }
 }
 
+/// Wraps an underlying, fully configured, actix service
+///
+/// It also holds a reference to the database connection pool and the core client,
+/// which can be accessed through the [TestApp] methods.
 pub(crate) struct TestApp<S>
 where
     S: Service<Request, Response = ServiceResponse<BoxBody>, Error = Error>,
@@ -133,12 +147,11 @@ impl<S> TestApp<S>
 where
     S: Service<Request, Response = ServiceResponse<BoxBody>, Error = Error>,
 {
-    #[allow(dead_code)]
+    #[allow(dead_code)] // while the pool migration is ongoing
     pub fn core_client(&self) -> Arc<CoreClient> {
         self.core_client.clone()
     }
 
-    #[allow(dead_code)]
     pub fn db_pool(&self) -> Arc<DbConnectionPoolV2> {
         self.db_pool
             .as_ref()
