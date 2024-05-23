@@ -171,12 +171,11 @@ where
     }
 }
 
-impl<S, Sref> AsRef<Sref> for TestApp<S>
+impl<S> AsRef<S> for TestApp<S>
 where
     S: Service<Request, Response = ServiceResponse<BoxBody>, Error = Error>,
-    S: AsRef<Sref>,
 {
-    fn as_ref(&self) -> &Sref {
-        self.deref().as_ref()
+    fn as_ref(&self) -> &S {
+        &self.service
     }
 }
