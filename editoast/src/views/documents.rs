@@ -127,9 +127,6 @@ async fn delete(
 
 #[cfg(test)]
 mod tests {
-    use actix_web::test::call_and_read_body;
-    use actix_web::test::call_and_read_body_json;
-    use actix_web::test::call_service;
     use actix_web::test::TestRequest;
     use rstest::rstest;
     use serde::Deserialize;
@@ -155,11 +152,14 @@ mod tests {
             .to_request();
 
         // Insert document
-        let create_response: PostDocumentResponse =
-            call_and_read_body_json(&app.service, request).await;
+        let new_doc = app
+            .fetch(request)
+            .assert_status(StatusCode::CREATED)
+            .json_into::<PostDocumentResponse>()
+            .document_key;
 
         // Get create document
-        let document = Document::retrieve(pool.get_ok().deref_mut(), create_response.document_key)
+        let document = Document::retrieve(pool.get_ok().deref_mut(), new_doc)
             .await
             .expect("Failed to retrieve document")
             .expect("Document not found");
@@ -184,7 +184,7 @@ mod tests {
         let request = TestRequest::get()
             .uri(&format!("/documents/{}", document.id))
             .to_request();
-        let response = call_and_read_body(&app.service, request).await;
+        let response = app.fetch(request).assert_status(StatusCode::OK).bytes();
 
         assert_eq!(response.to_vec(), b"Document post test data".to_vec());
     }
@@ -206,9 +206,7 @@ mod tests {
         let request = TestRequest::delete()
             .uri(format!("/documents/{}", document.id).as_str())
             .to_request();
-        let response = call_service(&app.service, request).await;
-
-        assert!(response.status().is_success());
+        app.fetch(request).assert_status(StatusCode::NO_CONTENT);
 
         // Get create document
         let document = Document::exists(pool.get_ok().deref_mut(), document.id)
