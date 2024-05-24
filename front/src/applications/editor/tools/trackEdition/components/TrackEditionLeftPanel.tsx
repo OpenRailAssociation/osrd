@@ -1,11 +1,12 @@
 import React, { useContext, useEffect, useRef, useMemo } from 'react';
 
-import type { WidgetProps } from '@rjsf/utils';
+import type { JSONSchema7 } from 'json-schema';
 import { isNil, omit } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
 import EditorForm from 'applications/editor/components/EditorForm';
 import EntityError from 'applications/editor/components/EntityError';
+import { FormLineStringLength } from 'applications/editor/components/LinearMetadata';
 import EditorContext from 'applications/editor/context';
 import {
   NEW_ENTITY_ID,
@@ -18,20 +19,11 @@ import type {
 } from 'applications/editor/tools/trackEdition/types';
 import { injectGeometry, removeInvalidRanges } from 'applications/editor/tools/trackEdition/utils';
 import type { ExtendedEditorContextType } from 'applications/editor/types';
-import DebouncedNumberInputSNCF from 'common/BootstrapSNCF/FormSNCF/DebouncedNumberInputSNCF';
 import { useInfraID } from 'common/osrdContext';
 import { save } from 'reducers/editor/thunkActions';
 import { useAppDispatch } from 'store';
 
 import AttachedRangesItemsList from './AttachedRangesItemsList';
-
-const CustomLengthInput: React.FC<WidgetProps> = (props) => {
-  const { onChange, value } = props;
-
-  return (
-    <DebouncedNumberInputSNCF debouncedDelay={1500} input={value} setInput={onChange} label="" />
-  );
-};
 
 const TrackEditionLeftPanel: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -54,29 +46,37 @@ const TrackEditionLeftPanel: React.FC = () => {
     }
   }, [isFormSubmited]);
 
-  const schema = useMemo(
-    () =>
-      getJsonSchemaForLayer(
-        editorState.editorSchema,
-        getLayerForObjectType(editorState.editorSchema, track.objType) || ''
-      ),
-    [editorState.editorSchema, track.objType]
-  );
+  const schema = useMemo(() => {
+    let jsonschema = getJsonSchemaForLayer(
+      editorState.editorSchema,
+      getLayerForObjectType(editorState.editorSchema, track.objType) || ''
+    );
+    if (isNil(jsonschema)) return jsonschema;
+
+    // Remove the source from schema if there is no source in the object
+    // To avoid to display it on the form
+    if (isNil(track.properties.extensions?.source)) {
+      jsonschema = omit(jsonschema, ['$defs.TrackSectionExtensions.properties.source']);
+    }
+    // Put the length field at top
+    return {
+      ...jsonschema,
+      properties: {
+        length: jsonschema.properties?.length,
+        ...omit(jsonschema.properties, ['length']),
+      },
+    } as JSONSchema7;
+  }, [editorState.editorSchema, track.objType, track.properties.extensions?.source]);
 
   return (
     <>
       <EditorForm
         data={track}
-        // Remove the source from schema if there is no source in the object
-        // To avoid to display it on the form
-        overrideSchema={
-          isNil(track.properties.extensions?.source)
-            ? omit(schema, ['$defs.TrackSectionExtensions.properties.source'])
-            : schema
-        }
+        overrideSchema={schema}
         overrideUiSchema={{
           length: {
-            'ui:widget': CustomLengthInput,
+            'ui:widget': FormLineStringLength,
+            'ui:classNames': 'border-bottom pb-3',
           },
           extensions: {
             source: {

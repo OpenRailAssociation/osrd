@@ -20,7 +20,7 @@ import i18n from 'i18n';
 import { getEditorState } from 'reducers/editor/selectors';
 import { getErrorMessage } from 'utils/error';
 
-import { FormComponent, FormLineStringLength } from './LinearMetadata';
+import { FormComponent } from './LinearMetadata';
 
 const fields = {
   ArrayField: FormComponent,
@@ -103,12 +103,7 @@ function EditorForm<T extends Omit<EditorEntity, 'objType'> & { objType: string 
         validator={validator}
         method={undefined}
         schema={isFrench ? translatedSchema : schema}
-        uiSchema={{
-          length: {
-            'ui:widget': FormLineStringLength,
-          },
-          ...(overrideUiSchema || {}),
-        }}
+        uiSchema={overrideUiSchema || {}}
         formData={formData}
         formContext={{
           geometry: data.geometry,
