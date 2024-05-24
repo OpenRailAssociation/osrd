@@ -25,7 +25,12 @@ class SimulationSuccess(
 sealed class ElectricalProfileValue {
     data class Profile(var profile: String) : ElectricalProfileValue()
 
-    class NoProfile : ElectricalProfileValue()
+    class NoProfile : ElectricalProfileValue() {
+        override fun equals(other: Any?): Boolean {
+            if (other is NoProfile) return true
+            return super.equals(other)
+        }
+    }
 }
 
 class MRSPResponse(
