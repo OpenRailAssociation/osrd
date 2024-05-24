@@ -446,7 +446,7 @@ const Editor = () => {
 
               {mapRef.current &&
                 editorState.editorLayers.has('errors') &&
-                editorState.issues.total && (
+                editorState.issues.total > 0 && (
                   <div className="error-box">
                     <InfraErrorMapControl mapRef={mapRef.current} switchTool={switchTool} />
                     <InfraErrorCorrector />

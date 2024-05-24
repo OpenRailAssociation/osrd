@@ -79,32 +79,37 @@ export function updateTotalsIssue(infraID: number | undefined) {
       let filterTotal = 0;
       if (infraID) {
         // Get total
-        const totalResp = dispatch(
-          osrdEditoastApi.endpoints.getInfraByInfraIdErrors.initiate({
-            infraId: infraID,
-            level: 'all',
-            errorType: undefined,
-            pageSize: 1,
-            page: 1,
-          })
+        const totalResp = await dispatch(
+          osrdEditoastApi.endpoints.getInfraByInfraIdErrors.initiate(
+            {
+              infraId: infraID,
+              level: 'all',
+              errorType: undefined,
+              pageSize: 1,
+              page: 1,
+            },
+            { subscribe: false, forceRefetch: true }
+          )
         );
-        totalResp.unsubscribe();
-        const totalResult = await totalResp;
-        total = totalResult.data?.count || 0;
+        total = totalResp.data?.count || 0;
+        filterTotal = total;
 
-        // Get total for the active filters
-        const filterResp = dispatch(
-          osrdEditoastApi.endpoints.getInfraByInfraIdErrors.initiate({
-            infraId: infraID,
-            level: editor.issues.filterLevel,
-            errorType: editor.issues.filterType ?? undefined,
-            pageSize: 1,
-            page: 1,
-          })
-        );
-        filterResp.unsubscribe();
-        const filterResult = await filterResp;
-        filterTotal = filterResult.data?.count || 0;
+        // Get total for the active filters (if needed)
+        if (editor.issues.filterLevel !== 'all' || !isNil(editor.issues.filterType)) {
+          const filterResp = await dispatch(
+            osrdEditoastApi.endpoints.getInfraByInfraIdErrors.initiate(
+              {
+                infraId: infraID,
+                level: editor.issues.filterLevel,
+                errorType: editor.issues.filterType ?? undefined,
+                pageSize: 1,
+                page: 1,
+              },
+              { subscribe: false, forceRefetch: true }
+            )
+          );
+          filterTotal = filterResp.data?.count || 0;
+        }
       }
       dispatch(updateTotalsIssueAction({ total, filterTotal }));
     } catch (e) {
