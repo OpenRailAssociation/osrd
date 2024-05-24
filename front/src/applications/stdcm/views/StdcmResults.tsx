@@ -9,6 +9,7 @@ import type {
   RollingStockWithLiveries,
   SimulationReport,
 } from 'common/api/osrdEditoastApi';
+import { LoaderFill } from 'common/Loaders';
 import SpaceTimeChart from 'modules/simulationResult/components/SpaceTimeChart/SpaceTimeChart';
 import { useStoreDataForSpaceTimeChart } from 'modules/simulationResult/components/SpaceTimeChart/useStoreDataForSpaceTimeChart';
 import SpeedSpaceChart from 'modules/simulationResult/components/SpeedSpaceChart/SpeedSpaceChart';
@@ -76,17 +77,21 @@ const StcdmResults = ({
           <div className="osrd-simulation-container mb-2">
             <p className="mt-2 mb-3 ml-4 font-weight-bold">{t('stdcm:spaceTimeGraphic')}</p>
             <div className="chart-container mt-2" style={{ height: `${spaceTimeChartHeight}px` }}>
-              <SpaceTimeChart
-                allowancesSettings={allowancesSettings}
-                inputSelectedTrain={selectedTrain}
-                selectedProjection={selectedProjection}
-                simulation={simulation}
-                simulationIsPlaying={simulationIsPlaying}
-                initialHeight={450}
-                onSetBaseHeight={setSpaceTimeChartHeight}
-                dispatchUpdateSelectedTrainId={dispatchUpdateSelectedTrainId}
-                dispatchPersistentUpdateSimulation={dispatchPersistentUpdateSimulation}
-              />
+              {simulation.trains.length ? (
+                <SpaceTimeChart
+                  allowancesSettings={allowancesSettings}
+                  inputSelectedTrain={selectedTrain}
+                  selectedProjection={selectedProjection}
+                  simulation={simulation}
+                  simulationIsPlaying={simulationIsPlaying}
+                  initialHeight={450}
+                  onSetBaseHeight={setSpaceTimeChartHeight}
+                  dispatchUpdateSelectedTrainId={dispatchUpdateSelectedTrainId}
+                  dispatchPersistentUpdateSimulation={dispatchPersistentUpdateSimulation}
+                />
+              ) : (
+                <LoaderFill />
+              )}
             </div>
           </div>
           <div className="osrd-config-item-container">

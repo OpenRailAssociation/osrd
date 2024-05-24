@@ -34,7 +34,7 @@ import { checkStdcmConf, formatStdcmPayload } from '../utils/formatStdcmConfV2';
 type StdcmRequestModalProps = {
   setCurrentStdcmRequestStatus: (currentStdcmRequestStatus: StdcmRequestStatus) => void;
   currentStdcmRequestStatus: StdcmRequestStatus;
-  setStdcmResults: (stdcmResults: PostStdcmApiResponse) => void;
+  setStdcmResults: (stdcmResults?: PostStdcmApiResponse) => void;
   setStdcmV2Results: (stdcmV2Results: StdcmV2SuccessResponse | undefined) => void;
 };
 
@@ -65,10 +65,18 @@ const StdcmRequestModal = ({
 
   const { timetableID } = osrdconf;
 
+  const resetResults = () => {
+    dispatch(updateSelectedTrainId(undefined));
+    dispatch(updateConsolidatedSimulation([]));
+    dispatch(updateSimulation({ trains: [] }));
+    setStdcmResults(undefined);
+  };
+
   useEffect(() => {
     const launchStdcmRequest = async () => {
       const payload = formatStdcmConf(dispatch, t, osrdconf as OsrdStdcmConfState);
       if (payload && timetableID) {
+        resetResults();
         postStdcm(payload)
           .unwrap()
           .then((result) => {
