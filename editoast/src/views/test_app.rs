@@ -6,7 +6,7 @@ use std::{ops::Deref, sync::Arc};
 
 use actix_http::Request;
 use actix_web::{
-    body::BoxBody,
+    body::{BoxBody, MessageBody},
     dev::{Service, ServiceResponse},
     middleware::NormalizePath,
     test::init_service,
@@ -14,6 +14,8 @@ use actix_web::{
     App, Error,
 };
 use chashmap::CHashMap;
+use serde::de::DeserializeOwned;
+use tracing::Instrument as _;
 
 use crate::{
     client::{MapLayersConfig, PostgresConfig, RedisConfig},
@@ -82,6 +84,17 @@ impl TestAppBuilder {
     pub fn build(
         self,
     ) -> TestApp<impl Service<Request, Response = ServiceResponse<BoxBody>, Error = Error>> {
+        let sub = tracing_subscriber::fmt()
+            .pretty()
+            .with_env_filter(
+                tracing_subscriber::EnvFilter::builder()
+                    .with_default_directive(tracing_subscriber::filter::LevelFilter::DEBUG.into())
+                    .from_env_lossy(),
+            )
+            .with_span_events(tracing_subscriber::fmt::format::FmtSpan::CLOSE)
+            .finish();
+        let tracing_guard = tracing::subscriber::set_default(sub);
+
         let json_cfg = JsonConfig::default()
             .limit(250 * 1024 * 1024) // 250MB
             .error_handler(|err, _| InternalError::from(err).into());
@@ -123,6 +136,7 @@ impl TestAppBuilder {
             service,
             db_pool: ref_db_pool,
             core_client: ref_core_client,
+            tracing_guard,
         }
     }
 }
@@ -141,6 +155,8 @@ where
     /// The Option<> lasts while the pool V1 is still around.
     db_pool: Option<Arc<DbConnectionPoolV2>>,
     core_client: Arc<CoreClient>,
+    #[allow(unused)] // included here to extend its lifetime, not meant to be used in any way
+    tracing_guard: tracing::subscriber::DefaultGuard,
 }
 
 impl<S> TestApp<S>
@@ -157,6 +173,22 @@ where
             .as_ref()
             .expect("no DbConnectionPoolV2 setup")
             .clone()
+    }
+
+    pub fn fetch(&self, req: Request) -> TestResponse {
+        let (method, uri) = (req.method().clone(), req.uri().clone());
+        let span = tracing::debug_span!("Request", %method, %uri);
+        futures::executor::block_on(
+            async move {
+                tracing::trace!(request = ?req);
+                let response = self.service.call(req).await.unwrap_or_else(|err| {
+                    tracing::error!(error = ?err, "Error fetching test request");
+                    panic!("could not fetch test request");
+                });
+                TestResponse::new(response)
+            }
+            .instrument(span),
+        )
     }
 }
 
@@ -177,5 +209,88 @@ where
 {
     fn as_ref(&self) -> &S {
         &self.service
+    }
+}
+
+pub struct TestResponse {
+    inner: ServiceResponse<BoxBody>,
+    log_payload: bool,
+}
+
+impl TestResponse {
+    #[tracing::instrument(name = "Response", level = "debug", skip(inner), fields(status = ?inner.status()))]
+    fn new(inner: ServiceResponse<BoxBody>) -> Self {
+        tracing::trace!(response = ?inner);
+        Self {
+            inner,
+            log_payload: true,
+        }
+    }
+
+    #[allow(unused)]
+    pub fn log_payload(mut self, log_payload: bool) -> Self {
+        self.log_payload = log_payload;
+        self
+    }
+
+    fn render_response_lossy(self) -> String {
+        if !self.log_payload {
+            return "payload logging disabled".to_string();
+        }
+        self.inner
+            .into_body()
+            .try_into_bytes()
+            .ok()
+            .and_then(|bytes| serde_json::from_slice::<serde_json::Value>(&bytes).ok())
+            .and_then(|json| serde_json::to_string_pretty(&json).ok())
+            .unwrap_or_else(|| "cannot render response body".to_string())
+    }
+
+    pub fn assert_status(self, expected_status: actix_http::StatusCode) -> Self {
+        let actual_status = self.inner.status();
+        if actual_status != expected_status {
+            let body = self.render_response_lossy();
+            pretty_assertions::assert_eq!(
+                actual_status,
+                expected_status,
+                "unexpected status code body={body}"
+            );
+            unreachable!("should have already panicked")
+        } else {
+            self
+        }
+    }
+
+    pub fn bytes(self) -> Vec<u8> {
+        self.inner
+            .into_body()
+            .try_into_bytes()
+            .expect("cannot extract body out of test response")
+            .into()
+    }
+
+    #[tracing::instrument(
+        name = "Deserialization",
+        level = "debug",
+        skip(self),
+        fields(response_status = ?self.inner.status())
+    )]
+    pub fn json_into<T: DeserializeOwned>(self) -> T {
+        let body = self.bytes();
+        serde_json::from_slice(body.as_ref()).unwrap_or_else(|err| {
+            tracing::error!(error = ?err, "Error deserializing test response into the desired type");
+            let actual: serde_json::Value =
+                serde_json::from_slice(body.as_ref()).unwrap_or_else(|err| {
+                    tracing::error!(
+                        error = ?err,
+                        ?body,
+                        "Failed to deserialize test response body into JSON"
+                    );
+                    panic!("could not deserialize test response into JSON");
+                });
+            let pretty = serde_json::to_string_pretty(&actual).unwrap();
+            tracing::error!(body = %pretty, "Actual JSON value");
+            panic!("could not deserialize test request");
+        })
     }
 }
