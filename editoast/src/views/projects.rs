@@ -27,7 +27,7 @@ use crate::modelsv2::projects::Tags;
 use crate::modelsv2::Changeset;
 use crate::modelsv2::Create;
 use crate::modelsv2::DbConnection;
-use crate::modelsv2::DbConnectionPool;
+use crate::modelsv2::DbConnectionPoolV2;
 use crate::modelsv2::Document;
 use crate::modelsv2::Model;
 use crate::modelsv2::Project;
@@ -104,8 +104,7 @@ impl From<ProjectCreateForm> for Changeset<Project> {
     }
 }
 
-async fn check_image_content(db_pool: Data<DbConnectionPool>, document_key: i64) -> Result<()> {
-    let conn = &mut db_pool.get().await?;
+async fn check_image_content(conn: &mut DbConnection, document_key: i64) -> Result<()> {
     let doc = Document::retrieve_or_fail(conn, document_key, || ProjectError::ImageNotFound {
         document_key,
     })
@@ -122,6 +121,7 @@ async fn check_image_content(db_pool: Data<DbConnectionPool>, document_key: i64)
 
 #[derive(Debug, Clone, Serialize, ToSchema)]
 #[schema(as = ProjectWithStudies)]
+#[cfg_attr(test, derive(Deserialize))]
 pub struct ProjectWithStudyCount {
     #[serde(flatten)]
     project: Project,
@@ -148,22 +148,23 @@ impl ProjectWithStudyCount {
 )]
 #[post("")]
 async fn create(
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Data<DbConnectionPoolV2>,
     data: Json<ProjectCreateForm>,
 ) -> Result<Json<ProjectWithStudyCount>> {
+    let conn = &mut db_pool.get().await?;
     let project_create_form = data.into_inner();
     if let Some(image) = project_create_form.image {
-        check_image_content(db_pool.clone(), image).await?;
+        check_image_content(conn, image).await?;
     }
     let project: Changeset<Project> = project_create_form.into();
-    let conn = &mut db_pool.get().await?;
     let project = project.create(conn).await?;
     let project_with_studies = ProjectWithStudyCount::try_fetch(conn, project).await?;
 
     Ok(Json(project_with_studies))
 }
 
-#[derive(serde::Serialize, utoipa::ToSchema)]
+#[derive(Serialize, ToSchema)]
+#[cfg_attr(test, derive(Deserialize))]
 struct ProjectWithStudyCountList {
     #[schema(value_type = Vec<ProjectWithStudies>)]
     results: Vec<ProjectWithStudyCount>,
@@ -181,7 +182,7 @@ struct ProjectWithStudyCountList {
 )]
 #[get("")]
 async fn list(
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Data<DbConnectionPoolV2>,
     pagination_params: Query<PaginationQueryParam>,
     Query(ordering_params): Query<OperationalStudiesOrderingParam>,
 ) -> Result<Json<ProjectWithStudyCountList>> {
@@ -191,11 +192,13 @@ async fn list(
         .warn_page_size(100)
         .into_selection_settings()
         .order_by(move || ordering.as_project_ordering());
+
     let (projects, stats) =
         Project::list_paginated(db_pool.get().await?.deref_mut(), settings).await?;
+
     let results = projects
         .into_iter()
-        .zip(std::iter::repeat(&db_pool).map(|p| p.get()))
+        .zip(db_pool.iter_conn())
         .map(|(project, conn)| async move {
             ProjectWithStudyCount::try_fetch(conn.await?.deref_mut(), project).await
         });
@@ -222,7 +225,7 @@ pub struct ProjectIdParam {
 )]
 #[get("")]
 async fn get(
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Data<DbConnectionPoolV2>,
     project: Path<i64>,
 ) -> Result<Json<ProjectWithStudyCount>> {
     let project_id = project.into_inner();
@@ -243,7 +246,7 @@ async fn get(
     )
 )]
 #[delete("")]
-async fn delete(project: Path<i64>, db_pool: Data<DbConnectionPool>) -> Result<HttpResponse> {
+async fn delete(project: Path<i64>, db_pool: Data<DbConnectionPoolV2>) -> Result<HttpResponse> {
     let project_id = project.into_inner();
     let conn = &mut db_pool.get().await?;
     if Project::delete_and_prune_document(conn, project_id).await? {
@@ -301,102 +304,150 @@ impl From<ProjectPatchForm> for Changeset<Project> {
 async fn patch(
     data: Json<ProjectPatchForm>,
     project_id: Path<i64>,
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Data<DbConnectionPoolV2>,
 ) -> Result<Json<ProjectWithStudyCount>> {
+    let conn = &mut db_pool.get().await?;
     let data = data.into_inner();
     let project_id = project_id.into_inner();
     if let Some(image) = data.image {
-        check_image_content(db_pool.clone(), image).await?;
+        check_image_content(conn, image).await?;
     }
     let project_changeset: Changeset<Project> = data.into();
-    let conn = &mut db_pool.get().await?;
     let project = Project::update_and_prune_document(conn, project_changeset, project_id).await?;
     Ok(Json(ProjectWithStudyCount::try_fetch(conn, project).await?))
 }
 
 #[cfg(test)]
 pub mod test {
-    use actix_http::Request;
+    use std::ops::DerefMut;
+
     use actix_web::http::StatusCode;
-    use actix_web::test as actix_test;
+    use actix_web::test::call_and_read_body_json;
     use actix_web::test::call_service;
-    use actix_web::test::read_body_json;
     use actix_web::test::TestRequest;
     use rstest::rstest;
     use serde_json::json;
-    use std::sync::Arc;
 
     use super::*;
-    use crate::fixtures::tests::db_pool;
-    use crate::fixtures::tests::project;
-    use crate::fixtures::tests::TestFixture;
-    use crate::modelsv2::DeleteStatic;
-    use crate::views::tests::create_test_service;
-
-    fn delete_project_request(project_id: i64) -> Request {
-        TestRequest::delete()
-            .uri(format!("/projects/{project_id}").as_str())
-            .to_request()
-    }
+    use crate::modelsv2::fixtures::create_project;
+    use crate::modelsv2::prelude::*;
+    use crate::views::test_app::TestAppBuilder;
 
     #[rstest]
-    async fn project_create_delete(db_pool: Arc<DbConnectionPool>) {
-        let app = create_test_service().await;
-        let req = TestRequest::post()
+    async fn project_post() {
+        let app = TestAppBuilder::default_app();
+        let pool = app.db_pool();
+
+        let project_name = "test_project";
+
+        let request = TestRequest::post()
             .uri("/projects")
             .set_json(json!({
-                "name": "test_project",
+                "name": project_name,
                 "description": "",
                 "objectives": "",
                 "funders": "",
             }))
             .to_request();
-        let response = call_service(&app, req).await;
-        assert_eq!(response.status(), StatusCode::OK);
-        let project: Project = read_body_json(response).await;
-        let conn = &mut db_pool.get().await.unwrap();
-        Project::delete_static(conn, project.id).await.unwrap();
+
+        let response: ProjectWithStudyCount = call_and_read_body_json(&app.service, request).await;
+
+        let project = Project::retrieve(pool.get_ok().deref_mut(), response.project.id)
+            .await
+            .expect("Failed to retrieve project")
+            .expect("Project not found");
+
+        assert_eq!(project.name, project_name);
     }
 
     #[rstest]
-    async fn project_delete(#[future] project: TestFixture<Project>) {
-        let app = create_test_service().await;
-        let project = project.await;
-        let response = call_service(&app, delete_project_request(project.id())).await;
-        assert_eq!(response.status(), StatusCode::NO_CONTENT);
-        let response = call_service(&app, delete_project_request(project.id())).await;
-        assert_eq!(response.status(), StatusCode::NOT_FOUND);
-    }
-
-    #[actix_test]
     async fn project_list() {
-        let app = create_test_service().await;
-        let req = TestRequest::get().uri("/projects/").to_request();
-        let response = call_service(&app, req).await;
-        assert_eq!(response.status(), StatusCode::OK);
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+
+        let created_project =
+            create_project(db_pool.get_ok().deref_mut(), "test_project_name").await;
+
+        let request = TestRequest::get().uri("/projects/").to_request();
+        let response: ProjectWithStudyCountList =
+            call_and_read_body_json(&app.service, request).await;
+
+        let project_retreived = response
+            .results
+            .iter()
+            .find(|p| p.project.id == created_project.id)
+            .unwrap();
+
+        assert_eq!(created_project, project_retreived.project);
     }
 
     #[rstest]
-    async fn project_get(#[future] project: TestFixture<Project>) {
-        let app = create_test_service().await;
-        let project = project.await;
+    async fn project_get() {
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
 
-        let req = TestRequest::get()
-            .uri(format!("/projects/{}", project.id()).as_str())
+        let created_project =
+            create_project(db_pool.get_ok().deref_mut(), "test_project_name").await;
+
+        let request = TestRequest::get()
+            .uri(format!("/projects/{}", created_project.id).as_str())
             .to_request();
-        let response = call_service(&app, req).await;
-        assert_eq!(response.status(), StatusCode::OK);
+        let response: ProjectWithStudyCount = call_and_read_body_json(&app.service, request).await;
+
+        assert_eq!(response.project, created_project);
     }
 
     #[rstest]
-    async fn project_patch(#[future] project: TestFixture<Project>) {
-        let app = create_test_service().await;
-        let project = project.await;
-        let req = TestRequest::patch()
-            .uri(format!("/projects/{}", project.id()).as_str())
-            .set_json(json!({"name": "rename_test", "budget":20000}))
+    async fn project_delete() {
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+
+        let created_project =
+            create_project(db_pool.get_ok().deref_mut(), "test_project_name").await;
+
+        let request = TestRequest::delete()
+            .uri(format!("/projects/{}", created_project.id).as_str())
             .to_request();
-        let response = call_service(&app, req).await;
-        assert_eq!(response.status(), StatusCode::OK);
+
+        let response = call_service(&app.service, request).await;
+        assert_eq!(response.status(), StatusCode::NO_CONTENT);
+
+        let exists = Project::exists(db_pool.get_ok().deref_mut(), created_project.id)
+            .await
+            .expect("Failed to check if project exists");
+
+        assert!(!exists);
+    }
+
+    #[rstest]
+    async fn project_patch() {
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+
+        let created_project =
+            create_project(db_pool.get_ok().deref_mut(), "test_project_name").await;
+
+        let updated_name = "rename_test";
+        let updated_budget = 20000;
+
+        let request = TestRequest::patch()
+            .uri(format!("/projects/{}", created_project.id).as_str())
+            .set_json(json!({
+                "name": updated_name,
+                "budget": updated_budget
+            }))
+            .to_request();
+
+        let response: ProjectWithStudyCount = call_and_read_body_json(&app.service, request).await;
+
+        assert_eq!(response.project, response.project);
+
+        let project = Project::retrieve(db_pool.get_ok().deref_mut(), response.project.id)
+            .await
+            .expect("Failed to retrieve project")
+            .expect("Project not found");
+
+        assert_eq!(project.name, updated_name);
+        assert_eq!(project.budget, Some(updated_budget));
     }
 }

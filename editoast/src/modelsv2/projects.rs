@@ -117,85 +117,85 @@ impl Project {
 
 #[cfg(test)]
 pub mod test {
+    use pretty_assertions::assert_eq;
     use rstest::rstest;
-    use std::sync::Arc;
+    use std::ops::DerefMut;
 
     use super::*;
-    use crate::fixtures::tests::db_pool;
-    use crate::fixtures::tests::project;
-    use crate::fixtures::tests::TestFixture;
-    use crate::modelsv2::DbConnectionPool;
-    use crate::modelsv2::DeleteStatic;
+    use crate::modelsv2::fixtures::create_project;
+    use crate::modelsv2::prelude::*;
+    use crate::modelsv2::DbConnectionPoolV2;
     use crate::modelsv2::Model;
-    use crate::modelsv2::Retrieve;
 
     #[rstest]
-    async fn create_delete_project(
-        #[future] project: TestFixture<Project>,
-        db_pool: Arc<DbConnectionPool>,
-    ) {
-        let project = project.await;
-        let conn = &mut db_pool.get().await.unwrap();
-        // Delete the project
-        assert!(Project::delete_static(conn, project.id()).await.unwrap());
-        // Second delete should be false
-        assert!(!Project::delete_static(conn, project.id()).await.unwrap());
+    async fn project_creation() {
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let project_name = "test_project_name";
+        let created_project = create_project(db_pool.get_ok().deref_mut(), project_name).await;
+        assert_eq!(created_project.name, project_name);
     }
 
     #[rstest]
-    async fn get_project(#[future] project: TestFixture<Project>, db_pool: Arc<DbConnectionPool>) {
-        let fixture_project = &project.await.model;
-        let conn = &mut db_pool.get().await.unwrap();
+    async fn project_retrieve() {
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let created_project =
+            create_project(db_pool.get_ok().deref_mut(), "test_project_name").await;
 
         // Get a project
-        let project = Project::retrieve(conn, fixture_project.id)
+        let project = Project::retrieve(db_pool.get_ok().deref_mut(), created_project.id)
             .await
-            .unwrap()
-            .unwrap();
-        assert_eq!(fixture_project, &project);
-        assert!(Project::list(conn, SelectionSettings::new()).await.is_ok());
+            .expect("Failed to retrieve project")
+            .expect("Project not found");
+
+        assert_eq!(&created_project, &project);
     }
 
     #[rstest]
-    async fn sort_project(#[future] project: TestFixture<Project>, db_pool: Arc<DbConnectionPool>) {
-        let project = project.await;
-        let project_2 = project
-            .model
-            .clone()
-            .into_changeset()
-            .name(project.model.name.clone() + "_bis");
+    async fn project_update() {
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let mut created_project =
+            create_project(db_pool.get_ok().deref_mut(), "test_project_name").await;
 
-        let _: TestFixture<Project> = TestFixture::create(project_2, db_pool.clone()).await;
+        let project_name = "update_name";
+        let project_budget = Some(1000);
 
-        let conn = &mut db_pool.get().await.unwrap();
+        // Patch a project
+        created_project
+            .patch()
+            .name(project_name.to_owned())
+            .budget(project_budget)
+            .apply(db_pool.get_ok().deref_mut())
+            .await
+            .expect("Failed to update project");
+
+        let project = Project::retrieve(db_pool.get_ok().deref_mut(), created_project.id)
+            .await
+            .expect("Failed to retrieve project")
+            .expect("Project not found");
+
+        assert_eq!(project.name, project_name);
+        assert_eq!(project.budget, project_budget);
+    }
+
+    #[rstest]
+    async fn sort_project() {
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let _created_project_1 =
+            create_project(db_pool.get_ok().deref_mut(), "test_project_name_1").await;
+        let _created_project_2 =
+            create_project(db_pool.get_ok().deref_mut(), "test_project_name_2").await;
+
         let projects = Project::list(
-            conn,
+            db_pool.get_ok().deref_mut(),
             SelectionSettings::new().order_by(|| Project::NAME.desc()),
         )
         .await
-        .unwrap();
+        .expect("Failed to retrieve projects");
 
         for (p1, p2) in projects.iter().zip(projects.iter().skip(1)) {
             let name_1 = p1.name.to_lowercase();
             let name_2 = p2.name.to_lowercase();
             assert!(name_1.ge(&name_2));
         }
-    }
-
-    #[rstest]
-    async fn update_project(
-        #[future] project: TestFixture<Project>,
-        db_pool: Arc<DbConnectionPool>,
-    ) {
-        let project_fixture = project.await;
-        let conn = &mut db_pool.get().await.unwrap();
-
-        // Patch a project
-        let mut project = project_fixture.model.clone();
-        project.name = "update_name".into();
-        project.budget = Some(1000);
-        project.save(conn).await.unwrap();
-        let project = Project::retrieve(conn, project.id).await.unwrap().unwrap();
-        assert_eq!(project.name, String::from("update_name"));
     }
 }

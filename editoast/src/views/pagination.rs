@@ -48,6 +48,7 @@ const DEFAULT_PAGE_SIZE: u64 = 25;
 /// We named the data field `result` to cope with the old pagination schema which
 /// enforced this name. For new paginated responses, the field name is up to your imagination :)
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, ToSchema)]
+#[cfg_attr(test, derive(Deserialize))]
 pub struct PaginationStats {
     /// The total number of items
     #[schema(minimum = 0)]
