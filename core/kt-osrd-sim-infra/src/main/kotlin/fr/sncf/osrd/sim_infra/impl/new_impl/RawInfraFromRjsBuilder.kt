@@ -9,7 +9,6 @@ import fr.sncf.osrd.utils.*
 import fr.sncf.osrd.utils.indexing.*
 import fr.sncf.osrd.utils.units.*
 import java.util.*
-import kotlin.collections.HashMap
 import kotlin.collections.set
 import kotlin.time.Duration
 
@@ -531,7 +530,10 @@ class RawInfraFromRjsBuilder {
         trackSectionName: String,
         trackSectionOffset: Offset<TrackSection>,
         props: Map<String, String>
-    ): OperationalPointPartId {
+    ): OperationalPointPartId? {
+        if (!trackSectionNameToIdxMap.contains(trackSectionName)) {
+            return null
+        }
         val trackSectionChunks = getTrackSectionDistanceSortedChunks(trackSectionName)
         val chunkDistanceIdx = trackSectionChunks.floorEntry(trackSectionOffset.distance)
         val opPartIdx =

@@ -5,11 +5,7 @@ import fr.sncf.osrd.geom.LineString
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeEndpoint
 import fr.sncf.osrd.railjson.schema.geom.RJSLineString
-import fr.sncf.osrd.railjson.schema.infra.RJSInfra
-import fr.sncf.osrd.railjson.schema.infra.RJSRoute
-import fr.sncf.osrd.railjson.schema.infra.RJSSwitch
-import fr.sncf.osrd.railjson.schema.infra.RJSSwitchType
-import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection
+import fr.sncf.osrd.railjson.schema.infra.*
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSRouteWaypoint
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSSignal
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSElectrification
@@ -789,12 +785,16 @@ fun parseRJSInfra(rjsInfra: RJSInfra): RawInfra {
                 props["trigram"] = sncf.trigram
             }
             if (opPart.extensions?.sncf != null) props["kp"] = opPart.extensions!!.sncf!!.kp
-            builder.operationalPointPart(
-                operationalPointId,
-                trackSectionName,
-                trackSectionOffset,
-                props
-            )
+            val partId =
+                builder.operationalPointPart(
+                    operationalPointId,
+                    trackSectionName,
+                    trackSectionOffset,
+                    props
+                )
+            if (partId == null) {
+                // TODO warning
+            }
         }
     }
 
