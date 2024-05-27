@@ -43,7 +43,7 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
     public final double beginPos;
     public final double endPos;
 
-    public final List<AllowanceRange> ranges;
+    public List<AllowanceRange> ranges;
 
     // potential speed limit under which the train would use too much capacity
     public final double capacitySpeedLimit;
@@ -126,14 +126,49 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
         var region = Envelope.make(base.slice(beginPos, endPos));
 
         // slice parts that are not modified and run the allowance algorithm on the allowance region
-        var builder = new EnvelopeBuilder();
-        builder.addParts(base.slice(Double.NEGATIVE_INFINITY, beginPos));
-        var allowanceRegion = computeAllowanceRegion(region, context);
-        for (var envelope : allowanceRegion) builder.addEnvelope(envelope);
-        builder.addParts(base.slice(endPos, Double.POSITIVE_INFINITY));
-        var res = builder.build();
-        assert res.continuous : "Discontinuity on the edges of the allowance region";
-        return res;
+        while (true) {
+            try {
+                var builder = new EnvelopeBuilder();
+                builder.addParts(base.slice(Double.NEGATIVE_INFINITY, beginPos));
+                var allowanceRegion = computeAllowanceRegion(region, context);
+                for (var envelope : allowanceRegion) builder.addEnvelope(envelope);
+                builder.addParts(base.slice(endPos, Double.POSITIVE_INFINITY));
+                var res = builder.build();
+                assert res.continuous : "Discontinuity on the edges of the allowance region";
+                return res;
+            } catch (OSRDError e) {
+                if (e.osrdErrorType == ErrorType.AllowanceConvergenceTooMuchTime
+                        || e.osrdErrorType == ErrorType.AllowanceConvergenceNotEnoughTime) {
+                    // The ranges are too short and the constraints too important:
+                    // we can try to merge ranges together to find a realistic
+                    // solution that would follow most of the constraints,
+                    // to be returned with a warning
+                    var rangeIndex = (int) e.context.getOrDefault("allowance_range_index", 0);
+                    if (rangeIndex >= ranges.size() - 1) throw e;
+                    mergeRangesAtIndex(base, rangeIndex);
+                    // TODO raise warning
+                } else {
+                    throw e;
+                }
+            }
+        }
+    }
+
+    /** Merge together the envelope ranges at index `rangeIndex` and `rangeIndex + 1`.
+     * The time over the two ranges is kept, but the transition time will not be
+     * enforced. */
+    private void mergeRangesAtIndex(Envelope base, int rangeIndex) {
+        var prevRange = ranges.get(rangeIndex);
+        var nextRange = ranges.get(rangeIndex + 1);
+        var prevRangeTime = prevRange.value.getAllowanceTime(
+                base.getTimeBetween(prevRange.beginPos, prevRange.endPos), prevRange.endPos - prevRange.beginPos);
+        var nextRangeTime = nextRange.value.getAllowanceTime(
+                base.getTimeBetween(nextRange.beginPos, nextRange.endPos), nextRange.endPos - nextRange.beginPos);
+        var newRange = new AllowanceRange(
+                prevRange.beginPos, nextRange.endPos, new AllowanceValue.FixedTime(prevRangeTime + nextRangeTime));
+        ranges = new ArrayList<>(ranges);
+        ranges.set(rangeIndex, newRange);
+        ranges.remove(rangeIndex + 1);
     }
 
     private record RangeBaseTime(AllowanceRange range, double baseTime) {}
@@ -185,19 +220,24 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
 
         // compute ranges one by one in the right order
         for (var rangeIndex : rangeOrder) {
-            var range = ranges.get(rangeIndex);
-            logger.debug("computing range n°{}", rangeIndex + 1);
-            var envelopeRange = Envelope.make(envelopeRegion.slice(range.beginPos, range.endPos));
-            var imposedBeginSpeed = imposedTransitionSpeeds[rangeIndex];
-            var imposedEndSpeed = imposedTransitionSpeeds[rangeIndex + 1];
-            var rangeRatio = envelopeRange.getTotalTime() / envelopeRegion.getTotalTime();
-            var tolerance = context.timeStep * rangeRatio;
-            var allowanceRange = computeAllowanceRange(
-                    envelopeRange, context, range.value, imposedBeginSpeed, imposedEndSpeed, tolerance);
-            // memorize the beginning and end speeds
-            imposedTransitionSpeeds[rangeIndex] = allowanceRange.getBeginSpeed();
-            imposedTransitionSpeeds[rangeIndex + 1] = allowanceRange.getEndSpeed();
-            res[rangeIndex] = allowanceRange;
+            try {
+                var range = ranges.get(rangeIndex);
+                logger.debug("computing range n°{}", rangeIndex + 1);
+                var envelopeRange = Envelope.make(envelopeRegion.slice(range.beginPos, range.endPos));
+                var imposedBeginSpeed = imposedTransitionSpeeds[rangeIndex];
+                var imposedEndSpeed = imposedTransitionSpeeds[rangeIndex + 1];
+                var rangeRatio = envelopeRange.getTotalTime() / envelopeRegion.getTotalTime();
+                var tolerance = context.timeStep * rangeRatio;
+                var allowanceRange = computeAllowanceRange(
+                        envelopeRange, context, range.value, imposedBeginSpeed, imposedEndSpeed, tolerance);
+                // memorize the beginning and end speeds
+                imposedTransitionSpeeds[rangeIndex] = allowanceRange.getBeginSpeed();
+                imposedTransitionSpeeds[rangeIndex + 1] = allowanceRange.getEndSpeed();
+                res[rangeIndex] = allowanceRange;
+            } catch (OSRDError e) {
+                e.context.put("allowance_range_index", rangeIndex);
+                throw e;
+            }
         }
 
         return res;

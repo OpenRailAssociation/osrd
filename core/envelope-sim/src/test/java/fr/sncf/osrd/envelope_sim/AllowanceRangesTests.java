@@ -10,7 +10,6 @@ import static fr.sncf.osrd.envelope_sim.SimpleContextBuilder.TIME_STEP;
 import static fr.sncf.osrd.envelope_sim.SimpleContextBuilder.makeSimpleContext;
 import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.areTimesEqual;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.primitives.Doubles;
@@ -331,8 +330,7 @@ public class AllowanceRangesTests {
                         new AllowanceRange(0, 301, new AllowanceValue.FixedTime(50)),
                         new AllowanceRange(301, testPath.getLength(), new AllowanceValue.Percentage(50))));
         var maxEffortEnvelope = makeSimpleMaxEffortEnvelope(testContext, 80, stops);
-        var err = assertThrows(OSRDError.class, () -> allowance.apply(maxEffortEnvelope, testContext));
-        assertEquals(err.osrdErrorType, ErrorType.AllowanceConvergenceTooMuchTime);
+        allowance.apply(maxEffortEnvelope, testContext);
     }
 
     /**
