@@ -56,7 +56,7 @@ To deploy the application on a server, check out the [deployment guide](https://
 
 ## Get in touch
 
-Send an email at <contact@osrd.fr>, or [open an issue](https://github.com/OpenRailAssociation/osrd/issues/new?labels=kind%3Aquestion&template=question.yaml)
+Send an email at <contact@osrd.fr>, [open an issue](https://github.com/OpenRailAssociation/osrd/issues/new?labels=kind%3Aquestion&template=question.yaml), or join the [#public-general:osrd.fr](https://matrix.to/#/#public-general:osrd.fr) matrix channel.
 
 ## Sponsors
 
