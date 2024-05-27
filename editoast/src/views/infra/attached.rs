@@ -12,7 +12,7 @@ use thiserror::Error;
 use crate::error::Result;
 use crate::infra_cache::InfraCache;
 use crate::modelsv2::prelude::*;
-use crate::modelsv2::DbConnectionPool;
+use crate::modelsv2::DbConnectionPoolV2;
 use crate::modelsv2::Infra;
 use crate::views::infra::InfraApiError;
 use editoast_schemas::primitives::ObjectType;
@@ -62,7 +62,7 @@ struct InfraAttachedParams {
 async fn attached(
     params: Path<InfraAttachedParams>,
     infra_caches: Data<CHashMap<i64, InfraCache>>,
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Data<DbConnectionPoolV2>,
 ) -> Result<Json<HashMap<ObjectType, Vec<String>>>> {
     let InfraAttachedParams { infra_id, track_id } = params.into_inner();
     let mut conn = db_pool.get().await?;
@@ -99,46 +99,54 @@ async fn attached(
 mod tests {
     use std::collections::HashMap;
 
-    use actix_http::StatusCode;
     use actix_web::test::call_and_read_body_json;
-    use actix_web::test::call_service;
     use actix_web::test::TestRequest;
     use rstest::rstest;
+    use std::ops::DerefMut;
 
-    use crate::fixtures::tests::empty_infra;
-    use crate::fixtures::tests::TestFixture;
-    use crate::infra_cache::operation::RailjsonObject;
+    use crate::infra_cache::operation::create::apply_create_operation;
+    use crate::modelsv2::prelude::*;
     use crate::modelsv2::Infra;
-    use crate::views::infra::tests::create_object_request;
-    use crate::views::tests::create_test_service;
+    use crate::views::test_app::TestAppBuilder;
     use editoast_schemas::infra::Detector;
     use editoast_schemas::infra::TrackSection;
     use editoast_schemas::primitives::OSRDIdentified;
     use editoast_schemas::primitives::ObjectType;
 
     #[rstest]
-    async fn get_attached_detector(#[future] empty_infra: TestFixture<Infra>) {
-        let app = create_test_service().await;
-        let empty_infra = empty_infra.await;
+    async fn get_attached_detector() {
+        let app = TestAppBuilder::default_app();
+        let pool = app.db_pool();
+
+        // Create empty infra
+        let empty_infra = Infra::changeset()
+            .name("test_infra".to_owned())
+            .last_railjson_version()
+            .create(pool.get_ok().deref_mut())
+            .await
+            .expect("Failed to create infra");
 
         // Create a track and a detector on it
-        let track: RailjsonObject = TrackSection::default().into();
-        let req = create_object_request(empty_infra.id(), track.clone());
-        assert_eq!(call_service(&app, req).await.status(), StatusCode::OK);
-        let req = create_object_request(
-            empty_infra.id(),
-            Detector {
-                track: track.get_id().clone().into(),
-                ..Default::default()
-            }
-            .into(),
-        );
-        assert_eq!(call_service(&app, req).await.status(), StatusCode::OK);
+        let track = TrackSection::default().into();
+        apply_create_operation(&track, empty_infra.id, pool.get_ok().deref_mut())
+            .await
+            .expect("Failed to create track object");
+
+        let detector = Detector {
+            track: track.get_id().clone().into(),
+            ..Default::default()
+        }
+        .into();
+        apply_create_operation(&detector, empty_infra.id, pool.get_ok().deref_mut())
+            .await
+            .expect("Failed to create detector object");
 
         let req = TestRequest::get()
-            .uri(format!("/infra/{}/attached/{}/", empty_infra.id(), track.get_id()).as_str())
+            .uri(format!("/infra/{}/attached/{}/", empty_infra.id, track.get_id()).as_str())
             .to_request();
-        let response: HashMap<ObjectType, Vec<String>> = call_and_read_body_json(&app, req).await;
+
+        let response: HashMap<ObjectType, Vec<String>> =
+            call_and_read_body_json(&app.service, req).await;
         assert_eq!(response.get(&ObjectType::Detector).unwrap().len(), 1);
     }
 }
