@@ -13,7 +13,7 @@ use crate::modelsv2::projects::Tags;
 use crate::modelsv2::DbConnection;
 use crate::modelsv2::Scenario;
 
-#[derive(Clone, Debug, Serialize, Deserialize, ModelV2, ToSchema)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, ModelV2, ToSchema)]
 #[model(table = crate::tables::study)]
 pub struct Study {
     pub id: i64,
@@ -83,76 +83,62 @@ fn dates_in_order(a: Option<Option<NaiveDate>>, b: Option<Option<NaiveDate>>) ->
 
 #[cfg(test)]
 pub mod test {
+    use pretty_assertions::assert_eq;
     use rstest::rstest;
     use std::ops::DerefMut;
-    use std::sync::Arc;
 
     use super::*;
-    use crate::fixtures::tests::db_pool;
-    use crate::fixtures::tests::study_fixture_set;
-    use crate::fixtures::tests::StudyFixtureSet;
-    use crate::fixtures::tests::TestFixture;
-    use crate::modelsv2::DbConnectionPool;
+    use crate::modelsv2::fixtures::create_project;
+    use crate::modelsv2::fixtures::create_study;
+    use crate::modelsv2::DbConnectionPoolV2;
 
     #[rstest]
-    async fn create_delete_study(
-        #[future] study_fixture_set: StudyFixtureSet,
-        db_pool: Arc<DbConnectionPool>,
-    ) {
-        let StudyFixtureSet {
-            study,
-            project: _project,
-        } = study_fixture_set.await;
+    async fn study_retrieve() {
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let created_project =
+            create_project(db_pool.get_ok().deref_mut(), "test_project_name").await;
 
-        // Delete the study
-        let conn = &mut db_pool.get().await.unwrap();
-        Study::delete_static(conn, study.id()).await.unwrap();
+        let study_name = "test_study_name";
+        let created_study =
+            create_study(db_pool.get_ok().deref_mut(), study_name, created_project.id).await;
 
-        // Second delete should fail
-        assert!(!Study::delete_static(conn, study.id()).await.unwrap());
+        // Retrieve a study
+        let study = Study::retrieve(db_pool.get_ok().deref_mut(), created_study.id)
+            .await
+            .expect("Failed to retrieve study")
+            .expect("Study not found");
+
+        assert_eq!(&created_study, &study);
     }
 
     #[rstest]
-    async fn get_study(
-        #[future] study_fixture_set: StudyFixtureSet,
-        db_pool: Arc<DbConnectionPool>,
-    ) {
-        let StudyFixtureSet {
-            study,
-            project: _project,
-        } = study_fixture_set.await;
+    async fn sort_study() {
+        let db_pool = DbConnectionPoolV2::for_tests();
 
-        // Get a study
-        let conn = &mut db_pool.get().await.unwrap();
-        assert!(Study::retrieve(conn, study.id()).await.is_ok());
-        assert!(Study::list(conn, Default::default()).await.is_ok());
-    }
+        let created_project =
+            create_project(db_pool.get_ok().deref_mut(), "test_project_name").await;
 
-    #[rstest]
-    async fn sort_study(
-        #[future] study_fixture_set: StudyFixtureSet,
-        db_pool: Arc<DbConnectionPool>,
-    ) {
-        let StudyFixtureSet {
-            study,
-            project: _project,
-        } = study_fixture_set.await;
+        let _created_study_1 = create_study(
+            db_pool.get_ok().deref_mut(),
+            "test_study_name_1",
+            created_project.id,
+        )
+        .await;
 
-        // Create second study
-        let study_2 = study
-            .model
-            .clone()
-            .into_changeset()
-            .name(study.model.name.clone() + "_bis");
-
-        let _: TestFixture<Study> = TestFixture::create(study_2, db_pool.clone()).await;
+        let _created_study_2 = create_study(
+            db_pool.get_ok().deref_mut(),
+            "test_study_name_2",
+            created_project.id,
+        )
+        .await;
 
         let studies = Study::list(
-            db_pool.get().await.unwrap().deref_mut(),
+            db_pool.get_ok().deref_mut(),
             SelectionSettings::new().order_by(|| Study::NAME.desc()),
         )
         .await
-        .unwrap();
+        .expect("Failed to retrieve studies");
+
         for (s1, s2) in studies.iter().zip(studies.iter().skip(1)) {
             let name_1 = s1.name.to_lowercase();
             let name_2 = s2.name.to_lowercase();

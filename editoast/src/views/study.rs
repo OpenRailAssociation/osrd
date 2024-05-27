@@ -28,7 +28,7 @@ use crate::error::InternalError;
 use crate::error::Result;
 use crate::modelsv2::prelude::*;
 use crate::modelsv2::DbConnection;
-use crate::modelsv2::DbConnectionPool;
+use crate::modelsv2::DbConnectionPoolV2;
 use crate::modelsv2::Project;
 use crate::modelsv2::Study;
 use crate::modelsv2::Tags;
@@ -140,7 +140,7 @@ impl StudyCreateForm {
 )]
 #[post("")]
 async fn create(
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Data<DbConnectionPoolV2>,
     data: Json<StudyCreateForm>,
     project: Path<i64>,
 ) -> Result<Json<StudyResponse>> {
@@ -152,7 +152,6 @@ async fn create(
         .transaction::<_, InternalError, _>(|conn| {
             async {
                 // Check if project exists
-                use crate::modelsv2::Retrieve;
                 let mut project = Project::retrieve_or_fail(conn, project_id, || {
                     ProjectError::NotFound { project_id }
                 })
@@ -200,11 +199,10 @@ pub struct StudyIdParam {
     )
 )]
 #[delete("")]
-async fn delete(path: Path<(i64, i64)>, db_pool: Data<DbConnectionPool>) -> Result<HttpResponse> {
+async fn delete(path: Path<(i64, i64)>, db_pool: Data<DbConnectionPoolV2>) -> Result<HttpResponse> {
     let (project_id, study_id) = path.into_inner();
     // Check if project exists
     let conn = &mut db_pool.get().await?;
-    use crate::modelsv2::Retrieve;
     let mut project =
         Project::retrieve_or_fail(conn, project_id, || ProjectError::NotFound { project_id })
             .await?;
@@ -229,7 +227,7 @@ async fn delete(path: Path<(i64, i64)>, db_pool: Data<DbConnectionPool>) -> Resu
 )]
 #[get("")]
 async fn get(
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Data<DbConnectionPoolV2>,
     path: Path<(i64, i64)>,
 ) -> Result<Json<StudyResponse>> {
     let (project_id, study_id) = path.into_inner();
@@ -308,7 +306,7 @@ impl StudyPatchForm {
 async fn patch(
     data: Json<StudyPatchForm>,
     path: Path<(i64, i64)>,
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Data<DbConnectionPoolV2>,
 ) -> Result<Json<StudyResponse>> {
     let (project_id, study_id) = path.into_inner();
     let conn = &mut db_pool.get().await?;
@@ -316,7 +314,6 @@ async fn patch(
         .transaction::<_, InternalError, _>(|conn| {
             async {
                 // Check if project exists
-                use crate::modelsv2::Retrieve;
                 let mut project = Project::retrieve_or_fail(conn, project_id, || {
                     ProjectError::NotFound { project_id }
                 })
@@ -326,6 +323,7 @@ async fn patch(
                 let study = data
                     .into_inner()
                     .into_study_changeset()?
+                    .last_modification(Utc::now().naive_utc())
                     .update_or_fail(conn, study_id, || StudyError::NotFound { study_id })
                     .await?;
                 let study_scenarios = StudyWithScenarioCount::try_fetch(conn, study).await?;
@@ -342,7 +340,7 @@ async fn patch(
     Ok(Json(study_response))
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
 #[schema(as = StudyWithScenarios)]
 pub struct StudyWithScenarioCount {
     #[serde(flatten)]
@@ -360,7 +358,8 @@ impl StudyWithScenarioCount {
     }
 }
 
-#[derive(serde::Serialize, utoipa::ToSchema)]
+#[derive(Serialize, ToSchema)]
+#[cfg_attr(test, derive(Deserialize))]
 struct StudyListResponse {
     #[schema(value_type = Vec<StudyWithScenarios>)]
     results: Vec<StudyWithScenarioCount>,
@@ -378,7 +377,7 @@ struct StudyListResponse {
 )]
 #[get("")]
 async fn list(
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Data<DbConnectionPoolV2>,
     project: Path<i64>,
     Query(pagination_params): Query<PaginationQueryParam>,
     Query(ordering_params): Query<OperationalStudiesOrderingParam>,
@@ -411,58 +410,30 @@ async fn list(
 
 #[cfg(test)]
 pub mod test {
-    use actix_http::Request;
     use actix_web::http::StatusCode;
+    use actix_web::test::call_and_read_body_json;
     use actix_web::test::call_service;
-    use actix_web::test::read_body_json;
     use actix_web::test::TestRequest;
+    use pretty_assertions::assert_eq;
     use rstest::rstest;
     use serde_json::json;
-    use std::sync::Arc;
 
     use super::*;
-    use crate::fixtures::tests::db_pool;
-    use crate::fixtures::tests::project;
-    use crate::fixtures::tests::study_fixture_set;
-    use crate::fixtures::tests::StudyFixtureSet;
-    use crate::fixtures::tests::TestFixture;
-    use crate::modelsv2::DeleteStatic;
-    use crate::modelsv2::Project;
+    use crate::modelsv2::fixtures::create_project;
+    use crate::modelsv2::fixtures::create_study;
     use crate::modelsv2::Study;
-    use crate::views::tests::create_test_service;
-
-    fn easy_study_url(study_fixture_set: &StudyFixtureSet, detail: bool) -> String {
-        format!(
-            "/projects/{project_id}/studies/{study_id}",
-            project_id = study_fixture_set.project.id(),
-            study_id = if detail {
-                study_fixture_set.study.id().to_string()
-            } else {
-                "".to_string()
-            }
-        )
-    }
-
-    pub fn study_url(project_id: i64, study_id: Option<i64>) -> String {
-        format!(
-            "/projects/{}/studies/{}",
-            project_id,
-            study_id.map_or_else(|| "".to_owned(), |v| v.to_string())
-        )
-    }
-
-    fn delete_study_request(study_fixture_set: &StudyFixtureSet) -> Request {
-        TestRequest::delete()
-            .uri(easy_study_url(study_fixture_set, true).as_str())
-            .to_request()
-    }
+    use crate::views::test_app::TestAppBuilder;
 
     #[rstest]
-    async fn study_create(#[future] project: TestFixture<Project>, db_pool: Arc<DbConnectionPool>) {
-        let app = create_test_service().await;
-        let project = project.await;
-        let req = TestRequest::post()
-            .uri(format!("/projects/{}/studies/", project.id()).as_str())
+    async fn study_post() {
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+
+        let created_project =
+            create_project(db_pool.get_ok().deref_mut(), "test_project_name").await;
+
+        let request = TestRequest::post()
+            .uri(&format!("/projects/{}/studies/", created_project.id))
             .set_json(json!({
                 "name": "study_test",
                 "description": "Study description",
@@ -472,85 +443,181 @@ pub mod test {
                 "study_type": "",
             }))
             .to_request();
-        let response = call_service(&app, req).await;
-        assert_eq!(response.status(), StatusCode::OK);
 
-        let study_response: StudyResponse = read_body_json(response).await;
-        let study = TestFixture::new(study_response.study, db_pool.clone());
-        assert_eq!(study.model.name.clone(), "study_test");
+        let response: StudyResponse = call_and_read_body_json(&app.service, request).await;
+
+        let study = Study::retrieve(db_pool.get_ok().deref_mut(), response.study.id)
+            .await
+            .expect("Failed to retrieve study")
+            .expect("Study not found");
+
+        assert_eq!(study, response.study);
+        assert_eq!(study.project_id, created_project.id);
     }
 
     #[rstest]
-    async fn study_delete(#[future] study_fixture_set: StudyFixtureSet) {
-        let app = create_test_service().await;
-        let study_fixture_set = study_fixture_set.await;
+    async fn study_list() {
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
 
-        let response = call_service(&app, delete_study_request(&study_fixture_set)).await;
+        let created_project =
+            create_project(db_pool.get_ok().deref_mut(), "test_project_name").await;
+
+        let created_study = create_study(
+            db_pool.get_ok().deref_mut(),
+            "test_study_name",
+            created_project.id,
+        )
+        .await;
+
+        let request = TestRequest::get()
+            .uri(&format!("/projects/{}/studies/", created_project.id))
+            .to_request();
+
+        let response: StudyListResponse = call_and_read_body_json(&app.service, request).await;
+        let studies_retreived = response
+            .results
+            .iter()
+            .find(|r| r.study.id == created_study.id)
+            .expect("Study not found");
+
+        assert_eq!(studies_retreived.study, created_study);
+    }
+
+    #[rstest]
+    async fn study_get() {
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+
+        let created_project =
+            create_project(db_pool.get_ok().deref_mut(), "test_project_name").await;
+
+        let created_study = create_study(
+            db_pool.get_ok().deref_mut(),
+            "test_study_name",
+            created_project.id,
+        )
+        .await;
+
+        let request = TestRequest::get()
+            .uri(&format!(
+                "/projects/{}/studies/{}",
+                created_project.id, created_study.id
+            ))
+            .to_request();
+
+        let response: StudyResponse = call_and_read_body_json(&app.service, request).await;
+
+        assert_eq!(response.study, created_study);
+        assert_eq!(response.study.project_id, created_project.id);
+        assert_eq!(response.project, created_project);
+    }
+
+    #[rstest]
+    async fn study_get_not_found() {
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+
+        let created_project =
+            create_project(db_pool.get_ok().deref_mut(), "test_project_name").await;
+
+        let created_study = create_study(
+            db_pool.get_ok().deref_mut(),
+            "test_study_name",
+            created_project.id,
+        )
+        .await;
+
+        let request = TestRequest::get()
+            .uri(&format!(
+                "/projects/{}/studies/{}",
+                created_project.id,
+                created_study.id + 1000
+            ))
+            .to_request();
+
+        let response = call_service(&app.service, request).await;
+        assert_eq!(response.status(), StatusCode::NOT_FOUND);
+    }
+
+    #[rstest]
+    async fn study_delete() {
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+
+        let created_project =
+            create_project(db_pool.get_ok().deref_mut(), "test_project_name").await;
+
+        let created_study = create_study(
+            db_pool.get_ok().deref_mut(),
+            "test_study_name",
+            created_project.id,
+        )
+        .await;
+
+        let request = TestRequest::delete()
+            .uri(&format!(
+                "/projects/{}/studies/{}",
+                created_project.id, created_study.id
+            ))
+            .to_request();
+
+        let response = call_service(&app.service, request).await;
         assert_eq!(response.status(), StatusCode::NO_CONTENT);
 
-        let response = call_service(&app, delete_study_request(&study_fixture_set)).await;
-        assert_eq!(response.status(), StatusCode::NOT_FOUND);
-    }
-
-    #[rstest]
-    async fn study_list(#[future] study_fixture_set: StudyFixtureSet) {
-        let app = create_test_service().await;
-        let fx_set = study_fixture_set.await;
-
-        let req = TestRequest::get()
-            .uri(easy_study_url(&fx_set, false).as_str())
-            .to_request();
-
-        let response = call_service(&app, req).await;
-        assert_eq!(response.status(), StatusCode::OK);
-    }
-
-    #[rstest]
-    async fn study_get(
-        #[future] study_fixture_set: StudyFixtureSet,
-        db_pool: Arc<DbConnectionPool>,
-    ) {
-        let app = create_test_service().await;
-        let study_fixture_set = study_fixture_set.await;
-
-        let url = easy_study_url(&study_fixture_set, true);
-        let url_project_not_found = study_url(
-            study_fixture_set.project.id() + 1,
-            Some(study_fixture_set.study.id()),
-        );
-
-        let req = TestRequest::get()
-            .uri(url_project_not_found.as_str())
-            .to_request();
-        let response = call_service(&app, req).await;
-        assert_eq!(response.status(), StatusCode::NOT_FOUND);
-
-        let req = TestRequest::get().uri(url.as_str()).to_request();
-        let response = call_service(&app, req).await;
-        assert_eq!(response.status(), StatusCode::OK);
-
-        let conn = &mut db_pool.get().await.unwrap();
-        assert!(Study::delete_static(conn, study_fixture_set.study.id())
+        let exists = Study::exists(db_pool.get_ok().deref_mut(), created_study.id)
             .await
-            .unwrap());
+            .expect("Failed to check if study exists");
 
-        let req = TestRequest::get().uri(url.as_str()).to_request();
-        let response = call_service(&app, req).await;
-        assert_eq!(response.status(), StatusCode::NOT_FOUND);
+        assert!(!exists);
     }
 
     #[rstest]
-    async fn study_patch(#[future] study_fixture_set: StudyFixtureSet) {
-        let app = create_test_service().await;
-        let study_fixture_set = study_fixture_set.await;
-        let req = TestRequest::patch()
-            .uri(easy_study_url(&study_fixture_set, true).as_str())
-            .set_json(json!({"name": "rename_test", "budget":20000}))
+    async fn study_patch() {
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+
+        let created_project =
+            create_project(db_pool.get_ok().deref_mut(), "test_project_name").await;
+
+        let created_study = create_study(
+            db_pool.get_ok().deref_mut(),
+            "test_study_name",
+            created_project.id,
+        )
+        .await;
+
+        let study_name = "rename_test";
+        let study_budget = 20000;
+
+        let request = TestRequest::patch()
+            .uri(&format!(
+                "/projects/{}/studies/{}",
+                created_project.id, created_study.id
+            ))
+            .set_json(json!({
+                "name": study_name,
+                "budget": study_budget,
+            }))
             .to_request();
-        let response = call_service(&app, req).await;
+        let response = call_service(&app.service, request).await;
         assert_eq!(response.status(), StatusCode::OK);
 
-        let StudyWithScenarioCount { study, .. } = read_body_json(response).await;
-        assert_eq!(study.name, "rename_test");
+        let updated_study = Study::retrieve(db_pool.get_ok().deref_mut(), created_study.id)
+            .await
+            .expect("Failed to retrieve study")
+            .expect("Study not found");
+
+        let updated_project = Project::retrieve(db_pool.get_ok().deref_mut(), created_project.id)
+            .await
+            .expect("Failed to retrieve project")
+            .expect("Project not found");
+
+        assert_eq!(updated_study.name, study_name);
+        assert_eq!(updated_study.budget, Some(study_budget));
+        assert_eq!(updated_study.project_id, created_project.id);
+        // Check that the last modification date of the study and the project have been updated
+        assert!(updated_project.last_modification > created_project.last_modification);
+        assert!(updated_study.last_modification > created_study.last_modification);
     }
 }
