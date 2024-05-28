@@ -1,0 +1,234 @@
+{
+    "timetable_version": 2,
+    "error_type": "STDCM",
+    "code": 500,
+    "error": "{\"status\":500,\"type\":\"core:assert_error\",\"context\":{\"stack_trace\":[\"STDCMEndpointV2.kt:172\",\"STDCMEndpointV2.kt:1\",\"STDCMEndpointV2.kt:116\",\"FkRegex.java:153\",\"FkRegex.java:217\",\"FkChain.java:72\",\"TkFork.java:98\",\"TkFallback.java:84\",\"TkFallback.java:66\",\"TkWrap.java:58\",\"TkSlf4j.java:110\",\"BkBasic.java:123\",\"BkBasic.java:99\",\"BkSafe.java:46\",\"BkWrap.java:51\",\"BkParallel.java:81\",\"ThreadPoolExecutor.java:1136\",\"ThreadPoolExecutor.java:635\",\"Thread.java:840\"],\"url\":\"http://localhost:8080/v2/stdcm\",\"assert_message\":\"STDCM result is conflicting with the scheduled timetable\",\"file_location\":\"STDCMEndpointV2.kt:172\"},\"message\":\"assert check failed\"}",
+    "infra_name": "small_infra",
+    "stdcm_payload": {
+        "rolling_stock_id": 470,
+        "start_time": "2024-01-01T23:02:27+00:00",
+        "maximum_departure_delay": 5251097,
+        "maximum_run_time": 31681873,
+        "time_gap_before": 206166,
+        "time_gap_after": 342983,
+        "steps": [
+            {
+                "duration": 180125,
+                "location": {
+                    "track": "TE0",
+                    "offset": 581924
+                }
+            },
+            {
+                "duration": 905261,
+                "location": {
+                    "track": "TE0",
+                    "offset": 338804
+                }
+            },
+            {
+                "duration": null,
+                "location": {
+                    "track": "TE3",
+                    "offset": 1469324
+                }
+            },
+            {
+                "duration": 1,
+                "location": {
+                    "track": "TD2",
+                    "offset": 1694161
+                }
+            }
+        ],
+        "comfort": "STANDARD",
+        "margin": "None"
+    },
+    "prelude": [
+        {
+            "schedule_payload": [
+                {
+                    "comfort": "STANDARD",
+                    "path": [
+                        {
+                            "offset": 38835,
+                            "track": "TA5",
+                            "id": "0"
+                        },
+                        {
+                            "offset": 9672,
+                            "track": "TA5",
+                            "id": "1"
+                        }
+                    ],
+                    "initial_speed": 0,
+                    "labels": [],
+                    "constraint_distribution": "STANDARD",
+                    "margins": {
+                        "boundaries": [],
+                        "values": [
+                            "5%"
+                        ]
+                    },
+                    "options": {
+                        "use_electrical_profiles": false
+                    },
+                    "rolling_stock_name": "fast_rolling_stock",
+                    "schedule": [],
+                    "speed_limit_tag": null,
+                    "start_time": "2024-01-01T19:07:57+00:00",
+                    "train_name": "fuzzer_train"
+                }
+            ]
+        },
+        {
+            "schedule_payload": [
+                {
+                    "comfort": "STANDARD",
+                    "path": [
+                        {
+                            "offset": 1484967,
+                            "track": "TE3",
+                            "id": "0"
+                        },
+                        {
+                            "offset": 1533327,
+                            "track": "TE3",
+                            "id": "1"
+                        },
+                        {
+                            "offset": 941643,
+                            "track": "TE0",
+                            "id": "2"
+                        },
+                        {
+                            "offset": 1848,
+                            "track": "TF0",
+                            "id": "3"
+                        },
+                        {
+                            "offset": 6293168,
+                            "track": "TF1",
+                            "id": "4"
+                        }
+                    ],
+                    "initial_speed": 0,
+                    "labels": [],
+                    "constraint_distribution": "STANDARD",
+                    "margins": {
+                        "boundaries": [
+                            "2"
+                        ],
+                        "values": [
+                            "None",
+                            "None"
+                        ]
+                    },
+                    "options": {
+                        "use_electrical_profiles": false
+                    },
+                    "rolling_stock_name": "fast_rolling_stock",
+                    "schedule": [],
+                    "speed_limit_tag": null,
+                    "start_time": "2024-01-01T22:18:24+00:00",
+                    "train_name": "fuzzer_train"
+                }
+            ]
+        },
+        {
+            "schedule_payload": [
+                {
+                    "comfort": "STANDARD",
+                    "path": [
+                        {
+                            "offset": 1334824,
+                            "track": "TE1",
+                            "id": "0"
+                        },
+                        {
+                            "offset": 1170516,
+                            "track": "TE1",
+                            "id": "1"
+                        },
+                        {
+                            "offset": 1883043,
+                            "track": "TE3",
+                            "id": "2"
+                        }
+                    ],
+                    "initial_speed": 0,
+                    "labels": [],
+                    "constraint_distribution": "STANDARD",
+                    "margins": {
+                        "boundaries": [],
+                        "values": [
+                            "6min/100km"
+                        ]
+                    },
+                    "options": {
+                        "use_electrical_profiles": false
+                    },
+                    "rolling_stock_name": "fast_rolling_stock",
+                    "schedule": [],
+                    "speed_limit_tag": null,
+                    "start_time": "2024-01-01T23:10:24+00:00",
+                    "train_name": "fuzzer_train"
+                }
+            ]
+        },
+        {
+            "schedule_payload": [
+                {
+                    "comfort": "STANDARD",
+                    "path": [
+                        {
+                            "offset": 637436,
+                            "track": "TC0",
+                            "id": "0"
+                        },
+                        {
+                            "offset": 699939,
+                            "track": "TC0",
+                            "id": "1"
+                        },
+                        {
+                            "offset": 17976394,
+                            "track": "TD0",
+                            "id": "2"
+                        },
+                        {
+                            "offset": 351005,
+                            "track": "TD2",
+                            "id": "3"
+                        },
+                        {
+                            "offset": 390457,
+                            "track": "TH0",
+                            "id": "4"
+                        }
+                    ],
+                    "initial_speed": 0,
+                    "labels": [],
+                    "constraint_distribution": "STANDARD",
+                    "margins": {
+                        "boundaries": [
+                            "2"
+                        ],
+                        "values": [
+                            "None",
+                            "None"
+                        ]
+                    },
+                    "options": {
+                        "use_electrical_profiles": false
+                    },
+                    "rolling_stock_name": "fast_rolling_stock",
+                    "schedule": [],
+                    "speed_limit_tag": null,
+                    "start_time": "2024-01-01T12:11:49+00:00",
+                    "train_name": "fuzzer_train"
+                }
+            ]
+        }
+    ]
+}
