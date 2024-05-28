@@ -13,8 +13,6 @@ import fr.sncf.osrd.envelope_sim.allowances.LinearAllowance
 import fr.sncf.osrd.envelope_sim.allowances.MarecoAllowance
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceRange
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue.*
-import fr.sncf.osrd.envelope_sim.electrification.Electrification
-import fr.sncf.osrd.envelope_sim.electrification.Electrified
 import fr.sncf.osrd.envelope_sim.pipelines.MaxEffortEnvelope
 import fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath
@@ -25,6 +23,9 @@ import fr.sncf.osrd.sim_infra.api.Path
 import fr.sncf.osrd.sim_infra.api.PathProperties
 import fr.sncf.osrd.sim_infra.api.Route
 import fr.sncf.osrd.sim_infra.impl.ChunkPath
+import fr.sncf.osrd.standalone_sim.result.ElectrificationRange
+import fr.sncf.osrd.standalone_sim.result.ElectrificationRange.ElectrificationUsage
+import fr.sncf.osrd.standalone_sim.result.ElectrificationRange.ElectrificationUsage.ElectrifiedUsage
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.indexing.StaticIdxList
@@ -65,6 +66,8 @@ fun runStandaloneSimulation(
             useElectricalProfiles
         )
     val curvesAndConditions = rollingStock.mapTractiveEffortCurves(electrificationMap, comfort)
+    val electrificationRanges =
+        ElectrificationRange.from(curvesAndConditions.conditions, electrificationMap)
     var context =
         EnvelopeSimContext(rollingStock, envelopeSimPath, timeStep, curvesAndConditions.curves)
 
@@ -134,26 +137,30 @@ fun runStandaloneSimulation(
         provisional = provisionalResult,
         finalOutput = finalEnvelopeResult,
         mrsp = makeMRSPResponse(speedLimits),
-        electricalProfiles = makeElectricalProfiles(electrificationMap),
+        electricalProfiles = makeElectricalProfiles(electrificationRanges),
     )
 }
 
 fun makeElectricalProfiles(
-    electrifications: ImmutableRangeMap<Double, Electrification>
+    electrificationRanges: List<ElectrificationRange>
 ): RangeValues<ElectricalProfileValue> {
-    fun profileFromElectrification(electrification: Electrification): ElectricalProfileValue {
+    fun profileFromElectrification(electrification: ElectrificationUsage): ElectricalProfileValue {
         return when (electrification) {
-            is Electrified -> ElectricalProfileValue.Profile(electrification.mode)
+            is ElectrifiedUsage ->
+                ElectricalProfileValue.Profile(
+                    electrification.profile,
+                    electrification.profileHandled
+                )
             else -> ElectricalProfileValue.NoProfile()
         }
     }
 
     // This map is mostly used to coalesce identical values
     val profileMap = TreeRangeMap.create<Double, ElectricalProfileValue>()
-    for (electrification in electrifications.asMapOfRanges()) {
+    for (electrification in electrificationRanges) {
         profileMap.putCoalescing(
-            Range.closed(electrification.key.lowerEndpoint(), electrification.key.upperEndpoint()),
-            profileFromElectrification(electrification.value)
+            Range.closed(electrification.start, electrification.stop),
+            profileFromElectrification(electrification.electrificationUsage)
         )
     }
 
