@@ -68,7 +68,13 @@ public final class CoastingGenerator {
 
         var resultCoast = coastFromBeginning(
                 envelope, context, constrainedBuilder.getLastPos(), constrainedBuilder.getLastSpeed());
-        assert resultCoast == null || resultCoast.getEndPos() <= endPos + context.timeStep * speed;
+        if (resultCoast == null || resultCoast.getEndPos() > endPos + context.timeStep * speed) {
+            // The coasting envelope didn't intersect with the base envelope,
+            // which can happen if it should have intersected in the middle of a simulation step.
+            // There's no good way to handle this with the current envelope framework,
+            // returning null at least avoids crashing and keeps the binary search going
+            return null;
+        }
         return resultCoast;
     }
 }
