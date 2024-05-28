@@ -26,6 +26,7 @@ use editoast_derive::EditoastError;
 use serde::Deserialize;
 use serde::Serialize;
 use std::collections::HashMap;
+use std::ops::DerefMut as _;
 use std::sync::Arc;
 use thiserror::Error;
 use utoipa::IntoParams;
@@ -33,6 +34,7 @@ use utoipa::ToSchema;
 
 use self::edition::edit;
 use self::edition::split_track_section;
+use super::pagination::PaginationStats;
 use super::params::List;
 use crate::core::infra_loading::InfraLoadRequest;
 use crate::core::infra_state::InfraStateRequest;
@@ -44,12 +46,10 @@ use crate::infra_cache::InfraCache;
 use crate::infra_cache::ObjectCache;
 use crate::map;
 use crate::map::MapLayers;
-use crate::models::List as ModelList;
-use crate::models::NoParams;
 use crate::modelsv2::prelude::*;
 use crate::modelsv2::DbConnectionPool;
 use crate::modelsv2::Infra;
-use crate::views::pagination::PaginatedResponse;
+use crate::views::pagination::PaginatedList as _;
 use crate::views::pagination::PaginationQueryParam;
 use crate::RedisClient;
 use editoast_schemas::infra::SwitchType;
@@ -211,40 +211,47 @@ async fn refresh(
     Ok(Json(RefreshResponse { infra_refreshed }))
 }
 
+#[derive(Serialize, ToSchema)]
+struct InfraListResponse {
+    #[serde(flatten)]
+    stats: PaginationStats,
+    results: Vec<InfraWithState>,
+}
+
 /// Return a list of infras
 #[get("")]
 async fn list(
     db_pool: Data<DbConnectionPool>,
     core: Data<CoreClient>,
     pagination_params: Query<PaginationQueryParam>,
-) -> Result<Json<PaginatedResponse<InfraWithState>>> {
-    let (page, per_page) = pagination_params
+) -> Result<Json<InfraListResponse>> {
+    let settings = pagination_params
         .validate(1000)?
         .warn_page_size(100)
-        .unpack();
-    let db_pool = db_pool.into_inner();
-    let infras = Infra::list(db_pool.clone(), page, per_page, NoParams).await?;
-    let infra_state = call_core_infra_state(None, db_pool, core).await?;
-    let infras_with_state: Vec<InfraWithState> = infras
-        .results
-        .into_iter()
-        .map(|infra| {
-            let infra_id = infra.id;
-            let state = infra_state
-                .get(&infra_id.to_string())
-                .unwrap_or(&InfraStateResponse::default())
-                .status;
-            InfraWithState { infra, state }
-        })
-        .collect();
-    let infras_with_state = PaginatedResponse::<InfraWithState> {
-        count: infras.count,
-        previous: infras.previous,
-        next: infras.next,
-        results: infras_with_state,
+        .into_selection_settings();
+
+    let ((infras, stats), infra_states) = {
+        let conn = &mut db_pool.get().await?;
+        futures::try_join!(
+            Infra::list_paginated(conn, settings),
+            fetch_all_infra_states(core.as_ref()),
+        )?
     };
 
-    Ok(Json(infras_with_state))
+    let response = InfraListResponse {
+        stats,
+        results: infras
+            .into_iter()
+            .map(|infra| {
+                let state = infra_states
+                    .get(&infra.id.to_string())
+                    .map(|response| response.status)
+                    .unwrap_or_default();
+                InfraWithState { infra, state }
+            })
+            .collect(),
+    };
+    Ok(Json(response))
 }
 
 #[derive(Debug, Clone, Copy, Default, Deserialize, PartialEq, Eq, Serialize, ToSchema)]
@@ -296,11 +303,7 @@ async fn get(
     let conn = &mut db_pool.get().await?;
     let infra =
         Infra::retrieve_or_fail(conn, infra_id, || InfraApiError::NotFound { infra_id }).await?;
-    let infra_state = call_core_infra_state(Some(infra_id), db_pool.into_inner(), core).await?;
-    let state = infra_state
-        .get(&infra_id.to_string())
-        .unwrap_or(&InfraStateResponse::default())
-        .status;
+    let state = fetch_infra_state(infra.id, core.as_ref()).await?.status;
     Ok(Json(InfraWithState { infra, state }))
 }
 
@@ -562,12 +565,6 @@ async fn unlock(
     Ok(HttpResponse::NoContent().finish())
 }
 
-#[derive(Debug, Default, Deserialize)]
-
-pub struct StatePayload {
-    infra: Option<i64>,
-}
-
 /// Instructs Core to load an infra
 #[utoipa::path(
     tag = "infra",
@@ -595,21 +592,9 @@ async fn load(
     Ok(HttpResponse::NoContent().finish())
 }
 
-/// Builds a Core cache_status request, runs it
-pub async fn call_core_infra_state(
-    infra_id: Option<i64>,
-    db_pool: Arc<DbConnectionPool>,
-    core: Data<CoreClient>,
-) -> Result<HashMap<String, InfraStateResponse>> {
-    if let Some(infra_id) = infra_id {
-        let conn = &mut db_pool.get().await?;
-        if !Infra::exists(conn, infra_id).await? {
-            return Err(InfraApiError::NotFound { infra_id }.into());
-        }
-    }
-    let infra_request = InfraStateRequest { infra: infra_id };
-    let response = infra_request.fetch(core.as_ref()).await?;
-    Ok(response)
+#[derive(Debug, Default, Deserialize)]
+pub struct StatePayload {
+    infra: Option<i64>,
 }
 
 #[get("/cache_status")]
@@ -618,14 +603,36 @@ async fn cache_status(
     db_pool: Data<DbConnectionPool>,
     core: Data<CoreClient>,
 ) -> Result<Json<HashMap<String, InfraStateResponse>>> {
-    let payload = match payload {
-        Either::Left(state) => state.into_inner(),
-        Either::Right(_) => Default::default(),
-    };
-    let infra_id = payload.infra;
-    Ok(Json(
-        call_core_infra_state(infra_id, db_pool.into_inner(), core).await?,
-    ))
+    if let Either::Left(Json(StatePayload {
+        infra: Some(infra_id),
+    })) = payload
+    {
+        if !Infra::exists(db_pool.get().await?.deref_mut(), infra_id).await? {
+            return Err(InfraApiError::NotFound { infra_id }.into());
+        }
+        let infra_state = fetch_infra_state(infra_id, core.as_ref()).await?;
+        Ok(Json(HashMap::from([(infra_id.to_string(), infra_state)])))
+    } else {
+        Ok(Json(fetch_all_infra_states(core.as_ref()).await?))
+    }
+}
+
+/// Builds a Core cache_status request, runs it
+pub async fn fetch_infra_state(infra_id: i64, core: &CoreClient) -> Result<InfraStateResponse> {
+    Ok(InfraStateRequest {
+        infra: Some(infra_id),
+    }
+    .fetch(core)
+    .await?
+    .get(&infra_id.to_string())
+    .cloned()
+    .unwrap_or_default())
+}
+
+pub async fn fetch_all_infra_states(
+    core: &CoreClient,
+) -> Result<HashMap<String, InfraStateResponse>> {
+    InfraStateRequest::default().fetch(core).await
 }
 
 #[cfg(test)]

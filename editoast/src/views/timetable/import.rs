@@ -36,7 +36,7 @@ use crate::modelsv2::Infra;
 use crate::modelsv2::OperationalPointModel;
 use crate::modelsv2::RetrieveBatch;
 use crate::modelsv2::RollingStockModel;
-use crate::views::infra::call_core_infra_state;
+use crate::views::infra::fetch_infra_state;
 use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraState;
 use crate::views::pathfinding::save_core_pathfinding;
@@ -207,17 +207,13 @@ pub async fn post_timetable(
             .await?;
 
     // Check infra is loaded
-    let db_pool = db_pool.into_inner();
-    let mut infra_state =
-        call_core_infra_state(Some(infra_id), db_pool.clone(), core_client.clone()).await?;
-    let infra_status = infra_state
-        .remove(&infra_id.to_string())
-        .unwrap_or_default()
-        .status;
+    let core_client = core_client.as_ref();
+    let infra_status = fetch_infra_state(infra_id, core_client).await?.status;
     if infra_status != InfraState::Cached {
         return Err(TimetableError::InfraNotLoaded { infra_id }.into());
     }
 
+    let db_pool = db_pool.into_inner();
     let mut item_futures = Vec::new();
 
     for item in data.into_inner() {
@@ -227,7 +223,7 @@ pub async fn post_timetable(
             db_pool.clone(),
             item,
             timetable_id,
-            &core_client,
+            core_client,
         ));
     }
     let item_results = try_join_all(item_futures).await?;
