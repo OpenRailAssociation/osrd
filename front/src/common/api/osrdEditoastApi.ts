@@ -1049,17 +1049,12 @@ export type GetElectricalProfileSetByElectricalProfileSetIdLevelOrderApiArg = {
 };
 export type GetHealthApiResponse = unknown;
 export type GetHealthApiArg = void;
-export type GetInfraApiResponse = /** status 200 The infras list */ {
-  count: number;
-  next: any;
-  previous: any;
-  results?: Infra[];
+export type GetInfraApiResponse = /** status 200 All infras, paginated */ PaginationStats & {
+  results: InfraWithState[];
 };
 export type GetInfraApiArg = {
-  /** Page number */
   page?: number;
-  /** Number of elements by page */
-  pageSize?: number;
+  pageSize?: number | null;
 };
 export type PostInfraApiResponse = /** status 201 The created infra */ Infra;
 export type PostInfraApiArg = {
@@ -1894,6 +1889,20 @@ export type ElectricalProfileSet = {
   id: number;
   name: string;
 };
+export type PaginationStats = {
+  /** The total number of items */
+  count: number;
+  /** The current page number */
+  current: number;
+  /** The next page number, if any */
+  next: number | null;
+  /** The total number of pages */
+  page_count: number;
+  /** The number of items per page */
+  page_size: number;
+  /** The previous page number, if any */
+  previous: number | null;
+};
 export type Infra = {
   created: string;
   generated_version: string | null;
@@ -1903,6 +1912,20 @@ export type Infra = {
   name: string;
   railjson_version: string;
   version: string;
+};
+export type InfraState =
+  | 'NOT_LOADED'
+  | 'INITIALIZING'
+  | 'DOWNLOADING'
+  | 'PARSING_JSON'
+  | 'PARSING_INFRA'
+  | 'LOADING_SIGNALS'
+  | 'BUILDING_BLOCKS'
+  | 'CACHED'
+  | 'TRANSIENT_ERROR'
+  | 'ERROR';
+export type InfraWithState = Infra & {
+  state: InfraState;
 };
 export type BufferStop = {
   extensions?: {
@@ -2267,20 +2290,6 @@ export type InfraError = {
     obj_type: 'TrackSection' | 'Signal' | 'BufferStop' | 'Detector' | 'Switch' | 'Route';
   };
 };
-export type InfraState =
-  | 'NOT_LOADED'
-  | 'INITIALIZING'
-  | 'DOWNLOADING'
-  | 'PARSING_JSON'
-  | 'PARSING_INFRA'
-  | 'LOADING_SIGNALS'
-  | 'BUILDING_BLOCKS'
-  | 'CACHED'
-  | 'TRANSIENT_ERROR'
-  | 'ERROR';
-export type InfraWithState = Infra & {
-  state: InfraState;
-};
 export type BoundingBox = (number & number)[][];
 export type PathfindingOutput = {
   detectors: string[];
@@ -2468,20 +2477,6 @@ export type ProfilesOnPathResponse = {
 export type ElectrificationsOnPathResponse = {
   electrification_ranges: RangedValue[];
   warnings: InternalError[];
-};
-export type PaginationStats = {
-  /** The total number of items */
-  count: number;
-  /** The current page number */
-  current: number;
-  /** The next page number, if any */
-  next: number | null;
-  /** The total number of pages */
-  page_count: number;
-  /** The number of items per page */
-  page_size: number;
-  /** The previous page number, if any */
-  previous: number | null;
 };
 export type Tags = string[];
 export type Project = {

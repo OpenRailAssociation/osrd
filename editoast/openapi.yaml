@@ -9290,42 +9290,40 @@ paths:
   /infra/:
     get:
       parameters:
-      - description: Page number
-        in: query
+      - in: query
         name: page
+        required: false
         schema:
           default: 1
+          format: int64
           minimum: 1
           type: integer
-      - description: Number of elements by page
-        in: query
+      - in: query
         name: page_size
+        required: false
         schema:
           default: 25
-          maximum: 10000
+          format: int64
           minimum: 1
+          nullable: true
           type: integer
       responses:
         '200':
           content:
             application/json:
               schema:
-                properties:
-                  count:
-                    type: number
-                  next: {}
-                  previous: {}
-                  results:
-                    items:
-                      $ref: '#/components/schemas/Infra'
-                    type: array
-                required:
-                - count
-                - next
-                - previous
-                type: object
-          description: The infras list
-      summary: Paginated list of all available infras
+                allOf:
+                - $ref: '#/components/schemas/PaginationStats'
+                - properties:
+                    results:
+                      items:
+                        $ref: '#/components/schemas/InfraWithState'
+                      type: array
+                  required:
+                  - results
+                  type: object
+          description: All infras, paginated
+      summary: Lists all infras along with their current loading state in Core
       tags:
       - infra
     post:
