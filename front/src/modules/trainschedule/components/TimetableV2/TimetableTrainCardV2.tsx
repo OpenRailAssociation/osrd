@@ -23,7 +23,7 @@ import {
   updateSelectedTrainId,
 } from 'reducers/osrdsimulation/actions';
 import { useAppDispatch } from 'store';
-import { isoDateToMs, msToIsoDate } from 'utils/date';
+import { isoDateToMs, formatToIsoDate } from 'utils/date';
 import { castErrorToFailure } from 'utils/error';
 import { sec2time } from 'utils/timeManipulation';
 
@@ -118,7 +118,7 @@ const TimetableTrainCardV2 = ({
     if (trainsResults) {
       const trainDetail = trainsResults[0];
       const formattedStartTimeMs = isoDateToMs(trainDetail.start_time);
-      const newStartTimeString = msToIsoDate(formattedStartTimeMs + 1000 * 60 * trainDelta);
+      const newStartTimeString = formatToIsoDate(formattedStartTimeMs + 1000 * 60 * trainDelta);
 
       const newTrain: TrainScheduleBase = {
         ...omit(trainDetail, ['id', 'timetable_id']),

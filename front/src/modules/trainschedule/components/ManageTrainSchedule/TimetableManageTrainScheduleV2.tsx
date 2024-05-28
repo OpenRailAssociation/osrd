@@ -18,8 +18,6 @@ type TimetableManageTrainScheduleProps = {
   setDisplayTrainScheduleManagement: (type: string) => void;
   setTrainResultsToFetch: (trainScheduleIds?: number[]) => void;
   infraState?: InfraState;
-  // refetchTimetable: () => void;
-  // refetchConflicts: () => void;
 };
 
 const TimetableManageTrainScheduleV2 = ({
@@ -27,8 +25,6 @@ const TimetableManageTrainScheduleV2 = ({
   setDisplayTrainScheduleManagement,
   setTrainResultsToFetch,
   infraState,
-  // refetchTimetable,
-  // refetchConflicts,
 }: TimetableManageTrainScheduleProps) => {
   const { t } = useTranslation('operationalStudies/manageTrainSchedule');
   const dispatch = useDispatch();
@@ -65,9 +61,7 @@ const TimetableManageTrainScheduleV2 = ({
             ) : (
               <AddTrainScheduleV2Button
                 infraState={infraState}
-                // refetchTimetable={refetchTimetable}
                 setIsWorking={setIsWorking}
-                // refetchConflicts={refetchConflicts}
                 // setTrainResultsToFetch={setTrainResultsToFetch}
               />
             )}

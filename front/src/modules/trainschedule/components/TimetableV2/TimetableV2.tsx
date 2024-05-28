@@ -7,9 +7,9 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
-import type { Conflict, InfraState } from 'common/api/osrdEditoastApi';
+import type { ConflictV2, InfraState } from 'common/api/osrdEditoastApi';
 import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
-import ConflictsList from 'modules/conflict/components/ConflictsList';
+import ConflictsListV2 from 'modules/conflict/components/ConflictsListV2';
 import { updateSelectedTrainId } from 'reducers/osrdsimulation/actions';
 import { getTrainIdUsedForProjection } from 'reducers/osrdsimulation/selectors';
 import { useAppDispatch } from 'store';
@@ -26,7 +26,7 @@ type TimetableV2Props = {
   infraState: InfraState;
   trainIds: number[];
   selectedTrainId?: number;
-  conflicts?: Conflict[];
+  conflicts?: ConflictV2[];
   setTrainResultsToFetch: (trainScheduleIds?: number[]) => void;
 };
 
@@ -86,7 +86,7 @@ const TimetableV2 = ({
     setSelectedTrainIds(currentSelectedTrainIds);
   };
 
-  const handleConflictClick = (conflict: Conflict) => {
+  const handleConflictClick = (conflict: ConflictV2) => {
     if (conflict.train_ids.length > 0) {
       const firstTrainId = conflict.train_ids[0];
       dispatch(updateSelectedTrainId(firstTrainId));
@@ -176,11 +176,12 @@ const TimetableV2 = ({
           </div>
         )}
         {conflicts && (
-          <ConflictsList
+          <ConflictsListV2
             conflicts={conflicts}
             expanded={conflictsListExpanded}
             toggleConflictsList={toggleConflictsListExpanded}
-            onClick={handleConflictClick}
+            trainSchedulesDetails={trainSchedulesDetails}
+            onConflictClick={handleConflictClick}
           />
         )}
       </div>

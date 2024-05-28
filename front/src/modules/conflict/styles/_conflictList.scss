@@ -76,13 +76,26 @@
     .conflict-type {
       text-align: left;
       flex-grow: 1;
+      white-space: nowrap;
     }
     .conflict-times {
+      margin-left: 0.5rem;
       text-align: right;
       font-size: 0.8rem;
+      white-space: nowrap;
+      overflow: hidden; 
+      text-overflow: ellipsis;
       .start-time {
         font-weight: 600;
         font-size: 0.9rem;
+        overflow: hidden; 
+        text-overflow: ellipsis;
+        white-space: nowrap; 
+      }
+      .end-time {
+        overflow: hidden; 
+        text-overflow: ellipsis;
+        white-space: nowrap; 
       }
     }
   }

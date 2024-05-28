@@ -6,7 +6,7 @@ import { uniq } from 'lodash';
 import { enhancedEditoastApi } from 'common/api/enhancedEditoastApi';
 import type { SimulationSummaryResult, TrainScheduleResult } from 'common/api/osrdEditoastApi';
 import { useInfraID } from 'common/osrdContext';
-import { isoDateToMs, msToIsoDate } from 'utils/date';
+import { isoDateToMs, formatToIsoDate } from 'utils/date';
 import { jouleToKwh } from 'utils/physics';
 import { formatKmValue } from 'utils/strings';
 
@@ -134,7 +134,7 @@ const useTrainSchedulesDetails = (
           const otherProps =
             trainSummary.status === 'success'
               ? {
-                  arrivalTime: msToIsoDate(formattedStartTimeMs + trainSummary.time, true),
+                  arrivalTime: formatToIsoDate(formattedStartTimeMs + trainSummary.time, true),
                   duration: trainSummary.time,
                   pathLength: formatKmValue(trainSummary.length, 'millimeters', 1),
                   mechanicalEnergyConsumed: jouleToKwh(trainSummary.energy_consumption, true),
