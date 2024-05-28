@@ -1699,8 +1699,9 @@ export type PatchV2ProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg
   scenarioId: number;
   scenarioPatchFormV2: ScenarioPatchFormV2;
 };
-export type GetV2TimetableApiResponse =
-  /** status 200 List timetables */ PaginatedResponseOfTimetable;
+export type GetV2TimetableApiResponse = /** status 200 List timetables */ PaginationStats & {
+  results: TimetableResult[];
+};
 export type GetV2TimetableApiArg = {
   page?: number;
   pageSize?: number | null;
@@ -3442,16 +3443,6 @@ export type ScenarioPatchFormV2 = {
 export type TimetableResult = {
   electrical_profile_set_id?: number | null;
   id: number;
-};
-export type PaginatedResponseOfTimetable = {
-  /** The total number of items */
-  count: number;
-  /** The next page number */
-  next: number | null;
-  /** The previous page number */
-  previous: number | null;
-  /** The list of results */
-  results: TimetableResult[];
 };
 export type TimetableForm = {
   electrical_profile_set_id?: number | null;

@@ -4323,34 +4323,6 @@ components:
       - next
       - results
       type: object
-    PaginatedResponseOfTimetable:
-      description: A paginated response
-      properties:
-        count:
-          description: The total number of items
-          format: int64
-          type: integer
-        next:
-          description: The next page number
-          format: int64
-          nullable: true
-          type: integer
-        previous:
-          description: The previous page number
-          format: int64
-          nullable: true
-          type: integer
-        results:
-          description: The list of results
-          items:
-            $ref: '#/components/schemas/TimetableResult'
-          type: array
-      required:
-      - count
-      - previous
-      - next
-      - results
-      type: object
     PaginationStats:
       description: |-
         Statistics about a paginated editoast response
@@ -11891,7 +11863,16 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedResponseOfTimetable'
+                allOf:
+                - $ref: '#/components/schemas/PaginationStats'
+                - properties:
+                    results:
+                      items:
+                        $ref: '#/components/schemas/TimetableResult'
+                      type: array
+                  required:
+                  - results
+                  type: object
           description: List timetables
       summary: Retrieve paginated timetables
       tags:

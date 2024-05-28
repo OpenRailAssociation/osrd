@@ -1,6 +1,7 @@
 pub mod stdcm;
 
 use std::collections::HashMap;
+use std::ops::DerefMut as _;
 
 use actix_web::delete;
 use actix_web::get;
@@ -26,10 +27,7 @@ use crate::core::v2::conflict_detection::ConflictDetectionRequest;
 use crate::core::v2::conflict_detection::TrainRequirements;
 use crate::core::v2::simulation::SimulationResponse;
 use crate::core::AsCoreRequest;
-use crate::decl_paginated_response;
 use crate::error::Result;
-use crate::models::List;
-use crate::models::NoParams;
 use crate::modelsv2::timetable::Timetable;
 use crate::modelsv2::timetable::TimetableWithTrains;
 use crate::modelsv2::train_schedule::TrainSchedule;
@@ -41,8 +39,9 @@ use crate::modelsv2::Infra;
 use crate::modelsv2::Model;
 use crate::modelsv2::Retrieve;
 use crate::modelsv2::Update;
-use crate::views::pagination::PaginatedResponse;
+use crate::views::pagination::PaginatedList;
 use crate::views::pagination::PaginationQueryParam;
+use crate::views::pagination::PaginationStats;
 use crate::views::v2::train_schedule::train_simulation_batch;
 use crate::views::v2::train_schedule::TrainScheduleForm;
 use crate::views::v2::train_schedule::TrainScheduleResult;
@@ -66,7 +65,6 @@ crate::routes! {
 }
 
 editoast_common::schemas! {
-    PaginatedResponseOfTimetable,
     TimetableForm,
     TimetableResult,
     TimetableDetailedResult,
@@ -161,28 +159,36 @@ async fn get(
     Ok(Json(timetable.into()))
 }
 
-decl_paginated_response!(PaginatedResponseOfTimetable, TimetableResult);
+#[derive(Serialize, ToSchema)]
+struct ListTimetablesResponse {
+    #[serde(flatten)]
+    stats: PaginationStats,
+    results: Vec<TimetableResult>,
+}
 
 /// Retrieve paginated timetables
 #[utoipa::path(
     tag = "timetablev2",
     params(PaginationQueryParam),
     responses(
-        (status = 200, description = "List timetables", body = PaginatedResponseOfTimetable),
+        (status = 200, description = "List timetables", body = inline(ListTimetablesResponse)),
     ),
 )]
 #[get("")]
 async fn list(
     db_pool: Data<DbConnectionPool>,
     pagination_params: Query<PaginationQueryParam>,
-) -> Result<Json<PaginatedResponse<TimetableResult>>> {
-    let (page, per_page) = pagination_params
+) -> Result<Json<ListTimetablesResponse>> {
+    let settings = pagination_params
         .validate(1000)?
         .warn_page_size(100)
-        .unpack();
-    let conn = &mut db_pool.get().await?;
-    let timetable = Timetable::list_conn(conn, page, per_page, NoParams).await?;
-    Ok(Json(timetable.into()))
+        .into_selection_settings();
+    let (timetables, stats) =
+        Timetable::list_paginated(db_pool.get().await?.deref_mut(), settings).await?;
+    Ok(Json(ListTimetablesResponse {
+        stats,
+        results: timetables.into_iter().map_into().collect(),
+    }))
 }
 
 /// Create a timetable
