@@ -4,6 +4,7 @@ import com.squareup.moshi.*
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import fr.sncf.osrd.api.api_v2.RangeValues
 import fr.sncf.osrd.api.api_v2.TrackRange
+import fr.sncf.osrd.conflicts.TravelledPath
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock.GammaType
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSEffortCurves.RJSModeEffortCurve
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingResistance
@@ -90,7 +91,7 @@ class SimulationPath(
 )
 
 class SimulationScheduleItem(
-    @Json(name = "path_offset") val pathOffset: Offset<Path>,
+    @Json(name = "path_offset") val pathOffset: Offset<TravelledPath>,
     val arrival: TimeDelta?,
     @Json(name = "stop_for") val stopFor: Duration?,
     @Json(name = "on_stop_signal") val onStopSignal: Boolean,

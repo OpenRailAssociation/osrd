@@ -37,7 +37,7 @@ fun convertPathfindingResult(
     warningRecorder: DiagnosticRecorderImpl
 ): PathfindingResult {
     val path = makePathProps(rawInfra, blockInfra, rawPath.ranges)
-    val result = PathfindingResult(path.getLength().distance.meters)
+    val result = PathfindingResult(path.getLength().meters)
     result.routePaths = makeRoutePath(blockInfra, rawInfra, rawPath.ranges)
     result.pathWaypoints = makePathWaypoint(path, rawPath, rawInfra, blockInfra)
     result.geographic = makeGeographic(path)

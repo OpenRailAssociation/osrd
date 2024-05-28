@@ -228,7 +228,7 @@ class MRSPTest {
         justification = "called implicitly by MethodSource"
     )
     private fun testComputeMRSPArgs(): Stream<Arguments> {
-        val pathLength = toMeters(path!!.getLength().distance)
+        val pathLength = toMeters(path!!.getLength())
         return Stream.of(
             // Multiple speed sections with correct/incorrect train tag and no rolling stock
             // length

@@ -3,10 +3,7 @@ package fr.sncf.osrd.sim_infra.utils
 import fr.sncf.osrd.geom.LineString
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.utils.DistanceRangeMap
-import fr.sncf.osrd.utils.units.Length
-import fr.sncf.osrd.utils.units.Offset
-import fr.sncf.osrd.utils.units.Speed
-import fr.sncf.osrd.utils.units.meters
+import fr.sncf.osrd.utils.units.*
 
 /**
  * This class is used to create a PathProperties from a slice of an existing PathProperties.
@@ -27,7 +24,7 @@ data class PathPropertiesView(
         return base
             .getOperationalPointParts()
             .map { IdxWithOffset(it.value, it.offset - startOffset.distance) }
-            .filter { it.offset >= Offset(0.meters) && it.offset <= getLength() }
+            .filter { it.offset >= Offset(0.meters) && it.offset.distance <= getLength() }
     }
 
     override fun getGradients(): DistanceRangeMap<Double> {
@@ -39,7 +36,7 @@ data class PathPropertiesView(
     }
 
     override fun getGeo(): LineString {
-        val baseLength = base.getLength().distance.meters
+        val baseLength = base.getLength().meters
         return base
             .getGeo()
             .slice(startOffset.distance.meters / baseLength, endOffset.distance.meters / baseLength)
@@ -61,8 +58,8 @@ data class PathPropertiesView(
         return sliceRangeMap(base.getSpeedLimits(trainTag))
     }
 
-    override fun getLength(): Length<Path> {
-        return Length(endOffset - startOffset)
+    override fun getLength(): Distance {
+        return endOffset - startOffset
     }
 
     override fun getTrackLocationAtOffset(pathOffset: Offset<Path>): TrackLocation {

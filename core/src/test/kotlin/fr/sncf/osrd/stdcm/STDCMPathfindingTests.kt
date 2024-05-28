@@ -3,10 +3,8 @@ package fr.sncf.osrd.stdcm
 import com.google.common.collect.ImmutableMultimap
 import fr.sncf.osrd.graph.Pathfinding.EdgeLocation
 import fr.sncf.osrd.sim_infra.api.BlockId
-import fr.sncf.osrd.sim_infra.api.Path
 import fr.sncf.osrd.stdcm.preprocessing.OccupancySegment
 import fr.sncf.osrd.utils.DummyInfra
-import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import org.junit.jupiter.api.Assertions
@@ -45,7 +43,7 @@ class STDCMPathfindingTests {
                 .setStartLocations(setOf(EdgeLocation(firstBlock, Offset(30.meters))))
                 .setEndLocations(setOf(EdgeLocation(secondBlock, Offset(30.meters))))
                 .run()!!
-        Assertions.assertEquals(Length<Path>(100.meters), res.trainPath.getLength())
+        Assertions.assertEquals(100.meters, res.trainPath.getLength())
     }
 
     /** Look for a path where the blocks are occupied before and after */

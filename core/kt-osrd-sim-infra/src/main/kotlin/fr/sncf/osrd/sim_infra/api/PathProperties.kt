@@ -7,7 +7,7 @@ import fr.sncf.osrd.sim_infra.impl.buildChunkPath
 import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.indexing.DirStaticIdxList
 import fr.sncf.osrd.utils.indexing.StaticIdx
-import fr.sncf.osrd.utils.units.Length
+import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.Speed
 import java.lang.RuntimeException
@@ -46,7 +46,7 @@ interface PathProperties {
 
     @JvmName("getSpeedLimits") fun getSpeedLimits(trainTag: String?): DistanceRangeMap<Speed>
 
-    @JvmName("getLength") fun getLength(): Length<Path>
+    @JvmName("getLength") fun getLength(): Distance
 
     @JvmName("getTrackLocationAtOffset")
     fun getTrackLocationAtOffset(pathOffset: Offset<Path>): TrackLocation
