@@ -158,9 +158,6 @@ pub trait Update: Sized + 'static {
     async fn update_conn(self, conn: &mut DbConnection, id: i64) -> Result<Option<Self>>;
 }
 
-/// Use this struct for list when there are no generic parameters
-pub struct NoParams;
-
 /// Trait to implement the `list` and `list_conn` methods.
 /// This trait is automatically implemented by the `#[derive(Model)]` macro.
 /// Check the macro documentation [here](editoast_derive::Model)

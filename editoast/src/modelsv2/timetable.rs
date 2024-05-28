@@ -1,44 +1,18 @@
-use async_trait::async_trait;
 use diesel::sql_query;
 use diesel::sql_types::Array;
 use diesel::sql_types::BigInt;
 use diesel::sql_types::Nullable;
 use editoast_derive::ModelV2;
 
-use crate::diesel::query_dsl::methods::DistinctDsl;
 use crate::error::Result;
-use crate::models::List;
-use crate::models::NoParams;
 use crate::modelsv2::DbConnection;
 use crate::modelsv2::Retrieve;
-use crate::modelsv2::Row;
-use crate::tables::timetable_v2::dsl;
-use crate::views::pagination::Paginate;
-use crate::views::pagination::PaginatedResponse;
 
 #[derive(Debug, Default, Clone, ModelV2)]
 #[model(table = crate::tables::timetable_v2)]
 pub struct Timetable {
     pub id: i64,
     pub electrical_profile_set_id: Option<i64>,
-}
-
-#[async_trait]
-impl List<NoParams> for Timetable {
-    async fn list_conn(
-        conn: &mut DbConnection,
-        page: i64,
-        page_size: i64,
-        _: NoParams,
-    ) -> Result<PaginatedResponse<Self>> {
-        let timetable_rows = dsl::timetable_v2
-            .distinct()
-            .paginate(page, page_size)
-            .load_and_count::<Row<Timetable>>(conn)
-            .await?;
-
-        Ok(timetable_rows.into())
-    }
 }
 
 /// Should be used to retrieve a timetable with its trains
