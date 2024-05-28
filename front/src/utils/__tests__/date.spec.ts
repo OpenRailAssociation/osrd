@@ -1,4 +1,4 @@
-import { dateTimeToIso, isoDateToMs, msToIsoDate } from 'utils/date';
+import { dateTimeToIso, isoDateToMs, formatToIsoDate } from 'utils/date';
 
 describe('dateTimeToIso', () => {
   it('should return an iso date by passing a date without milliseconds', () => {
@@ -34,10 +34,10 @@ describe('isoDateToMs', () => {
   });
 });
 
-describe('msToIsoDate', () => {
+describe('formatToIsoDate', () => {
   it('should return the date in ISO 8601', () => {
     const msDate = 1714156215000;
-    const isoDate = msToIsoDate(msDate);
+    const isoDate = formatToIsoDate(msDate);
     expect(isoDate).toEqual('2024-04-26T18:30:15Z'); // Ends by Z because CI seems to be in UTC timezone
   });
 });

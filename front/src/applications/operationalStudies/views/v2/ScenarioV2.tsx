@@ -146,11 +146,10 @@ const ScenarioV2 = () => {
     }
   );
 
-  // const { refetch: refetchConflicts } =
-  //   osrdEditoastApi.endpoints.getV2TimetableByIdConflicts.useQuery(
-  //     { id: timetable!.id, infraId: infraId! },
-  //     { skip: !timetable || !infraId }
-  //   );
+  const { data: conflicts } = osrdEditoastApi.endpoints.getV2TimetableByIdConflicts.useQuery(
+    { id: timetable?.id as number, infraId: infraId! },
+    { skip: !timetable || !infraId }
+  );
 
   useEffect(() => {
     if (timetable && infra?.state === 'CACHED' && timetable.train_ids.length > 0) {
@@ -287,7 +286,6 @@ const ScenarioV2 = () => {
                     setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
                     setTrainResultsToFetch={setTrainResultsToFetch}
                     infraState={infra.state}
-                    // refetchConflicts={() => {}}
                   />
                 )}
                 {infra && (
@@ -297,7 +295,7 @@ const ScenarioV2 = () => {
                     infraState={infra.state}
                     trainIds={timetable.train_ids}
                     selectedTrainId={selectedTrainId}
-                    conflicts={[]}
+                    conflicts={conflicts}
                     setTrainResultsToFetch={setTrainResultsToFetch}
                   />
                 )}

@@ -11,7 +11,7 @@ import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/compon
 import trainNameWithNum from 'modules/trainschedule/components/ManageTrainSchedule/helpers/trainNameHelper';
 import { setFailure, setSuccess } from 'reducers/main';
 import { useAppDispatch } from 'store';
-import { isoDateToMs, msToIsoDate } from 'utils/date';
+import { isoDateToMs, formatToIsoDate } from 'utils/date';
 import { castErrorToFailure } from 'utils/error';
 import { sec2time } from 'utils/timeManipulation';
 
@@ -20,16 +20,12 @@ import formatTrainSchedulePayload from './helpers/formatTrainSchedulePayload';
 
 type SubmitConfAddTrainScheduleProps = {
   infraState?: InfraState;
-  //   refetchTimetable: () => void;
-  //   refetchConflicts: () => void;
   setIsWorking: (isWorking: boolean) => void;
   //   setTrainResultsToFetch: (trainScheduleIds?: number[]) => void;
 };
 
 const AddTrainScheduleV2Button = ({
   infraState,
-  //   refetchTimetable,
-  //   refetchConflicts,
   setIsWorking,
   //   setTrainResultsToFetch,
 }: SubmitConfAddTrainScheduleProps) => {
@@ -58,7 +54,7 @@ const AddTrainScheduleV2Button = ({
       let actualTrainCount = 1;
 
       for (let nb = 1; nb <= trainCount; nb += 1) {
-        const newStartTimeString = msToIsoDate(
+        const newStartTimeString = formatToIsoDate(
           formattedStartTimeMs + 1000 * 60 * trainDelta * (nb - 1)
         );
         const trainName = trainNameWithNum(baseTrainName, actualTrainCount, trainCount);
@@ -86,8 +82,6 @@ const AddTrainScheduleV2Button = ({
         );
         setIsWorking(false);
         // setTrainResultsToFetch(newTrainIds);
-        // refetchTimetable();
-        // refetchConflicts();
       } catch (e) {
         setIsWorking(false);
         dispatch(setFailure(castErrorToFailure(e)));

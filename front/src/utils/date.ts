@@ -52,10 +52,10 @@ export const dateTimeToIso = (inputDateTime: string) => {
  * @param msDate milliseconds date (elapsed from January 1st 1970)
  * @return an ISO 8601 date (e.g. 2024-04-25T08:30:00+02:00)
  */
-export const msToIsoDate = (msDate: number, formatDate: boolean = false) => {
+export const formatToIsoDate = (date: number | string, formatDate: boolean = false) => {
   const userTimeZone = dayjs.tz.guess(); // Format : 'Europe/Paris'
   const format = formatDate ? 'D/MM/YYYY HH:mm:ss' : '';
-  return dayjs.tz(msDate, userTimeZone).format(format);
+  return dayjs.tz(date, userTimeZone).format(format);
 };
 
 /**
@@ -92,4 +92,9 @@ export function getEarliestDate(date1: string | null | undefined, dat2: string |
     return formatedDate1 < formatedDate2 ? formatedDate1 : formatedDate2;
   }
   return formatedDate1 || formatedDate2;
+}
+
+export function stringToTime(sec: string) {
+  const secNum = parseInt(sec, 10);
+  return new Date(secNum * 1000).toISOString().substr(11, 8);
 }
