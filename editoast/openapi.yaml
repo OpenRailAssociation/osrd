@@ -7470,10 +7470,13 @@ components:
                         enum:
                         - profile
                         type: string
+                      handled:
+                        type: boolean
                       profile:
+                        nullable: true
                         type: string
                     required:
-                    - profile
+                    - handled
                     - electrical_profile_type
                     type: object
                 type: array
