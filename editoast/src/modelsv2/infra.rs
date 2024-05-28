@@ -7,13 +7,11 @@ mod voltage;
 
 use std::pin::Pin;
 
-use async_trait::async_trait;
 use chrono::NaiveDateTime;
 use chrono::Utc;
 use derivative::Derivative;
 use diesel::sql_query;
 use diesel::sql_types::BigInt;
-use diesel::QueryDsl;
 use diesel_async::RunQueryDsl;
 use editoast_derive::ModelV2;
 use futures::future::try_join_all;
@@ -29,8 +27,6 @@ use uuid::Uuid;
 use crate::error::Result;
 use crate::generated_data;
 use crate::infra_cache::InfraCache;
-use crate::models::List;
-use crate::models::NoParams;
 use crate::modelsv2::get_geometry_layer_table;
 use crate::modelsv2::get_table;
 use crate::modelsv2::prelude::*;
@@ -39,8 +35,6 @@ use crate::modelsv2::Create;
 use crate::modelsv2::DbConnection;
 use crate::modelsv2::DbConnectionPool;
 use crate::tables::infra::dsl;
-use crate::views::pagination::Paginate;
-use crate::views::pagination::PaginatedResponse;
 use editoast_schemas::infra::RailJson;
 use editoast_schemas::infra::RAILJSON_VERSION;
 use editoast_schemas::primitives::ObjectType;
@@ -224,33 +218,6 @@ impl Infra {
         self.generated_version = None;
         self.save(conn).await?;
         Ok(true)
-    }
-}
-
-#[async_trait]
-impl List<NoParams> for Infra {
-    async fn list_conn(
-        conn: &mut DbConnection,
-        page: i64,
-        page_size: i64,
-        _: NoParams,
-    ) -> Result<PaginatedResponse<Self>> {
-        let PaginatedResponse {
-            count,
-            previous,
-            next,
-            results,
-        } = dsl::infra
-            .distinct()
-            .paginate(page, page_size)
-            .load_and_count::<Row<Self>>(conn)
-            .await?;
-        Ok(PaginatedResponse {
-            count,
-            previous,
-            next,
-            results: results.into_iter().map(Self::from_row).collect(),
-        })
     }
 }
 

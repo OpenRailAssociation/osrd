@@ -23,8 +23,11 @@ class _InfraDetails:
 @dataclass(frozen=True)
 class _InfraResponse:
     count: int
-    next: Optional[Any]
-    previous: Optional[Any]
+    page_size: int
+    page_count: int
+    current: int
+    previous: Optional[int]
+    next: Optional[int]
     results: Iterable[Mapping[str, Any]]
 
 
