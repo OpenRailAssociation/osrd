@@ -74,10 +74,16 @@ data class PathPropertiesImpl(
                 infra.getRoutesOnTrackChunk(dirChunkId).filter { route ->
                     pathRoutes!!.contains(route)
                 }
-            assert(routeOnChunk.size < 2) {
-                "a train cannot follow more than one route at the same time"
-            }
-            val route = routeOnChunk.singleOrNull()?.let { routeId -> infra.getRouteName(routeId) }
+            // TODO: add a warning.
+            // Technically, in the following situation, the path would loop, and you could have 2
+            // itineraries in the path with the same commonChunk, with no way to know the true speed
+            // limit. For now, we take the first itinerary's speed limit.
+            // -> - -
+            //        \
+            //         end
+            //           \
+            // - start - - - commonChunk - ->
+            val route = routeOnChunk.firstOrNull()?.let { routeId -> infra.getRouteName(routeId) }
             infra.getTrackChunkSpeedSections(dirChunkId, trainTag, route)
         }
     }
