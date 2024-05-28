@@ -23,7 +23,7 @@ class SimulationSuccess(
 ) : SimulationResponse
 
 sealed class ElectricalProfileValue {
-    data class Profile(var profile: String) : ElectricalProfileValue()
+    data class Profile(val profile: String?, val handled: Boolean) : ElectricalProfileValue()
 
     class NoProfile : ElectricalProfileValue() {
         override fun equals(other: Any?): Boolean {
