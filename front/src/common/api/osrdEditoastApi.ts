@@ -3502,7 +3502,8 @@ export type SimulationResponse =
             }
           | {
               electrical_profile_type: 'profile';
-              profile: string;
+              handled: boolean;
+              profile?: string | null;
             }
         )[];
       };

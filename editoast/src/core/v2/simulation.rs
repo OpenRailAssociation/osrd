@@ -211,7 +211,10 @@ pub struct ElectricalProfiles {
 #[serde(tag = "electrical_profile_type", rename_all = "snake_case")]
 pub enum ElectricalProfileValue {
     NoProfile,
-    Profile { profile: String },
+    Profile {
+        profile: Option<String>,
+        handled: bool,
+    },
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
