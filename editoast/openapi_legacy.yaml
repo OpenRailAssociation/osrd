@@ -22,43 +22,6 @@ tags:
 
 paths:
   /infra/:
-    get:
-      tags:
-        - infra
-      summary: Paginated list of all available infras
-      parameters:
-        - description: Page number
-          in: query
-          name: page
-          schema:
-            default: 1
-            minimum: 1
-            type: integer
-        - description: Number of elements by page
-          in: query
-          name: page_size
-          schema:
-            default: 25
-            maximum: 10000
-            minimum: 1
-            type: integer
-      responses:
-        200:
-          description: The infras list
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  count:
-                    type: number
-                  next: {}
-                  previous: {}
-                  results:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/Infra"
-                required: [count, next, previous]
     post:
       tags:
         - infra

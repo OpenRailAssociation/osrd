@@ -76,6 +76,7 @@ crate::routes! {
             get_voltages,
             get_switch_types,
         },
+        list,
         get_all_voltages,
         railjson::routes(),
     },
@@ -218,7 +219,14 @@ struct InfraListResponse {
     results: Vec<InfraWithState>,
 }
 
-/// Return a list of infras
+/// Lists all infras along with their current loading state in Core
+#[utoipa::path(
+    tag = "infra",
+    params(PaginationQueryParam),
+    responses(
+        (status = 200, description = "All infras, paginated", body = inline(InfraListResponse))
+    ),
+)]
 #[get("")]
 async fn list(
     db_pool: Data<DbConnectionPool>,
