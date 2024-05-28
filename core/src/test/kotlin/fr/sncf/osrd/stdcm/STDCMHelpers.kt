@@ -45,7 +45,7 @@ fun makeRequirementsFromPath(
                     TestTrains.REALISTIC_FAST_TRAIN,
                     0.0,
                     ArrayList(),
-                    listOf(TrainStop(trainPath.getLength().distance.meters, 1.0)),
+                    listOf(TrainStop(trainPath.getLength().meters, 1.0)),
                     listOf(),
                     null,
                     RollingStock.Comfort.STANDARD,

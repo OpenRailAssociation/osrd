@@ -65,7 +65,7 @@ class RemainingDistanceEstimator(
         ): Point {
             val path = makePathProps(blockInfra, rawInfra, blockIdx)
             val lineString = path.getGeo()
-            val normalizedOffset = pointOffset.distance.meters / path.getLength().distance.meters
+            val normalizedOffset = pointOffset.distance.meters / path.getLength().meters
             return lineString.interpolateNormalized(normalizedOffset)
         }
 

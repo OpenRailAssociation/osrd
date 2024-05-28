@@ -5,6 +5,7 @@ import fr.sncf.osrd.api.api_v2.RangeValues
 import fr.sncf.osrd.api.api_v2.standalone_sim.MarginValue
 import fr.sncf.osrd.api.api_v2.standalone_sim.ReportTrain
 import fr.sncf.osrd.api.api_v2.standalone_sim.SimulationScheduleItem
+import fr.sncf.osrd.conflicts.TravelledPath
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue.Percentage
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue.TimePerDistance
@@ -14,7 +15,6 @@ import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath
 import fr.sncf.osrd.envelope_sim_infra.MRSP
 import fr.sncf.osrd.external_generated_inputs.ElectricalProfileMapping
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowanceDistribution
-import fr.sncf.osrd.sim_infra.api.Path
 import fr.sncf.osrd.sim_infra.api.makePathProperties
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.TestTrains
@@ -103,9 +103,9 @@ class StandaloneSimulationTest {
      */
     private fun generateTestCases(): Stream<Arguments> {
         // Enumerate possible individual scheduled points
-        val thirdDistance = pathLength / 3.0
-        val halfDistance = pathLength / 2.0
-        val twoThirdDistance = pathLength * (2.0 / 3.0)
+        val thirdDistance = Offset<TravelledPath>(pathLength / 3.0)
+        val halfDistance = Offset<TravelledPath>(pathLength / 2.0)
+        val twoThirdDistance = Offset<TravelledPath>(pathLength * (2.0 / 3.0))
         val possibleScheduledItem =
             listOf(
                 SimulationScheduleItem(
@@ -124,7 +124,7 @@ class StandaloneSimulationTest {
                 ),
                 SimulationScheduleItem(twoThirdDistance, null, 30.seconds, false),
                 SimulationScheduleItem(
-                    pathLength,
+                    Offset<TravelledPath>(pathLength),
                     maxEffortEnvelope.totalTime.seconds + 300.seconds,
                     0.seconds,
                     false
@@ -149,7 +149,7 @@ class StandaloneSimulationTest {
                 RangeValues(),
                 RangeValues(listOf(), listOf(MarginValue.Percentage(10.0))),
                 RangeValues(
-                    listOf(Offset(pathLength.distance / 2.0)),
+                    listOf(Offset(pathLength / 2.0)),
                     listOf(
                         MarginValue.Percentage(10.0),
                         MarginValue.MinPer100Km(5.0),
@@ -169,7 +169,7 @@ class StandaloneSimulationTest {
                                 margins = margin,
                                 startSpeed = startSpeed,
                                 allowanceDistribution = distribution,
-                                pathLength = pathLength.distance
+                                pathLength = pathLength
                             )
                         )
                     }
@@ -224,7 +224,7 @@ class StandaloneSimulationTest {
         }
 
         // Test margin values
-        val boundaries = mutableListOf<Offset<Path>>()
+        val boundaries = mutableListOf<Offset<TravelledPath>>()
         boundaries.add(Offset(Distance.ZERO))
         boundaries.addAll(testCase.margins.boundaries)
         boundaries.add(Offset(testCase.pathLength))
@@ -260,7 +260,7 @@ class StandaloneSimulationTest {
      * Returns the time at which the given offset is reached, interpolating linearly between points.
      */
     private fun getTimeAt(
-        offset: Offset<Path>,
+        offset: Offset<TravelledPath>,
         train: ReportTrain,
         interpolateRight: Boolean
     ): Double {
@@ -271,8 +271,8 @@ class StandaloneSimulationTest {
      * Returns the time at which the given offset is reached, interpolating linearly between points.
      */
     private fun getTimeAt(
-        offset: Offset<Path>,
-        positions: List<Offset<Path>>,
+        offset: Offset<TravelledPath>,
+        positions: List<Offset<TravelledPath>>,
         times: List<TimeDelta>,
         interpolateRight: Boolean
     ): Double {

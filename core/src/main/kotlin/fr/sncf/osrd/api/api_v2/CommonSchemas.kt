@@ -1,6 +1,7 @@
 package fr.sncf.osrd.api.api_v2
 
 import com.squareup.moshi.Json
+import fr.sncf.osrd.conflicts.TravelledPath
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection
 import fr.sncf.osrd.sim_infra.api.Path
 import fr.sncf.osrd.sim_infra.api.TrackSection
@@ -21,7 +22,7 @@ data class UndirectedTrackRange(
 )
 
 data class RangeValues<T>(
-    val boundaries: List<Offset<Path>> = listOf(),
+    val boundaries: List<Offset<TravelledPath>> = listOf(),
     val values: List<T> = listOf()
 )
 

@@ -88,8 +88,8 @@ data class PathPropertiesImpl(
         }
     }
 
-    override fun getLength(): Length<Path> {
-        return Length(chunkPath.endOffset - chunkPath.beginOffset)
+    override fun getLength(): Distance {
+        return chunkPath.endOffset - chunkPath.beginOffset
     }
 
     override fun getTrackLocationAtOffset(pathOffset: Offset<Path>): TrackLocation {

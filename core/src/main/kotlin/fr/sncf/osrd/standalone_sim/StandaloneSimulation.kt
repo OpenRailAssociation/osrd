@@ -7,6 +7,7 @@ import com.google.common.collect.TreeRangeMap
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.api.api_v2.RangeValues
 import fr.sncf.osrd.api.api_v2.standalone_sim.*
+import fr.sncf.osrd.conflicts.TravelledPath
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext
 import fr.sncf.osrd.envelope_sim.allowances.LinearAllowance
@@ -165,7 +166,10 @@ fun makeElectricalProfiles(
     }
 
     val boundaries =
-        profileMap.asMapOfRanges().map { Offset<Path>(it.key.upperEndpoint().meters) }.dropLast(1)
+        profileMap
+            .asMapOfRanges()
+            .map { Offset<TravelledPath>(it.key.upperEndpoint().meters) }
+            .dropLast(1)
     val values = profileMap.asMapOfRanges().map { it.value }
 
     return RangeValues(boundaries = boundaries, values = values)
@@ -193,10 +197,10 @@ fun buildFinalEnvelope(
     allowanceType: RJSAllowanceDistribution,
     scheduledPoints: List<SimulationScheduleItem>
 ): Envelope {
-    fun getEnvelopeTimeAt(offset: Offset<Path>): Double {
+    fun getEnvelopeTimeAt(offset: Offset<TravelledPath>): Double {
         return provisionalEnvelope.interpolateTotalTimeClamp(offset.distance.meters)
     }
-    var prevFixedPointOffset = Offset<Path>(0.meters)
+    var prevFixedPointOffset = Offset<TravelledPath>(0.meters)
     var prevFixedPointDepartureTime = 0.0
     val marginRanges = mutableListOf<AllowanceRange>()
     for (point in scheduledPoints) {
@@ -227,7 +231,7 @@ fun buildFinalEnvelope(
         prevFixedPointOffset = point.pathOffset
         prevFixedPointDepartureTime = arrivalTime + extraTime + (point.stopFor?.seconds ?: 0.0)
     }
-    val pathEnd = Offset<Path>(maxEffortEnvelope.endPos.meters)
+    val pathEnd = Offset<TravelledPath>(maxEffortEnvelope.endPos.meters)
     if (prevFixedPointOffset < pathEnd) {
         // Because the last margin call is based on the max effort envelope,
         // we still need to cover all ranges to keep the standard margin,
@@ -264,12 +268,12 @@ fun distributeAllowance(
     provisionalEnvelope: Envelope,
     extraTime: Double,
     margins: RangeValues<MarginValue>,
-    startOffset: Offset<Path>,
-    endOffset: Offset<Path>
+    startOffset: Offset<TravelledPath>,
+    endOffset: Offset<TravelledPath>
 ): List<AllowanceRange> {
     fun rangeTime(
-        from: Offset<Path>,
-        to: Offset<Path>,
+        from: Offset<TravelledPath>,
+        to: Offset<TravelledPath>,
         envelope: Envelope = provisionalEnvelope
     ): Double {
         assert(from < to)
@@ -311,7 +315,7 @@ fun buildProvisionalEnvelope(
 ): Envelope {
     val marginRanges = mutableListOf<AllowanceRange>()
     // Add path extremities to boundaries
-    val boundaries = mutableListOf<Offset<Path>>()
+    val boundaries = mutableListOf<Offset<TravelledPath>>()
     boundaries.add(Offset(Distance.ZERO))
     boundaries.addAll(rawMargins.boundaries)
     boundaries.add(Offset(Distance.fromMeters(context.path.length)))

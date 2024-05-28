@@ -6,6 +6,7 @@ import com.squareup.moshi.Moshi
 import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import fr.sncf.osrd.api.api_v2.*
+import fr.sncf.osrd.conflicts.TravelledPath
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.sim_infra.api.Path
 import fr.sncf.osrd.utils.json.UnitAdapterFactory
@@ -39,7 +40,7 @@ class MRSPResponse(
 )
 
 class CompleteReportTrain(
-    positions: List<Offset<Path>>,
+    positions: List<Offset<TravelledPath>>,
     times: List<TimeDelta>, // Times are compared to the departure time
     speeds: List<Double>,
     @Json(name = "energy_consumption") energyConsumption: Double,
@@ -50,7 +51,7 @@ class CompleteReportTrain(
 ) : ReportTrain(positions, times, speeds, energyConsumption)
 
 open class ReportTrain(
-    val positions: List<Offset<Path>>,
+    val positions: List<Offset<TravelledPath>>,
     val times: List<TimeDelta>, // Times are compared to the departure time
     val speeds: List<Double>,
     @Json(name = "energy_consumption") val energyConsumption: Double,

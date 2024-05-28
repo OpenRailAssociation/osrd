@@ -9,6 +9,7 @@ import fr.sncf.osrd.graph.Pathfinding.EdgeLocation
 import fr.sncf.osrd.graph.PathfindingEdgeLocationId
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
+import fr.sncf.osrd.sim_infra.api.Path
 import fr.sncf.osrd.sim_infra.api.PathProperties
 import fr.sncf.osrd.utils.Helpers
 import fr.sncf.osrd.utils.units.Distance.Companion.fromMeters
@@ -73,7 +74,7 @@ class RemainingDistanceEstimatorTest {
                 0
             ), // Test with target at the end of the edge
             Arguments.of(
-                listOf(EdgeLocation(block, path!!.getLength())),
+                listOf(EdgeLocation(block, Offset<Path>(path!!.getLength()))),
                 0,
                 fromMeters(points[0].distanceAsMeters(Iterables.getLast(points))).millimeters,
                 0
@@ -81,17 +82,17 @@ class RemainingDistanceEstimatorTest {
             Arguments.of(
                 listOf(
                     EdgeLocation(block, Offset(0.meters)),
-                    EdgeLocation(block, path!!.getLength())
+                    EdgeLocation(block, Offset<Path>(path!!.getLength()))
                 ),
                 0,
                 0,
                 0
             ), // Test with an offset on the block
             Arguments.of(
-                listOf(EdgeLocation(block, path!!.getLength())),
+                listOf(EdgeLocation(block, Offset<Path>(path!!.getLength()))),
                 0,
                 0,
-                path!!.getLength().distance.millimeters
+                path!!.getLength().millimeters
             )
         )
     }
