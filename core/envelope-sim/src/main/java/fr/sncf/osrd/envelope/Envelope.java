@@ -1,5 +1,7 @@
 package fr.sncf.osrd.envelope;
 
+import static fr.sncf.osrd.envelope_utils.DoubleUtils.clamp;
+
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.envelope.part.EnvelopePart;
 import fr.sncf.osrd.reporting.exceptions.ErrorType;
@@ -166,6 +168,8 @@ public final class Envelope implements Iterable<EnvelopePart>, SearchableEnvelop
      * Return the maximum speed in the range [beginPos, endPos]. Assumes the envelope is continuous.
      */
     public double maxSpeedInRange(double beginPos, double endPos) {
+        beginPos = clamp(beginPos, getBeginPos(), getEndPos());
+        endPos = clamp(endPos, getBeginPos(), getEndPos());
         var beginPartIndex = findRight(beginPos);
         var endPartIndex = findLeft(endPos);
         var maxSpeed = get(beginPartIndex).interpolateSpeed(beginPos);
