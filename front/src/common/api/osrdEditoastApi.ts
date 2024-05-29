@@ -1058,9 +1058,9 @@ export type GetInfraApiArg = {
 };
 export type PostInfraApiResponse = /** status 201 The created infra */ Infra;
 export type PostInfraApiArg = {
-  /** Name of the infra to create */
   body: {
-    name?: string;
+    /** The name to give to the new infra */
+    name: string;
   };
 };
 export type PostInfraRailjsonApiResponse = /** status 201 The imported infra id */ {
