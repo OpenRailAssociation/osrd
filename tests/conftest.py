@@ -10,6 +10,7 @@ from tests.path import Path as TrainPath
 from tests.scenario import Scenario
 from tests.services import EDITOAST_URL
 from tests.test_e2e import FAST_ROLLING_STOCK_JSON_PATH, TestRollingStock
+from tests.timetable_v2 import TimetableV2
 from tests.utils.timetable import create_scenario, create_scenario_v2
 
 
@@ -238,3 +239,16 @@ def west_to_south_east_simulations(
         },
     )
     yield response.json()
+
+
+@pytest.fixture
+def timetable_v2() -> TimetableV2:
+    timetable_payload = {}
+    r = requests.post(
+        f"{EDITOAST_URL}v2/timetable/",
+        json=timetable_payload,
+    )
+    if r.status_code // 100 != 2:
+        err = f"Error creating timetable {r.status_code}: {r.content}, payload={json.dumps(timetable_payload)}"
+        raise RuntimeError(err)
+    return TimetableV2(**r.json())
