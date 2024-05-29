@@ -27,26 +27,6 @@ pub struct Scenario {
     pub study_id: i64,
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize, ToSchema)]
-#[schema(as = ScenarioWithDetailsV2)]
-pub struct ScenarioWithDetails {
-    #[serde(flatten)]
-    #[schema(value_type = ScenarioV2)]
-    pub scenario: Scenario,
-    pub infra_name: String,
-    pub trains_count: i64,
-}
-
-impl ScenarioWithDetails {
-    pub async fn from_scenario(scenario: Scenario, conn: &mut DbConnection) -> Result<Self> {
-        Ok(Self {
-            infra_name: scenario.infra_name(conn).await?,
-            trains_count: scenario.trains_count(conn).await?,
-            scenario,
-        })
-    }
-}
-
 impl Scenario {
     pub async fn infra_name(&self, conn: &mut DbConnection) -> Result<String> {
         use crate::tables::infra::dsl as infra_dsl;
