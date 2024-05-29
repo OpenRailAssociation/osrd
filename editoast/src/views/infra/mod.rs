@@ -77,6 +77,7 @@ crate::routes! {
             get_switch_types,
         },
         list,
+        create,
         get_all_voltages,
         railjson::routes(),
     },
@@ -134,18 +135,6 @@ pub enum InfraApiError {
     #[error("Infra '{infra_id}', could not be found")]
     #[editoast_error(status = 404)]
     NotFound { infra_id: i64 },
-}
-
-#[derive(Debug, Deserialize)]
-#[serde(deny_unknown_fields)]
-pub struct InfraForm {
-    pub name: String,
-}
-
-impl From<InfraForm> for Changeset<Infra> {
-    fn from(infra: InfraForm) -> Self {
-        Self::default().name(infra.name).last_railjson_version()
-    }
 }
 
 #[derive(Debug, Deserialize)]
@@ -315,9 +304,34 @@ async fn get(
     Ok(Json(InfraWithState { infra, state }))
 }
 
-/// Create an infra
+#[derive(Debug, Deserialize, ToSchema)]
+#[serde(deny_unknown_fields)]
+pub struct InfraCreateForm {
+    /// The name to give to the new infra
+    pub name: String,
+}
+
+impl From<InfraCreateForm> for Changeset<Infra> {
+    fn from(infra: InfraCreateForm) -> Self {
+        Self::default().name(infra.name).last_railjson_version()
+    }
+}
+
+/// Creates an empty infra
+///
+/// The infra may be edited by batch later via the `POST /infra/ID` or `POST /infra/ID/railjson` endpoints.
+#[utoipa::path(
+    tag = "infra",
+    request_body = inline(InfraCreateForm),
+    responses(
+        (status = 201, description = "The created infra", body = Infra),
+    ),
+)]
 #[post("")]
-async fn create(db_pool: Data<DbConnectionPool>, data: Json<InfraForm>) -> Result<impl Responder> {
+async fn create(
+    db_pool: Data<DbConnectionPool>,
+    data: Json<InfraCreateForm>,
+) -> Result<impl Responder> {
     let infra: Changeset<Infra> = data.into_inner().into();
     let conn = &mut db_pool.get().await?;
     let infra = infra.create(conn).await?;

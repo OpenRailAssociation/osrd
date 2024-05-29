@@ -9271,15 +9271,20 @@ paths:
       tags:
       - infra
     post:
+      description: The infra may be edited by batch later via the `POST /infra/ID` or `POST /infra/ID/railjson` endpoints.
       requestBody:
         content:
           application/json:
             schema:
+              additionalProperties: false
               properties:
                 name:
+                  description: The name to give to the new infra
                   type: string
+              required:
+              - name
               type: object
-        description: Name of the infra to create
+        required: true
       responses:
         '201':
           content:
@@ -9287,7 +9292,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Infra'
           description: The created infra
-      summary: Create an infra
+      summary: Creates an empty infra
       tags:
       - infra
   /infra/railjson/:

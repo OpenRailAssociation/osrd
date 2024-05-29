@@ -21,28 +21,6 @@ tags:
     description: Train Schedule
 
 paths:
-  /infra/:
-    post:
-      tags:
-        - infra
-      summary: Create an infra
-      requestBody:
-        description: Name of the infra to create
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                name:
-                  type: string
-      responses:
-        201:
-          description: The created infra
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Infra"
-
   /infra/{id}/:
     post:
       tags:
