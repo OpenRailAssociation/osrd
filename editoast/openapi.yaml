@@ -4323,34 +4323,6 @@ components:
       - next
       - results
       type: object
-    PaginatedResponseOfScenarioWithDetails:
-      description: A paginated response
-      properties:
-        count:
-          description: The total number of items
-          format: int64
-          type: integer
-        next:
-          description: The next page number
-          format: int64
-          nullable: true
-          type: integer
-        previous:
-          description: The previous page number
-          format: int64
-          nullable: true
-          type: integer
-        results:
-          description: The list of results
-          items:
-            $ref: '#/components/schemas/ScenarioWithDetailsV2'
-          type: array
-      required:
-      - count
-      - previous
-      - next
-      - results
-      type: object
     PaginatedResponseOfTimetable:
       description: A paginated response
       properties:
@@ -11732,8 +11704,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedResponseOfScenarioWithDetails'
-          description: The list of scenarios
+                allOf:
+                - $ref: '#/components/schemas/PaginationStats'
+                - properties:
+                    results:
+                      items:
+                        $ref: '#/components/schemas/ScenarioWithDetails'
+                      type: array
+                  required:
+                  - results
+                  type: object
+          description: A paginated list of scenarios
+        '404':
+          description: Project or study doesn't exist
       summary: Return a list of scenarios
       tags:
       - scenariosv2
