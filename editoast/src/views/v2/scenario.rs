@@ -1,3 +1,5 @@
+use std::ops::DerefMut as _;
+
 use actix_web::delete;
 use actix_web::get;
 use actix_web::patch;
@@ -18,11 +20,9 @@ use thiserror::Error;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
-use crate::decl_paginated_response;
 use crate::error::InternalError;
 use crate::error::Result;
 use crate::models::train_schedule::LightTrainSchedule;
-use crate::models::List;
 use crate::modelsv2::prelude::*;
 use crate::modelsv2::scenario::Scenario;
 use crate::modelsv2::scenario::ScenarioWithDetails;
@@ -33,8 +33,9 @@ use crate::modelsv2::Project;
 use crate::modelsv2::Study;
 use crate::modelsv2::Tags;
 use crate::views::operational_studies::OperationalStudiesOrderingParam;
-use crate::views::pagination::PaginatedResponse;
+use crate::views::pagination::PaginatedList as _;
 use crate::views::pagination::PaginationQueryParam;
+use crate::views::pagination::PaginationStats;
 use crate::views::projects::ProjectIdParam;
 use crate::views::scenario::check_project_study;
 use crate::views::scenario::check_project_study_conn;
@@ -59,7 +60,6 @@ editoast_common::schemas! {
     ScenarioWithDetails,
     ScenarioResponse,
     ScenarioCreateForm,
-    PaginatedResponseOfScenarioWithDetails,
     LightTrainSchedule, // TODO: remove from here once train schedule is migrated
 }
 
@@ -387,39 +387,52 @@ async fn get(
     Ok(Json(scenarios_response))
 }
 
-type ScenarioWithDetailsV2 = ScenarioWithDetails;
-decl_paginated_response!(
-    PaginatedResponseOfScenarioWithDetails,
-    ScenarioWithDetailsV2
-);
+#[derive(Serialize, ToSchema)]
+#[cfg_attr(test, derive(Deserialize))]
+struct ListScenariosResponse {
+    #[serde(flatten)]
+    stats: PaginationStats,
+    results: Vec<ScenarioWithDetails>,
+}
 
 /// Return a list of scenarios
 #[utoipa::path(
     tag = "scenariosv2",
     params(ProjectIdParam, StudyIdParam, PaginationQueryParam, OperationalStudiesOrderingParam),
     responses(
-        (status = 200, body = PaginatedResponseOfScenarioWithDetails, description = "The list of scenarios"),
+        (status = 200, description = "A paginated list of scenarios", body = inline(ListScenariosResponse)),
+        (status = 404, description = "Project or study doesn't exist")
     )
 )]
 #[get("")]
 async fn list(
     db_pool: Data<DbConnectionPool>,
-    pagination_params: Query<PaginationQueryParam>,
     path: Path<(i64, i64)>,
-    params: Query<OperationalStudiesOrderingParam>,
-) -> Result<Json<PaginatedResponse<ScenarioWithDetails>>> {
-    let (page, per_page) = pagination_params
+    Query(pagination_params): Query<PaginationQueryParam>,
+    Query(OperationalStudiesOrderingParam { ordering }): Query<OperationalStudiesOrderingParam>,
+) -> Result<Json<ListScenariosResponse>> {
+    let db_pool = db_pool.into_inner();
+    let (project_id, study_id) = path.into_inner();
+    let _ = check_project_study(db_pool.clone(), project_id, study_id).await?;
+
+    let settings = pagination_params
         .validate(1000)?
         .warn_page_size(100)
-        .unpack();
-    let (project_id, study_id) = path.into_inner();
+        .into_selection_settings()
+        .order_by(move || ordering.as_scenario_ordering())
+        .filter(move || Scenario::STUDY_ID.eq(study_id));
+    let (scenarios, stats) =
+        Scenario::list_paginated(db_pool.get().await?.deref_mut(), settings).await?;
 
-    let db_pool = db_pool.into_inner();
-    let _ = check_project_study(db_pool.clone(), project_id, study_id).await?;
-    let ordering = params.ordering.clone();
-    let scenarios =
-        ScenarioWithDetails::list(db_pool, page, per_page, (study_id, ordering)).await?;
-    Ok(Json(scenarios))
+    let futs = scenarios
+        .into_iter()
+        .zip(std::iter::repeat(&db_pool).map(|p| p.get()))
+        .map(|(scenario, conn)| async {
+            ScenarioWithDetails::from_scenario(scenario, conn.await?.deref_mut()).await
+        });
+    let results = futures::future::try_join_all(futs).await?;
+
+    Ok(Json(ListScenariosResponse { stats, results }))
 }
 
 #[cfg(test)]
@@ -478,8 +491,7 @@ mod tests {
         let url = scenario_url(fixtures.project.id(), fixtures.study.id(), None);
 
         let request = TestRequest::get().uri(&url).to_request();
-        let mut response: PaginatedResponse<ScenarioWithDetails> =
-            call_and_read_body_json(&service, request).await;
+        let mut response: ListScenariosResponse = call_and_read_body_json(&service, request).await;
 
         assert!(!response.results.is_empty());
         assert_eq!(

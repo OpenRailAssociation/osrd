@@ -1,5 +1,6 @@
 use crate::modelsv2::prelude::*;
 use crate::modelsv2::Project;
+use crate::modelsv2::Scenario;
 use crate::modelsv2::Study;
 
 editoast_common::schemas! {
@@ -54,6 +55,17 @@ impl Ordering {
             Ordering::CreationDateDesc => Study::CREATION_DATE.desc(),
             Ordering::LastModifiedAsc => Study::LAST_MODIFICATION.asc(),
             Ordering::LastModifiedDesc => Study::LAST_MODIFICATION.desc(),
+        }
+    }
+
+    pub fn as_scenario_ordering(&self) -> SortSetting<Scenario> {
+        match *self {
+            Ordering::NameAsc => Scenario::NAME.asc(),
+            Ordering::NameDesc => Scenario::NAME.desc(),
+            Ordering::CreationDateAsc => Scenario::CREATION_DATE.asc(),
+            Ordering::CreationDateDesc => Scenario::CREATION_DATE.desc(),
+            Ordering::LastModifiedAsc => Scenario::LAST_MODIFICATION.asc(),
+            Ordering::LastModifiedDesc => Scenario::LAST_MODIFICATION.desc(),
         }
     }
 }

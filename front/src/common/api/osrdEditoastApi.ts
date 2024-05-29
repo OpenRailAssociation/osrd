@@ -1655,7 +1655,9 @@ export type PostV2InfraByInfraIdPathfindingBlocksApiArg = {
   pathfindingInputV2: PathfindingInputV2;
 };
 export type GetV2ProjectsByProjectIdStudiesAndStudyIdScenariosApiResponse =
-  /** status 200 The list of scenarios */ PaginatedResponseOfScenarioWithDetails;
+  /** status 200 A paginated list of scenarios */ PaginationStats & {
+    results: ScenarioWithDetails[];
+  };
 export type GetV2ProjectsByProjectIdStudiesAndStudyIdScenariosApiArg = {
   /** The id of a project */
   projectId: number;
@@ -3401,6 +3403,12 @@ export type PathfindingInputV2 = {
   /** List of supported signaling systems */
   rolling_stock_supported_signaling_systems: string[];
 };
+export type ScenarioWithDetails = Scenario & {
+  electrical_profile_set_name?: string | null;
+  infra_name: string;
+  train_schedules: LightTrainSchedule[];
+  trains_count: number;
+};
 export type ScenarioV2 = {
   creation_date: string;
   description: string;
@@ -3411,20 +3419,6 @@ export type ScenarioV2 = {
   study_id: number;
   tags: Tags;
   timetable_id: number;
-};
-export type ScenarioWithDetailsV2 = ScenarioV2 & {
-  infra_name: string;
-  trains_count: number;
-};
-export type PaginatedResponseOfScenarioWithDetails = {
-  /** The total number of items */
-  count: number;
-  /** The next page number */
-  next: number | null;
-  /** The previous page number */
-  previous: number | null;
-  /** The list of results */
-  results: ScenarioWithDetailsV2[];
 };
 export type ScenarioResponseV2 = ScenarioV2 & {
   infra_name: string;
