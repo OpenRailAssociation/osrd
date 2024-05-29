@@ -18,8 +18,8 @@ use crate::generated_data::generate_infra_errors;
 use crate::generated_data::infra_error::InfraError;
 use crate::infra_cache::operation::CacheOperation;
 use crate::infra_cache::operation::DeleteOperation;
+use crate::infra_cache::operation::InfraObject;
 use crate::infra_cache::operation::Operation;
-use crate::infra_cache::operation::RailjsonObject;
 use crate::infra_cache::operation::UpdateOperation;
 use crate::infra_cache::InfraCache;
 use crate::infra_cache::ObjectCache;
@@ -53,7 +53,7 @@ fn new_ref_fix_delete_pair(object: &impl OSRDObject) -> (ObjectRef, Fix) {
     (object.get_ref(), (operation, cache_operation))
 }
 
-fn new_ref_fix_create_pair(object: RailjsonObject) -> (ObjectRef, Fix) {
+fn new_ref_fix_create_pair(object: InfraObject) -> (ObjectRef, Fix) {
     let object_ref = object.get_ref();
     let operation = Operation::Create(Box::new(object.clone()));
     let cache_operation = CacheOperation::Create(ObjectCache::from(object));
@@ -235,7 +235,7 @@ fn reduce_operation(
             debug_assert_eq!(railjson_object.get_type(), obj_type);
             railjson_object
                 .patch(&railjson_patch)
-                .map(|railjson_object: RailjsonObject| Operation::Create(Box::new(railjson_object)))
+                .map(|railjson_object: InfraObject| Operation::Create(Box::new(railjson_object)))
                 .ok()
                 .or_else(|| {
                     error!("failed to apply patch when reducing CREATE+UPDATE");
@@ -335,8 +335,8 @@ mod tests {
     use crate::infra_cache::object_cache::DetectorCache;
     use crate::infra_cache::object_cache::SignalCache;
     use crate::infra_cache::operation::DeleteOperation;
+    use crate::infra_cache::operation::InfraObject;
     use crate::infra_cache::operation::Operation;
-    use crate::infra_cache::operation::RailjsonObject;
     use crate::infra_cache::InfraCacheEditoastError;
     use crate::modelsv2::infra::errors::QueryParams;
     use crate::views::tests::create_test_service;
@@ -690,7 +690,7 @@ mod tests {
         assert!(operations.is_empty());
     }
 
-    fn get_create_operation_request(railjson: RailjsonObject, infra_id: i64) -> Request {
+    fn get_create_operation_request(railjson: InfraObject, infra_id: i64) -> Request {
         let create_operation = Operation::Create(Box::new(railjson));
         TestRequest::post()
             .uri(format!("/infra/{infra_id}/").as_str())
@@ -739,7 +739,7 @@ mod tests {
         let empty_infra_id = empty_infra.id();
 
         // Create an odd buffer stops (to a track endpoint linked by a switch)
-        let track: RailjsonObject = TrackSection {
+        let track: InfraObject = TrackSection {
             id: "test_track".into(),
             length: 1_000.0,
             ..Default::default()
@@ -791,7 +791,7 @@ mod tests {
         let empty_infra = empty_infra(db_pool()).await;
         let empty_infra_id = empty_infra.id();
 
-        let electrification: RailjsonObject = Electrification::default().into();
+        let electrification: InfraObject = Electrification::default().into();
         let operational_point = OperationalPoint::default().into();
         let speed_section = SpeedSection::default().into();
 
@@ -822,7 +822,7 @@ mod tests {
         let empty_infra = empty_infra(db_pool()).await;
         let empty_infra_id = empty_infra.id();
 
-        let track: RailjsonObject = TrackSection {
+        let track: InfraObject = TrackSection {
             id: "test_track".into(),
             length: 1_000.0,
             slopes: vec![Slope {
@@ -834,7 +834,7 @@ mod tests {
         }
         .into();
 
-        let electrification: RailjsonObject = Electrification {
+        let electrification: InfraObject = Electrification {
             track_ranges: vec![ApplicableDirectionsTrackRange {
                 track: track.get_id().as_str().into(),
                 begin: 250.0,
@@ -845,7 +845,7 @@ mod tests {
         }
         .into();
 
-        let operational_point: RailjsonObject = OperationalPoint {
+        let operational_point: InfraObject = OperationalPoint {
             parts: vec![OperationalPointPart {
                 track: track.get_id().as_str().into(),
                 position: 1250.0,
@@ -855,7 +855,7 @@ mod tests {
         }
         .into();
 
-        let speed_section: RailjsonObject = SpeedSection {
+        let speed_section: InfraObject = SpeedSection {
             track_ranges: vec![ApplicableDirectionsTrackRange {
                 track: track.get_id().as_str().into(),
                 begin: 250.0,
@@ -895,7 +895,7 @@ mod tests {
         let empty_infra = empty_infra(db_pool()).await;
         let empty_infra_id = empty_infra.id();
 
-        let track: RailjsonObject = TrackSection {
+        let track: InfraObject = TrackSection {
             id: "test_track".into(),
             length: 1_000.0,
             geo: geos::geojson::Geometry::new(geos::geojson::Value::LineString(vec![
@@ -906,21 +906,21 @@ mod tests {
         }
         .into();
 
-        let signal: RailjsonObject = Signal {
+        let signal: InfraObject = Signal {
             position: pos,
             track: track.get_id().as_str().into(),
             ..Default::default()
         }
         .into();
 
-        let detector: RailjsonObject = Detector {
+        let detector: InfraObject = Detector {
             position: pos,
             track: track.get_id().as_str().into(),
             ..Default::default()
         }
         .into();
 
-        let buffer_stop: RailjsonObject = BufferStop {
+        let buffer_stop: InfraObject = BufferStop {
             position: pos,
             track: track.get_id().as_str().into(),
             ..Default::default()
@@ -958,7 +958,7 @@ mod tests {
         let empty_infra = empty_infra(db_pool()).await;
         let empty_infra_id = empty_infra.id();
 
-        let track: RailjsonObject = TrackSection {
+        let track: InfraObject = TrackSection {
             id: "track_with_no_buffer_stops".into(),
             length: 1_000.0,
             ..Default::default()
@@ -983,11 +983,11 @@ mod tests {
             let Operation::Create(boxed_buffer_stop) = operation else {
                 panic!("Unexpected Operation type.")
             };
-            let RailjsonObject::BufferStop {
+            let InfraObject::BufferStop {
                 railjson: buffer_stop,
             } = *boxed_buffer_stop
             else {
-                panic!("Unexpected RailjsonObject type.")
+                panic!("Unexpected InfraObject type.")
             };
             assert_eq!(buffer_stop.track, Identifier::from(track.get_id().as_str()));
             assert_eq!(buffer_stop.extensions, BufferStopExtension::default());

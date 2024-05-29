@@ -684,8 +684,8 @@ pub mod tests {
     use crate::fixtures::tests::TestFixture;
     use crate::generated_data;
     use crate::infra_cache::operation::create::apply_create_operation;
+    use crate::infra_cache::operation::InfraObject;
     use crate::infra_cache::operation::Operation;
-    use crate::infra_cache::operation::RailjsonObject;
     use crate::modelsv2::fixtures::create_empty_infra;
     use crate::modelsv2::fixtures::create_rolling_stock_with_energy_sources;
     use crate::modelsv2::get_geometry_layer_table;
@@ -707,7 +707,7 @@ pub mod tests {
             .to_request()
     }
 
-    pub fn create_object_request(infra_id: i64, obj: RailjsonObject) -> Request {
+    pub fn create_object_request(infra_id: i64, obj: InfraObject) -> Request {
         let operation = Operation::Create(Box::new(obj));
         TestRequest::post()
             .uri(format!("/infra/{infra_id}/").as_str())
@@ -751,7 +751,7 @@ pub mod tests {
             .await
             .unwrap();
 
-        let switch_type: RailjsonObject = SwitchType {
+        let switch_type: InfraObject = SwitchType {
             id: "test_switch_type".into(),
             ..Default::default()
         }

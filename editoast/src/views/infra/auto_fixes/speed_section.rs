@@ -12,8 +12,8 @@ use crate::generated_data::infra_error::InfraError;
 use crate::generated_data::infra_error::InfraErrorType;
 use crate::infra_cache::operation::CacheOperation;
 use crate::infra_cache::operation::DeleteOperation;
+use crate::infra_cache::operation::InfraObject;
 use crate::infra_cache::operation::Operation;
-use crate::infra_cache::operation::RailjsonObject;
 use crate::infra_cache::operation::UpdateOperation;
 use editoast_schemas::infra::SpeedSection;
 use editoast_schemas::primitives::OSRDIdentified as _;
@@ -69,7 +69,7 @@ pub fn fix_speed_section(
         .and_then(|operation| {
             let cache_operation = match CacheOperation::try_from_operation(
                 &operation,
-                RailjsonObject::SpeedSection {
+                InfraObject::SpeedSection {
                     railjson: speed_section.clone(),
                 },
             ) {

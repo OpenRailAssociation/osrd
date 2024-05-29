@@ -29,8 +29,8 @@ use crate::generated_data;
 use crate::infra_cache::object_cache::OperationalPointPartCache;
 use crate::infra_cache::operation::CacheOperation;
 use crate::infra_cache::operation::DeleteOperation;
+use crate::infra_cache::operation::InfraObject;
 use crate::infra_cache::operation::Operation;
-use crate::infra_cache::operation::RailjsonObject;
 use crate::infra_cache::operation::UpdateOperation;
 use crate::infra_cache::InfraCache;
 use crate::infra_cache::ObjectCache;
@@ -57,9 +57,8 @@ pub async fn edit<'a>(
     infra_caches: Data<CHashMap<i64, InfraCache>>,
     redis_client: Data<RedisClient>,
     map_layers: Data<MapLayers>,
-) -> Result<Json<Vec<RailjsonObject>>> {
+) -> Result<Json<Vec<InfraObject>>> {
     let infra_id = infra.into_inner();
-
     let mut conn = db_pool.get().await?;
     // TODO: lock for update
     let mut infra =
@@ -262,13 +261,13 @@ pub async fn split_track_section<'a>(
     // ~~~~~~~~~~~~~~~~~~~~~~~
     // Firstly, we create the two newly tracks
     let mut operations: Vec<Operation> = [
-        Operation::Create(Box::new(RailjsonObject::TrackSection {
+        Operation::Create(Box::new(InfraObject::TrackSection {
             railjson: left_tracksection,
         })),
-        Operation::Create(Box::new(RailjsonObject::TrackSection {
+        Operation::Create(Box::new(InfraObject::TrackSection {
             railjson: right_tracksection,
         })),
-        Operation::Create(Box::new(RailjsonObject::Switch {
+        Operation::Create(Box::new(InfraObject::Switch {
             railjson: track_link,
         })),
     ]
@@ -797,7 +796,7 @@ async fn apply_edit(
     infra: &mut Infra,
     operations: &[Operation],
     infra_cache: &mut InfraCache,
-) -> Result<Vec<RailjsonObject>> {
+) -> Result<Vec<InfraObject>> {
     let infra_id = infra.id;
     // Check if the infra is locked
     if infra.locked {
@@ -1018,7 +1017,7 @@ pub mod tests {
             }),
         ]
         .to_vec();
-        let result: Vec<RailjsonObject> =
+        let result: Vec<InfraObject> =
             apply_edit(conn, &mut small_infra.model, &operations, &mut infra_cache)
                 .await
                 .unwrap();
