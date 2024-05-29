@@ -21,36 +21,6 @@ tags:
     description: Train Schedule
 
 paths:
-  /infra/{id}/:
-    post:
-      tags:
-        - infra
-      summary: Update/Create/Delete an object of the infra
-      parameters:
-        - in: path
-          name: id
-          schema:
-            type: integer
-          description: infra id
-          required: true
-      requestBody:
-        description: Operations to do on the infra
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                $ref: "#/components/schemas/Operation"
-      responses:
-        200:
-          description: An array containing infos about the operations processed
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/RailjsonObject"
-
   /infra/{id}/errors/:
     get:
       tags:
@@ -170,82 +140,6 @@ paths:
 
 components:
   schemas:
-    RailjsonObject:
-      required:
-        - obj_type
-        - railjson
-      properties:
-        obj_type:
-          $ref: "#/components/schemas/ObjectType"
-        railjson:
-          $ref: "#/components/schemas/Railjson"
-
-    DeleteOperation:
-      required:
-        - operation_type
-        - obj_type
-        - obj_id
-      properties:
-        operation_type:
-          type: string
-          enum:
-            - DELETE
-        obj_type:
-          $ref: "#/components/schemas/ObjectType"
-        obj_id:
-          type: string
-          example: bd840b06-84ba-4566-98c1-ccf0196c5f16
-
-    UpdateOperation:
-      required:
-        - operation_type
-        - obj_type
-        - railjson_patch
-      properties:
-        operation_type:
-          type: string
-          enum:
-            - UPDATE
-        obj_type:
-          $ref: "#/components/schemas/ObjectType"
-        obj_id:
-          type: string
-          example: bd840b06-84ba-4566-98c1-ccf0196c5f16
-        railjson_patch:
-          $ref: "#/components/schemas/Patches"
-
-    Patch:
-      description: A JSONPatch document as defined by RFC 6902
-      required:
-        - "op"
-        - "path"
-      properties:
-        op:
-          type: string
-          description: The operation to be performed
-          enum:
-            - "add"
-            - "remove"
-            - "replace"
-            - "move"
-            - "copy"
-            - "test"
-        path:
-          type: string
-          description: A JSON-Pointer
-        value:
-          type: object
-          description: The value to be used within the operations.
-        from:
-          type: string
-          description: A string containing a JSON Pointer value.
-
-    Patches:
-      type: array
-      description: A list of Patch
-      items:
-        $ref: "#/components/schemas/Patch"
-
     Railjson:
       type: object
       description: This field follows railjson format
@@ -275,7 +169,6 @@ components:
         track_name: track name
         navigability: BOTH
         track_number: 1
-
     InfraErrorType:
       type: string
       description: Type of the infra error

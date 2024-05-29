@@ -158,7 +158,7 @@ export function updateFiltersIssue(
 }
 
 export function saveOperations(
-  infraID: number | undefined,
+  infraId: number | undefined,
   operations: Operation[],
   shouldLoad: boolean = true
 ) {
@@ -167,10 +167,10 @@ export function saveOperations(
       dispatch(setLoading());
     }
     try {
-      if (isNil(infraID)) throw new Error('No infrastructure');
+      if (isNil(infraId)) throw new Error('No infrastructure');
       const response = await dispatch(
-        osrdEditoastApi.endpoints.postInfraById.initiate({
-          id: infraID,
+        osrdEditoastApi.endpoints.postInfraByInfraId.initiate({
+          infraId,
           body: operations,
         })
       );
@@ -196,7 +196,7 @@ export function saveOperations(
       );
       throw e;
     } finally {
-      dispatch(updateTotalsIssue(infraID));
+      dispatch(updateTotalsIssue(infraId));
     }
   };
 }

@@ -12,7 +12,7 @@ use crate::modelsv2::DbConnection;
 use editoast_schemas::primitives::ObjectRef;
 use editoast_schemas::primitives::ObjectType;
 
-#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq, Hash)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash, Deserialize, Serialize, utoipa::ToSchema)]
 #[serde(deny_unknown_fields)]
 /// A delete operation. Contains same information as a object ref but has another serialization.
 pub struct DeleteOperation {
