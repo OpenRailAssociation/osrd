@@ -18,7 +18,6 @@ use actix_web::web::Data;
 use actix_web::web::Json;
 use actix_web::web::Path;
 use actix_web::web::Query;
-use actix_web::Either;
 use actix_web::HttpResponse;
 use actix_web::Responder;
 use chashmap::CHashMap;
@@ -26,7 +25,6 @@ use editoast_derive::EditoastError;
 use serde::Deserialize;
 use serde::Serialize;
 use std::collections::HashMap;
-use std::ops::DerefMut as _;
 use std::sync::Arc;
 use thiserror::Error;
 use utoipa::IntoParams;
@@ -97,7 +95,6 @@ pub fn infra_routes() -> impl HttpServiceFactory {
             list,
             create,
             refresh,
-            cache_status,
             get_all_voltages,
             railjson::railjson_routes(),
         ))
@@ -628,31 +625,6 @@ async fn load(
     Ok(HttpResponse::NoContent().finish())
 }
 
-#[derive(Debug, Default, Deserialize)]
-pub struct StatePayload {
-    infra: Option<i64>,
-}
-
-#[get("/cache_status")]
-async fn cache_status(
-    payload: Either<Json<StatePayload>, ()>,
-    db_pool: Data<DbConnectionPool>,
-    core: Data<CoreClient>,
-) -> Result<Json<HashMap<String, InfraStateResponse>>> {
-    if let Either::Left(Json(StatePayload {
-        infra: Some(infra_id),
-    })) = payload
-    {
-        if !Infra::exists(db_pool.get().await?.deref_mut(), infra_id).await? {
-            return Err(InfraApiError::NotFound { infra_id }.into());
-        }
-        let infra_state = fetch_infra_state(infra_id, core.as_ref()).await?;
-        Ok(Json(HashMap::from([(infra_id.to_string(), infra_state)])))
-    } else {
-        Ok(Json(fetch_all_infra_states(core.as_ref()).await?))
-    }
-}
-
 /// Builds a Core cache_status request, runs it
 pub async fn fetch_infra_state(infra_id: i64, core: &CoreClient) -> Result<InfraStateResponse> {
     Ok(InfraStateRequest {
@@ -1118,52 +1090,5 @@ pub mod tests {
             .to_request();
         let response = call_service(&app, req).await;
         assert_eq!(response.status(), StatusCode::NO_CONTENT);
-    }
-
-    #[rstest]
-    async fn infra_get_state_no_result(#[future] empty_infra: TestFixture<Infra>) {
-        let empty_infra = empty_infra.await;
-
-        let mut core = MockingClient::new();
-        core.stub("/cache_status")
-            .method(reqwest::Method::POST)
-            .response(StatusCode::OK)
-            .body("{}")
-            .finish();
-        let app = create_test_service_with_core_client(core).await;
-        let payload = json!({"infra": empty_infra.id()});
-        let req = TestRequest::get()
-            .uri("/infra/cache_status")
-            .set_json(payload)
-            .to_request();
-        let response = call_service(&app, req).await;
-        assert_eq!(response.status(), StatusCode::OK);
-    }
-
-    #[rstest]
-    async fn infra_get_state_with_result(#[future] empty_infra: TestFixture<Infra>) {
-        let empty_infra = empty_infra.await;
-        let infra_id = empty_infra.id();
-        let mut core = MockingClient::new();
-        core.stub("/cache_status")
-            .method(reqwest::Method::POST)
-            .response(StatusCode::OK)
-            .body(format!(
-                "{{
-                \"{infra_id}\": {{
-        \"last_status\": \"BUILDING_BLOCKS\",
-        \"status\": \"CACHED\"
-        }}
-        }}"
-            ))
-            .finish();
-        let app = create_test_service_with_core_client(core).await;
-        let payload = json!({ "infra": infra_id });
-        let req = TestRequest::get()
-            .uri("/infra/cache_status")
-            .set_json(payload)
-            .to_request();
-        let response = call_service(&app, req).await;
-        assert_eq!(response.status(), StatusCode::OK);
     }
 }
