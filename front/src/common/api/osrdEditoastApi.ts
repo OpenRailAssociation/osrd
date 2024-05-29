@@ -126,7 +126,7 @@ const injectedRtkApi = api
         query: (queryArg) => ({
           url: `/infra/refresh/`,
           method: 'POST',
-          params: { infras: queryArg.infras, force: queryArg.force },
+          params: { force: queryArg.force, infras: queryArg.infras },
         }),
         invalidatesTags: ['infra'],
       }),
@@ -1073,13 +1073,16 @@ export type PostInfraRailjsonApiArg = {
   generateData?: boolean;
   railJson: RailJson;
 };
-export type PostInfraRefreshApiResponse =
-  /** status 200 A list thats contains the ID of the infras that were refreshed* */ number[];
+export type PostInfraRefreshApiResponse = /** status 200  */ {
+  /** The list of infras that were refreshed successfully */
+  infra_refreshed: number[];
+};
 export type PostInfraRefreshApiArg = {
-  /** A list of infra ID */
-  infras?: number[];
-  /** Force the refresh of the layers */
   force?: boolean;
+  /** A comma-separated list of infra IDs to refresh
+    
+    If not provided, all available infras will be refreshed. */
+  infras?: number[];
 };
 export type GetInfraVoltagesApiResponse = /** status 200 Voltages list */ string[];
 export type GetInfraVoltagesApiArg = void;

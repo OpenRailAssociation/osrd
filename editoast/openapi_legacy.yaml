@@ -120,36 +120,6 @@ paths:
                     items:
                       $ref: "#/components/schemas/InfraError"
 
-  /infra/refresh/:
-    post:
-      tags:
-        - infra
-      summary: Refresh the layers
-      parameters:
-        - in: query
-          name: infras
-          schema:
-            type: array
-            items:
-              type: integer
-            default: []
-          description: A list of infra ID
-        - in: query
-          name: force
-          schema:
-            type: boolean
-            default: false
-          description: Force the refresh of the layers
-      responses:
-        200:
-          description: A list thats contains the ID of the infras that were refreshed*
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: integer
-
   /infra/{id}/objects/{object_type}/:
     post:
       tags:
