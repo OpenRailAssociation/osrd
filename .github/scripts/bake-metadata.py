@@ -86,6 +86,12 @@ class BaseEvent(ABC):
         version = self.get_stable_version()
         return self.tag(target, version)
 
+    def output_method(self):
+        return "registry"
+
+    def get_output(self, target: Target) -> List[str]:
+        return ["type=registry"]
+
     def get_tags(self, target: Target) -> List[str]:
         return [self.get_stable_tag(target)]
 
@@ -98,10 +104,7 @@ class BaseEvent(ABC):
 
 @dataclass
 class PullRequestEvent(BaseEvent):
-    # the namespace is where images get pushed
-    # if the image is a fork, this can't be the target repo
-    namespace: str
-
+    is_fork: bool
     pr_id: str
     pr_branch: str
     # the target branch name
@@ -114,9 +117,6 @@ class PullRequestEvent(BaseEvent):
     # the target branch commit hash
     target_hash: str
 
-    def get_namespace(self):
-        return self.namespace
-
     def version_string(self):
         return (
             f"pr {self.pr_id} ("
@@ -128,6 +128,16 @@ class PullRequestEvent(BaseEvent):
         # edge/osrd-front:pr-42-HASH-nginx
         return f"pr-{self.pr_id}-{self.merge_hash}"
 
+    def output_method(self):
+        if not self.is_fork:
+            return super().output_method()
+        return "artifact"
+
+    def get_output(self, target: Target) -> List[str]:
+        if not self.is_fork:
+            return super().get_output(target)
+        return [f"type=docker,dest=osrd-{target.name}.tar"]
+
     def pr_tag(self, target: Target) -> str:
         # edge/osrd-front:pr-42-nginx  # pr-42 (merge of XXXX into XXXX)
         return self.tag(target, f"pr-{self.pr_id}")
@@ -136,11 +146,16 @@ class PullRequestEvent(BaseEvent):
         return [*super().get_tags(target), self.pr_tag(target)]
 
     def get_cache_to(self, target: Target) -> List[str]:
+        if self.is_fork:
+            return []
         return [registry_cache(self.pr_tag(target))]
 
     def get_cache_from(self, target: Target) -> List[str]:
+        target_branch_cache = registry_cache(self.tag(target, self.target_branch))
+        if self.is_fork:
+            return [target_branch_cache]
         return [
-            registry_cache(self.tag(target, self.target_branch)),
+            target_branch_cache,
             registry_cache(self.pr_tag(target)),
         ]
 
@@ -261,17 +276,9 @@ def parse_event(context) -> Event:
         target_branch = context["base_ref"]
         orig_hash, target_hash = parse_merge_commit(commit_hash)
         repo_ctx = context["event"]["pull_request"]["head"]["repo"]
-        # if the repository is a fork, packages cannot be pushed to
-        # the upstream registry. Instead, we push to the fork's registry.
-        # The default namespace is suffixed with -edge, hence the special case
-        namespace = DEFAULT_EDGE_NAMESPACE
-        if repo_ctx["fork"]:
-            # multun/osrd
-            repo_name = repo_ctx["full_name"]
-            # ghcr wants lowercase org names
-            namespace = f"ghcr.io/{repo_name.lower()}"
+        is_fork = repo_ctx["fork"]
         return PullRequestEvent(
-            namespace=namespace,
+            is_fork=is_fork,
             pr_id=parse_pr_id(ref),
             pr_branch=context["head_ref"],
             target_branch=target_branch,
@@ -286,7 +293,10 @@ def generate_bake_file(event, targets):
     bake_targets = {}
     for target in targets:
         # TODO: add labels
-        target_manifest = {"tags": event.get_tags(target)}
+        target_manifest = {
+            "tags": event.get_tags(target),
+            "output": event.get_output(target),
+        }
         if cache_to := event.get_cache_to(target):
             target_manifest["cache-to"] = cache_to
         if cache_from := event.get_cache_from(target):
@@ -311,6 +321,7 @@ def main():
             stable_tags[target.name] = event.get_stable_tag(target)
         print(f"stable_version={event.get_stable_version()}", file=f)
         print(f"stable_tags={json.dumps(stable_tags)}", file=f)
+        print(f"output_method={event.output_method()}", file=f)
 
 
 if __name__ == "__main__":
