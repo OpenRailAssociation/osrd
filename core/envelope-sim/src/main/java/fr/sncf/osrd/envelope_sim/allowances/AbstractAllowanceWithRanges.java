@@ -144,7 +144,10 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
                     // solution that would follow most of the constraints,
                     // to be returned with a warning
                     var rangeIndex = (int) e.context.getOrDefault("allowance_range_index", 0);
-                    if (rangeIndex >= ranges.size() - 1) throw e;
+                    if (rangeIndex >= ranges.size() - 1) {
+                        if (rangeIndex > 0) rangeIndex--;
+                        else throw e;
+                    }
                     mergeRangesAtIndex(base, rangeIndex);
                     // TODO raise warning
                 } else {
