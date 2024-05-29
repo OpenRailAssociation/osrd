@@ -78,6 +78,7 @@ crate::routes! {
         },
         list,
         create,
+        refresh,
         get_all_voltages,
         railjson::routes(),
     },
@@ -137,20 +138,33 @@ pub enum InfraApiError {
     NotFound { infra_id: i64 },
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, IntoParams)]
 struct RefreshQueryParams {
     #[serde(default)]
     force: bool,
+    /// A comma-separated list of infra IDs to refresh
+    ///
+    /// If not provided, all available infras will be refreshed.
     #[serde(default)]
+    #[param(value_type = Vec<u64>)]
     infras: List<i64>,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, ToSchema)]
 struct RefreshResponse {
+    /// The list of infras that were refreshed successfully
     infra_refreshed: Vec<i64>,
 }
 
-/// Refresh infra generated data
+/// Refresh infra generated geographic layers
+#[utoipa::path(
+    tag = "infra",
+    params(RefreshQueryParams),
+    responses(
+        (status = 200, body = inline(RefreshResponse)),
+        (status = 404, description = "Invalid infra ID query parameters"),
+    )
+)]
 #[post("/refresh")]
 async fn refresh(
     db_pool: Data<DbConnectionPool>,
