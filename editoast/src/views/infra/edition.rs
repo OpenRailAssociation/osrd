@@ -29,7 +29,6 @@ use crate::generated_data;
 use crate::infra_cache::object_cache::OperationalPointPartCache;
 use crate::infra_cache::operation::CacheOperation;
 use crate::infra_cache::operation::DeleteOperation;
-use crate::infra_cache::operation::InfraObject;
 use crate::infra_cache::operation::Operation;
 use crate::infra_cache::operation::UpdateOperation;
 use crate::infra_cache::InfraCache;
@@ -43,6 +42,7 @@ use crate::modelsv2::Infra;
 use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraIdParam;
 use crate::RedisClient;
+use editoast_schemas::infra::InfraObject;
 
 crate::routes! {
     split_track_section,
@@ -57,8 +57,8 @@ pub async fn edit<'a>(
     infra_caches: Data<CHashMap<i64, InfraCache>>,
     redis_client: Data<RedisClient>,
     map_layers: Data<MapLayers>,
-    let infra_id = infra.into_inner();
 ) -> Result<Json<Vec<InfraObject>>> {
+    let infra_id = infra.into_inner();
 
     let mut conn = db_pool.get().await?;
     // TODO: lock for update

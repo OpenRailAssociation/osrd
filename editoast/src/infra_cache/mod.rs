@@ -53,10 +53,10 @@ use crate::infra_cache::object_cache::SignalCache;
 use crate::infra_cache::object_cache::SwitchCache;
 use crate::infra_cache::object_cache::TrackSectionCache;
 use crate::infra_cache::operation::CacheOperation;
-use crate::infra_cache::operation::InfraObject;
 use crate::modelsv2::railjson::find_all_schemas;
 use crate::modelsv2::DbConnection;
 use crate::modelsv2::Infra;
+use editoast_schemas::infra::InfraObject;
 use editoast_schemas::primitives::BoundingBox;
 
 /// Contains infra cached data used to generate layers and errors

@@ -16,9 +16,9 @@ use crate::error::InternalError;
 use crate::error::Result;
 use crate::generated_data::generate_infra_errors;
 use crate::generated_data::infra_error::InfraError;
+use crate::infra_cache::operation::patch_infra_object;
 use crate::infra_cache::operation::CacheOperation;
 use crate::infra_cache::operation::DeleteOperation;
-use crate::infra_cache::operation::InfraObject;
 use crate::infra_cache::operation::Operation;
 use crate::infra_cache::operation::UpdateOperation;
 use crate::infra_cache::InfraCache;
@@ -28,6 +28,7 @@ use crate::modelsv2::DbConnectionPool;
 use crate::modelsv2::Infra;
 use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraIdParam;
+use editoast_schemas::infra::InfraObject;
 use editoast_schemas::primitives::OSRDIdentified as _;
 use editoast_schemas::primitives::OSRDObject;
 use editoast_schemas::primitives::ObjectRef;
@@ -233,8 +234,7 @@ fn reduce_operation(
             } = update;
             debug_assert_eq!(railjson_object.get_id(), &obj_id);
             debug_assert_eq!(railjson_object.get_type(), obj_type);
-            railjson_object
-                .patch(&railjson_patch)
+            patch_infra_object(&railjson_object, &railjson_patch)
                 .map(|railjson_object: InfraObject| Operation::Create(Box::new(railjson_object)))
                 .ok()
                 .or_else(|| {
@@ -335,7 +335,6 @@ mod tests {
     use crate::infra_cache::object_cache::DetectorCache;
     use crate::infra_cache::object_cache::SignalCache;
     use crate::infra_cache::operation::DeleteOperation;
-    use crate::infra_cache::operation::InfraObject;
     use crate::infra_cache::operation::Operation;
     use crate::infra_cache::InfraCacheEditoastError;
     use crate::views::pagination::PaginatedResponse;
@@ -344,6 +343,7 @@ mod tests {
     use editoast_schemas::infra::Detector;
     use editoast_schemas::infra::Electrification;
     use editoast_schemas::infra::Endpoint;
+    use editoast_schemas::infra::InfraObject;
     use editoast_schemas::infra::OperationalPoint;
     use editoast_schemas::infra::OperationalPointPart;
     use editoast_schemas::infra::Route;

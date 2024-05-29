@@ -670,7 +670,6 @@ pub mod tests {
     use crate::fixtures::tests::IntoFixture;
     use crate::fixtures::tests::TestFixture;
     use crate::generated_data;
-    use crate::infra_cache::operation::InfraObject;
     use crate::infra_cache::operation::Operation;
     use crate::modelsv2::get_geometry_layer_table;
     use crate::modelsv2::get_table;
@@ -678,6 +677,7 @@ pub mod tests {
     use crate::views::tests::create_test_service;
     use crate::views::tests::create_test_service_with_core_client;
     use editoast_schemas::infra::Electrification;
+    use editoast_schemas::infra::InfraObject;
     use editoast_schemas::infra::SpeedSection;
     use editoast_schemas::infra::SwitchType;
     use editoast_schemas::infra::RAILJSON_VERSION;
