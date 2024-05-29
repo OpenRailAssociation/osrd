@@ -27,9 +27,9 @@ use editoast_schemas::primitives::OSRDIdentified;
 use editoast_schemas::primitives::OSRDObject;
 use editoast_schemas::primitives::ObjectType;
 
-#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, utoipa::ToSchema)]
 #[serde(tag = "obj_type", deny_unknown_fields)]
-pub enum RailjsonObject {
+pub enum InfraObject {
     TrackSection { railjson: TrackSection },
     Signal { railjson: Signal },
     NeutralSection { railjson: NeutralSection },
@@ -44,10 +44,10 @@ pub enum RailjsonObject {
 }
 
 pub async fn apply_create_operation<'r>(
-    railjson_object: &'r RailjsonObject,
+    railjson_object: &'r InfraObject,
     infra_id: i64,
     conn: &mut DbConnection,
-) -> Result<(usize, &'r RailjsonObject)> {
+) -> Result<(usize, &'r InfraObject)> {
     if railjson_object.get_id().is_empty() {
         return Err(OperationError::EmptyId.into());
     }
@@ -64,48 +64,48 @@ pub async fn apply_create_operation<'r>(
     .map_err(|err| err.into())
 }
 
-impl OSRDIdentified for RailjsonObject {
+impl OSRDIdentified for InfraObject {
     fn get_id(&self) -> &String {
         self.get_obj().get_id()
     }
 }
 
-impl OSRDObject for RailjsonObject {
+impl OSRDObject for InfraObject {
     fn get_type(&self) -> ObjectType {
         self.get_obj().get_type()
     }
 }
 
-impl RailjsonObject {
+impl InfraObject {
     pub fn get_obj(&self) -> &dyn OSRDObject {
         match self {
-            RailjsonObject::TrackSection { railjson: obj } => obj,
-            RailjsonObject::Signal { railjson: obj } => obj,
-            RailjsonObject::NeutralSection { railjson: obj } => obj,
-            RailjsonObject::SpeedSection { railjson: obj } => obj,
-            RailjsonObject::Switch { railjson: obj } => obj,
-            RailjsonObject::SwitchType { railjson: obj } => obj,
-            RailjsonObject::Detector { railjson: obj } => obj,
-            RailjsonObject::BufferStop { railjson: obj } => obj,
-            RailjsonObject::Route { railjson: obj } => obj,
-            RailjsonObject::OperationalPoint { railjson: obj } => obj,
-            RailjsonObject::Electrification { railjson: obj } => obj,
+            InfraObject::TrackSection { railjson: obj } => obj,
+            InfraObject::Signal { railjson: obj } => obj,
+            InfraObject::NeutralSection { railjson: obj } => obj,
+            InfraObject::SpeedSection { railjson: obj } => obj,
+            InfraObject::Switch { railjson: obj } => obj,
+            InfraObject::SwitchType { railjson: obj } => obj,
+            InfraObject::Detector { railjson: obj } => obj,
+            InfraObject::BufferStop { railjson: obj } => obj,
+            InfraObject::Route { railjson: obj } => obj,
+            InfraObject::OperationalPoint { railjson: obj } => obj,
+            InfraObject::Electrification { railjson: obj } => obj,
         }
     }
 
     pub fn get_data(&self) -> Value {
         match self {
-            RailjsonObject::TrackSection { railjson: obj } => serde_json::to_value(obj),
-            RailjsonObject::Signal { railjson: obj } => serde_json::to_value(obj),
-            RailjsonObject::SpeedSection { railjson: obj } => serde_json::to_value(obj),
-            RailjsonObject::NeutralSection { railjson: obj } => serde_json::to_value(obj),
-            RailjsonObject::Switch { railjson: obj } => serde_json::to_value(obj),
-            RailjsonObject::SwitchType { railjson: obj } => serde_json::to_value(obj),
-            RailjsonObject::Detector { railjson: obj } => serde_json::to_value(obj),
-            RailjsonObject::BufferStop { railjson: obj } => serde_json::to_value(obj),
-            RailjsonObject::Route { railjson: obj } => serde_json::to_value(obj),
-            RailjsonObject::OperationalPoint { railjson: obj } => serde_json::to_value(obj),
-            RailjsonObject::Electrification { railjson: obj } => serde_json::to_value(obj),
+            InfraObject::TrackSection { railjson: obj } => serde_json::to_value(obj),
+            InfraObject::Signal { railjson: obj } => serde_json::to_value(obj),
+            InfraObject::SpeedSection { railjson: obj } => serde_json::to_value(obj),
+            InfraObject::NeutralSection { railjson: obj } => serde_json::to_value(obj),
+            InfraObject::Switch { railjson: obj } => serde_json::to_value(obj),
+            InfraObject::SwitchType { railjson: obj } => serde_json::to_value(obj),
+            InfraObject::Detector { railjson: obj } => serde_json::to_value(obj),
+            InfraObject::BufferStop { railjson: obj } => serde_json::to_value(obj),
+            InfraObject::Route { railjson: obj } => serde_json::to_value(obj),
+            InfraObject::OperationalPoint { railjson: obj } => serde_json::to_value(obj),
+            InfraObject::Electrification { railjson: obj } => serde_json::to_value(obj),
         }
         .unwrap()
     }
@@ -113,57 +113,57 @@ impl RailjsonObject {
     pub fn patch(self, json_patch: &Patch) -> Result<Self> {
         // `json_patch::patch()` operates on `serde_json::Value`.
         // Therefore, we have to:
-        // (1) transform `RailjsonObject` into `serde_json::Value`,
+        // (1) transform `InfraObject` into `serde_json::Value`,
         // (2) patch the object,
-        // (3) transform `serde_json::Value` back into a `RailjsonObject`.
+        // (3) transform `serde_json::Value` back into a `InfraObject`.
         // The code below is explicitely typed (even if not needed) to help understand this dance.
         let object_type = self.get_type();
         let mut value: serde_json::Value = match &self {
-            RailjsonObject::TrackSection { railjson } => serde_json::to_value(railjson)?,
-            RailjsonObject::Signal { railjson } => serde_json::to_value(railjson)?,
-            RailjsonObject::NeutralSection { railjson } => serde_json::to_value(railjson)?,
-            RailjsonObject::SpeedSection { railjson } => serde_json::to_value(railjson)?,
-            RailjsonObject::Switch { railjson } => serde_json::to_value(railjson)?,
-            RailjsonObject::SwitchType { railjson } => serde_json::to_value(railjson)?,
-            RailjsonObject::Detector { railjson } => serde_json::to_value(railjson)?,
-            RailjsonObject::BufferStop { railjson } => serde_json::to_value(railjson)?,
-            RailjsonObject::Route { railjson } => serde_json::to_value(railjson)?,
-            RailjsonObject::OperationalPoint { railjson } => serde_json::to_value(railjson)?,
-            RailjsonObject::Electrification { railjson } => serde_json::to_value(railjson)?,
+            InfraObject::TrackSection { railjson } => serde_json::to_value(railjson)?,
+            InfraObject::Signal { railjson } => serde_json::to_value(railjson)?,
+            InfraObject::NeutralSection { railjson } => serde_json::to_value(railjson)?,
+            InfraObject::SpeedSection { railjson } => serde_json::to_value(railjson)?,
+            InfraObject::Switch { railjson } => serde_json::to_value(railjson)?,
+            InfraObject::SwitchType { railjson } => serde_json::to_value(railjson)?,
+            InfraObject::Detector { railjson } => serde_json::to_value(railjson)?,
+            InfraObject::BufferStop { railjson } => serde_json::to_value(railjson)?,
+            InfraObject::Route { railjson } => serde_json::to_value(railjson)?,
+            InfraObject::OperationalPoint { railjson } => serde_json::to_value(railjson)?,
+            InfraObject::Electrification { railjson } => serde_json::to_value(railjson)?,
         };
         json_patch::patch(&mut value, json_patch)?;
         let railjson_object = match object_type {
-            ObjectType::TrackSection => RailjsonObject::TrackSection {
+            ObjectType::TrackSection => InfraObject::TrackSection {
                 railjson: serde_json::from_value(value)?,
             },
-            ObjectType::Signal => RailjsonObject::Signal {
+            ObjectType::Signal => InfraObject::Signal {
                 railjson: serde_json::from_value(value)?,
             },
-            ObjectType::SpeedSection => RailjsonObject::SpeedSection {
+            ObjectType::SpeedSection => InfraObject::SpeedSection {
                 railjson: serde_json::from_value(value)?,
             },
-            ObjectType::Detector => RailjsonObject::Detector {
+            ObjectType::Detector => InfraObject::Detector {
                 railjson: serde_json::from_value(value)?,
             },
-            ObjectType::NeutralSection => RailjsonObject::NeutralSection {
+            ObjectType::NeutralSection => InfraObject::NeutralSection {
                 railjson: serde_json::from_value(value)?,
             },
-            ObjectType::Switch => RailjsonObject::Switch {
+            ObjectType::Switch => InfraObject::Switch {
                 railjson: serde_json::from_value(value)?,
             },
-            ObjectType::SwitchType => RailjsonObject::SwitchType {
+            ObjectType::SwitchType => InfraObject::SwitchType {
                 railjson: serde_json::from_value(value)?,
             },
-            ObjectType::BufferStop => RailjsonObject::BufferStop {
+            ObjectType::BufferStop => InfraObject::BufferStop {
                 railjson: serde_json::from_value(value)?,
             },
-            ObjectType::Route => RailjsonObject::Route {
+            ObjectType::Route => InfraObject::Route {
                 railjson: serde_json::from_value(value)?,
             },
-            ObjectType::OperationalPoint => RailjsonObject::OperationalPoint {
+            ObjectType::OperationalPoint => InfraObject::OperationalPoint {
                 railjson: serde_json::from_value(value)?,
             },
-            ObjectType::Electrification => RailjsonObject::Electrification {
+            ObjectType::Electrification => InfraObject::Electrification {
                 railjson: serde_json::from_value(value)?,
             },
         };
@@ -171,79 +171,79 @@ impl RailjsonObject {
     }
 }
 
-impl From<TrackSection> for RailjsonObject {
+impl From<TrackSection> for InfraObject {
     fn from(track: TrackSection) -> Self {
-        RailjsonObject::TrackSection { railjson: track }
+        InfraObject::TrackSection { railjson: track }
     }
 }
 
-impl From<Electrification> for RailjsonObject {
+impl From<Electrification> for InfraObject {
     fn from(electrification: Electrification) -> Self {
-        RailjsonObject::Electrification {
+        InfraObject::Electrification {
             railjson: electrification,
         }
     }
 }
 
-impl From<Signal> for RailjsonObject {
+impl From<Signal> for InfraObject {
     fn from(signal: Signal) -> Self {
-        RailjsonObject::Signal { railjson: signal }
+        InfraObject::Signal { railjson: signal }
     }
 }
 
-impl From<SpeedSection> for RailjsonObject {
+impl From<SpeedSection> for InfraObject {
     fn from(speedsection: SpeedSection) -> Self {
-        RailjsonObject::SpeedSection {
+        InfraObject::SpeedSection {
             railjson: speedsection,
         }
     }
 }
 
-impl From<NeutralSection> for RailjsonObject {
+impl From<NeutralSection> for InfraObject {
     fn from(neutralsection: NeutralSection) -> Self {
-        RailjsonObject::NeutralSection {
+        InfraObject::NeutralSection {
             railjson: neutralsection,
         }
     }
 }
 
-impl From<Switch> for RailjsonObject {
+impl From<Switch> for InfraObject {
     fn from(switch: Switch) -> Self {
-        RailjsonObject::Switch { railjson: switch }
+        InfraObject::Switch { railjson: switch }
     }
 }
 
-impl From<SwitchType> for RailjsonObject {
+impl From<SwitchType> for InfraObject {
     fn from(switchtype: SwitchType) -> Self {
-        RailjsonObject::SwitchType {
+        InfraObject::SwitchType {
             railjson: switchtype,
         }
     }
 }
 
-impl From<Detector> for RailjsonObject {
+impl From<Detector> for InfraObject {
     fn from(detector: Detector) -> Self {
-        RailjsonObject::Detector { railjson: detector }
+        InfraObject::Detector { railjson: detector }
     }
 }
 
-impl From<BufferStop> for RailjsonObject {
+impl From<BufferStop> for InfraObject {
     fn from(bufferstop: BufferStop) -> Self {
-        RailjsonObject::BufferStop {
+        InfraObject::BufferStop {
             railjson: bufferstop,
         }
     }
 }
 
-impl From<Route> for RailjsonObject {
+impl From<Route> for InfraObject {
     fn from(route: Route) -> Self {
-        RailjsonObject::Route { railjson: route }
+        InfraObject::Route { railjson: route }
     }
 }
 
-impl From<OperationalPoint> for RailjsonObject {
+impl From<OperationalPoint> for InfraObject {
     fn from(operationalpoint: OperationalPoint) -> Self {
-        RailjsonObject::OperationalPoint {
+        InfraObject::OperationalPoint {
             railjson: operationalpoint,
         }
     }
@@ -271,10 +271,10 @@ pub mod tests {
                 async fn [<test_create_ $obj:snake>]() {
                     let db_pool = crate::modelsv2::DbConnectionPoolV2::for_tests();
                     let infra = crate::modelsv2::fixtures::create_empty_infra(db_pool.get_ok().deref_mut()).await;
-                    let railjson_object = crate::infra_cache::operation::create::RailjsonObject::$obj {
+                    let infra_object = crate::infra_cache::operation::InfraObject::$obj {
                         railjson: $obj::default(),
                     };
-                    let result = crate::infra_cache::operation::create::apply_create_operation(&railjson_object, infra.id, db_pool.get_ok().deref_mut()).await;
+                    let result = crate::infra_cache::operation::create::apply_create_operation(&infra_object, infra.id, db_pool.get_ok().deref_mut()).await;
                     assert!(result.is_ok(), "Failed to create a {}", stringify!($obj));
                 }
             }

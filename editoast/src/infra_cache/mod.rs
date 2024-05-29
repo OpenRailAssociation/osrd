@@ -53,7 +53,7 @@ use crate::infra_cache::object_cache::SignalCache;
 use crate::infra_cache::object_cache::SwitchCache;
 use crate::infra_cache::object_cache::TrackSectionCache;
 use crate::infra_cache::operation::CacheOperation;
-use crate::infra_cache::operation::RailjsonObject;
+use crate::infra_cache::operation::InfraObject;
 use crate::modelsv2::railjson::find_all_schemas;
 use crate::modelsv2::DbConnection;
 use crate::modelsv2::Infra;
@@ -93,22 +93,22 @@ pub enum ObjectCache {
     NeutralSection(NeutralSection),
 }
 
-impl From<RailjsonObject> for ObjectCache {
-    fn from(railjson: RailjsonObject) -> Self {
+impl From<InfraObject> for ObjectCache {
+    fn from(railjson: InfraObject) -> Self {
         match railjson {
-            RailjsonObject::TrackSection { railjson } => ObjectCache::TrackSection(railjson.into()),
-            RailjsonObject::Signal { railjson } => ObjectCache::Signal(railjson.into()),
-            RailjsonObject::NeutralSection { railjson } => ObjectCache::NeutralSection(railjson),
-            RailjsonObject::SpeedSection { railjson } => ObjectCache::SpeedSection(railjson),
-            RailjsonObject::Switch { railjson } => ObjectCache::Switch(railjson.into()),
-            RailjsonObject::SwitchType { railjson } => ObjectCache::SwitchType(railjson),
-            RailjsonObject::Detector { railjson } => ObjectCache::Detector(railjson.into()),
-            RailjsonObject::BufferStop { railjson } => ObjectCache::BufferStop(railjson.into()),
-            RailjsonObject::Route { railjson } => ObjectCache::Route(railjson),
-            RailjsonObject::OperationalPoint { railjson } => {
+            InfraObject::TrackSection { railjson } => ObjectCache::TrackSection(railjson.into()),
+            InfraObject::Signal { railjson } => ObjectCache::Signal(railjson.into()),
+            InfraObject::NeutralSection { railjson } => ObjectCache::NeutralSection(railjson),
+            InfraObject::SpeedSection { railjson } => ObjectCache::SpeedSection(railjson),
+            InfraObject::Switch { railjson } => ObjectCache::Switch(railjson.into()),
+            InfraObject::SwitchType { railjson } => ObjectCache::SwitchType(railjson),
+            InfraObject::Detector { railjson } => ObjectCache::Detector(railjson.into()),
+            InfraObject::BufferStop { railjson } => ObjectCache::BufferStop(railjson.into()),
+            InfraObject::Route { railjson } => ObjectCache::Route(railjson),
+            InfraObject::OperationalPoint { railjson } => {
                 ObjectCache::OperationalPoint(railjson.into())
             }
-            RailjsonObject::Electrification { railjson } => ObjectCache::Electrification(railjson),
+            InfraObject::Electrification { railjson } => ObjectCache::Electrification(railjson),
         }
     }
 }

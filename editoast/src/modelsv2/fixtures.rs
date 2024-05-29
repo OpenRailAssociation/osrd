@@ -4,7 +4,7 @@ use chrono::Utc;
 use editoast_schemas::primitives::OSRDObject;
 
 use crate::infra_cache::operation::create::apply_create_operation;
-use crate::infra_cache::operation::RailjsonObject;
+use crate::infra_cache::operation::InfraObject;
 use crate::modelsv2::prelude::*;
 use crate::modelsv2::rolling_stock_livery::RollingStockLiveryModel;
 use crate::modelsv2::timetable::Timetable;
@@ -245,12 +245,12 @@ pub async fn create_infra_object<T>(
     conn: &mut DbConnection,
     infra_id: i64,
     object: T,
-) -> RailjsonObject
+) -> InfraObject
 where
-    T: Into<RailjsonObject> + OSRDObject,
+    T: Into<InfraObject> + OSRDObject,
 {
     let object_type = object.get_type();
-    let railjson_object: RailjsonObject = object.into();
+    let railjson_object: InfraObject = object.into();
     let result = apply_create_operation(&railjson_object, infra_id, conn).await;
     assert!(result.is_ok(), "Failed to create a {object_type}");
     railjson_object
