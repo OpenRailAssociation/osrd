@@ -19,6 +19,7 @@ jobs:
     outputs:
       stable_tags: ${{ steps.bake-metadata.outputs.stable_tags }}
       stable_version: ${{ steps.bake-metadata.outputs.stable_version }}
+      output_method: ${{ steps.bake-metadata.outputs.output_method }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -72,7 +73,7 @@ jobs:
 
           for i in $(seq 1 3); do
             echo "::group::Try $i"
-            if docker buildx bake $BAKEFILE $METADATA --push 2>&1 | tee docker-build.log; then
+            if docker buildx bake $BAKEFILE $METADATA 2>&1 | tee docker-build.log; then
               echo "::endgroup::"
               exit 0
             fi
@@ -90,6 +91,13 @@ jobs:
           done
           echo "All retries failed, exiting."
           exit 1
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        if: steps.bake-metadata.outputs.output_method == 'artifact'
+        with:
+          name: build
+          path: osrd-*.tar
 
   check_generated_railjson_sync:
     runs-on: ubuntu-latest
@@ -331,6 +339,19 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Download built images
+        if: needs.build.outputs.output_method == 'artifact'
+        uses: actions/download-artifact@v4
+        with:
+          name: build
+          path: .
+
+      - name: Load built images
+        if: needs.build.outputs.output_method == 'artifact'
+        run: |
+          docker load --input ./osrd-*.tar
+          docker image ls -a
 
       - name: Generate rtk bindings
         run: >
