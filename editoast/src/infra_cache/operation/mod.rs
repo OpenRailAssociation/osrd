@@ -4,7 +4,7 @@ mod update;
 
 use std::ops::Deref as _;
 
-pub use create::RailjsonObject;
+pub use create::InfraObject;
 use editoast_derive::EditoastError;
 use serde::Deserialize;
 use serde::Serialize;
@@ -19,14 +19,16 @@ use crate::modelsv2::DbConnection;
 use editoast_schemas::primitives::OSRDObject as _;
 use editoast_schemas::primitives::ObjectRef;
 
-editoast_common::schemas! { Operation, }
+editoast_common::schemas! {
+    Operation,
+}
 
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, ToSchema)]
 #[serde(tag = "operation_type", deny_unknown_fields)]
 pub enum Operation {
     #[serde(rename = "CREATE")]
     #[schema(value_type = RailjsonObject)]
-    Create(Box<RailjsonObject>),
+    Create(Box<InfraObject>),
     #[serde(rename = "UPDATE")]
     Update(UpdateOperation),
     #[serde(rename = "DELETE")]
@@ -41,10 +43,7 @@ pub enum CacheOperation {
 }
 
 impl CacheOperation {
-    pub fn try_from_operation(
-        operation: &Operation,
-        railjson_object: RailjsonObject,
-    ) -> Result<Self> {
+    pub fn try_from_operation(operation: &Operation, railjson_object: InfraObject) -> Result<Self> {
         let cache_operation = match operation {
             Operation::Create(new_railjson_object) => {
                 debug_assert_eq!(new_railjson_object.get_ref(), railjson_object.get_ref());
@@ -69,7 +68,7 @@ impl Operation {
         &self,
         infra_id: i64,
         conn: &mut DbConnection,
-    ) -> Result<Option<RailjsonObject>> {
+    ) -> Result<Option<InfraObject>> {
         match self {
             Operation::Delete(deletion) => {
                 deletion.apply(infra_id, conn).await?;

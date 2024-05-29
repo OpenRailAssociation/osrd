@@ -15,7 +15,7 @@ use serde_json::Value;
 
 use super::OperationError;
 use crate::error::Result;
-use crate::infra_cache::operation::RailjsonObject;
+use crate::infra_cache::operation::InfraObject;
 use crate::modelsv2::get_table;
 use crate::modelsv2::DbConnection;
 use editoast_schemas::primitives::OSRDIdentified;
@@ -30,7 +30,7 @@ pub struct UpdateOperation {
 }
 
 impl UpdateOperation {
-    pub async fn apply(&self, infra_id: i64, conn: &mut DbConnection) -> Result<RailjsonObject> {
+    pub async fn apply(&self, infra_id: i64, conn: &mut DbConnection) -> Result<InfraObject> {
         // Load object
 
         let mut obj: DataObject = match sql_query(format!(
@@ -87,7 +87,7 @@ struct DataObject {
 impl DataObject {
     /// This function will patch the data object given an update operation.
     /// It will also check that the id of the id of the object is untouched and that the resulted data is valid.
-    pub fn patch_and_check(&mut self, update: &UpdateOperation) -> Result<RailjsonObject> {
+    pub fn patch_and_check(&mut self, update: &UpdateOperation) -> Result<InfraObject> {
         json_patch::patch(&mut self.data, &update.railjson_patch).map_err(|err| {
             OperationError::InvalidPatch {
                 error: err.to_string(),
@@ -99,7 +99,7 @@ impl DataObject {
             "obj_type": update.obj_type.to_string(),
         });
 
-        let obj_railjson = match from_value::<RailjsonObject>(value) {
+        let obj_railjson = match from_value::<InfraObject>(value) {
             Ok(obj) => obj,
             Err(err) => {
                 return Err(OperationError::InvalidPatch {

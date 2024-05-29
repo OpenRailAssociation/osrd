@@ -8,7 +8,7 @@ use super::Fix;
 use crate::generated_data::infra_error::InfraError;
 use crate::generated_data::infra_error::InfraErrorType;
 use crate::infra_cache::object_cache::TrackSectionCache;
-use crate::infra_cache::operation::RailjsonObject;
+use crate::infra_cache::operation::InfraObject;
 use editoast_schemas::infra::BufferStop;
 use editoast_schemas::infra::Endpoint;
 use editoast_schemas::primitives::Identifier;
@@ -28,7 +28,7 @@ pub fn fix_track_section(
                     Endpoint::Begin => 0.0,
                     Endpoint::End => track_section.length,
                 };
-                let buffer_stop = RailjsonObject::BufferStop {
+                let buffer_stop = InfraObject::BufferStop {
                     railjson: (BufferStop {
                         id: Identifier::from(Uuid::new_v4()),
                         track: track_id.to_string().into(),
@@ -78,7 +78,7 @@ mod tests {
             panic!("expecting an `Operation::Create(_)`");
         };
         let railjson = railjson.deref().clone();
-        let RailjsonObject::BufferStop {
+        let InfraObject::BufferStop {
             railjson: buffer_stop,
         } = railjson
         else {
