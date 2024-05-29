@@ -23,18 +23,89 @@ use editoast_schemas::primitives::ObjectType;
 
 editoast_common::schemas! {
     Operation,
+    &json_patch::AddOperation,
+    &json_patch::CopyOperation,
+    &json_patch::MoveOperation,
+    &json_patch::PatchOperation,
+    &json_patch::RemoveOperation,
+    &json_patch::ReplaceOperation,
+    &json_patch::TestOperation,
+    &json_patch::Patch,
 }
 
-#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, ToSchema)]
-#[serde(tag = "operation_type", deny_unknown_fields)]
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
+#[serde(tag = "operation_type", deny_unknown_fields, rename_all = "UPPERCASE")]
 pub enum Operation {
-    #[serde(rename = "CREATE")]
-    #[schema(value_type = InfraObject)]
     Create(Box<InfraObject>),
-    #[serde(rename = "UPDATE")]
     Update(UpdateOperation),
-    #[serde(rename = "DELETE")]
     Delete(DeleteOperation),
+}
+
+// We implement ToSchema this way because:
+//
+// - The crate `json_patch` provides us schema definitions for the JSON Patch standard :)
+// - However the names of the subcomponents are quite generic (AddOperation, CopyOperation, etc.)
+// - These could be mistaken with our own `UpdateOperation` and `DeleteOperation` types which have a very
+//   different meaning
+// - We also can't `#[schema(inline)]` them because utoipa doesn't allow inlining the content of enum variants :'(
+// - We also can't change the schema of `Operation` to please utoipa's macros because the frontend is
+//   quite dependant on the current schema
+// - So we have to manually define the schema for the `Operation` to keep the current schema but without
+//   the need to declare `UpdateOperation` and `DeleteOperation` as components
+impl<'s> ToSchema<'s> for Operation {
+    fn schema() -> (
+        &'s str,
+        utoipa::openapi::RefOr<utoipa::openapi::schema::Schema>,
+    ) {
+        #[derive(ToSchema, Serialize)]
+        #[serde(rename_all = "UPPERCASE")]
+        #[allow(unused)]
+        enum Create {
+            Create,
+        }
+
+        #[derive(ToSchema, Serialize)]
+        #[serde(rename_all = "UPPERCASE")]
+        #[allow(unused)]
+        enum Update {
+            Update,
+        }
+
+        #[derive(ToSchema, Serialize)]
+        #[serde(rename_all = "UPPERCASE")]
+        #[allow(unused)]
+        enum Delete {
+            Delete,
+        }
+
+        #[derive(ToSchema, Serialize)]
+        #[serde(untagged)]
+        #[allow(unused)]
+        enum Operation {
+            Create {
+                #[schema(inline)]
+                operation_type: Create,
+                #[serde(flatten)]
+                payload: Box<InfraObject>,
+            },
+            Update {
+                #[schema(inline)]
+                operation_type: Update,
+                #[serde(flatten)]
+                #[schema(inline)]
+                payload: UpdateOperation,
+            },
+            Delete {
+                #[schema(inline)]
+                operation_type: Delete,
+                #[serde(flatten)]
+                #[schema(inline)]
+                payload: DeleteOperation,
+            },
+        }
+
+        Operation::schema()
+    }
 }
 
 #[derive(Clone)]

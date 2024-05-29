@@ -21,11 +21,12 @@ use editoast_schemas::infra::InfraObject;
 use editoast_schemas::primitives::OSRDIdentified;
 use editoast_schemas::primitives::ObjectType;
 
-#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, utoipa::ToSchema)]
 #[serde(deny_unknown_fields)]
 pub struct UpdateOperation {
     pub obj_id: String,
     pub obj_type: ObjectType,
+    #[schema(inline)]
     pub railjson_patch: Patch,
 }
 

@@ -134,14 +134,6 @@ const injectedRtkApi = api
         query: () => ({ url: `/infra/voltages/` }),
         providesTags: ['infra', 'rolling_stock'],
       }),
-      postInfraById: build.mutation<PostInfraByIdApiResponse, PostInfraByIdApiArg>({
-        query: (queryArg) => ({
-          url: `/infra/${queryArg.id}/`,
-          method: 'POST',
-          body: queryArg.body,
-        }),
-        invalidatesTags: ['infra'],
-      }),
       getInfraByIdErrors: build.query<GetInfraByIdErrorsApiResponse, GetInfraByIdErrorsApiArg>({
         query: (queryArg) => ({
           url: `/infra/${queryArg.id}/errors/`,
@@ -176,6 +168,14 @@ const injectedRtkApi = api
       getInfraByInfraId: build.query<GetInfraByInfraIdApiResponse, GetInfraByInfraIdApiArg>({
         query: (queryArg) => ({ url: `/infra/${queryArg.infraId}/` }),
         providesTags: ['infra'],
+      }),
+      postInfraByInfraId: build.mutation<PostInfraByInfraIdApiResponse, PostInfraByInfraIdApiArg>({
+        query: (queryArg) => ({
+          url: `/infra/${queryArg.infraId}/`,
+          method: 'POST',
+          body: queryArg.body,
+        }),
+        invalidatesTags: ['infra'],
       }),
       putInfraByInfraId: build.mutation<PutInfraByInfraIdApiResponse, PutInfraByInfraIdApiArg>({
         query: (queryArg) => ({
@@ -1086,14 +1086,6 @@ export type PostInfraRefreshApiArg = {
 };
 export type GetInfraVoltagesApiResponse = /** status 200 Voltages list */ string[];
 export type GetInfraVoltagesApiArg = void;
-export type PostInfraByIdApiResponse =
-  /** status 200 An array containing infos about the operations processed */ RailjsonObject[];
-export type PostInfraByIdApiArg = {
-  /** infra id */
-  id: number;
-  /** Operations to do on the infra */
-  body: Operation[];
-};
 export type GetInfraByIdErrorsApiResponse = /** status 200 A paginated list of errors */ {
   /** Total number of elements */
   count?: number;
@@ -1140,6 +1132,13 @@ export type GetInfraByInfraIdApiResponse = /** status 200 The infra */ InfraWith
 export type GetInfraByInfraIdApiArg = {
   /** An existing infra ID */
   infraId: number;
+};
+export type PostInfraByInfraIdApiResponse =
+  /** status 200 The result of the operations */ InfraObject[];
+export type PostInfraByInfraIdApiArg = {
+  /** An existing infra ID */
+  infraId: number;
+  body: Operation[];
 };
 export type PutInfraByInfraIdApiResponse = /** status 200 The infra has been renamed */ Infra;
 export type PutInfraByInfraIdApiArg = {
@@ -2213,58 +2212,6 @@ export type RailJson = {
   /** The version of the RailJSON format. Defaults to the current version. */
   version: string;
 };
-export type ObjectType =
-  | 'TrackSection'
-  | 'Signal'
-  | 'SpeedSection'
-  | 'Detector'
-  | 'NeutralSection'
-  | 'Switch'
-  | 'SwitchType'
-  | 'BufferStop'
-  | 'Route'
-  | 'OperationalPoint'
-  | 'Electrification';
-export type Railjson = {
-  id: string;
-  [key: string]: any;
-};
-export type RailjsonObject = {
-  obj_type: ObjectType;
-  railjson: Railjson;
-};
-export type Patch = {
-  /** A string containing a JSON Pointer value. */
-  from?: string;
-  /** The operation to be performed */
-  op: 'add' | 'remove' | 'replace' | 'move' | 'copy' | 'test';
-  /** A JSON-Pointer */
-  path: string;
-  /** The value to be used within the operations. */
-  value?: object;
-};
-export type Patches = Patch[];
-export type UpdateOperation = {
-  obj_id?: string;
-  obj_type: ObjectType;
-  operation_type: 'UPDATE';
-  railjson_patch: Patches;
-};
-export type DeleteOperation = {
-  obj_id: string;
-  obj_type: ObjectType;
-  operation_type: 'DELETE';
-};
-export type Operation =
-  | (RailjsonObject & {
-      operation_type: 'CREATE';
-    })
-  | (UpdateOperation & {
-      operation_type: 'UPDATE';
-    })
-  | (DeleteOperation & {
-      operation_type: 'DELETE';
-    });
 export type InfraErrorType =
   | 'duplicated_group'
   | 'empty_object'
@@ -2295,6 +2242,146 @@ export type InfraError = {
     obj_type: 'TrackSection' | 'Signal' | 'BufferStop' | 'Detector' | 'Switch' | 'Route';
   };
 };
+export type Railjson = {
+  id: string;
+  [key: string]: any;
+};
+export type ObjectType =
+  | 'TrackSection'
+  | 'Signal'
+  | 'SpeedSection'
+  | 'Detector'
+  | 'NeutralSection'
+  | 'Switch'
+  | 'SwitchType'
+  | 'BufferStop'
+  | 'Route'
+  | 'OperationalPoint'
+  | 'Electrification';
+export type InfraObject =
+  | {
+      obj_type: 'TrackSection';
+      railjson: TrackSection;
+    }
+  | {
+      obj_type: 'Signal';
+      railjson: Signal;
+    }
+  | {
+      obj_type: 'NeutralSection';
+      railjson: NeutralSection;
+    }
+  | {
+      obj_type: 'SpeedSection';
+      railjson: SpeedSection;
+    }
+  | {
+      obj_type: 'Switch';
+      railjson: Switch;
+    }
+  | {
+      obj_type: 'SwitchType';
+      railjson: SwitchType;
+    }
+  | {
+      obj_type: 'Detector';
+      railjson: Detector;
+    }
+  | {
+      obj_type: 'BufferStop';
+      railjson: BufferStop;
+    }
+  | {
+      obj_type: 'Route';
+      railjson: Route;
+    }
+  | {
+      obj_type: 'OperationalPoint';
+      railjson: OperationalPoint;
+    }
+  | {
+      obj_type: 'Electrification';
+      railjson: Electrification;
+    };
+export type AddOperation = {
+  /** JSON-Pointer value [RFC6901](https://tools.ietf.org/html/rfc6901) that references a location
+    within the target document where the operation is performed. */
+  path: string;
+  /** Value to add to the target location. */
+  value: any;
+};
+export type RemoveOperation = {
+  /** JSON-Pointer value [RFC6901](https://tools.ietf.org/html/rfc6901) that references a location
+    within the target document where the operation is performed. */
+  path: string;
+};
+export type ReplaceOperation = {
+  /** JSON-Pointer value [RFC6901](https://tools.ietf.org/html/rfc6901) that references a location
+    within the target document where the operation is performed. */
+  path: string;
+  /** Value to replace with. */
+  value: any;
+};
+export type MoveOperation = {
+  /** JSON-Pointer value [RFC6901](https://tools.ietf.org/html/rfc6901) that references a location
+    to move value from. */
+  from: string;
+  /** JSON-Pointer value [RFC6901](https://tools.ietf.org/html/rfc6901) that references a location
+    within the target document where the operation is performed. */
+  path: string;
+};
+export type CopyOperation = {
+  /** JSON-Pointer value [RFC6901](https://tools.ietf.org/html/rfc6901) that references a location
+    to copy value from. */
+  from: string;
+  /** JSON-Pointer value [RFC6901](https://tools.ietf.org/html/rfc6901) that references a location
+    within the target document where the operation is performed. */
+  path: string;
+};
+export type TestOperation = {
+  /** JSON-Pointer value [RFC6901](https://tools.ietf.org/html/rfc6901) that references a location
+    within the target document where the operation is performed. */
+  path: string;
+  /** Value to test against. */
+  value: any;
+};
+export type PatchOperation =
+  | (AddOperation & {
+      op: 'add';
+    })
+  | (RemoveOperation & {
+      op: 'remove';
+    })
+  | (ReplaceOperation & {
+      op: 'replace';
+    })
+  | (MoveOperation & {
+      op: 'move';
+    })
+  | (CopyOperation & {
+      op: 'copy';
+    })
+  | (TestOperation & {
+      op: 'test';
+    });
+export type Operation =
+  | (InfraObject & {
+      operation_type: 'CREATE';
+    })
+  | ({
+      obj_id: string;
+      obj_type: ObjectType;
+      /** Representation of JSON Patch (list of patch operations) */
+      railjson_patch: PatchOperation[];
+    } & {
+      operation_type: 'UPDATE';
+    })
+  | ({
+      obj_id: string;
+      obj_type: ObjectType;
+    } & {
+      operation_type: 'DELETE';
+    });
 export type BoundingBox = (number & number)[][];
 export type PathfindingOutput = {
   detectors: string[];
