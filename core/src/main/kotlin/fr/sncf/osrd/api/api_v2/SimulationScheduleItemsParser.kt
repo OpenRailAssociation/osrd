@@ -49,5 +49,5 @@ fun parseRawSimulationScheduleItems(
         )
         i++
     }
-    return simulationScheduleItems
+    return simulationScheduleItems.sortedBy { it.pathOffset }
 }
