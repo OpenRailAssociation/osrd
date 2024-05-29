@@ -4,8 +4,9 @@ mod update;
 
 use std::ops::Deref as _;
 
-pub use create::InfraObject;
 use editoast_derive::EditoastError;
+use editoast_schemas::primitives::OSRDObject as _;
+use json_patch::Patch;
 use serde::Deserialize;
 use serde::Serialize;
 use thiserror::Error;
@@ -16,8 +17,9 @@ pub use self::delete::DeleteOperation;
 use crate::error::Result;
 use crate::infra_cache::ObjectCache;
 use crate::modelsv2::DbConnection;
-use editoast_schemas::primitives::OSRDObject as _;
+use editoast_schemas::infra::InfraObject;
 use editoast_schemas::primitives::ObjectRef;
+use editoast_schemas::primitives::ObjectType;
 
 editoast_common::schemas! {
     Operation,
@@ -43,19 +45,19 @@ pub enum CacheOperation {
 }
 
 impl CacheOperation {
-    pub fn try_from_operation(operation: &Operation, railjson_object: InfraObject) -> Result<Self> {
+    pub fn try_from_operation(operation: &Operation, infra_object: InfraObject) -> Result<Self> {
         let cache_operation = match operation {
             Operation::Create(new_railjson_object) => {
-                debug_assert_eq!(new_railjson_object.get_ref(), railjson_object.get_ref());
+                debug_assert_eq!(new_railjson_object.get_ref(), infra_object.get_ref());
                 CacheOperation::Create(ObjectCache::from(new_railjson_object.deref().clone()))
             }
             Operation::Update(UpdateOperation { railjson_patch, .. }) => {
-                let railjson_object = railjson_object.patch(railjson_patch)?;
+                let railjson_object = patch_infra_object(&infra_object, railjson_patch)?;
                 CacheOperation::Update(ObjectCache::from(railjson_object))
             }
             Operation::Delete(delete_operation) => {
                 let object_ref = ObjectRef::from(delete_operation.clone());
-                debug_assert_eq!(object_ref, railjson_object.get_ref());
+                debug_assert_eq!(object_ref, infra_object.get_ref());
                 CacheOperation::Delete(object_ref)
             }
         };
@@ -84,6 +86,66 @@ impl Operation {
             }
         }
     }
+}
+
+pub fn patch_infra_object(infra_object: &InfraObject, json_patch: &Patch) -> Result<InfraObject> {
+    // `json_patch::patch()` operates on `serde_json::Value`.
+    // Therefore, we have to:
+    // (1) transform `RailjsonObject` into `serde_json::Value`,
+    // (2) patch the object,
+    // (3) transform `serde_json::Value` back into a `RailjsonObject`.
+    // The code below is explicitely typed (even if not needed) to help understand this dance.
+    let object_type = infra_object.get_type();
+    let mut value: serde_json::Value = match &infra_object {
+        InfraObject::TrackSection { railjson } => serde_json::to_value(railjson)?,
+        InfraObject::Signal { railjson } => serde_json::to_value(railjson)?,
+        InfraObject::NeutralSection { railjson } => serde_json::to_value(railjson)?,
+        InfraObject::SpeedSection { railjson } => serde_json::to_value(railjson)?,
+        InfraObject::Switch { railjson } => serde_json::to_value(railjson)?,
+        InfraObject::SwitchType { railjson } => serde_json::to_value(railjson)?,
+        InfraObject::Detector { railjson } => serde_json::to_value(railjson)?,
+        InfraObject::BufferStop { railjson } => serde_json::to_value(railjson)?,
+        InfraObject::Route { railjson } => serde_json::to_value(railjson)?,
+        InfraObject::OperationalPoint { railjson } => serde_json::to_value(railjson)?,
+        InfraObject::Electrification { railjson } => serde_json::to_value(railjson)?,
+    };
+    json_patch::patch(&mut value, json_patch)?;
+    let railjson_object = match object_type {
+        ObjectType::TrackSection => InfraObject::TrackSection {
+            railjson: serde_json::from_value(value)?,
+        },
+        ObjectType::Signal => InfraObject::Signal {
+            railjson: serde_json::from_value(value)?,
+        },
+        ObjectType::SpeedSection => InfraObject::SpeedSection {
+            railjson: serde_json::from_value(value)?,
+        },
+        ObjectType::Detector => InfraObject::Detector {
+            railjson: serde_json::from_value(value)?,
+        },
+        ObjectType::NeutralSection => InfraObject::NeutralSection {
+            railjson: serde_json::from_value(value)?,
+        },
+        ObjectType::Switch => InfraObject::Switch {
+            railjson: serde_json::from_value(value)?,
+        },
+        ObjectType::SwitchType => InfraObject::SwitchType {
+            railjson: serde_json::from_value(value)?,
+        },
+        ObjectType::BufferStop => InfraObject::BufferStop {
+            railjson: serde_json::from_value(value)?,
+        },
+        ObjectType::Route => InfraObject::Route {
+            railjson: serde_json::from_value(value)?,
+        },
+        ObjectType::OperationalPoint => InfraObject::OperationalPoint {
+            railjson: serde_json::from_value(value)?,
+        },
+        ObjectType::Electrification => InfraObject::Electrification {
+            railjson: serde_json::from_value(value)?,
+        },
+    };
+    Ok(railjson_object)
 }
 
 #[derive(Debug, Error, EditoastError)]

@@ -8,6 +8,7 @@ mod directional_track_range;
 mod electrical_profiles;
 mod electrification;
 mod endpoint;
+mod infra_object;
 mod loading_gauge_limit;
 mod neutral_section;
 mod operational_point;
@@ -43,6 +44,7 @@ pub use electrical_profiles::ElectricalProfileSetData;
 pub use electrical_profiles::LevelValues;
 pub use electrification::Electrification;
 pub use endpoint::Endpoint;
+pub use infra_object::InfraObject;
 pub use loading_gauge_limit::LoadingGaugeLimit;
 pub use neutral_section::NeutralSection;
 pub use operational_point::OperationalPoint;
@@ -86,18 +88,20 @@ editoast_common::schemas! {
     applicable_directions_track_range::schemas(),
     buffer_stop::schemas(),
     detector::schemas(),
-    directional_track_range::schemas(),
     direction::schemas(),
+    directional_track_range::schemas(),
     electrical_profiles::schemas(),
     electrification::schemas(),
     endpoint::schemas(),
+    infra_object::schemas(),
     loading_gauge_limit::schemas(),
     neutral_section::schemas(),
     operational_point::schemas(),
+    railjson::schemas(),
     route::schemas(),
     side::schemas(),
-    signal::schemas(),
     sign::schemas(),
+    signal::schemas(),
     speed_section::schemas(),
     switch::schemas(),
     switch_type::schemas(),
@@ -105,5 +109,4 @@ editoast_common::schemas! {
     track_location::schemas(),
     track_offset::schemas(),
     track_section::schemas(),
-    railjson::schemas(),
 }

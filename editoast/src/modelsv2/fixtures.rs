@@ -4,7 +4,6 @@ use chrono::Utc;
 use editoast_schemas::primitives::OSRDObject;
 
 use crate::infra_cache::operation::create::apply_create_operation;
-use crate::infra_cache::operation::InfraObject;
 use crate::modelsv2::prelude::*;
 use crate::modelsv2::rolling_stock_livery::RollingStockLiveryModel;
 use crate::modelsv2::timetable::Timetable;
@@ -18,6 +17,7 @@ use crate::modelsv2::Scenario;
 use crate::modelsv2::Study;
 use crate::modelsv2::Tags;
 use crate::views::rolling_stocks::rolling_stock_form::RollingStockForm;
+use editoast_schemas::infra::InfraObject;
 
 pub fn project_changeset(name: &str) -> Changeset<Project> {
     Project::changeset()

@@ -15,9 +15,9 @@ use serde_json::Value;
 
 use super::OperationError;
 use crate::error::Result;
-use crate::infra_cache::operation::InfraObject;
 use crate::modelsv2::get_table;
 use crate::modelsv2::DbConnection;
+use editoast_schemas::infra::InfraObject;
 use editoast_schemas::primitives::OSRDIdentified;
 use editoast_schemas::primitives::ObjectType;
 
