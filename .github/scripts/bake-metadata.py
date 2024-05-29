@@ -101,6 +101,10 @@ class BaseEvent(ABC):
 
 @dataclass
 class PullRequestEvent(BaseEvent):
+    # the namespace is where images get pushed
+    # if the image is a fork, this can't be the target repo
+    namespace: str
+
     pr_id: str
     pr_branch: str
     # the target branch name
@@ -114,6 +118,9 @@ class PullRequestEvent(BaseEvent):
     orig_hash: str
     # the target branch commit hash
     target_hash: str
+
+    def get_namespace(self):
+        return self.namespace
 
     def version_string(self):
         return (
@@ -258,7 +265,18 @@ def parse_event(context) -> Event:
     if event_name == "pull_request":
         target_branch = context["base_ref"]
         orig_hash, target_hash = parse_merge_commit(commit_hash)
+        repo_ctx = context["event"]["pull_request"]["head"]["repo"]
+        # if the repository is a fork, packages cannot be pushed to
+        # the upstream registry. Instead, we push to the fork's registry.
+        # The default namespace is suffixed with -edge, hence the special case
+        namespace = DEFAULT_EDGE_NAMESPACE
+        if repo_ctx["fork"]:
+            # multun/osrd
+            repo_name = repo_ctx["full_name"]
+            # ghcr wants lowercase org names
+            namespace = f"ghcr.io/{repo_name.lower()}"
         return PullRequestEvent(
+            namespace=namespace,
             pr_id=parse_pr_id(ref),
             pr_branch=context["head_ref"],
             target_branch=target_branch,
