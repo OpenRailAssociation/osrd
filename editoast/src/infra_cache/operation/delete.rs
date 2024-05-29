@@ -94,7 +94,7 @@ mod tests {
                     let db_pool = crate::modelsv2::DbConnectionPoolV2::for_tests();
                     let infra = crate::modelsv2::fixtures::create_empty_infra(db_pool.get_ok().deref_mut()).await;
 
-                    let railjson_object = crate::infra_cache::operation::InfraObject::$obj {
+                    let railjson_object = editoast_schemas::infra::InfraObject::$obj {
                         railjson: $obj::default(),
                     };
                     let result = crate::infra_cache::operation::create::apply_create_operation(&railjson_object, infra.id, db_pool.get_ok().deref_mut()).await;

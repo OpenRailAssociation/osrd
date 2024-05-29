@@ -3655,6 +3655,129 @@ components:
       required:
       - infra_id
       type: object
+    InfraObject:
+      oneOf:
+      - properties:
+          obj_type:
+            enum:
+            - TrackSection
+            type: string
+          railjson:
+            $ref: '#/components/schemas/TrackSection'
+        required:
+        - railjson
+        - obj_type
+        type: object
+      - properties:
+          obj_type:
+            enum:
+            - Signal
+            type: string
+          railjson:
+            $ref: '#/components/schemas/Signal'
+        required:
+        - railjson
+        - obj_type
+        type: object
+      - properties:
+          obj_type:
+            enum:
+            - NeutralSection
+            type: string
+          railjson:
+            $ref: '#/components/schemas/NeutralSection'
+        required:
+        - railjson
+        - obj_type
+        type: object
+      - properties:
+          obj_type:
+            enum:
+            - SpeedSection
+            type: string
+          railjson:
+            $ref: '#/components/schemas/SpeedSection'
+        required:
+        - railjson
+        - obj_type
+        type: object
+      - properties:
+          obj_type:
+            enum:
+            - Switch
+            type: string
+          railjson:
+            $ref: '#/components/schemas/Switch'
+        required:
+        - railjson
+        - obj_type
+        type: object
+      - properties:
+          obj_type:
+            enum:
+            - SwitchType
+            type: string
+          railjson:
+            $ref: '#/components/schemas/SwitchType'
+        required:
+        - railjson
+        - obj_type
+        type: object
+      - properties:
+          obj_type:
+            enum:
+            - Detector
+            type: string
+          railjson:
+            $ref: '#/components/schemas/Detector'
+        required:
+        - railjson
+        - obj_type
+        type: object
+      - properties:
+          obj_type:
+            enum:
+            - BufferStop
+            type: string
+          railjson:
+            $ref: '#/components/schemas/BufferStop'
+        required:
+        - railjson
+        - obj_type
+        type: object
+      - properties:
+          obj_type:
+            enum:
+            - Route
+            type: string
+          railjson:
+            $ref: '#/components/schemas/Route'
+        required:
+        - railjson
+        - obj_type
+        type: object
+      - properties:
+          obj_type:
+            enum:
+            - OperationalPoint
+            type: string
+          railjson:
+            $ref: '#/components/schemas/OperationalPoint'
+        required:
+        - railjson
+        - obj_type
+        type: object
+      - properties:
+          obj_type:
+            enum:
+            - Electrification
+            type: string
+          railjson:
+            $ref: '#/components/schemas/Electrification'
+        required:
+        - railjson
+        - obj_type
+        type: object
     InfraState:
       enum:
       - NOT_LOADED

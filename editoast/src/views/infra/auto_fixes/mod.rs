@@ -16,9 +16,9 @@ use crate::error::InternalError;
 use crate::error::Result;
 use crate::generated_data::generate_infra_errors;
 use crate::generated_data::infra_error::InfraError;
+use crate::infra_cache::operation::patch_infra_object;
 use crate::infra_cache::operation::CacheOperation;
 use crate::infra_cache::operation::DeleteOperation;
-use crate::infra_cache::operation::InfraObject;
 use crate::infra_cache::operation::Operation;
 use crate::infra_cache::operation::UpdateOperation;
 use crate::infra_cache::InfraCache;
@@ -28,6 +28,7 @@ use crate::modelsv2::DbConnectionPool;
 use crate::modelsv2::Infra;
 use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraIdParam;
+use editoast_schemas::infra::InfraObject;
 use editoast_schemas::primitives::OSRDIdentified as _;
 use editoast_schemas::primitives::OSRDObject;
 use editoast_schemas::primitives::ObjectRef;
@@ -224,18 +225,17 @@ fn reduce_operation(
             error!("cannot reduce these 2 operations, it should never happen");
             None
         }
-        (Some(Operation::Create(railjson_object)), Some(Operation::Update(update))) => {
+        (Some(Operation::Create(infra_object)), Some(Operation::Update(update))) => {
             let UpdateOperation {
                 obj_id,
                 obj_type,
                 railjson_patch,
                 ..
             } = update;
-            debug_assert_eq!(railjson_object.get_id(), &obj_id);
-            debug_assert_eq!(railjson_object.get_type(), obj_type);
-            railjson_object
-                .patch(&railjson_patch)
-                .map(|railjson_object: InfraObject| Operation::Create(Box::new(railjson_object)))
+            debug_assert_eq!(infra_object.get_id(), &obj_id);
+            debug_assert_eq!(infra_object.get_type(), obj_type);
+            patch_infra_object(&infra_object, &railjson_patch)
+                .map(|infra_object: InfraObject| Operation::Create(Box::new(infra_object)))
                 .ok()
                 .or_else(|| {
                     error!("failed to apply patch when reducing CREATE+UPDATE");
@@ -335,7 +335,6 @@ mod tests {
     use crate::infra_cache::object_cache::DetectorCache;
     use crate::infra_cache::object_cache::SignalCache;
     use crate::infra_cache::operation::DeleteOperation;
-    use crate::infra_cache::operation::InfraObject;
     use crate::infra_cache::operation::Operation;
     use crate::infra_cache::InfraCacheEditoastError;
     use crate::modelsv2::infra::errors::QueryParams;
@@ -344,6 +343,7 @@ mod tests {
     use editoast_schemas::infra::Detector;
     use editoast_schemas::infra::Electrification;
     use editoast_schemas::infra::Endpoint;
+    use editoast_schemas::infra::InfraObject;
     use editoast_schemas::infra::OperationalPoint;
     use editoast_schemas::infra::OperationalPointPart;
     use editoast_schemas::infra::Route;

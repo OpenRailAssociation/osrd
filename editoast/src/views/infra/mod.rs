@@ -684,7 +684,6 @@ pub mod tests {
     use crate::fixtures::tests::TestFixture;
     use crate::generated_data;
     use crate::infra_cache::operation::create::apply_create_operation;
-    use crate::infra_cache::operation::InfraObject;
     use crate::infra_cache::operation::Operation;
     use crate::modelsv2::fixtures::create_empty_infra;
     use crate::modelsv2::fixtures::create_rolling_stock_with_energy_sources;
@@ -695,6 +694,7 @@ pub mod tests {
     use crate::views::tests::create_test_service;
     use crate::views::tests::create_test_service_with_core_client;
     use editoast_schemas::infra::Electrification;
+    use editoast_schemas::infra::InfraObject;
     use editoast_schemas::infra::Speed;
     use editoast_schemas::infra::SpeedSection;
     use editoast_schemas::infra::SwitchType;
