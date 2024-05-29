@@ -17,9 +17,6 @@ DEFAULT_EDGE_NAMESPACE = "ghcr.io/openrailassociation/osrd-edge"
 DEFAULT_RELEASE_NAMESPACE = "ghcr.io/openrailassociation/osrd-stable"
 
 
-PROTECTED_BRANCHES = {"dev", "staging", "prod"}
-
-
 @dataclass
 class Target:
     name: str
@@ -109,8 +106,6 @@ class PullRequestEvent(BaseEvent):
     pr_branch: str
     # the target branch name
     target_branch: str
-    # whether the target branch is protected
-    target_protected: bool
 
     # the merge commit the CI runs on
     merge_hash: str
@@ -280,7 +275,6 @@ def parse_event(context) -> Event:
             pr_id=parse_pr_id(ref),
             pr_branch=context["head_ref"],
             target_branch=target_branch,
-            target_protected=target_branch in PROTECTED_BRANCHES,
             merge_hash=commit_hash,
             orig_hash=orig_hash,
             target_hash=target_hash,
