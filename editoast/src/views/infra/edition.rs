@@ -45,20 +45,38 @@ use crate::RedisClient;
 use editoast_schemas::infra::InfraObject;
 
 crate::routes! {
+    edit,
     split_track_section,
 }
 
-/// CRUD for edit an infrastructure. Takes a batch of operations.
+/// Edit the content of an infrastructure
+///
+/// Takes a batch of operations. An operation is a JSON patch document that will
+/// be applied to the RailJSON description of the appropriate infra object.
+///
+/// The consistency of the patch with the RailJSON schema is checked. If a patch
+/// is erroneous, the whole batch is rejected.
+///
+/// After editing the object, the generated cartographic layers are invalidated and
+/// regenerated. The edition step fails if the regeneration fails.
+#[utoipa::path(
+    tag = "infra",
+    params(InfraIdParam),
+    request_body = Vec<Operation>,
+    responses(
+        (status = 200, body = Vec<InfraObject>, description = "The result of the operations")
+    )
+)]
 #[post("")]
 pub async fn edit<'a>(
-    infra: Path<i64>,
+    infra: Path<InfraIdParam>,
     operations: Json<Vec<Operation>>,
     db_pool: Data<DbConnectionPool>,
     infra_caches: Data<CHashMap<i64, InfraCache>>,
     redis_client: Data<RedisClient>,
     map_layers: Data<MapLayers>,
 ) -> Result<Json<Vec<InfraObject>>> {
-    let infra_id = infra.into_inner();
+    let infra_id = infra.infra_id;
     let mut conn = db_pool.get().await?;
     // TODO: lock for update
     let mut infra =

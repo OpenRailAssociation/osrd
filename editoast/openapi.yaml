@@ -1,5 +1,19 @@
 components:
   schemas:
+    AddOperation:
+      description: JSON Patch 'add' operation representation
+      properties:
+        path:
+          description: |-
+            JSON-Pointer value [RFC6901](https://tools.ietf.org/html/rfc6901) that references a location
+            within the target document where the operation is performed.
+          type: string
+        value:
+          description: Value to add to the target location.
+      required:
+      - path
+      - value
+      type: object
     Allowance:
       oneOf:
       - allOf:
@@ -288,6 +302,23 @@ components:
       - end_time
       - conflict_type
       type: object
+    CopyOperation:
+      description: JSON Patch 'copy' operation representation
+      properties:
+        from:
+          description: |-
+            JSON-Pointer value [RFC6901](https://tools.ietf.org/html/rfc6901) that references a location
+            to copy value from.
+          type: string
+        path:
+          description: |-
+            JSON-Pointer value [RFC6901](https://tools.ietf.org/html/rfc6901) that references a location
+            within the target document where the operation is performed.
+          type: string
+      required:
+      - from
+      - path
+      type: object
     Curve:
       properties:
         position:
@@ -300,21 +331,6 @@ components:
       - radius
       - position
       type: object
-    DeleteOperation:
-      properties:
-        obj_id:
-          example: bd840b06-84ba-4566-98c1-ccf0196c5f16
-          type: string
-        obj_type:
-          $ref: '#/components/schemas/ObjectType'
-        operation_type:
-          enum:
-          - DELETE
-          type: string
-      required:
-      - operation_type
-      - obj_type
-      - obj_id
     DeleteRollingStockQueryParams:
       properties:
         force:
@@ -4056,6 +4072,23 @@ components:
       - default_curve
       - is_electric
       type: object
+    MoveOperation:
+      description: JSON Patch 'move' operation representation
+      properties:
+        from:
+          description: |-
+            JSON-Pointer value [RFC6901](https://tools.ietf.org/html/rfc6901) that references a location
+            to move value from.
+          type: string
+        path:
+          description: |-
+            JSON-Pointer value [RFC6901](https://tools.ietf.org/html/rfc6901) that references a location
+            within the target document where the operation is performed.
+          type: string
+      required:
+      - from
+      - path
+      type: object
     Mrsp:
       description: A MRSP computation result (Most Restrictive Speed Profile)
       items:
@@ -4221,7 +4254,7 @@ components:
     Operation:
       oneOf:
       - allOf:
-        - $ref: '#/components/schemas/RailjsonObject'
+        - $ref: '#/components/schemas/InfraObject'
         - properties:
             operation_type:
               enum:
@@ -4231,7 +4264,22 @@ components:
           - operation_type
           type: object
       - allOf:
-        - $ref: '#/components/schemas/UpdateOperation'
+        - additionalProperties: false
+          properties:
+            obj_id:
+              type: string
+            obj_type:
+              $ref: '#/components/schemas/ObjectType'
+            railjson_patch:
+              description: Representation of JSON Patch (list of patch operations)
+              items:
+                $ref: '#/components/schemas/PatchOperation'
+              type: array
+          required:
+          - obj_id
+          - obj_type
+          - railjson_patch
+          type: object
         - properties:
             operation_type:
               enum:
@@ -4241,7 +4289,17 @@ components:
           - operation_type
           type: object
       - allOf:
-        - $ref: '#/components/schemas/DeleteOperation'
+        - additionalProperties: false
+          description: A delete operation. Contains same information as a object ref but has another serialization.
+          properties:
+            obj_id:
+              type: string
+            obj_type:
+              $ref: '#/components/schemas/ObjectType'
+          required:
+          - obj_id
+          - obj_type
+          type: object
         - properties:
             operation_type:
               enum:
@@ -4511,35 +4569,73 @@ components:
       - next
       type: object
     Patch:
-      description: A JSONPatch document as defined by RFC 6902
-      properties:
-        from:
-          description: A string containing a JSON Pointer value.
-          type: string
-        op:
-          description: The operation to be performed
-          enum:
-          - add
-          - remove
-          - replace
-          - move
-          - copy
-          - test
-          type: string
-        path:
-          description: A JSON-Pointer
-          type: string
-        value:
-          description: The value to be used within the operations.
-          type: object
-      required:
-      - op
-      - path
-    Patches:
-      description: A list of Patch
+      description: Representation of JSON Patch (list of patch operations)
       items:
-        $ref: '#/components/schemas/Patch'
+        $ref: '#/components/schemas/PatchOperation'
       type: array
+    PatchOperation:
+      description: JSON Patch single patch operation
+      oneOf:
+      - allOf:
+        - $ref: '#/components/schemas/AddOperation'
+        - properties:
+            op:
+              enum:
+              - add
+              type: string
+          required:
+          - op
+          type: object
+      - allOf:
+        - $ref: '#/components/schemas/RemoveOperation'
+        - properties:
+            op:
+              enum:
+              - remove
+              type: string
+          required:
+          - op
+          type: object
+      - allOf:
+        - $ref: '#/components/schemas/ReplaceOperation'
+        - properties:
+            op:
+              enum:
+              - replace
+              type: string
+          required:
+          - op
+          type: object
+      - allOf:
+        - $ref: '#/components/schemas/MoveOperation'
+        - properties:
+            op:
+              enum:
+              - move
+              type: string
+          required:
+          - op
+          type: object
+      - allOf:
+        - $ref: '#/components/schemas/CopyOperation'
+        - properties:
+            op:
+              enum:
+              - copy
+              type: string
+          required:
+          - op
+          type: object
+      - allOf:
+        - $ref: '#/components/schemas/TestOperation'
+        - properties:
+            op:
+              enum:
+              - test
+              type: string
+          required:
+          - op
+          type: object
     PathItem:
       allOf:
       - description: The location of a path waypoint
@@ -5774,15 +5870,6 @@ components:
       required:
       - id
       type: object
-    RailjsonObject:
-      properties:
-        obj_type:
-          $ref: '#/components/schemas/ObjectType'
-        railjson:
-          $ref: '#/components/schemas/Railjson'
-      required:
-      - obj_type
-      - railjson
     RangeAllowance:
       properties:
         begin_position:
@@ -5833,6 +5920,31 @@ components:
       required:
       - tau
       - soc_ref
+      type: object
+    RemoveOperation:
+      description: JSON Patch 'remove' operation representation
+      properties:
+        path:
+          description: |-
+            JSON-Pointer value [RFC6901](https://tools.ietf.org/html/rfc6901) that references a location
+            within the target document where the operation is performed.
+          type: string
+      required:
+      - path
+      type: object
+    ReplaceOperation:
+      description: JSON Patch 'replace' operation representation
+      properties:
+        path:
+          description: |-
+            JSON-Pointer value [RFC6901](https://tools.ietf.org/html/rfc6901) that references a location
+            within the target document where the operation is performed.
+          type: string
+        value:
+          description: Value to replace with.
+      required:
+      - path
+      - value
       type: object
     ReportTrain:
       properties:
@@ -8176,6 +8288,20 @@ components:
       items:
         type: string
       type: array
+    TestOperation:
+      description: JSON Patch 'test' operation representation
+      properties:
+        path:
+          description: |-
+            JSON-Pointer value [RFC6901](https://tools.ietf.org/html/rfc6901) that references a location
+            within the target document where the operation is performed.
+          type: string
+        value:
+          description: Value to test against.
+      required:
+      - path
+      - value
+      type: object
     Timetable:
       properties:
         id:
@@ -9030,23 +9156,6 @@ components:
       - duration
       - on_stop_signal
       type: object
-    UpdateOperation:
-      properties:
-        obj_id:
-          example: bd840b06-84ba-4566-98c1-ccf0196c5f16
-          type: string
-        obj_type:
-          $ref: '#/components/schemas/ObjectType'
-        operation_type:
-          enum:
-          - UPDATE
-          type: string
-        railjson_patch:
-          $ref: '#/components/schemas/Patches'
-      required:
-      - operation_type
-      - obj_type
-      - railjson_patch
     Version:
       properties:
         git_describe:
@@ -9526,35 +9635,6 @@ paths:
       tags:
       - infra
       - rolling_stock
-  /infra/{id}/:
-    post:
-      parameters:
-      - description: infra id
-        in: path
-        name: id
-        required: true
-        schema:
-          type: integer
-      requestBody:
-        content:
-          application/json:
-            schema:
-              items:
-                $ref: '#/components/schemas/Operation'
-              type: array
-        description: Operations to do on the infra
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                items:
-                  $ref: '#/components/schemas/RailjsonObject'
-                type: array
-          description: An array containing infos about the operations processed
-      summary: Update/Create/Delete an object of the infra
-      tags:
-      - infra
   /infra/{id}/errors/:
     get:
       parameters:
@@ -9717,6 +9797,44 @@ paths:
         '404':
           description: Infra ID not found
       summary: Retrieve a specific infra
+      tags:
+      - infra
+    post:
+      description: |-
+        Takes a batch of operations. An operation is a JSON patch document that will
+        be applied to the RailJSON description of the appropriate infra object.
+
+        The consistency of the patch with the RailJSON schema is checked. If a patch
+        is erroneous, the whole batch is rejected.
+
+        After editing the object, the generated cartographic layers are invalidated and
+        regenerated. The edition step fails if the regeneration fails.
+      parameters:
+      - description: An existing infra ID
+        in: path
+        name: infra_id
+        required: true
+        schema:
+          format: int64
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              items:
+                $ref: '#/components/schemas/Operation'
+              type: array
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/InfraObject'
+                type: array
+          description: The result of the operations
+      summary: Edit the content of an infrastructure
       tags:
       - infra
     put:

@@ -6,13 +6,9 @@ import { isArray, isNil, isObject, uniq } from 'lodash';
 import { v4 as uuid } from 'uuid';
 
 import type { EditoastType } from 'applications/editor/consts';
+import type { CreateOperation, DeleteOperation, UpdateOperation } from 'applications/editor/types';
 import type { EditorEntity, EditorSchema } from 'applications/editor/typesEditorEntity';
-import type {
-  DeleteOperation,
-  UpdateOperation,
-  Operation,
-  PostInfraByIdObjectsAndObjectTypeApiResponse,
-} from 'common/api/osrdEditoastApi';
+import type { PostInfraByIdObjectsAndObjectTypeApiResponse } from 'common/api/osrdEditoastApi';
 import {
   ALL_SIGNAL_LAYERS_SET,
   SIGNALS_TO_SYMBOLS,
@@ -149,7 +145,7 @@ export function nestEntity(entity: EditorEntity, type: EditoastType): EditorEnti
   };
 }
 
-export function entityToCreateOperation(entity: EditorEntity): Operation {
+export function entityToCreateOperation(entity: EditorEntity): CreateOperation {
   return {
     operation_type: 'CREATE',
     obj_type: entity.objType,
@@ -157,7 +153,7 @@ export function entityToCreateOperation(entity: EditorEntity): Operation {
       ...entity.properties,
       id: uuid(),
     },
-  };
+  } as CreateOperation;
 }
 export function entityToUpdateOperation(entity: EditorEntity, prev: EditorEntity): UpdateOperation {
   return {

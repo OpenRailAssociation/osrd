@@ -6,6 +6,7 @@ import type { IconType } from 'react-icons/lib/iconBase';
 import type { ViewState } from 'react-map-gl/maplibre';
 
 import type { SwitchType } from 'applications/editor/tools/switchEdition/types';
+import type { Operation } from 'common/api/osrdEditoastApi';
 import type { ModalContextType } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import type { EditorState } from 'reducers/editor';
 import type { AppDispatch } from 'store';
@@ -22,6 +23,12 @@ export type MapState = {
   mapStyle: string;
   viewport: ViewState;
 };
+
+// EDITOAST OPERATIONS
+
+export type CreateOperation = Extract<Operation, { operation_type: 'CREATE' }>;
+export type UpdateOperation = Extract<Operation, { operation_type: 'UPDATE' }>;
+export type DeleteOperation = Extract<Operation, { operation_type: 'DELETE' }>;
 
 // EDITOR CONTEXT
 
