@@ -93,7 +93,10 @@ fn init_tracing(mode: EditoastMode, telemetry_config: &client::TelemetryConfig) 
         // Set the default log level to 'info'
         .with_default_directive(tracing_subscriber::filter::LevelFilter::INFO.into())
         .from_env_lossy();
-    let fmt_layer = tracing_subscriber::fmt::layer().compact();
+    let fmt_layer = tracing_subscriber::fmt::layer()
+        .pretty()
+        .with_file(false)
+        .with_line_number(false);
     let fmt_layer = if mode == EditoastMode::Cli {
         fmt_layer.with_writer(std::io::stderr).boxed()
     } else {
