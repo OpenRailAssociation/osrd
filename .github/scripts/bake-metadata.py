@@ -13,11 +13,8 @@ from typing import Optional, Union, List, Tuple, Callable, TypeAlias
 from abc import ABC, abstractmethod
 
 
-EDGE_PREFIX = "ghcr.io/openrailassociation/osrd-edge/"
-RELEASE_PREFIX = "ghcr.io/openrailassociation/osrd-stable/"
-
-
-PROTECTED_BRANCHES = {"dev", "staging", "prod"}
+DEFAULT_EDGE_NAMESPACE = "ghcr.io/openrailassociation/osrd-edge"
+DEFAULT_RELEASE_NAMESPACE = "ghcr.io/openrailassociation/osrd-stable"
 
 
 @dataclass
@@ -69,21 +66,6 @@ def registry_cache(image: str) -> str:
     return f"type=registry,mode=max,ref={image}-cache"
 
 
-def edge_image(target: Target) -> str:
-    return f"{EDGE_PREFIX}osrd-{target.image}"
-
-
-def release_image(target: Target) -> str:
-    return f"{RELEASE_PREFIX}osrd-{target.image}"
-
-
-ImageNamer = Callable[[Target], str]
-
-
-def tag(target: Target, version: str, namer: ImageNamer = edge_image) -> str:
-    return f"{namer(target)}:{version}{target.suffix}"
-
-
 class BaseEvent(ABC):
     @abstractmethod
     def version_string(self) -> str:
@@ -93,13 +75,16 @@ class BaseEvent(ABC):
     def get_stable_version(self) -> str:
         pass
 
-    def get_stable_image_namer(self) -> ImageNamer:
-        return edge_image
+    def get_namespace(self) -> str:
+        return DEFAULT_EDGE_NAMESPACE
+
+    def tag(self, target: Target, version: str) -> str:
+        image_name = f"{self.get_namespace()}/osrd-{target.image}"
+        return f"{image_name}:{version}{target.suffix}"
 
     def get_stable_tag(self, target: Target) -> str:
         version = self.get_stable_version()
-        namer = self.get_stable_image_namer()
-        return tag(target, version, namer)
+        return self.tag(target, version)
 
     def get_tags(self, target: Target) -> List[str]:
         return [self.get_stable_tag(target)]
@@ -113,12 +98,14 @@ class BaseEvent(ABC):
 
 @dataclass
 class PullRequestEvent(BaseEvent):
+    # the namespace is where images get pushed
+    # if the image is a fork, this can't be the target repo
+    namespace: str
+
     pr_id: str
     pr_branch: str
     # the target branch name
     target_branch: str
-    # whether the target branch is protected
-    target_protected: bool
 
     # the merge commit the CI runs on
     merge_hash: str
@@ -126,6 +113,9 @@ class PullRequestEvent(BaseEvent):
     orig_hash: str
     # the target branch commit hash
     target_hash: str
+
+    def get_namespace(self):
+        return self.namespace
 
     def version_string(self):
         return (
@@ -140,7 +130,7 @@ class PullRequestEvent(BaseEvent):
 
     def pr_tag(self, target: Target) -> str:
         # edge/osrd-front:pr-42-nginx  # pr-42 (merge of XXXX into XXXX)
-        return tag(target, f"pr-{self.pr_id}")
+        return self.tag(target, f"pr-{self.pr_id}")
 
     def get_tags(self, target: Target) -> List[str]:
         return [*super().get_tags(target), self.pr_tag(target)]
@@ -150,7 +140,7 @@ class PullRequestEvent(BaseEvent):
 
     def get_cache_from(self, target: Target) -> List[str]:
         return [
-            registry_cache(tag(target, self.target_branch)),
+            registry_cache(self.tag(target, self.target_branch)),
             registry_cache(self.pr_tag(target)),
         ]
 
@@ -173,10 +163,10 @@ class MergeGroupEvent(BaseEvent):
         # we can't easily cache from the PRs, as multiple PRs
         # can be grouped into one merge group batch, and there's
         # no obvious way to figure out which ones
-        return [registry_cache(tag(target, self.target_branch))]
+        return [registry_cache(self.tag(target, self.target_branch))]
 
     def get_cache_to(self, target: Target) -> List[str]:
-        return [registry_cache(tag(target, self.target_branch))]
+        return [registry_cache(self.tag(target, self.target_branch))]
 
 
 @dataclass
@@ -194,7 +184,7 @@ class BranchEvent(BaseEvent):
 
     def branch_tag(self, target: Target) -> str:
         # edge/osrd-front:dev-nginx  # dev XXXX
-        return tag(target, self.branch_name)
+        return self.tag(target, self.branch_name)
 
     def get_tags(self, target: Target) -> List[str]:
         return [*super().get_tags(target), self.branch_tag(target)]
@@ -222,8 +212,8 @@ class ReleaseEvent(BaseEvent):
             name = f"{name}-draft"
         return name
 
-    def get_stable_image_namer(self) -> ImageNamer:
-        return release_image
+    def get_namespace(self) -> str:
+        return DEFAULT_RELEASE_NAMESPACE
 
     def get_tags(self, target: Target) -> List[str]:
         if not target.release:
@@ -270,11 +260,21 @@ def parse_event(context) -> Event:
     if event_name == "pull_request":
         target_branch = context["base_ref"]
         orig_hash, target_hash = parse_merge_commit(commit_hash)
+        repo_ctx = context["event"]["pull_request"]["head"]["repo"]
+        # if the repository is a fork, packages cannot be pushed to
+        # the upstream registry. Instead, we push to the fork's registry.
+        # The default namespace is suffixed with -edge, hence the special case
+        namespace = DEFAULT_EDGE_NAMESPACE
+        if repo_ctx["fork"]:
+            # multun/osrd
+            repo_name = repo_ctx["full_name"]
+            # ghcr wants lowercase org names
+            namespace = f"ghcr.io/{repo_name.lower()}"
         return PullRequestEvent(
+            namespace=namespace,
             pr_id=parse_pr_id(ref),
             pr_branch=context["head_ref"],
             target_branch=target_branch,
-            target_protected=target_branch in PROTECTED_BRANCHES,
             merge_hash=commit_hash,
             orig_hash=orig_hash,
             target_hash=target_hash,
