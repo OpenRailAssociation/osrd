@@ -25,8 +25,8 @@ use crate::error::Result;
 use crate::models::train_schedule::LightTrainSchedule;
 use crate::modelsv2::prelude::*;
 use crate::modelsv2::scenario::Scenario;
-use crate::modelsv2::scenario::ScenarioWithDetails;
 use crate::modelsv2::timetable::Timetable;
+use crate::modelsv2::DbConnection;
 use crate::modelsv2::DbConnectionPool;
 use crate::modelsv2::Infra;
 use crate::modelsv2::Project;
@@ -114,6 +114,26 @@ pub enum ScenarioError {
     #[error("Infra '{infra_id}', could not be found")]
     #[editoast_error(status = 404)]
     InfraNotFound { infra_id: i64 },
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize, ToSchema)]
+#[schema(as = ScenarioWithDetailsV2)]
+pub struct ScenarioWithDetails {
+    #[serde(flatten)]
+    #[schema(value_type = ScenarioV2)]
+    pub scenario: Scenario,
+    pub infra_name: String,
+    pub trains_count: i64,
+}
+
+impl ScenarioWithDetails {
+    pub async fn from_scenario(scenario: Scenario, conn: &mut DbConnection) -> Result<Self> {
+        Ok(Self {
+            infra_name: scenario.infra_name(conn).await?,
+            trains_count: scenario.trains_count(conn).await?,
+            scenario,
+        })
+    }
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize, ToSchema)]
