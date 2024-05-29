@@ -9,7 +9,6 @@ import fr.sncf.osrd.conflicts.incrementalConflictDetector
 import fr.sncf.osrd.envelope_utils.DoubleBinarySearch
 import fr.sncf.osrd.sim_infra.api.Path
 import fr.sncf.osrd.sim_infra.api.RawSignalingInfra
-import fr.sncf.osrd.sim_infra.api.getTrackSectionFromNameOrThrow
 import fr.sncf.osrd.standalone_sim.result.ResultTrain.SpacingRequirement
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
@@ -138,7 +137,7 @@ private fun convertWorkSchedules(
     val res = mutableListOf<SpacingRequirement>()
     for (entry in workSchedules) {
         for (range in entry.trackRanges) {
-            val track = getTrackSectionFromNameOrThrow(range.trackSection, infra)
+            val track = infra.getTrackSectionFromName(range.trackSection) ?: continue
             for (chunk in infra.getTrackSectionChunks(track)) {
                 val chunkStartOffset = infra.getTrackChunkOffset(chunk)
                 val chunkEndOffset = chunkStartOffset + infra.getTrackChunkLength(chunk).distance
