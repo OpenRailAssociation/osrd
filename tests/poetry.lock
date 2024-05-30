@@ -571,10 +571,10 @@ test = ["codecov (>=2.0.5)", "coverage (>=4.2)", "flake8 (>=3.0.4)", "pytest (>=
 
 [[package]]
 name = "osrd-schemas"
-version = "0.8.10"
+version = "0.8.12"
 description = ""
 optional = false
-python-versions = ">=3.9,<=3.12"
+python-versions = ">=3.9,<3.13"
 files = []
 develop = true
 
@@ -960,10 +960,10 @@ files = [
 
 [[package]]
 name = "railjson-generator"
-version = "0.4.7"
+version = "0.4.8"
 description = ""
 optional = false
-python-versions = ">=3.9,<=3.12"
+python-versions = ">=3.9,<3.13"
 files = []
 develop = true
 
@@ -1077,5 +1077,5 @@ zstd = ["zstandard (>=0.18.0)"]
 
 [metadata]
 lock-version = "2.0"
-python-versions = ">=3.9,<=3.12"
-content-hash = "6d59a7f5003ef25815e6f4a7edd653435a74e6811d5eac6b3b411c2d40d26e95"
+python-versions = ">=3.9,<3.13"
+content-hash = "54d69c8234d8c901bfe14bb8288f4c14be8f3639b6d16f3186459379ca9ed457"
