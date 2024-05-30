@@ -69,17 +69,17 @@ mod tests {
     use rstest::rstest;
     use std::ops::DerefMut;
 
-    use crate::infra_cache::operation::create::tests::create_buffer_stop;
-    use crate::infra_cache::operation::create::tests::create_detector;
-    use crate::infra_cache::operation::create::tests::create_electrification;
-    use crate::infra_cache::operation::create::tests::create_op;
-    use crate::infra_cache::operation::create::tests::create_route;
-    use crate::infra_cache::operation::create::tests::create_signal;
-    use crate::infra_cache::operation::create::tests::create_speed;
-    use crate::infra_cache::operation::create::tests::create_switch;
-    use crate::infra_cache::operation::create::tests::create_track;
     use crate::infra_cache::operation::delete::DeleteOperation;
+    use crate::modelsv2::fixtures::create_buffer_stop;
+    use crate::modelsv2::fixtures::create_detector;
+    use crate::modelsv2::fixtures::create_electrification;
     use crate::modelsv2::fixtures::create_empty_infra;
+    use crate::modelsv2::fixtures::create_op;
+    use crate::modelsv2::fixtures::create_route;
+    use crate::modelsv2::fixtures::create_signal;
+    use crate::modelsv2::fixtures::create_speed;
+    use crate::modelsv2::fixtures::create_switch;
+    use crate::modelsv2::fixtures::create_track;
     use crate::modelsv2::DbConnectionPoolV2;
     use editoast_schemas::primitives::OSRDIdentified;
     use editoast_schemas::primitives::OSRDObject;

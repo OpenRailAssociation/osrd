@@ -130,12 +130,12 @@ mod tests {
 
     use super::UpdateOperation;
     use crate::error::EditoastError;
-    use crate::infra_cache::operation::create::tests::create_signal;
-    use crate::infra_cache::operation::create::tests::create_speed;
-    use crate::infra_cache::operation::create::tests::create_switch;
-    use crate::infra_cache::operation::create::tests::create_track;
     use crate::infra_cache::operation::OperationError;
     use crate::modelsv2::fixtures::create_empty_infra;
+    use crate::modelsv2::fixtures::create_signal;
+    use crate::modelsv2::fixtures::create_speed;
+    use crate::modelsv2::fixtures::create_switch;
+    use crate::modelsv2::fixtures::create_track;
     use crate::modelsv2::DbConnectionPoolV2;
     use editoast_schemas::primitives::OSRDIdentified;
     use editoast_schemas::primitives::ObjectType;
