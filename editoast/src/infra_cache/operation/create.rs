@@ -251,11 +251,6 @@ impl From<OperationalPoint> for RailjsonObject {
 
 #[cfg(test)]
 pub mod tests {
-    use crate::infra_cache::operation::create::apply_create_operation;
-    use crate::infra_cache::operation::create::RailjsonObject;
-    use crate::modelsv2::fixtures::create_empty_infra;
-    use crate::modelsv2::DbConnection;
-    use crate::modelsv2::DbConnectionPoolV2;
     use editoast_schemas::infra::BufferStop;
     use editoast_schemas::infra::Detector;
     use editoast_schemas::infra::Electrification;
@@ -266,180 +261,32 @@ pub mod tests {
     use editoast_schemas::infra::Switch;
     use editoast_schemas::infra::SwitchType;
     use editoast_schemas::infra::TrackSection;
-    use rstest::rstest;
     use std::ops::DerefMut;
 
-    pub async fn create_track(
-        conn: &mut DbConnection,
-        infra_id: i64,
-        track: TrackSection,
-    ) -> RailjsonObject {
-        let obj = RailjsonObject::TrackSection { railjson: track };
-        assert!(apply_create_operation(&obj, infra_id, conn).await.is_ok());
-        obj
-    }
-
-    pub async fn create_signal(
-        conn: &mut DbConnection,
-        infra_id: i64,
-        signal: Signal,
-    ) -> RailjsonObject {
-        let obj = RailjsonObject::Signal { railjson: signal };
-        assert!(apply_create_operation(&obj, infra_id, conn).await.is_ok());
-        obj
-    }
-
-    pub async fn create_speed(
-        conn: &mut DbConnection,
-        infra_id: i64,
-        speed: SpeedSection,
-    ) -> RailjsonObject {
-        let obj = RailjsonObject::SpeedSection { railjson: speed };
-        assert!(apply_create_operation(&obj, infra_id, conn).await.is_ok());
-        obj
-    }
-
-    pub async fn create_switch(
-        conn: &mut DbConnection,
-        infra_id: i64,
-        switch: Switch,
-    ) -> RailjsonObject {
-        let obj = RailjsonObject::Switch { railjson: switch };
-        assert!(apply_create_operation(&obj, infra_id, conn).await.is_ok());
-        obj
-    }
-
-    pub async fn create_detector(
-        conn: &mut DbConnection,
-        infra_id: i64,
-        detector: Detector,
-    ) -> RailjsonObject {
-        let obj = RailjsonObject::Detector { railjson: detector };
-        assert!(apply_create_operation(&obj, infra_id, conn).await.is_ok());
-        obj
-    }
-
-    pub async fn create_buffer_stop(
-        conn: &mut DbConnection,
-        infra_id: i64,
-        buffer_stop: BufferStop,
-    ) -> RailjsonObject {
-        let obj = RailjsonObject::BufferStop {
-            railjson: buffer_stop,
+    macro_rules! test_create_object {
+        ($obj:ident) => {
+            paste::paste! {
+                #[rstest::rstest]
+                async fn [<test_create_ $obj:snake>]() {
+                    let db_pool = crate::modelsv2::DbConnectionPoolV2::for_tests();
+                    let infra = crate::modelsv2::fixtures::create_empty_infra(db_pool.get_ok().deref_mut()).await;
+                    let railjson_object = crate::infra_cache::operation::create::RailjsonObject::$obj {
+                        railjson: $obj::default(),
+                    };
+                    assert!(crate::infra_cache::operation::create::apply_create_operation(&railjson_object, infra.id, db_pool.get_ok().deref_mut()).await.is_ok());
+                }
+            }
         };
-        assert!(apply_create_operation(&obj, infra_id, conn).await.is_ok());
-        obj
     }
 
-    pub async fn create_route(
-        conn: &mut DbConnection,
-        infra_id: i64,
-        route: Route,
-    ) -> RailjsonObject {
-        let obj = RailjsonObject::Route { railjson: route };
-        assert!(apply_create_operation(&obj, infra_id, conn).await.is_ok());
-        obj
-    }
-
-    pub async fn create_op(
-        conn: &mut DbConnection,
-        infra_id: i64,
-        op: OperationalPoint,
-    ) -> RailjsonObject {
-        let obj = RailjsonObject::OperationalPoint { railjson: op };
-        assert!(apply_create_operation(&obj, infra_id, conn).await.is_ok());
-        obj
-    }
-
-    pub async fn create_switch_type(
-        conn: &mut DbConnection,
-        infra_id: i64,
-        st: SwitchType,
-    ) -> RailjsonObject {
-        let obj = RailjsonObject::SwitchType { railjson: st };
-        assert!(apply_create_operation(&obj, infra_id, conn).await.is_ok());
-        obj
-    }
-
-    pub async fn create_electrification(
-        conn: &mut DbConnection,
-        infra_id: i64,
-        electrification: Electrification,
-    ) -> RailjsonObject {
-        let obj = RailjsonObject::Electrification {
-            railjson: electrification,
-        };
-        assert!(apply_create_operation(&obj, infra_id, conn).await.is_ok());
-        obj
-    }
-
-    #[rstest]
-    async fn create_track_test() {
-        let db_pool = DbConnectionPoolV2::for_tests();
-        let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
-        create_track(db_pool.get_ok().deref_mut(), infra.id, Default::default()).await;
-    }
-
-    #[rstest]
-    async fn create_signal_test() {
-        let db_pool = DbConnectionPoolV2::for_tests();
-        let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
-        create_signal(db_pool.get_ok().deref_mut(), infra.id, Default::default()).await;
-    }
-
-    #[rstest]
-    async fn create_speed_test() {
-        let db_pool = DbConnectionPoolV2::for_tests();
-        let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
-        create_speed(db_pool.get_ok().deref_mut(), infra.id, Default::default()).await;
-    }
-
-    #[rstest]
-    async fn create_switch_test() {
-        let db_pool = DbConnectionPoolV2::for_tests();
-        let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
-        create_switch(db_pool.get_ok().deref_mut(), infra.id, Default::default()).await;
-    }
-
-    #[rstest]
-    async fn create_detector_test() {
-        let db_pool = DbConnectionPoolV2::for_tests();
-        let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
-        create_detector(db_pool.get_ok().deref_mut(), infra.id, Default::default()).await;
-    }
-
-    #[rstest]
-    async fn create_buffer_stop_test() {
-        let db_pool = DbConnectionPoolV2::for_tests();
-        let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
-        create_buffer_stop(db_pool.get_ok().deref_mut(), infra.id, Default::default()).await;
-    }
-
-    #[rstest]
-    async fn create_route_test() {
-        let db_pool = DbConnectionPoolV2::for_tests();
-        let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
-        create_route(db_pool.get_ok().deref_mut(), infra.id, Default::default()).await;
-    }
-
-    #[rstest]
-    async fn create_op_test() {
-        let db_pool = DbConnectionPoolV2::for_tests();
-        let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
-        create_op(db_pool.get_ok().deref_mut(), infra.id, Default::default()).await;
-    }
-
-    #[rstest]
-    async fn create_switch_type_test() {
-        let db_pool = DbConnectionPoolV2::for_tests();
-        let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
-        create_switch_type(db_pool.get_ok().deref_mut(), infra.id, Default::default()).await;
-    }
-
-    #[rstest]
-    async fn create_electrification_test() {
-        let db_pool = DbConnectionPoolV2::for_tests();
-        let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
-        create_electrification(db_pool.get_ok().deref_mut(), infra.id, Default::default()).await;
-    }
+    test_create_object!(TrackSection);
+    test_create_object!(Signal);
+    test_create_object!(SpeedSection);
+    test_create_object!(Switch);
+    test_create_object!(Detector);
+    test_create_object!(BufferStop);
+    test_create_object!(Route);
+    test_create_object!(OperationalPoint);
+    test_create_object!(SwitchType);
+    test_create_object!(Electrification);
 }
