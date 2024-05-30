@@ -157,50 +157,45 @@ pub async fn update_all(
 
 #[cfg(test)]
 pub mod tests {
-    use actix_web::test as actix_test;
-    use diesel_async::scoped_futures::ScopedFutureExt;
+    use rstest::rstest;
+    use std::ops::DerefMut;
 
     use crate::fixtures::tests::db_pool;
     use crate::generated_data::clear_all;
     use crate::generated_data::refresh_all;
     use crate::generated_data::update_all;
-    use crate::modelsv2::infra::tests::test_infra_transaction;
+    use crate::modelsv2::fixtures::create_empty_infra;
+    use crate::modelsv2::DbConnectionPoolV2;
 
-    #[actix_test] // Slow test
+    #[rstest] // Slow test
     async fn refresh_all_test() {
-        test_infra_transaction(|_conn, infra| {
-            async move {
-                assert!(refresh_all(db_pool(), infra.id, &Default::default())
-                    .await
-                    .is_ok());
-            }
-            .scope_boxed()
-        })
-        .await
+        let db_pool_v2 = DbConnectionPoolV2::for_tests();
+        let infra = create_empty_infra(db_pool_v2.get_ok().deref_mut()).await;
+        assert!(refresh_all(db_pool(), infra.id, &Default::default())
+            .await
+            .is_ok());
     }
 
-    #[actix_test]
+    #[rstest]
     async fn update_all_test() {
-        test_infra_transaction(|conn, infra| {
-            async move {
-                assert!(update_all(conn, infra.id, &[], &Default::default())
-                    .await
-                    .is_ok());
-            }
-            .scope_boxed()
-        })
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
+        assert!(update_all(
+            db_pool.get_ok().deref_mut(),
+            infra.id,
+            &[],
+            &Default::default()
+        )
         .await
+        .is_ok());
     }
 
-    #[actix_test]
+    #[rstest]
     async fn clear_all_test() {
-        test_infra_transaction(|conn, infra| {
-            async move {
-                let res = clear_all(conn, infra.id).await;
-                assert!(res.is_ok());
-            }
-            .scope_boxed()
-        })
-        .await
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
+        assert!(clear_all(db_pool.get_ok().deref_mut(), infra.id)
+            .await
+            .is_ok());
     }
 }

@@ -296,8 +296,6 @@ impl OperationalPointModel {
 
 #[cfg(test)]
 mod tests_persist {
-    use diesel_async::scoped_futures::ScopedFutureExt;
-
     use super::*;
 
     macro_rules! test_persist {
@@ -305,13 +303,11 @@ mod tests_persist {
             paste::paste! {
                 #[rstest::rstest]
                 async fn [<test_persist_ $obj:snake>]() {
-                    crate::modelsv2::infra::tests::test_infra_transaction(|conn, infra| {
-                        async move {
-                            let schemas = (0..10).map(|_| Default::default());
-                            let changesets = $obj::from_infra_schemas(infra.id, schemas);
-                            assert!($obj::create_batch::<_, Vec<_>>(conn, changesets).await.is_ok());
-                        }.scope_boxed()
-                    }).await;
+                    let db_pool =  crate::modelsv2::DbConnectionPoolV2::for_tests();
+                    let infra =  crate::modelsv2::fixtures::create_empty_infra(db_pool.get_ok().deref_mut()).await;
+                    let schemas = (0..10).map(|_| Default::default());
+                    let changesets = $obj::from_infra_schemas(infra.id, schemas);
+                    assert!($obj::create_batch::<_, Vec<_>>(db_pool.get_ok().deref_mut(), changesets).await.is_ok());
                 }
             }
         };
