@@ -7,9 +7,4 @@ export const MAIN_API = {
   },
 };
 
-export const SENTRY_CONFIG = {
-  react_sentry_dsn: import.meta.env.OSRD_SENTRY_DSN,
-  environment: import.meta.env.OSRD_SENTRY_ENVIRONMENT,
-};
-
 export default MAIN_API;
