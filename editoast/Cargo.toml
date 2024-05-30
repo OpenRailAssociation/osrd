@@ -45,7 +45,7 @@ actix-files = "0.6.6"
 actix-http = "3.8.0"
 actix-multipart = "0.6.2"
 actix-web = "4.8.0"
-actix-web-opentelemetry = { version = "0.17.0", features = ["awc"] }
+actix-web-opentelemetry = { version = "0.18.0", features = ["awc"] }
 async-trait = "0.1.80"
 cfg-if = "1.0.0"
 chashmap = "2.2.2"
@@ -76,11 +76,11 @@ itertools = "0.13.0"
 json-patch = { version = "2.0.0", features = ["utoipa"] }
 mvt.workspace = true
 openssl = "*"
-opentelemetry = "0.22.0"
-opentelemetry-datadog = { version = "0.10.0", features = ["reqwest-client"] }
-opentelemetry-otlp = "0.15.0"
-opentelemetry-semantic-conventions = "0.14.0"
-opentelemetry_sdk = { version = "0.22.1", features = ["rt-tokio", "trace"] }
+opentelemetry = "0.23.0"
+opentelemetry-datadog = { version = "0.11.0", features = ["reqwest-client"] }
+opentelemetry-otlp = "0.16.0"
+opentelemetry-semantic-conventions = "0.15.0"
+opentelemetry_sdk = { version = "0.23.0", features = ["rt-tokio", "trace"] }
 osm_to_railjson = { path = "./osm_to_railjson" }
 paste.workspace = true
 pathfinding = "4.10.0"
@@ -108,7 +108,7 @@ thiserror.workspace = true
 tokio = "*"
 tokio-postgres = "*"
 tracing.workspace = true
-tracing-opentelemetry = "0.23.0"
+tracing-opentelemetry = "0.24.0"
 tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
 url = { version = "2.5.2", features = ["serde"] }
 utoipa.workspace = true
