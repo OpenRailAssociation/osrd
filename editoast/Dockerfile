@@ -1,7 +1,7 @@
 ##############
 # Cargo chef #
 ##############
-FROM lukemathwalker/cargo-chef:0.1.66-rust-latest AS chef
+FROM lukemathwalker/cargo-chef:latest-rust-latest AS chef
 WORKDIR /app
 
 #######################
@@ -17,17 +17,13 @@ RUN cargo chef prepare --recipe-path recipe.json
 FROM chef as base_builder
 # geos crate requirement
 RUN apt update -yqq && apt install -yqq --no-install-recommends libgeos-dev mold
-# Instal diesel_cli
-RUN cargo install diesel_cli --no-default-features --features postgres
 
-######################
-# Testing env: build #
-######################
+################
+# Test builder #
+################
 FROM base_builder AS test_builder
-RUN rustup component add llvm-tools && \
-    rustup component add rustfmt && \
-    rustup component add clippy && \
-    cargo install --locked grcov
+RUN apt update -yqq && apt install -yqq --no-install-recommends jq
+RUN rustup component add llvm-tools
 COPY --from=planner /app/recipe.json recipe.json
 COPY --from=planner /app/editoast_derive/ editoast_derive
 COPY --from=test_data . /tests/data
@@ -37,10 +33,27 @@ ENV LLVM_PROFILE_FILE="editoast-%p-%m.profraw"
 RUN cargo chef cook --tests --recipe-path recipe.json
 COPY . .
 
+RUN <<EOF
+mkdir -p /test-programs
+cargo test --workspace --no-run --message-format=json | \
+    jq -r 'select(.reason == "compiler-artifact" and .profile.test) | .executable' | \
+    xargs install -t /test-programs
+ls -la /test-programs
+EOF
+
+###############
+# Built tests #
+###############
+
+FROM scratch AS tests
+COPY --from=test_builder /test-programs/* /
+
 #######################
 # Running env : build #
 #######################
 FROM base_builder AS run_builder
+RUN cargo install diesel_cli --no-default-features --features postgres
+
 COPY --from=planner /app/recipe.json recipe.json
 COPY --from=planner /app/editoast_derive/ editoast_derive
 ENV RUSTFLAGS="-C link-arg=-fuse-ld=mold"
@@ -52,10 +65,13 @@ RUN cargo install --locked --path .
 # Running env #
 ###############
 FROM debian:bookworm-slim as running_env
-RUN apt update -yqq && \
-    apt install -yqq --no-install-recommends libpq-dev curl ca-certificates libgeos-dev libjemalloc2 && \
-    apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false && \
-    rm -rf /var/lib/apt/lists/*
+RUN <<EOF
+set -e
+apt-get update -yqq
+apt-get install -yqq --no-install-recommends libpq-dev curl ca-certificates libgeos-dev libjemalloc2
+apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false
+rm -rf /var/cache/apt/* /var/lib/apt/lists/*
+EOF
 
 COPY --from=run_builder /usr/local/cargo/bin/editoast /usr/local/bin/editoast
 COPY --from=run_builder /usr/local/cargo/bin/diesel /usr/local/bin/diesel

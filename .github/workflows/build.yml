@@ -439,13 +439,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Check for i18n missing keys
-        run: |
-          docker run --name=front-i18n-checker --net=host \
-              ${{ fromJSON(needs.build.outputs.stable_tags).front-build }} \
-              yarn i18n-checker
-          exit $(docker wait front-i18n-checker)
-
       - name: Execute tests within container
         run: |
           docker run --rm --net=host \
@@ -482,30 +475,25 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Documentation check
-        run: |
-          docker run --name=editoast-doc --net=host -v $PWD/output:/output \
-            -e RUSTDOCFLAGS="-D warnings" \
-            ${{ fromJSON(needs.build.outputs.stable_tags).editoast-test }} \
-            cargo doc --manifest-path ./Cargo.toml --no-deps
-
-          exit $(docker wait editoast-doc)
+      - uses: moonrepo/setup-rust@v1
+        with:
+          components: [rustfmt, clippy]
 
       - name: Format check
         run: |
-          docker run --name=editoast-format --net=host -v $PWD/output:/output \
-            ${{ fromJSON(needs.build.outputs.stable_tags).editoast-test }} \
-            cargo fmt --check
+          cd editoast
+          cargo fmt check
 
-          exit $(docker wait editoast-format)
+      - name: Documentation check
+        run: |
+          cd editoast
+          RUSTDOCFLAGS="-D warnings" cargo doc --no-deps
 
       - name: Clippy check
         run: |
-          docker run --name=editoast-clippy --net=host -v $PWD/output:/output \
-            ${{ fromJSON(needs.build.outputs.stable_tags).editoast-test }} \
-            cargo clippy --all-features --all-targets -- -D warnings
+          cd editoast
+          cargo clippy --all-features --all-targets -- -D warnings
 
-          exit $(docker wait editoast-clippy)
 
   check_editoast_openapi:
     # for the same reason as check_editoast_lints, we run this in a separate job
@@ -526,6 +514,13 @@ jobs:
       - name: Check for unexpected changes
         run: |
           diff $PWD/editoast/openapi.yaml $PWD/output/openapi.yaml
+
+      - name: Check for i18n missing keys
+        run: |
+          docker run --name=front-i18n-checker --net=host \
+              ${{ fromJSON(needs.build.outputs.stable_tags).front-build }} \
+              yarn i18n-checker
+          exit $(docker wait front-i18n-checker)
 
       - name: Check for i18n API errors
         run: |

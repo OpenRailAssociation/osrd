@@ -67,7 +67,7 @@ target "editoast-test" {
   inherits = ["base", "base-editoast-test"]
   context = "editoast"
   dockerfile = "Dockerfile"
-  target = "test_builder"
+  target = "tests"
   contexts = {
     test_data = "./tests/data"
   }
@@ -118,7 +118,7 @@ target "front-tests" {
   target = "tests"
   contexts = {
     test_data = "./tests/data"
-  } 
+  }
 }
 
 ###########
