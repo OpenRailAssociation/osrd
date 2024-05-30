@@ -90,85 +90,8 @@ paths:
                     items:
                       $ref: "#/components/schemas/InfraError"
 
-  /infra/{id}/objects/{object_type}/:
-    post:
-      tags:
-        - infra
-      summary: "Retrieve a list of specific objects in railjson format"
-      parameters:
-        - in: path
-          name: id
-          schema:
-            type: integer
-          description: Infra id
-          required: true
-        - in: path
-          name: object_type
-          schema:
-            $ref: "#/components/schemas/ObjectType"
-          description: The type of the object
-          required: true
-      requestBody:
-        description: List of object id's
-        required: true
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                type: string
-      responses:
-        200:
-          description: No content
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: object
-                  required:
-                    - railjson
-                    - geographic
-                  properties:
-                    railjson:
-                      description: Object properties in railjson format
-                      $ref: "#/components/schemas/Railjson"
-                    geographic:
-                      description: object's geographic in geojson format
-                      $ref: "#/components/schemas/Geometry"
-
-
 components:
   schemas:
-    Railjson:
-      type: object
-      description: This field follows railjson format
-      additionalProperties: true
-      required:
-        - id
-      properties:
-        id:
-          type: string
-      example:
-        id: bd840b06-84ba-4566-98c1-ccf0196c5f16
-        geo:
-          type: LineString
-          coordinates:
-            - - 1.0
-              - 41.0
-            - - 2.0
-              - 42.0
-        curves: []
-        length: 1000
-        slopes:
-          - end: 500
-            begin: 250
-            gradient: -1
-        line_code: 1
-        line_name: my line
-        track_name: track name
-        navigability: BOTH
-        track_number: 1
     InfraErrorType:
       type: string
       description: Type of the infra error
@@ -343,10 +266,3 @@ components:
               type: array
               items:
                 $ref: "#/components/schemas/Point3D"
-
-    SpaceTimePosition:
-      type: object
-      properties:
-        time: { type: number, format: float }
-        position: { type: number, format: float }
-      required: [time, position, speed]

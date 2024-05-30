@@ -9,7 +9,6 @@ use diesel_async::RunQueryDsl;
 use editoast_schemas::primitives::ObjectType;
 use serde::Deserialize;
 use serde::Serialize;
-use serde_json::Value as JsonValue;
 
 use super::Infra;
 use crate::error::Result;
@@ -17,13 +16,20 @@ use crate::modelsv2::get_geometry_layer_table;
 use crate::modelsv2::get_table;
 use crate::modelsv2::DbConnection;
 
-#[derive(QueryableByName, Debug, Clone, Serialize, Deserialize, PartialEq)]
+editoast_common::schemas! {
+    ObjectQueryable,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, QueryableByName, utoipa::ToSchema)]
+#[schema(as = InfraObjectWithGeometry)]
 pub struct ObjectQueryable {
     #[diesel(sql_type = Text)]
     pub obj_id: String,
     #[diesel(sql_type = Jsonb)]
-    pub railjson: JsonValue,
+    #[schema(value_type = Object)]
+    pub railjson: serde_json::Value,
     #[diesel(sql_type = Nullable<Jsonb>)]
+    #[schema(value_type = GeoJson)]
     pub geographic: Option<diesel_json::Json<geos::geojson::Geometry>>,
 }
 

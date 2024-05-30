@@ -8,7 +8,7 @@ import { v4 as uuid } from 'uuid';
 import type { EditoastType } from 'applications/editor/consts';
 import type { CreateOperation, DeleteOperation, UpdateOperation } from 'applications/editor/types';
 import type { EditorEntity, EditorSchema } from 'applications/editor/typesEditorEntity';
-import type { PostInfraByIdObjectsAndObjectTypeApiResponse } from 'common/api/osrdEditoastApi';
+import type { PostInfraByInfraIdObjectsAndObjectTypeApiResponse } from 'common/api/osrdEditoastApi';
 import {
   ALL_SIGNAL_LAYERS_SET,
   SIGNALS_TO_SYMBOLS,
@@ -176,7 +176,7 @@ export function entityToDeleteOperation(entity: EditorEntity): DeleteOperation {
 }
 
 export function editoastToEditorEntity<T extends EditorEntity = EditorEntity>(
-  entity: PostInfraByIdObjectsAndObjectTypeApiResponse[0],
+  entity: Omit<PostInfraByInfraIdObjectsAndObjectTypeApiResponse[0], 'obj_id'>,
   type: T['objType']
 ): T {
   return {

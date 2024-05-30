@@ -9,16 +9,21 @@ use actix_web::web::Path;
 use editoast_derive::EditoastError;
 use thiserror::Error;
 
+use super::InfraApiError;
+use super::InfraIdParam;
 use crate::error::Result;
 use crate::modelsv2::infra::ObjectQueryable;
 use crate::modelsv2::DbConnectionPool;
 use crate::modelsv2::Infra;
-use crate::views::infra::InfraApiError;
 use crate::Retrieve;
 use editoast_schemas::primitives::ObjectType;
 
+crate::routes! {
+    get_objects,
+}
+
 /// Return `/infra/<infra_id>/objects` routes
-pub fn routes() -> impl HttpServiceFactory {
+pub fn routes_v1() -> impl HttpServiceFactory {
     get_objects
 }
 
@@ -36,14 +41,30 @@ fn has_unique_ids(obj_ids: &[String]) -> bool {
     obj_ids.len() == obj_ids.iter().collect::<HashSet<_>>().len()
 }
 
-/// Return the railjson list of a specific OSRD object
+#[derive(serde::Deserialize, utoipa::IntoParams)]
+struct ObjectTypeParam {
+    object_type: ObjectType,
+}
+
+/// Retrieves specific infra objects
+#[utoipa::path(
+    tag = "infra",
+    params(InfraIdParam, ObjectTypeParam),
+    request_body = Vec<String>,
+    responses(
+        (status = 200, description = "The list of objects", body = Vec<InfraObjectWithGeometry>),
+        (status = 400, description = "Duplicate object ids provided"),
+        (status = 404, description = "Object ID or infra ID invalid")
+    )
+)]
 #[post("/objects/{object_type}")]
 async fn get_objects(
-    path_params: Path<(i64, ObjectType)>,
+    infra_id_param: Path<InfraIdParam>,
+    object_type_param: Path<ObjectTypeParam>,
     obj_ids: Json<Vec<String>>,
     db_pool: Data<DbConnectionPool>,
 ) -> Result<Json<Vec<ObjectQueryable>>> {
-    let (infra_id, obj_type) = path_params.into_inner();
+    let infra_id = infra_id_param.infra_id;
     if !has_unique_ids(&obj_ids) {
         return Err(GetObjectsErrors::DuplicateIdsProvided.into());
     }
@@ -52,7 +73,9 @@ async fn get_objects(
     let infra =
         Infra::retrieve_or_fail(conn, infra_id, || InfraApiError::NotFound { infra_id }).await?;
     let obj_ids = obj_ids.into_inner();
-    let objects = infra.get_objects(conn, obj_type, &obj_ids).await?;
+    let objects = infra
+        .get_objects(conn, object_type_param.object_type, &obj_ids)
+        .await?;
 
     // Build a cache to reorder the result
     let mut objects: HashMap<_, _> = objects

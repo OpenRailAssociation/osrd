@@ -10,6 +10,7 @@ import { convertDepartureTimeIntoSec } from 'applications/operationalStudies/uti
 import {
   osrdEditoastApi,
   type ReportTrainV2,
+  type TrackSection,
   type TrainScheduleBase,
 } from 'common/api/osrdEditoastApi';
 import type { PositionSpeedTime, SpeedPosition } from 'reducers/osrdsimulation/types';
@@ -202,8 +203,8 @@ export const formatOperationalPoints = async (
   const trackIds = uniq(operationalPoints.map((op) => op.part.track));
   const trackSections = await store
     .dispatch(
-      osrdEditoastApi.endpoints.postInfraByIdObjectsAndObjectType.initiate({
-        id: infraId,
+      osrdEditoastApi.endpoints.postInfraByInfraIdObjectsAndObjectType.initiate({
+        infraId,
         objectType: 'TrackSection',
         body: trackIds,
       })
@@ -243,7 +244,7 @@ export const formatOperationalPoints = async (
     }
 
     const associatedTrackSection = trackSections.find(
-      (trackSection) => trackSection.railjson.id === op.part.track
+      (trackSection) => (trackSection.railjson as TrackSection).id === op.part.track
     );
 
     let metadata;
