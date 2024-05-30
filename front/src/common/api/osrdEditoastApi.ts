@@ -147,17 +147,6 @@ const injectedRtkApi = api
         }),
         providesTags: ['infra'],
       }),
-      postInfraByIdObjectsAndObjectType: build.mutation<
-        PostInfraByIdObjectsAndObjectTypeApiResponse,
-        PostInfraByIdObjectsAndObjectTypeApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/infra/${queryArg.id}/objects/${queryArg.objectType}/`,
-          method: 'POST',
-          body: queryArg.body,
-        }),
-        invalidatesTags: ['infra'],
-      }),
       deleteInfraByInfraId: build.mutation<
         DeleteInfraByInfraIdApiResponse,
         DeleteInfraByInfraIdApiArg
@@ -231,6 +220,17 @@ const injectedRtkApi = api
         PostInfraByInfraIdLockApiArg
       >({
         query: (queryArg) => ({ url: `/infra/${queryArg.infraId}/lock/`, method: 'POST' }),
+        invalidatesTags: ['infra'],
+      }),
+      postInfraByInfraIdObjectsAndObjectType: build.mutation<
+        PostInfraByInfraIdObjectsAndObjectTypeApiResponse,
+        PostInfraByInfraIdObjectsAndObjectTypeApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/infra/${queryArg.infraId}/objects/${queryArg.objectType}/`,
+          method: 'POST',
+          body: queryArg.body,
+        }),
         invalidatesTags: ['infra'],
       }),
       postInfraByInfraIdPathfinding: build.mutation<
@@ -1109,20 +1109,6 @@ export type GetInfraByIdErrorsApiArg = {
   /** Whether the response should include errors or warnings */
   level?: 'errors' | 'warnings' | 'all';
 };
-export type PostInfraByIdObjectsAndObjectTypeApiResponse = /** status 200 No content */ {
-  /** object's geographic in geojson format */
-  geographic: Geometry;
-  /** Object properties in railjson format */
-  railjson: Railjson;
-}[];
-export type PostInfraByIdObjectsAndObjectTypeApiArg = {
-  /** Infra id */
-  id: number;
-  /** The type of the object */
-  objectType: ObjectType;
-  /** List of object id's */
-  body: string[];
-};
 export type DeleteInfraByInfraIdApiResponse = unknown;
 export type DeleteInfraByInfraIdApiArg = {
   /** An existing infra ID */
@@ -1189,6 +1175,14 @@ export type PostInfraByInfraIdLockApiResponse = unknown;
 export type PostInfraByInfraIdLockApiArg = {
   /** An existing infra ID */
   infraId: number;
+};
+export type PostInfraByInfraIdObjectsAndObjectTypeApiResponse =
+  /** status 200 The list of objects */ InfraObjectWithGeometry[];
+export type PostInfraByInfraIdObjectsAndObjectTypeApiArg = {
+  /** An existing infra ID */
+  infraId: number;
+  objectType: ObjectType;
+  body: string[];
 };
 export type PostInfraByInfraIdPathfindingApiResponse =
   /** status 200 A list of shortest paths between starting and ending track locations */ PathfindingOutput[];
@@ -2242,22 +2236,6 @@ export type InfraError = {
     obj_type: 'TrackSection' | 'Signal' | 'BufferStop' | 'Detector' | 'Switch' | 'Route';
   };
 };
-export type Railjson = {
-  id: string;
-  [key: string]: any;
-};
-export type ObjectType =
-  | 'TrackSection'
-  | 'Signal'
-  | 'SpeedSection'
-  | 'Detector'
-  | 'NeutralSection'
-  | 'Switch'
-  | 'SwitchType'
-  | 'BufferStop'
-  | 'Route'
-  | 'OperationalPoint'
-  | 'Electrification';
 export type InfraObject =
   | {
       obj_type: 'TrackSection';
@@ -2303,6 +2281,18 @@ export type InfraObject =
       obj_type: 'Electrification';
       railjson: Electrification;
     };
+export type ObjectType =
+  | 'TrackSection'
+  | 'Signal'
+  | 'SpeedSection'
+  | 'Detector'
+  | 'NeutralSection'
+  | 'Switch'
+  | 'SwitchType'
+  | 'BufferStop'
+  | 'Route'
+  | 'OperationalPoint'
+  | 'Electrification';
 export type AddOperation = {
   /** JSON-Pointer value [RFC6901](https://tools.ietf.org/html/rfc6901) that references a location
     within the target document where the operation is performed. */
@@ -2383,6 +2373,48 @@ export type Operation =
       operation_type: 'DELETE';
     });
 export type BoundingBox = (number & number)[][];
+export type GeoJsonPointValue = number[];
+export type GeoJsonPoint = {
+  coordinates: GeoJsonPointValue;
+  type: 'Point';
+};
+export type GeoJsonMultiPointValue = GeoJsonPointValue[];
+export type GeoJsonMultiPoint = {
+  coordinates: GeoJsonMultiPointValue;
+  type: 'MultiPoint';
+};
+export type GeoJsonLineStringValue = GeoJsonPointValue[];
+export type GeoJsonLineString = {
+  coordinates: GeoJsonLineStringValue;
+  type: 'LineString';
+};
+export type GeoJsonMultiLineStringValue = GeoJsonLineStringValue[];
+export type GeoJsonMultiLineString = {
+  coordinates: GeoJsonMultiLineStringValue;
+  type: 'MultiLineString';
+};
+export type GeoJsonPolygonValue = GeoJsonLineStringValue[];
+export type GeoJsonPolygon = {
+  coordinates: GeoJsonPolygonValue;
+  type: 'Polygon';
+};
+export type GeoJsonMultiPolygonValue = GeoJsonPolygonValue[];
+export type GeoJsonMultiPolygon = {
+  coordinates: GeoJsonMultiPolygonValue;
+  type: 'MultiPolygon';
+};
+export type GeoJson =
+  | GeoJsonPoint
+  | GeoJsonMultiPoint
+  | GeoJsonLineString
+  | GeoJsonMultiLineString
+  | GeoJsonPolygon
+  | GeoJsonMultiPolygon;
+export type InfraObjectWithGeometry = {
+  geographic: GeoJson;
+  obj_id: string;
+  railjson: object;
+};
 export type PathfindingOutput = {
   detectors: string[];
   switches_directions: {
@@ -2515,16 +2547,6 @@ export type PaginatedResponseOfLightRollingStockWithLiveries = {
   previous: number | null;
   /** The list of results */
   results: LightRollingStockWithLiveries[];
-};
-export type GeoJsonPointValue = number[];
-export type GeoJsonLineStringValue = GeoJsonPointValue[];
-export type GeoJsonLineString = {
-  coordinates: GeoJsonLineStringValue;
-  type: 'LineString';
-};
-export type GeoJsonPoint = {
-  coordinates: GeoJsonPointValue;
-  type: 'Point';
 };
 export type TrackLocation = {
   /** The offset on the track section in meters */

@@ -43,6 +43,7 @@ pub use object_queryable::ObjectQueryable;
 
 editoast_common::schemas! {
     Infra,
+    object_queryable::schemas(),
 }
 
 /// The default version of a newly created infrastructure

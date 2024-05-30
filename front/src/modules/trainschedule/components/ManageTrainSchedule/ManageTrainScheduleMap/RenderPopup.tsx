@@ -43,7 +43,7 @@ function RenderPopup({ pathProperties }: RenderPopupProps) {
   const [trackOffset, setTrackOffset] = useState(0);
 
   const [getTrackEntity] =
-    osrdEditoastApi.endpoints.postInfraByIdObjectsAndObjectType.useMutation();
+    osrdEditoastApi.endpoints.postInfraByInfraIdObjectsAndObjectType.useMutation();
 
   useEffect(() => {
     const calculateOffset = async () => {
@@ -55,7 +55,7 @@ function RenderPopup({ pathProperties }: RenderPopupProps) {
         return;
       const trackId = featureInfoClick.feature.properties.id;
       const result = await getTrackEntity({
-        id: infraId!,
+        infraId: infraId!,
         objectType: 'TrackSection',
         body: [trackId],
       }).unwrap();
