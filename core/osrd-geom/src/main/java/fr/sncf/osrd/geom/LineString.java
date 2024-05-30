@@ -243,4 +243,17 @@ public final class LineString {
 
         return LineString.make(newBufferX.toArray(), newBufferY.toArray());
     }
+
+    @Override
+    public String toString() {
+        // The result can be imported as a WKT linestring
+        // (e.g. can be logged to a CSV file and imported in QGIS)
+        return "LINESTRING("
+                + String.join(
+                        ",",
+                        getPoints().stream()
+                                .map(it -> String.format("%s %s", it.x(), it.y()))
+                                .toList())
+                + ')';
+    }
 }
