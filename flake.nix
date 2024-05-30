@@ -57,6 +57,9 @@
           ps.progress
           ps.tqdm
           ps.ipywidgets
+
+          # TOOLS
+          ps.python-lsp-server
         ];
 
         fixedNode = pkgs.nodejs-18_x;
@@ -99,6 +102,7 @@
                 cargo-watch
                 osmium-tool
                 geos
+                mold
                 openssl
                 pkg-config
                 postgresql
@@ -106,7 +110,8 @@
 
                 # API
                 (python311.withPackages pythonPackages)
-
+                ruff-lsp
+                
                 # Core
                 gradle
                 jdk17
@@ -129,6 +134,7 @@
               ]);
 
             RUST_SRC_PATH = "${rustPlatform.rustLibSrc}";
+            RUSTFLAGS = "-C link-arg=-fuse-ld=mold";
           };
         }
     );
