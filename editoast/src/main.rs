@@ -22,7 +22,7 @@ use crate::modelsv2::Infra;
 use crate::views::OpenApiRoot;
 use actix_cors::Cors;
 use actix_web::dev::{Service, ServiceRequest};
-use actix_web::middleware::{Condition, Logger, NormalizePath};
+use actix_web::middleware::{Logger, NormalizePath};
 use actix_web::web::{scope, Data, JsonConfig, PayloadConfig};
 use actix_web::{App, HttpServer};
 use chashmap::CHashMap;
@@ -60,7 +60,6 @@ use opentelemetry::KeyValue;
 use opentelemetry_otlp::WithExportConfig as _;
 use opentelemetry_sdk::Resource;
 pub use redis_utils::{RedisClient, RedisConnection};
-use sentry::ClientInitGuard;
 use std::error::Error;
 use std::fs::File;
 use std::io::{BufReader, IsTerminal};
@@ -68,7 +67,7 @@ use std::process::exit;
 use std::sync::Arc;
 use std::{env, fs};
 use thiserror::Error;
-use tracing::{error, info, warn};
+use tracing::{error, info};
 use tracing_subscriber::{layer::SubscriberExt as _, util::SubscriberInitExt as _, Layer as _};
 use validator::ValidationErrorsKind;
 use views::infra::InfraApiError;
@@ -318,31 +317,6 @@ async fn trains_import(
     Ok(())
 }
 
-fn init_sentry(args: &RunserverArgs) -> Option<ClientInitGuard> {
-    match (args.sentry_dsn.clone(), args.sentry_env.clone()) {
-        (Some(sentry_dsn), Some(sentry_env)) => Some(sentry::init((
-            sentry_dsn,
-            sentry::ClientOptions {
-                release: match env::var("OSRD_GIT_DESCRIBE").ok() {
-                    Some(release) => Some(release.into()),
-                    None => sentry::release_name!(),
-                },
-                environment: Some(sentry_env.into()),
-                ..Default::default()
-            },
-        ))),
-        (None, Some(_)) => {
-            warn!("SENTRY_DSN must be set to send events to Sentry.");
-            None
-        }
-        (Some(_), None) => {
-            warn!("SENTRY_ENV must be set to send events to Sentry.");
-            None
-        }
-        _ => None,
-    }
-}
-
 fn log_received_request(req: &ServiceRequest) {
     let request_line = if req.query_string().is_empty() {
         format!("{} {} {:?}", req.method(), req.path(), req.version())
@@ -401,10 +375,6 @@ async fn runserver(
     // Setup shared states
     let infra_caches = Data::new(CHashMap::<i64, InfraCache>::default());
 
-    // Setup sentry
-    let _guard = init_sentry(&args);
-    let is_sentry_initialized = _guard.is_some();
-
     let server = HttpServer::new(move || {
         // Build CORS
         let cors = {
@@ -431,10 +401,6 @@ async fn runserver(
 
         App::new()
             .wrap(actix_web_opentelemetry::RequestTracing::new())
-            .wrap(Condition::new(
-                is_sentry_initialized,
-                sentry_actix::Sentry::new(),
-            ))
             .wrap(cors)
             .wrap(NormalizePath::trim())
             .wrap_fn(|req, srv| {

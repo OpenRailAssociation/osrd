@@ -143,10 +143,6 @@ pub struct RunserverArgs {
     pub backend_url: String,
     #[clap(long, env = "OSRD_BACKEND_TOKEN", default_value_t = String::from(""))]
     pub backend_token: String,
-    #[arg(long, env = "SENTRY_DSN")]
-    pub sentry_dsn: Option<String>,
-    #[arg(long, env = "SENTRY_ENV")]
-    pub sentry_env: Option<String>,
     #[derivative(Default(value = r#""".into()"#))]
     #[clap(long, env = "ROOT_PATH", default_value_t = String::new())]
     pub root_path: String,
