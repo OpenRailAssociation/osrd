@@ -3794,6 +3794,19 @@ components:
         - railjson
         - obj_type
         type: object
+    InfraObjectWithGeometry:
+      properties:
+        geographic:
+          $ref: '#/components/schemas/GeoJson'
+        obj_id:
+          type: string
+        railjson:
+          type: object
+      required:
+      - obj_id
+      - railjson
+      - geographic
+      type: object
     InfraState:
       enum:
       - NOT_LOADED
@@ -5841,35 +5854,6 @@ components:
       - buffer_stops
       - detectors
       type: object
-    Railjson:
-      additionalProperties: true
-      description: This field follows railjson format
-      example:
-        curves: []
-        geo:
-          coordinates:
-          - - 1.0
-            - 41.0
-          - - 2.0
-            - 42.0
-          type: LineString
-        id: bd840b06-84ba-4566-98c1-ccf0196c5f16
-        length: 1000
-        line_code: 1
-        line_name: my line
-        navigability: BOTH
-        slopes:
-        - begin: 250
-          end: 500
-          gradient: -1
-        track_name: track name
-        track_number: 1
-      properties:
-        id:
-          type: string
-      required:
-      - id
-      type: object
     RangeAllowance:
       properties:
         begin_position:
@@ -7904,19 +7888,6 @@ components:
       - gradient
       - position
       type: object
-    SpaceTimePosition:
-      properties:
-        position:
-          format: float
-          type: number
-        time:
-          format: float
-          type: number
-      required:
-      - time
-      - position
-      - speed
-      type: object
     SpacingRequirement:
       properties:
         begin_time:
@@ -9700,52 +9671,6 @@ paths:
       summary: Retrieve a paginated list of errors
       tags:
       - infra
-  /infra/{id}/objects/{object_type}/:
-    post:
-      parameters:
-      - description: Infra id
-        in: path
-        name: id
-        required: true
-        schema:
-          type: integer
-      - description: The type of the object
-        in: path
-        name: object_type
-        required: true
-        schema:
-          $ref: '#/components/schemas/ObjectType'
-      requestBody:
-        content:
-          application/json:
-            schema:
-              items:
-                type: string
-              type: array
-        description: List of object id's
-        required: true
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                items:
-                  properties:
-                    geographic:
-                      $ref: '#/components/schemas/Geometry'
-                      description: object's geographic in geojson format
-                    railjson:
-                      $ref: '#/components/schemas/Railjson'
-                      description: Object properties in railjson format
-                  required:
-                  - railjson
-                  - geographic
-                  type: object
-                type: array
-          description: No content
-      summary: Retrieve a list of specific objects in railjson format
-      tags:
-      - infra
   /infra/{infra_id}/:
     delete:
       description: |-
@@ -10007,6 +9932,45 @@ paths:
         '404':
           description: The infra was not found
       summary: Lock an infra
+      tags:
+      - infra
+  /infra/{infra_id}/objects/{object_type}/:
+    post:
+      parameters:
+      - description: An existing infra ID
+        in: path
+        name: infra_id
+        required: true
+        schema:
+          format: int64
+          type: integer
+      - in: path
+        name: object_type
+        required: true
+        schema:
+          $ref: '#/components/schemas/ObjectType'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              items:
+                type: string
+              type: array
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/InfraObjectWithGeometry'
+                type: array
+          description: The list of objects
+        '400':
+          description: Duplicate object ids provided
+        '404':
+          description: Object ID or infra ID invalid
+      summary: Retrieves specific infra objects
       tags:
       - infra
   /infra/{infra_id}/pathfinding/:

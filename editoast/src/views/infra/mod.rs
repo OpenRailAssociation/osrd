@@ -56,6 +56,7 @@ crate::routes! {
     "/infra" => {
         "/{infra_id}" => {
             (
+                objects::routes(),
                 routes::routes(),
                 lines::routes(),
                 auto_fixes::routes(),
@@ -116,7 +117,7 @@ pub fn infra_routes() -> impl HttpServiceFactory {
                 ))
                 .service((
                     errors::routes(),
-                    objects::routes(),
+                    objects::routes_v1(),
                     routes::routes(),
                     pathfinding::routes(),
                     attached::routes(),

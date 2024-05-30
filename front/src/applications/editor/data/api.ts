@@ -3,13 +3,13 @@ import { groupBy, uniq, toPairs } from 'lodash';
 import type { EditoastType } from 'applications/editor/consts';
 import type { EditorEntity } from 'applications/editor/typesEditorEntity';
 import {
-  type PostInfraByIdObjectsAndObjectTypeApiResponse,
+  type PostInfraByInfraIdObjectsAndObjectTypeApiResponse,
   osrdEditoastApi,
 } from 'common/api/osrdEditoastApi';
 import type { AppDispatch } from 'store';
 
 export function editoastToEditorEntity<T extends EditorEntity = EditorEntity>(
-  entity: PostInfraByIdObjectsAndObjectTypeApiResponse[0],
+  entity: PostInfraByInfraIdObjectsAndObjectTypeApiResponse[0],
   type: T['objType']
 ): T {
   return {
@@ -31,8 +31,8 @@ export async function getEntities<T extends EditorEntity = EditorEntity>(
 ): Promise<Record<string, T>> {
   const uniqIDs = uniq(ids);
   const results = await dispatch(
-    osrdEditoastApi.endpoints.postInfraByIdObjectsAndObjectType.initiate({
-      id: infraId,
+    osrdEditoastApi.endpoints.postInfraByInfraIdObjectsAndObjectType.initiate({
+      infraId,
       objectType: type,
       body: uniqIDs,
     })
