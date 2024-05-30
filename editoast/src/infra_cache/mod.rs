@@ -875,12 +875,12 @@ pub enum InfraCacheEditoastError {
 
 #[cfg(test)]
 pub mod tests {
-    use std::collections::HashMap;
-
-    use actix_web::test as actix_test;
     use chashmap::CHashMap;
-    use diesel_async::scoped_futures::ScopedFutureExt;
     use editoast_schemas::infra::Waypoint;
+    use pretty_assertions::assert_eq;
+    use rstest::rstest;
+    use std::collections::HashMap;
+    use std::ops::DerefMut;
 
     use super::OperationalPointCache;
     use crate::infra_cache::object_cache::BufferStopCache;
@@ -900,7 +900,8 @@ pub mod tests {
     use crate::infra_cache::operation::create::tests::create_track;
     use crate::infra_cache::InfraCache;
     use crate::infra_cache::SwitchCache;
-    use crate::modelsv2::infra::tests::test_infra_transaction;
+    use crate::modelsv2::fixtures::create_empty_infra;
+    use crate::modelsv2::DbConnectionPoolV2;
     use editoast_schemas::infra::ApplicableDirections;
     use editoast_schemas::infra::ApplicableDirectionsTrackRange;
     use editoast_schemas::infra::Direction;
@@ -918,191 +919,179 @@ pub mod tests {
     use editoast_schemas::primitives::NonBlankString;
     use editoast_schemas::primitives::OSRDIdentified;
 
-    #[actix_test]
+    #[rstest]
     async fn load_track_section() {
-        test_infra_transaction(|conn, infra| {
-            async move {
-                let track = create_track(conn, infra.id, Default::default()).await;
-                let infra_cache = InfraCache::load(conn, &infra).await.unwrap();
-                assert_eq!(infra_cache.track_sections().len(), 1);
-                assert!(infra_cache.track_sections().contains_key(track.get_id()));
-            }
-            .scope_boxed()
-        })
-        .await;
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
+        let track = create_track(db_pool.get_ok().deref_mut(), infra.id, Default::default()).await;
+        let infra_cache = InfraCache::load(db_pool.get_ok().deref_mut(), &infra)
+            .await
+            .unwrap();
+
+        assert_eq!(infra_cache.track_sections().len(), 1);
+        assert!(infra_cache.track_sections().contains_key(track.get_id()));
     }
 
-    #[actix_test]
+    #[rstest]
     async fn load_signal() {
-        test_infra_transaction(|conn, infra| {
-            {
-                async move {
-                    let signal = create_signal(conn, infra.id, Default::default()).await;
-                    let infra_cache = InfraCache::load(conn, &infra).await.unwrap();
-                    assert!(infra_cache.signals().contains_key(signal.get_id()));
-                    let refs = infra_cache.track_sections_refs;
-                    assert_eq!(refs.get("InvalidRef").unwrap().len(), 1);
-                }
-            }
-            .scope_boxed()
-        })
-        .await;
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
+        let signal =
+            create_signal(db_pool.get_ok().deref_mut(), infra.id, Default::default()).await;
+        let infra_cache = InfraCache::load(db_pool.get_ok().deref_mut(), &infra)
+            .await
+            .unwrap();
+
+        assert!(infra_cache.signals().contains_key(signal.get_id()));
+        let refs = infra_cache.track_sections_refs;
+        assert_eq!(refs.get("InvalidRef").unwrap().len(), 1);
     }
 
-    #[actix_test]
+    #[rstest]
     async fn load_speed_section() {
-        test_infra_transaction(|conn, infra| {
-            async move {
-                let speed = create_speed(
-                    conn,
-                    infra.id,
-                    SpeedSection {
-                        track_ranges: vec![Default::default()],
-                        ..Default::default()
-                    },
-                )
-                .await;
-                let infra_cache = InfraCache::load(conn, &infra).await.unwrap();
-                assert!(infra_cache.speed_sections().contains_key(speed.get_id()));
-                let refs = infra_cache.track_sections_refs;
-                assert_eq!(refs.get("InvalidRef").unwrap().len(), 1);
-            }
-            .scope_boxed()
-        })
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
+        let speed = create_speed(
+            db_pool.get_ok().deref_mut(),
+            infra.id,
+            SpeedSection {
+                track_ranges: vec![Default::default()],
+                ..Default::default()
+            },
+        )
         .await;
+        let infra_cache = InfraCache::load(db_pool.get_ok().deref_mut(), &infra)
+            .await
+            .unwrap();
+
+        assert!(infra_cache.speed_sections().contains_key(speed.get_id()));
+        let refs = infra_cache.track_sections_refs;
+        assert_eq!(refs.get("InvalidRef").unwrap().len(), 1);
     }
 
-    #[actix_test]
+    #[rstest]
     async fn load_route() {
-        test_infra_transaction(|conn, infra| {
-            async move {
-                let route = create_route(conn, infra.id, Default::default()).await;
-                let infra_cache = InfraCache::load(conn, &infra).await.unwrap();
-                assert!(infra_cache.routes().contains_key(route.get_id()));
-            }
-            .scope_boxed()
-        })
-        .await;
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
+        let route = create_route(db_pool.get_ok().deref_mut(), infra.id, Default::default()).await;
+        let infra_cache = InfraCache::load(db_pool.get_ok().deref_mut(), &infra)
+            .await
+            .unwrap();
+
+        assert!(infra_cache.routes().contains_key(route.get_id()));
     }
 
-    #[actix_test]
+    #[rstest]
     async fn load_operational_point() {
-        test_infra_transaction(|conn, infra| {
-            async move {
-                let op = create_op(
-                    conn,
-                    infra.id,
-                    OperationalPoint {
-                        parts: vec![Default::default()],
-                        ..Default::default()
-                    },
-                )
-                .await;
-
-                let infra_cache = InfraCache::load(conn, &infra).await.unwrap();
-
-                assert!(infra_cache.operational_points().contains_key(op.get_id()));
-                let refs = infra_cache.track_sections_refs;
-                assert_eq!(refs.get("InvalidRef").unwrap().len(), 1);
-            }
-            .scope_boxed()
-        })
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
+        let op = create_op(
+            db_pool.get_ok().deref_mut(),
+            infra.id,
+            OperationalPoint {
+                parts: vec![Default::default()],
+                ..Default::default()
+            },
+        )
         .await;
+
+        let infra_cache = InfraCache::load(db_pool.get_ok().deref_mut(), &infra)
+            .await
+            .unwrap();
+
+        assert!(infra_cache.operational_points().contains_key(op.get_id()));
+        let refs = infra_cache.track_sections_refs;
+        assert_eq!(refs.get("InvalidRef").unwrap().len(), 1);
     }
 
-    #[actix_test]
+    #[rstest]
     async fn load_switch() {
-        test_infra_transaction(|conn, infra| {
-            async move {
-                let switch = create_switch(
-                    conn,
-                    infra.id,
-                    Switch {
-                        ports: HashMap::from([("port".into(), Default::default())]),
-                        ..Default::default()
-                    },
-                )
-                .await;
-                let infra_cache = InfraCache::load(conn, &infra).await.unwrap();
-                assert!(infra_cache.switches().contains_key(switch.get_id()));
-            }
-            .scope_boxed()
-        })
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
+        let switch = create_switch(
+            db_pool.get_ok().deref_mut(),
+            infra.id,
+            Switch {
+                ports: HashMap::from([("port".into(), Default::default())]),
+                ..Default::default()
+            },
+        )
         .await;
+        let infra_cache = InfraCache::load(db_pool.get_ok().deref_mut(), &infra)
+            .await
+            .unwrap();
+
+        assert!(infra_cache.switches().contains_key(switch.get_id()));
     }
 
-    #[actix_test]
+    #[rstest]
     async fn load_switch_type() {
-        test_infra_transaction(|conn, infra| {
-            async move {
-                let s_type = create_switch_type(conn, infra.id, Default::default()).await;
-                let infra_cache = InfraCache::load(conn, &infra).await.unwrap();
-                assert!(infra_cache.switch_types().contains_key(s_type.get_id()));
-            }
-            .scope_boxed()
-        })
-        .await;
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
+        let s_type =
+            create_switch_type(db_pool.get_ok().deref_mut(), infra.id, Default::default()).await;
+        let infra_cache = InfraCache::load(db_pool.get_ok().deref_mut(), &infra)
+            .await
+            .unwrap();
+
+        assert!(infra_cache.switch_types().contains_key(s_type.get_id()));
     }
 
-    #[actix_test]
+    #[rstest]
     async fn load_detector() {
-        test_infra_transaction(|conn, infra| {
-            async move {
-                let detector = create_detector(conn, infra.id, Default::default()).await;
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
+        let detector =
+            create_detector(db_pool.get_ok().deref_mut(), infra.id, Default::default()).await;
 
-                let infra_cache = InfraCache::load(conn, &infra).await.unwrap();
+        let infra_cache = InfraCache::load(db_pool.get_ok().deref_mut(), &infra)
+            .await
+            .unwrap();
 
-                assert!(infra_cache.detectors().contains_key(detector.get_id()));
-                let refs = infra_cache.track_sections_refs;
-                assert_eq!(refs.get("InvalidRef").unwrap().len(), 1);
-            }
-            .scope_boxed()
-        })
-        .await;
+        assert!(infra_cache.detectors().contains_key(detector.get_id()));
+        let refs = infra_cache.track_sections_refs;
+        assert_eq!(refs.get("InvalidRef").unwrap().len(), 1);
     }
 
-    #[actix_test]
+    #[rstest]
     async fn load_buffer_stop() {
-        test_infra_transaction(|conn, infra| {
-            async move {
-                let bs = create_buffer_stop(conn, infra.id, Default::default()).await;
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
+        let bs =
+            create_buffer_stop(db_pool.get_ok().deref_mut(), infra.id, Default::default()).await;
 
-                let infra_cache = InfraCache::load(conn, &infra).await.unwrap();
+        let infra_cache = InfraCache::load(db_pool.get_ok().deref_mut(), &infra)
+            .await
+            .unwrap();
 
-                assert!(infra_cache.buffer_stops().contains_key(bs.get_id()));
-                let refs = infra_cache.track_sections_refs;
-                assert_eq!(refs.get("InvalidRef").unwrap().len(), 1);
-            }
-            .scope_boxed()
-        })
-        .await;
+        assert!(infra_cache.buffer_stops().contains_key(bs.get_id()));
+        let refs = infra_cache.track_sections_refs;
+        assert_eq!(refs.get("InvalidRef").unwrap().len(), 1);
     }
 
-    #[actix_test]
+    #[rstest]
     async fn load_electrification() {
-        test_infra_transaction(|conn, infra| {
-            async move {
-                let electrification = create_electrification(
-                    conn,
-                    infra.id,
-                    Electrification {
-                        track_ranges: vec![Default::default()],
-                        ..Default::default()
-                    },
-                )
-                .await;
-
-                let infra_cache = InfraCache::load(conn, &infra).await.unwrap();
-
-                assert!(infra_cache
-                    .electrifications()
-                    .contains_key(electrification.get_id()));
-                let refs = infra_cache.track_sections_refs;
-                assert_eq!(refs.get("InvalidRef").unwrap().len(), 1);
-            }
-            .scope_boxed()
-        })
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
+        let electrification = create_electrification(
+            db_pool.get_ok().deref_mut(),
+            infra.id,
+            Electrification {
+                track_ranges: vec![Default::default()],
+                ..Default::default()
+            },
+        )
         .await;
+
+        let infra_cache = InfraCache::load(db_pool.get_ok().deref_mut(), &infra)
+            .await
+            .unwrap();
+
+        assert!(infra_cache
+            .electrifications()
+            .contains_key(electrification.get_id()));
+        let refs = infra_cache.track_sections_refs;
+        assert_eq!(refs.get("InvalidRef").unwrap().len(), 1);
     }
 
     pub fn create_track_section_cache<T: AsRef<str>>(obj_id: T, length: f64) -> TrackSectionCache {
@@ -1385,42 +1374,34 @@ pub mod tests {
         infra_cache
     }
 
-    #[actix_test]
+    #[rstest]
     async fn load_infra_cache() {
-        test_infra_transaction(|conn, infra| {
-            async move {
-                let infra_caches = CHashMap::new();
-                InfraCache::get_or_load(conn, &infra_caches, &infra)
-                    .await
-                    .unwrap();
-                assert_eq!(infra_caches.len(), 1);
-                InfraCache::get_or_load(conn, &infra_caches, &infra)
-                    .await
-                    .unwrap();
-                assert_eq!(infra_caches.len(), 1);
-            }
-            .scope_boxed()
-        })
-        .await;
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
+        let infra_caches = CHashMap::new();
+        InfraCache::get_or_load(db_pool.get_ok().deref_mut(), &infra_caches, &infra)
+            .await
+            .unwrap();
+        assert_eq!(infra_caches.len(), 1);
+        InfraCache::get_or_load(db_pool.get_ok().deref_mut(), &infra_caches, &infra)
+            .await
+            .unwrap();
+        assert_eq!(infra_caches.len(), 1);
     }
 
-    #[actix_test]
+    #[rstest]
     async fn load_infra_cache_mut() {
-        test_infra_transaction(|conn, infra| {
-            async move {
-                let infra_caches = CHashMap::new();
-                InfraCache::get_or_load_mut(conn, &infra_caches, &infra)
-                    .await
-                    .unwrap();
-                assert_eq!(infra_caches.len(), 1);
-                InfraCache::get_or_load_mut(conn, &infra_caches, &infra)
-                    .await
-                    .unwrap();
-                assert_eq!(infra_caches.len(), 1);
-            }
-            .scope_boxed()
-        })
-        .await;
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
+        let infra_caches = CHashMap::new();
+        InfraCache::get_or_load_mut(db_pool.get_ok().deref_mut(), &infra_caches, &infra)
+            .await
+            .unwrap();
+        assert_eq!(infra_caches.len(), 1);
+        InfraCache::get_or_load_mut(db_pool.get_ok().deref_mut(), &infra_caches, &infra)
+            .await
+            .unwrap();
+        assert_eq!(infra_caches.len(), 1);
     }
 
     mod getters {

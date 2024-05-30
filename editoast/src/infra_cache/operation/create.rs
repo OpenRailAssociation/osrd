@@ -251,13 +251,11 @@ impl From<OperationalPoint> for RailjsonObject {
 
 #[cfg(test)]
 pub mod tests {
-    use actix_web::test as actix_test;
-    use diesel_async::scoped_futures::ScopedFutureExt;
-
     use crate::infra_cache::operation::create::apply_create_operation;
     use crate::infra_cache::operation::create::RailjsonObject;
-    use crate::modelsv2::infra::tests::test_infra_transaction;
+    use crate::modelsv2::fixtures::create_empty_infra;
     use crate::modelsv2::DbConnection;
+    use crate::modelsv2::DbConnectionPoolV2;
     use editoast_schemas::infra::BufferStop;
     use editoast_schemas::infra::Detector;
     use editoast_schemas::infra::Electrification;
@@ -268,6 +266,8 @@ pub mod tests {
     use editoast_schemas::infra::Switch;
     use editoast_schemas::infra::SwitchType;
     use editoast_schemas::infra::TrackSection;
+    use rstest::rstest;
+    use std::ops::DerefMut;
 
     pub async fn create_track(
         conn: &mut DbConnection,
@@ -373,113 +373,73 @@ pub mod tests {
         obj
     }
 
-    #[actix_test]
+    #[rstest]
     async fn create_track_test() {
-        test_infra_transaction(|conn, infra| {
-            async move {
-                create_track(conn, infra.id, Default::default()).await;
-            }
-            .scope_boxed()
-        })
-        .await;
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
+        create_track(db_pool.get_ok().deref_mut(), infra.id, Default::default()).await;
     }
 
-    #[actix_test]
+    #[rstest]
     async fn create_signal_test() {
-        test_infra_transaction(|conn, infra| {
-            async move {
-                create_signal(conn, infra.id, Default::default()).await;
-            }
-            .scope_boxed()
-        })
-        .await;
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
+        create_signal(db_pool.get_ok().deref_mut(), infra.id, Default::default()).await;
     }
 
-    #[actix_test]
+    #[rstest]
     async fn create_speed_test() {
-        test_infra_transaction(|conn, infra| {
-            async move {
-                create_speed(conn, infra.id, Default::default()).await;
-            }
-            .scope_boxed()
-        })
-        .await;
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
+        create_speed(db_pool.get_ok().deref_mut(), infra.id, Default::default()).await;
     }
 
-    #[actix_test]
+    #[rstest]
     async fn create_switch_test() {
-        test_infra_transaction(|conn, infra| {
-            async move {
-                create_switch(conn, infra.id, Default::default()).await;
-            }
-            .scope_boxed()
-        })
-        .await;
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
+        create_switch(db_pool.get_ok().deref_mut(), infra.id, Default::default()).await;
     }
 
-    #[actix_test]
+    #[rstest]
     async fn create_detector_test() {
-        test_infra_transaction(|conn, infra| {
-            async move {
-                create_detector(conn, infra.id, Default::default()).await;
-            }
-            .scope_boxed()
-        })
-        .await;
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
+        create_detector(db_pool.get_ok().deref_mut(), infra.id, Default::default()).await;
     }
 
-    #[actix_test]
+    #[rstest]
     async fn create_buffer_stop_test() {
-        test_infra_transaction(|conn, infra| {
-            async move {
-                create_buffer_stop(conn, infra.id, Default::default()).await;
-            }
-            .scope_boxed()
-        })
-        .await;
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
+        create_buffer_stop(db_pool.get_ok().deref_mut(), infra.id, Default::default()).await;
     }
 
-    #[actix_test]
+    #[rstest]
     async fn create_route_test() {
-        test_infra_transaction(|conn, infra| {
-            async move {
-                create_route(conn, infra.id, Default::default()).await;
-            }
-            .scope_boxed()
-        })
-        .await;
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
+        create_route(db_pool.get_ok().deref_mut(), infra.id, Default::default()).await;
     }
 
-    #[actix_test]
+    #[rstest]
     async fn create_op_test() {
-        test_infra_transaction(|conn, infra| {
-            async move {
-                create_op(conn, infra.id, Default::default()).await;
-            }
-            .scope_boxed()
-        })
-        .await;
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
+        create_op(db_pool.get_ok().deref_mut(), infra.id, Default::default()).await;
     }
 
-    #[actix_test]
+    #[rstest]
     async fn create_switch_type_test() {
-        test_infra_transaction(|conn, infra| {
-            async move {
-                create_switch_type(conn, infra.id, Default::default()).await;
-            }
-            .scope_boxed()
-        })
-        .await;
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
+        create_switch_type(db_pool.get_ok().deref_mut(), infra.id, Default::default()).await;
     }
 
-    #[actix_test]
+    #[rstest]
     async fn create_electrification_test() {
-        test_infra_transaction(|conn, infra| {
-            async move {
-                create_electrification(conn, infra.id, Default::default()).await;
-            }
-            .scope_boxed()
-        })
-        .await;
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
+        create_electrification(db_pool.get_ok().deref_mut(), infra.id, Default::default()).await;
     }
 }

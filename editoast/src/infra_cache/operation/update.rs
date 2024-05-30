@@ -119,13 +119,14 @@ impl DataObject {
 
 #[cfg(test)]
 mod tests {
-    use actix_web::test as actix_test;
     use diesel::sql_query;
     use diesel::sql_types::Double;
     use diesel::sql_types::Text;
-    use diesel_async::scoped_futures::ScopedFutureExt;
     use diesel_async::RunQueryDsl;
+    use pretty_assertions::assert_eq;
+    use rstest::rstest;
     use serde_json::from_str;
+    use std::ops::DerefMut;
 
     use super::UpdateOperation;
     use crate::error::EditoastError;
@@ -134,7 +135,8 @@ mod tests {
     use crate::infra_cache::operation::create::tests::create_switch;
     use crate::infra_cache::operation::create::tests::create_track;
     use crate::infra_cache::operation::OperationError;
-    use crate::modelsv2::infra::tests::test_infra_transaction;
+    use crate::modelsv2::fixtures::create_empty_infra;
+    use crate::modelsv2::DbConnectionPoolV2;
     use editoast_schemas::primitives::OSRDIdentified;
     use editoast_schemas::primitives::ObjectType;
 
@@ -150,100 +152,102 @@ mod tests {
         label: String,
     }
 
-    #[actix_test]
+    #[rstest]
     async fn valid_update_track() {
-        test_infra_transaction(|conn, infra| async move {
-            let track = create_track(conn, infra.id, Default::default()).await;
-
-            let update_track = UpdateOperation {
-                obj_id: track.get_id().clone(),
-                obj_type: ObjectType::TrackSection,
-                railjson_patch: from_str(
-                    r#"[
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
+        let track = create_track(db_pool.get_ok().deref_mut(), infra.id, Default::default()).await;
+        let update_track = UpdateOperation {
+            obj_id: track.get_id().clone(),
+            obj_type: ObjectType::TrackSection,
+            railjson_patch: from_str(
+                r#"[
                     { "op": "replace", "path": "/length", "value": 80.0 }
                   ]"#,
-                )
-                .unwrap(),
-            };
+            )
+            .unwrap(),
+        };
 
-            assert!(update_track.apply(infra.id, conn).await.is_ok());
+        assert!(update_track
+            .apply(infra.id, db_pool.get_ok().deref_mut())
+            .await
+            .is_ok());
 
-            let updated_length = sql_query(format!(
+        let updated_length = sql_query(format!(
                 "SELECT (data->>'length')::float as val FROM infra_object_track_section WHERE obj_id = '{}' AND infra_id = {}",
                 track.get_id(),
                 infra.id
             ))
-            .get_result::<Value>(conn).await.unwrap();
+            .get_result::<Value>(db_pool.get_ok().deref_mut()).await.unwrap();
 
-            assert_eq!(updated_length.val, 80.0);
-        }.scope_boxed()).await;
+        assert_eq!(updated_length.val, 80.0);
     }
 
-    #[actix_test]
+    #[rstest]
     async fn invalid_update_track() {
-        test_infra_transaction(|conn, infra| {
-            async move {
-                let track = create_track(conn, infra.id, Default::default()).await;
-
-                let update_track = UpdateOperation {
-                    obj_id: track.get_id().clone(),
-                    obj_type: ObjectType::TrackSection,
-                    railjson_patch: from_str(
-                        r#"[
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
+        let track = create_track(db_pool.get_ok().deref_mut(), infra.id, Default::default()).await;
+        let update_track = UpdateOperation {
+            obj_id: track.get_id().clone(),
+            obj_type: ObjectType::TrackSection,
+            railjson_patch: from_str(
+                r#"[
                     { "op": "replace", "path": "/id", "value": "impossible_track" }
                   ]"#,
-                    )
-                    .unwrap(),
-                };
+            )
+            .unwrap(),
+        };
+        let res = update_track
+            .apply(infra.id, db_pool.get_ok().deref_mut())
+            .await;
 
-                let res = update_track.apply(infra.id, conn).await;
-
-                assert!(res.is_err());
-                assert_eq!(
-                    res.unwrap_err().get_type(),
-                    OperationError::ModifyId.get_type()
-                );
-            }
-            .scope_boxed()
-        })
-        .await;
+        assert!(res.is_err());
+        assert_eq!(
+            res.unwrap_err().get_type(),
+            OperationError::ModifyId.get_type()
+        );
     }
 
-    #[actix_test]
+    #[rstest]
     async fn valid_update_signal() {
-        test_infra_transaction(|conn, infra| async move {
-            let signal = create_signal(conn, infra.id, Default::default()).await;
-
-            let update_signal = UpdateOperation {
-                obj_id: signal.get_id().clone(),
-                obj_type: ObjectType::Signal,
-                railjson_patch: from_str(
-                    r#"[
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
+        let signal =
+            create_signal(db_pool.get_ok().deref_mut(), infra.id, Default::default()).await;
+        let update_signal = UpdateOperation {
+            obj_id: signal.get_id().clone(),
+            obj_type: ObjectType::Signal,
+            railjson_patch: from_str(
+                r#"[
                     { "op": "replace", "path": "/sight_distance", "value": 15.0 }
                   ]"#,
-                )
-                .unwrap(),
-            };
+            )
+            .unwrap(),
+        };
 
-            assert!(update_signal.apply(infra.id, conn).await.is_ok());
+        assert!(update_signal
+            .apply(infra.id, db_pool.get_ok().deref_mut())
+            .await
+            .is_ok());
 
-            let updated_length = sql_query(format!(
+        let updated_length = sql_query(format!(
                 "SELECT (data->>'sight_distance')::float as val FROM infra_object_signal WHERE obj_id = '{}' AND infra_id = {}",
                 signal.get_id(),
                 infra.id
             ))
-            .get_result::<Value>(conn).await.unwrap();
+            .get_result::<Value>(db_pool.get_ok().deref_mut()).await.unwrap();
 
-            assert_eq!(updated_length.val, 15.0);
-        }.scope_boxed()).await;
+        assert_eq!(updated_length.val, 15.0);
     }
 
-    #[actix_test]
+    #[rstest]
     async fn valid_update_switch_extension() {
-        test_infra_transaction(|conn, infra| async move {
-            let switch = create_switch(conn, infra.id, Default::default()).await;
-
-            let update_switch = UpdateOperation {
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
+        let switch =
+            create_switch(db_pool.get_ok().deref_mut(), infra.id, Default::default()).await;
+        let update_switch = UpdateOperation {
                 obj_id: switch.get_id().clone(),
                 obj_type: ObjectType::Switch,
                 railjson_patch: from_str(
@@ -254,77 +258,78 @@ mod tests {
                 .unwrap(),
             };
 
-            assert!(update_switch.apply(infra.id, conn).await.is_ok());
+        assert!(update_switch
+            .apply(infra.id, db_pool.get_ok().deref_mut())
+            .await
+            .is_ok());
 
-            let updated_comment = sql_query(format!(
+        let updated_comment = sql_query(format!(
                 "SELECT (data->'extensions'->'sncf'->>'label') as label FROM infra_object_switch WHERE obj_id = '{}' AND infra_id = {}",
                 switch.get_id(),
                 infra.id
             ))
-            .get_result::<Label>(conn).await.unwrap();
+            .get_result::<Label>(db_pool.get_ok().deref_mut()).await.unwrap();
 
-            assert_eq!(updated_comment.label, "Switch Label");
-        }.scope_boxed()).await;
+        assert_eq!(updated_comment.label, "Switch Label");
     }
 
-    #[actix_test]
+    #[rstest]
     async fn valid_update_speed() {
-        test_infra_transaction(|conn, infra| async move {
-            let speed = create_speed(conn, infra.id, Default::default()).await;
-
-            let update_speed = UpdateOperation {
-                obj_id: speed.get_id().clone(),
-                obj_type: ObjectType::SpeedSection,
-                railjson_patch: from_str(
-                    r#"[
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
+        let speed = create_speed(db_pool.get_ok().deref_mut(), infra.id, Default::default()).await;
+        let update_speed = UpdateOperation {
+            obj_id: speed.get_id().clone(),
+            obj_type: ObjectType::SpeedSection,
+            railjson_patch: from_str(
+                r#"[
                         { "op": "replace", "path": "/speed_limit", "value": 80.0 }
                   ]"#,
-                )
-                .unwrap(),
-            };
+            )
+            .unwrap(),
+        };
 
-            assert!(update_speed.apply(infra.id, conn).await.is_ok());
+        assert!(update_speed
+            .apply(infra.id, db_pool.get_ok().deref_mut())
+            .await
+            .is_ok());
 
-            let updated_speed = sql_query(format!(
+        let updated_speed = sql_query(format!(
                 "SELECT (data->>'speed_limit')::float as val FROM infra_object_speed_section WHERE obj_id = '{}' AND infra_id = {}",
                 speed.get_id(),
                 infra.id
             ))
-            .get_result::<Value>(conn).await.unwrap();
+            .get_result::<Value>(db_pool.get_ok().deref_mut()).await.unwrap();
 
-            assert_eq!(updated_speed.val, 80.0);
-        }.scope_boxed()).await;
+        assert_eq!(updated_speed.val, 80.0);
     }
 
-    #[actix_test]
+    #[rstest]
     async fn wrong_id_update_track() {
-        test_infra_transaction(|conn, infra| {
-            async move {
-                let update_track = UpdateOperation {
-                    obj_id: "non_existent_id".to_string(),
-                    obj_type: ObjectType::TrackSection,
-                    railjson_patch: from_str(
-                        r#"[
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
+        let update_track = UpdateOperation {
+            obj_id: "non_existent_id".to_string(),
+            obj_type: ObjectType::TrackSection,
+            railjson_patch: from_str(
+                r#"[
                     { "op": "replace", "path": "/length", "value": 80.0 }
                   ]"#,
-                    )
-                    .unwrap(),
-                };
+            )
+            .unwrap(),
+        };
+        let res = update_track
+            .apply(infra.id, db_pool.get_ok().deref_mut())
+            .await;
 
-                let res = update_track.apply(infra.id, conn).await;
-
-                assert!(res.is_err());
-                assert_eq!(
-                    res.unwrap_err().get_type(),
-                    OperationError::ObjectNotFound {
-                        obj_id: "non_existent_id".to_string(),
-                        infra_id: infra.id
-                    }
-                    .get_type()
-                );
+        assert!(res.is_err());
+        assert_eq!(
+            res.unwrap_err().get_type(),
+            OperationError::ObjectNotFound {
+                obj_id: "non_existent_id".to_string(),
+                infra_id: infra.id
             }
-            .scope_boxed()
-        })
-        .await;
+            .get_type()
+        );
     }
 }

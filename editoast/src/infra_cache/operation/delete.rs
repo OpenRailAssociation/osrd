@@ -62,11 +62,12 @@ impl From<ObjectRef> for DeleteOperation {
 
 #[cfg(test)]
 mod tests {
-    use actix_web::test as actix_test;
     use diesel::sql_query;
     use diesel::sql_types::BigInt;
-    use diesel_async::scoped_futures::ScopedFutureExt;
     use diesel_async::RunQueryDsl;
+    use pretty_assertions::assert_eq;
+    use rstest::rstest;
+    use std::ops::DerefMut;
 
     use crate::infra_cache::operation::create::tests::create_buffer_stop;
     use crate::infra_cache::operation::create::tests::create_detector;
@@ -78,7 +79,8 @@ mod tests {
     use crate::infra_cache::operation::create::tests::create_switch;
     use crate::infra_cache::operation::create::tests::create_track;
     use crate::infra_cache::operation::delete::DeleteOperation;
-    use crate::modelsv2::infra::tests::test_infra_transaction;
+    use crate::modelsv2::fixtures::create_empty_infra;
+    use crate::modelsv2::DbConnectionPoolV2;
     use editoast_schemas::primitives::OSRDIdentified;
     use editoast_schemas::primitives::OSRDObject;
 
@@ -88,183 +90,217 @@ mod tests {
         nb: i64,
     }
 
-    #[actix_test]
+    #[rstest]
     async fn delete_track() {
-        test_infra_transaction(|conn, infra| async  move {
-            let track = create_track(conn, infra.id, Default::default()).await;
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
 
-            let track_deletion: DeleteOperation = track.get_ref().into();
+        let track = create_track(db_pool.get_ok().deref_mut(), infra.id, Default::default()).await;
 
-            assert!(track_deletion.apply(infra.id, conn).await.is_ok());
+        let track_deletion: DeleteOperation = track.get_ref().into();
 
-            let res_del = sql_query(format!(
+        assert!(track_deletion
+            .apply(infra.id, db_pool.get_ok().deref_mut())
+            .await
+            .is_ok());
+
+        let res_del = sql_query(format!(
                 "SELECT COUNT (*) AS nb FROM infra_object_track_section WHERE obj_id = '{}' AND infra_id = {}",
                 track.get_id(),
                 infra.id
             ))
-            .get_result::<Count>(conn).await.unwrap();
+            .get_result::<Count>(db_pool.get_ok().deref_mut()).await.unwrap();
 
-            assert_eq!(res_del.nb, 0);
-        }.scope_boxed()).await;
+        assert_eq!(res_del.nb, 0);
     }
 
-    #[actix_test]
+    #[rstest]
     async fn delete_signal() {
-        test_infra_transaction(|conn, infra| async  move {
-            let signal = create_signal(conn, infra.id, Default::default()).await;
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
 
-            let signal_deletion: DeleteOperation = signal.get_ref().into();
+        let signal =
+            create_signal(db_pool.get_ok().deref_mut(), infra.id, Default::default()).await;
 
-            assert!(signal_deletion.apply(infra.id, conn).await.is_ok());
+        let signal_deletion: DeleteOperation = signal.get_ref().into();
 
-            let res_del = sql_query(format!(
-                "SELECT COUNT (*) AS nb FROM infra_object_signal WHERE obj_id = '{}' AND infra_id = {}",
-                signal.get_id(),
-                infra.id
-            ))
-            .get_result::<Count>(conn).await.unwrap();
+        assert!(signal_deletion
+            .apply(infra.id, db_pool.get_ok().deref_mut())
+            .await
+            .is_ok());
 
-            assert_eq!(res_del.nb, 0);
-        }.scope_boxed()).await;
+        let res_del = sql_query(format!(
+            "SELECT COUNT (*) AS nb FROM infra_object_signal WHERE obj_id = '{}' AND infra_id = {}",
+            signal.get_id(),
+            infra.id
+        ))
+        .get_result::<Count>(db_pool.get_ok().deref_mut())
+        .await
+        .unwrap();
+
+        assert_eq!(res_del.nb, 0);
     }
 
-    #[actix_test]
+    #[rstest]
     async fn delete_speed() {
-        test_infra_transaction(|conn, infra| async  move {
-            let speed = create_speed(conn, infra.id, Default::default()).await;
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
+        let speed = create_speed(db_pool.get_ok().deref_mut(), infra.id, Default::default()).await;
+        let speed_deletion: DeleteOperation = speed.get_ref().into();
 
-            let speed_deletion: DeleteOperation = speed.get_ref().into();
+        assert!(speed_deletion
+            .apply(infra.id, db_pool.get_ok().deref_mut())
+            .await
+            .is_ok());
 
-            assert!(speed_deletion.apply(infra.id, conn).await.is_ok());
-
-            let res_del = sql_query(format!(
+        let res_del = sql_query(format!(
                 "SELECT COUNT (*) AS nb FROM infra_object_speed_section WHERE obj_id = '{}' AND infra_id = {}",
                 speed.get_id(),
                 infra.id
             ))
-            .get_result::<Count>(conn).await.unwrap();
+            .get_result::<Count>(db_pool.get_ok().deref_mut()).await.unwrap();
 
-            assert_eq!(res_del.nb, 0);
-        }.scope_boxed()).await;
+        assert_eq!(res_del.nb, 0);
     }
 
-    #[actix_test]
+    #[rstest]
     async fn delete_switch() {
-        test_infra_transaction(|conn, infra| async  move {
-            let switch = create_switch(conn, infra.id, Default::default()).await;
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
+        let switch =
+            create_switch(db_pool.get_ok().deref_mut(), infra.id, Default::default()).await;
+        let switch_deletion: DeleteOperation = switch.get_ref().into();
 
-            let switch_deletion: DeleteOperation = switch.get_ref().into();
+        assert!(switch_deletion
+            .apply(infra.id, db_pool.get_ok().deref_mut())
+            .await
+            .is_ok());
 
-            assert!(switch_deletion.apply(infra.id, conn).await.is_ok());
+        let res_del = sql_query(format!(
+            "SELECT COUNT (*) AS nb FROM infra_object_switch WHERE obj_id = '{}' AND infra_id = {}",
+            switch.get_id(),
+            infra.id
+        ))
+        .get_result::<Count>(db_pool.get_ok().deref_mut())
+        .await
+        .unwrap();
 
-            let res_del = sql_query(format!(
-                "SELECT COUNT (*) AS nb FROM infra_object_switch WHERE obj_id = '{}' AND infra_id = {}",
-                switch.get_id(),
-                infra.id
-            ))
-            .get_result::<Count>(conn).await.unwrap();
-
-            assert_eq!(res_del.nb, 0);
-        }.scope_boxed()).await;
+        assert_eq!(res_del.nb, 0);
     }
 
-    #[actix_test]
+    #[rstest]
     async fn delete_detector() {
-        test_infra_transaction(|conn, infra|async   move {
-            let detector = create_detector(conn, infra.id, Default::default()).await;
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
+        let detector =
+            create_detector(db_pool.get_ok().deref_mut(), infra.id, Default::default()).await;
+        let detector_deletion: DeleteOperation = detector.get_ref().into();
 
-            let detector_deletion: DeleteOperation = detector.get_ref().into();
+        assert!(detector_deletion
+            .apply(infra.id, db_pool.get_ok().deref_mut())
+            .await
+            .is_ok());
 
-            assert!(detector_deletion.apply(infra.id, conn).await.is_ok());
-
-            let res_del = sql_query(format!(
+        let res_del = sql_query(format!(
                 "SELECT COUNT (*) AS nb FROM infra_object_detector WHERE obj_id = '{}' AND infra_id = {}",
                 detector.get_id(),
                 infra.id
             ))
-            .get_result::<Count>(conn).await.unwrap();
+            .get_result::<Count>(db_pool.get_ok().deref_mut()).await.unwrap();
 
-            assert_eq!(res_del.nb, 0);
-        }.scope_boxed()).await;
+        assert_eq!(res_del.nb, 0);
     }
 
-    #[actix_test]
+    #[rstest]
     async fn delete_buffer_stop() {
-        test_infra_transaction(|conn, infra| async move {
-            let buffer_stop = create_buffer_stop(conn, infra.id, Default::default()).await;
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
+        let buffer_stop =
+            create_buffer_stop(db_pool.get_ok().deref_mut(), infra.id, Default::default()).await;
+        let buffer_stop_deletion: DeleteOperation = buffer_stop.get_ref().into();
 
-            let buffer_stop_deletion: DeleteOperation = buffer_stop.get_ref().into();
+        assert!(buffer_stop_deletion
+            .apply(infra.id, db_pool.get_ok().deref_mut())
+            .await
+            .is_ok());
 
-            assert!(buffer_stop_deletion.apply(infra.id, conn).await.is_ok());
-
-            let res_del = sql_query(format!(
+        let res_del = sql_query(format!(
                 "SELECT COUNT (*) AS nb FROM infra_object_buffer_stop WHERE obj_id = '{}' AND infra_id = {}",
                 buffer_stop.get_id(),
                 infra.id
             ))
-            .get_result::<Count>(conn).await.unwrap();
+            .get_result::<Count>(db_pool.get_ok().deref_mut()).await.unwrap();
 
-            assert_eq!(res_del.nb, 0);
-        }.scope_boxed()).await;
+        assert_eq!(res_del.nb, 0);
     }
 
-    #[actix_test]
+    #[rstest]
     async fn delete_route() {
-        test_infra_transaction(|conn, infra| async  move {
-            let route = create_route(conn, infra.id, Default::default()).await;
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
+        let route = create_route(db_pool.get_ok().deref_mut(), infra.id, Default::default()).await;
+        let route_deletion: DeleteOperation = route.get_ref().into();
 
-            let route_deletion: DeleteOperation = route.get_ref().into();
+        assert!(route_deletion
+            .apply(infra.id, db_pool.get_ok().deref_mut())
+            .await
+            .is_ok());
 
-            assert!(route_deletion.apply(infra.id, conn).await.is_ok());
+        let res_del = sql_query(format!(
+            "SELECT COUNT (*) AS nb FROM infra_object_route WHERE obj_id = '{}' AND infra_id = {}",
+            route.get_id(),
+            infra.id
+        ))
+        .get_result::<Count>(db_pool.get_ok().deref_mut())
+        .await
+        .unwrap();
 
-            let res_del = sql_query(format!(
-                "SELECT COUNT (*) AS nb FROM infra_object_route WHERE obj_id = '{}' AND infra_id = {}",
-                route.get_id(),
-                infra.id
-            ))
-            .get_result::<Count>(conn).await.unwrap();
-
-            assert_eq!(res_del.nb, 0);
-        }.scope_boxed()).await;
+        assert_eq!(res_del.nb, 0);
     }
 
-    #[actix_test]
+    #[rstest]
     async fn delete_op() {
-        test_infra_transaction(|conn, infra| async move {
-            let op = create_op(conn, infra.id, Default::default()).await;
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
+        let op = create_op(db_pool.get_ok().deref_mut(), infra.id, Default::default()).await;
 
-            let op_deletion: DeleteOperation = op.get_ref().into();
+        let op_deletion: DeleteOperation = op.get_ref().into();
 
-            assert!(op_deletion.apply(infra.id, conn).await.is_ok());
-
-            let res_del = sql_query(format!(
+        assert!(op_deletion
+            .apply(infra.id, db_pool.get_ok().deref_mut())
+            .await
+            .is_ok());
+        let res_del = sql_query(format!(
                 "SELECT COUNT (*) AS nb FROM infra_object_operational_point WHERE obj_id = '{}' AND infra_id = {}",
                 op.get_id(),
                 infra.id
             ))
-            .get_result::<Count>(conn).await.unwrap();
+            .get_result::<Count>(db_pool.get_ok().deref_mut()).await.unwrap();
 
-            assert_eq!(res_del.nb, 0);
-        }.scope_boxed()).await;
+        assert_eq!(res_del.nb, 0);
     }
 
-    #[actix_test]
+    #[rstest]
     async fn delete_electrification() {
-        test_infra_transaction(|conn, infra| async  move {
-            let electrification = create_electrification(conn, infra.id, Default::default()).await;
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
+        let electrification =
+            create_electrification(db_pool.get_ok().deref_mut(), infra.id, Default::default())
+                .await;
+        let op_deletion: DeleteOperation = electrification.get_ref().into();
 
-            let op_deletion: DeleteOperation = electrification.get_ref().into();
+        assert!(op_deletion
+            .apply(infra.id, db_pool.get_ok().deref_mut())
+            .await
+            .is_ok());
 
-            assert!(op_deletion.apply(infra.id, conn).await.is_ok());
-
-            let res_del = sql_query(format!(
+        let res_del = sql_query(format!(
                 "SELECT COUNT (*) AS nb FROM infra_object_electrification WHERE obj_id = '{}' AND infra_id = {}",
                 electrification.get_id(),
                 infra.id
             ))
-            .get_result::<Count>(conn).await.unwrap();
+            .get_result::<Count>(db_pool.get_ok().deref_mut()).await.unwrap();
 
-            assert_eq!(res_del.nb, 0);
-        }.scope_boxed()).await;
+        assert_eq!(res_del.nb, 0);
     }
 }

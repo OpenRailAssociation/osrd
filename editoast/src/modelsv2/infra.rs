@@ -223,11 +223,6 @@ impl Infra {
 
 #[cfg(test)]
 pub mod tests {
-    use actix_web::test as actix_test;
-    use diesel::result::Error;
-    use diesel_async::scoped_futures::ScopedBoxFuture;
-    use diesel_async::scoped_futures::ScopedFutureExt;
-    use diesel_async::AsyncConnection;
     use editoast_schemas::infra::BufferStop;
     use editoast_schemas::infra::Detector;
     use editoast_schemas::infra::Electrification;
@@ -242,7 +237,9 @@ pub mod tests {
     use editoast_schemas::infra::TrackSection;
     use editoast_schemas::infra::RAILJSON_VERSION;
     use editoast_schemas::primitives::OSRDIdentified;
+    use pretty_assertions::assert_eq;
     use rstest::rstest;
+    use std::ops::DerefMut;
     use uuid::Uuid;
 
     use super::Infra;
@@ -250,47 +247,23 @@ pub mod tests {
     use crate::fixtures::tests::db_pool;
     use crate::fixtures::tests::small_infra;
     use crate::fixtures::tests::IntoFixture;
+    use crate::modelsv2::fixtures::create_empty_infra;
     use crate::modelsv2::infra::DEFAULT_INFRA_VERSION;
     use crate::modelsv2::prelude::*;
     use crate::modelsv2::railjson::find_all_schemas;
     use crate::modelsv2::railjson::RailJsonError;
-    use crate::modelsv2::DbConnection;
+    use crate::modelsv2::DbConnectionPoolV2;
 
-    pub async fn test_infra_transaction<'a, F>(fn_test: F)
-    where
-        F: for<'r> FnOnce(&'r mut DbConnection, Infra) -> ScopedBoxFuture<'a, 'r, ()> + Send + 'a,
-    {
-        let pool = db_pool();
-        let mut conn = pool.get().await.unwrap();
-        conn.test_transaction::<_, Error, _>(|conn| {
-            async move {
-                let infra = Infra::changeset()
-                    .name("test_infra".to_owned())
-                    .last_railjson_version()
-                    .create(conn)
-                    .await
-                    .expect("infra should be created properly");
-                fn_test(conn, infra).await;
-                Ok(())
-            }
-            .scope_boxed()
-        })
-        .await;
-    }
-
-    #[actix_test]
+    #[rstest]
     async fn create_infra() {
-        test_infra_transaction(|_, infra| {
-            async move {
-                assert_eq!(infra.owner, Uuid::nil());
-                assert_eq!(infra.railjson_version, RAILJSON_VERSION);
-                assert_eq!(infra.version, DEFAULT_INFRA_VERSION);
-                assert_eq!(infra.generated_version, None);
-                assert!(!infra.locked);
-            }
-            .scope_boxed()
-        })
-        .await;
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
+
+        assert_eq!(infra.owner, Uuid::nil());
+        assert_eq!(infra.railjson_version, RAILJSON_VERSION);
+        assert_eq!(infra.version, DEFAULT_INFRA_VERSION);
+        assert_eq!(infra.generated_version, None);
+        assert!(!infra.locked);
     }
 
     #[rstest]
@@ -312,7 +285,7 @@ pub mod tests {
         assert_eq!(infra.name, infra_new_name);
     }
 
-    #[actix_test]
+    #[rstest]
     async fn persists_railjson_ko_version() {
         let pool = db_pool();
         let railjson_with_invalid_version = RailJson {

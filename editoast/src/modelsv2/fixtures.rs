@@ -2,6 +2,7 @@ use chrono::Utc;
 
 use crate::modelsv2::prelude::*;
 use crate::modelsv2::DbConnection;
+use crate::modelsv2::Infra;
 use crate::modelsv2::Project;
 use crate::modelsv2::Study;
 use crate::modelsv2::Tags;
@@ -39,4 +40,13 @@ pub async fn create_study(conn: &mut DbConnection, name: &str, project_id: i64) 
         .create(conn)
         .await
         .expect("Failed to create study")
+}
+
+pub async fn create_empty_infra(conn: &mut DbConnection) -> Infra {
+    Infra::changeset()
+        .name("empty_infra".to_owned())
+        .last_railjson_version()
+        .create(conn)
+        .await
+        .expect("Failed to create empty infra")
 }
