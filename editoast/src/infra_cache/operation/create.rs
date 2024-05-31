@@ -254,6 +254,7 @@ pub mod tests {
     use editoast_schemas::infra::BufferStop;
     use editoast_schemas::infra::Detector;
     use editoast_schemas::infra::Electrification;
+    use editoast_schemas::infra::NeutralSection;
     use editoast_schemas::infra::OperationalPoint;
     use editoast_schemas::infra::Route;
     use editoast_schemas::infra::Signal;
@@ -273,7 +274,8 @@ pub mod tests {
                     let railjson_object = crate::infra_cache::operation::create::RailjsonObject::$obj {
                         railjson: $obj::default(),
                     };
-                    assert!(crate::infra_cache::operation::create::apply_create_operation(&railjson_object, infra.id, db_pool.get_ok().deref_mut()).await.is_ok());
+                    let result = crate::infra_cache::operation::create::apply_create_operation(&railjson_object, infra.id, db_pool.get_ok().deref_mut()).await;
+                    assert!(result.is_ok(), "Failed to create a {}", stringify!($obj));
                 }
             }
         };
@@ -289,4 +291,5 @@ pub mod tests {
     test_create_object!(OperationalPoint);
     test_create_object!(SwitchType);
     test_create_object!(Electrification);
+    test_create_object!(NeutralSection);
 }
