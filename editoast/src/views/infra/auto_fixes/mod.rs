@@ -60,9 +60,9 @@ fn new_ref_fix_create_pair(object: RailjsonObject) -> (ObjectRef, Fix) {
     (object_ref, (operation, cache_operation))
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum OrderedOperation {
-    RemoveTrackRange { track_range_idx: usize },
+    RemoveTrackRef { track_refs: usize },
     Delete,
 }
 
