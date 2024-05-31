@@ -54,14 +54,6 @@ fun makeChunkPathFromEdges(graph: STDCMGraph, edges: List<STDCMEdge>): ChunkPath
     return buildChunkPath(graph.rawInfra, chunks, firstOffset, lastOffset)
 }
 
-/** Converts an offset on an STDCM edge into an offset on its underlying block */
-fun convertOffsetToBlock(
-    edgeOffset: Offset<STDCMEdge>,
-    envelopeStartOffset: Offset<Block>
-): Offset<Block> {
-    return Offset(edgeOffset.distance + envelopeStartOffset.distance)
-}
-
 /** Converts an offset on a block into an offset on its STDCM edge */
 fun convertOffsetToEdge(
     blockOffset: Offset<Block>,

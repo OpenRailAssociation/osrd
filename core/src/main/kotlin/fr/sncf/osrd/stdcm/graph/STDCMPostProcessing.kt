@@ -122,7 +122,7 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
 private fun makeBlockWaypoints(path: Result): List<PathfindingEdgeLocationId<Block>> {
     val res = ArrayList<PathfindingEdgeLocationId<Block>>()
     for (waypoint in path.waypoints) {
-        val blockOffset = convertOffsetToBlock(waypoint.offset, waypoint.edge.envelopeStartOffset)
+        val blockOffset = waypoint.edge.blockOffsetFromEdge(waypoint.offset)
         res.add(EdgeLocation(waypoint.edge.block, blockOffset))
     }
     return res
