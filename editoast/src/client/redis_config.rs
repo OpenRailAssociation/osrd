@@ -19,7 +19,7 @@ pub struct RedisConfig {
     #[derivative(Default(value = r#""redis://localhost:6379".into()"#))]
     #[arg(long, env, default_value = "redis://localhost:6379")]
     /// Redis url like `redis://[:PASSWORD@]HOST[:PORT][/DATABASE]`
-    redis_url: String,
+    pub redis_url: String,
 }
 
 impl RedisConfig {

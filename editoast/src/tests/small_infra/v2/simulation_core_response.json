@@ -1,0 +1,1396 @@
+{
+    "status": "success",
+    "base": {
+        "positions": [
+            0,
+            922,
+            3688,
+            8294,
+            14738,
+            33127,
+            74410,
+            132026,
+            205811,
+            295536,
+            400764,
+            520809,
+            852096,
+            1251647,
+            1718279,
+            2250513,
+            2756972,
+            3402916,
+            4000097,
+            4633700,
+            6241281,
+            7232177,
+            8264101,
+            12859701,
+            14967175,
+            17384443,
+            44098664
+        ],
+        "times": [
+            0,
+            2000,
+            4000,
+            6000,
+            8000,
+            12000,
+            18000,
+            24000,
+            30000,
+            36000,
+            42000,
+            48000,
+            62000,
+            76000,
+            90000,
+            104000,
+            116000,
+            130000,
+            142000,
+            154000,
+            182000,
+            198000,
+            214000,
+            280000,
+            308000,
+            338824,
+            672752
+        ],
+        "speeds": [
+            0.0,
+            0.922252864428832,
+            1.8432032114946648,
+            2.7628099235446646,
+            3.681032132931539,
+            5.5128202736486145,
+            8.245289212510947,
+            10.956016119575583,
+            13.633851147514424,
+            16.26304555554944,
+            18.798294048916254,
+            21.17627237751497,
+            26.118432587818077,
+            30.948687072528028,
+            35.69620951388874,
+            40.30476878595238,
+            44.06926083791856,
+            48.14996944158808,
+            51.331952899835336,
+            54.22120451481157,
+            60.55296447888967,
+            63.255614871984605,
+            65.65947728038537,
+            73.68628963204522,
+            76.80746240617442,
+            80.0,
+            80.0
+        ],
+        "energy_consumption": 6319104242.0
+    },
+    "provisional": {
+        "positions": [
+            0,
+            922,
+            3688,
+            8294,
+            23016,
+            45066,
+            91807,
+            132026,
+            205811,
+            364001,
+            520809,
+            750412,
+            1015049,
+            1378177,
+            1790341,
+            2170549,
+            2669445,
+            3119097,
+            4103262,
+            5373911,
+            9817581,
+            11369499,
+            13434645,
+            15930035,
+            18501967,
+            40799902,
+            44098664
+        ],
+        "times": [
+            0,
+            2000,
+            4000,
+            6000,
+            10000,
+            14000,
+            20000,
+            24000,
+            30000,
+            40000,
+            48000,
+            58000,
+            68000,
+            80000,
+            92000,
+            102000,
+            114000,
+            124000,
+            144000,
+            167288,
+            244962,
+            270962,
+            302962,
+            338962,
+            373879,
+            669094,
+            711493
+        ],
+        "speeds": [
+            0.0,
+            0.922252864428832,
+            1.8432032114946648,
+            2.7628099235446646,
+            4.5977722924939375,
+            6.425802688220971,
+            9.151702521168463,
+            10.956016119575583,
+            13.633851147514424,
+            17.964203409991594,
+            21.17627237751497,
+            24.72250750421132,
+            28.197139397822923,
+            32.31552280670609,
+            36.36570938594909,
+            39.65902830707021,
+            43.458146629043185,
+            46.44502723302716,
+            51.83383144627613,
+            57.20902535253096,
+            57.20902535253096,
+            62.012455518691226,
+            66.91245535359779,
+            71.61327926724968,
+            75.53125,
+            75.53125,
+            80.0
+        ],
+        "energy_consumption": 6401880711.0
+    },
+    "final_output": {
+        "positions": [
+            0,
+            922,
+            3688,
+            8294,
+            23016,
+            45066,
+            91807,
+            132026,
+            205811,
+            364001,
+            520809,
+            750412,
+            1015049,
+            1378177,
+            1790341,
+            2170549,
+            2669445,
+            3119097,
+            4103262,
+            5373911,
+            9817581,
+            11369499,
+            13434645,
+            15930035,
+            18501967,
+            40799902,
+            44098664
+        ],
+        "times": [
+            0,
+            2000,
+            4000,
+            6000,
+            10000,
+            14000,
+            20000,
+            24000,
+            30000,
+            40000,
+            48000,
+            58000,
+            68000,
+            80000,
+            92000,
+            102000,
+            114000,
+            124000,
+            144000,
+            167288,
+            244962,
+            270962,
+            302962,
+            338962,
+            373879,
+            669094,
+            711493
+        ],
+        "speeds": [
+            0.0,
+            0.922252864428832,
+            1.8432032114946648,
+            2.7628099235446646,
+            4.5977722924939375,
+            6.425802688220971,
+            9.151702521168463,
+            10.956016119575583,
+            13.633851147514424,
+            17.964203409991594,
+            21.17627237751497,
+            24.72250750421132,
+            28.197139397822923,
+            32.31552280670609,
+            36.36570938594909,
+            39.65902830707021,
+            43.458146629043185,
+            46.44502723302716,
+            51.83383144627613,
+            57.20902535253096,
+            57.20902535253096,
+            62.012455518691226,
+            66.91245535359779,
+            71.61327926724968,
+            75.53125,
+            75.53125,
+            80.0
+        ],
+        "energy_consumption": 6401880711.0,
+        "signal_sightings": [
+            {
+                "signal": "SA2",
+                "time": 39699,
+                "position": 358620,
+                "state": "VL"
+            },
+            {
+                "signal": "SA6_1",
+                "time": 106167,
+                "position": 2338620,
+                "state": "VL"
+            },
+            {
+                "signal": "SA6_2",
+                "time": 140798,
+                "position": 3938620,
+                "state": "VL"
+            },
+            {
+                "signal": "SA6_3",
+                "time": 170167,
+                "position": 5538620,
+                "state": "VL"
+            },
+            {
+                "signal": "SA6_4",
+                "time": 198134,
+                "position": 7138620,
+                "state": "VL"
+            },
+            {
+                "signal": "SA6_5",
+                "time": 226102,
+                "position": 8738620,
+                "state": "VL"
+            },
+            {
+                "signal": "SA5",
+                "time": 254268,
+                "position": 10358620,
+                "state": "VL"
+            },
+            {
+                "signal": "SC5",
+                "time": 270786,
+                "position": 11358620,
+                "state": "VL"
+            },
+            {
+                "signal": "SD0_1",
+                "time": 300586,
+                "position": 13276120,
+                "state": "VL"
+            },
+            {
+                "signal": "SD0_2",
+                "time": 323155,
+                "position": 14813620,
+                "state": "VL"
+            },
+            {
+                "signal": "SD0_3",
+                "time": 344813,
+                "position": 16351120,
+                "state": "VL"
+            },
+            {
+                "signal": "SD0_4",
+                "time": 365718,
+                "position": 17888620,
+                "state": "VL"
+            },
+            {
+                "signal": "SD0_5",
+                "time": 386113,
+                "position": 19426120,
+                "state": "VL"
+            },
+            {
+                "signal": "SD0_6",
+                "time": 406469,
+                "position": 20963620,
+                "state": "VL"
+            },
+            {
+                "signal": "SD0_7",
+                "time": 426825,
+                "position": 22501120,
+                "state": "VL"
+            },
+            {
+                "signal": "SD0_8",
+                "time": 447180,
+                "position": 24038620,
+                "state": "VL"
+            },
+            {
+                "signal": "SD0_9",
+                "time": 467536,
+                "position": 25576120,
+                "state": "VL"
+            },
+            {
+                "signal": "SD0_10",
+                "time": 487892,
+                "position": 27113620,
+                "state": "VL"
+            },
+            {
+                "signal": "SD0_11",
+                "time": 508248,
+                "position": 28651120,
+                "state": "VL"
+            },
+            {
+                "signal": "SD0_12",
+                "time": 528604,
+                "position": 30188620,
+                "state": "VL"
+            },
+            {
+                "signal": "SD0_13",
+                "time": 548959,
+                "position": 31726120,
+                "state": "VL"
+            },
+            {
+                "signal": "SD0_14",
+                "time": 569315,
+                "position": 33263620,
+                "state": "VL"
+            },
+            {
+                "signal": "SD0_15",
+                "time": 589671,
+                "position": 34801120,
+                "state": "VL"
+            },
+            {
+                "signal": "SD2",
+                "time": 610292,
+                "position": 36358620,
+                "state": "VL"
+            },
+            {
+                "signal": "SD6",
+                "time": 636771,
+                "position": 38358620,
+                "state": "VL"
+            },
+            {
+                "signal": "SG0",
+                "time": 650010,
+                "position": 39358620,
+                "state": "VL"
+            },
+            {
+                "signal": "SG1_1",
+                "time": 678802,
+                "position": 41538620,
+                "state": "VL"
+            },
+            {
+                "signal": "SG3",
+                "time": 702184,
+                "position": 43358620,
+                "state": "VL"
+            }
+        ],
+        "zone_updates": [
+            {
+                "zone": "zone.[DA2:DECREASING, buffer_stop.0:INCREASING]",
+                "time": 0,
+                "position": 0,
+                "is_entry": true
+            },
+            {
+                "zone": "zone.[DA2:INCREASING, DA3:DECREASING, DA7:INCREASING]",
+                "time": 59131,
+                "position": 778620,
+                "is_entry": true
+            },
+            {
+                "zone": "zone.[DA3:INCREASING, DA6_1:DECREASING]",
+                "time": 72270,
+                "position": 1138620,
+                "is_entry": true
+            },
+            {
+                "zone": "zone.[DA2:DECREASING, buffer_stop.0:INCREASING]",
+                "time": 73608,
+                "position": 1178620,
+                "is_entry": false
+            },
+            {
+                "zone": "zone.[DA2:INCREASING, DA3:DECREASING, DA7:INCREASING]",
+                "time": 84841,
+                "position": 1538620,
+                "is_entry": false
+            },
+            {
+                "zone": "zone.[DA6_1:INCREASING, DA6_2:DECREASING]",
+                "time": 116037,
+                "position": 2758620,
+                "is_entry": true
+            },
+            {
+                "zone": "zone.[DA3:INCREASING, DA6_1:DECREASING]",
+                "time": 124848,
+                "position": 3158620,
+                "is_entry": false
+            },
+            {
+                "zone": "zone.[DA6_2:INCREASING, DA6_3:DECREASING]",
+                "time": 148870,
+                "position": 4358620,
+                "is_entry": true
+            },
+            {
+                "zone": "zone.[DA6_1:INCREASING, DA6_2:DECREASING]",
+                "time": 156292,
+                "position": 4758620,
+                "is_entry": false
+            },
+            {
+                "zone": "zone.[DA6_3:INCREASING, DA6_4:DECREASING]",
+                "time": 177508,
+                "position": 5958620,
+                "is_entry": true
+            },
+            {
+                "zone": "zone.[DA6_2:INCREASING, DA6_3:DECREASING]",
+                "time": 184500,
+                "position": 6358620,
+                "is_entry": false
+            },
+            {
+                "zone": "zone.[DA6_4:INCREASING, DA6_5:DECREASING]",
+                "time": 205476,
+                "position": 7558620,
+                "is_entry": true
+            },
+            {
+                "zone": "zone.[DA6_3:INCREASING, DA6_4:DECREASING]",
+                "time": 212468,
+                "position": 7958620,
+                "is_entry": false
+            },
+            {
+                "zone": "zone.[DA5:DECREASING, DA6_5:INCREASING]",
+                "time": 233443,
+                "position": 9158620,
+                "is_entry": true
+            },
+            {
+                "zone": "zone.[DA6_4:INCREASING, DA6_5:DECREASING]",
+                "time": 240435,
+                "position": 9558620,
+                "is_entry": false
+            },
+            {
+                "zone": "zone.[DA5:INCREASING, DC0:DECREASING, DC1:DECREASING]",
+                "time": 261303,
+                "position": 10778620,
+                "is_entry": true
+            },
+            {
+                "zone": "zone.[DC1:INCREASING, DC5:DECREASING]",
+                "time": 267219,
+                "position": 11138620,
+                "is_entry": true
+            },
+            {
+                "zone": "zone.[DA5:DECREASING, DA6_5:INCREASING]",
+                "time": 267870,
+                "position": 11178620,
+                "is_entry": false
+            },
+            {
+                "zone": "zone.[DA5:INCREASING, DC0:DECREASING, DC1:DECREASING]",
+                "time": 273679,
+                "position": 11538620,
+                "is_entry": false
+            },
+            {
+                "zone": "zone.[DC4:INCREASING, DC5:INCREASING, DD0:DECREASING]",
+                "time": 277502,
+                "position": 11778620,
+                "is_entry": true
+            },
+            {
+                "zone": "zone.[DD0:INCREASING, DD0_1:DECREASING]",
+                "time": 283168,
+                "position": 12138620,
+                "is_entry": true
+            },
+            {
+                "zone": "zone.[DC1:INCREASING, DC5:DECREASING]",
+                "time": 283792,
+                "position": 12178620,
+                "is_entry": false
+            },
+            {
+                "zone": "zone.[DC4:INCREASING, DC5:INCREASING, DD0:DECREASING]",
+                "time": 289373,
+                "position": 12538620,
+                "is_entry": false
+            },
+            {
+                "zone": "zone.[DD0_1:INCREASING, DD0_2:DECREASING]",
+                "time": 306853,
+                "position": 13696120,
+                "is_entry": true
+            },
+            {
+                "zone": "zone.[DD0:INCREASING, DD0_1:DECREASING]",
+                "time": 312748,
+                "position": 14096120,
+                "is_entry": false
+            },
+            {
+                "zone": "zone.[DD0_2:INCREASING, DD0_3:DECREASING]",
+                "time": 329154,
+                "position": 15233620,
+                "is_entry": true
+            },
+            {
+                "zone": "zone.[DD0_1:INCREASING, DD0_2:DECREASING]",
+                "time": 334808,
+                "position": 15633620,
+                "is_entry": false
+            },
+            {
+                "zone": "zone.[DD0_3:INCREASING, DD0_4:DECREASING]",
+                "time": 350593,
+                "position": 16771120,
+                "is_entry": true
+            },
+            {
+                "zone": "zone.[DD0_2:INCREASING, DD0_3:DECREASING]",
+                "time": 356048,
+                "position": 17171120,
+                "is_entry": false
+            },
+            {
+                "zone": "zone.[DD0_4:INCREASING, DD0_5:DECREASING]",
+                "time": 371315,
+                "position": 18308620,
+                "is_entry": true
+            },
+            {
+                "zone": "zone.[DD0_3:INCREASING, DD0_4:DECREASING]",
+                "time": 376613,
+                "position": 18708620,
+                "is_entry": false
+            },
+            {
+                "zone": "zone.[DD0_5:INCREASING, DD0_6:DECREASING]",
+                "time": 391673,
+                "position": 19846120,
+                "is_entry": true
+            },
+            {
+                "zone": "zone.[DD0_4:INCREASING, DD0_5:DECREASING]",
+                "time": 396969,
+                "position": 20246120,
+                "is_entry": false
+            },
+            {
+                "zone": "zone.[DD0_6:INCREASING, DD0_7:DECREASING]",
+                "time": 412029,
+                "position": 21383620,
+                "is_entry": true
+            },
+            {
+                "zone": "zone.[DD0_5:INCREASING, DD0_6:DECREASING]",
+                "time": 417325,
+                "position": 21783620,
+                "is_entry": false
+            },
+            {
+                "zone": "zone.[DD0_7:INCREASING, DD0_8:DECREASING]",
+                "time": 432385,
+                "position": 22921120,
+                "is_entry": true
+            },
+            {
+                "zone": "zone.[DD0_6:INCREASING, DD0_7:DECREASING]",
+                "time": 437681,
+                "position": 23321120,
+                "is_entry": false
+            },
+            {
+                "zone": "zone.[DD0_8:INCREASING, DD0_9:DECREASING]",
+                "time": 452741,
+                "position": 24458620,
+                "is_entry": true
+            },
+            {
+                "zone": "zone.[DD0_7:INCREASING, DD0_8:DECREASING]",
+                "time": 458037,
+                "position": 24858620,
+                "is_entry": false
+            },
+            {
+                "zone": "zone.[DD0_10:DECREASING, DD0_9:INCREASING]",
+                "time": 473097,
+                "position": 25996120,
+                "is_entry": true
+            },
+            {
+                "zone": "zone.[DD0_8:INCREASING, DD0_9:DECREASING]",
+                "time": 478393,
+                "position": 26396120,
+                "is_entry": false
+            },
+            {
+                "zone": "zone.[DD0_10:INCREASING, DD0_11:DECREASING]",
+                "time": 493453,
+                "position": 27533620,
+                "is_entry": true
+            },
+            {
+                "zone": "zone.[DD0_10:DECREASING, DD0_9:INCREASING]",
+                "time": 498748,
+                "position": 27933620,
+                "is_entry": false
+            },
+            {
+                "zone": "zone.[DD0_11:INCREASING, DD0_12:DECREASING]",
+                "time": 513808,
+                "position": 29071120,
+                "is_entry": true
+            },
+            {
+                "zone": "zone.[DD0_10:INCREASING, DD0_11:DECREASING]",
+                "time": 519104,
+                "position": 29471120,
+                "is_entry": false
+            },
+            {
+                "zone": "zone.[DD0_12:INCREASING, DD0_13:DECREASING]",
+                "time": 534164,
+                "position": 30608620,
+                "is_entry": true
+            },
+            {
+                "zone": "zone.[DD0_11:INCREASING, DD0_12:DECREASING]",
+                "time": 539460,
+                "position": 31008620,
+                "is_entry": false
+            },
+            {
+                "zone": "zone.[DD0_13:INCREASING, DD0_14:DECREASING]",
+                "time": 554520,
+                "position": 32146120,
+                "is_entry": true
+            },
+            {
+                "zone": "zone.[DD0_12:INCREASING, DD0_13:DECREASING]",
+                "time": 559816,
+                "position": 32546120,
+                "is_entry": false
+            },
+            {
+                "zone": "zone.[DD0_14:INCREASING, DD0_15:DECREASING]",
+                "time": 574876,
+                "position": 33683620,
+                "is_entry": true
+            },
+            {
+                "zone": "zone.[DD0_13:INCREASING, DD0_14:DECREASING]",
+                "time": 580172,
+                "position": 34083620,
+                "is_entry": false
+            },
+            {
+                "zone": "zone.[DD0_15:INCREASING, DD2:DECREASING]",
+                "time": 595232,
+                "position": 35221120,
+                "is_entry": true
+            },
+            {
+                "zone": "zone.[DD0_14:INCREASING, DD0_15:DECREASING]",
+                "time": 600527,
+                "position": 35621120,
+                "is_entry": false
+            },
+            {
+                "zone": "zone.[DD2:INCREASING, DD3:INCREASING, DD4:DECREASING, DD5:DECREASING, DE0:INCREASING, DF0:DECREASING]",
+                "time": 615852,
+                "position": 36778620,
+                "is_entry": true
+            },
+            {
+                "zone": "zone.[DD4:INCREASING, DD6:DECREASING]",
+                "time": 620618,
+                "position": 37138620,
+                "is_entry": true
+            },
+            {
+                "zone": "zone.[DD0_15:INCREASING, DD2:DECREASING]",
+                "time": 621148,
+                "position": 37178620,
+                "is_entry": false
+            },
+            {
+                "zone": "zone.[DD2:INCREASING, DD3:INCREASING, DD4:DECREASING, DD5:DECREASING, DE0:INCREASING, DF0:DECREASING]",
+                "time": 625914,
+                "position": 37538620,
+                "is_entry": false
+            },
+            {
+                "zone": "zone.[DD6:INCREASING, DD7:DECREASING, DE7:DECREASING]",
+                "time": 642331,
+                "position": 38778620,
+                "is_entry": true
+            },
+            {
+                "zone": "zone.[DD7:INCREASING, DG0:DECREASING]",
+                "time": 647098,
+                "position": 39138620,
+                "is_entry": true
+            },
+            {
+                "zone": "zone.[DD4:INCREASING, DD6:DECREASING]",
+                "time": 647627,
+                "position": 39178620,
+                "is_entry": false
+            },
+            {
+                "zone": "zone.[DD6:INCREASING, DD7:DECREASING, DE7:DECREASING]",
+                "time": 652393,
+                "position": 39538620,
+                "is_entry": false
+            },
+            {
+                "zone": "zone.[DG0:INCREASING, DG1:DECREASING, DH0:INCREASING, DH1:DECREASING]",
+                "time": 655571,
+                "position": 39778620,
+                "is_entry": true
+            },
+            {
+                "zone": "zone.[DG1:INCREASING, DG1_1:DECREASING]",
+                "time": 660337,
+                "position": 40138620,
+                "is_entry": true
+            },
+            {
+                "zone": "zone.[DD7:INCREASING, DG0:DECREASING]",
+                "time": 660867,
+                "position": 40178620,
+                "is_entry": false
+            },
+            {
+                "zone": "zone.[DG0:INCREASING, DG1:DECREASING, DH0:INCREASING, DH1:DECREASING]",
+                "time": 665633,
+                "position": 40538620,
+                "is_entry": false
+            },
+            {
+                "zone": "zone.[DG1_1:INCREASING, DG3:DECREASING]",
+                "time": 684264,
+                "position": 41958620,
+                "is_entry": true
+            },
+            {
+                "zone": "zone.[DG1:INCREASING, DG1_1:DECREASING]",
+                "time": 689429,
+                "position": 42358620,
+                "is_entry": false
+            },
+            {
+                "zone": "zone.[DG3:INCREASING, DG5:DECREASING, DG7:DECREASING]",
+                "time": 707479,
+                "position": 43778620,
+                "is_entry": true
+            }
+        ],
+        "spacing_requirements": [
+            {
+                "zone": "zone.[DA2:DECREASING, buffer_stop.0:INCREASING]",
+                "begin_time": 0,
+                "end_time": 73608
+            },
+            {
+                "zone": "zone.[DA2:INCREASING, DA3:DECREASING, DA7:INCREASING]",
+                "begin_time": 39699,
+                "end_time": 84841
+            },
+            {
+                "zone": "zone.[DA3:INCREASING, DA6_1:DECREASING]",
+                "begin_time": 39699,
+                "end_time": 124848
+            },
+            {
+                "zone": "zone.[DA6_1:INCREASING, DA6_2:DECREASING]",
+                "begin_time": 39699,
+                "end_time": 156292
+            },
+            {
+                "zone": "zone.[DA6_2:INCREASING, DA6_3:DECREASING]",
+                "begin_time": 106167,
+                "end_time": 184500
+            },
+            {
+                "zone": "zone.[DA6_3:INCREASING, DA6_4:DECREASING]",
+                "begin_time": 140798,
+                "end_time": 212468
+            },
+            {
+                "zone": "zone.[DA6_4:INCREASING, DA6_5:DECREASING]",
+                "begin_time": 170167,
+                "end_time": 240435
+            },
+            {
+                "zone": "zone.[DA5:DECREASING, DA6_5:INCREASING]",
+                "begin_time": 198134,
+                "end_time": 267870
+            },
+            {
+                "zone": "zone.[DA5:INCREASING, DC0:DECREASING, DC1:DECREASING]",
+                "begin_time": 226102,
+                "end_time": 273679
+            },
+            {
+                "zone": "zone.[DC1:INCREASING, DC5:DECREASING]",
+                "begin_time": 226102,
+                "end_time": 283792
+            },
+            {
+                "zone": "zone.[DC4:INCREASING, DC5:INCREASING, DD0:DECREASING]",
+                "begin_time": 254268,
+                "end_time": 289373
+            },
+            {
+                "zone": "zone.[DD0:INCREASING, DD0_1:DECREASING]",
+                "begin_time": 254268,
+                "end_time": 312748
+            },
+            {
+                "zone": "zone.[DD0_1:INCREASING, DD0_2:DECREASING]",
+                "begin_time": 270786,
+                "end_time": 334808
+            },
+            {
+                "zone": "zone.[DD0_2:INCREASING, DD0_3:DECREASING]",
+                "begin_time": 300586,
+                "end_time": 356048
+            },
+            {
+                "zone": "zone.[DD0_3:INCREASING, DD0_4:DECREASING]",
+                "begin_time": 323155,
+                "end_time": 376613
+            },
+            {
+                "zone": "zone.[DD0_4:INCREASING, DD0_5:DECREASING]",
+                "begin_time": 344813,
+                "end_time": 396969
+            },
+            {
+                "zone": "zone.[DD0_5:INCREASING, DD0_6:DECREASING]",
+                "begin_time": 365718,
+                "end_time": 417325
+            },
+            {
+                "zone": "zone.[DD0_6:INCREASING, DD0_7:DECREASING]",
+                "begin_time": 386113,
+                "end_time": 437681
+            },
+            {
+                "zone": "zone.[DD0_7:INCREASING, DD0_8:DECREASING]",
+                "begin_time": 406469,
+                "end_time": 458037
+            },
+            {
+                "zone": "zone.[DD0_8:INCREASING, DD0_9:DECREASING]",
+                "begin_time": 426825,
+                "end_time": 478393
+            },
+            {
+                "zone": "zone.[DD0_10:DECREASING, DD0_9:INCREASING]",
+                "begin_time": 447180,
+                "end_time": 498748
+            },
+            {
+                "zone": "zone.[DD0_10:INCREASING, DD0_11:DECREASING]",
+                "begin_time": 467536,
+                "end_time": 519104
+            },
+            {
+                "zone": "zone.[DD0_11:INCREASING, DD0_12:DECREASING]",
+                "begin_time": 487892,
+                "end_time": 539460
+            },
+            {
+                "zone": "zone.[DD0_12:INCREASING, DD0_13:DECREASING]",
+                "begin_time": 508248,
+                "end_time": 559816
+            },
+            {
+                "zone": "zone.[DD0_13:INCREASING, DD0_14:DECREASING]",
+                "begin_time": 528604,
+                "end_time": 580172
+            },
+            {
+                "zone": "zone.[DD0_14:INCREASING, DD0_15:DECREASING]",
+                "begin_time": 548959,
+                "end_time": 600527
+            },
+            {
+                "zone": "zone.[DD0_15:INCREASING, DD2:DECREASING]",
+                "begin_time": 569315,
+                "end_time": 621148
+            },
+            {
+                "zone": "zone.[DD2:INCREASING, DD3:INCREASING, DD4:DECREASING, DD5:DECREASING, DE0:INCREASING, DF0:DECREASING]",
+                "begin_time": 589671,
+                "end_time": 625914
+            },
+            {
+                "zone": "zone.[DD4:INCREASING, DD6:DECREASING]",
+                "begin_time": 589671,
+                "end_time": 647627
+            },
+            {
+                "zone": "zone.[DD6:INCREASING, DD7:DECREASING, DE7:DECREASING]",
+                "begin_time": 610292,
+                "end_time": 652393
+            },
+            {
+                "zone": "zone.[DD7:INCREASING, DG0:DECREASING]",
+                "begin_time": 610292,
+                "end_time": 660867
+            },
+            {
+                "zone": "zone.[DG0:INCREASING, DG1:DECREASING, DH0:INCREASING, DH1:DECREASING]",
+                "begin_time": 636771,
+                "end_time": 665633
+            },
+            {
+                "zone": "zone.[DG1:INCREASING, DG1_1:DECREASING]",
+                "begin_time": 636771,
+                "end_time": 689429
+            },
+            {
+                "zone": "zone.[DG1_1:INCREASING, DG3:DECREASING]",
+                "begin_time": 650010,
+                "end_time": 711490
+            },
+            {
+                "zone": "zone.[DG3:INCREASING, DG5:DECREASING, DG7:DECREASING]",
+                "begin_time": 678802,
+                "end_time": 711490
+            },
+            {
+                "zone": "zone.[DG5:INCREASING, buffer_stop.5:DECREASING]",
+                "begin_time": 678802,
+                "end_time": 711490
+            }
+        ],
+        "routing_requirements": [
+            {
+                "route": "rt.buffer_stop.0->DA2",
+                "begin_time": 0,
+                "zones": [
+                    {
+                        "zone": "zone.[DA2:DECREASING, buffer_stop.0:INCREASING]",
+                        "entry_detector": "INCREASING:buffer_stop.0",
+                        "exit_detector": "INCREASING:DA2",
+                        "switches": {},
+                        "end_time": 73608
+                    }
+                ]
+            },
+            {
+                "route": "rt.DA2->DA5",
+                "begin_time": 39699,
+                "zones": [
+                    {
+                        "zone": "zone.[DA2:INCREASING, DA3:DECREASING, DA7:INCREASING]",
+                        "entry_detector": "INCREASING:DA2",
+                        "exit_detector": "INCREASING:DA3",
+                        "switches": {
+                            "PA2": "A_B2"
+                        },
+                        "end_time": 84841
+                    },
+                    {
+                        "zone": "zone.[DA3:INCREASING, DA6_1:DECREASING]",
+                        "entry_detector": "INCREASING:DA3",
+                        "exit_detector": "INCREASING:DA6_1",
+                        "switches": {},
+                        "end_time": 124848
+                    },
+                    {
+                        "zone": "zone.[DA6_1:INCREASING, DA6_2:DECREASING]",
+                        "entry_detector": "INCREASING:DA6_1",
+                        "exit_detector": "INCREASING:DA6_2",
+                        "switches": {},
+                        "end_time": 156292
+                    },
+                    {
+                        "zone": "zone.[DA6_2:INCREASING, DA6_3:DECREASING]",
+                        "entry_detector": "INCREASING:DA6_2",
+                        "exit_detector": "INCREASING:DA6_3",
+                        "switches": {},
+                        "end_time": 184500
+                    },
+                    {
+                        "zone": "zone.[DA6_3:INCREASING, DA6_4:DECREASING]",
+                        "entry_detector": "INCREASING:DA6_3",
+                        "exit_detector": "INCREASING:DA6_4",
+                        "switches": {},
+                        "end_time": 212468
+                    },
+                    {
+                        "zone": "zone.[DA6_4:INCREASING, DA6_5:DECREASING]",
+                        "entry_detector": "INCREASING:DA6_4",
+                        "exit_detector": "INCREASING:DA6_5",
+                        "switches": {},
+                        "end_time": 240435
+                    },
+                    {
+                        "zone": "zone.[DA5:DECREASING, DA6_5:INCREASING]",
+                        "entry_detector": "INCREASING:DA6_5",
+                        "exit_detector": "INCREASING:DA5",
+                        "switches": {},
+                        "end_time": 267870
+                    }
+                ]
+            },
+            {
+                "route": "rt.DA5->DC5",
+                "begin_time": 226102,
+                "zones": [
+                    {
+                        "zone": "zone.[DA5:INCREASING, DC0:DECREASING, DC1:DECREASING]",
+                        "entry_detector": "INCREASING:DA5",
+                        "exit_detector": "INCREASING:DC1",
+                        "switches": {
+                            "PC0": "A_B2"
+                        },
+                        "end_time": 273679
+                    },
+                    {
+                        "zone": "zone.[DC1:INCREASING, DC5:DECREASING]",
+                        "entry_detector": "INCREASING:DC1",
+                        "exit_detector": "INCREASING:DC5",
+                        "switches": {},
+                        "end_time": 283792
+                    }
+                ]
+            },
+            {
+                "route": "rt.DC5->DD2",
+                "begin_time": 254268,
+                "zones": [
+                    {
+                        "zone": "zone.[DC4:INCREASING, DC5:INCREASING, DD0:DECREASING]",
+                        "entry_detector": "INCREASING:DC5",
+                        "exit_detector": "INCREASING:DD0",
+                        "switches": {
+                            "PC2": "A_B1"
+                        },
+                        "end_time": 289373
+                    },
+                    {
+                        "zone": "zone.[DD0:INCREASING, DD0_1:DECREASING]",
+                        "entry_detector": "INCREASING:DD0",
+                        "exit_detector": "INCREASING:DD0_1",
+                        "switches": {},
+                        "end_time": 312748
+                    },
+                    {
+                        "zone": "zone.[DD0_1:INCREASING, DD0_2:DECREASING]",
+                        "entry_detector": "INCREASING:DD0_1",
+                        "exit_detector": "INCREASING:DD0_2",
+                        "switches": {},
+                        "end_time": 334808
+                    },
+                    {
+                        "zone": "zone.[DD0_2:INCREASING, DD0_3:DECREASING]",
+                        "entry_detector": "INCREASING:DD0_2",
+                        "exit_detector": "INCREASING:DD0_3",
+                        "switches": {},
+                        "end_time": 356048
+                    },
+                    {
+                        "zone": "zone.[DD0_3:INCREASING, DD0_4:DECREASING]",
+                        "entry_detector": "INCREASING:DD0_3",
+                        "exit_detector": "INCREASING:DD0_4",
+                        "switches": {},
+                        "end_time": 376613
+                    },
+                    {
+                        "zone": "zone.[DD0_4:INCREASING, DD0_5:DECREASING]",
+                        "entry_detector": "INCREASING:DD0_4",
+                        "exit_detector": "INCREASING:DD0_5",
+                        "switches": {},
+                        "end_time": 396969
+                    },
+                    {
+                        "zone": "zone.[DD0_5:INCREASING, DD0_6:DECREASING]",
+                        "entry_detector": "INCREASING:DD0_5",
+                        "exit_detector": "INCREASING:DD0_6",
+                        "switches": {},
+                        "end_time": 417325
+                    },
+                    {
+                        "zone": "zone.[DD0_6:INCREASING, DD0_7:DECREASING]",
+                        "entry_detector": "INCREASING:DD0_6",
+                        "exit_detector": "INCREASING:DD0_7",
+                        "switches": {},
+                        "end_time": 437681
+                    },
+                    {
+                        "zone": "zone.[DD0_7:INCREASING, DD0_8:DECREASING]",
+                        "entry_detector": "INCREASING:DD0_7",
+                        "exit_detector": "INCREASING:DD0_8",
+                        "switches": {},
+                        "end_time": 458037
+                    },
+                    {
+                        "zone": "zone.[DD0_8:INCREASING, DD0_9:DECREASING]",
+                        "entry_detector": "INCREASING:DD0_8",
+                        "exit_detector": "INCREASING:DD0_9",
+                        "switches": {},
+                        "end_time": 478393
+                    },
+                    {
+                        "zone": "zone.[DD0_10:DECREASING, DD0_9:INCREASING]",
+                        "entry_detector": "INCREASING:DD0_9",
+                        "exit_detector": "INCREASING:DD0_10",
+                        "switches": {},
+                        "end_time": 498748
+                    },
+                    {
+                        "zone": "zone.[DD0_10:INCREASING, DD0_11:DECREASING]",
+                        "entry_detector": "INCREASING:DD0_10",
+                        "exit_detector": "INCREASING:DD0_11",
+                        "switches": {},
+                        "end_time": 519104
+                    },
+                    {
+                        "zone": "zone.[DD0_11:INCREASING, DD0_12:DECREASING]",
+                        "entry_detector": "INCREASING:DD0_11",
+                        "exit_detector": "INCREASING:DD0_12",
+                        "switches": {},
+                        "end_time": 539460
+                    },
+                    {
+                        "zone": "zone.[DD0_12:INCREASING, DD0_13:DECREASING]",
+                        "entry_detector": "INCREASING:DD0_12",
+                        "exit_detector": "INCREASING:DD0_13",
+                        "switches": {},
+                        "end_time": 559816
+                    },
+                    {
+                        "zone": "zone.[DD0_13:INCREASING, DD0_14:DECREASING]",
+                        "entry_detector": "INCREASING:DD0_13",
+                        "exit_detector": "INCREASING:DD0_14",
+                        "switches": {},
+                        "end_time": 580172
+                    },
+                    {
+                        "zone": "zone.[DD0_14:INCREASING, DD0_15:DECREASING]",
+                        "entry_detector": "INCREASING:DD0_14",
+                        "exit_detector": "INCREASING:DD0_15",
+                        "switches": {},
+                        "end_time": 600527
+                    },
+                    {
+                        "zone": "zone.[DD0_15:INCREASING, DD2:DECREASING]",
+                        "entry_detector": "INCREASING:DD0_15",
+                        "exit_detector": "INCREASING:DD2",
+                        "switches": {},
+                        "end_time": 621148
+                    }
+                ]
+            },
+            {
+                "route": "rt.DD2->DD6",
+                "begin_time": 589671,
+                "zones": [
+                    {
+                        "zone": "zone.[DD2:INCREASING, DD3:INCREASING, DD4:DECREASING, DD5:DECREASING, DE0:INCREASING, DF0:DECREASING]",
+                        "entry_detector": "INCREASING:DD2",
+                        "exit_detector": "INCREASING:DD4",
+                        "switches": {
+                            "PD0": "STATIC"
+                        },
+                        "end_time": 625914
+                    },
+                    {
+                        "zone": "zone.[DD4:INCREASING, DD6:DECREASING]",
+                        "entry_detector": "INCREASING:DD4",
+                        "exit_detector": "INCREASING:DD6",
+                        "switches": {},
+                        "end_time": 647627
+                    }
+                ]
+            },
+            {
+                "route": "rt.DD6->DG0",
+                "begin_time": 610292,
+                "zones": [
+                    {
+                        "zone": "zone.[DD6:INCREASING, DD7:DECREASING, DE7:DECREASING]",
+                        "entry_detector": "INCREASING:DD6",
+                        "exit_detector": "INCREASING:DD7",
+                        "switches": {
+                            "PE2": "A_B2"
+                        },
+                        "end_time": 652393
+                    },
+                    {
+                        "zone": "zone.[DD7:INCREASING, DG0:DECREASING]",
+                        "entry_detector": "INCREASING:DD7",
+                        "exit_detector": "INCREASING:DG0",
+                        "switches": {},
+                        "end_time": 660867
+                    }
+                ]
+            },
+            {
+                "route": "rt.DG0->DG3",
+                "begin_time": 636771,
+                "zones": [
+                    {
+                        "zone": "zone.[DG0:INCREASING, DG1:DECREASING, DH0:INCREASING, DH1:DECREASING]",
+                        "entry_detector": "INCREASING:DG0",
+                        "exit_detector": "INCREASING:DG1",
+                        "switches": {
+                            "PH0": "A1_B1"
+                        },
+                        "end_time": 665633
+                    },
+                    {
+                        "zone": "zone.[DG1:INCREASING, DG1_1:DECREASING]",
+                        "entry_detector": "INCREASING:DG1",
+                        "exit_detector": "INCREASING:DG1_1",
+                        "switches": {},
+                        "end_time": 689429
+                    },
+                    {
+                        "zone": "zone.[DG1_1:INCREASING, DG3:DECREASING]",
+                        "entry_detector": "INCREASING:DG1_1",
+                        "exit_detector": "INCREASING:DG3",
+                        "switches": {},
+                        "end_time": 711490
+                    }
+                ]
+            },
+            {
+                "route": "rt.DG3->buffer_stop.5",
+                "begin_time": 678802,
+                "zones": [
+                    {
+                        "zone": "zone.[DG3:INCREASING, DG5:DECREASING, DG7:DECREASING]",
+                        "entry_detector": "INCREASING:DG3",
+                        "exit_detector": "INCREASING:DG5",
+                        "switches": {
+                            "PG0": "A_B1"
+                        },
+                        "end_time": 711490
+                    },
+                    {
+                        "zone": "zone.[DG5:INCREASING, buffer_stop.5:DECREASING]",
+                        "entry_detector": "INCREASING:DG5",
+                        "exit_detector": "INCREASING:buffer_stop.5",
+                        "switches": {},
+                        "end_time": 711490
+                    }
+                ]
+            }
+        ]
+    },
+    "mrsp": {
+        "positions": [
+            0,
+            44098664
+        ],
+        "speeds": [
+            80.0,
+            80.0
+        ]
+    },
+    "electrical_profiles": {
+        "boundaries": [
+            918620,
+            968620,
+            9458620,
+            9558620,
+            43958620
+        ],
+        "values": [
+            {
+                "electrical_profile_type": "profile",
+                "profile": null,
+                "handled": true
+            },
+            {
+                "electrical_profile_type": "no_profile"
+            },
+            {
+                "electrical_profile_type": "profile",
+                "profile": null,
+                "handled": true
+            },
+            {
+                "electrical_profile_type": "no_profile"
+            },
+            {
+                "electrical_profile_type": "profile",
+                "profile": null,
+                "handled": true
+            },
+            {
+                "electrical_profile_type": "no_profile"
+            }
+        ]
+    }
+}

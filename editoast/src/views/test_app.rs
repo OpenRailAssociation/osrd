@@ -99,7 +99,11 @@ impl TestAppBuilder {
             .limit(250 * 1024 * 1024) // 250MB
             .error_handler(|err, _| InternalError::from(err).into());
 
-        let redis = RedisClient::new(RedisConfig::default()).expect("cannot get redis client");
+        let redis = RedisClient::new(RedisConfig {
+            no_cache: true,
+            ..Default::default()
+        })
+        .expect("cannot get redis client");
 
         let core_client = Data::new(self.core_client.expect(
             "No core client provided to TestAppBuilder, use Default or provide a core client",
