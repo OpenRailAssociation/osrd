@@ -287,7 +287,7 @@ dependencies = [
  "awc",
  "futures-util",
  "opentelemetry",
- "opentelemetry-semantic-conventions",
+ "opentelemetry-semantic-conventions 0.14.0",
  "serde",
 ]
 
@@ -1380,7 +1380,7 @@ dependencies = [
  "opentelemetry",
  "opentelemetry-datadog",
  "opentelemetry-otlp",
- "opentelemetry-semantic-conventions",
+ "opentelemetry-semantic-conventions 0.15.0",
  "opentelemetry_sdk",
  "osm_to_railjson",
  "paste",
@@ -2825,7 +2825,7 @@ dependencies = [
  "once_cell",
  "opentelemetry",
  "opentelemetry-http",
- "opentelemetry-semantic-conventions",
+ "opentelemetry-semantic-conventions 0.14.0",
  "opentelemetry_sdk",
  "reqwest",
  "rmp",
@@ -2857,7 +2857,7 @@ dependencies = [
  "http 0.2.12",
  "opentelemetry",
  "opentelemetry-proto",
- "opentelemetry-semantic-conventions",
+ "opentelemetry-semantic-conventions 0.14.0",
  "opentelemetry_sdk",
  "prost",
  "thiserror",
@@ -2882,6 +2882,12 @@ name = "opentelemetry-semantic-conventions"
 version = "0.14.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f9ab5bd6c42fb9349dcf28af2ba9a0667f697f9bdcca045d39f2cec5543e2910"
+
+[[package]]
+name = "opentelemetry-semantic-conventions"
+version = "0.15.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1869fb4bb9b35c5ba8a1e40c9b128a7b4c010d07091e864a29da19e4fe2ca4d7"
 
 [[package]]
 name = "opentelemetry_sdk"
