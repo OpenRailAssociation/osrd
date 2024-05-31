@@ -24,12 +24,12 @@ fn invalid_reference_to_ordered_operation(
     speed_section: &SpeedSection,
     object_ref: &ObjectRef,
 ) -> Option<OrderedOperation> {
-    let (track_range_idx, _) = speed_section
+    let (track_refs, _) = speed_section
         .track_ranges
         .iter()
         .enumerate()
         .find(|(_idx, track_range)| track_range.track.as_str() == object_ref.obj_id)?;
-    Some(OrderedOperation::RemoveTrackRange { track_range_idx })
+    Some(OrderedOperation::RemoveTrackRef { track_refs })
 }
 
 pub fn fix_speed_section(
@@ -47,18 +47,17 @@ pub fn fix_speed_section(
                 None
             }
         })
+        .unique()
         // Need to invert the ordering because removing from the front would invalidate other indexes
         .sorted_by_key(|ordered_operation| std::cmp::Reverse(ordered_operation.clone()))
         .map(|ordered_operation| match ordered_operation {
-            OrderedOperation::RemoveTrackRange { track_range_idx } => {
-                Operation::Update(UpdateOperation {
-                    obj_id: speed_section.get_id().clone(),
-                    obj_type: speed_section.get_type(),
-                    railjson_patch: Patch(vec![PatchOperation::Remove(RemoveOperation {
-                        path: format!("/track_ranges/{track_range_idx}").parse().unwrap(),
-                    })]),
-                })
-            }
+            OrderedOperation::RemoveTrackRef { track_refs } => Operation::Update(UpdateOperation {
+                obj_id: speed_section.get_id().clone(),
+                obj_type: speed_section.get_type(),
+                railjson_patch: Patch(vec![PatchOperation::Remove(RemoveOperation {
+                    path: format!("/track_ranges/{track_refs}").parse().unwrap(),
+                })]),
+            }),
             OrderedOperation::Delete => {
                 Operation::Delete(DeleteOperation::from(speed_section.get_ref()))
             }
