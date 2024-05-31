@@ -1,5 +1,6 @@
 package fr.sncf.osrd.api.api_v2.stdcm
 
+import com.google.common.collect.ImmutableRangeMap
 import fr.sncf.osrd.api.ExceptionHandler
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.api.InfraManager
@@ -11,20 +12,25 @@ import fr.sncf.osrd.conflicts.*
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue.Percentage
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue.TimePerDistance
+import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath
+import fr.sncf.osrd.envelope_sim_infra.MRSP
 import fr.sncf.osrd.graph.Pathfinding
 import fr.sncf.osrd.graph.PathfindingEdgeLocationId
-import fr.sncf.osrd.railjson.schema.schedule.RJSAllowanceDistribution
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.utils.chunksToRoutes
-import fr.sncf.osrd.standalone_sim.runStandaloneSimulation
+import fr.sncf.osrd.standalone_sim.makeElectricalProfiles
+import fr.sncf.osrd.standalone_sim.makeMRSPResponse
+import fr.sncf.osrd.standalone_sim.result.ElectrificationRange
+import fr.sncf.osrd.standalone_sim.runScheduleMetadataExtractor
+import fr.sncf.osrd.stdcm.STDCMResult
 import fr.sncf.osrd.stdcm.STDCMStep
 import fr.sncf.osrd.stdcm.graph.findPath
 import fr.sncf.osrd.stdcm.preprocessing.implementation.makeBlockAvailability
+import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.TrainStop
 import fr.sncf.osrd.utils.Direction
-import fr.sncf.osrd.utils.DistanceRangeMapImpl
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import fr.sncf.osrd.utils.units.seconds
@@ -90,25 +96,8 @@ class STDCMEndpointV2(private val infraManager: InfraManager) : Take {
             }
             val pathfindingResponse = runPathfindingPostProcessing(infra, path.blocks)
 
-            // Run the simulation
             val simulationResponse =
-                runStandaloneSimulation(
-                    infra,
-                    path.trainPath,
-                    path.chunkPath,
-                    infra.blockInfra.chunksToRoutes(infra.rawInfra, path.chunkPath.chunks),
-                    null,
-                    rollingStock,
-                    request.comfort,
-                    RJSAllowanceDistribution.MARECO,
-                    request.speedLimitTag,
-                    DistanceRangeMapImpl(),
-                    false,
-                    request.timeStep.seconds,
-                    parseSimulationScheduleItems(path.stopResults),
-                    0.0,
-                    RangeValues(emptyList(), listOf(request.margin))
-                )
+                buildSimResponse(infra, path, rollingStock, request.speedLimitTag, request.comfort)
 
             // Check for conflicts
             checkForConflicts(trainsRequirements, simulationResponse, path.departureTime)
@@ -120,6 +109,66 @@ class STDCMEndpointV2(private val infraManager: InfraManager) : Take {
         } catch (ex: Throwable) {
             ExceptionHandler.handle(ex)
         }
+    }
+
+    /** Build the simulation part of the response */
+    private fun buildSimResponse(
+        infra: FullInfra,
+        path: STDCMResult,
+        rollingStock: RollingStock,
+        speedLimitTag: String?,
+        comfort: RollingStock.Comfort
+    ): SimulationSuccess {
+        val reportTrain =
+            runScheduleMetadataExtractor(
+                path.envelope,
+                path.trainPath,
+                path.chunkPath,
+                infra,
+                infra.blockInfra.chunksToRoutes(infra.rawInfra, path.chunkPath.chunks),
+                rollingStock,
+                parseSimulationScheduleItems(path.stopResults),
+            )
+
+        // Lighter description of the same simulation result
+        val simpleReportTrain =
+            ReportTrain(
+                reportTrain.positions,
+                reportTrain.times,
+                reportTrain.speeds,
+                reportTrain.energyConsumption
+            )
+        val speedLimits = MRSP.computeMRSP(path.trainPath, rollingStock, false, speedLimitTag)
+
+        // All simulations are the same for now
+        return SimulationSuccess(
+            base = simpleReportTrain,
+            provisional = simpleReportTrain,
+            finalOutput = reportTrain,
+            mrsp = makeMRSPResponse(speedLimits),
+            electricalProfiles = buildSTDCMElectricalProfiles(infra, path, rollingStock, comfort),
+        )
+    }
+
+    /** Build the electrical profiles from the path */
+    private fun buildSTDCMElectricalProfiles(
+        infra: FullInfra,
+        path: STDCMResult,
+        rollingStock: RollingStock,
+        comfort: RollingStock.Comfort
+    ): RangeValues<ElectricalProfileValue> {
+        val envelopeSimPath = EnvelopeTrainPath.from(infra.rawInfra, path.trainPath, null)
+        val electrificationMap =
+            envelopeSimPath.getElectrificationMap(
+                rollingStock.basePowerClass,
+                ImmutableRangeMap.of(),
+                rollingStock.powerRestrictions,
+                false
+            )
+        val curvesAndConditions = rollingStock.mapTractiveEffortCurves(electrificationMap, comfort)
+        val electrificationRanges =
+            ElectrificationRange.from(curvesAndConditions.conditions, electrificationMap)
+        return makeElectricalProfiles(electrificationRanges)
     }
 }
 
@@ -155,7 +204,8 @@ private fun parseSimulationScheduleItems(
 ): List<SimulationScheduleItem> {
     return parseRawSimulationScheduleItems(
         trainStops.map {
-            SimulationScheduleItem(Offset(it.position.meters), null, it.duration.seconds, true)
+            val duration = if (it.duration > 0.0) it.duration.seconds else null
+            SimulationScheduleItem(Offset(it.position.meters), null, duration, duration != null)
         }
     )
 }
