@@ -80,7 +80,7 @@ opentelemetry = "0.22.0"
 opentelemetry-datadog = { version = "0.10.0", features = ["reqwest-client"] }
 opentelemetry-otlp = "0.15.0"
 opentelemetry-semantic-conventions = "0.14.0"
-opentelemetry_sdk = { version = "0.22.1", features = ["rt-tokio", "trace"] }
+opentelemetry_sdk = { version = "0.23.0", features = ["rt-tokio", "trace"] }
 osm_to_railjson = { path = "./osm_to_railjson" }
 paste.workspace = true
 pathfinding = "4.9.1"
