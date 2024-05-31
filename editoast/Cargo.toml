@@ -88,7 +88,7 @@ postgis_diesel.workspace = true
 postgres-openssl = "0.5.0"
 rand.workspace = true
 rangemap.workspace = true
-redis = { version = "0.25.3", features = [
+redis = { version = "0.25.4", features = [
   "cluster-async",
   "connection-manager",
   "tokio-comp",
