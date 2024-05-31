@@ -1,0 +1,50 @@
+{
+    "comfort": "STANDARD",
+    "path": [
+        {
+            "offset": 1041380,
+            "track": "TA0",
+            "id": "0"
+        },
+        {
+            "offset": 1165666,
+            "track": "TA0",
+            "id": "1"
+        },
+        {
+            "offset": 8858961,
+            "track": "TA6",
+            "id": "2"
+        },
+        {
+            "offset": 795976,
+            "track": "TD2",
+            "id": "3"
+        },
+        {
+            "offset": 140044,
+            "track": "TG4",
+            "id": "4"
+        }
+    ],
+    "initial_speed": 0,
+    "labels": [],
+    "constraint_distribution": "MARECO",
+    "margins": {
+        "boundaries": [
+            "2"
+        ],
+        "values": [
+            "3%",
+            "7%"
+        ]
+    },
+    "options": {
+        "use_electrical_profiles": false
+    },
+    "rolling_stock_name": "fast_rolling_stock",
+    "schedule": [],
+    "speed_limit_tag": null,
+    "start_time": "2024-01-01T07:19:54+00:00",
+    "train_name": "fuzzer_train"
+}

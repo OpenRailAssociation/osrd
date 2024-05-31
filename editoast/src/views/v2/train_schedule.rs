@@ -674,6 +674,7 @@ async fn get_path(
 #[cfg(test)]
 mod tests {
 
+    use crate::views::tests::create_test_service_with_core_client;
     use actix_web::test::call_and_read_body_json;
     use actix_web::test::call_service;
     use actix_web::test::TestRequest;
@@ -682,6 +683,7 @@ mod tests {
     use std::sync::Arc;
 
     use super::*;
+    use crate::core::mocking::MockingClient;
     use crate::fixtures::tests::db_pool;
     use crate::fixtures::tests::make_simple_train_schedule_v2;
     use crate::fixtures::tests::named_fast_rolling_stock;
@@ -695,6 +697,7 @@ mod tests {
     use crate::modelsv2::Delete;
     use crate::modelsv2::DeleteStatic;
     use crate::views::tests::create_test_service;
+    use actix_web::http::StatusCode;
 
     #[rstest]
     async fn get_trainschedule(
@@ -833,7 +836,6 @@ mod tests {
     }
 
     #[rstest]
-    #[ignore] // TODO: This test should be rewritten using mocks
     async fn train_schedule_simulation(
         #[future] timetable_v2: TestFixture<Timetable>,
         #[future] small_infra: TestFixture<Infra>,
@@ -845,21 +847,39 @@ mod tests {
             named_fast_rolling_stock("fast_rolling_stock_update_rolling_stock", db_pool.clone())
                 .await;
 
-        let train_schedule_base: TrainScheduleBase = TrainScheduleBase {
+        let train_schedule: TrainScheduleBase = TrainScheduleBase {
             rolling_stock_name: rolling_stock.name.clone(),
-            ..serde_json::from_str(include_str!("../../tests/train_schedules/simple.json"))
-                .expect("Unable to parse")
+            ..serde_json::from_str(include_str!(
+                "../../tests/train_schedules/simple_success_pathfinding.json"
+            ))
+            .expect("Unable to parse")
         };
-        let train_schedule = TrainScheduleForm {
-            timetable_id: Some(timetable.id()),
-            train_schedule: train_schedule_base,
-        };
+
+        let mut core = MockingClient::new();
+
+        core.stub("/v2/pathfinding/blocks")
+            .method(reqwest::Method::POST)
+            .response(StatusCode::OK)
+            .body(include_str!(
+                "../../tests/small_infra/v2/pathfinding_core_response.json"
+            ))
+            .finish();
+
+        core.stub("/v2/standalone_simulation")
+            .method(reqwest::Method::POST)
+            .response(StatusCode::OK)
+            .body(include_str!(
+                "../../tests/small_infra/v2/simulation_core_response.json"
+            ))
+            .finish();
+
+        let service = create_test_service_with_core_client(core).await;
+
         let request = TestRequest::post()
-            .uri("/v2/train_schedule")
+            .uri(&format!("/v2/timetable/{}/train_schedule", timetable.id()))
             .set_json(json!(vec![train_schedule]))
             .to_request();
 
-        let service = create_test_service().await;
         let train_schedule: Vec<TrainScheduleResult> =
             call_and_read_body_json(&service, request).await;
         assert_eq!(train_schedule.len(), 1);
@@ -879,7 +899,6 @@ mod tests {
     }
 
     #[rstest]
-    #[ignore] // TODO: This test should be rewritten using mocks
     async fn train_schedule_simulation_summary(
         #[future] timetable_v2: TestFixture<Timetable>,
         #[future] small_infra: TestFixture<Infra>,
@@ -892,24 +911,100 @@ mod tests {
 
         let train_schedule: TrainScheduleBase = TrainScheduleBase {
             rolling_stock_name: rolling_stock.name.clone(),
-            ..serde_json::from_str(include_str!("../../tests/train_schedules/simple.json"))
-                .expect("Unable to parse")
+            ..serde_json::from_str(include_str!(
+                "../../tests/train_schedules/simple_success_pathfinding.json"
+            ))
+            .expect("Unable to parse")
         };
         let request = TestRequest::post()
             .uri(format!("/v2/timetable/{}/train_schedule", timetable.id()).as_str())
             .set_json(json!(vec![train_schedule]))
             .to_request();
 
-        let service = create_test_service().await;
+        let mut core = MockingClient::new();
+
+        core.stub("/v2/pathfinding/blocks")
+            .method(reqwest::Method::POST)
+            .response(StatusCode::OK)
+            .body(include_str!(
+                "../../tests/small_infra/v2/pathfinding_core_response.json"
+            ))
+            .finish();
+
+        core.stub("/v2/standalone_simulation")
+            .method(reqwest::Method::POST)
+            .response(StatusCode::OK)
+            .body(include_str!(
+                "../../tests/small_infra/v2/simulation_core_response.json"
+            ))
+            .finish();
+
+        let service = create_test_service_with_core_client(core).await;
+
         let train_schedule: Vec<TrainScheduleResult> =
             call_and_read_body_json(&service, request).await;
         assert_eq!(train_schedule.len(), 1);
         let request = TestRequest::get()
             .uri(
                 format!(
-                    "/v2/train_schedule/simulation_summary/?infra={}&ids[]={}",
+                    "/v2/train_schedule/simulation_summary?infra={}&ids[]={}",
                     infra.id(),
                     train_schedule[0].id,
+                )
+                .as_str(),
+            )
+            .to_request();
+
+        let response = call_service(&service, request).await;
+        assert!(response.status().is_success());
+    }
+
+    #[rstest]
+    async fn get_path(
+        #[future] timetable_v2: TestFixture<Timetable>,
+        #[future] small_infra: TestFixture<Infra>,
+        db_pool: Arc<DbConnectionPool>,
+    ) {
+        let timetable = timetable_v2.await;
+        let infra = small_infra.await;
+        let rolling_stock =
+            named_fast_rolling_stock("fast_rolling_stock_update_rolling_stock", db_pool.clone())
+                .await;
+
+        let train_schedule: TrainScheduleBase = TrainScheduleBase {
+            rolling_stock_name: rolling_stock.name.clone(),
+            ..serde_json::from_str(include_str!(
+                "../../tests/train_schedules/simple_success_pathfinding.json"
+            ))
+            .expect("Unable to parse")
+        };
+
+        let request = TestRequest::post()
+            .uri(format!("/v2/timetable/{}/train_schedule", timetable.id()).as_str())
+            .set_json(json!(vec![train_schedule]))
+            .to_request();
+
+        let mut core = MockingClient::new();
+
+        core.stub("/v2/pathfinding/blocks")
+            .method(reqwest::Method::POST)
+            .response(StatusCode::OK)
+            .body(include_str!(
+                "../../tests/small_infra/v2/pathfinding_core_response.json"
+            ))
+            .finish();
+
+        let service = create_test_service_with_core_client(core).await;
+
+        let train_schedule: Vec<TrainScheduleResult> =
+            call_and_read_body_json(&service, request).await;
+
+        let request = TestRequest::get()
+            .uri(
+                format!(
+                    "/v2/train_schedule/{}/path?infra_id={}",
+                    train_schedule[0].id,
+                    infra.id(),
                 )
                 .as_str(),
             )
