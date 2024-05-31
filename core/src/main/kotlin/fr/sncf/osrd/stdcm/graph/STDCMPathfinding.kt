@@ -183,8 +183,32 @@ class STDCMPathfinding(
             }
         }
 
-        // FIXME: We return an empty list of waypoints (not used for now)
-        return Result(edges.toList(), listOf())
+        val edgeList = edges.toList()
+        return Result(edgeList, makeWaypoints(edgeList))
+    }
+
+    private fun makeWaypoints(edges: List<STDCMEdge>): List<EdgeLocation> {
+        var nextStepIndex = 0
+        var currentEdgeIndex = 0
+        val res = mutableListOf<EdgeLocation>()
+        while (currentEdgeIndex < edges.size && nextStepIndex < steps.size) {
+            val step = steps[nextStepIndex]
+            val edge = edges[currentEdgeIndex]
+            val locationOnEdge =
+                step.locations
+                    .filter { it.edge == edge.block }
+                    .mapNotNull { edge.edgeOffsetFromBlock(it.offset) }
+            assert(locationOnEdge.size <= 1)
+            if (locationOnEdge.isNotEmpty()) {
+                res.add(EdgeLocation(edge, locationOnEdge.first()))
+                nextStepIndex++
+            } else {
+                currentEdgeIndex++
+            }
+        }
+        assert(nextStepIndex == steps.size)
+        assert(currentEdgeIndex == edges.size - 1)
+        return res
     }
 
     /**

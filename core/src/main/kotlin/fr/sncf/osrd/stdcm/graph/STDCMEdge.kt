@@ -138,4 +138,19 @@ data class STDCMEdge(
     override fun toString(): String {
         return "STDCMEdge(timeStart=$timeStart, block=$block)"
     }
+
+    /**
+     * Returns the offset on the edge referential from a given block offset, if it's covered by the
+     * edge.
+     */
+    fun edgeOffsetFromBlock(blockOffset: Offset<Block>): Offset<STDCMEdge>? {
+        val projectedOffset = Offset<STDCMEdge>(blockOffset - envelopeStartOffset)
+        if (projectedOffset.distance < 0.meters || projectedOffset > length) return null
+        return projectedOffset
+    }
+
+    /** Returns the offset on the block referential from a given edge offset. */
+    fun blockOffsetFromEdge(edgeOffset: Offset<STDCMEdge>): Offset<Block> {
+        return envelopeStartOffset + edgeOffset.distance
+    }
 }
