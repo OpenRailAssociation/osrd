@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { BiSelectMultiple } from 'react-icons/bi';
 import { useSelector } from 'react-redux';
 
+import type { TrainSpaceTimeData } from 'applications/operationalStudies/types';
 import { enhancedEditoastApi } from 'common/api/enhancedEditoastApi';
 import DeleteModal from 'common/BootstrapSNCF/ModalSNCF/DeleteModal';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
@@ -29,6 +30,8 @@ type TimetableToolbarProps = {
   setSelectedTrainIds: (selectedTrainIds: number[]) => void;
   multiSelectOn: boolean;
   setMultiSelectOn: (multiSelectOn: boolean) => void;
+  setTrainResultsToFetch: (trainScheduleIds?: number[]) => void;
+  setSpaceTimeData: React.Dispatch<React.SetStateAction<TrainSpaceTimeData[]>>;
 };
 
 const TimetableToolbar = ({
@@ -39,6 +42,8 @@ const TimetableToolbar = ({
   setSelectedTrainIds,
   multiSelectOn,
   setMultiSelectOn,
+  setTrainResultsToFetch,
+  setSpaceTimeData,
 }: TimetableToolbarProps) => {
   const { t } = useTranslation(['operationalStudies/scenario', 'common/itemTypes']);
   const dispatch = useAppDispatch();
@@ -91,6 +96,8 @@ const TimetableToolbar = ({
     await deleteTrainSchedules({ body: { ids: selectedTrainIds } })
       .unwrap()
       .then(() => {
+        setTrainResultsToFetch([]); // We don't want to fetch space time data again
+        setSpaceTimeData((prev) => prev.filter((train) => !selectedTrainIds.includes(train.id)));
         dispatch(
           setSuccess({
             title: t('timetable.trainsSelectionDeletedCount', { count: trainsCount }),

@@ -166,18 +166,7 @@ const ScenarioV2 = () => {
         setTrainSpaceTimeData
       );
     }
-  }, [timetable, infra]);
-
-  useEffect(() => {
-    if (timetable && infra?.state === 'CACHED' && trainIdUsedForProjection && infraId) {
-      getSpaceTimeChartData(
-        timetable.train_ids,
-        trainIdUsedForProjection,
-        infraId,
-        setTrainSpaceTimeData
-      );
-    }
-  }, [trainIdUsedForProjection]);
+  }, [timetable, trainIdUsedForProjection, infra]);
 
   useEffect(() => {
     if (!projectId || !studyId || !scenarioId) {
@@ -306,6 +295,7 @@ const ScenarioV2 = () => {
                     selectedTrainId={selectedTrainId}
                     conflicts={conflicts}
                     setTrainResultsToFetch={setTrainResultsToFetch}
+                    setSpaceTimeData={setTrainSpaceTimeData}
                   />
                 )}
               </div>

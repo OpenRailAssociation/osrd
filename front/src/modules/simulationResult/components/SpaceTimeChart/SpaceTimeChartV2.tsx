@@ -161,7 +161,6 @@ const SpaceTimeChartV2 = (props: SpaceTimeChartV2Props) => {
 
   const redrawChart = () => {
     if (trainSimulations && trainIdUsedForProjection) {
-      // combination of trains data from projectpathtrainresults et simulationresponse ?
       const trainsToDraw = trainSimulations.map((train) => createTrainV2(train));
 
       const newDrawnedChart = drawAllTrainsV2(

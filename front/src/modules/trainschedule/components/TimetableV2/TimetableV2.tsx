@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
+import type { TrainSpaceTimeData } from 'applications/operationalStudies/types';
 import type { ConflictV2, InfraState } from 'common/api/osrdEditoastApi';
 import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
 import ConflictsListV2 from 'modules/conflict/components/ConflictsListV2';
@@ -28,6 +29,7 @@ type TimetableV2Props = {
   selectedTrainId?: number;
   conflicts?: ConflictV2[];
   setTrainResultsToFetch: (trainScheduleIds?: number[]) => void;
+  setSpaceTimeData: React.Dispatch<React.SetStateAction<TrainSpaceTimeData[]>>;
 };
 
 const TimetableV2 = ({
@@ -38,6 +40,7 @@ const TimetableV2 = ({
   selectedTrainId,
   conflicts,
   setTrainResultsToFetch,
+  setSpaceTimeData,
 }: TimetableV2Props) => {
   const { t } = useTranslation(['operationalStudies/scenario', 'common/itemTypes']);
 
@@ -140,6 +143,8 @@ const TimetableV2 = ({
         setSelectedTrainIds={setSelectedTrainIds}
         multiSelectOn={multiselectOn}
         setMultiSelectOn={setMultiselectOn}
+        setTrainResultsToFetch={setTrainResultsToFetch}
+        setSpaceTimeData={setSpaceTimeData}
       />
 
       <div
@@ -165,6 +170,7 @@ const TimetableV2 = ({
               }
               setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
               setTrainResultsToFetch={setTrainResultsToFetch}
+              setSpaceTimeData={setSpaceTimeData}
             />
           ))}
       </div>

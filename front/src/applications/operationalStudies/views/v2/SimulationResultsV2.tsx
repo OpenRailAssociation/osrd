@@ -102,7 +102,7 @@ const SimulationResultsV2 = ({
     }
   }, [trainSimulation]);
 
-  if (!trainSimulation) return null;
+  if (!trainSimulation || spaceTimeData.length === 0) return null;
 
   if (trainSimulation.status !== 'success' && !isUpdating) return null;
 
