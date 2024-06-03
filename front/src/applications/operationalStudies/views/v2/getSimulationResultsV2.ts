@@ -118,8 +118,5 @@ export const getSpaceTimeChartData = async (
     } finally {
       store.dispatch(updateIsUpdating(false));
     }
-  } else {
-    store.dispatch(updateSelectedTrainId(undefined));
-    store.dispatch(updateTrainIdUsedForProjection(undefined));
   }
 };

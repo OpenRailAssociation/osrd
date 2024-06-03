@@ -9,6 +9,7 @@ import { MdAvTimer, MdContentCopy } from 'react-icons/md';
 import nextId from 'react-id-generator';
 
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
+import type { TrainSpaceTimeData } from 'applications/operationalStudies/types';
 import invalidInfra from 'assets/pictures/components/missing_tracks.svg';
 import invalidRollingStock from 'assets/pictures/components/missing_train.svg';
 import { enhancedEditoastApi } from 'common/api/enhancedEditoastApi';
@@ -41,6 +42,7 @@ type TimetableTrainCardProps = {
   handleSelectTrain: (trainId: number) => void;
   setDisplayTrainScheduleManagement: (arg0: string) => void;
   setTrainResultsToFetch: (trainScheduleIds?: number[]) => void;
+  setSpaceTimeData: React.Dispatch<React.SetStateAction<TrainSpaceTimeData[]>>;
 };
 
 const TimetableTrainCardV2 = ({
@@ -55,6 +57,7 @@ const TimetableTrainCardV2 = ({
   setDisplayTrainScheduleManagement,
   handleSelectTrain,
   setTrainResultsToFetch,
+  setSpaceTimeData,
 }: TimetableTrainCardProps) => {
   const { t } = useTranslation(['operationalStudies/scenario']);
   const dispatch = useAppDispatch();
@@ -86,7 +89,8 @@ const TimetableTrainCardV2 = ({
     deleteTrainSchedule({ body: { ids: [train.id] } })
       .unwrap()
       .then(() => {
-        setTrainResultsToFetch(undefined);
+        setTrainResultsToFetch([]); // We don't want to fetch space time data again
+        setSpaceTimeData((prev) => prev.filter((trainData) => trainData.id !== train.id));
         dispatch(
           setSuccess({
             title: t('timetable.trainDeleted', { name: train.trainName }),
@@ -142,6 +146,12 @@ const TimetableTrainCardV2 = ({
         dispatch(setFailure(castErrorToFailure(e)));
       }
     }
+  };
+
+  const selectPathProjection = async () => {
+    // We want to refetch all train space time data
+    setTrainResultsToFetch(undefined);
+    dispatch(updateTrainIdUsedForProjection(train.id));
   };
 
   const getInvalidIcon = (invalidReason: InvalidReason) => {
@@ -248,7 +258,7 @@ const TimetableTrainCardV2 = ({
             type="button"
             aria-label={t('timetable.choosePath')}
             title={t('timetable.choosePath')}
-            onClick={() => dispatch(updateTrainIdUsedForProjection(train.id))}
+            onClick={selectPathProjection}
           >
             <GiPathDistance />
           </button>
