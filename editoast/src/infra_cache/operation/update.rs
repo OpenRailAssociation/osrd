@@ -123,6 +123,9 @@ mod tests {
     use diesel::sql_types::Double;
     use diesel::sql_types::Text;
     use diesel_async::RunQueryDsl;
+    use editoast_schemas::infra::Signal;
+    use editoast_schemas::infra::SpeedSection;
+    use editoast_schemas::infra::Switch;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
     use serde_json::from_str;
@@ -132,11 +135,9 @@ mod tests {
     use crate::error::EditoastError;
     use crate::infra_cache::operation::OperationError;
     use crate::modelsv2::fixtures::create_empty_infra;
-    use crate::modelsv2::fixtures::create_signal;
-    use crate::modelsv2::fixtures::create_speed;
-    use crate::modelsv2::fixtures::create_switch;
-    use crate::modelsv2::fixtures::create_track;
+    use crate::modelsv2::fixtures::create_infra_object;
     use crate::modelsv2::DbConnectionPoolV2;
+    use editoast_schemas::infra::TrackSection;
     use editoast_schemas::primitives::OSRDIdentified;
     use editoast_schemas::primitives::ObjectType;
 
@@ -156,7 +157,12 @@ mod tests {
     async fn valid_update_track() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
-        let track = create_track(db_pool.get_ok().deref_mut(), infra.id, Default::default()).await;
+        let track = create_infra_object::<TrackSection>(
+            db_pool.get_ok().deref_mut(),
+            infra.id,
+            Default::default(),
+        )
+        .await;
         let update_track = UpdateOperation {
             obj_id: track.get_id().clone(),
             obj_type: ObjectType::TrackSection,
@@ -187,7 +193,12 @@ mod tests {
     async fn invalid_update_track() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
-        let track = create_track(db_pool.get_ok().deref_mut(), infra.id, Default::default()).await;
+        let track = create_infra_object::<TrackSection>(
+            db_pool.get_ok().deref_mut(),
+            infra.id,
+            Default::default(),
+        )
+        .await;
         let update_track = UpdateOperation {
             obj_id: track.get_id().clone(),
             obj_type: ObjectType::TrackSection,
@@ -213,8 +224,12 @@ mod tests {
     async fn valid_update_signal() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
-        let signal =
-            create_signal(db_pool.get_ok().deref_mut(), infra.id, Default::default()).await;
+        let signal = create_infra_object::<Signal>(
+            db_pool.get_ok().deref_mut(),
+            infra.id,
+            Default::default(),
+        )
+        .await;
         let update_signal = UpdateOperation {
             obj_id: signal.get_id().clone(),
             obj_type: ObjectType::Signal,
@@ -245,8 +260,12 @@ mod tests {
     async fn valid_update_switch_extension() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
-        let switch =
-            create_switch(db_pool.get_ok().deref_mut(), infra.id, Default::default()).await;
+        let switch = create_infra_object::<Switch>(
+            db_pool.get_ok().deref_mut(),
+            infra.id,
+            Default::default(),
+        )
+        .await;
         let update_switch = UpdateOperation {
                 obj_id: switch.get_id().clone(),
                 obj_type: ObjectType::Switch,
@@ -277,7 +296,12 @@ mod tests {
     async fn valid_update_speed() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
-        let speed = create_speed(db_pool.get_ok().deref_mut(), infra.id, Default::default()).await;
+        let speed = create_infra_object::<SpeedSection>(
+            db_pool.get_ok().deref_mut(),
+            infra.id,
+            Default::default(),
+        )
+        .await;
         let update_speed = UpdateOperation {
             obj_id: speed.get_id().clone(),
             obj_type: ObjectType::SpeedSection,
