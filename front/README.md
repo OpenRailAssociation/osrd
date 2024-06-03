@@ -250,4 +250,13 @@ All common code (and shared components) supposed to be in `common/`.
 - Better docs: still in use ? with
 - jsdocs
 
-### Module editor
+### Updating Dependencies
+When `package.json` changes (new packages or updated versions), developers may have issues running the app with Docker. New packages or versions might not be recognized by Docker.
+
+To fix this, follow these steps:
+
+1. After pulling new changes, run `yarn install` to update local dependencies.
+2. If issues persist, delete `node_modules` and run `yarn install` again.
+3. Run `docker compose build --no-cache` to rebuild Docker images from scratch with new dependencies.
+
+This ensures developers can run the app with the latest dependencies using Docker.
