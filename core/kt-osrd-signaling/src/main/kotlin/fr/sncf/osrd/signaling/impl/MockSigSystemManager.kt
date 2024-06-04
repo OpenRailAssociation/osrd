@@ -16,6 +16,13 @@ class MockSigSystemManager(
         block: SigBlock
     ) {}
 
+    override fun checkSignal(
+        reporter: SignalDiagReporter,
+        driverId: SignalDriverId,
+        settings: SigSettings,
+        sigBlock: SigBlock
+    ) {}
+
     override fun evalSignal(
         driverId: SignalDriverId,
         signal: SigSettings,
