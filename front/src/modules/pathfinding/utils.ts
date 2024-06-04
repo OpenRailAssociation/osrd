@@ -56,7 +56,8 @@ export const getPathfindingQuery = ({
       if ('track' in step) {
         return {
           track: step.track,
-          offset: step.offset,
+          // pathfinding blocks endpoint requires offsets in mm
+          offset: step.offset * 1000,
         };
       }
       if ('operational_point' in step) {
