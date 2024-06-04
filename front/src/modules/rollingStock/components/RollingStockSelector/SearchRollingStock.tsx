@@ -34,6 +34,7 @@ const SearchRollingStock = ({
         <InputSNCF
           id="searchfilter"
           type="text"
+          value={filters.text}
           onChange={(e) => searchMateriel(e.target.value)}
           placeholder={t('translation:common.search')}
           noMargin
