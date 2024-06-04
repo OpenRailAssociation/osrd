@@ -1,6 +1,7 @@
 package fr.sncf.osrd.standalone_sim;
 
 import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.arePositionsEqual;
+import static fr.sncf.osrd.envelope_utils.DoubleUtils.clamp;
 
 import fr.sncf.osrd.envelope.EnvelopeInterpolate;
 import fr.sncf.osrd.train.TrainStop;
@@ -18,25 +19,46 @@ public class EnvelopeStopWrapper implements EnvelopeInterpolate {
         this.stops = stops;
     }
 
-    @Override
-    public double interpolateTotalTime(double position) {
+    private double interpolate(double position, boolean isArrivalAt) {
         double stopTime = 0;
         for (var stop : stops) {
-            if (stop.position > position && !arePositionsEqual(stop.position, position)) break;
+            if (arePositionsEqual(stop.position, position)) {
+                if (isArrivalAt) break;
+            } else if (position < stop.position) break;
             stopTime += stop.duration;
         }
-        return stopTime + envelope.interpolateTotalTime(position);
-    }
-
-    /** Interpolate time in microseconds */
-    public long interpolateTotalTimeUS(double position) {
-        return (long) (this.interpolateTotalTime(position) * 1_000_000);
+        return stopTime
+                + (isArrivalAt ? envelope.interpolateArrivalAt(position) : envelope.interpolateDepartureFrom(position));
     }
 
     @Override
-    public double interpolateTotalTimeClamp(double position) {
-        position = Math.max(0, Math.min(envelope.getEndPos(), position));
-        return interpolateTotalTime(position);
+    public double interpolateArrivalAt(double position) {
+        return interpolate(position, true);
+    }
+
+    @Override
+    public double interpolateDepartureFrom(double position) {
+        return interpolate(position, false);
+    }
+
+    @Override
+    public long interpolateArrivalAtUS(double position) {
+        return (long) (this.interpolateArrivalAt(position) * 1_000_000);
+    }
+
+    @Override
+    public long interpolateDepartureFromUS(double position) {
+        return (long) (this.interpolateDepartureFrom(position) * 1_000_000);
+    }
+
+    @Override
+    public double interpolateArrivalAtClamp(double position) {
+        return interpolateArrivalAt(clamp(position, 0, envelope.getEndPos()));
+    }
+
+    @Override
+    public double interpolateDepartureFromClamp(double position) {
+        return interpolateDepartureFrom(clamp(position, 0, envelope.getEndPos()));
     }
 
     @Override

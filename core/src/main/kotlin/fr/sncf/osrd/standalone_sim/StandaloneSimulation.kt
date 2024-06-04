@@ -202,7 +202,7 @@ fun buildFinalEnvelope(
     scheduledPoints: List<SimulationScheduleItem>
 ): Envelope {
     fun getEnvelopeTimeAt(offset: Offset<TravelledPath>): Double {
-        return provisionalEnvelope.interpolateTotalTimeClamp(offset.distance.meters)
+        return provisionalEnvelope.interpolateDepartureFromClamp(offset.distance.meters)
     }
     var prevFixedPointOffset = Offset<TravelledPath>(0.meters)
     var prevFixedPointDepartureTime = 0.0
@@ -288,8 +288,8 @@ fun distributeAllowance(
         envelope: Envelope = provisionalEnvelope
     ): Double {
         assert(from < to)
-        val start = envelope.interpolateTotalTimeClamp(from.distance.meters)
-        val end = envelope.interpolateTotalTimeClamp(to.distance.meters)
+        val start = envelope.interpolateDepartureFromClamp(from.distance.meters)
+        val end = envelope.interpolateDepartureFromClamp(to.distance.meters)
         return end - start
     }
     val rangeEnds = margins.boundaries.filter { it > startOffset && it < endOffset }.toMutableList()

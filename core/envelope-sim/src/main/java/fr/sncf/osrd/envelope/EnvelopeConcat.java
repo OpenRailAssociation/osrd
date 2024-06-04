@@ -1,5 +1,7 @@
 package fr.sncf.osrd.envelope;
 
+import static fr.sncf.osrd.envelope_utils.DoubleUtils.clamp;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,21 +49,37 @@ public class EnvelopeConcat implements EnvelopeInterpolate {
     }
 
     @Override
-    public double interpolateTotalTime(double position) {
-        var envelope = findEnvelopeAt(position);
+    public double interpolateArrivalAt(double position) {
+        var envelope = findEnvelopeLeftAt(position);
         assert envelope != null : "Trying to interpolate time outside of the envelope";
-        return envelope.startTime + envelope.envelope.interpolateTotalTimeClamp(position - envelope.startOffset);
+        return envelope.startTime + envelope.envelope.interpolateArrivalAtClamp(position - envelope.startOffset);
     }
 
     @Override
-    public long interpolateTotalTimeUS(double position) {
-        return (long) (interpolateTotalTime(position) * 1_000_000);
+    public double interpolateDepartureFrom(double position) {
+        var envelope = findEnvelopeRightAt(position);
+        assert envelope != null : "Trying to interpolate time outside of the envelope";
+        return envelope.startTime + envelope.envelope.interpolateDepartureFromClamp(position - envelope.startOffset);
     }
 
     @Override
-    public double interpolateTotalTimeClamp(double position) {
-        var clamped = Math.max(0, Math.min(position, endPos));
-        return interpolateTotalTime(clamped);
+    public long interpolateArrivalAtUS(double position) {
+        return (long) (interpolateArrivalAt(position) * 1_000_000);
+    }
+
+    @Override
+    public long interpolateDepartureFromUS(double position) {
+        return (long) (interpolateDepartureFrom(position) * 1_000_000);
+    }
+
+    @Override
+    public double interpolateArrivalAtClamp(double position) {
+        return interpolateArrivalAt(clamp(position, 0, endPos));
+    }
+
+    @Override
+    public double interpolateDepartureFromClamp(double position) {
+        return interpolateDepartureFrom(clamp(position, 0, endPos));
     }
 
     @Override
@@ -94,15 +112,23 @@ public class EnvelopeConcat implements EnvelopeInterpolate {
     /**
      * Returns the envelope at the given position.
      */
-    private LocatedEnvelope findEnvelopeAt(double position) {
-        var index = findEnvelopeIndexAt(position);
+    private LocatedEnvelope findEnvelopeLeftAt(double position) {
+        var index = findEnvelopeIndexAt(position, true);
+        return index == -1 ? null : envelopes.get(index);
+    }
+
+    /**
+     * Returns the envelope at the given position.
+     */
+    private LocatedEnvelope findEnvelopeRightAt(double position) {
+        var index = findEnvelopeIndexAt(position, false);
         return index == -1 ? null : envelopes.get(index);
     }
 
     /**
      * Returns the index of the envelope at the given position.
      */
-    private int findEnvelopeIndexAt(double position) {
+    private int findEnvelopeIndexAt(double position, boolean searchLeft) {
         if (position < 0) return -1;
         var lowerBound = 0; // included
         var upperBound = envelopes.size(); // excluded
@@ -113,6 +139,12 @@ public class EnvelopeConcat implements EnvelopeInterpolate {
                 upperBound = i;
             } else if (position > envelope.startOffset + envelope.envelope.getEndPos()) {
                 lowerBound = i + 1;
+            } else if (searchLeft && position == envelope.startOffset && i > 0) {
+                return i - 1;
+            } else if (!searchLeft
+                    && position == envelope.startOffset + envelope.envelope.getEndPos()
+                    && i < envelopes.size() - 1) {
+                return i + 1;
             } else {
                 return i;
             }
@@ -122,13 +154,13 @@ public class EnvelopeConcat implements EnvelopeInterpolate {
 
     @Override
     public double maxSpeedInRange(double beginPos, double endPos) {
-        var firstEnvelopeIndex = findEnvelopeIndexAt(beginPos);
+        var firstEnvelopeIndex = findEnvelopeIndexAt(beginPos, false);
         assert firstEnvelopeIndex != -1 : "Trying to interpolate time outside of the envelope";
         var firstEnvelope = envelopes.get(firstEnvelopeIndex);
         var beginSpeed = firstEnvelope.envelope.maxSpeedInRange(
                 beginPos - firstEnvelope.startOffset, firstEnvelope.envelope.getEndPos());
 
-        var lastEnvelopeIndex = findEnvelopeIndexAt(endPos);
+        var lastEnvelopeIndex = findEnvelopeIndexAt(endPos, true);
         assert lastEnvelopeIndex != -1 : "Trying to interpolate time outside of the envelope";
         var lastEnvelope = envelopes.get(lastEnvelopeIndex);
         var endOffset = endPos - lastEnvelope.startOffset;

@@ -61,7 +61,7 @@ fun runScheduleMetadataExtractor(
     // Compute stops
     val stops = ArrayList<ResultStops>()
     for (stop in legacyStops) {
-        val stopTime = envelopeWithStops.interpolateTotalTime(stop.position) - stop.duration
+        val stopTime = envelopeWithStops.interpolateArrivalAt(stop.position)
         stops.add(ResultStops(stopTime, stop.position, stop.duration))
     }
 
@@ -106,7 +106,7 @@ fun runScheduleMetadataExtractor(
                 rawInfra.getPhysicalSignalName(
                     loadedSignalInfra.getPhysicalSignal(pathSignal.signal)
                 )!!,
-                envelopeWithStops.interpolateTotalTime(sightOffset.distance.meters).seconds,
+                envelopeWithStops.interpolateArrivalAt(sightOffset.distance.meters).seconds,
                 sightOffset,
                 "VL" // TODO: find out the real state
             )
@@ -194,8 +194,7 @@ fun isScheduledPointsHonored(
 ): Boolean {
     for (e in schedule) {
         if (e.arrival == null) continue
-        var computed = envelopeStopWrapper.interpolateTotalTime(e.pathOffset.distance.meters)
-        if (e.stopFor != null) computed -= e.stopFor.seconds
+        val computed = envelopeStopWrapper.interpolateArrivalAt(e.pathOffset.distance.meters)
         val expected = e.arrival.seconds
         // Check that the expected arrival time and the simulated one match ~1s
         if ((computed - expected).absoluteValue > 1.0) {

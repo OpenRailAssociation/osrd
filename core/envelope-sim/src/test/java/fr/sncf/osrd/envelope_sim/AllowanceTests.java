@@ -183,11 +183,11 @@ public class AllowanceTests {
         var endPos = allowance.endPos;
         var allowanceEnvelope = allowance.apply(base, context);
 
-        var timeBeginPointBase = base.interpolateTotalTime(beginPos);
-        var timeEndPointBase = base.interpolateTotalTime(endPos);
+        var timeBeginPointBase = base.interpolateDepartureFrom(beginPos);
+        var timeEndPointBase = base.interpolateDepartureFrom(endPos);
 
-        var timeBeginPoint = allowanceEnvelope.interpolateTotalTime(beginPos);
-        var timeEndPoint = allowanceEnvelope.interpolateTotalTime(endPos);
+        var timeBeginPoint = allowanceEnvelope.interpolateDepartureFrom(beginPos);
+        var timeEndPoint = allowanceEnvelope.interpolateDepartureFrom(endPos);
         var expectedTimeEndPoint = timeEndPointBase + allowance.getAddedTime(base);
 
         // make sure begin has the same time before and after margin, and that end is offset by the

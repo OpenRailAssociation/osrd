@@ -175,16 +175,19 @@ public class AllowanceRangesTests {
 
         // Check that we lose as much time as specified
         assertEquals(
-                maxEffortEnvelope.interpolateTotalTime(rangesTransitions[1]) + value1.time,
-                marecoEnvelope.interpolateTotalTime(rangesTransitions[1]),
+                maxEffortEnvelope.interpolateDepartureFrom(rangesTransitions[1]) + value1.time,
+                marecoEnvelope.interpolateDepartureFrom(rangesTransitions[1]),
                 testContext.timeStep);
         assertEquals(
-                maxEffortEnvelope.interpolateTotalTime(rangesTransitions[2]) + value1.time + value2.time,
-                marecoEnvelope.interpolateTotalTime(rangesTransitions[2]),
+                maxEffortEnvelope.interpolateDepartureFrom(rangesTransitions[2]) + value1.time + value2.time,
+                marecoEnvelope.interpolateDepartureFrom(rangesTransitions[2]),
                 testContext.timeStep);
         assertEquals(
-                maxEffortEnvelope.interpolateTotalTime(rangesTransitions[3]) + value1.time + value2.time + value3.time,
-                marecoEnvelope.interpolateTotalTime(rangesTransitions[3]),
+                maxEffortEnvelope.interpolateDepartureFrom(rangesTransitions[3])
+                        + value1.time
+                        + value2.time
+                        + value3.time,
+                marecoEnvelope.interpolateDepartureFrom(rangesTransitions[3]),
                 testContext.timeStep);
         assertEquals(
                 maxEffortEnvelope.getTotalTime() + value1.time + value2.time + value3.time,

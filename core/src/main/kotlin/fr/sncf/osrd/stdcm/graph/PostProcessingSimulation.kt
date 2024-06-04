@@ -341,8 +341,8 @@ private fun makeAllowanceRanges(
     val res = ArrayList<AllowanceRange>()
     for (point in fixedPoints) {
         val baseTime =
-            envelope.interpolateTotalTimeClamp(point.offset.distance.meters) -
-                envelope.interpolateTotalTimeClamp(transition)
+            envelope.interpolateArrivalAtClamp(point.offset.distance.meters) -
+                envelope.interpolateDepartureFromClamp(transition)
         val pointArrivalTime = transitionTime + baseTime
         val neededDelay = max(0.0, point.time - pointArrivalTime - prevAddedTime)
 

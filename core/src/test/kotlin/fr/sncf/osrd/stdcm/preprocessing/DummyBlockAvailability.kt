@@ -117,7 +117,7 @@ class DummyBlockAvailability(
     ): BlockAvailabilityInterface.Availability {
         val resourceUses = generateResourcesForPath(infraExplorer, startOffset, endOffset)
         // startTime refers to the time at startOffset, we need to offset it
-        val pathStartTime = startTime - infraExplorer.interpolateTimeClamp(startOffset)
+        val pathStartTime = startTime - infraExplorer.interpolateDepartureFromClamp(startOffset)
         val unavailability =
             findMinimumDelay(infraExplorer, resourceUses, pathStartTime, startOffset)
         return unavailability ?: findMaximumDelay(infraExplorer, resourceUses, pathStartTime)
@@ -244,8 +244,8 @@ class DummyBlockAvailability(
         if (startOffset.distance > blockExitOffset || endOffset.distance < blockEnterOffset)
             return null
 
-        val enterTime = explorer.interpolateTimeClamp(Offset(blockEnterOffset))
-        val exitTime = explorer.interpolateTimeClamp(Offset(blockExitOffset))
+        val enterTime = explorer.interpolateDepartureFromClamp(Offset(blockEnterOffset))
+        val exitTime = explorer.interpolateDepartureFromClamp(Offset(blockExitOffset))
         return TimeInterval(enterTime, exitTime)
     }
 

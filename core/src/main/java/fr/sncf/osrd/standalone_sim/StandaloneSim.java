@@ -172,7 +172,7 @@ public class StandaloneSim {
         double lostTime = 0.;
         for (var schedulePoint : scheduledPoints) {
             var rangeEndPos = schedulePoint.pathOffset;
-            double excessTime = schedulePoint.time - maxEffortEnvelope.interpolateTotalTime(rangeEndPos) - lostTime;
+            double excessTime = schedulePoint.time - maxEffortEnvelope.interpolateArrivalAt(rangeEndPos) - lostTime;
             if (excessTime < 0) {
                 // TODO: Raise a warning
                 continue;

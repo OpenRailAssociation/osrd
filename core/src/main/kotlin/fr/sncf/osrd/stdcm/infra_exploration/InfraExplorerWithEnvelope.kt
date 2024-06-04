@@ -32,7 +32,7 @@ import fr.sncf.osrd.utils.units.Offset
  *
  * Note: the first envelope doesn't necessarily cover the first block in its entirety, while path
  * offsets start at offset=0 on the first block. There are two ways to properly handle time at path
- * offsets: either using `explorer.interpolateTimeClamp`, or by converting the offsets into
+ * offsets: either using `explorer.interpolateDepartureFromClamp`, or by converting the offsets into
  * `Offset<TravelledPath>` using the underlying incremental path.
  */
 interface InfraExplorerWithEnvelope : InfraExplorer {
@@ -44,10 +44,10 @@ interface InfraExplorerWithEnvelope : InfraExplorer {
     fun addEnvelope(envelope: EnvelopeInterpolate): InfraExplorerWithEnvelope
 
     /**
-     * Calls `InterpolateTotalTimeClamp` on the underlying envelope, taking the travelled path
+     * Calls `InterpolateDepartureFromClamp` on the underlying envelope, taking the travelled path
      * offset into account.
      */
-    fun interpolateTimeClamp(pathOffset: Offset<Path>): Double
+    fun interpolateDepartureFromClamp(pathOffset: Offset<Path>): Double
 
     /** Returns the spacing requirements since the last update */
     fun getSpacingRequirements(): List<ResultTrain.SpacingRequirement>

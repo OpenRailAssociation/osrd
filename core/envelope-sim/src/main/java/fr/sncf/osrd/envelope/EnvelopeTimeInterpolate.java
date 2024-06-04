@@ -5,16 +5,27 @@ import java.util.List;
 public interface EnvelopeTimeInterpolate {
 
     /** Computes the time required to get to a given point of the envelope */
-    double interpolateTotalTime(double position);
+    double interpolateArrivalAt(double position);
+
+    /** Computes last time when the train is at a given point of the envelope (including stop duration if at stop) */
+    double interpolateDepartureFrom(double position);
 
     /** Computes the time required to get to a given point of the envelope in microseconds */
-    long interpolateTotalTimeUS(double position);
+    long interpolateArrivalAtUS(double position);
+
+    /** Computes last time when the train is at a given point of the envelope (including stop duration if at stop) in microseconds */
+    long interpolateDepartureFromUS(double position);
 
     /**
      * Computes the time required to get to a given point of the envelope, clamping the position to
      * [0, envelope length] first
      */
-    double interpolateTotalTimeClamp(double position);
+    double interpolateArrivalAtClamp(double position);
+
+    /**
+     * Computes last time when the train is at a given point of the envelope (including stop duration if at stop), clamping the position to [0, envelope length] first
+     */
+    double interpolateDepartureFromClamp(double position);
 
     /** Returns the start position of the envelope */
     double getBeginPos();

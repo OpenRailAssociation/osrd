@@ -38,12 +38,12 @@ class IncrementalRequirementEnvelopeAdapter(
         if (stopOffset.distance.meters > endPos) {
             return Double.POSITIVE_INFINITY
         }
-        // stop duration is included in interpolateTotalTime()
+        // stop duration is included in interpolateDepartureFrom()
         var pastStop = (stopOffset.distance).meters
         if (pastStop > endPos) {
             pastStop = endPos
         }
-        return envelopeWithStops.interpolateTotalTime(pastStop)
+        return envelopeWithStops.interpolateDepartureFrom(pastStop)
     }
 
     override fun arrivalTimeInRange(
@@ -54,7 +54,7 @@ class IncrementalRequirementEnvelopeAdapter(
         // if the head of the train enters the zone at some point, use that
         val begin = pathBeginOff.distance.meters
         if (begin >= 0.0 && begin <= envelopeWithStops.endPos)
-            return envelopeWithStops.interpolateTotalTime(begin)
+            return envelopeWithStops.interpolateArrivalAt(begin)
 
         val end = pathEndOff.distance.meters
 
@@ -75,7 +75,7 @@ class IncrementalRequirementEnvelopeAdapter(
 
         val criticalPoint = end + rollingStock.length
         if (criticalPoint >= 0.0 && criticalPoint <= envelopeWithStops.endPos)
-            return envelopeWithStops.interpolateTotalTime(criticalPoint)
+            return envelopeWithStops.interpolateDepartureFrom(criticalPoint)
 
         return Double.POSITIVE_INFINITY
     }

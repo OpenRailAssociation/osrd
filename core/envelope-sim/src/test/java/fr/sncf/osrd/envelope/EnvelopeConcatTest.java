@@ -18,12 +18,12 @@ public class EnvelopeConcatTest {
         // List of functions to call, they should return the same result for the envelope and the
         // concatenated version
         var functions = List.<Function<EnvelopeTimeInterpolate, Double>>of(
-                in -> in.interpolateTotalTime(0),
-                in -> in.interpolateTotalTime(1),
-                in -> in.interpolateTotalTime(2),
-                in -> in.interpolateTotalTimeUS(1.5) / 1_000.,
-                in -> in.interpolateTotalTimeClamp(-1),
-                in -> in.interpolateTotalTimeClamp(0.5),
+                in -> in.interpolateDepartureFrom(0),
+                in -> in.interpolateDepartureFrom(1),
+                in -> in.interpolateDepartureFrom(2),
+                in -> in.interpolateDepartureFromUS(1.5) / 1_000.,
+                in -> in.interpolateDepartureFromClamp(-1),
+                in -> in.interpolateDepartureFromClamp(0.5),
                 EnvelopeTimeInterpolate::getBeginPos,
                 EnvelopeTimeInterpolate::getEndPos,
                 EnvelopeTimeInterpolate::getTotalTime);
@@ -46,7 +46,8 @@ public class EnvelopeConcatTest {
         final var secondEnvelopeTime = envelopes.get(1).getTotalTime();
 
         assertEquals(
-                firstEnvelopeTime + envelopes.get(1).interpolateTotalTime(1), concatenated.interpolateTotalTime(3));
+                firstEnvelopeTime + envelopes.get(1).interpolateDepartureFrom(1),
+                concatenated.interpolateDepartureFrom(3));
         assertEquals(0, concatenated.getBeginPos());
         assertEquals(4, concatenated.getEndPos());
         assertEquals(firstEnvelopeTime + secondEnvelopeTime, concatenated.getTotalTime());

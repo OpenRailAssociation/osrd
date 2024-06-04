@@ -200,7 +200,7 @@ class InfraExplorerWithEnvelopeTests {
 
     /**
      * Test that the envelope bounds are equal, then iterate by an arbitrary step length to test for
-     * interpolateTotalTime equality.
+     * interpolateDepartureFrom/ArrivalAt equality (respectively with/without stop duration).
      */
     private fun testEnvelopeTimeEquality(expected: Envelope, actual: EnvelopeTimeInterpolate) {
         assertTrue { arePositionsEqual(expected.beginPos, actual.beginPos) }
@@ -209,8 +209,14 @@ class InfraExplorerWithEnvelopeTests {
         while (position < expected.endPos) {
             assertTrue(
                 areTimesEqual(
-                    expected.interpolateTotalTime(position),
-                    actual.interpolateTotalTime(position),
+                    expected.interpolateDepartureFrom(position),
+                    actual.interpolateDepartureFrom(position),
+                )
+            )
+            assertTrue(
+                areTimesEqual(
+                    expected.interpolateArrivalAt(position),
+                    actual.interpolateArrivalAt(position),
                 )
             )
             position += 1.0
