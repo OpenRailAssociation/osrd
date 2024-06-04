@@ -122,8 +122,8 @@ public final class LineString {
                         lineString.bufferY[0]);
 
                 if (distance < 1e-5) {
-                    newBufferX.remove(newBufferX.size() - 1);
-                    newBufferY.remove(newBufferY.size() - 1);
+                    newBufferX.removeAt(newBufferX.size() - 1);
+                    newBufferY.removeAt(newBufferY.size() - 1);
                 } else {
                     newCumulativeLengths.add(distance + newCumulativeLengths.get(newCumulativeLengths.size() - 1));
                 }
