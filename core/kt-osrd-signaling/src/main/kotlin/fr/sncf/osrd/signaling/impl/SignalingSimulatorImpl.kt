@@ -126,6 +126,30 @@ class SignalingSimulatorImpl(override val sigModuleManager: SigSystemManager) : 
                     }
                 }
             sigModuleManager.checkSignalingSystemBlock(reporter, sigSystem, sigBlock)
+            for ((signal, nextSignal) in signals.windowed(2)) {
+                val signalReporter =
+                    object : SignalDiagReporter {
+                        override fun report(errorType: String) {
+                            logger.debug {
+                                val signalName = rawSignalingInfra.getLogicalSignalName(signal)
+                                val nextSignalName =
+                                    rawSignalingInfra.getLogicalSignalName(nextSignal)
+                                "error at signal $signalName to $nextSignalName: $errorType"
+                            }
+                        }
+                    }
+                val driver =
+                    sigModuleManager.findDriver(
+                        loadedSignalInfra.getSignalingSystem(signal),
+                        loadedSignalInfra.getSignalingSystem(nextSignal)
+                    )
+                sigModuleManager.checkSignal(
+                    signalReporter,
+                    driver,
+                    loadedSignalInfra.getSettings(signal),
+                    sigBlock
+                )
+            }
         }
         return blockInfra
     }

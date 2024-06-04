@@ -98,4 +98,13 @@ class SigSystemManagerImpl : SigSystemManager {
     ) {
         sigSystemPool[sigSystem].checkBlock(reporter, block)
     }
+
+    override fun checkSignal(
+        reporter: SignalDiagReporter,
+        driverId: SignalDriverId,
+        settings: SigSettings,
+        sigBlock: SigBlock
+    ) {
+        driverPool[driverId].checkSignal(reporter, settings, sigBlock)
+    }
 }

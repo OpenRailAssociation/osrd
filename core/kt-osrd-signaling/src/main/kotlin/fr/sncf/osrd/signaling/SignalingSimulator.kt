@@ -21,10 +21,19 @@ enum class ZoneStatus {
 }
 
 interface SigSystemManager : InfraSigSystemManager {
+    /** Signaling system check of the block */
     fun checkSignalingSystemBlock(
         reporter: BlockDiagReporter,
         sigSystem: SignalingSystemId,
         block: SigBlock
+    )
+
+    /** Driver specific checks of the signal settings and block */
+    fun checkSignal(
+        reporter: SignalDiagReporter,
+        driverId: SignalDriverId,
+        settings: SigSettings,
+        sigBlock: SigBlock
     )
 
     fun evalSignal(

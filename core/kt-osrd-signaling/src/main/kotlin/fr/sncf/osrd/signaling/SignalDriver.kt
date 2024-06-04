@@ -75,7 +75,6 @@ interface SignalDriver {
         limitView: SpeedLimitView?
     ): SigState
 
-    /** block is the partial block in front of the signal, as no signal can see backward */
     fun checkSignal(reporter: SignalDiagReporter, signal: SigSettings, block: SigBlock)
 }
 
