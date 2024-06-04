@@ -33,6 +33,8 @@ import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 public class ConflictDetectionTest {
 
@@ -223,7 +225,7 @@ public class ConflictDetectionTest {
         var chunkPathA = chunkPathFromRoutes(
                 rawInfra,
                 List.of("rt.DA5->DC5", "rt.DC5->DD2"),
-                makeTrackLocation(tc1, fromMeters(185)), // cut path after PC0
+                makeTrackLocation(tc1, fromMeters(185)), // cut path after PC1
                 makeTrackLocation(td0, fromMeters(24820)));
         var pathPropsA = makePathProperties(rawInfra, chunkPathA, null);
         var chunkPathB = chunkPathFromRoutes(
@@ -250,12 +252,190 @@ public class ConflictDetectionTest {
             var simResultAWithStop =
                     simpleSim(fullInfra, pathPropsA, chunkPathA, 0, Double.POSITIVE_INFINITY, List.of(stop));
 
-            var conflicts = ConflictsKt.detectConflicts(List.of(
-                    convertRequirements(0L, 0.0, simResultAWithStop.train),
-                    convertRequirements(1L, 0.0, simResultB.train)));
+            var reqA = convertRequirements(0L, 0.0, simResultAWithStop.train);
+            var reqB = convertRequirements(1L, 0.0, simResultB.train);
+            var conflicts = ConflictsKt.detectConflicts(List.of(reqA, reqB));
             assertFalse(conflicts.stream().anyMatch((conflict) -> conflict.conflictType == ROUTING));
             assertFalse(conflicts.stream().anyMatch((conflict) -> conflict.conflictType == SPACING));
         }
+    }
+
+    /*
+    Context: both trains start in station and the requirements on the block protecting the switch at station exit may
+    conflict.
+    This block is protected by 2 signals (first will be yellow, last and closest will be red).
+    Test for trains starting after the first signal protecting block with the switch.
+    Also, the stopping train stops either (all combinations):
+    * on stop-signal or on open signal
+    * while seeing the last signal protecting block or before seeing it
+
+    Stopping on open signal and before seeing any signal protecting the block is quite an undefined behavior (train
+    is starting after first signal) for routing conflicts.
+    In current implementation, the considered signal is not really the limiting one, but the first signal seen by the
+    train that is protecting the block.
+    So one might consider that train should require resource at its very beginning, but we actually go for waiting
+    to see any signal.
+     */
+    @ParameterizedTest
+    @CsvSource({
+        "false, true, true, true",
+        "true, true, false, false",
+        "false, false, false, false",
+        "true, false, false, false",
+    })
+    public void conflictHandlingWithTrainStartingDuringRequirementTrigger(
+            boolean onStopSignal, boolean seeingEntrySignal, boolean hasRoutingConflict, boolean hasSpacingConflict)
+            throws Exception {
+        var rjsInfra = Helpers.getExampleInfra("small_infra/infra.json");
+        var fullInfra = fullInfraFromRJS(rjsInfra);
+        var rawInfra = fullInfra.rawInfra();
+        var tc0 = getTrackSectionFromNameOrThrow("TC0", rawInfra);
+        var tc1 = getTrackSectionFromNameOrThrow("TC1", rawInfra);
+        var td0 = getTrackSectionFromNameOrThrow("TD0", rawInfra);
+
+        var chunkPathA = chunkPathFromRoutes(
+                rawInfra,
+                List.of("rt.DA5->DC5", "rt.DC5->DD2"),
+                makeTrackLocation(tc1, fromMeters(185)), // cut path after PC1
+                makeTrackLocation(td0, fromMeters(24820)));
+        var pathPropsA = makePathProperties(rawInfra, chunkPathA, null);
+        var chunkPathB = chunkPathFromRoutes(
+                rawInfra,
+                List.of("rt.DA5->DC4", "rt.DC4->DD2"),
+                makeTrackLocation(tc0, fromMeters(185)), // cut path after PC0
+                makeTrackLocation(td0, fromMeters(24820)));
+        var pathPropsB = makePathProperties(rawInfra, chunkPathB, null);
+
+        var simResultB = simpleSim(fullInfra, pathPropsB, chunkPathB, 0, Double.POSITIVE_INFINITY, List.of());
+
+        // signal position on track minus sight distance and start travelled path position
+        var sightOffset = 800 - 400 - 185;
+        var stopPosition = sightOffset + (seeingEntrySignal ? 100 : -100);
+        var stop = new TrainStop(stopPosition, 600, onStopSignal);
+        var simResultAWithStop =
+                simpleSim(fullInfra, pathPropsA, chunkPathA, 0, Double.POSITIVE_INFINITY, List.of(stop));
+
+        var reqA = convertRequirements(0L, 0.0, simResultAWithStop.train);
+        var reqB = convertRequirements(1L, 0.0, simResultB.train);
+        var conflicts = ConflictsKt.detectConflicts(List.of(reqA, reqB));
+        assert (hasRoutingConflict == conflicts.stream().anyMatch((conflict) -> conflict.conflictType == ROUTING));
+        assert (hasSpacingConflict == conflicts.stream().anyMatch((conflict) -> conflict.conflictType == SPACING));
+    }
+
+    /*
+    Context: 2 trains would conflict requiring the same block at the same time at a crossing.
+    Test conflict handling with a train stopping before or after seeing the very first signal protecting the
+    crossing block (no ambiguity about the start of the train being after any protecting signal).
+    Test also combination with reception on stop-signal or open signal.
+     */
+    @ParameterizedTest
+    @CsvSource({
+        "false, true, true, true",
+        "true, true, false, false",
+        "false, false, false, false",
+        "true, false, false, false",
+    })
+    public void conflictHandlingBeforeAfterSignalSight(
+            boolean onStopSignal, boolean seeingLimitingSignal, boolean hasRoutingConflict, boolean hasSpacingConflict)
+            throws Exception {
+        var rjsInfra = Helpers.getExampleInfra("small_infra/infra.json");
+        var fullInfra = fullInfraFromRJS(rjsInfra);
+        var rawInfra = fullInfra.rawInfra();
+        var tg0 = getTrackSectionFromNameOrThrow("TG0", rawInfra);
+        var td0 = getTrackSectionFromNameOrThrow("TD0", rawInfra);
+        var tf1 = getTrackSectionFromNameOrThrow("TF1", rawInfra);
+        var te0 = getTrackSectionFromNameOrThrow("TE0", rawInfra);
+
+        /*
+        Trains without stop are conflicting at crossing
+        Train A is going West (and will stop)
+        Train B is going North
+         */
+        var chunkPathA = chunkPathFromRoutes(
+                rawInfra,
+                List.of("rt.DG1->DD7", "rt.DD7->DD4", "rt.DD4->DD0"),
+                makeTrackLocation(tg0, fromMeters(800)),
+                makeTrackLocation(td0, fromMeters(23000)));
+        var pathPropsA = makePathProperties(rawInfra, chunkPathA, null);
+        var chunkPathB = chunkPathFromRoutes(
+                rawInfra,
+                List.of("rt.buffer_stop.4->DD5", "rt.DD5->DE1"),
+                makeTrackLocation(tf1, fromMeters(3700)),
+                makeTrackLocation(te0, fromMeters(400)));
+        var pathPropsB = makePathProperties(rawInfra, chunkPathB, null);
+
+        var simResultB = simpleSim(fullInfra, pathPropsB, chunkPathB, 0, Double.POSITIVE_INFINITY, List.of());
+
+        // limiting signal is seen after 200 m on travelled path
+        var sightOffset = 200;
+        var stopPosition = sightOffset + (seeingLimitingSignal ? 100 : -100);
+        var stop = new TrainStop(stopPosition, 600, onStopSignal);
+        var simResultAWithStop =
+                simpleSim(fullInfra, pathPropsA, chunkPathA, 0, Double.POSITIVE_INFINITY, List.of(stop));
+
+        var reqA = convertRequirements(0L, 0.0, simResultAWithStop.train);
+        var reqB = convertRequirements(1L, 0.0, simResultB.train);
+        var conflicts = ConflictsKt.detectConflicts(List.of(reqA, reqB));
+        assert (hasRoutingConflict == conflicts.stream().anyMatch((conflict) -> conflict.conflictType == ROUTING));
+        assert (hasSpacingConflict == conflicts.stream().anyMatch((conflict) -> conflict.conflictType == SPACING));
+    }
+
+    /*
+    Test that overtaking conflicts are correctly processed in the case of 2 trains, one is
+    stopping for 10 min, the other is direct.
+    For all combinations of:
+    - stop with reception on stop signal or not
+    - trains being close (5min) or far (1hour) from each other
+    - first train leaving being the one with stop (overtaking) or the direct (no overtake)
+     */
+    @ParameterizedTest
+    @CsvSource({
+        "false, 300, true, true",
+        "true, 300, false, false",
+        "false, 3600, false, false",
+        "true, 3600, false, false",
+        "false, -300, false, false",
+        "true, -300, false, false",
+        "false, -3600, false, false",
+        "true, -3600, false, false",
+    })
+    public void conflictDetectionForOvertakeInStation(
+            boolean onStopSignal,
+            double directStartTime, // stopping train starts at 0
+            boolean hasRoutingConflict,
+            boolean hasSpacingConflict)
+            throws Exception {
+        var rjsInfra = Helpers.getExampleInfra("small_infra/infra.json");
+        var fullInfra = fullInfraFromRJS(rjsInfra);
+        var rawInfra = fullInfra.rawInfra();
+
+        var ta6 = getTrackSectionFromNameOrThrow("TA6", rawInfra);
+        var td0 = getTrackSectionFromNameOrThrow("TD0", rawInfra);
+
+        var chunkPathCenter = chunkPathFromRoutes(
+                rawInfra,
+                List.of("rt.DA0->DA5", "rt.DA5->DC5", "rt.DC5->DD2"),
+                makeTrackLocation(ta6, fromMeters(1000)), // start after DA3
+                makeTrackLocation(td0, fromMeters(24820)));
+        var pathPropsCenter = makePathProperties(rawInfra, chunkPathCenter, null);
+        var chunkPathNorth = chunkPathFromRoutes(
+                rawInfra,
+                List.of("rt.DA0->DA5", "rt.DA5->DC4", "rt.DC4->DD2"),
+                makeTrackLocation(ta6, fromMeters(1000)),
+                makeTrackLocation(td0, fromMeters(24820)));
+        var pathPropsNorth = makePathProperties(rawInfra, chunkPathNorth, null);
+
+        var stop = new TrainStop(9700, 600, onStopSignal);
+        var simResultCenterWithStop =
+                simpleSim(fullInfra, pathPropsCenter, chunkPathCenter, 0, Double.POSITIVE_INFINITY, List.of(stop));
+        var simResultNorthOvertaking =
+                simpleSim(fullInfra, pathPropsNorth, chunkPathNorth, 0, Double.POSITIVE_INFINITY, List.of());
+
+        var reqWithStop = convertRequirements(0L, 0.0, simResultCenterWithStop.train);
+        var reqOvertaking = convertRequirements(1L, directStartTime, simResultNorthOvertaking.train);
+        var conflicts = ConflictsKt.detectConflicts(List.of(reqWithStop, reqOvertaking));
+        assert (hasRoutingConflict == conflicts.stream().anyMatch((conflict) -> conflict.conflictType == ROUTING));
+        assert (hasSpacingConflict == conflicts.stream().anyMatch((conflict) -> conflict.conflictType == SPACING));
     }
 
     private static TrainRequirements convertRequirements(long trainId, double offset, ResultTrain train) {

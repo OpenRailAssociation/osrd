@@ -233,6 +233,21 @@ fun run(
     )
 }
 
+fun getBlockOffsets(
+    blockPath: StaticIdxList<Block>,
+    pathOffsetBuilder: PathOffsetBuilder,
+    blockInfra: BlockInfra
+): OffsetArray<TravelledPath> {
+    val blockOffsets = MutableOffsetArray(blockPath.size) { Offset.zero<TravelledPath>() }
+    var curOffset = Offset.zero<Path>()
+    for (i in 0 until blockPath.size) {
+        blockOffsets[i] = pathOffsetBuilder.toTravelledPath(curOffset)
+        val blockLength = blockInfra.getBlockLength(blockPath[i])
+        curOffset += blockLength.distance
+    }
+    return blockOffsets.immutableCopyOf()
+}
+
 fun routingRequirements(
     pathOffsetBuilder: PathOffsetBuilder,
     simulator: SignalingSimulator,
@@ -260,13 +275,7 @@ fun routingRequirements(
     }
     routeBlockBounds[routePath.size] = detailedBlockPath.size
 
-    val blockOffsets = MutableOffsetArray(blockPath.size) { Offset.zero<TravelledPath>() }
-    var curOffset = Offset.zero<Path>()
-    for (i in 0 until blockPath.size) {
-        blockOffsets[i] = pathOffsetBuilder.toTravelledPath(curOffset)
-        val blockLength = blockInfra.getBlockLength(blockPath[i])
-        curOffset += blockLength.distance
-    }
+    val blockOffsets = getBlockOffsets(blockPath, pathOffsetBuilder, blockInfra)
 
     // compute the signaling train state for each signal
     data class SignalingTrainStateImpl(override val speed: Speed) : SignalingTrainState
@@ -345,6 +354,7 @@ fun routingRequirements(
                 simulator.sigModuleManager,
                 simulatedSignalStates,
                 blockPath,
+                blockOffsets,
                 routeStartBlockIndex,
                 signalingTrainStates
             ) ?: return null
@@ -458,6 +468,7 @@ private fun findLimitingSignal(
     sigSystemManager: SigSystemManager,
     simulatedSignalStates: Map<LogicalSignalId, SigState>,
     blockPath: StaticIdxList<Block>,
+    blockOffsets: OffsetArray<TravelledPath>,
     routeStartBlockIndex: Int,
     signalingTrainStates: Map<LogicalSignalId, SignalingTrainState>
 ): LimitingSignal? {
@@ -469,6 +480,13 @@ private fun findLimitingSignal(
         val signalIndexStart = if (curBlockIndex == 0) 0 else 1
         for (curSignalIndex in (signalIndexStart until blockSignals.size).reversed()) {
             val signal = blockSignals[curSignalIndex]
+
+            // ignore unseen signals before the start of the travelled path
+            val signalTravelledOffset =
+                blockOffsets[curBlockIndex] +
+                    blockInfra.getSignalsPositions(curBlock)[curSignalIndex].distance
+            if (signalTravelledOffset < Offset.zero()) break
+
             val ssid = loadedSignalInfra.getSignalingSystem(signal)
             val signalState = simulatedSignalStates[signal]!!
             val trainState = signalingTrainStates[signal]!!
