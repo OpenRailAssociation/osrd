@@ -164,8 +164,7 @@ async fn call_core_stdcm(
     })
     .await?;
     let rolling_stock =
-        retrieve_existing_rolling_stock(&db_pool, RollingStockKey::Id(data.rolling_stock_id))
-            .await?;
+        retrieve_existing_rolling_stock(conn, RollingStockKey::Id(data.rolling_stock_id)).await?;
     let steps = parse_stdcm_steps(db_pool.clone(), data, &infra).await?;
     let spacing_requirements = make_spacing_requirements(db_pool, data.timetable_id).await?;
     STDCMCoreRequest {
