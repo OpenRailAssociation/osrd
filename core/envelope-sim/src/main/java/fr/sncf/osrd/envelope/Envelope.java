@@ -2,6 +2,7 @@ package fr.sncf.osrd.envelope;
 
 import static fr.sncf.osrd.envelope_utils.DoubleUtils.clamp;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.envelope.part.EnvelopePart;
 import fr.sncf.osrd.reporting.exceptions.ErrorType;
@@ -184,8 +185,7 @@ public final class Envelope implements Iterable<EnvelopePart>, SearchableEnvelop
         return maxSpeed;
     }
 
-    /** Computes the time required to get to a given point of the envelope */
-    public long interpolateTotalTimeUS(double position) {
+    private long interpolateUS(double position, boolean isArrivalAt) {
         assert continuous : "interpolating times on a non continuous envelope is a risky business";
         var envelopePartIndex = findLeft(position);
         assert envelopePartIndex >= 0 : "Trying to interpolate time outside of the envelope";
@@ -193,18 +193,40 @@ public final class Envelope implements Iterable<EnvelopePart>, SearchableEnvelop
         return getCumulativeTimeUS(envelopePartIndex) + envelopePart.interpolateTotalTimeUS(position);
     }
 
-    /** Computes the time required to get to a given point of the envelope */
-    public double interpolateTotalTime(double position) {
-        return ((double) interpolateTotalTimeUS(position)) / 1_000_000;
+    @Override
+    public double interpolateArrivalAt(double position) {
+        return ((double) interpolateArrivalAtUS(position)) / 1_000_000;
     }
 
-    /**
-     * Computes the time required to get to a given point of the envelope. The value is clamped to
-     * the [0, envelope length] range.
-     */
-    public double interpolateTotalTimeClamp(double position) {
-        position = Math.min(getEndPos(), Math.max(0, position));
-        return ((double) interpolateTotalTimeUS(position)) / 1_000_000;
+    @Override
+    public long interpolateArrivalAtUS(double position) {
+        return interpolateUS(position, true);
+    }
+
+    @Override
+    public double interpolateDepartureFrom(double position) {
+        return ((double) interpolateDepartureFromUS(position)) / 1_000_000;
+    }
+
+    @Override
+    public long interpolateDepartureFromUS(double position) {
+        return interpolateUS(position, false);
+    }
+
+    @Override
+    public double interpolateArrivalAtClamp(double position) {
+        return ((double) interpolateArrivalAtUS(clamp(position, 0, getEndPos()))) / 1_000_000;
+    }
+
+    @Override
+    public double interpolateDepartureFromClamp(double position) {
+        return ((double) interpolateDepartureFromUS(clamp(position, 0, getEndPos()))) / 1_000_000;
+    }
+
+    /** Returns the time between the two positions of the envelope
+     * (no stop included in envelope, so no problem) */
+    public double getTimeBetween(double beginPos, double endPos) {
+        return interpolateDepartureFrom(endPos) - interpolateDepartureFrom(beginPos);
     }
 
     // endregion
@@ -238,11 +260,6 @@ public final class Envelope implements Iterable<EnvelopePart>, SearchableEnvelop
         return ((double) getTotalTimeUS()) / 1_000_000;
     }
 
-    /** Returns the time between two positions of the envelope */
-    public double getTimeBetween(double beginPos, double endPos) {
-        return interpolateTotalTime(endPos) - interpolateTotalTime(beginPos);
-    }
-
     /**
      * Returns the total time required to get from the start of the envelope to the start of an
      * envelope part, in microseconds
@@ -261,7 +278,7 @@ public final class Envelope implements Iterable<EnvelopePart>, SearchableEnvelop
     /**
      * Cuts an envelope, interpolating new points if required.
      *
-     * @return a list of envelope parts spanning from beginPosition to endPosition
+     * @return an array of envelope parts spanning from beginPosition to endPosition
      */
     public EnvelopePart[] slice(double beginPosition, double endPosition) {
         return slice(beginPosition, Double.NaN, endPosition, Double.NaN);
@@ -270,7 +287,7 @@ public final class Envelope implements Iterable<EnvelopePart>, SearchableEnvelop
     /**
      * Cuts an envelope, interpolating new points if required.
      *
-     * @return a list of envelope parts spanning from beginPosition to endPosition
+     * @return aa array of envelope parts spanning from beginPosition to endPosition
      */
     public EnvelopePart[] slice(double beginPosition, double beginSpeed, double endPosition, double endSpeed) {
         int beginIndex = 0;
@@ -339,6 +356,7 @@ public final class Envelope implements Iterable<EnvelopePart>, SearchableEnvelop
     // endregion
 
     @Override
+    @NonNull
     public Iterator<EnvelopePart> iterator() {
         return new Iterator<>() {
             private int i = 0;

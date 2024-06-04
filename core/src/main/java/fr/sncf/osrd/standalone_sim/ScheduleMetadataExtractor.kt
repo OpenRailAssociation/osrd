@@ -111,7 +111,7 @@ fun run(
     // Compute stops
     val stops = ArrayList<ResultStops>()
     for (stop in schedule.stops) {
-        val stopTime = envelopeWithStops.interpolateTotalTime(stop.position) - stop.duration
+        val stopTime = envelopeWithStops.interpolateArrivalAt(stop.position)
         stops.add(ResultStops(stopTime, stop.position, stop.duration))
     }
 
@@ -161,7 +161,7 @@ fun run(
                 rawInfra.getPhysicalSignalName(
                     loadedSignalInfra.getPhysicalSignal(pathSignal.signal)
                 ),
-                envelopeWithStops.interpolateTotalTime(sightOffset.distance.meters),
+                envelopeWithStops.interpolateArrivalAt(sightOffset.distance.meters),
                 sightOffset.distance.meters,
                 "VL" // TODO: find out the real state
             )
@@ -368,7 +368,7 @@ fun routingRequirements(
             val stop = stops[stopIdx]
             val stopTravelledOffset = pathOffsetBuilder.toTravelledPath(stop.pathOffset)
             if (stop.onStopSignal && entrySignalOffset <= stopTravelledOffset) {
-                // stop duration is included in interpolateTotalTime()
+                // stop duration is included in interpolateDepartureFromClamp()
                 criticalPos = stopTravelledOffset
                 break
             }
@@ -379,7 +379,7 @@ fun routingRequirements(
 
         // find last time when the train is at the critical location (including stop duration if at
         // stop)
-        return envelope.clampInterpolate(criticalPos)
+        return envelope.interpolateDepartureFromClamp(criticalPos.distance.meters)
     }
 
     val res = mutableListOf<RoutingRequirement>()
@@ -408,7 +408,7 @@ fun routingRequirements(
                 assert(routeIndex == 0)
                 continue
             }
-            val criticalTime = envelope.clampInterpolate(criticalPos)
+            val criticalTime = envelope.interpolateDepartureFromClamp(criticalPos.distance.meters)
             zoneRequirements.add(routingZoneRequirement(rawInfra, zonePath, criticalTime))
         }
         res.add(
@@ -482,16 +482,6 @@ private fun findLimitingSignal(
     return LimitingSignal(lastSignalBlockIndex, lastSignalIndex)
 }
 
-fun EnvelopeTimeInterpolate.clampInterpolate(position: Offset<TravelledPath>): Double {
-    val criticalPos = position.distance.meters
-    if (criticalPos <= 0.0) return 0.0
-    if (criticalPos >= endPos) return totalTime
-
-    // find last time when the train is at the critical location (including stop duration if at
-    // stop)
-    return interpolateTotalTime(criticalPos)
-}
-
 data class ZoneOccupationChangeEvent(
     val time: TimeDelta,
     val offset: Offset<TravelledPath>,
@@ -518,7 +508,7 @@ fun zoneOccupationChangeEvents(
             if (currentOffset.distance > envelope.endPos.meters) break
             val entryOffset = Offset.max(Offset.zero(), currentOffset)
             val entryTime =
-                envelope.interpolateTotalTimeUS(entryOffset.distance.meters).microseconds
+                envelope.interpolateArrivalAtUS(entryOffset.distance.meters).microseconds
             val zone = rawInfra.getNextZone(rawInfra.getZonePathEntry(zonePath))!!
             zoneOccupationChangeEvents.add(
                 ZoneOccupationChangeEvent(entryTime, entryOffset, zoneCount, true, blockIdx, zone)
@@ -531,7 +521,7 @@ fun zoneOccupationChangeEvents(
             val exitOffset = Offset.max(Offset.zero(), currentOffset + trainLength.meters)
             if (exitOffset.distance <= envelope.endPos.meters) {
                 val exitTime =
-                    envelope.interpolateTotalTimeUS(exitOffset.distance.meters).microseconds
+                    envelope.interpolateDepartureFromUS(exitOffset.distance.meters).microseconds
                 zoneOccupationChangeEvents.add(
                     ZoneOccupationChangeEvent(
                         exitTime,

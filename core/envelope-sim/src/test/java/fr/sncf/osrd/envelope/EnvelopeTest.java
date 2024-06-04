@@ -55,18 +55,18 @@ public class EnvelopeTest {
     }
 
     @Test
-    void testInterpolateTime() {
+    void testInterpolateDepartureFrom() {
         var partA = EnvelopeTestUtils.generateTimes(new double[] {0, 2}, new double[] {1, 1});
         var partB = EnvelopeTestUtils.generateTimes(new double[] {2, 4}, new double[] {1, 1});
         var envelope = Envelope.make(partA, partB);
 
         assertEquals(1, partA.interpolateTotalTime(1));
 
-        assertEquals(1, envelope.interpolateTotalTime(1));
-        assertEquals(2, envelope.interpolateTotalTime(2));
-        assertEquals(2, envelope.interpolateTotalTime(2));
-        assertEquals(3, envelope.interpolateTotalTime(3));
-        assertEquals(3.5, envelope.interpolateTotalTime(3.5));
-        assertEquals(4, envelope.interpolateTotalTime(4));
+        assertEquals(1, envelope.interpolateDepartureFrom(1));
+        assertEquals(2, envelope.interpolateDepartureFrom(2));
+        assertEquals(2, envelope.interpolateDepartureFrom(2));
+        assertEquals(3, envelope.interpolateDepartureFrom(3));
+        assertEquals(3.5, envelope.interpolateDepartureFrom(3.5));
+        assertEquals(4, envelope.interpolateDepartureFrom(4));
     }
 }

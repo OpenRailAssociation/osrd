@@ -103,7 +103,7 @@ class StandardAllowanceTests {
         Assertions.assertNotNull(res.withAllowance!!)
         val secondBlockEntryTime =
             (res.withAllowance.departureTime +
-                res.withAllowance.envelope.interpolateTotalTime(
+                res.withAllowance.envelope.interpolateArrivalAt(
                     infra.getBlockLength(firstBlock).distance.meters
                 ))
         Assertions.assertTrue(secondBlockEntryTime >= 3600 - TIME_STEP)
@@ -137,7 +137,7 @@ class StandardAllowanceTests {
         Assertions.assertNotNull(res.withAllowance!!)
         val timeEnterOccupiedSection =
             (res.withAllowance.departureTime +
-                res.withAllowance.envelope.interpolateTotalTime(5000.0))
+                res.withAllowance.envelope.interpolateArrivalAt(5000.0))
         Assertions.assertEquals(3600.0, timeEnterOccupiedSection, 3 * TIME_STEP)
         occupancyTest(res.withAllowance, occupancyGraph, 2 * TIME_STEP)
         checkAllowanceResult(res, allowance)
@@ -185,7 +185,7 @@ class StandardAllowanceTests {
                 .setStandardAllowance(allowance)
                 .run()!!
         occupancyTest(res, occupancyGraph, TIME_STEP)
-        val thirdBlockEntryTime = (res.departureTime + res.envelope.interpolateTotalTime(11000.0))
+        val thirdBlockEntryTime = (res.departureTime + res.envelope.interpolateArrivalAt(11000.0))
         Assertions.assertEquals(
             1000.0,
             thirdBlockEntryTime,
@@ -234,7 +234,7 @@ class StandardAllowanceTests {
                 .setStandardAllowance(allowance)
                 .run()!!
         occupancyTest(res, occupancyGraph, TIME_STEP)
-        val thirdBlockEntryTime = (res.departureTime + res.envelope.interpolateTotalTime(10001.0))
+        val thirdBlockEntryTime = (res.departureTime + res.envelope.interpolateArrivalAt(10001.0))
         Assertions.assertEquals(1000.0, thirdBlockEntryTime, 3 * TIME_STEP)
     }
 
@@ -360,7 +360,7 @@ class StandardAllowanceTests {
                 .setStandardAllowance(allowance)
                 .run()!!
         occupancyTest(res, occupancyGraph, TIME_STEP)
-        val thirdBlockEntryTime = (res.departureTime + res.envelope.interpolateTotalTime(11000.0))
+        val thirdBlockEntryTime = (res.departureTime + res.envelope.interpolateArrivalAt(11000.0))
         // 2 allowances + the extra safety TIME_STEP added when avoiding conflicts gives us 3 *
         // TIME_STEP
         Assertions.assertEquals(1000.0, thirdBlockEntryTime, 3 * TIME_STEP)

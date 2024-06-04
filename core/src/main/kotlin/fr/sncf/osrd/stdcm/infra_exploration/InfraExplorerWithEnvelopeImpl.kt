@@ -62,9 +62,9 @@ data class InfraExplorerWithEnvelopeImpl(
         return this
     }
 
-    override fun interpolateTimeClamp(pathOffset: Offset<Path>): Double {
+    override fun interpolateDepartureFromClamp(pathOffset: Offset<Path>): Double {
         return getFullEnvelope()
-            .interpolateTotalTimeClamp(
+            .interpolateDepartureFromClamp(
                 getIncrementalPath().toTravelledPath(pathOffset).distance.meters
             )
     }

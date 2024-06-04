@@ -137,12 +137,12 @@ fun occupancyTest(
         for ((timeStart, timeEnd, distanceStart, distanceEnd) in blockOccupancies) {
             val enterTime =
                 res.departureTime +
-                    envelopeWrapper.interpolateTotalTimeClamp(
+                    envelopeWrapper.interpolateArrivalAtClamp(
                         (startBlockPosition + distanceStart).meters
                     )
             val exitTime =
                 res.departureTime +
-                    envelopeWrapper.interpolateTotalTimeClamp(
+                    envelopeWrapper.interpolateDepartureFromClamp(
                         (startBlockPosition + distanceEnd).meters
                     )
             Assertions.assertTrue(

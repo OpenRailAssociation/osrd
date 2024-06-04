@@ -35,8 +35,8 @@ data class BlockAvailability(
         val spacingRequirements =
             if (needFullRequirements) infraExplorer.getFullSpacingRequirements()
             else infraExplorer.getSpacingRequirements()
-        val pathStartTime = startTime - infraExplorer.interpolateTimeClamp(startOffset)
-        val endTime = infraExplorer.interpolateTimeClamp(endOffset) + pathStartTime
+        val pathStartTime = startTime - infraExplorer.interpolateDepartureFromClamp(startOffset)
+        val endTime = infraExplorer.interpolateDepartureFromClamp(endOffset) + pathStartTime
 
         // Modify the spacing requirements to adjust for the start time,
         // and filter out the ones that are outside the relevant time range
@@ -90,7 +90,7 @@ data class BlockAvailability(
         var value = 0.0
         while (i++ < 20 && !search.complete()) {
             value = search.input
-            search.feedback(envelope.interpolateTotalTimeClamp(search.input))
+            search.feedback(envelope.interpolateDepartureFromClamp(search.input))
         }
         return Offset(Distance.fromMeters(value))
     }
