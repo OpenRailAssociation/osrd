@@ -9,6 +9,9 @@ use crate::modelsv2::Infra;
 use crate::modelsv2::Project;
 use crate::modelsv2::Study;
 use crate::modelsv2::Tags;
+use crate::views::rolling_stocks::rolling_stock_form::RollingStockForm;
+
+use super::RollingStockModel;
 
 pub fn project_changeset(name: &str) -> Changeset<Project> {
     Project::changeset()
@@ -43,6 +46,57 @@ pub async fn create_study(conn: &mut DbConnection, name: &str, project_id: i64) 
         .create(conn)
         .await
         .expect("Failed to create study")
+}
+
+pub fn fast_rolling_stock_form(name: &str) -> RollingStockForm {
+    let mut rolling_stock_form: RollingStockForm =
+        serde_json::from_str(include_str!("../tests/example_rolling_stock_1.json"))
+            .expect("Unable to parse exemple rolling stock");
+    rolling_stock_form.name = name.to_string();
+    rolling_stock_form
+}
+
+pub fn fast_rolling_stock_changeset(name: &str) -> Changeset<RollingStockModel> {
+    let mut rolling_stock_form: RollingStockForm = fast_rolling_stock_form(name);
+    rolling_stock_form.name = name.to_string();
+    let rolling_stock_model: Changeset<RollingStockModel> = rolling_stock_form.into();
+    rolling_stock_model.version(0)
+}
+
+pub async fn create_fast_rolling_stock(conn: &mut DbConnection, name: &str) -> RollingStockModel {
+    fast_rolling_stock_changeset(name)
+        .create(conn)
+        .await
+        .expect("Failed to create rolling stock")
+}
+
+pub fn rolling_stock_with_energy_sources_form(name: &str) -> RollingStockForm {
+    let mut rolling_stock_form: RollingStockForm = serde_json::from_str(include_str!(
+        "../tests/example_rolling_stock_2_energy_sources.json"
+    ))
+    .expect("Unable to parse rolling stock with energy sources");
+    rolling_stock_form.name = name.to_string();
+    rolling_stock_form
+}
+
+pub fn rolling_stock_with_energy_sources_changeset(name: &str) -> Changeset<RollingStockModel> {
+    let rolling_stock_model: Changeset<RollingStockModel> =
+        rolling_stock_with_energy_sources_form(name).into();
+    rolling_stock_model.name(name.to_owned()).version(1)
+}
+
+pub async fn create_rolling_stock_with_energy_sources(
+    conn: &mut DbConnection,
+    name: &str,
+) -> RollingStockModel {
+    rolling_stock_with_energy_sources_changeset(name)
+        .create(conn)
+        .await
+        .expect("Failed to create rolling stock with energy sources")
+}
+
+pub fn get_rolling_stock_with_invalid_effort_curves() -> &'static str {
+    include_str!("../tests/example_rolling_stock_3.json")
 }
 
 pub async fn create_empty_infra(conn: &mut DbConnection) -> Infra {

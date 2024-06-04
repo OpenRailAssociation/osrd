@@ -1,5 +1,6 @@
 mod power_restrictions;
 mod rolling_stock_usage;
+pub use rolling_stock_usage::TrainScheduleScenarioStudyProject;
 
 use std::collections::HashMap;
 
@@ -17,10 +18,8 @@ use editoast_schemas::rolling_stock::RollingStock;
 use editoast_schemas::rolling_stock::RollingStockMetadata;
 use editoast_schemas::rolling_stock::RollingStockSupportedSignalingSystems;
 use power_restrictions::PowerRestriction;
-pub use rolling_stock_usage::TrainScheduleScenarioStudyProject;
 use serde::Deserialize;
 use serde::Serialize;
-use std::sync::Arc;
 use utoipa::ToSchema;
 use validator::Validate;
 use validator::ValidationError;
@@ -29,7 +28,7 @@ use validator::ValidationErrors;
 use crate::error::Result;
 use crate::modelsv2::prelude::*;
 use crate::modelsv2::rolling_stock_livery::RollingStockLiveryMetadataModel;
-use crate::modelsv2::DbConnectionPool;
+use crate::modelsv2::DbConnection;
 use crate::views::rolling_stocks::RollingStockWithLiveries;
 
 editoast_common::schemas! {
@@ -83,16 +82,12 @@ pub struct RollingStockModel {
 }
 
 impl RollingStockModel {
-    pub async fn with_liveries(
-        self,
-        db_pool: Arc<DbConnectionPool>,
-    ) -> Result<RollingStockWithLiveries> {
+    pub async fn with_liveries(self, conn: &mut DbConnection) -> Result<RollingStockWithLiveries> {
         use crate::tables::rolling_stock_livery::dsl as livery_dsl;
-        let mut conn = db_pool.get().await?;
         let liveries = livery_dsl::rolling_stock_livery
             .filter(livery_dsl::rolling_stock_id.eq(self.id))
             .select(RollingStockLiveryMetadataModel::as_select())
-            .load(&mut conn)
+            .load(conn)
             .await?;
         Ok(RollingStockWithLiveries {
             rolling_stock: self,
@@ -223,98 +218,72 @@ impl From<RollingStock> for RollingStockModelChangeset {
 pub mod tests {
     use rstest::*;
     use serde_json::to_value;
-    use std::sync::Arc;
+    use std::ops::DerefMut;
 
     use super::RollingStockModel;
     use crate::error::InternalError;
-    use crate::fixtures::tests::db_pool;
-    use crate::fixtures::tests::get_other_rolling_stock_form;
-    use crate::fixtures::tests::named_fast_rolling_stock;
-    use crate::fixtures::tests::named_other_rolling_stock;
-    use crate::modelsv2::Changeset;
-    use crate::modelsv2::DbConnectionPool;
+    use crate::modelsv2::fixtures::create_fast_rolling_stock;
+    use crate::modelsv2::fixtures::create_rolling_stock_with_energy_sources;
+    use crate::modelsv2::fixtures::rolling_stock_with_energy_sources_changeset;
+    use crate::modelsv2::prelude::*;
+    use crate::modelsv2::DbConnectionPoolV2;
     use crate::views::rolling_stocks::map_diesel_error;
     use crate::views::rolling_stocks::RollingStockError;
 
-    pub fn get_invalid_effort_curves() -> &'static str {
-        include_str!("../tests/example_rolling_stock_3.json")
-    }
-
     #[rstest]
-    async fn create_delete_rolling_stock(db_pool: Arc<DbConnectionPool>) {
-        use crate::modelsv2::Retrieve;
-        let mut db_conn = db_pool.get().await.expect("Failed to get db connection");
-        let name = "fast_rolling_stock_create_delete_rolling_stock";
-        let rolling_stock_id: i64;
-        {
-            let rolling_stock = named_fast_rolling_stock(name, db_pool.clone()).await;
-            rolling_stock_id = rolling_stock.id();
-            assert_eq!(name, rolling_stock.model.name.clone());
-        }
+    async fn update_rolling_stock() {
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let rs_name = "fast_rolling_stock_name";
 
-        let rolling_stock = RollingStockModel::retrieve(&mut db_conn, rolling_stock_id)
-            .await
-            .unwrap();
+        let created_fast_rolling_stock =
+            create_fast_rolling_stock(db_pool.get_ok().deref_mut(), rs_name).await;
 
-        assert!(rolling_stock.is_none());
-    }
-
-    #[rstest]
-    async fn update_rolling_stock(db_pool: Arc<DbConnectionPool>) {
-        use crate::modelsv2::Update;
-        let mut db_conn = db_pool.get().await.expect("Failed to get db connection");
         // GIVEN
-        let other_rs_name = "other_rolling_stock_update_rolling_stock";
-        let rolling_stock =
-            named_fast_rolling_stock("fast_rolling_stock_update_rolling_stock", db_pool.clone())
-                .await;
-        let rolling_stock_id = rolling_stock.id();
+        let rs_name_with_enrgy_sources_name = "other_rolling_stock_update_rolling_stock";
+        let rolling_stock_id = created_fast_rolling_stock.id;
 
-        let updated_rolling_stock: Changeset<RollingStockModel> =
-            get_other_rolling_stock_form(other_rs_name).into();
-        // updated_rolling_stock.id = rolling_stock_id;
+        let rolling_stock_with_energy_sources: Changeset<RollingStockModel> =
+            rolling_stock_with_energy_sources_changeset(rs_name_with_enrgy_sources_name);
 
         // WHEN
-        let updated_rolling_stock = updated_rolling_stock
-            .update(&mut db_conn, rolling_stock_id)
+        let updated_rolling_stock = rolling_stock_with_energy_sources
+            .update(db_pool.get_ok().deref_mut(), rolling_stock_id)
             .await
-            .unwrap()
+            .expect("Failed to update rolling stock")
             .unwrap();
 
         // THEN
-        assert_eq!(updated_rolling_stock.name, other_rs_name);
+        assert_eq!(updated_rolling_stock.name, rs_name_with_enrgy_sources_name);
     }
 
     #[rstest]
-    async fn update_rolling_stock_failure_name_already_used(db_pool: Arc<DbConnectionPool>) {
-        use crate::modelsv2::*;
-        let mut db_conn = db_pool.get().await.expect("Failed to get db connection");
-        // GIVEN
-        let name = "fast_rolling_stock_update_rolling_stock_failure_name_already_used";
-        let _rolling_stock = named_fast_rolling_stock(name, db_pool.clone()).await;
-        let other_rolling_stock = named_other_rolling_stock(
-            "other_rolling_stock_update_rolling_stock_failure_name_already_used",
-            db_pool.clone(),
-        )
-        .await;
+    async fn update_rolling_stock_failure_name_already_used() {
+        let db_pool = DbConnectionPoolV2::for_tests();
 
-        let other_rolling_stock_id = other_rolling_stock.id();
-        let mut other_rolling_stock =
-            RollingStockModel::retrieve(&mut db_conn, other_rolling_stock_id)
-                .await
-                .unwrap()
-                .unwrap();
-        other_rolling_stock.name = name.to_string();
+        // GIVEN
+        // Creating the first rolling stock
+        let rs_name = "fast_rolling_stock_name";
+        let created_fast_rolling_stock =
+            create_fast_rolling_stock(db_pool.get_ok().deref_mut(), rs_name).await;
+
+        // Creating the second rolling stock
+        let rs_name_with_enrgy_sources_name = "fast_rolling_stock_with_energy_sources_name";
+        let created_fast_rolling_stock_with_energy_sources =
+            create_rolling_stock_with_energy_sources(
+                db_pool.get_ok().deref_mut(),
+                rs_name_with_enrgy_sources_name,
+            )
+            .await;
 
         // WHEN
-        let result = other_rolling_stock
+        let result = created_fast_rolling_stock_with_energy_sources
             .into_changeset()
-            .update(&mut db_conn, other_rolling_stock_id)
+            .update(db_pool.get_ok().deref_mut(), created_fast_rolling_stock.id)
             .await
-            .map_err(|e| map_diesel_error(e, name));
+            .map_err(|e| map_diesel_error(e, rs_name));
 
         let error: InternalError = RollingStockError::NameAlreadyUsed {
-            name: String::from(name),
+            name: String::from(rs_name),
         }
         .into();
 
