@@ -8,6 +8,8 @@ import { useSelector } from 'react-redux';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { ModalBodySNCF, ModalHeaderSNCF } from 'common/BootstrapSNCF/ModalSNCF';
 import SwitchSNCF, { SWITCH_TYPES } from 'common/BootstrapSNCF/SwitchSNCF/SwitchSNCF';
+import { operationalStudiesConfSliceActions } from 'reducers/osrdconf/operationalStudiesConf';
+import { stdcmConfSliceActions } from 'reducers/osrdconf/stdcmConf';
 import {
   updateUserPreferences,
   switchTrainScheduleV2Activated,
@@ -21,9 +23,7 @@ import {
 import { useAppDispatch } from 'store';
 import { useDebounce } from 'utils/helpers';
 
-import { useInfraActions, useOsrdConfActions } from './osrdContext';
-
-export default function UserSettings() {
+const UserSettings = () => {
   const userPreferences = useSelector(getUserPreferences);
   const trainScheduleV2Activated = useSelector(getTrainScheduleV2Activated);
   const stdcmV2Activated = useSelector(getStdcmV2Activated);
@@ -31,8 +31,27 @@ export default function UserSettings() {
   const dispatch = useAppDispatch();
 
   const debouncedSafeWord = useDebounce(safeWordText, 500);
-  const { updateScenarioID, updateTimetableID } = useOsrdConfActions();
-  const { updateInfraID } = useInfraActions();
+
+  const {
+    updateScenarioID: updateEexScenarioId,
+    updateTimetableID: updateEexTimetableId,
+    updateInfraID: updateEexInfraId,
+  } = operationalStudiesConfSliceActions;
+  const {
+    updateScenarioID: updateStdcmScenarioId,
+    updateTimetableID: updateStdcmTimetableId,
+    updateInfraID: updateStdcmInfraId,
+  } = stdcmConfSliceActions;
+
+  const resetStore = () => {
+    dispatch(updateEexScenarioId(undefined));
+    dispatch(updateEexTimetableId(undefined));
+    dispatch(updateEexInfraId(undefined));
+
+    dispatch(updateStdcmScenarioId(undefined));
+    dispatch(updateStdcmTimetableId(undefined));
+    dispatch(updateStdcmInfraId(undefined));
+  };
 
   useEffect(() => {
     dispatch(updateUserPreferences({ ...userPreferences, safeWord: debouncedSafeWord }));
@@ -78,9 +97,7 @@ export default function UserSettings() {
               name="train-schedule-version-switch"
               onChange={() => {
                 dispatch(switchTrainScheduleV2Activated());
-                dispatch(updateScenarioID(undefined));
-                dispatch(updateTimetableID(undefined));
-                dispatch(updateInfraID(undefined));
+                resetStore();
               }}
               checked={trainScheduleV2Activated}
             />
@@ -95,8 +112,7 @@ export default function UserSettings() {
               name="stdcm-version-switch"
               onChange={() => {
                 dispatch(switchStdcmV2Activated());
-                dispatch(updateScenarioID(undefined));
-                dispatch(updateTimetableID(undefined));
+                resetStore();
               }}
               checked={stdcmV2Activated}
             />
@@ -106,4 +122,6 @@ export default function UserSettings() {
       </ModalBodySNCF>
     </>
   );
-}
+};
+
+export default UserSettings;
