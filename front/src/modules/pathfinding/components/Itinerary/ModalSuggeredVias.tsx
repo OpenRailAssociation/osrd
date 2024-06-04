@@ -100,7 +100,7 @@ export default function ModalSugerredVias({
           </button>
         ) : (
           <button
-            className="btn btn-sm btn-only-icon bg-dark"
+            className="btn btn-sm btn-only-icon"
             type="button"
             aria-label={t('removeVia')}
             title={t('removeVia')}
