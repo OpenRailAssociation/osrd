@@ -84,6 +84,7 @@ const SpeedSpaceSettings = ({
         onChange={() => toggleSetting(settingKey)}
         type="checkbox"
         disabled={disabled}
+        containerClassName="small"
       />
     ),
     [t, toggleSetting]
@@ -91,7 +92,7 @@ const SpeedSpaceSettings = ({
 
   return (
     <div
-      className={cx('showSettings', { 'ml-5': showSettings })}
+      className={cx('showSettings', { 'mx-2': showSettings })}
       style={showSettings ? { width: 'auto' } : { width: 0 }}
     >
       <div className="h2 d-flex align-items-center">{t('speedSpaceSettings.display')}</div>

@@ -5,7 +5,6 @@
   position: relative;
 
   .showSettingsButton {
-    position: absolute;
     border: none;
     background: none;
     cursor: pointer;
@@ -16,6 +15,7 @@
   .showSettings {
     overflow: hidden;
     transition: 0.3s;
+    white-space: nowrap;
   }
 
   .btn-rotate {
