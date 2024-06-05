@@ -22,7 +22,7 @@ import { removeElementAtIndex } from 'utils/array';
 import timeColumn from './TimeColumnComponent';
 
 type TimesStopsProps = {
-  pathProperties: ManageTrainSchedulePathProperties;
+  pathProperties: ManageTrainSchedulePathProperties | undefined;
   pathSteps?: (PathStep | null)[];
 };
 
@@ -63,6 +63,15 @@ const createDeleteViaButton = ({
 
 const TimesStops = ({ pathProperties, pathSteps = [] }: TimesStopsProps) => {
   const { t } = useTranslation('timesStops');
+
+  if (!pathProperties) {
+    return (
+      <div className="d-flex justify-content-center align-items-center h-100">
+        <p className="pt-1 px-5">{t('noPathLoaded')}</p>
+      </div>
+    );
+  }
+
   const dispatch = useAppDispatch();
   const { upsertViaFromSuggestedOP, updatePathSteps } = useOsrdConfActions();
 
@@ -103,6 +112,10 @@ const TimesStops = ({ pathProperties, pathSteps = [] }: TimesStopsProps) => {
           })
         ),
         title: `${t('stopTime')}`,
+
+        // We should not be able to edit the stopping time of the origin and destination
+        disabled: ({ rowIndex }) =>
+          rowIndex === 0 || rowIndex === pathProperties.allVias?.length - 1,
         grow: 0.6,
       },
       {
@@ -111,6 +124,8 @@ const TimesStops = ({ pathProperties, pathSteps = [] }: TimesStopsProps) => {
           checkboxColumn as Partial<Column<boolean | undefined>>
         ),
         title: t('receptionOnClosedSignal'),
+
+        // We should not be able to edit the reception on close signal of the origin
         grow: 0.6,
         disabled: ({ rowData }) => !rowData.stopFor,
       },

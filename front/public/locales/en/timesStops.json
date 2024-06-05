@@ -5,5 +5,6 @@
   "receptionOnClosedSignal": "Reception on Closed Signal",
   "theoreticalMargin": "Theoretical Margin",
   "theoreticalMarginPlaceholder": "% or min/100km",
-  "waypoint": "Waypoint {{id}}"
+  "waypoint": "Waypoint {{id}}",
+  "noPathLoaded": "No path loaded"
 }

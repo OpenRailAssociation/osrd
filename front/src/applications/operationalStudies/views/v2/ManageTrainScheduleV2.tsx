@@ -122,7 +122,7 @@ const ManageTrainScheduleV2 = () => {
       </div>
     ),
     label: t('tabs.timesStops'),
-    content: pathProperties && <TimesStops pathProperties={pathProperties} pathSteps={pathSteps} />,
+    content: <TimesStops pathProperties={pathProperties} pathSteps={pathSteps} />,
   };
 
   const tabSimulationSettings = {
