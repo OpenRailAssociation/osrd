@@ -135,11 +135,17 @@ export const checkStdcmConf = (
         name,
         ch,
         metadata,
-        ...path
+        theoreticalMargin,
+        kp,
+        onStopSignal,
+        ...stepLocation
       } = step;
+
+      const secondary_code = 'trigram' in stepLocation || 'uic' in stepLocation ? ch : undefined;
+
       return {
         duration: stopFor ? sec2ms(ISO8601Duration2sec(stopFor)) : 0,
-        location: { ...path, secondary_code: ch },
+        location: { ...stepLocation, secondary_code },
       };
     }),
     startTime: originTime!,
