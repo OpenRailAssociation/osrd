@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
@@ -19,9 +19,15 @@ import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/compon
 import { Map } from 'modules/trainschedule/components/ManageTrainSchedule';
 import ElectricalProfiles from 'modules/trainschedule/components/ManageTrainSchedule/ElectricalProfiles';
 import TrainSettings from 'modules/trainschedule/components/ManageTrainSchedule/TrainSettings';
-import { formatKmValue } from 'utils/strings';
+import { formatKmValue, createPowerRestrictions } from 'utils/strings';
+import PowerRestrictionsSelectorV2 from 'modules/powerRestriction/components/PowerRestrictionsSelectorV2';
+import { isElectric } from 'modules/rollingStock/helpers/electric';
+import { osrdEditoastApi, type RangedValueV2 } from 'common/api/osrdEditoastApi';
+import { useAppDispatch } from 'store';
+import { initial } from 'lodash';
 
 const ManageTrainScheduleV2 = () => {
+  const dispatch = useAppDispatch();
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
   const { getOriginV2, getDestinationV2 } = useOsrdConfSelectors();
   const origin = useSelector(getOriginV2);
@@ -34,6 +40,70 @@ const ManageTrainScheduleV2 = () => {
 
   const { rollingStockId, rollingStockComfort, rollingStock } =
     useStoreDataForRollingStockSelector();
+
+  const [initialPowerRestrictions, setInitialPowerRestrictions] = useState([]);
+
+  const pathElectrificationRanges = () => {
+    if (!pathProperties) return [];
+
+    const boundaries = [0, ...pathProperties.electrifications.boundaries, pathProperties.length];
+    const values = [...pathProperties.electrifications.values];
+
+    const ranges = [];
+    let start = boundaries[0];
+    let currentVoltage = values[0].voltage;
+
+    for (let i = 1; i < values.length; i++) {
+      if (values[i].type === 'electrification' && values[i].voltage !== currentVoltage) {
+        ranges.push({
+          begin: start,
+          end: boundaries[i],
+          value: currentVoltage,
+        });
+        start = boundaries[i];
+        currentVoltage = values[i].voltage;
+      }
+    }
+
+    // Add the last segment
+    ranges.push({
+      begin: start,
+      end: boundaries[boundaries.length - 1],
+      value: currentVoltage,
+    });
+    setInitialPowerRestrictions(ranges);
+    return ranges;
+  };
+
+  const formattedPathElectrificationRanges = useMemo(() => {
+    if (!pathProperties) return [];
+
+    return pathElectrificationRanges().map((electrificationRange) => ({
+      begin: electrificationRange.begin,
+      end: electrificationRange.end,
+      value: `${electrificationRange.value}`,
+    }));
+  }, [pathProperties]);
+
+  const trackSections = pathProperties?.trackSectionRanges || [];
+
+  const [cumulativeSums, setCumulativeSums] = useState([]);
+
+  useEffect(() => {
+    if (trackSections.length > 0) {
+      const cumulative = trackSections.reduce((acc, section) => {
+        const lastSum = acc.length > 0 ? acc[acc.length - 1] : 0;
+        acc.push(lastSum + section.end);
+        return acc;
+      }, []);
+
+      setCumulativeSums(cumulative);
+    }
+  }, [trackSections]);
+
+  useEffect(() => {
+    console.log(pathProperties, 'pathProperties');
+  }, [formattedPathElectrificationRanges, cumulativeSums]);
 
   // TODO TS2 : test this hook in simulation results issue
   // useSetupItineraryForTrainUpdate(setPathProperties);
@@ -129,13 +199,14 @@ const ManageTrainScheduleV2 = () => {
             />
           </div>
         </div>
-        {/* {rollingStock && isElectric(rollingStock.effort_curves.modes) && (
+        {rollingStock && isElectric(rollingStock.effort_curves.modes) && (
           <PowerRestrictionsSelectorV2
             rollingStockModes={rollingStock.effort_curves.modes}
             rollingStockPowerRestrictions={rollingStock.power_restrictions}
-            pathElectrificationRanges={pathWithElectrifications.electrification_ranges}
+            pathElectrificationRanges={initialPowerRestrictions}
+            pathProperties={pathProperties}
           />
-        )} */}
+        )}
       </div>
     ),
   };

@@ -87,7 +87,6 @@ export function reducer(state: PathfindingState, action: PathfindingActionV2): P
       };
     }
     case 'PATHFINDING_PARAM_CHANGED':
-    case 'VIAS_CHANGED':
     case 'INFRA_CHANGED': {
       if (
         !action.params ||
@@ -225,14 +224,14 @@ const Pathfinding = ({ pathProperties, setPathProperties }: PathfindingProps) =>
         case 'CACHED': {
           setIsInfraLoaded(true);
           if (isInfraError) setIsInfraError(false);
-          pathfindingDispatch({
-            type: 'INFRA_CHANGED',
-            params: {
-              origin,
-              destination,
-              rollingStock,
-            },
-          });
+          // pathfindingDispatch({
+          //   type: 'INFRA_CHANGED',
+          //   params: {
+          //     origin,
+          //     destination,
+          //     rollingStock,
+          //   },
+          // });
           break;
         }
         default:
@@ -246,18 +245,18 @@ const Pathfinding = ({ pathProperties, setPathProperties }: PathfindingProps) =>
     return getPathfindingQuery({ infraId, rollingStock, origin, destination, pathSteps });
   };
 
-  useEffect(() => {
-    if (isPathfindingInitialized) {
-      pathfindingDispatch({
-        type: 'VIAS_CHANGED',
-        params: {
-          origin,
-          destination,
-          rollingStock,
-        },
-      });
-    }
-  }, [vias]);
+  // useEffect(() => {
+  //   if (isPathfindingInitialized) {
+  //     pathfindingDispatch({
+  //       type: 'VIAS_CHANGED',
+  //       params: {
+  //         origin,
+  //         destination,
+  //         rollingStock,
+  //       },
+  //     });
+  //   }
+  // }, [vias]);
 
   useEffect(() => {
     if (isInfraError) {
@@ -318,6 +317,7 @@ const Pathfinding = ({ pathProperties, setPathProperties }: PathfindingProps) =>
                 geometry,
                 suggestedOperationalPoints: updatedSuggestedOPs,
                 length: pathfindingResult.length,
+                trackSectionRanges: pathfindingResult.track_section_ranges,
               });
 
               pathfindingDispatch({ type: 'PATHFINDING_FINISHED' });

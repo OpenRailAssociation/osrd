@@ -10,7 +10,7 @@ type IntervalsEditorSelectFormProps = {
   data: IntervalItem[];
   interval: IntervalItem;
   selectedIntervalIndex: number;
-  setData: (newData: IntervalItem[]) => void;
+  setData: (newData: IntervalItem[], selectedIntervalIndex?: number) => void;
   selectOptions: string[];
 };
 
@@ -31,7 +31,10 @@ const IntervalsEditorSelectForm = ({
           const result = cloneDeep(data);
           if (result[selectedIntervalIndex]) {
             result[selectedIntervalIndex].value = newValue;
-            setData(result);
+            console.log('newValue -- ', newValue);
+            console.log('result -- ', result);
+            console.log('selectedIntervalIndex -- ', selectedIntervalIndex);
+            setData(result, selectedIntervalIndex);
           }
         }
       }}

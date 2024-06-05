@@ -1,4 +1,4 @@
-import type { PathProperties, PathResponse } from 'common/api/osrdEditoastApi';
+import type { PathProperties, PathResponse, PathfindingResult } from 'common/api/osrdEditoastApi';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
 
 export interface Destination {
@@ -75,7 +75,7 @@ export type TrainScheduleImportConfig = {
   startTime: string;
   endTime: string;
 };
-
+type SuccesfulPathfindingResult = Extract<PathfindingResult, { status: 'success' }>;
 // Extraction of some required and non nullable properties from osrdEditoastApi's PathProperties type
 export type ManageTrainSchedulePathProperties = {
   electrifications: NonNullable<PathProperties['electrifications']>;
@@ -83,4 +83,5 @@ export type ManageTrainSchedulePathProperties = {
   /** Operational points along the path and vias added by clicking on map */
   suggestedOperationalPoints: SuggestedOP[];
   length: number;
+  trackSectionRanges: NonNullable<SuccesfulPathfindingResult['track_section_ranges']>;
 };

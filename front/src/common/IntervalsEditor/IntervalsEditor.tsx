@@ -40,7 +40,7 @@ type IntervalsEditorProps = {
   /** Remarkable points on path */
   operationalPoints?: OperationalPoint[];
   /** Function to update the data in the parent component */
-  setData: (newData: IntervalItem[]) => void;
+  setData: (newData: IntervalItem[], selectedIntervalIndex?: number) => void;
   /** Indicates whether the value should be displayed in the range or not */
   showValues?: boolean;
   /** Title of the intervals editor */
@@ -105,7 +105,10 @@ const IntervalsEditor = (props: IntervalsEditorProps) => {
 
   // Data to display
   const [resizingData, setResizingData] = useState<IntervalItem[]>(data);
-  useEffect(() => setResizingData(data), [data]);
+
+  useEffect(() => {
+    setResizingData(data);
+  }, [data]);
 
   // Which segment is selected
   const [selected, setSelected] = useState<number | null>(null);
@@ -230,8 +233,14 @@ const IntervalsEditor = (props: IntervalsEditorProps) => {
               if (selectedTool === INTERVALS_EDITOR_TOOLS.CUT_TOOL) {
                 if (clickTimeout) clearTimeout(clickTimeout);
                 setClickPrevent(true);
+                console.log('Data before split:', data);
+                console.log('Point to split at:', point);
+
                 const newData = splitAt(data, point);
+
+                console.log('Data after split:', newData);
                 setData(newData);
+                console.log(setData, 'setData after split');
                 setSelected(null);
                 setSelectedTool(null);
               }

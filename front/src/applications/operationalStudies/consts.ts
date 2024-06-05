@@ -127,6 +127,12 @@ export type StudyType = typeof STUDY_TYPES;
 
 export type PowerRestrictionRange = LinearMetadataItem<{ value: string }>;
 
+export type PowerRestrictionV2 = {
+  from: string;
+  to: string;
+  code: string;
+};
+
 // electrical profiles
 interface Profile {
   mode: string;

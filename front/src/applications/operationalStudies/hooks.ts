@@ -110,6 +110,7 @@ export const useSetupItineraryForTrainUpdate = (
                 geometry,
                 suggestedOperationalPoints: updatedSuggestedOPs,
                 length: pathfindingResult.length,
+                trackSectionRanges: pathfindingResult.track_section_ranges,
               });
 
               adjustConfWithTrainToModifyV2(

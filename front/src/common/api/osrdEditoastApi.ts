@@ -2383,6 +2383,11 @@ export type RangedValue = {
   end: number;
   value: string;
 };
+export type RangedValueV2 = {
+  begin: number;
+  end: number;
+  value: string;
+};
 export type ProfilesOnPathResponse = {
   electrical_profile_ranges: RangedValue[];
   warnings: InternalError[];

@@ -3,7 +3,7 @@ import type { Draft } from 'immer';
 import { compact, omit } from 'lodash';
 import nextId from 'react-id-generator';
 
-import type { PointOnMap } from 'applications/operationalStudies/consts';
+import type { PointOnMap, PowerRestrictionV2 } from 'applications/operationalStudies/consts';
 import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
 import { isVia } from 'modules/pathfinding/utils';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
@@ -20,6 +20,7 @@ import type { OsrdConfState, PathStep } from 'reducers/osrdconf/types';
 import { addElementAtIndex, removeElementAtIndex, replaceElementAtIndex } from 'utils/array';
 import { formatIsoDate } from 'utils/date';
 import type { ArrayElement } from 'utils/types';
+import NO_POWER_RESTRICTION from 'modules/powerRestriction/consts';
 
 export const defaultCommonConf: OsrdConfState = {
   name: '',
@@ -37,6 +38,7 @@ export const defaultCommonConf: OsrdConfState = {
   rollingStockID: undefined,
   rollingStockComfort: 'STANDARD' as const,
   powerRestrictionRanges: [],
+  powerRestrictionV2: [],
   speedLimitByTag: undefined,
   origin: undefined,
   initialSpeed: 0,
@@ -108,6 +110,12 @@ interface CommonConfReducers<S extends OsrdConfState> extends InfraStateReducers
   ['updateGridMarginBefore']: CaseReducer<S, PayloadAction<S['gridMarginBefore']>>;
   ['updateGridMarginAfter']: CaseReducer<S, PayloadAction<S['gridMarginAfter']>>;
   ['updatePowerRestrictionRanges']: CaseReducer<S, PayloadAction<S['powerRestrictionRanges']>>;
+  ['updatePowerRestrictionRangesV2']: CaseReducer<
+    S,
+    PayloadAction<{ from: PathStep; to: PathStep; code: string }>
+  >;
+  ['resetPowerRestrictionRangesV2']: CaseReducer<S>;
+  // ajouter une nouvelle action updatePowerRestrionRangesV2
   ['updateTrainScheduleIDsToModify']: CaseReducer<S, PayloadAction<S['trainScheduleIDsToModify']>>;
   ['updateFeatureInfoClick']: CaseReducer<S, PayloadAction<S['featureInfoClick']>>;
   ['updatePathSteps']: CaseReducer<S, PayloadAction<S['pathSteps']>>;
@@ -313,6 +321,59 @@ export function buildCommonConfReducers<S extends OsrdConfState>(): CommonConfRe
     ) {
       state.powerRestrictionRanges = action.payload;
     },
+    // ajouter la nouvelle action updatePowerRestrictionRangesv2
+    // - prend en argument: { from: PathStep, to: PathStep, code: ''}
+    // - vérifier que powerRestrictionSelected "code" soit pas no code. Si c'est no code, il faut récupérer from et to, et regarder si ils sont pas utilisés pour une autre restriction de puissance, alors, on les retire.
+    // - update d'abord les pathSteps: verifie que from et to sont dans state.pathSteps (s'ils y sont pas, tu dois les inserer grace a positionOnPath)
+    // - update ensuite les powerRestrictions
+
+    updatePowerRestrictionRangesV2(
+      state: Draft<S>,
+      action: PayloadAction<{ from: PathStep; to: PathStep; code: string }>
+    ) {
+      console.log('on est dans le dispatch');
+      const { from, to, code } = action.payload;
+      let newPathSteps = [...state.pathSteps];
+
+      const pathIds = compact(state.pathSteps).map((step) => step.id);
+      // verifier que to.id est dans pathIds et pareil pour le from.
+      if (!pathIds.includes(from.id)) {
+        const fromIndex = newPathSteps.findIndex(
+          (step) => step?.positionOnPath && step.positionOnPath > from.positionOnPath!
+        );
+
+        newPathSteps = addElementAtIndex(newPathSteps, fromIndex, from);
+      }
+      if (!pathIds.includes(to.id)) {
+        const toIndex = newPathSteps.findIndex(
+          (step) => step?.positionOnPath && step.positionOnPath > to.positionOnPath!
+        );
+
+        newPathSteps = addElementAtIndex(newPathSteps, toIndex, to);
+      }
+
+      console.log(newPathSteps, 'newPathSteps');
+
+      // ajouter les path steps a mon state.pathSteps en les classant par positionOnPath
+      state.pathSteps = newPathSteps;
+
+      //  Update power restriction ranges
+      let newPowerRestrictionRangesV2 = [...state.powerRestrictionV2];
+      if (code !== NO_POWER_RESTRICTION) {
+        newPowerRestrictionRangesV2.push({ from: from.id, to: to.id, code });
+      } else {
+        newPowerRestrictionRangesV2 = state.powerRestrictionV2.filter(
+          (restriction) => restriction.from !== from.id || restriction.to !== to.id
+        );
+      }
+      console.log(newPowerRestrictionRangesV2, 'newPowerRestrictionRangesV2 tututu');
+      state.powerRestrictionV2 = newPowerRestrictionRangesV2;
+    },
+    // TODO Remove this
+    resetPowerRestrictionRangesV2(state: Draft<S>) {
+      state.powerRestrictionV2 = [];
+    },
+
     updateTrainScheduleIDsToModify(
       state: Draft<S>,
       action: PayloadAction<S['trainScheduleIDsToModify']>

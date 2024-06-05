@@ -443,7 +443,7 @@ export function splitAt<T>(
   if (linearMetadata.length < 1) throw new Error('linear metadata is empty');
   if (distance >= (last(linearMetadata)?.end || 0) || distance <= 0)
     throw new Error('split point is outside the geometry');
-
+  console.log(linearMetadata, 'linearMetadata', distance, 'distance');
   return linearMetadata
     .map((item) => {
       if (item.begin <= distance && distance <= item.end) {

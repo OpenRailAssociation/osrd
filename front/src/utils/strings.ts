@@ -1,3 +1,4 @@
+import type { PowerRestrictionV2 } from 'applications/operationalStudies/consts';
 import type { Unit } from './types';
 
 export const NARROW_NO_BREAK_SPACE = '\u202f';
@@ -20,6 +21,39 @@ export function formatKmValue(value: number, unit: Unit = 'meters', digits = 3) 
   }
   return `${(value / divider).toFixed(digits)}${NO_BREAK_SPACE}km`;
 }
+
+export const createPowerRestrictions = (
+  boundaries: number[],
+  values: { type: string; voltage?: string }[]
+): PowerRestrictionV2[] => {
+  const powerRestrictions: PowerRestrictionV2[] = [];
+  let currentVoltage = values[0]?.voltage || 'NO_POWER_RESTRICTION';
+
+  // Add the first restriction from 0 to the first boundary
+  powerRestrictions.push({
+    from: '0',
+    to: boundaries[0].toString(),
+    value: currentVoltage,
+  });
+
+  for (let i = 0; i < boundaries.length - 1; i++) {
+    if (values[i].type === 'electrification') {
+      const nextVoltage = values[i].voltage || 'NO_POWER_RESTRICTION';
+
+      // Check if the voltage changes
+      if (nextVoltage !== currentVoltage) {
+        currentVoltage = nextVoltage;
+        powerRestrictions.push({
+          from: boundaries[i].toString(),
+          to: boundaries[i + 1].toString(),
+          value: currentVoltage,
+        });
+      }
+    }
+  }
+  console.log(powerRestrictions, 'powerRestrictions');
+  return powerRestrictions;
+};
 
 export function language2flag(lng: string) {
   switch (lng) {
