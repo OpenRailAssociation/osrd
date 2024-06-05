@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 
+import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { MdTrain } from 'react-icons/md';
 import { useSelector } from 'react-redux';
@@ -22,7 +23,8 @@ const ScenarioExplorer = ({
   globalProjectId,
   globalStudyId,
   globalScenarioId,
-}: ScenarioExplorerProps) => {
+  displayImgProject = true,
+}: ScenarioExplorerProps & { displayImgProject?: boolean }) => {
   const { t } = useTranslation('common/scenarioExplorer');
   const dispatch = useAppDispatch();
   const { openModal } = useModal();
@@ -136,12 +138,17 @@ const ScenarioExplorer = ({
     >
       {globalProjectId && projectDetails && studyDetails && scenario ? (
         <div className="scenario-explorator-card-head">
-          {imageUrl && (
+          {displayImgProject && imageUrl && (
             <div className="scenario-explorator-card-head-img">
               <img src={imageUrl} alt="Project logo" />
             </div>
           )}
-          <div className={`scenario-explorator-card-head-content ${imageUrl ? '' : 'no-image'}`}>
+          <div
+            className={cx('scenario-explorator-card-head-content', {
+              'no-image': !imageUrl,
+              'ml-0': !displayImgProject,
+            })}
+          >
             <div className="scenario-explorator-card-head-content-item">
               <img src={projectIcon} alt="project icon" />
               <span className="scenario-explorator-card-head-legend">{t('projectLegend')}</span>
