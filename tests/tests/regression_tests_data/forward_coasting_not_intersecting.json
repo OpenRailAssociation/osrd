@@ -1,0 +1,59 @@
+{
+    "timetable_version": 2,
+    "error_type": "RESULT",
+    "code": 200,
+    "error": "{\"status\":\"simulation_failed\",\"core_error\":{\"status\":500,\"type\":\"core:impossible_simulation\",\"context\":{\"allowance_range_index\":1},\"message\":\"The requested train stopped before reaching its destination (not enough traction)\"}}",
+    "infra_name": "small_infra",
+    "schedule_payload": [
+        {
+            "comfort": "STANDARD",
+            "path": [
+                {
+                    "offset": 561106,
+                    "track": "TG0",
+                    "id": "0"
+                },
+                {
+                    "offset": 78698,
+                    "track": "TG0",
+                    "id": "1"
+                },
+                {
+                    "offset": 642653,
+                    "track": "TC0",
+                    "id": "2"
+                },
+                {
+                    "offset": 2725,
+                    "track": "TA3",
+                    "id": "3"
+                },
+                {
+                    "offset": 554934,
+                    "track": "TA1",
+                    "id": "4"
+                }
+            ],
+            "initial_speed": 0,
+            "labels": [],
+            "constraint_distribution": "MARECO",
+            "margins": {
+                "boundaries": [
+                    "2"
+                ],
+                "values": [
+                    "None",
+                    "4min/100km"
+                ]
+            },
+            "options": {
+                "use_electrical_profiles": false
+            },
+            "rolling_stock_name": "fast_rolling_stock",
+            "schedule": [],
+            "speed_limit_tag": null,
+            "start_time": "2024-01-01T03:54:03+00:00",
+            "train_name": "fuzzer_train"
+        }
+    ]
+}
