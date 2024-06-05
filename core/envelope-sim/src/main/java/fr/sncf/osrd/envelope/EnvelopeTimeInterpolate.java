@@ -7,8 +7,8 @@ public interface EnvelopeTimeInterpolate {
     /** Computes the time required to get to a given point of the envelope */
     double interpolateTotalTime(double position);
 
-    /** Computes the time required to get to a given point of the envelope in ms */
-    long interpolateTotalTimeMS(double position);
+    /** Computes the time required to get to a given point of the envelope in microseconds */
+    long interpolateTotalTimeUS(double position);
 
     /**
      * Computes the time required to get to a given point of the envelope, clamping the position to

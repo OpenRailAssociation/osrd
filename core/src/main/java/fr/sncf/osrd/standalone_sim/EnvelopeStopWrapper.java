@@ -28,8 +28,8 @@ public class EnvelopeStopWrapper implements EnvelopeInterpolate {
         return stopTime + envelope.interpolateTotalTime(position);
     }
 
-    public long interpolateTotalTimeMS(double position) {
-        return (long) (this.interpolateTotalTime(position) * 1000);
+    public long interpolateTotalTimeUS(double position) {
+        return (long) (this.interpolateTotalTime(position) * 1_000_000);
     }
 
     @Override

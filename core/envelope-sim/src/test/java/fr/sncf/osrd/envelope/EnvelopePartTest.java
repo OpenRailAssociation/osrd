@@ -89,8 +89,8 @@ class EnvelopePartTest {
             switch (i) {
                 case 0:
                     expectedEnvelopePartEnergy = PhysicsRollingStock.getMaxEffort(1, testEffortCurveMap.get(0.))
-                            * envelopePart.getTotalTimeMS()
-                            / 1000;
+                            * envelopePart.getTotalTimeUS()
+                            / 1_000_000;
                     break;
                 case 1:
                     Assertions.assertEquals(envelopePart.getMinSpeed(), envelopePart.getMaxSpeed());

@@ -517,7 +517,8 @@ fun zoneOccupationChangeEvents(
             // Compute occupation change event
             if (currentOffset.distance > envelope.endPos.meters) break
             val entryOffset = Offset.max(Offset.zero(), currentOffset)
-            val entryTime = TimeDelta(envelope.interpolateTotalTimeMS(entryOffset.distance.meters))
+            val entryTime =
+                envelope.interpolateTotalTimeUS(entryOffset.distance.meters).microseconds
             val zone = rawInfra.getNextZone(rawInfra.getZonePathEntry(zonePath))!!
             zoneOccupationChangeEvents.add(
                 ZoneOccupationChangeEvent(entryTime, entryOffset, zoneCount, true, blockIdx, zone)
@@ -530,7 +531,7 @@ fun zoneOccupationChangeEvents(
             val exitOffset = Offset.max(Offset.zero(), currentOffset + trainLength.meters)
             if (exitOffset.distance <= envelope.endPos.meters) {
                 val exitTime =
-                    TimeDelta(envelope.interpolateTotalTimeMS(exitOffset.distance.meters))
+                    envelope.interpolateTotalTimeUS(exitOffset.distance.meters).microseconds
                 zoneOccupationChangeEvents.add(
                     ZoneOccupationChangeEvent(
                         exitTime,

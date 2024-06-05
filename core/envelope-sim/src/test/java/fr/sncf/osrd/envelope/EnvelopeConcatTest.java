@@ -21,7 +21,7 @@ public class EnvelopeConcatTest {
                 in -> in.interpolateTotalTime(0),
                 in -> in.interpolateTotalTime(1),
                 in -> in.interpolateTotalTime(2),
-                in -> (double) in.interpolateTotalTimeMS(1.5),
+                in -> in.interpolateTotalTimeUS(1.5) / 1_000.,
                 in -> in.interpolateTotalTimeClamp(-1),
                 in -> in.interpolateTotalTimeClamp(0.5),
                 EnvelopeTimeInterpolate::getBeginPos,

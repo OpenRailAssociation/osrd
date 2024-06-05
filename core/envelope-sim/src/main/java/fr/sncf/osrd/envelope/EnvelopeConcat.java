@@ -54,8 +54,8 @@ public class EnvelopeConcat implements EnvelopeInterpolate {
     }
 
     @Override
-    public long interpolateTotalTimeMS(double position) {
-        return (long) (interpolateTotalTime(position) * 1000);
+    public long interpolateTotalTimeUS(double position) {
+        return (long) (interpolateTotalTime(position) * 1_000_000);
     }
 
     @Override
