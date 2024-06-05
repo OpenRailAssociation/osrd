@@ -92,13 +92,3 @@ export function ISO8601Duration2sec(duration: string) {
 export function getStopTime(sec: number) {
   return new Date(sec * 1000).toISOString().substr(11, 5);
 }
-
-export function getStopDurationTime(sec: number) {
-  const timeInMilliseconds = sec * 1000;
-  const time = new Date(timeInMilliseconds);
-
-  if (timeInMilliseconds < 60000) {
-    return `${time.getUTCSeconds()} sec`;
-  }
-  return `${time.getUTCMinutes()} min`;
-}

@@ -8,10 +8,10 @@ import iconAlert from 'assets/simulationReportSheet/icon_alert_fill.png';
 import logoSNCF from 'assets/simulationReportSheet/logo_sncf_reseau.png';
 import type { PostStdcmApiResponse, RollingStockWithLiveries } from 'common/api/osrdEditoastApi';
 import { formatDay } from 'utils/date';
-import { getStopDurationTime, getStopTime } from 'utils/timeManipulation';
+import { getStopTime } from 'utils/timeManipulation';
 
 import styles from './SimulationReportStyleSheet';
-import { extractSpeedLimit, formatCreationDate } from '../utils';
+import { extractSpeedLimit, getStopDurationTime, formatCreationDate } from '../utils';
 
 type SimulationReportSheetProps = {
   stdcmData: PostStdcmApiResponse;
