@@ -149,7 +149,7 @@ const SimulationResultsV2 = ({
           >
             {showWarpedMap ? <ChevronLeft /> : <ChevronRight />}
           </button>
-          <SimulationWarpedMap collapsed={!showWarpedMap} />
+          <SimulationWarpedMap collapsed={!showWarpedMap} pathProperties={pathProperties} />
 
           <div className="osrd-simulation-container d-flex flex-grow-1 flex-shrink-1">
             <div className="chart-container" style={{ height: `${heightOfSpaceTimeChart}px` }}>
