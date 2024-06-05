@@ -438,15 +438,14 @@ impl From<InfraPatchForm> for Changeset<Infra> {
 )]
 #[put("")]
 async fn put(
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Data<DbConnectionPoolV2>,
     infra: Path<i64>,
     Json(patch): Json<InfraPatchForm>,
 ) -> Result<Json<Infra>> {
     let infra_cs: Changeset<Infra> = patch.into();
-    let conn = &mut db_pool.get().await?;
     let infra = infra_cs
-        .update_or_fail(conn, *infra, || InfraApiError::NotFound {
-            infra_id: *infra,
+        .update_or_fail(db_pool.get().await?.deref_mut(), *infra, || {
+            InfraApiError::NotFound { infra_id: *infra }
         })
         .await?;
     Ok(Json(infra))
@@ -885,14 +884,16 @@ pub mod tests {
     }
 
     #[rstest]
-    async fn infra_rename(#[future] empty_infra: TestFixture<Infra>) {
-        let empty_infra = empty_infra.await;
-        let app = create_test_service().await;
+    async fn infra_rename() {
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+        let empty_infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
+
         let req = TestRequest::put()
-            .uri(format!("/infra/{}", empty_infra.id()).as_str())
+            .uri(format!("/infra/{}", empty_infra.id).as_str())
             .set_json(json!({"name": "rename_test"}))
             .to_request();
-        let response = call_service(&app, req).await;
+        let response = call_service(&app.service, req).await;
         assert_eq!(response.status(), StatusCode::OK);
         let infra: Infra = read_body_json(response).await;
         assert_eq!(infra.name, "rename_test");
