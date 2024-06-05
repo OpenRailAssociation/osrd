@@ -921,10 +921,10 @@ pub mod tests {
     async fn load_track_section() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
-        let track = create_infra_object::<TrackSection>(
+        let track = create_infra_object(
             db_pool.get_ok().deref_mut(),
             infra.id,
-            Default::default(),
+            TrackSection::default(),
         )
         .await;
         let infra_cache = InfraCache::load(db_pool.get_ok().deref_mut(), &infra)
@@ -939,12 +939,8 @@ pub mod tests {
     async fn load_signal() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
-        let signal = create_infra_object::<Signal>(
-            db_pool.get_ok().deref_mut(),
-            infra.id,
-            Default::default(),
-        )
-        .await;
+        let signal =
+            create_infra_object(db_pool.get_ok().deref_mut(), infra.id, Signal::default()).await;
         let infra_cache = InfraCache::load(db_pool.get_ok().deref_mut(), &infra)
             .await
             .unwrap();
@@ -958,7 +954,7 @@ pub mod tests {
     async fn load_speed_section() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
-        let speed = create_infra_object::<SpeedSection>(
+        let speed = create_infra_object(
             db_pool.get_ok().deref_mut(),
             infra.id,
             SpeedSection {
@@ -980,12 +976,8 @@ pub mod tests {
     async fn load_route() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
-        let route = create_infra_object::<Route>(
-            db_pool.get_ok().deref_mut(),
-            infra.id,
-            Default::default(),
-        )
-        .await;
+        let route =
+            create_infra_object(db_pool.get_ok().deref_mut(), infra.id, Route::default()).await;
         let infra_cache = InfraCache::load(db_pool.get_ok().deref_mut(), &infra)
             .await
             .unwrap();
@@ -997,7 +989,7 @@ pub mod tests {
     async fn load_operational_point() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
-        let op = create_infra_object::<OperationalPoint>(
+        let op = create_infra_object(
             db_pool.get_ok().deref_mut(),
             infra.id,
             OperationalPoint {
@@ -1020,7 +1012,7 @@ pub mod tests {
     async fn load_switch() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
-        let switch = create_infra_object::<Switch>(
+        let switch = create_infra_object(
             db_pool.get_ok().deref_mut(),
             infra.id,
             Switch {
@@ -1040,10 +1032,10 @@ pub mod tests {
     async fn load_switch_type() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
-        let s_type = create_infra_object::<SwitchType>(
+        let s_type = create_infra_object(
             db_pool.get_ok().deref_mut(),
             infra.id,
-            Default::default(),
+            SwitchType::default(),
         )
         .await;
         let infra_cache = InfraCache::load(db_pool.get_ok().deref_mut(), &infra)
@@ -1057,12 +1049,8 @@ pub mod tests {
     async fn load_detector() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
-        let detector = create_infra_object::<Detector>(
-            db_pool.get_ok().deref_mut(),
-            infra.id,
-            Default::default(),
-        )
-        .await;
+        let detector =
+            create_infra_object(db_pool.get_ok().deref_mut(), infra.id, Detector::default()).await;
         let infra_cache = InfraCache::load(db_pool.get_ok().deref_mut(), &infra)
             .await
             .unwrap();
@@ -1076,10 +1064,10 @@ pub mod tests {
     async fn load_buffer_stop() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
-        let bs = create_infra_object::<BufferStop>(
+        let bs = create_infra_object(
             db_pool.get_ok().deref_mut(),
             infra.id,
-            Default::default(),
+            BufferStop::default(),
         )
         .await;
         let infra_cache = InfraCache::load(db_pool.get_ok().deref_mut(), &infra)
@@ -1095,7 +1083,7 @@ pub mod tests {
     async fn load_electrification() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
-        let electrification = create_infra_object::<Electrification>(
+        let electrification = create_infra_object(
             db_pool.get_ok().deref_mut(),
             infra.id,
             Electrification {

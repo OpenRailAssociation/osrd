@@ -25,6 +25,7 @@ use editoast_derive::EditoastError;
 use serde::Deserialize;
 use serde::Serialize;
 use std::collections::HashMap;
+use std::ops::DerefMut;
 use std::sync::Arc;
 use thiserror::Error;
 use utoipa::IntoParams;
@@ -46,6 +47,7 @@ use crate::map;
 use crate::map::MapLayers;
 use crate::modelsv2::prelude::*;
 use crate::modelsv2::DbConnectionPool;
+use crate::modelsv2::DbConnectionPoolV2;
 use crate::modelsv2::Infra;
 use crate::views::pagination::PaginatedList as _;
 use crate::views::pagination::PaginationQueryParam;
@@ -303,14 +305,15 @@ struct InfraIdParam {
 )]
 #[get("")]
 async fn get(
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Data<DbConnectionPoolV2>,
     infra: Path<InfraIdParam>,
     core: Data<CoreClient>,
 ) -> Result<Json<InfraWithState>> {
     let infra_id = infra.infra_id;
-    let conn = &mut db_pool.get().await?;
-    let infra =
-        Infra::retrieve_or_fail(conn, infra_id, || InfraApiError::NotFound { infra_id }).await?;
+    let infra = Infra::retrieve_or_fail(db_pool.get().await?.deref_mut(), infra_id, || {
+        InfraApiError::NotFound { infra_id }
+    })
+    .await?;
     let state = fetch_infra_state(infra.id, core.as_ref()).await?.status;
     Ok(Json(InfraWithState { infra, state }))
 }
@@ -648,15 +651,16 @@ pub mod tests {
     use actix_http::Request;
     use actix_web::http::StatusCode;
     use actix_web::test as actix_test;
-    use actix_web::test::call_and_read_body_json;
     use actix_web::test::call_service;
     use actix_web::test::read_body_json;
     use actix_web::test::TestRequest;
     use diesel::sql_query;
     use diesel::sql_types::BigInt;
     use diesel_async::RunQueryDsl;
-    use rstest::*;
+    use pretty_assertions::assert_eq;
+    use rstest::rstest;
     use serde_json::json;
+    use std::ops::DerefMut;
     use std::sync::Arc;
     use strum::IntoEnumIterator;
 
@@ -672,9 +676,11 @@ pub mod tests {
     use crate::generated_data;
     use crate::infra_cache::operation::Operation;
     use crate::infra_cache::operation::RailjsonObject;
+    use crate::modelsv2::fixtures::create_empty_infra;
     use crate::modelsv2::get_geometry_layer_table;
     use crate::modelsv2::get_table;
     use crate::modelsv2::infra::DEFAULT_INFRA_VERSION;
+    use crate::views::test_app::TestAppBuilder;
     use crate::views::tests::create_test_service;
     use crate::views::tests::create_test_service_with_core_client;
     use editoast_schemas::infra::Electrification;
@@ -846,29 +852,36 @@ pub mod tests {
     }
 
     #[rstest]
-    async fn infra_get(#[future] empty_infra: TestFixture<Infra>, db_pool: Arc<DbConnectionPool>) {
-        let empty_infra = empty_infra.await;
+    async fn infra_get() {
+        let db_pool = DbConnectionPoolV2::for_tests();
         let mut core = MockingClient::new();
         core.stub("/cache_status")
             .method(reqwest::Method::POST)
             .response(StatusCode::OK)
             .body("{}")
             .finish();
-        let app = create_test_service_with_core_client(core).await;
+
+        let app = TestAppBuilder::new()
+            .db_pool(db_pool.clone())
+            .core_client(core.into())
+            .build();
+        let empty_infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
 
         let req = TestRequest::get()
-            .uri(format!("/infra/{}", empty_infra.id()).as_str())
+            .uri(format!("/infra/{}", empty_infra.id).as_str())
             .to_request();
-        let response = call_service(&app, req).await;
+        let response = call_service(&app.service, req).await;
         assert_eq!(response.status(), StatusCode::OK);
 
-        let conn = &mut db_pool.get().await.unwrap();
-        empty_infra.delete(conn).await.unwrap();
+        empty_infra
+            .delete(db_pool.get_ok().deref_mut())
+            .await
+            .unwrap();
 
         let req = TestRequest::get()
-            .uri(format!("/infra/{}", empty_infra.id()).as_str())
+            .uri(format!("/infra/{}", empty_infra.id).as_str())
             .to_request();
-        let response = call_service(&app, req).await;
+        let response = call_service(&app.service, req).await;
         assert_eq!(response.status(), StatusCode::NOT_FOUND);
     }
 
@@ -1033,7 +1046,7 @@ pub mod tests {
     }
 
     #[rstest]
-    async fn infra_lock(#[future] empty_infra: TestFixture<Infra>) {
+    async fn infra_lock(#[future] empty_infra: TestFixture<Infra>, db_pool: Arc<DbConnectionPool>) {
         let empty_infra = empty_infra.await;
         let mut core = MockingClient::new();
         core.stub("/cache_status")
@@ -1054,10 +1067,11 @@ pub mod tests {
         assert_eq!(response.status(), StatusCode::NO_CONTENT);
 
         // Check lock
-        let req = TestRequest::get()
-            .uri(format!("/infra/{}", infra_id).as_str())
-            .to_request();
-        let infra: Infra = call_and_read_body_json(&app, req).await;
+        let conn = &mut db_pool.get().await.unwrap();
+        let infra = Infra::retrieve(conn, infra_id)
+            .await
+            .unwrap()
+            .expect("infra was not cloned");
         assert!(infra.locked);
 
         // Unlock infra
@@ -1068,10 +1082,10 @@ pub mod tests {
         assert_eq!(response.status(), StatusCode::NO_CONTENT);
 
         // Check lock
-        let req = TestRequest::get()
-            .uri(format!("/infra/{}", infra_id).as_str())
-            .to_request();
-        let infra: Infra = call_and_read_body_json(&app, req).await;
+        let infra = Infra::retrieve(conn, infra_id)
+            .await
+            .unwrap()
+            .expect("infra was not cloned");
         assert!(!infra.locked);
     }
 
