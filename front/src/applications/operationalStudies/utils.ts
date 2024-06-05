@@ -1,6 +1,7 @@
 import { omit } from 'lodash';
 
 import type { PathProperties, ProjectPathTrainResult } from 'common/api/osrdEditoastApi';
+import getPathVoltages from 'modules/pathfinding/helpers/getPathVoltages';
 import { convertUTCDateToLocalDate, isoDateToMs } from 'utils/date';
 import { mmToM } from 'utils/physics';
 import { ms2sec } from 'utils/timeManipulation';
@@ -183,12 +184,18 @@ export const preparePathPropertiesData = (
     electricalProfilesRanges
   );
 
+  const voltageRanges = getPathVoltages(
+    electrifications as NonNullable<PathProperties['electrifications']>,
+    pathLength
+  );
+
   return {
     electrifications: electrificationRanges,
     curves: formattedCurves,
     slopes: formattedSlopes,
     operationalPoints: operational_points as NonNullable<PathProperties['operational_points']>,
     geometry: geometry as NonNullable<PathProperties['geometry']>,
+    voltages: voltageRanges,
   };
 };
 

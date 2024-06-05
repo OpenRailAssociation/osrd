@@ -30,7 +30,7 @@ import {
 import { createEmptySegmentAt, removeSegment } from './utils';
 import ZoomButtons from './ZoomButtons';
 
-type IntervalsEditorProps = {
+export type IntervalsEditorProps = {
   /** Additionnal read-only data that will be displayed along the path, below the intervals editor */
   additionalData?: AdditionalDataItem[];
   /** Default value used when a new range is created */
@@ -40,7 +40,9 @@ type IntervalsEditorProps = {
   /** Remarkable points on path */
   operationalPoints?: OperationalPoint[];
   /** Function to update the data in the parent component */
-  setData: (newData: IntervalItem[]) => void;
+  setData: (newData: IntervalItem[], selectedIntervalIndex?: number) => void;
+  onCut?: (position: number) => void;
+  onDelete?: (from: number, to: number) => void;
   /** Indicates whether the value should be displayed in the range or not */
   showValues?: boolean;
   /** Title of the intervals editor */
@@ -49,6 +51,12 @@ type IntervalsEditorProps = {
   toolsConfig?: IntervalsEditorToolsConfig;
   /** Total length of the path */
   totalLength: number;
+  disableDrag?: boolean;
+  onResizeFromInput?: (
+    intervalIndex: number,
+    context: 'begin' | 'end',
+    newPosition: number
+  ) => void;
 } & (
   | {
       intervalType: INTERVAL_TYPES.NUMBER;
@@ -83,6 +91,8 @@ const IntervalsEditor = (props: IntervalsEditorProps) => {
     intervalType,
     operationalPoints = [],
     setData,
+    onCut,
+    onDelete,
     showValues = true,
     title,
     totalLength,
@@ -91,7 +101,10 @@ const IntervalsEditor = (props: IntervalsEditorProps) => {
       deleteTool: true,
       translateTool: false,
       addTool: true,
+      mergeTool: true,
     },
+    disableDrag = false,
+    onResizeFromInput,
   } = props;
 
   // Which segment areas are visible
@@ -105,10 +118,13 @@ const IntervalsEditor = (props: IntervalsEditorProps) => {
 
   // Data to display
   const [resizingData, setResizingData] = useState<IntervalItem[]>(data);
-  useEffect(() => setResizingData(data), [data]);
 
   // Which segment is selected
   const [selected, setSelected] = useState<number | null>(null);
+
+  useEffect(() => {
+    setResizingData(data);
+  }, [data, selected]);
 
   // For mouse click / doubleClick
   const [clickTimeout, setClickTimeout] = useState<number | null>(null);
@@ -202,6 +218,7 @@ const IntervalsEditor = (props: IntervalsEditorProps) => {
             operationalPoints={operationalPoints}
             options={options}
             viewBox={viewBox}
+            disableDrag={disableDrag}
             onMouseEnter={(_e, _item, index, point) => {
               if (mode === null) setHovered({ index, point });
             }}
@@ -230,15 +247,24 @@ const IntervalsEditor = (props: IntervalsEditorProps) => {
               if (selectedTool === INTERVALS_EDITOR_TOOLS.CUT_TOOL) {
                 if (clickTimeout) clearTimeout(clickTimeout);
                 setClickPrevent(true);
-                const newData = splitAt(data, point);
-                setData(newData);
+
+                if (onCut) {
+                  onCut(point);
+                } else {
+                  const newData = splitAt(data, point);
+                  setData(newData);
+                }
                 setSelected(null);
                 setSelectedTool(null);
               }
               if (selectedTool === INTERVALS_EDITOR_TOOLS.DELETE_TOOL) {
-                const newData = removeSegment(data, index, emptyValue, intervalDefaultUnit);
+                if (onDelete) {
+                  onDelete(data[index].begin, data[index].end);
+                } else {
+                  const newData = removeSegment(data, index, emptyValue, intervalDefaultUnit);
+                  setData(newData);
+                }
                 setClickPrevent(false);
-                setData(newData);
                 setSelected(null);
                 toggleSelectedTool(INTERVALS_EDITOR_TOOLS.DELETE_TOOL);
               }
@@ -313,6 +339,7 @@ const IntervalsEditor = (props: IntervalsEditorProps) => {
               interval={data[selected]}
               selectedIntervalIndex={selected}
               setData={setData}
+              onInputChange={onResizeFromInput}
               setSelectedIntervalIndex={setSelected}
               totalLength={totalLength}
               defaultValue={defaultValue}

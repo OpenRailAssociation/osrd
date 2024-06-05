@@ -31,6 +31,7 @@ const checkCurrentConfig = (
     initialSpeed,
     usingElectricalProfiles,
     rollingStockComfortV2,
+    powerRestrictionV2,
     startTime,
   } = osrdconf;
   let error = false;
@@ -153,9 +154,7 @@ const checkCurrentConfig = (
 
     margins: formatMargin(compact(pathSteps)),
     schedule: formatSchedule(compact(pathSteps), startTime),
-
-    // TODO TS2 : adapt this for power restrictions issue
-    // powerRestrictions: formatPowerRestrictions(pathSteps)
+    powerRestrictions: powerRestrictionV2,
     firstStartTime: startTime,
     speedLimitByTag,
   };

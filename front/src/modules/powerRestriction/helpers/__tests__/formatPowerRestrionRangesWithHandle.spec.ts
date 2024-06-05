@@ -1,6 +1,6 @@
 import {
   effortCurves,
-  electrificationRangesForPowerRestrictions,
+  voltageRangesForPowerRestrictions,
   formattedPowerRestrictionRanges,
   powerRestriction,
   powerRestrictionRanges,
@@ -25,7 +25,7 @@ describe('addHandledToPowerRestrictions', () => {
   it('should properly format power restrictions ranges with handled property', () => {
     const result = addHandledToPowerRestrictions(
       powerRestrictionRanges,
-      electrificationRangesForPowerRestrictions,
+      voltageRangesForPowerRestrictions,
       effortCurves
     );
 

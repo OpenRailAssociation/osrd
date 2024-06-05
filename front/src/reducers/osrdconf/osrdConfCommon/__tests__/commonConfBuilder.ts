@@ -225,6 +225,7 @@ export default function commonConfBuilder() {
       suggestedOperationalPoints: [],
       allWaypoints: [],
       length: 1169926000,
+      trackSectionRanges: [],
     }),
   };
 }

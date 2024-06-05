@@ -21,7 +21,7 @@ import {
 } from 'modules/pathfinding/utils';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
-import { setFailure } from 'reducers/main';
+import { setFailure, setWarning } from 'reducers/main';
 import type { PathStep } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
@@ -138,15 +138,8 @@ export const usePathfindingV2 = (
 ) => {
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
   const dispatch = useAppDispatch();
-  const {
-    getInfraID,
-    getOriginV2,
-    getDestinationV2,
-    getViasV2,
-    getPathSteps,
-    // getPowerRestrictionRanges,
-    // getAllowances,
-  } = useOsrdConfSelectors();
+  const { getInfraID, getOriginV2, getDestinationV2, getViasV2, getPathSteps } =
+    useOsrdConfSelectors();
   const infraId = useSelector(getInfraID, isEqual);
   const origin = useSelector(getOriginV2, isEqual);
   const destination = useSelector(getDestinationV2, isEqual);
@@ -154,9 +147,7 @@ export const usePathfindingV2 = (
   const pathSteps = useSelector(getPathSteps);
   const { infra, reloadCount, setIsInfraError } = useInfraStatus();
   const { rollingStock } = useStoreDataForRollingStockSelector();
-  // TODO TS2 : update this parts in margins and powerrestriction issues
-  // const powerRestrictions = useSelector(getPowerRestrictionRanges, isEqual);
-  // const allowances = useSelector(getAllowances, isEqual);
+
   const initializerArgs = {
     origin,
     destination,
@@ -173,11 +164,7 @@ export const usePathfindingV2 = (
   const [postPathProperties] =
     osrdEditoastApi.endpoints.postV2InfraByInfraIdPathProperties.useMutation();
 
-  const {
-    updatePathSteps,
-    // updatePowerRestrictionRanges,
-    // updateAllowances,
-  } = useOsrdConfActions();
+  const { updatePathSteps } = useOsrdConfActions();
 
   const generatePathfindingParams = (): PostV2InfraByInfraIdPathfindingBlocksApiArg | null => {
     setPathProperties(undefined);
@@ -266,7 +253,15 @@ export const usePathfindingV2 = (
                   }),
                 };
               });
-              dispatch(updatePathSteps(updatedPathSteps));
+              dispatch(
+                updatePathSteps({ pathSteps: updatedPathSteps, resetPowerRestrictions: true })
+              );
+              dispatch(
+                setWarning({
+                  title: t('warningMessages.pathfindingChange'),
+                  text: t('warningMessages.powerRestrictionsReset'),
+                })
+              );
 
               const allWaypoints = upsertViasInOPs(
                 suggestedOperationalPoints,
@@ -279,21 +274,10 @@ export const usePathfindingV2 = (
                 suggestedOperationalPoints,
                 allWaypoints,
                 length: pathfindingResult.length,
+                trackSectionRanges: pathfindingResult.track_section_ranges,
               });
 
               pathfindingDispatch({ type: 'PATHFINDING_FINISHED' });
-
-              // TODO TS2 : adapt this in margins and power restrictions issues
-              // * if (!isEmptyArray(powerRestrictions) || !isEmptyArray(allowances)) {
-              // *  dispatch(updatePowerRestrictionRanges([]));
-              // *  dispatch(updateAllowances([]));
-              // *  dispatch(
-              // *    setWarning({
-              // *      title: t('warningMessages.pathfindingChange'),
-              // *      text: t('warningMessages.marginsAndPowerRestrictionsReset'),
-              // *    })
-              // *  );
-              // * }
             }
           } else {
             pathfindingDispatch({

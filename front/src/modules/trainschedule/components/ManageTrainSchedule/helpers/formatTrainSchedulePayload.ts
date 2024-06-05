@@ -18,6 +18,7 @@ export default function formatTrainSchedulePayload(
     usingElectricalProfiles,
     rollingStockComfort,
     margins,
+    powerRestrictions,
   } = validConfig;
 
   return {
@@ -30,10 +31,8 @@ export default function formatTrainSchedulePayload(
       use_electrical_profiles: usingElectricalProfiles,
     },
     path,
-    // TODO TS2 : handle power restrictions
-    // power_restrictions: validConfig.powerRestrictions,
+    power_restrictions: powerRestrictions,
     rolling_stock_name: rollingStockName,
-    // TODO TS2 : handle handle margins
     schedule: validConfig.schedule,
     speed_limit_tag: speedLimitByTag,
     start_time: startTime,

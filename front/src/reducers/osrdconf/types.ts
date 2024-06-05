@@ -1,6 +1,7 @@
 import type { Feature, Position } from 'geojson';
 
 import type { PowerRestrictionRange, PointOnMap } from 'applications/operationalStudies/consts';
+import type { PowerRestrictionV2 } from 'applications/operationalStudies/types';
 import type {
   RollingStockComfortType,
   PathResponse,
@@ -31,6 +32,7 @@ export interface OsrdConfState extends InfraState {
   speedLimitByTag?: string;
   // TODO: update the call to the api, to rename the fields begin & end -> begin_position & end_position
   powerRestrictionRanges: PowerRestrictionRange[];
+  powerRestrictionV2: PowerRestrictionV2[];
   origin?: PointOnMap;
   initialSpeed?: number;
   // TODO TS2 : remove this property from store when drop v1

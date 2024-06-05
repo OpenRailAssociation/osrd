@@ -38,6 +38,7 @@ export const defaultCommonConf: OsrdConfState = {
   rollingStockID: undefined,
   rollingStockComfort: 'STANDARD' as const,
   powerRestrictionRanges: [],
+  powerRestrictionV2: [],
   speedLimitByTag: undefined,
   origin: undefined,
   initialSpeed: 0,
@@ -113,7 +114,10 @@ interface CommonConfReducers<S extends OsrdConfState> extends InfraStateReducers
   ['updatePowerRestrictionRanges']: CaseReducer<S, PayloadAction<S['powerRestrictionRanges']>>;
   ['updateTrainScheduleIDsToModify']: CaseReducer<S, PayloadAction<S['trainScheduleIDsToModify']>>;
   ['updateFeatureInfoClick']: CaseReducer<S, PayloadAction<S['featureInfoClick']>>;
-  ['updatePathSteps']: CaseReducer<S, PayloadAction<S['pathSteps']>>;
+  ['updatePathSteps']: CaseReducer<
+    S,
+    PayloadAction<{ pathSteps: S['pathSteps']; resetPowerRestrictions?: boolean }>
+  >;
   ['updateOriginV2']: CaseReducer<S, PayloadAction<ArrayElement<S['pathSteps']>>>;
   ['updateDestinationV2']: CaseReducer<S, PayloadAction<ArrayElement<S['pathSteps']>>>;
   ['deleteItineraryV2']: CaseReducer<S>;
@@ -348,8 +352,14 @@ export function buildCommonConfReducers<S extends OsrdConfState>(): CommonConfRe
       const feature = omit(action.payload.feature, ['_vectorTileFeature']);
       state.featureInfoClick = { ...action.payload, feature };
     },
-    updatePathSteps(state: Draft<S>, action: PayloadAction<S['pathSteps']>) {
-      state.pathSteps = action.payload;
+    updatePathSteps(
+      state: Draft<S>,
+      action: PayloadAction<{ pathSteps: S['pathSteps']; resetPowerRestrictions?: boolean }>
+    ) {
+      state.pathSteps = action.payload.pathSteps;
+      if (action.payload.resetPowerRestrictions) {
+        state.powerRestrictionV2 = [];
+      }
     },
     updateOriginV2(state: Draft<S>, action: PayloadAction<ArrayElement<S['pathSteps']>>) {
       state.pathSteps = replaceElementAtIndex(state.pathSteps, 0, action.payload);

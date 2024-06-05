@@ -30,7 +30,7 @@ const StdcmVias = ({ disabled = false, setCurrentSimulationInputs }: StdcmConfig
 
   const updatePathStepsList = (pathStep: PathStep | null, index: number) => {
     const newPathSteps = replaceElementAtIndex(pathSteps, index, pathStep);
-    dispatch(updatePathSteps(newPathSteps));
+    dispatch(updatePathSteps({ pathSteps: newPathSteps }));
   };
 
   const updatePathStepStopTime = (stopTime: string, index: number) => {
@@ -95,7 +95,7 @@ const StdcmVias = ({ disabled = false, setCurrentSimulationInputs }: StdcmConfig
         Icon={<Location size="lg" variant="base" />}
         onClick={() => {
           const newPathSteps = addElementAtIndex(pathSteps, pathSteps.length - 1, null);
-          dispatch(updatePathSteps(newPathSteps));
+          dispatch(updatePathSteps({ pathSteps: newPathSteps }));
         }}
       />
     </div>
