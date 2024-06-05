@@ -497,14 +497,17 @@ async fn get_switch_types(
 #[get("/speed_limit_tags")]
 async fn get_speed_limit_tags(
     infra: Path<InfraIdParam>,
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Data<DbConnectionPoolV2>,
 ) -> Result<Json<Vec<String>>> {
-    let conn = &mut db_pool.get().await?;
-    let infra = Infra::retrieve_or_fail(conn, infra.infra_id, || InfraApiError::NotFound {
-        infra_id: infra.infra_id,
+    let infra = Infra::retrieve_or_fail(db_pool.get().await?.deref_mut(), infra.infra_id, || {
+        InfraApiError::NotFound {
+            infra_id: infra.infra_id,
+        }
     })
     .await?;
-    let speed_limits_tags = infra.get_speed_limit_tags(conn).await?;
+    let speed_limits_tags = infra
+        .get_speed_limit_tags(db_pool.get().await?.deref_mut())
+        .await?;
     Ok(Json(
         speed_limits_tags.into_iter().map(|el| (el.tag)).collect(),
     ))
@@ -673,6 +676,7 @@ pub mod tests {
     use crate::fixtures::tests::IntoFixture;
     use crate::fixtures::tests::TestFixture;
     use crate::generated_data;
+    use crate::infra_cache::operation::create::apply_create_operation;
     use crate::infra_cache::operation::Operation;
     use crate::infra_cache::operation::RailjsonObject;
     use crate::modelsv2::fixtures::create_empty_infra;
@@ -683,6 +687,7 @@ pub mod tests {
     use crate::views::tests::create_test_service;
     use crate::views::tests::create_test_service_with_core_client;
     use editoast_schemas::infra::Electrification;
+    use editoast_schemas::infra::Speed;
     use editoast_schemas::infra::SpeedSection;
     use editoast_schemas::infra::SwitchType;
     use editoast_schemas::infra::RAILJSON_VERSION;
@@ -934,18 +939,27 @@ pub mod tests {
     }
 
     #[rstest]
-    async fn infra_get_speed_limit_tags(#[future] empty_infra: TestFixture<Infra>) {
-        let empty_infra = empty_infra.await;
-        let app = create_test_service().await;
+    async fn infra_get_speed_limit_tags() {
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+        let empty_infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
 
-        let req = create_object_request(empty_infra.id(), SpeedSection::default().into());
-        assert_eq!(call_service(&app, req).await.status(), StatusCode::OK);
+        let speed_section = SpeedSection {
+            speed_limit_by_tag: HashMap::from([("test_tag".into(), Speed(10.))]),
+            ..Default::default()
+        }
+        .into();
+        apply_create_operation(&speed_section, empty_infra.id, db_pool.get_ok().deref_mut())
+            .await
+            .expect("Failed to create speed section object");
 
         let req = TestRequest::get()
-            .uri(format!("/infra/{}/speed_limit_tags/", empty_infra.id()).as_str())
+            .uri(format!("/infra/{}/speed_limit_tags/", empty_infra.id).as_str())
             .to_request();
-        let response = call_service(&app, req).await;
+        let response = call_service(&app.service, req).await;
         assert_eq!(response.status(), StatusCode::OK);
+        let speed_limit_tags: Vec<String> = read_body_json(response).await;
+        assert_eq!(speed_limit_tags, vec!["test_tag"]);
     }
 
     #[rstest]
