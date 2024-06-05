@@ -84,7 +84,7 @@ const drawPowerRestriction = (
     }
   };
 
-  if (!isIncompatible && isRestriction) drawZone.call(addTextZone);
+  drawZone.call(addTextZone);
 
   // create pop-up when hovering rect-profile
   drawZone

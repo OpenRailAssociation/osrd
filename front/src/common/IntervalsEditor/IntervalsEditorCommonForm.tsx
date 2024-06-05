@@ -6,13 +6,15 @@ import DebouncedNumberInputSNCF from 'common/BootstrapSNCF/FormSNCF/DebouncedNum
 import { fixLinearMetadataItems, resizeSegment } from 'common/IntervalsDataViz/data';
 import { notEmpty } from 'common/IntervalsDataViz/utils';
 
+import type { IntervalsEditorProps } from './IntervalsEditor';
 import type { IntervalItem } from './types';
 
 type IntervalsEditorFormProps = {
   data: IntervalItem[];
   interval: IntervalItem;
   selectedIntervalIndex: number;
-  setData: (newData: IntervalItem[]) => void;
+  setData: (newData: IntervalItem[], selectedIntervalIndex?: number) => void;
+  onInputChange?: IntervalsEditorProps['onResizeFromInput'];
   setSelectedIntervalIndex: (selectedIntervalIndex: number) => void;
   totalLength: number;
   defaultValue: string | number;
@@ -26,10 +28,11 @@ const IntervalsEditorCommonForm = ({
   setSelectedIntervalIndex,
   totalLength,
   defaultValue,
+  onInputChange,
 }: IntervalsEditorFormProps) => {
   const { t } = useTranslation('common/common');
 
-  const [begin, setBegin] = useState<number>(Math.round(interval.begin));
+  const [begin, setBegin] = useState(Math.round(interval.begin));
   const [end, setEnd] = useState(Math.round(interval.end));
 
   useEffect(() => {
@@ -39,6 +42,7 @@ const IntervalsEditorCommonForm = ({
 
   const resizeSegmentByInput = (newPosition: number, context: 'begin' | 'end') => {
     const gap = newPosition - interval[context];
+
     // use absolute value to manage cases where the position is not rounded
     // ex: begin = 1200.68 and newPosition = 1200 (because input is rounded)
     if (Math.abs(gap) > 1) {
@@ -53,7 +57,11 @@ const IntervalsEditorCommonForm = ({
         fieldName: 'value',
         defaultValue,
       });
-      setData(fixedResults);
+      if (onInputChange) {
+        onInputChange(selectedIntervalIndex, context, newPosition);
+      } else {
+        setData(fixedResults, selectedIntervalIndex);
+      }
 
       // update the selected interval if needed
       // corner case: if we create a new empty first segment

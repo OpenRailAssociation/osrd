@@ -56,6 +56,7 @@ export const getPathfindingQuery = ({
       if ('track' in step) {
         return {
           track: step.track,
+          // TODO: step offset should be in mm in the store /!\
           // pathfinding blocks endpoint requires offsets in mm
           offset: step.offset * 1000,
         };

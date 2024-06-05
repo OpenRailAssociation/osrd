@@ -625,7 +625,7 @@ const testCommonConfReducers = (slice: OperationalStudiesConfSlice | StdcmConfSl
 
   it('should handle updatePathSteps', () => {
     const pathSteps = testDataBuilder.buildPathSteps();
-    defaultStore.dispatch(slice.actions.updatePathSteps(pathSteps));
+    defaultStore.dispatch(slice.actions.updatePathSteps({ pathSteps }));
     const state = defaultStore.getState()[slice.name];
     expect(state.pathSteps).toEqual(pathSteps);
   });

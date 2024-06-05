@@ -174,7 +174,7 @@ $resize-width: 3px;
             }
 
             &.with-data {
-                z-index: 2;
+              z-index: 2;
             }
 
             &.highlighted {
@@ -195,14 +195,14 @@ $resize-width: 3px;
               background-color: $color;
               text-align: center;
               white-space: nowrap;
-              overflow-y:hidden;
+              overflow-y: hidden;
               span {
-                color:#fff;
+                color: #fff;
                 display: block;
                 font-size: 0.6em;
                 // trick to hide the value if the div is too small
                 // https://medium.com/swlh/hiding-an-element-when-there-is-no-enough-space-thanos-snap-technique-8a11e31267c0
-                max-height: max(0px, calc((100% - 12px)*999));
+                max-height: max(0px, calc((100% - 12px) * 999));
                 overflow: hidden;
               }
             }
@@ -214,8 +214,8 @@ $resize-width: 3px;
               z-index: 2;
               background-color: #fff;
 
-              &:hover,
-              &.selected {
+              &:not(.disabled):hover,
+              &:not(.disabled).selected {
                 background-color: #000;
                 cursor: col-resize;
               }
@@ -280,7 +280,7 @@ $resize-width: 3px;
         .scale {
           display: flex;
           justify-content: space-between;
-          span{
+          span {
             font-size: 0.6em;
             overflow: hidden;
             align-self: end;
@@ -335,10 +335,10 @@ $resize-width: 3px;
               height: 50px;
               text-align: center;
 
-              &:before{
-                content: "";
+              &:before {
+                content: '';
                 position: absolute;
-                top: -.2em;
+                top: -0.2em;
                 width: 1px;
                 height: 0.4em;
                 background-color: black;
@@ -355,7 +355,6 @@ $resize-width: 3px;
                 top: 0.75em;
               }
             }
-
           }
         }
       }
@@ -372,7 +371,8 @@ $resize-width: 3px;
       z-index: 999;
 
       .linear-metadata-tooltip {
-        .header, .footer {
+        .header,
+        .footer {
           display: flex;
           flex-direction: row;
           justify-content: space-between;
@@ -396,7 +396,6 @@ $resize-width: 3px;
       padding: 1em;
 
       .header {
-
         .btn-toolbar {
           width: 100%;
           display: flex;

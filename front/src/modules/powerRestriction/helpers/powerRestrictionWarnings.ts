@@ -1,8 +1,13 @@
+import { compact, isEmpty, keyBy } from 'lodash';
+
+import type { PowerRestrictionV2 } from 'applications/operationalStudies/types';
 import type { RangedValue, RollingStock } from 'common/api/osrdEditoastApi';
 import { NO_POWER_RESTRICTION } from 'modules/powerRestriction/consts';
 import type { PowerRestrictionWarnings } from 'modules/powerRestriction/types';
 import { getRollingStockPowerRestrictionsByMode } from 'modules/rollingStock/helpers/powerRestrictions';
+import type { PathStep } from 'reducers/osrdconf/types';
 
+// TODO drop v1: convert begin and end in meters here instead of in PowerRestrictionsSelectorV2
 const getInvalidZoneBoundaries = (
   powerRestrictionRange: RangedValue,
   electrificationRange: RangedValue
@@ -97,3 +102,56 @@ export const countWarnings = (
     missingPowerRestrictionWarnings.length
   );
 };
+
+const formatElectricalRanges = (
+  ranges: PowerRestrictionV2[],
+  pathStepsById: Record<string, PathStep>
+): { begin: number; end: number; value: string }[] => {
+  const formattedRanges = compact(
+    ranges.map((range) => {
+      const begin = pathStepsById[range.from]?.positionOnPath;
+      const end = pathStepsById[range.to]?.positionOnPath;
+
+      if (begin !== undefined && end !== undefined) {
+        return {
+          begin,
+          end,
+          value: range.value,
+        };
+      }
+      return null;
+    })
+  );
+  return formattedRanges;
+};
+
+const getPowerRestrictionsWarningsData = ({
+  pathSteps,
+  pathElectrificationRanges,
+  rollingStockModes,
+  powerRestrictionRanges,
+}: {
+  pathSteps: PathStep[];
+  rollingStockPowerRestrictions: RollingStock['power_restrictions'];
+  pathElectrificationRanges: RangedValue[];
+  powerRestrictionRanges: PowerRestrictionV2[];
+  rollingStockModes: RollingStock['effort_curves']['modes'];
+}) => {
+  const pathStepsById = keyBy(pathSteps, 'id');
+  const warnings =
+    !isEmpty(pathElectrificationRanges) && !isEmpty(powerRestrictionRanges)
+      ? getPowerRestrictionsWarnings(
+          formatElectricalRanges(powerRestrictionRanges, pathStepsById),
+          pathElectrificationRanges,
+          rollingStockModes
+        )
+      : undefined;
+  const warningsNb = warnings ? countWarnings(warnings) : 0;
+
+  return {
+    warnings,
+    warningsNb,
+  };
+};
+
+export default getPowerRestrictionsWarningsData;

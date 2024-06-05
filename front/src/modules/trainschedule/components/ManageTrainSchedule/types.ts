@@ -53,10 +53,9 @@ export type ValidConfig = {
   initialSpeed: number;
   usingElectricalProfiles: boolean;
   path: TrainScheduleBase['path'];
-  // TODO TS2 : adapt this for times and stops / power restrictions issues
   margins: TrainScheduleBase['margins'];
   schedule: TrainScheduleBase['schedule'];
-  // powerRestrictions: TrainScheduleBase['power_restrictions']
+  powerRestrictions?: TrainScheduleBase['power_restrictions'];
   firstStartTime: string;
   speedLimitByTag?: string;
 };

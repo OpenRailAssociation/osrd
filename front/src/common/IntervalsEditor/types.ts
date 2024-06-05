@@ -26,6 +26,7 @@ export type IntervalsEditorTool =
 export type IntervalsEditorToolsConfig = {
   cutTool?: boolean;
   deleteTool?: boolean;
+  mergeTool?: boolean;
   translateTool?: boolean;
   addTool?: boolean;
 };

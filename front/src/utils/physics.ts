@@ -21,6 +21,11 @@ export function mmToM(length: number) {
   return length / 1000;
 }
 
+/** Convert meters to millimeters */
+export function mToMm(length: number) {
+  return length * 1000;
+}
+
 /** Convert km/h to m/s */
 export function kmhToMs(v: number) {
   return Math.abs(v / 3.6);

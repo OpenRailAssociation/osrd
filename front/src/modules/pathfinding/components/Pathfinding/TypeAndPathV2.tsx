@@ -222,6 +222,7 @@ const TypeAndPathV2 = ({ setPathProperties }: PathfindingProps) => {
               suggestedOperationalPoints,
               allWaypoints: suggestedOperationalPoints,
               length: pathfindingResult.length,
+              trackSectionRanges: pathfindingResult.track_section_ranges,
             });
 
             const pathSteps: PathStep[] = opList.map((op, i) => {
@@ -240,7 +241,7 @@ const TypeAndPathV2 = ({ setPathProperties }: PathfindingProps) => {
                 stopFor: i === opList.length - 1 ? '0' : undefined,
               };
             });
-            dispatch(updatePathSteps(pathSteps));
+            dispatch(updatePathSteps({ pathSteps, resetPowerRestrictions: true }));
           }
         }
         // TODO TS2 : test errors display after core / editoast connexion for pathProperties

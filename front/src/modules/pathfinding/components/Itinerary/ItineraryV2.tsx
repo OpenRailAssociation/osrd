@@ -59,12 +59,12 @@ const ItineraryV2 = ({
 
   const inverseOD = () => {
     const revertedPathSteps = [...pathSteps].reverse();
-    dispatch(updatePathSteps(revertedPathSteps));
+    dispatch(updatePathSteps({ pathSteps: revertedPathSteps, resetPowerRestrictions: true }));
   };
 
   const resetPathfinding = () => {
     setPathProperties(undefined);
-    dispatch(updatePathSteps([null, null]));
+    dispatch(updatePathSteps({ pathSteps: [null, null], resetPowerRestrictions: true }));
   };
 
   useEffect(() => {

@@ -1,18 +1,16 @@
 import { compact } from 'lodash';
 
-import type {
-  ElectrificationRangeV2,
-  PathPropertiesFormatted,
-} from 'applications/operationalStudies/types';
+import type { PathPropertiesFormatted } from 'applications/operationalStudies/types';
 import type {
   PathfindingResultSuccess,
+  RangedValue,
   RollingStock,
   SimulationPowerRestrictionRange,
   TrainScheduleBase,
   TrainScheduleResult,
 } from 'common/api/osrdEditoastApi';
 import { getRollingStockPowerRestrictionsByMode } from 'modules/rollingStock/helpers/powerRestrictions';
-import { mmToM } from 'utils/physics';
+import { mToMm, mmToM } from 'utils/physics';
 
 /**
  * Format power restrictions data to ranges data base on path steps position
@@ -38,39 +36,47 @@ export const formatPowerRestrictionRanges = (
     })
   );
 
-/**
- * Format power restrictions data to be used in simulation results charts
- */
+/** Format power restrictions data to be used in simulation results charts */
 export const addHandledToPowerRestrictions = (
   powerRestrictionRanges: Omit<SimulationPowerRestrictionRange, 'handled'>[],
-  electrificationRanges: ElectrificationRangeV2[],
+  voltageRanges: RangedValue[],
   rollingStockEffortCurves: RollingStock['effort_curves']['modes']
 ): SimulationPowerRestrictionRange[] => {
   const powerRestrictionsByMode = getRollingStockPowerRestrictionsByMode(rollingStockEffortCurves);
 
-  return powerRestrictionRanges.map((powerRestrictionRange) => {
-    const foundElectrificationRange = electrificationRanges.find(
-      (electrificationRange) =>
-        electrificationRange.start <= powerRestrictionRange.start &&
-        electrificationRange.stop >= powerRestrictionRange.stop
-    );
+  const restrictionsWithHandled: SimulationPowerRestrictionRange[] = [];
 
-    let isHandled = false;
-    if (
-      foundElectrificationRange &&
-      foundElectrificationRange.electrificationUsage.type === 'electrification' &&
-      powerRestrictionsByMode[foundElectrificationRange.electrificationUsage.voltage]
-    ) {
-      isHandled = powerRestrictionsByMode[
-        foundElectrificationRange.electrificationUsage.voltage
-      ].includes(powerRestrictionRange.code);
-    }
+  powerRestrictionRanges.forEach((powerRestrictionRange) => {
+    const powerRestrictionBeginInMm = mToMm(powerRestrictionRange.start);
+    const powerRestrictionEndInMm = mToMm(powerRestrictionRange.stop);
 
-    return {
-      ...powerRestrictionRange,
-      handled: isHandled,
-    };
+    // find all the voltage ranges which overlap the powerRestrictionRange
+    voltageRanges.forEach((voltageRange) => {
+      const restrictionBeginIsInRange =
+        voltageRange.begin <= powerRestrictionBeginInMm &&
+        powerRestrictionBeginInMm < voltageRange.end;
+      const restrictionEndIsInRange =
+        voltageRange.begin < powerRestrictionEndInMm && powerRestrictionEndInMm <= voltageRange.end;
+
+      if (restrictionBeginIsInRange || restrictionEndIsInRange) {
+        const powerRestrictionForVoltage = powerRestrictionsByMode[voltageRange.value];
+        const isHandled =
+          !!powerRestrictionForVoltage &&
+          powerRestrictionForVoltage.includes(powerRestrictionRange.code);
+
+        // add the restriction corresponding to the voltage range
+        restrictionsWithHandled.push({
+          start: restrictionBeginIsInRange
+            ? powerRestrictionRange.start
+            : mmToM(voltageRange.begin),
+          stop: restrictionEndIsInRange ? powerRestrictionRange.stop : mmToM(voltageRange.end),
+          code: powerRestrictionRange.code,
+          handled: isHandled,
+        });
+      }
+    });
   });
+  return restrictionsWithHandled;
 };
 
 const formatPowerRestrictionRangesWithHandled = ({
@@ -96,7 +102,7 @@ const formatPowerRestrictionRangesWithHandled = ({
     );
     const powerRestrictionsWithHandled = addHandledToPowerRestrictions(
       powerRestrictionsRanges,
-      pathProperties.electrifications,
+      pathProperties.voltages,
       selectedTrainRollingStock.effort_curves.modes
     );
 

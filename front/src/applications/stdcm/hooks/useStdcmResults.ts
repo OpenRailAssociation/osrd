@@ -121,6 +121,7 @@ const useStdcmResults = (
           suggestedOperationalPoints: updatedSuggestedOPs,
           allWaypoints: updatedSuggestedOPs,
           length: path.length,
+          trackSectionRanges: path.track_section_ranges,
         });
       }
     };

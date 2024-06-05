@@ -3,6 +3,8 @@ import { createSlice } from '@reduxjs/toolkit';
 import { defaultCommonConf, buildCommonConfReducers } from 'reducers/osrdconf/osrdConfCommon';
 import type { OsrdConfState } from 'reducers/osrdconf/types';
 
+import { builPowerRestrictionReducer } from './powerRestrictionReducer';
+
 export type OperationalStudiesConfState = OsrdConfState;
 
 export const operationalStudiesConfSlice = createSlice({
@@ -10,6 +12,7 @@ export const operationalStudiesConfSlice = createSlice({
   initialState: defaultCommonConf,
   reducers: {
     ...buildCommonConfReducers<OperationalStudiesConfState>(),
+    ...builPowerRestrictionReducer<OperationalStudiesConfState>(),
   },
 });
 

@@ -157,7 +157,7 @@ export const createPowerRestrictionSegment = (
   // figure out if the power restriction is incompatible or missing`
   const isRestriction = powerRestrictionRange.handled;
   const isIncompatiblePowerRestriction = !!powerRestrictionRange.code;
-  const isStriped = !!powerRestrictionRange.code;
+  const isStriped = !powerRestrictionRange.code || !powerRestrictionRange.handled;
 
   const segment: PowerRestrictionSegment = {
     position_start: powerRestrictionRange.start,

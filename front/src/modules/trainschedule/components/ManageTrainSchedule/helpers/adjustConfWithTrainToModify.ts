@@ -145,7 +145,7 @@ export function adjustConfWithTrainToModifyV2(
   dispatch(updateRollingStockID(rollingStockId));
   dispatch(updateName(train_name));
   dispatch(updateDepartureTime(start_time));
-  dispatch(updatePathSteps(pathSteps));
+  dispatch(updatePathSteps({ pathSteps, resetPowerRestrictions: true }));
   dispatch(updateInitialSpeed(initial_speed ? msToKmh(initial_speed) : 0));
 
   if (options?.use_electrical_profiles === usingElectricalProfiles)

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
 import { compact } from 'lodash';
 import { useTranslation } from 'react-i18next';
@@ -13,10 +13,13 @@ import { useOsrdConfSelectors } from 'common/osrdContext';
 import { useStoreDataForSpeedLimitByTagSelector } from 'common/SpeedLimitByTagSelector/useStoreDataForSpeedLimitByTagSelector';
 import Tabs from 'common/Tabs';
 import ItineraryV2 from 'modules/pathfinding/components/Itinerary/ItineraryV2';
+import getPathVoltages from 'modules/pathfinding/helpers/getPathVoltages';
 import { upsertViasInOPs } from 'modules/pathfinding/utils';
+import PowerRestrictionsSelectorV2 from 'modules/powerRestriction/components/PowerRestrictionsSelectorV2';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import { RollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
+import { isElectric } from 'modules/rollingStock/helpers/electric';
 import TimesStops from 'modules/timesStops/TimesStops';
 import { Map } from 'modules/trainschedule/components/ManageTrainSchedule';
 import SimulationSettings from 'modules/trainschedule/components/ManageTrainSchedule/SimulationSettings';
@@ -52,16 +55,12 @@ const ManageTrainScheduleV2 = () => {
         allWaypoints,
       });
     }
-  }, [pathSteps]);
+  }, []);
 
-  // TODO TS2 : test this hook in simulation results issue
-  // useSetupItineraryForTrainUpdate(setPathProperties);
-
-  // const { data: pathWithElectrifications = { electrification_ranges: [] as RangedValue[] } } =
-  //   osrdEditoastApi.endpoints.getPathfindingByPathfindingIdElectrifications.useQuery(
-  //     { pathfindingId: pathFindingID as number },
-  //     { skip: !pathFindingID }
-  //   );
+  const voltageRanges = useMemo(
+    () => getPathVoltages(pathProperties?.electrifications, pathProperties?.length),
+    [pathProperties]
+  );
 
   const tabRollingStock = {
     id: 'rollingstock',
@@ -151,13 +150,14 @@ const ManageTrainScheduleV2 = () => {
           dispatchUpdateSpeedLimitByTag={dispatchUpdateSpeedLimitByTag}
           constraintDistribution={constraintDistribution}
         />
-        {/* {rollingStock && isElectric(rollingStock.effort_curves.modes) && (
+        {rollingStock && isElectric(rollingStock.effort_curves.modes) && pathProperties && (
           <PowerRestrictionsSelectorV2
             rollingStockModes={rollingStock.effort_curves.modes}
             rollingStockPowerRestrictions={rollingStock.power_restrictions}
-            pathElectrificationRanges={pathWithElectrifications.electrification_ranges}
+            voltageRanges={voltageRanges}
+            pathProperties={pathProperties}
           />
-        )} */}
+        )}
       </div>
     ),
   };

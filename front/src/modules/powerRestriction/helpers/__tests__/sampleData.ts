@@ -1,4 +1,3 @@
-import type { ElectrificationRangeV2 } from 'applications/operationalStudies/types';
 import type {
   EffortCurves,
   RangedValue,
@@ -471,37 +470,21 @@ export const powerRestrictionRanges: Omit<SimulationPowerRestrictionRange, 'hand
   },
 ];
 
-export const electrificationRangesForPowerRestrictions: ElectrificationRangeV2[] = [
+export const voltageRangesForPowerRestrictions: RangedValue[] = [
   {
-    start: 0,
-    stop: 2,
-    electrificationUsage: {
-      type: 'electrification',
-      voltage: '1500V',
-      electrical_profile_type: 'profile',
-      profile: 'O',
-      handled: true,
-    },
+    begin: 0,
+    end: 2000,
+    value: '1500V',
   },
   {
-    start: 2,
-    stop: 3,
-    electrificationUsage: {
-      lower_pantograph: true,
-      type: 'neutral_section',
-      electrical_profile_type: 'no_profile',
-    },
+    begin: 2000,
+    end: 3000,
+    value: '',
   },
   {
-    start: 3,
-    stop: 4,
-    electrificationUsage: {
-      type: 'electrification',
-      voltage: '25000V',
-      electrical_profile_type: 'profile',
-      profile: '25000V',
-      handled: true,
-    },
+    begin: 3000,
+    end: 4000,
+    value: '25000V',
   },
 ];
 

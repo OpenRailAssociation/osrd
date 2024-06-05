@@ -94,7 +94,7 @@ const TimesStops = ({ pathProperties, pathSteps = [], startTime }: TimesStopsPro
     });
     const updatedPathSteps = removeElementAtIndex(pathSteps, index);
 
-    dispatch(updatePathSteps(updatedPathSteps));
+    dispatch(updatePathSteps({ pathSteps: updatedPathSteps }));
   };
 
   return (

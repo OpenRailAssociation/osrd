@@ -76,13 +76,15 @@ const ToolButtons = ({ selectedTool, toolsConfig, toggleSelectedTool }: ToolButt
             toggleSelectedTool={toggleSelectedTool}
           />
         )}
-        <ToolButton
-          selectedTool={selectedTool}
-          tool={INTERVALS_EDITOR_TOOLS.MERGE_TOOL}
-          title={t('actions.merge')}
-          icon={<BiArrowFromLeft />}
-          toggleSelectedTool={toggleSelectedTool}
-        />
+        {toolsConfig.mergeTool && (
+          <ToolButton
+            selectedTool={selectedTool}
+            tool={INTERVALS_EDITOR_TOOLS.MERGE_TOOL}
+            title={t('actions.merge')}
+            icon={<BiArrowFromLeft />}
+            toggleSelectedTool={toggleSelectedTool}
+          />
+        )}
         {toolsConfig.deleteTool && (
           <ToolButton
             selectedTool={selectedTool}
