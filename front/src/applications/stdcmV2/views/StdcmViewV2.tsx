@@ -8,7 +8,6 @@ import { useSelector } from 'react-redux';
 import STDCM_REQUEST_STATUS from 'applications/stdcm/consts';
 import useStdcm from 'applications/stdcm/hooks/useStdcm';
 import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
-import ScenarioExplorer from 'modules/scenario/components/ScenarioExplorer';
 import { Map } from 'modules/trainschedule/components/ManageTrainSchedule';
 import type { StdcmConfSliceActions } from 'reducers/osrdconf/stdcmConf';
 import { useAppDispatch } from 'store';
@@ -21,9 +20,7 @@ import StdcmLoader from '../components/StdcmLoader';
 import StdcmOrigin from '../components/StdcmOrigin';
 
 const StdcmViewV2 = () => {
-  const { getProjectID, getScenarioID, getStudyID } = useOsrdConfSelectors();
-  const studyID = useSelector(getStudyID);
-  const projectID = useSelector(getProjectID);
+  const { getScenarioID } = useOsrdConfSelectors();
   const scenarioID = useSelector(getScenarioID);
   const { launchStdcmRequest, cancelStdcmRequest, currentStdcmRequestStatus } = useStdcm();
   const isPending = currentStdcmRequestStatus === STDCM_REQUEST_STATUS.pending;
@@ -49,46 +46,35 @@ const StdcmViewV2 = () => {
   return (
     <div className="stdcm-v2">
       <StdcmHeader />
-      <div className="stdcm-v2__body">
-        <div className="stdcm-v2-simulation-settings">
-          <div>
-            <div className="mb-4">
-              <ScenarioExplorer
-                globalProjectId={projectID}
-                globalStudyId={studyID}
-                globalScenarioId={scenarioID}
-              />
+      {scenarioID && (
+        <div className="stdcm-v2__body">
+          <div className="stdcm-v2-simulation-settings">
+            <div className="stdcm-v2-consist-container">
+              <StdcmConsist disabled={isPending} />
             </div>
-            {scenarioID && <StdcmConsist disabled={isPending} />}
-          </div>
-          {scenarioID && (
-            <>
-              <div className="stdcm-v2__separator" />
-              <div className="stdcm-v2-simulation-itinirary">
-                {/* //TODO: rename StdcmDefaultCard */}
-                {/* <StdcmDefaultCard text="Indiquer le sillon antérieur" Icon={<ArrowUp size="lg" />} /> */}
-                <StdcmOrigin disabled={isPending} />
-                {/* <StdcmDefaultCard text="Ajouter un passage" Icon={<Location size="lg" />} /> */}
-                <StdcmDestination disabled={isPending} />
-                {/* <StdcmDefaultCard text="Indiquer le sillon postérieur" Icon={<ArrowDown size="lg" />} /> */}
+            <div className="stdcm-v2__separator" />
+            <div className="stdcm-v2-simulation-itinerary">
+              {/* //TODO: rename StdcmDefaultCard */}
+              {/* <StdcmDefaultCard text="Indiquer le sillon antérieur" Icon={<ArrowUp size="lg" />} /> */}
+              <StdcmOrigin disabled={isPending} />
+              {/* <StdcmDefaultCard text="Ajouter un passage" Icon={<Location size="lg" />} /> */}
+              <StdcmDestination disabled={isPending} />
+              {/* <StdcmDefaultCard text="Indiquer le sillon postérieur" Icon={<ArrowDown size="lg" />} /> */}
+              <div className="stdcm-v2-launch-request">
                 <Button
                   label={t('simulation.getSimulation')}
                   onClick={() => launchStdcmRequest()}
                 />
-                {isPending && (
-                  <StdcmLoader cancelStdcmRequest={cancelStdcmRequest} ref={loaderRef} />
-                )}
               </div>
-            </>
-          )}
-        </div>
-        {scenarioID && (
-          <div className="osrd-config-item-container osrd-config-item-container-map stdcm-v2-map">
-            <Map />
+              {isPending && <StdcmLoader cancelStdcmRequest={cancelStdcmRequest} ref={loaderRef} />}
+            </div>
           </div>
-        )}
-        <div />
-      </div>
+          <div className="osrd-config-item-container osrd-config-item-container-map stdcm-v2-map">
+            <Map hideAttribution />
+          </div>
+          <div />
+        </div>
+      )}
     </div>
   );
 };

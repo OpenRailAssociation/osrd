@@ -3,12 +3,12 @@
     background-color: rgba(255, 255, 255, 1);
     height: 120px;
     position: relative;
+    display: flex ;
+    align-items: center;
+    justify-content: space-between;
 
     .stdcm-v2-header__title {
-        position: absolute;
-        left: 56px;
-        top: 50%;
-        transform: translateY(-50%);
+        max-height: 3rem;
         color: rgba(0, 0, 0, 1);
         font-size: 32px;
         font-weight: 600;
@@ -19,10 +19,7 @@
     }
 
     .stdcm-v2-header__notification {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
+        max-height: 3rem;
         border-radius: 2px;
         border: 4px solid rgba(112, 193, 229, 1);
         background-color: rgba(230, 247, 255, 1);
@@ -32,7 +29,6 @@
         font-weight: 600;
         font-style: SemiBold;
         letter-spacing: 0px;
-        text-align: left;
         line-height: 24px;
 
         a {
@@ -43,6 +39,19 @@
             letter-spacing: 0px;
             text-align: left;
             line-height: 24px;
+        }
+    }
+
+    .scenario-explorator-card {
+        height: 7rem;
+        margin-bottom: 0;
+
+        &-noscenario {
+            font-size: 1.2rem;
+        }
+
+        &-head-img, &-head {
+            height: 6rem;
         }
     }
 }

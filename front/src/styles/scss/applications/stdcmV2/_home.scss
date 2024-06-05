@@ -2,24 +2,30 @@
     .stdcm-v2__body {
         padding: 32px;
         background-color: rgb(239, 243, 245);
-        display: grid;
-        grid-template-columns: 2fr 1fr;
-        gap: 32px;
+        display: flex;
     
         .stdcm-v2-simulation-settings {
-            display: grid;
-            grid-template-columns: 1fr auto 1.5fr;
-            grid-column-gap: 13px;
+            display: flex;
+            gap: 13px;
             .stdcm-v2__separator {
                 border-radius: 4px;
                 background-color: rgba(0, 0, 0, 0.05);
                 width: 6px;
                 height: 280px;
+                margin: 12px 0;
             }
-            .stdcm-v2-simulation-itinirary {
+            .stdcm-v2-simulation-itinerary {
                 display: flex;
                 flex-direction: column;
                 gap: 32px;
+                width: 450px;
+
+                /*TODO Waiting to fix the button in ui-core...*/
+                .stdcm-v2-launch-request > button {
+                    justify-content: center;
+                    width: 100%;
+                    font-weight: 500;
+                }
             }
         }
 
@@ -27,6 +33,11 @@
             border-radius: 8px;
             border: 1px solid rgba(255, 255, 255, 1);
             box-shadow: 0px 0px 0px 2px rgba(255, 255, 255, 0.75) inset, 0px 0px 0px 1px rgba(0, 0, 0, 0.25) inset;
+            height: auto;
+            min-height: 540px;
+            margin-left: 0.85rem;
+            width: 100%;
+            height: calc(100vh - 64px);
         }
     }
 

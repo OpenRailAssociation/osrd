@@ -16,11 +16,12 @@
     font-size: 1.5rem;
   }
   .scenario-explorator-card-head {
+    height: 6.75rem;
     .scenario-explorator-card-head-img {
       position: absolute;
       overflow: hidden;
       border-radius: 4px;
-      height: 6.75rem;
+      height: inherit;
       width: 6rem;
       img {
         display: flex;
@@ -34,18 +35,18 @@
     }
     .scenario-explorator-card-head-content {
       margin-left: 6.5rem;
-      height: 4.5rem;
       font-weight: 500;
+      height: 100%;
       .scenario-explorator-card-head-content-item {
         display: flex;
         align-items: center;
         margin-bottom: 0.25rem;
-        height: 1.5rem;
+        height: 22%;
         img {
           border-radius: 4px 0 0 4px;
           background-color: var(--coolgray3);
           padding: 0.25rem;
-          height: 1.5rem;
+          height: 100%;
         }
         div {
           display: flex;

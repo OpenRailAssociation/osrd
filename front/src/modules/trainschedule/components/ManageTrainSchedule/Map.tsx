@@ -56,9 +56,10 @@ import ItineraryMarkersV2 from './ManageTrainScheduleMap/ItineraryMarkersV2';
 type MapProps = {
   pathProperties?: ManageTrainSchedulePathProperties;
   setMapCanvas?: (mapCanvas: string) => void;
+  hideAttribution?: boolean;
 };
 
-const Map = ({ pathProperties, setMapCanvas }: MapProps) => {
+const Map = ({ pathProperties, setMapCanvas, hideAttribution = false }: MapProps) => {
   const mapBlankStyle = useMapBlankStyle();
 
   const infraID = useInfraID();
@@ -244,7 +245,9 @@ const Map = ({ pathProperties, setMapCanvas }: MapProps) => {
         id="map-container"
       >
         <VirtualLayers />
-        <AttributionControl position="bottom-right" customAttribution={CUSTOM_ATTRIBUTION} />
+        {!hideAttribution && (
+          <AttributionControl position="bottom-right" customAttribution={CUSTOM_ATTRIBUTION} />
+        )}
         <ScaleControl maxWidth={100} unit="metric" style={scaleControlStyle} />
 
         <Background
