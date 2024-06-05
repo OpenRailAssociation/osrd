@@ -1,37 +1,44 @@
-import React, { useLayoutEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
-import cx from 'classnames';
 import type { CellComponent, CellProps, Column } from 'react-datasheet-grid/dist/types';
 
 const TimeComponent = ({
   focus,
   rowData,
+  active,
   setRowData,
 }: CellProps<string | null | undefined, string>) => {
   const ref = useRef<HTMLInputElement>(null);
+  const [tempTimeValue, setTempTimeValue] = useState<string | null | undefined>(rowData);
 
-  useLayoutEffect(() => {
-    if (focus) {
+  useEffect(() => {
+    if (active) {
       ref.current?.select();
     } else {
       ref.current?.blur();
     }
-  }, [focus]);
+  }, [active]);
 
   return (
     <input
-      className={cx('dsg-input', !focus && 'dsg-hide-time-picker')}
+      className="dsg-input"
       type="time"
       tabIndex={-1}
       ref={ref}
+      step={2}
       style={{
         pointerEvents: focus ? 'auto' : 'none',
-        opacity: rowData || focus ? undefined : 0,
+        opacity: rowData || active ? undefined : 0,
       }}
-      value={rowData ?? ''}
+      value={tempTimeValue ?? ''}
       onChange={(e) => {
-        const time = e.target.value;
-        setRowData(time);
+        setTempTimeValue(e.target.value);
+      }}
+      onBlur={() => {
+        // To prevent the operational point to be transformed into a via if we leave the cell empty after focusing it
+        if (rowData !== tempTimeValue) {
+          setRowData(tempTimeValue);
+        }
       }}
     />
   );
