@@ -12,7 +12,8 @@ import { PiLinkBold, PiLinkBreakBold } from 'react-icons/pi';
 import { useSelector } from 'react-redux';
 
 import type { Layer } from 'applications/editor/consts';
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import type { PathPropertiesFormatted } from 'applications/operationalStudies/types';
+import { osrdEditoastApi, type GeoJsonLineStringValue } from 'common/api/osrdEditoastApi';
 import { LoaderFill } from 'common/Loaders';
 import { getImprovedOSRDData } from 'common/Map/WarpedMap/core/helpers';
 import DataLoader from 'common/Map/WarpedMap/DataLoader';
@@ -29,6 +30,7 @@ import {
   getSelectedTrain,
 } from 'reducers/osrdsimulation/selectors';
 import type { PositionsSpeedTimes, Train } from 'reducers/osrdsimulation/types';
+import { getTrainScheduleV2Activated } from 'reducers/user/userSelectors';
 import { useAppDispatch } from 'store';
 import { clip } from 'utils/mapHelper';
 import type { AsyncMemoState } from 'utils/useAsyncMemo';
@@ -63,7 +65,13 @@ function transformDataStatePayload(
  * This component handles loading the simulation path, all the surrounding data (OSM and OSRD), transforms them, and
  * then mounts a WarpedMap with all that data:
  */
-const SimulationWarpedMap = ({ collapsed }: { collapsed?: boolean }) => {
+const SimulationWarpedMap = ({
+  collapsed,
+  pathProperties,
+}: {
+  collapsed?: boolean;
+  pathProperties?: PathPropertiesFormatted;
+}) => {
   const dispatch = useAppDispatch();
   const infraID = useInfraID();
   const [state, setState] = useState<
@@ -78,7 +86,10 @@ const SimulationWarpedMap = ({ collapsed }: { collapsed?: boolean }) => {
       } & PathStatePayload &
         DataStatePayload)
   >({ type: 'idle' });
+
   const pathfindingID = useSelector(getSelectedProjection)?.path as number;
+  const trainScheduleV2Activated = useSelector(getTrainScheduleV2Activated);
+
   const [getPath] = osrdEditoastApi.endpoints.getPathfindingByPathfindingId.useLazyQuery();
   const layers = useMemo(() => new Set<Layer>(['track_sections']), []);
   const [mode, setMode] = useState<'manual' | 'auto'>('auto');
@@ -178,7 +189,9 @@ const SimulationWarpedMap = ({ collapsed }: { collapsed?: boolean }) => {
 
   // Itinerary handling:
   const selectedTrain = useSelector(getSelectedTrain);
+
   const itineraryState: AsyncMemoState<Feature<LineString> | null> = useAsyncMemo(async () => {
+    if (pathProperties) return lineString(pathProperties.geometry.coordinates);
     if (!selectedTrain || state.type !== 'dataLoaded') return null;
 
     const { data: path } = await getPath({ pathfindingId: selectedTrain.path });
@@ -186,6 +199,7 @@ const SimulationWarpedMap = ({ collapsed }: { collapsed?: boolean }) => {
 
     return lineString(path.geographic.coordinates);
   }, [selectedTrain, state.type, simulation]);
+
   const warpedItinerary = useMemo(() => {
     const itinerary = getAsyncMemoData(itineraryState);
     if (itinerary && state.type === 'dataLoaded')
@@ -242,26 +256,36 @@ const SimulationWarpedMap = ({ collapsed }: { collapsed?: boolean }) => {
     state,
   ]);
 
+  const updateWarpedMapState = (coordinates: GeoJsonLineStringValue) => {
+    const path = lineString(coordinates);
+    const pathBBox = bbox(path) as BBox2d;
+    const { warpedBBox, transform } = getWarping(path);
+    setState({ type: 'pathLoaded', path, pathBBox, warpedBBox, transform });
+  };
+
   /**
    * This effect handles loading the simulation path, and retrieve the warping function:
    */
   useEffect(() => {
     setState({ type: 'loading' });
-    getPath({ pathfindingId: pathfindingID })
-      .then(({ data, isError, error }) => {
-        if (isError) {
-          setState({ type: 'error', message: error as string });
-        } else if (!data?.geographic?.coordinates) {
-          setState({ type: 'error', message: 'No coordinates' });
-        } else {
-          const path = lineString(data?.geographic?.coordinates as Position[]);
-          const pathBBox = bbox(path) as BBox2d;
-          const { warpedBBox, transform } = getWarping(path);
 
-          setState({ type: 'pathLoaded', path, pathBBox, warpedBBox, transform });
-        }
-      })
-      .catch((error) => setState({ type: 'error', message: error }));
+    // V2
+    if (trainScheduleV2Activated) {
+      if (pathProperties) updateWarpedMapState(pathProperties.geometry.coordinates);
+    } else {
+      // TODO DROP V1: remove this condition
+      getPath({ pathfindingId: pathfindingID })
+        .then(({ data, isError, error }) => {
+          if (isError) {
+            setState({ type: 'error', message: error as string });
+          } else if (!data?.geographic?.coordinates) {
+            setState({ type: 'error', message: 'No coordinates' });
+          } else {
+            updateWarpedMapState(data?.geographic?.coordinates);
+          }
+        })
+        .catch((error) => setState({ type: 'error', message: error }));
+    }
   }, [pathfindingID]);
 
   /**
