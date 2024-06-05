@@ -62,7 +62,7 @@ public final class EnvelopePart implements SearchableEnvelope {
     private double minSpeedCache = Double.NaN;
 
     /** The time from the start of the envelope, in microseconds. Only read using getTotalTimes. */
-    private long[] cumulativeMicroSTimesCache = null;
+    private long[] cumulativeUSTimesCache = null;
 
     // endregion
 
@@ -273,8 +273,8 @@ public final class EnvelopePart implements SearchableEnvelope {
      * caches the time in microseconds to reach any point of the envelope part, from the start of the
      * envelope part.
      */
-    private long[] getTotalTimesMicroseconds() {
-        if (cumulativeMicroSTimesCache != null) return cumulativeMicroSTimesCache;
+    private long[] getTotalTimesUS() {
+        if (cumulativeUSTimesCache != null) return cumulativeUSTimesCache;
 
         var totalTimes = new long[positions.length];
         totalTimes[0] = 0;
@@ -284,22 +284,22 @@ public final class EnvelopePart implements SearchableEnvelope {
             totalTime += (long) (timeDeltas[i] * 1_000_000);
             totalTimes[i + 1] = totalTime;
         }
-        cumulativeMicroSTimesCache = totalTimes;
+        cumulativeUSTimesCache = totalTimes;
         return totalTimes;
     }
 
-    /** Returns the total time of the envelope part, in milliseconds */
-    public long getTotalTimeMS() {
-        var totalTimes = getTotalTimesMicroseconds();
-        return totalTimes[totalTimes.length - 1] / 1_000;
+    /** Returns the total time of the envelope part, in microseconds */
+    public long getTotalTimeUS() {
+        var totalTimes = getTotalTimesUS();
+        return totalTimes[totalTimes.length - 1];
     }
 
     /**
      * Returns the total time required to get from the start of the envelope part to a given point
-     * of the envelope part, in milliseconds
+     * of the envelope part, in microseconds
      */
-    public long getTotalTimeMS(int pointIndex) {
-        return getTotalTimesMicroseconds()[pointIndex] / 1_000;
+    public long getTotalTimeUS(int pointIndex) {
+        return getTotalTimesUS()[pointIndex];
     }
 
     // endregion
@@ -383,22 +383,22 @@ public final class EnvelopePart implements SearchableEnvelope {
 
     /**
      * Returns the time required to get from the start of the envelope part to the given position,
-     * in milliseconds.
+     * in microseconds.
      */
-    public long interpolateTotalTimeMS(double position) {
+    public long interpolateTotalTimeUS(double position) {
         assert position >= getBeginPos();
         assert position <= getEndPos();
         var pointIndex = Arrays.binarySearch(positions, position);
         // if the position matches one of the data points
-        if (pointIndex >= 0) return getTotalTimeMS(pointIndex);
+        if (pointIndex >= 0) return getTotalTimeUS(pointIndex);
 
         // when the position isn't found, binarySearch returns -(insertion point) - 1
         var insertionPoint = -(pointIndex + 1);
         // the index of the step is the index of the point which starts the range
         var stepIndex = insertionPoint - 1;
-        long timeToStepStart = getTotalTimeMS(stepIndex);
+        long timeToStepStart = getTotalTimeUS(stepIndex);
         var interpolatedTime = interpolateTimeDelta(stepIndex, position);
-        return timeToStepStart + (long) (interpolatedTime * 1000);
+        return timeToStepStart + (long) (interpolatedTime * 1_000_000);
     }
 
     /**
@@ -406,7 +406,7 @@ public final class EnvelopePart implements SearchableEnvelope {
      * in seconds
      */
     public double interpolateTotalTime(double position) {
-        return ((double) interpolateTotalTimeMS(position)) / 1000;
+        return ((double) interpolateTotalTimeUS(position)) / 1_000_000;
     }
 
     /** Compute the time deltas between positions */

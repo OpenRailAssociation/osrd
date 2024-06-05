@@ -26,9 +26,9 @@ public class EnvelopeDebug {
             var positions = part.clonePositions();
             var times = new double[part.pointCount()];
             for (int pointIndex = 0; pointIndex < part.pointCount(); pointIndex++)
-                times[pointIndex] = startTime + part.getTotalTimeMS(pointIndex) / 1000.;
+                times[pointIndex] = startTime + part.getTotalTimeUS(pointIndex) / 1_000_000.;
             plotArrays(plot, lineName, times, positions);
-            startTime += part.getTotalTimeMS() / 1000.;
+            startTime += part.getTotalTimeUS() / 1_000_000.;
         }
     }
 

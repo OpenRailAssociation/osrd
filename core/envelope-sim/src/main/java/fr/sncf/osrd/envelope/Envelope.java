@@ -32,7 +32,7 @@ public final class Envelope implements Iterable<EnvelopePart>, SearchableEnvelop
     private final double minSpeed;
 
     /**
-     * The time from the start of the envelope to envelope part transitions, in milliseconds. Only
+     * The time from the start of the envelope to envelope part transitions, in microseconds. Only
      * read using getTotalTimes.
      */
     private long[] cumulativeTimesCache = null;
@@ -185,17 +185,17 @@ public final class Envelope implements Iterable<EnvelopePart>, SearchableEnvelop
     }
 
     /** Computes the time required to get to a given point of the envelope */
-    public long interpolateTotalTimeMS(double position) {
+    public long interpolateTotalTimeUS(double position) {
         assert continuous : "interpolating times on a non continuous envelope is a risky business";
         var envelopePartIndex = findLeft(position);
         assert envelopePartIndex >= 0 : "Trying to interpolate time outside of the envelope";
         var envelopePart = get(envelopePartIndex);
-        return getCumulativeTimeMS(envelopePartIndex) + envelopePart.interpolateTotalTimeMS(position);
+        return getCumulativeTimeUS(envelopePartIndex) + envelopePart.interpolateTotalTimeUS(position);
     }
 
     /** Computes the time required to get to a given point of the envelope */
     public double interpolateTotalTime(double position) {
-        return ((double) interpolateTotalTimeMS(position)) / 1000;
+        return ((double) interpolateTotalTimeUS(position)) / 1_000_000;
     }
 
     /**
@@ -204,7 +204,7 @@ public final class Envelope implements Iterable<EnvelopePart>, SearchableEnvelop
      */
     public double interpolateTotalTimeClamp(double position) {
         position = Math.min(getEndPos(), Math.max(0, position));
-        return ((double) interpolateTotalTimeMS(position)) / 1000;
+        return ((double) interpolateTotalTimeUS(position)) / 1_000_000;
     }
 
     // endregion
@@ -212,7 +212,7 @@ public final class Envelope implements Iterable<EnvelopePart>, SearchableEnvelop
     // region CACHING
 
     /** This method must be private as it returns an array */
-    private long[] getCumulativeTimesMS() {
+    private long[] getCumulativeTimesUS() {
         if (cumulativeTimesCache != null) return cumulativeTimesCache;
 
         var timesToPartTransitions = new long[parts.length + 1];
@@ -220,22 +220,22 @@ public final class Envelope implements Iterable<EnvelopePart>, SearchableEnvelop
 
         long totalTime = 0;
         for (int i = 0; i < parts.length; i++) {
-            totalTime += parts[i].getTotalTimeMS();
+            totalTime += parts[i].getTotalTimeUS();
             timesToPartTransitions[i + 1] = totalTime;
         }
         cumulativeTimesCache = timesToPartTransitions;
         return timesToPartTransitions;
     }
 
-    /** Returns the total time of the envelope, in milliseconds */
-    public long getTotalTimeMS() {
-        var timesToPartTransitions = getCumulativeTimesMS();
+    /** Returns the total time of the envelope, in microseconds */
+    public long getTotalTimeUS() {
+        var timesToPartTransitions = getCumulativeTimesUS();
         return timesToPartTransitions[timesToPartTransitions.length - 1];
     }
 
     /** Returns the total time of the envelope */
     public double getTotalTime() {
-        return ((double) getTotalTimeMS()) / 1000;
+        return ((double) getTotalTimeUS()) / 1_000_000;
     }
 
     /** Returns the time between two positions of the envelope */
@@ -245,13 +245,13 @@ public final class Envelope implements Iterable<EnvelopePart>, SearchableEnvelop
 
     /**
      * Returns the total time required to get from the start of the envelope to the start of an
-     * envelope part, in milliseconds
+     * envelope part, in microseconds
      *
      * @param transitionIndex either an envelope part index, of the number of parts to get the total
      *     time
      */
-    public long getCumulativeTimeMS(int transitionIndex) {
-        return getCumulativeTimesMS()[transitionIndex];
+    public long getCumulativeTimeUS(int transitionIndex) {
+        return getCumulativeTimesUS()[transitionIndex];
     }
 
     // endregion
