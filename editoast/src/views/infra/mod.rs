@@ -402,12 +402,11 @@ async fn clone(
 #[delete("")]
 async fn delete(
     infra: Path<InfraIdParam>,
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Data<DbConnectionPoolV2>,
     infra_caches: Data<CHashMap<i64, InfraCache>>,
 ) -> Result<HttpResponse> {
     let infra_id = infra.infra_id;
-    let conn = &mut db_pool.get().await?;
-    if Infra::delete_static(conn, infra_id).await? {
+    if Infra::delete_static(db_pool.get().await?.deref_mut(), infra_id).await? {
         infra_caches.remove(&infra_id);
         Ok(HttpResponse::NoContent().finish())
     } else {
@@ -806,14 +805,15 @@ pub mod tests {
     }
 
     #[rstest]
-    async fn infra_delete(#[future] empty_infra: TestFixture<Infra>) {
-        let empty_infra = empty_infra.await;
-        let app = create_test_service().await;
+    async fn infra_delete() {
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+        let empty_infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
 
-        let response = call_service(&app, delete_infra_request(empty_infra.id())).await;
+        let response = call_service(&app.service, delete_infra_request(empty_infra.id)).await;
         assert_eq!(response.status(), StatusCode::NO_CONTENT);
 
-        let response = call_service(&app, delete_infra_request(empty_infra.id())).await;
+        let response = call_service(&app.service, delete_infra_request(empty_infra.id)).await;
         assert_eq!(response.status(), StatusCode::NOT_FOUND);
     }
 
