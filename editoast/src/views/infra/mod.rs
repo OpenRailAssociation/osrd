@@ -463,16 +463,18 @@ async fn put(
 #[get("/switch_types")]
 async fn get_switch_types(
     infra: Path<InfraIdParam>,
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Data<DbConnectionPoolV2>,
     infra_caches: Data<CHashMap<i64, InfraCache>>,
 ) -> Result<Json<Vec<SwitchType>>> {
-    let conn = &mut db_pool.get().await?;
-    let infra = Infra::retrieve_or_fail(conn, infra.infra_id, || InfraApiError::NotFound {
-        infra_id: infra.infra_id,
+    let infra = Infra::retrieve_or_fail(db_pool.get().await?.deref_mut(), infra.infra_id, || {
+        InfraApiError::NotFound {
+            infra_id: infra.infra_id,
+        }
     })
     .await?;
 
-    let infra = InfraCache::get_or_load(conn, &infra_caches, &infra).await?;
+    let infra =
+        InfraCache::get_or_load(db_pool.get().await?.deref_mut(), &infra_caches, &infra).await?;
     Ok(Json(
         infra
             .switch_types()
@@ -1032,14 +1034,15 @@ pub mod tests {
     }
 
     #[rstest]
-    async fn infra_get_switch_types(#[future] empty_infra: TestFixture<Infra>) {
-        let empty_infra = empty_infra.await;
-        let app = create_test_service().await;
+    async fn infra_get_switch_types() {
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+        let empty_infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
 
         let req = TestRequest::get()
-            .uri(format!("/infra/{}/switch_types/", empty_infra.id()).as_str())
+            .uri(format!("/infra/{}/switch_types/", empty_infra.id).as_str())
             .to_request();
-        let response = call_service(&app, req).await;
+        let response = call_service(&app.service, req).await;
         assert_eq!(response.status(), StatusCode::OK);
         let switch_types: Vec<SwitchType> = read_body_json(response).await;
         assert_eq!(switch_types.len(), 5);
