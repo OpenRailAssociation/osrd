@@ -224,17 +224,24 @@ const TypeAndPathV2 = ({ setPathProperties }: PathfindingProps) => {
               allVias: suggestedOperationalPoints,
               length: pathfindingResult.length,
             });
-          }
 
-          const pathSteps: PathStep[] = opList.map((op, i) => ({
-            id: nextId(),
-            uic: op.uic,
-            name: op.name,
-            ch: op.ch,
-            coordinates: op.geographic.coordinates,
-            positionOnPath: pathfindingResult.path_items_positions[i],
-          }));
-          dispatch(updatePathSteps(pathSteps));
+            const pathSteps: PathStep[] = opList.map((op, i) => {
+              // We know we will find one because the operational points returned by pathproperties depend on the op searched
+              const correspondingOp = suggestedOperationalPoints.find(
+                (formattedOP) => formattedOP.uic === op.uic && formattedOP.ch === op.ch
+              ) as SuggestedOP;
+              return {
+                id: nextId(),
+                uic: op.uic,
+                name: op.name,
+                ch: op.ch,
+                kp: correspondingOp.kp,
+                coordinates: correspondingOp.coordinates,
+                positionOnPath: pathfindingResult.path_items_positions[i],
+              };
+            });
+            dispatch(updatePathSteps(pathSteps));
+          }
         }
         // TODO TS2 : test errors display after core / editoast connexion for pathProperties
       } catch (e) {

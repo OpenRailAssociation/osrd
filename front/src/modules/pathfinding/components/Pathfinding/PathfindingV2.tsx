@@ -300,19 +300,31 @@ const Pathfinding = ({ pathProperties, setPathProperties }: PathfindingProps) =>
               await postPathProperties(pathPropertiesParams).unwrap();
 
             if (electrifications && geometry && operational_points) {
-              const pathStepsWihPosition = compact(pathSteps).map((step, i) => ({
-                ...step,
-                positionOnPath: pathfindingResult.path_items_positions[i],
-              }));
-              dispatch(updatePathSteps(pathStepsWihPosition));
-
               const suggestedOperationalPoints: SuggestedOP[] = formatSuggestedOperationalPoints(
                 operational_points,
                 geometry,
                 pathfindingResult.length
               );
 
-              const allVias = upsertViasInOPs(suggestedOperationalPoints, pathStepsWihPosition);
+              // We update existing pathsteps with coordinates, positionOnPath and kp corresponding to the new pathfinding result
+              const updatedPathSteps: PathStep[] = compact(pathSteps).map((step, i) => {
+                const correspondingOp = suggestedOperationalPoints.find(
+                  (suggestedOp) =>
+                    'uic' in step && suggestedOp.uic === step.uic && suggestedOp.ch === step.ch
+                );
+
+                return correspondingOp
+                  ? {
+                      ...step,
+                      kp: correspondingOp.kp,
+                      coordinates: correspondingOp.coordinates,
+                      positionOnPath: pathfindingResult.path_items_positions[i],
+                    }
+                  : { ...step, positionOnPath: pathfindingResult.path_items_positions[i] };
+              });
+              dispatch(updatePathSteps(updatedPathSteps));
+
+              const allVias = upsertViasInOPs(suggestedOperationalPoints, updatedPathSteps);
 
               setPathProperties({
                 electrifications,
