@@ -343,12 +343,11 @@ impl From<InfraCreateForm> for Changeset<Infra> {
 )]
 #[post("")]
 async fn create(
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Data<DbConnectionPoolV2>,
     data: Json<InfraCreateForm>,
 ) -> Result<impl Responder> {
     let infra: Changeset<Infra> = data.into_inner().into();
-    let conn = &mut db_pool.get().await?;
-    let infra = infra.create(conn).await?;
+    let infra = infra.create(db_pool.get().await?.deref_mut()).await?;
     Ok(HttpResponse::Created().json(infra))
 }
 
@@ -834,12 +833,12 @@ pub mod tests {
 
     #[rstest]
     async fn default_infra_create(db_pool: Arc<DbConnectionPool>) {
-        let app = create_test_service().await;
+        let app = TestAppBuilder::default_app();
         let req = TestRequest::post()
             .uri("/infra")
             .set_json(json!({ "name": "create_infra_test" }))
             .to_request();
-        let response = call_service(&app, req).await;
+        let response = call_service(&app.service, req).await;
         assert_eq!(response.status(), StatusCode::CREATED);
         let infra = read_body_json::<Infra, _>(response)
             .await
