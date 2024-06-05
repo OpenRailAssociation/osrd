@@ -10,7 +10,7 @@ import { formatDateToString, formatDayV2 } from 'utils/date';
 
 import styles from './SimulationReportStyleSheet';
 import type { SimulationReportSheetProps } from '../types';
-import { extractSpeedLimit, getOperationalPointsWithTimes } from '../utils';
+import { extractSpeedLimit, getStopDurationTime, getOperationalPointsWithTimes } from '../utils';
 
 const SimulationReportSheetV2 = ({
   stdcmData,
@@ -158,7 +158,7 @@ const SimulationReportSheetV2 = ({
                 {opList.map((step, index) => {
                   const isFirstStep = index === 0;
                   const isLastStep = index === opList.length - 1;
-                  const shouldRenderRow = isFirstStep || /* step.stop > '0' || */ isLastStep;
+                  const shouldRenderRow = isFirstStep || step.duration > 0 || isLastStep;
                   if (shouldRenderRow) {
                     renderedIndex += 1;
                     return (
@@ -267,21 +267,24 @@ const SimulationReportSheetV2 = ({
                   <TR
                     key={index}
                     style={
-                      /* step.stop !== '0' && !isLastStep
+                      step.duration !== 0 && !isLastStep
                         ? styles.simulation.blueRow
-                        : */ styles.simulation.tbody
+                        : styles.simulation.tbody
                     }
                   >
                     <TD style={styles.simulation.indexColumn}>{index + 1}</TD>
                     <View style={styles.simulation.opWidth}>
                       <TD
                         style={
-                          !isFirstStep && !isLastStep /* && step.stop !== '0' */
+                          !isFirstStep && !isLastStep && step.duration !== 0
                             ? styles.simulation.opStop
                             : styles.simulation.td
                         }
                       >
-                        {!isFirstStep && !isLastStep && step.name === prevStep.name
+                        {!isFirstStep &&
+                        !isLastStep &&
+                        step.name === prevStep.name &&
+                        step.duration === 0
                           ? '='
                           : step.name || 'Unknown'}
                       </TD>
@@ -290,30 +293,37 @@ const SimulationReportSheetV2 = ({
                       <TD style={styles.simulation.chColumn}>{step.ch}</TD>
                     </View>
                     <View style={styles.simulation.trackWidth}>
-                      {/* <TD style={styles.simulation.td}>{step.metadata?.trackName}</TD> */}
+                      <TD style={styles.simulation.td}>{step.trackName}</TD>
                     </View>
                     <View style={styles.simulation.endWidth}>
                       <TD style={styles.simulation.stopColumn}>
-                        {isLastStep /* || step.stop !== '0' */ ? step.time : ''}
+                        {isLastStep || step.duration !== 0 ? step.time : ''}
                       </TD>
                     </View>
                     <View style={styles.simulation.passageWidth}>
-                      <TD style={styles.simulation.stopColumn}>
+                      <TD
+                        style={{
+                          ...(step.duration !== 0 && !isLastStep
+                            ? {
+                                width: `${step.duration < 600 && step.duration >= 60 ? 60 : 70}px`,
+                                ...styles.simulation.blueStop,
+                              }
+                            : styles.simulation.stopColumn),
+                        }}
+                      >
                         {
                           // eslint-disable-next-line no-nested-ternary
                           !isFirstStep && !isLastStep
-                            ? // ? step.stop !== '0'
-                              //   ? /* getStopDurationTime(step.stop) */ 'test'
-                              step.time
+                            ? step.duration !== 0
+                              ? getStopDurationTime(step.duration)
+                              : step.time
                             : ''
                         }
                       </TD>
                     </View>
                     <View style={styles.simulation.startWidth}>
                       <TD style={styles.simulation.stopColumn}>
-                        {isFirstStep /* ||  step.stop !== '0' */
-                          ? step.departureTime /* + step.stop */
-                          : ''}
+                        {isFirstStep || step.duration !== 0 ? step.stopEndTime : ''}
                       </TD>
                     </View>
                     <View style={styles.simulation.weightWidth}>
