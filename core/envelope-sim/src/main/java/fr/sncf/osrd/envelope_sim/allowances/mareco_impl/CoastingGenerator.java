@@ -12,8 +12,6 @@ import fr.sncf.osrd.envelope.part.constraints.EnvelopeConstraint;
 import fr.sncf.osrd.envelope.part.constraints.SpeedConstraint;
 import fr.sncf.osrd.envelope_sim.*;
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeCoasting;
-import fr.sncf.osrd.reporting.exceptions.ErrorType;
-import fr.sncf.osrd.reporting.exceptions.OSRDError;
 
 public final class CoastingGenerator {
     /** Generate a coasting envelope part which starts at startPos */
@@ -24,8 +22,14 @@ public final class CoastingGenerator {
         var constrainedBuilder = new ConstrainedEnvelopePartBuilder(
                 partBuilder, new SpeedConstraint(0, FLOOR), new EnvelopeConstraint(envelope, CEILING));
         EnvelopeCoasting.coast(context, startPos, startSpeed, constrainedBuilder, 1);
-        if (constrainedBuilder.lastIntersection == 0)
-            throw new OSRDError(ErrorType.ImpossibleSimulationError); // We reached a stop while coasting
+        if (constrainedBuilder.lastIntersection == 0) {
+            // We reached a stop while coasting. This is not supposed to normally happen,
+            // but may be the result of the coasting envelope not intersecting with the
+            // base envelope (such as being an epsilon away before diverging again).
+            // We can't properly handle it without editing envelopes by hand,
+            // but returning null can keep the binary search going.
+            return null;
+        }
         if (partBuilder.isEmpty()) return null;
         return partBuilder.build();
     }
