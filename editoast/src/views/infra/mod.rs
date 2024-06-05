@@ -533,16 +533,20 @@ struct GetVoltagesQueryParams {
 async fn get_voltages(
     infra: Path<InfraIdParam>,
     param: Query<GetVoltagesQueryParams>,
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Data<DbConnectionPoolV2>,
 ) -> Result<Json<Vec<String>>> {
     let include_rolling_stock_modes = param.into_inner().include_rolling_stock_modes;
-    let conn = &mut db_pool.get().await?;
-    let infra = Infra::retrieve_or_fail(conn, infra.infra_id, || InfraApiError::NotFound {
-        infra_id: infra.infra_id,
+    let infra = Infra::retrieve_or_fail(db_pool.get().await?.deref_mut(), infra.infra_id, || {
+        InfraApiError::NotFound {
+            infra_id: infra.infra_id,
+        }
     })
     .await?;
     let voltages = infra
-        .get_voltages(conn, include_rolling_stock_modes)
+        .get_voltages(
+            db_pool.get().await?.deref_mut(),
+            include_rolling_stock_modes,
+        )
         .await?;
     Ok(Json(voltages.into_iter().map(|el| (el.voltage)).collect()))
 }
@@ -680,6 +684,7 @@ pub mod tests {
     use crate::infra_cache::operation::Operation;
     use crate::infra_cache::operation::RailjsonObject;
     use crate::modelsv2::fixtures::create_empty_infra;
+    use crate::modelsv2::fixtures::create_rolling_stock_with_energy_sources;
     use crate::modelsv2::get_geometry_layer_table;
     use crate::modelsv2::get_table;
     use crate::modelsv2::infra::DEFAULT_INFRA_VERSION;
@@ -1002,48 +1007,55 @@ pub mod tests {
     }
 
     #[rstest]
-    async fn infra_get_voltages(#[future] empty_infra: TestFixture<Infra>) {
-        let app = create_test_service().await;
-        let infra = empty_infra.await;
+    #[case(true)]
+    #[case(false)]
+    async fn infra_get_voltages(#[case] include_rolling_stock_modes: bool) {
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+        let empty_infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
 
-        let test_cases = vec![true, false];
         // Create electrification
         let electrification = Electrification {
             id: "test".into(),
             voltage: "0".into(),
             track_ranges: vec![],
-        };
-
-        let req = create_object_request(infra.id(), electrification.into());
-        assert_eq!(call_service(&app, req).await.status(), StatusCode::OK);
+        }
+        .into();
+        apply_create_operation(
+            &electrification,
+            empty_infra.id,
+            db_pool.get_ok().deref_mut(),
+        )
+        .await
+        .expect("Failed to create electrification object");
 
         // Create rolling_stock
-        let _rolling_stock =
-            named_other_rolling_stock("other_rolling_stock_infra_get_voltages", db_pool()).await;
+        let _rolling_stock = create_rolling_stock_with_energy_sources(
+            db_pool.get_ok().deref_mut(),
+            "other_rolling_stock_infra_get_voltages",
+        )
+        .await;
 
-        for include_rolling_stock_modes in test_cases {
-            let req = TestRequest::get()
-                .uri(
-                    format!(
-                        "/infra/{}/voltages/?include_rolling_stock_modes={}",
-                        infra.id(),
-                        include_rolling_stock_modes
-                    )
-                    .as_str(),
+        let req = TestRequest::get()
+            .uri(
+                format!(
+                    "/infra/{}/voltages/?include_rolling_stock_modes={}",
+                    empty_infra.id, include_rolling_stock_modes
                 )
-                .to_request();
-            let response = call_service(&app, req).await;
-            assert_eq!(response.status(), StatusCode::OK);
+                .as_str(),
+            )
+            .to_request();
+        let response = call_service(&app.service, req).await;
+        assert_eq!(response.status(), StatusCode::OK);
 
-            if !include_rolling_stock_modes {
-                let voltages: Vec<String> = read_body_json(response).await;
-                assert_eq!(voltages[0], "0");
-                assert_eq!(voltages.len(), 1);
-            } else {
-                let voltages: Vec<String> = read_body_json(response).await;
-                assert!(voltages.contains(&String::from("25000V")));
-                assert!(voltages.len() >= 2);
-            }
+        if !include_rolling_stock_modes {
+            let voltages: Vec<String> = read_body_json(response).await;
+            assert_eq!(voltages[0], "0");
+            assert_eq!(voltages.len(), 1);
+        } else {
+            let voltages: Vec<String> = read_body_json(response).await;
+            assert!(voltages.contains(&String::from("25000V")));
+            assert!(voltages.len() >= 2);
         }
     }
 
