@@ -622,13 +622,14 @@ async fn unlock(
 #[post("/load")]
 async fn load(
     path: Path<InfraIdParam>,
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Data<DbConnectionPoolV2>,
     core: Data<CoreClient>,
 ) -> Result<HttpResponse> {
-    let conn = &mut db_pool.get().await?;
     let infra_id = path.infra_id;
-    let infra =
-        Infra::retrieve_or_fail(conn, infra_id, || InfraApiError::NotFound { infra_id }).await?;
+    let infra = Infra::retrieve_or_fail(db_pool.get().await?.deref_mut(), infra_id, || {
+        InfraApiError::NotFound { infra_id }
+    })
+    .await?;
     let infra_request = InfraLoadRequest {
         infra: infra.id,
         expected_version: infra.version,
@@ -1128,19 +1129,25 @@ pub mod tests {
     }
 
     #[rstest]
-    async fn infra_load_core(#[future] empty_infra: TestFixture<Infra>) {
-        let empty_infra = empty_infra.await;
+    async fn infra_load_core() {
+        let db_pool = DbConnectionPoolV2::for_tests();
         let mut core = MockingClient::new();
         core.stub("/infra_load")
             .method(reqwest::Method::POST)
-            .response(StatusCode::NO_CONTENT)
-            .body("")
+            .response(StatusCode::OK)
+            .body("{}")
             .finish();
-        let app = create_test_service_with_core_client(core).await;
+
+        let app = TestAppBuilder::new()
+            .db_pool(db_pool.clone())
+            .core_client(core.into())
+            .build();
+        let empty_infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
+
         let req = TestRequest::post()
-            .uri(format!("/infra/{}/load", empty_infra.id()).as_str())
+            .uri(format!("/infra/{}/load", empty_infra.id).as_str())
             .to_request();
-        let response = call_service(&app, req).await;
+        let response = call_service(&app.service, req).await;
         assert_eq!(response.status(), StatusCode::NO_CONTENT);
     }
 }

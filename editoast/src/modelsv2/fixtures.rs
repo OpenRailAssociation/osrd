@@ -75,21 +75,6 @@ pub async fn create_fast_rolling_stock(conn: &mut DbConnection, name: &str) -> R
         .expect("Failed to create rolling stock")
 }
 
-pub fn rolling_stock_with_energy_sources_form(name: &str) -> RollingStockForm {
-    let mut rolling_stock_form: RollingStockForm = serde_json::from_str(include_str!(
-        "../tests/example_rolling_stock_2_energy_sources.json"
-    ))
-    .expect("Unable to parse rolling stock with energy sources");
-    rolling_stock_form.name = name.to_string();
-    rolling_stock_form
-}
-
-pub fn rolling_stock_with_energy_sources_changeset(name: &str) -> Changeset<RollingStockModel> {
-    let rolling_stock_model: Changeset<RollingStockModel> =
-        rolling_stock_with_energy_sources_form(name).into();
-    rolling_stock_model.name(name.to_owned()).version(1)
-}
-
 pub async fn create_rolling_stock_with_energy_sources(
     conn: &mut DbConnection,
     name: &str,
@@ -196,16 +181,6 @@ pub fn rolling_stock_with_energy_sources_changeset(name: &str) -> Changeset<Roll
     let rolling_stock_model: Changeset<RollingStockModel> =
         rolling_stock_with_energy_sources_form(name).into();
     rolling_stock_model.name(name.to_owned()).version(1)
-}
-
-pub async fn create_rolling_stock_with_energy_sources(
-    conn: &mut DbConnection,
-    name: &str,
-) -> RollingStockModel {
-    rolling_stock_with_energy_sources_changeset(name)
-        .create(conn)
-        .await
-        .expect("Failed to create rolling stock with energy sources")
 }
 
 pub async fn create_infra_object<T>(
