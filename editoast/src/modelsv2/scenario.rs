@@ -14,6 +14,7 @@ use crate::modelsv2::Tags;
 #[derive(Debug, Clone, ModelV2, Deserialize, Serialize, ToSchema)]
 #[schema(as = ScenarioV2)]
 #[model(table = crate::tables::scenario_v2)]
+#[cfg_attr(test, derive(PartialEq))]
 pub struct Scenario {
     pub id: i64,
     pub infra_id: i64,
