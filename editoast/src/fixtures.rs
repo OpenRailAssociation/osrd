@@ -185,15 +185,6 @@ pub mod tests {
         include_str!("./tests/train_schedules/simple_array.json")
     }
 
-    pub async fn named_other_rolling_stock(
-        name: &str,
-        db_pool: Arc<DbConnectionPool>,
-    ) -> TestFixture<RollingStockModel> {
-        let mut rs: Changeset<RollingStockModel> = get_other_rolling_stock_form(name).into();
-        rs = rs.version(0);
-        TestFixture::create(rs, db_pool).await
-    }
-
     async fn make_train_schedule(
         db_pool: Arc<DbConnectionPool>,
         path_id: i64,
