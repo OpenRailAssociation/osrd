@@ -120,10 +120,7 @@ pub(super) struct SearchResultItemOperationalPointTrackSections {
         query_joins = "
             INNER JOIN infra_object_track_section AS track_section
             ON track_section.infra_id = infra_object_signal.infra_id
-                AND track_section.obj_id = infra_object_signal.data->>'track'
-            INNER JOIN infra_layer_signal AS layer
-            ON layer.infra_id = infra_object_signal.infra_id
-                AND layer.obj_id = infra_object_signal.obj_id",
+                AND track_section.obj_id = infra_object_signal.data->>'track'",
     ),
     column(
         name = "label",
@@ -162,12 +159,6 @@ pub(super) struct SearchResultItemOperationalPointTrackSections {
         data_type = "integer",
         sql = "(track_section.data->'extensions'->'sncf'->>'line_code')::integer"
     ),
-    column(
-        name = "sprite_signaling_system",
-        data_type = "TEXT",
-        sql = "layer.signaling_system"
-    ),
-    column(name = "sprite", data_type = "TEXT", sql = "layer.sprite"),
     joins = "
         INNER JOIN infra_object_signal AS sig ON sig.id = search_signal.id
         INNER JOIN infra_object_track_section AS track_section ON track_section.obj_id = sig.data->>'track' AND track_section.infra_id = sig.infra_id
@@ -190,9 +181,9 @@ pub(super) struct SearchResultItemSignal {
     line_name: String,
     #[search(sql = "ST_AsGeoJSON(ST_Transform(lay.geographic, 4326))::json")]
     geographic: GeoJsonPoint,
-    #[search(sql = "search_signal.sprite_signaling_system")]
+    #[search(sql = "lay.signaling_system")]
     sprite_signaling_system: Option<String>,
-    #[search(sql = "search_signal.sprite")]
+    #[search(sql = "lay.sprite")]
     sprite: Option<String>,
 }
 
