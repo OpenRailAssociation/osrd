@@ -49,19 +49,23 @@
       in
         with pkgs; {
           devShells.default = mkShell {
+            nativeBuildInputs = [
+              # Rust
+              rustChan
+              # Linker
+              mold-wrapped
+              # Libs
+              geos
+              openssl
+              pkg-config
+              postgresql
+            ];
             buildInputs =
               [
-                # Rust
-                rustChan
                 # Tools & Libs
                 diesel-cli
                 cargo-watch
                 osmium-tool
-                geos
-                mold
-                openssl
-                pkg-config
-                postgresql
                 taplo
 
                 # API
