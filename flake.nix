@@ -43,6 +43,7 @@
           "rust-src"
           "rustc"
           "rustfmt"
+          "rust-analyzer"
         ];
 
         osrd-dev-scripts = pkgs.callPackage ./nix/scripts.nix {};
