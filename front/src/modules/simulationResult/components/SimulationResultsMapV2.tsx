@@ -66,7 +66,7 @@ import { getPresentSimulation, getSelectedTrain } from 'reducers/osrdsimulation/
 import type { Train } from 'reducers/osrdsimulation/types';
 import { useAppDispatch } from 'store';
 
-import { useChartSynchronizerV2 } from './ChartHelpers/ChartSynchronizerV2';
+import { useChartSynchronizerV2 } from './ChartSynchronizer';
 import { getRegimeKey, getSimulationHoverPositions } from './SimulationResultsMap/helpers';
 
 type MapProps = {

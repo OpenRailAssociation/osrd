@@ -4,7 +4,7 @@ import * as d3 from 'd3';
 
 import type { SimulationReport } from 'common/api/osrdEditoastApi';
 import { getDirection, gridX } from 'modules/simulationResult/components/ChartHelpers/ChartHelpers';
-import { useChartSynchronizer } from 'modules/simulationResult/components/ChartHelpers/ChartSynchronizer';
+import { useChartSynchronizer } from 'modules/simulationResult/components/ChartSynchronizer';
 import type { TimeScaleDomain } from 'modules/simulationResult/types';
 import { sec2datetime } from 'utils/timeManipulation';
 

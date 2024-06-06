@@ -6,8 +6,8 @@ import { useSelector } from 'react-redux';
 
 import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
 import RunningTime from 'applications/stdcm/components/RunningTime';
-import STDCM_REQUEST_STATUS from 'applications/stdcm/consts';
-import type { StdcmV2SuccessResponse } from 'applications/stdcm/types';
+import { STDCM_REQUEST_STATUS } from 'applications/stdcm/consts';
+import type { StdcmV2Results } from 'applications/stdcm/types';
 import StdcmResults from 'applications/stdcm/views/StdcmResults';
 import { osrdEditoastApi, type PostStdcmApiResponse } from 'common/api/osrdEditoastApi';
 import { useInfraID, useOsrdConfSelectors } from 'common/osrdContext';
@@ -29,7 +29,7 @@ type OSRDStdcmConfigProps = {
   currentStdcmRequestStatus: string;
   launchStdcmRequest: () => Promise<void>;
   stdcmResults?: PostStdcmApiResponse;
-  stdcmV2Results?: StdcmV2SuccessResponse;
+  stdcmV2Results?: StdcmV2Results | null;
   pathProperties?: ManageTrainSchedulePathProperties;
   setPathProperties: (pathProperties?: ManageTrainSchedulePathProperties) => void;
 };
@@ -210,7 +210,7 @@ const StdcmConfig = ({
             {trainScheduleV2Activated && rollingStock && stdcmV2Results && (
               <StdcmResultsV2
                 mapCanvas={mapCanvas}
-                stdcmResults={stdcmV2Results}
+                stdcmV2Results={stdcmV2Results}
                 pathProperties={pathProperties}
                 rollingStockData={rollingStock}
                 speedLimitByTag={speedLimitByTag}

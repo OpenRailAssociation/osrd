@@ -5,7 +5,7 @@ import { Button } from '@osrd-project/ui-core';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
-import STDCM_REQUEST_STATUS from 'applications/stdcm/consts';
+import { STDCM_REQUEST_STATUS } from 'applications/stdcm/consts';
 import useStdcm from 'applications/stdcm/hooks/useStdcm';
 import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
 import { Map } from 'modules/trainschedule/components/ManageTrainSchedule';

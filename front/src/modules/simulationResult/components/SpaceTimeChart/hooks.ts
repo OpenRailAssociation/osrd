@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 
+import { STDCM_TRAIN_ID } from 'applications/stdcm/consts';
 import {
   osrdEditoastApi,
   type PathProperties,
@@ -20,7 +21,7 @@ const useGetProjectedTrainOperationalPoints = (
       infraId: infraId as number,
     },
     {
-      skip: !trainIdUsedForProjection || !infraId,
+      skip: !trainIdUsedForProjection || !infraId || trainIdUsedForProjection === STDCM_TRAIN_ID,
     }
   );
 

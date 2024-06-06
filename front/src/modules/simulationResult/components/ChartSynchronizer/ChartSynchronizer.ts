@@ -4,7 +4,7 @@ import { CHART_AXES, LIST_VALUES } from 'modules/simulationResult/consts';
 import type { PositionsSpeedTimes, SimulationTrain } from 'reducers/osrdsimulation/types';
 import type { Store } from 'store';
 
-import { interpolateOnTime } from './ChartHelpers';
+import { interpolateOnTime } from '../ChartHelpers/ChartHelpers';
 
 type PositionValues = PositionsSpeedTimes<Date>;
 type Subscriber = (timePosition: Date, positionValues: PositionValues) => void;

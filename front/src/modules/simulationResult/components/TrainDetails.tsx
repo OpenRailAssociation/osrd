@@ -6,7 +6,7 @@ import { useSelector } from 'react-redux';
 import type { RootState } from 'reducers';
 import type { ConsolidatedRouteAspect, PositionsSpeedTimes } from 'reducers/osrdsimulation/types';
 
-import { useChartSynchronizer } from './ChartHelpers/ChartSynchronizer';
+import { useChartSynchronizer } from './ChartSynchronizer';
 
 /**
  * Given the routeAspects and a timePosition, returns the bounds [start, end]

@@ -30,7 +30,7 @@ import { dateIsInRange } from 'utils/date';
 import { mmToM } from 'utils/physics';
 
 import { drawAxisTitle, drawSpaceCurvesSlopesChartCurve } from './utils';
-import { useChartSynchronizerV2 } from '../ChartHelpers/ChartSynchronizerV2';
+import { useChartSynchronizerV2 } from '../ChartSynchronizer';
 
 const CHART_ID = 'SpaceCurvesSlopes';
 

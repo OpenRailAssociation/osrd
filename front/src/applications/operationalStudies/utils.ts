@@ -1,14 +1,6 @@
-import { compact, omit } from 'lodash';
+import { omit } from 'lodash';
 
-import type {
-  PathProperties,
-  PathfindingResultSuccess,
-  ProjectPathTrainResult,
-  RollingStock,
-  SimulationPowerRestrictionRange,
-  TrainScheduleBase,
-} from 'common/api/osrdEditoastApi';
-import { getRollingStockPowerRestrictionsByMode } from 'modules/rollingStock/helpers/powerRestrictions';
+import type { PathProperties, ProjectPathTrainResult } from 'common/api/osrdEditoastApi';
 import { convertUTCDateToLocalDate, isoDateToMs } from 'utils/date';
 import { mmToM } from 'utils/physics';
 import { ms2sec } from 'utils/timeManipulation';
@@ -194,65 +186,6 @@ export const preparePathPropertiesData = (
     operationalPoints: operational_points as NonNullable<PathProperties['operational_points']>,
     geometry: geometry as NonNullable<PathProperties['geometry']>,
   };
-};
-
-/**
- * Format power restrictions data to ranges data base on path steps position
- */
-export const formatPowerRestrictionRanges = (
-  powerRestrictions: NonNullable<TrainScheduleBase['power_restrictions']>,
-  path: TrainScheduleBase['path'],
-  stepsPathPositions: PathfindingResultSuccess['path_items_positions']
-): Omit<SimulationPowerRestrictionRange, 'handled'>[] =>
-  compact(
-    powerRestrictions.map((powerRestriction) => {
-      const startStep = path.findIndex((step) => step.id === powerRestriction.from);
-      const stopStep = path.findIndex((step) => step.id === powerRestriction.to);
-      if (startStep === -1 || stopStep === -1) {
-        console.error('Power restriction range not found in path steps.');
-        return null;
-      }
-      return {
-        start: mmToM(stepsPathPositions[startStep]),
-        stop: mmToM(stepsPathPositions[stopStep]),
-        code: powerRestriction.value,
-      };
-    })
-  );
-
-/**
- * Format power restrictions data to be used in simulation results charts
- */
-export const formatPowerRestrictionRangesWithHandled = (
-  powerRestrictionRanges: Omit<SimulationPowerRestrictionRange, 'handled'>[],
-  electrificationRanges: ElectrificationRangeV2[],
-  rollingStockEffortCurves: RollingStock['effort_curves']['modes']
-): SimulationPowerRestrictionRange[] => {
-  const powerRestrictionsByMode = getRollingStockPowerRestrictionsByMode(rollingStockEffortCurves);
-
-  return powerRestrictionRanges.map((powerRestrictionRange) => {
-    const foundElectrificationRange = electrificationRanges.find(
-      (electrificationRange) =>
-        electrificationRange.start <= powerRestrictionRange.start &&
-        electrificationRange.stop >= powerRestrictionRange.stop
-    );
-
-    let isHandled = false;
-    if (
-      foundElectrificationRange &&
-      foundElectrificationRange.electrificationUsage.type === 'electrification' &&
-      powerRestrictionsByMode[foundElectrificationRange.electrificationUsage.voltage]
-    ) {
-      isHandled = powerRestrictionsByMode[
-        foundElectrificationRange.electrificationUsage.voltage
-      ].includes(powerRestrictionRange.code);
-    }
-
-    return {
-      ...powerRestrictionRange,
-      handled: isHandled,
-    };
-  });
 };
 
 /**

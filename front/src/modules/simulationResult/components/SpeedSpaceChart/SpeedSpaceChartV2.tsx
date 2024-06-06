@@ -14,11 +14,11 @@ import type {
   SimulationResponse,
 } from 'common/api/osrdEditoastApi';
 import { interpolateOnPosition } from 'modules/simulationResult/components/ChartHelpers/ChartHelpers';
-import { useChartSynchronizerV2 } from 'modules/simulationResult/components/ChartHelpers/ChartSynchronizerV2';
 import {
   enableInteractivityV2,
   traceVerticalLine,
 } from 'modules/simulationResult/components/ChartHelpers/enableInteractivity';
+import { useChartSynchronizerV2 } from 'modules/simulationResult/components/ChartSynchronizer';
 import {
   createSpeedSpaceChart,
   drawSpeedSpaceTrain,

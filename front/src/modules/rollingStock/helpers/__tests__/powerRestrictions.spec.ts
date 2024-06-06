@@ -1,4 +1,4 @@
-import { effortCurves } from 'applications/operationalStudies/__tests__/sampleData';
+import { effortCurves } from 'modules/powerRestriction/helpers/__tests__/sampleData';
 
 import { getRollingStockPowerRestrictionsByMode } from '../powerRestrictions';
 

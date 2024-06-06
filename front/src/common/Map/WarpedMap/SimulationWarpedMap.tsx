@@ -21,7 +21,7 @@ import type { WarpingFunction } from 'common/Map/WarpedMap/getWarping';
 import getWarping from 'common/Map/WarpedMap/getWarping';
 import WarpedMap from 'common/Map/WarpedMap/WarpedMap';
 import { useInfraID } from 'common/osrdContext';
-import { useChartSynchronizer } from 'modules/simulationResult/components/ChartHelpers/ChartSynchronizer';
+import { useChartSynchronizer } from 'modules/simulationResult/components/ChartSynchronizer';
 import { getSimulationHoverPositions } from 'modules/simulationResult/components/SimulationResultsMap/helpers';
 import type { TrainPosition } from 'modules/simulationResult/components/SimulationResultsMap/types';
 import {
