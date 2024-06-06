@@ -565,12 +565,13 @@ async fn get_all_voltages(db_pool: Data<DbConnectionPoolV2>) -> Result<Json<Vec<
     Ok(Json(voltages.into_iter().map(|el| (el.voltage)).collect()))
 }
 
-async fn set_locked(infra_id: i64, locked: bool, db_pool: Arc<DbConnectionPool>) -> Result<()> {
-    let conn = &mut db_pool.get().await?;
-    let mut infra =
-        Infra::retrieve_or_fail(conn, infra_id, || InfraApiError::NotFound { infra_id }).await?;
+async fn set_locked(infra_id: i64, locked: bool, db_pool: Arc<DbConnectionPoolV2>) -> Result<()> {
+    let mut infra = Infra::retrieve_or_fail(db_pool.get().await?.deref_mut(), infra_id, || {
+        InfraApiError::NotFound { infra_id }
+    })
+    .await?;
     infra.locked = locked;
-    infra.save(conn).await
+    infra.save(db_pool.get().await?.deref_mut()).await
 }
 
 /// Lock an infra
@@ -583,7 +584,10 @@ async fn set_locked(infra_id: i64, locked: bool, db_pool: Arc<DbConnectionPool>)
     )
 )]
 #[post("/lock")]
-async fn lock(infra: Path<InfraIdParam>, db_pool: Data<DbConnectionPool>) -> Result<HttpResponse> {
+async fn lock(
+    infra: Path<InfraIdParam>,
+    db_pool: Data<DbConnectionPoolV2>,
+) -> Result<HttpResponse> {
     set_locked(infra.infra_id, true, db_pool.into_inner()).await?;
     Ok(HttpResponse::NoContent().finish())
 }
@@ -600,7 +604,7 @@ async fn lock(infra: Path<InfraIdParam>, db_pool: Data<DbConnectionPool>) -> Res
 #[post("/unlock")]
 async fn unlock(
     infra: Path<InfraIdParam>,
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Data<DbConnectionPoolV2>,
 ) -> Result<HttpResponse> {
     set_locked(infra.infra_id, false, db_pool.into_inner()).await?;
     Ok(HttpResponse::NoContent().finish())
@@ -1079,29 +1083,30 @@ pub mod tests {
     }
 
     #[rstest]
-    async fn infra_lock(#[future] empty_infra: TestFixture<Infra>, db_pool: Arc<DbConnectionPool>) {
-        let empty_infra = empty_infra.await;
+    async fn infra_lock() {
+        let db_pool = DbConnectionPoolV2::for_tests();
         let mut core = MockingClient::new();
         core.stub("/cache_status")
             .method(reqwest::Method::POST)
             .response(StatusCode::OK)
             .body("{}")
             .finish();
-        let app = create_test_service_with_core_client(core).await;
-        assert!(!empty_infra.locked);
 
-        let infra_id = empty_infra.id();
+        let app = TestAppBuilder::new()
+            .db_pool(db_pool.clone())
+            .core_client(core.into())
+            .build();
+        let empty_infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
 
         // Lock infra
         let req = TestRequest::post()
-            .uri(format!("/infra/{}/lock/", infra_id).as_str())
+            .uri(format!("/infra/{}/lock/", empty_infra.id).as_str())
             .to_request();
-        let response = call_service(&app, req).await;
+        let response = call_service(&app.service, req).await;
         assert_eq!(response.status(), StatusCode::NO_CONTENT);
 
         // Check lock
-        let conn = &mut db_pool.get().await.unwrap();
-        let infra = Infra::retrieve(conn, infra_id)
+        let infra = Infra::retrieve(db_pool.get_ok().deref_mut(), empty_infra.id)
             .await
             .unwrap()
             .expect("infra was not cloned");
@@ -1109,13 +1114,13 @@ pub mod tests {
 
         // Unlock infra
         let req = TestRequest::post()
-            .uri(format!("/infra/{}/unlock/", infra_id).as_str())
+            .uri(format!("/infra/{}/unlock/", empty_infra.id).as_str())
             .to_request();
-        let response = call_service(&app, req).await;
+        let response = call_service(&app.service, req).await;
         assert_eq!(response.status(), StatusCode::NO_CONTENT);
 
         // Check lock
-        let infra = Infra::retrieve(conn, infra_id)
+        let infra = Infra::retrieve(db_pool.get_ok().deref_mut(), empty_infra.id)
             .await
             .unwrap()
             .expect("infra was not cloned");
