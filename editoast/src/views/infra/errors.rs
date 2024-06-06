@@ -5,6 +5,7 @@ use actix_web::web::Json as WebJson;
 use actix_web::web::Path;
 use actix_web::web::Query;
 use editoast_derive::EditoastError;
+use std::ops::DerefMut;
 use strum::VariantNames;
 use thiserror::Error;
 
@@ -14,7 +15,7 @@ use crate::modelsv2::infra::errors::InfraError;
 use crate::modelsv2::infra::errors::QueryParams;
 use crate::modelsv2::infra::Infra;
 use crate::modelsv2::prelude::*;
-use crate::modelsv2::DbConnectionPool;
+use crate::modelsv2::DbConnectionPoolV2;
 use crate::views::infra::InfraApiError;
 use crate::views::pagination::PaginatedResponse;
 use crate::views::pagination::PaginationQueryParam;
@@ -27,7 +28,7 @@ pub fn routes() -> impl HttpServiceFactory {
 /// Return the list of errors of an infra
 #[get("/errors")]
 async fn list_errors(
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Data<DbConnectionPoolV2>,
     infra: Path<i64>,
     pagination_params: Query<PaginationQueryParam>,
     params: Query<QueryParams>,
@@ -44,11 +45,12 @@ async fn list_errors(
         }
     }
 
-    let conn = &mut db_pool.get().await?;
-    let infra =
-        Infra::retrieve_or_fail(conn, infra_id, || InfraApiError::NotFound { infra_id }).await?;
+    let infra = Infra::retrieve_or_fail(db_pool.get().await?.deref_mut(), infra_id, || {
+        InfraApiError::NotFound { infra_id }
+    })
+    .await?;
     let errors = infra
-        .get_paginated_errors(conn, page, per_page, &params)
+        .get_paginated_errors(db_pool.get().await?.deref_mut(), page, per_page, &params)
         .await?;
     Ok(WebJson(errors))
 }
@@ -72,13 +74,13 @@ mod tests {
     use actix_http::StatusCode;
     use actix_web::test::call_service;
     use actix_web::test::TestRequest;
+    use pretty_assertions::assert_eq;
     use rstest::rstest;
+    use std::ops::DerefMut;
 
-    use crate::fixtures::tests::empty_infra;
-    use crate::fixtures::tests::TestFixture;
-    use crate::modelsv2::Infra;
+    use crate::modelsv2::fixtures::create_empty_infra;
     use crate::views::infra::errors::check_error_type_query;
-    use crate::views::tests::create_test_service;
+    use crate::views::test_app::TestAppBuilder;
 
     #[test]
     fn check_error_type() {
@@ -87,26 +89,24 @@ mod tests {
     }
 
     #[rstest]
-    async fn list_errors_get(#[future] empty_infra: TestFixture<Infra>) {
-        let empty_infra = empty_infra.await;
+    async fn list_errors_get() {
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+        let empty_infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
 
         let error_type = "overlapping_electrifications";
         let level = "warnings";
-
-        let app = create_test_service().await;
 
         let req = TestRequest::get()
             .uri(
                 format!(
                     "/infra/{}/errors?error_type={}&level={}",
-                    empty_infra.id(),
-                    error_type,
-                    level
+                    empty_infra.id, error_type, level
                 )
                 .as_str(),
             )
             .to_request();
-        let response = call_service(&app, req).await;
+        let response = call_service(&app.service, req).await;
         assert_eq!(response.status(), StatusCode::OK);
     }
 }

@@ -879,7 +879,7 @@ pub mod tests {
     use crate::fixtures::tests::db_pool;
     use crate::fixtures::tests::small_infra;
     use crate::modelsv2::infra::errors::InfraError;
-    use crate::views::pagination::PaginatedResponse;
+    use crate::modelsv2::infra::errors::QueryParams;
     use crate::views::tests::create_test_service;
 
     #[rstest]
@@ -947,6 +947,7 @@ pub mod tests {
     async fn split_track_section_should_work() {
         // Init
         let pg_db_pool = db_pool();
+        let conn = &mut db_pool().get().await.unwrap();
         let small_infra = small_infra(pg_db_pool.clone()).await;
         let app = create_test_service().await;
 
@@ -957,11 +958,10 @@ pub mod tests {
         call_service(&app, req_refresh).await;
 
         // Get infra errors
-        let req_init_errors = TestRequest::get()
-            .uri(format!("/infra/{}/errors", small_infra.id()).as_str())
-            .to_request();
-        let init_errors: PaginatedResponse<InfraError> =
-            call_and_read_body_json(&app, req_init_errors).await;
+        let init_errors = small_infra
+            .get_paginated_errors(conn, 1, 25, &QueryParams::default())
+            .await
+            .unwrap();
 
         // Make a call to split the track section
         let req = TestRequest::post()
@@ -977,10 +977,10 @@ pub mod tests {
         assert_eq!(res.len(), 2);
 
         // Check that infra errors has not increased with the split (omit route error for now)
-        let req_errors = TestRequest::get()
-            .uri(format!("/infra/{}/errors", small_infra.id()).as_str())
-            .to_request();
-        let errors: PaginatedResponse<InfraError> = call_and_read_body_json(&app, req_errors).await;
+        let errors = small_infra
+            .get_paginated_errors(conn, 1, 25, &QueryParams::default())
+            .await
+            .unwrap();
         let errors_without_routes: Vec<InfraError> = errors
             .results
             .into_iter()
