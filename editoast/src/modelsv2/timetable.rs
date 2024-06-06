@@ -10,6 +10,7 @@ use crate::modelsv2::Retrieve;
 
 #[derive(Debug, Default, Clone, ModelV2)]
 #[model(table = crate::tables::timetable_v2)]
+#[cfg_attr(test, derive(serde::Deserialize, PartialEq))]
 pub struct Timetable {
     pub id: i64,
     pub electrical_profile_set_id: Option<i64>,

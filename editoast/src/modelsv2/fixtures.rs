@@ -7,6 +7,7 @@ use crate::infra_cache::operation::create::apply_create_operation;
 use crate::infra_cache::operation::RailjsonObject;
 use crate::modelsv2::prelude::*;
 use crate::modelsv2::rolling_stock_livery::RollingStockLiveryModel;
+use crate::modelsv2::timetable::Timetable;
 use crate::modelsv2::DbConnection;
 use crate::modelsv2::Document;
 use crate::modelsv2::ElectricalProfileSet;
@@ -163,6 +164,14 @@ pub async fn create_electrical_profile_set(conn: &mut DbConnection) -> Electrica
         .create(conn)
         .await
         .expect("Failed to create electrical profile set")
+}
+
+pub async fn create_timetable(conn: &mut DbConnection) -> Timetable {
+    Timetable::changeset()
+        .electrical_profile_set_id(None)
+        .create(conn)
+        .await
+        .expect("Failed to create timetable")
 }
 
 pub async fn create_empty_infra(conn: &mut DbConnection) -> Infra {
