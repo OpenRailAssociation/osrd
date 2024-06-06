@@ -256,7 +256,7 @@ mod tests {
         let response: PaginatedResponse<LightRollingStockWithLiveries> =
             assert_status_and_read!(response, StatusCode::OK);
 
-        //  Ensure that AT LEAST all the rolling stocks create above are returned, in order
+        // Ensure that AT LEAST all the rolling stocks create above are returned, in order
         let vec_ids = response
             .results
             .iter()

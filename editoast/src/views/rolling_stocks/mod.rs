@@ -603,20 +603,20 @@ pub mod tests {
     use crate::views::test_app::TestAppBuilder;
     use crate::views::tests::create_test_service;
 
-    pub fn rolling_stock_create_request(rolling_stock_form: &RollingStockForm) -> Request {
+    fn rolling_stock_create_request(rolling_stock_form: &RollingStockForm) -> Request {
         TestRequest::post()
             .uri("/rolling_stock")
             .set_json(rolling_stock_form)
             .to_request()
     }
 
-    pub fn rolling_stock_get_by_id_request(rolling_stock_id: i64) -> Request {
+    fn rolling_stock_get_by_id_request(rolling_stock_id: i64) -> Request {
         TestRequest::get()
             .uri(format!("/rolling_stock/{rolling_stock_id}").as_str())
             .to_request()
     }
 
-    pub fn rolling_stock_delete_request(rolling_stock_id: i64) -> Request {
+    fn rolling_stock_delete_request(rolling_stock_id: i64) -> Request {
         TestRequest::delete()
             .uri(format!("/rolling_stock/{rolling_stock_id}").as_str())
             .to_request()
