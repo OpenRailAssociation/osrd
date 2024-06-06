@@ -405,7 +405,7 @@ mod tests {
         force_refresh(&mut small_infra).await;
 
         // Check the only initial issues are "overlapping_speed_sections" warnings
-        let infra_errors_before_all: PaginatedResponse<crate::views::infra::errors::InfraError> =
+        let infra_errors_before_all: PaginatedResponse<crate::modelsv2::infra::errors::InfraError> =
             read_body_json(call_service(&app, errors_request(small_infra_id)).await).await;
         assert!(infra_errors_before_all.results.iter().all(|e| e
             .information
@@ -424,7 +424,7 @@ mod tests {
             .to_request();
         assert_eq!(call_service(&app, req_del).await.status(), StatusCode::OK);
 
-        let infra_errors_before_fix: PaginatedResponse<crate::views::infra::errors::InfraError> =
+        let infra_errors_before_fix: PaginatedResponse<crate::modelsv2::infra::errors::InfraError> =
             read_body_json(call_service(&app, errors_request(small_infra_id)).await).await;
         // Check that some new issues appeared
         assert!(infra_errors_before_fix.count > infra_errors_before_all.count);
@@ -433,7 +433,7 @@ mod tests {
         let response = call_service(&app, auto_fixes_request(small_infra_id)).await;
 
         // THEN
-        let infra_errors_after_fix: PaginatedResponse<crate::views::infra::errors::InfraError> =
+        let infra_errors_after_fix: PaginatedResponse<crate::modelsv2::infra::errors::InfraError> =
             read_body_json(call_service(&app, errors_request(small_infra_id)).await).await;
         assert_eq!(infra_errors_after_fix, infra_errors_before_fix);
 

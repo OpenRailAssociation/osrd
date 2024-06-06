@@ -4,35 +4,24 @@ use actix_web::web::Data;
 use actix_web::web::Json as WebJson;
 use actix_web::web::Path;
 use actix_web::web::Query;
-use diesel::sql_query;
-use diesel::sql_types::BigInt;
-use diesel::sql_types::Json;
-use diesel::sql_types::Text;
 use editoast_derive::EditoastError;
-use serde::Deserialize;
-use serde::Serialize;
-use serde_json::Value as JsonValue;
 use strum::VariantNames;
 use thiserror::Error;
 
 use crate::error::Result;
 use crate::generated_data::infra_error::InfraErrorType;
+use crate::modelsv2::infra::errors::InfraError;
+use crate::modelsv2::infra::errors::QueryParams;
+use crate::modelsv2::infra::Infra;
+use crate::modelsv2::prelude::*;
 use crate::modelsv2::DbConnectionPool;
-use crate::views::pagination::Paginate;
+use crate::views::infra::InfraApiError;
 use crate::views::pagination::PaginatedResponse;
 use crate::views::pagination::PaginationQueryParam;
 
 /// Return `/infra/<infra_id>/errors` routes
 pub fn routes() -> impl HttpServiceFactory {
     list_errors
-}
-
-#[derive(Debug, Clone, Deserialize)]
-struct QueryParams {
-    #[serde(default)]
-    level: Level,
-    error_type: Option<String>,
-    object_id: Option<String>,
 }
 
 /// Return the list of errors of an infra
@@ -47,7 +36,7 @@ async fn list_errors(
         .validate(100)?
         .warn_page_size(100)
         .unpack();
-    let infra = infra.into_inner();
+    let infra_id = infra.into_inner();
 
     if let Some(error_type) = &params.error_type {
         if !check_error_type_query(error_type) {
@@ -55,7 +44,12 @@ async fn list_errors(
         }
     }
 
-    let errors = get_paginated_infra_errors(db_pool, infra, page, per_page, &params).await?;
+    let conn = &mut db_pool.get().await?;
+    let infra =
+        Infra::retrieve_or_fail(conn, infra_id, || InfraApiError::NotFound { infra_id }).await?;
+    let errors = infra
+        .get_paginated_errors(conn, page, per_page, &params)
+        .await?;
     Ok(WebJson(errors))
 }
 
@@ -71,53 +65,6 @@ fn check_error_type_query(param: &String) -> bool {
 enum ListErrorsErrors {
     #[error("Wrong Error type provided")]
     WrongErrorTypeProvided,
-}
-
-#[derive(QueryableByName, Debug, Clone, Serialize, Deserialize, PartialEq)]
-pub struct InfraError {
-    #[diesel(sql_type = Json)]
-    pub information: JsonValue,
-}
-
-#[derive(Default, Debug, Clone, PartialEq, Eq, Deserialize)]
-#[serde(rename_all = "lowercase")]
-pub enum Level {
-    Warnings,
-    Errors,
-    #[default]
-    All,
-}
-
-async fn get_paginated_infra_errors(
-    db_pool: Data<DbConnectionPool>,
-    infra: i64,
-    page: i64,
-    per_page: i64,
-    params: &QueryParams,
-) -> Result<PaginatedResponse<InfraError>> {
-    let mut query =
-        String::from("SELECT information::text FROM infra_layer_error WHERE infra_id = $1");
-    if params.level == Level::Warnings {
-        query += " AND information->>'is_warning' = 'true'"
-    } else if params.level == Level::Errors {
-        query += " AND information->>'is_warning' = 'false'"
-    }
-    if params.error_type.is_some() {
-        query += " AND information->>'error_type' = $2"
-    }
-    if params.object_id.is_some() {
-        query += " AND information->>'obj_id' = $3"
-    }
-    let error_type = params.error_type.clone().unwrap_or_default();
-    let object_id = params.object_id.clone().unwrap_or_default();
-    let mut conn = db_pool.get().await?;
-    sql_query(query)
-        .bind::<BigInt, _>(infra)
-        .bind::<Text, _>(error_type)
-        .bind::<Text, _>(object_id)
-        .paginate(page, per_page)
-        .load_and_count::<InfraError>(&mut conn)
-        .await
 }
 
 #[cfg(test)]
