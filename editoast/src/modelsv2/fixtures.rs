@@ -1,17 +1,20 @@
+use std::io::Cursor;
+
 use chrono::Utc;
 use editoast_schemas::primitives::OSRDObject;
 
 use crate::infra_cache::operation::create::apply_create_operation;
 use crate::infra_cache::operation::RailjsonObject;
 use crate::modelsv2::prelude::*;
+use crate::modelsv2::rolling_stock_livery::RollingStockLiveryModel;
 use crate::modelsv2::DbConnection;
+use crate::modelsv2::Document;
 use crate::modelsv2::Infra;
 use crate::modelsv2::Project;
+use crate::modelsv2::RollingStockModel;
 use crate::modelsv2::Study;
 use crate::modelsv2::Tags;
 use crate::views::rolling_stocks::rolling_stock_form::RollingStockForm;
-
-use super::RollingStockModel;
 
 pub fn project_changeset(name: &str) -> Changeset<Project> {
     Project::changeset()
@@ -97,6 +100,59 @@ pub async fn create_rolling_stock_with_energy_sources(
 
 pub fn get_rolling_stock_with_invalid_effort_curves() -> &'static str {
     include_str!("../tests/example_rolling_stock_3.json")
+}
+
+pub fn rolling_stock_livery_changeset(
+    name: &str,
+    rolling_stock_id: i64,
+    compound_image_id: i64,
+) -> Changeset<RollingStockLiveryModel> {
+    // let rolling_stock = named_fast_rolling_stock(&rs_name, db_pool.clone()).await;
+    // let image = document_example(db_pool.clone()).await;
+
+    RollingStockLiveryModel::changeset()
+        .name(name.to_string())
+        .rolling_stock_id(rolling_stock_id)
+        .compound_image_id(Some(compound_image_id))
+}
+
+pub async fn create_rolling_stock_livery(
+    conn: &mut DbConnection,
+    name: &str,
+    rolling_stock_id: i64,
+    compound_image_id: i64,
+) -> RollingStockLiveryModel {
+    rolling_stock_livery_changeset(name, rolling_stock_id, compound_image_id)
+        .create(conn)
+        .await
+        .expect("Failed to create rolling stock livery")
+}
+
+pub async fn create_document_example(conn: &mut DbConnection) -> Document {
+    let img = image::open("src/tests/example_rolling_stock_image_1.gif").unwrap();
+    let mut img_bytes: Vec<u8> = Vec::new();
+    assert!(img
+        .write_to(&mut Cursor::new(&mut img_bytes), image::ImageFormat::Png)
+        .is_ok());
+    let changeset = Document::changeset()
+        .content_type(String::from("img/png"))
+        .data(img_bytes);
+
+    changeset
+        .create(conn)
+        .await
+        .expect("Failed to create document")
+}
+
+pub async fn create_rolling_stock_livery_fixture(
+    conn: &mut DbConnection,
+    name: &str,
+) -> (RollingStockLiveryModel, RollingStockModel, Document) {
+    let rolling_stock = create_fast_rolling_stock(conn, name).await;
+    let document_exemple = create_document_example(conn).await;
+    let rs_livery =
+        create_rolling_stock_livery(conn, name, rolling_stock.id, document_exemple.id).await;
+    (rs_livery, rolling_stock, document_exemple)
 }
 
 pub async fn create_empty_infra(conn: &mut DbConnection) -> Infra {

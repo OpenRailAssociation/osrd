@@ -6,7 +6,7 @@ use actix_web::web::Query;
 
 use crate::decl_paginated_response;
 use crate::error::Result;
-use crate::modelsv2::DbConnectionPool;
+use crate::modelsv2::DbConnectionPoolV2;
 use crate::modelsv2::LightRollingStockModel;
 use crate::modelsv2::Retrieve;
 use crate::views::pagination::PaginatedResponse;
@@ -50,11 +50,12 @@ editoast_common::schemas! {
 )]
 #[get("")]
 async fn list(
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Data<DbConnectionPoolV2>,
     page_settings: Query<PaginationQueryParam>,
 ) -> Result<Json<PaginatedResponse<LightRollingStockWithLiveries>>> {
+    let conn = &mut db_pool.get().await?;
     let (page, per_page) = page_settings.validate(1000)?.warn_page_size(100).unpack();
-    let result = LightRollingStockModel::list(db_pool.into_inner(), page, per_page).await?;
+    let result = LightRollingStockModel::list(conn, page, per_page).await?;
 
     let results: Vec<LightRollingStockWithLiveries> =
         result.results.into_iter().map(|l| l.into()).collect();
@@ -79,7 +80,7 @@ async fn list(
 )]
 #[get("")]
 async fn get(
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Data<DbConnectionPoolV2>,
     rolling_stock_id: Path<i64>,
 ) -> Result<Json<LightRollingStockWithLiveries>> {
     let rolling_stock_id = rolling_stock_id.into_inner();
@@ -90,10 +91,8 @@ async fn get(
         }
     })
     .await?;
-    let rollig_stock_with_liveries: LightRollingStockWithLiveries = rolling_stock
-        .with_liveries(db_pool.into_inner())
-        .await?
-        .into();
+    let rollig_stock_with_liveries: LightRollingStockWithLiveries =
+        rolling_stock.with_liveries(conn).await?.into();
     Ok(Json(rollig_stock_with_liveries))
 }
 
@@ -107,7 +106,7 @@ async fn get(
 )]
 #[get("")]
 async fn get_by_name(
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Data<DbConnectionPoolV2>,
     rolling_stock_name: Path<String>,
 ) -> Result<Json<LightRollingStockWithLiveries>> {
     let rolling_stock_name = rolling_stock_name.into_inner();
@@ -119,95 +118,32 @@ async fn get_by_name(
             }
         })
         .await?;
-    let rollig_stock_with_liveries: LightRollingStockWithLiveries = rolling_stock
-        .with_liveries(db_pool.into_inner())
-        .await?
-        .into();
+    let rollig_stock_with_liveries: LightRollingStockWithLiveries =
+        rolling_stock.with_liveries(conn).await?.into();
     Ok(Json(rollig_stock_with_liveries))
 }
 
 #[cfg(test)]
 mod tests {
     use std::collections::HashSet;
+    use std::ops::DerefMut;
 
     use actix_http::StatusCode;
-    use actix_web::test as actix_test;
+    use actix_web::test::call_and_read_body_json;
     use actix_web::test::call_service;
     use actix_web::test::TestRequest;
+    use pretty_assertions::assert_eq;
     use rstest::*;
-    use std::sync::Arc;
 
     use super::LightRollingStockWithLiveries;
     use crate::assert_response_error_type_match;
     use crate::assert_status_and_read;
-    use crate::fixtures::tests::db_pool;
-    use crate::fixtures::tests::named_fast_rolling_stock;
-    use crate::fixtures::tests::rolling_stock_livery;
-    use crate::modelsv2::DbConnectionPool;
+    use crate::error::InternalError;
+    use crate::modelsv2::fixtures::create_fast_rolling_stock;
+    use crate::modelsv2::fixtures::create_rolling_stock_livery_fixture;
     use crate::views::pagination::PaginatedResponse;
     use crate::views::pagination::PaginationError;
-    use crate::views::tests::create_test_service;
-
-    #[actix_test]
-    async fn list_light_rolling_stock() {
-        let app = create_test_service().await;
-        let req = TestRequest::get().uri("/light_rolling_stock").to_request();
-        let response = call_service(&app, req).await;
-        assert_eq!(response.status(), StatusCode::OK);
-    }
-
-    #[rstest]
-    async fn get_light_rolling_stock(db_pool: Arc<DbConnectionPool>) {
-        // GIVEN
-        let app = create_test_service().await;
-        let rolling_stock = named_fast_rolling_stock(
-            "fast_rolling_stock_get_light_rolling_stock",
-            db_pool.clone(),
-        )
-        .await;
-
-        let req = TestRequest::get()
-            .uri(format!("/light_rolling_stock/{}", rolling_stock.id()).as_str())
-            .to_request();
-
-        // WHEN
-        let response = call_service(&app, req).await;
-
-        // THEN
-        assert_eq!(response.status(), StatusCode::OK);
-    }
-
-    #[rstest]
-    async fn get_light_rolling_stock_by_name(db_pool: Arc<DbConnectionPool>) {
-        // GIVEN
-        let app = create_test_service().await;
-        let rolling_stock = named_fast_rolling_stock(
-            "fast_rolling_stock_get_light_rolling_stock_",
-            db_pool.clone(),
-        )
-        .await;
-
-        let req = TestRequest::get()
-            .uri(format!("/light_rolling_stock/name/{}", rolling_stock.name).as_str())
-            .to_request();
-
-        // WHEN
-        let response = call_service(&app, req).await;
-
-        // THEN
-        assert_eq!(response.status(), StatusCode::OK);
-    }
-
-    #[rstest]
-    async fn no_rolling_stock() {
-        let app = create_test_service().await;
-
-        let req = TestRequest::get()
-            .uri(format!("/light_rolling_stock/{}", -1).as_str())
-            .to_request();
-        let response = call_service(&app, req).await;
-        assert_eq!(response.status(), StatusCode::NOT_FOUND);
-    }
+    use crate::views::test_app::TestAppBuilder;
 
     fn is_sorted(data: &[i64]) -> bool {
         for elem in data.windows(2) {
@@ -219,37 +155,109 @@ mod tests {
     }
 
     #[rstest]
-    async fn list_light_rolling_stock_increasing_ids(db_pool: Arc<DbConnectionPool>) {
-        // Generate some rolling stocks
-        let vec_fixtures = (0..10)
-            .map(|x| {
-                let pool = db_pool.clone();
-                async move {
-                    rolling_stock_livery(&format!("list_light_rolling_stock_livery_ids_{x}"), pool)
-                        .await
-                }
-            })
-            .collect::<Vec<_>>();
-        let vec_fixtures = futures::future::join_all(vec_fixtures).await;
-        let expected_ids = vec_fixtures
+    async fn list_light_rolling_stock() {
+        let app = TestAppBuilder::default_app();
+        let request = TestRequest::get().uri("/light_rolling_stock").to_request();
+        let response = call_service(&app.service, request).await;
+        assert_eq!(response.status(), StatusCode::OK);
+    }
+
+    #[rstest]
+    async fn get_light_rolling_stock() {
+        // GIVEN
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+
+        let rs_name = "fast_rolling_stock_name";
+        let fast_rolling_stock =
+            create_fast_rolling_stock(db_pool.get_ok().deref_mut(), rs_name).await;
+
+        let request = TestRequest::get()
+            .uri(format!("/light_rolling_stock/{}", fast_rolling_stock.id).as_str())
+            .to_request();
+
+        // WHEN
+        let response: LightRollingStockWithLiveries =
+            call_and_read_body_json(&app.service, request).await;
+
+        // THEN
+        assert_eq!(response.rolling_stock.id, fast_rolling_stock.id);
+    }
+
+    #[rstest]
+    async fn get_light_rolling_stock_by_name() {
+        // GIVEN
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+
+        let rs_name = "fast_rolling_stock_name";
+        let fast_rolling_stock =
+            create_fast_rolling_stock(db_pool.get_ok().deref_mut(), rs_name).await;
+
+        let request = TestRequest::get()
+            .uri(format!("/light_rolling_stock/name/{}", rs_name).as_str())
+            .to_request();
+
+        // WHEN
+        let response: LightRollingStockWithLiveries =
+            call_and_read_body_json(&app.service, request).await;
+
+        // THEN
+        assert_eq!(response.rolling_stock.id, fast_rolling_stock.id);
+        assert_eq!(response.rolling_stock.name, fast_rolling_stock.name);
+    }
+
+    #[rstest]
+    async fn get_unexisting_light_rolling_stock() {
+        let app = TestAppBuilder::default_app();
+
+        let request = TestRequest::get()
+            .uri(format!("/light_rolling_stock/{}", -1).as_str())
+            .to_request();
+        let response = call_service(&app.service, request).await;
+
+        assert_eq!(response.status(), StatusCode::NOT_FOUND);
+    }
+
+    #[rstest]
+    async fn list_light_rolling_stock_increasing_ids() {
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+
+        let generated_rolling_stock = (0..10)
+            .into_iter()
+            .zip(std::iter::repeat(&db_pool).map(|p| p.get()))
+            .map(|(rs_id, conn)| async move {
+                let fixtures = create_rolling_stock_livery_fixture(
+                    conn.await.unwrap().deref_mut(),
+                    &format!("rs_name_{}", rs_id),
+                )
+                .await;
+                let fixtures: Result<_, InternalError> = Ok(fixtures);
+                fixtures
+            });
+
+        let generated_fixtures = futures::future::try_join_all(generated_rolling_stock)
+            .await
+            .unwrap();
+
+        let expected_rs_ids = generated_fixtures
             .iter()
-            .map(|x| x.rolling_stock.model.id)
+            .map(|(_, rs, _)| rs.id)
             .collect::<HashSet<_>>();
 
-        // Fetch all rolling stocks using /light_rolling_stock
-        let app = create_test_service().await;
-        let req = TestRequest::get().uri("/light_rolling_stock/").to_request();
-        let response = call_service(&app, req).await;
+        let request = TestRequest::get().uri("/light_rolling_stock/").to_request();
+        let response = call_service(&app.service, request).await;
         let response: PaginatedResponse<LightRollingStockWithLiveries> =
             assert_status_and_read!(response, StatusCode::OK);
         let count = response.count;
         let uri = format!("/light_rolling_stock/?page_size={count}");
-        let req = TestRequest::get().uri(&uri).to_request();
-        let response = call_service(&app, req).await;
+        let request = TestRequest::get().uri(&uri).to_request();
+        let response = call_service(&app.service, request).await;
         let response: PaginatedResponse<LightRollingStockWithLiveries> =
             assert_status_and_read!(response, StatusCode::OK);
 
-        // Ensure that AT LEAST all the rolling stocks create above are returned, in order
+        //  Ensure that AT LEAST all the rolling stocks create above are returned, in order
         let vec_ids = response
             .results
             .iter()
@@ -259,16 +267,19 @@ mod tests {
         let ids = HashSet::from_iter(vec_ids.into_iter());
 
         // Since tests are not properly isolated, some rolling stock fixture may "leak" from another test, so maybe ids.len() > expected_ids.len()
-        assert!(expected_ids.is_subset(&ids));
+        assert!(expected_rs_ids.is_subset(&ids));
     }
 
     #[rstest]
     async fn light_rolling_stock_max_page_size() {
-        let app = create_test_service().await;
-        let req = TestRequest::get()
+        let app = TestAppBuilder::default_app();
+
+        let request = TestRequest::get()
             .uri("/light_rolling_stock/?page_size=1010")
             .to_request();
-        let response = call_service(&app, req).await;
+
+        let response = call_service(&app.service, request).await;
+
         assert_eq!(response.status(), StatusCode::BAD_REQUEST);
         assert_response_error_type_match!(
             response,

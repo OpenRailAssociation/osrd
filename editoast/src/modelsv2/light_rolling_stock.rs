@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-use std::sync::Arc;
 
 use diesel::sql_query;
 use diesel::ExpressionMethods;
@@ -20,7 +19,7 @@ use utoipa::ToSchema;
 use super::Row;
 use crate::error::Result;
 use crate::modelsv2::rolling_stock_livery::RollingStockLiveryMetadataModel;
-use crate::modelsv2::DbConnectionPool;
+use crate::modelsv2::DbConnection;
 use crate::modelsv2::Model;
 use crate::views::pagination::Paginate;
 use crate::views::pagination::PaginatedResponse;
@@ -68,14 +67,13 @@ pub struct LightRollingStockModel {
 impl LightRollingStockModel {
     pub async fn with_liveries(
         self,
-        db_pool: Arc<DbConnectionPool>,
+        conn: &mut DbConnection,
     ) -> Result<LightRollingStockWithLiveriesModel> {
         use crate::tables::rolling_stock_livery::dsl as livery_dsl;
-        let mut conn = db_pool.get().await?;
         let liveries = livery_dsl::rolling_stock_livery
             .filter(livery_dsl::rolling_stock_id.eq(self.id))
             .select(RollingStockLiveryMetadataModel::as_select())
-            .load(&mut conn)
+            .load(conn)
             .await?;
         Ok(LightRollingStockWithLiveriesModel {
             rolling_stock: self.into(),
@@ -85,11 +83,10 @@ impl LightRollingStockModel {
 
     /// List the rolling stocks with their simplified effort curves
     pub async fn list(
-        db_pool: Arc<DbConnectionPool>,
+        conn: &mut DbConnection,
         page: i64,
         per_page: i64,
     ) -> Result<PaginatedResponse<LightRollingStockWithLiveriesModel>> {
-        let conn = &mut db_pool.get().await?;
         let light_rolling_stocks = sql_query("SELECT * FROM rolling_stock ORDER BY id")
             .paginate(page, per_page)
             .load_and_count::<Row<LightRollingStockModel>>(conn)
@@ -103,7 +100,7 @@ impl LightRollingStockModel {
 
         let mut results = Vec::new();
         for lrs in lrs_results.into_iter() {
-            results.push(lrs.with_liveries(db_pool.clone()).await?);
+            results.push(lrs.with_liveries(conn).await?);
         }
 
         Ok(PaginatedResponse {
@@ -153,42 +150,42 @@ pub struct LightRollingStockWithLiveriesModel {
 #[cfg(test)]
 pub mod tests {
     use rstest::*;
-    use std::sync::Arc;
+    use std::ops::DerefMut;
 
     use super::LightRollingStockModel;
-    use crate::fixtures::tests::db_pool;
-    use crate::fixtures::tests::named_fast_rolling_stock;
-    use crate::modelsv2::DbConnectionPool;
+    use crate::modelsv2::fixtures::create_fast_rolling_stock;
+    use crate::modelsv2::DbConnectionPoolV2;
     use crate::modelsv2::Retrieve;
 
     #[rstest]
-    async fn get_light_rolling_stock(db_pool: Arc<DbConnectionPool>) {
+    async fn get_light_rolling_stock() {
         // GIVEN
-        let rolling_stock = named_fast_rolling_stock(
-            "fast_rolling_stock_get_light_rolling_stock",
-            db_pool.clone(),
-        )
-        .await;
-        let rolling_stock_id = rolling_stock.id();
+        let db_pool = DbConnectionPoolV2::for_tests();
+
+        let rs_name = "fast_rolling_stock_name";
+        let created_fast_rolling_stock =
+            create_fast_rolling_stock(db_pool.get_ok().deref_mut(), rs_name).await;
 
         // THEN
-        let conn = &mut db_pool.get().await.unwrap();
-        assert!(LightRollingStockModel::retrieve(conn, rolling_stock_id)
-            .await
-            .is_ok());
+        assert!(LightRollingStockModel::retrieve(
+            db_pool.get_ok().deref_mut(),
+            created_fast_rolling_stock.id
+        )
+        .await
+        .is_ok());
     }
 
     #[rstest]
-    async fn list_light_rolling_stock(db_pool: Arc<DbConnectionPool>) {
+    async fn list_light_rolling_stock() {
         // GIVEN
-        let rolling_stock = named_fast_rolling_stock(
-            "fast_rolling_stock_list_light_rolling_stock",
-            db_pool.clone(),
-        )
-        .await;
+        let db_pool = DbConnectionPoolV2::for_tests();
+
+        let rs_name = "fast_rolling_stock_name";
+        let created_fast_rolling_stock =
+            create_fast_rolling_stock(db_pool.get_ok().deref_mut(), rs_name).await;
 
         // WHEN
-        let rolling_stocks = LightRollingStockModel::list(db_pool, 1, 1000)
+        let rolling_stocks = LightRollingStockModel::list(db_pool.get_ok().deref_mut(), 1, 1000)
             .await
             .unwrap();
 
@@ -199,6 +196,6 @@ pub mod tests {
             .iter()
             .map(|x| x.rolling_stock.id)
             .collect();
-        assert!(ids.contains(&rolling_stock.id()));
+        assert!(ids.contains(&created_fast_rolling_stock.id));
     }
 }
