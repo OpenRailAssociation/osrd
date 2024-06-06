@@ -17,7 +17,7 @@ use crate::error::Result;
 use crate::modelsv2::electrical_profiles::ElectricalProfileSet;
 use crate::modelsv2::electrical_profiles::LightElectricalProfileSet;
 use crate::modelsv2::Create;
-use crate::modelsv2::DbConnectionPool;
+use crate::modelsv2::DbConnectionPoolV2;
 use crate::modelsv2::DeleteStatic;
 use crate::modelsv2::Model;
 use crate::modelsv2::Retrieve;
@@ -57,7 +57,7 @@ pub struct ElectricalProfileSetId {
     )
 )]
 #[get("")]
-async fn list(db_pool: Data<DbConnectionPool>) -> Result<Json<Vec<LightElectricalProfileSet>>> {
+async fn list(db_pool: Data<DbConnectionPoolV2>) -> Result<Json<Vec<LightElectricalProfileSet>>> {
     let mut conn = db_pool.get().await?;
     Ok(Json(ElectricalProfileSet::list_light(&mut conn).await?))
 }
@@ -73,7 +73,7 @@ async fn list(db_pool: Data<DbConnectionPool>) -> Result<Json<Vec<LightElectrica
 )]
 #[get("")]
 async fn get(
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Data<DbConnectionPoolV2>,
     electrical_profile_set: Path<i64>,
 ) -> Result<Json<ElectricalProfileSetData>> {
     let electrical_profile_set_id = electrical_profile_set.into_inner();
@@ -105,7 +105,7 @@ async fn get(
 )]
 #[get("")]
 async fn get_level_order(
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Data<DbConnectionPoolV2>,
     electrical_profile_set: Path<i64>,
 ) -> Result<Json<HashMap<String, LevelValues>>> {
     let electrical_profile_set_id = electrical_profile_set.into_inner();
@@ -130,7 +130,7 @@ async fn get_level_order(
 )]
 #[delete("")]
 async fn delete(
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Data<DbConnectionPoolV2>,
     electrical_profile_set: Path<i64>,
 ) -> Result<HttpResponse> {
     let electrical_profile_set_id = electrical_profile_set.into_inner();
@@ -159,7 +159,7 @@ struct ElectricalProfileQueryArgs {
 )]
 #[post("")]
 async fn post_electrical_profile(
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Data<DbConnectionPoolV2>,
     ep_set_name: Query<ElectricalProfileQueryArgs>,
     data: Json<ElectricalProfileSetData>,
 ) -> Result<Json<ElectricalProfileSet>> {
@@ -182,35 +182,33 @@ pub enum ElectricalProfilesError {
 #[cfg(test)]
 mod tests {
     use actix_http::StatusCode;
-    use actix_web::test as actix_test;
     use actix_web::test::call_service;
     use actix_web::test::read_body_json;
     use actix_web::test::TestRequest;
+    use pretty_assertions::assert_eq;
     use rstest::rstest;
-    use std::sync::Arc;
+    use std::ops::DerefMut;
 
     use super::*;
-    use crate::fixtures::tests::db_pool;
-    use crate::fixtures::tests::dummy_electrical_profile_set;
-    use crate::fixtures::tests::electrical_profile_set;
-    use crate::fixtures::tests::TestFixture;
-    use crate::views::tests::create_test_service;
+    use crate::modelsv2::fixtures::create_electrical_profile_set;
+    use crate::views::test_app::TestAppBuilder;
+    use crate::Exists;
     use editoast_schemas::infra::ElectricalProfile;
     use editoast_schemas::infra::TrackRange;
 
     #[rstest]
-    async fn test_list(
-        #[future] electrical_profile_set: TestFixture<ElectricalProfileSet>,
-        #[future] dummy_electrical_profile_set: TestFixture<ElectricalProfileSet>,
-    ) {
-        let _set_1 = electrical_profile_set.await;
-        let _set_2 = dummy_electrical_profile_set.await;
+    async fn get_electrical_profile_list() {
+        let app = TestAppBuilder::default_app();
+        let pool = app.db_pool();
 
-        let app = create_test_service().await;
-        let req = TestRequest::get()
+        let _set_1 = create_electrical_profile_set(pool.get_ok().deref_mut()).await;
+        let _set_2 = create_electrical_profile_set(pool.get_ok().deref_mut()).await;
+
+        let request = TestRequest::get()
             .uri("/electrical_profile_set")
             .to_request();
-        let response = call_service(&app, req).await;
+        let response = call_service(&app.service, request).await;
+
         assert_eq!(response.status(), StatusCode::OK);
 
         assert!(
@@ -221,53 +219,63 @@ mod tests {
         );
     }
 
-    #[actix_test]
-    async fn test_get_none() {
-        let app = create_test_service().await;
+    #[rstest]
+    async fn get_unexisting_electrical_profile() {
+        let app = TestAppBuilder::default_app();
+
         let req = TestRequest::get()
             .uri("/electrical_profile_set/666")
             .to_request();
-        let response = call_service(&app, req).await;
+
+        let response = call_service(&app.service, req).await;
         assert_eq!(response.status(), StatusCode::NOT_FOUND);
     }
 
     #[rstest]
-    async fn test_get_some(
-        #[future] dummy_electrical_profile_set: TestFixture<ElectricalProfileSet>,
-    ) {
-        let profile_set = dummy_electrical_profile_set.await;
+    async fn get_electrical_profile() {
+        let app = TestAppBuilder::default_app();
+        let pool = app.db_pool();
 
-        let app = create_test_service().await;
+        let electrical_profile_set = create_electrical_profile_set(pool.get_ok().deref_mut()).await;
+
         let req = TestRequest::get()
-            .uri(&format!("/electrical_profile_set/{}", profile_set.id()))
+            .uri(&format!(
+                "/electrical_profile_set/{}",
+                electrical_profile_set.id
+            ))
             .to_request();
-        let response = call_service(&app, req).await;
+
+        let response = call_service(&app.service, req).await;
         assert_eq!(response.status(), StatusCode::OK);
     }
 
-    #[actix_test]
-    async fn test_get_level_order_none() {
-        let app = create_test_service().await;
+    #[rstest]
+    async fn get_unexisting_electrical_profile_level_order() {
+        let app = TestAppBuilder::default_app();
+
         let req = TestRequest::get()
             .uri("/electrical_profile_set/666/level_order")
             .to_request();
-        let response = call_service(&app, req).await;
+
+        let response = call_service(&app.service, req).await;
+
         assert_eq!(response.status(), StatusCode::NOT_FOUND);
     }
 
     #[rstest]
-    async fn test_get_level_order_some(
-        #[future] electrical_profile_set: TestFixture<ElectricalProfileSet>,
-    ) {
-        let profile_set = electrical_profile_set.await;
-        let app = create_test_service().await;
+    async fn test_get_level_order_some() {
+        let app = TestAppBuilder::default_app();
+        let pool = app.db_pool();
+
+        let electrical_profile_set = create_electrical_profile_set(pool.get_ok().deref_mut()).await;
+
         let req = TestRequest::get()
             .uri(&format!(
                 "/electrical_profile_set/{}/level_order",
-                profile_set.id()
+                electrical_profile_set.id
             ))
             .to_request();
-        let response = call_service(&app, req).await;
+        let response = call_service(&app.service, req).await;
         assert_eq!(response.status(), StatusCode::OK);
         let level_order = read_body_json::<HashMap<String, Vec<String>>, _>(response).await;
         assert_eq!(level_order.len(), 1);
@@ -278,37 +286,45 @@ mod tests {
     }
 
     #[rstest]
-    async fn test_delete_none() {
-        let app = create_test_service().await;
+    async fn delete_unexisting_electrical_profile() {
+        let app = TestAppBuilder::default_app();
         let req = TestRequest::delete()
             .uri("/electrical_profile_set/666")
             .to_request();
-        let response = call_service(&app, req).await;
+        let response = call_service(&app.service, req).await;
         assert_eq!(response.status(), StatusCode::NOT_FOUND);
     }
 
     #[rstest]
-    async fn test_delete_some(
-        #[future] dummy_electrical_profile_set: TestFixture<ElectricalProfileSet>,
-    ) {
-        let profile_set = dummy_electrical_profile_set.await;
-        let app = create_test_service().await;
+    async fn delete_electrical_profile() {
+        let app = TestAppBuilder::default_app();
+        let pool = app.db_pool();
+
+        let electrical_profile_set = create_electrical_profile_set(pool.get_ok().deref_mut()).await;
+
         let req = TestRequest::delete()
-            .uri(&format!("/electrical_profile_set/{}", profile_set.id()))
+            .uri(&format!(
+                "/electrical_profile_set/{}",
+                electrical_profile_set.id
+            ))
             .to_request();
-        let response = call_service(&app, req).await;
+        let response = call_service(&app.service, req).await;
+
         assert_eq!(response.status(), StatusCode::NO_CONTENT);
 
-        let conn = &mut db_pool().get().await.unwrap();
-        assert!(ElectricalProfileSet::retrieve(conn, profile_set.id())
-            .await
-            .unwrap()
-            .is_none());
+        let exists =
+            ElectricalProfileSet::exists(pool.get_ok().deref_mut(), electrical_profile_set.id)
+                .await
+                .expect("Failed to check if electrical profile set exists");
+
+        assert!(!exists);
     }
 
     #[rstest]
-    async fn test_post(db_pool: Arc<DbConnectionPool>) {
-        let app = create_test_service().await;
+    async fn test_post() {
+        let app = TestAppBuilder::default_app();
+        let pool = app.db_pool();
+
         let ep_set = ElectricalProfileSetData {
             levels: vec![ElectricalProfile {
                 value: "A".to_string(),
@@ -317,18 +333,22 @@ mod tests {
             }],
             level_order: Default::default(),
         };
+
         let req = TestRequest::post()
             .uri("/electrical_profile_set/?name=elec")
             .set_json(ep_set)
             .to_request();
 
-        let response = call_service(&app, req).await;
+        let response = call_service(&app.service, req).await;
         assert_eq!(response.status(), StatusCode::OK);
-        let created_ep_set = TestFixture::<ElectricalProfileSet> {
-            model: read_body_json(response).await,
-            db_pool,
-            infra: None,
-        };
-        assert_eq!(created_ep_set.model.name.clone(), "elec");
+
+        let created_ep: ElectricalProfileSet = read_body_json(response).await;
+
+        let created_ep = ElectricalProfileSet::retrieve(pool.get_ok().deref_mut(), created_ep.id)
+            .await
+            .expect("Failed to retrieve created electrical profile set")
+            .expect("Electrical profile set not found");
+
+        assert_eq!(created_ep.name, "elec");
     }
 }
