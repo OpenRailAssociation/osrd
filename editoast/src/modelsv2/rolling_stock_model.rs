@@ -239,11 +239,11 @@ pub mod tests {
             create_fast_rolling_stock(db_pool.get_ok().deref_mut(), rs_name).await;
 
         // GIVEN
-        let rs_name_with_enrgy_sources_name = "other_rolling_stock_update_rolling_stock";
+        let rs_name_with_energy_sources_name = "other_rolling_stock_update_rolling_stock";
         let rolling_stock_id = created_fast_rolling_stock.id;
 
         let rolling_stock_with_energy_sources: Changeset<RollingStockModel> =
-            rolling_stock_with_energy_sources_changeset(rs_name_with_enrgy_sources_name);
+            rolling_stock_with_energy_sources_changeset(rs_name_with_energy_sources_name);
 
         // WHEN
         let updated_rolling_stock = rolling_stock_with_energy_sources
@@ -253,7 +253,7 @@ pub mod tests {
             .unwrap();
 
         // THEN
-        assert_eq!(updated_rolling_stock.name, rs_name_with_enrgy_sources_name);
+        assert_eq!(updated_rolling_stock.name, rs_name_with_energy_sources_name);
     }
 
     #[rstest]
@@ -267,11 +267,11 @@ pub mod tests {
             create_fast_rolling_stock(db_pool.get_ok().deref_mut(), rs_name).await;
 
         // Creating the second rolling stock
-        let rs_name_with_enrgy_sources_name = "fast_rolling_stock_with_energy_sources_name";
+        let rs_name_with_energy_sources_name = "fast_rolling_stock_with_energy_sources_name";
         let created_fast_rolling_stock_with_energy_sources =
             create_rolling_stock_with_energy_sources(
                 db_pool.get_ok().deref_mut(),
-                rs_name_with_enrgy_sources_name,
+                rs_name_with_energy_sources_name,
             )
             .await;
 
