@@ -14,7 +14,7 @@ export type TrainScheduleWithDetails = {
    * in ms
    */
   duration: number;
-  stepsCount: number;
+  stopsCount: number;
   pathLength: string;
   rollingStock?: LightRollingStockWithLiveries;
   mechanicalEnergyConsumed: number;

@@ -9,6 +9,7 @@ import { useInfraID } from 'common/osrdContext';
 import { isoDateToMs, formatToIsoDate } from 'utils/date';
 import { jouleToKwh } from 'utils/physics';
 import { formatKmValue } from 'utils/strings';
+import { ISO8601Duration2sec } from 'utils/timeManipulation';
 
 import type { TrainScheduleWithDetails } from './types';
 import { extractTagCode, keepTrain } from './utils';
@@ -151,7 +152,10 @@ const useTrainSchedulesDetails = (
             id: trainSchedule.id,
             trainName: trainSchedule.train_name,
             startTime: dayjs(trainSchedule.start_time).format('D/MM/YYYY HH:mm:ss'), // format to time
-            stepsCount: trainSchedule.schedule?.length ?? 0,
+            stopsCount:
+              (trainSchedule.schedule?.filter(
+                (step) => step.stop_for && ISO8601Duration2sec(step.stop_for) > 0
+              ).length ?? 0) + 1, // +1 to take the final stop (destination) into account
             speedLimitTag: trainSchedule.speed_limit_tag ?? null,
             labels: trainSchedule.labels ?? [],
             rollingStock,
