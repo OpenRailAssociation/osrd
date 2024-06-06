@@ -560,9 +560,8 @@ async fn get_voltages(
     )
 )]
 #[get("/voltages")]
-async fn get_all_voltages(db_pool: Data<DbConnectionPool>) -> Result<Json<Vec<String>>> {
-    let conn = &mut db_pool.get().await?;
-    let voltages = Infra::get_all_voltages(conn).await?;
+async fn get_all_voltages(db_pool: Data<DbConnectionPoolV2>) -> Result<Json<Vec<String>>> {
+    let voltages = Infra::get_all_voltages(db_pool.get().await?.deref_mut()).await?;
     Ok(Json(voltages.into_iter().map(|el| (el.voltage)).collect()))
 }
 
@@ -675,7 +674,6 @@ pub mod tests {
     use crate::core::mocking::MockingClient;
     use crate::fixtures::tests::db_pool;
     use crate::fixtures::tests::empty_infra;
-    use crate::fixtures::tests::named_other_rolling_stock;
     use crate::fixtures::tests::small_infra;
     use crate::fixtures::tests::IntoFixture;
     use crate::fixtures::tests::TestFixture;
@@ -969,35 +967,41 @@ pub mod tests {
 
     #[rstest]
     async fn infra_get_all_voltages() {
-        let app = create_test_service().await;
-        let infra_1 = empty_infra(db_pool()).await;
-        let infra_2 = small_infra(db_pool()).await;
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+        let infra_1 = create_empty_infra(db_pool.get_ok().deref_mut()).await;
+        let infra_2 = create_empty_infra(db_pool.get_ok().deref_mut()).await;
 
         // Create electrifications
         let electrification_1 = Electrification {
             id: "test1".into(),
             voltage: "0V".into(),
             track_ranges: vec![],
-        };
+        }
+        .into();
+        apply_create_operation(&electrification_1, infra_1.id, db_pool.get_ok().deref_mut())
+            .await
+            .expect("Failed to create electrification_1 object");
+
         let electrification_2 = Electrification {
             id: "test2".into(),
             voltage: "1V".into(),
             track_ranges: vec![],
-        };
-
-        let req = create_object_request(infra_1.id(), electrification_1.into());
-        assert_eq!(call_service(&app, req).await.status(), StatusCode::OK);
-
-        let req = create_object_request(infra_2.id(), electrification_2.into());
-        assert_eq!(call_service(&app, req).await.status(), StatusCode::OK);
+        }
+        .into();
+        apply_create_operation(&electrification_2, infra_2.id, db_pool.get_ok().deref_mut())
+            .await
+            .expect("Failed to create electrification_2 object");
 
         // Create rolling_stock
-        let _rolling_stock =
-            named_other_rolling_stock("other_rolling_stock_infra_get_all_voltages", db_pool())
-                .await;
+        let _rolling_stock = create_rolling_stock_with_energy_sources(
+            db_pool.get_ok().deref_mut(),
+            "other_rolling_stock_infra_get_all_voltages",
+        )
+        .await;
 
         let req = TestRequest::get().uri("/infra/voltages/").to_request();
-        let response = call_service(&app, req).await;
+        let response = call_service(&app.service, req).await;
         assert_eq!(response.status(), StatusCode::OK);
         let voltages: Vec<String> = read_body_json(response).await;
         assert!(voltages.len() >= 3);
