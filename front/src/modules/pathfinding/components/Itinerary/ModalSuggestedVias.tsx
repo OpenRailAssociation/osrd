@@ -93,7 +93,7 @@ const ModalSuggestedVias = ({ suggestedVias }: ModalSuggestedViasProps) => {
   return (
     <div className="manage-vias-modal">
       <ModalHeaderSNCF withCloseButton>
-        <h1>{`${t('manageVias', { count: vias.length })}`}</h1>
+        <h1>{t('manageVias', { count: vias.length })}</h1>
       </ModalHeaderSNCF>
       <ModalBodySNCF>
         <div className="suggested-vias">
