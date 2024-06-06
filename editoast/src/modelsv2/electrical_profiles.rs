@@ -38,33 +38,30 @@ pub struct LightElectricalProfileSet {
 #[cfg(test)]
 mod tests {
     use rstest::rstest;
-    use std::sync::Arc;
+    use std::ops::DerefMut;
 
     use super::*;
-    use crate::fixtures::tests::db_pool;
-    use crate::fixtures::tests::dummy_electrical_profile_set;
-    use crate::fixtures::tests::electrical_profile_set;
-    use crate::fixtures::tests::TestFixture;
-    use crate::modelsv2::DbConnectionPool;
+    use crate::modelsv2::fixtures::create_electrical_profile_set;
+    use crate::modelsv2::DbConnectionPoolV2;
 
     #[rstest]
-    async fn test_list_light(
-        db_pool: Arc<DbConnectionPool>,
-        #[future] electrical_profile_set: TestFixture<ElectricalProfileSet>,
-        #[future] dummy_electrical_profile_set: TestFixture<ElectricalProfileSet>,
-    ) {
-        let set_1 = electrical_profile_set.await;
-        let set_2 = dummy_electrical_profile_set.await;
-        let mut conn = db_pool.get().await.unwrap();
-        let list = ElectricalProfileSet::list_light(&mut conn).await.unwrap();
+    async fn test_list_light() {
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let set_1 = create_electrical_profile_set(db_pool.get_ok().deref_mut()).await;
+        let set_2 = create_electrical_profile_set(db_pool.get_ok().deref_mut()).await;
+
+        let list = ElectricalProfileSet::list_light(db_pool.get_ok().deref_mut())
+            .await
+            .expect("Failed to list electrical profile sets");
 
         assert!(list.contains(&LightElectricalProfileSet {
-            id: set_1.model.id,
-            name: set_1.model.name.clone(),
+            id: set_1.id,
+            name: set_1.name.clone(),
         }));
+
         assert!(list.contains(&LightElectricalProfileSet {
-            id: set_2.model.id,
-            name: set_2.model.name.clone(),
+            id: set_2.id,
+            name: set_2.name.clone(),
         }));
     }
 }

@@ -9,6 +9,7 @@ use crate::modelsv2::prelude::*;
 use crate::modelsv2::rolling_stock_livery::RollingStockLiveryModel;
 use crate::modelsv2::DbConnection;
 use crate::modelsv2::Document;
+use crate::modelsv2::ElectricalProfileSet;
 use crate::modelsv2::Infra;
 use crate::modelsv2::Project;
 use crate::modelsv2::RollingStockModel;
@@ -153,6 +154,15 @@ pub async fn create_rolling_stock_livery_fixture(
     let rs_livery =
         create_rolling_stock_livery(conn, name, rolling_stock.id, document_exemple.id).await;
     (rs_livery, rolling_stock, document_exemple)
+}
+
+pub async fn create_electrical_profile_set(conn: &mut DbConnection) -> ElectricalProfileSet {
+    let json = include_str!("../tests/electrical_profile_set.json");
+    serde_json::from_str::<Changeset<ElectricalProfileSet>>(json)
+        .expect("Unable to parse")
+        .create(conn)
+        .await
+        .expect("Failed to create electrical profile set")
 }
 
 pub async fn create_empty_infra(conn: &mut DbConnection) -> Infra {

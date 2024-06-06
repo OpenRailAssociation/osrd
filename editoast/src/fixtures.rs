@@ -15,10 +15,10 @@ pub mod tests {
             SimulationOutputChangeset, Timetable, TrainSchedule,
         },
         modelsv2::{
-            self, projects::Tags, rolling_stock_livery::RollingStockLiveryModel,
-            scenario::Scenario as ScenarioV2, timetable::Timetable as TimetableV2,
-            train_schedule::TrainSchedule as TrainScheduleV2, Changeset, Document,
-            ElectricalProfileSet, Infra, Model, Project, RollingStockModel, Study,
+            self, projects::Tags, scenario::Scenario as ScenarioV2,
+            timetable::Timetable as TimetableV2, train_schedule::TrainSchedule as TrainScheduleV2,
+            Changeset, Document, ElectricalProfileSet, Infra, Model, Project, RollingStockModel,
+            Study,
         },
         views::{
             rolling_stocks::rolling_stock_form::RollingStockForm,
@@ -428,32 +428,6 @@ pub mod tests {
             db_pool,
         )
         .await
-    }
-    pub struct RollingStockLiveryFixture {
-        pub rolling_stock_livery: TestFixture<RollingStockLiveryModel>,
-        pub rolling_stock: TestFixture<RollingStockModel>,
-        pub image: TestFixture<Document>,
-    }
-
-    pub async fn rolling_stock_livery(
-        name: &str,
-        db_pool: Arc<DbConnectionPool>,
-    ) -> RollingStockLiveryFixture {
-        let mut rs_name = "fast_rolling_stock_".to_string();
-        rs_name.push_str(name);
-        let rolling_stock = named_fast_rolling_stock(&rs_name, db_pool.clone()).await;
-        let image = document_example(db_pool.clone()).await;
-
-        let rolling_stock_livery = RollingStockLiveryModel::changeset()
-            .name("test_livery".to_string())
-            .rolling_stock_id(rolling_stock.id())
-            .compound_image_id(Some(image.id()));
-
-        RollingStockLiveryFixture {
-            rolling_stock_livery: TestFixture::create(rolling_stock_livery, db_pool).await,
-            rolling_stock,
-            image,
-        }
     }
 
     #[fixture]

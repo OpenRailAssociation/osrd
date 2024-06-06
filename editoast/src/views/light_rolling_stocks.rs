@@ -225,7 +225,6 @@ mod tests {
         let db_pool = app.db_pool();
 
         let generated_rolling_stock = (0..10)
-            .into_iter()
             .zip(std::iter::repeat(&db_pool).map(|p| p.get()))
             .map(|(rs_id, conn)| async move {
                 let fixtures = create_rolling_stock_livery_fixture(
