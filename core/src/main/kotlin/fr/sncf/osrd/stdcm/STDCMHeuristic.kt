@@ -15,6 +15,8 @@ import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import java.util.PriorityQueue
 import kotlin.math.max
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 /**
  * This file implements the A* heuristic used by STDCM.
@@ -29,6 +31,7 @@ import kotlin.math.max
  * It could eventually be improved further by using lookahead or route data, but this adds a fair
  * amount of complexity to the implementation.
  */
+val logger: Logger = LoggerFactory.getLogger("STDCMHeuristic")
 
 /** Describes a pending block, ready to be added to the cached blocks. */
 private data class PendingBlock(
@@ -51,6 +54,7 @@ fun makeSTDCMHeuristics(
     rollingStock: PhysicsRollingStock,
     maxDepartureDelay: Double,
 ): List<AStarHeuristic<STDCMEdge, STDCMEdge>> {
+    logger.info("Start building STDCM heuristic...")
     // One map per number of reached pathfinding step
     val maps = mutableListOf<MutableMap<BlockId, Double>>()
     for (i in 0 until steps.size - 1) maps.add(mutableMapOf())
@@ -93,6 +97,10 @@ fun makeSTDCMHeuristics(
             return@add Double.POSITIVE_INFINITY
         }
     }
+    val bestTravelTime =
+        steps.first().locations.minOfOrNull { maps.first()[it.edge] ?: Double.POSITIVE_INFINITY }
+            ?: Double.POSITIVE_INFINITY
+    logger.info("STDCM heuristic built, best theoretical travel time = $bestTravelTime seconds")
     return res
 }
 

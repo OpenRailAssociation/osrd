@@ -120,6 +120,7 @@ fun simulateBlock(
         MaxEffortEnvelope.from(context, initialSpeed, maxSpeedEnvelope)
     } catch (e: OSRDError) {
         // The train can't reach its destination, for example because of high slopes
+        logger.info("STDCM Simulation failed (ignoring this possible path): ${e.message}")
         null
     }
 }

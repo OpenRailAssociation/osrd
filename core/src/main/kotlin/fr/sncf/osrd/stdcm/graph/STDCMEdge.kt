@@ -5,6 +5,7 @@ import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
+import java.lang.Double.isNaN
 import java.util.*
 
 data class STDCMEdge(
@@ -46,6 +47,10 @@ data class STDCMEdge(
     var weight: Double? = null // Weight (total distance from start + estimation to end) of the edge
 ) : Comparable<STDCMEdge> {
     val block = infraExplorer.getCurrentBlock()
+
+    init {
+        assert(!isNaN(timeStart)) { "STDCM edge starts at NaN time" }
+    }
 
     override fun equals(other: Any?): Boolean {
         if (other == null || other.javaClass != STDCMEdge::class.java) return false
