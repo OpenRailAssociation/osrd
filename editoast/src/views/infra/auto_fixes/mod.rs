@@ -338,7 +338,7 @@ mod tests {
     use crate::infra_cache::operation::Operation;
     use crate::infra_cache::operation::RailjsonObject;
     use crate::infra_cache::InfraCacheEditoastError;
-    use crate::views::pagination::PaginatedResponse;
+    use crate::modelsv2::infra::errors::QueryParams;
     use crate::views::tests::create_test_service;
     use editoast_schemas::infra::ApplicableDirectionsTrackRange;
     use editoast_schemas::infra::Detector;
@@ -371,12 +371,6 @@ mod tests {
             .unwrap();
     }
 
-    fn errors_request(infra_id: i64) -> Request {
-        TestRequest::get()
-            .uri(format!("/infra/{infra_id}/errors").as_str())
-            .to_request()
-    }
-
     fn auto_fixes_request(infra_id: i64) -> Request {
         TestRequest::get()
             .uri(format!("/infra/{infra_id}/auto_fixes").as_str())
@@ -402,11 +396,14 @@ mod tests {
         let app = create_test_service().await;
         let mut small_infra = small_infra(db_pool()).await;
         let small_infra_id = small_infra.id();
+        let conn = &mut db_pool().get().await.unwrap();
         force_refresh(&mut small_infra).await;
 
         // Check the only initial issues are "overlapping_speed_sections" warnings
-        let infra_errors_before_all: PaginatedResponse<crate::modelsv2::infra::errors::InfraError> =
-            read_body_json(call_service(&app, errors_request(small_infra_id)).await).await;
+        let infra_errors_before_all = small_infra
+            .get_paginated_errors(conn, 1, 25, &QueryParams::default())
+            .await
+            .unwrap();
         assert!(infra_errors_before_all.results.iter().all(|e| e
             .information
             .get("error_type")
@@ -424,8 +421,10 @@ mod tests {
             .to_request();
         assert_eq!(call_service(&app, req_del).await.status(), StatusCode::OK);
 
-        let infra_errors_before_fix: PaginatedResponse<crate::modelsv2::infra::errors::InfraError> =
-            read_body_json(call_service(&app, errors_request(small_infra_id)).await).await;
+        let infra_errors_before_fix = small_infra
+            .get_paginated_errors(conn, 1, 25, &QueryParams::default())
+            .await
+            .unwrap();
         // Check that some new issues appeared
         assert!(infra_errors_before_fix.count > infra_errors_before_all.count);
 
@@ -433,8 +432,10 @@ mod tests {
         let response = call_service(&app, auto_fixes_request(small_infra_id)).await;
 
         // THEN
-        let infra_errors_after_fix: PaginatedResponse<crate::modelsv2::infra::errors::InfraError> =
-            read_body_json(call_service(&app, errors_request(small_infra_id)).await).await;
+        let infra_errors_after_fix = small_infra
+            .get_paginated_errors(conn, 1, 25, &QueryParams::default())
+            .await
+            .unwrap();
         assert_eq!(infra_errors_after_fix, infra_errors_before_fix);
 
         assert_eq!(response.status(), StatusCode::OK);

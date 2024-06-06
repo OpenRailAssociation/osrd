@@ -12,7 +12,7 @@ use crate::modelsv2::DbConnection;
 use crate::views::pagination::Paginate;
 use crate::views::pagination::PaginatedResponse;
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Default, Debug, Clone, Deserialize)]
 pub struct QueryParams {
     #[serde(default)]
     level: Level,
@@ -42,7 +42,7 @@ impl Infra {
         page: i64,
         per_page: i64,
         params: &QueryParams,
-    ) -> Result<PaginatedResponse<crate::modelsv2::infra::errors::InfraError>> {
+    ) -> Result<PaginatedResponse<InfraError>> {
         let mut query =
             String::from("SELECT information::text FROM infra_layer_error WHERE infra_id = $1");
         if params.level == Level::Warnings {
