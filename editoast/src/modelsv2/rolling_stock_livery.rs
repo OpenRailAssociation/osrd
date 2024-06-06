@@ -83,42 +83,47 @@ impl From<RollingStockLiveryMetadataModel> for RollingStockLiveryMetadata {
 #[cfg(test)]
 pub mod tests {
     use rstest::*;
-    use std::sync::Arc;
+    use std::ops::DerefMut;
 
     use super::RollingStockLiveryModel;
-    use crate::fixtures::tests::db_pool;
-    use crate::fixtures::tests::rolling_stock_livery;
-    use crate::modelsv2::DbConnectionPool;
+    use crate::modelsv2::fixtures::create_rolling_stock_livery_fixture;
+    use crate::modelsv2::prelude::*;
+    use crate::modelsv2::DbConnectionPoolV2;
     use crate::modelsv2::Document;
 
     #[rstest]
-    async fn create_get_delete_rolling_stock_livery(db_pool: Arc<DbConnectionPool>) {
-        use crate::modelsv2::prelude::*;
-        let mut conn = db_pool.get().await.unwrap();
-        let rolling_stock_livery = rolling_stock_livery("", db_pool.clone()).await;
-        let livery_id = rolling_stock_livery.rolling_stock_livery.id();
-        let rolling_stock_livery = &rolling_stock_livery.rolling_stock_livery.model;
-        let image_id = rolling_stock_livery.compound_image_id.unwrap();
+    async fn create_delete_rolling_stock_livery() {
+        let db_pool = DbConnectionPoolV2::for_tests();
 
-        assert!(RollingStockLiveryModel::retrieve(&mut conn, livery_id)
+        let (rs_livery, _, image) =
+            create_rolling_stock_livery_fixture(db_pool.get_ok().deref_mut(), "rs_livery_name")
+                .await;
+
+        assert!(
+            RollingStockLiveryModel::retrieve(db_pool.get_ok().deref_mut(), rs_livery.id)
+                .await
+                .is_ok()
+        );
+
+        assert!(Document::retrieve(db_pool.get_ok().deref_mut(), image.id)
             .await
             .is_ok());
 
-        assert!(Document::retrieve(&mut conn, image_id).await.is_ok());
-
-        assert!(rolling_stock_livery
-            .delete_with_compound_image(&mut conn)
+        assert!(rs_livery
+            .delete_with_compound_image(db_pool.get_ok().deref_mut())
             .await
             .is_ok());
 
-        assert!(RollingStockLiveryModel::retrieve(&mut conn, livery_id)
+        assert!(
+            RollingStockLiveryModel::retrieve(db_pool.get_ok().deref_mut(), rs_livery.id)
+                .await
+                .expect("Failed to retrieve rolling stock livery")
+                .is_none()
+        );
+
+        assert!(Document::retrieve(db_pool.get_ok().deref_mut(), image.id)
             .await
-            .unwrap()
+            .expect("Failed to retrieve document")
             .is_none());
-
-        assert!(Document::retrieve(&mut conn, image_id)
-            .await
-            .unwrap()
-            .is_none(),);
     }
 }
