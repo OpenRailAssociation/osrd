@@ -27,7 +27,7 @@ use crate::modelsv2::prelude::*;
 use crate::modelsv2::scenario::Scenario;
 use crate::modelsv2::timetable::Timetable;
 use crate::modelsv2::DbConnection;
-use crate::modelsv2::DbConnectionPool;
+use crate::modelsv2::DbConnectionPoolV2;
 use crate::modelsv2::Infra;
 use crate::modelsv2::Project;
 use crate::modelsv2::Study;
@@ -36,10 +36,10 @@ use crate::views::operational_studies::OperationalStudiesOrderingParam;
 use crate::views::pagination::PaginatedList as _;
 use crate::views::pagination::PaginationQueryParam;
 use crate::views::pagination::PaginationStats;
+use crate::views::projects::ProjectError;
 use crate::views::projects::ProjectIdParam;
-use crate::views::scenario::check_project_study;
-use crate::views::scenario::check_project_study_conn;
 use crate::views::scenario::ScenarioIdParam;
+use crate::views::study::StudyError;
 use crate::views::study::StudyIdParam;
 
 crate::routes! {
@@ -95,6 +95,23 @@ impl From<ScenarioCreateForm> for Changeset<Scenario> {
             .timetable_id(scenario.timetable_id)
             .tags(scenario.tags)
     }
+}
+
+pub async fn check_project_study(
+    conn: &mut DbConnection,
+    project_id: i64,
+    study_id: i64,
+) -> Result<(Project, Study)> {
+    let project =
+        Project::retrieve_or_fail(conn, project_id, || ProjectError::NotFound { project_id })
+            .await?;
+    let study =
+        Study::retrieve_or_fail(conn, study_id, || StudyError::NotFound { study_id }).await?;
+
+    if study.project_id != project_id {
+        return Err(StudyError::NotFound { study_id }.into());
+    }
+    Ok((project, study))
 }
 
 #[derive(Debug, Error, EditoastError)]
@@ -175,7 +192,7 @@ impl ScenarioResponse {
 )]
 #[post("")]
 async fn create(
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Data<DbConnectionPoolV2>,
     data: Json<ScenarioCreateForm>,
     path: Path<(i64, i64)>,
 ) -> Result<Json<ScenarioResponse>> {
@@ -184,14 +201,13 @@ async fn create(
     let infra_id = data.infra_id;
     let scenario: Changeset<Scenario> = data.into_inner().into();
 
-    let mut tx = db_pool.get().await?;
-
-    let scenarios_response = tx
+    let scenarios_response = db_pool
+        .get()
+        .await?
         .transaction::<_, InternalError, _>(|conn| {
             async {
                 // Check if the project and the study exist
-                let (mut project, study) =
-                    check_project_study_conn(conn, project_id, study_id).await?;
+                let (mut project, study) = check_project_study(conn, project_id, study_id).await?;
 
                 // Check if the timetable exists
                 let _ = Timetable::retrieve_or_fail(conn, timetable_id, || {
@@ -240,40 +256,41 @@ async fn create(
 #[delete("")]
 async fn delete(
     path: Path<ScenarioPathParam>,
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Data<DbConnectionPoolV2>,
 ) -> Result<HttpResponse> {
     let ScenarioPathParam {
         project_id,
         study_id,
         scenario_id,
     } = path.into_inner();
-    let mut tx = db_pool.get().await?;
 
-    let db_pool = db_pool.into_inner();
-    tx.transaction::<_, InternalError, _>(|conn| {
-        async {
-            // Check if the project and the study exist
-            let (mut project, study) = check_project_study(db_pool.clone(), project_id, study_id)
-                .await
-                .unwrap();
+    db_pool
+        .get()
+        .await?
+        .transaction::<_, InternalError, _>(|conn| {
+            async {
+                // Check if the project and the study exist
+                let (mut project, study) = check_project_study(conn, project_id, study_id)
+                    .await
+                    .unwrap();
 
-            // Delete scenario
-            Scenario::delete_static_or_fail(conn, scenario_id, || ScenarioError::NotFound {
-                scenario_id,
-            })
-            .await?;
+                // Delete scenario
+                Scenario::delete_static_or_fail(conn, scenario_id, || ScenarioError::NotFound {
+                    scenario_id,
+                })
+                .await?;
 
-            // Update project last_modification field
-            project.update_last_modified(conn).await?;
+                // Update project last_modification field
+                project.update_last_modified(conn).await?;
 
-            // Update study last_modification field
-            study.clone().update_last_modified(conn).await?;
+                // Update study last_modification field
+                study.clone().update_last_modified(conn).await?;
 
-            Ok(())
-        }
-        .scope_boxed()
-    })
-    .await?;
+                Ok(())
+            }
+            .scope_boxed()
+        })
+        .await?;
 
     Ok(HttpResponse::NoContent().finish())
 }
@@ -313,7 +330,7 @@ impl From<ScenarioPatchForm> for <Scenario as crate::modelsv2::Model>::Changeset
 async fn patch(
     data: Json<ScenarioPatchForm>,
     path: Path<ScenarioPathParam>,
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Data<DbConnectionPoolV2>,
 ) -> Result<Json<ScenarioResponse>> {
     let ScenarioPathParam {
         project_id,
@@ -321,14 +338,13 @@ async fn patch(
         scenario_id,
     } = path.into_inner();
 
-    let mut tx = db_pool.get().await?;
-
-    let scenarios_response = tx
+    let scenarios_response = db_pool
+        .get()
+        .await?
         .transaction::<_, InternalError, _>(|conn| {
             async {
                 // Check if project and study exist
-                let (mut project, study) =
-                    check_project_study_conn(conn, project_id, study_id).await?;
+                let (mut project, study) = check_project_study(conn, project_id, study_id).await?;
 
                 // Check if the infra exists
                 if let Some(infra_id) = data.0.infra_id {
@@ -377,20 +393,18 @@ async fn patch(
 )]
 #[get("")]
 async fn get(
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Data<DbConnectionPoolV2>,
     path: Path<ScenarioPathParam>,
 ) -> Result<Json<ScenarioResponse>> {
-    use crate::modelsv2::Retrieve;
-
     let ScenarioPathParam {
         project_id,
         study_id,
         scenario_id,
     } = path.into_inner();
 
-    let db_pool = db_pool.into_inner();
-    let (project, study) = check_project_study(db_pool.clone(), project_id, study_id).await?;
     let conn = &mut db_pool.get().await?;
+
+    let (project, study) = check_project_study(conn, project_id, study_id).await?;
     // Return the scenarios
     let scenario = Scenario::retrieve_or_fail(conn, scenario_id, || ScenarioError::NotFound {
         scenario_id,
@@ -426,14 +440,13 @@ struct ListScenariosResponse {
 )]
 #[get("")]
 async fn list(
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Data<DbConnectionPoolV2>,
     path: Path<(i64, i64)>,
     Query(pagination_params): Query<PaginationQueryParam>,
     Query(OperationalStudiesOrderingParam { ordering }): Query<OperationalStudiesOrderingParam>,
 ) -> Result<Json<ListScenariosResponse>> {
-    let db_pool = db_pool.into_inner();
     let (project_id, study_id) = path.into_inner();
-    let _ = check_project_study(db_pool.clone(), project_id, study_id).await?;
+    let _ = check_project_study(db_pool.get().await?.deref_mut(), project_id, study_id).await?;
 
     let settings = pagination_params
         .validate(1000)?
@@ -461,20 +474,17 @@ mod tests {
     use actix_web::test::call_and_read_body_json;
     use actix_web::test::call_service;
     use actix_web::test::TestRequest;
+    use pretty_assertions::assert_eq;
     use rstest::rstest;
     use serde_json::json;
-    use std::sync::Arc;
 
     use super::*;
-    use crate::fixtures::tests::db_pool;
-    use crate::fixtures::tests::scenario_v2_fixture_set;
-    use crate::fixtures::tests::small_infra;
-    use crate::fixtures::tests::timetable_v2;
-    use crate::fixtures::tests::ScenarioV2FixtureSet;
-    use crate::fixtures::tests::TestFixture;
-    use crate::modelsv2::timetable::Timetable as TimetableV2;
-    use crate::modelsv2::Infra;
-    use crate::views::tests::create_test_service;
+    use crate::modelsv2::fixtures::create_empty_infra;
+    use crate::modelsv2::fixtures::create_project;
+    use crate::modelsv2::fixtures::create_scenario_fixtures_set;
+    use crate::modelsv2::fixtures::create_study;
+    use crate::modelsv2::fixtures::create_timetable;
+    use crate::views::test_app::TestAppBuilder;
 
     pub fn scenario_url(project_id: i64, study_id: i64, scenario_id: Option<i64>) -> String {
         format!(
@@ -486,32 +496,38 @@ mod tests {
     }
 
     #[rstest]
-    async fn get_scenario(#[future] scenario_v2_fixture_set: ScenarioV2FixtureSet) {
-        let service = create_test_service().await;
-        let fixtures = scenario_v2_fixture_set.await;
+    async fn get_scenario() {
+        let app = TestAppBuilder::default_app();
+        let pool = app.db_pool();
+
+        let fixtures =
+            create_scenario_fixtures_set(pool.get_ok().deref_mut(), "test_scenario_name").await;
 
         let url = scenario_url(
-            fixtures.project.id(),
-            fixtures.study.id(),
-            Some(fixtures.scenario.id()),
+            fixtures.project.id,
+            fixtures.study.id,
+            Some(fixtures.scenario.id),
         );
-
         let request = TestRequest::get().uri(&url).to_request();
-        let response: ScenarioResponse = call_and_read_body_json(&service, request).await;
 
-        assert_eq!(response.scenario.id, fixtures.scenario.id());
-        assert_eq!(response.scenario.name, fixtures.scenario.model.name);
+        let response: ScenarioResponse = call_and_read_body_json(&app.service, request).await;
+
+        assert_eq!(response.scenario, fixtures.scenario);
     }
 
     #[rstest]
-    async fn get_scenarios(#[future] scenario_v2_fixture_set: ScenarioV2FixtureSet) {
-        let service = create_test_service().await;
-        let fixtures = scenario_v2_fixture_set.await;
+    async fn get_scenarios() {
+        let app = TestAppBuilder::default_app();
+        let pool = app.db_pool();
 
-        let url = scenario_url(fixtures.project.id(), fixtures.study.id(), None);
+        let fixtures =
+            create_scenario_fixtures_set(pool.get_ok().deref_mut(), "test_scenario_name").await;
+
+        let url = scenario_url(fixtures.project.id, fixtures.study.id, None);
 
         let request = TestRequest::get().uri(&url).to_request();
-        let mut response: ListScenariosResponse = call_and_read_body_json(&service, request).await;
+        let mut response: ListScenariosResponse =
+            call_and_read_body_json(&app.service, request).await;
 
         assert!(!response.results.is_empty());
         assert_eq!(
@@ -525,40 +541,37 @@ mod tests {
     }
 
     #[rstest]
-    async fn get_scenarios_with_wrong_study(
-        #[future] scenario_v2_fixture_set: ScenarioV2FixtureSet,
-    ) {
-        let service = create_test_service().await;
-        let fixtures = scenario_v2_fixture_set.await;
+    async fn get_scenarios_with_wrong_study() {
+        let app = TestAppBuilder::default_app();
+        let pool = app.db_pool();
 
-        let url = scenario_url(
-            fixtures.project.id(),
-            99999999,
-            Some(fixtures.scenario.id()),
-        );
+        let fixtures =
+            create_scenario_fixtures_set(pool.get_ok().deref_mut(), "test_scenario_name").await;
+
+        let url = scenario_url(fixtures.project.id, 99999999, Some(fixtures.scenario.id));
 
         let request = TestRequest::get().uri(&url).to_request();
-        let response = call_service(&service, request).await;
+        let response = call_service(&app.service, request).await;
 
         assert_eq!(response.status(), StatusCode::NOT_FOUND);
     }
 
     #[rstest]
-    async fn post_scenario(
-        #[future] scenario_v2_fixture_set: ScenarioV2FixtureSet,
-        #[future] timetable_v2: TestFixture<TimetableV2>,
-        db_pool: Arc<DbConnectionPool>,
-    ) {
-        let service = create_test_service().await;
-        let fixtures = scenario_v2_fixture_set.await;
-        let timetable_v2 = timetable_v2.await;
+    async fn post_scenario() {
+        let app = TestAppBuilder::default_app();
+        let pool = app.db_pool();
 
-        let url = scenario_url(fixtures.project.id(), fixtures.study.id(), None);
+        let project = create_project(pool.get_ok().deref_mut(), "project_test_name").await;
+        let study = create_study(pool.get_ok().deref_mut(), "study_test_name", project.id).await;
+        let infra = create_empty_infra(pool.get_ok().deref_mut()).await;
+        let timetable = create_timetable(pool.get_ok().deref_mut()).await;
 
-        let study_name = "new created scenario V2";
-        let study_description = "new created scenario description V2";
-        let study_timetable_id = timetable_v2.id();
-        let study_infra_id = fixtures.infra.id();
+        let url = scenario_url(project.id, study.id, None);
+
+        let study_name = "new created scenario";
+        let study_description = "new created scenario description";
+        let study_timetable_id = timetable.id;
+        let study_infra_id = infra.id;
         let study_tags = Tags::new(vec!["tag1".to_string(), "tag2".to_string()]);
 
         // Insert scenario
@@ -572,35 +585,42 @@ mod tests {
                 "tags": study_tags
             }))
             .to_request();
-        let response: ScenarioResponse = call_and_read_body_json(&service, request).await;
-
-        // Delete the scenario
-        assert!(
-            Scenario::delete_static(&mut db_pool.get().await.unwrap(), response.scenario.id)
-                .await
-                .unwrap()
-        );
+        let response: ScenarioResponse = call_and_read_body_json(&app.service, request).await;
 
         assert_eq!(response.scenario.name, study_name);
         assert_eq!(response.scenario.description, study_description);
         assert_eq!(response.scenario.infra_id, study_infra_id);
         assert_eq!(response.scenario.timetable_id, study_timetable_id);
         assert_eq!(response.scenario.tags, study_tags);
+
+        let created_scenario = Scenario::retrieve(pool.get_ok().deref_mut(), response.scenario.id)
+            .await
+            .expect("Failed to retrieve scenario")
+            .expect("Scenario not found");
+
+        assert_eq!(created_scenario.name, study_name);
+        assert_eq!(created_scenario.description, study_description);
+        assert_eq!(created_scenario.infra_id, study_infra_id);
+        assert_eq!(created_scenario.timetable_id, study_timetable_id);
+        assert_eq!(created_scenario.tags, study_tags);
     }
 
     #[rstest]
-    async fn patch_scenario(#[future] scenario_v2_fixture_set: ScenarioV2FixtureSet) {
-        let service = create_test_service().await;
-        let fixtures = scenario_v2_fixture_set.await;
+    async fn patch_scenario() {
+        let app = TestAppBuilder::default_app();
+        let pool = app.db_pool();
+
+        let fixtures =
+            create_scenario_fixtures_set(pool.get_ok().deref_mut(), "test_scenario_name").await;
 
         let url = scenario_url(
-            fixtures.project.id(),
-            fixtures.study.id(),
-            Some(fixtures.scenario.id()),
+            fixtures.project.id,
+            fixtures.study.id,
+            Some(fixtures.scenario.id),
         );
 
-        let study_name = "new patched scenario V2";
-        let study_description = "new patched scenario description V2";
+        let study_name = "new patched scenario";
+        let study_description = "new patched scenario description";
         let study_tags = Tags::new(vec!["patched_tag1".to_string(), "patched_tag2".to_string()]);
 
         // Update scenario
@@ -612,7 +632,7 @@ mod tests {
                 "tags": study_tags
             }))
             .to_request();
-        let response: ScenarioResponse = call_and_read_body_json(&service, request).await;
+        let response: ScenarioResponse = call_and_read_body_json(&app.service, request).await;
 
         assert_eq!(response.scenario.name, study_name);
         assert_eq!(response.scenario.description, study_description);
@@ -620,16 +640,17 @@ mod tests {
     }
 
     #[rstest]
-    async fn patch_scenario_with_unavailable_infra(
-        #[future] scenario_v2_fixture_set: ScenarioV2FixtureSet,
-    ) {
-        let service = create_test_service().await;
-        let fixtures = scenario_v2_fixture_set.await;
+    async fn patch_scenario_with_unavailable_infra() {
+        let app = TestAppBuilder::default_app();
+        let pool = app.db_pool();
+
+        let fixtures =
+            create_scenario_fixtures_set(pool.get_ok().deref_mut(), "test_scenario_name").await;
 
         let url = scenario_url(
-            fixtures.project.id(),
-            fixtures.study.id(),
-            Some(fixtures.scenario.id()),
+            fixtures.project.id,
+            fixtures.study.id,
+            Some(fixtures.scenario.id),
         );
 
         // Update scenario
@@ -639,56 +660,67 @@ mod tests {
                 "infra_id": 999999999,
             }))
             .to_request();
-        let response = call_service(&service, request).await;
+
+        let response = call_service(&app.service, request).await;
         assert_eq!(response.status(), StatusCode::NOT_FOUND);
     }
 
     #[rstest]
-    async fn patch_infra_id_scenario(
-        #[future] scenario_v2_fixture_set: ScenarioV2FixtureSet,
-        #[future] small_infra: TestFixture<Infra>,
-    ) {
-        let service = create_test_service().await;
-        let small_infra = small_infra.await;
-        let fixtures = scenario_v2_fixture_set.await;
+    async fn patch_infra_id_scenario() {
+        let app = TestAppBuilder::default_app();
+        let pool = app.db_pool();
 
-        assert_eq!(fixtures.scenario.model.infra_id, fixtures.infra.id());
+        let fixtures =
+            create_scenario_fixtures_set(pool.get_ok().deref_mut(), "test_scenario_name").await;
+        let other_infra = create_empty_infra(pool.get_ok().deref_mut()).await;
+
+        assert_eq!(fixtures.scenario.infra_id, fixtures.infra.id);
+        assert_ne!(fixtures.scenario.infra_id, other_infra.id);
 
         let url = scenario_url(
-            fixtures.project.id(),
-            fixtures.study.id(),
-            Some(fixtures.scenario.id()),
+            fixtures.project.id,
+            fixtures.study.id,
+            Some(fixtures.scenario.id),
         );
 
         let study_name = "new patched scenario V2";
-        let study_small_infra_infra_id = small_infra.id();
+        let study_other_infra_id = other_infra.id;
 
         let request = TestRequest::patch()
             .uri(&url)
             .set_json(json!({
                 "name": study_name,
-                "infra_id": study_small_infra_infra_id,
+                "infra_id": study_other_infra_id,
             }))
             .to_request();
-        let response: ScenarioResponse = call_and_read_body_json(&service, request).await;
+        let response: ScenarioResponse = call_and_read_body_json(&app.service, request).await;
 
-        assert_eq!(response.scenario.infra_id, study_small_infra_infra_id);
+        assert_eq!(response.scenario.infra_id, study_other_infra_id);
         assert_eq!(response.scenario.name, study_name);
     }
 
     #[rstest]
-    async fn delete_scenario(#[future] scenario_v2_fixture_set: ScenarioV2FixtureSet) {
-        let service = create_test_service().await;
-        let fixtures = scenario_v2_fixture_set.await;
+    async fn delete_scenario() {
+        let app = TestAppBuilder::default_app();
+        let pool = app.db_pool();
+
+        let fixtures =
+            create_scenario_fixtures_set(pool.get_ok().deref_mut(), "test_scenario_name").await;
 
         let url = scenario_url(
-            fixtures.project.id(),
-            fixtures.study.id(),
-            Some(fixtures.scenario.id()),
+            fixtures.project.id,
+            fixtures.study.id,
+            Some(fixtures.scenario.id),
         );
         let request = TestRequest::delete().uri(&url).to_request();
-        let response = call_service(&service, request).await;
+        let response = call_service(&app.service, request).await;
 
         assert_eq!(response.status(), StatusCode::NO_CONTENT);
+
+        let exists = Scenario::exists(pool.get_ok().deref_mut(), fixtures.scenario.id)
+            .await
+            .expect("Failed to check if scenario exists");
+
+        assert!(!exists);
     }
 }

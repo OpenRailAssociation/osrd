@@ -14,6 +14,7 @@ use crate::modelsv2::ElectricalProfileSet;
 use crate::modelsv2::Infra;
 use crate::modelsv2::Project;
 use crate::modelsv2::RollingStockModel;
+use crate::modelsv2::Scenario;
 use crate::modelsv2::Study;
 use crate::modelsv2::Tags;
 use crate::views::rolling_stocks::rolling_stock_form::RollingStockForm;
@@ -51,6 +52,71 @@ pub async fn create_study(conn: &mut DbConnection, name: &str, project_id: i64) 
         .create(conn)
         .await
         .expect("Failed to create study")
+}
+
+pub async fn create_timetable(conn: &mut DbConnection) -> Timetable {
+    Timetable::changeset()
+        .electrical_profile_set_id(None)
+        .create(conn)
+        .await
+        .expect("Failed to create timetable")
+}
+
+pub fn scenario_changeset(
+    name: &str,
+    study_id: i64,
+    timetable_id: i64,
+    infra_id: i64,
+) -> Changeset<Scenario> {
+    Scenario::changeset()
+        .name(name.to_string())
+        .description("test_scenario_v2 description".to_string())
+        .creation_date(Utc::now().naive_utc())
+        .last_modification(Utc::now().naive_utc())
+        .tags(Tags::default())
+        .timetable_id(timetable_id)
+        .study_id(study_id)
+        .infra_id(infra_id)
+}
+
+pub async fn create_scenario(
+    conn: &mut DbConnection,
+    name: &str,
+    study_id: i64,
+    timetable_id: i64,
+    infra_id: i64,
+) -> Scenario {
+    let scenario = scenario_changeset(name, study_id, timetable_id, infra_id);
+    scenario
+        .create(conn)
+        .await
+        .expect("Failed to create scenario")
+}
+
+pub struct ScenarioFixtureSet {
+    pub project: Project,
+    pub study: Study,
+    pub scenario: Scenario,
+    pub timetable: Timetable,
+    pub infra: Infra,
+}
+
+pub async fn create_scenario_fixtures_set(
+    conn: &mut DbConnection,
+    name: &str,
+) -> ScenarioFixtureSet {
+    let project = create_project(conn, &format!("project_test_name_with_{name}")).await;
+    let study = create_study(conn, &format!("study_test_name_with_{name}"), project.id).await;
+    let infra = create_empty_infra(conn).await;
+    let timetable = create_timetable(conn).await;
+    let scenario = create_scenario(conn, name, study.id, timetable.id, infra.id).await;
+    ScenarioFixtureSet {
+        project,
+        study,
+        scenario,
+        timetable,
+        infra,
+    }
 }
 
 pub fn fast_rolling_stock_form(name: &str) -> RollingStockForm {
@@ -149,14 +215,6 @@ pub async fn create_electrical_profile_set(conn: &mut DbConnection) -> Electrica
         .create(conn)
         .await
         .expect("Failed to create electrical profile set")
-}
-
-pub async fn create_timetable(conn: &mut DbConnection) -> Timetable {
-    Timetable::changeset()
-        .electrical_profile_set_id(None)
-        .create(conn)
-        .await
-        .expect("Failed to create timetable")
 }
 
 pub async fn create_empty_infra(conn: &mut DbConnection) -> Infra {

@@ -388,6 +388,7 @@ mod tests {
     use actix_web::test::call_service;
     use actix_web::test::read_body_json;
     use actix_web::test::TestRequest;
+    use pretty_assertions::assert_eq;
     use reqwest::StatusCode;
     use rstest::rstest;
     use serde_json::json;
