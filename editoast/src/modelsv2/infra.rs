@@ -1,3 +1,4 @@
+pub mod errors;
 mod object_queryable;
 mod railjson_data;
 mod route_from_waypoint_result;

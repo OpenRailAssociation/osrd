@@ -878,7 +878,7 @@ pub mod tests {
     use super::*;
     use crate::fixtures::tests::db_pool;
     use crate::fixtures::tests::small_infra;
-    use crate::views::infra::errors::InfraError;
+    use crate::modelsv2::infra::errors::InfraError;
     use crate::views::pagination::PaginatedResponse;
     use crate::views::tests::create_test_service;
 
