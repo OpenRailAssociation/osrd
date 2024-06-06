@@ -8,11 +8,11 @@ import { Rnd } from 'react-rnd';
 
 import type { SimulationReport } from 'common/api/osrdEditoastApi';
 import { timeShiftTrain } from 'modules/simulationResult/components/ChartHelpers/ChartHelpers';
-import { useChartSynchronizer } from 'modules/simulationResult/components/ChartHelpers/ChartSynchronizer';
 import {
   enableInteractivity,
   traceVerticalLine,
 } from 'modules/simulationResult/components/ChartHelpers/enableInteractivity';
+import { useChartSynchronizer } from 'modules/simulationResult/components/ChartSynchronizer';
 import ChartModal from 'modules/simulationResult/components/SpaceTimeChart/ChartModal';
 import { isolatedCreateTrain as createTrain } from 'modules/simulationResult/components/SpaceTimeChart/createTrain';
 import { drawAllTrains } from 'modules/simulationResult/components/SpaceTimeChart/d3Helpers';

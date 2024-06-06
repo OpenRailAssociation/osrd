@@ -6,7 +6,7 @@ import type { TrainSpaceTimeData } from 'applications/operationalStudies/types';
 import type { PositionsSpeedTimes } from 'reducers/osrdsimulation/types';
 
 import { sec2d3datetime } from './ChartHelpers/ChartHelpers';
-import { useChartSynchronizerV2 } from './ChartHelpers/ChartSynchronizerV2';
+import { useChartSynchronizerV2 } from './ChartSynchronizer';
 
 /**
  * Given the routeAspects and a timePosition, returns the bounds [start, end]

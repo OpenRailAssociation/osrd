@@ -34,7 +34,7 @@ import type {
 } from 'reducers/osrdsimulation/types';
 import { dateIsInRange } from 'utils/date';
 
-import { useChartSynchronizer } from './ChartHelpers/ChartSynchronizer';
+import { useChartSynchronizer } from './ChartSynchronizer';
 import { drawAxisTitle, drawSpaceCurvesSlopesChartCurve } from './SpaceCurvesSlopes/utils';
 
 const CHART_ID = 'SpaceCurvesSlopes';

@@ -1,7 +1,5 @@
 import {
   formatElectrificationRanges,
-  formatPowerRestrictionRanges,
-  formatPowerRestrictionRangesWithHandled,
   transformBoundariesDataToPositionDataArray,
   transformBoundariesDataToRangesData,
 } from 'applications/operationalStudies/utils';
@@ -10,22 +8,14 @@ import {
   boundariesDataWithElectrificalProfile,
   boundariesDataWithElectrification,
   boundariesDataWithNumber,
-  effortCurves,
   electricalProfileRangesData,
   electricalProfileRangesDataShort,
   electrificationRanges,
   electrificationRangesData,
   electrificationRangesDataLarge,
-  electrificationRangesForPowerRestrictions,
   electrificationRangesLarge,
-  formattedPowerRestrictionRanges,
   getExpectedResultDataNumber,
   pathLength,
-  powerRestriction,
-  powerRestrictionRanges,
-  powerRestrictionRangesWithHandled,
-  stepPath,
-  stepPathPositions,
 } from './sampleData';
 
 describe('transformBoundariesDataToPositionDataArray', () => {
@@ -87,25 +77,5 @@ describe('formatElectrificationRanges', () => {
     );
 
     expect(result).toEqual(electrificationRangesLarge);
-  });
-});
-
-describe('formatPowerRestrictionRanges', () => {
-  it('should properly format power restrictions ranges', () => {
-    const result = formatPowerRestrictionRanges(powerRestriction, stepPath, stepPathPositions);
-
-    expect(result).toEqual(formattedPowerRestrictionRanges);
-  });
-});
-
-describe('formatPowerRestrictionRangesWithHandled', () => {
-  it('should properly format power restrictions ranges with handled property', () => {
-    const result = formatPowerRestrictionRangesWithHandled(
-      powerRestrictionRanges,
-      electrificationRangesForPowerRestrictions,
-      effortCurves
-    );
-
-    expect(result).toEqual(powerRestrictionRangesWithHandled);
   });
 });

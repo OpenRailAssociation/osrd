@@ -3,12 +3,14 @@ import { useRef, useEffect } from 'react';
 import { CHART_AXES, LIST_VALUES, type ListValues } from 'modules/simulationResult/consts';
 import type { PositionsSpeedTimes } from 'reducers/osrdsimulation/types';
 
-import { interpolateOnTime } from './ChartHelpers';
+import { interpolateOnTime } from '../ChartHelpers/ChartHelpers';
 
 type PositionValues = PositionsSpeedTimes<Date>;
 type Subscriber = (timePosition: Date, positionValues: PositionValues) => void;
 
 export type ChartSynchronizerTrainData = Partial<{ [Key in ListValues[number]]: unknown }>;
+
+const IS_TRAIN_SCHEDULE_V2 = true;
 
 /**
  * This singleton class allows components to subscribe to d3 data updates.
@@ -58,7 +60,7 @@ export class ChartSynchronizerV2 {
         this.trainData,
         CHART_AXES.SPACE_TIME,
         LIST_VALUES.SPACE_TIME,
-        true
+        IS_TRAIN_SCHEDULE_V2
       )(this.timePosition) as PositionValues;
     } else {
       this.positionValues = {} as PositionValues;

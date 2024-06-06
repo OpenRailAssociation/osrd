@@ -9,11 +9,11 @@ import { Rnd } from 'react-rnd';
 import type { TrainSpaceTimeData } from 'applications/operationalStudies/types';
 import { getSpaceTimeChartData } from 'applications/operationalStudies/views/v2/getSimulationResultsV2';
 import { osrdEditoastApi, type TrainScheduleResult } from 'common/api/osrdEditoastApi';
-import { useChartSynchronizerV2 } from 'modules/simulationResult/components/ChartHelpers/ChartSynchronizerV2';
 import {
   enableInteractivityV2,
   traceVerticalLine,
 } from 'modules/simulationResult/components/ChartHelpers/enableInteractivity';
+import { useChartSynchronizerV2 } from 'modules/simulationResult/components/ChartSynchronizer';
 import ChartModal from 'modules/simulationResult/components/SpaceTimeChart/ChartModal';
 import { createTrainV2 } from 'modules/simulationResult/components/SpaceTimeChart/createTrain';
 import { drawAllTrainsV2 } from 'modules/simulationResult/components/SpaceTimeChart/d3Helpers';
@@ -56,6 +56,7 @@ export type SpaceTimeChartV2Props = {
   setTrainResultsToFetch?: (trainSchedulesIDs?: number[]) => void;
   setTimeScaleDomain?: (newTimeScaleDomain: TimeScaleDomain) => void;
   setTrainSpaceTimeData: React.Dispatch<React.SetStateAction<TrainSpaceTimeData[]>>;
+  deactivateChartSynchronization?: boolean;
 };
 
 const SpaceTimeChartV2 = ({
@@ -71,6 +72,7 @@ const SpaceTimeChartV2 = ({
   setTrainResultsToFetch = noop,
   setTimeScaleDomain,
   setTrainSpaceTimeData,
+  deactivateChartSynchronization,
 }: SpaceTimeChartV2Props) => {
   const ref = useRef<HTMLDivElement>(null);
   const rndContainerRef = useRef<Rnd>(null);
@@ -101,9 +103,14 @@ const SpaceTimeChartV2 = ({
   /* coordinate the vertical cursors with other graphs (GEV for instance) */
   const { updateTimePosition } = useChartSynchronizerV2(
     (newTimePosition, positionValues) => {
-      if (
+      if (deactivateChartSynchronization) {
+        if (chart) {
+          chart.svg.selectAll('#horizontal-line').attr('y1', chart.y(0)).attr('y2', chart.y(0));
+          chart.svg.selectAll('#vertical-line').attr('x1', chart.x(0)).attr('x2', chart.x(0));
+        }
+      } else if (
         timeScaleDomain &&
-        timeScaleDomain.range &&
+        timeScaleDomain?.range &&
         dateIsInRange(newTimePosition, timeScaleDomain.range)
       ) {
         traceVerticalLine(chart, CHART_AXES.SPACE_TIME, positionValues, newTimePosition, rotate);
@@ -241,7 +248,10 @@ const SpaceTimeChartV2 = ({
         simulationIsPlaying,
         updateTimePosition,
         newTimeScaleRange,
-        selectedTrain.start_time
+        selectedTrain.start_time,
+        undefined,
+        undefined,
+        deactivateChartSynchronization
       );
     }
   }, [chart]);

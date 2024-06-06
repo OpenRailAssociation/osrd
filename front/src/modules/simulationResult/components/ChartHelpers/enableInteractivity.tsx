@@ -413,7 +413,8 @@ export const enableInteractivityV2 = <
   chartDimensions: [Date, Date],
   selectedTrainDepartureDate: string,
   setSharedXScaleDomain?: React.Dispatch<React.SetStateAction<PositionScaleDomain>>,
-  additionalValues: ChartAxes[] = [] // more values to display on the same chart
+  additionalValues: ChartAxes[] = [], // more values to display on the same chart
+  deactivateChartSynchronization = false
 ) => {
   if (!chart) return;
   const zoom = d3zoom<SVGGElement, unknown>()
@@ -490,7 +491,10 @@ export const enableInteractivityV2 = <
         });
       }
 
-      updateTimePosition(timePositionLocal);
+      if (!deactivateChartSynchronization) {
+        updateTimePosition(timePositionLocal);
+      }
+
       if (chart.svg && dateIsInRange(timePositionLocal, chartDimensions)) {
         const verticalMark = pointer(event, event.currentTarget)[0];
         const horizontalMark = pointer(event, event.currentTarget)[1];

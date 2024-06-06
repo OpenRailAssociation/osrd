@@ -1,4 +1,4 @@
-const STDCM_REQUEST_STATUS = Object.freeze({
+export const STDCM_REQUEST_STATUS = Object.freeze({
   idle: 'IDLE',
   pending: 'PENDING',
   success: 'SUCCESS',
@@ -7,6 +7,6 @@ const STDCM_REQUEST_STATUS = Object.freeze({
   noresults: 'NORESULTS',
 });
 
-export default STDCM_REQUEST_STATUS;
+export const STDCM_TRAIN_ID = -10;
 
 export const RUNTIME_CAP = 43200;

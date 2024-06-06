@@ -1,6 +1,7 @@
 import i18n from 'i18next';
 import type { AnyAction, Reducer } from 'redux';
 
+import { STDCM_TRAIN_ID } from 'applications/stdcm/consts';
 import {
   type SimulationReport,
   type TrainSchedule,
@@ -107,7 +108,7 @@ const apiSyncOnDiff = (
 
     // if train is stdcm, it is not persisted in the backend
     // so it should not be fetched/updated in the backend too
-    if (id === 1500) return;
+    if (id === STDCM_TRAIN_ID) return;
 
     const apiDetailsForPresentTrain = JSON.stringify(getTrainDetailsForAPI(presentTrain));
 

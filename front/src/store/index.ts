@@ -5,7 +5,7 @@ import { persistStore, getStoredState } from 'redux-persist';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { osrdGatewayApi } from 'common/api/osrdGatewayApi';
-import { ChartSynchronizer } from 'modules/simulationResult/components/ChartHelpers/ChartSynchronizer';
+import { ChartSynchronizer } from 'modules/simulationResult/components/ChartSynchronizer';
 import persistedReducer, {
   rootReducer,
   rootInitialState,

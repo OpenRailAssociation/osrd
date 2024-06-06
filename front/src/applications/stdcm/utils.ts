@@ -127,10 +127,6 @@ export function getOperationalPointsWithTimes(simulationReport: SimulationReport
   const operationalPoints = simulationReport.pathProperties?.suggestedOperationalPoints || [];
   const { simulation } = simulationReport.stdcmData;
 
-  if (simulation.status !== 'success') {
-    throw new Error('Simulation was not successful.');
-  }
-
   const { positions, times } = simulation.final_output;
   const departureTime = new Date(simulationReport.stdcmData.departure_time)
     .toLocaleTimeString()

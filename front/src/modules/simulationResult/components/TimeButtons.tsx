@@ -12,8 +12,7 @@ import { getTrainScheduleV2Activated } from 'reducers/user/userSelectors';
 import { useAppDispatch } from 'store';
 import { datetime2time, sec2datetime, time2datetime } from 'utils/timeManipulation';
 
-import { useChartSynchronizer } from './ChartHelpers/ChartSynchronizer';
-import { useChartSynchronizerV2 } from './ChartHelpers/ChartSynchronizerV2';
+import { useChartSynchronizer, useChartSynchronizerV2 } from './ChartSynchronizer';
 
 // transform a speed ratio (X2 X10 X20, etc.) to interval time & step to bypass
 const factor2ms = (factor: number) => {
