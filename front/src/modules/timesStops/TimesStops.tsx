@@ -112,6 +112,7 @@ const TimesStops = ({ pathProperties, pathSteps = [] }: TimesStopsProps) => {
         ),
         title: t('receptionOnClosedSignal'),
         grow: 0.6,
+        disabled: ({ rowData }) => !rowData.stopFor,
       },
       {
         ...keyColumn<PathWaypointColumn, 'theoreticalMargin'>(
@@ -158,6 +159,9 @@ const TimesStops = ({ pathProperties, pathSteps = [] }: TimesStopsProps) => {
       value={timesStopsSteps}
       onChange={(row, [op]) => {
         const rowData = row[`${op.fromRowIndex}`];
+        if (!rowData.stopFor) {
+          rowData.onStopSignal = false;
+        }
         if (rowData.theoreticalMargin && !marginRegExValidation.test(rowData.theoreticalMargin!)) {
           rowData.isMarginValid = false;
           setTimesStopsSteps(row);
