@@ -549,8 +549,6 @@ diesel::table! {
         signaling_systems -> Nullable<Array<Nullable<Text>>>,
         settings -> Nullable<Array<Nullable<Text>>>,
         line_code -> Nullable<Int4>,
-        sprite_signaling_system -> Nullable<Text>,
-        sprite -> Nullable<Text>,
     }
 }
 
