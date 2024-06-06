@@ -69,11 +69,13 @@ class STDCMGraph(
      * allowance.
      */
     fun getStandardAllowanceSpeedRatio(envelope: Envelope): Double {
-        if (standardAllowance == null) return 1.0
+        if (standardAllowance == null || envelope.endPos == 0.0) return 1.0
         val runTime = envelope.totalTime
         val distance = envelope.totalDistance
         val allowanceRatio = standardAllowance.getAllowanceRatio(runTime, distance)
-        return 1 / (1 + allowanceRatio)
+        val res = 1 / (1 + allowanceRatio)
+        assert(!isNaN(res) && isFinite(res))
+        return res
     }
 
     override fun getEdgeEnd(edge: STDCMEdge): STDCMNode {
