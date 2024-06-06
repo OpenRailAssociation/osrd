@@ -28,17 +28,14 @@ use crate::core::v2::conflict_detection::TrainRequirements;
 use crate::core::v2::simulation::SimulationResponse;
 use crate::core::AsCoreRequest;
 use crate::error::Result;
+use crate::modelsv2::prelude::*;
 use crate::modelsv2::timetable::Timetable;
 use crate::modelsv2::timetable::TimetableWithTrains;
 use crate::modelsv2::train_schedule::TrainSchedule;
 use crate::modelsv2::train_schedule::TrainScheduleChangeset;
-use crate::modelsv2::Create;
 use crate::modelsv2::DbConnectionPool;
-use crate::modelsv2::DeleteStatic;
+use crate::modelsv2::DbConnectionPoolV2;
 use crate::modelsv2::Infra;
-use crate::modelsv2::Model;
-use crate::modelsv2::Retrieve;
-use crate::modelsv2::Update;
 use crate::views::pagination::PaginatedList;
 use crate::views::pagination::PaginationQueryParam;
 use crate::views::pagination::PaginationStats;
@@ -144,7 +141,7 @@ struct TimetableIdParam {
 )]
 #[get("")]
 async fn get(
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Data<DbConnectionPoolV2>,
     timetable_id: Path<TimetableIdParam>,
 ) -> Result<Json<TimetableDetailedResult>> {
     let timetable_id = timetable_id.id;
@@ -176,7 +173,7 @@ struct ListTimetablesResponse {
 )]
 #[get("")]
 async fn list(
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Data<DbConnectionPoolV2>,
     pagination_params: Query<PaginationQueryParam>,
 ) -> Result<Json<ListTimetablesResponse>> {
     let settings = pagination_params
@@ -202,7 +199,7 @@ async fn list(
 )]
 #[post("")]
 async fn post(
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Data<DbConnectionPoolV2>,
     data: Json<TimetableForm>,
 ) -> Result<Json<TimetableResult>> {
     let conn = &mut db_pool.get().await?;
@@ -258,7 +255,7 @@ async fn put(
 )]
 #[delete("")]
 async fn delete(
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Data<DbConnectionPoolV2>,
     timetable_id: Path<TimetableIdParam>,
 ) -> Result<HttpResponse> {
     let timetable_id = timetable_id.id;
@@ -388,83 +385,101 @@ pub async fn conflicts(
 
 #[cfg(test)]
 mod tests {
-
-    use actix_web::test::call_and_read_body_json;
     use actix_web::test::call_service;
+    use actix_web::test::read_body_json;
     use actix_web::test::TestRequest;
+    use reqwest::StatusCode;
     use rstest::rstest;
     use serde_json::json;
-    use std::sync::Arc;
 
     use super::*;
-    use crate::fixtures::tests::db_pool;
-    use crate::fixtures::tests::timetable_v2;
-    use crate::fixtures::tests::TestFixture;
-    use crate::modelsv2::Delete;
-    use crate::views::tests::create_test_service;
+    use crate::modelsv2::fixtures::create_timetable;
+    use crate::views::test_app::TestAppBuilder;
 
     #[rstest]
-    async fn get_timetable(
-        #[future] timetable_v2: TestFixture<Timetable>,
-        db_pool: Arc<DbConnectionPool>,
-    ) {
-        let service = create_test_service().await;
-        let timetable = timetable_v2.await;
+    async fn get_timetable() {
+        let app = TestAppBuilder::default_app();
+        let pool = app.db_pool();
 
-        let url = format!("/v2/timetable/{}", timetable.id());
+        let timetable = create_timetable(pool.get_ok().deref_mut()).await;
 
-        // Should succeed
-        let request = TestRequest::get().uri(&url).to_request();
-        let response = call_service(&service, request).await;
+        let request = TestRequest::get()
+            .uri(&format!("/v2/timetable/{}", timetable.id))
+            .to_request();
+        let response = call_service(&app.service, request).await;
         assert!(response.status().is_success());
 
-        // Delete the timetable
-        assert!(timetable
-            .model
-            .delete(&mut db_pool.get().await.unwrap())
-            .await
-            .unwrap());
-
-        // Should fail
-        let request = TestRequest::get().uri(&url).to_request();
-        let response = call_service(&service, request).await;
-        assert!(response.status().is_client_error());
+        let timetable_from_response: Timetable = read_body_json(response).await;
+        assert_eq!(timetable_from_response, timetable);
     }
 
     #[rstest]
-    async fn timetable_post(db_pool: Arc<DbConnectionPool>) {
-        let service = create_test_service().await;
+    async fn get_unexisting_timetable() {
+        let app = TestAppBuilder::default_app();
+        let request = TestRequest::get()
+            .uri(&format!("/v2/timetable/{}", 0))
+            .to_request();
+        let response = call_service(&app.service, request).await;
+        assert_eq!(response.status(), StatusCode::NOT_FOUND);
+    }
+
+    #[rstest]
+    async fn get_timetable_list() {
+        let app = TestAppBuilder::default_app();
+        let pool = app.db_pool();
+
+        create_timetable(pool.get_ok().deref_mut()).await;
+
+        let request = TestRequest::get().uri("/v2/timetable/").to_request();
+
+        let response = call_service(&app.service, request).await;
+
+        assert_eq!(response.status(), StatusCode::OK);
+    }
+
+    #[rstest]
+    async fn timetable_post() {
+        let app = TestAppBuilder::default_app();
+        let pool = app.db_pool();
 
         // Insert timetable
         let request = TestRequest::post()
             .uri("/v2/timetable")
             .set_json(json!({ "electrical_profil_set_id": None::<i64>}))
             .to_request();
-        let response: TimetableResult = call_and_read_body_json(&service, request).await;
 
-        // Delete the timetable
-        assert!(
-            Timetable::delete_static(&mut db_pool.get().await.unwrap(), response.id)
+        let response = call_service(&app.service, request).await;
+        assert_eq!(response.status(), StatusCode::OK);
+
+        let created_timetable: Timetable = read_body_json(response).await;
+
+        let retrieved_timetable =
+            Timetable::retrieve(pool.get_ok().deref_mut(), created_timetable.id)
                 .await
-                .unwrap()
-        );
+                .expect("Failed to retrieve timetable")
+                .expect("Timetable not found");
+
+        assert_eq!(created_timetable, retrieved_timetable);
     }
 
     #[rstest]
-    async fn timetable_delete(#[future] timetable_v2: TestFixture<Timetable>) {
-        let timetable = timetable_v2.await;
-        let service = create_test_service().await;
+    async fn timetable_delete() {
+        let app = TestAppBuilder::default_app();
+        let pool = app.db_pool();
+
+        let timetable = create_timetable(pool.get_ok().deref_mut()).await;
+
         let request = TestRequest::delete()
-            .uri(format!("/v2/timetable/{}", timetable.id()).as_str())
+            .uri(format!("/v2/timetable/{}", timetable.id).as_str())
             .to_request();
-        assert!(call_service(&service, request).await.status().is_success());
-    }
 
-    #[rstest]
-    async fn timetable_list(#[future] timetable_v2: TestFixture<Timetable>) {
-        timetable_v2.await;
-        let service = create_test_service().await;
-        let request = TestRequest::get().uri("/v2/timetable/").to_request();
-        assert!(call_service(&service, request).await.status().is_success());
+        let response = call_service(&app.service, request).await;
+        assert_eq!(response.status(), StatusCode::NO_CONTENT);
+
+        let exists = Timetable::exists(pool.get_ok().deref_mut(), timetable.id)
+            .await
+            .expect("Failed to check if timetable exists");
+
+        assert!(!exists);
     }
 }
