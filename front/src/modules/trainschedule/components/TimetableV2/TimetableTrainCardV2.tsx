@@ -224,7 +224,7 @@ const TimetableTrainCardV2 = ({
           </div>
           <div className="scenario-timetable-train-body">
             {train.speedLimitTag && <span className="flex-grow-1">{train.speedLimitTag}</span>}
-            <span className="mr-3">{t('timetable.stopsCount', { count: train.stepsCount })}</span>
+            <span className="mr-3">{t('timetable.stopsCount', { count: train.stopsCount })} </span>
             <small
               className="mx-xl-2 mr-lg-2 text-orange font-weight-bold"
               data-testid="allowance-energy-consumed"
