@@ -120,7 +120,12 @@ class STDCMPathfinding(
                 stops,
                 listOf(constraints)
             )
-        val path = findPathImpl() ?: return null
+        val path = findPathImpl()
+        if (path == null) {
+            graph.logger.info("Failed to find a path")
+            return null
+        }
+        graph.logger.info("Path found")
 
         return STDCMPostProcessing(graph)
             .makeResult(
