@@ -18,6 +18,7 @@ import { setFailure, setSuccess } from 'reducers/main';
 import { useAppDispatch } from 'store';
 
 import { generateV2TrainSchedulesPayloads } from './generateTrainSchedulesPayloads';
+import type { RollingstockOpenData2OSRDKeys } from './types';
 
 function LoadingIfSearching({ isLoading, t }: { isLoading: boolean; t: TFunction }) {
   return (
@@ -49,6 +50,17 @@ const ImportTrainScheduleTrainsListV2 = ({
     [rollingStocks]
   );
 
+  // Format the trains list to match the train names provided by the backend
+  const formattedTrainsList = useMemo(
+    () =>
+      trainsList.map(({ rollingStock, ...train }) => {
+        const validTrainName =
+          rollingstockOpenData2OSRD[rollingStock as RollingstockOpenData2OSRDKeys];
+        return { ...train, rollingStock: validTrainName };
+      }),
+    [trainsList]
+  );
+
   const [postTrainSchedule] =
     enhancedEditoastApi.endpoints.postV2TimetableByIdTrainSchedule.useMutation();
 
@@ -57,7 +69,9 @@ const ImportTrainScheduleTrainsListV2 = ({
   async function generateV2TrainSchedules() {
     try {
       const payloads =
-        trainsJsonData.length > 0 ? trainsJsonData : generateV2TrainSchedulesPayloads(trainsList);
+        trainsJsonData.length > 0
+          ? trainsJsonData
+          : generateV2TrainSchedulesPayloads(formattedTrainsList);
 
       await postTrainSchedule({ id: timetableId, body: payloads }).unwrap();
       dispatch(
@@ -108,9 +122,7 @@ const ImportTrainScheduleTrainsListV2 = ({
                 key={train.trainNumber}
                 rollingStock={
                   rollingStockDict[
-                    rollingstockOpenData2OSRD[
-                      train.rollingStock as keyof typeof rollingstockOpenData2OSRD
-                    ]
+                    rollingstockOpenData2OSRD[train.rollingStock as RollingstockOpenData2OSRDKeys]
                   ]
                 }
               />
