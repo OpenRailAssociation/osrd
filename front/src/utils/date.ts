@@ -129,7 +129,3 @@ export function convertUTCDateToLocalDate(date: number) {
   const timeDifferenceMinutes = new Date().getTimezoneOffset();
   return Math.abs(timeDifferenceMinutes) * 60 + date;
 }
-
-export function extractTime(isoDate: string) {
-  return dayjs(isoDate).utc().format('HH:mm');
-}
