@@ -889,14 +889,15 @@ pub mod tests {
     use actix_web::test::call_and_read_body_json;
     use actix_web::test::call_service;
     use actix_web::test::TestRequest;
-    use rstest::*;
-    use serde_json::Value as JsonValue;
+    use pretty_assertions::assert_eq;
+    use rstest::rstest;
 
     use super::*;
     use crate::fixtures::tests::db_pool;
     use crate::fixtures::tests::small_infra;
     use crate::generated_data::infra_error::InfraError;
     use crate::generated_data::infra_error::InfraErrorType;
+    use crate::modelsv2::infra::ObjectQueryable;
     use crate::views::infra::errors::query_errors;
     use crate::views::tests::create_test_service;
 
@@ -1041,10 +1042,8 @@ pub mod tests {
     #[rstest]
     async fn apply_edit_transaction_should_rollback() {
         // Init
-        let pg_db_pool = db_pool();
-        let app = create_test_service().await;
-        let conn = &mut pg_db_pool.get().await.unwrap();
-        let mut small_infra = small_infra(pg_db_pool.clone()).await;
+        let conn = &mut db_pool().get().await.unwrap();
+        let mut small_infra = small_infra(db_pool().clone()).await;
         let mut infra_cache = InfraCache::load(conn, &small_infra.model).await.unwrap();
 
         // Calling "apply_edit" with a first OK operation and a KO second one
@@ -1081,11 +1080,11 @@ pub mod tests {
         assert!(result.is_err());
 
         // Check that TA0 length is not changed
-        let req = TestRequest::post()
-            .uri(format!("/infra/{}/objects/TrackSection", small_infra.id()).as_str())
-            .set_json(json!(["TA0"]))
-            .to_request();
-        let res: Vec<JsonValue> = call_and_read_body_json(&app, req).await;
-        assert_eq!(2000.0, res[0]["railjson"]["length"])
+        let res: Vec<ObjectQueryable> = small_infra
+            .model
+            .get_objects(conn, ObjectType::TrackSection, &vec!["TA0".to_string()])
+            .await
+            .unwrap();
+        assert_eq!(2000.0, res[0].railjson.as_object().unwrap()["length"]);
     }
 }
