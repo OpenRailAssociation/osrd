@@ -142,14 +142,16 @@ async fn get_routes_track_ranges<'a>(
     infra: Path<i64>,
     params: Query<RouteTrackRangesParams>,
     infra_caches: Data<CHashMap<i64, InfraCache>>,
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Data<DbConnectionPoolV2>,
 ) -> Result<Json<Vec<RouteTrackRangesResult>>> {
     let infra_id = infra.into_inner();
-    let conn = &mut db_pool.get().await?;
-    let infra =
-        Infra::retrieve_or_fail(conn, infra_id, || InfraApiError::NotFound { infra_id }).await?;
+    let infra = Infra::retrieve_or_fail(db_pool.get().await?.deref_mut(), infra_id, || {
+        InfraApiError::NotFound { infra_id }
+    })
+    .await?;
 
-    let infra_cache = InfraCache::get_or_load(conn, &infra_caches, &infra).await?;
+    let infra_cache =
+        InfraCache::get_or_load(db_pool.get().await?.deref_mut(), &infra_caches, &infra).await?;
     let graph = Graph::load(&infra_cache);
     let routes_cache = infra_cache.routes();
     let result = params

@@ -130,12 +130,12 @@ mod tests {
         let db_pool = app.db_pool();
         let empty_infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
 
-        let req = TestRequest::post()
+        let request = TestRequest::post()
             .uri(format!("/infra/{}/objects/TrackSection", empty_infra.id).as_str())
             .set_json(["invalid_id"])
             .to_request();
-        let response = call_service(&app.service, req).await;
-        assert_eq!(response.status(), StatusCode::BAD_REQUEST);
+
+        app.fetch(request).assert_status(StatusCode::BAD_REQUEST);
     }
 
     #[rstest]
