@@ -348,6 +348,7 @@ const ScenarioV2 = () => {
                     collapsedTimetable={collapsedTimetable}
                     setTrainResultsToFetch={setTrainResultsToFetch}
                     spaceTimeData={trainSpaceTimeData}
+                    setTrainSpaceTimeData={setTrainSpaceTimeData}
                   />
                 )}
               </div>

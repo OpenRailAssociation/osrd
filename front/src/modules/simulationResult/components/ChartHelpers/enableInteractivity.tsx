@@ -457,12 +457,6 @@ export const enableInteractivityV2 = <
             ? chart.y.invert(pointer(event, event.currentTarget)[1])
             : chart.x.invert(pointer(event, event.currentTarget)[0])
         ) as Date;
-
-        immediatePositionsValuesForPointer = interpolateOnTime(
-          selectedTrainData,
-          keyValues,
-          LIST_VALUES.SPACE_TIME
-        )(timePositionLocal);
       } else {
         // SpeedSpaceChart or SpaceCurvesSlopesChart
         const positionLocal = chart.x.invert(pointer(event, event.currentTarget)[0]) as number;
@@ -495,7 +489,6 @@ export const enableInteractivityV2 = <
 
       updateTimePosition(timePositionLocal);
       if (chart.svg && dateIsInRange(timePositionLocal, chartDimensions)) {
-        // if (chart.svg) {
         const verticalMark = pointer(event, event.currentTarget)[0];
         const horizontalMark = pointer(event, event.currentTarget)[1];
         chart.svg.selectAll('#vertical-line').attr('x1', verticalMark).attr('x2', verticalMark);
