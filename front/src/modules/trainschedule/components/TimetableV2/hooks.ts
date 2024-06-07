@@ -41,7 +41,10 @@ const useTrainSchedulesDetails = (
         infra: infraId as number,
         ids: trainIds,
       },
-      { skip: !infraId || !trainIds.length }
+      {
+        skip: !infraId || !trainIds.length,
+        refetchOnMountOrArgChange: true,
+      }
     );
 
   const { currentData: trainSchedules } = enhancedEditoastApi.endpoints.getV2TrainSchedule.useQuery(
