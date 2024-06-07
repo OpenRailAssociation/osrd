@@ -4,8 +4,8 @@ const config: ConfigFile = {
   schemaFile: '../../../editoast/openapi.yaml',
   apiFile: '../common/api/baseGeneratedApis.ts',
   apiImport: 'baseEditoastApi',
-  outputFile: '../common/api/osrdEditoastApi.ts',
-  exportName: 'osrdEditoastApi',
+  outputFile: '../common/api/generatedEditoastApi.ts',
+  exportName: 'generatedEditoastApi',
   hooks: false,
   tag: true,
 };
