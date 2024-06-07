@@ -2,7 +2,7 @@ import { compact, last, omit } from 'lodash';
 
 import type { PointOnMap } from 'applications/operationalStudies/consts';
 import type { Allowance, Distribution, Infra, TrainScheduleBase } from 'common/api/osrdEditoastApi';
-import NO_POWER_RESTRICTION from 'modules/powerRestriction/consts';
+import { NO_POWER_RESTRICTION } from 'modules/powerRestriction/consts';
 import displayPowerRestrictionIntervals from 'modules/powerRestriction/helpers/displayPowerRestrictionIntervals';
 import mergePowerRestrictionRanges from 'modules/trainschedule/components/ManageTrainSchedule/helpers/mergePowerRestrictionRanges';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';

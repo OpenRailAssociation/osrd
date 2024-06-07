@@ -121,6 +121,7 @@
     "inconsistent_other": "The intervals below contain inconsistencies. The default speed effort curves will be used for these.",
     "powerRestrictionInvalidCombination": "- {{powerRestrictionCode}} is incompatible with electrification {{electrification}} of the path between {{begin}}m and {{end}}m",
     "missingPowerRestriction": "- Missing power restriction between {{begin}}m and {{end}}m.",
+    "modeNotHandled": "- No power restriction should be given between {{begin}}m and {{end}}m since the electrification mode {{electrification}} is not handled.",
     "pathfindingChange": "Pathfinding changed",
     "marginsAndPowerRestrictionsReset": "Margins and power restrictions have been reset."
   }

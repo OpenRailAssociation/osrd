@@ -1,3 +1,2 @@
-const NO_POWER_RESTRICTION = 'NO_POWER_RESTRICTION';
-
-export default NO_POWER_RESTRICTION;
+// eslint-disable-next-line import/prefer-default-export
+export const NO_POWER_RESTRICTION = 'NO_POWER_RESTRICTION';

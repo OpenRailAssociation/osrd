@@ -28,8 +28,8 @@ import type {
 
 /**
  * Transform datas received with boundaries / values format :
- *  - boundaries : List of `n` boundaries of the ranges. A boundary is a distance 
- * from the beginning of the path in mm. 
+ *  - boundaries : List of `n` boundaries of the ranges. A boundary is a distance
+ * from the beginning of the path in mm.
     - values : List of `n+1` values associated to the ranges.
     @returns an array of PositionData with the position in meters and the associated value
     depending on the kind of data provided. As the boundaries don't include the path's origin and destination
@@ -62,10 +62,10 @@ export const transformBoundariesDataToPositionDataArray = <T extends 'gradient' 
 
 /**
  * Transform electrifications received with boundaries / values format :
- *  - boundaries : List of `n` boundaries of the ranges. A boundary is a distance 
- * from the beginning of the path in mm. 
+ *  - boundaries : List of `n` boundaries of the ranges. A boundary is a distance
+ * from the beginning of the path in mm.
     - values : List of `n+1` values associated to the ranges.
-    @returns an array of electrifications ranges with the start and stop of the range in meters and 
+    @returns an array of electrifications ranges with the start and stop of the range in meters and
     the associated value. As the boundaries don't include the path's origin and destination
     positions, we add them manually.
  */
@@ -240,7 +240,8 @@ export const formatPowerRestrictionRangesWithHandled = (
     let isHandled = false;
     if (
       foundElectrificationRange &&
-      foundElectrificationRange.electrificationUsage.type === 'electrification'
+      foundElectrificationRange.electrificationUsage.type === 'electrification' &&
+      powerRestrictionsByMode[foundElectrificationRange.electrificationUsage.voltage]
     ) {
       isHandled = powerRestrictionsByMode[
         foundElectrificationRange.electrificationUsage.voltage
