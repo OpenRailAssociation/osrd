@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import dayjs from 'dayjs';
 import { uniq } from 'lodash';
 
-import { enhancedEditoastApi } from 'common/api/enhancedEditoastApi';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { SimulationSummaryResult, TrainScheduleResult } from 'common/api/osrdEditoastApi';
 import { useInfraID } from 'common/osrdContext';
 import { isoDateToMs, formatToIsoDate } from 'utils/date';
@@ -36,7 +36,7 @@ const useTrainSchedulesDetails = (
   const [uniqueTags, setUniqueTags] = useState<string[]>([]);
 
   const { currentData: trainSchedulesSummary } =
-    enhancedEditoastApi.endpoints.getV2TrainScheduleSimulationSummary.useQuery(
+    osrdEditoastApi.endpoints.getV2TrainScheduleSimulationSummary.useQuery(
       {
         infra: infraId as number,
         ids: trainIds,
@@ -47,7 +47,7 @@ const useTrainSchedulesDetails = (
       }
     );
 
-  const { currentData: trainSchedules } = enhancedEditoastApi.endpoints.getV2TrainSchedule.useQuery(
+  const { currentData: trainSchedules } = osrdEditoastApi.endpoints.getV2TrainSchedule.useQuery(
     {
       ids: trainIds,
     },
@@ -58,7 +58,7 @@ const useTrainSchedulesDetails = (
 
   // We fetch all RS to get the data we need for the advanced filters
   const { data: { results: rollingStocks } = { results: [] } } =
-    enhancedEditoastApi.endpoints.getLightRollingStock.useQuery({ pageSize: 1000 });
+    osrdEditoastApi.endpoints.getLightRollingStock.useQuery({ pageSize: 1000 });
 
   useEffect(() => {
     const filterTrainSchedules = (

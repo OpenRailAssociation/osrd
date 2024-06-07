@@ -8,7 +8,6 @@ import { BiSelectMultiple } from 'react-icons/bi';
 import { useSelector } from 'react-redux';
 
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
-import { enhancedEditoastApi } from 'common/api/enhancedEditoastApi';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type {
   Conflict,
@@ -97,7 +96,7 @@ export default function Timetable({
 
   // We fetch all RS to get the data we need for the advanced filters
   const { data: { results: rollingStocks } = { results: [] } } =
-    enhancedEditoastApi.endpoints.getLightRollingStock.useQuery({ pageSize: 1000 });
+    osrdEditoastApi.endpoints.getLightRollingStock.useQuery({ pageSize: 1000 });
 
   // Filter RS by their names and labels
   const keepTrain = (train: ScheduledTrain, searchString: string): boolean => {

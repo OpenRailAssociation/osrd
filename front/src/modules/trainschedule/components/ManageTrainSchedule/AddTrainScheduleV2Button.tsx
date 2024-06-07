@@ -4,7 +4,7 @@ import { Plus } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
-import { enhancedEditoastApi } from 'common/api/enhancedEditoastApi';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { InfraState, TrainScheduleBase } from 'common/api/osrdEditoastApi';
 import { useOsrdConfSelectors } from 'common/osrdContext';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
@@ -30,7 +30,7 @@ const AddTrainScheduleV2Button = ({
   setTrainResultsToFetch,
 }: SubmitConfAddTrainScheduleProps) => {
   const [postTrainSchedule] =
-    enhancedEditoastApi.endpoints.postV2TimetableByIdTrainSchedule.useMutation();
+    osrdEditoastApi.endpoints.postV2TimetableByIdTrainSchedule.useMutation();
   const dispatch = useAppDispatch();
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
 

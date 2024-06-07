@@ -9,7 +9,6 @@ import { useSelector } from 'react-redux';
 import InfraLoadingState from 'applications/operationalStudies/components/Scenario/InfraLoadingState';
 import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
 import infraLogo from 'assets/pictures/components/tracks.svg';
-import { enhancedEditoastApi } from 'common/api/enhancedEditoastApi';
 import type {
   PostV2InfraByInfraIdPathPropertiesApiArg,
   PostV2InfraByInfraIdPathfindingBlocksApiArg,
@@ -183,7 +182,7 @@ const Pathfinding = ({ pathProperties, setPathProperties }: PathfindingProps) =>
   const [postPathfindingBlocks] =
     osrdEditoastApi.endpoints.postV2InfraByInfraIdPathfindingBlocks.useMutation();
   const [postPathProperties] =
-    enhancedEditoastApi.endpoints.postV2InfraByInfraIdPathProperties.useMutation();
+    osrdEditoastApi.endpoints.postV2InfraByInfraIdPathProperties.useMutation();
 
   const { data: infra } = osrdEditoastApi.endpoints.getInfraByInfraId.useQuery(
     { infraId: infraId as number },

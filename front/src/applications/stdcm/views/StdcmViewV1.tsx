@@ -9,7 +9,7 @@ import STDCM_REQUEST_STATUS from 'applications/stdcm/consts';
 import useStdcm from 'applications/stdcm/hooks/useStdcm';
 import StdcmConfig from 'applications/stdcm/views/StdcmConfig';
 import StdcmRequestModal from 'applications/stdcm/views/StdcmRequestModal';
-import { enhancedEditoastApi } from 'common/api/enhancedEditoastApi';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type {
   PathfindingResultSuccess,
   PostV2InfraByInfraIdPathPropertiesApiArg,
@@ -29,7 +29,7 @@ const StdcmViewV1 = () => {
   const [pathProperties, setPathProperties] = useState<ManageTrainSchedulePathProperties>();
 
   const [postPathProperties] =
-    enhancedEditoastApi.endpoints.postV2InfraByInfraIdPathProperties.useMutation();
+    osrdEditoastApi.endpoints.postV2InfraByInfraIdPathProperties.useMutation();
 
   const {
     stdcmResults,

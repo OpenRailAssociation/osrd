@@ -8,7 +8,7 @@ import { BiSelectMultiple } from 'react-icons/bi';
 import { useSelector } from 'react-redux';
 
 import type { TrainSpaceTimeData } from 'applications/operationalStudies/types';
-import { enhancedEditoastApi } from 'common/api/enhancedEditoastApi';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import DeleteModal from 'common/BootstrapSNCF/ModalSNCF/DeleteModal';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { setFailure, setSuccess } from 'reducers/main';
@@ -61,7 +61,7 @@ const TimetableToolbar = ({
   const debouncedFilter = useDebounce(filter, 500);
   const debouncedRollingstockFilter = useDebounce(rollingStockFilter, 500);
 
-  const [deleteTrainSchedules] = enhancedEditoastApi.endpoints.deleteV2TrainSchedule.useMutation();
+  const [deleteTrainSchedules] = osrdEditoastApi.endpoints.deleteV2TrainSchedule.useMutation();
 
   const uniqueTags = useTrainSchedulesDetails(
     trainIds,

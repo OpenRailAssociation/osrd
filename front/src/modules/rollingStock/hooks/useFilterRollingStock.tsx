@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-import { enhancedEditoastApi } from 'common/api/enhancedEditoastApi';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { LightRollingStock, LightRollingStockWithLiveries } from 'common/api/osrdEditoastApi';
 import { setFailure } from 'reducers/main';
 import { useAppDispatch } from 'store';
@@ -132,7 +132,7 @@ export default function useFilterRollingStock() {
     isSuccess,
     isError,
     error,
-  } = enhancedEditoastApi.endpoints.getLightRollingStock.useQuery({
+  } = osrdEditoastApi.endpoints.getLightRollingStock.useQuery({
     pageSize: 1000,
   });
 

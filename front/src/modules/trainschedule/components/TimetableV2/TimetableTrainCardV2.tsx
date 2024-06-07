@@ -12,7 +12,6 @@ import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/con
 import type { TrainSpaceTimeData } from 'applications/operationalStudies/types';
 import invalidInfra from 'assets/pictures/components/missing_tracks.svg';
 import invalidRollingStock from 'assets/pictures/components/missing_train.svg';
-import { enhancedEditoastApi } from 'common/api/enhancedEditoastApi';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { TrainScheduleBase } from 'common/api/osrdEditoastApi';
 import { useOsrdConfActions } from 'common/osrdContext';
@@ -64,9 +63,9 @@ const TimetableTrainCardV2 = ({
   const { updateTrainScheduleIDsToModify } = useOsrdConfActions();
 
   const [postTrainSchedule] =
-    enhancedEditoastApi.endpoints.postV2TimetableByIdTrainSchedule.useMutation();
+    osrdEditoastApi.endpoints.postV2TimetableByIdTrainSchedule.useMutation();
   const [getTrainSchedule] = osrdEditoastApi.endpoints.getV2TrainSchedule.useLazyQuery();
-  const [deleteTrainSchedule] = enhancedEditoastApi.endpoints.deleteV2TrainSchedule.useMutation();
+  const [deleteTrainSchedule] = osrdEditoastApi.endpoints.deleteV2TrainSchedule.useMutation();
 
   const changeSelectedTrainId = (trainId: number) => {
     dispatch(updateSelectedTrainId(trainId));

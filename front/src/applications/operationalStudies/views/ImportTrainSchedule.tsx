@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import type { TrainSchedule } from 'applications/operationalStudies/types';
-import { enhancedEditoastApi } from 'common/api/enhancedEditoastApi';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { Loader } from 'common/Loaders';
 import {
   ImportTrainScheduleConfig,
@@ -25,7 +25,7 @@ export default function ImportTrainSchedule({
   const [isLoading, setIsLoading] = useState(false);
 
   const { data: { results: rollingStocks } = { results: [] }, isError } =
-    enhancedEditoastApi.endpoints.getLightRollingStock.useQuery({
+    osrdEditoastApi.endpoints.getLightRollingStock.useQuery({
       pageSize: 1000,
     });
 
