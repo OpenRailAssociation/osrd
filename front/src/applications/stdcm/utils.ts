@@ -1,5 +1,3 @@
-import { extractTime } from 'utils/date';
-
 import type { SimulationReportSheetProps } from './types';
 
 function generateRandomString(length: number): string {
@@ -61,7 +59,9 @@ export function getOperationalPointsWithTimes(simulationReport: SimulationReport
   }
 
   const { positions, times } = simulation.final_output;
-  const departureTime = extractTime(simulationReport.stdcmData.departure_time);
+  const departureTime = new Date(simulationReport.stdcmData.departure_time)
+    .toLocaleTimeString()
+    .substring(0, 5);
 
   // Parse departure time into hours and minutes
   const [departureHour, departureMinute] = departureTime.split(':').map(Number);
