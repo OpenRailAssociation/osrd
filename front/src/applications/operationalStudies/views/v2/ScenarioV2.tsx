@@ -159,8 +159,12 @@ const ScenarioV2 = () => {
     if (timetable && infra?.state === 'CACHED' && trainIdUsedForProjection && infraId) {
       // If trainResultsToFetch is undefined that means it's the first load of the scenario
       // and we want to get all timetable trains results
+      const resultsToFetch =
+        trainResultsToFetch && trainResultsToFetch.length > 0
+          ? trainResultsToFetch
+          : timetable.train_ids;
       getSpaceTimeChartData(
-        trainResultsToFetch ?? timetable.train_ids,
+        resultsToFetch,
         trainIdUsedForProjection,
         infraId,
         setTrainSpaceTimeData
