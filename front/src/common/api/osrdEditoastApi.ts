@@ -74,7 +74,7 @@ const osrdEditoastApi = generatedEditoastApi.enhanceEndpoints({
       }),
       // As we always use all get trainschedule v2 endpoints after updating the timetable,
       // we don't want to invalidate the trainschedulev2 tag here to preven multiple calls
-      invalidatesTags: ['timetablev2'],
+      invalidatesTags: ['timetablev2', 'scenariosv2'],
     },
     postV2TimetableByIdTrainSchedule: {
       query: (queryArg) => ({
@@ -84,7 +84,35 @@ const osrdEditoastApi = generatedEditoastApi.enhanceEndpoints({
       }),
       // As we always use all get trainschedule v2 endpoints after updating the timetable,
       // we don't want to invalidate the trainschedulev2 tag here to preven multiple calls
-      invalidatesTags: ['timetablev2'],
+      invalidatesTags: ['timetablev2', 'scenariosv2'],
+    },
+    // Invalidate the children count and last update timestamp
+    postProjectsByProjectIdStudies: {
+      invalidatesTags: ['studies', 'projects'],
+    },
+    patchProjectsByProjectIdStudiesAndStudyId: {
+      invalidatesTags: ['studies', 'projects'],
+    },
+    deleteProjectsByProjectIdStudiesAndStudyId: {
+      invalidatesTags: ['studies', 'projects'],
+    },
+    postProjectsByProjectIdStudiesAndStudyIdScenarios: {
+      invalidatesTags: ['scenarios', 'studies', 'projects'],
+    },
+    patchProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId: {
+      invalidatesTags: ['scenarios', 'studies', 'projects'],
+    },
+    deleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId: {
+      invalidatesTags: ['scenarios', 'studies', 'projects'],
+    },
+    postV2ProjectsByProjectIdStudiesAndStudyIdScenarios: {
+      invalidatesTags: ['scenariosv2', 'studies', 'projects'],
+    },
+    patchV2ProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId: {
+      invalidatesTags: ['scenariosv2', 'studies', 'projects'],
+    },
+    deleteV2ProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId: {
+      invalidatesTags: ['scenariosv2', 'studies', 'projects'],
     },
   },
 });
