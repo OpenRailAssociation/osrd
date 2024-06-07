@@ -1,6 +1,3 @@
-use std::collections::HashMap;
-use std::collections::HashSet;
-
 use actix_web::get;
 use actix_web::post;
 use actix_web::web::Data;
@@ -11,6 +8,9 @@ use chashmap::CHashMap;
 use editoast_schemas::infra::RoutePath;
 use serde::Deserialize;
 use serde::Serialize;
+use std::collections::HashMap;
+use std::collections::HashSet;
+use std::ops::DerefMut;
 use strum::Display;
 use utoipa::ToSchema;
 
@@ -19,6 +19,7 @@ use crate::infra_cache::Graph;
 use crate::infra_cache::InfraCache;
 use crate::modelsv2::prelude::*;
 use crate::modelsv2::DbConnectionPool;
+use crate::modelsv2::DbConnectionPoolV2;
 use crate::modelsv2::Infra;
 use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraIdParam;
@@ -66,16 +67,21 @@ struct RoutesResponse {
 #[get("/{waypoint_type}/{waypoint_id}")]
 async fn get_routes_from_waypoint(
     path: Path<RoutesFromWaypointParams>,
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Data<DbConnectionPoolV2>,
 ) -> Result<Json<RoutesResponse>> {
-    let conn = &mut db_pool.get().await?;
-    let infra = Infra::retrieve_or_fail(conn, path.infra_id, || InfraApiError::NotFound {
-        infra_id: path.infra_id,
+    let infra = Infra::retrieve_or_fail(db_pool.get().await?.deref_mut(), path.infra_id, || {
+        InfraApiError::NotFound {
+            infra_id: path.infra_id,
+        }
     })
     .await?;
 
     let routes = infra
-        .get_routes_from_waypoint(conn, &path.waypoint_id, path.waypoint_type.to_string())
+        .get_routes_from_waypoint(
+            db_pool.get().await?.deref_mut(),
+            &path.waypoint_id,
+            path.waypoint_type.to_string(),
+        )
         .await?;
 
     // Split routes depending if they are entry or exit points
@@ -265,18 +271,20 @@ mod tests {
 
     use crate::assert_status_and_read;
     use crate::fixtures::tests::db_pool;
-    use crate::fixtures::tests::empty_infra;
     use crate::fixtures::tests::small_infra;
-    use crate::infra_cache::operation::Operation;
+    use crate::infra_cache::operation::create::apply_create_operation;
+    use crate::modelsv2::fixtures::create_empty_infra;
     use crate::views::infra::routes::RoutesFromNodesPositions;
     use crate::views::infra::routes::RoutesResponse;
     use crate::views::infra::routes::WaypointType;
+    use crate::views::test_app::TestAppBuilder;
     use crate::views::tests::create_test_service;
     use editoast_schemas::infra::BufferStop;
     use editoast_schemas::infra::Detector;
     use editoast_schemas::infra::Route;
     use editoast_schemas::infra::TrackSection;
     use editoast_schemas::infra::Waypoint;
+    use std::ops::DerefMut;
 
     #[rstest]
     async fn get_routes_nodes() {
@@ -396,9 +404,10 @@ mod tests {
 
     #[rstest]
     async fn get_routes_should_return_routes_from_buffer_stop_and_detector() {
-        let app = create_test_service().await;
-        let empty_infra = empty_infra(db_pool()).await;
-        let empty_infra_id = empty_infra.id();
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+        let empty_infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
+        let empty_infra_id = empty_infra.id;
 
         let track = TrackSection {
             id: "track_001".into(),
@@ -442,13 +451,9 @@ mod tests {
         }
         .into();
         for obj in [track, detector, bs_start, bs_stop, route_1, route_2] {
-            let create_operation = Operation::Create(Box::new(obj));
-            let request = TestRequest::post()
-                .uri(format!("/infra/{empty_infra_id}/").as_str())
-                .set_json(json!([create_operation]))
-                .to_request();
-            let response = call_service(&app, request).await;
-            assert_eq!(response.status(), StatusCode::OK);
+            apply_create_operation(&obj, empty_infra_id, db_pool.get_ok().deref_mut())
+                .await
+                .expect("Failed to create track object");
         }
 
         // BufferStop Routes
@@ -456,7 +461,7 @@ mod tests {
         let request = TestRequest::get()
             .uri(format!("/infra/{empty_infra_id}/routes/{waypoint_type}/bs_stop").as_str())
             .to_request();
-        let response = call_service(&app, request).await;
+        let response = call_service(&app.service, request).await;
         assert_eq!(response.status(), StatusCode::OK);
         let routes: RoutesResponse = read_body_json(response).await;
         assert_eq!(
@@ -472,7 +477,7 @@ mod tests {
         let request = TestRequest::get()
             .uri(format!("/infra/{empty_infra_id}/routes/{waypoint_type}/detector_001").as_str())
             .to_request();
-        let response = call_service(&app, request).await;
+        let response = call_service(&app.service, request).await;
         assert_eq!(response.status(), StatusCode::OK);
         let routes: RoutesResponse = read_body_json(response).await;
         assert_eq!(
@@ -486,17 +491,21 @@ mod tests {
 
     #[rstest]
     async fn get_routes_should_return_empty_response() {
-        let app = create_test_service().await;
-        let empty_infra = empty_infra(db_pool()).await;
-        let empty_infra_id = empty_infra.id();
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+        let empty_infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
+
         let waypoint_type = WaypointType::Detector;
         let request = TestRequest::get()
             .uri(
-                format!("/infra/{empty_infra_id}/routes/{waypoint_type}/NOT_EXISTING_WAYPOINT_ID")
-                    .as_str(),
+                format!(
+                    "/infra/{}/routes/{waypoint_type}/NOT_EXISTING_WAYPOINT_ID",
+                    empty_infra.id
+                )
+                .as_str(),
             )
             .to_request();
-        let response = call_service(&app, request).await;
+        let response = call_service(&app.service, request).await;
         assert_eq!(response.status(), StatusCode::OK);
         let routes: RoutesResponse = read_body_json(response).await;
         assert_eq!(
