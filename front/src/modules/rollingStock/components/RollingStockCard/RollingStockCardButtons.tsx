@@ -28,7 +28,7 @@ const RollingStockCardButtons = ({
   const { closeModal } = useContext(ModalContext);
 
   const { getRollingStockComfort } = useOsrdConfSelectors();
-  const rollingStockComfort = useSelector(getRollingStockComfort);
+  const currentComfortInStore = useSelector(getRollingStockComfort);
   const trainScheduleV2Activated = useSelector(getTrainScheduleV2Activated);
   const [comfort, setComfort] = useState('STANDARD');
 
@@ -81,8 +81,10 @@ const RollingStockCardButtons = ({
   }, [curvesComfortList]);
 
   useEffect(() => {
-    setComfort(rollingStockComfort);
-  }, [rollingStockComfort]);
+    if (curvesComfortList.includes(currentComfortInStore)) {
+      setComfort(currentComfortInStore);
+    }
+  }, [currentComfortInStore]);
 
   return (
     <div className="rollingstock-footer-buttons">
