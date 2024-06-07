@@ -11,6 +11,7 @@ use editoast_derive::EditoastError;
 use pathfinding::prelude::yen;
 use serde::Deserialize;
 use serde::Serialize;
+use std::ops::DerefMut;
 use thiserror::Error;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
@@ -19,7 +20,7 @@ use crate::error::Result;
 use crate::infra_cache::Graph;
 use crate::infra_cache::InfraCache;
 use crate::modelsv2::prelude::*;
-use crate::modelsv2::DbConnectionPool;
+use crate::modelsv2::DbConnectionPoolV2;
 use crate::modelsv2::Infra;
 use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraIdParam;
@@ -99,7 +100,7 @@ async fn pathfinding_view(
     params: Query<QueryParam>,
     input: Json<PathfindingInput>,
     infra_caches: Data<CHashMap<i64, InfraCache>>,
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Data<DbConnectionPoolV2>,
 ) -> Result<Json<Vec<PathfindingOutput>>> {
     // Parse and check input
     let infra_id = infra.into_inner().infra_id;
@@ -112,12 +113,13 @@ async fn pathfinding_view(
         .into());
     }
 
-    let mut conn = db_pool.get().await?;
     // TODO: lock for share
-    let infra =
-        Infra::retrieve_or_fail(&mut conn, infra_id, || InfraApiError::NotFound { infra_id })
-            .await?;
-    let infra_cache = InfraCache::get_or_load(&mut conn, &infra_caches, &infra).await?;
+    let infra = Infra::retrieve_or_fail(db_pool.get().await?.deref_mut(), infra_id, || {
+        InfraApiError::NotFound { infra_id }
+    })
+    .await?;
+    let infra_cache =
+        InfraCache::get_or_load(db_pool.get().await?.deref_mut(), &infra_caches, &infra).await?;
 
     // Check that the starting and ending track locations are valid
     if !infra_cache
