@@ -98,7 +98,7 @@ const Map = ({ pathProperties, setMapCanvas, hideAttribution = false }: MapProps
       }
     };
     if (mapIsLoaded) captureMap();
-  }, [mapIsLoaded, geoJson, viewport]);
+  }, [mapIsLoaded, geoJson, pathProperties]);
 
   const scaleControlStyle = {
     left: 20,
