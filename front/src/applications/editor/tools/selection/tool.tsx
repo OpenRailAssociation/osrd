@@ -9,7 +9,11 @@ import { FaDrawPolygon } from 'react-icons/fa';
 import { FaScissors } from 'react-icons/fa6';
 import { FiEdit } from 'react-icons/fi';
 
-import { LAYER_TO_EDITOAST_DICT, type Layer } from 'applications/editor/consts';
+import {
+  LAYER_TO_EDITOAST_DICT,
+  NON_EDITABLE_OBJECT_TYPES,
+  type Layer,
+} from 'applications/editor/consts';
 import { getMixedEntities } from 'applications/editor/data/api';
 import { DEFAULT_COMMON_TOOL_STATE } from 'applications/editor/tools/consts';
 import { openEntityEditionPanel } from 'applications/editor/tools/utils';
@@ -86,7 +90,9 @@ const SelectionTool: Tool<SelectionState> = {
         icon: FiEdit,
         labelTranslationKey: 'Editor.tools.select-items.actions.edit-info',
         isDisabled({ state }) {
-          return state.selection.length !== 1;
+          if (state.selection.length !== 1) return true;
+          const selectedElement = state.selection[0];
+          return NON_EDITABLE_OBJECT_TYPES.includes(selectedElement.objType);
         },
         onClick({ state, switchTool }) {
           if (state.selection.length === 1) {
@@ -139,7 +145,10 @@ const SelectionTool: Tool<SelectionState> = {
         icon: Trash,
         labelTranslationKey: 'Editor.tools.select-items.actions.delete-selection',
         isDisabled({ state }) {
-          return !state.selection.length;
+          if (!state.selection.length) return true;
+          return state.selection.some((entity) =>
+            NON_EDITABLE_OBJECT_TYPES.includes(entity.objType)
+          );
         },
         onClick({ infraID, openModal, closeModal, forceRender, state, setState, dispatch, t }) {
           openModal(
