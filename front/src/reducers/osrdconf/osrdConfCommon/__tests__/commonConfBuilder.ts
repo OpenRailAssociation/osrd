@@ -4,7 +4,7 @@ import type { SwitchType } from 'applications/editor/tools/switchEdition/types';
 import type { PointOnMap, PowerRestrictionRange } from 'applications/operationalStudies/consts';
 import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
 import type { Allowance, PathResponse, RangedValue } from 'common/api/osrdEditoastApi';
-import NO_POWER_RESTRICTION from 'modules/powerRestriction/consts';
+import { NO_POWER_RESTRICTION } from 'modules/powerRestriction/consts';
 import type { OsrdConfState, PathStep } from 'reducers/osrdconf/types';
 
 export default function commonConfBuilder() {

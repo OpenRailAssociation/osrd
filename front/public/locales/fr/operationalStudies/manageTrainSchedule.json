@@ -122,6 +122,7 @@
     "inconsistent_other": "Plusieurs intervalles comportent des incohérences. Les courbes effort vitesse par défaut seront utilisées pour ceux-ci.",
     "powerRestrictionInvalidCombination": "- Code {{powerRestrictionCode}} incompatible avec l'électrification à {{electrification}} de l'itinéraire entre {{begin}}m et {{end}}m. ",
     "missingPowerRestriction": "- Restriction de puissance manquante entre {{begin}}m et {{end}}m.",
+    "modeNotHandled": "- Aucune restriction de puissance ne devrait être renseignée entre {{begin}}m and {{end}}m comme le matériel roulant ne supporte pas l'électrification {{electrification}}.",
     "pathfindingChange": "Changement de chemin",
     "marginsAndPowerRestrictionsReset": "Les marges et les restrictions de puissance ont été réinitialisées."
   }

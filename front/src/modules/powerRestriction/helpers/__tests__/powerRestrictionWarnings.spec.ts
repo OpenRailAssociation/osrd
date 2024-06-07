@@ -1,6 +1,4 @@
-import type { Dictionary } from 'lodash';
-
-import type { PowerRestrictionWarning } from 'modules/powerRestriction/types';
+import type { PowerRestrictionWarnings } from 'modules/powerRestriction/types';
 
 import {
   pathElectrificationRanges,
@@ -10,7 +8,13 @@ import {
   rollingStockModes,
   validPowerRestrictionRanges,
 } from './sampleData';
-import { countWarnings, getPowerRestrictionsWarnings } from '../powerRestrictionSelector';
+import { countWarnings, getPowerRestrictionsWarnings } from '../powerRestrictionWarnings';
+
+const emptyResult: PowerRestrictionWarnings = {
+  invalidCombinationWarnings: [],
+  modeNotSupportedWarnings: [],
+  missingPowerRestrictionWarnings: [],
+};
 
 describe('getPowerRestrictionsWarnings', () => {
   it('should return an empty object if there is no warning', () => {
@@ -20,7 +24,7 @@ describe('getPowerRestrictionsWarnings', () => {
       rollingStockModes
     );
 
-    expect(warnings).toEqual({});
+    expect(warnings).toEqual(emptyResult);
   });
 
   it('should return an object with only one key if there is no power restriction selected', () => {
@@ -30,25 +34,22 @@ describe('getPowerRestrictionsWarnings', () => {
       rollingStockModes
     );
 
-    const expectedResult: Dictionary<PowerRestrictionWarning[]> = {
-      NO_POWER_RESTRICTION: [
+    const expectedResult: PowerRestrictionWarnings = {
+      ...emptyResult,
+      missingPowerRestrictionWarnings: [
         {
-          powerRestrictionCode: 'NO_POWER_RESTRICTION',
           begin: 0,
           end: 636293,
         },
         {
-          powerRestrictionCode: 'NO_POWER_RESTRICTION',
           begin: 636293,
           end: 826794,
         },
         {
-          powerRestrictionCode: 'NO_POWER_RESTRICTION',
           begin: 826794,
           end: 890963,
         },
         {
-          powerRestrictionCode: 'NO_POWER_RESTRICTION',
           begin: 890963,
           end: 1115651,
         },
@@ -57,6 +58,7 @@ describe('getPowerRestrictionsWarnings', () => {
 
     expect(warnings).toEqual(expectedResult);
   });
+
   it('should return an object with 4 warnings distributed in 2 keys if warnings are a combination of one power restriction code two times and no power restriction code two times', () => {
     const warnings = getPowerRestrictionsWarnings(
       powerRestrictionRangesMixedIn2Keys,
@@ -64,8 +66,9 @@ describe('getPowerRestrictionsWarnings', () => {
       rollingStockModes
     );
 
-    const expectedResult = {
-      C3US: [
+    const expectedResult: PowerRestrictionWarnings = {
+      ...emptyResult,
+      invalidCombinationWarnings: [
         {
           powerRestrictionCode: 'C3US',
           electrification: '25000V',
@@ -79,14 +82,12 @@ describe('getPowerRestrictionsWarnings', () => {
           end: 890963,
         },
       ],
-      NO_POWER_RESTRICTION: [
+      missingPowerRestrictionWarnings: [
         {
-          powerRestrictionCode: 'NO_POWER_RESTRICTION',
           begin: 636293,
           end: 826794,
         },
         {
-          powerRestrictionCode: 'NO_POWER_RESTRICTION',
           begin: 890963,
           end: 1115651,
         },
@@ -95,6 +96,7 @@ describe('getPowerRestrictionsWarnings', () => {
 
     expect(warnings).toEqual(expectedResult);
   });
+
   it('should return an object with 2 warnings distributed in 2 keys if 2 different power restrictions code are invalid', () => {
     const warnings = getPowerRestrictionsWarnings(
       powerRestrictionRangesWithValidRanges,
@@ -103,15 +105,14 @@ describe('getPowerRestrictionsWarnings', () => {
     );
 
     const expectedResult = {
-      M1US: [
+      ...emptyResult,
+      invalidCombinationWarnings: [
         {
           powerRestrictionCode: 'M1US',
           electrification: '1500V',
           begin: 636293,
           end: 826794,
         },
-      ],
-      C1US: [
         {
           powerRestrictionCode: 'C1US',
           electrification: '25000V',
@@ -122,6 +123,63 @@ describe('getPowerRestrictionsWarnings', () => {
     };
 
     expect(warnings).toEqual(expectedResult);
+  });
+
+  describe('should handle the case where the train passes on a segment in 1500V but handles only 25000V', () => {
+    const simplePathElectrificationRanges = [
+      {
+        begin: 0,
+        end: 10000,
+        value: '25000V',
+      },
+    ];
+    const rollintStockModesWithout25000V = {
+      '1500V': rollingStockModes['1500V'],
+    };
+
+    it('should return no warning if the mode is not supported and no power restriction is defined', () => {
+      const emptyPowerRestrictionRanges = [
+        {
+          begin: 0,
+          end: 10000,
+          value: 'NO_POWER_RESTRICTION',
+        },
+      ];
+      const warnings = getPowerRestrictionsWarnings(
+        emptyPowerRestrictionRanges,
+        simplePathElectrificationRanges,
+        rollintStockModesWithout25000V
+      );
+
+      expect(warnings).toEqual(emptyResult);
+    });
+
+    it('should return a warning if the mode is not supported and a power restriction is defined', () => {
+      const simplePowerRestrictionRanges = [
+        {
+          begin: 0,
+          end: 10000,
+          value: 'C1UM',
+        },
+      ];
+      const warnings = getPowerRestrictionsWarnings(
+        simplePowerRestrictionRanges,
+        simplePathElectrificationRanges,
+        rollintStockModesWithout25000V
+      );
+
+      const expectedResult = {
+        ...emptyResult,
+        modeNotSupportedWarnings: [
+          {
+            electrification: '25000V',
+            begin: 0,
+            end: 10000,
+          },
+        ],
+      };
+      expect(warnings).toEqual(expectedResult);
+    });
   });
 });
 

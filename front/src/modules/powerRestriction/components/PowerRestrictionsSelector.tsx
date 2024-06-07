@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo } from 'react';
 
 import { Alert } from '@osrd-project/ui-icons';
-import { isEmpty, last, type Dictionary } from 'lodash';
+import { isEmpty, last } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
@@ -12,13 +12,12 @@ import IntervalsEditor from 'common/IntervalsEditor/IntervalsEditor';
 import { INTERVAL_TYPES } from 'common/IntervalsEditor/types';
 import type { IntervalItem } from 'common/IntervalsEditor/types';
 import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
-import NO_POWER_RESTRICTION from 'modules/powerRestriction/consts';
+import { NO_POWER_RESTRICTION } from 'modules/powerRestriction/consts';
 import displayPowerRestrictionIntervals from 'modules/powerRestriction/helpers/displayPowerRestrictionIntervals';
 import {
   countWarnings,
   getPowerRestrictionsWarnings,
-} from 'modules/powerRestriction/helpers/powerRestrictionSelector';
-import type { PowerRestrictionWarning } from 'modules/powerRestriction/types';
+} from 'modules/powerRestriction/helpers/powerRestrictionWarnings';
 import { useAppDispatch } from 'store';
 
 /** Arbitrairy default segment length (1km) */
@@ -57,16 +56,15 @@ const PowerRestrictionsSelector = ({
     return specialPoints;
   }, [pathElectrificationRanges]);
 
-  /** Format the electrification ranges to display them on the interval editor */
-  const formattedPathElectrificationRanges = useMemo(
-    () =>
-      pathElectrificationRanges.map((electrificationRange) => ({
-        begin: electrificationRange.begin,
-        end: electrificationRange.end,
-        value: `${electrificationRange.value}`,
-      })),
-    [pathElectrificationRanges]
-  );
+  /** Format the electrification ranges to display them on the interval editor. */
+  const formattedPathElectrificationRanges = useMemo(() => {
+    const handledModes = Object.keys(rollingStockModes);
+    return pathElectrificationRanges.map(({ begin, end, value: mode }) => ({
+      begin,
+      end,
+      value: handledModes.includes(mode) ? mode : '',
+    }));
+  }, [pathElectrificationRanges]);
 
   /** Set up the powerRestrictionRanges with the electrificationChangePoints */
   useEffect(() => {
@@ -117,7 +115,7 @@ const PowerRestrictionsSelector = ({
             pathElectrificationRanges,
             rollingStockModes
           )
-        : ({} as Dictionary<PowerRestrictionWarning[]>),
+        : undefined,
     [powerRestrictionRanges]
   );
 
@@ -142,7 +140,7 @@ const PowerRestrictionsSelector = ({
         {!isEmpty(rollingStockPowerRestrictions) ? (
           <>
             <p className="mb-1 mt-1">{t('powerRestrictionExplanationText')}</p>
-            {totalPowerRestrictionWarnings > 0 && (
+            {powerRestrictionsWarnings && totalPowerRestrictionWarnings > 0 && (
               <div className="border border-warning rounded p-3 my-3">
                 <div className="d-flex align-items-center mb-2">
                   <div className="d-flex align-items-center text-warning">
@@ -152,29 +150,37 @@ const PowerRestrictionsSelector = ({
                     {t('warningMessages.inconsistent', { count: totalPowerRestrictionWarnings })}
                   </span>
                 </div>
-                {Object.entries(powerRestrictionsWarnings).map(
-                  ([warningCategory, warningsByCategory]) => (
-                    <div className="d-flex flex-column" key={warningCategory}>
-                      {warningsByCategory.map(
-                        ({ powerRestrictionCode, electrification, begin, end }) => (
-                          <span key={`${powerRestrictionCode}-${begin}-${end}`}>
-                            {warningCategory !== NO_POWER_RESTRICTION
-                              ? t('warningMessages.powerRestrictionInvalidCombination', {
-                                  powerRestrictionCode,
-                                  electrification,
-                                  begin,
-                                  end,
-                                })
-                              : t('warningMessages.missingPowerRestriction', {
-                                  begin,
-                                  end,
-                                })}
-                          </span>
-                        )
-                      )}
-                    </div>
-                  )
-                )}
+                <div className="d-flex flex-column">
+                  {powerRestrictionsWarnings.modeNotSupportedWarnings.map(
+                    ({ begin, end, electrification }) => (
+                      <span key={`not-handled-mode-${begin}-${end}`}>
+                        {t('warningMessages.modeNotHandled', { begin, end, electrification })}
+                      </span>
+                    )
+                  )}
+                  {Object.values(powerRestrictionsWarnings.invalidCombinationWarnings).map(
+                    ({ powerRestrictionCode, electrification, begin, end }) => (
+                      <span key={`${powerRestrictionCode}-${begin}-${end}`}>
+                        {t('warningMessages.powerRestrictionInvalidCombination', {
+                          powerRestrictionCode,
+                          electrification,
+                          begin,
+                          end,
+                        })}
+                      </span>
+                    )
+                  )}
+                  {powerRestrictionsWarnings.missingPowerRestrictionWarnings.map(
+                    ({ begin, end }) => (
+                      <span key={`missing-power-restriction-${begin}-${end}`}>
+                        {t('warningMessages.missingPowerRestriction', {
+                          begin,
+                          end,
+                        })}
+                      </span>
+                    )
+                  )}
+                </div>
               </div>
             )}
             <IntervalsEditor
