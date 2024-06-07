@@ -7,6 +7,7 @@ import { GiResize } from 'react-icons/gi';
 import { Rnd } from 'react-rnd';
 
 import type { TrainSpaceTimeData } from 'applications/operationalStudies/types';
+import { getSpaceTimeChartData } from 'applications/operationalStudies/views/v2/getSimulationResultsV2';
 import { osrdEditoastApi, type TrainScheduleResult } from 'common/api/osrdEditoastApi';
 import { useChartSynchronizerV2 } from 'modules/simulationResult/components/ChartHelpers/ChartSynchronizerV2';
 import {
@@ -20,7 +21,7 @@ import { CHART_AXES } from 'modules/simulationResult/consts';
 import type { TimeScaleDomain } from 'modules/simulationResult/types';
 import type { Chart } from 'reducers/osrdsimulation/types';
 import { dateIsInRange, isoDateToMs, formatToIsoDate } from 'utils/date';
-import { sec2datetime, datetime2sec, ISO8601Duration2sec } from 'utils/timeManipulation';
+import { ISO8601Duration2sec } from 'utils/timeManipulation';
 
 import { SPACE_TIME_CHART_ID } from './consts';
 import useGetProjectedTrainOperationalPoints from './hooks';
@@ -55,26 +56,26 @@ export type SpaceTimeChartV2Props = {
   dispatchUpdateSelectedTrainId: DispatchUpdateSelectedTrainId;
   setTrainResultsToFetch?: (trainSchedulesIDs?: number[]) => void;
   setTimeScaleDomain?: (newTimeScaleDomain: TimeScaleDomain) => void;
+  setTrainSpaceTimeData: React.Dispatch<React.SetStateAction<TrainSpaceTimeData[]>>;
 };
 
-const SpaceTimeChartV2 = (props: SpaceTimeChartV2Props) => {
+const SpaceTimeChartV2 = ({
+  infraId,
+  initialHeight = 400,
+  inputSelectedTrain,
+  trainIdUsedForProjection,
+  simulation,
+  simulationIsPlaying = false,
+  timeScaleDomain,
+  onSetBaseHeight = noop,
+  dispatchUpdateSelectedTrainId,
+  setTrainResultsToFetch = noop,
+  setTimeScaleDomain,
+  setTrainSpaceTimeData,
+}: SpaceTimeChartV2Props) => {
   const ref = useRef<HTMLDivElement>(null);
   const rndContainerRef = useRef<Rnd>(null);
   const { t } = useTranslation('simulation');
-
-  const {
-    infraId,
-    initialHeight = 400,
-    inputSelectedTrain,
-    trainIdUsedForProjection,
-    simulation,
-    simulationIsPlaying = false,
-    timeScaleDomain,
-    onSetBaseHeight = noop,
-    dispatchUpdateSelectedTrainId,
-    setTrainResultsToFetch = noop,
-    setTimeScaleDomain,
-  } = props;
 
   const [baseHeight, setBaseHeight] = useState(initialHeight);
   const [chart, setChart] = useState<Chart | undefined>();
@@ -93,9 +94,9 @@ const SpaceTimeChartV2 = (props: SpaceTimeChartV2Props) => {
 
   const [updateTrainSchedule] = osrdEditoastApi.endpoints.putV2TrainScheduleById.useMutation();
 
-  const selectedProjectedTrain = useMemo(
+  const selectedTrainSimulation = useMemo(
     () => simulation.find((train) => train.id === selectedTrain.id),
-    [simulation, selectedTrain]
+    [simulation, selectedTrain.id]
   );
 
   /* coordinate the vertical cursors with other graphs (GEV for instance) */
@@ -110,19 +111,48 @@ const SpaceTimeChartV2 = (props: SpaceTimeChartV2Props) => {
       }
     },
     'space-time',
-    [chart, rotate, selectedTrain]
+    [chart, rotate, timeScaleDomain]
   );
 
-  // Consequence of direct actions by component
-  const onOffsetTimeByDragging = useCallback(
+  /**
+   * Shift a train after a drag and drop or when using the modal to update the departure time
+   */
+  const shiftTrain = useCallback(
     (offset: number) => {
-      // Sets the train which needs its results to be updated
-      // We know it is always the selected train because when dragging one, it gets the selection
-      if (selectedTrain) setTrainResultsToFetch([selectedTrain.id]);
+      if (offset) {
+        const newDepartureTime = formatToIsoDate(
+          isoDateToMs(selectedTrain.start_time) + offset * 1000
+        );
 
-      if (timePosition && offset) {
-        const newTimePosition = sec2datetime(datetime2sec(timePosition) + offset);
-        updateTimePosition(newTimePosition);
+        let schedule;
+        if (selectedTrain.schedule) {
+          schedule = selectedTrain.schedule.map((scheduleStep) => {
+            if (scheduleStep.arrival) {
+              // arrival is in format PTxxxS (PT3600S) as the number of seconds from the start
+              const updatedArrivalInSeconds = ISO8601Duration2sec(scheduleStep.arrival) + offset;
+              const newScheduleStep = {
+                ...scheduleStep,
+                arrival: `PT${updatedArrivalInSeconds}S`,
+              };
+              return newScheduleStep;
+            }
+            return scheduleStep;
+          });
+        }
+
+        const updatedTrainPayload = { ...selectedTrain, start_time: newDepartureTime, schedule };
+
+        updateTrainSchedule({ id: selectedTrain.id, trainScheduleForm: updatedTrainPayload }).then(
+          () => {
+            setTrainResultsToFetch([selectedTrain.id]);
+            getSpaceTimeChartData(
+              [selectedTrain.id],
+              trainIdUsedForProjection!,
+              infraId!,
+              setTrainSpaceTimeData
+            );
+          }
+        );
       }
     },
     [selectedTrain, timePosition, updateTimePosition]
@@ -134,17 +164,12 @@ const SpaceTimeChartV2 = (props: SpaceTimeChartV2Props) => {
    * take into account an input update
    */
   useEffect(() => {
-    if (simulation.length > 0) {
-      setTrainSimulations(simulation);
-    }
+    setTrainSimulations(simulation);
   }, [simulation]);
 
   useEffect(() => {
-    // avoid useless re-render if selectedTrain is already correct
-    if (selectedTrain?.id !== inputSelectedTrain?.id) {
-      setSelectedTrain(inputSelectedTrain);
-    }
-  }, [inputSelectedTrain?.id]);
+    setSelectedTrain(inputSelectedTrain);
+  }, [inputSelectedTrain]);
 
   /*
    * ACTIONS HANDLE
@@ -184,37 +209,10 @@ const SpaceTimeChartV2 = (props: SpaceTimeChartV2Props) => {
 
   /*
    * shift the train after a drag and drop
-   * dragOffset is in Seconds !! (typecript is nice)
+   * dragOffset is in seconds
    */
   useEffect(() => {
-    if (dragOffset) {
-      const newDepartureTime = formatToIsoDate(
-        isoDateToMs(selectedTrain.start_time) + dragOffset * 1000
-      );
-
-      // recalculer tous les schedules
-      let schedule;
-      if (selectedTrain.schedule) {
-        schedule = selectedTrain.schedule.map((scheduleStep) => {
-          if (scheduleStep.arrival) {
-            // arrival is in format PTxxxS (PT3600S) as the number of seconds from the start
-            const updatedArrivalInSeconds = ISO8601Duration2sec(scheduleStep.arrival) + dragOffset;
-            const newScheduleStep = {
-              ...scheduleStep,
-              arrival: `PT${updatedArrivalInSeconds}S`,
-            };
-            return newScheduleStep;
-          }
-          return scheduleStep;
-        });
-      }
-
-      const updatedTrainPayload = { ...selectedTrain, start_time: newDepartureTime, schedule };
-
-      updateTrainSchedule({ id: selectedTrain.id, trainScheduleForm: updatedTrainPayload }).then(
-        () => setTrainResultsToFetch([selectedTrain.id])
-      );
-    }
+    shiftTrain(dragOffset);
   }, [dragOffset]);
 
   /* redraw the trains ifformating
@@ -224,7 +222,7 @@ const SpaceTimeChartV2 = (props: SpaceTimeChartV2Props) => {
    */
   useEffect(() => {
     redrawChart();
-  }, [resetChart, rotate, selectedTrain, trainSimulations, operationalPoints, height]);
+  }, [resetChart, rotate, selectedTrain.id, trainSimulations, operationalPoints, height]);
 
   /* redraw the trains if the time scale range has changed from Timeline */
   useEffect(() => {
@@ -239,7 +237,7 @@ const SpaceTimeChartV2 = (props: SpaceTimeChartV2Props) => {
 
   /* add behaviour on zoom and mousemove/mouseover/wheel on the new chart each time the chart changes */
   useEffect(() => {
-    if (chart && selectedProjectedTrain) {
+    if (chart && selectedTrainSimulation) {
       const newTimeScaleRange = (rotate ? chart.y.domain() : chart.x.domain()) as [Date, Date];
 
       if (setTimeScaleDomain) {
@@ -250,7 +248,7 @@ const SpaceTimeChartV2 = (props: SpaceTimeChartV2Props) => {
       }
 
       // combination oif simulationresponse and projectpathtrainresult trains ?
-      const dataSimulation = createTrainV2(selectedProjectedTrain);
+      const dataSimulation = createTrainV2(selectedTrainSimulation);
       enableInteractivityV2(
         chart,
         dataSimulation,
@@ -315,7 +313,7 @@ const SpaceTimeChartV2 = (props: SpaceTimeChartV2Props) => {
             modificationKey={showModal}
             setShowModal={setShowModal}
             trainName={selectedTrain.train_name}
-            offsetTimeByDragging={onOffsetTimeByDragging}
+            offsetTimeByDragging={shiftTrain}
           />
         )}
         <div style={{ height: `100%` }} ref={ref} />

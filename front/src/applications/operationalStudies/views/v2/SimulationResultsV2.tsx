@@ -30,12 +30,14 @@ type SimulationResultsV2Props = {
   collapsedTimetable: boolean;
   setTrainResultsToFetch: (trainSchedulesIDs?: number[]) => void;
   spaceTimeData: TrainSpaceTimeData[];
+  setTrainSpaceTimeData: React.Dispatch<React.SetStateAction<TrainSpaceTimeData[]>>;
 };
 
 const SimulationResultsV2 = ({
   collapsedTimetable,
   setTrainResultsToFetch,
   spaceTimeData,
+  setTrainSpaceTimeData,
 }: SimulationResultsV2Props) => {
   const { t } = useTranslation('simulation');
   const dispatch = useAppDispatch();
@@ -165,6 +167,7 @@ const SimulationResultsV2 = ({
                 setTrainResultsToFetch={setTrainResultsToFetch}
                 timeScaleDomain={timeScaleDomain}
                 setTimeScaleDomain={setTimeScaleDomain}
+                setTrainSpaceTimeData={setTrainSpaceTimeData}
               />
             </div>
           </div>

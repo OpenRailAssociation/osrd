@@ -373,12 +373,7 @@ const specificInterpolateOnTime =
         if (bisection && bisection[1] && bisection[1].time) {
           const bisec0 = bisection[0];
           const bisec1 = bisection[1];
-          if (
-            bisec0.time !== undefined &&
-            bisec0.position !== undefined &&
-            bisec1.time !== undefined &&
-            bisec1.position !== undefined
-          ) {
+          if (bisec0.time && bisec0.position && bisec1.time && bisec1.position) {
             const duration = Number(bisec1.time) - Number(bisec0.time); // en ms
             const timePositionFromTime = Number(timePositionLocal) - Number(bisec0.time);
             const proportion = timePositionFromTime / duration;
