@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 
 import { useSelector } from 'react-redux';
 
-import { enhancedEditoastApi } from 'common/api/enhancedEditoastApi';
 import {
   osrdEditoastApi,
   type PostV2InfraByInfraIdPathPropertiesApiArg,
@@ -55,7 +54,7 @@ export const useSetupItineraryForTrainUpdate = (
   const [postPathfindingBlocks] =
     osrdEditoastApi.endpoints.postV2InfraByInfraIdPathfindingBlocks.useMutation();
   const [postPathProperties] =
-    enhancedEditoastApi.endpoints.postV2InfraByInfraIdPathProperties.useMutation();
+    osrdEditoastApi.endpoints.postV2InfraByInfraIdPathProperties.useMutation();
 
   useEffect(() => {
     const setupItineraryForTrainUpdate = async () => {
@@ -187,7 +186,7 @@ export const useSimulationResults = () => {
     );
 
   const [postPathProperties] =
-    enhancedEditoastApi.endpoints.postV2InfraByInfraIdPathProperties.useMutation();
+    osrdEditoastApi.endpoints.postV2InfraByInfraIdPathProperties.useMutation();
 
   useEffect(() => {
     const getPathProperties = async () => {

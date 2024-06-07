@@ -8,7 +8,6 @@ import { useTranslation } from 'react-i18next';
 import nextId from 'react-id-generator';
 
 import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
-import { enhancedEditoastApi } from 'common/api/enhancedEditoastApi';
 import type {
   PostSearchApiArg,
   PostV2InfraByInfraIdPathPropertiesApiArg,
@@ -78,7 +77,7 @@ const TypeAndPathV2 = ({ setPathProperties }: PathfindingProps) => {
   const [postPathfindingBlocks] =
     osrdEditoastApi.endpoints.postV2InfraByInfraIdPathfindingBlocks.useMutation();
   const [postPathProperties] =
-    enhancedEditoastApi.endpoints.postV2InfraByInfraIdPathProperties.useMutation();
+    osrdEditoastApi.endpoints.postV2InfraByInfraIdPathProperties.useMutation();
 
   const { t: tManageTrainSchedule } = useTranslation('operationalStudies/manageTrainSchedule');
   const { t: tTypeAndPath } = useTranslation('common/typeAndPath');

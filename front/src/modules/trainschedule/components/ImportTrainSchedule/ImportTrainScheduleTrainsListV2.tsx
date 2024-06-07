@@ -6,8 +6,8 @@ import { keyBy } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
 import type { TrainScheduleV2 } from 'applications/operationalStudies/types';
-import { enhancedEditoastApi } from 'common/api/enhancedEditoastApi';
 import {
+  osrdEditoastApi,
   type LightRollingStockWithLiveries,
   type TrainScheduleBase,
 } from 'common/api/osrdEditoastApi';
@@ -62,7 +62,7 @@ const ImportTrainScheduleTrainsListV2 = ({
   );
 
   const [postTrainSchedule] =
-    enhancedEditoastApi.endpoints.postV2TimetableByIdTrainSchedule.useMutation();
+    osrdEditoastApi.endpoints.postV2TimetableByIdTrainSchedule.useMutation();
 
   const dispatch = useAppDispatch();
 

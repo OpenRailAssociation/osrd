@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 
-import { enhancedEditoastApi } from 'common/api/enhancedEditoastApi';
 import {
   osrdEditoastApi,
   type PathProperties,
@@ -26,7 +25,7 @@ const useGetProjectedTrainOperationalPoints = (
   );
 
   const [postPathProperties] =
-    enhancedEditoastApi.endpoints.postV2InfraByInfraIdPathProperties.useMutation();
+    osrdEditoastApi.endpoints.postV2InfraByInfraIdPathProperties.useMutation();
 
   useEffect(() => {
     const getOperationalPoints = async () => {

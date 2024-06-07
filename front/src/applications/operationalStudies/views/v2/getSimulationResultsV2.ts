@@ -1,6 +1,5 @@
 import type { TrainSpaceTimeData } from 'applications/operationalStudies/types';
 import { formatSpaceTimeData } from 'applications/operationalStudies/utils';
-import { enhancedEditoastApi } from 'common/api/enhancedEditoastApi';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import i18n from 'i18n';
 import { setFailure } from 'reducers/main';
@@ -67,7 +66,7 @@ export const getSpaceTimeChartData = async (
         const { blocks, routes, track_section_ranges } = pathfindingResult;
         const projectPathTrainResult = await store
           .dispatch(
-            enhancedEditoastApi.endpoints.postV2TrainScheduleProjectPath.initiate({
+            osrdEditoastApi.endpoints.postV2TrainScheduleProjectPath.initiate({
               infra: infraId,
               ids: trainSchedulesIDs,
               projectPathInput: { blocks, routes, track_section_ranges },
