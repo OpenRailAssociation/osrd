@@ -2,12 +2,12 @@ import type React from 'react';
 
 import { useTranslation } from 'react-i18next';
 
-import type { InfraError } from './types';
+import type { InfraError } from 'common/api/osrdEditoastApi';
 
 /**
  * A component that display an infra error type label.
  */
-const InfraErrorTypeLabel: React.FC<{ error: InfraError['information'] }> = ({ error }) => {
+const InfraErrorTypeLabel: React.FC<{ error: InfraError }> = ({ error }) => {
   const { t } = useTranslation();
   return t(`Editor.infra-errors.error-type.${error.error_type}.name`);
 };

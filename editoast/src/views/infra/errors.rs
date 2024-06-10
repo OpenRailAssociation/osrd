@@ -1,4 +1,4 @@
-use std::ops::DerefMut;
+use std::str::FromStr;
 
 use actix_web::dev::HttpServiceFactory;
 use actix_web::get;
@@ -6,82 +6,110 @@ use actix_web::web::Data;
 use actix_web::web::Json as WebJson;
 use actix_web::web::Path;
 use actix_web::web::Query;
-use diesel::dsl::sql;
-use diesel::pg::Pg;
-use diesel::sql_types::Jsonb;
 use editoast_derive::EditoastError;
+use editoast_schemas::primitives::Identifier;
 use serde::Deserialize;
 use serde::Serialize;
-use serde_json::Value as JsonValue;
-use strum::VariantNames;
 use thiserror::Error;
 
 use crate::error::Result;
-use crate::generated_data::infra_error::InfraErrorType;
-use crate::modelsv2::pagination::load_for_pagination;
-use crate::modelsv2::DbConnection;
+use crate::generated_data::infra_error::InfraError;
+use crate::generated_data::infra_error::InfraErrorTypeLabel;
+use crate::modelsv2::infra::errors::Level;
+use crate::modelsv2::prelude::*;
 use crate::modelsv2::DbConnectionPoolV2;
+use crate::modelsv2::Infra;
+use crate::views::infra::InfraIdParam;
 use crate::views::pagination::PaginationQueryParam;
 use crate::views::pagination::PaginationStats;
 
+use super::InfraApiError;
+
+crate::routes! {
+    list_errors,
+}
+
 /// Return `/infra/<infra_id>/errors` routes
-pub fn routes() -> impl HttpServiceFactory {
+pub fn routes_v1() -> impl HttpServiceFactory {
     list_errors
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, utoipa::IntoParams)]
+#[into_params(parameter_in = Query)]
 struct ErrorListQueryParams {
+    /// Whether the response should include errors or warnings
     #[serde(default)]
+    #[param(inline)]
     level: Level,
+    /// The type of error to filter on
+    #[param(value_type = Option<InfraErrorTypeLabel>)]
     error_type: Option<String>,
-    object_id: Option<String>,
+    /// Filter errors and warnings related to a given object
+    #[param(value_type = Option<String>)]
+    object_id: Option<Identifier>,
 }
 
-#[derive(Serialize)]
-struct ErrorListResponse {
+#[derive(Serialize, utoipa::ToSchema)]
+#[cfg_attr(test, derive(Debug, Deserialize, PartialEq))]
+pub(in crate::views) struct ErrorListResponse {
     #[serde(flatten)]
-    stats: PaginationStats,
-    results: Vec<InfraError>,
+    pub(in crate::views) stats: PaginationStats,
+    #[schema(inline)]
+    pub(in crate::views) results: Vec<InfraErrorResponse>,
 }
 
-/// Return the list of errors of an infra
+#[derive(Debug, Serialize, utoipa::ToSchema)]
+#[cfg_attr(test, derive(Deserialize, PartialEq))]
+pub(in crate::views) struct InfraErrorResponse {
+    pub(in crate::views) information: InfraError,
+}
+
+/// A paginated list of errors related to an infra
+#[utoipa::path(
+     tag = "infra",
+     params(InfraIdParam, PaginationQueryParam, ErrorListQueryParams),
+     responses(
+         (status = 200, body = inline(ErrorListResponse), description = "A paginated list of errors"),
+     ),
+ )]
 #[get("/errors")]
 async fn list_errors(
     db_pool: Data<DbConnectionPoolV2>,
-    infra: Path<i64>,
+    infra: Path<InfraIdParam>,
     pagination_params: Query<PaginationQueryParam>,
-    params: Query<ErrorListQueryParams>,
+    Query(ErrorListQueryParams {
+        level,
+        error_type,
+        object_id,
+    }): Query<ErrorListQueryParams>,
 ) -> Result<WebJson<ErrorListResponse>> {
     let (page, page_size) = pagination_params
         .validate(100)?
         .warn_page_size(100)
         .unpack();
     let (page, page_size) = (page as u64, page_size as u64);
-    let infra = infra.into_inner();
 
-    if let Some(error_type) = &params.error_type {
-        if !check_error_type_query(error_type) {
-            return Err(ListErrorsErrors::WrongErrorTypeProvided.into());
-        }
-    }
+    let error_type = match error_type.map(|et| InfraErrorTypeLabel::from_str(&et).ok()) {
+        Some(None) => return Err(ListErrorsErrors::WrongErrorTypeProvided.into()),
+        Some(et) => et,
+        None => None,
+    };
 
-    let (results, total_count) = get_paginated_infra_errors(
-        db_pool.get().await?.deref_mut(),
-        infra,
-        page,
-        page_size,
-        params.into_inner(),
-    )
+    let conn = &mut db_pool.get().await?;
+    let infra = Infra::retrieve_or_fail(conn, infra.infra_id, || InfraApiError::NotFound {
+        infra_id: infra.infra_id,
+    })
     .await?;
+
+    let (results, total_count) = infra
+        .get_paginated_errors(conn, level, error_type, object_id, page, page_size)
+        .await?;
+    let results = results
+        .into_iter()
+        .map(|information| InfraErrorResponse { information })
+        .collect::<Vec<_>>();
     let stats = PaginationStats::new(results.len() as u64, total_count, page, page_size);
     Ok(WebJson(ErrorListResponse { stats, results }))
-}
-
-/// Check if the query parameter error_type exist
-fn check_error_type_query(param: &String) -> bool {
-    InfraErrorType::VARIANTS
-        .iter()
-        .any(|x| &x.to_string() == param)
 }
 
 #[derive(Debug, Error, EditoastError)]
@@ -91,59 +119,15 @@ enum ListErrorsErrors {
     WrongErrorTypeProvided,
 }
 
-#[derive(QueryableByName, Debug, Clone, Serialize, Deserialize, PartialEq)]
-pub struct InfraError {
-    #[diesel(sql_type = Jsonb)]
-    pub information: JsonValue,
-}
-
-#[derive(Default, Debug, Clone, PartialEq, Eq, Deserialize)]
-#[serde(rename_all = "lowercase")]
-pub enum Level {
-    Warnings,
-    Errors,
-    #[default]
-    All,
-}
-
-async fn get_paginated_infra_errors(
-    conn: &mut DbConnection,
-    infra: i64,
-    page: u64,
-    page_size: u64,
-    params: ErrorListQueryParams,
-) -> Result<(Vec<InfraError>, u64)> {
-    use crate::tables::infra_layer_error::dsl;
-    use crate::tables::infra_layer_error::table;
-    use diesel::prelude::*;
-    use diesel::sql_types::*;
-    let ErrorListQueryParams {
-        level,
-        error_type,
-        object_id,
-    } = params;
-    type Filter = Box<dyn BoxableExpression<table, Pg, SqlType = Bool>>;
-    fn sql_true() -> Filter {
-        Box::new(sql::<Bool>("TRUE"))
-    }
-    let level_filter: Filter = match level {
-        Level::Warnings => Box::new(sql::<Text>("information->>'is_warning'").eq("true")),
-        Level::Errors => Box::new(sql::<Text>("information->>'is_warning'").eq("false")),
-        Level::All => sql_true(),
-    };
-    let error_type_filter: Filter = error_type
-        .map(|ty| -> Filter { Box::new(sql::<Text>("information->>'error_type'").eq(ty)) })
-        .unwrap_or_else(sql_true);
-    let object_id_filter: Filter = object_id
-        .map(|id| -> Filter { Box::new(sql::<Text>("information->>'obj_id'").eq(id)) })
-        .unwrap_or_else(sql_true);
-    let query = dsl::infra_layer_error
-        .select(dsl::information)
-        .filter(dsl::infra_id.eq(infra))
-        .filter(level_filter)
-        .filter(error_type_filter)
-        .filter(object_id_filter);
-    load_for_pagination(conn, query, page, page_size).await
+#[cfg(test)]
+pub(in crate::views) async fn query_errors(
+    conn: &mut crate::modelsv2::DbConnection,
+    infra: &Infra,
+) -> (Vec<InfraError>, u64) {
+    infra
+        .get_paginated_errors(conn, Level::All, None, None, 1, 10000)
+        .await
+        .expect("errors should be fetched successfully")
 }
 
 #[cfg(test)]
@@ -156,14 +140,7 @@ mod tests {
     use std::ops::DerefMut;
 
     use crate::modelsv2::fixtures::create_empty_infra;
-    use crate::views::infra::errors::check_error_type_query;
     use crate::views::test_app::TestAppBuilder;
-
-    #[test]
-    fn check_error_type() {
-        let error_type = "invalid_reference".to_string();
-        assert!(check_error_type_query(&error_type));
-    }
 
     #[rstest]
     async fn list_errors_get() {

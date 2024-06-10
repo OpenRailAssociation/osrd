@@ -3607,43 +3607,207 @@ components:
       - modified
       type: object
     InfraError:
-      description: An infra error or warning
-      properties:
-        geographic:
-          $ref: '#/components/schemas/Geometry'
-          description: Geojson of the geographic geometry of the error
-          nullable: true
-        information:
-          description: Information about the error (check schema documentation for more details)
-          properties:
-            error_type:
-              $ref: '#/components/schemas/InfraErrorType'
-            field:
-              type: string
-            is_warning:
-              type: boolean
-            obj_id:
-              type: string
-            obj_type:
-              enum:
-              - TrackSection
-              - Signal
-              - BufferStop
-              - Detector
-              - Switch
-              - Route
-              type: string
-          required:
-          - obj_id
-          - obj_type
-          - error_type
-          - is_warning
-          type: object
-      required:
-      - information
-      type: object
+      allOf:
+      - $ref: '#/components/schemas/InfraErrorType'
+      - properties:
+          field:
+            nullable: true
+            type: string
+          is_warning:
+            type: boolean
+          obj_id:
+            type: string
+          obj_type:
+            $ref: '#/components/schemas/ObjectType'
+        required:
+        - obj_id
+        - obj_type
+        - field
+        - is_warning
+        type: object
     InfraErrorType:
-      description: Type of the infra error
+      oneOf:
+      - properties:
+          error_type:
+            enum:
+            - duplicated_group
+            type: string
+          original_group_path:
+            type: string
+        required:
+        - original_group_path
+        - error_type
+        type: object
+      - properties:
+          error_type:
+            enum:
+            - empty_object
+            type: string
+        required:
+        - error_type
+        type: object
+      - properties:
+          error_type:
+            enum:
+            - invalid_group
+            type: string
+          group:
+            type: string
+          switch_type:
+            type: string
+        required:
+        - group
+        - switch_type
+        - error_type
+        type: object
+      - properties:
+          error_type:
+            enum:
+            - invalid_reference
+            type: string
+          reference:
+            $ref: '#/components/schemas/ObjectRef'
+        required:
+        - reference
+        - error_type
+        type: object
+      - properties:
+          error_type:
+            enum:
+            - invalid_route
+            type: string
+        required:
+        - error_type
+        type: object
+      - properties:
+          error_type:
+            enum:
+            - invalid_switch_ports
+            type: string
+        required:
+        - error_type
+        type: object
+      - properties:
+          error_type:
+            enum:
+            - missing_route
+            type: string
+        required:
+        - error_type
+        type: object
+      - properties:
+          endpoint:
+            $ref: '#/components/schemas/Endpoint'
+          error_type:
+            enum:
+            - missing_buffer_stop
+            type: string
+        required:
+        - endpoint
+        - error_type
+        type: object
+      - properties:
+          error_type:
+            enum:
+            - node_endpoints_not_unique
+            type: string
+        required:
+        - error_type
+        type: object
+      - properties:
+          error_type:
+            enum:
+            - object_out_of_path
+            type: string
+          reference:
+            $ref: '#/components/schemas/ObjectRef'
+        required:
+        - reference
+        - error_type
+        type: object
+      - properties:
+          error_type:
+            enum:
+            - odd_buffer_stop_location
+            type: string
+        required:
+        - error_type
+        type: object
+      - properties:
+          error_type:
+            enum:
+            - out_of_range
+            type: string
+          expected_range:
+            items:
+              format: double
+              type: number
+            type: array
+          position:
+            format: double
+            type: number
+        required:
+        - position
+        - expected_range
+        - error_type
+        type: object
+      - properties:
+          error_type:
+            enum:
+            - overlapping_electrifications
+            type: string
+          reference:
+            $ref: '#/components/schemas/ObjectRef'
+        required:
+        - reference
+        - error_type
+        type: object
+      - properties:
+          error_type:
+            enum:
+            - overlapping_speed_sections
+            type: string
+          reference:
+            $ref: '#/components/schemas/ObjectRef'
+        required:
+        - reference
+        - error_type
+        type: object
+      - properties:
+          error_type:
+            enum:
+            - overlapping_switches
+            type: string
+          reference:
+            $ref: '#/components/schemas/ObjectRef'
+        required:
+        - reference
+        - error_type
+        type: object
+      - properties:
+          error_type:
+            enum:
+            - unknown_port_name
+            type: string
+          port_name:
+            type: string
+        required:
+        - port_name
+        - error_type
+        type: object
+      - properties:
+          error_type:
+            enum:
+            - unused_port
+            type: string
+          port_name:
+            type: string
+        required:
+        - port_name
+        - error_type
+        type: object
+    InfraErrorTypeLabel:
+      description: Auto-generated discriminant enum variants
       enum:
       - duplicated_group
       - empty_object
@@ -3653,15 +3817,15 @@ components:
       - invalid_switch_ports
       - missing_route
       - missing_buffer_stop
+      - node_endpoints_not_unique
       - object_out_of_path
       - odd_buffer_stop_location
       - out_of_range
+      - overlapping_electrifications
       - overlapping_speed_sections
       - overlapping_switches
-      - overlapping_electrifications
       - unknown_port_name
       - unused_port
-      - node_endpoints_not_unique
       type: string
     InfraIdQueryParam:
       properties:
@@ -9619,77 +9783,6 @@ paths:
       tags:
       - infra
       - rolling_stock
-  /infra/{id}/errors/:
-    get:
-      parameters:
-      - description: infra id
-        in: path
-        name: id
-        required: true
-        schema:
-          type: integer
-      - description: The page number
-        in: query
-        name: page
-        schema:
-          default: 1
-          type: integer
-      - description: The number of item per page
-        in: query
-        name: page_size
-        schema:
-          default: 25
-          minimum: 10
-          type: integer
-      - description: The type of error to filter on
-        in: query
-        name: error_type
-        schema:
-          $ref: '#/components/schemas/InfraErrorType'
-      - description: errors and warnings that only part of a given object
-        in: query
-        name: object_id
-        schema:
-          type: string
-      - description: Whether the response should include errors or warnings
-        in: query
-        name: level
-        schema:
-          default: all
-          enum:
-          - errors
-          - warnings
-          - all
-          type: string
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                properties:
-                  count:
-                    description: Total number of elements
-                    example: 1
-                    type: integer
-                  next:
-                    description: The index of the following page (null if no more pages available)
-                    example: null
-                    nullable: true
-                    type: integer
-                  previous:
-                    description: The index of the previous page (null if requesting the first page)
-                    example: null
-                    nullable: true
-                    type: integer
-                  results:
-                    items:
-                      $ref: '#/components/schemas/InfraError'
-                    type: array
-                type: object
-          description: A paginated list of errors
-      summary: Retrieve a paginated list of errors
-      tags:
-      - infra
   /infra/{infra_id}/:
     delete:
       description: |-
@@ -9888,6 +9981,82 @@ paths:
         '404':
           description: Infra ID not found
       summary: Duplicate an infra
+      tags:
+      - infra
+  /infra/{infra_id}/errors/:
+    get:
+      parameters:
+      - description: An existing infra ID
+        in: path
+        name: infra_id
+        required: true
+        schema:
+          format: int64
+          type: integer
+      - in: query
+        name: page
+        required: false
+        schema:
+          default: 1
+          format: int64
+          minimum: 1
+          type: integer
+      - in: query
+        name: page_size
+        required: false
+        schema:
+          default: 25
+          format: int64
+          minimum: 1
+          nullable: true
+          type: integer
+      - description: Whether the response should include errors or warnings
+        in: query
+        name: level
+        required: false
+        schema:
+          enum:
+          - warnings
+          - errors
+          - all
+          type: string
+      - description: The type of error to filter on
+        in: query
+        name: error_type
+        required: false
+        schema:
+          allOf:
+          - $ref: '#/components/schemas/InfraErrorTypeLabel'
+          nullable: true
+      - description: Filter errors and warnings related to a given object
+        in: query
+        name: object_id
+        required: false
+        schema:
+          nullable: true
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/PaginationStats'
+                - properties:
+                    results:
+                      items:
+                        properties:
+                          information:
+                            $ref: '#/components/schemas/InfraError'
+                        required:
+                        - information
+                        type: object
+                      type: array
+                  required:
+                  - results
+                  type: object
+          description: A paginated list of errors
+      summary: A paginated list of errors related to an infra
       tags:
       - infra
   /infra/{infra_id}/lines/{line_code}/bbox/:

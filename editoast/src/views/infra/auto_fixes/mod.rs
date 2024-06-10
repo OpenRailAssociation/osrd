@@ -331,13 +331,14 @@ mod tests {
     use crate::fixtures::tests::db_pool;
     use crate::fixtures::tests::empty_infra;
     use crate::fixtures::tests::small_infra;
+    use crate::generated_data::infra_error::InfraErrorType;
     use crate::infra_cache::object_cache::BufferStopCache;
     use crate::infra_cache::object_cache::DetectorCache;
     use crate::infra_cache::object_cache::SignalCache;
     use crate::infra_cache::operation::DeleteOperation;
     use crate::infra_cache::operation::Operation;
     use crate::infra_cache::InfraCacheEditoastError;
-    use crate::modelsv2::infra::errors::QueryParams;
+    use crate::views::infra::errors::query_errors;
     use crate::views::tests::create_test_service;
     use editoast_schemas::infra::ApplicableDirectionsTrackRange;
     use editoast_schemas::infra::Detector;
@@ -400,15 +401,10 @@ mod tests {
         force_refresh(&mut small_infra).await;
 
         // Check the only initial issues are "overlapping_speed_sections" warnings
-        let infra_errors_before_all = small_infra
-            .get_paginated_errors(conn, 1, 25, &QueryParams::default())
-            .await
-            .unwrap();
-        assert!(infra_errors_before_all.results.iter().all(|e| e
-            .information
-            .get("error_type")
-            .unwrap()
-            == "overlapping_speed_sections"));
+        let (infra_errors_before_all, before_all_count) = query_errors(conn, &small_infra).await;
+        assert!(infra_errors_before_all
+            .iter()
+            .all(|e| matches!(e.sub_type, InfraErrorType::OverlappingSpeedSections { .. })));
 
         // Remove a track
         let deletion = Operation::Delete(DeleteOperation {
@@ -421,21 +417,15 @@ mod tests {
             .to_request();
         assert_eq!(call_service(&app, req_del).await.status(), StatusCode::OK);
 
-        let infra_errors_before_fix = small_infra
-            .get_paginated_errors(conn, 1, 25, &QueryParams::default())
-            .await
-            .unwrap();
         // Check that some new issues appeared
-        assert!(infra_errors_before_fix.count > infra_errors_before_all.count);
+        let (infra_errors_before_fix, before_fix_count) = query_errors(conn, &small_infra).await;
+        assert!(before_fix_count > before_all_count);
 
         // WHEN
         let response = call_service(&app, auto_fixes_request(small_infra_id)).await;
 
         // THEN
-        let infra_errors_after_fix = small_infra
-            .get_paginated_errors(conn, 1, 25, &QueryParams::default())
-            .await
-            .unwrap();
+        let (infra_errors_after_fix, _) = query_errors(conn, &small_infra).await;
         assert_eq!(infra_errors_after_fix, infra_errors_before_fix);
 
         assert_eq!(response.status(), StatusCode::OK);

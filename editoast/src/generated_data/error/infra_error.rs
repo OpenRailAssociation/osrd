@@ -5,21 +5,34 @@ use editoast_schemas::primitives::ObjectRef;
 use editoast_schemas::primitives::ObjectType;
 use serde::Deserialize;
 use serde::Serialize;
-use strum::VariantNames;
+use strum::AsRefStr;
+use strum::EnumDiscriminants;
+use strum::EnumString;
+use utoipa::ToSchema;
 
-#[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
-#[serde(deny_unknown_fields)]
-pub struct InfraError {
-    obj_id: String,
-    obj_type: ObjectType,
-    field: Option<String>,
-    is_warning: bool,
-    #[serde(flatten)]
-    sub_type: InfraErrorType,
+editoast_common::schemas! {
+     InfraError,
+     InfraErrorType,
+     InfraErrorTypeLabel,
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Debug, VariantNames, Clone)]
+#[derive(Serialize, Deserialize, PartialEq, Debug, Clone, ToSchema)]
+pub struct InfraError {
+    pub obj_id: String,
+    pub obj_type: ObjectType,
+    #[schema(required)]
+    pub field: Option<String>,
+    pub is_warning: bool,
+    #[serde(flatten)]
+    pub sub_type: InfraErrorType,
+}
+
+#[derive(Serialize, Deserialize, PartialEq, Debug, EnumDiscriminants, Clone, ToSchema)]
 #[strum(serialize_all = "snake_case")]
+#[strum_discriminants(derive(ToSchema, Deserialize, EnumString, AsRefStr))]
+#[strum_discriminants(name(InfraErrorTypeLabel))]
+#[strum_discriminants(serde(rename_all = "snake_case", deny_unknown_fields))]
+#[strum_discriminants(strum(serialize_all = "snake_case"))]
 #[serde(tag = "error_type", rename_all = "snake_case", deny_unknown_fields)]
 pub enum InfraErrorType {
     DuplicatedGroup {

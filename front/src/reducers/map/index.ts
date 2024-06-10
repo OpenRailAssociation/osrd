@@ -3,7 +3,7 @@ import { createSlice } from '@reduxjs/toolkit';
 import type { Position } from '@turf/helpers';
 import type { ViewState } from 'react-map-gl/maplibre';
 
-import type { InfraErrorType } from 'applications/editor/components/InfraErrors';
+import type { InfraErrorTypeLabel } from 'common/api/osrdEditoastApi';
 import { MAP_URL } from 'common/Map/const';
 import history from 'main/history';
 import { gpsRound } from 'utils/helpers';
@@ -47,7 +47,7 @@ export interface MapState {
     platforms: boolean;
   };
   issuesSettings?: {
-    types: Array<InfraErrorType>;
+    types: Array<InfraErrorTypeLabel>;
   };
   mapSearchMarker?: MapSearchMarker;
   lineSearchCode?: number;

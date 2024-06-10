@@ -4,13 +4,13 @@ import cx from 'classnames';
 import type { IconBaseProps } from 'react-icons';
 import { BsFillExclamationCircleFill, BsFillExclamationTriangleFill } from 'react-icons/bs';
 
-import type { InfraError } from './types';
+import type { InfraError } from 'common/api/osrdEditoastApi';
 
 /**
  * A component that display an infra error Icon.
  */
 interface InfraErrorIconProps extends IconBaseProps {
-  error: InfraError['information'];
+  error: InfraError;
 }
 const InfraErrorIcon: FC<InfraErrorIconProps> = ({ error, ...props }) =>
   error.is_warning ? (

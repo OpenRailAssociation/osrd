@@ -6,8 +6,12 @@ import { FaDiamondTurnRight } from 'react-icons/fa6';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import { useSelector } from 'react-redux';
 
-import { EDITOAST_TYPES } from 'applications/editor/consts';
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { EDITOAST_TYPES, type EditoastType } from 'applications/editor/consts';
+import {
+  osrdEditoastApi,
+  type InfraErrorTypeLabel,
+  type InfraError,
+} from 'common/api/osrdEditoastApi';
 import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 import { LoaderFill, Spinner } from 'common/Loaders';
 import { getEditorIssues } from 'reducers/editor/selectors';
@@ -16,7 +20,7 @@ import { useAppDispatch } from 'store';
 
 import { INFRA_ERRORS, INFRA_ERRORS_BY_LEVEL } from './consts';
 import { InfraErrorBox } from './InfraError';
-import type { InfraError, InfraErrorLevel, InfraErrorType } from './types';
+import type { InfraErrorLevel } from './types';
 
 const INFRA_ERROR_LEVELS: Array<NonNullable<InfraErrorLevel>> = ['all', 'errors', 'warnings'];
 
@@ -36,22 +40,29 @@ const InfraErrorsList: React.FC<InfraErrorsListProps> = ({ infraID, onErrorClick
   // list of issues
   const [errors, setErrors] = useState<Array<InfraError>>([]);
   // Error types filtered in correlatino with error level
-  const [errorTypeList, setErrorTypeList] = useState<InfraErrorType[]>(INFRA_ERRORS);
+  const [errorTypeList, setErrorTypeList] = useState<InfraErrorTypeLabel[]>(INFRA_ERRORS);
 
   // Query to retrieve the issue with the API
-  const [getInfraErrors] = osrdEditoastApi.endpoints.getInfraByIdErrors.useLazyQuery({});
+  const [getInfraErrors] = osrdEditoastApi.endpoints.getInfraByInfraIdErrors.useLazyQuery({});
   const fetch = useCallback(
-    async (id: number, page: number, level: InfraErrorLevel, errorType?: InfraErrorType) => {
+    async (
+      infraId: number,
+      page: number,
+      level: InfraErrorLevel,
+      errorType?: InfraErrorTypeLabel
+    ) => {
       setLoading(true);
       try {
         const response = await getInfraErrors({
-          id,
+          infraId,
           page,
           errorType,
           level,
         });
         setErrors((prev) => {
-          const apiErrors = response.data ? response.data.results || [] : [];
+          const apiErrors = response.data
+            ? response.data.results.map((res) => res.information) || []
+            : [];
           return page === 1 ? apiErrors : [...prev, ...apiErrors];
         });
         setTotal(response.data ? response.data.count || 0 : null);
@@ -113,7 +124,8 @@ const InfraErrorsList: React.FC<InfraErrorsListProps> = ({ infraID, onErrorClick
             onChange={(e) => {
               dispatch(
                 updateFiltersIssue(infraID, {
-                  filterType: e.target.value !== 'all' ? (e.target.value as InfraErrorType) : null,
+                  filterType:
+                    e.target.value !== 'all' ? (e.target.value as InfraErrorTypeLabel) : null,
                 })
               );
             }}
@@ -150,8 +162,8 @@ const InfraErrorsList: React.FC<InfraErrorsListProps> = ({ infraID, onErrorClick
             <ul className="list-group">
               {errors.map((item, index) => (
                 <li key={uniqueId()} className="list-group-item management-item">
-                  <InfraErrorBox error={item.information} index={index + 1}>
-                    {EDITOAST_TYPES.includes(item.information.obj_type) && (
+                  <InfraErrorBox error={item} index={index + 1}>
+                    {EDITOAST_TYPES.includes(item.obj_type as EditoastType) && (
                       <button
                         className="dropdown-item"
                         type="button"

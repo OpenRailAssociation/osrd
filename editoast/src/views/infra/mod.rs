@@ -65,6 +65,7 @@ crate::routes! {
                 pathfinding::routes(),
                 attached::routes(),
                 edition::routes(),
+                errors::routes(),
             ),
             get,
             load,
@@ -118,7 +119,7 @@ pub fn infra_routes() -> impl HttpServiceFactory {
                     get_switch_types,
                 ))
                 .service((
-                    errors::routes(),
+                    errors::routes_v1(),
                     objects::routes_v1(),
                     routes::routes(),
                     pathfinding::routes(),

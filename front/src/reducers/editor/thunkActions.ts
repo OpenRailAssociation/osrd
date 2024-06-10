@@ -80,8 +80,8 @@ export function updateTotalsIssue(infraID: number | undefined) {
       if (infraID) {
         // Get total
         const totalResp = dispatch(
-          osrdEditoastApi.endpoints.getInfraByIdErrors.initiate({
-            id: infraID,
+          osrdEditoastApi.endpoints.getInfraByInfraIdErrors.initiate({
+            infraId: infraID,
             level: 'all',
             errorType: undefined,
             pageSize: 1,
@@ -94,8 +94,8 @@ export function updateTotalsIssue(infraID: number | undefined) {
 
         // Get total for the active filters
         const filterResp = dispatch(
-          osrdEditoastApi.endpoints.getInfraByIdErrors.initiate({
-            id: infraID,
+          osrdEditoastApi.endpoints.getInfraByInfraIdErrors.initiate({
+            infraId: infraID,
             level: editor.issues.filterLevel,
             errorType: editor.issues.filterType ?? undefined,
             pageSize: 1,

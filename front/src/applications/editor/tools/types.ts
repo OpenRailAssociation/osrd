@@ -1,7 +1,7 @@
 import type { Feature } from 'geojson';
 
-import type { InfraError } from 'applications/editor/components/InfraErrors';
 import type { EditoastType } from 'applications/editor/consts';
+import type { InfraError } from 'common/api/osrdEditoastApi';
 
 export type CommonToolState = {
   mousePosition: [number, number] | null;
@@ -9,6 +9,6 @@ export type CommonToolState = {
     type: EditoastType;
     id: string;
     renderedEntity: Feature;
-    error?: InfraError['information'];
+    error?: InfraError;
   } | null;
 };

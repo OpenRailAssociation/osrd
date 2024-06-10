@@ -134,19 +134,6 @@ const injectedRtkApi = api
         query: () => ({ url: `/infra/voltages/` }),
         providesTags: ['infra', 'rolling_stock'],
       }),
-      getInfraByIdErrors: build.query<GetInfraByIdErrorsApiResponse, GetInfraByIdErrorsApiArg>({
-        query: (queryArg) => ({
-          url: `/infra/${queryArg.id}/errors/`,
-          params: {
-            page: queryArg.page,
-            page_size: queryArg.pageSize,
-            error_type: queryArg.errorType,
-            object_id: queryArg.objectId,
-            level: queryArg.level,
-          },
-        }),
-        providesTags: ['infra'],
-      }),
       deleteInfraByInfraId: build.mutation<
         DeleteInfraByInfraIdApiResponse,
         DeleteInfraByInfraIdApiArg
@@ -198,6 +185,22 @@ const injectedRtkApi = api
           params: { name: queryArg.name },
         }),
         invalidatesTags: ['infra'],
+      }),
+      getInfraByInfraIdErrors: build.query<
+        GetInfraByInfraIdErrorsApiResponse,
+        GetInfraByInfraIdErrorsApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/infra/${queryArg.infraId}/errors/`,
+          params: {
+            page: queryArg.page,
+            page_size: queryArg.pageSize,
+            level: queryArg.level,
+            error_type: queryArg.errorType,
+            object_id: queryArg.objectId,
+          },
+        }),
+        providesTags: ['infra'],
       }),
       getInfraByInfraIdLinesAndLineCodeBbox: build.query<
         GetInfraByInfraIdLinesAndLineCodeBboxApiResponse,
@@ -1086,29 +1089,6 @@ export type PostInfraRefreshApiArg = {
 };
 export type GetInfraVoltagesApiResponse = /** status 200 Voltages list */ string[];
 export type GetInfraVoltagesApiArg = void;
-export type GetInfraByIdErrorsApiResponse = /** status 200 A paginated list of errors */ {
-  /** Total number of elements */
-  count?: number;
-  /** The index of the following page (null if no more pages available) */
-  next?: number | null;
-  /** The index of the previous page (null if requesting the first page) */
-  previous?: number | null;
-  results?: InfraError[];
-};
-export type GetInfraByIdErrorsApiArg = {
-  /** infra id */
-  id: number;
-  /** The page number */
-  page?: number;
-  /** The number of item per page */
-  pageSize?: number;
-  /** The type of error to filter on */
-  errorType?: InfraErrorType;
-  /** errors and warnings that only part of a given object */
-  objectId?: string;
-  /** Whether the response should include errors or warnings */
-  level?: 'errors' | 'warnings' | 'all';
-};
 export type DeleteInfraByInfraIdApiResponse = unknown;
 export type DeleteInfraByInfraIdApiArg = {
   /** An existing infra ID */
@@ -1157,6 +1137,24 @@ export type PostInfraByInfraIdCloneApiArg = {
   infraId: number;
   /** The name of the new infra */
   name: string;
+};
+export type GetInfraByInfraIdErrorsApiResponse =
+  /** status 200 A paginated list of errors */ PaginationStats & {
+    results: {
+      information: InfraError;
+    }[];
+  };
+export type GetInfraByInfraIdErrorsApiArg = {
+  /** An existing infra ID */
+  infraId: number;
+  page?: number;
+  pageSize?: number | null;
+  /** Whether the response should include errors or warnings */
+  level?: 'warnings' | 'errors' | 'all';
+  /** The type of error to filter on */
+  errorType?: InfraErrorTypeLabel | null;
+  /** Filter errors and warnings related to a given object */
+  objectId?: string | null;
 };
 export type GetInfraByInfraIdLinesAndLineCodeBboxApiResponse =
   /** status 200 The BBox of the line */ BoundingBox;
@@ -2206,36 +2204,6 @@ export type RailJson = {
   /** The version of the RailJSON format. Defaults to the current version. */
   version: string;
 };
-export type InfraErrorType =
-  | 'duplicated_group'
-  | 'empty_object'
-  | 'invalid_group'
-  | 'invalid_reference'
-  | 'invalid_route'
-  | 'invalid_switch_ports'
-  | 'missing_route'
-  | 'missing_buffer_stop'
-  | 'object_out_of_path'
-  | 'odd_buffer_stop_location'
-  | 'out_of_range'
-  | 'overlapping_speed_sections'
-  | 'overlapping_switches'
-  | 'overlapping_electrifications'
-  | 'unknown_port_name'
-  | 'unused_port'
-  | 'node_endpoints_not_unique';
-export type InfraError = {
-  /** Geojson of the geographic geometry of the error */
-  geographic?: Geometry;
-  /** Information about the error (check schema documentation for more details) */
-  information: {
-    error_type: InfraErrorType;
-    field?: string;
-    is_warning: boolean;
-    obj_id: string;
-    obj_type: 'TrackSection' | 'Signal' | 'BufferStop' | 'Detector' | 'Switch' | 'Route';
-  };
-};
 export type InfraObject =
   | {
       obj_type: 'TrackSection';
@@ -2372,6 +2340,99 @@ export type Operation =
     } & {
       operation_type: 'DELETE';
     });
+export type ObjectRef = {
+  obj_id: string;
+  type: ObjectType;
+};
+export type InfraErrorType =
+  | {
+      error_type: 'duplicated_group';
+      original_group_path: string;
+    }
+  | {
+      error_type: 'empty_object';
+    }
+  | {
+      error_type: 'invalid_group';
+      group: string;
+      switch_type: string;
+    }
+  | {
+      error_type: 'invalid_reference';
+      reference: ObjectRef;
+    }
+  | {
+      error_type: 'invalid_route';
+    }
+  | {
+      error_type: 'invalid_switch_ports';
+    }
+  | {
+      error_type: 'missing_route';
+    }
+  | {
+      endpoint: Endpoint;
+      error_type: 'missing_buffer_stop';
+    }
+  | {
+      error_type: 'node_endpoints_not_unique';
+    }
+  | {
+      error_type: 'object_out_of_path';
+      reference: ObjectRef;
+    }
+  | {
+      error_type: 'odd_buffer_stop_location';
+    }
+  | {
+      error_type: 'out_of_range';
+      expected_range: number[];
+      position: number;
+    }
+  | {
+      error_type: 'overlapping_electrifications';
+      reference: ObjectRef;
+    }
+  | {
+      error_type: 'overlapping_speed_sections';
+      reference: ObjectRef;
+    }
+  | {
+      error_type: 'overlapping_switches';
+      reference: ObjectRef;
+    }
+  | {
+      error_type: 'unknown_port_name';
+      port_name: string;
+    }
+  | {
+      error_type: 'unused_port';
+      port_name: string;
+    };
+export type InfraError = InfraErrorType & {
+  field: string | null;
+  is_warning: boolean;
+  obj_id: string;
+  obj_type: ObjectType;
+};
+export type InfraErrorTypeLabel =
+  | 'duplicated_group'
+  | 'empty_object'
+  | 'invalid_group'
+  | 'invalid_reference'
+  | 'invalid_route'
+  | 'invalid_switch_ports'
+  | 'missing_route'
+  | 'missing_buffer_stop'
+  | 'node_endpoints_not_unique'
+  | 'object_out_of_path'
+  | 'odd_buffer_stop_location'
+  | 'out_of_range'
+  | 'overlapping_electrifications'
+  | 'overlapping_speed_sections'
+  | 'overlapping_switches'
+  | 'unknown_port_name'
+  | 'unused_port';
 export type BoundingBox = (number & number)[][];
 export type GeoJsonPointValue = number[];
 export type GeoJsonPoint = {
