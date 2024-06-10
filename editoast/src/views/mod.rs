@@ -106,6 +106,7 @@ editoast_common::schemas! {
     editoast_common::schemas(),
     operation::schemas(),
     editoast_schemas::schemas(),
+    crate::generated_data::schemas(),
 }
 
 #[derive(OpenApi)]

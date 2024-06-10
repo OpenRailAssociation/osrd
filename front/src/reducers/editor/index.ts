@@ -4,7 +4,7 @@ import type { PayloadAction } from '@reduxjs/toolkit';
 import type { InfraErrorLevel } from 'applications/editor/components/InfraErrors';
 import type { Layer } from 'applications/editor/consts';
 import type { EditorSchema } from 'applications/editor/typesEditorEntity';
-import type { InfraErrorType } from 'common/api/osrdEditoastApi';
+import type { InfraErrorTypeLabel } from 'common/api/osrdEditoastApi';
 import { type InfraState, buildInfraStateReducers, infraState } from 'reducers/infra';
 
 export interface EditorState extends InfraState {
@@ -14,7 +14,7 @@ export interface EditorState extends InfraState {
     total: number;
     filterTotal: number;
     filterLevel: NonNullable<InfraErrorLevel>;
-    filterType: InfraErrorType | null;
+    filterType: InfraErrorTypeLabel | null;
   };
 }
 

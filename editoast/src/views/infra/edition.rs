@@ -895,8 +895,9 @@ pub mod tests {
     use super::*;
     use crate::fixtures::tests::db_pool;
     use crate::fixtures::tests::small_infra;
-    use crate::modelsv2::infra::errors::InfraError;
-    use crate::modelsv2::infra::errors::QueryParams;
+    use crate::generated_data::infra_error::InfraError;
+    use crate::generated_data::infra_error::InfraErrorType;
+    use crate::views::infra::errors::query_errors;
     use crate::views::tests::create_test_service;
 
     #[rstest]
@@ -964,7 +965,7 @@ pub mod tests {
     async fn split_track_section_should_work() {
         // Init
         let pg_db_pool = db_pool();
-        let conn = &mut db_pool().get().await.unwrap();
+        let conn = &mut pg_db_pool.get().await.unwrap();
         let small_infra = small_infra(pg_db_pool.clone()).await;
         let app = create_test_service().await;
 
@@ -975,10 +976,7 @@ pub mod tests {
         call_service(&app, req_refresh).await;
 
         // Get infra errors
-        let init_errors = small_infra
-            .get_paginated_errors(conn, 1, 25, &QueryParams::default())
-            .await
-            .unwrap();
+        let (init_errors, _) = query_errors(conn, &small_infra).await;
 
         // Make a call to split the track section
         let req = TestRequest::post()
@@ -994,21 +992,17 @@ pub mod tests {
         assert_eq!(res.len(), 2);
 
         // Check that infra errors has not increased with the split (omit route error for now)
-        let errors = small_infra
-            .get_paginated_errors(conn, 1, 25, &QueryParams::default())
-            .await
-            .unwrap();
+        let (errors, _) = query_errors(conn, &small_infra).await;
         let errors_without_routes: Vec<InfraError> = errors
-            .results
             .into_iter()
             .filter(|e| {
-                !e.information["error_type"]
-                    .as_str()
-                    .unwrap()
-                    .ends_with("_route")
+                !matches!(
+                    e.sub_type,
+                    InfraErrorType::MissingRoute | InfraErrorType::InvalidRoute
+                )
             })
             .collect();
-        assert_eq!(errors_without_routes.len() - init_errors.results.len(), 0);
+        assert_eq!(errors_without_routes.len() - init_errors.len(), 0);
     }
 
     #[rstest]

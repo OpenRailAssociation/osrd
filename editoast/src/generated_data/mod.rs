@@ -41,6 +41,10 @@ use crate::infra_cache::InfraCache;
 use crate::modelsv2::DbConnection;
 use crate::modelsv2::DbConnectionPool;
 
+editoast_common::schemas! {
+    error::schemas(),
+}
+
 /// This trait define how a generated data table should be handled
 #[async_trait]
 pub trait GeneratedData {

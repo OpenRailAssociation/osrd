@@ -1,69 +1,75 @@
-use diesel::sql_query;
-use diesel::sql_types::BigInt;
-use diesel::sql_types::Json;
-use diesel::sql_types::Text;
+use diesel::pg::Pg;
+use editoast_schemas::primitives::Identifier;
 use serde::Deserialize;
-use serde::Serialize;
-use serde_json::Value as JsonValue;
 
 use super::Infra;
 use crate::error::Result;
+use crate::generated_data::infra_error::{InfraError, InfraErrorTypeLabel};
+use crate::modelsv2::pagination::load_for_pagination;
 use crate::modelsv2::DbConnection;
-use crate::views::pagination::Paginate;
-use crate::views::pagination::PaginatedResponse;
 
-#[derive(Default, Debug, Clone, Deserialize)]
-pub struct QueryParams {
-    #[serde(default)]
-    level: Level,
-    pub error_type: Option<String>,
-    object_id: Option<String>,
-}
-
-#[derive(Default, Debug, Clone, PartialEq, Eq, Deserialize)]
+#[derive(Default, Debug, Clone, PartialEq, Eq, Deserialize, utoipa::ToSchema)]
 #[serde(rename_all = "lowercase")]
-enum Level {
+pub enum Level {
     Warnings,
     Errors,
     #[default]
     All,
 }
 
-#[derive(QueryableByName, Debug, Clone, Serialize, Deserialize, PartialEq)]
-pub struct InfraError {
-    #[diesel(sql_type = Json)]
-    pub information: JsonValue,
-}
-
 impl Infra {
     pub async fn get_paginated_errors(
         &self,
         conn: &mut DbConnection,
-        page: i64,
-        per_page: i64,
-        params: &QueryParams,
-    ) -> Result<PaginatedResponse<InfraError>> {
-        let mut query =
-            String::from("SELECT information::text FROM infra_layer_error WHERE infra_id = $1");
-        if params.level == Level::Warnings {
-            query += " AND information->>'is_warning' = 'true'"
-        } else if params.level == Level::Errors {
-            query += " AND information->>'is_warning' = 'false'"
+        level: Level,
+        error_type: Option<InfraErrorTypeLabel>,
+        object_id: Option<Identifier>,
+        page: u64,
+        page_size: u64,
+    ) -> Result<(Vec<InfraError>, u64)> {
+        use crate::tables::infra_layer_error::dsl;
+        use crate::tables::infra_layer_error::table;
+        use diesel::dsl::sql;
+        use diesel::prelude::*;
+        use diesel::sql_types::*;
+
+        type Filter = Box<dyn BoxableExpression<table, Pg, SqlType = Bool>>;
+        fn sql_true() -> Filter {
+            Box::new(sql::<Bool>("TRUE"))
         }
-        if params.error_type.is_some() {
-            query += " AND information->>'error_type' = $2"
+
+        let level_filter: Filter = match level {
+            Level::Warnings => Box::new(sql::<Text>("information->>'is_warning'").eq("true")),
+            Level::Errors => Box::new(sql::<Text>("information->>'is_warning'").eq("false")),
+            Level::All => sql_true(),
+        };
+        let error_type_filter: Filter = error_type
+            .as_ref()
+            .map(|ty| ty.as_ref())
+            .map(|ty| -> Filter {
+                Box::new(sql::<Text>("information->>'error_type'").eq(ty.to_owned()))
+            })
+            .unwrap_or_else(sql_true);
+        let object_id_filter: Filter = object_id
+            .map(|id| id.0)
+            .map(|id| -> Filter { Box::new(sql::<Text>("information->>'obj_id'").eq(id)) })
+            .unwrap_or_else(sql_true);
+
+        let query = dsl::infra_layer_error
+            .select(dsl::information)
+            .filter(dsl::infra_id.eq(self.id))
+            .filter(level_filter)
+            .filter(error_type_filter)
+            .filter(object_id_filter);
+
+        #[derive(QueryableByName)]
+        struct Result {
+            #[diesel(sql_type = Jsonb)]
+            information: diesel_json::Json<InfraError>,
         }
-        if params.object_id.is_some() {
-            query += " AND information->>'obj_id' = $3"
-        }
-        let error_type = params.error_type.clone().unwrap_or_default();
-        let object_id = params.object_id.clone().unwrap_or_default();
-        sql_query(query)
-            .bind::<BigInt, _>(self.id)
-            .bind::<Text, _>(error_type)
-            .bind::<Text, _>(object_id)
-            .paginate(page, per_page)
-            .load_and_count::<InfraError>(conn)
-            .await
+        let (results, count): (Vec<Result>, _) =
+            load_for_pagination(conn, query, page, page_size).await?;
+        let results = results.into_iter().map(|r| r.information.0).collect();
+        Ok((results, count))
     }
 }

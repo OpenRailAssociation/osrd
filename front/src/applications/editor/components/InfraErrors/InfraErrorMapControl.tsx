@@ -8,13 +8,13 @@ import { useSelector } from 'react-redux';
 import { getEntity } from 'applications/editor/data/api';
 import { centerMapOnObject, selectEntities } from 'applications/editor/tools/utils';
 import type { EditorContextType } from 'applications/editor/types';
+import type { InfraError } from 'common/api/osrdEditoastApi';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { getEditorState } from 'reducers/editor/selectors';
 import { useAppDispatch } from 'store';
 import useKeyboardShortcuts from 'utils/hooks/useKeyboardShortcuts';
 
 import InfraErrorsModal from './InfraErrorsModal';
-import type { InfraError } from './types';
 
 const InfraErrorMapControl: FC<{
   mapRef: MapRef;
@@ -36,12 +36,7 @@ const InfraErrorMapControl: FC<{
     openModal(
       <InfraErrorsModal
         onErrorClick={async (infraID: number, item: InfraError) => {
-          const entity = await getEntity(
-            infraID,
-            item.information.obj_id,
-            item.information.obj_type,
-            dispatch
-          );
+          const entity = await getEntity(infraID, item.obj_id, item.obj_type, dispatch);
 
           // select the entity
           selectEntities([entity], { switchTool, dispatch, editorState });

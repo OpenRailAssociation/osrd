@@ -40,6 +40,10 @@ use crate::modelsv2::DbConnection;
 use editoast_schemas::primitives::OSRDObject;
 use editoast_schemas::primitives::ObjectType;
 
+editoast_common::schemas! {
+    infra_error::schemas(),
+}
+
 /// Empty context used when no context is needed
 #[derive(Debug, Default)]
 pub struct NoContext;

@@ -17,12 +17,13 @@ import type { RouteEntity } from 'applications/editor/tools/routeEdition/types';
 import type { SwitchEntity } from 'applications/editor/tools/switchEdition/types';
 import type { TrackSectionEntity } from 'applications/editor/tools/trackEdition/types';
 import type { EditorEntity } from 'applications/editor/typesEditorEntity';
+import type { InfraError } from 'common/api/osrdEditoastApi';
 import { LoaderFill } from 'common/Loaders';
 import { getSpeedSectionsNameString } from 'common/Map/Layers/SpeedLimits';
 import { useInfraID } from 'common/osrdContext';
 import { type AppDispatch, useAppDispatch } from 'store';
 
-import { type InfraError, InfraErrorIcon, InfraErrorTypeLabel } from './InfraErrors';
+import { InfraErrorIcon, InfraErrorTypeLabel } from './InfraErrors';
 
 function prettifyStringsArray(strings: string[], finalSeparator: string): string {
   switch (strings.length) {
@@ -301,7 +302,7 @@ const EntitySumUp: FC<
   {
     classes?: Partial<typeof DEFAULT_CLASSES>;
     status?: string;
-    error?: InfraError['information'];
+    error?: InfraError;
   } & (
     | { entity: EditorEntity; id?: undefined; objType?: undefined }
     | { id: string; objType: EditoastType; entity?: undefined }

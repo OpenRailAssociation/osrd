@@ -2,11 +2,11 @@ import React, { type FC } from 'react';
 
 import { useTranslation } from 'react-i18next';
 
+import type { InfraError } from 'common/api/osrdEditoastApi';
 import { Modal } from 'common/BootstrapSNCF/ModalSNCF';
 import { useInfraID } from 'common/osrdContext';
 
 import InfraErrorsList from './InfraErrorsList';
-import type { InfraError } from './types';
 
 interface InfraErrorsModalProps {
   onErrorClick: (infraId: number, item: InfraError) => void | Promise<void>;
