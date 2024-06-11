@@ -38,19 +38,19 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['documents'],
       }),
-      deleteDocumentsByDocumentKey: build.mutation<
-        DeleteDocumentsByDocumentKeyApiResponse,
-        DeleteDocumentsByDocumentKeyApiArg
-      >({
-        query: (queryArg) => ({ url: `/documents/${queryArg.documentKey}/`, method: 'DELETE' }),
-        invalidatesTags: ['documents'],
-      }),
       getDocumentsByDocumentKey: build.query<
         GetDocumentsByDocumentKeyApiResponse,
         GetDocumentsByDocumentKeyApiArg
       >({
-        query: (queryArg) => ({ url: `/documents/${queryArg.documentKey}/` }),
+        query: (queryArg) => ({ url: `/documents/${queryArg.documentKey}` }),
         providesTags: ['documents'],
+      }),
+      deleteDocumentsByDocumentKey: build.mutation<
+        DeleteDocumentsByDocumentKeyApiResponse,
+        DeleteDocumentsByDocumentKeyApiArg
+      >({
+        query: (queryArg) => ({ url: `/documents/${queryArg.documentKey}`, method: 'DELETE' }),
+        invalidatesTags: ['documents'],
       }),
       getElectricalProfileSet: build.query<
         GetElectricalProfileSetApiResponse,
@@ -71,6 +71,15 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['electrical_profiles'],
       }),
+      getElectricalProfileSetByElectricalProfileSetId: build.query<
+        GetElectricalProfileSetByElectricalProfileSetIdApiResponse,
+        GetElectricalProfileSetByElectricalProfileSetIdApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/electrical_profile_set/${queryArg.electricalProfileSetId}/`,
+        }),
+        providesTags: ['electrical_profiles'],
+      }),
       deleteElectricalProfileSetByElectricalProfileSetId: build.mutation<
         DeleteElectricalProfileSetByElectricalProfileSetIdApiResponse,
         DeleteElectricalProfileSetByElectricalProfileSetIdApiArg
@@ -80,15 +89,6 @@ const injectedRtkApi = api
           method: 'DELETE',
         }),
         invalidatesTags: ['electrical_profiles'],
-      }),
-      getElectricalProfileSetByElectricalProfileSetId: build.query<
-        GetElectricalProfileSetByElectricalProfileSetIdApiResponse,
-        GetElectricalProfileSetByElectricalProfileSetIdApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/electrical_profile_set/${queryArg.electricalProfileSetId}/`,
-        }),
-        providesTags: ['electrical_profiles'],
       }),
       getElectricalProfileSetByElectricalProfileSetIdLevelOrder: build.query<
         GetElectricalProfileSetByElectricalProfileSetIdLevelOrderApiResponse,
@@ -100,7 +100,7 @@ const injectedRtkApi = api
         providesTags: ['electrical_profiles'],
       }),
       getHealth: build.query<GetHealthApiResponse, GetHealthApiArg>({
-        query: () => ({ url: `/health/` }),
+        query: () => ({ url: `/health` }),
       }),
       getInfra: build.query<GetInfraApiResponse, GetInfraApiArg>({
         query: (queryArg) => ({
@@ -115,7 +115,7 @@ const injectedRtkApi = api
       }),
       postInfraRailjson: build.mutation<PostInfraRailjsonApiResponse, PostInfraRailjsonApiArg>({
         query: (queryArg) => ({
-          url: `/infra/railjson/`,
+          url: `/infra/railjson`,
           method: 'POST',
           body: queryArg.railJson,
           params: { name: queryArg.name, generate_data: queryArg.generateData },
@@ -124,22 +124,15 @@ const injectedRtkApi = api
       }),
       postInfraRefresh: build.mutation<PostInfraRefreshApiResponse, PostInfraRefreshApiArg>({
         query: (queryArg) => ({
-          url: `/infra/refresh/`,
+          url: `/infra/refresh`,
           method: 'POST',
           params: { force: queryArg.force, infras: queryArg.infras },
         }),
         invalidatesTags: ['infra'],
       }),
       getInfraVoltages: build.query<GetInfraVoltagesApiResponse, GetInfraVoltagesApiArg>({
-        query: () => ({ url: `/infra/voltages/` }),
+        query: () => ({ url: `/infra/voltages` }),
         providesTags: ['infra', 'rolling_stock'],
-      }),
-      deleteInfraByInfraId: build.mutation<
-        DeleteInfraByInfraIdApiResponse,
-        DeleteInfraByInfraIdApiArg
-      >({
-        query: (queryArg) => ({ url: `/infra/${queryArg.infraId}/`, method: 'DELETE' }),
-        invalidatesTags: ['infra'],
       }),
       getInfraByInfraId: build.query<GetInfraByInfraIdApiResponse, GetInfraByInfraIdApiArg>({
         query: (queryArg) => ({ url: `/infra/${queryArg.infraId}/` }),
@@ -161,11 +154,18 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['infra'],
       }),
+      deleteInfraByInfraId: build.mutation<
+        DeleteInfraByInfraIdApiResponse,
+        DeleteInfraByInfraIdApiArg
+      >({
+        query: (queryArg) => ({ url: `/infra/${queryArg.infraId}/`, method: 'DELETE' }),
+        invalidatesTags: ['infra'],
+      }),
       getInfraByInfraIdAttachedAndTrackId: build.query<
         GetInfraByInfraIdAttachedAndTrackIdApiResponse,
         GetInfraByInfraIdAttachedAndTrackIdApiArg
       >({
-        query: (queryArg) => ({ url: `/infra/${queryArg.infraId}/attached/${queryArg.trackId}/` }),
+        query: (queryArg) => ({ url: `/infra/${queryArg.infraId}/attached/${queryArg.trackId}` }),
         providesTags: ['infra'],
       }),
       getInfraByInfraIdAutoFixes: build.query<
@@ -180,7 +180,7 @@ const injectedRtkApi = api
         PostInfraByInfraIdCloneApiArg
       >({
         query: (queryArg) => ({
-          url: `/infra/${queryArg.infraId}/clone/`,
+          url: `/infra/${queryArg.infraId}/clone`,
           method: 'POST',
           params: { name: queryArg.name },
         }),
@@ -191,7 +191,7 @@ const injectedRtkApi = api
         GetInfraByInfraIdErrorsApiArg
       >({
         query: (queryArg) => ({
-          url: `/infra/${queryArg.infraId}/errors/`,
+          url: `/infra/${queryArg.infraId}/errors`,
           params: {
             page: queryArg.page,
             page_size: queryArg.pageSize,
@@ -215,14 +215,14 @@ const injectedRtkApi = api
         PostInfraByInfraIdLoadApiResponse,
         PostInfraByInfraIdLoadApiArg
       >({
-        query: (queryArg) => ({ url: `/infra/${queryArg.infraId}/load/`, method: 'POST' }),
+        query: (queryArg) => ({ url: `/infra/${queryArg.infraId}/load`, method: 'POST' }),
         invalidatesTags: ['infra'],
       }),
       postInfraByInfraIdLock: build.mutation<
         PostInfraByInfraIdLockApiResponse,
         PostInfraByInfraIdLockApiArg
       >({
-        query: (queryArg) => ({ url: `/infra/${queryArg.infraId}/lock/`, method: 'POST' }),
+        query: (queryArg) => ({ url: `/infra/${queryArg.infraId}/lock`, method: 'POST' }),
         invalidatesTags: ['infra'],
       }),
       postInfraByInfraIdObjectsAndObjectType: build.mutation<
@@ -230,7 +230,7 @@ const injectedRtkApi = api
         PostInfraByInfraIdObjectsAndObjectTypeApiArg
       >({
         query: (queryArg) => ({
-          url: `/infra/${queryArg.infraId}/objects/${queryArg.objectType}/`,
+          url: `/infra/${queryArg.infraId}/objects/${queryArg.objectType}`,
           method: 'POST',
           body: queryArg.body,
         }),
@@ -252,7 +252,7 @@ const injectedRtkApi = api
         GetInfraByInfraIdRailjsonApiResponse,
         GetInfraByInfraIdRailjsonApiArg
       >({
-        query: (queryArg) => ({ url: `/infra/${queryArg.infraId}/railjson/` }),
+        query: (queryArg) => ({ url: `/infra/${queryArg.infraId}/railjson` }),
         providesTags: ['infra'],
       }),
       postInfraByInfraIdRoutesNodes: build.mutation<
@@ -260,7 +260,7 @@ const injectedRtkApi = api
         PostInfraByInfraIdRoutesNodesApiArg
       >({
         query: (queryArg) => ({
-          url: `/infra/${queryArg.infraId}/routes/nodes/`,
+          url: `/infra/${queryArg.infraId}/routes/nodes`,
           method: 'POST',
           body: queryArg.body,
         }),
@@ -271,7 +271,7 @@ const injectedRtkApi = api
         GetInfraByInfraIdRoutesTrackRangesApiArg
       >({
         query: (queryArg) => ({
-          url: `/infra/${queryArg.infraId}/routes/track_ranges/`,
+          url: `/infra/${queryArg.infraId}/routes/track_ranges`,
           params: { routes: queryArg.routes },
         }),
         providesTags: ['infra', 'routes'],
@@ -281,7 +281,7 @@ const injectedRtkApi = api
         GetInfraByInfraIdRoutesAndWaypointTypeWaypointIdApiArg
       >({
         query: (queryArg) => ({
-          url: `/infra/${queryArg.infraId}/routes/${queryArg.waypointType}/${queryArg.waypointId}/`,
+          url: `/infra/${queryArg.infraId}/routes/${queryArg.waypointType}/${queryArg.waypointId}`,
         }),
         providesTags: ['infra', 'routes'],
       }),
@@ -289,7 +289,7 @@ const injectedRtkApi = api
         GetInfraByInfraIdSpeedLimitTagsApiResponse,
         GetInfraByInfraIdSpeedLimitTagsApiArg
       >({
-        query: (queryArg) => ({ url: `/infra/${queryArg.infraId}/speed_limit_tags/` }),
+        query: (queryArg) => ({ url: `/infra/${queryArg.infraId}/speed_limit_tags` }),
         providesTags: ['infra'],
       }),
       postInfraByInfraIdSplitTrackSection: build.mutation<
@@ -297,7 +297,7 @@ const injectedRtkApi = api
         PostInfraByInfraIdSplitTrackSectionApiArg
       >({
         query: (queryArg) => ({
-          url: `/infra/${queryArg.infraId}/split_track_section/`,
+          url: `/infra/${queryArg.infraId}/split_track_section`,
           method: 'POST',
           body: queryArg.trackOffset,
         }),
@@ -307,14 +307,14 @@ const injectedRtkApi = api
         GetInfraByInfraIdSwitchTypesApiResponse,
         GetInfraByInfraIdSwitchTypesApiArg
       >({
-        query: (queryArg) => ({ url: `/infra/${queryArg.infraId}/switch_types/` }),
+        query: (queryArg) => ({ url: `/infra/${queryArg.infraId}/switch_types` }),
         providesTags: ['infra'],
       }),
       postInfraByInfraIdUnlock: build.mutation<
         PostInfraByInfraIdUnlockApiResponse,
         PostInfraByInfraIdUnlockApiArg
       >({
-        query: (queryArg) => ({ url: `/infra/${queryArg.infraId}/unlock/`, method: 'POST' }),
+        query: (queryArg) => ({ url: `/infra/${queryArg.infraId}/unlock`, method: 'POST' }),
         invalidatesTags: ['infra'],
       }),
       getInfraByInfraIdVoltages: build.query<
@@ -322,7 +322,7 @@ const injectedRtkApi = api
         GetInfraByInfraIdVoltagesApiArg
       >({
         query: (queryArg) => ({
-          url: `/infra/${queryArg.infraId}/voltages/`,
+          url: `/infra/${queryArg.infraId}/voltages`,
           params: { include_rolling_stock_modes: queryArg.includeRollingStockModes },
         }),
         providesTags: ['infra'],
@@ -379,13 +379,6 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['pathfinding'],
       }),
-      deletePathfindingByPathfindingId: build.mutation<
-        DeletePathfindingByPathfindingIdApiResponse,
-        DeletePathfindingByPathfindingIdApiArg
-      >({
-        query: (queryArg) => ({ url: `/pathfinding/${queryArg.pathfindingId}/`, method: 'DELETE' }),
-        invalidatesTags: ['pathfinding'],
-      }),
       getPathfindingByPathfindingId: build.query<
         GetPathfindingByPathfindingIdApiResponse,
         GetPathfindingByPathfindingIdApiArg
@@ -404,12 +397,19 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['pathfinding'],
       }),
+      deletePathfindingByPathfindingId: build.mutation<
+        DeletePathfindingByPathfindingIdApiResponse,
+        DeletePathfindingByPathfindingIdApiArg
+      >({
+        query: (queryArg) => ({ url: `/pathfinding/${queryArg.pathfindingId}/`, method: 'DELETE' }),
+        invalidatesTags: ['pathfinding'],
+      }),
       getPathfindingByPathfindingIdElectricalProfiles: build.query<
         GetPathfindingByPathfindingIdElectricalProfilesApiResponse,
         GetPathfindingByPathfindingIdElectricalProfilesApiArg
       >({
         query: (queryArg) => ({
-          url: `/pathfinding/${queryArg.pathfindingId}/electrical_profiles/`,
+          url: `/pathfinding/${queryArg.pathfindingId}/electrical_profiles`,
           params: {
             rolling_stock_id: queryArg.rollingStockId,
             electrical_profile_set_id: queryArg.electricalProfileSetId,
@@ -421,7 +421,7 @@ const injectedRtkApi = api
         GetPathfindingByPathfindingIdElectrificationsApiResponse,
         GetPathfindingByPathfindingIdElectrificationsApiArg
       >({
-        query: (queryArg) => ({ url: `/pathfinding/${queryArg.pathfindingId}/electrifications/` }),
+        query: (queryArg) => ({ url: `/pathfinding/${queryArg.pathfindingId}/electrifications` }),
         providesTags: ['infra'],
       }),
       getProjects: build.query<GetProjectsApiResponse, GetProjectsApiArg>({
@@ -443,19 +443,19 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['projects'],
       }),
-      deleteProjectsByProjectId: build.mutation<
-        DeleteProjectsByProjectIdApiResponse,
-        DeleteProjectsByProjectIdApiArg
-      >({
-        query: (queryArg) => ({ url: `/projects/${queryArg.projectId}/`, method: 'DELETE' }),
-        invalidatesTags: ['projects'],
-      }),
       getProjectsByProjectId: build.query<
         GetProjectsByProjectIdApiResponse,
         GetProjectsByProjectIdApiArg
       >({
         query: (queryArg) => ({ url: `/projects/${queryArg.projectId}/` }),
         providesTags: ['projects'],
+      }),
+      deleteProjectsByProjectId: build.mutation<
+        DeleteProjectsByProjectIdApiResponse,
+        DeleteProjectsByProjectIdApiArg
+      >({
+        query: (queryArg) => ({ url: `/projects/${queryArg.projectId}/`, method: 'DELETE' }),
+        invalidatesTags: ['projects'],
       }),
       patchProjectsByProjectId: build.mutation<
         PatchProjectsByProjectIdApiResponse,
@@ -493,6 +493,15 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['studies'],
       }),
+      getProjectsByProjectIdStudiesAndStudyId: build.query<
+        GetProjectsByProjectIdStudiesAndStudyIdApiResponse,
+        GetProjectsByProjectIdStudiesAndStudyIdApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/`,
+        }),
+        providesTags: ['studies'],
+      }),
       deleteProjectsByProjectIdStudiesAndStudyId: build.mutation<
         DeleteProjectsByProjectIdStudiesAndStudyIdApiResponse,
         DeleteProjectsByProjectIdStudiesAndStudyIdApiArg
@@ -502,15 +511,6 @@ const injectedRtkApi = api
           method: 'DELETE',
         }),
         invalidatesTags: ['studies'],
-      }),
-      getProjectsByProjectIdStudiesAndStudyId: build.query<
-        GetProjectsByProjectIdStudiesAndStudyIdApiResponse,
-        GetProjectsByProjectIdStudiesAndStudyIdApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/`,
-        }),
-        providesTags: ['studies'],
       }),
       patchProjectsByProjectIdStudiesAndStudyId: build.mutation<
         PatchProjectsByProjectIdStudiesAndStudyIdApiResponse,
@@ -548,6 +548,15 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['scenarios'],
       }),
+      getProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId: build.query<
+        GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiResponse,
+        GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/${queryArg.scenarioId}/`,
+        }),
+        providesTags: ['scenarios'],
+      }),
       deleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId: build.mutation<
         DeleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiResponse,
         DeleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg
@@ -557,15 +566,6 @@ const injectedRtkApi = api
           method: 'DELETE',
         }),
         invalidatesTags: ['scenarios'],
-      }),
-      getProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId: build.query<
-        GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiResponse,
-        GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/${queryArg.scenarioId}/`,
-        }),
-        providesTags: ['scenarios'],
       }),
       patchProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId: build.mutation<
         PatchProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiResponse,
@@ -601,6 +601,13 @@ const injectedRtkApi = api
         query: () => ({ url: `/rolling_stock/power_restrictions/` }),
         providesTags: ['rolling_stock'],
       }),
+      getRollingStockByRollingStockId: build.query<
+        GetRollingStockByRollingStockIdApiResponse,
+        GetRollingStockByRollingStockIdApiArg
+      >({
+        query: (queryArg) => ({ url: `/rolling_stock/${queryArg.rollingStockId}/` }),
+        providesTags: ['rolling_stock'],
+      }),
       deleteRollingStockByRollingStockId: build.mutation<
         DeleteRollingStockByRollingStockIdApiResponse,
         DeleteRollingStockByRollingStockIdApiArg
@@ -611,13 +618,6 @@ const injectedRtkApi = api
           params: { force: queryArg.force },
         }),
         invalidatesTags: ['rolling_stock'],
-      }),
-      getRollingStockByRollingStockId: build.query<
-        GetRollingStockByRollingStockIdApiResponse,
-        GetRollingStockByRollingStockIdApiArg
-      >({
-        query: (queryArg) => ({ url: `/rolling_stock/${queryArg.rollingStockId}/` }),
-        providesTags: ['rolling_stock'],
       }),
       patchRollingStockByRollingStockId: build.mutation<
         PatchRollingStockByRollingStockIdApiResponse,
@@ -654,7 +654,7 @@ const injectedRtkApi = api
       }),
       postSearch: build.mutation<PostSearchApiResponse, PostSearchApiArg>({
         query: (queryArg) => ({
-          url: `/search/`,
+          url: `/search`,
           method: 'POST',
           body: queryArg.searchPayload,
           params: { page: queryArg.page, page_size: queryArg.pageSize },
@@ -675,16 +675,14 @@ const injectedRtkApi = api
         GetSpritesSignalingSystemsApiResponse,
         GetSpritesSignalingSystemsApiArg
       >({
-        query: () => ({ url: `/sprites/signaling_systems/` }),
+        query: () => ({ url: `/sprites/signaling_systems` }),
         providesTags: ['sprites'],
       }),
       getSpritesBySignalingSystemAndFileName: build.query<
         GetSpritesBySignalingSystemAndFileNameApiResponse,
         GetSpritesBySignalingSystemAndFileNameApiArg
       >({
-        query: (queryArg) => ({
-          url: `/sprites/${queryArg.signalingSystem}/${queryArg.fileName}/`,
-        }),
+        query: (queryArg) => ({ url: `/sprites/${queryArg.signalingSystem}/${queryArg.fileName}` }),
         providesTags: ['sprites'],
       }),
       postStdcm: build.mutation<PostStdcmApiResponse, PostStdcmApiArg>({
@@ -707,7 +705,7 @@ const injectedRtkApi = api
         GetTimetableByIdConflictsApiResponse,
         GetTimetableByIdConflictsApiArg
       >({
-        query: (queryArg) => ({ url: `/timetable/${queryArg.id}/conflicts/` }),
+        query: (queryArg) => ({ url: `/timetable/${queryArg.id}/conflicts` }),
         providesTags: ['timetable'],
       }),
       deleteTrainSchedule: build.mutation<
@@ -726,7 +724,7 @@ const injectedRtkApi = api
         PostTrainScheduleResultsApiArg
       >({
         query: (queryArg) => ({
-          url: `/train_schedule/results/`,
+          url: `/train_schedule/results`,
           method: 'POST',
           body: queryArg.body,
         }),
@@ -737,18 +735,11 @@ const injectedRtkApi = api
         PostTrainScheduleStandaloneSimulationApiArg
       >({
         query: (queryArg) => ({
-          url: `/train_schedule/standalone_simulation/`,
+          url: `/train_schedule/standalone_simulation`,
           method: 'POST',
           body: queryArg.body,
         }),
         invalidatesTags: ['train_schedule'],
-      }),
-      deleteTrainScheduleById: build.mutation<
-        DeleteTrainScheduleByIdApiResponse,
-        DeleteTrainScheduleByIdApiArg
-      >({
-        query: (queryArg) => ({ url: `/train_schedule/${queryArg.id}/`, method: 'DELETE' }),
-        invalidatesTags: ['train_schedule', 'timetable'],
       }),
       getTrainScheduleById: build.query<
         GetTrainScheduleByIdApiResponse,
@@ -757,12 +748,19 @@ const injectedRtkApi = api
         query: (queryArg) => ({ url: `/train_schedule/${queryArg.id}/` }),
         providesTags: ['train_schedule'],
       }),
+      deleteTrainScheduleById: build.mutation<
+        DeleteTrainScheduleByIdApiResponse,
+        DeleteTrainScheduleByIdApiArg
+      >({
+        query: (queryArg) => ({ url: `/train_schedule/${queryArg.id}/`, method: 'DELETE' }),
+        invalidatesTags: ['train_schedule', 'timetable'],
+      }),
       getTrainScheduleByIdResult: build.query<
         GetTrainScheduleByIdResultApiResponse,
         GetTrainScheduleByIdResultApiArg
       >({
         query: (queryArg) => ({
-          url: `/train_schedule/${queryArg.id}/result/`,
+          url: `/train_schedule/${queryArg.id}/result`,
           params: { path_id: queryArg.pathId },
         }),
         providesTags: ['train_schedule'],
@@ -815,6 +813,15 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['scenariosv2'],
       }),
+      getV2ProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId: build.query<
+        GetV2ProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiResponse,
+        GetV2ProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/v2/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/${queryArg.scenarioId}/`,
+        }),
+        providesTags: ['scenariosv2'],
+      }),
       deleteV2ProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId: build.mutation<
         DeleteV2ProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiResponse,
         DeleteV2ProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg
@@ -824,15 +831,6 @@ const injectedRtkApi = api
           method: 'DELETE',
         }),
         invalidatesTags: ['scenariosv2'],
-      }),
-      getV2ProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId: build.query<
-        GetV2ProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiResponse,
-        GetV2ProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/v2/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/${queryArg.scenarioId}/`,
-        }),
-        providesTags: ['scenariosv2'],
       }),
       patchV2ProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId: build.mutation<
         PatchV2ProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiResponse,
@@ -860,13 +858,6 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['timetablev2'],
       }),
-      deleteV2TimetableById: build.mutation<
-        DeleteV2TimetableByIdApiResponse,
-        DeleteV2TimetableByIdApiArg
-      >({
-        query: (queryArg) => ({ url: `/v2/timetable/${queryArg.id}/`, method: 'DELETE' }),
-        invalidatesTags: ['timetablev2'],
-      }),
       getV2TimetableById: build.query<GetV2TimetableByIdApiResponse, GetV2TimetableByIdApiArg>({
         query: (queryArg) => ({ url: `/v2/timetable/${queryArg.id}/` }),
         providesTags: ['timetablev2'],
@@ -879,12 +870,19 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['timetablev2'],
       }),
+      deleteV2TimetableById: build.mutation<
+        DeleteV2TimetableByIdApiResponse,
+        DeleteV2TimetableByIdApiArg
+      >({
+        query: (queryArg) => ({ url: `/v2/timetable/${queryArg.id}/`, method: 'DELETE' }),
+        invalidatesTags: ['timetablev2'],
+      }),
       getV2TimetableByIdConflicts: build.query<
         GetV2TimetableByIdConflictsApiResponse,
         GetV2TimetableByIdConflictsApiArg
       >({
         query: (queryArg) => ({
-          url: `/v2/timetable/${queryArg.id}/conflicts/`,
+          url: `/v2/timetable/${queryArg.id}/conflicts`,
           params: { infra_id: queryArg.infraId },
         }),
         providesTags: ['timetablev2'],
@@ -906,11 +904,15 @@ const injectedRtkApi = api
         PostV2TimetableByIdTrainScheduleApiArg
       >({
         query: (queryArg) => ({
-          url: `/v2/timetable/${queryArg.id}/train_schedule/`,
+          url: `/v2/timetable/${queryArg.id}/train_schedule`,
           method: 'POST',
           body: queryArg.body,
         }),
         invalidatesTags: ['timetablev2', 'train_schedulev2'],
+      }),
+      getV2TrainSchedule: build.query<GetV2TrainScheduleApiResponse, GetV2TrainScheduleApiArg>({
+        query: (queryArg) => ({ url: `/v2/train_schedule/`, params: { ids: queryArg.ids } }),
+        providesTags: ['train_schedulev2'],
       }),
       deleteV2TrainSchedule: build.mutation<
         DeleteV2TrainScheduleApiResponse,
@@ -923,16 +925,12 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['timetablev2', 'train_schedulev2'],
       }),
-      getV2TrainSchedule: build.query<GetV2TrainScheduleApiResponse, GetV2TrainScheduleApiArg>({
-        query: (queryArg) => ({ url: `/v2/train_schedule/`, params: { ids: queryArg.ids } }),
-        providesTags: ['train_schedulev2'],
-      }),
       postV2TrainScheduleProjectPath: build.mutation<
         PostV2TrainScheduleProjectPathApiResponse,
         PostV2TrainScheduleProjectPathApiArg
       >({
         query: (queryArg) => ({
-          url: `/v2/train_schedule/project_path/`,
+          url: `/v2/train_schedule/project_path`,
           method: 'POST',
           body: queryArg.projectPathInput,
           params: { infra: queryArg.infra, ids: queryArg.ids },
@@ -944,7 +942,7 @@ const injectedRtkApi = api
         GetV2TrainScheduleSimulationSummaryApiArg
       >({
         query: (queryArg) => ({
-          url: `/v2/train_schedule/simulation_summary/`,
+          url: `/v2/train_schedule/simulation_summary`,
           params: { infra: queryArg.infra, ids: queryArg.ids },
         }),
         providesTags: ['train_schedulev2'],
@@ -982,16 +980,16 @@ const injectedRtkApi = api
         GetV2TrainScheduleByIdSimulationApiArg
       >({
         query: (queryArg) => ({
-          url: `/v2/train_schedule/${queryArg.id}/simulation/`,
+          url: `/v2/train_schedule/${queryArg.id}/simulation`,
           params: { infra_id: queryArg.infraId },
         }),
         providesTags: ['train_schedulev2'],
       }),
       getVersion: build.query<GetVersionApiResponse, GetVersionApiArg>({
-        query: () => ({ url: `/version/` }),
+        query: () => ({ url: `/version` }),
       }),
       getVersionCore: build.query<GetVersionCoreApiResponse, GetVersionCoreApiArg>({
-        query: () => ({ url: `/version/core/` }),
+        query: () => ({ url: `/version/core` }),
       }),
       postWorkSchedules: build.mutation<PostWorkSchedulesApiResponse, PostWorkSchedulesApiArg>({
         query: (queryArg) => ({
@@ -1012,15 +1010,15 @@ export type PostDocumentsApiArg = {
   contentType: string;
   body: Blob;
 };
-export type DeleteDocumentsByDocumentKeyApiResponse =
-  /** status 204 The document was deleted */ void;
-export type DeleteDocumentsByDocumentKeyApiArg = {
-  /** The document's key */
-  documentKey: number;
-};
 export type GetDocumentsByDocumentKeyApiResponse =
   /** status 200 The document's binary content */ Blob;
 export type GetDocumentsByDocumentKeyApiArg = {
+  /** The document's key */
+  documentKey: number;
+};
+export type DeleteDocumentsByDocumentKeyApiResponse =
+  /** status 204 The document was deleted */ void;
+export type DeleteDocumentsByDocumentKeyApiArg = {
   /** The document's key */
   documentKey: number;
 };
@@ -1033,14 +1031,14 @@ export type PostElectricalProfileSetApiArg = {
   name: string;
   electricalProfileSetData: ElectricalProfileSetData;
 };
-export type DeleteElectricalProfileSetByElectricalProfileSetIdApiResponse =
-  /** status 204 The electrical profile was deleted successfully */ void;
-export type DeleteElectricalProfileSetByElectricalProfileSetIdApiArg = {
-  electricalProfileSetId: number;
-};
 export type GetElectricalProfileSetByElectricalProfileSetIdApiResponse =
   /** status 200 The list of electrical profiles in the set */ ElectricalProfileSetData;
 export type GetElectricalProfileSetByElectricalProfileSetIdApiArg = {
+  electricalProfileSetId: number;
+};
+export type DeleteElectricalProfileSetByElectricalProfileSetIdApiResponse =
+  /** status 204 The electrical profile was deleted successfully */ void;
+export type DeleteElectricalProfileSetByElectricalProfileSetIdApiArg = {
   electricalProfileSetId: number;
 };
 export type GetElectricalProfileSetByElectricalProfileSetIdLevelOrderApiResponse =
@@ -1089,11 +1087,6 @@ export type PostInfraRefreshApiArg = {
 };
 export type GetInfraVoltagesApiResponse = /** status 200 Voltages list */ string[];
 export type GetInfraVoltagesApiArg = void;
-export type DeleteInfraByInfraIdApiResponse = unknown;
-export type DeleteInfraByInfraIdApiArg = {
-  /** An existing infra ID */
-  infraId: number;
-};
 export type GetInfraByInfraIdApiResponse = /** status 200 The infra */ InfraWithState;
 export type GetInfraByInfraIdApiArg = {
   /** An existing infra ID */
@@ -1114,6 +1107,11 @@ export type PutInfraByInfraIdApiArg = {
     /** The new name to give the infra */
     name: string;
   };
+};
+export type DeleteInfraByInfraIdApiResponse = unknown;
+export type DeleteInfraByInfraIdApiArg = {
+  /** An existing infra ID */
+  infraId: number;
 };
 export type GetInfraByInfraIdAttachedAndTrackIdApiResponse =
   /** status 200 All objects attached to the given track (arranged by types) */ {
@@ -1321,11 +1319,6 @@ export type PostPathfindingApiResponse = /** status 201 The created path */ Path
 export type PostPathfindingApiArg = {
   pathfindingRequest: PathfindingRequest;
 };
-export type DeletePathfindingByPathfindingIdApiResponse = unknown;
-export type DeletePathfindingByPathfindingIdApiArg = {
-  /** A stored path ID */
-  pathfindingId: number;
-};
 export type GetPathfindingByPathfindingIdApiResponse =
   /** status 200 The requested path */ PathResponse;
 export type GetPathfindingByPathfindingIdApiArg = {
@@ -1338,6 +1331,11 @@ export type PutPathfindingByPathfindingIdApiArg = {
   /** A stored path ID */
   pathfindingId: number;
   pathfindingRequest: PathfindingRequest;
+};
+export type DeletePathfindingByPathfindingIdApiResponse = unknown;
+export type DeletePathfindingByPathfindingIdApiArg = {
+  /** A stored path ID */
+  pathfindingId: number;
 };
 export type GetPathfindingByPathfindingIdElectricalProfilesApiResponse =
   /** status 200  */ ProfilesOnPathResponse;
@@ -1365,15 +1363,15 @@ export type PostProjectsApiResponse = /** status 201 The created project */ Proj
 export type PostProjectsApiArg = {
   projectCreateForm: ProjectCreateForm;
 };
-export type DeleteProjectsByProjectIdApiResponse =
-  /** status 204 The project was deleted successfully */ void;
-export type DeleteProjectsByProjectIdApiArg = {
-  /** The id of a project */
-  projectId: number;
-};
 export type GetProjectsByProjectIdApiResponse =
   /** status 200 The requested project */ ProjectWithStudies;
 export type GetProjectsByProjectIdApiArg = {
+  /** The id of a project */
+  projectId: number;
+};
+export type DeleteProjectsByProjectIdApiResponse =
+  /** status 204 The project was deleted successfully */ void;
+export type DeleteProjectsByProjectIdApiArg = {
   /** The id of a project */
   projectId: number;
 };
@@ -1403,16 +1401,16 @@ export type PostProjectsByProjectIdStudiesApiArg = {
   projectId: number;
   studyCreateForm: StudyCreateForm;
 };
-export type DeleteProjectsByProjectIdStudiesAndStudyIdApiResponse =
-  /** status 204 The study was deleted successfully */ void;
-export type DeleteProjectsByProjectIdStudiesAndStudyIdApiArg = {
+export type GetProjectsByProjectIdStudiesAndStudyIdApiResponse =
+  /** status 200 The requested study */ StudyResponse;
+export type GetProjectsByProjectIdStudiesAndStudyIdApiArg = {
   /** The id of a project */
   projectId: number;
   studyId: number;
 };
-export type GetProjectsByProjectIdStudiesAndStudyIdApiResponse =
-  /** status 200 The requested study */ StudyResponse;
-export type GetProjectsByProjectIdStudiesAndStudyIdApiArg = {
+export type DeleteProjectsByProjectIdStudiesAndStudyIdApiResponse =
+  /** status 204 The study was deleted successfully */ void;
+export type DeleteProjectsByProjectIdStudiesAndStudyIdApiArg = {
   /** The id of a project */
   projectId: number;
   studyId: number;
@@ -1444,17 +1442,17 @@ export type PostProjectsByProjectIdStudiesAndStudyIdScenariosApiArg = {
   studyId: number;
   scenarioCreateForm: ScenarioCreateForm;
 };
-export type DeleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiResponse =
-  /** status 204 The scenario was deleted successfully */ void;
-export type DeleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg = {
+export type GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiResponse =
+  /** status 200 The requested scenario */ ScenarioResponse;
+export type GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg = {
   /** The id of a project */
   projectId: number;
   studyId: number;
   scenarioId: number;
 };
-export type GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiResponse =
-  /** status 200 The requested scenario */ ScenarioResponse;
-export type GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg = {
+export type DeleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiResponse =
+  /** status 204 The scenario was deleted successfully */ void;
+export type DeleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg = {
   /** The id of a project */
   projectId: number;
   studyId: number;
@@ -1482,17 +1480,17 @@ export type GetRollingStockNameByRollingStockNameApiArg = {
 export type GetRollingStockPowerRestrictionsApiResponse =
   /** status 200 Retrieve the power restrictions list */ string[];
 export type GetRollingStockPowerRestrictionsApiArg = void;
+export type GetRollingStockByRollingStockIdApiResponse =
+  /** status 200 The requested rolling stock */ RollingStockWithLiveries;
+export type GetRollingStockByRollingStockIdApiArg = {
+  rollingStockId: number;
+};
 export type DeleteRollingStockByRollingStockIdApiResponse =
   /** status 204 The rolling stock was deleted successfully */ void;
 export type DeleteRollingStockByRollingStockIdApiArg = {
   rollingStockId: number;
   /** force the deletion even if it’s used */
   force?: boolean;
-};
-export type GetRollingStockByRollingStockIdApiResponse =
-  /** status 200 The requested rolling stock */ RollingStockWithLiveries;
-export type GetRollingStockByRollingStockIdApiArg = {
-  rollingStockId: number;
 };
 export type PatchRollingStockByRollingStockIdApiResponse =
   /** status 200 The created rolling stock */ RollingStockWithLiveries;
@@ -1614,13 +1612,13 @@ export type PostTrainScheduleStandaloneSimulationApiArg = {
     timetable: number;
   };
 };
-export type DeleteTrainScheduleByIdApiResponse = unknown;
-export type DeleteTrainScheduleByIdApiArg = {
+export type GetTrainScheduleByIdApiResponse = /** status 200 The train schedule */ TrainSchedule;
+export type GetTrainScheduleByIdApiArg = {
   /** A train schedule ID */
   id: number;
 };
-export type GetTrainScheduleByIdApiResponse = /** status 200 The train schedule */ TrainSchedule;
-export type GetTrainScheduleByIdApiArg = {
+export type DeleteTrainScheduleByIdApiResponse = unknown;
+export type DeleteTrainScheduleByIdApiArg = {
   /** A train schedule ID */
   id: number;
 };
@@ -1667,17 +1665,17 @@ export type PostV2ProjectsByProjectIdStudiesAndStudyIdScenariosApiArg = {
   studyId: number;
   scenarioCreateFormV2: ScenarioCreateFormV2;
 };
-export type DeleteV2ProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiResponse =
-  /** status 204 The scenario was deleted successfully */ void;
-export type DeleteV2ProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg = {
+export type GetV2ProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiResponse =
+  /** status 200 The requested scenario */ ScenarioResponseV2;
+export type GetV2ProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg = {
   /** The id of a project */
   projectId: number;
   studyId: number;
   scenarioId: number;
 };
-export type GetV2ProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiResponse =
-  /** status 200 The requested scenario */ ScenarioResponseV2;
-export type GetV2ProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg = {
+export type DeleteV2ProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiResponse =
+  /** status 204 The scenario was deleted successfully */ void;
+export type DeleteV2ProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg = {
   /** The id of a project */
   projectId: number;
   studyId: number;
@@ -1704,11 +1702,6 @@ export type PostV2TimetableApiResponse =
 export type PostV2TimetableApiArg = {
   timetableForm: TimetableForm;
 };
-export type DeleteV2TimetableByIdApiResponse = unknown;
-export type DeleteV2TimetableByIdApiArg = {
-  /** A timetable ID */
-  id: number;
-};
 export type GetV2TimetableByIdApiResponse =
   /** status 200 Timetable with train schedules ids */ TimetableDetailedResult;
 export type GetV2TimetableByIdApiArg = {
@@ -1721,6 +1714,11 @@ export type PutV2TimetableByIdApiArg = {
   /** A timetable ID */
   id: number;
   timetableForm: TimetableForm;
+};
+export type DeleteV2TimetableByIdApiResponse = unknown;
+export type DeleteV2TimetableByIdApiArg = {
+  /** A timetable ID */
+  id: number;
 };
 export type GetV2TimetableByIdConflictsApiResponse =
   /** status 200 List of conflict */ ConflictV2[];
@@ -1781,17 +1779,17 @@ export type PostV2TimetableByIdTrainScheduleApiArg = {
   id: number;
   body: TrainScheduleBase[];
 };
-export type DeleteV2TrainScheduleApiResponse = unknown;
-export type DeleteV2TrainScheduleApiArg = {
-  body: {
-    ids: number[];
-  };
-};
 export type GetV2TrainScheduleApiResponse =
   /** status 200 Retrieve a list of train schedule */ TrainScheduleResult[];
 export type GetV2TrainScheduleApiArg = {
   /** Ids of train schedule */
   ids: number[];
+};
+export type DeleteV2TrainScheduleApiResponse = unknown;
+export type DeleteV2TrainScheduleApiArg = {
+  body: {
+    ids: number[];
+  };
 };
 export type PostV2TrainScheduleProjectPathApiResponse = /** status 200 Project Path Output */ {
   [key: string]: ProjectPathTrainResult;
@@ -2117,32 +2115,12 @@ export type Curve = {
   position: number;
   radius: number;
 };
-export type Point3D = number[];
-export type Point = {
-  coordinates: Point3D;
-  type: 'Point';
-};
-export type LineString = {
-  coordinates: Point3D[];
+export type GeoJsonPointValue = number[];
+export type GeoJsonLineStringValue = GeoJsonPointValue[];
+export type GeoJsonLineString = {
+  coordinates: GeoJsonLineStringValue;
   type: 'LineString';
 };
-export type Polygon = {
-  coordinates: Point3D[][];
-  type: 'Polygon';
-};
-export type MultiPoint = {
-  coordinates: Point3D[];
-  type: 'MultiPoint';
-};
-export type MultiLineString = {
-  coordinates: Point3D[][];
-  type: 'MultiLineString';
-};
-export type MultiPolygon = {
-  coordinates: Point3D[][][];
-  type: 'MultiPolygon';
-};
-export type Geometry = Point | LineString | Polygon | MultiPoint | MultiLineString | MultiPolygon;
 export type LoadingGaugeType =
   | 'G1'
   | 'G2'
@@ -2176,7 +2154,7 @@ export type TrackSection = {
       name: string;
     } | null;
   };
-  geo: Geometry;
+  geo: GeoJsonLineString;
   id: string;
   length: number;
   loading_gauge_limits?: LoadingGaugeLimit[];
@@ -2438,7 +2416,6 @@ export type InfraErrorTypeLabel =
   | 'unknown_port_name'
   | 'unused_port';
 export type BoundingBox = (number & number)[][];
-export type GeoJsonPointValue = number[];
 export type GeoJsonPoint = {
   coordinates: GeoJsonPointValue;
   type: 'Point';
@@ -2447,11 +2424,6 @@ export type GeoJsonMultiPointValue = GeoJsonPointValue[];
 export type GeoJsonMultiPoint = {
   coordinates: GeoJsonMultiPointValue;
   type: 'MultiPoint';
-};
-export type GeoJsonLineStringValue = GeoJsonPointValue[];
-export type GeoJsonLineString = {
-  coordinates: GeoJsonLineStringValue;
-  type: 'LineString';
 };
 export type GeoJsonMultiLineStringValue = GeoJsonLineStringValue[];
 export type GeoJsonMultiLineString = {
@@ -3197,7 +3169,11 @@ export type SingleSimulationRequest = {
 };
 export type PathfindingPayload = {
   path_waypoints: PathWaypoint[];
-  route_paths: RoutePath[];
+  route_paths: {
+    route: string;
+    signaling_type: string;
+    track_sections: DirectionalTrackRange[];
+  }[];
 };
 export type GetCurvePoint = {
   position: number;

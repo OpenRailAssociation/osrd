@@ -26,7 +26,6 @@ editoast_common::schemas! {
     Slope,
     Curve,
     PathfindingPayload,
-    RoutePath,
     PathWaypoint,
 }
 
@@ -151,6 +150,7 @@ pub struct Curve {
 #[derive(Debug, Clone, PartialEq, Derivative, Deserialize, Serialize, ToSchema)]
 #[derivative(Default)]
 pub struct PathfindingPayload {
+    #[schema(inline)]
     pub route_paths: Vec<RoutePath>,
     pub path_waypoints: Vec<PathWaypoint>,
 }
