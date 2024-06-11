@@ -1,7 +1,7 @@
 import { point, lineString, featureCollection } from '@turf/helpers';
 import type { Feature, Point } from 'geojson';
 
-import type { LineString } from 'common/api/osrdEditoastApi';
+import type { GeoJsonLineString as LineString } from 'common/api/osrdEditoastApi';
 import { getTangent, getCurrentBearing, nearestPointOnLine } from 'utils/geometry';
 
 import lineNorthenLatitude from './assets/line-northern-latitude.json';

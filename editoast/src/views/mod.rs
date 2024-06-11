@@ -42,7 +42,6 @@ use utoipa::ToSchema;
 
 use self::openapi::merge_path_items;
 use self::openapi::remove_discriminator;
-use self::openapi::OpenApiMerger;
 use self::openapi::Routes;
 use crate::client::get_app_version;
 use crate::core::version::CoreVersionRequest;
@@ -111,12 +110,11 @@ editoast_common::schemas! {
 }
 
 #[derive(OpenApi)]
-#[openapi(
-    info(description = "My Api description"),
-    tags(),
-    paths(),
-    components(responses())
-)]
+#[openapi(info(
+    title = "OSRD Editoast",
+    description = "All HTTP endpoints of Editoast",
+    license(name = "LGPL", url = "https://www.gnu.org/licenses/lgpl-3.0.html"),
+))]
 pub struct OpenApiRoot;
 
 impl OpenApiRoot {
@@ -260,10 +258,7 @@ impl OpenApiRoot {
         );
     }
 
-    pub fn build_openapi() -> serde_json::Value {
-        let manual = include_str!("../../openapi_legacy.yaml").to_owned();
-        let mut openapi = OpenApiRoot::openapi();
-
+    fn insert_routes(openapi: &mut utoipa::openapi::OpenApi) {
         let routes = routes_v2();
         for (path, path_item) in routes.paths.into_flat_path_list() {
             debug!("processing {path}");
@@ -275,7 +270,9 @@ impl OpenApiRoot {
                 openapi.paths.paths.insert(path, path_item);
             }
         }
+    }
 
+    fn insert_schemas(openapi: &mut utoipa::openapi::OpenApi) {
         if openapi.components.is_none() {
             openapi.components = Some(Default::default());
         }
@@ -285,13 +282,11 @@ impl OpenApiRoot {
             .unwrap()
             .schemas
             .extend(schemas());
+    }
 
-        Self::remove_discrimators(&mut openapi);
-        Self::split_tags(&mut openapi);
-        Self::add_errors_in_schema(&mut openapi);
-
-        // Remove the operation_id that defaults to the endpoint function name
-        // so that it doesn't override the RTK methods names.
+    // Remove the operation_id that defaults to the endpoint function name
+    // so that it doesn't override the RTK methods names.
+    fn remove_operation_id(openapi: &mut utoipa::openapi::OpenApi) {
         for (_, endpoint) in openapi.paths.paths.iter_mut() {
             for (_, operation) in endpoint.operations.iter_mut() {
                 operation.operation_id = None;
@@ -305,13 +300,17 @@ impl OpenApiRoot {
                 }
             }
         }
-        let generated = openapi
-            .to_json()
-            .expect("the openapi should generate properly");
-        OpenApiMerger::new(manual, generated)
-            .smart_merge()
-            .add_trailing_slash_to_paths()
-            .finish()
+    }
+
+    pub fn build_openapi() -> utoipa::openapi::OpenApi {
+        let mut openapi = OpenApiRoot::openapi();
+        Self::insert_routes(&mut openapi);
+        Self::insert_schemas(&mut openapi);
+        Self::remove_discrimators(&mut openapi);
+        Self::split_tags(&mut openapi);
+        Self::add_errors_in_schema(&mut openapi);
+        Self::remove_operation_id(&mut openapi);
+        openapi
     }
 }
 
@@ -485,7 +484,7 @@ mod tests {
     }
 
     #[test]
-    fn openapi_merge_goes_well() {
+    fn openapi_building_goes_well() {
         let _ = OpenApiRoot::build_openapi(); // panics if something is wrong
     }
 }
