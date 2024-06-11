@@ -24,9 +24,7 @@ pub mod work_schedules;
 #[cfg(test)]
 mod test_app;
 
-use actix_web::dev::HttpServiceFactory;
 use actix_web::get;
-use actix_web::services;
 use actix_web::web::Data;
 use actix_web::web::Json;
 use diesel::sql_query;
@@ -42,7 +40,6 @@ use utoipa::ToSchema;
 
 use self::openapi::merge_path_items;
 use self::openapi::remove_discriminator;
-use self::openapi::Routes;
 use crate::client::get_app_version;
 use crate::core::version::CoreVersionRequest;
 use crate::core::AsCoreRequest;
@@ -51,62 +48,55 @@ use crate::core::{self};
 use crate::error::ErrorDefinition;
 use crate::error::Result;
 use crate::error::{self};
+use crate::generated_data;
 use crate::infra_cache::operation;
 use crate::models;
 use crate::modelsv2;
 use crate::modelsv2::DbConnectionPoolV2;
 use crate::RedisClient;
 
-// This function is only temporary while our migration to using utoipa is
-// still going
-
-fn routes_v2() -> Routes<impl HttpServiceFactory> {
-    crate::routes! {
-        (health, version, core_version),
-        (rolling_stocks::routes(), light_rolling_stocks::routes()),
-        (pathfinding::routes(), stdcm::routes(), train_schedule::routes()),
-        (projects::routes(),timetable::routes(), work_schedules::routes()),
-        documents::routes(),
-        sprites::routes(),
-        search::routes(),
-        electrical_profiles::routes(),
-        layers::routes(),
-        infra::routes(),
-        single_simulation::routes(),
-        v2::routes()
-    }
-    routes()
-}
-
-pub fn routes() -> impl HttpServiceFactory {
-    services![infra::infra_routes(), routes_v2(),]
+crate::routes! {
+    (health, version, core_version),
+    (rolling_stocks::routes(), light_rolling_stocks::routes()),
+    (pathfinding::routes(), stdcm::routes(), train_schedule::routes()),
+    (projects::routes(),timetable::routes(), work_schedules::routes()),
+    documents::routes(),
+    sprites::routes(),
+    search::routes(),
+    electrical_profiles::routes(),
+    layers::routes(),
+    infra::routes(),
+    single_simulation::routes(),
+    v2::routes()
 }
 
 editoast_common::schemas! {
-    error::schemas(),
+    Version,
+
+    editoast_common::schemas(),
+    editoast_schemas::schemas(),
     models::schemas(),
     modelsv2::schemas(),
     core::schemas(),
-    Version,
-    pagination::schemas(),
-    timetable::schemas(),
+
     documents::schemas(),
-    pathfinding::schemas(),
-    operational_studies::schemas(),
-    projects::schemas(),
-    search::schemas(),
-    train_schedule::schemas(),
-    rolling_stocks::schemas(),
-    light_rolling_stocks::schemas(),
     electrical_profiles::schemas(),
+    error::schemas(),
+    generated_data::schemas(),
     infra::schemas(),
+    light_rolling_stocks::schemas(),
+    operation::schemas(),
+    operational_studies::schemas(),
+    pagination::schemas(),
+    pathfinding::schemas(),
+    projects::schemas(),
+    rolling_stocks::schemas(),
+    search::schemas(),
     single_simulation::schemas(),
+    timetable::schemas(),
+    train_schedule::schemas(),
     v2::schemas(),
     work_schedules::schemas(),
-    editoast_common::schemas(),
-    operation::schemas(),
-    editoast_schemas::schemas(),
-    crate::generated_data::schemas(),
 }
 
 #[derive(OpenApi)]
@@ -259,7 +249,7 @@ impl OpenApiRoot {
     }
 
     fn insert_routes(openapi: &mut utoipa::openapi::OpenApi) {
-        let routes = routes_v2();
+        let routes = routes();
         for (path, path_item) in routes.paths.into_flat_path_list() {
             debug!("processing {path}");
             if openapi.paths.paths.contains_key(&path) {

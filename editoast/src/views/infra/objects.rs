@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 use std::collections::HashSet;
 
-use actix_web::dev::HttpServiceFactory;
 use actix_web::post;
 use actix_web::web::Data;
 use actix_web::web::Json;
@@ -20,11 +19,6 @@ use editoast_schemas::primitives::ObjectType;
 
 crate::routes! {
     get_objects,
-}
-
-/// Return `/infra/<infra_id>/objects` routes
-pub fn routes_v1() -> impl HttpServiceFactory {
-    get_objects
 }
 
 #[derive(Debug, Error, EditoastError)]

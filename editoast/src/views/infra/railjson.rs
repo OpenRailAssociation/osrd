@@ -1,8 +1,6 @@
-use actix_web::dev::HttpServiceFactory;
 use actix_web::get;
 use actix_web::http::header::ContentType;
 use actix_web::post;
-use actix_web::services;
 use actix_web::web::Data;
 use actix_web::web::Json;
 use actix_web::web::Path;
@@ -30,11 +28,6 @@ use crate::modelsv2::Infra;
 use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraIdParam;
 use editoast_schemas::primitives::ObjectType;
-
-/// Return `/infra/<infra_id>/railjson` routes
-pub fn railjson_routes() -> impl HttpServiceFactory {
-    services![get_railjson, post_railjson]
-}
 
 crate::routes! {
     get_railjson,

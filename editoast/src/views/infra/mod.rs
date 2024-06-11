@@ -9,11 +9,9 @@ mod railjson;
 mod routes;
 
 use actix_web::delete;
-use actix_web::dev::HttpServiceFactory;
 use actix_web::get;
 use actix_web::post;
 use actix_web::put;
-use actix_web::web::scope;
 use actix_web::web::Data;
 use actix_web::web::Json;
 use actix_web::web::Path;
@@ -31,8 +29,6 @@ use thiserror::Error;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
-use self::edition::edit;
-use self::edition::split_track_section;
 use super::pagination::PaginationStats;
 use super::params::List;
 use crate::core::infra_loading::InfraLoadRequest;
@@ -56,6 +52,11 @@ use editoast_schemas::infra::SwitchType;
 
 crate::routes! {
     "/infra" => {
+        list,
+        create,
+        refresh,
+        get_all_voltages,
+        railjson::routes(),
         "/{infra_id}" => {
             (
                 objects::routes(),
@@ -78,11 +79,6 @@ crate::routes! {
             get_voltages,
             get_switch_types,
         },
-        list,
-        create,
-        refresh,
-        get_all_voltages,
-        railjson::routes(),
     },
 }
 
@@ -90,44 +86,6 @@ editoast_common::schemas! {
     pathfinding::schemas(),
     InfraState,
     InfraWithState,
-}
-
-/// Return `/infra` routes
-pub fn infra_routes() -> impl HttpServiceFactory {
-    scope("/infra")
-        .service((
-            list,
-            create,
-            refresh,
-            get_all_voltages,
-            railjson::railjson_routes(),
-        ))
-        .service(
-            scope("/{infra_id}")
-                .service((
-                    get,
-                    load,
-                    delete,
-                    clone,
-                    edit,
-                    split_track_section,
-                    put,
-                    lock,
-                    unlock,
-                    get_speed_limit_tags,
-                    get_voltages,
-                    get_switch_types,
-                ))
-                .service((
-                    errors::routes_v1(),
-                    objects::routes_v1(),
-                    routes::routes(),
-                    pathfinding::routes(),
-                    attached::routes(),
-                    lines::routes(),
-                    auto_fixes::routes(),
-                )),
-        )
 }
 
 #[derive(Debug, Error, EditoastError)]
