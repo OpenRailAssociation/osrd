@@ -1,6 +1,5 @@
 use std::str::FromStr;
 
-use actix_web::dev::HttpServiceFactory;
 use actix_web::get;
 use actix_web::web::Data;
 use actix_web::web::Json as WebJson;
@@ -27,11 +26,6 @@ use super::InfraApiError;
 
 crate::routes! {
     list_errors,
-}
-
-/// Return `/infra/<infra_id>/errors` routes
-pub fn routes_v1() -> impl HttpServiceFactory {
-    list_errors
 }
 
 #[derive(Debug, Clone, Deserialize, utoipa::IntoParams)]
