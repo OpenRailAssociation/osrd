@@ -32,6 +32,7 @@ pub struct TrackSection {
     #[serde(default)]
     pub loading_gauge_limits: Vec<LoadingGaugeLimit>,
     #[derivative(Default(value = "Geometry::new(LineString(vec![]))"))]
+    #[schema(value_type = GeoJsonLineString)]
     pub geo: Geometry,
     #[serde(default)]
     #[schema(inline)]
