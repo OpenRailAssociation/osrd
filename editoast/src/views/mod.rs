@@ -3,7 +3,7 @@ pub mod electrical_profiles;
 pub mod infra;
 mod layers;
 pub mod light_rolling_stocks;
-pub mod openapi;
+mod openapi;
 pub mod operational_studies;
 pub mod pagination;
 pub mod params;
@@ -24,28 +24,24 @@ pub mod work_schedules;
 #[cfg(test)]
 mod test_app;
 
+use std::ops::DerefMut as _;
+
+pub use openapi::OpenApiRoot;
+
 use actix_web::get;
 use actix_web::web::Data;
 use actix_web::web::Json;
 use diesel::sql_query;
-use itertools::Itertools;
 use redis::cmd;
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
-use std::ops::DerefMut;
-use tracing::debug;
-use utoipa::openapi::RefOr;
-use utoipa::OpenApi;
 use utoipa::ToSchema;
 
-use self::openapi::merge_path_items;
-use self::openapi::remove_discriminator;
 use crate::client::get_app_version;
 use crate::core::version::CoreVersionRequest;
 use crate::core::AsCoreRequest;
 use crate::core::CoreClient;
 use crate::core::{self};
-use crate::error::ErrorDefinition;
 use crate::error::Result;
 use crate::error::{self};
 use crate::generated_data;
@@ -97,211 +93,6 @@ editoast_common::schemas! {
     train_schedule::schemas(),
     v2::schemas(),
     work_schedules::schemas(),
-}
-
-#[derive(OpenApi)]
-#[openapi(info(
-    title = "OSRD Editoast",
-    description = "All HTTP endpoints of Editoast",
-    license(name = "LGPL", url = "https://www.gnu.org/licenses/lgpl-3.0.html"),
-))]
-pub struct OpenApiRoot;
-
-impl OpenApiRoot {
-    // RTK doesn't support the discriminator: property everywhere utoipa
-    // puts it. So we remove it, even though utoipa is correct.
-    fn remove_discrimators(openapi: &mut utoipa::openapi::OpenApi) {
-        for (_, endpoint) in openapi.paths.paths.iter_mut() {
-            for (_, operation) in endpoint.operations.iter_mut() {
-                if let Some(request_body) = operation.request_body.as_mut() {
-                    for (_, content) in request_body.content.iter_mut() {
-                        remove_discriminator(&mut content.schema);
-                    }
-                }
-                for (_, response) in operation.responses.responses.iter_mut() {
-                    match response {
-                        RefOr::T(response) => {
-                            for (_, content) in response.content.iter_mut() {
-                                remove_discriminator(&mut content.schema);
-                            }
-                        }
-                        RefOr::Ref { .. } => panic!("editoast doesn't support response references"),
-                    }
-                }
-            }
-        }
-        if let Some(components) = openapi.components.as_mut() {
-            for component in components.schemas.values_mut() {
-                remove_discriminator(component);
-            }
-        }
-    }
-
-    // utoipa::path doesn't support multiple tags, so this is a hack to split them
-    // A PR on utoipa might be a good idea
-    // Split comma-separated tags into multiple tags
-    fn split_tags(openapi: &mut utoipa::openapi::OpenApi) {
-        for (_, endpoint) in openapi.paths.paths.iter_mut() {
-            for (_, operation) in endpoint.operations.iter_mut() {
-                operation.tags = operation.tags.as_ref().map(|tags| {
-                    tags.iter()
-                        .flat_map(|tag| tag.split(','))
-                        .map(|tag| tag.trim().to_owned())
-                        .collect()
-                });
-            }
-        }
-    }
-
-    fn error_context_to_openapi_object(error_def: &ErrorDefinition) -> utoipa::openapi::Object {
-        let mut context = utoipa::openapi::Object::new();
-        // We write openapi propertiesd by alpha order, to keep the same yml file
-        for prop_name in error_def.get_context().keys().sorted() {
-            let prop_type = &error_def.get_context()[prop_name];
-            context.properties.insert(
-                prop_name.clone(),
-                utoipa::openapi::ObjectBuilder::new()
-                    .schema_type(match prop_type.as_ref() {
-                        "bool" => utoipa::openapi::SchemaType::Boolean,
-                        "isize" => utoipa::openapi::SchemaType::Integer,
-                        "i8" => utoipa::openapi::SchemaType::Integer,
-                        "i16" => utoipa::openapi::SchemaType::Integer,
-                        "i32" => utoipa::openapi::SchemaType::Integer,
-                        "i64" => utoipa::openapi::SchemaType::Integer,
-                        "usize" => utoipa::openapi::SchemaType::Integer,
-                        "u8" => utoipa::openapi::SchemaType::Integer,
-                        "u16" => utoipa::openapi::SchemaType::Integer,
-                        "u32" => utoipa::openapi::SchemaType::Integer,
-                        "u64" => utoipa::openapi::SchemaType::Integer,
-                        "f8" => utoipa::openapi::SchemaType::Number,
-                        "f16" => utoipa::openapi::SchemaType::Number,
-                        "f32" => utoipa::openapi::SchemaType::Number,
-                        "f64" => utoipa::openapi::SchemaType::Number,
-                        "Vec" => utoipa::openapi::SchemaType::Array,
-                        "char" => utoipa::openapi::SchemaType::String,
-                        "String" => utoipa::openapi::SchemaType::String,
-                        _ => utoipa::openapi::SchemaType::Object,
-                    })
-                    .into(),
-            );
-            context.required.push(prop_name.clone());
-        }
-        context
-    }
-
-    // Add errors in openapi schema
-    fn add_errors_in_schema(openapi: &mut utoipa::openapi::OpenApi) {
-        // Building the generic editoast error
-        let mut editoast_error = utoipa::openapi::OneOf::new();
-        editoast_error.description = Some("Generated error type for Editoast".to_string());
-        editoast_error.discriminator = Some(utoipa::openapi::Discriminator::new("type"));
-
-        // Adding all error type to openapi
-        // alpha sorted by name, to keep the same file (there is no order guarantee with inventory)
-        let mut errors: Vec<&ErrorDefinition> = vec![];
-        for error_def in inventory::iter::<ErrorDefinition> {
-            errors.push(error_def);
-        }
-        errors.sort_by(|a, b| a.namespace.cmp(b.namespace).then(a.id.cmp(b.id)));
-        for error_def in errors {
-            openapi.components.as_mut().unwrap().schemas.insert(
-                error_def.get_schema_name(),
-                utoipa::openapi::ObjectBuilder::new()
-                    .property(
-                        "type",
-                        utoipa::openapi::ObjectBuilder::new()
-                            .schema_type(utoipa::openapi::SchemaType::String)
-                            .enum_values(Some([error_def.id])),
-                    )
-                    .property(
-                        "status",
-                        utoipa::openapi::ObjectBuilder::new()
-                            .schema_type(utoipa::openapi::SchemaType::Integer)
-                            .enum_values(Some([error_def.status])),
-                    )
-                    .property(
-                        "message",
-                        utoipa::openapi::ObjectBuilder::new()
-                            .schema_type(utoipa::openapi::SchemaType::String),
-                    )
-                    .property("context", Self::error_context_to_openapi_object(error_def))
-                    .required("type")
-                    .required("status")
-                    .required("message")
-                    .into(),
-            );
-
-            // Adding the ref of the error to the generic error
-            editoast_error.items.push(
-                utoipa::openapi::Ref::new(format!(
-                    "#/components/schemas/{}",
-                    error_def.get_schema_name()
-                ))
-                .into(),
-            );
-        }
-
-        // Adding generic error to openapi
-        openapi.components.as_mut().unwrap().schemas.insert(
-            String::from("EditoastError"),
-            utoipa::openapi::OneOfBuilder::from(editoast_error).into(),
-        );
-    }
-
-    fn insert_routes(openapi: &mut utoipa::openapi::OpenApi) {
-        let routes = routes();
-        for (path, path_item) in routes.paths.into_flat_path_list() {
-            debug!("processing {path}");
-            if openapi.paths.paths.contains_key(&path) {
-                let existing_path_item = openapi.paths.paths.remove(&path).unwrap();
-                let merged = merge_path_items(existing_path_item, path_item);
-                openapi.paths.paths.insert(path, merged);
-            } else {
-                openapi.paths.paths.insert(path, path_item);
-            }
-        }
-    }
-
-    fn insert_schemas(openapi: &mut utoipa::openapi::OpenApi) {
-        if openapi.components.is_none() {
-            openapi.components = Some(Default::default());
-        }
-        openapi
-            .components
-            .as_mut()
-            .unwrap()
-            .schemas
-            .extend(schemas());
-    }
-
-    // Remove the operation_id that defaults to the endpoint function name
-    // so that it doesn't override the RTK methods names.
-    fn remove_operation_id(openapi: &mut utoipa::openapi::OpenApi) {
-        for (_, endpoint) in openapi.paths.paths.iter_mut() {
-            for (_, operation) in endpoint.operations.iter_mut() {
-                operation.operation_id = None;
-                // By default utoipa adds a tag "crate" to operations that don't have
-                // any. That causes problems with RTK tag management.
-                match &operation.tags {
-                    Some(tags) if tags.len() == 1 && tags.first().unwrap() == "crate" => {
-                        operation.tags = None;
-                    }
-                    _ => (),
-                }
-            }
-        }
-    }
-
-    pub fn build_openapi() -> utoipa::openapi::OpenApi {
-        let mut openapi = OpenApiRoot::openapi();
-        Self::insert_routes(&mut openapi);
-        Self::insert_schemas(&mut openapi);
-        Self::remove_discrimators(&mut openapi);
-        Self::split_tags(&mut openapi);
-        Self::add_errors_in_schema(&mut openapi);
-        Self::remove_operation_id(&mut openapi);
-        openapi
-    }
 }
 
 #[utoipa::path(
@@ -370,7 +161,6 @@ mod tests {
     use rstest::rstest;
 
     use super::test_app::TestAppBuilder;
-    use super::OpenApiRoot;
     use crate::core::mocking::MockingClient;
     use crate::core::CoreClient;
 
@@ -471,10 +261,5 @@ mod tests {
         let response: HashMap<String, Option<String>> =
             call_and_read_body_json(&app, request).await;
         assert!(response.contains_key("git_describe"));
-    }
-
-    #[test]
-    fn openapi_building_goes_well() {
-        let _ = OpenApiRoot::build_openapi(); // panics if something is wrong
     }
 }
