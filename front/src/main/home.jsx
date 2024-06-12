@@ -2,18 +2,21 @@ import React from 'react';
 
 import { useTranslation } from 'react-i18next';
 
-import logo from 'assets/logo-osrd-color-white.svg';
+import defaultLogo from 'assets/logo-osrd-color-white.svg';
 import editorImg from 'assets/pictures/home/editor.svg';
 import mapImg from 'assets/pictures/home/map.svg';
 import operationalStudiesImg from 'assets/pictures/home/operationalStudies.svg';
 import rollingStockEditorImg from 'assets/pictures/home/rollingstockeditor.svg';
 import stdcmImg from 'assets/pictures/home/stdcm.svg';
+import proudLogo from 'assets/proud-logo-osrd-color-white.svg';
 import Card from 'common/BootstrapSNCF/CardSNCF/CardSNCF';
 import { ModalProvider } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 
 export default function Home() {
   const { t } = useTranslation('home/home');
+
+  const logo = new Date().getMonth() === 5 ? proudLogo : defaultLogo;
 
   return (
     <ModalProvider>
