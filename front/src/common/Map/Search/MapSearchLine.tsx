@@ -7,7 +7,7 @@ import { useSelector } from 'react-redux';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { BoundingBox, SearchResultItemTrack } from 'common/api/osrdEditoastApi';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import { zoomToFeature } from 'common/Map/WarpedMap/core/helpers';
+import { computeBBoxViewport } from 'common/Map/WarpedMap/core/helpers';
 import { useInfraID } from 'common/osrdContext';
 import { updateLineSearchCode, updateMapSearchMarker } from 'reducers/map';
 import type { Viewport } from 'reducers/map';
@@ -74,7 +74,8 @@ const MapSearchLine = ({ updateExtViewport, closeMapSearchPopUp }: MapSearchLine
           type: 'LineString',
           coordinates: coordinates(trackPath),
         });
-        zoomToFeature(boundaries, map.viewport, updateExtViewport);
+        const newViewport = computeBBoxViewport(boundaries, map.viewport);
+        updateExtViewport(newViewport);
       })
       .catch(() => {
         dispatch(updateLineSearchCode(undefined));

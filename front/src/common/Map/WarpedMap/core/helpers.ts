@@ -178,6 +178,25 @@ export function simplifyFeature(feature: MapGeoJSONFeature): Feature {
   };
 }
 
+export function computeBBoxViewport(boundingBox: BBox | Position, initialViewport: Viewport) {
+  const [minLng, minLat, maxLng, maxLat] = boundingBox;
+  const viewportTemp = new WebMercatorViewport({ ...initialViewport, width: 600, height: 400 });
+  const { longitude, latitude, zoom } = viewportTemp.fitBounds(
+    [
+      [minLng, minLat],
+      [maxLng, maxLat],
+    ],
+    { padding: 40 }
+  );
+
+  return {
+    ...initialViewport,
+    longitude,
+    latitude,
+    zoom: zoom > 5 ? zoom : 5,
+  };
+}
+
 /**
  * Zoom helpers:
  */
@@ -187,21 +206,6 @@ export function zoomToFeature(
   mapViewport: Viewport,
   updateExtViewport: (viewport: Viewport) => void
 ) {
-  const [minLng, minLat, maxLng, maxLat] = boundingBox;
-  const viewportTemp = new WebMercatorViewport({ ...mapViewport, width: 600, height: 400 });
-  const { longitude, latitude, zoom } = viewportTemp.fitBounds(
-    [
-      [minLng, minLat],
-      [maxLng, maxLat],
-    ],
-    { padding: 40 }
-  );
-
-  const newViewport = {
-    ...mapViewport,
-    longitude,
-    latitude,
-    zoom: zoom > 5 ? zoom : 5,
-  };
+  const newViewport = computeBBoxViewport(boundingBox, mapViewport);
   updateExtViewport(newViewport);
 }

@@ -1,7 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
+import bbox from '@turf/bbox';
 import type { Feature, Point } from 'geojson';
 import html2canvas from 'html2canvas';
+import { isEqual } from 'lodash';
 import type { MapLayerMouseEvent } from 'maplibre-gl';
 import ReactMapGL, { AttributionControl, ScaleControl } from 'react-map-gl/maplibre';
 import type { MapRef } from 'react-map-gl/maplibre';
@@ -37,6 +39,7 @@ import Terrain from 'common/Map/Layers/Terrain';
 import TracksGeographic from 'common/Map/Layers/TracksGeographic';
 import TracksOSM from 'common/Map/Layers/TracksOSM';
 import { removeSearchItemMarkersOnMap } from 'common/Map/utils';
+import { computeBBoxViewport } from 'common/Map/WarpedMap/core/helpers';
 import { useInfraID, useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
 import VirtualLayers from 'modules/simulationResult/components/SimulationResultsMap/VirtualLayers';
@@ -65,11 +68,11 @@ const Map = ({ pathProperties, setMapCanvas, hideAttribution = false }: MapProps
   const infraID = useInfraID();
   const terrain3DExaggeration = useSelector(getTerrain3DExaggeration);
   const { viewport, mapSearchMarker, mapStyle, showOSM, layersSettings } = useSelector(getMap);
-  const { getGeojson } = useOsrdConfSelectors();
-  const geoJson = useSelector(getGeojson);
   const trainScheduleV2Activated = useSelector(getTrainScheduleV2Activated);
 
   const [mapIsLoaded, setMapIsLoaded] = useState(false);
+  const [showLayers, setShowLayers] = useState(true);
+
   const [snappedPoint, setSnappedPoint] = useState<Feature<Point> | undefined>();
   const { urlLat = '', urlLon = '', urlZoom = '', urlBearing = '', urlPitch = '' } = useParams();
   const dispatch = useAppDispatch();
@@ -79,26 +82,6 @@ const Map = ({ pathProperties, setMapCanvas, hideAttribution = false }: MapProps
   );
 
   const mapRef = useRef<MapRef | null>(null);
-
-  useEffect(() => {
-    const captureMap = async () => {
-      const mapElement = document.getElementById('map-container');
-      if (!mapElement) {
-        console.error('Map element not found');
-        return;
-      }
-      try {
-        if (setMapCanvas) {
-          const canvas = await html2canvas(mapElement);
-          const imageDataURL = canvas.toDataURL();
-          setMapCanvas(imageDataURL);
-        }
-      } catch (error) {
-        console.error('Error capturing map:', error);
-      }
-    };
-    if (mapIsLoaded) captureMap();
-  }, [mapIsLoaded, geoJson, pathProperties]);
 
   const scaleControlStyle = {
     left: 20,
@@ -204,6 +187,32 @@ const Map = ({ pathProperties, setMapCanvas, hideAttribution = false }: MapProps
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    if (pathProperties && setMapCanvas) {
+      setShowLayers(false);
+    }
+  }, [pathProperties]);
+
+  const captureMap = async () => {
+    if (!pathProperties) return;
+
+    const itineraryViewPort = computeBBoxViewport(bbox(pathProperties.geometry), viewport);
+
+    if (setMapCanvas && !showLayers && isEqual(viewport, itineraryViewPort)) {
+      try {
+        const mapElement = document.getElementById('map-container');
+        if (mapElement) {
+          const canvas = await html2canvas(mapElement);
+          setMapCanvas(canvas.toDataURL());
+        }
+      } catch (error) {
+        console.error('Error capturing map:', error);
+      } finally {
+        setShowLayers(true);
+      }
+    }
+  };
+
   return (
     <>
       <MapButtons
@@ -241,6 +250,7 @@ const Map = ({ pathProperties, setMapCanvas, hideAttribution = false }: MapProps
         onLoad={() => {
           setMapIsLoaded(true);
         }}
+        onIdle={() => captureMap()}
         preserveDrawingBuffer
         id="map-container"
       >
@@ -294,63 +304,67 @@ const Map = ({ pathProperties, setMapCanvas, hideAttribution = false }: MapProps
           layerOrder={LAYER_GROUPS_ORDER[LAYERS.ROUTES.GROUP]}
           infraID={infraID}
         />
-        {layersSettings.operationalpoints && (
-          <OperationalPoints
-            colors={colors[mapStyle]}
-            layerOrder={LAYER_GROUPS_ORDER[LAYERS.OPERATIONAL_POINTS.GROUP]}
-            infraID={infraID}
-          />
+        {showLayers && (
+          <>
+            {layersSettings.operationalpoints && (
+              <OperationalPoints
+                colors={colors[mapStyle]}
+                layerOrder={LAYER_GROUPS_ORDER[LAYERS.OPERATIONAL_POINTS.GROUP]}
+                infraID={infraID}
+              />
+            )}
+
+            <Electrifications
+              colors={colors[mapStyle]}
+              layerOrder={LAYER_GROUPS_ORDER[LAYERS.ELECTRIFICATIONS.GROUP]}
+              infraID={infraID}
+            />
+            {layersSettings.neutral_sections && (
+              <NeutralSections
+                colors={colors[mapStyle]}
+                layerOrder={LAYER_GROUPS_ORDER[LAYERS.DEAD_SECTIONS.GROUP]}
+                infraID={infraID}
+              />
+            )}
+            <BufferStops
+              colors={colors[mapStyle]}
+              layerOrder={LAYER_GROUPS_ORDER[LAYERS.BUFFER_STOPS.GROUP]}
+              infraID={infraID}
+            />
+            <Detectors
+              colors={colors[mapStyle]}
+              layerOrder={LAYER_GROUPS_ORDER[LAYERS.DETECTORS.GROUP]}
+              infraID={infraID}
+            />
+            <Switches
+              colors={colors[mapStyle]}
+              layerOrder={LAYER_GROUPS_ORDER[LAYERS.SWITCHES.GROUP]}
+              infraID={infraID}
+            />
+
+            <SpeedLimits
+              colors={colors[mapStyle]}
+              layerOrder={LAYER_GROUPS_ORDER[LAYERS.SPEED_LIMITS.GROUP]}
+              infraID={infraID}
+            />
+            <SNCF_PSL
+              colors={colors[mapStyle]}
+              layerOrder={LAYER_GROUPS_ORDER[LAYERS.SPEED_LIMITS.GROUP]}
+              infraID={infraID}
+            />
+
+            <Signals
+              sourceTable="signals"
+              colors={colors[mapStyle]}
+              layerOrder={LAYER_GROUPS_ORDER[LAYERS.SIGNALS.GROUP]}
+              infraID={infraID}
+            />
+            <LineSearchLayer
+              layerOrder={LAYER_GROUPS_ORDER[LAYERS.LINE_SEARCH.GROUP]}
+              infraID={infraID}
+            />
+          </>
         )}
-        <Electrifications
-          colors={colors[mapStyle]}
-          layerOrder={LAYER_GROUPS_ORDER[LAYERS.ELECTRIFICATIONS.GROUP]}
-          infraID={infraID}
-        />
-        {layersSettings.neutral_sections && (
-          <NeutralSections
-            colors={colors[mapStyle]}
-            layerOrder={LAYER_GROUPS_ORDER[LAYERS.DEAD_SECTIONS.GROUP]}
-            infraID={infraID}
-          />
-        )}
-        <BufferStops
-          colors={colors[mapStyle]}
-          layerOrder={LAYER_GROUPS_ORDER[LAYERS.BUFFER_STOPS.GROUP]}
-          infraID={infraID}
-        />
-        <Detectors
-          colors={colors[mapStyle]}
-          layerOrder={LAYER_GROUPS_ORDER[LAYERS.DETECTORS.GROUP]}
-          infraID={infraID}
-        />
-        <Switches
-          colors={colors[mapStyle]}
-          layerOrder={LAYER_GROUPS_ORDER[LAYERS.SWITCHES.GROUP]}
-          infraID={infraID}
-        />
-
-        <SpeedLimits
-          colors={colors[mapStyle]}
-          layerOrder={LAYER_GROUPS_ORDER[LAYERS.SPEED_LIMITS.GROUP]}
-          infraID={infraID}
-        />
-        <SNCF_PSL
-          colors={colors[mapStyle]}
-          layerOrder={LAYER_GROUPS_ORDER[LAYERS.SPEED_LIMITS.GROUP]}
-          infraID={infraID}
-        />
-
-        <Signals
-          sourceTable="signals"
-          colors={colors[mapStyle]}
-          layerOrder={LAYER_GROUPS_ORDER[LAYERS.SIGNALS.GROUP]}
-          infraID={infraID}
-        />
-        <LineSearchLayer
-          layerOrder={LAYER_GROUPS_ORDER[LAYERS.LINE_SEARCH.GROUP]}
-          infraID={infraID}
-        />
-
         <RenderPopup pathProperties={pathProperties} />
         {mapIsLoaded &&
           (trainScheduleV2Activated ? (
