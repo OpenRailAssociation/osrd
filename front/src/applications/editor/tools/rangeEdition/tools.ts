@@ -19,6 +19,8 @@ export const SpeedEditionTool = getRangeEditionTool<SpeedSectionEntity | SpeedSe
   icon: MdSpeed,
   getNewEntity: getNewSpeedSection,
   messagesComponent: SpeedSectionMessages,
+  requiredLayers: new Set(['speed_sections', 'psl', 'psl_signs', 'switches']),
+  incompatibleLayers: ['electrifications'],
   layersComponent: SpeedSectionEditionLayers,
   leftPanelComponent: RangeEditionLeftPanel,
   canSave(state) {
@@ -43,6 +45,8 @@ export const ElectrificationEditionTool = getRangeEditionTool<ElectrificationEnt
   messagesComponent: ElectrificationMessages,
   layersComponent: ElectrificationEditionLayers,
   leftPanelComponent: RangeEditionLeftPanel,
+  requiredLayers: new Set(['electrifications']),
+  incompatibleLayers: ['speed_sections', 'psl', 'psl_signs', 'switches'],
   getEventsLayers() {
     return [
       'editor/geo/track-main',

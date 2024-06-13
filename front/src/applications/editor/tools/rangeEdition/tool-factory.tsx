@@ -52,6 +52,8 @@ type RangeEditionToolParams<T extends EditorRange> = {
   leftPanelComponent: ComponentType;
   canSave?: (state: RangeEditionState<T>) => boolean;
   getEventsLayers?: (context: ReadOnlyEditorContextType<RangeEditionState<T>>) => string[];
+  requiredLayers: Set<Layer>;
+  incompatibleLayers?: Layer[];
 };
 
 function getRangeEditionTool<T extends EditorRange>({
@@ -61,6 +63,8 @@ function getRangeEditionTool<T extends EditorRange>({
   messagesComponent,
   layersComponent,
   leftPanelComponent,
+  requiredLayers,
+  incompatibleLayers,
   canSave,
   getEventsLayers,
 }: RangeEditionToolParams<T>): Tool<RangeEditionState<T>> {
@@ -88,11 +92,8 @@ function getRangeEditionTool<T extends EditorRange>({
     id,
     icon,
     labelTranslationKey: `Editor.tools.${objectTypeEdition}-edition.label`,
-    requiredLayers: new Set(
-      layersEntity.objType === 'SpeedSection'
-        ? ['speed_sections', 'psl', 'psl_signs', 'switches']
-        : ['electrifications']
-    ),
+    requiredLayers,
+    incompatibleLayers,
     getInitialState,
 
     actions: [

@@ -20,6 +20,7 @@ const RouteEditionTool: Tool<RouteEditionState> = {
   icon: GiPathDistance,
   labelTranslationKey: 'Editor.tools.routes-edition.label',
   requiredLayers: new Set(['buffer_stops', 'detectors']),
+  incompatibleLayers: ['errors'],
   getInitialState: () => getRouteEditionState(),
   actions: [
     [
