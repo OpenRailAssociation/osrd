@@ -16,6 +16,7 @@ import type {
   TrainScheduleResult,
 } from 'common/api/osrdEditoastApi';
 import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
+import { useStoreDataForSpeedLimitByTagSelector } from 'common/SpeedLimitByTagSelector/useStoreDataForSpeedLimitByTagSelector';
 import createTrain from 'modules/simulationResult/components/SpaceTimeChart/createTrain';
 import { CHART_AXES } from 'modules/simulationResult/consts';
 import { setFailure } from 'reducers/main';
@@ -75,6 +76,8 @@ const useStdcm = () => {
   const controller = new AbortController();
 
   const { timetableID } = osrdconf;
+
+  const { speedLimitByTag } = useStoreDataForSpeedLimitByTagSelector();
 
   const resetResults = () => {
     dispatch(updateSelectedTrainId(undefined));
@@ -160,6 +163,8 @@ const useStdcm = () => {
           setStdcmV2Response({
             ...response,
             rollingStock: stdcmRollingStock,
+            creationDate: new Date(),
+            speedLimitByTag,
           } as StdcmV2SuccessResponse);
 
           const stdcmTrain: TrainScheduleResult = {
@@ -213,6 +218,8 @@ const useStdcm = () => {
     dispatch(updateSimulation(emptySimulation));
   };
 
+  const isPending = currentStdcmRequestStatus === STDCM_REQUEST_STATUS.pending;
+
   return {
     stdcmResults,
     stdcmV2Results,
@@ -221,6 +228,7 @@ const useStdcm = () => {
     cancelStdcmRequest,
     pathProperties,
     setPathProperties,
+    isPending,
   };
 };
 

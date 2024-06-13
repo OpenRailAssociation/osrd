@@ -6,8 +6,6 @@ import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
 import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
-import { STDCM_REQUEST_STATUS } from 'applications/stdcm/consts';
-import useStdcm from 'applications/stdcm/hooks/useStdcm';
 import { useOsrdConfActions } from 'common/osrdContext';
 import { usePathfindingV2 } from 'modules/pathfinding/hook/usePathfinding';
 import { Map } from 'modules/trainschedule/components/ManageTrainSchedule';
@@ -24,7 +22,9 @@ import type { StdcmSimulationResult } from '../types';
 type StdcmConfigProps = {
   currentSimulationInputs: StdcmSimulationResult['input'] | undefined;
   pathProperties?: ManageTrainSchedulePathProperties;
-  setPathProperties: (pathProperties?: ManageTrainSchedulePathProperties) => void;
+  isPending: boolean;
+  launchStdcmRequest: () => Promise<void>;
+  cancelStdcmRequest: () => void;
   setCurrentSimulationInputs: React.Dispatch<
     React.SetStateAction<StdcmSimulationResult['input'] | undefined>
   >;
@@ -33,20 +33,26 @@ type StdcmConfigProps = {
 const StdcmConfig = ({
   currentSimulationInputs,
   pathProperties,
-  setPathProperties,
+  isPending,
+  launchStdcmRequest,
+  cancelStdcmRequest,
   setCurrentSimulationInputs,
 }: StdcmConfigProps) => {
   const { t } = useTranslation('stdcm');
   const loaderRef = useRef<HTMLDivElement>(null);
 
-  const { launchStdcmRequest, cancelStdcmRequest, currentStdcmRequestStatus } = useStdcm();
-  const isPending = currentStdcmRequestStatus === STDCM_REQUEST_STATUS.pending;
-
   const dispatch = useAppDispatch();
   const { updateGridMarginAfter, updateGridMarginBefore, updateStdcmStandardAllowance } =
     useOsrdConfActions() as StdcmConfSliceActions;
 
-  const { pathfindingState } = usePathfindingV2(setPathProperties, pathProperties);
+  const { pathfindingState } = usePathfindingV2(undefined, pathProperties);
+
+  const clickOnSimulation = () => {
+    if (pathfindingState.done) {
+      launchStdcmRequest();
+      setCurrentSimulationInputs(undefined);
+    }
+  };
 
   useEffect(() => {
     if (isPending) {
@@ -92,15 +98,7 @@ const StdcmConfig = ({
             })}
           >
             {currentSimulationInputs && (
-              <Button
-                label={t('simulation.getSimulation')}
-                onClick={() => {
-                  if (pathfindingState.done) {
-                    launchStdcmRequest();
-                    setCurrentSimulationInputs(undefined);
-                  }
-                }}
-              />
+              <Button label={t('simulation.getSimulation')} onClick={clickOnSimulation} />
             )}
             {pathfindingState.error && (
               <div className="warning-box">

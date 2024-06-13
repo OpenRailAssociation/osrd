@@ -1,5 +1,4 @@
 import type {
-  ManageTrainSchedulePathProperties,
   PathPropertiesFormatted,
   TrainSpaceTimeData,
 } from 'applications/operationalStudies/types';
@@ -22,16 +21,30 @@ export type StdcmV2SuccessResponse = Omit<
 > & {
   simulation: Extract<SimulationResponse, { status: 'success' }>;
   rollingStock: LightRollingStock;
+  creationDate: Date;
+  speedLimitByTag?: string;
 };
 
 export type SimulationReportSheetProps = {
   stdcmData: StdcmV2SuccessResponse;
-  pathProperties?: ManageTrainSchedulePathProperties;
-  rollingStockData: RollingStockWithLiveries;
-  speedLimitByTag?: string;
   simulationReportSheetNumber: string;
   mapCanvas?: string;
-  creationDate?: Date;
+  operationalPointsList: StdcmResultsOperationalPointsList;
+};
+
+export type StdcmResultsOperationalPointsList = StdcmResultsOperationalPoint[];
+
+type StdcmResultsOperationalPoint = {
+  opId: string;
+  positionOnPath: number;
+  time: string | null;
+  name?: string;
+  ch?: string;
+  stop?: string | null;
+  duration: number;
+  departureTime: string;
+  stopEndTime: string;
+  trackName?: string;
 };
 
 export type StdcmV2Results = {

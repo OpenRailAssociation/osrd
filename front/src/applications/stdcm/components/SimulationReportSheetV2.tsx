@@ -10,21 +10,18 @@ import { formatDateToString, formatDayV2 } from 'utils/date';
 
 import styles from './SimulationReportStyleSheet';
 import type { SimulationReportSheetProps } from '../types';
-import { extractSpeedLimit, getStopDurationTime, getOperationalPointsWithTimes } from '../utils';
+import { extractSpeedLimit, getStopDurationTime } from '../utils';
 
 const SimulationReportSheetV2 = ({
   stdcmData,
-  pathProperties,
-  rollingStockData,
-  speedLimitByTag,
   simulationReportSheetNumber,
   mapCanvas,
-  creationDate,
+  operationalPointsList,
 }: SimulationReportSheetProps) => {
   const { t } = useTranslation('stdcm-simulation-report-sheet');
   let renderedIndex = 0;
 
-  const date = creationDate && t('formattedDate', formatDateToString(creationDate));
+  const { rollingStock, speedLimitByTag, departure_time: departureTime, creationDate } = stdcmData;
 
   // TODO: Add RC information when it becomes avalaible, until that, we use fake ones
   const fakeInformation = {
@@ -35,18 +32,6 @@ const SimulationReportSheetV2 = ({
     path_number1: 'n°XXXXXX',
     path_number2: 'n°YYYYYY',
   };
-
-  const simulationReport: SimulationReportSheetProps = {
-    stdcmData,
-    pathProperties,
-    rollingStockData,
-    speedLimitByTag,
-    simulationReportSheetNumber,
-    mapCanvas,
-    creationDate,
-  };
-
-  const opList = getOperationalPointsWithTimes(simulationReport);
 
   return (
     <Document>
@@ -68,7 +53,9 @@ const SimulationReportSheetV2 = ({
               n°
               {simulationReportSheetNumber}
             </Text>
-            <Text style={styles.header.creationDate}>{date}</Text>
+            <Text style={styles.header.creationDate}>
+              {t('formattedDate', formatDateToString(creationDate))}
+            </Text>
           </View>
           <Image src={logoSNCF} style={styles.header.sncfLogo} />
         </View>
@@ -85,7 +72,7 @@ const SimulationReportSheetV2 = ({
           <View style={styles.rcInfo.rcBox}>
             <View style={styles.rcInfo.stdcmApplication}>
               <Text style={styles.rcInfo.applicationDate}>{t('applicationDate')}</Text>
-              <Text style={styles.rcInfo.date}>{formatDayV2(stdcmData.departure_time)}</Text>
+              <Text style={styles.rcInfo.date}>{formatDayV2(departureTime)}</Text>
               <Text style={styles.rcInfo.referencePath}>{t('referencePath')}</Text>
               <Text style={styles.rcInfo.pathNumber}>{fakeInformation.path_number1}</Text>
             </View>
@@ -104,22 +91,22 @@ const SimulationReportSheetV2 = ({
                 <Text style={styles.convoyAndRoute.convoyInfoData}>-</Text>
                 <Text style={styles.convoyAndRoute.convoyInfoTitles}>{t('maxSpeed')}</Text>
                 <Text style={styles.convoyAndRoute.convoyInfoData}>
-                  {`${Math.floor(rollingStockData.max_speed * 3.6)} km/h`}
+                  {`${Math.floor(rollingStock.max_speed * 3.6)} km/h`}
                 </Text>
               </View>
               <View style={styles.convoyAndRoute.convoyInfoBox2}>
                 <Text style={styles.convoyAndRoute.convoyInfoTitles}>{t('maxWeight')}</Text>
                 <Text style={styles.convoyAndRoute.convoyInfoData}>
-                  {`${Math.floor(rollingStockData.mass / 1000)} t`}
+                  {`${Math.floor(rollingStock.mass / 1000)} t`}
                 </Text>
                 <Text style={styles.convoyAndRoute.convoyInfoTitles}>{t('referenceEngine')}</Text>
                 <Text style={styles.convoyAndRoute.convoyInfoData}>
-                  {rollingStockData.metadata?.reference || '-'}
+                  {rollingStock.metadata?.reference || '-'}
                 </Text>
                 <Text style={styles.convoyAndRoute.convoyInfoTitles}>{t('maxLength')}</Text>
                 <Text
                   style={styles.convoyAndRoute.convoyInfoData}
-                >{`${rollingStockData.length} m`}</Text>
+                >{`${rollingStock.length} m`}</Text>
               </View>
             </View>
           </View>
@@ -155,9 +142,9 @@ const SimulationReportSheetV2 = ({
                     <TD>{t('motif')}</TD>
                   </View>
                 </TH>
-                {opList.map((step, index) => {
+                {operationalPointsList.map((step, index) => {
                   const isFirstStep = index === 0;
-                  const isLastStep = index === opList.length - 1;
+                  const isLastStep = index === operationalPointsList.length - 1;
                   const shouldRenderRow = isFirstStep || step.duration > 0 || isLastStep;
                   if (shouldRenderRow) {
                     renderedIndex += 1;
@@ -183,7 +170,7 @@ const SimulationReportSheetV2 = ({
                         </View>
                         <View style={styles.convoyAndRoute.stopTableStartWidth}>
                           <TD style={styles.convoyAndRoute.stopTableStartColumn}>
-                            {isFirstStep ? step.departureTime : ''}
+                            {isFirstStep ? step.stopEndTime : ''}
                           </TD>
                         </View>
                         <View style={styles.convoyAndRoute.stopTableMotifWidth}>
@@ -259,10 +246,10 @@ const SimulationReportSheetV2 = ({
                   <TD>{t('crossedATE')}</TD>
                 </View>
               </TH>
-              {opList.map((step, index) => {
+              {operationalPointsList.map((step, index) => {
                 const isFirstStep = index === 0;
-                const isLastStep = index === opList.length - 1;
-                const prevStep = opList[index - 1];
+                const isLastStep = index === operationalPointsList.length - 1;
+                const prevStep = operationalPointsList[index - 1];
                 return (
                   <TR
                     key={index}
@@ -328,12 +315,12 @@ const SimulationReportSheetV2 = ({
                     </View>
                     <View style={styles.simulation.weightWidth}>
                       <TD style={styles.simulation.td}>
-                        {!isFirstStep ? '=' : `${Math.floor(rollingStockData.mass / 1000)} t`}
+                        {!isFirstStep ? '=' : `${Math.floor(rollingStock.mass / 1000)} t`}
                       </TD>
                     </View>
                     <View style={styles.simulation.refEngineWidth}>
                       <TD style={styles.simulation.td}>
-                        {!isFirstStep ? '=' : rollingStockData.metadata?.reference}
+                        {!isFirstStep ? '=' : rollingStock.metadata?.reference}
                       </TD>
                     </View>
                     <View style={styles.simulation.convSignWidth}>
@@ -349,9 +336,11 @@ const SimulationReportSheetV2 = ({
             <View style={styles.simulation.horizontalBar} />
           </View>
         </View>
-        <View style={styles.map.map} id="simulationMap">
-          <Image src={mapCanvas} />
-        </View>
+        {mapCanvas && (
+          <View style={styles.map.map} id="simulationMap">
+            <Image src={mapCanvas} />
+          </View>
+        )}
         <View style={styles.footer.warrantyBox}>
           <Text style={styles.footer.warrantyMessage}>{t('withoutWarranty')}</Text>
         </View>

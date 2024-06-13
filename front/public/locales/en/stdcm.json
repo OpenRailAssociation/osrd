@@ -10,10 +10,20 @@
   "pathfindingFailed": "No path have been found for these waypoints.",
   "pleaseWait": "Please wait…",
   "simulation":{
+    "available": "Simulation available",
     "averageRequestTime": "For your request, the time required is generally 90 seconds.",
     "calculatingSimulation": "Calculation in progress...",
     "getSimulation": "Get the simulation",
     "pendingSimulation": "Simulation in progress",
+    "results":{
+      "displayAll": "Display all operational points",
+      "displayMain": "Display main operational points",
+      "downloadSimulationSheet": "Download simulation report sheet",
+      "gesicoRequest":"and attach this document to your GESICO DSDM request.",
+      "selectThisSimulation": "Select this simulation",
+      "simulationNumber": "Simulation n°1",
+      "simulationSelected": "You have selected this simulation"  
+    },
     "stopCalculation" : "Stop calculation"
   },
   "spaceSpeedGraphic": "Space-Velocity graph",

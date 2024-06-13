@@ -1,4 +1,7 @@
-import type { SimulationReportSheetProps } from './types';
+import type { SimulationResponse } from 'common/api/generatedEditoastApi';
+import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
+
+import type { StdcmResultsOperationalPointsList } from './types';
 
 function generateRandomString(length: number): string {
   return Array.from({ length }, () => Math.floor(Math.random() * 10)).join('');
@@ -112,28 +115,16 @@ const getStopDurationBetweenToPositions = (
   return null;
 };
 
-export function getOperationalPointsWithTimes(simulationReport: SimulationReportSheetProps): {
-  opId: string;
-  positionOnPath: number;
-  time: string | null;
-  name: string | undefined;
-  ch: string | undefined;
-  stop: string | null | undefined;
-  duration: number;
-  departureTime: string;
-  stopEndTime: string;
-  trackName: string | undefined;
-}[] {
-  const operationalPoints = simulationReport.pathProperties?.suggestedOperationalPoints || [];
-  const { simulation } = simulationReport.stdcmData;
-
+export function getOperationalPointsWithTimes(
+  operationalPoints: SuggestedOP[],
+  simulation: Extract<SimulationResponse, { status: 'success' }>,
+  departureTime: string
+): StdcmResultsOperationalPointsList {
   const { positions, times } = simulation.final_output;
-  const departureTime = new Date(simulationReport.stdcmData.departure_time)
-    .toLocaleTimeString()
-    .substring(0, 5);
+  const pathDepartureTime = new Date(departureTime).toLocaleTimeString().substring(0, 5);
 
   // Parse departure time into hours and minutes
-  const [departureHour, departureMinute] = departureTime.split(':').map(Number);
+  const [departureHour, departureMinute] = pathDepartureTime.split(':').map(Number);
 
   // Map operational points with their positions, times, and stop durations
   const opResults = operationalPoints.map((op) => {

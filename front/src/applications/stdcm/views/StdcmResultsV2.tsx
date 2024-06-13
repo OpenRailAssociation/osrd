@@ -1,10 +1,9 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import { useTranslation } from 'react-i18next';
 
 import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
-import type { RollingStockWithLiveries } from 'common/api/osrdEditoastApi';
 import { LoaderFill } from 'common/Loaders';
 import SpaceTimeChartV2 from 'modules/simulationResult/components/SpaceTimeChart/SpaceTimeChartV2';
 import SpeedSpaceChartV2 from 'modules/simulationResult/components/SpeedSpaceChart/SpeedSpaceChartV2';
@@ -13,29 +12,19 @@ import type { TimeScaleDomain } from 'modules/simulationResult/types';
 import SimulationReportSheetV2 from '../components/SimulationReportSheetV2';
 import { STDCM_TRAIN_ID } from '../consts';
 import type { StdcmV2Results } from '../types';
-import { generateCodeNumber } from '../utils';
+import { generateCodeNumber, getOperationalPointsWithTimes } from '../utils';
 
 type StcdmResultsProps = {
   mapCanvas?: string;
   stdcmV2Results: StdcmV2Results;
   pathProperties?: ManageTrainSchedulePathProperties;
-  rollingStockData: RollingStockWithLiveries;
-  speedLimitByTag?: string;
-  creationDate?: Date;
 };
 
 const codeNumber = generateCodeNumber();
 
 // TODO TS2 : Adapt StdcmResult to trainSchedule v2 (SpaceTimeChart and SpeedSpaceChart)
 
-const StcdmResultsV2 = ({
-  mapCanvas,
-  stdcmV2Results,
-  pathProperties,
-  rollingStockData,
-  speedLimitByTag,
-  creationDate,
-}: StcdmResultsProps) => {
+const StcdmResultsV2 = ({ mapCanvas, stdcmV2Results, pathProperties }: StcdmResultsProps) => {
   const { t } = useTranslation(['stdcm']);
   const [spaceTimeChartHeight, setSpaceTimeChartHeight] = useState(450);
   const [speedSpaceChartHeight, setSpeedSpaceChartHeight] = useState(250);
@@ -54,6 +43,16 @@ const StcdmResultsV2 = ({
     dispatchUpdateSelectedTrainId,
     setSpaceTimeData,
   } = stdcmV2Results;
+
+  const operationalPointsList = useMemo(
+    () =>
+      getOperationalPointsWithTimes(
+        pathProperties?.suggestedOperationalPoints || [],
+        stdcmV2Results.stdcmResponse.simulation,
+        stdcmV2Results.stdcmResponse.departure_time
+      ),
+    [pathProperties, stdcmV2Results]
+  );
 
   return (
     <main className="osrd-config-mastcontainer" style={{ height: '115vh' }}>
@@ -104,12 +103,9 @@ const StcdmResultsV2 = ({
               document={
                 <SimulationReportSheetV2
                   stdcmData={stdcmResponse}
-                  pathProperties={pathProperties}
-                  rollingStockData={rollingStockData}
-                  speedLimitByTag={speedLimitByTag}
                   simulationReportSheetNumber={codeNumber}
                   mapCanvas={mapCanvas}
-                  creationDate={creationDate}
+                  operationalPointsList={operationalPointsList}
                 />
               }
               fileName={`STDCM-${codeNumber}.pdf`}
