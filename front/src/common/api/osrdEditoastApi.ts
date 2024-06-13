@@ -3465,8 +3465,14 @@ export type ConflictV2 = {
   train_ids: number[];
 };
 export type ReportTrainV2 = {
+  /** Total energy consumption */
   energy_consumption: number;
+  /** List of positions of a train
+    Both positions (in mm) and times (in ms) must have the same length */
   positions: number[];
+  /** Whether the train has reached all its scheduled points on time */
+  scheduled_points_honored: boolean;
+  /** List of speeds associated to a position */
   speeds: number[];
   times: number[];
 };
@@ -3646,6 +3652,8 @@ export type SimulationSummaryResult =
       energy_consumption: number;
       /** Length of a path in mm */
       length: number;
+      /** Whether the train has reached all its scheduled points on time */
+      scheduled_points_honored: boolean;
       status: 'success';
       /** Travel time in ms */
       time: number;

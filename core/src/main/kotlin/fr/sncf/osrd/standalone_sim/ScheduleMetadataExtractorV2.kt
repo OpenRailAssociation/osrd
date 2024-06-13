@@ -17,6 +17,7 @@ import fr.sncf.osrd.utils.indexing.StaticIdxList
 import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
 import fr.sncf.osrd.utils.units.*
 import kotlin.math.abs
+import kotlin.math.absoluteValue
 
 /** Use an already computed envelope to extract various metadata about a trip. */
 fun runScheduleMetadataExtractor(
@@ -162,6 +163,7 @@ fun runScheduleMetadataExtractor(
         reportTrain.times,
         reportTrain.speeds,
         reportTrain.energyConsumption,
+        reportTrain.scheduledPointsHonored,
         signalSightings,
         zoneUpdates,
         spacingRequirements.requirements.map {
@@ -183,6 +185,24 @@ fun runScheduleMetadataExtractor(
             )
         }
     )
+}
+
+/** This function checks if the scheduled points were respected */
+fun isScheduledPointsHonored(
+    schedule: List<SimulationScheduleItem>,
+    envelopeStopWrapper: EnvelopeStopWrapper
+): Boolean {
+    for (e in schedule) {
+        if (e.arrival == null) continue
+        var computed = envelopeStopWrapper.interpolateTotalTime(e.pathOffset.distance.meters)
+        if (e.stopFor != null) computed -= e.stopFor.seconds
+        val expected = e.arrival.seconds
+        // Check that the expected arrival time and the simulated one match ~1s
+        if ((computed - expected).absoluteValue > 1.0) {
+            return false
+        }
+    }
+    return true
 }
 
 fun makeSimpleReportTrain(
@@ -225,10 +245,14 @@ fun makeSimpleReportTrain(
             return@rdp abs(point.speed - projSpeed) * speedScaling +
                 abs(point.time - projTime) * timeScaling
         }
+
+    val scheduledPointsHonored = isScheduledPointsHonored(schedule, envelopeStopWrapper)
+
     return ReportTrain(
         simplified.map { Offset(it.position.meters) },
         simplified.map { it.time.seconds },
         simplified.map { it.speed },
         mechanicalEnergyConsumed,
+        scheduledPointsHonored,
     )
 }

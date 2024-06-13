@@ -140,13 +140,16 @@ pub struct SimulationPath {
 #[derive(Deserialize, Serialize, Clone, Debug, ToSchema)]
 #[schema(as = ReportTrainV2)]
 pub struct ReportTrain {
-    // List of positions of a train
-    // Both positions (in mm) and times (in ms) must have the same length
+    /// List of positions of a train
+    /// Both positions (in mm) and times (in ms) must have the same length
     pub positions: Vec<u64>,
     pub times: Vec<u64>,
-    // List of speeds associated to a position
+    /// List of speeds associated to a position
     pub speeds: Vec<f64>,
+    /// Total energy consumption
     pub energy_consumption: f64,
+    /// Whether the train has reached all its scheduled points on time
+    pub scheduled_points_honored: bool,
 }
 
 #[derive(Deserialize, Serialize, Clone, Debug, ToSchema)]

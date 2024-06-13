@@ -505,6 +505,8 @@ enum SimulationSummaryResult {
         time: u64,
         /// Total energy consumption of a train in kWh
         energy_consumption: f64,
+        /// Whether the train has reached all its scheduled points on time
+        scheduled_points_honored: bool,
     },
     /// Pathfinding not found
     PathfindingNotFound,
@@ -574,6 +576,7 @@ pub async fn simulation_summary(
                     length: *report.positions.last().unwrap(),
                     time: *report.times.last().unwrap(),
                     energy_consumption: report.energy_consumption,
+                    scheduled_points_honored: report.scheduled_points_honored,
                 }
             }
             SimulationResponse::PathfindingFailed { pathfinding_result } => {

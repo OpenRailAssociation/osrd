@@ -5751,15 +5751,23 @@ components:
     ReportTrainV2:
       properties:
         energy_consumption:
+          description: Total energy consumption
           format: double
           type: number
         positions:
+          description: |-
+            List of positions of a train
+            Both positions (in mm) and times (in ms) must have the same length
           items:
             format: int64
             minimum: 0
             type: integer
           type: array
+        scheduled_points_honored:
+          description: Whether the train has reached all its scheduled points on time
+          type: boolean
         speeds:
+          description: List of speeds associated to a position
           items:
             format: double
             type: number
@@ -5775,6 +5783,7 @@ components:
       - times
       - speeds
       - energy_consumption
+      - scheduled_points_honored
       type: object
     ResultPosition:
       properties:
@@ -7524,6 +7533,9 @@ components:
             format: int64
             minimum: 0
             type: integer
+          scheduled_points_honored:
+            description: Whether the train has reached all its scheduled points on time
+            type: boolean
           status:
             enum:
             - success
@@ -7537,6 +7549,7 @@ components:
         - length
         - time
         - energy_consumption
+        - scheduled_points_honored
         - status
         type: object
       - properties:
