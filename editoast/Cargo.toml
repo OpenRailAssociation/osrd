@@ -76,7 +76,7 @@ itertools = "0.13.0"
 json-patch = "2.0.0"
 mvt.workspace = true
 openssl = "*"
-opentelemetry = "0.22.0"
+opentelemetry = "0.23.0"
 opentelemetry-datadog = { version = "0.10.0", features = ["reqwest-client"] }
 opentelemetry-otlp = "0.15.0"
 opentelemetry-semantic-conventions = "0.14.0"
