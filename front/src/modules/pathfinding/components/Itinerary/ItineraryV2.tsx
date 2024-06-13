@@ -8,7 +8,7 @@ import { useSelector } from 'react-redux';
 
 import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
-import { zoomToFeature } from 'common/Map/WarpedMap/core/helpers';
+import { computeBBoxViewport } from 'common/Map/WarpedMap/core/helpers';
 import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
 import Tipped from 'common/Tipped';
 import PathfindingV2 from 'modules/pathfinding/components/Pathfinding/PathfindingV2';
@@ -81,7 +81,8 @@ const ItineraryV2 = ({
 
   useEffect(() => {
     if (pathProperties) {
-      zoomToFeature(bbox(pathProperties.geometry), map.viewport, setExtViewport);
+      const newViewport = computeBBoxViewport(bbox(pathProperties.geometry), map.viewport);
+      setExtViewport(newViewport);
     }
   }, [pathProperties]);
 

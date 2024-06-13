@@ -7,7 +7,7 @@ import { useSelector } from 'react-redux';
 
 import type { PathResponse } from 'common/api/osrdEditoastApi';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
-import { zoomToFeature } from 'common/Map/WarpedMap/core/helpers';
+import { computeBBoxViewport } from 'common/Map/WarpedMap/core/helpers';
 import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
 import Tipped from 'common/Tipped';
 import Pathfinding from 'modules/pathfinding/components/Pathfinding/Pathfinding';
@@ -41,7 +41,8 @@ function Itinerary({ path }: ItineraryProps) {
   const { openModal } = useModal();
 
   const zoomToFeatureInItinerary = (boundingBox: Position) => {
-    zoomToFeature(boundingBox, map.viewport, setExtViewport);
+    const newViewport = computeBBoxViewport(boundingBox, map.viewport);
+    setExtViewport(newViewport);
   };
 
   const zoomToFeaturePoint = (lngLat?: Position) => {

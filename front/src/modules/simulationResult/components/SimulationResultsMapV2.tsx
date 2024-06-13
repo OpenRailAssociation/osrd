@@ -47,7 +47,7 @@ import Terrain from 'common/Map/Layers/Terrain';
 import TracksGeographic from 'common/Map/Layers/TracksGeographic';
 import TracksOSM from 'common/Map/Layers/TracksOSM';
 import { removeSearchItemMarkersOnMap } from 'common/Map/utils';
-import { zoomToFeature } from 'common/Map/WarpedMap/core/helpers';
+import { computeBBoxViewport } from 'common/Map/WarpedMap/core/helpers';
 import { useInfraID } from 'common/osrdContext';
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
 import {
@@ -195,7 +195,10 @@ const Map: FC<MapProps> = ({ geometry }) => {
   }, []);
 
   useEffect(() => {
-    if (geojsonPath) zoomToFeature(bbox(geojsonPath), viewport, updateViewportChange);
+    if (geojsonPath) {
+      const newViewport = computeBBoxViewport(bbox(geojsonPath), viewport);
+      updateViewportChange(newViewport);
+    }
   }, [geojsonPath]);
 
   const handleLoadFinished = () => {
