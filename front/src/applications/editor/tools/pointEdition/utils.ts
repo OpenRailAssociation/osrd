@@ -18,7 +18,9 @@ export function getNewSignal(point?: [number, number]): SignalEntity {
     properties: {
       id: NEW_ENTITY_ID,
       extensions: {
-        sncf: {},
+        sncf: {
+          side: 'CENTER',
+        },
       },
     },
     geometry: point
