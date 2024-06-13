@@ -52,12 +52,13 @@ export const LAYERS: Array<{ layers: Layer[]; icon: string | JSX.Element }> = [
   },
 ];
 
-interface LayersModalProps {
+type LayersModalProps = {
   initialLayers: Set<Layer>;
   selection?: EditorEntity[];
   frozenLayers?: Set<Layer>;
   onChange: (args: { newLayers: Set<Layer> }) => void;
-}
+};
+
 const LayersModal: FC<LayersModalProps> = ({
   initialLayers,
   selection,

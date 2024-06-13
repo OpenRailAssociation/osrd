@@ -36,7 +36,7 @@ import { updateViewport, type Viewport } from 'reducers/map';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 
-import type { EditoastType } from './consts';
+import type { EditoastType, Layer } from './consts';
 import type { EditorContextType, ExtendedEditorContextType, FullTool, Reducer } from './types';
 import type { EditorEntity } from './typesEditorEntity';
 
@@ -184,6 +184,7 @@ const Editor = () => {
         .filter((group) => group.length),
     [toolAndState.tool, extendedContext]
   );
+
   /**
    * When the component mounts
    * => we load the data model
@@ -276,13 +277,16 @@ const Editor = () => {
   useEffect(() => {
     if (toolAndState.tool.onMount) toolAndState.tool.onMount(extendedContext);
 
-    const layersList = toolAndState.tool.requiredLayers
-      ? new Set([...editorState.editorLayers, ...toolAndState.tool.requiredLayers])
-      : editorState.editorLayers;
+    const { requiredLayers, incompatibleLayers } = toolAndState.tool;
+    if (requiredLayers || incompatibleLayers) {
+      const newLayers: Set<Layer> = new Set([
+        ...editorState.editorLayers,
+        ...(requiredLayers ?? []),
+      ]);
 
-    // Remove the errors layer for better visibility in the route tool
-    if (toolAndState.tool.id === 'route-edition') layersList.delete('errors');
-    dispatch(selectLayers(layersList));
+      if (incompatibleLayers) incompatibleLayers.forEach((l) => newLayers.delete(l));
+      dispatch(selectLayers(newLayers));
+    }
 
     return () => {
       if (toolAndState.tool.onUnmount) toolAndState.tool.onUnmount(extendedContext);

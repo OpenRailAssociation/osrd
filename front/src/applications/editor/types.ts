@@ -96,6 +96,7 @@ export type Tool<S> = {
   // When user click on tool button on the side bar.
   onClick?: (context: ReadOnlyEditorContextType<CommonToolState>) => void;
   requiredLayers?: Set<Layer>;
+  incompatibleLayers?: Layer[];
   isDisabled?: (context: ReadOnlyEditorContextType<S>) => boolean;
   isHidden?: (context: ReadOnlyEditorContextType<CommonToolState>) => boolean;
 
