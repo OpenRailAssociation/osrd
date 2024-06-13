@@ -99,11 +99,7 @@ const StdcmConfig = ({
     );
   }, [infra, osrdconf, originV2, destinationV2]);
 
-  const [creationDate, setCreationDate] = useState<Date>();
-
   const handleClick = () => {
-    const currentDateTime = new Date();
-    setCreationDate(currentDateTime);
     launchStdcmRequest();
   };
 
@@ -212,9 +208,6 @@ const StdcmConfig = ({
                 mapCanvas={mapCanvas}
                 stdcmV2Results={stdcmV2Results}
                 pathProperties={pathProperties}
-                rollingStockData={rollingStock}
-                speedLimitByTag={speedLimitByTag}
-                creationDate={creationDate}
               />
             )}
           </div>

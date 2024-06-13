@@ -133,7 +133,7 @@ function init({
 }
 
 export const usePathfindingV2 = (
-  setPathProperties: (pathProperties?: ManageTrainSchedulePathProperties) => void,
+  setPathProperties?: (pathProperties?: ManageTrainSchedulePathProperties) => void | null,
   pathProperties?: ManageTrainSchedulePathProperties
 ) => {
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
@@ -167,7 +167,7 @@ export const usePathfindingV2 = (
   const { updatePathSteps } = useOsrdConfActions();
 
   const generatePathfindingParams = (): PostV2InfraByInfraIdPathfindingBlocksApiArg | null => {
-    setPathProperties(undefined);
+    if (setPathProperties) setPathProperties(undefined);
     return getPathfindingQuery({ infraId, rollingStock, origin, destination, pathSteps });
   };
 
@@ -268,7 +268,7 @@ export const usePathfindingV2 = (
                 compact(updatedPathSteps)
               );
 
-              setPathProperties({
+              setPathProperties?.({
                 electrifications,
                 geometry,
                 suggestedOperationalPoints,

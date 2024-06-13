@@ -1,90 +1,284 @@
 .stdcm-v2 {
-    .stdcm-v2__body {
-        padding: 32px;
-        background-color: rgb(239, 243, 245);
+  .stdcm-v2__body {
+    padding: 32px;
+    background-color: rgb(239, 243, 245);
+    display: flex;
+
+    .stdcm-v2-simulation-settings {
+      display: flex;
+      gap: 13px;
+      .stdcm-v2__separator {
+        border-radius: 4px;
+        background-color: rgba(0, 0, 0, 0.05);
+        width: 6px;
+        height: 280px;
+        margin: 12px 0;
+      }
+      .stdcm-v2-simulation-itinerary {
         display: flex;
-    
-        .stdcm-v2-simulation-settings {
-            display: flex;
-            gap: 13px;
-            .stdcm-v2__separator {
-                border-radius: 4px;
-                background-color: rgba(0, 0, 0, 0.05);
-                width: 6px;
-                height: 280px;
-                margin: 12px 0;
-            }
-            .stdcm-v2-simulation-itinerary {
-                display: flex;
-                flex-direction: column;
-                gap: 32px;
-                width: 450px;
+        flex-direction: column;
+        gap: 32px;
+        width: 450px;
 
-                .stdcm-v2-vias-list {
-                    display: flex;
-                    flex-direction: column;
-                    gap: 2rem;
-                }
-
-                /*TODO Waiting to fix the button in ui-core...*/
-                .stdcm-v2-launch-request{
-                    padding-bottom: 0.15rem;
-                    button {
-                        justify-content: center;
-                        width: 100%;
-                        font-weight: 500;
-                    }
-                } 
-
-                .warning-box {
-                    border-radius: 8px;
-                    box-shadow:  0px 0px 0px 4px rgba(255, 255, 255, 1) inset, 0px 0px 0px 5px rgba(234, 167, 43, 1) inset, 0px 3px 7px -3px rgba(125, 82, 30, 0.55);
-                    background-color: rgba(253, 245, 225, 1);
-                    color: #7D521E;
-                    display: flex;
-                    flex-direction: column;
-                    padding: 1rem 1.8125rem 2rem 1.8125rem;
-                    margin-top: 0.75rem;
-
-                    span {
-                        color: #EAA72B;
-                        align-self: center;
-                        margin-bottom: 6px;
-                    }
-
-                }
-
-                .wizz-effect:active {
-                    .warning-box {
-                        animation: tilt-shaking 0.25s 0s;
-                    }
-                }
-
-                @keyframes tilt-shaking {
-                0% { transform: rotate(0deg); }
-                12% { transform: rotate(1deg); }
-                24% { transform: rotate(0eg); }
-                36% { transform: rotate(-1deg); }
-                47% { transform: rotate(0deg); }
-                59% { transform: rotate(1deg); }
-                70% { transform: rotate(0eg); }
-                85% { transform: rotate(-1deg); }
-                100% { transform: rotate(0deg); }
-                }
-
-            }
+        .stdcm-v2-vias-list {
+          display: flex;
+          flex-direction: column;
+          gap: 2rem;
         }
-        
-        .stdcm-v2-map {
-            border-radius: 8px;
-            border: 1px solid rgba(255, 255, 255, 1);
-            box-shadow: 0px 0px 0px 2px rgba(255, 255, 255, 0.75) inset, 0px 0px 0px 1px rgba(0, 0, 0, 0.25) inset;
-            height: auto;
-            min-height: 540px;
-            margin-left: 0.85rem;
+
+        /*TODO Waiting to fix the button in ui-core...*/
+        .stdcm-v2-launch-request {
+          padding-bottom: 0.15rem;
+
+          button {
+            justify-content: center;
             width: 100%;
-            height: calc(100vh - 64px);
+            font-weight: 500;
+          }
         }
+        .simulation-availaible {
+          width: 34.125rem;
+          height: 5rem;
+          display: flex;
+          flex-direction: column;
+          position: absolute;
+          margin-top: 2.5rem;
+          border-radius: 0.5rem;
+          background-color: rgb(230, 247, 238);
+          box-shadow:
+            0px 0px 0px 4px rgba(255, 255, 255, 1) inset,
+            0px 0px 0px 5px rgb(60, 202, 128) inset,
+            0px 3px 7px -3px rgba(11, 114, 60, 0.4);
+
+          span {
+            color: rgb(11, 114, 60);
+            align-self: center;
+            padding-top: 1.438rem;
+            font-size: 1.5rem;
+            line-height: 2rem;
+          }
+        }
+
+        .warning-box {
+          border-radius: 0.5rem;
+          box-shadow:
+            0px 0px 0px 4px rgba(255, 255, 255, 1) inset,
+            0px 0px 0px 5px rgba(234, 167, 43, 1) inset,
+            0px 3px 7px -3px rgba(125, 82, 30, 0.55);
+          background-color: rgba(253, 245, 225, 1);
+          color: #7d521e;
+          display: flex;
+          flex-direction: column;
+          padding: 1rem 1.8125rem 2rem 1.8125rem;
+          margin-top: 0.75rem;
+
+          span {
+            color: #eaa72b;
+            align-self: center;
+            margin-bottom: 6px;
+          }
+        }
+
+        .wizz-effect:active {
+          .warning-box {
+            animation: tilt-shaking 0.25s 0s;
+          }
+        }
+
+        @keyframes tilt-shaking {
+          0% {
+            transform: rotate(0deg);
+          }
+          12% {
+            transform: rotate(1deg);
+          }
+          24% {
+            transform: rotate(0eg);
+          }
+          36% {
+            transform: rotate(-1deg);
+          }
+          47% {
+            transform: rotate(0deg);
+          }
+          59% {
+            transform: rotate(1deg);
+          }
+          70% {
+            transform: rotate(0eg);
+          }
+          85% {
+            transform: rotate(-1deg);
+          }
+          100% {
+            transform: rotate(0deg);
+          }
+        }
+      }
     }
 
+    .stdcm-v2-map {
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 1);
+      box-shadow:
+        0px 0px 0px 2px rgba(255, 255, 255, 0.75) inset,
+        0px 0px 0px 1px rgba(0, 0, 0, 0.25) inset;
+      height: auto;
+      min-height: 540px;
+      margin-left: 0.85rem;
+      width: 100%;
+      height: calc(100vh - 64px);
+    }
+  }
+  .stdcm-v2-results {
+    background-color: rgb(233, 239, 242);
+    .simuation-banner {
+      color: rgb(0, 0, 0);
+      font-weight: 600;
+      font-size: 1.125rem;
+      line-height: 1.5rem;
+      padding-top: 1.813rem;
+      margin-left: 2rem;
+      margin-right: 2rem;
+      border-bottom: 0.063rem solid rgb(182, 178, 175);
+      .creation-date {
+        color: rgb(121, 118, 113);
+        font-weight: 400;
+        font-size: 0.875rem;
+        line-height: 1.25rem;
+        padding-top: 0.25rem;
+        padding-bottom: 0.688rem;
+      }
+      .simulation-validated {
+        display: flex;
+        .check-circle {
+          color: rgb(60, 202, 128);
+          padding-left: 0.5rem;
+        }
+      }
+    }
+    .simuation-results {
+      display: flex;
+      justify-content: space-between;
+      .results-and-sheet {
+        display: flex;
+        flex-direction: column;
+      }
+      .table-container {
+        margin-top: 2.125rem;
+        margin-left: 2rem;
+        width: 50.25rem;
+
+        .table-results {
+          border-radius: 0.375rem;
+          background-color: rgba(0, 0, 0, 0.05);
+
+          th {
+            height: 2rem;
+            font-size: 0.875rem;
+            font-weight: 400;
+            text-transform: capitalize;
+            color: rgb(121, 118, 113);
+            padding-top: 0.313rem;
+            padding-bottom: 0.313rem;
+            vertical-align: middle;
+          }
+          tbody tr:nth-child(odd) {
+            background-color: rgb(239, 243, 245);
+          }
+          tbody tr:nth-child(even) {
+            background-color: rgb(246, 248, 249);
+          }
+          td {
+            height: 2rem;
+            font-size: 0.875;
+            font-weight: 400;
+            color: rgb(49, 46, 43);
+            line-height: 1.25rem;
+            vertical-align: middle;
+          }
+          .index {
+            padding-left: 2rem;
+          }
+          .pr {
+            padding-right: 12.438rem;
+          }
+          .ch {
+            padding-right: 2.25rem;
+          }
+          .stop {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: rgb(0, 0, 0);
+            line-height: 1.25rem;
+            width: 4.688rem;
+          }
+          .stop-with-duration {
+            font-size: 0.875rem;
+            color: rgb(255, 255, 255);
+            background-color: rgb(33, 100, 130);
+            border-radius: 0.625rem;
+            margin-top: 0.375rem;
+            margin-bottom: 0.375rem;
+            margin-right: 1.813rem;
+            text-align: center;
+          }
+          .weight {
+            padding-left: 2.063rem;
+          }
+          .semi-bold-output {
+            font-weight: 600;
+          }
+        }
+        .display-all {
+          height: 6.5rem;
+          background-color: rgba(0, 0, 0, 0.05);
+          display: flex;
+          justify-content: space-between;
+          border-bottom-left-radius: 0.375rem;
+          border-bottom-right-radius: 0.375rem;
+          .button-display-all-PR {
+            padding-top: 2rem;
+            padding-left: 2.25rem;
+          }
+          .button-get-simulation {
+            padding-top: 2rem;
+            padding-right: 2.25rem;
+          }
+          .selected-simulation {
+            padding-top: 0.6rem;
+          }
+        }
+      }
+    }
+    .get-simulation {
+      margin-left: 2rem;
+      height: 10.75rem;
+      background-color: rgb(255, 255, 255);
+      border-bottom-left-radius: 0.375rem;
+      border-bottom-right-radius: 0.375rem;
+      .download-simulation {
+        padding-top: 2.813rem;
+        padding-left: 16.438rem;
+      }
+      .gesico-text {
+        font-weight: 400;
+        font-size: 1rem;
+        color: rgb(49, 46, 43);
+        padding-top: 1.313rem;
+        padding-left: 12.938rem;
+      }
+    }
+    .map-results {
+      width: 33.75rem;
+      height: 33.75rem;
+      margin-top: 2.313rem;
+      margin-right: 2rem;
+      border-radius: 0.5rem;
+      border: 0.063rem solid rgba(255, 255, 255, 1);
+      box-shadow:
+        0rem 0rem 0rem 0.125rem rgba(255, 255, 255, 0.75) inset,
+        0rem 0rem 0rem 0.063rem rgba(0, 0, 0, 0.25) inset;
+    }
+  }
 }
