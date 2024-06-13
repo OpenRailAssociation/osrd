@@ -136,7 +136,8 @@ class STDCMEndpointV2(private val infraManager: InfraManager) : Take {
                 reportTrain.positions,
                 reportTrain.times,
                 reportTrain.speeds,
-                reportTrain.energyConsumption
+                reportTrain.energyConsumption,
+                reportTrain.scheduledPointsHonored
             )
         val speedLimits = MRSP.computeMRSP(path.trainPath, rollingStock, false, speedLimitTag)
 
