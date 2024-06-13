@@ -194,7 +194,11 @@ const StdcmConfig = ({
                         : 'stdcm-map-noSimulation'
                     }`}
                   >
-                    <Map setMapCanvas={setMapCanvas} pathProperties={pathProperties} />
+                    <Map
+                      setMapCanvas={setMapCanvas}
+                      pathProperties={pathProperties}
+                      currentStdcmRequestStatus={currentStdcmRequestStatus}
+                    />
                   </div>
                 )}
               </div>

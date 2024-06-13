@@ -57,16 +57,20 @@ type MapProps = {
   pathProperties?: ManageTrainSchedulePathProperties;
   setMapCanvas?: (mapCanvas: string) => void;
   hideAttribution?: boolean;
+  currentStdcmRequestStatus?: string;
 };
 
-const Map = ({ pathProperties, setMapCanvas, hideAttribution = false }: MapProps) => {
+const Map = ({
+  pathProperties,
+  setMapCanvas,
+  hideAttribution = false,
+  currentStdcmRequestStatus,
+}: MapProps) => {
   const mapBlankStyle = useMapBlankStyle();
 
   const infraID = useInfraID();
   const terrain3DExaggeration = useSelector(getTerrain3DExaggeration);
   const { viewport, mapSearchMarker, mapStyle, showOSM, layersSettings } = useSelector(getMap);
-  const { getGeojson } = useOsrdConfSelectors();
-  const geoJson = useSelector(getGeojson);
   const trainScheduleV2Activated = useSelector(getTrainScheduleV2Activated);
 
   const [mapIsLoaded, setMapIsLoaded] = useState(false);
@@ -80,6 +84,8 @@ const Map = ({ pathProperties, setMapCanvas, hideAttribution = false }: MapProps
 
   const mapRef = useRef<MapRef | null>(null);
 
+  const [mapCaptured, setMapCaptured] = useState(false);
+
   useEffect(() => {
     const captureMap = async () => {
       const mapElement = document.getElementById('map-container');
@@ -92,13 +98,19 @@ const Map = ({ pathProperties, setMapCanvas, hideAttribution = false }: MapProps
           const canvas = await html2canvas(mapElement);
           const imageDataURL = canvas.toDataURL();
           setMapCanvas(imageDataURL);
+          setMapCaptured(true);
         }
       } catch (error) {
         console.error('Error capturing map:', error);
       }
     };
-    if (mapIsLoaded) captureMap();
-  }, [mapIsLoaded, geoJson, viewport]);
+
+    if (mapIsLoaded && !mapCaptured && currentStdcmRequestStatus === 'SUCCESS') {
+      setTimeout(() => {
+        captureMap();
+      }, 500);
+    }
+  }, [mapIsLoaded, mapCaptured, pathProperties, setMapCanvas]);
 
   const scaleControlStyle = {
     left: 20,
