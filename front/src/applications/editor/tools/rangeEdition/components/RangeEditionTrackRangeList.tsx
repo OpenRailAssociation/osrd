@@ -4,24 +4,27 @@ import { groupBy } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { MdShowChart } from 'react-icons/md';
 
-import EntitySumUp from 'applications/editor/components/EntitySumUp';
 import EditorContext from 'applications/editor/context';
 import type {
-  ApplicableTrackRange,
   ElectrificationEntity,
   RangeEditionState,
   SpeedSectionEntity,
 } from 'applications/editor/tools/rangeEdition/types';
 import type { ExtendedEditorContextType } from 'applications/editor/types';
-import { LoaderFill } from 'common/Loaders';
 
+import TrackRange from './TrackRange';
 import { compareTrackRange } from '../utils';
 
 const DEFAULT_DISPLAYED_RANGES_COUNT = 5;
 
-const TrackRangesList = () => {
+type TrackRangeListProps = {
+  withRouteName?: boolean;
+  speedRestrictionTool: boolean;
+};
+
+const TrackRangesList = ({ withRouteName, speedRestrictionTool }: TrackRangeListProps) => {
   const {
-    state: { entity, trackSectionsCache, routeElements, routeExtra = {} },
+    state: { entity, routeElements, routeExtra = {} },
   } = useContext(EditorContext) as ExtendedEditorContextType<
     RangeEditionState<SpeedSectionEntity | ElectrificationEntity>
   >;
@@ -30,48 +33,43 @@ const TrackRangesList = () => {
   const ranges = entity.properties.track_ranges || [];
   const displayedRanges = showAll ? ranges : ranges.slice(0, DEFAULT_DISPLAYED_RANGES_COUNT);
 
-  const rangesByRoute = groupBy(displayedRanges, (range) => {
-    const isCurrentRange = compareTrackRange(range);
-    // eslint-disable-next-line no-restricted-syntax
-    for (const [routeKey, { trackRanges }] of Object.entries(routeElements)) {
-      if (isCurrentRange(routeExtra[routeKey]) || trackRanges.some(isCurrentRange)) {
-        return routeKey;
-      }
+  function makeFullTrackList() {
+    if (withRouteName) {
+      const rangesByRoute = groupBy(displayedRanges, (range) => {
+        const isCurrentRange = compareTrackRange(range);
+        // eslint-disable-next-line no-restricted-syntax
+        for (const [routeKey, { trackRanges }] of Object.entries(routeElements)) {
+          if (isCurrentRange(routeExtra[routeKey]) || trackRanges.some(isCurrentRange)) {
+            return routeKey;
+          }
+        }
+        return undefined;
+      });
+      return Object.entries(rangesByRoute).reduce<JSX.Element[]>((acc, [route, tracks], index) => {
+        const routeJSX = <h3 key={`route-${index}`}>{route}</h3>;
+        const routeTracks = tracks.map((tr, trackIndex) => (
+          <TrackRange
+            range={tr}
+            index={trackIndex}
+            speedRestrictionTool={speedRestrictionTool}
+            key={`track-range-${tr.track}-${tr.begin}-${tr.end}-${tr.applicable_directions}-${trackIndex}`}
+          />
+        ));
+        return [...acc, routeJSX, ...routeTracks];
+      }, []);
     }
-    return undefined;
-  });
+    return displayedRanges.map((tr, trackIndex) => (
+      <TrackRange
+        range={tr}
+        index={trackIndex}
+        speedRestrictionTool={speedRestrictionTool}
+        key={`track-range-${tr.track}-${tr.begin}-${tr.end}-${tr.applicable_directions}-${trackIndex}`}
+      />
+    ));
+  }
 
-  const makeTrackJSX = (range: ApplicableTrackRange, i: number) => {
-    const trackState = trackSectionsCache[range.track];
+  const fullTrackList = makeFullTrackList();
 
-    return (
-      <li
-        key={`track-range-${range.track}-${range.begin}-${range.end}-${range.applicable_directions}-${i}`}
-        className="mb-4 d-flex flex-row align-items-center"
-      >
-        {(!trackState || trackState.type === 'loading') && (
-          <div className="position-relative w-100" style={{ height: 50 }}>
-            <LoaderFill className="bg-transparent" />
-          </div>
-        )}
-        {trackState?.type === 'success' && (
-          <div className="flex-grow-1 flex-shrink-1 ml-3">
-            <EntitySumUp entity={trackState.track} />
-            {entity.objType !== 'Electrification' &&
-              t(`Editor.directions.${range.applicable_directions}`)}
-          </div>
-        )}
-      </li>
-    );
-  };
-  const fullTrackList = Object.entries(rangesByRoute).reduce<JSX.Element[]>(
-    (acc, [route, tracks], index) => {
-      const routeJSX = <h3 key={`route-${index}`}>{route}</h3>;
-      const routeTracks = tracks.map(makeTrackJSX);
-      return [...acc, routeJSX, ...routeTracks];
-    },
-    []
-  );
   return (
     <div>
       <h4 className="pb-2">

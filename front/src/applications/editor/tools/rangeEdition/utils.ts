@@ -342,7 +342,7 @@ export function selectPslSign(
 }
 
 export function speedSectionIsPsl(entity: SpeedSectionEntity): boolean {
-  return !!entity.properties?.extensions?.psl_sncf;
+  return Boolean(entity.properties?.extensions?.psl_sncf);
 }
 
 export function isOnModeMove(interactionStateType: string): boolean {

@@ -49,8 +49,6 @@ const RangeEditionLeftPanel = () => {
     },
   } = useContext(EditorContext) as ExtendedEditorContextType<RangeEditionState<SpeedSectionEntity>>;
 
-  const [speedRestriction, setSpeedRestriction] = useState(false);
-
   const [getRoutesFromSwitch] =
     osrdEditoastApi.endpoints.postInfraByInfraIdRoutesNodes.useMutation();
 
@@ -60,6 +58,14 @@ const RangeEditionLeftPanel = () => {
   const [switchesRouteCandidates, setSwitchesRouteCandidates] = useState<string[]>([]);
   const [availableSwitchesPositions, setAvailableSwitchesPositions] =
     useState<AvailableSwitchPositions>({});
+
+  // The 2 main checkboxes
+  const isPermanentSpeedLimit = speedSectionIsPsl(entity as SpeedSectionEntity);
+  const [isSpeedRestriction, setIsSpeedRestriction] = useState(false);
+
+  const isNew = entity.properties.id === NEW_ENTITY_ID;
+  const infraID = useInfraID();
+  const entityIsSpeedSection = entity.objType === 'SpeedSection';
 
   /** Reset both highlighted and selected track_ranges, route ids and switches lists */
   const resetSpeedRestrictionSelections = () => {
@@ -75,9 +81,9 @@ const RangeEditionLeftPanel = () => {
   };
 
   const toggleSpeedRestriction = () => {
-    if (speedRestriction) resetSpeedRestrictionSelections();
-    setSpeedRestriction(!speedRestriction);
-    const selectiontype = speedRestriction ? 'idle' : 'selectSwitch';
+    if (isSpeedRestriction) resetSpeedRestrictionSelections();
+    setIsSpeedRestriction(!isSpeedRestriction);
+    const selectiontype = isSpeedRestriction ? 'idle' : 'selectSwitch';
     const newEntity = cloneDeep(entity) as SpeedSectionEntity;
     if (newEntity.properties.extensions) {
       newEntity.properties.extensions = undefined;
@@ -87,10 +93,6 @@ const RangeEditionLeftPanel = () => {
       interactionState: { type: selectiontype },
     });
   };
-
-  const isNew = entity.properties.id === NEW_ENTITY_ID;
-  const isPSL = speedSectionIsPsl(entity as SpeedSectionEntity);
-  const infraID = useInfraID();
 
   const { data: voltages } = osrdEditoastApi.endpoints.getInfraByInfraIdVoltages.useQuery(
     {
@@ -216,108 +218,103 @@ const RangeEditionLeftPanel = () => {
     }
   }, [selectedSwitches]);
 
-  const isSpeedSection = entity.objType === 'SpeedSection';
-  return (
-    <div className={cx({ 'speed-section': isSpeedSection })}>
-      <legend className="mb-4">
-        {t(`Editor.obj-types.${isSpeedSection ? 'SpeedSection' : 'Electrification'}`)}
-      </legend>
-      {initialEntity.objType === 'SpeedSection'
-        ? speedLimitTags && <SpeedSectionMetadataForm speedLimitTags={speedLimitTags} />
-        : voltages && <ElectrificationMetadataForm voltages={voltages} />}
-      <hr />
-      {initialEntity.objType === 'SpeedSection' && (
-        <>
-          <div>
-            {!speedRestriction && (
-              <div className="d-flex">
-                <CheckboxRadioSNCF
-                  type="checkbox"
-                  id="is-psl-checkbox"
-                  name="is-psl-checkbox"
-                  checked={isPSL}
-                  disabled={entity.properties.track_ranges?.length === 0}
-                  label={t('Editor.tools.speed-edition.toggle-psl')}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                    let newExtension: SpeedSectionEntity['properties']['extensions'] = {
-                      psl_sncf: null,
-                    };
-                    if (e.target.checked) {
-                      const firstRange = (entity.properties?.track_ranges || [])[0];
-                      if (!firstRange) return;
-                      newExtension = {
-                        psl_sncf: initialEntity.properties?.extensions?.psl_sncf || {
-                          announcement: [],
-                          r: [],
-                          z: {
-                            direction: 'START_TO_STOP',
-                            position: firstRange.begin,
-                            side: 'LEFT',
-                            track: firstRange.track,
-                            type: 'Z',
-                            value: '',
-                            kp: '',
-                          },
-                        },
-                      };
-                    }
-                    updateSpeedSectionExtensions(newExtension);
-                  }}
-                />
-              </div>
-            )}
+  // The 2 main checkboxes
+  const permanentSpeedLimitCheckbox = !isSpeedRestriction && (
+    <div className="d-flex">
+      <CheckboxRadioSNCF
+        type="checkbox"
+        id="is-psl-checkbox"
+        name="is-psl-checkbox"
+        checked={isPermanentSpeedLimit}
+        disabled={entity.properties.track_ranges?.length === 0}
+        label={t('Editor.tools.speed-edition.toggle-psl')}
+        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+          let newExtension: SpeedSectionEntity['properties']['extensions'] = {
+            psl_sncf: null,
+          };
+          if (e.target.checked) {
+            const firstRange = (entity.properties?.track_ranges || [])[0];
+            if (!firstRange) return;
+            newExtension = {
+              psl_sncf: initialEntity.properties?.extensions?.psl_sncf || {
+                announcement: [],
+                r: [],
+                z: {
+                  direction: 'START_TO_STOP',
+                  position: firstRange.begin,
+                  side: 'LEFT',
+                  track: firstRange.track,
+                  type: 'Z',
+                  value: '',
+                  kp: '',
+                },
+              },
+            };
+          }
+          updateSpeedSectionExtensions(newExtension);
+        }}
+      />
+    </div>
+  );
+  const speedRestrictionCheckbox = !isPermanentSpeedLimit && (
+    <div className="d-flex">
+      <CheckboxRadioSNCF
+        type="checkbox"
+        id="get-route-from-switch"
+        name="get-route-from-switch"
+        checked={isSpeedRestriction}
+        label={t('Editor.tools.speed-edition.ralen-30-60')}
+        onChange={toggleSpeedRestriction}
+      />
+    </div>
+  );
 
-            {!speedRestriction && entity.properties.track_ranges?.length === 0 && (
-              <p className="mt-3 font-size-1">{t('Editor.tools.speed-edition.toggle-psl-help')}</p>
-            )}
-            {!isPSL && (
-              <div className="d-flex">
-                <CheckboxRadioSNCF
-                  type="checkbox"
-                  id="get-route-from-switch"
-                  name="get-route-from-switch"
-                  checked={speedRestriction}
-                  label={t('Editor.tools.speed-edition.ralen-30-60')}
-                  onChange={toggleSpeedRestriction}
-                />
-              </div>
-            )}
-            {!speedRestriction && isPSL && (
-              <EditPSLSection
-                entity={entity as SpeedSectionPslEntity}
-                setState={
-                  setState as (
-                    stateOrReducer: PartialOrReducer<RangeEditionState<SpeedSectionEntity>>
-                  ) => void
-                }
-                trackSectionsCache={trackSectionsCache}
-              />
-            )}
-          </div>
-          <hr />
-        </>
-      )}
-      {speedRestriction && (
-        <>
-          {t('Editor.tools.speed-edition.select-switches-to-get-route')}
-          {Object.keys(selectedSwitches).length > 0 && (
-            <>
-              <SwitchList
-                selectedSwitches={selectedSwitches}
-                unselectSwitch={unselectSwitch}
-                setSwitchSelection={setState}
-                availableSwitchesPositions={availableSwitchesPositions}
-              />
-              {switchesRouteCandidates.length === 0 && (
-                <p className="text-muted">{t('Editor.tools.routes-edition.routes_zero')}</p>
-              )}
-            </>
+  // Entity is Speed Section
+  if (entityIsSpeedSection) {
+    return (
+      <div className="speed-section">
+        <legend className="mb-4">{t(`Editor.obj-types.SpeedSection`)}</legend>
+        {speedLimitTags && <SpeedSectionMetadataForm speedLimitTags={speedLimitTags} />}
+        <hr />
+        <div>
+          {permanentSpeedLimitCheckbox}
+          {!isSpeedRestriction && entity.properties.track_ranges?.length === 0 && (
+            <p className="mt-3 font-size-1">{t('Editor.tools.speed-edition.toggle-psl-help')}</p>
           )}
-          <hr />
-        </>
-      )}
-      {switchesRouteCandidates.length > 0 && (
-        <>
+          {speedRestrictionCheckbox}
+          {!isSpeedRestriction && isPermanentSpeedLimit && (
+            <EditPSLSection
+              entity={entity as SpeedSectionPslEntity}
+              setState={
+                setState as (
+                  stateOrReducer: PartialOrReducer<RangeEditionState<SpeedSectionEntity>>
+                ) => void
+              }
+              trackSectionsCache={trackSectionsCache}
+            />
+          )}
+        </div>
+        <hr />
+        {isSpeedRestriction && (
+          <>
+            {t('Editor.tools.speed-edition.select-switches-to-get-route')}
+            {Object.keys(selectedSwitches).length > 0 && (
+              <>
+                <SwitchList
+                  selectedSwitches={selectedSwitches}
+                  unselectSwitch={unselectSwitch}
+                  setSwitchSelection={setState}
+                  availableSwitchesPositions={availableSwitchesPositions}
+                />
+                {switchesRouteCandidates.length === 0 && (
+                  <p className="text-muted">{t('Editor.tools.routes-edition.routes_zero')}</p>
+                )}
+              </>
+            )}
+            <hr />
+          </>
+        )}
+        {switchesRouteCandidates.length > 0 && (
           <RouteList
             switchesRouteCandidates={switchesRouteCandidates}
             onRouteSelect={handleRouteClicked(true)}
@@ -325,10 +322,23 @@ const RangeEditionLeftPanel = () => {
             onRouteHighlight={handleRouteClicked(false)}
             highlightedRoutes={highlightedRoutes}
           />
-          <TrackRangesList />
-        </>
-      )}
+        )}
+        <TrackRangesList
+          withRouteName={switchesRouteCandidates.length > 0}
+          speedRestrictionTool={isSpeedRestriction}
+        />
+        {!isNew && <EntityError className="mt-1" entity={entity} />}
+      </div>
+    );
+  }
 
+  // Entity is electrification
+  return (
+    <div>
+      <legend className="mb-4">{t(`Editor.obj-types.Electrification`)}</legend>
+      {voltages && <ElectrificationMetadataForm voltages={voltages} />}
+      <hr />
+      <TrackRangesList speedRestrictionTool={isSpeedRestriction} />
       {!isNew && <EntityError className="mt-1" entity={entity} />}
     </div>
   );
