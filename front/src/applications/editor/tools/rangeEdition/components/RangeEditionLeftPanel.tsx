@@ -211,7 +211,9 @@ const RangeEditionLeftPanel = () => {
   }, [routeElements]);
 
   useEffect(() => {
-    searchRoutesFromSwitch();
+    if (isSpeedRestriction && !isEmpty(selectedSwitches)) {
+      searchRoutesFromSwitch();
+    }
   }, [selectedSwitches]);
 
   const isSpeedSection = entity.objType === 'SpeedSection';
