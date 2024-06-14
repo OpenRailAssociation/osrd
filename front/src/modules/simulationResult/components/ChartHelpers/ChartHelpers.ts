@@ -277,6 +277,7 @@ export const gridY2 = (axisScale: SimulationD3Scale, width: number) =>
     .tickSize(-width)
     .tickFormat(() => '');
 
+// drop V1 : remove this
 // Interpolation of cursor based on space position
 // ['position', 'speed']
 export const interpolateOnPosition = (
@@ -291,6 +292,28 @@ export const interpolateOnPosition = (
     const distanceFromPosition = positionLocal - bisection[0].position;
     const proportion = distanceFromPosition / distance;
     return sec2d3datetime(d3.interpolateNumber(bisection[0].time, bisection[1].time)(proportion));
+  }
+  return null;
+};
+
+// Interpolation of cursor based on space position
+// ['position', 'speed']
+export const interpolateOnPositionV2 = (
+  dataSimulation: { speed: PositionSpeedTime[] | ReportTrainData[] }, // TODO DROP V1 : remove PositionSpeedTime type
+  positionLocal: number,
+  offset: number // in seconds
+) => {
+  const bisect = d3.bisector<PositionSpeedTime, number>((d) => d.position).left;
+  const index = bisect(dataSimulation.speed, positionLocal, 1);
+  const bisection = [dataSimulation.speed[index - 1], dataSimulation.speed[index]];
+  if (bisection[1]) {
+    const distanceBetweenSteps = bisection[1].position - bisection[0].position;
+    const durationBetweenSteps = bisection[1].time - bisection[0].time;
+    const distanceFromPrevStep = positionLocal - bisection[0].position;
+
+    const durationFromPrevStep =
+      durationBetweenSteps * (distanceFromPrevStep / distanceBetweenSteps);
+    return sec2d3datetime(offset + (bisection[0].time + durationFromPrevStep) / 1000);
   }
   return null;
 };

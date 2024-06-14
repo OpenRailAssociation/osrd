@@ -220,7 +220,8 @@ export const createSpeedSpaceChart = (
     scaleX = defineLinear(maxX + 100);
 
     const maxY = d3.max(trainSimulation.speed, (speedObject) => speedObject.speed) as number;
-    scaleY = defineLinear(maxY);
+    // add some padding at the top of the chart
+    scaleY = defineLinear(maxY * 1.05);
 
     const minY2 = d3.min(
       trainSimulation.slopesCurve,

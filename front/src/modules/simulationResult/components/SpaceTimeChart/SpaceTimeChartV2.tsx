@@ -100,7 +100,7 @@ const SpaceTimeChartV2 = ({
   );
 
   /* coordinate the vertical cursors with other graphs (GEV for instance) */
-  const { timePosition, updateTimePosition } = useChartSynchronizerV2(
+  const { updateTimePosition } = useChartSynchronizerV2(
     (newTimePosition, positionValues) => {
       if (
         timeScaleDomain &&
@@ -155,7 +155,7 @@ const SpaceTimeChartV2 = ({
         );
       }
     },
-    [selectedTrain, timePosition, updateTimePosition]
+    [selectedTrain, trainIdUsedForProjection]
   );
 
   /*
@@ -257,7 +257,8 @@ const SpaceTimeChartV2 = ({
         setChart,
         simulationIsPlaying,
         updateTimePosition,
-        newTimeScaleRange
+        newTimeScaleRange,
+        selectedTrain.start_time
       );
     }
   }, [chart]);

@@ -175,7 +175,7 @@ const SimulationResultsV2 = ({
       )}
 
       {/* TRAIN : SPACE SPEED CHART */}
-      {selectedTrainRollingStock && trainSimulation && pathProperties && (
+      {selectedTrainRollingStock && trainSimulation && pathProperties && selectedTrain && (
         <div className="osrd-simulation-container d-flex mb-2">
           <div className="chart-container" style={{ height: `${heightOfSpeedSpaceChart}px` }}>
             <SpeedSpaceChartV2
@@ -187,13 +187,14 @@ const SimulationResultsV2 = ({
               pathProperties={pathProperties}
               sharedXScaleDomain={positionScaleDomain}
               setSharedXScaleDomain={setPositionScaleDomain}
+              departureTime={selectedTrain.start_time}
             />
           </div>
         </div>
       )}
 
       {/* TRAIN : CURVES & SLOPES */}
-      {trainSimulation.status === 'success' && pathProperties && (
+      {trainSimulation.status === 'success' && pathProperties && selectedTrain && (
         <div className="osrd-simulation-container d-flex mb-2">
           <div
             className="chart-container"
@@ -225,6 +226,7 @@ const SimulationResultsV2 = ({
                 pathProperties={pathProperties}
                 sharedXScaleDomain={positionScaleDomain}
                 setSharedXScaleDomain={setPositionScaleDomain}
+                departureTime={selectedTrain.start_time}
               />
             </Rnd>
           </div>

@@ -52,6 +52,7 @@ export type SpeedSpaceChartV2Props = {
   trainRollingStock?: LightRollingStock;
   sharedXScaleDomain?: PositionScaleDomain;
   setSharedXScaleDomain?: React.Dispatch<React.SetStateAction<PositionScaleDomain>>;
+  departureTime: string;
 };
 
 /**
@@ -72,6 +73,7 @@ const SpeedSpaceChartV2 = ({
   trainRollingStock,
   sharedXScaleDomain,
   setSharedXScaleDomain,
+  departureTime,
 }: SpeedSpaceChartV2Props) => {
   const simulationIsPlaying = useSelector(getIsPlaying);
   const speedSpaceSettings = useSelector(getSpeedSpaceSettings);
@@ -230,6 +232,7 @@ const SpeedSpaceChartV2 = ({
         simulationIsPlaying,
         updateTimePosition,
         timeScaleRange,
+        departureTime,
         setSharedXScaleDomain,
         additionalAxes
       );

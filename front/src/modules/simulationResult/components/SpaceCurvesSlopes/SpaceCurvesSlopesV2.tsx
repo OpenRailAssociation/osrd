@@ -40,6 +40,7 @@ type SpaceCurvesSlopesV2Props = {
   pathProperties: PathPropertiesFormatted;
   sharedXScaleDomain?: PositionScaleDomain;
   setSharedXScaleDomain?: React.Dispatch<React.SetStateAction<PositionScaleDomain>>;
+  departureTime: string;
 };
 
 const SpaceCurvesSlopesV2 = ({
@@ -48,6 +49,7 @@ const SpaceCurvesSlopesV2 = ({
   pathProperties,
   sharedXScaleDomain,
   setSharedXScaleDomain,
+  departureTime,
 }: SpaceCurvesSlopesV2Props) => {
   const simulationIsPlaying = useSelector(getIsPlaying);
   const { base } = trainSimulation;
@@ -221,6 +223,7 @@ const SpaceCurvesSlopesV2 = ({
       simulationIsPlaying,
       updateTimePosition,
       timeScaleRange,
+      departureTime,
       setSharedXScaleDomain,
       [CHART_AXES.SPACE_GRADIENT, CHART_AXES.SPACE_RADIUS, CHART_AXES.SPACE_HEIGHT]
     );

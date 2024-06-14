@@ -11,6 +11,7 @@ import {
   interpolateOnTime,
   getAxis,
   isSpaceTimeChart,
+  interpolateOnPositionV2,
 } from 'modules/simulationResult/components/ChartHelpers/ChartHelpers';
 import drawGuideLines from 'modules/simulationResult/components/ChartHelpers/drawGuideLines';
 import type { SpaceCurvesSlopesData } from 'modules/simulationResult/components/SpaceCurvesSlopes';
@@ -35,7 +36,7 @@ import type {
   PositionSpeedTime,
   PositionsSpeedTimes,
 } from 'reducers/osrdsimulation/types';
-import { dateIsInRange } from 'utils/date';
+import { dateIsInRange, isoDateWithTimezoneToSec } from 'utils/date';
 import type { typedEntries } from 'utils/types';
 
 export const displayGuide = (chart: Chart, opacity: number) => {
@@ -410,6 +411,7 @@ export const enableInteractivityV2 = <
   simulationIsPlaying: boolean,
   updateTimePosition: (newTimePositionValues: Date) => void,
   chartDimensions: [Date, Date],
+  selectedTrainDepartureDate: string,
   setSharedXScaleDomain?: React.Dispatch<React.SetStateAction<PositionScaleDomain>>,
   additionalValues: ChartAxes[] = [] // more values to display on the same chart
 ) => {
@@ -460,9 +462,10 @@ export const enableInteractivityV2 = <
       } else {
         // SpeedSpaceChart or SpaceCurvesSlopesChart
         const positionLocal = chart.x.invert(pointer(event, event.currentTarget)[0]) as number;
-        timePositionLocal = interpolateOnPosition(
+        timePositionLocal = interpolateOnPositionV2(
           selectedTrainData as { speed: PositionSpeedTime[] },
-          positionLocal
+          positionLocal,
+          isoDateWithTimezoneToSec(selectedTrainDepartureDate)
         );
 
         if (!timePositionLocal) {
