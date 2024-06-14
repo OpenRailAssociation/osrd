@@ -345,6 +345,10 @@ export function speedSectionIsPsl(entity: SpeedSectionEntity): boolean {
   return Boolean(entity.properties?.extensions?.psl_sncf);
 }
 
+export function speedSectionIsSpeedRestriction(entity: SpeedSectionEntity): boolean {
+  return Boolean(entity.properties?.on_routes);
+}
+
 export function isOnModeMove(interactionStateType: string): boolean {
   return ['moveRangeExtremity', 'moveSign'].includes(interactionStateType);
 }
@@ -383,11 +387,11 @@ export const makeSpeedRestrictionTrackRanges = (
     zoneTrackRanges.push(extraTrackRange);
     returnedExtra = true;
   }
-  const trackRangesWithRenamedDirections = zoneTrackRanges.map((tr) => ({
+  const trackRangesWithBothDirections = zoneTrackRanges.map((tr) => ({
     ...tr,
     applicable_directions: 'BOTH' as ApplicableDirections,
   }));
-  return [trackRangesWithRenamedDirections, returnedExtra];
+  return [trackRangesWithBothDirections, returnedExtra];
 };
 
 function renameDirection(trackRange: TrackRange) {
@@ -418,10 +422,3 @@ export const makeRouteElements = (
     }
     return acc;
   }, {});
-
-export const compareTrackRange =
-  (a: ApplicableTrackRange) => (b: ApplicableTrackRange | undefined) =>
-    a.track === b?.track &&
-    a.begin === b?.begin &&
-    a.end === b?.end &&
-    a.applicable_directions === b?.applicable_directions;
