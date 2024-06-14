@@ -109,7 +109,7 @@ function getSumUpContent(
   classesOverride: Partial<typeof DEFAULT_CLASSES> | undefined,
   status: string | undefined
 ): JSX.Element {
-  let type = t(`Editor.obj-types.${entity.objType}`);
+  const type = t(`Editor.obj-types.${entity.objType}`);
   let text = '';
   const subtexts: (string | JSX.Element)[] = [];
   const classes = { ...DEFAULT_CLASSES, ...(classesOverride || {}) };
@@ -132,14 +132,7 @@ function getSumUpContent(
       }
       break;
     }
-    // @ts-expect-error: Here we only deal with the installation_type, the rest is handled with BufferStop and Detector.
-    case 'Signal': {
-      const signal = entity as SignalEntity;
-      if (signal.properties.extensions.sncf.installation_type) {
-        type += ` - ${signal.properties.extensions.sncf.installation_type}`;
-      }
-    }
-    // eslint-disable-next-line no-fallthrough
+    case 'Signal':
     case 'BufferStop':
     case 'Detector': {
       // This cast is OK since both buffer stops and detectors have same
