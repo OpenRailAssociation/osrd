@@ -7558,7 +7558,6 @@ components:
                     $ref: '#/components/schemas/Side'
                 required:
                 - label
-                - side
                 - kp
                 type: object
               nullable: true

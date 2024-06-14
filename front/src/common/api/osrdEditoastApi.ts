@@ -2051,7 +2051,7 @@ export type Signal = {
     sncf?: {
       kp: string;
       label: string;
-      side: Side;
+      side?: Side;
     } | null;
   };
   id: string;
