@@ -15,13 +15,10 @@ use utoipa::ToSchema;
 
 use crate::error::InternalError;
 use crate::error::Result;
+use crate::modelsv2::prelude::*;
 use crate::modelsv2::work_schedules::WorkSchedule;
 use crate::modelsv2::work_schedules::WorkScheduleGroup;
 use crate::modelsv2::work_schedules::WorkScheduleType;
-use crate::modelsv2::Changeset;
-use crate::modelsv2::Create;
-use crate::modelsv2::CreateBatch;
-use crate::modelsv2::Model;
 use crate::views::AuthorizationError;
 use crate::views::AuthorizerExt;
 use crate::AppState;
@@ -187,7 +184,6 @@ pub mod test {
     use std::ops::DerefMut;
 
     use super::*;
-    use crate::modelsv2::prelude::*;
     use crate::views::test_app::TestAppBuilder;
 
     #[rstest]

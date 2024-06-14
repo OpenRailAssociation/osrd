@@ -21,9 +21,10 @@ use serde::Deserialize;
 /// /!\ Its compound image is not deleted by cascade if the livery is removed.
 ///
 #[derive(Debug, Clone, Derivative, ModelV2)]
+#[cfg_attr(test, derive(Deserialize))]
 #[derivative(Default)]
 #[model(table = editoast_models::tables::rolling_stock_livery)]
-#[cfg_attr(test, derive(Deserialize))]
+#[model(gen(ops = crd, list))]
 pub struct RollingStockLiveryModel {
     pub id: i64,
     pub name: String,

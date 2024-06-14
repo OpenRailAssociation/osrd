@@ -1,6 +1,7 @@
 mod args;
 mod codegen;
 mod config;
+mod crud;
 mod identifier;
 mod parsing;
 mod utils;
@@ -93,6 +94,7 @@ fn test_construction() {
         #[model(table = editoast_models::tables::osrd_infra_document)]
         #[model(row(type_name = "DocumentRow", derive(Debug)))]
         #[model(changeset(type_name = "DocumentChangeset", public, derive(Debug)))] // fields are public
+        #[model(gen(ops = crud, batch_ops = crud, list))]
         struct Document {
             #[model(column = "id", preferred, primary)]
             id_: i64,

@@ -58,6 +58,7 @@ pub const DEFAULT_INFRA_VERSION: &str = "0";
 
 #[derive(Debug, Clone, Derivative, Serialize, Deserialize, ModelV2, utoipa::ToSchema)]
 #[model(table = editoast_models::tables::infra)]
+#[model(gen(ops = crud, batch_ops = r, list))]
 #[derivative(Default)]
 pub struct Infra {
     pub id: i64,

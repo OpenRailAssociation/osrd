@@ -20,6 +20,7 @@ editoast_common::schemas! {
 
 #[derive(Clone, Debug, Serialize, Deserialize, ModelV2, ToSchema, PartialEq)]
 #[model(table = editoast_models::tables::project)]
+#[model(gen(ops = crud, list))]
 pub struct Project {
     pub id: i64,
     pub name: String,

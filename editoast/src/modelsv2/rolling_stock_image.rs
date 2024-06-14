@@ -8,6 +8,7 @@ use serde::Serialize;
 
 #[derive(Debug, Clone, Serialize, ModelV2)]
 #[model(table = editoast_models::tables::rolling_stock_separate_image)]
+#[model(gen(ops = c))]
 pub struct RollingStockSeparatedImageModel {
     pub id: i64,
     pub order: i32,

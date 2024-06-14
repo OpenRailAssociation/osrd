@@ -9,6 +9,7 @@ use utoipa::ToSchema;
 
 #[derive(Debug, Clone, ModelV2)]
 #[model(table = editoast_models::tables::work_schedule_group)]
+#[model(gen(ops = crd, batch_ops = c, list))]
 pub struct WorkScheduleGroup {
     pub id: i64,
     pub creation_date: NaiveDateTime,
@@ -25,6 +26,7 @@ pub enum WorkScheduleType {
 
 #[derive(Debug, Default, Clone, ModelV2)]
 #[model(table = editoast_models::tables::work_schedule)]
+#[model(gen(batch_ops = c, list))]
 pub struct WorkSchedule {
     pub id: i64,
     pub start_date_time: NaiveDateTime,

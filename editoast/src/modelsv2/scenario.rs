@@ -14,6 +14,7 @@ use editoast_models::DbConnection;
 #[derive(Debug, Clone, ModelV2, Deserialize, Serialize, ToSchema)]
 #[schema(as = ScenarioV2)]
 #[model(table = editoast_models::tables::scenario_v2)]
+#[model(gen(ops = crud, list))]
 #[cfg_attr(test, derive(PartialEq))]
 pub struct Scenario {
     pub id: i64,

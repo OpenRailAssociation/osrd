@@ -15,6 +15,7 @@ use serde::Deserialize;
 
 #[derive(Debug, Clone, ModelV2, ToSchema, Serialize)]
 #[model(table = editoast_models::tables::stdcm_search_environment)]
+#[model(gen(ops = crd, list))]
 #[cfg_attr(test, derive(Deserialize, PartialEq), model(changeset(derive(Clone))))]
 pub struct StdcmSearchEnvironment {
     pub id: i64,
