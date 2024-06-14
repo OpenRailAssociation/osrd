@@ -1,6 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
 
-import cx from 'classnames';
 import { cloneDeep, isEmpty, last, pick, uniqWith } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
@@ -23,6 +22,7 @@ import {
   makeSpeedRestrictionTrackRanges,
   makeRouteElements,
   speedSectionIsPsl,
+  speedSectionIsSpeedRestriction,
 } from 'applications/editor/tools/rangeEdition/utils';
 import type { ExtendedEditorContextType, PartialOrReducer } from 'applications/editor/types';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
@@ -61,7 +61,7 @@ const RangeEditionLeftPanel = () => {
 
   // The 2 main checkboxes
   const isPermanentSpeedLimit = speedSectionIsPsl(entity as SpeedSectionEntity);
-  const [isSpeedRestriction, setIsSpeedRestriction] = useState(false);
+  const isSpeedRestriction = speedSectionIsSpeedRestriction(entity as SpeedSectionEntity);
 
   const isNew = entity.properties.id === NEW_ENTITY_ID;
   const infraID = useInfraID();
@@ -82,13 +82,14 @@ const RangeEditionLeftPanel = () => {
 
   const toggleSpeedRestriction = () => {
     if (isSpeedRestriction) resetSpeedRestrictionSelections();
-    setIsSpeedRestriction(!isSpeedRestriction);
     const selectiontype = isSpeedRestriction ? 'idle' : 'selectSwitch';
     const newEntity = cloneDeep(entity) as SpeedSectionEntity;
     if (newEntity.properties.extensions) {
       newEntity.properties.extensions = undefined;
     }
+    newEntity.properties.track_ranges = [];
     setState({
+      isSpeedRestriction: !isSpeedRestriction,
       entity: newEntity,
       interactionState: { type: selectiontype },
     });

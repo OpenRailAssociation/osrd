@@ -12,6 +12,7 @@ import EditorContext from 'applications/editor/context';
 import { getEntities, getEntity } from 'applications/editor/data/api';
 import { flattenEntity } from 'applications/editor/data/utils';
 import type {
+  ApplicableTrackRange,
   PslSignFeature,
   RangeEditionState,
   SpeedSectionEntity,
@@ -22,9 +23,11 @@ import {
   getTrackRangeFeatures,
   isOnModeMove,
   speedSectionIsPsl,
+  speedSectionIsSpeedRestriction,
 } from 'applications/editor/tools/rangeEdition/utils';
 import type { TrackSectionEntity } from 'applications/editor/tools/trackEdition/types';
 import type { ExtendedEditorContextType } from 'applications/editor/types';
+import type { EditorEntity } from 'applications/editor/typesEditorEntity';
 import colors from 'common/Map/Consts/colors';
 import GeoJSONs, { SourcesDefinitionsIndex } from 'common/Map/Layers/GeoJSONs';
 import { useInfraID } from 'common/osrdContext';
@@ -53,6 +56,8 @@ export const SpeedSectionEditionLayers = () => {
     setState,
   } = useContext(EditorContext) as ExtendedEditorContextType<RangeEditionState<SpeedSectionEntity>>;
   const isPermanentSpeedLimit = speedSectionIsPsl(entity);
+  const isSpeedRestriction = speedSectionIsSpeedRestriction(entity as SpeedSectionEntity);
+
   const { mapStyle, layersSettings, issuesSettings, showIGNBDORTHO } = useSelector(getMap);
   const infraID = useInfraID();
   const selection = useMemo(() => {
@@ -72,18 +77,29 @@ export const SpeedSectionEditionLayers = () => {
     return res;
   }, [interactionState, hoveredItem, entity, selectedSwitches]);
 
-  // Tracks that are selected
+  const makeTrackRangeFeatures =
+    (flatEntity: EditorEntity) => (range: ApplicableTrackRange, i: number) => {
+      const trackState = trackSectionsCache[range.track];
+      return trackState?.type === 'success'
+        ? getTrackRangeFeatures(trackState.track, range, i, flatEntity.properties)
+        : [];
+    };
+
+  // dashed lines - - - (selected routes tracks in the case of speed restrictions)
   const selectedTracksFeature: FeatureCollection = useMemo(() => {
     const flatEntity = flattenEntity(entity);
     // generate trackRangeFeatures
-    const trackRangeFeatures = Object.values(pick(routeElements, highlightedRoutes))
-      .flatMap((el) => el.trackRanges)
-      .flatMap((range, i) => {
-        const trackState = trackSectionsCache[range.track];
-        return trackState?.type === 'success'
-          ? getTrackRangeFeatures(trackState.track, range, i, flatEntity.properties)
-          : [];
-      }) as Feature<LineString | Point>[];
+    let trackRangeFeatures;
+    if (isSpeedRestriction) {
+      trackRangeFeatures = Object.values(pick(routeElements, highlightedRoutes))
+        .flatMap((el) => el.trackRanges)
+        .flatMap(makeTrackRangeFeatures(flatEntity)) as Feature<LineString | Point>[];
+    } else {
+      const trackRanges = entity.properties?.track_ranges || [];
+      trackRangeFeatures = trackRanges.flatMap(makeTrackRangeFeatures(flatEntity)) as Feature<
+        LineString | Point
+      >[];
+    }
 
     // generate pslSignFeatures
     let pslSignFeatures = [] as PslSignFeature[];
@@ -96,17 +112,14 @@ export const SpeedSectionEditionLayers = () => {
     return featureCollection([...trackRangeFeatures, ...pslSignFeatures]);
   }, [entity, highlightedRoutes, trackSectionsCache]);
 
-  // Where the speed limit applies
+  // Where the speed limit applies (entity track_ranges)
   const speedSectionsFeature: FeatureCollection = useMemo(() => {
     const flatEntity = flattenEntity(entity);
     // generate trackRangeFeatures
     const trackRanges = entity.properties?.track_ranges || [];
-    const trackRangeFeatures = trackRanges.flatMap((range, i) => {
-      const trackState = trackSectionsCache[range.track];
-      return trackState?.type === 'success'
-        ? getTrackRangeFeatures(trackState.track, range, i, flatEntity.properties)
-        : [];
-    }) as Feature<LineString | Point>[];
+    const trackRangeFeatures = trackRanges.flatMap(makeTrackRangeFeatures(flatEntity)) as Feature<
+      LineString | Point
+    >[];
     return featureCollection([...trackRangeFeatures]);
   }, [entity, trackSectionsCache]);
 
