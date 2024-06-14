@@ -1,6 +1,6 @@
 #![allow(clippy::manual_unwrap_or_default)]
 
-use super::RawIdentifier;
+use super::{crud::Crud, RawIdentifier};
 use darling::{
     ast,
     util::{self, PathList},
@@ -22,12 +22,24 @@ pub(super) struct ModelArgs {
     pub(super) changeset: GeneratedTypeArgs,
     #[darling(multiple, rename = "identifier")]
     pub(super) identifiers: Vec<RawIdentifier>,
+    #[darling(rename = "gen")]
+    pub(super) impl_plan: ImplPlan,
     #[darling(default)]
     pub(super) preferred: Option<RawIdentifier>,
     #[darling(default)]
     pub(super) batch_chunk_size_limit: Option<usize>,
 
     pub(super) data: ast::Data<util::Ignored, ModelFieldArgs>,
+}
+
+#[derive(Debug, PartialEq, Eq, FromMeta)]
+pub(super) struct ImplPlan {
+    #[darling(default)]
+    pub(super) ops: Crud,
+    #[darling(default)]
+    pub(super) batch_ops: Crud,
+    #[darling(default)]
+    pub(super) list: bool,
 }
 
 #[derive(FromMeta, Default, Debug, PartialEq)]

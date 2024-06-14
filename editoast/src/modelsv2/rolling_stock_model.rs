@@ -34,6 +34,7 @@ editoast_common::schemas! {
 
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, ModelV2, ToSchema)]
 #[model(table = editoast_models::tables::rolling_stock)]
+#[model(gen(ops = crud, batch_ops = r, list))]
 #[model(changeset(derive(Validate), public))]
 #[schema(as = RollingStock)]
 pub struct RollingStockModel {

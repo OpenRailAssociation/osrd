@@ -13,6 +13,7 @@ use editoast_schemas::infra::ElectricalProfileSetData;
 #[derive(Clone, Debug, Serialize, Deserialize, ModelV2, ToSchema)]
 #[model(table = editoast_models::tables::electrical_profile_set)]
 #[model(changeset(derive(Deserialize)))]
+#[model(gen(ops = crd))]
 pub struct ElectricalProfileSet {
     pub id: i64,
     pub name: String,

@@ -4,10 +4,17 @@ use darling::Error;
 use proc_macro2::Span;
 
 use super::{
-    args::{GeneratedTypeArgs, ModelArgs, ModelFieldArgs},
+    args::{GeneratedTypeArgs, ImplPlan, ModelArgs, ModelFieldArgs},
+    crud::Crud,
     identifier::{Identifier, RawIdentifier},
     FieldTransformation, Fields, ModelConfig, ModelField, DEFAULT_BATCH_CHUNK_SIZE_LIMIT,
 };
+
+impl ImplPlan {
+    fn generates_something(&self) -> bool {
+        self.ops != Crud::default() || self.batch_ops != Crud::default() || self.list
+    }
+}
 
 impl ModelConfig {
     pub(crate) fn from_macro_args(
@@ -15,6 +22,12 @@ impl ModelConfig {
         model_name: syn::Ident,
         visibility: syn::Visibility,
     ) -> darling::Result<Self> {
+        if !options.impl_plan.generates_something() {
+            return Err(Error::custom(
+                "Model: at least one operation must be generated",
+            ));
+        }
+
         let row = GeneratedTypeArgs {
             type_name: options.row.type_name.or(Some(format!("{}Row", model_name))),
             ..options.row
@@ -121,6 +134,7 @@ impl ModelConfig {
             batch_chunk_size_limit: options
                 .batch_chunk_size_limit
                 .unwrap_or(DEFAULT_BATCH_CHUNK_SIZE_LIMIT),
+            impl_plan: options.impl_plan,
             fields,
             row,
             changeset,

@@ -41,6 +41,7 @@ macro_rules! infra_model {
         #[derive(Debug, Clone, Default, Serialize, Deserialize, ModelV2)]
         #[model(table = $table)]
         #[model(preferred = (infra_id, obj_id))]
+        #[model(gen(ops = crud, batch_ops = crud, list))]
         pub struct $name {
             pub id: i64,
             pub obj_id: String,

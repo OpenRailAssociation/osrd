@@ -6,6 +6,7 @@ use editoast_derive::ModelV2;
 
 #[derive(Debug, Default, Clone, ModelV2)]
 #[model(table = editoast_models::tables::document)]
+#[model(gen(ops = crd))]
 pub struct Document {
     pub id: i64,
     pub content_type: String,

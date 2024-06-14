@@ -57,6 +57,7 @@ mod tests {
 
     #[derive(Debug, Default, Clone, ModelV2, PartialEq, Eq)]
     #[model(table = editoast_models::tables::document)]
+    #[model(gen(ops = crud, batch_ops = crud, list))]
     struct Document {
         id: i64,
         content_type: String,
@@ -164,6 +165,7 @@ mod tests {
 
         #[derive(Debug, Clone, ModelV2)]
         #[model(table = editoast_models::tables::document)]
+        #[model(gen(ops = r, batch_ops = c))]
         struct Document {
             id: i64,
             content_type: String,

@@ -6,7 +6,7 @@ use std::{
 use syn::parse_quote;
 
 use super::{
-    args::GeneratedTypeArgs,
+    args::{GeneratedTypeArgs, ImplPlan},
     identifier::{Identifier, RawIdentifier},
 };
 
@@ -22,6 +22,7 @@ pub(crate) struct ModelConfig {
     pub(crate) identifiers: HashSet<Identifier>, // identifiers ⊆ fields
     pub(crate) preferred_identifier: Identifier, // preferred_identifier ∈ identifiers
     pub(crate) primary_identifier: Identifier,   // primary_identifier ∈ identifiers
+    pub(crate) impl_plan: ImplPlan,
 }
 
 #[derive(Debug, PartialEq, Clone)]
