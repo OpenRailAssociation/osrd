@@ -23,7 +23,7 @@ use crate::{
 #[derive(Debug)]
 pub enum UriParseError {
     SchemeOrAuthorityMissing,
-    InvalidUri(actix_web::http::uri::InvalidUri),
+    InvalidUri(#[allow(dead_code)] actix_web::http::uri::InvalidUri),
 }
 
 fn parse_and_check_uri(s: &str) -> Result<Uri, UriParseError> {
