@@ -70,6 +70,7 @@ pub struct SignalExtensions {
 #[serde(deny_unknown_fields)]
 pub struct SignalSncfExtension {
     pub label: String,
+    #[serde(default)]
     pub side: Side,
     pub kp: String,
 }
