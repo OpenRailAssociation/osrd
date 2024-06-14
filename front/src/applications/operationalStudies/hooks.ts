@@ -22,7 +22,7 @@ import { setFailure } from 'reducers/main';
 import type { PathStep } from 'reducers/osrdconf/types';
 import { getSelectedTrainId } from 'reducers/osrdsimulation/selectors';
 import { useAppDispatch } from 'store';
-import { isoDateToMs } from 'utils/date';
+import { isoDateWithTimezoneToSec } from 'utils/date';
 import { castErrorToFailure } from 'utils/error';
 import { getPointCoordinates } from 'utils/geometry';
 import { mmToM } from 'utils/physics';
@@ -251,10 +251,8 @@ export const useSimulationResults = () => {
             // The chart time axis is set by d3 function *sec2d3datetime* which start the chart at 01/01/1900 00:00:00
             // As javascript new Date() util takes count of the minutes lost since 1/1/1900 (9min and 21s), we have
             // to use sec2d3datetime here as well to set the times on the chart
-            const timeDifferenceMinutes = new Date().getTimezoneOffset();
             const time = sec2d3datetime(
-              isoDateToMs(selectedTrainSchedule.start_time) / 1000 +
-                Math.abs(timeDifferenceMinutes) * 60 +
+              isoDateWithTimezoneToSec(selectedTrainSchedule.start_time) +
                 trainSimulation.base.times[index] / 1000
             );
 
