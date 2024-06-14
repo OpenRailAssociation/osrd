@@ -50,10 +50,9 @@ export type SignalEntity = EditorEntity<
     logical_signals?: SignalingSystem[];
     extensions: {
       sncf: {
-        is_in_service?: boolean;
-        is_lightable?: boolean;
-        is_operational?: boolean;
-        installation_type?: string;
+        kp?: string;
+        label?: string;
+        side?: string;
       };
     };
   }
