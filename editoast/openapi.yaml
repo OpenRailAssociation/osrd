@@ -6881,10 +6881,10 @@ components:
           minimum: 0
           type: integer
         maximum_run_time:
-          default: 2592000
           description: Specifies how long the total run time can be in milliseconds
           format: int64
           minimum: 0
+          nullable: true
           type: integer
         rolling_stock_id:
           format: int64
@@ -12438,10 +12438,10 @@ paths:
                   minimum: 0
                   type: integer
                 maximum_run_time:
-                  default: 2592000
                   description: Specifies how long the total run time can be in milliseconds
                   format: int64
                   minimum: 0
+                  nullable: true
                   type: integer
                 rolling_stock_id:
                   format: int64
@@ -12512,6 +12512,17 @@ paths:
                       - path_not_found
                       type: string
                   required:
+                  - status
+                  type: object
+                - properties:
+                    error:
+                      $ref: '#/components/schemas/SimulationResponse'
+                    status:
+                      enum:
+                      - preprocessing_simulation_error
+                      type: string
+                  required:
+                  - error
                   - status
                   type: object
           description: The simulation result
