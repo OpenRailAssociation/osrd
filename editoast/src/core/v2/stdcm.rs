@@ -109,6 +109,9 @@ pub enum STDCMResponse {
         departure_time: DateTime<Utc>,
     },
     PathNotFound,
+    PreprocessingSimulationError {
+        error: SimulationResponse,
+    },
 }
 
 impl AsCoreRequest<Json<STDCMResponse>> for STDCMRequest {

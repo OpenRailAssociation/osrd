@@ -1739,6 +1739,10 @@ export type PostV2TimetableByIdStdcmApiResponse =
     }
   | {
       status: 'path_not_found';
+    }
+  | {
+      error: SimulationResponse;
+      status: 'preprocessing_simulation_error';
     };
 export type PostV2TimetableByIdStdcmApiArg = {
   /** The infra id */
@@ -1752,7 +1756,7 @@ export type PostV2TimetableByIdStdcmApiArg = {
     /** By how long we can shift the departure time in milliseconds */
     maximum_departure_delay?: number;
     /** Specifies how long the total run time can be in milliseconds */
-    maximum_run_time?: number;
+    maximum_run_time?: number | null;
     rolling_stock_id: number;
     /** Train categories for speed limits */
     speed_limit_tags?: string | null;

@@ -244,6 +244,7 @@ fun makeSimpleReportTrain(
             return@rdp abs(point.speed - projSpeed) * speedScaling +
                 abs(point.time - projTime) * timeScaling
         }
+    assert(simplified.isNotEmpty()) { "simulation result shouldn't be empty" }
 
     val scheduledPointsHonored = isScheduledPointsHonored(schedule, envelopeStopWrapper)
 

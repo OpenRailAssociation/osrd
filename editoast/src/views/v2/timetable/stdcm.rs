@@ -6,13 +6,14 @@ use actix_web::web::Query;
 use chrono::Utc;
 use chrono::{DateTime, NaiveDateTime, TimeZone};
 use editoast_derive::EditoastError;
-use editoast_schemas::train_schedule::Comfort;
 use editoast_schemas::train_schedule::MarginValue;
 use editoast_schemas::train_schedule::PathItemLocation;
+use editoast_schemas::train_schedule::{Comfort, Margins, PathItem};
 use serde::Deserialize;
 use serde::Serialize;
 use std::cmp::max;
 use std::collections::HashMap;
+use std::sync::Arc;
 use thiserror::Error;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
@@ -33,7 +34,7 @@ use crate::modelsv2::RollingStockModel;
 use crate::modelsv2::{DbConnection, Infra, List};
 use crate::views::v2::path::pathfinding::extract_location_from_path_items;
 use crate::views::v2::path::pathfinding::TrackOffsetExtractionError;
-use crate::views::v2::train_schedule::train_simulation_batch;
+use crate::views::v2::train_schedule::{train_simulation, train_simulation_batch};
 use crate::RedisClient;
 use crate::Retrieve;
 use crate::RetrieveBatch;
@@ -78,9 +79,7 @@ pub struct STDCMRequestPayload {
     #[schema(default = default_maximum_departure_delay)]
     maximum_departure_delay: u64,
     /// Specifies how long the total run time can be in milliseconds
-    #[serde(default = "default_maximum_run_time")]
-    #[schema(default = default_maximum_run_time)]
-    maximum_run_time: u64,
+    maximum_run_time: Option<u64>,
     /// Train categories for speed limits
     speed_limit_tags: Option<String>,
     /// Margin before the train passage in seconds
@@ -114,11 +113,6 @@ const fn default_maximum_departure_delay() -> u64 {
     TWO_HOURS_IN_MILLISECONDS
 }
 
-const TWELVE_HOURS_IN_MILLISECONDS: u64 = 12 * 60 * 60 * 60;
-const fn default_maximum_run_time() -> u64 {
-    TWELVE_HOURS_IN_MILLISECONDS
-}
-
 #[derive(Debug, Default, Clone, Serialize, Deserialize, IntoParams, ToSchema)]
 struct InfraIdQueryParam {
     infra: i64,
@@ -150,6 +144,7 @@ async fn stdcm(
     let timetable_id = id.into_inner();
     let infra_id = query.into_inner().infra;
     let data = data.into_inner();
+    let redis_client_inner = redis_client.into_inner();
 
     // 1. Retrieve Timetable / Infra / Trains / Simulation / Rolling Stock
     let timetable = TimetableWithTrains::retrieve_or_fail(conn, timetable_id, || {
@@ -164,7 +159,7 @@ async fn stdcm(
 
     let simulations = train_simulation_batch(
         db_pool.clone(),
-        redis_client.into_inner().clone(),
+        redis_client_inner.clone(),
         core_client.clone(),
         &trains,
         &infra,
@@ -195,6 +190,25 @@ async fn stdcm(
         );
     }
 
+    let maximum_run_time_result = get_maximum_run_time(
+        db_pool.clone(),
+        redis_client_inner.clone(),
+        core_client.clone(),
+        &data,
+        &infra,
+        &rolling_stock,
+        timetable_id,
+    )
+    .await?;
+    let maximum_run_time = match maximum_run_time_result {
+        MaxRunningTimeResult::MaxRunningTime { value } => value,
+        MaxRunningTimeResult::Error { error } => {
+            return Ok(Json(STDCMResponse::PreprocessingSimulationError {
+                error: *error,
+            }))
+        }
+    };
+
     // 3. Parse stdcm path items
     let path_items = parse_stdcm_steps(conn, &data, &infra).await?;
 
@@ -212,7 +226,7 @@ async fn stdcm(
         start_time: data.start_time,
         trains_requirements,
         maximum_departure_delay: Some(data.maximum_departure_delay),
-        maximum_run_time: data.maximum_run_time,
+        maximum_run_time,
         speed_limit_tag: data.speed_limit_tags,
         time_gap_before: data.time_gap_before,
         time_gap_after: data.time_gap_after,
@@ -222,7 +236,7 @@ async fn stdcm(
             conn,
             data.start_time,
             data.maximum_departure_delay,
-            data.maximum_run_time,
+            maximum_run_time,
         )
         .await?,
     }
@@ -232,13 +246,96 @@ async fn stdcm(
     Ok(Json(stdcm_response))
 }
 
+/// get the maximum run time, compute it if unspecified.
+/// returns an enum with either the result or a SimulationResponse if it failed
+async fn get_maximum_run_time(
+    db_pool: Arc<DbConnectionPoolV2>,
+    redis_client: Arc<RedisClient>,
+    core_client: Arc<CoreClient>,
+    data: &STDCMRequestPayload,
+    infra: &Infra,
+    rolling_stock: &RollingStockModel,
+    timetable_id: i64,
+) -> Result<MaxRunningTimeResult> {
+    if let Some(maximum_run_time) = data.maximum_run_time {
+        return Ok(MaxRunningTimeResult::MaxRunningTime {
+            value: maximum_run_time,
+        });
+    }
+
+    let train_schedule = TrainSchedule {
+        id: 0,
+        train_name: "".to_string(),
+        labels: vec![],
+        rolling_stock_name: rolling_stock.name.clone(),
+        timetable_id,
+        start_time: data.start_time,
+        schedule: vec![],
+        margins: build_single_margin(data.margin),
+        initial_speed: 0.0,
+        comfort: data.comfort,
+        path: convert_steps(&data.steps),
+        constraint_distribution: Default::default(),
+        speed_limit_tag: data.speed_limit_tags.clone(),
+        power_restrictions: vec![],
+        options: Default::default(),
+    };
+
+    let conn = &mut db_pool.clone().get().await?;
+    let sim_result =
+        train_simulation(conn, redis_client, core_client, &train_schedule, infra).await?;
+
+    let total_stop_time: u64 = data
+        .steps
+        .iter()
+        .map(|step: &PathfindingItem| step.duration.unwrap_or_default())
+        .sum();
+
+    return Ok(match sim_result {
+        SimulationResponse::Success { provisional, .. } => MaxRunningTimeResult::MaxRunningTime {
+            value: *provisional.times.last().expect("empty simulation result") * 2
+                + total_stop_time,
+        },
+        err => MaxRunningTimeResult::Error {
+            error: Box::from(err),
+        },
+    });
+}
+
+/// Convert the list of pathfinding items into a list of path item
+fn convert_steps(steps: &[PathfindingItem]) -> Vec<PathItem> {
+    return steps
+        .iter()
+        .map(|step| PathItem {
+            id: Default::default(),
+            deleted: false,
+            location: step.location.clone(),
+        })
+        .collect();
+}
+
+/// Build a margins object with one margin value covering the entire range
+fn build_single_margin(margin: Option<MarginValue>) -> Margins {
+    match margin {
+        None => Margins {
+            boundaries: vec![],
+            values: vec![],
+        },
+        Some(m) => Margins {
+            boundaries: vec![],
+            values: vec![m],
+        },
+    }
+}
+
+/// Build the list of work schedules for the given time range
 async fn build_work_schedules(
     conn: &mut DbConnection,
     time: DateTime<Utc>,
-    max_departure_delay: u64,
-    max_run_time: u64,
+    maximum_departure_delay: u64,
+    maximum_run_time: u64,
 ) -> Result<Vec<STDCMWorkSchedule>> {
-    let max_simulation_time = max_run_time + max_departure_delay;
+    let maximum_simulation_time = maximum_run_time + maximum_departure_delay;
     let res = Ok(WorkSchedule::list(conn, Default::default())
         .await?
         .iter()
@@ -258,7 +355,7 @@ async fn build_work_schedules(
             };
             schedule
         })
-        .filter(|ws| ws.end_time > 0 && ws.start_time < max_simulation_time)
+        .filter(|ws| ws.end_time > 0 && ws.start_time < maximum_simulation_time)
         .collect());
     res
 }
@@ -301,4 +398,9 @@ impl From<TrackOffsetExtractionError> for STDCMError {
             path_item: error.path_item,
         }
     }
+}
+
+enum MaxRunningTimeResult {
+    MaxRunningTime { value: u64 },
+    Error { error: Box<SimulationResponse> },
 }
