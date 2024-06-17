@@ -13,7 +13,6 @@ use serde::Deserialize;
 use serde::Serialize;
 use std::cmp::max;
 use std::collections::HashMap;
-use std::sync::Arc;
 use thiserror::Error;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
@@ -197,7 +196,7 @@ async fn stdcm(
     }
 
     // 3. Parse stdcm path items
-    let path_items = parse_stdcm_steps(db_pool, &data, &infra).await?;
+    let path_items = parse_stdcm_steps(conn, &data, &infra).await?;
 
     // 4. Build STDCM request
     let stdcm_response = STDCMRequest {
@@ -270,7 +269,7 @@ fn elapsed_since_time_ms(time: &NaiveDateTime, zero: &DateTime<Utc>) -> u64 {
 
 /// Create steps from track_map and waypoints
 async fn parse_stdcm_steps(
-    db_pool: Arc<DbConnectionPool>,
+    conn: &mut DbConnection,
     data: &STDCMRequestPayload,
     infra: &Infra,
 ) -> Result<Vec<STDCMPathItem>> {
@@ -282,7 +281,6 @@ async fn parse_stdcm_steps(
         durations.push(item.duration);
     }
 
-    let conn = &mut db_pool.get().await?;
     let track_offsets = extract_location_from_path_items(conn, infra.id, &locations).await?;
     let track_offsets = track_offsets.map_err::<STDCMError, _>(|err| err.into())?;
 

@@ -39,14 +39,13 @@ use crate::core::AsCoreRequest;
 use crate::core::CoreClient;
 use crate::error::Result;
 use crate::modelsv2::infra::Infra;
+use crate::modelsv2::prelude::*;
 use crate::modelsv2::timetable::Timetable;
 use crate::modelsv2::train_schedule::TrainSchedule;
 use crate::modelsv2::train_schedule::TrainScheduleChangeset;
 use crate::modelsv2::DbConnection;
 use crate::modelsv2::DbConnectionPool;
-use crate::modelsv2::Model;
-use crate::modelsv2::Retrieve;
-use crate::modelsv2::RetrieveBatch;
+use crate::modelsv2::DbConnectionPoolV2;
 use crate::views::v2::path::pathfinding_from_train;
 use crate::views::v2::path::PathfindingError;
 use crate::RedisClient;
@@ -185,7 +184,7 @@ struct BatchDeletionRequest {
 )]
 #[get("")]
 async fn get(
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Data<DbConnectionPoolV2>,
     train_schedule_id: Path<TrainScheduleIdParam>,
 ) -> Result<Json<TrainScheduleResult>> {
     let train_schedule_id = train_schedule_id.id;
@@ -215,7 +214,7 @@ struct GetBatchParams {
 )]
 #[get("")]
 async fn get_batch(
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Data<DbConnectionPoolV2>,
     params: QsQuery<GetBatchParams>,
 ) -> Result<Json<Vec<TrainScheduleResult>>> {
     let conn = &mut db_pool.get().await?;
@@ -241,7 +240,7 @@ async fn get_batch(
 )]
 #[delete("")]
 async fn delete(
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Data<DbConnectionPoolV2>,
     data: Json<BatchDeletionRequest>,
 ) -> Result<HttpResponse> {
     use crate::modelsv2::DeleteBatch;
@@ -267,11 +266,10 @@ async fn delete(
 )]
 #[put("")]
 async fn put(
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Data<DbConnectionPoolV2>,
     train_schedule_id: Path<TrainScheduleIdParam>,
     data: Json<TrainScheduleForm>,
 ) -> Result<Json<TrainScheduleResult>> {
-    use crate::modelsv2::Update;
     let conn = &mut db_pool.get().await?;
 
     let train_id = train_schedule_id.id;
@@ -676,67 +674,65 @@ async fn get_path(
 
 #[cfg(test)]
 mod tests {
+    use std::ops::DerefMut;
+    use std::sync::Arc;
 
+    use actix_http::StatusCode;
     use actix_web::test::call_and_read_body_json;
     use actix_web::test::call_service;
     use actix_web::test::TestRequest;
+    use pretty_assertions::assert_eq;
     use rstest::rstest;
     use serde_json::json;
-    use std::sync::Arc;
 
     use super::*;
     use crate::fixtures::tests::db_pool;
-    use crate::fixtures::tests::make_simple_train_schedule_v2;
     use crate::fixtures::tests::named_fast_rolling_stock;
     use crate::fixtures::tests::small_infra;
     use crate::fixtures::tests::timetable_v2;
-    use crate::fixtures::tests::train_schedule_v2;
     use crate::fixtures::tests::TestFixture;
-    use crate::fixtures::tests::TrainScheduleV2FixtureSet;
+    use crate::modelsv2::fixtures::create_simple_train_schedule;
+    use crate::modelsv2::fixtures::create_timetable;
+    use crate::modelsv2::fixtures::simple_train_schedule_base;
     use crate::modelsv2::infra::Infra;
     use crate::modelsv2::timetable::Timetable;
-    use crate::modelsv2::Delete;
-    use crate::modelsv2::DeleteStatic;
+    use crate::views::test_app::TestAppBuilder;
     use crate::views::tests::create_test_service;
 
     #[rstest]
-    async fn get_trainschedule(
-        #[future] train_schedule_v2: TrainScheduleV2FixtureSet,
-        db_pool: Arc<DbConnectionPool>,
-    ) {
-        let service = create_test_service().await;
-        let fixture = train_schedule_v2.await;
-        let url = format!("/v2/train_schedule/{}", fixture.train_schedule.id());
+    async fn train_schedule_get() {
+        let app = TestAppBuilder::default_app();
+        let pool = app.db_pool();
 
-        // Should succeed
+        let timetable = create_timetable(pool.get_ok().deref_mut()).await;
+        let train_schedule =
+            create_simple_train_schedule(pool.get_ok().deref_mut(), timetable.id).await;
+
+        let url = format!("/v2/train_schedule/{}", train_schedule.id);
         let request = TestRequest::get().uri(&url).to_request();
-        let response = call_service(&service, request).await;
-        assert!(response.status().is_success());
 
-        // Delete the train_schedule
-        assert!(fixture
-            .train_schedule
-            .model
-            .delete(&mut db_pool.get().await.unwrap())
-            .await
-            .unwrap());
+        let response = app
+            .fetch(request)
+            .assert_status(StatusCode::OK)
+            .json_into::<TrainScheduleResult>();
 
-        // Should fail
-        let request = TestRequest::get().uri(&url).to_request();
-        let response = call_service(&service, request).await;
-        assert!(response.status().is_client_error());
+        assert_eq!(train_schedule.id, response.id);
+        assert_eq!(train_schedule.timetable_id, response.timetable_id);
+        assert_eq!(
+            train_schedule.initial_speed,
+            response.train_schedule.initial_speed
+        );
     }
 
     #[rstest]
-    async fn get_batch_trainschedule(
-        #[future] timetable_v2: TestFixture<Timetable>,
-        db_pool: Arc<DbConnectionPool>,
-    ) {
-        let service = create_test_service().await;
-        let timetable = timetable_v2.await;
-        let ts1 = make_simple_train_schedule_v2(timetable.id(), db_pool.clone()).await;
-        let ts2 = make_simple_train_schedule_v2(timetable.id(), db_pool.clone()).await;
-        let ts3 = make_simple_train_schedule_v2(timetable.id(), db_pool.clone()).await;
+    async fn train_schedule_get_batch() {
+        let app = TestAppBuilder::default_app();
+        let pool = app.db_pool();
+
+        let timetable = create_timetable(pool.get_ok().deref_mut()).await;
+        let ts1 = create_simple_train_schedule(pool.get_ok().deref_mut(), timetable.id).await;
+        let ts2 = create_simple_train_schedule(pool.get_ok().deref_mut(), timetable.id).await;
+        let ts3 = create_simple_train_schedule(pool.get_ok().deref_mut(), timetable.id).await;
 
         let url = format!(
             "/v2/train_schedule/?ids[]={}&ids[]={}&ids[]={}",
@@ -745,93 +741,79 @@ mod tests {
 
         // Should succeed
         let request = TestRequest::get().uri(&url).to_request();
-        let res: Vec<TrainScheduleResult> = call_and_read_body_json(&service, request).await;
-        assert_eq!(res.len(), 3);
-
-        // Delete one of the train_schedule
-        assert!(ts1
-            .model
-            .delete(&mut db_pool.get().await.unwrap())
-            .await
-            .unwrap());
-
-        // Should fail
-        let request = TestRequest::get().uri(&url).to_request();
-        let response = call_service(&service, request).await;
-        assert!(response.status().is_client_error());
+        let response: Vec<TrainScheduleResult> =
+            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        assert_eq!(response.len(), 3);
     }
 
     #[rstest]
-    async fn train_schedule_post(
-        #[future] timetable_v2: TestFixture<Timetable>,
-        db_pool: Arc<DbConnectionPool>,
-    ) {
-        let service = create_test_service().await;
+    async fn train_schedule_post() {
+        let app = TestAppBuilder::default_app();
+        let pool = app.db_pool();
 
-        let timetable = timetable_v2.await;
+        let timetable = create_timetable(pool.get_ok().deref_mut()).await;
+        let train_schedule_base = simple_train_schedule_base();
+
         // Insert train_schedule
-        let train_schedule: TrainScheduleBase =
-            serde_json::from_str(include_str!("../../tests/train_schedules/simple.json"))
-                .expect("Unable to parse");
         let request = TestRequest::post()
-            .uri(format!("/v2/timetable/{}/train_schedule", timetable.id()).as_str())
-            .set_json(json!(vec![train_schedule]))
+            .uri(format!("/v2/timetable/{}/train_schedule", timetable.id).as_str())
+            .set_json(json!(vec![train_schedule_base]))
             .to_request();
-        let response: Vec<TrainScheduleResult> = call_and_read_body_json(&service, request).await;
+
+        let response: Vec<TrainScheduleResult> =
+            app.fetch(request).assert_status(StatusCode::OK).json_into();
         assert_eq!(response.len(), 1);
-        let train_id = response[0].id;
-
-        // Delete the train_schedule
-        assert!(
-            TrainSchedule::delete_static(&mut db_pool.get().await.unwrap(), train_id)
-                .await
-                .is_ok()
-        );
     }
 
     #[rstest]
-    async fn train_schedule_delete(#[future] train_schedule_v2: TrainScheduleV2FixtureSet) {
-        let fixture = train_schedule_v2.await;
-        let service = create_test_service().await;
-        let request = TestRequest::delete()
-            .uri("/v2/train_schedule/")
-            .set_json(json!({"ids": vec![fixture.train_schedule.id()]}))
-            .to_request();
-        let response = call_service(&service, request).await;
-        assert!(response.status().is_success());
+    async fn train_schedule_delete() {
+        let app = TestAppBuilder::default_app();
+        let pool = app.db_pool();
 
-        // Delete should fail
+        let timetable = create_timetable(pool.get_ok().deref_mut()).await;
+        let train_schedule =
+            create_simple_train_schedule(pool.get_ok().deref_mut(), timetable.id).await;
 
         let request = TestRequest::delete()
             .uri("/v2/train_schedule/")
-            .set_json(json!({"ids": vec![fixture.train_schedule.id()]}))
+            .set_json(json!({"ids": vec![train_schedule.id]}))
             .to_request();
-        assert_eq!(call_service(&service, request).await.status().as_u16(), 404);
+
+        let _ = app.fetch(request).assert_status(StatusCode::NO_CONTENT);
+
+        let exists = TrainSchedule::exists(pool.get_ok().deref_mut(), train_schedule.id)
+            .await
+            .expect("Failed to retrieve train_schedule");
+
+        assert!(!exists);
     }
 
     #[rstest]
-    async fn train_schedule_put(#[future] train_schedule_v2: TrainScheduleV2FixtureSet) {
-        let TrainScheduleV2FixtureSet {
-            timetable,
-            train_schedule,
-        } = train_schedule_v2.await;
-        let service = create_test_service().await;
-        let rs_name = String::from("NEW ROLLING_STOCK");
-        let train_schedule_base: TrainScheduleBase = TrainScheduleBase {
-            rolling_stock_name: rs_name.clone(),
-            ..serde_json::from_str(include_str!("../../tests/train_schedules/simple.json"))
-                .expect("Unable to parse")
+    async fn train_schedule_put() {
+        let app = TestAppBuilder::default_app();
+        let pool = app.db_pool();
+
+        let timetable = create_timetable(pool.get_ok().deref_mut()).await;
+        let train_schedule =
+            create_simple_train_schedule(pool.get_ok().deref_mut(), timetable.id).await;
+
+        let rs_name = "NEW ROLLING_STOCK";
+
+        let mut update_train_schedule_base = simple_train_schedule_base();
+        update_train_schedule_base.rolling_stock_name = rs_name.to_owned();
+
+        let update_train_schedule_form = TrainScheduleForm {
+            timetable_id: Some(timetable.id),
+            train_schedule: update_train_schedule_base,
         };
-        let train_schedule_form = TrainScheduleForm {
-            timetable_id: Some(timetable.id()),
-            train_schedule: train_schedule_base,
-        };
+
         let request = TestRequest::put()
-            .uri(format!("/v2/train_schedule/{}", train_schedule.id()).as_str())
-            .set_json(json!(train_schedule_form))
+            .uri(format!("/v2/train_schedule/{}", train_schedule.id).as_str())
+            .set_json(json!(update_train_schedule_form))
             .to_request();
 
-        let response: TrainScheduleResult = call_and_read_body_json(&service, request).await;
+        let response: TrainScheduleResult =
+            app.fetch(request).assert_status(StatusCode::OK).json_into();
         assert_eq!(response.train_schedule.rolling_stock_name, rs_name)
     }
 

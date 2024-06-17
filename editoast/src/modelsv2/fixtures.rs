@@ -1,12 +1,15 @@
 use std::io::Cursor;
 
 use chrono::Utc;
+use editoast_schemas::infra::InfraObject;
 use editoast_schemas::primitives::OSRDObject;
+use editoast_schemas::train_schedule::TrainScheduleBase;
 
 use crate::infra_cache::operation::create::apply_create_operation;
 use crate::modelsv2::prelude::*;
 use crate::modelsv2::rolling_stock_livery::RollingStockLiveryModel;
 use crate::modelsv2::timetable::Timetable;
+use crate::modelsv2::train_schedule::TrainSchedule;
 use crate::modelsv2::DbConnection;
 use crate::modelsv2::Document;
 use crate::modelsv2::ElectricalProfileSet;
@@ -17,7 +20,7 @@ use crate::modelsv2::Scenario;
 use crate::modelsv2::Study;
 use crate::modelsv2::Tags;
 use crate::views::rolling_stocks::rolling_stock_form::RollingStockForm;
-use editoast_schemas::infra::InfraObject;
+use crate::views::v2::train_schedule::TrainScheduleForm;
 
 pub fn project_changeset(name: &str) -> Changeset<Project> {
     Project::changeset()
@@ -60,6 +63,30 @@ pub async fn create_timetable(conn: &mut DbConnection) -> Timetable {
         .create(conn)
         .await
         .expect("Failed to create timetable")
+}
+
+pub fn simple_train_schedule_base() -> TrainScheduleBase {
+    serde_json::from_str(include_str!("../tests/train_schedules/simple.json"))
+        .expect("Unable to parse")
+}
+
+pub fn simple_train_schedule_form(timetable_id: i64) -> TrainScheduleForm {
+    let train_schedule: TrainScheduleBase = simple_train_schedule_base();
+    TrainScheduleForm {
+        timetable_id: Some(timetable_id),
+        train_schedule,
+    }
+}
+
+pub async fn create_simple_train_schedule(
+    conn: &mut DbConnection,
+    timetable_id: i64,
+) -> TrainSchedule {
+    let train_schedule: Changeset<TrainSchedule> = simple_train_schedule_form(timetable_id).into();
+    train_schedule
+        .create(conn)
+        .await
+        .expect("Failed to create train schedule")
 }
 
 pub fn scenario_changeset(
