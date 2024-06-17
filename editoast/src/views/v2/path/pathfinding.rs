@@ -23,7 +23,7 @@ use crate::core::CoreClient;
 use crate::error::Result;
 use crate::modelsv2::train_schedule::TrainSchedule;
 use crate::modelsv2::DbConnection;
-use crate::modelsv2::DbConnectionPool;
+use crate::modelsv2::DbConnectionPoolV2;
 use crate::modelsv2::Infra;
 use crate::modelsv2::OperationalPointModel;
 use crate::modelsv2::Retrieve;
@@ -81,7 +81,7 @@ struct PathfindingInput {
 )]
 #[post("")]
 pub async fn post(
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Data<DbConnectionPoolV2>,
     redis_client: Data<RedisClient>,
     core: Data<CoreClient>,
     infra_id: Path<i64>,

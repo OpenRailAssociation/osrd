@@ -222,7 +222,7 @@ async fn post(
 )]
 #[put("")]
 async fn put(
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Data<DbConnectionPoolV2>,
     timetable_id: Path<TimetableIdParam>,
     data: Json<TimetableForm>,
 ) -> Result<Json<TimetableDetailedResult>> {
@@ -278,12 +278,10 @@ async fn delete(
 )]
 #[post("train_schedule")]
 async fn train_schedule(
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Data<DbConnectionPoolV2>,
     timetable_id: Path<TimetableIdParam>,
     data: Json<Vec<TrainScheduleBase>>,
 ) -> Result<Json<Vec<TrainScheduleResult>>> {
-    use crate::modelsv2::CreateBatch;
-
     let conn = &mut db_pool.get().await?;
 
     let timetable_id = timetable_id.id;
@@ -385,8 +383,6 @@ pub async fn conflicts(
 
 #[cfg(test)]
 mod tests {
-    use actix_web::test::call_service;
-    use actix_web::test::read_body_json;
     use actix_web::test::TestRequest;
     use pretty_assertions::assert_eq;
     use reqwest::StatusCode;
@@ -407,10 +403,10 @@ mod tests {
         let request = TestRequest::get()
             .uri(&format!("/v2/timetable/{}", timetable.id))
             .to_request();
-        let response = call_service(&app.service, request).await;
-        assert!(response.status().is_success());
 
-        let timetable_from_response: Timetable = read_body_json(response).await;
+        let timetable_from_response: Timetable =
+            app.fetch(request).assert_status(StatusCode::OK).json_into();
+
         assert_eq!(timetable_from_response, timetable);
     }
 
@@ -420,8 +416,7 @@ mod tests {
         let request = TestRequest::get()
             .uri(&format!("/v2/timetable/{}", 0))
             .to_request();
-        let response = call_service(&app.service, request).await;
-        assert_eq!(response.status(), StatusCode::NOT_FOUND);
+        app.fetch(request).assert_status(StatusCode::NOT_FOUND);
     }
 
     #[rstest]
@@ -433,9 +428,7 @@ mod tests {
 
         let request = TestRequest::get().uri("/v2/timetable/").to_request();
 
-        let response = call_service(&app.service, request).await;
-
-        assert_eq!(response.status(), StatusCode::OK);
+        app.fetch(request).assert_status(StatusCode::OK);
     }
 
     #[rstest]
@@ -449,10 +442,8 @@ mod tests {
             .set_json(json!({ "electrical_profil_set_id": None::<i64>}))
             .to_request();
 
-        let response = call_service(&app.service, request).await;
-        assert_eq!(response.status(), StatusCode::OK);
-
-        let created_timetable: Timetable = read_body_json(response).await;
+        let created_timetable: Timetable =
+            app.fetch(request).assert_status(StatusCode::OK).json_into();
 
         let retrieved_timetable =
             Timetable::retrieve(pool.get_ok().deref_mut(), created_timetable.id)
@@ -474,8 +465,7 @@ mod tests {
             .uri(format!("/v2/timetable/{}", timetable.id).as_str())
             .to_request();
 
-        let response = call_service(&app.service, request).await;
-        assert_eq!(response.status(), StatusCode::NO_CONTENT);
+        app.fetch(request).assert_status(StatusCode::NO_CONTENT);
 
         let exists = Timetable::exists(pool.get_ok().deref_mut(), timetable.id)
             .await

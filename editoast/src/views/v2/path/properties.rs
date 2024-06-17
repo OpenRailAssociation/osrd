@@ -31,7 +31,7 @@ use crate::core::v2::pathfinding::TrackRange;
 use crate::core::AsCoreRequest;
 use crate::core::CoreClient;
 use crate::error::Result;
-use crate::modelsv2::DbConnectionPool;
+use crate::modelsv2::DbConnectionPoolV2;
 use crate::views::v2::path::retrieve_infra_version;
 use crate::RedisClient;
 use crate::RedisConnection;
@@ -157,7 +157,7 @@ type Properties = EnumSet<Property>;
 )]
 #[post("")]
 pub async fn post(
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Data<DbConnectionPoolV2>,
     redis_client: Data<RedisClient>,
     core_client: Data<CoreClient>,
     infra_id: Path<i64>,
