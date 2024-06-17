@@ -13,6 +13,7 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 use std::hash::Hash;
 use std::hash::Hasher;
+use std::ops::DerefMut;
 use std::sync::Arc;
 use tracing::info;
 use utoipa::ToSchema;
@@ -32,6 +33,7 @@ use crate::core::CoreClient;
 use crate::error::Result;
 use crate::modelsv2::infra::Infra;
 use crate::modelsv2::train_schedule::TrainSchedule;
+use crate::modelsv2::DbConnectionPoolV2;
 use crate::modelsv2::Retrieve;
 use crate::modelsv2::RetrieveBatch;
 use crate::views::v2::path::pathfinding_from_train;
@@ -43,7 +45,6 @@ use crate::views::v2::train_schedule::ReportTrain;
 use crate::views::v2::train_schedule::SignalSighting;
 use crate::views::v2::train_schedule::ZoneUpdate;
 
-use crate::modelsv2::DbConnectionPool;
 use crate::RedisClient;
 use crate::RollingStockModel;
 
@@ -123,7 +124,7 @@ struct CachedProjectPathTrainResult {
 )]
 #[post("/project_path")]
 async fn project_path(
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Data<DbConnectionPoolV2>,
     redis_client: Data<RedisClient>,
     core_client: Data<CoreClient>,
     params: QsQuery<SimulationBatchParams>,
@@ -140,22 +141,22 @@ async fn project_path(
     let infra_id = query_props.infra;
     let db_pool = db_pool.into_inner();
     let redis_client = redis_client.into_inner();
-    let conn = &mut db_pool.clone().get().await?;
     let mut redis_conn = redis_client.get_connection().await?;
     let core = core_client.into_inner();
 
-    let infra = Infra::retrieve_or_fail(conn, infra_id, || TrainScheduleError::InfraNotFound {
-        infra_id,
+    let infra = Infra::retrieve_or_fail(db_pool.get().await?.deref_mut(), infra_id, || {
+        TrainScheduleError::InfraNotFound { infra_id }
     })
     .await?;
 
-    let train_schedule_batch: Vec<TrainSchedule> =
-        TrainSchedule::retrieve_batch_or_fail(conn, train_ids, |missing| {
-            TrainScheduleError::BatchTrainScheduleNotFound {
-                number: missing.len(),
-            }
-        })
-        .await?;
+    let train_schedule_batch: Vec<TrainSchedule> = TrainSchedule::retrieve_batch_or_fail(
+        db_pool.get().await?.deref_mut(),
+        train_ids,
+        |missing| TrainScheduleError::BatchTrainScheduleNotFound {
+            number: missing.len(),
+        },
+    )
+    .await?;
     let simulations = train_simulation_batch(
         db_pool.clone(),
         redis_client.clone(),
@@ -170,9 +171,14 @@ async fn project_path(
     let mut miss_cache = HashMap::new();
 
     for (train, sim) in train_schedule_batch.iter().zip(simulations) {
-        let pathfinding_result =
-            pathfinding_from_train(conn, &mut redis_conn, core.clone(), &infra, train.clone())
-                .await?;
+        let pathfinding_result = pathfinding_from_train(
+            db_pool.get().await?.deref_mut(),
+            &mut redis_conn,
+            core.clone(),
+            &infra,
+            train.clone(),
+        )
+        .await?;
 
         let track_ranges = match pathfinding_result {
             PathfindingResult::Success(PathfindingResultSuccess {
@@ -284,7 +290,8 @@ async fn project_path(
         })
         .collect();
     let (rs, missing): (Vec<_>, _) =
-        RollingStockModel::retrieve_batch(conn, rolling_stock_names).await?;
+        RollingStockModel::retrieve_batch(db_pool.get().await?.deref_mut(), rolling_stock_names)
+            .await?;
     assert!(missing.is_empty(), "Missing rolling stock models");
     let rolling_stock_length: HashMap<_, _> =
         rs.into_iter().map(|rs| (rs.name, rs.length)).collect();
