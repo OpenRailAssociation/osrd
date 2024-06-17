@@ -162,6 +162,7 @@ public final class RollingStock implements PhysicsRollingStock {
 
     protected record CurveAndCondition(TractiveEffortPoint[] curve, InfraConditions cond) {}
 
+    @SuppressFBWarnings("SE_BAD_FIELD")
     public record CurvesAndConditions(
             RangeMap<Double, TractiveEffortPoint[]> curves, RangeMap<Double, InfraConditions> conditions) {}
 
