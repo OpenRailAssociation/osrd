@@ -33,7 +33,6 @@ use crate::modelsv2::timetable::Timetable;
 use crate::modelsv2::timetable::TimetableWithTrains;
 use crate::modelsv2::train_schedule::TrainSchedule;
 use crate::modelsv2::train_schedule::TrainScheduleChangeset;
-use crate::modelsv2::DbConnectionPool;
 use crate::modelsv2::DbConnectionPoolV2;
 use crate::modelsv2::Infra;
 use crate::views::pagination::PaginatedList;
@@ -320,7 +319,7 @@ pub struct InfraIdQueryParam {
 )]
 #[get("/conflicts")]
 pub async fn conflicts(
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Data<DbConnectionPoolV2>,
     redis_client: Data<RedisClient>,
     core_client: Data<CoreClient>,
     timetable_id: Path<TimetableIdParam>,

@@ -28,12 +28,12 @@ use crate::error::Result;
 use crate::modelsv2::timetable::TimetableWithTrains;
 use crate::modelsv2::train_schedule::TrainSchedule;
 use crate::modelsv2::work_schedules::WorkSchedule;
+use crate::modelsv2::DbConnectionPoolV2;
 use crate::modelsv2::RollingStockModel;
 use crate::modelsv2::{DbConnection, Infra, List};
 use crate::views::v2::path::pathfinding::extract_location_from_path_items;
 use crate::views::v2::path::pathfinding::TrackOffsetExtractionError;
 use crate::views::v2::train_schedule::train_simulation_batch;
-use crate::DbConnectionPool;
 use crate::RedisClient;
 use crate::Retrieve;
 use crate::RetrieveBatch;
@@ -137,7 +137,7 @@ struct InfraIdQueryParam {
 )]
 #[post("")]
 async fn stdcm(
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Data<DbConnectionPoolV2>,
     redis_client: Data<RedisClient>,
     core_client: Data<CoreClient>,
     id: Path<i64>,

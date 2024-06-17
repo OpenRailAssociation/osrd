@@ -5,6 +5,7 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 use std::hash::Hash;
 use std::hash::Hasher;
+use std::ops::DerefMut;
 use std::sync::Arc;
 
 use actix_web::web::{Data, Json, Path, Query};
@@ -302,8 +303,8 @@ pub async fn simulation(
 ) -> Result<Json<SimulationResponse>> {
     let infra_id = query.into_inner().infra_id;
     let train_schedule_id = train_schedule_id.into_inner().id;
+
     let conn = &mut db_pool.get().await?;
-    let db_pool = db_pool.into_inner();
     let redis_client = redis_client.into_inner();
     let core_client = core_client.into_inner();
 
@@ -320,20 +321,19 @@ pub async fn simulation(
     .await?;
 
     Ok(Json(
-        train_simulation(db_pool, redis_client, core_client, &train_schedule, &infra).await?,
+        train_simulation(conn, redis_client, core_client, &train_schedule, &infra).await?,
     ))
 }
 
 /// Compute the simulation of a given train schedule
 pub async fn train_simulation(
-    db_pool: Arc<DbConnectionPool>,
+    conn: &mut DbConnection,
     redis_client: Arc<RedisClient>,
     core: Arc<CoreClient>,
     train_schedule: &TrainSchedule,
     infra: &Infra,
 ) -> Result<SimulationResponse> {
     let mut redis_conn = redis_client.get_connection().await?;
-    let conn = &mut db_pool.get().await?;
     // Compute path
     let pathfinding_result = pathfinding_from_train(
         conn,
@@ -530,11 +530,12 @@ enum SimulationSummaryResult {
 )]
 #[get("/simulation_summary")]
 pub async fn simulation_summary(
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Data<DbConnectionPoolV2>,
     redis_client: Data<RedisClient>,
     req: HttpRequest,
     core: Data<CoreClient>,
 ) -> Result<Json<HashMap<i64, SimulationSummaryResult>>> {
+    let db_pool = db_pool.into_inner();
     // TODO: Stop using serde_qs and move the query params to the body
     let config = Config::new(5, false);
     let query_props: SimulationBatchParams =
@@ -544,25 +545,25 @@ pub async fn simulation_summary(
             }
         })?;
     let infra_id = query_props.infra;
-    let conn = &mut db_pool.clone().get().await?;
-    let db_pool = db_pool.into_inner();
     let redis_client = redis_client.into_inner();
     let core = core.into_inner();
 
-    let infra = Infra::retrieve_or_fail(conn, infra_id, || TrainScheduleError::InfraNotFound {
-        infra_id,
+    let infra = Infra::retrieve_or_fail(db_pool.get().await?.deref_mut(), infra_id, || {
+        TrainScheduleError::InfraNotFound { infra_id }
     })
     .await?;
     let train_ids = query_props.ids;
-    let trains: Vec<TrainSchedule> =
-        TrainSchedule::retrieve_batch_or_fail(conn, train_ids, |missing| {
-            TrainScheduleError::BatchTrainScheduleNotFound {
-                number: missing.len(),
-            }
-        })
-        .await?;
+    let trains: Vec<TrainSchedule> = TrainSchedule::retrieve_batch_or_fail(
+        db_pool.get().await?.deref_mut(),
+        train_ids,
+        |missing| TrainScheduleError::BatchTrainScheduleNotFound {
+            number: missing.len(),
+        },
+    )
+    .await?;
 
-    let simulations = train_simulation_batch(db_pool, redis_client, core, &trains, &infra).await?;
+    let simulations =
+        train_simulation_batch(db_pool.clone(), redis_client, core, &trains, &infra).await?;
 
     // Transform simulations to simulation summary
     let mut simulation_summaries = HashMap::new();
@@ -608,25 +609,34 @@ pub async fn simulation_summary(
 ///
 /// Returns an error if any of the train ids are not found.
 pub async fn train_simulation_batch(
-    db_pool: Arc<DbConnectionPool>,
+    db_pool: Arc<DbConnectionPoolV2>,
     redis_client: Arc<RedisClient>,
     core_client: Arc<CoreClient>,
     train_schedules: &[TrainSchedule],
     infra: &Infra,
 ) -> Result<Vec<SimulationResponse>> {
-    let mut pending_simulations = vec![];
-    for train_schedule in train_schedules.iter() {
-        pending_simulations.push(train_simulation(
-            db_pool.clone(),
-            redis_client.clone(),
-            core_client.clone(),
-            train_schedule,
-            infra,
-        ));
-    }
+    let pending_simulations =
+        train_schedules
+            .iter()
+            .zip(db_pool.iter_conn())
+            .map(|(train_schedule, conn)| {
+                let redis_client = redis_client.clone();
+                let core_client = core_client.clone();
+                async move {
+                    train_simulation(
+                        conn.await
+                            .expect("Failed to get database connection")
+                            .deref_mut(),
+                        redis_client,
+                        core_client,
+                        train_schedule,
+                        infra,
+                    )
+                    .await
+                }
+            });
 
-    let simulations = futures::future::join_all(pending_simulations).await;
-    simulations.into_iter().collect()
+    futures::future::try_join_all(pending_simulations).await
 }
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize, IntoParams, ToSchema)]
@@ -645,7 +655,7 @@ pub struct InfraIdQueryParam {
 )]
 #[get("")]
 async fn get_path(
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Data<DbConnectionPoolV2>,
     redis_client: Data<RedisClient>,
     core: Data<CoreClient>,
     train_schedule_id: Path<TrainScheduleIdParam>,
@@ -797,10 +807,8 @@ mod tests {
         let train_schedule =
             create_simple_train_schedule(pool.get_ok().deref_mut(), timetable.id).await;
 
-        let rs_name = "NEW ROLLING_STOCK";
-
         let mut update_train_schedule_base = simple_train_schedule_base();
-        update_train_schedule_base.rolling_stock_name = rs_name.to_owned();
+        update_train_schedule_base.rolling_stock_name = String::from("NEW ROLLING_STOCK");
 
         let update_train_schedule_form = TrainScheduleForm {
             timetable_id: Some(timetable.id),
@@ -814,7 +822,10 @@ mod tests {
 
         let response: TrainScheduleResult =
             app.fetch(request).assert_status(StatusCode::OK).json_into();
-        assert_eq!(response.train_schedule.rolling_stock_name, rs_name)
+        assert_eq!(
+            response.train_schedule.rolling_stock_name,
+            update_train_schedule_form.train_schedule.rolling_stock_name
+        )
     }
 
     #[rstest]
