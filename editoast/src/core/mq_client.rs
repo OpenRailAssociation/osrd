@@ -1,3 +1,6 @@
+/*
+Todo: Rewrite a client here to send messages to core.
+
 use futures_util::StreamExt;
 use lapin::{
     options::{BasicPublishOptions, QueueDeclareOptions},
@@ -234,3 +237,4 @@ impl RabbitMQClient {
         Ok(serde_json::from_slice(&message.data).map_err(Error::SerializationError)?)
     }
 }
+ */

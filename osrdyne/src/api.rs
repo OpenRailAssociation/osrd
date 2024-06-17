@@ -1,3 +1,4 @@
+/*
 use std::sync::Arc;
 
 use axum::{extract::State, routing::get, Json, Router};
@@ -51,3 +52,4 @@ async fn list_cores(State(state): State<AppState>) -> Json<ListCoresResponse> {
         cores: latest_known_cores.clone(),
     })
 }
+*/
