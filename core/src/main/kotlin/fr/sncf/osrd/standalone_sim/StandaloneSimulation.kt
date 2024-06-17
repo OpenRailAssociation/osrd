@@ -33,6 +33,10 @@ import fr.sncf.osrd.utils.indexing.StaticIdxList
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
+val standaloneSimLogger: Logger = LoggerFactory.getLogger("StandaloneSimulation")
 
 /** Run a simulation for a single train. */
 fun runStandaloneSimulation(
@@ -216,6 +220,7 @@ fun buildFinalEnvelope(
         var extraTime = point.arrival.seconds - arrivalTime
         if (extraTime < 0.0) {
             // TODO: raise a warning
+            standaloneSimLogger.warn("impossible scheduled point")
             extraTime = 0.0
         }
         marginRanges.addAll(
@@ -271,6 +276,12 @@ fun distributeAllowance(
     startOffset: Offset<TravelledPath>,
     endOffset: Offset<TravelledPath>
 ): List<AllowanceRange> {
+    assert(startOffset <= endOffset)
+    if (startOffset == endOffset) {
+        // TODO: raise warning (overlapping scheduled points)
+        standaloneSimLogger.error("different scheduled points at the same location ($startOffset)")
+        return listOf()
+    }
     fun rangeTime(
         from: Offset<TravelledPath>,
         to: Offset<TravelledPath>,
