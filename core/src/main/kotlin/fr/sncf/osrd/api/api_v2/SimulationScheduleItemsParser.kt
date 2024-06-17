@@ -3,6 +3,9 @@ package fr.sncf.osrd.api.api_v2
 import fr.sncf.osrd.api.api_v2.standalone_sim.SimulationScheduleItem
 import fr.sncf.osrd.utils.units.TimeDelta
 import java.lang.Long.min
+import mu.KotlinLogging
+
+val simulationScheduleItemParserLogger = KotlinLogging.logger {}
 
 /**
  * Merge consecutive schedule items which are at the same location, i.e. have the same path offset.
@@ -44,9 +47,12 @@ fun parseRawSimulationScheduleItems(
             onStopSignal = onStopSignal || rawSimulationScheduleItems[i + 1].onStopSignal
             i++
         }
-        simulationScheduleItems.add(
-            SimulationScheduleItem(pathOffset, arrival, stopFor, onStopSignal)
-        )
+        val newItem = SimulationScheduleItem(pathOffset, arrival, stopFor, onStopSignal)
+        if (simulationScheduleItems.lastOrNull() == newItem) {
+            simulationScheduleItemParserLogger.warn { "duplicated schedule items: $newItem" }
+        } else {
+            simulationScheduleItems.add(newItem)
+        }
         i++
     }
     return simulationScheduleItems.sortedBy { it.pathOffset }
