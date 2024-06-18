@@ -186,7 +186,7 @@ class DetectorDescriptor(
     val names: List<String>,
 )
 
-class RawInfraImplFromRjs(
+class RawInfraImpl(
     private val trackNodePool: StaticPool<TrackNode, TrackNodeDescriptor>,
     private val trackSectionPool: StaticPool<TrackSection, TrackSectionDescriptor>,
     private val trackChunkPool: StaticPool<TrackChunk, TrackChunkDescriptor>,
