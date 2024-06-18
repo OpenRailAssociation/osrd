@@ -57,11 +57,17 @@ const RollingStockEditorFormModal = ({
         displayErrorObject(errorObject)
       )}
       <div className="d-flex justify-content-end w-100">
-        <button type="button" className="btn btn-sm btn-primary-gray" onClick={() => closeModal()}>
+        <button
+          data-testid="confirm-modal-button-no"
+          type="button"
+          className="btn btn-sm btn-primary-gray"
+          onClick={() => closeModal()}
+        >
           {t('common.no')}
         </button>
         {!errorObject && (
           <button
+            data-testid="confirm-modal-button-yes"
             type="button"
             className={`btn btn-sm ${deleteAction ? 'bg-red text-white' : 'btn-primary'} ml-3`}
             onClick={() => {
