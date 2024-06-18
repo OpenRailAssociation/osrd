@@ -27,6 +27,7 @@ const buildCommonConfSelectors = <ConfState extends OsrdConfState>(
   return {
     ...buildInfraStateSelectors(slice),
     getConf,
+    getConstraintDistribution: makeOsrdConfSelector('constraintDistribution'),
     getName: makeOsrdConfSelector('name'),
     getTrainCount: makeOsrdConfSelector('trainCount'),
     getTrainDelta: makeOsrdConfSelector('trainDelta'),

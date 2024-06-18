@@ -9,6 +9,7 @@ export default function formatTrainSchedulePayload(
   startTime: string
 ): TrainScheduleBase {
   const {
+    constraintDistribution,
     rollingStockName,
     path,
     labels,
@@ -21,8 +22,7 @@ export default function formatTrainSchedulePayload(
 
   return {
     comfort: rollingStockComfort,
-    // TODO TS2 : add a switch somewhere in the app to let the user chose (and add it to store)
-    constraint_distribution: 'MARECO',
+    constraint_distribution: constraintDistribution,
     initial_speed: initialSpeed,
     labels,
     margins,

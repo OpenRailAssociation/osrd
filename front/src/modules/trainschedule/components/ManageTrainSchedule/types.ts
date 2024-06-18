@@ -41,6 +41,7 @@ export type Margin = {
 };
 
 export type ValidConfig = {
+  constraintDistribution: TrainScheduleBase['constraint_distribution'];
   rollingStockName: string;
   baseTrainName: string;
   timetableId: number;

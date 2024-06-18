@@ -1,7 +1,7 @@
 import { compact, last, omit } from 'lodash';
 
 import type { PointOnMap } from 'applications/operationalStudies/consts';
-import type { Allowance, Infra, TrainScheduleBase } from 'common/api/osrdEditoastApi';
+import type { Allowance, Distribution, Infra, TrainScheduleBase } from 'common/api/osrdEditoastApi';
 import NO_POWER_RESTRICTION from 'modules/powerRestriction/consts';
 import displayPowerRestrictionIntervals from 'modules/powerRestriction/helpers/displayPowerRestrictionIntervals';
 import mergePowerRestrictionRanges from 'modules/trainschedule/components/ManageTrainSchedule/helpers/mergePowerRestrictionRanges';
@@ -38,6 +38,14 @@ const testCommonConfReducers = (slice: OperationalStudiesConfSlice | StdcmConfSl
 
   beforeEach(() => {
     defaultStore = createStore(slice);
+  });
+
+  it('should handle updateConstraintDistribution', () => {
+    const newConstraintDistribution: Distribution = 'STANDARD';
+    defaultStore.dispatch(slice.actions.updateConstraintDistribution(newConstraintDistribution));
+
+    const state = defaultStore.getState()[slice.name];
+    expect(state.constraintDistribution).toBe(newConstraintDistribution);
   });
 
   it('should handle updateName', () => {

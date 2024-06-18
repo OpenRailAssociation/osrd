@@ -7,11 +7,13 @@ import type {
   AllowanceValue,
   TrackOffset,
   TrainScheduleBase,
+  Distribution,
 } from 'common/api/osrdEditoastApi';
 import type { AllowanceForm } from 'modules/trainschedule/components/ManageTrainSchedule/Allowances/types';
 import type { InfraState } from 'reducers/infra';
 
 export interface OsrdConfState extends InfraState {
+  constraintDistribution: Distribution;
   rollingStockComfort: RollingStockComfortType;
   name: string;
   trainCount: number;
