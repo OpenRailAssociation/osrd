@@ -42,7 +42,7 @@ To compile and run the application with an example infrastructure:
 docker compose up -d --build
 
 ./scripts/load-railjson-infra.sh small_infra tests/data/infras/small_infra/infra.json
-./scripts/load-railjson-rolling-stock.sh tests/data/rolling_stocks/fast_rolling_stock.json
+./scripts/load-railjson-rolling-stock.sh tests/data/rolling_stocks/*.json
 
 # open the web app
 xdg-open http://localhost:4000/
