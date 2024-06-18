@@ -4,11 +4,13 @@ import * as d3 from 'd3';
 import { CgLoadbar } from 'react-icons/cg';
 import { useSelector } from 'react-redux';
 
-import type { PathPropertiesFormatted } from 'applications/operationalStudies/types';
-import type { SimulationResponse } from 'common/api/osrdEditoastApi';
+import type {
+  PathPropertiesFormatted,
+  SimulationResponseSuccess,
+} from 'applications/operationalStudies/types';
 import {
   defineLinear,
-  interpolateOnPosition,
+  interpolateOnPositionV2,
   mergeDatasAreaConstantV2,
 } from 'modules/simulationResult/components/ChartHelpers/ChartHelpers';
 import defineChart from 'modules/simulationResult/components/ChartHelpers/defineChart';
@@ -26,7 +28,7 @@ import { CHART_AXES } from 'modules/simulationResult/consts';
 import type { PositionScaleDomain, SpaceCurvesSlopesDataV2 } from 'modules/simulationResult/types';
 import { getIsPlaying } from 'reducers/osrdsimulation/selectors';
 import type { Chart, SpeedSpaceChart } from 'reducers/osrdsimulation/types';
-import { dateIsInRange } from 'utils/date';
+import { dateIsInRange, isoDateWithTimezoneToSec } from 'utils/date';
 import { mmToM } from 'utils/physics';
 
 import { drawAxisTitle, drawSpaceCurvesSlopesChartCurve } from './utils';
@@ -36,7 +38,7 @@ const CHART_ID = 'SpaceCurvesSlopes';
 
 type SpaceCurvesSlopesV2Props = {
   initialHeight: number;
-  trainSimulation: Extract<SimulationResponse, { status: 'success' }>;
+  trainSimulation: SimulationResponseSuccess;
   pathProperties: PathPropertiesFormatted;
   sharedXScaleDomain?: PositionScaleDomain;
   setSharedXScaleDomain?: React.Dispatch<React.SetStateAction<PositionScaleDomain>>;
@@ -91,10 +93,9 @@ const SpaceCurvesSlopesV2 = ({
   const timeScaleRange: [Date, Date] = useMemo(() => {
     if (chart) {
       const spaceScaleRange = chart.x.domain();
-      return spaceScaleRange.map((position) => interpolateOnPosition(trainData, position)) as [
-        Date,
-        Date,
-      ];
+      return spaceScaleRange.map((position) =>
+        interpolateOnPositionV2(trainData, position, isoDateWithTimezoneToSec(departureTime))
+      ) as [Date, Date];
     }
     return [new Date(), new Date()];
   }, [chart]);

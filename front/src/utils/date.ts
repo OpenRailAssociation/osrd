@@ -117,7 +117,7 @@ export const formatDateToString = (date: Date) => {
 
 /** check whether a date is included in the range or not */
 export function dateIsInRange(date: Date, range: [Date, Date]) {
-  return date > range[0] && date < range[1];
+  return range[0] <= date && date <= range[1];
 }
 
 export const formatDateForInput = (date?: string | null) => (date ? date.substring(0, 10) : '');

@@ -6,17 +6,27 @@ export function jouleToKwh(jouleEnergy: number, roundedUp = false) {
   return value;
 }
 
-// Convert millimeters to meters
+/** Convert meters to km */
+export function mToKm(length: number) {
+  return length / 1000;
+}
+
+/** Convert km to meters */
+export function kmToM(length: number) {
+  return length * 1000;
+}
+
+/** Convert millimeters to meters */
 export function mmToM(length: number) {
   return length / 1000;
 }
 
-// Convert km/h to m/s
+/** Convert km/h to m/s */
 export function kmhToMs(v: number) {
   return Math.abs(v / 3.6);
 }
 
-// Convert m/s to km/h
+/** Convert m/s to km/h */
 export function msToKmh(v: number) {
   return v * 3.6;
 }
