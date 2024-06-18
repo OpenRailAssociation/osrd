@@ -465,7 +465,7 @@ export const enableInteractivityV2 = <
         const positionLocal = chart.x.invert(pointer(event, event.currentTarget)[0]) as number;
         timePositionLocal = interpolateOnPositionV2(
           selectedTrainData as { speed: PositionSpeedTime[] },
-          positionLocal,
+          Math.max(positionLocal, 0),
           isoDateWithTimezoneToSec(selectedTrainDepartureDate)
         );
 

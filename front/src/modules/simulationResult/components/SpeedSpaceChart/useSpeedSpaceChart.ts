@@ -89,7 +89,7 @@ const useSpeedSpaceChart = (
   return trainScheduleResult &&
     rollingStock &&
     formattedPowerRestrictions &&
-    simulation &&
+    simulation?.status === 'success' &&
     formattedPathProperties &&
     departureTime
     ? {

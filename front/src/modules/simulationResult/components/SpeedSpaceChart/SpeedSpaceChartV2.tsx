@@ -7,13 +7,15 @@ import { GiResize } from 'react-icons/gi';
 import { useSelector } from 'react-redux';
 import { Rnd } from 'react-rnd';
 
-import type { PathPropertiesFormatted } from 'applications/operationalStudies/types';
+import type {
+  PathPropertiesFormatted,
+  SimulationResponseSuccess,
+} from 'applications/operationalStudies/types';
 import type {
   LightRollingStock,
   SimulationPowerRestrictionRange,
-  SimulationResponse,
 } from 'common/api/osrdEditoastApi';
-import { interpolateOnPosition } from 'modules/simulationResult/components/ChartHelpers/ChartHelpers';
+import { interpolateOnPositionV2 } from 'modules/simulationResult/components/ChartHelpers/ChartHelpers';
 import {
   enableInteractivityV2,
   traceVerticalLine,
@@ -29,7 +31,7 @@ import { updateSpeedSpaceSettings } from 'reducers/osrdsimulation/actions';
 import { getIsPlaying, getSpeedSpaceSettings } from 'reducers/osrdsimulation/selectors';
 import type { SpeedSpaceChart, SpeedSpaceSettingsType } from 'reducers/osrdsimulation/types';
 import { useAppDispatch } from 'store';
-import { dateIsInRange } from 'utils/date';
+import { dateIsInRange, isoDateWithTimezoneToSec } from 'utils/date';
 
 import ElectricalProfilesLegend from './ElectricalProfilesLegend';
 import { prepareSpeedSpaceDataV2 } from './prepareData';
@@ -46,7 +48,7 @@ const SETTINGS_TO_AXIS = {
 export type SpeedSpaceChartV2Props = {
   initialHeight: number;
   onSetChartBaseHeight: (chartBaseHeight: number) => void;
-  trainSimulation: SimulationResponse;
+  trainSimulation: SimulationResponseSuccess;
   selectedTrainPowerRestrictions: SimulationPowerRestrictionRange[];
   pathProperties: PathPropertiesFormatted;
   trainRollingStock?: LightRollingStock;
@@ -109,7 +111,11 @@ const SpeedSpaceChartV2 = ({
     if (chart && formattedTrainSimulation) {
       const spaceScaleRange = chart.x.domain();
       return spaceScaleRange.map((position) =>
-        interpolateOnPosition(formattedTrainSimulation, position)
+        interpolateOnPositionV2(
+          formattedTrainSimulation,
+          position,
+          isoDateWithTimezoneToSec(departureTime)
+        )
       ) as [Date, Date];
     }
     return [new Date(), new Date()];

@@ -4,23 +4,18 @@ import bbox from '@turf/bbox';
 import { lineString, point } from '@turf/helpers';
 import lineLength from '@turf/length';
 import lineSlice from '@turf/line-slice';
-import { keyBy } from 'lodash';
 import type { MapLayerMouseEvent } from 'maplibre-gl';
 import ReactMapGL, { AttributionControl, ScaleControl } from 'react-map-gl/maplibre';
 import type { MapRef } from 'react-map-gl/maplibre';
 import { useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
-/* Main data & layers */
-
-/* Settings & Buttons */
-
-/* Objects & various */
-
-/* Interactions */
-
-import type { PathPropertiesFormatted } from 'applications/operationalStudies/types';
+import type {
+  PathPropertiesFormatted,
+  SimulationResponseSuccess,
+} from 'applications/operationalStudies/types';
 import MapButtons from 'common/Map/Buttons/MapButtons';
+import TrainOnMap, { type TrainCurrentInfo } from 'common/Map/components/TrainOnMap/TrainOnMap';
 import { CUSTOM_ATTRIBUTION } from 'common/Map/const';
 import colors from 'common/Map/Consts/colors';
 import Background from 'common/Map/Layers/Background';
@@ -50,67 +45,58 @@ import { removeSearchItemMarkersOnMap } from 'common/Map/utils';
 import { computeBBoxViewport } from 'common/Map/WarpedMap/core/helpers';
 import { useInfraID } from 'common/osrdContext';
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
-import {
-  getDirection,
-  interpolateOnPosition,
-} from 'modules/simulationResult/components/ChartHelpers/ChartHelpers';
 import RenderItinerary from 'modules/simulationResult/components/SimulationResultsMap/RenderItinerary';
-import TrainHoverPosition from 'modules/simulationResult/components/SimulationResultsMap/TrainHoverPosition';
-import type { TrainPosition } from 'modules/simulationResult/components/SimulationResultsMap/types';
 import VirtualLayers from 'modules/simulationResult/components/SimulationResultsMap/VirtualLayers';
 import type { RootState } from 'reducers';
 import { updateViewport } from 'reducers/map';
 import type { Viewport } from 'reducers/map';
 import { getLayersSettings, getTerrain3DExaggeration } from 'reducers/map/selectors';
-import { getPresentSimulation, getSelectedTrain } from 'reducers/osrdsimulation/selectors';
-import type { Train } from 'reducers/osrdsimulation/types';
 import { useAppDispatch } from 'store';
+import { isoDateWithTimezoneToSec } from 'utils/date';
+import { kmToM, mmToM, msToKmh } from 'utils/physics';
 
+import { interpolateOnPositionV2 } from './ChartHelpers/ChartHelpers';
 import { useChartSynchronizerV2 } from './ChartSynchronizer';
-import { getRegimeKey, getSimulationHoverPositions } from './SimulationResultsMap/helpers';
+import getSelectedTrainHoverPositions from './SimulationResultsMap/getSelectedTrainHoverPositions';
 
 type MapProps = {
   setExtViewport: (viewport: Viewport) => void;
   geometry?: PathPropertiesFormatted['geometry'];
+  trainSimulation?: SimulationResponseSuccess & { trainId: number; startTime: string };
 };
 
-const Map: FC<MapProps> = ({ geometry }) => {
+const SimulationResultMapV2: FC<MapProps> = ({ geometry, trainSimulation }) => {
+  const { urlLat = '', urlLon = '', urlZoom = '', urlBearing = '', urlPitch = '' } = useParams();
+
   const mapBlankStyle = useMapBlankStyle();
-  const [mapLoaded, setMapLoaded] = useState(false);
   const { viewport, mapSearchMarker, mapStyle, showOSM } = useSelector(
     (state: RootState) => state.map
   );
-  const { isPlaying, allowancesSettings } = useSelector((state: RootState) => state.osrdsimulation);
-  const simulation = useSelector(getPresentSimulation);
-  const trains = useMemo(() => keyBy(simulation.trains, 'id'), [simulation.trains]);
-  const selectedTrain = useSelector(getSelectedTrain);
+  const { isPlaying } = useSelector((state: RootState) => state.osrdsimulation);
   const terrain3DExaggeration = useSelector(getTerrain3DExaggeration);
   const layersSettings = useSelector(getLayersSettings);
 
+  const [mapLoaded, setMapLoaded] = useState(false);
+  const [interactiveLayerIds, setInteractiveLayerIds] = useState<string[]>([]);
+  const [selectedTrainHoverPosition, setSelectedTrainHoverPosition] = useState<TrainCurrentInfo>();
+
   const geojsonPath = useMemo(() => geometry && lineString(geometry.coordinates), [geometry]);
 
-  const [selectedTrainHoverPosition, setTrainHoverPosition] = useState<TrainPosition>();
-  const [otherTrainsHoverPosition, setOtherTrainsHoverPosition] = useState<TrainPosition[]>([]);
-  const { urlLat = '', urlLon = '', urlZoom = '', urlBearing = '', urlPitch = '' } = useParams();
   const dispatch = useAppDispatch();
 
   const { updateTimePosition } = useChartSynchronizerV2(
-    (timePosition, positionValues) => {
-      if (timePosition && geojsonPath) {
-        const positions = getSimulationHoverPositions(
+    (_, positionValues) => {
+      if (trainSimulation && geojsonPath) {
+        const selectedTrainPosition = getSelectedTrainHoverPositions(
           geojsonPath,
-          simulation,
-          timePosition,
           positionValues,
-          selectedTrain?.id,
-          allowancesSettings
+          trainSimulation.trainId
         );
-        setTrainHoverPosition(positions.find((train) => train.isSelected));
-        setOtherTrainsHoverPosition(positions.filter((train) => !train.isSelected));
+        setSelectedTrainHoverPosition(selectedTrainPosition);
       }
     },
     'simulation-result-map',
-    [geojsonPath, simulation, selectedTrain, allowancesSettings]
+    [geojsonPath, trainSimulation]
   );
 
   const updateViewportChange = useCallback(
@@ -134,49 +120,42 @@ const Map: FC<MapProps> = ({ geometry }) => {
     });
   };
 
-  const onFeatureHover = (e: MapLayerMouseEvent) => {
-    if (mapLoaded && !isPlaying && e && geojsonPath?.geometry.coordinates && selectedTrain) {
+  const onPathHover = (e: MapLayerMouseEvent) => {
+    if (mapLoaded && !isPlaying && e && geojsonPath && trainSimulation) {
       const line = lineString(geojsonPath.geometry.coordinates);
       const cursorPoint = point(e.lngLat.toArray());
-      const key = getRegimeKey(selectedTrain.id);
-      const train = selectedTrain[key];
-      if (train) {
-        const lastCoordinates =
-          geojsonPath.geometry.coordinates[geojsonPath.geometry.coordinates.length - 1];
-        const startCoordinates = getDirection(train.head_positions)
-          ? [geojsonPath.geometry.coordinates[0][0], geojsonPath.geometry.coordinates[0][1]]
-          : [lastCoordinates[0], lastCoordinates[1]];
-        const start = point(startCoordinates);
-        const sliced = lineSlice(start, cursorPoint, line);
-        const positionLocal = lineLength(sliced, { units: 'kilometers' }) * 1000;
-        const timePositionLocal = interpolateOnPosition({ speed: train.speeds }, positionLocal);
-        if (timePositionLocal instanceof Date) {
-          updateTimePosition(timePositionLocal);
-        } else {
-          throw new Error(
-            'Map onFeatureHover, try to update TimePositionValue with incorrect imput'
-          );
-        }
+
+      const startCoordinates = geojsonPath.geometry.coordinates[0];
+
+      const start = point(startCoordinates);
+      const sliced = lineSlice(start, cursorPoint, line);
+      const positionLocal = kmToM(lineLength(sliced, { units: 'kilometers' }));
+
+      const baseSpeedData = trainSimulation.base.speeds.map((speed, i) => ({
+        speed: msToKmh(speed),
+        position: mmToM(trainSimulation.base.positions[i]),
+        time: trainSimulation.base.times[i],
+      }));
+      const timePositionLocal = interpolateOnPositionV2(
+        { speed: baseSpeedData },
+        positionLocal,
+        isoDateWithTimezoneToSec(trainSimulation.startTime)
+      );
+
+      if (timePositionLocal instanceof Date) {
+        updateTimePosition(timePositionLocal);
+      } else {
+        throw new Error('Map onFeatureHover, try to update TimePositionValue with incorrect imput');
       }
     }
   };
 
-  function defineInteractiveLayers() {
-    const interactiveLayersLocal: string[] = [];
-    if (mapLoaded && geojsonPath) {
-      interactiveLayersLocal.push('geojsonPath');
-      interactiveLayersLocal.push('main-train-path');
-      otherTrainsHoverPosition.forEach((train) => {
-        interactiveLayersLocal.push(`${train.id}-path`);
-      });
-    }
-    return interactiveLayersLocal;
-  }
-  const [interactiveLayerIds, setInteractiveLayerIds] = useState<string[]>([]);
   useEffect(() => {
-    setInteractiveLayerIds(defineInteractiveLayers());
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [geojsonPath, otherTrainsHoverPosition.length]);
+    const interactiveLayers: string[] =
+      mapLoaded && geojsonPath ? ['geojsonPath', 'main-train-path'] : [];
+    setInteractiveLayerIds(interactiveLayers);
+  }, [geojsonPath]);
+
   useEffect(() => {
     if (mapRef.current) {
       if (urlLat) {
@@ -222,7 +201,7 @@ const Map: FC<MapProps> = ({ geometry }) => {
         mapStyle={mapBlankStyle}
         onMove={(e) => updateViewportChange(e.viewState)}
         attributionControl={false} // Defined below
-        onMouseEnter={onFeatureHover}
+        onMouseEnter={onPathHover}
         onResize={(e) => {
           updateViewportChange({
             width: e.target.getContainer().offsetWidth,
@@ -358,34 +337,17 @@ const Map: FC<MapProps> = ({ geometry }) => {
           />
         )}
 
-        {geojsonPath && selectedTrainHoverPosition && selectedTrain && (
-          <TrainHoverPosition
-            point={selectedTrainHoverPosition}
-            isSelectedTrain
+        {geojsonPath && selectedTrainHoverPosition && trainSimulation && (
+          <TrainOnMap
+            trainInfo={selectedTrainHoverPosition}
             geojsonPath={geojsonPath}
-            layerOrder={LAYER_GROUPS_ORDER[LAYERS.TRAIN.GROUP]}
             viewport={viewport}
-            train={selectedTrain as Train} // TODO: remove Train interface
-            allowancesSettings={allowancesSettings}
+            trainSimulation={trainSimulation}
           />
         )}
-        {geojsonPath &&
-          otherTrainsHoverPosition.map((pt) =>
-            trains[pt.trainId] ? (
-              <TrainHoverPosition
-                point={pt}
-                geojsonPath={geojsonPath}
-                key={pt.id}
-                layerOrder={LAYER_GROUPS_ORDER[LAYERS.TRAIN.GROUP]}
-                train={trains[pt.trainId] as Train}
-                viewport={viewport}
-                allowancesSettings={allowancesSettings}
-              />
-            ) : null
-          )}
       </ReactMapGL>
     </>
   );
 };
 
-export default Map;
+export default SimulationResultMapV2;

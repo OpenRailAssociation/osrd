@@ -240,6 +240,15 @@ const SimulationResultsV2 = ({
             <SimulationResultsMapV2
               setExtViewport={setExtViewport}
               geometry={pathProperties?.geometry}
+              trainSimulation={
+                selectedTrain && trainSimulation
+                  ? {
+                      ...trainSimulation,
+                      trainId: selectedTrain.id,
+                      startTime: selectedTrain.start_time,
+                    }
+                  : undefined
+              }
             />
           </div>
         </div>
@@ -247,7 +256,7 @@ const SimulationResultsV2 = ({
 
       {/* TRAIN : DRIVER TRAIN SCHEDULE */}
       {selectedTrain &&
-        trainSimulation.status === 'success' &&
+        trainSimulation &&
         pathProperties &&
         selectedTrainRollingStock &&
         infraId && (

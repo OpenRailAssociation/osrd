@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 
-import dayjs from 'dayjs';
 import { useTranslation } from 'react-i18next';
 import { FaBackward, FaPause, FaPlay, FaStop } from 'react-icons/fa';
 import { useSelector } from 'react-redux';
 
+import { convertDepartureTimeIntoSec } from 'applications/operationalStudies/utils';
 import type { SimulationReport } from 'common/api/osrdEditoastApi';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { updateIsPlaying } from 'reducers/osrdsimulation/actions';
@@ -58,7 +58,8 @@ const TimeButtons = ({ selectedTrain, departureTime }: TimeButtonsProps) => {
     clearInterval(playInterval);
     setPlayInterval(undefined);
     if (trainScheduleV2Activated) {
-      if (departureTime) updateTimePositionV2(dayjs(departureTime, 'D/MM/YYYY HH:mm:ss').toDate());
+      if (departureTime)
+        updateTimePositionV2(sec2datetime(convertDepartureTimeIntoSec(departureTime)));
     } else if (selectedTrain) {
       updateTimePosition(sec2datetime(selectedTrain.base.stops[0].time));
     }
@@ -83,7 +84,11 @@ const TimeButtons = ({ selectedTrain, departureTime }: TimeButtonsProps) => {
       } else {
         i += factor.steps;
       }
-      updateTimePosition(new Date(i * 1000));
+      if (trainScheduleV2Activated) {
+        updateTimePositionV2(new Date(i * 1000));
+      } else {
+        updateTimePosition(new Date(i * 1000));
+      }
     }, factor.ms);
     setPlayInterval(playIntervalLocal);
     dispatch(updateIsPlaying(true));

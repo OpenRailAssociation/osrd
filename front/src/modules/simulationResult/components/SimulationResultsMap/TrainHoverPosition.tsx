@@ -1,3 +1,4 @@
+// TO DO DROP V1: remove this file
 import React from 'react';
 
 import along from '@turf/along';
@@ -15,7 +16,7 @@ import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 import type { Viewport } from 'reducers/map';
 import type { AllowancesSetting, AllowancesSettings, Train } from 'reducers/osrdsimulation/types';
 import { getCurrentBearing } from 'utils/geometry';
-import { boundedValue } from 'utils/numbers';
+import { clamp as boundedValue } from 'utils/numbers';
 import { datetime2time } from 'utils/timeManipulation';
 
 import type { TrainPosition } from './types';
