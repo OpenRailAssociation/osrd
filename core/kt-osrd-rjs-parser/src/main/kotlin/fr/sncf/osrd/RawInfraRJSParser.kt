@@ -16,7 +16,15 @@ import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.sim_infra.api.*
-import fr.sncf.osrd.sim_infra.impl.new_impl.*
+import fr.sncf.osrd.sim_infra.impl.BuildRouteError
+import fr.sncf.osrd.sim_infra.impl.MissingNodeConfig
+import fr.sncf.osrd.sim_infra.impl.RawInfraFromRjsBuilder
+import fr.sncf.osrd.sim_infra.impl.ReachedNodeDeadEnd
+import fr.sncf.osrd.sim_infra.impl.ReachedTrackDeadEnd
+import fr.sncf.osrd.sim_infra.impl.SpeedSection
+import fr.sncf.osrd.sim_infra.impl.TrackChunkDescriptor
+import fr.sncf.osrd.sim_infra.impl.TrackNodeConfigDescriptor
+import fr.sncf.osrd.sim_infra.impl.route
 import fr.sncf.osrd.utils.*
 import fr.sncf.osrd.utils.Direction.DECREASING
 import fr.sncf.osrd.utils.Direction.INCREASING
