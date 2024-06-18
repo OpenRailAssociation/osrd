@@ -23,7 +23,7 @@ services:
     network_mode: host
     environment:
       PSQL_HOST: "localhost"
-      EDITOAST_PORT: "8090"
+      EDITOAST_PORT: 8090
       OSRD_BACKEND_URL: "http://localhost:8080"
       REDIS_URL: "redis://localhost"
       DATABASE_URL: "postgres://osrd:password@localhost:5432/osrd"
