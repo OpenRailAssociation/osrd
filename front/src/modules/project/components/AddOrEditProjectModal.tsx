@@ -376,6 +376,7 @@ export default function AddOrEditProjectModal({
               type="number"
               name="projectInputBudget"
               unit="€"
+              min={0}
               label={
                 <div className="d-flex align-items-center">
                   <span className="mr-2">
@@ -385,12 +386,17 @@ export default function AddOrEditProjectModal({
                 </div>
               }
               value={
-                currentProject.budget !== undefined && currentProject.budget !== null
+                currentProject.budget !== undefined &&
+                currentProject.budget !== null &&
+                currentProject.budget >= 0
                   ? currentProject.budget
                   : ''
               }
               onChange={(e) =>
-                handleProjectInputChange('budget', e.target.value !== '' ? +e.target.value : null)
+                handleProjectInputChange(
+                  'budget',
+                  e.target.value !== '' && +e.target.value >= 0 ? +e.target.value : null
+                )
               }
               textRight
             />

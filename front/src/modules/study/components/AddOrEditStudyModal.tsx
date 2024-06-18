@@ -398,6 +398,7 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
               type="number"
               name="studyInputBudget"
               unit="€"
+              min={0}
               label={
                 <div className="d-flex align-items-center">
                   <span className="mr-2">
@@ -407,12 +408,17 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
                 </div>
               }
               value={
-                currentStudy.budget !== undefined && currentStudy.budget !== null
+                currentStudy.budget !== undefined &&
+                currentStudy.budget !== null &&
+                currentStudy.budget >= 0
                   ? currentStudy.budget
                   : ''
               }
               onChange={(e) =>
-                handleStudyInputChange('budget', e.target.value !== '' ? +e.target.value : null)
+                handleStudyInputChange(
+                  'budget',
+                  e.target.value !== '' && +e.target.value >= 0 ? +e.target.value : null
+                )
               }
               textRight
             />
