@@ -7,7 +7,6 @@ import scenarioData from './operationStudies/scenario.json';
 import { PlaywrightHomePage } from '../pages/home-page-model';
 import RollingStockSelectorPage from '../pages/rolling-stock-selector-page';
 import PlaywrightScenarioPage from '../pages/scenario-page-model';
-
 // API requests
 
 const getApiContext = async () =>
@@ -80,8 +79,50 @@ export const getRollingStock = async () => {
   return rollingStock;
 };
 
-// Scenario creation
+// Find and delete rolling stock with the given name
+export async function findAndDeleteRollingStock(rollingStockName: string) {
+  const rollingStocks = await getApiRequest(`/api/light_rolling_stock/`, { page_size: 500 });
 
+  const rollingStockToDeleteCreated = rollingStocks.results.find(
+    (r: RollingStock) => r.name === rollingStockName
+  );
+  if (rollingStockToDeleteCreated) {
+    await deleteApiRequest(`/api/rolling_stock/${rollingStockToDeleteCreated.id}/`);
+  }
+}
+
+// Fill and check input by ID
+// Note: This method check if the locator uses ID or TestID and fills it with the input value
+export async function fillAndCheckInputById(
+  page: Page,
+  inputId: string,
+  value: string | number,
+  isTestId = false
+) {
+  const input = isTestId ? page.getByTestId(inputId) : page.locator(`#${inputId}`);
+
+  await input.click();
+  await input.fill(`${value}`);
+  expect(await input.inputValue()).toBe(`${value}`);
+}
+
+// Verify input by ID
+// Note: This method check if the locator uses ID or TestID and verifies its content
+export async function verifyAndCheckInputById(
+  page: Page,
+  inputId: string,
+  expectedValue: string | number,
+  isTestId = false
+) {
+  const input = isTestId ? page.getByTestId(inputId) : page.locator(`#${inputId}`);
+
+  expect(await input.inputValue()).toContain(`${expectedValue}`);
+}
+
+// Generate unique name (used for creating rolling stock)
+export const generateUniqueName = async (baseName: string) => `${baseName}-${uuidv4()}`;
+
+// Scenario creation
 export default async function createCompleteScenario(
   page: Page,
   trainScheduleName: string,
