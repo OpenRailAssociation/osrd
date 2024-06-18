@@ -1,4 +1,4 @@
-package fr.sncf.osrd.sim_infra.impl.new_impl
+package fr.sncf.osrd.sim_infra.impl
 
 import fr.sncf.osrd.geom.LineString
 import fr.sncf.osrd.reporting.exceptions.ErrorType
