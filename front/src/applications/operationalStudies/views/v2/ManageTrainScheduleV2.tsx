@@ -10,7 +10,6 @@ import pahtFindingPic from 'assets/pictures/components/pathfinding.svg';
 import simulationSettings from 'assets/pictures/components/simulationSettings.svg';
 import rollingStockPic from 'assets/pictures/components/train.svg';
 import { useOsrdConfSelectors } from 'common/osrdContext';
-import SpeedLimitByTagSelector from 'common/SpeedLimitByTagSelector/SpeedLimitByTagSelector';
 import { useStoreDataForSpeedLimitByTagSelector } from 'common/SpeedLimitByTagSelector/useStoreDataForSpeedLimitByTagSelector';
 import Tabs from 'common/Tabs';
 import ItineraryV2 from 'modules/pathfinding/components/Itinerary/ItineraryV2';
@@ -20,16 +19,18 @@ import { RollingStockSelector } from 'modules/rollingStock/components/RollingSto
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
 import TimesStops from 'modules/timesStops/TimesStops';
 import { Map } from 'modules/trainschedule/components/ManageTrainSchedule';
-import ElectricalProfiles from 'modules/trainschedule/components/ManageTrainSchedule/ElectricalProfiles';
+import SimulationSettings from 'modules/trainschedule/components/ManageTrainSchedule/SimulationSettings';
 import TrainSettings from 'modules/trainschedule/components/ManageTrainSchedule/TrainSettings';
 import { formatKmValue } from 'utils/strings';
 
 const ManageTrainScheduleV2 = () => {
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
-  const { getOriginV2, getDestinationV2, getPathSteps } = useOsrdConfSelectors();
+  const { getOriginV2, getDestinationV2, getPathSteps, getConstraintDistribution } =
+    useOsrdConfSelectors();
   const origin = useSelector(getOriginV2);
   const destination = useSelector(getDestinationV2);
   const pathSteps = useSelector(getPathSteps);
+  const constraintDistribution = useSelector(getConstraintDistribution);
 
   const [pathProperties, setPathProperties] = useState<ManageTrainSchedulePathProperties>();
 
@@ -136,16 +137,12 @@ const ManageTrainScheduleV2 = () => {
     label: t('tabs.simulationSettings'),
     content: (
       <div>
-        <div className="row no-gutters">
-          <div className="col-lg-6 pr-lg-2">
-            <ElectricalProfiles />
-            <SpeedLimitByTagSelector
-              selectedSpeedLimitByTag={speedLimitByTag}
-              speedLimitsByTags={speedLimitsByTags}
-              dispatchUpdateSpeedLimitByTag={dispatchUpdateSpeedLimitByTag}
-            />
-          </div>
-        </div>
+        <SimulationSettings
+          selectedSpeedLimitByTag={speedLimitByTag}
+          speedLimitsByTags={speedLimitsByTags}
+          dispatchUpdateSpeedLimitByTag={dispatchUpdateSpeedLimitByTag}
+          constraintDistribution={constraintDistribution}
+        />
         {/* {rollingStock && isElectric(rollingStock.effort_curves.modes) && (
           <PowerRestrictionsSelectorV2
             rollingStockModes={rollingStock.effort_curves.modes}

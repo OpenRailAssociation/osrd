@@ -22,6 +22,7 @@ import { formatIsoDate } from 'utils/date';
 import type { ArrayElement } from 'utils/types';
 
 export const defaultCommonConf: OsrdConfState = {
+  constraintDistribution: 'MARECO',
   name: '',
   trainCount: 1,
   trainDelta: 15,
@@ -64,6 +65,7 @@ export const defaultCommonConf: OsrdConfState = {
 };
 
 interface CommonConfReducers<S extends OsrdConfState> extends InfraStateReducers<S> {
+  ['updateConstraintDistribution']: CaseReducer<S, PayloadAction<S['constraintDistribution']>>;
   ['updateName']: CaseReducer<S, PayloadAction<S['name']>>;
   ['updateTrainCount']: CaseReducer<S, PayloadAction<S['trainCount']>>;
   ['updateTrainDelta']: CaseReducer<S, PayloadAction<OsrdConfState['trainDelta']>>;
@@ -133,6 +135,12 @@ interface CommonConfReducers<S extends OsrdConfState> extends InfraStateReducers
 export function buildCommonConfReducers<S extends OsrdConfState>(): CommonConfReducers<S> {
   return {
     ...buildInfraStateReducers<S>(),
+    updateConstraintDistribution(
+      state: Draft<S>,
+      action: PayloadAction<S['constraintDistribution']>
+    ) {
+      state.constraintDistribution = action.payload;
+    },
     updateName(state: Draft<S>, action: PayloadAction<S['name']>) {
       state.name = action.payload;
     },

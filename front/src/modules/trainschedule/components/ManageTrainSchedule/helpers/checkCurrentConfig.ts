@@ -19,6 +19,7 @@ const checkCurrentConfig = (
   ignoreTrainAddSettings = false
 ): ValidConfig | null => {
   const {
+    constraintDistribution,
     pathSteps,
     name: trainName,
     timetableID,
@@ -121,6 +122,7 @@ const checkCurrentConfig = (
 
   if (error) return null;
   return {
+    constraintDistribution,
     rollingStockName: rollingStockName as string,
     baseTrainName: trainName,
     timetableId: timetableID as number,
