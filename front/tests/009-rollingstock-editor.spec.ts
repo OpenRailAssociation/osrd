@@ -1,192 +1,157 @@
+import fs from 'fs';
+import path from 'path';
 import { test, expect } from '@playwright/test';
-
 import type { RollingStock } from 'common/api/osrdEditoastApi';
-
-import { deleteApiRequest } from './assets/utils';
 import { PlaywrightRollingstockEditorPage } from './pages/rollingstock-editor-page-model';
+
+// Correct path to load rolling stock details from JSON
+
+const rollingstockDetailsPath = path.resolve(
+  __dirname,
+  '../tests/assets/rollingStock/rollingstockDetails.js'
+);
+const rollingstockDetails = JSON.parse(fs.readFileSync(rollingstockDetailsPath, 'utf-8'));
 
 test.describe('Rollingstock editor page', () => {
   test('should correctly create a new rolling stock', async ({ page }) => {
-    const playwrightRollingstockEditorPage = new PlaywrightRollingstockEditorPage(page);
+    const rollingStockEditorPage = new PlaywrightRollingstockEditorPage(page);
+    const rollingStockCreatedName = 'Test_name';
 
-    await playwrightRollingstockEditorPage.navigateToPage();
+    // Navigate to the page
+    await rollingStockEditorPage.navigateToPage();
 
-    await playwrightRollingstockEditorPage.clickOnNewRollingstockButton();
+    // Create a new rolling stock
+    await rollingStockEditorPage.clickOnNewRollingstockButton();
 
-    await playwrightRollingstockEditorPage.fillAndCheckInputById('name', 'Test_name');
-    await playwrightRollingstockEditorPage.fillAndCheckInputById('detail', 'Test detail');
-    await playwrightRollingstockEditorPage.fillAndCheckInputById('family', 'Test family');
-    await playwrightRollingstockEditorPage.fillAndCheckInputById('grouping', 'Test grouping');
+    // Fill in the rolling stock details
+    for (const input of rollingstockDetails.inputs) {
+      await rollingStockEditorPage.fillAndCheckInputById(input.id, input.value, input.isNumeric);
+    }
 
-    await playwrightRollingstockEditorPage.fillAndCheckInputById('number', 500);
-    await playwrightRollingstockEditorPage.fillAndCheckInputById('reference', 'Test reference');
-    await playwrightRollingstockEditorPage.fillAndCheckInputById('series', 'Test series');
+    // Select loading gauge
+    await rollingStockEditorPage.selectLoadingGauge('GA');
 
-    await playwrightRollingstockEditorPage.fillAndCheckInputById('subseries', 'Test subseries');
-    await playwrightRollingstockEditorPage.fillAndCheckInputById('type', 'Test type');
-    await playwrightRollingstockEditorPage.fillAndCheckInputById('unit', 'Test unit');
+    // Submit and handle incomplete form warning
+    await rollingStockEditorPage.submitRollingStock();
+    await rollingStockEditorPage.checkToastSNCFTitle(/Formulaire incomplet/);
 
-    await playwrightRollingstockEditorPage.fillAndCheckInputById('length', 50);
-    await playwrightRollingstockEditorPage.fillAndCheckInputById('mass-input', 80, true);
-    await playwrightRollingstockEditorPage.fillAndCheckInputById('maxSpeed-input', 200, true);
-    await playwrightRollingstockEditorPage.fillAndCheckInputById('startupTime', 5);
-    await playwrightRollingstockEditorPage.fillAndCheckInputById('startupAcceleration', 0.1);
-
-    await playwrightRollingstockEditorPage.fillAndCheckInputById('comfortAcceleration', 1);
-    await playwrightRollingstockEditorPage.fillAndCheckInputById('inertiaCoefficient', 1);
-    await playwrightRollingstockEditorPage.fillAndCheckInputById('gammaValue', 1);
-    const loadingGauge = playwrightRollingstockEditorPage.getRollingStockInputById('loadingGauge');
-    await loadingGauge.selectOption('GA');
-    expect(await loadingGauge.inputValue()).toBe('GA');
-    await playwrightRollingstockEditorPage.fillAndCheckInputById('basePowerClass', 7);
-
-    await playwrightRollingstockEditorPage.fillAndCheckInputById(
-      'rollingResistanceA-input',
-      15,
-      true
-    );
-    await playwrightRollingstockEditorPage.fillAndCheckInputById(
-      'rollingResistanceB-input',
-      0.3,
-      true
-    );
-    await playwrightRollingstockEditorPage.fillAndCheckInputById(
-      'rollingResistanceC-input',
-      0.005,
-      true
+    // Fill speed effort curves Not Specified
+    await rollingStockEditorPage.fillSpeedEffortCurves(
+      rollingstockDetails.speedEffortData,
+      false,
+      '',
+      '1500V'
     );
 
-    await playwrightRollingstockEditorPage.clickOnSubmitRollingstockButton();
-
-    await playwrightRollingstockEditorPage.checkToastSNCFTitle(/Formulaire incomplet/);
-
-    await playwrightRollingstockEditorPage.clickOnSpeedEffortCurvesButton();
-
-    // Select and check traction mode
-    const tractionModesSelector =
-      playwrightRollingstockEditorPage.getRollingStockInputByTestId('traction-mode-selector');
-
-    await tractionModesSelector.getByRole('button').click();
-
-    await tractionModesSelector
-      .getByRole('button', {
-        name: '1500V',
-        exact: true,
-      })
-      .click();
-
-    await expect(tractionModesSelector.getByTitle('1500V')).toBeVisible();
-
-    // Select and check power restriction
-    const powerRestrictionSelector = playwrightRollingstockEditorPage.getRollingStockInputByTestId(
-      'power-restriction-selector'
+    // Fill speed effort curves C1
+    await rollingStockEditorPage.fillSpeedEffortCurves(
+      rollingstockDetails.speedEffortDataC1,
+      true,
+      'C1 ',
+      '1500V'
     );
 
-    // Complete the speed effort curves Not specified
+    // Fill additional rolling stock details
+    await rollingStockEditorPage.fillAdditionalDetails(rollingstockDetails.additionalDetails);
 
-    const velocityCellRow0 = playwrightRollingstockEditorPage.getVelocityCellByRow(1);
-    await playwrightRollingstockEditorPage.setSpreedsheetCell('0', velocityCellRow0);
+    // Submit and confirm rolling stock
+    await rollingStockEditorPage.confirmRollingStockCreation();
 
-    const effortCellRow0 = playwrightRollingstockEditorPage.getEffortCellByRow(1);
-    await playwrightRollingstockEditorPage.setSpreedsheetCell('900', effortCellRow0);
-
-    const velocityCellRow1 = playwrightRollingstockEditorPage.getVelocityCellByRow(2);
-    await playwrightRollingstockEditorPage.setSpreedsheetCell('5', velocityCellRow1);
-
-    const effortCellRow1 = playwrightRollingstockEditorPage.getEffortCellByRow(2);
-    await playwrightRollingstockEditorPage.setSpreedsheetCell('800', effortCellRow1);
-
-    // Select and complete the speed effort curves C0
-    await powerRestrictionSelector.getByRole('button').nth(1).click();
-    const powerRestrictionModal =
-      playwrightRollingstockEditorPage.getRollingStockInputById('modal-body');
-
-    await powerRestrictionModal.getByTitle('C1 ', { exact: true }).click();
-
-    await expect(powerRestrictionSelector.getByTitle('C1')).toBeVisible();
-
-    await playwrightRollingstockEditorPage.setSpreedsheetCell('0', velocityCellRow0);
-
-    await playwrightRollingstockEditorPage.setSpreedsheetCell('900', effortCellRow0);
-
-    await playwrightRollingstockEditorPage.setSpreedsheetCell('5', velocityCellRow1);
-
-    await playwrightRollingstockEditorPage.setSpreedsheetCell('800', effortCellRow1);
-
-    const velocityCellRow2 = playwrightRollingstockEditorPage.getVelocityCellByRow(3);
-    await playwrightRollingstockEditorPage.setSpreedsheetCell('10', velocityCellRow2);
-
-    const effortCellRow2 = playwrightRollingstockEditorPage.getEffortCellByRow(3);
-    await playwrightRollingstockEditorPage.setSpreedsheetCell('900', effortCellRow2);
-
-    const velocityCellRow3 = playwrightRollingstockEditorPage.getVelocityCellByRow(4);
-    await playwrightRollingstockEditorPage.setSpreedsheetCell('20', velocityCellRow3);
-
-    const effortCellRow3 = playwrightRollingstockEditorPage.getEffortCellByRow(4);
-    await playwrightRollingstockEditorPage.setSpreedsheetCell('800', effortCellRow3);
-
-    await playwrightRollingstockEditorPage.clickOnRollingstockDetailsButton();
-
-    await playwrightRollingstockEditorPage.fillAndCheckInputById('electricalPowerStartupTime', 1);
-
-    await playwrightRollingstockEditorPage.fillAndCheckInputById('raisePantographTime', 20);
-
-    await playwrightRollingstockEditorPage.clickOnSubmitRollingstockButton();
-
-    const reponsePromise = playwrightRollingstockEditorPage.page.waitForResponse((response) =>
+    // Confirm the creation of the rolling stock
+    const responsePromise = rollingStockEditorPage.page.waitForResponse((response) =>
       response.url().includes('/api/rolling_stock/')
     );
 
-    // Confirm the creation of the rolling stock
-    await playwrightRollingstockEditorPage.page.getByText('Oui', { exact: true }).click();
-
     expect(
-      playwrightRollingstockEditorPage.page.getByTestId(`rollingstock-Test_name`)
+      await rollingStockEditorPage.page.getByTestId(`rollingstock-${rollingStockCreatedName}`)
     ).toBeDefined();
 
+    // Get to details page of the new rollingstock
+    await rollingStockEditorPage.searchRollingStock(rollingStockCreatedName);
+    await rollingStockEditorPage.editRollingStock(rollingStockCreatedName);
+
+    // Verify the rolling stock details
+    for (const input of rollingstockDetails.inputs) {
+      await rollingStockEditorPage.verifyAndCheckInputById(input.id, input.value, input.isNumeric);
+    }
+    await rollingStockEditorPage.clickOnSpeedEffortCurvesButton();
+
+    // Verify speed effort curves
+    await rollingStockEditorPage.verifySpeedEffortCurves(
+      rollingstockDetails.speedEffortData,
+      false,
+      'C1'
+    );
+    await rollingStockEditorPage.verifySpeedEffortCurves(
+      rollingstockDetails.speedEffortDataC1,
+      true,
+      'C1'
+    );
+
     // Delete the rolling stock created
-    const response = await reponsePromise;
+    const response = await responsePromise;
     const responseJSON: RollingStock = await response.json();
-    await deleteApiRequest(`/api/rolling_stock/${responseJSON.id}/`);
+    await rollingStockEditorPage.deleteRollingStock(responseJSON.id);
   });
 
   test('should correctly duplicate and modify a rolling stock', async ({ page }) => {
-    const playwrightRollingstockEditorPage = new PlaywrightRollingstockEditorPage(page);
+    const rollingStockEditorPage = new PlaywrightRollingstockEditorPage(page);
+    const rollingStockUpdatedName = 'Test_name_updated';
+    const rollingStockAddedName = 'rollingstock_1500_25000_test_e2e';
+    await rollingStockEditorPage.navigateToPage();
 
-    await playwrightRollingstockEditorPage.navigateToPage();
+    // Select the rolling stock from global-setup
+    await rollingStockEditorPage.selectRollingStock(rollingStockAddedName);
 
-    const rollingStockCard = playwrightRollingstockEditorPage.page.getByTestId(
-      `rollingstock-rollingstock_1500_25000_test_e2e`
-    );
-
-    await rollingStockCard.click();
-
-    const reponsePromise = playwrightRollingstockEditorPage.page.waitForResponse((response) =>
+    const responsePromise = rollingStockEditorPage.page.waitForResponse((response) =>
       response.url().includes('/api/rolling_stock/')
     );
 
-    const duplicateRollingStockButton = playwrightRollingstockEditorPage.page
-      .locator('.rollingstock-editor-buttons')
-      .locator('button')
-      .nth(1);
+    // Duplicate rolling stock
+    await rollingStockEditorPage.duplicateRollingStock();
 
-    await duplicateRollingStockButton.click();
+    // Update the rolling stock details and curves
+    for (const input of rollingstockDetails.updatedInputs) {
+      await rollingStockEditorPage.fillAndCheckInputById(input.id, input.value, input.isNumeric);
+    }
+    await rollingStockEditorPage.clickOnSpeedEffortCurvesButton();
+    await rollingStockEditorPage.deleteElectricalProfile('25000V');
+    await rollingStockEditorPage.fillSpeedEffortData(
+      rollingstockDetails.speedEffortDataUpdated,
+      true,
+      'C1',
+      true
+    );
 
-    await playwrightRollingstockEditorPage.fillAndCheckInputById('name', 'rollingstock_copied');
+    // Confirm the modification of RS
+    await rollingStockEditorPage.clickOnSubmitRollingstockButton();
+    await rollingStockEditorPage.page.getByText('Oui', { exact: true }).click();
 
-    await playwrightRollingstockEditorPage.clickOnSubmitRollingstockButton();
+    // Confirm the presence of the original RS
+    rollingStockEditorPage.searchRollingStock(rollingStockAddedName);
+    expect(await rollingStockEditorPage.page.getByTestId(rollingStockAddedName)).toBeVisible;
+    await rollingStockEditorPage.clearSearchRollingStock();
 
-    await playwrightRollingstockEditorPage.page.getByText('Oui', { exact: true }).click();
+    // Get to details page of the new rollingstock
+    await rollingStockEditorPage.searchRollingStock(rollingStockUpdatedName);
+    await rollingStockEditorPage.editRollingStock(rollingStockUpdatedName);
 
-    await playwrightRollingstockEditorPage.getRollingStockSearchInput.fill('rollingstock_copied');
+    // Verify the rolling stock details
+    for (const input of rollingstockDetails.updatedInputs) {
+      await rollingStockEditorPage.verifyAndCheckInputById(input.id, input.value, input.isNumeric);
+    }
+    await rollingStockEditorPage.clickOnSpeedEffortCurvesButton();
 
-    expect(
-      playwrightRollingstockEditorPage.page.getByTestId(`rollingstock-rollingstock_copied`)
-    ).toBeDefined();
+    // Verify speed effort curves
+    await rollingStockEditorPage.verifySpeedEffortCurves(
+      rollingstockDetails.speedEffortDataUpdated,
+      true,
+      'C1'
+    );
 
     // Delete the rolling stock duplicated
-    const response = await reponsePromise;
+    const response = await responsePromise;
     const responseJSON: RollingStock = await response.json();
-    await deleteApiRequest(`/api/rolling_stock/${responseJSON.id}/`);
+    await rollingStockEditorPage.deleteRollingStock(responseJSON.id);
   });
 });
