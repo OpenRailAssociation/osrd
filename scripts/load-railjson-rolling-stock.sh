@@ -8,8 +8,13 @@
 
 set -e
 
-rolling_stock_path="${1:?missing path to RailJSON rolling stock}"
+if [ "$#" = 0 ]; then
+	echo "Missing path to RailJSON rolling stock"
+	exit 1
+fi
 
-echo "Loading example rolling stock"
-docker cp "${rolling_stock_path}" osrd-editoast:tmp/stock.json
-docker exec osrd-editoast editoast import-rolling-stock //tmp/stock.json
+echo "Loading $# example rolling stock(s)"
+for rolling_stock_path in "$@"; do
+	docker cp "${rolling_stock_path}" osrd-editoast:tmp/stock.json
+	docker exec osrd-editoast editoast import-rolling-stock //tmp/stock.json
+done
