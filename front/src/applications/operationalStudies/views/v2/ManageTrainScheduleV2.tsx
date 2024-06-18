@@ -25,12 +25,13 @@ import { formatKmValue } from 'utils/strings';
 
 const ManageTrainScheduleV2 = () => {
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
-  const { getOriginV2, getDestinationV2, getPathSteps, getConstraintDistribution } =
+  const { getOriginV2, getDestinationV2, getPathSteps, getConstraintDistribution, getStartTime } =
     useOsrdConfSelectors();
   const origin = useSelector(getOriginV2);
   const destination = useSelector(getDestinationV2);
   const pathSteps = useSelector(getPathSteps);
   const constraintDistribution = useSelector(getConstraintDistribution);
+  const startTime = useSelector(getStartTime);
 
   const [pathProperties, setPathProperties] = useState<ManageTrainSchedulePathProperties>();
 
@@ -42,13 +43,13 @@ const ManageTrainScheduleV2 = () => {
 
   useEffect(() => {
     if (pathProperties) {
-      const allVias = upsertViasInOPs(
+      const allWaypoints = upsertViasInOPs(
         pathProperties.suggestedOperationalPoints,
         compact(pathSteps)
       );
       setPathProperties({
         ...pathProperties,
-        allVias,
+        allWaypoints,
       });
     }
   }, [pathSteps]);
@@ -123,7 +124,14 @@ const ManageTrainScheduleV2 = () => {
       </div>
     ),
     label: t('tabs.timesStops'),
-    content: <TimesStops pathProperties={pathProperties} pathSteps={pathSteps} />,
+    // If pathProperties is defined we know that pathSteps won't have any null values
+    content: (
+      <TimesStops
+        pathProperties={pathProperties}
+        pathSteps={compact(pathSteps)}
+        startTime={startTime}
+      />
+    ),
   };
 
   const tabSimulationSettings = {

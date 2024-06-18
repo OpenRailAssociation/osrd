@@ -1,7 +1,5 @@
 import React, { useMemo, useState, useEffect } from 'react';
 
-import type { TFunction } from 'i18next';
-import { compact } from 'lodash';
 import {
   keyColumn,
   type Column,
@@ -19,37 +17,36 @@ import type { PathStep } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { removeElementAtIndex } from 'utils/array';
 
+import { marginRegExValidation } from './consts';
 import timeColumn from './TimeColumnComponent';
+import type { PathWaypointColumn } from './types';
+import { formatSuggestedViasToRowVias } from './utils';
+
+const WITH_KP = true;
 
 type TimesStopsProps = {
   pathProperties: ManageTrainSchedulePathProperties | undefined;
-  pathSteps?: (PathStep | null)[];
+  pathSteps?: PathStep[];
+  startTime?: string;
 };
-
-type PathWaypointColumn = SuggestedOP & {
-  isMarginValid: boolean;
-};
-
-const marginRegExValidation = /^\d+(\.\d+)?%$|^\d+(\.\d+)?min\/100km$/;
-
-const formatSuggestedViasToRowVias = (
-  operationalPoints: SuggestedOP[],
-  t: TFunction<'timesStops', undefined>
-): PathWaypointColumn[] =>
-  operationalPoints?.map((op) => ({
-    ...op,
-    name: op.name || t('waypoint', { id: op.opId }),
-    isMarginValid: op.theoreticalMargin ? marginRegExValidation.test(op.theoreticalMargin) : true,
-    onStopSignal: op.onStopSignal || false,
-  }));
 
 const createDeleteViaButton = ({
   removeVia,
-  isRowVia,
+  rowIndex,
+  rowData,
+  pathProperties,
+  pathSteps,
 }: {
   removeVia: () => void;
-  isRowVia: boolean;
+  rowIndex: number;
+  rowData: PathWaypointColumn;
+  pathProperties: ManageTrainSchedulePathProperties;
+  pathSteps: PathStep[];
 }) => {
+  const isRowVia =
+    rowIndex !== 0 &&
+    rowIndex !== pathProperties.allWaypoints?.length - 1 &&
+    isVia(pathSteps, rowData, WITH_KP);
   if (isRowVia) {
     return (
       <button type="button" onClick={removeVia}>
@@ -61,7 +58,7 @@ const createDeleteViaButton = ({
   return <></>;
 };
 
-const TimesStops = ({ pathProperties, pathSteps = [] }: TimesStopsProps) => {
+const TimesStops = ({ pathProperties, pathSteps = [], startTime }: TimesStopsProps) => {
   const { t } = useTranslation('timesStops');
 
   if (!pathProperties) {
@@ -78,9 +75,14 @@ const TimesStops = ({ pathProperties, pathSteps = [] }: TimesStopsProps) => {
   const [timesStopsSteps, setTimesStopsSteps] = useState<PathWaypointColumn[]>([]);
 
   useEffect(() => {
-    const suggestedOPs = formatSuggestedViasToRowVias(pathProperties.allVias, t);
+    const suggestedOPs = formatSuggestedViasToRowVias(
+      pathProperties.allWaypoints,
+      pathSteps,
+      t,
+      startTime
+    );
     setTimesStopsSteps(suggestedOPs);
-  }, [t, pathProperties.allVias]);
+  }, [t, pathProperties.allWaypoints, startTime]);
 
   const columns: Column<PathWaypointColumn>[] = useMemo(
     () => [
@@ -99,8 +101,8 @@ const TimesStops = ({ pathProperties, pathSteps = [] }: TimesStopsProps) => {
         ...keyColumn<PathWaypointColumn, 'arrival'>('arrival', timeColumn),
         title: t('arrivalTime'),
 
-        // We should not be edit the arrival time of the origin
-        cellClassName: ({ rowIndex }) => (rowIndex === 0 ? 'dsg-hidden-cell' : ''),
+        // We should not be able to edit the arrival time of the origin
+        disabled: ({ rowIndex }) => rowIndex === 0,
         grow: 0.6,
       },
       {
@@ -112,10 +114,6 @@ const TimesStops = ({ pathProperties, pathSteps = [] }: TimesStopsProps) => {
           })
         ),
         title: `${t('stopTime')}`,
-
-        // We should not be able to edit the stopping time of the origin and destination
-        disabled: ({ rowIndex }) =>
-          rowIndex === 0 || rowIndex === pathProperties.allVias?.length - 1,
         grow: 0.6,
       },
       {
@@ -125,9 +123,11 @@ const TimesStops = ({ pathProperties, pathSteps = [] }: TimesStopsProps) => {
         ),
         title: t('receptionOnClosedSignal'),
 
-        // We should not be able to edit the reception on close signal of the origin
+        // We should not be able to edit the reception on close signal if stopFor is not filled
+        // except for the destination
         grow: 0.6,
-        disabled: ({ rowData }) => !rowData.stopFor,
+        disabled: ({ rowData, rowIndex }) =>
+          rowIndex !== pathProperties.allWaypoints?.length - 1 && !rowData.stopFor,
       },
       {
         ...keyColumn<PathWaypointColumn, 'theoreticalMargin'>(
@@ -147,16 +147,16 @@ const TimesStops = ({ pathProperties, pathSteps = [] }: TimesStopsProps) => {
         ),
         cellClassName: ({ rowData }) => (rowData.isMarginValid ? '' : 'invalidCell'),
         title: t('theoreticalMargin'),
-        disabled: ({ rowIndex }) => rowIndex === pathProperties.allVias.length - 1,
+        disabled: ({ rowIndex }) => rowIndex === pathProperties.allWaypoints.length - 1,
       },
     ],
-    [t, pathProperties.allVias.length]
+    [t, pathProperties.allWaypoints.length]
   );
 
   const removeVia = (rowData: PathWaypointColumn) => {
-    const index = compact(pathSteps).findIndex((step) => {
+    const index = pathSteps.findIndex((step) => {
       if ('uic' in step) {
-        return step.uic === rowData.uic && step.ch === rowData.ch && step.kp === rowData.kp;
+        return step.uic === rowData.uic && step.ch === rowData.ch && step.name === rowData.name;
       }
       if ('track' in step) {
         return step.track === rowData.track;
@@ -174,7 +174,7 @@ const TimesStops = ({ pathProperties, pathSteps = [] }: TimesStopsProps) => {
       value={timesStopsSteps}
       onChange={(row, [op]) => {
         const rowData = row[`${op.fromRowIndex}`];
-        if (!rowData.stopFor) {
+        if (!rowData.stopFor && op.fromRowIndex !== pathProperties.allWaypoints.length - 1) {
           rowData.onStopSignal = false;
         }
         if (rowData.theoreticalMargin && !marginRegExValidation.test(rowData.theoreticalMargin!)) {
@@ -182,22 +182,26 @@ const TimesStops = ({ pathProperties, pathSteps = [] }: TimesStopsProps) => {
           setTimesStopsSteps(row);
         } else {
           rowData.isMarginValid = true;
+          if (op.fromRowIndex === 0) rowData.arrival = null;
           dispatch(upsertViaFromSuggestedOP(rowData as SuggestedOP));
         }
       }}
       stickyRightColumn={{
-        component: ({ rowData }) =>
+        component: ({ rowData, rowIndex }) =>
           createDeleteViaButton({
             removeVia: () => removeVia(rowData),
-            isRowVia: isVia(compact(pathSteps), rowData),
+            rowIndex,
+            rowData,
+            pathProperties,
+            pathSteps,
           }),
       }}
       lockRows
       height={600}
       rowClassName={({ rowData, rowIndex }) =>
         rowIndex === 0 ||
-        rowIndex === pathProperties.allVias.length - 1 ||
-        isVia(compact(pathSteps), rowData)
+        rowIndex === pathProperties.allWaypoints.length - 1 ||
+        isVia(pathSteps, rowData, WITH_KP)
           ? 'activeRow'
           : ''
       }

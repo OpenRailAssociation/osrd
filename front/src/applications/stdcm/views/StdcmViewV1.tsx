@@ -72,7 +72,7 @@ const StdcmViewV1 = () => {
           electrifications,
           geometry,
           suggestedOperationalPoints: updatedSuggestedOPs,
-          allVias: updatedSuggestedOPs,
+          allWaypoints: updatedSuggestedOPs,
           length: path.length,
         });
       }

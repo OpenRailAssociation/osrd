@@ -797,7 +797,7 @@ const testCommonConfReducers = (slice: OperationalStudiesConfSlice | StdcmConfSl
       expect(state.pathSteps).toEqual([brest, rennes, insertedVia, paris, strasbourg]);
     });
 
-    it('should update an existing via if it comes from the "times and step" table and has been added by slecting it on the map', () => {
+    it('should update an existing via if it comes from the "times and step" table and has been added by selecting it on the map', () => {
       const pathSteps = [brest, rennes, lemans, paris, strasbourg];
       const store = createStore(slice, {
         pathSteps,
@@ -813,7 +813,7 @@ const testCommonConfReducers = (slice: OperationalStudiesConfSlice | StdcmConfSl
       };
 
       const updatedVia: PathStep = {
-        id: 'id2', // nextId() second increments after the one l.764
+        id: 'lemans',
         positionOnPath: 200,
         track: '60ca8dda-6667-11e3-81ff-01f464e0362d',
         offset: 426.443,

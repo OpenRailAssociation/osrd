@@ -86,8 +86,8 @@ export type ManageTrainSchedulePathProperties = {
   electrifications: NonNullable<PathProperties['electrifications']>;
   geometry: NonNullable<PathProperties['geometry']>;
   suggestedOperationalPoints: SuggestedOP[];
-  /** Operational points along the path and vias added by clicking on map */
-  allVias: SuggestedOP[];
+  /** Operational points along the path (including origin and destination) and vias added by clicking on map */
+  allWaypoints: SuggestedOP[];
   length: number;
 };
 

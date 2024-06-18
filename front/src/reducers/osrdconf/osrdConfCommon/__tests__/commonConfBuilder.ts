@@ -223,7 +223,7 @@ export default function commonConfBuilder() {
         ],
       },
       suggestedOperationalPoints: [],
-      allVias: [],
+      allWaypoints: [],
       length: 1169926000,
     }),
   };
