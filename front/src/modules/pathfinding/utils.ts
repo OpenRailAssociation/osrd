@@ -88,41 +88,38 @@ export const getPathfindingQuery = ({
 
 export const upsertViasInOPs = (ops: SuggestedOP[], pathSteps: PathStep[]): SuggestedOP[] => {
   let updatedOPs = [...ops];
-  const vias = pathSteps.slice(1, -1);
-  if (vias.length > 0) {
-    vias.forEach((step) => {
-      // We check only for vias added by map click
-      if ('track' in step) {
-        const formattedStep: SuggestedOP = {
-          opId: step.id,
-          positionOnPath: step.positionOnPath!,
-          offsetOnTrack: step.offset,
-          track: step.track,
-          coordinates: step.coordinates,
-        };
-        // If it hasn't an uic, the step has been added by map click,
-        // we know we have its position on path so we can insert it
-        // at the good index in the existing operational points
-        const index = updatedOPs.findIndex(
-          (op) => step.positionOnPath && op.positionOnPath >= step.positionOnPath
-        );
-        updatedOPs = addElementAtIndex(updatedOPs, index, formattedStep);
-      } else if ('uic' in step) {
-        updatedOPs = updatedOPs.map((op) => {
-          if (op.uic === step.uic && op.ch === step.ch && op.kp === step.kp) {
-            return {
-              ...op,
-              stopFor: step.stopFor,
-              arrival: step.arrival,
-              onStopSignal: step.onStopSignal,
-              theoreticalMargin: step.theoreticalMargin,
-            };
-          }
-          return op;
-        });
-      }
-    });
-  }
+  pathSteps.forEach((step) => {
+    // We check only for vias added by map click
+    if ('track' in step) {
+      const formattedStep: SuggestedOP = {
+        opId: step.id,
+        positionOnPath: step.positionOnPath!,
+        offsetOnTrack: step.offset,
+        track: step.track,
+        coordinates: step.coordinates,
+      };
+      // If it hasn't an uic, the step has been added by map click,
+      // we know we have its position on path so we can insert it
+      // at the good index in the existing operational points
+      const index = updatedOPs.findIndex(
+        (op) => step.positionOnPath && op.positionOnPath >= step.positionOnPath
+      );
+      updatedOPs = addElementAtIndex(updatedOPs, index, formattedStep);
+    } else if ('uic' in step) {
+      updatedOPs = updatedOPs.map((op) => {
+        if (op.uic === step.uic && op.ch === step.ch && op.kp === step.kp) {
+          return {
+            ...op,
+            stopFor: step.stopFor,
+            arrival: step.arrival,
+            onStopSignal: step.onStopSignal,
+            theoreticalMargin: step.theoreticalMargin,
+          };
+        }
+        return op;
+      });
+    }
+  });
   return updatedOPs;
 };
 
@@ -131,10 +128,16 @@ export const upsertViasInOPs = (ops: SuggestedOP[], pathSteps: PathStep[]): Sugg
  * Some OPs have same uic so we need to check also the ch (can be still not enough
  * probably because of imports problem).
  * If the vias has no uic, it has been added via map click and we know it has an id.
+ * @param withKP - If true, we check the kp compatibility instead of the name.
+ * It is used in the times and stops table to check if an operational point is a via.
  */
-export const isVia = (vias: PathStep[], op: SuggestedOP) =>
+export const isVia = (vias: PathStep[], op: SuggestedOP, withKP = false) =>
   vias.some(
     (via) =>
-      ('uic' in via && 'ch' in via && via.uic === op.uic && via.ch === op.ch && via.kp === op.kp) ||
+      ('uic' in via &&
+        'ch' in via &&
+        via.uic === op.uic &&
+        via.ch === op.ch &&
+        (withKP ? via.kp === op.kp : via.name === op.name)) ||
       via.id === op.opId
   );

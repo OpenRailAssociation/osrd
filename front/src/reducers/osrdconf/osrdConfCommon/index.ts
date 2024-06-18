@@ -402,11 +402,8 @@ export function buildCommonConfReducers<S extends OsrdConfState>(): CommonConfRe
     upsertViaFromSuggestedOP(state: Draft<S>, action: PayloadAction<SuggestedOP>) {
       // We know that, at this point, origin and destination are defined because pathfinding has been done
       const pathSteps = compact(state.pathSteps);
-      const index = pathSteps.findIndex(
-        (step) => step.positionOnPath! >= action.payload.positionOnPath
-      );
 
-      const newVia: PathStep = {
+      let newVia: PathStep = {
         coordinates: action.payload.coordinates,
         id: nextId(),
         positionOnPath: action.payload.positionOnPath,
@@ -429,9 +426,26 @@ export function buildCommonConfReducers<S extends OsrdConfState>(): CommonConfRe
 
       const isInVias = isVia(pathSteps, action.payload);
       if (isInVias) {
-        state.pathSteps = replaceElementAtIndex(state.pathSteps, index, newVia);
+        // Because of import issues, there can be multiple ops with same position on path
+        // To avoid updating the wrong one, we need to find the one that matches the payload
+        const stepIndex = pathSteps.findIndex(
+          (step) =>
+            ('uic' in step &&
+              'ch' in step &&
+              step.uic === action.payload.uic &&
+              step.ch === action.payload.ch &&
+              step.name === action.payload.name) ||
+            step.id === action.payload.opId
+        );
+        newVia = { ...newVia, id: pathSteps[stepIndex].id }; // We don't need to change the id of the updated via
+        state.pathSteps = replaceElementAtIndex(state.pathSteps, stepIndex, newVia);
       } else {
-        state.pathSteps = addElementAtIndex(state.pathSteps, index, newVia);
+        const index = pathSteps.findIndex(
+          (step) => step.positionOnPath! >= action.payload.positionOnPath
+        );
+        // Because of import issues, there can be multiple ops at position 0
+        // To avoid inserting a new via before the origin we need to check if the index is 0
+        state.pathSteps = addElementAtIndex(state.pathSteps, index || 1, newVia);
       }
     },
     updateRollingStockComfortV2(

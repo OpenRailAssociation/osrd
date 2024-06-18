@@ -323,13 +323,13 @@ const Pathfinding = ({ pathProperties, setPathProperties }: PathfindingProps) =>
               });
               dispatch(updatePathSteps(updatedPathSteps));
 
-              const allVias = upsertViasInOPs(suggestedOperationalPoints, updatedPathSteps);
+              const allWaypoints = upsertViasInOPs(suggestedOperationalPoints, updatedPathSteps);
 
               setPathProperties({
                 electrifications,
                 geometry,
                 suggestedOperationalPoints,
-                allVias,
+                allWaypoints,
                 length: pathfindingResult.length,
               });
 

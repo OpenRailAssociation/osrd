@@ -112,7 +112,7 @@ const ItineraryV2 = ({
               className="col my-1 text-white btn bg-info btn-sm"
               type="button"
               onClick={() =>
-                openModal(<ModalSuggestedVias suggestedVias={pathProperties.allVias} />)
+                openModal(<ModalSuggestedVias suggestedVias={pathProperties.allWaypoints} />)
               }
             >
               <span className="mr-1">{t('addVias')}</span>

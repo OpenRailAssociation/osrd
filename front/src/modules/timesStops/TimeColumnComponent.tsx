@@ -19,6 +19,13 @@ const TimeComponent = ({
     }
   }, [active]);
 
+  // Allow us to update the field when the change comes from outside of the input
+  // In this use case, we use it when the user updates the start time to update
+  // the arrival time for the origin which should match the departure time
+  useEffect(() => {
+    setTempTimeValue(rowData);
+  }, [rowData]);
+
   return (
     <input
       className="dsg-input"

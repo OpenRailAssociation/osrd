@@ -113,13 +113,13 @@ export const useSetupItineraryForTrainUpdate = (
                 pathfindingResult.length
               );
 
-              const allVias = upsertViasInOPs(suggestedOperationalPoints, formatedPathSteps);
+              const allWaypoints = upsertViasInOPs(suggestedOperationalPoints, formatedPathSteps);
 
               setPathProperties({
                 electrifications,
                 geometry,
                 suggestedOperationalPoints,
-                allVias,
+                allWaypoints,
                 length: pathfindingResult.length,
               });
 
