@@ -171,7 +171,7 @@ private class TrackSectionBuilder(
     }
 }
 
-class RawInfraFromRjsBuilder {
+class RawInfraBuilder {
     private val trackNodePool = StaticPool<TrackNode, TrackNodeDescriptor>()
     private val trackSectionPool = StaticPool<TrackSection, TrackSectionBuilder>()
     private val trackChunkPool = StaticPool<TrackChunk, TrackChunkDescriptor>()
@@ -647,7 +647,7 @@ class RawInfraFromRjsBuilder {
 }
 
 @Throws(BuildRouteError::class)
-fun RawInfraFromRjsBuilder.route(
+fun RawInfraBuilder.route(
     routeName: String,
     routeEntry: DirDetectorId,
     exit: DetectorId,
@@ -747,7 +747,7 @@ data class ReachedNodeDeadEnd(
 ) : BuildRouteError()
 
 class RouteZonePathBuilder(
-    private val infraBuilder: RawInfraFromRjsBuilder,
+    private val infraBuilder: RawInfraBuilder,
     private val routeBuilder: RouteBuilder,
     routeEntry: DirDetectorId,
     private val releaseDetectors: StaticIdxSortedSet<Detector>
