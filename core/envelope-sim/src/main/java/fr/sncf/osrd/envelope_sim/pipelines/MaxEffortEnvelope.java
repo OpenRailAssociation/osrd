@@ -34,12 +34,13 @@ public class MaxEffortEnvelope {
      * maintain its speed
      */
     public static Envelope addAccelerationAndConstantSpeedParts(
-            EnvelopeSimContext context, Envelope maxSpeedProfile, double initialSpeed) {
+            EnvelopeSimContext context, Envelope maxSpeedProfile, double initialPosition, double initialSpeed) {
         var builder = OverlayEnvelopeBuilder.forward(maxSpeedProfile);
         var cursor = EnvelopeCursor.forward(maxSpeedProfile);
-        var maxSpeed = maxSpeedProfile.interpolateSpeedRightDir(0, 1);
-        if (initialSpeed < maxSpeed) accelerate(context, maxSpeedProfile, initialSpeed, 0, builder, cursor);
-
+        var maxSpeed = maxSpeedProfile.interpolateSpeedRightDir(initialPosition, 1);
+        if (initialSpeed < maxSpeed) {
+            accelerate(context, maxSpeedProfile, initialSpeed, initialPosition, builder, cursor);
+        }
         while (!cursor.hasReachedEnd()) {
             if (cursor.checkPart(MaxEffortEnvelope::maxEffortPlateau)) {
                 var partBuilder = new EnvelopePartBuilder();
@@ -137,7 +138,7 @@ public class MaxEffortEnvelope {
 
     /** Generate a max effort envelope given a max speed envelope */
     public static Envelope from(EnvelopeSimContext context, double initialSpeed, Envelope maxSpeedProfile) {
-        var maxEffortEnvelope = addAccelerationAndConstantSpeedParts(context, maxSpeedProfile, initialSpeed);
+        var maxEffortEnvelope = addAccelerationAndConstantSpeedParts(context, maxSpeedProfile, 0, initialSpeed);
         assert maxEffortEnvelope.continuous : "Discontinuity in max effort envelope";
         assert maxEffortEnvelope.getBeginPos() == 0;
         return maxEffortEnvelope;

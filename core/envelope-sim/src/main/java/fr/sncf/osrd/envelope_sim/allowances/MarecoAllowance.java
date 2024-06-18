@@ -1,5 +1,7 @@
 package fr.sncf.osrd.envelope_sim.allowances;
 
+import static fr.sncf.osrd.envelope_sim.pipelines.MaxEffortEnvelope.addAccelerationAndConstantSpeedParts;
+
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.envelope.*;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
@@ -74,8 +76,11 @@ public final class MarecoAllowance extends AbstractAllowanceWithRanges {
     protected Envelope computeCore(Envelope coreBase, EnvelopeSimContext context, double v1) {
         double vf = computeVf(v1, context.rollingStock);
 
-        // 1) cap the core base envelope at v1
+        // 1) cap the core base envelope at v1 and check if v1 is physically reachable
         var cappedEnvelope = EnvelopeSpeedCap.from(coreBase, List.of(new MarecoSpeedLimit()), v1);
+        var initialPosition = cappedEnvelope.getBeginPos();
+        var initialSpeed = cappedEnvelope.getBeginSpeed();
+        cappedEnvelope = addAccelerationAndConstantSpeedParts(context, cappedEnvelope, initialPosition, initialSpeed);
 
         // 2) find accelerating slopes on constant speed limit regions
         var coastingOpportunities = new ArrayList<CoastingOpportunity>();
