@@ -18,7 +18,7 @@ import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.impl.BuildRouteError
 import fr.sncf.osrd.sim_infra.impl.MissingNodeConfig
-import fr.sncf.osrd.sim_infra.impl.RawInfraFromRjsBuilder
+import fr.sncf.osrd.sim_infra.impl.RawInfraBuilder
 import fr.sncf.osrd.sim_infra.impl.ReachedNodeDeadEnd
 import fr.sncf.osrd.sim_infra.impl.ReachedTrackDeadEnd
 import fr.sncf.osrd.sim_infra.impl.SpeedSection
@@ -248,7 +248,7 @@ private fun parseRjsRouteWaypoint(
 }
 
 /** Build detection zones on a partially-filled builder (track-sections, nodes and detectors) */
-private fun buildZones(builder: RawInfraFromRjsBuilder) {
+private fun buildZones(builder: RawInfraBuilder) {
     // 1. run a union-find to figure out which zone each start and end of track section belongs to
     val uf = UnionFind(builder.getTrackSections().size.toInt() * 2)
 
@@ -320,7 +320,7 @@ private fun buildZones(builder: RawInfraFromRjsBuilder) {
 }
 
 private fun parseRjsTrackSection(
-    builder: RawInfraFromRjsBuilder,
+    builder: RawInfraBuilder,
     rjsTrack: RJSTrackSection,
     trackSectionNameToDistanceSortedDetectors:
         Map<String, TreeMap<Offset<TrackSection>, MutableList<String>>>,
@@ -403,7 +403,7 @@ private fun parseRjsTrackSection(
     }
 }
 
-fun parseRjsElectrification(builder: RawInfraFromRjsBuilder, electrification: RJSElectrification) {
+fun parseRjsElectrification(builder: RawInfraBuilder, electrification: RJSElectrification) {
     for (electrificationRange in electrification.trackRanges) {
         val applyElectrificationForChunkBetween =
             { chunk: TrackChunkDescriptor, chunkLower: Distance, chunkUpper: Distance ->
@@ -435,7 +435,7 @@ fun parseRjsElectrification(builder: RawInfraFromRjsBuilder, electrification: RJ
 }
 
 fun parseNeutralRanges(
-    builder: RawInfraFromRjsBuilder,
+    builder: RawInfraBuilder,
     isAnnouncement: Boolean,
     neutralSection: RJSNeutralSection,
 ) {
@@ -523,7 +523,7 @@ fun parseSpeedSection(rjsSpeedSection: RJSSpeedSection): SpeedSection {
     )
 }
 
-fun parseSpeedSection(builder: RawInfraFromRjsBuilder, speedSection: RJSSpeedSection) {
+fun parseSpeedSection(builder: RawInfraBuilder, speedSection: RJSSpeedSection) {
     for (speedRange in speedSection.trackRanges) {
         val applySpeedSectionForChunkBetween =
             { chunk: TrackChunkDescriptor, chunkLower: Distance, chunkUpper: Distance ->
@@ -557,7 +557,7 @@ fun parseSpeedSection(builder: RawInfraFromRjsBuilder, speedSection: RJSSpeedSec
 }
 
 fun parseTrackNode(
-    builder: RawInfraFromRjsBuilder,
+    builder: RawInfraBuilder,
     switchTypeMap: Map<String, RJSSwitchType>,
     rjsNode: RJSSwitch
 ) {
@@ -595,7 +595,7 @@ fun parseTrackNode(
     builder.node(rjsNode.id, rjsNode.groupChangeDelay.seconds, ports, configs)
 }
 
-fun parseRoute(builder: RawInfraFromRjsBuilder, rjsRoute: RJSRoute) {
+fun parseRoute(builder: RawInfraBuilder, rjsRoute: RJSRoute) {
     val routeName = rjsRoute.id
 
     // parse the entry / exit detectors
@@ -667,7 +667,7 @@ fun parseRoute(builder: RawInfraFromRjsBuilder, rjsRoute: RJSRoute) {
     }
 }
 
-fun parseSignal(builder: RawInfraFromRjsBuilder, rjsSignal: RJSSignal) {
+fun parseSignal(builder: RawInfraBuilder, rjsSignal: RJSSignal) {
     val trackSectionId =
         builder.getTrackSectionByName(rjsSignal.track)
             ?: throw OSRDError.newInfraLoadingError(
@@ -726,7 +726,7 @@ fun EdgeEndpoint.toEndpoint(): Endpoint {
 }
 
 fun parseRJSInfra(rjsInfra: RJSInfra): RawInfra {
-    val builder = RawInfraFromRjsBuilder()
+    val builder = RawInfraBuilder()
 
     // Parse detectors and buffer-stops
     val trackSectionNameToDistanceSortedDetectors =
