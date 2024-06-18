@@ -291,6 +291,30 @@ class PathfindingTests {
     }
 
     @Test
+    fun sameEdgeMoreUnorderedWaypointsTest() {
+        /* Same test as above but with more steps
+
+        0 -> -> B -> -> E -> -> Step -> -> 1
+         */
+        val builder = SimpleGraphBuilder()
+        builder.makeNodes(3)
+        builder.makeEdge(0, 1, 100.meters)
+        builder.makeEdge(1, 2, 100.meters)
+        val g = builder.build()
+        val res =
+            Pathfinding(g)
+                .setEdgeToLength { edge -> edge.length }
+                .runPathfindingEdgesOnly(
+                    listOf(
+                        listOf(builder.getEdgeLocation("0-1", 10.meters)),
+                        listOf(builder.getEdgeLocation("0-1", 40.meters)),
+                        listOf(builder.getEdgeLocation("0-1", 20.meters)),
+                    )
+                )
+        Assertions.assertNull(res)
+    }
+
+    @Test
     fun sameEdgeWithLoopTest() {
         /* The end is at a smaller offset that the start: it has to loop through the edges to reach it
 
