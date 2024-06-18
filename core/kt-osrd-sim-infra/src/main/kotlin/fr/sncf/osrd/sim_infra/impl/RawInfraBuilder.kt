@@ -554,7 +554,7 @@ class RawInfraBuilder {
 
     fun build(): RawInfra {
         resolveReferences()
-        return RawInfraImplFromRjs(
+        return RawInfraImpl(
             trackNodePool,
             trackSectionPool.map { it.build() },
             trackChunkPool,
