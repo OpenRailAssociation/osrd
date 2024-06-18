@@ -182,29 +182,35 @@ class Pathfinding<NodeT : Any, EdgeT : Any, OffsetType>(
             // reach a target
             var waypointOnRange = false
             if (step.prev == null || step.nReachedTargets == step.prev.nReachedTargets)
-                for (target in targetsOnEdges[step.nReachedTargets].apply(step.range.edge)) if (
-                    step.range.start <= target.offset
-                ) {
-                    waypointOnRange = true
-                    // Adds a new step precisely on the stop location. This ensures that we don't
-                    // ignore the
-                    // distance between the start of the edge and the stop location
-                    var newRange = EdgeRange(target.edge, step.range.start, target.offset)
-                    newRange = filterRange(newRange)!!
-                    if (newRange.end != target.offset) {
-                        // The target location is blocked by a blocked range, it can't be accessed
-                        // from here
-                        continue
+                for (target in targetsOnEdges[step.nReachedTargets].apply(step.range.edge)) {
+                    if (step.range.start <= target.offset) {
+                        if (
+                            (step.targets.lastOrNull()?.offset ?: Offset(0.meters)) > target.offset
+                        ) {
+                            // The previous waypoint is further on the edge
+                            continue
+                        }
+                        waypointOnRange = true
+                        // Adds a new step precisely on the stop location. This ensures that we
+                        // don't ignore the distance between the start of the edge and the stop
+                        // location
+                        var newRange = EdgeRange(target.edge, step.range.start, target.offset)
+                        newRange = filterRange(newRange)!!
+                        if (newRange.end != target.offset) {
+                            // The target location is blocked by a blocked range, it can't be
+                            // accessed from here
+                            continue
+                        }
+                        val stepTargets = ArrayList(step.targets)
+                        stepTargets.add(target)
+                        registerStep(
+                            newRange,
+                            step.prev,
+                            step.totalDistance,
+                            step.nReachedTargets + 1,
+                            stepTargets
+                        )
                     }
-                    val stepTargets = ArrayList(step.targets)
-                    stepTargets.add(target)
-                    registerStep(
-                        newRange,
-                        step.prev,
-                        step.totalDistance,
-                        step.nReachedTargets + 1,
-                        stepTargets
-                    )
                 }
             val edgeLength = edgeToLength!!.apply(step.range.edge)
             if (!waypointOnRange && step.range.end == edgeLength) {
