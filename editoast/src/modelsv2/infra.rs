@@ -11,8 +11,11 @@ use std::pin::Pin;
 use chrono::NaiveDateTime;
 use chrono::Utc;
 use derivative::Derivative;
+use diesel::delete;
 use diesel::sql_query;
 use diesel::sql_types::BigInt;
+use diesel::ExpressionMethods;
+use diesel::QueryDsl;
 use diesel_async::RunQueryDsl;
 use editoast_derive::ModelV2;
 use futures::future::try_join_all;
@@ -220,6 +223,53 @@ impl Infra {
         self.generated_version = None;
         self.save(conn).await?;
         Ok(true)
+    }
+
+    /// Delete efficiently all the data of the infra.
+    /// This disable some triggers to speed up the deletion.
+    ///
+    /// Note: Everything is done in one transaction for consistency.
+    pub async fn fast_delete_static(conn: &mut DbConnection, infra_id: i64) -> Result<bool> {
+        use crate::tables::infra_object_track_section::dsl as track_section_dsl;
+        use crate::tables::search_track::dsl as search_track_dsl;
+
+        conn.build_transaction()
+            .run(|conn| Box::pin(async {
+                // Lock the table to avoid infra edition while the trigger is disabled
+                sql_query("LOCK TABLE infra_object_track_section IN SHARE ROW EXCLUSIVE MODE")
+                    .execute(conn)
+                    .await?;
+
+                // Disable the trigger to speed up the deletion
+                sql_query("ALTER TABLE infra_object_track_section DISABLE TRIGGER search_track__del_trig")
+                    .execute(conn)
+                    .await?;
+                // Delete the track sections
+                delete(
+                    track_section_dsl::infra_object_track_section
+                        .filter(track_section_dsl::infra_id.eq(infra_id)),
+                )
+                .execute(conn)
+                .await
+                .expect("Failed to delete from infra_object_track_section");
+                // Delete search track
+                delete(
+                    search_track_dsl::search_track.filter(search_track_dsl::infra_id.eq(infra_id as i32)),
+                )
+                .execute(conn)
+                .await
+                .expect("Failed to delete from search_track");
+
+                // Re-Enable the trigger to speed up the deletion
+                sql_query("ALTER TABLE infra_object_track_section ENABLE TRIGGER search_track__del_trig")
+                    .execute(conn)
+                    .await
+                    .expect("Failed to enable trigger");
+
+                // Delete the rest of the infra
+                Self::delete_static(conn, infra_id).await
+            }))
+            .await
     }
 }
 
