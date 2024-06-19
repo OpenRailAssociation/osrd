@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 use super::{
-    core_driver::{CoreDriver, CoreMetadata, DriverError},
+    worker_driver::{DriverError, WorkerDriver, WorkerMetadata},
     LABEL_CORE_ID, LABEL_INFRA_ID, LABEL_MANAGED_BY, MANAGED_BY_VALUE,
 };
 
@@ -38,7 +38,7 @@ impl DockerDriver {
     }
 }
 
-impl CoreDriver for DockerDriver {
+impl WorkerDriver for DockerDriver {
     fn get_or_create_core_pool(
         &self,
         infra_id: usize,
@@ -128,7 +128,7 @@ impl CoreDriver for DockerDriver {
 
     fn list_core_pools(
         &self,
-    ) -> Pin<Box<dyn Future<Output = Result<Vec<CoreMetadata>, DriverError>> + Send + '_>> {
+    ) -> Pin<Box<dyn Future<Output = Result<Vec<WorkerMetadata>, DriverError>> + Send + '_>> {
         Box::pin(async move {
             let containers = self
                 .client
@@ -141,7 +141,7 @@ impl CoreDriver for DockerDriver {
                 .filter_map(|container| {
                     container.labels.as_ref().and_then(|labels| {
                         if labels.get(LABEL_MANAGED_BY) == Some(&MANAGED_BY_VALUE.to_string()) {
-                            Some(CoreMetadata {
+                            Some(WorkerMetadata {
                                 external_id: container.id.clone().expect("container id missing"),
                                 core_id: Uuid::parse_str(
                                     labels.get(LABEL_CORE_ID).expect("core_id label missing"),

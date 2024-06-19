@@ -1,12 +1,29 @@
-use std::{collections::BTreeMap, sync::Arc};
+use std::{
+    collections::{BTreeMap, HashMap},
+    sync::Arc,
+    time::Duration,
+};
 
 use futures_lite::stream::StreamExt;
-use lapin::{options::{BasicConsumeOptions, BasicQosOptions, ExchangeDeclareOptions, QueueBindOptions, QueueDeclareOptions}, types::FieldTable, Channel, Connection, ExchangeKind::{Direct, Fanout}};
+use lapin::{
+    options::{
+        BasicConsumeOptions, BasicPublishOptions, BasicQosOptions, ExchangeDeclareOptions,
+        QueueBindOptions, QueueDeclareOptions,
+    },
+    types::FieldTable,
+    BasicProperties, Channel, Connection,
+    ExchangeKind::{Direct, Fanout},
+};
 use percent_encoding::{utf8_percent_encode, NON_ALPHANUMERIC};
 use tokio::{sync::oneshot, task::JoinSet};
 
-use crate::{management_client::{ArgumentValue, ManagementClient, Policy, PolicyScope}, queue_controller::queues_control_loop, target_tracker::TargetTrackerClient, watch_logger::watch_logger, Key};
-
+use crate::{
+    management_client::{ArgumentValue, ManagementClient, Policy, PolicyScope},
+    queue_controller::{queues_control_loop, QueuesState},
+    target_tracker::{QueueStatus, TargetTrackerClient, TargetUpdate},
+    watch_logger::watch_logger,
+    Key, WorkerDriver,
+};
 
 pub struct Pool {
     // the percent encoded pool ID
@@ -61,7 +78,8 @@ impl Pool {
     }
 
     pub fn parse_key(&self, queue_name: &str) -> Option<Key> {
-        queue_name.strip_prefix(&self.pool_req_prefix)
+        queue_name
+            .strip_prefix(&self.pool_req_prefix)
             .map(Key::decode)
     }
 
@@ -69,36 +87,82 @@ impl Pool {
         format!("{}{}", self.pool_req_prefix, key.encode())
     }
 
-    pub async fn setup(&self, conn: &Connection, management_client: &ManagementClient) -> anyhow::Result<()> {
+    pub async fn setup(
+        &self,
+        conn: &Connection,
+        management_client: &ManagementClient,
+    ) -> anyhow::Result<()> {
         // create exchanges
         let chan = conn.create_channel().await?;
-        chan.exchange_declare(&self.request_xchg, Direct, ExchangeDeclareOptions::default(), FieldTable::default()).await?;
-        chan.exchange_declare(&self.orphan_xchg, Fanout, ExchangeDeclareOptions::default(), FieldTable::default()).await?;
-        chan.exchange_declare(&self.deadletter_xchg, Fanout, ExchangeDeclareOptions::default(), FieldTable::default()).await?;
-        chan.exchange_declare(&self.activity_xchg, Fanout, ExchangeDeclareOptions::default(), FieldTable::default()).await?;
+        chan.exchange_declare(
+            &self.request_xchg,
+            Direct,
+            ExchangeDeclareOptions::default(),
+            FieldTable::default(),
+        )
+        .await?;
+        chan.exchange_declare(
+            &self.orphan_xchg,
+            Fanout,
+            ExchangeDeclareOptions::default(),
+            FieldTable::default(),
+        )
+        .await?;
+        chan.exchange_declare(
+            &self.deadletter_xchg,
+            Fanout,
+            ExchangeDeclareOptions::default(),
+            FieldTable::default(),
+        )
+        .await?;
+        chan.exchange_declare(
+            &self.activity_xchg,
+            Fanout,
+            ExchangeDeclareOptions::default(),
+            FieldTable::default(),
+        )
+        .await?;
 
         // setup the policy for the request exchange
-        management_client.set_policy(format!("{}-req-xchg", self.pool_id), Policy {
-            pattern: self.request_xchg.clone(),
-            definition: BTreeMap::from([
-                ("dead-letter-exchange".into(), ArgumentValue::String(self.deadletter_xchg.clone())),
-                ("alternate-exchange".into(), ArgumentValue::String(self.orphan_xchg.clone())),
-            ]),
-            priority: Some(10),
-            apply_to: Some(PolicyScope::Exchanges),
-        }).await?;
+        management_client
+            .set_policy(
+                format!("{}-req-xchg", self.pool_id),
+                Policy {
+                    pattern: self.request_xchg.clone(),
+                    definition: BTreeMap::from([
+                        (
+                            "dead-letter-exchange".into(),
+                            ArgumentValue::String(self.deadletter_xchg.clone()),
+                        ),
+                        (
+                            "alternate-exchange".into(),
+                            ArgumentValue::String(self.orphan_xchg.clone()),
+                        ),
+                    ]),
+                    priority: Some(10),
+                    apply_to: Some(PolicyScope::Exchanges),
+                },
+            )
+            .await?;
 
         // setup the policy for request queues
         let request_queues_policy_id = format!("{}-req-queues", self.pool_id);
         if self.request_queue_policy.is_empty() {
-            management_client.remove_policy(request_queues_policy_id).await?;
+            management_client
+                .remove_policy(request_queues_policy_id)
+                .await?;
         } else {
-            management_client.set_policy(request_queues_policy_id, Policy {
-                pattern: format!("^{}", self.pool_req_prefix),
-                definition: self.request_queue_policy.clone(),
-                priority: Some(10),
-                apply_to: Some(PolicyScope::Queues),
-            }).await?;
+            management_client
+                .set_policy(
+                    request_queues_policy_id,
+                    Policy {
+                        pattern: format!("^{}", self.pool_req_prefix),
+                        definition: self.request_queue_policy.clone(),
+                        priority: Some(10),
+                        apply_to: Some(PolicyScope::Queues),
+                    },
+                )
+                .await?;
         }
 
         // create queues
@@ -108,47 +172,132 @@ impl Pool {
             auto_delete: false,
             ..Default::default()
         };
-        chan.queue_declare(&self.orphan_queue, exclusive, FieldTable::default()).await?;
-        chan.queue_declare(&self.deadletter_queue, exclusive, FieldTable::default()).await?;
-        chan.queue_declare(&self.activity_queue, exclusive, FieldTable::default()).await?;
-        chan.queue_declare(&self.poison_queue, exclusive, FieldTable::default()).await?;
+        chan.queue_declare(&self.orphan_queue, exclusive, FieldTable::default())
+            .await?;
+        chan.queue_declare(&self.deadletter_queue, exclusive, FieldTable::default())
+            .await?;
+        chan.queue_declare(&self.activity_queue, exclusive, FieldTable::default())
+            .await?;
+        chan.queue_declare(&self.poison_queue, exclusive, FieldTable::default())
+            .await?;
 
         // bind queues to exchanges
-        chan.queue_bind(&self.orphan_queue, &self.orphan_xchg, "", QueueBindOptions::default(), FieldTable::default()).await?;
-        chan.queue_bind(&self.deadletter_queue, &self.deadletter_xchg, "", QueueBindOptions::default(), FieldTable::default()).await?;
-        chan.queue_bind(&self.activity_queue, &self.activity_xchg, "", QueueBindOptions::default(), FieldTable::default()).await?;
+        chan.queue_bind(
+            &self.orphan_queue,
+            &self.orphan_xchg,
+            "",
+            QueueBindOptions::default(),
+            FieldTable::default(),
+        )
+        .await?;
+        chan.queue_bind(
+            &self.deadletter_queue,
+            &self.deadletter_xchg,
+            "",
+            QueueBindOptions::default(),
+            FieldTable::default(),
+        )
+        .await?;
+        chan.queue_bind(
+            &self.activity_queue,
+            &self.activity_xchg,
+            "",
+            QueueBindOptions::default(),
+            FieldTable::default(),
+        )
+        .await?;
 
         Ok(())
     }
 
-    pub async fn start(self: Arc<Self>, conn: &Connection, management_client: &ManagementClient, tracker_client: TargetTrackerClient) -> anyhow::Result<JoinSet<()>> {
+    pub async fn start(
+        self: Arc<Self>,
+        conn: &Connection,
+        management_client: &ManagementClient,
+        tracker_client: TargetTrackerClient,
+        driver: Box<dyn WorkerDriver>,
+        worker_loop_interval: Duration,
+    ) -> anyhow::Result<JoinSet<anyhow::Result<()>>> {
         let mut tasks = JoinSet::new();
         // start control loops
         let expected_state = tracker_client.subscribe().await?;
-        tasks.spawn(watch_logger("target state".into(), expected_state.clone()));
-        // tasks.spawn(worker_control_loop(expected_state.clone()));
+        {
+            let expected_state = expected_state.clone();
+            tasks.spawn(async {
+                watch_logger("target state".into(), expected_state).await;
+                Ok(())
+            });
+        }
+        {
+            let expected_state = expected_state.clone();
+            tasks.spawn(async move {
+                worker_control_loop(expected_state, driver, worker_loop_interval).await;
+                Ok(())
+            });
+        }
         let (queue_status_sender, queue_status_receiver) = oneshot::channel();
         let queue_channel = conn.create_channel().await?;
 
         let init_queues = management_client.list_queues().await?;
-        let init_keys: Vec<Key> = init_queues.into_iter().filter_map(|q| self.parse_key(&q.name)).collect();
-        tasks.spawn(queues_control_loop(self.clone(), queue_channel, init_keys, expected_state, queue_status_sender));
+        let init_keys: Vec<Key> = init_queues
+            .into_iter()
+            .filter_map(|q| self.parse_key(&q.name))
+            .collect();
+        {
+            let pool = self.clone();
+            tasks.spawn(async move {
+                queues_control_loop(
+                    pool,
+                    queue_channel,
+                    init_keys,
+                    expected_state,
+                    queue_status_sender,
+                )
+                .await;
+                Ok(())
+            });
+        }
         let queue_status = queue_status_receiver.await?;
-        tasks.spawn(watch_logger("queue status".into(), queue_status));
+        {
+            let queue_status = queue_status.clone();
+            tasks.spawn(async {
+                watch_logger("queue status".into(), queue_status).await;
+                Ok(())
+            });
+        }
 
         // start the message processors
-        // let activity_channel = conn.create_channel().await?;
-        // let orphan_channel = conn.create_channel().await?;
+        let activity_channel = conn.create_channel().await?;
+        let orphan_channel = conn.create_channel().await?;
+        let deadletter_channel = conn.create_channel().await?;
+        let extra_lifetime = Duration::from_secs(1); // FIXME: make this configurable
 
-        // tasks.spawn(activity_processor(self.activity_queue.clone(), activity_channel, tracker_client.clone()));
-        // tasks.spawn(orphan_processor(self.orphan_queue.clone(), orphan_channel, tracker_client.clone(), queue_status));
-        // tasks.spawn(deadletter_responder());
+        tasks.spawn(activity_processor(
+            self.clone(),
+            activity_channel,
+            tracker_client.clone(),
+            extra_lifetime,
+        ));
+        tasks.spawn(orphan_processor(
+            self.clone(),
+            orphan_channel,
+            tracker_client.clone(),
+            queue_status,
+            extra_lifetime,
+        ));
+        tasks.spawn(deadletter_responder(self.clone(), deadletter_channel));
 
         Ok(tasks)
     }
 }
 
-async fn orphan_processor(pool: Arc<Pool>, chan: Channel, tracker_client: TargetTrackerClient, queues_status: Receiver<TargetUpdate>) {
+async fn orphan_processor(
+    pool: Arc<Pool>,
+    chan: Channel,
+    tracker_client: TargetTrackerClient,
+    mut queues_status: tokio::sync::watch::Receiver<QueuesState>,
+    extra_lifetime: Duration,
+) -> anyhow::Result<()> {
     chan.basic_qos(200, BasicQosOptions::default()).await?;
 
     let consumer_tag = format!("{}-orphan-processor", pool.pool_id);
@@ -156,20 +305,185 @@ async fn orphan_processor(pool: Arc<Pool>, chan: Channel, tracker_client: Target
         exclusive: true,
         ..Default::default()
     };
-    let mut consumer = chan.basic_consume(&pool.orphan_queue, &consumer_tag, options, FieldTable::default()).await?;
+    let mut consumer = chan
+        .basic_consume(
+            &pool.orphan_queue,
+            &consumer_tag,
+            options,
+            FieldTable::default(),
+        )
+        .await?;
     while let Some(delivery) = consumer.next().await {
+        let delivery = delivery?;
+        let routing_key = delivery.routing_key.as_str();
+        let key = Key::decode(routing_key);
 
+        // Require queue creation
+        // FIXME: understand the implications of the zero extra duration
+        let generation = tracker_client
+            .require_worker_group(key.clone(), extra_lifetime)
+            .await?;
+
+        // Wait for the queue control loop to catch up and create the queue
+        while queues_status.borrow_and_update().target_generation < generation {
+            queues_status.changed().await?;
+        }
+
+        while queues_status.borrow_and_update().queues.get(&key) == Some(&QueueStatus::Active) {
+            queues_status.changed().await?;
+        }
+
+        // Republish message
+        chan.basic_publish(
+            &pool.request_xchg,
+            routing_key,
+            BasicPublishOptions::default(),
+            &delivery.data,
+            delivery.properties,
+        )
+        .await?;
+
+        chan.basic_ack(delivery.delivery_tag, Default::default())
+            .await?;
     }
     Ok(())
 }
 
-/*
-async fn activity_processor(pool: Arc<Pool>, activity_queue: String, chan: Channel, client: TargetTrackerClient) -> anyhow::Result<()> {
+async fn activity_processor(
+    pool: Arc<Pool>,
+    chan: Channel,
+    client: TargetTrackerClient,
+    extra_lifetime: Duration,
+) -> anyhow::Result<()> {
+    chan.basic_qos(200, BasicQosOptions::default()).await?;
+
+    let consumer_tag = format!("{}-activity-processor", pool.pool_id);
+    let options = BasicConsumeOptions {
+        ..Default::default()
+    };
+    let mut consumer = chan
+        .basic_consume(
+            &pool.activity_queue,
+            &consumer_tag,
+            options,
+            FieldTable::default(),
+        )
+        .await?;
+
+    let mut last_activities = HashMap::new();
+
+    while let Some(delivery) = consumer.next().await {
+        let delivery = delivery?;
+        let routing_key = delivery.routing_key.as_str();
+        let key = Key::decode(routing_key);
+        let now = std::time::Instant::now();
+
+        // debouncing
+        if let Some(&last_activity) = last_activities.get(&key) {
+            if last_activity + extra_lifetime < now {
+                last_activities.insert(key.clone(), now);
+                continue;
+            }
+        }
+        last_activities.insert(key.clone(), now);
+
+        // Update the state tracker
+        let _ = client.require_worker_group(key, extra_lifetime);
+    }
+    Ok(())
 }
 
-async fn worker_control_loop(_expected_state: Receiver<TargetUpdate>) {
+async fn worker_control_loop(
+    expected_state: tokio::sync::watch::Receiver<TargetUpdate>,
+    driver: Box<dyn WorkerDriver>,
+    sleep_interval: Duration,
+) {
+    loop {
+        let target = expected_state.borrow().clone();
+
+        let current_cores = match driver.list_core_pools().await {
+            Ok(cores) => cores,
+            Err(e) => {
+                log::error!(
+                    "Failed to list core pools: {:?}. Aborting current loop iteration.",
+                    e
+                );
+                tokio::time::sleep(sleep_interval).await;
+                continue;
+            }
+        };
+
+        let current_infras: Vec<usize> = current_cores.into_iter().map(|c| c.infra_id).collect();
+        let wanted_infras: Vec<usize> = target
+            .queues
+            .keys()
+            .map(|k| k.encode().parse().expect("key should be a number"))
+            .collect();
+
+        // Remove unwanted cores
+        for infra_id in current_infras {
+            if !wanted_infras.contains(&infra_id) {
+                if let Err(e) = driver.destroy_core_pool(infra_id).await {
+                    log::error!(
+                        "Failed to destroy core pool: {:?}. Aborting current loop iteration.",
+                        e
+                    );
+                    tokio::time::sleep(sleep_interval).await;
+                    continue;
+                }
+            }
+        }
+
+        // Add wanted cores
+        for infra_id in wanted_infras {
+            if let Err(e) = driver.get_or_create_core_pool(infra_id).await {
+                log::error!(
+                    "Failed to get or create core pool: {:?}. Aborting current loop iteration.",
+                    e
+                );
+                tokio::time::sleep(sleep_interval).await;
+                continue;
+            }
+        }
+
+        tokio::time::sleep(sleep_interval).await;
+    }
 }
 
-async fn deadletter_responder() {
+async fn deadletter_responder(pool: Arc<Pool>, chan: Channel) -> anyhow::Result<()> {
+    chan.basic_qos(200, BasicQosOptions::default()).await?;
+
+    let consumer_tag = format!("{}-deadletter-responder", pool.pool_id);
+    let options = BasicConsumeOptions {
+        exclusive: true,
+        ..Default::default()
+    };
+    let mut consumer = chan
+        .basic_consume(
+            &pool.deadletter_queue,
+            &consumer_tag,
+            options,
+            FieldTable::default(),
+        )
+        .await?;
+
+    while let Some(delivery) = consumer.next().await {
+        let delivery = delivery?;
+        let Some(reply_to) = delivery.properties.reply_to() else {
+            continue;
+        };
+
+        // FIXME: design the response protocol...
+        let payload = b"deadletter reponse";
+        chan.basic_publish(
+            "",
+            reply_to.as_str(),
+            BasicPublishOptions::default(),
+            payload,
+            BasicProperties::default(),
+        )
+        .await?;
+    }
+
+    Ok(())
 }
-*/

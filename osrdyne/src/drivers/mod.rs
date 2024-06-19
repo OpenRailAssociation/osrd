@@ -1,6 +1,7 @@
-pub mod core_driver;
 pub mod docker;
 pub mod kubernetes;
+pub mod noop;
+pub mod worker_driver;
 
 const LABEL_MANAGED_BY: &str = "osrd/managed_by";
 const LABEL_CORE_ID: &str = "osrd/core_id";

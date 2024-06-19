@@ -1,5 +1,5 @@
 use super::{
-    core_driver::{CoreDriver, CoreMetadata, DriverError},
+    worker_driver::{DriverError, WorkerDriver, WorkerMetadata},
     LABEL_CORE_ID, LABEL_INFRA_ID, LABEL_MANAGED_BY, MANAGED_BY_VALUE,
 };
 use k8s_openapi::{
@@ -92,7 +92,7 @@ impl KubernetesDriver {
     }
 }
 
-impl CoreDriver for KubernetesDriver {
+impl WorkerDriver for KubernetesDriver {
     fn get_or_create_core_pool(
         &self,
         infra_id: usize,
@@ -237,7 +237,7 @@ impl CoreDriver for KubernetesDriver {
                 kube::api::Api::<Service>::namespaced(self.client.clone(), &self.options.namespace)
                     .create(&kube::api::PostParams::default(), &service)
                     .await
-                    .map_err(super::core_driver::DriverError::KubernetesError)?;
+                    .map_err(super::worker_driver::DriverError::KubernetesError)?;
             }
 
             // Create the autoscaler if needed
@@ -280,14 +280,14 @@ impl CoreDriver for KubernetesDriver {
                 )
                 .create(&kube::api::PostParams::default(), &hpa)
                 .await
-                .map_err(super::core_driver::DriverError::KubernetesError)?;
+                .map_err(super::worker_driver::DriverError::KubernetesError)?;
             }
 
             // Create the deployment
             kube::api::Api::<Deployment>::namespaced(self.client.clone(), &self.options.namespace)
                 .create(&kube::api::PostParams::default(), &deployment)
                 .await
-                .map_err(super::core_driver::DriverError::KubernetesError)?;
+                .map_err(super::worker_driver::DriverError::KubernetesError)?;
 
             Ok(new_id)
         })
@@ -312,7 +312,7 @@ impl CoreDriver for KubernetesDriver {
                     )
                     .delete(&core_deployment_name, &kube::api::DeleteParams::default())
                     .await
-                    .map_err(super::core_driver::DriverError::KubernetesError)?;
+                    .map_err(super::worker_driver::DriverError::KubernetesError)?;
 
                     // Delete the service
                     if self.options.deploy_service {
@@ -322,7 +322,7 @@ impl CoreDriver for KubernetesDriver {
                         )
                         .delete(&core_deployment_name, &kube::api::DeleteParams::default())
                         .await
-                        .map_err(super::core_driver::DriverError::KubernetesError)?;
+                        .map_err(super::worker_driver::DriverError::KubernetesError)?;
                     }
 
                     // Delete the autoscaler
@@ -333,7 +333,7 @@ impl CoreDriver for KubernetesDriver {
                         )
                         .delete(&core_deployment_name, &kube::api::DeleteParams::default())
                         .await
-                        .map_err(super::core_driver::DriverError::KubernetesError)?;
+                        .map_err(super::worker_driver::DriverError::KubernetesError)?;
                     }
 
                     return Ok(());
@@ -346,7 +346,7 @@ impl CoreDriver for KubernetesDriver {
 
     fn list_core_pools(
         &self,
-    ) -> Pin<Box<dyn Future<Output = Result<Vec<CoreMetadata>, DriverError>> + Send + '_>> {
+    ) -> Pin<Box<dyn Future<Output = Result<Vec<WorkerMetadata>, DriverError>> + Send + '_>> {
         Box::pin(async move {
             let deployments = kube::api::Api::<Deployment>::namespaced(
                 self.client.clone(),
@@ -354,7 +354,7 @@ impl CoreDriver for KubernetesDriver {
             )
             .list(&kube::api::ListParams::default())
             .await
-            .map_err(super::core_driver::DriverError::KubernetesError)?;
+            .map_err(super::worker_driver::DriverError::KubernetesError)?;
 
             let cores = deployments
                 .iter()
@@ -364,7 +364,7 @@ impl CoreDriver for KubernetesDriver {
                             let core_id = labels.get(LABEL_CORE_ID).expect("core_id not found");
                             let infra_id = labels.get(LABEL_INFRA_ID).expect("infra_id not found");
 
-                            Some(super::core_driver::CoreMetadata {
+                            Some(super::worker_driver::WorkerMetadata {
                                 external_id: deployment.metadata.name.clone()?,
                                 core_id: Uuid::parse_str(core_id)
                                     .expect("core_id not a valid UUID"),

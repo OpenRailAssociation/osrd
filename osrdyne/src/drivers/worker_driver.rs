@@ -8,7 +8,7 @@ use serde::Serialize;
 use uuid::Uuid;
 
 #[derive(Clone, Serialize, Debug)]
-pub struct CoreMetadata {
+pub struct WorkerMetadata {
     /// External identifier (container id in Docker, deployment name in Kubernetes)
     pub external_id: String,
     /// Internal UUID of the core.
@@ -34,7 +34,7 @@ impl Display for DriverError {
     }
 }
 
-pub trait CoreDriver {
+pub trait WorkerDriver: Send {
     /// Schedule a core to run on a specific infrastructure.
     /// If the core is already scheduled, nothing happens.
     /// Returns the internal UUID of the core.
@@ -52,5 +52,5 @@ pub trait CoreDriver {
     /// Returns the status of a core.
     fn list_core_pools(
         &self,
-    ) -> Pin<Box<dyn Future<Output = Result<Vec<CoreMetadata>, DriverError>> + Send + '_>>;
+    ) -> Pin<Box<dyn Future<Output = Result<Vec<WorkerMetadata>, DriverError>> + Send + '_>>;
 }
