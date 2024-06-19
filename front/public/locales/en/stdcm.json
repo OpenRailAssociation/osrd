@@ -5,6 +5,7 @@
     "consist": "Consist",
     "tractionEngine": "Traction engine"
   },
+  "formattedCreationDate": "{{month}}/{{day}}/{{year}} {{hours}}:{{minutes}}",
   "loaderImageLegend": "The TGV Nord line",
   "notificationTitle": "Phase 1: from D-7 to D-1 5pm, on the Perrigny-Miramas axis.",
   "pleaseWait": "Please wait…",

@@ -5,6 +5,7 @@
     "consist": "Convoi",
     "tractionEngine": "Engin de traction"
   },
+  "formattedCreationDate": "{{day}}/{{month}}/{{year}} {{hours}}:{{minutes}}",
   "loaderImageLegend": "La ligne TGV Nord",
   "notificationTitle": "Phase 1 : de J-7 à J-1 17h, sur l’axe Perrigny—Miramas.",
   "pleaseWait": "Veuillez patientez…",

@@ -18,7 +18,7 @@ export type SimulationReportSheetProps = {
   pathProperties?: ManageTrainSchedulePathProperties;
   rollingStockData: RollingStockWithLiveries;
   speedLimitByTag?: string;
-  simulationReportSheetNumber: string;
+  simulationReportSheetNumber?: string;
   mapCanvas?: string;
   creationDate?: Date;
 };
