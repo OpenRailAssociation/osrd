@@ -15,6 +15,10 @@ import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 
+// TODO: refactor this structure (and its usage) to be able to model a speed limit affecting only
+//       trains using one specific route AND one specific speedLimitTag
+//       (not affecting other trains using that route but with another speedLimitTag, or using
+//       that speedLimitTag but another route).
 data class SpeedSection(
     val default: Speed,
     val speedByTrainTag: Map<String, Speed>,
@@ -35,8 +39,7 @@ data class SpeedSection(
                     val aSpeed = a.speedByRoute[it]
                     val bSpeed = b.speedByRoute[it]
                     if (aSpeed != null && bSpeed != null) Speed.min(aSpeed, bSpeed)
-                    else if (aSpeed != null) aSpeed
-                    else if (bSpeed != null) bSpeed else throw RuntimeException()
+                    else aSpeed ?: (bSpeed ?: throw RuntimeException())
                 }
             return SpeedSection(default, speedByTrainTag, speedByRoute)
         }
@@ -517,6 +520,8 @@ class RawInfraImpl(
             // We decided that the responsibility of creating speed sections that are
             // consistent with exploitation rules fallback to the user, for now at least.
             // The same thing applies to speed limits by train tag.
+            // TODO: as stated for SpeedSection class, a refactor is required to respect
+            //       specifications
             assert(speedFromTag == null || speedFromRoute == null) { "checked at parsing" }
             val allowedSpeed = speedFromRoute ?: speedFromTag ?: speedSection.default
             res.put(entry.lower, entry.upper, allowedSpeed)
