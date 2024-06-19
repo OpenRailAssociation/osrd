@@ -124,7 +124,7 @@ export const checkStdcmConf = (
     rollingStockId: rollingStockID!,
     timetableId: timetableID!,
     rollingStockComfort: rollingStockComfortV2,
-    path: compact(osrdconf.pathSteps).map((step, index) => {
+    path: compact(osrdconf.pathSteps).map((step) => {
       const {
         id,
         arrival,
@@ -142,15 +142,9 @@ export const checkStdcmConf = (
       } = step;
 
       const secondary_code = 'trigram' in stepLocation || 'uic' in stepLocation ? ch : undefined;
-      let duration: number;
-      if (index === osrdconf.pathSteps.length - 1) {
-        duration = 1;
-      } else {
-        duration = sec2ms(ISO8601Duration2sec(stopFor || '')) || 0;
-      }
 
       return {
-        duration,
+        duration: stopFor ? sec2ms(ISO8601Duration2sec(stopFor) || Number(stopFor)) : 0,
         location: { ...stepLocation, secondary_code },
       };
     }),

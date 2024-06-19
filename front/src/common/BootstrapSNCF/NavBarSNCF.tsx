@@ -90,6 +90,7 @@ const LegacyNavBarSNCF = ({ appName, logo = logoOSRD }: Props) => {
                 {t(`language.${i18n.language}`)}
               </button>,
               <button
+                data-testid="user-settings-btn"
                 type="button"
                 className="user-settings-btn btn-link text-reset"
                 onClick={() => openModal(<UserSettings />)}

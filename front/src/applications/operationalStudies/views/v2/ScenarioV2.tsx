@@ -15,6 +15,7 @@ import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import { useInfraID, useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
+import useInfraStatus from 'modules/pathfinding/hook/useInfraStatus';
 import AddAndEditScenarioModal from 'modules/scenario/components/AddOrEditScenarioModal';
 import ScenarioLoaderMessage from 'modules/scenario/components/ScenarioLoaderMessage';
 import TimetableManageTrainScheduleV2 from 'modules/trainschedule/components/ManageTrainSchedule/TimetableManageTrainScheduleV2';
@@ -43,13 +44,13 @@ const ScenarioV2 = () => {
   );
   const [trainsWithDetails, setTrainsWithDetails] = useState(false);
   const [collapsedTimetable, setCollapsedTimetable] = useState(false);
-  const [isInfraLoaded, setIsInfraLoaded] = useState(false);
-  const [reloadCount, setReloadCount] = useState(1);
   const [trainSpaceTimeData, setTrainSpaceTimeData] = useState<TrainSpaceTimeData[]>([]);
   const [trainResultsToFetch, setTrainResultsToFetch] = useState<number[]>();
   const isUpdating = useSelector((state: RootState) => state.osrdsimulation.isUpdating);
 
   const { openModal } = useModal();
+
+  const { infra, isInfraLoaded, reloadCount } = useInfraStatus();
 
   const {
     projectId: urlProjectId,
@@ -98,44 +99,6 @@ const ScenarioV2 = () => {
       dispatch(updateInfraID(scenario.infra_id));
     }
   }, [scenario]);
-
-  const { data: infra } = osrdEditoastApi.endpoints.getInfraByInfraId.useQuery(
-    { infraId: infraId as number },
-    {
-      skip: !infraId,
-      refetchOnMountOrArgChange: true,
-      pollingInterval: !isInfraLoaded ? 1000 : undefined,
-    }
-  );
-  const [reloadInfra] = osrdEditoastApi.endpoints.postInfraByInfraIdLoad.useMutation();
-
-  useEffect(() => {
-    if (reloadCount <= 5 && infra && infra.state === 'TRANSIENT_ERROR') {
-      setTimeout(() => {
-        reloadInfra({ infraId: infraId as number }).unwrap();
-        setReloadCount((count) => count + 1);
-      }, 1000);
-    }
-  }, [infra, reloadCount]);
-
-  useEffect(() => {
-    if (infra && (infra.state === 'NOT_LOADED' || infra.state === 'DOWNLOADING')) {
-      setIsInfraLoaded(false);
-    }
-
-    if (
-      infra &&
-      (infra.state === 'CACHED' || infra.state === 'ERROR' || infra.state === 'TRANSIENT_ERROR')
-    ) {
-      setIsInfraLoaded(true);
-    }
-  }, [infra]);
-
-  useEffect(() => {
-    if (infraId) {
-      reloadInfra({ infraId }).unwrap();
-    }
-  }, [infraId]);
 
   const { data: timetable } = osrdEditoastApi.endpoints.getV2TimetableById.useQuery(
     { id: timetableId! },

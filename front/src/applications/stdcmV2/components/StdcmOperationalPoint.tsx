@@ -1,35 +1,26 @@
 import React, { useEffect, useMemo } from 'react';
 
-import type { ActionCreatorWithPayload } from '@reduxjs/toolkit';
 import { useTranslation } from 'react-i18next';
 import nextId from 'react-id-generator';
 
 import type { SearchResultItemOperationalPoint } from 'common/api/osrdEditoastApi';
 import SelectSNCF from 'common/BootstrapSNCF/SelectSNCF';
-import useSearchOperationalPoint, {
-  MAIN_OP_CH_CODES,
-} from 'common/Map/Search/useSearchOperationalPoint';
+import useSearchOperationalPoint from 'common/Map/Search/useSearchOperationalPoint';
 import type { PathStep } from 'reducers/osrdconf/types';
-import { useAppDispatch } from 'store';
 
 import StdcmSuggestions from './StdcmSuggestions';
 
-type UpdatePointActions =
-  | ActionCreatorWithPayload<PathStep | null, 'stdcmConf/updateOriginV2'>
-  | ActionCreatorWithPayload<PathStep | null, 'stdcmConf/updateDestinationV2'>;
-
 type StdcmOperationalPointProps = {
-  updatePoint: UpdatePointActions;
+  updatePoint: (pathStep: PathStep | null) => void;
   point: PathStep | null;
   disabled?: boolean;
 };
 
 function formatChCode(chCode: string) {
-  return MAIN_OP_CH_CODES.includes(chCode) ? 'BV' : chCode;
+  return chCode === '' ? 'BV' : chCode;
 }
 
 const StdcmOperationalPoint = ({ updatePoint, point, disabled }: StdcmOperationalPointProps) => {
-  const dispatch = useAppDispatch();
   const { t } = useTranslation('stdcm');
 
   const {
@@ -86,7 +77,7 @@ const StdcmOperationalPoint = ({ updatePoint, point, disabled }: StdcmOperationa
           coordinates: p.geographic.coordinates,
         }
       : null;
-    dispatch(updatePoint(newPoint));
+    updatePoint(newPoint);
   };
 
   const onInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -144,7 +135,8 @@ const StdcmOperationalPoint = ({ updatePoint, point, disabled }: StdcmOperationa
 
   return (
     <div className="flex">
-      <div className="suggestions col-8">
+      <div className="suggestions col-9">
+        {/* Those components will be replaced by their ui-core versions when they're ready (#7712) */}
         <StdcmSuggestions
           id="ci"
           label={t('trainPath.ci')}
@@ -157,7 +149,7 @@ const StdcmOperationalPoint = ({ updatePoint, point, disabled }: StdcmOperationa
           disabled={disabled}
         />
       </div>
-      <div className="suggestions w-100 py-2 col-4">
+      <div className="suggestions stdcm-v2-ch-selector w-100 py-2 col-3">
         <SelectSNCF
           label={t('trainPath.ch')}
           id="ch"

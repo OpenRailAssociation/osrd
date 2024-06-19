@@ -5,6 +5,17 @@
     height: fit-content;
     position: relative;
 
+    .stdcm-v2-default-card-icon{
+        padding-left: 0.125rem;
+        color: #1844EF;
+    }
+
+    .stdcm-v2-via-icons {
+        button {
+            display: none;
+        }
+    }
+
     &.has-tip::after {
         content: "";
         position: absolute;
@@ -29,6 +40,7 @@
         text-align: left;
         line-height: 24px;
         padding: 7px 16px 0px 16px;
+        height: 2.5rem;
         span {
             padding-bottom: 6px;
         }
@@ -40,9 +52,37 @@
         .suggestions > div:first-child{
             padding-left: 0;
         }
-        .suggestions * label {
+        .suggestions * label, .stdcm-v2-via-stop-for * label {
             margin-bottom: 0;
         }
+
+        .suggestions.stdcm-v2-ch-selector {
+            label {
+                margin: 0.2rem 0 0.15rem 0;
+            }
+            select {
+                min-height: 2.55rem;
+                padding: 0 1rem;
+                appearance: auto;
+                background-image: none;
+                border-radius: 4px;
+                border: 0.125rem solid rgba(255, 255, 255, 0.75);
+                border: 0.0625rem solid rgba(148, 145, 142, 1);
+                box-shadow: 0px 0.0625rem 0.0625rem rgba(0, 0, 0, 0.2), 0px 0.125rem 0.25rem rgba(0, 0, 0, 0.1);
+                background-color: rgba(0, 0, 0, 0.01);
+            }
+        }
+
+        .feed-back {
+            padding-left: 0rem;
+            padding-right: 0.3rem;
+        }
+
+        .stdcm-v2-default-card-button {
+            color: rgba(24, 68, 239, 1);
+            line-height: 24px;
+        }
+        
     }
 
     &.disabled {
@@ -50,4 +90,30 @@
         pointer-events: none;
     }
 
+    &-via-button {
+        padding: 0.5rem;
+    }
+
+}
+
+.stdcm-v2-card:hover {
+    .stdcm-v2-via-icons{
+        span {
+            display: none;
+        }
+        button {
+            display: contents;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            color: #256afa;
+        }
+    }
+    
+}
+
+.stdcm-v2-card:last-of-type {
+    .stdcm-v2-card__body {
+        padding-bottom: 0.75rem;
+    }
 }

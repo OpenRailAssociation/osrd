@@ -3,6 +3,7 @@ import { test, expect } from '@playwright/test';
 import project from './assets/operationStudies/project.json';
 import scenario from './assets/operationStudies/scenario.json';
 import study from './assets/operationStudies/study.json';
+import { PlaywrightHomePage } from './pages/home-page-model';
 import StdcmPage from './pages/stdcm-page-model';
 import manageTrainScheduleTranslation from '../public/locales/fr/operationalStudies/manageTrainSchedule.json';
 
@@ -16,6 +17,11 @@ const rollingStockTranslation = manageTrainScheduleTranslation.rollingstock;
 test.describe('STDCM page', () => {
   test('should configure and launch a stdcm', async ({ page }) => {
     const stdcmPage = new StdcmPage(page);
+
+    // TODO: DROP STDCMV1: remove this part
+    const homePage = new PlaywrightHomePage(page);
+    await homePage.goToHomePage();
+    await stdcmPage.toggleStdcmV1();
 
     await stdcmPage.navigateToPage();
     await expect(stdcmPage.scenarioExplorerModal).not.toBeVisible();

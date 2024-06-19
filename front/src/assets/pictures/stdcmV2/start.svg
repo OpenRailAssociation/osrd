@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="20.3279221px" height="30px" viewBox="0 0 20.3279221 30" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Assets/Itinerary/Start</title>
+    <defs>
+        <linearGradient x1="50%" y1="0%" x2="50%" y2="100%" id="linearGradient-1">
+            <stop stop-color="#000000" stop-opacity="0" offset="0%"></stop>
+            <stop stop-color="#000000" stop-opacity="0.530976836" offset="100%"></stop>
+        </linearGradient>
+        <rect id="path-2" x="0" y="0" width="18" height="18" rx="3"></rect>
+        <filter x="-1.4%" y="-1.4%" width="102.8%" height="102.8%" filterUnits="objectBoundingBox" id="filter-3">
+            <feMorphology radius="0.5" operator="erode" in="SourceAlpha" result="shadowSpreadInner1"></feMorphology>
+            <feOffset dx="0" dy="0" in="shadowSpreadInner1" result="shadowOffsetInner1"></feOffset>
+            <feComposite in="shadowOffsetInner1" in2="SourceAlpha" operator="arithmetic" k2="-1" k3="1" result="shadowInnerInner1"></feComposite>
+            <feColorMatrix values="0 0 0 0 0   0 0 0 0 0   0 0 0 0 0  0 0 0 1 0" type="matrix" in="shadowInnerInner1"></feColorMatrix>
+        </filter>
+    </defs>
+    <g id="Assets/Itinerary/Start" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <circle id="Oval" fill="#FFFFFF" cx="9" cy="27" r="3"></circle>
+        <rect id="halo" stroke-opacity="0.75" stroke="#FFFFFF" stroke-width="2" x="-1" y="-1" width="20" height="20" rx="3"></rect>
+        <path d="M12.963961,14.0284271 L14.963961,14.0284271 L14.963961,29.0284271 C14.963961,29.5807119 14.5162458,30.0284271 13.963961,30.0284271 C13.4116763,30.0284271 12.963961,29.5807119 12.963961,29.0284271 L12.963961,14.0284271 L12.963961,14.0284271 Z" id="Rectangle" fill="url(#linearGradient-1)" transform="translate(13.964, 22.0284) rotate(45) translate(-13.964, -22.0284)"></path>
+        <path d="M9.75,13.25 L9.75,27 C9.75,27.2071068 9.66605339,27.3946068 9.53033009,27.5303301 C9.39460678,27.6660534 9.20710678,27.75 9,27.75 C8.79289322,27.75 8.60539322,27.6660534 8.46966991,27.5303301 C8.33394661,27.3946068 8.25,27.2071068 8.25,27 L8.25,13.25 L9.75,13.25 Z" id="Rectangle" stroke="#000000" stroke-width="0.5" fill="#D3D1CF"></path>
+        <path d="M10,14 L10,16 L9.91677659,15.999916 C9.76245759,15.1170085 9.41005081,14.5 9,14.5 C8.58994919,14.5 8.23754241,15.1170085 8.08322341,15.999916 L8,16 L8,14 L10,14 Z" id="Shadow" fill-opacity="0.5" fill="#000000"></path>
+        <g id="Sign">
+            <use fill="#3C8AFF" fill-rule="evenodd" xlink:href="#path-2"></use>
+            <use fill="black" fill-opacity="1" filter="url(#filter-3)" xlink:href="#path-2"></use>
+        </g>
+        <circle id="Oval" stroke="#1844EF" stroke-width="1.5" fill="#FFFFFF" cx="9" cy="9" r="4.75"></circle>
+    </g>
+</svg>

@@ -35,7 +35,7 @@ const ScenarioExplorer = ({
   const stdcmV2Activated = useSelector(getStdcmV2Activated);
   const useTrainScheduleV2 = trainScheduleV2Activated || stdcmV2Activated;
 
-  const { updateInfraID, updateTimetableID } = useOsrdConfActions();
+  const { updateInfraID, updateTimetableID, updateScenarioID } = useOsrdConfActions();
   const { data: projectDetails } = osrdEditoastApi.endpoints.getProjectsByProjectId.useQuery(
     { projectId: globalProjectId as number },
     { skip: !globalProjectId }
@@ -59,7 +59,7 @@ const ScenarioExplorer = ({
       }
     );
 
-  const { data: scenarioV2 } =
+  const { currentData: scenarioV2, isSuccess: isScenarioSuccess } =
     osrdEditoastApi.endpoints.getV2ProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId.useQuery(
       {
         projectId: globalProjectId as number,
@@ -68,6 +68,7 @@ const ScenarioExplorer = ({
       },
       {
         skip: !useTrainScheduleV2 || !globalProjectId || !globalStudyId || !globalScenarioId,
+        refetchOnMountOrArgChange: true,
       }
     );
 
@@ -118,6 +119,12 @@ const ScenarioExplorer = ({
       setImageUrl(undefined);
     }
   }, [projectDetails]);
+
+  useEffect(() => {
+    if (!isScenarioSuccess && stdcmV2Activated) {
+      dispatch(updateScenarioID(undefined));
+    }
+  }, [scenario, scenarioV2, isScenarioSuccess]);
 
   return (
     <div

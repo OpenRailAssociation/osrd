@@ -7,6 +7,7 @@
   },
   "loaderImageLegend": "La ligne TGV Nord",
   "notificationTitle": "Phase 1 : de J-7 à J-1 17h, sur l’axe Perrigny—Miramas.",
+  "pathfindingFailed": "Aucun chemin n'a été trouvé pour ces points de jalonnement.",
   "pleaseWait": "Veuillez patientez…",
   "simulation":{
     "averageRequestTime": "Pour votre demande, le temps nécessaire est généralement de 90 secondes.",
@@ -24,12 +25,15 @@
   "stdcmResults": "Résultats",
   "stdcmSimulationReport": "Fiche simulation",
   "trainPath": {
+    "addVia": "Ajouter un PR intermédiaire",
     "asSoonAsPossible": "Dès que possible",
     "ch": "CH",
     "ci": "CI",
     "date": "Date",
     "destination": "Destination",
     "origin": "Origine",
-    "time": "Heure"
+    "stopFor": "Temps d'arrêt minimum",
+    "time": "Heure",
+    "vias": "PR intermédiaire"
   }
 }

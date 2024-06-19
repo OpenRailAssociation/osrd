@@ -77,11 +77,7 @@ export function reducer(state: PathfindingState, action: PathfindingAction): Pat
     case 'PATHFINDING_PARAM_CHANGED':
     case 'VIAS_CHANGED':
     case 'INFRA_CHANGED': {
-      if (
-        !action.params ||
-        state.running ||
-        (action.type === 'INFRA_CHANGED' && action.params.pathfindingId)
-      ) {
+      if (!action.params || state.running || action.params.pathfindingId) {
         return { ...state };
       }
       const { origin, destination, rollingStockID } = action.params;

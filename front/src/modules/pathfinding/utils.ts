@@ -48,7 +48,7 @@ export const getPathfindingQuery = ({
   pathSteps: (PathStep | null)[];
 }): PostV2InfraByInfraIdPathfindingBlocksApiArg | null => {
   if (infraId && rollingStock && origin && destination) {
-    // Only origin and destination can be null so we can compact
+    // Only origin and destination can be null so we can compact and we want to remove any via that would be null
     const pathItems: PathfindingInputV2['path_items'] = compact(pathSteps).map((step) => {
       if ('uic' in step) {
         return { uic: step.uic, secondary_code: step.ch };
