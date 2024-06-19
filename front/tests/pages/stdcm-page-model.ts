@@ -12,6 +12,12 @@ export default class StdcmPage extends SimulationConfPage {
 
   private scenarioExplorerMinicards: Locator;
 
+  private stdcmSwitch: Locator;
+
+  private dropDown: Locator;
+
+  private userSettings: Locator;
+
   // STDCM
   private getOriginTimeDelta: Locator;
 
@@ -24,6 +30,9 @@ export default class StdcmPage extends SimulationConfPage {
     this.scenarioExplorerButton = page.getByTestId('scenario-explorator');
     this.scenarioExplorerModal = page.locator('.scenario-explorator-modal');
     this.scenarioExplorerMinicards = page.locator('.minicard');
+    this.stdcmSwitch = page.getByTestId('stdcm-version-switch');
+    this.dropDown = page.getByTestId('dropdown-sncf');
+    this.userSettings = page.getByTestId('user-settings-btn');
 
     // STDCM
     this.getOriginTimeDelta = page.locator('#osrd-config-time-origin').first();
@@ -32,6 +41,15 @@ export default class StdcmPage extends SimulationConfPage {
   async navigateToPage() {
     await this.page.goto('/stdcm/');
     await this.removeViteOverlay();
+  }
+
+  // Check Stdcm Version
+  async toggleStdcmV1() {
+    await this.dropDown.click();
+    await this.userSettings.click();
+    if (await this.stdcmSwitch.isChecked()) {
+      await this.stdcmSwitch.click();
+    }
   }
 
   // Scenario Explorator

@@ -12,6 +12,7 @@ const StdcmHeader = () => {
   const studyID = useSelector(getStudyID);
   const projectID = useSelector(getProjectID);
   const scenarioID = useSelector(getScenarioID);
+
   return (
     <div className="stdcm-v2-header">
       <span className="stdcm-v2-header__title col-3 pl-5">ST DCM</span>

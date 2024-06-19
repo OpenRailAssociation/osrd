@@ -272,6 +272,8 @@ export function buildCommonConfReducers<S extends OsrdConfState>(): CommonConfRe
         return { payload: newVias };
       },
     },
+    // TODO: Change the type of duration to number. It is preferable to keep this value in seconds in the store
+    //* to avoid multiple conversions between seconds and ISO8601 format across the front.
     updateViaStopTimeV2(
       state: Draft<S>,
       action: PayloadAction<{ via: PathStep; duration: string }>

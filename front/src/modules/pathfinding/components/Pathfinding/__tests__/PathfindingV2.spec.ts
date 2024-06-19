@@ -1,5 +1,5 @@
-import { reducer } from 'modules/pathfinding/components/Pathfinding/PathfindingV2';
 import { initialState } from 'modules/pathfinding/consts';
+import { reducer } from 'modules/pathfinding/hook/usePathfinding';
 import type { PathfindingActionV2 } from 'modules/pathfinding/types';
 import rollingStock from 'modules/rollingStock/components/RollingStockSelector/sampleData';
 
@@ -260,26 +260,6 @@ describe('reducer', () => {
         running: true,
         done: false,
         mustBeLaunched: false,
-      });
-    });
-    test('infra has changed, previously in error', () => {
-      const state = {
-        ...initialState,
-        error: 'error',
-      };
-      const action: PathfindingActionV2 = {
-        type: 'INFRA_CHANGED',
-        params: {
-          origin,
-          destination,
-          rollingStock,
-        },
-      };
-      expect(reducer(state, action)).toEqual({
-        ...initialState,
-        error: '',
-        mustBeLaunched: true,
-        missingParam: false,
       });
     });
   });

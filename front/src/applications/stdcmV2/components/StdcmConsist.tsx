@@ -16,12 +16,12 @@ import { useAppDispatch } from 'store';
 
 import StdcmCard from './StdcmCard';
 import StdcmSuggestions from './StdcmSuggestions';
+import type { StdcmConfigCardProps } from '../types';
 
-interface StdcmSuggestionsConsistOption
-  extends SelectOptionObject,
-    Omit<LightRollingStockWithLiveries, 'id'> {
-  value: LightRollingStockWithLiveries;
-}
+type StdcmSuggestionsConsistOption = SelectOptionObject &
+  Omit<LightRollingStockWithLiveries, 'id'> & {
+    value: LightRollingStockWithLiveries;
+  };
 
 const ConsistCardTitle = ({
   rollingStock,
@@ -37,7 +37,7 @@ const ConsistCardTitle = ({
   );
 };
 
-const StdcmConsist = ({ disabled = false }: { disabled?: boolean }) => {
+const StdcmConsist = ({ setCurrentSimulationInputs, disabled = false }: StdcmConfigCardProps) => {
   const { t } = useTranslation('stdcm');
   const { speedLimitByTag, speedLimitsByTags, dispatchUpdateSpeedLimitByTag } =
     useStoreDataForSpeedLimitByTagSelector();
@@ -88,6 +88,12 @@ const StdcmConsist = ({ disabled = false }: { disabled?: boolean }) => {
     } else {
       searchRollingStock('');
     }
+    setCurrentSimulationInputs((prevState) => ({
+      ...prevState,
+      consist: {
+        tractionEngine: rollingStock,
+      },
+    }));
   }, [rollingStock]);
 
   return (
@@ -105,15 +111,12 @@ const StdcmConsist = ({ disabled = false }: { disabled?: boolean }) => {
             onChange={onInputChange}
             onBlur={onInputOnBlur}
             disabled={disabled}
-            options={filteredRollingStockList.map(
-              (rs: LightRollingStockWithLiveries) =>
-                ({
-                  value: rs,
-                  label: getLabel(rs),
-                  ...rs,
-                  id: rs.id.toString(),
-                }) as StdcmSuggestionsConsistOption
-            )}
+            options={filteredRollingStockList.map((rs) => ({
+              value: rs,
+              label: getLabel(rs),
+              ...rs,
+              id: rs.id.toString(),
+            }))}
             onSelectSuggestion={onSelectSuggestion}
           />
         </div>

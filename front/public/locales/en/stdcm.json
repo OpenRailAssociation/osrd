@@ -7,6 +7,7 @@
   },
   "loaderImageLegend": "The TGV Nord line",
   "notificationTitle": "Phase 1: from D-7 to D-1 5pm, on the Perrigny-Miramas axis.",
+  "pathfindingFailed": "No path have been found for these waypoints.",
   "pleaseWait": "Please wait…",
   "simulation":{
     "averageRequestTime": "For your request, the time required is generally 90 seconds.",
@@ -24,12 +25,15 @@
   "stdcmResults": "Results",
   "stdcmSimulationReport": "Path simulation report",
   "trainPath": {
+    "addVia": "Add intermediate OP",
     "asSoonAsPossible": "As soon as possible",
     "ch": "CH",
     "ci": "CI",
     "date": "Date",
     "destination": "Destination",
     "origin": "Origin",
-    "time": "Time"
+    "stopFor": "Minimum stop time",
+    "time": "Time",
+    "vias" : "Intermediate OP"
   }
 }

@@ -20,15 +20,61 @@
                 gap: 32px;
                 width: 450px;
 
-                /*TODO Waiting to fix the button in ui-core...*/
-                .stdcm-v2-launch-request > button {
-                    justify-content: center;
-                    width: 100%;
-                    font-weight: 500;
+                .stdcm-v2-vias-list {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 2rem;
                 }
+
+                /*TODO Waiting to fix the button in ui-core...*/
+                .stdcm-v2-launch-request{
+                    padding-bottom: 0.15rem;
+                    button {
+                        justify-content: center;
+                        width: 100%;
+                        font-weight: 500;
+                    }
+                } 
+
+                .warning-box {
+                    border-radius: 8px;
+                    box-shadow:  0px 0px 0px 4px rgba(255, 255, 255, 1) inset, 0px 0px 0px 5px rgba(234, 167, 43, 1) inset, 0px 3px 7px -3px rgba(125, 82, 30, 0.55);
+                    background-color: rgba(253, 245, 225, 1);
+                    color: #7D521E;
+                    display: flex;
+                    flex-direction: column;
+                    padding: 1rem 1.8125rem 2rem 1.8125rem;
+                    margin-top: 0.75rem;
+
+                    span {
+                        color: #EAA72B;
+                        align-self: center;
+                        margin-bottom: 6px;
+                    }
+
+                }
+
+                .wizz-effect:active {
+                    .warning-box {
+                        animation: tilt-shaking 0.25s 0s;
+                    }
+                }
+
+                @keyframes tilt-shaking {
+                0% { transform: rotate(0deg); }
+                12% { transform: rotate(1deg); }
+                24% { transform: rotate(0eg); }
+                36% { transform: rotate(-1deg); }
+                47% { transform: rotate(0deg); }
+                59% { transform: rotate(1deg); }
+                70% { transform: rotate(0eg); }
+                85% { transform: rotate(-1deg); }
+                100% { transform: rotate(0deg); }
+                }
+
             }
         }
-
+        
         .stdcm-v2-map {
             border-radius: 8px;
             border: 1px solid rgba(255, 255, 255, 1);

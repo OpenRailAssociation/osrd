@@ -50,6 +50,7 @@ const DropdownSNCF: FC<{
         targetAttachment="bottom right"
         renderTarget={(ref) => (
           <button
+            data-testid="dropdown-sncf"
             ref={ref as LegacyRef<HTMLButtonElement>}
             className={className || `${type} btn dropdown-toggle toolbar-item-spacing`}
             type="button"
