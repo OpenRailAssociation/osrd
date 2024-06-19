@@ -408,7 +408,7 @@ async fn delete(
     infra_caches: Data<CHashMap<i64, InfraCache>>,
 ) -> Result<HttpResponse> {
     let infra_id = infra.infra_id;
-    if Infra::delete_static(db_pool.get().await?.deref_mut(), infra_id).await? {
+    if Infra::fast_delete_static(db_pool.get().await?.deref_mut(), infra_id).await? {
         infra_caches.remove(&infra_id);
         Ok(HttpResponse::NoContent().finish())
     } else {
