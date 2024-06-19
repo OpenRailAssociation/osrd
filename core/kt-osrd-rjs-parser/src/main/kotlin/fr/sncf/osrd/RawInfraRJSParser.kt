@@ -468,12 +468,6 @@ fun parseNeutralRanges(
                 }
 
                 chunkDirNeutralSections.put(dirChunkLower, dirChunkUpper, incomingNeutralSection)
-
-                // TODO: remove this priority given to announcement.
-                // Only added to match the former import process, but no functional need exists
-                if (!isAnnouncement) {
-                    chunkDirNeutralSections.putMany(previousDirNeutralSections.asList())
-                }
             }
         builder.applyFunctionToTrackSectionChunksBetween(
             trackRange.trackSectionID,
@@ -506,8 +500,6 @@ fun mergeIntoSpeedSections(
 
 fun parseSpeedSection(rjsSpeedSection: RJSSpeedSection): SpeedSection {
     var defaultLimit = rjsSpeedSection.speedLimit.metersPerSecond
-    // TODO: this makes 0 sense, and was only added to match the previous implementation.
-    //   it needs to be burned to the ground
     val routeLimits =
         if (rjsSpeedSection.onRoutes != null) {
             val res = rjsSpeedSection.onRoutes.associateWith { defaultLimit }
@@ -801,7 +793,10 @@ fun parseRJSInfra(rjsInfra: RJSInfra): RawInfra {
                     props
                 )
             if (partId == null) {
-                // TODO warning
+                // TODO: link warning to specific request (through response or tracing)
+                logger.warn(
+                    "Invalid Part on track $trackSectionName for Operational Point $operationalPointId"
+                )
             }
         }
     }

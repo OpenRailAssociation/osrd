@@ -475,7 +475,7 @@ class RawInfraBuilder {
 
         return trackChunkPool.add(
             TrackChunkDescriptor(
-                // TODO: The track ID will be filled later, track is not initialized yet
+                // TrackSection ID will be filled later, track is not initialized yet
                 StaticIdx(0u),
                 offset,
                 length,
