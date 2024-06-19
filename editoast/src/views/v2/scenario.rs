@@ -471,8 +471,6 @@ async fn list(
 #[cfg(test)]
 mod tests {
     use actix_web::http::StatusCode;
-    use actix_web::test::call_and_read_body_json;
-    use actix_web::test::call_service;
     use actix_web::test::TestRequest;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
@@ -510,7 +508,8 @@ mod tests {
         );
         let request = TestRequest::get().uri(&url).to_request();
 
-        let response: ScenarioResponse = call_and_read_body_json(&app.service, request).await;
+        let response: ScenarioResponse =
+            app.fetch(request).assert_status(StatusCode::OK).json_into();
 
         assert_eq!(response.scenario, fixtures.scenario);
     }
@@ -524,10 +523,10 @@ mod tests {
             create_scenario_fixtures_set(pool.get_ok().deref_mut(), "test_scenario_name").await;
 
         let url = scenario_url(fixtures.project.id, fixtures.study.id, None);
-
         let request = TestRequest::get().uri(&url).to_request();
+
         let mut response: ListScenariosResponse =
-            call_and_read_body_json(&app.service, request).await;
+            app.fetch(request).assert_status(StatusCode::OK).json_into();
 
         assert!(!response.results.is_empty());
         assert_eq!(
@@ -551,9 +550,8 @@ mod tests {
         let url = scenario_url(fixtures.project.id, 99999999, Some(fixtures.scenario.id));
 
         let request = TestRequest::get().uri(&url).to_request();
-        let response = call_service(&app.service, request).await;
 
-        assert_eq!(response.status(), StatusCode::NOT_FOUND);
+        app.fetch(request).assert_status(StatusCode::NOT_FOUND);
     }
 
     #[rstest]
@@ -585,7 +583,9 @@ mod tests {
                 "tags": study_tags
             }))
             .to_request();
-        let response: ScenarioResponse = call_and_read_body_json(&app.service, request).await;
+
+        let response: ScenarioResponse =
+            app.fetch(request).assert_status(StatusCode::OK).json_into();
 
         assert_eq!(response.scenario.name, study_name);
         assert_eq!(response.scenario.description, study_description);
@@ -632,7 +632,8 @@ mod tests {
                 "tags": study_tags
             }))
             .to_request();
-        let response: ScenarioResponse = call_and_read_body_json(&app.service, request).await;
+        let response: ScenarioResponse =
+            app.fetch(request).assert_status(StatusCode::OK).json_into();
 
         assert_eq!(response.scenario.name, study_name);
         assert_eq!(response.scenario.description, study_description);
@@ -661,8 +662,7 @@ mod tests {
             }))
             .to_request();
 
-        let response = call_service(&app.service, request).await;
-        assert_eq!(response.status(), StatusCode::NOT_FOUND);
+        app.fetch(request).assert_status(StatusCode::NOT_FOUND);
     }
 
     #[rstest]
@@ -693,7 +693,8 @@ mod tests {
                 "infra_id": study_other_infra_id,
             }))
             .to_request();
-        let response: ScenarioResponse = call_and_read_body_json(&app.service, request).await;
+        let response: ScenarioResponse =
+            app.fetch(request).assert_status(StatusCode::OK).json_into();
 
         assert_eq!(response.scenario.infra_id, study_other_infra_id);
         assert_eq!(response.scenario.name, study_name);
@@ -713,9 +714,8 @@ mod tests {
             Some(fixtures.scenario.id),
         );
         let request = TestRequest::delete().uri(&url).to_request();
-        let response = call_service(&app.service, request).await;
 
-        assert_eq!(response.status(), StatusCode::NO_CONTENT);
+        app.fetch(request).assert_status(StatusCode::NO_CONTENT);
 
         let exists = Scenario::exists(pool.get_ok().deref_mut(), fixtures.scenario.id)
             .await
