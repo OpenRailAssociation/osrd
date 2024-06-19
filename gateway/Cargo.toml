@@ -59,7 +59,7 @@ openidconnect = { git = "https://github.com/multun/openidconnect-rs.git", branch
 reqwest = { version = "0.12", default-features = false, features = [
   "rustls-tls-native-roots",
 ] }
-url = "2.4"
+url = "2.5"
 
 
 [dependencies]
