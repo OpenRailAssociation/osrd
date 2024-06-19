@@ -20,7 +20,7 @@ use crate::modelsv2::work_schedules::WorkScheduleType;
 use crate::modelsv2::Changeset;
 use crate::modelsv2::Create;
 use crate::modelsv2::CreateBatch;
-use crate::modelsv2::DbConnectionPool;
+use crate::modelsv2::DbConnectionPoolV2;
 use crate::modelsv2::Model;
 use editoast_schemas::infra::TrackRange;
 
@@ -137,7 +137,7 @@ struct WorkScheduleCreateResponse {
 )]
 #[post("")]
 async fn create(
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Data<DbConnectionPoolV2>,
     data: Json<WorkScheduleCreateForm>,
 ) -> Result<Json<WorkScheduleCreateResponse>> {
     let conn = &mut db_pool.get().await?;
@@ -170,35 +170,23 @@ async fn create(
 #[cfg(test)]
 pub mod test {
     use actix_web::http::StatusCode;
-    use actix_web::test::{call_service, read_body_json, TestRequest};
+    use actix_web::test::TestRequest;
+    use pretty_assertions::assert_eq;
     use rstest::rstest;
     use serde_json::json;
-    use std::sync::Arc;
+    use std::ops::DerefMut;
 
     use super::*;
-    use crate::assert_response_error_type_match;
-    use crate::fixtures::tests::{db_pool, TestFixture};
-    use crate::modelsv2::Retrieve;
-    use crate::views::tests::create_test_service;
-
-    async fn create_work_schedule_group_fixture(
-        db_pool: Arc<DbConnectionPool>,
-        work_schedule_response: WorkScheduleCreateResponse,
-    ) -> TestFixture<WorkScheduleGroup> {
-        let mut conn = db_pool.get().await.unwrap();
-        let created_group =
-            WorkScheduleGroup::retrieve(&mut conn, work_schedule_response.work_schedule_group_id)
-                .await
-                .unwrap();
-        assert!(created_group.is_some());
-        TestFixture::new(created_group.unwrap(), db_pool.clone())
-    }
+    use crate::modelsv2::prelude::*;
+    use crate::views::test_app::TestAppBuilder;
 
     #[rstest]
-    async fn work_schedule_create(db_pool: Arc<DbConnectionPool>) {
+    async fn work_schedule_create() {
         // GIVEN
-        let app = create_test_service().await;
-        let req = TestRequest::post()
+        let app = TestAppBuilder::default_app();
+        let pool = app.db_pool();
+
+        let request = TestRequest::post()
             .uri("/work_schedules")
             .set_json(json!({
                 "work_schedule_group_name": "work schedule group name",
@@ -213,20 +201,26 @@ pub mod test {
             .to_request();
 
         // WHEN
-        let response = call_service(&app, req).await;
+        let work_schedule_response = app
+            .fetch(request)
+            .assert_status(StatusCode::OK)
+            .json_into::<WorkScheduleCreateResponse>();
 
         // THEN
-        assert_eq!(response.status(), StatusCode::OK);
-        let work_schedule_response: WorkScheduleCreateResponse = read_body_json(response).await;
-        let _fixture =
-            create_work_schedule_group_fixture(db_pool.clone(), work_schedule_response).await;
+        let created_group = WorkScheduleGroup::retrieve(
+            pool.get_ok().deref_mut(),
+            work_schedule_response.work_schedule_group_id,
+        )
+        .await
+        .expect("Failed to retrieve work schedule group");
+        assert!(created_group.is_some());
     }
 
     #[rstest]
     async fn work_schedule_create_fail_start_date_after_end_date() {
-        // GIVEN
-        let app = create_test_service().await;
-        let req = TestRequest::post()
+        let app = TestAppBuilder::default_app();
+
+        let request = TestRequest::post()
             .uri("/work_schedules")
             .set_json(json!({
                 "work_schedule_group_name": "work schedule group name",
@@ -240,53 +234,44 @@ pub mod test {
             }))
             .to_request();
 
-        // WHEN
-        let response = call_service(&app, req).await;
-
-        // THEN
-        assert_eq!(response.status(), StatusCode::BAD_REQUEST);
+        app.fetch(request).assert_status(StatusCode::BAD_REQUEST);
     }
 
     #[rstest]
-    async fn work_schedule_create_fail_name_already_used(db_pool: Arc<DbConnectionPool>) {
+    async fn work_schedule_create_fail_name_already_used() {
         // GIVEN
-        let app = create_test_service().await;
-        let payload = json!({
-            "work_schedule_group_name": "duplicated work schedule group name",
-            "work_schedules": [{
-                "start_date_time": "2024-01-01T08:00:00",
-                "end_date_time": "2024-01-01T09:00:00",
-                "track_ranges": [],
-                "obj_id": "work_schedule_obj_id",
-                "work_schedule_type": "CATENARY"
-            }]
-        });
+        let app = TestAppBuilder::default_app();
+        let pool = app.db_pool();
 
-        let req = TestRequest::post()
-            .uri("/work_schedules")
-            .set_json(payload.clone())
-            .to_request();
-        let first_response = call_service(&app, req).await;
-        assert_eq!(first_response.status(), StatusCode::OK);
-        let work_schedule_response: WorkScheduleCreateResponse =
-            read_body_json(first_response).await;
-        let _fixture =
-            create_work_schedule_group_fixture(db_pool.clone(), work_schedule_response).await;
+        WorkScheduleGroup::changeset()
+            .name("duplicated work schedule group name".to_string())
+            .creation_date(Utc::now().naive_utc())
+            .create(pool.get_ok().deref_mut())
+            .await
+            .expect("Failed to create work schedule group");
 
-        // WHEN
-        let req = TestRequest::post()
+        let request = TestRequest::post()
             .uri("/work_schedules")
-            .set_json(payload.clone())
+            .set_json(json!({
+                "work_schedule_group_name": "duplicated work schedule group name",
+                "work_schedules": [{
+                    "start_date_time": "2024-01-01T08:00:00",
+                    "end_date_time": "2024-01-01T09:00:00",
+                    "track_ranges": [],
+                    "obj_id": "work_schedule_obj_id",
+                    "work_schedule_type": "CATENARY"
+                }]
+            }))
             .to_request();
 
-        // THEN
-        let response = call_service(&app, req).await;
-        assert_eq!(response.status(), StatusCode::BAD_REQUEST);
-        assert_response_error_type_match!(
-            response,
-            WorkScheduleError::NameAlreadyUsed {
-                name: String::from("duplicated work schedule group name"),
-            }
+        let work_schedule_response = app
+            .fetch(request)
+            .assert_status(StatusCode::BAD_REQUEST)
+            .json_into::<InternalError>();
+
+        assert_eq!(
+            &work_schedule_response.error_type,
+            "editoast:work_schedule:NameAlreadyUsed"
         );
     }
 }
