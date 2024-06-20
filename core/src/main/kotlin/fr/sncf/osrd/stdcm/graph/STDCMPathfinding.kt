@@ -156,6 +156,10 @@ class STDCMPathfinding(
             if (Duration.between(start, Instant.now()).toSeconds() >= pathfindingTimeout)
                 throw OSRDError(ErrorType.PathfindingTimeoutError)
             val edge = queue.poll() ?: return null
+            if (edge.weight!!.isInfinite()) {
+                // TODO: filter with max running time, can't be done with abstract weight
+                return null
+            }
             // TODO: we mostly reason in terms of endNode, we should probably change the queue.
             val endNode = graph.getEdgeEnd(edge)
             if (endNode.waypointIndex >= graph.steps.size - 1) {
