@@ -187,6 +187,7 @@ class RawInfraBuilder {
     private val zonePathMap = mutableMapOf<ZonePathSpec, ZonePathId>()
     private val operationalPointPartPool =
         StaticPool<OperationalPointPart, OperationalPointPartDescriptor>()
+    private val speedLimitTagPool = mutableMapOf<String, SpeedLimitTagDescriptor>()
 
     private val trackSectionNameToIdxMap = mutableMapOf<String, TrackSectionId>()
     private val routeNameToIdxMap = mutableMapOf<String, RouteId>()
@@ -433,6 +434,10 @@ class RawInfraBuilder {
         return physicalSignalPool.add(builder.build())
     }
 
+    fun speedLimitTag(tagDescriptor: SpeedLimitTagDescriptor) {
+        speedLimitTagPool[tagDescriptor.id] = tagDescriptor
+    }
+
     fun trackSection(name: String, chunks: StaticIdxList<TrackChunk>): TrackSectionId {
         val chunkBoundaryToDetector = MutableList<DetectorId?>(chunks.size + 1) { null }
         val detectors = mutableStaticIdxArrayListOf<Detector>()
@@ -568,6 +573,7 @@ class RawInfraBuilder {
             zonePathPool,
             zonePathMap,
             operationalPointPartPool,
+            speedLimitTagPool,
             makeTrackNameMap(),
             makeRouteNameMap(),
             makeDetEntryToRouteMap(),

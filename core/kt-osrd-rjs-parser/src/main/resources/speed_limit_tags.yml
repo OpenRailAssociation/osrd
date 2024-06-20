@@ -1,0 +1,224 @@
+V200:
+  name: Voyageurs - V200
+  fallback_list: [V160, V140, V120, ME100, MA100, MA90, MA80]
+  default_speed: 8.333333
+
+R200:
+  name: Voyageurs - Trains réversibles V200
+  fallback_list: [V200, V160, V140, V120, ME100, MA100, MA90, MA80]
+  default_speed: 8.333333
+
+AR200:
+  name: Voyageurs - AR200
+  fallback_list: [V200, V160, V140, V120, ME100, MA100, MA90, MA80]
+  default_speed: 8.333333
+
+V160:
+  name: Voyageurs - V160
+  fallback_list: [V140, V120, ME100, MA100, MA90, MA80]
+  default_speed: 8.333333
+
+R160:
+  name: Voyageurs - Trains réversibles V160
+  fallback_list: [V160, V140, V120, ME100, MA100, MA90, MA80]
+  default_speed: 8.333333
+
+AR160:
+  name: Voyageurs - AR160
+  fallback_list: [V160, V140, V120, ME100, MA100, MA90, MA80]
+  default_speed: 8.333333
+
+V140:
+  name: Voyageurs - V140
+  fallback_list: [V120, ME100, MA100, MA90, MA80]
+  default_speed: 8.333333
+
+R140:
+  name: Voyageurs - Trains réversibles V140
+  fallback_list: [V140, V120, ME100, MA100, MA90, MA80]
+  default_speed: 8.333333
+
+AR140:
+  name: Voyageurs - AR140
+  fallback_list: [V140, V120, ME100, MA100, MA90, MA80]
+  default_speed: 8.333333
+
+V120:
+  name: Voyageurs - V120
+  fallback_list: [ME100, MA100, MA90, MA80]
+  default_speed: 8.333333
+
+R120:
+  name: Voyageurs - Trains réversibles V120
+  fallback_list: [V120, ME100, MA100, MA90, MA80]
+  default_speed: 8.333333
+
+AR120:
+  name: Voyageurs - AR120
+  fallback_list: [V120, ME100, MA100, MA90, MA80]
+  default_speed: 8.333333
+
+MVGV:
+  name: Messagerie - MVGV
+  fallback_list: [MV160, ME140, ME120, ME100, MA100, MA90, MA80]
+  default_speed: 8.333333
+
+MV160:
+  name: Messagerie - MV160
+  fallback_list: [ME140, ME120, ME100, MA100, MA90, MA80]
+  default_speed: 8.333333
+
+ME140:
+  name: Messagerie - ME140
+  fallback_list: [ME120, ME100, MA100, MA90, MA80]
+  default_speed: 8.333333
+
+ME120:
+  name: Messagerie - ME120
+  fallback_list: [ME100, MA100, MA90, MA80]
+  default_speed: 8.333333
+
+ME100:
+  name: Messagerie - ME100
+  fallback_list: [MA100, MA90, MA80]
+  default_speed: 8.333333
+
+HLP:
+  name: Divers - Haut le pied
+  fallback_list: [ME100, MA100, MA90, MA80]
+  default_speed: 8.333333
+
+MA100:
+  name: Marchandise - MA100
+  fallback_list: [MA90, MA80]
+  default_speed: 8.333333
+
+MA90:
+  name: Marchandise - MA90
+  fallback_list: [MA80]
+  default_speed: 8.333333
+
+MA80:
+  name: Marchandise - MA80
+  fallback_list: []
+  default_speed: 8.333333
+
+E32C:
+  name: Voyageurs - Automoteurs - E32C
+  fallback_list: [E30C, E20C, E20N, V200, E16C, E16N, V160, E14C, E14N, V140, E12N, V120, ME100, MA100, MA90, MA80]
+  default_speed: 8.333333
+
+E30C:
+  name: Voyageurs - Automoteurs - E30C
+  fallback_list: [E20C, E20N, V200, E16C, E16N, V160, E14C, E14N, V140, E12N, V120, ME100, MA100, MA90, MA80]
+  default_speed: 8.333333
+
+E20C:
+  name: Voyageurs - Automoteurs - E20C
+  fallback_list: [E20N, V200, E16C, E16N, V160, E14C, E14N, V140, E12N, V120, ME100, MA100, MA90, MA80]
+  default_speed: 8.333333
+
+E20N:
+  name: Voyageurs - Automoteurs - E20N
+  fallback_list: [V200, E16N, V160, E14N, V140, E12N, V120, ME100, MA100, MA90, MA80]
+  default_speed: 8.333333
+
+E16C:
+  name: Voyageurs - Automoteurs - E16C
+  fallback_list: [E16N, V160, E14C, E14N, V140, E12N, V120, ME100, MA100, MA90, MA80]
+  default_speed: 8.333333
+
+E16N:
+  name: Voyageurs - Automoteurs - E16N
+  fallback_list: [V160, E14N, V140, E12N, V120, ME100, MA100, MA90, MA80]
+  default_speed: 8.333333
+
+E14F:
+  name: Voyageurs - Automoteurs - E14F
+  fallback_list: [E14R, E14Q, E14P, E14C, E14N, V140, E12Q, E12N, V120, ME100, MA100, MA90, MA80]
+  default_speed: 8.333333
+
+E14C:
+  name: Voyageurs - Automoteurs - E14C
+  fallback_list: [E14N, V140, E12N, V120, ME100, MA100, MA90, MA80]
+  default_speed: 8.333333
+
+E14R:
+  name: Voyageurs - Automoteurs - E14R
+  fallback_list: [E14Q, E14P, E14N, V140, E12Q, E12N, V120, ME100, MA100, MA90, MA80]
+  default_speed: 8.333333
+
+E14Q:
+  name: Voyageurs - Automoteurs - E14Q
+  fallback_list: [E14P, E14N, V140, E12Q, E12N, V120, ME100, MA100, MA90, MA80]
+  default_speed: 8.333333
+
+E14P:
+  name: Voyageurs - Automoteurs - E14P
+  fallback_list: [E14N, V140, E12N, V120, ME100, MA100, MA90, MA80]
+  default_speed: 8.333333
+
+E14N:
+  name: Voyageurs - Automoteurs - E14N
+  fallback_list: [V140, E12N, V120, ME100, MA100, MA90, MA80]
+  default_speed: 8.333333
+
+E12C:
+  name: Voyageurs - Automoteurs - E12C
+  fallback_list: [E12N, V120, ME100, MA100, MA90, MA80]
+  default_speed: 8.333333
+
+E12Q:
+  name: Voyageurs - Automoteurs - E12Q
+  fallback_list: [E12N, V120, ME100, MA100, MA90, MA80]
+  default_speed: 8.333333
+
+E12N:
+  name: Voyageurs - Automoteurs - E12N
+  fallback_list: [V120, ME100, MA100, MA90, MA80]
+  default_speed: 8.333333
+
+E10C:
+  name: Voyageurs - Automoteurs - E10C
+  fallback_list: [ME100, MA100, MA90, MA80]
+  default_speed: 8.333333
+
+T16C:
+  name: Voyageurs - Autorails - T16C
+  fallback_list: [V160, T14C, T14N, V140, T12C, T12N, V120, ME100, MA100, MA90, MA80]
+  default_speed: 8.333333
+
+T14C:
+  name: Voyageurs - Autorails - T14C
+  fallback_list: [T14N, V140, T12C, T12N, V120, ME100, MA100, MA90, MA80]
+  default_speed: 8.333333
+
+T14N:
+  name: Voyageurs - Autorails - T14N
+  fallback_list: [V140, T12N, V120, ME100, MA100, MA90, MA80]
+  default_speed: 8.333333
+
+T12C:
+  name: Voyageurs - Autorails - T12C
+  fallback_list: [T12N, V120, ME100, MA100, MA90, MA80]
+  default_speed: 8.333333
+
+T12N:
+  name: Voyageurs - Autorails - T12N
+  fallback_list: [V120, ME100, MA100, MA90, MA80]
+  default_speed: 8.333333
+
+B16C:
+  name: Voyageurs - BIMA - B16C
+  fallback_list: [T16C, V160, T14C, T14N, V140, T12C, T12N, V120, ME100, MA100, MA90, MA80]
+  default_speed: 8.333333
+
+TM:
+  name: Divers - Train de machines
+  fallback_list: [MA90, MA80]
+  default_speed: 8.333333
+
+EVO:
+  name: Divers - Evolution
+  fallback_list: [MA80]
+  default_speed: 8.333333
