@@ -21,7 +21,7 @@ import { extractTagCode, keepTrain } from './utils';
  * @param debouncedRollingstockFilter filter for train's rolling stock metadata
  * @param validityFilter filter for valid train or not
  * @param selectedTags filter for train's speed limit tag
- * @returns trainschedules unique speedlimit tags
+ * @returns trainschedules unique speedlimit tags and train schedules
  */
 const useTrainSchedulesDetails = (
   trainIds: number[],
@@ -179,7 +179,7 @@ const useTrainSchedulesDetails = (
     selectedTags,
   ]);
 
-  return uniqueTags;
+  return { uniqueTags, trainSchedules };
 };
 
 export default useTrainSchedulesDetails;
