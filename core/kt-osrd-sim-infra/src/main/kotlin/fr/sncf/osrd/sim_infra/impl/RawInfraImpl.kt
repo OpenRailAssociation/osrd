@@ -3,13 +3,68 @@ package fr.sncf.osrd.sim_infra.impl
 import fr.sncf.osrd.geom.LineString
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
-import fr.sncf.osrd.sim_infra.api.*
+import fr.sncf.osrd.sim_infra.api.Detector
+import fr.sncf.osrd.sim_infra.api.DetectorId
+import fr.sncf.osrd.sim_infra.api.DirDetectorId
+import fr.sncf.osrd.sim_infra.api.DirTrackChunkId
+import fr.sncf.osrd.sim_infra.api.DirTrackSectionId
+import fr.sncf.osrd.sim_infra.api.EndpointTrackSectionId
+import fr.sncf.osrd.sim_infra.api.LoadingGaugeConstraint
+import fr.sncf.osrd.sim_infra.api.LogicalSignal
+import fr.sncf.osrd.sim_infra.api.LogicalSignalId
+import fr.sncf.osrd.sim_infra.api.NeutralSection
+import fr.sncf.osrd.sim_infra.api.OperationalPointPart
+import fr.sncf.osrd.sim_infra.api.OperationalPointPartId
+import fr.sncf.osrd.sim_infra.api.OptDirTrackSectionId
+import fr.sncf.osrd.sim_infra.api.PhysicalSignal
+import fr.sncf.osrd.sim_infra.api.PhysicalSignalId
+import fr.sncf.osrd.sim_infra.api.RawInfra
+import fr.sncf.osrd.sim_infra.api.RawSignalParameters
+import fr.sncf.osrd.sim_infra.api.Route
+import fr.sncf.osrd.sim_infra.api.RouteId
+import fr.sncf.osrd.sim_infra.api.SpeedLimit
+import fr.sncf.osrd.sim_infra.api.TrackChunk
+import fr.sncf.osrd.sim_infra.api.TrackChunkId
+import fr.sncf.osrd.sim_infra.api.TrackNode
+import fr.sncf.osrd.sim_infra.api.TrackNodeConfig
+import fr.sncf.osrd.sim_infra.api.TrackNodeConfigId
+import fr.sncf.osrd.sim_infra.api.TrackNodeId
+import fr.sncf.osrd.sim_infra.api.TrackNodePort
+import fr.sncf.osrd.sim_infra.api.TrackNodePortId
+import fr.sncf.osrd.sim_infra.api.TrackSection
+import fr.sncf.osrd.sim_infra.api.TrackSectionId
+import fr.sncf.osrd.sim_infra.api.Zone
+import fr.sncf.osrd.sim_infra.api.ZoneId
+import fr.sncf.osrd.sim_infra.api.ZonePath
+import fr.sncf.osrd.sim_infra.api.ZonePathId
+import fr.sncf.osrd.sim_infra.api.decreasing
+import fr.sncf.osrd.sim_infra.api.getZonePathZone
+import fr.sncf.osrd.sim_infra.api.increasing
+import fr.sncf.osrd.sim_infra.api.toEndpoint
 import fr.sncf.osrd.utils.Direction
 import fr.sncf.osrd.utils.DirectionalMap
 import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.distanceRangeMapOf
-import fr.sncf.osrd.utils.indexing.*
-import fr.sncf.osrd.utils.units.*
+import fr.sncf.osrd.utils.indexing.DirStaticIdxList
+import fr.sncf.osrd.utils.indexing.IdxMap
+import fr.sncf.osrd.utils.indexing.MutableStaticIdxArrayList
+import fr.sncf.osrd.utils.indexing.OptStaticIdx
+import fr.sncf.osrd.utils.indexing.StaticIdx
+import fr.sncf.osrd.utils.indexing.StaticIdxList
+import fr.sncf.osrd.utils.indexing.StaticIdxSortedSet
+import fr.sncf.osrd.utils.indexing.StaticIdxSpace
+import fr.sncf.osrd.utils.indexing.StaticPool
+import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
+import fr.sncf.osrd.utils.units.Distance
+import fr.sncf.osrd.utils.units.Length
+import fr.sncf.osrd.utils.units.MutableOffsetArray
+import fr.sncf.osrd.utils.units.Offset
+import fr.sncf.osrd.utils.units.OffsetList
+import fr.sncf.osrd.utils.units.Speed
+import fr.sncf.osrd.utils.units.findSegment
+import fr.sncf.osrd.utils.units.meters
+import fr.sncf.osrd.utils.units.mutableOffsetArrayListOf
+import kotlin.collections.set
 import kotlin.time.Duration
 import mu.KotlinLogging
 
@@ -45,6 +100,13 @@ data class SpeedSection(
         }
     }
 }
+
+data class SpeedLimitTagDescriptor(
+    val id: String, // short name
+    val name: String, // long name
+    val fallbackList: List<String>, // order of the list matters for fallback
+    val defaultSpeed: Speed?
+)
 
 class TrackNodeConfigDescriptor(
     val name: String,
@@ -204,6 +266,7 @@ class RawInfraImpl(
     private val zonePathMap: Map<ZonePathSpec, ZonePathId>,
     private val operationalPointPartPool:
         StaticPool<OperationalPointPart, OperationalPointPartDescriptor>,
+    private val speedLimitTagPool: Map<String, SpeedLimitTagDescriptor>,
     private val trackSectionNameMap: Map<String, TrackSectionId>,
     private val routeNameMap: Map<String, RouteId>,
     private val dirDetEntryToRouteMap: Map<DirDetectorId, StaticIdxList<Route>>,
@@ -223,6 +286,9 @@ class RawInfraImpl(
             }
             bounds.immutableCopyOf()
         }
+    // TODO remove once long names are unused
+    private val speedLimitTagNameToIdMap =
+        speedLimitTagPool.values.associate { Pair(it.name, it.id) }
     private val chunkToZoneMap =
         zonePathPool
             .flatMap { zonePathId ->
@@ -276,6 +342,13 @@ class RawInfraImpl(
     }
 
     init {
+        // check that SpeedLimitTag fallbacks are present in the list of SpeedLimitTag
+        for (tag in speedLimitTagPool.values) {
+            for (fallbackTag in tag.fallbackList) {
+                assert(speedLimitTagPool.containsKey(fallbackTag))
+            }
+        }
+
         // initialize the zone detector map
         for (zone in zonePool) zoneDetectors[zone] = mutableListOf()
         for (detector in detectorPool) {
@@ -511,9 +584,29 @@ class RawInfraImpl(
         route: String?,
     ): DistanceRangeMap<Speed> {
         val res = distanceRangeMapOf<Speed>()
+
+        var trainTagId = trainTag
+        // TODO remove once long names are unused
+        if (speedLimitTagNameToIdMap.contains(trainTagId)) {
+            trainTagId = speedLimitTagNameToIdMap[trainTagId]
+        }
+        val trainSpeedLimitTagDescriptor = speedLimitTagPool[trainTagId]
+
+        // TODO remove once long names are unused
+        val trainTagName = trainSpeedLimitTagDescriptor?.name
+
         for (entry in trackChunkPool[trackChunk.value].speedSections.get(trackChunk.direction)) {
             val speedSection = entry.value
-            val speedFromTag = speedSection.speedByTrainTag[trainTag]
+            var infraTagSpeed =
+                getInfraTagSpeedAndId(
+                        speedSection,
+                        trainTagId,
+                        trainTagName,
+                        trainSpeedLimitTagDescriptor
+                    )
+                    .first
+
+            /* Route handling */
             val speedFromRoute = speedSection.speedByRoute[route]
             // Attempting to use min(speedFrom[Route|Tag], speedSection.default) leads to
             // confusing results with overlapping speed sections from a user perspective.
@@ -522,11 +615,57 @@ class RawInfraImpl(
             // The same thing applies to speed limits by train tag.
             // TODO: as stated for SpeedSection class, a refactor is required to respect
             //       specifications
-            assert(speedFromTag == null || speedFromRoute == null) { "checked at parsing" }
-            val allowedSpeed = speedFromRoute ?: speedFromTag ?: speedSection.default
+            assert(infraTagSpeed == null || speedFromRoute == null) { "checked at parsing" }
+            val allowedSpeed =
+                if (speedFromRoute != null) {
+                    speedFromRoute
+                } else if (infraTagSpeed != null) {
+                    infraTagSpeed
+                } else if (
+                    trainSpeedLimitTagDescriptor?.defaultSpeed != null &&
+                        trainSpeedLimitTagDescriptor.defaultSpeed < speedSection.default
+                ) {
+                    trainSpeedLimitTagDescriptor.defaultSpeed
+                } else {
+                    speedSection.default
+                }
             res.put(entry.lower, entry.upper, allowedSpeed)
         }
         return res
+    }
+
+    private fun getInfraTagSpeedAndId(
+        speedSection: SpeedSection,
+        trainTagId: String?,
+        trainTagName: String?,
+        trainSpeedLimitTagDescriptor: SpeedLimitTagDescriptor?
+    ): Pair<Speed?, String?> {
+        /* SpeedLimitTag handling */
+        var infraTagSpeed = speedSection.speedByTrainTag[trainTagId]
+        // TODO remove once long names are unused
+        if (infraTagSpeed == null && trainTagName != null) {
+            infraTagSpeed = speedSection.speedByTrainTag[trainTagName]
+        }
+
+        var infraTagId = if (infraTagSpeed != null) trainTagId else null
+
+        if (infraTagSpeed == null && trainSpeedLimitTagDescriptor != null) {
+            for (fallbackTagId in trainSpeedLimitTagDescriptor.fallbackList) {
+                val fallbackSpeed =
+                    speedSection.speedByTrainTag[fallbackTagId]
+                        // TODO remove once long names are unused and move method to
+                        // SpeedLimitTagDescriptor
+                        ?: speedSection.speedByTrainTag[speedLimitTagPool[fallbackTagId]?.name]
+
+                if (fallbackSpeed != null) {
+                    if (infraTagSpeed == null || fallbackSpeed > infraTagSpeed) {
+                        infraTagSpeed = fallbackSpeed
+                        infraTagId = fallbackTagId
+                    }
+                }
+            }
+        }
+        return Pair(infraTagSpeed, infraTagId)
     }
 
     override fun getRoutesOnTrackChunk(trackChunk: DirTrackChunkId): StaticIdxList<Route> {

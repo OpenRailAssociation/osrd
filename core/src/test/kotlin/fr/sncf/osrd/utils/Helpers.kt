@@ -9,14 +9,24 @@ import fr.sncf.osrd.railjson.schema.external_generated_inputs.RJSElectricalProfi
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingStock
 import fr.sncf.osrd.reporting.exceptions.OSRDError
-import fr.sncf.osrd.sim_infra.api.*
+import fr.sncf.osrd.sim_infra.api.Block
+import fr.sncf.osrd.sim_infra.api.BlockId
+import fr.sncf.osrd.sim_infra.api.RawSignalingInfra
+import fr.sncf.osrd.sim_infra.api.Route
+import fr.sncf.osrd.sim_infra.api.SignalingSystem
+import fr.sncf.osrd.sim_infra.api.TrackChunk
+import fr.sncf.osrd.sim_infra.api.TrackLocation
 import fr.sncf.osrd.sim_infra.impl.ChunkPath
 import fr.sncf.osrd.sim_infra.impl.buildChunkPath
 import fr.sncf.osrd.sim_infra.impl.getOffsetOfTrackLocationOnChunks
 import fr.sncf.osrd.sim_infra.utils.BlockPathElement
 import fr.sncf.osrd.sim_infra.utils.recoverBlocks
 import fr.sncf.osrd.sim_infra.utils.toList
-import fr.sncf.osrd.utils.indexing.*
+import fr.sncf.osrd.utils.indexing.MutableDirStaticIdxArrayList
+import fr.sncf.osrd.utils.indexing.MutableStaticIdxArrayList
+import fr.sncf.osrd.utils.indexing.StaticIdx
+import fr.sncf.osrd.utils.indexing.StaticIdxList
+import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
 import fr.sncf.osrd.utils.moshi.MoshiUtils
 import fr.sncf.osrd.utils.units.Offset
 import java.io.File
@@ -75,9 +85,8 @@ object Helpers {
 
     @Throws(IOException::class, URISyntaxException::class)
     private fun <T> deserializeResource(adapter: JsonAdapter<T>, resourcePath: String): T {
-        val loader = Helpers::class.java.getClassLoader()
         val resourceURL =
-            loader.getResource(resourcePath)
+            {}.javaClass.classLoader.getResource(resourcePath)
                 ?: throw IOException("can't find resource $resourcePath")
         return MoshiUtils.deserialize(adapter, Paths.get(resourceURL.toURI()))
     }
@@ -85,8 +94,7 @@ object Helpers {
     /** Given a resource path find the full path (works cross-platform) */
     @JvmStatic
     fun getResourcePath(resourcePath: String?): Path {
-        val classLoader = Helpers::class.java.getClassLoader()
-        val url = classLoader.getResource(resourcePath)!!
+        val url = {}.javaClass.classLoader.getResource(resourcePath)!!
         return try {
             File(url.toURI()).toPath()
         } catch (e: URISyntaxException) {

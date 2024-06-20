@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ksp)
     id 'jacoco'
 }
@@ -30,6 +31,9 @@ dependencies {
 
     // Use JUnit Jupiter API for testing.
     testImplementation libs.junit.jupiter.api
+
+    // YAML
+    implementation libs.kaml
 }
 
 // to get KSP generated-stuff to be recognised
