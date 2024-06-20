@@ -200,14 +200,14 @@
       min-height: 100px;
     }
   }
+}
 
-  .editor-infra-errors-list {
-    .error-count {
-      height: 1.5rem;
-    }
-    #errors-list-container {
-      height: 60vh;
-      overflow: auto;
-    }
+.editor-infra-errors-list {
+  .error-count {
+    height: 1.5rem;
+  }
+  #errors-list-container {
+    height: 60vh;
+    overflow: auto;
   }
 }
