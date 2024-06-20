@@ -208,9 +208,10 @@ class STDCMPathfinding(
                 step.locations
                     .filter { it.edge == edge.block }
                     .mapNotNull { edge.edgeOffsetFromBlock(it.offset) }
-            assert(locationOnEdge.size <= 1)
-            if (locationOnEdge.isNotEmpty()) {
-                res.add(EdgeLocation(edge, locationOnEdge.first()))
+                    .minOrNull()
+            // Sometimes a step has several locations on the same edge, we just pick the first
+            if (locationOnEdge != null) {
+                res.add(EdgeLocation(edge, locationOnEdge))
                 nextStepIndex++
             } else {
                 currentEdgeIndex++
