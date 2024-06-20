@@ -105,9 +105,7 @@ services:
     command:
       - /bin/sh
       - -c
-      - |
-        diesel migration run
-        editoast runserver
+      - "diesel migration run && exec editoast runserver"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost/health"]
       start_period: 4s
