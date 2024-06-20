@@ -634,7 +634,8 @@ pub mod tests {
         let request = rolling_stock_create_request(&fast_rolling_stock_form);
 
         // WHEN
-        let response: RollingStockModel = call_and_read_body_json(&app.service, request).await;
+        let response: RollingStockModel =
+            app.fetch(request).assert_status(StatusCode::OK).json_into();
 
         // THEN
         // Check if the rolling stock was created in the database
@@ -665,7 +666,8 @@ pub mod tests {
             .to_request();
 
         // WHEN
-        let response: RollingStockModel = call_and_read_body_json(&app.service, request).await;
+        let response: RollingStockModel =
+            app.fetch(request).assert_status(StatusCode::OK).json_into();
 
         // THEN
         // Check if the rolling stock was created in the database with locked = true
@@ -689,9 +691,11 @@ pub mod tests {
 
         let request = rolling_stock_create_request(&new_fast_rolling_stock_form);
 
-        let response: InternalError = call_and_read_body_json(&app.service, request).await;
+        let response: InternalError = app
+            .fetch(request)
+            .assert_status(StatusCode::BAD_REQUEST)
+            .json_into();
 
-        assert_eq!(response.status, StatusCode::BAD_REQUEST);
         assert_eq!(
             response.error_type,
             "editoast:rollingstocks:NameAlreadyUsed"
@@ -710,10 +714,12 @@ pub mod tests {
         let request = rolling_stock_create_request(&fast_rolling_stock_form);
 
         // WHEN
-        let response: InternalError = call_and_read_body_json(&app.service, request).await;
+        let response: InternalError = app
+            .fetch(request)
+            .assert_status(StatusCode::BAD_REQUEST)
+            .json_into();
 
         // THEN
-        assert_eq!(response.status, StatusCode::BAD_REQUEST);
         assert_eq!(
             response.error_type,
             "editoast:rollingstocks:BasePowerClassEmpty"
@@ -732,9 +738,11 @@ pub mod tests {
             .insert_header(ContentType::json())
             .to_request();
 
-        let response: InternalError = call_and_read_body_json(&app.service, request).await;
+        let response: InternalError = app
+            .fetch(request)
+            .assert_status(StatusCode::BAD_REQUEST)
+            .json_into();
 
-        assert_eq!(response.status, StatusCode::BAD_REQUEST);
         assert_eq!(response.error_type, "editoast:JsonError");
         assert_eq!(
             response.message,
@@ -755,7 +763,8 @@ pub mod tests {
         let request = rolling_stock_get_by_id_request(fast_rolling_stock.id);
 
         // WHEN
-        let response: RollingStockModel = call_and_read_body_json(&app.service, request).await;
+        let response: RollingStockModel =
+            app.fetch(request).assert_status(StatusCode::OK).json_into();
 
         // THEN
         assert_eq!(response, fast_rolling_stock);
@@ -775,7 +784,8 @@ pub mod tests {
             .uri(format!("/rolling_stock/name/{rs_name}").as_str())
             .to_request();
 
-        let response: RollingStockModel = call_and_read_body_json(&app.service, request).await;
+        let response: RollingStockModel =
+            app.fetch(request).assert_status(StatusCode::OK).json_into();
 
         // THEN
         assert_eq!(response, fast_rolling_stock);
@@ -787,9 +797,7 @@ pub mod tests {
 
         let request = rolling_stock_get_by_id_request(0);
 
-        let response = call_service(&app.service, request).await;
-
-        assert_eq!(response.status(), StatusCode::NOT_FOUND);
+        app.fetch(request).assert_status(StatusCode::NOT_FOUND);
     }
 
     #[rstest]
@@ -800,9 +808,7 @@ pub mod tests {
             .uri(format!("/rolling_stock/name/{}", "unexisting_rolling_stock_name").as_str())
             .to_request();
 
-        let response = call_service(&app.service, request).await;
-
-        assert_eq!(response.status(), StatusCode::NOT_FOUND);
+        app.fetch(request).assert_status(StatusCode::NOT_FOUND);
     }
 
     #[rstest]
@@ -826,10 +832,9 @@ pub mod tests {
             .to_request();
 
         // WHEN
-        let response = call_service(&app.service, request).await;
+        app.fetch(request).assert_status(StatusCode::OK);
 
         // THEN
-        assert_eq!(response.status(), StatusCode::OK);
 
         let updated_rolling_stock: RollingStockModel =
             RollingStockModel::retrieve(db_pool.get_ok().deref_mut(), fast_rolling_stock.id)
@@ -867,10 +872,12 @@ pub mod tests {
             .to_request();
 
         // WHEN
-        let response: InternalError = call_and_read_body_json(&app.service, request).await;
+        let response: InternalError = app
+            .fetch(request)
+            .assert_status(StatusCode::BAD_REQUEST)
+            .json_into();
 
         // THEN
-        assert_eq!(response.status, StatusCode::BAD_REQUEST);
         assert_eq!(
             response.error_type,
             "editoast:rollingstocks:NameAlreadyUsed"
@@ -900,10 +907,12 @@ pub mod tests {
             .to_request();
 
         // WHEN
-        let response: InternalError = call_and_read_body_json(&app.service, request).await;
+        let response: InternalError = app
+            .fetch(request)
+            .assert_status(StatusCode::BAD_REQUEST)
+            .json_into();
 
         // THEN
-        assert_eq!(response.status, StatusCode::BAD_REQUEST);
         assert_eq!(
             response.error_type,
             "editoast:rollingstocks:RollingStockIsLocked"
@@ -926,8 +935,7 @@ pub mod tests {
             .set_json(json!({ "locked": true }))
             .to_request();
 
-        let response = call_service(&app.service, request).await;
-        assert_eq!(response.status(), StatusCode::NO_CONTENT);
+        app.fetch(request).assert_status(StatusCode::NO_CONTENT);
 
         let fast_rolling_stock: RollingStockModel =
             RollingStockModel::retrieve(db_pool.get_ok().deref_mut(), fast_rolling_stock.id)
@@ -957,8 +965,7 @@ pub mod tests {
             .set_json(json!({ "locked": false }))
             .to_request();
 
-        let response = call_service(&app.service, request).await;
-        assert_eq!(response.status(), StatusCode::NO_CONTENT);
+        app.fetch(request).assert_status(StatusCode::NO_CONTENT);
 
         let fast_rolling_stock: RollingStockModel =
             RollingStockModel::retrieve(db_pool.get_ok().deref_mut(), locked_fast_rolling_stock.id)
@@ -985,16 +992,15 @@ pub mod tests {
             .to_request();
 
         // WHEN
-        let response = call_service(&app.service, request).await;
+        let response: Vec<String> = app.fetch(request).assert_status(StatusCode::OK).json_into();
 
         // THEN
         let power_restrictions = serde_json::to_string(&power_restrictions)
             .expect("Failed to convert power_restrictions to string");
         assert!(power_restrictions.contains(&"C2".to_string()));
         assert!(power_restrictions.contains(&"C5".to_string()));
-        let response_body: Vec<String> = read_body_json(response).await;
-        assert!(response_body.contains(&"C2".to_string()));
-        assert!(response_body.contains(&"C5".to_string()));
+        assert!(response.contains(&"C2".to_string()));
+        assert!(response.contains(&"C5".to_string()));
     }
 
     #[rstest]
@@ -1017,10 +1023,12 @@ pub mod tests {
             .to_request();
 
         // WHEN
-        let response: InternalError = call_and_read_body_json(&app.service, request).await;
+        let response: InternalError = app
+            .fetch(request)
+            .assert_status(StatusCode::BAD_REQUEST)
+            .json_into();
 
         // THEN
-        assert_eq!(response.status, StatusCode::BAD_REQUEST);
         assert_eq!(
             response.error_type,
             "editoast:rollingstocks:RollingStockIsLocked"
