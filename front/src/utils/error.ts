@@ -21,20 +21,31 @@ export function getErrorName(error: unknown, defaultValue?: string): string {
  * If message can't be found, a default one is return (or the default value specified)
  */
 export function getErrorMessage(error: unknown, defaultValue?: string): string {
-  let message = defaultValue || i18n.t('default', { ns: ['errors'] });
-  if (isObject(error)) {
-    // check if it's an APIError
-    if ('data' in error && 'status' in error) {
+  const defaultMessage = defaultValue || i18n.t('default', { ns: ['errors'] });
+  if (!isObject(error)) {
+    return defaultMessage;
+  }
+
+  // Check if it's an APIError
+  if ('data' in error && 'status' in error) {
+    if (isObject(error.data)) {
       const { type, message: i18nMsg, context } = (error as ApiError).data;
       const i18nId = type.split(':').join('.');
-      message = i18n.t(i18nId, i18nMsg, { ...context, ns: ['errors'] });
+      return i18n.t(i18nId, i18nMsg, { ...context, ns: ['errors'] });
     }
-    // Check if the object has a message prop (like standard Error)
-    else if ('message' in error) {
-      message = `${error.message}`;
+    if (typeof error.data === 'string') {
+      // API returned a plaintext error instead of a JSON payload
+      return error.data;
     }
   }
-  return message;
+
+  // Check if the object has a message prop (like standard Error)
+  if ('message' in error) {
+    return `${error.message}`;
+  }
+
+  // Didn't find anything better than the default generic error message
+  return defaultMessage;
 }
 
 /**
