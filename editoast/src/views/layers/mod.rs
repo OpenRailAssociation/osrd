@@ -30,7 +30,7 @@ use crate::map::get_view_cache_prefix;
 use crate::map::Layer;
 use crate::map::MapLayers;
 use crate::map::Tile;
-use crate::modelsv2::DbConnectionPool;
+use crate::modelsv2::DbConnectionPoolV2;
 use crate::RedisClient;
 
 crate::routes! {
@@ -179,7 +179,7 @@ async fn cache_and_get_mvt_tile(
     path: Path<(String, String, u64, u64, u64)>,
     params: Query<InfraQueryParam>,
     map_layers: Data<MapLayers>,
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Data<DbConnectionPoolV2>,
     redis_client: Data<RedisClient>,
 ) -> Result<HttpResponse> {
     let (layer_slug, view_slug, z, x, y) = path.into_inner();
@@ -235,8 +235,6 @@ mod tests {
     use std::collections::HashMap;
 
     use actix_web::http::StatusCode;
-    use actix_web::test::call_service;
-    use actix_web::test::read_body_json;
     use actix_web::test::TestRequest;
     use rstest::rstest;
     use serde::de::DeserializeOwned;
@@ -246,7 +244,7 @@ mod tests {
     use crate::error::InternalError;
     use crate::map::MapLayers;
     use crate::views::layers::ViewMetadata;
-    use crate::views::tests::create_test_service;
+    use crate::views::test_app::TestAppBuilder;
 
     /// Run a simple get query on `uri` and check the status code and json body
     async fn test_get_query<T: DeserializeOwned + PartialEq + std::fmt::Debug>(
@@ -254,11 +252,12 @@ mod tests {
         expected_status: StatusCode,
         expected_body: T,
     ) {
-        let app = create_test_service().await;
-        let req = TestRequest::get().uri(uri).to_request();
-        let response = call_service(&app, req).await;
-        assert_eq!(response.status(), expected_status);
-        let body: T = read_body_json(response).await;
+        let app = TestAppBuilder::default_app();
+        let request = TestRequest::get().uri(uri).to_request();
+        let body: T = app
+            .fetch(request)
+            .assert_status(expected_status)
+            .json_into();
         assert_eq!(expected_body, body)
     }
 
