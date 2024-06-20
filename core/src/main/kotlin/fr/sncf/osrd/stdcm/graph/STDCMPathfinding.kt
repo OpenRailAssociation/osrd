@@ -257,7 +257,7 @@ class STDCMPathfinding(
         for (location in locations) {
             val infraExplorers =
                 initInfraExplorerWithEnvelope(fullInfra, location, rollingStock, stops, constraints)
-            val extended = infraExplorers.flatMap { extendLookaheadUntil(it, 4) }
+            val extended = infraExplorers.flatMap { extendLookaheadUntil(it, 3) }
             for (explorer in extended) {
                 val edges =
                     STDCMEdgeBuilder(explorer, graph)

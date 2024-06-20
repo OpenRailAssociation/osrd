@@ -96,7 +96,7 @@ class STDCMGraph(
             visitedNodes.markAsVisited(fingerprint, node.time)
             res.addAll(STDCMEdgeBuilder.fromNode(this, node, explorer).makeAllEdges())
         } else {
-            val extended = extendLookaheadUntil(node.infraExplorer.clone(), 4)
+            val extended = extendLookaheadUntil(node.infraExplorer.clone(), 3)
             for (newPath in extended) {
                 if (newPath.getLookahead().size == 0) continue
                 newPath.moveForward()

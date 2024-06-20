@@ -146,10 +146,10 @@ class SpacingResourceGeneratorTest {
             res.add(iterationResult)
         }
         for (i in res.indices) {
-            // We need at least 4 blocks to find a block that doesn't restrict the signal at the end
+            // We need at least 3 blocks to find a block that doesn't restrict the signal at the end
             // of block 1
             val nBlocks = i + 1
-            val expectedNotEnoughPath = nBlocks < 4
+            val expectedNotEnoughPath = nBlocks < 3
             assertEquals(expectedNotEnoughPath, res[i] is NotEnoughPath)
         }
     }
@@ -281,6 +281,41 @@ class SpacingResourceGeneratorTest {
             assertFalse { requirement.isComplete }
             assertEquals(automaton.callbacks.currentTime, requirement.endTime)
         }
+    }
+
+    @Test
+    fun testRequiredPathLength() {
+        val path = incrementalPathOf(infra.rawInfra, infra.blockInfra)
+        val automaton =
+            SpacingRequirementAutomaton(
+                infra.rawInfra,
+                infra.loadedSignalInfra,
+                infra.blockInfra,
+                infra.signalingSimulator,
+                makeCallbacks(blockLengths[0].distance, false),
+                path
+            )
+        val blocks =
+            mutableStaticIdxArrayListOf(
+                blocks[0],
+                blocks[1],
+                blocks[2],
+            )
+        path.extend(
+            PathFragment(
+                mutableStaticIdxArrayListOf(routes[0]),
+                blocks,
+                stops = listOf(),
+                containsStart = true,
+                containsEnd = false,
+                0.meters,
+                0.meters
+            )
+        )
+        val iterationResult = automaton.processPathUpdate()
+
+        // We should have just enough data to generate resource use
+        assertTrue { iterationResult != NotEnoughPath }
     }
 }
 
