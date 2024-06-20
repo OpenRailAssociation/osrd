@@ -33,10 +33,6 @@ const ItineraryV2 = ({ pathProperties, setPathProperties }: ItineraryV2Props) =>
   const destination = useSelector(getDestinationV2);
   const pathSteps = useSelector(getPathSteps);
 
-  useEffect(() => {
-    console.log(pathSteps, ' pathSteps');
-  });
-
   const [extViewport, setExtViewport] = useState<Viewport>();
   const [displayTypeAndPath, setDisplayTypeAndPath] = useState(false);
   const dispatch = useAppDispatch();

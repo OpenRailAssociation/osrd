@@ -1,10 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react';
 
+import { Alert } from '@osrd-project/ui-icons';
 import { compact, isEmpty, keyBy, last, type Dictionary } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import nextId from 'react-id-generator';
 import { useSelector } from 'react-redux';
 
+import type { PowerRestrictionV2 } from 'applications/operationalStudies/consts';
 import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
 import icon from 'assets/pictures/components/power_restrictions.svg';
 import type { RangedValue, RollingStock, TrackRange } from 'common/api/osrdEditoastApi';
@@ -14,21 +16,22 @@ import type { IntervalItem } from 'common/IntervalsEditor/types';
 import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
 import NO_POWER_RESTRICTION from 'modules/powerRestriction/consts';
 import type { PowerRestrictionWarning } from 'modules/powerRestriction/types';
-import type { PathStep } from 'reducers/osrdconf/types';
+// import type { PathStep } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { getPointCoordinates } from 'utils/geometry';
-import { Alert } from '@osrd-project/ui-icons';
+
+import createPathStep from '../helpers/createPathStep';
+import formatPowerRestrictions from '../helpers/formatPowerRestrictions';
 import { getPowerRestrictionsWarnings, countWarnings } from '../helpers/powerRestrictionSelector';
-import type { PowerRestrictionV2 } from 'applications/operationalStudies/consts';
 
 const DEFAULT_SEGMENT_LENGTH = 1000;
 
-interface PowerRestrictionsSelectorProps {
+type PowerRestrictionsSelectorProps = {
   pathElectrificationRanges: RangedValue[];
   rollingStockPowerRestrictions: RollingStock['power_restrictions'];
   rollingStockModes: RollingStock['effort_curves']['modes'];
   pathProperties: ManageTrainSchedulePathProperties | undefined;
-}
+};
 
 const PowerRestrictionsSelectorV2 = ({
   pathElectrificationRanges,
@@ -39,22 +42,18 @@ const PowerRestrictionsSelectorV2 = ({
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
   const dispatch = useAppDispatch();
   const { getPowerRestrictionV2, getPathSteps } = useOsrdConfSelectors();
-  const { updatePowerRestrictionRangesV2, resetPowerRestrictionRangesV2 } = useOsrdConfActions();
+  const {
+    upsertPowerRestrictionRangesV2,
+    resetPowerRestrictionRangesV2,
+    cutPowerRestrictionRangesV2,
+    deletePowerRestrictionRangesV2,
+  } = useOsrdConfActions();
   const powerRestrictionRanges = useSelector(getPowerRestrictionV2);
-  const pathSteps = useSelector(getPathSteps);
-  console.log('pathSteps', pathSteps);
+  const pathSteps = compact(useSelector(getPathSteps));
 
-  const formatElectricalRanges = (ranges: PowerRestrictionV2[]) => {
-    const pathStepsById = keyBy(pathSteps, 'id');
-    const formattedRanges = ranges.map((range) => ({
-      begin: pathStepsById[range.from]?.positionOnPath!!,
-      end: pathStepsById[range.to]?.positionOnPath!!,
-      value: range.code,
-    }));
-    return formattedRanges;
-  };
-
-  const [updatedPathSteps, setUpdatedPathSteps] = useState<PathStep[]>([]);
+  // pathSteps + points de coupure d'électricité
+  // const [updatedPathSteps, setUpdatedPathSteps] = useState<PathStep[]>([]);
+  const [cutPositions, setCutPositions] = useState<number[]>([]);
   const [intervalsEditorData, setIntervalsEditorData] = useState<IntervalItem[]>([]);
 
   const pathLength = useMemo(() => {
@@ -70,33 +69,6 @@ const PowerRestrictionsSelectorV2 = ({
     return specialPoints;
   }, [pathElectrificationRanges]);
 
-  const [formattedPathElectrificationRanges, setFormattedPathElectrificationRanges] =
-    useState(pathElectrificationRanges);
-
-  /** Check the compatibility between the powerRestrictionRanges and the electrifications */
-  // const powerRestrictionsWarnings = useMemo(
-  //   () =>
-  //     !isEmpty(rollingStockPowerRestrictions) &&
-  //     !isEmpty(pathElectrificationRanges) &&
-  //     !isEmpty(powerRestrictionRanges)
-  //       ? getPowerRestrictionsWarnings(
-  //           formatElectricalRanges(powerRestrictionRanges),
-  //           pathElectrificationRanges,
-  //           rollingStockModes
-  //         )
-  //       : ({} as Dictionary<PowerRestrictionWarning[]>),
-  //   [powerRestrictionRanges]
-  // );
-
-  // const totalPowerRestrictionWarnings = useMemo(
-  //   () => countWarnings(powerRestrictionsWarnings),
-  //   [powerRestrictionsWarnings]
-  // );
-
-  useEffect(() => {
-    console.log({ pathProperties });
-  }, []);
-
   const cumulativeSums = useMemo(
     () =>
       pathProperties?.trackSectionRanges.reduce<number[]>((acc, section) => {
@@ -108,8 +80,13 @@ const PowerRestrictionsSelectorV2 = ({
     [pathProperties]
   );
 
+  const powerRestrictionOptions = useMemo(
+    () => [NO_POWER_RESTRICTION, ...Object.keys(rollingStockPowerRestrictions)],
+    [rollingStockPowerRestrictions]
+  );
+
   const findTrackSectionIndex = (position: number) => {
-    for (let i = 0; i < cumulativeSums.length; i++) {
+    for (let i = 0; i < cumulativeSums.length; i += 1) {
       if (position <= cumulativeSums[i]) {
         return i;
       }
@@ -130,233 +107,152 @@ const PowerRestrictionsSelectorV2 = ({
       : position - inferiorSum;
   };
 
-  const powerRestrictionOptions = useMemo(
-    () => [NO_POWER_RESTRICTION, ...Object.keys(rollingStockPowerRestrictions)],
-    [rollingStockPowerRestrictions]
-  );
-
   const editPowerRestrictionRanges = (
     newPowerRestrictionRanges: IntervalItem[],
     selectedIntervalIndex?: number
   ) => {
-    const newDispatchedValue = selectedIntervalIndex
-      ? newPowerRestrictionRanges[selectedIntervalIndex]
-      : undefined;
-
-    console.log('New Power Restriction Ranges:', {
-      newPowerRestrictionRanges,
-      intervalsEditorData,
-      newDispatchedValue,
-      selectedIntervalIndex,
-    });
-
-    console.log(updatedPathSteps, 'updatedPathSteps');
-
-    if (!newDispatchedValue) {
-      setIntervalsEditorData(newPowerRestrictionRanges);
+    if (selectedIntervalIndex === undefined) {
       return;
     }
-    const fromPoint = updatedPathSteps.find(
-      (step) => step.positionOnPath === newDispatchedValue?.begin
-    );
-    const toPoint = updatedPathSteps.find(
-      (step) => step.positionOnPath === newDispatchedValue?.end
-    );
+    const newDispatchedValue = newPowerRestrictionRanges[selectedIntervalIndex];
 
-    console.log('fromPoint', fromPoint, 'toPoint', toPoint);
-    if (fromPoint && toPoint) {
-      dispatch(
-        updatePowerRestrictionRangesV2({
-          from: fromPoint,
-          to: toPoint,
-          code: newDispatchedValue.value.toString(),
-        })
+    let fromPathStep = pathSteps.find((step) => step.positionOnPath === newDispatchedValue.begin);
+    if (!fromPathStep) {
+      fromPathStep = createPathStep(
+        newDispatchedValue.begin,
+        cumulativeSums,
+        pathProperties,
+        pathSteps
       );
+    }
+    let toPathStep = pathSteps.find((step) => step.positionOnPath === newDispatchedValue.end);
+    if (!toPathStep) {
+      toPathStep = createPathStep(
+        newDispatchedValue.end,
+        cumulativeSums,
+        pathProperties,
+        pathSteps
+      );
+    }
+
+    if (fromPathStep && toPathStep) {
+      if (newDispatchedValue.value !== NO_POWER_RESTRICTION) {
+        dispatch(
+          upsertPowerRestrictionRangesV2({
+            from: fromPathStep,
+            to: toPathStep,
+            code: newDispatchedValue.value.toString(),
+          })
+        );
+      } else {
+        dispatch(deletePowerRestrictionRangesV2({ from: fromPathStep, to: toPathStep }));
+      }
     }
   };
 
-  useEffect(() => {
-    const pathStepById = keyBy(pathSteps, 'id');
-    const intervalsMap = new Map();
-    console.log('Données debut du useEffect intervalsEditorData', {
-      intervalsEditorData,
-      powerRestrictionRanges,
-      pathStepById,
-      pathSteps,
-    });
-
-    powerRestrictionRanges.forEach((range) => {
-      const from = pathStepById[range.from];
-      const to = pathStepById[range.to];
-
-      console.log('forEach PowRestRanges', { range, from, to });
-      if (from && to) {
-        const testBegin = intervalsEditorData.find((item) => item.begin === from.positionOnPath);
-        const testEnd = intervalsEditorData.find((item) => item.end === to.positionOnPath);
-        console.log({ testBegin, testEnd }, 'testBegin testEnd');
-        if (testBegin && !testEnd) {
-          console.log('begin mais pas end ', {
-            begin: testBegin.begin,
-            end: from.positionOnPath,
-            value: testBegin.value,
-          });
-          intervalsMap.set(from.positionOnPath, {
-            begin: testBegin.begin,
-            end: from.positionOnPath,
-            value: testBegin.value,
-          });
-        }
-        if (!testBegin && testEnd) {
-          console.log('end mais pas begin ', {
-            begin: to.positionOnPath,
-            end: testEnd.end,
-            value: testEnd.value,
-          });
-          intervalsMap.set(from.positionOnPath, {
-            begin: to.positionOnPath,
-            end: testEnd.end,
-            value: testEnd.value,
-          });
-        }
-        intervalsMap.set(from.positionOnPath, {
-          begin: from.positionOnPath,
-          end: to.positionOnPath,
-          value: range.code,
-        });
-      }
-      console.log(intervalsMap, 'intervalsMap AORPOARE?FOPA');
-    });
-    console.log('Données mid useEffect -> ', { intervalsMap, powerRestrictionRanges });
-
-    pathElectrificationRanges.forEach((range) => {
-      let current = range.begin;
-      while (current < range.end) {
-        console.log(current, 'current while');
-        const nextChangePoint = electrificationChangePoints.find(
-          (point) => point.position > current && point.position <= range.end
-        );
-
-        const nextPosition = nextChangePoint ? nextChangePoint.position : range.end;
-        if (!intervalsMap.has(current)) {
-          intervalsMap.set(current, {
-            begin: current,
-            end: nextPosition,
-            value: NO_POWER_RESTRICTION,
-          });
-        }
-
-        current = nextPosition;
-        console.log({ nextChangePoint, range, current, nextPosition }, 'nextChangePoint');
-      }
-    });
-
-    console.log('Données fin du useEffect', {
-      intervalsEditorData: Array.from(intervalsMap.values()).sort((a, b) => a.begin - b.begin),
-      intervalsMap,
-      pathElectrificationRanges,
-    });
-    setIntervalsEditorData(Array.from(intervalsMap.values()).sort((a, b) => a.begin - b.begin));
-  }, [electrificationChangePoints, pathSteps]);
-
-  useEffect(() => {
-    const existingPositions = new Set(pathSteps.map((step) => step?.positionOnPath));
-    const newSteps = intervalsEditorData.map((range) => {
-      const trackSectionRange = findTrackSection(range.begin);
-      const isStepDuplicate = existingPositions.has(range.begin);
-      if (range.begin === 0 || !pathProperties || !trackSectionRange || isStepDuplicate)
-        return null;
-
-      const offset = calculateOffset(trackSectionRange, range.begin);
-      const coordinates = getPointCoordinates(pathProperties.geometry, pathLength, range.begin);
-      return {
-        id: nextId(),
-        positionOnPath: range.begin,
-        coordinates,
-        track: trackSectionRange.track_section,
-        offset,
-      };
-    });
-
-    const combinedSteps = compact([...pathSteps, ...(newSteps as PathStep[])]);
-    setUpdatedPathSteps(combinedSteps.sort((a, b) => a.positionOnPath!! - b.positionOnPath!!));
-    console.log(intervalsEditorData, 'intervalsEditor Data avant reduce');
-    console.log(pathElectrificationRanges, 'pathElectrificationRanges avant reduce');
-
-    const filledElectricRanges = pathElectrificationRanges.reduce(
-      (acc, curr, index) => {
-        // curr = 217 -> 417 || 417 !== 608 (curr +1) || newInterval => begin = ( curr existe dans intervalRanges ? curr.end : curr.begin), end = next.begin, value = curr.value
-        const next =
-          index < pathElectrificationRanges.length - 1
-            ? pathElectrificationRanges[index + 1]
-            : null;
-        const isIntervalRange = acc.find(
-          (item) => item.begin === curr.begin && item.end === curr.end
-        );
-        console.log({ next, isIntervalRange, curr }, 'next, isIntervalRange, curr');
-        if ((isIntervalRange && !next) || curr.end === next?.begin) return acc; // si dernier range est un interval et qu'il n'y a pas de next, on ne fait rien
-        const newRange = {
-          begin: isIntervalRange ? curr.end : curr.begin,
-          end: next ? next.begin : curr.end,
-          value: 'NO_POWER_RESTRICTION',
-        };
-        console.log(newRange, 'new range');
-        acc.push(newRange);
-        return acc;
-      },
-
-      [...intervalsEditorData.values()]
+  const cutPowerRestrictionRange = (cutAtPosition: number) => {
+    const intervalCut = intervalsEditorData.find(
+      (interval) => interval.begin <= cutAtPosition && interval.end >= cutAtPosition
     );
-    console.log('filledElectricRanges', filledElectricRanges);
-  }, [pathSteps, pathProperties, cumulativeSums, pathLength, intervalsEditorData]);
+    if (!intervalCut || !pathProperties || intervalCut.value === NO_POWER_RESTRICTION) {
+      const newCutPositions = !cutPositions.length
+        ? [cutAtPosition]
+        : cutPositions.flatMap((position, index) => {
+            if (position > cutAtPosition) {
+              return [cutAtPosition, position];
+            }
+            if (index === cutPositions.length - 1) {
+              return [position, cutAtPosition];
+            }
+            return [position];
+          });
+      setCutPositions(newCutPositions);
+      return;
+    }
 
-  const compareArrays = (array1: IntervalItem[], array2: IntervalItem[]) => {
-    const differences: { index: number; array1End: number; array2End: number }[] = [];
-    array1.forEach((item, index) => {
-      if (item.end !== array2[index]?.end) {
-        differences.push({
-          index,
-          array1End: item.end,
-          array2End: array2[index]?.end,
-        });
-      }
-    });
-    return differences;
+    const trackSectionRangeAtCut = findTrackSection(cutAtPosition);
+
+    if (trackSectionRangeAtCut) {
+      const offsetAtCut = calculateOffset(trackSectionRangeAtCut, cutAtPosition);
+      const coordinatesAtCut = getPointCoordinates(
+        pathProperties.geometry,
+        pathLength,
+        cutAtPosition
+      );
+      const cutAt = {
+        id: nextId(),
+        positionOnPath: cutAtPosition,
+        coordinates: coordinatesAtCut,
+        track: trackSectionRangeAtCut.track_section,
+        offset: offsetAtCut,
+      };
+
+      dispatch(cutPowerRestrictionRangesV2({ cutAt }));
+    }
   };
 
+  const deletePowerRestrictionRange = (from: number, to: number) => {
+    const fromPathStep = pathSteps.find((step) => step.positionOnPath === from);
+    const toPathStep = pathSteps.find((step) => step.positionOnPath === to);
+
+    if (fromPathStep && toPathStep) {
+      dispatch(deletePowerRestrictionRangesV2({ from: fromPathStep, to: toPathStep }));
+    }
+  };
+
+  const formatElectricalRanges = (
+    ranges: PowerRestrictionV2[]
+  ): { begin: number; end: number; value: string }[] => {
+    const pathStepsById = keyBy(pathSteps, 'id');
+    const formattedRanges = compact(
+      ranges.map((range) => {
+        const begin = pathStepsById[range.from]?.positionOnPath;
+        const end = pathStepsById[range.to]?.positionOnPath;
+
+        if (begin !== undefined && end !== undefined) {
+          return {
+            begin,
+            end,
+            value: range.code,
+          };
+        }
+        return null;
+      })
+    );
+    return formattedRanges;
+  };
+
+  /** Check the compatibility between the powerRestrictionRanges and the electrifications */
+  const powerRestrictionsWarnings = useMemo(
+    () =>
+      !isEmpty(rollingStockPowerRestrictions) &&
+      !isEmpty(pathElectrificationRanges) &&
+      !isEmpty(powerRestrictionRanges)
+        ? getPowerRestrictionsWarnings(
+            formatElectricalRanges(powerRestrictionRanges),
+            pathElectrificationRanges,
+            rollingStockModes
+          )
+        : ({} as Dictionary<PowerRestrictionWarning[]>),
+    [powerRestrictionRanges]
+  );
+
+  const totalPowerRestrictionWarnings = useMemo(
+    () => countWarnings(powerRestrictionsWarnings),
+    [powerRestrictionsWarnings]
+  );
+
   useEffect(() => {
-    console.log(formattedPathElectrificationRanges, 'formattedPathElectrificationRanges');
-  }, [formattedPathElectrificationRanges]);
-
-  // useEffect(() => {
-  //   const differences = compareArrays(intervalsEditorData, formattedPathElectrificationRanges);
-  //   console.log(
-  //     { differences, intervalsEditorData, formattedPathElectrificationRanges },
-  //     'differences'
-  //   );
-
-  //   if (differences.length > 0) {
-  //     const firstDifference = differences[0];
-  //     const updatedRanges = [...formattedPathElectrificationRanges];
-
-  //     updatedRanges[firstDifference.index].end = firstDifference.array1End;
-
-  //     const newElement = {
-  //       begin: firstDifference.array1End,
-  //       end: firstDifference.array2End,
-  //       value: updatedRanges[firstDifference.index].value,
-  //     };
-
-  //     updatedRanges.splice(firstDifference.index + 1, 0, newElement);
-
-  //     // Remove the original range that was cut
-  //     if (newElement.begin === updatedRanges[firstDifference.index].begin) {
-  //       updatedRanges.splice(firstDifference.index, 1);
-  //     }
-  //     console.log(updatedRanges, 'updatedRanges');
-  //     setFormattedPathElectrificationRanges(updatedRanges);
-  //     console.log(formattedPathElectrificationRanges, 'formattedPathElectrificationRanges');
-  //   }
-  // }, [intervalsEditorData]);
+    if (pathProperties) {
+      const newIntervalEditorData = formatPowerRestrictions(
+        powerRestrictionRanges,
+        [...electrificationChangePoints.map(({ position }) => position), ...cutPositions],
+        compact(pathSteps),
+        pathProperties?.length
+      );
+      setIntervalsEditorData(newIntervalEditorData);
+    }
+  }, [electrificationChangePoints, cutPositions, powerRestrictionRanges]);
 
   return (
     <div className="osrd-config-item mb-2">
@@ -366,7 +262,7 @@ const PowerRestrictionsSelectorV2 = ({
         {!isEmpty(rollingStockPowerRestrictions) ? (
           <>
             <p className="mb-1 mt-1">{t('powerRestrictionExplanationText')}</p>
-            {/* {totalPowerRestrictionWarnings > 0 && (
+            {totalPowerRestrictionWarnings > 0 && (
               <div className="border border-warning rounded p-3 my-3">
                 <div className="d-flex align-items-center mb-2">
                   <div className="d-flex align-items-center text-warning">
@@ -400,9 +296,9 @@ const PowerRestrictionsSelectorV2 = ({
                   )
                 )}
               </div>
-            )} */}
+            )}
             <IntervalsEditor
-              additionalData={formattedPathElectrificationRanges}
+              additionalData={pathElectrificationRanges}
               intervalType={INTERVAL_TYPES.SELECT}
               data={intervalsEditorData}
               defaultValue={NO_POWER_RESTRICTION}
@@ -410,9 +306,18 @@ const PowerRestrictionsSelectorV2 = ({
               operationalPoints={electrificationChangePoints}
               selectOptions={powerRestrictionOptions}
               setData={editPowerRestrictionRanges}
+              onCut={cutPowerRestrictionRange}
+              onDelete={deletePowerRestrictionRange}
               totalLength={pathLength}
+              toolsConfig={{
+                cutTool: true,
+                deleteTool: true,
+              }}
+              disableDrag
             />
-            <button onClick={() => dispatch(resetPowerRestrictionRangesV2())}>RESET</button>
+            <button type="button" onClick={() => dispatch(resetPowerRestrictionRangesV2())}>
+              RESET
+            </button>
           </>
         ) : (
           <p className="pt-1">{t('powerRestrictionEmptyExplanationText')}</p>

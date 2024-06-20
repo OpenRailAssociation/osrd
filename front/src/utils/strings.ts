@@ -1,4 +1,5 @@
 import type { PowerRestrictionV2 } from 'applications/operationalStudies/consts';
+
 import type { Unit } from './types';
 
 export const NARROW_NO_BREAK_SPACE = '\u202f';
@@ -33,10 +34,10 @@ export const createPowerRestrictions = (
   powerRestrictions.push({
     from: '0',
     to: boundaries[0].toString(),
-    value: currentVoltage,
+    code: currentVoltage,
   });
 
-  for (let i = 0; i < boundaries.length - 1; i++) {
+  for (let i = 0; i < boundaries.length - 1; i += 1) {
     if (values[i].type === 'electrification') {
       const nextVoltage = values[i].voltage || 'NO_POWER_RESTRICTION';
 
@@ -46,12 +47,11 @@ export const createPowerRestrictions = (
         powerRestrictions.push({
           from: boundaries[i].toString(),
           to: boundaries[i + 1].toString(),
-          value: currentVoltage,
+          code: currentVoltage,
         });
       }
     }
   }
-  console.log(powerRestrictions, 'powerRestrictions');
   return powerRestrictions;
 };
 

@@ -1,6 +1,6 @@
 import type { CaseReducer, PayloadAction, PrepareAction } from '@reduxjs/toolkit';
 import type { Draft } from 'immer';
-import { compact, omit } from 'lodash';
+import { compact, keyBy, omit, sortBy } from 'lodash';
 import nextId from 'react-id-generator';
 
 import type { PointOnMap, PowerRestrictionV2 } from 'applications/operationalStudies/consts';
@@ -110,9 +110,14 @@ interface CommonConfReducers<S extends OsrdConfState> extends InfraStateReducers
   ['updateGridMarginBefore']: CaseReducer<S, PayloadAction<S['gridMarginBefore']>>;
   ['updateGridMarginAfter']: CaseReducer<S, PayloadAction<S['gridMarginAfter']>>;
   ['updatePowerRestrictionRanges']: CaseReducer<S, PayloadAction<S['powerRestrictionRanges']>>;
-  ['updatePowerRestrictionRangesV2']: CaseReducer<
+  ['upsertPowerRestrictionRangesV2']: CaseReducer<
     S,
     PayloadAction<{ from: PathStep; to: PathStep; code: string }>
+  >;
+  ['cutPowerRestrictionRangesV2']: CaseReducer<S, PayloadAction<{ cutAt: PathStep }>>;
+  ['deletePowerRestrictionRangesV2']: CaseReducer<
+    S,
+    PayloadAction<{ from: PathStep; to: PathStep }>
   >;
   ['resetPowerRestrictionRangesV2']: CaseReducer<S>;
   // ajouter une nouvelle action updatePowerRestrionRangesV2
@@ -327,15 +332,16 @@ export function buildCommonConfReducers<S extends OsrdConfState>(): CommonConfRe
     // - update d'abord les pathSteps: verifie que from et to sont dans state.pathSteps (s'ils y sont pas, tu dois les inserer grace a positionOnPath)
     // - update ensuite les powerRestrictions
 
-    updatePowerRestrictionRangesV2(
+    upsertPowerRestrictionRangesV2(
       state: Draft<S>,
       action: PayloadAction<{ from: PathStep; to: PathStep; code: string }>
     ) {
-      console.log('on est dans le dispatch');
       const { from, to, code } = action.payload;
       let newPathSteps = [...state.pathSteps];
-
+      console.log(newPathSteps, 'newPathSteps');
       const pathIds = compact(state.pathSteps).map((step) => step.id);
+      console.log(pathIds, 'pathIds');
+
       // verifier que to.id est dans pathIds et pareil pour le from.
       if (!pathIds.includes(from.id)) {
         const fromIndex = newPathSteps.findIndex(
@@ -352,28 +358,117 @@ export function buildCommonConfReducers<S extends OsrdConfState>(): CommonConfRe
         newPathSteps = addElementAtIndex(newPathSteps, toIndex, to);
       }
 
-      console.log(newPathSteps, 'newPathSteps');
-
-      // ajouter les path steps a mon state.pathSteps en les classant par positionOnPath
-      state.pathSteps = newPathSteps;
-
       //  Update power restriction ranges
-      let newPowerRestrictionRangesV2 = [...state.powerRestrictionV2];
+      const newPathStepsById = keyBy(newPathSteps, 'id');
+      let newPowerRestrictionRangesV2 = state.powerRestrictionV2.filter(
+        (restriction) => restriction.from !== from.id && restriction.to !== to.id
+      );
       if (code !== NO_POWER_RESTRICTION) {
         newPowerRestrictionRangesV2.push({ from: from.id, to: to.id, code });
-      } else {
-        newPowerRestrictionRangesV2 = state.powerRestrictionV2.filter(
-          (restriction) => restriction.from !== from.id || restriction.to !== to.id
+        newPowerRestrictionRangesV2 = sortBy(
+          newPowerRestrictionRangesV2,
+          (range) => newPathStepsById[range.from]?.positionOnPath
         );
       }
-      console.log(newPowerRestrictionRangesV2, 'newPowerRestrictionRangesV2 tututu');
+
+      state.pathSteps = newPathSteps;
+      state.powerRestrictionV2 = newPowerRestrictionRangesV2;
+    },
+    cutPowerRestrictionRangesV2(state: Draft<S>, action: PayloadAction<{ cutAt: PathStep }>) {
+      const { cutAt } = action.payload;
+      let newPathSteps = [...state.pathSteps];
+
+      // vérifier que cutAt n'est pas dans les pathSteps
+      // insérer cutAt dans les pathSteps
+      const pathIds = compact(state.pathSteps).map((step) => step.id);
+      if (!pathIds.includes(cutAt.id)) {
+        const cutAtIndex = newPathSteps.findIndex(
+          (step) => step?.positionOnPath && step.positionOnPath > cutAt.positionOnPath!
+        );
+
+        newPathSteps = addElementAtIndex(newPathSteps, cutAtIndex, cutAt);
+        state.pathSteps = newPathSteps;
+
+        const prevStep = newPathSteps[cutAtIndex - 1];
+        const nextStep = newPathSteps[cutAtIndex + 1];
+
+        if (!prevStep || !nextStep) {
+          console.error('PROBLEME');
+        } else {
+          // updater les powerRestrictions correctement
+          const newPowerRestrictionRangesV2 = state.powerRestrictionV2.reduce(
+            (acc, powerRestriction) => {
+              if (powerRestriction.from === prevStep.id) {
+                acc.push({
+                  ...powerRestriction,
+                  to: cutAt.id,
+                });
+                acc.push({
+                  ...powerRestriction,
+                  from: cutAt.id,
+                  to: nextStep.id,
+                });
+              } else {
+                acc.push(powerRestriction);
+              }
+              return acc;
+            },
+            [] as PowerRestrictionV2[]
+          );
+          state.powerRestrictionV2 = newPowerRestrictionRangesV2;
+        }
+      }
+    },
+    deletePowerRestrictionRangesV2(
+      state: Draft<S>,
+      action: PayloadAction<{ from: PathStep; to: PathStep }>
+    ) {
+      const { from, to } = action.payload;
+
+      const newPowerRestrictionRangesV2 = state.powerRestrictionV2.filter(
+        (restriction) => restriction.from !== from.id && restriction.to !== to.id
+      );
+
+      const checkValidPathStep = (pathStep: PathStep) => {
+        if (!pathStep || pathStep.locked || pathStep.arrival || pathStep.stop_for) return false;
+        return true;
+      };
+
+      // TO DO: retirer les path steps inutilisés
+      // / ! \ verifier le champ des marges après rebase
+      const fromIsUsed = newPowerRestrictionRangesV2.some(
+        (restriction) => restriction.from === from.id || restriction.to === from.id
+      );
+      const toIsUsed = newPowerRestrictionRangesV2.some(
+        (restriction) => restriction.from === to.id || restriction.to === to.id
+      );
+
+      let newPathSteps = [...state.pathSteps];
+      // si pathstep sans horaire (arrival, stop_for), qui n'est pas locked
+      // ou pas de restriction de puissance ni de marge qui commence ou termine au pathStep => on le retire
+      if (!fromIsUsed) {
+        if (checkValidPathStep(from)) {
+          newPathSteps = newPathSteps.filter(
+            (pathStep) => pathStep?.positionOnPath !== from.positionOnPath
+          );
+        }
+      }
+
+      if (!toIsUsed) {
+        if (checkValidPathStep(to)) {
+          newPathSteps = newPathSteps.filter(
+            (pathStep) => pathStep?.positionOnPath !== to.positionOnPath
+          );
+        }
+      }
+
+      state.pathSteps = newPathSteps;
       state.powerRestrictionV2 = newPowerRestrictionRangesV2;
     },
     // TODO Remove this
     resetPowerRestrictionRangesV2(state: Draft<S>) {
       state.powerRestrictionV2 = [];
     },
-
     updateTrainScheduleIDsToModify(
       state: Draft<S>,
       action: PayloadAction<S['trainScheduleIDsToModify']>

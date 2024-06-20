@@ -85,3 +85,8 @@ export type ManageTrainSchedulePathProperties = {
   length: number;
   trackSectionRanges: NonNullable<SuccesfulPathfindingResult['track_section_ranges']>;
 };
+
+export interface ElectrificationValue {
+  type: string;
+  voltage?: string;
+}

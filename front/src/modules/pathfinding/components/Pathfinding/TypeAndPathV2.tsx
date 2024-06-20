@@ -198,7 +198,6 @@ const TypeAndPathV2 = ({ setPathProperties }: PathfindingProps) => {
 
       try {
         const pathfindingResult = await postPathfindingBlocks(params).unwrap();
-        console.log(pathfindingResult, 'pathfindingResult');
 
         if (pathfindingResult.status === 'success') {
           const pathPropertiesParams: PostV2InfraByInfraIdPathPropertiesApiArg = {
@@ -226,7 +225,6 @@ const TypeAndPathV2 = ({ setPathProperties }: PathfindingProps) => {
               trackSectionRanges: pathfindingResult.track_section_ranges,
             });
           }
-          console.log(opList, 'opList');
           const pathSteps: PathStep[] = opList.map((op, i) => ({
             id: nextId(),
             uic: op.uic,

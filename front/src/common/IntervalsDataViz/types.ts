@@ -95,6 +95,8 @@ export interface IntervalItemBaseProps<T> {
    * stringValues: each interval has just a category ref, not a continuous value
    */
   options?: { resizingScale?: boolean; fullHeightItem?: boolean; showValues?: boolean };
+
+  disableDrag?: boolean;
 }
 
 export interface OperationalPoint {

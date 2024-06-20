@@ -41,6 +41,8 @@ type IntervalsEditorProps = {
   operationalPoints?: OperationalPoint[];
   /** Function to update the data in the parent component */
   setData: (newData: IntervalItem[], selectedIntervalIndex?: number) => void;
+  onCut?: (position: number) => void;
+  onDelete?: (from: number, to: number) => void;
   /** Indicates whether the value should be displayed in the range or not */
   showValues?: boolean;
   /** Title of the intervals editor */
@@ -49,6 +51,7 @@ type IntervalsEditorProps = {
   toolsConfig?: IntervalsEditorToolsConfig;
   /** Total length of the path */
   totalLength: number;
+  disableDrag?: boolean;
 } & (
   | {
       intervalType: INTERVAL_TYPES.NUMBER;
@@ -83,6 +86,8 @@ const IntervalsEditor = (props: IntervalsEditorProps) => {
     intervalType,
     operationalPoints = [],
     setData,
+    onCut,
+    onDelete,
     showValues = true,
     title,
     totalLength,
@@ -91,7 +96,9 @@ const IntervalsEditor = (props: IntervalsEditorProps) => {
       deleteTool: true,
       translateTool: false,
       addTool: true,
+      mergeTool: true,
     },
+    disableDrag = false,
   } = props;
 
   // Which segment areas are visible
@@ -205,6 +212,7 @@ const IntervalsEditor = (props: IntervalsEditorProps) => {
             operationalPoints={operationalPoints}
             options={options}
             viewBox={viewBox}
+            disableDrag={disableDrag}
             onMouseEnter={(_e, _item, index, point) => {
               if (mode === null) setHovered({ index, point });
             }}
@@ -233,21 +241,24 @@ const IntervalsEditor = (props: IntervalsEditorProps) => {
               if (selectedTool === INTERVALS_EDITOR_TOOLS.CUT_TOOL) {
                 if (clickTimeout) clearTimeout(clickTimeout);
                 setClickPrevent(true);
-                console.log('Data before split:', data);
-                console.log('Point to split at:', point);
 
-                const newData = splitAt(data, point);
-
-                console.log('Data after split:', newData);
-                setData(newData);
-                console.log(setData, 'setData after split');
+                if (onCut) {
+                  onCut(point);
+                } else {
+                  const newData = splitAt(data, point);
+                  setData(newData);
+                }
                 setSelected(null);
                 setSelectedTool(null);
               }
               if (selectedTool === INTERVALS_EDITOR_TOOLS.DELETE_TOOL) {
-                const newData = removeSegment(data, index, emptyValue, intervalDefaultUnit);
+                if (onDelete) {
+                  onDelete(data[index].begin, data[index].end);
+                } else {
+                  const newData = removeSegment(data, index, emptyValue, intervalDefaultUnit);
+                  setData(newData);
+                }
                 setClickPrevent(false);
-                setData(newData);
                 setSelected(null);
                 toggleSelectedTool(INTERVALS_EDITOR_TOOLS.DELETE_TOOL);
               }

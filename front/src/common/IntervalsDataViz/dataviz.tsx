@@ -84,6 +84,7 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
   onDragX,
   onResize,
   onCreate,
+  disableDrag,
 }: LinearMetadataDatavizProps<T>) => {
   // Html ref of the div wrapper
   const wrapper = useRef<HTMLDivElement | null>(null);
@@ -412,6 +413,7 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
             segment={segment}
             setDraginStartAt={setDraginStartAt}
             setResizing={setResizing}
+            disableDrag={disableDrag}
           />
         ))}
       </div>

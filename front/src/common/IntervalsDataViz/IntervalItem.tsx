@@ -46,6 +46,7 @@ const IntervalItem = <T extends { [key: string]: string | number }>({
   segment,
   setDraginStartAt,
   setResizing,
+  disableDrag = true,
 }: IntervalItemProps<T>) => {
   let valueText = '';
   if (field && segment[field]) {
@@ -161,15 +162,20 @@ const IntervalItem = <T extends { [key: string]: string | number }>({
       {/* Create a div for the resize */}
       {data[segment.index] && segment.end === data[segment.index].end && (
         <div
-          title="Resize"
-          aria-label="Resize"
-          className={cx('resize', resizing && resizing.index === segment.index && 'selected')}
+          title={!disableDrag ? 'Resize' : 'Interval boundary'}
+          aria-label={!disableDrag ? 'Resize' : 'Interval boundary'}
+          className={cx('resize', {
+            selected: resizing && resizing.index === segment.index,
+            disabled: disableDrag,
+          })}
           onClick={(e) => {
             e.stopPropagation();
             e.preventDefault();
           }}
           onMouseDown={(e) => {
-            setResizing({ index: segment.index, startAt: e.clientX, startPosition: segment.end });
+            if (!disableDrag) {
+              setResizing({ index: segment.index, startAt: e.clientX, startPosition: segment.end });
+            }
             e.stopPropagation();
             e.preventDefault();
           }}

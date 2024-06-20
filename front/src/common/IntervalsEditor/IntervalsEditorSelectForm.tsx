@@ -31,9 +31,6 @@ const IntervalsEditorSelectForm = ({
           const result = cloneDeep(data);
           if (result[selectedIntervalIndex]) {
             result[selectedIntervalIndex].value = newValue;
-            console.log('newValue -- ', newValue);
-            console.log('result -- ', result);
-            console.log('selectedIntervalIndex -- ', selectedIntervalIndex);
             setData(result, selectedIntervalIndex);
           }
         }
