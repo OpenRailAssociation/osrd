@@ -514,4 +514,28 @@ class STDCMPathfindingTests {
                 .run()
         assertNull(res)
     }
+
+    /**
+     * This is mostly a malformed input, but it can happen on misplaced operational points. It's
+     * actually really hard to handle it *perfectly* but we should at least not crash.
+     */
+    @Test
+    fun repeatedLocationsOnEdge() {
+        /*
+        a --> b --> c
+         */
+        val infra = DummyInfra()
+        val firstBlock = infra.addBlock("a", "b")
+        val secondBlock = infra.addBlock("b", "c")
+        STDCMPathfindingBuilder()
+            .setInfra(infra.fullInfra())
+            .setStartLocations(
+                setOf(
+                    EdgeLocation(firstBlock, Offset(0.meters)),
+                    EdgeLocation(firstBlock, Offset(10.meters)),
+                )
+            )
+            .setEndLocations(setOf(EdgeLocation(secondBlock, Offset(50.meters))))
+            .run()!!
+    }
 }
