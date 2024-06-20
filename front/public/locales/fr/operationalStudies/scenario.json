@@ -37,6 +37,7 @@
     "copy": "copie",
     "delete": "Supprimer",
     "deleteSelection": "Supprimer les trains sélectionnés",
+    "downloadSelection": "Télécharger les trains sélectionnés",
     "duplicate": "Dupliquer",
     "importTrainSchedule": "Importer",
     "invalidTrains": "La grille horaires comporte des trains invalides.",

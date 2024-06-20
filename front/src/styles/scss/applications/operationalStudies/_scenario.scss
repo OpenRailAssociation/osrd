@@ -160,6 +160,10 @@
           background-color: rgba(var(--secondary-rgb), 0.5);
         }
       }
+      .multiselect-download {
+        @extend .multiselect-delete;
+        background-color: var(--primary);
+      }
       .scenario-timetable-toolbar {
         display: flex;
         align-items: center;

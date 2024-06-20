@@ -38,6 +38,7 @@
     "copy": "copy",
     "delete": "Delete",
     "deleteSelection": "Delete selected trains",
+    "downloadSelection": "Download selected trains",
     "duplicate": "Clone",
     "importTrainSchedule": "Import",
     "invalidTrains": "The timetable contains invalid trains.",

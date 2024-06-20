@@ -1,6 +1,6 @@
 import React, { useContext, useState } from 'react';
 
-import { Filter, Trash } from '@osrd-project/ui-icons';
+import { Filter, Trash, Download } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { isEmpty } from 'lodash';
 import { useTranslation } from 'react-i18next';
@@ -63,7 +63,7 @@ const TimetableToolbar = ({
 
   const [deleteTrainSchedules] = osrdEditoastApi.endpoints.deleteV2TrainSchedule.useMutation();
 
-  const uniqueTags = useTrainSchedulesDetails(
+  const { uniqueTags, trainSchedules } = useTrainSchedulesDetails(
     trainIds,
     setTrainSchedulesDetails,
     debouncedFilter,
@@ -114,6 +114,23 @@ const TimetableToolbar = ({
       });
   };
 
+  const exportTrainSchedules = (selectedTrainIdsFromClick: number[]) => {
+    if (!trainSchedules) return;
+
+    const formattedTrainSchedules = trainSchedules
+      .filter(({ id }) => selectedTrainIdsFromClick.includes(id))
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      .map(({ id, ...trainSchedule }) => trainSchedule);
+
+    const jsonString = JSON.stringify({ train_schedules: formattedTrainSchedules });
+    const blob = new Blob([jsonString], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'train_schedules.json';
+    a.click();
+  };
+
   return (
     <>
       <div className="scenario-timetable-toolbar justify-content-between">
@@ -142,6 +159,15 @@ const TimetableToolbar = ({
                 }
               >
                 <Trash />
+              </button>
+              <button
+                aria-label={t('timetable.downloadSelection')}
+                disabled={!selectedTrainIds.length}
+                className={cx('mx-2 multiselect-download', { disabled: !selectedTrainIds.length })}
+                type="button"
+                onClick={() => exportTrainSchedules(selectedTrainIds)}
+              >
+                <Download />
               </button>
             </>
           )}
