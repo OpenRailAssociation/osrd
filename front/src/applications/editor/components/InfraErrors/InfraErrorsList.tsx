@@ -158,29 +158,27 @@ const InfraErrorsList: React.FC<InfraErrorsListProps> = ({ infraID, onErrorClick
           scrollableTarget="errors-list-container"
           next={() => fetch(infraID, next ?? 1, filterLevel, filterType ?? undefined)}
         >
-          {errors && (
-            <ul className="list-group">
-              {errors.map((item, index) => (
-                <li key={uniqueId()} className="list-group-item management-item">
-                  <InfraErrorBox error={item} index={index + 1}>
-                    {EDITOAST_TYPES.includes(item.obj_type as EditoastType) && (
-                      <button
-                        className="dropdown-item"
-                        type="button"
-                        aria-label={t('Editor.infra-errors.list.goto-error')}
-                        title={t('Editor.infra-errors.list.goto-error')}
-                        onClick={() => {
-                          onErrorClick(infraID, item);
-                        }}
-                      >
-                        <FaDiamondTurnRight size={30} />
-                      </button>
-                    )}
-                  </InfraErrorBox>
-                </li>
-              ))}
-            </ul>
-          )}
+          <ul className="list-group">
+            {errors.map((item, index) => (
+              <li key={uniqueId()} className="list-group-item management-item">
+                <InfraErrorBox error={item} index={index + 1}>
+                  {EDITOAST_TYPES.includes(item.obj_type as EditoastType) && (
+                    <button
+                      className="dropdown-item"
+                      type="button"
+                      aria-label={t('Editor.infra-errors.list.goto-error')}
+                      title={t('Editor.infra-errors.list.goto-error')}
+                      onClick={() => {
+                        onErrorClick(infraID, item);
+                      }}
+                    >
+                      <FaDiamondTurnRight size={30} />
+                    </button>
+                  )}
+                </InfraErrorBox>
+              </li>
+            ))}
+          </ul>
         </InfiniteScroll>
       </div>
     </div>
