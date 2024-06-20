@@ -218,13 +218,14 @@ class SpacingRequirementAutomaton(
     }
 
     // Returns true if the zone is required to be clear for the signal to not be constraining.
-    // Returns false if it's either not required, or we need a longer block path to tell.
+    // Returns false if it's not required
+    // Returns null if we need more path
     private fun isZoneIndexRequiredForSignal(
         probedZoneIndex: Int,
         pathSignal: PathSignal,
         routes: List<RouteId>,
         trainState: SignalingTrainState
-    ): Boolean {
+    ): Boolean? {
         val firstBlockIndex = pathSignal.minBlockPathIndex
 
         // List of blocks to include in the simulator call
@@ -238,10 +239,10 @@ class SpacingRequirementAutomaton(
         var nSimulatedZones = blockInfra.getBlockPath(blocks[0]).size
 
         // Add blocks in the block path until the probed zone is covered
-        while (probedZoneIndex - firstSimulatedZone + 1 > nSimulatedZones) {
+        while (probedZoneIndex - firstSimulatedZone > nSimulatedZones) {
             if (firstBlockIndex + blocks.size >= incrementalPath.blockCount) {
                 // exiting, the end of the block path has been reached
-                return false
+                return null
             }
             val newBlock = incrementalPath.getBlock(firstBlockIndex + blocks.size)
             blocks.add(newBlock)
@@ -249,7 +250,9 @@ class SpacingRequirementAutomaton(
         }
 
         val zoneStates = MutableList(nSimulatedZones) { ZoneStatus.CLEAR }
-        zoneStates[probedZoneIndex - firstSimulatedZone] = ZoneStatus.OCCUPIED
+        if (probedZoneIndex - firstSimulatedZone < zoneStates.size) {
+            zoneStates[probedZoneIndex - firstSimulatedZone] = ZoneStatus.OCCUPIED
+        } // Otherwise we rely on the `followingZoneState` of `simulator.evaluate`
         val simulatedSignalStates =
             simulator.evaluate(
                 rawInfra,
@@ -271,12 +274,23 @@ class SpacingRequirementAutomaton(
     }
 
     // Returns the index of the first zone that isn't required for the given signal,
-    // or null if we need more path to determine it
+    // or null if we need more path to determine it. The returned value may be one index
+    // further than the end of the path, if we need the whole path but nothing more.
     private fun findFirstNonRequiredZoneIndex(
         pathSignal: PathSignal,
         routes: List<RouteId>,
         trainState: SignalingTrainState
     ): Int? {
+        // Check if more path is needed for a valid solution
+        // (i.e. the zone after the end of the path is required)
+        val lastZoneIndex = incrementalPath.getBlockEndZone(incrementalPath.blockCount - 1)
+        if (
+            !incrementalPath.pathComplete &&
+                isZoneIndexRequiredForSignal(lastZoneIndex, pathSignal, routes, trainState) != false
+        ) {
+            return null
+        }
+
         // We are looking for the index `i` where `isZoneIndexRequiredForSignal` returns
         // true at `i-1` and false at `i`. We could just iterate starting at 0, but
         // because `i` is not that small (20 on average) and the signaling
@@ -288,7 +302,7 @@ class SpacingRequirementAutomaton(
         // on start+20 that rarely exceeds start+40.
         // We run a binary search on that range, and iterate one by one when the solution is above.
         var lowerBound = getSignalProtectedZone(pathSignal)
-        val initialUpperBound = min(lowerBound + 40, incrementalPath.zonePathCount)
+        val initialUpperBound = min(lowerBound + 40, lastZoneIndex)
         var upperBound = initialUpperBound
 
         // Main loop, binary search
@@ -296,7 +310,7 @@ class SpacingRequirementAutomaton(
             if (lowerBound == upperBound) break
             val probedZoneIndex = (upperBound + lowerBound) / 2
             val required =
-                isZoneIndexRequiredForSignal(probedZoneIndex, pathSignal, routes, trainState)
+                isZoneIndexRequiredForSignal(probedZoneIndex, pathSignal, routes, trainState)!!
             if (required) {
                 lowerBound = probedZoneIndex + 1
             } else {
@@ -306,18 +320,9 @@ class SpacingRequirementAutomaton(
 
         // Handle the case where the result is higher than the initial upper bound
         while (
-            lowerBound >= initialUpperBound &&
-                isZoneIndexRequiredForSignal(lowerBound, pathSignal, routes, trainState)
+            lowerBound in initialUpperBound ..< lastZoneIndex &&
+                isZoneIndexRequiredForSignal(lowerBound, pathSignal, routes, trainState)!!
         ) lowerBound++
-
-        // Check if more path is needed for a valid solution
-        // (i.e. the first zone that is not required is out of bounds)
-        if (
-            lowerBound >= incrementalPath.getBlockEndZone(incrementalPath.blockCount - 1) &&
-                !incrementalPath.pathComplete
-        ) {
-            return null
-        }
         return lowerBound
     }
 
