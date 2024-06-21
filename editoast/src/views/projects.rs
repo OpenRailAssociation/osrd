@@ -322,8 +322,6 @@ pub mod test {
     use std::ops::DerefMut;
 
     use actix_web::http::StatusCode;
-    use actix_web::test::call_and_read_body_json;
-    use actix_web::test::call_service;
     use actix_web::test::TestRequest;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
@@ -351,7 +349,8 @@ pub mod test {
             }))
             .to_request();
 
-        let response: ProjectWithStudyCount = call_and_read_body_json(&app.service, request).await;
+        let response: ProjectWithStudyCount =
+            app.fetch(request).assert_status(StatusCode::OK).json_into();
 
         let project = Project::retrieve(pool.get_ok().deref_mut(), response.project.id)
             .await
@@ -370,8 +369,9 @@ pub mod test {
             create_project(db_pool.get_ok().deref_mut(), "test_project_name").await;
 
         let request = TestRequest::get().uri("/projects/").to_request();
+
         let response: ProjectWithStudyCountList =
-            call_and_read_body_json(&app.service, request).await;
+            app.fetch(request).assert_status(StatusCode::OK).json_into();
 
         let project_retreived = response
             .results
@@ -393,7 +393,9 @@ pub mod test {
         let request = TestRequest::get()
             .uri(format!("/projects/{}", created_project.id).as_str())
             .to_request();
-        let response: ProjectWithStudyCount = call_and_read_body_json(&app.service, request).await;
+
+        let response: ProjectWithStudyCount =
+            app.fetch(request).assert_status(StatusCode::OK).json_into();
 
         assert_eq!(response.project, created_project);
     }
@@ -410,8 +412,7 @@ pub mod test {
             .uri(format!("/projects/{}", created_project.id).as_str())
             .to_request();
 
-        let response = call_service(&app.service, request).await;
-        assert_eq!(response.status(), StatusCode::NO_CONTENT);
+        app.fetch(request).assert_status(StatusCode::NO_CONTENT);
 
         let exists = Project::exists(db_pool.get_ok().deref_mut(), created_project.id)
             .await
@@ -439,7 +440,8 @@ pub mod test {
             }))
             .to_request();
 
-        let response: ProjectWithStudyCount = call_and_read_body_json(&app.service, request).await;
+        let response: ProjectWithStudyCount =
+            app.fetch(request).assert_status(StatusCode::OK).json_into();
 
         assert_eq!(response.project, response.project);
 
