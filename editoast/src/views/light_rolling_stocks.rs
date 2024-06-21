@@ -129,20 +129,15 @@ mod tests {
     use std::ops::DerefMut;
 
     use actix_http::StatusCode;
-    use actix_web::test::call_and_read_body_json;
-    use actix_web::test::call_service;
     use actix_web::test::TestRequest;
     use pretty_assertions::assert_eq;
     use rstest::*;
 
     use super::LightRollingStockWithLiveries;
-    use crate::assert_response_error_type_match;
-    use crate::assert_status_and_read;
     use crate::error::InternalError;
     use crate::modelsv2::fixtures::create_fast_rolling_stock;
     use crate::modelsv2::fixtures::create_rolling_stock_livery_fixture;
     use crate::views::pagination::PaginatedResponse;
-    use crate::views::pagination::PaginationError;
     use crate::views::test_app::TestAppBuilder;
 
     fn is_sorted(data: &[i64]) -> bool {
@@ -158,8 +153,7 @@ mod tests {
     async fn list_light_rolling_stock() {
         let app = TestAppBuilder::default_app();
         let request = TestRequest::get().uri("/light_rolling_stock").to_request();
-        let response = call_service(&app.service, request).await;
-        assert_eq!(response.status(), StatusCode::OK);
+        app.fetch(request).assert_status(StatusCode::OK);
     }
 
     #[rstest]
@@ -178,7 +172,7 @@ mod tests {
 
         // WHEN
         let response: LightRollingStockWithLiveries =
-            call_and_read_body_json(&app.service, request).await;
+            app.fetch(request).assert_status(StatusCode::OK).json_into();
 
         // THEN
         assert_eq!(response.rolling_stock.id, fast_rolling_stock.id);
@@ -200,7 +194,7 @@ mod tests {
 
         // WHEN
         let response: LightRollingStockWithLiveries =
-            call_and_read_body_json(&app.service, request).await;
+            app.fetch(request).assert_status(StatusCode::OK).json_into();
 
         // THEN
         assert_eq!(response.rolling_stock.id, fast_rolling_stock.id);
@@ -214,9 +208,8 @@ mod tests {
         let request = TestRequest::get()
             .uri(format!("/light_rolling_stock/{}", -1).as_str())
             .to_request();
-        let response = call_service(&app.service, request).await;
 
-        assert_eq!(response.status(), StatusCode::NOT_FOUND);
+        app.fetch(request).assert_status(StatusCode::NOT_FOUND);
     }
 
     #[rstest]
@@ -246,15 +239,13 @@ mod tests {
             .collect::<HashSet<_>>();
 
         let request = TestRequest::get().uri("/light_rolling_stock/").to_request();
-        let response = call_service(&app.service, request).await;
         let response: PaginatedResponse<LightRollingStockWithLiveries> =
-            assert_status_and_read!(response, StatusCode::OK);
+            app.fetch(request).assert_status(StatusCode::OK).json_into();
         let count = response.count;
         let uri = format!("/light_rolling_stock/?page_size={count}");
         let request = TestRequest::get().uri(&uri).to_request();
-        let response = call_service(&app.service, request).await;
         let response: PaginatedResponse<LightRollingStockWithLiveries> =
-            assert_status_and_read!(response, StatusCode::OK);
+            app.fetch(request).assert_status(StatusCode::OK).json_into();
 
         // Ensure that AT LEAST all the rolling stocks create above are returned, in order
         let vec_ids = response
@@ -277,15 +268,13 @@ mod tests {
             .uri("/light_rolling_stock/?page_size=1010")
             .to_request();
 
-        let response = call_service(&app.service, request).await;
+        let response: InternalError = app
+            .fetch(request)
+            .assert_status(StatusCode::BAD_REQUEST)
+            .json_into();
 
-        assert_eq!(response.status(), StatusCode::BAD_REQUEST);
-        assert_response_error_type_match!(
-            response,
-            PaginationError::InvalidPageSize {
-                provided_page_size: 1010,
-                max_page_size: 1000
-            }
-        );
+        assert_eq!(response.error_type, "editoast:pagination:InvalidPageSize");
+        assert_eq!(response.context["provided_page_size"], 1010);
+        assert_eq!(response.context["max_page_size"], 1000);
     }
 }
