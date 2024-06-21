@@ -182,8 +182,6 @@ pub enum ElectricalProfilesError {
 #[cfg(test)]
 mod tests {
     use actix_http::StatusCode;
-    use actix_web::test::call_service;
-    use actix_web::test::read_body_json;
     use actix_web::test::TestRequest;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
@@ -207,28 +205,22 @@ mod tests {
         let request = TestRequest::get()
             .uri("/electrical_profile_set")
             .to_request();
-        let response = call_service(&app.service, request).await;
 
-        assert_eq!(response.status(), StatusCode::OK);
+        let response: Vec<LightElectricalProfileSet> =
+            app.fetch(request).assert_status(StatusCode::OK).json_into();
 
-        assert!(
-            read_body_json::<Vec<LightElectricalProfileSet>, _>(response)
-                .await
-                .len()
-                >= 2
-        );
+        assert!(response.len() >= 2);
     }
 
     #[rstest]
     async fn get_unexisting_electrical_profile() {
         let app = TestAppBuilder::default_app();
 
-        let req = TestRequest::get()
+        let request = TestRequest::get()
             .uri("/electrical_profile_set/666")
             .to_request();
 
-        let response = call_service(&app.service, req).await;
-        assert_eq!(response.status(), StatusCode::NOT_FOUND);
+        app.fetch(request).assert_status(StatusCode::NOT_FOUND);
     }
 
     #[rstest]
@@ -238,28 +230,25 @@ mod tests {
 
         let electrical_profile_set = create_electrical_profile_set(pool.get_ok().deref_mut()).await;
 
-        let req = TestRequest::get()
+        let request = TestRequest::get()
             .uri(&format!(
                 "/electrical_profile_set/{}",
                 electrical_profile_set.id
             ))
             .to_request();
 
-        let response = call_service(&app.service, req).await;
-        assert_eq!(response.status(), StatusCode::OK);
+        app.fetch(request).assert_status(StatusCode::OK);
     }
 
     #[rstest]
     async fn get_unexisting_electrical_profile_level_order() {
         let app = TestAppBuilder::default_app();
 
-        let req = TestRequest::get()
+        let request = TestRequest::get()
             .uri("/electrical_profile_set/666/level_order")
             .to_request();
 
-        let response = call_service(&app.service, req).await;
-
-        assert_eq!(response.status(), StatusCode::NOT_FOUND);
+        app.fetch(request).assert_status(StatusCode::NOT_FOUND);
     }
 
     #[rstest]
@@ -269,15 +258,16 @@ mod tests {
 
         let electrical_profile_set = create_electrical_profile_set(pool.get_ok().deref_mut()).await;
 
-        let req = TestRequest::get()
+        let request = TestRequest::get()
             .uri(&format!(
                 "/electrical_profile_set/{}/level_order",
                 electrical_profile_set.id
             ))
             .to_request();
-        let response = call_service(&app.service, req).await;
-        assert_eq!(response.status(), StatusCode::OK);
-        let level_order = read_body_json::<HashMap<String, Vec<String>>, _>(response).await;
+
+        let level_order: HashMap<String, Vec<String>> =
+            app.fetch(request).assert_status(StatusCode::OK).json_into();
+
         assert_eq!(level_order.len(), 1);
         assert_eq!(
             level_order.get("25000V").unwrap(),
@@ -288,11 +278,10 @@ mod tests {
     #[rstest]
     async fn delete_unexisting_electrical_profile() {
         let app = TestAppBuilder::default_app();
-        let req = TestRequest::delete()
+        let request = TestRequest::delete()
             .uri("/electrical_profile_set/666")
             .to_request();
-        let response = call_service(&app.service, req).await;
-        assert_eq!(response.status(), StatusCode::NOT_FOUND);
+        app.fetch(request).assert_status(StatusCode::NOT_FOUND);
     }
 
     #[rstest]
@@ -302,15 +291,14 @@ mod tests {
 
         let electrical_profile_set = create_electrical_profile_set(pool.get_ok().deref_mut()).await;
 
-        let req = TestRequest::delete()
+        let request = TestRequest::delete()
             .uri(&format!(
                 "/electrical_profile_set/{}",
                 electrical_profile_set.id
             ))
             .to_request();
-        let response = call_service(&app.service, req).await;
 
-        assert_eq!(response.status(), StatusCode::NO_CONTENT);
+        app.fetch(request).assert_status(StatusCode::NO_CONTENT);
 
         let exists =
             ElectricalProfileSet::exists(pool.get_ok().deref_mut(), electrical_profile_set.id)
@@ -334,15 +322,13 @@ mod tests {
             level_order: Default::default(),
         };
 
-        let req = TestRequest::post()
+        let request = TestRequest::post()
             .uri("/electrical_profile_set/?name=elec")
             .set_json(ep_set)
             .to_request();
 
-        let response = call_service(&app.service, req).await;
-        assert_eq!(response.status(), StatusCode::OK);
-
-        let created_ep: ElectricalProfileSet = read_body_json(response).await;
+        let created_ep: ElectricalProfileSet =
+            app.fetch(request).assert_status(StatusCode::OK).json_into();
 
         let created_ep = ElectricalProfileSet::retrieve(pool.get_ok().deref_mut(), created_ep.id)
             .await
