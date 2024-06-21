@@ -23,17 +23,22 @@ pub struct OidcConfig {
     pub callback_url: Box<RedirectUrl>,
     pub client_id: ClientId,
     pub client_secret: Option<ClientSecret>,
+    pub acr: Option<String>,
+    pub amr: Vec<String>,
     pub profile_scope_override: Option<String>,
     pub username_whitelist: Option<HashSet<String>>,
 }
 
 impl OidcConfig {
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         issuer_url: Box<IssuerUrl>,
         post_login_url: Box<url::Url>,
         callback_url: Box<RedirectUrl>,
         client_id: String,
         client_secret: String,
+        acr: Option<String>,
+        amr: Vec<String>,
         profile_scope_override: Option<String>,
         username_whitelist: Option<HashSet<String>>,
     ) -> Self {
@@ -43,6 +48,8 @@ impl OidcConfig {
             callback_url,
             client_id: ClientId::new(client_id),
             client_secret: Some(ClientSecret::new(client_secret)),
+            acr,
+            amr,
             profile_scope_override,
             username_whitelist,
         }
@@ -51,6 +58,8 @@ impl OidcConfig {
 
 #[derive(Clone)]
 pub struct OidcProvider {
+    pub amr: Vec<String>,
+    pub acr: Option<String>,
     pub client: Box<
         CoreClient<
             EndpointSet,
@@ -86,6 +95,8 @@ impl OidcProvider {
         );
 
         Ok(Self {
+            amr: config.amr.clone(),
+            acr: config.acr.clone(),
             client,
             post_login_url: config.post_login_url.clone(),
             profile_scope_override: config.profile_scope_override.clone(),
@@ -128,8 +139,9 @@ impl SessionProvider for OidcProvider {
         _: &HttpRequest,
     ) -> Result<LoginResponse, actix_web::Error> {
         let scope = self.profile_scope_override.as_deref().unwrap_or("profile");
+
         // Generate the full authorization URL.
-        let client_builder = self
+        let mut client_builder = self
             .client
             .authorize_url(
                 CoreAuthenticationFlow::AuthorizationCode,
@@ -137,6 +149,9 @@ impl SessionProvider for OidcProvider {
                 Nonce::new_random,
             )
             .add_scope(Scope::new(scope.to_owned()));
+        if let Some(acr) = &self.acr {
+            client_builder = client_builder.add_extra_param("acr_values", acr);
+        }
 
         let (auth_url, csrf_token, nonce) = client_builder.url();
         // if we ever decide to store the nonce unencrypted, we should also change how it's checked:
@@ -240,6 +255,42 @@ impl SessionProvider for OidcProvider {
                 })
                 .map(|claim_name| claim_name.to_string());
 
+            if let Some(acr) = &self.acr {
+                match claims.auth_context_ref() {
+                    Some(claims_acr) if claims_acr.as_str() == acr => {
+                        log::info!("Multifactor Authentification");
+                    }
+                    _ => {
+                        return Err(CallbackError::InvalidAcr.into());
+                    }
+                }
+            }
+
+            let default_value = &Vec::new();
+            let claims_amr: Vec<_> = claims
+                .auth_method_refs()
+                .unwrap_or(default_value)
+                .iter()
+                .map(|a| a.as_str())
+                .collect();
+
+            if !self.amr.is_empty() {
+                log::info!("claims_amr: {:?}", claims_amr);
+
+                if !self.amr.iter().all(|amr_value| {
+                    claims_amr
+                        .iter()
+                        .any(|c_amr_value| c_amr_value == amr_value)
+                }) {
+                    log::warn!(
+                        "failed to validate amr. required values: {:?}, found values: {:?}",
+                        self.amr,
+                        claims_amr
+                    );
+                    return Err(CallbackError::InvalidAmr.into());
+                }
+            }
+
             log::info!("logging in the user: id={subject} name={name:?}");
 
             // if there's no name, use the subject as a placeholder
@@ -311,6 +362,10 @@ pub enum CallbackError {
     InvalidAccessTokenSignature,
     #[error("User not authorized")]
     UserNotAuthorized,
+    #[error("invalid acr")]
+    InvalidAcr,
+    #[error("invalid amr")]
+    InvalidAmr,
 }
 
 impl actix_web::ResponseError for CallbackError {
@@ -323,6 +378,8 @@ impl actix_web::ResponseError for CallbackError {
             CallbackError::InvalidIDTokenSignature => StatusCode::INTERNAL_SERVER_ERROR,
             CallbackError::InvalidAccessTokenSignature => StatusCode::INTERNAL_SERVER_ERROR,
             CallbackError::UserNotAuthorized => StatusCode::FORBIDDEN,
+            CallbackError::InvalidAcr => StatusCode::BAD_REQUEST,
+            CallbackError::InvalidAmr => StatusCode::BAD_REQUEST,
         }
     }
 }

@@ -184,6 +184,8 @@ pub enum AuthProvider {
         client_secret: String,
         profile_scope_override: Option<String>,
         username_whitelist: Option<HashSet<String>>,
+        acr: Option<String>,
+        amr: Vec<String>,
     },
 }
 
