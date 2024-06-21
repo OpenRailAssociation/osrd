@@ -8,7 +8,7 @@ use serde::Serialize;
 use super::OperationError;
 use crate::error::Result;
 use crate::modelsv2::get_table;
-use crate::modelsv2::DbConnection;
+use editoast_models::DbConnection;
 use editoast_schemas::primitives::ObjectRef;
 use editoast_schemas::primitives::ObjectType;
 
@@ -64,6 +64,7 @@ impl From<ObjectRef> for DeleteOperation {
 mod tests {
     use diesel::sql_types::BigInt;
 
+    use editoast_models::DbConnectionPoolV2;
     use editoast_schemas::infra::BufferStop;
     use editoast_schemas::infra::Detector;
     use editoast_schemas::infra::Electrification;
@@ -91,7 +92,7 @@ mod tests {
                     use diesel_async::RunQueryDsl;
                     use std::ops::DerefMut;
 
-                    let db_pool = crate::modelsv2::DbConnectionPoolV2::for_tests();
+                    let db_pool = DbConnectionPoolV2::for_tests();
                     let infra = crate::modelsv2::fixtures::create_empty_infra(db_pool.get_ok().deref_mut()).await;
 
                     let railjson_object = editoast_schemas::infra::InfraObject::$obj {

@@ -31,9 +31,9 @@ pub use train_schedule::ZoneUpdate;
 pub use self::pathfinding::*;
 use crate::error::Result;
 use crate::modelsv2::projects;
-use crate::modelsv2::DbConnection;
-use crate::modelsv2::DbConnectionPool;
 use crate::views::pagination::PaginatedResponse;
+use editoast_models::DbConnection;
+use editoast_models::DbConnectionPool;
 
 editoast_common::schemas! {
     projects::schemas(),

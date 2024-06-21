@@ -27,8 +27,9 @@ use super::scenario;
 use crate::error::InternalError;
 use crate::error::Result;
 use crate::modelsv2::prelude::*;
-use crate::modelsv2::DbConnection;
-use crate::modelsv2::DbConnectionPoolV2;
+use editoast_models::DbConnection;
+use editoast_models::DbConnectionPoolV2;
+
 use crate::modelsv2::Project;
 use crate::modelsv2::Study;
 use crate::modelsv2::Tags;

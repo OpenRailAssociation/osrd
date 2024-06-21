@@ -9,8 +9,8 @@ use serde::Serialize;
 
 use super::Document;
 use crate::error::Result;
-use crate::modelsv2::DbConnection;
 use crate::tables::rolling_stock_livery;
+use editoast_models::DbConnection;
 
 /// Rolling Stock Livery
 ///
@@ -88,8 +88,8 @@ pub mod tests {
     use super::RollingStockLiveryModel;
     use crate::modelsv2::fixtures::create_rolling_stock_livery_fixture;
     use crate::modelsv2::prelude::*;
-    use crate::modelsv2::DbConnectionPoolV2;
     use crate::modelsv2::Document;
+    use editoast_models::DbConnectionPoolV2;
 
     #[rstest]
     async fn create_delete_rolling_stock_livery() {

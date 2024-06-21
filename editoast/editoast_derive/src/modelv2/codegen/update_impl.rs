@@ -35,7 +35,7 @@ impl ToTokens for UpdateImpl {
                 #[tracing::instrument(name = #span_name, skip_all, err, fields(query_id))]
                 async fn update(
                     self,
-                    conn: &mut crate::modelsv2::DbConnection,
+                    conn: &mut editoast_models::DbConnection,
                     #id_ident: #ty,
                 ) -> crate::error::Result<Option<#model>> {
                     use diesel::prelude::*;

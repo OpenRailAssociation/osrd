@@ -1,22 +1,22 @@
 use std::collections::HashMap;
 use std::collections::HashSet;
+use std::ops::DerefMut;
 
 use actix_web::post;
 use actix_web::web::Data;
 use actix_web::web::Json;
 use actix_web::web::Path;
 use editoast_derive::EditoastError;
-use std::ops::DerefMut;
+use editoast_models::DbConnectionPoolV2;
+use editoast_schemas::primitives::ObjectType;
 use thiserror::Error;
 
 use super::InfraApiError;
 use super::InfraIdParam;
 use crate::error::Result;
 use crate::modelsv2::infra::ObjectQueryable;
-use crate::modelsv2::DbConnectionPoolV2;
 use crate::modelsv2::Infra;
 use crate::Retrieve;
-use editoast_schemas::primitives::ObjectType;
 
 crate::routes! {
     get_objects,

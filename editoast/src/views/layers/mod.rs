@@ -30,8 +30,8 @@ use crate::map::get_view_cache_prefix;
 use crate::map::Layer;
 use crate::map::MapLayers;
 use crate::map::Tile;
-use crate::modelsv2::DbConnectionPoolV2;
 use crate::RedisClient;
+use editoast_models::DbConnectionPoolV2;
 
 crate::routes! {
      "/layers" => {

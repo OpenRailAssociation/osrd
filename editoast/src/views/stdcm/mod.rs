@@ -36,9 +36,9 @@ use crate::models::PathfindingPayload;
 use crate::models::SpacingRequirement;
 use crate::models::TrainSchedule;
 use crate::modelsv2::prelude::*;
-use crate::modelsv2::DbConnectionPool;
 use crate::modelsv2::Infra;
 use crate::views::rolling_stocks::retrieve_existing_rolling_stock;
+use editoast_models::DbConnectionPool;
 
 crate::routes! {
     "/stdcm" => {

@@ -5,7 +5,7 @@ use diesel::result::Error::NotFound;
 use crate::error::EditoastError;
 use crate::error::Result;
 use crate::models::PreferredId;
-use crate::modelsv2::DbConnection;
+use editoast_models::DbConnection;
 
 use super::Model;
 

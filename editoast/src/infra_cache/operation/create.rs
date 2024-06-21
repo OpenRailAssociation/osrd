@@ -7,7 +7,7 @@ use diesel_async::RunQueryDsl;
 use super::OperationError;
 use crate::error::Result;
 use crate::modelsv2::get_table;
-use crate::modelsv2::DbConnection;
+use editoast_models::DbConnection;
 use editoast_schemas::infra::InfraObject;
 use editoast_schemas::primitives::OSRDIdentified;
 use editoast_schemas::primitives::OSRDObject;
@@ -53,7 +53,7 @@ pub mod tests {
             paste::paste! {
                 #[rstest::rstest]
                 async fn [<test_create_ $obj:snake>]() {
-                    let db_pool = crate::modelsv2::DbConnectionPoolV2::for_tests();
+                    let db_pool = editoast_models::DbConnectionPoolV2::for_tests();
                     let infra = crate::modelsv2::fixtures::create_empty_infra(db_pool.get_ok().deref_mut()).await;
                     let infra_object = editoast_schemas::infra::InfraObject::$obj {
                         railjson: $obj::default(),

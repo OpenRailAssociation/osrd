@@ -1,0 +1,22 @@
+[package]
+name = "editoast_models"
+version = "0.1.0"
+edition = "2021"
+license = "LGPL-3.0"
+
+[features]
+testing = []
+
+[dependencies]
+diesel.workspace = true
+diesel-async.workspace = true
+editoast_derive.workspace = true
+futures.workspace = true
+futures-util.workspace = true
+openssl.workspace = true
+postgres-openssl.workspace = true
+thiserror.workspace = true
+tokio.workspace = true
+tokio-postgres.workspace = true
+tracing.workspace = true
+url.workspace = true

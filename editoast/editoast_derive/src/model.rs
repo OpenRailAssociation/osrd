@@ -84,7 +84,7 @@ fn create_functions(config: &Config) -> TokenStream {
     quote! {
         #[async_trait::async_trait]
         impl crate::models::Create for #model_name {
-            async fn create_conn(self, conn: &mut crate::modelsv2::DbConnection) -> crate::error::Result<Self> {
+            async fn create_conn(self, conn: &mut editoast_models::DbConnection) -> crate::error::Result<Self> {
                 use #table::table;
                 use diesel_async::RunQueryDsl;
 
@@ -92,7 +92,7 @@ fn create_functions(config: &Config) -> TokenStream {
             }
 
             #[doc = #documentation]
-            async fn create(self, db_pool: std::sync::Arc<crate::modelsv2::DbConnectionPool>) -> crate::error::Result<Self> {
+            async fn create(self, db_pool: std::sync::Arc<editoast_models::DbConnectionPool>) -> crate::error::Result<Self> {
                 let mut conn = db_pool.get().await?;
                 self.create_conn(&mut conn).await
             }
@@ -126,7 +126,7 @@ fn retrieve_functions(config: &Config) -> TokenStream {
     quote! {
         #[async_trait::async_trait]
         impl crate::models::Retrieve for #model_name {
-            async fn retrieve_conn(conn: &mut crate::modelsv2::DbConnection, obj_id: i64) -> crate::error::Result<Option<Self>> {
+            async fn retrieve_conn(conn: &mut editoast_models::DbConnection, obj_id: i64) -> crate::error::Result<Option<Self>> {
                 use #table::table;
                 use #table::dsl;
                 use diesel_async::RunQueryDsl;
@@ -142,7 +142,7 @@ fn retrieve_functions(config: &Config) -> TokenStream {
             }
 
             #[doc = #retrieve_documentation]
-            async fn retrieve(db_pool: std::sync::Arc<crate::modelsv2::DbConnectionPool>, id: i64) -> crate::error::Result<Option<Self>> {
+            async fn retrieve(db_pool: std::sync::Arc<editoast_models::DbConnectionPool>, id: i64) -> crate::error::Result<Option<Self>> {
                 let mut conn = db_pool.get().await?;
                 Self::retrieve_conn(&mut conn, id).await
             }
@@ -174,7 +174,7 @@ fn delete_functions(config: &Config) -> TokenStream {
     quote! {
         #[async_trait::async_trait]
         impl crate::models::Delete for #model_name {
-            async fn delete_conn(conn: &mut crate::modelsv2::DbConnection, obj_id: i64) -> crate::error::Result<bool> {
+            async fn delete_conn(conn: &mut editoast_models::DbConnection, obj_id: i64) -> crate::error::Result<bool> {
                 use #table::table;
                 use #table::dsl;
                 use diesel_async::RunQueryDsl;
@@ -188,7 +188,7 @@ fn delete_functions(config: &Config) -> TokenStream {
             }
 
             #[doc = #documentation]
-            async fn delete(db_pool: std::sync::Arc<crate::modelsv2::DbConnectionPool>, id: i64) -> crate::error::Result<bool> {
+            async fn delete(db_pool: std::sync::Arc<editoast_models::DbConnectionPool>, id: i64) -> crate::error::Result<bool> {
                 let mut conn = db_pool.get().await?;
                 Self::delete_conn(&mut conn, id).await
             }
@@ -207,7 +207,7 @@ fn update_functions(config: &Config) -> TokenStream {
     quote! {
         #[async_trait::async_trait]
         impl crate::models::Update for #model_name {
-            async fn update_conn(self, conn: &mut crate::modelsv2::DbConnection, obj_id: i64) -> crate::error::Result<Option<Self>> {
+            async fn update_conn(self, conn: &mut editoast_models::DbConnection, obj_id: i64) -> crate::error::Result<Option<Self>> {
                 use #table::table;
 
                 match diesel::update(table.find(obj_id)).set(&self).get_result(conn).await

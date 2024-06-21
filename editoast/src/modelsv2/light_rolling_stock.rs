@@ -19,12 +19,12 @@ use utoipa::ToSchema;
 use super::Row;
 use crate::error::Result;
 use crate::modelsv2::rolling_stock_livery::RollingStockLiveryMetadataModel;
-use crate::modelsv2::DbConnection;
 use crate::modelsv2::Model;
 use crate::views::pagination::Paginate;
 use crate::views::pagination::PaginatedResponse;
 use crate::views::rolling_stocks::light_rolling_stock::LightEffortCurves;
 use crate::views::rolling_stocks::light_rolling_stock::LightRollingStock;
+use editoast_models::DbConnection;
 
 #[derive(Debug, Clone, ModelV2, Serialize, ToSchema)]
 #[model(table = crate::tables::rolling_stock)]
@@ -154,8 +154,8 @@ pub mod tests {
 
     use super::LightRollingStockModel;
     use crate::modelsv2::fixtures::create_fast_rolling_stock;
-    use crate::modelsv2::DbConnectionPoolV2;
     use crate::modelsv2::Retrieve;
+    use editoast_models::DbConnectionPoolV2;
 
     #[rstest]
     async fn get_light_rolling_stock() {

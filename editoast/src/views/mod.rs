@@ -48,8 +48,8 @@ use crate::generated_data;
 use crate::infra_cache::operation;
 use crate::models;
 use crate::modelsv2;
-use crate::modelsv2::DbConnectionPoolV2;
 use crate::RedisClient;
+use editoast_models::DbConnectionPoolV2;
 
 crate::routes! {
     (health, version, core_version),

@@ -5,10 +5,11 @@ pub mod tests {
     use std::ops::{Deref, DerefMut};
     use std::sync::Arc;
 
+    use editoast_models::create_connection_pool;
+    use editoast_models::DbConnection;
+    use editoast_models::DbConnectionPool;
+
     use crate::client::PostgresConfig;
-    use crate::modelsv2::database::connection_pool::create_connection_pool;
-    use crate::modelsv2::database::DbConnectionPool;
-    use crate::modelsv2::DbConnection;
     use crate::{
         models::{
             self, train_schedule::Mrsp, Identifiable, Pathfinding, PathfindingChangeset,

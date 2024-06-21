@@ -34,9 +34,9 @@ use crate::modelsv2::get_table;
 use crate::modelsv2::prelude::*;
 use crate::modelsv2::railjson::persist_railjson;
 use crate::modelsv2::Create;
-use crate::modelsv2::DbConnection;
-use crate::modelsv2::DbConnectionPool;
 use crate::tables::infra::dsl;
+use editoast_models::DbConnection;
+use editoast_models::DbConnectionPool;
 use editoast_schemas::infra::RailJson;
 use editoast_schemas::infra::RAILJSON_VERSION;
 use editoast_schemas::primitives::ObjectType;
@@ -323,7 +323,7 @@ pub mod tests {
     use crate::modelsv2::prelude::*;
     use crate::modelsv2::railjson::find_all_schemas;
     use crate::modelsv2::railjson::RailJsonError;
-    use crate::modelsv2::DbConnectionPoolV2;
+    use editoast_models::DbConnectionPoolV2;
 
     #[rstest]
     async fn create_infra() {

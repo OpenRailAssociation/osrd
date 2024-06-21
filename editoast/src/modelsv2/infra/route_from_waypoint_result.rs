@@ -6,7 +6,7 @@ use diesel_async::RunQueryDsl;
 
 use super::Infra;
 use crate::error::Result;
-use crate::modelsv2::DbConnection;
+use editoast_models::DbConnection;
 
 #[derive(QueryableByName)]
 pub struct RouteFromWaypointResult {

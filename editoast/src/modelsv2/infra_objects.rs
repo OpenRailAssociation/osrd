@@ -6,8 +6,8 @@ use serde::Deserialize;
 use serde::Serialize;
 
 use crate::modelsv2::prelude::*;
-use crate::modelsv2::DbConnection;
 use crate::tables::*;
+use editoast_models::DbConnection;
 use editoast_schemas::primitives::ObjectType;
 
 pub trait ModelBackedSchema: Sized {
@@ -304,7 +304,7 @@ mod tests_persist {
             paste::paste! {
                 #[rstest::rstest]
                 async fn [<test_persist_ $obj:snake>]() {
-                    let db_pool =  crate::modelsv2::DbConnectionPoolV2::for_tests();
+                    let db_pool =  editoast_models::DbConnectionPoolV2::for_tests();
                     let infra =  crate::modelsv2::fixtures::create_empty_infra(db_pool.get_ok().deref_mut()).await;
                     let schemas = (0..10).map(|_| Default::default());
                     let changesets = $obj::from_infra_schemas(infra.id, schemas);

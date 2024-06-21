@@ -6,7 +6,6 @@ use actix_web::web::Query;
 
 use crate::decl_paginated_response;
 use crate::error::Result;
-use crate::modelsv2::DbConnectionPoolV2;
 use crate::modelsv2::LightRollingStockModel;
 use crate::modelsv2::Retrieve;
 use crate::views::pagination::PaginatedResponse;
@@ -15,6 +14,7 @@ use crate::views::rolling_stocks::RollingStockError;
 use crate::views::rolling_stocks::RollingStockIdParam;
 use crate::views::rolling_stocks::RollingStockKey;
 use crate::views::rolling_stocks::RollingStockNameParam;
+use editoast_models::DbConnectionPoolV2;
 
 use super::rolling_stocks::light_rolling_stock::LightRollingStockWithLiveries;
 

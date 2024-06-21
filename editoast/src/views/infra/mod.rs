@@ -42,12 +42,12 @@ use crate::infra_cache::ObjectCache;
 use crate::map;
 use crate::map::MapLayers;
 use crate::modelsv2::prelude::*;
-use crate::modelsv2::DbConnectionPool;
-use crate::modelsv2::DbConnectionPoolV2;
 use crate::modelsv2::Infra;
 use crate::views::pagination::PaginatedList as _;
 use crate::views::pagination::PaginationQueryParam;
 use crate::RedisClient;
+use editoast_models::DbConnectionPool;
+use editoast_models::DbConnectionPoolV2;
 use editoast_schemas::infra::SwitchType;
 
 crate::routes! {

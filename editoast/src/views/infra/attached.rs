@@ -12,9 +12,9 @@ use thiserror::Error;
 use crate::error::Result;
 use crate::infra_cache::InfraCache;
 use crate::modelsv2::prelude::*;
-use crate::modelsv2::DbConnectionPoolV2;
 use crate::modelsv2::Infra;
 use crate::views::infra::InfraApiError;
+use editoast_models::DbConnectionPoolV2;
 use editoast_schemas::primitives::ObjectType;
 
 crate::routes! { attached }

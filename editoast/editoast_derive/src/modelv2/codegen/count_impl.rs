@@ -22,7 +22,7 @@ impl ToTokens for CountImpl {
                     offset,
                 ))]
                 async fn count(
-                    conn: &'async_trait mut crate::modelsv2::DbConnection,
+                    conn: &'async_trait mut editoast_models::DbConnection,
                     settings: crate::modelsv2::prelude::SelectionSettings<Self>,
                 ) -> crate::error::Result<u64> {
                     use diesel::QueryDsl;

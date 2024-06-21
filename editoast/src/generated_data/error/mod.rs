@@ -36,7 +36,7 @@ use crate::infra_cache::operation::CacheOperation;
 use crate::infra_cache::Graph;
 use crate::infra_cache::InfraCache;
 use crate::infra_cache::ObjectCache;
-use crate::modelsv2::DbConnection;
+use editoast_models::DbConnection;
 use editoast_schemas::primitives::OSRDObject;
 use editoast_schemas::primitives::ObjectType;
 

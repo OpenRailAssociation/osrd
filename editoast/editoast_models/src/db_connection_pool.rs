@@ -3,6 +3,7 @@ use diesel::ConnectionResult;
 use diesel_async::pooled_connection::deadpool::Object;
 use diesel_async::pooled_connection::deadpool::Pool;
 
+use diesel_async::pooled_connection::AsyncDieselConnectionManager;
 use diesel_async::pooled_connection::ManagerConfig;
 use diesel_async::AsyncPgConnection;
 use futures::future::BoxFuture;
@@ -14,20 +15,21 @@ use openssl::ssl::SslVerifyMode;
 use std::sync::Arc;
 use url::Url;
 
-#[cfg(test)]
+#[cfg(feature = "testing")]
 use tokio::sync::OwnedRwLockWriteGuard;
-#[cfg(test)]
+#[cfg(feature = "testing")]
 use tokio::sync::RwLock;
 
 use super::DbConnection;
-use super::DbConnectionConfig;
-use super::DbConnectionError;
 use super::DbConnectionPool;
+use super::EditoastModelsError;
 
-#[cfg(test)]
+pub type DbConnectionConfig = AsyncDieselConnectionManager<AsyncPgConnection>;
+
+#[cfg(feature = "testing")]
 pub type DbConnectionV2 = OwnedRwLockWriteGuard<Object<AsyncPgConnection>>;
 
-#[cfg(not(test))]
+#[cfg(not(feature = "testing"))]
 pub type DbConnectionV2 = Object<AsyncPgConnection>;
 
 /// Wrapper for connection pooling with support for test connections on `cfg(test)`
@@ -42,11 +44,11 @@ pub type DbConnectionV2 = Object<AsyncPgConnection>;
 #[derive(Clone)]
 pub struct DbConnectionPoolV2 {
     pool: Arc<Pool<AsyncPgConnection>>,
-    #[cfg(test)]
+    #[cfg(feature = "testing")]
     test_connection: Option<Arc<RwLock<Object<AsyncPgConnection>>>>,
 }
 
-#[cfg(test)]
+#[cfg(feature = "testing")]
 impl Default for DbConnectionPoolV2 {
     fn default() -> Self {
         Self::for_tests()
@@ -62,23 +64,23 @@ impl DbConnectionPoolV2 {
     /// Creates a connection pool with the given settings
     ///
     /// In a testing environment, you should use `DbConnectionPoolV2::for_tests` instead.
-    pub async fn try_initialize(url: Url, max_size: usize) -> Result<Self, DbConnectionError> {
+    pub async fn try_initialize(url: Url, max_size: usize) -> Result<Self, EditoastModelsError> {
         let pool = create_connection_pool(url, max_size)?;
         Self::try_from_pool(Arc::new(pool)).await
     }
 
-    #[cfg(test)]
-    async fn get_connection(&self) -> Result<DbConnectionV2, DbConnectionError> {
+    #[cfg(feature = "testing")]
+    async fn get_connection(&self) -> Result<DbConnectionV2, EditoastModelsError> {
         if let Some(test_connection) = &self.test_connection {
             let connection = test_connection.clone().write_owned().await;
             Ok(connection)
         } else {
-            Err(DbConnectionError::TestConnection)
+            Err(EditoastModelsError::TestConnection)
         }
     }
 
-    #[cfg(not(test))]
-    async fn get_connection(&self) -> Result<DbConnectionV2, DbConnectionError> {
+    #[cfg(not(feature = "testing"))]
+    async fn get_connection(&self) -> Result<DbConnectionV2, EditoastModelsError> {
         let connection = self.pool.get().await?;
         Ok(connection)
     }
@@ -106,7 +108,7 @@ impl DbConnectionPoolV2 {
     /// 1. Once a connection is used, it should be dropped **AS SOON AS POSSIBLE**. Failing to do so
     ///    may lead to deadlocks. Example:
     ///
-    /// ```rust
+    /// ```ignore
     /// let conn = pool.get_ok();
     /// // Do something with conn
     ///
@@ -119,7 +121,7 @@ impl DbConnectionPoolV2 {
     ///    that the connection usage follows its acquisition. Failing to do so is equivalent to
     ///    the following example:
     ///
-    /// ```rust
+    /// ```ignore
     /// let conn_futures = (0..10).map(|_| async { pool.get() });
     /// let deadlock = futures::future::join_all(conn_futures).await;
     /// ```
@@ -130,7 +132,7 @@ impl DbConnectionPoolV2 {
     ///
     /// - Don't declare a variable for a single-use connection:
     ///
-    /// ```rust
+    /// ```ignore
     /// // do
     /// my_function_using_conn(pool.get().await?.deref_mut()).await;
     /// // instead of
@@ -140,7 +142,7 @@ impl DbConnectionPoolV2 {
     ///
     /// - If a connection is used repeatedly, prefer using explicit scoping:
     ///
-    /// ```rust
+    /// ```ignore
     /// let my_results = {
     ///     let conn = &mut pool.get().await?;
     ///     foo(conn).await + bar(conn).await
@@ -152,7 +154,7 @@ impl DbConnectionPoolV2 {
     ///   acquired just before its usage, and dropped just after, **all in the same future**.
     ///   And these futures must all be awaited before attempting to acquire a new connection.
     ///
-    /// ```rust
+    /// ```ignore
     /// let operations =
     ///     items.into_iter()
     ///         .zip(pool.iter_conn())
@@ -163,7 +165,7 @@ impl DbConnectionPoolV2 {
     /// let results = futures::future::try_join_all(operations).await?;
     /// // you may acquire a new connection afterwards
     /// ```
-    pub async fn get(&self) -> Result<DbConnectionV2, DbConnectionError> {
+    pub async fn get(&self) -> Result<DbConnectionV2, EditoastModelsError> {
         self.get_connection().await
     }
 
@@ -173,7 +175,7 @@ impl DbConnectionPoolV2 {
     ///
     /// See [DbConnectionPoolV2::get] for more information on how connections should be used
     /// in tests.
-    #[cfg(test)]
+    #[cfg(feature = "testing")]
     pub fn get_ok(&self) -> DbConnectionV2 {
         futures::executor::block_on(self.get()).expect("Failed to get test connection")
     }
@@ -184,7 +186,7 @@ impl DbConnectionPoolV2 {
     ///
     /// # Example
     ///
-    /// ```rust
+    /// ```ignore
     /// let operations =
     ///     items.into_iter()
     ///         .zip(pool.iter_conn())
@@ -198,30 +200,30 @@ impl DbConnectionPoolV2 {
     #[allow(unused)] // TEMPORARY
     pub fn iter_conn(
         &self,
-    ) -> impl Iterator<Item = impl Future<Output = Result<DbConnectionV2, DbConnectionError>> + '_>
+    ) -> impl Iterator<Item = impl Future<Output = Result<DbConnectionV2, EditoastModelsError>> + '_>
     {
         std::iter::repeat(self).map(|p| p.get())
     }
 
-    #[cfg(not(test))]
+    #[cfg(not(feature = "testing"))]
     pub async fn try_from_pool(
         pool: Arc<Pool<AsyncPgConnection>>,
-    ) -> Result<Self, DbConnectionError> {
+    ) -> Result<Self, EditoastModelsError> {
         Ok(Self { pool })
     }
 
-    #[cfg(test)]
+    #[cfg(feature = "testing")]
     pub async fn try_from_pool(
         pool: Arc<Pool<AsyncPgConnection>>,
-    ) -> Result<Self, DbConnectionError> {
+    ) -> Result<Self, EditoastModelsError> {
         Self::try_from_pool_test(pool, true).await
     }
 
-    #[cfg(test)]
+    #[cfg(feature = "testing")]
     pub async fn try_from_pool_test(
         pool: Arc<Pool<AsyncPgConnection>>,
         transaction: bool,
-    ) -> Result<Self, DbConnectionError> {
+    ) -> Result<Self, EditoastModelsError> {
         use diesel_async::AsyncConnection;
         let mut conn = pool.get().await?;
         if transaction {
@@ -235,7 +237,7 @@ impl DbConnectionPoolV2 {
         })
     }
 
-    #[cfg(test)]
+    #[cfg(feature = "testing")]
     fn new_for_tests(transaction: bool) -> Self {
         let url = std::env::var("OSRD_TEST_PG_URL")
             .unwrap_or_else(|_| String::from("postgresql://osrd:password@localhost/osrd"));
@@ -250,7 +252,7 @@ impl DbConnectionPoolV2 {
     /// This method will create a connection with a transaction that will be rolled back at the end of the test.
     ///
     /// You can set the `OSRD_TEST_PG_URL` environment variable to use a custom database url.
-    #[cfg(test)]
+    #[cfg(feature = "testing")]
     pub fn for_tests() -> Self {
         Self::new_for_tests(true)
     }
@@ -258,7 +260,7 @@ impl DbConnectionPoolV2 {
     /// Create a connection pool for testing purposes without a transaction
     ///
     /// You can set the `OSRD_TEST_PG_URL` environment variable to use a custom database url.
-    #[cfg(test)]
+    #[cfg(feature = "testing")]
     pub fn for_tests_no_transaction() -> Self {
         Self::new_for_tests(false)
     }
@@ -267,7 +269,7 @@ impl DbConnectionPoolV2 {
 pub fn create_connection_pool(
     url: Url,
     max_size: usize,
-) -> Result<DbConnectionPool, DbConnectionError> {
+) -> Result<DbConnectionPool, EditoastModelsError> {
     let mut manager_config = ManagerConfig::default();
     manager_config.custom_setup = Box::new(establish_connection);
     let manager = DbConnectionConfig::new_with_config(url, manager_config);

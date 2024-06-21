@@ -14,6 +14,8 @@ use actix_web::{
     App, Error,
 };
 use chashmap::CHashMap;
+use editoast_models::create_connection_pool;
+use editoast_models::DbConnectionPoolV2;
 use serde::de::DeserializeOwned;
 use tracing::Instrument as _;
 
@@ -23,7 +25,6 @@ use crate::{
     error::InternalError,
     infra_cache::InfraCache,
     map::MapLayers,
-    modelsv2::{database::connection_pool::create_connection_pool, DbConnectionPoolV2},
     RedisClient,
 };
 

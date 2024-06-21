@@ -6,7 +6,7 @@ use diesel::query_builder::QueryFragment;
 use diesel::sql_types::{Bool, SqlType};
 use std::sync::Arc;
 
-use crate::modelsv2::DbConnection;
+use editoast_models::DbConnection;
 
 use super::Model;
 

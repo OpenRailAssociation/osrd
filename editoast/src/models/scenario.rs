@@ -23,12 +23,12 @@ use crate::error::Result;
 use crate::models::train_schedule::LightTrainSchedule;
 use crate::models::Delete;
 use crate::models::TextArray;
-use crate::modelsv2::DbConnection;
-use crate::modelsv2::DbConnectionPool;
 use crate::tables::scenario;
 use crate::views::operational_studies::Ordering;
 use crate::views::pagination::Paginate;
 use crate::views::pagination::PaginatedResponse;
+use editoast_models::DbConnection;
+use editoast_models::DbConnectionPool;
 
 #[derive(
     Clone,

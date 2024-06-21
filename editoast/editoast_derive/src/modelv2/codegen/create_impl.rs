@@ -25,7 +25,7 @@ impl ToTokens for CreateImpl {
                 #[tracing::instrument(name = #span_name, skip_all, err)]
                 async fn create(
                     self,
-                    conn: &mut crate::modelsv2::DbConnection,
+                    conn: &mut editoast_models::DbConnection,
                 ) -> crate::error::Result<#model> {
                     use diesel_async::RunQueryDsl;
                     diesel::insert_into(#table_mod::table)

@@ -55,7 +55,6 @@ use crate::models::Timetable;
 use crate::models::TrainSchedule;
 use crate::models::TrainScheduleChangeset;
 use crate::models::Update;
-use crate::modelsv2::DbConnectionPool;
 use crate::modelsv2::ElectricalProfileSet;
 use crate::modelsv2::Infra;
 use crate::modelsv2::LightRollingStockModel;
@@ -66,6 +65,7 @@ use crate::tables;
 use crate::views::infra::InfraApiError;
 use crate::views::train_schedule::simulation_report::fetch_simulation_output;
 use crate::DieselJson;
+use editoast_models::DbConnectionPool;
 
 crate::routes! {
     "/train_schedule" => {

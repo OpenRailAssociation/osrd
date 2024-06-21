@@ -27,9 +27,9 @@ use crate::models::train_schedule::TrainScheduleOptions;
 use crate::models::Pathfinding;
 use crate::models::Retrieve;
 use crate::modelsv2::electrical_profiles::ElectricalProfileSet;
-use crate::modelsv2::DbConnectionPool;
 use crate::modelsv2::Exists;
 use crate::modelsv2::RollingStockModel;
+use editoast_models::DbConnectionPool;
 
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "single_simulation")]

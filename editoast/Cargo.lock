@@ -1363,6 +1363,7 @@ dependencies = [
  "diesel_json",
  "editoast_common",
  "editoast_derive",
+ "editoast_models",
  "editoast_schemas",
  "enum-map",
  "enumset",
@@ -1438,6 +1439,24 @@ dependencies = [
  "quote",
  "serde_json",
  "syn 2.0.68",
+]
+
+[[package]]
+name = "editoast_models"
+version = "0.1.0"
+dependencies = [
+ "diesel",
+ "diesel-async",
+ "editoast_derive",
+ "futures 0.3.30",
+ "futures-util",
+ "openssl",
+ "postgres-openssl",
+ "thiserror",
+ "tokio",
+ "tokio-postgres",
+ "tracing",
+ "url",
 ]
 
 [[package]]

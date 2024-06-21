@@ -1,4 +1,3 @@
-pub mod database;
 pub mod documents;
 pub mod electrical_profiles;
 #[allow(unused)]
@@ -24,9 +23,6 @@ pub mod work_schedules;
 
 pub use prelude::*;
 
-pub use database::DbConnection;
-pub use database::DbConnectionPool;
-pub use database::DbConnectionPoolV2;
 pub use documents::Document;
 pub use electrical_profiles::ElectricalProfileSet;
 pub use infra::Infra;

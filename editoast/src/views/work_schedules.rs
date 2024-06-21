@@ -20,8 +20,8 @@ use crate::modelsv2::work_schedules::WorkScheduleType;
 use crate::modelsv2::Changeset;
 use crate::modelsv2::Create;
 use crate::modelsv2::CreateBatch;
-use crate::modelsv2::DbConnectionPoolV2;
 use crate::modelsv2::Model;
+use editoast_models::DbConnectionPoolV2;
 use editoast_schemas::infra::TrackRange;
 
 crate::routes! {

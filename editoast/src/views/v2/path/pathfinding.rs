@@ -22,8 +22,6 @@ use crate::core::AsCoreRequest;
 use crate::core::CoreClient;
 use crate::error::Result;
 use crate::modelsv2::train_schedule::TrainSchedule;
-use crate::modelsv2::DbConnection;
-use crate::modelsv2::DbConnectionPoolV2;
 use crate::modelsv2::Infra;
 use crate::modelsv2::OperationalPointModel;
 use crate::modelsv2::Retrieve;
@@ -35,6 +33,8 @@ use crate::redis_utils::RedisClient;
 use crate::redis_utils::RedisConnection;
 use crate::views::get_app_version;
 use crate::views::v2::path::PathfindingError;
+use editoast_models::DbConnection;
+use editoast_models::DbConnectionPoolV2;
 use editoast_schemas::infra::OperationalPoint;
 
 type TrackOffsetResult = std::result::Result<Vec<Vec<TrackOffset>>, TrackOffsetExtractionError>;

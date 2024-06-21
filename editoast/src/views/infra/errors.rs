@@ -16,11 +16,11 @@ use crate::generated_data::infra_error::InfraError;
 use crate::generated_data::infra_error::InfraErrorTypeLabel;
 use crate::modelsv2::infra::errors::Level;
 use crate::modelsv2::prelude::*;
-use crate::modelsv2::DbConnectionPoolV2;
 use crate::modelsv2::Infra;
 use crate::views::infra::InfraIdParam;
 use crate::views::pagination::PaginationQueryParam;
 use crate::views::pagination::PaginationStats;
+use editoast_models::DbConnectionPoolV2;
 
 use super::InfraApiError;
 
@@ -115,7 +115,7 @@ enum ListErrorsErrors {
 
 #[cfg(test)]
 pub(in crate::views) async fn query_errors(
-    conn: &mut crate::modelsv2::DbConnection,
+    conn: &mut editoast_models::DbConnection,
     infra: &Infra,
 ) -> (Vec<InfraError>, u64) {
     infra

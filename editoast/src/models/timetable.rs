@@ -18,11 +18,11 @@ use crate::models::train_schedule::MechanicalEnergyConsumedBaseEco;
 use crate::models::train_schedule::TrainSchedule;
 use crate::models::train_schedule::TrainScheduleSummary;
 use crate::models::SimulationOutput;
-use crate::modelsv2::DbConnection;
-use crate::modelsv2::DbConnectionPool;
 use crate::modelsv2::LightRollingStockModel;
 use crate::modelsv2::Retrieve;
 use crate::tables::timetable;
+use editoast_models::DbConnection;
+use editoast_models::DbConnectionPool;
 
 editoast_common::schemas! {
     Timetable,

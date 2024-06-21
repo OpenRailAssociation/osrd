@@ -8,8 +8,8 @@ use serde_derive::Serialize;
 use utoipa::ToSchema;
 
 use crate::error::Result;
-use crate::modelsv2::DbConnection;
 use crate::modelsv2::Tags;
+use editoast_models::DbConnection;
 
 #[derive(Debug, Clone, ModelV2, Deserialize, Serialize, ToSchema)]
 #[schema(as = ScenarioV2)]

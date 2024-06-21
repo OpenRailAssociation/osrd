@@ -3,10 +3,9 @@ use diesel::query_builder::{AstPass, Query, QueryFragment, QueryId};
 use diesel::sql_types::{BigInt, Untyped};
 use diesel::{QueryResult, QueryableByName};
 use diesel_async::RunQueryDsl;
+use editoast_models::DbConnection;
 
 use crate::error::Result;
-
-use super::DbConnection;
 
 #[derive(QueryId)]
 struct PaginatedQuery<Q> {

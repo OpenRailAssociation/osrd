@@ -28,8 +28,8 @@ use validator::ValidationErrors;
 use crate::error::Result;
 use crate::modelsv2::prelude::*;
 use crate::modelsv2::rolling_stock_livery::RollingStockLiveryMetadataModel;
-use crate::modelsv2::DbConnection;
 use crate::views::rolling_stocks::RollingStockWithLiveries;
+use editoast_models::DbConnection;
 
 editoast_common::schemas! {
     RollingStockModel,
@@ -226,9 +226,9 @@ pub mod tests {
     use crate::modelsv2::fixtures::create_rolling_stock_with_energy_sources;
     use crate::modelsv2::fixtures::rolling_stock_with_energy_sources_changeset;
     use crate::modelsv2::prelude::*;
-    use crate::modelsv2::DbConnectionPoolV2;
     use crate::views::rolling_stocks::map_diesel_error;
     use crate::views::rolling_stocks::RollingStockError;
+    use editoast_models::DbConnectionPoolV2;
 
     #[rstest]
     async fn update_rolling_stock() {
