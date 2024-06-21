@@ -578,9 +578,7 @@ pub mod tests {
     use actix_http::Request;
     use actix_http::StatusCode;
     use actix_web::http::header::ContentType;
-    use actix_web::test::call_and_read_body_json;
     use actix_web::test::call_service;
-    use actix_web::test::read_body_json;
     use actix_web::test::TestRequest;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
