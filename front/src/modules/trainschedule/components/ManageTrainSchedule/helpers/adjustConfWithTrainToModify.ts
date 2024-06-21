@@ -8,8 +8,10 @@ import type {
   TrainSchedule,
   TrainScheduleResult,
 } from 'common/api/osrdEditoastApi';
+import type { OperationalStudiesConfSliceActions } from 'reducers/osrdconf/operationalStudiesConf';
 import type { ConfSliceActions } from 'reducers/osrdconf/osrdConfCommon';
 import type { PathStep } from 'reducers/osrdconf/types';
+import { convertIsoUtcToLocalTime } from 'utils/date';
 import { msToKmh } from 'utils/physics';
 import { sec2time } from 'utils/timeManipulation';
 import type { ArrayElement } from 'utils/types';
@@ -118,7 +120,7 @@ export function adjustConfWithTrainToModifyV2(
   rollingStockId: number,
   dispatch: Dispatch,
   usingElectricalProfiles: boolean,
-  osrdActions: ConfSliceActions
+  osrdActions: OperationalStudiesConfSliceActions
 ) {
   const {
     updateRollingStockID,
@@ -126,9 +128,9 @@ export function adjustConfWithTrainToModifyV2(
     updateSpeedLimitByTag,
     updateLabels,
     updateName,
-    updateDepartureTime,
+    updateStartTime,
     updateInitialSpeed,
-    updatePowerRestrictionRanges,
+    updatePowerRestrictionRangesV2,
     updatePathSteps,
   } = osrdActions;
 
@@ -144,27 +146,17 @@ export function adjustConfWithTrainToModifyV2(
 
   dispatch(updateRollingStockID(rollingStockId));
   dispatch(updateName(train_name));
-  dispatch(updateDepartureTime(start_time));
+  dispatch(updateStartTime(convertIsoUtcToLocalTime(start_time)));
   dispatch(updatePathSteps({ pathSteps, resetPowerRestrictions: true }));
   dispatch(updateInitialSpeed(initial_speed ? msToKmh(initial_speed) : 0));
 
-  if (options?.use_electrical_profiles === usingElectricalProfiles)
+  const trainUsingElectricalProfiles = options?.use_electrical_profiles ?? true;
+  if (trainUsingElectricalProfiles !== usingElectricalProfiles)
     dispatch(toggleUsingElectricalProfiles());
 
-  if (speed_limit_tag) dispatch(updateSpeedLimitByTag(speed_limit_tag));
+  dispatch(updateSpeedLimitByTag(speed_limit_tag));
 
-  if (labels) dispatch(updateLabels(labels));
+  dispatch(updateLabels(labels || []));
 
-  if (power_restrictions) {
-    // TODO TS2 : check that this format is still the one we need
-    dispatch(
-      updatePowerRestrictionRanges(
-        power_restrictions.map(({ from, to, value }) => ({
-          begin: +from,
-          end: +to,
-          value,
-        }))
-      )
-    );
-  }
+  dispatch(updatePowerRestrictionRangesV2(power_restrictions || []));
 }

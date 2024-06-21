@@ -5,6 +5,8 @@ import utc from 'dayjs/plugin/utc';
 
 import i18n from 'i18n';
 
+import { ISO8601Duration2sec } from './timeManipulation';
+
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
@@ -137,4 +139,12 @@ export function getEarliestDate(date1: string | null | undefined, dat2: string |
 export function convertUTCDateToLocalDate(date: number) {
   const timeDifferenceMinutes = new Date().getTimezoneOffset();
   return Math.abs(timeDifferenceMinutes) * 60 + date;
+}
+
+export function convertIsoUtcToLocalTime(isoUtcString: string): string {
+  return dayjs(isoUtcString).local().format();
+}
+
+export function addDurationToIsoDate(startTime: string, duration: string) {
+  return dayjs(startTime).add(ISO8601Duration2sec(duration), 'second').format();
 }

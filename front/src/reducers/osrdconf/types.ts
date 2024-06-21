@@ -6,12 +6,13 @@ import type {
   RollingStockComfortType,
   PathResponse,
   AllowanceValue,
-  TrackOffset,
   TrainScheduleBase,
   Distribution,
+  PathfindingInputV2,
 } from 'common/api/osrdEditoastApi';
 import type { AllowanceForm } from 'modules/trainschedule/components/ManageTrainSchedule/Allowances/types';
 import type { InfraState } from 'reducers/infra';
+import type { ArrayElement } from 'utils/types';
 
 export interface OsrdConfState extends InfraState {
   constraintDistribution: Distribution;
@@ -68,23 +69,9 @@ export interface OsrdStdcmConfState extends OsrdConfState {
   standardStdcmAllowance?: StandardAllowance;
 }
 
-export type PathStep = (
-  | TrackOffset
-  | {
-      operational_point: string;
-    }
-  | {
-      /** An optional secondary code to identify a more specific location */
-      secondary_code?: string | null;
-      trigram: string;
-    }
-  | {
-      /** An optional secondary code to identify a more specific location */
-      secondary_code?: string | null;
-      /** The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point */
-      uic: number;
-    }
-) & {
+export type PathItem = ArrayElement<PathfindingInputV2['path_items']>;
+
+export type PathStep = PathItem & {
   id: string;
   /** Metadata given to mark a point as wishing to be deleted by the user.
         It's useful for soft deleting the point (waiting to fix / remove all references)
