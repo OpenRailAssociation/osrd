@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 
+import { omit } from 'lodash';
 import { useSelector } from 'react-redux';
 
 import {
@@ -7,34 +8,31 @@ import {
   type PostV2InfraByInfraIdPathPropertiesApiArg,
   type PostV2InfraByInfraIdPathfindingBlocksApiArg,
 } from 'common/api/osrdEditoastApi';
-import { useInfraID, useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
+import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
 import { formatSuggestedOperationalPoints, upsertViasInOPs } from 'modules/pathfinding/utils';
 import { getSupportedElectrification, isThermal } from 'modules/rollingStock/helpers/electric';
-import useSpeedSpaceChart from 'modules/simulationResult/components/SpeedSpaceChart/useSpeedSpaceChart';
 import { adjustConfWithTrainToModifyV2 } from 'modules/trainschedule/components/ManageTrainSchedule/helpers/adjustConfWithTrainToModify';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
 import { setFailure } from 'reducers/main';
-import type { PathStep } from 'reducers/osrdconf/types';
-import { getSelectedTrainId } from 'reducers/osrdsimulation/selectors';
+import type { OperationalStudiesConfSliceActions } from 'reducers/osrdconf/operationalStudiesConf';
+import type { PathItem, PathStep } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
+import { addDurationToIsoDate } from 'utils/date';
 import { castErrorToFailure } from 'utils/error';
 import { getPointCoordinates } from 'utils/geometry';
+import { ISO8601Duration2sec } from 'utils/timeManipulation';
 
-import type { ManageTrainSchedulePathProperties } from './types';
+import type { ManageTrainSchedulePathProperties } from '../types';
 
-/**
- * Hook to relaunch the pathfinding when editing a train
- */
-export const useSetupItineraryForTrainUpdate = (
-  setPathProperties: (pathProperties: ManageTrainSchedulePathProperties) => void
+const useSetupItineraryForTrainUpdate = (
+  setPathProperties: (pathProperties: ManageTrainSchedulePathProperties) => void,
+  trainIdToEdit: number
 ) => {
-  const { getInfraID, getTrainScheduleIDsToModify, getUsingElectricalProfiles } =
-    useOsrdConfSelectors();
+  const { getInfraID, getUsingElectricalProfiles } = useOsrdConfSelectors();
   const infraId = useSelector(getInfraID);
-  const trainScheduleIDsToModify = useSelector(getTrainScheduleIDsToModify);
   const usingElectricalProfiles = useSelector(getUsingElectricalProfiles);
   const dispatch = useAppDispatch();
-  const osrdActions = useOsrdConfActions();
+  const osrdActions = useOsrdConfActions() as OperationalStudiesConfSliceActions;
 
   const [getTrainScheduleById] = osrdEditoastApi.endpoints.getV2TrainScheduleById.useLazyQuery({});
   const [getRollingStockByName] =
@@ -47,7 +45,7 @@ export const useSetupItineraryForTrainUpdate = (
   useEffect(() => {
     const setupItineraryForTrainUpdate = async () => {
       const trainSchedule = await getTrainScheduleById({
-        id: trainScheduleIDsToModify[0],
+        id: trainIdToEdit,
       }).unwrap();
 
       if (infraId) {
@@ -61,7 +59,9 @@ export const useSetupItineraryForTrainUpdate = (
         const params: PostV2InfraByInfraIdPathfindingBlocksApiArg = {
           infraId,
           pathfindingInputV2: {
-            path_items: trainSchedule.path,
+            path_items: trainSchedule.path.map((item) =>
+              omit(item, ['id', 'deleted'])
+            ) as PathItem[],
             rolling_stock_is_thermal: isThermal(rollingStock.effort_curves.modes),
             rolling_stock_loading_gauge: rollingStock.loading_gauge,
             rolling_stock_supported_electrifications: getSupportedElectrification(
@@ -88,20 +88,68 @@ export const useSetupItineraryForTrainUpdate = (
               const stepsCoordinates = pathfindingResult.path_items_positions.map((position) =>
                 getPointCoordinates(geometry, pathfindingResult.length, position)
               );
-
-              const formatedPathSteps: PathStep[] = trainSchedule.path.map((step, i) => ({
-                ...step,
-                coordinates: stepsCoordinates[i],
-                positionOnPath: pathfindingResult.path_items_positions[i],
-              }));
-
               const suggestedOperationalPoints: SuggestedOP[] = formatSuggestedOperationalPoints(
                 operational_points,
                 geometry,
                 pathfindingResult.length
               );
 
-              const allWaypoints = upsertViasInOPs(suggestedOperationalPoints, formatedPathSteps);
+              const updatedPathSteps: PathStep[] = trainSchedule.path.map((step, i) => {
+                const correspondingOp = suggestedOperationalPoints.find(
+                  (suggestedOp) =>
+                    'uic' in step &&
+                    suggestedOp.uic === step.uic &&
+                    suggestedOp.ch === step.secondary_code
+                );
+
+                const correspondingSchedule = trainSchedule.schedule?.find(
+                  (schedule) => schedule.at === step.id
+                );
+
+                const { kp, name, ch } = correspondingOp || {};
+
+                const {
+                  arrival,
+                  stop_for: stopFor,
+                  locked,
+                  on_stop_signal: onStopSignal,
+                } = correspondingSchedule || {};
+
+                const stepWithoutSecondaryCode = omit(step, ['secondary_code']);
+
+                return {
+                  ...stepWithoutSecondaryCode,
+                  ch,
+                  kp,
+                  name,
+                  positionOnPath: pathfindingResult.path_items_positions[i],
+                  arrival: arrival
+                    ? addDurationToIsoDate(trainSchedule.start_time, arrival).substring(11, 19)
+                    : arrival,
+                  stopFor: stopFor ? ISO8601Duration2sec(stopFor) : stopFor,
+                  locked,
+                  onStopSignal,
+                  coordinates: stepsCoordinates[i],
+                } as PathStep;
+              });
+
+              const findCorrespondingMargin = (
+                stepId: string,
+                margins: { boundaries: string[]; values: string[] }
+              ) => {
+                const marginIndex = margins.boundaries.findIndex(
+                  (boundaryId) => boundaryId === stepId
+                );
+                return marginIndex !== -1 ? margins.values[marginIndex + 1] : undefined;
+              };
+
+              if (trainSchedule.margins) {
+                updatedPathSteps.forEach((step) => {
+                  step.theoreticalMargin = findCorrespondingMargin(step.id, trainSchedule.margins!);
+                });
+              }
+
+              const allWaypoints = upsertViasInOPs(suggestedOperationalPoints, updatedPathSteps);
 
               setPathProperties({
                 electrifications,
@@ -114,7 +162,7 @@ export const useSetupItineraryForTrainUpdate = (
 
               adjustConfWithTrainToModifyV2(
                 trainSchedule,
-                formatedPathSteps,
+                updatedPathSteps,
                 rollingStock.id,
                 dispatch,
                 usingElectricalProfiles,
@@ -129,51 +177,8 @@ export const useSetupItineraryForTrainUpdate = (
       }
     };
 
-    if (trainScheduleIDsToModify.length > 0) setupItineraryForTrainUpdate();
-  }, [trainScheduleIDsToModify]);
+    setupItineraryForTrainUpdate();
+  }, [trainIdToEdit]);
 };
 
-/**
- * Prepare data to be used in simulation results
- */
-export const useSimulationResults = () => {
-  const infraId = useInfraID();
-  const selectedTrainId = useSelector(getSelectedTrainId);
-
-  const { data: selectedTrainSchedule } = osrdEditoastApi.endpoints.getV2TrainScheduleById.useQuery(
-    {
-      id: selectedTrainId as number,
-    },
-    { skip: !selectedTrainId }
-  );
-
-  const { data: path } = osrdEditoastApi.endpoints.getV2TrainScheduleByIdPath.useQuery(
-    {
-      id: selectedTrainId as number,
-      infraId: infraId as number,
-    },
-    { skip: !selectedTrainId || !infraId }
-  );
-  const pathfindingResultSuccess = path?.status === 'success' ? path : undefined;
-
-  const { data: trainSimulation } =
-    osrdEditoastApi.endpoints.getV2TrainScheduleByIdSimulation.useQuery(
-      { id: selectedTrainId as number, infraId: infraId as number },
-      { skip: !selectedTrainId || !infraId }
-    );
-
-  const speedSpaceChart = useSpeedSpaceChart(
-    selectedTrainSchedule,
-    pathfindingResultSuccess,
-    trainSimulation,
-    selectedTrainSchedule?.start_time
-  );
-
-  return {
-    selectedTrain: selectedTrainSchedule,
-    selectedTrainRollingStock: speedSpaceChart?.rollingStock,
-    selectedTrainPowerRestrictions: speedSpaceChart?.formattedPowerRestrictions || [],
-    trainSimulation: speedSpaceChart?.simulation,
-    pathProperties: speedSpaceChart?.formattedPathProperties,
-  };
-};
+export default useSetupItineraryForTrainUpdate;

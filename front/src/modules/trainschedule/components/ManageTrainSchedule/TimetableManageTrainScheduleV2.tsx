@@ -1,23 +1,23 @@
 import React, { useState } from 'react';
 
-import { ChevronLeft } from '@osrd-project/ui-icons';
+import { ChevronLeft, Pencil } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
-import { useDispatch } from 'react-redux';
 
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
 import type { InfraState } from 'common/api/osrdEditoastApi';
 import DotsLoader from 'common/DotsLoader/DotsLoader';
-import { useOsrdConfActions } from 'common/osrdContext';
 import TrainAddingSettings from 'modules/trainschedule/components/ManageTrainSchedule/TrainAddingSettings';
 
 import AddTrainScheduleV2Button from './AddTrainScheduleV2Button';
-import SubmitConfUpdateTrainSchedulesV2 from './SubmitConfUpdateTrainSchedulesV2';
+import useUpdateTrainSchedule from './hooks/useUpdateTrainSchedule';
 
 type TimetableManageTrainScheduleProps = {
   displayTrainScheduleManagement: string;
+  trainIdToEdit?: number;
   setDisplayTrainScheduleManagement: (type: string) => void;
   setTrainResultsToFetch: (trainScheduleIds?: number[]) => void;
   infraState?: InfraState;
+  setTrainIdToEdit: (trainIdToEdit?: number) => void;
 };
 
 const TimetableManageTrainScheduleV2 = ({
@@ -25,26 +25,40 @@ const TimetableManageTrainScheduleV2 = ({
   setDisplayTrainScheduleManagement,
   setTrainResultsToFetch,
   infraState,
+  trainIdToEdit,
+  setTrainIdToEdit,
 }: TimetableManageTrainScheduleProps) => {
   const { t } = useTranslation('operationalStudies/manageTrainSchedule');
-  const dispatch = useDispatch();
   const [isWorking, setIsWorking] = useState(false);
-  const { updateTrainScheduleIDsToModify } = useOsrdConfActions();
 
   const leaveManageTrainSchedule = () => {
     setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.none);
-    dispatch(updateTrainScheduleIDsToModify([]));
+    setTrainIdToEdit(undefined);
   };
+
+  const updateTrainSchedule = useUpdateTrainSchedule(
+    setIsWorking,
+    setDisplayTrainScheduleManagement,
+    setTrainResultsToFetch,
+    setTrainIdToEdit,
+    trainIdToEdit
+  );
 
   return (
     <div className="scenario-timetable-managetrainschedule">
       <div className="scenario-timetable-managetrainschedule-header">
         {displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.edit && (
-          <SubmitConfUpdateTrainSchedulesV2
-            setIsWorking={setIsWorking}
-            setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
-            setTrainResultsToFetch={setTrainResultsToFetch}
-          />
+          <button
+            className="btn btn-warning"
+            type="button"
+            onClick={updateTrainSchedule}
+            data-testid="submit-edit-train-schedule"
+          >
+            <span className="mr-2">
+              <Pencil size="lg" />
+            </span>
+            {t('updateTrainSchedule')}
+          </button>
         )}
 
         {displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.add && (

@@ -10,6 +10,7 @@ import { addElementAtIndex } from 'utils/array';
 import { addPathStep, cleanPathSteps, isRangeCovered, updateRestrictions } from './utils';
 
 export type PowerRestrictionReducer<S extends OsrdConfState> = {
+  ['updatePowerRestrictionRangesV2']: CaseReducer<S, PayloadAction<PowerRestrictionV2[]>>;
   ['upsertPowerRestrictionRangesV2']: CaseReducer<
     S,
     PayloadAction<{ from: PathStep; to: PathStep; code: string }>
@@ -40,6 +41,10 @@ export type PowerRestrictionReducer<S extends OsrdConfState> = {
 
 export function builPowerRestrictionReducer<S extends OsrdConfState>(): PowerRestrictionReducer<S> {
   return {
+    updatePowerRestrictionRangesV2(state: Draft<S>, action: PayloadAction<PowerRestrictionV2[]>) {
+      state.powerRestrictionV2 = action.payload;
+    },
+
     upsertPowerRestrictionRangesV2(
       state: Draft<S>,
       action: PayloadAction<{ from: PathStep; to: PathStep; code: string }>

@@ -46,6 +46,7 @@ const ScenarioV2 = () => {
   const [collapsedTimetable, setCollapsedTimetable] = useState(false);
   const [trainSpaceTimeData, setTrainSpaceTimeData] = useState<TrainSpaceTimeData[]>([]);
   const [trainResultsToFetch, setTrainResultsToFetch] = useState<number[]>();
+  const [trainIdToEdit, setTrainIdToEdit] = useState<number>();
   const isUpdating = useSelector((state: RootState) => state.osrdsimulation.isUpdating);
 
   const { openModal } = useModal();
@@ -244,6 +245,8 @@ const ScenarioV2 = () => {
                   displayTrainScheduleManagement={displayTrainScheduleManagement}
                   setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
                   setTrainResultsToFetch={setTrainResultsToFetch}
+                  trainIdToEdit={trainIdToEdit}
+                  setTrainIdToEdit={setTrainIdToEdit}
                   infraState={infra.state}
                 />
               )}
@@ -257,6 +260,8 @@ const ScenarioV2 = () => {
                   conflicts={conflicts}
                   setTrainResultsToFetch={setTrainResultsToFetch}
                   setSpaceTimeData={setTrainSpaceTimeData}
+                  setTrainIdToEdit={setTrainIdToEdit}
+                  trainIdToEdit={trainIdToEdit}
                 />
               )}
             </div>
@@ -269,7 +274,7 @@ const ScenarioV2 = () => {
               {(displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.add ||
                 displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.edit) && (
                 <div className="scenario-managetrainschedule">
-                  <ManageTrainScheduleV2 />
+                  <ManageTrainScheduleV2 trainIdToEdit={trainIdToEdit} />
                 </div>
               )}
               {displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.import && (

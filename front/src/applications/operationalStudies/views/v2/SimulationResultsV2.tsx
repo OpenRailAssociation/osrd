@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { Rnd } from 'react-rnd';
 
-import { useSimulationResults } from 'applications/operationalStudies/hooks';
+import useSimulationResults from 'applications/operationalStudies/hooks/useSimulationResults';
 import type { TrainSpaceTimeData } from 'applications/operationalStudies/types';
 import SimulationWarpedMap from 'common/Map/WarpedMap/SimulationWarpedMap';
 import { getScaleDomainFromValuesV2 } from 'modules/simulationResult/components/ChartHelpers/getScaleDomainFromValues';

@@ -14,7 +14,6 @@ import invalidInfra from 'assets/pictures/components/missing_tracks.svg';
 import invalidRollingStock from 'assets/pictures/components/missing_train.svg';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { TrainScheduleBase } from 'common/api/osrdEditoastApi';
-import { useOsrdConfActions } from 'common/osrdContext';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import trainNameWithNum from 'modules/trainschedule/components/ManageTrainSchedule/helpers/trainNameHelper';
 import { setFailure, setSuccess } from 'reducers/main';
@@ -41,6 +40,7 @@ type TimetableTrainCardProps = {
   handleSelectTrain: (trainId: number) => void;
   setDisplayTrainScheduleManagement: (arg0: string) => void;
   setTrainResultsToFetch: (trainScheduleIds?: number[]) => void;
+  setTrainIdToEdit: (trainIdToEdit?: number) => void;
   setSpaceTimeData: React.Dispatch<React.SetStateAction<TrainSpaceTimeData[]>>;
 };
 
@@ -56,12 +56,11 @@ const TimetableTrainCardV2 = ({
   setDisplayTrainScheduleManagement,
   handleSelectTrain,
   setTrainResultsToFetch,
+  setTrainIdToEdit,
   setSpaceTimeData,
 }: TimetableTrainCardProps) => {
   const { t } = useTranslation(['operationalStudies/scenario']);
   const dispatch = useAppDispatch();
-  const { updateTrainScheduleIDsToModify } = useOsrdConfActions();
-
   const [postTrainSchedule] =
     osrdEditoastApi.endpoints.postV2TimetableByIdTrainSchedule.useMutation();
   const [getTrainSchedule] = osrdEditoastApi.endpoints.postV2TrainSchedule.useLazyQuery();
@@ -72,7 +71,7 @@ const TimetableTrainCardV2 = ({
   };
 
   const editTrainSchedule = () => {
-    dispatch(updateTrainScheduleIDsToModify([train.id]));
+    setTrainIdToEdit(train.id);
     setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.edit);
   };
 
