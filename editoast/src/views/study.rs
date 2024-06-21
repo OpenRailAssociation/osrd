@@ -411,8 +411,6 @@ async fn list(
 #[cfg(test)]
 pub mod test {
     use actix_web::http::StatusCode;
-    use actix_web::test::call_and_read_body_json;
-    use actix_web::test::call_service;
     use actix_web::test::TestRequest;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
@@ -444,7 +442,7 @@ pub mod test {
             }))
             .to_request();
 
-        let response: StudyResponse = call_and_read_body_json(&app.service, request).await;
+        let response: StudyResponse = app.fetch(request).assert_status(StatusCode::OK).json_into();
 
         let study = Study::retrieve(db_pool.get_ok().deref_mut(), response.study.id)
             .await
@@ -474,7 +472,9 @@ pub mod test {
             .uri(&format!("/projects/{}/studies/", created_project.id))
             .to_request();
 
-        let response: StudyListResponse = call_and_read_body_json(&app.service, request).await;
+        let response: StudyListResponse =
+            app.fetch(request).assert_status(StatusCode::OK).json_into();
+
         let studies_retreived = response
             .results
             .iter()
@@ -506,7 +506,7 @@ pub mod test {
             ))
             .to_request();
 
-        let response: StudyResponse = call_and_read_body_json(&app.service, request).await;
+        let response: StudyResponse = app.fetch(request).assert_status(StatusCode::OK).json_into();
 
         assert_eq!(response.study, created_study);
         assert_eq!(response.study.project_id, created_project.id);
@@ -536,8 +536,7 @@ pub mod test {
             ))
             .to_request();
 
-        let response = call_service(&app.service, request).await;
-        assert_eq!(response.status(), StatusCode::NOT_FOUND);
+        app.fetch(request).assert_status(StatusCode::NOT_FOUND);
     }
 
     #[rstest]
@@ -562,8 +561,7 @@ pub mod test {
             ))
             .to_request();
 
-        let response = call_service(&app.service, request).await;
-        assert_eq!(response.status(), StatusCode::NO_CONTENT);
+        app.fetch(request).assert_status(StatusCode::NO_CONTENT);
 
         let exists = Study::exists(db_pool.get_ok().deref_mut(), created_study.id)
             .await
@@ -600,8 +598,8 @@ pub mod test {
                 "budget": study_budget,
             }))
             .to_request();
-        let response = call_service(&app.service, request).await;
-        assert_eq!(response.status(), StatusCode::OK);
+
+        app.fetch(request).assert_status(StatusCode::OK);
 
         let updated_study = Study::retrieve(db_pool.get_ok().deref_mut(), created_study.id)
             .await
