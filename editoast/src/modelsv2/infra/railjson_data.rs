@@ -7,7 +7,7 @@ use editoast_schemas::primitives::ObjectType;
 use super::Infra;
 use crate::error::Result;
 use crate::modelsv2::get_table;
-use crate::modelsv2::DbConnection;
+use editoast_models::DbConnection;
 
 #[derive(QueryableByName, Default)]
 pub struct RailJsonData {

@@ -23,7 +23,7 @@ impl ToTokens for DeleteImpl {
                 #[tracing::instrument(name = #span_name, skip_all, ret, err, fields(query_id = ?self.#primary_key))]
                 async fn delete(
                     &self,
-                    conn: &mut crate::modelsv2::DbConnection,
+                    conn: &mut editoast_models::DbConnection,
                 ) -> crate::error::Result<bool> {
                     use diesel::prelude::*;
                     use diesel_async::RunQueryDsl;

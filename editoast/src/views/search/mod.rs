@@ -232,8 +232,8 @@ use self::searchast::SearchAst;
 use self::typing::AstType;
 use self::typing::TypeSpec;
 use crate::error::Result;
-use crate::modelsv2::DbConnectionPool;
 use crate::views::pagination::PaginationQueryParam;
+use editoast_models::DbConnectionPool;
 
 crate::routes! {
     search

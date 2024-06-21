@@ -17,12 +17,12 @@ use super::check_train_validity;
 use crate::error::Result;
 use crate::models::Identifiable;
 use crate::models::Timetable;
-use crate::modelsv2::DbConnectionPool;
 use crate::modelsv2::LightRollingStockModel;
 use crate::modelsv2::Retrieve;
 use crate::tables::simulation_output;
 use crate::tables::train_schedule;
 use crate::DieselJson;
+use editoast_models::DbConnectionPool;
 
 editoast_common::schemas! {
     TrainSchedule,

@@ -1,6 +1,7 @@
 use actix_web::{error::JsonPayloadError, http::StatusCode, HttpResponse, ResponseError};
 use colored::Colorize;
 use diesel::result::Error as DieselError;
+use editoast_models::EditoastModelsError;
 use redis::RedisError;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
@@ -14,8 +15,6 @@ use std::{
 use tracing::error;
 use utoipa::ToSchema;
 use validator::{ValidationErrors, ValidationErrorsKind};
-
-use crate::modelsv2::database::DbConnectionError;
 
 editoast_common::schemas! {
     InternalError,
@@ -128,13 +127,13 @@ impl EditoastError for DieselError {
     }
 }
 
-impl EditoastError for DbConnectionError {
+impl EditoastError for EditoastModelsError {
     fn get_status(&self) -> StatusCode {
         StatusCode::INTERNAL_SERVER_ERROR
     }
 
     fn get_type(&self) -> &str {
-        "editoast:ConnectionPoolError"
+        "editoast:EditoastModelsError"
     }
 }
 

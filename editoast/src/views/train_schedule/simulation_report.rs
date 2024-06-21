@@ -30,11 +30,11 @@ use crate::models::SimulationOutput;
 use crate::models::SimulationOutputChangeset;
 use crate::models::Slope;
 use crate::models::TrainSchedule;
-use crate::modelsv2::DbConnectionPool;
 use crate::modelsv2::RollingStockModel;
 use crate::views::pathfinding::make_track_map;
 use crate::views::train_schedule::projection::Projection;
 use crate::views::train_schedule::TrainScheduleError::UnsimulatedTrainSchedule;
+use editoast_models::DbConnectionPool;
 use editoast_schemas::primitives::Identifier;
 
 editoast_common::schemas! {

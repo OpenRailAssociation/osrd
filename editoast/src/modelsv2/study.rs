@@ -10,8 +10,8 @@ use utoipa::ToSchema;
 use crate::error::Result;
 use crate::modelsv2::prelude::*;
 use crate::modelsv2::projects::Tags;
-use crate::modelsv2::DbConnection;
 use crate::modelsv2::Scenario;
+use editoast_models::DbConnection;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, ModelV2, ToSchema)]
 #[model(table = crate::tables::study)]
@@ -90,7 +90,7 @@ pub mod test {
     use super::*;
     use crate::modelsv2::fixtures::create_project;
     use crate::modelsv2::fixtures::create_study;
-    use crate::modelsv2::DbConnectionPoolV2;
+    use editoast_models::DbConnectionPoolV2;
 
     #[rstest]
     async fn study_retrieve() {

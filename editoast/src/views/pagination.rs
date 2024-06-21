@@ -15,10 +15,10 @@ use utoipa::IntoParams;
 use utoipa::ToSchema;
 
 use crate::error::Result;
-use crate::modelsv2::DbConnection;
 use crate::ListAndCount;
 use crate::Model;
 use crate::SelectionSettings;
+use editoast_models::DbConnection;
 
 editoast_common::schemas! {
     PaginationStats,

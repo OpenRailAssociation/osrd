@@ -6,8 +6,8 @@ use utoipa::ToSchema;
 
 use crate::diesel::QueryDsl;
 use crate::error::Result;
-use crate::modelsv2::DbConnection;
 use crate::tables::electrical_profile_set;
+use editoast_models::DbConnection;
 use editoast_schemas::infra::ElectricalProfileSetData;
 
 #[derive(Clone, Debug, Serialize, Deserialize, ModelV2, ToSchema)]
@@ -42,7 +42,7 @@ mod tests {
 
     use super::*;
     use crate::modelsv2::fixtures::create_electrical_profile_set;
-    use crate::modelsv2::DbConnectionPoolV2;
+    use editoast_models::DbConnectionPoolV2;
 
     #[rstest]
     async fn test_list_light() {

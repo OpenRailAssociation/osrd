@@ -36,12 +36,12 @@ use crate::infra_cache::ObjectCache;
 use crate::map;
 use crate::map::MapLayers;
 use crate::modelsv2::prelude::*;
-use crate::modelsv2::DbConnection;
-use crate::modelsv2::DbConnectionPool;
 use crate::modelsv2::Infra;
 use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraIdParam;
 use crate::RedisClient;
+use editoast_models::DbConnection;
+use editoast_models::DbConnectionPool;
 use editoast_schemas::infra::InfraObject;
 
 crate::routes! {

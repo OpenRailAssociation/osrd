@@ -7,7 +7,7 @@ use utoipa::ToSchema;
 
 use super::RollingStockModel;
 use crate::error::Result;
-use crate::modelsv2::DbConnection;
+use editoast_models::DbConnection;
 
 editoast_common::schemas! {
     PowerRestriction,

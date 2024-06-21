@@ -30,8 +30,6 @@ use crate::models::ScheduledPoint;
 use crate::models::Timetable;
 use crate::models::TrainSchedule;
 use crate::modelsv2::prelude::*;
-use crate::modelsv2::DbConnection;
-use crate::modelsv2::DbConnectionPool;
 use crate::modelsv2::Infra;
 use crate::modelsv2::OperationalPointModel;
 use crate::modelsv2::RetrieveBatch;
@@ -43,6 +41,8 @@ use crate::views::pathfinding::save_core_pathfinding;
 use crate::views::timetable::Path;
 use crate::views::timetable::TimetableError;
 use crate::views::train_schedule::process_simulation_response;
+use editoast_models::DbConnection;
+use editoast_models::DbConnectionPool;
 use editoast_schemas::infra::OperationalPointPart;
 
 crate::routes! {

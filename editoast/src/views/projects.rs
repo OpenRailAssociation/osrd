@@ -26,13 +26,13 @@ use crate::error::Result;
 use crate::modelsv2::projects::Tags;
 use crate::modelsv2::Changeset;
 use crate::modelsv2::Create;
-use crate::modelsv2::DbConnection;
-use crate::modelsv2::DbConnectionPoolV2;
 use crate::modelsv2::Document;
 use crate::modelsv2::Model;
 use crate::modelsv2::Project;
 use crate::modelsv2::Retrieve;
 use crate::views::pagination::PaginationQueryParam;
+use editoast_models::DbConnection;
+use editoast_models::DbConnectionPoolV2;
 
 crate::routes! {
     "/projects" => {

@@ -41,13 +41,13 @@ use crate::modelsv2::prelude::*;
 use crate::modelsv2::timetable::Timetable;
 use crate::modelsv2::train_schedule::TrainSchedule;
 use crate::modelsv2::train_schedule::TrainScheduleChangeset;
-use crate::modelsv2::DbConnection;
-use crate::modelsv2::DbConnectionPool;
-use crate::modelsv2::DbConnectionPoolV2;
 use crate::views::v2::path::pathfinding_from_train;
 use crate::views::v2::path::PathfindingError;
 use crate::RedisClient;
 use crate::RollingStockModel;
+use editoast_models::DbConnection;
+use editoast_models::DbConnectionPool;
+use editoast_models::DbConnectionPoolV2;
 
 const CACHE_SIMULATION_EXPIRATION: u64 = 604800; // 1 week
 

@@ -5,8 +5,8 @@ use diesel::sql_types::Nullable;
 use editoast_derive::ModelV2;
 
 use crate::error::Result;
-use crate::modelsv2::DbConnection;
 use crate::modelsv2::Retrieve;
+use editoast_models::DbConnection;
 
 #[derive(Debug, Default, Clone, ModelV2)]
 #[model(table = crate::tables::timetable_v2)]

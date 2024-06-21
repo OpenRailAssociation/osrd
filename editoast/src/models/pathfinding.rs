@@ -244,7 +244,7 @@ pub mod tests {
     use super::*;
     use crate::fixtures::tests::TestFixture;
     use crate::models::Create;
-    use crate::modelsv2::DbConnectionPool;
+    use editoast_models::DbConnectionPool;
 
     pub fn simple_pathfinding(infra_id: i64) -> Pathfinding {
         //    T1       T2        T3       T4      T5

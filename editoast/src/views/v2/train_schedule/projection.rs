@@ -31,7 +31,6 @@ use crate::core::CoreClient;
 use crate::error::Result;
 use crate::modelsv2::infra::Infra;
 use crate::modelsv2::train_schedule::TrainSchedule;
-use crate::modelsv2::DbConnectionPoolV2;
 use crate::modelsv2::Retrieve;
 use crate::modelsv2::RetrieveBatch;
 use crate::views::v2::path::pathfinding_from_train;
@@ -42,6 +41,7 @@ use crate::views::v2::train_schedule::CompleteReportTrain;
 use crate::views::v2::train_schedule::ReportTrain;
 use crate::views::v2::train_schedule::SignalSighting;
 use crate::views::v2::train_schedule::ZoneUpdate;
+use editoast_models::DbConnectionPoolV2;
 
 use crate::RedisClient;
 use crate::RollingStockModel;

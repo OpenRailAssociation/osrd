@@ -18,13 +18,13 @@ use crate::error::Result;
 use crate::infra_cache::InfraCache;
 use crate::models::pathfinding::Pathfinding;
 use crate::models::Retrieve;
-use crate::modelsv2::DbConnectionPool;
 use crate::modelsv2::Infra;
 use crate::modelsv2::Retrieve as RetrieveV2;
 use crate::views::pathfinding::path_rangemap::make_path_range_map;
 use crate::views::pathfinding::path_rangemap::TrackMap;
 use crate::views::pathfinding::PathfindingError;
 use crate::views::pathfinding::PathfindingIdParam;
+use editoast_models::DbConnectionPool;
 use editoast_schemas::primitives::ObjectType;
 
 crate::routes! {

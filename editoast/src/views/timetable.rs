@@ -22,8 +22,8 @@ use crate::models::SimulationOutput;
 use crate::models::Timetable;
 use crate::models::TimetableWithSchedulesDetails;
 use crate::models::TrainSchedule;
-use crate::modelsv2::DbConnectionPool;
 use crate::views::train_schedule::TrainScheduleError;
+use editoast_models::DbConnectionPool;
 
 mod import;
 

@@ -10,7 +10,6 @@ use crate::modelsv2::prelude::*;
 use crate::modelsv2::rolling_stock_livery::RollingStockLiveryModel;
 use crate::modelsv2::timetable::Timetable;
 use crate::modelsv2::train_schedule::TrainSchedule;
-use crate::modelsv2::DbConnection;
 use crate::modelsv2::Document;
 use crate::modelsv2::ElectricalProfileSet;
 use crate::modelsv2::Infra;
@@ -21,6 +20,7 @@ use crate::modelsv2::Study;
 use crate::modelsv2::Tags;
 use crate::views::rolling_stocks::rolling_stock_form::RollingStockForm;
 use crate::views::v2::train_schedule::TrainScheduleForm;
+use editoast_models::DbConnection;
 
 pub fn project_changeset(name: &str) -> Changeset<Project> {
     Project::changeset()

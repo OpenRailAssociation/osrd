@@ -14,7 +14,7 @@ use super::Infra;
 use crate::error::Result;
 use crate::modelsv2::get_geometry_layer_table;
 use crate::modelsv2::get_table;
-use crate::modelsv2::DbConnection;
+use editoast_models::DbConnection;
 
 editoast_common::schemas! {
     ObjectQueryable,

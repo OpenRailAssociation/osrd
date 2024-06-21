@@ -33,7 +33,6 @@ use crate::modelsv2::timetable::Timetable;
 use crate::modelsv2::timetable::TimetableWithTrains;
 use crate::modelsv2::train_schedule::TrainSchedule;
 use crate::modelsv2::train_schedule::TrainScheduleChangeset;
-use crate::modelsv2::DbConnectionPoolV2;
 use crate::modelsv2::Infra;
 use crate::views::pagination::PaginatedList;
 use crate::views::pagination::PaginationQueryParam;
@@ -44,6 +43,7 @@ use crate::views::v2::train_schedule::TrainScheduleResult;
 use crate::CoreClient;
 use crate::RedisClient;
 use crate::RetrieveBatch;
+use editoast_models::DbConnectionPoolV2;
 
 crate::routes! {
     "/v2/timetable" => {

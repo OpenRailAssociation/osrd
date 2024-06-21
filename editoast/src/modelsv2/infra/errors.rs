@@ -6,7 +6,7 @@ use super::Infra;
 use crate::error::Result;
 use crate::generated_data::infra_error::{InfraError, InfraErrorTypeLabel};
 use crate::modelsv2::pagination::load_for_pagination;
-use crate::modelsv2::DbConnection;
+use editoast_models::DbConnection;
 
 #[derive(Default, Debug, Clone, PartialEq, Eq, Deserialize, utoipa::ToSchema)]
 #[serde(rename_all = "lowercase")]

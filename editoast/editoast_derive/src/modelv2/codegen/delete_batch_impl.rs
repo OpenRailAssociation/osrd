@@ -30,7 +30,7 @@ impl ToTokens for DeleteBatchImpl {
             impl crate::modelsv2::DeleteBatch<#ty> for #model {
                 #[tracing::instrument(name = #span_name, skip_all, ret, err, fields(query_ids))]
                 async fn delete_batch<I: std::iter::IntoIterator<Item = #ty> + Send + 'async_trait>(
-                    conn: &mut crate::modelsv2::DbConnection,
+                    conn: &mut editoast_models::DbConnection,
                     ids: I,
                 ) -> crate::error::Result<usize> {
                     use #table_mod::dsl;

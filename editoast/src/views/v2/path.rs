@@ -10,8 +10,8 @@ use thiserror::Error;
 use crate::core::v2::pathfinding::TrackRange;
 use crate::error::Result;
 use crate::modelsv2::prelude::*;
-use crate::modelsv2::DbConnection;
 use crate::modelsv2::Infra;
+use editoast_models::DbConnection;
 
 /// Expiration time for the cache of the pathfinding and path properties.
 /// Note: 604800 seconds = 1 week

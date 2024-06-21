@@ -29,15 +29,16 @@ use crate::error::Result;
 use crate::modelsv2::timetable::TimetableWithTrains;
 use crate::modelsv2::train_schedule::TrainSchedule;
 use crate::modelsv2::work_schedules::WorkSchedule;
-use crate::modelsv2::DbConnectionPoolV2;
 use crate::modelsv2::RollingStockModel;
-use crate::modelsv2::{DbConnection, Infra, List};
+use crate::modelsv2::{Infra, List};
 use crate::views::v2::path::pathfinding::extract_location_from_path_items;
 use crate::views::v2::path::pathfinding::TrackOffsetExtractionError;
 use crate::views::v2::train_schedule::{train_simulation, train_simulation_batch};
 use crate::RedisClient;
 use crate::Retrieve;
 use crate::RetrieveBatch;
+use editoast_models::DbConnection;
+use editoast_models::DbConnectionPoolV2;
 
 crate::routes! {
     "/stdcm" => {

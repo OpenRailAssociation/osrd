@@ -2,7 +2,7 @@ use std::fmt::Debug;
 
 use crate::error::EditoastError;
 use crate::error::Result;
-use crate::modelsv2::DbConnection;
+use editoast_models::DbConnection;
 
 /// Describes how a [Model](super::Model) can be created in the database
 ///

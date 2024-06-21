@@ -14,8 +14,8 @@ use thiserror::Error;
 use utoipa::ToSchema;
 
 use crate::error::Result;
-use crate::modelsv2::DbConnectionPoolV2;
 use crate::modelsv2::*;
+use editoast_models::DbConnectionPoolV2;
 
 crate::routes! {
     "/documents" => {

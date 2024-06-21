@@ -18,12 +18,12 @@ use crate::error::Result;
 use crate::infra_cache::Graph;
 use crate::infra_cache::InfraCache;
 use crate::modelsv2::prelude::*;
-use crate::modelsv2::DbConnectionPool;
-use crate::modelsv2::DbConnectionPoolV2;
 use crate::modelsv2::Infra;
 use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraIdParam;
 use crate::views::params::List;
+use editoast_models::DbConnectionPool;
+use editoast_models::DbConnectionPoolV2;
 
 crate::routes! {
     "/routes" => {

@@ -19,13 +19,13 @@ use crate::error::Result;
 use crate::models::pathfinding::Pathfinding;
 use crate::models::Retrieve;
 use crate::modelsv2::electrical_profiles::ElectricalProfileSet;
-use crate::modelsv2::DbConnectionPool;
 use crate::modelsv2::LightRollingStockModel;
 use crate::views::electrical_profiles::ElectricalProfilesError;
 use crate::views::pathfinding::path_rangemap::make_path_range_map;
 use crate::views::pathfinding::path_rangemap::TrackMap;
 use crate::views::pathfinding::PathfindingError;
 use crate::views::pathfinding::PathfindingIdParam;
+use editoast_models::DbConnectionPool;
 use editoast_schemas::infra::ElectricalProfileSetData;
 
 crate::routes! {

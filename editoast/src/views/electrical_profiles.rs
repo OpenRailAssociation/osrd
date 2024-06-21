@@ -17,10 +17,10 @@ use crate::error::Result;
 use crate::modelsv2::electrical_profiles::ElectricalProfileSet;
 use crate::modelsv2::electrical_profiles::LightElectricalProfileSet;
 use crate::modelsv2::Create;
-use crate::modelsv2::DbConnectionPoolV2;
 use crate::modelsv2::DeleteStatic;
 use crate::modelsv2::Model;
 use crate::modelsv2::Retrieve;
+use editoast_models::DbConnectionPoolV2;
 use editoast_schemas::infra::ElectricalProfileSetData;
 use editoast_schemas::infra::LevelValues;
 

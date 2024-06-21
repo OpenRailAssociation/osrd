@@ -33,8 +33,6 @@ use crate::models::ScenarioWithCountTrains;
 use crate::models::ScenarioWithDetails;
 use crate::models::Timetable;
 use crate::models::Update;
-use crate::modelsv2::DbConnection;
-use crate::modelsv2::DbConnectionPool;
 use crate::modelsv2::Project;
 use crate::modelsv2::Study;
 use crate::views::pagination::PaginatedResponse;
@@ -43,6 +41,8 @@ use crate::views::projects::ProjectError;
 use crate::views::projects::ProjectIdParam;
 use crate::views::study::StudyError;
 use crate::views::study::StudyIdParam;
+use editoast_models::DbConnection;
+use editoast_models::DbConnectionPool;
 
 crate::routes! {
     "/scenarios" => {

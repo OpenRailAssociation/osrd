@@ -11,7 +11,7 @@ use serde::Deserialize;
 
 use super::Infra;
 use crate::error::Result;
-use crate::modelsv2::DbConnection;
+use editoast_models::DbConnection;
 
 #[derive(QueryableByName, Debug, Clone, Deserialize)]
 pub struct SplitedTrackSectionWithData {

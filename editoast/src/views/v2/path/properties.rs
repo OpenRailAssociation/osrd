@@ -31,11 +31,11 @@ use crate::core::v2::pathfinding::TrackRange;
 use crate::core::AsCoreRequest;
 use crate::core::CoreClient;
 use crate::error::Result;
-use crate::modelsv2::DbConnectionPoolV2;
 use crate::views::v2::path::retrieve_infra_version;
 use crate::RedisClient;
 use crate::RedisConnection;
 use editoast_common::geometry::GeoJsonLineString;
+use editoast_models::DbConnectionPoolV2;
 use editoast_schemas::infra::OperationalPointExtensions;
 use editoast_schemas::infra::OperationalPointPart;
 

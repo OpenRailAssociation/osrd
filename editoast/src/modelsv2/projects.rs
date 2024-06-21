@@ -7,11 +7,11 @@ use utoipa::ToSchema;
 
 use crate::error::Result;
 use crate::modelsv2::prelude::*;
-use crate::modelsv2::DbConnection;
 use crate::modelsv2::Document;
 use crate::modelsv2::Study;
 use crate::views::projects::ProjectError;
 use crate::SelectionSettings;
+use editoast_models::DbConnection;
 
 editoast_common::schemas! {
     Project,
@@ -124,8 +124,8 @@ pub mod test {
     use super::*;
     use crate::modelsv2::fixtures::create_project;
     use crate::modelsv2::prelude::*;
-    use crate::modelsv2::DbConnectionPoolV2;
     use crate::modelsv2::Model;
+    use editoast_models::DbConnectionPoolV2;
 
     #[rstest]
     async fn project_creation() {

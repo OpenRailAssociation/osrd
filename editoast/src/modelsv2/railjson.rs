@@ -8,8 +8,8 @@ use crate::error::InternalError;
 use crate::error::Result;
 use crate::modelsv2::infra_objects::*;
 use crate::modelsv2::prelude::*;
-use crate::modelsv2::DbConnection;
-use crate::modelsv2::DbConnectionPool;
+use editoast_models::DbConnection;
+use editoast_models::DbConnectionPool;
 
 #[derive(Debug, thiserror::Error, EditoastError)]
 #[editoast_error(base_id = "railjson")]

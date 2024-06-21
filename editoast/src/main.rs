@@ -16,8 +16,6 @@ mod views;
 
 use crate::core::CoreClient;
 use crate::error::InternalError;
-use crate::modelsv2::DbConnectionPool;
-use crate::modelsv2::DbConnectionPoolV2;
 use crate::modelsv2::Infra;
 use crate::views::OpenApiRoot;
 use actix_cors::Cors;
@@ -34,6 +32,8 @@ use client::{
     ImportRollingStockArgs, ImportTimetableArgs, InfraCloneArgs, InfraCommands, ListProfileSetArgs,
     MakeMigrationArgs, RedisConfig, RefreshArgs, RunserverArgs, SearchCommands, TimetablesCommands,
 };
+use editoast_models::DbConnectionPool;
+use editoast_models::DbConnectionPoolV2;
 use editoast_schemas::infra::ElectricalProfileSetData;
 use editoast_schemas::rolling_stock::RollingStock;
 use editoast_schemas::train_schedule::TrainScheduleBase;
@@ -46,11 +46,11 @@ use opentelemetry_datadog::DatadogPropagator;
 use opentelemetry_sdk::propagation::TraceContextPropagator;
 use views::v2::train_schedule::{TrainScheduleForm, TrainScheduleResult};
 
-use crate::modelsv2::DbConnection;
 use colored::*;
 use diesel::sql_query;
 use diesel_async::RunQueryDsl;
 use diesel_json::Json as DieselJson;
+use editoast_models::DbConnection;
 use editoast_schemas::infra::RailJson;
 use infra_cache::InfraCache;
 use map::MapLayers;

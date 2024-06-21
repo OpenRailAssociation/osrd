@@ -1,7 +1,7 @@
 use thiserror::Error;
 
 #[derive(Debug, Error)]
-pub enum DbConnectionError {
+pub enum EditoastModelsError {
     #[error(transparent)]
     DeadpoolPool(#[from] diesel_async::pooled_connection::deadpool::PoolError),
     #[error(transparent)]

@@ -26,8 +26,6 @@ use crate::models::train_schedule::LightTrainSchedule;
 use crate::modelsv2::prelude::*;
 use crate::modelsv2::scenario::Scenario;
 use crate::modelsv2::timetable::Timetable;
-use crate::modelsv2::DbConnection;
-use crate::modelsv2::DbConnectionPoolV2;
 use crate::modelsv2::Infra;
 use crate::modelsv2::Project;
 use crate::modelsv2::Study;
@@ -41,6 +39,8 @@ use crate::views::projects::ProjectIdParam;
 use crate::views::scenario::ScenarioIdParam;
 use crate::views::study::StudyError;
 use crate::views::study::StudyIdParam;
+use editoast_models::DbConnection;
+use editoast_models::DbConnectionPoolV2;
 
 crate::routes! {
     "/v2/projects/{project_id}/studies/{study_id}/scenarios" => {
