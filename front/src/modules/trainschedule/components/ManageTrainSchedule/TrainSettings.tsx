@@ -74,6 +74,7 @@ export default function TrainSettings() {
     setName(nameFromStore);
     setDepartureTime(departureTimeFromStore);
     setInitialSpeed(initialSpeedFromStore);
+    setStartTime(startTimeFromStore.substring(0, 19));
   }, [nameFromStore, departureTimeFromStore, initialSpeedFromStore]);
 
   return (

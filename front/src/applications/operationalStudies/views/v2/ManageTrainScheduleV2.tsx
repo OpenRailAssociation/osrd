@@ -4,6 +4,7 @@ import { compact } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
+import useSetupItineraryForTrainUpdate from 'applications/operationalStudies/hooks/useSetupItineraryForTrainUpdate';
 import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
 import allowancesPic from 'assets/pictures/components/allowances.svg';
 import pahtFindingPic from 'assets/pictures/components/pathfinding.svg';
@@ -26,7 +27,11 @@ import SimulationSettings from 'modules/trainschedule/components/ManageTrainSche
 import TrainSettings from 'modules/trainschedule/components/ManageTrainSchedule/TrainSettings';
 import { formatKmValue } from 'utils/strings';
 
-const ManageTrainScheduleV2 = () => {
+type ManageTrainScheduleV2Props = {
+  trainIdToEdit?: number;
+};
+
+const ManageTrainScheduleV2 = ({ trainIdToEdit }: ManageTrainScheduleV2Props) => {
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
   const { getOriginV2, getDestinationV2, getPathSteps, getConstraintDistribution, getStartTime } =
     useOsrdConfSelectors();
@@ -61,6 +66,10 @@ const ManageTrainScheduleV2 = () => {
     () => getPathVoltages(pathProperties?.electrifications, pathProperties?.length),
     [pathProperties]
   );
+  // TODO TS2 : test this hook in simulation results issue
+  if (trainIdToEdit) {
+    useSetupItineraryForTrainUpdate(setPathProperties, trainIdToEdit);
+  }
 
   const tabRollingStock = {
     id: 'rollingstock',

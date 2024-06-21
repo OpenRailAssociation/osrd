@@ -9,7 +9,6 @@ import { useSelector } from 'react-redux';
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
 import type { TrainSpaceTimeData } from 'applications/operationalStudies/types';
 import type { ConflictV2, InfraState } from 'common/api/osrdEditoastApi';
-import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
 import ConflictsListV2 from 'modules/conflict/components/ConflictsListV2';
 import { updateSelectedTrainId } from 'reducers/osrdsimulation/actions';
 import { getTrainIdUsedForProjection } from 'reducers/osrdsimulation/selectors';
@@ -29,7 +28,9 @@ type TimetableV2Props = {
   selectedTrainId?: number;
   conflicts?: ConflictV2[];
   setTrainResultsToFetch: (trainScheduleIds?: number[]) => void;
+  setTrainIdToEdit: (trainId?: number) => void;
   setSpaceTimeData: React.Dispatch<React.SetStateAction<TrainSpaceTimeData[]>>;
+  trainIdToEdit?: number;
 };
 
 const TimetableV2 = ({
@@ -41,13 +42,12 @@ const TimetableV2 = ({
   conflicts,
   setTrainResultsToFetch,
   setSpaceTimeData,
+  setTrainIdToEdit,
+  trainIdToEdit,
 }: TimetableV2Props) => {
   const { t } = useTranslation(['operationalStudies/scenario', 'common/itemTypes']);
 
-  const { getTrainScheduleIDsToModify } = useOsrdConfSelectors();
-  const { updateTrainScheduleIDsToModify } = useOsrdConfActions();
   const trainIdUsedForProjection = useSelector(getTrainIdUsedForProjection);
-  const trainScheduleIDsToModify = useSelector(getTrainScheduleIDsToModify);
 
   const [trainSchedulesDetails, setTrainSchedulesDetails] = useState<TrainScheduleWithDetails[]>(
     []
@@ -100,11 +100,6 @@ const TimetableV2 = ({
     if (!multiselectOn) setSelectedTrainIds([]);
   }, [multiselectOn]);
 
-  // Avoid keeping this on refresh
-  useEffect(() => {
-    dispatch(updateTrainScheduleIDsToModify([]));
-  }, []);
-
   return (
     <div className="scenario-timetable">
       <div className="scenario-timetable-addtrains-buttons">
@@ -125,7 +120,6 @@ const TimetableV2 = ({
           data-testid="scenarios-add-train-schedule-button"
           onClick={() => {
             setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.add);
-            dispatch(updateTrainScheduleIDsToModify([]));
           }}
         >
           <span className="mr-2">
@@ -163,12 +157,13 @@ const TimetableV2 = ({
               intervalPosition={valueToInterval(train.duration, trainsDurationsIntervals)}
               key={`timetable-train-card-${train.id}-${train.trainName}`}
               isSelected={infraState === 'CACHED' && selectedTrainId === train.id}
-              isModified={trainScheduleIDsToModify.includes(train.id)}
+              isModified={train.id === trainIdToEdit}
               projectionPathIsUsed={
                 infraState === 'CACHED' && trainIdUsedForProjection === train.id
               }
               setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
               setTrainResultsToFetch={setTrainResultsToFetch}
+              setTrainIdToEdit={setTrainIdToEdit}
               setSpaceTimeData={setSpaceTimeData}
             />
           ))}
