@@ -480,7 +480,7 @@ async fn deadletter_responder(pool: Arc<Pool>, chan: Channel) -> anyhow::Result<
             reply_to.as_str(),
             BasicPublishOptions::default(),
             payload,
-            BasicProperties::default(),
+            BasicProperties::default().with_headers(FieldTable::default()),
         )
         .await?;
     }
