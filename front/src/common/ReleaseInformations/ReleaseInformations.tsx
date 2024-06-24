@@ -44,7 +44,7 @@ function ReleaseInformations() {
                   href={osrdWebSite}
                   className="mb-4"
                   target="_blank"
-                  rel="noreferrer"
+                  rel="noopener noreferrer"
                   onMouseEnter={motriceParty}
                 >
                   <img src={osrdLogo} alt="OSRD logo" width={192} />
