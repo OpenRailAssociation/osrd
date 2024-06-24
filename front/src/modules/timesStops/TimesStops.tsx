@@ -1,12 +1,6 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 
-import {
-  keyColumn,
-  type Column,
-  checkboxColumn,
-  createTextColumn,
-  DynamicDataSheetGrid,
-} from 'react-datasheet-grid';
+import { DynamicDataSheetGrid } from 'react-datasheet-grid';
 import { useTranslation } from 'react-i18next';
 
 import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
@@ -16,9 +10,9 @@ import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSc
 import type { PathStep } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { removeElementAtIndex } from 'utils/array';
+import { marginRegExValidation } from 'utils/physics';
 
-import { marginRegExValidation } from './consts';
-import timeColumn from './TimeColumnComponent';
+import { useInputColumns } from './TimeStopsColumns';
 import type { PathWaypointColumn } from './types';
 import { formatSuggestedViasToRowVias } from './utils';
 
@@ -30,19 +24,21 @@ type TimesStopsProps = {
   startTime?: string;
 };
 
+type DeleteButtonProps = {
+  removeVia: () => void;
+  rowIndex: number;
+  rowData: PathWaypointColumn;
+  pathProperties: ManageTrainSchedulePathProperties;
+  pathSteps: PathStep[];
+};
+
 const createDeleteViaButton = ({
   removeVia,
   rowIndex,
   rowData,
   pathProperties,
   pathSteps,
-}: {
-  removeVia: () => void;
-  rowIndex: number;
-  rowData: PathWaypointColumn;
-  pathProperties: ManageTrainSchedulePathProperties;
-  pathSteps: PathStep[];
-}) => {
+}: DeleteButtonProps) => {
   const isRowVia =
     rowIndex !== 0 &&
     rowIndex !== pathProperties.allWaypoints?.length - 1 &&
@@ -84,74 +80,7 @@ const TimesStops = ({ pathProperties, pathSteps = [], startTime }: TimesStopsPro
     setTimesStopsSteps(suggestedOPs);
   }, [t, pathProperties.allWaypoints, startTime]);
 
-  const columns: Column<PathWaypointColumn>[] = useMemo(
-    () => [
-      {
-        ...keyColumn<PathWaypointColumn, 'name'>('name', createTextColumn()),
-        title: t('name'),
-        disabled: true,
-      },
-      {
-        ...keyColumn<PathWaypointColumn, 'ch'>('ch', createTextColumn()),
-        title: 'Ch',
-        disabled: true,
-        grow: 0.1,
-      },
-      {
-        ...keyColumn<PathWaypointColumn, 'arrival'>('arrival', timeColumn),
-        title: t('arrivalTime'),
-
-        // We should not be able to edit the arrival time of the origin
-        disabled: ({ rowIndex }) => rowIndex === 0,
-        grow: 0.6,
-      },
-      {
-        ...keyColumn<PathWaypointColumn, 'stopFor'>(
-          'stopFor',
-          createTextColumn({
-            continuousUpdates: false,
-            alignRight: true,
-          })
-        ),
-        title: `${t('stopTime')}`,
-        grow: 0.6,
-      },
-      {
-        ...keyColumn<PathWaypointColumn, 'onStopSignal'>(
-          'onStopSignal',
-          checkboxColumn as Partial<Column<boolean | undefined>>
-        ),
-        title: t('receptionOnClosedSignal'),
-
-        // We should not be able to edit the reception on close signal if stopFor is not filled
-        // except for the destination
-        grow: 0.6,
-        disabled: ({ rowData, rowIndex }) =>
-          rowIndex !== pathProperties.allWaypoints?.length - 1 && !rowData.stopFor,
-      },
-      {
-        ...keyColumn<PathWaypointColumn, 'theoreticalMargin'>(
-          'theoreticalMargin',
-          createTextColumn({
-            continuousUpdates: false,
-            alignRight: true,
-            placeholder: t('theoreticalMarginPlaceholder'),
-            formatBlurredInput: (value) => {
-              if (!value || value === 'none') return '';
-              if (!marginRegExValidation.test(value)) {
-                return `${value}${t('theoreticalMarginPlaceholder')}`;
-              }
-              return value;
-            },
-          })
-        ),
-        cellClassName: ({ rowData }) => (rowData.isMarginValid ? '' : 'invalidCell'),
-        title: t('theoreticalMargin'),
-        disabled: ({ rowIndex }) => rowIndex === pathProperties.allWaypoints.length - 1,
-      },
-    ],
-    [t, pathProperties.allWaypoints.length]
-  );
+  const columns = useInputColumns(pathProperties);
 
   const removeVia = (rowData: PathWaypointColumn) => {
     const index = pathSteps.findIndex((step) => {
