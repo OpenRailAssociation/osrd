@@ -120,9 +120,9 @@ const TimetableToolbar = ({
     const formattedTrainSchedules = trainSchedules
       .filter(({ id }) => selectedTrainIdsFromClick.includes(id))
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      .map(({ id, ...trainSchedule }) => trainSchedule);
+      .map(({ id, timetable_id, ...trainSchedule }) => trainSchedule);
 
-    const jsonString = JSON.stringify({ train_schedules: formattedTrainSchedules });
+    const jsonString = JSON.stringify(formattedTrainSchedules);
     const blob = new Blob([jsonString], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
