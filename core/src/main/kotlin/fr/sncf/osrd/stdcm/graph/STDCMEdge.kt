@@ -6,7 +6,6 @@ import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import java.lang.Double.isNaN
-import java.util.*
 
 data class STDCMEdge(
     val infraExplorer:
@@ -44,47 +43,11 @@ data class STDCMEdge(
     val totalTime:
         Double, // How long it takes to go from the beginning to the end of the block, taking the
     // standard allowance into account
-    var weight: Double? = null // Weight (total distance from start + estimation to end) of the edge
-) : Comparable<STDCMEdge> {
+) {
     val block = infraExplorer.getCurrentBlock()
 
     init {
         assert(!isNaN(timeStart)) { "STDCM edge starts at NaN time" }
-    }
-
-    override fun equals(other: Any?): Boolean {
-        if (other == null || other.javaClass != STDCMEdge::class.java) return false
-        val otherEdge = other as STDCMEdge
-        return if (
-            infraExplorer.getLastEdgeIdentifier() != otherEdge.infraExplorer.getLastEdgeIdentifier()
-        )
-            false
-        else
-            minuteTimeStart == otherEdge.minuteTimeStart &&
-                envelopeStartOffset == otherEdge.envelopeStartOffset
-
-        // We need to consider that the edges aren't equal if the times are different,
-        // but if we do it "naively" we end up visiting the same places a near-infinite number of
-        // times.
-        // We handle it by discretizing the start time of the edge: we round the time down to the
-        // minute and compare
-        // this value.
-    }
-
-    override fun compareTo(other: STDCMEdge): Int {
-        return if (weight != other.weight) weight!!.compareTo(other.weight!!)
-        else {
-            // If the weights are equal, we prioritize the highest number of reached targets
-            other.waypointIndex - waypointIndex
-        }
-    }
-
-    override fun hashCode(): Int {
-        return Objects.hash(
-            infraExplorer.getLastEdgeIdentifier(),
-            minuteTimeStart,
-            envelopeStartOffset
-        )
     }
 
     /** Returns the node at the end of this edge */

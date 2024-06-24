@@ -7,10 +7,8 @@ import fr.sncf.osrd.graph.*
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.sim_infra.api.Block
-import fr.sncf.osrd.stdcm.STDCMResult
-import fr.sncf.osrd.stdcm.STDCMStep
+import fr.sncf.osrd.stdcm.*
 import fr.sncf.osrd.stdcm.infra_exploration.initInfraExplorerWithEnvelope
-import fr.sncf.osrd.stdcm.makeSTDCMHeuristics
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.utils.units.Offset
@@ -73,8 +71,8 @@ class STDCMPathfinding(
     private val pathfindingTimeout: Double = 120.0
 ) {
 
-    private var estimateRemainingDistance: List<AStarHeuristic<STDCMEdge, STDCMEdge>>? = ArrayList()
-    private var starts: Set<STDCMEdge> = HashSet()
+    private var remainingTimeEstimators: List<STDCMAStarHeuristic<STDCMNode>>? = ArrayList()
+    private var starts: Set<STDCMNode> = HashSet()
 
     var graph: STDCMGraph =
         STDCMGraph(
@@ -94,14 +92,13 @@ class STDCMPathfinding(
         assert(steps.size >= 2) { "Not enough steps have been set to find a path" }
 
         // Initialize the A* heuristic
-        estimateRemainingDistance =
+        remainingTimeEstimators =
             makeSTDCMHeuristics(
                 fullInfra.blockInfra,
                 fullInfra.rawInfra,
                 steps,
                 maxRunTime,
-                rollingStock,
-                maxDepartureDelay
+                rollingStock
             )
 
         val constraints =
@@ -143,46 +140,37 @@ class STDCMPathfinding(
     }
 
     private fun findPathImpl(): Result? {
-        val queue = PriorityQueue<STDCMEdge>()
+        val queue = PriorityQueue<STDCMNode>()
         for (location in starts) {
-            val totalCostUntilEdge = computeTotalCostUntilEdge(location)
-            val distanceLeftEstimation =
-                estimateRemainingDistance!![0].apply(location, location.length)
-            location.weight = distanceLeftEstimation + totalCostUntilEdge
+            location.remainingTimeEstimation = remainingTimeEstimators!!.apply(location, 0)
             queue.add(location)
         }
         val start = Instant.now()
         while (true) {
             if (Duration.between(start, Instant.now()).toSeconds() >= pathfindingTimeout)
                 throw OSRDError(ErrorType.PathfindingTimeoutError)
-            val edge = queue.poll() ?: return null
-            if (edge.weight!!.isInfinite()) {
-                // TODO: filter with max running time, can't be done with abstract weight
+            val endNode = queue.poll() ?: return null
+            if (endNode.getCurrentRunningTime() + endNode.remainingTimeEstimation > maxRunTime)
                 return null
-            }
-            // TODO: we mostly reason in terms of endNode, we should probably change the queue.
-            val endNode = graph.getEdgeEnd(edge)
             if (endNode.waypointIndex >= graph.steps.size - 1) {
-                return buildResult(edge)
+                return buildResult(endNode)
             }
-            val neighbors = graph.getAdjacentEdges(endNode)
+            val neighbors = getAdjacentNodes(endNode)
             for (neighbor in neighbors) {
-                val totalCostUntilEdge = computeTotalCostUntilEdge(neighbor)
-                var distanceLeftEstimation = 0.0
-                if (neighbor.waypointIndex < estimateRemainingDistance!!.size)
-                    distanceLeftEstimation =
-                        estimateRemainingDistance!![neighbor.waypointIndex].apply(
-                            neighbor,
-                            neighbor.length
-                        )
-                neighbor.weight = totalCostUntilEdge + distanceLeftEstimation
+                if (neighbor.waypointIndex < remainingTimeEstimators!!.size)
+                    neighbor.remainingTimeEstimation =
+                        remainingTimeEstimators!!.apply(neighbor, neighbor.waypointIndex)
                 queue.add(neighbor)
             }
         }
     }
 
-    private fun buildResult(edge: STDCMEdge): Result {
-        var mutLastEdge: STDCMEdge? = edge
+    private fun getAdjacentNodes(node: STDCMNode): Collection<STDCMNode> {
+        return graph.getAdjacentEdges(node).map { it.getEdgeEnd(graph) }
+    }
+
+    private fun buildResult(node: STDCMNode): Result {
+        var mutLastEdge: STDCMEdge? = node.previousEdge
         val edges = ArrayDeque<STDCMEdge>()
 
         while (mutLastEdge != null) {
@@ -222,26 +210,6 @@ class STDCMPathfinding(
         return res
     }
 
-    /**
-     * Compute the total cost of a path (in s) to an edge location This estimation of the total cost
-     * is used to compare paths in the pathfinding algorithm. We select the shortest path (in
-     * duration), and for 2 paths with the same duration, we select the earliest one. The path
-     * weight which takes into account the total duration of the path and the time shift at the
-     * departure (with different weights): path_duration * maxDepartureDelay + departure_time_shift.
-     *
-     * <br></br> EXAMPLE Let's assume we are trying to find a train between 9am and 10am. The
-     * maxDepartureDelay is 1 hour (3600s). Let's assume we have found two possible trains:
-     * - the first one leaves at 9:59 and lasts for 20:00 min.
-     * - the second one leaves at 9:00 and lasts for 20:01 min. As we are looking for the fastest
-     *   train, the first train should have the lightest weight, which is the case with the formula
-     *   above.
-     */
-    private fun computeTotalCostUntilEdge(edge: STDCMEdge): Double {
-        val timeEnd = edge.getApproximateTimeAtLocation(edge.length)
-        val pathDuration = timeEnd - edge.totalDepartureTimeShift
-        return pathDuration * maxDepartureDelay + edge.totalDepartureTimeShift
-    }
-
     /** Converts locations on a block id into a location on a STDCMGraph.Edge. */
     private fun convertLocations(
         graph: STDCMGraph,
@@ -251,8 +219,8 @@ class STDCMPathfinding(
         rollingStock: RollingStock,
         stops: List<Collection<PathfindingEdgeLocationId<Block>>> = listOf(),
         constraints: List<PathfindingConstraint<Block>>
-    ): Set<STDCMEdge> {
-        val res = HashSet<STDCMEdge>()
+    ): Set<STDCMNode> {
+        val res = HashSet<STDCMNode>()
 
         for (location in locations) {
             val infraExplorers =
@@ -265,7 +233,9 @@ class STDCMPathfinding(
                         .setStartOffset(location.offset)
                         .setPrevMaximumAddedDelay(maxDepartureDelay)
                         .makeAllEdges()
-                for (edge in edges) res.add(edge)
+                for (edge in edges) {
+                    res.add(edge.getEdgeEnd(graph))
+                }
             }
         }
         return res
