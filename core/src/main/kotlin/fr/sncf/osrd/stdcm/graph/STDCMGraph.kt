@@ -6,8 +6,8 @@ import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue.FixedTime
 import fr.sncf.osrd.graph.Graph
+import fr.sncf.osrd.stdcm.STDCMHeuristicBuilder
 import fr.sncf.osrd.stdcm.STDCMStep
-import fr.sncf.osrd.stdcm.makeSTDCMHeuristic
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.RollingStock.Comfort
@@ -53,13 +53,14 @@ class STDCMGraph(
 
     // Initialize the A* heuristic
     val remainingTimeEstimator =
-        makeSTDCMHeuristic(
-            fullInfra.blockInfra,
-            fullInfra.rawInfra,
-            steps,
-            maxRunTime,
-            rollingStock
-        )
+        STDCMHeuristicBuilder(
+                fullInfra.blockInfra,
+                fullInfra.rawInfra,
+                steps,
+                maxRunTime,
+                rollingStock
+            )
+            .build()
 
     /** Constructor */
     init {

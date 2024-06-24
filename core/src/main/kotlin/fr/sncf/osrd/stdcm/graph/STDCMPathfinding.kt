@@ -1,13 +1,17 @@
 package fr.sncf.osrd.stdcm.graph
 
 import fr.sncf.osrd.api.FullInfra
-import fr.sncf.osrd.api.pathfinding.constraints.*
+import fr.sncf.osrd.api.pathfinding.constraints.ConstraintCombiner
+import fr.sncf.osrd.api.pathfinding.constraints.initConstraints
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue
-import fr.sncf.osrd.graph.*
+import fr.sncf.osrd.graph.PathfindingConstraint
+import fr.sncf.osrd.graph.PathfindingEdgeLocationId
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.stdcm.*
+import fr.sncf.osrd.stdcm.STDCMResult
+import fr.sncf.osrd.stdcm.STDCMStep
 import fr.sncf.osrd.stdcm.infra_exploration.initInfraExplorerWithEnvelope
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.train.RollingStock
