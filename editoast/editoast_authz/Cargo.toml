@@ -1,0 +1,19 @@
+[package]
+name = "editoast_authz"
+license.workspace = true
+version.workspace = true
+edition.workspace = true
+
+[features]
+fixtures = []
+
+[dependencies]
+serde = { workspace = true, features = ["derive"] }
+strum.workspace = true
+thiserror.workspace = true
+toml_edit = { version = "0.22.16", features = ["parse", "serde"] }
+tracing.workspace = true
+
+[dev-dependencies]
+pretty_assertions.workspace = true
+tokio.workspace = true

@@ -7,6 +7,7 @@ use axum::extract::State;
 use axum::response::IntoResponse;
 use chrono::Utc;
 use derivative::Derivative;
+use editoast_authz::BuiltinRole;
 use editoast_derive::EditoastError;
 use editoast_models::DbConnectionPoolV2;
 use serde::Deserialize;
@@ -27,7 +28,10 @@ use crate::modelsv2::Document;
 use crate::modelsv2::Model;
 use crate::modelsv2::Project;
 use crate::modelsv2::Retrieve;
+use crate::views::make_authorizer;
 use crate::views::pagination::PaginationQueryParam;
+use crate::views::AuthorizationError;
+use crate::AppState;
 use editoast_models::DbConnection;
 
 crate::routes! {
@@ -144,9 +148,22 @@ impl ProjectWithStudyCount {
     )
 )]
 async fn create(
-    State(db_pool): State<DbConnectionPoolV2>,
+    headers: axum::http::HeaderMap,
+    State(AppState {
+        db_pool_v2: db_pool,
+        role_config,
+        ..
+    }): State<AppState>,
     Json(project_create_form): Json<ProjectCreateForm>,
 ) -> Result<Json<ProjectWithStudyCount>> {
+    let mut authorizer = make_authorizer(&headers, role_config.as_ref(), db_pool.clone()).await?;
+    let authorized = authorizer
+        .check_roles([BuiltinRole::OpsWrite].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Unauthorized.into());
+    }
     let conn = &mut db_pool.get().await?;
     if let Some(image) = project_create_form.image {
         check_image_content(conn, image).await?;

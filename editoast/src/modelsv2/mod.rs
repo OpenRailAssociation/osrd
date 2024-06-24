@@ -8,6 +8,7 @@ pub mod infra_objects;
 pub mod layers;
 pub mod light_rolling_stock;
 // We allow unused until models is moved to a separate crate
+pub mod auth;
 pub mod pagination;
 #[allow(unused)]
 pub mod prelude;

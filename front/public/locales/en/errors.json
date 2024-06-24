@@ -16,6 +16,11 @@
     "attached": {
       "TrackNotFound": "Track {{track_id}} not found"
     },
+    "authorization": {
+      "AuthError": "Authentication/authorization internal error, try again or contact support",
+      "Unauthenticated": "Unauthenticated user",
+      "Unauthorized": "Access denied"
+    },
     "auto_fixes": {
       "ConflictingFixesOnSameObject": "Conflicting fixes for the same object on the same fix-iteration",
       "FixTrialFailure": "Failed trying to apply fixes",
