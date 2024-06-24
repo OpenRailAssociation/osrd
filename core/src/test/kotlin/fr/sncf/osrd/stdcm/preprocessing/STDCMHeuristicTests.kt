@@ -4,10 +4,10 @@ import fr.sncf.osrd.envelope_sim.SimpleRollingStock
 import fr.sncf.osrd.graph.PathfindingEdgeLocationId
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.stdcm.STDCMAStarHeuristic
+import fr.sncf.osrd.stdcm.STDCMHeuristicBuilder
 import fr.sncf.osrd.stdcm.STDCMStep
 import fr.sncf.osrd.stdcm.graph.STDCMEdge
 import fr.sncf.osrd.stdcm.infra_exploration.initInfraExplorerWithEnvelope
-import fr.sncf.osrd.stdcm.makeSTDCMHeuristic
 import fr.sncf.osrd.utils.DummyInfra
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Length
@@ -64,13 +64,14 @@ class STDCMHeuristicTests {
             )
 
         val heuristic =
-            makeSTDCMHeuristic(
-                infra,
-                infra,
-                steps,
-                Double.POSITIVE_INFINITY,
-                SimpleRollingStock.STANDARD_TRAIN,
-            )
+            STDCMHeuristicBuilder(
+                    infra,
+                    infra,
+                    steps,
+                    Double.POSITIVE_INFINITY,
+                    SimpleRollingStock.STANDARD_TRAIN,
+                )
+                .build()
 
         assertEquals(
             400.0 - 50.0,
