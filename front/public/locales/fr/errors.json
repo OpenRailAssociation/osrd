@@ -16,6 +16,11 @@
     "attached": {
       "TrackNotFound": "Section de ligne {{track_id}} non trouvée"
     },
+    "authorization": {
+      "AuthError": "Erreur interne d'authentification ou d'autorisation, veuillez réessayer ou contacter le support",
+      "Unauthenticated": "Utilisateur non authentifié",
+      "Unauthorized": "Accès refusé"
+    },
     "auto_fixes": {
       "ConflictingFixesOnSameObject": "Correctifs conflictuels pour le même objet sur la même itération de correctif",
       "FixTrialFailure": "Echec de l'application des correctifs",

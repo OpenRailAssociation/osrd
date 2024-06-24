@@ -3888,6 +3888,63 @@ components:
           type: string
           enum:
           - editoast:attached:TrackNotFound
+    EditoastAuthorizationErrorAuthError:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 500
+        type:
+          type: string
+          enum:
+          - editoast:authorization:AuthError
+    EditoastAuthorizationErrorUnauthenticated:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 401
+        type:
+          type: string
+          enum:
+          - editoast:authorization:Unauthenticated
+    EditoastAuthorizationErrorUnauthorized:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 401
+        type:
+          type: string
+          enum:
+          - editoast:authorization:Unauthorized
     EditoastAutoFixesEditoastErrorConflictingFixesOnSameObject:
       type: object
       required:
@@ -4341,6 +4398,9 @@ components:
       - $ref: '#/components/schemas/EditoastAppHealthErrorRedis'
       - $ref: '#/components/schemas/EditoastAppHealthErrorTimeout'
       - $ref: '#/components/schemas/EditoastAttachedErrorTrackNotFound'
+      - $ref: '#/components/schemas/EditoastAuthorizationErrorAuthError'
+      - $ref: '#/components/schemas/EditoastAuthorizationErrorUnauthenticated'
+      - $ref: '#/components/schemas/EditoastAuthorizationErrorUnauthorized'
       - $ref: '#/components/schemas/EditoastAutoFixesEditoastErrorConflictingFixesOnSameObject'
       - $ref: '#/components/schemas/EditoastAutoFixesEditoastErrorFixTrialFailure'
       - $ref: '#/components/schemas/EditoastAutoFixesEditoastErrorMaximumIterationReached'

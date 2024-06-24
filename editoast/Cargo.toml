@@ -30,6 +30,7 @@ diesel = { version = "2.1.6", features = [
   "uuid",
 ] }
 diesel-async = { version = "0.4.1", features = ["deadpool", "postgres"] }
+editoast_authz = { path = "./editoast_authz" }
 editoast_common = { path = "./editoast_common" }
 editoast_derive = { path = "./editoast_derive" }
 editoast_models = { path = "./editoast_models" }
@@ -46,6 +47,7 @@ openssl = "0.10.66"
 paste = "1.0.15"
 postgis_diesel = { version = "2.3.1", features = ["serde"] }
 postgres-openssl = "0.5.0"
+pretty_assertions = "1.4.0"
 rand = "0.8.5"
 rangemap = "1.5.1"
 rstest = "0.19.0"
@@ -78,6 +80,7 @@ derivative.workspace = true
 diesel.workspace = true
 diesel-async = { workspace = true }
 diesel_json = "0.2.1"
+editoast_authz.workspace = true
 editoast_common = { workspace = true }
 editoast_derive.workspace = true
 editoast_models.workspace = true
@@ -144,8 +147,9 @@ validator = { version = "0.18.1", features = ["derive"] }
 [dev-dependencies]
 async-std = { version = "1.12.0", features = ["attributes", "tokio1"] }
 axum = { version = "0.7.5", features = ["macros", "multipart"] }
+editoast_authz = { workspace = true, features = ["fixtures"] }
 editoast_models = { workspace = true, features = ["testing"] }
-pretty_assertions = "1.4.0"
+pretty_assertions.workspace = true
 rstest.workspace = true
 serial_test = "3.1.1"
 tempfile.workspace = true

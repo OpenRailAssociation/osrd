@@ -29,6 +29,9 @@ use std::ops::DerefMut as _;
 use std::sync::Arc;
 use std::time::Duration;
 
+use editoast_authz::authorizer::Authorizer;
+use editoast_authz::authorizer::UserInfo;
+use editoast_authz::BuiltinRole;
 use futures::TryFutureExt;
 pub use openapi::OpenApiRoot;
 
@@ -53,6 +56,7 @@ use crate::generated_data;
 use crate::infra_cache::operation;
 use crate::models;
 use crate::modelsv2;
+use crate::modelsv2::auth::PgAuthDriver;
 use crate::AppState;
 use crate::RedisClient;
 
@@ -110,6 +114,56 @@ editoast_common::schemas! {
     train_schedule::schemas(),
     v2::schemas(),
     work_schedules::schemas(),
+}
+
+pub type Roles = editoast_authz::roles::RoleConfig<BuiltinRole>;
+
+// This function will become a middleware once we switch to axum
+async fn make_authorizer<'config>(
+    headers: &axum::http::HeaderMap,
+    roles: &'config Roles,
+    db_pool: Arc<DbConnectionPoolV2>,
+) -> Result<Authorizer<'config, PgAuthDriver<BuiltinRole>>, AuthorizationError> {
+    if roles.is_superuser() {
+        return Ok(Authorizer::new_superuser(
+            roles,
+            PgAuthDriver::<BuiltinRole>::new(db_pool.clone()),
+        ));
+    }
+    let Some(header) = headers.get("x-remote-user") else {
+        return Err(AuthorizationError::Unauthenticated);
+    };
+    let (identity, name) = header
+        .to_str()
+        .expect("unexpected non-ascii characters in x-remote-user")
+        .split_once('/') // FIXME: the gateway should inject two headers instead
+        .expect("odd x-remote-user format");
+    let authorizer = Authorizer::try_initialize(
+        UserInfo {
+            identity: identity.to_owned(),
+            name: name.to_owned(),
+        },
+        roles,
+        PgAuthDriver::<BuiltinRole>::new(db_pool.clone()),
+    )
+    .await?;
+    Ok(authorizer)
+}
+
+#[derive(Debug, Error, EditoastError)]
+#[editoast_error(base_id = "authorization")]
+pub enum AuthorizationError {
+    #[error("Unauthenticated")]
+    #[editoast_error(status = 401)]
+    Unauthenticated,
+    #[error("Unauthorized")]
+    #[editoast_error(status = 401)]
+    Unauthorized,
+    #[error(transparent)]
+    #[editoast_error(status = 500)]
+    AuthError(
+        #[from] <PgAuthDriver<BuiltinRole> as editoast_authz::authorizer::StorageDriver>::Error,
+    ),
 }
 
 #[derive(Debug, Error, EditoastError)]

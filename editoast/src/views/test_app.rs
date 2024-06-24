@@ -23,6 +23,8 @@ use crate::{
 use axum_test::TestRequest;
 use axum_test::TestServer;
 
+use super::Roles;
+
 /// A builder interface for [TestApp]
 ///
 /// It allows configuring some parameters for the app service.
@@ -35,6 +37,7 @@ use axum_test::TestServer;
 pub(crate) struct TestAppBuilder {
     db_pool: Option<DbConnectionPoolV2>,
     core_client: Option<CoreClient>,
+    roles: Option<Roles>,
     db_pool_v1: bool,
 }
 
@@ -43,6 +46,7 @@ impl TestAppBuilder {
         Self {
             db_pool: None,
             core_client: None,
+            roles: None,
             db_pool_v1: false,
         }
     }
@@ -60,12 +64,20 @@ impl TestAppBuilder {
         self
     }
 
+    pub fn roles(mut self, roles: Roles) -> Self {
+        assert!(self.roles.is_none());
+        self.roles = Some(roles);
+        self
+    }
+
     pub fn default_app() -> TestApp {
         let pool = DbConnectionPoolV2::for_tests();
         let core_client = CoreClient::default();
+        let roles = Roles::new_superuser();
         TestAppBuilder::new()
             .db_pool(pool)
             .core_client(core_client)
+            .roles(roles)
             .build()
     }
 
@@ -109,6 +121,9 @@ impl TestAppBuilder {
         // Load speed limit tag config
         let speed_limit_tag_ids = Arc::new(SpeedLimitTagIds::load());
 
+        // Role configuration
+        let role_config = self.roles.unwrap_or_else(Roles::new_superuser).into();
+
         // Build Core client
         let core_client = Arc::new(self.core_client.expect(
             "No core client provided to TestAppBuilder, use Default or provide a core client",
@@ -123,6 +138,7 @@ impl TestAppBuilder {
             map_layers: MapLayers::parse().into(),
             map_layers_config: MapLayersConfig::default().into(),
             speed_limit_tag_ids,
+            role_config,
         };
 
         // Configure the axum router

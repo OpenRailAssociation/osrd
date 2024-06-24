@@ -4,6 +4,60 @@ diesel::table! {
     use diesel::sql_types::*;
     use postgis_diesel::sql_types::*;
 
+    authn_group (id) {
+        id -> Int8,
+        name -> Text,
+    }
+}
+
+diesel::table! {
+    use diesel::sql_types::*;
+    use postgis_diesel::sql_types::*;
+
+    authn_group_membership (id) {
+        id -> Int8,
+        user -> Int8,
+        group -> Int8,
+    }
+}
+
+diesel::table! {
+    use diesel::sql_types::*;
+    use postgis_diesel::sql_types::*;
+
+    authn_subject (id) {
+        id -> Int8,
+    }
+}
+
+diesel::table! {
+    use diesel::sql_types::*;
+    use postgis_diesel::sql_types::*;
+
+    authn_user (id) {
+        id -> Int8,
+        #[max_length = 255]
+        identity_id -> Varchar,
+        name -> Nullable<Text>,
+    }
+}
+
+diesel::table! {
+    use diesel::sql_types::*;
+    use postgis_diesel::sql_types::*;
+
+    authz_role (id) {
+        id -> Int8,
+        subject -> Int8,
+        #[max_length = 255]
+        role -> Varchar,
+    }
+}
+
+diesel::table! {
+    use diesel::sql_types::*;
+    use postgis_diesel::sql_types::*;
+
     document (id) {
         id -> Int8,
         #[max_length = 255]
@@ -725,6 +779,11 @@ diesel::table! {
     }
 }
 
+diesel::joinable!(authn_group -> authn_subject (id));
+diesel::joinable!(authn_group_membership -> authn_group (group));
+diesel::joinable!(authn_group_membership -> authn_user (user));
+diesel::joinable!(authn_user -> authn_subject (id));
+diesel::joinable!(authz_role -> authn_subject (subject));
 diesel::joinable!(infra_layer_buffer_stop -> infra (infra_id));
 diesel::joinable!(infra_layer_detector -> infra (infra_id));
 diesel::joinable!(infra_layer_electrification -> infra (infra_id));
@@ -776,6 +835,11 @@ diesel::joinable!(train_schedule_v2 -> timetable_v2 (timetable_id));
 diesel::joinable!(work_schedule -> work_schedule_group (work_schedule_group_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
+    authn_group,
+    authn_group_membership,
+    authn_subject,
+    authn_user,
+    authz_role,
     document,
     electrical_profile_set,
     infra,

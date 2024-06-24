@@ -1,0 +1,5 @@
+name = "Test role configuration"
+version = "0.1"
+
+[application_roles.operational_studies]
+implies = ["operational_studies_write"]

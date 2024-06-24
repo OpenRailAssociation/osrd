@@ -148,6 +148,10 @@ pub struct RunserverArgs {
     pub root_path: String,
     #[clap(long)]
     pub workers: Option<usize>,
+    /// An application roles configuration file to apply. If none is provided (default behavior),
+    /// the superuser role is granted to all users.
+    #[clap(long, env = "EDITOAST_ROLES_CONFIG")]
+    pub roles_config: Option<PathBuf>,
 }
 
 #[derive(Args, Debug)]
