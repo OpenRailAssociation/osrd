@@ -282,16 +282,16 @@ dependencies = [
 
 [[package]]
 name = "actix-web-opentelemetry"
-version = "0.17.0"
+version = "0.18.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d6e0327e7b731c61b77fb54b278477aa3ebd09752bde38d169863167636e2d48"
+checksum = "923b53a2a54dd0b6fb3e737a036b497321b693d16c120806ba4009478f06109b"
 dependencies = [
  "actix-http",
  "actix-web",
  "awc",
  "futures-util",
- "opentelemetry",
- "opentelemetry-semantic-conventions",
+ "opentelemetry 0.23.0",
+ "opentelemetry-semantic-conventions 0.15.0",
  "serde",
 ]
 
@@ -1387,10 +1387,10 @@ dependencies = [
  "json-patch",
  "mvt",
  "openssl",
- "opentelemetry",
+ "opentelemetry 0.22.0",
  "opentelemetry-datadog",
  "opentelemetry-otlp",
- "opentelemetry-semantic-conventions",
+ "opentelemetry-semantic-conventions 0.14.0",
  "opentelemetry_sdk",
  "osm_to_railjson",
  "paste",
@@ -2818,6 +2818,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "opentelemetry"
+version = "0.23.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1b69a91d4893e713e06f724597ad630f1fa76057a5e1026c0ca67054a9032a76"
+dependencies = [
+ "futures-core",
+ "futures-sink",
+ "js-sys",
+ "once_cell",
+ "pin-project-lite",
+ "thiserror",
+]
+
+[[package]]
 name = "opentelemetry-datadog"
 version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2828,9 +2842,9 @@ dependencies = [
  "indexmap 2.2.6",
  "itertools 0.11.0",
  "once_cell",
- "opentelemetry",
+ "opentelemetry 0.22.0",
  "opentelemetry-http",
- "opentelemetry-semantic-conventions",
+ "opentelemetry-semantic-conventions 0.14.0",
  "opentelemetry_sdk",
  "reqwest",
  "rmp",
@@ -2847,7 +2861,7 @@ dependencies = [
  "async-trait",
  "bytes",
  "http 0.2.12",
- "opentelemetry",
+ "opentelemetry 0.22.0",
  "reqwest",
 ]
 
@@ -2860,9 +2874,9 @@ dependencies = [
  "async-trait",
  "futures-core",
  "http 0.2.12",
- "opentelemetry",
+ "opentelemetry 0.22.0",
  "opentelemetry-proto",
- "opentelemetry-semantic-conventions",
+ "opentelemetry-semantic-conventions 0.14.0",
  "opentelemetry_sdk",
  "prost",
  "thiserror",
@@ -2876,7 +2890,7 @@ version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3a8fddc9b68f5b80dae9d6f510b88e02396f006ad48cac349411fbecc80caae4"
 dependencies = [
- "opentelemetry",
+ "opentelemetry 0.22.0",
  "opentelemetry_sdk",
  "prost",
  "tonic",
@@ -2887,6 +2901,12 @@ name = "opentelemetry-semantic-conventions"
 version = "0.14.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f9ab5bd6c42fb9349dcf28af2ba9a0667f697f9bdcca045d39f2cec5543e2910"
+
+[[package]]
+name = "opentelemetry-semantic-conventions"
+version = "0.15.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1869fb4bb9b35c5ba8a1e40c9b128a7b4c010d07091e864a29da19e4fe2ca4d7"
 
 [[package]]
 name = "opentelemetry_sdk"
@@ -2901,7 +2921,7 @@ dependencies = [
  "futures-util",
  "glob",
  "once_cell",
- "opentelemetry",
+ "opentelemetry 0.22.0",
  "ordered-float",
  "percent-encoding",
  "rand 0.8.5",
@@ -4637,7 +4657,7 @@ checksum = "a9be14ba1bbe4ab79e9229f7f89fab8d120b865859f10527f31c033e599d2284"
 dependencies = [
  "js-sys",
  "once_cell",
- "opentelemetry",
+ "opentelemetry 0.22.0",
  "opentelemetry_sdk",
  "smallvec 1.13.2",
  "tracing",
