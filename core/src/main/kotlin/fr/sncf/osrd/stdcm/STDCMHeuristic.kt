@@ -3,13 +3,12 @@ package fr.sncf.osrd.stdcm
 import fr.sncf.osrd.api.pathfinding.makePathProps
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock
 import fr.sncf.osrd.envelope_sim_infra.MRSP
-import fr.sncf.osrd.graph.AStarHeuristic
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.sim_infra.api.BlockInfra
 import fr.sncf.osrd.sim_infra.api.RawInfra
 import fr.sncf.osrd.sim_infra.utils.getBlockEntry
-import fr.sncf.osrd.stdcm.graph.STDCMEdge
+import fr.sncf.osrd.stdcm.graph.STDCMNode
 import fr.sncf.osrd.utils.indexing.StaticIdx
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
@@ -45,15 +44,24 @@ private data class PendingBlock(
     }
 }
 
-/** Runs all the pre-processing and initialize the STDCM A* heuristic. */
+/**
+ * This typealias defines a function that can be used as a heuristic for an A* pathfinding. It takes
+ * a node as input, and returns an estimation of the remaining time needed to get to the end.
+ */
+typealias STDCMAStarHeuristic<NodeT> = (NodeT) -> Double
+
+fun <NodeT> List<STDCMAStarHeuristic<NodeT>>.apply(node: NodeT, nbPassedSteps: Int): Double {
+    return this[nbPassedSteps](node)
+}
+
+/** Runs all the pre-processing and initializes the STDCM A* heuristic. */
 fun makeSTDCMHeuristics(
     blockInfra: BlockInfra,
     rawInfra: RawInfra,
     steps: List<STDCMStep>,
     maxRunningTime: Double,
     rollingStock: PhysicsRollingStock,
-    maxDepartureDelay: Double,
-): List<AStarHeuristic<STDCMEdge, STDCMEdge>> {
+): List<STDCMAStarHeuristic<STDCMNode>> {
     logger.info("Start building STDCM heuristic...")
     // One map per number of reached pathfinding step
     val maps = mutableListOf<MutableMap<BlockId, Double>>()
@@ -76,23 +84,24 @@ fun makeSTDCMHeuristics(
         }
     }
 
-    // We build one function (`AStarHeuristic`) per number of reached step
-    val res = mutableListOf<AStarHeuristic<STDCMEdge, STDCMEdge>>()
+    // We build one function (`STDCMAStarHeuristic`) per number of reached step
+    val res = mutableListOf<STDCMAStarHeuristic<STDCMNode>>()
     for (nPassedSteps in maps.indices) {
-        res.add { edge, offset ->
+        res.add { node ->
             // We need to iterate through the previous maps,
             // to handle cases where several steps are on the same block
             for (i in (0..nPassedSteps).reversed()) {
-                val cachedRemainingDistance = maps[i][edge.block] ?: continue
-                val blockOffset = edge.envelopeStartOffset + offset.distance
+                val cachedRemainingTime = maps[i][node.previousEdge.block] ?: continue
                 val remainingTime =
-                    cachedRemainingDistance -
-                        getBlockTime(rawInfra, blockInfra, edge.block, rollingStock, blockOffset)
-
-                // Accounts for the math in the `costToEdgeLocation`.
-                // We need the resulting value to be in the same referential as the cost
-                // used as STDCM cost function, which scales the running time
-                return@add remainingTime * maxDepartureDelay
+                    cachedRemainingTime -
+                        getBlockTime(
+                            rawInfra,
+                            blockInfra,
+                            node.previousEdge.block,
+                            rollingStock,
+                            node.locationOnEdge
+                        )
+                return@add remainingTime
             }
             return@add Double.POSITIVE_INFINITY
         }

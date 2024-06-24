@@ -34,18 +34,7 @@ fun interface TargetsOnEdge<EdgeT, OffsetType> {
     fun apply(edge: EdgeT): Collection<Pathfinding.EdgeLocation<EdgeT, OffsetType>>
 }
 
-/** Alternate way to define the cost: returns the absolute cost of a location on an edge */
-fun interface TotalCostUntilEdgeLocation<EdgeT, OffsetType> {
-    fun apply(edgeLocation: Pathfinding.EdgeLocation<EdgeT, OffsetType>): Double
-}
-
 // Type aliases to avoid repeating `StaticIdx<T>, T` when edge types are static idx
 typealias AStarHeuristicId<T> = AStarHeuristic<StaticIdx<T>, T>
 
-typealias EdgeToLengthId<T> = EdgeToLength<StaticIdx<T>, T>
-
 typealias PathfindingConstraint<T> = EdgeToRanges<StaticIdx<T>, T>
-
-typealias TargetsOnEdgeId<T> = TargetsOnEdge<StaticIdx<T>, T>
-
-typealias TotalCostUntilEdgeLocationId<T> = TotalCostUntilEdgeLocation<StaticIdx<T>, T>
