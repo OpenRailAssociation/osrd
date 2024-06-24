@@ -1,8 +1,8 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 
-import type { CellComponent, CellProps, Column } from 'react-datasheet-grid/dist/types';
+import type { CellProps } from 'react-datasheet-grid/dist/types';
 
-const TimeComponent = ({
+const TimeInput = ({
   focus,
   rowData,
   active,
@@ -51,15 +51,6 @@ const TimeComponent = ({
   );
 };
 
-TimeComponent.displayName = 'TimeComponent';
+TimeInput.displayName = 'TimeInput';
 
-const timeColumn: Partial<Column<string | null | undefined, string, string>> = {
-  component: TimeComponent as CellComponent<string | null | undefined, string>,
-  deleteValue: () => null,
-  copyValue: ({ rowData }) => rowData ?? null,
-  pasteValue: ({ value }) => value,
-  minWidth: 170,
-  isCellEmpty: ({ rowData }) => !rowData,
-};
-
-export default timeColumn;
+export default TimeInput;

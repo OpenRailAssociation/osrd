@@ -24,3 +24,5 @@ export function msToKmh(v: number) {
 export function mToKmOneDecimal(m: number) {
   return Math.round(m / 100) / 10;
 }
+
+export const marginRegExValidation = /^\d+(\.\d+)?%$|^\d+(\.\d+)?min\/100km$/;

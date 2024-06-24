@@ -2,8 +2,8 @@ import type { TFunction } from 'i18next';
 
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
 import type { PathStep } from 'reducers/osrdconf/types';
+import { marginRegExValidation } from 'utils/physics';
 
-import { marginRegExValidation } from './consts';
 import type { PathWaypointColumn } from './types';
 
 // eslint-disable-next-line import/prefer-default-export
