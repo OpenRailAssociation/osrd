@@ -822,7 +822,11 @@ pub mod tests {
 
     #[rstest]
     async fn infra_delete() {
-        let app = TestAppBuilder::default_app();
+        let pool = DbConnectionPoolV2::for_tests_no_transaction();
+        let app = TestAppBuilder::new()
+            .db_pool(pool)
+            .core_client(CoreClient::default())
+            .build();
         let db_pool = app.db_pool();
         let empty_infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
 
