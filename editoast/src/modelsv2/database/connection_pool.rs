@@ -214,9 +214,19 @@ impl DbConnectionPoolV2 {
     pub async fn try_from_pool(
         pool: Arc<Pool<AsyncPgConnection>>,
     ) -> Result<Self, DbConnectionError> {
+        Self::try_from_pool_test(pool, true).await
+    }
+
+    #[cfg(test)]
+    pub async fn try_from_pool_test(
+        pool: Arc<Pool<AsyncPgConnection>>,
+        transaction: bool,
+    ) -> Result<Self, DbConnectionError> {
         use diesel_async::AsyncConnection;
         let mut conn = pool.get().await?;
-        conn.begin_test_transaction().await?;
+        if transaction {
+            conn.begin_test_transaction().await?;
+        }
         let test_connection = Arc::new(RwLock::new(conn));
 
         Ok(Self {
@@ -225,16 +235,32 @@ impl DbConnectionPoolV2 {
         })
     }
 
-    /// Create a connection pool for testing purposes
+    #[cfg(test)]
+    fn new_for_tests(transaction: bool) -> Self {
+        let url = std::env::var("OSRD_TEST_PG_URL")
+            .unwrap_or_else(|_| String::from("postgresql://osrd:password@localhost/osrd"));
+        let url = Url::parse(&url).expect("Failed to parse postgresql url");
+        let pool =
+            create_connection_pool(url, 1).expect("Failed to initialize test connection pool");
+        futures::executor::block_on(Self::try_from_pool_test(Arc::new(pool), transaction))
+            .expect("Failed to initialize test connection pool")
+    }
+
+    /// Create a connection pool for testing purposes.
+    /// This method will create a connection with a transaction that will be rolled back at the end of the test.
     ///
     /// You can set the `OSRD_TEST_PG_URL` environment variable to use a custom database url.
     #[cfg(test)]
     pub fn for_tests() -> Self {
-        let url = std::env::var("OSRD_TEST_PG_URL")
-            .unwrap_or_else(|_| String::from("postgresql://osrd:password@localhost/osrd"));
-        let url = Url::parse(&url).expect("Failed to parse postgresql url");
-        futures::executor::block_on(Self::try_initialize(url, 1))
-            .expect("Failed to initialize test connection pool")
+        Self::new_for_tests(true)
+    }
+
+    /// Create a connection pool for testing purposes without a transaction
+    ///
+    /// You can set the `OSRD_TEST_PG_URL` environment variable to use a custom database url.
+    #[cfg(test)]
+    pub fn for_tests_no_transaction() -> Self {
+        Self::new_for_tests(false)
     }
 }
 
