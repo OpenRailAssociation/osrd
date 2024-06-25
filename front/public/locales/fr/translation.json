@@ -403,6 +403,7 @@
           "save-speed-section": "Sauvegarder la vitesse limite"
         },
         "add-new-speed-limit": "Ajouter une nouvelle limitation",
+        "add-new-tag": "Ajouter un nouveau code de composition",
         "add-sign": "Ajouter un panneau de type {{signType}}",
         "add-track-range": "Cliquer pour lier à :",
         "additional-speed-limit": "Limitation de vitesse additionnelles",

@@ -1,4 +1,4 @@
-import React, { type FC, useContext, useEffect, useMemo, useState } from 'react';
+import React, { type FC, useContext, useEffect, useState } from 'react';
 
 import { cloneDeep, isEmpty, isEqual, map, size } from 'lodash';
 import { useTranslation } from 'react-i18next';
@@ -13,6 +13,7 @@ import type {
   SpeedSectionEntity,
 } from 'applications/editor/tools/rangeEdition/types';
 import type { ExtendedEditorContextType } from 'applications/editor/types';
+import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
 
 import SpeedInput from './SpeedInput';
 
@@ -29,7 +30,9 @@ const getNewSpeedLimitTag = (
   return newSpeedLimitTag;
 };
 
-const SpeedSectionMetadataForm: FC = () => {
+type SpeedSectionMetadataFormProps = { speedLimitTags: string[] };
+
+const SpeedSectionMetadataForm: FC<SpeedSectionMetadataFormProps> = ({ speedLimitTags }) => {
   const { t } = useTranslation();
   const {
     state: { entity, error },
@@ -39,15 +42,6 @@ const SpeedSectionMetadataForm: FC = () => {
   const [tagSpeedLimits, setTagSpeedLimits] = useState<
     { id: string; tag: string; value?: number }[]
   >(map(entity.properties.speed_limit_by_tag, (value, tag) => ({ tag, value, id: nextId() })));
-
-  const tagCounts = useMemo(
-    () =>
-      tagSpeedLimits.reduce(
-        (iter: Record<string, number>, { tag }) => ({ ...iter, [tag]: (iter[tag] || 0) + 1 }),
-        {}
-      ),
-    [tagSpeedLimits]
-  );
 
   useEffect(() => {
     const newState: Partial<RangeEditionState<SpeedSectionEntity>> = {};
@@ -103,24 +97,24 @@ const SpeedSectionMetadataForm: FC = () => {
         )}
         {tagSpeedLimits.map(({ id, tag, value }, currentIndex) => (
           <div key={id} className="form-group field field-string">
-            <div className="d-flex flex-row align-items-center">
-              <input
-                required
-                className="form-control flex-grow-2 flex-shrink-1 mr-2 px-2"
-                placeholder=""
-                type="text"
-                value={tag}
-                pattern={
-                  // Insert an invalid pattern to force the error appearance when tag is redundant
-                  tagCounts[tag] && tagCounts[tag] > 1 ? `not ${tag}` : undefined
-                }
-                onChange={(e) => {
-                  const newKey = e.target.value;
-                  setTagSpeedLimits((state) =>
-                    state.map((pair, i) => (i === currentIndex ? { ...pair, tag: newKey } : pair))
-                  );
-                }}
-              />
+            <div className="d-flex flex-row align-items-center my-1">
+              <div className="flex-grow-1 mr-2">
+                <SelectImprovedSNCF
+                  options={speedLimitTags}
+                  value={tag}
+                  onChange={(tagSelected) => {
+                    setTagSpeedLimits((state) =>
+                      state.map((pair, i) =>
+                        i === currentIndex ? { ...pair, tag: tagSelected } : pair
+                      )
+                    );
+                  }}
+                  withSearch
+                  withNewValueInput
+                  addButtonTitle={t('Editor.tools.speed-edition.add-new-tag')}
+                  bgWhite
+                />
+              </div>
               <SpeedInput
                 className="form-control flex-shrink-0 px-2"
                 style={{ width: '5em' }}
