@@ -99,6 +99,14 @@ const RangeEditionLeftPanel = () => {
     { skip: !infraID }
   );
 
+  const { data: speedLimitTags } =
+    osrdEditoastApi.endpoints.getInfraByInfraIdSpeedLimitTags.useQuery(
+      {
+        infraId: infraID as number,
+      },
+      { skip: !infraID }
+    );
+
   const updateSpeedSectionExtensions = (
     extensions: SpeedSectionEntity['properties']['extensions']
   ) => {
@@ -212,11 +220,9 @@ const RangeEditionLeftPanel = () => {
       <legend className="mb-4">
         {t(`Editor.obj-types.${isSpeedSection ? 'SpeedSection' : 'Electrification'}`)}
       </legend>
-      {initialEntity.objType === 'SpeedSection' ? (
-        <SpeedSectionMetadataForm />
-      ) : (
-        voltages && <ElectrificationMetadataForm voltages={voltages} />
-      )}
+      {initialEntity.objType === 'SpeedSection'
+        ? speedLimitTags && <SpeedSectionMetadataForm speedLimitTags={speedLimitTags} />
+        : voltages && <ElectrificationMetadataForm voltages={voltages} />}
       <hr />
       {initialEntity.objType === 'SpeedSection' && (
         <>

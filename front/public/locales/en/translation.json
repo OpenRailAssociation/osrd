@@ -420,6 +420,7 @@
           "save-speed-section": "Save the speed limit"
         },
         "add-new-speed-limit": "Add new speed limit",
+        "add-new-tag": "Add a new composition code",
         "add-sign": "Add a sign from {{signType}} type",
         "add-track-range": "Click to link to:",
         "additional-speed-limit": "Additional speed limits",
