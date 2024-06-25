@@ -100,6 +100,91 @@ class STDCMHeuristicTests {
         )
     }
 
+    @Test
+    fun lookaheadTest() {
+        /*
+                   -------> x ------> y
+                  /
+        a ------> b ------> c ------> d ------> e
+             ^         ^                   ^
+             0         1                   2
+         */
+        val infra = DummyInfra()
+        val blocks =
+            listOf(
+                infra.addBlock("a", "b", allowedSpeed = 1.0),
+                infra.addBlock("b", "c", allowedSpeed = 1.0),
+                infra.addBlock("c", "d", allowedSpeed = 1.0),
+                infra.addBlock("d", "e", allowedSpeed = 1.0),
+            )
+        val alternativeBlocks =
+            listOf(
+                infra.addBlock("b", "x", allowedSpeed = 1.0),
+                infra.addBlock("x", "y", allowedSpeed = 1.0),
+            )
+
+        val steps =
+            listOf(
+                STDCMStep(
+                    listOf(PathfindingEdgeLocationId(blocks[0], Offset(50.meters))),
+                    null,
+                    false
+                ),
+                STDCMStep(
+                    listOf(PathfindingEdgeLocationId(blocks[1], Offset(50.meters))),
+                    null,
+                    false
+                ),
+                STDCMStep(
+                    listOf(PathfindingEdgeLocationId(blocks[3], Offset(50.meters))),
+                    1.0,
+                    true
+                ),
+            )
+
+        val heuristics =
+            STDCMHeuristicBuilder(
+                    infra,
+                    infra,
+                    steps,
+                    Double.POSITIVE_INFINITY,
+                    SimpleRollingStock.STANDARD_TRAIN,
+                )
+                .build()
+
+        for (i in 1 until blocks.size) {
+            val lookahead = mutableListOf<BlockId>()
+            for (j in 1 ..< i) {
+                lookahead.add(blocks[j])
+            }
+            // While the lookahead is on the right path, the remaining distance shouldn't change
+            assertEquals(
+                400.0 - 50.0 - 50.0,
+                getLocationRemainingTime(
+                    infra,
+                    blocks[0],
+                    50.meters,
+                    0,
+                    heuristics,
+                    lookahead = lookahead
+                )
+            )
+        }
+
+        // Lookahead on the wrong path, no possible result
+        assertEquals(
+            Double.POSITIVE_INFINITY,
+            getLocationRemainingTime(
+                infra,
+                blocks[0],
+                50.meters,
+                0,
+                heuristics,
+                lookahead = listOf(alternativeBlocks.first())
+            )
+        )
+    }
+
     /**
      * Returns the estimated remaining time at the given location. The instantiated stdcm edge
      * starts at edgeStart, the edgeOffset references this edge.
@@ -109,15 +194,24 @@ class STDCMHeuristicTests {
         block: BlockId,
         nodeOffsetOnEdge: Distance?,
         nbPassedSteps: Int,
-        heuristic: STDCMAStarHeuristic
+        heuristic: STDCMAStarHeuristic,
+        lookahead: List<BlockId> = listOf()
     ): Double {
-        val explorer =
+        var explorer =
             initInfraExplorerWithEnvelope(
                     infra.fullInfra(),
                     PathfindingEdgeLocationId(block, Offset(0.meters)),
                     SimpleRollingStock.STANDARD_TRAIN
                 )
                 .first()
+
+        // Extend the lookahead to include the blocks given as parameters
+        while (!lookahead.all { explorer.getLookahead().contains(it) }) {
+            explorer =
+                explorer.cloneAndExtendLookahead().first { newExplorer ->
+                    newExplorer.getLookahead().all { lookahead.contains(it) }
+                }
+        }
         val defaultEdge =
             STDCMEdge(
                 explorer,
