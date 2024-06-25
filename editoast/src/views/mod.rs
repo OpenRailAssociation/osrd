@@ -34,6 +34,7 @@ use itertools::Itertools;
 use redis::cmd;
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
+use std::ops::DerefMut;
 use tracing::debug;
 use utoipa::openapi::RefOr;
 use utoipa::OpenApi;
@@ -54,7 +55,7 @@ use crate::error::{self};
 use crate::infra_cache::operation;
 use crate::models;
 use crate::modelsv2;
-use crate::modelsv2::DbConnectionPool;
+use crate::modelsv2::DbConnectionPoolV2;
 use crate::RedisClient;
 
 // This function is only temporary while our migration to using utoipa is
@@ -321,12 +322,13 @@ impl OpenApiRoot {
 )]
 #[get("/health")]
 async fn health(
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Data<DbConnectionPoolV2>,
     redis_client: Data<RedisClient>,
 ) -> Result<&'static str> {
     use diesel_async::RunQueryDsl;
-    let mut conn = db_pool.get().await?;
-    sql_query("SELECT 1").execute(&mut conn).await?;
+    sql_query("SELECT 1")
+        .execute(db_pool.get().await?.deref_mut())
+        .await?;
 
     let mut conn = redis_client.get_connection().await?;
     cmd("PING").query_async::<_, ()>(&mut conn).await.unwrap();
@@ -374,9 +376,9 @@ mod tests {
     use actix_web::dev::ServiceResponse;
     use actix_web::test as actix_test;
     use actix_web::test::call_and_read_body_json;
-    use actix_web::test::call_service;
     use actix_web::test::TestRequest;
     use actix_web::Error;
+    use rstest::rstest;
 
     use super::test_app::TestAppBuilder;
     use super::OpenApiRoot;
@@ -451,12 +453,11 @@ mod tests {
         create_test_service_with_core_client(CoreClient::default()).await
     }
 
-    #[actix_test]
+    #[rstest]
     async fn health() {
-        let service = create_test_service().await;
+        let app = TestAppBuilder::default_app();
         let request = TestRequest::get().uri("/health").to_request();
-        let response = call_service(&service, request).await;
-        assert!(response.status().is_success());
+        app.fetch(request).assert_status(StatusCode::OK);
     }
 
     #[actix_test]
