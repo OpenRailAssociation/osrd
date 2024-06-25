@@ -15,6 +15,7 @@ import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import java.util.*
 import kotlin.math.max
+import kotlin.math.min
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -33,9 +34,6 @@ typealias STDCMAStarHeuristic = (STDCMEdge, Offset<Block>?, Int) -> Double
  * been reached.
  *
  * Because it's optimistic, we know that we still find the best (fastest) solution.
- *
- * It could eventually be improved further by using lookahead or route data, but this adds a fair
- * amount of complexity to the implementation.
  */
 class STDCMHeuristicBuilder(
     private val blockInfra: BlockInfra,
@@ -51,8 +49,10 @@ class STDCMHeuristicBuilder(
     fun build(): STDCMAStarHeuristic {
         logger.info("Start building STDCM heuristic...")
         // One map per number of reached pathfinding step
-        val maps = mutableListOf<MutableMap<BlockId, Double>>()
-        for (i in 0 until steps.size - 1) maps.add(mutableMapOf())
+        // maps[n][block] = min time it takes to go from the start of the block to the destination,
+        // if we're at the n-th step of the path
+        val remainingTimeEstimations = mutableListOf<MutableMap<BlockId, Double>>()
+        for (i in 0 until steps.size - 1) remainingTimeEstimations.add(mutableMapOf())
 
         // Build the cached values
         // We run a kind of Dijkstra, but starting from the end
@@ -60,31 +60,63 @@ class STDCMHeuristicBuilder(
         while (true) {
             val block = pendingBlocks.poll() ?: break
             val index = max(0, block.stepIndex - 1)
-            if (maps[index].contains(block.block)) {
+            if (remainingTimeEstimations[index].contains(block.block)) {
                 continue
             }
-            maps[index][block.block] = block.remainingTimeAtBlockStart
+            for (i in index until remainingTimeEstimations.size) {
+                remainingTimeEstimations[i][block.block] =
+                    min(
+                        block.remainingTimeAtBlockStart,
+                        remainingTimeEstimations[i].getOrDefault(
+                            block.block,
+                            Double.POSITIVE_INFINITY
+                        )
+                    )
+            }
             if (block.stepIndex > 0) {
                 pendingBlocks.addAll(getPredecessors(block))
             }
         }
         val bestTravelTime =
             steps.first().locations.minOfOrNull {
-                maps.first()[it.edge] ?: Double.POSITIVE_INFINITY
+                remainingTimeEstimations.first()[it.edge] ?: Double.POSITIVE_INFINITY
             } ?: Double.POSITIVE_INFINITY
         logger.info("STDCM heuristic built, best theoretical travel time = $bestTravelTime seconds")
 
-        // We build one function (`AStarHeuristic`) per number of reached step
         return res@{ edge, offset, nPassedSteps ->
-            // We need to iterate through the previous maps,
-            // to handle cases where several steps are on the same block
-            for (i in (0..nPassedSteps).reversed()) {
-                val cachedRemainingDistance = maps[i][edge.block] ?: continue
-                val remainingTime = cachedRemainingDistance - getBlockTime(edge.block, offset)
+            if (nPassedSteps >= steps.size - 1) return@res 0.0
+            val lookahead = edge.infraExplorer.getLookahead()
+            val currentBlock = edge.block
+            val allBlocks = mutableListOf(currentBlock)
+            allBlocks.addAll(lookahead)
 
-                return@res remainingTime
-            }
-            return@res Double.POSITIVE_INFINITY
+            // We don't consider the time of the last lookahead block to avoid issues
+            // if it contains the destination, and we don't need it (the destination is
+            // already locked-in).
+
+            // Account for the steps that will be passed in the lookahead
+            val expectedIndex =
+                getExpectedStepIndex(
+                    allBlocks.subList(0, allBlocks.size - 1),
+                    offset ?: edge.blockOffsetFromEdge(edge.length),
+                    nPassedSteps
+                )
+
+            val timeAfterStartOfLastBlock =
+                remainingTimeEstimations[expectedIndex][allBlocks.last()]
+                    ?: return@res Double.POSITIVE_INFINITY
+
+            // Compute the time it takes from the current point until the start
+            // of the last block of the lookahead, then from that point the destination.
+            var timeUntilStartOfLastBlock = 0.0
+            for (j in 0 until allBlocks.size - 1) timeUntilStartOfLastBlock +=
+                getBlockTime(allBlocks[j], null)
+            val timeSinceFirstBlock = getBlockTime(edge.block, offset)
+            timeUntilStartOfLastBlock -= timeSinceFirstBlock
+
+            val remainingTime = timeUntilStartOfLastBlock + timeAfterStartOfLastBlock
+
+            return@res remainingTime
         }
     }
 
@@ -171,6 +203,36 @@ class STDCMHeuristicBuilder(
         return mrspCache.computeIfAbsent(block) {
             val pathProps = makePathProps(blockInfra, rawInfra, block, routes = listOf())
             MRSP.computeMRSP(pathProps, rollingStock, false, null)
+        }
+    }
+
+    /** Returns the numbers of passed waypoints at the end of the block list */
+    private fun getExpectedStepIndex(
+        blocks: List<BlockId>,
+        firstOffset: Offset<Block>,
+        currentIndex: Int
+    ): Int {
+        var stepIndex = currentIndex
+        var blockIndex = 0
+        var currentOffset = firstOffset
+        while (true) {
+            if (stepIndex >= steps.size - 2 || blockIndex >= blocks.size) {
+                return stepIndex
+            }
+            val nextLocations = steps[stepIndex + 1].locations
+            val locationOnBlock =
+                nextLocations.firstOrNull {
+                    it.edge == blocks[blockIndex] && it.offset >= currentOffset
+                }
+            if (locationOnBlock != null) {
+                // Step passed on the block
+                stepIndex++
+                currentOffset = locationOnBlock.offset
+            } else {
+                // Move on to the next block
+                blockIndex++
+                currentOffset = Offset(0.meters)
+            }
         }
     }
 }
