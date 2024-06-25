@@ -186,7 +186,6 @@ public final class Envelope implements Iterable<EnvelopePart>, SearchableEnvelop
     }
 
     private long interpolateUS(double position, boolean isArrivalAt) {
-        assert continuous : "interpolating times on a non continuous envelope is a risky business";
         var envelopePartIndex = findLeft(position);
         assert envelopePartIndex >= 0 : "Trying to interpolate time outside of the envelope";
         var envelopePart = get(envelopePartIndex);

@@ -1,6 +1,7 @@
 package fr.sncf.osrd.stdcm
 
 import fr.sncf.osrd.api.pathfinding.makePathProps
+import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock
 import fr.sncf.osrd.envelope_sim_infra.MRSP
 import fr.sncf.osrd.sim_infra.api.Block
@@ -44,6 +45,7 @@ class STDCMHeuristicBuilder(
     private val rollingStock: PhysicsRollingStock,
 ) {
     private val logger: Logger = LoggerFactory.getLogger("STDCMHeuristic")
+    private val mrspCache = mutableMapOf<BlockId, Envelope>()
 
     /** Runs all the pre-processing and initialize the STDCM A* heuristic. */
     fun build(): STDCMAStarHeuristic {
@@ -160,9 +162,15 @@ class STDCMHeuristicBuilder(
     ): Double {
         if (endOffset?.distance == 0.meters) return 0.0
         val actualLength = endOffset ?: blockInfra.getBlockLength(block)
-        val pathProps =
-            makePathProps(blockInfra, rawInfra, block, endOffset = actualLength, routes = listOf())
-        val mrsp = MRSP.computeMRSP(pathProps, rollingStock, false, null)
-        return mrsp.totalTime
+        val mrsp = getMRSP(block)
+        return mrsp.interpolateArrivalAtClamp(actualLength.distance.meters)
+    }
+
+    /** Returns the speed limits for the given block (cached). */
+    private fun getMRSP(block: BlockId): Envelope {
+        return mrspCache.computeIfAbsent(block) {
+            val pathProps = makePathProps(blockInfra, rawInfra, block, routes = listOf())
+            MRSP.computeMRSP(pathProps, rollingStock, false, null)
+        }
     }
 }
