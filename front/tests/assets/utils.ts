@@ -120,8 +120,11 @@ export async function verifyAndCheckInputById(
 }
 
 // Generate unique name (used for creating rolling stock)
-export const generateUniqueName = async (baseName: string) => `${baseName}-${uuidv4()}`;
-
+export const generateUniqueName = async (baseName: string) => {
+  // Generate a UUID and truncate it to 6 characters
+  const uuidSegment = uuidv4().slice(0, 6);
+  return `${baseName}-${uuidSegment}`;
+};
 // Scenario creation
 export default async function createCompleteScenario(
   page: Page,

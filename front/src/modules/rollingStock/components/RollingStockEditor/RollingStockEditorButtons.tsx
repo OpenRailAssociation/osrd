@@ -111,6 +111,7 @@ const RollingStockEditorButtons = ({
       })}
     >
       <button
+        data-testid="rollingstock-edit-button"
         type="button"
         className="btn btn-primary bg-orange px-1 py-0"
         aria-label={t('translation:common.edit')}
@@ -122,6 +123,7 @@ const RollingStockEditorButtons = ({
         <Pencil />
       </button>
       <button
+        data-testid="rollingstock-duplicate-button"
         type="button"
         className="btn btn-primary px-1 py-0"
         aria-label={t('translation:common.duplicate')}
@@ -132,6 +134,7 @@ const RollingStockEditorButtons = ({
         <Duplicate />
       </button>
       <button
+        data-testid="rollingstock-delete-button"
         type="button"
         className="btn btn-primary bg-red px-1 py-0"
         aria-label={t('translation:common.delete')}
