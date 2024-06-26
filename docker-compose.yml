@@ -77,7 +77,7 @@ services:
     restart: unless-stopped
     ports: ["3000:3000"]
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost"]
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
       start_period: 4s
       interval: 5s
 
