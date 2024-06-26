@@ -26,6 +26,8 @@ use editoast_common::geometry::GeoJsonPoint;
 )]
 #[allow(unused)]
 /// A search result item for a query with `object = "track"`
+///
+/// **IMPORTANT**: Please note that any modification to this struct should be reflected in [crate::modelsv2::infra::Infra::clone]
 pub(super) struct SearchResultItemTrack {
     #[search(sql = "search_track.infra_id")]
     infra_id: i64,
@@ -83,6 +85,8 @@ pub(super) struct SearchResultItemTrack {
 )]
 #[allow(unused)]
 /// A search result item for a query with `object = "operationalpoint"`
+///
+/// **IMPORTANT**: Please note that any modification to this struct should be reflected in [crate::modelsv2::infra::Infra::clone]
 pub(super) struct SearchResultItemOperationalPoint {
     #[search(sql = "OP.obj_id")]
     obj_id: String,
@@ -166,6 +170,8 @@ pub(super) struct SearchResultItemOperationalPointTrackSections {
 )]
 #[allow(unused)]
 /// A search result item for a query with `object = "signal"`
+///
+/// **IMPORTANT**: Please note that any modification to this struct should be reflected in [crate::modelsv2::infra::Infra::clone]
 pub(super) struct SearchResultItemSignal {
     #[search(sql = "sig.infra_id")]
     infra_id: i64,

@@ -205,6 +205,7 @@ infra_model!(
 infra_model!(
     NeutralSectionModel,
     infra_object_neutral_section,
+    infra_layer_neutral_section,
     editoast_schemas::infra::NeutralSection
 );
 

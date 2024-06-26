@@ -10597,7 +10597,10 @@ components:
       description: A search result item that depends on the query's `object`
     SearchResultItemOperationalPoint:
       type: object
-      description: A search result item for a query with `object = "operationalpoint"`
+      description: |-
+        A search result item for a query with `object = "operationalpoint"`
+
+        **IMPORTANT**: Please note that any modification to this struct should be reflected in [crate::modelsv2::infra::Infra::clone]
       required:
       - obj_id
       - infra_id
@@ -10729,7 +10732,10 @@ components:
           minimum: 0
     SearchResultItemSignal:
       type: object
-      description: A search result item for a query with `object = "signal"`
+      description: |-
+        A search result item for a query with `object = "signal"`
+
+        **IMPORTANT**: Please note that any modification to this struct should be reflected in [crate::modelsv2::infra::Infra::clone]
       required:
       - infra_id
       - label
@@ -10810,7 +10816,10 @@ components:
             type: string
     SearchResultItemTrack:
       type: object
-      description: A search result item for a query with `object = "track"`
+      description: |-
+        A search result item for a query with `object = "track"`
+
+        **IMPORTANT**: Please note that any modification to this struct should be reflected in [crate::modelsv2::infra::Infra::clone]
       required:
       - infra_id
       - line_name

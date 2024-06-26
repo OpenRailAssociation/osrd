@@ -338,7 +338,7 @@ async fn clone(
         infra_id: params.infra_id,
     })
     .await?;
-    let cloned_infra = infra.clone(db_pool.into_inner(), name).await?;
+    let cloned_infra = infra.clone(conn, name).await?;
     Ok(Json(cloned_infra.id))
 }
 

@@ -6,8 +6,6 @@ mod speed_limit_tags;
 mod splited_track_section_with_data;
 mod voltage;
 
-use std::pin::Pin;
-
 use chrono::NaiveDateTime;
 use chrono::Utc;
 use derivative::Derivative;
@@ -18,8 +16,6 @@ use diesel::ExpressionMethods;
 use diesel::QueryDsl;
 use diesel_async::RunQueryDsl;
 use editoast_derive::ModelV2;
-use futures::future::try_join_all;
-use futures::Future;
 use serde::Deserialize;
 use serde::Serialize;
 use std::sync::Arc;
@@ -27,6 +23,8 @@ use strum::IntoEnumIterator;
 use tracing::debug;
 use tracing::error;
 use uuid::Uuid;
+
+pub use object_queryable::ObjectQueryable;
 
 use crate::error::Result;
 use crate::generated_data;
@@ -42,7 +40,6 @@ use crate::tables::infra::dsl;
 use editoast_schemas::infra::RailJson;
 use editoast_schemas::infra::RAILJSON_VERSION;
 use editoast_schemas::primitives::ObjectType;
-pub use object_queryable::ObjectQueryable;
 
 editoast_common::schemas! {
     Infra,
@@ -125,65 +122,92 @@ impl Infra {
         self.save(conn).await
     }
 
-    pub async fn clone(&self, db_pool: Arc<DbConnectionPool>, new_name: String) -> Result<Infra> {
-        // Duplicate infra shell
-        let mut conn = db_pool.get().await?;
-        let cloned_infra = <Self as Clone>::clone(self)
-            .into_changeset()
-            .name(new_name)
-            .created(Utc::now().naive_utc())
-            .modified(Utc::now().naive_utc())
-            .create(&mut conn)
-            .await?;
+    pub async fn clone(&self, conn: &mut DbConnection, new_name: String) -> Result<Infra> {
+        conn.build_transaction().run(|conn| Box::pin(async {
+            // Duplicate infra shell
+            let cloned_infra = <Self as Clone>::clone(self)
+                .into_changeset()
+                .name(new_name)
+                .created(Utc::now().naive_utc())
+                .modified(Utc::now().naive_utc())
+                .create(conn)
+                .await?;
 
-        // TODO: lock clone infra for update
+            // Disable triggers to speed up the cloning
+            sql_query("ALTER TABLE infra_object_signal DISABLE TRIGGER search_signal__ins_trig").execute(conn).await?;
+            sql_query("ALTER TABLE infra_object_track_section DISABLE TRIGGER search_track__ins_trig").execute(conn).await?;
+            sql_query("ALTER TABLE infra_object_operational_point DISABLE TRIGGER search_operational_point__ins_trig").execute(conn).await?;
 
-        // Fill cloned infra with data
+            // Fill cloned infra with data
+            for object in ObjectType::iter() {
+                let model_table = get_table(&object);
+                sql_query(format!(
+                    "INSERT INTO {model_table}(obj_id,data,infra_id) SELECT obj_id,data,$1 FROM {model_table} WHERE infra_id = $2"
+                ))
+                .bind::<BigInt, _>(cloned_infra.id)
+                .bind::<BigInt, _>(self.id)
+                .execute(conn).await?;
 
-        // When creating a connection for each objet, it will a panic with 'Cannot access shared transaction state' in the database pool
-        // Just one connection fixes it, but partially* defeats the purpose of joining all the requests at the end
-        // * AsyncPgConnection supports pipeling within one connection, but it won’t run parallel
-        let mut futures = Vec::<Pin<Box<dyn Future<Output = _>>>>::new();
-        let mut conn = db_pool.get().await?;
-        for object in ObjectType::iter() {
-            let model_table = get_table(&object);
-            let model = sql_query(format!(
-                "INSERT INTO {model_table}(obj_id,data,infra_id) SELECT obj_id,data,$1 FROM {model_table} WHERE infra_id = $2"
-            ))
-            .bind::<BigInt, _>(cloned_infra.id)
-            .bind::<BigInt, _>(self.id)
-            .execute(&mut conn);
-            futures.push(model);
+                if let Some(layer_table) = get_geometry_layer_table(&object) {
+                    let layer_table = layer_table.to_string();
+                    let sql = if object != ObjectType::Signal {
+                        format!("INSERT INTO {layer_table}(obj_id,geographic,infra_id) SELECT obj_id,geographic,$1 FROM {layer_table} WHERE infra_id=$2")
+                    } else {
+                        format!("INSERT INTO {layer_table}(obj_id,geographic,infra_id, angle_geo, signaling_system, sprite) 
+                                    SELECT obj_id,geographic,$1,angle_geo, signaling_system, sprite FROM {layer_table} WHERE infra_id = $2")
+                    };
 
-            if let Some(layer_table) = get_geometry_layer_table(&object) {
-                let layer_table = layer_table.to_string();
-                let sql = if layer_table != get_geometry_layer_table(&ObjectType::Signal).unwrap() {
-                    format!(
-                    "INSERT INTO {layer_table}(obj_id,geographic,infra_id) SELECT obj_id,geographic,$1 FROM {layer_table} WHERE infra_id=$2")
-                } else {
-                    // TODO: we should test this behavior
-                    format!(
-                    "INSERT INTO {layer_table}(obj_id,geographic,infra_id, angle_geo, signaling_system, sprite) SELECT obj_id,geographic,$1,angle_geo, signaling_system, sprite FROM {layer_table} WHERE infra_id = $2"
-                )
-                };
+                    sql_query(sql)
+                        .bind::<BigInt, _>(cloned_infra.id)
+                        .bind::<BigInt, _>(self.id)
+                        .execute(conn)
+                        .await?;
+                }
+            }
 
-                let layer = sql_query(sql)
+            // Re-enable triggers to speed up the cloning
+            sql_query("ALTER TABLE infra_object_signal ENABLE TRIGGER search_signal__ins_trig").execute(conn).await?;
+            sql_query("ALTER TABLE infra_object_track_section ENABLE TRIGGER search_track__ins_trig").execute(conn).await?;
+            sql_query("ALTER TABLE infra_object_operational_point ENABLE TRIGGER search_operational_point__ins_trig").execute(conn).await?;
+
+            // Fill search tables
+            sql_query("INSERT INTO search_signal(id, label, line_name, infra_id, obj_id, signaling_systems, settings, line_code) 
+                        SELECT signal.id, label, line_name, $1, search_signal.obj_id, signaling_systems, settings, line_code FROM search_signal 
+                        JOIN infra_object_signal AS signal ON search_signal.obj_id = signal.obj_id and signal.infra_id = $1
+                        WHERE search_signal.infra_id = $2")
+                .bind::<BigInt, _>(cloned_infra.id)
+                .bind::<BigInt, _>(self.id)
+                .execute(conn).await?;
+
+            sql_query("INSERT INTO search_track(infra_id, line_code, line_name, unprocessed_line_name) SELECT $1, line_code, line_name, unprocessed_line_name FROM search_track WHERE infra_id = $2")
+                .bind::<BigInt, _>(cloned_infra.id)
+                .bind::<BigInt, _>(self.id)
+                .execute(conn).await?;
+
+            sql_query("INSERT INTO search_operational_point(id, infra_id, obj_id, uic, trigram, ci, ch, name) 
+                        SELECT op.id, $1, op.obj_id, uic, trigram, ci, ch, name FROM search_operational_point 
+                        JOIN infra_object_operational_point AS op ON search_operational_point.obj_id = op.obj_id and op.infra_id = $1
+                        WHERE search_operational_point.infra_id = $2")
+                .bind::<BigInt, _>(cloned_infra.id)
+                .bind::<BigInt, _>(self.id)
+                .execute(conn).await?;
+
+            // Add error layers
+            sql_query("INSERT INTO infra_layer_error(geographic, information, infra_id, info_hash) SELECT geographic, information, $1, info_hash FROM infra_layer_error WHERE infra_id = $2")
+                .bind::<BigInt, _>(cloned_infra.id)
+                .bind::<BigInt, _>(self.id)
+                .execute(conn).await?;
+
+            // Add sign layers
+            for layer_table in ["infra_layer_psl_sign", "infra_layer_neutral_sign"] {
+                sql_query(format!("INSERT INTO {layer_table}(obj_id, geographic, data, infra_id, angle_geo) SELECT obj_id, geographic, data, $1, angle_geo FROM {layer_table} WHERE infra_id = $2"))
                     .bind::<BigInt, _>(cloned_infra.id)
                     .bind::<BigInt, _>(self.id)
-                    .execute(&mut conn);
-                futures.push(layer);
+                    .execute(conn).await?;
             }
-        }
 
-        // Add error layers
-        let error_layer = sql_query("INSERT INTO infra_layer_error(geographic, information, infra_id, info_hash) SELECT geographic, information, $1, info_hash FROM infra_layer_error WHERE infra_id = $2")
-        .bind::<BigInt, _>(cloned_infra.id)
-        .bind::<BigInt, _>(self.id)
-        .execute(&mut conn);
-        futures.push(error_layer);
-
-        let _res = try_join_all(futures).await?;
-        Ok(cloned_infra)
+            Ok(cloned_infra)
+        })).await
     }
 
     /// Refreshes generated data if not up to date and returns whether they were refreshed.
@@ -235,11 +259,6 @@ impl Infra {
 
         conn.build_transaction()
             .run(|conn| Box::pin(async {
-                // Lock the table to avoid infra edition while the trigger is disabled
-                sql_query("LOCK TABLE infra_object_track_section IN SHARE ROW EXCLUSIVE MODE")
-                    .execute(conn)
-                    .await?;
-
                 // Disable the trigger to speed up the deletion
                 sql_query("ALTER TABLE infra_object_track_section DISABLE TRIGGER search_track__del_trig")
                     .execute(conn)
@@ -321,19 +340,16 @@ pub mod tests {
     #[rstest]
     async fn clone_infra_with_new_name_returns_new_cloned_infra() {
         // GIVEN
-        let pg_db_pool = db_pool();
-        let small_infra = small_infra(pg_db_pool.clone()).await;
+        let db_pool = db_pool();
+        let small_infra = small_infra(db_pool.clone()).await;
         let infra_new_name = "clone_infra_with_new_name_returns_new_cloned_infra".to_string();
 
         // WHEN
-        let result = small_infra
-            .clone(pg_db_pool.clone(), infra_new_name.clone())
-            .await;
+        let mut conn = db_pool.get().await.unwrap();
+        let result = small_infra.clone(&mut conn, infra_new_name.clone()).await;
 
         // THEN
-        let infra = result
-            .expect("could not clone infra")
-            .into_fixture(pg_db_pool);
+        let infra = result.expect("could not clone infra").into_fixture(db_pool);
         assert_eq!(infra.name, infra_new_name);
     }
 
