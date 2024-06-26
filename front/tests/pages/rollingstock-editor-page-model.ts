@@ -40,6 +40,8 @@ export default class PlaywrightRollingstockEditorPage extends PlaywrightCommonPa
 
   readonly getDuplicateRollingStockButton: Locator;
 
+  readonly getDeleteRollingStockButton: Locator;
+
   constructor(page: Page) {
     super(page);
     this.getNewRollingstockButton = page.getByTestId('new-rollingstock-button');
@@ -65,6 +67,7 @@ export default class PlaywrightRollingstockEditorPage extends PlaywrightCommonPa
     this.getDuplicateRollingStockButton = this.getRollingStockEditorButtons
       .locator('button')
       .nth(1);
+    this.getDeleteRollingStockButton = this.getRollingStockEditorButtons.locator('button').nth(2);
   }
 
   // Navigate to the Rolling Stock Editor Page
@@ -284,5 +287,12 @@ export default class PlaywrightRollingstockEditorPage extends PlaywrightCommonPa
   // Duplicate rolling stock creation
   async duplicateRollingStock() {
     await this.getDuplicateRollingStockButton.click();
+  }
+
+  // Delete a rolling stock
+  async deleteRollingStock(rollingStockName: string) {
+    await this.selectRollingStock(rollingStockName);
+    await this.getDeleteRollingStockButton.click();
+    await this.getConfirmModalButtonYes.click();
   }
 }
