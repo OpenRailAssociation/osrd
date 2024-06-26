@@ -284,6 +284,7 @@ impl From<ProjectPatchForm> for Changeset<Project> {
             .flat_budget(Some(project.budget))
             .flat_image(Some(project.image))
             .flat_tags(project.tags)
+            .last_modification(Utc::now().naive_utc())
     }
 }
 
@@ -452,5 +453,6 @@ pub mod test {
 
         assert_eq!(project.name, updated_name);
         assert_eq!(project.budget, Some(updated_budget));
+        assert!(project.last_modification > created_project.last_modification);
     }
 }
