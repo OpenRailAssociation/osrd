@@ -313,6 +313,7 @@ impl From<ScenarioPatchForm> for <Scenario as crate::modelsv2::Model>::Changeset
             .flat_description(scenario.description)
             .flat_tags(scenario.tags)
             .flat_infra_id(scenario.infra_id)
+            .last_modification(Utc::now().naive_utc())
     }
 }
 
@@ -638,6 +639,7 @@ mod tests {
         assert_eq!(response.scenario.name, study_name);
         assert_eq!(response.scenario.description, study_description);
         assert_eq!(response.scenario.tags, study_tags);
+        assert!(response.scenario.last_modification > fixtures.scenario.last_modification);
     }
 
     #[rstest]
