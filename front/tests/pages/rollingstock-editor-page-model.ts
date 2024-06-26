@@ -18,8 +18,6 @@ export default class PlaywrightRollingstockEditorPage extends PlaywrightCommonPa
 
   readonly getRollingStockEditorList: Locator;
 
-  readonly getRollingStockEditorButtons: Locator;
-
   readonly getPowerRestrictionSelector: Locator;
 
   readonly getElectricalProfileSelector: Locator;
@@ -38,7 +36,11 @@ export default class PlaywrightRollingstockEditorPage extends PlaywrightCommonPa
 
   readonly deleteSelectedElectricalProfileButton: Locator;
 
+  readonly getEditRollingStockButton: Locator;
+
   readonly getDuplicateRollingStockButton: Locator;
+
+  readonly getDeleteRollingStockButton: Locator;
 
   constructor(page: Page) {
     super(page);
@@ -49,7 +51,6 @@ export default class PlaywrightRollingstockEditorPage extends PlaywrightCommonPa
     this.getRollingStockSpreadsheet = page.locator('.dsg-container');
     this.getRollingStockSearchInput = page.locator('#searchfilter');
     this.getRollingStockEditorList = page.getByTestId('rollingstock-editor-list');
-    this.getRollingStockEditorButtons = page.locator('.rollingstock-editor-buttons');
     this.getPowerRestrictionSelector = page.getByTestId('power-restriction-selector');
     this.getElectricalProfileSelector = page.getByTestId('electrical-profile-selector');
     this.getLoadingGauge = page.locator('#loadingGauge');
@@ -62,9 +63,9 @@ export default class PlaywrightRollingstockEditorPage extends PlaywrightCommonPa
       'button',
       { name: 'Delete item', exact: true }
     );
-    this.getDuplicateRollingStockButton = this.getRollingStockEditorButtons
-      .locator('button')
-      .nth(1);
+    this.getEditRollingStockButton = page.getByTestId('rollingstock-edit-button');
+    this.getDuplicateRollingStockButton = page.getByTestId('rollingstock-duplicate-button');
+    this.getDeleteRollingStockButton = page.getByTestId('rollingstock-delete-button');
   }
 
   // Navigate to the Rolling Stock Editor Page
@@ -97,7 +98,7 @@ export default class PlaywrightRollingstockEditorPage extends PlaywrightCommonPa
   // Edit a rolling stock
   async editRollingStock(rollingStockName: string) {
     await this.selectRollingStock(rollingStockName);
-    await this.getRollingStockEditorButtons.first().click();
+    await this.getEditRollingStockButton.click();
   }
 
   // Click the Submit Rolling Stock Button
@@ -284,5 +285,12 @@ export default class PlaywrightRollingstockEditorPage extends PlaywrightCommonPa
   // Duplicate rolling stock creation
   async duplicateRollingStock() {
     await this.getDuplicateRollingStockButton.click();
+  }
+
+  // Delete a rolling stock
+  async deleteRollingStock(rollingStockName: string) {
+    await this.selectRollingStock(rollingStockName);
+    await this.getDeleteRollingStockButton.click();
+    await this.getConfirmModalButtonYes.click();
   }
 }

@@ -21,20 +21,24 @@ const rollingstockDetails = JSON.parse(fs.readFileSync(rollingstockDetailsPath, 
 test.describe('Rollingstock editor page', () => {
   let uniqueRollingStockName: string;
   let uniqueUpdatedRollingStockName: string;
+  let uniqueDeletedRollingStockName: string;
 
   test.beforeEach(async () => {
-    uniqueRollingStockName = await generateUniqueName('Test_name');
-    uniqueUpdatedRollingStockName = await generateUniqueName('Test_name_updated');
+    uniqueRollingStockName = await generateUniqueName('RSN');
+    uniqueUpdatedRollingStockName = await generateUniqueName('U_RSN');
+    uniqueDeletedRollingStockName = await generateUniqueName('D_RSN');
 
     // Check and delete the specified rolling stocks if they exist
     await findAndDeleteRollingStock(uniqueRollingStockName);
     await findAndDeleteRollingStock(uniqueUpdatedRollingStockName);
+    await findAndDeleteRollingStock(uniqueDeletedRollingStockName);
   });
 
   test.afterEach(async () => {
     // Clean up by deleting the created or updated rolling stock
     await findAndDeleteRollingStock(uniqueRollingStockName);
     await findAndDeleteRollingStock(uniqueUpdatedRollingStockName);
+    await findAndDeleteRollingStock(uniqueDeletedRollingStockName);
   });
 
   test('should correctly create a new rolling stock', async ({ page }) => {
@@ -160,5 +164,29 @@ test.describe('Rollingstock editor page', () => {
       true,
       'C1'
     );
+  });
+  test('should correctly duplicate and delete a rolling stock', async ({ page }) => {
+    const rollingStockEditorPage = new PlaywrightRollingstockEditorPage(page);
+    const addedRollingStockName = 'rollingstock_1500_25000_test_e2e';
+
+    await rollingStockEditorPage.navigateToPage();
+
+    // Select the rolling stock from global-setup
+    await rollingStockEditorPage.selectRollingStock(addedRollingStockName);
+
+    // Duplicate and change the rolling stock name
+    await rollingStockEditorPage.duplicateRollingStock();
+    await fillAndCheckInputById(page, 'name', uniqueDeletedRollingStockName);
+
+    // Confirm the modification of RS name
+    await rollingStockEditorPage.submitRollingStock();
+
+    // Delete the duplicated rolling stock
+    await rollingStockEditorPage.deleteRollingStock(uniqueDeletedRollingStockName);
+
+    // Confirm the RS is deleted
+    await expect(
+      rollingStockEditorPage.page.getByTestId(uniqueDeletedRollingStockName)
+    ).toBeHidden();
   });
 });
