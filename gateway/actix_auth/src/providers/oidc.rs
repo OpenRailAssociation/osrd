@@ -24,7 +24,7 @@ pub struct OidcConfig {
     pub client_id: ClientId,
     pub client_secret: Option<ClientSecret>,
     pub acr: Option<String>,
-    pub amr: Vec<String>,
+    pub amr: Option<Vec<String>>,
     pub profile_scope_override: Option<String>,
     pub username_whitelist: Option<HashSet<String>>,
 }
@@ -38,7 +38,7 @@ impl OidcConfig {
         client_id: String,
         client_secret: String,
         acr: Option<String>,
-        amr: Vec<String>,
+        amr: Option<Vec<String>>,
         profile_scope_override: Option<String>,
         username_whitelist: Option<HashSet<String>>,
     ) -> Self {
@@ -58,7 +58,7 @@ impl OidcConfig {
 
 #[derive(Clone)]
 pub struct OidcProvider {
-    pub amr: Vec<String>,
+    pub amr: Option<Vec<String>>,
     pub acr: Option<String>,
     pub client: Box<
         CoreClient<
@@ -274,10 +274,8 @@ impl SessionProvider for OidcProvider {
                 .map(|a| a.as_str())
                 .collect();
 
-            if !self.amr.is_empty() {
-                log::info!("claims_amr: {:?}", claims_amr);
-
-                if !self.amr.iter().all(|amr_value| {
+            if let Some(amr) = &self.amr {
+                if amr.iter().all(|amr_value| {
                     claims_amr
                         .iter()
                         .any(|c_amr_value| c_amr_value == amr_value)
