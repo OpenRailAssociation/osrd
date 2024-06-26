@@ -333,6 +333,11 @@ fun buildProvisionalEnvelope(
     for (i in 0 until rawMargins.values.size) {
         val start = boundaries[i]
         val end = boundaries[i + 1]
+        if (start == end) {
+            standaloneSimLogger.warn("Zero-length margin range at offset $start (skipping)")
+            // TODO: raise warning
+            continue
+        }
         val value =
             when (val rawValue = rawMargins.values[i]) {
                 is MarginValue.MinPer100Km -> TimePerDistance(rawValue.value)
