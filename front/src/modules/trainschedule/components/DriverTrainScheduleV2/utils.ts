@@ -232,7 +232,10 @@ export const formatOperationalPoints = async (
     // Get duration
     let stepDuration = 0;
     const correspondingStep = train.path.find(
-      (step) => 'uic' in step && step.uic === op.extensions?.identifier?.uic
+      (step) =>
+        'uic' in step &&
+        step.uic === op.extensions?.identifier?.uic &&
+        step.secondary_code === op.extensions.sncf?.ch
     );
     if (correspondingStep) {
       const correspondingSchedule = train.schedule?.find(
