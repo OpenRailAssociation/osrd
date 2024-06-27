@@ -31,13 +31,6 @@ data class STDCMEdge(
     val previousNode: STDCMNode?,
     // Offset of the envelope if it doesn't start at the beginning of the edge
     val envelopeStartOffset: Offset<Block>,
-    // Time at which the train enters the block, discretized by only considering the
-    // minutes.
-    // Used to identify visited edges
-    val minuteTimeStart: Int,
-    // Speed factor used to account for standard allowance
-    // e.g. if we have a 5% standard allowance, this value is 1/1.05.
-    val standardAllowanceSpeedFactor: Double,
     // Index of the last waypoint passed by this train
     val waypointIndex: Int,
     // True if the edge end is a stop

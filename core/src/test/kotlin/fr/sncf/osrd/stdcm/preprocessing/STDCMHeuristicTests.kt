@@ -133,8 +133,6 @@ class STDCMHeuristicTests {
                 null,
                 Offset(0.meters),
                 0,
-                0.0,
-                0,
                 false,
                 0.0,
                 0.0,
