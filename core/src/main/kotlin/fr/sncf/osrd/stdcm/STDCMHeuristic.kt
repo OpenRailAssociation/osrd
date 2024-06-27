@@ -46,22 +46,19 @@ private data class PendingBlock(
 
 /**
  * This typealias defines a function that can be used as a heuristic for an A* pathfinding. It takes
- * a node as input, and returns an estimation of the remaining time needed to get to the end.
+ * a node and a number of passed steps as input, and returns an estimation of the remaining time
+ * needed to get to the end.
  */
-typealias STDCMAStarHeuristic<NodeT> = (NodeT) -> Double
-
-fun <NodeT> List<STDCMAStarHeuristic<NodeT>>.apply(node: NodeT, nbPassedSteps: Int): Double {
-    return this[nbPassedSteps](node)
-}
+typealias STDCMAStarHeuristic<NodeT> = (NodeT, Int) -> Double
 
 /** Runs all the pre-processing and initializes the STDCM A* heuristic. */
-fun makeSTDCMHeuristics(
+fun makeSTDCMHeuristic(
     blockInfra: BlockInfra,
     rawInfra: RawInfra,
     steps: List<STDCMStep>,
     maxRunningTime: Double,
     rollingStock: PhysicsRollingStock,
-): List<STDCMAStarHeuristic<STDCMNode>> {
+): STDCMAStarHeuristic<STDCMNode> {
     logger.info("Start building STDCM heuristic...")
     // One map per number of reached pathfinding step
     val maps = mutableListOf<MutableMap<BlockId, Double>>()
@@ -84,33 +81,30 @@ fun makeSTDCMHeuristics(
         }
     }
 
-    // We build one function (`STDCMAStarHeuristic`) per number of reached step
-    val res = mutableListOf<STDCMAStarHeuristic<STDCMNode>>()
-    for (nPassedSteps in maps.indices) {
-        res.add { node ->
-            // We need to iterate through the previous maps,
-            // to handle cases where several steps are on the same block
-            for (i in (0..nPassedSteps).reversed()) {
-                val cachedRemainingTime = maps[i][node.previousEdge.block] ?: continue
-                val remainingTime =
-                    cachedRemainingTime -
-                        getBlockTime(
-                            rawInfra,
-                            blockInfra,
-                            node.previousEdge.block,
-                            rollingStock,
-                            node.locationOnEdge
-                        )
-                return@add remainingTime
-            }
-            return@add Double.POSITIVE_INFINITY
-        }
-    }
     val bestTravelTime =
         steps.first().locations.minOfOrNull { maps.first()[it.edge] ?: Double.POSITIVE_INFINITY }
             ?: Double.POSITIVE_INFINITY
     logger.info("STDCM heuristic built, best theoretical travel time = $bestTravelTime seconds")
-    return res
+
+    return res@{ node, nPassedSteps ->
+        if (nPassedSteps >= maps.size) return@res 0.0
+        // We need to iterate through the previous maps,
+        // to handle cases where several steps are on the same block
+        for (i in (0..nPassedSteps).reversed()) {
+            val cachedRemainingTime = maps[i][node.previousEdge.block] ?: continue
+            val remainingTime =
+                cachedRemainingTime -
+                    getBlockTime(
+                        rawInfra,
+                        blockInfra,
+                        node.previousEdge.block,
+                        rollingStock,
+                        node.locationOnEdge
+                    )
+            return@res remainingTime
+        }
+        return@res Double.POSITIVE_INFINITY
+    }
 }
 
 /**

@@ -6,11 +6,10 @@ import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.stdcm.STDCMAStarHeuristic
 import fr.sncf.osrd.stdcm.STDCMStep
-import fr.sncf.osrd.stdcm.apply
 import fr.sncf.osrd.stdcm.graph.STDCMEdge
 import fr.sncf.osrd.stdcm.graph.STDCMNode
 import fr.sncf.osrd.stdcm.infra_exploration.initInfraExplorerWithEnvelope
-import fr.sncf.osrd.stdcm.makeSTDCMHeuristics
+import fr.sncf.osrd.stdcm.makeSTDCMHeuristic
 import fr.sncf.osrd.utils.DummyInfra
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Length
@@ -66,40 +65,39 @@ class STDCMHeuristicTests {
                 ),
             )
 
-        val heuristics =
-            makeSTDCMHeuristics(
+        val heuristic =
+            makeSTDCMHeuristic(
                 infra,
                 infra,
                 steps,
                 Double.POSITIVE_INFINITY,
                 SimpleRollingStock.STANDARD_TRAIN,
             )
-        assertEquals(4, heuristics.size)
 
         assertEquals(
             400.0 - 50.0,
-            getLocationRemainingTime(infra, blocks[0], 50.meters, 0, heuristics)
+            getLocationRemainingTime(infra, blocks[0], 50.meters, 0, heuristic)
         )
         assertEquals(
             400.0 - 85.0,
-            getLocationRemainingTime(infra, blocks[0], 85.meters, 0, heuristics)
+            getLocationRemainingTime(infra, blocks[0], 85.meters, 0, heuristic)
         )
         assertEquals(
             400.0 - 100.0 - 25.0,
-            getLocationRemainingTime(infra, blocks[1], 25.meters, 1, heuristics)
+            getLocationRemainingTime(infra, blocks[1], 25.meters, 1, heuristic)
         )
         assertEquals(
             400.0 - 100.0 - 75.0,
-            getLocationRemainingTime(infra, blocks[1], 75.meters, 2, heuristics)
+            getLocationRemainingTime(infra, blocks[1], 75.meters, 2, heuristic)
         )
         assertEquals(
             400.0 - 200.0,
-            getLocationRemainingTime(infra, blocks[2], 0.meters, 3, heuristics)
+            getLocationRemainingTime(infra, blocks[2], 0.meters, 3, heuristic)
         )
-        assertEquals(0.0, getLocationRemainingTime(infra, blocks[3], null, 3, heuristics))
+        assertEquals(0.0, getLocationRemainingTime(infra, blocks[3], null, 3, heuristic))
         assertEquals(
             Double.POSITIVE_INFINITY,
-            getLocationRemainingTime(infra, blocks[3], 0.meters, 0, heuristics)
+            getLocationRemainingTime(infra, blocks[3], 0.meters, 0, heuristic)
         )
     }
 
@@ -112,7 +110,7 @@ class STDCMHeuristicTests {
         block: BlockId,
         nodeOffsetOnEdge: Distance?,
         nbPassedSteps: Int,
-        heuristics: List<STDCMAStarHeuristic<STDCMNode>>
+        heuristic: STDCMAStarHeuristic<STDCMNode>
     ): Double {
         val explorer =
             initInfraExplorerWithEnvelope(
@@ -143,6 +141,6 @@ class STDCMHeuristicTests {
         if (nodeOffsetOnEdge != null) locationOnEdge = Offset(nodeOffsetOnEdge)
         val node =
             STDCMNode(0.0, 0.0, explorer, 0.0, 0.0, defaultEdge, 0, locationOnEdge, null, 0.0)
-        return heuristics.apply(node, nbPassedSteps)
+        return heuristic.invoke(node, nbPassedSteps)
     }
 }
