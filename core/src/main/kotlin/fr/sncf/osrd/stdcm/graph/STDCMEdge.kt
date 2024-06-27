@@ -64,6 +64,8 @@ data class STDCMEdge(
             if (!pass) break
             newWaypointIndex++
         }
+        val timeSinceDeparture =
+            totalTime + timeStart - totalDepartureTimeShift - graph.minScheduleTimeStart
         return if (!endAtStop) {
             // We move on to the next block
             STDCMNode(
@@ -75,7 +77,8 @@ data class STDCMEdge(
                 this,
                 newWaypointIndex,
                 null,
-                null
+                null,
+                timeSinceDeparture,
             )
         } else {
             // New edge on the same block, after a stop
@@ -89,7 +92,8 @@ data class STDCMEdge(
                 this,
                 newWaypointIndex,
                 envelopeStartOffset + length.distance,
-                stopDuration
+                stopDuration,
+                timeSinceDeparture,
             )
         }
     }
