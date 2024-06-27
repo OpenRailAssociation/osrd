@@ -280,8 +280,6 @@ internal constructor(
                 prevAddedDelay + departureTimeShift,
                 prevNode,
                 startOffset,
-                (actualStartTime / 60).toInt(),
-                standardAllowanceSpeedRatio,
                 waypointIndex,
                 endAtStop,
                 envelope!!.beginSpeed,
