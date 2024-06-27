@@ -11,6 +11,7 @@ import Study from 'applications/operationalStudies/views/Study';
 import HomeMap from 'applications/referenceMap/Home';
 import HomeRollingStockEditor from 'applications/rollingStockEditor/Home';
 import HomeStdcm from 'applications/stdcm/Home';
+import Error403 from 'common/authorization/components/Error403';
 import ErrorBoundary from 'common/ErrorBoundary';
 import { Loader } from 'common/Loaders';
 import NotificationsState from 'common/Notifications';
@@ -103,6 +104,10 @@ const router = createBrowserRouter([
         element: <Scenario />,
       },
     ],
+  },
+  {
+    path: '403/*',
+    element: <Error403 />,
   },
   {
     path: '*',

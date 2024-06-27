@@ -13,7 +13,7 @@ import persistedReducer, {
   persistConfig,
 } from 'reducers';
 
-import { listenerMiddleware } from './listenerMiddleware';
+import { listenerMiddleware } from './listeners/listenerMiddleware';
 
 const reduxDevToolsOptions: Config = {
   serialize: {
