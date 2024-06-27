@@ -21,7 +21,6 @@ import { CHART_AXES } from 'modules/simulationResult/consts';
 import type { TimeScaleDomain } from 'modules/simulationResult/types';
 import type { Chart } from 'reducers/osrdsimulation/types';
 import { dateIsInRange, isoDateToMs, formatToIsoDate } from 'utils/date';
-import { ISO8601Duration2sec } from 'utils/timeManipulation';
 
 import { SPACE_TIME_CHART_ID } from './consts';
 import useGetProjectedTrainOperationalPoints from './hooks';
@@ -124,23 +123,7 @@ const SpaceTimeChartV2 = ({
           isoDateToMs(selectedTrain.start_time) + offset * 1000
         );
 
-        let schedule;
-        if (selectedTrain.schedule) {
-          schedule = selectedTrain.schedule.map((scheduleStep) => {
-            if (scheduleStep.arrival) {
-              // arrival is in format PTxxxS (PT3600S) as the number of seconds from the start
-              const updatedArrivalInSeconds = ISO8601Duration2sec(scheduleStep.arrival) + offset;
-              const newScheduleStep = {
-                ...scheduleStep,
-                arrival: `PT${updatedArrivalInSeconds}S`,
-              };
-              return newScheduleStep;
-            }
-            return scheduleStep;
-          });
-        }
-
-        const updatedTrainPayload = { ...selectedTrain, start_time: newDepartureTime, schedule };
+        const updatedTrainPayload = { ...selectedTrain, start_time: newDepartureTime };
 
         updateTrainSchedule({ id: selectedTrain.id, trainScheduleForm: updatedTrainPayload }).then(
           () => {
