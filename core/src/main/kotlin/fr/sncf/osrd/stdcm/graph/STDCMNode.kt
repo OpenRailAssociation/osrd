@@ -6,22 +6,26 @@ import fr.sncf.osrd.utils.units.Offset
 import kotlin.math.abs
 
 data class STDCMNode(
-    val time: Double, // Time at the transition of the edge
-    val speed: Double, // Speed at the end of the previous edge
-    val infraExplorer: InfraExplorerWithEnvelope, // Instance used to explore the infra
-    val totalPrevAddedDelay:
-        Double, // Sum of all the delays we have added by shifting the departure time
-    val maximumAddedDelay:
-        Double, // Maximum delay we can add by delaying the start time without causing conflicts
-    val previousEdge: STDCMEdge, // Edge that lead to this node
-    val waypointIndex: Int, // Index of the last waypoint passed by the train
-    val locationOnEdge:
-        Offset<
-            Block
-        >?, // Position on a block, if this node isn't on the transition between blocks (stop)
-    val stopDuration: Double?, // When the node is a stop, how long the train remains here
-    var remainingTimeEstimation: Double =
-        0.0, // Estimation of the min time it takes to reach the end from this node
+    // Time at the transition of the edge
+    val time: Double,
+    // Speed at the end of the previous edge
+    val speed: Double,
+    // Instance used to explore the infra
+    val infraExplorer: InfraExplorerWithEnvelope,
+    // Sum of all the delays we have added by shifting the departure time
+    val totalPrevAddedDelay: Double,
+    // Maximum delay we can add by delaying the start time without causing conflicts
+    val maximumAddedDelay: Double,
+    // Edge that lead to this node
+    val previousEdge: STDCMEdge,
+    // Index of the last waypoint passed by the train
+    val waypointIndex: Int,
+    // Position on a block, if this node isn't on the transition between blocks (stop)
+    val locationOnEdge: Offset<Block>?,
+    // When the node is a stop, how long the train remains here
+    val stopDuration: Double?,
+    // Estimation of the min time it takes to reach the end from this node
+    var remainingTimeEstimation: Double = 0.0,
 ) : Comparable<STDCMNode> {
 
     /**
