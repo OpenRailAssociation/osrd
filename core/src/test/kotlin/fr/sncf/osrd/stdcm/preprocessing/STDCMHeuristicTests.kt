@@ -2,12 +2,10 @@ package fr.sncf.osrd.stdcm.preprocessing
 
 import fr.sncf.osrd.envelope_sim.SimpleRollingStock
 import fr.sncf.osrd.graph.PathfindingEdgeLocationId
-import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.stdcm.STDCMAStarHeuristic
 import fr.sncf.osrd.stdcm.STDCMStep
 import fr.sncf.osrd.stdcm.graph.STDCMEdge
-import fr.sncf.osrd.stdcm.graph.STDCMNode
 import fr.sncf.osrd.stdcm.infra_exploration.initInfraExplorerWithEnvelope
 import fr.sncf.osrd.stdcm.makeSTDCMHeuristic
 import fr.sncf.osrd.utils.DummyInfra
@@ -110,7 +108,7 @@ class STDCMHeuristicTests {
         block: BlockId,
         nodeOffsetOnEdge: Distance?,
         nbPassedSteps: Int,
-        heuristic: STDCMAStarHeuristic<STDCMNode>
+        heuristic: STDCMAStarHeuristic
     ): Double {
         val explorer =
             initInfraExplorerWithEnvelope(
@@ -137,10 +135,6 @@ class STDCMHeuristicTests {
                 Length(0.meters),
                 0.0
             )
-        var locationOnEdge: Offset<Block>? = null
-        if (nodeOffsetOnEdge != null) locationOnEdge = Offset(nodeOffsetOnEdge)
-        val node =
-            STDCMNode(0.0, 0.0, explorer, 0.0, 0.0, defaultEdge, 0, locationOnEdge, null, 0.0)
-        return heuristic.invoke(node, nbPassedSteps)
+        return heuristic.invoke(defaultEdge, nodeOffsetOnEdge?.let { Offset(it) }, nbPassedSteps)
     }
 }

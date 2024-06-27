@@ -70,7 +70,6 @@ class STDCMPathfinding(
     private val pathfindingTimeout: Double = 120.0
 ) {
 
-    private var remainingTimeEstimator: STDCMAStarHeuristic<STDCMNode> = { _, _ -> 0.0 }
     private var starts: Set<STDCMNode> = HashSet()
 
     var graph: STDCMGraph =
@@ -89,16 +88,6 @@ class STDCMPathfinding(
 
     fun findPath(): STDCMResult? {
         assert(steps.size >= 2) { "Not enough steps have been set to find a path" }
-
-        // Initialize the A* heuristic
-        remainingTimeEstimator =
-            makeSTDCMHeuristic(
-                fullInfra.blockInfra,
-                fullInfra.rawInfra,
-                steps,
-                maxRunTime,
-                rollingStock
-            )
 
         val constraints =
             ConstraintCombiner(initConstraints(fullInfra, listOf(rollingStock)).toMutableList())
@@ -141,7 +130,6 @@ class STDCMPathfinding(
     private fun findPathImpl(): Result? {
         val queue = PriorityQueue<STDCMNode>()
         for (location in starts) {
-            location.remainingTimeEstimation = remainingTimeEstimator.invoke(location, 0)
             queue.add(location)
         }
         val start = Instant.now()
@@ -154,12 +142,7 @@ class STDCMPathfinding(
             if (endNode.waypointIndex >= graph.steps.size - 1) {
                 return buildResult(endNode)
             }
-            val neighbors = getAdjacentNodes(endNode)
-            for (neighbor in neighbors) {
-                neighbor.remainingTimeEstimation =
-                    remainingTimeEstimator.invoke(neighbor, neighbor.waypointIndex)
-                queue.add(neighbor)
-            }
+            queue += getAdjacentNodes(endNode)
         }
     }
 
