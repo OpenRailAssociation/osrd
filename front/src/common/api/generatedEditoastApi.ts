@@ -1751,14 +1751,16 @@ export type PostV2TimetableByIdStdcmApiArg = {
     comfort: Comfort;
     /** Can be a percentage `X%`, a time in minutes per 100 kilometer `Xmin/100km` or `None` */
     margin?: string | null;
-    /** By how long we can shift the departure time in milliseconds */
+    /** By how long we can shift the departure time in milliseconds
+        Deprecated, first step data should be used instead */
     maximum_departure_delay?: number;
     /** Specifies how long the total run time can be in milliseconds */
     maximum_run_time?: number | null;
     rolling_stock_id: number;
     /** Train categories for speed limits */
     speed_limit_tags?: string | null;
-    start_time: string;
+    /** Deprecated, first step arrival time should be used instead */
+    start_time?: string | null;
     steps: PathfindingItem[];
     /** Margin after the train passage in milliseconds
         
@@ -3684,10 +3686,19 @@ export type PathItemLocation =
       /** The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point */
       uic: number;
     };
+export type StepTimingData = {
+  /** Time at which the train should arrive at the location */
+  arrival_time: string;
+  /** The train may arrive up to this duration after the expected arrival time */
+  arrival_time_tolerance_after: number;
+  /** The train may arrive up to this duration before the expected arrival time */
+  arrival_time_tolerance_before: number;
+};
 export type PathfindingItem = {
   /** The stop duration in milliseconds, None if the train does not stop. */
   duration?: number | null;
   location: PathItemLocation;
+  timing_data?: StepTimingData | null;
 };
 export type Distribution = 'STANDARD' | 'MARECO';
 export type TrainScheduleBase = {

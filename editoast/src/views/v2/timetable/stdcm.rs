@@ -4,7 +4,7 @@ use actix_web::web::Json;
 use actix_web::web::Path;
 use actix_web::web::Query;
 use chrono::Utc;
-use chrono::{DateTime, NaiveDateTime, TimeZone};
+use chrono::{DateTime, Duration, NaiveDateTime, TimeZone};
 use editoast_derive::EditoastError;
 use editoast_schemas::train_schedule::MarginValue;
 use editoast_schemas::train_schedule::PathItemLocation;
@@ -19,10 +19,10 @@ use utoipa::IntoParams;
 use utoipa::ToSchema;
 
 use crate::core::v2::simulation::SimulationResponse;
-use crate::core::v2::stdcm::STDCMRequest;
 use crate::core::v2::stdcm::STDCMResponse;
 use crate::core::v2::stdcm::TrainRequirement;
 use crate::core::v2::stdcm::{STDCMPathItem, STDCMWorkSchedule, UndirectedTrackRange};
+use crate::core::v2::stdcm::{STDCMRequest, STDCMStepTimingData};
 use crate::core::AsCoreRequest;
 use crate::core::CoreClient;
 use crate::error::Result;
@@ -48,6 +48,7 @@ crate::routes! {
 editoast_common::schemas! {
     STDCMRequestPayload,
     PathfindingItem,
+    StepTimingData,
 }
 
 #[derive(Debug, Error, EditoastError, Serialize)]
@@ -70,11 +71,13 @@ enum STDCMError {
 /// An STDCM request
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
 pub struct STDCMRequestPayload {
-    start_time: DateTime<Utc>,
+    /// Deprecated, first step arrival time should be used instead
+    start_time: Option<DateTime<Utc>>,
     steps: Vec<PathfindingItem>,
     rolling_stock_id: i64,
     comfort: Comfort,
     /// By how long we can shift the departure time in milliseconds
+    /// Deprecated, first step data should be used instead
     #[serde(default = "default_maximum_departure_delay")]
     #[schema(default = default_maximum_departure_delay)]
     maximum_departure_delay: u64,
@@ -106,6 +109,18 @@ struct PathfindingItem {
     duration: Option<u64>,
     /// The associated location
     location: PathItemLocation,
+    /// Time at which the train should arrive at the location, if specified
+    timing_data: Option<StepTimingData>,
+}
+
+#[derive(Debug, Serialize, Deserialize, PartialEq, Clone, ToSchema)]
+struct StepTimingData {
+    /// Time at which the train should arrive at the location
+    arrival_time: DateTime<Utc>,
+    /// The train may arrive up to this duration before the expected arrival time
+    arrival_time_tolerance_before: u64,
+    /// The train may arrive up to this duration after the expected arrival time
+    arrival_time_tolerance_after: u64,
 }
 
 const TWO_HOURS_IN_MILLISECONDS: u64 = 2 * 60 * 60 * 60;
@@ -209,6 +224,8 @@ async fn stdcm(
         }
     };
 
+    let departure_time = get_earliest_departure_time(&data, maximum_run_time);
+
     // 3. Parse stdcm path items
     let path_items = parse_stdcm_steps(conn, &data, &infra).await?;
 
@@ -223,7 +240,7 @@ async fn stdcm(
             .clone(),
         comfort: data.comfort,
         path_items,
-        start_time: data.start_time,
+        start_time: departure_time,
         trains_requirements,
         maximum_departure_delay: Some(data.maximum_departure_delay),
         maximum_run_time,
@@ -234,7 +251,7 @@ async fn stdcm(
         time_step: Some(2000),
         work_schedules: build_work_schedules(
             conn,
-            data.start_time,
+            departure_time,
             data.maximum_departure_delay,
             maximum_run_time,
         )
@@ -244,6 +261,34 @@ async fn stdcm(
     .await?;
 
     Ok(Json(stdcm_response))
+}
+
+/// Returns the earliest time at which the train may start
+fn get_earliest_departure_time(data: &STDCMRequestPayload, maximum_run_time: u64) -> DateTime<Utc> {
+    // Prioritize: start time, or first step time, or (first specified time - max run time)
+    data.start_time.unwrap_or(
+        data.steps
+            .first()
+            .and_then(|step| step.timing_data.clone())
+            .and_then(|data| Option::from(data.arrival_time))
+            .unwrap_or(
+                get_earliest_step_time(data) - Duration::milliseconds(maximum_run_time as i64),
+            ),
+    )
+}
+
+/// Returns the earliest time that has been set on any step
+fn get_earliest_step_time(data: &STDCMRequestPayload) -> DateTime<Utc> {
+    // Get the earliest time that has been specified for any step
+    data.start_time
+        .or_else(|| {
+            data.steps
+                .iter()
+                .flat_map(|step| step.timing_data.iter())
+                .map(|data| data.arrival_time)
+                .next()
+        })
+        .expect("No time specified for stdcm request")
 }
 
 /// get the maximum run time, compute it if unspecified.
@@ -263,13 +308,16 @@ async fn get_maximum_run_time(
         });
     }
 
+    // Doesn't matter for now, but eventually it will affect tmp speed limits
+    let approx_start_time = get_earliest_step_time(data);
+
     let train_schedule = TrainSchedule {
         id: 0,
         train_name: "".to_string(),
         labels: vec![],
         rolling_stock_name: rolling_stock.name.clone(),
         timetable_id,
-        start_time: data.start_time,
+        start_time: approx_start_time,
         schedule: vec![],
         margins: build_single_margin(data.margin),
         initial_speed: 0.0,
@@ -372,10 +420,8 @@ async fn parse_stdcm_steps(
 ) -> Result<Vec<STDCMPathItem>> {
     let path_items = data.steps.clone();
     let mut locations = Vec::with_capacity(path_items.len());
-    let mut durations = Vec::with_capacity(path_items.len());
     for item in path_items {
         locations.push(item.location);
-        durations.push(item.duration);
     }
 
     let track_offsets = extract_location_from_path_items(conn, infra.id, &locations).await?;
@@ -383,10 +429,17 @@ async fn parse_stdcm_steps(
 
     Ok(track_offsets
         .iter()
-        .zip(durations)
-        .map(|(track_offset, duration)| STDCMPathItem {
-            stop_duration: duration,
+        .zip(&data.steps)
+        .map(|(track_offset, path_item)| STDCMPathItem {
+            stop_duration: path_item.duration,
             locations: track_offset.to_vec(),
+            step_timing_data: path_item.timing_data.as_ref().map(|timing_data| {
+                STDCMStepTimingData {
+                    arrival_time: timing_data.arrival_time,
+                    arrival_time_tolerance_before: timing_data.arrival_time_tolerance_before,
+                    arrival_time_tolerance_after: timing_data.arrival_time_tolerance_after,
+                }
+            }),
         })
         .collect())
 }
