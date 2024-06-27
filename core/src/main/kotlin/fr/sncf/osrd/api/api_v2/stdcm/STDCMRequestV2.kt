@@ -60,6 +60,13 @@ class STDCMRequestV2(
 class STDCMPathItem(
     val locations: List<TrackLocation>,
     @Json(name = "stop_duration") val stopDuration: Duration?,
+    @Json(name = "step_timing_data") val stepTimingData: StepTimingData?,
+)
+
+data class StepTimingData(
+    @Json(name = "arrival_time") val arrivalTime: ZonedDateTime,
+    @Json(name = "arrival_time_tolerance_before") val arrivalTimeToleranceBefore: Duration,
+    @Json(name = "arrival_time_tolerance_after") val arrivalTimeToleranceAfter: Duration,
 )
 
 class TrackOffset(val track: String, val offset: Offset<TrackSection>)

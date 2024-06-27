@@ -3017,7 +3017,6 @@ paths:
               type: object
               description: An STDCM request
               required:
-              - start_time
               - steps
               - rolling_stock_id
               - comfort
@@ -3035,7 +3034,9 @@ paths:
                 maximum_departure_delay:
                   type: integer
                   format: int64
-                  description: By how long we can shift the departure time in milliseconds
+                  description: |-
+                    By how long we can shift the departure time in milliseconds
+                    Deprecated, first step data should be used instead
                   default: 432000
                   minimum: 0
                 maximum_run_time:
@@ -3054,6 +3055,8 @@ paths:
                 start_time:
                   type: string
                   format: date-time
+                  description: Deprecated, first step arrival time should be used instead
+                  nullable: true
                 steps:
                   type: array
                   items:
@@ -8549,6 +8552,10 @@ components:
           minimum: 0
         location:
           $ref: '#/components/schemas/PathItemLocation'
+        timing_data:
+          allOf:
+          - $ref: '#/components/schemas/StepTimingData'
+          nullable: true
     PathfindingOutput:
       type: object
       required:
@@ -10177,7 +10184,6 @@ components:
       type: object
       description: An STDCM request
       required:
-      - start_time
       - steps
       - rolling_stock_id
       - comfort
@@ -10195,7 +10201,9 @@ components:
         maximum_departure_delay:
           type: integer
           format: int64
-          description: By how long we can shift the departure time in milliseconds
+          description: |-
+            By how long we can shift the departure time in milliseconds
+            Deprecated, first step data should be used instead
           default: 432000
           minimum: 0
         maximum_run_time:
@@ -10214,6 +10222,8 @@ components:
         start_time:
           type: string
           format: date-time
+          description: Deprecated, first step arrival time should be used instead
+          nullable: true
         steps:
           type: array
           items:
@@ -11487,6 +11497,27 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/RangeAllowance'
+    StepTimingData:
+      type: object
+      required:
+      - arrival_time
+      - arrival_time_tolerance_before
+      - arrival_time_tolerance_after
+      properties:
+        arrival_time:
+          type: string
+          format: date-time
+          description: Time at which the train should arrive at the location
+        arrival_time_tolerance_after:
+          type: integer
+          format: int64
+          description: The train may arrive up to this duration after the expected arrival time
+          minimum: 0
+        arrival_time_tolerance_before:
+          type: integer
+          format: int64
+          description: The train may arrive up to this duration before the expected arrival time
+          minimum: 0
     Study:
       type: object
       required:

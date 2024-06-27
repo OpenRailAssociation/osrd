@@ -75,7 +75,11 @@ class DurationAdapter : JsonAdapter<Duration?>() {
  */
 class DateAdapter : JsonAdapter<ZonedDateTime>() {
     @FromJson
-    override fun fromJson(reader: JsonReader): ZonedDateTime {
+    override fun fromJson(reader: JsonReader): ZonedDateTime? {
+        if (reader.peek() == JsonReader.Token.NULL) {
+            reader.skipValue()
+            return null
+        }
         return ZonedDateTime.parse(reader.nextString())
     }
 

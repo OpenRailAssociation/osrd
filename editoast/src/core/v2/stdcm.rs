@@ -64,6 +64,19 @@ pub struct STDCMPathItem {
     pub locations: Vec<TrackOffset>,
     /// Stop duration in milliseconds. None if the train does not stop at this path item.
     pub stop_duration: Option<u64>,
+    /// If specified, describes when the train may arrive at the location
+    pub step_timing_data: Option<STDCMStepTimingData>,
+}
+
+/// Contains the data of a step timing, when it is specified
+#[derive(Debug, Serialize)]
+pub struct STDCMStepTimingData {
+    /// Time the train should arrive at this point
+    pub arrival_time: DateTime<Utc>,
+    /// Tolerance for the arrival time, when it arrives before the expected time, in ms
+    pub arrival_time_tolerance_before: u64,
+    /// Tolerance for the arrival time, when it arrives after the expected time, in ms
+    pub arrival_time_tolerance_after: u64,
 }
 
 /// Lighter description of a work schedule, only contains what's relevant
