@@ -35,7 +35,7 @@ const LicenseAttributions = () => {
     .map((licence) => ({ ...licence, name: licence.name.replace('@', '') }))
     .sort((a, b) => a.name.localeCompare(b.name))
     .map(({ name, version, copyright, publisher, url, licenses }) => (
-      <a key={name} href={url}>
+      <a key={name} href={url} rel="noreferrer">
         <h3 className="d-flex mr-1 mb-0">
           {name}
           <small className="d-flex align-items-center ml-2">
