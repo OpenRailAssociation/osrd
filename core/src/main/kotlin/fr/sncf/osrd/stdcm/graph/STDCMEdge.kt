@@ -79,10 +79,12 @@ data class STDCMEdge(
                 null,
                 null,
                 timeSinceDeparture,
+                graph.remainingTimeEstimator.invoke(this, null, newWaypointIndex),
             )
         } else {
             // New edge on the same block, after a stop
             val stopDuration = graph.getFirstStopAfterIndex(waypointIndex)!!.duration!!
+            val locationOnEdge = envelopeStartOffset + length.distance
             STDCMNode(
                 totalTime + timeStart + stopDuration,
                 endSpeed,
@@ -93,7 +95,7 @@ data class STDCMEdge(
                 newWaypointIndex,
                 envelopeStartOffset + length.distance,
                 stopDuration,
-                timeSinceDeparture,
+                graph.remainingTimeEstimator.invoke(this, locationOnEdge, newWaypointIndex)
             )
         }
     }

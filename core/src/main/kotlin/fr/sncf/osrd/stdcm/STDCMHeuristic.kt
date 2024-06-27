@@ -8,7 +8,7 @@ import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.sim_infra.api.BlockInfra
 import fr.sncf.osrd.sim_infra.api.RawInfra
 import fr.sncf.osrd.sim_infra.utils.getBlockEntry
-import fr.sncf.osrd.stdcm.graph.STDCMNode
+import fr.sncf.osrd.stdcm.graph.STDCMEdge
 import fr.sncf.osrd.utils.indexing.StaticIdx
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
@@ -46,10 +46,10 @@ private data class PendingBlock(
 
 /**
  * This typealias defines a function that can be used as a heuristic for an A* pathfinding. It takes
- * a node and a number of passed steps as input, and returns an estimation of the remaining time
- * needed to get to the end.
+ * an edge, and offset on this edge, and a number of passed steps as input, and returns an
+ * estimation of the remaining time needed to get to the end.
  */
-typealias STDCMAStarHeuristic<NodeT> = (NodeT, Int) -> Double
+typealias STDCMAStarHeuristic = (STDCMEdge, Offset<Block>?, Int) -> Double
 
 /** Runs all the pre-processing and initializes the STDCM A* heuristic. */
 fun makeSTDCMHeuristic(
@@ -58,7 +58,7 @@ fun makeSTDCMHeuristic(
     steps: List<STDCMStep>,
     maxRunningTime: Double,
     rollingStock: PhysicsRollingStock,
-): STDCMAStarHeuristic<STDCMNode> {
+): STDCMAStarHeuristic {
     logger.info("Start building STDCM heuristic...")
     // One map per number of reached pathfinding step
     val maps = mutableListOf<MutableMap<BlockId, Double>>()
@@ -86,21 +86,15 @@ fun makeSTDCMHeuristic(
             ?: Double.POSITIVE_INFINITY
     logger.info("STDCM heuristic built, best theoretical travel time = $bestTravelTime seconds")
 
-    return res@{ node, nPassedSteps ->
+    return res@{ previousEdge, location, nPassedSteps ->
         if (nPassedSteps >= maps.size) return@res 0.0
         // We need to iterate through the previous maps,
         // to handle cases where several steps are on the same block
         for (i in (0..nPassedSteps).reversed()) {
-            val cachedRemainingTime = maps[i][node.previousEdge.block] ?: continue
+            val cachedRemainingTime = maps[i][previousEdge.block] ?: continue
             val remainingTime =
                 cachedRemainingTime -
-                    getBlockTime(
-                        rawInfra,
-                        blockInfra,
-                        node.previousEdge.block,
-                        rollingStock,
-                        node.locationOnEdge
-                    )
+                    getBlockTime(rawInfra, blockInfra, previousEdge.block, rollingStock, location)
             return@res remainingTime
         }
         return@res Double.POSITIVE_INFINITY
