@@ -15,7 +15,6 @@ import fr.sncf.osrd.utils.units.Offset
 import java.time.Duration
 import java.time.Instant
 import java.util.*
-import kotlin.collections.ArrayList
 import kotlin.collections.HashSet
 
 data class EdgeLocation(val edge: STDCMEdge, val offset: Offset<STDCMEdge>)
@@ -71,7 +70,7 @@ class STDCMPathfinding(
     private val pathfindingTimeout: Double = 120.0
 ) {
 
-    private var remainingTimeEstimators: List<STDCMAStarHeuristic<STDCMNode>>? = ArrayList()
+    private var remainingTimeEstimator: STDCMAStarHeuristic<STDCMNode> = { _, _ -> 0.0 }
     private var starts: Set<STDCMNode> = HashSet()
 
     var graph: STDCMGraph =
@@ -92,8 +91,8 @@ class STDCMPathfinding(
         assert(steps.size >= 2) { "Not enough steps have been set to find a path" }
 
         // Initialize the A* heuristic
-        remainingTimeEstimators =
-            makeSTDCMHeuristics(
+        remainingTimeEstimator =
+            makeSTDCMHeuristic(
                 fullInfra.blockInfra,
                 fullInfra.rawInfra,
                 steps,
@@ -142,7 +141,7 @@ class STDCMPathfinding(
     private fun findPathImpl(): Result? {
         val queue = PriorityQueue<STDCMNode>()
         for (location in starts) {
-            location.remainingTimeEstimation = remainingTimeEstimators!!.apply(location, 0)
+            location.remainingTimeEstimation = remainingTimeEstimator.invoke(location, 0)
             queue.add(location)
         }
         val start = Instant.now()
@@ -157,9 +156,8 @@ class STDCMPathfinding(
             }
             val neighbors = getAdjacentNodes(endNode)
             for (neighbor in neighbors) {
-                if (neighbor.waypointIndex < remainingTimeEstimators!!.size)
-                    neighbor.remainingTimeEstimation =
-                        remainingTimeEstimators!!.apply(neighbor, neighbor.waypointIndex)
+                neighbor.remainingTimeEstimation =
+                    remainingTimeEstimator.invoke(neighbor, neighbor.waypointIndex)
                 queue.add(neighbor)
             }
         }
