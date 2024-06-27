@@ -8,41 +8,49 @@ import fr.sncf.osrd.utils.units.meters
 import java.lang.Double.isNaN
 
 data class STDCMEdge(
-    val infraExplorer:
-        InfraExplorerWithEnvelope, // Instance used to explore the infra, contains the current
+    // Instance used to explore the infra, contains the current
     // underlying edge (block)
-    val infraExplorerWithNewEnvelope: InfraExplorerWithEnvelope, // Includes this edge's envelope
-    val timeStart: Double, // Time at which the train enters the block
-    val maximumAddedDelayAfter:
-        Double, // Maximum delay we can add after this block by delaying the start time without
+    val infraExplorer: InfraExplorerWithEnvelope,
+    // Includes this edge's envelope
+    val infraExplorerWithNewEnvelope: InfraExplorerWithEnvelope,
+    // Time at which the train enters the block
+    val timeStart: Double,
+    // Maximum delay we can add after this block by delaying the start time without
     // causing conflicts
-    val addedDelay:
-        Double, // Delay we needed to add in this block to avoid conflicts (by shifting the
+    val maximumAddedDelayAfter: Double,
+    // Delay we needed to add in this block to avoid conflicts (by shifting the
     // departure time)
-    val timeNextOccupancy:
-        Double, // Time of the next occupancy of the block, used to identify the "opening" used by
+    val addedDelay: Double,
+    // Time of the next occupancy of the block, used to identify the "opening" used by
     // the edge
-    val totalDepartureTimeShift:
-        Double, // Total delay we have added by shifting the departure time since the start of the
+    val timeNextOccupancy: Double,
+    // Total delay we have added by shifting the departure time since the start of the
     // path
-    val previousNode:
-        STDCMNode?, // Node located at the start of this edge, null if this is the first edge
-    val envelopeStartOffset:
-        Offset<Block>, // Offset of the envelope if it doesn't start at the beginning of the edge
-    val minuteTimeStart:
-        Int, // Time at which the train enters the block, discretized by only considering the
+    val totalDepartureTimeShift: Double,
+    // Node located at the start of this edge, null if this is the first edge
+    val previousNode: STDCMNode?,
+    // Offset of the envelope if it doesn't start at the beginning of the edge
+    val envelopeStartOffset: Offset<Block>,
+    // Time at which the train enters the block, discretized by only considering the
     // minutes.
     // Used to identify visited edges
-    val standardAllowanceSpeedFactor: Double, // Speed factor used to account for standard allowance
+    val minuteTimeStart: Int,
+    // Speed factor used to account for standard allowance
     // e.g. if we have a 5% standard allowance, this value is 1/1.05.
-    val waypointIndex: Int, // Index of the last waypoint passed by this train
-    val endAtStop: Boolean, // True if the edge end is a stop
-    val beginSpeed: Double, // Speed at the beginning of the edge
-    val endSpeed: Double, // Speed at the end of the edge
-    val length: Length<STDCMEdge>, // Edge length
-    val totalTime:
-        Double, // How long it takes to go from the beginning to the end of the block, taking the
+    val standardAllowanceSpeedFactor: Double,
+    // Index of the last waypoint passed by this train
+    val waypointIndex: Int,
+    // True if the edge end is a stop
+    val endAtStop: Boolean,
+    // Speed at the beginning of the edge
+    val beginSpeed: Double,
+    // Speed at the end of the edge
+    val endSpeed: Double,
+    // Edge length
+    val length: Length<STDCMEdge>,
+    // How long it takes to go from the beginning to the end of the block, taking the
     // standard allowance into account
+    val totalTime: Double,
 ) {
     val block = infraExplorer.getCurrentBlock()
 
