@@ -150,7 +150,7 @@ class STDCMPathfinding(
             if (Duration.between(start, Instant.now()).toSeconds() >= pathfindingTimeout)
                 throw OSRDError(ErrorType.PathfindingTimeoutError)
             val endNode = queue.poll() ?: return null
-            if (endNode.getCurrentRunningTime() + endNode.remainingTimeEstimation > maxRunTime)
+            if (endNode.timeSinceDeparture + endNode.remainingTimeEstimation > maxRunTime)
                 return null
             if (endNode.waypointIndex >= graph.steps.size - 1) {
                 return buildResult(endNode)

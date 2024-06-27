@@ -141,7 +141,8 @@ class STDCMHeuristicTests {
             )
         var locationOnEdge: Offset<Block>? = null
         if (nodeOffsetOnEdge != null) locationOnEdge = Offset(nodeOffsetOnEdge)
-        val node = STDCMNode(0.0, 0.0, explorer, 0.0, 0.0, defaultEdge, 0, locationOnEdge, null)
+        val node =
+            STDCMNode(0.0, 0.0, explorer, 0.0, 0.0, defaultEdge, 0, locationOnEdge, null, 0.0)
         return heuristics.apply(node, nbPassedSteps)
     }
 }

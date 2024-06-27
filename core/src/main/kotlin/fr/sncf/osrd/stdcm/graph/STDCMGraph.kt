@@ -31,7 +31,7 @@ class STDCMGraph(
     val timeStep: Double,
     blockAvailability: BlockAvailabilityInterface,
     maxRunTime: Double,
-    minScheduleTimeStart: Double,
+    val minScheduleTimeStart: Double,
     steps: List<STDCMStep>,
     tag: String?,
     standardAllowance: AllowanceValue?

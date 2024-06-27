@@ -24,6 +24,9 @@ data class STDCMNode(
     val locationOnEdge: Offset<Block>?,
     // When the node is a stop, how long the train remains here
     val stopDuration: Double?,
+    // Time since train departure. Accounts for stops and travel time, but not the changes in
+    // departure time.
+    val timeSinceDeparture: Double,
     // Estimation of the min time it takes to reach the end from this node
     var remainingTimeEstimation: Double = 0.0,
 ) : Comparable<STDCMNode> {
@@ -35,8 +38,8 @@ data class STDCMNode(
      * priority queue, from the best path to the worst path. We then explore them in that order.
      */
     override fun compareTo(other: STDCMNode): Int {
-        val runTimeEstimation = getCurrentRunningTime() + remainingTimeEstimation
-        val otherRunTimeEstimation = other.getCurrentRunningTime() + other.remainingTimeEstimation
+        val runTimeEstimation = timeSinceDeparture + remainingTimeEstimation
+        val otherRunTimeEstimation = other.timeSinceDeparture + other.remainingTimeEstimation
         // Firstly, minimize the total run time: highest priority node takes the least time to
         // complete the path
         return if (abs(runTimeEstimation - otherRunTimeEstimation) >= 1e-3)
@@ -57,9 +60,5 @@ data class STDCMNode(
             infraExplorer.getCurrentBlock(),
             waypointIndex
         )
-    }
-
-    fun getCurrentRunningTime(): Double {
-        return time - totalPrevAddedDelay
     }
 }
