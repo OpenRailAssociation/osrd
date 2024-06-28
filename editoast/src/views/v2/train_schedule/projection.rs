@@ -7,7 +7,6 @@ use editoast_schemas::primitives::Identifier;
 use futures::join;
 use serde::Deserialize;
 use serde::Serialize;
-use serde_qs::actix::QsQuery;
 use std::collections::hash_map::DefaultHasher;
 use std::collections::HashMap;
 use std::collections::HashSet;
@@ -18,7 +17,6 @@ use std::sync::Arc;
 use tracing::info;
 use utoipa::ToSchema;
 
-use super::SimulationBatchParams;
 use super::TrainScheduleError;
 use crate::client::get_app_version;
 use crate::core::v2::pathfinding::PathfindingResult;
@@ -52,14 +50,22 @@ const CACHE_PROJECTION_EXPIRATION: u64 = 604800; // 1 week
 
 editoast_common::schemas! {
     ProjectPathTrainResult,
-    ProjectPathInput,
+    ProjectPathForm,
 }
 crate::routes! {
     project_path,
 }
 
+#[derive(Debug, Deserialize, ToSchema)]
+struct ProjectPathForm {
+    infra_id: i64,
+    ids: HashSet<i64>,
+    #[schema(inline)]
+    path: ProjectPathInput,
+}
+
 /// Project path input is described by a list of routes and a list of track range
-#[derive(Debug, Deserialize, Serialize, ToSchema)]
+#[derive(Debug, Deserialize, ToSchema)]
 struct ProjectPathInput {
     /// List of track ranges
     #[schema(min_items = 1)]
@@ -114,10 +120,7 @@ struct CachedProjectPathTrainResult {
 /// Train schedules that are invalid (pathfinding or simulation failed) are not included in the result
 #[utoipa::path(
     tag = "train_schedulev2",
-    params(
-        ("infra" = i64, Query, description = "The infra id"),
-        ("ids" = Vec<i64>, Query, description = "Ids of train schedule"),
-    ),
+    request_body = ProjectPathForm,
     responses(
         (status = 200, description = "Project Path Output", body = HashMap<i64, ProjectPathTrainResult>),
     ),
@@ -127,18 +130,19 @@ async fn project_path(
     db_pool: Data<DbConnectionPoolV2>,
     redis_client: Data<RedisClient>,
     core_client: Data<CoreClient>,
-    params: QsQuery<SimulationBatchParams>,
-    data: Json<ProjectPathInput>,
+    data: Json<ProjectPathForm>,
 ) -> Result<Json<HashMap<i64, ProjectPathTrainResult>>> {
+    let ProjectPathForm {
+        infra_id,
+        ids: train_ids,
+        path,
+    } = data.into_inner();
     let ProjectPathInput {
         track_section_ranges: path_track_ranges,
         routes: path_routes,
         blocks: path_blocks,
-    } = data.into_inner();
+    } = path;
     let path_projection = PathProjection::new(&path_track_ranges);
-    let query_props = params.into_inner();
-    let train_ids = query_props.ids;
-    let infra_id = query_props.infra;
     let db_pool = db_pool.into_inner();
     let redis_client = redis_client.into_inner();
     let mut redis_conn = redis_client.get_connection().await?;

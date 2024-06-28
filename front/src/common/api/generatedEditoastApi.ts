@@ -910,9 +910,12 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['timetablev2', 'train_schedulev2'],
       }),
-      getV2TrainSchedule: build.query<GetV2TrainScheduleApiResponse, GetV2TrainScheduleApiArg>({
-        query: (queryArg) => ({ url: `/v2/train_schedule/`, params: { ids: queryArg.ids } }),
-        providesTags: ['train_schedulev2'],
+      postV2TrainSchedule: build.mutation<
+        PostV2TrainScheduleApiResponse,
+        PostV2TrainScheduleApiArg
+      >({
+        query: (queryArg) => ({ url: `/v2/train_schedule/`, method: 'POST', body: queryArg.body }),
+        invalidatesTags: ['train_schedulev2'],
       }),
       deleteV2TrainSchedule: build.mutation<
         DeleteV2TrainScheduleApiResponse,
@@ -932,20 +935,20 @@ const injectedRtkApi = api
         query: (queryArg) => ({
           url: `/v2/train_schedule/project_path`,
           method: 'POST',
-          body: queryArg.projectPathInput,
-          params: { infra: queryArg.infra, ids: queryArg.ids },
+          body: queryArg.projectPathForm,
         }),
         invalidatesTags: ['train_schedulev2'],
       }),
-      getV2TrainScheduleSimulationSummary: build.query<
-        GetV2TrainScheduleSimulationSummaryApiResponse,
-        GetV2TrainScheduleSimulationSummaryApiArg
+      postV2TrainScheduleSimulationSummary: build.mutation<
+        PostV2TrainScheduleSimulationSummaryApiResponse,
+        PostV2TrainScheduleSimulationSummaryApiArg
       >({
         query: (queryArg) => ({
           url: `/v2/train_schedule/simulation_summary`,
-          params: { infra: queryArg.infra, ids: queryArg.ids },
+          method: 'POST',
+          body: queryArg.body,
         }),
-        providesTags: ['train_schedulev2'],
+        invalidatesTags: ['train_schedulev2'],
       }),
       getV2TrainScheduleById: build.query<
         GetV2TrainScheduleByIdApiResponse,
@@ -1781,11 +1784,12 @@ export type PostV2TimetableByIdTrainScheduleApiArg = {
   id: number;
   body: TrainScheduleBase[];
 };
-export type GetV2TrainScheduleApiResponse =
+export type PostV2TrainScheduleApiResponse =
   /** status 200 Retrieve a list of train schedule */ TrainScheduleResult[];
-export type GetV2TrainScheduleApiArg = {
-  /** Ids of train schedule */
-  ids: number[];
+export type PostV2TrainScheduleApiArg = {
+  body: {
+    ids: number[];
+  };
 };
 export type DeleteV2TrainScheduleApiResponse = unknown;
 export type DeleteV2TrainScheduleApiArg = {
@@ -1797,21 +1801,17 @@ export type PostV2TrainScheduleProjectPathApiResponse = /** status 200 Project P
   [key: string]: ProjectPathTrainResult;
 };
 export type PostV2TrainScheduleProjectPathApiArg = {
-  /** The infra id */
-  infra: number;
-  /** Ids of train schedule */
-  ids: number[];
-  projectPathInput: ProjectPathInput;
+  projectPathForm: ProjectPathForm;
 };
-export type GetV2TrainScheduleSimulationSummaryApiResponse =
+export type PostV2TrainScheduleSimulationSummaryApiResponse =
   /** status 200 Associate each train id with its simulation summary */ {
     [key: string]: SimulationSummaryResult;
   };
-export type GetV2TrainScheduleSimulationSummaryApiArg = {
-  /** The infra id */
-  infra: number;
-  /** Ids of train schedule */
-  ids: number[];
+export type PostV2TrainScheduleSimulationSummaryApiArg = {
+  body: {
+    ids: number[];
+    infra_id: number;
+  };
 };
 export type GetV2TrainScheduleByIdApiResponse =
   /** status 200 The train schedule */ TrainScheduleResult;
@@ -3799,13 +3799,18 @@ export type ProjectPathTrainResult = {
   /** Rolling stock length in mm */
   rolling_stock_length: number;
 };
-export type ProjectPathInput = {
-  /** Path description as block ids */
-  blocks: string[];
-  /** List of route ids */
-  routes: string[];
-  /** List of track ranges */
-  track_section_ranges: TrackRange[];
+export type ProjectPathForm = {
+  ids: number[];
+  infra_id: number;
+  /** Project path input is described by a list of routes and a list of track range */
+  path: {
+    /** Path description as block ids */
+    blocks: string[];
+    /** List of route ids */
+    routes: string[];
+    /** List of track ranges */
+    track_section_ranges: TrackRange[];
+  };
 };
 export type SimulationSummaryResult =
   | {

@@ -3156,20 +3156,25 @@ paths:
                 items:
                   $ref: '#/components/schemas/TrainScheduleResult'
   /v2/train_schedule/:
-    get:
+    post:
       tags:
       - train_schedulev2
       summary: Return a specific train schedule
-      parameters:
-      - name: ids
-        in: query
-        description: Ids of train schedule
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - ids
+              properties:
+                ids:
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+                  uniqueItems: true
         required: true
-        schema:
-          type: array
-          items:
-            type: integer
-            format: int64
       responses:
         '200':
           description: Retrieve a list of train schedule
@@ -3212,29 +3217,11 @@ paths:
         - Returns 200 with a hashmap of train_id to ProjectPathTrainResult
 
         Train schedules that are invalid (pathfinding or simulation failed) are not included in the result
-      parameters:
-      - name: infra
-        in: query
-        description: The infra id
-        required: true
-        schema:
-          type: integer
-          format: int64
-      - name: ids
-        in: query
-        description: Ids of train schedule
-        required: true
-        schema:
-          type: array
-          items:
-            type: integer
-            format: int64
       requestBody:
-        description: ''
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ProjectPathInput'
+              $ref: '#/components/schemas/ProjectPathForm'
         required: true
       responses:
         '200':
@@ -3246,28 +3233,30 @@ paths:
                 additionalProperties:
                   $ref: '#/components/schemas/ProjectPathTrainResult'
   /v2/train_schedule/simulation_summary:
-    get:
+    post:
       tags:
       - train_schedulev2
       summary: Associate each train id with its simulation summary response
       description: 'If the simulation fails, it associates the reason: pathfinding failed or running time failed'
-      parameters:
-      - name: infra
-        in: query
-        description: The infra id
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - infra_id
+              - ids
+              properties:
+                ids:
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+                  uniqueItems: true
+                infra_id:
+                  type: integer
+                  format: int64
         required: true
-        schema:
-          type: integer
-          format: int64
-      - name: ids
-        in: query
-        description: Ids of train schedule
-        required: true
-        schema:
-          type: array
-          items:
-            type: integer
-            format: int64
       responses:
         '200':
           description: Associate each train id with its simulation summary
@@ -3521,17 +3510,6 @@ components:
           maxLength: 255
           minLength: 1
       additionalProperties: false
-    BatchDeletionRequest:
-      type: object
-      required:
-      - ids
-      properties:
-        ids:
-          type: array
-          items:
-            type: integer
-            format: int64
-          uniqueItems: true
     BoundingBox:
       type: array
       items:
@@ -4376,7 +4354,6 @@ components:
       - $ref: '#/components/schemas/EditoastTrainScheduleErrorUnsimulatedTrainSchedule'
       - $ref: '#/components/schemas/EditoastTrainScheduleErrorBatchTrainScheduleNotFound'
       - $ref: '#/components/schemas/EditoastTrainScheduleErrorInfraNotFound'
-      - $ref: '#/components/schemas/EditoastTrainScheduleErrorInvalidQueryParams'
       - $ref: '#/components/schemas/EditoastTrainScheduleErrorNotFound'
       - $ref: '#/components/schemas/EditoastTypeCheckErrorArgMissing'
       - $ref: '#/components/schemas/EditoastTypeCheckErrorArgTypeMismatch'
@@ -6167,30 +6144,6 @@ components:
           type: string
           enum:
           - editoast:train_schedule_v2:InfraNotFound
-    EditoastTrainScheduleErrorInvalidQueryParams:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          required:
-          - message
-          properties:
-            message:
-              type: string
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 400
-        type:
-          type: string
-          enum:
-          - editoast:train_schedule_v2:InvalidQueryParams
     EditoastTrainScheduleErrorNoSimulation:
       type: object
       required:
@@ -9115,36 +9068,52 @@ components:
           allOf:
           - $ref: '#/components/schemas/Tags'
           nullable: true
-    ProjectPathInput:
+    ProjectPathForm:
       type: object
-      description: Project path input is described by a list of routes and a list of track range
       required:
-      - track_section_ranges
-      - routes
-      - blocks
+      - infra_id
+      - ids
+      - path
       properties:
-        blocks:
+        ids:
           type: array
           items:
-            type: string
-            maxLength: 255
-            minLength: 1
-          description: Path description as block ids
-          minItems: 1
-        routes:
-          type: array
-          items:
-            type: string
-            maxLength: 255
-            minLength: 1
-          description: List of route ids
-          minItems: 1
-        track_section_ranges:
-          type: array
-          items:
-            $ref: '#/components/schemas/TrackRange'
-          description: List of track ranges
-          minItems: 1
+            type: integer
+            format: int64
+          uniqueItems: true
+        infra_id:
+          type: integer
+          format: int64
+        path:
+          type: object
+          description: Project path input is described by a list of routes and a list of track range
+          required:
+          - track_section_ranges
+          - routes
+          - blocks
+          properties:
+            blocks:
+              type: array
+              items:
+                type: string
+                maxLength: 255
+                minLength: 1
+              description: Path description as block ids
+              minItems: 1
+            routes:
+              type: array
+              items:
+                type: string
+                maxLength: 255
+                minLength: 1
+              description: List of route ids
+              minItems: 1
+            track_section_ranges:
+              type: array
+              items:
+                $ref: '#/components/schemas/TrackRange'
+              description: List of track ranges
+              minItems: 1
     ProjectPathTrainResult:
       allOf:
       - type: object
