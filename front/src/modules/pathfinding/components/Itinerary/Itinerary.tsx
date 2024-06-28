@@ -112,7 +112,7 @@ function Itinerary({ path }: ItineraryProps) {
         </div>
       )}
       {origin && destination && (
-        <div className="d-flex flex-row">
+        <div className="d-flex flex-row flex-wrap">
           {geojson && (
             <button
               className="col my-1 text-white btn bg-info btn-sm"
