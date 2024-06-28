@@ -64,7 +64,7 @@ const TimetableTrainCardV2 = ({
 
   const [postTrainSchedule] =
     osrdEditoastApi.endpoints.postV2TimetableByIdTrainSchedule.useMutation();
-  const [getTrainSchedule] = osrdEditoastApi.endpoints.getV2TrainSchedule.useLazyQuery();
+  const [getTrainSchedule] = osrdEditoastApi.endpoints.postV2TrainSchedule.useLazyQuery();
   const [deleteTrainSchedule] = osrdEditoastApi.endpoints.deleteV2TrainSchedule.useMutation();
 
   const changeSelectedTrainId = (trainId: number) => {
@@ -112,7 +112,7 @@ const TimetableTrainCardV2 = ({
     const trainCount = 1;
     const actualTrainCount = 1;
 
-    const trainsResults = await getTrainSchedule({ ids: [train.id] })
+    const trainsResults = await getTrainSchedule({ body: { ids: [train.id] } })
       .unwrap()
       .catch((e) => {
         dispatch(setFailure(castErrorToFailure(e)));

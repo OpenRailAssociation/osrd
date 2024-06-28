@@ -59,7 +59,7 @@ export const getSpaceTimeChartData = async (
       );
 
       const { data: trainSchedules } = await store.dispatch(
-        osrdEditoastApi.endpoints.getV2TrainSchedule.initiate({ ids: trainSchedulesIDs })
+        osrdEditoastApi.endpoints.postV2TrainSchedule.initiate({ body: { ids: trainSchedulesIDs } })
       );
 
       if (pathfindingResult && pathfindingResult.status === 'success' && trainSchedules) {
@@ -67,9 +67,11 @@ export const getSpaceTimeChartData = async (
         const projectPathTrainResult = await store
           .dispatch(
             osrdEditoastApi.endpoints.postV2TrainScheduleProjectPath.initiate({
-              infra: infraId,
-              ids: trainSchedulesIDs,
-              projectPathInput: { blocks, routes, track_section_ranges },
+              projectPathForm: {
+                infra_id: infraId,
+                ids: trainSchedulesIDs,
+                path: { blocks, routes, track_section_ranges },
+              },
             })
           )
           .unwrap();

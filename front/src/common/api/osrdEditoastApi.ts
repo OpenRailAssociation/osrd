@@ -38,34 +38,6 @@ const osrdEditoastApi = generatedEditoastApi.enhanceEndpoints({
         body: queryArg.pathPropertiesInput,
       }),
     },
-    getV2TrainScheduleSimulationSummary: {
-      query: (queryArg) => ({
-        // We currently can't build the url path the way we want with rtk query with the regular endpoint
-        // so we need to do it manually with this function and enhanced endpoint
-        url: `/v2/train_schedule/simulation_summary?infra=${queryArg.infra}&${formatURLWithIds(queryArg.ids)}`,
-        method: 'GET',
-      }),
-    },
-    getV2TrainSchedule: {
-      query: (queryArg) => ({
-        // We currently can't build the url path the way we want with rtk query with the regular endpoint
-        // so we need to do it manually with this function and enhanced endpoint
-        url: `/v2/train_schedule?${formatURLWithIds(queryArg.ids)}`,
-        method: 'GET',
-      }),
-    },
-    postV2TrainScheduleProjectPath: {
-      query: (queryArg) => ({
-        // We currently can't build the url path the way we want with rtk query with the regular endpoint
-        // so we need to do it manually with this function and enhanced endpoint
-        url: `/v2/train_schedule/project_path?infra=${queryArg.infra}&${formatURLWithIds(queryArg.ids)}`,
-        method: 'POST',
-        body: queryArg.projectPathInput,
-      }),
-      // As we always use all get trainschedule v2 endpoints after updating the timetable,
-      // we don't want to invalidate the trainschedulev2 tag here to preven multiple calls
-      invalidatesTags: [],
-    },
     deleteV2TrainSchedule: {
       query: (queryArg) => ({
         url: `/v2/train_schedule/`,
@@ -73,7 +45,7 @@ const osrdEditoastApi = generatedEditoastApi.enhanceEndpoints({
         body: queryArg.body,
       }),
       // As we always use all get trainschedule v2 endpoints after updating the timetable,
-      // we don't want to invalidate the trainschedulev2 tag here to preven multiple calls
+      // we don't want to invalidate the trainschedulev2 tag here to prevent multiple calls
       invalidatesTags: ['timetablev2', 'scenariosv2'],
     },
     postV2TimetableByIdTrainSchedule: {
@@ -83,7 +55,7 @@ const osrdEditoastApi = generatedEditoastApi.enhanceEndpoints({
         body: queryArg.body,
       }),
       // As we always use all get trainschedule v2 endpoints after updating the timetable,
-      // we don't want to invalidate the trainschedulev2 tag here to preven multiple calls
+      // we don't want to invalidate the trainschedulev2 tag here to prevent multiple calls
       invalidatesTags: ['timetablev2', 'scenariosv2'],
     },
     // Invalidate the children count and last update timestamp

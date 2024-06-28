@@ -36,10 +36,12 @@ const useTrainSchedulesDetails = (
   const [uniqueTags, setUniqueTags] = useState<string[]>([]);
 
   const { currentData: trainSchedulesSummary } =
-    osrdEditoastApi.endpoints.getV2TrainScheduleSimulationSummary.useQuery(
+    osrdEditoastApi.endpoints.postV2TrainScheduleSimulationSummary.useQuery(
       {
-        infra: infraId as number,
-        ids: trainIds,
+        body: {
+          infra_id: infraId as number,
+          ids: trainIds,
+        },
       },
       {
         skip: !infraId || !trainIds.length,
@@ -47,9 +49,11 @@ const useTrainSchedulesDetails = (
       }
     );
 
-  const { currentData: trainSchedules } = osrdEditoastApi.endpoints.getV2TrainSchedule.useQuery(
+  const { currentData: trainSchedules } = osrdEditoastApi.endpoints.postV2TrainSchedule.useQuery(
     {
-      ids: trainIds,
+      body: {
+        ids: trainIds,
+      },
     },
     {
       skip: !trainIds.length,
