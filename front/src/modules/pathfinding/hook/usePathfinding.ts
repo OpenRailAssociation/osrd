@@ -296,7 +296,10 @@ export const usePathfindingV2 = (
               // * }
             }
           } else {
-            pathfindingDispatch({ type: 'PATHFINDING_ERROR', message: pathfindingResult.status });
+            pathfindingDispatch({
+              type: 'PATHFINDING_ERROR',
+              message: `pathfindingErrors.${pathfindingResult.status}`,
+            });
           }
         } catch (e) {
           if (isObject(e)) {

@@ -78,6 +78,16 @@
   "pathfindingMissingParamsSimple": "Missing information for the search",
   "pathfindingNoState": "No route search.",
   "pathfindingStatus": "Pathfinding state",
+  "pathfindingErrors": {
+    "not_found_in_blocks": "Missing block",
+    "not_found_in_routes": "Missing route",
+    "not_found_in_tracks": "Missing track",
+    "incompatible_electrification": "Incompatible electrification",
+    "incompatible_loading_gauge": "Incompatible loading gauge",
+    "incompatible_signaling_system": "Incompatible signaling system",
+    "not_enough_path_items": "Missing parameters for pathfinding: Departure, Arrival, Rolling stock",
+    "pathfinding_failed": "No path found"
+  },
   "powerRestriction": "Power restriction code",
   "powerRestrictionExplanationText": "By default, the simulation will use the nominal power.",
   "powerRestrictionEmptyExplanationText": "The selected rolling stock does not have any power restrictions. You can edit it in the rolling stock editor.",
