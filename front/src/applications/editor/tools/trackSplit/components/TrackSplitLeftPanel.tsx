@@ -86,8 +86,8 @@ const TrackSplitLeftPanel: FC<unknown> = () => {
             id="offset"
             type="number"
             inputProps={{ required: true }}
-            value={state.offset / 1000}
-            min={0}
+            value={state.offset === 0 ? '' : state.offset / 1000}
+            min={1}
             max={trackLength}
             whiteBG
             focus
@@ -100,8 +100,10 @@ const TrackSplitLeftPanel: FC<unknown> = () => {
                 : undefined
             }
             onChange={(e) => {
-              if (!Number.isNaN(e.target.valueAsNumber))
-                setState((prev) => ({ ...prev, offset: e.target.valueAsNumber * 1000 }));
+              setState((prev) => ({
+                ...prev,
+                offset: e.target.valueAsNumber * 1000 || 0,
+              }));
             }}
           />
         </form>
