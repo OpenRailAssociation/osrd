@@ -1,7 +1,9 @@
 use std::io::Cursor;
+use std::sync::Arc;
 
 use chrono::Utc;
 use editoast_schemas::infra::InfraObject;
+use editoast_schemas::infra::RailJson;
 use editoast_schemas::primitives::OSRDObject;
 use editoast_schemas::train_schedule::TrainScheduleBase;
 
@@ -21,6 +23,8 @@ use crate::modelsv2::Tags;
 use crate::views::rolling_stocks::rolling_stock_form::RollingStockForm;
 use crate::views::v2::train_schedule::TrainScheduleForm;
 use editoast_models::DbConnection;
+use editoast_models::DbConnectionPool;
+use editoast_models::DbConnectionPoolV2;
 
 pub fn project_changeset(name: &str) -> Changeset<Project> {
     Project::changeset()
@@ -281,4 +285,17 @@ where
     let result = apply_create_operation(&railjson_object, infra_id, conn).await;
     assert!(result.is_ok(), "Failed to create a {object_type}");
     railjson_object
+}
+
+pub async fn create_small_infra(db_pool: Arc<DbConnectionPoolV2>) -> Infra {
+    let railjson: RailJson = serde_json::from_str(include_str!(
+        "../../../tests/data/infras/small_infra/infra.json"
+    ))
+    .unwrap();
+    Infra::changeset()
+        .name("small_infra".to_owned())
+        .last_railjson_version()
+        .persist_v2(railjson, db_pool)
+        .await
+        .unwrap()
 }

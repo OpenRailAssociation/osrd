@@ -6,6 +6,8 @@ mod speed_limit_tags;
 mod split_track_section_with_data;
 mod voltage;
 
+use std::ops::DerefMut;
+
 use chrono::NaiveDateTime;
 use chrono::Utc;
 use derivative::Derivative;
@@ -33,10 +35,12 @@ use crate::modelsv2::get_geometry_layer_table;
 use crate::modelsv2::get_table;
 use crate::modelsv2::prelude::*;
 use crate::modelsv2::railjson::persist_railjson;
+use crate::modelsv2::railjson::persist_railjson_v2;
 use crate::modelsv2::Create;
 use crate::tables::infra::dsl;
 use editoast_models::DbConnection;
 use editoast_models::DbConnectionPool;
+use editoast_models::DbConnectionPoolV2;
 use editoast_schemas::infra::RailJson;
 use editoast_schemas::infra::RAILJSON_VERSION;
 use editoast_schemas::primitives::ObjectType;
@@ -84,6 +88,23 @@ impl InfraChangeset {
         if let Err(e) = persist_railjson(db_pool, infra.id, railjson).await {
             error!("Could not import infrastructure {}. Rolling back", infra.id);
             infra.delete(conn).await?;
+            return Err(e);
+        };
+        debug!("🛤  Import finished successfully");
+        Ok(infra)
+    }
+
+    pub async fn persist_v2(
+        self,
+        railjson: RailJson,
+        db_pool: Arc<DbConnectionPoolV2>,
+    ) -> Result<Infra> {
+        let infra = self.create(db_pool.get().await?.deref_mut()).await?;
+        // TODO: lock infra for update
+        debug!("🛤  Begin importing all railjson objects");
+        if let Err(e) = persist_railjson_v2(db_pool.clone(), infra.id, railjson).await {
+            error!("Could not import infrastructure {}. Rolling back", infra.id);
+            infra.delete(db_pool.get().await?.deref_mut()).await?;
             return Err(e);
         };
         debug!("🛤  Import finished successfully");
