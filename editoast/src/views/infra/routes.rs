@@ -263,7 +263,6 @@ async fn get_routes_nodes(
 mod tests {
     use actix_http::StatusCode;
     use actix_web::test::call_service;
-    use actix_web::test::read_body_json;
     use actix_web::test::TestRequest;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
@@ -463,9 +462,9 @@ mod tests {
         let request = TestRequest::get()
             .uri(format!("/infra/{empty_infra_id}/routes/{waypoint_type}/bs_stop").as_str())
             .to_request();
-        let response = call_service(&app.service, request).await;
-        assert_eq!(response.status(), StatusCode::OK);
-        let routes: RoutesResponse = read_body_json(response).await;
+
+        let routes: RoutesResponse = app.fetch(request).assert_status(StatusCode::OK).json_into();
+
         assert_eq!(
             routes,
             RoutesResponse {
@@ -479,9 +478,9 @@ mod tests {
         let request = TestRequest::get()
             .uri(format!("/infra/{empty_infra_id}/routes/{waypoint_type}/detector_001").as_str())
             .to_request();
-        let response = call_service(&app.service, request).await;
-        assert_eq!(response.status(), StatusCode::OK);
-        let routes: RoutesResponse = read_body_json(response).await;
+
+        let routes: RoutesResponse = app.fetch(request).assert_status(StatusCode::OK).json_into();
+
         assert_eq!(
             routes,
             RoutesResponse {
@@ -507,9 +506,9 @@ mod tests {
                 .as_str(),
             )
             .to_request();
-        let response = call_service(&app.service, request).await;
-        assert_eq!(response.status(), StatusCode::OK);
-        let routes: RoutesResponse = read_body_json(response).await;
+
+        let routes: RoutesResponse = app.fetch(request).assert_status(StatusCode::OK).json_into();
+
         assert_eq!(
             routes,
             RoutesResponse {
