@@ -78,6 +78,16 @@
   "pathfindingMissingParamsSimple": "Informations manquantes pour la recherche",
   "pathfindingNoState": "Aucune recherche itinéraire.",
   "pathfindingStatus": "Statut recherche d’itinéraire",
+  "pathfindingErrors": {
+    "not_found_in_blocks": "Canton manquant",
+    "not_found_in_routes": "Itinéraire manquant",
+    "not_found_in_tracks": "Voie manquante",
+    "incompatible_electrification": "Électrification incompatible",
+    "incompatible_loading_gauge": "Gabarit incompatible",
+    "incompatible_signaling_system": "Système de signalisation incompatible",
+    "not_enough_path_items": "Éléments manquants pour la recherche : Origine, Destination, Matériel roulant",
+    "pathfinding_failed": "Aucun chemin trouvé"
+  },
   "pleaseWait": "Veuillez patientez…",
   "powerRestriction": "Code de restriction de puissance",
   "powerRestrictionExplanationText": "Si aucune restriction de puissance n'est renseignée sur un intervalle, le calcul de marche sera réalisé en utilisant la puissance nominale.",
