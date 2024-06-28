@@ -237,6 +237,7 @@ const TypeAndPathV2 = ({ setPathProperties }: PathfindingProps) => {
                 kp: correspondingOp.kp,
                 coordinates: correspondingOp.coordinates,
                 positionOnPath: pathfindingResult.path_items_positions[i],
+                stopFor: i === opList.length - 1 ? '0' : undefined,
               };
             });
             dispatch(updatePathSteps(pathSteps));

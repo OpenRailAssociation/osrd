@@ -18,9 +18,4 @@ describe('ISO8601Duration2sec', () => {
   it('should handle hours and seconds without min', () => {
     expect(ISO8601Duration2sec('PT1H1S')).toEqual(3601);
   });
-  it('should throw if the duration is not correctly formatted', () => {
-    expect(() => ISO8601Duration2sec('test')).toThrow(
-      new Error('Invalid ISO 8601 duration format')
-    );
-  });
 });

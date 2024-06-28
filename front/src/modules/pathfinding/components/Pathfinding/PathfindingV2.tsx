@@ -312,14 +312,21 @@ const Pathfinding = ({ pathProperties, setPathProperties }: PathfindingProps) =>
                     'uic' in step && suggestedOp.uic === step.uic && suggestedOp.ch === step.ch
                 );
 
+                const stopFor = i === pathSteps.length - 1 && !step.stopFor ? '0' : step.stopFor;
+
                 return correspondingOp
                   ? {
                       ...step,
                       kp: correspondingOp.kp,
                       coordinates: correspondingOp.coordinates,
                       positionOnPath: pathfindingResult.path_items_positions[i],
+                      stopFor,
                     }
-                  : { ...step, positionOnPath: pathfindingResult.path_items_positions[i] };
+                  : {
+                      ...step,
+                      positionOnPath: pathfindingResult.path_items_positions[i],
+                      stopFor,
+                    };
               });
               dispatch(updatePathSteps(updatedPathSteps));
 
