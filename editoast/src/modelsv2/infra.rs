@@ -16,6 +16,7 @@ use diesel::sql_query;
 use diesel::sql_types::BigInt;
 use diesel::ExpressionMethods;
 use diesel::QueryDsl;
+use diesel_async::AsyncConnection;
 use diesel_async::RunQueryDsl;
 use editoast_derive::ModelV2;
 use serde::Deserialize;
@@ -144,7 +145,7 @@ impl Infra {
     }
 
     pub async fn clone(&self, conn: &mut DbConnection, new_name: String) -> Result<Infra> {
-        conn.build_transaction().run(|conn| Box::pin(async {
+        conn.transaction(|conn| Box::pin(async {
             // Duplicate infra shell
             let cloned_infra = <Self as Clone>::clone(self)
                 .into_changeset()
@@ -337,7 +338,6 @@ pub mod tests {
     use super::Infra;
     use crate::error::EditoastError;
     use crate::fixtures::tests::db_pool;
-    use crate::fixtures::tests::small_infra;
     use crate::fixtures::tests::IntoFixture;
     use crate::modelsv2::fixtures::create_empty_infra;
     use crate::modelsv2::infra::DEFAULT_INFRA_VERSION;
@@ -361,20 +361,22 @@ pub mod tests {
     #[rstest]
     async fn clone_infra_with_new_name_returns_new_cloned_infra() {
         // GIVEN
-        let db_pool = db_pool();
-        let small_infra = small_infra(db_pool.clone()).await;
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let empty_infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
         let infra_new_name = "clone_infra_with_new_name_returns_new_cloned_infra".to_string();
 
         // WHEN
-        let mut conn = db_pool.get().await.unwrap();
-        let result = small_infra.clone(&mut conn, infra_new_name.clone()).await;
+        let result = empty_infra
+            .clone(db_pool.get_ok().deref_mut(), infra_new_name.clone())
+            .await
+            .expect("could not clone infra");
 
         // THEN
-        let infra = result.expect("could not clone infra").into_fixture(db_pool);
-        assert_eq!(infra.name, infra_new_name);
+        assert_eq!(result.name, infra_new_name);
     }
 
     #[rstest]
+    #[serial_test::serial]
     async fn persists_railjson_ko_version() {
         let pool = db_pool();
         let railjson_with_invalid_version = RailJson {

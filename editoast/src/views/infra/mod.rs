@@ -330,15 +330,16 @@ struct CloneQuery {
 #[post("/clone")]
 async fn clone(
     params: Path<InfraIdParam>,
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Data<DbConnectionPoolV2>,
     Query(CloneQuery { name }): Query<CloneQuery>,
 ) -> Result<Json<i64>> {
-    let conn = &mut db_pool.get().await?;
-    let infra = Infra::retrieve_or_fail(conn, params.infra_id, || InfraApiError::NotFound {
-        infra_id: params.infra_id,
+    let infra = Infra::retrieve_or_fail(db_pool.get().await?.deref_mut(), params.infra_id, || {
+        InfraApiError::NotFound {
+            infra_id: params.infra_id,
+        }
     })
     .await?;
-    let cloned_infra = infra.clone(conn, name).await?;
+    let cloned_infra = infra.clone(db_pool.get().await?.deref_mut(), name).await?;
     Ok(Json(cloned_infra.id))
 }
 
@@ -635,11 +636,9 @@ pub mod tests {
     use strum::IntoEnumIterator;
 
     use super::*;
-    use crate::assert_status_and_read;
     use crate::core::mocking::MockingClient;
     use crate::fixtures::tests::db_pool;
     use crate::fixtures::tests::empty_infra;
-    use crate::fixtures::tests::small_infra;
     use crate::fixtures::tests::IntoFixture;
     use crate::fixtures::tests::TestFixture;
     use crate::generated_data;
@@ -647,6 +646,7 @@ pub mod tests {
     use crate::infra_cache::operation::Operation;
     use crate::modelsv2::fixtures::create_empty_infra;
     use crate::modelsv2::fixtures::create_rolling_stock_with_energy_sources;
+    use crate::modelsv2::fixtures::create_small_infra;
     use crate::modelsv2::get_geometry_layer_table;
     use crate::modelsv2::get_table;
     use crate::modelsv2::infra::DEFAULT_INFRA_VERSION;
@@ -676,20 +676,21 @@ pub mod tests {
     }
 
     #[rstest]
-    async fn infra_clone_empty(db_pool: Arc<DbConnectionPool>) {
-        let conn = &mut db_pool.get().await.unwrap();
-        let infra = empty_infra(db_pool.clone()).await;
-        let app = create_test_service().await;
-        let req = TestRequest::post()
-            .uri(format!("/infra/{}/clone/?name=cloned_infra", infra.id).as_str())
+    #[serial_test::serial]
+    async fn infra_clone_empty() {
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+        let empty_infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
+
+        let request = TestRequest::post()
+            .uri(format!("/infra/{}/clone/?name=cloned_infra", empty_infra.id).as_str())
             .to_request();
-        let response = call_service(&app, req).await;
-        let cloned_infra_id: i64 = assert_status_and_read!(response, StatusCode::OK);
-        let cloned_infra = Infra::retrieve(conn, cloned_infra_id)
+
+        let cloned_infra_id: i64 = app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let cloned_infra = Infra::retrieve(db_pool.get_ok().deref_mut(), cloned_infra_id)
             .await
             .unwrap()
-            .expect("infra was not cloned")
-            .into_fixture(db_pool);
+            .expect("infra was not cloned");
         assert_eq!(cloned_infra.name, "cloned_infra");
     }
 
@@ -700,45 +701,42 @@ pub mod tests {
     }
 
     #[rstest] // Slow test
-    async fn infra_clone(db_pool: Arc<DbConnectionPool>) {
-        let app = create_test_service().await;
-        let small_infra = small_infra(db_pool.clone()).await;
+    #[serial_test::serial]
+    async fn infra_clone() {
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+        let small_infra = create_small_infra(db_pool.clone()).await;
         let small_infra_id = small_infra.id;
-        let conn = &mut db_pool.get().await.unwrap();
-        let infra_cache = InfraCache::load(conn, &small_infra).await.unwrap();
-
-        generated_data::refresh_all(db_pool.clone(), small_infra_id, &infra_cache)
+        let infra_cache = InfraCache::load(db_pool.get_ok().deref_mut(), &small_infra)
             .await
             .unwrap();
 
-        let switch_type: InfraObject = SwitchType {
+        generated_data::refresh_all_v2(db_pool.clone(), small_infra_id, &infra_cache)
+            .await
+            .unwrap();
+
+        let switch_type = SwitchType {
             id: "test_switch_type".into(),
             ..Default::default()
         }
         .into();
-
-        let create_operation = TestRequest::post()
-            .uri(format!("/infra/{small_infra_id}/").as_str())
-            .set_json(json!([Operation::Create(Box::new(switch_type))]))
-            .to_request();
-
-        assert_eq!(
-            call_service(&app, create_operation).await.status(),
-            StatusCode::OK
-        );
+        apply_create_operation(&switch_type, small_infra_id, db_pool.get_ok().deref_mut())
+            .await
+            .expect("Failed to create switch_type object");
 
         let req_clone = TestRequest::post()
             .uri(format!("/infra/{}/clone/?name=cloned_infra", small_infra_id).as_str())
             .to_request();
-        let response = call_service(&app, req_clone).await;
-        assert_eq!(response.status(), StatusCode::OK);
 
-        let cloned_infra_id: i64 = read_body_json(response).await;
-        let _cloned_infra = Infra::retrieve(conn, cloned_infra_id)
+        let cloned_infra_id: i64 = app
+            .fetch(req_clone)
+            .assert_status(StatusCode::OK)
+            .json_into();
+
+        let _cloned_infra = Infra::retrieve(db_pool.get_ok().deref_mut(), cloned_infra_id)
             .await
             .unwrap()
-            .expect("infra was not cloned")
-            .into_fixture(db_pool);
+            .expect("infra was not cloned");
 
         let mut tables = vec!["infra_layer_error"];
         for object in ObjectType::iter() {
@@ -757,7 +755,7 @@ pub mod tests {
                     table
                 ))
                 .bind::<BigInt, _>(inf_id)
-                .get_result::<Count>(conn)
+                .get_result::<Count>(db_pool.get_ok().deref_mut())
                 .await
                 .unwrap();
 
