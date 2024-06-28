@@ -30,6 +30,7 @@ use operational_point::OperationalPointLayer;
 use psl_sign::PSLSignLayer;
 use signal::SignalLayer;
 use speed_section::SpeedSectionLayer;
+use std::ops::DerefMut;
 use std::sync::Arc;
 use switch::SwitchLayer;
 use tracing::debug;
@@ -40,6 +41,7 @@ use crate::infra_cache::operation::CacheOperation;
 use crate::infra_cache::InfraCache;
 use editoast_models::DbConnection;
 use editoast_models::DbConnectionPool;
+use editoast_models::DbConnectionPoolV2;
 
 editoast_common::schemas! {
     error::schemas(),
@@ -74,6 +76,14 @@ pub trait GeneratedData {
     ) -> Result<()> {
         let mut conn = pool.get().await?;
         Self::refresh(&mut conn, infra, infra_cache).await
+    }
+
+    async fn refresh_pool_v2(
+        pool: Arc<DbConnectionPoolV2>,
+        infra: i64,
+        infra_cache: &InfraCache,
+    ) -> Result<()> {
+        Self::refresh(pool.get().await?.deref_mut(), infra, infra_cache).await
     }
 
     /// Search and update all objects that needs to be refreshed given a list of operation.
@@ -116,6 +126,41 @@ pub async fn refresh_all(
     debug!("⚙️ Infra {infra}: object layers is generated");
     // The error layer depends on the other layers and must be executed at the end.
     ErrorLayer::refresh_pool(db_pool.clone(), infra, infra_cache).await?;
+    debug!("⚙️ Infra {infra}: errors layer is generated");
+    Ok(())
+}
+
+pub async fn refresh_all_v2(
+    db_pool: Arc<DbConnectionPoolV2>,
+    infra: i64,
+    infra_cache: &InfraCache,
+) -> Result<()> {
+    // The other layers depend on track section layer.
+    // We must wait until its completion before running the other requests in parallel
+    TrackSectionLayer::refresh_pool_v2(db_pool.clone(), infra, infra_cache).await?;
+    debug!("⚙️ Infra {infra}: track section layer is generated");
+    // The analyze step significantly improves the performance when importing and generating together
+    // It doesn’t seem to make a different when the generation step is ran separately
+    // It isn’t clear why without analyze the Postgres server seems to run at 100% without halting
+    sql_query("analyze")
+        .execute(db_pool.get().await?.deref_mut())
+        .await?;
+    debug!("⚙️ Infra {infra}: database analyzed");
+    futures::try_join!(
+        SpeedSectionLayer::refresh_pool_v2(db_pool.clone(), infra, infra_cache),
+        SignalLayer::refresh_pool_v2(db_pool.clone(), infra, infra_cache),
+        SwitchLayer::refresh_pool_v2(db_pool.clone(), infra, infra_cache),
+        BufferStopLayer::refresh_pool_v2(db_pool.clone(), infra, infra_cache),
+        ElectrificationLayer::refresh_pool_v2(db_pool.clone(), infra, infra_cache),
+        DetectorLayer::refresh_pool_v2(db_pool.clone(), infra, infra_cache),
+        OperationalPointLayer::refresh_pool_v2(db_pool.clone(), infra, infra_cache),
+        PSLSignLayer::refresh_pool_v2(db_pool.clone(), infra, infra_cache),
+        NeutralSectionLayer::refresh_pool_v2(db_pool.clone(), infra, infra_cache),
+        NeutralSignLayer::refresh_pool_v2(db_pool.clone(), infra, infra_cache),
+    )?;
+    debug!("⚙️ Infra {infra}: object layers is generated");
+    // The error layer depends on the other layers and must be executed at the end.
+    ErrorLayer::refresh_pool_v2(db_pool.clone(), infra, infra_cache).await?;
     debug!("⚙️ Infra {infra}: errors layer is generated");
     Ok(())
 }
