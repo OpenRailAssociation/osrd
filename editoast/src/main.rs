@@ -64,6 +64,7 @@ pub use redis_utils::{RedisClient, RedisConnection};
 use std::error::Error;
 use std::fs::File;
 use std::io::{BufReader, IsTerminal};
+use std::ops::DerefMut;
 use std::process::exit;
 use std::sync::Arc;
 use std::{env, fs};
@@ -220,7 +221,7 @@ async fn run() -> Result<(), Box<dyn Error + Send + Sync>> {
             SearchCommands::Refresh(args) => refresh_search_tables(args, db_pool.pool_v1()).await,
         },
         Commands::Infra(subcommand) => match subcommand {
-            InfraCommands::Clone(args) => clone_infra(args, db_pool.pool_v1()).await,
+            InfraCommands::Clone(args) => clone_infra(args, db_pool.into()).await,
             InfraCommands::Clear(args) => clear_infra(args, db_pool.pool_v1(), redis_config).await,
             InfraCommands::Generate(args) => {
                 generate_infra(args, db_pool.pool_v1(), redis_config).await
@@ -578,10 +579,9 @@ async fn import_rolling_stock(
 
 async fn clone_infra(
     infra_args: InfraCloneArgs,
-    db_pool: Arc<DbConnectionPool>,
+    db_pool: Arc<DbConnectionPoolV2>,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
-    let conn = &mut db_pool.get().await?;
-    let infra = Infra::retrieve(conn, infra_args.id as i64)
+    let infra = Infra::retrieve(db_pool.get().await?.deref_mut(), infra_args.id as i64)
         .await?
         .ok_or_else(|| {
             // When EditoastError will be removed from the models crate,
@@ -594,7 +594,9 @@ async fn clone_infra(
     let new_name = infra_args
         .new_name
         .unwrap_or_else(|| format!("{} (clone)", infra.name));
-    let cloned_infra = infra.clone(conn, new_name).await?;
+    let cloned_infra = infra
+        .clone(db_pool.get().await?.deref_mut(), new_name)
+        .await?;
     println!(
         "✅ Infra {} (ID: {}) was successfully cloned",
         cloned_infra.name.bold(),
