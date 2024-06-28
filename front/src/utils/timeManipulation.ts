@@ -1,6 +1,10 @@
 import * as d3 from 'd3';
+import dayjs from 'dayjs';
+import duration from 'dayjs/plugin/duration';
 
 import type { TimeString } from 'common/types';
+
+dayjs.extend(duration);
 
 export function sec2ms(sec: number) {
   return sec * 1000;
@@ -78,15 +82,9 @@ export function formatDurationAsISO8601(seconds: number) {
 /**
  * Parse ISO8601 duration, for instance "PT11H9M8S" (11h, 9min and 8s) to seconds
  */
-export function ISO8601Duration2sec(duration: string) {
-  const regex = /PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/;
-  const matches = duration.match(regex);
-  if (!matches) {
-    throw new Error('Invalid ISO 8601 duration format');
-  }
-
-  const [hours, minutes, seconds] = matches.slice(1).map((match) => parseInt(match || '0', 10));
-  return hours * 60 * 60 + minutes * 60 + seconds;
+export function ISO8601Duration2sec(isoDuration: string) {
+  const durationDictionnary = dayjs.duration(isoDuration);
+  return durationDictionnary.asSeconds();
 }
 
 export function getStopTime(sec: number) {
