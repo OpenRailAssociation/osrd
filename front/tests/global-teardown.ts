@@ -2,7 +2,7 @@ import { test as setup } from '@playwright/test';
 
 import type { Infra, Project, RollingStock } from 'common/api/osrdEditoastApi';
 
-import { deleteApiRequest, getApiRequest } from './assets/utils';
+import { deleteApiRequest, getApiRequest } from './utils/index';
 
 setup('teardown', async () => {
   const infras = await getApiRequest(`/api/infra/`);

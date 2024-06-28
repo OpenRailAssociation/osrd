@@ -1,9 +1,7 @@
 import { type Locator, type Page, expect } from '@playwright/test';
 
 import BasePage from './base-page';
-import rollingstockTranslation from '../../public/locales/fr/rollingstock.json';
-
-const electricCheckboxTranslation = rollingstockTranslation.electric;
+import { extractNumberFromString } from '../utils/index';
 
 export default class RollingStockSelectorPage extends BasePage {
   readonly rollingStockSelectorButton: Locator;
@@ -16,15 +14,31 @@ export default class RollingStockSelectorPage extends BasePage {
 
   readonly rollingStockListItem: Locator;
 
-  readonly getRollingStockSearch: Locator;
-
-  readonly getRollingStockSearchFilter: Locator;
+  readonly getRollingStockModalSearch: Locator;
 
   readonly rollingStockMiniCards: Locator;
 
   readonly getRollingstockSpanNames: Locator;
 
-  readonly electricalCheckbox: Locator;
+  readonly getElectricRollingStockFilter: Locator;
+
+  readonly getThermalRollingStockFilter: Locator;
+
+  readonly getRollingStockSearchResult: Locator;
+
+  readonly getThermalRollingStockIcons: Locator;
+
+  readonly getElectricRollingStockIcons: Locator;
+
+  readonly getElectricRollingStockFirstIcon: Locator;
+
+  readonly getThermalRollingStockFirstIcon: Locator;
+
+  readonly getRollingStockList: Locator;
+
+  readonly getThermalElectricRollingStockIcons: Locator;
+
+  readonly getNoRollingStockResult: Locator;
 
   constructor(page: Page) {
     super(page);
@@ -35,13 +49,23 @@ export default class RollingStockSelectorPage extends BasePage {
     this.rollingStockListItem = page.locator('.rollingstock-container');
 
     this.getResultsFound = page.locator('.modal-dialog').locator('small').first();
-    this.getRollingStockSearch = this.rollingStockSelectorModal.locator('#searchfilter');
-    this.getRollingStockSearchFilter = page.locator('.rollingstock-search-filters');
+    this.getRollingStockModalSearch = this.rollingStockSelectorModal.locator('#searchfilter');
     this.rollingStockMiniCards = page.locator('.rollingstock-selector-minicard');
     this.getRollingstockSpanNames = page.locator('.rollingstock-minicard-name');
-    this.electricalCheckbox = this.rollingStockSelectorModal.locator('label').filter({
-      hasText: electricCheckboxTranslation,
-    });
+    this.getElectricRollingStockFilter = page.locator('label[for="elec"]');
+    this.getThermalRollingStockFilter = page.locator('label[for="thermal"]');
+    this.getRollingStockSearchResult = page.getByTestId('search-results-text');
+    this.getThermalRollingStockIcons = page.locator('.rollingstock-footer-specs .text-pink');
+    this.getElectricRollingStockIcons = page.locator('.rollingstock-footer-specs .text-primary');
+    this.getThermalElectricRollingStockIcons = page
+      .locator('.rollingstock-footer-specs .rollingstock-tractionmode:has(.text-pink)')
+      .filter({
+        has: page.locator('.text-primary'),
+      });
+    this.getElectricRollingStockFirstIcon = this.getElectricRollingStockIcons.first();
+    this.getThermalRollingStockFirstIcon = this.getThermalRollingStockIcons.first();
+    this.getRollingStockList = page.locator('.rollingstock-editor-list .rollingstock-title');
+    this.getNoRollingStockResult = page.locator('.rollingstock-empty');
   }
 
   async openRollingstockModal() {
@@ -54,11 +78,11 @@ export default class RollingStockSelectorPage extends BasePage {
   }
 
   async searchRollingstock(rollingstockName: string) {
-    await this.getRollingStockSearch.fill(rollingstockName);
+    await this.getRollingStockModalSearch.fill(rollingstockName);
   }
 
   async selectRollingStock(rollingStockName: string) {
-    await this.getRollingStockSearch.fill(rollingStockName);
+    await this.getRollingStockModalSearch.fill(rollingStockName);
     const rollingstockItem = this.rollingStockList.getByTestId(`rollingstock-${rollingStockName}`);
     await rollingstockItem.click();
     await rollingstockItem.locator('.rollingstock-footer-buttons > button').click();
@@ -78,5 +102,20 @@ export default class RollingStockSelectorPage extends BasePage {
 
   async closeRollingstockModal() {
     await this.rollingStockSelectorModal.locator('.close').click();
+  }
+
+  // Select Combustion engine RS filter
+  async thermalRollingStockFilter() {
+    await this.getThermalRollingStockFilter.click();
+  }
+
+  // Select Electic RS filter
+  async electricRollingStockFilter() {
+    await this.getElectricRollingStockFilter.click();
+  }
+
+  // Get the number of RS from the search result text
+  async getRollingStockSearchNumber(): Promise<number> {
+    return extractNumberFromString(await this.getRollingStockSearchResult.innerText());
   }
 }

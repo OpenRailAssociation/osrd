@@ -13,7 +13,7 @@ import type {
 import projectData from './assets/operationStudies/project.json';
 import scenarioData from './assets/operationStudies/scenario.json';
 import studyData from './assets/operationStudies/study.json';
-import { getApiRequest, postApiRequest } from './assets/utils';
+import { getApiRequest, postApiRequest } from './utils/index';
 
 async function createDataForTests() {
   const smallInfraRailjson: RailJson = JSON.parse(
