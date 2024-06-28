@@ -8,6 +8,12 @@ const config: ConfigFile = {
   exportName: 'generatedEditoastApi',
   hooks: false,
   tag: true,
+  endpointOverrides: [
+    {
+      pattern: ['postV2TrainSchedule', 'postV2TrainScheduleSimulationSummary'],
+      type: 'query',
+    },
+  ],
 };
 
 export default config;
