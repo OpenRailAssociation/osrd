@@ -9,15 +9,12 @@ use std::ops::DerefMut;
 use std::sync::Arc;
 
 use actix_web::web::{Data, Json, Path, Query};
-use actix_web::HttpRequest;
-use actix_web::{delete, get, put, HttpResponse};
+use actix_web::{delete, get, post, put, HttpResponse};
 use editoast_derive::EditoastError;
 use editoast_schemas::train_schedule::TrainScheduleBase;
 use itertools::Itertools;
 use serde::Deserialize;
 use serde::Serialize;
-use serde_qs::actix::QsQuery;
-use serde_qs::Config;
 use thiserror::Error;
 use tracing::info;
 use utoipa::IntoParams;
@@ -75,7 +72,6 @@ editoast_common::schemas! {
     TrainScheduleBase,
     TrainScheduleForm,
     TrainScheduleResult,
-    BatchDeletionRequest,
     SimulationSummaryResult,
     InfraIdQueryParam,
     projection::schemas(),
@@ -94,9 +90,6 @@ pub enum TrainScheduleError {
     #[error("Infra '{infra_id}', could not be found")]
     #[editoast_error(status = 404)]
     InfraNotFound { infra_id: i64 },
-    #[error("Invalid query params '{message}'")]
-    #[editoast_error(status = 400)]
-    InvalidQueryParams { message: String },
 }
 
 #[derive(IntoParams, Deserialize)]
@@ -170,11 +163,6 @@ impl From<TrainScheduleForm> for TrainScheduleChangeset {
     }
 }
 
-#[derive(Debug, Deserialize, ToSchema)]
-struct BatchDeletionRequest {
-    ids: HashSet<i64>,
-}
-
 /// Return a specific train schedule
 #[utoipa::path(
     tag = "train_schedulev2",
@@ -198,29 +186,26 @@ async fn get(
     Ok(Json(train_schedule.into()))
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, IntoParams)]
-struct GetBatchParams {
-    ids: Vec<i64>,
+#[derive(Debug, Deserialize, ToSchema)]
+struct BatchRequest {
+    ids: HashSet<i64>,
 }
 
 /// Return a specific train schedule
 #[utoipa::path(
     tag = "train_schedulev2",
-    params(
-        ("ids" = Vec<i64>, Query, description = "Ids of train schedule"),
-    ),
+    request_body = inline(BatchRequest),
     responses(
         (status = 200, description = "Retrieve a list of train schedule", body = Vec<TrainScheduleResult>)
     )
 )]
-#[get("")]
+#[post("")]
 async fn get_batch(
     db_pool: Data<DbConnectionPoolV2>,
-    params: QsQuery<GetBatchParams>,
+    data: Json<BatchRequest>,
 ) -> Result<Json<Vec<TrainScheduleResult>>> {
     let conn = &mut db_pool.get().await?;
-    let query_props = params.into_inner();
-    let train_ids = query_props.ids;
+    let train_ids = data.into_inner().ids;
     let trains: Vec<TrainSchedule> =
         TrainSchedule::retrieve_batch_or_fail(conn, train_ids, |missing| {
             TrainScheduleError::BatchTrainScheduleNotFound {
@@ -234,7 +219,7 @@ async fn get_batch(
 /// Delete a train schedule and its result
 #[utoipa::path(
     tag = "timetablev2,train_schedulev2",
-    request_body = inline(BatchDeletionRequest),
+    request_body = inline(BatchRequest),
     responses(
         (status = 204, description = "All train schedules have been deleted")
     )
@@ -242,7 +227,7 @@ async fn get_batch(
 #[delete("")]
 async fn delete(
     db_pool: Data<DbConnectionPoolV2>,
-    data: Json<BatchDeletionRequest>,
+    data: Json<BatchRequest>,
 ) -> Result<HttpResponse> {
     use crate::modelsv2::DeleteBatch;
 
@@ -486,10 +471,10 @@ fn train_simulation_input_hash(
     format!("simulation_{osrd_version}.{infra_id}.{infra_version}.{hash_simulation_input}")
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, IntoParams)]
-struct SimulationBatchParams {
-    infra: i64,
-    ids: Vec<i64>,
+#[derive(Debug, Clone, Deserialize, ToSchema)]
+struct SimulationBatchForm {
+    infra_id: i64,
+    ids: HashSet<i64>,
 }
 
 #[derive(Debug, Serialize, ToSchema)]
@@ -520,31 +505,23 @@ enum SimulationSummaryResult {
 /// If the simulation fails, it associates the reason: pathfinding failed or running time failed
 #[utoipa::path(
     tag = "train_schedulev2",
-    params(
-        ("infra" = i64, Query, description = "The infra id"),
-        ("ids" = Vec<i64>, Query, description = "Ids of train schedule"),
-    ),
+    request_body = inline(SimulationBatchForm),
     responses(
         (status = 200, description = "Associate each train id with its simulation summary", body = HashMap<i64, SimulationSummaryResult>),
     ),
 )]
-#[get("/simulation_summary")]
+#[post("/simulation_summary")]
 pub async fn simulation_summary(
     db_pool: Data<DbConnectionPoolV2>,
     redis_client: Data<RedisClient>,
-    req: HttpRequest,
     core: Data<CoreClient>,
+    data: Json<SimulationBatchForm>,
 ) -> Result<Json<HashMap<i64, SimulationSummaryResult>>> {
     let db_pool = db_pool.into_inner();
-    // TODO: Stop using serde_qs and move the query params to the body
-    let config = Config::new(5, false);
-    let query_props: SimulationBatchParams =
-        config.deserialize_str(req.query_string()).map_err(|e| {
-            TrainScheduleError::InvalidQueryParams {
-                message: e.to_string(),
-            }
-        })?;
-    let infra_id = query_props.infra;
+    let SimulationBatchForm {
+        infra_id,
+        ids: train_ids,
+    } = data.into_inner();
     let redis_client = redis_client.into_inner();
     let core = core.into_inner();
 
@@ -552,7 +529,6 @@ pub async fn simulation_summary(
         TrainScheduleError::InfraNotFound { infra_id }
     })
     .await?;
-    let train_ids = query_props.ids;
     let trains: Vec<TrainSchedule> = TrainSchedule::retrieve_batch_or_fail(
         db_pool.get().await?.deref_mut(),
         train_ids,
@@ -744,13 +720,13 @@ mod tests {
         let ts2 = create_simple_train_schedule(pool.get_ok().deref_mut(), timetable.id).await;
         let ts3 = create_simple_train_schedule(pool.get_ok().deref_mut(), timetable.id).await;
 
-        let url = format!(
-            "/v2/train_schedule/?ids[]={}&ids[]={}&ids[]={}",
-            ts1.id, ts2.id, ts3.id
-        );
-
         // Should succeed
-        let request = TestRequest::get().uri(&url).to_request();
+        let request = TestRequest::post()
+            .uri("/v2/train_schedule")
+            .set_json(json!({
+                "ids": vec![ts1.id, ts2.id, ts3.id]
+            }))
+            .to_request();
         let response: Vec<TrainScheduleResult> =
             app.fetch(request).assert_status(StatusCode::OK).json_into();
         assert_eq!(response.len(), 3);
