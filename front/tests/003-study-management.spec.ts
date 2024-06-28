@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import type { Project, Study } from 'common/api/osrdEditoastApi';
 
 import studyData from './assets/operationStudies/study.json';
-import { getProject, postApiRequest } from './assets/utils';
+import { getProject, postApiRequest } from './utils/index';
 import PlaywrightCommonPage from './pages/common-page-model';
 import { PlaywrightHomePage } from './pages/home-page-model';
 import { StudyPage } from './pages/study-page-model';

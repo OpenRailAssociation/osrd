@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import type { Project } from 'common/api/osrdEditoastApi';
 
 import projectData from './assets/operationStudies/project.json';
-import { deleteApiRequest, getApiRequest, postApiRequest } from './assets/utils';
+import { deleteApiRequest, getApiRequest, postApiRequest } from './utils/index';
 import PlaywrightCommonPage from './pages/common-page-model';
 import { PlaywrightHomePage } from './pages/home-page-model';
 import { ProjectPage } from './pages/project-page-model';
@@ -60,7 +60,7 @@ test.describe('Test if operationnal study : project workflow is working properly
     expect(objectives).not.toEqual(null);
     if (objectives !== null)
       expect(objectives.replace(/[^A-Za-z0-9]/g, '')).toContain(
-        (project.objectives ?? "").replace(/[^A-Za-z0-9]/g, '')
+        (project.objectives ?? '').replace(/[^A-Za-z0-9]/g, '')
       );
     expect(await projectPage.getProjectFinancialsInfos.textContent()).toContain(
       projectData.funders

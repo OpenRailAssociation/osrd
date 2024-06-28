@@ -4,11 +4,13 @@ import path from 'path';
 import { test, expect } from '@playwright/test';
 
 import {
-  findAndDeleteRollingStock,
+  findAndDeleteRollingStocks,
   generateUniqueName,
   verifyAndCheckInputById,
   fillAndCheckInputById,
-} from './assets/utils';
+  addRollingStock,
+} from './utils/index';
+import RollingStockSelectorPage from './pages/rolling-stock-selector-page';
 import PlaywrightRollingstockEditorPage from './pages/rollingstock-editor-page-model';
 
 // Correct path to load rolling stock details from JSON
@@ -16,7 +18,14 @@ const rollingstockDetailsPath = path.resolve(
   __dirname,
   '../tests/assets/rollingStock/rollingstockDetails.json'
 );
+// Correct path to load electrical and themal rolling stock  from JSON
+const rollingstockPath = path.resolve(
+  __dirname,
+  '../tests/assets/rollingStock/thermal-electric_rolling_stock.json'
+);
 const rollingstockDetails = JSON.parse(fs.readFileSync(rollingstockDetailsPath, 'utf-8'));
+const rollingStockJson = JSON.parse(fs.readFileSync(rollingstockPath, 'utf8'));
+const thermalElectricRollingStockName = 'thermal-electric_rolling_stock';
 
 test.describe('Rollingstock editor page', () => {
   let uniqueRollingStockName: string;
@@ -29,16 +38,22 @@ test.describe('Rollingstock editor page', () => {
     uniqueDeletedRollingStockName = await generateUniqueName('D_RSN');
 
     // Check and delete the specified rolling stocks if they exist
-    await findAndDeleteRollingStock(uniqueRollingStockName);
-    await findAndDeleteRollingStock(uniqueUpdatedRollingStockName);
-    await findAndDeleteRollingStock(uniqueDeletedRollingStockName);
+    await findAndDeleteRollingStocks([
+      uniqueRollingStockName,
+      uniqueUpdatedRollingStockName,
+      uniqueDeletedRollingStockName,
+      thermalElectricRollingStockName,
+    ]);
   });
 
   test.afterEach(async () => {
     // Clean up by deleting the created or updated rolling stock
-    await findAndDeleteRollingStock(uniqueRollingStockName);
-    await findAndDeleteRollingStock(uniqueUpdatedRollingStockName);
-    await findAndDeleteRollingStock(uniqueDeletedRollingStockName);
+    await findAndDeleteRollingStocks([
+      uniqueRollingStockName,
+      uniqueUpdatedRollingStockName,
+      uniqueDeletedRollingStockName,
+      thermalElectricRollingStockName,
+    ]);
   });
 
   test('should correctly create a new rolling stock', async ({ page }) => {
@@ -188,5 +203,93 @@ test.describe('Rollingstock editor page', () => {
     await expect(
       rollingStockEditorPage.page.getByTestId(uniqueDeletedRollingStockName)
     ).toBeHidden();
+  });
+  test('should correctly filter a rolling stock', async ({ page }) => {
+    const rollingStockEditorPage = new PlaywrightRollingstockEditorPage(page);
+    const rollingStockSelectorPage = new RollingStockSelectorPage(page);
+    // Navigate to rolling stock editor page
+    await rollingStockEditorPage.navigateToPage();
+
+    // Extract and check the initial count of rolling stock
+    const initialRollingStockFoundNumber =
+      await rollingStockSelectorPage.getRollingStockSearchNumber();
+
+    // Perform a filtering action for electric rolling stock
+    await rollingStockSelectorPage.electricRollingStockFilter();
+
+    // Verify that filtering reduces the count and all the RS have electic icons
+    expect(await rollingStockSelectorPage.getElectricRollingStockIcons.count()).toEqual(
+      await rollingStockSelectorPage.getRollingStockSearchNumber()
+    );
+
+    // Clear electric filter
+    await rollingStockSelectorPage.electricRollingStockFilter();
+
+    // Perform a filtering action for thermal rolling stock
+    await rollingStockSelectorPage.thermalRollingStockFilter();
+
+    // Verify that filtering reduces the count and all the RS have thermal icons
+    expect(await rollingStockSelectorPage.getThermalRollingStockIcons.count()).toEqual(
+      await rollingStockSelectorPage.getRollingStockSearchNumber()
+    );
+
+    // Perform a filtering action for combined thermal-electric rolling stock
+    await rollingStockSelectorPage.electricRollingStockFilter();
+
+    // Verify that filtering reduces the count and all the RS have thermal and electric icons
+    expect(await rollingStockSelectorPage.getThermalElectricRollingStockIcons.count()).toEqual(
+      await rollingStockSelectorPage.getRollingStockSearchNumber()
+    );
+
+    // Clear filters
+    await rollingStockSelectorPage.electricRollingStockFilter();
+    await rollingStockSelectorPage.thermalRollingStockFilter();
+
+    // Verify that the count of rolling stock is back to the initial number
+    expect(await rollingStockSelectorPage.getRollingStockList.count()).toEqual(
+      initialRollingStockFoundNumber
+    );
+  });
+
+  test('should correctly search for a rolling stock', async ({ page }) => {
+    const rollingStockEditorPage = new PlaywrightRollingstockEditorPage(page);
+    const rollingStockSelectorPage = new RollingStockSelectorPage(page);
+    // Add a rolling stock via postAPI
+    await addRollingStock(thermalElectricRollingStockName, rollingStockJson);
+
+    // Navigate to rolling stock editor page
+    await rollingStockEditorPage.navigateToPage();
+
+    // Extract and check the initial count of rolling stock
+    const initialRollingStockFoundNumber =
+      await rollingStockSelectorPage.getRollingStockSearchNumber();
+
+    // Search for the specific rolling stock
+    await rollingStockEditorPage.searchRollingStock(thermalElectricRollingStockName);
+    expect(
+      rollingStockEditorPage.page.getByTestId(
+        `rollingstock-thermal-${thermalElectricRollingStockName}`
+      )
+    ).toBeDefined();
+
+    // Verify that the first rolling stock has the thermal and electric icon
+    await expect(rollingStockSelectorPage.getThermalRollingStockFirstIcon).toBeVisible();
+    await expect(rollingStockSelectorPage.getElectricRollingStockFirstIcon).toBeVisible();
+
+    // Clear the search
+    await rollingStockEditorPage.clearSearchRollingStock();
+
+    // Verify that the count of rolling stock is back to the initial number
+    expect(await rollingStockSelectorPage.getRollingStockList.count()).toEqual(
+      initialRollingStockFoundNumber
+    );
+    // Search for a non existing rolling stock
+    await rollingStockEditorPage.searchRollingStock(
+      `${thermalElectricRollingStockName}-no-results`
+    );
+
+    // Verify that the count of rolling stock is 0 (No results Found)
+    await expect(rollingStockSelectorPage.getNoRollingStockResult).toBeVisible();
+    expect(await rollingStockSelectorPage.getRollingStockSearchNumber()).toEqual(0);
   });
 });
