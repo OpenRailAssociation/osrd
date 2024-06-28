@@ -1,7 +1,7 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
 import PlaywrightCommonPage from './common-page-model';
-import { fillAndCheckInputById } from '../assets/utils';
+import { fillAndCheckInputById } from '../utils/index';
 
 export default class PlaywrightRollingstockEditorPage extends PlaywrightCommonPage {
   readonly getNewRollingstockButton: Locator;
@@ -71,6 +71,8 @@ export default class PlaywrightRollingstockEditorPage extends PlaywrightCommonPa
   // Navigate to the Rolling Stock Editor Page
   async navigateToPage() {
     await this.page.goto('/rolling-stock-editor/');
+    // Wait for the page to reach the network idle state
+    await this.page.waitForLoadState('networkidle');
     await this.removeViteOverlay();
   }
 
@@ -162,6 +164,7 @@ export default class PlaywrightRollingstockEditorPage extends PlaywrightCommonPa
   }
 
   // Set spreadsheet row value
+  // TODO: Refactor to eliminate ESLint errors
   async setSpreadsheetRow(data: { row: number; velocity: string; effort: string }[]) {
     for (const { row, effort, velocity } of data) {
       const velocityCell = this.getVelocityCellByRow(row);
@@ -222,6 +225,7 @@ export default class PlaywrightRollingstockEditorPage extends PlaywrightCommonPa
         .getByTitle(powerRestrictionValue, { exact: true })
         .click();
     }
+    // TODO: Refactor to eliminate ESLint errors
     for (const rowData of data) {
       const rowIndex = data.indexOf(rowData) + 1;
       const velocityCell = this.getVelocityCellByRow(rowIndex);
@@ -242,7 +246,7 @@ export default class PlaywrightRollingstockEditorPage extends PlaywrightCommonPa
         .getByRole('button', { name: powerRestrictionValue })
         .click();
     }
-
+    // TODO: Refactor to eliminate ESLint errors
     for (const rowData of expectedData) {
       const rowIndex = expectedData.indexOf(rowData) + 1;
       const velocityCell = await this.getVelocityCellByRowValue(rowIndex);

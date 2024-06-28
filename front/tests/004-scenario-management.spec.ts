@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import type { Infra, Project, Scenario, Study } from 'common/api/osrdEditoastApi';
 
 import scenarioData from './assets/operationStudies/scenario.json';
-import { getInfra, getProject, getStudy, postApiRequest } from './assets/utils';
+import { getInfra, getProject, getStudy, postApiRequest } from './utils/index';
 import PlaywrightCommonPage from './pages/common-page-model';
 import { PlaywrightHomePage } from './pages/home-page-model';
 import ScenarioPage from './pages/scenario-page-model';
