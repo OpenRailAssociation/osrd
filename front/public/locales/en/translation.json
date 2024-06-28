@@ -508,7 +508,7 @@
         "offset": {
           "label": "Position",
           "description": "Offset of the point in meters to the beginning of the track section",
-          "error": "The offset of the split point to the beginning must be greater than 0 and smaller than {{max}}"
+          "error": "The offset of the split point to the beginning must be greater than 1 and smaller than {{max}}"
         },
         "actions": {
           "save": "Save the split"

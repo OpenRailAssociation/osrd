@@ -491,7 +491,7 @@
         "offset": {
           "label": "Position",
           "description": "Distance entre le point et le début du TIV (en mètres)",
-          "error": "La position doit être un nombre compris entre 0 et {{max}}"
+          "error": "La position doit être un nombre compris entre 1 et {{max}}"
         },
         "actions": {
           "save": "Sauvegarder la division"
