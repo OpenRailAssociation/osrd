@@ -1,6 +1,6 @@
 {
-  "addVia": "Ajouter ce via",
-  "addVias": "Ajout de vias",
+  "addVia": "Ajouter ce point de passage",
+  "addVias": "Ajout de points de passage",
   "addTrainSchedule": "Ajouter un ou plusieurs trains",
   "blocktype": "Type de block",
   "BoundsAreLinked": "Les deux bornes sont liées",
