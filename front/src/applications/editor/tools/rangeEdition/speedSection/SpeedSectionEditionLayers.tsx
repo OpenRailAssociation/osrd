@@ -77,28 +77,28 @@ export const SpeedSectionEditionLayers = () => {
     return res;
   }, [interactionState, hoveredItem, entity, selectedSwitches]);
 
-  const makeTrackRangeFeatures =
+  const extractTrackRangeFeatures =
     (flatEntity: EditorEntity) => (range: ApplicableTrackRange, i: number) => {
       const trackState = trackSectionsCache[range.track];
-      return trackState?.type === 'success'
-        ? getTrackRangeFeatures(trackState.track, range, i, flatEntity.properties)
-        : [];
+      return (
+        trackState?.type === 'success'
+          ? getTrackRangeFeatures(trackState.track, range, i, flatEntity.properties)
+          : []
+      ) as Feature<LineString | Point>[];
     };
 
   // dashed lines - - - (selected routes tracks in the case of speed restrictions)
-  const selectedTracksFeature: FeatureCollection = useMemo(() => {
+  const selectedTracksFeature = useMemo(() => {
     const flatEntity = flattenEntity(entity);
     // generate trackRangeFeatures
     let trackRangeFeatures;
     if (isSpeedRestriction) {
       trackRangeFeatures = Object.values(pick(routeElements, highlightedRoutes))
         .flatMap((el) => el.trackRanges)
-        .flatMap(makeTrackRangeFeatures(flatEntity)) as Feature<LineString | Point>[];
+        .flatMap(extractTrackRangeFeatures(flatEntity));
     } else {
       const trackRanges = entity.properties?.track_ranges || [];
-      trackRangeFeatures = trackRanges.flatMap(makeTrackRangeFeatures(flatEntity)) as Feature<
-        LineString | Point
-      >[];
+      trackRangeFeatures = trackRanges.flatMap(extractTrackRangeFeatures(flatEntity));
     }
 
     // generate pslSignFeatures
@@ -117,10 +117,8 @@ export const SpeedSectionEditionLayers = () => {
     const flatEntity = flattenEntity(entity);
     // generate trackRangeFeatures
     const trackRanges = entity.properties?.track_ranges || [];
-    const trackRangeFeatures = trackRanges.flatMap(makeTrackRangeFeatures(flatEntity)) as Feature<
-      LineString | Point
-    >[];
-    return featureCollection([...trackRangeFeatures]);
+    const trackRangeFeatures = trackRanges.flatMap(extractTrackRangeFeatures(flatEntity));
+    return featureCollection(trackRangeFeatures);
   }, [entity, trackSectionsCache]);
 
   const { speedSectionLayerProps, pslLayerProps } = useMemo(() => {
@@ -359,13 +357,3 @@ export const SpeedSectionEditionLayers = () => {
 };
 
 export const SpeedSectionMessages = () => null;
-
-// export const SpeedSectionMessages: FC = () => {
-//   const { t } = useTranslation();
-//   const {
-//     state: {
-//       /* TODO */
-//     },
-//   } = useContext(EditorContext) as ExtendedEditorContextType<SpeedSectionEditionState>;
-//   return null;
-// };

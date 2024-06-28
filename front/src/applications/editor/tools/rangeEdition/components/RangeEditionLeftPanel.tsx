@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
 
-import { cloneDeep, isEmpty, last, pick, uniqWith } from 'lodash';
+import { cloneDeep, isEmpty, isEqual, last, pick, uniqWith } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
 import EntityError from 'applications/editor/components/EntityError';
@@ -18,7 +18,6 @@ import type {
   ApplicableTrackRange,
 } from 'applications/editor/tools/rangeEdition/types';
 import {
-  compareTrackRange,
   makeSpeedRestrictionTrackRanges,
   makeRouteElements,
   speedSectionIsPsl,
@@ -30,8 +29,8 @@ import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
 import { useInfraID } from 'common/osrdContext';
 import { isEmptyArray, toggleElement } from 'utils/array';
 
-import TrackRangesList from './RangeEditionTrackRangeList';
 import RouteList from './RouteList';
+import TrackRangesList from './TrackRangeList';
 import SwitchList from '../speedSection/SwitchList';
 
 const RangeEditionLeftPanel = () => {
@@ -81,17 +80,23 @@ const RangeEditionLeftPanel = () => {
   };
 
   const toggleSpeedRestriction = () => {
-    if (isSpeedRestriction) resetSpeedRestrictionSelections();
     const selectiontype = isSpeedRestriction ? 'idle' : 'selectSwitch';
     const newEntity = cloneDeep(entity) as SpeedSectionEntity;
-    if (newEntity.properties.extensions) {
-      newEntity.properties.extensions = undefined;
-    }
+    newEntity.properties.extensions = undefined;
     newEntity.properties.track_ranges = [];
+    if (isSpeedRestriction) {
+      newEntity.properties.on_routes = undefined;
+    } else {
+      newEntity.properties.on_routes = [];
+    }
     setState({
-      isSpeedRestriction: !isSpeedRestriction,
       entity: newEntity,
       interactionState: { type: selectiontype },
+      ...(isSpeedRestriction && {
+        selectedSwitches: {},
+        routeElements: {},
+        highlightedRoutes: [],
+      }),
     });
   };
 
@@ -152,9 +157,7 @@ const RangeEditionLeftPanel = () => {
         }
         return result;
       });
-      properties.track_ranges = uniqWith(trackRangesBetweenSwitches, (a, b) =>
-        compareTrackRange(a)(b)
-      );
+      properties.track_ranges = uniqWith(trackRangesBetweenSwitches, (a, b) => isEqual(a, b));
       setState({
         optionsState: { type: 'idle' },
         routeExtra: newRouteExtra,
@@ -188,7 +191,9 @@ const RangeEditionLeftPanel = () => {
     const { routes, available_node_positions } = routesAndNodesPositions;
 
     const newEntity = cloneDeep(entity) as SpeedSectionEntity;
-    newEntity.properties.on_routes = [];
+    if (isSpeedRestriction) {
+      newEntity.properties.on_routes = [];
+    }
     setState({
       entity: newEntity,
     });
@@ -324,10 +329,7 @@ const RangeEditionLeftPanel = () => {
             highlightedRoutes={highlightedRoutes}
           />
         )}
-        <TrackRangesList
-          withRouteName={switchesRouteCandidates.length > 0}
-          speedRestrictionTool={isSpeedRestriction}
-        />
+        <TrackRangesList speedRestrictionTool={isSpeedRestriction} />
         {!isNew && <EntityError className="mt-1" entity={entity} />}
       </div>
     );

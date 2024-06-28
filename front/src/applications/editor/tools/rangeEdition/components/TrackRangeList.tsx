@@ -1,6 +1,5 @@
 import React, { useContext, useState } from 'react';
 
-import { groupBy } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { MdShowChart } from 'react-icons/md';
 
@@ -12,19 +11,18 @@ import type {
 } from 'applications/editor/tools/rangeEdition/types';
 import type { ExtendedEditorContextType } from 'applications/editor/types';
 
+import GroupedTrackRangeList from './GroupedTrackRangeList';
 import TrackRange from './TrackRange';
-import { compareTrackRange } from '../utils';
 
 const DEFAULT_DISPLAYED_RANGES_COUNT = 5;
 
 type TrackRangeListProps = {
-  withRouteName?: boolean;
   speedRestrictionTool: boolean;
 };
 
-const TrackRangesList = ({ withRouteName, speedRestrictionTool }: TrackRangeListProps) => {
+const TrackRangesList = ({ speedRestrictionTool }: TrackRangeListProps) => {
   const {
-    state: { entity, routeElements, routeExtra = {} },
+    state: { entity },
   } = useContext(EditorContext) as ExtendedEditorContextType<
     RangeEditionState<SpeedSectionEntity | ElectrificationEntity>
   >;
@@ -34,36 +32,15 @@ const TrackRangesList = ({ withRouteName, speedRestrictionTool }: TrackRangeList
   const displayedRanges = showAll ? ranges : ranges.slice(0, DEFAULT_DISPLAYED_RANGES_COUNT);
 
   function makeFullTrackList() {
-    if (withRouteName) {
-      const rangesByRoute = groupBy(displayedRanges, (range) => {
-        const isCurrentRange = compareTrackRange(range);
-        // eslint-disable-next-line no-restricted-syntax
-        for (const [routeKey, { trackRanges }] of Object.entries(routeElements)) {
-          if (isCurrentRange(routeExtra[routeKey]) || trackRanges.some(isCurrentRange)) {
-            return routeKey;
-          }
-        }
-        return undefined;
-      });
-      return Object.entries(rangesByRoute).reduce<JSX.Element[]>((acc, [route, tracks], index) => {
-        const routeJSX = <h3 key={`route-${index}`}>{route}</h3>;
-        const routeTracks = tracks.map((tr, trackIndex) => (
-          <TrackRange
-            range={tr}
-            index={trackIndex}
-            speedRestrictionTool={speedRestrictionTool}
-            key={`track-range-${tr.track}-${tr.begin}-${tr.end}-${tr.applicable_directions}-${trackIndex}`}
-          />
-        ));
-        return [...acc, routeJSX, ...routeTracks];
-      }, []);
+    if (speedRestrictionTool) {
+      return <GroupedTrackRangeList displayedRanges={displayedRanges} />;
     }
-    return displayedRanges.map((tr, trackIndex) => (
+    return displayedRanges.map((trackRange, trackIndex) => (
       <TrackRange
-        range={tr}
+        range={trackRange}
         index={trackIndex}
         speedRestrictionTool={speedRestrictionTool}
-        key={`track-range-${tr.track}-${tr.begin}-${tr.end}-${tr.applicable_directions}-${trackIndex}`}
+        key={`track-range-${trackRange.track}-${trackRange.begin}-${trackRange.end}-${trackRange.applicable_directions}-${trackIndex}`}
       />
     ));
   }
