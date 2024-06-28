@@ -107,8 +107,6 @@ async fn get_objects(
 #[cfg(test)]
 mod tests {
     use actix_web::http::StatusCode;
-    use actix_web::test::call_service;
-    use actix_web::test::read_body_json;
     use actix_web::test::TestRequest;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
@@ -144,14 +142,12 @@ mod tests {
         let db_pool = app.db_pool();
         let empty_infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
 
-        let req = TestRequest::post()
+        let request = TestRequest::post()
             .uri(format!("/infra/{}/objects/TrackSection", empty_infra.id).as_str())
             .set_json(vec![""; 0])
             .to_request();
-        assert_eq!(
-            call_service(&app.service, req).await.status(),
-            StatusCode::OK
-        );
+
+        app.fetch(request).assert_status(StatusCode::OK);
     }
 
     #[rstest]
@@ -175,15 +171,14 @@ mod tests {
         .expect("Failed to create switch object");
 
         // WHEN
-        let req = TestRequest::post()
+        let request = TestRequest::post()
             .uri(format!("/infra/{}/objects/Switch", empty_infra.id).as_str())
             .set_json(vec!["switch_001"])
             .to_request();
-        let response = call_service(&app.service, req).await;
 
         // THEN
-        assert_eq!(response.status(), StatusCode::OK);
-        let switch_object: Vec<ObjectQueryable> = read_body_json(response).await;
+        let switch_object: Vec<ObjectQueryable> =
+            app.fetch(request).assert_status(StatusCode::OK).json_into();
         let expected_switch_object = vec![ObjectQueryable {
             obj_id: switch.get_id().to_string(),
             railjson: json!({
@@ -206,12 +201,12 @@ mod tests {
         let db_pool = app.db_pool();
         let empty_infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
 
-        let req = TestRequest::post()
+        let request = TestRequest::post()
             .uri(format!("/infra/{}/objects/TrackSection", empty_infra.id).as_str())
             .set_json(vec!["id"; 2])
             .to_request();
-        let response = call_service(&app.service, req).await;
-        assert_eq!(response.status(), StatusCode::BAD_REQUEST);
+
+        app.fetch(request).assert_status(StatusCode::BAD_REQUEST);
     }
 
     #[rstest]
@@ -230,13 +225,13 @@ mod tests {
         .await
         .expect("Failed to create switch type object");
 
-        let req = TestRequest::post()
+        let request = TestRequest::post()
             .uri(format!("/infra/{}/objects/SwitchType", empty_infra.id).as_str())
             .set_json(vec![switch_type.id.clone()])
             .to_request();
-        let response = call_service(&app.service, req).await;
-        assert_eq!(response.status(), StatusCode::OK);
-        let switch_type_object: Vec<ObjectQueryable> = read_body_json(response).await;
+
+        let switch_type_object: Vec<ObjectQueryable> =
+            app.fetch(request).assert_status(StatusCode::OK).json_into();
         let expected_switch_type_object = vec![ObjectQueryable {
             obj_id: switch_type.get_id().to_string(),
             railjson: json!({
