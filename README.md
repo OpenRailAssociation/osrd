@@ -65,3 +65,9 @@ Send an email at <contact@osrd.fr>, [open an issue](https://github.com/OpenRailA
   <img src="assets/sponsors/european-union.svg" width="150px" height="150px" alt="European Union"/>
   <img src="assets/sponsors/sncf-reseau.svg" width="150px" height="150px" alt="SNCF Réseau"/>
 </p>
+
+## License
+
+OSRD is licensed under the GNU Lesser General Public License v3.0, see LICENSE.
+
+Copyright © 2022 The OSRD Contributors
