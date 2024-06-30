@@ -47,7 +47,7 @@ const StdcmConsist = ({ disabled = false }: { disabled?: boolean }) => {
 
   const { rollingStock } = useStoreDataForRollingStockSelector();
 
-  const { filters, searchMateriel, filteredRollingStockList } = useFilterRollingStock();
+  const { filters, searchRollingStock, filteredRollingStockList } = useFilterRollingStock();
 
   const getLabel = (rs: LightRollingStockWithLiveries) => {
     let res = '';
@@ -67,7 +67,7 @@ const StdcmConsist = ({ disabled = false }: { disabled?: boolean }) => {
   };
 
   const onInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    searchMateriel(e.target.value);
+    searchRollingStock(e.target.value);
   };
 
   const onInputOnBlur = () => {
@@ -84,9 +84,9 @@ const StdcmConsist = ({ disabled = false }: { disabled?: boolean }) => {
 
   useEffect(() => {
     if (rollingStock) {
-      searchMateriel(getLabel(rollingStock));
+      searchRollingStock(getLabel(rollingStock));
     } else {
-      searchMateriel('');
+      searchRollingStock('');
     }
   }, [rollingStock]);
 

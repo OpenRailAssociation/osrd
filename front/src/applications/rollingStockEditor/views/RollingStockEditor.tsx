@@ -35,7 +35,7 @@ const RollingStockEditor = () => {
   const {
     filteredRollingStockList,
     filters,
-    searchMateriel,
+    searchRollingStock,
     toggleFilter,
     searchIsLoading,
     resetFilters,
@@ -173,7 +173,7 @@ const RollingStockEditor = () => {
         <SearchRollingStock
           filteredRollingStockList={filteredRollingStockList}
           filters={filters}
-          searchMateriel={searchMateriel}
+          searchRollingStock={searchRollingStock}
           toggleFilter={toggleFilter}
           hasWhiteBackground
         />

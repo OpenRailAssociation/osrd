@@ -13,7 +13,7 @@ import type { RollingStockFilters } from 'modules/rollingStock/hooks/useFilterRo
 
 type SearchRollingStockProps = {
   filteredRollingStockList: LightRollingStockWithLiveries[];
-  searchMateriel: (value: string) => void;
+  searchRollingStock: (value: string) => void;
   toggleFilter: (filter: 'elec' | 'thermal' | 'locked' | 'notLocked') => void;
   filters: RollingStockFilters;
   hasWhiteBackground?: boolean;
@@ -22,7 +22,7 @@ type SearchRollingStockProps = {
 const SearchRollingStock = ({
   filteredRollingStockList,
   filters,
-  searchMateriel,
+  searchRollingStock,
   toggleFilter,
   hasWhiteBackground,
 }: SearchRollingStockProps) => {
@@ -35,7 +35,7 @@ const SearchRollingStock = ({
           id="searchfilter"
           type="text"
           value={filters.text}
-          onChange={(e) => searchMateriel(e.target.value)}
+          onChange={(e) => searchRollingStock(e.target.value)}
           placeholder={t('translation:common.search')}
           noMargin
           unit={<Search />}
