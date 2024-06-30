@@ -141,7 +141,7 @@ export default function useFilterRollingStock() {
   const [filteredRollingStockList, setFilteredRollingStockList] =
     useState<LightRollingStockWithLiveries[]>(allRollingStocks);
 
-  const searchMateriel = (value: string) => {
+  const searchRollingStock = (value: string) => {
     setFilters({ ...filters, text: value.toLowerCase() });
     setSearchIsLoading(true);
   };
@@ -180,7 +180,7 @@ export default function useFilterRollingStock() {
     filters,
     searchIsLoading,
     resetFilters,
-    searchMateriel,
+    searchRollingStock,
     toggleFilter,
   };
 }

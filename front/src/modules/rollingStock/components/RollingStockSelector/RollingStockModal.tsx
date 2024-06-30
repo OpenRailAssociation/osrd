@@ -22,7 +22,7 @@ function RollingStockModal({ ref2scroll }: RollingStockModal) {
   const [openRollingStockCardId, setOpenRollingStockCardId] = useState(rollingStockID);
   const { closeModal } = useContext(ModalContext);
 
-  const { filteredRollingStockList, filters, searchMateriel, toggleFilter, searchIsLoading } =
+  const { filteredRollingStockList, filters, searchRollingStock, toggleFilter, searchIsLoading } =
     useFilterRollingStock();
 
   useEffect(() => {
@@ -64,7 +64,7 @@ function RollingStockModal({ ref2scroll }: RollingStockModal) {
           <SearchRollingStock
             filteredRollingStockList={filteredRollingStockList}
             filters={filters}
-            searchMateriel={searchMateriel}
+            searchRollingStock={searchRollingStock}
             toggleFilter={toggleFilter}
           />
         </div>
