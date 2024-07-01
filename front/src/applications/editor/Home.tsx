@@ -1,31 +1,18 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 
 import { Lock } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 import { Route, Routes } from 'react-router-dom';
 
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { ModalProvider } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
-import { useInfraID } from 'common/osrdContext';
+import { useCurrentInfra } from 'modules/infra/useInfra';
 
 import Editor from './Editor';
 
 export default function HomeEditorUnplugged() {
   const { t } = useTranslation(['home/home', 'referenceMap']);
-  const infraID = useInfraID();
-  const [getInfraByInfraId, { data: infra }] =
-    osrdEditoastApi.endpoints.getInfraByInfraId.useLazyQuery({});
-
-  /**
-   * When infra id changes
-   * => fetch it
-   */
-  useEffect(() => {
-    if (infraID) {
-      getInfraByInfraId({ infraId: infraID });
-    }
-  }, [infraID, getInfraByInfraId]);
+  const { data: infra } = useCurrentInfra();
 
   return (
     <ModalProvider>

@@ -9,7 +9,7 @@ import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
 import { useInfraID } from 'common/osrdContext';
 import Tipped from 'common/Tipped';
 
-import { useSwitchTypes } from '../../switchEdition/types';
+import useSwitchTypes from '../../switchEdition/useSwitchTypes';
 import type {
   AvailableSwitchPositions,
   RangeEditionState,
@@ -34,7 +34,7 @@ const SwitchList: React.FC<SwitchListProps> = ({
   availableSwitchesPositions,
 }) => {
   const infraID = useInfraID();
-  const switchTypes = useSwitchTypes(infraID);
+  const { data: switchTypes } = useSwitchTypes(infraID);
 
   /** Switch positions ordered by type for the current infra */
   const switchPositionsByType = switchTypes.reduce<AvailableSwitchPositions>(

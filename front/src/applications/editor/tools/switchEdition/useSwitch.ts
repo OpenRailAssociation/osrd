@@ -4,11 +4,11 @@ import { first, keyBy } from 'lodash';
 
 import EditorContext from 'applications/editor/context';
 import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
-import { useSwitchTypes } from 'applications/editor/tools/switchEdition/types';
 import type {
   SwitchEditionState,
   SwitchEntity,
 } from 'applications/editor/tools/switchEdition/types';
+import useSwitchTypes from 'applications/editor/tools/switchEdition/useSwitchTypes';
 import {
   getSwitchTypeJSONSchema,
   switchToFlatSwitch,
@@ -27,7 +27,7 @@ const useSwitch = () => {
 
   // Retrieve proper data
   const infraID = useInfraID();
-  const switchTypes = useSwitchTypes(infraID);
+  const { data: switchTypes } = useSwitchTypes(infraID);
 
   const switchTypesDict = useMemo(() => keyBy(switchTypes, 'id'), [switchTypes]);
   const switchTypeOptions = useMemo(
