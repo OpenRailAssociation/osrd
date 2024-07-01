@@ -156,7 +156,7 @@ const SwitchEditionLayers = () => {
         }
       );
     }
-  }, [entity?.properties?.ports, infraID]);
+  }, [entity?.properties?.ports, infraID, switchType]);
 
   return (
     <>

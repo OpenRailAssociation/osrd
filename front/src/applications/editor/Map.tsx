@@ -10,7 +10,7 @@ import { LAYER_TO_EDITOAST_DICT, LAYERS_SET } from 'applications/editor/consts';
 import type { Layer } from 'applications/editor/consts';
 import EditorContext from 'applications/editor/context';
 import { getEntity } from 'applications/editor/data/api';
-import { useSwitchTypes } from 'applications/editor/tools/switchEdition/types';
+import useSwitchTypes from 'applications/editor/tools/switchEdition/useSwitchTypes';
 import type { CommonToolState } from 'applications/editor/tools/types';
 import type { EditorContextType, ExtendedEditorContextType, Tool } from 'applications/editor/types';
 import type { InfraError } from 'common/api/osrdEditoastApi';
@@ -76,7 +76,7 @@ const MapUnplugged = ({
     isHovering: false,
   });
   const context = useContext(EditorContext) as EditorContextType<CommonToolState>;
-  const switchTypes = useSwitchTypes(infraID);
+  const { data: switchTypes } = useSwitchTypes(infraID);
   const editorState = useSelector(getEditorState);
   const showOSM = useSelector(getShowOSM);
   const terrain3DExaggeration = useSelector(getTerrain3DExaggeration);

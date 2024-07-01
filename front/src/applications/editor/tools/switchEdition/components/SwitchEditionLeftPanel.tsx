@@ -45,10 +45,6 @@ const SwitchEditionLeftPanel = () => {
     isNew,
   } = useSwitch();
 
-  if (!switchType || !flatSwitchEntity) {
-    return null;
-  }
-
   // Hack to be able to launch the submit event from the rjsf form by using
   // the toolbar button instead of the form one.
   // See https://github.com/rjsf-team/react-jsonschema-form/issues/500
@@ -59,6 +55,7 @@ const SwitchEditionLeftPanel = () => {
     }
   }, [isFormSubmited]);
 
+  if (!switchType || !flatSwitchEntity) return null;
   return (
     <div>
       <legend>{t('Editor.tools.switch-edition.switch-type')}</legend>

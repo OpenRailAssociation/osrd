@@ -15,17 +15,18 @@ import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
 import Map from 'applications/editor/Map';
 import TOOL_NAMES from 'applications/editor/tools/constsToolNames';
 import TOOLS from 'applications/editor/tools/constsTools';
-import { useSwitchTypes } from 'applications/editor/tools/switchEdition/types';
+import useSwitchTypes from 'applications/editor/tools/switchEdition/useSwitchTypes';
 import type { switchProps } from 'applications/editor/tools/switchProps';
 import type { CommonToolState } from 'applications/editor/tools/types';
 import { centerMapOnObject, selectEntities } from 'applications/editor/tools/utils';
-import { osrdEditoastApi, type ObjectType } from 'common/api/osrdEditoastApi';
+import type { ObjectType } from 'common/api/osrdEditoastApi';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { LoaderState } from 'common/Loaders';
 import MapButtons from 'common/Map/Buttons/MapButtons';
 import MapSearch from 'common/Map/Search/MapSearch';
 import { useInfraActions, useInfraID, useOsrdActions } from 'common/osrdContext';
 import Tipped from 'common/Tipped';
+import useInfra from 'modules/infra/useInfra';
 import type { EditorSliceActions } from 'reducers/editor';
 import { getEditorState, getInfraLockStatus } from 'reducers/editor/selectors';
 import { loadDataModel, updateTotalsIssue } from 'reducers/editor/thunkActions';
@@ -52,7 +53,7 @@ const Editor = () => {
   const isLoading = useSelector(getIsLoading);
   const isLocked = useSelector(getInfraLockStatus);
   const editorState = useSelector(getEditorState);
-  const switchTypes = useSwitchTypes(infraID);
+  const { data: switchTypes } = useSwitchTypes(infraID);
   /* eslint-disable @typescript-eslint/no-explicit-any */
   const [toolAndState, setToolAndState] = useState<FullTool<any>>({
     tool: TOOLS[TOOL_NAMES.SELECTION],
@@ -65,12 +66,7 @@ const Editor = () => {
   }, [setRenderingFingerprint]);
 
   const [isFormSubmited, setIsFormSubmited] = useState(false);
-  const { data: infra } = osrdEditoastApi.endpoints.getInfraByInfraId.useQuery(
-    { infraId: infraID as number },
-    {
-      skip: !infraID,
-    }
-  );
+  const { data: infra } = useInfra(infraID);
   const { updateInfra } = useInfraActions();
 
   const switchTool = useCallback(

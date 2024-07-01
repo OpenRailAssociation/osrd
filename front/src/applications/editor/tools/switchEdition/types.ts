@@ -2,7 +2,6 @@ import type { Position, Point } from 'geojson';
 
 import type { CommonToolState } from 'applications/editor/tools/types';
 import type { EditorEntity } from 'applications/editor/typesEditorEntity';
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 
 export const ENDPOINTS = ['BEGIN', 'END'] as const;
 export type EndPoint = (typeof ENDPOINTS)[number];
@@ -65,27 +64,4 @@ export type SwitchEditionState = CommonToolState & {
         onSelect: (candidate: PortEndPointCandidate) => void;
         hoveredPoint: PortEndPointCandidate | null;
       };
-};
-
-// Client prefered order
-const trackNodeTypeOrder = [
-  'link',
-  'point_switch',
-  'crossing',
-  'single_slip_switch',
-  'double_slip_switch',
-];
-
-export const useSwitchTypes = (infraID: number | undefined) => {
-  const { data } = osrdEditoastApi.endpoints.getInfraByInfraIdSwitchTypes.useQuery(
-    { infraId: infraID as number },
-    { skip: !infraID }
-  );
-  let orderedData = [] as SwitchType[];
-  if (data) {
-    orderedData = ([...data] as SwitchType[]).sort(
-      (a, b) => trackNodeTypeOrder.indexOf(a.id) - trackNodeTypeOrder.indexOf(b.id)
-    );
-  }
-  return orderedData;
 };
