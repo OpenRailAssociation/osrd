@@ -52,6 +52,7 @@
       font-size: 2rem;
       font-weight: 500;
       color: var(--primary);
+      overflow: auto;
       .study-details-modify-button {
         background-color: transparent;
         border: none;
@@ -83,6 +84,7 @@
     .study-details-description {
       margin-bottom: 0.5rem;
       white-space: break-spaces;
+      overflow: auto;
     }
     .study-details-state {
       padding: 5rem 0 1rem;
@@ -165,6 +167,8 @@
       .study-details-financials-infos {
         display: flex;
         gap: 1rem;
+        overflow: auto;
+        margin-right: 0.5rem;
         .study-details-financials-infos-item {
           text-transform: uppercase;
           font-weight: 500;

@@ -34,7 +34,9 @@ import useInputChange from 'utils/hooks/useInputChange';
 import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
 import useOutsideClick from 'utils/hooks/useOutsideClick';
 
-type ScenarioForm = ScenarioPatchForm & {
+import checkScenarioFields from '../utils';
+
+export type ScenarioForm = ScenarioPatchForm & {
   id?: number;
   infra_id?: number;
   electrical_profile_set_id?: number | null;
@@ -170,10 +172,13 @@ export default function AddOrEditScenarioModal({
     handleScenarioInputChange('tags', newTags);
   };
 
+  const invalidFields = checkScenarioFields(currentScenario);
+  const hasErrors = Object.values(invalidFields).some((field) => field);
+
   const createScenario = async () => {
-    if (!currentScenario.name || !currentScenario.infra_id) {
+    if (!currentScenario.infra_id || hasErrors) {
       setDisplayErrors(true);
-    } else if (projectId && studyId && currentScenario) {
+    } else if (projectId && studyId && currentScenario && currentScenario.name) {
       let postScenarioRequest;
       const ids = { projectId, studyId };
       if (useTrainScheduleV2) {
@@ -212,7 +217,7 @@ export default function AddOrEditScenarioModal({
   };
 
   const updateScenario = () => {
-    if (!currentScenario.name) {
+    if (hasErrors) {
       setDisplayErrors(true);
     } else if (scenario && projectId && studyId && scenario.id) {
       const ids = { projectId, studyId, scenarioId: scenario.id };
@@ -329,10 +334,8 @@ export default function AddOrEditScenarioModal({
                 }
                 value={currentScenario.name || ''}
                 onChange={(e) => handleScenarioInputChange('name', e.target.value)}
-                isInvalid={displayErrors && !currentScenario.name}
-                errorMsg={
-                  displayErrors && !currentScenario.name ? t('scenarioNameMissing') : undefined
-                }
+                isInvalid={displayErrors && invalidFields.name}
+                errorMsg={t('scenarioNameInvalid')}
               />
             </div>
             <div className="scenario-edition-modal-description">
@@ -349,6 +352,8 @@ export default function AddOrEditScenarioModal({
                 value={currentScenario.description || ''}
                 onChange={(e) => handleScenarioInputChange('description', e.target.value)}
                 placeholder={t('scenarioDescriptionPlaceholder')}
+                isInvalid={displayErrors && invalidFields.description}
+                errorMsg={t('scenarioDescriptionInvalid')}
               />
             </div>
             {!editionMode && electricalProfilOptions.length > 1 && (
