@@ -40,7 +40,6 @@ use crate::error::Result;
 use crate::infra_cache::operation::CacheOperation;
 use crate::infra_cache::InfraCache;
 use editoast_models::DbConnection;
-use editoast_models::DbConnectionPool;
 use editoast_models::DbConnectionPoolV2;
 
 editoast_common::schemas! {
@@ -70,15 +69,6 @@ pub trait GeneratedData {
     }
 
     async fn refresh_pool(
-        pool: Arc<DbConnectionPool>,
-        infra: i64,
-        infra_cache: &InfraCache,
-    ) -> Result<()> {
-        let mut conn = pool.get().await?;
-        Self::refresh(&mut conn, infra, infra_cache).await
-    }
-
-    async fn refresh_pool_v2(
         pool: Arc<DbConnectionPoolV2>,
         infra: i64,
         infra_cache: &InfraCache,
@@ -97,7 +87,7 @@ pub trait GeneratedData {
 
 /// Refresh all the generated data of a given infra
 pub async fn refresh_all(
-    db_pool: Arc<DbConnectionPool>,
+    db_pool: Arc<DbConnectionPoolV2>,
     infra: i64,
     infra_cache: &InfraCache,
 ) -> Result<()> {
@@ -105,11 +95,12 @@ pub async fn refresh_all(
     // We must wait until its completion before running the other requests in parallel
     TrackSectionLayer::refresh_pool(db_pool.clone(), infra, infra_cache).await?;
     debug!("⚙️ Infra {infra}: track section layer is generated");
-    let mut conn = db_pool.get().await?;
     // The analyze step significantly improves the performance when importing and generating together
     // It doesn’t seem to make a different when the generation step is ran separately
     // It isn’t clear why without analyze the Postgres server seems to run at 100% without halting
-    sql_query("analyze").execute(&mut conn).await?;
+    sql_query("analyze")
+        .execute(db_pool.get().await?.deref_mut())
+        .await?;
     debug!("⚙️ Infra {infra}: database analyzed");
     futures::try_join!(
         SpeedSectionLayer::refresh_pool(db_pool.clone(), infra, infra_cache),
@@ -126,41 +117,6 @@ pub async fn refresh_all(
     debug!("⚙️ Infra {infra}: object layers is generated");
     // The error layer depends on the other layers and must be executed at the end.
     ErrorLayer::refresh_pool(db_pool.clone(), infra, infra_cache).await?;
-    debug!("⚙️ Infra {infra}: errors layer is generated");
-    Ok(())
-}
-
-pub async fn refresh_all_v2(
-    db_pool: Arc<DbConnectionPoolV2>,
-    infra: i64,
-    infra_cache: &InfraCache,
-) -> Result<()> {
-    // The other layers depend on track section layer.
-    // We must wait until its completion before running the other requests in parallel
-    TrackSectionLayer::refresh_pool_v2(db_pool.clone(), infra, infra_cache).await?;
-    debug!("⚙️ Infra {infra}: track section layer is generated");
-    // The analyze step significantly improves the performance when importing and generating together
-    // It doesn’t seem to make a different when the generation step is ran separately
-    // It isn’t clear why without analyze the Postgres server seems to run at 100% without halting
-    sql_query("analyze")
-        .execute(db_pool.get().await?.deref_mut())
-        .await?;
-    debug!("⚙️ Infra {infra}: database analyzed");
-    futures::try_join!(
-        SpeedSectionLayer::refresh_pool_v2(db_pool.clone(), infra, infra_cache),
-        SignalLayer::refresh_pool_v2(db_pool.clone(), infra, infra_cache),
-        SwitchLayer::refresh_pool_v2(db_pool.clone(), infra, infra_cache),
-        BufferStopLayer::refresh_pool_v2(db_pool.clone(), infra, infra_cache),
-        ElectrificationLayer::refresh_pool_v2(db_pool.clone(), infra, infra_cache),
-        DetectorLayer::refresh_pool_v2(db_pool.clone(), infra, infra_cache),
-        OperationalPointLayer::refresh_pool_v2(db_pool.clone(), infra, infra_cache),
-        PSLSignLayer::refresh_pool_v2(db_pool.clone(), infra, infra_cache),
-        NeutralSectionLayer::refresh_pool_v2(db_pool.clone(), infra, infra_cache),
-        NeutralSignLayer::refresh_pool_v2(db_pool.clone(), infra, infra_cache),
-    )?;
-    debug!("⚙️ Infra {infra}: object layers is generated");
-    // The error layer depends on the other layers and must be executed at the end.
-    ErrorLayer::refresh_pool_v2(db_pool.clone(), infra, infra_cache).await?;
     debug!("⚙️ Infra {infra}: errors layer is generated");
     Ok(())
 }
@@ -210,7 +166,7 @@ pub mod tests {
     use std::ops::DerefMut;
 
     use crate::generated_data::clear_all;
-    use crate::generated_data::refresh_all_v2;
+    use crate::generated_data::refresh_all;
     use crate::generated_data::update_all;
     use crate::modelsv2::fixtures::create_empty_infra;
     use editoast_models::DbConnectionPoolV2;
@@ -219,11 +175,9 @@ pub mod tests {
     async fn refresh_all_test() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
-        assert!(
-            refresh_all_v2(db_pool.into(), infra.id, &Default::default())
-                .await
-                .is_ok()
-        );
+        assert!(refresh_all(db_pool.into(), infra.id, &Default::default())
+            .await
+            .is_ok());
     }
 
     #[rstest]

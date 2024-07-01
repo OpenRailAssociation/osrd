@@ -176,7 +176,7 @@ async fn post_railjson(
         let infra_cache =
             InfraCache::get_or_load(db_pool.get().await?.deref_mut(), &infra_caches, &infra)
                 .await?;
-        infra.refresh_v2(db_pool, true, &infra_cache).await?;
+        infra.refresh(db_pool, true, &infra_cache).await?;
     }
 
     Ok(Json(PostRailjsonResponse { infra: infra.id }))

@@ -236,34 +236,9 @@ impl Infra {
     /// `force` argument allows us to refresh it in any cases.
     /// This function will update `generated_version` accordingly.
     /// If refreshed you need to call `invalidate_after_refresh` to invalidate layer cache
-    pub async fn refresh_v2(
-        &mut self,
-        db_pool: Arc<DbConnectionPoolV2>,
-        force: bool,
-        infra_cache: &InfraCache,
-    ) -> Result<bool> {
-        // Check if refresh is needed
-        if !force
-            && self.generated_version.is_some()
-            && &self.version == self.generated_version.as_ref().unwrap()
-        {
-            return Ok(false);
-        }
-
-        // TODO: lock self for update
-
-        generated_data::refresh_all_v2(db_pool.clone(), self.id, infra_cache).await?;
-
-        // Update generated infra version
-        self.bump_generated_version(db_pool.get().await?.deref_mut())
-            .await?;
-
-        Ok(true)
-    }
-
     pub async fn refresh(
         &mut self,
-        db_pool: Arc<DbConnectionPool>,
+        db_pool: Arc<DbConnectionPoolV2>,
         force: bool,
         infra_cache: &InfraCache,
     ) -> Result<bool> {
@@ -280,8 +255,8 @@ impl Infra {
         generated_data::refresh_all(db_pool.clone(), self.id, infra_cache).await?;
 
         // Update generated infra version
-        let mut conn = db_pool.get().await?;
-        self.bump_generated_version(&mut conn).await?;
+        self.bump_generated_version(db_pool.get().await?.deref_mut())
+            .await?;
 
         Ok(true)
     }

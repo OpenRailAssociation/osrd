@@ -159,10 +159,7 @@ async fn refresh(
         let infra_cache =
             InfraCache::get_or_load(db_pool.get().await?.deref_mut(), &infra_caches, &infra)
                 .await?;
-        if infra
-            .refresh_v2(db_pool.clone(), force, &infra_cache)
-            .await?
-        {
+        if infra.refresh(db_pool.clone(), force, &infra_cache).await? {
             infra_refreshed.push(infra.id);
         }
     }
@@ -714,7 +711,7 @@ pub mod tests {
             .await
             .unwrap();
 
-        generated_data::refresh_all_v2(db_pool.clone(), small_infra_id, &infra_cache)
+        generated_data::refresh_all(db_pool.clone(), small_infra_id, &infra_cache)
             .await
             .unwrap();
 
