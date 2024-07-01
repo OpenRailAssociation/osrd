@@ -172,8 +172,8 @@ fn value_to_sql(value: &TypedAst, string_bindings: &mut Vec<String>) -> String {
 mod test {
 
     use super::SqlQuery;
-    use crate::views::search::context::TypedAst;
-    use crate::views::search::typing::AstType;
+    use crate::context::TypedAst;
+    use crate::typing::AstType;
 
     #[test]
     fn render_literal() {

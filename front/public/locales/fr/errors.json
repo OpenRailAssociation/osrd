@@ -127,6 +127,7 @@
       "TimetableNotFound": "Grille horaire '{{timetable_id}}' non trouvée"
     },
     "search": {
+      "SearchEngineError": "Erreur interne du moteur de recherche",
       "ArgMissing": "Argument de type {{expected}} manquant à la position {{arg_pos}}",
       "ArgTypeMismatch": "Argument de type {{expected}} attendu à la position {{arg_pos}}, mais {{actual}} reçu",
       "EmptyArray": "Les tableaux vides sont interdits",

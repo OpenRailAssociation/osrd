@@ -1365,6 +1365,7 @@ dependencies = [
  "editoast_derive",
  "editoast_models",
  "editoast_schemas",
+ "editoast_search",
  "enum-map",
  "enumset",
  "futures 0.3.30",
@@ -1479,6 +1480,18 @@ dependencies = [
  "thiserror",
  "utoipa",
  "uuid",
+]
+
+[[package]]
+name = "editoast_search"
+version = "0.1.0"
+dependencies = [
+ "itertools 0.13.0",
+ "serde",
+ "serde_json",
+ "strum",
+ "thiserror",
+ "utoipa",
 ]
 
 [[package]]

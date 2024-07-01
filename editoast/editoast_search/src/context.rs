@@ -3,13 +3,9 @@
 use std::collections::HashMap;
 use std::rc::Rc;
 
-use editoast_derive::EditoastError;
-use thiserror::Error;
-
 use super::sqlquery::SqlQuery;
 use super::typing::AstType;
 use super::typing::TypeSpec;
-use crate::error::Result;
 
 /// Represents a [super::searchast::SearchAst] that also carries valid type information
 ///
@@ -84,28 +80,32 @@ where
     }
 }
 
-#[derive(Debug, Error, EditoastError)]
-#[editoast_error(base_id = "search")]
+#[derive(Debug, thiserror::Error)]
 pub enum ProcessingError {
     #[error("undefined function '{function}'")]
     UndefinedFunction { function: String },
     #[error("no suitable overload of '{0}' found for {1}")]
     UndefinedOverload(String, String),
+    #[error("type mismatch in function '{in_function}' call: {type_error}")]
+    FunctionTypeMismatch {
+        type_error: crate::typing::TypeCheckError,
+        in_function: String,
+    },
     #[error("unexpected column '{column}'")]
     UnexpectedColumn { column: String },
     #[error("expected type {expected}, got value '{value}' of type {actual} instead")]
-    #[editoast_error(no_context)]
     RuntimeTypeCheckFail {
         value: String,
         expected: TypeSpec,
         actual: TypeSpec,
     },
     #[error("expected value of type {expected}, but got ersatz '{value}'")]
-    #[editoast_error(no_context)]
     UnexpectedErsatz { value: String, expected: TypeSpec },
+    #[error("an error occurred while running function '{function}': {error}")]
+    FunctionError { function: String, error: String },
 }
 
-pub type QueryFunctionFn = Rc<dyn Fn(Vec<TypedAst>) -> Result<TypedAst>>;
+pub type QueryFunctionFn = Rc<dyn Fn(Vec<TypedAst>) -> Result<TypedAst, ProcessingError>>;
 
 /// Represents a context function, with a name and a type signature
 pub struct QueryFunction {
@@ -153,7 +153,7 @@ impl QueryContext {
         &self,
         function_name: &String,
         arglist_types: &[TypeSpec],
-    ) -> Result<&QueryFunction> {
+    ) -> Result<&QueryFunction, ProcessingError> {
         let functions = self.functions.get(function_name).ok_or_else(|| {
             ProcessingError::UndefinedFunction {
                 function: function_name.to_owned(),
@@ -168,7 +168,10 @@ impl QueryContext {
                 function
                     .signature
                     .typecheck_args(arglist_types)
-                    .map_err(|err| err.with_context("in function", function_name.to_owned()))?;
+                    .map_err(|err| ProcessingError::FunctionTypeMismatch {
+                        type_error: err,
+                        in_function: function_name.to_owned(),
+                    })?;
                 Ok(function)
             }
             _ => 'find_overload: {
@@ -195,7 +198,11 @@ impl QueryContext {
     }
 
     /// Calls the function `function_name` with `args` and returns its result
-    pub fn call<S: AsRef<str>>(&self, function_name: S, args: Vec<TypedAst>) -> Result<TypedAst> {
+    pub fn call<S: AsRef<str>>(
+        &self,
+        function_name: S,
+        args: Vec<TypedAst>,
+    ) -> Result<TypedAst, ProcessingError> {
         let function_name: String = function_name.as_ref().into();
         let values_types = args
             .iter()
@@ -203,6 +210,5 @@ impl QueryContext {
             .collect::<Vec<TypeSpec>>();
         let function = self.find_function(&function_name, &values_types)?;
         (function.fun)(args)
-            .map_err(|err| err.with_context("in function", function_name.to_owned()))
     }
 }

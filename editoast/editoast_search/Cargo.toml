@@ -1,0 +1,13 @@
+[package]
+name = "editoast_search"
+version = "0.1.0"
+edition = "2021"
+license = "LGPL-3.0"
+
+[dependencies]
+itertools.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+strum.workspace = true
+thiserror.workspace = true
+utoipa.workspace = true
