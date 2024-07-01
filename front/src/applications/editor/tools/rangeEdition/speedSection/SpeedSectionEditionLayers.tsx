@@ -149,10 +149,7 @@ export const SpeedSectionEditionLayers = () => {
 
   // Here is where we handle loading the TrackSections attached to the speed section:
   useEffect(() => {
-    const trackIDs =
-      Object.values(pick(routeElements, highlightedRoutes))
-        .flatMap((el) => el.trackRanges)
-        ?.map((range) => range.track) || [];
+    const trackIDs = entity.properties?.track_ranges?.map((range) => range.track) || [];
     const missingTrackIDs = trackIDs.filter((id) => !trackSectionsCache[id]);
 
     if (missingTrackIDs.length) {
@@ -179,7 +176,7 @@ export const SpeedSectionEditionLayers = () => {
         }));
       });
     }
-  }, [entity.properties?.track_ranges]);
+  }, [entity, entity.properties?.track_ranges]);
 
   // Here is where we load hovered track sections that are not in ranges yet:
   useEffect(() => {
