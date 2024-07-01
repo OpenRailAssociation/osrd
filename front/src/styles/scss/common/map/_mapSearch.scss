@@ -4,25 +4,34 @@
   }
   .search-results {
     height: 30vh;
-    overflow: auto;
+    display: flex;
+    overflow-y: auto;
+    overflow-x: hidden;
     padding-right: 0.5rem;
+    width: 100%;
+    flex-direction: column;
+
     .search-result-item {
       all: unset;
       display: flex;
       align-items: center;
       padding: 0 0.25rem;
       border-radius: var(--border-radius);
-      width: 100%;
       cursor: pointer;
       line-height: 1.25rem;
+
       .trigram {
         color: var(--coolgray9);
         font-family: monospace;
         font-size: 0.8rem;
         width: 2rem;
+        flex-grow: 0;
+        flex-shrink: 0;
       }
       .name {
         padding: 0.25rem 0 0 0.5rem;
+        flex-grow: 1;
+        flex-shrink: 1;
         .ch {
           margin-left: 0.25rem;
           font-size: 0.9rem;
@@ -33,6 +42,8 @@
         margin-left: auto;
         font-size: 0.7rem;
         color: var(--primary);
+        flex-grow: 0;
+        flex-shrink: 0;
       }
       &.main {
         .trigram {
