@@ -52,6 +52,7 @@ use diesel_async::RunQueryDsl;
 use diesel_json::Json as DieselJson;
 use editoast_models::DbConnection;
 use editoast_schemas::infra::RailJson;
+use editoast_search::{SearchConfig, SearchConfigStore};
 use infra_cache::InfraCache;
 use map::MapLayers;
 use modelsv2::electrical_profiles::ElectricalProfileSet;
@@ -71,7 +72,7 @@ use tracing::{error, info};
 use tracing_subscriber::{layer::SubscriberExt as _, util::SubscriberInitExt as _, Layer as _};
 use validator::ValidationErrorsKind;
 use views::infra::InfraApiError;
-use views::search::{SearchConfig, SearchConfigFinder, SearchConfigStore};
+use views::search::SearchConfigFinder;
 
 /// The mode editoast is running in
 ///

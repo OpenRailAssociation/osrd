@@ -7,33 +7,24 @@ use std::hash::Hasher;
 use std::hash::{self};
 use std::ops::Shr;
 
-use editoast_derive::EditoastError;
 use serde::Deserialize;
-use thiserror::Error;
 
-use crate::error::Result;
-
-#[derive(Debug, PartialEq, Error, EditoastError)]
-#[editoast_error(base_id = "search")]
-enum TypeCheckError {
+#[derive(Debug, thiserror::Error)]
+pub enum TypeCheckError {
     #[error("expected variadic argument of type {expected}, but got {actual}")]
-    #[editoast_error(no_context)]
     VariadicArgTypeMismatch {
         expected: TypeSpec,
         actual: TypeSpec,
     },
     #[error("expected argument of type {expected} at position {arg_pos}, but got {actual}")]
-    #[editoast_error(no_context)]
     ArgTypeMismatch {
         expected: TypeSpec,
         actual: TypeSpec,
         arg_pos: usize,
     },
     #[error("expected argument of type {expected} at position {arg_pos} is missing")]
-    #[editoast_error(no_context)]
     ArgMissing { expected: TypeSpec, arg_pos: usize },
     #[error("unexpected argument of type {arg_type} found")]
-    #[editoast_error(no_context)]
     UnexpectedArg { arg_type: TypeSpec },
 }
 
@@ -199,7 +190,7 @@ impl TypeSpec {
     /// list as arguments
     ///
     /// Panics if `self` is not a [TypeSpec::Function] signature.
-    pub fn typecheck_args(&self, args: &[TypeSpec]) -> Result<()> {
+    pub fn typecheck_args(&self, args: &[TypeSpec]) -> Result<(), TypeCheckError> {
         let TypeSpec::Function { args: fargs, .. } = self else {
             panic!("typecheck_args called with {self:?} which is not a function signature");
         };
@@ -213,8 +204,7 @@ impl TypeSpec {
                         return Err(TypeCheckError::VariadicArgTypeMismatch {
                             expected: (**expected).clone(),
                             actual: (*arg).clone(),
-                        }
-                        .into());
+                        });
                     }
                 }
                 // We need to explicitly break here otherwise rust will try
@@ -228,15 +218,13 @@ impl TypeSpec {
                             expected: (*expected).clone(),
                             actual: (*arg).clone(),
                             arg_pos: i,
-                        }
-                        .into())
+                        })
                     }
                     None => {
                         return Err(TypeCheckError::ArgMissing {
                             expected: (*expected).clone(),
                             arg_pos: i,
-                        }
-                        .into())
+                        })
                     }
                 }
             }
@@ -244,8 +232,7 @@ impl TypeSpec {
         match args_iter.next() {
             Some(arg) => Err(TypeCheckError::UnexpectedArg {
                 arg_type: (*arg).clone(),
-            }
-            .into()),
+            }),
             None => Ok(()),
         }
     }
@@ -331,8 +318,8 @@ impl Eq for TypeSpec {}
 mod tests {
 
     use super::AstType;
-    use crate::views::search::typing::hash_eq;
-    use crate::views::search::typing::TypeSpec;
+    use crate::typing::hash_eq;
+    use crate::typing::TypeSpec;
 
     #[test]
     fn test_rhs_function_signature() {

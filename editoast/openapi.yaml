@@ -2109,7 +2109,7 @@ paths:
 
         Where:
         - `object` can be any search object declared in `search.yml`
-        - `query` is a JSON document which can be deserialized into a [SearchAst].
+        - `query` is a JSON document which can be deserialized into a [editoast_search::SearchAst].
         Check out examples below.
 
         # Response
@@ -2127,7 +2127,7 @@ paths:
 
         # Available functions
 
-        See [create_processing_context()].
+        See [editoast_search::create_processing_context()].
 
         # A few query examples
 
@@ -2137,7 +2137,7 @@ paths:
         * All railway stations with "Paris" in their name but not PNO :
         `["and", ["search", ["name"], "Paris"], ["not", ["=", ["trigram"], "pno"]]]`
 
-        See [SearchAst] for a more detailed view of the query language.
+        See [editoast_search::SearchAst] for a more detailed view of the query language.
       parameters:
       - name: page
         in: query
@@ -4298,11 +4298,6 @@ components:
       - $ref: '#/components/schemas/EditoastPostgresConfigErrorPassword'
       - $ref: '#/components/schemas/EditoastPostgresConfigErrorPort'
       - $ref: '#/components/schemas/EditoastPostgresConfigErrorUsername'
-      - $ref: '#/components/schemas/EditoastProcessingErrorRuntimeTypeCheckFail'
-      - $ref: '#/components/schemas/EditoastProcessingErrorUndefinedFunction'
-      - $ref: '#/components/schemas/EditoastProcessingErrorUndefinedOverload'
-      - $ref: '#/components/schemas/EditoastProcessingErrorUnexpectedColumn'
-      - $ref: '#/components/schemas/EditoastProcessingErrorUnexpectedErsatz'
       - $ref: '#/components/schemas/EditoastProjectErrorImageError'
       - $ref: '#/components/schemas/EditoastProjectErrorImageNotFound'
       - $ref: '#/components/schemas/EditoastProjectErrorNotFound'
@@ -4323,13 +4318,8 @@ components:
       - $ref: '#/components/schemas/EditoastScenarioErrorNotFound'
       - $ref: '#/components/schemas/EditoastScenarioErrorNotFound'
       - $ref: '#/components/schemas/EditoastScenarioErrorTimetableNotFound'
-      - $ref: '#/components/schemas/EditoastSearchAstErrorEmptyArray'
-      - $ref: '#/components/schemas/EditoastSearchAstErrorIntegerConversion'
-      - $ref: '#/components/schemas/EditoastSearchAstErrorInvalidColumnName'
-      - $ref: '#/components/schemas/EditoastSearchAstErrorInvalidFunctionIdentifier'
-      - $ref: '#/components/schemas/EditoastSearchAstErrorInvalidSyntax'
-      - $ref: '#/components/schemas/EditoastSearchErrorObjectType'
-      - $ref: '#/components/schemas/EditoastSearchErrorQueryAst'
+      - $ref: '#/components/schemas/EditoastSearchApiErrorObjectType'
+      - $ref: '#/components/schemas/EditoastSearchApiErrorSearchEngineError'
       - $ref: '#/components/schemas/EditoastSingleSimulationErrorElectricalProfileSetNotFound'
       - $ref: '#/components/schemas/EditoastSingleSimulationErrorPathNotFound'
       - $ref: '#/components/schemas/EditoastSingleSimulationErrorRollingStockNotFound'
@@ -4355,10 +4345,6 @@ components:
       - $ref: '#/components/schemas/EditoastTrainScheduleErrorBatchTrainScheduleNotFound'
       - $ref: '#/components/schemas/EditoastTrainScheduleErrorInfraNotFound'
       - $ref: '#/components/schemas/EditoastTrainScheduleErrorNotFound'
-      - $ref: '#/components/schemas/EditoastTypeCheckErrorArgMissing'
-      - $ref: '#/components/schemas/EditoastTypeCheckErrorArgTypeMismatch'
-      - $ref: '#/components/schemas/EditoastTypeCheckErrorUnexpectedArg'
-      - $ref: '#/components/schemas/EditoastTypeCheckErrorVariadicArgTypeMismatch'
       - $ref: '#/components/schemas/EditoastWorkScheduleErrorNameAlreadyUsed'
       description: Generated error type for Editoast
       discriminator:
@@ -5062,130 +5048,6 @@ components:
           type: string
           enum:
           - editoast:postgres:Username
-    EditoastProcessingErrorRuntimeTypeCheckFail:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          required:
-          - actual
-          - expected
-          - value
-          properties:
-            actual:
-              type: object
-            expected:
-              type: object
-            value:
-              type: string
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 400
-        type:
-          type: string
-          enum:
-          - editoast:search:RuntimeTypeCheckFail
-    EditoastProcessingErrorUndefinedFunction:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          required:
-          - function
-          properties:
-            function:
-              type: string
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 400
-        type:
-          type: string
-          enum:
-          - editoast:search:UndefinedFunction
-    EditoastProcessingErrorUndefinedOverload:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 400
-        type:
-          type: string
-          enum:
-          - editoast:search:UndefinedOverload
-    EditoastProcessingErrorUnexpectedColumn:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          required:
-          - column
-          properties:
-            column:
-              type: string
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 400
-        type:
-          type: string
-          enum:
-          - editoast:search:UnexpectedColumn
-    EditoastProcessingErrorUnexpectedErsatz:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          required:
-          - expected
-          - value
-          properties:
-            expected:
-              type: object
-            value:
-              type: string
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 400
-        type:
-          type: string
-          enum:
-          - editoast:search:UnexpectedErsatz
     EditoastProjectErrorImageError:
       type: object
       required:
@@ -5636,122 +5498,7 @@ components:
           type: string
           enum:
           - editoast:scenario:TimetableNotFound
-    EditoastSearchAstErrorEmptyArray:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 400
-        type:
-          type: string
-          enum:
-          - editoast:search:EmptyArray
-    EditoastSearchAstErrorIntegerConversion:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          required:
-          - value
-          properties:
-            value:
-              type: integer
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 400
-        type:
-          type: string
-          enum:
-          - editoast:search:IntegerConversion
-    EditoastSearchAstErrorInvalidColumnName:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          required:
-          - value
-          properties:
-            value:
-              type: object
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 400
-        type:
-          type: string
-          enum:
-          - editoast:search:InvalidColumnName
-    EditoastSearchAstErrorInvalidFunctionIdentifier:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          required:
-          - value
-          properties:
-            value:
-              type: object
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 400
-        type:
-          type: string
-          enum:
-          - editoast:search:InvalidFunctionIdentifier
-    EditoastSearchAstErrorInvalidSyntax:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          required:
-          - value
-          properties:
-            value:
-              type: object
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 400
-        type:
-          type: string
-          enum:
-          - editoast:search:InvalidSyntax
-    EditoastSearchErrorObjectType:
+    EditoastSearchApiErrorObjectType:
       type: object
       required:
       - type
@@ -5775,7 +5522,7 @@ components:
           type: string
           enum:
           - editoast:search:ObjectType
-    EditoastSearchErrorQueryAst:
+    EditoastSearchApiErrorSearchEngineError:
       type: object
       required:
       - type
@@ -5784,11 +5531,6 @@ components:
       properties:
         context:
           type: object
-          required:
-          - query_type
-          properties:
-            query_type:
-              type: string
         message:
           type: string
         status:
@@ -5798,7 +5540,7 @@ components:
         type:
           type: string
           enum:
-          - editoast:search:QueryAst
+          - editoast:search:SearchEngineError
     EditoastSingleSimulationErrorElectricalProfileSetNotFound:
       type: object
       required:
@@ -6302,114 +6044,6 @@ components:
           type: string
           enum:
           - editoast:train_schedule:UnsimulatedTrainSchedule
-    EditoastTypeCheckErrorArgMissing:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          required:
-          - arg_pos
-          - expected
-          properties:
-            arg_pos:
-              type: integer
-            expected:
-              type: object
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 400
-        type:
-          type: string
-          enum:
-          - editoast:search:ArgMissing
-    EditoastTypeCheckErrorArgTypeMismatch:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          required:
-          - actual
-          - arg_pos
-          - expected
-          properties:
-            actual:
-              type: object
-            arg_pos:
-              type: integer
-            expected:
-              type: object
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 400
-        type:
-          type: string
-          enum:
-          - editoast:search:ArgTypeMismatch
-    EditoastTypeCheckErrorUnexpectedArg:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          required:
-          - arg_type
-          properties:
-            arg_type:
-              type: object
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 400
-        type:
-          type: string
-          enum:
-          - editoast:search:UnexpectedArg
-    EditoastTypeCheckErrorVariadicArgTypeMismatch:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          required:
-          - actual
-          - expected
-          properties:
-            actual:
-              type: object
-            expected:
-              type: object
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 400
-        type:
-          type: string
-          enum:
-          - editoast:search:VariadicArgTypeMismatch
     EditoastWorkScheduleErrorNameAlreadyUsed:
       type: object
       required:

@@ -125,6 +125,7 @@
       "NotFound": "Scenario not found"
     },
     "search": {
+      "SearchEngineError": "Internal search engine error",
       "ArgMissing": "Expected argument of type {{expected}} at position {{arg_pos}} is missing",
       "ArgTypeMismatch": "Expected argument of type {{expected}} at position {{arg_pos}}, but got {{actual}}",
       "EmptyArray": "Empty arrays are invalid syntax",

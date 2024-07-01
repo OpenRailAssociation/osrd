@@ -135,31 +135,31 @@ impl ColumnType {
     fn to_type_spec(&self) -> TokenStream {
         match self {
             ColumnType::Integer => {
-                quote! { crate::views::search::TypeSpec::Type(crate::views::search::AstType::Integer) }
+                quote! { editoast_search::TypeSpec::Type(editoast_search::AstType::Integer) }
             }
             ColumnType::Float => {
-                quote! { crate::views::search::TypeSpec::Type(crate::views::search::AstType::Float) }
+                quote! { editoast_search::TypeSpec::Type(editoast_search::AstType::Float) }
             }
             ColumnType::String | ColumnType::TextualSearchString => {
-                quote! { crate::views::search::TypeSpec::Type(crate::views::search::AstType::String) }
+                quote! { editoast_search::TypeSpec::Type(editoast_search::AstType::String) }
             }
             ColumnType::Boolean => {
-                quote! { crate::views::search::TypeSpec::Type(crate::views::search::AstType::Boolean) }
+                quote! { editoast_search::TypeSpec::Type(editoast_search::AstType::Boolean) }
             }
             ColumnType::Null => {
-                quote! { crate::views::search::TypeSpec::Type(crate::views::search::AstType::Null) }
+                quote! { editoast_search::TypeSpec::Type(editoast_search::AstType::Null) }
             }
             ColumnType::Sequence(ct) => {
                 let ts = ct.to_type_spec();
-                quote! { crate::views::search::TypeSpec::Sequence(Box::new(#ts)) }
+                quote! { editoast_search::TypeSpec::Sequence(Box::new(#ts)) }
             }
         }
     }
 
     fn index(&self) -> TokenStream {
         match self {
-            ColumnType::TextualSearchString => quote! { crate::views::search::Index::GinTrgm },
-            _ => quote! { crate::views::search::Index::Default },
+            ColumnType::TextualSearchString => quote! { editoast_search::Index::GinTrgm },
+            _ => quote! { editoast_search::Index::Default },
         }
     }
 }
@@ -202,9 +202,9 @@ pub fn expand_search(input: &DeriveInput) -> Result<TokenStream> {
                     )));
                 }
                 st = ColumnType::TextualSearchString;
-                quote! { crate::views::search::SearchType::Textual }
+                quote! { editoast_search::SearchType::Textual }
             } else {
-                quote! { crate::views::search::SearchType::None }
+                quote! { editoast_search::SearchType::None }
             };
             let Some(sql) = sql else {
                 return Err(Error::custom(format!(
@@ -219,7 +219,7 @@ pub fn expand_search(input: &DeriveInput) -> Result<TokenStream> {
                 quote! { None }
             };
             quote! {
-                Some(crate::views::search::CriteriaMigration {
+                Some(editoast_search::CriteriaMigration {
                     sql_type: #data_type.to_owned(),
                     sql: #sql.to_owned(),
                     index: #index,
@@ -230,7 +230,7 @@ pub fn expand_search(input: &DeriveInput) -> Result<TokenStream> {
             quote! { None }
         };
         criterias.push(quote! {
-            crate::views::search::Criteria {
+            editoast_search::Criteria {
                 name: #name.to_owned(),
                 data_type: #ts,
                 migration: #migration,
@@ -253,7 +253,7 @@ pub fn expand_search(input: &DeriveInput) -> Result<TokenStream> {
             None => quote! { None },
         };
         let sql = prop.sql;
-        properties.push(quote! { crate::views::search::Property {
+        properties.push(quote! { editoast_search::Property {
             name: #name.to_owned(),
             sql: #sql.to_owned(),
             data_type: #ts,
@@ -278,7 +278,7 @@ pub fn expand_search(input: &DeriveInput) -> Result<TokenStream> {
             None => quote! { None },
         };
         quote! {
-            Some(crate::views::search::Migration {
+            Some(editoast_search::Migration {
                 src_table: #src_table.to_owned(),
                 src_primary_key: #src_primary_key.to_owned(),
                 query_joins: #query_joins.to_owned(),
@@ -298,9 +298,9 @@ pub fn expand_search(input: &DeriveInput) -> Result<TokenStream> {
             .push((name.clone(), struct_name.to_string()));
     }
     Ok(quote! {
-        impl crate::views::search::SearchObject for #struct_name {
-            fn search_config() -> crate::views::search::SearchConfig {
-                crate::views::search::SearchConfig {
+        impl editoast_search::SearchObject for #struct_name {
+            fn search_config() -> editoast_search::SearchConfig {
+                editoast_search::SearchConfig {
                     name: #name.to_owned(),
                     table: #table.to_owned(),
                     joins: #joins,
@@ -324,16 +324,16 @@ pub fn expand_store(input: &DeriveInput) -> Result<TokenStream> {
         })
         .unzip();
     Ok(quote! {
-        impl crate::views::search::SearchConfigStore for #name {
-            fn find<S: AsRef<str>>(object_name: S) -> Option<crate::views::search::SearchConfig> {
+        impl editoast_search::SearchConfigStore for #name {
+            fn find<S: AsRef<str>>(object_name: S) -> Option<editoast_search::SearchConfig> {
                 match object_name.as_ref() {
-                    #(#object_name => Some(< #ident as crate::views::search::SearchObject > :: search_config())),* ,
+                    #(#object_name => Some(< #ident as editoast_search::SearchObject > :: search_config())),* ,
                     _ => None
                 }
             }
 
-            fn all() -> Vec<crate::views::search::SearchConfig> {
-                vec![#(< #ident as crate::views::search::SearchObject > :: search_config()),*]
+            fn all() -> Vec<editoast_search::SearchConfig> {
+                vec![#(< #ident as editoast_search::SearchObject > :: search_config()),*]
             }
         }
 

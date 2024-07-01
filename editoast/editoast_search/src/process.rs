@@ -10,12 +10,14 @@ use super::searchast::SearchAst;
 use super::sqlquery::SqlQuery;
 use super::typing::AstType;
 use super::typing::TypeSpec;
-use crate::error::Result;
 
 impl QueryContext {
     /// Typechecks a [SearchAst], returning the type of the whole expressions
     /// if typechecking succeeds
-    pub fn typecheck_search_query(&self, search_ast: &SearchAst) -> Result<TypeSpec> {
+    pub fn typecheck_search_query(
+        &self,
+        search_ast: &SearchAst,
+    ) -> Result<TypeSpec, ProcessingError> {
         let typed_ast = match search_ast {
             SearchAst::Null => AstType::Null.into(),
             SearchAst::Boolean(_) => AstType::Boolean.into(),
@@ -33,7 +35,7 @@ impl QueryContext {
                 let arglist_types = args
                     .iter()
                     .map(|arg| self.typecheck_search_query(arg))
-                    .collect::<Result<Vec<_>>>()?;
+                    .collect::<Result<Vec<_>, _>>()?;
                 let function = self.find_function(function_name, &arglist_types)?;
                 let TypeSpec::Function { result, .. } = &function.signature else {
                     unreachable!()
@@ -46,7 +48,7 @@ impl QueryContext {
 
     /// Evaluates a [SearchAst] within the context, producing a [TypedAst]
     /// that can later be converted to an [SqlQuery]
-    pub fn evaluate_ast(&self, ast: &SearchAst) -> Result<TypedAst> {
+    pub fn evaluate_ast(&self, ast: &SearchAst) -> Result<TypedAst, ProcessingError> {
         match ast {
             SearchAst::Null => Ok(TypedAst::Null),
             SearchAst::Boolean(b) => Ok(TypedAst::Boolean(*b)),
@@ -66,7 +68,7 @@ impl QueryContext {
                 let args = query_args
                     .iter()
                     .map(|sub| self.evaluate_ast(sub))
-                    .collect::<Result<Vec<TypedAst>>>()?;
+                    .collect::<Result<Vec<_>, _>>()?;
                 self.call(function_name, args)
             }
         }
@@ -75,7 +77,7 @@ impl QueryContext {
     /// Evaluates a [SearchAst] within the context and returns the generated [SqlQuery]
     ///
     /// See [Self::evaluate_ast()]
-    pub fn search_ast_to_sql(&self, ast: &SearchAst) -> Result<SqlQuery> {
+    pub fn search_ast_to_sql(&self, ast: &SearchAst) -> Result<SqlQuery, ProcessingError> {
         Ok(self.evaluate_ast(ast)?.into())
     }
 }
@@ -235,13 +237,13 @@ mod tests {
         env
     }
 
-    fn typecheck(query: Value) -> Result<TypeSpec> {
+    fn typecheck(query: Value) -> Result<TypeSpec, ProcessingError> {
         let expr = SearchAst::build_ast(query).unwrap();
         let env = test_env();
         env.typecheck_search_query(&expr)
     }
 
-    fn try_eval(query: Value) -> Result<TypedAst> {
+    fn try_eval(query: Value) -> Result<TypedAst, ProcessingError> {
         let expr = SearchAst::build_ast(query).unwrap();
         let env = test_env();
         env.evaluate_ast(&expr)

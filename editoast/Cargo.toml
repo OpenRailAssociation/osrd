@@ -11,6 +11,7 @@ members = [
   "editoast_derive",
   "editoast_models",
   "editoast_schemas",
+  "editoast_search",
   "osm_to_railjson",
 ]
 
@@ -28,11 +29,13 @@ editoast_common = { path = "./editoast_common" }
 editoast_derive = { path = "./editoast_derive" }
 editoast_models = { path = "./editoast_models" }
 editoast_schemas = { path = "./editoast_schemas" }
+editoast_search = { path = "./editoast_search" }
 enum-map = "2.7.3"
 futures = "0.3.30"
 futures-util = "0.3.30"
 geojson = "0.24"
 geos = { version = "8.3.1", features = ["json"] }
+itertools = "0.13.0"
 mvt = "0.9.3"
 openssl = "0.10.64"
 paste = "1.0.15"
@@ -77,6 +80,7 @@ editoast_common = { workspace = true }
 editoast_derive.workspace = true
 editoast_models.workspace = true
 editoast_schemas.workspace = true
+editoast_search = { workspace = true }
 enum-map.workspace = true
 enumset = "1.1.3"
 futures.workspace = true
@@ -85,7 +89,7 @@ geos.workspace = true
 heck = "0.5.0"
 image = "0.25.1"
 inventory = "0.3"
-itertools = "0.13.0"
+itertools.workspace = true
 json-patch = { version = "2.0.0", features = ["utoipa"] }
 mvt.workspace = true
 openssl.workspace = true

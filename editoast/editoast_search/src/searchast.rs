@@ -2,14 +2,9 @@
 
 use std::fmt::Debug;
 
-use editoast_derive::EditoastError;
 use serde_json::Value;
-use thiserror::Error;
 
-use crate::error::Result;
-
-#[derive(Debug, PartialEq, Error, EditoastError)]
-#[editoast_error(base_id = "search")]
+#[derive(Debug, thiserror::Error)]
 pub enum SearchAstError {
     #[error("could not convert {value} to i64")]
     IntegerConversion { value: u64 },
@@ -39,7 +34,7 @@ pub enum SearchAstError {
 ///
 /// Note that the empty array `[]` and all objects `{...}` are invalid queries.
 ///
-/// ```
+/// ```ignore
 /// assert!(SearchAst::build_ast(json!(
 ///     ["and", ["=", ["a"], 12],
 ///             ["=", ["b"], ["=", true, ["c"]]],
@@ -58,28 +53,25 @@ pub enum SearchAst {
 }
 
 impl SearchAst {
-    pub fn build_ast(value: Value) -> Result<SearchAst> {
+    pub fn build_ast(value: Value) -> Result<SearchAst, SearchAstError> {
         match value {
             Value::Null => Ok(SearchAst::Null),
             Value::Bool(b) => Ok(SearchAst::Boolean(b)),
             Value::Number(n) if n.is_u64() => i64::try_from(n.as_u64().unwrap())
                 .map(SearchAst::Integer)
-                .map_err(|_| {
-                    SearchAstError::IntegerConversion {
-                        value: n.as_u64().unwrap(),
-                    }
-                    .into()
+                .map_err(|_| SearchAstError::IntegerConversion {
+                    value: n.as_u64().unwrap(),
                 }),
             Value::Number(n) if n.is_i64() => Ok(SearchAst::Integer(n.as_i64().unwrap())),
             Value::Number(n) => Ok(SearchAst::Float(n.as_f64().unwrap())),
             Value::String(s) => Ok(SearchAst::String(s)),
-            Value::Array(arr) if arr.is_empty() => Err(SearchAstError::EmptyArray.into()),
+            Value::Array(arr) if arr.is_empty() => Err(SearchAstError::EmptyArray),
             Value::Array(mut arr) if arr.len() == 1 => {
                 let first = arr.pop().unwrap();
                 if first.is_string() && !first.as_str().unwrap().is_empty() {
                     Ok(SearchAst::Column(first.as_str().unwrap().into()))
                 } else {
-                    Err(SearchAstError::InvalidColumnName { value: first }.into())
+                    Err(SearchAstError::InvalidColumnName { value: first })
                 }
             }
             Value::Array(mut arr) => {
@@ -89,13 +81,13 @@ impl SearchAst {
                     let args = args
                         .iter()
                         .map(|val| SearchAst::build_ast(val.clone()))
-                        .collect::<Result<Vec<_>>>()?;
+                        .collect::<Result<Vec<_>, _>>()?;
                     Ok(SearchAst::Call(first.as_str().unwrap().into(), args))
                 } else {
-                    Err(SearchAstError::InvalidFunctionIdentifier { value: first }.into())
+                    Err(SearchAstError::InvalidFunctionIdentifier { value: first })
                 }
             }
-            Value::Object(_) => Err(SearchAstError::InvalidSyntax { value }.into()),
+            Value::Object(_) => Err(SearchAstError::InvalidSyntax { value }),
         }
     }
 }

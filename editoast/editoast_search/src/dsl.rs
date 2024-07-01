@@ -9,8 +9,7 @@ use super::context::QueryContext;
 use super::typing::TypeSpec;
 use super::AstType;
 use super::TypedAst;
-use crate::error::Result;
-use crate::views::search::sqlquery::SqlQuery;
+use crate::sqlquery::SqlQuery;
 
 /// Trait that should be implemented by all DSL specifiers types to provide
 /// the required compile-time information to the [QueryContext::def_function_1()]-like
@@ -25,7 +24,7 @@ use crate::views::search::sqlquery::SqlQuery;
 /// defining a binary function multiply that accepts two integers, possibly NULL, that
 /// cannot be ersatzes (cf. [TypedAst::is_ersatz()]):
 ///
-/// ```
+/// ```ignore
 /// context.def_function(
 ///     "*",
 ///     TypeSpec::or(AstType::Integer, AstType::Null)
@@ -57,7 +56,7 @@ use crate::views::search::sqlquery::SqlQuery;
 ///
 /// Rewriting the function defined above using the DSL could be done this way:
 ///
-/// ```
+/// ```ignore
 /// context
 ///     .def_function_2::<dsl::Nullable<dsl::Integer>, dsl::Nullable<dsl::Integer>, dsl::Integer>(
 ///         "*",
@@ -88,23 +87,21 @@ pub trait Type {
     type ReturnType;
 
     fn type_spec() -> TypeSpec;
-    fn into_arg(value: TypedAst) -> Result<Self::ArgType>;
-    fn from_return(value: Self::ReturnType) -> Result<TypedAst>;
+    fn into_arg(value: TypedAst) -> Result<Self::ArgType, ProcessingError>;
+    fn from_return(value: Self::ReturnType) -> Result<TypedAst, ProcessingError>;
 
-    fn typecheck(value: &TypedAst) -> Result<()> {
+    fn typecheck(value: &TypedAst) -> Result<(), ProcessingError> {
         if value.is_ersatz() {
             Err(ProcessingError::UnexpectedErsatz {
                 value: format!("{value:?}"),
                 expected: Self::type_spec(),
-            }
-            .into())
+            })
         } else if !Self::type_spec().is_supertype_spec(&value.type_spec()) {
             Err(ProcessingError::RuntimeTypeCheckFail {
                 value: format!("{value:?}"),
                 expected: Self::type_spec(),
                 actual: value.type_spec(),
-            }
-            .into())
+            })
         } else {
             Ok(())
         }
@@ -141,12 +138,12 @@ impl Type for Null {
         TypeSpec::Type(AstType::Null)
     }
 
-    fn into_arg(value: TypedAst) -> Result<Self::ArgType> {
+    fn into_arg(value: TypedAst) -> Result<Self::ArgType, ProcessingError> {
         Self::typecheck(&value)?;
         Ok(())
     }
 
-    fn from_return(_: Self::ReturnType) -> Result<TypedAst> {
+    fn from_return(_: Self::ReturnType) -> Result<TypedAst, ProcessingError> {
         Ok(TypedAst::Null)
     }
 }
@@ -159,7 +156,7 @@ impl Type for Boolean {
         TypeSpec::Type(AstType::Boolean)
     }
 
-    fn into_arg(value: TypedAst) -> Result<Self::ArgType> {
+    fn into_arg(value: TypedAst) -> Result<Self::ArgType, ProcessingError> {
         Self::typecheck(&value)?;
         let TypedAst::Boolean(b) = value else {
             unreachable!();
@@ -167,7 +164,7 @@ impl Type for Boolean {
         Ok(b)
     }
 
-    fn from_return(value: Self::ReturnType) -> Result<TypedAst> {
+    fn from_return(value: Self::ReturnType) -> Result<TypedAst, ProcessingError> {
         Ok(TypedAst::Boolean(value))
     }
 }
@@ -180,7 +177,7 @@ impl Type for Integer {
         TypeSpec::Type(AstType::Integer)
     }
 
-    fn into_arg(value: TypedAst) -> Result<Self::ArgType> {
+    fn into_arg(value: TypedAst) -> Result<Self::ArgType, ProcessingError> {
         Self::typecheck(&value)?;
         let TypedAst::Integer(n) = value else {
             unreachable!();
@@ -188,7 +185,7 @@ impl Type for Integer {
         Ok(n)
     }
 
-    fn from_return(value: Self::ReturnType) -> Result<TypedAst> {
+    fn from_return(value: Self::ReturnType) -> Result<TypedAst, ProcessingError> {
         Ok(TypedAst::Integer(value))
     }
 }
@@ -201,7 +198,7 @@ impl Type for Float {
         TypeSpec::Type(AstType::Float)
     }
 
-    fn into_arg(value: TypedAst) -> Result<Self::ArgType> {
+    fn into_arg(value: TypedAst) -> Result<Self::ArgType, ProcessingError> {
         Self::typecheck(&value)?;
         let TypedAst::Float(n) = value else {
             unreachable!();
@@ -209,7 +206,7 @@ impl Type for Float {
         Ok(n)
     }
 
-    fn from_return(value: Self::ReturnType) -> Result<TypedAst> {
+    fn from_return(value: Self::ReturnType) -> Result<TypedAst, ProcessingError> {
         Ok(TypedAst::Float(value))
     }
 }
@@ -222,7 +219,7 @@ impl Type for String {
         TypeSpec::Type(AstType::String)
     }
 
-    fn into_arg(value: TypedAst) -> Result<Self::ArgType> {
+    fn into_arg(value: TypedAst) -> Result<Self::ArgType, ProcessingError> {
         Self::typecheck(&value)?;
         let TypedAst::String(s) = value else {
             unreachable!();
@@ -230,7 +227,7 @@ impl Type for String {
         Ok(s)
     }
 
-    fn from_return(value: Self::ReturnType) -> Result<TypedAst> {
+    fn from_return(value: Self::ReturnType) -> Result<TypedAst, ProcessingError> {
         Ok(TypedAst::String(value))
     }
 }
@@ -243,7 +240,7 @@ impl<T: Type> Type for Sql<T> {
         T::type_spec()
     }
 
-    fn into_arg(value: TypedAst) -> Result<Self::ArgType> {
+    fn into_arg(value: TypedAst) -> Result<Self::ArgType, ProcessingError> {
         Self::typecheck(&value)?;
         let TypedAst::Sql(sql, _) = value else {
             unreachable!();
@@ -251,7 +248,7 @@ impl<T: Type> Type for Sql<T> {
         Ok(*sql)
     }
 
-    fn from_return(value: Self::ReturnType) -> Result<TypedAst> {
+    fn from_return(value: Self::ReturnType) -> Result<TypedAst, ProcessingError> {
         if let SqlQuery::Value(value) = value {
             Ok(value)
         } else {
@@ -268,17 +265,17 @@ impl<T: Type> Type for Ersatz<T> {
         T::type_spec()
     }
 
-    fn into_arg(value: TypedAst) -> Result<Self::ArgType> {
+    fn into_arg(value: TypedAst) -> Result<Self::ArgType, ProcessingError> {
         Self::typecheck(&value)?;
         Ok(value)
     }
 
-    fn from_return(value: Self::ReturnType) -> Result<TypedAst> {
+    fn from_return(value: Self::ReturnType) -> Result<TypedAst, ProcessingError> {
         Self::typecheck(&value)?;
         Ok(value)
     }
 
-    fn typecheck(value: &TypedAst) -> Result<()> {
+    fn typecheck(value: &TypedAst) -> Result<(), ProcessingError> {
         match value {
             TypedAst::Column { spec, .. } | TypedAst::Sql(_, spec) => {
                 if Self::type_spec().is_supertype_spec(spec) {
@@ -288,8 +285,7 @@ impl<T: Type> Type for Ersatz<T> {
                         value: format!("{value:?}"),
                         expected: Self::type_spec(),
                         actual: value.type_spec(),
-                    }
-                    .into())
+                    })
                 }
             }
             value => T::typecheck(value),
@@ -305,7 +301,7 @@ impl<T: Type> Type for Nullable<T> {
         TypeSpec::Union(Box::new(T::type_spec()), Box::new(Null::type_spec()))
     }
 
-    fn into_arg(value: TypedAst) -> Result<Self::ArgType> {
+    fn into_arg(value: TypedAst) -> Result<Self::ArgType, ProcessingError> {
         if let TypedAst::Null = value {
             Ok(None)
         } else {
@@ -313,7 +309,7 @@ impl<T: Type> Type for Nullable<T> {
         }
     }
 
-    fn from_return(value: Self::ReturnType) -> Result<TypedAst> {
+    fn from_return(value: Self::ReturnType) -> Result<TypedAst, ProcessingError> {
         Ok(match value {
             Some(value) => T::from_return(value)?,
             None => TypedAst::Null,
@@ -329,7 +325,7 @@ impl<T: Type> Type for Array<T> {
         TypeSpec::seq(T::type_spec())
     }
 
-    fn into_arg(value: TypedAst) -> Result<Self::ArgType> {
+    fn into_arg(value: TypedAst) -> Result<Self::ArgType, ProcessingError> {
         Self::typecheck(&value)?;
         let TypedAst::Sequence(items, _) = value else {
             unreachable!()
@@ -337,12 +333,12 @@ impl<T: Type> Type for Array<T> {
         items.into_iter().map(T::into_arg).collect()
     }
 
-    fn from_return(value: Self::ReturnType) -> Result<TypedAst> {
+    fn from_return(value: Self::ReturnType) -> Result<TypedAst, ProcessingError> {
         Ok(TypedAst::Sequence(
             value
                 .into_iter()
                 .map(T::from_return)
-                .collect::<Result<Vec<_>>>()?,
+                .collect::<Result<Vec<_>, ProcessingError>>()?,
             T::type_spec(),
         ))
     }
@@ -351,7 +347,7 @@ impl<T: Type> Type for Array<T> {
 impl QueryContext {
     /// Defines a unary function using the [Type] DSL
     ///
-    /// ```
+    /// ```ignore
     /// let mut context = QueryContext::default();
     /// context.def_function_1::<dsl::Nullable<dsl::Ersatz<dsl::Boolean>>, dsl::Sql<dsl::Boolean>>(
     ///     "not",
@@ -360,23 +356,31 @@ impl QueryContext {
     /// ```
     ///
     /// See [Type] for information about the DSL itself
+    #[allow(clippy::type_complexity)]
     pub fn def_function_1<P1: Type + 'static, R: Type + 'static>(
         &mut self,
         name: &'static str,
-        fun: Rc<dyn Fn(P1::ArgType) -> Result<R::ReturnType>>,
+        fun: Rc<dyn Fn(P1::ArgType) -> Result<R::ReturnType, std::string::String>>,
     ) {
         self.def_function(
             name,
             P1::type_spec() >> R::type_spec(),
             Rc::new(move |args| {
-                R::from_return(fun(P1::into_arg(args.into_iter().next().unwrap())?)?)
+                let value =
+                    fun(P1::into_arg(args.into_iter().next().unwrap())?).map_err(|error| {
+                        ProcessingError::FunctionError {
+                            function: name.to_owned(),
+                            error,
+                        }
+                    })?;
+                R::from_return(value)
             }),
         )
     }
 
     /// Defines a binary function using the [Type] DSL
     ///
-    /// ```
+    /// ```ignore
     /// let mut env = create_processing_context();
     /// env.def_function_2::<dsl::Integer, dsl::Integer, dsl::Integer>(
     ///     "+",
@@ -389,17 +393,22 @@ impl QueryContext {
     pub fn def_function_2<P1: Type + 'static, P2: Type + 'static, R: Type + 'static>(
         &mut self,
         name: &'static str,
-        fun: Rc<dyn Fn(P1::ArgType, P2::ArgType) -> Result<R::ReturnType>>,
+        fun: Rc<dyn Fn(P1::ArgType, P2::ArgType) -> Result<R::ReturnType, std::string::String>>,
     ) {
         self.def_function(
             name,
             P1::type_spec() >> P2::type_spec() >> R::type_spec(),
             Rc::new(move |args| {
                 let mut args = args.into_iter();
-                R::from_return(fun(
+                let value = fun(
                     P1::into_arg(args.next().unwrap())?,
                     P2::into_arg(args.next().unwrap())?,
-                )?)
+                )
+                .map_err(|error| ProcessingError::FunctionError {
+                    function: name.to_owned(),
+                    error,
+                })?;
+                R::from_return(value)
             }),
         )
     }
