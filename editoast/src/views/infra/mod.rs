@@ -46,7 +46,6 @@ use crate::modelsv2::Infra;
 use crate::views::pagination::PaginatedList as _;
 use crate::views::pagination::PaginationQueryParam;
 use crate::RedisClient;
-use editoast_models::DbConnectionPool;
 use editoast_models::DbConnectionPoolV2;
 use editoast_schemas::infra::SwitchType;
 
@@ -194,7 +193,7 @@ struct InfraListResponse {
 )]
 #[get("")]
 async fn list(
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Data<DbConnectionPoolV2>,
     core: Data<CoreClient>,
     pagination_params: Query<PaginationQueryParam>,
 ) -> Result<Json<InfraListResponse>> {
@@ -624,9 +623,6 @@ pub async fn fetch_all_infra_states(
 pub mod tests {
     use actix_http::Request;
     use actix_web::http::StatusCode;
-    use actix_web::test as actix_test;
-    use actix_web::test::call_service;
-    use actix_web::test::read_body_json;
     use actix_web::test::TestRequest;
     use diesel::sql_query;
     use diesel::sql_types::BigInt;
@@ -635,16 +631,12 @@ pub mod tests {
     use rstest::rstest;
     use serde_json::json;
     use std::ops::DerefMut;
-    use std::sync::Arc;
     use strum::IntoEnumIterator;
 
     use super::*;
     use crate::core::mocking::MockingClient;
-    use crate::fixtures::tests::db_pool;
-    use crate::fixtures::tests::IntoFixture;
     use crate::generated_data;
     use crate::infra_cache::operation::create::apply_create_operation;
-    use crate::infra_cache::operation::Operation;
     use crate::modelsv2::fixtures::create_empty_infra;
     use crate::modelsv2::fixtures::create_rolling_stock_with_energy_sources;
     use crate::modelsv2::fixtures::create_small_infra;
@@ -652,9 +644,7 @@ pub mod tests {
     use crate::modelsv2::get_table;
     use crate::modelsv2::infra::DEFAULT_INFRA_VERSION;
     use crate::views::test_app::TestAppBuilder;
-    use crate::views::tests::create_test_service_with_core_client;
     use editoast_schemas::infra::Electrification;
-    use editoast_schemas::infra::InfraObject;
     use editoast_schemas::infra::Speed;
     use editoast_schemas::infra::SpeedSection;
     use editoast_schemas::infra::SwitchType;
@@ -664,14 +654,6 @@ pub mod tests {
     fn delete_infra_request(infra_id: i64) -> Request {
         TestRequest::delete()
             .uri(format!("/infra/{infra_id}").as_str())
-            .to_request()
-    }
-
-    pub fn create_object_request(infra_id: i64, obj: InfraObject) -> Request {
-        let operation = Operation::Create(Box::new(obj));
-        TestRequest::post()
-            .uri(format!("/infra/{infra_id}/").as_str())
-            .set_json(json!([operation]))
             .to_request()
     }
 
@@ -786,39 +768,45 @@ pub mod tests {
         let db_pool = app.db_pool();
         let empty_infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
 
-        let response = call_service(&app.service, delete_infra_request(empty_infra.id)).await;
-        assert_eq!(response.status(), StatusCode::NO_CONTENT);
+        app.fetch(delete_infra_request(empty_infra.id))
+            .assert_status(StatusCode::NO_CONTENT);
 
-        let response = call_service(&app.service, delete_infra_request(empty_infra.id)).await;
-        assert_eq!(response.status(), StatusCode::NOT_FOUND);
+        app.fetch(delete_infra_request(empty_infra.id))
+            .assert_status(StatusCode::NOT_FOUND);
     }
 
-    #[actix_test]
+    #[rstest]
     async fn infra_list() {
+        let db_pool = DbConnectionPoolV2::for_tests();
         let mut core = MockingClient::new();
         core.stub("/cache_status")
             .method(reqwest::Method::POST)
             .response(StatusCode::OK)
             .body("{}")
             .finish();
-        let app = create_test_service_with_core_client(core).await;
-        let req = TestRequest::get().uri("/infra/").to_request();
-        let response = call_service(&app, req).await;
-        assert_eq!(response.status(), StatusCode::OK);
+
+        let app = TestAppBuilder::new()
+            .db_pool(db_pool.clone())
+            .core_client(core.into())
+            .build();
+        let request = TestRequest::get().uri("/infra/").to_request();
+
+        app.fetch(request).assert_status(StatusCode::OK);
     }
 
     #[rstest]
-    async fn default_infra_create(db_pool: Arc<DbConnectionPool>) {
+    async fn default_infra_create() {
         let app = TestAppBuilder::default_app();
-        let req = TestRequest::post()
+
+        let request = TestRequest::post()
             .uri("/infra")
             .set_json(json!({ "name": "create_infra_test" }))
             .to_request();
-        let response = call_service(&app.service, req).await;
-        assert_eq!(response.status(), StatusCode::CREATED);
-        let infra = read_body_json::<Infra, _>(response)
-            .await
-            .into_fixture(db_pool);
+        let infra: Infra = app
+            .fetch(request)
+            .assert_status(StatusCode::CREATED)
+            .json_into();
+
         assert_eq!(infra.name, "create_infra_test");
         assert_eq!(infra.railjson_version, RAILJSON_VERSION);
         assert_eq!(infra.version, DEFAULT_INFRA_VERSION);
@@ -845,8 +833,8 @@ pub mod tests {
         let req = TestRequest::get()
             .uri(format!("/infra/{}", empty_infra.id).as_str())
             .to_request();
-        let response = call_service(&app.service, req).await;
-        assert_eq!(response.status(), StatusCode::OK);
+
+        app.fetch(req).assert_status(StatusCode::OK);
 
         empty_infra
             .delete(db_pool.get_ok().deref_mut())
@@ -856,8 +844,8 @@ pub mod tests {
         let req = TestRequest::get()
             .uri(format!("/infra/{}", empty_infra.id).as_str())
             .to_request();
-        let response = call_service(&app.service, req).await;
-        assert_eq!(response.status(), StatusCode::NOT_FOUND);
+
+        app.fetch(req).assert_status(StatusCode::NOT_FOUND);
     }
 
     #[rstest]
@@ -870,9 +858,9 @@ pub mod tests {
             .uri(format!("/infra/{}", empty_infra.id).as_str())
             .set_json(json!({"name": "rename_test"}))
             .to_request();
-        let response = call_service(&app.service, req).await;
-        assert_eq!(response.status(), StatusCode::OK);
-        let infra: Infra = read_body_json(response).await;
+
+        let infra: Infra = app.fetch(req).assert_status(StatusCode::OK).json_into();
+
         assert_eq!(infra.name, "rename_test");
     }
 
@@ -928,9 +916,10 @@ pub mod tests {
         let req = TestRequest::get()
             .uri(format!("/infra/{}/speed_limit_tags/", empty_infra.id).as_str())
             .to_request();
-        let response = call_service(&app.service, req).await;
-        assert_eq!(response.status(), StatusCode::OK);
-        let speed_limit_tags: Vec<String> = read_body_json(response).await;
+
+        let speed_limit_tags: Vec<String> =
+            app.fetch(req).assert_status(StatusCode::OK).json_into();
+
         assert_eq!(speed_limit_tags, vec!["test_tag"]);
     }
 
@@ -970,9 +959,9 @@ pub mod tests {
         .await;
 
         let req = TestRequest::get().uri("/infra/voltages/").to_request();
-        let response = call_service(&app.service, req).await;
-        assert_eq!(response.status(), StatusCode::OK);
-        let voltages: Vec<String> = read_body_json(response).await;
+
+        let voltages: Vec<String> = app.fetch(req).assert_status(StatusCode::OK).json_into();
+
         assert!(voltages.len() >= 3);
         assert!(voltages.contains(&String::from("0V")));
         assert!(voltages.contains(&String::from("1V")));
@@ -1018,15 +1007,13 @@ pub mod tests {
                 .as_str(),
             )
             .to_request();
-        let response = call_service(&app.service, req).await;
-        assert_eq!(response.status(), StatusCode::OK);
 
         if !include_rolling_stock_modes {
-            let voltages: Vec<String> = read_body_json(response).await;
+            let voltages: Vec<String> = app.fetch(req).assert_status(StatusCode::OK).json_into();
             assert_eq!(voltages[0], "0");
             assert_eq!(voltages.len(), 1);
         } else {
-            let voltages: Vec<String> = read_body_json(response).await;
+            let voltages: Vec<String> = app.fetch(req).assert_status(StatusCode::OK).json_into();
             assert!(voltages.contains(&String::from("25000V")));
             assert!(voltages.len() >= 2);
         }
@@ -1041,9 +1028,10 @@ pub mod tests {
         let req = TestRequest::get()
             .uri(format!("/infra/{}/switch_types/", empty_infra.id).as_str())
             .to_request();
-        let response = call_service(&app.service, req).await;
-        assert_eq!(response.status(), StatusCode::OK);
-        let switch_types: Vec<SwitchType> = read_body_json(response).await;
+
+        let switch_types: Vec<SwitchType> =
+            app.fetch(req).assert_status(StatusCode::OK).json_into();
+
         assert_eq!(switch_types.len(), 5);
     }
 
@@ -1067,8 +1055,8 @@ pub mod tests {
         let req = TestRequest::post()
             .uri(format!("/infra/{}/lock/", empty_infra.id).as_str())
             .to_request();
-        let response = call_service(&app.service, req).await;
-        assert_eq!(response.status(), StatusCode::NO_CONTENT);
+
+        app.fetch(req).assert_status(StatusCode::NO_CONTENT);
 
         // Check lock
         let infra = Infra::retrieve(db_pool.get_ok().deref_mut(), empty_infra.id)
@@ -1081,8 +1069,8 @@ pub mod tests {
         let req = TestRequest::post()
             .uri(format!("/infra/{}/unlock/", empty_infra.id).as_str())
             .to_request();
-        let response = call_service(&app.service, req).await;
-        assert_eq!(response.status(), StatusCode::NO_CONTENT);
+
+        app.fetch(req).assert_status(StatusCode::NO_CONTENT);
 
         // Check lock
         let infra = Infra::retrieve(db_pool.get_ok().deref_mut(), empty_infra.id)
@@ -1111,7 +1099,7 @@ pub mod tests {
         let req = TestRequest::post()
             .uri(format!("/infra/{}/load", empty_infra.id).as_str())
             .to_request();
-        let response = call_service(&app.service, req).await;
-        assert_eq!(response.status(), StatusCode::NO_CONTENT);
+
+        app.fetch(req).assert_status(StatusCode::NO_CONTENT);
     }
 }

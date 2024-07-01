@@ -43,7 +43,6 @@ use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraIdParam;
 use crate::RedisClient;
 use editoast_models::DbConnection;
-use editoast_models::DbConnectionPool;
 use editoast_models::DbConnectionPoolV2;
 use editoast_schemas::infra::InfraObject;
 
@@ -74,20 +73,27 @@ crate::routes! {
 pub async fn edit<'a>(
     infra: Path<InfraIdParam>,
     operations: Json<Vec<Operation>>,
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Data<DbConnectionPoolV2>,
     infra_caches: Data<CHashMap<i64, InfraCache>>,
     redis_client: Data<RedisClient>,
     map_layers: Data<MapLayers>,
 ) -> Result<Json<Vec<InfraObject>>> {
     let infra_id = infra.infra_id;
-    let mut conn = db_pool.get().await?;
     // TODO: lock for update
-    let mut infra =
-        Infra::retrieve_or_fail(&mut conn, infra_id, || InfraApiError::NotFound { infra_id })
+    let mut infra = Infra::retrieve_or_fail(db_pool.get().await?.deref_mut(), infra_id, || {
+        InfraApiError::NotFound { infra_id }
+    })
+    .await?;
+    let mut infra_cache =
+        InfraCache::get_or_load_mut(db_pool.get().await?.deref_mut(), &infra_caches, &infra)
             .await?;
-    let mut infra_cache = InfraCache::get_or_load_mut(&mut conn, &infra_caches, &infra).await?;
-    let operation_results =
-        apply_edit(&mut conn, &mut infra, &operations, &mut infra_cache).await?;
+    let operation_results = apply_edit(
+        db_pool.get().await?.deref_mut(),
+        &mut infra,
+        &operations,
+        &mut infra_cache,
+    )
+    .await?;
 
     let mut conn = redis_client.get_connection().await?;
     map::invalidate_all(
