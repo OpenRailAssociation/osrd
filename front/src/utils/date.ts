@@ -5,7 +5,6 @@ import utc from 'dayjs/plugin/utc';
 
 import i18n from 'i18n';
 
-dayjs.locale('fr');
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
@@ -19,16 +18,18 @@ export function formatIsoDate(date: Date) {
 }
 
 export function dateTimeFormatting(date: Date, withoutTime: boolean = false) {
+  let locale;
   switch (i18n.language) {
     case 'fr':
-      dayjs.locale('fr');
+      locale = 'fr';
       break;
     default:
-      dayjs.locale('en-gb');
+      locale = 'en-gb';
   }
   const dateToUTC = dayjs(`${date}Z`); // The 'Z' is to ensure we have an UTC date
   const dateFormat = withoutTime ? 'D MMM YYYY' : 'D MMM YYYY HH:mm';
-  return dateToUTC.tz(dayjs.tz.guess()).format(dateFormat).replace(/\./gi, '');
+  const tz = dayjs.tz.guess();
+  return dateToUTC.locale(locale).tz(tz).format(dateFormat).replace(/\./gi, '');
 }
 
 /**
@@ -79,8 +80,7 @@ export function formatDay(locale = 'fr') {
   if (!['en', 'fr'].includes(locale)) {
     throw new Error('Invalid locale');
   }
-  dayjs.locale(locale);
-  const currentDate = dayjs();
+  const currentDate = dayjs().locale(locale);
   if (locale === 'en') {
     return currentDate.format('dddd, MMMM D, YYYY');
   }
