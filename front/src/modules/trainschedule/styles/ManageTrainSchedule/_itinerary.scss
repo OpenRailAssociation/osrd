@@ -58,10 +58,24 @@
       }
 
       &-name {
-        max-width: 47%;
+        width: 45%;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+        
+        &.reduced-text {
+          width: 41%;
+        }
+      }
+
+      &-uic {
+        width: 15%;
+        text-align: end;
+        padding-right: 0.5rem;
+      }
+
+      &-ch {
+        width: 6%;
       }
     }
   }
