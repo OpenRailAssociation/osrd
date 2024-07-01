@@ -185,35 +185,33 @@ const SNCF_PSL = ({ colors, layerOrder, infraID }: SNCF_PSLProps) => {
     filter: speedSectionFilter,
   };
 
-  if (layersSettings.sncf_psl) {
-    return (
-      <>
-        <Source
-          id="osrd_sncf_psl_geo"
-          type="vector"
-          url={`${MAP_URL}/layer/psl/mvt/geo/?infra=${infraID}`}
-        >
-          <OrderedLayer
-            {...speedValueParams}
-            id="chartis/osrd_sncf_psl_value/geo"
-            layerOrder={layerOrder}
-          />
-          <OrderedLayer
-            {...speedLineBGParams}
-            id="chartis/osrd_sncf_psl_colors_bg/geo"
-            layerOrder={layerOrder}
-          />
-          <OrderedLayer
-            {...speedLineParams}
-            id="chartis/osrd_sncf_psl_colors/geo"
-            layerOrder={layerOrder}
-          />
-        </Source>
-        <SNCF_PSL_Signs colors={colors} layerOrder={layerOrder} />
-      </>
-    );
-  }
-  return null;
+  if (!layersSettings.sncf_psl || isNil(infraID)) return null;
+  return (
+    <>
+      <Source
+        id="osrd_sncf_psl_geo"
+        type="vector"
+        url={`${MAP_URL}/layer/psl/mvt/geo/?infra=${infraID}`}
+      >
+        <OrderedLayer
+          {...speedValueParams}
+          id="chartis/osrd_sncf_psl_value/geo"
+          layerOrder={layerOrder}
+        />
+        <OrderedLayer
+          {...speedLineBGParams}
+          id="chartis/osrd_sncf_psl_colors_bg/geo"
+          layerOrder={layerOrder}
+        />
+        <OrderedLayer
+          {...speedLineParams}
+          id="chartis/osrd_sncf_psl_colors/geo"
+          layerOrder={layerOrder}
+        />
+      </Source>
+      <SNCF_PSL_Signs colors={colors} layerOrder={layerOrder} />
+    </>
+  );
 };
 
 export default SNCF_PSL;

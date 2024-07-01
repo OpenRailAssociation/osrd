@@ -79,6 +79,8 @@ export default function NeutralSectionSigns(props: NeutralSectionSignsProps) {
     isSignalisation: true,
     sourceTable: 'neutral_signs',
   });
+
+  if (isNil(infraID)) return null;
   return (
     <Source
       id="osrd_sncf_neutral_signs_geo"

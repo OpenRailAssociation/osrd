@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { isNil } from 'lodash';
 import { type LayerProps, Source } from 'react-map-gl/maplibre';
 
 import { MAP_URL } from 'common/Map/const';
@@ -36,6 +37,7 @@ export default ({ colors, layerOrder, infraID }: NeutralSectionsProps) => {
     },
   };
 
+  if (isNil(infraID)) return null;
   return (
     <>
       <Source

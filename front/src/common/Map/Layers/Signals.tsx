@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { isNil } from 'lodash';
 import { Source, type MapRef } from 'react-map-gl/maplibre';
 import { useSelector } from 'react-redux';
 
@@ -36,7 +37,7 @@ const Signals = ({ colors, sourceTable, layerOrder, infraID }: PlatformProps) =>
     minzoom: 12,
   };
 
-  if (!layersSettings.signals) return null;
+  if (!layersSettings.signals || isNil(infraID)) return null;
   return (
     <Source
       promoteId="id"

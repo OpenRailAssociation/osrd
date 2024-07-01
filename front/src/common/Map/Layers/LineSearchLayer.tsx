@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { isNil } from 'lodash';
 import { Source } from 'react-map-gl/maplibre';
 import { useSelector } from 'react-redux';
 
@@ -14,14 +15,13 @@ interface TracksGeographicProps {
 
 const LineSearchLayer = ({ layerOrder, infraID }: TracksGeographicProps) => {
   const { lineSearchCode } = useSelector(getMap);
-  const infraVersion = infraID !== undefined ? `?infra=${infraID}` : null;
 
-  if (!infraVersion) return null;
+  if (isNil(infraID)) return null;
   return (
     <Source
       id="searchTrack-geo"
       type="vector"
-      url={`${MAP_URL}/layer/track_sections/mvt/geo/${infraVersion}`}
+      url={`${MAP_URL}/layer/track_sections/mvt/geo/?infra=${infraID}`}
       source-layer={MAP_TRACK_SOURCES.geographic}
     >
       {lineSearchCode && (

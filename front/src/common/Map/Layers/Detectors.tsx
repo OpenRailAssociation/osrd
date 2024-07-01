@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { isNil } from 'lodash';
 import { Source } from 'react-map-gl/maplibre';
 import type { CircleLayer, SymbolLayer } from 'react-map-gl/maplibre';
 import { useSelector } from 'react-redux';
@@ -68,7 +69,7 @@ const Detectors = ({ colors, layerOrder, infraID }: DetectorsProps) => {
   const layerPoint = getDetectorsLayerProps({ colors, sourceTable: 'detectors' });
   const layerName = getDetectorsNameLayerProps({ colors, sourceTable: 'detectors' });
 
-  if (!layersSettings.detectors) return null;
+  if (!layersSettings.detectors || isNil(infraID)) return null;
   return (
     <Source
       id="osrd_detectors_geo"

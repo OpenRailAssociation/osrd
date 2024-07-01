@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { isNil } from 'lodash';
 import { Source } from 'react-map-gl/maplibre';
 import type { CircleLayer, LineLayer, SymbolLayer } from 'react-map-gl/maplibre';
 import { useSelector } from 'react-redux';
@@ -96,7 +97,7 @@ export default function Routes({ colors, layerOrder, infraID }: RoutesProps) {
   const pointProps = getRoutesPointLayerProps({ colors, sourceTable: 'routes' });
   const textProps = getRoutesTextLayerProps({ colors, sourceTable: 'routes' });
 
-  if (!layersSettings.routes) return null;
+  if (!layersSettings.routes || isNil(infraID)) return null;
   return (
     <Source
       id="osrd_routes_geo"
