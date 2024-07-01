@@ -59,7 +59,7 @@ while IFS= read -r commit_title; do
         # if it's the first error for this commit, print the error header
         if [ -z "$commit_check_failed" ]; then
             printf '%sinvalid commit title:%s ' "$RED" "$RESET"
-            printf '%s%s%s\n' "$BLUE" "$commit_title" "$RESET"
+            printf '%s"%s"%s\n' "$BLUE" "$commit_title" "$RESET"
         fi
 
         printf '   %s- %s%s\n' "$RED" "$check_error" "$RESET"
