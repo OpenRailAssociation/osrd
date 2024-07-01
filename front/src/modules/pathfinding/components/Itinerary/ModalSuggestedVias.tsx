@@ -56,9 +56,11 @@ const ModalSuggestedVias = ({ suggestedVias }: ModalSuggestedViasProps) => {
       >
         {isInVias && <small className="pr-2">{idxTrueVia}</small>}
         <i className={`${!isInVias ? 'text-muted' : 'text-info'} icons-itinerary-bullet mr-2`} />
-        <span className="suggested-via-name">{op.name || ''}</span>&nbsp;
-        {op.ch && <span>{op.ch}</span>}
-        {op.uic && <small className="text-muted ml-3">{formatUicToCi(op.uic)}</small>}
+        <span className={cx('mr-1', 'suggested-via-name', { 'reduced-text': isInVias })}>
+          {op.name || ''}
+        </span>
+        {op.ch && <span className="suggested-via-ch">{op.ch}</span>}
+        {op.uic && <small className="suggested-via-uic text-muted">{formatUicToCi(op.uic)}</small>}
         <div className="ml-auto">
           {op.positionOnPath && (
             <small className="mr-2">{`KM ${(Math.round(op.positionOnPath) / 1000000).toFixed(3)}`}</small>
