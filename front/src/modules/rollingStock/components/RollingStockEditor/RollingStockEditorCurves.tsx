@@ -79,35 +79,6 @@ const RollingStockEditorCurves = ({
     }
   };
 
-  const { selectedCurveIndex, selectedCurve, selectedTractionModeCurves } = useMemo(() => {
-    if (!selectedTractionMode || !effortCurves || !effortCurves[selectedTractionMode])
-      return { selectedCurveIndex: null, selectedCurve: null, selectedTractionModeCurves: null };
-
-    const isElectric = selectedTractionMode !== THERMAL_TRACTION_IDENTIFIER;
-    const modeCurves = effortCurves[selectedTractionMode].curves.filter(
-      (curve) => curve.cond.comfort === selectedParams.comfortLevel
-    );
-
-    if (isElectric) {
-      const index = modeCurves.findIndex(
-        (curve) =>
-          curve.cond.electrical_profile_level === selectedParams.electricalProfile &&
-          curve.cond.power_restriction_code === selectedParams.powerRestriction
-      );
-      return {
-        selectedCurveIndex: index,
-        selectedCurve: modeCurves[index],
-        selectedTractionModeCurves: modeCurves,
-      };
-    }
-
-    return {
-      selectedCurveIndex: 0,
-      selectedCurve: modeCurves[0],
-      selectedTractionModeCurves: modeCurves,
-    };
-  }, [effortCurves, selectedTractionMode, selectedParams]);
-
   const [hoveredRollingstockParam, setHoveredRollingstockParam] = useState<string | null>();
 
   /** Dict of all the params of the rollingStock */
@@ -155,6 +126,25 @@ const RollingStockEditorCurves = ({
     selectedTractionMode,
     effortCurves,
   ]);
+
+  const { selectedCurveIndex, selectedCurve, selectedTractionModeCurves } = useMemo(() => {
+    if (!selectedTractionMode || !effortCurves)
+      return { selectedCurveIndex: null, selectedCurve: null, selectedTractionModeCurves: null };
+
+    const modeCurves = effortCurves[selectedTractionMode].curves;
+
+    const index = modeCurves.findIndex(
+      (curve) =>
+        curve.cond.comfort === selectedParams.comfortLevel &&
+        curve.cond.electrical_profile_level === selectedParams.electricalProfile &&
+        curve.cond.power_restriction_code === selectedParams.powerRestriction
+    );
+    return {
+      selectedCurveIndex: index,
+      selectedCurve: modeCurves[index],
+      selectedTractionModeCurves: modeCurves,
+    };
+  }, [effortCurves, selectedTractionMode, selectedParams]);
 
   /** List of curves matching the selected comfort, traction mode and electrical profile */
   const curvesToDisplay = useMemo(() => {

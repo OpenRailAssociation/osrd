@@ -85,7 +85,7 @@ const CurveSpreadsheet = ({
     const filledDataSheet: DataSheetCurve[] = max_efforts.map((effort, index) => ({
       speed: speeds[index] !== null ? Math.round(msToKmh(speeds[index]!)) : null,
       // Effort needs to be displayed in kN
-      effort: effort && effort !== null ? effort / 1000 : null,
+      effort: effort !== null ? effort / 1000 : null,
     }));
 
     // Add an empty line for input only if last line is not already empty
@@ -105,6 +105,7 @@ const CurveSpreadsheet = ({
       const sortedSpreadsheetValues = spreadsheetCurve
         .filter((item) => item.speed !== null || item.effort !== null)
         .sort((a, b) => {
+          if (a.speed === null && b.speed === null) return Number(a.effort) - Number(b.effort);
           if (a.speed === null) return -1;
           if (b.speed === null) return 1;
           return Number(a.speed) - Number(b.speed);
