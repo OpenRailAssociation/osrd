@@ -1,5 +1,6 @@
 use std::collections::hash_map::Entry;
 use std::collections::hash_map::HashMap;
+use std::ops::DerefMut;
 
 use actix_web::get;
 use actix_web::web::Data;
@@ -27,7 +28,7 @@ use crate::modelsv2::prelude::*;
 use crate::modelsv2::Infra;
 use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraIdParam;
-use editoast_models::DbConnectionPool;
+use editoast_models::DbConnectionPoolV2;
 use editoast_schemas::infra::InfraObject;
 use editoast_schemas::primitives::OSRDIdentified as _;
 use editoast_schemas::primitives::OSRDObject;
@@ -86,18 +87,19 @@ crate::routes! {
 async fn list_auto_fixes(
     infra: Path<i64>,
     infra_caches: Data<CHashMap<i64, InfraCache>>,
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Data<DbConnectionPoolV2>,
 ) -> Result<WebJson<Vec<Operation>>> {
     let infra_id = infra.into_inner();
-    let mut conn = db_pool.get().await?;
-    let infra =
-        Infra::retrieve_or_fail(&mut conn, infra_id, || InfraApiError::NotFound { infra_id })
-            .await?;
+    let infra = Infra::retrieve_or_fail(db_pool.get().await?.deref_mut(), infra_id, || {
+        InfraApiError::NotFound { infra_id }
+    })
+    .await?;
 
     // accepting the early release of ReadGuard as it's anyway released when sending the suggestions (so before edit)
-    let mut infra_cache_clone = InfraCache::get_or_load(&mut conn, &infra_caches, &infra)
-        .await?
-        .clone();
+    let mut infra_cache_clone =
+        InfraCache::get_or_load(db_pool.get().await?.deref_mut(), &infra_caches, &infra)
+            .await?
+            .clone();
 
     let mut fixes = vec![];
     for _ in 0..MAX_AUTO_FIXES_ITERATIONS {
@@ -320,26 +322,25 @@ mod tests {
 
     use actix_http::Request;
     use actix_http::StatusCode;
-    use actix_web::test::call_service;
-    use actix_web::test::read_body_json;
     use actix_web::test::TestRequest;
     use editoast_schemas::infra::BufferStop;
     use editoast_schemas::infra::BufferStopExtension;
-    use serde_json::json;
+    use pretty_assertions::assert_eq;
+    use std::ops::DerefMut;
 
     use super::*;
-    use crate::fixtures::tests::db_pool;
-    use crate::fixtures::tests::empty_infra;
-    use crate::fixtures::tests::small_infra;
     use crate::generated_data::infra_error::InfraErrorType;
     use crate::infra_cache::object_cache::BufferStopCache;
     use crate::infra_cache::object_cache::DetectorCache;
     use crate::infra_cache::object_cache::SignalCache;
+    use crate::infra_cache::operation::create::apply_create_operation;
     use crate::infra_cache::operation::DeleteOperation;
     use crate::infra_cache::operation::Operation;
     use crate::infra_cache::InfraCacheEditoastError;
+    use crate::modelsv2::fixtures::create_empty_infra;
+    use crate::modelsv2::fixtures::create_small_infra;
     use crate::views::infra::errors::query_errors;
-    use crate::views::tests::create_test_service;
+    use crate::views::test_app::TestAppBuilder;
     use editoast_schemas::infra::ApplicableDirectionsTrackRange;
     use editoast_schemas::infra::Detector;
     use editoast_schemas::infra::Electrification;
@@ -359,19 +360,6 @@ mod tests {
     use editoast_schemas::primitives::ObjectRef;
     use editoast_schemas::primitives::ObjectType;
 
-    async fn get_infra_cache(infra: &Infra) -> InfraCache {
-        InfraCache::load(&mut db_pool().get().await.unwrap(), infra)
-            .await
-            .unwrap()
-    }
-
-    async fn force_refresh(infra: &mut Infra) {
-        infra
-            .refresh(db_pool(), true, &get_infra_cache(infra).await)
-            .await
-            .unwrap();
-    }
-
     fn auto_fixes_request(infra_id: i64) -> Request {
         TestRequest::get()
             .uri(format!("/infra/{infra_id}/auto_fixes").as_str())
@@ -380,56 +368,77 @@ mod tests {
 
     #[rstest::rstest]
     async fn test_no_fix() {
-        let app = create_test_service().await;
-        let small_infra = small_infra(db_pool()).await;
-        let small_infra_id = small_infra.id();
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+        let small_infra = create_small_infra(db_pool.clone()).await;
+        let small_infra_id = small_infra.id;
 
-        let response = call_service(&app, auto_fixes_request(small_infra_id)).await;
+        let operations: Vec<Operation> = app
+            .fetch(auto_fixes_request(small_infra_id))
+            .assert_status(StatusCode::OK)
+            .json_into();
 
-        assert_eq!(response.status(), StatusCode::OK);
-        let operations: Vec<Operation> = read_body_json(response).await;
         assert!(operations.is_empty());
     }
 
     #[rstest::rstest]
     async fn test_fix_invalid_ref_puntual_objects() {
         // GIVEN
-        let app = create_test_service().await;
-        let mut small_infra = small_infra(db_pool()).await;
-        let small_infra_id = small_infra.id();
-        let conn = &mut db_pool().get().await.unwrap();
-        force_refresh(&mut small_infra).await;
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+        let mut small_infra = create_small_infra(db_pool.clone()).await;
+        let small_infra_id = small_infra.id;
+        let mut infra_cache = InfraCache::load(db_pool.get_ok().deref_mut(), &small_infra)
+            .await
+            .expect("Failed to get infra cache");
+        small_infra
+            .refresh_v2(db_pool.clone(), true, &infra_cache)
+            .await
+            .expect("Failed to refresh infra");
 
         // Check the only initial issues are "overlapping_speed_sections" warnings
-        let (infra_errors_before_all, before_all_count) = query_errors(conn, &small_infra).await;
+        let (infra_errors_before_all, before_all_count) =
+            query_errors(db_pool.get_ok().deref_mut(), &small_infra).await;
         assert!(infra_errors_before_all
             .iter()
             .all(|e| matches!(e.sub_type, InfraErrorType::OverlappingSpeedSections { .. })));
+        dbg!(infra_errors_before_all, before_all_count);
 
         // Remove a track
-        let deletion = Operation::Delete(DeleteOperation {
+        let delete_operation = DeleteOperation {
             obj_id: "TA1".to_string(),
             obj_type: ObjectType::TrackSection,
-        });
-        let req_del = TestRequest::post()
-            .uri(format!("/infra/{small_infra_id}/").as_str())
-            .set_json(json!([deletion]))
-            .to_request();
-        assert_eq!(call_service(&app, req_del).await.status(), StatusCode::OK);
+        };
+        let deletion = Operation::Delete(delete_operation.clone());
+        let _ = deletion
+            .apply(small_infra_id, db_pool.get_ok().deref_mut())
+            .await
+            .expect("Failed to delete a track");
+        infra_cache
+            .apply_operations(&vec![CacheOperation::Delete(delete_operation.into())])
+            .expect("Failed to apply operations");
+        small_infra
+            .refresh_v2(db_pool.clone(), true, &infra_cache)
+            .await
+            .expect("Failed to refresh infra");
 
         // Check that some new issues appeared
-        let (infra_errors_before_fix, before_fix_count) = query_errors(conn, &small_infra).await;
+        let (infra_errors_before_fix, before_fix_count) =
+            query_errors(db_pool.get_ok().deref_mut(), &small_infra).await;
+        dbg!(before_fix_count, before_all_count);
         assert!(before_fix_count > before_all_count);
 
         // WHEN
-        let response = call_service(&app, auto_fixes_request(small_infra_id)).await;
+        let operations: Vec<Operation> = app
+            .fetch(auto_fixes_request(small_infra_id))
+            .assert_status(StatusCode::OK)
+            .json_into();
 
         // THEN
-        let (infra_errors_after_fix, _) = query_errors(conn, &small_infra).await;
+        let (infra_errors_after_fix, _) =
+            query_errors(db_pool.get_ok().deref_mut(), &small_infra).await;
         assert_eq!(infra_errors_after_fix, infra_errors_before_fix);
 
-        assert_eq!(response.status(), StatusCode::OK);
-        let operations: Vec<Operation> = read_body_json(response).await;
         assert!(operations.contains(&Operation::Delete(DeleteOperation {
             obj_id: "SA0".to_string(),
             obj_type: ObjectType::Signal,
@@ -450,24 +459,25 @@ mod tests {
 
     #[rstest::rstest]
     async fn test_fix_invalid_ref_route_entry_exit() {
-        let app = create_test_service().await;
-        let small_infra = small_infra(db_pool()).await;
-        let small_infra_id = small_infra.id();
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+        let small_infra = create_small_infra(db_pool.clone()).await;
+        let small_infra_id = small_infra.id;
         // Remove a buffer stop
         let deletion = Operation::Delete(DeleteOperation {
             obj_id: "buffer_stop.4".to_string(),
             obj_type: ObjectType::BufferStop,
         });
-        let req_del = TestRequest::post()
-            .uri(format!("/infra/{small_infra_id}/").as_str())
-            .set_json(json!([deletion]))
-            .to_request();
-        assert_eq!(call_service(&app, req_del).await.status(), StatusCode::OK);
+        deletion
+            .apply(small_infra_id, db_pool.get_ok().deref_mut())
+            .await
+            .expect("Failed to delete BufferStop");
 
-        let response = call_service(&app, auto_fixes_request(small_infra_id)).await;
+        let operations: Vec<Operation> = app
+            .fetch(auto_fixes_request(small_infra_id))
+            .assert_status(StatusCode::OK)
+            .json_into();
 
-        assert_eq!(response.status(), StatusCode::OK);
-        let operations: Vec<Operation> = read_body_json(response).await;
         assert!(operations.contains(&Operation::Delete(DeleteOperation {
             obj_id: "rt.DE0->buffer_stop.4".to_string(),
             obj_type: ObjectType::Route,
@@ -680,19 +690,12 @@ mod tests {
         assert!(operations.is_empty());
     }
 
-    fn get_create_operation_request(railjson: InfraObject, infra_id: i64) -> Request {
-        let create_operation = Operation::Create(Box::new(railjson));
-        TestRequest::post()
-            .uri(format!("/infra/{infra_id}/").as_str())
-            .set_json(json!([create_operation]))
-            .to_request()
-    }
-
     #[rstest::rstest]
     async fn invalid_switch_ports() {
-        let app = create_test_service().await;
-        let small_infra = small_infra(db_pool()).await;
-        let small_infra_id = small_infra.id();
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+        let small_infra = create_small_infra(db_pool.clone()).await;
+        let small_infra_id = small_infra.id;
 
         let ports = HashMap::from([
             ("WRONG".into(), TrackEndpoint::new("TA1", Endpoint::End)),
@@ -705,17 +708,19 @@ mod tests {
             ..Default::default()
         };
         // Create an invalid switch
-        let req_create =
-            get_create_operation_request(invalid_switch.clone().into(), small_infra_id);
-        assert_eq!(
-            call_service(&app, req_create).await.status(),
-            StatusCode::OK
-        );
+        apply_create_operation(
+            &invalid_switch.clone().into(),
+            small_infra_id,
+            db_pool.get_ok().deref_mut(),
+        )
+        .await
+        .expect("Failed to create invalid_switch object");
 
-        let response = call_service(&app, auto_fixes_request(small_infra_id)).await;
-        assert_eq!(response.status(), StatusCode::OK);
+        let operations: Vec<Operation> = app
+            .fetch(auto_fixes_request(small_infra_id))
+            .assert_status(StatusCode::OK)
+            .json_into();
 
-        let operations: Vec<Operation> = read_body_json(response).await;
         assert!(operations.contains(&Operation::Delete(DeleteOperation {
             obj_id: invalid_switch.get_id().to_string(),
             obj_type: ObjectType::Switch,
@@ -724,9 +729,10 @@ mod tests {
 
     #[rstest::rstest]
     async fn odd_buffer_stop_location() {
-        let app = create_test_service().await;
-        let empty_infra = empty_infra(db_pool()).await;
-        let empty_infra_id = empty_infra.id();
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+        let empty_infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
+        let empty_infra_id = empty_infra.id;
 
         // Create an odd buffer stops (to a track endpoint linked by a switch)
         let track: InfraObject = TrackSection {
@@ -757,18 +763,16 @@ mod tests {
         }
         .into();
         for obj in [&track, &bs_start, &bs_stop, &bs_odd] {
-            let req_create = get_create_operation_request(obj.clone(), empty_infra_id);
-            assert_eq!(
-                call_service(&app, req_create).await.status(),
-                StatusCode::OK
-            );
+            apply_create_operation(obj, empty_infra_id, db_pool.get_ok().deref_mut())
+                .await
+                .expect("Failed to create object");
         }
 
-        let response = call_service(&app, auto_fixes_request(empty_infra_id)).await;
+        let operations: Vec<Operation> = app
+            .fetch(auto_fixes_request(empty_infra_id))
+            .assert_status(StatusCode::OK)
+            .json_into();
 
-        assert_eq!(response.status(), StatusCode::OK);
-
-        let operations: Vec<Operation> = read_body_json(response).await;
         assert!(operations.contains(&Operation::Delete(DeleteOperation {
             obj_id: bs_odd.get_id().clone(),
             obj_type: ObjectType::BufferStop,
@@ -777,26 +781,25 @@ mod tests {
 
     #[rstest::rstest]
     async fn empty_object() {
-        let app = create_test_service().await;
-        let empty_infra = empty_infra(db_pool()).await;
-        let empty_infra_id = empty_infra.id();
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+        let empty_infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
+        let empty_infra_id = empty_infra.id;
 
         let electrification: InfraObject = Electrification::default().into();
         let operational_point = OperationalPoint::default().into();
         let speed_section = SpeedSection::default().into();
 
         for obj in [&electrification, &operational_point, &speed_section] {
-            let req_create = get_create_operation_request(obj.clone(), empty_infra_id);
-            assert_eq!(
-                call_service(&app, req_create).await.status(),
-                StatusCode::OK
-            );
+            apply_create_operation(obj, empty_infra_id, db_pool.get_ok().deref_mut())
+                .await
+                .expect("Failed to create object");
         }
 
-        let response = call_service(&app, auto_fixes_request(empty_infra_id)).await;
-        assert_eq!(response.status(), StatusCode::OK);
-
-        let operations: Vec<Operation> = read_body_json(response).await;
+        let operations: Vec<Operation> = app
+            .fetch(auto_fixes_request(empty_infra_id))
+            .assert_status(StatusCode::OK)
+            .json_into();
 
         for obj in [&electrification, &operational_point, &speed_section] {
             assert!(operations.contains(&Operation::Delete(DeleteOperation {
@@ -808,9 +811,10 @@ mod tests {
 
     #[rstest::rstest]
     async fn out_of_range_must_be_ignored() {
-        let app = create_test_service().await;
-        let empty_infra = empty_infra(db_pool()).await;
-        let empty_infra_id = empty_infra.id();
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+        let empty_infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
+        let empty_infra_id = empty_infra.id;
 
         let track: InfraObject = TrackSection {
             id: "test_track".into(),
@@ -857,17 +861,15 @@ mod tests {
         .into();
 
         for obj in [&track, &electrification, &operational_point, &speed_section] {
-            let req_create = get_create_operation_request(obj.clone(), empty_infra_id);
-            assert_eq!(
-                call_service(&app, req_create).await.status(),
-                StatusCode::OK
-            );
+            apply_create_operation(obj, empty_infra_id, db_pool.get_ok().deref_mut())
+                .await
+                .expect("Failed to create object");
         }
 
-        let response = call_service(&app, auto_fixes_request(empty_infra_id)).await;
-        assert_eq!(response.status(), StatusCode::OK);
-
-        let operations: Vec<Operation> = read_body_json(response).await;
+        let operations: Vec<Operation> = app
+            .fetch(auto_fixes_request(empty_infra_id))
+            .assert_status(StatusCode::OK)
+            .json_into();
 
         for obj in [&track, &electrification, &operational_point, &speed_section] {
             assert!(!operations.contains(&Operation::Delete(DeleteOperation {
@@ -881,9 +883,10 @@ mod tests {
     #[case(250., 1)]
     #[case(1250., 5)]
     async fn out_of_range_must_be_deleted(#[case] pos: f64, #[case] error_count: usize) {
-        let app = create_test_service().await;
-        let empty_infra = empty_infra(db_pool()).await;
-        let empty_infra_id = empty_infra.id();
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+        let empty_infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
+        let empty_infra_id = empty_infra.id;
 
         let track: InfraObject = TrackSection {
             id: "test_track".into(),
@@ -918,17 +921,16 @@ mod tests {
         .into();
 
         for obj in [&track, &signal, &detector, &buffer_stop] {
-            let req_create = get_create_operation_request(obj.clone(), empty_infra_id);
-            assert_eq!(
-                call_service(&app, req_create).await.status(),
-                StatusCode::OK
-            );
+            apply_create_operation(obj, empty_infra_id, db_pool.get_ok().deref_mut())
+                .await
+                .expect("Failed to create object");
         }
 
-        let response = call_service(&app, auto_fixes_request(empty_infra_id)).await;
-        assert_eq!(response.status(), StatusCode::OK);
+        let operations: Vec<Operation> = app
+            .fetch(auto_fixes_request(empty_infra_id))
+            .assert_status(StatusCode::OK)
+            .json_into();
 
-        let operations: Vec<Operation> = read_body_json(response).await;
         assert_eq!(operations.len(), error_count);
 
         if !operations.len() == 5 {
@@ -944,9 +946,10 @@ mod tests {
     #[rstest::rstest]
     async fn missing_track_extremity_buffer_stop_fix() {
         // GIVEN
-        let app = create_test_service().await;
-        let empty_infra = empty_infra(db_pool()).await;
-        let empty_infra_id = empty_infra.id();
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+        let empty_infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
+        let empty_infra_id = empty_infra.id;
 
         let track: InfraObject = TrackSection {
             id: "track_with_no_buffer_stops".into(),
@@ -954,19 +957,17 @@ mod tests {
             ..Default::default()
         }
         .into();
-        let req_create = get_create_operation_request(track.clone(), empty_infra_id);
-        assert_eq!(
-            call_service(&app, req_create).await.status(),
-            StatusCode::OK
-        );
+        apply_create_operation(&track, empty_infra_id, db_pool.get_ok().deref_mut())
+            .await
+            .expect("Failed to create track section object");
 
         // WHEN
-        let response = call_service(&app, auto_fixes_request(empty_infra_id)).await;
+        let operations: Vec<Operation> = app
+            .fetch(auto_fixes_request(empty_infra_id))
+            .assert_status(StatusCode::OK)
+            .json_into();
 
         // THEN
-        assert_eq!(response.status(), StatusCode::OK);
-
-        let operations: Vec<Operation> = read_body_json(response).await;
         assert_eq!(operations.len(), 2);
         let mut positions = vec![];
         for operation in operations {
