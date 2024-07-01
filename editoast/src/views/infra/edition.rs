@@ -3,6 +3,7 @@ use actix_web::web::Data;
 use actix_web::web::Json;
 use actix_web::web::Path;
 use chashmap::CHashMap;
+use diesel_async::AsyncConnection;
 use editoast_derive::EditoastError;
 use editoast_schemas::infra::ApplicableDirectionsTrackRange;
 use editoast_schemas::infra::DirectionalTrackRange;
@@ -19,6 +20,7 @@ use itertools::Itertools;
 use json_patch::{AddOperation, Patch, PatchOperation, RemoveOperation, ReplaceOperation};
 use serde_json::json;
 use std::collections::HashMap;
+use std::ops::DerefMut;
 use thiserror::Error;
 use tracing::error;
 use tracing::info;
@@ -42,6 +44,7 @@ use crate::views::infra::InfraIdParam;
 use crate::RedisClient;
 use editoast_models::DbConnection;
 use editoast_models::DbConnectionPool;
+use editoast_models::DbConnectionPoolV2;
 use editoast_schemas::infra::InfraObject;
 
 crate::routes! {
@@ -109,7 +112,7 @@ pub async fn edit<'a>(
 pub async fn split_track_section<'a>(
     infra: Path<i64>,
     payload: Json<TrackOffset>,
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Data<DbConnectionPoolV2>,
     infra_caches: Data<CHashMap<i64, InfraCache>>,
     redis_client: Data<RedisClient>,
     map_layers: Data<MapLayers>,
@@ -121,12 +124,15 @@ pub async fn split_track_section<'a>(
         offset = payload.offset,
         "Splitting track section"
     );
-    let conn = &mut db_pool.get().await?;
 
     // Check the infra
-    let mut infra =
-        Infra::retrieve_or_fail(conn, infra_id, || InfraApiError::NotFound { infra_id }).await?;
-    let mut infra_cache = InfraCache::get_or_load_mut(conn, &infra_caches, &infra).await?;
+    let mut infra = Infra::retrieve_or_fail(db_pool.get().await?.deref_mut(), infra_id, || {
+        InfraApiError::NotFound { infra_id }
+    })
+    .await?;
+    let mut infra_cache =
+        InfraCache::get_or_load_mut(db_pool.get().await?.deref_mut(), &infra_caches, &infra)
+            .await?;
 
     // Get tracks cache if it exists
     let tracksection_cached = infra_cache.get_track_section(&payload.track)?.clone();
@@ -145,7 +151,11 @@ pub async fn split_track_section<'a>(
 
     // Calling the DB to get the full object and also the split geo
     let result = infra
-        .get_split_track_section_with_data(conn, payload.track.clone(), distance_fraction)
+        .get_split_track_section_with_data(
+            db_pool.get().await?.deref_mut(),
+            payload.track.clone(),
+            distance_fraction,
+        )
         .await?;
     let tracksection_data = result.expect("Failed to retrieve split track section data. Ensure the track ID and distance fraction are valid.").clone();
     let tracksection = tracksection_data.railjson.as_ref().clone();
@@ -306,7 +316,13 @@ pub async fn split_track_section<'a>(
     }));
 
     // Apply operations
-    apply_edit(conn, &mut infra, &operations, &mut infra_cache).await?;
+    apply_edit(
+        db_pool.get().await?.deref_mut(),
+        &mut infra,
+        &operations,
+        &mut infra_cache,
+    )
+    .await?;
     let mut conn = redis_client.get_connection().await?;
     map::invalidate_all(
         &mut conn,
@@ -823,8 +839,7 @@ async fn apply_edit(
 
     // Apply modifications in one transaction
     connection
-        .build_transaction()
-        .run(|conn| {
+        .transaction(|conn| {
             Box::pin(async {
                 let mut railjsons = vec![];
                 let mut cache_operations = vec![];
@@ -886,8 +901,6 @@ enum EditionError {
 #[cfg(test)]
 pub mod tests {
     use actix_web::http::StatusCode;
-    use actix_web::test::call_and_read_body_json;
-    use actix_web::test::call_service;
     use actix_web::test::TestRequest;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
@@ -897,103 +910,100 @@ pub mod tests {
     use crate::fixtures::tests::small_infra;
     use crate::generated_data::infra_error::InfraError;
     use crate::generated_data::infra_error::InfraErrorType;
+    use crate::modelsv2::fixtures::create_small_infra;
     use crate::modelsv2::infra::ObjectQueryable;
     use crate::views::infra::errors::query_errors;
-    use crate::views::tests::create_test_service;
+    use crate::views::test_app::TestAppBuilder;
 
     #[rstest]
     async fn split_track_section_should_return_404_with_bad_infra() {
         // Init
-        let app = create_test_service().await;
+        let app = TestAppBuilder::default_app();
 
         // Make a call with a bad infra ID
-        let req = TestRequest::post()
+        let request = TestRequest::post()
             .uri("/infra/123456789/split_track_section/")
             .set_json(json!({
                 "track": String::from("INVALID-ID"),
                 "offset": 1,
             }))
             .to_request();
-        let res = call_service(&app, req).await;
 
         // Check that we receive a 404
-        assert_eq!(res.status(), StatusCode::NOT_FOUND);
+        app.fetch(request).assert_status(StatusCode::NOT_FOUND);
     }
 
     #[rstest]
     async fn split_track_section_should_return_404_with_bad_id() {
         // Init
-        let pg_db_pool = db_pool();
-        let small_infra = small_infra(pg_db_pool.clone()).await;
-        let app = create_test_service().await;
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+        let small_infra = create_small_infra(db_pool.clone()).await;
 
         // Make a call with a bad ID
-        let req = TestRequest::post()
-            .uri(format!("/infra/{}/split_track_section", small_infra.id()).as_str())
+        let request = TestRequest::post()
+            .uri(format!("/infra/{}/split_track_section", small_infra.id).as_str())
             .set_json(json!({
                 "track":"INVALID-ID",
                 "offset": 1,
             }))
             .to_request();
-        let res = call_service(&app, req).await;
 
         // Check that we receive a 404
-        assert_eq!(res.status(), StatusCode::NOT_FOUND);
+        app.fetch(request).assert_status(StatusCode::NOT_FOUND);
     }
 
     #[rstest]
     async fn split_track_section_should_fail_with_bad_distance() {
         // Init
-        let pg_db_pool = db_pool();
-        let small_infra = small_infra(pg_db_pool.clone()).await;
-        let app = create_test_service().await;
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+        let small_infra = create_small_infra(db_pool.clone()).await;
 
         // Make a call with a bad distance
-        let req = TestRequest::post()
-            .uri(format!("/infra/{}/split_track_section", small_infra.id()).as_str())
+        let request = TestRequest::post()
+            .uri(format!("/infra/{}/split_track_section", small_infra.id).as_str())
             .set_json(json!({
                 "track": "TA0",
                 "offset": 5000000,
             }))
             .to_request();
-        let res = call_service(&app, req).await;
 
         // Check that we receive an error
-        assert_eq!(res.status(), StatusCode::BAD_REQUEST);
+        app.fetch(request).assert_status(StatusCode::BAD_REQUEST);
     }
 
     #[rstest]
     async fn split_track_section_should_work() {
         // Init
-        let pg_db_pool = db_pool();
-        let conn = &mut pg_db_pool.get().await.unwrap();
-        let small_infra = small_infra(pg_db_pool.clone()).await;
-        let app = create_test_service().await;
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+        let small_infra = create_small_infra(db_pool.clone()).await;
 
         // Refresh the infra to get the good number of infra errors
         let req_refresh = TestRequest::post()
-            .uri(format!("/infra/refresh/?infras={}&force=true", small_infra.id()).as_str())
+            .uri(format!("/infra/refresh/?infras={}&force=true", small_infra.id).as_str())
             .to_request();
-        call_service(&app, req_refresh).await;
+        app.fetch(req_refresh).assert_status(StatusCode::OK);
 
         // Get infra errors
-        let (init_errors, _) = query_errors(conn, &small_infra).await;
+        let (init_errors, _) = query_errors(db_pool.get_ok().deref_mut(), &small_infra).await;
 
         // Make a call to split the track section
-        let req = TestRequest::post()
-            .uri(format!("/infra/{}/split_track_section", small_infra.id()).as_str())
+        let request = TestRequest::post()
+            .uri(format!("/infra/{}/split_track_section", small_infra.id).as_str())
             .set_json(json!({
                 "track": "TA0",
                 "offset": 1000000,
             }))
             .to_request();
-        let res: Vec<String> = call_and_read_body_json(&app, req).await;
+        let res: Vec<String> = app.fetch(request).assert_status(StatusCode::OK).json_into();
 
         // Check the response
         assert_eq!(res.len(), 2);
 
         // Check that infra errors has not increased with the split (omit route error for now)
-        let (errors, _) = query_errors(conn, &small_infra).await;
+        let (errors, _) = query_errors(db_pool.get_ok().deref_mut(), &small_infra).await;
         let errors_without_routes: Vec<InfraError> = errors
             .into_iter()
             .filter(|e| {

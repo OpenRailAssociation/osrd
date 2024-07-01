@@ -209,20 +209,21 @@ pub mod tests {
     use rstest::rstest;
     use std::ops::DerefMut;
 
-    use crate::fixtures::tests::db_pool;
     use crate::generated_data::clear_all;
-    use crate::generated_data::refresh_all;
+    use crate::generated_data::refresh_all_v2;
     use crate::generated_data::update_all;
     use crate::modelsv2::fixtures::create_empty_infra;
     use editoast_models::DbConnectionPoolV2;
 
     #[rstest] // Slow test
     async fn refresh_all_test() {
-        let db_pool_v2 = DbConnectionPoolV2::for_tests();
-        let infra = create_empty_infra(db_pool_v2.get_ok().deref_mut()).await;
-        assert!(refresh_all(db_pool(), infra.id, &Default::default())
-            .await
-            .is_ok());
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
+        assert!(
+            refresh_all_v2(db_pool.into(), infra.id, &Default::default())
+                .await
+                .is_ok()
+        );
     }
 
     #[rstest]

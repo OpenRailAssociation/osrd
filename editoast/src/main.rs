@@ -224,9 +224,9 @@ async fn run() -> Result<(), Box<dyn Error + Send + Sync>> {
             InfraCommands::Clone(args) => clone_infra(args, db_pool.into()).await,
             InfraCommands::Clear(args) => clear_infra(args, db_pool.pool_v1(), redis_config).await,
             InfraCommands::Generate(args) => {
-                generate_infra(args, db_pool.pool_v1(), redis_config).await
+                generate_infra(args, db_pool.into(), redis_config).await
             }
-            InfraCommands::ImportRailjson(args) => import_railjson(args, db_pool.pool_v1()).await,
+            InfraCommands::ImportRailjson(args) => import_railjson(args, db_pool.into()).await,
         },
         Commands::Timetables(subcommand) => match subcommand {
             TimetablesCommands::Import(args) => trains_import(args, db_pool.pool_v1()).await,
@@ -485,19 +485,18 @@ async fn batch_retrieve_infras(
 /// This command refresh all infra given as input (if no infra given then refresh all of them)
 async fn generate_infra(
     args: GenerateArgs,
-    db_pool: Arc<DbConnectionPool>,
+    db_pool: Arc<DbConnectionPoolV2>,
     redis_config: RedisConfig,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
-    let mut conn = db_pool.get().await?;
     let mut infras = vec![];
     if args.infra_ids.is_empty() {
         // Retrieve all available infra
-        for infra in Infra::all(&mut conn).await {
+        for infra in Infra::all(db_pool.get().await?.deref_mut()).await {
             infras.push(infra);
         }
     } else {
         // Retrieve given infras
-        infras = batch_retrieve_infras(&mut conn, &args.infra_ids).await?;
+        infras = batch_retrieve_infras(db_pool.get().await?.deref_mut(), &args.infra_ids).await?;
     }
     for mut infra in infras {
         println!(
@@ -505,9 +504,9 @@ async fn generate_infra(
             infra.name.clone().bold(),
             infra.id
         );
-        let infra_cache = InfraCache::load(&mut conn, &infra).await?;
+        let infra_cache = InfraCache::load(db_pool.get().await?.deref_mut(), &infra).await?;
         if infra
-            .refresh(db_pool.clone(), args.force, &infra_cache)
+            .refresh_v2(db_pool.clone(), args.force, &infra_cache)
             .await?
         {
             build_redis_pool_and_invalidate_all_cache(redis_config.clone(), infra.id).await?;
@@ -607,7 +606,7 @@ async fn clone_infra(
 
 async fn import_railjson(
     args: ImportRailjsonArgs,
-    db_pool: Arc<DbConnectionPool>,
+    db_pool: Arc<DbConnectionPoolV2>,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
     let railjson_file = match File::open(args.railjson_path.clone()) {
         Ok(file) => file,
@@ -631,19 +630,18 @@ async fn import_railjson(
     let railjson: RailJson = serde_json::from_reader(BufReader::new(railjson_file))?;
 
     println!("🍞 Importing infra {infra_name}");
-    let mut infra = infra.persist(railjson, db_pool.clone()).await?;
+    let mut infra = infra.persist_v2(railjson, db_pool.clone()).await?;
 
-    let mut conn = db_pool.get().await?;
     infra
-        .bump_version(&mut conn)
+        .bump_version(db_pool.get().await?.deref_mut())
         .await
         .map_err(|_| InfraApiError::NotFound { infra_id: infra.id })?;
 
     println!("✅ Infra {infra_name}[{}] saved!", infra.id);
     // Generate only if the was set
     if args.generate {
-        let infra_cache = InfraCache::load(&mut conn, &infra).await?;
-        infra.refresh(db_pool, true, &infra_cache).await?;
+        let infra_cache = InfraCache::load(db_pool.get().await?.deref_mut(), &infra).await?;
+        infra.refresh_v2(db_pool, true, &infra_cache).await?;
         println!(
             "✅ Infra {infra_name}[{}] generated data refreshed!",
             infra.id
@@ -884,9 +882,6 @@ mod tests {
         get_trainschedule_json_array, TestFixture,
     };
     use crate::modelsv2::RollingStockModel;
-    use diesel::sql_query;
-    use diesel::sql_types::Text;
-    use diesel_async::RunQueryDsl;
     use modelsv2::DeleteStatic;
     use rand::distributions::Alphanumeric;
     use rand::{thread_rng, Rng};
@@ -1083,7 +1078,7 @@ mod tests {
     }
 
     #[rstest]
-    async fn import_railjson_ko_file_not_found(db_pool: Arc<DbConnectionPool>) {
+    async fn import_railjson_ko_file_not_found() {
         // GIVEN
         let railjson_path = "non/existing/railjson/file/location";
         let args: ImportRailjsonArgs = ImportRailjsonArgs {
@@ -1093,7 +1088,7 @@ mod tests {
         };
 
         // WHEN
-        let result = import_railjson(args.clone(), db_pool).await;
+        let result = import_railjson(args.clone(), DbConnectionPoolV2::for_tests().into()).await;
 
         // THEN
         assert!(result.is_err());
@@ -1108,7 +1103,7 @@ mod tests {
     }
 
     #[rstest]
-    async fn import_railjson_ok(db_pool: Arc<DbConnectionPool>) {
+    async fn import_railjson_ok() {
         // GIVEN
         let railjson = Default::default();
         let file = generate_temp_file::<RailJson>(&railjson);
@@ -1126,18 +1121,10 @@ mod tests {
         };
 
         // WHEN
-        let result = import_railjson(args, db_pool.clone()).await;
+        let result = import_railjson(args, DbConnectionPoolV2::for_tests().into()).await;
 
         // THEN
         assert!(result.is_ok());
-
-        // CLEANUP
-        let mut conn = db_pool.get().await.unwrap();
-        sql_query("DELETE FROM infra WHERE name = $1")
-            .bind::<Text, _>(infra_name)
-            .execute(&mut conn)
-            .await
-            .unwrap();
     }
 
     fn generate_temp_file<T: Serialize>(object: &T) -> NamedTempFile {

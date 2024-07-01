@@ -15,6 +15,7 @@ use enum_map::EnumMap;
 use futures::future::try_join_all;
 use serde::Deserialize;
 use serde::Serialize;
+use std::ops::DerefMut;
 use strum::IntoEnumIterator;
 use thiserror::Error;
 use utoipa::IntoParams;
@@ -27,6 +28,7 @@ use crate::modelsv2::Infra;
 use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraIdParam;
 use editoast_models::DbConnectionPool;
+use editoast_models::DbConnectionPoolV2;
 use editoast_schemas::primitives::ObjectType;
 
 crate::routes! {
@@ -150,7 +152,7 @@ struct PostRailjsonResponse {
 async fn post_railjson(
     params: Query<PostRailjsonQueryParams>,
     railjson: Json<RailJson>,
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Data<DbConnectionPoolV2>,
     infra_caches: Data<CHashMap<i64, InfraCache>>,
 ) -> Result<Json<PostRailjsonResponse>> {
     if railjson.version != RAILJSON_VERSION {
@@ -162,18 +164,19 @@ async fn post_railjson(
     let mut infra = Infra::changeset()
         .name(params.name.clone())
         .last_railjson_version()
-        .persist(railjson, db_pool.clone())
+        .persist_v2(railjson, db_pool.clone())
         .await?;
     let infra_id = infra.id;
 
-    let mut conn = db_pool.get().await?;
     infra
-        .bump_version(&mut conn)
+        .bump_version(db_pool.get().await?.deref_mut())
         .await
         .map_err(|_| InfraApiError::NotFound { infra_id })?;
     if params.generate_data {
-        let infra_cache = InfraCache::get_or_load(&mut conn, &infra_caches, &infra).await?;
-        infra.refresh(db_pool, true, &infra_cache).await?;
+        let infra_cache =
+            InfraCache::get_or_load(db_pool.get().await?.deref_mut(), &infra_caches, &infra)
+                .await?;
+        infra.refresh_v2(db_pool, true, &infra_cache).await?;
     }
 
     Ok(Json(PostRailjsonResponse { infra: infra.id }))
@@ -185,14 +188,14 @@ mod tests {
     use actix_web::test as actix_test;
     use actix_web::test::call_service;
     use actix_web::test::read_body_json;
-    use rstest::*;
-    use std::sync::Arc;
+    use pretty_assertions::assert_eq;
+    use rstest::rstest;
 
     use super::*;
-    use crate::fixtures::tests::db_pool;
     use crate::fixtures::tests::empty_infra;
     use crate::fixtures::tests::TestFixture;
     use crate::views::infra::tests::create_object_request;
+    use crate::views::test_app::TestAppBuilder;
     use crate::views::tests::create_test_service;
     use editoast_schemas::infra::SwitchType;
 
@@ -218,8 +221,9 @@ mod tests {
 
     #[rstest]
     #[serial_test::serial]
-    async fn test_post_railjson(db_pool: Arc<DbConnectionPool>) {
-        let app = create_test_service().await;
+    async fn test_post_railjson() {
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
 
         let railjson = RailJson {
             buffer_stops: (0..10).map(|_| Default::default()).collect(),
@@ -239,11 +243,13 @@ mod tests {
             .uri("/infra/railjson?name=post_railjson_test")
             .set_json(&railjson)
             .to_request();
-        let response = call_service(&app, req).await;
-        assert_eq!(response.status(), StatusCode::OK);
-        let res: PostRailjsonResponse = read_body_json(response).await;
 
-        let conn = &mut db_pool.get().await.unwrap();
-        assert!(Infra::delete_static(conn, res.infra).await.unwrap());
+        let res: PostRailjsonResponse = app.fetch(req).assert_status(StatusCode::OK).json_into();
+
+        assert!(
+            Infra::delete_static(db_pool.get_ok().deref_mut(), res.infra)
+                .await
+                .unwrap()
+        );
     }
 }

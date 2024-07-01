@@ -126,13 +126,12 @@ struct RefreshResponse {
 )]
 #[post("/refresh")]
 async fn refresh(
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Data<DbConnectionPoolV2>,
     redis_client: Data<RedisClient>,
     Query(query_params): Query<RefreshQueryParams>,
     infra_caches: Data<CHashMap<i64, InfraCache>>,
     map_layers: Data<MapLayers>,
 ) -> Result<Json<RefreshResponse>> {
-    let mut conn = db_pool.get().await?;
     // Use a transaction to give scope to infra list lock
     let RefreshQueryParams {
         force,
@@ -141,11 +140,13 @@ async fn refresh(
 
     let infras_list = if infras.is_empty() {
         // Retrieve all available infra
-        Infra::all(&mut conn).await
+        Infra::all(db_pool.get().await?.deref_mut()).await
     } else {
         // Retrieve given infras
-        Infra::retrieve_batch_or_fail(&mut conn, infras, |missing| InfraApiError::NotFound {
-            infra_id: missing.into_iter().next().unwrap(),
+        Infra::retrieve_batch_or_fail(db_pool.get().await?.deref_mut(), infras, |missing| {
+            InfraApiError::NotFound {
+                infra_id: missing.into_iter().next().unwrap(),
+            }
         })
         .await?
     };
@@ -155,8 +156,13 @@ async fn refresh(
     let mut infra_refreshed = vec![];
 
     for mut infra in infras_list {
-        let infra_cache = InfraCache::get_or_load(&mut conn, &infra_caches, &infra).await?;
-        if infra.refresh(db_pool.clone(), force, &infra_cache).await? {
+        let infra_cache =
+            InfraCache::get_or_load(db_pool.get().await?.deref_mut(), &infra_caches, &infra)
+                .await?;
+        if infra
+            .refresh_v2(db_pool.clone(), force, &infra_cache)
+            .await?
+        {
             infra_refreshed.push(infra.id);
         }
     }
@@ -638,9 +644,7 @@ pub mod tests {
     use super::*;
     use crate::core::mocking::MockingClient;
     use crate::fixtures::tests::db_pool;
-    use crate::fixtures::tests::empty_infra;
     use crate::fixtures::tests::IntoFixture;
-    use crate::fixtures::tests::TestFixture;
     use crate::generated_data;
     use crate::infra_cache::operation::create::apply_create_operation;
     use crate::infra_cache::operation::Operation;
@@ -651,7 +655,6 @@ pub mod tests {
     use crate::modelsv2::get_table;
     use crate::modelsv2::infra::DEFAULT_INFRA_VERSION;
     use crate::views::test_app::TestAppBuilder;
-    use crate::views::tests::create_test_service;
     use crate::views::tests::create_test_service_with_core_client;
     use editoast_schemas::infra::Electrification;
     use editoast_schemas::infra::InfraObject;
@@ -882,30 +885,32 @@ pub mod tests {
     }
 
     #[rstest]
-    async fn infra_refresh(#[future] empty_infra: TestFixture<Infra>) {
-        let empty_infra = empty_infra.await;
-        let app = create_test_service().await;
+    async fn infra_refresh() {
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+        let empty_infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
+
         let req = TestRequest::post()
             .uri(format!("/infra/refresh/?infras={}", empty_infra.id).as_str())
             .to_request();
-        let response = call_service(&app, req).await;
-        assert_eq!(response.status(), StatusCode::OK);
-        let refreshed_infras: InfraRefreshedResponse = read_body_json(response).await;
+
+        let refreshed_infras: InfraRefreshedResponse =
+            app.fetch(req).assert_status(StatusCode::OK).json_into();
         assert_eq!(refreshed_infras.infra_refreshed, vec![empty_infra.id]);
     }
 
     #[rstest] // Slow test
-    async fn infra_refresh_force(#[future] empty_infra: TestFixture<Infra>) {
-        let empty_infra = empty_infra.await;
-        let app = create_test_service().await;
+    async fn infra_refresh_force() {
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+        let empty_infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
 
         let req = TestRequest::post()
-            .uri(format!("/infra/refresh/?infras={}&force=true", empty_infra.id()).as_str())
+            .uri(format!("/infra/refresh/?infras={}&force=true", empty_infra.id).as_str())
             .to_request();
-        let response = call_service(&app, req).await;
-        assert_eq!(response.status(), StatusCode::OK);
-        let refreshed_infras: InfraRefreshedResponse = read_body_json(response).await;
-        assert!(refreshed_infras.infra_refreshed.contains(&empty_infra.id()));
+        let refreshed_infras: InfraRefreshedResponse =
+            app.fetch(req).assert_status(StatusCode::OK).json_into();
+        assert!(refreshed_infras.infra_refreshed.contains(&empty_infra.id));
     }
 
     #[rstest]
