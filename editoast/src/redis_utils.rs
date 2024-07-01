@@ -15,6 +15,7 @@ use redis::RedisResult;
 use redis::ToRedisArgs;
 use serde::de::DeserializeOwned;
 use serde::Serialize;
+use std::fmt::Debug;
 
 pub enum RedisConnection {
     Cluster(ClusterConnection),
@@ -59,7 +60,8 @@ impl ConnectionLike for RedisConnection {
 
 impl RedisConnection {
     /// Get a deserializable value from redis
-    pub async fn json_get<T: DeserializeOwned, K: ToRedisArgs + Send + Sync>(
+    #[tracing::instrument(name = "cache:get", skip(self), err)]
+    pub async fn json_get<T: DeserializeOwned, K: Debug + ToRedisArgs + Send + Sync>(
         &mut self,
         key: K,
     ) -> Result<Option<T>> {
@@ -76,7 +78,8 @@ impl RedisConnection {
     }
 
     /// Get a deserializable value from redis with expiry time
-    pub async fn json_get_ex<T: DeserializeOwned, K: ToRedisArgs + Send + Sync>(
+    #[tracing::instrument(name = "cache:get_with_expiration", skip(self), err)]
+    pub async fn json_get_ex<T: DeserializeOwned, K: Debug + ToRedisArgs + Send + Sync>(
         &mut self,
         key: K,
         seconds: u64,
@@ -94,7 +97,8 @@ impl RedisConnection {
     }
 
     /// Set a serializable value to redis with expiry time
-    pub async fn json_set_ex<K: ToRedisArgs + Send + Sync, T: Serialize>(
+    #[tracing::instrument(name = "cache:set_with_expiration", skip(self, value), err)]
+    pub async fn json_set_ex<K: Debug + ToRedisArgs + Send + Sync, T: Serialize>(
         &mut self,
         key: K,
         value: &T,
