@@ -50,7 +50,7 @@ async-trait = "0.1.80"
 cfg-if = "1.0.0"
 chashmap = "2.2.2"
 chrono.workspace = true
-clap = { version = "4.5.7", features = ["derive", "env"] }
+clap = { version = "4.5.8", features = ["derive", "env"] }
 colored = "2.1.0"
 derivative.workspace = true
 diesel = { version = "2.1.6", features = [
