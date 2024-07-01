@@ -192,7 +192,6 @@ const CurveParamSelectors = ({
 
   const removeTractionMode = (mode: string) => {
     if (!effortCurves) return;
-    if (mode === selectedTractionMode) selectedParamsSetter('tractionMode', null);
     const filteredModesList = Object.fromEntries(
       Object.entries(effortCurves).filter(([key]) => key !== mode)
     );
@@ -270,6 +269,7 @@ const CurveParamSelectors = ({
           selectNewItemButtonProps={{
             options: comfortOptions,
             selectNewItem: updateComfortLevelsList,
+            disabled: !selectedTractionMode,
           }}
           dataTestId="comfort-level-selector"
         />

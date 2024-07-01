@@ -78,7 +78,11 @@ const SelectorItem = <T extends string | null>({
           <button
             type="button"
             tabIndex={0}
-            onClick={() => onItemRemoved(item.id)}
+            onClick={(e) => {
+              // This way, we won't trigger the onClick of the parent div
+              e.stopPropagation();
+              onItemRemoved(item.id);
+            }}
             className="selector-trash-icon"
             aria-label="Delete item"
           >
