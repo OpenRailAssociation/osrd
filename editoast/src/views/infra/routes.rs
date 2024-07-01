@@ -22,7 +22,6 @@ use crate::modelsv2::Infra;
 use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraIdParam;
 use crate::views::params::List;
-use editoast_models::DbConnectionPool;
 use editoast_models::DbConnectionPoolV2;
 
 crate::routes! {
@@ -192,12 +191,13 @@ async fn get_routes_track_ranges<'a>(
 async fn get_routes_nodes(
     params: Path<InfraIdParam>,
     infra_caches: Data<CHashMap<i64, InfraCache>>,
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Data<DbConnectionPoolV2>,
     Json(node_states): Json<HashMap<String, Option<String>>>,
 ) -> Result<Json<RoutesFromNodesPositions>> {
-    let conn = &mut db_pool.get().await?;
-    let infra = Infra::retrieve_or_fail(conn, params.infra_id, || InfraApiError::NotFound {
-        infra_id: params.infra_id,
+    let infra = Infra::retrieve_or_fail(db_pool.get().await?.deref_mut(), params.infra_id, || {
+        InfraApiError::NotFound {
+            infra_id: params.infra_id,
+        }
     })
     .await?;
 
@@ -205,7 +205,8 @@ async fn get_routes_nodes(
         return Ok(Json(RoutesFromNodesPositions::default()));
     }
 
-    let infra_cache = InfraCache::get_or_load(conn, &infra_caches, &infra).await?;
+    let infra_cache =
+        InfraCache::get_or_load(db_pool.get().await?.deref_mut(), &infra_caches, &infra).await?;
     let routes_cache = infra_cache.routes();
 
     let filtered_routes = routes_cache
@@ -262,7 +263,6 @@ async fn get_routes_nodes(
 #[cfg(test)]
 mod tests {
     use actix_http::StatusCode;
-    use actix_web::test::call_service;
     use actix_web::test::TestRequest;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
@@ -270,16 +270,13 @@ mod tests {
     use std::collections::HashMap;
     use std::collections::HashSet;
 
-    use crate::assert_status_and_read;
-    use crate::fixtures::tests::db_pool;
-    use crate::fixtures::tests::small_infra;
     use crate::infra_cache::operation::create::apply_create_operation;
     use crate::modelsv2::fixtures::create_empty_infra;
+    use crate::modelsv2::fixtures::create_small_infra;
     use crate::views::infra::routes::RoutesFromNodesPositions;
     use crate::views::infra::routes::RoutesResponse;
     use crate::views::infra::routes::WaypointType;
     use crate::views::test_app::TestAppBuilder;
-    use crate::views::tests::create_test_service;
     use editoast_schemas::infra::BufferStop;
     use editoast_schemas::infra::Detector;
     use editoast_schemas::infra::Route;
@@ -354,8 +351,9 @@ mod tests {
             ),
         ];
 
-        let app = create_test_service().await;
-        let small_infra = small_infra(db_pool()).await;
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+        let small_infra = create_small_infra(db_pool.clone()).await;
 
         fn compare_result(got: RoutesFromNodesPositions, expected: RoutesFromNodesPositions) {
             let mut got_routes = got.routes;
@@ -393,12 +391,13 @@ mod tests {
                 available_node_positions: expected.1.into_iter().collect::<HashMap<_, _>>(),
             };
             let request = TestRequest::post()
-                .uri(&format!("/infra/{}/routes/nodes", small_infra.id()))
+                .uri(&format!("/infra/{}/routes/nodes", small_infra.id))
                 .set_json(&params)
                 .to_request();
             println!("{request:?}  body:\n    {params}");
-            let response = call_service(&app, request).await;
-            let got: RoutesFromNodesPositions = assert_status_and_read!(response, StatusCode::OK);
+
+            let got: RoutesFromNodesPositions =
+                app.fetch(request).assert_status(StatusCode::OK).json_into();
             compare_result(got, expected_result)
         }
     }

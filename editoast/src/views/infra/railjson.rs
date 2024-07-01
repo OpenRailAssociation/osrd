@@ -27,7 +27,6 @@ use crate::modelsv2::prelude::*;
 use crate::modelsv2::Infra;
 use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraIdParam;
-use editoast_models::DbConnectionPool;
 use editoast_models::DbConnectionPoolV2;
 use editoast_schemas::primitives::ObjectType;
 
@@ -55,12 +54,13 @@ enum ListErrorsRailjson {
 #[get("/{infra_id}/railjson")]
 async fn get_railjson(
     infra: Path<InfraIdParam>,
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Data<DbConnectionPoolV2>,
 ) -> Result<impl Responder> {
     let infra_id = infra.infra_id;
-    let conn = &mut db_pool.get().await?;
-    let infra_meta =
-        Infra::retrieve_or_fail(conn, infra_id, || InfraApiError::NotFound { infra_id }).await?;
+    let infra_meta = Infra::retrieve_or_fail(db_pool.get().await?.deref_mut(), infra_id, || {
+        InfraApiError::NotFound { infra_id }
+    })
+    .await?;
 
     let futures: Vec<_> = ObjectType::iter()
         .map(|object_type| (object_type, db_pool.get()))
@@ -186,35 +186,36 @@ async fn post_railjson(
 mod tests {
     use actix_http::StatusCode;
     use actix_web::test as actix_test;
-    use actix_web::test::call_service;
-    use actix_web::test::read_body_json;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
 
     use super::*;
-    use crate::fixtures::tests::empty_infra;
-    use crate::fixtures::tests::TestFixture;
-    use crate::views::infra::tests::create_object_request;
+    use crate::infra_cache::operation::create::apply_create_operation;
+    use crate::modelsv2::fixtures::create_empty_infra;
     use crate::views::test_app::TestAppBuilder;
-    use crate::views::tests::create_test_service;
     use editoast_schemas::infra::SwitchType;
 
     #[rstest]
     #[serial_test::serial]
-    async fn test_get_railjson(#[future] empty_infra: TestFixture<Infra>) {
-        let empty_infra = empty_infra.await;
-        let app = create_test_service().await;
+    async fn test_get_railjson() {
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+        let empty_infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
 
-        let req = create_object_request(empty_infra.id(), SwitchType::default().into());
-        let response = call_service(&app, req).await;
-        assert!(response.status().is_success());
+        apply_create_operation(
+            &SwitchType::default().into(),
+            empty_infra.id,
+            db_pool.get_ok().deref_mut(),
+        )
+        .await
+        .expect("Failed to create SwitchType object");
 
-        let req = actix_test::TestRequest::get()
-            .uri(&format!("/infra/{}/railjson", empty_infra.id()))
+        let request = actix_test::TestRequest::get()
+            .uri(&format!("/infra/{}/railjson", empty_infra.id))
             .to_request();
-        let response = call_service(&app, req).await;
-        assert_eq!(response.status(), StatusCode::OK);
-        let railjson: RailJson = read_body_json(response).await;
+
+        let railjson: RailJson = app.fetch(request).assert_status(StatusCode::OK).json_into();
+
         assert_eq!(railjson.version, RAILJSON_VERSION);
         assert_eq!(railjson.extended_switch_types.len(), 1);
     }
