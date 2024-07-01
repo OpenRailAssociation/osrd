@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { isNil } from 'lodash';
 import { Source } from 'react-map-gl/maplibre';
 import { useSelector } from 'react-redux';
 
@@ -18,13 +19,13 @@ interface TracksGeographicProps {
 
 function TracksGeographic({ colors, layerOrder, infraID }: TracksGeographicProps) {
   const { showIGNBDORTHO, showIGNSCAN25 } = useSelector(getMap);
-  const infraVersion = infraID !== undefined ? `?infra=${infraID}` : null;
 
+  if (isNil(infraID)) return null;
   return (
     <Source
       id="tracksGeographic"
       type="vector"
-      url={`${MAP_URL}/layer/track_sections/mvt/geo/${infraVersion}`}
+      url={`${MAP_URL}/layer/track_sections/mvt/geo/?infra=${infraID}`}
       source-layer={MAP_TRACK_SOURCES.geographic}
     >
       <OrderedLayer

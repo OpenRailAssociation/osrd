@@ -7,13 +7,16 @@ import { Route, Routes } from 'react-router-dom';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { ModalProvider } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
-import { useInfraID } from 'common/osrdContext';
+import { useInfraActions, useInfraID } from 'common/osrdContext';
+import { useAppDispatch } from 'store';
 
 import Map from './Map';
 
 const HomeReferenceMap = () => {
   const { t } = useTranslation(['home/home', 'referenceMap']);
+  const dispatch = useAppDispatch();
 
+  const { updateInfraID } = useInfraActions();
   const infraID = useInfraID();
   const [getInfraByInfraId, { data: infra }] =
     osrdEditoastApi.endpoints.getInfraByInfraId.useLazyQuery({});
@@ -24,9 +27,14 @@ const HomeReferenceMap = () => {
    */
   useEffect(() => {
     if (infraID) {
-      getInfraByInfraId({ infraId: infraID as number });
+      // if the infra in the store is not found, then we set it to undefined
+      getInfraByInfraId({ infraId: infraID as number }).then((resp) => {
+        if (resp.error && 'status' in resp.error && resp.error.status === 404) {
+          dispatch(updateInfraID(undefined));
+        }
+      });
     }
-  }, [infraID, getInfraByInfraId]);
+  }, [infraID, getInfraByInfraId, dispatch]);
 
   return (
     <ModalProvider>

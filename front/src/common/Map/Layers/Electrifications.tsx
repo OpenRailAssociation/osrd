@@ -133,27 +133,25 @@ export default function Electrifications({ colors, layerOrder, infraID }: Electr
     sourceTable: 'electrifications',
   });
 
-  if (layersSettings.electrifications) {
-    return (
-      <Source
-        id="electrifications_geo"
-        type="vector"
-        url={`${MAP_URL}/layer/electrifications/mvt/geo/?infra=${infraID}`}
-      >
-        <OrderedLayer
-          {...electrificationsParams}
-          // beforeId={`chartis/tracks-geo/main`}
-          id="chartis/electrifications/geo"
-          layerOrder={layerOrder}
-        />
-        <OrderedLayer
-          {...electrificationsTextParams}
-          // beforeId={`chartis/tracks-geo/main`}
-          id="chartis/electrifications_names/geo"
-          layerOrder={layerOrder}
-        />
-      </Source>
-    );
-  }
-  return null;
+  if (!layersSettings.electrifications || isNil(infraID)) return null;
+  return (
+    <Source
+      id="electrifications_geo"
+      type="vector"
+      url={`${MAP_URL}/layer/electrifications/mvt/geo/?infra=${infraID}`}
+    >
+      <OrderedLayer
+        {...electrificationsParams}
+        // beforeId={`chartis/tracks-geo/main`}
+        id="chartis/electrifications/geo"
+        layerOrder={layerOrder}
+      />
+      <OrderedLayer
+        {...electrificationsTextParams}
+        // beforeId={`chartis/tracks-geo/main`}
+        id="chartis/electrifications_names/geo"
+        layerOrder={layerOrder}
+      />
+    </Source>
+  );
 }

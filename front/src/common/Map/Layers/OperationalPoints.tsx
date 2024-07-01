@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { isNil } from 'lodash';
 import { Source, type LayerProps } from 'react-map-gl/maplibre';
 
 import { MAP_URL } from 'common/Map/const';
@@ -116,6 +117,7 @@ export default function OperationalPoints({ colors, layerOrder, infraID }: Props
     },
   };
 
+  if (isNil(infraID)) return null;
   return (
     <Source
       id="osrd_operational_point_geo"

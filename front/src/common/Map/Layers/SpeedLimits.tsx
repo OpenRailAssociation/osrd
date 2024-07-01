@@ -198,31 +198,28 @@ export default function SpeedLimits({ colors, layerOrder, infraID }: SpeedLimits
     filter,
   };
 
-  if (layersSettings.speedlimits) {
-    return (
-      <Source
-        id="osrd_speed_limit_geo"
-        type="vector"
-        url={`${MAP_URL}/layer/speed_sections/mvt/geo/?infra=${infraID}`}
-      >
-        <OrderedLayer
-          {...lineProps}
-          id="chartis/osrd_speed_limit_colors/geo"
-          layerOrder={layerOrder}
-        />
-        <OrderedLayer
-          {...pointProps}
-          id="chartis/osrd_speed_limit_points/geo"
-          layerOrder={layerOrder}
-        />
-        <OrderedLayer
-          {...textProps}
-          id="chartis/osrd_speed_limit_value/geo"
-          layerOrder={layerOrder}
-        />
-      </Source>
-    );
-  }
-
-  return null;
+  if (!layersSettings.speedlimits || isNil(infraID)) return null;
+  return (
+    <Source
+      id="osrd_speed_limit_geo"
+      type="vector"
+      url={`${MAP_URL}/layer/speed_sections/mvt/geo/?infra=${infraID}`}
+    >
+      <OrderedLayer
+        {...lineProps}
+        id="chartis/osrd_speed_limit_colors/geo"
+        layerOrder={layerOrder}
+      />
+      <OrderedLayer
+        {...pointProps}
+        id="chartis/osrd_speed_limit_points/geo"
+        layerOrder={layerOrder}
+      />
+      <OrderedLayer
+        {...textProps}
+        id="chartis/osrd_speed_limit_value/geo"
+        layerOrder={layerOrder}
+      />
+    </Source>
+  );
 }

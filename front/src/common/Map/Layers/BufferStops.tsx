@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { isNil } from 'lodash';
 import { Source, type SymbolLayer } from 'react-map-gl/maplibre';
 import { useSelector } from 'react-redux';
 
@@ -43,7 +44,7 @@ interface BufferStopsProps {
 const BufferStops = ({ layerOrder, infraID }: BufferStopsProps) => {
   const layersSettings = useSelector(getLayersSettings);
 
-  if (!layersSettings.bufferstops) return null;
+  if (!layersSettings.bufferstops || isNil(infraID)) return null;
   return (
     <Source
       id="osrd_bufferstop_geo"

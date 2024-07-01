@@ -91,6 +91,7 @@ export default function SNCF_PSL_Signs(props: SNCF_PSL_SignsProps) {
     sourceTable: 'psl_signs',
   });
 
+  if (isNil(infraID)) return null;
   return (
     <Source
       id="osrd_sncf_psl_signs_geo"
