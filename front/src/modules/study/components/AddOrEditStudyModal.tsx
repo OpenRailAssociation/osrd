@@ -21,7 +21,7 @@ import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
 import TextareaSNCF from 'common/BootstrapSNCF/TextareaSNCF';
 import { useOsrdConfActions } from 'common/osrdContext';
-import { createSelectOptions } from 'modules/study/utils';
+import { checkStudyFields, createSelectOptions } from 'modules/study/utils';
 import { setFailure, setSuccess } from 'reducers/main';
 import { useAppDispatch } from 'store';
 import { formatDateForInput, getEarliestDate } from 'utils/date';
@@ -101,8 +101,11 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
     handleStudyInputChange('tags', updatedTags);
   };
 
+  const invalidFields = checkStudyFields(currentStudy);
+  const hasErrors = Object.values(invalidFields).some((field) => field);
+
   const createStudy = () => {
-    if (!currentStudy?.name) {
+    if (hasErrors) {
       setDisplayErrors(true);
     } else {
       createStudies({
@@ -119,7 +122,7 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
   };
 
   const updateStudy = () => {
-    if (!currentStudy?.name) {
+    if (hasErrors) {
       setDisplayErrors(true);
     } else if (study?.id && projectId) {
       patchStudies({
@@ -231,8 +234,8 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
             }
             value={currentStudy?.name}
             onChange={(e) => handleStudyInputChange('name', e.target.value)}
-            isInvalid={displayErrors && !currentStudy?.name}
-            errorMsg={displayErrors && !currentStudy?.name ? t('studyNameMissing') : undefined}
+            isInvalid={displayErrors && invalidFields.name}
+            errorMsg={t('studyNameInvalid')}
           />
         </div>
         <div className="row">
@@ -301,6 +304,8 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
                 value={currentStudy.description ?? undefined}
                 onChange={(e) => handleStudyInputChange('description', e.target.value)}
                 placeholder={t('studyDescriptionPlaceholder')}
+                isInvalid={displayErrors && invalidFields.description}
+                errorMsg={t('studyDescriptionInvalid')}
               />
             </div>
           </div>
@@ -373,6 +378,8 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
               }
               value={currentStudy?.service_code || ''}
               onChange={(e) => handleStudyInputChange('service_code', e.target.value)}
+              isInvalid={displayErrors && invalidFields.service_code}
+              errorMsg={t('studyServiceCodeInvalid')}
             />
           </div>
           <div className="col-lg-4">
@@ -390,6 +397,8 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
               }
               value={currentStudy?.business_code || ''}
               onChange={(e) => handleStudyInputChange('business_code', e.target.value)}
+              isInvalid={displayErrors && invalidFields.business_code}
+              errorMsg={t('studyBusinessCodeInvalid')}
             />
           </div>
           <div className="col-lg-4">
@@ -421,6 +430,8 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
                 )
               }
               textRight
+              isInvalid={displayErrors && invalidFields.budget}
+              errorMsg={t('studyBudgetInvalid')}
             />
           </div>
         </div>

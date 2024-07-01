@@ -33,6 +33,8 @@ import useInputChange from 'utils/hooks/useInputChange';
 import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
 import useOutsideClick from 'utils/hooks/useOutsideClick';
 
+import checkProjectFields from '../utils';
+
 const emptyProject: ProjectCreateForm = {
   budget: null,
   description: '',
@@ -43,7 +45,7 @@ const emptyProject: ProjectCreateForm = {
   tags: [],
 };
 
-interface ProjectForm extends ProjectCreateForm {
+export interface ProjectForm extends ProjectCreateForm {
   id?: number;
 }
 
@@ -118,8 +120,11 @@ export default function AddOrEditProjectModal({
     }
   };
 
+  const invalidFields = checkProjectFields(currentProject);
+  const hasError = Object.values(invalidFields).some((fieldIsInvalid) => fieldIsInvalid);
+
   const createProject = async () => {
-    if (currentProject.name === '') {
+    if (hasError) {
       setDisplayErrors(true);
     } else {
       try {
@@ -154,7 +159,7 @@ export default function AddOrEditProjectModal({
   };
 
   const updateProject = async () => {
-    if (currentProject.name === '') {
+    if (hasError) {
       setDisplayErrors(true);
     } else if (project && currentProject.id) {
       try {
@@ -292,10 +297,8 @@ export default function AddOrEditProjectModal({
                 }
                 value={currentProject.name}
                 onChange={(e) => handleProjectInputChange('name', e.target.value)}
-                isInvalid={displayErrors && !currentProject.name}
-                errorMsg={
-                  displayErrors && !currentProject.name ? t('projectNameMissing') : undefined
-                }
+                isInvalid={displayErrors && invalidFields.name}
+                errorMsg={t('projectNameInvalid')}
               />
             </div>
             <div className="project-edition-modal-description">
@@ -313,6 +316,8 @@ export default function AddOrEditProjectModal({
                 onChange={(e) => handleProjectInputChange('description', e.target.value)}
                 placeholder={t('projectDescriptionPlaceholder')}
                 rows={3}
+                isInvalid={displayErrors && invalidFields.description}
+                errorMsg={t('projectDescriptionInvalid')}
               />
             </div>
           </div>
@@ -332,6 +337,8 @@ export default function AddOrEditProjectModal({
                 }
                 value={currentProject.objectives ?? undefined}
                 onChange={(e) => handleProjectInputChange('objectives', e.target.value)}
+                isInvalid={displayErrors && invalidFields.objectives}
+                errorMsg={t('projectObjectivesInvalid')}
               />
             </div>
           </div>
@@ -367,6 +374,8 @@ export default function AddOrEditProjectModal({
               }
               value={currentProject.funders ?? undefined}
               onChange={(e) => handleProjectInputChange('funders', e.target.value)}
+              isInvalid={displayErrors && invalidFields.funders}
+              errorMsg={t('projectFundersInvalid')}
             />
           </div>
           <div className="col-lg-4">
@@ -399,6 +408,8 @@ export default function AddOrEditProjectModal({
                 )
               }
               textRight
+              isInvalid={displayErrors && invalidFields.budget}
+              errorMsg={t('projectBudgetInvalid')}
             />
           </div>
         </div>

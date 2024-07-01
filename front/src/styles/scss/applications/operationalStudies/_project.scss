@@ -34,6 +34,7 @@
           color: var(--purple);
           font-size: 2rem;
           font-weight: 500;
+          overflow: auto;
           .project-details-title-modify-button {
             background-color: transparent;
             border: none;
@@ -95,6 +96,8 @@
           text-transform: uppercase;
         }
         flex-grow: 1;
+        overflow: auto;
+        margin-right: 0.5rem;
       }
       .project-details-financials-amount {
         display: flex;
