@@ -392,7 +392,7 @@ mod tests {
             .await
             .expect("Failed to get infra cache");
         small_infra
-            .refresh_v2(db_pool.clone(), true, &infra_cache)
+            .refresh(db_pool.clone(), true, &infra_cache)
             .await
             .expect("Failed to refresh infra");
 
@@ -418,7 +418,7 @@ mod tests {
             .apply_operations(&vec![CacheOperation::Delete(delete_operation.into())])
             .expect("Failed to apply operations");
         small_infra
-            .refresh_v2(db_pool.clone(), true, &infra_cache)
+            .refresh(db_pool.clone(), true, &infra_cache)
             .await
             .expect("Failed to refresh infra");
 
