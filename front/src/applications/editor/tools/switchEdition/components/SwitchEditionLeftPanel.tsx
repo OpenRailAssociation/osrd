@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useRef } from 'react';
 
-import { debounce } from 'lodash';
+import { debounce, omit } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import Select from 'react-select';
 
@@ -68,9 +68,17 @@ const SwitchEditionLeftPanel = () => {
         onChange={(o) => {
           if (o && o.value !== switchType.id) {
             const newEntity = getNewSwitch(switchTypesDict[o.value]);
+            // keep track of the common props when switching types
             setState({
               ...state,
-              entity: newEntity,
+              entity: {
+                ...newEntity,
+                properties: {
+                  ports: {},
+                  ...omit(state.entity.properties, ['ports']),
+                  ...newEntity.properties,
+                },
+              },
               initialEntity: newEntity,
             });
           }
