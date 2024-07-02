@@ -1,7 +1,7 @@
-import React, { useContext, useEffect, useRef, useMemo } from 'react';
+import React, { useContext, useEffect, useRef, useMemo, useState } from 'react';
 
 import type { JSONSchema7 } from 'json-schema';
-import { isNil, omit } from 'lodash';
+import { isNil, omit, uniqueId } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
 import EditorForm from 'applications/editor/components/EditorForm';
@@ -33,6 +33,7 @@ const TrackEditionLeftPanel: React.FC = () => {
     EditorContext
   ) as ExtendedEditorContextType<TrackEditionState>;
   const submitBtnRef = useRef<HTMLButtonElement>(null);
+  const [formKey, setFormKey] = useState(state.initialTrack.properties.id);
   const { track, initialTrack } = state;
   const isNew = track.properties.id === NEW_ENTITY_ID;
 
@@ -68,9 +69,18 @@ const TrackEditionLeftPanel: React.FC = () => {
     } as JSONSchema7;
   }, [editorState.editorSchema, track.objType, track.properties.extensions?.source]);
 
+  /**
+   * When the ref of the initialEntity changed,
+   * we remount the form (to reset its state, mainly for errors)
+   */
+  useEffect(() => {
+    setFormKey(uniqueId());
+  }, [state.initialTrack]);
+
   return (
     <>
       <EditorForm
+        key={formKey}
         data={track}
         overrideSchema={schema}
         overrideUiSchema={{

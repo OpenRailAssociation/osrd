@@ -93,8 +93,11 @@ function getPointEditionTool<T extends EditorPoint>({
             return isEqual(entity, initialEntity);
           },
           onClick({ setState, state: { initialEntity } }) {
+            const entity = cloneDeep(initialEntity);
+            // We set the initialEntity, so its ref changes and the form is remounted
             setState({
-              entity: cloneDeep(initialEntity),
+              entity,
+              initialEntity: entity,
             });
           },
         },
