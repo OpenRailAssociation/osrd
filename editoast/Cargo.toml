@@ -19,7 +19,7 @@ derivative = "2.2.0"
 editoast_common = { path = "./editoast_common" }
 editoast_schemas = { path = "./editoast_schemas" }
 enum-map = "2.7.3"
-geojson = "*"
+geojson = "0.24"
 geos = { version = "8.3.1", features = ["json"] }
 mvt = "0.9.3"
 paste = "1.0.15"
@@ -67,7 +67,7 @@ editoast_schemas = { workspace = true }
 enum-map.workspace = true
 enumset = "1.1.3"
 futures = "0.3.30"
-futures-util = "*"
+futures-util = "0.3.30"
 geos.workspace = true
 heck = "0.5.0"
 image = "0.25.1"
@@ -75,7 +75,7 @@ inventory = "0.3"
 itertools = "0.13.0"
 json-patch = { version = "2.0.0", features = ["utoipa"] }
 mvt.workspace = true
-openssl = "*"
+openssl = "0.10.64"
 opentelemetry = "0.23.0"
 opentelemetry-datadog = { version = "0.11.0", features = ["reqwest-client"] }
 opentelemetry-otlp = "0.16.0"
@@ -106,7 +106,7 @@ sha1 = "0.10"
 strum.workspace = true
 thiserror.workspace = true
 tokio = { version = "1.38.0", features = ["macros", "rt-multi-thread"] }
-tokio-postgres = "*"
+tokio-postgres = "0.7.10"
 tracing.workspace = true
 tracing-opentelemetry = "0.24.0"
 tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
