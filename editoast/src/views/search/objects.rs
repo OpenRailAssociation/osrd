@@ -1,3 +1,5 @@
+#![allow(clippy::duplicated_attributes)]
+
 use chrono::NaiveDateTime;
 use editoast_derive::Search;
 use editoast_derive::SearchConfigStore;

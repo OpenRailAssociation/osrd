@@ -1,3 +1,5 @@
+#![allow(clippy::manual_unwrap_or_default)]
+
 use std::sync::OnceLock;
 
 use darling::{ast, util, Error, FromDeriveInput, FromField};

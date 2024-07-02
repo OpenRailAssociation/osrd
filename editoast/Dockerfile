@@ -1,7 +1,7 @@
 ##############
 # Cargo chef #
 ##############
-FROM lukemathwalker/cargo-chef:0.1.66-rust-latest AS chef
+FROM lukemathwalker/cargo-chef:0.1.67-rust-latest AS chef
 WORKDIR /app
 
 #######################

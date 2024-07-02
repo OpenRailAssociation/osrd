@@ -21,6 +21,8 @@ pub struct TrainRequirements {
 
 #[derive(Debug, Deserialize)]
 pub struct ConflictDetectionResponse {
+    // TODO: Warnings should be forward to the client (for debugging purposes)
+    #[allow(dead_code)]
     pub warnings: Vec<String>,
     pub conflicts: Vec<CoreConflict>,
 }

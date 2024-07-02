@@ -1,6 +1,7 @@
 pub mod database;
 pub mod documents;
 pub mod electrical_profiles;
+#[allow(unused)]
 #[cfg(test)]
 pub mod fixtures;
 pub mod infra;
