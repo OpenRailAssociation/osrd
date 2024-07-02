@@ -48,8 +48,12 @@ describe('makeSpeedRestrictionTrackRanges', () => {
           type: 'point_switch',
         },
       };
-      const [result] = makeSpeedRestrictionTrackRanges(trackRanges, switches, selectedSwitches);
-      expect(result).toEqual([]);
+      const { trackRangesWithBothDirections } = makeSpeedRestrictionTrackRanges(
+        trackRanges,
+        switches,
+        selectedSwitches
+      );
+      expect(trackRangesWithBothDirections).toEqual([]);
     });
     it('should return a 10 m long track range with extraMeters', () => {
       const selectedSwitches = {
@@ -58,14 +62,14 @@ describe('makeSpeedRestrictionTrackRanges', () => {
           type: 'point_switch',
         },
       };
-      const [result, returnedExtra] = makeSpeedRestrictionTrackRanges(
+      const { trackRangesWithBothDirections, returnedExtra } = makeSpeedRestrictionTrackRanges(
         trackRanges,
         switches,
         selectedSwitches,
         true
       );
       expect(returnedExtra).toBe(true);
-      expect(result).toEqual([
+      expect(trackRangesWithBothDirections).toEqual([
         {
           track: 'd',
           begin: 90,
@@ -87,8 +91,12 @@ describe('makeSpeedRestrictionTrackRanges', () => {
           type: 'link',
         },
       };
-      const [result] = makeSpeedRestrictionTrackRanges(trackRanges, switches, selectedSwitches);
-      expect(result).toEqual([
+      const { trackRangesWithBothDirections } = makeSpeedRestrictionTrackRanges(
+        trackRanges,
+        switches,
+        selectedSwitches
+      );
+      expect(trackRangesWithBothDirections).toEqual([
         {
           track: 'b',
           begin: 0,
@@ -114,8 +122,12 @@ describe('makeSpeedRestrictionTrackRanges', () => {
           type: 'link',
         },
       };
-      const [result] = makeSpeedRestrictionTrackRanges(trackRanges, switches, selectedSwitches);
-      expect(result).toEqual([
+      const { trackRangesWithBothDirections } = makeSpeedRestrictionTrackRanges(
+        trackRanges,
+        switches,
+        selectedSwitches
+      );
+      expect(trackRangesWithBothDirections).toEqual([
         {
           track: 'b',
           begin: 0,
@@ -153,8 +165,12 @@ describe('makeSpeedRestrictionTrackRanges', () => {
           type: 'point_switch',
         },
       };
-      const [result] = makeSpeedRestrictionTrackRanges(trackRanges, switches, selectedSwitches);
-      expect(result).toEqual([
+      const { trackRangesWithBothDirections } = makeSpeedRestrictionTrackRanges(
+        trackRanges,
+        switches,
+        selectedSwitches
+      );
+      expect(trackRangesWithBothDirections).toEqual([
         {
           track: 'b',
           begin: 0,

@@ -146,16 +146,16 @@ const RangeEditionLeftPanel = () => {
       const newRouteExtra = { ...routeExtra };
       const selectedRoutes = pick(routeElements, properties.on_routes);
       const trackRangesBetweenSwitches = Object.values(selectedRoutes).flatMap((els) => {
-        const [result, hasExtraTrack] = makeSpeedRestrictionTrackRanges(
+        const { trackRangesWithBothDirections, returnedExtra } = makeSpeedRestrictionTrackRanges(
           els.trackRanges,
           els.switches,
           selectedSwitches,
           true
         );
-        if (hasExtraTrack) {
-          newRouteExtra[routeId] = last(result) as ApplicableTrackRange;
+        if (returnedExtra) {
+          newRouteExtra[routeId] = last(trackRangesWithBothDirections) as ApplicableTrackRange;
         }
-        return result;
+        return trackRangesWithBothDirections;
       });
       properties.track_ranges = uniqWith(trackRangesBetweenSwitches, (a, b) => isEqual(a, b));
       setState({
@@ -341,7 +341,7 @@ const RangeEditionLeftPanel = () => {
       <legend className="mb-4">{t(`Editor.obj-types.Electrification`)}</legend>
       {voltages && <ElectrificationMetadataForm voltages={voltages} />}
       <hr />
-      <TrackRangesList speedRestrictionTool={isSpeedRestriction} />
+      <TrackRangesList />
       {!isNew && <EntityError className="mt-1" entity={entity} />}
     </div>
   );

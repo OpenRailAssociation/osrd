@@ -13,11 +13,12 @@ import type { ExtendedEditorContextType } from 'applications/editor/types';
 
 import GroupedTrackRangeList from './GroupedTrackRangeList';
 import TrackRange from './TrackRange';
+import { trackRangeKey } from '../utils';
 
 const DEFAULT_DISPLAYED_RANGES_COUNT = 5;
 
 type TrackRangeListProps = {
-  speedRestrictionTool: boolean;
+  speedRestrictionTool?: boolean;
 };
 
 const TrackRangesList = ({ speedRestrictionTool }: TrackRangeListProps) => {
@@ -31,22 +32,6 @@ const TrackRangesList = ({ speedRestrictionTool }: TrackRangeListProps) => {
   const ranges = entity.properties.track_ranges || [];
   const displayedRanges = showAll ? ranges : ranges.slice(0, DEFAULT_DISPLAYED_RANGES_COUNT);
 
-  function makeFullTrackList() {
-    if (speedRestrictionTool) {
-      return <GroupedTrackRangeList displayedRanges={displayedRanges} />;
-    }
-    return displayedRanges.map((trackRange, trackIndex) => (
-      <TrackRange
-        range={trackRange}
-        index={trackIndex}
-        speedRestrictionTool={speedRestrictionTool}
-        key={`track-range-${trackRange.track}-${trackRange.begin}-${trackRange.end}-${trackRange.applicable_directions}-${trackIndex}`}
-      />
-    ));
-  }
-
-  const fullTrackList = makeFullTrackList();
-
   return (
     <div>
       <h4 className="pb-2">
@@ -57,7 +42,19 @@ const TrackRangesList = ({ speedRestrictionTool }: TrackRangeListProps) => {
           {t('Editor.tools.range-edition.empty-linked-track-section')}
         </p>
       ) : (
-        <ul className="list-unstyled">{fullTrackList}</ul>
+        <ul className="list-unstyled">
+          {speedRestrictionTool ? (
+            <GroupedTrackRangeList displayedRanges={displayedRanges} />
+          ) : (
+            displayedRanges.map((trackRange, trackIndex) => (
+              <TrackRange
+                trackRange={trackRange}
+                index={trackIndex}
+                key={trackRangeKey(trackRange, trackIndex)}
+              />
+            ))
+          )}
+        </ul>
       )}
       {ranges.length > DEFAULT_DISPLAYED_RANGES_COUNT && (
         <div className="mt-4">

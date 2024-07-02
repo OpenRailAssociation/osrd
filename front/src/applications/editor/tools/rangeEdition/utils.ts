@@ -368,7 +368,7 @@ export const makeSpeedRestrictionTrackRanges = (
   switches: string[],
   selectedSwitches: Record<string, object>,
   extraMeters?: boolean
-): [ApplicableTrackRange[], boolean] => {
+) => {
   const indices = Object.keys(selectedSwitches).map(
     (selectedSwitch) => switches.findIndex((s) => s === selectedSwitch) + 1
   );
@@ -387,11 +387,11 @@ export const makeSpeedRestrictionTrackRanges = (
     zoneTrackRanges.push(extraTrackRange);
     returnedExtra = true;
   }
-  const trackRangesWithBothDirections = zoneTrackRanges.map((tr) => ({
+  const trackRangesWithBothDirections = zoneTrackRanges.map<ApplicableTrackRange>((tr) => ({
     ...tr,
     applicable_directions: 'BOTH' as ApplicableDirections,
   }));
-  return [trackRangesWithBothDirections, returnedExtra];
+  return { trackRangesWithBothDirections, returnedExtra };
 };
 
 function renameDirection(trackRange: TrackRange) {
@@ -422,3 +422,6 @@ export const makeRouteElements = (
     }
     return acc;
   }, {});
+
+export const trackRangeKey = (trackRange: ApplicableTrackRange, index: number) =>
+  `track-range-${trackRange.track}-${trackRange.begin}-${trackRange.end}-${trackRange.applicable_directions}-${index}`;

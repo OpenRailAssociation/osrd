@@ -13,23 +13,24 @@ import { LoaderFill } from 'common/Loaders';
 
 import TrackRangeApplicableDirections from './TrackRangeApplicableDirections';
 import TrackRangeButtons from './TrackRangeButtons';
+import { trackRangeKey } from '../utils';
 
 type TrackRangeProps = {
   index: number;
-  range: ApplicableTrackRange;
-  speedRestrictionTool: boolean;
+  trackRange: ApplicableTrackRange;
+  speedRestrictionTool?: boolean;
 };
 
-const TrackRange = ({ range, index, speedRestrictionTool }: TrackRangeProps) => {
+const TrackRange = ({ trackRange, index, speedRestrictionTool }: TrackRangeProps) => {
   const {
     state: { trackSectionsCache },
   } = useContext(EditorContext) as ExtendedEditorContextType<
     RangeEditionState<SpeedSectionEntity | ElectrificationEntity>
   >;
 
-  const trackState = trackSectionsCache[range.track];
+  const trackState = trackSectionsCache[trackRange.track];
 
-  const key = `track-range-${range.track}-${range.begin}-${range.end}-${range.applicable_directions}-${index}`;
+  const key = trackRangeKey(trackRange, index);
   if (!trackState || trackState.type === 'loading') {
     return (
       <li key={key} className="mb-4 d-flex flex-row align-items-center">
@@ -43,13 +44,13 @@ const TrackRange = ({ range, index, speedRestrictionTool }: TrackRangeProps) => 
 
   return (
     <li key={key} className="mb-4 d-flex flex-row align-items-center">
-      {!speedRestrictionTool && <TrackRangeButtons range={range} index={index} />}
+      {!speedRestrictionTool && <TrackRangeButtons range={trackRange} index={index} />}
       <div className="flex-grow-1 flex-shrink-1 ml-3">
         <EntitySumUp entity={trackState.track} />
         <TrackRangeApplicableDirections
-          range={range}
+          range={trackRange}
           index={index}
-          speedRestrictionTool={speedRestrictionTool}
+          speedRestrictionTool={Boolean(speedRestrictionTool)}
         />
       </div>
     </li>
