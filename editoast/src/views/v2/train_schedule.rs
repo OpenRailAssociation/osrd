@@ -591,28 +591,42 @@ pub async fn train_simulation_batch(
     train_schedules: &[TrainSchedule],
     infra: &Infra,
 ) -> Result<Vec<SimulationResponse>> {
-    let pending_simulations =
-        train_schedules
-            .iter()
-            .zip(db_pool.iter_conn())
-            .map(|(train_schedule, conn)| {
-                let redis_client = redis_client.clone();
-                let core_client = core_client.clone();
-                async move {
-                    train_simulation(
-                        conn.await
-                            .expect("Failed to get database connection")
-                            .deref_mut(),
-                        redis_client,
-                        core_client,
-                        train_schedule,
-                        infra,
-                    )
-                    .await
-                }
-            });
+    let train_schedules = train_schedules.to_vec();
+    let infra = Clone::clone(infra);
+    tokio::task::spawn_blocking(move || {
+        let pending_simulations =
+            train_schedules
+                .iter()
+                .zip(db_pool.iter_conn())
+                .map(|(train_schedule, conn)| {
+                    let redis_client = redis_client.clone();
+                    let core_client = core_client.clone();
+                    let infra = &infra;
+                    async move {
+                        train_simulation(
+                            conn.await
+                                .expect("Failed to get database connection")
+                                .deref_mut(),
+                            redis_client,
+                            core_client,
+                            train_schedule,
+                            infra,
+                        )
+                        .await
+                    }
+                });
 
-    futures::future::try_join_all(pending_simulations).await
+        let pending_simulations = futures::future::try_join_all(pending_simulations);
+
+        tokio::runtime::Builder::new_current_thread()
+            .thread_name("train_simulation_batch")
+            .enable_all()
+            .build()
+            .unwrap()
+            .block_on(pending_simulations)
+    })
+    .await
+    .expect("Task panicked")
 }
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize, IntoParams, ToSchema)]
