@@ -152,7 +152,8 @@ public enum ErrorType {
     InconsistentSpeedSection(
             "speed_section",
             "Speed section definition is nonsensical and cannot be used for simulation",
-            ErrorCause.USER);
+            ErrorCause.USER),
+    MissingLastSTDCMStop("missing_last_stdcm_stop", "Last step of stdcm request needs to be a stop", ErrorCause.USER);
 
     public final String type;
     public final String message;

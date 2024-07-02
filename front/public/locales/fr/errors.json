@@ -9,7 +9,8 @@
   "default": "Une erreur est survenue.",
   "pageNotFound": "La page que vous recherchez n'existe pas.",
   "core": {
-    "assert_error": "Assertion échouée à {{file_location}}: {{assert_message}}"
+    "assert_error": "Assertion échouée à {{file_location}}: {{assert_message}}",
+    "missing_last_stdcm_stop": "Les requêtes STDCM ne finissant pas par un arrêt ne sont pas actuellement supportées"
   },
   "editoast": {
     "attached": {

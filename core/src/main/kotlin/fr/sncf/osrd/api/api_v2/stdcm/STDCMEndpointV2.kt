@@ -16,6 +16,7 @@ import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath
 import fr.sncf.osrd.envelope_sim_infra.MRSP
 import fr.sncf.osrd.graph.Pathfinding
 import fr.sncf.osrd.graph.PathfindingEdgeLocationId
+import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl
 import fr.sncf.osrd.sim_infra.api.Block
@@ -35,7 +36,6 @@ import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import fr.sncf.osrd.utils.units.seconds
 import java.time.Duration.ofMillis
-import java.util.HashSet
 import org.takes.Request
 import org.takes.Response
 import org.takes.Take
@@ -174,7 +174,9 @@ class STDCMEndpointV2(private val infraManager: InfraManager) : Take {
 }
 
 private fun parseSteps(infra: FullInfra, pathItems: List<STDCMPathItem>): List<STDCMStep> {
-    assert(pathItems.last().stopDuration != null)
+    if (pathItems.last().stopDuration == null) {
+        throw OSRDError(ErrorType.MissingLastSTDCMStop)
+    }
     return pathItems
         .map {
             STDCMStep(

@@ -9,7 +9,8 @@
   "default": "An error has occurred.",
   "pageNotFound": "The page you are looking for does not exist.",
   "core": {
-    "assert_error": "Assert error at {{file_location}}: {{assert_message}}"
+    "assert_error": "Assert error at {{file_location}}: {{assert_message}}",
+    "missing_last_stdcm_stop": "STDCM requests that don't end with a stop aren't currently supported"
   },
   "editoast": {
     "attached": {
