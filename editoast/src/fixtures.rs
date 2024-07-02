@@ -4,6 +4,7 @@ pub mod tests {
     use std::io::Cursor;
     use std::ops::{Deref, DerefMut};
     use std::sync::Arc;
+    use uuid::Uuid;
 
     use editoast_models::create_connection_pool;
     use editoast_models::DbConnection;
@@ -261,8 +262,7 @@ pub mod tests {
         } = scenario_fixture_set().await;
 
         let pathfinding = pathfinding(db_pool()).await;
-        let mut rs_name = "fast_rolling_stock_".to_string();
-        rs_name.push_str(name);
+        let rs_name = format!("fast_rolling_stock_{}_{name}", Uuid::new_v4()).to_string();
         let rolling_stock = named_fast_rolling_stock(&rs_name, db_pool()).await;
         let ts_model = make_train_schedule(
             db_pool(),
