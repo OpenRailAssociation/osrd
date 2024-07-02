@@ -43,9 +43,10 @@ type TrainDetailsV2Props = {
 };
 
 const TrainDetailsV2 = ({ projectedTrain }: TrainDetailsV2Props) => {
-  const [{ headPosition, tailPosition, speed }, setLocalPositionValues] = useState<
-    PositionsSpeedTimes<Date>
-  >({} as PositionsSpeedTimes<Date>);
+  const [
+    { eco_headPosition: headPosition, eco_tailPosition: tailPosition, eco_speed: speed },
+    setLocalPositionValues,
+  ] = useState<PositionsSpeedTimes<Date>>({} as PositionsSpeedTimes<Date>);
 
   useChartSynchronizerV2(
     (_, positionValues) => {
