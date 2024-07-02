@@ -161,7 +161,7 @@ export default function drawTrain(
         groupID,
         'curveLinear',
         CHART_AXES.SPACE_TIME,
-        'headPosition',
+        'eco_headPosition',
         rotate,
         isSelected
       )
@@ -174,7 +174,7 @@ export default function drawTrain(
         groupID,
         'curveLinear',
         CHART_AXES.SPACE_TIME,
-        'tailPosition',
+        'eco_tailPosition',
         rotate,
         isSelected
       )
