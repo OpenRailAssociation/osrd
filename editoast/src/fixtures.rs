@@ -1,3 +1,4 @@
+#[allow(dead_code)]
 #[cfg(test)]
 pub mod tests {
     use std::io::Cursor;

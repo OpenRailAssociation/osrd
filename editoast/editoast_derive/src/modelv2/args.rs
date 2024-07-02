@@ -1,3 +1,5 @@
+#![allow(clippy::manual_unwrap_or_default)]
+
 use super::RawIdentifier;
 use darling::{
     ast,
