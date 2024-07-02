@@ -72,7 +72,6 @@ function EditorForm<T extends Omit<EditorEntity, 'objType'> & { objType: string 
 
   /**
    * When data or schema change
-   * => recompute formData by fixing LM
    */
   useEffect(() => {
     setFormData(omitBy(data.properties, isNil));
@@ -98,6 +97,7 @@ function EditorForm<T extends Omit<EditorEntity, 'objType'> & { objType: string 
       <Form
         fields={{ ...fields, ...(overrideFields || {}) }}
         liveValidate={submited}
+        showErrorList={submited ? 'top' : false}
         action={undefined}
         noHtml5Validate
         validator={validator}

@@ -59,8 +59,11 @@ const TrackEditionTool: Tool<TrackEditionState> = {
           return isEqual(track, initialTrack);
         },
         onClick({ setState, state: { initialTrack } }) {
+          // We set the initialEntity, so its ref changes and the form is remounted
+          const track = cloneDeep(initialTrack);
           setState({
-            track: cloneDeep(initialTrack),
+            track,
+            initialTrack: track,
           });
         },
       },

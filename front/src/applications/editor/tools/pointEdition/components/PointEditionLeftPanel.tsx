@@ -2,6 +2,7 @@ import React, { type ComponentType, useContext, useEffect, useRef, useState } fr
 
 import along from '@turf/along';
 import length from '@turf/length';
+import { uniqueId } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
 import EditorForm from 'applications/editor/components/EditorForm';
@@ -48,6 +49,7 @@ const PointEditionLeftPanel = <Entity extends EditorEntity>({
     EditorContext
   ) as ExtendedEditorContextType<PointEditionState<Entity>>;
   const submitBtnRef = useRef<HTMLButtonElement>(null);
+  const [formKey, setFormKey] = useState(state.initialEntity.properties.id);
 
   const isWayPoint = type === 'BufferStop' || type === 'Detector';
   const isNew = state.entity.properties.id === NEW_ENTITY_ID;
@@ -91,6 +93,14 @@ const PointEditionLeftPanel = <Entity extends EditorEntity>({
     }
   }, [infraID, setState, state, state.entity.properties.track, trackState.id, trackState.type]);
 
+  /**
+   * When the ref of the initialEntity changed,
+   * we remount the form (to reset its state, mainly for errors)
+   */
+  useEffect(() => {
+    setFormKey(uniqueId());
+  }, [state.initialEntity]);
+
   return (
     <>
       {isWayPoint && !isNew && (
@@ -101,6 +111,7 @@ const PointEditionLeftPanel = <Entity extends EditorEntity>({
         </>
       )}
       <EditorForm
+        key={formKey}
         data={state.entity as Entity}
         overrideUiSchema={{
           logical_signals: {
