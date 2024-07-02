@@ -50,6 +50,18 @@ class STDCMEndpointV2(private val infraManager: InfraManager) : Take {
     override fun act(req: Request): Response {
         val recorder = DiagnosticRecorderImpl(false)
         return try {
+            val l = mutableListOf<Int>()
+            var i = 0
+            while (true) {
+                if (i++ % (1 shl 25) == 0) {
+                    val total = Runtime.getRuntime().totalMemory() / (1024 * 1024)
+                    val free = Runtime.getRuntime().freeMemory() / (1024 * 1024)
+                    val max = Runtime.getRuntime().maxMemory() / (1024 * 1024)
+                    val used = total - free
+                    println("used=$used, free=$free, total=$total, max=$max (Mb)")
+                }
+                l.add(0)
+            }
             // Parse request input
             val body = RqPrint(req).printBody()
             val request =
