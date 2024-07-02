@@ -158,7 +158,7 @@ impl EditoastMode {
     }
 }
 
-#[actix_web::main]
+#[tokio::main]
 async fn main() {
     match run().await {
         Ok(_) => (),
