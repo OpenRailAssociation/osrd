@@ -77,29 +77,29 @@ export const SpeedSectionEditionLayers = () => {
     return res;
   }, [interactionState, hoveredItem, entity, selectedSwitches]);
 
-  const extractTrackRangeFeatures =
-    (flatEntity: EditorEntity) => (range: ApplicableTrackRange, i: number) => {
-      const trackState = trackSectionsCache[range.track];
-      return (
-        trackState?.type === 'success'
-          ? getTrackRangeFeatures(trackState.track, range, i, flatEntity.properties)
-          : []
-      ) as Feature<LineString | Point>[];
-    };
+  const extractTrackRangeFeatures = (
+    flatEntity: EditorEntity,
+    range: ApplicableTrackRange,
+    i: number
+  ) => {
+    const trackState = trackSectionsCache[range.track];
+    return (
+      trackState?.type === 'success'
+        ? getTrackRangeFeatures(trackState.track, range, i, flatEntity.properties)
+        : []
+    ) as Feature<LineString | Point>[];
+  };
 
   // dashed lines - - - (selected routes tracks in the case of speed restrictions)
-  const selectedTracksFeature = useMemo(() => {
+  const selectedTracksFeatures = useMemo(() => {
     const flatEntity = flattenEntity(entity);
     // generate trackRangeFeatures
-    let trackRangeFeatures;
-    if (isSpeedRestriction) {
-      trackRangeFeatures = Object.values(pick(routeElements, highlightedRoutes))
-        .flatMap((el) => el.trackRanges)
-        .flatMap(extractTrackRangeFeatures(flatEntity));
-    } else {
-      const trackRanges = entity.properties?.track_ranges || [];
-      trackRangeFeatures = trackRanges.flatMap(extractTrackRangeFeatures(flatEntity));
-    }
+    const trackRanges = isSpeedRestriction
+      ? Object.values(pick(routeElements, highlightedRoutes)).flatMap((el) => el.trackRanges)
+      : entity.properties?.track_ranges || [];
+    const trackRangeFeatures = trackRanges.flatMap((range, i) =>
+      extractTrackRangeFeatures(flatEntity, range, i)
+    );
 
     // generate pslSignFeatures
     let pslSignFeatures = [] as PslSignFeature[];
@@ -117,7 +117,9 @@ export const SpeedSectionEditionLayers = () => {
     const flatEntity = flattenEntity(entity);
     // generate trackRangeFeatures
     const trackRanges = entity.properties?.track_ranges || [];
-    const trackRangeFeatures = trackRanges.flatMap(extractTrackRangeFeatures(flatEntity));
+    const trackRangeFeatures = trackRanges.flatMap((range, i) =>
+      extractTrackRangeFeatures(flatEntity, range, i)
+    );
     return featureCollection(trackRangeFeatures);
   }, [entity, trackSectionsCache]);
 
@@ -176,7 +178,7 @@ export const SpeedSectionEditionLayers = () => {
         }));
       });
     }
-  }, [entity, entity.properties?.track_ranges]);
+  }, [entity.properties?.track_ranges]);
 
   // Here is where we load hovered track sections that are not in ranges yet:
   useEffect(() => {
@@ -304,7 +306,7 @@ export const SpeedSectionEditionLayers = () => {
       {/* complete routes (dashed) */}
       <Source
         type="geojson"
-        data={!isPermanentSpeedLimit ? selectedTracksFeature : emptyFeatureCollection}
+        data={!isPermanentSpeedLimit ? selectedTracksFeatures : emptyFeatureCollection}
         key="speed-section-full-route"
       >
         <Layer
@@ -330,7 +332,7 @@ export const SpeedSectionEditionLayers = () => {
       </Source>
       <Source
         type="geojson"
-        data={isPermanentSpeedLimit ? selectedTracksFeature : emptyFeatureCollection}
+        data={isPermanentSpeedLimit ? selectedTracksFeatures : emptyFeatureCollection}
         key="psl"
       >
         {pslLayerProps.map((props, i) => (
