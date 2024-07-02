@@ -234,77 +234,79 @@ export const useSimulationResults = () => {
           setFormattedPowerRestrictions(powerRestrictionsWithHandled);
         }
 
-        // Format chart synchronizer data
-        const {
-          baseHeadPositions,
-          baseTailPositions,
-          baseSpeeds,
-          marginSpeeds,
-          ecoHeadPosition,
-          ecoTailPosition,
-          ecoSpeeds,
-        } = trainSimulation.base.positions.reduce(
-          (results, position, index) => {
-            const positionInMeters = mmToM(position);
+        const baseHeadPositions: { time: Date; position: number }[] = [];
+        const baseTailPositions: { time: Date; position: number }[] = [];
+        const baseSpeeds: { time: Date; position: number; speed: number }[] = [];
+        trainSimulation.base.positions.forEach((positionInMM, index) => {
+          const position = mmToM(positionInMM);
 
-            // TODO GET v2 : probably remove this conversion as trains will travel on several days
-            // The chart time axis is set by d3 function *sec2d3datetime* which start the chart at 01/01/1900 00:00:00
-            // As javascript new Date() util takes count of the minutes lost since 1/1/1900 (9min and 21s), we have
-            // to use sec2d3datetime here as well to set the times on the chart
-            const time = sec2d3datetime(
-              isoDateWithTimezoneToSec(selectedTrainSchedule.start_time) +
-                trainSimulation.base.times[index] / 1000
-            );
-
-            if (!time) {
-              return results;
-            }
-
-            results.baseHeadPositions.push({ position: positionInMeters, time });
-            results.baseTailPositions.push({
-              position: positionInMeters - selectedTrainRollingStock.length,
-              time,
-            });
-            results.baseSpeeds.push({
-              position: positionInMeters,
-              time,
-              speed: trainSimulation.base.speeds[index],
-            });
-            results.marginSpeeds.push({
-              position: positionInMeters,
-              time,
-              speed: trainSimulation.final_output.speeds[index],
-            });
-            results.ecoHeadPosition.push({ position, time });
-            results.ecoTailPosition.push({
-              position: positionInMeters - selectedTrainRollingStock.length,
-              time,
-            });
-            results.ecoSpeeds.push({
-              position: positionInMeters,
-              time,
-              speed: trainSimulation.final_output.speeds[index],
-            });
-            return results;
-          },
-          {
-            baseHeadPositions: [] as { time: Date; position: number }[],
-            baseTailPositions: [] as { time: Date; position: number }[],
-            baseSpeeds: [] as { time: Date; position: number; speed: number }[],
-            marginSpeeds: [] as { time: Date; position: number; speed: number }[],
-            ecoHeadPosition: [] as { time: Date; position: number }[],
-            ecoTailPosition: [] as { time: Date; position: number }[],
-            ecoSpeeds: [] as { time: Date; position: number; speed: number }[],
+          // TODO GET v2 : probably remove this conversion as trains will travel on several days
+          // The chart time axis is set by d3 function *sec2d3datetime* which start the chart at 01/01/1900 00:00:00
+          // As javascript new Date() util takes count of the minutes lost since 1/1/1900 (9min and 21s), we have
+          // to use sec2d3datetime here as well to set the times on the chart
+          const time = sec2d3datetime(
+            isoDateWithTimezoneToSec(selectedTrainSchedule.start_time) +
+              trainSimulation.base.times[index] / 1000
+          );
+          if (!time) {
+            return;
           }
-        );
+
+          baseHeadPositions.push({ position, time });
+          baseTailPositions.push({
+            position: position - selectedTrainRollingStock.length,
+            time,
+          });
+          baseSpeeds.push({
+            position,
+            time,
+            speed: trainSimulation.base.speeds[index],
+          });
+        });
+
+        const marginSpeeds: { time: Date; position: number; speed: number }[] = [];
+        const ecoHeadPositions: { time: Date; position: number }[] = [];
+        const ecoTailPositions: { time: Date; position: number }[] = [];
+        const ecoSpeeds: { time: Date; position: number; speed: number }[] = [];
+        trainSimulation.final_output.positions.forEach((positionInMM, index) => {
+          const position = mmToM(positionInMM);
+
+          // TODO GET v2 : probably remove this conversion as trains will travel on several days
+          // The chart time axis is set by d3 function *sec2d3datetime* which start the chart at 01/01/1900 00:00:00
+          // As javascript new Date() util takes count of the minutes lost since 1/1/1900 (9min and 21s), we have
+          // to use sec2d3datetime here as well to set the times on the chart
+          const time = sec2d3datetime(
+            isoDateWithTimezoneToSec(selectedTrainSchedule.start_time) +
+              trainSimulation.final_output.times[index] / 1000
+          );
+          if (!time) {
+            return;
+          }
+
+          marginSpeeds.push({
+            position,
+            time,
+            speed: trainSimulation.final_output.speeds[index],
+          });
+          ecoHeadPositions.push({ position, time });
+          ecoTailPositions.push({
+            position: position - selectedTrainRollingStock.length,
+            time,
+          });
+          ecoSpeeds.push({
+            position,
+            time,
+            speed: trainSimulation.final_output.speeds[index],
+          });
+        });
 
         const formattedChartSynchronizerData: ChartSynchronizerTrainData = {
           headPosition: baseHeadPositions,
           tailPosition: baseTailPositions,
           speed: baseSpeeds,
           margins_speed: marginSpeeds,
-          eco_headPosition: ecoHeadPosition,
-          eco_tailPosition: ecoTailPosition,
+          eco_headPosition: ecoHeadPositions,
+          eco_tailPosition: ecoTailPositions,
           eco_speed: ecoSpeeds,
         };
 
