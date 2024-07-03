@@ -380,6 +380,10 @@ async fn runserver(
     // Setup shared states
     let infra_caches = Data::new(CHashMap::<i64, InfraCache>::default());
 
+    // Build Core client
+    let core_client =
+        CoreClient::new_mq(args.mq_url.clone(), "core".into(), args.core_timeout).await;
+
     let server = HttpServer::new(move || {
         // Build CORS
         let cors = {
@@ -395,12 +399,6 @@ async fn runserver(
                     .allow_any_header(),
             }
         };
-
-        // Build Core client
-        let core_client = CoreClient::new_direct(
-            args.backend_url.parse().expect("invalid backend_url value"),
-            args.backend_token.clone(),
-        );
 
         let actix_logger_format = r#"%r STATUS: %s in %T s ("%{Referer}i" "%{User-Agent}i")"#;
 
@@ -421,7 +419,7 @@ async fn runserver(
             .app_data(infra_caches.clone())
             .app_data(Data::new(MapLayers::parse()))
             .app_data(Data::new(args.map_layers_config.clone()))
-            .app_data(Data::new(core_client))
+            .app_data(Data::new(core_client.clone()))
             .service(scope(&args.root_path).service(views::routes()))
     });
 

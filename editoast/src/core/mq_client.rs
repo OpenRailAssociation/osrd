@@ -49,8 +49,10 @@ pub enum Error {
 }
 
 impl RabbitMQClient {
-    pub async fn new(options: Options) -> Result<Self, lapin::Error> {
-        let connection = Connection::connect(&options.uri, ConnectionProperties::default()).await?;
+    pub async fn new(options: Options) -> Result<Self, Error> {
+        let connection = Connection::connect(&options.uri, ConnectionProperties::default())
+            .await
+            .map_err(|e| Error::Lapin(e))?;
         let hostname = hostname::get()
             .map(|name| name.to_string_lossy().into_owned())
             .unwrap_or_else(|_| "unknown".to_string());
@@ -108,7 +110,8 @@ impl RabbitMQClient {
                 serialized_payload,
                 properties,
             )
-            .await;
+            .await
+            .map_err(|e| Error::Lapin(e))?;
 
         Ok(())
     }
@@ -172,7 +175,8 @@ impl RabbitMQClient {
                 serialized_payload,
                 properties,
             )
-            .await;
+            .await
+            .map_err(|e| Error::Lapin(e))?;
 
         // Await the response
         let response_delivery = timeout(

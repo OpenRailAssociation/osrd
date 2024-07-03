@@ -138,11 +138,12 @@ pub struct RunserverArgs {
     #[derivative(Default(value = r#""0.0.0.0".into()"#))]
     #[arg(long, env = "EDITOAST_ADDRESS", default_value_t = String::from("0.0.0.0"))]
     pub address: String,
-    #[derivative(Default(value = r#""http://localhost:8080".into()"#))]
-    #[clap(long, env = "OSRD_BACKEND_URL", default_value_t = String::from("http://localhost:8080"))]
-    pub backend_url: String,
-    #[clap(long, env = "OSRD_BACKEND_TOKEN", default_value_t = String::from(""))]
-    pub backend_token: String,
+    #[derivative(Default(value = r#""amqp://127.0.0.1:5672/%2f".into()"#))]
+    #[clap(long, env = "OSRD_MQ_URL", default_value_t = String::from("amqp://127.0.0.1:5672/%2f"))]
+    pub mq_url: String,
+    #[derivative(Default(value = "60"))] // TODO: find the currently used timeout
+    #[clap(long, env = "EDITOAST_CORE_TIMEOUT", default_value_t = 60)]
+    pub core_timeout: u64,
     #[derivative(Default(value = r#""".into()"#))]
     #[clap(long, env = "ROOT_PATH", default_value_t = String::new())]
     pub root_path: String,

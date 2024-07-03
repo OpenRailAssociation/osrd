@@ -37,6 +37,8 @@ use crate::core::mocking::MockingError;
 use crate::error::InternalError;
 use crate::error::Result;
 
+pub use mq_client::RabbitMQClient;
+
 editoast_common::schemas! {
     simulation::schemas(),
     v2::simulation::schemas(),
@@ -62,7 +64,7 @@ fn colored_method(method: &reqwest::Method) -> ColoredString {
 #[derive(Debug, Clone)]
 pub enum CoreClient {
     Direct(HttpClient),
-    MessageQueue(mq_client::RabbitMQClient),
+    MessageQueue(RabbitMQClient),
     #[cfg(test)]
     Mocked(mocking::MockingClient),
 }
@@ -81,6 +83,18 @@ impl CoreClient {
             })
             .build_base_url(base_url);
         Self::Direct(client)
+    }
+
+    pub async fn new_mq(uri: String, worker_pool_identifier: String, timeout: u64) -> Result<Self> {
+        let options = mq_client::Options {
+            uri,
+            worker_pool_identifier,
+            timeout,
+        };
+
+        let client = RabbitMQClient::new(options).await?;
+
+        Ok(Self::MessageQueue(client))
     }
 
     fn handle_error(
