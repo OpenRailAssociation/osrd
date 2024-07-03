@@ -474,7 +474,7 @@ pub mod tests {
         Infra::changeset()
             .name("small_infra".to_owned())
             .last_railjson_version()
-            .persist(railjson, db_pool)
+            .persist(railjson, db_pool.get().await.unwrap().deref_mut())
             .await
             .unwrap()
     }

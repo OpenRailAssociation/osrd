@@ -134,6 +134,14 @@ impl DbConnectionPoolV2 {
     /// # }
     /// ```
     ///
+    /// ### Deadlocks
+    ///
+    /// We encountered a deadlock error in our tests,
+    /// especially those using `empty_infra` and `small_infra`.
+    /// Adding `#[serial_test::serial]` solved the issue.
+    /// We tried increasing the deadlock timeout, but that didn't work.
+    /// Using random `infra_id` with rand didn't help either.
+    ///
     /// ## Guidelines
     ///
     /// To prevent these issues, prefer the following patterns:

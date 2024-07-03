@@ -219,7 +219,6 @@ mod tests {
     }
 
     #[rstest]
-    #[serial_test::serial]
     async fn test_map_electrical_profiles(
         #[future] electrical_profile_set: TestFixture<ElectricalProfileSet>,
     ) {
@@ -253,7 +252,6 @@ mod tests {
     }
 
     #[rstest]
-    #[serial_test::serial]
     async fn test_view_electrical_profiles_on_path(
         db_pool: Arc<DbConnectionPool>,
         #[future] empty_infra: TestFixture<Infra>,

@@ -164,7 +164,7 @@ async fn post_railjson(
     let mut infra = Infra::changeset()
         .name(params.name.clone())
         .last_railjson_version()
-        .persist_v2(railjson, db_pool.clone())
+        .persist(railjson, db_pool.get().await?.deref_mut())
         .await?;
     let infra_id = infra.id;
 
@@ -196,6 +196,7 @@ mod tests {
     use editoast_schemas::infra::SwitchType;
 
     #[rstest]
+    // PostgreSQL deadlock can happen in this test, see section `Deadlock` of [DbConnectionPoolV2::get] for more information
     #[serial_test::serial]
     async fn test_get_railjson() {
         let app = TestAppBuilder::default_app();
@@ -221,6 +222,7 @@ mod tests {
     }
 
     #[rstest]
+    // PostgreSQL deadlock can happen in this test, see section `Deadlock` of [DbConnectionPoolV2::get] for more information
     #[serial_test::serial]
     async fn test_post_railjson() {
         let app = TestAppBuilder::default_app();

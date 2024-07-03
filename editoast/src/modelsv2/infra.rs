@@ -36,11 +36,9 @@ use crate::modelsv2::get_geometry_layer_table;
 use crate::modelsv2::get_table;
 use crate::modelsv2::prelude::*;
 use crate::modelsv2::railjson::persist_railjson;
-use crate::modelsv2::railjson::persist_railjson_v2;
 use crate::modelsv2::Create;
 use crate::tables::infra::dsl;
 use editoast_models::DbConnection;
-use editoast_models::DbConnectionPool;
 use editoast_models::DbConnectionPoolV2;
 use editoast_schemas::infra::RailJson;
 use editoast_schemas::infra::RAILJSON_VERSION;
@@ -77,35 +75,13 @@ pub struct Infra {
 }
 
 impl InfraChangeset {
-    pub async fn persist(
-        self,
-        railjson: RailJson,
-        db_pool: Arc<DbConnectionPool>,
-    ) -> Result<Infra> {
-        let conn = &mut db_pool.get().await?;
+    pub async fn persist(self, railjson: RailJson, conn: &mut DbConnection) -> Result<Infra> {
         let infra = self.create(conn).await?;
         // TODO: lock infra for update
         debug!("🛤  Begin importing all railjson objects");
-        if let Err(e) = persist_railjson(db_pool, infra.id, railjson).await {
+        if let Err(e) = persist_railjson(conn, infra.id, railjson).await {
             error!("Could not import infrastructure {}. Rolling back", infra.id);
             infra.delete(conn).await?;
-            return Err(e);
-        };
-        debug!("🛤  Import finished successfully");
-        Ok(infra)
-    }
-
-    pub async fn persist_v2(
-        self,
-        railjson: RailJson,
-        db_pool: Arc<DbConnectionPoolV2>,
-    ) -> Result<Infra> {
-        let infra = self.create(db_pool.get().await?.deref_mut()).await?;
-        // TODO: lock infra for update
-        debug!("🛤  Begin importing all railjson objects");
-        if let Err(e) = persist_railjson_v2(db_pool.clone(), infra.id, railjson).await {
-            error!("Could not import infrastructure {}. Rolling back", infra.id);
-            infra.delete(db_pool.get().await?.deref_mut()).await?;
             return Err(e);
         };
         debug!("🛤  Import finished successfully");
@@ -337,8 +313,6 @@ pub mod tests {
 
     use super::Infra;
     use crate::error::EditoastError;
-    use crate::fixtures::tests::db_pool;
-    use crate::fixtures::tests::IntoFixture;
     use crate::modelsv2::fixtures::create_empty_infra;
     use crate::modelsv2::infra::DEFAULT_INFRA_VERSION;
     use crate::modelsv2::prelude::*;
@@ -359,6 +333,8 @@ pub mod tests {
     }
 
     #[rstest]
+    // PostgreSQL deadlock can happen in this test, see section `Deadlock` of [DbConnectionPoolV2::get] for more information
+    #[serial_test::serial]
     async fn clone_infra_with_new_name_returns_new_cloned_infra() {
         // GIVEN
         let db_pool = DbConnectionPoolV2::for_tests();
@@ -378,7 +354,7 @@ pub mod tests {
     #[rstest]
     #[serial_test::serial]
     async fn persists_railjson_ko_version() {
-        let pool = db_pool();
+        let db_pool = DbConnectionPoolV2::for_tests();
         let railjson_with_invalid_version = RailJson {
             version: "0".to_string(),
             ..Default::default()
@@ -386,7 +362,7 @@ pub mod tests {
         let res = Infra::changeset()
             .name("test".to_owned())
             .last_railjson_version()
-            .persist(railjson_with_invalid_version, pool)
+            .persist(railjson_with_invalid_version, db_pool.get_ok().deref_mut())
             .await;
         assert!(res.is_err());
         let expected_error = RailJsonError::UnsupportedVersion {
@@ -418,14 +394,13 @@ pub mod tests {
             version: RAILJSON_VERSION.to_string(),
         };
 
-        let pool = db_pool();
+        let db_pool = DbConnectionPoolV2::for_tests();
         let infra = Infra::changeset()
             .name("persist_railjson_ok_infra".to_owned())
             .last_railjson_version()
-            .persist(railjson.clone(), pool.clone())
+            .persist(railjson.clone(), db_pool.get_ok().deref_mut())
             .await
-            .expect("could not persist infra")
-            .into_fixture(pool.clone());
+            .expect("could not persist infra");
 
         // THEN
         assert_eq!(infra.railjson_version, railjson.version);
@@ -435,51 +410,94 @@ pub mod tests {
             objects
         }
 
-        let conn = &mut pool.get().await.unwrap();
         let id = infra.id;
 
         assert_eq!(
-            sort::<BufferStop>(find_all_schemas(conn, id).await.unwrap()),
+            sort::<BufferStop>(
+                find_all_schemas(db_pool.get_ok().deref_mut(), id)
+                    .await
+                    .unwrap()
+            ),
             sort(railjson.buffer_stops)
         );
         assert_eq!(
-            sort::<Route>(find_all_schemas(conn, id).await.unwrap()),
+            sort::<Route>(
+                find_all_schemas(db_pool.get_ok().deref_mut(), id)
+                    .await
+                    .unwrap()
+            ),
             sort(railjson.routes)
         );
         assert_eq!(
-            sort::<SwitchType>(find_all_schemas(conn, id).await.unwrap()),
+            sort::<SwitchType>(
+                find_all_schemas(db_pool.get_ok().deref_mut(), id)
+                    .await
+                    .unwrap()
+            ),
             sort(railjson.extended_switch_types)
         );
         assert_eq!(
-            sort::<Switch>(find_all_schemas(conn, id).await.unwrap()),
+            sort::<Switch>(
+                find_all_schemas(db_pool.get_ok().deref_mut(), id)
+                    .await
+                    .unwrap()
+            ),
             sort(railjson.switches)
         );
         assert_eq!(
-            sort::<TrackSection>(find_all_schemas(conn, id).await.unwrap()),
+            sort::<TrackSection>(
+                find_all_schemas(db_pool.get_ok().deref_mut(), id)
+                    .await
+                    .unwrap()
+            ),
             sort(railjson.track_sections)
         );
         assert_eq!(
-            sort::<SpeedSection>(find_all_schemas(conn, id).await.unwrap()),
+            sort::<SpeedSection>(
+                find_all_schemas(db_pool.get_ok().deref_mut(), id)
+                    .await
+                    .unwrap()
+            ),
             sort(railjson.speed_sections)
         );
         assert_eq!(
-            sort::<NeutralSection>(find_all_schemas(conn, id).await.unwrap()),
+            sort::<NeutralSection>(
+                find_all_schemas(db_pool.get_ok().deref_mut(), id)
+                    .await
+                    .unwrap()
+            ),
             sort(railjson.neutral_sections)
         );
         assert_eq!(
-            sort::<Electrification>(find_all_schemas(conn, id).await.unwrap()),
+            sort::<Electrification>(
+                find_all_schemas(db_pool.get_ok().deref_mut(), id)
+                    .await
+                    .unwrap()
+            ),
             sort(railjson.electrifications)
         );
         assert_eq!(
-            sort::<Signal>(find_all_schemas(conn, id).await.unwrap()),
+            sort::<Signal>(
+                find_all_schemas(db_pool.get_ok().deref_mut(), id)
+                    .await
+                    .unwrap()
+            ),
             sort(railjson.signals)
         );
         assert_eq!(
-            sort::<Detector>(find_all_schemas(conn, id).await.unwrap()),
+            sort::<Detector>(
+                find_all_schemas(db_pool.get_ok().deref_mut(), id)
+                    .await
+                    .unwrap()
+            ),
             sort(railjson.detectors)
         );
         assert_eq!(
-            sort::<OperationalPoint>(find_all_schemas(conn, id).await.unwrap()),
+            sort::<OperationalPoint>(
+                find_all_schemas(db_pool.get_ok().deref_mut(), id)
+                    .await
+                    .unwrap()
+            ),
             sort(railjson.operational_points)
         );
     }
