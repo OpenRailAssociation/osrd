@@ -15,12 +15,9 @@ services:
     ports: []
     network_mode: host
 
-  core_controller:
+  osrdyne:
     ports: []
     network_mode: host
-    environment:
-      - DEFAULT_CC_RMQ_HOST=localhost
-      - DEFAULT_CC_REDIS_HOST=localhost
 
   editoast:
     ports: []

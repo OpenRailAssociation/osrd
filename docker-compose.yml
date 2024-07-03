@@ -52,11 +52,13 @@ services:
       timeout: 30s
       retries: 3
 
-  core_controller:
-    image: ghcr.io/osrd-project/edge/osrd-core_controller:${TAG-dev}
-    container_name: osrd-core_controller
+  osrdyne:
+    image: ghcr.io/openrailassociation/osrd-edge/osrd-osrdyne:${TAG-dev}
+    container_name: osrd-osrdyne
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     build:
-      context: core_controller
+      context: osrdyne
       dockerfile: Dockerfile
     restart: unless-stopped
 

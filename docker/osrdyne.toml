@@ -1,0 +1,15 @@
+[worker_driver]
+type = "docker"
+# TODO: How do we pre-build the image for developers if it's not in the docker compose anymore ?
+core_image_name = "osrd/core"
+core_image_tag = ""
+container_prefix = ""
+worker_driver.default_env = [
+    "CORE_EDITOAST_URL=http://osrd-editoast",
+    "JAVA_TOOL_OPTIONS=-javaagent:/app/opentelemetry-javaagent.jar",
+    "CORE_MONITOR_TYPE=opentelemetry",
+    "OTEL_EXPORTER_OTLP_TRACES_PROTOCOL=grpc",
+    "OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=http://jaeger:4317",
+    "OTEL_METRICS_EXPORTER=none",
+    "OTEL_LOGS_EXPORTER=none"
+]
