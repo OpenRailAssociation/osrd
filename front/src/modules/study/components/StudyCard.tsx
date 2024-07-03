@@ -28,7 +28,6 @@ export default function StudyCard({ setFilterChips, study }: StudyCardProps) {
     dispatch(updateScenarioID(undefined));
     navigate(`studies/${study.id}`);
   };
-
   return (
     <div className="study-card">
       <div className="study-card-name" data-testid={study.name}>
@@ -109,7 +108,7 @@ export default function StudyCard({ setFilterChips, study }: StudyCardProps) {
             <Calendar />
           </span>
           <span className="mr-1">{t('updatedOn')}</span>
-          {study.last_modification && dateTimeFormatting(new Date(study.last_modification))}
+          {dateTimeFormatting(study.last_modification)}
         </div>
       </div>
     </div>

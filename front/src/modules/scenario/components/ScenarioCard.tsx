@@ -83,7 +83,7 @@ export default function StudyCard({ setFilterChips, scenario }: StudyCardProps) 
             <Calendar />
           </span>
           <span className="mr-1">{t('updatedOn')}</span>
-          {scenario.last_modification && dateTimeFormatting(new Date(scenario.last_modification))}
+          {dateTimeFormatting(scenario.last_modification)}
         </div>
       </div>
     </div>
