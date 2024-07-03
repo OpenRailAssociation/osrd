@@ -5,6 +5,7 @@ import static fr.sncf.osrd.envelope_utils.DoubleUtils.clamp;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.envelope.part.EnvelopePart;
+import fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator;
 import fr.sncf.osrd.reporting.exceptions.ErrorType;
 import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import java.util.ArrayList;
@@ -51,7 +52,8 @@ public final class Envelope implements Iterable<EnvelopePart>, SearchableEnvelop
         for (int i = 0; i < parts.length - 1; i++) {
             if (parts[i].getEndPos() != parts[i + 1].getBeginPos())
                 throw new OSRDError(ErrorType.EnvelopePartsNotContiguous);
-            if (parts[i].getEndSpeed() != parts[i + 1].getBeginSpeed()) continuous = false;
+            if (!TrainPhysicsIntegrator.areSpeedsEqual(parts[i].getEndSpeed(), parts[i + 1].getBeginSpeed()))
+                continuous = false;
         }
 
         // find the minimum and maximum speeds for all envelope parts
