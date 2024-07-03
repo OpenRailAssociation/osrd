@@ -20,7 +20,11 @@ import { useDebounce } from 'utils/helpers';
 
 import FilterPanel from './FilterPanel';
 import useTrainSchedulesDetails from './hooks';
-import type { TrainScheduleWithDetails, ValidityFilter } from './types';
+import type {
+  ScheduledPointsHonoredFilter,
+  TrainScheduleWithDetails,
+  ValidityFilter,
+} from './types';
 
 type TimetableToolbarProps = {
   trainIds: number[];
@@ -56,9 +60,12 @@ const TimetableToolbar = ({
   const [filter, setFilter] = useState('');
   const [rollingStockFilter, setRollingStockFilter] = useState('');
   const [validityFilter, setValidityFilter] = useState<ValidityFilter>('both');
+  const [scheduledPointsHonoredFilter, setScheduledPointsHonoredFilter] =
+    useState<ScheduledPointsHonoredFilter>('both');
   const [selectedTags, setSelectedTags] = useState<Set<string | null>>(new Set());
 
   const debouncedFilter = useDebounce(filter, 500);
+
   const debouncedRollingstockFilter = useDebounce(rollingStockFilter, 500);
 
   const [deleteTrainSchedules] = osrdEditoastApi.endpoints.deleteV2TrainSchedule.useMutation();
@@ -69,6 +76,7 @@ const TimetableToolbar = ({
     debouncedFilter,
     debouncedRollingstockFilter,
     validityFilter,
+    scheduledPointsHonoredFilter,
     selectedTags
   );
 
@@ -210,6 +218,8 @@ const TimetableToolbar = ({
           setRollingStockFilter={setRollingStockFilter}
           validityFilter={validityFilter}
           setValidityFilter={setValidityFilter}
+          scheduledPointsHonoredFilter={scheduledPointsHonoredFilter}
+          setScheduledPointsHonoredFilter={setScheduledPointsHonoredFilter}
           uniqueTags={uniqueTags}
           selectedTags={selectedTags}
           setSelectedTags={setSelectedTags}

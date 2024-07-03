@@ -270,14 +270,15 @@
               .scenario-timetable-train-header {
                 display: flex;
                 align-items: center;
-                padding: 0 0.25rem;
                 background-color: var(--coolgray3);
                 transition: background-color 0.2s;
                 .scenario-timetable-train-name {
+                  padding-right: 20px;
                   position: relative;
                   display: flex;
                   align-items: center;
                   overflow: hidden;
+                  padding-left: 0.25rem;
                   .scenario-timetable-train-idx {
                     display: flex;
                     align-items: center;
@@ -318,10 +319,12 @@
                   }
                 }
                 .scenario-timetable-train-times {
+                  display: flex;
+                  justify-content: space-between;
                   min-width: 20%;
                   text-align: right;
-                  height: 1.5rem;
                   line-height: 0.8rem;
+                  padding-right: 0.25rem;
                   .scenario-timetable-train-departure {
                     font-weight: 600;
                     font-size: 0.9rem;
@@ -333,6 +336,11 @@
                 }
                 .V2 {
                   min-width: 40%;
+                }
+                .not-honored{
+                  background-color: var(--warning);
+                  border-top: solid 2px var(--warning);
+                  border-bottom: solid 2px var(--warning);
                 }
               }
               .scenario-timetable-train-body {

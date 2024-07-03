@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 
-import type { ValidityFilter } from './types';
+import type { ValidityFilter, ScheduledPointsHonoredFilter } from './types';
 
 type FilterPanelProps = {
   filter: string;
@@ -15,6 +15,10 @@ type FilterPanelProps = {
   setRollingStockFilter: (rollingStockFilter: string) => void;
   validityFilter: ValidityFilter;
   setValidityFilter: (validityFilter: ValidityFilter) => void;
+  scheduledPointsHonoredFilter: ScheduledPointsHonoredFilter;
+  setScheduledPointsHonoredFilter: (
+    scheduledPointsHonoredFilter: ScheduledPointsHonoredFilter
+  ) => void;
   uniqueTags: string[];
   selectedTags: Set<string | null>;
   setSelectedTags: React.Dispatch<React.SetStateAction<Set<string | null>>>;
@@ -27,6 +31,8 @@ const FilterPanel = ({
   setRollingStockFilter,
   validityFilter,
   setValidityFilter,
+  scheduledPointsHonoredFilter,
+  setScheduledPointsHonoredFilter,
   uniqueTags,
   selectedTags,
   setSelectedTags,
@@ -37,6 +43,12 @@ const FilterPanel = ({
     { value: 'both', label: t('timetable.showAllTrains') },
     { value: 'valid', label: t('timetable.showValidTrains') },
     { value: 'invalid', label: t('timetable.showInvalidTrains') },
+  ];
+
+  const scheduledPointsHonoredOptions: { value: ScheduledPointsHonoredFilter; label: string }[] = [
+    { value: 'both', label: t('timetable.showAllTrains') },
+    { value: 'honored', label: t('timetable.showHonoredTrains') },
+    { value: 'notHonored', label: t('timetable.showNotHonoredTrains') },
   ];
 
   const toggleTagSelection = (tag: string | null) => {
@@ -97,6 +109,21 @@ const FilterPanel = ({
             />
           </div>
 
+          <label htmlFor="train-keep-timetable">
+            {t('timetable.scheduledPointsHonoredFilter')}
+          </label>
+          <div className="validity-filter">
+            <OptionsSNCF
+              onChange={(event) =>
+                setScheduledPointsHonoredFilter(event.target.value as ScheduledPointsHonoredFilter)
+              }
+              options={scheduledPointsHonoredOptions}
+              name="schedule-point-honored"
+              selectedValue={scheduledPointsHonoredFilter}
+            />
+          </div>
+        </div>
+        <div className="col-5">
           <label htmlFor="composition-tag-filter">{t('timetable.compositionCodes')}</label>
           <div className="composition-tag-filter" id="composition-tag-filter">
             {uniqueTags.map((tag) => {

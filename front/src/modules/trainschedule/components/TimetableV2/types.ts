@@ -5,6 +5,8 @@ import type {
 
 export type ValidityFilter = 'both' | 'valid' | 'invalid';
 
+export type ScheduledPointsHonoredFilter = 'both' | 'honored' | 'notHonored';
+
 export type TrainScheduleWithDetails = {
   id: number;
   trainName: string;
@@ -21,6 +23,7 @@ export type TrainScheduleWithDetails = {
   speedLimitTag: string | null;
   labels: string[];
   invalidReason?: InvalidReason;
+  scheduledPointsNotHonored?: boolean;
 };
 
 export type InvalidReason = Exclude<SimulationSummaryResult['status'], 'success'>;

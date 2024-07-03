@@ -20,6 +20,7 @@ import { extractTagCode, keepTrain } from './utils';
  * @param debouncedFilter filter for train name and labels
  * @param debouncedRollingstockFilter filter for train's rolling stock metadata
  * @param validityFilter filter for valid train or not
+ * @param scheduledPointsHonoredFilter filter for trains that keep their timetables or not
  * @param selectedTags filter for train's speed limit tag
  * @returns trainschedules unique speedlimit tags and train schedules
  */
@@ -29,6 +30,7 @@ const useTrainSchedulesDetails = (
   debouncedFilter: string,
   debouncedRollingstockFilter: string,
   validityFilter: string,
+  scheduledPointsHonoredFilter: string,
   selectedTags: Set<string | null>
 ) => {
   const infraId = useInfraID();
@@ -80,6 +82,21 @@ const useTrainSchedulesDetails = (
           if (validityFilter === 'invalid' && trainSummary.status === 'success') return false;
         }
 
+        // Apply scheduled points honored filter
+        if (scheduledPointsHonoredFilter !== 'both') {
+          if (trainSummary.status === 'success') {
+            const isHonored = trainSummary.scheduled_points_honored;
+            if (
+              (scheduledPointsHonoredFilter === 'honored' && !isHonored) ||
+              (scheduledPointsHonoredFilter === 'notHonored' && isHonored)
+            ) {
+              return false;
+            }
+          } else {
+            return false;
+          }
+        }
+
         // Apply tag filter
         if (
           selectedTags.size > 0 &&
@@ -121,6 +138,7 @@ const useTrainSchedulesDetails = (
       // We want to trigger this only if a filter is applied
       const filtereredTrainSchedules =
         validityFilter !== 'both' ||
+        scheduledPointsHonoredFilter !== 'both' ||
         selectedTags.size > 0 ||
         debouncedRollingstockFilter ||
         debouncedFilter
@@ -146,6 +164,7 @@ const useTrainSchedulesDetails = (
                   duration: trainSummary.time,
                   pathLength: formatKmValue(trainSummary.length, 'millimeters', 1),
                   mechanicalEnergyConsumed: jouleToKwh(trainSummary.energy_consumption, true),
+                  scheduledPointsNotHonored: !trainSummary.scheduled_points_honored,
                 }
               : {
                   arrivalTime: '',
@@ -166,6 +185,7 @@ const useTrainSchedulesDetails = (
             speedLimitTag: trainSchedule.speed_limit_tag ?? null,
             labels: trainSchedule.labels ?? [],
             rollingStock,
+
             ...otherProps,
           };
         });
@@ -180,6 +200,7 @@ const useTrainSchedulesDetails = (
     debouncedFilter,
     debouncedRollingstockFilter,
     validityFilter,
+    scheduledPointsHonoredFilter,
     selectedTags,
   ]);
 
