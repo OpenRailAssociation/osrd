@@ -25,11 +25,27 @@ export const formatSuggestedViasToRowVias = (
       formattedOps.unshift(operationalPoints[originIndexInOps]);
     }
   }
-  return formattedOps.map((op, i) => ({
-    ...op,
-    name: op.name || t('waypoint', { id: op.opId }),
-    isMarginValid: op.theoreticalMargin ? marginRegExValidation.test(op.theoreticalMargin) : true,
-    onStopSignal: op.onStopSignal || false,
-    arrival: i === 0 ? startTime?.substring(11, 19) : op.arrival,
-  }));
+  return formattedOps.map((op, i) => {
+    const isMarginValid = op.theoreticalMargin
+      ? marginRegExValidation.test(op.theoreticalMargin)
+      : true;
+
+    const correspondingOp = !('uic' in op)
+      ? pathSteps.find((step) => step.id === op.opId)
+      : undefined;
+
+    const { arrival, onStopSignal, name } = correspondingOp || op;
+
+    return {
+      ...op,
+      isMarginValid,
+      arrival: i === 0 ? startTime?.substring(11, 19) : arrival,
+      onStopSignal: onStopSignal || false,
+      name: name || t('waypoint', { id: op.opId }),
+      ...(correspondingOp && {
+        stopFor: correspondingOp.stopFor,
+        theoreticalMargin: correspondingOp.theoreticalMargin,
+      }),
+    };
+  });
 };
