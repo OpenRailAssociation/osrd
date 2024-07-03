@@ -370,7 +370,7 @@ mod tests {
     async fn test_no_fix() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
-        let small_infra = create_small_infra(db_pool.clone()).await;
+        let small_infra = create_small_infra(db_pool.get_ok().deref_mut()).await;
         let small_infra_id = small_infra.id;
 
         let operations: Vec<Operation> = app
@@ -386,7 +386,7 @@ mod tests {
         // GIVEN
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
-        let mut small_infra = create_small_infra(db_pool.clone()).await;
+        let mut small_infra = create_small_infra(db_pool.get_ok().deref_mut()).await;
         let small_infra_id = small_infra.id;
         let mut infra_cache = InfraCache::load(db_pool.get_ok().deref_mut(), &small_infra)
             .await
@@ -402,7 +402,6 @@ mod tests {
         assert!(infra_errors_before_all
             .iter()
             .all(|e| matches!(e.sub_type, InfraErrorType::OverlappingSpeedSections { .. })));
-        dbg!(infra_errors_before_all, before_all_count);
 
         // Remove a track
         let delete_operation = DeleteOperation {
@@ -425,7 +424,6 @@ mod tests {
         // Check that some new issues appeared
         let (infra_errors_before_fix, before_fix_count) =
             query_errors(db_pool.get_ok().deref_mut(), &small_infra).await;
-        dbg!(before_fix_count, before_all_count);
         assert!(before_fix_count > before_all_count);
 
         // WHEN
@@ -461,7 +459,7 @@ mod tests {
     async fn test_fix_invalid_ref_route_entry_exit() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
-        let small_infra = create_small_infra(db_pool.clone()).await;
+        let small_infra = create_small_infra(db_pool.get_ok().deref_mut()).await;
         let small_infra_id = small_infra.id;
         // Remove a buffer stop
         let deletion = Operation::Delete(DeleteOperation {
@@ -694,7 +692,7 @@ mod tests {
     async fn invalid_switch_ports() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
-        let small_infra = create_small_infra(db_pool.clone()).await;
+        let small_infra = create_small_infra(db_pool.get_ok().deref_mut()).await;
         let small_infra_id = small_infra.id;
 
         let ports = HashMap::from([

@@ -1,5 +1,4 @@
 use std::io::Cursor;
-use std::sync::Arc;
 
 use chrono::Utc;
 use editoast_schemas::infra::InfraObject;
@@ -287,7 +286,7 @@ where
     railjson_object
 }
 
-pub async fn create_small_infra(db_pool: Arc<DbConnectionPoolV2>) -> Infra {
+pub async fn create_small_infra(conn: &mut DbConnection) -> Infra {
     let railjson: RailJson = serde_json::from_str(include_str!(
         "../../../tests/data/infras/small_infra/infra.json"
     ))
@@ -295,7 +294,7 @@ pub async fn create_small_infra(db_pool: Arc<DbConnectionPoolV2>) -> Infra {
     Infra::changeset()
         .name("small_infra".to_owned())
         .last_railjson_version()
-        .persist_v2(railjson, db_pool)
+        .persist(railjson, conn)
         .await
         .unwrap()
 }

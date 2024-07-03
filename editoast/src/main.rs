@@ -630,7 +630,9 @@ async fn import_railjson(
     let railjson: RailJson = serde_json::from_reader(BufReader::new(railjson_file))?;
 
     println!("🍞 Importing infra {infra_name}");
-    let mut infra = infra.persist_v2(railjson, db_pool.clone()).await?;
+    let mut infra = infra
+        .persist(railjson, db_pool.get().await?.deref_mut())
+        .await?;
 
     infra
         .bump_version(db_pool.get().await?.deref_mut())

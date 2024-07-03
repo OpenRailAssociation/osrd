@@ -86,38 +86,39 @@ pub trait GeneratedData {
 }
 
 /// Refresh all the generated data of a given infra
+#[tracing::instrument(level = "debug", skip_all, fields(infra_id))]
 pub async fn refresh_all(
     db_pool: Arc<DbConnectionPoolV2>,
-    infra: i64,
+    infra_id: i64,
     infra_cache: &InfraCache,
 ) -> Result<()> {
     // The other layers depend on track section layer.
     // We must wait until its completion before running the other requests in parallel
-    TrackSectionLayer::refresh_pool(db_pool.clone(), infra, infra_cache).await?;
-    debug!("⚙️ Infra {infra}: track section layer is generated");
+    TrackSectionLayer::refresh_pool(db_pool.clone(), infra_id, infra_cache).await?;
+    debug!("⚙️ Infra {infra_id}: track section layer is generated");
     // The analyze step significantly improves the performance when importing and generating together
     // It doesn’t seem to make a different when the generation step is ran separately
     // It isn’t clear why without analyze the Postgres server seems to run at 100% without halting
     sql_query("analyze")
         .execute(db_pool.get().await?.deref_mut())
         .await?;
-    debug!("⚙️ Infra {infra}: database analyzed");
+    debug!("⚙️ Infra {infra_id}: database analyzed");
     futures::try_join!(
-        SpeedSectionLayer::refresh_pool(db_pool.clone(), infra, infra_cache),
-        SignalLayer::refresh_pool(db_pool.clone(), infra, infra_cache),
-        SwitchLayer::refresh_pool(db_pool.clone(), infra, infra_cache),
-        BufferStopLayer::refresh_pool(db_pool.clone(), infra, infra_cache),
-        ElectrificationLayer::refresh_pool(db_pool.clone(), infra, infra_cache),
-        DetectorLayer::refresh_pool(db_pool.clone(), infra, infra_cache),
-        OperationalPointLayer::refresh_pool(db_pool.clone(), infra, infra_cache),
-        PSLSignLayer::refresh_pool(db_pool.clone(), infra, infra_cache),
-        NeutralSectionLayer::refresh_pool(db_pool.clone(), infra, infra_cache),
-        NeutralSignLayer::refresh_pool(db_pool.clone(), infra, infra_cache),
+        SpeedSectionLayer::refresh_pool(db_pool.clone(), infra_id, infra_cache),
+        SignalLayer::refresh_pool(db_pool.clone(), infra_id, infra_cache),
+        SwitchLayer::refresh_pool(db_pool.clone(), infra_id, infra_cache),
+        BufferStopLayer::refresh_pool(db_pool.clone(), infra_id, infra_cache),
+        ElectrificationLayer::refresh_pool(db_pool.clone(), infra_id, infra_cache),
+        DetectorLayer::refresh_pool(db_pool.clone(), infra_id, infra_cache),
+        OperationalPointLayer::refresh_pool(db_pool.clone(), infra_id, infra_cache),
+        PSLSignLayer::refresh_pool(db_pool.clone(), infra_id, infra_cache),
+        NeutralSectionLayer::refresh_pool(db_pool.clone(), infra_id, infra_cache),
+        NeutralSignLayer::refresh_pool(db_pool.clone(), infra_id, infra_cache),
     )?;
-    debug!("⚙️ Infra {infra}: object layers is generated");
+    debug!("⚙️ Infra {infra_id}: object layers is generated");
     // The error layer depends on the other layers and must be executed at the end.
-    ErrorLayer::refresh_pool(db_pool.clone(), infra, infra_cache).await?;
-    debug!("⚙️ Infra {infra}: errors layer is generated");
+    ErrorLayer::refresh_pool(db_pool.clone(), infra_id, infra_cache).await?;
+    debug!("⚙️ Infra {infra_id}: errors layer is generated");
     Ok(())
 }
 
@@ -171,7 +172,10 @@ pub mod tests {
     use crate::modelsv2::fixtures::create_empty_infra;
     use editoast_models::DbConnectionPoolV2;
 
-    #[rstest] // Slow test
+    #[rstest]
+    // Slow test
+    // PostgreSQL deadlock can happen in this test, see section `Deadlock` of [DbConnectionPoolV2::get] for more information
+    #[serial_test::serial]
     async fn refresh_all_test() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;

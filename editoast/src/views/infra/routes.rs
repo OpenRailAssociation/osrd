@@ -353,7 +353,7 @@ mod tests {
 
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
-        let small_infra = create_small_infra(db_pool.clone()).await;
+        let small_infra = create_small_infra(db_pool.get_ok().deref_mut()).await;
 
         fn compare_result(got: RoutesFromNodesPositions, expected: RoutesFromNodesPositions) {
             let mut got_routes = got.routes;

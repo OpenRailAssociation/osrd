@@ -687,7 +687,7 @@ pub mod tests {
     async fn infra_clone() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
-        let small_infra = create_small_infra(db_pool.clone()).await;
+        let small_infra = create_small_infra(db_pool.get_ok().deref_mut()).await;
         let small_infra_id = small_infra.id;
         let infra_cache = InfraCache::load(db_pool.get_ok().deref_mut(), &small_infra)
             .await
@@ -884,7 +884,10 @@ pub mod tests {
         assert_eq!(refreshed_infras.infra_refreshed, vec![empty_infra.id]);
     }
 
-    #[rstest] // Slow test
+    #[rstest]
+    // Slow test
+    // PostgreSQL deadlock can happen in this test, see section `Deadlock` of [DbConnectionPoolV2::get] for more information
+    #[serial_test::serial]
     async fn infra_refresh_force() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();

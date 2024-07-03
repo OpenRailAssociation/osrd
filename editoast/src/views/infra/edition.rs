@@ -944,7 +944,7 @@ pub mod tests {
         // Init
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
-        let small_infra = create_small_infra(db_pool.clone()).await;
+        let small_infra = create_small_infra(db_pool.get_ok().deref_mut()).await;
 
         // Make a call with a bad ID
         let request = TestRequest::post()
@@ -964,7 +964,7 @@ pub mod tests {
         // Init
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
-        let small_infra = create_small_infra(db_pool.clone()).await;
+        let small_infra = create_small_infra(db_pool.get_ok().deref_mut()).await;
 
         // Make a call with a bad distance
         let request = TestRequest::post()
@@ -984,7 +984,7 @@ pub mod tests {
         // Init
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
-        let small_infra = create_small_infra(db_pool.clone()).await;
+        let small_infra = create_small_infra(db_pool.get_ok().deref_mut()).await;
 
         // Refresh the infra to get the good number of infra errors
         let req_refresh = TestRequest::post()
