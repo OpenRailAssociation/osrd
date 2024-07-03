@@ -3,7 +3,7 @@ mod object_queryable;
 mod railjson_data;
 mod route_from_waypoint_result;
 mod speed_limit_tags;
-mod splited_track_section_with_data;
+mod split_track_section_with_data;
 mod voltage;
 
 use chrono::NaiveDateTime;

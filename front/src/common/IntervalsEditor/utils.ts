@@ -8,7 +8,7 @@ import type { LinearMetadataItem } from 'common/IntervalsDataViz/types';
  * @param linearMetadata The linear metadata we work on
  * @param distance The distance where we split the linear metadata and create a new empty segment
  * @param defaultValue The default value used for the new segment
- * @returns A new linear metadata with two more segments (1 filled with default value and the existing splitted one)
+ * @returns A new linear metadata with two more segments (1 filled with default value and the existing split one)
  * @throws An error when linear metadata is empty, or when the distance is outside
  */
 export function createEmptySegmentAt<T>(

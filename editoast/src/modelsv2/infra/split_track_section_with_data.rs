@@ -14,7 +14,7 @@ use crate::error::Result;
 use editoast_models::DbConnection;
 
 #[derive(QueryableByName, Debug, Clone, Deserialize)]
-pub struct SplitedTrackSectionWithData {
+pub struct SplitTrackSectionWithData {
     #[diesel(sql_type = Text)]
     pub obj_id: String,
     #[diesel(sql_type = Jsonb)]
@@ -26,18 +26,18 @@ pub struct SplitedTrackSectionWithData {
 }
 
 impl Infra {
-    pub async fn get_splited_track_section_with_data(
+    pub async fn get_split_track_section_with_data(
         &self,
         conn: &mut DbConnection,
         track: Identifier,
         distance_fraction: f64,
-    ) -> Result<Option<SplitedTrackSectionWithData>> {
-        let query = include_str!("sql/get_splited_track_section_with_data.sql");
+    ) -> Result<Option<SplitTrackSectionWithData>> {
+        let query = include_str!("sql/get_split_track_section_with_data.sql");
         let result = sql_query(query)
             .bind::<BigInt, _>(self.id)
             .bind::<Text, _>(track.to_string())
             .bind::<Double, _>(distance_fraction)
-            .get_result::<SplitedTrackSectionWithData>(conn)
+            .get_result::<SplitTrackSectionWithData>(conn)
             .await
             .optional()?;
         Ok(result)

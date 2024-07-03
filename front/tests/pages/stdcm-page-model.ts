@@ -47,9 +47,9 @@ export default class StdcmPage extends SimulationConfPage {
 
   // STDCM
   async setOriginTime(digits: string) {
-    const splittedDigit = digits.split('');
+    const splitDigit = digits.split('');
     await this.getOriginTimeDelta.focus();
-    splittedDigit.forEach(async (digit) => {
+    splitDigit.forEach(async (digit) => {
       await this.page.keyboard.press(digit);
     });
   }
