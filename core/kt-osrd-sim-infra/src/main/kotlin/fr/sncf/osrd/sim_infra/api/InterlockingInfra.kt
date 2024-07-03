@@ -32,7 +32,7 @@ interface LocationInfra : TrackNetworkInfra, TrackInfra, TrackProperties {
 
     fun getDetectorName(det: DetectorId): String
 
-    fun getTrackChunkZone(chunk: TrackChunkId): ZoneId
+    fun getTrackChunkZone(chunk: TrackChunkId): ZoneId?
 }
 
 fun LocationInfra.isBufferStop(detector: StaticIdx<Detector>): Boolean {

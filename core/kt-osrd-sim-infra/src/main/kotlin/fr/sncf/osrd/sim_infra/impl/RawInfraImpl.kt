@@ -605,8 +605,8 @@ class RawInfraImpl(
         return detectorPool[det].names[0]
     }
 
-    override fun getTrackChunkZone(chunk: TrackChunkId): ZoneId {
-        return chunkToZoneMap[chunk]!!
+    override fun getTrackChunkZone(chunk: TrackChunkId): ZoneId? {
+        return chunkToZoneMap[chunk]
     }
 
     override fun getNextTrackSection(
