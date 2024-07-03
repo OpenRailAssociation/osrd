@@ -19,7 +19,8 @@ use editoast_schemas::infra::SpeedSection;
 use editoast_schemas::infra::Switch;
 use editoast_schemas::infra::TrackEndpoint;
 use editoast_schemas::primitives::Identifier;
-use osm4routing::Coord;
+use geo_types::Coord;
+use osm4routing::Distance;
 use osm4routing::Edge;
 use osm4routing::NodeId;
 use osmpbfreader::Node;
@@ -181,9 +182,7 @@ pub fn double_slip_switch(node: NodeId, branches: &[Branch]) -> Switch {
 
 // Computes the angle betwen the segments [oa] and [ob]
 pub fn angle(o: Coord, a: Coord, b: Coord) -> f64 {
-    ((a.lat - o.lat).atan2(a.lon - o.lon).to_degrees()
-        - (b.lat - o.lat).atan2(b.lon - o.lon).to_degrees())
-    .abs()
+    ((a.y - o.y).atan2(a.x - o.x).to_degrees() - (b.y - o.y).atan2(b.x - o.x).to_degrees()).abs()
 }
 
 fn direction(node: &osmpbfreader::Node) -> Direction {
@@ -500,7 +499,7 @@ fn identifier(tags: &osmpbfreader::Tags) -> Option<OperationalPointIdentifierExt
 
 #[cfg(test)]
 mod tests {
-    use osm4routing::Coord;
+    use geo_types::Coord;
     use rstest::rstest;
 
     use super::*;
@@ -510,9 +509,9 @@ mod tests {
         /* b
         .  | 90 °
         .  o–––––a */
-        let o = Coord { lon: 0.0, lat: 0.0 };
-        let a = Coord { lon: 1.0, lat: 0.0 };
-        let b = Coord { lon: 0.0, lat: 1.0 };
+        let o = Coord { x: 0.0, y: 0.0 };
+        let a = Coord { x: 1.0, y: 0.0 };
+        let b = Coord { x: 0.0, y: 1.0 };
         assert_eq!(90.0, angle(o, a, b).round());
     }
 
@@ -529,11 +528,11 @@ mod tests {
     fn test_reference_coord() {
         let edge = Edge {
             nodes: vec![NodeId(0), NodeId(1)],
-            geometry: vec![Coord { lon: 0., lat: 0. }, Coord { lon: 1., lat: 1. }],
+            geometry: vec![Coord { x: 0., y: 0. }, Coord { x: 1., y: 1. }],
             ..Default::default()
         };
-        assert_eq!(1., reference_coord(NodeId(0), &edge).lon);
-        assert_eq!(0., reference_coord(NodeId(1), &edge).lon);
+        assert_eq!(1., reference_coord(NodeId(0), &edge).x);
+        assert_eq!(0., reference_coord(NodeId(1), &edge).x);
     }
 
     #[test]
@@ -541,14 +540,14 @@ mod tests {
         let edge = Edge {
             nodes: vec![NodeId(0), NodeId(1), NodeId(2)],
             geometry: vec![
-                Coord { lon: 0., lat: 0. },
-                Coord { lon: 0., lat: 0. },
-                Coord { lon: 1., lat: 1. },
+                Coord { x: 0., y: 0. },
+                Coord { x: 0., y: 0. },
+                Coord { x: 1., y: 1. },
             ],
             ..Default::default()
         };
-        assert_eq!(1., reference_coord(NodeId(0), &edge).lon);
-        assert_eq!(0., reference_coord(NodeId(2), &edge).lon);
+        assert_eq!(1., reference_coord(NodeId(0), &edge).x);
+        assert_eq!(0., reference_coord(NodeId(2), &edge).x);
     }
 
     #[rstest]

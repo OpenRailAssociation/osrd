@@ -6,8 +6,9 @@ license = "LGPL-3.0"
 
 [dependencies]
 editoast_schemas.workspace = true
+geo-types = "0.7.13"
 geos.workspace = true
-osm4routing = "0.6.1"
+osm4routing = "0.6.5"
 osmpbfreader = "0.16.1"
 serde_json.workspace = true
 tracing.workspace = true

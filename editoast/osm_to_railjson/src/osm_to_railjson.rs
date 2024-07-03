@@ -71,7 +71,7 @@ pub fn parse_osm(osm_pbf_in: PathBuf) -> Result<RailJson, Box<dyn Error + Send +
     railjson.track_sections = rail_edges
         .map(|e| {
             let geo = geos::geojson::Geometry::new(geos::geojson::Value::LineString(
-                e.geometry.iter().map(|c| vec![c.lon, c.lat]).collect(),
+                e.geometry.iter().map(|c| vec![c.x, c.y]).collect(),
             ));
             TrackSection {
                 id: e.id.as_str().into(),

@@ -2903,9 +2903,9 @@ dependencies = [
 
 [[package]]
 name = "osm4routing"
-version = "0.6.3"
+version = "0.6.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cb78580e65df0c8dc5843be72560c7b54c67fd0c68cb969529cc4721b79bb777"
+checksum = "29beb511cf712c27b676758b5035ab51c9d21065be29234713614611566a51ae"
 dependencies = [
  "clap",
  "csv",
@@ -2919,6 +2919,7 @@ name = "osm_to_railjson"
 version = "0.1.0"
 dependencies = [
  "editoast_schemas",
+ "geo-types",
  "geos",
  "osm4routing",
  "osmpbfreader",
