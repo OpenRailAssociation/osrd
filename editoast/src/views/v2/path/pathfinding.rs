@@ -27,12 +27,12 @@ use crate::modelsv2::OperationalPointModel;
 use crate::modelsv2::Retrieve;
 use crate::modelsv2::RetrieveBatch;
 use crate::modelsv2::RetrieveBatchUnchecked;
-use crate::modelsv2::RollingStockModel;
 use crate::modelsv2::TrackSectionModel;
 use crate::redis_utils::RedisClient;
 use crate::redis_utils::RedisConnection;
 use crate::views::get_app_version;
 use crate::views::v2::path::PathfindingError;
+use crate::views::v2::train_schedule::TrainScheduleProxy;
 use editoast_models::DbConnection;
 use editoast_models::DbConnectionPoolV2;
 use editoast_schemas::infra::OperationalPoint;
@@ -159,17 +159,29 @@ async fn pathfinding_blocks(
     Ok(pathfinding_result)
 }
 
-/// Compute a path given a batch of trainschedule and an infrastructure
+/// Compute a path given a batch of trainschedule and an infrastructure.
+///
+/// ## Important
+///
+/// If this function was called with the same train schedule, the result will be cached.
+/// If you call this function multiple times with the same train schedule but with another infra, then you must provide a fresh `cache`.
 pub async fn pathfinding_from_train(
     conn: &mut DbConnection,
     redis: &mut RedisConnection,
     core: Arc<CoreClient>,
     infra: &Infra,
     train_schedule: TrainSchedule,
+    proxy: Arc<TrainScheduleProxy>,
 ) -> Result<PathfindingResult> {
+    if let Some(res) = proxy.get_pathfinding_result(train_schedule.id) {
+        return Ok(res);
+    }
+
     // Retrieve rolling stock
     let rolling_stock_name = train_schedule.rolling_stock_name.clone();
-    let Some(rolling_stock) = RollingStockModel::retrieve(conn, rolling_stock_name.clone()).await?
+    let Some(rolling_stock) = proxy
+        .get_rolling_stock(rolling_stock_name.clone(), conn)
+        .await?
     else {
         return Ok(PathfindingResult::RollingStockNotFound { rolling_stock_name });
     };
@@ -187,7 +199,13 @@ pub async fn pathfinding_from_train(
             .collect(),
     };
 
-    pathfinding_blocks(conn, redis, core, infra, &path_input).await
+    match pathfinding_blocks(conn, redis, core, infra, &path_input).await {
+        Ok(res) => {
+            proxy.set_pathfinding_result(train_schedule.id, res.clone());
+            Ok(res)
+        }
+        err => err,
+    }
 }
 
 /// Generates a unique hash based on the pathfinding entries.
