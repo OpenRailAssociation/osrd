@@ -17,6 +17,10 @@ import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import kotlin.math.max
 import kotlin.math.min
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
+val blockAvailabilityLogger: Logger = LoggerFactory.getLogger("BlockAvailability")
 
 data class BlockAvailability(
     val fullInfra: FullInfra,
@@ -143,6 +147,12 @@ private fun convertWorkSchedules(
                 val chunkEndOffset = chunkStartOffset + infra.getTrackChunkLength(chunk).distance
                 if (chunkStartOffset > range.end || chunkEndOffset < range.begin) continue
                 val zone = infra.getTrackChunkZone(chunk)
+                if (zone == null) {
+                    blockAvailabilityLogger.info(
+                        "Skipping part of work schedule [${entry.startTime}; ${entry.endTime}] because it is on a track not fully covered by routes: $track",
+                    )
+                    continue
+                }
                 res.add(
                     SpacingRequirement(
                         infra.getZoneName(zone),
