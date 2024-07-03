@@ -47,7 +47,7 @@ const TrackSplitLayers: FC<unknown> = () => {
     editorState: { editorLayers },
   } = useContext(EditorContext) as ExtendedEditorContextType<TrackSplitState>;
 
-  const splittedPoint = getSplitPoint(state);
+  const splitPoint = getSplitPoint(state);
 
   return (
     <>
@@ -67,8 +67,8 @@ const TrackSplitLayers: FC<unknown> = () => {
         <Layer id={TRACK_LAYER_ID} type="line" paint={TRACK_STYLE} />
       </Source>
 
-      {/* Highlighted splitted point of the track section */}
-      <Source type="geojson" data={splittedPoint}>
+      {/* Highlighted split point of the track section */}
+      <Source type="geojson" data={splitPoint}>
         <Layer
           id={POINTS_LAYER_ID}
           type="circle"

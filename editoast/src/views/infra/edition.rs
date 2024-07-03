@@ -143,14 +143,14 @@ pub async fn split_track_section<'a>(
         .into());
     }
 
-    // Calling the DB to get the full object and also the splitted geo
+    // Calling the DB to get the full object and also the split geo
     let result = infra
-        .get_splited_track_section_with_data(conn, payload.track.clone(), distance_fraction)
+        .get_split_track_section_with_data(conn, payload.track.clone(), distance_fraction)
         .await?;
-    let tracksection_data = result.expect("Failed to retrieve splited track section data. Ensure the track ID and distance fraction are valid.").clone();
+    let tracksection_data = result.expect("Failed to retrieve split track section data. Ensure the track ID and distance fraction are valid.").clone();
     let tracksection = tracksection_data.railjson.as_ref().clone();
 
-    // Building the two newly tracksections from the splitted one
+    // Building the two newly tracksections from the split one
     // ~~~~~~~~~~~~~~~
     // left
     let left_tracksection_id = Uuid::new_v4();
@@ -291,7 +291,7 @@ pub async fn split_track_section<'a>(
     ]
     .to_vec();
 
-    operations.extend(get_splitted_operations_for_impacted(
+    operations.extend(get_split_operations_for_impacted(
         &mut infra_cache,
         &tracksection,
         distance,
@@ -335,13 +335,13 @@ pub async fn split_track_section<'a>(
 /// * ....
 ///
 /// # Arguments
-/// * `tracksection_id` - ID of the original track (the splitted one)
-/// * `distance` - Distance (in meters) where the tracksection is splitted
+/// * `tracksection_id` - ID of the original track (the split one)
+/// * `distance` - Distance (in meters) where the tracksection is split
 /// * `left_tracksection_id` - ID of the newly "left" tracksection
 /// * `tracksection_id` - ID of the newly "right" tracksection
 /// * `path` - JSON path for the operation
 /// * `sign` - Sign to check
-fn get_splitted_operations_for_impacted(
+fn get_split_operations_for_impacted(
     infra_cache: &mut InfraCache,
     tracksection: &TrackSection,
     distance: f64,
@@ -458,7 +458,7 @@ fn get_splitted_operations_for_impacted(
                 operations.push(Operation::Update(UpdateOperation {
                     obj_type: obj.obj_type,
                     obj_id: obj.obj_id.to_string(),
-                    railjson_patch: Patch(get_splitted_patch_operations_for_applicable_ranges(
+                    railjson_patch: Patch(get_split_patch_operations_for_applicable_ranges(
                         tracksection.id.clone(),
                         distance,
                         left_tracksection_id,
@@ -472,7 +472,7 @@ fn get_splitted_operations_for_impacted(
                 let speedsection = infra_cache.get_speed_section(&obj.obj_id).unwrap();
                 let mut patch_operations: Vec<PatchOperation> = Vec::<PatchOperation>::new();
                 // Check track ranges
-                patch_operations.extend(get_splitted_patch_operations_for_applicable_ranges(
+                patch_operations.extend(get_split_patch_operations_for_applicable_ranges(
                     tracksection.id.clone(),
                     distance,
                     left_tracksection_id,
@@ -483,7 +483,7 @@ fn get_splitted_operations_for_impacted(
                 // Check extensions for signs in extensions
                 if let Some(psl) = &speedsection.extensions.psl_sncf {
                     // check for `z``
-                    patch_operations.extend(get_splitted_patch_operations_for_sign(
+                    patch_operations.extend(get_split_patch_operations_for_sign(
                         tracksection.id.clone(),
                         distance,
                         left_tracksection_id,
@@ -493,7 +493,7 @@ fn get_splitted_operations_for_impacted(
                     ));
                     // check for `announcement`
                     for (index, sign) in psl.announcement().iter().enumerate() {
-                        patch_operations.extend(get_splitted_patch_operations_for_sign(
+                        patch_operations.extend(get_split_patch_operations_for_sign(
                             tracksection.id.clone(),
                             distance,
                             left_tracksection_id,
@@ -504,7 +504,7 @@ fn get_splitted_operations_for_impacted(
                     }
                     // check for `r`
                     for (index, sign) in psl.r().iter().enumerate() {
-                        patch_operations.extend(get_splitted_patch_operations_for_sign(
+                        patch_operations.extend(get_split_patch_operations_for_sign(
                             tracksection.id.clone(),
                             distance,
                             left_tracksection_id,
@@ -551,7 +551,7 @@ fn get_splitted_operations_for_impacted(
                 let neutralsection = infra_cache.get_neutral_section(&obj.obj_id).unwrap();
                 let mut patch_operations: Vec<PatchOperation> = Vec::<PatchOperation>::new();
                 // Check track ranges
-                patch_operations.extend(get_splitted_patch_operations_for_ranges(
+                patch_operations.extend(get_split_patch_operations_for_ranges(
                     tracksection.id.clone(),
                     distance,
                     left_tracksection_id,
@@ -562,7 +562,7 @@ fn get_splitted_operations_for_impacted(
                 // Check extensions for signs in extensions
                 if let Some(neutral) = &neutralsection.extensions.neutral_sncf {
                     // Check for `z``
-                    patch_operations.extend(get_splitted_patch_operations_for_sign(
+                    patch_operations.extend(get_split_patch_operations_for_sign(
                         tracksection.id.clone(),
                         distance,
                         left_tracksection_id,
@@ -572,7 +572,7 @@ fn get_splitted_operations_for_impacted(
                     ));
                     // check for `announcement`
                     for (index, sign) in neutral.announcement.iter().enumerate() {
-                        patch_operations.extend(get_splitted_patch_operations_for_sign(
+                        patch_operations.extend(get_split_patch_operations_for_sign(
                             tracksection.id.clone(),
                             distance,
                             left_tracksection_id,
@@ -583,7 +583,7 @@ fn get_splitted_operations_for_impacted(
                     }
                     // check for `end`
                     for (index, sign) in neutral.end.iter().enumerate() {
-                        patch_operations.extend(get_splitted_patch_operations_for_sign(
+                        patch_operations.extend(get_split_patch_operations_for_sign(
                             tracksection.id.clone(),
                             distance,
                             left_tracksection_id,
@@ -594,7 +594,7 @@ fn get_splitted_operations_for_impacted(
                     }
                     // check for `rev`
                     for (index, sign) in neutral.rev.iter().enumerate() {
-                        patch_operations.extend(get_splitted_patch_operations_for_sign(
+                        patch_operations.extend(get_split_patch_operations_for_sign(
                             tracksection.id.clone(),
                             distance,
                             left_tracksection_id,
@@ -625,13 +625,13 @@ fn get_splitted_operations_for_impacted(
 /// It helps to generate a JSON patch operation for a `Sign`.
 ///
 /// # Arguments
-/// * `tracksection_id` - ID of the original track (the splitted one)
-/// * `distance` - Distance (in meters) where the tracksection is splitted
+/// * `tracksection_id` - ID of the original track (the split one)
+/// * `distance` - Distance (in meters) where the tracksection is split
 /// * `left_tracksection_id` - ID of the newly "left" tracksection
 /// * `tracksection_id` - ID of the newly "right" tracksection
 /// * `path` - JSON path for the operation
 /// * `sign` - Sign to check
-fn get_splitted_patch_operations_for_sign(
+fn get_split_patch_operations_for_sign(
     tracksection_id: Identifier,
     distance: f64,
     left_tracksection_id: Uuid,
@@ -664,13 +664,13 @@ fn get_splitted_patch_operations_for_sign(
 /// It helps to generate a JSON patch operation for a `Vec<ApplicableDirectionsTrackRange>`.
 ///
 /// # Arguments
-/// * `tracksection_id` - ID of the original track (the splitted one)
-/// * `distance` - Distance (in meters) where the tracksection is splitted
+/// * `tracksection_id` - ID of the original track (the split one)
+/// * `distance` - Distance (in meters) where the tracksection is split
 /// * `left_tracksection_id` - ID of the newly "left" tracksection
 /// * `right_tracksection_id` - ID of the newly "right" tracksection
 /// * `path` - JSON path for the operation
 /// * `ranges` - List of track section ranges
-fn get_splitted_patch_operations_for_applicable_ranges(
+fn get_split_patch_operations_for_applicable_ranges(
     tracksection_id: Identifier,
     distance: f64,
     left_tracksection_id: Uuid,
@@ -739,13 +739,13 @@ fn get_splitted_patch_operations_for_applicable_ranges(
 /// /!\ It's the same function than the one above, but for `DirectionalTrackRange`` instead of `ApplicableDirectionsTrackRange``.
 ///
 /// # Arguments
-/// * `tracksection_id` - ID of the original track (the splitted one)
-/// * `distance` - Distance (in meters) where the tracksection is splitted
+/// * `tracksection_id` - ID of the original track (the split one)
+/// * `distance` - Distance (in meters) where the tracksection is split
 /// * `left_tracksection_id` - ID of the newly "left" tracksection
 /// * `right_tracksection_id` - ID of the newly "right" tracksection
 /// * `path` - JSON path for the operation
 /// * `ranges` - List of track section ranges
-fn get_splitted_patch_operations_for_ranges(
+fn get_split_patch_operations_for_ranges(
     tracksection_id: Identifier,
     distance: f64,
     left_tracksection_id: Uuid,

@@ -11,7 +11,7 @@ import type { ChartAxes } from 'modules/simulationResult/consts';
 import type { Train, SimulationTrain } from 'reducers/osrdsimulation/types';
 
 /**
- * Will do some formating & computation to get a trains to be displayed. Stored then with currentSimulation splitted reducer
+ * Will do some formating & computation to get a trains to be displayed. Stored then with currentSimulation split reducer
  * @param {*} keyValues what do we compare (times vs position vs speed vs slope etc...)
  * @param {*} simulationTrains simulation raw data
  * @returns

@@ -208,20 +208,20 @@ class PlaywrightScenarioPage extends BasePage {
   }
 
   async setNumberOfTrains(digits: string) {
-    const splittedDigit = digits.split('');
+    const splitDigit = digits.split('');
     await this.getTrainCountInput.focus();
     await this.page.keyboard.press('Backspace');
-    splittedDigit.forEach(async (digit) => {
+    splitDigit.forEach(async (digit) => {
       await this.page.keyboard.press(digit);
     });
   }
 
   async setDelta(digits: string) {
-    const splittedDigit = digits.split('');
+    const splitDigit = digits.split('');
     await this.getDeltaInput.focus();
     await this.page.keyboard.press('Backspace');
     await this.page.keyboard.press('Backspace');
-    splittedDigit.forEach(async (digit) => {
+    splitDigit.forEach(async (digit) => {
       await this.page.keyboard.press(digit);
     });
   }
