@@ -210,7 +210,7 @@ async fn project_simulation_results(
     let signal_sightings = simulation_result.signal_sightings;
     let zone_updates = simulation_result.zone_updates;
     let signal_projection_request = SignalProjectionRequest {
-        infra: infra_id.to_string(),
+        infra: infra_id,
         train_path: projection_path_payload.into(),
         signal_sightings,
         zone_updates,

@@ -62,6 +62,7 @@ fn colored_method(method: &reqwest::Method) -> ColoredString {
 #[derive(Debug, Clone)]
 pub enum CoreClient {
     Direct(HttpClient),
+    MessageQueue(mq_client::RabbitMQClient),
     #[cfg(test)]
     Mocked(mocking::MockingClient),
 }
@@ -110,6 +111,7 @@ impl CoreClient {
         method: reqwest::Method,
         path: &str,
         body: Option<&B>,
+        infra_id: Option<i64>,
     ) -> Result<R::Response> {
         let method_s = colored_method(&method);
         debug!(
@@ -158,6 +160,17 @@ impl CoreClient {
 
                 error!(target: "editoast::coreclient", "{method_s} {path} {status}", status = status.to_string().bold().red());
                 Err(self.handle_error(bytes.as_ref(), status, url))
+            }
+            CoreClient::MessageQueue(client) => {
+                // TODO: maybe implement retry?
+                let infra_id = infra_id.expect("FIXME: allow empty infra id in the amqp protocol"); // FIXME: allow empty infra id in the amqp protocol
+                                                                                                    // TODO: tracing: use correlation id
+
+                let response = client
+                    .call_with_response::<_, R>(infra_id.to_string(), &body, true, None, None)
+                    .await?;
+
+                Ok(response)
             }
             #[cfg(test)]
             CoreClient::Mocked(client) => {
@@ -231,6 +244,9 @@ where
         Self::URL_PATH
     }
 
+    /// Returns the infra id used for the request. Must be provided.
+    fn infra_id(&self) -> Option<i64>;
+
     /// Returns whether or not `self` should be serialized as JSON and used as
     /// the request body
     ///
@@ -253,6 +269,7 @@ where
             self.method(),
             self.url(),
             if self.has_body() { Some(self) } else { None },
+            self.infra_id(),
         )
         .await
     }
@@ -422,6 +439,10 @@ mod test {
         impl AsCoreRequest<()> for Req {
             const METHOD: Method = Method::GET;
             const URL_PATH: &'static str = "/test";
+
+            fn infra_id(&self) -> Option<i64> {
+                None
+            }
         }
         let mut core = MockingClient::default();
         core.stub("/test")
@@ -440,6 +461,10 @@ mod test {
         impl AsCoreRequest<Bytes> for Req {
             const METHOD: Method = Method::GET;
             const URL_PATH: &'static str = "/test";
+
+            fn infra_id(&self) -> Option<i64> {
+                None
+            }
         }
         let mut core = MockingClient::default();
         core.stub("/test")
@@ -458,6 +483,10 @@ mod test {
         impl AsCoreRequest<()> for Req {
             const METHOD: Method = Method::GET;
             const URL_PATH: &'static str = "/test";
+
+            fn infra_id(&self) -> Option<i64> {
+                None
+            }
         }
         let error = json!({
             "context": {

@@ -38,4 +38,8 @@ pub struct CoreConflict {
 impl AsCoreRequest<Json<ConflictDetectionResponse>> for ConflicDetectionRequest {
     const METHOD: reqwest::Method = reqwest::Method::POST;
     const URL_PATH: &'static str = "/detect_conflicts";
+
+    fn infra_id(&self) -> Option<i64> {
+        None
+    }
 }

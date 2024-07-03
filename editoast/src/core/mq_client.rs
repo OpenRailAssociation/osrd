@@ -1,23 +1,24 @@
-/*
-Todo: Rewrite a client here to send messages to core.
-
+use super::CoreResponse;
+use crate::error::InternalError;
+use editoast_derive::EditoastError;
 use futures_util::StreamExt;
 use lapin::{
-    options::{BasicPublishOptions, QueueDeclareOptions},
-    types::FieldTable,
-    BasicProperties, Channel, Connection, ConnectionProperties,
+    options::{BasicAckOptions, BasicConsumeOptions, BasicPublishOptions},
+    types::{FieldTable, ShortString},
+    BasicProperties, Connection, ConnectionProperties,
 };
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 use serde_json::to_vec;
-use std::fmt::Debug;
+use std::{fmt::Debug, sync::Arc};
+use thiserror::Error;
 use tokio::time::{timeout, Duration};
-use uuid::Uuid;
 
+#[derive(Debug, Clone)]
 pub struct RabbitMQClient {
-    connection: Connection,
-    core_queue_prefix: String,
+    connection: Arc<Connection>,
     exchange: String,
     timeout: u64,
+    hostname: String,
 }
 
 pub struct Options {
@@ -25,101 +26,53 @@ pub struct Options {
     /// for instance: `amqp://osrd:password@localhost:5672/%2f` for the default vhost
     pub uri: String,
     /// Exchange name
-    pub exchange: String,
-    /// Prefix for the core queues
-    pub core_queue_prefix: String,
+    pub worker_pool_identifier: String,
     /// Default timeout for the response
     pub timeout: u64,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
-struct MessageEnvelope<T>
-where
-    T: Serialize + Debug,
-{
-    payload: T,
-    message_type: String,
-    respond_to: Option<String>,
-    infra_expected_version: i64,
-}
-
-impl<T> MessageEnvelope<T>
-where
-    T: Serialize + Debug,
-{
-    fn new(
-        payload: T,
-        message_type: String,
-        respond_to: Option<String>,
-        infra_expected_version: i64,
-    ) -> Self {
-        MessageEnvelope {
-            payload,
-            message_type,
-            respond_to,
-            infra_expected_version,
-        }
-    }
-
-    fn serialized_payload(&self) -> Result<Vec<u8>, Error> {
-        Ok(to_vec(&self).map_err(Error::SerializationError)?)
-    }
-}
-
-#[derive(Debug)]
+#[derive(Debug, Error, EditoastError)]
+#[editoast_error(base_id = "coreclient")]
 pub enum Error {
+    #[error("AMQP error: {0}")]
+    #[editoast_error(status = "500")]
     Lapin(lapin::Error),
+    #[error("Cannot serialize request: {0}")]
+    #[editoast_error(status = "500")]
     SerializationError(serde_json::Error),
+    #[error("Cannot deserialize response: {0}")]
+    #[editoast_error(status = "500")]
+    DeserialisationError(InternalError),
+    #[error("Response timeout")]
+    #[editoast_error(status = "500")]
     ResponseTimeout,
 }
 
 impl RabbitMQClient {
     pub async fn new(options: Options) -> Result<Self, lapin::Error> {
         let connection = Connection::connect(&options.uri, ConnectionProperties::default()).await?;
+        let hostname = hostname::get()
+            .map(|name| name.to_string_lossy().into_owned())
+            .unwrap_or_else(|_| "unknown".to_string());
+
         Ok(RabbitMQClient {
-            connection,
-            core_queue_prefix: options.core_queue_prefix,
-            exchange: options.exchange,
+            connection: Arc::new(connection),
+            exchange: options.worker_pool_identifier,
             timeout: options.timeout,
+            hostname,
         })
     }
 
-    /// Create the core queue.
-    /// If it does not exist, the queue will be created with the provided options.
-    /// If it exists, the queue_declare call will not have any effect.
-    pub async fn create_queue_for_core(
-        &self,
-        channel: &Channel,
-        infra_id: i64,
-    ) -> Result<String, Error> {
-        let core_queue_name = format!("{}-{}", self.core_queue_prefix, infra_id);
-
-        channel
-            .queue_declare(
-                &core_queue_name,
-                QueueDeclareOptions {
-                    exclusive: false,
-                    auto_delete: false,
-                    durable: true,
-                    ..Default::default()
-                },
-                FieldTable::default(),
-            )
-            .await
-            .map_err(Error::Lapin)?;
-
-        Ok(core_queue_name)
-    }
-
+    #[allow(dead_code)]
     pub async fn call<T>(
         &self,
-        message_type: &str,
-        infra_id: i64,
-        infra_expected_version: i64,
-        payload: T,
+        routing_key: String,
+        published_payload: &T,
+        mandatory: bool,
+        correlation_id: Option<String>,
     ) -> Result<(), Error>
     where
-        T: Serialize + Debug,
+        T: Serialize,
     {
         // Create a channel
         let channel = self
@@ -128,42 +81,49 @@ impl RabbitMQClient {
             .await
             .map_err(Error::Lapin)?;
 
-        // Prepare the message
-        let serialized_payload = MessageEnvelope::new(
-            payload,
-            message_type.to_string(),
-            None,
-            infra_expected_version,
-        )
-        .serialized_payload()?;
+        let serialized_payload_vec =
+            to_vec(published_payload).map_err(Error::SerializationError)?;
+        let serialized_payload = serialized_payload_vec.as_slice();
 
-        // Prepare the queue and publish the message to the core queue
-        let core_queue_name = self.create_queue_for_core(&channel, infra_id).await?;
+        let options = BasicPublishOptions {
+            mandatory,
+            ..Default::default()
+        };
+
+        let properties = {
+            let mut properties = BasicProperties::default();
+
+            if let Some(id) = correlation_id {
+                properties = properties.with_correlation_id(ShortString::from(id));
+            }
+
+            properties
+        };
+
         channel
             .basic_publish(
-                &self.exchange,
-                core_queue_name.as_str(),
-                BasicPublishOptions::default(),
-                &serialized_payload,
-                BasicProperties::default(),
+                self.exchange.as_str(),
+                routing_key.as_str(),
+                options,
+                serialized_payload,
+                properties,
             )
-            .await
-            .map_err(Error::Lapin)?;
+            .await;
 
         Ok(())
     }
 
     pub async fn call_with_response<T, TR>(
         &self,
-        message_type: &str,
-        infra_id: i64,
-        infra_expected_version: i64,
-        payload: T,
+        routing_key: String,
+        published_payload: &Option<T>,
+        mandatory: bool,
+        correlation_id: Option<String>,
         override_timeout: Option<u64>,
-    ) -> Result<TR, Error>
+    ) -> Result<TR::Response, Error>
     where
-        T: Serialize + Debug,
-        TR: for<'de> Deserialize<'de> + Debug,
+        T: Serialize,
+        TR: CoreResponse,
     {
         // Create a channel
         let channel = self
@@ -172,69 +132,70 @@ impl RabbitMQClient {
             .await
             .map_err(Error::Lapin)?;
 
-        // Declare a queue with a random name for the response.
-        // This queue will be deleted after the response is received.
-        let temp_queue_name = format!("resp-{}", Uuid::new_v4());
-        let temp_queue = channel
-            .queue_declare(
-                &temp_queue_name,
-                QueueDeclareOptions {
-                    exclusive: true,
-                    auto_delete: true,
-                    durable: false,
-                    ..Default::default()
-                },
+        let serialized_payload_vec =
+            to_vec(published_payload).map_err(Error::SerializationError)?;
+        let serialized_payload = serialized_payload_vec.as_slice();
+
+        let options = BasicPublishOptions {
+            mandatory,
+            ..Default::default()
+        };
+
+        let properties = {
+            let mut properties = BasicProperties::default()
+                .with_reply_to(ShortString::from("amq.rabbitmq.reply-to"));
+
+            if let Some(id) = correlation_id {
+                properties = properties.with_correlation_id(ShortString::from(id));
+            }
+
+            properties
+        };
+
+        // Set up a consumer on the reply-to queue
+        let mut consumer = channel
+            .basic_consume(
+                "amq.rabbitmq.reply-to",
+                self.hostname.as_str(),
+                BasicConsumeOptions::default(),
                 FieldTable::default(),
             )
             .await
             .map_err(Error::Lapin)?;
 
-        // Prepare the message
-        let serialized_payload = MessageEnvelope::new(
-            payload,
-            message_type.to_string(),
-            Some(temp_queue_name),
-            infra_expected_version,
-        )
-        .serialized_payload()?;
-
-        let core_queue_name = self.create_queue_for_core(&channel, infra_id).await?;
-
-        // Publish the message to the core queue
+        // Publish the message
         channel
             .basic_publish(
-                &self.exchange,
-                core_queue_name.as_str(),
-                BasicPublishOptions::default(),
-                &serialized_payload,
-                BasicProperties::default(),
+                self.exchange.as_str(),
+                routing_key.as_str(),
+                options,
+                serialized_payload,
+                properties,
             )
-            .await
-            .map_err(Error::Lapin)?;
+            .await;
 
-        // Create a consumer for the temporary response queue
-        let consumer = channel
-            .basic_consume(
-                &temp_queue.name().as_str(),
-                "editoast",
-                lapin::options::BasicConsumeOptions::default(),
-                FieldTable::default(),
-            )
-            .await
-            .map_err(Error::Lapin)?;
-
-        // Wait for the response, resolve it and return it
-        let timeout_duration = override_timeout.unwrap_or(self.timeout);
-        let message = timeout(
-            Duration::from_secs(timeout_duration),
-            consumer.into_future(),
+        // Await the response
+        let response_delivery = timeout(
+            Duration::from_secs(override_timeout.unwrap_or(self.timeout)),
+            consumer.next(),
         )
         .await
-        .map_err(|_| Error::ResponseTimeout)?
-        .0
-        .unwrap()
-        .map_err(Error::Lapin)?;
-        Ok(serde_json::from_slice(&message.data).map_err(Error::SerializationError)?)
+        .map_err(|_| Error::ResponseTimeout)?;
+
+        if let Some(Ok(delivery)) = response_delivery {
+            // Acknowledge the message
+            delivery
+                .ack(BasicAckOptions::default())
+                .await
+                .map_err(Error::Lapin)?;
+
+            // Deserialize the response
+            let response =
+                TR::from_bytes(&delivery.data).map_err(|e| Error::DeserialisationError(e))?;
+
+            Ok(response)
+        } else {
+            Err(Error::ResponseTimeout)
+        }
     }
 }
- */

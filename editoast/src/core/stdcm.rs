@@ -13,7 +13,7 @@ use crate::modelsv2::RollingStockModel;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct STDCMCoreRequest {
-    pub infra: String,
+    pub infra: i64,
     pub expected_version: String,
     pub rolling_stock: RollingStockModel,
     pub comfort: RollingStockComfortType,
@@ -36,6 +36,10 @@ pub struct STDCMCoreRequest {
 impl AsCoreRequest<Json<STDCMCoreResponse>> for STDCMCoreRequest {
     const METHOD: reqwest::Method = reqwest::Method::POST;
     const URL_PATH: &'static str = "/stdcm";
+
+    fn infra_id(&self) -> Option<i64> {
+        Some(self.infra)
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug)]

@@ -25,4 +25,8 @@ pub struct InfraStateResponse {
 impl AsCoreRequest<Json<HashMap<String, InfraStateResponse>>> for InfraStateRequest {
     const METHOD: reqwest::Method = reqwest::Method::POST;
     const URL_PATH: &'static str = "/cache_status";
+
+    fn infra_id(&self) -> Option<i64> {
+        self.infra
+    }
 }
