@@ -20,3 +20,7 @@ tokio.workspace = true
 tokio-postgres.workspace = true
 tracing.workspace = true
 url.workspace = true
+
+[dev-dependencies]
+# The feature 'testing' is needed for all of the doc-tests
+editoast_models = { path = "./", features = ["testing"] }

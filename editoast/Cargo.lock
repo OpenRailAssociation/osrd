@@ -1448,6 +1448,7 @@ dependencies = [
  "diesel",
  "diesel-async",
  "editoast_derive",
+ "editoast_models",
  "futures 0.3.30",
  "futures-util",
  "openssl",

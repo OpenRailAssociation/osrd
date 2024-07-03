@@ -108,22 +108,30 @@ impl DbConnectionPoolV2 {
     /// 1. Once a connection is used, it should be dropped **AS SOON AS POSSIBLE**. Failing to do so
     ///    may lead to deadlocks. Example:
     ///
-    /// ```ignore
+    /// ```no_run
+    /// # #[tokio::main]
+    /// # async fn main() {
+    /// let pool = editoast_models::DbConnectionPoolV2::for_tests();
     /// let conn = pool.get_ok();
     /// // Do something with conn
     ///
-    /// // This will deadlock because `conn` hasn't been droped yet. Since this function is
+    /// // This will deadlock because `conn` hasn't been dropped yet. Since this function is
     /// // not async, this is equivalent to an infinite loop.
     /// let conn2 = pool.get_ok();
+    /// # }
     /// ```
     ///
     /// 2. If several futures are spawned and each use their own connection, you should make sure
     ///    that the connection usage follows its acquisition. Failing to do so is equivalent to
     ///    the following example:
     ///
-    /// ```ignore
+    /// ```no_run
+    /// # #[tokio::main]
+    /// # async fn main() {
+    /// let pool = editoast_models::DbConnectionPoolV2::for_tests();
     /// let conn_futures = (0..10).map(|_| async { pool.get() });
     /// let deadlock = futures::future::join_all(conn_futures).await;
+    /// # }
     /// ```
     ///
     /// ## Guidelines
@@ -132,38 +140,71 @@ impl DbConnectionPoolV2 {
     ///
     /// - Don't declare a variable for a single-use connection:
     ///
-    /// ```ignore
+    /// ```
+    /// # async fn my_function_using_conn(conn: tokio::sync::OwnedRwLockWriteGuard<diesel_async::pooled_connection::deadpool::Object<diesel_async::AsyncPgConnection>>) {
+    /// #   // Do something with the connection
+    /// # }
+    /// #
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), editoast_models::EditoastModelsError> {
+    /// let pool = editoast_models::DbConnectionPoolV2::for_tests();
     /// // do
-    /// my_function_using_conn(pool.get().await?.deref_mut()).await;
+    /// my_function_using_conn(pool.get().await?).await;
     /// // instead of
-    /// let conn = &mut pool.get().await?;
+    /// let conn = pool.get().await?;
     /// my_function_using_conn(conn).await;
+    /// # Ok(())
+    /// # }
     /// ```
     ///
     /// - If a connection is used repeatedly, prefer using explicit scoping:
     ///
-    /// ```ignore
+    /// ```
+    /// # async fn foo(conn: &mut tokio::sync::OwnedRwLockWriteGuard<diesel_async::pooled_connection::deadpool::Object<diesel_async::AsyncPgConnection>>) -> u8 {
+    /// #   0
+    /// # }
+    /// # async fn bar(conn: &mut tokio::sync::OwnedRwLockWriteGuard<diesel_async::pooled_connection::deadpool::Object<diesel_async::AsyncPgConnection>>) -> u8 {
+    /// #   42
+    /// # }
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), editoast_models::EditoastModelsError> {
+    /// let pool = editoast_models::DbConnectionPoolV2::for_tests();
     /// let my_results = {
     ///     let conn = &mut pool.get().await?;
     ///     foo(conn).await + bar(conn).await
     /// };
     /// // you may acquire a new connection afterwards
+    /// # Ok(())
+    /// # }
     /// ```
     ///
     /// - If you need to open several connections, then the connection must be
     ///   acquired just before its usage, and dropped just after, **all in the same future**.
     ///   And these futures must all be awaited before attempting to acquire a new connection.
     ///
-    /// ```ignore
+    /// ```
+    /// # trait DoSomething: Sized {
+    /// #   async fn do_something(self, conn: tokio::sync::OwnedRwLockWriteGuard<diesel_async::pooled_connection::deadpool::Object<diesel_async::AsyncPgConnection>>) -> Result<(), editoast_models::EditoastModelsError> {
+    /// #     // Do something with the connection
+    /// #     Ok(())
+    /// #   }
+    /// # }
+    /// # impl DoSomething for u8 {}
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
+    /// # let items = vec![0_u8; 2];
+    /// let pool = editoast_models::DbConnectionPoolV2::for_tests();
     /// let operations =
     ///     items.into_iter()
     ///         .zip(pool.iter_conn())
-    ///         .map(|(item, conn)| async {
+    ///         .map(|(item, conn)| async move {
     ///             let conn = conn.await?; // note the await here
     ///             item.do_something(conn).await
     ///         });
     /// let results = futures::future::try_join_all(operations).await?;
     /// // you may acquire a new connection afterwards
+    /// # Ok(())
+    /// # }
     /// ```
     pub async fn get(&self) -> Result<DbConnectionV2, EditoastModelsError> {
         self.get_connection().await
@@ -186,16 +227,29 @@ impl DbConnectionPoolV2 {
     ///
     /// # Example
     ///
-    /// ```ignore
+    /// ```
+    /// # trait DoSomething: Sized {
+    /// #   async fn do_something(self, conn: tokio::sync::OwnedRwLockWriteGuard<diesel_async::pooled_connection::deadpool::Object<diesel_async::AsyncPgConnection>>) -> Result<(), editoast_models::EditoastModelsError> {
+    /// #     // Do something with the connection
+    /// #     Ok(())
+    /// #   }
+    /// # }
+    /// # impl DoSomething for u8 {}
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
+    /// # let items = vec![0_u8; 2];
+    /// let pool = editoast_models::DbConnectionPoolV2::for_tests();
     /// let operations =
     ///     items.into_iter()
     ///         .zip(pool.iter_conn())
-    ///         .map(|(item, conn)| async {
+    ///         .map(|(item, conn)| async move {
     ///             let conn = conn.await?; // note the await here
     ///             item.do_something(conn).await
     ///         });
     /// let results = futures::future::try_join_all(operations).await?;
     /// // you may acquire a new connection afterwards
+    /// # Ok(())
+    /// # }
     /// ```
     #[allow(unused)] // TEMPORARY
     pub fn iter_conn(
