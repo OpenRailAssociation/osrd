@@ -30,6 +30,7 @@ use crate::core::AsCoreRequest;
 use crate::core::CoreClient;
 use crate::error::Result;
 use crate::modelsv2::infra::Infra;
+use crate::modelsv2::timetable::Timetable;
 use crate::modelsv2::train_schedule::TrainSchedule;
 use crate::modelsv2::Retrieve;
 use crate::modelsv2::RetrieveBatch;
@@ -40,6 +41,7 @@ use crate::views::v2::train_schedule::train_simulation_batch;
 use crate::views::v2::train_schedule::CompleteReportTrain;
 use crate::views::v2::train_schedule::ReportTrain;
 use crate::views::v2::train_schedule::SignalSighting;
+use crate::views::v2::train_schedule::TrainScheduleProxy;
 use crate::views::v2::train_schedule::ZoneUpdate;
 use editoast_models::DbConnectionPoolV2;
 
@@ -153,7 +155,7 @@ async fn project_path(
     })
     .await?;
 
-    let train_schedule_batch: Vec<TrainSchedule> = TrainSchedule::retrieve_batch_or_fail(
+    let trains: Vec<TrainSchedule> = TrainSchedule::retrieve_batch_or_fail(
         db_pool.get().await?.deref_mut(),
         train_ids,
         |missing| TrainScheduleError::BatchTrainScheduleNotFound {
@@ -161,12 +163,33 @@ async fn project_path(
         },
     )
     .await?;
+
+    let (rolling_stocks, _): (Vec<_>, _) = RollingStockModel::retrieve_batch(
+        db_pool.get().await?.deref_mut(),
+        trains
+            .iter()
+            .map::<String, _>(|t| t.rolling_stock_name.clone()),
+    )
+    .await?;
+
+    let (timetables, _): (Vec<_>, _) = Timetable::retrieve_batch(
+        db_pool.get().await?.deref_mut(),
+        trains
+            .iter()
+            .map(|t| t.timetable_id)
+            .collect::<HashSet<_>>(),
+    )
+    .await?;
+
+    let proxy = Arc::new(TrainScheduleProxy::new(&rolling_stocks, &timetables));
+
     let simulations = train_simulation_batch(
         db_pool.clone(),
         redis_client.clone(),
         core.clone(),
-        &train_schedule_batch,
+        &trains,
         &infra,
+        proxy.clone(),
     )
     .await?;
 
@@ -174,13 +197,14 @@ async fn project_path(
     let mut hit_cache: HashMap<i64, CachedProjectPathTrainResult> = HashMap::new();
     let mut miss_cache = HashMap::new();
 
-    for (train, sim) in train_schedule_batch.iter().zip(simulations) {
+    for (train, sim) in trains.iter().zip(simulations) {
         let pathfinding_result = pathfinding_from_train(
             db_pool.get().await?.deref_mut(),
             &mut redis_conn,
             core.clone(),
             &infra,
             train.clone(),
+            proxy.clone(),
         )
         .await?;
 
@@ -276,29 +300,14 @@ async fn project_path(
         hit_cache.insert(id, cached);
     }
 
-    let train_map: HashMap<i64, TrainSchedule> = train_schedule_batch
-        .into_iter()
-        .map(|ts| (ts.id, ts))
-        .collect();
+    let train_map: HashMap<i64, TrainSchedule> = trains.into_iter().map(|ts| (ts.id, ts)).collect();
 
     // 4.1 Fetch rolling stock length
     let mut project_path_result = HashMap::new();
-    let rolling_stock_names: HashSet<_> = hit_cache
-        .keys()
-        .map(|id| {
-            train_map
-                .get(id)
-                .expect("Train not found")
-                .rolling_stock_name
-                .clone()
-        })
+    let rolling_stock_length: HashMap<_, _> = rolling_stocks
+        .into_iter()
+        .map(|rs| (rs.name, rs.length))
         .collect();
-    let (rs, missing): (Vec<_>, _) =
-        RollingStockModel::retrieve_batch(db_pool.get().await?.deref_mut(), rolling_stock_names)
-            .await?;
-    assert!(missing.is_empty(), "Missing rolling stock models");
-    let rolling_stock_length: HashMap<_, _> =
-        rs.into_iter().map(|rs| (rs.name, rs.length)).collect();
 
     // 4.2 Build the projection response
     for (id, cached) in hit_cache {

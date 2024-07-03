@@ -13,6 +13,7 @@ use serde::Deserialize;
 use serde::Serialize;
 use std::cmp::max;
 use std::collections::HashMap;
+use std::ops::DerefMut;
 use std::sync::Arc;
 use thiserror::Error;
 use utoipa::IntoParams;
@@ -26,6 +27,7 @@ use crate::core::v2::stdcm::{STDCMRequest, STDCMStepTimingData};
 use crate::core::AsCoreRequest;
 use crate::core::CoreClient;
 use crate::error::Result;
+use crate::modelsv2::timetable::Timetable;
 use crate::modelsv2::timetable::TimetableWithTrains;
 use crate::modelsv2::train_schedule::TrainSchedule;
 use crate::modelsv2::work_schedules::WorkSchedule;
@@ -33,6 +35,7 @@ use crate::modelsv2::RollingStockModel;
 use crate::modelsv2::{Infra, List};
 use crate::views::v2::path::pathfinding::extract_location_from_path_items;
 use crate::views::v2::path::pathfinding::TrackOffsetExtractionError;
+use crate::views::v2::train_schedule::TrainScheduleProxy;
 use crate::views::v2::train_schedule::{train_simulation, train_simulation_batch};
 use crate::RedisClient;
 use crate::Retrieve;
@@ -163,15 +166,27 @@ async fn stdcm(
     let redis_client_inner = redis_client.into_inner();
 
     // 1. Retrieve Timetable / Infra / Trains / Simulation / Rolling Stock
-    let timetable = TimetableWithTrains::retrieve_or_fail(conn, timetable_id, || {
+    let timetable_trains = TimetableWithTrains::retrieve_or_fail(conn, timetable_id, || {
         STDCMError::TimetableNotFound { timetable_id }
     })
     .await?;
+    let timetable: Timetable = timetable_trains.clone().into();
 
     let infra =
         Infra::retrieve_or_fail(conn, infra_id, || STDCMError::InfraNotFound { infra_id }).await?;
 
-    let (trains, _): (Vec<_>, _) = TrainSchedule::retrieve_batch(conn, timetable.train_ids).await?;
+    let (trains, _): (Vec<_>, _) =
+        TrainSchedule::retrieve_batch(conn, timetable_trains.train_ids).await?;
+
+    let (rolling_stocks, _): (Vec<_>, _) = RollingStockModel::retrieve_batch(
+        db_pool.get().await?.deref_mut(),
+        trains
+            .iter()
+            .map::<String, _>(|t| t.rolling_stock_name.clone()),
+    )
+    .await?;
+
+    let proxy = Arc::new(TrainScheduleProxy::new(&rolling_stocks, &[timetable]));
 
     let simulations = train_simulation_batch(
         db_pool.clone(),
@@ -179,6 +194,7 @@ async fn stdcm(
         core_client.clone(),
         &trains,
         &infra,
+        proxy,
     )
     .await?;
 
@@ -331,8 +347,15 @@ async fn get_maximum_run_time(
     };
 
     let conn = &mut db_pool.clone().get().await?;
-    let sim_result =
-        train_simulation(conn, redis_client, core_client, &train_schedule, infra).await?;
+    let sim_result = train_simulation(
+        conn,
+        redis_client,
+        core_client,
+        &train_schedule,
+        infra,
+        Arc::default(),
+    )
+    .await?;
 
     let total_stop_time: u64 = data
         .steps

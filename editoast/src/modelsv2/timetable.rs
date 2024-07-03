@@ -8,9 +8,9 @@ use crate::error::Result;
 use crate::modelsv2::Retrieve;
 use editoast_models::DbConnection;
 
-#[derive(Debug, Default, Clone, ModelV2)]
+#[derive(Debug, Default, Clone, ModelV2, PartialEq)]
 #[model(table = crate::tables::timetable_v2)]
-#[cfg_attr(test, derive(serde::Deserialize, PartialEq))]
+#[cfg_attr(test, derive(serde::Deserialize))]
 pub struct Timetable {
     pub id: i64,
     pub electrical_profile_set_id: Option<i64>,
@@ -46,6 +46,15 @@ impl Retrieve<i64> for TimetableWithTrains {
             Ok(result) => Ok(Some(result)),
             Err(diesel::result::Error::NotFound) => Ok(None),
             Err(err) => Err(err.into()),
+        }
+    }
+}
+
+impl From<TimetableWithTrains> for Timetable {
+    fn from(timetable_with_trains: TimetableWithTrains) -> Self {
+        Self {
+            id: timetable_with_trains.id,
+            electrical_profile_set_id: timetable_with_trains.electrical_profile_set_id,
         }
     }
 }
