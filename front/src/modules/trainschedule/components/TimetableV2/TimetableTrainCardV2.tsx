@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Alert, Pencil, Trash } from '@osrd-project/ui-icons';
+import { Alert, Pencil, Trash, Clock } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { omit } from 'lodash';
 import { useTranslation } from 'react-i18next';
@@ -216,9 +216,20 @@ const TimetableTrainCardV2 = ({
                 </span>
               )}
             </div>
-            <div className="scenario-timetable-train-times V2">
-              <div className="scenario-timetable-train-departure">{train.startTime}</div>
-              <div className="scenario-timetable-train-arrival">{train.arrivalTime}</div>
+            <div
+              className={cx('scenario-timetable-train-times V2', {
+                'not-honored': train.scheduledPointsNotHonored,
+              })}
+            >
+              {train.scheduledPointsNotHonored && (
+                <div className="ml-1">
+                  <Clock size="lg" />
+                </div>
+              )}
+              <div>
+                <div className="scenario-timetable-train-departure">{train.startTime}</div>
+                <div className="scenario-timetable-train-arrival">{train.arrivalTime}</div>
+              </div>
             </div>
           </div>
           <div className="scenario-timetable-train-body">

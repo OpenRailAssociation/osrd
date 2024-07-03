@@ -134,7 +134,6 @@ const TimetableV2 = ({
           {t('timetable.addTrainSchedule')}
         </button>
       </div>
-
       <TimetableToolbar
         trainIds={trainIds}
         trainSchedulesDetails={trainSchedulesDetails}
