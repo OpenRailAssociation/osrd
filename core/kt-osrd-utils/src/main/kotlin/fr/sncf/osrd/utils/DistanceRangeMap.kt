@@ -1,6 +1,7 @@
 package fr.sncf.osrd.utils
 
-import fr.sncf.osrd.utils.units.*
+import fr.sncf.osrd.utils.units.Distance
+import fr.sncf.osrd.utils.units.meters
 import java.util.function.BiFunction
 
 /**
@@ -94,4 +95,21 @@ fun <T> mergeDistanceRangeMaps(
 
     // Build the whole map at once to avoid redundant computations.
     return distanceRangeMapOf(resEntries)
+}
+
+/**
+ * Filters the 'mapToFilter' map, keeping only ranges also present in 'filter' map (values from
+ * 'filter' map are not considered)
+ */
+fun <T, R> filterIntersection(
+    mapToFilter: DistanceRangeMap<T>,
+    filter: DistanceRangeMap<R>
+): DistanceRangeMap<T> {
+    val res = distanceRangeMapOf<T>()
+    for (range in filter) {
+        val filteredRange = mapToFilter.clone()
+        filteredRange.truncate(range.lower, range.upper)
+        res.putMany(filteredRange.asList())
+    }
+    return res
 }

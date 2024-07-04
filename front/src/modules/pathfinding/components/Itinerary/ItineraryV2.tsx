@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 
-import { ArrowSwitch, Plus, Rocket, Trash } from '@osrd-project/ui-icons';
+import { ArrowSwitch, Route, Plus, Rocket, Trash } from '@osrd-project/ui-icons';
 import bbox from '@turf/bbox';
 import type { Position } from 'geojson';
+import { isNil } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
@@ -61,6 +62,13 @@ const ItineraryV2 = ({
     }
   };
 
+  const seeWholeItinerary = () => {
+    if (pathProperties) {
+      const newViewport = computeBBoxViewport(bbox(pathProperties.geometry), map.viewport);
+      dispatch(updateViewport(newViewport));
+    }
+  };
+
   const notifyRestrictionResetWarning = () => {
     if (!isEmptyArray(powerRestrictions)) {
       dispatch(
@@ -85,10 +93,7 @@ const ItineraryV2 = ({
   };
 
   useEffect(() => {
-    if (pathProperties) {
-      const newViewport = computeBBoxViewport(bbox(pathProperties.geometry), map.viewport);
-      dispatch(updateViewport(newViewport));
-    }
+    seeWholeItinerary();
   }, [pathProperties]);
 
   return (
@@ -113,10 +118,20 @@ const ItineraryV2 = ({
       )}
       {origin && destination && (
         <div className="d-flex flex-row flex-wrap">
+          <button
+            className="col my-1 btn bg-white btn-sm"
+            type="button"
+            aria-label={t('viewItineraryOnMap')}
+            title={t('viewItineraryOnMap')}
+            onClick={seeWholeItinerary}
+            disabled={isNil(pathProperties)}
+          >
+            <Route />
+          </button>
           {pathProperties && pathProperties.suggestedOperationalPoints && (
             <button
               data-testid="add-waypoints-button"
-              className="col my-1 text-white btn bg-info btn-sm"
+              className="col ml-1 my-1 text-white btn bg-info btn-sm"
               type="button"
               onClick={() =>
                 openModal(<ModalSuggestedVias suggestedVias={pathProperties.allWaypoints} />)

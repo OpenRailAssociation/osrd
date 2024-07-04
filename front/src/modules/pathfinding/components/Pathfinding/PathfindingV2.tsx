@@ -11,7 +11,7 @@ import type { ManageTrainSchedulePathProperties } from 'applications/operational
 import infraLogo from 'assets/pictures/components/tracks.svg';
 import { Spinner } from 'common/Loaders';
 import { useOsrdConfSelectors } from 'common/osrdContext';
-import { usePathfindingV2 } from 'modules/pathfinding/hook/usePathfinding';
+import { usePathfindingV2 } from 'modules/pathfinding/hooks/usePathfinding';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
 import { conditionalStringConcat, formatKmValue } from 'utils/strings';
 

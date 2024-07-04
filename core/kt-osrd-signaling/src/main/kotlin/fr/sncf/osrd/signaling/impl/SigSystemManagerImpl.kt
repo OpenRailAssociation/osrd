@@ -69,6 +69,10 @@ class SigSystemManagerImpl : SigSystemManager {
         return sigSystemPool[sigSystem].parametersSchema
     }
 
+    override fun getName(sigSystem: SignalingSystemId): String {
+        return sigSystemPool[sigSystem].id
+    }
+
     override val drivers
         get() = driverPool.space()
 

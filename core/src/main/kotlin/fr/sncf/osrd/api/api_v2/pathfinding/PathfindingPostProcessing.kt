@@ -7,6 +7,8 @@ import fr.sncf.osrd.graph.Pathfinding
 import fr.sncf.osrd.graph.PathfindingEdgeLocationId
 import fr.sncf.osrd.graph.PathfindingResultId
 import fr.sncf.osrd.railjson.schema.infra.RJSRoutePath
+import fr.sncf.osrd.reporting.exceptions.ErrorType
+import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.sim_infra.api.Path
@@ -20,8 +22,18 @@ import fr.sncf.osrd.utils.units.sumDistances
 
 fun runPathfindingPostProcessing(
     infra: FullInfra,
+    initialRequest: PathfindingBlockRequest,
     rawPath: PathfindingResultId<Block>
-): PathfindingBlockResponse {
+): PathfindingBlockSuccess {
+    val res = runPathfindingBlockPostProcessing(infra, rawPath)
+    validatePathfindingResponse(infra, initialRequest, res)
+    return res
+}
+
+fun runPathfindingBlockPostProcessing(
+    infra: FullInfra,
+    rawPath: PathfindingResultId<Block>
+): PathfindingBlockSuccess {
     // We reuse some of the old function of pathfindingResultConverter,
     // there will be some cleanup to be made when the old version is removed
     val oldRoutePath = makeRoutePath(infra.blockInfra, infra.rawInfra, rawPath.ranges)
@@ -36,6 +48,42 @@ fun runPathfindingPostProcessing(
         Length(rawPath.ranges.map { it.end - it.start }.sumDistances()),
         makePathItemPositions(rawPath)
     )
+}
+
+fun validatePathfindingResponse(
+    infra: FullInfra,
+    req: PathfindingBlockRequest,
+    res: PathfindingBlockResponse
+) {
+    if (res !is PathfindingBlockSuccess) return
+
+    for ((i, blockName) in res.blocks.withIndex()) {
+        val block = infra.blockInfra.getBlockFromName(blockName)!!
+        val stopAtBufferStop = infra.blockInfra.blockStopAtBufferStop(block)
+        val isLastBlock = i == res.blocks.size - 1
+        if (stopAtBufferStop && !isLastBlock) {
+            val zonePath = infra.blockInfra.getBlockPath(block).last()
+            val detector = infra.rawInfra.getZonePathExit(zonePath)
+            val detectorName = infra.rawInfra.getDetectorName(detector.value)
+            val err = OSRDError(ErrorType.MissingSignalOnRouteTransition)
+            err.context["detector"] = "detector=$detectorName, dir=${detector.direction}"
+            throw err
+        }
+    }
+
+    val trackSet = HashSet<String>()
+    for (track in res.trackSectionRanges) trackSet.add(track.trackSection)
+    if (trackSet.size != res.trackSectionRanges.size)
+        throw OSRDError(ErrorType.PathWithRepeatedTracks)
+
+    if (res.pathItemPositions.size != req.pathItems.size)
+        throw OSRDError(ErrorType.PathHasInvalidItemPositions)
+
+    if (res.pathItemPositions[0].distance.millimeters != 0L)
+        throw OSRDError(ErrorType.PathHasInvalidItemPositions)
+
+    if (res.pathItemPositions[res.pathItemPositions.size - 1] != res.length)
+        throw OSRDError(ErrorType.PathHasInvalidItemPositions)
 }
 
 fun makePathItemPositions(path: Pathfinding.Result<StaticIdx<Block>, Block>): List<Offset<Path>> {

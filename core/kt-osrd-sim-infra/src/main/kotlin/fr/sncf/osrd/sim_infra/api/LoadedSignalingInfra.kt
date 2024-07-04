@@ -4,7 +4,8 @@ import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.sim_infra.impl.SignalParameters
 import fr.sncf.osrd.utils.Direction
 import fr.sncf.osrd.utils.indexing.*
-import fr.sncf.osrd.utils.units.*
+import fr.sncf.osrd.utils.units.Length
+import fr.sncf.osrd.utils.units.OffsetList
 
 /** A type of signaling system, which is used both for blocks and signals */
 sealed interface SignalingSystem
@@ -44,6 +45,8 @@ interface InfraSigSystemManager {
     fun getSettingsSchema(sigSystem: SignalingSystemId): SigSettingsSchema
 
     fun getParametersSchema(sigSystem: SignalingSystemId): SigParametersSchema
+
+    fun getName(sigSystem: SignalingSystemId): String
 
     val drivers: StaticIdxSpace<SignalDriver>
 

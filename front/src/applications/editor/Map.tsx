@@ -350,7 +350,7 @@ const MapUnplugged = ({
           {mapSearchMarker && <SearchMarker data={mapSearchMarker} colors={colors[mapStyle]} />}
         </ReactMapGL>
       </div>
-      ;{children}
+      {children}
     </>
   );
 };

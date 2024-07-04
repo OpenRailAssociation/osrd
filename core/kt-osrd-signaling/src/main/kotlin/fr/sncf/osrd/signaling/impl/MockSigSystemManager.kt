@@ -62,6 +62,10 @@ class MockSigSystemManager(
         return parametersSchema
     }
 
+    override fun getName(sigSystem: SignalingSystemId): String {
+        return this.sigSystem
+    }
+
     override val drivers: StaticIdxSpace<SignalDriver>
         get() = StaticIdxSpace(1u)
 
