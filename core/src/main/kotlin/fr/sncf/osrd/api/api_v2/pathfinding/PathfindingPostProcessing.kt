@@ -21,7 +21,7 @@ import fr.sncf.osrd.utils.units.sumDistances
 fun runPathfindingPostProcessing(
     infra: FullInfra,
     rawPath: PathfindingResultId<Block>
-): PathfindingBlockResponse {
+): PathfindingBlockSuccess {
     // We reuse some of the old function of pathfindingResultConverter,
     // there will be some cleanup to be made when the old version is removed
     val oldRoutePath = makeRoutePath(infra.blockInfra, infra.rawInfra, rawPath.ranges)
