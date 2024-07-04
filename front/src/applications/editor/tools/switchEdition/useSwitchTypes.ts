@@ -6,7 +6,7 @@ import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 
 import type { SwitchType } from './types';
 
-// Client prefered order
+// Client preferred order
 const trackNodeTypeOrder = [
   'link',
   'point_switch',
@@ -15,30 +15,47 @@ const trackNodeTypeOrder = [
   'double_slip_switch',
 ];
 
+let switchTypesCache: Record<number, SwitchType[]> = {};
+
 export default function useSwitchTypes(infraID: number | undefined) {
-  const [data, setData] = useState<SwitchType[]>([]);
+  const [data, setData] = useState<SwitchType[]>(
+    !isNil(infraID) ? switchTypesCache[infraID] || [] : []
+  );
   const [getInfraSwitchTypes, { isLoading, error }] =
     osrdEditoastApi.endpoints.getInfraByInfraIdSwitchTypes.useLazyQuery({});
+  const invalidateCache = useCallback(() => {
+    switchTypesCache = {};
+  }, [switchTypesCache]);
 
   const fetch = useCallback(
     async (infraId?: number) => {
-      // reset
+      // Reset state:
       setData([]);
+
+      if (isNil(infraId)) {
+        return;
+      }
+
+      // Check cache first:
+      if (switchTypesCache[infraId]) {
+        setData(switchTypesCache[infraId]);
+        return;
+      }
+
       try {
-        if (!isNil(infraId)) {
-          const resp = getInfraSwitchTypes({ infraId });
-          const result = await resp.unwrap();
-          if (result) {
-            const orderedData = [...result] as SwitchType[];
-            orderedData.sort(
-              (a, b) => trackNodeTypeOrder.indexOf(a.id) - trackNodeTypeOrder.indexOf(b.id)
-            );
-            setData(orderedData);
-          } else {
-            setData([]);
-          }
-          resp.unsubscribe();
+        const resp = getInfraSwitchTypes({ infraId }, true);
+        const result = await resp.unwrap();
+        if (result) {
+          const orderedData = [...result] as SwitchType[];
+          orderedData.sort(
+            (a, b) => trackNodeTypeOrder.indexOf(a.id) - trackNodeTypeOrder.indexOf(b.id)
+          );
+          setData(orderedData);
+          switchTypesCache[infraId] = orderedData;
+        } else {
+          setData([]);
         }
+        resp.unsubscribe();
       } catch (e) {
         console.error(e);
       }
@@ -50,5 +67,5 @@ export default function useSwitchTypes(infraID: number | undefined) {
     fetch(infraID);
   }, [infraID, fetch]);
 
-  return { data, isLoading, error };
+  return { data, isLoading, error, invalidateCache };
 }

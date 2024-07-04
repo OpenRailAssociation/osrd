@@ -64,7 +64,7 @@ const SwitchList: React.FC<SwitchListProps> = ({
               <span className="align-self-end">{`${t('Editor.obj-types.Switch')} ${swId}`}</span>
             </div>
             <div className="d-flex ml-4">
-              {switchPositionsByType[type].map((optPosition, posIndex) => {
+              {switchPositionsByType[type]?.map((optPosition, posIndex) => {
                 const isPositionNull = optPosition === 'Any';
                 const isButtonIncompatible =
                   Object.keys(selectedSwitches).length > 1 &&
