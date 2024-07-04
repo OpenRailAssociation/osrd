@@ -6,11 +6,14 @@ import com.squareup.moshi.Moshi
 import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import fr.sncf.osrd.api.api_v2.TrackRange
+import fr.sncf.osrd.conflicts.TravelledPath
+import fr.sncf.osrd.graph.Pathfinding.Range
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.sim_infra.api.Path
 import fr.sncf.osrd.utils.json.UnitAdapterFactory
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
+import java.util.*
 
 interface PathfindingBlockResponse
 
@@ -25,7 +28,24 @@ class PathfindingBlockSuccess(
 
     /** Offsets of the waypoints given as input */
     @Json(name = "path_item_positions") val pathItemPositions: List<Offset<Path>>
-) : PathfindingBlockResponse
+) : PathfindingBlockResponse {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is PathfindingBlockSuccess) return false
+
+        if (blocks != other.blocks) return false
+        if (routes != other.routes) return false
+        if (trackSectionRanges != other.trackSectionRanges) return false
+        if (length != other.length) return false
+        if (pathItemPositions != other.pathItemPositions) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        return Objects.hash(blocks, routes, trackSectionRanges, length, pathItemPositions)
+    }
+}
 
 class NotFoundInBlocks(
     @Json(name = "track_section_ranges") val trackSectionRanges: List<TrackRange>,
@@ -39,41 +59,21 @@ class NotFoundInRoutes(
 
 class NotFoundInTracks : PathfindingBlockResponse
 
-open class IncompatibleConstraint(
-    val blocks: List<String>,
-    val routes: List<String>,
-    @Json(name = "track_section_ranges") val trackSectionRanges: List<TrackRange>,
-    val length: Length<Path>,
-    @Json(name = "incompatible_ranges")
-    val incompatibleRanges: List<List<Offset<Path>>>, // List of pairs
+class IncompatibleConstraintsPathResponse(
+    @Json(name = "relaxed_constraints_path") val relaxedConstraintsPath: PathfindingBlockSuccess,
+    @Json(name = "incompatible_constraints") val incompatibleConstraints: IncompatibleConstraints
 ) : PathfindingBlockResponse
 
-class IncompatibleElectrification(
-    blocks: List<String>,
-    routes: List<String>,
-    @Json(name = "track_section_ranges") trackSectionRanges: List<TrackRange>,
-    length: Length<Path>,
-    @Json(name = "incompatible_ranges")
-    incompatibleRanges: List<List<Offset<Path>>> // List of pairs
-) : IncompatibleConstraint(blocks, routes, trackSectionRanges, length, incompatibleRanges)
+data class IncompatibleConstraints(
+    @Json(name = "incompatible_electrification_ranges")
+    val incompatibleElectrificationRanges: List<RangeValue<String>>,
+    @Json(name = "incompatible_gauge_ranges")
+    val incompatibleGaugeRanges: List<Range<TravelledPath>>,
+    @Json(name = "incompatible_signaling_system_ranges")
+    val incompatibleSignalingSystemRanges: List<RangeValue<String>>
+)
 
-class IncompatibleLoadingGauge(
-    blocks: List<String>,
-    routes: List<String>,
-    @Json(name = "track_section_ranges") trackSectionRanges: List<TrackRange>,
-    length: Length<Path>,
-    @Json(name = "incompatible_ranges")
-    incompatibleRanges: List<List<Offset<Path>>> // List of pairs
-) : IncompatibleConstraint(blocks, routes, trackSectionRanges, length, incompatibleRanges)
-
-class IncompatibleSignalingSystem(
-    blocks: List<String>,
-    routes: List<String>,
-    @Json(name = "track_section_ranges") trackSectionRanges: List<TrackRange>,
-    length: Length<Path>,
-    @Json(name = "incompatible_ranges")
-    incompatibleRanges: List<List<Offset<Path>>> // List of pairs
-) : IncompatibleConstraint(blocks, routes, trackSectionRanges, length, incompatibleRanges)
+data class RangeValue<T>(val range: Range<TravelledPath>, val value: T)
 
 class PathfindingFailed(
     @Json(name = "core_error") val coreError: OSRDError,
@@ -87,9 +87,7 @@ val polymorphicPathfindingResponseAdapter: PolymorphicJsonAdapterFactory<Pathfin
         .withSubtype(NotFoundInBlocks::class.java, "not_found_in_blocks")
         .withSubtype(NotFoundInRoutes::class.java, "not_found_in_routes")
         .withSubtype(NotFoundInTracks::class.java, "not_found_in_tracks")
-        .withSubtype(IncompatibleElectrification::class.java, "incompatible_electrification")
-        .withSubtype(IncompatibleLoadingGauge::class.java, "incompatible_loading_gauge")
-        .withSubtype(IncompatibleSignalingSystem::class.java, "incompatible_signaling_system")
+        .withSubtype(IncompatibleConstraintsPathResponse::class.java, "incompatible_constraints")
         .withSubtype(NotEnoughPathItems::class.java, "not_enough_path_items")
         .withSubtype(PathfindingFailed::class.java, "pathfinding_failed")
 
