@@ -6,7 +6,7 @@ import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.api.InfraManager
 import fr.sncf.osrd.api.api_v2.*
 import fr.sncf.osrd.api.api_v2.pathfinding.findWaypointBlocks
-import fr.sncf.osrd.api.api_v2.pathfinding.runPathfindingPostProcessing
+import fr.sncf.osrd.api.api_v2.pathfinding.runPathfindingBlockPostProcessing
 import fr.sncf.osrd.api.api_v2.standalone_sim.*
 import fr.sncf.osrd.conflicts.*
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue
@@ -104,7 +104,7 @@ class STDCMEndpointV2(private val infraManager: InfraManager) : Take {
                 val response = PathNotFound()
                 return RsJson(RsWithBody(stdcmResponseAdapter.toJson(response)))
             }
-            val pathfindingResponse = runPathfindingPostProcessing(infra, path.blocks)
+            val pathfindingResponse = runPathfindingBlockPostProcessing(infra, path.blocks)
 
             val simulationResponse =
                 buildSimResponse(infra, path, rollingStock, request.speedLimitTag, request.comfort)

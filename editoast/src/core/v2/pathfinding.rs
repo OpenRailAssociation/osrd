@@ -11,8 +11,12 @@ use crate::core::{AsCoreRequest, Json};
 use crate::error::InternalError;
 
 editoast_common::schemas! {
+    IncompatibleConstraints,
+    IncompatibleOffsetRangeWithValue,
+    IncompatibleOffsetRange,
     PathfindingResult,
     PathfindingResultSuccess,
+    OffsetRange,
     TrackRange,
 }
 
@@ -35,6 +39,30 @@ pub struct PathfindingRequest {
     pub rolling_stock_supported_signaling_systems: Vec<String>,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+pub struct OffsetRange {
+    start: u64,
+    end: u64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+pub struct IncompatibleOffsetRangeWithValue {
+    range: OffsetRange,
+    value: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+pub struct IncompatibleOffsetRange {
+    range: OffsetRange,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+pub struct IncompatibleConstraints {
+    incompatible_electrification_ranges: Vec<IncompatibleOffsetRangeWithValue>,
+    incompatible_gauge_ranges: Vec<IncompatibleOffsetRange>,
+    incompatible_signaling_system_ranges: Vec<IncompatibleOffsetRangeWithValue>,
+}
+
 #[derive(Serialize, Deserialize, Clone, Debug, ToSchema)]
 #[serde(tag = "status", rename_all = "snake_case")]
 pub enum PathfindingResult {
@@ -48,32 +76,9 @@ pub enum PathfindingResult {
         length: u64,
     },
     NotFoundInTracks,
-    IncompatibleElectrification {
-        #[schema(inline)]
-        blocks: Vec<Identifier>,
-        #[schema(inline)]
-        routes: Vec<Identifier>,
-        track_section_ranges: Vec<TrackRange>,
-        length: u64,
-        incompatible_ranges: Vec<(u64, u64)>,
-    },
-    IncompatibleLoadingGauge {
-        #[schema(inline)]
-        blocks: Vec<Identifier>,
-        #[schema(inline)]
-        routes: Vec<Identifier>,
-        track_section_ranges: Vec<TrackRange>,
-        length: u64,
-        incompatible_ranges: Vec<(u64, u64)>,
-    },
-    IncompatibleSignalingSystem {
-        #[schema(inline)]
-        blocks: Vec<Identifier>,
-        #[schema(inline)]
-        routes: Vec<Identifier>,
-        track_section_ranges: Vec<TrackRange>,
-        length: u64,
-        incompatible_ranges: Vec<(u64, u64)>,
+    IncompatibleConstraints {
+        relaxed_constraints_path: Box<PathfindingResultSuccess>,
+        incompatible_constraints: Box<IncompatibleConstraints>,
     },
     InvalidPathItem {
         index: usize,

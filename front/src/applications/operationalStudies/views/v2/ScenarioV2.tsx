@@ -18,7 +18,7 @@ import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import { useInfraID, useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
-import useInfraStatus from 'modules/pathfinding/hook/useInfraStatus';
+import useInfraStatus from 'modules/pathfinding/hooks/useInfraStatus';
 import AddAndEditScenarioModal from 'modules/scenario/components/AddOrEditScenarioModal';
 import ScenarioLoaderMessage from 'modules/scenario/components/ScenarioLoaderMessage';
 import TimetableManageTrainScheduleV2 from 'modules/trainschedule/components/ManageTrainSchedule/TimetableManageTrainScheduleV2';

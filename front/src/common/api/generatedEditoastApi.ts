@@ -3460,6 +3460,22 @@ export type PathfindingResultSuccess = {
   /** Path description as track ranges */
   track_section_ranges: TrackRange[];
 };
+export type OffsetRange = {
+  end: number;
+  start: number;
+};
+export type IncompatibleOffsetRangeWithValue = {
+  range: OffsetRange;
+  value: string;
+};
+export type IncompatibleOffsetRange = {
+  range: OffsetRange;
+};
+export type IncompatibleConstraints = {
+  incompatible_electrification_ranges: IncompatibleOffsetRangeWithValue[];
+  incompatible_gauge_ranges: IncompatibleOffsetRange[];
+  incompatible_signaling_system_ranges: IncompatibleOffsetRangeWithValue[];
+};
 export type PathItemLocation =
   | TrackOffset
   | {
@@ -3494,28 +3510,9 @@ export type PathfindingResult =
       status: 'not_found_in_tracks';
     }
   | {
-      blocks: string[];
-      incompatible_ranges: (number & number)[][];
-      length: number;
-      routes: string[];
-      status: 'incompatible_electrification';
-      track_section_ranges: TrackRange[];
-    }
-  | {
-      blocks: string[];
-      incompatible_ranges: (number & number)[][];
-      length: number;
-      routes: string[];
-      status: 'incompatible_loading_gauge';
-      track_section_ranges: TrackRange[];
-    }
-  | {
-      blocks: string[];
-      incompatible_ranges: (number & number)[][];
-      length: number;
-      routes: string[];
-      status: 'incompatible_signaling_system';
-      track_section_ranges: TrackRange[];
+      incompatible_constraints: IncompatibleConstraints;
+      relaxed_constraints_path: PathfindingResultSuccess;
+      status: 'incompatible_constraints';
     }
   | {
       index: number;
