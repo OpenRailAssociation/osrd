@@ -3,7 +3,15 @@ package fr.sncf.osrd.pathfinding
 import fr.sncf.osrd.api.ApiTest
 import fr.sncf.osrd.api.api_v2.TrackLocation
 import fr.sncf.osrd.api.api_v2.TrackRange
-import fr.sncf.osrd.api.api_v2.pathfinding.*
+import fr.sncf.osrd.api.api_v2.pathfinding.IncompatibleConstraints
+import fr.sncf.osrd.api.api_v2.pathfinding.IncompatibleConstraintsPathResponse
+import fr.sncf.osrd.api.api_v2.pathfinding.PathfindingBlockRequest
+import fr.sncf.osrd.api.api_v2.pathfinding.PathfindingBlockSuccess
+import fr.sncf.osrd.api.api_v2.pathfinding.PathfindingBlocksEndpointV2
+import fr.sncf.osrd.api.api_v2.pathfinding.RangeValue
+import fr.sncf.osrd.api.api_v2.pathfinding.pathfindingRequestAdapter
+import fr.sncf.osrd.api.api_v2.pathfinding.pathfindingResponseAdapter
+import fr.sncf.osrd.graph.Pathfinding
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType
 import fr.sncf.osrd.utils.takes.TakesUtils
@@ -78,6 +86,29 @@ class PathfindingV2Test : ApiTest() {
         val waypointsStart = listOf(waypointStart)
         val waypointsEnd = listOf(waypointEnd)
         val waypoints = listOf(waypointsStart, waypointsEnd)
+
+        val unconstrainedRequestBody =
+            pathfindingRequestAdapter.toJson(
+                PathfindingBlockRequest(
+                    rollingStockLoadingGauge = RJSLoadingGaugeType.GC,
+                    rollingStockIsThermal = true,
+                    rollingStockSupportedElectrifications = listOf(),
+                    rollingStockSupportedSignalingSystems =
+                        listOf("BAL", "BAPR", "TVM300", "TVM430"),
+                    timeout = null,
+                    infra = "tiny_infra/infra.json",
+                    expectedVersion = "1",
+                    pathItems = waypoints,
+                )
+            )
+        val unconstrainedRawResponse =
+            PathfindingBlocksEndpointV2(infraManager)
+                .act(RqFake("POST", "/v2/pathfinding/blocks", unconstrainedRequestBody))
+        val unconstrainedResponse = TakesUtils.readBodyResponse(unconstrainedRawResponse)
+        val unconstrainedParsed =
+            (pathfindingResponseAdapter.fromJson(unconstrainedResponse)
+                as? PathfindingBlockSuccess)!!
+
         val requestBody =
             pathfindingRequestAdapter.toJson(
                 PathfindingBlockRequest(
@@ -96,6 +127,17 @@ class PathfindingV2Test : ApiTest() {
                 .act(RqFake("POST", "/v2/pathfinding/blocks", requestBody))
         val response = TakesUtils.readBodyResponse(rawResponse)
         val parsed =
-            (pathfindingResponseAdapter.fromJson(response) as? IncompatibleElectrification)!!
+            (pathfindingResponseAdapter.fromJson(response)
+                as? IncompatibleConstraintsPathResponse)!!
+        assert(parsed.relaxedConstraintsPath == unconstrainedParsed)
+        assert(
+            parsed.incompatibleConstraints ==
+                IncompatibleConstraints(
+                    incompatibleElectrificationRanges =
+                        listOf(RangeValue(Pathfinding.Range(Offset.zero(), Offset.zero()), "elec")),
+                    incompatibleGaugeRanges = listOf(),
+                    incompatibleSignalingSystemRanges = listOf()
+                )
+        )
     }
 }

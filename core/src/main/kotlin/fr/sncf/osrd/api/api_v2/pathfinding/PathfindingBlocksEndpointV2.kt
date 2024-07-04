@@ -175,37 +175,53 @@ private fun computePaths(
                     .runPathfinding(waypoints)
             if (res == null) {
                 // This way of handling it is suboptimal, but it should be reworked soon
+                val relaxedPathResponse =
+                    runPathfindingPostProcessing(infra, possiblePathWithoutErrorNoConstraints)
+
                 when (currentConstraint::class.java) {
                     ElectrificationConstraints::class.java -> {
                         throw NoPathFoundException(
-                            IncompatibleElectrification(
-                                listOf(),
-                                listOf(),
-                                listOf(),
-                                Length(0.meters),
-                                listOf(),
+                            IncompatibleConstraintsPathResponse(
+                                relaxedPathResponse,
+                                IncompatibleConstraints(
+                                    listOf(
+                                        RangeValue(
+                                            Pathfinding.Range(Offset.zero(), Offset.zero()),
+                                            "elec"
+                                        )
+                                    ),
+                                    listOf(),
+                                    listOf()
+                                )
                             )
                         )
                     }
                     LoadingGaugeConstraints::class.java -> {
                         throw NoPathFoundException(
-                            IncompatibleLoadingGauge(
-                                listOf(),
-                                listOf(),
-                                listOf(),
-                                Length(0.meters),
-                                listOf(),
+                            IncompatibleConstraintsPathResponse(
+                                relaxedPathResponse,
+                                IncompatibleConstraints(
+                                    listOf(),
+                                    listOf(Pathfinding.Range(Offset.zero(), Offset.zero())),
+                                    listOf()
+                                )
                             )
                         )
                     }
                     SignalingSystemConstraints::class.java -> {
                         throw NoPathFoundException(
-                            IncompatibleSignalingSystem(
-                                listOf(),
-                                listOf(),
-                                listOf(),
-                                Length(0.meters),
-                                listOf(),
+                            IncompatibleConstraintsPathResponse(
+                                relaxedPathResponse,
+                                IncompatibleConstraints(
+                                    listOf(),
+                                    listOf(),
+                                    listOf(
+                                        RangeValue(
+                                            Pathfinding.Range(Offset.zero(), Offset.zero()),
+                                            "signal"
+                                        )
+                                    )
+                                )
                             )
                         )
                     }
@@ -213,7 +229,7 @@ private fun computePaths(
             }
         }
     }
-    // It didn’t fail due to a constraint, no path exists
+    // It didn’t fail due to a RS constraint, no path exists
     throw NoPathFoundException(NotFoundInBlocks(listOf(), Length(0.meters)))
 }
 
