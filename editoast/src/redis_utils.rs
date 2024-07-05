@@ -77,6 +77,31 @@ impl RedisConnection {
         }
     }
 
+    /// Get a list of deserializable value from redis
+    #[tracing::instrument(name = "cache:get_bulk", skip(self), err)]
+    pub async fn json_get_bulk<T: DeserializeOwned, K: Debug + ToRedisArgs + Send + Sync>(
+        &mut self,
+        keys: &[K],
+    ) -> Result<Vec<Option<T>>> {
+        // Avoid mget to fail if keys is empty
+        if keys.is_empty() {
+            return Ok(vec![]);
+        }
+        let values: Vec<Option<String>> = self.mget(keys).await?;
+        values
+            .into_iter()
+            .map(|value| match value {
+                Some(v) => match serde_json::from_str::<T>(&v) {
+                    Ok(value) => Ok(Some(value)),
+                    Err(_) => {
+                        Err(RedisError::from((ErrorKind::TypeError, "Expected valid json")).into())
+                    }
+                },
+                None => Ok(None),
+            })
+            .collect()
+    }
+
     /// Get a deserializable value from redis with expiry time
     #[tracing::instrument(name = "cache:get_with_expiration", skip(self), err)]
     pub async fn json_get_ex<T: DeserializeOwned, K: Debug + ToRedisArgs + Send + Sync>(
@@ -115,6 +140,35 @@ impl RedisConnection {
             }
         };
         self.set_ex(key, str_value, seconds).await?;
+        Ok(())
+    }
+
+    /// Set a list of serializable values to redis
+    #[tracing::instrument(name = "cache:set_bulk", skip(self, items), err)]
+    pub async fn json_set_bulk<K: Debug + ToRedisArgs + Send + Sync, T: Serialize>(
+        &mut self,
+        items: &[(K, T)],
+    ) -> Result<()> {
+        // Avoid mset to fail if keys is empty
+        if items.is_empty() {
+            return Ok(());
+        }
+        let serialized_items = items
+            .iter()
+            .map(|(key, value)| {
+                serde_json::to_string(value)
+                    .map(|str_value| (key, str_value))
+                    .map_err(|_| {
+                        RedisError::from((
+                            ErrorKind::IoError,
+                            "An error occured serializing to json",
+                        ))
+                        .into()
+                    })
+            })
+            .collect::<Result<Vec<_>>>()?;
+
+        self.mset(&serialized_items).await?;
         Ok(())
     }
 }
