@@ -4,7 +4,7 @@ import turfDistance from '@turf/distance';
 import { point, type Position, featureCollection, lineString, type Units } from '@turf/helpers';
 import { getCoord } from '@turf/invariant';
 import length from '@turf/length';
-import type { Feature, Point, FeatureCollection, LineString } from 'geojson';
+import type { Feature, Point, FeatureCollection, LineString, MultiLineString } from 'geojson';
 import { minBy } from 'lodash';
 
 import type { GeoJsonLineString } from 'common/api/osrdEditoastApi';
@@ -53,8 +53,7 @@ export interface NearestPointOnLine extends Feature<Point> {
   };
 }
 /**
- * This function has the same signature than the one of turf (except for multilines),
- * but it is more precise.
+ * This function has the same signature than the one of turf, but it is more precise.
  *
  * You can check those links for references :
  * - https://github.com/Turfjs/turf/issues/1440
@@ -69,13 +68,28 @@ export interface NearestPointOnLine extends Feature<Point> {
  * Angle of vertex B (cosines law) is `AngleB = arccos((AB² + BC² - AC²) / (2 * AB * BC))`
  */
 export function nearestPointOnLine(
-  line: Feature<LineString> | LineString,
+  line: Feature<LineString> | LineString | Feature<MultiLineString> | MultiLineString,
   inPoint: Feature<Point> | Point | Position,
   options?: { units?: Units }
 ): NearestPointOnLine {
+  // Handle multilines
+  if (
+    line.type === 'MultiLineString' ||
+    (line.type === 'Feature' && line.geometry.type === 'MultiLineString')
+  ) {
+    const linesCoords =
+      line.type === 'MultiLineString'
+        ? line.coordinates
+        : (line as Feature<MultiLineString>).geometry.coordinates;
+    const nearestPoints = linesCoords.map((lineCoords) =>
+      nearestPointOnLine({ type: 'LineString', coordinates: lineCoords }, inPoint, options)
+    );
+    return minBy(nearestPoints, (i) => i.properties.dist) || nearestPoints[0];
+  }
+
   const pointA = getCoord(inPoint);
   const lineCoords: Position[] =
-    line.type === 'Feature' ? line.geometry.coordinates : line.coordinates;
+    line.type === 'Feature' ? (line as Feature<LineString>).geometry.coordinates : line.coordinates;
 
   const closestPointPerSegment: Array<{ point: Position; dist: number; index: number }> = [];
   for (let n = 1; n < lineCoords.length; n += 1) {
