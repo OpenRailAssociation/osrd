@@ -98,6 +98,12 @@ impl CoreClient {
         CoreError::UnparsableErrorOutput.into()
     }
 
+    #[tracing::instrument(
+        target = "editoast::coreclient",
+        name = "core:fetch",
+        skip(self, body),
+        err
+    )]
     async fn fetch<B: Serialize, R: CoreResponse>(
         &self,
         method: reqwest::Method,
@@ -105,8 +111,10 @@ impl CoreClient {
         body: Option<&B>,
     ) -> Result<R::Response> {
         let method_s = colored_method(&method);
-        info!(target: "editoast::coreclient", "{method_s} {path}");
-        debug!(target: "editoast::coreclient", "Request content: {body}", body = body.and_then(|b| serde_json::to_string_pretty(b).ok()).unwrap_or_default());
+        debug!(
+            target: "editoast::coreclient", 
+            body = body.and_then(|b| serde_json::to_string_pretty(b).ok()).unwrap_or_default(),
+            "Request content");
         match self {
             CoreClient::Direct(client) => {
                 let mut i_try = 0;
