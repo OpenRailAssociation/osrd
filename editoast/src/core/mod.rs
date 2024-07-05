@@ -181,7 +181,7 @@ impl CoreClient {
                                                                                                     // TODO: tracing: use correlation id
 
                 let response = client
-                    .call_with_response::<_, R>(infra_id.to_string(), &body, true, None, None)
+                    .call_with_response::<_, R>(infra_id.to_string(), path, &body, true, None, None)
                     .await?;
 
                 Ok(response)

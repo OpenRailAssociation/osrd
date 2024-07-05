@@ -2,9 +2,10 @@ use super::CoreResponse;
 use crate::error::InternalError;
 use editoast_derive::EditoastError;
 use futures_util::StreamExt;
+use itertools::Itertools;
 use lapin::{
     options::{BasicAckOptions, BasicConsumeOptions, BasicPublishOptions},
-    types::{FieldTable, ShortString},
+    types::{ByteArray, FieldTable, ShortString},
     BasicProperties, Connection, ConnectionProperties,
 };
 use serde::Serialize;
@@ -69,6 +70,7 @@ impl RabbitMQClient {
     pub async fn call<T>(
         &self,
         routing_key: String,
+        path: &str,
         published_payload: &T,
         mandatory: bool,
         correlation_id: Option<String>,
@@ -92,15 +94,16 @@ impl RabbitMQClient {
             ..Default::default()
         };
 
-        let properties = {
-            let mut properties = BasicProperties::default();
+        let path: ByteArray = path.bytes().collect_vec().into();
+        let mut headers = FieldTable::default();
+        headers.insert("x-rpc-path".into(), path.into());
 
-            if let Some(id) = correlation_id {
-                properties = properties.with_correlation_id(ShortString::from(id));
-            }
+        let mut properties = BasicProperties::default().with_headers(headers);
+        if let Some(id) = correlation_id {
+            properties = properties.with_correlation_id(ShortString::from(id));
+        }
 
-            properties
-        };
+        let properties = properties;
 
         channel
             .basic_publish(
@@ -119,6 +122,7 @@ impl RabbitMQClient {
     pub async fn call_with_response<T, TR>(
         &self,
         routing_key: String,
+        path: &str,
         published_payload: &Option<T>,
         mandatory: bool,
         correlation_id: Option<String>,
@@ -144,16 +148,17 @@ impl RabbitMQClient {
             ..Default::default()
         };
 
-        let properties = {
-            let mut properties = BasicProperties::default()
-                .with_reply_to(ShortString::from("amq.rabbitmq.reply-to"));
+        let path: ByteArray = path.bytes().collect_vec().into();
+        let mut headers = FieldTable::default();
+        headers.insert("x-rpc-path".into(), path.into());
 
-            if let Some(id) = correlation_id {
-                properties = properties.with_correlation_id(ShortString::from(id));
-            }
-
-            properties
-        };
+        let mut properties = BasicProperties::default()
+            .with_reply_to(ShortString::from("amq.rabbitmq.reply-to"))
+            .with_headers(headers);
+        if let Some(id) = correlation_id {
+            properties = properties.with_correlation_id(ShortString::from(id));
+        }
+        let properties = properties;
 
         // Set up a consumer on the reply-to queue
         let mut consumer = channel
