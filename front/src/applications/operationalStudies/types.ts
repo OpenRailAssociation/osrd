@@ -1,4 +1,5 @@
 import type {
+  IncompatibleConstraints,
   PathProperties,
   PathResponse,
   ProjectPathTrainResult,
@@ -89,6 +90,7 @@ export type ManageTrainSchedulePathProperties = {
   /** Operational points along the path (including origin and destination) and vias added by clicking on map */
   allWaypoints: SuggestedOP[];
   length: number;
+  incompatibleConstraints?: Partial<IncompatibleConstraints>;
 };
 
 /**

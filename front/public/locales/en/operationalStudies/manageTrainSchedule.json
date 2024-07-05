@@ -53,6 +53,15 @@
   "infraLoading": "Infrastructure is loading…",
   "inputOPTrigrams": "Enter the trigrams of operational points you want to the path to go through, separated by a space.",
   "inputOPTrigramsExample": "Ex: LSN CIG CCS",
+  "incompatibleConstraints": {
+    "filters": {
+      "enable": "Display constraints of type'{{name}}'",
+      "disable": "Hide constraints of type '{{name}}'"
+    },
+    "info": "Pathfinding failed due to some constraints. Here you will find the list of constraints that failed on the shortest path, with for each, the type of constraint, the position of the start of the failure zone relative to the start of the path, and its length.",
+    "title": "{{count}} incompatible contraints",
+    "gotoMap": "See on the map"
+  },
   "inverseOD": "Reverse itinerary",
   "launchPathFinding": "Launch pathfinding",
   "launchSimulation": "Start",

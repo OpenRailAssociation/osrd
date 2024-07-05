@@ -12,6 +12,7 @@ import rollingStockPic from 'assets/pictures/components/train.svg';
 import { useOsrdConfSelectors } from 'common/osrdContext';
 import { useStoreDataForSpeedLimitByTagSelector } from 'common/SpeedLimitByTagSelector/useStoreDataForSpeedLimitByTagSelector';
 import Tabs from 'common/Tabs';
+import IncompatibleConstraints from 'modules/pathfinding/components/IncompatibleConstraints';
 import ItineraryV2 from 'modules/pathfinding/components/Itinerary/ItineraryV2';
 import { upsertViasInOPs } from 'modules/pathfinding/utils';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
@@ -110,7 +111,9 @@ const ManageTrainScheduleV2 = () => {
         <div className="floating-itinerary">
           <ItineraryV2 pathProperties={pathProperties} setPathProperties={setPathProperties} />
         </div>
-        <Map pathProperties={pathProperties} />
+        <Map pathProperties={pathProperties}>
+          <IncompatibleConstraints pathProperties={pathProperties} />
+        </Map>
       </div>
     ),
   };

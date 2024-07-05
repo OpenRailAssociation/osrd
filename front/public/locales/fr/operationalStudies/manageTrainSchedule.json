@@ -53,6 +53,21 @@
   "infraLoading": "Infra en cours de chargement…",
   "inputOPTrigrams": "Entrez les trigrammes des points remarquables par lesquels vous voulez que l'itinéraire se fasse, séparés par un espace.",
   "inputOPTrigramsExample": "Ex : LSN CIG CCS",
+  "incompatibleConstraints": {
+    "filters": {
+      "title": "Filtrer sur le type de contrainte",
+      "enable": "Afficher les contraintes de type '{{name}}'",
+      "disable": "Cacher les contraintes de type '{{name}}'"
+    },
+    "incompatible_electrification_ranges": "Électrification incompatible",
+    "incompatible_gauge_ranges": "Gabarit incompatible",
+    "incompatible_signalisation_system_ranges": "Système de signalisation incompatible",
+    "info": "La recherche de chemin a échoué à cause de certaines contraintes. Vous trouverez ici la liste des contraintes ayant échoué sur le chemin le plus court, avec pour chacune, le type de contrainte, la position du début de la zone d’échec par rapport au début du chemin, et sa longueur. ​",
+    "gotoMap": "Voir sur la carte",
+    "seePathOnMap": "Voir le chemin sur la carte",
+    "title": "{{total}} contraintes incompatibles",
+    "title_on": "{{count}} sur {{total}} contraintes incompatibles"
+  },
   "inverseOD": "Inverser l'itinéraire",
   "launchPathFinding": "Lancer la recherche d'itinéraire",
   "launchSimulation": "Démarrer",
@@ -82,9 +97,7 @@
     "not_found_in_blocks": "Canton manquant",
     "not_found_in_routes": "Itinéraire manquant",
     "not_found_in_tracks": "Voie manquante",
-    "incompatible_electrification": "Électrification incompatible",
-    "incompatible_loading_gauge": "Gabarit incompatible",
-    "incompatible_signaling_system": "Système de signalisation incompatible",
+    "incompatible_constraints": "Contraintes incompatibles",
     "not_enough_path_items": "Éléments manquants pour la recherche : Origine, Destination, Matériel roulant",
     "pathfinding_failed": "Aucun chemin trouvé"
   },

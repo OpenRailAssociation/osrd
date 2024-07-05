@@ -1,7 +1,9 @@
 {
   "actions": {
     "add": "Ajouter",
+    "collpase": "Reduire",
     "delete": "Supprimer",
+    "expand": "Agrandir",
     "merge": "Fusionner avec le segment suivant",
     "reset": "Réinitialiser",
     "split": "Diviser",
