@@ -36,6 +36,7 @@ export default defineConfig(({ mode }) => {
     },
     test: {
       globals: true,
+      globalSetup: './vitest.global-setup.ts',
       include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
       environment: 'happy-dom',
       coverage: {
