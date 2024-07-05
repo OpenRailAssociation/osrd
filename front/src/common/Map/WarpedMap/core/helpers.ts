@@ -58,7 +58,7 @@ export function getSamples(
  * Given a line and a lengthToAdd, extend the line at its two extremities by lengthToAdd meters.
  */
 export function extendLine(line: Feature<LineString>, lengthToAdd: number): Feature<LineString> {
-  if (lengthToAdd <= 1) throw new Error('lengthToAdd must be a positive');
+  if (lengthToAdd < 0) throw new Error('lengthToAdd must be positive');
 
   const points = line.geometry.coordinates;
   const firstPoint = points[0] as Vec2;
