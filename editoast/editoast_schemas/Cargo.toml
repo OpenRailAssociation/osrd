@@ -1,8 +1,8 @@
 [package]
 name = "editoast_schemas"
-version = "0.1.0"
-edition = "2021"
-license = "LGPL-3.0"
+license.workspace = true
+version.workspace = true
+edition.workspace = true
 
 [dependencies]
 chrono.workspace = true
