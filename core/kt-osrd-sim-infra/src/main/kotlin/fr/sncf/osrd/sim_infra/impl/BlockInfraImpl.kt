@@ -193,18 +193,6 @@ private fun buildBlockName(
         descriptor.signals.map {
             "${rawInfra.getLogicalSignalName(it)}-${rawInfra.getSignalingSystemId(it)}"
         }
-    val tracks = mutableListOf<String>()
-    val trackIds = mutableListOf<DirTrackSectionId>()
-    for (zonePath in descriptor.path) {
-        for (chunk in rawInfra.getZonePathChunks(zonePath)) {
-            val trackName = rawInfra.getTrackSectionName(rawInfra.getTrackFromChunk(chunk.value))
-            if (tracks.isNotEmpty() && tracks[tracks.size - 1] == trackName) continue
-            tracks.add(trackName)
-            trackIds.add(
-                DirTrackSectionId(rawInfra.getTrackFromChunk(chunk.value), chunk.direction)
-            )
-        }
-    }
     val trackNodes = descriptor.path.flatMap { rawInfra.getZonePathMovableElements(it) }
     val trackNodeConfig = descriptor.path.flatMap { rawInfra.getZonePathMovableElementsConfigs(it) }
     val trackNodeConfigNames = mutableListOf<String>()
