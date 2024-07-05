@@ -189,7 +189,7 @@ data class SigData<MarkerT>(val schema: SigSchema<MarkerT>, private val data: In
 
     override fun hashCode(): Int {
         var result = schema.hashCode()
-        result = 31 * result + data.hashCode()
+        result = 31 * result + data.contentHashCode()
         return result
     }
 }
