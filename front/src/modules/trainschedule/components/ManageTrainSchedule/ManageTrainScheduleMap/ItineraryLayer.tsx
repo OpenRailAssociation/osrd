@@ -10,23 +10,30 @@ import { useOsrdConfSelectors } from 'common/osrdContext';
 type ItineraryLayerProps = {
   layerOrder: number;
   geometry?: GeoJsonLineString;
+  hideItineraryLine?: boolean;
 };
 
-export default function ItineraryLayer({ layerOrder, geometry }: ItineraryLayerProps) {
+export default function ItineraryLayer({
+  layerOrder,
+  geometry,
+  hideItineraryLine = false,
+}: ItineraryLayerProps) {
   const { getOriginV2, getDestinationV2 } = useOsrdConfSelectors();
   const origin = useSelector(getOriginV2);
   const destination = useSelector(getDestinationV2);
   if (geometry && origin && destination) {
     return (
       <Source type="geojson" data={geometry}>
-        <OrderedLayer
-          type="line"
-          paint={{
-            'line-width': 5,
-            'line-color': 'rgba(210, 225, 0, 0.75)',
-          }}
-          layerOrder={layerOrder}
-        />
+        {!hideItineraryLine && (
+          <OrderedLayer
+            type="line"
+            paint={{
+              'line-width': 5,
+              'line-color': 'rgba(210, 225, 0, 0.75)',
+            }}
+            layerOrder={layerOrder}
+          />
+        )}
       </Source>
     );
   }
