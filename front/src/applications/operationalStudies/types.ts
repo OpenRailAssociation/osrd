@@ -1,4 +1,5 @@
 import type {
+  IncompatibleConstraints,
   PathProperties,
   PathResponse,
   PathfindingResultSuccess,
@@ -94,6 +95,7 @@ export type ManageTrainSchedulePathProperties = {
   allWaypoints: SuggestedOP[];
   length: number;
   trackSectionRanges: NonNullable<PathfindingResultSuccess['track_section_ranges']>;
+  incompatibleConstraints?: Partial<IncompatibleConstraints>;
 };
 
 /**

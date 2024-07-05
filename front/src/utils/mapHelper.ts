@@ -309,7 +309,7 @@ export function getMapMouseEventNearestFeature(
   e: MapLayerMouseEvent,
   opts?: { layersId?: string[]; tolerance?: number; excludeOsm?: boolean }
 ): { feature: MapGeoJSONFeature; nearest: number[]; distance: number } | null {
-  const layers = opts?.layersId;
+  const layers = opts?.layersId || [];
   const tolerance = opts?.tolerance || 15;
   const excludeOsm = opts?.excludeOsm || true;
   const { target: map, point } = e;

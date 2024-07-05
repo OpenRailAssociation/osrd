@@ -53,6 +53,21 @@
   "infraLoading": "Infrastructure is loading…",
   "inputOPTrigrams": "Enter the trigrams of operational points you want to the path to go through, separated by a space.",
   "inputOPTrigramsExample": "Ex: LSN CIG CCS",
+  "incompatibleConstraints": {
+    "filters": {
+      "title": "Filter on constraint's type",
+      "enable": "Display constraints of type'{{name}}'",
+      "disable": "Hide constraints of type '{{name}}'"
+    },
+    "incompatible_electrification_ranges": "Incompatible electrification",
+    "incompatible_gauge_ranges": "Incompatible loading gauge",
+    "incompatible_signalisation_system_ranges": "Incompatible signaling system",
+    "info": "Pathfinding failed due to some constraints. Here you will find the list of constraints that failed on the shortest path, with for each, the type of constraint, the position of the start of the failure zone relative to the start of the path, and its length.",
+    "gotoMap": "See on the map",
+    "seeConstraintsOnMap": "See contraints on the map",
+    "title": "{{count}} incompatible contraints",
+    "title_on": "{{count}} on {{total}} incompatible contraintss"
+  },
   "inverseOD": "Reverse itinerary",
   "launchPathFinding": "Launch pathfinding",
   "launchSimulation": "Start",
@@ -82,9 +97,6 @@
     "not_found_in_blocks": "Missing block",
     "not_found_in_routes": "Missing route",
     "not_found_in_tracks": "Missing track",
-    "incompatible_electrification": "Incompatible electrification",
-    "incompatible_loading_gauge": "Incompatible loading gauge",
-    "incompatible_signaling_system": "Incompatible signaling system",
     "not_enough_path_items": "Missing parameters for pathfinding: Departure, Arrival, Rolling stock",
     "pathfinding_failed": "No path found"
   },

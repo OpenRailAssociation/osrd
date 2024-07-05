@@ -1,3 +1,5 @@
+import { round } from 'lodash';
+
 import type { Unit } from './types';
 
 export const NARROW_NO_BREAK_SPACE = '\u202f';
@@ -65,4 +67,29 @@ export function convertInputStringToNumber(str: string) {
  */
 export function formatUicToCi(uic: number) {
   return uic.toString().replace(/^87/, '');
+}
+
+/**
+ * Given a distance in millimeters, returns a human readable string.
+ * Exemples:
+ * - 927520 -> 927m
+ * - 1927520 -> 1.92Km
+ *
+ * @param distance the distance in millimeters
+ * @returns A human readable string of the distance
+ */
+export function distanceToHumanReadable(distance: number): string {
+  let label = `${distance}mm`;
+  if (!distance) return '0';
+
+  const meters = distance / 1000;
+  if (Math.floor(meters) > 0) {
+    label = `${round(meters, 0)}m`;
+  }
+
+  const kms = distance / 1000 / 1000;
+  if (Math.floor(kms) > 0) {
+    label = `${round(kms, 2)}Km`;
+  }
+  return label;
 }

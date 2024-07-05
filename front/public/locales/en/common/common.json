@@ -1,7 +1,9 @@
 {
   "actions": {
     "add": "Add",
+    "collapse": "Collapse",
     "delete": "Delete",
+    "expand": "Expand",
     "merge": "Merge with next segment",
     "reset": "Reset",
     "split": "Split",

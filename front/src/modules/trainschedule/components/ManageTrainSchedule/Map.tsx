@@ -1,4 +1,12 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, {
+  type FC,
+  type PropsWithChildren,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 
 import bbox from '@turf/bbox';
 import type { Feature, Point } from 'geojson';
@@ -63,12 +71,13 @@ type MapProps = {
   hideItinerary?: boolean;
 };
 
-const Map = ({
+const Map: FC<PropsWithChildren<MapProps>> = ({
   pathProperties,
   setMapCanvas,
   hideAttribution = false,
   hideItinerary = false,
-}: MapProps) => {
+  children,
+}) => {
   const mapBlankStyle = useMapBlankStyle();
 
   const infraID = useInfraID();
@@ -394,6 +403,8 @@ const Map = ({
           ))}
         {mapSearchMarker && <SearchMarker data={mapSearchMarker} colors={colors[mapStyle]} />}
         {snappedPoint !== undefined && <SnappedMarker geojson={snappedPoint} />}
+
+        {children}
       </ReactMapGL>
     </>
   );

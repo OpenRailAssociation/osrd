@@ -6566,6 +6566,51 @@ components:
           type: number
           format: double
           nullable: true
+    IncompatibleConstraints:
+      type: object
+      properties:
+        incompatible_electrification_ranges:
+          type: array
+          items:
+            $ref: '#/components/schemas/IncompatibleElectrification'
+          nullable: true
+        incompatible_gauge_ranges:
+          type: array
+          items:
+            $ref: '#/components/schemas/IncompatibleLoadingGauge'
+          nullable: true
+        incompatible_signalisation_system_ranges:
+          type: array
+          items:
+            $ref: '#/components/schemas/IncompatibleSignalingSystem'
+          nullable: true
+    IncompatibleElectrification:
+      type: object
+      required:
+      - range
+      - value
+      properties:
+        range:
+          $ref: '#/components/schemas/RangeOffet'
+        value:
+          type: string
+    IncompatibleLoadingGauge:
+      type: object
+      required:
+      - range
+      properties:
+        range:
+          $ref: '#/components/schemas/RangeOffet'
+    IncompatibleSignalingSystem:
+      type: object
+      required:
+      - range
+      - value
+      properties:
+        range:
+          $ref: '#/components/schemas/RangeOffet'
+        value:
+          type: string
     Infra:
       type: object
       required:
@@ -8276,139 +8321,18 @@ components:
             - not_found_in_tracks
       - type: object
         required:
-        - blocks
-        - routes
-        - track_section_ranges
-        - length
-        - incompatible_ranges
+        - relaxed_constraints_path
+        - incompatible_constraints
         - status
         properties:
-          blocks:
-            type: array
-            items:
-              type: string
-              maxLength: 255
-              minLength: 1
-          incompatible_ranges:
-            type: array
-            items:
-              type: array
-              items:
-                allOf:
-                - type: integer
-                  format: int64
-                  minimum: 0
-                - type: integer
-                  format: int64
-                  minimum: 0
-          length:
-            type: integer
-            format: int64
-            minimum: 0
-          routes:
-            type: array
-            items:
-              type: string
-              maxLength: 255
-              minLength: 1
+          incompatible_constraints:
+            $ref: '#/components/schemas/IncompatibleConstraints'
+          relaxed_constraints_path:
+            $ref: '#/components/schemas/PathfindingResultSuccess'
           status:
             type: string
             enum:
-            - incompatible_electrification
-          track_section_ranges:
-            type: array
-            items:
-              $ref: '#/components/schemas/TrackRange'
-      - type: object
-        required:
-        - blocks
-        - routes
-        - track_section_ranges
-        - length
-        - incompatible_ranges
-        - status
-        properties:
-          blocks:
-            type: array
-            items:
-              type: string
-              maxLength: 255
-              minLength: 1
-          incompatible_ranges:
-            type: array
-            items:
-              type: array
-              items:
-                allOf:
-                - type: integer
-                  format: int64
-                  minimum: 0
-                - type: integer
-                  format: int64
-                  minimum: 0
-          length:
-            type: integer
-            format: int64
-            minimum: 0
-          routes:
-            type: array
-            items:
-              type: string
-              maxLength: 255
-              minLength: 1
-          status:
-            type: string
-            enum:
-            - incompatible_loading_gauge
-          track_section_ranges:
-            type: array
-            items:
-              $ref: '#/components/schemas/TrackRange'
-      - type: object
-        required:
-        - blocks
-        - routes
-        - track_section_ranges
-        - length
-        - incompatible_ranges
-        - status
-        properties:
-          blocks:
-            type: array
-            items:
-              type: string
-              maxLength: 255
-              minLength: 1
-          incompatible_ranges:
-            type: array
-            items:
-              type: array
-              items:
-                allOf:
-                - type: integer
-                  format: int64
-                  minimum: 0
-                - type: integer
-                  format: int64
-                  minimum: 0
-          length:
-            type: integer
-            format: int64
-            minimum: 0
-          routes:
-            type: array
-            items:
-              type: string
-              maxLength: 255
-              minLength: 1
-          status:
-            type: string
-            enum:
-            - incompatible_signaling_system
-          track_section_ranges:
-            type: array
-            items:
-              $ref: '#/components/schemas/TrackRange'
+            - incompatible_constraints
       - type: object
         required:
         - index
@@ -8955,6 +8879,20 @@ components:
           format: double
         value:
           $ref: '#/components/schemas/AllowanceValue'
+    RangeOffet:
+      type: object
+      required:
+      - start
+      - end
+      properties:
+        end:
+          type: integer
+          format: int64
+          minimum: 0
+        start:
+          type: integer
+          format: int64
+          minimum: 0
     RangedValue:
       type: object
       description: A struct to represent range maps in responses

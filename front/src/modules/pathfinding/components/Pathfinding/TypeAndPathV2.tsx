@@ -197,7 +197,6 @@ const TypeAndPathV2 = ({ setPathProperties }: PathfindingProps) => {
 
       try {
         const pathfindingResult = await postPathfindingBlocks(params).unwrap();
-
         if (pathfindingResult.status === 'success') {
           const pathPropertiesParams: PostV2InfraByInfraIdPathPropertiesApiArg = {
             infraId,

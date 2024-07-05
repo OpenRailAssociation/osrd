@@ -3454,6 +3454,26 @@ export type PathfindingResultSuccess = {
   /** Path description as track ranges */
   track_section_ranges: TrackRange[];
 };
+export type RangeOffet = {
+  end: number;
+  start: number;
+};
+export type IncompatibleElectrification = {
+  range: RangeOffet;
+  value: string;
+};
+export type IncompatibleLoadingGauge = {
+  range: RangeOffet;
+};
+export type IncompatibleSignalingSystem = {
+  range: RangeOffet;
+  value: string;
+};
+export type IncompatibleConstraints = {
+  incompatible_electrification_ranges?: IncompatibleElectrification[] | null;
+  incompatible_gauge_ranges?: IncompatibleLoadingGauge[] | null;
+  incompatible_signalisation_system_ranges?: IncompatibleSignalingSystem[] | null;
+};
 export type PathfindingResult =
   | (PathfindingResultSuccess & {
       status: 'success';
@@ -3472,28 +3492,9 @@ export type PathfindingResult =
       status: 'not_found_in_tracks';
     }
   | {
-      blocks: string[];
-      incompatible_ranges: (number & number)[][];
-      length: number;
-      routes: string[];
-      status: 'incompatible_electrification';
-      track_section_ranges: TrackRange[];
-    }
-  | {
-      blocks: string[];
-      incompatible_ranges: (number & number)[][];
-      length: number;
-      routes: string[];
-      status: 'incompatible_loading_gauge';
-      track_section_ranges: TrackRange[];
-    }
-  | {
-      blocks: string[];
-      incompatible_ranges: (number & number)[][];
-      length: number;
-      routes: string[];
-      status: 'incompatible_signaling_system';
-      track_section_ranges: TrackRange[];
+      incompatible_constraints: IncompatibleConstraints;
+      relaxed_constraints_path: PathfindingResultSuccess;
+      status: 'incompatible_constraints';
     }
   | {
       index: number;
