@@ -8,6 +8,7 @@ import StdcmViewV1 from 'applications/stdcm/views/StdcmViewV1';
 import StdcmViewV2 from 'applications/stdcmV2/views/StdcmViewV2';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import { getStdcmV2Activated } from 'reducers/user/userSelectors';
+import { getLogo } from 'utils/logo';
 
 export default function HomeStdcm() {
   const stdcmV2Activated = useSelector(getStdcmV2Activated);
@@ -22,7 +23,7 @@ export default function HomeStdcm() {
 
   return (
     <>
-      <NavBarSNCF appName={t('stdcm')} />
+      <NavBarSNCF logo={getLogo()} appName={t('stdcm')} />
       <Routes>
         <Route path="" element={<StdcmViewV1 />} />
       </Routes>

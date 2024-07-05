@@ -5,10 +5,10 @@ import { useSelector } from 'react-redux';
 
 import FilterTextField from 'applications/operationalStudies/components/FilterTextField';
 import {
+  osrdEditoastApi,
   type PostSearchApiArg,
   type ProjectWithStudies,
   type SearchResultItemProject,
-  osrdEditoastApi,
 } from 'common/api/osrdEditoastApi';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
@@ -17,6 +17,7 @@ import ProjectCard from 'modules/project/components/ProjectCard';
 import ProjectCardEmpty from 'modules/project/components/ProjectCardEmpty';
 import ProjectSelectionToolbar from 'modules/project/components/ProjectSelectionToolbar';
 import { getUserSafeWord } from 'reducers/user/userSelectors';
+import { getLogo } from 'utils/logo';
 
 type SortOptions =
   | 'NameAsc'
@@ -140,7 +141,10 @@ export default function HomeOperationalStudies() {
 
   return (
     <>
-      <NavBarSNCF appName={<div className="navbar-breadcrumbs">{t('projects')}</div>} />
+      <NavBarSNCF
+        logo={getLogo()}
+        appName={<div className="navbar-breadcrumbs">{t('projects')}</div>}
+      />
       <main className="mastcontainer mastcontainer-no-mastnav">
         <div className="p-3">
           <div className="projects-toolbar">

@@ -7,12 +7,12 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 
-import logoOSRD from 'assets/fav-osrd-color.svg';
 import ChangeLanguageModal from 'common/ChangeLanguageModal';
 import ReleaseInformations from 'common/ReleaseInformations/ReleaseInformations';
 import UserSettings from 'common/UserSettings';
 import { getUserSafeWord } from 'reducers/user/userSelectors';
 import useAuth from 'utils/hooks/OsrdAuth';
+import { getLogo } from 'utils/logo';
 import { language2flag } from 'utils/strings';
 
 import DropdownSNCF, { DROPDOWN_STYLE_TYPES } from './DropdownSNCF';
@@ -23,7 +23,7 @@ type Props = {
   logo?: string;
 };
 
-const LegacyNavBarSNCF = ({ appName, logo = logoOSRD }: Props) => {
+const LegacyNavBarSNCF = ({ appName, logo = getLogo() }: Props) => {
   const { openModal } = useModal();
   const safeWord = useSelector(getUserSafeWord);
   const { t } = useTranslation('home/navbar');
