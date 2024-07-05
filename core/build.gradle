@@ -102,6 +102,9 @@ dependencies {
     compileOnly libs.spotbugs.annotations
     testCompileOnly libs.jcip.annotations
     testCompileOnly libs.spotbugs.annotations
+
+    // rabbitmq
+    implementation libs.amqp.client
 }
 // endregion
 
