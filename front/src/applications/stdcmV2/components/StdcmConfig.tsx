@@ -115,7 +115,7 @@ const StdcmConfig = ({
         </div>
       </div>
       <div className="osrd-config-item-container osrd-config-item-container-map stdcm-v2-map">
-        <Map hideAttribution />
+        <Map hideAttribution hideItinerary pathProperties={pathProperties} />
       </div>
       <div />
     </div>

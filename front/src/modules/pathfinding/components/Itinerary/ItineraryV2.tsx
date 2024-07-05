@@ -13,7 +13,6 @@ import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
 import Tipped from 'common/Tipped';
 import PathfindingV2 from 'modules/pathfinding/components/Pathfinding/PathfindingV2';
 import TypeAndPathV2 from 'modules/pathfinding/components/Pathfinding/TypeAndPathV2';
-import type { Viewport } from 'reducers/map';
 import { updateViewport } from 'reducers/map';
 import { getMap } from 'reducers/map/selectors';
 import { useAppDispatch } from 'store';
@@ -40,7 +39,6 @@ const ItineraryV2 = ({
   const destination = useSelector(getDestinationV2);
   const pathSteps = useSelector(getPathSteps);
 
-  const [extViewport, setExtViewport] = useState<Viewport>();
   const [displayTypeAndPath, setDisplayTypeAndPath] = useState(false);
   const dispatch = useAppDispatch();
   const map = useSelector(getMap);
@@ -55,7 +53,7 @@ const ItineraryV2 = ({
         latitude: lngLat[1],
         zoom: 16,
       };
-      setExtViewport(newViewport);
+      dispatch(updateViewport(newViewport));
     }
   };
 
@@ -70,19 +68,9 @@ const ItineraryV2 = ({
   };
 
   useEffect(() => {
-    if (extViewport !== undefined) {
-      dispatch(
-        updateViewport({
-          ...extViewport,
-        })
-      );
-    }
-  }, [extViewport]);
-
-  useEffect(() => {
     if (pathProperties) {
       const newViewport = computeBBoxViewport(bbox(pathProperties.geometry), map.viewport);
-      setExtViewport(newViewport);
+      dispatch(updateViewport(newViewport));
     }
   }, [pathProperties]);
 

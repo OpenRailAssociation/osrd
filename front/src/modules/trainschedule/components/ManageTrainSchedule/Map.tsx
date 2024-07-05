@@ -60,9 +60,15 @@ type MapProps = {
   pathProperties?: ManageTrainSchedulePathProperties;
   setMapCanvas?: (mapCanvas: string) => void;
   hideAttribution?: boolean;
+  hideItinerary?: boolean;
 };
 
-const Map = ({ pathProperties, setMapCanvas, hideAttribution = false }: MapProps) => {
+const Map = ({
+  pathProperties,
+  setMapCanvas,
+  hideAttribution = false,
+  hideItinerary = false,
+}: MapProps) => {
   const mapBlankStyle = useMapBlankStyle();
 
   const infraID = useInfraID();
@@ -188,17 +194,21 @@ const Map = ({ pathProperties, setMapCanvas, hideAttribution = false }: MapProps
   }, []);
 
   useEffect(() => {
-    if (pathProperties && setMapCanvas) {
-      setShowLayers(false);
+    if (pathProperties) {
+      if (setMapCanvas) {
+        setShowLayers(false);
+      }
+      const newViewport = computeBBoxViewport(bbox(pathProperties.geometry), viewport);
+      dispatch(updateViewport(newViewport));
     }
   }, [pathProperties]);
 
   const captureMap = async () => {
     if (!pathProperties) return;
 
-    const itineraryViewPort = computeBBoxViewport(bbox(pathProperties.geometry), viewport);
+    const itineraryViewport = computeBBoxViewport(bbox(pathProperties.geometry), viewport);
 
-    if (setMapCanvas && !showLayers && isEqual(viewport, itineraryViewPort)) {
+    if (setMapCanvas && !showLayers && isEqual(viewport, itineraryViewport)) {
       try {
         const mapElement = document.getElementById('map-container');
         if (mapElement) {
@@ -372,6 +382,7 @@ const Map = ({ pathProperties, setMapCanvas, hideAttribution = false }: MapProps
               <ItineraryLayer
                 layerOrder={LAYER_GROUPS_ORDER[LAYERS.ITINERARY.GROUP]}
                 geometry={pathProperties?.geometry}
+                hideItineraryLine={hideItinerary}
               />
               {mapRef.current && <ItineraryMarkersV2 map={mapRef.current.getMap()} />}
             </>
