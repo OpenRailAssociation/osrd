@@ -5,11 +5,11 @@ import React from 'react';
 
 import { useTranslation } from 'react-i18next';
 
-import osrdLogo from 'assets/fav-osrd-color.svg';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import motriceParty from 'common/MotriceRelated/motriceParty';
+import { getLogo } from 'utils/logo';
 
 import LicenseAttributions from './LicenseAttributions';
 
@@ -47,7 +47,7 @@ function ReleaseInformations() {
                   rel="noopener noreferrer"
                   onMouseEnter={motriceParty}
                 >
-                  <img src={osrdLogo} alt="OSRD logo" width={192} />
+                  <img src={getLogo()} alt="OSRD logo" width={192} />
                 </a>
                 <h2>OSRD</h2>
                 <h3>Open Source Railway Designer</h3>

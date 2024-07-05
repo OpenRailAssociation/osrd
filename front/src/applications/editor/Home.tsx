@@ -7,6 +7,7 @@ import { Route, Routes } from 'react-router-dom';
 import { ModalProvider } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import { useCurrentInfra } from 'modules/infra/useInfra';
+import { getLogo } from 'utils/logo';
 
 import Editor from './Editor';
 
@@ -17,6 +18,7 @@ export default function HomeEditorUnplugged() {
   return (
     <ModalProvider>
       <NavBarSNCF
+        logo={getLogo()}
         appName={
           <>
             {t('editor')}

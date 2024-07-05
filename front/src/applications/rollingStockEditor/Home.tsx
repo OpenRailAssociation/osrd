@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 
 import { ModalProvider } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
+import { getLogo } from 'utils/logo';
 
 import RollingStockEditor from './views/RollingStockEditor';
 
@@ -12,7 +13,7 @@ const HomeRollingStockEditor: FC = () => {
 
   return (
     <ModalProvider>
-      <NavBarSNCF appName={<>{t('rollingStockEditor')}</>} />
+      <NavBarSNCF logo={getLogo()} appName={<>{t('rollingStockEditor')}</>} />
       <RollingStockEditor />
     </ModalProvider>
   );
