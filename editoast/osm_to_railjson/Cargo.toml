@@ -1,8 +1,8 @@
 [package]
 name = "osm_to_railjson"
-version = "0.1.0"
-edition = "2021"
-license = "LGPL-3.0"
+license.workspace = true
+version.workspace = true
+edition.workspace = true
 
 [dependencies]
 editoast_schemas.workspace = true

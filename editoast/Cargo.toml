@@ -1,8 +1,8 @@
 [package]
 name = "editoast"
-version = "0.1.0"
-edition = "2021"
-license = "LGPL-3.0"
+license.workspace = true
+version.workspace = true
+edition.workspace = true
 
 [workspace]
 members = [
@@ -13,6 +13,11 @@ members = [
   "editoast_schemas",
   "osm_to_railjson",
 ]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "LGPL-3.0"
 
 [workspace.dependencies]
 chrono = { version = "0.4.38", features = ["serde"] }
