@@ -97,6 +97,7 @@ impl RabbitMQClient {
         let path: ByteArray = path.bytes().collect_vec().into();
         let mut headers = FieldTable::default();
         headers.insert("x-rpc-path".into(), path.into());
+        attach_tracing_info(&mut headers);
 
         let mut properties = BasicProperties::default().with_headers(headers);
         if let Some(id) = correlation_id {
@@ -151,6 +152,7 @@ impl RabbitMQClient {
         let path: ByteArray = path.bytes().collect_vec().into();
         let mut headers = FieldTable::default();
         headers.insert("x-rpc-path".into(), path.into());
+        attach_tracing_info(&mut headers);
 
         let mut properties = BasicProperties::default()
             .with_reply_to(ShortString::from("amq.rabbitmq.reply-to"))
@@ -206,5 +208,25 @@ impl RabbitMQClient {
         } else {
             Err(Error::ResponseTimeout)
         }
+    }
+}
+
+fn attach_tracing_info(headers: &mut FieldTable) {
+    use opentelemetry::global as otel;
+    use tracing::Span;
+    use tracing_opentelemetry::OpenTelemetrySpanExt;
+    let ctx = Span::current().context();
+
+    otel::get_text_map_propagator(|propagator| {
+        propagator.inject_context(&ctx, &mut HeaderInjector(headers));
+    });
+}
+
+struct HeaderInjector<'a>(&'a mut FieldTable);
+impl opentelemetry::propagation::Injector for HeaderInjector<'_> {
+    /// Set a key and value pair on the headers
+    fn set(&mut self, key: &str, value: String) {
+        let value: ByteArray = value.bytes().collect_vec().into();
+        self.0.insert(key.into(), value.into());
     }
 }
