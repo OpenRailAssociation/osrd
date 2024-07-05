@@ -47,7 +47,7 @@ function displayNoImageMessages(isValid: boolean, t: (arg0: string) => string) {
     <>
       <Image />
       {isValid ? (
-        <div className="project-edition-modal-picture-placeholder-text">{t('noImage')}</div>
+        <div className="project-edition-modal-picture-placeholder-text">{t('addImage')}</div>
       ) : (
         <div className="project-edition-modal-picture-placeholder-text invalid">
           {t('noImageInvalid')}
