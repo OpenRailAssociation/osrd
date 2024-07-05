@@ -35,6 +35,7 @@ type PictureUploaderProps = {
 
 type PicturePlaceholderButtonsProps = {
   setTempProjectImage: (tempProjectImage: Blob | null | undefined) => void;
+  tempProjectImage: Blob | null | undefined;
   safeWord: string;
   t: TFunction;
 };
@@ -88,6 +89,7 @@ function PicturePlaceholder({ image, isValid, tempProjectImage }: PicturePlaceho
 
 function PicturePlaceholderButtons({
   setTempProjectImage,
+  tempProjectImage,
   safeWord,
   t,
 }: PicturePlaceholderButtonsProps) {
@@ -183,14 +185,17 @@ function PicturePlaceholderButtons({
       >
         <img src={logoSNCF} alt="SNCF LOGO" />
       </button>
-      <button
-        className="remove"
-        type="button"
-        aria-label={t('removeImage')}
-        onClick={() => setTempProjectImage(null)}
-      >
-        <XCircle variant="fill" />
-      </button>
+
+      {tempProjectImage && (
+        <button
+          className="remove"
+          type="button"
+          aria-label={t('removeImage')}
+          onClick={() => setTempProjectImage(null)}
+        >
+          <XCircle variant="fill" />
+        </button>
+      )}
     </div>
   );
 }
@@ -247,6 +252,7 @@ export default function PictureUploader({
       </label>
       <PicturePlaceholderButtons
         setTempProjectImage={setTempProjectImage}
+        tempProjectImage={tempProjectImage}
         safeWord={safeWord}
         t={t}
       />
