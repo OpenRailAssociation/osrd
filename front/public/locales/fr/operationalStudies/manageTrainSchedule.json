@@ -53,6 +53,24 @@
   "infraLoading": "Infra en cours de chargement…",
   "inputOPTrigrams": "Entrez les trigrammes des points remarquables par lesquels vous voulez que l'itinéraire se fasse, séparés par un espace.",
   "inputOPTrigramsExample": "Ex : LSN CIG CCS",
+  "incompatibleConstraints": {
+    "filters": {
+      "activateAll": "Afficher toutes les contraintes",
+      "disable": "Cacher les contraintes de type '{{name}}'",
+      "enable": "Afficher les contraintes de type '{{name}}'",
+      "focus": "Afficher uniquement les contraintes de type '{{name}}'",
+      "title": "Filtrer sur le type de contrainte"
+    },
+    "incompatible_electrification_ranges": "Électrification incompatible",
+    "incompatible_gauge_ranges": "Gabarit incompatible",
+    "incompatible_signaling_system_ranges": "Système de signalisation incompatible",
+    "info": "La recherche de chemin a échoué à cause de certaines contraintes. Vous trouverez ici la liste des contraintes ayant échoué sur le chemin le plus court, avec pour chacune, le type de contrainte, la position du début de la zone d’échec par rapport au début du chemin, et sa longueur.",
+    "gotoMap": "Voir sur la carte",
+    "noElectrification": "Non électrifié",
+    "seeConstraintsOnMap": "Voir les contraintes incompatibles sur la carte",
+    "title": "{{total}} contraintes incompatibles",
+    "title_on": "{{count}} sur {{total}} contraintes incompatibles"
+  },
   "inverseOD": "Inverser l'itinéraire",
   "launchPathFinding": "Lancer la recherche d'itinéraire",
   "launchSimulation": "Démarrer",
@@ -76,16 +94,14 @@
   "pathfindingNoState": "Aucune recherche itinéraire.",
   "pathfindingStatus": "Statut recherche d’itinéraire",
   "pathfindingErrors": {
+    "incompatible_constraints": "Contraintes incompatibles",
+    "invalid_path_item": "Point de passage non trouvé",
     "not_found_in_blocks": "Canton manquant",
     "not_found_in_routes": "Itinéraire manquant",
     "not_found_in_tracks": "Voie manquante",
-    "incompatible_electrification": "Électrification incompatible",
-    "incompatible_loading_gauge": "Gabarit incompatible",
-    "incompatible_signaling_system": "Système de signalisation incompatible",
     "not_enough_path_items": "Éléments manquants pour la recherche : Origine, Destination, Matériel roulant",
-    "invalid_path_item": "Point de passage non trouvé",
-    "rolling_stock_not_found": "Matériel roulant non trouvé",
-    "pathfinding_failed": "Aucun chemin trouvé"
+    "pathfinding_failed": "Aucun chemin trouvé",
+    "rolling_stock_not_found": "Matériel roulant non trouvé"
   },
   "pleaseWait": "Veuillez patientez…",
   "powerRestriction": "Code de restriction de puissance",
@@ -125,6 +141,7 @@
   "usingElectricalProfiles": "Utiliser les profils électriques",
   "via": "Étape",
   "vias": "Points de passage, arrêts",
+  "viewItineraryOnMap": "Voir l'itinéraire sur la carte",
   "warningMessages": {
     "electrification": "Électrification",
     "inconsistent_one": "Un intervalle comporte des incohérences. La courbe effort vitesse par défaut sera utilisée pour celui-ci.",

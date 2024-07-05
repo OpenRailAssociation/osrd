@@ -1,5 +1,5 @@
 import { initialState } from 'modules/pathfinding/consts';
-import { reducer } from 'modules/pathfinding/hook/usePathfinding';
+import { reducer } from 'modules/pathfinding/hooks/usePathfinding';
 import type { PathfindingActionV2 } from 'modules/pathfinding/types';
 import rollingStock from 'modules/rollingStock/components/RollingStockSelector/sampleData';
 

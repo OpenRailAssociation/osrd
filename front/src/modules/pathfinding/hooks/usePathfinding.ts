@@ -80,6 +80,15 @@ export function reducer(state: PathfindingState, action: PathfindingActionV2): P
         mustBeLaunched: false,
       };
     }
+    case 'PATHFINDING_INCOMPATIBLE_CONSTRAINTS': {
+      return {
+        ...state,
+        running: false,
+        done: false,
+        error: action.message || '',
+        mustBeLaunched: false,
+      };
+    }
     case 'PATHFINDING_PARAM_CHANGED':
     case 'VIAS_CHANGED': {
       if (
@@ -223,12 +232,20 @@ export const usePathfindingV2 = (
         try {
           const pathfindingResult = await postPathfindingBlocks(pathfindingInputV2).unwrap();
 
-          if (pathfindingResult.status === 'success') {
+          if (
+            pathfindingResult.status === 'success' ||
+            pathfindingResult.status === 'incompatible_constraints'
+          ) {
+            const pathResult =
+              pathfindingResult.status === 'success'
+                ? pathfindingResult
+                : pathfindingResult.relaxed_constraints_path;
+
             const pathPropertiesParams: PostV2InfraByInfraIdPathPropertiesApiArg = {
               infraId,
               props: ['electrifications', 'geometry', 'operational_points'],
               pathPropertiesInput: {
-                track_section_ranges: pathfindingResult.track_section_ranges,
+                track_section_ranges: pathResult.track_section_ranges,
               },
             };
             const { electrifications, geometry, operational_points } =
@@ -238,7 +255,7 @@ export const usePathfindingV2 = (
               const suggestedOperationalPoints: SuggestedOP[] = formatSuggestedOperationalPoints(
                 operational_points,
                 geometry,
-                pathfindingResult.length
+                pathResult.length
               );
 
               // We update existing pathsteps with coordinates, positionOnPath and kp corresponding to the new pathfinding result
@@ -254,7 +271,7 @@ export const usePathfindingV2 = (
 
                 return {
                   ...step,
-                  positionOnPath: pathfindingResult.path_item_positions[i],
+                  positionOnPath: pathResult.path_item_positions[i],
                   stopFor,
                   theoreticalMargin,
                   ...(correspondingOp && {
@@ -284,16 +301,28 @@ export const usePathfindingV2 = (
                 compact(updatedPathSteps)
               );
 
-              setPathProperties?.({
-                electrifications,
-                geometry,
-                suggestedOperationalPoints,
-                allWaypoints,
-                length: pathfindingResult.length,
-                trackSectionRanges: pathfindingResult.track_section_ranges,
-              });
+              if (setPathProperties)
+                setPathProperties({
+                  electrifications,
+                  geometry,
+                  suggestedOperationalPoints,
+                  allWaypoints,
+                  length: pathResult.length,
+                  trackSectionRanges: pathResult.track_section_ranges,
+                  incompatibleConstraints:
+                    pathfindingResult.status === 'incompatible_constraints'
+                      ? pathfindingResult.incompatible_constraints
+                      : undefined,
+                });
 
-              pathfindingDispatch({ type: 'PATHFINDING_FINISHED' });
+              if (pathfindingResult.status === 'success') {
+                pathfindingDispatch({ type: 'PATHFINDING_FINISHED' });
+              } else {
+                pathfindingDispatch({
+                  type: 'PATHFINDING_INCOMPATIBLE_CONSTRAINTS',
+                  message: `pathfindingErrors.${pathfindingResult.status}`,
+                });
+              }
             }
           } else {
             pathfindingDispatch({

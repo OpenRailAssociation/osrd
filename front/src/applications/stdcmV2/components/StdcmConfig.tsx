@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next';
 
 import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
 import { useOsrdConfActions } from 'common/osrdContext';
-import { usePathfindingV2 } from 'modules/pathfinding/hook/usePathfinding';
+import { usePathfindingV2 } from 'modules/pathfinding/hooks/usePathfinding';
 import { Map } from 'modules/trainschedule/components/ManageTrainSchedule';
 import type { StdcmConfSliceActions } from 'reducers/osrdconf/stdcmConf';
 import { useAppDispatch } from 'store';
