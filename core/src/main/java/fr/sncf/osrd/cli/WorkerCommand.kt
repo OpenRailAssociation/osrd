@@ -23,7 +23,6 @@ import okhttp3.OkHttpClient
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.takes.Request
-import org.takes.Response
 import java.io.InputStream
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.thread
@@ -32,7 +31,7 @@ import kotlin.concurrent.thread
 @Parameters(commandDescription = "RabbitMQ worker mode")
 class WorkerCommand : CliCommand {
 
-    @Parameter(names = ["--rabbitmq-url"]) var rabbitmqUrl: String = "amqp://localhost" // TODO
+    @Parameter(names = ["--amqp-uri"]) var amqpUri: String = "amqp://127.0.0.1:5672/%2f" // TODO
 
     @Parameter(
         names = ["--editoast-url"],
@@ -47,7 +46,7 @@ class WorkerCommand : CliCommand {
     private val editoastAuthorization: String? = null
 
     @Parameter(names = ["-j", "--threads"], description = "The number of threads to serve requests from")
-    private val threads: Int? = null
+    private val threads: Int = 1
 
 
     val WORKER_ID: String
@@ -109,13 +108,13 @@ class WorkerCommand : CliCommand {
             )
 
         val factory = ConnectionFactory()
-        factory.setUri(rabbitmqUrl)
+        factory.setUri(amqpUri)
         val connection = factory.newConnection()
         connection.createChannel().use { channel ->
             reportActivity(channel, "started")
         }
 
-        repeat(threads ?: 1) {
+        repeat(threads) {
             thread {
                 val activityChannel = connection.createChannel()
                 val channel = connection.createChannel()

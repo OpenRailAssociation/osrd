@@ -55,8 +55,8 @@ impl WorkerDriver for DockerDriver {
 
             let final_env = {
                 let mut env = self.options.default_env.clone();
-                env.push(format!("CORE_ID={}", new_id));
-                env.push(format!("INFRA_ID={}", infra_id));
+                env.push(format!("WORKER_ID={}", new_id));
+                env.push(format!("WORKER_KEY={}", infra_id));
                 env
             };
 

@@ -473,14 +473,30 @@ async fn deadletter_responder(pool: Arc<Pool>, chan: Channel) -> anyhow::Result<
             continue;
         };
 
+        let Some(first_death) = delivery
+            .properties
+            .headers()
+            .as_ref()
+            .and_then(|h| h.inner().get("x-first-death"))
+        else {
+            log::error!(
+                "Deadletter message without x-first-death header: {:?}",
+                delivery
+            );
+            continue;
+        };
+
+        let mut headers = FieldTable::default();
+        headers.insert("x-status".into(), first_death.clone());
+
         // FIXME: design the response protocol...
-        let payload = b"deadletter reponse";
+        let payload = b"";
         chan.basic_publish(
             "",
             reply_to.as_str(),
             BasicPublishOptions::default(),
             payload,
-            BasicProperties::default().with_headers(FieldTable::default()),
+            BasicProperties::default().with_headers(headers),
         )
         .await?;
     }

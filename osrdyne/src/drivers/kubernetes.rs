@@ -116,12 +116,12 @@ impl WorkerDriver for KubernetesDriver {
                     .clone()
                     .unwrap_or_default();
                 env.push(EnvVar {
-                    name: "CORE_ID".to_string(),
+                    name: "WORKER_ID".to_string(),
                     value: Some(new_id.to_string()),
                     ..Default::default()
                 });
                 env.push(EnvVar {
-                    name: "INFRA_ID".to_string(),
+                    name: "WORKER_KEY".to_string(),
                     value: Some(infra_id.to_string()),
                     ..Default::default()
                 });
