@@ -60,7 +60,7 @@ impl RabbitMQClient {
 
         Ok(RabbitMQClient {
             connection: Arc::new(connection),
-            exchange: options.worker_pool_identifier,
+            exchange: format!("{}-req-xchg", options.worker_pool_identifier),
             timeout: options.timeout,
             hostname,
         })
@@ -167,7 +167,10 @@ impl RabbitMQClient {
             .basic_consume(
                 "amq.rabbitmq.reply-to",
                 self.hostname.as_str(),
-                BasicConsumeOptions::default(),
+                BasicConsumeOptions {
+                    no_ack: true,
+                    ..Default::default()
+                },
                 FieldTable::default(),
             )
             .await

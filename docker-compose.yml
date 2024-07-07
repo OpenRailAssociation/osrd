@@ -38,6 +38,7 @@ services:
 
   rabbitmq:
     image: rabbitmq:3-management
+    container_name: osrd-rabbitmq
     ports:
       - "5672:5672"
       - "15672:15672"
@@ -80,13 +81,18 @@ services:
   osrdyne:
     image: ghcr.io/openrailassociation/osrd-edge/osrd-osrdyne:${TAG-dev}
     container_name: osrd-osrdyne
+    depends_on:
+      rabbitmq: {condition: service_healthy}
     command: osrdyne
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+      - ./docker/osrdyne.toml:/osrdyne.toml
     build:
       context: osrdyne
       dockerfile: Dockerfile
     restart: unless-stopped
+    environment:
+      RUST_LOG: "info"
 
   front:
     image: ghcr.io/openrailassociation/osrd-edge/osrd-front:${TAG-dev}-${OSRD_FRONT_MODE-devel}
@@ -117,6 +123,7 @@ services:
     depends_on:
       postgres: {condition: service_healthy}
       redis: {condition: service_healthy}
+      rabbitmq: {condition: service_healthy}
     build:
       context: editoast
       dockerfile: Dockerfile
@@ -131,6 +138,8 @@ services:
       DATABASE_URL: "postgres://osrd:password@postgres/osrd"
       TELEMETRY_KIND: "opentelemetry"
       TELEMETRY_ENDPOINT: "http://jaeger:4317"
+      RUST_LOG: "debug"
+      OSRD_MQ_URL: "amqp://osrd:password@osrd-rabbitmq:5672/%2f"
     command:
       - /bin/sh
       - -c

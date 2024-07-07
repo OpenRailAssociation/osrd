@@ -23,7 +23,6 @@ pub enum ArgumentValue {
 
 type Arguments = BTreeMap<String, ArgumentValue>;
 
-
 #[derive(Deserialize, Debug)]
 pub struct Queue {
     pub arguments: Arguments,
@@ -36,7 +35,6 @@ pub struct Queue {
     pub r#type: String,
     pub vhost: String,
 }
-
 
 #[derive(Deserialize, Serialize, Debug)]
 pub enum PolicyScope {
@@ -92,6 +90,10 @@ impl ManagementClient {
             username => username,
         };
 
+        // FIXME: delete that
+        let user = "osrd";
+        let password = "password";
+
         Ok(Self {
             client: reqwest::Client::new(),
             base: format!("http://{host}:{port}").parse()?,
@@ -101,11 +103,17 @@ impl ManagementClient {
         })
     }
 
-    pub fn make_request(&self, method: Method, rel_url: impl AsRef<str>) -> anyhow::Result<Request> {
+    pub fn make_request(
+        &self,
+        method: Method,
+        rel_url: impl AsRef<str>,
+    ) -> anyhow::Result<Request> {
         let url = self.base.join(rel_url.as_ref())?;
         let username = self.user.clone();
         let password = self.password.clone();
-        let request = self.client.request(method, url)
+        let request = self
+            .client
+            .request(method, url)
             .basic_auth(username, Some(password))
             .build()?;
         Ok(request)

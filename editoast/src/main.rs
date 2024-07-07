@@ -382,7 +382,7 @@ async fn runserver(
 
     // Build Core client
     let core_client =
-        CoreClient::new_mq(args.mq_url.clone(), "core".into(), args.core_timeout).await;
+        CoreClient::new_mq(args.mq_url.clone(), "core".into(), args.core_timeout).await?;
 
     let server = HttpServer::new(move || {
         // Build CORS

@@ -7,6 +7,8 @@ use std::{
 use serde::Serialize;
 use uuid::Uuid;
 
+use crate::Key;
+
 #[derive(Clone, Serialize, Debug)]
 pub struct WorkerMetadata {
     /// External identifier (container id in Docker, deployment name in Kubernetes)
@@ -14,7 +16,7 @@ pub struct WorkerMetadata {
     /// Internal UUID of the core.
     pub core_id: Uuid,
     /// Infrastructure ID for which this core provides services.
-    pub infra_id: usize,
+    pub infra_id: Key,
 }
 
 #[derive(Debug)]
@@ -40,13 +42,13 @@ pub trait WorkerDriver: Send {
     /// Returns the internal UUID of the core.
     fn get_or_create_core_pool(
         &self,
-        infra_id: usize,
+        infra_id: Key,
     ) -> Pin<Box<dyn Future<Output = Result<Uuid, DriverError>> + Send + '_>>;
 
     /// Unschedules a core from the given infrastructure.
     fn destroy_core_pool(
         &self,
-        infra_id: usize,
+        infra_id: Key,
     ) -> Pin<Box<dyn Future<Output = Result<(), DriverError>> + Send + '_>>;
 
     /// Returns the status of a core.

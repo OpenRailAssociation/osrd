@@ -92,6 +92,8 @@ impl Pool {
         conn: &Connection,
         management_client: &ManagementClient,
     ) -> anyhow::Result<()> {
+        log::info!("Setting up pool: {}", self.pool_id);
+
         // create exchanges
         let chan = conn.create_channel().await?;
         chan.exchange_declare(
@@ -413,12 +415,15 @@ async fn worker_control_loop(
             }
         };
 
-        let current_infras: Vec<usize> = current_cores.into_iter().map(|c| c.infra_id).collect();
-        let wanted_infras: Vec<usize> = target
+        let current_infras = current_cores
+            .into_iter()
+            .map(|c| c.infra_id)
+            .collect::<Vec<_>>();
+        let wanted_infras = target
             .queues
-            .keys()
-            .map(|k| k.encode().parse().expect("key should be a number"))
-            .collect();
+            .into_iter()
+            .map(|(k, _)| k)
+            .collect::<Vec<_>>();
 
         // Remove unwanted cores
         for infra_id in current_infras {

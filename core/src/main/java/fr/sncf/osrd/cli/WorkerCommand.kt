@@ -2,10 +2,7 @@ package fr.sncf.osrd.cli
 
 import com.beust.jcommander.Parameter
 import com.beust.jcommander.Parameters
-import com.rabbitmq.client.AMQP
-import com.rabbitmq.client.Channel
-import com.rabbitmq.client.ConnectionFactory
-import com.rabbitmq.client.DeliverCallback
+import com.rabbitmq.client.*
 import fr.sncf.osrd.api.*
 import fr.sncf.osrd.api.api_v2.conflicts.ConflictDetectionEndpointV2
 import fr.sncf.osrd.api.api_v2.path_properties.PathPropEndpoint
@@ -25,28 +22,28 @@ import org.slf4j.LoggerFactory
 import org.takes.Request
 import java.io.InputStream
 import java.util.concurrent.TimeUnit
-import kotlin.concurrent.thread
 
 
 @Parameters(commandDescription = "RabbitMQ worker mode")
 class WorkerCommand : CliCommand {
 
-    @Parameter(names = ["--amqp-uri"]) var amqpUri: String = "amqp://127.0.0.1:5672/%2f" // TODO
+    @Parameter(names = ["--amqp-uri"])
+    var amqpUri: String = "amqp://osrd:password@osrd-rabbitmq:5672/%2f" // TODO
 
     @Parameter(
         names = ["--editoast-url"],
         description = "The base URL of editoast (used to query infrastructures)"
     )
-    private val editoastUrl: String? = null
+    private var editoastUrl: String? = null
 
     @Parameter(
         names = ["--editoast-authorization"],
         description = "The HTTP Authorization header sent to editoast"
     )
-    private val editoastAuthorization: String? = null
+    private var editoastAuthorization: String? = null
 
     @Parameter(names = ["-j", "--threads"], description = "The number of threads to serve requests from")
-    private val threads: Int = 1
+    private var threads: Int = 1
 
 
     val WORKER_ID: String
@@ -114,93 +111,101 @@ class WorkerCommand : CliCommand {
             reportActivity(channel, "started")
         }
 
-        repeat(threads) {
-            thread {
-                val activityChannel = connection.createChannel()
-                val channel = connection.createChannel()
-                channel.basicConsume(
-                    WORKER_REQUESTS_QUEUE,
-                    false,
-                    DeliverCallback { consumerTag, message ->
-                        reportActivity(activityChannel, "request-received")
+        val activityChannel = connection.createChannel()
+        val channel = connection.createChannel()
+        channel.basicConsume(
+            WORKER_REQUESTS_QUEUE,
+            false, mapOf(),
+            DeliverCallback { consumerTag, message ->
+                reportActivity(activityChannel, "request-received")
 
-                        val replyTo = message.properties.replyTo
-                        val correlationId = message.properties.correlationId
-                        val body = message.body
-                        val path = message.properties.headers["x-rpc-path"] as String?
-                        if (path == null) {
-                            logger.error("missing x-rpc-path header")
-                            channel.basicReject(message.envelope.deliveryTag, false)
-                            if (replyTo != null) {
-                                // TODO: response format to handle protocol error
-                                channel.basicPublish(
-                                    "",
-                                    replyTo,
-                                    null,
-                                    "missing x-rpc-path header".toByteArray()
-                                )
-                            }
-
-                            return@DeliverCallback
-                        }
-
-                        val endpoint = endpoints[path]
-                        if (endpoint == null) {
-                            logger.error("unknown path {}", path)
-                            channel.basicReject(message.envelope.deliveryTag, false)
-                            if (replyTo != null) {
-                                // TODO: response format to handle protocol error
-                                channel.basicPublish("", replyTo, null, "unknown path $path".toByteArray())
-                            }
-
-                            return@DeliverCallback
-                        }
-
-                        class RabbitMQTextMapGetter : TextMapGetter<Map<String, Any>> {
-                            override fun keys(carrier: Map<String, Any>): Iterable<String> {
-                                return carrier.keys
-                            }
-
-                            override fun get(carrier: Map<String, Any>?, key: String): String? {
-                                return carrier?.get(key) as String?
-                            }
-                        }
-
-                        val context = GlobalOpenTelemetry.getPropagators().textMapPropagator.extract(
-                            Context.current(),
-                            message.properties.headers,
-                            RabbitMQTextMapGetter()
+                val replyTo = message.properties.replyTo
+                val correlationId = message.properties.correlationId
+                val body = message.body
+                val path = (message.properties.headers["x-rpc-path"] as ByteArray?)?.decodeToString()
+                if (path == null) {
+                    logger.error("missing x-rpc-path header")
+                    channel.basicReject(message.envelope.deliveryTag, false)
+                    if (replyTo != null) {
+                        // TODO: response format to handle protocol error
+                        channel.basicPublish(
+                            "",
+                            replyTo,
+                            null,
+                            "missing x-rpc-path header".toByteArray()
                         )
-                        val span = tracer.spanBuilder(path).setParent(context).startSpan()
-
-                        val payload = try {
-                            span.makeCurrent().use { scope ->
-                                val response = endpoint.act(MQRequest(body))
-                                response
-                                    .body()
-                                    .readAllBytes() // TODO: check the response code too to catch error
-                            }
-                        } catch (t: Throwable) {
-                            span.recordException(t)
-                            "ERROR, exception received".toByteArray() // TODO: have a valid payload for uncaught exceptions
-                        } finally {
-                            span.end()
-                        }
-
-                        if (replyTo != null) {
-                            val properties = AMQP.BasicProperties().builder()
-                                .correlationId(correlationId)
-                                .headers(mapOf("x-status" to "ok"))
-                                .build()
-                            channel.basicPublish("", replyTo, properties, payload)
-                        }
-
-                        channel.basicAck(message.envelope.deliveryTag, false)
                     }
-                ) { _ ->
+
+                    return@DeliverCallback
                 }
-            }
+                logger.info("received request for path {}", path)
+
+                val endpoint = endpoints[path]
+                if (endpoint == null) {
+                    logger.error("unknown path {}", path)
+                    channel.basicReject(message.envelope.deliveryTag, false)
+                    if (replyTo != null) {
+                        // TODO: response format to handle protocol error
+                        channel.basicPublish("", replyTo, null, "unknown path $path".toByteArray())
+                    }
+
+                    return@DeliverCallback
+                }
+
+                class RabbitMQTextMapGetter : TextMapGetter<Map<String, Any>> {
+                    override fun keys(carrier: Map<String, Any>): Iterable<String> {
+                        return carrier.keys
+                    }
+
+                    override fun get(carrier: Map<String, Any>?, key: String): String? {
+                        return carrier?.get(key) as String?
+                    }
+                }
+
+                val context = GlobalOpenTelemetry.getPropagators().textMapPropagator.extract(
+                    Context.current(),
+                    message.properties.headers,
+                    RabbitMQTextMapGetter()
+                )
+                val span = tracer.spanBuilder(path).setParent(context).startSpan()
+
+                val payload = try {
+                    span.makeCurrent().use { scope ->
+                        val response = endpoint.act(MQRequest(path, body))
+                        response
+                            .body()
+                            .readAllBytes() // TODO: check the response code too to catch error
+                    }
+                } catch (t: Throwable) {
+                    span.recordException(t)
+                    "ERROR, exception received".toByteArray() // TODO: have a valid payload for uncaught exceptions
+                } finally {
+                    span.end()
+                }
+
+                if (replyTo != null) {
+                    val properties = AMQP.BasicProperties().builder()
+                        .correlationId(correlationId)
+                        .headers(mapOf("x-status" to "ok"))
+                        .build()
+                    channel.basicPublish("", replyTo, properties, payload)
+                }
+
+                channel.basicAck(message.envelope.deliveryTag, false)
+                logger.info("request for path {} processed", path)
+            }, { _ ->
+                logger.error("consumer cancelled")
+            }, { consumerTag, e ->
+                logger.info("consume shutdown: {}, {}", consumerTag, e.toString())
+            })
+
+        logger.info("consume ended")
+
+        while (true) {
+            Thread.sleep(100)
+            if (!channel.isOpen()) break
         }
+
         return 0
     }
 
@@ -209,9 +214,9 @@ class WorkerCommand : CliCommand {
         activityChannel.basicPublish(WORKER_ACTIVITY_EXCHANGE, WORKER_KEY, properties, null)
     }
 
-    class MQRequest(private val body: ByteArray) : Request {
+    class MQRequest(private val path: String, private val body: ByteArray) : Request {
         override fun head(): MutableIterable<String> {
-            return mutableListOf()
+            return mutableListOf("POST $path HTTP/1.1")
         }
 
         override fun body(): InputStream {

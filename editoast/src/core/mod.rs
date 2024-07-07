@@ -177,8 +177,9 @@ impl CoreClient {
             }
             CoreClient::MessageQueue(client) => {
                 // TODO: maybe implement retry?
-                let infra_id = infra_id.expect("FIXME: allow empty infra id in the amqp protocol"); // FIXME: allow empty infra id in the amqp protocol
-                                                                                                    // TODO: tracing: use correlation id
+                let infra_id = infra_id.unwrap_or(1); // FIXME: don't do that!!!
+                                                      //expect("FIXME: allow empty infra id in the amqp protocol"); // FIXME: allow empty infra id in the amqp protocol
+                                                      // TODO: tracing: use correlation id
 
                 let response = client
                     .call_with_response::<_, R>(infra_id.to_string(), path, &body, true, None, None)

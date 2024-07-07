@@ -16,7 +16,7 @@ pub enum WorkerDriverConfig {
     KubernetesDriver(KubernetesDriverOptions),
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct OsrdyneConfig {
     pub amqp_uri: String,
     pub management_port: u16,
@@ -33,10 +33,10 @@ pub struct OsrdyneConfig {
 impl Default for OsrdyneConfig {
     fn default() -> Self {
         Self {
-            amqp_uri: "amqp://127.0.0.1:5672/%2f".into(),
+            amqp_uri: "amqp://osrd:password@osrd-rabbitmq:5672/%2f".into(),
             management_port: 15672,
             management_host: None,
-            pool_id: "default".to_string(),
+            pool_id: "core".to_string(),
             max_workers: None,
             worker_driver: WorkerDriverConfig::Noop,
             worker_loop_interval: Duration::from_millis(500),

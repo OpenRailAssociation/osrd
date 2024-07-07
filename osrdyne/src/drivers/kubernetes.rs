@@ -1,3 +1,5 @@
+use crate::Key;
+
 use super::{
     worker_driver::{DriverError, WorkerDriver, WorkerMetadata},
     LABEL_CORE_ID, LABEL_INFRA_ID, LABEL_MANAGED_BY, MANAGED_BY_VALUE,
@@ -95,7 +97,7 @@ impl KubernetesDriver {
 impl WorkerDriver for KubernetesDriver {
     fn get_or_create_core_pool(
         &self,
-        infra_id: usize,
+        infra_id: Key,
     ) -> Pin<Box<dyn Future<Output = Result<Uuid, DriverError>> + Send + '_>> {
         Box::pin(async move {
             let current_cores = self.list_core_pools().await?;
@@ -150,7 +152,7 @@ impl WorkerDriver for KubernetesDriver {
                     name: Some(core_deployment_name.clone()),
                     namespace: Some(self.options.namespace.clone()),
                     labels: Some({
-                        let mut labels = BTreeMap::new();
+                        let mut labels: BTreeMap<String, String> = BTreeMap::new();
                         labels.insert(LABEL_MANAGED_BY.to_owned(), MANAGED_BY_VALUE.to_owned());
                         labels.insert(LABEL_CORE_ID.to_owned(), new_id.to_string());
                         labels.insert(LABEL_INFRA_ID.to_owned(), infra_id.to_string());
@@ -295,7 +297,7 @@ impl WorkerDriver for KubernetesDriver {
 
     fn destroy_core_pool(
         &self,
-        infra_id: usize,
+        infra_id: Key,
     ) -> Pin<Box<dyn Future<Output = Result<(), DriverError>> + Send + '_>> {
         Box::pin(async move {
             let current_cores = self.list_core_pools().await?;
@@ -368,7 +370,7 @@ impl WorkerDriver for KubernetesDriver {
                                 external_id: deployment.metadata.name.clone()?,
                                 core_id: Uuid::parse_str(core_id)
                                     .expect("core_id not a valid UUID"),
-                                infra_id: infra_id.parse().expect("infra_id not a valid number"),
+                                infra_id: Key::decode(infra_id),
                             })
                         } else {
                             None

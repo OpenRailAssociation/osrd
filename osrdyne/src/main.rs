@@ -2,6 +2,7 @@ use lapin::Connection;
 use lapin::ConnectionProperties;
 use log::error;
 use log::info;
+use log::logger;
 use std::collections::BTreeMap;
 use std::sync::Arc;
 use std::time::Duration;
@@ -61,6 +62,7 @@ async fn main() -> Result<(), anyhow::Error> {
     env_logger::init();
 
     let config = parse_config()?;
+    log::info!("config: {:?}", &config);
     let pool = Arc::new(Pool::new(
         config.pool_id.clone(),
         request_queues_policy(&config),
@@ -87,9 +89,9 @@ async fn main() -> Result<(), anyhow::Error> {
         target_tracker_config,
     ));
 
-    target_tracker_client
-        .require_worker_group(Key::new("test"), Duration::ZERO)
-        .await?;
+    // target_tracker_client
+    //     .require_worker_group(Key::new("test"), Duration::ZERO)
+    //     .await?;
 
     'reconnect_loop: loop {
         // connect to rabbitmq
