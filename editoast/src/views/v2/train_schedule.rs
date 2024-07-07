@@ -385,7 +385,15 @@ pub async fn train_simulation(
     }
 
     // Compute simulation from core
-    let result = simulation_request.fetch(core.as_ref()).await?;
+    let result = simulation_request.fetch(core.as_ref()).await;
+
+    let result = match result {
+        Ok(result) => result,
+        Err(core_error) if core_error.status.is_server_error() => {
+            SimulationResponse::SimulationFailed { core_error }
+        }
+        err => return err,
+    };
 
     // Cache the simulation response
     redis_conn
