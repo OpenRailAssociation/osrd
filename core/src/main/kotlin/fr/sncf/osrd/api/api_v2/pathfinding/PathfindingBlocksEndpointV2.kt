@@ -5,6 +5,7 @@ import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.api.InfraManager
 import fr.sncf.osrd.api.api_v2.TrackLocation
 import fr.sncf.osrd.api.pathfinding.constraints.*
+import fr.sncf.osrd.conflicts.TravelledPath
 import fr.sncf.osrd.graph.*
 import fr.sncf.osrd.graph.Pathfinding.EdgeLocation
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType
@@ -144,69 +145,56 @@ private fun computePaths(
             .setEdgeToLength { block -> infra.blockInfra.getBlockLength(block) }
             .setRemainingDistanceEstimator(remainingDistanceEstimators)
             .runPathfinding(waypoints)
-    if (possiblePathWithoutErrorNoConstraints != null) {
-        for (currentConstraint in constraints) {
-            val res =
-                Pathfinding(GraphAdapter(infra.blockInfra, infra.rawInfra))
-                    .setTimeout(timeout)
-                    .setEdgeToLength { block: BlockId -> infra.blockInfra.getBlockLength(block) }
-                    .addBlockedRangeOnEdges(currentConstraint)
-                    .setRemainingDistanceEstimator(remainingDistanceEstimators)
-                    .runPathfinding(waypoints)
-            if (res == null) {
-                // This way of handling it is suboptimal, but it should be reworked soon
-                val relaxedPathResponse =
-                    runPathfindingPostProcessing(infra, possiblePathWithoutErrorNoConstraints)
-
-                when (currentConstraint::class.java) {
-                    ElectrificationConstraints::class.java -> {
-                        throw NoPathFoundException(
-                            IncompatibleConstraintsPathResponse(
-                                relaxedPathResponse,
-                                IncompatibleConstraints(
-                                    listOf(
-                                        RangeValue(
-                                            Pathfinding.Range(Offset.zero(), Offset.zero()),
-                                            "elec"
-                                        )
-                                    ),
-                                    listOf(),
-                                    listOf()
-                                )
-                            )
-                        )
+    if (
+        possiblePathWithoutErrorNoConstraints != null &&
+            possiblePathWithoutErrorNoConstraints.ranges.isNotEmpty()
+    ) {
+        val elecRanges = mutableListOf<RangeValue<String>>()
+        val gaugeRanges = mutableListOf<Pathfinding.Range<TravelledPath>>()
+        val signalRanges = mutableListOf<RangeValue<String>>()
+        var travelledPathBlockStart =
+            Offset<TravelledPath>(
+                -possiblePathWithoutErrorNoConstraints.ranges.first().start.distance
+            )
+        for (range in possiblePathWithoutErrorNoConstraints.ranges) {
+            for (currentConstraint in constraints) {
+                for (blockedRange in currentConstraint.apply(range.edge)) {
+                    if (blockedRange.end < range.start || range.end < blockedRange.start) {
+                        // The blocked range is outside the used part
+                        continue
                     }
-                    LoadingGaugeConstraints::class.java -> {
-                        throw NoPathFoundException(
-                            IncompatibleConstraintsPathResponse(
-                                relaxedPathResponse,
-                                IncompatibleConstraints(
-                                    listOf(),
-                                    listOf(Pathfinding.Range(Offset.zero(), Offset.zero())),
-                                    listOf()
-                                )
-                            )
+                    val range =
+                        Pathfinding.Range(
+                            travelledPathBlockStart +
+                                Offset.max(blockedRange.start, range.start).distance,
+                            travelledPathBlockStart +
+                                Offset.min(blockedRange.end, range.end).distance
                         )
-                    }
-                    SignalingSystemConstraints::class.java -> {
-                        throw NoPathFoundException(
-                            IncompatibleConstraintsPathResponse(
-                                relaxedPathResponse,
-                                IncompatibleConstraints(
-                                    listOf(),
-                                    listOf(),
-                                    listOf(
-                                        RangeValue(
-                                            Pathfinding.Range(Offset.zero(), Offset.zero()),
-                                            "signal"
-                                        )
-                                    )
-                                )
-                            )
-                        )
+                    when (currentConstraint::class.java) {
+                        ElectrificationConstraints::class.java -> {
+                            elecRanges.add(RangeValue(range, "elec"))
+                        }
+                        LoadingGaugeConstraints::class.java -> {
+                            gaugeRanges.add(range)
+                        }
+                        SignalingSystemConstraints::class.java -> {
+                            signalRanges.add(RangeValue(range, "signal"))
+                        }
                     }
                 }
             }
+            travelledPathBlockStart += infra.blockInfra.getBlockLength(range.edge).distance
+        }
+
+        if (elecRanges.isNotEmpty() || gaugeRanges.isNotEmpty() || signalRanges.isNotEmpty()) {
+            val relaxedPathResponse =
+                runPathfindingPostProcessing(infra, possiblePathWithoutErrorNoConstraints)
+            throw NoPathFoundException(
+                IncompatibleConstraintsPathResponse(
+                    relaxedPathResponse,
+                    IncompatibleConstraints(elecRanges, gaugeRanges, signalRanges)
+                )
+            )
         }
     }
     // It didn’t fail due to a RS constraint, no path exists

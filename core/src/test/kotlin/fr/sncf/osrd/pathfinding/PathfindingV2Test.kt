@@ -134,7 +134,20 @@ class PathfindingV2Test : ApiTest() {
             parsed.incompatibleConstraints ==
                 IncompatibleConstraints(
                     incompatibleElectrificationRanges =
-                        listOf(RangeValue(Pathfinding.Range(Offset.zero(), Offset.zero()), "elec")),
+                        listOf(
+                            RangeValue(
+                                Pathfinding.Range(Offset.zero(), Offset(125.meters)),
+                                "elec"
+                            ),
+                            RangeValue(
+                                Pathfinding.Range(Offset(125.meters), Offset(10175.meters)),
+                                "elec"
+                            ),
+                            RangeValue(
+                                Pathfinding.Range(Offset(10175.meters), Offset(10250.meters)),
+                                "elec"
+                            )
+                        ),
                     incompatibleGaugeRanges = listOf(),
                     incompatibleSignalingSystemRanges = listOf()
                 )
