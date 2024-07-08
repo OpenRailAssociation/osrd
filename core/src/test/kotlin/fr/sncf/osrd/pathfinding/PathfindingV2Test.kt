@@ -115,7 +115,7 @@ class PathfindingV2Test : ApiTest() {
                     rollingStockLoadingGauge = RJSLoadingGaugeType.G1,
                     rollingStockIsThermal = false,
                     rollingStockSupportedElectrifications = listOf("nonexistent_electrification"),
-                    rollingStockSupportedSignalingSystems = listOf("BAL"),
+                    rollingStockSupportedSignalingSystems = listOf("TVM300"),
                     timeout = null,
                     infra = "tiny_infra/infra.json",
                     expectedVersion = "1",
@@ -134,9 +134,20 @@ class PathfindingV2Test : ApiTest() {
             parsed.incompatibleConstraints ==
                 IncompatibleConstraints(
                     incompatibleElectrificationRanges =
-                        listOf(RangeValue(Pathfinding.Range(Offset.zero(), Offset.zero()), "elec")),
+                        listOf(
+                            RangeValue(
+                                Pathfinding.Range(Offset.zero(), Offset(10250.meters)),
+                                "" // range not electrified
+                            )
+                        ),
                     incompatibleGaugeRanges = listOf(),
-                    incompatibleSignalingSystemRanges = listOf()
+                    incompatibleSignalingSystemRanges =
+                        listOf(
+                            RangeValue(
+                                Pathfinding.Range(Offset.zero(), Offset(10250.meters)),
+                                "BAL"
+                            )
+                        )
                 )
         )
     }
