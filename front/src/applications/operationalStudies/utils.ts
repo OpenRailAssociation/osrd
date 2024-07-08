@@ -38,7 +38,11 @@ export const transformBoundariesDataToPositionDataArray = <T extends 'gradient' 
         position: mmToM(boundary),
         [value]: boundariesData.values[index],
       } as PositionData<T>;
-      acc.push(newData);
+      const combiningData = {
+        position: mmToM(boundary),
+        [value]: boundariesData.values[index + 1],
+      } as PositionData<T>;
+      acc.push(newData, combiningData);
       return acc;
     },
     [{ position: 0, [value]: 0 }] as PositionData<T>[]
