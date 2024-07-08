@@ -129,7 +129,7 @@ impl CoreClient {
     ) -> Result<R::Response> {
         let method_s = colored_method(&method);
         debug!(
-            target: "editoast::coreclient", 
+            target: "editoast::coreclient",
             body = body.and_then(|b| serde_json::to_string_pretty(b).ok()).unwrap_or_default(),
             "Request content");
         match self {

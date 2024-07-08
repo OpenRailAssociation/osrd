@@ -55,28 +55,14 @@ services:
 
   core:
     image: ghcr.io/openrailassociation/osrd-edge/osrd-core:${TAG-dev}
-    # container_name: osrd-core
+    container_name: osrd-core-dummy
     build:
       context: core
       dockerfile: Dockerfile
       additional_contexts:
         test_data: tests/data
     restart: no
-    ports: ["8080:8080"]
     command: "true"
-    environment:
-      CORE_EDITOAST_URL: "http://osrd-editoast"
-      JAVA_TOOL_OPTIONS: "-javaagent:/app/opentelemetry-javaagent.jar"
-      CORE_MONITOR_TYPE: "opentelemetry"
-      OTEL_EXPORTER_OTLP_TRACES_PROTOCOL: "grpc"
-      OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: "http://jaeger:4317"
-      OTEL_METRICS_EXPORTER: "none"
-      OTEL_LOGS_EXPORTER: "none"
-    # healthcheck:
-      # test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
-      # start_period: 4s
-      # interval: 5s
-
 
   osrdyne:
     image: ghcr.io/openrailassociation/osrd-edge/osrd-osrdyne:${TAG-dev}

@@ -158,7 +158,7 @@ class WorkerCommand : CliCommand {
                     }
 
                     override fun get(carrier: Map<String, Any>?, key: String): String? {
-                        return carrier?.get(key) as String?
+                        return (carrier?.get(key) as ByteArray?)?.decodeToString()
                     }
                 }
 
