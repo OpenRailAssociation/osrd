@@ -25,8 +25,11 @@ export const getExpectedResultDataNumber = <T extends 'gradient' | 'radius'>(
   [
     { position: 0, [value]: 0 },
     { position: 1, [value]: 1 },
+    { position: 1, [value]: 2 },
     { position: 2, [value]: 2 },
+    { position: 2, [value]: 3 },
     { position: 3, [value]: 3 },
+    { position: 3, [value]: 4 },
     { position: 4, [value]: 4 },
   ] as PositionData<T>[];
 
