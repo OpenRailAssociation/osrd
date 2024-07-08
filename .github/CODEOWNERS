@@ -25,8 +25,8 @@
 # --- CORE ---
 /core                                                    @openrailassociation/OSRD-Core
 
-# --- CORE CONTROLLER ---
-/core_controller                                         @osrd-project/devops
+# --- OSRDYNE ---
+/osrdyne                                                 @openrailassociation/OSRD-DevOps
 
 # --- CORE PHYSICS ---
 /core/*Physics*.java                                     @openrailassociation/OSRD-Physics
