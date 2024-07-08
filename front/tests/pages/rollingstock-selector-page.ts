@@ -3,7 +3,7 @@ import { type Locator, type Page, expect } from '@playwright/test';
 import BasePage from './base-page';
 import { extractNumberFromString } from '../utils/index';
 
-export default class RollingStockSelectorPage extends BasePage {
+class RollingStockSelectorPage extends BasePage {
   readonly rollingStockSelectorButton: Locator;
 
   readonly rollingStockSelectorModal: Locator;
@@ -36,9 +36,17 @@ export default class RollingStockSelectorPage extends BasePage {
 
   readonly getRollingStockList: Locator;
 
-  readonly getThermalElectricRollingStockIcons: Locator;
+  readonly getDualModeRollingStockIcons: Locator;
 
   readonly getNoRollingStockResult: Locator;
+
+  readonly comfortHeatingButton: Locator;
+
+  readonly comfortACButton: Locator;
+
+  readonly getSelectedComfortType: Locator;
+
+  readonly getSelectedRollingStockName: Locator;
 
   constructor(page: Page) {
     super(page);
@@ -57,7 +65,7 @@ export default class RollingStockSelectorPage extends BasePage {
     this.getRollingStockSearchResult = page.getByTestId('search-results-text');
     this.getThermalRollingStockIcons = page.locator('.rollingstock-footer-specs .text-pink');
     this.getElectricRollingStockIcons = page.locator('.rollingstock-footer-specs .text-primary');
-    this.getThermalElectricRollingStockIcons = page
+    this.getDualModeRollingStockIcons = page
       .locator('.rollingstock-footer-specs .rollingstock-tractionmode:has(.text-pink)')
       .filter({
         has: page.locator('.text-primary'),
@@ -66,6 +74,10 @@ export default class RollingStockSelectorPage extends BasePage {
     this.getThermalRollingStockFirstIcon = this.getThermalRollingStockIcons.first();
     this.getRollingStockList = page.locator('.rollingstock-editor-list .rollingstock-title');
     this.getNoRollingStockResult = page.locator('.rollingstock-empty');
+    this.comfortHeatingButton = page.getByTestId('comfort-heating-button');
+    this.comfortACButton = page.getByTestId('comfort-ac-button');
+    this.getSelectedComfortType = page.getByTestId('selected-comfort-type-info');
+    this.getSelectedRollingStockName = page.getByTestId('selected-rolling-stock-info');
   }
 
   async openRollingstockModal() {
@@ -119,3 +131,4 @@ export default class RollingStockSelectorPage extends BasePage {
     return extractNumberFromString(await this.getRollingStockSearchResult.innerText());
   }
 }
+export default RollingStockSelectorPage;

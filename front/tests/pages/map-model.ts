@@ -1,6 +1,6 @@
 import { type Locator, type Page, expect } from '@playwright/test';
 
-import { PlaywrightHomePage } from './home-page-model';
+import HomePage from './home-page-model';
 
 export interface selectPointOnMapProps {
   stationName: string;
@@ -8,7 +8,7 @@ export interface selectPointOnMapProps {
   positionClick: { x: number; y: number };
 }
 
-class PlaywrightMap {
+class MapPage {
   readonly getBtnShearch: Locator;
 
   readonly getBtnCloseShearch: Locator;
@@ -23,7 +23,7 @@ class PlaywrightMap {
 
   readonly getPathFindingResult: Locator;
 
-  readonly playwrightHomePage: PlaywrightHomePage;
+  readonly homePage: HomePage;
 
   constructor(readonly page: Page) {
     this.getBtnShearch = page.getByRole('button', { name: 'Search' });
@@ -35,7 +35,7 @@ class PlaywrightMap {
       .locator('.map-popup-click-select')
       .getByTestId('map-destination-button');
     this.getPathFindingResult = page.locator('.pathfinding-done');
-    this.playwrightHomePage = new PlaywrightHomePage(page);
+    this.homePage = new HomePage(page);
   }
 
   async disableLayers() {
@@ -80,10 +80,7 @@ class PlaywrightMap {
     const { stationName, stationItemName, isOrigin } = args;
     await this.openMapSearch();
     await this.searchStation(stationName);
-    await this.playwrightHomePage.page
-      .getByRole('button', { name: stationItemName })
-      .first()
-      .click();
+    await this.homePage.page.getByRole('button', { name: stationItemName }).first().click();
     await this.clickOnMap();
     // We don't use ternaries here, as eslint warns us about rule no-unused-expressions
     if (isOrigin) {
@@ -101,5 +98,4 @@ class PlaywrightMap {
     await this.selectPointOnMap({ ...props, isOrigin: false });
   }
 }
-
-export default PlaywrightMap;
+export default MapPage;

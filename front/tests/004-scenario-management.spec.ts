@@ -4,10 +4,10 @@ import { v4 as uuidv4 } from 'uuid';
 import type { Infra, Project, Scenario, Study } from 'common/api/osrdEditoastApi';
 
 import scenarioData from './assets/operationStudies/scenario.json';
-import { getInfra, getProject, getStudy, postApiRequest } from './utils/index';
-import PlaywrightCommonPage from './pages/common-page-model';
-import { PlaywrightHomePage } from './pages/home-page-model';
+import CommonPage from './pages/common-page-model';
+import HomePage from './pages/home-page-model';
 import ScenarioPage from './pages/scenario-page-model';
+import { getInfra, getProject, getStudy, postApiRequest } from './utils/index';
 
 let smallInfra: Infra;
 let project: Project;
@@ -31,9 +31,9 @@ test.beforeEach(async () => {
 
 test.describe('Test if operationnal study : scenario creation workflow is working properly', () => {
   test('Create a new scenario', async ({ page }) => {
-    const playwrightHomePage = new PlaywrightHomePage(page);
+    const homePage = new HomePage(page);
     const scenarioPage = new ScenarioPage(page);
-    const commonPage = new PlaywrightCommonPage(page);
+    const commonPage = new CommonPage(page);
 
     await page.goto(`/operational-studies/projects/${project.id}/studies/${study.id}`);
 
@@ -55,9 +55,9 @@ test.describe('Test if operationnal study : scenario creation workflow is workin
     await commonPage.setTag(scenarioData.tags[2]);
 
     await scenarioPage.setScenarioInfraByName('small_infra_test_e2e');
-    const createButton = playwrightHomePage.page.getByTestId('createScenario');
+    const createButton = homePage.page.getByTestId('createScenario');
     await createButton.click();
-    await playwrightHomePage.page.waitForURL('**/scenarios/*');
+    await homePage.page.waitForURL('**/scenarios/*');
     expect(await scenarioPage.getScenarioName.textContent()).toContain(scenarioName);
     expect(await scenarioPage.getScenarioDescription.textContent()).toContain(
       scenarioData.description
@@ -67,7 +67,7 @@ test.describe('Test if operationnal study : scenario creation workflow is workin
 
   test('Update a scenario', async ({ page }) => {
     const scenarioPage = new ScenarioPage(page);
-    const commonPage = new PlaywrightCommonPage(page);
+    const commonPage = new CommonPage(page);
 
     await page.goto(
       `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenario.id}`

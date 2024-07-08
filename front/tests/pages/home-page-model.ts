@@ -1,9 +1,8 @@
-/* eslint-disable import/prefer-default-export */
 import { expect, type Locator, type Page } from '@playwright/test';
 
 import home from '../../public/locales/fr/home/home.json';
 
-export class PlaywrightHomePage {
+class HomePage {
   // The current page object
   readonly page: Page;
 
@@ -31,6 +30,12 @@ export class PlaywrightHomePage {
 
   readonly getViteOverlay: Locator;
 
+  readonly TSV2Switch: Locator;
+
+  readonly dropDown: Locator;
+
+  readonly userSettings: Locator;
+
   constructor(page: Page) {
     this.page = page;
     // Initialize locators using roles and text content
@@ -46,6 +51,9 @@ export class PlaywrightHomePage {
     this.getBody = page.locator('body');
     this.translation = home;
     this.getViteOverlay = page.locator('vite-plugin-checker-error-overlay');
+    this.TSV2Switch = page.getByTestId('train-schedule-version-switch');
+    this.dropDown = page.getByTestId('dropdown-sncf');
+    this.userSettings = page.getByTestId('user-settings-btn');
   }
 
   // Completly remove VITE button & sign
@@ -101,4 +109,15 @@ export class PlaywrightHomePage {
   getTranslations(key: keyof typeof home) {
     return this.translation[key];
   }
+
+  // TODO : Delete after drop V1
+  // Check Stdcm Version
+  async toggleTSV2() {
+    await this.dropDown.click();
+    await this.userSettings.click();
+    if (!(await this.TSV2Switch.isChecked()) && (await this.TSV2Switch.isVisible())) {
+      await this.TSV2Switch.click();
+    }
+  }
 }
+export default HomePage;

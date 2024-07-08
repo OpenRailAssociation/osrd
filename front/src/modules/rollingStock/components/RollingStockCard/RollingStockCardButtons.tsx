@@ -61,7 +61,10 @@ const RollingStockCardButtons = ({
       options.push({
         value: 'HEATING',
         label: (
-          <span className="rollingstock-footer-button-with-picto">
+          <span
+            data-testid="comfort-heating-button"
+            className="rollingstock-footer-button-with-picto"
+          >
             {comfort2pictogram('HEATING')} {t('comfortTypes.HEATING')}
           </span>
         ),
@@ -71,7 +74,7 @@ const RollingStockCardButtons = ({
       options.push({
         value: 'AC',
         label: (
-          <span className="rollingstock-footer-button-with-picto">
+          <span data-testid="comfort-ac-button" className="rollingstock-footer-button-with-picto">
             {comfort2pictogram('AC')} {t('comfortTypes.AC')}
           </span>
         ),

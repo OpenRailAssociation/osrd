@@ -3,29 +3,24 @@ import path from 'path';
 
 import { test, expect } from '@playwright/test';
 
+import RollingstockEditorPage from './pages/rollingstock-editor-page-model';
+import RollingStockSelectorPage from './pages/rollingstock-selector-page';
 import {
   findAndDeleteRollingStocks,
   generateUniqueName,
   verifyAndCheckInputById,
   fillAndCheckInputById,
-  addRollingStock,
 } from './utils/index';
-import RollingStockSelectorPage from './pages/rolling-stock-selector-page';
-import PlaywrightRollingstockEditorPage from './pages/rollingstock-editor-page-model';
 
 // Correct path to load rolling stock details from JSON
 const rollingstockDetailsPath = path.resolve(
   __dirname,
   '../tests/assets/rollingStock/rollingstockDetails.json'
 );
-// Correct path to load electrical and themal rolling stock  from JSON
-const rollingstockPath = path.resolve(
-  __dirname,
-  '../tests/assets/rollingStock/thermal-electric_rolling_stock.json'
-);
+
 const rollingstockDetails = JSON.parse(fs.readFileSync(rollingstockDetailsPath, 'utf-8'));
-const rollingStockJson = JSON.parse(fs.readFileSync(rollingstockPath, 'utf8'));
-const thermalElectricRollingStockName = 'thermal-electric_rolling_stock';
+const dualModeRollingStockName = 'dual-mode_rollingstock_test_e2e';
+const electricRollingStockName = 'rollingstock_1500_25000_test_e2e';
 
 test.describe('Rollingstock editor page', () => {
   let uniqueRollingStockName: string;
@@ -42,7 +37,6 @@ test.describe('Rollingstock editor page', () => {
       uniqueRollingStockName,
       uniqueUpdatedRollingStockName,
       uniqueDeletedRollingStockName,
-      thermalElectricRollingStockName,
     ]);
   });
 
@@ -52,12 +46,11 @@ test.describe('Rollingstock editor page', () => {
       uniqueRollingStockName,
       uniqueUpdatedRollingStockName,
       uniqueDeletedRollingStockName,
-      thermalElectricRollingStockName,
     ]);
   });
 
   test('should correctly create a new rolling stock', async ({ page }) => {
-    const rollingStockEditorPage = new PlaywrightRollingstockEditorPage(page);
+    const rollingStockEditorPage = new RollingstockEditorPage(page);
     // Navigate to the page
     await rollingStockEditorPage.navigateToPage();
 
@@ -128,13 +121,12 @@ test.describe('Rollingstock editor page', () => {
   });
 
   test('should correctly duplicate and modify a rolling stock', async ({ page }) => {
-    const rollingStockEditorPage = new PlaywrightRollingstockEditorPage(page);
-    const addedRollingStockName = 'rollingstock_1500_25000_test_e2e';
+    const rollingStockEditorPage = new RollingstockEditorPage(page);
 
     await rollingStockEditorPage.navigateToPage();
 
     // Select the rolling stock from global-setup
-    await rollingStockEditorPage.selectRollingStock(addedRollingStockName);
+    await rollingStockEditorPage.selectRollingStock(electricRollingStockName);
 
     // Duplicate rolling stock
     await rollingStockEditorPage.duplicateRollingStock();
@@ -158,8 +150,8 @@ test.describe('Rollingstock editor page', () => {
     await rollingStockEditorPage.submitRollingStock();
 
     // Confirm the presence of the original RS
-    await rollingStockEditorPage.searchRollingStock(addedRollingStockName);
-    expect(rollingStockEditorPage.page.getByTestId(addedRollingStockName)).toBeDefined();
+    await rollingStockEditorPage.searchRollingStock(electricRollingStockName);
+    expect(rollingStockEditorPage.page.getByTestId(electricRollingStockName)).toBeDefined();
     await rollingStockEditorPage.clearSearchRollingStock();
 
     // Get to details page of the new rolling stock
@@ -181,13 +173,12 @@ test.describe('Rollingstock editor page', () => {
     );
   });
   test('should correctly duplicate and delete a rolling stock', async ({ page }) => {
-    const rollingStockEditorPage = new PlaywrightRollingstockEditorPage(page);
-    const addedRollingStockName = 'rollingstock_1500_25000_test_e2e';
+    const rollingStockEditorPage = new RollingstockEditorPage(page);
 
     await rollingStockEditorPage.navigateToPage();
 
     // Select the rolling stock from global-setup
-    await rollingStockEditorPage.selectRollingStock(addedRollingStockName);
+    await rollingStockEditorPage.selectRollingStock(electricRollingStockName);
 
     // Duplicate and change the rolling stock name
     await rollingStockEditorPage.duplicateRollingStock();
@@ -205,7 +196,7 @@ test.describe('Rollingstock editor page', () => {
     ).toBeHidden();
   });
   test('should correctly filter a rolling stock', async ({ page }) => {
-    const rollingStockEditorPage = new PlaywrightRollingstockEditorPage(page);
+    const rollingStockEditorPage = new RollingstockEditorPage(page);
     const rollingStockSelectorPage = new RollingStockSelectorPage(page);
     // Navigate to rolling stock editor page
     await rollingStockEditorPage.navigateToPage();
@@ -233,11 +224,11 @@ test.describe('Rollingstock editor page', () => {
       await rollingStockSelectorPage.getRollingStockSearchNumber()
     );
 
-    // Perform a filtering action for combined thermal-electric rolling stock
+    // Perform a filtering action for dual-mode rolling stock
     await rollingStockSelectorPage.electricRollingStockFilter();
 
     // Verify that filtering reduces the count and all the RS have thermal and electric icons
-    expect(await rollingStockSelectorPage.getThermalElectricRollingStockIcons.count()).toEqual(
+    expect(await rollingStockSelectorPage.getDualModeRollingStockIcons.count()).toEqual(
       await rollingStockSelectorPage.getRollingStockSearchNumber()
     );
 
@@ -252,10 +243,8 @@ test.describe('Rollingstock editor page', () => {
   });
 
   test('should correctly search for a rolling stock', async ({ page }) => {
-    const rollingStockEditorPage = new PlaywrightRollingstockEditorPage(page);
+    const rollingStockEditorPage = new RollingstockEditorPage(page);
     const rollingStockSelectorPage = new RollingStockSelectorPage(page);
-    // Add a rolling stock via postAPI
-    await addRollingStock(thermalElectricRollingStockName, rollingStockJson);
 
     // Navigate to rolling stock editor page
     await rollingStockEditorPage.navigateToPage();
@@ -265,11 +254,9 @@ test.describe('Rollingstock editor page', () => {
       await rollingStockSelectorPage.getRollingStockSearchNumber();
 
     // Search for the specific rolling stock
-    await rollingStockEditorPage.searchRollingStock(thermalElectricRollingStockName);
+    await rollingStockEditorPage.searchRollingStock(dualModeRollingStockName);
     expect(
-      rollingStockEditorPage.page.getByTestId(
-        `rollingstock-thermal-${thermalElectricRollingStockName}`
-      )
+      rollingStockEditorPage.page.getByTestId(`rollingstock-${dualModeRollingStockName}`)
     ).toBeDefined();
 
     // Verify that the first rolling stock has the thermal and electric icon
@@ -284,9 +271,7 @@ test.describe('Rollingstock editor page', () => {
       initialRollingStockFoundNumber
     );
     // Search for a non existing rolling stock
-    await rollingStockEditorPage.searchRollingStock(
-      `${thermalElectricRollingStockName}-no-results`
-    );
+    await rollingStockEditorPage.searchRollingStock(`${dualModeRollingStockName}-no-results`);
 
     // Verify that the count of rolling stock is 0 (No results Found)
     await expect(rollingStockSelectorPage.getNoRollingStockResult).toBeVisible();

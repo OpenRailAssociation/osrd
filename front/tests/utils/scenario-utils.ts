@@ -1,11 +1,11 @@
 import { type Page, expect } from '@playwright/test';
 import { v4 as uuidv4 } from 'uuid';
 
-import scenarioData from '../assets/operationStudies/scenario.json';
 import { getInfra, getProject, getRollingStock, getStudy, postApiRequest } from '.';
-import { PlaywrightHomePage } from '../pages/home-page-model';
-import RollingStockSelectorPage from '../pages/rolling-stock-selector-page';
-import PlaywrightScenarioPage from '../pages/scenario-page-model';
+import scenarioData from '../assets/operationStudies/scenario.json';
+import HomePage from '../pages/home-page-model';
+import RollingStockSelectorPage from '../pages/rollingstock-selector-page';
+import ScenarioPage from '../pages/scenario-page-model';
 
 // Scenario creation
 export default async function createCompleteScenario(
@@ -29,26 +29,26 @@ export default async function createCompleteScenario(
     }
   );
 
-  const playwrightHomePage = new PlaywrightHomePage(page);
-  const scenarioPage = new PlaywrightScenarioPage(page);
+  const homePage = new HomePage(page);
+  const scenarioPage = new ScenarioPage(page);
 
   await page.goto(
     `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenario.id}`
   );
 
-  await playwrightHomePage.page.getByTestId('scenarios-add-train-schedule-button').click();
+  await homePage.page.getByTestId('scenarios-add-train-schedule-button').click();
 
   await scenarioPage.setTrainScheduleName(trainScheduleName);
   await scenarioPage.setNumberOfTrains(trainCount);
   await scenarioPage.setDelta(delta);
 
   // ***************** Select Rolling Stock *****************
-  const playwrightRollingstockModalPage = new RollingStockSelectorPage(playwrightHomePage.page);
-  await playwrightRollingstockModalPage.openRollingstockModal();
+  const rollingstockModalPage = new RollingStockSelectorPage(homePage.page);
+  await rollingstockModalPage.openRollingstockModal();
 
-  await playwrightRollingstockModalPage.searchRollingstock('rollingstock_1500_25000_test_e2e');
+  await rollingstockModalPage.searchRollingstock('rollingstock_1500_25000_test_e2e');
 
-  const rollingstockCard = playwrightRollingstockModalPage.getRollingstockCardByTestID(
+  const rollingstockCard = rollingstockModalPage.getRollingstockCardByTestID(
     `rollingstock-${rollingStock.name}`
   );
 
@@ -69,7 +69,7 @@ export default async function createCompleteScenario(
 // Allowances management
 
 export async function allowancesManagement(
-  scenarioPage: PlaywrightScenarioPage,
+  scenarioPage: ScenarioPage,
   scenarioName: string,
   allowanceType: 'standard' | 'engineering'
 ) {

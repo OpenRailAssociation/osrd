@@ -2,7 +2,7 @@ import { expect, type Locator, type Page } from '@playwright/test';
 
 import SimulationConfPage from './simulation-conf-page';
 
-export default class StdcmPage extends SimulationConfPage {
+class StdcmPage extends SimulationConfPage {
   readonly missingParams: Locator;
 
   // Scenario Explorator
@@ -72,3 +72,4 @@ export default class StdcmPage extends SimulationConfPage {
     });
   }
 }
+export default StdcmPage;

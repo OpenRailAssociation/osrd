@@ -1,15 +1,15 @@
 import { test } from '@playwright/test';
 import { v4 as uuidv4 } from 'uuid';
 
+import ScenarioPage from './pages/scenario-page-model';
 import createCompleteScenario, { allowancesManagement } from './utils/scenario-utils';
-import PlaywrightScenarioPage from './pages/scenario-page-model';
 
 let scenarioName: string;
-let scenarioPage: PlaywrightScenarioPage;
+let scenarioPage: ScenarioPage;
 
 test.describe('Testing if all mandatory elements simulation configuration are loaded in operationnal studies app', () => {
   test.beforeEach(async ({ page }) => {
-    scenarioPage = new PlaywrightScenarioPage(page);
+    scenarioPage = new ScenarioPage(page);
     scenarioName = `Train_Schedule_${uuidv4().slice(0, 5)}`;
     await createCompleteScenario(page, scenarioName, '1', '15');
   });

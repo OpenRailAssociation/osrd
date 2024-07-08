@@ -63,7 +63,6 @@ const SwitchSNCF: FC<SwitchSNCFProps> = ({
         <label htmlFor={id} className="switch-control">
           <span className="sr-only">On/Off switch</span>
           <input
-            data-testid={name}
             id={id}
             type="checkbox"
             className="sr-only"
@@ -71,7 +70,7 @@ const SwitchSNCF: FC<SwitchSNCFProps> = ({
             checked={checked}
             disabled={disabled}
           />
-          <span className="switch-control-slider" />
+          <span data-testid={name} className="switch-control-slider" />
         </label>
       );
     case SWITCH_TYPES.options:

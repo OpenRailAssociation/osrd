@@ -4,10 +4,10 @@ import { v4 as uuidv4 } from 'uuid';
 import type { Infra, Project, RollingStock, Scenario, Study } from 'common/api/osrdEditoastApi';
 
 import scenarioData from './assets/operationStudies/scenario.json';
+import HomePage from './pages/home-page-model';
+import RollingStockSelectorPage from './pages/rollingstock-selector-page';
+import ScenarioPage from './pages/scenario-page-model';
 import { getProject, getStudy, getRollingStock, postApiRequest, getInfra } from './utils/index';
-import { PlaywrightHomePage } from './pages/home-page-model';
-import RollingStockSelectorPage from './pages/rolling-stock-selector-page';
-import PlaywrightScenarioPage from './pages/scenario-page-model';
 
 let smallInfra: Infra;
 let project: Project;
@@ -33,15 +33,14 @@ test.beforeEach(async () => {
 
 test.describe('Testing if all mandatory elements simulation configuration are loaded in operationnal studies app', () => {
   test('Testing pathfinding with rollingstock and composition code', async ({ page }) => {
-    const playwrightHomePage = new PlaywrightHomePage(page);
-    const scenarioPage = new PlaywrightScenarioPage(page);
-
+    const homePage = new HomePage(page);
+    const scenarioPage = new ScenarioPage(page);
     await page.goto(
       `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenario.id}`
     );
 
     await scenarioPage.checkInfraLoaded();
-    await playwrightHomePage.page.getByTestId('scenarios-add-train-schedule-button').click();
+    await homePage.page.getByTestId('scenarios-add-train-schedule-button').click();
 
     await scenarioPage.setTrainScheduleName('TrainSchedule');
     const trainCount = '7';
@@ -49,16 +48,16 @@ test.describe('Testing if all mandatory elements simulation configuration are lo
 
     // TODO: move this test in his own file
     // ***************** Test Rolling Stock *****************
-    const playwrightRollingstockModalPage = new RollingStockSelectorPage(playwrightHomePage.page);
+    const rollingstockModalPage = new RollingStockSelectorPage(homePage.page);
     await expect(scenarioPage.getRollingStockSelector).toBeVisible();
-    await playwrightRollingstockModalPage.openRollingstockModal();
-    const rollingstockModal = playwrightRollingstockModalPage.rollingStockSelectorModal;
+    await rollingstockModalPage.openRollingstockModal();
+    const rollingstockModal = rollingstockModalPage.rollingStockSelectorModal;
     await expect(rollingstockModal).toBeVisible();
 
     // Voluntarily add spaces and capital letters so we also test the normalization of the search functionality
-    await playwrightRollingstockModalPage.searchRollingstock(' rollingstock_1500_25000_test_E2E ');
+    await rollingstockModalPage.searchRollingstock(' rollingstock_1500_25000_test_E2E ');
 
-    const rollingstockCard = playwrightRollingstockModalPage.getRollingstockCardByTestID(
+    const rollingstockCard = rollingstockModalPage.getRollingstockCardByTestID(
       `rollingstock-${rollingStock.name}`
     );
     await expect(rollingstockCard).toHaveClass(/inactive/);
@@ -67,12 +66,12 @@ test.describe('Testing if all mandatory elements simulation configuration are lo
 
     await rollingstockCard.locator('button').click();
 
-    expect(
-      await playwrightRollingstockModalPage.getRollingStockMiniCardInfo().first().textContent()
-    ).toMatch(rollingStock.name);
-    expect(
-      await playwrightRollingstockModalPage.getRollingStockInfoComfort().textContent()
-    ).toMatch(/ConfortSStandard/i);
+    expect(await rollingstockModalPage.getRollingStockMiniCardInfo().first().textContent()).toMatch(
+      rollingStock.name
+    );
+    expect(await rollingstockModalPage.getRollingStockInfoComfort().textContent()).toMatch(
+      /ConfortSStandard/i
+    );
 
     // ***************** Test choice Origin/Destination *****************
     await scenarioPage.openTabByDataId('tab-pathfinding');

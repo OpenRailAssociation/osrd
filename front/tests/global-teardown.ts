@@ -12,11 +12,14 @@ setup('teardown', async () => {
   const project = projects.results.find((p: Project) => p.name === 'project_test_e2e');
 
   const rollingStocks = await getApiRequest(`/api/light_rolling_stock/`, { page_size: 500 });
-  const rollingStock: RollingStock = await rollingStocks.results.find(
+  const electricRollingStock: RollingStock = await rollingStocks.results.find(
     (r: RollingStock) => r.name === 'rollingstock_1500_25000_test_e2e'
   );
-
+  const dualModeRollingStock: RollingStock = await rollingStocks.results.find(
+    (r: RollingStock) => r.name === 'dual-mode_rollingstock_test_e2e'
+  );
   await deleteApiRequest(`/api/infra/${infra.id}/`);
   await deleteApiRequest(`/api/projects/${project.id}/`);
-  await deleteApiRequest(`/api/rolling_stock/${rollingStock.id}/`);
+  await deleteApiRequest(`/api/rolling_stock/${electricRollingStock.id}/`);
+  await deleteApiRequest(`/api/rolling_stock/${dualModeRollingStock.id}/`);
 });

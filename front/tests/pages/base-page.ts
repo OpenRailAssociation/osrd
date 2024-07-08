@@ -1,6 +1,6 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
-export default class BasePage {
+class BasePage {
   public page: Page;
 
   private backToHomePageButton: Locator;
@@ -40,3 +40,4 @@ export default class BasePage {
     await this.page.getByRole('button', { name }).click();
   }
 }
+export default BasePage;

@@ -74,7 +74,9 @@ const RollingStockSelector = ({
                   <span className="rollingstock-info-comfort text-uppercase small">
                     <span className="text-uppercase font-weight-bold">{t('comfort')}</span>
                     <span className="mx-2">{comfort2pictogram(rollingStockComfort)}</span>
-                    {t(`comfortTypes.${rollingStockComfort}`)}
+                    <span data-testid="selected-comfort-type-info">
+                      {t(`comfortTypes.${rollingStockComfort}`)}
+                    </span>
                   </span>
                   <RollingStockInfo
                     rollingStock={rollingStockSelected}
