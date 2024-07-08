@@ -6,7 +6,11 @@ import com.google.common.collect.TreeRangeSet
 import fr.sncf.osrd.api.pathfinding.makePathProps
 import fr.sncf.osrd.graph.Pathfinding
 import fr.sncf.osrd.graph.PathfindingConstraint
-import fr.sncf.osrd.sim_infra.api.*
+import fr.sncf.osrd.sim_infra.api.Block
+import fr.sncf.osrd.sim_infra.api.BlockId
+import fr.sncf.osrd.sim_infra.api.BlockInfra
+import fr.sncf.osrd.sim_infra.api.PathProperties
+import fr.sncf.osrd.sim_infra.api.RawSignalingInfra
 import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Offset

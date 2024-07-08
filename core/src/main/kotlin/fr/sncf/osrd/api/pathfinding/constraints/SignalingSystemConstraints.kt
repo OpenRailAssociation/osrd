@@ -3,7 +3,10 @@ package fr.sncf.osrd.api.pathfinding.constraints
 import fr.sncf.osrd.graph.Pathfinding
 import fr.sncf.osrd.graph.PathfindingConstraint
 import fr.sncf.osrd.signaling.SignalingSimulator
-import fr.sncf.osrd.sim_infra.api.*
+import fr.sncf.osrd.sim_infra.api.Block
+import fr.sncf.osrd.sim_infra.api.BlockId
+import fr.sncf.osrd.sim_infra.api.BlockInfra
+import fr.sncf.osrd.sim_infra.api.SignalingSystemId
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
@@ -18,9 +21,9 @@ data class SignalingSystemConstraints(
             val edgeBlockedRanges = getBlockedRanges(edge, blockInfra, rollingStockSigSystems)
             if (edgeBlockedRanges.isNotEmpty()) {
                 res.addAll(edgeBlockedRanges)
-                break // if this edge is blocked for 2 RS, we will have the same exact range (the
-                // full edge
-                // range) twice
+                // if this edge is blocked for 2 RS, we will have the same exact range (the full
+                // edge range) twice
+                break
             }
         }
         return res
