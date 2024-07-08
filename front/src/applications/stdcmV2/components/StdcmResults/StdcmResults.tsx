@@ -8,7 +8,10 @@ import { useTranslation } from 'react-i18next';
 import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
 import SimulationReportSheetV2 from 'applications/stdcm/components/SimulationReportSheetV2';
 import type { StdcmV2SuccessResponse } from 'applications/stdcm/types';
-import { generateCodeNumber, getOperationalPointsWithTimes } from 'applications/stdcm/utils';
+import {
+  generateCodeNumber,
+  getOperationalPointsWithTimes,
+} from 'applications/stdcm/utils/formatSimulationReportSheet';
 import { Map } from 'modules/trainschedule/components/ManageTrainSchedule';
 import { dateTimeFormatting } from 'utils/date';
 

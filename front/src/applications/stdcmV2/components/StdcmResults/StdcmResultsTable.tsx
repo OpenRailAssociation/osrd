@@ -7,7 +7,7 @@ import type {
   StdcmResultsOperationalPointsList,
   StdcmV2SuccessResponse,
 } from 'applications/stdcm/types';
-import { getStopDurationTime } from 'applications/stdcm/utils';
+import { getStopDurationTime } from 'applications/stdcm/utils/formatSimulationReportSheet';
 
 type SimulationTableProps = {
   stdcmData: StdcmV2SuccessResponse;

@@ -11,7 +11,11 @@ import { formatDay } from 'utils/date';
 import { getStopTime } from 'utils/timeManipulation';
 
 import styles from './SimulationReportStyleSheet';
-import { extractSpeedLimit, getStopDurationTime, formatCreationDate } from '../utils';
+import {
+  extractSpeedLimit,
+  getStopDurationTime,
+  formatCreationDate,
+} from '../utils/formatSimulationReportSheet';
 
 type SimulationReportSheetProps = {
   stdcmData: PostStdcmApiResponse;

@@ -1,13 +1,15 @@
 import type { SimulationResponse } from 'common/api/generatedEditoastApi';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
 
-import type { StdcmResultsOperationalPointsList } from './types';
+import type { StdcmResultsOperationalPointsList } from '../types';
 
 function generateRandomString(length: number): string {
   return Array.from({ length }, () => Math.floor(Math.random() * 10)).join('');
 }
 
-// TODO: The number must be calculated from a hash of stdcm inputs (to have a stable number). It is currently generated randomly, so there could be duplicates.
+/** TODO The number must be calculated from a hash of stdcm inputs (to have a stable number).
+ * It is currently generated randomly, so there could be duplicates. Once done, don't forget to update the tests.
+ */
 export function generateCodeNumber(): string {
   const currentDate = new Date();
   const year = currentDate.getFullYear().toString().substr(-2);
@@ -17,7 +19,7 @@ export function generateCodeNumber(): string {
   return `${month}${year}-${randomPart1}-${randomPart2}`;
 }
 
-// TODO: This function is only used for V1, so it must be deleted when V1 is abandoned.
+// TODO DROP STDCM V1
 export function formatCreationDate(date: string) {
   const creationDate = new Date(date);
   const day = creationDate.getDate();
@@ -67,53 +69,65 @@ function timeStringToSeconds(time: string): number {
 }
 
 /**
- * Based on a stop arrival time and a stop duration, calculate the departure time on this stop
+ * @param arrivalTime format: hh:mm (24h format) of the arrival time
+ * @param duration format: mm:ss of the duration of the stop
+ * @returns The departure time of the stop in the format hh:mm
  */
-function computeStopDepartureTime(hhmm: string, mmss: string): string {
-  const [hh, mm] = hhmm.split(':').map(Number);
+export function computeStopDepartureTime(arrivalTime: string, duration: string): string {
+  const [hh, mm] = arrivalTime.split(':').map(Number);
   const totalSeconds1 = hh * 3600 + mm * 60;
-  const totalSeconds2 = timeStringToSeconds(mmss);
+  const totalSeconds2 = timeStringToSeconds(duration);
 
   const totalSeconds = totalSeconds1 + totalSeconds2;
-  const hours = Math.floor(totalSeconds / 3600);
+  const hours = Math.floor(totalSeconds / 3600) % 24;
   const minutes = Math.floor((totalSeconds % 3600) / 60);
 
   return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
 }
 
 // Function to add minutes to the departure time
-const addMinutesToTime = (baseHour: number, baseMinute: number, minutesToAdd: number): string => {
+export function addMinutesToTime(
+  baseHour: number,
+  baseMinute: number,
+  minutesToAdd: number
+): string {
   const totalMinutes = baseHour * 60 + baseMinute + minutesToAdd;
   const finalHour = Math.floor(totalMinutes / 60) % 24;
   const finalMinutes = totalMinutes % 60;
   return `${String(finalHour).padStart(2, '0')}:${String(finalMinutes).padStart(2, '0')}`;
-};
+}
 
-const getTimeAtPosition = (
+function getTimeAtPosition(
   trainPosition: number,
   trainPositions: number[],
   trainTimes: number[],
   trainDepartureHour: number,
   trainDepartureMinute: number
-): string => {
+): string {
   const index = trainPositions.findIndex((pos) => pos >= trainPosition);
   const timeInMillis = trainTimes[index];
   const timeInMinutes = Math.floor(timeInMillis / 60000);
   return addMinutesToTime(trainDepartureHour, trainDepartureMinute, timeInMinutes);
-};
+}
 
-const getStopDurationBetweenToPositions = (
+/**
+ * @param position format: Distance from the beginning of the path in mm
+ * @param positionsList format: List of positions of a train in mm.
+ * @param timesList format: List of times in milliseconds corresponding to the positions in trainPositions.
+ * @returns The duration in milliseconds between the first and last occurrence of the position in the trainPositions array
+ */
+export function getStopDurationBetweenTwoPositions(
   position: number,
-  trainPositions: number[],
-  trainTimes: number[]
-): number | null => {
-  const firstIndex = trainPositions.indexOf(position);
-  const lastIndex = trainPositions.lastIndexOf(position);
+  positionsList: number[],
+  timesList: number[]
+): number | null {
+  const firstIndex = positionsList.indexOf(position);
+  const lastIndex = positionsList.lastIndexOf(position);
   if (firstIndex !== -1 && lastIndex !== -1 && firstIndex !== lastIndex) {
-    return trainTimes[lastIndex] - trainTimes[firstIndex];
+    return timesList[lastIndex] - timesList[firstIndex];
   }
   return null;
-};
+}
 
 export function getOperationalPointsWithTimes(
   operationalPoints: SuggestedOP[],
@@ -136,7 +150,7 @@ export function getOperationalPointsWithTimes(
       departureMinute
     );
 
-    const duration = getStopDurationBetweenToPositions(op.positionOnPath, positions, times);
+    const duration = getStopDurationBetweenTwoPositions(op.positionOnPath, positions, times);
     const durationInSeconds = duration !== null ? duration / 1000 : 0;
     const durationToString = secondsToTimeString(durationInSeconds);
     const stopEndTime = computeStopDepartureTime(formattedTime, durationToString);
@@ -147,7 +161,6 @@ export function getOperationalPointsWithTimes(
       time: formattedTime,
       name: op.name,
       ch: op.ch,
-      stop: op.stopFor,
       duration: durationInSeconds,
       departureTime,
       stopEndTime,

@@ -10,7 +10,7 @@ import { formatDateToString, formatDayV2 } from 'utils/date';
 
 import styles from './SimulationReportStyleSheet';
 import type { SimulationReportSheetProps } from '../types';
-import { extractSpeedLimit, getStopDurationTime } from '../utils';
+import { extractSpeedLimit, getStopDurationTime } from '../utils/formatSimulationReportSheet';
 
 const SimulationReportSheetV2 = ({
   stdcmData,
