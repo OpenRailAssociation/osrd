@@ -12,7 +12,10 @@ import type { TimeScaleDomain } from 'modules/simulationResult/types';
 import SimulationReportSheetV2 from '../components/SimulationReportSheetV2';
 import { STDCM_TRAIN_ID } from '../consts';
 import type { StdcmV2Results } from '../types';
-import { generateCodeNumber, getOperationalPointsWithTimes } from '../utils';
+import {
+  generateCodeNumber,
+  getOperationalPointsWithTimes,
+} from '../utils/formatSimulationReportSheet';
 
 type StcdmResultsProps = {
   mapCanvas?: string;

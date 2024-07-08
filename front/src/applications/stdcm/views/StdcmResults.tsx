@@ -16,7 +16,7 @@ import SpeedSpaceChart from 'modules/simulationResult/components/SpeedSpaceChart
 import type { AllowancesSettings } from 'reducers/osrdsimulation/types';
 
 import SimulationReportSheet from '../components/SimulationReportSheet';
-import { generateCodeNumber } from '../utils';
+import { generateCodeNumber } from '../utils/formatSimulationReportSheet';
 
 type StcdmResultsProps = {
   mapCanvas?: string;
