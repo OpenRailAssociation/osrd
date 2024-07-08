@@ -1,8 +1,8 @@
 import { type Locator, type Page, expect } from '@playwright/test';
 
-import RollingStockSelectorPage from './rolling-stock-selector-page';
+import RollingStockSelectorPage from './rollingstock-selector-page';
 
-export default class SimulationConfPage extends RollingStockSelectorPage {
+class SimulationConfPage extends RollingStockSelectorPage {
   readonly infraLoadingState: Locator;
 
   readonly pathfindingState: Locator;
@@ -57,3 +57,4 @@ export default class SimulationConfPage extends RollingStockSelectorPage {
     await expect(this.pathfindingDoneLabel).toBeVisible();
   }
 }
+export default SimulationConfPage;

@@ -63,7 +63,11 @@ export const RollingStockInfo = ({
             {`${metadata.family} / ${metadata.type} / ${metadata.grouping}`}
           </span>
         )}
-        {showEnd && <span className="rollingstock-info-end">{rollingStock.name}</span>}
+        {showEnd && (
+          <span data-testid="selected-rolling-stock-info" className="rollingstock-info-end">
+            {rollingStock.name}
+          </span>
+        )}
       </div>
     </div>
   );

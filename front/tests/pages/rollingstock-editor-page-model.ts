@@ -1,9 +1,9 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
-import PlaywrightCommonPage from './common-page-model';
+import CommonPage from './common-page-model';
 import { fillAndCheckInputById } from '../utils/index';
 
-export default class PlaywrightRollingstockEditorPage extends PlaywrightCommonPage {
+class RollingstockEditorPage extends CommonPage {
   readonly getNewRollingstockButton: Locator;
 
   readonly getSubmitRollingstockButton: Locator;
@@ -298,3 +298,4 @@ export default class PlaywrightRollingstockEditorPage extends PlaywrightCommonPa
     await this.getConfirmModalButtonYes.click();
   }
 }
+export default RollingstockEditorPage;

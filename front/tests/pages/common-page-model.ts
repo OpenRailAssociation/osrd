@@ -1,10 +1,9 @@
-import { expect } from '@playwright/test';
-import type { Locator, Page } from '@playwright/test';
+import { expect, type Locator, type Page } from '@playwright/test';
 
 import BasePage from './base-page';
 import rollingstockTranslation from '../../public/locales/fr/rollingstock.json';
 
-class PlaywrightCommonPage extends BasePage {
+class CommonPage extends BasePage {
   readonly rollingstockTranslation: typeof rollingstockTranslation;
 
   readonly getToastSNCF: Locator;
@@ -33,4 +32,4 @@ class PlaywrightCommonPage extends BasePage {
   }
 }
 
-export default PlaywrightCommonPage;
+export default CommonPage;

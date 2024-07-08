@@ -1,9 +1,8 @@
-/* eslint-disable import/prefer-default-export */
 import { expect, type Locator, type Page } from '@playwright/test';
 
 import study from '../../public/locales/fr/operationalStudies/study.json';
 
-export class StudyPage {
+class StudyPage {
   // The current page object
   readonly page: Page;
 
@@ -161,3 +160,4 @@ export class StudyPage {
     await this.getStudyDeleteConfirmBtn.click();
   }
 }
+export default StudyPage;

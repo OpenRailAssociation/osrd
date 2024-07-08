@@ -24,6 +24,10 @@ async function createDataForTests() {
     fs.readFileSync('../tests/data/rolling_stocks/electric_rolling_stock.json', 'utf8')
   );
 
+  const dualModeRollingStockJson = JSON.parse(
+    fs.readFileSync('./tests/assets/rollingStock/dual-mode_rolling_stock.json', 'utf8')
+  );
+
   const createdInfra: PostInfraRailjsonApiResponse = await postApiRequest(
     `/api/infra/railjson/`,
     {
@@ -40,6 +44,10 @@ async function createDataForTests() {
   await postApiRequest('/api/rolling_stock/', {
     ...rollingStockJson,
     name: 'rollingstock_1500_25000_test_e2e',
+  });
+  await postApiRequest('/api/rolling_stock/', {
+    ...dualModeRollingStockJson,
+    name: 'dual-mode_rollingstock_test_e2e',
   });
 
   const project = await postApiRequest('/api/projects/', {

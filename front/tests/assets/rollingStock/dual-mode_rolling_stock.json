@@ -1,6 +1,6 @@
 {
   "railjson_version": "3.2",
-  "name": "thermal-electric_rolling_stock",
+  "name": "dual-mode_rollingstock_test_e2e",
   "effort_curves": {
     "modes": {
       "25000V": {
@@ -404,7 +404,7 @@
     "default_mode": "thermal"
   },
   "metadata": {
-    "detail": "thermo-electric",
+    "detail": "dual-mode",
     "family": "",
     "type": "",
     "grouping": "",
@@ -412,7 +412,7 @@
     "subseries": "",
     "unit": "",
     "number": "",
-    "reference": "thermo-electric"
+    "reference": "dual-mode"
   },
   "length": 350.0,
   "max_speed": 44.44444444444444,

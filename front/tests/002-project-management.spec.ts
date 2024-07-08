@@ -4,10 +4,10 @@ import { v4 as uuidv4 } from 'uuid';
 import type { Project } from 'common/api/osrdEditoastApi';
 
 import projectData from './assets/operationStudies/project.json';
+import CommonPage from './pages/common-page-model';
+import HomePage from './pages/home-page-model';
+import ProjectPage from './pages/project-page-model';
 import { deleteApiRequest, getApiRequest, postApiRequest } from './utils/index';
-import PlaywrightCommonPage from './pages/common-page-model';
-import { PlaywrightHomePage } from './pages/home-page-model';
-import { ProjectPage } from './pages/project-page-model';
 
 let project: Project;
 
@@ -25,12 +25,12 @@ test.afterEach(async () => {
 
 test.describe('Test if operationnal study : project workflow is working properly', () => {
   test('Create a new project', async ({ page }) => {
-    const playwrightHomePage = new PlaywrightHomePage(page);
+    const homePage = new HomePage(page);
     const projectPage = new ProjectPage(page);
-    const commonPage = new PlaywrightCommonPage(page);
+    const commonPage = new CommonPage(page);
 
-    await playwrightHomePage.goToHomePage();
-    await playwrightHomePage.goToOperationalStudiesPage();
+    await homePage.goToHomePage();
+    await homePage.goToOperationalStudiesPage();
     await expect(projectPage.getAddProjectBtn).toBeVisible();
     await projectPage.openProjectModalCreation();
 
@@ -49,9 +49,9 @@ test.describe('Test if operationnal study : project workflow is working properly
     await commonPage.setTag(projectData.tags[1]);
     await commonPage.setTag(projectData.tags[2]);
 
-    const createButton = playwrightHomePage.page.getByTestId('createProject');
+    const createButton = homePage.page.getByTestId('createProject');
     await createButton.click();
-    await playwrightHomePage.page.waitForURL('**/projects/*');
+    await homePage.page.waitForURL('**/projects/*');
     expect(await projectPage.getProjectName.textContent()).toContain(projectName);
     expect(await projectPage.getProjectDescription.textContent()).toContain(
       projectData.description
@@ -79,9 +79,9 @@ test.describe('Test if operationnal study : project workflow is working properly
   });
 
   test(' update a project', async ({ page }) => {
-    const playwrightHomePage = new PlaywrightHomePage(page);
+    const homePage = new HomePage(page);
     const projectPage = new ProjectPage(page);
-    const commonPage = new PlaywrightCommonPage(page);
+    const commonPage = new CommonPage(page);
 
     await page.goto('/operational-studies/projects');
 
@@ -103,8 +103,8 @@ test.describe('Test if operationnal study : project workflow is working properly
 
     await projectPage.clickProjectUpdateConfirmBtn();
 
-    await playwrightHomePage.goToHomePage();
-    await playwrightHomePage.goToOperationalStudiesPage();
+    await homePage.goToHomePage();
+    await homePage.goToOperationalStudiesPage();
 
     await projectPage.openProjectByTestId(`${project.name} (updated)`);
 

@@ -4,10 +4,10 @@ import { v4 as uuidv4 } from 'uuid';
 import type { Project, Study } from 'common/api/osrdEditoastApi';
 
 import studyData from './assets/operationStudies/study.json';
+import CommonPage from './pages/common-page-model';
+import HomePage from './pages/home-page-model';
+import StudyPage from './pages/study-page-model';
 import { getProject, postApiRequest } from './utils/index';
-import PlaywrightCommonPage from './pages/common-page-model';
-import { PlaywrightHomePage } from './pages/home-page-model';
-import { StudyPage } from './pages/study-page-model';
 
 let project: Project;
 let study: Study;
@@ -27,9 +27,9 @@ test.beforeEach(async () => {
 
 test.describe('Test if operationnal study: study creation workflow is working properly', () => {
   test('Create a new study', async ({ page }) => {
-    const playwrightHomePage = new PlaywrightHomePage(page);
+    const homePage = new HomePage(page);
     const studyPage = new StudyPage(page);
-    const commonPage = new PlaywrightCommonPage(page);
+    const commonPage = new CommonPage(page);
 
     await page.goto(`/operational-studies/projects/${project.id}`);
 
@@ -62,9 +62,9 @@ test.describe('Test if operationnal study: study creation workflow is working pr
     await commonPage.setTag(project.tags[1]);
     await commonPage.setTag(project.tags[2]);
 
-    const createButton = playwrightHomePage.page.getByTestId('createStudy');
+    const createButton = homePage.page.getByTestId('createStudy');
     await createButton.click();
-    await playwrightHomePage.page.waitForURL('**/studies/*');
+    await homePage.page.waitForURL('**/studies/*');
     expect(await studyPage.getStudyName.textContent()).toContain(studyName);
     expect(await studyPage.getStudyDescription.textContent()).toContain(studyData.description);
     expect(await studyPage.getStudyType.textContent()).toContain(studyData.type);
@@ -85,7 +85,7 @@ test.describe('Test if operationnal study: study creation workflow is working pr
 
   test(' update a study', async ({ page }) => {
     const studyPage = new StudyPage(page);
-    const commonPage = new PlaywrightCommonPage(page);
+    const commonPage = new CommonPage(page);
 
     await page.goto(`/operational-studies/projects/${project.id}/studies/${study.id}`);
 
@@ -139,7 +139,7 @@ test.describe('Test if operationnal study: study creation workflow is working pr
   });
 
   test('Delete a study', async ({ page }) => {
-    const playwrightHomePage = new PlaywrightHomePage(page);
+    const homePage = new HomePage(page);
     const studyPage = new StudyPage(page);
 
     await page.goto(`/operational-studies/projects/${project.id}/studies/${study.id}`);
@@ -148,8 +148,8 @@ test.describe('Test if operationnal study: study creation workflow is working pr
 
     await studyPage.clickStudyDeleteConfirmBtn();
 
-    await playwrightHomePage.goToHomePage();
-    await playwrightHomePage.goToOperationalStudiesPage();
+    await homePage.goToHomePage();
+    await homePage.goToOperationalStudiesPage();
 
     await expect(studyPage.getStudyByName(studyData.name)).not.toBeVisible();
   });
