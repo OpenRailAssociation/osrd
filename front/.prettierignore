@@ -1,0 +1,10 @@
+*.md
+src/assets/mapstyles/*.json
+src/common/ReleaseInformations/json/licenses.json
+src/common/api/generatedEditoastApi.ts
+src/common/api/osrdGatewayApi.ts
+src/modules/rollingStock/components/RollingStockSelector/consts/mlgtraffic.json
+src/modules/rollingStock/components/RollingStockSelector/consts/rollingstockDetailDB.json
+src/modules/trainschedule/components/ImportTrainSchedule/rollingstock_opendata2osrd.json
+src/reducers/osrdconf/infra_schema.json
+src/utils/__tests__/assets/*.json
