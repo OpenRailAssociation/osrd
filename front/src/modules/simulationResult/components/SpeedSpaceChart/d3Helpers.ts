@@ -283,17 +283,7 @@ export const drawSpeedSpaceTrain = (
       CHART_AXES.SPACE_SPEED,
       'speed'
     );
-    if (dataSimulation.standardMarginSpeedData) {
-      drawCurve(
-        chartLocal,
-        'speed margins',
-        dataSimulation.standardMarginSpeedData,
-        'speedSpaceChart',
-        'curveLinear',
-        CHART_AXES.SPACE_SPEED,
-        'margins_speed'
-      );
-    }
+    // TODO: Add the function to draw the provisional curve when the Gev v2 is implemented
     if (dataSimulation.schedulePointsMarginSpeedData) {
       drawCurve(
         chartLocal,
