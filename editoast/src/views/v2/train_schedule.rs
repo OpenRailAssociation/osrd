@@ -1,5 +1,4 @@
 mod projection;
-mod proxy;
 
 use std::collections::hash_map::DefaultHasher;
 use std::collections::HashMap;
@@ -42,17 +41,14 @@ use crate::modelsv2::prelude::*;
 use crate::modelsv2::timetable::Timetable;
 use crate::modelsv2::train_schedule::TrainSchedule;
 use crate::modelsv2::train_schedule::TrainScheduleChangeset;
-use crate::views::v2::path::pathfinding_from_train;
+use crate::views::v2::path::pathfinding::pathfinding_from_train;
+use crate::views::v2::path::pathfinding_from_train_batch;
 use crate::views::v2::path::PathfindingError;
 use crate::RedisClient;
 use crate::RollingStockModel;
 use editoast_models::DbConnection;
 use editoast_models::DbConnectionPool;
 use editoast_models::DbConnectionPoolV2;
-
-pub use proxy::TrainScheduleProxy;
-
-const CACHE_SIMULATION_EXPIRATION: u64 = 604800; // 1 week
 
 crate::routes! {
     "/v2/train_schedule" => {
@@ -309,116 +305,169 @@ pub async fn simulation(
     .await?;
 
     Ok(Json(
-        train_simulation(
-            conn,
-            redis_client,
-            core_client,
-            &train_schedule,
-            &infra,
-            Arc::default(),
-        )
-        .await?,
+        train_simulation(conn, redis_client, core_client, train_schedule, &infra)
+            .await?
+            .0,
     ))
 }
 
-/// Compute the simulation of a given train schedule
+/// Compute simulation of a train schedule
 pub async fn train_simulation(
     conn: &mut DbConnection,
     redis_client: Arc<RedisClient>,
     core: Arc<CoreClient>,
-    train_schedule: &TrainSchedule,
+    train_schedule: TrainSchedule,
     infra: &Infra,
-    proxy: Arc<TrainScheduleProxy>,
-) -> Result<SimulationResponse> {
+) -> Result<(SimulationResponse, PathfindingResult)> {
+    Ok(
+        train_simulation_batch(conn, redis_client, core, &[train_schedule], infra)
+            .await?
+            .pop()
+            .unwrap(),
+    )
+}
+
+/// Compute in batch the simulation of a list of train schedule
+///
+/// Note: The order of the returned simulations is the same as the order of the train schedules.
+pub async fn train_simulation_batch(
+    conn: &mut DbConnection,
+    redis_client: Arc<RedisClient>,
+    core: Arc<CoreClient>,
+    train_schedules: &[TrainSchedule],
+    infra: &Infra,
+) -> Result<Vec<(SimulationResponse, PathfindingResult)>> {
     let mut redis_conn = redis_client.get_connection().await?;
     // Compute path
-    let pathfinding_result = pathfinding_from_train(
+    let (rolling_stocks, _): (Vec<_>, _) = RollingStockModel::retrieve_batch(
+        conn,
+        train_schedules
+            .iter()
+            .map::<String, _>(|t| t.rolling_stock_name.clone()),
+    )
+    .await?;
+    let rolling_stocks: HashMap<_, _> = rolling_stocks
+        .into_iter()
+        .map(|rs| (rs.name.clone(), rs))
+        .collect();
+    let (timetables, _): (Vec<_>, _) = Timetable::retrieve_batch(
+        conn,
+        train_schedules
+            .iter()
+            .map(|t| t.timetable_id)
+            .collect::<HashSet<_>>(),
+    )
+    .await?;
+    let timetables: HashMap<_, _> = timetables
+        .into_iter()
+        .map(|timetable| (timetable.id, timetable))
+        .collect();
+    let pathfinding_results = pathfinding_from_train_batch(
         conn,
         &mut redis_conn,
         core.clone(),
         infra,
-        train_schedule.clone(),
-        proxy.clone(),
+        train_schedules,
+        &rolling_stocks,
     )
     .await?;
 
-    let (path, path_items_positions) = match pathfinding_result {
-        PathfindingResult::Success(PathfindingResultSuccess {
-            blocks,
-            routes,
-            track_section_ranges,
-            path_items_positions,
-            ..
-        }) => (
-            SimulationPath {
+    let mut simulation_results = vec![SimulationResponse::default(); train_schedules.len()];
+    let mut to_sim = Vec::with_capacity(train_schedules.len());
+    for (index, (pathfinding, train_schedule)) in
+        pathfinding_results.iter().zip(train_schedules).enumerate()
+    {
+        let (path, path_items_positions) = match pathfinding {
+            PathfindingResult::Success(PathfindingResultSuccess {
                 blocks,
                 routes,
                 track_section_ranges,
-            },
+                path_items_positions,
+                ..
+            }) => (
+                SimulationPath {
+                    blocks: blocks.clone(),
+                    routes: routes.clone(),
+                    track_section_ranges: track_section_ranges.clone(),
+                },
+                path_items_positions,
+            ),
+            _ => {
+                simulation_results[index] = SimulationResponse::PathfindingFailed {
+                    pathfinding_result: pathfinding.clone(),
+                };
+                continue;
+            }
+        };
+
+        // Build simulation request
+        let rolling_stock = rolling_stocks[&train_schedule.rolling_stock_name].clone();
+        let timetable = timetables[&train_schedule.timetable_id].clone();
+        let simulation_request = build_simulation_request(
+            infra,
+            train_schedule,
             path_items_positions,
-        ),
-        _ => {
-            return Ok(SimulationResponse::PathfindingFailed { pathfinding_result });
-        }
-    };
+            path,
+            rolling_stock,
+            timetable,
+        );
 
-    // Build simulation request
-    let simulation_request = build_simulation_request(
-        conn,
-        infra,
-        train_schedule,
-        &path_items_positions,
-        path,
-        proxy,
-    )
-    .await?;
-
-    // Compute unique hash of the simulation input
-    let hash = train_simulation_input_hash(infra.id, &infra.version, &simulation_request);
-
-    let result: Option<SimulationResponse> = redis_conn
-        .json_get_ex(&hash, CACHE_SIMULATION_EXPIRATION)
-        .await?;
-    if let Some(simulation_result) = result {
-        info!("Simulation hit cache");
-        return Ok(simulation_result);
+        // Compute unique hash of the simulation input
+        let simulation_hash =
+            train_simulation_input_hash(infra.id, &infra.version, &simulation_request);
+        to_sim.push((index, simulation_hash, simulation_request));
     }
 
-    // Compute simulation from core
-    let result = simulation_request.fetch(core.as_ref()).await?;
-
-    // Cache the simulation response
-    redis_conn
-        .json_set_ex(&hash, &result, CACHE_SIMULATION_EXPIRATION)
+    let cached_results: Vec<Option<SimulationResponse>> = redis_conn
+        .json_get_bulk(&to_sim.iter().map(|(_, hash, _)| hash).collect::<Vec<_>>())
         .await?;
 
+    let nb_hit = cached_results.iter().flatten().count();
+    let nb_miss = to_sim.len() - nb_hit;
+    info!(nb_hit, nb_miss, "Hit cache");
+
+    // Compute simulation from core
+    let mut futures = Vec::with_capacity(nb_miss);
+    let mut futures_index_hash = Vec::with_capacity(nb_miss);
+    for ((train_index, train_hash, sim_request), sim_cached) in to_sim.iter().zip(cached_results) {
+        if let Some(sim_cached) = sim_cached {
+            simulation_results[*train_index] = sim_cached;
+            continue;
+        }
+        futures.push(Box::pin(sim_request.fetch(core.as_ref())));
+        futures_index_hash.push((*train_index, train_hash));
+    }
+
+    let simulated: Vec<_> = futures::future::join_all(futures)
+        .await
+        .into_iter()
+        .collect::<Result<_>>()?;
+
+    let mut to_cache = Vec::with_capacity(simulated.len());
+    for ((train_index, train_hash), sim_res) in futures_index_hash.into_iter().zip(simulated) {
+        simulation_results[train_index] = sim_res.clone();
+        to_cache.push((train_hash, sim_res));
+    }
+
+    // Cache the simulation response
+    redis_conn.json_set_bulk(&to_cache).await?;
+
     // Return the response
-    Ok(result)
+    Ok(simulation_results
+        .into_iter()
+        .zip(pathfinding_results)
+        .collect())
 }
 
-async fn build_simulation_request(
-    conn: &mut DbConnection,
+fn build_simulation_request(
     infa: &Infra,
     train_schedule: &TrainSchedule,
     path_items_position: &[u64],
     path: SimulationPath,
-    proxy: Arc<TrainScheduleProxy>,
-) -> Result<SimulationRequest> {
-    // Get rolling stock
-    let rolling_stock_name = train_schedule.rolling_stock_name.clone();
-    let rolling_stock = proxy
-        .get_rolling_stock(rolling_stock_name, conn)
-        .await?
-        .expect("Rolling stock should exist since the pathfinding succeeded");
-    // Get electrical_profile_set_id
-    let timetable_id = train_schedule.timetable_id;
-    let timetable = proxy
-        .get_timetable(timetable_id, conn)
-        .await?
-        .expect("Timetable should exist since it's a foreign key");
-
+    rolling_stock: RollingStockModel,
+    timetable: Timetable,
+) -> SimulationRequest {
     assert_eq!(path_items_position.len(), train_schedule.path.len());
-
     // Project path items to path offset
     let path_items_to_position: HashMap<_, _> = train_schedule
         .path
@@ -464,7 +513,7 @@ async fn build_simulation_request(
         })
         .collect();
 
-    Ok(SimulationRequest {
+    SimulationRequest {
         infra: infa.id,
         expected_version: infa.version.clone(),
         path,
@@ -478,7 +527,7 @@ async fn build_simulation_request(
         options: train_schedule.options.clone(),
         rolling_stock: rolling_stock.into(),
         electrical_profile_set_id: timetable.electrical_profile_set_id,
-    })
+    }
 }
 
 // Compute hash input of a simulation
@@ -560,37 +609,20 @@ pub async fn simulation_summary(
         },
     )
     .await?;
-    let (rolling_stocks, _): (Vec<_>, _) = RollingStockModel::retrieve_batch(
-        db_pool.get().await?.deref_mut(),
-        trains
-            .iter()
-            .map::<String, _>(|t| t.rolling_stock_name.clone()),
-    )
-    .await?;
-    let (timetables, _): (Vec<_>, _) = Timetable::retrieve_batch(
-        db_pool.get().await?.deref_mut(),
-        trains
-            .iter()
-            .map(|t| t.timetable_id)
-            .collect::<HashSet<_>>(),
-    )
-    .await?;
-
-    let proxy = Arc::new(TrainScheduleProxy::new(&rolling_stocks, &timetables));
 
     let simulations = train_simulation_batch(
-        db_pool.clone(),
+        db_pool.get().await?.deref_mut(),
         redis_client,
         core,
         &trains,
         &infra,
-        proxy.clone(),
     )
     .await?;
 
     // Transform simulations to simulation summary
     let mut simulation_summaries = HashMap::new();
     for (train, sim) in trains.iter().zip(simulations) {
+        let (sim, _) = sim;
         let simulation_summary_result = match sim {
             SimulationResponse::Success { final_output, .. } => {
                 let report = final_output.report_train;
@@ -624,45 +656,6 @@ pub async fn simulation_summary(
     }
 
     Ok(Json(simulation_summaries))
-}
-
-/// Compute train simulation in batch given a list of train schedules.
-///
-/// Note: The order of the returned simulations is the same as the order of the train schedules.
-///
-/// Returns an error if any of the train ids are not found.
-pub async fn train_simulation_batch(
-    db_pool: Arc<DbConnectionPoolV2>,
-    redis_client: Arc<RedisClient>,
-    core_client: Arc<CoreClient>,
-    train_schedules: &[TrainSchedule],
-    infra: &Infra,
-    proxy: Arc<TrainScheduleProxy>,
-) -> Result<Vec<SimulationResponse>> {
-    let pending_simulations =
-        train_schedules
-            .iter()
-            .zip(db_pool.iter_conn())
-            .map(|(train_schedule, conn)| {
-                let redis_client = redis_client.clone();
-                let core_client = core_client.clone();
-                let cache = proxy.clone();
-                async move {
-                    train_simulation(
-                        conn.await
-                            .expect("Failed to get database connection")
-                            .deref_mut(),
-                        redis_client,
-                        core_client,
-                        train_schedule,
-                        infra,
-                        cache,
-                    )
-                    .await
-                }
-            });
-
-    futures::future::try_join_all(pending_simulations).await
 }
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize, IntoParams, ToSchema)]
@@ -704,15 +697,7 @@ async fn get_path(
     })
     .await?;
     Ok(Json(
-        pathfinding_from_train(
-            conn,
-            &mut redis_conn,
-            core,
-            &infra,
-            train_schedule,
-            Arc::default(),
-        )
-        .await?,
+        pathfinding_from_train(conn, &mut redis_conn, core, &infra, train_schedule).await?,
     ))
 }
 

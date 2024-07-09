@@ -30,18 +30,15 @@ use crate::core::AsCoreRequest;
 use crate::core::CoreClient;
 use crate::error::Result;
 use crate::modelsv2::infra::Infra;
-use crate::modelsv2::timetable::Timetable;
 use crate::modelsv2::train_schedule::TrainSchedule;
 use crate::modelsv2::Retrieve;
 use crate::modelsv2::RetrieveBatch;
-use crate::views::v2::path::pathfinding_from_train;
 use crate::views::v2::path::projection::PathProjection;
 use crate::views::v2::path::projection::TrackLocationFromPath;
 use crate::views::v2::train_schedule::train_simulation_batch;
 use crate::views::v2::train_schedule::CompleteReportTrain;
 use crate::views::v2::train_schedule::ReportTrain;
 use crate::views::v2::train_schedule::SignalSighting;
-use crate::views::v2::train_schedule::TrainScheduleProxy;
 use crate::views::v2::train_schedule::ZoneUpdate;
 use editoast_models::DbConnectionPoolV2;
 
@@ -170,24 +167,12 @@ async fn project_path(
     )
     .await?;
 
-    let (timetables, _): (Vec<_>, _) = Timetable::retrieve_batch(
-        db_pool.get().await?.deref_mut(),
-        trains
-            .iter()
-            .map(|t| t.timetable_id)
-            .collect::<HashSet<_>>(),
-    )
-    .await?;
-
-    let proxy = Arc::new(TrainScheduleProxy::new(&rolling_stocks, &timetables));
-
     let simulations = train_simulation_batch(
-        db_pool.clone(),
+        db_pool.get().await?.deref_mut(),
         redis_client.clone(),
         core.clone(),
         &trains,
         &infra,
-        proxy.clone(),
     )
     .await?;
 
@@ -195,17 +180,7 @@ async fn project_path(
     let mut trains_hash_values = HashMap::new();
     let mut trains_details = HashMap::new();
 
-    for (train, sim) in trains.iter().zip(simulations) {
-        let pathfinding_result = pathfinding_from_train(
-            db_pool.get().await?.deref_mut(),
-            &mut redis_conn,
-            core.clone(),
-            &infra,
-            train.clone(),
-            proxy.clone(),
-        )
-        .await?;
-
+    for (train, (sim, pathfinding_result)) in trains.iter().zip(simulations) {
         let track_ranges = match pathfinding_result {
             PathfindingResult::Success(PathfindingResultSuccess {
                 track_section_ranges,

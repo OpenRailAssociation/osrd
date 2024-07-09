@@ -137,7 +137,7 @@ pub struct SimulationPath {
     pub track_section_ranges: Vec<TrackRange>,
 }
 
-#[derive(Deserialize, Serialize, Clone, Debug, ToSchema)]
+#[derive(Deserialize, Default, Serialize, Clone, Debug, ToSchema)]
 #[schema(as = ReportTrainV2)]
 pub struct ReportTrain {
     /// List of positions of a train
@@ -152,7 +152,7 @@ pub struct ReportTrain {
     pub scheduled_points_honored: bool,
 }
 
-#[derive(Deserialize, Serialize, Clone, Debug, ToSchema)]
+#[derive(Deserialize, Default, Serialize, Clone, Debug, ToSchema)]
 pub struct CompleteReportTrain {
     #[serde(flatten)]
     #[schema(value_type = ReportTrainV2)]
@@ -200,7 +200,7 @@ pub struct RoutingZoneRequirement {
     pub end_time: u64,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
+#[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
 pub struct ElectricalProfiles {
     /// List of `n` boundaries of the ranges.
     /// A boundary is a distance from the beginning of the path in mm.
@@ -277,6 +277,18 @@ pub enum SimulationResponse {
     SimulationFailed {
         core_error: InternalError,
     },
+}
+
+impl Default for SimulationResponse {
+    fn default() -> Self {
+        Self::Success {
+            base: Default::default(),
+            provisional: Default::default(),
+            final_output: Default::default(),
+            mrsp: Default::default(),
+            electrical_profiles: Default::default(),
+        }
+    }
 }
 
 impl AsCoreRequest<Json<SimulationResponse>> for SimulationRequest {
