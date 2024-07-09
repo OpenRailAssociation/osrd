@@ -53,7 +53,7 @@ slf4j = { module = 'org.slf4j:slf4j-api', version = '2.0.+' } # MIT
 junit-jupiter-api = { module = 'org.junit.jupiter:junit-jupiter-api', version.ref = 'junit' } # EPL 2.0
 junit-jupiter-params = { module = 'org.junit.jupiter:junit-jupiter-params', version.ref = 'junit' } # EPL 2.0
 junit-jupiter-engine = { module = 'org.junit.jupiter:junit-jupiter-engine', version.ref = 'junit' } # EPL 2.0
-assertj = { module = 'org.assertj:assertj-core', version = '3.25.3' } # Apache 2.0
+assertj = { module = 'org.assertj:assertj-core', version = '3.26.3' } # Apache 2.0
 jqwik = { module = 'net.jqwik:jqwik', version = '1.8.+' } # EPL 2.0
 mockito-inline = { module = 'org.mockito:mockito-inline', version.ref = 'mockito' } # MIT
 mockito-junit-jupiter = { module = 'org.mockito:mockito-junit-jupiter', version.ref = 'mockito' } # MIT
