@@ -36,7 +36,7 @@ const Tabs = ({ tabs, pills = false, fullWidth = false, fullHeight = false }: Ta
   };
 
   return (
-    <div className={cx('tabs-container', fullWidth && 'full-width', fullHeight && 'full-height')}>
+    <div className={cx('tabs-container', { 'full-width': fullWidth, 'full-height': fullHeight })}>
       <div className={cx('tabs', pills && 'pills')}>
         {tabs.map((tab, index) => (
           <div

@@ -15,6 +15,8 @@
   "filterPlaceholder": "Filter, tags",
   "advancedFiltersPlaceholder": "Filter by family, serie, detail",
   "infraLoadingState": "{{step}}/7",
+  "macroscopic": "Macroscopic",
+  "microscopic": "Microscopic",
   "modifyScenario": "Modify scenario",
   "noElectricalProfileSet": "No electrical profile",
   "scenarioCancel": "Cancel",
@@ -72,6 +74,6 @@
   "conflictsCount_one": "1 conflict",
   "conflictsCount_other": "{{count}} conflicts",
   "conflictsCount_zero": "No conflict",
-  "Spacing": "Spacing conflict",
-  "Routing": "Itineraries conflict"
+  "Routing": "Itineraries conflict",
+  "Spacing": "Spacing conflict"
 }
