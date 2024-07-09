@@ -2,7 +2,7 @@
 # Cargo chef #
 ##############
 FROM lukemathwalker/cargo-chef:0.1.67-rust-latest AS chef
-WORKDIR /app
+WORKDIR /editoast
 
 #######################
 # Cargo chef : Recipe #
@@ -28,8 +28,8 @@ RUN rustup component add llvm-tools && \
     rustup component add rustfmt && \
     rustup component add clippy && \
     cargo install --locked grcov
-COPY --from=planner /app/recipe.json recipe.json
-COPY --from=planner /app/editoast_derive/ editoast_derive
+COPY --from=planner /editoast/recipe.json recipe.json
+COPY --from=planner /editoast/editoast_derive/ editoast_derive
 COPY --from=test_data . /tests/data
 
 ENV RUSTFLAGS="-Cinstrument-coverage -C link-arg=-fuse-ld=mold"
@@ -41,12 +41,16 @@ COPY . .
 # Running env : build #
 #######################
 FROM base_builder AS run_builder
-COPY --from=planner /app/recipe.json recipe.json
-COPY --from=planner /app/editoast_derive/ editoast_derive
+COPY --from=planner /editoast/recipe.json recipe.json
+COPY --from=planner /editoast/editoast_derive/ editoast_derive
 ENV RUSTFLAGS="-C link-arg=-fuse-ld=mold"
-RUN cargo chef cook --release --recipe-path recipe.json
+RUN --mount=type=cache,target=/usr/local/cargo/registry \
+    --mount=type=cache,target=/editoast/target \
+    cargo chef cook --release --recipe-path recipe.json
 COPY . .
-RUN cargo install --locked --path .
+RUN --mount=type=cache,target=/usr/local/cargo/registry \
+    --mount=type=cache,target=/editoast/target \
+    cargo install --locked --path .
 
 ###############
 # Running env #
@@ -59,8 +63,8 @@ RUN apt update -yqq && \
 
 COPY --from=run_builder /usr/local/cargo/bin/editoast /usr/local/bin/editoast
 COPY --from=run_builder /usr/local/cargo/bin/diesel /usr/local/bin/diesel
-COPY --from=run_builder /app/migrations /migrations
-COPY --from=run_builder /app/assets /assets
+COPY --from=run_builder /editoast/migrations /migrations
+COPY --from=run_builder /editoast/assets /assets
 
 ARG OSRD_GIT_DESCRIBE
 ENV OSRD_GIT_DESCRIBE=${OSRD_GIT_DESCRIBE}
