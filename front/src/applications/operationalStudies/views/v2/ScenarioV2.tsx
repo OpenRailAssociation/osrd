@@ -29,6 +29,7 @@ import { getSpaceTimeChartData, selectProjectionV2 } from './getSimulationResult
 import ImportTrainScheduleV2 from './ImportTrainScheduleV2';
 import ManageTrainScheduleV2 from './ManageTrainScheduleV2';
 import SimulationResultsV2 from './SimulationResultsV2';
+import NGE from 'applications/operationalStudies/components/MacroEditor/NGE';
 
 type SimulationParams = {
   projectId: string;
