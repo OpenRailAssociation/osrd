@@ -117,7 +117,7 @@
     .scenario-timetable {
       display: flex;
       flex-direction: column;
-      height: calc(var(--content-height) - 8rem);
+      height: calc(var(--content-height) - 11rem);
       .scenario-timetable-addtrains-buttons {
         display: flex;
         align-items: center;
@@ -509,5 +509,8 @@
     overflow: auto;
     width: 100%;
     height: var(--content-height);
+  }
+  .macro-container {
+    height: calc(var(--content-height) - 5.5rem);
   }
 }

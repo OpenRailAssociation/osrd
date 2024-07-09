@@ -1,12 +1,15 @@
 import React, { useEffect, useMemo, useState } from 'react';
 
 import { Pencil, Eye, EyeClosed, ChevronLeft, ChevronRight } from '@osrd-project/ui-icons';
+import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { GiElectric } from 'react-icons/gi';
 import { useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
 import BreadCrumbs from 'applications/operationalStudies/components/BreadCrumbs';
+import NGE from 'applications/operationalStudies/components/MacroEditor/NGE';
+import MicroMacroSwitch from 'applications/operationalStudies/components/MicroMacroSwitch';
 import InfraLoadingState from 'applications/operationalStudies/components/Scenario/InfraLoadingState';
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
 import type { TrainSpaceTimeData } from 'applications/operationalStudies/types';
@@ -48,6 +51,7 @@ const ScenarioV2 = () => {
   const [trainResultsToFetch, setTrainResultsToFetch] = useState<number[]>();
   const [trainIdToEdit, setTrainIdToEdit] = useState<number>();
   const isUpdating = useSelector((state: RootState) => state.osrdsimulation.isUpdating);
+  const [isMacro, setIsMacro] = useState(false);
 
   const { openModal } = useModal();
 
@@ -147,6 +151,11 @@ const ScenarioV2 = () => {
     []
   );
 
+  const toggleMicroMacroButton = (isMacroMode: boolean) => {
+    setIsMacro(isMacroMode);
+    setCollapsedTimetable(isMacroMode);
+  };
+
   if (!scenario || !infraId || !timetableId || !timetable) return null;
 
   return (
@@ -159,7 +168,9 @@ const ScenarioV2 = () => {
       <main className="mastcontainer mastcontainer-no-mastnav">
         <div className="scenario">
           <div className="row scenario-container">
-            <div className={collapsedTimetable ? 'd-none' : 'col-hdp-3 col-xl-4 col-lg-5 col-md-6'}>
+            <div
+              className={`scenario-sidemenu ${collapsedTimetable ? 'd-none' : 'col-hdp-3 col-xl-4 col-lg-5 col-md-6'}`}
+            >
               <div className="scenario-sidemenu">
                 {scenario && (
                   <div className="scenario-details">
@@ -242,29 +253,34 @@ const ScenarioV2 = () => {
                     <div className="scenario-details-description">{scenario.description}</div>
                   </div>
                 )}
-                {displayTrainScheduleManagement !== MANAGE_TRAIN_SCHEDULE_TYPES.none && infra && (
-                  <TimetableManageTrainScheduleV2
-                    displayTrainScheduleManagement={displayTrainScheduleManagement}
-                    setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
-                    setTrainResultsToFetch={setTrainResultsToFetch}
-                    trainIdToEdit={trainIdToEdit}
-                    setTrainIdToEdit={setTrainIdToEdit}
-                    infraState={infra.state}
-                  />
-                )}
-                {infra && (
-                  <TimetableV2
-                    setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
-                    trainsWithDetails={trainsWithDetails}
-                    infraState={infra.state}
-                    trainIds={timetable.train_ids}
-                    selectedTrainId={selectedTrainId}
-                    conflicts={conflicts}
-                    setTrainResultsToFetch={setTrainResultsToFetch}
-                    setSpaceTimeData={setTrainSpaceTimeData}
-                    setTrainIdToEdit={setTrainIdToEdit}
-                    trainIdToEdit={trainIdToEdit}
-                  />
+                <MicroMacroSwitch isMacro={isMacro} setIsMacro={toggleMicroMacroButton} />
+                {!isMacro && (
+                  <>
+                    {displayTrainScheduleManagement !== MANAGE_TRAIN_SCHEDULE_TYPES.none &&
+                      infra && (
+                        <TimetableManageTrainScheduleV2
+                          displayTrainScheduleManagement={displayTrainScheduleManagement}
+                          setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
+                          setTrainResultsToFetch={setTrainResultsToFetch}
+                          trainIdToEdit={trainIdToEdit}
+                          setTrainIdToEdit={setTrainIdToEdit}
+                        />
+                      )}
+                    {infra && (
+                      <TimetableV2
+                        setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
+                        trainsWithDetails={trainsWithDetails}
+                        infraState={infra.state}
+                        trainIds={timetable.train_ids}
+                        selectedTrainId={selectedTrainId}
+                        conflicts={conflicts}
+                        setTrainResultsToFetch={setTrainResultsToFetch}
+                        setSpaceTimeData={setTrainSpaceTimeData}
+                        setTrainIdToEdit={setTrainIdToEdit}
+                        trainIdToEdit={trainIdToEdit}
+                      />
+                    )}
+                  </>
                 )}
               </div>
             </div>
@@ -288,37 +304,47 @@ const ScenarioV2 = () => {
               )}
               <div className="scenario-results">
                 {collapsedTimetable && (
-                  <div className="scenario-timetable-collapsed">
-                    <button
-                      className="timetable-collapse-button"
-                      type="button"
-                      aria-label={t('toggleTimetable')}
-                      onClick={() => setCollapsedTimetable(false)}
-                    >
-                      <ChevronRight />
-                    </button>
-                    <div className="lead ml-2">{scenario.name}</div>
-                    <div className="d-flex align-items-center ml-auto">
-                      <img src={infraLogo} alt="Infra logo" className="infra-logo mr-2" />
-                      {scenario.infra_name}
+                  <>
+                    <div className="scenario-timetable-collapsed">
+                      <button
+                        className="timetable-collapse-button"
+                        type="button"
+                        aria-label={t('toggleTimetable')}
+                        onClick={() => setCollapsedTimetable(false)}
+                      >
+                        <ChevronRight />
+                      </button>
+                      <div className="lead ml-2">{scenario.name}</div>
+                      <div className="d-flex align-items-center ml-auto">
+                        <img src={infraLogo} alt="Infra logo" className="infra-logo mr-2" />
+                        {scenario.infra_name}
+                      </div>
+                      <div className="d-flex align-items-center ml-4">
+                        <span className="mr-1">
+                          <GiElectric />
+                        </span>
+                        {timetable.electrical_profile_set_id
+                          ? timetable.electrical_profile_set_id
+                          : t('noElectricalProfileSet')}
+                      </div>
                     </div>
-                    <div className="d-flex align-items-center ml-4">
-                      <span className="mr-1">
-                        <GiElectric />
-                      </span>
-                      {timetable.electrical_profile_set_id
-                        ? timetable.electrical_profile_set_id
-                        : t('noElectricalProfileSet')}
-                    </div>
-                  </div>
+                    <MicroMacroSwitch isMacro={isMacro} setIsMacro={toggleMicroMacroButton} />
+                  </>
                 )}
-                {isInfraLoaded && infra && (
-                  <SimulationResultsV2
-                    collapsedTimetable={collapsedTimetable}
-                    setTrainResultsToFetch={setTrainResultsToFetch}
-                    spaceTimeData={trainSpaceTimeData}
-                    setTrainSpaceTimeData={setTrainSpaceTimeData}
-                  />
+                {isMacro ? (
+                  <div className={cx(collapsedTimetable ? 'macro-container' : 'h-100')}>
+                    <NGE />
+                  </div>
+                ) : (
+                  isInfraLoaded &&
+                  infra && (
+                    <SimulationResultsV2
+                      collapsedTimetable={collapsedTimetable}
+                      setTrainResultsToFetch={setTrainResultsToFetch}
+                      spaceTimeData={trainSpaceTimeData}
+                      setTrainSpaceTimeData={setTrainSpaceTimeData}
+                    />
+                  )
                 )}
               </div>
             </div>
