@@ -4,7 +4,7 @@
 # Cargo chef #
 ##############
 FROM lukemathwalker/cargo-chef:0.1.67-rust-latest AS chef
-WORKDIR /app
+WORKDIR /gateway
 
 #######################
 # Cargo chef : Recipe #
@@ -17,10 +17,14 @@ RUN cargo chef prepare --recipe-path recipe.json
 # Cargo chef : build #
 ######################
 FROM chef as run_builder
-COPY --from=planner /app/recipe.json recipe.json
-RUN cargo chef cook --release --recipe-path recipe.json
+COPY --from=planner /gateway/recipe.json recipe.json
+RUN --mount=type=cache,target=/usr/local/cargo/registry \
+    --mount=type=cache,target=/gateway/target \
+    cargo chef cook --release --recipe-path recipe.json
 COPY . .
-RUN cargo install --locked --path .
+RUN --mount=type=cache,target=/usr/local/cargo/registry \
+    --mount=type=cache,target=/gateway/target \
+    cargo install --locked --path .
 
 ######################
 # Testing env: build #
@@ -30,7 +34,7 @@ RUN rustup component add llvm-tools && \
     rustup component add rustfmt && \
     rustup component add clippy && \
     cargo install --locked grcov
-COPY --from=planner /app/recipe.json recipe.json
+COPY --from=planner /gateway/recipe.json recipe.json
 
 ENV RUSTFLAGS="-Cinstrument-coverage"
 ENV LLVM_PROFILE_FILE="gateway-%p-%m.profraw"
