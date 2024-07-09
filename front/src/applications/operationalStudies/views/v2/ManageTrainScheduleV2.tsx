@@ -95,7 +95,7 @@ const ManageTrainScheduleV2 = () => {
         <img src={pahtFindingPic} alt="path finding" />
         <span className="ml-2 d-flex align-items-center flex-grow-1 w-100">
           {t('tabs.pathFinding')}
-          {destination && destination.positionOnPath && (
+          {pathProperties && destination && destination.positionOnPath && (
             <small className="ml-auto pl-1">
               {formatKmValue(destination.positionOnPath, 'millimeters')}
             </small>
@@ -103,7 +103,7 @@ const ManageTrainScheduleV2 = () => {
         </span>
       </div>
     ),
-    withWarning: !origin || !destination,
+    withWarning: !origin || !destination || !pathProperties,
     label: t('tabs.pathFinding'),
     content: (
       <div className="osrd-config-item-container-map" data-testid="map">
