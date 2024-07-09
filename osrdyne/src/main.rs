@@ -21,6 +21,7 @@ use crate::drivers::kubernetes::KubernetesDriver;
 use crate::drivers::noop::NoopDriver;
 use crate::drivers::worker_driver::WorkerDriver;
 
+mod api;
 mod config;
 mod drivers;
 mod key;
@@ -91,6 +92,10 @@ async fn main() -> Result<(), anyhow::Error> {
     //     .require_worker_group(Key::new("test"), Duration::ZERO)
     //     .await?;
 
+    let (worker_list_send, woker_list_recv) = tokio::sync::watch::channel(Arc::new(vec![]));
+
+    tokio::spawn(api::create_server("127.0.0.1:4242".into(), woker_list_recv));
+
     'reconnect_loop: loop {
         // connect to rabbitmq
         let conn = Connection::connect(&config.amqp_uri, ConnectionProperties::default()).await?;
@@ -121,6 +126,7 @@ async fn main() -> Result<(), anyhow::Error> {
                 target_tracker_client.clone(),
                 driver,
                 config.worker_loop_interval,
+                worker_list_send.clone(),
             )
             .await?;
 

@@ -18,6 +18,7 @@ use percent_encoding::{utf8_percent_encode, NON_ALPHANUMERIC};
 use tokio::{sync::oneshot, task::JoinSet};
 
 use crate::{
+    drivers::worker_driver::WorkerMetadata,
     management_client::{ArgumentValue, ManagementClient, Policy, PolicyScope},
     queue_controller::{queues_control_loop, QueuesState},
     target_tracker::{QueueStatus, TargetTrackerClient, TargetUpdate},
@@ -219,6 +220,7 @@ impl Pool {
         tracker_client: TargetTrackerClient,
         driver: Box<dyn WorkerDriver>,
         worker_loop_interval: Duration,
+        running_worker_watch: tokio::sync::watch::Sender<Arc<Vec<WorkerMetadata>>>,
     ) -> anyhow::Result<JoinSet<anyhow::Result<()>>> {
         let mut tasks = JoinSet::new();
         // start control loops
@@ -233,7 +235,13 @@ impl Pool {
         {
             let expected_state = expected_state.clone();
             tasks.spawn(async move {
-                worker_control_loop(expected_state, driver, worker_loop_interval).await;
+                worker_control_loop(
+                    expected_state,
+                    running_worker_watch,
+                    driver,
+                    worker_loop_interval,
+                )
+                .await;
                 Ok(())
             });
         }
@@ -397,6 +405,7 @@ async fn activity_processor(
 
 async fn worker_control_loop(
     expected_state: tokio::sync::watch::Receiver<TargetUpdate>,
+    running_workers_watch: tokio::sync::watch::Sender<Arc<Vec<WorkerMetadata>>>,
     driver: Box<dyn WorkerDriver>,
     sleep_interval: Duration,
 ) {
@@ -415,9 +424,12 @@ async fn worker_control_loop(
             }
         };
 
+        let current_cores = Arc::new(current_cores);
+        running_workers_watch.send(current_cores.clone());
+
         let current_infras = current_cores
-            .into_iter()
-            .map(|c| c.infra_id)
+            .iter()
+            .map(|c| &c.infra_id)
             .collect::<Vec<_>>();
         let wanted_infras = target
             .queues
@@ -428,7 +440,7 @@ async fn worker_control_loop(
         // Remove unwanted cores
         for infra_id in current_infras {
             if !wanted_infras.contains(&infra_id) {
-                if let Err(e) = driver.destroy_core_pool(infra_id).await {
+                if let Err(e) = driver.destroy_core_pool(infra_id.clone()).await {
                     log::error!(
                         "Failed to destroy core pool: {:?}. Aborting current loop iteration.",
                         e

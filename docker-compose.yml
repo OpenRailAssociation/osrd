@@ -77,6 +77,7 @@ services:
       context: osrdyne
       dockerfile: Dockerfile
     restart: unless-stopped
+    ports: ["4242:4242"]
     environment:
       RUST_LOG: "info"
 
