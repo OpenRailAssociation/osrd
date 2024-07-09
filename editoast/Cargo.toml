@@ -60,7 +60,7 @@ tokio-postgres = "0.7.10"
 tracing = { version = "0.1.40", features = ["log"] }
 url = { version = "2.5.2", features = ["serde"] }
 utoipa = { version = "4.2.3", features = ["actix_extras", "chrono", "uuid"] }
-uuid = { version = "1.9.1", features = ["serde", "v4"] }
+uuid = { version = "1.10.0", features = ["serde", "v4"] }
 
 [dependencies]
 # For batch dependency updates, see editoast/README.md
