@@ -71,6 +71,9 @@ jobs:
         run: |
           set -eo pipefail
 
+          # disable cache mounts as github cache is slow
+          find -name Dockerfile -print0 | xargs -0 sed -Ei 's/--mount=type=cache,target=[^[:blank:]]+//g'
+
           TRANSIENT_FAILURES=(
             "failed to solve: failed to compute cache key"
             "httpReadSeeker: failed open: failed to authorize: no active session"
