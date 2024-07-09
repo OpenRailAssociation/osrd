@@ -71,7 +71,7 @@ actix-http = "3.8.0"
 actix-multipart = "0.7.2"
 actix-web = "4.8.0"
 actix-web-opentelemetry = { version = "0.18.0", features = ["awc"] }
-async-trait = "0.1.80"
+async-trait = "0.1.81"
 cfg-if = "1.0.0"
 chashmap = "2.2.2"
 chrono.workspace = true
