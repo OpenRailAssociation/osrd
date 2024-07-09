@@ -2,7 +2,7 @@ pub mod pathfinding;
 pub mod projection;
 mod properties;
 
-pub use pathfinding::pathfinding_from_train;
+pub use pathfinding::pathfinding_from_train_batch;
 
 use editoast_derive::EditoastError;
 use thiserror::Error;
@@ -12,10 +12,6 @@ use crate::error::Result;
 use crate::modelsv2::prelude::*;
 use crate::modelsv2::Infra;
 use editoast_models::DbConnection;
-
-/// Expiration time for the cache of the pathfinding and path properties.
-/// Note: 604800 seconds = 1 week
-const CACHE_PATH_EXPIRATION: u64 = 604800;
 
 crate::routes! {
     properties::routes(),
