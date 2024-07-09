@@ -27,7 +27,6 @@ use crate::core::v2::stdcm::{STDCMRequest, STDCMStepTimingData};
 use crate::core::AsCoreRequest;
 use crate::core::CoreClient;
 use crate::error::Result;
-use crate::modelsv2::timetable::Timetable;
 use crate::modelsv2::timetable::TimetableWithTrains;
 use crate::modelsv2::train_schedule::TrainSchedule;
 use crate::modelsv2::work_schedules::WorkSchedule;
@@ -35,8 +34,8 @@ use crate::modelsv2::RollingStockModel;
 use crate::modelsv2::{Infra, List};
 use crate::views::v2::path::pathfinding::extract_location_from_path_items;
 use crate::views::v2::path::pathfinding::TrackOffsetExtractionError;
-use crate::views::v2::train_schedule::TrainScheduleProxy;
-use crate::views::v2::train_schedule::{train_simulation, train_simulation_batch};
+use crate::views::v2::train_schedule::train_simulation;
+use crate::views::v2::train_schedule::train_simulation_batch;
 use crate::RedisClient;
 use crate::Retrieve;
 use crate::RetrieveBatch;
@@ -157,7 +156,6 @@ async fn stdcm(
     query: Query<InfraIdQueryParam>,
     data: Json<STDCMRequestPayload>,
 ) -> Result<Json<STDCMResponse>> {
-    let conn = &mut db_pool.clone().get().await?;
     let db_pool = db_pool.into_inner();
     let core_client = core_client.into_inner();
     let timetable_id = id.into_inner();
@@ -166,48 +164,44 @@ async fn stdcm(
     let redis_client_inner = redis_client.into_inner();
 
     // 1. Retrieve Timetable / Infra / Trains / Simulation / Rolling Stock
-    let timetable_trains = TimetableWithTrains::retrieve_or_fail(conn, timetable_id, || {
-        STDCMError::TimetableNotFound { timetable_id }
-    })
-    .await?;
-    let timetable: Timetable = timetable_trains.clone().into();
-
-    let infra =
-        Infra::retrieve_or_fail(conn, infra_id, || STDCMError::InfraNotFound { infra_id }).await?;
-
-    let (trains, _): (Vec<_>, _) =
-        TrainSchedule::retrieve_batch(conn, timetable_trains.train_ids).await?;
-
-    let (rolling_stocks, _): (Vec<_>, _) = RollingStockModel::retrieve_batch(
+    let timetable_trains = TimetableWithTrains::retrieve_or_fail(
         db_pool.get().await?.deref_mut(),
-        trains
-            .iter()
-            .map::<String, _>(|t| t.rolling_stock_name.clone()),
+        timetable_id,
+        || STDCMError::TimetableNotFound { timetable_id },
     )
     .await?;
 
-    let proxy = Arc::new(TrainScheduleProxy::new(&rolling_stocks, &[timetable]));
+    let infra = Infra::retrieve_or_fail(db_pool.get().await?.deref_mut(), infra_id, || {
+        STDCMError::InfraNotFound { infra_id }
+    })
+    .await?;
+
+    let (trains, _): (Vec<_>, _) =
+        TrainSchedule::retrieve_batch(db_pool.get().await?.deref_mut(), timetable_trains.train_ids)
+            .await?;
+
+    let rolling_stock = RollingStockModel::retrieve_or_fail(
+        db_pool.get().await?.deref_mut(),
+        data.rolling_stock_id,
+        || STDCMError::RollingStockNotFound {
+            rolling_stock_id: data.rolling_stock_id,
+        },
+    )
+    .await?;
 
     let simulations = train_simulation_batch(
-        db_pool.clone(),
+        db_pool.get().await?.deref_mut(),
         redis_client_inner.clone(),
         core_client.clone(),
         &trains,
         &infra,
-        proxy,
     )
-    .await?;
-
-    let rolling_stock = RollingStockModel::retrieve_or_fail(conn, data.rolling_stock_id, || {
-        STDCMError::RollingStockNotFound {
-            rolling_stock_id: data.rolling_stock_id,
-        }
-    })
     .await?;
 
     // 2. Build core request
     let mut trains_requirements = HashMap::new();
     for (train, sim) in trains.iter().zip(simulations) {
+        let (sim, _) = sim;
         let final_output = match sim {
             SimulationResponse::Success { final_output, .. } => final_output,
             _ => continue,
@@ -244,7 +238,7 @@ async fn stdcm(
     let departure_time = get_earliest_departure_time(&data, maximum_run_time);
 
     // 3. Parse stdcm path items
-    let path_items = parse_stdcm_steps(conn, &data, &infra).await?;
+    let path_items = parse_stdcm_steps(db_pool.get().await?.deref_mut(), &data, &infra).await?;
 
     // 4. Build STDCM request
     let stdcm_response = STDCMRequest {
@@ -267,7 +261,7 @@ async fn stdcm(
         margin: data.margin,
         time_step: Some(2000),
         work_schedules: build_work_schedules(
-            conn,
+            db_pool.get().await?.deref_mut(),
             departure_time,
             data.maximum_departure_delay,
             maximum_run_time,
@@ -346,14 +340,12 @@ async fn get_maximum_run_time(
         options: Default::default(),
     };
 
-    let conn = &mut db_pool.clone().get().await?;
-    let sim_result = train_simulation(
-        conn,
+    let (sim_result, _) = train_simulation(
+        db_pool.get().await?.deref_mut(),
         redis_client,
         core_client,
-        &train_schedule,
+        train_schedule,
         infra,
-        Arc::default(),
     )
     .await?;
 

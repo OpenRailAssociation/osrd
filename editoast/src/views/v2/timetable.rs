@@ -2,7 +2,6 @@ pub mod stdcm;
 
 use std::collections::HashMap;
 use std::ops::DerefMut as _;
-use std::sync::Arc;
 
 use actix_web::delete;
 use actix_web::get;
@@ -35,13 +34,11 @@ use crate::modelsv2::timetable::TimetableWithTrains;
 use crate::modelsv2::train_schedule::TrainSchedule;
 use crate::modelsv2::train_schedule::TrainScheduleChangeset;
 use crate::modelsv2::Infra;
-use crate::modelsv2::RollingStockModel;
 use crate::views::pagination::PaginatedList;
 use crate::views::pagination::PaginationQueryParam;
 use crate::views::pagination::PaginationStats;
 use crate::views::v2::train_schedule::train_simulation_batch;
 use crate::views::v2::train_schedule::TrainScheduleForm;
-use crate::views::v2::train_schedule::TrainScheduleProxy;
 use crate::views::v2::train_schedule::TrainScheduleResult;
 use crate::CoreClient;
 use crate::RedisClient;
@@ -329,50 +326,41 @@ pub async fn conflicts(
     query: Query<InfraIdQueryParam>,
 ) -> Result<Json<Vec<Conflict>>> {
     let db_pool = db_pool.into_inner();
-    let conn = &mut db_pool.clone().get().await?;
     let redis_client = redis_client.into_inner();
     let core_client = core_client.into_inner();
     let timetable_id = timetable_id.into_inner().id;
     let infra_id = query.into_inner().infra_id;
 
     // 1. Retrieve Timetable / Infra / Trains / Simultion
-    let timetable_trains = TimetableWithTrains::retrieve_or_fail(conn, timetable_id, || {
-        TimetableError::NotFound { timetable_id }
-    })
+    let timetable_trains = TimetableWithTrains::retrieve_or_fail(
+        db_pool.get().await?.deref_mut(),
+        timetable_id,
+        || TimetableError::NotFound { timetable_id },
+    )
     .await?;
-    let timetable: Timetable = timetable_trains.clone().into();
 
-    let infra = Infra::retrieve_or_fail(conn, infra_id, || TimetableError::InfraNotFound {
-        infra_id,
+    let infra = Infra::retrieve_or_fail(db_pool.get().await?.deref_mut(), infra_id, || {
+        TimetableError::InfraNotFound { infra_id }
     })
     .await?;
 
     let (trains, _): (Vec<_>, _) =
-        TrainSchedule::retrieve_batch(conn, timetable_trains.train_ids).await?;
-
-    let (rolling_stocks, _): (Vec<_>, _) = RollingStockModel::retrieve_batch(
-        db_pool.get().await?.deref_mut(),
-        trains
-            .iter()
-            .map::<String, _>(|t| t.rolling_stock_name.clone()),
-    )
-    .await?;
-
-    let proxy = Arc::new(TrainScheduleProxy::new(&rolling_stocks, &[timetable]));
+        TrainSchedule::retrieve_batch(db_pool.get().await?.deref_mut(), timetable_trains.train_ids)
+            .await?;
 
     let simulations = train_simulation_batch(
-        db_pool.clone(),
+        db_pool.get().await?.deref_mut(),
         redis_client.clone(),
         core_client.clone(),
         &trains,
         &infra,
-        proxy,
     )
     .await?;
 
     // 2. Build core request
     let mut trains_requirements = HashMap::with_capacity(trains.len());
     for (train, sim) in trains.into_iter().zip(simulations) {
+        let (sim, _) = sim;
         let final_output = match sim {
             SimulationResponse::Success { final_output, .. } => final_output,
             _ => continue,

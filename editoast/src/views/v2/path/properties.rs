@@ -21,7 +21,6 @@ use std::hash::Hasher;
 use tracing::info;
 use utoipa::ToSchema;
 
-use super::CACHE_PATH_EXPIRATION;
 use crate::client::get_app_version;
 use crate::core::v2::path_properties::OperationalPointOnPath;
 use crate::core::v2::path_properties::PathPropertiesRequest;
@@ -230,10 +229,7 @@ async fn retrieve_path_properties(
     let track_ranges = &path_properties_input.track_section_ranges;
     let hash = path_properties_input_hash(infra, infra_version, track_ranges);
 
-    let path_properties: PathProperties = redis_conn
-        .json_get_ex(&hash, CACHE_PATH_EXPIRATION)
-        .await?
-        .unwrap_or_default();
+    let path_properties: PathProperties = redis_conn.json_get(&hash).await?.unwrap_or_default();
 
     Ok(path_properties)
 }
@@ -251,9 +247,7 @@ async fn cache_path_properties(
     let hash = path_properties_input_hash(infra, infra_version, track_ranges);
 
     // Cache all properties except electrifications
-    redis_conn
-        .json_set_ex(&hash, &path_properties, CACHE_PATH_EXPIRATION)
-        .await?;
+    redis_conn.json_set(&hash, &path_properties).await?;
 
     Ok(())
 }
