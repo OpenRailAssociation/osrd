@@ -733,6 +733,14 @@ jobs:
         run: |
           docker load --input ./osrd-front-build.tar
 
+      - name: Check code formatting
+        run: |
+          docker run --name=front-format --net=host \
+            ${{ fromJSON(needs.build.outputs.stable_tags).front-build }} \
+            yarn prettier . --check
+
+          exit $(docker wait front-format)
+
       - name: Execute tests within container
         run: |
           docker run --name=front-test --net=host -v $PWD/output:/app/tests/unit \
