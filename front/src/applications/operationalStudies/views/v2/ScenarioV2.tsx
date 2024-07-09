@@ -132,12 +132,6 @@ const ScenarioV2 = () => {
     }
   }, [timetable, trainIdUsedForProjection, infra]);
 
-  useEffect(() => {
-    if (!projectId || !studyId || !scenarioId) {
-      throw new Error('Missing projectId, studyId or scenarioId');
-    }
-  }, [projectId, studyId, scenarioId]);
-
   useEffect(
     () => () => {
       dispatch(updateTimetableID(undefined));
