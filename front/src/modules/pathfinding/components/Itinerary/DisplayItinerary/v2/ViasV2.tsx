@@ -43,6 +43,7 @@ const ViasV2 = ({ zoomToFeaturePoint, shouldManageStopDuration }: DisplayViasV2P
               >
                 {(providedDraggable) => (
                   <div
+                    data-testid="dropped-via-info"
                     ref={providedDraggable.innerRef}
                     {...providedDraggable.draggableProps}
                     {...providedDraggable.dragHandleProps}
@@ -59,12 +60,14 @@ const ViasV2 = ({ zoomToFeaturePoint, shouldManageStopDuration }: DisplayViasV2P
                         tabIndex={0}
                       >
                         <small className="font-weight-bold text-muted mr-1">{index + 1}</small>
-                        <small className="mr-1 text-nowrap">
+                        <small data-testid="via-dropped-name" className="mr-1 text-nowrap">
                           {`${via.name || `KM ${via.positionOnPath && (Math.round(via.positionOnPath) / 1000000).toFixed(3)}`}`}
                         </small>
-                        {via.ch && <small>{via.ch}</small>}
+                        {via.ch && <small data-testid="via-dropped-ch">{via.ch}</small>}
                         {'uic' in via && (
-                          <small className="text-muted ml-3">{formatUicToCi(via.uic)}</small>
+                          <small data-testid="via-dropped-uic" className="text-muted ml-3">
+                            {formatUicToCi(via.uic)}
+                          </small>
                         )}
                       </div>
                       {shouldManageStopDuration && (
@@ -75,6 +78,7 @@ const ViasV2 = ({ zoomToFeaturePoint, shouldManageStopDuration }: DisplayViasV2P
                         />
                       )}
                       <button
+                        data-testid="delete-via-button"
                         className="btn btn-sm btn-only-icon btn-white ml-auto"
                         type="button"
                         onClick={() => dispatch(deleteViaV2(index))}

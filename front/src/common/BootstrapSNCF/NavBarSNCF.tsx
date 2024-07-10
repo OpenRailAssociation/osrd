@@ -87,7 +87,7 @@ const LegacyNavBarSNCF = ({ appName, logo = getLogo() }: Props) => {
                 <span className="mr-2">
                   {i18n.language && getUnicodeFlagIcon(language2flag(i18n.language))}
                 </span>
-                {t(`language.${i18n.language}`)}
+                <span data-testid="language-info">{t(`language.${i18n.language}`)} </span>
               </button>,
               <button
                 data-testid="user-settings-btn"

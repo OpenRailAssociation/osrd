@@ -78,6 +78,7 @@ const Pathfinding = ({ pathProperties, setPathProperties }: PathfindingProps) =>
 
       {!pathProperties && isPathFindingActive ? (
         <div
+          data-testid="pathfinding-no-state"
           className={cx('content pathfinding-none', { 'mt-2': infra && infra.state !== 'CACHED' })}
         >
           {t('pathfindingNoState')}
@@ -103,7 +104,7 @@ const Pathfinding = ({ pathProperties, setPathProperties }: PathfindingProps) =>
               <span className="lead">
                 <Alert />
               </span>
-              <span className="flex-grow-1">
+              <span data-testid="missing-params-info" className="flex-grow-1">
                 {t('pathfindingMissingParams', { missingElements })}
               </span>
             </div>
