@@ -7,8 +7,6 @@ edition.workspace = true
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-chrono.workspace = true
-geos.workspace = true
 rangemap.workspace = true
 serde.workspace = true
 serde_derive.workspace = true
