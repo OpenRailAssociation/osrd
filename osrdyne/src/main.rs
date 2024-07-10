@@ -94,7 +94,7 @@ async fn main() -> Result<(), anyhow::Error> {
 
     let (worker_list_send, woker_list_recv) = tokio::sync::watch::channel(Arc::new(vec![]));
 
-    tokio::spawn(api::create_server("127.0.0.1:4242".into(), woker_list_recv));
+    tokio::spawn(api::create_server("0.0.0.0:4242".into(), woker_list_recv));
 
     'reconnect_loop: loop {
         // connect to rabbitmq
