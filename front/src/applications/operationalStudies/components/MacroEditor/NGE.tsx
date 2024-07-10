@@ -1,9 +1,9 @@
-import { useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 
 import ngeMain from '@osrd-project/netzgrafik-frontend/dist/netzgrafik-frontend/en/main.js?url';
-import ngeStyles from '@osrd-project/netzgrafik-frontend/dist/netzgrafik-frontend/en/styles.css?url';
-import ngeRuntime from '@osrd-project/netzgrafik-frontend/dist/netzgrafik-frontend/en/runtime.js?url';
 import ngePolyfills from '@osrd-project/netzgrafik-frontend/dist/netzgrafik-frontend/en/polyfills.js?url';
+import ngeRuntime from '@osrd-project/netzgrafik-frontend/dist/netzgrafik-frontend/en/runtime.js?url';
+import ngeStyles from '@osrd-project/netzgrafik-frontend/dist/netzgrafik-frontend/en/styles.css?url';
 import ngeVendor from '@osrd-project/netzgrafik-frontend/dist/netzgrafik-frontend/en/vendor.js?url';
 
 import 'styles/scss/applications/operationalStudies/_nge.scss';
@@ -35,9 +35,9 @@ function NGE() {
       frame.contentDocument!.body.appendChild(ngeRoot);
 
       // listens to create, update and delete operations
-      ngeRoot.addEventListener('operation', (event: Event) => {
-        console.log('Operation received', (event as CustomEvent).detail);
-      });
+      // ngeRoot.addEventListener('operation', (event: Event) => {
+      //   console.log('Operation received', (event as CustomEvent).detail);
+      // });
 
       // get netzgrafik model from NGE
       // let netzgrafikDto = ngeRoot.netzgrafikDto;
@@ -54,7 +54,7 @@ function NGE() {
     };
   }, []);
 
-  return <iframe ref={frameRef} srcDoc={frameSrc} />;
+  return <iframe ref={frameRef} srcDoc={frameSrc} title="nge-iframe" />;
 }
 
 export default NGE;

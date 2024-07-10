@@ -73,5 +73,7 @@
   "conflictsCount_other": "{{count}} conflicts",
   "conflictsCount_zero": "No conflict",
   "Spacing": "Spacing conflict",
-  "Routing": "Itineraries conflict"
+  "Routing": "Itineraries conflict",
+  "microscopic": "Microscopic",
+  "macroscopic": "Macroscopic"
 }

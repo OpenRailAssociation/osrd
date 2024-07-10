@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useRef, useMemo } from 'react';
 
 import { ChevronLeft, ChevronRight } from '@osrd-project/ui-icons';
-import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { Rnd } from 'react-rnd';
@@ -27,14 +26,12 @@ import { useAppDispatch } from 'store';
 const MAP_MIN_HEIGHT = 450;
 
 type SimulationResultsV2Props = {
-  collapsedTimetable: boolean;
   setTrainResultsToFetch: (trainSchedulesIDs?: number[]) => void;
   spaceTimeData: TrainSpaceTimeData[];
   setTrainSpaceTimeData: React.Dispatch<React.SetStateAction<TrainSpaceTimeData[]>>;
 };
 
 const SimulationResultsV2 = ({
-  collapsedTimetable,
   setTrainResultsToFetch,
   spaceTimeData,
   setTrainSpaceTimeData,
@@ -112,11 +109,7 @@ const SimulationResultsV2 = ({
     <div className="simulation-results">
       {/* SIMULATION : STICKY BAR */}
       {selectedTrain && (
-        <div
-          className={cx('osrd-simulation-sticky-bar', {
-            'with-collapsed-timetable': collapsedTimetable,
-          })}
-        >
+        <div className="osrd-simulation-sticky-bar">
           <div className="row">
             <div className="col-xl-4">
               <TimeButtons departureTime={selectedTrain.start_time} />
