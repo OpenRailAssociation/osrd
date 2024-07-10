@@ -28,6 +28,7 @@ pub struct OsrdyneConfig {
     pub default_message_ttl: Option<usize>,
     pub max_length: Option<usize>,
     pub max_length_bytes: Option<usize>,
+    pub api_address: String,
 }
 
 impl Default for OsrdyneConfig {
@@ -43,6 +44,7 @@ impl Default for OsrdyneConfig {
             default_message_ttl: None,
             max_length: None,
             max_length_bytes: None,
+            api_address: "0.0.0.0:4242".into(), // TODO: decide on the port
         }
     }
 }
