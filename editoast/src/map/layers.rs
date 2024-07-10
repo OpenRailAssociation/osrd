@@ -18,7 +18,6 @@ pub struct View {
     pub exclude_fields: Vec<String>,
     #[serde(default)]
     pub joins: Vec<JoinExpr>,
-    pub cache_duration: u64,
     #[serde(rename = "where", default)]
     pub where_expr: Vec<String>,
 }
