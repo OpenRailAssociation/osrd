@@ -198,9 +198,7 @@ async fn cache_and_get_mvt_tile(
     );
 
     let mut redis = redis_client.get_connection().await?;
-    let cached_value: Option<Vec<u8>> = redis
-        .get_ex(&cache_key, redis::Expiry::EX(view.cache_duration as usize))
-        .await?;
+    let cached_value: Option<Vec<u8>> = redis.get(&cache_key).await?;
 
     if let Some(value) = cached_value {
         return Ok(HttpResponse::Ok()
@@ -222,7 +220,7 @@ async fn cache_and_get_mvt_tile(
         .to_bytes()
         .unwrap();
     redis
-        .set_ex(&cache_key, mvt_bytes.clone(), view.cache_duration)
+        .set(&cache_key, mvt_bytes.clone())
         .await
         .unwrap_or_else(|_| panic!("Fail to set value in redis with key {cache_key}"));
     Ok(HttpResponse::Ok()
