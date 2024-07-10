@@ -18,6 +18,19 @@ services:
   osrdyne:
     ports: []
     network_mode: host
+    environment:
+      OSRDYNE__WORKER_DRIVER__HOST_NETWORKING: "true"
+      OSRDYNE__WORKER_DRIVER__DEFAULT_ENV: > 
+        [
+        "CORE_EDITOAST_URL=http://127.0.0.1:8089",
+        "JAVA_TOOL_OPTIONS=-javaagent:/app/opentelemetry-javaagent.jar",
+        "CORE_MONITOR_TYPE=opentelemetry",
+        "OTEL_EXPORTER_OTLP_TRACES_PROTOCOL=grpc",
+        "OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=http://127.0.0.1:4317",
+        "OTEL_METRICS_EXPORTER=none",
+        "OTEL_LOGS_EXPORTER=none"
+        ]
+      OSRDYNE__AMQP_URI: "amqp://osrd:password@127.0.0.1:5672/%2f"
 
   editoast:
     ports: []
@@ -29,6 +42,7 @@ services:
       REDIS_URL: "redis://localhost"
       DATABASE_URL: "postgres://osrd:password@localhost:5432/osrd"
       TELEMETRY_ENDPOINT: "http://localhost:4317"
+      OSRD_MQ_URL: "amqp://osrd:password@127.0.0.1:5672/%2f"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8090/health"]
 

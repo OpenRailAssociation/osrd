@@ -27,8 +27,6 @@ import java.util.concurrent.TimeUnit
 @Parameters(commandDescription = "RabbitMQ worker mode")
 class WorkerCommand : CliCommand {
 
-    @Parameter(names = ["--amqp-uri"])
-    var amqpUri: String = "amqp://osrd:password@osrd-rabbitmq:5672/%2f" // TODO
 
     @Parameter(
         names = ["--editoast-url"],
@@ -48,6 +46,7 @@ class WorkerCommand : CliCommand {
 
     val WORKER_ID: String
     val WORKER_KEY: String
+    val WORKER_AMQP_URI: String
     val WORKER_POOL: String
     val WORKER_REQUESTS_QUEUE: String
     val WORKER_ACTIVITY_EXCHANGE: String
@@ -56,6 +55,7 @@ class WorkerCommand : CliCommand {
         // TODO: handle errors more gracefully, etc
         WORKER_ID = System.getenv("WORKER_ID")!!
         WORKER_KEY = System.getenv("WORKER_KEY")!!
+        WORKER_AMQP_URI = System.getenv("WORKER_AMQP_URI") ?: "amqp://osrd:password@127.0.0.1:5672/%2f"
         WORKER_POOL = System.getenv("WORKER_POOL") ?: "core"
         WORKER_REQUESTS_QUEUE = System.getenv("WORKER_REQUESTS_QUEUE") ?: "$WORKER_POOL-req-$WORKER_KEY"
         WORKER_ACTIVITY_EXCHANGE = System.getenv("WORKER_ACTIVITY_EXCHANGE") ?: "$WORKER_POOL-activity-xchg"
@@ -105,7 +105,7 @@ class WorkerCommand : CliCommand {
             )
 
         val factory = ConnectionFactory()
-        factory.setUri(amqpUri)
+        factory.setUri(WORKER_AMQP_URI)
         val connection = factory.newConnection()
         connection.createChannel().use { channel ->
             reportActivity(channel, "started")

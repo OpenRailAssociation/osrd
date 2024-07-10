@@ -30,18 +30,22 @@ pub struct DockerDriverOptions {
     pub container_command: Option<Vec<String>>,
     /// The default environment variables to set for the core
     pub default_env: Vec<String>,
+    // Should the containers be started in host networking mode
+    pub host_networking: Option<bool>,
 }
 
 pub struct DockerDriver {
     client: Docker,
     options: DockerDriverOptions,
+    amqp_uri: String,
 }
 
 impl DockerDriver {
-    pub fn new(options: DockerDriverOptions) -> DockerDriver {
+    pub fn new(options: DockerDriverOptions, amqp_uri: String) -> DockerDriver {
         DockerDriver {
             client: Docker::connect_with_socket_defaults().expect("Failed to connect to Docker"),
             options,
+            amqp_uri,
         }
     }
 }
@@ -65,6 +69,7 @@ impl WorkerDriver for DockerDriver {
                 let mut env = self.options.default_env.clone();
                 env.push(format!("WORKER_ID={}", new_id));
                 env.push(format!("WORKER_KEY={}", infra_id));
+                env.push(format!("WORKER_AMQP_URI={}", self.amqp_uri));
                 env
             };
 
@@ -82,6 +87,26 @@ impl WorkerDriver for DockerDriver {
                 name: container_name.clone(),
                 platform: None,
             };
+
+            let mut networking_config = Some(NetworkingConfig {
+                endpoints_config: HashMap::from([(
+                    "osrd_default".to_string(),
+                    bollard::models::EndpointSettings {
+                        ..Default::default()
+                    },
+                )]),
+            });
+
+            let mut host_config = HostConfig {
+                auto_remove: Some(true),
+                ..Default::default()
+            };
+
+            if self.options.host_networking == Some(true) {
+                networking_config = None;
+                host_config.network_mode = Some("host".to_string());
+            }
+
             let config = Config {
                 image: Some(format!(
                     "{}:{}",
@@ -90,21 +115,11 @@ impl WorkerDriver for DockerDriver {
                 env: Some(final_env),
                 labels: Some(labels),
                 cmd: self.options.container_command.clone(),
-                networking_config: Some(NetworkingConfig {
-                    endpoints_config: HashMap::from([(
-                        "osrd_default".to_string(),
-                        bollard::models::EndpointSettings {
-                            ..Default::default()
-                        },
-                    )]),
-                }),
-                host_config: Some(HostConfig {
-                    auto_remove: Some(true),
-                    ..Default::default()
-                }),
+                networking_config,
+                host_config: Some(host_config),
                 ..Default::default()
             };
-            // TODO: we need to be able to set the container in host mode
+
             self.client
                 .create_container(Some(options), config)
                 .await

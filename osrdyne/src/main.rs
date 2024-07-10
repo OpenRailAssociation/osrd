@@ -103,7 +103,7 @@ async fn main() -> Result<(), anyhow::Error> {
         let driver: Box<dyn WorkerDriver> = match config.worker_driver.clone() {
             WorkerDriverConfig::DockerDriver(opts) => {
                 info!("Using Docker driver");
-                Box::new(DockerDriver::new(opts))
+                Box::new(DockerDriver::new(opts, config.amqp_uri.clone()))
             }
 
             WorkerDriverConfig::KubernetesDriver(opts) => {
