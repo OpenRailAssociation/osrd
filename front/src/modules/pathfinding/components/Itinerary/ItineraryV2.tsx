@@ -115,6 +115,7 @@ const ItineraryV2 = ({
         <div className="d-flex flex-row flex-wrap">
           {pathProperties && pathProperties.suggestedOperationalPoints && (
             <button
+              data-testid="add-waypoints-button"
               className="col my-1 text-white btn bg-info btn-sm"
               type="button"
               onClick={() =>
@@ -125,12 +126,18 @@ const ItineraryV2 = ({
               <Plus />
             </button>
           )}
-          <button className="col ml-1 my-1 btn bg-warning btn-sm" type="button" onClick={inverseOD}>
+          <button
+            data-testid="reverse-itinerary-button"
+            className="col ml-1 my-1 btn bg-warning btn-sm"
+            type="button"
+            onClick={inverseOD}
+          >
             <span className="mr-1">{t('inverseOD')}</span>
             <ArrowSwitch />
           </button>
           <Tipped mode="right">
             <button
+              data-testid="delete-itinerary-button"
               type="button"
               className="ml-1 mt-1 btn-danger btn btn-sm"
               aria-label={t('deleteRoute')}
@@ -152,7 +159,9 @@ const ItineraryV2 = ({
                 shouldManageStopDuration={shouldManageStopDuration}
               />
             ) : (
-              <small className="ml-4">{t('noPlaceChosen')}</small>
+              <small data-testid="no-waypoint-chosen-text" className="ml-4">
+                {t('noPlaceChosen')}
+              </small>
             )}
           </div>
           <DestinationV2 zoomToFeaturePoint={zoomToFeaturePoint} />

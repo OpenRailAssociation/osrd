@@ -56,7 +56,7 @@ const OriginV2 = ({ zoomToFeaturePoint }: OriginProps) => {
       role="button"
       tabIndex={0}
     >
-      <strong className="mr-1 text-nowrap">
+      <strong data-testid="origin-op-info" className="mr-1 text-nowrap">
         {/* If origin doesn't have name, we know that it has been added by click on map and has a track property */}
         {origin?.name || (origin && 'track' in origin && origin.track.split('-')[0])}
       </strong>
@@ -87,7 +87,7 @@ const OriginV2 = ({ zoomToFeaturePoint }: OriginProps) => {
         <span className="text-success mr-2">
           <RiMapPin2Fill />
         </span>
-        {t('noOriginChosen')}
+        <span data-testid="no-origin-chosen-text">{t('noOriginChosen')}</span>
       </>
     );
 
@@ -99,6 +99,7 @@ const OriginV2 = ({ zoomToFeaturePoint }: OriginProps) => {
         </span>
         <span className="flex-grow-1">{originPointName}</span>
         <button
+          data-testid="delete-origin-button"
           className="btn btn-sm btn-only-icon btn-white"
           type="button"
           onClick={() => {

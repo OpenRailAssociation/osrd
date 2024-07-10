@@ -21,7 +21,7 @@ test.describe('STDCM page', () => {
     // TODO: DROP STDCMV1: remove this part
     const homePage = new HomePage(page);
     await homePage.goToHomePage();
-    await stdcmPage.toggleStdcmV1();
+    await homePage.toggleStdcmV1();
 
     await stdcmPage.navigateToPage();
     await expect(stdcmPage.scenarioExplorerModal).not.toBeVisible();

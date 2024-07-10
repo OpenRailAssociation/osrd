@@ -63,10 +63,14 @@ const ModalSuggestedVias = ({ suggestedVias }: ModalSuggestedViasProps) => {
         {op.uic && <small className="suggested-via-uic text-muted">{formatUicToCi(op.uic)}</small>}
         <div className="ml-auto">
           {op.positionOnPath && (
-            <small className="mr-2">{`KM ${(Math.round(op.positionOnPath) / 1000000).toFixed(3)}`}</small>
+            <small
+              data-testid="suggested-via-distance"
+              className="mr-2"
+            >{`KM ${(Math.round(op.positionOnPath) / 1000000).toFixed(3)}`}</small>
           )}
           {!isInVias ? (
             <button
+              data-testid="suggested-via-add-button"
               className="btn btn-sm btn-only-icon"
               type="button"
               aria-label={t('addVia')}
@@ -77,6 +81,7 @@ const ModalSuggestedVias = ({ suggestedVias }: ModalSuggestedViasProps) => {
             </button>
           ) : (
             <button
+              data-testid="suggested-via-delete-button"
               className="btn btn-sm btn-only-icon"
               type="button"
               aria-label={t('removeVia')}

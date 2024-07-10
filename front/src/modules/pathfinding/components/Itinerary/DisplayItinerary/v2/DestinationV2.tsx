@@ -26,7 +26,7 @@ const DestinationV2 = ({ zoomToFeaturePoint }: DestinationProps) => {
         <span className="text-warning mr-2">
           <IoFlag />
         </span>
-        {t('noDestinationChosen')}
+        <span data-testid="no-destination-chosen-text">{t('noDestinationChosen')}</span>
       </>
     );
 
@@ -42,13 +42,14 @@ const DestinationV2 = ({ zoomToFeaturePoint }: DestinationProps) => {
           tabIndex={0}
           className="flex-grow-1"
         >
-          <strong className="mr-1 text-nowrap">
+          <strong data-testid="destination-op-info" className="mr-1 text-nowrap">
             {/* If destination doesn't have name, we know that it has been added by click on map and has a track property */}
             {destination?.name ||
               (destination && 'track' in destination && destination.track.split('-')[0])}
           </strong>
         </div>
         <button
+          data-testid="delete-destination-button"
           className="btn btn-sm btn-only-icon btn-white ml-auto"
           type="button"
           onClick={() => {

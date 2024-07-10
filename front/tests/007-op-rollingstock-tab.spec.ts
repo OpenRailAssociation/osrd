@@ -51,6 +51,7 @@ test.describe('Verifying that all elements in the rolling stock tab are loaded c
     const operationalStudiesPage = new OperationalStudiesPage(page);
     const scenarioPage = new ScenarioPage(page);
     const rollingStockSelector = new RollingStockSelectorPage(page);
+
     // TODO: DROP TSV1: remove this part
     const homePage = new HomePage(page);
     await homePage.goToHomePage();
@@ -65,7 +66,7 @@ test.describe('Verifying that all elements in the rolling stock tab are loaded c
     await scenarioPage.checkInfraLoaded();
 
     // Click on add train button
-    await operationalStudiesPage.clickOnAddScenarioTrainBtn();
+    await operationalStudiesPage.clickOnAddTrainBtn();
 
     // Verify the presence of warnings in Rolling Stock and Route Tab
     await operationalStudiesPage.verifyTabWarningPresence();
@@ -100,6 +101,7 @@ test.describe('Verifying that all elements in the rolling stock tab are loaded c
     const operationalStudiesPage = new OperationalStudiesPage(page);
     const scenarioPage = new ScenarioPage(page);
     const rollingStockSelector = new RollingStockSelectorPage(page);
+
     // TODO: DROP TSV1: remove this part
     const homePage = new HomePage(page);
     await homePage.goToHomePage();
@@ -114,7 +116,7 @@ test.describe('Verifying that all elements in the rolling stock tab are loaded c
     await scenarioPage.checkInfraLoaded();
 
     // Click on add train button
-    await operationalStudiesPage.clickOnAddScenarioTrainBtn();
+    await operationalStudiesPage.clickOnAddTrainBtn();
 
     // Open Rolling Stock Selector, search for the added train, and select it
     await operationalStudiesPage.openEmptyRollingStockSelector();

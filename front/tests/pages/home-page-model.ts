@@ -36,6 +36,10 @@ class HomePage {
 
   readonly userSettings: Locator;
 
+  readonly OSRDLanguage: Locator;
+
+  private stdcmSwitch: Locator;
+
   constructor(page: Page) {
     this.page = page;
     // Initialize locators using roles and text content
@@ -52,8 +56,10 @@ class HomePage {
     this.translation = home;
     this.getViteOverlay = page.locator('vite-plugin-checker-error-overlay');
     this.TSV2Switch = page.getByTestId('train-schedule-version-switch');
+    this.stdcmSwitch = page.getByTestId('stdcm-version-switch');
     this.dropDown = page.getByTestId('dropdown-sncf');
     this.userSettings = page.getByTestId('user-settings-btn');
+    this.OSRDLanguage = page.getByTestId('language-info');
   }
 
   // Completly remove VITE button & sign
@@ -111,13 +117,30 @@ class HomePage {
   }
 
   // TODO : Delete after drop V1
-  // Check Stdcm Version
+  // Check TS Version
   async toggleTSV2() {
     await this.dropDown.click();
     await this.userSettings.click();
     if (!(await this.TSV2Switch.isChecked()) && (await this.TSV2Switch.isVisible())) {
       await this.TSV2Switch.click();
     }
+  }
+
+  // Check Stdcm Version
+  async toggleStdcmV1() {
+    await this.dropDown.click();
+    await this.userSettings.click();
+    if ((await this.stdcmSwitch.isChecked()) && (await this.stdcmSwitch.isVisible())) {
+      await this.stdcmSwitch.click();
+    }
+  }
+
+  // Get OSRD selected language
+  async getOSRDLanguage(): Promise<string> {
+    await this.dropDown.click();
+    const selectedLanguage = await this.OSRDLanguage.innerText();
+    await this.dropDown.click();
+    return selectedLanguage;
   }
 }
 export default HomePage;
