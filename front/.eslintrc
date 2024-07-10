@@ -2,7 +2,10 @@
   "env": {
     "browser": true
   },
-  "ignorePatterns": ["src/common/api/*Api.ts"],
+  "ignorePatterns": [
+    "src/common/api/generatedEditoastApi.ts",
+    "src/common/api/osrdGatewayApi.ts"
+  ],
   "extends": [
     "plugin:vitest/recommended",
     "airbnb",
