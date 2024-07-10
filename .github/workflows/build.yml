@@ -160,6 +160,12 @@ jobs:
         with:
           name: front-nginx
           path: osrd-front-nginx.tar
+      - name: Upload osrdyne artifact
+        uses: actions/upload-artifact@v4
+        if: steps.bake-metadata.outputs.output_method == 'artifact'
+        with:
+          name: osrdyne
+          path: osrd-osrdyne.tar
 
   check_generated_railjson_sync:
     runs-on: ubuntu-latest

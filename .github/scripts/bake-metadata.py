@@ -47,8 +47,8 @@ TARGETS = [
     Target(name="gateway-test", image="gateway", variant="test"),
     Target(name="gateway-front", image="gateway", variant="front", release=True),
 
-    Target(name="core_controller", image="core_controller", release=True),
-    Target(name="core_controller-test", image="core_controller", variant="test"),
+    Target(name="osrdyne", image="osrdyne", release=True),
+    Target(name="osrdyne-test", image="osrdyne", variant="test"),
 ]
 
 

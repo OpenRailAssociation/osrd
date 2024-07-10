@@ -13,8 +13,8 @@ group "default" {
     "gateway-standalone",
     "gateway-test",
     "gateway-front",
-    "core_controller",
-    "core_controller-test"
+    "osrdyne",
+    "osrdyne-test"
   ]
 }
 
@@ -155,22 +155,22 @@ target "gateway-front" {
   }
 }
 
-###################
-# Core Controller #
-###################
+###########
+# OSRDyne #
+###########
 
-target "base-core_controller" {}
-target "core_controller" {
-  inherits = ["base", "base-core_controller"]
-  context = "core_controller"
+target "base-osrdyne" {}
+target "osrdyne" {
+  inherits = ["base", "base-osrdyne"]
+  context = "osrdyne"
   dockerfile = "Dockerfile"
   target = "running_env"
 }
 
-target "base-core_controller-test" {}
-target "core_controller-test" {
-  inherits = ["base", "base-core_controller-test"]
-  context = "core_controller"
+target "base-osrdyne-test" {}
+target "osrdyne-test" {
+  inherits = ["base", "base-osrdyne-test"]
+  context = "osrdyne"
   dockerfile = "Dockerfile"
   target = "testing_env"
 }

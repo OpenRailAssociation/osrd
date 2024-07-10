@@ -48,10 +48,10 @@ target "base-gateway-front" {
   tags = tags("gateway-front")
 }
 
-target "base-core_controller" {
-  tags = tags("core_controller")
+target "base-osrdyne" {
+  tags = tags("osrdyne")
 }
 
-target "base-core_controller-test" {
-  tags = tags("core_controller")
+target "base-osrdyne-test" {
+  tags = tags("osrdyne")
 }
