@@ -9,7 +9,7 @@ import {
   type PostV2InfraByInfraIdPathfindingBlocksApiArg,
 } from 'common/api/osrdEditoastApi';
 import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
-import { formatSuggestedOperationalPoints, upsertViasInOPs } from 'modules/pathfinding/utils';
+import { formatSuggestedOperationalPoints, upsertPathStepsInOPs } from 'modules/pathfinding/utils';
 import { getSupportedElectrification, isThermal } from 'modules/rollingStock/helpers/electric';
 import { adjustConfWithTrainToModifyV2 } from 'modules/trainschedule/components/ManageTrainSchedule/helpers/adjustConfWithTrainToModify';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
@@ -33,7 +33,6 @@ const useSetupItineraryForTrainUpdate = (
   const usingElectricalProfiles = useSelector(getUsingElectricalProfiles);
   const dispatch = useAppDispatch();
   const osrdActions = useOsrdConfActions() as OperationalStudiesConfSliceActions;
-
   const [getTrainScheduleById] = osrdEditoastApi.endpoints.getV2TrainScheduleById.useLazyQuery({});
   const [getRollingStockByName] =
     osrdEditoastApi.endpoints.getRollingStockNameByRollingStockName.useLazyQuery();
@@ -41,21 +40,17 @@ const useSetupItineraryForTrainUpdate = (
     osrdEditoastApi.endpoints.postV2InfraByInfraIdPathfindingBlocks.useMutation();
   const [postPathProperties] =
     osrdEditoastApi.endpoints.postV2InfraByInfraIdPathProperties.useMutation();
-
   useEffect(() => {
     const setupItineraryForTrainUpdate = async () => {
       const trainSchedule = await getTrainScheduleById({
         id: trainIdToEdit,
       }).unwrap();
-
       if (infraId) {
         const rollingStock = await getRollingStockByName({
           rollingStockName: trainSchedule.rolling_stock_name,
         }).unwrap();
-
         // TODO TS2 : Next part might not be needed (except to updePathSteps), we need inly trainSchedulePath and
         // rolling stock infos to relaunch the pathfinding. Check for that in simulation results issue
-
         const params: PostV2InfraByInfraIdPathfindingBlocksApiArg = {
           infraId,
           pathfindingInputV2: {
@@ -70,7 +65,6 @@ const useSetupItineraryForTrainUpdate = (
             rolling_stock_supported_signaling_systems: rollingStock.supported_signaling_systems,
           },
         };
-
         try {
           const pathfindingResult = await postPathfindingBlocks(params).unwrap();
           if (pathfindingResult.status === 'success') {
@@ -83,7 +77,6 @@ const useSetupItineraryForTrainUpdate = (
             };
             const { electrifications, geometry, operational_points } =
               await postPathProperties(pathPropertiesParams).unwrap();
-
             if (electrifications && geometry && operational_points) {
               const stepsCoordinates = pathfindingResult.path_items_positions.map((position) =>
                 getPointCoordinates(geometry, pathfindingResult.length, position)
@@ -149,7 +142,10 @@ const useSetupItineraryForTrainUpdate = (
                 });
               }
 
-              const allWaypoints = upsertViasInOPs(suggestedOperationalPoints, updatedPathSteps);
+              const allWaypoints = upsertPathStepsInOPs(
+                suggestedOperationalPoints,
+                updatedPathSteps
+              );
 
               setPathProperties({
                 electrifications,
@@ -159,7 +155,6 @@ const useSetupItineraryForTrainUpdate = (
                 length: pathfindingResult.length,
                 trackSectionRanges: pathfindingResult.track_section_ranges,
               });
-
               adjustConfWithTrainToModifyV2(
                 trainSchedule,
                 updatedPathSteps,
@@ -176,9 +171,7 @@ const useSetupItineraryForTrainUpdate = (
         }
       }
     };
-
     setupItineraryForTrainUpdate();
   }, [trainIdToEdit]);
 };
-
 export default useSetupItineraryForTrainUpdate;

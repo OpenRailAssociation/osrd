@@ -87,10 +87,11 @@ export const getPathfindingQuery = ({
   return null;
 };
 
-export const upsertViasInOPs = (ops: SuggestedOP[], pathSteps: PathStep[]): SuggestedOP[] => {
+export const upsertPathStepsInOPs = (ops: SuggestedOP[], pathSteps: PathStep[]): SuggestedOP[] => {
   let updatedOPs = [...ops];
   pathSteps.forEach((step) => {
-    // We check only for vias added by map click
+    const { stopFor, arrival, onStopSignal, theoreticalMargin } = step;
+    // We check only for pathSteps added by map click
     if ('track' in step) {
       const formattedStep: SuggestedOP = {
         opId: step.id,
@@ -98,23 +99,35 @@ export const upsertViasInOPs = (ops: SuggestedOP[], pathSteps: PathStep[]): Sugg
         offsetOnTrack: step.offset,
         track: step.track,
         coordinates: step.coordinates,
+        stopFor,
+        arrival,
+        onStopSignal,
+        theoreticalMargin,
       };
       // If it hasn't an uic, the step has been added by map click,
       // we know we have its position on path so we can insert it
       // at the good index in the existing operational points
       const index = updatedOPs.findIndex(
-        (op) => step.positionOnPath && op.positionOnPath >= step.positionOnPath
+        (op) => step.positionOnPath !== undefined && op.positionOnPath >= step.positionOnPath
       );
-      updatedOPs = addElementAtIndex(updatedOPs, index, formattedStep);
+
+      // if index === -1, it means that the position on path of the last step is bigger
+      // than the last operationnal point position.
+      // So we know this pathStep is the destination and we want to add it at the end of the array.
+      if (index !== -1) {
+        updatedOPs = addElementAtIndex(updatedOPs, index, formattedStep);
+      } else {
+        updatedOPs.push(formattedStep);
+      }
     } else if ('uic' in step) {
       updatedOPs = updatedOPs.map((op) => {
         if (op.uic === step.uic && op.ch === step.ch && op.kp === step.kp) {
           return {
             ...op,
-            stopFor: step.stopFor,
-            arrival: step.arrival,
-            onStopSignal: step.onStopSignal,
-            theoreticalMargin: step.theoreticalMargin,
+            stopFor,
+            arrival,
+            onStopSignal,
+            theoreticalMargin,
           };
         }
         return op;

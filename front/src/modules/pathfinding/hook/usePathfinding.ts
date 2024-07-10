@@ -18,7 +18,7 @@ import type { PathfindingActionV2, PathfindingState } from 'modules/pathfinding/
 import {
   formatSuggestedOperationalPoints,
   getPathfindingQuery,
-  upsertViasInOPs,
+  upsertPathStepsInOPs,
 } from 'modules/pathfinding/utils';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
@@ -269,7 +269,7 @@ export const usePathfindingV2 = (
                 })
               );
 
-              const allWaypoints = upsertViasInOPs(
+              const allWaypoints = upsertPathStepsInOPs(
                 suggestedOperationalPoints,
                 compact(updatedPathSteps)
               );

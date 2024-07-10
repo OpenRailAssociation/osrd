@@ -15,7 +15,7 @@ import {
   type TrainScheduleResult,
 } from 'common/api/osrdEditoastApi';
 import { useInfraID, useOsrdConfSelectors } from 'common/osrdContext';
-import { formatSuggestedOperationalPoints, upsertViasInOPs } from 'modules/pathfinding/utils';
+import { formatSuggestedOperationalPoints, upsertPathStepsInOPs } from 'modules/pathfinding/utils';
 import formatTrainsIntoSpaceTimeData from 'modules/simulationResult/components/SpaceTimeChart/formatSpaceTimeData';
 import useSpeedSpaceChart from 'modules/simulationResult/components/SpeedSpaceChart/useSpeedSpaceChart';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
@@ -110,7 +110,7 @@ const useStdcmResults = (
           path.length
         );
 
-        const updatedSuggestedOPs = upsertViasInOPs(
+        const updatedSuggestedOPs = upsertPathStepsInOPs(
           suggestedOperationalPoints,
           pathStepsWihPosition
         );
