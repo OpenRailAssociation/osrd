@@ -10,22 +10,16 @@ import {
 const formatPathPropertiesProps = (props: Property[]) =>
   props.map((prop) => `props[]=${prop}`).join('&');
 
-const formatURLWithIds = (ids: number[]) => ids.map((id) => `ids[]=${id}`).join('&');
-
 const osrdEditoastApi = generatedEditoastApi.enhanceEndpoints({
   endpoints: {
     getLightRollingStock: {
-      transformResponse: (response: GetLightRollingStockApiResponse) => {
-        return {
-          ...response,
-          results: sortBy(response?.results, ['metadata.reference', 'name']),
-        };
-      },
+      transformResponse: (response: GetLightRollingStockApiResponse) => ({
+        ...response,
+        results: sortBy(response?.results, ['metadata.reference', 'name']),
+      }),
     },
     getSpritesSignalingSystems: {
-      transformResponse: (response: GetSpritesSignalingSystemsApiResponse) => {
-        return response.sort();
-      },
+      transformResponse: (response: GetSpritesSignalingSystemsApiResponse) => response.sort(),
     },
     // This endpoint will return only the props we ask for and the url needs to be build in a specific way
     // See https://osrd.fr/en/docs/reference/design-docs/timetable/#path

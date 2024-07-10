@@ -1,5 +1,6 @@
 import type { TrainScheduleImportConfig } from 'applications/operationalStudies/types';
 import type { ImportStation } from 'common/StationCard';
+
 import customAxios from './axios';
 
 export const GRAOU_URL = 'https://graou.info';
@@ -14,6 +15,7 @@ export const getGraouTrainSchedules = async (config: TrainScheduleImportConfig) 
     return result.data;
   } catch (error) {
     console.error(error);
+    return null;
   }
 };
 
@@ -31,6 +33,6 @@ export const searchGraouStations = async (term: string) => {
     return result.data as ImportStation[];
   } catch (error) {
     console.error(error);
-    return;
+    return null;
   }
 };
