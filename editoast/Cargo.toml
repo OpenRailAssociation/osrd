@@ -72,7 +72,6 @@ actix-multipart = "0.7.2"
 actix-web = "4.8.0"
 actix-web-opentelemetry = { version = "0.18.0", features = ["awc"] }
 async-trait = "0.1.81"
-cfg-if = "1.0.0"
 chashmap = "2.2.2"
 chrono.workspace = true
 clap = { version = "4.5.9", features = ["derive", "env"] }
@@ -91,13 +90,11 @@ enumset = "1.1.3"
 futures.workspace = true
 futures-util.workspace = true
 geos.workspace = true
-heck = "0.5.0"
 image = "0.25.1"
 inventory = "0.3"
 itertools.workspace = true
 json-patch = { version = "2.0.0", features = ["utoipa"] }
 mvt.workspace = true
-openssl.workspace = true
 opentelemetry = "0.23.0"
 opentelemetry-datadog = { version = "0.11.0", features = ["reqwest-client"] }
 opentelemetry-otlp = "0.16.0"
@@ -107,7 +104,6 @@ osm_to_railjson = { path = "./osm_to_railjson" }
 paste.workspace = true
 pathfinding = "4.10.0"
 postgis_diesel.workspace = true
-postgres-openssl.workspace = true
 rand.workspace = true
 rangemap.workspace = true
 redis = { version = "0.25.4", features = [
@@ -128,7 +124,6 @@ sha1 = "0.10"
 strum.workspace = true
 thiserror.workspace = true
 tokio.workspace = true
-tokio-postgres.workspace = true
 tracing.workspace = true
 tracing-opentelemetry = "0.24.0"
 tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
