@@ -15,7 +15,7 @@ import { useStoreDataForSpeedLimitByTagSelector } from 'common/SpeedLimitByTagSe
 import Tabs from 'common/Tabs';
 import ItineraryV2 from 'modules/pathfinding/components/Itinerary/ItineraryV2';
 import getPathVoltages from 'modules/pathfinding/helpers/getPathVoltages';
-import { upsertViasInOPs } from 'modules/pathfinding/utils';
+import { upsertPathStepsInOPs } from 'modules/pathfinding/utils';
 import PowerRestrictionsSelectorV2 from 'modules/powerRestriction/components/PowerRestrictionsSelectorV2';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import { RollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector';
@@ -51,7 +51,7 @@ const ManageTrainScheduleV2 = ({ trainIdToEdit }: ManageTrainScheduleV2Props) =>
 
   useEffect(() => {
     if (pathProperties) {
-      const allWaypoints = upsertViasInOPs(
+      const allWaypoints = upsertPathStepsInOPs(
         pathProperties.suggestedOperationalPoints,
         compact(pathSteps)
       );
