@@ -35,6 +35,7 @@
       "GenericCoreError": "Core error {{raw_error}}",
       "UnparsableErrorOutput": "Core returned an error in an unknown format"
     },
+    "DatabaseAccessError": "Database access fatal error",
     "document": {
       "NotFound": "Document '{{document_key}}' not found"
     },
