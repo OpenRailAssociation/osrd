@@ -10,12 +10,12 @@
   position: absolute;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.3); 
+  background: rgba(0, 0, 0, 0.3);
   z-index: 3;
   display: flex;
   justify-content: center;
   align-items: center;
-  
+
   .confirm-modal-content {
     background: white;
     border-radius: 8px;

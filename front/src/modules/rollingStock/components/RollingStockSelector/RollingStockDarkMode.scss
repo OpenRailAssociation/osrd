@@ -3,12 +3,16 @@
 }
 .rollingstock-container {
   &:hover {
-    .rollingstock-card-header, .rollingstock-card-body, .rollingstock-footer {
+    .rollingstock-card-header,
+    .rollingstock-card-body,
+    .rollingstock-footer {
       border-color: var(--coolgray3);
     }
   }
   &.active {
-    .rollingstock-card-header, .rollingstock-card-body, .rollingstock-footer {
+    .rollingstock-card-header,
+    .rollingstock-card-body,
+    .rollingstock-footer {
       border-color: var(--blue);
     }
   }
@@ -18,6 +22,7 @@
   border-color: var(--gray);
 }
 
-.rollingstock-card-body, .rollingstock-footer {
+.rollingstock-card-body,
+.rollingstock-footer {
   border-color: var(--gray);
 }

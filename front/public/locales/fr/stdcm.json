@@ -9,22 +9,22 @@
   "notificationTitle": "Phase 1 : de J-7 à J-1 17h, sur l’axe Perrigny—Miramas.",
   "pathfindingFailed": "Aucun chemin n'a été trouvé pour ces points de jalonnement.",
   "pleaseWait": "Veuillez patientez…",
-  "simulation":{
+  "simulation": {
     "available": "Simulation disponible",
     "averageRequestTime": "Pour votre demande, le temps nécessaire est généralement de 90 secondes.",
     "calculatingSimulation": "Calcul en cours...",
     "getSimulation": "Obtenir la simulation",
     "pendingSimulation": "simulation en cours",
-    "results":{
+    "results": {
       "displayAll": "Afficher tous les jalons",
       "displayMain": "Afficher les jalons principaux",
       "downloadSimulationSheet": "Télécharger la fiche de simulation",
-      "gesicoRequest":"et joignez ce document à votre demande GESICO DSDM",
+      "gesicoRequest": "et joignez ce document à votre demande GESICO DSDM",
       "selectThisSimulation": "Retenir cette simulation",
       "simulationNumber": "Simulation n°1",
       "simulationSelected": "Vous avez retenu cette simulation"
     },
-    "stopCalculation" : "Arrêter le calcul"
+    "stopCalculation": "Arrêter le calcul"
   },
   "spaceSpeedGraphic": "Graphique Espace-Vitesse",
   "spaceTimeGraphic": "Graphique Espace-Temps",
