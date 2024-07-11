@@ -55,7 +55,8 @@ test.describe('Testing if all mandatory elements simulation configuration are lo
     const rollingstockModal = playwrightRollingstockModalPage.rollingStockSelectorModal;
     await expect(rollingstockModal).toBeVisible();
 
-    await playwrightRollingstockModalPage.searchRollingstock('rollingstock_1500_25000_test_e2e');
+    // Voluntarily add spaces and capital letters so we also test the normalization of the search functionality
+    await playwrightRollingstockModalPage.searchRollingstock(' rollingstock_1500_25000_test_E2E ');
 
     const rollingstockCard = playwrightRollingstockModalPage.getRollingstockCardByTestID(
       `rollingstock-${rollingStock.name}`

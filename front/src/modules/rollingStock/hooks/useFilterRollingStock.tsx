@@ -55,7 +55,7 @@ function rollingStockPassesSearchedStringFilter(
     return true;
   }
   function includesSearchedString(str: string | undefined) {
-    return str && str.toLowerCase().includes(filters.text);
+    return str?.trim().toLowerCase().includes(filters.text.trim().toLowerCase());
   }
   return [
     name,
@@ -142,7 +142,7 @@ export default function useFilterRollingStock() {
     useState<LightRollingStockWithLiveries[]>(allRollingStocks);
 
   const searchRollingStock = (value: string) => {
-    setFilters({ ...filters, text: value.toLowerCase() });
+    setFilters({ ...filters, text: value });
     setSearchIsLoading(true);
   };
 
