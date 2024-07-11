@@ -104,7 +104,7 @@ pub struct PathfindingResultSuccess {
     pub length: u64,
     /// The path offset in mm of each path item given as input of the pathfinding
     /// The first value is always `0` (beginning of the path) and the last one is always equal to the `length` of the path in mm
-    pub path_items_positions: Vec<u64>,
+    pub path_item_positions: Vec<u64>,
 }
 
 /// An oriented range on a track section.

@@ -78,7 +78,7 @@ const useSetupItineraryForTrainUpdate = (
             const { electrifications, geometry, operational_points } =
               await postPathProperties(pathPropertiesParams).unwrap();
             if (electrifications && geometry && operational_points) {
-              const stepsCoordinates = pathfindingResult.path_items_positions.map((position) =>
+              const stepsCoordinates = pathfindingResult.path_item_positions.map((position) =>
                 getPointCoordinates(geometry, pathfindingResult.length, position)
               );
               const suggestedOperationalPoints: SuggestedOP[] = formatSuggestedOperationalPoints(
@@ -115,7 +115,7 @@ const useSetupItineraryForTrainUpdate = (
                   ch,
                   kp,
                   name,
-                  positionOnPath: pathfindingResult.path_items_positions[i],
+                  positionOnPath: pathfindingResult.path_item_positions[i],
                   arrival: arrival
                     ? addDurationToIsoDate(trainSchedule.start_time, arrival).substring(11, 19)
                     : arrival,

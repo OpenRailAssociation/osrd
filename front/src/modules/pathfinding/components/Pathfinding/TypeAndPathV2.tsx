@@ -237,7 +237,7 @@ const TypeAndPathV2 = ({ setPathProperties }: PathfindingProps) => {
                 ch: op.ch,
                 kp: correspondingOp.kp,
                 coordinates: correspondingOp.coordinates,
-                positionOnPath: pathfindingResult.path_items_positions[i],
+                positionOnPath: pathfindingResult.path_item_positions[i],
                 stopFor: i === opList.length - 1 ? '0' : undefined,
               };
             });

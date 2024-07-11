@@ -251,7 +251,7 @@ export const usePathfindingV2 = (
 
                 return {
                   ...step,
-                  positionOnPath: pathfindingResult.path_items_positions[i],
+                  positionOnPath: pathfindingResult.path_item_positions[i],
                   stopFor,
                   ...(correspondingOp && {
                     kp: correspondingOp.kp,

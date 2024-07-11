@@ -18,7 +18,7 @@ import { mToMm, mmToM } from 'utils/physics';
 export const formatPowerRestrictionRanges = (
   powerRestrictions: NonNullable<TrainScheduleBase['power_restrictions']>,
   path: TrainScheduleBase['path'],
-  stepsPathPositions: PathfindingResultSuccess['path_items_positions']
+  stepsPathPositions: PathfindingResultSuccess['path_item_positions']
 ): Omit<SimulationPowerRestrictionRange, 'handled'>[] =>
   compact(
     powerRestrictions.map((powerRestriction) => {
@@ -98,7 +98,7 @@ const formatPowerRestrictionRangesWithHandled = ({
     const powerRestrictionsRanges = formatPowerRestrictionRanges(
       selectedTrainSchedule.power_restrictions,
       selectedTrainSchedule.path,
-      pathfindingResult.path_items_positions
+      pathfindingResult.path_item_positions
     );
     const powerRestrictionsWithHandled = addHandledToPowerRestrictions(
       powerRestrictionsRanges,
