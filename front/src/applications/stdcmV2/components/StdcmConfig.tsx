@@ -18,6 +18,7 @@ import StdcmLoader from './StdcmLoader';
 import StdcmOrigin from './StdcmOrigin';
 import StdcmVias from './StdcmVias';
 import type { StdcmSimulationResult } from '../types';
+import type { PathProperties } from 'common/api/generatedEditoastApi';
 
 type StdcmConfigProps = {
   currentSimulationInputs: StdcmSimulationResult['input'] | undefined;
@@ -28,6 +29,8 @@ type StdcmConfigProps = {
   setCurrentSimulationInputs: React.Dispatch<
     React.SetStateAction<StdcmSimulationResult['input'] | undefined>
   >;
+  basicPathproperties?: PathProperties;
+  setBasicPathproperties?: React.Dispatch<React.SetStateAction<PathProperties | undefined>>;
 };
 
 const StdcmConfig = ({

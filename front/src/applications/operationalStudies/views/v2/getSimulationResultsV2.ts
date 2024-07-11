@@ -57,7 +57,6 @@ export const getSpaceTimeChartData = async (
           infraId,
         })
       );
-
       const { data: trainSchedules } = await store.dispatch(
         osrdEditoastApi.endpoints.postV2TrainSchedule.initiate({ body: { ids: trainSchedulesIDs } })
       );

@@ -6,6 +6,7 @@ import { useSelector } from 'react-redux';
 
 import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
 import type {
+  PathProperties,
   PostV2InfraByInfraIdPathPropertiesApiArg,
   PostV2InfraByInfraIdPathfindingBlocksApiArg,
   RollingStockWithLiveries,
@@ -159,6 +160,10 @@ export const usePathfindingV2 = (
 
   const [isPathfindingInitialized, setIsPathfindingInitialized] = useState(false);
 
+  const [basicOperationPoints, setBasicOperationPoints] = useState<
+    PathProperties['operational_points']
+  >([]);
+
   const [postPathfindingBlocks] =
     osrdEditoastApi.endpoints.postV2InfraByInfraIdPathfindingBlocks.useMutation();
   const [postPathProperties] =
@@ -227,6 +232,7 @@ export const usePathfindingV2 = (
               await postPathProperties(pathPropertiesParams).unwrap();
 
             if (electrifications && geometry && operational_points) {
+              setBasicOperationPoints(operational_points);
               const suggestedOperationalPoints: SuggestedOP[] = formatSuggestedOperationalPoints(
                 operational_points,
                 geometry,
@@ -308,6 +314,7 @@ export const usePathfindingV2 = (
   useEffect(() => setIsPathfindingInitialized(true), []);
 
   return {
+    basicOperationPoints,
     isPathfindingInitialized,
     pathfindingState,
     pathfindingDispatch,

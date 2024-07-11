@@ -306,9 +306,7 @@ const ScenarioV2 = () => {
                 {isInfraLoaded && infra && (
                   <SimulationResultsV2
                     collapsedTimetable={collapsedTimetable}
-                    setTrainResultsToFetch={setTrainResultsToFetch}
                     spaceTimeData={trainSpaceTimeData}
-                    setTrainSpaceTimeData={setTrainSpaceTimeData}
                   />
                 )}
               </div>

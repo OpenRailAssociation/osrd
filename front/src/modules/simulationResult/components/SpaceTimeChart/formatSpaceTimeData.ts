@@ -37,7 +37,6 @@ const formatSpaceTimeData = (
   }));
 
   return {
-    ...omit(projectPathTrainResult, ['space_time_curves', 'signal_updates']),
     spaceTimeCurves,
     signal_updates,
     id: +trainId,

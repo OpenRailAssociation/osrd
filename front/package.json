@@ -12,6 +12,7 @@
     "@openapi-contrib/openapi-schema-to-json-schema": "^5.1.0",
     "@osrd-project/ui-core": "^0.0.24",
     "@osrd-project/ui-icons": "^0.0.24",
+    "@osrd-project/ui-manchette": "file: ../../../../osrd-ui/ui-manchette",
     "@react-pdf/renderer": "^3.4.2",
     "@redux-devtools/extension": "^3.3.0",
     "@reduxjs/toolkit": "^2.1.0",

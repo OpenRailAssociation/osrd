@@ -1,14 +1,10 @@
 import type {
   PathProperties,
   PathResponse,
-  PathfindingResultSuccess,
   ProjectPathTrainResult,
-  RangedValue,
   SimulationResponse,
-  TrainScheduleBase,
 } from 'common/api/osrdEditoastApi';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
-import type { ArrayElement } from 'utils/types';
 
 export interface Destination {
   uic: number;
@@ -93,7 +89,6 @@ export type ManageTrainSchedulePathProperties = {
   /** Operational points along the path (including origin and destination) and vias added by clicking on map */
   allWaypoints: SuggestedOP[];
   length: number;
-  trackSectionRanges: NonNullable<PathfindingResultSuccess['track_section_ranges']>;
 };
 
 /**
@@ -102,8 +97,7 @@ export type ManageTrainSchedulePathProperties = {
 export type TrainSpaceTimeData = {
   id: number;
   trainName: string;
-  spaceTimeCurves: { time: number; headPosition: number; tailPosition: number }[][];
-} & Omit<ProjectPathTrainResult, 'space_time_curves'>;
+} & ProjectPathTrainResult;
 
 export type PositionData<T extends 'gradient' | 'radius'> = {
   [key in T]: number;
@@ -111,7 +105,6 @@ export type PositionData<T extends 'gradient' | 'radius'> = {
   position: number;
 };
 
-/** Start and stop are in meters */
 export type ElectrificationRangeV2 = {
   electrificationUsage: ElectrificationUsageV2;
   start: number;
@@ -149,21 +142,15 @@ export type ElectricalProfileValue = Extract<
   { status: 'success' }
 >['electrical_profiles']['values'][number];
 
-/** Electrifications start and stop are in meters */
+/**
+ * Electrifications start and stop are in meters
+ */
 export type PathPropertiesFormatted = {
   electrifications: ElectrificationRangeV2[];
   curves: PositionData<'radius'>[];
   slopes: PositionData<'gradient'>[];
   operationalPoints: NonNullable<PathProperties['operational_points']>;
   geometry: NonNullable<PathProperties['geometry']>;
-  voltages: RangedValue[];
 };
-
-export type PowerRestrictionV2 = ArrayElement<TrainScheduleBase['power_restrictions']>;
 
 export type SimulationResponseSuccess = Extract<SimulationResponse, { status: 'success' }>;
-
-export type ElectrificationVoltage = {
-  type: string;
-  voltage?: string;
-};
