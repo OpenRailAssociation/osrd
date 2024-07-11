@@ -95,8 +95,8 @@ impl OSRDIdentified for OperationalPoint {
 }
 
 impl OperationalPoint {
-    pub fn track_offset(op: &OperationalPoint) -> Vec<TrackOffset> {
-        op.parts
+    pub fn track_offset(&self) -> Vec<TrackOffset> {
+        self.parts
             .clone()
             .into_iter()
             .map(|el| TrackOffset {
