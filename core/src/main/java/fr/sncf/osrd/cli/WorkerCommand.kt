@@ -169,16 +169,22 @@ class WorkerCommand : CliCommand {
                 )
                 val span = tracer.spanBuilder(path).setParent(context).startSpan()
 
-                val payload = try {
+                var payload: ByteArray
+                var status: ByteArray
+                try {
                     span.makeCurrent().use { scope ->
                         val response = endpoint.act(MQRequest(path, body))
-                        response
+                        payload = response
                             .body()
-                            .readAllBytes() // TODO: check the response code too to catch error
+                            .readAllBytes() // TODO: check the response code too to catch
+                        val httpHeader = response.head().first()
+                        val statusCode = httpHeader.split(" ")[1]
+                        status = (if (statusCode[0] == '2') "ok" else "core_error").encodeToByteArray()
                     }
                 } catch (t: Throwable) {
                     span.recordException(t)
-                    "ERROR, exception received".toByteArray() // TODO: have a valid payload for uncaught exceptions
+                    payload = "ERROR, exception received".toByteArray() // TODO: have a valid payload for uncaught exceptions
+                    status = "core_error".encodeToByteArray()
                 } finally {
                     span.end()
                 }
@@ -186,7 +192,7 @@ class WorkerCommand : CliCommand {
                 if (replyTo != null) {
                     val properties = AMQP.BasicProperties().builder()
                         .correlationId(correlationId)
-                        .headers(mapOf("x-status" to "ok"))
+                        .headers(mapOf("x-status" to status))
                         .build()
                     channel.basicPublish("", replyTo, properties, payload)
                 }

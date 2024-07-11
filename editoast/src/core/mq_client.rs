@@ -13,6 +13,7 @@ use serde_json::to_vec;
 use std::{fmt::Debug, sync::Arc};
 use thiserror::Error;
 use tokio::time::{timeout, Duration};
+use utoipa::openapi::response;
 
 #[derive(Debug, Clone)]
 pub struct RabbitMQClient {
@@ -44,9 +45,17 @@ pub enum Error {
     #[error("Cannot deserialize response: {0}")]
     #[editoast_error(status = "500")]
     DeserialisationError(InternalError),
+    #[error("Cannot parse response status")]
+    #[editoast_error(status = "500")]
+    StatusParsingError,
     #[error("Response timeout")]
     #[editoast_error(status = "500")]
     ResponseTimeout,
+}
+
+pub struct MQResponse {
+    pub payload: Vec<u8>,
+    pub status: Vec<u8>,
 }
 
 impl RabbitMQClient {
@@ -120,7 +129,7 @@ impl RabbitMQClient {
         Ok(())
     }
 
-    pub async fn call_with_response<T, TR>(
+    pub async fn call_with_response<T>(
         &self,
         routing_key: String,
         path: &str,
@@ -128,10 +137,9 @@ impl RabbitMQClient {
         mandatory: bool,
         correlation_id: Option<String>,
         override_timeout: Option<u64>,
-    ) -> Result<TR::Response, Error>
+    ) -> Result<MQResponse, Error>
     where
         T: Serialize,
-        TR: CoreResponse,
     {
         // Create a channel
         let channel = self
@@ -204,10 +212,22 @@ impl RabbitMQClient {
                 .map_err(Error::Lapin)?;
 
             // Deserialize the response
-            let response =
-                TR::from_bytes(&delivery.data).map_err(|e| Error::DeserialisationError(e))?;
+            // let payload =
+            //     TR::from_bytes(&delivery.data).map_err(|e| Error::DeserialisationError(e))?;
 
-            Ok(response)
+            let status = delivery
+                .properties
+                .headers()
+                .as_ref()
+                .and_then(|f| f.inner().get("x-status"))
+                .and_then(|s| s.as_byte_array())
+                .map(|s| Ok(s.as_slice().to_owned()))
+                .unwrap_or(Err(Error::StatusParsingError))?;
+
+            Ok(MQResponse {
+                payload: delivery.data,
+                status,
+            })
         } else {
             Err(Error::ResponseTimeout)
         }

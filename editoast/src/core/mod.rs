@@ -97,17 +97,16 @@ impl CoreClient {
         Ok(Self::MessageQueue(client))
     }
 
-    fn handle_error(
-        &self,
-        bytes: &[u8],
-        status: reqwest::StatusCode,
-        url: String,
-    ) -> InternalError {
+    fn handle_error(&self, bytes: &[u8], url: String) -> InternalError {
         // We try to deserialize the response as an StandardCoreError in order to retain the context of the core error
         if let Ok(mut core_error) = <Json<StandardCoreError>>::from_bytes(bytes) {
+            let status: u16 = match core_error.cause {
+                CoreErrorCause::Internal => 500,
+                CoreErrorCause::User => 400,
+            };
             core_error.context.insert("url".to_owned(), url.into());
             let mut internal_error: InternalError = core_error.into();
-            internal_error.set_status(StatusCode::from_u16(status.as_u16()).unwrap());
+            internal_error.set_status(StatusCode::from_u16(status).unwrap());
             return internal_error;
         }
 
@@ -173,7 +172,7 @@ impl CoreClient {
                 }
 
                 error!(target: "editoast::coreclient", "{method_s} {path} {status}", status = status.to_string().bold().red());
-                Err(self.handle_error(bytes.as_ref(), status, url))
+                Err(self.handle_error(bytes.as_ref(), url))
             }
             CoreClient::MessageQueue(client) => {
                 // TODO: maybe implement retry?
@@ -182,10 +181,18 @@ impl CoreClient {
                                                       // TODO: tracing: use correlation id
 
                 let response = client
-                    .call_with_response::<_, R>(infra_id.to_string(), path, &body, true, None, None)
+                    .call_with_response(infra_id.to_string(), path, &body, true, None, None)
                     .await?;
 
-                Ok(response)
+                if response.status == b"ok" {
+                    return Ok(R::from_bytes(&response.payload)?);
+                }
+
+                if response.status == b"core_error" {
+                    return Err(self.handle_error(&response.payload, path.to_string()));
+                }
+
+                todo!("TODO: handle protocol errors")
             }
             #[cfg(test)]
             CoreClient::Mocked(client) => {
@@ -193,8 +200,7 @@ impl CoreClient {
                     Ok(Some(response)) => Ok(response),
                     Ok(None) => Err(CoreError::NoResponseContent.into()),
                     Err(MockingError { bytes, status, url }) => Err(self.handle_error(
-                        &bytes,
-                        reqwest::StatusCode::from_u16(status.as_u16()).unwrap(),
+                        &bytes, //reqwest::StatusCode::from_u16(status.as_u16()).unwrap(),
                         url,
                     )),
                 }
@@ -379,6 +385,13 @@ pub struct StandardCoreError {
     error_type: String,
     context: HashMap<String, Value>,
     message: String,
+    cause: CoreErrorCause,
+}
+
+#[derive(Debug, Deserialize)]
+pub enum CoreErrorCause {
+    Internal,
+    User,
 }
 
 impl crate::error::EditoastError for StandardCoreError {
