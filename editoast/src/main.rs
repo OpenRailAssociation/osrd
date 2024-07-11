@@ -366,7 +366,7 @@ async fn runserver(
     };
     let db_pool_v1 = Arc::into_inner(db_pool_v1_arc).unwrap();
     let db_pool_v1 = Data::new(db_pool_v1);
-    let db_pool_v2 = DbConnectionPoolV2::try_from_pool(db_pool_v1.clone().into_inner()).await?;
+    let db_pool_v2 = DbConnectionPoolV2::from_pool(db_pool_v1.clone().into_inner()).await;
     let db_pool_v2 = Data::new(db_pool_v2);
 
     // Custom Json extractor configuration

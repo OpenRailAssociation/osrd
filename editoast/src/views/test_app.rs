@@ -14,7 +14,7 @@ use actix_web::{
     App, Error,
 };
 use chashmap::CHashMap;
-use editoast_models::create_connection_pool;
+use editoast_models::db_connection_pool::create_connection_pool;
 use editoast_models::DbConnectionPoolV2;
 use serde::de::DeserializeOwned;
 use tracing::Instrument as _;

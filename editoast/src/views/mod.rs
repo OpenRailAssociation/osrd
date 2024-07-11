@@ -35,7 +35,7 @@ use actix_web::get;
 use actix_web::web::Data;
 use actix_web::web::Json;
 use editoast_derive::EditoastError;
-use editoast_models::ping_database;
+use editoast_models::db_connection_pool::ping_database;
 use editoast_models::DbConnectionPoolV2;
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
@@ -106,7 +106,7 @@ pub enum AppHealthError {
     #[error("Timeout error")]
     Timeout,
     #[error(transparent)]
-    Database(#[from] editoast_models::EditoastModelsError),
+    Database(#[from] editoast_models::db_connection_pool::PingError),
     #[error(transparent)]
     Redis(#[from] redis::RedisError),
 }
