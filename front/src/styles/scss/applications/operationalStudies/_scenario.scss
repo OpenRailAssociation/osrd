@@ -321,7 +321,7 @@
                 }
                 .scenario-timetable-train-times {
                   display: flex;
-                  justify-content: space-between;
+                  justify-content: right;
                   min-width: 20%;
                   text-align: right;
                   line-height: 0.8rem;
@@ -342,6 +342,7 @@
                   background-color: var(--warning);
                   border-top: solid 2px var(--warning);
                   border-bottom: solid 2px var(--warning);
+                  justify-content: space-between;
                 }
               }
               .scenario-timetable-train-body {
