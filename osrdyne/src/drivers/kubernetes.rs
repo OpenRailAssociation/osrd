@@ -81,15 +81,17 @@ pub struct KubernetesDriverOptions {
 pub struct KubernetesDriver {
     client: Client,
     options: KubernetesDriverOptions,
+    amqp_uri: String,
 }
 
 impl KubernetesDriver {
-    pub async fn new(options: KubernetesDriverOptions) -> KubernetesDriver {
+    pub async fn new(options: KubernetesDriverOptions, amqp_uri: String) -> KubernetesDriver {
         KubernetesDriver {
             client: Client::try_default()
                 .await
                 .expect("Failed to connect to Kubernetes"),
             options,
+            amqp_uri,
         }
     }
 }
@@ -135,6 +137,11 @@ impl WorkerDriver for KubernetesDriver {
                 env.push(EnvVar {
                     name: "CORE_EDITOAST_URL".to_string(),
                     value: Some(self.options.editoast_url.clone()),
+                    ..Default::default()
+                });
+                env.push(EnvVar {
+                    name: "WORKER_AMQP_URI".to_string(),
+                    value: Some(self.amqp_uri.clone()),
                     ..Default::default()
                 });
                 env
