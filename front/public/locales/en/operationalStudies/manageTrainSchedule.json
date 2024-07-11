@@ -86,6 +86,8 @@
     "incompatible_loading_gauge": "Incompatible loading gauge",
     "incompatible_signaling_system": "Incompatible signaling system",
     "not_enough_path_items": "Missing parameters for pathfinding: Departure, Arrival, Rolling stock",
+    "invalid_path_item": "Waypoint not found",
+    "rolling_stock_not_found": "Rolling stock not found",
     "pathfinding_failed": "No path found"
   },
   "powerRestriction": "Power restriction code",
