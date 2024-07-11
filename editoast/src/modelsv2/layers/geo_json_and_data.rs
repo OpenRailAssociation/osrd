@@ -4,7 +4,6 @@ use diesel::sql_types::Jsonb;
 use diesel::sql_types::Text;
 use diesel_async::RunQueryDsl;
 use editoast_models::DbConnection;
-use editoast_models::EditoastModelsError;
 use geos::geojson::Geometry;
 use geos::geojson::Value as GeoJsonValue;
 use mvt::Feature;
@@ -47,7 +46,7 @@ impl GeoJsonAndData {
         view: &View,
         infra: i64,
         geo_point: &GeoPoint,
-    ) -> Result<Vec<GeoJsonAndData>, EditoastModelsError> {
+    ) -> Result<Vec<GeoJsonAndData>, editoast_models::DatabaseError> {
         let geo_json_query = get_geo_json_sql_query(&layer.table_name, view);
         let records = sql_query(geo_json_query)
             .bind::<Integer, _>(geo_point.z as i32)

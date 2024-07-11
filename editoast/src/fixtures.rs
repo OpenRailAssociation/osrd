@@ -6,7 +6,7 @@ pub mod tests {
     use std::sync::Arc;
     use uuid::Uuid;
 
-    use editoast_models::create_connection_pool;
+    use editoast_models::db_connection_pool::create_connection_pool;
     use editoast_models::DbConnection;
     use editoast_models::DbConnectionPool;
 

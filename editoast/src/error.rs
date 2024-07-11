@@ -1,7 +1,9 @@
 use actix_web::{error::JsonPayloadError, http::StatusCode, HttpResponse, ResponseError};
 use colored::Colorize;
 use diesel::result::Error as DieselError;
-use editoast_models::EditoastModelsError;
+use editoast_models::db_connection_pool::DatabasePoolBuildError;
+use editoast_models::db_connection_pool::DatabasePoolError;
+use editoast_models::DatabaseError;
 use redis::RedisError;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
@@ -127,13 +129,33 @@ impl EditoastError for DieselError {
     }
 }
 
-impl EditoastError for EditoastModelsError {
+impl EditoastError for DatabasePoolBuildError {
     fn get_status(&self) -> StatusCode {
         StatusCode::INTERNAL_SERVER_ERROR
     }
 
     fn get_type(&self) -> &str {
-        "editoast:EditoastModelsError"
+        "editoast:DatabaseAccessError"
+    }
+}
+
+impl EditoastError for DatabasePoolError {
+    fn get_status(&self) -> StatusCode {
+        StatusCode::INTERNAL_SERVER_ERROR
+    }
+
+    fn get_type(&self) -> &str {
+        "editoast:DatabaseAccessError"
+    }
+}
+
+impl EditoastError for DatabaseError {
+    fn get_status(&self) -> StatusCode {
+        StatusCode::INTERNAL_SERVER_ERROR
+    }
+
+    fn get_type(&self) -> &str {
+        "editoast:DatabaseAccessError"
     }
 }
 
