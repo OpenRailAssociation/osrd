@@ -19,6 +19,7 @@ use thiserror::Error;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
+use crate::core::v2::pathfinding::PathfindingResult;
 use crate::core::v2::simulation::SimulationResponse;
 use crate::core::v2::stdcm::STDCMResponse;
 use crate::core::v2::stdcm::TrainRequirement;
@@ -32,8 +33,7 @@ use crate::modelsv2::train_schedule::TrainSchedule;
 use crate::modelsv2::work_schedules::WorkSchedule;
 use crate::modelsv2::RollingStockModel;
 use crate::modelsv2::{Infra, List};
-use crate::views::v2::path::pathfinding::extract_location_from_path_items;
-use crate::views::v2::path::pathfinding::TrackOffsetExtractionError;
+use crate::views::v2::path::path_item_cache::PathItemCache;
 use crate::views::v2::train_schedule::train_simulation;
 use crate::views::v2::train_schedule::train_simulation_batch;
 use crate::RedisClient;
@@ -434,14 +434,17 @@ async fn parse_stdcm_steps(
     data: &STDCMRequestPayload,
     infra: &Infra,
 ) -> Result<Vec<STDCMPathItem>> {
-    let path_items = data.steps.clone();
-    let mut locations = Vec::with_capacity(path_items.len());
-    for item in path_items {
-        locations.push(item.location);
-    }
+    let locations: Vec<_> = data.steps.iter().map(|item| &item.location).collect();
 
-    let track_offsets = extract_location_from_path_items(conn, infra.id, &locations).await?;
-    let track_offsets = track_offsets.map_err::<STDCMError, _>(|err| err.into())?;
+    let path_item_cache = PathItemCache::load(conn, infra.id, &locations).await?;
+    let track_offsets = path_item_cache
+        .extract_location_from_path_items(&locations)
+        .map_err(|path_res| match path_res {
+            PathfindingResult::InvalidPathItem { index, path_item } => {
+                STDCMError::InvalidPathItem { index, path_item }
+            }
+            _ => panic!("Unexpected pathfinding result"),
+        })?;
 
     Ok(track_offsets
         .iter()
@@ -458,15 +461,6 @@ async fn parse_stdcm_steps(
             }),
         })
         .collect())
-}
-
-impl From<TrackOffsetExtractionError> for STDCMError {
-    fn from(error: TrackOffsetExtractionError) -> Self {
-        STDCMError::InvalidPathItem {
-            index: error.index,
-            path_item: error.path_item,
-        }
-    }
 }
 
 enum MaxRunningTimeResult {

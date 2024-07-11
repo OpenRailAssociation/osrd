@@ -1,3 +1,4 @@
+pub mod path_item_cache;
 pub mod pathfinding;
 pub mod projection;
 mod properties;
