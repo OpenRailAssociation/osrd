@@ -460,7 +460,7 @@ pub async fn train_simulation_batch(
 }
 
 fn build_simulation_request(
-    infa: &Infra,
+    infra: &Infra,
     train_schedule: &TrainSchedule,
     path_items_position: &[u64],
     path: SimulationPath,
@@ -514,8 +514,8 @@ fn build_simulation_request(
         .collect();
 
     SimulationRequest {
-        infra: infa.id,
-        expected_version: infa.version.clone(),
+        infra: infra.id,
+        expected_version: infra.version.clone(),
         path,
         schedule,
         margins,
