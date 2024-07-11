@@ -55,6 +55,7 @@ import RenderPopup from 'modules/trainschedule/components/ManageTrainSchedule/Ma
 import { updateViewport } from 'reducers/map';
 import type { Viewport } from 'reducers/map';
 import { getMap, getTerrain3DExaggeration } from 'reducers/map/selectors';
+import type { PathStep } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { getMapMouseEventNearestFeature } from 'utils/mapHelper';
 
@@ -64,17 +65,23 @@ import ItineraryMarkersV2 from './ManageTrainScheduleMap/ItineraryMarkersV2';
 type MapProps = {
   pathProperties?: ManageTrainSchedulePathProperties;
   setMapCanvas?: (mapCanvas: string) => void;
+  isReadOnly?: boolean;
   hideAttribution?: boolean;
   hideItinerary?: boolean;
   preventPointSelection?: boolean;
+  mapId?: string;
+  simulationPathSteps?: PathStep[];
 };
 
 const Map: FC<PropsWithChildren<MapProps>> = ({
   pathProperties,
   setMapCanvas,
+  isReadOnly = false,
   hideAttribution = false,
   hideItinerary = false,
   preventPointSelection = false,
+  mapId = 'map-container',
+  simulationPathSteps,
   children,
 }) => {
   const mapBlankStyle = useMapBlankStyle();
@@ -82,9 +89,15 @@ const Map: FC<PropsWithChildren<MapProps>> = ({
   const infraID = useInfraID();
   const terrain3DExaggeration = useSelector(getTerrain3DExaggeration);
   const { viewport, mapSearchMarker, mapStyle, showOSM, layersSettings } = useSelector(getMap);
+  const mapViewport = useMemo(
+    () =>
+      isReadOnly && pathProperties
+        ? computeBBoxViewport(bbox(pathProperties?.geometry), viewport)
+        : viewport,
+    [isReadOnly, pathProperties, viewport]
+  );
 
   const [mapIsLoaded, setMapIsLoaded] = useState(false);
-  const [showLayers, setShowLayers] = useState(true);
 
   const [snappedPoint, setSnappedPoint] = useState<Feature<Point> | undefined>();
   const { urlLat = '', urlLon = '', urlZoom = '', urlBearing = '', urlPitch = '' } = useParams();
@@ -119,7 +132,7 @@ const Map: FC<PropsWithChildren<MapProps>> = ({
 
   const resetPitchBearing = () => {
     updateViewportChange({
-      ...viewport,
+      ...mapViewport,
       bearing: 0,
       pitch: 0,
     });
@@ -127,7 +140,6 @@ const Map: FC<PropsWithChildren<MapProps>> = ({
 
   const onFeatureClick = (e: MapLayerMouseEvent) => {
     if (preventPointSelection) return;
-
     const result = getMapMouseEventNearestFeature(e, { layersId: ['chartis/tracks-geo/main'] });
     if (
       result &&
@@ -155,7 +167,6 @@ const Map: FC<PropsWithChildren<MapProps>> = ({
 
   const onMoveGetFeature = (e: MapLayerMouseEvent) => {
     if (preventPointSelection) return;
-
     const result = getMapMouseEventNearestFeature(e, { layersId: ['chartis/tracks-geo/main'] });
     if (
       result &&
@@ -193,7 +204,7 @@ const Map: FC<PropsWithChildren<MapProps>> = ({
   useEffect(() => {
     if (urlLat) {
       updateViewportChange({
-        ...viewport,
+        ...mapViewport,
         latitude: parseFloat(urlLat),
         longitude: parseFloat(urlLon),
         zoom: parseFloat(urlZoom),
@@ -206,10 +217,7 @@ const Map: FC<PropsWithChildren<MapProps>> = ({
 
   useEffect(() => {
     if (pathProperties) {
-      if (setMapCanvas) {
-        setShowLayers(false);
-      }
-      const newViewport = computeBBoxViewport(bbox(pathProperties.geometry), viewport);
+      const newViewport = computeBBoxViewport(bbox(pathProperties.geometry), mapViewport);
       dispatch(updateViewport(newViewport));
     }
   }, [pathProperties]);
@@ -217,49 +225,55 @@ const Map: FC<PropsWithChildren<MapProps>> = ({
   const captureMap = async () => {
     if (!pathProperties) return;
 
-    const itineraryViewport = computeBBoxViewport(bbox(pathProperties.geometry), viewport);
+    const itineraryViewport = computeBBoxViewport(bbox(pathProperties.geometry), mapViewport);
 
-    if (setMapCanvas && !showLayers && isEqual(viewport, itineraryViewport)) {
+    if (setMapCanvas && isEqual(mapViewport, itineraryViewport)) {
       try {
-        const mapElement = document.getElementById('map-container');
+        const mapElement = document.getElementById(mapId);
         if (mapElement) {
           const canvas = await html2canvas(mapElement);
           setMapCanvas(canvas.toDataURL());
         }
       } catch (error) {
         console.error('Error capturing map:', error);
-      } finally {
-        setShowLayers(true);
       }
     }
   };
 
   return (
     <>
-      <MapButtons
-        map={mapRef.current ?? undefined}
-        resetPitchBearing={resetPitchBearing}
-        closeFeatureInfoClickPopup={closeFeatureInfoClickPopup}
-        bearing={viewport.bearing}
-        withMapKeyButton
-        viewPort={viewport}
-      />
+      {!isReadOnly && (
+        <MapButtons
+          map={mapRef.current ?? undefined}
+          resetPitchBearing={resetPitchBearing}
+          closeFeatureInfoClickPopup={closeFeatureInfoClickPopup}
+          bearing={mapViewport.bearing}
+          withMapKeyButton
+          viewPort={mapViewport}
+        />
+      )}
       <ReactMapGL
+        dragPan={false}
+        scrollZoom={false}
         ref={mapRef}
-        {...viewport}
+        {...mapViewport}
         style={{ width: '100%', height: '100%' }}
-        cursor={preventPointSelection ? 'default' : 'pointer'}
+        cursor={isReadOnly || preventPointSelection ? 'default' : 'pointer'}
         mapStyle={mapBlankStyle}
-        onMove={(e) => updateViewportChange(e.viewState)}
-        onMouseMove={onMoveGetFeature}
         attributionControl={false} // Defined below
-        onClick={onFeatureClick}
-        onResize={(e) => {
-          updateViewportChange({
-            width: e.target.getContainer().offsetWidth,
-            height: e.target.getContainer().offsetHeight,
-          });
-        }}
+        {...(!isReadOnly && {
+          dragPan: true,
+          scrollZoom: true,
+          onMove: (e) => updateViewportChange(e.viewState),
+          onMouseMove: onMoveGetFeature,
+          onClick: onFeatureClick,
+          onResize: (e) => {
+            updateViewportChange({
+              width: e.target.getContainer().offsetWidth,
+              height: e.target.getContainer().offsetHeight,
+            });
+          },
+        })}
         interactiveLayerIds={interactiveLayerIds}
         touchZoomRotate
         maxPitch={85}
@@ -271,9 +285,11 @@ const Map: FC<PropsWithChildren<MapProps>> = ({
         onLoad={() => {
           setMapIsLoaded(true);
         }}
-        onIdle={() => captureMap()}
+        onIdle={() => {
+          captureMap();
+        }}
         preserveDrawingBuffer
-        id="map-container"
+        id={mapId}
       >
         <VirtualLayers />
         {!hideAttribution && (
@@ -325,7 +341,7 @@ const Map: FC<PropsWithChildren<MapProps>> = ({
           layerOrder={LAYER_GROUPS_ORDER[LAYERS.ROUTES.GROUP]}
           infraID={infraID}
         />
-        {showLayers && (
+        {!isReadOnly && (
           <>
             {layersSettings.operationalpoints && (
               <OperationalPoints
@@ -384,9 +400,9 @@ const Map: FC<PropsWithChildren<MapProps>> = ({
               layerOrder={LAYER_GROUPS_ORDER[LAYERS.LINE_SEARCH.GROUP]}
               infraID={infraID}
             />
+            <RenderPopup pathProperties={pathProperties} />
           </>
         )}
-        <RenderPopup pathProperties={pathProperties} />
         {mapIsLoaded && (
           <>
             <ItineraryLayer
@@ -394,7 +410,12 @@ const Map: FC<PropsWithChildren<MapProps>> = ({
               geometry={pathProperties?.geometry}
               hideItineraryLine={hideItinerary}
             />
-            {mapRef.current && <ItineraryMarkersV2 map={mapRef.current.getMap()} />}
+            {mapRef.current && (
+              <ItineraryMarkersV2
+                simulationPathSteps={simulationPathSteps}
+                map={mapRef.current.getMap()}
+              />
+            )}
           </>
         )}
         {mapSearchMarker && <SearchMarker data={mapSearchMarker} colors={colors[mapStyle]} />}

@@ -58,7 +58,7 @@
   "speedSpaceChart": "Speed Space Chart",
   "stdcmComputation": "Search for a train path",
   "stdcmErrors": {
-    "bothOriginAndDestinationScheduled": "The calculation cannot take into account both an origin and a destination schedule. You have to choose one or the other:",
+    "bothPointAreScheduled": "The calculation cannot take into account both an origin and a destination schedule. You have to choose one or the other:",
     "noPaths": "Incompatibility with other train paths.",
     "noResults": "No path found",
     "noScheduledPoint": "The calculation requires either the origin or destination schedule.",

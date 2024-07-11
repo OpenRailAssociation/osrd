@@ -112,12 +112,14 @@ const StcdmResults = ({
             <span className="change-criteria">{t('changeCriteria')}</span>
           </div>
         )}
-        <div className="osrd-config-item-container osrd-config-item-container-map map-results">
+        <div className="osrd-config-item-container osrd-config-item-container-map map-results no-pointer-events">
           <Map
+            mapId="map-result"
+            isReadOnly
             hideAttribution
-            preventPointSelection
             setMapCanvas={setMapCanvas}
             pathProperties={selectedSimulation.outputs?.pathProperties}
+            simulationPathSteps={selectedSimulation.outputs?.results.simulationPathSteps}
           />
         </div>
       </div>

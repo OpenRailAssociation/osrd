@@ -33,6 +33,11 @@ type MarkerInformation = {
     }
 );
 
+type ItineraryMarkersProps = {
+  map: Map;
+  simulationPathSteps?: PathStep[];
+};
+
 const formatPointWithNoName = (
   lineCode: number,
   lineName: string,
@@ -78,11 +83,14 @@ const extractMarkerInformation = (pathSteps: (PathStep | null)[]) =>
     return acc;
   }, [] as MarkerInformation[]);
 
-const ItineraryMarkers = ({ map }: { map: Map }) => {
+const ItineraryMarkers = ({ map, simulationPathSteps }: ItineraryMarkersProps) => {
   const { getPathSteps } = useOsrdConfSelectors();
   const pathSteps = useSelector(getPathSteps);
 
-  const markersInformation = useMemo(() => extractMarkerInformation(pathSteps), [pathSteps]);
+  const markersInformation = useMemo(
+    () => extractMarkerInformation(simulationPathSteps || pathSteps),
+    [simulationPathSteps, pathSteps]
+  );
 
   const getMarkerDisplayInformation = useCallback(
     (markerInfo: MarkerInformation) => {
