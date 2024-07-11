@@ -6,9 +6,9 @@
   flex-grow: 1;
   cursor: pointer;
   border: 2px solid var(--coolgray1);
-  padding-top: .15rem;
+  padding-top: 0.15rem;
   border-radius: 4px;
-  transition: .2s;
+  transition: 0.2s;
   &.fixed-height {
     min-height: 4rem;
   }
@@ -18,10 +18,10 @@
   .station-card-head {
     display: flex;
     align-items: baseline;
-    padding: 0 .25rem;
+    padding: 0 0.25rem;
     height: 1.5rem;
     .station-card-code {
-      font-size: .8rem;
+      font-size: 0.8rem;
       width: 2.25rem;
     }
     .station-card-name {
@@ -32,44 +32,44 @@
     .station-card-ch {
       margin-left: auto;
       font-weight: 500;
-      font-size: .8rem;
+      font-size: 0.8rem;
     }
     .station-card-uic {
       margin-left: auto;
-      font-size: .6rem;
-      color: var(--primary);    
+      font-size: 0.6rem;
+      color: var(--primary);
     }
   }
   .station-card-localization {
     display: flex;
     align-items: baseline;
     position: relative;
-    padding: 0 .25rem 0 2.5rem;
+    padding: 0 0.25rem 0 2.5rem;
     height: 1rem;
-    line-height: .8rem;
+    line-height: 0.8rem;
     color: var(--coolgray9);
-    gap: .25rem;
+    gap: 0.25rem;
     .station-card-city {
-      font-size: .7rem;
+      font-size: 0.7rem;
     }
     .station-card-department {
       text-transform: uppercase;
-      font-size: .6rem;
+      font-size: 0.6rem;
     }
     .station-card-separator {
       font-size: 0.6rem;
     }
     .station-card-region {
       text-transform: uppercase;
-      font-size: .6rem;   
+      font-size: 0.6rem;
     }
   }
   .station-card-footer {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 .25rem;
-    font-size: .7rem;
+    padding: 0 0.25rem;
+    font-size: 0.7rem;
     background-color: var(--coolgray1);
     border-radius: 0 0 4px 4px;
     height: 1rem;
@@ -82,11 +82,11 @@
       overflow: hidden;
       white-space: nowrap;
       margin-left: auto;
-      margin-right: .25rem;
-      font-size: .6rem;
+      margin-right: 0.25rem;
+      font-size: 0.6rem;
     }
     .station-card-line-number {
-      font-size: .6rem;    
+      font-size: 0.6rem;
       color: var(--purple);
     }
   }

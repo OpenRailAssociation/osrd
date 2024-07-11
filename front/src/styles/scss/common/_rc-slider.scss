@@ -4,11 +4,11 @@ $prefixClass: rc-slider;
 
 $disabledColor: #ccc;
 $border-radius-base: 6px;
-$primary-color: map.get($colors, "green");
+$primary-color: map.get($colors, 'green');
 $tooltip-color: #fff;
 $tooltip-bg: mix(white, #666, 4%);
 $tooltip-arrow-width: 4px;
-$tooltip-distance: $tooltip-arrow-width+4;
+$tooltip-distance: $tooltip-arrow-width + 4;
 $tooltip-arrow-color: $tooltip-bg;
 $ease-out-quint: cubic-bezier(0.23, 1, 0.32, 1);
 $ease-in-quint: cubic-bezier(0.755, 0.05, 0.855, 0.06);
@@ -71,7 +71,7 @@ $ease-in-quint: cubic-bezier(0.755, 0.05, 0.855, 0.06);
     opacity: 0.8;
     touch-action: pan-x;
 
-    &-dragging{
+    &-dragging {
       border-color: mix(white, $primary-color, 0%);
       box-shadow: 0 0 0 5px mix(white, $primary-color, 0%);
     }
@@ -114,13 +114,13 @@ $ease-in-quint: cubic-bezier(0.755, 0.05, 0.855, 0.06);
   &-mark-text {
     position: absolute;
     display: inline-block;
-    color: map.get($colors, "coolgray9");
+    color: map.get($colors, 'coolgray9');
     text-align: center;
     vertical-align: middle;
     cursor: pointer;
     font-weight: 500;
     &-active {
-      color: map.get($colors, "coolgray11");
+      color: map.get($colors, 'coolgray11');
     }
   }
 
@@ -187,9 +187,9 @@ $ease-in-quint: cubic-bezier(0.755, 0.05, 0.855, 0.06);
       left: 5px;
       width: 4px;
     }
-    
+
     &-track-draggable {
-      border-top:0;
+      border-top: 0;
       border-bottom: 0;
       border-right: 5px solid rgba(0, 0, 0, 0);
       border-left: 5px solid rgba(0, 0, 0, 0);

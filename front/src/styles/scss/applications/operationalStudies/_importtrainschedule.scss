@@ -14,7 +14,8 @@
   }
 
   @media screen and (min-width: 768px) {
-    .osrd-config-item-from, .osrd-config-item-to {
+    .osrd-config-item-from,
+    .osrd-config-item-to {
       position: absolute;
       width: 100%;
     }
@@ -41,10 +42,11 @@
       margin-bottom: 0.25rem;
     }
   }
-  .results-stations, .result-station-selected {
+  .results-stations,
+  .result-station-selected {
     border-radius: 4px;
     position: relative;
-    margin-top: .5rem;
+    margin-top: 0.5rem;
   }
 }
 .automated-map {

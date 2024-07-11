@@ -9,22 +9,22 @@
   "notificationTitle": "Phase 1: from D-7 to D-1 5pm, on the Perrigny-Miramas axis.",
   "pathfindingFailed": "No path have been found for these waypoints.",
   "pleaseWait": "Please wait…",
-  "simulation":{
+  "simulation": {
     "available": "Simulation available",
     "averageRequestTime": "For your request, the time required is generally 90 seconds.",
     "calculatingSimulation": "Calculation in progress...",
     "getSimulation": "Get the simulation",
     "pendingSimulation": "Simulation in progress",
-    "results":{
+    "results": {
       "displayAll": "Display all operational points",
       "displayMain": "Display main operational points",
       "downloadSimulationSheet": "Download simulation report sheet",
-      "gesicoRequest":"and attach this document to your GESICO DSDM request.",
+      "gesicoRequest": "and attach this document to your GESICO DSDM request.",
       "selectThisSimulation": "Select this simulation",
       "simulationNumber": "Simulation n°1",
-      "simulationSelected": "You have selected this simulation"  
+      "simulationSelected": "You have selected this simulation"
     },
-    "stopCalculation" : "Stop calculation"
+    "stopCalculation": "Stop calculation"
   },
   "spaceSpeedGraphic": "Space-Velocity graph",
   "spaceTimeGraphic": "Space-Time graph",
@@ -44,6 +44,6 @@
     "origin": "Origin",
     "stopFor": "Minimum stop time",
     "time": "Time",
-    "vias" : "Intermediate OP"
+    "vias": "Intermediate OP"
   }
 }

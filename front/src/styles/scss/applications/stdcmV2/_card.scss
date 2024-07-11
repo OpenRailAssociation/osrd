@@ -1,119 +1,122 @@
 .stdcm-v2-card {
-    border-radius: 8px;
-    box-shadow: 0px 1px 0px rgba(255, 255, 255, 1) inset, 0px 4px 7px -3px rgba(24, 68, 239, 0.19), 0px 1px 3px rgba(49, 46, 43, 0.2);
-    background-color: rgba(255, 255, 255, 1);
-    height: fit-content;
-    position: relative;
+  border-radius: 8px;
+  box-shadow:
+    0px 1px 0px rgba(255, 255, 255, 1) inset,
+    0px 4px 7px -3px rgba(24, 68, 239, 0.19),
+    0px 1px 3px rgba(49, 46, 43, 0.2);
+  background-color: rgba(255, 255, 255, 1);
+  height: fit-content;
+  position: relative;
 
-    .stdcm-v2-default-card-icon{
-        padding-left: 0.125rem;
-        color: #1844EF;
+  .stdcm-v2-default-card-icon {
+    padding-left: 0.125rem;
+    color: #1844ef;
+  }
+
+  .stdcm-v2-via-icons {
+    button {
+      display: none;
+    }
+  }
+
+  &.has-tip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 20px;
+    border-top: 10px solid transparent;
+    border-top-color: rgba(255, 255, 255, 1);
+    border-left: 15px solid transparent;
+    border-right: 15px solid transparent;
+    filter: drop-shadow(0px 2px 1px #d0d7e7);
+  }
+
+  .stdcm-v2-card__header {
+    border-radius: 8px 8px 0px 0px;
+    box-shadow: 0px 1px 0px rgba(255, 255, 255, 0.75) inset;
+    background-color: rgba(235, 235, 234, 1);
+    color: rgba(0, 0, 0, 1);
+    font-size: 18px;
+    font-weight: 600;
+    font-style: SemiBold;
+    letter-spacing: 0px;
+    text-align: left;
+    line-height: 24px;
+    padding: 7px 16px 0px 16px;
+    height: 2.5rem;
+    span {
+      padding-bottom: 6px;
+    }
+  }
+
+  .stdcm-v2-card__body {
+    padding: 14px 21px 21px 21px;
+    // TODO: remove this style after ui-core component is implemented
+    .suggestions > div:first-child {
+      padding-left: 0;
+    }
+    .suggestions * label,
+    .stdcm-v2-via-stop-for * label {
+      margin-bottom: 0;
     }
 
-    .stdcm-v2-via-icons {
-        button {
-            display: none;
-        }
+    .suggestions.stdcm-v2-ch-selector {
+      label {
+        margin: 0.2rem 0 0.15rem 0;
+      }
+      select {
+        min-height: 2.55rem;
+        padding: 0 1rem;
+        appearance: auto;
+        background-image: none;
+        border-radius: 4px;
+        border: 0.125rem solid rgba(255, 255, 255, 0.75);
+        border: 0.0625rem solid rgba(148, 145, 142, 1);
+        box-shadow:
+          0px 0.0625rem 0.0625rem rgba(0, 0, 0, 0.2),
+          0px 0.125rem 0.25rem rgba(0, 0, 0, 0.1);
+        background-color: rgba(0, 0, 0, 0.01);
+      }
     }
 
-    &.has-tip::after {
-        content: "";
-        position: absolute;
-        top: 100%;
-        left: 20px;
-        border-top: 10px solid transparent;
-        border-top-color: rgba(255, 255, 255, 1); 
-        border-left: 15px solid transparent;
-        border-right: 15px solid transparent; 
-        filter: drop-shadow(0px 2px 1px #d0d7e7);
+    .feed-back {
+      padding-left: 0rem;
+      padding-right: 0.3rem;
     }
 
-    .stdcm-v2-card__header {
-        border-radius: 8px 8px 0px 0px;
-        box-shadow: 0px 1px 0px rgba(255, 255, 255, 0.75) inset;
-        background-color: rgba(235, 235, 234, 1);
-        color: rgba(0, 0, 0, 1);
-        font-size: 18px;
-        font-weight: 600;
-        font-style: SemiBold;
-        letter-spacing: 0px;
-        text-align: left;
-        line-height: 24px;
-        padding: 7px 16px 0px 16px;
-        height: 2.5rem;
-        span {
-            padding-bottom: 6px;
-        }
+    .stdcm-v2-default-card-button {
+      color: rgba(24, 68, 239, 1);
+      line-height: 24px;
     }
+  }
 
-    .stdcm-v2-card__body {
-        padding: 14px 21px 21px 21px;
-        // TODO: remove this style after ui-core component is implemented
-        .suggestions > div:first-child{
-            padding-left: 0;
-        }
-        .suggestions * label, .stdcm-v2-via-stop-for * label {
-            margin-bottom: 0;
-        }
+  &.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+  }
 
-        .suggestions.stdcm-v2-ch-selector {
-            label {
-                margin: 0.2rem 0 0.15rem 0;
-            }
-            select {
-                min-height: 2.55rem;
-                padding: 0 1rem;
-                appearance: auto;
-                background-image: none;
-                border-radius: 4px;
-                border: 0.125rem solid rgba(255, 255, 255, 0.75);
-                border: 0.0625rem solid rgba(148, 145, 142, 1);
-                box-shadow: 0px 0.0625rem 0.0625rem rgba(0, 0, 0, 0.2), 0px 0.125rem 0.25rem rgba(0, 0, 0, 0.1);
-                background-color: rgba(0, 0, 0, 0.01);
-            }
-        }
-
-        .feed-back {
-            padding-left: 0rem;
-            padding-right: 0.3rem;
-        }
-
-        .stdcm-v2-default-card-button {
-            color: rgba(24, 68, 239, 1);
-            line-height: 24px;
-        }
-        
-    }
-
-    &.disabled {
-        opacity: 0.5;
-        pointer-events: none;
-    }
-
-    &-via-button {
-        padding: 0.5rem;
-    }
-
+  &-via-button {
+    padding: 0.5rem;
+  }
 }
 
 .stdcm-v2-card:hover {
-    .stdcm-v2-via-icons{
-        span {
-            display: none;
-        }
-        button {
-            display: contents;
-            font-size: 1rem;
-            font-weight: 500;
-            cursor: pointer;
-            color: #256afa;
-        }
+  .stdcm-v2-via-icons {
+    span {
+      display: none;
     }
-    
+    button {
+      display: contents;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      color: #256afa;
+    }
+  }
 }
 
 .stdcm-v2-card:last-of-type {
-    .stdcm-v2-card__body {
-        padding-bottom: 0.75rem;
-    }
+  .stdcm-v2-card__body {
+    padding-bottom: 0.75rem;
+  }
 }

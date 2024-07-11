@@ -1727,8 +1727,7 @@ export type GetV2TimetableByIdConflictsApiArg = {
   id: number;
   infraId: number;
 };
-export type PostV2TimetableByIdStdcmApiResponse =
-  /** status 201 The simulation result */
+export type PostV2TimetableByIdStdcmApiResponse = /** status 201 The simulation result */
   | {
       departure_time: string;
       path: PathfindingResultSuccess;

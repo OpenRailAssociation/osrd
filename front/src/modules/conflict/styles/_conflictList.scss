@@ -83,19 +83,19 @@
       text-align: right;
       font-size: 0.8rem;
       white-space: nowrap;
-      overflow: hidden; 
+      overflow: hidden;
       text-overflow: ellipsis;
       .start-time {
         font-weight: 600;
         font-size: 0.9rem;
-        overflow: hidden; 
+        overflow: hidden;
         text-overflow: ellipsis;
-        white-space: nowrap; 
+        white-space: nowrap;
       }
       .end-time {
-        overflow: hidden; 
+        overflow: hidden;
         text-overflow: ellipsis;
-        white-space: nowrap; 
+        white-space: nowrap;
       }
     }
   }

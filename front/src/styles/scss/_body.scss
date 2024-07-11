@@ -174,8 +174,8 @@ body {
 }
 
 .modal.show {
-  // mastheader is at 1056 
-  z-index:1057;
+  // mastheader is at 1056
+  z-index: 1057;
 }
 
 @media (min-width: 576px) {
@@ -214,8 +214,18 @@ body {
 }
 
 .maplibregl-map {
-  font-family: Avenir, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue',
-    Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+  font-family:
+    Avenir,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    Roboto,
+    'Helvetica Neue',
+    Arial,
+    sans-serif,
+    'Apple Color Emoji',
+    'Segoe UI Emoji',
+    'Segoe UI Symbol';
   .maplibregl-marker {
     display: flex;
     align-items: center;

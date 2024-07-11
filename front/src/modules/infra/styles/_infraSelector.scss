@@ -5,12 +5,12 @@
   left: 0;
   top: 0;
   position: absolute;
-  background-color: rgba(white, .75);
+  background-color: rgba(white, 0.75);
   z-index: 2;
 }
 
 .infra-input-filter {
-  margin-bottom: .5rem;
+  margin-bottom: 0.5rem;
 }
 
 .infraselector-button {
@@ -19,7 +19,7 @@
   .infra-lock {
     display: flex;
     align-items: center;
-    margin-right: .5rem;
+    margin-right: 0.5rem;
     text-transform: uppercase;
   }
 }
@@ -30,15 +30,15 @@
   padding: 0;
   margin: 0;
   border: none;
-  font-size: .9rem;
+  font-size: 0.9rem;
   line-height: 2.2rem;
   font-weight: 400;
   text-transform: uppercase;
   background: none;
   color: var(--coolgray9);
-  transition: .2s;
+  transition: 0.2s;
   span {
-    font-size: .9rem;
+    font-size: 0.9rem;
   }
   &:hover {
     color: var(--coolgray13);
@@ -55,9 +55,9 @@
     border: 2px solid var(--coolgray3);
     background: none;
     padding: 0;
-    transition: .2s;
+    transition: 0.2s;
     width: 100%;
-    margin-bottom: .5rem;
+    margin-bottom: 0.5rem;
     border-radius: 4px;
     text-align: left;
     font-weight: 100;
@@ -67,8 +67,8 @@
       align-items: center;
       text-transform: uppercase;
       small {
-        font-size: .6rem;
-        margin-right: .25rem;
+        font-size: 0.6rem;
+        margin-right: 0.25rem;
       }
     }
     &.unlocked {
@@ -90,7 +90,7 @@
     }
     &.active {
       border-color: var(--primary);
-      opacity: .75;
+      opacity: 0.75;
       cursor: not-allowed;
       .infra-lock {
         color: var(--primary);
@@ -108,7 +108,7 @@
       }
     }
     .infraslist-item-choice-main {
-      padding: 0 .25rem;
+      padding: 0 0.25rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -121,8 +121,8 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: .25rem .25rem 0;
-      font-size: .6rem;
+      padding: 0.25rem 0.25rem 0;
+      font-size: 0.6rem;
       height: 1rem;
       line-height: 1.25rem;
       font-weight: 500;
@@ -135,9 +135,9 @@
     align-items: center;
     height: 3.5rem;
     position: relative;
-    margin-bottom: .5rem;
+    margin-bottom: 0.5rem;
     &.disabled {
-      opacity: .25;
+      opacity: 0.25;
     }
     .infraslist-item-edition-delete {
       display: flex;
@@ -150,7 +150,7 @@
         align-items: center;
         flex-grow: 1;
         overflow: hidden;
-        padding-left: .5rem;
+        padding-left: 0.5rem;
       }
       .infraslist-item-delete-button-container {
         display: flex;
@@ -166,10 +166,10 @@
         width: 50%;
         height: 100%;
         cursor: pointer;
-        transition: .2s;
+        transition: 0.2s;
         font-weight: 400;
         &:hover {
-          opacity: .5;
+          opacity: 0.5;
         }
         &.no {
           color: var(--white);
@@ -179,7 +179,7 @@
           cursor: not-allowed;
           color: var(--white);
           background-color: var(--red);
-          opacity: .5;
+          opacity: 0.5;
         }
         &.yes {
           color: var(--white);
@@ -195,7 +195,7 @@
       border: 2px solid var(--coolgray3);
       background: none;
       padding: 0;
-      transition: .2s;
+      transition: 0.2s;
       width: 100%;
       text-align: left;
       font-weight: 100;
@@ -204,10 +204,10 @@
         border-radius: 4px 0 0 4px;
       }
       .infraslist-item-edition-main {
-        padding: 0 .25rem;
+        padding: 0 0.25rem;
         display: flex;
         align-items: center;
-        font-size: .9rem;
+        font-size: 0.9rem;
         height: 2rem;
         line-height: 1rem;
         input {
@@ -220,11 +220,11 @@
           display: flex;
           align-items: center;
           color: var(--coolgray7);
-          padding: 0 .25rem 0 .25rem;
+          padding: 0 0.25rem 0 0.25rem;
           text-transform: uppercase;
           small {
-            font-size: .6rem;
-            margin-right: .25rem;
+            font-size: 0.6rem;
+            margin-right: 0.25rem;
           }
         }
       }
@@ -233,8 +233,8 @@
         align-items: center;
         background-color: var(--coolgray3);
         justify-content: space-between;
-        padding: .25rem .25rem 0;
-        font-size: .6rem;
+        padding: 0.25rem 0.25rem 0;
+        font-size: 0.6rem;
         height: 1rem;
         line-height: 1.25rem;
         font-weight: 500;
@@ -254,13 +254,15 @@
       flex-grow: 1;
       border: none;
       height: 3.25rem;
-      transition: background-color .4s, color .4s;
+      transition:
+        background-color 0.4s,
+        color 0.4s;
       width: 2rem;
       .spinner-border {
         color: var(--coolgray7);
         width: 1em;
         height: 1em;
-        border-width: .15rem;
+        border-width: 0.15rem;
       }
       &:last-child {
         border-radius: 0 4px 4px 0;
@@ -328,12 +330,12 @@
 }
 
 .infra-add {
-  padding: .5rem;
+  padding: 0.5rem;
   border: 2px solid var(--green);
   border-radius: 4px;
   .infra-add-error {
     height: 1rem;
-    margin: .5rem 0;
+    margin: 0.5rem 0;
     text-align: center;
     color: var(--red);
   }
@@ -341,12 +343,12 @@
     display: flex;
     align-items: center;
     color: var(--coolgray9);
-    padding: .5rem;
+    padding: 0.5rem;
     border: 2px dashed var(--coolgray3);
     border-radius: 4px;
     width: 100%;
     cursor: pointer;
-    transition: .2s;
+    transition: 0.2s;
     font-weight: 100;
     &.with-file {
       border-style: solid;

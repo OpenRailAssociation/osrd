@@ -1,4 +1,3 @@
-
 .tabs-container {
   display: flex;
   flex-direction: column;
@@ -71,7 +70,8 @@
         &::after {
           content: none;
         }
-        &:hover, &.active {
+        &:hover,
+        &.active {
           background-color: var(--primary);
           color: var(--white);
         }
@@ -83,7 +83,7 @@
   }
   .tab-content > .tab-pane {
     display: none;
-  }  
+  }
   .tab-content > .active {
     display: block;
   }
