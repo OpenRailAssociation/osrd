@@ -377,12 +377,12 @@ pub async fn train_simulation_batch(
     for (index, (pathfinding, train_schedule)) in
         pathfinding_results.iter().zip(train_schedules).enumerate()
     {
-        let (path, path_items_positions) = match pathfinding {
+        let (path, path_item_positions) = match pathfinding {
             PathfindingResult::Success(PathfindingResultSuccess {
                 blocks,
                 routes,
                 track_section_ranges,
-                path_items_positions,
+                path_item_positions,
                 ..
             }) => (
                 SimulationPath {
@@ -390,7 +390,7 @@ pub async fn train_simulation_batch(
                     routes: routes.clone(),
                     track_section_ranges: track_section_ranges.clone(),
                 },
-                path_items_positions,
+                path_item_positions,
             ),
             _ => {
                 simulation_results[index] = SimulationResponse::PathfindingFailed {
@@ -406,7 +406,7 @@ pub async fn train_simulation_batch(
         let simulation_request = build_simulation_request(
             infra,
             train_schedule,
-            path_items_positions,
+            path_item_positions,
             path,
             rolling_stock,
             timetable,
@@ -462,18 +462,18 @@ pub async fn train_simulation_batch(
 fn build_simulation_request(
     infra: &Infra,
     train_schedule: &TrainSchedule,
-    path_items_position: &[u64],
+    path_item_positions: &[u64],
     path: SimulationPath,
     rolling_stock: RollingStockModel,
     timetable: Timetable,
 ) -> SimulationRequest {
-    assert_eq!(path_items_position.len(), train_schedule.path.len());
+    assert_eq!(path_item_positions.len(), train_schedule.path.len());
     // Project path items to path offset
     let path_items_to_position: HashMap<_, _> = train_schedule
         .path
         .iter()
         .map(|p| &p.id)
-        .zip(path_items_position.iter().copied())
+        .zip(path_item_positions.iter().copied())
         .collect();
 
     let schedule = train_schedule

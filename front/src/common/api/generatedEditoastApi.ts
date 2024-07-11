@@ -3448,7 +3448,7 @@ export type PathfindingResultSuccess = {
   length: number;
   /** The path offset in mm of each path item given as input of the pathfinding
     The first value is always `0` (beginning of the path) and the last one is always equal to the `length` of the path in mm */
-  path_items_positions: number[];
+  path_item_positions: number[];
   /** Path description as route ids */
   routes: string[];
   /** Path description as track ranges */
