@@ -62,8 +62,6 @@
   .scenario-sidemenu {
     padding-top: 0.5rem;
     padding-bottom: 0.5rem;
-    display: flex;
-    flex-direction: column;
     .scenario-details {
       display: flex;
       flex-direction: column;
@@ -119,7 +117,7 @@
     .scenario-timetable {
       display: flex;
       flex-direction: column;
-      flex-grow: 1;
+      height: calc(var(--content-height) - 8rem);
       .scenario-timetable-addtrains-buttons {
         display: flex;
         align-items: center;
