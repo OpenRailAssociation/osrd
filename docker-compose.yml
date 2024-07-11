@@ -125,7 +125,6 @@ services:
       DATABASE_URL: "postgres://osrd:password@postgres/osrd"
       TELEMETRY_KIND: "opentelemetry"
       TELEMETRY_ENDPOINT: "http://jaeger:4317"
-      RUST_LOG: "debug"
       OSRD_MQ_URL: "amqp://osrd:password@osrd-rabbitmq:5672/%2f"
     command:
       - /bin/sh
