@@ -86,6 +86,8 @@
     "incompatible_loading_gauge": "Gabarit incompatible",
     "incompatible_signaling_system": "Système de signalisation incompatible",
     "not_enough_path_items": "Éléments manquants pour la recherche : Origine, Destination, Matériel roulant",
+    "invalid_path_item": "Point de passage non trouvé",
+    "rolling_stock_not_found": "Matériel roulant non trouvé",
     "pathfinding_failed": "Aucun chemin trouvé"
   },
   "pleaseWait": "Veuillez patientez…",
