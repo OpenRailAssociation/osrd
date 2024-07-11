@@ -1,21 +1,24 @@
 @import '@osrd-project/ui-core/dist/theme.css';
 
 // https://github.com/tailwindlabs/tailwindcss/issues/942
-svg, img {
-  display:inline-block;
+svg,
+img {
+  display: inline-block;
   max-width: none;
 }
 
 //https://github.com/tailwindlabs/tailwindcss/pull/7742#issuecomment-1061332148
-.study-card-img, .map-format-switch-img {
+.study-card-img,
+.map-format-switch-img {
   height: 24px;
 }
 
-.infra-logo, .icon-to-svg {
+.infra-logo,
+.icon-to-svg {
   height: 16px;
 }
 
-.layer-modal-img  {
+.layer-modal-img {
   height: 20px;
 }
 

@@ -12,14 +12,18 @@
       background-color: var(--coolgray1);
       padding: 0.5rem;
       border-radius: 4px;
-      height: calc(100% - 3.80rem);
+      height: calc(100% - 3.8rem);
       overflow: auto;
-      a[href^="http"] {
-        h3, i, .small {
+      a[href^='http'] {
+        h3,
+        i,
+        .small {
           color: var(--primary);
         }
         &:hover {
-          h3, i, .small {
+          h3,
+          i,
+          .small {
             color: var(--purple);
           }
         }

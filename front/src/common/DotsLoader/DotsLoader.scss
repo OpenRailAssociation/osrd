@@ -1,6 +1,6 @@
 @keyframes dot-keyframes {
   0% {
-    opacity: .4;
+    opacity: 0.4;
     transform: scale(1, 1);
   }
 
@@ -10,7 +10,7 @@
   }
 
   100% {
-    opacity: .4;
+    opacity: 0.4;
     transform: scale(1, 1);
   }
 }
@@ -30,7 +30,7 @@
     box-sizing: border-box;
 
     &:nth-child(2) {
-      animation-delay: .5s;
+      animation-delay: 0.5s;
     }
 
     &:nth-child(3) {
