@@ -167,16 +167,15 @@ impl Timetable {
     }
 
     /// Get infra_version from timetable
-    pub async fn infra_version_from_timetable(&self, db_pool: Arc<DbConnectionPool>) -> String {
+    pub async fn infra_version_from_timetable(&self, conn: &mut DbConnection) -> String {
         use crate::tables::infra::dsl as infra_dsl;
         use crate::tables::scenario::dsl as scenario_dsl;
         let timetable_id = self.id.unwrap();
-        let mut conn = db_pool.get().await.unwrap();
         scenario_dsl::scenario
             .filter(scenario_dsl::timetable_id.eq(timetable_id))
             .inner_join(infra_dsl::infra)
             .select(infra_dsl::version)
-            .first::<String>(&mut conn)
+            .first::<String>(conn)
             .await
             .expect("could not retrieve the version of the infra of a scenario using its timetable")
     }

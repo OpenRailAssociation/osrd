@@ -220,11 +220,12 @@ use editoast_search::SearchError;
 use serde::Deserialize;
 use serde::Serialize;
 use serde_json::value::Value as JsonValue;
+use std::ops::DerefMut;
 use utoipa::ToSchema;
 
 use crate::error::Result;
 use crate::views::pagination::PaginationQueryParam;
-use editoast_models::DbConnectionPool;
+use editoast_models::DbConnectionPoolV2;
 
 crate::routes! {
     search
@@ -334,7 +335,7 @@ struct SearchDBResult {
 pub async fn search(
     query_params: Query<PaginationQueryParam>,
     payload: Json<SearchPayload>,
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Data<DbConnectionPoolV2>,
 ) -> Result<impl Responder> {
     let (page, per_page) = query_params.validate(1000)?.warn_page_size(100).unpack();
     let Json(SearchPayload { object, query, dry }) = payload;
@@ -356,8 +357,9 @@ pub async fn search(
         return Ok(HttpResponse::Ok().body(query));
     }
 
-    let conn = &mut db_pool.get().await?;
-    let objects = query.load::<SearchDBResult>(conn).await?;
+    let objects = query
+        .load::<SearchDBResult>(db_pool.get().await?.deref_mut())
+        .await?;
     let results: Vec<_> = objects.into_iter().map(|r| r.result).collect();
     Ok(HttpResponse::Ok().json(results))
 }

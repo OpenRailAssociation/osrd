@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::ops::DerefMut;
 use std::sync::Arc;
 
 use actix_web::get;
@@ -24,6 +25,7 @@ use crate::models::TimetableWithSchedulesDetails;
 use crate::models::TrainSchedule;
 use crate::views::train_schedule::TrainScheduleError;
 use editoast_models::DbConnectionPool;
+use editoast_models::DbConnectionPoolV2;
 
 mod import;
 
@@ -92,9 +94,8 @@ struct Conflict {
 
 pub async fn get_simulated_schedules_from_timetable(
     timetable_id: i64,
-    db_pool: Arc<DbConnectionPool>,
+    db_pool: Arc<DbConnectionPoolV2>,
 ) -> Result<(Vec<TrainSchedule>, Vec<SimulationOutput>)> {
-    let mut conn = db_pool.get().await?;
     use diesel::BelongingToDsl;
     use diesel::ExpressionMethods;
     use diesel::GroupedBy;
@@ -105,11 +106,11 @@ pub async fn get_simulated_schedules_from_timetable(
 
     let train_schedules = train_schedule::table
         .filter(train_schedule::timetable_id.eq(timetable_id))
-        .load::<TrainSchedule>(&mut conn)
+        .load::<TrainSchedule>(db_pool.get().await?.deref_mut())
         .await?;
 
     SimulationOutput::belonging_to(&train_schedules)
-        .load::<SimulationOutput>(&mut conn)
+        .load::<SimulationOutput>(db_pool.get().await?.deref_mut())
         .await?
         .grouped_by(&train_schedules)
         .into_iter()
@@ -141,7 +142,7 @@ pub async fn get_simulated_schedules_from_timetable(
 )]
 #[get("conflicts")]
 async fn get_conflicts(
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Data<DbConnectionPoolV2>,
     timetable_id: Path<i64>,
     core_client: Data<CoreClient>,
 ) -> Result<Json<Vec<Conflict>>> {

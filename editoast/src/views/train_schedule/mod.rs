@@ -3,6 +3,7 @@ pub mod simulation_report;
 
 use std::collections::HashMap;
 use std::collections::HashSet;
+use std::ops::DerefMut;
 use std::sync::Arc;
 
 use actix_web::delete;
@@ -66,6 +67,7 @@ use crate::views::infra::InfraApiError;
 use crate::views::train_schedule::simulation_report::fetch_simulation_output;
 use crate::DieselJson;
 use editoast_models::DbConnectionPool;
+use editoast_models::DbConnectionPoolV2;
 
 crate::routes! {
     "/train_schedule" => {
@@ -370,29 +372,35 @@ struct GetResultQuery {
 )]
 #[get("/result")]
 async fn get_result(
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Data<DbConnectionPoolV2>,
     id: Path<i64>,
     query: Query<GetResultQuery>,
     core: Data<CoreClient>,
 ) -> Result<Json<SimulationReport>> {
     let train_schedule_id = id.into_inner();
     let db_pool = db_pool.into_inner();
-    let train_schedule = match TrainSchedule::retrieve(db_pool.clone(), train_schedule_id).await? {
-        Some(train_schedule) => train_schedule,
-        None => return Err(TrainScheduleError::NotFound { train_schedule_id }.into()),
-    };
+    let train_schedule =
+        match TrainSchedule::retrieve_conn(db_pool.get().await?.deref_mut(), train_schedule_id)
+            .await?
+        {
+            Some(train_schedule) => train_schedule,
+            None => return Err(TrainScheduleError::NotFound { train_schedule_id }.into()),
+        };
 
     let projection_path_id = query.into_inner().path_id.unwrap_or(train_schedule.path_id);
 
-    let projection_path = match Pathfinding::retrieve(db_pool.clone(), projection_path_id).await? {
-        Some(path) => path,
-        None => {
-            return Err(TrainScheduleError::PathNotFound {
-                path_id: projection_path_id,
+    let projection_path =
+        match Pathfinding::retrieve_conn(db_pool.get().await?.deref_mut(), projection_path_id)
+            .await?
+        {
+            Some(path) => path,
+            None => {
+                return Err(TrainScheduleError::PathNotFound {
+                    path_id: projection_path_id,
+                }
+                .into())
             }
-            .into())
-        }
-    };
+        };
 
     let projection_path_payload = projection_path.payload.0;
 
@@ -400,13 +408,15 @@ async fn get_result(
 
     let id_timetable = train_schedule.timetable_id;
 
-    let timetable = Timetable::retrieve(db_pool.clone(), id_timetable)
+    let timetable = Timetable::retrieve_conn(db_pool.get().await?.deref_mut(), id_timetable)
         .await?
         .ok_or(TrainScheduleError::TimetableNotFound {
             timetable_id: id_timetable,
         })?;
 
-    let scenario = timetable.get_scenario(db_pool.clone()).await?;
+    let scenario = timetable
+        .get_scenario_conn(db_pool.get().await?.deref_mut())
+        .await?;
 
     let infra = scenario.infra_id.expect("Scenario should have an infra id");
 
@@ -451,23 +461,25 @@ struct TrainSimulationResponse {
 )]
 #[post("/results")]
 async fn get_results(
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Data<DbConnectionPoolV2>,
     request: Json<TrainsSimulationRequest>,
     core: Data<CoreClient>,
 ) -> Result<Json<TrainSimulationResponse>> {
     use tables::train_schedule::dsl;
     let train_ids = request.train_ids.clone();
+    let db_pool = db_pool.into_inner();
+
     if train_ids.is_empty() {
         return Ok(Json(TrainSimulationResponse {
             simulations: vec![],
             invalid_trains: vec![],
         }));
     }
-    let mut conn = db_pool.get().await?;
+
     // TODO: replace by ModelV2::batch_retrieve when ready
     let schedules = dsl::train_schedule
         .filter(dsl::id.eq_any(train_ids.clone()))
-        .load::<TrainSchedule>(&mut conn)
+        .load::<TrainSchedule>(db_pool.get().await?.deref_mut())
         .await?;
 
     if schedules.len() != train_ids.len() {
@@ -479,15 +491,14 @@ async fn get_results(
         return Err(TrainScheduleError::BatchShouldHaveSameTimetable.into());
     }
 
-    let db_pool = db_pool.into_inner();
-    let timetable = Timetable::retrieve(db_pool.clone(), timetable_id)
+    let timetable = Timetable::retrieve_conn(db_pool.get().await?.deref_mut(), timetable_id)
         .await?
         .ok_or(TrainScheduleError::TimetableNotFound { timetable_id })?;
     let infra_version = timetable
-        .infra_version_from_timetable(db_pool.clone())
+        .infra_version_from_timetable(db_pool.get().await?.deref_mut())
         .await;
     let (result_schedules, invalid_trains) =
-        filter_invalid_trains(db_pool.clone(), schedules, infra_version).await?;
+        filter_invalid_trains(db_pool.get().await?.deref_mut(), schedules, infra_version).await?;
     if result_schedules.is_empty() {
         return Ok(Json(TrainSimulationResponse {
             simulations: vec![],
@@ -499,7 +510,7 @@ async fn get_results(
         .path_id
         .unwrap_or_else(|| result_schedules[0].path_id);
 
-    let projection_path = Pathfinding::retrieve(db_pool.clone(), path_id)
+    let projection_path = Pathfinding::retrieve_conn(db_pool.get().await?.deref_mut(), path_id)
         .await?
         .ok_or(TrainScheduleError::PathNotFound { path_id })?;
 
@@ -507,7 +518,9 @@ async fn get_results(
 
     let projection = Projection::new(&projection_path_payload);
 
-    let scenario = timetable.get_scenario(db_pool.clone()).await?;
+    let scenario = timetable
+        .get_scenario_conn(db_pool.get().await?.deref_mut())
+        .await?;
 
     let infra = scenario.infra_id.expect("Scenario should have an infra id");
     let mut res = Vec::new();
@@ -830,30 +843,30 @@ pub fn process_simulation_response(
 #[cfg(test)]
 pub mod tests {
     use actix_http::StatusCode;
-    use actix_web::test::call_service;
-    use actix_web::test::read_body_json;
     use actix_web::test::TestRequest;
     use rstest::rstest;
+    use std::ops::DerefMut;
 
-    use crate::fixtures::tests::db_pool;
-    use crate::fixtures::tests::pathfinding;
-    use crate::views::tests::create_test_service;
+    use crate::modelsv2::fixtures::create_pathfinding;
+    use crate::modelsv2::fixtures::create_small_infra;
+    use crate::views::test_app::TestAppBuilder;
     use crate::views::train_schedule::TrainSimulationResponse;
     use crate::views::train_schedule::TrainsSimulationRequest;
 
     #[rstest]
     async fn empty_timetable() {
-        let app = create_test_service().await;
-        let pathfinding = pathfinding(db_pool()).await;
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+        let small_infra = create_small_infra(db_pool.get_ok().deref_mut()).await;
+        let pathfinding = create_pathfinding(db_pool.get_ok().deref_mut(), small_infra.id).await;
         let url = "/train_schedule/results/";
         let body = TrainsSimulationRequest {
-            path_id: Some(pathfinding.id()),
+            path_id: Some(pathfinding.id),
             train_ids: vec![],
         };
-        let req = TestRequest::post().uri(url).set_json(body).to_request();
-        let response = call_service(&app, req).await;
-        assert_eq!(response.status(), StatusCode::OK);
-        let simulations_response: TrainSimulationResponse = read_body_json(response).await;
+        let request = TestRequest::post().uri(url).set_json(body).to_request();
+        let simulations_response: TrainSimulationResponse =
+            app.fetch(request).assert_status(StatusCode::OK).json_into();
         assert!(simulations_response.simulations.is_empty());
         assert!(simulations_response.invalid_trains.is_empty());
     }

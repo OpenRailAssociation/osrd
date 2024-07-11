@@ -7,6 +7,7 @@ use editoast_schemas::train_schedule::Allowance;
 use editoast_schemas::train_schedule::RjsPowerRestrictionRange;
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
+use std::ops::DerefMut;
 use thiserror::Error;
 use utoipa::ToSchema;
 
@@ -29,7 +30,7 @@ use crate::models::Retrieve;
 use crate::modelsv2::electrical_profiles::ElectricalProfileSet;
 use crate::modelsv2::Exists;
 use crate::modelsv2::RollingStockModel;
-use editoast_models::DbConnectionPool;
+use editoast_models::DbConnectionPoolV2;
 
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "single_simulation")]
@@ -151,23 +152,24 @@ impl TryFrom<SimulationResponse> for SingleSimulationResponse {
 #[post("")]
 /// Runs a simulation with a single train, does not write anything to the database
 async fn standalone_simulation(
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Data<DbConnectionPoolV2>,
     request: Json<SingleSimulationRequest>,
     core: Data<CoreClient>,
 ) -> Result<Json<SingleSimulationResponse>> {
     use crate::modelsv2::Retrieve;
-    let mut db_conn = db_pool.get().await?;
     let request = request.into_inner();
     let rolling_stock_id = request.rolling_stock_id;
 
-    let rolling_stock = RollingStockModel::retrieve_or_fail(&mut db_conn, rolling_stock_id, || {
-        SingleSimulationError::RollingStockNotFound { rolling_stock_id }
-    })
+    let rolling_stock = RollingStockModel::retrieve_or_fail(
+        db_pool.get().await?.deref_mut(),
+        rolling_stock_id,
+        || SingleSimulationError::RollingStockNotFound { rolling_stock_id },
+    )
     .await?;
 
     let db_pool = db_pool.into_inner();
     let path_id = request.path_id;
-    let pathfinding = Pathfinding::retrieve(db_pool.clone(), path_id).await?;
+    let pathfinding = Pathfinding::retrieve_conn(db_pool.get().await?.deref_mut(), path_id).await?;
     let pathfinding = match pathfinding {
         Some(pathfinding) => pathfinding,
         None => return Err(SingleSimulationError::PathNotFound { path_id }.into()),
@@ -200,23 +202,19 @@ async fn standalone_simulation(
 #[cfg(test)]
 mod tests {
     use actix_http::StatusCode;
-    use actix_web::test::call_service;
     use actix_web::test::TestRequest;
     use pretty_assertions::assert_eq;
     use reqwest::Method;
     use rstest::rstest;
     use serde_json::json;
-    use std::sync::Arc;
 
     use super::*;
-    use crate::assert_response_error_type_match;
-    use crate::assert_status_and_read;
     use crate::core::mocking::MockingClient;
-    use crate::fixtures::tests::db_pool;
-    use crate::fixtures::tests::electrical_profile_set;
-    use crate::fixtures::tests::named_fast_rolling_stock;
-    use crate::fixtures::tests::pathfinding;
-    use crate::views::tests::create_test_service_with_core_client;
+    use crate::modelsv2::fixtures::create_electrical_profile_set;
+    use crate::modelsv2::fixtures::create_fast_rolling_stock;
+    use crate::modelsv2::fixtures::create_pathfinding;
+    use crate::modelsv2::fixtures::create_small_infra;
+    use crate::views::test_app::TestAppBuilder;
 
     fn create_core_client() -> (MockingClient, SimulationResponse) {
         let mut core_client = MockingClient::new();
@@ -243,20 +241,24 @@ mod tests {
     #[case::invalid_path_id(Some(SingleSimulationError::PathNotFound { path_id: -666 }), "case_3")]
     #[case::invalid_ep_set_id(Some(SingleSimulationError::ElectricalProfileSetNotFound { electrical_profile_set_id: -666 }), "case_4")]
     async fn test_single_simulation(
-        db_pool: Arc<DbConnectionPool>,
         #[case] expected_error: Option<SingleSimulationError>,
         #[case] case_id: &str,
     ) {
         // GIVEN
         let (core_client, mock_response) = create_core_client();
-        let app = create_test_service_with_core_client(core_client).await;
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let app = TestAppBuilder::new()
+            .db_pool(db_pool.clone())
+            .core_client(core_client.into())
+            .build();
+        let small_infra = create_small_infra(db_pool.get_ok().deref_mut()).await;
 
         let mut _pf = None;
         let pf_id = match expected_error {
             Some(SingleSimulationError::PathNotFound { path_id }) => path_id,
             _ => {
-                _pf = Some(pathfinding(db_pool.clone()).await);
-                _pf.as_ref().unwrap().id()
+                _pf = Some(create_pathfinding(db_pool.get_ok().deref_mut(), small_infra.id).await);
+                _pf.as_ref().unwrap().id
             }
         };
 
@@ -268,8 +270,8 @@ mod tests {
             _ => {
                 let mut rs_name = "fast_rolling_stock_infra_get_voltages_".to_string();
                 rs_name.push_str(case_id);
-                _rs = Some(named_fast_rolling_stock(&rs_name, db_pool.clone()).await);
-                _rs.as_ref().unwrap().id()
+                _rs = Some(create_fast_rolling_stock(db_pool.get_ok().deref_mut(), &rs_name).await);
+                _rs.as_ref().unwrap().id
             }
         };
 
@@ -279,8 +281,8 @@ mod tests {
                 electrical_profile_set_id,
             }) => electrical_profile_set_id,
             _ => {
-                _ep_set = Some(electrical_profile_set(db_pool.clone()).await);
-                _ep_set.as_ref().unwrap().id()
+                _ep_set = Some(create_electrical_profile_set(db_pool.get_ok().deref_mut()).await);
+                _ep_set.as_ref().unwrap().id
             }
         };
 
@@ -304,35 +306,44 @@ mod tests {
             .set_json(&request_body)
             .to_request();
 
-        // WHEN
-        let response = call_service(&app, request).await;
-
-        // THEN
         if let Some(expected_error) = expected_error {
-            assert_response_error_type_match!(response, expected_error);
+            // WHEN
+            let response: InternalError = app
+                .fetch(request)
+                .assert_status(StatusCode::BAD_REQUEST)
+                .json_into();
+            // THEN
+            assert_eq!(response, expected_error.into());
         } else {
-            let response_body: SingleSimulationResponse =
-                assert_status_and_read!(response, StatusCode::OK);
-            assert_eq!(response_body, mock_response.try_into().unwrap());
+            // WHEN
+            let response: SingleSimulationResponse =
+                app.fetch(request).assert_status(StatusCode::OK).json_into();
+            // THEN
+            assert_eq!(response, mock_response.try_into().unwrap());
         }
     }
 
     #[rstest]
-    async fn test_single_simulation_bare_minimum_payload(db_pool: Arc<DbConnectionPool>) {
+    async fn test_single_simulation_bare_minimum_payload() {
         // GIVEN
         let (core_client, mock_response) = create_core_client();
-        let app = create_test_service_with_core_client(core_client).await;
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let app = TestAppBuilder::new()
+            .db_pool(db_pool.clone())
+            .core_client(core_client.into())
+            .build();
+        let small_infra = create_small_infra(db_pool.get_ok().deref_mut()).await;
 
-        let pf = pathfinding(db_pool.clone()).await;
-        let rs = named_fast_rolling_stock(
+        let pf = create_pathfinding(db_pool.get_ok().deref_mut(), small_infra.id).await;
+        let rs = create_fast_rolling_stock(
+            db_pool.get_ok().deref_mut(),
             "fast_rolling_stock_test_single_simulation_bare_minimum_payload",
-            db_pool.clone(),
         )
         .await;
 
         let request_body: serde_json::Value = json!({
-            "rolling_stock_id": rs.id(),
-            "path_id": pf.id(),
+            "rolling_stock_id": rs.id,
+            "path_id": pf.id,
         });
         let request = TestRequest::post()
             .uri("/single_simulation")
@@ -340,11 +351,10 @@ mod tests {
             .to_request();
 
         // WHEN
-        let response = call_service(&app, request).await;
+        let response_body: SingleSimulationResponse =
+            app.fetch(request).assert_status(StatusCode::OK).json_into();
 
         // THEN
-        let response_body: SingleSimulationResponse =
-            assert_status_and_read!(response, StatusCode::OK);
         assert_eq!(response_body, mock_response.try_into().unwrap());
     }
 }

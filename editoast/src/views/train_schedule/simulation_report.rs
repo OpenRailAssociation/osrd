@@ -1,3 +1,4 @@
+use std::ops::DerefMut;
 use std::sync::Arc;
 
 use diesel::ExpressionMethods;
@@ -34,7 +35,7 @@ use crate::modelsv2::RollingStockModel;
 use crate::views::pathfinding::make_track_map;
 use crate::views::train_schedule::projection::Projection;
 use crate::views::train_schedule::TrainScheduleError::UnsimulatedTrainSchedule;
-use editoast_models::DbConnectionPool;
+use editoast_models::DbConnectionPoolV2;
 use editoast_schemas::primitives::Identifier;
 
 editoast_common::schemas! {
@@ -92,18 +93,21 @@ pub async fn create_simulation_report(
     projection: &Projection,
     projection_path_payload: &PathfindingPayload,
     simulation_output_cs: SimulationOutputChangeset,
-    db_pool: Arc<DbConnectionPool>,
+    db_pool: Arc<DbConnectionPoolV2>,
     core: &CoreClient,
 ) -> error::Result<SimulationReport> {
-    let train_path = Pathfinding::retrieve(db_pool.clone(), train_schedule.path_id)
-        .await?
-        .expect("Train Schedule should have a path");
+    let train_path =
+        Pathfinding::retrieve_conn(db_pool.get().await?.deref_mut(), train_schedule.path_id)
+            .await?
+            .expect("Train Schedule should have a path");
     let train_path_payload = train_path.payload;
     use crate::modelsv2::Retrieve;
-    let mut db_conn = db_pool.clone().get().await?;
-    let rolling_stock = RollingStockModel::retrieve(&mut db_conn, train_schedule.rolling_stock_id)
-        .await?
-        .expect("Train Schedule should have a rolling stock");
+    let rolling_stock = RollingStockModel::retrieve(
+        db_pool.get().await?.deref_mut(),
+        train_schedule.rolling_stock_id,
+    )
+    .await?
+    .expect("Train Schedule should have a rolling stock");
     let train_length = rolling_stock.length;
     let departure_time = train_schedule.departure_time;
 
@@ -163,15 +167,14 @@ pub async fn create_simulation_report(
 
 pub async fn fetch_simulation_output(
     train_schedule: &TrainSchedule,
-    db_pool: Arc<DbConnectionPool>,
+    db_pool: Arc<DbConnectionPoolV2>,
 ) -> error::Result<SimulationOutput> {
     use crate::tables::simulation_output::dsl::*;
     let ts_id = train_schedule.id.unwrap();
 
-    let mut conn = db_pool.get().await?;
     simulation_output
         .filter(train_schedule_id.eq(ts_id))
-        .get_result(&mut conn)
+        .get_result(db_pool.get().await?.deref_mut())
         .await
         .map_err(|err| match err {
             diesel::result::Error::NotFound => UnsimulatedTrainSchedule {
@@ -192,7 +195,7 @@ async fn project_simulation_results(
     departure_time: f64,
     train_length: f64,
     core: &CoreClient,
-    db_pool: Arc<DbConnectionPool>,
+    db_pool: Arc<DbConnectionPoolV2>,
 ) -> error::Result<ReportTrain> {
     let arrival_time = simulation_result
         .head_positions
@@ -244,11 +247,10 @@ async fn add_stops_additional_information(
     stops: Vec<ResultStops>,
     infra_id: i64,
     path_waypoints: Vec<PathWaypoint>,
-    db_pool: Arc<DbConnectionPool>,
+    db_pool: Arc<DbConnectionPoolV2>,
 ) -> error::Result<Vec<FullResultStops>> {
-    let mut conn = db_pool.get().await?;
     let track_sections_map = make_track_map(
-        &mut conn,
+        db_pool.get().await?.deref_mut(),
         infra_id,
         path_waypoints
             .iter()
