@@ -39,16 +39,34 @@ body:
     validations:
       required: true
 
-  - type: textarea
+  - type: dropdown
     id: environment
     attributes:
-      label: What operating system, browser and environment are you using?
-      value: |
-        - **Browser**: Firefox v109
-        - **OS**: Nixos v22.11
-        - **Env**: Local
-    validations:
-      required: true
+      label: On which environments the bug occurs?
+      multiple: true
+      options:
+        - Local
+        - Dev (DgexSol)
+        - Staging (DgexSol)
+        - Dev (SNCF)
+        - Recette (SNCF)
+        - Integration (SNCF)
+        - Custom (Docker compose)
+        - Custom (Using K8s Helm Chart)
+        - Other
+
+  - type: dropdown
+    id: Browser
+    attributes:
+      label: On which browser the bug occurs?
+      multiple: true
+      options:
+        - Firefox
+        - Google Chrome
+        - Microsoft Edge
+        - Safari
+        - Opera
+        - Other
 
   - type: input
     id: osrdVersion
