@@ -38,6 +38,7 @@
     padding-bottom: 0.5rem;
     z-index: 1;
     background-color: var(--coolgray1);
+    width: 100%;
     .timetable-collapse-button {
       display: flex;
       align-items: center;
@@ -81,7 +82,6 @@
     .scenario-details {
       display: flex;
       flex-direction: column;
-      height: 8rem;
       &.scenario-details-v2 {
         flex-direction: row;
         justify-content: space-between;
