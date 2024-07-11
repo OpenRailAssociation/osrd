@@ -1,12 +1,12 @@
 import React, { useEffect, useRef } from 'react';
 
+/* eslint-disable import/extensions, import/no-unresolved */
 import ngeMain from '@osrd-project/netzgrafik-frontend/dist/netzgrafik-frontend/en/main.js?url';
 import ngePolyfills from '@osrd-project/netzgrafik-frontend/dist/netzgrafik-frontend/en/polyfills.js?url';
 import ngeRuntime from '@osrd-project/netzgrafik-frontend/dist/netzgrafik-frontend/en/runtime.js?url';
 import ngeStyles from '@osrd-project/netzgrafik-frontend/dist/netzgrafik-frontend/en/styles.css?url';
 import ngeVendor from '@osrd-project/netzgrafik-frontend/dist/netzgrafik-frontend/en/vendor.js?url';
-
-import 'styles/scss/applications/operationalStudies/_nge.scss';
+/* eslint-enable import/extensions, import/no-unresolved */
 
 const frameSrc = `
 <!DOCTYPE html>
@@ -31,7 +31,7 @@ function NGE() {
     function handleFrameLoad() {
       frame.removeEventListener('load', handleFrameLoad);
 
-      const ngeRoot = frame.contentDocument!.createElement('sbb-root') as HTMLElement;
+      const ngeRoot = frame.contentDocument!.createElement('sbb-root');
       frame.contentDocument!.body.appendChild(ngeRoot);
 
       // listens to create, update and delete operations

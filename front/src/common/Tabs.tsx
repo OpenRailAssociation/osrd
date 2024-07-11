@@ -46,8 +46,7 @@ const Tabs = ({
     <div
       className={cx(
         'tabs-container',
-        fullWidth && 'full-width',
-        fullHeight && 'full-height',
+        { 'full-width': fullWidth, 'full-height': fullHeight },
         className
       )}
     >
