@@ -136,7 +136,6 @@ const StdcmViewV2 = () => {
           <StdcmConfig
             selectedSimulation={selectedSimulation}
             currentSimulationInputs={currentSimulationInputs}
-            pathProperties={pathProperties}
             isPending={isPending}
             showBtnToLaunchSimulation={showBtnToLaunchSimulation}
             retainedSimulationIndex={retainedSimulationIndex}

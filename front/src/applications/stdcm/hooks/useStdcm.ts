@@ -95,6 +95,7 @@ const useStdcm = (showFailureNotification: boolean = true) => {
             rollingStock: stdcmRollingStock,
             creationDate: new Date(),
             speedLimitByTag,
+            simulationPathSteps: osrdconf.pathSteps,
           } as StdcmV2SuccessResponse);
 
           const stdcmTrain: TrainScheduleResult = {
