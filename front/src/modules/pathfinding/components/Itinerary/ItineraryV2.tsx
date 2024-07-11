@@ -13,9 +13,11 @@ import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
 import Tipped from 'common/Tipped';
 import PathfindingV2 from 'modules/pathfinding/components/Pathfinding/PathfindingV2';
 import TypeAndPathV2 from 'modules/pathfinding/components/Pathfinding/TypeAndPathV2';
+import { setWarning } from 'reducers/main';
 import { updateViewport } from 'reducers/map';
 import { getMap } from 'reducers/map/selectors';
 import { useAppDispatch } from 'store';
+import { isEmptyArray } from 'utils/array';
 
 import DestinationV2 from './DisplayItinerary/v2/DestinationV2';
 import OriginV2 from './DisplayItinerary/v2/OriginV2';
@@ -33,11 +35,13 @@ const ItineraryV2 = ({
   setPathProperties,
   shouldManageStopDuration,
 }: ItineraryV2Props) => {
-  const { getPathSteps, getOriginV2, getDestinationV2 } = useOsrdConfSelectors();
+  const { getPathSteps, getOriginV2, getDestinationV2, getPowerRestrictionV2 } =
+    useOsrdConfSelectors();
   const { updatePathSteps } = useOsrdConfActions();
   const origin = useSelector(getOriginV2);
   const destination = useSelector(getDestinationV2);
   const pathSteps = useSelector(getPathSteps);
+  const powerRestrictions = useSelector(getPowerRestrictionV2);
 
   const [displayTypeAndPath, setDisplayTypeAndPath] = useState(false);
   const dispatch = useAppDispatch();
@@ -57,13 +61,26 @@ const ItineraryV2 = ({
     }
   };
 
+  const notifyRestrictionResetWarning = () => {
+    if (!isEmptyArray(powerRestrictions)) {
+      dispatch(
+        setWarning({
+          title: t('warningMessages.pathfindingChange'),
+          text: t('warningMessages.powerRestrictionsReset'),
+        })
+      );
+    }
+  };
+
   const inverseOD = () => {
     const revertedPathSteps = [...pathSteps].reverse();
+    notifyRestrictionResetWarning();
     dispatch(updatePathSteps({ pathSteps: revertedPathSteps, resetPowerRestrictions: true }));
   };
 
   const resetPathfinding = () => {
     setPathProperties(undefined);
+    notifyRestrictionResetWarning();
     dispatch(updatePathSteps({ pathSteps: [null, null], resetPowerRestrictions: true }));
   };
 
@@ -91,7 +108,7 @@ const ItineraryV2 = ({
       </div>
       {displayTypeAndPath && (
         <div className="mb-2">
-          <TypeAndPathV2 setPathProperties={setPathProperties} />
+          <TypeAndPathV2 />
         </div>
       )}
       {origin && destination && (

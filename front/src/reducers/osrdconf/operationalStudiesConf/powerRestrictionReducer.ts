@@ -36,7 +36,6 @@ export type PowerRestrictionReducer<S extends OsrdConfState> = {
       newFromPathStep: PathStep;
     }>
   >;
-  ['resetPowerRestrictionRangesV2']: CaseReducer<S>;
 };
 
 export function builPowerRestrictionReducer<S extends OsrdConfState>(): PowerRestrictionReducer<S> {
@@ -239,9 +238,6 @@ export function builPowerRestrictionReducer<S extends OsrdConfState>(): PowerRes
         state.pathSteps = newPathSteps;
         state.powerRestrictionV2 = newPowerRestrictionRanges;
       }
-    },
-    resetPowerRestrictionRangesV2(state: Draft<S>) {
-      state.powerRestrictionV2 = [];
     },
   };
 }
