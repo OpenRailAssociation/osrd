@@ -24,7 +24,7 @@ class PathfindingBlockSuccess(
     val length: Length<Path>,
 
     /** Offsets of the waypoints given as input */
-    @Json(name = "path_items_positions") val pathItemPositions: List<Offset<Path>>
+    @Json(name = "path_item_positions") val pathItemPositions: List<Offset<Path>>
 ) : PathfindingBlockResponse
 
 class NotFoundInBlocks(

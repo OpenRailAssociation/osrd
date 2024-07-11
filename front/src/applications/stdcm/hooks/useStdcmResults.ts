@@ -101,7 +101,7 @@ const useStdcmResults = (
       if (geometry && operational_points && electrifications) {
         const pathStepsWihPosition = compact(pathSteps).map((step, i) => ({
           ...step,
-          positionOnPath: path.path_items_positions[i],
+          positionOnPath: path.path_item_positions[i],
         }));
 
         const suggestedOperationalPoints: SuggestedOP[] = formatSuggestedOperationalPoints(

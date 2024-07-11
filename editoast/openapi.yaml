@@ -8496,7 +8496,7 @@ components:
       - routes
       - track_section_ranges
       - length
-      - path_items_positions
+      - path_item_positions
       properties:
         blocks:
           type: array
@@ -8510,7 +8510,7 @@ components:
           format: int64
           description: Length of the path in mm
           minimum: 0
-        path_items_positions:
+        path_item_positions:
           type: array
           items:
             type: integer
