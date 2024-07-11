@@ -175,4 +175,3 @@ async fn update_queue(pool: Arc<Pool>, chan: Arc<Channel>, key: Key, new_state: 
     }
     Ok((key, new_state))
 }
-
