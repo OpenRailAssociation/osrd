@@ -1,5 +1,4 @@
 /* eslint-disable jsx-a11y/no-autofocus */
-
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 import { Alert, TriangleRight } from '@osrd-project/ui-icons';
@@ -7,24 +6,15 @@ import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import nextId from 'react-id-generator';
 
-import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
 import type {
   PostSearchApiArg,
-  PostV2InfraByInfraIdPathPropertiesApiArg,
-  PostV2InfraByInfraIdPathfindingBlocksApiArg,
   SearchResultItemOperationalPoint,
 } from 'common/api/osrdEditoastApi';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { MAIN_OP_CH_CODES } from 'common/Map/Search/useSearchOperationalPoint';
 import { useInfraID, useOsrdConfActions } from 'common/osrdContext';
-import { formatSuggestedOperationalPoints } from 'modules/pathfinding/utils';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
-import { getSupportedElectrification, isThermal } from 'modules/rollingStock/helpers/electric';
-import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
-import { setFailure } from 'reducers/main';
-import type { PathStep } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
-import { castErrorToFailure } from 'utils/error';
 import { useDebounce } from 'utils/helpers';
 import {
   isCursorSurroundedBySpace,
@@ -34,9 +24,6 @@ import {
 } from 'utils/inputManipulation';
 
 type SearchConstraintType = (string | number | string[])[];
-type PathfindingProps = {
-  setPathProperties: (pathProperties: ManageTrainSchedulePathProperties) => void;
-};
 
 const monospaceOneCharREMWidth = 0.6225;
 
@@ -68,16 +55,12 @@ function OpTooltips({ opList }: { opList: SearchResultItemOperationalPoint[] }) 
   );
 }
 
-const TypeAndPathV2 = ({ setPathProperties }: PathfindingProps) => {
+const TypeAndPathV2 = () => {
   const dispatch = useAppDispatch();
   const [inputText, setInputText] = useState('');
   const [opList, setOpList] = useState<SearchResultItemOperationalPoint[]>([]);
   const infraId = useInfraID();
   const [postSearch] = osrdEditoastApi.endpoints.postSearch.useMutation();
-  const [postPathfindingBlocks] =
-    osrdEditoastApi.endpoints.postV2InfraByInfraIdPathfindingBlocks.useMutation();
-  const [postPathProperties] =
-    osrdEditoastApi.endpoints.postV2InfraByInfraIdPathProperties.useMutation();
 
   const { t: tManageTrainSchedule } = useTranslation('operationalStudies/manageTrainSchedule');
   const { t: tTypeAndPath } = useTranslation('common/typeAndPath');
@@ -175,79 +158,16 @@ const TypeAndPathV2 = ({ setPathProperties }: PathfindingProps) => {
 
   const launchPathFinding = async () => {
     if (infraId && rollingStock && opList.length > 0) {
-      const pathItems = opList
+      const pathSteps = opList
         .filter((op) => op.trigram !== '')
         .map(({ uic, ch }) => ({
           uic,
+          ch,
           secondary_code: ch,
+          id: nextId(),
         }));
 
-      const params: PostV2InfraByInfraIdPathfindingBlocksApiArg = {
-        infraId,
-        pathfindingInputV2: {
-          path_items: pathItems,
-          rolling_stock_is_thermal: isThermal(rollingStock.effort_curves.modes),
-          rolling_stock_loading_gauge: rollingStock.loading_gauge,
-          rolling_stock_supported_electrifications: getSupportedElectrification(
-            rollingStock.effort_curves.modes
-          ),
-          rolling_stock_supported_signaling_systems: rollingStock.supported_signaling_systems,
-        },
-      };
-
-      try {
-        const pathfindingResult = await postPathfindingBlocks(params).unwrap();
-
-        if (pathfindingResult.status === 'success') {
-          const pathPropertiesParams: PostV2InfraByInfraIdPathPropertiesApiArg = {
-            infraId,
-            props: ['electrifications', 'geometry', 'operational_points'],
-            pathPropertiesInput: {
-              track_section_ranges: pathfindingResult.track_section_ranges,
-            },
-          };
-          const { electrifications, geometry, operational_points } =
-            await postPathProperties(pathPropertiesParams).unwrap();
-
-          if (electrifications && geometry && operational_points) {
-            const suggestedOperationalPoints: SuggestedOP[] = formatSuggestedOperationalPoints(
-              operational_points,
-              geometry,
-              pathfindingResult.length
-            );
-
-            setPathProperties({
-              electrifications,
-              geometry,
-              suggestedOperationalPoints,
-              allWaypoints: suggestedOperationalPoints,
-              length: pathfindingResult.length,
-              trackSectionRanges: pathfindingResult.track_section_ranges,
-            });
-
-            const pathSteps: PathStep[] = opList.map((op, i) => {
-              // We know we will find one because the operational points returned by pathproperties depend on the op searched
-              const correspondingOp = suggestedOperationalPoints.find(
-                (formattedOP) => formattedOP.uic === op.uic && formattedOP.ch === op.ch
-              ) as SuggestedOP;
-              return {
-                id: nextId(),
-                uic: op.uic,
-                name: op.name,
-                ch: op.ch,
-                kp: correspondingOp.kp,
-                coordinates: correspondingOp.coordinates,
-                positionOnPath: pathfindingResult.path_item_positions[i],
-                stopFor: i === opList.length - 1 ? '0' : undefined,
-              };
-            });
-            dispatch(updatePathSteps({ pathSteps, resetPowerRestrictions: true }));
-          }
-        }
-        // TODO TS2 : test errors display after core / editoast connexion for pathProperties
-      } catch (e) {
-        dispatch(setFailure(castErrorToFailure(e)));
-      }
+      dispatch(updatePathSteps({ pathSteps }));
     }
   };
 

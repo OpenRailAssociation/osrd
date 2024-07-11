@@ -100,6 +100,8 @@ const ItineraryMarkers = ({ map }: { map: Map }) => {
         return formatPointWithNoName(markerLineCode, markerLineName, markerTrackName, markerType);
       }
 
+      if (!markerCoordinates) return null;
+
       const trackResult = getNearestTrack(markerCoordinates, map);
       if (trackResult) {
         const {

@@ -35,13 +35,13 @@ const ModalSuggestedVias = ({ suggestedVias }: ModalSuggestedViasProps) => {
   );
 
   const removeViaFromPath = (op: SuggestedOP) => {
-    const updatedPathSteps = [...pathSteps];
+    const updatedPathSteps = compact(pathSteps).filter(
+      (step) =>
+        ('uic' in step && step.uic !== op.uic) || ('track' in step && step.track !== op.track)
+    );
     dispatch(
       updatePathSteps({
-        pathSteps: compact(updatedPathSteps).filter(
-          (step) =>
-            ('uic' in step && step.uic !== op.uic) || ('track' in step && step.track !== op.track)
-        ),
+        pathSteps: updatedPathSteps,
       })
     );
   };
