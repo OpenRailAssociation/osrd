@@ -27,7 +27,14 @@ impl ConnectionLike for RedisConnection {
         match self {
             RedisConnection::Cluster(connection) => connection.req_packed_command(cmd),
             RedisConnection::Tokio(connection) => connection.req_packed_command(cmd),
-            RedisConnection::NoCache => future::ok(redis::Value::Nil).boxed(),
+            RedisConnection::NoCache => {
+                let nb_keys = cmd.args_iter().count() - 1;
+                if nb_keys == 1 {
+                    future::ok(redis::Value::Nil).boxed()
+                } else {
+                    future::ok(redis::Value::Bulk(vec![redis::Value::Nil; nb_keys])).boxed()
+                }
+            }
         }
     }
 
