@@ -22,13 +22,13 @@ const frameSrc = `
 </html>
 `;
 
-function NGE() {
+const NGE = () => {
   const frameRef = useRef<HTMLIFrameElement>(null);
 
   useEffect(() => {
     const frame = frameRef.current!;
 
-    function handleFrameLoad() {
+    const handleFrameLoad = () => {
       frame.removeEventListener('load', handleFrameLoad);
 
       const ngeRoot = frame.contentDocument!.createElement('sbb-root');
@@ -45,7 +45,7 @@ function NGE() {
       // // set new netzgrafik model with new nodes
       // netzgrafikDto.nodes = testNodesDto;
       // ngeRoot.netzgrafikDto = netzgrafikDto;
-    }
+    };
 
     frame.addEventListener('load', handleFrameLoad);
 
@@ -55,6 +55,6 @@ function NGE() {
   }, []);
 
   return <iframe ref={frameRef} srcDoc={frameSrc} title="nge-iframe" />;
-}
+};
 
 export default NGE;
