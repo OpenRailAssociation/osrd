@@ -78,7 +78,7 @@ const TimesStops = ({ pathProperties, pathSteps = [], startTime }: TimesStopsPro
       startTime
     );
     setTimesStopsSteps(suggestedOPs);
-  }, [t, pathProperties.allWaypoints, startTime]);
+  }, [t, pathProperties.allWaypoints, startTime, pathSteps]);
 
   const columns = useInputColumns(pathProperties);
 
