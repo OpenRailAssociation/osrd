@@ -159,112 +159,116 @@ const ScenarioV2 = () => {
       <main className="mastcontainer mastcontainer-no-mastnav">
         <div className="scenario">
           <div className="row scenario-container">
-            <div
-              className={`scenario-sidemenu ${collapsedTimetable ? 'd-none' : 'col-hdp-3 col-xl-4 col-lg-5 col-md-6'}`}
-            >
-              {scenario && (
-                <div className="scenario-details">
-                  <div className="scenario-details-name">
-                    <span className="flex-grow-1 scenario-name text-truncate" title={scenario.name}>
-                      {scenario.name}
-                    </span>
-                    <button
-                      data-testid="editScenario"
-                      className="scenario-details-modify-button"
-                      type="button"
-                      aria-label={t('editScenario')}
-                      onClick={() =>
-                        openModal(
-                          <AddAndEditScenarioModal editionMode scenario={scenario} />,
-                          'xl',
-                          'no-close-modal'
-                        )
-                      }
-                      title={t('editScenario')}
-                    >
-                      <Pencil />
-                    </button>
-                    <button
-                      type="button"
-                      className="scenario-details-modify-button"
-                      onClick={() => setTrainsWithDetails(!trainsWithDetails)}
-                      title={t('displayTrainsWithDetails')}
-                    >
-                      {trainsWithDetails ? <EyeClosed /> : <Eye />}
-                    </button>
-                    <button
-                      type="button"
-                      className="scenario-details-modify-button"
-                      aria-label={t('toggleTimetable')}
-                      onClick={() => setCollapsedTimetable(true)}
-                    >
-                      <ChevronLeft />
-                    </button>
-                  </div>
-                  <div className="row">
-                    <div className="col-md-6">
-                      <div className="scenario-details-infra-name">
-                        <img src={infraLogo} alt="Infra logo" className="infra-logo mr-2" />
-                        {infra && <InfraLoadingState infra={infra} />}
-                        <span className="scenario-infra-name">{scenario.infra_name}</span>
-                        <small className="ml-auto text-muted">ID {scenario.infra_id}</small>
+            <div className={collapsedTimetable ? 'd-none' : 'col-hdp-3 col-xl-4 col-lg-5 col-md-6'}>
+              <div className="scenario-sidemenu">
+                {scenario && (
+                  <div className="scenario-details">
+                    <div className="scenario-details-name">
+                      <span
+                        className="flex-grow-1 scenario-name text-truncate"
+                        title={scenario.name}
+                      >
+                        {scenario.name}
+                      </span>
+                      <button
+                        data-testid="editScenario"
+                        className="scenario-details-modify-button"
+                        type="button"
+                        aria-label={t('editScenario')}
+                        onClick={() =>
+                          openModal(
+                            <AddAndEditScenarioModal editionMode scenario={scenario} />,
+                            'xl',
+                            'no-close-modal'
+                          )
+                        }
+                        title={t('editScenario')}
+                      >
+                        <Pencil />
+                      </button>
+                      <button
+                        type="button"
+                        className="scenario-details-modify-button"
+                        onClick={() => setTrainsWithDetails(!trainsWithDetails)}
+                        title={t('displayTrainsWithDetails')}
+                      >
+                        {trainsWithDetails ? <EyeClosed /> : <Eye />}
+                      </button>
+                      <button
+                        type="button"
+                        className="scenario-details-modify-button"
+                        aria-label={t('toggleTimetable')}
+                        onClick={() => setCollapsedTimetable(true)}
+                      >
+                        <ChevronLeft />
+                      </button>
+                    </div>
+                    <div className="row">
+                      <div className="col-md-6">
+                        <div className="scenario-details-infra-name">
+                          <img src={infraLogo} alt="Infra logo" className="infra-logo mr-2" />
+                          {infra && <InfraLoadingState infra={infra} />}
+                          <span className="scenario-infra-name">{scenario.infra_name}</span>
+                          <small className="ml-auto text-muted">ID {scenario.infra_id}</small>
+                        </div>
+                      </div>
+                      <div className="col-md-6">
+                        <div className="scenario-details-electrical-profile-set">
+                          <span className="mr-2">
+                            <GiElectric />
+                          </span>
+                          {timetable.electrical_profile_set_id
+                            ? timetable.electrical_profile_set_id
+                            : t('noElectricalProfileSet')}
+                        </div>
                       </div>
                     </div>
-                    <div className="col-md-6">
-                      <div className="scenario-details-electrical-profile-set">
-                        <span className="mr-2">
-                          <GiElectric />
-                        </span>
-                        {timetable.electrical_profile_set_id
-                          ? timetable.electrical_profile_set_id
-                          : t('noElectricalProfileSet')}
-                      </div>
-                    </div>
-                  </div>
-                  {infra &&
-                    infra.state === 'TRANSIENT_ERROR' &&
-                    (reloadCount <= 5 ? (
+                    {infra &&
+                      infra.state === 'TRANSIENT_ERROR' &&
+                      (reloadCount <= 5 ? (
+                        <div className="scenario-details-infra-error mt-1">
+                          {t('errorMessages.unableToLoadInfra', { reloadCount })}
+                        </div>
+                      ) : (
+                        <div className="scenario-details-infra-error mt-1">
+                          {t('errorMessages.softErrorInfra')}
+                        </div>
+                      ))}
+                    {infra && infra.state === 'ERROR' && (
                       <div className="scenario-details-infra-error mt-1">
-                        {t('errorMessages.unableToLoadInfra', { reloadCount })}
+                        {t('errorMessages.hardErrorInfra')}
                       </div>
-                    ) : (
-                      <div className="scenario-details-infra-error mt-1">
-                        {t('errorMessages.softErrorInfra')}
-                      </div>
-                    ))}
-                  {infra && infra.state === 'ERROR' && (
-                    <div className="scenario-details-infra-error mt-1">
-                      {t('errorMessages.hardErrorInfra')}
-                    </div>
-                  )}
-                  <div className="scenario-details-description">{scenario.description}</div>
-                </div>
-              )}
-              {displayTrainScheduleManagement !== MANAGE_TRAIN_SCHEDULE_TYPES.none && infra && (
-                <TimetableManageTrainScheduleV2
-                  displayTrainScheduleManagement={displayTrainScheduleManagement}
-                  setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
-                  setTrainResultsToFetch={setTrainResultsToFetch}
-                  trainIdToEdit={trainIdToEdit}
-                  setTrainIdToEdit={setTrainIdToEdit}
-                  infraState={infra.state}
-                />
-              )}
-              {infra && (
-                <TimetableV2
-                  setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
-                  trainsWithDetails={trainsWithDetails}
-                  infraState={infra.state}
-                  trainIds={timetable.train_ids}
-                  selectedTrainId={selectedTrainId}
-                  conflicts={conflicts}
-                  setTrainResultsToFetch={setTrainResultsToFetch}
-                  setSpaceTimeData={setTrainSpaceTimeData}
-                  setTrainIdToEdit={setTrainIdToEdit}
-                  trainIdToEdit={trainIdToEdit}
-                />
-              )}
+                    )}
+                    <div className="scenario-details-description">{scenario.description}</div>
+                  </div>
+                )}
+                {displayTrainScheduleManagement !== MANAGE_TRAIN_SCHEDULE_TYPES.none && infra && (
+                  <TimetableManageTrainScheduleV2
+                    displayTrainScheduleManagement={displayTrainScheduleManagement}
+                    setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
+                    setTrainResultsToFetch={setTrainResultsToFetch}
+                    trainIdToEdit={trainIdToEdit}
+                    setTrainIdToEdit={setTrainIdToEdit}
+                    infraState={infra.state}
+                  />
+                )}
+                {infra && (
+                  <TimetableV2
+                    setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
+                    trainsWithDetails={trainsWithDetails}
+                    infraState={infra.state}
+                    trainIds={timetable.train_ids}
+                    selectedTrainId={selectedTrainId}
+                    conflicts={conflicts}
+                    setTrainResultsToFetch={setTrainResultsToFetch}
+                    setSpaceTimeData={setTrainSpaceTimeData}
+                    setTrainIdToEdit={setTrainIdToEdit}
+                    trainIdToEdit={trainIdToEdit}
+                  />
+                )}
+              </div>
             </div>
+
             <div className={collapsedTimetable ? 'col-12' : 'col-hdp-9 col-xl-8 col-lg-7 col-md-6'}>
               {(!isInfraLoaded || isUpdating) &&
                 displayTrainScheduleManagement !== MANAGE_TRAIN_SCHEDULE_TYPES.add &&
