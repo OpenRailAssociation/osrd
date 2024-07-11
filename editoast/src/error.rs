@@ -129,6 +129,9 @@ impl EditoastError for DieselError {
     }
 }
 
+inventory::submit! {
+    crate::error::ErrorDefinition::new("editoast:DatabaseAccessError", "DatabaseAccessError", "DatabaseAccessError", 500u16, r#"{}"#)
+}
 impl EditoastError for DatabasePoolBuildError {
     fn get_status(&self) -> StatusCode {
         StatusCode::INTERNAL_SERVER_ERROR
@@ -138,7 +141,6 @@ impl EditoastError for DatabasePoolBuildError {
         "editoast:DatabaseAccessError"
     }
 }
-
 impl EditoastError for DatabasePoolError {
     fn get_status(&self) -> StatusCode {
         StatusCode::INTERNAL_SERVER_ERROR

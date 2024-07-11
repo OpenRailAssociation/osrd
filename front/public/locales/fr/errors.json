@@ -38,6 +38,7 @@
     "document": {
       "NotFound": "Document '{{document_key}}' non trouvé"
     },
+    "DatabaseAccessError": "Erreur fatale d'accès à la base de données",
     "electrical_profiles": {
       "NotFound": "Profil électrique '{{electrical_profile_set_id}}' non trouvé"
     },
