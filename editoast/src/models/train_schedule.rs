@@ -10,7 +10,6 @@ use editoast_schemas::train_schedule::Allowance;
 use editoast_schemas::train_schedule::RjsPowerRestrictionRange;
 use serde::Deserialize;
 use serde::Serialize;
-use std::sync::Arc;
 use utoipa::ToSchema;
 
 use super::check_train_validity;
@@ -22,7 +21,7 @@ use crate::modelsv2::Retrieve;
 use crate::tables::simulation_output;
 use crate::tables::train_schedule;
 use crate::DieselJson;
-use editoast_models::DbConnectionPool;
+use editoast_models::DbConnection;
 
 editoast_common::schemas! {
     TrainSchedule,
@@ -477,15 +476,14 @@ pub struct ScheduledPoint {
 }
 
 pub async fn filter_invalid_trains(
-    db_pool: Arc<DbConnectionPool>,
+    conn: &mut DbConnection,
     schedules: Vec<TrainSchedule>,
     infra_version: String,
 ) -> Result<(Vec<TrainSchedule>, Vec<i64>)> {
     let mut result = Vec::new();
     let mut invalid_trains = Vec::new();
     for schedule in schedules.into_iter() {
-        let mut conn = db_pool.get().await?;
-        let rolling_stock = LightRollingStockModel::retrieve(&mut conn, schedule.rolling_stock_id)
+        let rolling_stock = LightRollingStockModel::retrieve(conn, schedule.rolling_stock_id)
             .await
             .unwrap();
         let current_rolling_stock_version = rolling_stock.unwrap().version;

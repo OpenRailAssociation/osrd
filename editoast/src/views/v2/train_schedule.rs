@@ -47,7 +47,6 @@ use crate::views::v2::path::PathfindingError;
 use crate::RedisClient;
 use crate::RollingStockModel;
 use editoast_models::DbConnection;
-use editoast_models::DbConnectionPool;
 use editoast_models::DbConnectionPoolV2;
 
 crate::routes! {
@@ -279,7 +278,7 @@ async fn put(
 )]
 #[get("/simulation")]
 pub async fn simulation(
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Data<DbConnectionPoolV2>,
     redis_client: Data<RedisClient>,
     core_client: Data<CoreClient>,
     train_schedule_id: Path<TrainScheduleIdParam>,
@@ -288,26 +287,33 @@ pub async fn simulation(
     let infra_id = query.into_inner().infra_id;
     let train_schedule_id = train_schedule_id.into_inner().id;
 
-    let conn = &mut db_pool.get().await?;
     let redis_client = redis_client.into_inner();
     let core_client = core_client.into_inner();
 
     // Retrieve infra or fail
-    let infra = Infra::retrieve_or_fail(conn, infra_id, || TrainScheduleError::InfraNotFound {
-        infra_id,
+    let infra = Infra::retrieve_or_fail(db_pool.get().await?.deref_mut(), infra_id, || {
+        TrainScheduleError::InfraNotFound { infra_id }
     })
     .await?;
 
     // Retrieve train_schedule or fail
-    let train_schedule = TrainSchedule::retrieve_or_fail(conn, train_schedule_id, || {
-        TrainScheduleError::NotFound { train_schedule_id }
-    })
+    let train_schedule = TrainSchedule::retrieve_or_fail(
+        db_pool.get().await?.deref_mut(),
+        train_schedule_id,
+        || TrainScheduleError::NotFound { train_schedule_id },
+    )
     .await?;
 
     Ok(Json(
-        train_simulation(conn, redis_client, core_client, train_schedule, &infra)
-            .await?
-            .0,
+        train_simulation(
+            db_pool.get().await?.deref_mut(),
+            redis_client,
+            core_client,
+            train_schedule,
+            &infra,
+        )
+        .await?
+        .0,
     ))
 }
 
@@ -710,6 +716,7 @@ mod tests {
     use actix_web::test::call_and_read_body_json;
     use actix_web::test::call_service;
     use actix_web::test::TestRequest;
+    use editoast_models::DbConnectionPool;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
     use serde_json::json;

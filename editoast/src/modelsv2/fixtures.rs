@@ -5,8 +5,11 @@ use editoast_schemas::infra::InfraObject;
 use editoast_schemas::infra::RailJson;
 use editoast_schemas::primitives::OSRDObject;
 use editoast_schemas::train_schedule::TrainScheduleBase;
+use postgis_diesel::types::LineString;
 
 use crate::infra_cache::operation::create::apply_create_operation;
+use crate::models::Pathfinding;
+use crate::models::PathfindingChangeset;
 use crate::modelsv2::prelude::*;
 use crate::modelsv2::rolling_stock_livery::RollingStockLiveryModel;
 use crate::modelsv2::timetable::Timetable;
@@ -297,4 +300,29 @@ pub async fn create_small_infra(conn: &mut DbConnection) -> Infra {
         .persist(railjson, conn)
         .await
         .unwrap()
+}
+
+pub async fn create_pathfinding(conn: &mut DbConnection, infra_id: i64) -> Pathfinding {
+    let pathfinding_changeset = PathfindingChangeset {
+        infra_id: Some(infra_id),
+        payload: Some(
+            serde_json::from_str(include_str!(
+                "../tests/small_infra/pathfinding_fixture_payload.json"
+            ))
+            .unwrap(),
+        ),
+        length: Some(46776.),
+        slopes: Some(diesel_json::Json(vec![])),
+        curves: Some(diesel_json::Json(vec![])),
+        geographic: Some(LineString::new(None)),
+        owner: Some(Default::default()),
+        created: Some(Default::default()),
+        ..Default::default()
+    };
+    use crate::models::Create;
+    pathfinding_changeset
+        .create_conn(conn)
+        .await
+        .expect("Failed to create pathfinding")
+        .into()
 }
