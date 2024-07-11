@@ -4177,6 +4177,25 @@ components:
           type: string
           enum:
           - editoast:coreclient:UnparsableErrorOutput
+    EditoastDatabaseAccessErrorDatabaseAccessError:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 500
+        type:
+          type: string
+          enum:
+          - editoast:DatabaseAccessError
     EditoastDocumentErrorsNotFound:
       type: object
       required:
@@ -4322,6 +4341,7 @@ components:
       - $ref: '#/components/schemas/EditoastCoreErrorCoreResponseFormatError'
       - $ref: '#/components/schemas/EditoastCoreErrorGenericCoreError'
       - $ref: '#/components/schemas/EditoastCoreErrorUnparsableErrorOutput'
+      - $ref: '#/components/schemas/EditoastDatabaseAccessErrorDatabaseAccessError'
       - $ref: '#/components/schemas/EditoastDocumentErrorsNotFound'
       - $ref: '#/components/schemas/EditoastEditionErrorInfraIsLocked'
       - $ref: '#/components/schemas/EditoastEditionErrorSplitTrackSectionBadOffset'
