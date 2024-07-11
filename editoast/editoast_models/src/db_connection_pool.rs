@@ -24,7 +24,6 @@ use tokio::sync::RwLock;
 
 use super::DbConnection;
 use super::DbConnectionPool;
-use super::EditoastModelsError;
 
 pub type DbConnectionConfig = AsyncDieselConnectionManager<AsyncPgConnection>;
 
@@ -57,6 +56,14 @@ impl Default for DbConnectionPoolV2 {
     }
 }
 
+#[derive(Debug, thiserror::Error)]
+#[error("an error occurred while building the database pool: '{0}'")]
+pub struct DatabasePoolBuildError(#[from] diesel_async::pooled_connection::deadpool::BuildError);
+
+#[derive(Debug, thiserror::Error)]
+#[error("an error occurred while getting a connection from the database pool: '{0}'")]
+pub struct DatabasePoolError(#[from] diesel_async::pooled_connection::deadpool::PoolError);
+
 impl DbConnectionPoolV2 {
     /// Get inner pool for retro compatibility
     pub fn pool_v1(&self) -> Arc<Pool<AsyncPgConnection>> {
@@ -66,23 +73,24 @@ impl DbConnectionPoolV2 {
     /// Creates a connection pool with the given settings
     ///
     /// In a testing environment, you should use `DbConnectionPoolV2::for_tests` instead.
-    pub async fn try_initialize(url: Url, max_size: usize) -> Result<Self, EditoastModelsError> {
+    pub async fn try_initialize(url: Url, max_size: usize) -> Result<Self, DatabasePoolBuildError> {
         let pool = create_connection_pool(url, max_size)?;
-        Self::try_from_pool(Arc::new(pool)).await
+        Ok(Self::from_pool(Arc::new(pool)).await)
     }
 
     #[cfg(feature = "testing")]
-    async fn get_connection(&self) -> Result<DbConnectionV2, EditoastModelsError> {
-        if let Some(test_connection) = &self.test_connection {
-            let connection = test_connection.clone().write_owned().await;
-            Ok(connection)
-        } else {
-            Err(EditoastModelsError::TestConnection)
-        }
+    async fn get_connection(&self) -> Result<DbConnectionV2, DatabasePoolError> {
+        let Some(test_connection) = &self.test_connection else {
+            panic!(
+                "Test connection not initialized in test DatabasePool -- was `for_tests` called?"
+            );
+        };
+        let connection = test_connection.clone().write_owned().await;
+        Ok(connection)
     }
 
     #[cfg(not(feature = "testing"))]
-    async fn get_connection(&self) -> Result<DbConnectionV2, EditoastModelsError> {
+    async fn get_connection(&self) -> Result<DbConnectionV2, DatabasePoolError> {
         let connection = self.pool.get().await?;
         Ok(connection)
     }
@@ -156,7 +164,7 @@ impl DbConnectionPoolV2 {
     /// # }
     /// #
     /// # #[tokio::main]
-    /// # async fn main() -> Result<(), editoast_models::EditoastModelsError> {
+    /// # async fn main() -> Result<(), editoast_models::db_connection_pool::DatabasePoolError> {
     /// let pool = editoast_models::DbConnectionPoolV2::for_tests();
     /// // do
     /// my_function_using_conn(pool.get().await?).await;
@@ -177,7 +185,7 @@ impl DbConnectionPoolV2 {
     /// #   42
     /// # }
     /// # #[tokio::main]
-    /// # async fn main() -> Result<(), editoast_models::EditoastModelsError> {
+    /// # async fn main() -> Result<(), editoast_models::db_connection_pool::DatabasePoolError> {
     /// let pool = editoast_models::DbConnectionPoolV2::for_tests();
     /// let my_results = {
     ///     let conn = &mut pool.get().await?;
@@ -194,7 +202,7 @@ impl DbConnectionPoolV2 {
     ///
     /// ```
     /// # trait DoSomething: Sized {
-    /// #   async fn do_something(self, conn: tokio::sync::OwnedRwLockWriteGuard<diesel_async::pooled_connection::deadpool::Object<diesel_async::AsyncPgConnection>>) -> Result<(), editoast_models::EditoastModelsError> {
+    /// #   async fn do_something(self, conn: tokio::sync::OwnedRwLockWriteGuard<diesel_async::pooled_connection::deadpool::Object<diesel_async::AsyncPgConnection>>) -> Result<(), editoast_models::db_connection_pool::DatabasePoolError> {
     /// #     // Do something with the connection
     /// #     Ok(())
     /// #   }
@@ -216,7 +224,7 @@ impl DbConnectionPoolV2 {
     /// # Ok(())
     /// # }
     /// ```
-    pub async fn get(&self) -> Result<DbConnectionV2, EditoastModelsError> {
+    pub async fn get(&self) -> Result<DbConnectionV2, DatabasePoolError> {
         self.get_connection().await
     }
 
@@ -239,7 +247,7 @@ impl DbConnectionPoolV2 {
     ///
     /// ```
     /// # trait DoSomething: Sized {
-    /// #   async fn do_something(self, conn: tokio::sync::OwnedRwLockWriteGuard<diesel_async::pooled_connection::deadpool::Object<diesel_async::AsyncPgConnection>>) -> Result<(), editoast_models::EditoastModelsError> {
+    /// #   async fn do_something(self, conn: tokio::sync::OwnedRwLockWriteGuard<diesel_async::pooled_connection::deadpool::Object<diesel_async::AsyncPgConnection>>) -> Result<(), editoast_models::db_connection_pool::DatabasePoolError> {
     /// #     // Do something with the connection
     /// #     Ok(())
     /// #   }
@@ -261,44 +269,41 @@ impl DbConnectionPoolV2 {
     /// # Ok(())
     /// # }
     /// ```
-    #[allow(unused)] // TEMPORARY
     pub fn iter_conn(
         &self,
-    ) -> impl Iterator<Item = impl Future<Output = Result<DbConnectionV2, EditoastModelsError>> + '_>
+    ) -> impl Iterator<Item = impl Future<Output = Result<DbConnectionV2, DatabasePoolError>> + '_>
     {
-        std::iter::repeat(self).map(|p| p.get())
+        std::iter::repeat_with(|| self.get())
     }
 
     #[cfg(not(feature = "testing"))]
-    pub async fn try_from_pool(
-        pool: Arc<Pool<AsyncPgConnection>>,
-    ) -> Result<Self, EditoastModelsError> {
-        Ok(Self { pool })
+    pub async fn from_pool(pool: Arc<Pool<AsyncPgConnection>>) -> Self {
+        Self { pool }
     }
 
     #[cfg(feature = "testing")]
-    pub async fn try_from_pool(
-        pool: Arc<Pool<AsyncPgConnection>>,
-    ) -> Result<Self, EditoastModelsError> {
-        Self::try_from_pool_test(pool, true).await
+    pub async fn from_pool(pool: Arc<Pool<AsyncPgConnection>>) -> Self {
+        Self::from_pool_test(pool, true).await
     }
 
     #[cfg(feature = "testing")]
-    pub async fn try_from_pool_test(
-        pool: Arc<Pool<AsyncPgConnection>>,
-        transaction: bool,
-    ) -> Result<Self, EditoastModelsError> {
+    pub async fn from_pool_test(pool: Arc<Pool<AsyncPgConnection>>, transaction: bool) -> Self {
         use diesel_async::AsyncConnection;
-        let mut conn = pool.get().await?;
+        let mut conn = pool
+            .get()
+            .await
+            .expect("cannot acquire a connection in the test pool");
         if transaction {
-            conn.begin_test_transaction().await?;
+            conn.begin_test_transaction()
+                .await
+                .expect("cannot begin a test transaction");
         }
         let test_connection = Arc::new(RwLock::new(conn));
 
-        Ok(Self {
+        Self {
             pool,
             test_connection: Some(test_connection),
-        })
+        }
     }
 
     #[cfg(feature = "testing")]
@@ -308,8 +313,7 @@ impl DbConnectionPoolV2 {
         let url = Url::parse(&url).expect("Failed to parse postgresql url");
         let pool =
             create_connection_pool(url, 1).expect("Failed to initialize test connection pool");
-        futures::executor::block_on(Self::try_from_pool_test(Arc::new(pool), transaction))
-            .expect("Failed to initialize test connection pool")
+        futures::executor::block_on(Self::from_pool_test(Arc::new(pool), transaction))
     }
 
     /// Create a connection pool for testing purposes.
@@ -330,7 +334,11 @@ impl DbConnectionPoolV2 {
     }
 }
 
-pub async fn ping_database(conn: &mut DbConnection) -> Result<(), EditoastModelsError> {
+#[derive(Debug, thiserror::Error)]
+#[error("could not ping the database: '{0}'")]
+pub struct PingError(#[from] diesel::result::Error);
+
+pub async fn ping_database(conn: &mut DbConnection) -> Result<(), PingError> {
     sql_query("SELECT 1").execute(conn).await?;
     Ok(())
 }
@@ -338,7 +346,7 @@ pub async fn ping_database(conn: &mut DbConnection) -> Result<(), EditoastModels
 pub fn create_connection_pool(
     url: Url,
     max_size: usize,
-) -> Result<DbConnectionPool, EditoastModelsError> {
+) -> Result<DbConnectionPool, DatabasePoolBuildError> {
     let mut manager_config = ManagerConfig::default();
     manager_config.custom_setup = Box::new(establish_connection);
     let manager = DbConnectionConfig::new_with_config(url, manager_config);
