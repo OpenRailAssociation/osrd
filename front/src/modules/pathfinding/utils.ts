@@ -34,6 +34,23 @@ export const formatSuggestedOperationalPoints = (
     coordinates: getPointCoordinates(geometry, pathLength, op.position),
   }));
 
+export const matchPathStepAndOp = (step: PathStep, op: SuggestedOP) => {
+  if ('operational_point' in step) {
+    return step.operational_point === op.opId;
+  }
+  // We match the kp in case two OPs have the same uic+ch (can happen when the
+  // infra is imported)
+  if ('uic' in step) {
+    return step.uic === op.uic && step.ch === op.ch && step.kp === op.kp;
+  }
+  if ('trigram' in step) {
+    return step.trigram === op.trigram && step.ch === op.ch && step.kp === op.kp;
+  }
+  // TODO: we abuse the PathStep.id field here, the backend also sets it to an
+  // ID which has nothing to do with OPs
+  return step.id === op.opId;
+};
+
 export const getPathfindingQuery = ({
   infraId,
   rollingStock,

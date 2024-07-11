@@ -1,5 +1,6 @@
 import type { TFunction } from 'i18next';
 
+import { matchPathStepAndOp } from 'modules/pathfinding/utils';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
 import type { PathStep } from 'reducers/osrdconf/types';
 import { marginRegExValidation } from 'utils/physics';
@@ -26,15 +27,10 @@ export const formatSuggestedViasToRowVias = (
     }
   }
   return formattedOps.map((op, i) => {
-    const isMarginValid = op.theoreticalMargin
-      ? marginRegExValidation.test(op.theoreticalMargin)
-      : true;
+    const pathStep = pathSteps.find((step) => matchPathStepAndOp(step, op));
+    const { arrival, onStopSignal, name, stopFor, theoreticalMargin } = pathStep || op;
 
-    const correspondingOp = !('uic' in op)
-      ? pathSteps.find((step) => step.id === op.opId)
-      : undefined;
-
-    const { arrival, onStopSignal, name } = correspondingOp || op;
+    const isMarginValid = theoreticalMargin ? marginRegExValidation.test(theoreticalMargin) : true;
 
     return {
       ...op,
@@ -42,10 +38,8 @@ export const formatSuggestedViasToRowVias = (
       arrival: i === 0 ? startTime?.substring(11, 19) : arrival,
       onStopSignal: onStopSignal || false,
       name: name || t('waypoint', { id: op.opId }),
-      ...(correspondingOp && {
-        stopFor: correspondingOp.stopFor,
-        theoreticalMargin: correspondingOp.theoreticalMargin,
-      }),
+      stopFor,
+      theoreticalMargin,
     };
   });
 };
