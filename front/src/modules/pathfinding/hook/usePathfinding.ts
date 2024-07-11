@@ -24,6 +24,7 @@ import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSc
 import { setFailure, setWarning } from 'reducers/main';
 import type { PathStep } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
+import { isEmptyArray } from 'utils/array';
 import { castErrorToFailure } from 'utils/error';
 
 import useInfraStatus from './useInfraStatus';
@@ -138,13 +139,20 @@ export const usePathfindingV2 = (
 ) => {
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
   const dispatch = useAppDispatch();
-  const { getInfraID, getOriginV2, getDestinationV2, getViasV2, getPathSteps } =
-    useOsrdConfSelectors();
+  const {
+    getInfraID,
+    getOriginV2,
+    getDestinationV2,
+    getViasV2,
+    getPathSteps,
+    getPowerRestrictionV2,
+  } = useOsrdConfSelectors();
   const infraId = useSelector(getInfraID, isEqual);
   const origin = useSelector(getOriginV2, isEqual);
   const destination = useSelector(getDestinationV2, isEqual);
   const vias = useSelector(getViasV2(), isEqual);
   const pathSteps = useSelector(getPathSteps);
+  const powerRestrictions = useSelector(getPowerRestrictionV2);
   const { infra, reloadCount, setIsInfraError } = useInfraStatus();
   const { rollingStock } = useStoreDataForRollingStockSelector();
 
@@ -248,19 +256,25 @@ export const usePathfindingV2 = (
                   positionOnPath: pathfindingResult.path_item_positions[i],
                   stopFor,
                   ...(correspondingOp && {
+                    name: correspondingOp.name,
+                    uic: correspondingOp.uic,
+                    ch: correspondingOp.ch,
                     kp: correspondingOp.kp,
                     coordinates: correspondingOp.coordinates,
                   }),
                 };
               });
+
+              if (!isEmptyArray(powerRestrictions)) {
+                dispatch(
+                  setWarning({
+                    title: t('warningMessages.pathfindingChange'),
+                    text: t('warningMessages.powerRestrictionsReset'),
+                  })
+                );
+              }
               dispatch(
                 updatePathSteps({ pathSteps: updatedPathSteps, resetPowerRestrictions: true })
-              );
-              dispatch(
-                setWarning({
-                  title: t('warningMessages.pathfindingChange'),
-                  text: t('warningMessages.powerRestrictionsReset'),
-                })
               );
 
               const allWaypoints = upsertPathStepsInOPs(
@@ -300,6 +314,7 @@ export const usePathfindingV2 = (
         }
       }
     };
+
     if (infra && infra.state === 'CACHED' && pathfindingState.mustBeLaunched) {
       startPathFinding();
     }

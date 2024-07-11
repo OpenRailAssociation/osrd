@@ -85,7 +85,7 @@ export type PathStep = PathItem & {
   kp?: string;
   /** Distance from the beginning of the path in mm */
   positionOnPath?: number;
-  coordinates: Position;
+  coordinates?: Position;
   // Metadatas given by the search endpoint in TypeAndPath (name)
   name?: string;
   ch?: string; // can be used to difference two steps from each other when they have same uic
