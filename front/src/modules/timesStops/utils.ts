@@ -21,7 +21,7 @@ export const formatSuggestedViasToRowVias = (
       (op) => op.uic === origin.uic && op.ch === origin.ch && op.name === origin.name
     );
     // If the origin is in the ops and isn't the first operational point, we need to move it to the first position
-    if (originIndexInOps !== (-1 || 0)) {
+    if (originIndexInOps !== -1) {
       formattedOps = formattedOps.toSpliced(originIndexInOps, 1);
       formattedOps.unshift(operationalPoints[originIndexInOps]);
     }
