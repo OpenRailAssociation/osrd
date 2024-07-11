@@ -20,6 +20,13 @@ jobs:
       stable_tags: ${{ steps.bake-metadata.outputs.stable_tags }}
       stable_version: ${{ steps.bake-metadata.outputs.stable_version }}
       output_method: ${{ steps.bake-metadata.outputs.output_method }}
+    strategy:
+      matrix:
+        targets:
+          - [core-build, core]
+          - [editoast, editoast-test]
+          - [gateway-test, gateway-standalone]
+          - [front-build, front-tests, front-devel, front-nginx]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -70,10 +77,11 @@ jobs:
           )
           BAKEFILE="--file=docker/docker-bake.hcl"
           METADATA="--file=bake-metadata.json"
+          TARGETS="${{ join(matrix.targets, ' ') }}"
 
           for i in $(seq 1 3); do
             echo "::group::Try $i"
-            if docker buildx bake $BAKEFILE $METADATA 2>&1 | tee docker-build.log; then
+            if docker buildx bake $BAKEFILE $METADATA $TARGETS 2>&1 | tee docker-build.log; then
               echo "::endgroup::"
               exit 0
             fi
@@ -94,61 +102,61 @@ jobs:
 
       - name: Upload front-build artifact
         uses: actions/upload-artifact@v4
-        if: steps.bake-metadata.outputs.output_method == 'artifact'
+        if: steps.bake-metadata.outputs.output_method == 'artifact' && contains(matrix.targets, 'front-build')
         with:
           name: front-build
           path: osrd-front-build.tar
       - name: Upload core-build artifact
         uses: actions/upload-artifact@v4
-        if: steps.bake-metadata.outputs.output_method == 'artifact'
+        if: steps.bake-metadata.outputs.output_method == 'artifact' && contains(matrix.targets, 'core-build')
         with:
           name: core-build
           path: osrd-core-build.tar
       - name: Upload editoast-test artifact
         uses: actions/upload-artifact@v4
-        if: steps.bake-metadata.outputs.output_method == 'artifact'
+        if: steps.bake-metadata.outputs.output_method == 'artifact' && contains(matrix.targets, 'editoast-test')
         with:
           name: editoast-test
           path: osrd-editoast-test.tar
       - name: Upload editoast artifact
         uses: actions/upload-artifact@v4
-        if: steps.bake-metadata.outputs.output_method == 'artifact'
+        if: steps.bake-metadata.outputs.output_method == 'artifact' && contains(matrix.targets, 'editoast')
         with:
           name: editoast
           path: osrd-editoast.tar
       - name: Upload gateway-test artifact
         uses: actions/upload-artifact@v4
-        if: steps.bake-metadata.outputs.output_method == 'artifact'
+        if: steps.bake-metadata.outputs.output_method == 'artifact' && contains(matrix.targets, 'gateway-test')
         with:
           name: gateway-test
           path: osrd-gateway-test.tar
       - name: Upload front-tests artifact
         uses: actions/upload-artifact@v4
-        if: steps.bake-metadata.outputs.output_method == 'artifact'
+        if: steps.bake-metadata.outputs.output_method == 'artifact' && contains(matrix.targets, 'front-tests')
         with:
           name: front-tests
           path: osrd-front-tests.tar
       - name: Upload front artifact
         uses: actions/upload-artifact@v4
-        if: steps.bake-metadata.outputs.output_method == 'artifact'
+        if: steps.bake-metadata.outputs.output_method == 'artifact' && contains(matrix.targets, 'front-devel')
         with:
           name: front
           path: osrd-front.tar
       - name: Upload core artifact
         uses: actions/upload-artifact@v4
-        if: steps.bake-metadata.outputs.output_method == 'artifact'
+        if: steps.bake-metadata.outputs.output_method == 'artifact' && contains(matrix.targets, 'core')
         with:
           name: core
           path: osrd-core.tar
       - name: Upload gateway-standalone artifact
         uses: actions/upload-artifact@v4
-        if: steps.bake-metadata.outputs.output_method == 'artifact'
+        if: steps.bake-metadata.outputs.output_method == 'artifact' && contains(matrix.targets, 'gateway-standalone')
         with:
           name: gateway-standalone
           path: osrd-gateway-standalone.tar
       - name: Upload front-nginx artifact
         uses: actions/upload-artifact@v4
-        if: steps.bake-metadata.outputs.output_method == 'artifact'
+        if: steps.bake-metadata.outputs.output_method == 'artifact' && contains(matrix.targets, 'front-nginx')
         with:
           name: front-nginx
           path: osrd-front-nginx.tar
