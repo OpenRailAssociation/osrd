@@ -57,4 +57,4 @@ ENV OSRD_GIT_DESCRIBE=${OSRD_GIT_DESCRIBE}
 # We use jemalloc to reduce allocation fragmentation
 ENV LD_PRELOAD="/usr/lib/x86_64-linux-gnu/libjemalloc.so.2"
 
-CMD ["/usr/local/bin/osrd_osrdyne"]
+CMD ["/usr/local/bin/osrdyne"]
