@@ -4,6 +4,7 @@ mod db_connection_pool;
 mod error;
 
 pub use db_connection_pool::create_connection_pool;
+pub use db_connection_pool::ping_database;
 pub use db_connection_pool::DbConnectionPoolV2;
 pub use error::EditoastModelsError;
 

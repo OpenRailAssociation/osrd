@@ -193,6 +193,11 @@
     },
     "work_schedule": {
       "NameAlreadyUsed": "A group of work schedules with '{{name}}' already exists"
+    },
+    "app_health": {
+      "Timeout": "Service has not responded in time",
+      "Database": "Database is in error",
+      "Redis": "Redis is in error"
     }
   }
 }
