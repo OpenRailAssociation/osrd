@@ -49,7 +49,7 @@ impl Default for OsrdyneConfig {
 
 pub fn parse_config() -> Result<OsrdyneConfig, figment::Error> {
     Figment::from(Serialized::defaults(OsrdyneConfig::default()))
-        .merge(Yaml::file("osrdyne.toml"))
+        .merge(Yaml::file("osrdyne.yml"))
         // We use `__` as a separator for nested keys
         .merge(Env::prefixed("OSRDYNE__").split("__"))
         .extract()
