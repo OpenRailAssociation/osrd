@@ -108,7 +108,10 @@ async fn main() -> Result<(), anyhow::Error> {
 
             WorkerDriverConfig::KubernetesDriver(opts) => {
                 info!("Using Kubernetes driver");
-                Box::new(KubernetesDriver::new(opts, config.amqp_uri.clone()).await)
+                Box::new(
+                    KubernetesDriver::new(opts, config.amqp_uri.clone(), config.pool_id.clone())
+                        .await,
+                )
             }
 
             WorkerDriverConfig::Noop => {

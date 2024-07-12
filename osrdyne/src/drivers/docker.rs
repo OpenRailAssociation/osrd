@@ -21,9 +21,7 @@ use super::{
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct DockerDriverOptions {
     /// The name of the Docker image to use for the core
-    pub core_image_name: String,
-    /// The tag of the Docker image to use for the core
-    pub core_image_tag: String,
+    pub core_image: String,
     /// The prefix to use for the container names
     pub container_prefix: String,
     /// The command to run in the container
@@ -108,10 +106,7 @@ impl WorkerDriver for DockerDriver {
             }
 
             let config = Config {
-                image: Some(format!(
-                    "{}:{}",
-                    self.options.core_image_name, self.options.core_image_tag
-                )),
+                image: Some(self.options.core_image.clone()),
                 env: Some(final_env),
                 labels: Some(labels),
                 cmd: self.options.container_command.clone(),

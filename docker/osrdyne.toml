@@ -1,9 +1,6 @@
 [worker_driver]
 type = "DockerDriver"
-# TODO: How do we pre-build the image for developers if it's not in the docker compose anymore ?
-# Tentative answer: we keep it in the docker compose, but the container just run /bin/true...
-core_image_name = "ghcr.io/openrailassociation/osrd-edge/osrd-core"
-core_image_tag = "dev"
+core_image = "ghcr.io/openrailassociation/osrd-edge/osrd-core:dev"
 container_prefix = "osrd"
 container_command = [
     "sh",

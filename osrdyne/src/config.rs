@@ -4,7 +4,7 @@ use crate::drivers::{docker::DockerDriverOptions, kubernetes::KubernetesDriverOp
 use serde::{Deserialize, Serialize};
 
 use figment::{
-    providers::{Env, Format, Serialized, Toml},
+    providers::{Env, Format, Serialized, Yaml},
     Figment,
 };
 
@@ -22,7 +22,6 @@ pub struct OsrdyneConfig {
     pub management_port: u16,
     pub management_host: Option<String>,
     pub pool_id: String,
-    pub max_workers: Option<usize>,
     pub worker_driver: WorkerDriverConfig,
     pub worker_loop_interval: Duration,
     pub default_message_ttl: Option<usize>,
@@ -38,7 +37,6 @@ impl Default for OsrdyneConfig {
             management_port: 15672,
             management_host: None,
             pool_id: "core".to_string(),
-            max_workers: None,
             worker_driver: WorkerDriverConfig::Noop,
             worker_loop_interval: Duration::from_millis(500),
             default_message_ttl: None,
@@ -51,7 +49,7 @@ impl Default for OsrdyneConfig {
 
 pub fn parse_config() -> Result<OsrdyneConfig, figment::Error> {
     Figment::from(Serialized::defaults(OsrdyneConfig::default()))
-        .merge(Toml::file("osrdyne.toml"))
+        .merge(Yaml::file("osrdyne.toml"))
         // We use `__` as a separator for nested keys
         .merge(Env::prefixed("OSRDYNE__").split("__"))
         .extract()
