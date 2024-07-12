@@ -15,7 +15,7 @@ export const formatSuggestedViasToRowVias = (
   startTime?: string
 ): PathWaypointColumn[] => {
   const formattedOps = [...operationalPoints];
-  const origin = pathSteps[0] as PathStep;
+  const origin = pathSteps[0];
   if ('uic' in origin && 'ch' in origin) {
     const originIndexInOps = operationalPoints.findIndex(
       (op) => op.uic === origin.uic && op.ch === origin.ch && op.name === origin.name
