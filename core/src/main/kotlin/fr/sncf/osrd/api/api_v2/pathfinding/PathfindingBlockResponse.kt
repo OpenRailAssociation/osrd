@@ -1,5 +1,6 @@
 package fr.sncf.osrd.api.api_v2.pathfinding
 
+import com.squareup.moshi.FromJson
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
@@ -67,13 +68,17 @@ class IncompatibleConstraintsPathResponse(
 data class IncompatibleConstraints(
     @Json(name = "incompatible_electrification_ranges")
     val incompatibleElectrificationRanges: List<RangeValue<String>>,
-    @Json(name = "incompatible_gauge_ranges")
-    val incompatibleGaugeRanges: List<Range<TravelledPath>>,
+    @Json(name = "incompatible_gauge_ranges") val incompatibleGaugeRanges: List<RangeValue<String>>,
     @Json(name = "incompatible_signaling_system_ranges")
     val incompatibleSignalingSystemRanges: List<RangeValue<String>>
 )
 
-data class RangeValue<T>(val range: Range<TravelledPath>, val value: T)
+data class RangeValue<T>(val range: Range<TravelledPath>, val value: T?) {
+    @FromJson
+    fun fromJson(range: Range<TravelledPath>): RangeValue<T> {
+        return RangeValue(range, null)
+    }
+}
 
 class PathfindingFailed(
     @Json(name = "core_error") val coreError: OSRDError,

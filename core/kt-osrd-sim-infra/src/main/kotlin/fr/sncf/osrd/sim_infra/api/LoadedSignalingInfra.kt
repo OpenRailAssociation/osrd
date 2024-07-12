@@ -3,12 +3,7 @@ package fr.sncf.osrd.sim_infra.api
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.sim_infra.impl.SignalParameters
 import fr.sncf.osrd.utils.Direction
-import fr.sncf.osrd.utils.indexing.DirStaticIdxList
-import fr.sncf.osrd.utils.indexing.MutableStaticIdxArraySet
-import fr.sncf.osrd.utils.indexing.StaticIdx
-import fr.sncf.osrd.utils.indexing.StaticIdxList
-import fr.sncf.osrd.utils.indexing.StaticIdxSpace
-import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
+import fr.sncf.osrd.utils.indexing.*
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.OffsetList
 

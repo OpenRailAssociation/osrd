@@ -102,14 +102,14 @@ fun <T> mergeDistanceRangeMaps(
  * 'filter' map are not considered)
  */
 fun <T, R> filterIntersection(
-    filtered: DistanceRangeMap<T>,
+    mapToFilter: DistanceRangeMap<T>,
     filter: DistanceRangeMap<R>
 ): DistanceRangeMap<T> {
     val res = distanceRangeMapOf<T>()
     for (range in filter) {
-        val rangeFirst = filtered.clone()
-        rangeFirst.truncate(range.lower, range.upper)
-        res.putMany(rangeFirst.asList())
+        val filteredRange = mapToFilter.clone()
+        filteredRange.truncate(range.lower, range.upper)
+        res.putMany(filteredRange.asList())
     }
     return res
 }
