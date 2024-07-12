@@ -14,7 +14,7 @@ export const formatSuggestedViasToRowVias = (
   t: TFunction<'timesStops', undefined>,
   startTime?: string
 ): PathWaypointColumn[] => {
-  let formattedOps = [...operationalPoints];
+  const formattedOps = [...operationalPoints];
   const origin = pathSteps[0] as PathStep;
   if ('uic' in origin && 'ch' in origin) {
     const originIndexInOps = operationalPoints.findIndex(
@@ -22,8 +22,10 @@ export const formatSuggestedViasToRowVias = (
     );
     // If the origin is in the ops and isn't the first operational point, we need to move it to the first position
     if (originIndexInOps !== -1) {
-      formattedOps = formattedOps.toSpliced(originIndexInOps, 1);
-      formattedOps.unshift(operationalPoints[originIndexInOps]);
+      [formattedOps[0], formattedOps[originIndexInOps]] = [
+        formattedOps[originIndexInOps],
+        formattedOps[0],
+      ];
     }
   }
   return formattedOps.map((op, i) => {
