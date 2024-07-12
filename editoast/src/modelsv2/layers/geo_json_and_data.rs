@@ -1,5 +1,10 @@
+use diesel::sql_query;
+use diesel::sql_types::Integer;
 use diesel::sql_types::Jsonb;
 use diesel::sql_types::Text;
+use diesel_async::RunQueryDsl;
+use editoast_models::DbConnection;
+use editoast_models::EditoastModelsError;
 use geos::geojson::Geometry;
 use geos::geojson::Value as GeoJsonValue;
 use mvt::Feature;
@@ -11,6 +16,7 @@ use serde::Deserialize;
 use serde::Serialize;
 use serde_json::Value as JsonValue;
 
+use crate::map::Layer;
 use crate::map::View;
 
 #[derive(Clone, QueryableByName, Queryable, Debug, Serialize, Deserialize)]
@@ -21,17 +27,39 @@ pub struct GeoJsonAndData {
     pub data: JsonValue,
 }
 
-fn geometry_into_mvt_geom_type(geometry: &Geometry) -> GeomType {
-    match geometry.value {
-        GeoJsonValue::Point { .. } => GeomType::Point,
-        GeoJsonValue::MultiPoint { .. } => GeomType::Point,
-        GeoJsonValue::LineString { .. } => GeomType::Linestring,
-        GeoJsonValue::MultiLineString { .. } => GeomType::Linestring,
-        _ => panic!("geometry type unsupported by editoast tiling system"),
+#[derive(Debug)]
+pub struct GeoPoint {
+    x: u64,
+    y: u64,
+    z: u64,
+}
+
+impl GeoPoint {
+    pub fn new(x: u64, y: u64, z: u64) -> Self {
+        Self { x, y, z }
     }
 }
 
 impl GeoJsonAndData {
+    pub async fn get_records(
+        conn: &mut DbConnection,
+        layer: &Layer,
+        view: &View,
+        infra: i64,
+        geo_point: &GeoPoint,
+    ) -> Result<Vec<GeoJsonAndData>, EditoastModelsError> {
+        let geo_json_query = get_geo_json_sql_query(&layer.table_name, view);
+        let records = sql_query(geo_json_query)
+            .bind::<Integer, _>(geo_point.z as i32)
+            .bind::<Integer, _>(geo_point.x as i32)
+            .bind::<Integer, _>(geo_point.y as i32)
+            .bind::<Integer, _>(infra as i32)
+            .get_results::<GeoJsonAndData>(conn)
+            .await?;
+
+        Ok(records)
+    }
+
     /// Converts GeoJsonAndData as mvt GeomData
     pub fn as_geom_data(&self) -> GeomData {
         let geo_json = serde_json::from_str::<Geometry>(&self.geo_json).unwrap();
@@ -62,6 +90,16 @@ impl GeoJsonAndData {
             _ => panic!("geometry type unsupported by editoast tiling system"),
         };
         encoder.complete().unwrap().encode().unwrap()
+    }
+}
+
+fn geometry_into_mvt_geom_type(geometry: &Geometry) -> GeomType {
+    match geometry.value {
+        GeoJsonValue::Point { .. } => GeomType::Point,
+        GeoJsonValue::MultiPoint { .. } => GeomType::Point,
+        GeoJsonValue::LineString { .. } => GeomType::Linestring,
+        GeoJsonValue::MultiLineString { .. } => GeomType::Linestring,
+        _ => panic!("geometry type unsupported by editoast tiling system"),
     }
 }
 

@@ -1,5 +1,3 @@
-mod mvt_utils;
-
 use std::collections::HashMap;
 
 use actix_web::get;
@@ -8,13 +6,8 @@ use actix_web::web::Json;
 use actix_web::web::Path;
 use actix_web::web::Query;
 use actix_web::HttpResponse;
-use diesel::sql_query;
-use diesel::sql_types::Integer;
-use diesel_async::RunQueryDsl;
 use editoast_derive::EditoastError;
-use mvt_utils::create_and_fill_mvt_tile;
-use mvt_utils::get_geo_json_sql_query;
-use mvt_utils::GeoJsonAndData;
+use editoast_models::DbConnectionPoolV2;
 use redis::AsyncCommands;
 use serde::Deserialize;
 use serde::Serialize;
@@ -30,8 +23,10 @@ use crate::map::get_view_cache_prefix;
 use crate::map::Layer;
 use crate::map::MapLayers;
 use crate::map::Tile;
+use crate::modelsv2::layers::geo_json_and_data::create_and_fill_mvt_tile;
+use crate::modelsv2::layers::geo_json_and_data::GeoJsonAndData;
+use crate::modelsv2::layers::geo_json_and_data::GeoPoint;
 use crate::RedisClient;
-use editoast_models::DbConnectionPoolV2;
 
 crate::routes! {
      "/layers" => {
@@ -206,15 +201,9 @@ async fn cache_and_get_mvt_tile(
             .body(value));
     }
 
-    let geo_json_query = get_geo_json_sql_query(&layer.table_name, view);
-    let mut conn = db_pool.get().await?;
-    let records = sql_query(geo_json_query)
-        .bind::<Integer, _>(z as i32)
-        .bind::<Integer, _>(x as i32)
-        .bind::<Integer, _>(y as i32)
-        .bind::<Integer, _>(infra as i32)
-        .get_results::<GeoJsonAndData>(&mut conn)
-        .await?;
+    let conn = &mut db_pool.get().await?;
+    let records =
+        GeoJsonAndData::get_records(conn, layer, view, infra, &GeoPoint::new(z, x, y)).await?;
 
     let mvt_bytes: Vec<u8> = create_and_fill_mvt_tile(layer_slug, records)
         .to_bytes()
