@@ -120,7 +120,6 @@ services:
     ports: ["8090:80"]
     environment:
       EDITOAST_PORT: 80
-      PSQL_HOST: "postgres"
       REDIS_URL: "redis://redis"
       DATABASE_URL: "postgres://osrd:password@postgres/osrd"
       TELEMETRY_KIND: "opentelemetry"
