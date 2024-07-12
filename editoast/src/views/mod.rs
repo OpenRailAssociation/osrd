@@ -25,16 +25,22 @@ pub mod work_schedules;
 mod test_app;
 
 use std::ops::DerefMut as _;
+use std::sync::Arc;
+use std::time::Duration;
 
+use futures::TryFutureExt;
 pub use openapi::OpenApiRoot;
 
 use actix_web::get;
 use actix_web::web::Data;
 use actix_web::web::Json;
-use diesel::sql_query;
-use redis::cmd;
+use editoast_derive::EditoastError;
+use editoast_models::ping_database;
+use editoast_models::DbConnectionPoolV2;
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
+use thiserror::Error;
+use tokio::time::timeout;
 use utoipa::ToSchema;
 
 use crate::client::get_app_version;
@@ -49,7 +55,6 @@ use crate::infra_cache::operation;
 use crate::models;
 use crate::modelsv2;
 use crate::RedisClient;
-use editoast_models::DbConnectionPoolV2;
 
 crate::routes! {
     (health, version, core_version),
@@ -95,6 +100,17 @@ editoast_common::schemas! {
     work_schedules::schemas(),
 }
 
+#[derive(Debug, Error, EditoastError)]
+#[editoast_error(base_id = "app_health")]
+pub enum AppHealthError {
+    #[error("Timeout error")]
+    Timeout,
+    #[error(transparent)]
+    Database(#[from] editoast_models::EditoastModelsError),
+    #[error(transparent)]
+    Redis(#[from] redis::RedisError),
+}
+
 #[utoipa::path(
     responses(
         (status = 200, description = "Check if Editoast is running correctly", body = String)
@@ -105,14 +121,25 @@ async fn health(
     db_pool: Data<DbConnectionPoolV2>,
     redis_client: Data<RedisClient>,
 ) -> Result<&'static str> {
-    use diesel_async::RunQueryDsl;
-    sql_query("SELECT 1")
-        .execute(db_pool.get().await?.deref_mut())
-        .await?;
-
-    let mut conn = redis_client.get_connection().await?;
-    cmd("PING").query_async::<_, ()>(&mut conn).await.unwrap();
+    timeout(
+        Duration::from_millis(500),
+        check_health(db_pool.into_inner(), redis_client.into_inner()),
+    )
+    .await
+    .map_err(|_| AppHealthError::Timeout)??;
     Ok("ok")
+}
+
+async fn check_health(
+    db_pool: Arc<DbConnectionPoolV2>,
+    redis_client: Arc<RedisClient>,
+) -> Result<()> {
+    let mut db_connection = db_pool.clone().get().await?;
+    tokio::try_join!(
+        ping_database(db_connection.deref_mut()).map_err(AppHealthError::Database),
+        redis_client.ping_redis().map_err(|e| e.into())
+    )?;
+    Ok(())
 }
 
 #[derive(ToSchema, Serialize, Deserialize)]

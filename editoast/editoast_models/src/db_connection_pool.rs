@@ -1,18 +1,20 @@
+use std::sync::Arc;
+
+use diesel::sql_query;
 use diesel::ConnectionError;
 use diesel::ConnectionResult;
 use diesel_async::pooled_connection::deadpool::Object;
 use diesel_async::pooled_connection::deadpool::Pool;
-
 use diesel_async::pooled_connection::AsyncDieselConnectionManager;
 use diesel_async::pooled_connection::ManagerConfig;
 use diesel_async::AsyncPgConnection;
+use diesel_async::RunQueryDsl;
 use futures::future::BoxFuture;
 use futures::Future;
 use futures_util::FutureExt as _;
 use openssl::ssl::SslConnector;
 use openssl::ssl::SslMethod;
 use openssl::ssl::SslVerifyMode;
-use std::sync::Arc;
 use url::Url;
 
 #[cfg(feature = "testing")]
@@ -326,6 +328,11 @@ impl DbConnectionPoolV2 {
     pub fn for_tests_no_transaction() -> Self {
         Self::new_for_tests(false)
     }
+}
+
+pub async fn ping_database(conn: &mut DbConnection) -> Result<(), EditoastModelsError> {
+    sql_query("SELECT 1").execute(conn).await?;
+    Ok(())
 }
 
 pub fn create_connection_pool(

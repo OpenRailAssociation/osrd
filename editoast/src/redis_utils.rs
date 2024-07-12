@@ -1,10 +1,12 @@
-use crate::client::RedisConfig;
-use crate::error::Result;
+use std::fmt::Debug;
+
 use futures::future;
 use futures::FutureExt;
-use redis::aio::{ConnectionLike, ConnectionManager};
+use redis::aio::ConnectionLike;
+use redis::aio::ConnectionManager;
 use redis::cluster::ClusterClient;
 use redis::cluster_async::ClusterConnection;
+use redis::cmd;
 use redis::AsyncCommands;
 use redis::Client;
 use redis::ErrorKind;
@@ -14,7 +16,9 @@ use redis::RedisResult;
 use redis::ToRedisArgs;
 use serde::de::DeserializeOwned;
 use serde::Serialize;
-use std::fmt::Debug;
+
+use crate::client::RedisConfig;
+use crate::error::Result;
 
 pub enum RedisConnection {
     Cluster(ClusterConnection),
@@ -193,5 +197,11 @@ impl RedisClient {
             )),
             RedisClient::NoCache => Ok(RedisConnection::NoCache),
         }
+    }
+
+    pub async fn ping_redis(&self) -> RedisResult<()> {
+        let mut conn = self.get_connection().await?;
+        cmd("PING").query_async::<_, ()>(&mut conn).await?;
+        Ok(())
     }
 }

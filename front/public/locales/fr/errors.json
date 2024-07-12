@@ -195,6 +195,11 @@
     },
     "work_schedule": {
       "NameAlreadyUsed": "Un groupe de planches travaux avec le nom '{{name}}' existe déjà"
+    },
+    "app_health": {
+      "Timeout": "Le serveur n'a pas répondu à temps",
+      "Database": "Erreur de base de données",
+      "Redis": "Erreur de Redis"
     }
   }
 }

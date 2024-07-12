@@ -3794,6 +3794,63 @@ components:
       enum:
       - STANDARD
       - MARECO
+    EditoastAppHealthErrorDatabase:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 400
+        type:
+          type: string
+          enum:
+          - editoast:app_health:Database
+    EditoastAppHealthErrorRedis:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 400
+        type:
+          type: string
+          enum:
+          - editoast:app_health:Redis
+    EditoastAppHealthErrorTimeout:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 400
+        type:
+          type: string
+          enum:
+          - editoast:app_health:Timeout
     EditoastAttachedErrorTrackNotFound:
       type: object
       required:
@@ -4248,6 +4305,9 @@ components:
           - editoast:electrical_profiles:NotFound
     EditoastError:
       oneOf:
+      - $ref: '#/components/schemas/EditoastAppHealthErrorDatabase'
+      - $ref: '#/components/schemas/EditoastAppHealthErrorRedis'
+      - $ref: '#/components/schemas/EditoastAppHealthErrorTimeout'
       - $ref: '#/components/schemas/EditoastAttachedErrorTrackNotFound'
       - $ref: '#/components/schemas/EditoastAutoFixesEditoastErrorConflictingFixesOnSameObject'
       - $ref: '#/components/schemas/EditoastAutoFixesEditoastErrorFixTrialFailure'
