@@ -7,7 +7,6 @@ import fr.sncf.osrd.api.api_v2.TrackLocation
 import fr.sncf.osrd.api.pathfinding.constraints.*
 import fr.sncf.osrd.api.pathfinding.makeHeuristics
 import fr.sncf.osrd.api.pathfinding.makePathProps
-import fr.sncf.osrd.conflicts.TravelledPath
 import fr.sncf.osrd.graph.*
 import fr.sncf.osrd.graph.Pathfinding.EdgeLocation
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType
@@ -15,12 +14,8 @@ import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl
 import fr.sncf.osrd.sim_infra.api.*
-import fr.sncf.osrd.utils.CachedBlockMRSPBuilder
+import fr.sncf.osrd.utils.*
 import fr.sncf.osrd.utils.CachedBlockMRSPBuilder.Companion.DEFAULT_MAX_ROLLING_STOCK_SPEED
-import fr.sncf.osrd.utils.Direction
-import fr.sncf.osrd.utils.DistanceRangeMap
-import fr.sncf.osrd.utils.distanceRangeMapOf
-import fr.sncf.osrd.utils.filterIntersection
 import fr.sncf.osrd.utils.indexing.*
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Length
@@ -204,25 +199,43 @@ private fun buildIncompatibleConstraintsResponse(
     }
 
     val pathRanges = possiblePathWithoutErrorNoConstraints.ranges
+    val pathProps =
+        makePathProps(infra.rawInfra, infra.blockInfra, pathRanges.map { it.edge }, Offset.zero())
 
     val elecConstraints = constraints.filterIsInstance<ElectrificationConstraints>()
     assert(elecConstraints.size < 2)
     val elecBlockedRangeValues =
-        getElecBlockedRangeValues(infra, pathRanges, elecConstraints.firstOrNull())
+        getConstraintsDistanceRange(
+                infra,
+                pathRanges,
+                pathProps.getElectrification(),
+                elecConstraints.firstOrNull()
+            )
+            .map { RangeValue(Pathfinding.Range(Offset(it.lower), Offset(it.upper)), it.value) }
 
     val gaugeConstraints = constraints.filterIsInstance<LoadingGaugeConstraints>()
     assert(gaugeConstraints.size < 2)
     val gaugeBlockedRanges =
-        getGaugeBlockedRanges(infra, pathRanges, gaugeConstraints.firstOrNull())
+        getConstraintsDistanceRange(
+                infra,
+                pathRanges,
+                pathProps.getLoadingGauge(),
+                gaugeConstraints.firstOrNull()
+            )
+            .map { RangeValue<String>(Pathfinding.Range(Offset(it.lower), Offset(it.upper)), null) }
 
     val signalingSystemConstraints = constraints.filterIsInstance<SignalingSystemConstraints>()
     assert(signalingSystemConstraints.size < 2)
+    val blockList = pathRanges.map { it.edge }
+    val pathSignalingSystem = getPathSignalingSystems(infra, blockList)
     val signalingSystemBlockedRangeValues =
-        getSignalingSystemBlockedRangeValues(
-            infra,
-            pathRanges,
-            signalingSystemConstraints.firstOrNull()
-        )
+        getConstraintsDistanceRange(
+                infra,
+                pathRanges,
+                pathSignalingSystem,
+                signalingSystemConstraints.firstOrNull()
+            )
+            .map { RangeValue(Pathfinding.Range(Offset(it.lower), Offset(it.upper)), it.value) }
 
     if (
         listOf(elecBlockedRangeValues, gaugeBlockedRanges, signalingSystemBlockedRangeValues).all {
@@ -242,68 +255,21 @@ private fun buildIncompatibleConstraintsResponse(
     )
 }
 
-private fun getElecBlockedRangeValues(
+private fun <T> getConstraintsDistanceRange(
     infra: FullInfra,
     pathRanges: List<Pathfinding.EdgeRange<BlockId, Block>>,
-    elecConstraint: ElectrificationConstraints?
-): List<RangeValue<String>> {
-    if (elecConstraint == null) {
-        return listOf()
+    pathConstrainedValues: DistanceRangeMap<T>,
+    constraint: PathfindingConstraint<Block>?
+): DistanceRangeMap<T> {
+    if (constraint == null) {
+        return distanceRangeMapOf()
     }
 
+    val blockedRanges = getBlockedRanges(infra, pathRanges, constraint)
+    val filteredRangeValues = filterIntersection(pathConstrainedValues, blockedRanges)
     val travelledPathOffset = pathRanges.first().start.distance
-    val pathProps =
-        makePathProps(infra.rawInfra, infra.blockInfra, pathRanges.map { it.edge }, Offset.zero())
-    val blockedRanges = getBlockedRanges(infra, pathRanges, elecConstraint)
-
-    val pathElec = pathProps.getElectrification()
-    val filteredPathElec = filterIntersection(pathElec, blockedRanges)
-    filteredPathElec.shiftPositions(-travelledPathOffset)
-    return filteredPathElec.map {
-        RangeValue(Pathfinding.Range(Offset(it.lower), Offset(it.upper)), it.value)
-    }
-}
-
-private fun getGaugeBlockedRanges(
-    infra: FullInfra,
-    pathRanges: List<Pathfinding.EdgeRange<BlockId, Block>>,
-    gaugeConstraint: LoadingGaugeConstraints?
-): List<Pathfinding.Range<TravelledPath>> {
-    if (gaugeConstraint == null) {
-        return listOf()
-    }
-
-    val travelledPathOffset = pathRanges.first().start.distance
-    val pathProps =
-        makePathProps(infra.rawInfra, infra.blockInfra, pathRanges.map { it.edge }, Offset.zero())
-    val blockedRanges = getBlockedRanges(infra, pathRanges, gaugeConstraint)
-
-    // Split response on different gauges (even if no value is associated)
-    val pathGauge = pathProps.getLoadingGauge()
-    val filteredPathGauge = filterIntersection(pathGauge, blockedRanges)
-    filteredPathGauge.shiftPositions(-travelledPathOffset)
-    return filteredPathGauge.map { Pathfinding.Range(Offset(it.lower), Offset(it.upper)) }
-}
-
-private fun getSignalingSystemBlockedRangeValues(
-    infra: FullInfra,
-    pathRanges: List<Pathfinding.EdgeRange<BlockId, Block>>,
-    signalingSystemConstraint: SignalingSystemConstraints?
-): List<RangeValue<String>> {
-    if (signalingSystemConstraint == null) {
-        return listOf()
-    }
-
-    val travelledPathOffset = pathRanges.first().start.distance
-    val blockList = pathRanges.map { it.edge }
-    val blockedRanges = getBlockedRanges(infra, pathRanges, signalingSystemConstraint)
-
-    val pathSignalingSystem = getPathSignalingSystems(infra, blockList)
-    val filteredPathSignalingSystem = filterIntersection(pathSignalingSystem, blockedRanges)
-    filteredPathSignalingSystem.shiftPositions(-travelledPathOffset)
-    return filteredPathSignalingSystem.map {
-        RangeValue(Pathfinding.Range(Offset(it.lower), Offset(it.upper)), it.value)
-    }
+    filteredRangeValues.shiftPositions(-travelledPathOffset)
+    return filteredRangeValues
 }
 
 private fun getBlockedRanges(
