@@ -90,10 +90,6 @@ impl ManagementClient {
             username => username,
         };
 
-        // FIXME: delete that
-        let user = "osrd";
-        let password = "password";
-
         Ok(Self {
             client: reqwest::Client::new(),
             base: format!("http://{host}:{port}").parse()?,
@@ -149,5 +145,38 @@ impl ManagementClient {
         }
         resp.error_for_status()?;
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn try_from_standard_config() {
+        let uri = "amqp://osrd:password@osrd-rabbitmq:5672/%2f";
+        let mut config = OsrdyneConfig::default();
+        config.amqp_uri = uri.into();
+        config.management_port = 15672;
+
+        let client = ManagementClient::try_from(&config).expect("failed to create client");
+        assert_eq!(client.user, "osrd");
+        assert_eq!(client.password, "password");
+        assert_eq!(client.vhost, "%2f");
+        assert_eq!("http://osrd-rabbitmq:15672/", client.base.as_str());
+    }
+
+    #[test]
+    fn try_from_host_mode_config() {
+        let uri = "amqp://osrd:password@127.0.0.1:5672/%2f";
+        let mut config = OsrdyneConfig::default();
+        config.amqp_uri = uri.into();
+        config.management_port = 15672;
+
+        let client = ManagementClient::try_from(&config).expect("failed to create client");
+        assert_eq!(client.user, "osrd");
+        assert_eq!(client.password, "password");
+        assert_eq!(client.vhost, "%2f");
+        assert_eq!("http://127.0.0.1:15672/", client.base.as_str());
     }
 }
