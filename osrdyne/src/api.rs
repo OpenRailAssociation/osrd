@@ -1,7 +1,4 @@
-use std::{
-    borrow::{Borrow, BorrowMut},
-    sync::Arc,
-};
+use std::sync::Arc;
 
 use axum::{extract::State, routing::get, Json, Router};
 use log::info;
@@ -48,7 +45,7 @@ async fn app_state_updater(
     state: AppState,
     mut known_cores: tokio::sync::watch::Receiver<Arc<Vec<WorkerMetadata>>>,
 ) {
-    while (known_cores.changed().await.is_ok()) {
+    while known_cores.changed().await.is_ok() {
         let mut state_known_cores = state.known_cores.lock().await;
         *state_known_cores = known_cores.borrow().clone();
     }

@@ -369,6 +369,7 @@ async fn activity_processor(
 
     let consumer_tag = format!("{}-activity-processor", pool.pool_id);
     let options = BasicConsumeOptions {
+        no_ack: true,
         ..Default::default()
     };
     let mut consumer = chan
@@ -425,7 +426,7 @@ async fn worker_control_loop(
         };
 
         let current_cores = Arc::new(current_cores);
-        running_workers_watch.send(current_cores.clone());
+        let _ = running_workers_watch.send(current_cores.clone());
 
         let current_infras = current_cores
             .iter()
