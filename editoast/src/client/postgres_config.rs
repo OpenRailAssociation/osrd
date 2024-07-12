@@ -1,7 +1,5 @@
 use clap::Args;
 use derivative::Derivative;
-use editoast_derive::EditoastError;
-use thiserror::Error;
 use url::Url;
 
 use crate::error::Result;
@@ -9,9 +7,15 @@ use crate::error::Result;
 #[derive(Args, Debug, Derivative, Clone)]
 #[derivative(Default)]
 pub struct PostgresConfig {
-    #[derivative(Default(value = "postgres://osrd:password@localhost:5432/osrd"))]
-    #[arg(long, env, default_value_t = "postgres://osrd:password@localhost:5432/osrd")]
-    pub database_url,
+    #[derivative(Default(
+        value = "Url::parse(\"postgres://osrd:password@localhost:5432/osrd\").unwrap()"
+    ))]
+    #[arg(
+        long,
+        env,
+        default_value_t = Url::parse("postgres://osrd:password@localhost:5432/osrd").unwrap()
+    )]
+    pub database_url: Url,
     #[derivative(Default(value = "32"))]
     #[arg(long, env, default_value_t = 32)]
     pub pool_size: usize,
@@ -19,19 +23,6 @@ pub struct PostgresConfig {
 
 impl PostgresConfig {
     pub fn url(&self) -> Result<Url> {
-        Ok(database_url)
+        Ok(self.database_url.clone())
     }
-}
-
-#[derive(Debug, Error, EditoastError)]
-#[editoast_error(base_id = "postgres", default_status = 500)]
-pub enum PostgresConfigError {
-    #[error("Invalid host '{hostname}'")]
-    Host { hostname: String },
-    #[error("Invalid port '{port}'")]
-    Port { port: u16 },
-    #[error("Invalid username")]
-    Username,
-    #[error("Invalid password")]
-    Password,
 }
