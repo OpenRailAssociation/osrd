@@ -27,6 +27,7 @@ jobs:
           - [editoast, editoast-test]
           - [gateway-test, gateway-standalone]
           - [front-build, front-tests, front-devel, front-nginx]
+          - [osrdyne, osrdyne-test]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -162,10 +163,16 @@ jobs:
           path: osrd-front-nginx.tar
       - name: Upload osrdyne artifact
         uses: actions/upload-artifact@v4
-        if: steps.bake-metadata.outputs.output_method == 'artifact'
+        if: steps.bake-metadata.outputs.output_method == 'artifact' && contains(matrix.targets, 'osrdyne')
         with:
           name: osrdyne
           path: osrd-osrdyne.tar
+      - name: Upload osrdyne-test artifact
+        uses: actions/upload-artifact@v4
+        if: steps.bake-metadata.outputs.output_method == 'artifact' && contains(matrix.targets, 'osrdyne-test')
+        with:
+          name: osrdyne
+          path: osrd-osrdyne-test.tar
 
   check_generated_railjson_sync:
     runs-on: ubuntu-latest
