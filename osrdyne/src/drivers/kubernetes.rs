@@ -4,12 +4,15 @@ use super::{
     worker_driver::{DriverError, WorkerDriver, WorkerMetadata},
     LABEL_CORE_ID, LABEL_INFRA_ID, LABEL_MANAGED_BY, MANAGED_BY_VALUE,
 };
-use k8s_openapi::api::{
-    apps::v1::{Deployment, DeploymentSpec},
-    autoscaling::v1::HorizontalPodAutoscaler,
-    core::v1::{
-        Affinity, Container, EnvVar, PodSpec, PodTemplateSpec, ResourceRequirements, Toleration,
+use k8s_openapi::{
+    api::{
+        apps::v1::{Deployment, DeploymentSpec},
+        autoscaling::v1::HorizontalPodAutoscaler,
+        core::v1::{
+            Affinity, Container, EnvVar, PodSpec, PodTemplateSpec, ResourceRequirements, Toleration,
+        },
     },
+    apimachinery::pkg::apis::meta::v1::LabelSelector,
 };
 use kube::{api::ObjectMeta, Client};
 use serde::{Deserialize, Serialize};
@@ -135,21 +138,27 @@ impl WorkerDriver for KubernetesDriver {
                 env
             };
 
+            let labels = {
+                let mut labels = BTreeMap::new();
+                labels.insert(LABEL_MANAGED_BY.to_owned(), MANAGED_BY_VALUE.to_owned());
+                labels.insert(LABEL_CORE_ID.to_owned(), new_id.to_string());
+                labels.insert(LABEL_INFRA_ID.to_owned(), infra_id.to_string());
+                labels
+            };
+
             // Create a new deployment
             let deployment = Deployment {
                 metadata: ObjectMeta {
                     name: Some(core_deployment_name.clone()),
                     namespace: Some(self.options.namespace.clone()),
-                    labels: Some({
-                        let mut labels: BTreeMap<String, String> = BTreeMap::new();
-                        labels.insert(LABEL_MANAGED_BY.to_owned(), MANAGED_BY_VALUE.to_owned());
-                        labels.insert(LABEL_CORE_ID.to_owned(), new_id.to_string());
-                        labels.insert(LABEL_INFRA_ID.to_owned(), infra_id.to_string());
-                        labels
-                    }),
+                    labels: Some(labels.clone()),
                     ..Default::default()
                 },
                 spec: Some(DeploymentSpec {
+                    selector: LabelSelector {
+                        match_labels: Some(labels.clone()),
+                        ..Default::default()
+                    },
                     replicas: Some(1),
                     template: PodTemplateSpec {
                         spec: Some(PodSpec {
