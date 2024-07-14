@@ -294,4 +294,8 @@ impl Default for SimulationResponse {
 impl AsCoreRequest<Json<SimulationResponse>> for SimulationRequest {
     const METHOD: reqwest::Method = reqwest::Method::POST;
     const URL_PATH: &'static str = "/v2/standalone_simulation";
+
+    fn infra_id(&self) -> Option<i64> {
+        Some(self.infra)
+    }
 }

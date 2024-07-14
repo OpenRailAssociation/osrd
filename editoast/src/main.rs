@@ -367,11 +367,9 @@ impl AppState {
         let speed_limit_tag_ids = Arc::new(SpeedLimitTagIds::load());
 
         // Build Core client
-        let core_client = CoreClient::new_direct(
-            args.backend_url.parse().expect("invalid backend_url value"),
-            args.backend_token.clone(),
-        )
-        .into();
+        let core_client = CoreClient::new_mq(args.mq_url.clone(), "core".into(), args.core_timeout)
+            .await?
+            .into();
 
         Ok(Self {
             redis,

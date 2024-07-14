@@ -4369,6 +4369,10 @@ components:
       - $ref: '#/components/schemas/EditoastEditionErrorSplitTrackSectionBadOffset'
       - $ref: '#/components/schemas/EditoastEditoastUrlErrorInvalidUrl'
       - $ref: '#/components/schemas/EditoastElectricalProfilesErrorNotFound'
+      - $ref: '#/components/schemas/EditoastErrorLapin'
+      - $ref: '#/components/schemas/EditoastErrorResponseTimeout'
+      - $ref: '#/components/schemas/EditoastErrorSerialization'
+      - $ref: '#/components/schemas/EditoastErrorStatusParsing'
       - $ref: '#/components/schemas/EditoastGeometryErrorUnexpectedGeometry'
       - $ref: '#/components/schemas/EditoastGetObjectsErrorsDuplicateIdsProvided'
       - $ref: '#/components/schemas/EditoastGetObjectsErrorsObjectIdNotFound'
@@ -4396,10 +4400,6 @@ components:
       - $ref: '#/components/schemas/EditoastPathfindingViewErrorsEndingTrackLocationNotFound'
       - $ref: '#/components/schemas/EditoastPathfindingViewErrorsInvalidNumberOfPaths'
       - $ref: '#/components/schemas/EditoastPathfindingViewErrorsStartingTrackLocationNotFound'
-      - $ref: '#/components/schemas/EditoastPostgresConfigErrorHost'
-      - $ref: '#/components/schemas/EditoastPostgresConfigErrorPassword'
-      - $ref: '#/components/schemas/EditoastPostgresConfigErrorPort'
-      - $ref: '#/components/schemas/EditoastPostgresConfigErrorUsername'
       - $ref: '#/components/schemas/EditoastProjectErrorImageError'
       - $ref: '#/components/schemas/EditoastProjectErrorImageNotFound'
       - $ref: '#/components/schemas/EditoastProjectErrorNotFound'
@@ -4452,6 +4452,82 @@ components:
       description: Generated error type for Editoast
       discriminator:
         propertyName: type
+    EditoastErrorLapin:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 500
+        type:
+          type: string
+          enum:
+          - editoast:coreclient:Lapin
+    EditoastErrorResponseTimeout:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 500
+        type:
+          type: string
+          enum:
+          - editoast:coreclient:ResponseTimeout
+    EditoastErrorSerialization:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 500
+        type:
+          type: string
+          enum:
+          - editoast:coreclient:Serialization
+    EditoastErrorStatusParsing:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 500
+        type:
+          type: string
+          enum:
+          - editoast:coreclient:StatusParsing
     EditoastGeometryErrorUnexpectedGeometry:
       type: object
       required:
@@ -5065,92 +5141,6 @@ components:
           type: string
           enum:
           - editoast:infra:pathfinding:StartingTrackLocationNotFound
-    EditoastPostgresConfigErrorHost:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          required:
-          - hostname
-          properties:
-            hostname:
-              type: string
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 500
-        type:
-          type: string
-          enum:
-          - editoast:postgres:Host
-    EditoastPostgresConfigErrorPassword:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 500
-        type:
-          type: string
-          enum:
-          - editoast:postgres:Password
-    EditoastPostgresConfigErrorPort:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          required:
-          - port
-          properties:
-            port:
-              type: integer
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 500
-        type:
-          type: string
-          enum:
-          - editoast:postgres:Port
-    EditoastPostgresConfigErrorUsername:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 500
-        type:
-          type: string
-          enum:
-          - editoast:postgres:Username
     EditoastProjectErrorImageError:
       type: object
       required:

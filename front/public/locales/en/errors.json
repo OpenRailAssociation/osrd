@@ -33,6 +33,10 @@
       "ConnectionResetByPeer": "Core connection reset by peer. Should retry.",
       "CoreResponseFormatError": "Cannot parse Core response: {{msg}}",
       "GenericCoreError": "Core error {{raw_error}}",
+      "Lapin": "Core: message queue: protocol error",
+      "ResponseTimeout": "Core: request timeout",
+      "Serialization": "Core: cannot serialize request",
+      "StatusParsing": "Core: cannot parse status",
       "UnparsableErrorOutput": "Core returned an error in an unknown format"
     },
     "DatabaseAccessError": "Database access fatal error",

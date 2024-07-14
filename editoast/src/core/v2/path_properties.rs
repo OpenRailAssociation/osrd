@@ -81,4 +81,8 @@ pub struct OperationalPointOnPath {
 impl<'a> AsCoreRequest<Json<PathPropertiesResponse>> for PathPropertiesRequest<'a> {
     const METHOD: reqwest::Method = reqwest::Method::POST;
     const URL_PATH: &'static str = "/v2/path_properties";
+
+    fn infra_id(&self) -> Option<i64> {
+        Some(self.infra)
+    }
 }

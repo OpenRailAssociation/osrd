@@ -172,7 +172,7 @@ async fn call_core_stdcm(
     let steps = parse_stdcm_steps(db_pool.clone(), data, &infra).await?;
     let spacing_requirements = make_spacing_requirements(db_pool, data.timetable_id).await?;
     STDCMCoreRequest {
-        infra: infra.id.to_string(),
+        infra: infra.id,
         expected_version: infra.version,
         rolling_stock,
         comfort: data.comfort.clone(),

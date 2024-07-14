@@ -10,6 +10,7 @@ use crate::models::SpacingRequirement;
 #[derive(Debug, Serialize)]
 pub struct ConflicDetectionRequest {
     pub trains_requirements: Vec<TrainRequirements>,
+    pub infra_id: i64,
 }
 
 #[derive(Debug, Serialize)]
@@ -38,4 +39,8 @@ pub struct CoreConflict {
 impl AsCoreRequest<Json<ConflictDetectionResponse>> for ConflicDetectionRequest {
     const METHOD: reqwest::Method = reqwest::Method::POST;
     const URL_PATH: &'static str = "/detect_conflicts";
+
+    fn infra_id(&self) -> Option<i64> {
+        Some(self.infra_id)
+    }
 }
