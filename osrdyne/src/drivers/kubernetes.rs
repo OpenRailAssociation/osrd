@@ -161,6 +161,10 @@ impl WorkerDriver for KubernetesDriver {
                     },
                     replicas: Some(1),
                     template: PodTemplateSpec {
+                        metadata: Some(ObjectMeta {
+                            labels: Some(labels.clone()),
+                            ..Default::default()
+                        }),
                         spec: Some(PodSpec {
                             containers: vec![Container {
                                 name: core_deployment_name.clone(),
