@@ -47,3 +47,11 @@ target "base-gateway-test" {
 target "base-gateway-front" {
   tags = tags("gateway-front")
 }
+
+target "base-osrdyne" {
+  tags = tags("osrdyne")
+}
+
+target "base-osrdyne-test" {
+  tags = tags("osrdyne")
+}
