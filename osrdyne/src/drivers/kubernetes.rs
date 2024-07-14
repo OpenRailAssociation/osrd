@@ -52,6 +52,9 @@ pub struct KubernetesDriverOptions {
     /// The name of the Docker image to use for the core
     pub core_image: String,
 
+    /// Docker start command
+    pub start_command: Vec<String>,
+
     /// The prefix to use for the deployment names
     pub deployment_prefix: String,
 
@@ -170,6 +173,7 @@ impl WorkerDriver for KubernetesDriver {
                                 name: core_deployment_name.clone(),
                                 image: Some(self.options.core_image.clone()),
                                 env: Some(final_env),
+                                command: Some(self.options.start_command.clone()),
                                 ..Default::default()
                             }],
                             node_selector: self
