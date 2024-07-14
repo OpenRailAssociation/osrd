@@ -3,6 +3,7 @@ version: '3'
 volumes:
   psql_data:
   redis_data:
+  rabbitmq_data:
 
 services:
   postgres:
@@ -35,7 +36,25 @@ services:
       start_period: 4s
       interval: 5s
 
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: osrd-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: osrd
+      RABBITMQ_DEFAULT_PASS: password
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 30s
+      timeout: 30s
+      retries: 3
+
   core:
+    # This is a dummy container to build the core image
     image: ghcr.io/openrailassociation/osrd-edge/osrd-core:${TAG-dev}
     container_name: osrd-core
     build:
@@ -126,6 +145,23 @@ services:
       - "./docker/gateway.dev.simple.toml:/gateway.toml"
     restart: unless-stopped
     ports: ["4000:4000"]
+
+  osrdyne:
+    image: ghcr.io/openrailassociation/osrd-edge/osrd-osrdyne:${TAG-dev}
+    container_name: osrd-osrdyne
+    depends_on:
+      rabbitmq: {condition: service_healthy}
+    command: osrdyne
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./docker/osrdyne.yml:/osrdyne.yml
+    build:
+      context: osrdyne
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports: ["4242:4242"]
+    environment:
+      RUST_LOG: "info"
 
   jaeger:
     image: jaegertracing/all-in-one:latest
