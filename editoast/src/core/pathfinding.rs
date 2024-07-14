@@ -63,6 +63,10 @@ pub struct Warning {
 impl AsCoreRequest<Json<PathfindingResponse>> for PathfindingRequest {
     const METHOD: reqwest::Method = reqwest::Method::POST;
     const URL_PATH: &'static str = "/pathfinding/routes";
+
+    fn infra_id(&self) -> Option<i64> {
+        Some(self.infra)
+    }
 }
 
 impl Waypoint {

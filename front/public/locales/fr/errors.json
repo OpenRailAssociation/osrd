@@ -38,6 +38,10 @@
       "ConnectionResetByPeer": "Core: réinitialisation de la connexion. Nouvelle tentative.",
       "CoreResponseFormatError": "Core: impossible d'analyser la réponse '{{msg}}'",
       "GenericCoreError": "Core: erreur {{raw_error}}",
+      "Lapin": "Core: file d'attente de message: erreur de protocole",
+      "ResponseTimeout": "Core: temps d'attente écoulé",
+      "Serialization": "Core: impossible de sérialiser la requête",
+      "StatusParsing": "Core: impossible d'obtenir le status",
       "UnparsableErrorOutput": "Core: a renvoyé une erreur dans un format inconnu"
     },
     "document": {

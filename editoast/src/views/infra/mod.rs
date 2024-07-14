@@ -26,7 +26,6 @@ use utoipa::ToSchema;
 use super::pagination::PaginationStats;
 use super::params::List;
 use crate::core::infra_loading::InfraLoadRequest;
-use crate::core::infra_state::InfraStateRequest;
 use crate::core::infra_state::InfraStateResponse;
 use crate::core::AsCoreRequest;
 use crate::core::CoreClient;
@@ -192,20 +191,18 @@ async fn list(
     pagination_params: Query<PaginationQueryParam>,
 ) -> Result<Json<InfraListResponse>> {
     let db_pool = app_state.db_pool_v2.clone();
-    let core = app_state.core_client.clone();
 
     let settings = pagination_params
         .validate(1000)?
         .warn_page_size(100)
         .into_selection_settings();
 
-    let ((infras, stats), infra_states) = {
+    let (infras, stats) = {
         let conn = &mut db_pool.get().await?;
-        futures::try_join!(
-            Infra::list_paginated(conn, settings),
-            fetch_all_infra_states(core.as_ref()),
-        )?
+        Infra::list_paginated(conn, settings).await?
     };
+
+    let infra_states = fetch_all_infra_states(&infras).await?;
 
     let response = InfraListResponse {
         stats,
@@ -609,21 +606,28 @@ async fn load(
 }
 
 /// Builds a Core cache_status request, runs it
-pub async fn fetch_infra_state(infra_id: i64, core: &CoreClient) -> Result<InfraStateResponse> {
-    Ok(InfraStateRequest {
-        infra: Some(infra_id),
-    }
-    .fetch(core)
-    .await?
-    .get(&infra_id.to_string())
-    .cloned()
-    .unwrap_or_default())
+pub async fn fetch_infra_state(_infra_id: i64, _core: &CoreClient) -> Result<InfraStateResponse> {
+    Ok(InfraStateResponse {
+        // TODO: have a way to actually report infras states
+        last_status: None,
+        status: InfraState::Cached,
+    })
 }
 
 pub async fn fetch_all_infra_states(
-    core: &CoreClient,
+    infras: &[Infra],
 ) -> Result<HashMap<String, InfraStateResponse>> {
-    InfraStateRequest::default().fetch(core).await
+    let infras = infras.iter().map(|infra| {
+        (
+            infra.id.to_string(),
+            InfraStateResponse {
+                // TODO: have a way to actually report infras states
+                last_status: None,
+                status: InfraState::Cached,
+            },
+        )
+    });
+    Ok(HashMap::from_iter(infras))
 }
 
 #[cfg(test)]
@@ -781,18 +785,7 @@ pub mod tests {
 
     #[rstest]
     async fn infra_list() {
-        let db_pool = DbConnectionPoolV2::for_tests();
-        let mut core = MockingClient::new();
-        core.stub("/cache_status")
-            .method(reqwest::Method::POST)
-            .response(StatusCode::OK)
-            .body("{}")
-            .finish();
-
-        let app = TestAppBuilder::new()
-            .db_pool(db_pool.clone())
-            .core_client(core.into())
-            .build();
+        let app = TestAppBuilder::default_app();
         let request = app.get("/infra/");
         app.fetch(request).assert_status(StatusCode::OK);
     }

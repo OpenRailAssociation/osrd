@@ -85,6 +85,10 @@ pub struct SimulationRequest {
 impl AsCoreRequest<Json<SimulationResponse>> for SimulationRequest {
     const METHOD: reqwest::Method = reqwest::Method::POST;
     const URL_PATH: &'static str = "/standalone_simulation";
+
+    fn infra_id(&self) -> Option<i64> {
+        Some(self.infra)
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
@@ -105,7 +109,7 @@ impl SimulationResponse {
 
 #[derive(Debug, Serialize)]
 pub struct SignalProjectionRequest {
-    pub infra: String,
+    pub infra: i64,
     pub train_path: TrainPath,
     pub signal_sightings: Vec<SignalSighting>,
     pub zone_updates: Vec<ZoneUpdate>,
@@ -114,6 +118,10 @@ pub struct SignalProjectionRequest {
 impl AsCoreRequest<Json<SignalProjectionResponse>> for SignalProjectionRequest {
     const METHOD: reqwest::Method = reqwest::Method::POST;
     const URL_PATH: &'static str = "/project_signals";
+
+    fn infra_id(&self) -> Option<i64> {
+        Some(self.infra)
+    }
 }
 
 #[derive(Debug, Deserialize)]

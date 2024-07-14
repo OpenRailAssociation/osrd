@@ -62,4 +62,8 @@ pub struct SignalUpdatesResponse {
 impl<'a> AsCoreRequest<Json<SignalUpdatesResponse>> for SignalUpdatesRequest<'a> {
     const METHOD: reqwest::Method = reqwest::Method::POST;
     const URL_PATH: &'static str = "/v2/signal_projection";
+
+    fn infra_id(&self) -> Option<i64> {
+        Some(self.infra)
+    }
 }

@@ -19,6 +19,7 @@ editoast_common::schemas! {
 pub struct ConflictDetectionRequest {
     /// List of requirements for each train
     pub trains_requirements: HashMap<i64, TrainRequirements>,
+    pub infra_id: i64,
 }
 
 #[derive(Debug, Serialize)]
@@ -60,4 +61,8 @@ pub enum ConflictType {
 impl AsCoreRequest<Json<ConflictDetectionResponse>> for ConflictDetectionRequest {
     const METHOD: reqwest::Method = reqwest::Method::POST;
     const URL_PATH: &'static str = "/v2/conflict_detection";
+
+    fn infra_id(&self) -> Option<i64> {
+        Some(self.infra_id)
+    }
 }
