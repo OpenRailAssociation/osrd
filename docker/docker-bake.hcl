@@ -13,6 +13,8 @@ group "default" {
     "gateway-standalone",
     "gateway-test",
     "gateway-front",
+    "osrdyne",
+    "osrdyne-test"
   ]
 }
 
@@ -154,4 +156,24 @@ target "gateway-front" {
     gateway_build = "target:gateway-standalone"
     front_build = "target:front-build"
   }
+}
+
+###########
+# OSRDyne #
+###########
+
+target "base-osrdyne" {}
+target "osrdyne" {
+  inherits = ["base", "base-osrdyne"]
+  context = "osrdyne"
+  dockerfile = "Dockerfile"
+  target = "running_env"
+}
+
+target "base-osrdyne-test" {}
+target "osrdyne-test" {
+  inherits = ["base", "base-osrdyne-test"]
+  context = "osrdyne"
+  dockerfile = "Dockerfile"
+  target = "testing_env"
 }

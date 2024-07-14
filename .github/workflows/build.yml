@@ -27,6 +27,7 @@ jobs:
           - [editoast, editoast-test]
           - [gateway-test, gateway-standalone, gateway-front]
           - [front-build, front-tests, front-devel, front-nginx]
+          - [osrdyne, osrdyne-test]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -163,6 +164,18 @@ jobs:
         with:
           name: front-nginx
           path: osrd-front-nginx.tar
+      - name: Upload osrdyne artifact
+        uses: actions/upload-artifact@v4
+        if: steps.bake-metadata.outputs.output_method == 'artifact' && contains(matrix.targets, 'osrdyne')
+        with:
+          name: osrdyne
+          path: osrd-osrdyne.tar
+      - name: Upload osrdyne-test artifact
+        uses: actions/upload-artifact@v4
+        if: steps.bake-metadata.outputs.output_method == 'artifact' && contains(matrix.targets, 'osrdyne-test')
+        with:
+          name: osrdyne
+          path: osrd-osrdyne-test.tar
 
   check_generated_railjson_sync:
     runs-on: ubuntu-latest
@@ -723,6 +736,68 @@ jobs:
             cargo clippy --all-features --all-targets -- -D warnings
           exit $(docker wait gateway-clippy)
 
+  check_osrdyne:
+    runs-on: ubuntu-latest
+    needs:
+      - build
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download built images
+        if: needs.build.outputs.output_method == 'artifact'
+        uses: actions/download-artifact@v4
+        with:
+          name: osrdyne-test
+          path: .
+
+      - name: Load built images
+        if: needs.build.outputs.output_method == 'artifact'
+        run: |
+          docker load --input ./osrd-osrdyne-test.tar
+
+      - name: Execute tests within container
+        run: |
+          docker run --name=osrdyne-test --net=host -v $PWD/output:/output \
+            ${{ fromJSON(needs.build.outputs.stable_tags).osrdyne-test }} \
+            /bin/bash -c "cargo test --verbose && grcov . --binary-path ./target/debug/ -s . -t lcov --branch --ignore-not-existing --ignore "/*" -o /output/lcov.info"
+
+          exit $(docker wait osrdyne-test)
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          name: codecov
+          flags: osrdyne
+          fail_ci_if_error: false
+          verbose: true
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./output/lcov.info
+
+      - name: Documentation check
+        run: |
+          docker run --name=osrdyne-doc --net=host -v $PWD/output:/output \
+            -e RUSTDOCFLAGS="-D warnings" \
+            ${{ fromJSON(needs.build.outputs.stable_tags).osrdyne-test }} \
+            cargo doc --manifest-path ./Cargo.toml --no-deps
+
+          exit $(docker wait osrdyne-doc)
+
+      - name: Format check
+        run: |
+          docker run --name=osrdyne-format --net=host -v $PWD/output:/output \
+            ${{ fromJSON(needs.build.outputs.stable_tags).osrdyne-test }} \
+            cargo fmt --check
+          exit $(docker wait osrdyne-format)
+
+      - name: Clippy check
+        run: |
+          docker run --name=osrdyne-clippy --net=host -v $PWD/output:/output \
+            ${{ fromJSON(needs.build.outputs.stable_tags).osrdyne-test }} \
+            cargo clippy --all-features --all-targets -- -D warnings
+          exit $(docker wait osrdyne-clippy)
+
   check_front:
     runs-on: ubuntu-latest
     needs:
@@ -835,9 +910,15 @@ jobs:
           set -e
           export OSRD_FRONT_MODE=nginx
           export TAG='${{ needs.build.outputs.stable_version }}'
-          services='editoast core front gateway'
-          docker compose pull --policy missing $services
-          docker compose up --no-build -d $services jaeger
+
+          # Inside /docker/osrdyne.yml, replace core_image "osrd-core:dev" with "osrd-core:$TAG"
+          # to match the version of the core image we just built inside osrdyne
+          sed -i "s/osrd-core:dev/osrd-core:$TAG/" docker/osrdyne.yml
+
+          services='editoast osrdyne front core-test gateway'
+          composes='-f docker-compose.yml -f docker/docker-compose.core-test.yml'
+          docker compose $composes pull --policy missing $services
+          docker compose $composes up --no-build -d $services jaeger
         env:
           DOCKER_BUILDKIT: 1
           COMPOSE_DOCKER_CLI_BUILD: 1
