@@ -915,8 +915,8 @@ jobs:
           # to match the version of the core image we just built inside osrdyne
           sed -i "s/osrd-core:dev/osrd-core:$TAG/" docker/osrdyne.yml
 
-          services='editoast osrdyne front core-test gateway'
-          composes='-f docker-compose.yml -f docker/docker-compose.core-test.yml'
+          services='editoast osrdyne front core gateway'
+          composes='-f docker-compose.yml'
           docker compose $composes pull --policy missing $services
           docker compose $composes up --no-build -d $services jaeger
         env:

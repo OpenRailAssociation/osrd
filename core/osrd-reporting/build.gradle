@@ -21,9 +21,9 @@ dependencies {
     implementation libs.kotlin.stdlib
 
     //moshi
-    implementation libs.moshi
-    implementation libs.moshi.adapters
-    implementation libs.moshi.kotlin
+    api libs.moshi
+    api libs.moshi.adapters
+    api libs.moshi.kotlin
 
     //class-graph
     implementation libs.classgraph

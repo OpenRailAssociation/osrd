@@ -37,7 +37,7 @@ public final class OSRDError extends RuntimeException {
     public Map<String, Object> context = new HashMap<>();
 
     public final transient ErrorType osrdErrorType;
-    public final transient ErrorCause cause;
+    public final ErrorCause cause;
 
     /**
      * Constructs a new OSRDError with the specified error type.
