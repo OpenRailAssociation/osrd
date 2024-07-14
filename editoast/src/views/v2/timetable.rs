@@ -290,6 +290,7 @@ async fn conflicts(
     }
     let conflict_detection_request = ConflictDetectionRequest {
         trains_requirements,
+        infra_id,
     };
 
     // 3. Call core

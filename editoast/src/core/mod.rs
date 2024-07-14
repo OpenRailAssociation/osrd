@@ -4,6 +4,7 @@ pub mod infra_loading;
 pub mod infra_state;
 #[cfg(test)]
 pub mod mocking;
+pub mod mq_client;
 pub mod pathfinding;
 pub mod simulation;
 pub mod stdcm;
@@ -36,6 +37,8 @@ use crate::core::mocking::MockingError;
 use crate::error::InternalError;
 use crate::error::Result;
 
+pub use mq_client::RabbitMQClient;
+
 editoast_common::schemas! {
     simulation::schemas(),
     v2::simulation::schemas(),
@@ -61,6 +64,7 @@ fn colored_method(method: &reqwest::Method) -> ColoredString {
 #[derive(Debug, Clone)]
 pub enum CoreClient {
     Direct(HttpClient),
+    MessageQueue(RabbitMQClient),
     #[cfg(test)]
     Mocked(mocking::MockingClient),
 }
@@ -81,22 +85,35 @@ impl CoreClient {
         Self::Direct(client)
     }
 
-    fn handle_error(
-        &self,
-        bytes: &[u8],
-        status: reqwest::StatusCode,
-        url: String,
-    ) -> InternalError {
+    pub async fn new_mq(uri: String, worker_pool_identifier: String, timeout: u64) -> Result<Self> {
+        let options = mq_client::Options {
+            uri,
+            worker_pool_identifier,
+            timeout,
+        };
+
+        let client = RabbitMQClient::new(options).await?;
+
+        Ok(Self::MessageQueue(client))
+    }
+
+    fn handle_error(&self, bytes: &[u8], url: String) -> InternalError {
         // We try to deserialize the response as an StandardCoreError in order to retain the context of the core error
-        let mut internal_error: InternalError =
-            if let Ok(core_error) = <Json<StandardCoreError>>::from_bytes(bytes) {
-                core_error.into()
-            } else {
-                CoreError::UnparsableErrorOutput.into()
+        if let Ok(mut core_error) = <Json<StandardCoreError>>::from_bytes(bytes) {
+            let status: u16 = match core_error.cause {
+                CoreErrorCause::Internal => 500,
+                CoreErrorCause::User => 400,
             };
-        internal_error.context.insert("url".to_owned(), url.into());
-        internal_error.set_status(StatusCode::from_u16(status.as_u16()).unwrap());
-        internal_error
+            core_error.context.insert("url".to_owned(), url.into());
+            let mut internal_error: InternalError = core_error.into();
+            internal_error.set_status(StatusCode::from_u16(status).unwrap());
+            return internal_error;
+        }
+
+        let error: InternalError = CoreError::UnparsableErrorOutput.into();
+        let mut error = error.with_context("url", url);
+        error.set_status(StatusCode::INTERNAL_SERVER_ERROR);
+        error
     }
 
     #[tracing::instrument(
@@ -110,6 +127,7 @@ impl CoreClient {
         method: reqwest::Method,
         path: &str,
         body: Option<&B>,
+        infra_id: Option<i64>,
     ) -> Result<R::Response> {
         let method_s = colored_method(&method);
         debug!(
@@ -157,18 +175,38 @@ impl CoreClient {
                 }
 
                 error!(target: "editoast::coreclient", "{method_s} {path} {status}", status = status.to_string().bold().red());
-                Err(self.handle_error(bytes.as_ref(), status, url))
+                Err(self.handle_error(bytes.as_ref(), url))
+            }
+            CoreClient::MessageQueue(client) => {
+                // TODO: maybe implement retry?
+                let infra_id = infra_id.unwrap_or(1); // FIXME: don't do that!!!
+                                                      //expect("FIXME: allow empty infra id in the amqp protocol"); // FIXME: allow empty infra id in the amqp protocol
+                                                      // TODO: tracing: use correlation id
+
+                let response = client
+                    .call_with_response(infra_id.to_string(), path, &body, true, None)
+                    .await?;
+
+                if response.status == b"ok" {
+                    return R::from_bytes(&response.payload);
+                }
+
+                if response.status == b"core_error" {
+                    return Err(self.handle_error(&response.payload, path.to_string()));
+                }
+
+                todo!("TODO: handle protocol errors")
             }
             #[cfg(test)]
             CoreClient::Mocked(client) => {
                 match client.fetch_mocked::<_, B, R>(method, path, body) {
                     Ok(Some(response)) => Ok(response),
                     Ok(None) => Err(CoreError::NoResponseContent.into()),
-                    Err(MockingError { bytes, status, url }) => Err(self.handle_error(
-                        &bytes,
-                        reqwest::StatusCode::from_u16(status.as_u16()).unwrap(),
-                        url,
-                    )),
+                    Err(MockingError { bytes, status, url }) => Err({
+                        let mut err = self.handle_error(&bytes, url);
+                        err.set_status(status);
+                        err
+                    }),
                 }
             }
         }
@@ -231,6 +269,9 @@ where
         Self::URL_PATH
     }
 
+    /// Returns the infra id used for the request. Must be provided.
+    fn infra_id(&self) -> Option<i64>;
+
     /// Returns whether or not `self` should be serialized as JSON and used as
     /// the request body
     ///
@@ -253,6 +294,7 @@ where
             self.method(),
             self.url(),
             if self.has_body() { Some(self) } else { None },
+            self.infra_id(),
         )
         .await
     }
@@ -347,6 +389,15 @@ pub struct StandardCoreError {
     error_type: String,
     context: HashMap<String, Value>,
     message: String,
+    #[serde(default = "CoreErrorCause::default")]
+    cause: CoreErrorCause,
+}
+
+#[derive(Debug, Deserialize, Default)]
+pub enum CoreErrorCause {
+    #[default]
+    Internal,
+    User,
 }
 
 impl crate::error::EditoastError for StandardCoreError {
@@ -422,6 +473,10 @@ mod test {
         impl AsCoreRequest<()> for Req {
             const METHOD: Method = Method::GET;
             const URL_PATH: &'static str = "/test";
+
+            fn infra_id(&self) -> Option<i64> {
+                None
+            }
         }
         let mut core = MockingClient::default();
         core.stub("/test")
@@ -440,6 +495,10 @@ mod test {
         impl AsCoreRequest<Bytes> for Req {
             const METHOD: Method = Method::GET;
             const URL_PATH: &'static str = "/test";
+
+            fn infra_id(&self) -> Option<i64> {
+                None
+            }
         }
         let mut core = MockingClient::default();
         core.stub("/test")
@@ -458,6 +517,10 @@ mod test {
         impl AsCoreRequest<()> for Req {
             const METHOD: Method = Method::GET;
             const URL_PATH: &'static str = "/test";
+
+            fn infra_id(&self) -> Option<i64> {
+                None
+            }
         }
         let error = json!({
             "context": {

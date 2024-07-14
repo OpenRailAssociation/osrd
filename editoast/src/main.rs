@@ -370,11 +370,9 @@ impl AppState {
         let role_config = Arc::new(load_roles_config(args.roles_config.as_ref())?);
 
         // Build Core client
-        let core_client = CoreClient::new_direct(
-            args.backend_url.parse().expect("invalid backend_url value"),
-            args.backend_token.clone(),
-        )
-        .into();
+        let core_client = CoreClient::new_mq(args.mq_url.clone(), "core".into(), args.core_timeout)
+            .await?
+            .into();
 
         Ok(Self {
             redis,

@@ -11,23 +11,16 @@ services:
     ports: []
     network_mode: host
 
-  core:
-    ports: []
-    network_mode: host
-    environment:
-      CORE_EDITOAST_URL: "http://localhost:8090"
-      OTEL_EXPORTER_OTLP_ENDPOINT: "http://localhost:4317"
-
   editoast:
     ports: []
     network_mode: host
     environment:
-      PSQL_HOST: "localhost"
       EDITOAST_PORT: 8090
       OSRD_BACKEND_URL: "http://localhost:8080"
       REDIS_URL: "redis://localhost"
       DATABASE_URL: "postgres://osrd:password@localhost:5432/osrd"
       TELEMETRY_ENDPOINT: "http://localhost:4317"
+      OSRD_MQ_URL: "amqp://osrd:password@127.0.0.1:5672/%2f"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8090/health"]
 
@@ -57,7 +50,7 @@ services:
         "OTEL_LOGS_EXPORTER=none"
         ]
       OSRDYNE__AMQP_URI: "amqp://osrd:password@127.0.0.1:5672/%2f"
-
+      
   jaeger:
     ports: []
     network_mode: host

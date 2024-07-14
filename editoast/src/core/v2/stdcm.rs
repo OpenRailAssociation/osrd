@@ -130,4 +130,8 @@ pub enum STDCMResponse {
 impl AsCoreRequest<Json<STDCMResponse>> for STDCMRequest {
     const METHOD: reqwest::Method = reqwest::Method::POST;
     const URL_PATH: &'static str = "/v2/stdcm";
+
+    fn infra_id(&self) -> Option<i64> {
+        Some(self.infra)
+    }
 }

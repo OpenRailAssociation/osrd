@@ -146,6 +146,12 @@ async fn get_conflicts(
         ..
     }): State<AppState>,
 ) -> Result<Json<Vec<Conflict>>> {
+    let timetable = Timetable::retrieve(db_pool.pool_v1(), timetable_id)
+        .await?
+        .ok_or(TimetableError::NotFound { timetable_id })?;
+    let scenario = timetable.get_scenario(db_pool.pool_v1()).await?;
+    let infra_id = scenario.infra_id.unwrap();
+
     let (schedules, simulations) =
         get_simulated_schedules_from_timetable(timetable_id, db_pool).await?;
 
@@ -193,6 +199,7 @@ async fn get_conflicts(
 
     let request = ConflicDetectionRequest {
         trains_requirements,
+        infra_id,
     };
     let response = request.fetch(&core_client).await?;
 
