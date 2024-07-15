@@ -7,7 +7,13 @@ import type {
 } from 'common/api/osrdEditoastApi';
 import type { AppDispatch } from 'store';
 
-import type { Node, NetzgrafikDto } from './types';
+import type {
+  Node,
+  TrainrunCategory,
+  TrainrunFrequency,
+  TrainrunTimeCategory,
+  NetzgrafikDto,
+} from './types';
 
 // TODO: make this optional in NGE since it's SBB-specific
 const TRAINRUN_CATEGORY_HALTEZEITEN = {
@@ -19,16 +25,50 @@ const TRAINRUN_CATEGORY_HALTEZEITEN = {
   HaltezeitUncategorized: { haltezeit: 0, no_halt: false },
 };
 
+const DEFAULT_TRAINRUN_CATEGORY: TrainrunCategory = {
+  id: 1, // In NGE, Trainrun.DEFAULT_TRAINRUN_CATEGORY
+  order: 0,
+  name: 'Default',
+  shortName: '', // TODO: find a better way to hide this in the graph
+  fachCategory: 'HaltezeitUncategorized',
+  colorRef: 'EC',
+  minimalTurnaroundTime: 0,
+  nodeHeadwayStop: 0,
+  nodeHeadwayNonStop: 0,
+  sectionHeadway: 0,
+};
+
+const DEFAULT_TRAINRUN_FREQUENCY: TrainrunFrequency = {
+  id: 3, // In NGE, Trainrun.DEFAULT_TRAINRUN_FREQUENCY
+  order: 0,
+  frequency: 60,
+  offset: 0,
+  name: 'Default',
+  /** Short name, needs to be unique */
+  shortName: 'D',
+  linePatternRef: '60',
+};
+
+const DEFAULT_TRAINRUN_TIME_CATEGORY: TrainrunTimeCategory = {
+  id: 0, // In NGE, Trainrun.DEFAULT_TRAINRUN_TIME_CATEGORY
+  order: 0,
+  name: 'Default',
+  shortName: '7/24',
+  dayTimeInterval: [],
+  weekday: [1, 2, 3, 4, 5, 6, 7],
+  linePatternRef: '7/24',
+};
+
 const DEFAULT_DTO: NetzgrafikDto = {
-  nodes: [],
-  trainrunSections: [],
-  trainruns: [],
   resources: [],
+  nodes: [],
+  trainruns: [],
+  trainrunSections: [],
   metadata: {
     netzgrafikColors: [],
-    trainrunCategories: [],
-    trainrunFrequencies: [],
-    trainrunTimeCategories: [],
+    trainrunCategories: [DEFAULT_TRAINRUN_CATEGORY],
+    trainrunFrequencies: [DEFAULT_TRAINRUN_FREQUENCY],
+    trainrunTimeCategories: [DEFAULT_TRAINRUN_TIME_CATEGORY],
   },
   freeFloatingTexts: [],
   labels: [],
@@ -238,6 +278,12 @@ const importTimetable = async (
   return {
     ...DEFAULT_DTO,
     resources: [resource],
+    metadata: {
+      netzgrafikColors: [],
+      trainrunCategories: [DEFAULT_TRAINRUN_CATEGORY],
+      trainrunFrequencies: [DEFAULT_TRAINRUN_FREQUENCY],
+      trainrunTimeCategories: [DEFAULT_TRAINRUN_TIME_CATEGORY],
+    },
     nodes,
   };
 };

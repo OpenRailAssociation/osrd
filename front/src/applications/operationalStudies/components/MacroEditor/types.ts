@@ -67,6 +67,42 @@ export type TrainrunSection = {
   warnings: unknown[];
 };
 
+export type TrainrunCategory = {
+  id: number;
+  order: number;
+  name: string;
+  /** Short name, needs to be unique */
+  shortName: string;
+  fachCategory: string;
+  colorRef: string;
+  minimalTurnaroundTime: number;
+  nodeHeadwayStop: number;
+  nodeHeadwayNonStop: number;
+  sectionHeadway: number;
+};
+
+export type TrainrunFrequency = {
+  id: number;
+  order: number;
+  frequency: number;
+  offset: number;
+  name: string;
+  /** Short name, needs to be unique */
+  shortName: string;
+  linePatternRef: string;
+};
+
+export type TrainrunTimeCategory = {
+  id: number;
+  order: number;
+  name: string;
+  /** Short name, needs to be unique */
+  shortName: string;
+  dayTimeInterval: unknown[];
+  weekday: number[];
+  linePatternRef: string;
+};
+
 export type Resource = {
   id: number;
   capacity: number;
@@ -82,9 +118,9 @@ export type NetzgrafikDto = {
   resources: Resource[];
   metadata: {
     netzgrafikColors: unknown[];
-    trainrunCategories: unknown[];
-    trainrunFrequencies: unknown[];
-    trainrunTimeCategories: unknown[];
+    trainrunCategories: TrainrunCategory[];
+    trainrunFrequencies: TrainrunFrequency[];
+    trainrunTimeCategories: TrainrunTimeCategory[];
   };
   freeFloatingTexts: unknown[];
   labels: unknown[];
