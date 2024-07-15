@@ -32,7 +32,6 @@ use client::{
     ImportRollingStockArgs, ImportTimetableArgs, InfraCloneArgs, InfraCommands, ListProfileSetArgs,
     MakeMigrationArgs, RedisConfig, RefreshArgs, RunserverArgs, SearchCommands, TimetablesCommands,
 };
-use editoast_models::DbConnectionPool;
 use editoast_models::DbConnectionPoolV2;
 use editoast_schemas::infra::ElectricalProfileSetData;
 use editoast_schemas::rolling_stock::RollingStock;
@@ -193,7 +192,7 @@ async fn run() -> Result<(), Box<dyn Error + Send + Sync>> {
 
     match client.command {
         Commands::Runserver(args) => runserver(args, pg_config, redis_config).await,
-        Commands::ImportRollingStock(args) => import_rolling_stock(args, db_pool.pool_v1()).await,
+        Commands::ImportRollingStock(args) => import_rolling_stock(args, db_pool.into()).await,
         Commands::OsmToRailjson(args) => {
             osm_to_railjson::osm_to_railjson(args.osm_pbf_in, args.railjson_out)
         }
@@ -203,13 +202,13 @@ async fn run() -> Result<(), Box<dyn Error + Send + Sync>> {
         }
         Commands::ElectricalProfiles(subcommand) => match subcommand {
             ElectricalProfilesCommands::Import(args) => {
-                electrical_profile_set_import(args, db_pool.pool_v1()).await
+                electrical_profile_set_import(args, db_pool.into()).await
             }
             ElectricalProfilesCommands::List(args) => {
-                electrical_profile_set_list(args, db_pool.pool_v1()).await
+                electrical_profile_set_list(args, db_pool.into()).await
             }
             ElectricalProfilesCommands::Delete(args) => {
-                electrical_profile_set_delete(args, db_pool.pool_v1()).await
+                electrical_profile_set_delete(args, db_pool.into()).await
             }
         },
         Commands::Search(subcommand) => match subcommand {
@@ -218,38 +217,38 @@ async fn run() -> Result<(), Box<dyn Error + Send + Sync>> {
                 Ok(())
             }
             SearchCommands::MakeMigration(args) => make_search_migration(args),
-            SearchCommands::Refresh(args) => refresh_search_tables(args, db_pool.pool_v1()).await,
+            SearchCommands::Refresh(args) => refresh_search_tables(args, db_pool.into()).await,
         },
         Commands::Infra(subcommand) => match subcommand {
             InfraCommands::Clone(args) => clone_infra(args, db_pool.into()).await,
-            InfraCommands::Clear(args) => clear_infra(args, db_pool.pool_v1(), redis_config).await,
+            InfraCommands::Clear(args) => clear_infra(args, db_pool.into(), redis_config).await,
             InfraCommands::Generate(args) => {
                 generate_infra(args, db_pool.into(), redis_config).await
             }
             InfraCommands::ImportRailjson(args) => import_railjson(args, db_pool.into()).await,
         },
         Commands::Timetables(subcommand) => match subcommand {
-            TimetablesCommands::Import(args) => trains_import(args, db_pool.pool_v1()).await,
-            TimetablesCommands::Export(args) => trains_export(args, db_pool.pool_v1()).await,
+            TimetablesCommands::Import(args) => trains_import(args, db_pool.into()).await,
+            TimetablesCommands::Export(args) => trains_export(args, db_pool.into()).await,
         },
     }
 }
 
 async fn trains_export(
     args: ExportTimetableArgs,
-    db_pool: Arc<DbConnectionPool>,
+    db_pool: Arc<DbConnectionPoolV2>,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
-    let conn = &mut db_pool.get().await?;
-    let train_ids = match TimetableWithTrains::retrieve(conn, args.id).await? {
-        Some(timetable) => timetable.train_ids,
-        None => {
-            let error = CliError::new(1, format!("❌ Timetable not found, id: {0}", args.id));
-            return Err(Box::new(error));
-        }
-    };
+    let train_ids =
+        match TimetableWithTrains::retrieve(db_pool.get().await?.deref_mut(), args.id).await? {
+            Some(timetable) => timetable.train_ids,
+            None => {
+                let error = CliError::new(1, format!("❌ Timetable not found, id: {0}", args.id));
+                return Err(Box::new(error));
+            }
+        };
 
     let (train_schedules, missing): (Vec<_>, _) =
-        TrainSchedule::retrieve_batch(conn, train_ids).await?;
+        TrainSchedule::retrieve_batch(db_pool.get().await?.deref_mut(), train_ids).await?;
 
     assert!(missing.is_empty());
 
@@ -271,7 +270,7 @@ async fn trains_export(
 
 async fn trains_import(
     args: ImportTimetableArgs,
-    db_pool: Arc<DbConnectionPool>,
+    db_pool: Arc<DbConnectionPoolV2>,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
     let train_file = match File::open(args.path.clone()) {
         Ok(file) => file,
@@ -284,9 +283,10 @@ async fn trains_import(
         }
     };
 
-    let conn = &mut db_pool.get().await?;
     let timetable = match args.id {
-        Some(timetable) => match Timetable::retrieve(conn, timetable).await? {
+        Some(timetable) => match Timetable::retrieve(db_pool.get().await?.deref_mut(), timetable)
+            .await?
+        {
             Some(timetable) => timetable,
             None => {
                 let error = CliError::new(1, format!("❌ Timetable not found, id: {0}", timetable));
@@ -295,7 +295,7 @@ async fn trains_import(
         },
         None => {
             let changeset = Timetable::changeset();
-            changeset.create(conn).await?
+            changeset.create(db_pool.get().await?.deref_mut()).await?
         }
     };
 
@@ -311,7 +311,8 @@ async fn trains_import(
             .into()
         })
         .collect();
-    let inserted: Vec<_> = TrainSchedule::create_batch(conn, changesets).await?;
+    let inserted: Vec<_> =
+        TrainSchedule::create_batch(db_pool.get().await?.deref_mut(), changesets).await?;
 
     println!(
         "✅ {} train schedules created for timetable with id {}",
@@ -528,7 +529,7 @@ async fn generate_infra(
 
 async fn import_rolling_stock(
     args: ImportRollingStockArgs,
-    db_pool: Arc<DbConnectionPool>,
+    db_pool: Arc<DbConnectionPoolV2>,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
     for rolling_stock_path in args.rolling_stock_path {
         let rolling_stock_file = File::open(rolling_stock_path)?;
@@ -545,8 +546,11 @@ async fn import_rolling_stock(
                         .map(|n| n.bold())
                         .unwrap_or("rolling stock witout name".bold())
                 );
-                let conn = &mut db_pool.get().await?;
-                let rolling_stock = rolling_stock.locked(false).version(0).create(conn).await?;
+                let rolling_stock = rolling_stock
+                    .locked(false)
+                    .version(0)
+                    .create(db_pool.get().await?.deref_mut())
+                    .await?;
                 println!(
                     "✅ Rolling stock {}[{}] saved!",
                     &rolling_stock.name.bold(),
@@ -654,7 +658,7 @@ async fn import_railjson(
 
 async fn electrical_profile_set_import(
     args: ImportProfileSetArgs,
-    db_pool: Arc<DbConnectionPool>,
+    db_pool: Arc<DbConnectionPoolV2>,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
     let electrical_profile_set_file = File::open(args.electrical_profile_set_path)?;
 
@@ -664,18 +668,19 @@ async fn electrical_profile_set_import(
         .name(args.name)
         .data(electrical_profile_set_data);
 
-    let conn = &mut db_pool.get().await?;
-    let created_ep_set = ep_set.create(conn).await?;
+    let created_ep_set = ep_set.create(db_pool.get().await?.deref_mut()).await?;
     println!("✅ Electrical profile set {} created", created_ep_set.id);
     Ok(())
 }
 
 async fn electrical_profile_set_list(
     args: ListProfileSetArgs,
-    db_pool: Arc<DbConnectionPool>,
+    db_pool: Arc<DbConnectionPoolV2>,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
-    let mut conn = db_pool.get().await?;
-    let electrical_profile_sets = ElectricalProfileSet::list_light(&mut conn).await.unwrap();
+    let electrical_profile_sets =
+        ElectricalProfileSet::list_light(db_pool.get().await?.deref_mut())
+            .await
+            .unwrap();
     if !args.quiet {
         println!("Electrical profile sets:\nID - Name");
     }
@@ -690,13 +695,13 @@ async fn electrical_profile_set_list(
 
 async fn electrical_profile_set_delete(
     args: DeleteProfileSetArgs,
-    db_pool: Arc<DbConnectionPool>,
+    db_pool: Arc<DbConnectionPoolV2>,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
     for profile_set_id in args.profile_set_ids {
-        let conn = &mut db_pool.get().await?;
-        let deleted = ElectricalProfileSet::delete_static(conn, profile_set_id)
-            .await
-            .unwrap();
+        let deleted =
+            ElectricalProfileSet::delete_static(db_pool.get().await?.deref_mut(), profile_set_id)
+                .await
+                .unwrap();
         if !deleted {
             println!("❎ Electrical profile set {} not found", profile_set_id);
         } else {
@@ -710,19 +715,18 @@ async fn electrical_profile_set_delete(
 /// This command clear all generated data for the given infra
 async fn clear_infra(
     args: ClearArgs,
-    db_pool: Arc<DbConnectionPool>,
+    db_pool: Arc<DbConnectionPoolV2>,
     redis_config: RedisConfig,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
-    let mut conn = db_pool.get().await?;
     let mut infras = vec![];
     if args.infra_ids.is_empty() {
         // Retrieve all available infra
-        for infra in Infra::all(&mut conn).await {
+        for infra in Infra::all(db_pool.get().await?.deref_mut()).await {
             infras.push(infra);
         }
     } else {
         // Retrieve given infras
-        infras = batch_retrieve_infras(&mut conn, &args.infra_ids).await?;
+        infras = batch_retrieve_infras(db_pool.get().await?.deref_mut(), &args.infra_ids).await?;
     };
 
     for mut infra in infras {
@@ -732,7 +736,7 @@ async fn clear_infra(
             infra.id
         );
         build_redis_pool_and_invalidate_all_cache(redis_config.clone(), infra.id).await?;
-        infra.clear(&mut conn).await?;
+        infra.clear(db_pool.get().await?.deref_mut()).await?;
         println!("✅ Infra {}[{}] cleared!", infra.name.bold(), infra.id);
     }
     Ok(())
@@ -818,7 +822,7 @@ fn make_search_migration(args: MakeMigrationArgs) -> Result<(), Box<dyn Error + 
 
 async fn refresh_search_tables(
     args: RefreshArgs,
-    db_pool: Arc<DbConnectionPool>,
+    db_pool: Arc<DbConnectionPoolV2>,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
     let objects = if args.objects.is_empty() {
         SearchConfigFinder::all()
@@ -830,7 +834,6 @@ async fn refresh_search_tables(
         args.objects
     };
 
-    let mut conn = db_pool.get().await?;
     for object in objects {
         let Some(search_config) = SearchConfigFinder::find(&object) else {
             eprintln!("❌ No search object found for {object}");
@@ -843,11 +846,11 @@ async fn refresh_search_tables(
         println!("🤖 Refreshing search table for {}", object);
         println!("🚮 Dropping {} content", search_config.table);
         sql_query(search_config.clear_sql())
-            .execute(&mut conn)
+            .execute(db_pool.get().await?.deref_mut())
             .await?;
         println!("♻️  Regenerating {}", search_config.table);
         sql_query(search_config.refresh_table_sql())
-            .execute(&mut conn)
+            .execute(db_pool.get().await?.deref_mut())
             .await?;
         println!("✅ Search table for {} refreshed!", object);
     }
@@ -879,26 +882,30 @@ impl CliError {
 mod tests {
     use super::*;
 
-    use crate::fixtures::tests::{
-        db_pool, electrical_profile_set, get_fast_rolling_stock_schema,
-        get_trainschedule_json_array, TestFixture,
-    };
+    use crate::fixtures::tests::get_fast_rolling_stock_schema;
+    use crate::fixtures::tests::get_trainschedule_json_array;
+    use crate::modelsv2::fixtures::create_electrical_profile_set;
     use crate::modelsv2::RollingStockModel;
+
+    use editoast_models::DbConnectionPoolV2;
     use modelsv2::DeleteStatic;
     use rand::distributions::Alphanumeric;
     use rand::{thread_rng, Rng};
     use rstest::rstest;
     use serde::Serialize;
     use std::io::Write;
-    use std::sync::Arc;
+    use std::ops::DerefMut;
     use tempfile::NamedTempFile;
 
     #[rstest]
-    async fn import_export_timetable_schedule_v2(db_pool: Arc<DbConnectionPool>) {
-        let conn = &mut db_pool.get().await.unwrap();
+    async fn import_export_timetable_schedule_v2() {
+        let db_pool = DbConnectionPoolV2::for_tests();
 
         let changeset = Timetable::changeset();
-        let timetable = changeset.create(conn).await.unwrap();
+        let timetable = changeset
+            .create(db_pool.get_ok().deref_mut())
+            .await
+            .unwrap();
 
         let mut file = NamedTempFile::new().unwrap();
         file.write_all(get_trainschedule_json_array().as_bytes())
@@ -909,7 +916,7 @@ mod tests {
             path: file.path().into(),
             id: Some(timetable.id),
         };
-        let result = trains_import(args, db_pool.clone()).await;
+        let result = trains_import(args, db_pool.clone().into()).await;
         assert!(result.is_ok(), "{:?}", result);
 
         // Test to export the import
@@ -918,7 +925,7 @@ mod tests {
             path: export_file.path().into(),
             id: timetable.id,
         };
-        let export_result = trains_export(args, db_pool.clone()).await;
+        let export_result = trains_export(args, db_pool.clone().into()).await;
         assert!(export_result.is_ok(), "{:?}", export_result);
 
         // Test to reimport the exported import
@@ -926,31 +933,33 @@ mod tests {
             path: export_file.path().into(),
             id: Some(timetable.id),
         };
-        let reimport_result = trains_import(reimport_args, db_pool.clone()).await;
+        let reimport_result = trains_import(reimport_args, db_pool.clone().into()).await;
         assert!(reimport_result.is_ok(), "{:?}", reimport_result);
 
-        Timetable::delete_static(conn, timetable.id).await.unwrap();
+        Timetable::delete_static(db_pool.get_ok().deref_mut(), timetable.id)
+            .await
+            .unwrap();
     }
 
     #[rstest]
-    async fn import_rolling_stock_ko_file_not_found(db_pool: Arc<DbConnectionPool>) {
+    async fn import_rolling_stock_ko_file_not_found() {
         // GIVEN
+        let db_pool = DbConnectionPoolV2::for_tests();
         let args = ImportRollingStockArgs {
             rolling_stock_path: vec!["non/existing/railjson/file/location".into()],
         };
 
         // WHEN
-        let result = import_rolling_stock(args, db_pool).await;
+        let result = import_rolling_stock(args, db_pool.into()).await;
 
         // THEN
         assert!(result.is_err())
     }
 
     #[rstest]
-    async fn import_non_electric_rs_without_startup_and_panto_values(
-        db_pool: Arc<DbConnectionPool>,
-    ) {
+    async fn import_non_electric_rs_without_startup_and_panto_values() {
         // GIVEN
+        let db_pool = DbConnectionPoolV2::for_tests();
         let rolling_stock_name =
             "fast_rolling_stock_import_non_electric_rs_without_startup_and_panto_values";
         let mut non_electric_rs = get_fast_rolling_stock_schema(rolling_stock_name);
@@ -962,25 +971,27 @@ mod tests {
         };
 
         // WHEN
-        let result = import_rolling_stock(args, db_pool.clone()).await;
+        let result = import_rolling_stock(args, db_pool.clone().into()).await;
 
         // THEN
         assert!(
             result.is_ok(),
             "import should succeed, as raise_panto and startup are not required for non electric",
         );
-        let mut conn = db_pool.get().await.unwrap();
         use crate::modelsv2::Retrieve;
-        let created_rs = RollingStockModel::retrieve(&mut conn, rolling_stock_name.to_string())
-            .await
-            .unwrap();
+        let created_rs = RollingStockModel::retrieve(
+            db_pool.get_ok().deref_mut(),
+            rolling_stock_name.to_string(),
+        )
+        .await
+        .unwrap();
         assert!(created_rs.is_some());
-        TestFixture::new(created_rs.unwrap(), db_pool.clone());
     }
 
     #[rstest]
-    async fn import_non_electric_rs_with_startup_and_panto_values(db_pool: Arc<DbConnectionPool>) {
+    async fn import_non_electric_rs_with_startup_and_panto_values() {
         // GIVEN
+        let db_pool = DbConnectionPoolV2::for_tests();
         let rolling_stock_name =
             "fast_rolling_stock_import_non_electric_rs_with_startup_and_panto_values";
         let mut non_electric_rs = get_fast_rolling_stock_schema(rolling_stock_name);
@@ -992,29 +1003,31 @@ mod tests {
         };
 
         // WHEN
-        let result = import_rolling_stock(args, db_pool.clone()).await;
+        let result = import_rolling_stock(args, db_pool.clone().into()).await;
 
         // THEN
         assert!(result.is_ok(), "import should succeed");
-        let mut conn = db_pool.get().await.unwrap();
         use crate::modelsv2::Retrieve;
-        let created_rs = RollingStockModel::retrieve(&mut conn, rolling_stock_name.to_string())
-            .await
-            .unwrap();
-        assert!(created_rs.is_some());
-        let rs_fixture = TestFixture::new(created_rs.unwrap(), db_pool.clone());
+        let created_rs = RollingStockModel::retrieve(
+            db_pool.get_ok().deref_mut(),
+            rolling_stock_name.to_string(),
+        )
+        .await
+        .expect("failed to retrieve rolling stock")
+        .unwrap();
         let RollingStockModel {
             electrical_power_startup_time,
             raise_pantograph_time,
             ..
-        } = rs_fixture.model;
+        } = created_rs;
         assert!(electrical_power_startup_time.is_some());
         assert!(raise_pantograph_time.is_some());
     }
 
     #[rstest]
-    async fn import_electric_rs_without_startup_and_panto_values(db_pool: Arc<DbConnectionPool>) {
+    async fn import_electric_rs_without_startup_and_panto_values() {
         // GIVEN
+        let db_pool = DbConnectionPoolV2::for_tests();
         let rolling_stock_name =
             "fast_rolling_stock_import_electric_rs_without_startup_and_panto_values";
         let mut electric_rs = get_fast_rolling_stock_schema(rolling_stock_name);
@@ -1026,24 +1039,27 @@ mod tests {
         };
 
         // WHEN
-        let result = import_rolling_stock(args, db_pool.clone()).await;
+        let result = import_rolling_stock(args, db_pool.clone().into()).await;
 
         // THEN
         assert!(
             result.is_err(),
             "import should fail, as raise_panto and startup are required for electric"
         );
-        let mut conn = db_pool.get().await.unwrap();
         use crate::modelsv2::Retrieve;
-        let created_rs = RollingStockModel::retrieve(&mut conn, rolling_stock_name.to_string())
-            .await
-            .unwrap();
+        let created_rs = RollingStockModel::retrieve(
+            db_pool.get_ok().deref_mut(),
+            rolling_stock_name.to_string(),
+        )
+        .await
+        .unwrap();
         assert!(created_rs.is_none());
     }
 
     #[rstest]
-    async fn import_electric_rs_with_startup_and_panto_values(db_pool: Arc<DbConnectionPool>) {
+    async fn import_electric_rs_with_startup_and_panto_values() {
         // GIVEN
+        let db_pool = DbConnectionPoolV2::for_tests();
         let rolling_stock_name =
             "fast_rolling_stock_import_electric_rs_with_startup_and_panto_values";
         let electric_rolling_stock = get_fast_rolling_stock_schema(rolling_stock_name);
@@ -1053,30 +1069,25 @@ mod tests {
         };
 
         // WHEN
-        let result = import_rolling_stock(args, db_pool.clone()).await;
+        let result = import_rolling_stock(args, db_pool.clone().into()).await;
 
         // THEN
         assert!(result.is_ok(), "import should succeed");
-        let mut conn = db_pool.get().await.unwrap();
         use crate::modelsv2::Retrieve;
-        let created_rs = RollingStockModel::retrieve(&mut conn, rolling_stock_name.to_string())
-            .await
-            .unwrap();
-        assert!(created_rs.is_some());
-        let rs_fixture = TestFixture::new(created_rs.unwrap(), db_pool.clone());
+        let created_rs = RollingStockModel::retrieve(
+            db_pool.get_ok().deref_mut(),
+            rolling_stock_name.to_string(),
+        )
+        .await
+        .expect("Failed to retrieve rolling stock")
+        .unwrap();
         let RollingStockModel {
             electrical_power_startup_time,
             raise_pantograph_time,
             ..
-        } = rs_fixture.model;
-        assert_eq!(
-            electrical_power_startup_time,
-            rs_fixture.model.electrical_power_startup_time
-        );
-        assert_eq!(
-            raise_pantograph_time,
-            rs_fixture.model.raise_pantograph_time
-        );
+        } = created_rs;
+        assert!(electrical_power_startup_time.is_some());
+        assert!(raise_pantograph_time.is_some());
     }
 
     #[rstest]
@@ -1136,41 +1147,37 @@ mod tests {
     }
 
     #[rstest]
-    async fn test_electrical_profile_set_delete(
-        #[future] electrical_profile_set: TestFixture<ElectricalProfileSet>,
-        db_pool: Arc<DbConnectionPool>,
-    ) {
+    async fn test_electrical_profile_set_delete() {
         // GIVEN
-        let electrical_profile_set = electrical_profile_set.await;
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let electrical_profile_set =
+            create_electrical_profile_set(db_pool.get_ok().deref_mut()).await;
 
         let args = DeleteProfileSetArgs {
-            profile_set_ids: vec![electrical_profile_set.id()],
+            profile_set_ids: vec![electrical_profile_set.id],
         };
 
         // WHEN
-        electrical_profile_set_delete(args, db_pool.clone())
+        electrical_profile_set_delete(args, db_pool.clone().into())
             .await
             .unwrap();
 
         // THEN
-        let mut conn = db_pool.get().await.unwrap();
-        let empty = !ElectricalProfileSet::list_light(&mut conn)
+        let empty = !ElectricalProfileSet::list_light(db_pool.get_ok().deref_mut())
             .await
             .unwrap()
             .iter()
-            .any(|eps| eps.id == electrical_profile_set.id());
+            .any(|eps| eps.id == electrical_profile_set.id);
         assert!(empty);
     }
 
     #[rstest]
-    async fn test_electrical_profile_set_list_doesnt_fail(
-        #[future] electrical_profile_set: TestFixture<ElectricalProfileSet>,
-        db_pool: Arc<DbConnectionPool>,
-    ) {
-        let _electrical_profile_set = electrical_profile_set.await;
+    async fn test_electrical_profile_set_list_doesnt_fail() {
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let _ = create_electrical_profile_set(db_pool.get_ok().deref_mut()).await;
         for quiet in [true, false] {
             let args = ListProfileSetArgs { quiet };
-            electrical_profile_set_list(args, db_pool.clone())
+            electrical_profile_set_list(args, db_pool.clone().into())
                 .await
                 .unwrap();
         }
