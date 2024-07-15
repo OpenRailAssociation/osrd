@@ -9,11 +9,15 @@ import type { AppDispatch } from 'store';
 
 import type {
   Node,
+  Trainrun,
+  TrainrunSection,
   TrainrunCategory,
   TrainrunFrequency,
   TrainrunTimeCategory,
   NetzgrafikDto,
 } from './types';
+import { PortAlignment } from './types';
+import { findOpFromPathItem } from './utils';
 
 // TODO: make this optional in NGE since it's SBB-specific
 const TRAINRUN_CATEGORY_HALTEZEITEN = {
@@ -275,6 +279,90 @@ const importTimetable = async (
 
   nodes = convertGeoCoords(nodes);
 
+  // Create one NGE train run per OSRD train schedule
+  const trainruns: Trainrun[] = trainSchedules.map((trainSchedule) => ({
+    id: trainSchedule.id,
+    name: trainSchedule.train_name,
+    categoryId: DEFAULT_TRAINRUN_CATEGORY.id,
+    frequencyId: DEFAULT_TRAINRUN_FREQUENCY.id,
+    trainrunTimeCategoryId: DEFAULT_TRAINRUN_TIME_CATEGORY.id,
+    labelIds: [],
+  }));
+
+  let portId = 0;
+  const createPort = (trainrunSectionId: number) => {
+    const port = {
+      id: portId,
+      trainrunSectionId,
+      positionIndex: 0,
+      positionAlignment: PortAlignment.Top,
+    };
+    portId += 1;
+    return port;
+  };
+
+  let trainrunSectionId = 0;
+  const trainrunSections: TrainrunSection[] = trainSchedules
+    .map((trainSchedule) => {
+      const ops = trainSchedule.path.map((pathItem) => findOpFromPathItem(pathItem, searchResults));
+      const foundAllOps = ops.every((op) => op);
+      if (!foundAllOps) {
+        return [];
+      }
+
+      // OSRD describes the path in terms of nodes, NGE describes it in terms
+      // of sections between nodes. Iterate over path items two-by-two to
+      // convert them.
+      return ops.slice(0, -1).map((sourceOp, i) => {
+        const sourceNodeId = sourceOp!.obj_id;
+        const targetNodeId = ops[i + 1]!.obj_id;
+
+        const timeLockStub = {
+          time: 0,
+          consecutiveTime: null,
+          lock: false,
+          warning: null,
+          timeFormatter: null,
+        };
+
+        const sourcePort = createPort(trainrunSectionId);
+        const targetPort = createPort(trainrunSectionId);
+
+        const sourceNode = nodesById.get(sourceNodeId)!;
+        const targetNode = nodesById.get(targetNodeId)!;
+        sourceNode.ports.push(sourcePort);
+        targetNode.ports.push(targetPort);
+
+        // TODO: create transitions between ports
+
+        const trainrunSection = {
+          id: trainrunSectionId,
+          sourceNodeId,
+          sourcePortId: sourcePort.id,
+          targetNodeId,
+          targetPortId: targetPort.id,
+          travelTime: { ...timeLockStub },
+          sourceDeparture: { ...timeLockStub },
+          sourceArrival: { ...timeLockStub },
+          targetDeparture: { ...timeLockStub },
+          targetArrival: { ...timeLockStub },
+          numberOfStops: 0,
+          trainrunId: trainSchedule.id,
+          resourceId: resource.id,
+          path: {
+            path: [],
+            textPositions: [],
+          },
+          specificTrainrunSectionFrequencyId: 0,
+          warnings: [],
+        };
+        trainrunSectionId += 1;
+
+        return trainrunSection;
+      });
+    })
+    .flat();
+
   return {
     ...DEFAULT_DTO,
     resources: [resource],
@@ -285,6 +373,8 @@ const importTimetable = async (
       trainrunTimeCategories: [DEFAULT_TRAINRUN_TIME_CATEGORY],
     },
     nodes,
+    trainruns,
+    trainrunSections,
   };
 };
 
