@@ -23,6 +23,7 @@ use crate::{
     client::{MapLayersConfig, PostgresConfig, RedisConfig},
     core::CoreClient,
     error::InternalError,
+    generated_data::speed_limit_tags_config::SpeedLimitTagIds,
     infra_cache::InfraCache,
     map::MapLayers,
     RedisClient,
@@ -96,6 +97,8 @@ impl TestAppBuilder {
             .finish();
         let tracing_guard = tracing::subscriber::set_default(sub);
 
+        let speed_limit_tag_ids = Data::new(SpeedLimitTagIds::load());
+
         let json_cfg = JsonConfig::default()
             .limit(250 * 1024 * 1024) // 250MB
             .error_handler(|err, _| InternalError::from(err).into());
@@ -109,6 +112,7 @@ impl TestAppBuilder {
 
         let mut app = App::new()
             .wrap(NormalizePath::trim())
+            .app_data(speed_limit_tag_ids.clone())
             .app_data(json_cfg)
             .app_data(Data::new(redis))
             .app_data(Data::new(CHashMap::<i64, InfraCache>::default()))

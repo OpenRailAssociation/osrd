@@ -3,6 +3,7 @@ FROM gradle:8.0-jdk17 AS build_env
 
 WORKDIR /home/gradle/src
 COPY --from=test_data . /home/gradle/tests/data
+COPY --from=static_assets . /home/gradle/assets
 COPY --chown=gradle:gradle . .
 # Remove broken symlink (to prevent kaniko from crashing)
 RUN --mount=type=cache,target=/home/gradle/.gradle \

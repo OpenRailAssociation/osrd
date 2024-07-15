@@ -43,6 +43,7 @@ target "core-build" {
   target = "build_env"
   contexts = {
     test_data = "./tests/data"
+    static_assets = "./assets"
   }
 }
 
@@ -55,6 +56,7 @@ target "core" {
   target = "running_env"
   contexts = {
     test_data = "./tests/data"
+    static_assets = "./assets"
   }
 }
 
@@ -70,6 +72,7 @@ target "editoast-test" {
   target = "test_builder"
   contexts = {
     test_data = "./tests/data"
+    static_assets = "./assets"
   }
 }
 
@@ -80,7 +83,7 @@ target "editoast" {
   dockerfile = "Dockerfile"
   target = "running_env"
   contexts = {
-    test_data = "./tests/data"
+    static_assets = "./assets"
   }
 }
 

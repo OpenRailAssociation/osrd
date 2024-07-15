@@ -13,6 +13,7 @@ export const addTagTypes = [
   'scenarios',
   'rolling_stock_livery',
   'search',
+  'speed_limit_tags',
   'sprites',
   'stdcm',
   'timetable',
@@ -670,6 +671,10 @@ const injectedRtkApi = api
           method: 'POST',
           body: queryArg.singleSimulationRequest,
         }),
+      }),
+      getSpeedLimitTags: build.query<GetSpeedLimitTagsApiResponse, GetSpeedLimitTagsApiArg>({
+        query: () => ({ url: `/speed_limit_tags/` }),
+        providesTags: ['speed_limit_tags'],
       }),
       getSpritesSignalingSystems: build.query<
         GetSpritesSignalingSystemsApiResponse,
@@ -1521,6 +1526,9 @@ export type PostSingleSimulationApiResponse =
 export type PostSingleSimulationApiArg = {
   singleSimulationRequest: SingleSimulationRequest;
 };
+export type GetSpeedLimitTagsApiResponse =
+  /** status 200 List of configured speed-limit tags */ string[];
+export type GetSpeedLimitTagsApiArg = void;
 export type GetSpritesSignalingSystemsApiResponse =
   /** status 200 List of supported signaling systems */ string[];
 export type GetSpritesSignalingSystemsApiArg = void;
