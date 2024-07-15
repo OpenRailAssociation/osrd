@@ -27,6 +27,22 @@ public class MRSP {
      */
     public static Envelope computeMRSP(
             PathProperties path, PhysicsRollingStock rollingStock, boolean addRollingStockLength, String trainTag) {
+        return computeMRSP(path, rollingStock.getMaxSpeed(), rollingStock.getLength(), addRollingStockLength, trainTag);
+    }
+
+    /**
+     * Computes the MSRP for a rolling stock on a given path.
+     *
+     * @param path corresponding path.
+     * @param rsMaxSpeed rolling stock max speed (m/s)
+     * @param rsLength length of the rolling stock (m)
+     * @param addRollingStockLength whether the rolling stock length should be taken into account in
+     *     the computation.
+     * @param trainTag corresponding train.
+     * @return the corresponding MRSP as an Envelope.
+     */
+    public static Envelope computeMRSP(
+            PathProperties path, double rsMaxSpeed, double rsLength, boolean addRollingStockLength, String trainTag) {
         var builder = new MRSPEnvelopeBuilder();
         var pathLength = toMeters(path.getLength());
 
@@ -34,9 +50,9 @@ public class MRSP {
         builder.addPart(EnvelopePart.generateTimes(
                 List.of(EnvelopeProfile.CONSTANT_SPEED, MRSPEnvelopeBuilder.LimitKind.TRAIN_LIMIT),
                 new double[] {0, pathLength},
-                new double[] {rollingStock.getMaxSpeed(), rollingStock.getMaxSpeed()}));
+                new double[] {rsMaxSpeed, rsMaxSpeed}));
 
-        var offset = addRollingStockLength ? rollingStock.getLength() : 0.;
+        var offset = addRollingStockLength ? rsLength : 0.;
         var speedLimits = path.getSpeedLimits(trainTag);
         for (var speedLimit : speedLimits) {
             // Compute where this limit is active from and to

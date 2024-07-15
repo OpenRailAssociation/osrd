@@ -46,7 +46,7 @@ test.describe('STDCM page', () => {
     await expect(stdcmPage.missingParams).not.toContainText(rollingStockTranslation);
 
     await stdcmPage.selectPathByTrigram('MWS', 'NES');
-    await stdcmPage.checkPathfindingDistance('33.950 km');
+    await stdcmPage.checkPathfindingDistance('34.000 km');
 
     await stdcmPage.setOriginTime('081500');
     await stdcmPage.clickBtnByName('Appliquer');
