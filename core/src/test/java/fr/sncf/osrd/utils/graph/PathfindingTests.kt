@@ -1,11 +1,16 @@
 package fr.sncf.osrd.utils.graph
 
 import com.google.common.graph.NetworkBuilder
-import fr.sncf.osrd.graph.*
+import fr.sncf.osrd.graph.Graph
+import fr.sncf.osrd.graph.GraphAdapter
+import fr.sncf.osrd.graph.NetworkGraphAdapter
+import fr.sncf.osrd.graph.Pathfinding
 import fr.sncf.osrd.graph.Pathfinding.EdgeLocation
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
-import fr.sncf.osrd.utils.graph.PathfindingTests.SimpleGraphBuilder.*
+import fr.sncf.osrd.utils.CachedBlockMRSPBuilder
+import fr.sncf.osrd.utils.DummyInfra
+import fr.sncf.osrd.utils.graph.PathfindingTests.SimpleGraphBuilder.Edge
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
@@ -700,6 +705,48 @@ class PathfindingTests {
                         .isEqualTo(ErrorType.PathfindingTimeoutError)
                 })
         }
+    }
+
+    /**
+     * Check that the cost function is used, shortest path is longest. This test uses STDCM tooling
+     * to have speed limits.
+     */
+    @Test
+    fun emptyTimetable() {
+        /*
+                FAST
+        a ---------------> b -> c
+                           ^
+                    x ----/
+                      SLOW
+         */
+        val infra = DummyInfra()
+        val fast = infra.addBlock("a", "b", 4_999.meters, 50.0)
+        val slow = infra.addBlock("x", "b", 100.meters, 1.0)
+        val secondBlock = infra.addBlock("b", "c")
+        val mrspBuilder =
+            CachedBlockMRSPBuilder(infra.fullInfra().rawInfra, infra.fullInfra().blockInfra, null)
+        val res =
+            Pathfinding(GraphAdapter(infra.fullInfra().blockInfra, infra.fullInfra().rawInfra))
+                .setEdgeToLength { block -> infra.fullInfra().blockInfra.getBlockLength(block) }
+                .setRangeCost { range ->
+                    val start = mrspBuilder.getBlockTime(range.edge, range.start)
+                    val end = mrspBuilder.getBlockTime(range.edge, range.end)
+                    val res = end - start
+                    return@setRangeCost res
+                }
+                .runPathfindingEdgesOnly(
+                    listOf(
+                        listOf(
+                            EdgeLocation(slow, Offset(0.meters)),
+                            EdgeLocation(fast, Offset(0.meters)),
+                        ),
+                        listOf(
+                            EdgeLocation(secondBlock, Offset(0.meters)),
+                        )
+                    )
+                )
+        Assertions.assertEquals(listOf(fast, secondBlock), res)
     }
 
     companion object {

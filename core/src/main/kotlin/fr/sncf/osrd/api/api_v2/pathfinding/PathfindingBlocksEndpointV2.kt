@@ -12,6 +12,7 @@ import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl
 import fr.sncf.osrd.sim_infra.api.*
+import fr.sncf.osrd.utils.CachedBlockMRSPBuilder
 import fr.sncf.osrd.utils.Direction
 import fr.sncf.osrd.utils.indexing.*
 import fr.sncf.osrd.utils.units.Length
@@ -126,10 +127,15 @@ private fun computePaths(
     remainingDistanceEstimators: List<AStarHeuristicId<Block>>,
     timeout: Double?
 ): PathfindingResultId<Block> {
+    val mrspBuilder = CachedBlockMRSPBuilder(infra.rawInfra, infra.blockInfra, null)
     val pathFound =
         Pathfinding(GraphAdapter(infra.blockInfra, infra.rawInfra))
             .setTimeout(timeout)
             .setEdgeToLength { block: BlockId -> infra.blockInfra.getBlockLength(block) }
+            .setRangeCost { range ->
+                mrspBuilder.getBlockTime(range.edge, range.end) -
+                    mrspBuilder.getBlockTime(range.edge, range.start)
+            }
             .setRemainingDistanceEstimator(remainingDistanceEstimators)
             .addBlockedRangeOnEdges(constraints)
             .runPathfinding(waypoints)
@@ -142,6 +148,10 @@ private fun computePaths(
     val possiblePathWithoutErrorNoConstraints =
         Pathfinding(GraphAdapter(infra.blockInfra, infra.rawInfra))
             .setEdgeToLength { block -> infra.blockInfra.getBlockLength(block) }
+            .setRangeCost { range ->
+                mrspBuilder.getBlockTime(range.edge, range.end) -
+                    mrspBuilder.getBlockTime(range.edge, range.start)
+            }
             .setRemainingDistanceEstimator(remainingDistanceEstimators)
             .runPathfinding(waypoints)
     if (possiblePathWithoutErrorNoConstraints != null) {
@@ -150,6 +160,10 @@ private fun computePaths(
                 Pathfinding(GraphAdapter(infra.blockInfra, infra.rawInfra))
                     .setTimeout(timeout)
                     .setEdgeToLength { block: BlockId -> infra.blockInfra.getBlockLength(block) }
+                    .setRangeCost { range ->
+                        mrspBuilder.getBlockTime(range.edge, range.end) -
+                            mrspBuilder.getBlockTime(range.edge, range.start)
+                    }
                     .addBlockedRangeOnEdges(currentConstraint)
                     .setRemainingDistanceEstimator(remainingDistanceEstimators)
                     .runPathfinding(waypoints)

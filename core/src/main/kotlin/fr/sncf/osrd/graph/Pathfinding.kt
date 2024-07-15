@@ -82,6 +82,15 @@ class Pathfinding<NodeT : Any, EdgeT : Any, OffsetType>(
      */
     private var estimateRemainingDistance: List<AStarHeuristic<EdgeT, OffsetType>>? = ArrayList()
 
+    /**
+     * Function to call to get the cost of a range. Defaults to distances. The heuristic unit *must*
+     * match.
+     */
+    private var rangeCost: (EdgeRange<EdgeT, OffsetType>) -> Double =
+        { range: EdgeRange<EdgeT, OffsetType> ->
+            (range.end - range.start).millimeters.toDouble()
+        }
+
     /** Timeout, in seconds, to avoid infinite loop when no path can be found. */
     private var timeout = TIMEOUT
 
@@ -90,6 +99,14 @@ class Pathfinding<NodeT : Any, EdgeT : Any, OffsetType>(
         f: EdgeToLength<EdgeT, OffsetType>?
     ): Pathfinding<NodeT, EdgeT, OffsetType> {
         edgeToLength = f
+        return this
+    }
+
+    /** Sets the functor used to define the cost of an edge range */
+    fun setRangeCost(
+        f: (EdgeRange<EdgeT, OffsetType>) -> Double
+    ): Pathfinding<NodeT, EdgeT, OffsetType> {
+        rangeCost = f
         return this
     }
 
@@ -307,8 +324,7 @@ class Pathfinding<NodeT : Any, EdgeT : Any, OffsetType>(
         targets: List<EdgeLocation<EdgeT, OffsetType>> = listOf()
     ) {
         val filteredRange = filterRange(range) ?: return
-        val totalDistance =
-            prevDistance + (filteredRange.end - filteredRange.start).millimeters.toDouble()
+        val totalDistance = prevDistance + rangeCost.invoke(filteredRange)
         var distanceLeftEstimation = 0.0
         if (nPassedTargets < estimateRemainingDistance!!.size)
             distanceLeftEstimation =

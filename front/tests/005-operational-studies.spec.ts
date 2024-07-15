@@ -81,7 +81,7 @@ test.describe('Testing if all mandatory elements simulation configuration are lo
 
     await scenarioPage.getPathfindingByTriGramSearch('MWS', 'NES');
 
-    await scenarioPage.checkPathfindingDistance('33.950 km');
+    await scenarioPage.checkPathfindingDistance('34.000 km');
 
     // TODO: move this test in his own file
     // ***************** Test Composition Code *****************
