@@ -27,6 +27,7 @@ import { castErrorToFailure } from 'utils/error';
 import { sec2time } from 'utils/timeManipulation';
 
 import type { InvalidReason, TrainScheduleWithDetails } from './types';
+import { transformDateWithoutYear } from './utils';
 
 type TimetableTrainCardProps = {
   isSelectable: boolean;
@@ -121,7 +122,6 @@ const TimetableTrainCardV2 = ({
       const trainDetail = trainsResults[0];
       const formattedStartTimeMs = isoDateToMs(trainDetail.start_time);
       const newStartTimeString = formatToIsoDate(formattedStartTimeMs + 1000 * 60 * trainDelta);
-
       const newTrain: TrainScheduleBase = {
         ...omit(trainDetail, ['id', 'timetable_id']),
         start_time: newStartTimeString,
@@ -208,7 +208,9 @@ const TimetableTrainCardV2 = ({
                   {getInvalidIcon(train.invalidReason)}
                 </div>
               )}
-              {train.trainName}
+              <div className="train-name" title={train.trainName}>
+                {train.trainName}
+              </div>
               {train.rollingStock && (
                 <span className="img-container">
                   <RollingStock2Img rollingStock={train.rollingStock} />
@@ -226,8 +228,12 @@ const TimetableTrainCardV2 = ({
                 </div>
               )}
               <div>
-                <div className="scenario-timetable-train-departure">{train.startTime}</div>
-                <div className="scenario-timetable-train-arrival">{train.arrivalTime}</div>
+                <div className="scenario-timetable-train-departure">
+                  {transformDateWithoutYear(train.startTime)}
+                </div>
+                <div className="scenario-timetable-train-arrival" title={train.arrivalTime}>
+                  {transformDateWithoutYear(train.arrivalTime)}
+                </div>
               </div>
             </div>
           </div>

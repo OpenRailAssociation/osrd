@@ -31,3 +31,6 @@ export const extractTagCode = (tag?: string | null) => {
 
 export const timetableHasInvalidTrain = (trains: TrainScheduleWithDetails[]) =>
   trains.some((train) => train.invalidReason);
+
+export const transformDateWithoutYear = (dateTime: string): string =>
+  `${dateTime.split('/')[0]}/${dateTime.split('/')[1]} ${dateTime.split('/')[2].slice(5)} `;
