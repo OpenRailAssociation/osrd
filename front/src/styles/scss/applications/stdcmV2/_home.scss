@@ -36,28 +36,6 @@
             font-weight: 500;
           }
         }
-        .simulation-availaible {
-          width: 34.125rem;
-          height: 5rem;
-          display: flex;
-          flex-direction: column;
-          position: absolute;
-          margin-top: 2.5rem;
-          border-radius: 0.5rem;
-          background-color: rgb(230, 247, 238);
-          box-shadow:
-            0px 0px 0px 4px rgba(255, 255, 255, 1) inset,
-            0px 0px 0px 5px rgb(60, 202, 128) inset,
-            0px 3px 7px -3px rgba(11, 114, 60, 0.4);
-
-          span {
-            color: rgb(11, 114, 60);
-            align-self: center;
-            padding-top: 1.438rem;
-            font-size: 1.5rem;
-            line-height: 2rem;
-          }
-        }
 
         .warning-box {
           border-radius: 0.5rem;
@@ -130,6 +108,40 @@
       height: calc(100vh - 64px);
     }
   }
+  .stdcm-container {
+    position: relative;
+  }
+
+  .simulation-available {
+    position: absolute;
+    z-index: 10;
+    height: 5rem;
+    width: 34.125rem;
+    display: flex;
+    flex-direction: column;
+    margin-top: -2.5rem;
+    margin-left: 21.125rem;
+    border-radius: 0.5rem;
+    background-color: rgb(230, 247, 238);
+    box-shadow:
+      0px 0px 0px 4px rgba(255, 255, 255, 1) inset,
+      0px 0px 0px 5px rgb(60, 202, 128) inset,
+      0px 3px 7px -3px rgba(11, 114, 60, 0.4);
+
+    span {
+      color: rgb(11, 114, 60);
+      align-self: center;
+      padding-top: 1.438rem;
+      font-size: 1.5rem;
+      line-height: 2rem;
+    }
+  }
+
+  .stdcm-container.simulation-visible > *:not(.simulation-available) {
+    padding-top: 3rem;
+    padding-bottom: 3rem;
+  }
+
   .stdcm-v2-results {
     background-color: rgb(233, 239, 242);
     .simuation-banner {
