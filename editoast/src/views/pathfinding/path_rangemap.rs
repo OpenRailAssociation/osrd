@@ -42,11 +42,11 @@ mod tests {
     use editoast_common::range_map;
 
     use super::*;
-    use crate::models::pathfinding::tests::simple_pathfinding;
+    use crate::modelsv2::fixtures::simple_pathfinding_v1;
 
     #[test]
     fn test_make_path_range_map() {
-        let pathfinding = simple_pathfinding(0);
+        let pathfinding = simple_pathfinding_v1(0);
         let value_maps_by_track: HashMap<String, RangeMap<Float, String>> = [
             ("track_1".into(), range_map!(0.0, 10.0 => "A")),
             (

@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::fmt::Debug;
+use std::ops::DerefMut;
 
 use actix_web::get;
 use actix_web::web::Data;
@@ -25,7 +26,7 @@ use crate::views::pathfinding::path_rangemap::make_path_range_map;
 use crate::views::pathfinding::path_rangemap::TrackMap;
 use crate::views::pathfinding::PathfindingError;
 use crate::views::pathfinding::PathfindingIdParam;
-use editoast_models::DbConnectionPool;
+use editoast_models::DbConnectionPoolV2;
 use editoast_schemas::infra::ElectricalProfileSetData;
 
 crate::routes! {
@@ -97,33 +98,34 @@ struct ProfilesOnPathResponse {
 async fn electrical_profiles_on_path(
     params: Path<PathfindingIdParam>,
     request: Query<ProfilesOnPathQuery>,
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Data<DbConnectionPoolV2>,
 ) -> Result<Json<ProfilesOnPathResponse>> {
     let db_pool = db_pool.into_inner();
     let pathfinding_id = params.pathfinding_id;
-    let pathfinding = match Pathfinding::retrieve(db_pool.clone(), pathfinding_id).await? {
-        Some(pf) => pf,
-        None => return Err(PathfindingError::NotFound { pathfinding_id }.into()),
-    };
+    let pathfinding =
+        match Pathfinding::retrieve_conn(db_pool.get().await?.deref_mut(), pathfinding_id).await? {
+            Some(pf) => pf,
+            None => return Err(PathfindingError::NotFound { pathfinding_id }.into()),
+        };
 
     let rs_id = request.rolling_stock_id;
-    let conn = &mut db_pool.get().await?;
-    let rs = LightRollingStockModel::retrieve_or_fail(conn, rs_id, || {
-        PathfindingError::RollingStockNotFound {
-            rolling_stock_id: rs_id,
-        }
-    })
-    .await?;
+    let rs =
+        LightRollingStockModel::retrieve_or_fail(db_pool.get().await?.deref_mut(), rs_id, || {
+            PathfindingError::RollingStockNotFound {
+                rolling_stock_id: rs_id,
+            }
+        })
+        .await?;
 
     let eps_id = request.electrical_profile_set_id;
     use crate::modelsv2::Retrieve;
-    let conn = &mut db_pool.get().await.unwrap();
-    let eps = ElectricalProfileSet::retrieve_or_fail(conn, eps_id, || {
-        ElectricalProfilesError::NotFound {
-            electrical_profile_set_id: eps_id,
-        }
-    })
-    .await?;
+    let eps =
+        ElectricalProfileSet::retrieve_or_fail(db_pool.get().await?.deref_mut(), eps_id, || {
+            ElectricalProfilesError::NotFound {
+                electrical_profile_set_id: eps_id,
+            }
+        })
+        .await?;
 
     let track_section_ids = pathfinding.track_section_ids();
     let (electrical_profiles_by_track, warnings) =
@@ -139,29 +141,22 @@ async fn electrical_profiles_on_path(
 #[cfg(test)]
 mod tests {
     use actix_http::StatusCode;
-    use actix_web::test::call_service;
-    use actix_web::test::read_body_json;
     use actix_web::test::TestRequest;
     use editoast_common::range_map;
-    use rstest::*;
-    use std::sync::Arc;
+    use rstest::rstest;
+    use std::ops::DerefMut;
 
     use super::*;
-    use crate::fixtures::tests::db_pool;
-    use crate::fixtures::tests::empty_infra;
-    use crate::fixtures::tests::named_fast_rolling_stock;
-    use crate::fixtures::tests::TestFixture;
-    use crate::models::pathfinding::tests::simple_pathfinding_fixture;
+    use crate::modelsv2::fixtures::create_empty_infra;
+    use crate::modelsv2::fixtures::create_fast_rolling_stock;
+    use crate::modelsv2::fixtures::create_simple_pathfinding_v1;
     use crate::modelsv2::prelude::*;
-    use crate::modelsv2::Infra;
-    use crate::views::tests::create_test_service;
+    use crate::views::test_app::TestAppBuilder;
+    use editoast_models::DbConnection;
     use editoast_schemas::infra::ElectricalProfile;
     use editoast_schemas::infra::TrackRange;
 
-    #[fixture]
-    async fn electrical_profile_set(
-        db_pool: Arc<DbConnectionPool>,
-    ) -> TestFixture<ElectricalProfileSet> {
+    async fn electrical_profile_set(conn: &mut DbConnection) -> ElectricalProfileSet {
         let ep_data = ElectricalProfileSetData {
             levels: vec![
                 ElectricalProfile {
@@ -215,14 +210,18 @@ mod tests {
             .name("Small_ep_test".into())
             .data(ep_data);
 
-        TestFixture::create(electrical_profile_set, db_pool).await
+        electrical_profile_set
+            .create(conn)
+            .await
+            .expect("Failed to create electrical profile set")
     }
 
     #[rstest]
-    async fn test_map_electrical_profiles(
-        #[future] electrical_profile_set: TestFixture<ElectricalProfileSet>,
-    ) {
-        let ep_data = electrical_profile_set.await.model.data.clone();
+    async fn test_map_electrical_profiles() {
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let ep_data = electrical_profile_set(db_pool.get_ok().deref_mut())
+            .await
+            .data;
         let track_sections: HashSet<_> =
             vec!["track_1", "track_2", "track_3", "track_4", "track_5"]
                 .into_iter()
@@ -252,36 +251,31 @@ mod tests {
     }
 
     #[rstest]
-    async fn test_view_electrical_profiles_on_path(
-        db_pool: Arc<DbConnectionPool>,
-        #[future] empty_infra: TestFixture<Infra>,
-        #[future] electrical_profile_set: TestFixture<ElectricalProfileSet>,
-    ) {
+    async fn test_view_electrical_profiles_on_path() {
         // GIVEN
-        let ep_set = electrical_profile_set.await;
-        let rolling_stock = named_fast_rolling_stock(
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+        let ep_set = electrical_profile_set(db_pool.get_ok().deref_mut()).await;
+        let rolling_stock = create_fast_rolling_stock(
+            db_pool.get_ok().deref_mut(),
             "fast_rolling_stock_test_view_electrical_profiles_on_path",
-            db_pool.clone(),
         )
         .await;
-        let infra = empty_infra.await;
+        let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
+        let pathfinding =
+            create_simple_pathfinding_v1(db_pool.get_ok().deref_mut(), infra.id).await;
 
-        let pathfinding = simple_pathfinding_fixture(infra.id(), db_pool.clone()).await;
-
-        let app = create_test_service().await;
-        let req = TestRequest::get()
+        let request = TestRequest::get()
             .uri(&format!("/pathfinding/{}/electrical_profiles/?electrical_profile_set_id={}&rolling_stock_id={}", 
-            pathfinding.id(), ep_set.id(), rolling_stock.id(),)
+            pathfinding.id, ep_set.id, rolling_stock.id)
             )
             .to_request();
 
         // WHEN
-        let response = call_service(&app, req).await;
+        let response: ProfilesOnPathResponse =
+            app.fetch(request).assert_status(StatusCode::OK).json_into();
 
         // THEN
-        assert_eq!(response.status(), StatusCode::OK);
-
-        let response: ProfilesOnPathResponse = read_body_json(response).await;
         assert!(response.warnings.is_empty());
         assert_eq!(
             response.electrical_profile_ranges,

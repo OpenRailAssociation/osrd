@@ -239,79 +239,12 @@ impl Identifiable for Pathfinding {
 
 #[cfg(test)]
 pub mod tests {
-    use std::sync::Arc;
-
     use super::*;
-    use crate::fixtures::tests::TestFixture;
-    use crate::models::Create;
-    use editoast_models::DbConnectionPool;
-
-    pub fn simple_pathfinding(infra_id: i64) -> Pathfinding {
-        //    T1       T2        T3       T4      T5
-        // |------> < ------| |------> |------> |------>
-        let route_paths = vec![
-            RoutePath {
-                route: "route_1".into(),
-                track_ranges: vec![
-                    DirectionalTrackRange::new("track_1", 0.0, 10.0, Direction::StartToStop),
-                    DirectionalTrackRange::new("track_2", 7.0, 10.0, Direction::StopToStart),
-                    DirectionalTrackRange::new("track_2", 7.0, 7.0, Direction::StartToStop),
-                ],
-                signaling_type: "BAL3".into(),
-            },
-            RoutePath {
-                route: "route_2".into(),
-                track_ranges: vec![DirectionalTrackRange::new(
-                    "track_2",
-                    3.0,
-                    7.0,
-                    Direction::StopToStart,
-                )],
-                signaling_type: "BAL3".into(),
-            },
-            RoutePath {
-                route: "route_3".into(),
-                track_ranges: vec![
-                    DirectionalTrackRange::new("track_2", 0.0, 3.0, Direction::StopToStart),
-                    DirectionalTrackRange::new("track_3", 0.0, 10.0, Direction::StartToStop),
-                    DirectionalTrackRange::new("track_4", 0.0, 2.0, Direction::StartToStop),
-                ],
-                signaling_type: "BAL3".into(),
-            },
-            RoutePath {
-                route: "route_4".into(),
-                track_ranges: vec![
-                    DirectionalTrackRange::new("track_4", 2.0, 10.0, Direction::StartToStop),
-                    DirectionalTrackRange::new("track_5", 0.0, 8.0, Direction::StartToStop),
-                ],
-                signaling_type: "BAL3".into(),
-            },
-        ];
-        Pathfinding {
-            infra_id,
-            payload: diesel_json::Json(PathfindingPayload {
-                route_paths,
-                ..Default::default()
-            }),
-            ..Default::default()
-        }
-    }
-
-    pub async fn simple_pathfinding_fixture(
-        infra_id: i64,
-        db_pool: Arc<DbConnectionPool>,
-    ) -> TestFixture<Pathfinding> {
-        let pathfinding = simple_pathfinding(infra_id);
-        let mut changeset = PathfindingChangeset::from(pathfinding);
-        changeset.id = None;
-        let pathfinding: Pathfinding = changeset.create(db_pool.clone()).await.unwrap().into();
-
-        TestFixture::new(pathfinding, db_pool)
-    }
+    use crate::modelsv2::fixtures::simple_pathfinding_v1;
 
     #[test]
     fn test_path_track_section_ids() {
-        let pathfinding = simple_pathfinding(0);
+        let pathfinding = simple_pathfinding_v1(0);
         let track_section_ids = pathfinding.track_section_ids();
         assert_eq!(
             track_section_ids,
@@ -324,7 +257,7 @@ pub mod tests {
 
     #[test]
     fn test_path_merged_track_ranges() {
-        let pathfinding = simple_pathfinding(0);
+        let pathfinding = simple_pathfinding_v1(0);
         let merged_track_ranges = pathfinding.merged_track_ranges();
         assert_eq!(
             merged_track_ranges,
