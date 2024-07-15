@@ -9,7 +9,7 @@
 
 # --- FRONT ---
 /front                                                   @openrailassociation/OSRD-Front
-/front/src/common/api/osrdEditoastApi.ts
+/front/src/common/api/generatedEditoastApi.ts
 /front/src/common/api/osrdMiddlewareApi.ts
 /front/src/reducers/osrdconf/infra_schema.json
 
