@@ -13,7 +13,7 @@ export type Node = {
   fullName: string;
   positionX: number;
   positionY: number;
-  ports: unknown[];
+  ports: Port[];
   transitions: unknown[];
   connections: unknown[];
   resourceId: number;
@@ -27,6 +27,20 @@ export type Node = {
   labelIds: number[];
 };
 
+export type Port = {
+  id: number;
+  positionIndex: number;
+  positionAlignment: PortAlignment;
+  trainrunSectionId: number;
+};
+
+export enum PortAlignment {
+  Top,
+  Bottom,
+  Left,
+  Right,
+}
+
 export type Trainrun = {
   id: number;
   name: string;
@@ -38,7 +52,7 @@ export type Trainrun = {
 
 export type TimeLock = {
   time: number;
-  consecutiveTime: number;
+  consecutiveTime: number | null;
   lock: boolean;
   warning: null;
   timeFormatter: null;
@@ -51,11 +65,11 @@ export type TrainrunSection = {
   targetNodeId: number | string;
   targetPortId: number;
 
-  sourceArrival: TimeLock;
-  sourceDeparture: TimeLock;
-  targetArrival: TimeLock;
-  targetDeparture: TimeLock;
   travelTime: TimeLock;
+  sourceDeparture: TimeLock;
+  sourceArrival: TimeLock;
+  targetDeparture: TimeLock;
+  targetArrival: TimeLock;
 
   numberOfStops: number;
 
@@ -63,7 +77,10 @@ export type TrainrunSection = {
   resourceId: number;
 
   specificTrainrunSectionFrequencyId: number;
-  path: null;
+  path: {
+    path: unknown[];
+    textPositions: unknown[];
+  };
   warnings: unknown[];
 };
 
