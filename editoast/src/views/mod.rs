@@ -13,6 +13,7 @@ pub mod rolling_stocks;
 pub mod scenario;
 pub mod search;
 mod single_simulation;
+pub mod speed_limit_tags;
 pub mod sprites;
 pub mod stdcm;
 pub mod study;
@@ -61,8 +62,7 @@ crate::routes! {
     (rolling_stocks::routes(), light_rolling_stocks::routes()),
     (pathfinding::routes(), stdcm::routes(), train_schedule::routes()),
     (projects::routes(),timetable::routes(), work_schedules::routes()),
-    documents::routes(),
-    sprites::routes(),
+    (documents::routes(), sprites::routes(), speed_limit_tags::routes()),
     search::routes(),
     electrical_profiles::routes(),
     layers::routes(),

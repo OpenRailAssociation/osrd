@@ -137,7 +137,7 @@ test {
 sourceSets {
     test {
         resources {
-            srcDirs = ["../tests/data"]
+            srcDirs += "../tests/data"
         }
     }
 }

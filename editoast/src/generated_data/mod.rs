@@ -9,6 +9,7 @@ mod neutral_sign;
 mod operational_point;
 mod psl_sign;
 mod signal;
+pub mod speed_limit_tags_config;
 mod speed_section;
 pub mod sprite_config;
 mod switch;

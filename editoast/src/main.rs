@@ -36,6 +36,7 @@ use editoast_models::DbConnectionPoolV2;
 use editoast_schemas::infra::ElectricalProfileSetData;
 use editoast_schemas::rolling_stock::RollingStock;
 use editoast_schemas::train_schedule::TrainScheduleBase;
+use generated_data::speed_limit_tags_config::SpeedLimitTagIds;
 use modelsv2::{
     timetable::Timetable, timetable::TimetableWithTrains, train_schedule::TrainSchedule,
     train_schedule::TrainScheduleChangeset,
@@ -370,6 +371,9 @@ async fn runserver(
     let db_pool_v2 = DbConnectionPoolV2::from_pool(db_pool_v1.clone().into_inner()).await;
     let db_pool_v2 = Data::new(db_pool_v2);
 
+    // Static list of configured speed-limit tag ids
+    let speed_limit_tag_ids = Data::new(SpeedLimitTagIds::load());
+
     // Custom Json extractor configuration
     let json_cfg = JsonConfig::default()
         .limit(250 * 1024 * 1024) // 250MiB
@@ -414,6 +418,7 @@ async fn runserver(
                 srv.call(req)
             })
             .wrap(Logger::new(actix_logger_format).log_target("actix_logger"))
+            .app_data(speed_limit_tag_ids.clone())
             .app_data(json_cfg.clone())
             .app_data(payload_config.clone())
             .app_data(db_pool_v1.clone())

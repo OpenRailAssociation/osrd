@@ -19,6 +19,7 @@ FROM chef as base_builder
 RUN apt update -yqq && apt install -yqq --no-install-recommends libgeos-dev mold
 # Instal diesel_cli
 RUN cargo install diesel_cli --no-default-features --features postgres
+COPY --from=static_assets . /assets
 
 ######################
 # Testing env: build #

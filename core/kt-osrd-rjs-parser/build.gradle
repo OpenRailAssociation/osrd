@@ -44,6 +44,11 @@ kotlin {
     }
 }
 
+// to get speed_limit_tags.yml
+sourceSets {
+    main.resources.srcDirs += '../../assets/static_resources'
+}
+
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
     kotlinOptions {
         freeCompilerArgs += [
