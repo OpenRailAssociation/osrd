@@ -10,7 +10,7 @@ import ngeVendor from '@osrd-project/netzgrafik-frontend/dist/netzgrafik-fronten
 
 const frameSrc = `
 <!DOCTYPE html>
-<html class="sbb-lean">
+<html class="sbb-lean sbb-light">
   <head>
     <link rel="stylesheet" href="${ngeStyles}"></link>
     <script type="module" src="${ngeRuntime}"></script>
