@@ -20,9 +20,14 @@ import StcdmResultsTable from './StdcmResultsTable';
 type StcdmResultsV2Props = {
   stdcmData: StdcmV2SuccessResponse;
   pathProperties?: ManageTrainSchedulePathProperties;
+  setInteractedResultsElements: (interactedResultsElements: boolean) => void;
 };
 
-const StcdmResults = ({ stdcmData, pathProperties }: StcdmResultsV2Props) => {
+const StcdmResults = ({
+  stdcmData,
+  pathProperties,
+  setInteractedResultsElements,
+}: StcdmResultsV2Props) => {
   const { t } = useTranslation('stdcm');
   const withoutTime = false;
   const date = dateTimeFormatting(stdcmData.creationDate, withoutTime, 'alternate');
@@ -63,9 +68,10 @@ const StcdmResults = ({ stdcmData, pathProperties }: StcdmResultsV2Props) => {
         <div className="results-and-sheet">
           <StcdmResultsTable
             stdcmData={stdcmData}
-            setIsSimulationSelected={setIsSimulationSelected}
-            isSimulationSelected={isSimulationSelected}
             operationalPointsList={operationalPointsList}
+            isSimulationSelected={isSimulationSelected}
+            setIsSimulationSelected={setIsSimulationSelected}
+            setInteractedResultsElements={setInteractedResultsElements}
           />
           {isSimulationSelected && (
             <div className="get-simulation">

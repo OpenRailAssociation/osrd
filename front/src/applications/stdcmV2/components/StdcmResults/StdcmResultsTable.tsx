@@ -11,16 +11,18 @@ import { getStopDurationTime } from 'applications/stdcm/utils/formatSimulationRe
 
 type SimulationTableProps = {
   stdcmData: StdcmV2SuccessResponse;
-  setIsSimulationSelected: (simulationSelected: boolean) => void;
-  isSimulationSelected: boolean;
   operationalPointsList: StdcmResultsOperationalPointsList;
+  isSimulationSelected: boolean;
+  setIsSimulationSelected: (simulationSelected: boolean) => void;
+  setInteractedResultsElements: (interactedResultsElements: boolean) => void;
 };
 
 const StcdmResultsTable = ({
   stdcmData,
-  setIsSimulationSelected,
-  isSimulationSelected,
   operationalPointsList,
+  isSimulationSelected,
+  setIsSimulationSelected,
+  setInteractedResultsElements,
 }: SimulationTableProps) => {
   const { t } = useTranslation(['stdcm-simulation-report-sheet', 'stdcm']);
 
@@ -28,15 +30,17 @@ const StcdmResultsTable = ({
 
   const selectSimulation = () => {
     setIsSimulationSelected(true);
+    setInteractedResultsElements(true);
+  };
+
+  const handleShowAllClick = () => {
+    setShowAllOP((prevState) => !prevState);
+    setInteractedResultsElements(true);
   };
 
   useEffect(() => {
     setIsSimulationSelected(false);
   }, [stdcmData]);
-
-  const handleShowAllClick = () => {
-    setShowAllOP((prevState) => !prevState);
-  };
 
   return (
     <div className="table-container">
