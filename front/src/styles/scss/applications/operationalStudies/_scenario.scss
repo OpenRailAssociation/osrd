@@ -214,6 +214,7 @@
           display: flex;
 
           .scenario-timetable-train {
+            max-width: 100%;
             position: relative;
             display: flex;
             margin-bottom: 0.5rem;
@@ -261,6 +262,7 @@
               }
             }
             .scenario-timetable-train-container {
+              max-width: 100%;
               cursor: pointer;
               border: 1px solid var(--coolgray3);
               transition: border-color 0.2s;
@@ -278,6 +280,12 @@
                   align-items: center;
                   overflow: hidden;
                   padding-left: 0.25rem;
+                  .train-name {
+                    width: 8rem;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                  }
                   .scenario-timetable-train-idx {
                     display: flex;
                     align-items: center;
@@ -320,6 +328,7 @@
                 .scenario-timetable-train-times {
                   display: flex;
                   justify-content: right;
+                  align-items: center;
                   min-width: 20%;
                   text-align: right;
                   line-height: 0.8rem;
@@ -334,7 +343,7 @@
                   }
                 }
                 .V2 {
-                  min-width: 40%;
+                  min-width: 45%;
                 }
                 .not-honored {
                   background-color: var(--warning);
@@ -417,12 +426,13 @@
 
             &:hover:not(.modified, .invalid) {
               .scenario-timetable-train-container {
+                max-width: 100%;
                 border-radius: 4px 0 0 4px;
                 border-color: var(--secondary);
                 .scenario-timetable-train-header {
                   background-color: var(--secondary);
                   color: var(--white);
-                  .V2 {
+                  .not-honored {
                     min-width: 55%;
                   }
                 }
