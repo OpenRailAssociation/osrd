@@ -1,15 +1,13 @@
 package fr.sncf.osrd.stdcm
 
-import fr.sncf.osrd.api.pathfinding.makePathProps
-import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock
-import fr.sncf.osrd.envelope_sim_infra.MRSP
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.sim_infra.api.BlockInfra
 import fr.sncf.osrd.sim_infra.api.RawInfra
 import fr.sncf.osrd.sim_infra.utils.getBlockEntry
 import fr.sncf.osrd.stdcm.graph.STDCMEdge
+import fr.sncf.osrd.utils.CachedBlockMRSPBuilder
 import fr.sncf.osrd.utils.indexing.StaticIdx
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
@@ -43,7 +41,7 @@ class STDCMHeuristicBuilder(
     private val rollingStock: PhysicsRollingStock,
 ) {
     private val logger: Logger = LoggerFactory.getLogger("STDCMHeuristic")
-    private val mrspCache = mutableMapOf<BlockId, Envelope>()
+    private val mrspBuilder = CachedBlockMRSPBuilder(rawInfra, blockInfra, rollingStock)
 
     /** Runs all the pre-processing and initialize the STDCM A* heuristic. */
     fun build(): STDCMAStarHeuristic {
@@ -110,8 +108,8 @@ class STDCMHeuristicBuilder(
             // of the last block of the lookahead, then from that point the destination.
             var timeUntilStartOfLastBlock = 0.0
             for (j in 0 until allBlocks.size - 1) timeUntilStartOfLastBlock +=
-                getBlockTime(allBlocks[j], null)
-            val timeSinceFirstBlock = getBlockTime(edge.block, offset)
+                mrspBuilder.getBlockTime(allBlocks[j], null)
+            val timeSinceFirstBlock = mrspBuilder.getBlockTime(edge.block, offset)
             timeUntilStartOfLastBlock -= timeSinceFirstBlock
 
             val remainingTime = timeUntilStartOfLastBlock + timeAfterStartOfLastBlock
@@ -184,26 +182,11 @@ class STDCMHeuristicBuilder(
             if (step.stop) remainingTimeWithStops += step.duration!!
             newIndex--
         }
-        return PendingBlock(block, newIndex, remainingTimeWithStops + getBlockTime(block, offset))
-    }
-
-    /** Returns the time it takes to go through the given block, until `endOffset` if specified. */
-    private fun getBlockTime(
-        block: BlockId,
-        endOffset: Offset<Block>?,
-    ): Double {
-        if (endOffset?.distance == 0.meters) return 0.0
-        val actualLength = endOffset ?: blockInfra.getBlockLength(block)
-        val mrsp = getMRSP(block)
-        return mrsp.interpolateArrivalAtClamp(actualLength.distance.meters)
-    }
-
-    /** Returns the speed limits for the given block (cached). */
-    private fun getMRSP(block: BlockId): Envelope {
-        return mrspCache.computeIfAbsent(block) {
-            val pathProps = makePathProps(blockInfra, rawInfra, block, routes = listOf())
-            MRSP.computeMRSP(pathProps, rollingStock, false, null)
-        }
+        return PendingBlock(
+            block,
+            newIndex,
+            remainingTimeWithStops + mrspBuilder.getBlockTime(block, offset)
+        )
     }
 
     /** Returns the numbers of passed waypoints at the end of the block list */

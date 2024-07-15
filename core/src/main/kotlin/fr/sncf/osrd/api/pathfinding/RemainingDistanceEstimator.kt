@@ -13,6 +13,13 @@ import fr.sncf.osrd.utils.units.Offset
 /**
  * This is a function object that estimates the remaining distance to the closest target point,
  * using geo data. It is used as heuristic for A*.
+ *
+ * **LEGACY**
+ *
+ * Not currently in used as the geodesic computations are too expensive to compute, resulting in a
+ * net performance loss.
+ *
+ * TODO: before reusing this class, it now needs to return a minimum *time* instead of a distance.
  */
 class RemainingDistanceEstimator(
     private val blockInfra: BlockInfra,
