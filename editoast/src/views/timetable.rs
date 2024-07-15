@@ -24,7 +24,6 @@ use crate::models::Timetable;
 use crate::models::TimetableWithSchedulesDetails;
 use crate::models::TrainSchedule;
 use crate::views::train_schedule::TrainScheduleError;
-use editoast_models::DbConnectionPool;
 use editoast_models::DbConnectionPoolV2;
 
 mod import;
@@ -67,17 +66,18 @@ enum TimetableError {
 )]
 #[get("")]
 async fn get(
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Data<DbConnectionPoolV2>,
     timetable_id: Path<i64>,
 ) -> Result<Json<TimetableWithSchedulesDetails>> {
     let timetable_id = timetable_id.into_inner();
 
     // Return the timetable
     let db_pool = db_pool.into_inner();
-    let timetable = match Timetable::retrieve(db_pool.clone(), timetable_id).await? {
-        Some(timetable) => timetable,
-        None => return Err(TimetableError::NotFound { timetable_id }.into()),
-    };
+    let timetable =
+        match Timetable::retrieve_conn(db_pool.get().await?.deref_mut(), timetable_id).await? {
+            Some(timetable) => timetable,
+            None => return Err(TimetableError::NotFound { timetable_id }.into()),
+        };
     let timetable_with_schedules = timetable.with_detailed_train_schedules(db_pool).await?;
 
     Ok(Json(timetable_with_schedules))
@@ -227,69 +227,78 @@ async fn get_conflicts(
 
 #[cfg(test)]
 pub mod test {
-
     use actix_http::StatusCode;
-    use actix_web::test::call_service;
     use actix_web::test::TestRequest;
     use rstest::rstest;
+    use std::ops::DerefMut;
 
-    use crate::assert_status_and_read;
-    use crate::fixtures::tests::db_pool;
-    use crate::fixtures::tests::get_other_rolling_stock_form;
-    use crate::fixtures::tests::train_with_simulation_output_fixture_set;
     use crate::models::train_schedule::TrainScheduleValidation;
+    use crate::models::Identifiable;
     use crate::models::TimetableWithSchedulesDetails;
-    use crate::views::tests::create_test_service;
+    use crate::modelsv2::fixtures::create_empty_infra;
+    use crate::modelsv2::fixtures::create_fast_rolling_stock;
+    use crate::modelsv2::fixtures::create_pathfinding;
+    use crate::modelsv2::fixtures::create_project;
+    use crate::modelsv2::fixtures::create_scenario_v1;
+    use crate::modelsv2::fixtures::create_simulation_output;
+    use crate::modelsv2::fixtures::create_study;
+    use crate::modelsv2::fixtures::create_timetable_v1;
+    use crate::modelsv2::fixtures::create_train_schedule_v1;
+    use crate::modelsv2::fixtures::rolling_stock_with_energy_sources_form;
+    use crate::views::test_app::TestAppBuilder;
 
     #[rstest]
     async fn newer_rolling_stock_version() {
         // GIVEN
-        let app = create_test_service().await;
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
 
-        let train_with_simulation_output =
-            train_with_simulation_output_fixture_set("newer_rolling_stock_version", db_pool())
-                .await;
+        let test_name = "newer_rolling_stock_version";
+        let project = create_project(db_pool.get_ok().deref_mut(), test_name).await;
+        let study = create_study(db_pool.get_ok().deref_mut(), test_name, project.id).await;
+        let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
+        let timetable = create_timetable_v1(db_pool.get_ok().deref_mut(), test_name).await;
+        let _ = create_scenario_v1(
+            db_pool.get_ok().deref_mut(),
+            test_name,
+            study.id,
+            timetable.get_id(),
+            infra.id,
+        )
+        .await;
+        let rolling_stock =
+            create_fast_rolling_stock(db_pool.get_ok().deref_mut(), test_name).await;
+        let pathfinding = create_pathfinding(db_pool.get_ok().deref_mut(), infra.id).await;
+        let train_schedule = create_train_schedule_v1(
+            db_pool.get_ok().deref_mut(),
+            pathfinding.id,
+            timetable.get_id(),
+            rolling_stock.id,
+        )
+        .await;
+        let _ = create_simulation_output(db_pool.get_ok().deref_mut(), train_schedule.id).await;
 
-        let rolling_stock_id = train_with_simulation_output
-            .train_schedule
-            .model
-            .rolling_stock_id;
         // patch rolling_stock
-        let patch_rolling_stock_form =
-            get_other_rolling_stock_form("fast_rolling_stock_newer_rolling_stock_version");
+        let patch_rolling_stock_form = rolling_stock_with_energy_sources_form(
+            format!("{test_name}_newer_rolling_stock_version").as_str(),
+        );
 
         // WHEN
-        call_service(
-            &app,
-            TestRequest::patch()
-                .uri(format!("/rolling_stock/{}", rolling_stock_id).as_str())
-                .set_json(&patch_rolling_stock_form)
-                .to_request(),
-        )
-        .await;
+        let request = TestRequest::patch()
+            .uri(format!("/rolling_stock/{}", rolling_stock.id).as_str())
+            .set_json(patch_rolling_stock_form)
+            .to_request();
+        app.fetch(request).assert_status(StatusCode::OK);
 
         // get the timetable
-        let response = call_service(
-            &app,
-            TestRequest::get()
-                .uri(
-                    format!(
-                        "/timetable/{}",
-                        train_with_simulation_output
-                            .train_schedule
-                            .model
-                            .timetable_id
-                    )
-                    .as_str(),
-                )
-                .to_request(),
-        )
-        .await;
+        let request = TestRequest::get()
+            .uri(format!("/timetable/{}", timetable.get_id()).as_str())
+            .to_request();
 
         // THEN
-        let response_body: TimetableWithSchedulesDetails =
-            assert_status_and_read!(response, StatusCode::OK);
-        let invalid_reasons = &response_body
+        let response: TimetableWithSchedulesDetails =
+            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let invalid_reasons = &response
             .train_schedule_summaries
             .first()
             .unwrap()

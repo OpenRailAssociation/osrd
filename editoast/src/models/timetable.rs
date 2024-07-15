@@ -7,6 +7,7 @@ use futures::future::try_join_all;
 use serde::Deserialize;
 use serde::Serialize;
 use std::collections::HashMap;
+use std::ops::DerefMut;
 use std::sync::Arc;
 use utoipa::ToSchema;
 
@@ -23,6 +24,7 @@ use crate::modelsv2::Retrieve;
 use crate::tables::timetable;
 use editoast_models::DbConnection;
 use editoast_models::DbConnectionPool;
+use editoast_models::DbConnectionPoolV2;
 
 editoast_common::schemas! {
     Timetable,
@@ -79,16 +81,15 @@ impl Timetable {
     /// some information about the simulation result
     pub async fn with_detailed_train_schedules(
         self,
-        db_pool: Arc<DbConnectionPool>,
+        db_pool: Arc<DbConnectionPoolV2>,
     ) -> Result<TimetableWithSchedulesDetails> {
         use crate::tables::infra::dsl as infra_dsl;
         use crate::tables::scenario::dsl as scenario_dsl;
-        let mut conn = db_pool.get().await?;
         let infra_version = scenario_dsl::scenario
             .filter(scenario_dsl::timetable_id.eq(self.id.unwrap()))
             .inner_join(infra_dsl::infra)
             .select(infra_dsl::version)
-            .first::<String>(&mut conn)
+            .first::<String>(db_pool.get().await?.deref_mut())
             .await
             .unwrap();
 
@@ -159,11 +160,8 @@ impl Timetable {
     }
 
     /// Retrieves the associated train schedules
-    pub async fn get_train_schedules(
-        &self,
-        db_pool: Arc<DbConnectionPool>,
-    ) -> Result<Vec<TrainSchedule>> {
-        get_timetable_train_schedules(self.id.unwrap(), db_pool).await
+    pub async fn get_train_schedules(&self, conn: &mut DbConnection) -> Result<Vec<TrainSchedule>> {
+        get_timetable_train_schedules(conn, self.id.unwrap()).await
     }
 
     /// Get infra_version from timetable
@@ -203,25 +201,24 @@ impl Timetable {
 }
 
 pub async fn get_timetable_train_schedules(
+    conn: &mut DbConnection,
     timetable_id: i64,
-    db_pool: Arc<DbConnectionPool>,
 ) -> Result<Vec<TrainSchedule>> {
     use crate::tables::train_schedule;
-    let mut conn = db_pool.get().await?;
     Ok(train_schedule::table
         .filter(train_schedule::timetable_id.eq(timetable_id))
         .order_by(train_schedule::departure_time)
-        .load(&mut conn)
+        .load(conn)
         .await?)
 }
 
 pub async fn get_timetable_train_schedules_with_simulations(
     timetable_id: i64,
-    db_pool: Arc<DbConnectionPool>,
+    db_pool: Arc<DbConnectionPoolV2>,
 ) -> Result<Vec<(TrainSchedule, SimulationOutput)>> {
-    let train_schedules = get_timetable_train_schedules(timetable_id, db_pool.clone()).await?;
-
     let mut conn = db_pool.get().await?;
+    let train_schedules = get_timetable_train_schedules(&mut conn, timetable_id).await?;
+
     let simulation_outputs = SimulationOutput::belonging_to(&train_schedules)
         .load::<SimulationOutput>(&mut conn)
         .await?;

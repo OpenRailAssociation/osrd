@@ -303,7 +303,7 @@ mod tests {
         };
         let request = TestRequest::post()
             .uri("/single_simulation")
-            .set_json(&request_body)
+            .set_json(request_body)
             .to_request();
 
         if let Some(expected_error) = expected_error {
@@ -347,7 +347,7 @@ mod tests {
         });
         let request = TestRequest::post()
             .uri("/single_simulation")
-            .set_json(&request_body)
+            .set_json(request_body)
             .to_request();
 
         // WHEN

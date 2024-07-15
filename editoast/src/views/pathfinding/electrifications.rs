@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::fmt::Debug;
+use std::ops::DerefMut;
 
 use actix_web::get;
 use actix_web::web::Data;
@@ -24,7 +25,7 @@ use crate::views::pathfinding::path_rangemap::make_path_range_map;
 use crate::views::pathfinding::path_rangemap::TrackMap;
 use crate::views::pathfinding::PathfindingError;
 use crate::views::pathfinding::PathfindingIdParam;
-use editoast_models::DbConnectionPool;
+use editoast_models::DbConnectionPoolV2;
 use editoast_schemas::primitives::ObjectType;
 
 crate::routes! {
@@ -104,24 +105,25 @@ struct ElectrificationsOnPathResponse {
 /// Retrieve the electrification modes along a path, as seen by the rolling stock specified
 async fn electrifications_on_path(
     params: Path<PathfindingIdParam>,
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Data<DbConnectionPoolV2>,
     infra_caches: Data<CHashMap<i64, InfraCache>>,
 ) -> Result<Json<ElectrificationsOnPathResponse>> {
-    let mut conn = db_pool.get().await?;
-
     let pathfinding_id = params.pathfinding_id;
-    let pathfinding = match Pathfinding::retrieve_conn(&mut conn, pathfinding_id).await? {
-        Some(pf) => pf,
-        None => return Err(PathfindingError::NotFound { pathfinding_id }.into()),
-    };
+    let pathfinding =
+        match Pathfinding::retrieve_conn(db_pool.get().await?.deref_mut(), pathfinding_id).await? {
+            Some(pf) => pf,
+            None => return Err(PathfindingError::NotFound { pathfinding_id }.into()),
+        };
 
-    let infra = <Infra as RetrieveV2<_>>::retrieve(&mut conn, pathfinding.infra_id)
-        .await?
-        .expect("Foreign key constraint not respected");
+    let infra =
+        <Infra as RetrieveV2<_>>::retrieve(db_pool.get().await?.deref_mut(), pathfinding.infra_id)
+            .await?
+            .expect("Foreign key constraint not respected");
 
     let track_section_ids = pathfinding.track_section_ids();
 
-    let infra_cache = InfraCache::get_or_load(&mut conn, &infra_caches, &infra).await?;
+    let infra_cache =
+        InfraCache::get_or_load(db_pool.get().await?.deref_mut(), &infra_caches, &infra).await?;
     let (electrification_mode_map, warnings) =
         map_electrification_modes(&infra_cache, track_section_ids);
 
@@ -135,28 +137,25 @@ async fn electrifications_on_path(
 #[cfg(test)]
 pub mod tests {
     use actix_http::StatusCode;
-    use actix_web::test::call_service;
-    use actix_web::test::read_body_json;
     use actix_web::test::TestRequest;
     use editoast_common::range_map;
     use rstest::*;
     use serde_json::from_value;
-    use std::sync::Arc;
+    use std::ops::DerefMut;
     use ApplicableDirections::*;
 
     use super::*;
-    use crate::fixtures::tests::db_pool;
-    use crate::fixtures::tests::empty_infra;
-    use crate::fixtures::tests::TestFixture;
-    use crate::models::pathfinding::tests::simple_pathfinding_fixture;
+    use crate::modelsv2::fixtures::create_empty_infra;
+    use crate::modelsv2::fixtures::create_simple_pathfinding_v1;
     use crate::modelsv2::prelude::*;
     use crate::modelsv2::ElectrificationModel;
-    use crate::views::tests::create_test_service;
+    use crate::views::test_app::TestAppBuilder;
+    use editoast_models::DbConnection;
+    use editoast_models::DbConnectionPoolV2;
     use editoast_schemas::infra::ApplicableDirections;
     use editoast_schemas::infra::ApplicableDirectionsTrackRange;
     use editoast_schemas::infra::Electrification as ElectrificationSchema;
 
-    #[fixture]
     fn simple_mode_map() -> TrackMap<String> {
         // The mode map associated to the following electrifications
         let mut mode_map = [
@@ -174,12 +173,8 @@ pub mod tests {
         mode_map
     }
 
-    #[fixture]
-    async fn infra_with_electrifications(
-        db_pool: Arc<DbConnectionPool>,
-        #[future] empty_infra: TestFixture<Infra>,
-    ) -> TestFixture<Infra> {
-        let infra = empty_infra.await;
+    async fn infra_with_electrifications(conn: &mut DbConnection) -> Infra {
+        let infra = create_empty_infra(conn).await;
 
         // See the diagram in `models::pathfinding::tests::simple_path` to see how the track sections are connected.
         let electrification_schemas = vec![
@@ -209,8 +204,8 @@ pub mod tests {
             },
         ];
         ElectrificationModel::create_batch::<_, Vec<_>>(
-            &mut db_pool.get().await.unwrap(),
-            ElectrificationModel::from_infra_schemas(infra.id(), electrification_schemas),
+            conn,
+            ElectrificationModel::from_infra_schemas(infra.id, electrification_schemas),
         )
         .await
         .expect("Could not create electrifications");
@@ -218,16 +213,14 @@ pub mod tests {
     }
 
     #[rstest]
-    async fn test_map_electrification_modes(
-        db_pool: Arc<DbConnectionPool>,
-        #[future] infra_with_electrifications: TestFixture<Infra>,
-        simple_mode_map: TrackMap<String>,
-    ) {
-        let mut conn = db_pool.get().await.unwrap();
-        let infra_with_electrifications = infra_with_electrifications.await;
-        let infra_cache = InfraCache::load(&mut conn, &infra_with_electrifications.model)
-            .await
-            .expect("Could not load infra_cache");
+    async fn test_map_electrification_modes() {
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let infra_with_electrifications =
+            infra_with_electrifications(db_pool.get_ok().deref_mut()).await;
+        let infra_cache =
+            InfraCache::load(db_pool.get_ok().deref_mut(), &infra_with_electrifications)
+                .await
+                .expect("Could not load infra_cache");
         let track_sections: HashSet<_> =
             vec!["track_1", "track_2", "track_3", "track_4", "track_5"]
                 .into_iter()
@@ -235,20 +228,19 @@ pub mod tests {
                 .collect();
 
         let (mode_map, warnings) = map_electrification_modes(&infra_cache, track_sections);
-        assert_eq!(mode_map, simple_mode_map);
+        assert_eq!(mode_map, simple_mode_map());
         assert!(warnings.is_empty());
     }
 
     #[rstest]
-    async fn test_map_electrification_modes_with_warnings(
-        db_pool: Arc<DbConnectionPool>,
-        #[future] infra_with_electrifications: TestFixture<Infra>,
-    ) {
-        let mut conn = db_pool.get().await.unwrap();
-        let infra_with_electrifications = infra_with_electrifications.await;
-        let mut infra_cache = InfraCache::load(&mut conn, &infra_with_electrifications.model)
-            .await
-            .expect("Could not load infra_cache");
+    async fn test_map_electrification_modes_with_warnings() {
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let infra_with_electrifications =
+            infra_with_electrifications(db_pool.get_ok().deref_mut()).await;
+        let mut infra_cache =
+            InfraCache::load(db_pool.get_ok().deref_mut(), &infra_with_electrifications)
+                .await
+                .expect("Could not load infra_cache");
         infra_cache
             .add(ElectrificationSchema {
                 track_ranges: vec![ApplicableDirectionsTrackRange::new(
@@ -300,26 +292,27 @@ pub mod tests {
     }
 
     #[rstest]
-    async fn test_view_electrifications_on_path(
-        db_pool: Arc<DbConnectionPool>,
-        #[future] infra_with_electrifications: TestFixture<Infra>,
-    ) {
-        let infra_with_electrifications = infra_with_electrifications.await;
-        let pathfinding =
-            simple_pathfinding_fixture(infra_with_electrifications.id(), db_pool.clone()).await;
+    async fn test_view_electrifications_on_path() {
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+        let infra_with_electrifications =
+            infra_with_electrifications(db_pool.get_ok().deref_mut()).await;
+        let pathfinding = create_simple_pathfinding_v1(
+            db_pool.get_ok().deref_mut(),
+            infra_with_electrifications.id,
+        )
+        .await;
 
-        let app = create_test_service().await;
-        let req = TestRequest::get()
+        let request = TestRequest::get()
             .uri(&format!(
                 "/pathfinding/{}/electrifications/",
-                pathfinding.id()
+                pathfinding.id
             ))
             .to_request();
 
-        let response = call_service(&app, req).await;
-        assert_eq!(response.status(), StatusCode::OK);
+        let response: ElectrificationsOnPathResponse =
+            app.fetch(request).assert_status(StatusCode::OK).json_into();
 
-        let response: ElectrificationsOnPathResponse = read_body_json(response).await;
         assert!(response.warnings.is_empty());
         assert_eq!(response.electrification_ranges.len(), 3);
         assert_eq!(

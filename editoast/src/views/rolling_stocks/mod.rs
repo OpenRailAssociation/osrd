@@ -4,6 +4,7 @@ pub mod rolling_stock_form;
 use std::io::BufReader;
 use std::io::Cursor;
 use std::io::Read;
+use std::ops::DerefMut;
 
 use actix_multipart::form::tempfile::TempFile;
 use actix_multipart::form::text::Text;
@@ -43,7 +44,6 @@ use crate::modelsv2::Document;
 use crate::modelsv2::RollingStockModel;
 use crate::modelsv2::RollingStockSeparatedImageModel;
 use editoast_models::DbConnection;
-use editoast_models::DbConnectionPool;
 use editoast_models::DbConnectionPoolV2;
 
 crate::routes! {
@@ -311,23 +311,27 @@ struct DeleteRollingStockQueryParams {
 )]
 #[delete("")]
 async fn delete(
-    db_pool: Data<DbConnectionPool>,
+    db_pool: Data<DbConnectionPoolV2>,
     path: Path<i64>,
     params: Query<DeleteRollingStockQueryParams>,
 ) -> Result<HttpResponse> {
-    let conn = &mut db_pool.get().await?;
     let rolling_stock_id = path.into_inner();
     assert_rolling_stock_unlocked(
-        &retrieve_existing_rolling_stock(conn, RollingStockKey::Id(rolling_stock_id)).await?,
+        &retrieve_existing_rolling_stock(
+            db_pool.get().await?.deref_mut(),
+            RollingStockKey::Id(rolling_stock_id),
+        )
+        .await?,
     )?;
 
     if params.force {
-        return delete_rolling_stock(conn, rolling_stock_id).await;
+        return delete_rolling_stock(db_pool.get().await?.deref_mut(), rolling_stock_id).await;
     }
 
-    let trains = get_rolling_stock_usage(conn, rolling_stock_id).await?;
+    let trains =
+        get_rolling_stock_usage(db_pool.get().await?.deref_mut(), rolling_stock_id).await?;
     if trains.is_empty() {
-        return delete_rolling_stock(conn, rolling_stock_id).await;
+        return delete_rolling_stock(db_pool.get().await?.deref_mut(), rolling_stock_id).await;
     }
     Err(RollingStockError::RollingStockIsUsed {
         rolling_stock_id,
@@ -578,7 +582,6 @@ pub mod tests {
     use actix_http::Request;
     use actix_http::StatusCode;
     use actix_web::http::header::ContentType;
-    use actix_web::test::call_service;
     use actix_web::test::TestRequest;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
@@ -586,11 +589,17 @@ pub mod tests {
 
     use super::RollingStockError;
     use super::TrainScheduleScenarioStudyProject;
-    use crate::assert_response_error_type_match;
     use crate::error::InternalError;
-    use crate::fixtures::tests::train_schedule_with_scenario;
+    use crate::models::Identifiable;
+    use crate::modelsv2::fixtures::create_empty_infra;
     use crate::modelsv2::fixtures::create_fast_rolling_stock;
+    use crate::modelsv2::fixtures::create_pathfinding;
+    use crate::modelsv2::fixtures::create_project;
     use crate::modelsv2::fixtures::create_rolling_stock_with_energy_sources;
+    use crate::modelsv2::fixtures::create_scenario_v1;
+    use crate::modelsv2::fixtures::create_study;
+    use crate::modelsv2::fixtures::create_timetable_v1;
+    use crate::modelsv2::fixtures::create_train_schedule_v1;
     use crate::modelsv2::fixtures::fast_rolling_stock_changeset;
     use crate::modelsv2::fixtures::fast_rolling_stock_form;
     use crate::modelsv2::fixtures::get_rolling_stock_with_invalid_effort_curves;
@@ -599,7 +608,6 @@ pub mod tests {
     use crate::modelsv2::rolling_stock_model::RollingStockModel;
     use crate::views::rolling_stocks::rolling_stock_form::RollingStockForm;
     use crate::views::test_app::TestAppBuilder;
-    use crate::views::tests::create_test_service;
 
     fn rolling_stock_create_request(rolling_stock_form: &RollingStockForm) -> Request {
         TestRequest::post()
@@ -1002,7 +1010,6 @@ pub mod tests {
     }
 
     #[rstest]
-    #[ignore] // TODO test for rolling stock with DBConnectionPoolV2
     async fn delete_locked_rolling_stock_fails() {
         // GIVEN
         let app = TestAppBuilder::default_app();
@@ -1041,88 +1048,83 @@ pub mod tests {
     }
 
     #[rstest]
-    #[ignore] // TODO test for rolling stock with DBConnectionPoolV2
     async fn delete_unexisting_rolling_stock_returns_not_found() {
         let app = TestAppBuilder::default_app();
-
-        let request = TestRequest::delete()
-            .uri(format!("/rolling_stock/{}", 0).as_str())
-            .to_request();
-
-        let response = call_service(&app.service, request).await;
-
-        assert_eq!(response.status(), StatusCode::NOT_FOUND);
-    }
-
-    #[rstest] // TODO test for rolling stock with DBConnectionPoolV1
-    async fn delete_unexisting_rolling_stock_returns_not_found_v1() {
-        let app = create_test_service().await;
         let delete_request = rolling_stock_delete_request(0);
-        let delete_response = call_service(&app, delete_request).await;
-
-        assert_eq!(delete_response.status(), StatusCode::NOT_FOUND);
+        app.fetch(delete_request)
+            .assert_status(StatusCode::NOT_FOUND);
     }
 
-    #[rstest] // TODO test for rolling stock with DBConnectionPoolV1 and with TrainScheduleV1
+    #[rstest]
     async fn delete_used_rolling_stock_should_fail() {
         // GIVEN
-        let app = create_test_service().await;
-        let train_schedule_with_scenario =
-            train_schedule_with_scenario("delete_used_rolling_stock_should_fail").await;
-        let rolling_stock_id = train_schedule_with_scenario.rolling_stock.id();
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
 
-        // WHEN
-        let response = call_service(&app, rolling_stock_delete_request(rolling_stock_id)).await;
-
-        // THEN
-        assert_eq!(response.status(), StatusCode::CONFLICT);
-        let expected_usage = vec![TrainScheduleScenarioStudyProject {
-            train_schedule_id: train_schedule_with_scenario.train_schedule.id(),
-            train_name: train_schedule_with_scenario
-                .train_schedule
-                .model
-                .train_name
-                .clone(),
-            scenario_id: train_schedule_with_scenario.scenario.id(),
-            scenario_name: train_schedule_with_scenario
-                .scenario
-                .model
-                .name
-                .clone()
-                .unwrap(),
-            study_id: train_schedule_with_scenario.study.id(),
-            study_name: train_schedule_with_scenario.study.model.name.clone(),
-            project_id: train_schedule_with_scenario.project.id(),
-            project_name: train_schedule_with_scenario.project.model.name.clone(),
-        }];
-        assert_response_error_type_match!(
-            response,
-            RollingStockError::RollingStockIsUsed {
-                rolling_stock_id,
-                usage: expected_usage
-            }
+        let test_name = "delete_used_rolling_stock_should_fail";
+        let project = create_project(db_pool.get_ok().deref_mut(), test_name).await;
+        let study = create_study(db_pool.get_ok().deref_mut(), test_name, project.id).await;
+        let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
+        let timetable = create_timetable_v1(db_pool.get_ok().deref_mut(), test_name).await;
+        let scenario = create_scenario_v1(
+            db_pool.get_ok().deref_mut(),
+            test_name,
+            study.id,
+            timetable.get_id(),
+            infra.id,
         )
-    }
-
-    #[rstest] // TODO test for rolling stock with DBConnectionPoolV1 and with TrainScheduleV1
-    async fn forcefully_delete_used_rolling_stock() {
-        // GIVEN
-
-        let app = create_test_service().await;
-        let train_schedule_with_scenario =
-            train_schedule_with_scenario("forcefully_delete_used_rolling_stock").await;
-        let rolling_stock_id = train_schedule_with_scenario.rolling_stock.id();
-
-        // WHEN
-        let response = call_service(
-            &app,
-            TestRequest::delete()
-                .uri(format!("/rolling_stock/{}?force=true", rolling_stock_id).as_str())
-                .to_request(),
+        .await;
+        let rolling_stock =
+            create_fast_rolling_stock(db_pool.get_ok().deref_mut(), test_name).await;
+        let pathfinding = create_pathfinding(db_pool.get_ok().deref_mut(), infra.id).await;
+        let train_schedule = create_train_schedule_v1(
+            db_pool.get_ok().deref_mut(),
+            pathfinding.id,
+            timetable.get_id(),
+            rolling_stock.id,
         )
         .await;
 
+        // WHEN
+        let response: InternalError = app
+            .fetch(rolling_stock_delete_request(rolling_stock.id))
+            .assert_status(StatusCode::CONFLICT)
+            .json_into();
+
         // THEN
-        assert_eq!(response.status(), StatusCode::NO_CONTENT);
+        let expected_usage = vec![TrainScheduleScenarioStudyProject {
+            train_schedule_id: train_schedule.id.unwrap(),
+            train_name: train_schedule.train_name.clone(),
+            scenario_id: scenario.id.unwrap(),
+            scenario_name: scenario.name.clone().unwrap(),
+            study_id: study.id,
+            study_name: study.name.clone(),
+            project_id: project.id,
+            project_name: project.name.clone(),
+        }];
+        let expected_error: InternalError = RollingStockError::RollingStockIsUsed {
+            rolling_stock_id: rolling_stock.id,
+            usage: expected_usage,
+        }
+        .into();
+        assert_eq!(response, expected_error);
+    }
+
+    #[rstest]
+    async fn forcefully_delete_used_rolling_stock() {
+        // GIVEN
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+        let test_name = "forcefully_delete_used_rolling_stock";
+        let rolling_stock =
+            create_fast_rolling_stock(db_pool.get_ok().deref_mut(), test_name).await;
+
+        // WHEN
+        let request = TestRequest::delete()
+            .uri(format!("/rolling_stock/{}?force=true", rolling_stock.id).as_str())
+            .to_request();
+
+        // THEN
+        app.fetch(request).assert_status(StatusCode::NO_CONTENT);
     }
 }
