@@ -13,10 +13,7 @@ const formatMargin = (pathSteps: PathStep[]): Margin | undefined => {
         boundaries.push(step.id);
         values.push('none');
       }
-    }
-
-    // for the other steps, we add the margin if it's different from the previous one
-    else if (step.theoreticalMargin && step.theoreticalMargin !== values[values.length - 1]) {
+    } else if (step.theoreticalMargin) {
       boundaries.push(step.id);
       values.push(step.theoreticalMargin);
     }
