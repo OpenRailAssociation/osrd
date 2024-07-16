@@ -9,6 +9,7 @@ import type { AppDispatch } from 'store';
 
 import type {
   Node,
+  Port,
   Trainrun,
   TrainrunSection,
   TrainrunCategory,
@@ -301,6 +302,18 @@ const importTimetable = async (
     return port;
   };
 
+  let transitionId = 0;
+  const createTransition = (port1Id: number, port2Id: number) => {
+    const transition = {
+      id: transitionId,
+      port1Id,
+      port2Id,
+      isNonStopTransit: false,
+    };
+    transitionId += 1;
+    return transition;
+  };
+
   let trainrunSectionId = 0;
   const trainrunSections: TrainrunSection[] = trainSchedules
     .map((trainSchedule) => {
@@ -313,6 +326,7 @@ const importTimetable = async (
       // OSRD describes the path in terms of nodes, NGE describes it in terms
       // of sections between nodes. Iterate over path items two-by-two to
       // convert them.
+      let prevPort: Port | null = null;
       return ops.slice(0, -1).map((sourceOp, i) => {
         const sourceNodeId = sourceOp!.obj_id;
         const targetNodeId = ops[i + 1]!.obj_id;
@@ -333,7 +347,13 @@ const importTimetable = async (
         sourceNode.ports.push(sourcePort);
         targetNode.ports.push(targetPort);
 
-        // TODO: create transitions between ports
+        // Create a transition between the previous section and the one we're
+        // creating
+        if (prevPort) {
+          const transition = createTransition(prevPort.id, sourcePort.id);
+          sourceNode.transitions.push(transition);
+        }
+        prevPort = targetPort;
 
         const trainrunSection = {
           id: trainrunSectionId,
