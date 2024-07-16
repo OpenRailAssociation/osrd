@@ -5,17 +5,17 @@ const formatMargin = (pathSteps: PathStep[]): Margin | undefined => {
   const boundaries: string[] = [];
   const values: string[] = [];
 
-  pathSteps.forEach((step, index) => {
+  pathSteps.forEach(({ id, theoreticalMargin }, index) => {
     if (index === 0) {
-      values.push(step.theoreticalMargin || 'none');
+      values.push(theoreticalMargin || '0%');
     } else if (index === pathSteps.length - 1) {
-      if (values.length === 1 && values[0] !== 'none') {
-        boundaries.push(step.id);
-        values.push('none');
+      if (values.length === 1 && values[0] !== '0%' && values[0] !== '0min/100km') {
+        boundaries.push(id);
+        values.push('0%');
       }
-    } else if (step.theoreticalMargin) {
-      boundaries.push(step.id);
-      values.push(step.theoreticalMargin);
+    } else if (theoreticalMargin) {
+      boundaries.push(id);
+      values.push(theoreticalMargin);
     }
   });
 
