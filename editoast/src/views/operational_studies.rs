@@ -19,6 +19,7 @@ pub enum Ordering {
 }
 
 #[derive(Debug, Clone, serde::Deserialize, utoipa::IntoParams)]
+#[into_params(parameter_in = Query)]
 pub struct OperationalStudiesOrderingParam {
     #[serde(default)]
     pub ordering: Ordering,

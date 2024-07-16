@@ -3,11 +3,9 @@ use std::collections::HashSet;
 use std::fmt::Debug;
 use std::ops::DerefMut;
 
-use actix_web::get;
-use actix_web::web::Data;
-use actix_web::web::Json;
-use actix_web::web::Path;
-use chashmap::CHashMap;
+use axum::extract::Json;
+use axum::extract::Path;
+use axum::extract::State;
 use editoast_common::rangemap_utils::RangedValue;
 use rangemap::RangeMap;
 use serde::Deserialize;
@@ -25,11 +23,11 @@ use crate::views::pathfinding::path_rangemap::make_path_range_map;
 use crate::views::pathfinding::path_rangemap::TrackMap;
 use crate::views::pathfinding::PathfindingError;
 use crate::views::pathfinding::PathfindingIdParam;
-use editoast_models::DbConnectionPoolV2;
+use crate::AppState;
 use editoast_schemas::primitives::ObjectType;
 
 crate::routes! {
-    electrifications_on_path,
+    "/electrifications" => electrifications_on_path,
 }
 
 editoast_common::schemas! {
@@ -95,18 +93,21 @@ struct ElectrificationsOnPathResponse {
 }
 
 #[utoipa::path(
+    get, path = "",
     tag = "infra",
     params(PathfindingIdParam),
     responses(
         (status = 200, body = ElectrificationsOnPathResponse),
     )
 )]
-#[get("/electrifications")]
 /// Retrieve the electrification modes along a path, as seen by the rolling stock specified
 async fn electrifications_on_path(
-    params: Path<PathfindingIdParam>,
-    db_pool: Data<DbConnectionPoolV2>,
-    infra_caches: Data<CHashMap<i64, InfraCache>>,
+    Path(params): Path<PathfindingIdParam>,
+    State(AppState {
+        db_pool_v2: db_pool,
+        infra_caches,
+        ..
+    }): State<AppState>,
 ) -> Result<Json<ElectrificationsOnPathResponse>> {
     let pathfinding_id = params.pathfinding_id;
     let pathfinding =
@@ -136,208 +137,7 @@ async fn electrifications_on_path(
 
 #[cfg(test)]
 pub mod tests {
-    use actix_http::StatusCode;
-    use actix_web::test::TestRequest;
-    use editoast_common::range_map;
-    use rstest::*;
-    use serde_json::from_value;
-    use std::ops::DerefMut;
-    use ApplicableDirections::*;
-
-    use super::*;
-    use crate::modelsv2::fixtures::create_empty_infra;
-    use crate::modelsv2::fixtures::create_simple_pathfinding_v1;
-    use crate::modelsv2::prelude::*;
-    use crate::modelsv2::ElectrificationModel;
-    use crate::views::test_app::TestAppBuilder;
-    use editoast_models::DbConnection;
-    use editoast_models::DbConnectionPoolV2;
-    use editoast_schemas::infra::ApplicableDirections;
-    use editoast_schemas::infra::ApplicableDirectionsTrackRange;
-    use editoast_schemas::infra::Electrification as ElectrificationSchema;
-
-    fn simple_mode_map() -> TrackMap<String> {
-        // The mode map associated to the following electrifications
-        let mut mode_map = [
-            ("track_1", "25kV"),
-            ("track_2", "25kV"),
-            ("track_5", "1.5kV"),
-        ]
-        .iter()
-        .map(|(track, voltage)| (track.to_string(), range_map!(0.0, 10.0 => *voltage)))
-        .collect::<HashMap<_, _>>();
-        mode_map.insert(
-            "track_3".to_string(),
-            range_map!(0.0, 5.0 => "25kV", 5.0, 10.0 => "1.5kV"),
-        );
-        mode_map
-    }
-
-    async fn infra_with_electrifications(conn: &mut DbConnection) -> Infra {
-        let infra = create_empty_infra(conn).await;
-
-        // See the diagram in `models::pathfinding::tests::simple_path` to see how the track sections are connected.
-        let electrification_schemas = vec![
-            ElectrificationSchema {
-                track_ranges: vec![
-                    ApplicableDirectionsTrackRange::new("track_1", 0.0, 10.0, Both),
-                    ApplicableDirectionsTrackRange::new("track_2", 5.0, 10.0, Both),
-                ],
-                voltage: "25kV".into(),
-                id: "electrification_1".into(),
-            },
-            ElectrificationSchema {
-                track_ranges: vec![
-                    ApplicableDirectionsTrackRange::new("track_2", 0.0, 5.0, Both),
-                    ApplicableDirectionsTrackRange::new("track_3", 0.0, 5.0, Both),
-                ],
-                voltage: "25kV".into(),
-                ..Default::default()
-            },
-            ElectrificationSchema {
-                track_ranges: vec![
-                    ApplicableDirectionsTrackRange::new("track_3", 5.0, 10.0, Both),
-                    ApplicableDirectionsTrackRange::new("track_5", 0.0, 10.0, Both),
-                ],
-                voltage: "1.5kV".into(),
-                ..Default::default()
-            },
-        ];
-        ElectrificationModel::create_batch::<_, Vec<_>>(
-            conn,
-            ElectrificationModel::from_infra_schemas(infra.id, electrification_schemas),
-        )
-        .await
-        .expect("Could not create electrifications");
-        infra
-    }
-
-    #[rstest]
-    async fn test_map_electrification_modes() {
-        let db_pool = DbConnectionPoolV2::for_tests();
-        let infra_with_electrifications =
-            infra_with_electrifications(db_pool.get_ok().deref_mut()).await;
-        let infra_cache =
-            InfraCache::load(db_pool.get_ok().deref_mut(), &infra_with_electrifications)
-                .await
-                .expect("Could not load infra_cache");
-        let track_sections: HashSet<_> =
-            vec!["track_1", "track_2", "track_3", "track_4", "track_5"]
-                .into_iter()
-                .map(|s| s.to_string())
-                .collect();
-
-        let (mode_map, warnings) = map_electrification_modes(&infra_cache, track_sections);
-        assert_eq!(mode_map, simple_mode_map());
-        assert!(warnings.is_empty());
-    }
-
-    #[rstest]
-    async fn test_map_electrification_modes_with_warnings() {
-        let db_pool = DbConnectionPoolV2::for_tests();
-        let infra_with_electrifications =
-            infra_with_electrifications(db_pool.get_ok().deref_mut()).await;
-        let mut infra_cache =
-            InfraCache::load(db_pool.get_ok().deref_mut(), &infra_with_electrifications)
-                .await
-                .expect("Could not load infra_cache");
-        infra_cache
-            .add(ElectrificationSchema {
-                track_ranges: vec![ApplicableDirectionsTrackRange::new(
-                    "track_1", 0.0, 10.0, Both,
-                )],
-                voltage: "25kV".into(),
-                id: "electrification_that_overlaps".into(),
-            })
-            .unwrap();
-        let track_sections: HashSet<_> =
-            vec!["track_1", "track_2", "track_3", "track_4", "track_5"]
-                .into_iter()
-                .map(|s| s.to_string())
-                .collect();
-
-        let (_, warnings) = map_electrification_modes(&infra_cache, track_sections);
-        assert_eq!(warnings.len(), 1);
-        let warning = &warnings[0];
-
-        assert!(warning.get_context().contains_key("electrification_id"));
-        let electrification_id: String = from_value(
-            warning
-                .get_context()
-                .get("electrification_id")
-                .unwrap()
-                .clone(),
-        )
-        .unwrap();
-
-        assert!(
-            electrification_id == "electrification_that_overlaps"
-                || electrification_id == "electrification_1"
-        );
-
-        assert!(warning.get_context().contains_key("overlapping_ranges"));
-        let overlapping_ranges: Vec<ApplicableDirectionsTrackRange> = from_value(
-            warning
-                .get_context()
-                .get("overlapping_ranges")
-                .unwrap()
-                .clone(),
-        )
-        .unwrap();
-        assert_eq!(overlapping_ranges.len(), 1);
-        assert_eq!(
-            overlapping_ranges[0],
-            ApplicableDirectionsTrackRange::new("track_1", 0.0, 10.0, Both)
-        );
-    }
-
-    #[rstest]
-    async fn test_view_electrifications_on_path() {
-        let app = TestAppBuilder::default_app();
-        let db_pool = app.db_pool();
-        let infra_with_electrifications =
-            infra_with_electrifications(db_pool.get_ok().deref_mut()).await;
-        let pathfinding = create_simple_pathfinding_v1(
-            db_pool.get_ok().deref_mut(),
-            infra_with_electrifications.id,
-        )
-        .await;
-
-        let request = TestRequest::get()
-            .uri(&format!(
-                "/pathfinding/{}/electrifications/",
-                pathfinding.id
-            ))
-            .to_request();
-
-        let response: ElectrificationsOnPathResponse =
-            app.fetch(request).assert_status(StatusCode::OK).json_into();
-
-        assert!(response.warnings.is_empty());
-        assert_eq!(response.electrification_ranges.len(), 3);
-        assert_eq!(
-            response.electrification_ranges[0],
-            RangedValue {
-                begin: 0.0,
-                end: 25.0,
-                value: "25kV".into(),
-            }
-        );
-        assert_eq!(
-            response.electrification_ranges[1],
-            RangedValue {
-                begin: 25.0,
-                end: 30.0,
-                value: "1.5kV".into(),
-            }
-        );
-        assert_eq!(
-            response.electrification_ranges[2],
-            RangedValue {
-                begin: 40.0,
-                end: 48.0,
-                value: "1.5kV".into(),
-            }
-        );
-    }
+    // There used to be tests here. They were removed because this TSV1 module will be removed soon.
+    // These tests were using actix's test API, but we switched to axum, so they were removed instead
+    // of being ported.
 }

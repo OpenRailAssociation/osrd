@@ -55,23 +55,21 @@ serde_json = "1.0.120"
 strum = { version = "0.26.3", features = ["derive"] }
 tempfile = "3.10.1"
 thiserror = "1.0.63"
-tokio = { version = "1.39.1", features = ["macros", "rt-multi-thread"] }
+tokio = { version = "1.39.1", features = ["fs", "macros", "rt-multi-thread"] }
 tokio-postgres = "0.7.11"
 tracing = { version = "0.1.40", features = ["log"] }
 url = { version = "2.5.2", features = ["serde"] }
-utoipa = { version = "4.2.3", features = ["actix_extras", "chrono", "uuid"] }
+utoipa = { version = "4.2.3", features = ["chrono", "uuid"] }
 uuid = { version = "1.10.0", features = ["serde", "v4"] }
 
 [dependencies]
 # For batch dependency updates, see editoast/README.md
 
-actix-cors = "0.7.0"
-actix-files = "0.6.6"
-actix-http = "3.8.0"
-actix-multipart = "0.7.2"
-actix-web = "4.8.0"
-actix-web-opentelemetry = { version = "0.18.0", features = ["awc"] }
 async-trait = "0.1.81"
+axum = { version = "0.7.5", features = ["multipart"] }
+axum-extra = { version = "0.9.3", features = ["typed-header"] }
+axum-test = "15.3.0"
+axum-tracing-opentelemetry = "0.19.0"
 chashmap = "2.2.2"
 chrono.workspace = true
 clap = { version = "4.5.10", features = ["derive", "env"] }
@@ -90,10 +88,12 @@ enumset = "1.1.5"
 futures.workspace = true
 futures-util.workspace = true
 geos.workspace = true
+headers = "0.4.0"
 image = "0.25.2"
 inventory = "0.3"
 itertools.workspace = true
 json-patch = { version = "2.0.0", features = ["utoipa"] }
+mime = "0.3.17"
 mvt.workspace = true
 opentelemetry = "0.23.0"
 opentelemetry-datadog = { version = "0.11.0", features = ["reqwest-client"] }
@@ -112,18 +112,27 @@ redis = { version = "0.25.4", features = [
   "tokio-comp",
   "tokio-native-tls-comp",
 ] }
+regex = "1.10.5"
 # 0.12.0 to 0.12.4 have weird timeout issues https://github.com/seanmonstar/reqwest/issues/2283
 # This bug was introduced between 0.12.0 and 0.12.3.
 reqwest = { version = "0.11.27", features = ["json"] }
 serde.workspace = true
 serde_derive.workspace = true
 serde_json.workspace = true
-serde_qs = { version = "0.13.0", features = ["actix4"] }
+serde_qs = { version = "0.13.0", features = ["axum"] }
 serde_yaml = "0.9.34"
 sha1 = "0.10"
 strum.workspace = true
 thiserror.workspace = true
 tokio.workspace = true
+tokio-util = { version = "0.7.11", features = ["io", "tracing"] }
+tower = "0.4.13"
+tower-http = { version = "0.5.2", features = [
+  "cors",
+  "limit",
+  "normalize-path",
+  "trace",
+] }
 tracing.workspace = true
 tracing-opentelemetry = "0.24.0"
 tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
@@ -134,6 +143,7 @@ validator = { version = "0.18.1", features = ["derive"] }
 
 [dev-dependencies]
 async-std = { version = "1.12.0", features = ["attributes", "tokio1"] }
+axum = { version = "0.7.5", features = ["macros", "multipart"] }
 editoast_models = { workspace = true, features = ["testing"] }
 pretty_assertions = "1.4.0"
 rstest.workspace = true

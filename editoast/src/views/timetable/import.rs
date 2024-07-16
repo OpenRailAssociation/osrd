@@ -2,9 +2,8 @@ use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::sync::Arc;
 
-use actix_web::post;
-use actix_web::web::Data;
-use actix_web::web::Json;
+use axum::extract::Json;
+use axum::extract::State;
 use chrono::DateTime;
 use chrono::Timelike;
 use chrono::Utc;
@@ -41,6 +40,7 @@ use crate::views::pathfinding::save_core_pathfinding;
 use crate::views::timetable::Path;
 use crate::views::timetable::TimetableError;
 use crate::views::train_schedule::process_simulation_response;
+use crate::AppState;
 use editoast_models::DbConnection;
 use editoast_models::DbConnectionPool;
 use editoast_schemas::infra::OperationalPointPart;
@@ -59,6 +59,7 @@ editoast_common::schemas! {
     ImportTimings,
     TimetableImportError,
 }
+
 #[derive(Debug, Clone, Deserialize, ToSchema)]
 pub struct TimetableImportItem {
     #[schema(example = "2TGV2N2")]
@@ -174,22 +175,25 @@ struct OperationalPointsToParts {
 /// Import a timetable
 /// Returns data about the import for each train imported
 #[utoipa::path(
+    post, path = "",
     tag = "timetable",
     params(
         ("id" = u64, Path, description = "Timetable id"),
     ),
+    request_body = Vec<TimetableImportItem>,
     responses(
         (status = 200, description = "Import report", body = HashMap<String, TrainImportReport>),
     ),
 )]
-#[post("")]
-pub async fn post_timetable(
-    db_pool: Data<DbConnectionPool>,
-    timetable_id: Path<i64>,
-    core_client: Data<CoreClient>,
-    data: Json<Vec<TimetableImportItem>>,
+async fn post_timetable(
+    State(AppState {
+        db_pool_v1: db_pool,
+        core_client,
+        ..
+    }): State<AppState>,
+    Path(timetable_id): Path<i64>,
+    Json(data): Json<Vec<TimetableImportItem>>,
 ) -> Result<Json<HashMap<String, TrainImportReport>>> {
-    let timetable_id = timetable_id.into_inner();
     let mut conn = db_pool.get().await?;
 
     // Retrieve the timetable
@@ -207,23 +211,21 @@ pub async fn post_timetable(
             .await?;
 
     // Check infra is loaded
-    let core_client = core_client.as_ref();
-    let infra_status = fetch_infra_state(infra_id, core_client).await?.status;
+    let infra_status = fetch_infra_state(infra_id, &core_client).await?.status;
     if infra_status != InfraState::Cached {
         return Err(TimetableError::InfraNotLoaded { infra_id }.into());
     }
 
-    let db_pool = db_pool.into_inner();
     let mut item_futures = Vec::new();
 
-    for item in data.into_inner() {
+    for item in data {
         item_futures.push(import_item(
             infra_id,
             &infra.version,
             db_pool.clone(),
             item,
             timetable_id,
-            core_client,
+            &core_client,
         ));
     }
     let item_results = try_join_all(item_futures).await?;

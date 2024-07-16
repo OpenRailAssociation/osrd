@@ -59,13 +59,13 @@ pub fn error(input: TokenStream) -> TokenStream {
 /// ## Available implementations
 ///
 /// - **retrieve** (enable `Retrieve` trait)
-///   - `retrieve(Data<DbPool>, i64) -> Result<Option<Self>>`
+///   - `retrieve(State<DbPool>, i64) -> Result<Option<Self>>`
 ///   - `retrieve_conn(&mut PgConnection, i64) -> Result<Option<Self>>`
 /// - **create** (enable `Create` trait)
-///   - `create(self, Data<DbPool>) -> Result<Self>`
+///   - `create(self, State<DbPool>) -> Result<Self>`
 ///   - `create_conn(self, &mut PgConnection) -> Result<Self>`
 /// - **delete** (enable `Delete` trait)
-///   - `delete(Data<DbPool>, i64) -> Result<bool>`
+///   - `delete(State<DbPool>, i64) -> Result<bool>`
 ///   - `delete_conn(&mut PgConnection, i64) -> Result<bool>`
 ///
 /// ## Requirements

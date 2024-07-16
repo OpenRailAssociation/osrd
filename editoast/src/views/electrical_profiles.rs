@@ -1,13 +1,11 @@
 use std::collections::HashMap;
 
-use actix_web::delete;
-use actix_web::get;
-use actix_web::post;
-use actix_web::web::Data;
-use actix_web::web::Json;
-use actix_web::web::Path;
-use actix_web::web::Query;
-use actix_web::HttpResponse;
+use axum::extract::Json;
+use axum::extract::Path;
+use axum::extract::Query;
+use axum::extract::State;
+use axum::http::StatusCode;
+use axum::response::IntoResponse;
 use editoast_derive::EditoastError;
 use serde::Deserialize;
 use thiserror::Error;
@@ -31,11 +29,9 @@ crate::routes! {
         "/{electrical_profile_set_id}" => {
             get,
             delete,
-            "/level_order" => {
-                get_level_order
-            }
-        }
-    }
+            "/level_order" => get_level_order,
+        },
+    },
 }
 
 editoast_common::schemas! {
@@ -51,19 +47,22 @@ pub struct ElectricalProfileSetId {
 
 /// Retrieve the list of ids and names of electrical profile sets available
 #[utoipa::path(
+    get, path = "",
     tag = "electrical_profiles",
     responses(
         (status = 200, body = Vec<LightElectricalProfileSet>, description = "The list of ids and names of electrical profile sets available"),
     )
 )]
-#[get("")]
-async fn list(db_pool: Data<DbConnectionPoolV2>) -> Result<Json<Vec<LightElectricalProfileSet>>> {
+async fn list(
+    State(db_pool): State<DbConnectionPoolV2>,
+) -> Result<Json<Vec<LightElectricalProfileSet>>> {
     let mut conn = db_pool.get().await?;
     Ok(Json(ElectricalProfileSet::list_light(&mut conn).await?))
 }
 
 /// Return a specific set of electrical profiles
 #[utoipa::path(
+    get, path = "",
     tag = "electrical_profiles",
     params(ElectricalProfileSetId),
     responses(
@@ -71,12 +70,10 @@ async fn list(db_pool: Data<DbConnectionPoolV2>) -> Result<Json<Vec<LightElectri
         (status = 404, body = InternalError, description = "The requested electrical profile set was not found"),
     )
 )]
-#[get("")]
 async fn get(
-    db_pool: Data<DbConnectionPoolV2>,
-    electrical_profile_set: Path<i64>,
+    State(db_pool): State<DbConnectionPoolV2>,
+    Path(electrical_profile_set_id): Path<i64>,
 ) -> Result<Json<ElectricalProfileSetData>> {
-    let electrical_profile_set_id = electrical_profile_set.into_inner();
     let conn = &mut db_pool.get().await?;
     let ep_set = ElectricalProfileSet::retrieve_or_fail(conn, electrical_profile_set_id, || {
         ElectricalProfilesError::NotFound {
@@ -89,6 +86,7 @@ async fn get(
 
 /// Return the electrical profile value order for this set
 #[utoipa::path(
+    get, path = "",
     tag = "electrical_profiles",
     params(ElectricalProfileSetId),
     responses(
@@ -103,12 +101,10 @@ async fn get(
         (status = 404, body = InternalError, description = "The requested electrical profile set was not found"),
     )
 )]
-#[get("")]
 async fn get_level_order(
-    db_pool: Data<DbConnectionPoolV2>,
-    electrical_profile_set: Path<i64>,
+    State(db_pool): State<DbConnectionPoolV2>,
+    Path(electrical_profile_set_id): Path<i64>,
 ) -> Result<Json<HashMap<String, LevelValues>>> {
-    let electrical_profile_set_id = electrical_profile_set.into_inner();
     let conn = &mut db_pool.get().await?;
     let ep_set = ElectricalProfileSet::retrieve_or_fail(conn, electrical_profile_set_id, || {
         ElectricalProfilesError::NotFound {
@@ -121,6 +117,7 @@ async fn get_level_order(
 
 /// Delete an electrical profile set
 #[utoipa::path(
+    delete, path = "",
     tag = "electrical_profiles",
     params(ElectricalProfileSetId),
     responses(
@@ -128,28 +125,28 @@ async fn get_level_order(
         (status = 404, body = InternalError, description = "The requested electrical profie was not found"),
     )
 )]
-#[delete("")]
 async fn delete(
-    db_pool: Data<DbConnectionPoolV2>,
-    electrical_profile_set: Path<i64>,
-) -> Result<HttpResponse> {
-    let electrical_profile_set_id = electrical_profile_set.into_inner();
+    State(db_pool): State<DbConnectionPoolV2>,
+    Path(electrical_profile_set_id): Path<i64>,
+) -> Result<impl IntoResponse> {
     let conn = &mut db_pool.get().await?;
     let deleted = ElectricalProfileSet::delete_static(conn, electrical_profile_set_id).await?;
     if deleted {
-        Ok(HttpResponse::NoContent().finish())
+        Ok(StatusCode::NO_CONTENT)
     } else {
-        Ok(HttpResponse::NotFound().finish())
+        Ok(StatusCode::NOT_FOUND)
     }
 }
 
 #[derive(Deserialize, IntoParams)]
+#[into_params(parameter_in = Query)]
 struct ElectricalProfileQueryArgs {
     name: String,
 }
 
 /// import a new electrical profile set
 #[utoipa::path(
+    post, path = "",
     tag = "electrical_profiles",
     params(ElectricalProfileQueryArgs),
     request_body = ElectricalProfileSetData,
@@ -157,15 +154,14 @@ struct ElectricalProfileQueryArgs {
         (status = 200, body = ElectricalProfileSet, description = "The list of ids and names of electrical profile sets available"),
     )
 )]
-#[post("")]
 async fn post_electrical_profile(
-    db_pool: Data<DbConnectionPoolV2>,
-    ep_set_name: Query<ElectricalProfileQueryArgs>,
-    data: Json<ElectricalProfileSetData>,
+    State(db_pool): State<DbConnectionPoolV2>,
+    Query(ep_set_name): Query<ElectricalProfileQueryArgs>,
+    Json(data): Json<ElectricalProfileSetData>,
 ) -> Result<Json<ElectricalProfileSet>> {
     let ep_set = ElectricalProfileSet::changeset()
-        .name(ep_set_name.into_inner().name)
-        .data(data.into_inner());
+        .name(ep_set_name.name)
+        .data(data);
     let conn = &mut db_pool.get().await?;
     Ok(Json(ep_set.create(conn).await?))
 }
@@ -181,8 +177,8 @@ pub enum ElectricalProfilesError {
 
 #[cfg(test)]
 mod tests {
-    use actix_http::StatusCode;
-    use actix_web::test::TestRequest;
+
+    use axum::http::StatusCode;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
     use std::ops::DerefMut;
@@ -202,12 +198,9 @@ mod tests {
         let _set_1 = create_electrical_profile_set(pool.get_ok().deref_mut()).await;
         let _set_2 = create_electrical_profile_set(pool.get_ok().deref_mut()).await;
 
-        let request = TestRequest::get()
-            .uri("/electrical_profile_set")
-            .to_request();
-
-        let response: Vec<LightElectricalProfileSet> =
-            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let response = app.get("/electrical_profile_set").await;
+        response.assert_status(StatusCode::OK);
+        let response: Vec<LightElectricalProfileSet> = response.json();
 
         assert!(response.len() >= 2);
     }
@@ -216,11 +209,8 @@ mod tests {
     async fn get_unexisting_electrical_profile() {
         let app = TestAppBuilder::default_app();
 
-        let request = TestRequest::get()
-            .uri("/electrical_profile_set/666")
-            .to_request();
-
-        app.fetch(request).assert_status(StatusCode::NOT_FOUND);
+        let response = app.get("/electrical_profile_set/666").await;
+        response.assert_status(StatusCode::NOT_FOUND);
     }
 
     #[rstest]
@@ -230,25 +220,21 @@ mod tests {
 
         let electrical_profile_set = create_electrical_profile_set(pool.get_ok().deref_mut()).await;
 
-        let request = TestRequest::get()
-            .uri(&format!(
+        let response = app
+            .get(&format!(
                 "/electrical_profile_set/{}",
                 electrical_profile_set.id
             ))
-            .to_request();
-
-        app.fetch(request).assert_status(StatusCode::OK);
+            .await;
+        response.assert_status(StatusCode::OK);
     }
 
     #[rstest]
     async fn get_unexisting_electrical_profile_level_order() {
         let app = TestAppBuilder::default_app();
 
-        let request = TestRequest::get()
-            .uri("/electrical_profile_set/666/level_order")
-            .to_request();
-
-        app.fetch(request).assert_status(StatusCode::NOT_FOUND);
+        let response = app.get("/electrical_profile_set/666/level_order").await;
+        response.assert_status(StatusCode::NOT_FOUND);
     }
 
     #[rstest]
@@ -258,15 +244,14 @@ mod tests {
 
         let electrical_profile_set = create_electrical_profile_set(pool.get_ok().deref_mut()).await;
 
-        let request = TestRequest::get()
-            .uri(&format!(
+        let response = app
+            .get(&format!(
                 "/electrical_profile_set/{}/level_order",
                 electrical_profile_set.id
             ))
-            .to_request();
-
-        let level_order: HashMap<String, Vec<String>> =
-            app.fetch(request).assert_status(StatusCode::OK).json_into();
+            .await;
+        response.assert_status(StatusCode::OK);
+        let level_order: HashMap<String, Vec<String>> = response.json();
 
         assert_eq!(level_order.len(), 1);
         assert_eq!(
@@ -278,10 +263,8 @@ mod tests {
     #[rstest]
     async fn delete_unexisting_electrical_profile() {
         let app = TestAppBuilder::default_app();
-        let request = TestRequest::delete()
-            .uri("/electrical_profile_set/666")
-            .to_request();
-        app.fetch(request).assert_status(StatusCode::NOT_FOUND);
+        let response = app.delete("/electrical_profile_set/666").await;
+        response.assert_status(StatusCode::NOT_FOUND);
     }
 
     #[rstest]
@@ -291,14 +274,13 @@ mod tests {
 
         let electrical_profile_set = create_electrical_profile_set(pool.get_ok().deref_mut()).await;
 
-        let request = TestRequest::delete()
-            .uri(&format!(
+        let response = app
+            .delete(&format!(
                 "/electrical_profile_set/{}",
                 electrical_profile_set.id
             ))
-            .to_request();
-
-        app.fetch(request).assert_status(StatusCode::NO_CONTENT);
+            .await;
+        response.assert_status(StatusCode::NO_CONTENT);
 
         let exists =
             ElectricalProfileSet::exists(pool.get_ok().deref_mut(), electrical_profile_set.id)
@@ -322,13 +304,12 @@ mod tests {
             level_order: Default::default(),
         };
 
-        let request = TestRequest::post()
-            .uri("/electrical_profile_set/?name=elec")
-            .set_json(ep_set)
-            .to_request();
-
-        let created_ep: ElectricalProfileSet =
-            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let response = app
+            .post("/electrical_profile_set/?name=elec")
+            .json(&ep_set)
+            .await;
+        response.assert_status(StatusCode::OK);
+        let created_ep: ElectricalProfileSet = response.json();
 
         let created_ep = ElectricalProfileSet::retrieve(pool.get_ok().deref_mut(), created_ep.id)
             .await

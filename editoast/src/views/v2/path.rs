@@ -15,8 +15,8 @@ use crate::modelsv2::Infra;
 use editoast_models::DbConnection;
 
 crate::routes! {
-    properties::routes(),
-    pathfinding::routes(),
+    &properties,
+    &pathfinding,
 }
 
 editoast_common::schemas! {

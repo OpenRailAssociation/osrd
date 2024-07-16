@@ -1,7 +1,7 @@
 use std::collections::BTreeMap;
 use std::collections::VecDeque;
+use std::convert::Infallible;
 
-use actix_web::dev::HttpServiceFactory;
 use itertools::Itertools as _;
 use tracing::debug;
 use tracing::warn;
@@ -17,11 +17,7 @@ use utoipa::openapi::Schema;
 use utoipa::OpenApi;
 
 use crate::error::ErrorDefinition;
-
-pub struct Routes<F: HttpServiceFactory> {
-    pub service: F,
-    pub paths: OpenApiPathScope,
-}
+use crate::AppState;
 
 #[derive(Debug)]
 pub struct OpenApiPathScope {
@@ -44,13 +40,48 @@ impl std::fmt::Debug for Dispatch {
     }
 }
 
-impl<F: HttpServiceFactory> std::fmt::Debug for Routes<F> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("Routes")
-            .field("service", &"<unprintable>")
-            .field("paths", &self.paths)
-            .finish()
+/// Generates an `axum::MethodRouter` based on an HTTP method
+pub(in crate::views) fn make_method_router<P, H, T>(
+    handler: H,
+) -> axum::routing::MethodRouter<AppState, Infallible>
+where
+    P: utoipa::Path,
+    H: axum::handler::Handler<T, AppState>,
+    T: 'static,
+{
+    let path_item = P::path_item(None);
+    let method = path_item.operations.first_key_value().expect("lolz").0;
+    match *method {
+        utoipa::openapi::PathItemType::Get => axum::routing::get(handler),
+        utoipa::openapi::PathItemType::Post => axum::routing::post(handler),
+        utoipa::openapi::PathItemType::Put => axum::routing::put(handler),
+        utoipa::openapi::PathItemType::Delete => axum::routing::delete(handler),
+        utoipa::openapi::PathItemType::Options => axum::routing::options(handler),
+        utoipa::openapi::PathItemType::Head => axum::routing::head(handler),
+        utoipa::openapi::PathItemType::Patch => axum::routing::patch(handler),
+        utoipa::openapi::PathItemType::Trace => axum::routing::trace(handler),
+        utoipa::openapi::PathItemType::Connect => {
+            unimplemented!("cannot define endpoints using the CONNECT method")
+        }
     }
+}
+
+/// Reformats a service path defined in the OpenApi format to the Axum format
+///
+/// For path parameters, the OpenApi format uses curly braces, e.g. `/users/{id}`.
+/// The Axum format uses a colon, e.g. `/users/:id`.
+/// The `routes!` macro requires path parameters to be defined in the OpenApi format.
+pub(in crate::views) fn format_axum_path_parameters(url_with_path_params: &str) -> String {
+    url_with_path_params
+        .split('/')
+        .map(|part| {
+            if part.starts_with('{') && part.ends_with('}') {
+                format!(":{}", &part[1..part.len() - 1])
+            } else {
+                part.to_string()
+            }
+        })
+        .join("/")
 }
 
 #[allow(unused)]
@@ -62,11 +93,9 @@ impl OpenApiPathScope {
         }
     }
 
-    pub fn route<S: AsRef<str>>(mut self, openapi_path: S, openapi_pathitem: PathItem) -> Self {
-        self.paths.push_back(Dispatch::Path(
-            openapi_path.as_ref().to_owned(),
-            openapi_pathitem,
-        ));
+    pub fn route<P: utoipa::Path>(mut self) -> Self {
+        self.paths
+            .push_back(Dispatch::Path(P::path(), P::path_item(None)));
         self
     }
 
@@ -91,12 +120,11 @@ impl OpenApiPathScope {
         for item in self.paths {
             match item {
                 Dispatch::Path(path, pathitem) => paths.push((concat_path(prefix, path), pathitem)),
-                Dispatch::Scope(scope) => paths.append(
+                Dispatch::Scope(scope) => paths.extend(
                     &mut scope
                         .into_flat_path_list()
                         .into_iter()
-                        .map(|(path, pathitem)| (concat_path(prefix, path), pathitem))
-                        .collect(),
+                        .map(|(path, pathitem)| (concat_path(prefix, path), pathitem)),
                 ),
             }
         }
@@ -134,30 +162,23 @@ fn merge_path_items(a: PathItem, b: PathItem) -> PathItem {
     builder.build()
 }
 
-impl<F: HttpServiceFactory> HttpServiceFactory for Routes<F> {
-    fn register(self, config: &mut actix_web::dev::AppService) {
-        self.service.register(config);
-    }
-}
-
-/// A macro that given a tree of routes, generates the corresponding [Routes]
-/// object which also includes both the actix service and the routes' OpenAPI info
+/// A macro that given a tree of routes, generates two functions. One building
+/// an `axum::Router` and another building an [OpenApiPathScope] object.
 ///
-/// Note that you cannot have more than 12 services at the same scope level
-/// because HttpServiceFactory is not implemented for tuples with more than 12
-/// services (actix's fault, not mine, I swear 🥺). If you need more than 12
-/// services just group them within parentheses. A scope counts as one service.
-///
-/// That macro will generate a funciton `fn routes() -> Routes` that you can use
-/// inside another `routes!` invocation to include all the routes of another
-/// module. This is useful to split the routes in multiple files.
+/// This macro is useful to locally define a tree of routes instead of listing
+/// them all when building the web service. Both functions can be nested
+/// using `&submodule`.
 ///
 /// Also note that the order of the services will be kept the same, so you might
-/// encounter the classic actix issue that the first route that matches a request
+/// encounter the classic issue that the first route that matches a request
 /// will be used instead of the one you expect because of the order of the services.
 ///
 /// Finally, all the endpoints used in this macro **MUST** be annotated using
-/// `#[utoipa::path(...)]`, even if left empty.
+/// `#[utoipa::path(method, path = "", ...)]`.
+///
+/// # /!\ Warning /!\
+///
+/// **ALL ITEMS OF THIS MACROS MUST END WITH A COMMA `,`!!!!!!!!!!!!!!!**
 ///
 /// # Example
 /// ```
@@ -167,94 +188,103 @@ impl<F: HttpServiceFactory> HttpServiceFactory for Routes<F> {
 ///         "/{infra}" => {
 ///             load,
 ///             get,
-///             (s1, s2, s3, s4, s5, s6, s7, s8, s9, "/s" => { s10 }, s11, s12),
 ///         },
-///         sub_module::routes(),
-///         other_endpoint
-///     }
+///         &sub_module,
+///         other_endpoint,
+///     },
 /// }
 /// ```
 #[macro_export]
 macro_rules! routes {
     // TODO: apply the same pattern than schemas! with the three item types: ident, &path and expr
+    (@utoipa_type $route:ident) => { paste::paste! { [<__path_ $route>] } };
+    (@method_of $route:ident) => {
+        $crate::views::openapi::make_method_router::<$crate::routes!(@utoipa_type $route), _, _>(
+            $route
+        )
+    };
 
     // end of recursion, return the built expression
-    (@routes [$($routes:expr)*]) => { ($($routes),*) };
-    (@paths [$p:expr]) => { $p };
+    (@router [$router:expr]) => { $router };
+    (@openapi [$paths:expr]) => { $paths };
 
     // collect the endpoint and continue
-    (@routes [$($acc:expr)*] $route:ident , $($rest:tt)*) => {
-        $crate::routes!(@routes [$($acc)* $route] $($rest)*)
+    (@router [$router:expr] $route:ident , $($rest:tt)*) => {
+        $crate::routes!(@router
+            [$router.route("/", $crate::routes!(@method_of $route))]
+            $($rest)*
+        )
     };
     // retrieve the openapi data of the endpoint and continue
-    (@paths [$p:expr] $route:ident , $($rest:tt)*) => {
-        $crate::routes!(@paths
-            [paste::paste! {
-                $p.route(
-                    <[<__path_ $route>] as utoipa::Path>::path(),
-                    <[<__path_ $route>] as utoipa::Path>::path_item(None)
-                )
-            }]
+    (@openapi [$paths:expr] $route:ident , $($rest:tt)*) => {
+        $crate::routes!(@openapi
+            [$paths.route::<$crate::routes!(@utoipa_type $route)>()]
             $($rest)*
         )
     };
 
     // create a scope, recurse within the scope, and continue collecting at the same level
-    (@routes [$($acc:expr)*] $prefix:literal => {$($tt:tt)+} , $($rest:tt)*) => {
-        $crate::routes!(@routes [$($acc)* actix_web::web::scope($prefix).service(
-            $crate::routes!(@routes [] $($tt)+)
-        )] $($rest)*)
+    (@router [$router:expr] $prefix:literal => {$($tt:tt)+} , $($rest:tt)*) => {
+        $crate::routes!(@router
+            [$router.nest(
+                &$crate::views::openapi::format_axum_path_parameters($prefix),
+                $crate::routes!(@router [axum::Router::<$crate::AppState>::new()] $($tt)+)
+            )]
+            $($rest)*
+        )
     };
     // ditto
-    (@paths [$p:expr] $prefix:literal => {$($tt:tt)+} , $($rest:tt)*) => {
-        $crate::routes!(@paths [$p.scope(
-            $crate::routes!(@paths [$crate::views::openapi::OpenApiPathScope::new(Some($prefix))] $($tt)+)
-        )] $($rest)*)
+    (@openapi [$paths:expr] $prefix:literal => {$($tt:tt)+} , $($rest:tt)*) => {
+        $crate::routes!(@openapi
+            [$paths.scope(
+                $crate::routes!(@openapi
+                    [$crate::views::openapi::OpenApiPathScope::new(Some($prefix))]
+                    $($tt)+
+                )
+            )]
+            $($rest)*
+        )
     };
 
-    // FIXME: add memoization to avoid calling routes() twice
-    // call the routes() function for the submodule and collect just the service
-    (@routes [$($acc:expr)*] $sub:ident ::routes() , $($rest:tt)*) => {
-        $crate::routes!(@routes [$($acc)* $sub::routes().service] $($rest)*)
+    // syntactic sugar for single scoped endpoint
+    (@router [$router:expr] $prefix:literal => $route:ident , $($rest:tt)*) => {
+        $crate::routes!(@router [$router] $prefix => { $route , } , $($rest)*)
     };
-    // call the routes() function for the submodule and collect just the openapi description
-    (@paths [$p:expr] $sub:ident ::routes() , $($rest:tt)*) => {
-        $crate::routes!(@paths [$p.scope($sub::routes().paths)] $($rest)*)
+    (@openapi [$paths:expr] $prefix:literal => $route:ident , $($rest:tt)*) => {
+        $crate::routes!(@openapi [$paths] $prefix => { $route , } , $($rest)*)
     };
 
-    // tuple of services, just recurse within the tuple and continue parsing the same level
-    (@routes [$($acc:expr)*] ($($tt:tt)*) , $($rest:tt)*) => {
-        $crate::routes!(@routes [$($acc)*
-            $crate::routes!(@routes [] $($tt)*)
-        ] $($rest)*)
+    // include a submodule
+    (@router [$router:expr] & $sub_module:ident , $($rest:tt)*) => {
+        $crate::routes!(@router [$router.merge($sub_module::router())] $($rest)*)
     };
-    (@paths [$p:expr] ($($tt:tt)*) , $($rest:tt)*) => {
-        $crate::routes!(@paths [$p.scope(
-            $crate::routes!(@paths [$crate::views::openapi::OpenApiPathScope::new(None)] $($tt)*)
-         )] $($rest)*)
+    (@openapi [$paths:expr] & $sub_module:ident , $($rest:tt)*) => {
+        $crate::routes!(@openapi [$paths.scope($sub_module::openapi_paths())] $($rest)*)
     };
-
-    // handles a terminating term without a trailing comma
-    (@routes [$($acc:expr)*] $route:ident) => { $crate::routes!(@routes [$($acc)*] $route ,) };
-    (@paths [$p:expr] $route:ident) => { $crate::routes!(@paths [$p] $route ,) };
-    (@routes [$($acc:expr)*] $prefix:literal => {$($tt:tt)+}) => { $crate::routes!(@routes [$($acc)*] $prefix => {$($tt)+} ,) };
-    (@paths [$p:expr] $prefix:literal => {$($tt:tt)+}) => { $crate::routes!(@paths [$p] $prefix => {$($tt)+} ,) };
-    (@routes [$($acc:expr)*] $sub:ident ::routes()) => { $crate::routes!(@routes [$($acc)*] $sub ::routes() ,) };
-    (@paths [$p:expr] $sub:ident ::routes()) => { $crate::routes!(@paths [$p] $sub ::routes() ,) };
-    (@routes [$($acc:expr)*] ($($tt:tt)*)) => { $crate::routes!(@routes [$($acc)*] ($($tt)*) ,) };
-    (@paths [$p:expr] ($($tt:tt)*)) => { $crate::routes!(@paths [$p] ($($tt)*) ,) };
 
     // error handling to avoid falling back to the macro entry point and get recursion errors
-    (@routes $($tt:tt)*) => { compile_error!(stringify!("routes!: could not parse @routes: " $($tt)*)) };
-    (@paths $($tt:tt)*) => { compile_error!(stringify!("routes!: could not parse @paths: " $($tt)*)) };
+    (@router $($tt:tt)*) => { compile_error!(stringify!("routes!: could not parse @router: " $($tt)*)) };
+    (@openapi $($tt:tt)*) => { compile_error!(stringify!("routes!: could not parse @openapi: " $($tt)*)) };
 
-    // entry point
+    // entry points
+    (
+        $router_vis:vis fn $router:ident ();
+        $openapi_paths_vis:vis fn $openapi_paths:ident ();
+        $($tt:tt)*
+    ) => {
+        $router_vis fn $router() -> axum::Router<$crate::AppState> {
+            $crate::routes!(@router [axum::Router::<$crate::AppState>::new()] $($tt)*)
+        }
+
+        $openapi_paths_vis fn $openapi_paths() -> $crate::views::openapi::OpenApiPathScope {
+            $crate::routes!(@openapi [$crate::views::openapi::OpenApiPathScope::new(None)] $($tt)*)
+        }
+    };
     ($($tt:tt)*) => {
-        pub fn routes() -> $crate::views::openapi::Routes<impl actix_web::dev::HttpServiceFactory>  {
-            $crate::views::openapi::Routes {
-                service: $crate::routes!(@routes [] $($tt)*),
-                paths: $crate::routes!(@paths [$crate::views::openapi::OpenApiPathScope::new(None)] $($tt)*)
-            }
+        $crate::routes! {
+            pub(in $crate::views) fn router();
+            pub(in $crate::views) fn openapi_paths();
+            $($tt)*
         }
     }
 }
@@ -443,8 +473,13 @@ impl OpenApiRoot {
     }
 
     fn insert_routes(openapi: &mut utoipa::openapi::OpenApi) {
-        let routes = crate::views::routes();
-        for (path, path_item) in routes.paths.into_flat_path_list() {
+        let paths = crate::views::openapi_paths();
+        for (mut path, path_item) in paths.into_flat_path_list() {
+            // We are required by axum to have trailing slashes in the `Router`s.
+            // But that's not OpenApi compliant, so we remove them here.
+            if path.ends_with('/') {
+                path = path.trim_end_matches('/').to_string();
+            }
             debug!("processing {path}");
             if openapi.paths.paths.contains_key(&path) {
                 let existing_path_item = openapi.paths.paths.remove(&path).unwrap();

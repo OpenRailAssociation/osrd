@@ -1,11 +1,10 @@
 use std::ops::DerefMut;
 use std::sync::Arc;
 
-use actix_web::post;
-use actix_web::web::Data;
-use actix_web::web::Json;
-use actix_web::HttpResponse;
-use actix_web::Responder;
+use axum::extract::Json;
+use axum::extract::State;
+use axum::http::StatusCode;
+use axum::response::IntoResponse;
 use derivative::Derivative;
 use editoast_derive::EditoastError;
 use editoast_schemas::rolling_stock::RollingStockComfortType;
@@ -39,12 +38,11 @@ use crate::models::TrainSchedule;
 use crate::modelsv2::prelude::*;
 use crate::modelsv2::Infra;
 use crate::views::rolling_stocks::retrieve_existing_rolling_stock;
+use crate::AppState;
 use editoast_models::DbConnectionPoolV2;
 
 crate::routes! {
-    "/stdcm" => {
-        create
-    }
+    "/stdcm" => create,
 }
 
 /// An STDCM request
@@ -126,25 +124,26 @@ enum StdcmError {
 
 /// Compute a STDCM and return the simulation result
 #[utoipa::path(
+    post, path = "",
     tag = "stdcm",
     request_body = inline(STDCMRequestPayload),
     responses(
         (status = 201, body = inline(STDCMResponse), description = "The simulation result"),
     )
 )]
-#[post("")]
 async fn create(
-    db_pool: Data<DbConnectionPoolV2>,
-    core: Data<CoreClient>,
+    app_state: State<AppState>,
     data: Json<STDCMRequestPayload>,
-) -> Result<impl Responder> {
-    let stdcm_response = compute_stdcm(db_pool.into_inner(), core, data).await?;
-    Ok(HttpResponse::Created().json(stdcm_response))
+) -> Result<impl IntoResponse> {
+    let db_pool = app_state.db_pool_v2.clone();
+    let core = app_state.core_client.clone();
+    let stdcm_response = compute_stdcm(db_pool, core, data).await?;
+    Ok((StatusCode::CREATED, Json(stdcm_response)))
 }
 
 async fn compute_stdcm(
     db_pool: Arc<DbConnectionPoolV2>,
-    core: Data<CoreClient>,
+    core: Arc<CoreClient>,
     data: Json<STDCMRequestPayload>,
 ) -> Result<STDCMResponse> {
     let core_output = call_core_stdcm(db_pool.clone(), &core, &data).await?;
@@ -156,7 +155,7 @@ async fn compute_stdcm(
 
 async fn call_core_stdcm(
     db_pool: Arc<DbConnectionPoolV2>,
-    core: &Data<CoreClient>,
+    core: &Arc<CoreClient>,
     data: &Json<STDCMRequestPayload>,
 ) -> Result<STDCMCoreResponse> {
     let infra = Infra::retrieve_or_fail(db_pool.get().await?.deref_mut(), data.infra_id, || {
@@ -284,7 +283,7 @@ async fn create_path_from_core_response(
 /// processes the stdcm simulation and create a simulation report
 async fn create_simulation_from_core_response(
     db_pool: Arc<DbConnectionPoolV2>,
-    core: &Data<CoreClient>,
+    core: &Arc<CoreClient>,
     data: &Json<STDCMRequestPayload>,
     core_output: &STDCMCoreResponse,
     path: &Pathfinding,
@@ -315,145 +314,7 @@ async fn create_simulation_from_core_response(
 
 #[cfg(test)]
 mod tests {
-    use actix_http::StatusCode;
-    use actix_web::test::TestRequest;
-    use pretty_assertions::assert_eq;
-    use serde_derive::Deserialize;
-    use serde_json::from_str;
-    use serde_json::json;
-    use serde_json::Value;
-    use std::ops::DerefMut;
-
-    use super::STDCMResponse;
-    use crate::core::mocking::MockingClient;
-    use crate::models::Create;
-    use crate::models::Timetable;
-    use crate::modelsv2::fixtures::create_fast_rolling_stock;
-    use crate::modelsv2::fixtures::create_small_infra;
-    use crate::views::pathfinding::PathResponse;
-    use crate::views::test_app::TestAppBuilder;
-    use crate::views::train_schedule::simulation_report::SimulationReport;
-    use editoast_models::DbConnectionPoolV2;
-
-    /// conditions: one train scheduled for 8:00
-    /// stdcm looks for a spot between 8:00 and 10:00
-    #[rstest::rstest]
-    async fn stdcm_should_return_path_and_simulation() {
-        // GIVEN
-        let db_pool = DbConnectionPoolV2::for_tests();
-
-        let small_infra = create_small_infra(db_pool.get_ok().deref_mut()).await;
-
-        let fast_rolling_stock = create_fast_rolling_stock(
-            db_pool.get_ok().deref_mut(),
-            "fast_rolling_stock_stdcm_should_return_path_and_simulation",
-        )
-        .await;
-
-        let timetable = Timetable {
-            id: None,
-            name: Some(String::from("with_electrical_profiles")),
-        };
-        let timetable = timetable
-            .create_conn(db_pool.get_ok().deref_mut())
-            .await
-            .expect("Failed to create timetable");
-
-        let mut payload: Value = from_str(include_str!(
-            "../../tests/small_infra/stdcm/test_1/stdcm_post_payload.json"
-        ))
-        .unwrap();
-        *payload.get_mut("infra_id").unwrap() = json!(small_infra.id);
-        *payload.get_mut("rolling_stock_id").unwrap() = json!(fast_rolling_stock.id);
-        *payload.get_mut("timetable_id").unwrap() = json!(timetable.id);
-
-        let mut core = MockingClient::new();
-        core.stub("/stdcm")
-            .method(reqwest::Method::POST)
-            .response(StatusCode::OK)
-            .body(include_str!(
-                "../../tests/small_infra/stdcm/test_1/stdcm_core_response.json"
-            ))
-            .finish();
-        core.stub("/project_signals")
-            .method(reqwest::Method::POST)
-            .response(StatusCode::OK)
-            .body(include_str!(
-                "../../tests/small_infra/stdcm/test_1/project_signal_response.json"
-            ))
-            .finish();
-
-        let app = TestAppBuilder::new()
-            .db_pool(db_pool.clone())
-            .core_client(core.into())
-            .build();
-
-        let request = TestRequest::post()
-            .uri("/stdcm/")
-            .set_json(payload)
-            .to_request();
-
-        // WHEN
-        let stdcm_response: STDCMResponse = app
-            .fetch(request)
-            .assert_status(StatusCode::CREATED)
-            .json_into();
-
-        // THEN
-        #[derive(Deserialize)]
-        struct ExpectedResponse {
-            path: PathResponse,
-            simulation: SimulationReport,
-        }
-        let ExpectedResponse {
-            mut path,
-            mut simulation,
-        } = from_str(include_str!(
-            "../../tests/small_infra/stdcm/test_1/stdcm_post_expected_response.json"
-        ))
-        .unwrap();
-        path.id = stdcm_response.path.id;
-        path.owner = stdcm_response.path.owner;
-        path.created = stdcm_response.path.created;
-        simulation.id = stdcm_response.simulation.id;
-        simulation.path = stdcm_response.simulation.path;
-        assert_eq!(stdcm_response.path, path);
-        assert_eq!(stdcm_response.simulation, simulation);
-    }
-
-    #[rstest::rstest]
-    async fn stdcm_should_fail_if_infra_doesnt_exist() {
-        // GIVEN
-        let app = TestAppBuilder::default_app();
-        let db_pool = app.db_pool();
-
-        let fast_rolling_stock = create_fast_rolling_stock(
-            db_pool.get_ok().deref_mut(),
-            "fast_rolling_stock_stdcm_should_fail_if_infra_doesnt_exist",
-        )
-        .await;
-        let timetable = Timetable {
-            id: None,
-            name: Some(String::from("with_electrical_profiles")),
-        };
-        let timetable = timetable
-            .create_conn(db_pool.get_ok().deref_mut())
-            .await
-            .expect("Failed to create timetable");
-        let mut payload: Value = from_str(include_str!(
-            "../../tests/small_infra/stdcm/test_1/stdcm_post_payload.json"
-        ))
-        .unwrap();
-        *payload.get_mut("infra_id").unwrap() = json!(-999);
-        *payload.get_mut("rolling_stock_id").unwrap() = json!(fast_rolling_stock.id);
-        *payload.get_mut("timetable_id").unwrap() = json!(timetable.id);
-
-        let req = TestRequest::post()
-            .uri("/stdcm/")
-            .set_json(payload)
-            .to_request();
-
-        // THEN
-        app.fetch(req).assert_status(StatusCode::NOT_FOUND);
-    }
+    // There used to be tests here. They were removed because this TSV1 module will be removed soon.
+    // These tests were using actix's test API, but we switched to axum, so they were removed instead
+    // of being ported.
 }

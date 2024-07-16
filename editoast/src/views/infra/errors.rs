@@ -1,10 +1,9 @@
 use std::str::FromStr;
 
-use actix_web::get;
-use actix_web::web::Data;
-use actix_web::web::Json as WebJson;
-use actix_web::web::Path;
-use actix_web::web::Query;
+use axum::extract::Json;
+use axum::extract::Path;
+use axum::extract::Query;
+use axum::extract::State;
 use editoast_derive::EditoastError;
 use editoast_schemas::primitives::Identifier;
 use serde::Deserialize;
@@ -25,7 +24,7 @@ use editoast_models::DbConnectionPoolV2;
 use super::InfraApiError;
 
 crate::routes! {
-    list_errors,
+    "/errors" => list_errors,
 }
 
 #[derive(Debug, Clone, Deserialize, utoipa::IntoParams)]
@@ -60,23 +59,23 @@ pub(in crate::views) struct InfraErrorResponse {
 
 /// A paginated list of errors related to an infra
 #[utoipa::path(
+    get, path = "",
      tag = "infra",
      params(InfraIdParam, PaginationQueryParam, ErrorListQueryParams),
      responses(
          (status = 200, body = inline(ErrorListResponse), description = "A paginated list of errors"),
      ),
  )]
-#[get("/errors")]
 async fn list_errors(
-    db_pool: Data<DbConnectionPoolV2>,
-    infra: Path<InfraIdParam>,
-    pagination_params: Query<PaginationQueryParam>,
+    State(db_pool): State<DbConnectionPoolV2>,
+    Path(InfraIdParam { infra_id }): Path<InfraIdParam>,
+    Query(pagination_params): Query<PaginationQueryParam>,
     Query(ErrorListQueryParams {
         level,
         error_type,
         object_id,
     }): Query<ErrorListQueryParams>,
-) -> Result<WebJson<ErrorListResponse>> {
+) -> Result<Json<ErrorListResponse>> {
     let (page, page_size) = pagination_params
         .validate(100)?
         .warn_page_size(100)
@@ -90,10 +89,8 @@ async fn list_errors(
     };
 
     let conn = &mut db_pool.get().await?;
-    let infra = Infra::retrieve_or_fail(conn, infra.infra_id, || InfraApiError::NotFound {
-        infra_id: infra.infra_id,
-    })
-    .await?;
+    let infra =
+        Infra::retrieve_or_fail(conn, infra_id, || InfraApiError::NotFound { infra_id }).await?;
 
     let (results, total_count) = infra
         .get_paginated_errors(conn, level, error_type, object_id, page, page_size)
@@ -103,7 +100,7 @@ async fn list_errors(
         .map(|information| InfraErrorResponse { information })
         .collect::<Vec<_>>();
     let stats = PaginationStats::new(results.len() as u64, total_count, page, page_size);
-    Ok(WebJson(ErrorListResponse { stats, results }))
+    Ok(Json(ErrorListResponse { stats, results }))
 }
 
 #[derive(Debug, Error, EditoastError)]
@@ -126,10 +123,7 @@ pub(in crate::views) async fn query_errors(
 
 #[cfg(test)]
 mod tests {
-    use actix_http::StatusCode;
-    use actix_web::test::call_service;
-    use actix_web::test::TestRequest;
-    use pretty_assertions::assert_eq;
+    use axum::http::StatusCode;
     use rstest::rstest;
     use std::ops::DerefMut;
 
@@ -145,16 +139,13 @@ mod tests {
         let error_type = "overlapping_electrifications";
         let level = "warnings";
 
-        let req = TestRequest::get()
-            .uri(
-                format!(
-                    "/infra/{}/errors?error_type={}&level={}",
-                    empty_infra.id, error_type, level
-                )
-                .as_str(),
+        let req = app.get(
+            format!(
+                "/infra/{}/errors?error_type={}&level={}",
+                empty_infra.id, error_type, level
             )
-            .to_request();
-        let response = call_service(&app.service, req).await;
-        assert_eq!(response.status(), StatusCode::OK);
+            .as_str(),
+        );
+        app.fetch(req).assert_status(StatusCode::OK);
     }
 }

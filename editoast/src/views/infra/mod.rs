@@ -8,23 +8,17 @@ mod pathfinding;
 mod railjson;
 mod routes;
 
-use actix_web::delete;
-use actix_web::get;
-use actix_web::post;
-use actix_web::put;
-use actix_web::web::Data;
-use actix_web::web::Json;
-use actix_web::web::Path;
-use actix_web::web::Query;
-use actix_web::HttpResponse;
-use actix_web::Responder;
-use chashmap::CHashMap;
+use axum::extract::Json;
+use axum::extract::Path;
+use axum::extract::Query;
+use axum::extract::State;
+use axum::http::StatusCode;
+use axum::response::IntoResponse;
 use editoast_derive::EditoastError;
 use serde::Deserialize;
 use serde::Serialize;
 use std::collections::HashMap;
 use std::ops::DerefMut;
-use std::sync::Arc;
 use thiserror::Error;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
@@ -40,12 +34,11 @@ use crate::error::Result;
 use crate::infra_cache::InfraCache;
 use crate::infra_cache::ObjectCache;
 use crate::map;
-use crate::map::MapLayers;
 use crate::modelsv2::prelude::*;
 use crate::modelsv2::Infra;
 use crate::views::pagination::PaginatedList as _;
 use crate::views::pagination::PaginationQueryParam;
-use crate::RedisClient;
+use crate::AppState;
 use editoast_models::DbConnectionPoolV2;
 use editoast_schemas::infra::SwitchType;
 
@@ -53,30 +46,29 @@ crate::routes! {
     "/infra" => {
         list,
         create,
-        refresh,
-        get_all_voltages,
-        railjson::routes(),
+        "/refresh" => refresh,
+        "/voltages" => get_all_voltages,
+        &railjson,
         "/{infra_id}" => {
-            (
-                objects::routes(),
-                routes::routes(),
-                lines::routes(),
-                auto_fixes::routes(),
-                pathfinding::routes(),
-                attached::routes(),
-                edition::routes(),
-                errors::routes(),
-            ),
+            &objects,
+            &routes,
+            &lines,
+            &auto_fixes,
+            &pathfinding,
+            &attached,
+            &edition,
+            &errors,
+
             get,
-            load,
+            "/load" => load,
             delete,
             put,
-            clone,
-            lock,
-            unlock,
-            get_speed_limit_tags,
-            get_voltages,
-            get_switch_types,
+            "/clone" => clone,
+            "/lock" => lock,
+            "/unlock" => unlock,
+            "/speed_limit_tags" => get_speed_limit_tags,
+            "/voltages" => get_voltages,
+            "/switch_types" => get_switch_types,
         },
     },
 }
@@ -97,6 +89,7 @@ pub enum InfraApiError {
 }
 
 #[derive(Debug, Deserialize, IntoParams)]
+#[into_params(parameter_in = Query)]
 struct RefreshQueryParams {
     #[serde(default)]
     force: bool,
@@ -116,6 +109,7 @@ struct RefreshResponse {
 
 /// Refresh infra generated geographic layers
 #[utoipa::path(
+    post, path = "",
     tag = "infra",
     params(RefreshQueryParams),
     responses(
@@ -123,14 +117,15 @@ struct RefreshResponse {
         (status = 404, description = "Invalid infra ID query parameters"),
     )
 )]
-#[post("/refresh")]
 async fn refresh(
-    db_pool: Data<DbConnectionPoolV2>,
-    redis_client: Data<RedisClient>,
+    app_state: State<AppState>,
     Query(query_params): Query<RefreshQueryParams>,
-    infra_caches: Data<CHashMap<i64, InfraCache>>,
-    map_layers: Data<MapLayers>,
 ) -> Result<Json<RefreshResponse>> {
+    let db_pool = app_state.db_pool_v2.clone();
+    let redis_client = app_state.redis.clone();
+    let infra_caches = app_state.infra_caches.clone();
+    let map_layers = app_state.map_layers.clone();
+
     // Use a transaction to give scope to infra list lock
     let RefreshQueryParams {
         force,
@@ -151,7 +146,7 @@ async fn refresh(
     };
 
     // Refresh each infras
-    let db_pool = db_pool.into_inner();
+    let db_pool = db_pool;
     let mut infra_refreshed = vec![];
 
     for mut infra in infras_list {
@@ -185,18 +180,20 @@ struct InfraListResponse {
 
 /// Lists all infras along with their current loading state in Core
 #[utoipa::path(
+    get, path = "",
     tag = "infra",
     params(PaginationQueryParam),
     responses(
         (status = 200, description = "All infras, paginated", body = inline(InfraListResponse))
     ),
 )]
-#[get("")]
 async fn list(
-    db_pool: Data<DbConnectionPoolV2>,
-    core: Data<CoreClient>,
+    app_state: State<AppState>,
     pagination_params: Query<PaginationQueryParam>,
 ) -> Result<Json<InfraListResponse>> {
+    let db_pool = app_state.db_pool_v2.clone();
+    let core = app_state.core_client.clone();
+
     let settings = pagination_params
         .validate(1000)?
         .warn_page_size(100)
@@ -258,6 +255,7 @@ struct InfraIdParam {
 
 /// Retrieve a specific infra
 #[utoipa::path(
+    get, path = "",
     tag = "infra",
     params(InfraIdParam),
     responses(
@@ -265,18 +263,21 @@ struct InfraIdParam {
         (status = 404, description = "Infra ID not found"),
     ),
 )]
-#[get("")]
 async fn get(
-    db_pool: Data<DbConnectionPoolV2>,
-    infra: Path<InfraIdParam>,
-    core: Data<CoreClient>,
+    app_state: State<AppState>,
+    Path(infra): Path<InfraIdParam>,
 ) -> Result<Json<InfraWithState>> {
+    let db_pool = app_state.db_pool_v2.clone();
+    let core_client = app_state.core_client.clone();
+
     let infra_id = infra.infra_id;
     let infra = Infra::retrieve_or_fail(db_pool.get().await?.deref_mut(), infra_id, || {
         InfraApiError::NotFound { infra_id }
     })
     .await?;
-    let state = fetch_infra_state(infra.id, core.as_ref()).await?.status;
+    let state = fetch_infra_state(infra.id, core_client.as_ref())
+        .await?
+        .status;
     Ok(Json(InfraWithState { infra, state }))
 }
 
@@ -297,20 +298,20 @@ impl From<InfraCreateForm> for Changeset<Infra> {
 ///
 /// The infra may be edited by batch later via the `POST /infra/ID` or `POST /infra/ID/railjson` endpoints.
 #[utoipa::path(
+    post, path = "",
     tag = "infra",
     request_body = inline(InfraCreateForm),
     responses(
         (status = 201, description = "The created infra", body = Infra),
     ),
 )]
-#[post("")]
 async fn create(
-    db_pool: Data<DbConnectionPoolV2>,
-    data: Json<InfraCreateForm>,
-) -> Result<impl Responder> {
-    let infra: Changeset<Infra> = data.into_inner().into();
+    db_pool: State<DbConnectionPoolV2>,
+    Json(data): Json<InfraCreateForm>,
+) -> Result<impl IntoResponse> {
+    let infra: Changeset<Infra> = data.into();
     let infra = infra.create(db_pool.get().await?.deref_mut()).await?;
-    Ok(HttpResponse::Created().json(infra))
+    Ok((StatusCode::CREATED, Json(infra)))
 }
 
 #[derive(Deserialize, IntoParams)]
@@ -322,6 +323,7 @@ struct CloneQuery {
 
 /// Duplicate an infra
 #[utoipa::path(
+    post, path = "",
     tag = "infra",
     params(InfraIdParam, CloneQuery),
     responses(
@@ -329,10 +331,9 @@ struct CloneQuery {
         (status = 404, description = "Infra ID not found"),
     ),
 )]
-#[post("/clone")]
 async fn clone(
-    params: Path<InfraIdParam>,
-    db_pool: Data<DbConnectionPoolV2>,
+    Path(params): Path<InfraIdParam>,
+    db_pool: State<DbConnectionPoolV2>,
     Query(CloneQuery { name }): Query<CloneQuery>,
 ) -> Result<Json<i64>> {
     let infra = Infra::retrieve_or_fail(db_pool.get().await?.deref_mut(), params.infra_id, || {
@@ -355,6 +356,7 @@ async fn clone(
 ///
 /// This operation may take a while to complete.
 #[utoipa::path(
+    delete, path = "",
     tag = "infra",
     params(InfraIdParam),
     responses(
@@ -362,18 +364,18 @@ async fn clone(
         (status = 404, description = "Infra ID not found"),
     ),
 )]
-#[delete("")]
 async fn delete(
+    app_state: State<AppState>,
     infra: Path<InfraIdParam>,
-    db_pool: Data<DbConnectionPoolV2>,
-    infra_caches: Data<CHashMap<i64, InfraCache>>,
-) -> Result<HttpResponse> {
+) -> Result<impl IntoResponse> {
+    let db_pool = app_state.db_pool_v2.clone();
+    let infra_caches = app_state.infra_caches.clone();
     let infra_id = infra.infra_id;
     if Infra::fast_delete_static(db_pool.get().await?.deref_mut(), infra_id).await? {
         infra_caches.remove(&infra_id);
-        Ok(HttpResponse::NoContent().finish())
+        Ok(StatusCode::NO_CONTENT)
     } else {
-        Ok(HttpResponse::NotFound().finish())
+        Ok(StatusCode::NOT_FOUND)
     }
 }
 
@@ -391,6 +393,7 @@ impl From<InfraPatchForm> for Changeset<Infra> {
 
 /// Rename an infra
 #[utoipa::path(
+    put, path = "",
     tag = "infra",
     params(InfraIdParam),
     request_body = inline(InfraPatchForm),
@@ -399,16 +402,15 @@ impl From<InfraPatchForm> for Changeset<Infra> {
         (status = 404, description = "Infra ID not found"),
     ),
 )]
-#[put("")]
 async fn put(
-    db_pool: Data<DbConnectionPoolV2>,
-    infra: Path<i64>,
+    db_pool: State<DbConnectionPoolV2>,
+    Path(infra): Path<i64>,
     Json(patch): Json<InfraPatchForm>,
 ) -> Result<Json<Infra>> {
     let infra_cs: Changeset<Infra> = patch.into();
     let infra = infra_cs
-        .update_or_fail(db_pool.get().await?.deref_mut(), *infra, || {
-            InfraApiError::NotFound { infra_id: *infra }
+        .update_or_fail(db_pool.get().await?.deref_mut(), infra, || {
+            InfraApiError::NotFound { infra_id: infra }
         })
         .await?;
     Ok(Json(infra))
@@ -416,6 +418,7 @@ async fn put(
 
 /// Return the railjson list of switch types
 #[utoipa::path(
+    get, path = "",
     tag = "infra",
     params(InfraIdParam),
     responses(
@@ -423,12 +426,13 @@ async fn put(
         (status = 404, description = "The infra was not found"),
     )
 )]
-#[get("/switch_types")]
 async fn get_switch_types(
-    infra: Path<InfraIdParam>,
-    db_pool: Data<DbConnectionPoolV2>,
-    infra_caches: Data<CHashMap<i64, InfraCache>>,
+    app_state: State<AppState>,
+    Path(infra): Path<InfraIdParam>,
 ) -> Result<Json<Vec<SwitchType>>> {
+    let db_pool = app_state.db_pool_v2.clone();
+    let infra_caches = app_state.infra_caches.clone();
+
     let infra = Infra::retrieve_or_fail(db_pool.get().await?.deref_mut(), infra.infra_id, || {
         InfraApiError::NotFound {
             infra_id: infra.infra_id,
@@ -450,6 +454,7 @@ async fn get_switch_types(
 
 /// Returns the set of speed limit tags for a given infra
 #[utoipa::path(
+    get, path = "",
     tag = "infra",
     params(InfraIdParam),
     responses(
@@ -457,10 +462,9 @@ async fn get_switch_types(
         (status = 404, description = "The infra was not found"),
     )
 )]
-#[get("/speed_limit_tags")]
 async fn get_speed_limit_tags(
-    infra: Path<InfraIdParam>,
-    db_pool: Data<DbConnectionPoolV2>,
+    Path(infra): Path<InfraIdParam>,
+    db_pool: State<DbConnectionPoolV2>,
 ) -> Result<Json<Vec<String>>> {
     let infra = Infra::retrieve_or_fail(db_pool.get().await?.deref_mut(), infra.infra_id, || {
         InfraApiError::NotFound {
@@ -477,6 +481,7 @@ async fn get_speed_limit_tags(
 }
 
 #[derive(Debug, Clone, Deserialize, IntoParams)]
+#[into_params(parameter_in = Query)]
 struct GetVoltagesQueryParams {
     #[serde(default)]
     include_rolling_stock_modes: bool,
@@ -485,6 +490,7 @@ struct GetVoltagesQueryParams {
 /// Returns the set of voltages for a given infra and/or rolling_stocks modes.
 /// If include_rolling_stocks_modes is true, it returns also rolling_stocks modes.
 #[utoipa::path(
+    get, path = "",
     tag = "infra",
     params(InfraIdParam, GetVoltagesQueryParams),
     responses(
@@ -492,13 +498,12 @@ struct GetVoltagesQueryParams {
         (status = 404, description = "The infra was not found",),
     )
 )]
-#[get("/voltages")]
 async fn get_voltages(
-    infra: Path<InfraIdParam>,
-    param: Query<GetVoltagesQueryParams>,
-    db_pool: Data<DbConnectionPoolV2>,
+    Path(infra): Path<InfraIdParam>,
+    Query(param): Query<GetVoltagesQueryParams>,
+    db_pool: State<DbConnectionPoolV2>,
 ) -> Result<Json<Vec<String>>> {
-    let include_rolling_stock_modes = param.into_inner().include_rolling_stock_modes;
+    let include_rolling_stock_modes = param.include_rolling_stock_modes;
     let infra = Infra::retrieve_or_fail(db_pool.get().await?.deref_mut(), infra.infra_id, || {
         InfraApiError::NotFound {
             infra_id: infra.infra_id,
@@ -516,19 +521,19 @@ async fn get_voltages(
 
 /// Returns the set of voltages for all infras and rolling_stocks modes.
 #[utoipa::path(
+    get, path = "",
     tag = "infra,rolling_stock",
     responses(
         (status = 200,  description = "Voltages list", body = Vec<String>, example = json!(["750V", "1500V", "2500.5V"])),
         (status = 404, description = "The infra was not found",),
     )
 )]
-#[get("/voltages")]
-async fn get_all_voltages(db_pool: Data<DbConnectionPoolV2>) -> Result<Json<Vec<String>>> {
+async fn get_all_voltages(db_pool: State<DbConnectionPoolV2>) -> Result<Json<Vec<String>>> {
     let voltages = Infra::get_all_voltages(db_pool.get().await?.deref_mut()).await?;
     Ok(Json(voltages.into_iter().map(|el| (el.voltage)).collect()))
 }
 
-async fn set_locked(infra_id: i64, locked: bool, db_pool: Arc<DbConnectionPoolV2>) -> Result<()> {
+async fn set_locked(infra_id: i64, locked: bool, db_pool: DbConnectionPoolV2) -> Result<()> {
     let mut infra = Infra::retrieve_or_fail(db_pool.get().await?.deref_mut(), infra_id, || {
         InfraApiError::NotFound { infra_id }
     })
@@ -539,6 +544,7 @@ async fn set_locked(infra_id: i64, locked: bool, db_pool: Arc<DbConnectionPoolV2
 
 /// Lock an infra
 #[utoipa::path(
+    post, path = "",
     tag = "infra",
     params(InfraIdParam),
     responses(
@@ -546,17 +552,17 @@ async fn set_locked(infra_id: i64, locked: bool, db_pool: Arc<DbConnectionPoolV2
         (status = 404, description = "The infra was not found",),
     )
 )]
-#[post("/lock")]
 async fn lock(
-    infra: Path<InfraIdParam>,
-    db_pool: Data<DbConnectionPoolV2>,
-) -> Result<HttpResponse> {
-    set_locked(infra.infra_id, true, db_pool.into_inner()).await?;
-    Ok(HttpResponse::NoContent().finish())
+    Path(infra): Path<InfraIdParam>,
+    State(db_pool): State<DbConnectionPoolV2>,
+) -> Result<impl IntoResponse> {
+    set_locked(infra.infra_id, true, db_pool).await?;
+    Ok(StatusCode::NO_CONTENT)
 }
 
 /// Unlock an infra
 #[utoipa::path(
+    post, path = "",
     tag = "infra",
     params(InfraIdParam),
     responses(
@@ -564,17 +570,17 @@ async fn lock(
         (status = 404, description = "The infra was not found",),
     )
 )]
-#[post("/unlock")]
 async fn unlock(
-    infra: Path<InfraIdParam>,
-    db_pool: Data<DbConnectionPoolV2>,
-) -> Result<HttpResponse> {
-    set_locked(infra.infra_id, false, db_pool.into_inner()).await?;
-    Ok(HttpResponse::NoContent().finish())
+    Path(infra): Path<InfraIdParam>,
+    State(db_pool): State<DbConnectionPoolV2>,
+) -> Result<impl IntoResponse> {
+    set_locked(infra.infra_id, false, db_pool).await?;
+    Ok(StatusCode::NO_CONTENT)
 }
 
 /// Instructs Core to load an infra
 #[utoipa::path(
+    post, path = "",
     tag = "infra",
     params(InfraIdParam),
     responses(
@@ -582,12 +588,13 @@ async fn unlock(
         (status = 404, description = "The infra was not found"),
     )
 )]
-#[post("/load")]
 async fn load(
-    path: Path<InfraIdParam>,
-    db_pool: Data<DbConnectionPoolV2>,
-    core: Data<CoreClient>,
-) -> Result<HttpResponse> {
+    app_state: State<AppState>,
+    Path(path): Path<InfraIdParam>,
+) -> Result<impl IntoResponse> {
+    let db_pool = app_state.db_pool_v2.clone();
+    let core_client = app_state.core_client.clone();
+
     let infra_id = path.infra_id;
     let infra = Infra::retrieve_or_fail(db_pool.get().await?.deref_mut(), infra_id, || {
         InfraApiError::NotFound { infra_id }
@@ -597,8 +604,8 @@ async fn load(
         infra: infra.id,
         expected_version: infra.version,
     };
-    infra_request.fetch(core.as_ref()).await?;
-    Ok(HttpResponse::NoContent().finish())
+    infra_request.fetch(core_client.as_ref()).await?;
+    Ok(StatusCode::NO_CONTENT)
 }
 
 /// Builds a Core cache_status request, runs it
@@ -621,9 +628,7 @@ pub async fn fetch_all_infra_states(
 
 #[cfg(test)]
 pub mod tests {
-    use actix_http::Request;
-    use actix_web::http::StatusCode;
-    use actix_web::test::TestRequest;
+    use axum::http::StatusCode;
     use diesel::sql_query;
     use diesel::sql_types::BigInt;
     use diesel_async::RunQueryDsl;
@@ -643,6 +648,7 @@ pub mod tests {
     use crate::modelsv2::get_geometry_layer_table;
     use crate::modelsv2::get_table;
     use crate::modelsv2::infra::DEFAULT_INFRA_VERSION;
+    use crate::views::test_app::TestApp;
     use crate::views::test_app::TestAppBuilder;
     use editoast_schemas::infra::Electrification;
     use editoast_schemas::infra::Speed;
@@ -651,10 +657,10 @@ pub mod tests {
     use editoast_schemas::infra::RAILJSON_VERSION;
     use editoast_schemas::primitives::ObjectType;
 
-    fn delete_infra_request(infra_id: i64) -> Request {
-        TestRequest::delete()
-            .uri(format!("/infra/{infra_id}").as_str())
-            .to_request()
+    impl TestApp {
+        fn delete_infra_request(&self, infra_id: i64) -> axum_test::TestRequest {
+            self.delete(format!("/infra/{infra_id}").as_str())
+        }
     }
 
     #[rstest]
@@ -664,9 +670,8 @@ pub mod tests {
         let db_pool = app.db_pool();
         let empty_infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
 
-        let request = TestRequest::post()
-            .uri(format!("/infra/{}/clone/?name=cloned_infra", empty_infra.id).as_str())
-            .to_request();
+        let request =
+            app.post(format!("/infra/{}/clone/?name=cloned_infra", empty_infra.id).as_str());
 
         let cloned_infra_id: i64 = app.fetch(request).assert_status(StatusCode::OK).json_into();
         let cloned_infra = Infra::retrieve(db_pool.get_ok().deref_mut(), cloned_infra_id)
@@ -706,9 +711,8 @@ pub mod tests {
             .await
             .expect("Failed to create switch_type object");
 
-        let req_clone = TestRequest::post()
-            .uri(format!("/infra/{}/clone/?name=cloned_infra", small_infra_id).as_str())
-            .to_request();
+        let req_clone =
+            app.post(format!("/infra/{}/clone/?name=cloned_infra", small_infra_id).as_str());
 
         let cloned_infra_id: i64 = app
             .fetch(req_clone)
@@ -768,10 +772,10 @@ pub mod tests {
         let db_pool = app.db_pool();
         let empty_infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
 
-        app.fetch(delete_infra_request(empty_infra.id))
+        app.fetch(app.delete_infra_request(empty_infra.id))
             .assert_status(StatusCode::NO_CONTENT);
 
-        app.fetch(delete_infra_request(empty_infra.id))
+        app.fetch(app.delete_infra_request(empty_infra.id))
             .assert_status(StatusCode::NOT_FOUND);
     }
 
@@ -789,8 +793,7 @@ pub mod tests {
             .db_pool(db_pool.clone())
             .core_client(core.into())
             .build();
-        let request = TestRequest::get().uri("/infra/").to_request();
-
+        let request = app.get("/infra/");
         app.fetch(request).assert_status(StatusCode::OK);
     }
 
@@ -798,10 +801,9 @@ pub mod tests {
     async fn default_infra_create() {
         let app = TestAppBuilder::default_app();
 
-        let request = TestRequest::post()
-            .uri("/infra")
-            .set_json(json!({ "name": "create_infra_test" }))
-            .to_request();
+        let request = app
+            .post("/infra")
+            .json(&json!({ "name": "create_infra_test" }));
         let infra: Infra = app
             .fetch(request)
             .assert_status(StatusCode::CREATED)
@@ -830,9 +832,7 @@ pub mod tests {
             .build();
         let empty_infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
 
-        let req = TestRequest::get()
-            .uri(format!("/infra/{}", empty_infra.id).as_str())
-            .to_request();
+        let req = app.get(format!("/infra/{}", empty_infra.id).as_str());
 
         app.fetch(req).assert_status(StatusCode::OK);
 
@@ -841,9 +841,7 @@ pub mod tests {
             .await
             .unwrap();
 
-        let req = TestRequest::get()
-            .uri(format!("/infra/{}", empty_infra.id).as_str())
-            .to_request();
+        let req = app.get(format!("/infra/{}", empty_infra.id).as_str());
 
         app.fetch(req).assert_status(StatusCode::NOT_FOUND);
     }
@@ -854,10 +852,9 @@ pub mod tests {
         let db_pool = app.db_pool();
         let empty_infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
 
-        let req = TestRequest::put()
-            .uri(format!("/infra/{}", empty_infra.id).as_str())
-            .set_json(json!({"name": "rename_test"}))
-            .to_request();
+        let req = app
+            .put(format!("/infra/{}", empty_infra.id).as_str())
+            .json(&json!({"name": "rename_test"}));
 
         let infra: Infra = app.fetch(req).assert_status(StatusCode::OK).json_into();
 
@@ -875,9 +872,7 @@ pub mod tests {
         let db_pool = app.db_pool();
         let empty_infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
 
-        let req = TestRequest::post()
-            .uri(format!("/infra/refresh/?infras={}", empty_infra.id).as_str())
-            .to_request();
+        let req = app.post(format!("/infra/refresh/?infras={}", empty_infra.id).as_str());
 
         let refreshed_infras: InfraRefreshedResponse =
             app.fetch(req).assert_status(StatusCode::OK).json_into();
@@ -893,9 +888,8 @@ pub mod tests {
         let db_pool = app.db_pool();
         let empty_infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
 
-        let req = TestRequest::post()
-            .uri(format!("/infra/refresh/?infras={}&force=true", empty_infra.id).as_str())
-            .to_request();
+        let req =
+            app.post(format!("/infra/refresh/?infras={}&force=true", empty_infra.id).as_str());
         let refreshed_infras: InfraRefreshedResponse =
             app.fetch(req).assert_status(StatusCode::OK).json_into();
         assert!(refreshed_infras.infra_refreshed.contains(&empty_infra.id));
@@ -916,9 +910,7 @@ pub mod tests {
             .await
             .expect("Failed to create speed section object");
 
-        let req = TestRequest::get()
-            .uri(format!("/infra/{}/speed_limit_tags/", empty_infra.id).as_str())
-            .to_request();
+        let req = app.get(format!("/infra/{}/speed_limit_tags/", empty_infra.id).as_str());
 
         let speed_limit_tags: Vec<String> =
             app.fetch(req).assert_status(StatusCode::OK).json_into();
@@ -961,7 +953,7 @@ pub mod tests {
         )
         .await;
 
-        let req = TestRequest::get().uri("/infra/voltages/").to_request();
+        let req = app.get("/infra/voltages/");
 
         let voltages: Vec<String> = app.fetch(req).assert_status(StatusCode::OK).json_into();
 
@@ -1001,15 +993,13 @@ pub mod tests {
         )
         .await;
 
-        let req = TestRequest::get()
-            .uri(
-                format!(
-                    "/infra/{}/voltages/?include_rolling_stock_modes={}",
-                    empty_infra.id, include_rolling_stock_modes
-                )
-                .as_str(),
+        let req = app.get(
+            format!(
+                "/infra/{}/voltages/?include_rolling_stock_modes={}",
+                empty_infra.id, include_rolling_stock_modes
             )
-            .to_request();
+            .as_str(),
+        );
 
         if !include_rolling_stock_modes {
             let voltages: Vec<String> = app.fetch(req).assert_status(StatusCode::OK).json_into();
@@ -1028,9 +1018,7 @@ pub mod tests {
         let db_pool = app.db_pool();
         let empty_infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
 
-        let req = TestRequest::get()
-            .uri(format!("/infra/{}/switch_types/", empty_infra.id).as_str())
-            .to_request();
+        let req = app.get(format!("/infra/{}/switch_types/", empty_infra.id).as_str());
 
         let switch_types: Vec<SwitchType> =
             app.fetch(req).assert_status(StatusCode::OK).json_into();
@@ -1055,9 +1043,7 @@ pub mod tests {
         let empty_infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
 
         // Lock infra
-        let req = TestRequest::post()
-            .uri(format!("/infra/{}/lock/", empty_infra.id).as_str())
-            .to_request();
+        let req = app.post(format!("/infra/{}/lock/", empty_infra.id).as_str());
 
         app.fetch(req).assert_status(StatusCode::NO_CONTENT);
 
@@ -1069,9 +1055,7 @@ pub mod tests {
         assert!(infra.locked);
 
         // Unlock infra
-        let req = TestRequest::post()
-            .uri(format!("/infra/{}/unlock/", empty_infra.id).as_str())
-            .to_request();
+        let req = app.post(format!("/infra/{}/unlock/", empty_infra.id).as_str());
 
         app.fetch(req).assert_status(StatusCode::NO_CONTENT);
 
@@ -1099,9 +1083,7 @@ pub mod tests {
             .build();
         let empty_infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
 
-        let req = TestRequest::post()
-            .uri(format!("/infra/{}/load", empty_infra.id).as_str())
-            .to_request();
+        let req = app.post(format!("/infra/{}/load", empty_infra.id).as_str());
 
         app.fetch(req).assert_status(StatusCode::NO_CONTENT);
     }

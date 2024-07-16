@@ -1,8 +1,7 @@
-use actix_web::post;
-use actix_web::web::Data;
-use actix_web::web::Json;
-use actix_web::web::Path;
-use actix_web::web::Query;
+use axum::extract::Json;
+use axum::extract::Path;
+use axum::extract::Query;
+use axum::extract::State;
 use chrono::Utc;
 use chrono::{DateTime, Duration, NaiveDateTime, TimeZone};
 use editoast_derive::EditoastError;
@@ -36,6 +35,7 @@ use crate::modelsv2::{Infra, List};
 use crate::views::v2::path::path_item_cache::PathItemCache;
 use crate::views::v2::train_schedule::train_simulation;
 use crate::views::v2::train_schedule::train_simulation_batch;
+use crate::AppState;
 use crate::RedisClient;
 use crate::Retrieve;
 use crate::RetrieveBatch;
@@ -43,9 +43,7 @@ use editoast_models::DbConnection;
 use editoast_models::DbConnectionPoolV2;
 
 crate::routes! {
-    "/stdcm" => {
-        stdcm,
-    },
+    "/stdcm" => stdcm,
 }
 
 editoast_common::schemas! {
@@ -138,6 +136,7 @@ struct InfraIdQueryParam {
 
 /// Compute a STDCM and return the simulation result
 #[utoipa::path(
+    post, path = "",
     tag = "stdcm",
     request_body = inline(STDCMRequestPayload),
     params(("infra" = i64, Query, description = "The infra id"),
@@ -147,21 +146,17 @@ struct InfraIdQueryParam {
         (status = 201, body = inline(STDCMResponse), description = "The simulation result"),
     )
 )]
-#[post("")]
 async fn stdcm(
-    db_pool: Data<DbConnectionPoolV2>,
-    redis_client: Data<RedisClient>,
-    core_client: Data<CoreClient>,
-    id: Path<i64>,
-    query: Query<InfraIdQueryParam>,
-    data: Json<STDCMRequestPayload>,
+    app_state: State<AppState>,
+    Path(id): Path<i64>,
+    Query(query): Query<InfraIdQueryParam>,
+    Json(data): Json<STDCMRequestPayload>,
 ) -> Result<Json<STDCMResponse>> {
-    let db_pool = db_pool.into_inner();
-    let core_client = core_client.into_inner();
-    let timetable_id = id.into_inner();
-    let infra_id = query.into_inner().infra;
-    let data = data.into_inner();
-    let redis_client_inner = redis_client.into_inner();
+    let db_pool = app_state.db_pool_v2.clone();
+    let redis_client = app_state.redis.clone();
+    let core_client = app_state.core_client.clone();
+    let timetable_id = id;
+    let infra_id = query.infra;
 
     // 1. Retrieve Timetable / Infra / Trains / Simulation / Rolling Stock
     let timetable_trains = TimetableWithTrains::retrieve_or_fail(
@@ -191,7 +186,7 @@ async fn stdcm(
 
     let simulations = train_simulation_batch(
         db_pool.get().await?.deref_mut(),
-        redis_client_inner.clone(),
+        redis_client.clone(),
         core_client.clone(),
         &trains,
         &infra,
@@ -201,7 +196,7 @@ async fn stdcm(
     // 2. Compute the earliest start time and maximum running time
     let maximum_run_time_result = get_maximum_run_time(
         db_pool.clone(),
-        redis_client_inner.clone(),
+        redis_client.clone(),
         core_client.clone(),
         &data,
         &infra,

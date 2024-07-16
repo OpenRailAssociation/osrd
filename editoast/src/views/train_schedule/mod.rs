@@ -6,21 +6,19 @@ use std::collections::HashSet;
 use std::ops::DerefMut;
 use std::sync::Arc;
 
-use actix_web::delete;
-use actix_web::get;
-use actix_web::patch;
-use actix_web::post;
-use actix_web::web::Data;
-use actix_web::web::Json;
-use actix_web::web::Path;
-use actix_web::web::Query;
-use actix_web::HttpResponse;
+use axum::extract::Json;
+use axum::extract::Path;
+use axum::extract::Query;
+use axum::extract::State;
+use axum::http::StatusCode;
+use axum::response::IntoResponse;
 use diesel::ExpressionMethods;
 use diesel::QueryDsl;
 use diesel_async::scoped_futures::ScopedFutureExt;
 use diesel_async::AsyncConnection;
 use diesel_async::RunQueryDsl;
 use editoast_derive::EditoastError;
+use editoast_models::DbConnectionPoolV2;
 use editoast_schemas::rolling_stock::RollingStock;
 use editoast_schemas::rolling_stock::RollingStockComfortType;
 use editoast_schemas::train_schedule::Allowance;
@@ -40,7 +38,6 @@ use crate::core::simulation::SimulationRequest;
 use crate::core::simulation::SimulationResponse;
 use crate::core::simulation::TrainStop;
 use crate::core::AsCoreRequest;
-use crate::core::CoreClient;
 use crate::error::InternalError;
 use crate::error::Result;
 use crate::models::train_schedule::filter_invalid_trains;
@@ -65,21 +62,21 @@ use crate::modelsv2::RollingStockModel;
 use crate::tables;
 use crate::views::infra::InfraApiError;
 use crate::views::train_schedule::simulation_report::fetch_simulation_output;
+use crate::AppState;
 use crate::DieselJson;
 use editoast_models::DbConnectionPool;
-use editoast_models::DbConnectionPoolV2;
 
 crate::routes! {
     "/train_schedule" => {
-        get_results,
-        standalone_simulation,
+        "/results" => get_results,
+        "/standalone_simulation" => standalone_simulation,
         delete_multiple,
         patch_multiple,
         "/{id}" => {
             delete,
-            get_result,
+            "/result" => get_result,
             get,
-        }
+        },
     },
 }
 
@@ -131,47 +128,46 @@ struct TrainScheduleIdParam {
 
 /// Return a specific timetable with its associated schedules
 #[utoipa::path(
+    get, path = "",
     tag = "train_schedule",
     params(TrainScheduleIdParam),
     responses(
         (status = 200, description = "The train schedule", body = TrainSchedule)
     )
 )]
-#[get("")]
 async fn get(
-    db_pool: Data<DbConnectionPool>,
-    train_schedule_id: Path<i64>,
+    app_state: State<AppState>,
+    Path(train_schedule_id): Path<i64>,
 ) -> Result<Json<TrainSchedule>> {
-    let train_schedule_id = train_schedule_id.into_inner();
+    let db_pool = app_state.db_pool_v1.clone();
 
     // Return the timetable
-    let train_schedule =
-        match TrainSchedule::retrieve(db_pool.into_inner(), train_schedule_id).await? {
-            Some(train_schedule) => train_schedule,
-            None => return Err(TrainScheduleError::NotFound { train_schedule_id }.into()),
-        };
+    let train_schedule = match TrainSchedule::retrieve(db_pool, train_schedule_id).await? {
+        Some(train_schedule) => train_schedule,
+        None => return Err(TrainScheduleError::NotFound { train_schedule_id }.into()),
+    };
     Ok(Json(train_schedule))
 }
 
 /// Delete a train schedule and its result
 #[utoipa::path(
+    delete, path = "",
     tag = "train_schedule,timetable",
     params(TrainScheduleIdParam),
     responses(
         (status = 204, description = "The train schedule has been deleted")
     )
 )]
-#[delete("")]
 async fn delete(
-    db_pool: Data<DbConnectionPool>,
-    train_schedule_id: Path<i64>,
-) -> Result<HttpResponse> {
-    let train_schedule_id = train_schedule_id.into_inner();
-    if !TrainSchedule::delete(db_pool.into_inner(), train_schedule_id).await? {
+    app_state: State<AppState>,
+    Path(train_schedule_id): Path<i64>,
+) -> Result<impl IntoResponse> {
+    let db_pool = app_state.db_pool_v1.clone();
+    if !TrainSchedule::delete(db_pool, train_schedule_id).await? {
         return Err(TrainScheduleError::NotFound { train_schedule_id }.into());
     }
 
-    Ok(HttpResponse::NoContent().finish())
+    Ok(StatusCode::NO_CONTENT)
 }
 
 #[derive(Debug, Deserialize, ToSchema)]
@@ -181,25 +177,25 @@ struct BatchDeletionRequest {
 
 /// Delete multiple train schedules at once
 #[utoipa::path(
+    delete, path = "",
     tag = "train_schedule,timetable",
     request_body = inline(BatchDeletionRequest),
     responses(
         (status = 204, description = "The train schedules have been deleted")
     ),
 )]
-#[delete("")]
 async fn delete_multiple(
-    db_pool: Data<DbConnectionPool>,
-    request: Json<BatchDeletionRequest>,
-) -> Result<HttpResponse> {
+    db_pool: State<DbConnectionPoolV2>,
+    Json(request): Json<BatchDeletionRequest>,
+) -> Result<impl IntoResponse> {
     use crate::tables::train_schedule::dsl::*;
 
-    let train_schedule_ids = request.into_inner().ids;
+    let train_schedule_ids = request.ids;
     diesel::delete(train_schedule.filter(id.eq_any(train_schedule_ids)))
         .execute(&mut db_pool.get().await?)
         .await?;
 
-    Ok(HttpResponse::NoContent().finish())
+    Ok(StatusCode::NO_CONTENT)
 }
 
 /// A patch of a train schedule
@@ -247,25 +243,26 @@ struct PatchMultiplePayload(#[schema(min_items = 1)] Vec<TrainSchedulePatch>);
 
 /// Update multiple train schedules at once and re-run simulations accordingly
 #[utoipa::path(
+    patch, path = "",
     tag = "train_schedule,timetable",
     request_body = inline(PatchMultiplePayload),
     responses(
         (status = 204, description = "The train schedules have been updated")
     )
 )]
-#[patch("")]
 async fn patch_multiple(
-    db_pool: Data<DbConnectionPool>,
-    train_schedules_changesets: Json<PatchMultiplePayload>,
-    core: Data<CoreClient>,
-) -> Result<HttpResponse> {
-    let train_schedules_changesets = train_schedules_changesets.into_inner().0;
+    app_state: State<AppState>,
+    Json(train_schedules_changesets): Json<PatchMultiplePayload>,
+) -> Result<impl IntoResponse> {
+    let db_pool = app_state.db_pool_v1.clone();
+    let core = app_state.core_client.clone();
+
+    let train_schedules_changesets = train_schedules_changesets.0;
     if train_schedules_changesets.is_empty() {
         return Err(TrainScheduleError::NoTrainSchedules.into());
     }
 
     let mut conn = db_pool.get().await?;
-    let db_pool = db_pool.into_inner();
     conn.transaction::<_, InternalError, _>(|conn| {
         async {
             let mut train_schedules = Vec::new();
@@ -354,31 +351,33 @@ async fn patch_multiple(
         .scope_boxed()
     })
     .await?;
-    Ok(HttpResponse::NoContent().finish())
+    Ok(StatusCode::NO_CONTENT)
 }
 
 #[derive(Deserialize, IntoParams)]
+#[into_params(parameter_in = Query)]
 struct GetResultQuery {
     path_id: Option<i64>,
 }
 
 /// Retrieve a simulation result
 #[utoipa::path(
+    get, path = "",
     tag = "train_schedule",
     params(GetResultQuery, TrainScheduleIdParam),
     responses(
         (status = 200, description = "The train schedule result", body = SimulationReport)
     )
 )]
-#[get("/result")]
 async fn get_result(
-    db_pool: Data<DbConnectionPoolV2>,
-    id: Path<i64>,
-    query: Query<GetResultQuery>,
-    core: Data<CoreClient>,
+    app_state: State<AppState>,
+    Path(id): Path<i64>,
+    Query(query): Query<GetResultQuery>,
 ) -> Result<Json<SimulationReport>> {
-    let train_schedule_id = id.into_inner();
-    let db_pool = db_pool.into_inner();
+    let db_pool = app_state.db_pool_v2.clone();
+    let core = app_state.core_client.clone();
+    let train_schedule_id = id;
+
     let train_schedule =
         match TrainSchedule::retrieve_conn(db_pool.get().await?.deref_mut(), train_schedule_id)
             .await?
@@ -387,7 +386,7 @@ async fn get_result(
             None => return Err(TrainScheduleError::NotFound { train_schedule_id }.into()),
         };
 
-    let projection_path_id = query.into_inner().path_id.unwrap_or(train_schedule.path_id);
+    let projection_path_id = query.path_id.unwrap_or(train_schedule.path_id);
 
     let projection_path =
         match Pathfinding::retrieve_conn(db_pool.get().await?.deref_mut(), projection_path_id)
@@ -453,21 +452,22 @@ struct TrainSimulationResponse {
 
 /// Retrieve the simulation result of multiple train schedules
 #[utoipa::path(
+    post, path = "",
     tag = "train_schedule",
     request_body = inline(TrainsSimulationRequest),
     responses(
         (status = 200, description = "The train schedule simulations results and a list of invalid train_ids", body = TrainSimulationResponse)
     )
 )]
-#[post("/results")]
 async fn get_results(
-    db_pool: Data<DbConnectionPoolV2>,
-    request: Json<TrainsSimulationRequest>,
-    core: Data<CoreClient>,
+    app_state: State<AppState>,
+    Json(request): Json<TrainsSimulationRequest>,
 ) -> Result<Json<TrainSimulationResponse>> {
+    let db_pool = app_state.db_pool_v2.clone();
+    let core = app_state.core_client.clone();
+
     use tables::train_schedule::dsl;
     let train_ids = request.train_ids.clone();
-    let db_pool = db_pool.into_inner();
 
     if train_ids.is_empty() {
         return Ok(Json(TrainSimulationResponse {
@@ -608,19 +608,19 @@ impl From<TrainScheduleBatch> for Vec<TrainSchedule> {
 
 /// Create a batch of train schedule and run simulations accordingly
 #[utoipa::path(
+    post, path = "",
     tag = "train_schedule",
     request_body = inline(TrainScheduleBatch),
     responses(
         (status = 200, description = "The ids of the train_schedules created", body = Vec<i64>)
     )
 )]
-#[post("/standalone_simulation")]
 async fn standalone_simulation(
-    db_pool: Data<DbConnectionPool>,
-    request: Json<TrainScheduleBatch>,
-    core: Data<CoreClient>,
+    app_state: State<AppState>,
+    Json(request): Json<TrainScheduleBatch>,
 ) -> Result<Json<Vec<i64>>> {
-    let request = request.into_inner();
+    let db_pool = app_state.db_pool_v1.clone();
+    let core = app_state.core_client.clone();
 
     let id_timetable = request.timetable;
 
@@ -630,7 +630,6 @@ async fn standalone_simulation(
         return Err(TrainScheduleError::NoTrainSchedules.into());
     }
 
-    let db_pool = db_pool.into_inner();
     let timetable = Timetable::retrieve(db_pool.clone(), id_timetable)
         .await?
         .ok_or(TrainScheduleError::TimetableNotFound {
@@ -842,32 +841,7 @@ pub fn process_simulation_response(
 
 #[cfg(test)]
 pub mod tests {
-    use actix_http::StatusCode;
-    use actix_web::test::TestRequest;
-    use rstest::rstest;
-    use std::ops::DerefMut;
-
-    use crate::modelsv2::fixtures::create_pathfinding;
-    use crate::modelsv2::fixtures::create_small_infra;
-    use crate::views::test_app::TestAppBuilder;
-    use crate::views::train_schedule::TrainSimulationResponse;
-    use crate::views::train_schedule::TrainsSimulationRequest;
-
-    #[rstest]
-    async fn empty_timetable() {
-        let app = TestAppBuilder::default_app();
-        let db_pool = app.db_pool();
-        let small_infra = create_small_infra(db_pool.get_ok().deref_mut()).await;
-        let pathfinding = create_pathfinding(db_pool.get_ok().deref_mut(), small_infra.id).await;
-        let url = "/train_schedule/results/";
-        let body = TrainsSimulationRequest {
-            path_id: Some(pathfinding.id),
-            train_ids: vec![],
-        };
-        let request = TestRequest::post().uri(url).set_json(body).to_request();
-        let simulations_response: TrainSimulationResponse =
-            app.fetch(request).assert_status(StatusCode::OK).json_into();
-        assert!(simulations_response.simulations.is_empty());
-        assert!(simulations_response.invalid_trains.is_empty());
-    }
+    // There used to be tests here. They were removed because this TSV1 module will be removed soon.
+    // These tests were using actix's test API, but we switched to axum, so they were removed instead
+    // of being ported.
 }

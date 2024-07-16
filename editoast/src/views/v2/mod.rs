@@ -4,10 +4,10 @@ pub mod timetable;
 pub mod train_schedule;
 
 crate::routes! {
-            train_schedule::routes(),
-            timetable::routes(),
-            path::routes(),
-            scenario::routes(),
+    &train_schedule,
+    &timetable,
+    &path,
+    &scenario,
 }
 
 editoast_common::schemas! {

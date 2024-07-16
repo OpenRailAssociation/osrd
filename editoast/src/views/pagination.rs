@@ -170,6 +170,7 @@ pub struct PaginatedResponse<T> {
 }
 
 #[derive(Debug, Clone, Copy, Deserialize, IntoParams)]
+#[into_params(parameter_in = Query)]
 pub struct PaginationQueryParam {
     #[serde(default = "default_page")]
     #[param(minimum = 1, default = 1)]

@@ -119,7 +119,7 @@ struct ErrorWithHash {
 impl From<InfraError> for ErrorWithHash {
     fn from(error: InfraError) -> Self {
         let mut hasher = Sha1::new();
-        hasher.update(&serde_json::to_vec(&error).unwrap());
+        hasher.update(serde_json::to_vec(&error).unwrap());
         let hash = hasher.finalize();
         let hash: ErrorHash = format!("{:x}", hash);
         ErrorWithHash { error, hash }

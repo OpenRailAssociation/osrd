@@ -1,6 +1,5 @@
-use actix_web::post;
-use actix_web::web::Data;
-use actix_web::web::Json;
+use axum::extract::Json;
+use axum::extract::State;
 use editoast_derive::EditoastError;
 use editoast_schemas::rolling_stock::RollingStockComfortType;
 use editoast_schemas::train_schedule::Allowance;
@@ -16,7 +15,6 @@ use crate::core::simulation::SimulationRequest;
 use crate::core::simulation::SimulationResponse;
 use crate::core::simulation::TrainStop;
 use crate::core::AsCoreRequest;
-use crate::core::CoreClient;
 use crate::error::InternalError;
 use crate::error::Result;
 use crate::models::train_schedule::ElectrificationRange;
@@ -30,7 +28,7 @@ use crate::models::Retrieve;
 use crate::modelsv2::electrical_profiles::ElectricalProfileSet;
 use crate::modelsv2::Exists;
 use crate::modelsv2::RollingStockModel;
-use editoast_models::DbConnectionPoolV2;
+use crate::AppState;
 
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "single_simulation")]
@@ -50,9 +48,7 @@ pub enum SingleSimulationError {
 }
 
 crate::routes! {
-    "/single_simulation" => {
-        standalone_simulation,
-    }
+    "/single_simulation" => standalone_simulation,
 }
 
 editoast_common::schemas! {
@@ -144,20 +140,23 @@ impl TryFrom<SimulationResponse> for SingleSimulationResponse {
 }
 
 #[utoipa::path(
+    post, path = "",
     request_body = SingleSimulationRequest,
     responses(
         (status = 200, description = "Data about the simulation produced", body = SingleSimulationResponse),
     )
 )]
-#[post("")]
 /// Runs a simulation with a single train, does not write anything to the database
 async fn standalone_simulation(
-    db_pool: Data<DbConnectionPoolV2>,
-    request: Json<SingleSimulationRequest>,
-    core: Data<CoreClient>,
+    State(AppState {
+        db_pool_v2: db_pool,
+        core_client: core,
+        ..
+    }): State<AppState>,
+    Json(request): Json<SingleSimulationRequest>,
 ) -> Result<Json<SingleSimulationResponse>> {
     use crate::modelsv2::Retrieve;
-    let request = request.into_inner();
+    let mut conn = db_pool.get().await?;
     let rolling_stock_id = request.rolling_stock_id;
 
     let rolling_stock = RollingStockModel::retrieve_or_fail(
@@ -167,7 +166,6 @@ async fn standalone_simulation(
     )
     .await?;
 
-    let db_pool = db_pool.into_inner();
     let path_id = request.path_id;
     let pathfinding = Pathfinding::retrieve_conn(db_pool.get().await?.deref_mut(), path_id).await?;
     let pathfinding = match pathfinding {
@@ -176,9 +174,8 @@ async fn standalone_simulation(
     };
 
     if let Some(electrical_profile_set_id) = request.electrical_profile_set_id {
-        let conn = &mut db_pool.get().await?;
         let does_electrical_profile_set_exist =
-            ElectricalProfileSet::exists(conn, electrical_profile_set_id).await?;
+            ElectricalProfileSet::exists(&mut conn, electrical_profile_set_id).await?;
         if !does_electrical_profile_set_exist {
             return Err(SingleSimulationError::ElectricalProfileSetNotFound {
                 electrical_profile_set_id,
@@ -201,160 +198,7 @@ async fn standalone_simulation(
 
 #[cfg(test)]
 mod tests {
-    use actix_http::StatusCode;
-    use actix_web::test::TestRequest;
-    use pretty_assertions::assert_eq;
-    use reqwest::Method;
-    use rstest::rstest;
-    use serde_json::json;
-
-    use super::*;
-    use crate::core::mocking::MockingClient;
-    use crate::modelsv2::fixtures::create_electrical_profile_set;
-    use crate::modelsv2::fixtures::create_fast_rolling_stock;
-    use crate::modelsv2::fixtures::create_pathfinding;
-    use crate::modelsv2::fixtures::create_small_infra;
-    use crate::views::test_app::TestAppBuilder;
-
-    fn create_core_client() -> (MockingClient, SimulationResponse) {
-        let mut core_client = MockingClient::new();
-        let mock_response = SimulationResponse {
-            base_simulations: vec![Default::default()],
-            eco_simulations: vec![Default::default()],
-            speed_limits: vec![Default::default()],
-            warnings: vec![],
-            electrification_ranges: vec![Default::default()],
-            power_restriction_ranges: vec![Default::default()],
-        };
-        core_client
-            .stub("/standalone_simulation")
-            .method(Method::POST)
-            .response(StatusCode::OK)
-            .body(serde_json::to_string(&mock_response).unwrap())
-            .finish();
-        (core_client, mock_response)
-    }
-
-    #[rstest]
-    #[case::normal(None, "case_1")]
-    #[case::invalid_rs_id(Some(SingleSimulationError::RollingStockNotFound { rolling_stock_id: -666 }), "case_2")]
-    #[case::invalid_path_id(Some(SingleSimulationError::PathNotFound { path_id: -666 }), "case_3")]
-    #[case::invalid_ep_set_id(Some(SingleSimulationError::ElectricalProfileSetNotFound { electrical_profile_set_id: -666 }), "case_4")]
-    async fn test_single_simulation(
-        #[case] expected_error: Option<SingleSimulationError>,
-        #[case] case_id: &str,
-    ) {
-        // GIVEN
-        let (core_client, mock_response) = create_core_client();
-        let db_pool = DbConnectionPoolV2::for_tests();
-        let app = TestAppBuilder::new()
-            .db_pool(db_pool.clone())
-            .core_client(core_client.into())
-            .build();
-        let small_infra = create_small_infra(db_pool.get_ok().deref_mut()).await;
-
-        let mut _pf = None;
-        let pf_id = match expected_error {
-            Some(SingleSimulationError::PathNotFound { path_id }) => path_id,
-            _ => {
-                _pf = Some(create_pathfinding(db_pool.get_ok().deref_mut(), small_infra.id).await);
-                _pf.as_ref().unwrap().id
-            }
-        };
-
-        let mut _rs = None;
-        let rs_id = match expected_error {
-            Some(SingleSimulationError::RollingStockNotFound { rolling_stock_id }) => {
-                rolling_stock_id
-            }
-            _ => {
-                let mut rs_name = "fast_rolling_stock_infra_get_voltages_".to_string();
-                rs_name.push_str(case_id);
-                _rs = Some(create_fast_rolling_stock(db_pool.get_ok().deref_mut(), &rs_name).await);
-                _rs.as_ref().unwrap().id
-            }
-        };
-
-        let mut _ep_set = None;
-        let ep_set_id = match expected_error {
-            Some(SingleSimulationError::ElectricalProfileSetNotFound {
-                electrical_profile_set_id,
-            }) => electrical_profile_set_id,
-            _ => {
-                _ep_set = Some(create_electrical_profile_set(db_pool.get_ok().deref_mut()).await);
-                _ep_set.as_ref().unwrap().id
-            }
-        };
-
-        let request_body = SingleSimulationRequest {
-            rolling_stock_id: rs_id,
-            electrical_profile_set_id: Some(ep_set_id),
-            path_id: pf_id,
-            schedule_args: ScheduleArgs {
-                initial_speed: 0.0,
-                scheduled_points: vec![],
-                allowances: vec![],
-                stops: vec![],
-                tag: None,
-                comfort: RollingStockComfortType::Standard,
-                power_restriction_ranges: None,
-                options: None,
-            },
-        };
-        let request = TestRequest::post()
-            .uri("/single_simulation")
-            .set_json(request_body)
-            .to_request();
-
-        if let Some(expected_error) = expected_error {
-            // WHEN
-            let response: InternalError = app
-                .fetch(request)
-                .assert_status(StatusCode::BAD_REQUEST)
-                .json_into();
-            // THEN
-            assert_eq!(response, expected_error.into());
-        } else {
-            // WHEN
-            let response: SingleSimulationResponse =
-                app.fetch(request).assert_status(StatusCode::OK).json_into();
-            // THEN
-            assert_eq!(response, mock_response.try_into().unwrap());
-        }
-    }
-
-    #[rstest]
-    async fn test_single_simulation_bare_minimum_payload() {
-        // GIVEN
-        let (core_client, mock_response) = create_core_client();
-        let db_pool = DbConnectionPoolV2::for_tests();
-        let app = TestAppBuilder::new()
-            .db_pool(db_pool.clone())
-            .core_client(core_client.into())
-            .build();
-        let small_infra = create_small_infra(db_pool.get_ok().deref_mut()).await;
-
-        let pf = create_pathfinding(db_pool.get_ok().deref_mut(), small_infra.id).await;
-        let rs = create_fast_rolling_stock(
-            db_pool.get_ok().deref_mut(),
-            "fast_rolling_stock_test_single_simulation_bare_minimum_payload",
-        )
-        .await;
-
-        let request_body: serde_json::Value = json!({
-            "rolling_stock_id": rs.id,
-            "path_id": pf.id,
-        });
-        let request = TestRequest::post()
-            .uri("/single_simulation")
-            .set_json(request_body)
-            .to_request();
-
-        // WHEN
-        let response_body: SingleSimulationResponse =
-            app.fetch(request).assert_status(StatusCode::OK).json_into();
-
-        // THEN
-        assert_eq!(response_body, mock_response.try_into().unwrap());
-    }
+    // There used to be tests here. They were removed because this TSV1 module will be removed soon.
+    // These tests were using actix's test API, but we switched to axum, so they were removed instead
+    // of being ported.
 }

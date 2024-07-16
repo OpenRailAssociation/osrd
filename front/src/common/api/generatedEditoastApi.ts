@@ -32,7 +32,7 @@ const injectedRtkApi = api
     endpoints: (build) => ({
       postDocuments: build.mutation<PostDocumentsApiResponse, PostDocumentsApiArg>({
         query: (queryArg) => ({
-          url: `/documents/`,
+          url: `/documents`,
           method: 'POST',
           body: queryArg.body,
           headers: { content_type: queryArg.contentType },
@@ -57,7 +57,7 @@ const injectedRtkApi = api
         GetElectricalProfileSetApiResponse,
         GetElectricalProfileSetApiArg
       >({
-        query: () => ({ url: `/electrical_profile_set/` }),
+        query: () => ({ url: `/electrical_profile_set` }),
         providesTags: ['electrical_profiles'],
       }),
       postElectricalProfileSet: build.mutation<
@@ -65,7 +65,7 @@ const injectedRtkApi = api
         PostElectricalProfileSetApiArg
       >({
         query: (queryArg) => ({
-          url: `/electrical_profile_set/`,
+          url: `/electrical_profile_set`,
           method: 'POST',
           body: queryArg.electricalProfileSetData,
           params: { name: queryArg.name },
@@ -77,7 +77,7 @@ const injectedRtkApi = api
         GetElectricalProfileSetByElectricalProfileSetIdApiArg
       >({
         query: (queryArg) => ({
-          url: `/electrical_profile_set/${queryArg.electricalProfileSetId}/`,
+          url: `/electrical_profile_set/${queryArg.electricalProfileSetId}`,
         }),
         providesTags: ['electrical_profiles'],
       }),
@@ -86,7 +86,7 @@ const injectedRtkApi = api
         DeleteElectricalProfileSetByElectricalProfileSetIdApiArg
       >({
         query: (queryArg) => ({
-          url: `/electrical_profile_set/${queryArg.electricalProfileSetId}/`,
+          url: `/electrical_profile_set/${queryArg.electricalProfileSetId}`,
           method: 'DELETE',
         }),
         invalidatesTags: ['electrical_profiles'],
@@ -96,7 +96,7 @@ const injectedRtkApi = api
         GetElectricalProfileSetByElectricalProfileSetIdLevelOrderApiArg
       >({
         query: (queryArg) => ({
-          url: `/electrical_profile_set/${queryArg.electricalProfileSetId}/level_order/`,
+          url: `/electrical_profile_set/${queryArg.electricalProfileSetId}/level_order`,
         }),
         providesTags: ['electrical_profiles'],
       }),
@@ -105,13 +105,13 @@ const injectedRtkApi = api
       }),
       getInfra: build.query<GetInfraApiResponse, GetInfraApiArg>({
         query: (queryArg) => ({
-          url: `/infra/`,
+          url: `/infra`,
           params: { page: queryArg.page, page_size: queryArg.pageSize },
         }),
         providesTags: ['infra'],
       }),
       postInfra: build.mutation<PostInfraApiResponse, PostInfraApiArg>({
-        query: (queryArg) => ({ url: `/infra/`, method: 'POST', body: queryArg.body }),
+        query: (queryArg) => ({ url: `/infra`, method: 'POST', body: queryArg.body }),
         invalidatesTags: ['infra'],
       }),
       postInfraRailjson: build.mutation<PostInfraRailjsonApiResponse, PostInfraRailjsonApiArg>({
@@ -136,12 +136,12 @@ const injectedRtkApi = api
         providesTags: ['infra', 'rolling_stock'],
       }),
       getInfraByInfraId: build.query<GetInfraByInfraIdApiResponse, GetInfraByInfraIdApiArg>({
-        query: (queryArg) => ({ url: `/infra/${queryArg.infraId}/` }),
+        query: (queryArg) => ({ url: `/infra/${queryArg.infraId}` }),
         providesTags: ['infra'],
       }),
       postInfraByInfraId: build.mutation<PostInfraByInfraIdApiResponse, PostInfraByInfraIdApiArg>({
         query: (queryArg) => ({
-          url: `/infra/${queryArg.infraId}/`,
+          url: `/infra/${queryArg.infraId}`,
           method: 'POST',
           body: queryArg.body,
         }),
@@ -149,7 +149,7 @@ const injectedRtkApi = api
       }),
       putInfraByInfraId: build.mutation<PutInfraByInfraIdApiResponse, PutInfraByInfraIdApiArg>({
         query: (queryArg) => ({
-          url: `/infra/${queryArg.infraId}/`,
+          url: `/infra/${queryArg.infraId}`,
           method: 'PUT',
           body: queryArg.body,
         }),
@@ -159,7 +159,7 @@ const injectedRtkApi = api
         DeleteInfraByInfraIdApiResponse,
         DeleteInfraByInfraIdApiArg
       >({
-        query: (queryArg) => ({ url: `/infra/${queryArg.infraId}/`, method: 'DELETE' }),
+        query: (queryArg) => ({ url: `/infra/${queryArg.infraId}`, method: 'DELETE' }),
         invalidatesTags: ['infra'],
       }),
       getInfraByInfraIdAttachedAndTrackId: build.query<
@@ -173,7 +173,7 @@ const injectedRtkApi = api
         GetInfraByInfraIdAutoFixesApiResponse,
         GetInfraByInfraIdAutoFixesApiArg
       >({
-        query: (queryArg) => ({ url: `/infra/${queryArg.infraId}/auto_fixes/` }),
+        query: (queryArg) => ({ url: `/infra/${queryArg.infraId}/auto_fixes` }),
         providesTags: ['infra'],
       }),
       postInfraByInfraIdClone: build.mutation<
@@ -208,7 +208,7 @@ const injectedRtkApi = api
         GetInfraByInfraIdLinesAndLineCodeBboxApiArg
       >({
         query: (queryArg) => ({
-          url: `/infra/${queryArg.infraId}/lines/${queryArg.lineCode}/bbox/`,
+          url: `/infra/${queryArg.infraId}/lines/${queryArg.lineCode}/bbox`,
         }),
         providesTags: ['infra'],
       }),
@@ -242,7 +242,7 @@ const injectedRtkApi = api
         PostInfraByInfraIdPathfindingApiArg
       >({
         query: (queryArg) => ({
-          url: `/infra/${queryArg.infraId}/pathfinding/`,
+          url: `/infra/${queryArg.infraId}/pathfinding`,
           method: 'POST',
           body: queryArg.pathfindingInput,
           params: { number: queryArg.number },
@@ -333,7 +333,7 @@ const injectedRtkApi = api
         GetLayersLayerByLayerSlugMvtAndViewSlugApiArg
       >({
         query: (queryArg) => ({
-          url: `/layers/layer/${queryArg.layerSlug}/mvt/${queryArg.viewSlug}/`,
+          url: `/layers/layer/${queryArg.layerSlug}/mvt/${queryArg.viewSlug}`,
           params: { infra: queryArg.infra },
         }),
         providesTags: ['layers'],
@@ -343,7 +343,7 @@ const injectedRtkApi = api
         GetLayersTileByLayerSlugAndViewSlugZXYApiArg
       >({
         query: (queryArg) => ({
-          url: `/layers/tile/${queryArg.layerSlug}/${queryArg.viewSlug}/${queryArg.z}/${queryArg.x}/${queryArg.y}/`,
+          url: `/layers/tile/${queryArg.layerSlug}/${queryArg.viewSlug}/${queryArg.z}/${queryArg.x}/${queryArg.y}`,
           params: { infra: queryArg.infra },
         }),
         providesTags: ['layers'],
@@ -353,7 +353,7 @@ const injectedRtkApi = api
         GetLightRollingStockApiArg
       >({
         query: (queryArg) => ({
-          url: `/light_rolling_stock/`,
+          url: `/light_rolling_stock`,
           params: { page: queryArg.page, page_size: queryArg.pageSize },
         }),
         providesTags: ['rolling_stock'],
@@ -362,19 +362,19 @@ const injectedRtkApi = api
         GetLightRollingStockNameByRollingStockNameApiResponse,
         GetLightRollingStockNameByRollingStockNameApiArg
       >({
-        query: (queryArg) => ({ url: `/light_rolling_stock/name/${queryArg.rollingStockName}/` }),
+        query: (queryArg) => ({ url: `/light_rolling_stock/name/${queryArg.rollingStockName}` }),
         providesTags: ['rolling_stock'],
       }),
       getLightRollingStockByRollingStockId: build.query<
         GetLightRollingStockByRollingStockIdApiResponse,
         GetLightRollingStockByRollingStockIdApiArg
       >({
-        query: (queryArg) => ({ url: `/light_rolling_stock/${queryArg.rollingStockId}/` }),
+        query: (queryArg) => ({ url: `/light_rolling_stock/${queryArg.rollingStockId}` }),
         providesTags: ['rolling_stock'],
       }),
       postPathfinding: build.mutation<PostPathfindingApiResponse, PostPathfindingApiArg>({
         query: (queryArg) => ({
-          url: `/pathfinding/`,
+          url: `/pathfinding`,
           method: 'POST',
           body: queryArg.pathfindingRequest,
         }),
@@ -384,7 +384,7 @@ const injectedRtkApi = api
         GetPathfindingByPathfindingIdApiResponse,
         GetPathfindingByPathfindingIdApiArg
       >({
-        query: (queryArg) => ({ url: `/pathfinding/${queryArg.pathfindingId}/` }),
+        query: (queryArg) => ({ url: `/pathfinding/${queryArg.pathfindingId}` }),
         providesTags: ['pathfinding'],
       }),
       putPathfindingByPathfindingId: build.mutation<
@@ -392,7 +392,7 @@ const injectedRtkApi = api
         PutPathfindingByPathfindingIdApiArg
       >({
         query: (queryArg) => ({
-          url: `/pathfinding/${queryArg.pathfindingId}/`,
+          url: `/pathfinding/${queryArg.pathfindingId}`,
           method: 'PUT',
           body: queryArg.pathfindingRequest,
         }),
@@ -402,7 +402,7 @@ const injectedRtkApi = api
         DeletePathfindingByPathfindingIdApiResponse,
         DeletePathfindingByPathfindingIdApiArg
       >({
-        query: (queryArg) => ({ url: `/pathfinding/${queryArg.pathfindingId}/`, method: 'DELETE' }),
+        query: (queryArg) => ({ url: `/pathfinding/${queryArg.pathfindingId}`, method: 'DELETE' }),
         invalidatesTags: ['pathfinding'],
       }),
       getPathfindingByPathfindingIdElectricalProfiles: build.query<
@@ -427,7 +427,7 @@ const injectedRtkApi = api
       }),
       getProjects: build.query<GetProjectsApiResponse, GetProjectsApiArg>({
         query: (queryArg) => ({
-          url: `/projects/`,
+          url: `/projects`,
           params: {
             page: queryArg.page,
             page_size: queryArg.pageSize,
@@ -438,7 +438,7 @@ const injectedRtkApi = api
       }),
       postProjects: build.mutation<PostProjectsApiResponse, PostProjectsApiArg>({
         query: (queryArg) => ({
-          url: `/projects/`,
+          url: `/projects`,
           method: 'POST',
           body: queryArg.projectCreateForm,
         }),
@@ -448,14 +448,14 @@ const injectedRtkApi = api
         GetProjectsByProjectIdApiResponse,
         GetProjectsByProjectIdApiArg
       >({
-        query: (queryArg) => ({ url: `/projects/${queryArg.projectId}/` }),
+        query: (queryArg) => ({ url: `/projects/${queryArg.projectId}` }),
         providesTags: ['projects'],
       }),
       deleteProjectsByProjectId: build.mutation<
         DeleteProjectsByProjectIdApiResponse,
         DeleteProjectsByProjectIdApiArg
       >({
-        query: (queryArg) => ({ url: `/projects/${queryArg.projectId}/`, method: 'DELETE' }),
+        query: (queryArg) => ({ url: `/projects/${queryArg.projectId}`, method: 'DELETE' }),
         invalidatesTags: ['projects'],
       }),
       patchProjectsByProjectId: build.mutation<
@@ -463,7 +463,7 @@ const injectedRtkApi = api
         PatchProjectsByProjectIdApiArg
       >({
         query: (queryArg) => ({
-          url: `/projects/${queryArg.projectId}/`,
+          url: `/projects/${queryArg.projectId}`,
           method: 'PATCH',
           body: queryArg.projectPatchForm,
         }),
@@ -474,7 +474,7 @@ const injectedRtkApi = api
         GetProjectsByProjectIdStudiesApiArg
       >({
         query: (queryArg) => ({
-          url: `/projects/${queryArg.projectId}/studies/`,
+          url: `/projects/${queryArg.projectId}/studies`,
           params: {
             page: queryArg.page,
             page_size: queryArg.pageSize,
@@ -488,7 +488,7 @@ const injectedRtkApi = api
         PostProjectsByProjectIdStudiesApiArg
       >({
         query: (queryArg) => ({
-          url: `/projects/${queryArg.projectId}/studies/`,
+          url: `/projects/${queryArg.projectId}/studies`,
           method: 'POST',
           body: queryArg.studyCreateForm,
         }),
@@ -499,7 +499,7 @@ const injectedRtkApi = api
         GetProjectsByProjectIdStudiesAndStudyIdApiArg
       >({
         query: (queryArg) => ({
-          url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/`,
+          url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}`,
         }),
         providesTags: ['studies'],
       }),
@@ -508,7 +508,7 @@ const injectedRtkApi = api
         DeleteProjectsByProjectIdStudiesAndStudyIdApiArg
       >({
         query: (queryArg) => ({
-          url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/`,
+          url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}`,
           method: 'DELETE',
         }),
         invalidatesTags: ['studies'],
@@ -518,7 +518,7 @@ const injectedRtkApi = api
         PatchProjectsByProjectIdStudiesAndStudyIdApiArg
       >({
         query: (queryArg) => ({
-          url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/`,
+          url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}`,
           method: 'PATCH',
           body: queryArg.studyPatchForm,
         }),
@@ -529,7 +529,7 @@ const injectedRtkApi = api
         GetProjectsByProjectIdStudiesAndStudyIdScenariosApiArg
       >({
         query: (queryArg) => ({
-          url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/`,
+          url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios`,
           params: {
             page: queryArg.page,
             page_size: queryArg.pageSize,
@@ -543,7 +543,7 @@ const injectedRtkApi = api
         PostProjectsByProjectIdStudiesAndStudyIdScenariosApiArg
       >({
         query: (queryArg) => ({
-          url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/`,
+          url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios`,
           method: 'POST',
           body: queryArg.scenarioCreateForm,
         }),
@@ -554,7 +554,7 @@ const injectedRtkApi = api
         GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg
       >({
         query: (queryArg) => ({
-          url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/${queryArg.scenarioId}/`,
+          url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/${queryArg.scenarioId}`,
         }),
         providesTags: ['scenarios'],
       }),
@@ -563,7 +563,7 @@ const injectedRtkApi = api
         DeleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg
       >({
         query: (queryArg) => ({
-          url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/${queryArg.scenarioId}/`,
+          url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/${queryArg.scenarioId}`,
           method: 'DELETE',
         }),
         invalidatesTags: ['scenarios'],
@@ -573,7 +573,7 @@ const injectedRtkApi = api
         PatchProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg
       >({
         query: (queryArg) => ({
-          url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/${queryArg.scenarioId}/`,
+          url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/${queryArg.scenarioId}`,
           method: 'PATCH',
           body: queryArg.scenarioPatchForm,
         }),
@@ -581,7 +581,7 @@ const injectedRtkApi = api
       }),
       postRollingStock: build.mutation<PostRollingStockApiResponse, PostRollingStockApiArg>({
         query: (queryArg) => ({
-          url: `/rolling_stock/`,
+          url: `/rolling_stock`,
           method: 'POST',
           body: queryArg.rollingStockForm,
           params: { locked: queryArg.locked },
@@ -592,21 +592,21 @@ const injectedRtkApi = api
         GetRollingStockNameByRollingStockNameApiResponse,
         GetRollingStockNameByRollingStockNameApiArg
       >({
-        query: (queryArg) => ({ url: `/rolling_stock/name/${queryArg.rollingStockName}/` }),
+        query: (queryArg) => ({ url: `/rolling_stock/name/${queryArg.rollingStockName}` }),
         providesTags: ['rolling_stock'],
       }),
       getRollingStockPowerRestrictions: build.query<
         GetRollingStockPowerRestrictionsApiResponse,
         GetRollingStockPowerRestrictionsApiArg
       >({
-        query: () => ({ url: `/rolling_stock/power_restrictions/` }),
+        query: () => ({ url: `/rolling_stock/power_restrictions` }),
         providesTags: ['rolling_stock'],
       }),
       getRollingStockByRollingStockId: build.query<
         GetRollingStockByRollingStockIdApiResponse,
         GetRollingStockByRollingStockIdApiArg
       >({
-        query: (queryArg) => ({ url: `/rolling_stock/${queryArg.rollingStockId}/` }),
+        query: (queryArg) => ({ url: `/rolling_stock/${queryArg.rollingStockId}` }),
         providesTags: ['rolling_stock'],
       }),
       deleteRollingStockByRollingStockId: build.mutation<
@@ -614,7 +614,7 @@ const injectedRtkApi = api
         DeleteRollingStockByRollingStockIdApiArg
       >({
         query: (queryArg) => ({
-          url: `/rolling_stock/${queryArg.rollingStockId}/`,
+          url: `/rolling_stock/${queryArg.rollingStockId}`,
           method: 'DELETE',
           params: { force: queryArg.force },
         }),
@@ -625,7 +625,7 @@ const injectedRtkApi = api
         PatchRollingStockByRollingStockIdApiArg
       >({
         query: (queryArg) => ({
-          url: `/rolling_stock/${queryArg.rollingStockId}/`,
+          url: `/rolling_stock/${queryArg.rollingStockId}`,
           method: 'PATCH',
           body: queryArg.rollingStockForm,
         }),
@@ -636,7 +636,7 @@ const injectedRtkApi = api
         PostRollingStockByRollingStockIdLiveryApiArg
       >({
         query: (queryArg) => ({
-          url: `/rolling_stock/${queryArg.rollingStockId}/livery/`,
+          url: `/rolling_stock/${queryArg.rollingStockId}/livery`,
           method: 'POST',
           body: queryArg.rollingStockLiveryCreateForm,
         }),
@@ -647,7 +647,7 @@ const injectedRtkApi = api
         PatchRollingStockByRollingStockIdLockedApiArg
       >({
         query: (queryArg) => ({
-          url: `/rolling_stock/${queryArg.rollingStockId}/locked/`,
+          url: `/rolling_stock/${queryArg.rollingStockId}/locked`,
           method: 'PATCH',
           body: queryArg.rollingStockLockedUpdateForm,
         }),
@@ -667,13 +667,13 @@ const injectedRtkApi = api
         PostSingleSimulationApiArg
       >({
         query: (queryArg) => ({
-          url: `/single_simulation/`,
+          url: `/single_simulation`,
           method: 'POST',
           body: queryArg.singleSimulationRequest,
         }),
       }),
       getSpeedLimitTags: build.query<GetSpeedLimitTagsApiResponse, GetSpeedLimitTagsApiArg>({
-        query: () => ({ url: `/speed_limit_tags/` }),
+        query: () => ({ url: `/speed_limit_tags` }),
         providesTags: ['speed_limit_tags'],
       }),
       getSpritesSignalingSystems: build.query<
@@ -691,16 +691,16 @@ const injectedRtkApi = api
         providesTags: ['sprites'],
       }),
       postStdcm: build.mutation<PostStdcmApiResponse, PostStdcmApiArg>({
-        query: (queryArg) => ({ url: `/stdcm/`, method: 'POST', body: queryArg.body }),
+        query: (queryArg) => ({ url: `/stdcm`, method: 'POST', body: queryArg.body }),
         invalidatesTags: ['stdcm'],
       }),
       getTimetableById: build.query<GetTimetableByIdApiResponse, GetTimetableByIdApiArg>({
-        query: (queryArg) => ({ url: `/timetable/${queryArg.id}/` }),
+        query: (queryArg) => ({ url: `/timetable/${queryArg.id}` }),
         providesTags: ['timetable'],
       }),
       postTimetableById: build.mutation<PostTimetableByIdApiResponse, PostTimetableByIdApiArg>({
         query: (queryArg) => ({
-          url: `/timetable/${queryArg.id}/`,
+          url: `/timetable/${queryArg.id}`,
           method: 'POST',
           body: queryArg.body,
         }),
@@ -717,11 +717,11 @@ const injectedRtkApi = api
         DeleteTrainScheduleApiResponse,
         DeleteTrainScheduleApiArg
       >({
-        query: (queryArg) => ({ url: `/train_schedule/`, method: 'DELETE', body: queryArg.body }),
+        query: (queryArg) => ({ url: `/train_schedule`, method: 'DELETE', body: queryArg.body }),
         invalidatesTags: ['train_schedule', 'timetable'],
       }),
       patchTrainSchedule: build.mutation<PatchTrainScheduleApiResponse, PatchTrainScheduleApiArg>({
-        query: (queryArg) => ({ url: `/train_schedule/`, method: 'PATCH', body: queryArg.body }),
+        query: (queryArg) => ({ url: `/train_schedule`, method: 'PATCH', body: queryArg.body }),
         invalidatesTags: ['train_schedule', 'timetable'],
       }),
       postTrainScheduleResults: build.mutation<
@@ -750,14 +750,14 @@ const injectedRtkApi = api
         GetTrainScheduleByIdApiResponse,
         GetTrainScheduleByIdApiArg
       >({
-        query: (queryArg) => ({ url: `/train_schedule/${queryArg.id}/` }),
+        query: (queryArg) => ({ url: `/train_schedule/${queryArg.id}` }),
         providesTags: ['train_schedule'],
       }),
       deleteTrainScheduleById: build.mutation<
         DeleteTrainScheduleByIdApiResponse,
         DeleteTrainScheduleByIdApiArg
       >({
-        query: (queryArg) => ({ url: `/train_schedule/${queryArg.id}/`, method: 'DELETE' }),
+        query: (queryArg) => ({ url: `/train_schedule/${queryArg.id}`, method: 'DELETE' }),
         invalidatesTags: ['train_schedule', 'timetable'],
       }),
       getTrainScheduleByIdResult: build.query<
@@ -775,7 +775,7 @@ const injectedRtkApi = api
         PostV2InfraByInfraIdPathPropertiesApiArg
       >({
         query: (queryArg) => ({
-          url: `/v2/infra/${queryArg.infraId}/path_properties/`,
+          url: `/v2/infra/${queryArg.infraId}/path_properties`,
           method: 'POST',
           body: queryArg.pathPropertiesInput,
           params: { props: queryArg.props },
@@ -787,7 +787,7 @@ const injectedRtkApi = api
         PostV2InfraByInfraIdPathfindingBlocksApiArg
       >({
         query: (queryArg) => ({
-          url: `/v2/infra/${queryArg.infraId}/pathfinding/blocks/`,
+          url: `/v2/infra/${queryArg.infraId}/pathfinding/blocks`,
           method: 'POST',
           body: queryArg.pathfindingInputV2,
         }),
@@ -798,7 +798,7 @@ const injectedRtkApi = api
         GetV2ProjectsByProjectIdStudiesAndStudyIdScenariosApiArg
       >({
         query: (queryArg) => ({
-          url: `/v2/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/`,
+          url: `/v2/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios`,
           params: {
             page: queryArg.page,
             page_size: queryArg.pageSize,
@@ -812,7 +812,7 @@ const injectedRtkApi = api
         PostV2ProjectsByProjectIdStudiesAndStudyIdScenariosApiArg
       >({
         query: (queryArg) => ({
-          url: `/v2/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/`,
+          url: `/v2/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios`,
           method: 'POST',
           body: queryArg.scenarioCreateFormV2,
         }),
@@ -823,7 +823,7 @@ const injectedRtkApi = api
         GetV2ProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg
       >({
         query: (queryArg) => ({
-          url: `/v2/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/${queryArg.scenarioId}/`,
+          url: `/v2/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/${queryArg.scenarioId}`,
         }),
         providesTags: ['scenariosv2'],
       }),
@@ -832,7 +832,7 @@ const injectedRtkApi = api
         DeleteV2ProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg
       >({
         query: (queryArg) => ({
-          url: `/v2/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/${queryArg.scenarioId}/`,
+          url: `/v2/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/${queryArg.scenarioId}`,
           method: 'DELETE',
         }),
         invalidatesTags: ['scenariosv2'],
@@ -842,7 +842,7 @@ const injectedRtkApi = api
         PatchV2ProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg
       >({
         query: (queryArg) => ({
-          url: `/v2/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/${queryArg.scenarioId}/`,
+          url: `/v2/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/${queryArg.scenarioId}`,
           method: 'PATCH',
           body: queryArg.scenarioPatchFormV2,
         }),
@@ -850,26 +850,26 @@ const injectedRtkApi = api
       }),
       getV2Timetable: build.query<GetV2TimetableApiResponse, GetV2TimetableApiArg>({
         query: (queryArg) => ({
-          url: `/v2/timetable/`,
+          url: `/v2/timetable`,
           params: { page: queryArg.page, page_size: queryArg.pageSize },
         }),
         providesTags: ['timetablev2'],
       }),
       postV2Timetable: build.mutation<PostV2TimetableApiResponse, PostV2TimetableApiArg>({
         query: (queryArg) => ({
-          url: `/v2/timetable/`,
+          url: `/v2/timetable`,
           method: 'POST',
           body: queryArg.timetableForm,
         }),
         invalidatesTags: ['timetablev2'],
       }),
       getV2TimetableById: build.query<GetV2TimetableByIdApiResponse, GetV2TimetableByIdApiArg>({
-        query: (queryArg) => ({ url: `/v2/timetable/${queryArg.id}/` }),
+        query: (queryArg) => ({ url: `/v2/timetable/${queryArg.id}` }),
         providesTags: ['timetablev2'],
       }),
       putV2TimetableById: build.mutation<PutV2TimetableByIdApiResponse, PutV2TimetableByIdApiArg>({
         query: (queryArg) => ({
-          url: `/v2/timetable/${queryArg.id}/`,
+          url: `/v2/timetable/${queryArg.id}`,
           method: 'PUT',
           body: queryArg.timetableForm,
         }),
@@ -879,7 +879,7 @@ const injectedRtkApi = api
         DeleteV2TimetableByIdApiResponse,
         DeleteV2TimetableByIdApiArg
       >({
-        query: (queryArg) => ({ url: `/v2/timetable/${queryArg.id}/`, method: 'DELETE' }),
+        query: (queryArg) => ({ url: `/v2/timetable/${queryArg.id}`, method: 'DELETE' }),
         invalidatesTags: ['timetablev2'],
       }),
       getV2TimetableByIdConflicts: build.query<
@@ -897,7 +897,7 @@ const injectedRtkApi = api
         PostV2TimetableByIdStdcmApiArg
       >({
         query: (queryArg) => ({
-          url: `/v2/timetable/${queryArg.id}/stdcm/`,
+          url: `/v2/timetable/${queryArg.id}/stdcm`,
           method: 'POST',
           body: queryArg.body,
           params: { infra: queryArg.infra },
@@ -916,18 +916,14 @@ const injectedRtkApi = api
         invalidatesTags: ['timetablev2', 'train_schedulev2'],
       }),
       postV2TrainSchedule: build.query<PostV2TrainScheduleApiResponse, PostV2TrainScheduleApiArg>({
-        query: (queryArg) => ({ url: `/v2/train_schedule/`, method: 'POST', body: queryArg.body }),
+        query: (queryArg) => ({ url: `/v2/train_schedule`, method: 'POST', body: queryArg.body }),
         providesTags: ['train_schedulev2'],
       }),
       deleteV2TrainSchedule: build.mutation<
         DeleteV2TrainScheduleApiResponse,
         DeleteV2TrainScheduleApiArg
       >({
-        query: (queryArg) => ({
-          url: `/v2/train_schedule/`,
-          method: 'DELETE',
-          body: queryArg.body,
-        }),
+        query: (queryArg) => ({ url: `/v2/train_schedule`, method: 'DELETE', body: queryArg.body }),
         invalidatesTags: ['timetablev2', 'train_schedulev2'],
       }),
       postV2TrainScheduleProjectPath: build.query<
@@ -956,7 +952,7 @@ const injectedRtkApi = api
         GetV2TrainScheduleByIdApiResponse,
         GetV2TrainScheduleByIdApiArg
       >({
-        query: (queryArg) => ({ url: `/v2/train_schedule/${queryArg.id}/` }),
+        query: (queryArg) => ({ url: `/v2/train_schedule/${queryArg.id}` }),
         providesTags: ['train_schedulev2'],
       }),
       putV2TrainScheduleById: build.mutation<
@@ -964,7 +960,7 @@ const injectedRtkApi = api
         PutV2TrainScheduleByIdApiArg
       >({
         query: (queryArg) => ({
-          url: `/v2/train_schedule/${queryArg.id}/`,
+          url: `/v2/train_schedule/${queryArg.id}`,
           method: 'PUT',
           body: queryArg.trainScheduleForm,
         }),
@@ -975,7 +971,7 @@ const injectedRtkApi = api
         GetV2TrainScheduleByIdPathApiArg
       >({
         query: (queryArg) => ({
-          url: `/v2/train_schedule/${queryArg.id}/path/`,
+          url: `/v2/train_schedule/${queryArg.id}/path`,
           params: { infra_id: queryArg.infraId },
         }),
         providesTags: ['train_schedulev2', 'pathfindingv2'],
@@ -998,7 +994,7 @@ const injectedRtkApi = api
       }),
       postWorkSchedules: build.mutation<PostWorkSchedulesApiResponse, PostWorkSchedulesApiArg>({
         query: (queryArg) => ({
-          url: `/work_schedules/`,
+          url: `/work_schedules`,
           method: 'POST',
           body: queryArg.workScheduleCreateForm,
         }),

@@ -1,8 +1,6 @@
-use actix_web::post;
-use actix_web::web::Data;
-use actix_web::web::Json;
-use actix_web::web::Path;
-use chashmap::CHashMap;
+use axum::extract::Json;
+use axum::extract::Path;
+use axum::extract::State;
 use diesel_async::AsyncConnection;
 use editoast_derive::EditoastError;
 use editoast_schemas::infra::ApplicableDirectionsTrackRange;
@@ -36,19 +34,17 @@ use crate::infra_cache::operation::UpdateOperation;
 use crate::infra_cache::InfraCache;
 use crate::infra_cache::ObjectCache;
 use crate::map;
-use crate::map::MapLayers;
 use crate::modelsv2::prelude::*;
 use crate::modelsv2::Infra;
 use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraIdParam;
-use crate::RedisClient;
+use crate::AppState;
 use editoast_models::DbConnection;
-use editoast_models::DbConnectionPoolV2;
 use editoast_schemas::infra::InfraObject;
 
 crate::routes! {
     edit,
-    split_track_section,
+    "/split_track_section" => split_track_section,
 }
 
 /// Edit the content of an infrastructure
@@ -62,6 +58,7 @@ crate::routes! {
 /// After editing the object, the generated cartographic layers are invalidated and
 /// regenerated. The edition step fails if the regeneration fails.
 #[utoipa::path(
+    post, path = "",
     tag = "infra",
     params(InfraIdParam),
     request_body = Vec<Operation>,
@@ -69,16 +66,17 @@ crate::routes! {
         (status = 200, body = Vec<InfraObject>, description = "The result of the operations")
     )
 )]
-#[post("")]
-pub async fn edit<'a>(
-    infra: Path<InfraIdParam>,
-    operations: Json<Vec<Operation>>,
-    db_pool: Data<DbConnectionPoolV2>,
-    infra_caches: Data<CHashMap<i64, InfraCache>>,
-    redis_client: Data<RedisClient>,
-    map_layers: Data<MapLayers>,
+async fn edit<'a>(
+    Path(InfraIdParam { infra_id }): Path<InfraIdParam>,
+    State(AppState {
+        db_pool_v2: db_pool,
+        infra_caches,
+        redis,
+        map_layers,
+        ..
+    }): State<AppState>,
+    Json(operations): Json<Vec<Operation>>,
 ) -> Result<Json<Vec<InfraObject>>> {
-    let infra_id = infra.infra_id;
     // TODO: lock for update
     let mut infra = Infra::retrieve_or_fail(db_pool.get().await?.deref_mut(), infra_id, || {
         InfraApiError::NotFound { infra_id }
@@ -95,7 +93,7 @@ pub async fn edit<'a>(
     )
     .await?;
 
-    let mut conn = redis_client.get_connection().await?;
+    let mut conn = redis.get_connection().await?;
     map::invalidate_all(
         &mut conn,
         &map_layers.layers.keys().cloned().collect(),
@@ -107,6 +105,7 @@ pub async fn edit<'a>(
 }
 
 #[utoipa::path(
+    post, path = "",
     tag = "infra",
     params(InfraIdParam),
     request_body = TrackOffset,
@@ -114,17 +113,17 @@ pub async fn edit<'a>(
         (status = 200, body = inline(Vec<String>), description = "ID of the trackSections created")
     ),
 )]
-#[post("/split_track_section")]
 pub async fn split_track_section<'a>(
-    infra: Path<i64>,
-    payload: Json<TrackOffset>,
-    db_pool: Data<DbConnectionPoolV2>,
-    infra_caches: Data<CHashMap<i64, InfraCache>>,
-    redis_client: Data<RedisClient>,
-    map_layers: Data<MapLayers>,
+    Path(InfraIdParam { infra_id }): Path<InfraIdParam>,
+    State(AppState {
+        db_pool_v2: db_pool,
+        infra_caches,
+        redis,
+        map_layers,
+        ..
+    }): State<AppState>,
+    Json(payload): Json<TrackOffset>,
 ) -> Result<Json<Vec<String>>> {
-    let payload = payload.into_inner();
-    let infra_id = infra.into_inner();
     info!(
         track_id = payload.track.as_str(),
         offset = payload.offset,
@@ -317,7 +316,7 @@ pub async fn split_track_section<'a>(
         &mut infra_cache,
     )
     .await?;
-    let mut conn = redis_client.get_connection().await?;
+    let mut conn = redis.get_connection().await?;
     map::invalidate_all(
         &mut conn,
         &map_layers.layers.keys().cloned().collect(),
@@ -894,8 +893,7 @@ enum EditionError {
 
 #[cfg(test)]
 pub mod tests {
-    use actix_web::http::StatusCode;
-    use actix_web::test::TestRequest;
+    use axum::http::StatusCode;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
 
@@ -915,13 +913,12 @@ pub mod tests {
         let app = TestAppBuilder::default_app();
 
         // Make a call with a bad infra ID
-        let request = TestRequest::post()
-            .uri("/infra/123456789/split_track_section/")
-            .set_json(json!({
+        let request = app
+            .post("/infra/123456789/split_track_section/")
+            .json(&json!({
                 "track": String::from("INVALID-ID"),
                 "offset": 1,
-            }))
-            .to_request();
+            }));
 
         // Check that we receive a 404
         app.fetch(request).assert_status(StatusCode::NOT_FOUND);
@@ -935,13 +932,12 @@ pub mod tests {
         let small_infra = create_small_infra(db_pool.get_ok().deref_mut()).await;
 
         // Make a call with a bad ID
-        let request = TestRequest::post()
-            .uri(format!("/infra/{}/split_track_section", small_infra.id).as_str())
-            .set_json(json!({
+        let request = app
+            .post(format!("/infra/{}/split_track_section", small_infra.id).as_str())
+            .json(&json!({
                 "track":"INVALID-ID",
                 "offset": 1,
-            }))
-            .to_request();
+            }));
 
         // Check that we receive a 404
         app.fetch(request).assert_status(StatusCode::NOT_FOUND);
@@ -955,13 +951,12 @@ pub mod tests {
         let small_infra = create_small_infra(db_pool.get_ok().deref_mut()).await;
 
         // Make a call with a bad distance
-        let request = TestRequest::post()
-            .uri(format!("/infra/{}/split_track_section", small_infra.id).as_str())
-            .set_json(json!({
+        let request = app
+            .post(format!("/infra/{}/split_track_section", small_infra.id).as_str())
+            .json(&json!({
                 "track": "TA0",
                 "offset": 5000000,
-            }))
-            .to_request();
+            }));
 
         // Check that we receive an error
         app.fetch(request).assert_status(StatusCode::BAD_REQUEST);
@@ -977,22 +972,20 @@ pub mod tests {
         let small_infra = create_small_infra(db_pool.get_ok().deref_mut()).await;
 
         // Refresh the infra to get the good number of infra errors
-        let req_refresh = TestRequest::post()
-            .uri(format!("/infra/refresh/?infras={}&force=true", small_infra.id).as_str())
-            .to_request();
+        let req_refresh =
+            app.post(format!("/infra/refresh/?infras={}&force=true", small_infra.id).as_str());
         app.fetch(req_refresh).assert_status(StatusCode::OK);
 
         // Get infra errors
         let (init_errors, _) = query_errors(db_pool.get_ok().deref_mut(), &small_infra).await;
 
         // Make a call to split the track section
-        let request = TestRequest::post()
-            .uri(format!("/infra/{}/split_track_section", small_infra.id).as_str())
-            .set_json(json!({
+        let request = app
+            .post(format!("/infra/{}/split_track_section", small_infra.id).as_str())
+            .json(&json!({
                 "track": track,
                 "offset": offset,
-            }))
-            .to_request();
+            }));
         let res: Vec<String> = app.fetch(request).assert_status(StatusCode::OK).json_into();
 
         // Check the response

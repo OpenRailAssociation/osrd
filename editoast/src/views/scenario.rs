@@ -1,12 +1,8 @@
-use actix_web::delete;
-use actix_web::get;
-use actix_web::patch;
-use actix_web::post;
-use actix_web::web::Data;
-use actix_web::web::Json;
-use actix_web::web::Path;
-use actix_web::web::Query;
-use actix_web::HttpResponse;
+use axum::extract::Json;
+use axum::extract::Path;
+use axum::extract::Query;
+use axum::extract::State;
+use axum::response::IntoResponse;
 use chrono::Utc;
 use derivative::Derivative;
 use diesel_async::scoped_futures::ScopedFutureExt;
@@ -41,6 +37,7 @@ use crate::views::projects::ProjectError;
 use crate::views::projects::ProjectIdParam;
 use crate::views::study::StudyError;
 use crate::views::study::StudyIdParam;
+use crate::AppState;
 use editoast_models::DbConnection;
 use editoast_models::DbConnectionPool;
 
@@ -52,8 +49,8 @@ crate::routes! {
             get,
             delete,
             patch,
-        }
-    }
+        },
+    },
 }
 
 editoast_common::schemas! {
@@ -72,7 +69,6 @@ editoast_common::schemas! {
 #[allow(clippy::enum_variant_names)]
 enum ScenarioError {
     /// Couldn't found the scenario with the given scenario ID
-
     #[error("Scenario '{scenario_id}', could not be found")]
     #[editoast_error(status = 404)]
     NotFound { scenario_id: i64 },
@@ -167,6 +163,7 @@ pub async fn check_project_study_conn(
 
 /// Create a scenario
 #[utoipa::path(
+    post, path = "",
     tag = "scenarios",
     params(ProjectIdParam, StudyIdParam),
     request_body = ScenarioCreateForm,
@@ -174,19 +171,18 @@ pub async fn check_project_study_conn(
         (status = 201, body = ScenarioResponse, description = "The created scenario"),
     )
 )]
-#[post("")]
 async fn create(
-    db_pool: Data<DbConnectionPool>,
-    data: Json<ScenarioCreateForm>,
-    path: Path<(i64, i64)>,
+    State(AppState {
+        db_pool_v1: db_pool,
+        ..
+    }): State<AppState>,
+    Path((project_id, study_id)): Path<(i64, i64)>,
+    Json(data): Json<ScenarioCreateForm>,
 ) -> Result<Json<ScenarioResponse>> {
-    let (project_id, study_id) = path.into_inner();
-
     let mut conn = db_pool.get().await?;
     // Check if the project and the study exist
     let (mut project, mut study) =
         check_project_study_conn(&mut conn, project_id, study_id).await?;
-    let db_pool = db_pool.into_inner();
     let (project, study, scenarios_with_details) = conn
         .transaction::<_, InternalError, _>(|conn| {
             async {
@@ -199,7 +195,7 @@ async fn create(
                 let timetable_id = timetable.id.unwrap();
 
                 // Create Scenario
-                let scenario: Scenario = data.into_inner().into_scenario(study_id, timetable_id);
+                let scenario: Scenario = data.into_scenario(study_id, timetable_id);
                 let scenario = scenario.create(db_pool).await?;
 
                 // Update study last_modification field
@@ -227,6 +223,7 @@ pub struct ScenarioIdParam {
 
 /// Delete a scenario
 #[utoipa::path(
+    delete, path = "",
     tag = "scenarios",
     params(ProjectIdParam, StudyIdParam, ScenarioIdParam),
     responses(
@@ -234,14 +231,13 @@ pub struct ScenarioIdParam {
         (status = 404, body = InternalError, description = "The requested scenario was not found"),
     )
 )]
-#[delete("")]
 async fn delete(
-    path: Path<(i64, i64, i64)>,
-    db_pool: Data<DbConnectionPool>,
-) -> Result<HttpResponse> {
-    let (project_id, study_id, scenario_id) = path.into_inner();
-
-    let db_pool = db_pool.into_inner();
+    Path((project_id, study_id, scenario_id)): Path<(i64, i64, i64)>,
+    State(AppState {
+        db_pool_v1: db_pool,
+        ..
+    }): State<AppState>,
+) -> Result<impl IntoResponse> {
     // Check if the project and the study exist
     let (mut project, mut study) = check_project_study(db_pool.clone(), project_id, study_id)
         .await
@@ -259,7 +255,7 @@ async fn delete(
     // Update study last_modification field
     study.update_last_modified(conn).await?;
 
-    Ok(HttpResponse::NoContent().finish())
+    Ok(axum::http::StatusCode::NO_CONTENT)
 }
 
 /// This structure is used by the patch endpoint to patch a study
@@ -284,6 +280,7 @@ impl From<ScenarioPatchForm> for Scenario {
 
 /// Update a scenario
 #[utoipa::path(
+    patch, path = "",
     tag = "scenarios",
     params(ProjectIdParam, StudyIdParam, ScenarioIdParam),
     request_body = ScenarioPatchForm,
@@ -292,14 +289,14 @@ impl From<ScenarioPatchForm> for Scenario {
         (status = 404, body = InternalError, description = "The requested scenario was not found"),
     )
 )]
-#[patch("")]
 async fn patch(
-    data: Json<ScenarioPatchForm>,
-    path: Path<(i64, i64, i64)>,
-    db_pool: Data<DbConnectionPool>,
+    Path((project_id, study_id, scenario_id)): Path<(i64, i64, i64)>,
+    State(AppState {
+        db_pool_v1: db_pool,
+        ..
+    }): State<AppState>,
+    Json(data): Json<ScenarioPatchForm>,
 ) -> Result<Json<ScenarioResponse>> {
-    let (project_id, study_id, scenario_id) = path.into_inner();
-
     let mut conn = db_pool.get().await?;
 
     let (project, study, scenario) = conn
@@ -310,7 +307,7 @@ async fn patch(
                     .await
                     .unwrap();
                 // Update the scenario
-                let scenario: Scenario = data.into_inner().into();
+                let scenario: Scenario = data.into();
                 let scenario = match scenario.update_conn(conn, scenario_id).await? {
                     Some(scenario) => scenario,
                     None => return Err(ScenarioError::NotFound { scenario_id }.into()),
@@ -331,6 +328,7 @@ async fn patch(
 
 /// Return a specific scenario
 #[utoipa::path(
+    get, path = "",
     tag = "scenarios",
     params(ProjectIdParam, StudyIdParam, ScenarioIdParam),
     responses(
@@ -338,13 +336,13 @@ async fn patch(
         (status = 404, body = InternalError, description = "The requested scenario was not found"),
     )
 )]
-#[get("")]
 async fn get(
-    db_pool: Data<DbConnectionPool>,
-    path: Path<(i64, i64, i64)>,
+    State(AppState {
+        db_pool_v1: db_pool,
+        ..
+    }): State<AppState>,
+    Path((project_id, study_id, scenario_id)): Path<(i64, i64, i64)>,
 ) -> Result<Json<ScenarioResponse>> {
-    let (project_id, study_id, scenario_id) = path.into_inner();
-    let db_pool = db_pool.into_inner();
     let (project, study) = check_project_study(db_pool.clone(), project_id, study_id).await?;
 
     // Return the scenarios
@@ -367,27 +365,29 @@ decl_paginated_response!(
     PaginatedResponseOfScenarioWithCountTrains,
     ScenarioWithCountTrains
 );
+
 /// Return a list of scenarios
 #[utoipa::path(
+    get, path = "",
     tag = "scenarios",
     params(ProjectIdParam, StudyIdParam, PaginationQueryParam, OperationalStudiesOrderingParam),
     responses(
         (status = 200, body = PaginatedResponseOfScenarioWithCountTrains, description = "The list of scenarios"),
     )
 )]
-#[get("")]
 async fn list(
-    db_pool: Data<DbConnectionPool>,
-    pagination_params: Query<PaginationQueryParam>,
-    path: Path<(i64, i64)>,
-    params: Query<OperationalStudiesOrderingParam>,
+    State(AppState {
+        db_pool_v1: db_pool,
+        ..
+    }): State<AppState>,
+    Path((project_id, study_id)): Path<(i64, i64)>,
+    Query(pagination_params): Query<PaginationQueryParam>,
+    Query(params): Query<OperationalStudiesOrderingParam>,
 ) -> Result<Json<PaginatedResponse<ScenarioWithCountTrains>>> {
     let (page, per_page) = pagination_params
         .validate(1000)?
         .warn_page_size(100)
         .unpack();
-    let (project_id, study_id) = path.into_inner();
-    let db_pool = db_pool.into_inner();
     let _ = check_project_study(db_pool.clone(), project_id, study_id).await?;
     let ordering = params.ordering.clone();
     let scenarios =
@@ -398,150 +398,7 @@ async fn list(
 
 #[cfg(test)]
 mod test {
-    use actix_http::Request;
-    use actix_web::http::StatusCode;
-    use actix_web::test::call_service;
-    use actix_web::test::read_body_json;
-    use actix_web::test::TestRequest;
-    use rstest::rstest;
-    use serde_json::json;
-    use std::sync::Arc;
-
-    use super::*;
-    use crate::fixtures::tests::db_pool;
-    use crate::fixtures::tests::empty_infra;
-    use crate::fixtures::tests::scenario_fixture_set;
-    use crate::fixtures::tests::study_fixture_set;
-    use crate::fixtures::tests::ScenarioFixtureSet;
-    use crate::fixtures::tests::StudyFixtureSet;
-    use crate::fixtures::tests::TestFixture;
-    use crate::modelsv2::Infra;
-    use crate::views::tests::create_test_service;
-
-    pub fn easy_scenario_url(scenario_fixture_set: &ScenarioFixtureSet, detail: bool) -> String {
-        scenario_url(
-            scenario_fixture_set.project.id(),
-            scenario_fixture_set.study.id(),
-            detail.then_some(scenario_fixture_set.scenario.id()),
-        )
-    }
-
-    pub fn scenario_url(project_id: i64, study_id: i64, scenario_id: Option<i64>) -> String {
-        format!(
-            "/projects/{}/studies/{}/scenarios/{}",
-            project_id,
-            study_id,
-            scenario_id.map_or_else(|| "".to_owned(), |v| v.to_string())
-        )
-    }
-
-    fn delete_scenario_request(scenario_fixture_set: &ScenarioFixtureSet) -> Request {
-        let url = easy_scenario_url(scenario_fixture_set, true);
-        TestRequest::delete().uri(url.as_str()).to_request()
-    }
-
-    #[rstest]
-    async fn scenario_create(
-        db_pool: Arc<DbConnectionPool>,
-        #[future] study_fixture_set: StudyFixtureSet,
-        #[future] empty_infra: TestFixture<Infra>,
-    ) {
-        let app = create_test_service().await;
-        let StudyFixtureSet { study, project } = study_fixture_set.await;
-        let empty_infra = empty_infra.await;
-
-        let request = TestRequest::post()
-            .uri(scenario_url(project.id(), study.id(), None).as_str())
-            .set_json(json!({ "name": "scenario_test" ,"infra_id": empty_infra.id() }))
-            .to_request();
-        let response = call_service(&app, request).await;
-        assert_eq!(response.status(), StatusCode::OK);
-
-        let scenario_response: ScenarioResponse = read_body_json(response).await;
-        let scenario = TestFixture::<Scenario>::new(scenario_response.scenario, db_pool);
-        assert_eq!(scenario.model.name.clone().unwrap(), "scenario_test");
-    }
-
-    #[rstest]
-    async fn scenario_delete() {
-        let app = create_test_service().await;
-        let scenario_fixture_set = scenario_fixture_set().await;
-
-        let response = call_service(&app, delete_scenario_request(&scenario_fixture_set)).await;
-        assert_eq!(response.status(), StatusCode::NO_CONTENT);
-
-        let response = call_service(&app, delete_scenario_request(&scenario_fixture_set)).await;
-        assert_eq!(response.status(), StatusCode::NOT_FOUND);
-    }
-
-    #[rstest]
-    async fn scenario_list() {
-        let app = create_test_service().await;
-        let scenario_fixture_set = scenario_fixture_set().await;
-
-        let url = easy_scenario_url(&scenario_fixture_set, false);
-        let req = TestRequest::get().uri(url.as_str()).to_request();
-        let response = call_service(&app, req).await;
-
-        assert_eq!(response.status(), StatusCode::OK);
-    }
-
-    #[rstest]
-    async fn scenario_get() {
-        let app = create_test_service().await;
-        let scenario_fixture_set = scenario_fixture_set().await;
-
-        let url = easy_scenario_url(&scenario_fixture_set, true);
-        let url_project_not_found = scenario_url(
-            scenario_fixture_set.project.id() + 1,
-            scenario_fixture_set.study.id(),
-            Some(scenario_fixture_set.scenario.id()),
-        );
-        let url_study_not_found = scenario_url(
-            scenario_fixture_set.project.id(),
-            scenario_fixture_set.study.id() + 1,
-            Some(scenario_fixture_set.scenario.id()),
-        );
-        let response = call_service(
-            &app,
-            TestRequest::get()
-                .uri(url_project_not_found.as_str())
-                .to_request(),
-        )
-        .await;
-        assert_eq!(response.status(), StatusCode::NOT_FOUND);
-        let response = call_service(
-            &app,
-            TestRequest::get()
-                .uri(url_study_not_found.as_str())
-                .to_request(),
-        )
-        .await;
-        assert_eq!(response.status(), StatusCode::NOT_FOUND);
-        let response = call_service(&app, TestRequest::get().uri(url.as_str()).to_request()).await;
-        assert_eq!(response.status(), StatusCode::OK);
-        let response =
-            call_service(&app, TestRequest::delete().uri(url.as_str()).to_request()).await;
-        assert_eq!(response.status(), StatusCode::NO_CONTENT);
-        let response = call_service(&app, TestRequest::get().uri(url.as_str()).to_request()).await;
-        assert_eq!(response.status(), StatusCode::NOT_FOUND);
-    }
-
-    #[rstest]
-    async fn scenario_patch() {
-        let app = create_test_service().await;
-        let scenario_fixture_set = scenario_fixture_set().await;
-
-        let url = easy_scenario_url(&scenario_fixture_set, true);
-        let new_name = scenario_fixture_set.scenario.model.name.clone().unwrap() + "_patched";
-        let req = TestRequest::patch()
-            .uri(url.as_str())
-            .set_json(json!({ "name": new_name }))
-            .to_request();
-        let response = call_service(&app, req).await;
-        assert_eq!(response.status(), StatusCode::OK);
-
-        let scenario: ScenarioWithDetails = read_body_json(response).await;
-        assert_eq!(scenario.scenario.name.unwrap(), new_name);
-    }
+    // There used to be tests here. They were removed because this TSV1 module will be removed soon.
+    // These tests were using actix's test API, but we switched to axum, so they were removed instead
+    // of being ported.
 }

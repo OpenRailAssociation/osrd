@@ -7,7 +7,7 @@ info:
     url: https://www.gnu.org/licenses/lgpl-3.0.html
   version: 0.1.0
 paths:
-  /documents/:
+  /documents:
     post:
       tags:
       - documents
@@ -81,7 +81,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalError'
-  /electrical_profile_set/:
+  /electrical_profile_set:
     get:
       tags:
       - electrical_profiles
@@ -118,7 +118,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ElectricalProfileSet'
-  /electrical_profile_set/{electrical_profile_set_id}/:
+  /electrical_profile_set/{electrical_profile_set_id}:
     get:
       tags:
       - electrical_profiles
@@ -163,7 +163,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalError'
-  /electrical_profile_set/{electrical_profile_set_id}/level_order/:
+  /electrical_profile_set/{electrical_profile_set_id}/level_order:
     get:
       tags:
       - electrical_profiles
@@ -208,7 +208,7 @@ paths:
             text/plain:
               schema:
                 type: string
-  /infra/:
+  /infra:
     get:
       tags:
       - infra
@@ -374,7 +374,7 @@ paths:
               - 2500.5V
         '404':
           description: The infra was not found
-  /infra/{infra_id}/:
+  /infra/{infra_id}:
     get:
       tags:
       - infra
@@ -522,7 +522,7 @@ paths:
                   type: array
                   items:
                     type: string
-  /infra/{infra_id}/auto_fixes/:
+  /infra/{infra_id}/auto_fixes:
     get:
       tags:
       - infra
@@ -650,7 +650,7 @@ paths:
                         properties:
                           information:
                             $ref: '#/components/schemas/InfraError'
-  /infra/{infra_id}/lines/{line_code}/bbox/:
+  /infra/{infra_id}/lines/{line_code}/bbox:
     get:
       tags:
       - infra
@@ -752,7 +752,7 @@ paths:
           description: Duplicate object ids provided
         '404':
           description: Object ID or infra ID invalid
-  /infra/{infra_id}/pathfinding/:
+  /infra/{infra_id}/pathfinding:
     post:
       tags:
       - infra
@@ -1092,7 +1092,7 @@ paths:
               - 2500.5V
         '404':
           description: The infra was not found
-  /layers/layer/{layer_slug}/mvt/{view_slug}/:
+  /layers/layer/{layer_slug}/mvt/{view_slug}:
     get:
       tags:
       - layers
@@ -1160,7 +1160,7 @@ paths:
                     - http://localhost:7070/tile/track_sections/geo/{z}/{x}/{y}/?infra=1
                   type:
                     type: string
-  /layers/tile/{layer_slug}/{view_slug}/{z}/{x}/{y}/:
+  /layers/tile/{layer_slug}/{view_slug}/{z}/{x}/{y}:
     get:
       tags:
       - layers
@@ -1211,7 +1211,7 @@ paths:
               schema:
                 type: string
                 format: binary
-  /light_rolling_stock/:
+  /light_rolling_stock:
     get:
       tags:
       - rolling_stock
@@ -1241,7 +1241,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PaginatedResponseOfLightRollingStockWithLiveries'
-  /light_rolling_stock/name/{rolling_stock_name}/:
+  /light_rolling_stock/name/{rolling_stock_name}:
     get:
       tags:
       - rolling_stock
@@ -1259,7 +1259,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/LightRollingStockWithLiveries'
-  /light_rolling_stock/{rolling_stock_id}/:
+  /light_rolling_stock/{rolling_stock_id}:
     get:
       tags:
       - rolling_stock
@@ -1278,7 +1278,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/LightRollingStockWithLiveries'
-  /pathfinding/:
+  /pathfinding:
     post:
       tags:
       - pathfinding
@@ -1296,7 +1296,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PathResponse'
-  /pathfinding/{pathfinding_id}/:
+  /pathfinding/{pathfinding_id}:
     get:
       tags:
       - pathfinding
@@ -1408,7 +1408,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ElectrificationsOnPathResponse'
-  /projects/:
+  /projects:
     get:
       tags:
       - projects
@@ -1469,7 +1469,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProjectWithStudies'
-  /projects/{project_id}/:
+  /projects/{project_id}:
     get:
       tags:
       - projects
@@ -1548,7 +1548,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalError'
-  /projects/{project_id}/studies/:
+  /projects/{project_id}/studies:
     get:
       tags:
       - studies
@@ -1623,7 +1623,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/StudyResponse'
-  /projects/{project_id}/studies/{study_id}/:
+  /projects/{project_id}/studies/{study_id}:
     get:
       tags:
       - studies
@@ -1720,7 +1720,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalError'
-  /projects/{project_id}/studies/{study_id}/scenarios/:
+  /projects/{project_id}/studies/{study_id}/scenarios:
     get:
       tags:
       - scenarios
@@ -1799,7 +1799,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ScenarioResponse'
-  /projects/{project_id}/studies/{study_id}/scenarios/{scenario_id}/:
+  /projects/{project_id}/studies/{study_id}/scenarios/{scenario_id}:
     get:
       tags:
       - scenarios
@@ -1913,7 +1913,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalError'
-  /rolling_stock/:
+  /rolling_stock:
     post:
       tags:
       - rolling_stock
@@ -1937,7 +1937,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RollingStock'
-  /rolling_stock/name/{rolling_stock_name}/:
+  /rolling_stock/name/{rolling_stock_name}:
     get:
       tags:
       - rolling_stock
@@ -1955,7 +1955,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RollingStockWithLiveries'
-  /rolling_stock/power_restrictions/:
+  /rolling_stock/power_restrictions:
     get:
       tags:
       - rolling_stock
@@ -1969,7 +1969,7 @@ paths:
                 type: array
                 items:
                   type: string
-  /rolling_stock/{rolling_stock_id}/:
+  /rolling_stock/{rolling_stock_id}:
     get:
       tags:
       - rolling_stock
@@ -2040,7 +2040,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RollingStockWithLiveries'
-  /rolling_stock/{rolling_stock_id}/livery/:
+  /rolling_stock/{rolling_stock_id}/livery:
     post:
       tags:
       - rolling_stock
@@ -2068,7 +2068,7 @@ paths:
                 $ref: '#/components/schemas/RollingStockLivery'
         '404':
           description: The requested rolling stock was not found
-  /rolling_stock/{rolling_stock_id}/locked/:
+  /rolling_stock/{rolling_stock_id}/locked:
     patch:
       tags:
       - rolling_stock
@@ -2171,7 +2171,7 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/SearchResultItem'
-  /single_simulation/:
+  /single_simulation:
     post:
       summary: Runs a simulation with a single train, does not write anything to the database
       requestBody:
@@ -2187,7 +2187,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SingleSimulationResponse'
-  /speed_limit_tags/:
+  /speed_limit_tags:
     get:
       tags:
       - speed_limit_tags
@@ -2243,7 +2243,7 @@ paths:
           description: Atlas image of config
         '404':
           description: Signaling system not found
-  /stdcm/:
+  /stdcm:
     post:
       tags:
       - stdcm
@@ -2338,7 +2338,7 @@ paths:
                     $ref: '#/components/schemas/PathfindingPayload'
                   simulation:
                     $ref: '#/components/schemas/SimulationReport'
-  /timetable/{id}/:
+  /timetable/{id}:
     get:
       tags:
       - timetable
@@ -2376,7 +2376,6 @@ paths:
           format: int64
           minimum: 0
       requestBody:
-        description: ''
         content:
           application/json:
             schema:
@@ -2417,7 +2416,7 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Conflict'
-  /train_schedule/:
+  /train_schedule:
     delete:
       tags:
       - train_schedule
@@ -2526,7 +2525,7 @@ paths:
                 items:
                   type: integer
                   format: int64
-  /train_schedule/{id}/:
+  /train_schedule/{id}:
     get:
       tags:
       - train_schedule
@@ -2589,7 +2588,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SimulationReport'
-  /v2/infra/{infra_id}/path_properties/:
+  /v2/infra/{infra_id}/path_properties:
     post:
       tags:
       - pathfindingv2
@@ -2623,7 +2622,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PathProperties'
-  /v2/infra/{infra_id}/pathfinding/blocks/:
+  /v2/infra/{infra_id}/pathfinding/blocks:
     post:
       tags:
       - pathfindingv2
@@ -2649,7 +2648,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PathfindingResult'
-  /v2/projects/{project_id}/studies/{study_id}/scenarios/:
+  /v2/projects/{project_id}/studies/{study_id}/scenarios:
     get:
       tags:
       - scenariosv2
@@ -2739,7 +2738,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ScenarioResponseV2'
-  /v2/projects/{project_id}/studies/{study_id}/scenarios/{scenario_id}/:
+  /v2/projects/{project_id}/studies/{study_id}/scenarios/{scenario_id}:
     get:
       tags:
       - scenariosv2
@@ -2853,7 +2852,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalError'
-  /v2/timetable/:
+  /v2/timetable:
     get:
       tags:
       - timetablev2
@@ -2911,7 +2910,7 @@ paths:
                 $ref: '#/components/schemas/TimetableResult'
         '404':
           description: Timetable not found
-  /v2/timetable/{id}/:
+  /v2/timetable/{id}:
     get:
       tags:
       - timetablev2
@@ -2946,7 +2945,6 @@ paths:
           type: integer
           format: int64
       requestBody:
-        description: ''
         content:
           application/json:
             schema:
@@ -3006,7 +3004,7 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/ConflictV2'
-  /v2/timetable/{id}/stdcm/:
+  /v2/timetable/{id}/stdcm:
     post:
       tags:
       - stdcm
@@ -3170,7 +3168,7 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/TrainScheduleResult'
-  /v2/train_schedule/:
+  /v2/train_schedule:
     post:
       tags:
       - train_schedulev2
@@ -3281,7 +3279,7 @@ paths:
                 type: object
                 additionalProperties:
                   $ref: '#/components/schemas/SimulationSummaryResult'
-  /v2/train_schedule/{id}/:
+  /v2/train_schedule/{id}:
     get:
       tags:
       - train_schedulev2
@@ -3327,7 +3325,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TrainScheduleResult'
-  /v2/train_schedule/{id}/path/:
+  /v2/train_schedule/{id}/path:
     get:
       tags:
       - train_schedulev2
@@ -3400,7 +3398,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Version'
-  /work_schedules/:
+  /work_schedules:
     post:
       tags:
       - work_schedules
@@ -4402,6 +4400,7 @@ components:
       - $ref: '#/components/schemas/EditoastRollingStockErrorCannotCreateCompoundImage'
       - $ref: '#/components/schemas/EditoastRollingStockErrorCannotReadImage'
       - $ref: '#/components/schemas/EditoastRollingStockErrorKeyNotFound'
+      - $ref: '#/components/schemas/EditoastRollingStockErrorLiveryMultipartError'
       - $ref: '#/components/schemas/EditoastRollingStockErrorNameAlreadyUsed'
       - $ref: '#/components/schemas/EditoastRollingStockErrorRollingStockIsLocked'
       - $ref: '#/components/schemas/EditoastRollingStockErrorRollingStockIsUsed'
@@ -5347,6 +5346,25 @@ components:
           type: string
           enum:
           - editoast:rollingstocks:KeyNotFound
+    EditoastRollingStockErrorLiveryMultipartError:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 400
+        type:
+          type: string
+          enum:
+          - editoast:rollingstocks:LiveryMultipartError
     EditoastRollingStockErrorNameAlreadyUsed:
       type: object
       required:

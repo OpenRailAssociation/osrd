@@ -55,7 +55,7 @@ pub fn expand_editoast_error(input: &DeriveInput) -> Result<TokenStream> {
         #error_definitions
 
         impl crate::error::EditoastError for #name {
-            fn get_status(&self) -> actix_web::http::StatusCode {
+            fn get_status(&self) -> axum::http::StatusCode {
                 #get_statuses
             }
 
@@ -167,9 +167,9 @@ fn expand_get_statuses(variants: &[ParsedVariant], default_status: u16) -> Resul
 
     let statuses = variants.iter().map(|variant| {
         let Some(status) = variant.params.status.as_ref() else {
-            return quote! { actix_web::http::StatusCode::from_u16(#default_status).unwrap() };
+            return quote! { axum::http::StatusCode::from_u16(#default_status).unwrap() };
         };
-        quote! { actix_web::http::StatusCode::try_from(#status).expect("EditoastError: invalid status expression") }
+        quote! { axum::http::StatusCode::try_from(#status).expect("EditoastError: invalid status expression") }
     });
 
     Ok(quote! {
