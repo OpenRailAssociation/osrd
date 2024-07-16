@@ -7801,41 +7801,7 @@ components:
       description: JSON Patch single patch operation
     PathItem:
       allOf:
-      - oneOf:
-        - $ref: '#/components/schemas/TrackOffset'
-        - type: object
-          required:
-          - operational_point
-          properties:
-            operational_point:
-              type: string
-              maxLength: 255
-              minLength: 1
-        - type: object
-          required:
-          - trigram
-          properties:
-            secondary_code:
-              type: string
-              description: An optional secondary code to identify a more specific location
-              nullable: true
-            trigram:
-              type: string
-              minLength: 1
-        - type: object
-          required:
-          - uic
-          properties:
-            secondary_code:
-              type: string
-              description: An optional secondary code to identify a more specific location
-              nullable: true
-            uic:
-              type: integer
-              format: int32
-              description: The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point
-              minimum: 0
-        description: The location of a path waypoint
+      - $ref: '#/components/schemas/PathItemLocation'
       - type: object
         required:
         - id
@@ -8133,41 +8099,7 @@ components:
         path_items:
           type: array
           items:
-            oneOf:
-            - $ref: '#/components/schemas/TrackOffset'
-            - type: object
-              required:
-              - operational_point
-              properties:
-                operational_point:
-                  type: string
-                  maxLength: 255
-                  minLength: 1
-            - type: object
-              required:
-              - trigram
-              properties:
-                secondary_code:
-                  type: string
-                  description: An optional secondary code to identify a more specific location
-                  nullable: true
-                trigram:
-                  type: string
-                  minLength: 1
-            - type: object
-              required:
-              - uic
-              properties:
-                secondary_code:
-                  type: string
-                  description: An optional secondary code to identify a more specific location
-                  nullable: true
-                uic:
-                  type: integer
-                  format: int32
-                  description: The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point
-                  minimum: 0
-            description: The location of a path waypoint
+            $ref: '#/components/schemas/PathItemLocation'
           description: List of waypoints given to the pathfinding
         rolling_stock_is_thermal:
           type: boolean
@@ -8479,41 +8411,7 @@ components:
             type: integer
             minimum: 0
           path_item:
-            oneOf:
-            - $ref: '#/components/schemas/TrackOffset'
-            - type: object
-              required:
-              - operational_point
-              properties:
-                operational_point:
-                  type: string
-                  maxLength: 255
-                  minLength: 1
-            - type: object
-              required:
-              - trigram
-              properties:
-                secondary_code:
-                  type: string
-                  description: An optional secondary code to identify a more specific location
-                  nullable: true
-                trigram:
-                  type: string
-                  minLength: 1
-            - type: object
-              required:
-              - uic
-              properties:
-                secondary_code:
-                  type: string
-                  description: An optional secondary code to identify a more specific location
-                  nullable: true
-                uic:
-                  type: integer
-                  format: int32
-                  description: The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point
-                  minimum: 0
-            description: The location of a path waypoint
+            $ref: '#/components/schemas/PathItemLocation'
           status:
             type: string
             enum:
@@ -11962,41 +11860,7 @@ components:
           type: array
           items:
             allOf:
-            - oneOf:
-              - $ref: '#/components/schemas/TrackOffset'
-              - type: object
-                required:
-                - operational_point
-                properties:
-                  operational_point:
-                    type: string
-                    maxLength: 255
-                    minLength: 1
-              - type: object
-                required:
-                - trigram
-                properties:
-                  secondary_code:
-                    type: string
-                    description: An optional secondary code to identify a more specific location
-                    nullable: true
-                  trigram:
-                    type: string
-                    minLength: 1
-              - type: object
-                required:
-                - uic
-                properties:
-                  secondary_code:
-                    type: string
-                    description: An optional secondary code to identify a more specific location
-                    nullable: true
-                  uic:
-                    type: integer
-                    format: int32
-                    description: The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point
-                    minimum: 0
-              description: The location of a path waypoint
+            - $ref: '#/components/schemas/PathItemLocation'
             - type: object
               required:
               - id
