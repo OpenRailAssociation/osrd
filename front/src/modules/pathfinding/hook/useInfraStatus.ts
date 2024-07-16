@@ -21,6 +21,7 @@ export default function useInfraStatus() {
     {
       refetchOnMountOrArgChange: true,
       pollingInterval: !isInfraLoaded ? 1000 : undefined,
+      skip: !infraId,
     }
   );
 
