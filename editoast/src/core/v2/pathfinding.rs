@@ -77,7 +77,6 @@ pub enum PathfindingResult {
     },
     InvalidPathItem {
         index: usize,
-        #[schema(inline)]
         path_item: PathItemLocation,
     },
     NotEnoughPathItems,

@@ -56,7 +56,6 @@ struct PathfindingInput {
     /// List of supported signaling systems
     rolling_stock_supported_signaling_systems: Vec<String>,
     /// List of waypoints given to the pathfinding
-    #[schema(inline)]
     path_items: Vec<PathItemLocation>,
 }
 

@@ -3453,6 +3453,22 @@ export type PathfindingResultSuccess = {
   /** Path description as track ranges */
   track_section_ranges: TrackRange[];
 };
+export type PathItemLocation =
+  | TrackOffset
+  | {
+      operational_point: string;
+    }
+  | {
+      /** An optional secondary code to identify a more specific location */
+      secondary_code?: string | null;
+      trigram: string;
+    }
+  | {
+      /** An optional secondary code to identify a more specific location */
+      secondary_code?: string | null;
+      /** The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point */
+      uic: number;
+    };
 export type PathfindingResult =
   | (PathfindingResultSuccess & {
       status: 'success';
@@ -3496,23 +3512,7 @@ export type PathfindingResult =
     }
   | {
       index: number;
-      /** The location of a path waypoint */
-      path_item:
-        | TrackOffset
-        | {
-            operational_point: string;
-          }
-        | {
-            /** An optional secondary code to identify a more specific location */
-            secondary_code?: string | null;
-            trigram: string;
-          }
-        | {
-            /** An optional secondary code to identify a more specific location */
-            secondary_code?: string | null;
-            /** The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point */
-            uic: number;
-          };
+      path_item: PathItemLocation;
       status: 'invalid_path_item';
     }
   | {
@@ -3528,23 +3528,7 @@ export type PathfindingResult =
     };
 export type PathfindingInputV2 = {
   /** List of waypoints given to the pathfinding */
-  path_items: (
-    | TrackOffset
-    | {
-        operational_point: string;
-      }
-    | {
-        /** An optional secondary code to identify a more specific location */
-        secondary_code?: string | null;
-        trigram: string;
-      }
-    | {
-        /** An optional secondary code to identify a more specific location */
-        secondary_code?: string | null;
-        /** The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point */
-        uic: number;
-      }
-  )[];
+  path_items: PathItemLocation[];
   /** Can the rolling stock run on non-electrified tracks */
   rolling_stock_is_thermal: boolean;
   rolling_stock_loading_gauge: LoadingGaugeType;
@@ -3666,22 +3650,6 @@ export type SimulationResponse =
       status: 'simulation_failed';
     };
 export type Comfort = 'STANDARD' | 'AIR_CONDITIONING' | 'HEATING';
-export type PathItemLocation =
-  | TrackOffset
-  | {
-      operational_point: string;
-    }
-  | {
-      /** An optional secondary code to identify a more specific location */
-      secondary_code?: string | null;
-      trigram: string;
-    }
-  | {
-      /** An optional secondary code to identify a more specific location */
-      secondary_code?: string | null;
-      /** The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point */
-      uic: number;
-    };
 export type StepTimingData = {
   /** Time at which the train should arrive at the location */
   arrival_time: string;
@@ -3711,23 +3679,7 @@ export type TrainScheduleBase = {
   options?: {
     use_electrical_profiles?: boolean;
   };
-  path: ((
-    | TrackOffset
-    | {
-        operational_point: string;
-      }
-    | {
-        /** An optional secondary code to identify a more specific location */
-        secondary_code?: string | null;
-        trigram: string;
-      }
-    | {
-        /** An optional secondary code to identify a more specific location */
-        secondary_code?: string | null;
-        /** The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point */
-        uic: number;
-      }
-  ) & {
+  path: (PathItemLocation & {
     /** Metadata given to mark a point as wishing to be deleted by the user.
         It's useful for soft deleting the point (waiting to fix / remove all references)
         If true, the train schedule is consider as invalid and must be edited */

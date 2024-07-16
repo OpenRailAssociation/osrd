@@ -24,7 +24,6 @@ pub struct PathItem {
     #[serde(default)]
     pub deleted: bool,
     #[serde(flatten)]
-    #[schema(inline)]
     pub location: PathItemLocation,
 }
 
