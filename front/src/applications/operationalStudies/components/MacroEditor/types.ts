@@ -14,7 +14,7 @@ export type Node = {
   positionX: number;
   positionY: number;
   ports: Port[];
-  transitions: unknown[];
+  transitions: Transition[];
   connections: unknown[];
   resourceId: number;
   /** Number of tracks where train can stop */
@@ -32,6 +32,13 @@ export type Port = {
   positionIndex: number;
   positionAlignment: PortAlignment;
   trainrunSectionId: number;
+};
+
+export type Transition = {
+  id: number;
+  port1Id: number;
+  port2Id: number;
+  isNonStopTransit: boolean;
 };
 
 export enum PortAlignment {
