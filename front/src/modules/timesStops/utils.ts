@@ -16,17 +16,13 @@ export const formatSuggestedViasToRowVias = (
 ): PathWaypointColumn[] => {
   const formattedOps = [...operationalPoints];
   const origin = pathSteps[0];
-  if ('uic' in origin && 'ch' in origin) {
-    const originIndexInOps = operationalPoints.findIndex(
-      (op) => op.uic === origin.uic && op.ch === origin.ch && op.name === origin.name
-    );
-    // If the origin is in the ops and isn't the first operational point, we need to move it to the first position
-    if (originIndexInOps !== -1) {
-      [formattedOps[0], formattedOps[originIndexInOps]] = [
-        formattedOps[originIndexInOps],
-        formattedOps[0],
-      ];
-    }
+  const originIndexInOps = operationalPoints.findIndex((op) => matchPathStepAndOp(origin, op));
+  // If the origin is in the ops and isn't the first operational point, we need to move it to the first position
+  if (originIndexInOps !== -1) {
+    [formattedOps[0], formattedOps[originIndexInOps]] = [
+      formattedOps[originIndexInOps],
+      formattedOps[0],
+    ];
   }
   return formattedOps.map((op, i) => {
     const pathStep = pathSteps.find((step) => matchPathStepAndOp(step, op));
