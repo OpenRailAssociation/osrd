@@ -26,32 +26,19 @@ pub struct GeoJsonAndData {
     pub data: JsonValue,
 }
 
-#[derive(Debug)]
-pub struct GeoPoint {
-    x: u64,
-    y: u64,
-    z: u64,
-}
-
-impl GeoPoint {
-    pub fn new(x: u64, y: u64, z: u64) -> Self {
-        Self { x, y, z }
-    }
-}
-
 impl GeoJsonAndData {
     pub async fn get_records(
         conn: &mut DbConnection,
         layer: &Layer,
         view: &View,
         infra: i64,
-        geo_point: &GeoPoint,
+        (x, y, z): (u64, u64, u64),
     ) -> Result<Vec<GeoJsonAndData>, editoast_models::DatabaseError> {
         let geo_json_query = get_geo_json_sql_query(&layer.table_name, view);
         let records = sql_query(geo_json_query)
-            .bind::<Integer, _>(geo_point.z as i32)
-            .bind::<Integer, _>(geo_point.x as i32)
-            .bind::<Integer, _>(geo_point.y as i32)
+            .bind::<Integer, _>(z as i32)
+            .bind::<Integer, _>(x as i32)
+            .bind::<Integer, _>(y as i32)
             .bind::<Integer, _>(infra as i32)
             .get_results::<GeoJsonAndData>(conn)
             .await?;
