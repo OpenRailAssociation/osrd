@@ -1,27 +1,11 @@
 .scenario {
   --navbar-height: 4.0625rem;
   --content-height: calc(100vh - var(--navbar-height) - 2rem);
-  &.scenario-v2 {
-    height: calc(100vh - var(--navbar-height));
-  }
   position: relative;
   padding: 0.5rem;
   .scenario-container {
     margin: 0;
-    &.scenario-container-v2 {
-      height: 100%;
-      &-tab {
-        height: calc(var(--content-height) - 6rem);
-        .tab-content {
-          height: 95%;
-          .tab-pane {
-            height: 100%;
-          }
-        }
-      }
-    }
   }
-
   @keyframes fadein {
     from {
       opacity: 0;
@@ -38,7 +22,6 @@
     padding-bottom: 0.5rem;
     z-index: 1;
     background-color: var(--coolgray1);
-    width: 100%;
     .timetable-collapse-button {
       display: flex;
       align-items: center;
@@ -79,15 +62,11 @@
   .scenario-sidemenu {
     padding-top: 0.5rem;
     padding-bottom: 0.5rem;
+    display: flex;
+    flex-direction: column;
     .scenario-details {
       display: flex;
       flex-direction: column;
-      &.scenario-details-v2 {
-        flex-direction: row;
-        justify-content: space-between;
-        width: 100%;
-        height: auto;
-      }
       .scenario-details-name {
         display: flex;
         align-items: center;
@@ -133,10 +112,6 @@
       .scenario-details-description {
         overflow: auto;
         height: 4rem;
-        &.scenario-details-description-v2 {
-          height: 5rem;
-          width: 100%;
-        }
         font-size: 0.9rem;
         white-space: break-spaces;
       }
@@ -144,7 +119,7 @@
     .scenario-timetable {
       display: flex;
       flex-direction: column;
-      height: calc(var(--content-height) - 8rem);
+      flex-grow: 1;
       .scenario-timetable-addtrains-buttons {
         display: flex;
         align-items: center;
@@ -503,7 +478,6 @@
       }
     }
   }
-
   .scenario-managetrainschedule {
     position: absolute;
     display: flex;
@@ -527,8 +501,8 @@
     overflow: auto;
     width: 100%;
     height: var(--content-height);
-    &.scenario-results-v2 {
-      height: 100%;
-    }
+  }
+  .macro-container {
+    height: 90%;
   }
 }
