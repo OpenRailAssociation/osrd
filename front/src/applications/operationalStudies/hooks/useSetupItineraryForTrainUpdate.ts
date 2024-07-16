@@ -128,12 +128,12 @@ const useSetupItineraryForTrainUpdate = (
 
               const findCorrespondingMargin = (
                 stepId: string,
+                stepIndex: number,
                 margins: { boundaries: string[]; values: string[] }
               ) => {
-                if (stepIndex === updatedPathSteps.length - 1) return undefined;
-
                 // The first pathStep will never have its id in boundaries
-                if (stepIndex === 0) return margins.values[0];
+                if (stepIndex === 0)
+                  return margins.values[0] === 'none' ? undefined : margins.values[0];
 
                 const marginIndex = margins.boundaries.findIndex(
                   (boundaryId) => boundaryId === stepId
@@ -143,8 +143,12 @@ const useSetupItineraryForTrainUpdate = (
               };
 
               if (trainSchedule.margins) {
-                updatedPathSteps.forEach((step) => {
-                  step.theoreticalMargin = findCorrespondingMargin(step.id, trainSchedule.margins!);
+                updatedPathSteps.forEach((step, index) => {
+                  step.theoreticalMargin = findCorrespondingMargin(
+                    step.id,
+                    index,
+                    trainSchedule.margins!
+                  );
                 });
               }
 
