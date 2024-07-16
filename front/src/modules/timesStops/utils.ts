@@ -28,7 +28,8 @@ export const formatSuggestedViasToRowVias = (
   }
   return formattedOps.map((op, i) => {
     const pathStep = pathSteps.find((step) => matchPathStepAndOp(step, op));
-    const { arrival, onStopSignal, name, stopFor, theoreticalMargin } = pathStep || op;
+    const { name } = pathStep || op;
+    const { arrival, onStopSignal, stopFor, theoreticalMargin } = pathStep || {};
 
     const isMarginValid = theoreticalMargin ? marginRegExValidation.test(theoreticalMargin) : true;
 
