@@ -25,7 +25,6 @@ use crate::map::MapLayers;
 use crate::map::Tile;
 use crate::modelsv2::layers::geo_json_and_data::create_and_fill_mvt_tile;
 use crate::modelsv2::layers::geo_json_and_data::GeoJsonAndData;
-use crate::modelsv2::layers::geo_json_and_data::GeoPoint;
 use crate::RedisClient;
 
 crate::routes! {
@@ -202,8 +201,7 @@ async fn cache_and_get_mvt_tile(
     }
 
     let conn = &mut db_pool.get().await?;
-    let records =
-        GeoJsonAndData::get_records(conn, layer, view, infra, &GeoPoint::new(z, x, y)).await?;
+    let records = GeoJsonAndData::get_records(conn, layer, view, infra, (x, y, z)).await?;
 
     let mvt_bytes: Vec<u8> = create_and_fill_mvt_tile(layer_slug, records)
         .to_bytes()
