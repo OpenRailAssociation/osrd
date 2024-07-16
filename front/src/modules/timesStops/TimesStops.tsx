@@ -111,7 +111,12 @@ const TimesStops = ({ pathProperties, pathSteps = [], startTime }: TimesStopsPro
           setTimesStopsSteps(row);
         } else {
           rowData.isMarginValid = true;
-          if (op.fromRowIndex === 0) rowData.arrival = null;
+          if (op.fromRowIndex === 0) {
+            rowData.arrival = null;
+            // As we put 0% by default for origin's margin, if the user removes a margin without
+            // replacing it to 0% (undefined), we change it to 0%
+            if (!rowData.theoreticalMargin) rowData.theoreticalMargin = '0%';
+          }
           dispatch(upsertViaFromSuggestedOP(rowData as SuggestedOP));
         }
       }}

@@ -255,12 +255,14 @@ export const usePathfindingV2 = (
                     'uic' in step && suggestedOp.uic === step.uic && suggestedOp.ch === step.ch
                 );
 
+                const theoreticalMargin = i === 0 ? '0%' : step.theoreticalMargin;
                 const stopFor = i === pathSteps.length - 1 && !step.stopFor ? '0' : step.stopFor;
 
                 return {
                   ...step,
                   positionOnPath: pathfindingResult.path_item_positions[i],
                   stopFor,
+                  theoreticalMargin,
                   ...(correspondingOp && {
                     name: correspondingOp.name,
                     uic: correspondingOp.uic,
