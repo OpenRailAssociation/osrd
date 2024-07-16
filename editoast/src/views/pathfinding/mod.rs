@@ -4,16 +4,13 @@ mod path_rangemap;
 
 use std::collections::HashMap;
 use std::collections::HashSet;
+use std::sync::Arc;
 
-use actix_web::delete;
-use actix_web::get;
-use actix_web::post;
-use actix_web::put;
-use actix_web::web::Data;
-use actix_web::web::Json;
-use actix_web::web::Path;
-use actix_web::HttpResponse;
-use actix_web::Responder;
+use axum::extract::Json;
+use axum::extract::Path;
+use axum::extract::State;
+use axum::http::StatusCode;
+use axum::response::IntoResponse;
 use chrono::DateTime;
 use chrono::Utc;
 use derivative::Derivative;
@@ -52,6 +49,7 @@ use crate::modelsv2::Infra;
 use crate::modelsv2::OperationalPointModel;
 use crate::modelsv2::Retrieve as RetrieveV2;
 use crate::modelsv2::RollingStockModel;
+use crate::AppState;
 use editoast_models::DbConnection;
 use editoast_models::DbConnectionPool;
 use editoast_schemas::infra::ApplicableDirectionsTrackRange;
@@ -65,10 +63,10 @@ crate::routes! {
             get_pf,
             del_pf,
             update_pf,
-            electrifications::routes(),
-            electrical_profiles::routes(),
+            &electrifications,
+            &electrical_profiles,
         },
-    }
+    },
 }
 
 editoast_common::schemas! {
@@ -420,9 +418,9 @@ impl Pathfinding {
 
 /// Builds a Core pathfinding request, runs it, post-processes the response and stores it in the DB
 async fn call_core_pf_and_save_result(
-    payload: Json<PathfindingRequest>,
-    db_pool: Data<DbConnectionPool>,
-    core: Data<CoreClient>,
+    payload: PathfindingRequest,
+    db_pool: Arc<DbConnectionPool>,
+    core_client: Arc<CoreClient>,
     update_id: Option<i64>,
 ) -> Result<Pathfinding> {
     let conn = &mut db_pool.get().await?;
@@ -433,7 +431,6 @@ async fn call_core_pf_and_save_result(
             return Err(PathfindingError::NotFound { pathfinding_id: id }.into());
         }
     }
-    let payload = payload.into_inner();
     let infra_id = payload.infra;
     let infra = <Infra as RetrieveV2<_>>::retrieve_or_fail(conn, infra_id, || {
         PathfindingError::InfraNotFound { infra_id }
@@ -448,7 +445,7 @@ async fn call_core_pf_and_save_result(
         .with_waypoints(&mut waypoints)
         .with_rolling_stocks(&mut rolling_stocks);
     let steps_duration = payload.steps.iter().map(|step| step.duration).collect();
-    let path_response = path_request.fetch(&core).await?;
+    let path_response = path_request.fetch(&core_client).await?;
     save_core_pathfinding(path_response, conn, infra_id, update_id, steps_duration).await
 }
 
@@ -488,19 +485,22 @@ pub async fn save_core_pathfinding(
 
 /// Run a pathfinding between waypoints and store the resulting path in the DB
 #[utoipa::path(
+    post, path = "",
     tag = "pathfinding",
     request_body = PathfindingRequest,
     responses(
         (status = 201, body = PathResponse, description = "The created path")
     )
 )]
-#[post("")]
 async fn create_pf(
-    payload: Json<PathfindingRequest>,
-    db_pool: Data<DbConnectionPool>,
-    core: Data<CoreClient>,
+    State(AppState {
+        db_pool_v1: db_pool,
+        core_client,
+        ..
+    }): State<AppState>,
+    Json(payload): Json<PathfindingRequest>,
 ) -> Result<Json<PathResponse>> {
-    let pathfinding = call_core_pf_and_save_result(payload, db_pool, core, None).await?;
+    let pathfinding = call_core_pf_and_save_result(payload, db_pool, core_client, None).await?;
     Ok(Json(pathfinding.into()))
 }
 
@@ -512,6 +512,7 @@ struct PathfindingIdParam {
 
 /// Updates an existing path with the result of a new pathfinding run
 #[utoipa::path(
+    put, path = "",
     tag = "pathfinding",
     request_body = PathfindingRequest,
     params(PathfindingIdParam),
@@ -519,33 +520,39 @@ struct PathfindingIdParam {
         (status = 200, body = PathResponse, description = "The updated path"),
     )
 )]
-#[put("")]
 async fn update_pf(
-    params: Path<PathfindingIdParam>,
-    payload: Json<PathfindingRequest>,
-    db_pool: Data<DbConnectionPool>,
-    core: Data<CoreClient>,
+    Path(params): Path<PathfindingIdParam>,
+    State(AppState {
+        db_pool_v1: db_pool,
+        core_client,
+        ..
+    }): State<AppState>,
+    Json(payload): Json<PathfindingRequest>,
 ) -> Result<Json<PathResponse>> {
     let pathfinding =
-        call_core_pf_and_save_result(payload, db_pool, core, Some(params.pathfinding_id)).await?;
+        call_core_pf_and_save_result(payload, db_pool, core_client, Some(params.pathfinding_id))
+            .await?;
     Ok(Json(pathfinding.into()))
 }
 
 /// Retrieves a stored path
 #[utoipa::path(
+    get, path = "",
     tag = "pathfinding",
     params(PathfindingIdParam),
     responses(
         (status = 200, body = PathResponse, description = "The requested path"),
     )
 )]
-#[get("")]
 async fn get_pf(
-    params: Path<PathfindingIdParam>,
-    db_pool: Data<DbConnectionPool>,
+    Path(params): Path<PathfindingIdParam>,
+    State(AppState {
+        db_pool_v1: db_pool,
+        ..
+    }): State<AppState>,
 ) -> Result<Json<PathResponse>> {
     let pathfinding_id = params.pathfinding_id;
-    match Pathfinding::retrieve(db_pool.into_inner(), pathfinding_id).await? {
+    match Pathfinding::retrieve(db_pool, pathfinding_id).await? {
         Some(pf) => Ok(Json(pf.into())),
         None => Err(PathfindingError::NotFound { pathfinding_id }.into()),
     }
@@ -553,20 +560,23 @@ async fn get_pf(
 
 /// Deletes a stored path
 #[utoipa::path(
+    delete, path = "",
     tag = "pathfinding",
     params(PathfindingIdParam),
     responses(
         (status = 204, description = "The path was deleted"),
     )
 )]
-#[delete("")]
 async fn del_pf(
-    params: Path<PathfindingIdParam>,
-    db_pool: Data<DbConnectionPool>,
-) -> Result<impl Responder> {
+    Path(params): Path<PathfindingIdParam>,
+    State(AppState {
+        db_pool_v1: db_pool,
+        ..
+    }): State<AppState>,
+) -> Result<impl IntoResponse> {
     let pathfinding_id = params.pathfinding_id;
-    if Pathfinding::delete(db_pool.into_inner(), pathfinding_id).await? {
-        Ok(HttpResponse::NoContent())
+    if Pathfinding::delete(db_pool, pathfinding_id).await? {
+        Ok(StatusCode::NO_CONTENT)
     } else {
         Err(PathfindingError::NotFound { pathfinding_id }.into())
     }
@@ -596,206 +606,7 @@ fn diesel_linestring_to_geojson(ls: LineString<Point>) -> Geometry {
 
 #[cfg(test)]
 mod test {
-    use actix_http::StatusCode;
-    use actix_web::test::call_service;
-    use actix_web::test::TestRequest;
-    use serde_json::json;
-
-    use crate::assert_response_error_type_match;
-    use crate::assert_status_and_read;
-    use crate::core::mocking::MockingClient;
-    use crate::fixtures::tests::db_pool;
-    use crate::fixtures::tests::empty_infra;
-    use crate::fixtures::tests::named_fast_rolling_stock;
-    use crate::fixtures::tests::pathfinding;
-    use crate::fixtures::tests::small_infra;
-    use crate::fixtures::tests::TestFixture;
-    use crate::models::Pathfinding;
-    use crate::models::Retrieve;
-    use crate::modelsv2::Infra;
-    use crate::views::pathfinding::PathResponse;
-    use crate::views::pathfinding::PathfindingError;
-    use crate::views::tests::create_test_service;
-    use crate::views::tests::create_test_service_with_core_client;
-
-    #[rstest::rstest]
-    async fn test_get_pf(#[future] pathfinding: TestFixture<Pathfinding>) {
-        let pf = &pathfinding.await.model;
-        let app = create_test_service().await;
-        let req = TestRequest::get()
-            .uri(&format!("/pathfinding/{}", pf.id))
-            .to_request();
-        let response = call_service(&app, req).await;
-        let response: PathResponse = assert_status_and_read!(response, StatusCode::OK);
-        let expected_response = PathResponse::from(pf.clone());
-        assert_eq!(response, expected_response);
-    }
-
-    #[actix_web::test]
-    async fn test_get_not_found() {
-        let app = create_test_service().await;
-        let req = TestRequest::get().uri("/pathfinding/666").to_request();
-        let response = call_service(&app, req).await;
-        assert_eq!(response.status(), StatusCode::NOT_FOUND);
-    }
-
-    #[rstest::rstest]
-    async fn test_delete_pf(#[future] pathfinding: TestFixture<Pathfinding>) {
-        let pf = &pathfinding.await.model;
-        let app = create_test_service().await;
-        let req = TestRequest::delete().uri(&format!("/pathfinding/{}", pf.id));
-        let response = call_service(&app, req.to_request()).await;
-        assert_eq!(response.status(), StatusCode::NO_CONTENT);
-        let req = TestRequest::delete().uri(&format!("/pathfinding/{}", pf.id));
-        let response = call_service(&app, req.to_request()).await;
-        assert_eq!(response.status(), StatusCode::NOT_FOUND);
-    }
-
-    #[actix_web::test]
-    async fn test_delete_not_found() {
-        let app = create_test_service().await;
-        let req = TestRequest::delete().uri("/pathfinding/666").to_request();
-        let response = call_service(&app, req).await;
-        assert_eq!(response.status(), StatusCode::NOT_FOUND);
-    }
-
-    #[rstest::rstest]
-    async fn test_post_ok() {
-        // GIVEN
-        // Avoid `Drop`ping the fixture
-        let rs = &named_fast_rolling_stock("fast_rolling_stock_test_post_ok", db_pool())
-            .await
-            .model;
-        let infra = small_infra(db_pool()).await;
-        let mut payload: serde_json::Value = serde_json::from_str(include_str!(
-            "../../tests/small_infra/pathfinding_post_payload.json"
-        ))
-        .unwrap();
-        *payload.get_mut("infra").unwrap() = json!(infra.id);
-        *payload.get_mut("rolling_stocks").unwrap() = json!([rs.id]);
-
-        let mut core = MockingClient::new();
-        core.stub("/pathfinding/routes")
-            .method(reqwest::Method::POST)
-            .response(StatusCode::OK)
-            .body(include_str!(
-                "../../tests/small_infra/pathfinding_core_response.json"
-            ))
-            .finish();
-        let app = create_test_service_with_core_client(core).await;
-        let req = TestRequest::post()
-            .uri("/pathfinding")
-            .set_json(payload)
-            .to_request();
-
-        // WHEN
-        let response = call_service(&app, req).await;
-
-        // THEN
-        let response: PathResponse = assert_status_and_read!(response, StatusCode::OK);
-        assert!(Pathfinding::retrieve(db_pool(), response.id).await.is_ok());
-    }
-
-    #[rstest::rstest]
-    async fn test_multiple_waypoints_ok() {
-        // GIVEN
-        // Avoid `Drop`ping the fixture
-        let rs =
-            &named_fast_rolling_stock("fast_rolling_stock_test_multiple_waypoints_ok", db_pool())
-                .await
-                .model;
-        let infra = small_infra(db_pool()).await;
-        let mut payload: serde_json::Value = serde_json::from_str(include_str!(
-            "../../tests/small_infra/pathfinding_post_multiple_waypoints_payload.json"
-        ))
-        .unwrap();
-        *payload.get_mut("infra").unwrap() = json!(infra.id);
-        *payload.get_mut("rolling_stocks").unwrap() = json!([rs.id]);
-
-        let mut core = MockingClient::new();
-        core.stub("/pathfinding/routes")
-            .method(reqwest::Method::POST)
-            .response(StatusCode::OK)
-            .body(include_str!(
-                "../../tests/small_infra/pathfinding_core_response.json"
-            ))
-            .finish();
-        let app = create_test_service_with_core_client(core).await;
-        let req = TestRequest::post()
-            .uri("/pathfinding")
-            .set_json(payload)
-            .to_request();
-
-        // WHEN
-        let response = call_service(&app, req).await;
-
-        // THEN
-        let response: PathResponse = assert_status_and_read!(response, StatusCode::OK);
-        assert!(Pathfinding::retrieve(db_pool(), response.id).await.is_ok());
-    }
-
-    #[rstest::rstest]
-    async fn test_infra_not_found() {
-        let payload: serde_json::Value = serde_json::from_str(include_str!(
-            "../../tests/small_infra/pathfinding_post_payload.json"
-        ))
-        .unwrap();
-        let app = create_test_service().await;
-        let req = TestRequest::post()
-            .uri("/pathfinding")
-            .set_json(payload)
-            .to_request();
-        let response = call_service(&app, req).await;
-        assert_eq!(response.status(), StatusCode::NOT_FOUND);
-        assert_response_error_type_match!(
-            response,
-            PathfindingError::InfraNotFound { infra_id: 0 }
-        );
-    }
-
-    #[rstest::rstest]
-    async fn test_rolling_stock_not_found(#[future] small_infra: TestFixture<Infra>) {
-        let infra = small_infra.await;
-        let mut payload: serde_json::Value = serde_json::from_str(include_str!(
-            "../../tests/small_infra/pathfinding_post_payload.json"
-        ))
-        .unwrap();
-        *payload.get_mut("infra").unwrap() = json!(infra.id);
-        let app = create_test_service().await;
-        let req = TestRequest::post()
-            .uri("/pathfinding")
-            .set_json(payload)
-            .to_request();
-        let response = call_service(&app, req).await;
-        assert_eq!(response.status(), StatusCode::NOT_FOUND);
-        assert_response_error_type_match!(
-            response,
-            PathfindingError::RollingStockNotFound {
-                rolling_stock_id: 0
-            }
-        );
-    }
-
-    #[rstest::rstest]
-    async fn test_track_section_not_found(#[future] empty_infra: TestFixture<Infra>) {
-        let infra = empty_infra.await;
-        let mut payload: serde_json::Value = serde_json::from_str(include_str!(
-            "../../tests/small_infra/pathfinding_post_payload.json"
-        ))
-        .unwrap();
-        *payload.get_mut("infra").unwrap() = json!(infra.id);
-        let app = create_test_service().await;
-        let req = TestRequest::post()
-            .uri("/pathfinding")
-            .set_json(payload)
-            .to_request();
-        let response = call_service(&app, req).await;
-        assert_eq!(response.status(), StatusCode::NOT_FOUND);
-        assert_response_error_type_match!(
-            response,
-            PathfindingError::TrackSectionsNotFound {
-                track_sections: Default::default()
-            }
-        );
-    }
+    // There used to be tests here. They were removed because this TSV1 module will be removed soon.
+    // These tests were using actix's test API, but we switched to axum, so they were removed instead
+    // of being ported.
 }

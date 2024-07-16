@@ -1,4 +1,6 @@
-use actix_web::{error::JsonPayloadError, http::StatusCode, HttpResponse, ResponseError};
+use axum::http::StatusCode;
+use axum::response::{IntoResponse, Response};
+use axum::Json;
 use colored::Colorize;
 use diesel::result::Error as DieselError;
 use editoast_models::db_connection_pool::DatabasePoolBuildError;
@@ -102,19 +104,15 @@ impl<T: EditoastError> From<T> for InternalError {
     }
 }
 
-impl ResponseError for InternalError {
-    fn status_code(&self) -> StatusCode {
-        self.status
-    }
-
-    fn error_response(&self) -> HttpResponse {
+impl IntoResponse for InternalError {
+    fn into_response(self) -> Response {
         error!(
             "[{}] {}: {}",
             self.error_type.bold(),
             self.message,
             Backtrace::capture() // won't log unless RUST_BACKTRACE=1
         );
-        HttpResponse::build(self.status).json(self)
+        (self.status, Json(self)).into_response()
     }
 }
 
@@ -173,19 +171,6 @@ impl EditoastError for RedisError {
 }
 
 /// Handle all json errors
-impl EditoastError for JsonPayloadError {
-    fn get_status(&self) -> StatusCode {
-        StatusCode::BAD_REQUEST
-    }
-
-    fn get_type(&self) -> &str {
-        "editoast:JsonError"
-    }
-
-    fn context(&self) -> HashMap<String, Value> {
-        [("cause".into(), json!(self.to_string()))].into()
-    }
-}
 
 /// Handle all json errors
 impl EditoastError for ValidationErrors {

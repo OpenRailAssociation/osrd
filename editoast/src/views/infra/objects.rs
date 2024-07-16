@@ -2,10 +2,9 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 use std::ops::DerefMut;
 
-use actix_web::post;
-use actix_web::web::Data;
-use actix_web::web::Json;
-use actix_web::web::Path;
+use axum::extract::Json;
+use axum::extract::Path;
+use axum::extract::State;
 use editoast_derive::EditoastError;
 use editoast_models::DbConnectionPoolV2;
 use editoast_schemas::primitives::ObjectType;
@@ -19,7 +18,7 @@ use crate::modelsv2::Infra;
 use crate::Retrieve;
 
 crate::routes! {
-    get_objects,
+    "/objects/{object_type}" => get_objects,
 }
 
 #[derive(Debug, Error, EditoastError)]
@@ -43,6 +42,7 @@ struct ObjectTypeParam {
 
 /// Retrieves specific infra objects
 #[utoipa::path(
+    post, path = "",
     tag = "infra",
     params(InfraIdParam, ObjectTypeParam),
     request_body = Vec<String>,
@@ -52,12 +52,11 @@ struct ObjectTypeParam {
         (status = 404, description = "Object ID or infra ID invalid")
     )
 )]
-#[post("/objects/{object_type}")]
 async fn get_objects(
-    infra_id_param: Path<InfraIdParam>,
-    object_type_param: Path<ObjectTypeParam>,
-    obj_ids: Json<Vec<String>>,
-    db_pool: Data<DbConnectionPoolV2>,
+    Path(infra_id_param): Path<InfraIdParam>,
+    Path(object_type_param): Path<ObjectTypeParam>,
+    State(db_pool): State<DbConnectionPoolV2>,
+    Json(obj_ids): Json<Vec<String>>,
 ) -> Result<Json<Vec<ObjectQueryable>>> {
     let infra_id = infra_id_param.infra_id;
     if !has_unique_ids(&obj_ids) {
@@ -68,7 +67,6 @@ async fn get_objects(
         InfraApiError::NotFound { infra_id }
     })
     .await?;
-    let obj_ids = obj_ids.into_inner();
     let objects = infra
         .get_objects(
             db_pool.get().await?.deref_mut(),
@@ -106,8 +104,7 @@ async fn get_objects(
 
 #[cfg(test)]
 mod tests {
-    use actix_web::http::StatusCode;
-    use actix_web::test::TestRequest;
+    use axum::http::StatusCode;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
     use serde_json::json;
@@ -128,10 +125,9 @@ mod tests {
         let db_pool = app.db_pool();
         let empty_infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
 
-        let request = TestRequest::post()
-            .uri(format!("/infra/{}/objects/TrackSection", empty_infra.id).as_str())
-            .set_json(["invalid_id"])
-            .to_request();
+        let request = app
+            .post(format!("/infra/{}/objects/TrackSection", empty_infra.id).as_str())
+            .json(&["invalid_id"]);
 
         app.fetch(request).assert_status(StatusCode::BAD_REQUEST);
     }
@@ -142,10 +138,9 @@ mod tests {
         let db_pool = app.db_pool();
         let empty_infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
 
-        let request = TestRequest::post()
-            .uri(format!("/infra/{}/objects/TrackSection", empty_infra.id).as_str())
-            .set_json(vec![""; 0])
-            .to_request();
+        let request = app
+            .post(format!("/infra/{}/objects/TrackSection", empty_infra.id).as_str())
+            .json(&vec![""; 0]);
 
         app.fetch(request).assert_status(StatusCode::OK);
     }
@@ -171,10 +166,9 @@ mod tests {
         .expect("Failed to create switch object");
 
         // WHEN
-        let request = TestRequest::post()
-            .uri(format!("/infra/{}/objects/Switch", empty_infra.id).as_str())
-            .set_json(vec!["switch_001"])
-            .to_request();
+        let request = app
+            .post(format!("/infra/{}/objects/Switch", empty_infra.id).as_str())
+            .json(&vec!["switch_001"]);
 
         // THEN
         let switch_object: Vec<ObjectQueryable> =
@@ -201,10 +195,9 @@ mod tests {
         let db_pool = app.db_pool();
         let empty_infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
 
-        let request = TestRequest::post()
-            .uri(format!("/infra/{}/objects/TrackSection", empty_infra.id).as_str())
-            .set_json(vec!["id"; 2])
-            .to_request();
+        let request = app
+            .post(format!("/infra/{}/objects/TrackSection", empty_infra.id).as_str())
+            .json(&vec!["id"; 2]);
 
         app.fetch(request).assert_status(StatusCode::BAD_REQUEST);
     }
@@ -225,10 +218,9 @@ mod tests {
         .await
         .expect("Failed to create switch type object");
 
-        let request = TestRequest::post()
-            .uri(format!("/infra/{}/objects/SwitchType", empty_infra.id).as_str())
-            .set_json(vec![switch_type.id.clone()])
-            .to_request();
+        let request = app
+            .post(format!("/infra/{}/objects/SwitchType", empty_infra.id).as_str())
+            .json(&vec![switch_type.id.clone()]);
 
         let switch_type_object: Vec<ObjectQueryable> =
             app.fetch(request).assert_status(StatusCode::OK).json_into();

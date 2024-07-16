@@ -1,13 +1,12 @@
 use std::collections::HashMap;
 
-use actix_web::get;
-use actix_web::web::Data;
-use actix_web::web::Json;
-use actix_web::web::Path;
-use actix_web::web::Query;
-use actix_web::HttpResponse;
+use axum::extract::Json;
+use axum::extract::Path;
+use axum::extract::Query;
+use axum::extract::State;
+use axum::http::header::CONTENT_TYPE;
+use axum::response::IntoResponse;
 use editoast_derive::EditoastError;
-use editoast_models::DbConnectionPoolV2;
 use redis::AsyncCommands;
 use serde::Deserialize;
 use serde::Serialize;
@@ -16,7 +15,6 @@ use utoipa::IntoParams;
 use utoipa::ToSchema;
 
 use crate::client::get_root_url;
-use crate::client::MapLayersConfig;
 use crate::error::Result;
 use crate::map::get_cache_tile_key;
 use crate::map::get_view_cache_prefix;
@@ -25,17 +23,13 @@ use crate::map::MapLayers;
 use crate::map::Tile;
 use crate::modelsv2::layers::geo_json_and_data::create_and_fill_mvt_tile;
 use crate::modelsv2::layers::geo_json_and_data::GeoJsonAndData;
-use crate::RedisClient;
+use crate::AppState;
 
 crate::routes! {
      "/layers" => {
-        "/layer/{layer_slug}/mvt/{view_slug}" => {
-            layer_view,
-        },
-        "/tile/{layer_slug}/{view_slug}/{z}/{x}/{y}" => {
-            cache_and_get_mvt_tile,
-        },
-    }
+        "/layer/{layer_slug}/mvt/{view_slug}" => layer_view,
+        "/tile/{layer_slug}/{view_slug}/{z}/{x}/{y}" => cache_and_get_mvt_tile,
+    },
 }
 
 #[derive(Debug, Error, EditoastError)]
@@ -106,21 +100,22 @@ struct ViewMetadata {
 
 /// Returns layer view metadata to query tiles
 #[utoipa::path(
+    get, path = "",
     tag = "layers",
     params(InfraQueryParam, LayerViewParams),
     responses(
         (status = 200, body = inline(ViewMetadata), description = "Successful Response"),
     )
 )]
-#[get("")]
 async fn layer_view(
-    path: Path<(String, String)>,
-    params: Query<InfraQueryParam>,
-    map_layers: Data<MapLayers>,
-    map_layers_config: Data<MapLayersConfig>,
+    Path((layer_slug, view_slug)): Path<(String, String)>,
+    Query(InfraQueryParam { infra: infra_id }): Query<InfraQueryParam>,
+    State(AppState {
+        map_layers,
+        map_layers_config,
+        ..
+    }): State<AppState>,
 ) -> Result<Json<ViewMetadata>> {
-    let (layer_slug, view_slug) = path.into_inner();
-    let infra = params.infra;
     let layer = match map_layers.layers.get(&layer_slug) {
         Some(layer) => layer,
         None => return Err(LayersError::new_layer_not_found(layer_slug, &map_layers).into()),
@@ -135,8 +130,9 @@ async fn layer_view(
         root_url.path_segments_mut().unwrap().push(""); // Add a trailing slash
     }
     let root_url = root_url.to_string();
-    let tiles_url_pattern =
-        format!("{root_url}layers/tile/{layer_slug}/{view_slug}/{{z}}/{{x}}/{{y}}/?infra={infra}");
+    let tiles_url_pattern = format!(
+        "{root_url}layers/tile/{layer_slug}/{view_slug}/{{z}}/{{x}}/{{y}}/?infra={infra_id}"
+    );
 
     Ok(Json(ViewMetadata {
         data_type: "vector".to_owned(),
@@ -162,22 +158,23 @@ struct TileParams {
 
 /// Mvt tile from the cache if possible, otherwise gets data from the database and caches it in redis
 #[utoipa::path(
+    get, path = "",
     tag = "layers",
     params(InfraQueryParam, TileParams),
     responses(
         (status = 200, body = Vec<u8>, description = "Successful Response"),
     )
 )]
-#[get("")]
 async fn cache_and_get_mvt_tile(
-    path: Path<(String, String, u64, u64, u64)>,
-    params: Query<InfraQueryParam>,
-    map_layers: Data<MapLayers>,
-    db_pool: Data<DbConnectionPoolV2>,
-    redis_client: Data<RedisClient>,
-) -> Result<HttpResponse> {
-    let (layer_slug, view_slug, z, x, y) = path.into_inner();
-    let infra = params.infra;
+    Path((layer_slug, view_slug, z, x, y)): Path<(String, String, u64, u64, u64)>,
+    Query(InfraQueryParam { infra: infra_id }): Query<InfraQueryParam>,
+    State(AppState {
+        map_layers,
+        db_pool_v2: db_pool,
+        redis,
+        ..
+    }): State<AppState>,
+) -> Result<impl IntoResponse> {
     let layer = match map_layers.layers.get(&layer_slug) {
         Some(layer) => layer,
         None => return Err(LayersError::new_layer_not_found(layer_slug, &map_layers).into()),
@@ -187,21 +184,19 @@ async fn cache_and_get_mvt_tile(
         None => return Err(LayersError::new_view_not_found(view_slug, layer).into()),
     };
     let cache_key = get_cache_tile_key(
-        &get_view_cache_prefix(&layer_slug, infra, &view_slug),
+        &get_view_cache_prefix(&layer_slug, infra_id, &view_slug),
         &Tile { x, y, z },
     );
 
-    let mut redis = redis_client.get_connection().await?;
+    let mut redis = redis.get_connection().await?;
     let cached_value: Option<Vec<u8>> = redis.get(&cache_key).await?;
 
     if let Some(value) = cached_value {
-        return Ok(HttpResponse::Ok()
-            .content_type("application/x-protobuf")
-            .body(value));
+        return Ok(([(CONTENT_TYPE, "application/x-protobuf")], value));
     }
 
     let conn = &mut db_pool.get().await?;
-    let records = GeoJsonAndData::get_records(conn, layer, view, infra, (x, y, z)).await?;
+    let records = GeoJsonAndData::get_records(conn, layer, view, infra_id, (x, y, z)).await?;
 
     let mvt_bytes: Vec<u8> = create_and_fill_mvt_tile(layer_slug, records)
         .to_bytes()
@@ -209,18 +204,16 @@ async fn cache_and_get_mvt_tile(
     redis
         .set(&cache_key, mvt_bytes.clone())
         .await
-        .unwrap_or_else(|_| panic!("Fail to set value in redis with key {cache_key}"));
-    Ok(HttpResponse::Ok()
-        .content_type("application/x-protobuf")
-        .body(mvt_bytes))
+        .unwrap_or_else(|_| panic!("Failed to set value in redis with key {cache_key}"));
+
+    Ok(([(CONTENT_TYPE, "application/x-protobuf")], mvt_bytes))
 }
 
 #[cfg(test)]
 mod tests {
     use std::collections::HashMap;
 
-    use actix_web::http::StatusCode;
-    use actix_web::test::TestRequest;
+    use axum::http::StatusCode;
     use rstest::rstest;
     use serde::de::DeserializeOwned;
     use serde_json::to_value;
@@ -238,7 +231,7 @@ mod tests {
         expected_body: T,
     ) {
         let app = TestAppBuilder::default_app();
-        let request = TestRequest::get().uri(uri).to_request();
+        let request = app.get(uri);
         let body: T = app
             .fetch(request)
             .assert_status(expected_status)

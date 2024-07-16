@@ -1,10 +1,7 @@
-use actix_web::get;
-use actix_web::post;
-use actix_web::web::Data;
-use actix_web::web::Json;
-use actix_web::web::Path;
-use actix_web::web::Query;
-use chashmap::CHashMap;
+use axum::extract::Json;
+use axum::extract::Path;
+use axum::extract::Query;
+use axum::extract::State;
 use editoast_schemas::infra::RoutePath;
 use serde::Deserialize;
 use serde::Serialize;
@@ -22,14 +19,15 @@ use crate::modelsv2::Infra;
 use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraIdParam;
 use crate::views::params::List;
+use crate::AppState;
 use editoast_models::DbConnectionPoolV2;
 
 crate::routes! {
     "/routes" => {
-        get_routes_track_ranges,
-        get_routes_from_waypoint,
-        get_routes_nodes,
-    }
+        "/track_ranges" => get_routes_track_ranges,
+        "/{waypoint_type}/{waypoint_id}" => get_routes_from_waypoint,
+        "/nodes" => get_routes_nodes,
+    },
 }
 
 #[derive(Debug, Display, Clone, Copy, Deserialize, ToSchema)]
@@ -57,16 +55,16 @@ struct RoutesResponse {
 
 /// Retrieve all routes that starting and ending by the given waypoint (detector or buffer stop)
 #[utoipa::path(
+    get, path = "",
     tag = "infra,routes",
     params(RoutesFromWaypointParams),
     responses(
         (status = 200, body = inline(RoutesResponse), description = "All routes that starting and ending by the given waypoint")
     ),
 )]
-#[get("/{waypoint_type}/{waypoint_id}")]
 async fn get_routes_from_waypoint(
-    path: Path<RoutesFromWaypointParams>,
-    db_pool: Data<DbConnectionPoolV2>,
+    Path(path): Path<RoutesFromWaypointParams>,
+    db_pool: State<DbConnectionPoolV2>,
 ) -> Result<Json<RoutesResponse>> {
     let infra = Infra::retrieve_or_fail(db_pool.get().await?.deref_mut(), path.infra_id, || {
         InfraApiError::NotFound {
@@ -110,6 +108,7 @@ enum RouteTrackRangesResult {
 }
 
 #[derive(Debug, Clone, Deserialize, utoipa::IntoParams)]
+#[into_params(parameter_in = Query)]
 struct RouteTrackRangesParams {
     /// A list of comma-separated route ids
     #[param(value_type = String)]
@@ -126,6 +125,7 @@ struct RoutesFromNodesPositions {
 
 /// Compute the track ranges through which routes passes.
 #[utoipa::path(
+    get, path = "",
     tag = "infra,routes",
     params(InfraIdParam, RouteTrackRangesParams),
     responses(
@@ -136,14 +136,14 @@ struct RoutesFromNodesPositions {
         )
     ),
 )]
-#[get("/track_ranges")]
-async fn get_routes_track_ranges<'a>(
-    infra: Path<i64>,
-    params: Query<RouteTrackRangesParams>,
-    infra_caches: Data<CHashMap<i64, InfraCache>>,
-    db_pool: Data<DbConnectionPoolV2>,
+async fn get_routes_track_ranges(
+    app_state: State<AppState>,
+    Path(infra): Path<i64>,
+    Query(params): Query<RouteTrackRangesParams>,
 ) -> Result<Json<Vec<RouteTrackRangesResult>>> {
-    let infra_id = infra.into_inner();
+    let db_pool = app_state.db_pool_v2.clone();
+    let infra_caches = app_state.infra_caches.clone();
+    let infra_id = infra;
     let infra = Infra::retrieve_or_fail(db_pool.get().await?.deref_mut(), infra_id, || {
         InfraApiError::NotFound { infra_id }
     })
@@ -180,6 +180,7 @@ async fn get_routes_track_ranges<'a>(
 
 /// Returns the list of routes crossing the specified nodes, along with the available positions for each of them.
 #[utoipa::path(
+    post, path = "",
     tag = "infra,routes",
     params(InfraIdParam),
     request_body(content = HashMap<String, Option<String>>, description = "A mapping node_id -> node_state | null"),
@@ -187,13 +188,14 @@ async fn get_routes_track_ranges<'a>(
         (status = 200, body = inline(RoutesFromNodesPositions), description = "A list of route IDs along with available positions for each specified node")
     ),
 )]
-#[post("/nodes")]
 async fn get_routes_nodes(
-    params: Path<InfraIdParam>,
-    infra_caches: Data<CHashMap<i64, InfraCache>>,
-    db_pool: Data<DbConnectionPoolV2>,
+    app_state: State<AppState>,
+    Path(params): Path<InfraIdParam>,
     Json(node_states): Json<HashMap<String, Option<String>>>,
 ) -> Result<Json<RoutesFromNodesPositions>> {
+    let db_pool = app_state.db_pool_v2.clone();
+    let infra_caches = app_state.infra_caches.clone();
+
     let infra = Infra::retrieve_or_fail(db_pool.get().await?.deref_mut(), params.infra_id, || {
         InfraApiError::NotFound {
             infra_id: params.infra_id,
@@ -262,8 +264,7 @@ async fn get_routes_nodes(
 
 #[cfg(test)]
 mod tests {
-    use actix_http::StatusCode;
-    use actix_web::test::TestRequest;
+    use axum::http::StatusCode;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
     use serde_json::json;
@@ -390,10 +391,9 @@ mod tests {
                 routes: expected.0.iter().map(|s| s.to_string()).collect(),
                 available_node_positions: expected.1.into_iter().collect::<HashMap<_, _>>(),
             };
-            let request = TestRequest::post()
-                .uri(&format!("/infra/{}/routes/nodes", small_infra.id))
-                .set_json(&params)
-                .to_request();
+            let request = app
+                .post(&format!("/infra/{}/routes/nodes", small_infra.id))
+                .json(&params);
             println!("{request:?}  body:\n    {params}");
 
             let got: RoutesFromNodesPositions =
@@ -458,9 +458,8 @@ mod tests {
 
         // BufferStop Routes
         let waypoint_type = WaypointType::BufferStop;
-        let request = TestRequest::get()
-            .uri(format!("/infra/{empty_infra_id}/routes/{waypoint_type}/bs_stop").as_str())
-            .to_request();
+        let request =
+            app.get(format!("/infra/{empty_infra_id}/routes/{waypoint_type}/bs_stop").as_str());
 
         let routes: RoutesResponse = app.fetch(request).assert_status(StatusCode::OK).json_into();
 
@@ -474,9 +473,8 @@ mod tests {
 
         // Detector Routes
         let waypoint_type = WaypointType::Detector;
-        let request = TestRequest::get()
-            .uri(format!("/infra/{empty_infra_id}/routes/{waypoint_type}/detector_001").as_str())
-            .to_request();
+        let request = app
+            .get(format!("/infra/{empty_infra_id}/routes/{waypoint_type}/detector_001").as_str());
 
         let routes: RoutesResponse = app.fetch(request).assert_status(StatusCode::OK).json_into();
 
@@ -496,15 +494,13 @@ mod tests {
         let empty_infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
 
         let waypoint_type = WaypointType::Detector;
-        let request = TestRequest::get()
-            .uri(
-                format!(
-                    "/infra/{}/routes/{waypoint_type}/NOT_EXISTING_WAYPOINT_ID",
-                    empty_infra.id
-                )
-                .as_str(),
+        let request = app.get(
+            format!(
+                "/infra/{}/routes/{waypoint_type}/NOT_EXISTING_WAYPOINT_ID",
+                empty_infra.id
             )
-            .to_request();
+            .as_str(),
+        );
 
         let routes: RoutesResponse = app.fetch(request).assert_status(StatusCode::OK).json_into();
 

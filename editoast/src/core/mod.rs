@@ -14,8 +14,8 @@ use std::collections::HashMap;
 use std::fmt::Display;
 use std::marker::PhantomData;
 
-use actix_http::StatusCode;
 use async_trait::async_trait;
+use axum::http::StatusCode;
 use colored::ColoredString;
 use colored::Colorize;
 use editoast_derive::EditoastError;
@@ -112,7 +112,7 @@ impl CoreClient {
     ) -> Result<R::Response> {
         let method_s = colored_method(&method);
         debug!(
-            target: "editoast::coreclient", 
+            target: "editoast::coreclient",
             body = body.and_then(|b| serde_json::to_string_pretty(b).ok()).unwrap_or_default(),
             "Request content");
         match self {
@@ -403,7 +403,7 @@ impl From<reqwest::Error> for CoreError {
 
 #[cfg(test)]
 mod test {
-    use actix_http::StatusCode;
+    use axum::http::StatusCode;
     use pretty_assertions::assert_eq;
     use reqwest::Method;
     use serde_derive::Serialize;

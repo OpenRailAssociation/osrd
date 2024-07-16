@@ -1,14 +1,10 @@
 use std::ops::DerefMut as _;
 
-use actix_web::delete;
-use actix_web::get;
-use actix_web::patch;
-use actix_web::post;
-use actix_web::web::Data;
-use actix_web::web::Json;
-use actix_web::web::Path;
-use actix_web::web::Query;
-use actix_web::HttpResponse;
+use axum::extract::Json;
+use axum::extract::Path;
+use axum::extract::Query;
+use axum::extract::State;
+use axum::response::IntoResponse;
 use chrono::NaiveDate;
 use chrono::Utc;
 use derivative::Derivative;
@@ -46,9 +42,9 @@ crate::routes! {
             get,
             delete,
             patch,
-            scenario::routes(),
-        }
-    }
+            &scenario,
+        },
+    },
 }
 
 editoast_common::schemas! {
@@ -132,6 +128,7 @@ impl StudyCreateForm {
 }
 
 #[utoipa::path(
+    post, path = "",
     tag = "studies",
     params(ProjectIdParam),
     request_body = StudyCreateForm,
@@ -139,14 +136,11 @@ impl StudyCreateForm {
         (status = 201, body = StudyResponse, description = "The created study"),
     )
 )]
-#[post("")]
 async fn create(
-    db_pool: Data<DbConnectionPoolV2>,
-    data: Json<StudyCreateForm>,
-    project: Path<i64>,
+    State(db_pool): State<DbConnectionPoolV2>,
+    Path(project_id): Path<i64>,
+    Json(data): Json<StudyCreateForm>,
 ) -> Result<Json<StudyResponse>> {
-    let project_id = project.into_inner();
-
     let conn = &mut db_pool.get().await?;
 
     let (study, project) = conn
@@ -159,11 +153,7 @@ async fn create(
                 .await?;
 
                 // Create study
-                let study: Study = data
-                    .into_inner()
-                    .into_study_changeset(project_id)?
-                    .create(conn)
-                    .await?;
+                let study: Study = data.into_study_changeset(project_id)?.create(conn).await?;
 
                 // Update project last_modification field
                 project.update_last_modified(conn).await?;
@@ -192,6 +182,7 @@ pub struct StudyIdParam {
 
 /// Delete a study
 #[utoipa::path(
+    delete, path = "",
     tag = "studies",
     params(ProjectIdParam, StudyIdParam),
     responses(
@@ -199,9 +190,10 @@ pub struct StudyIdParam {
         (status = 404, body = InternalError, description = "The requested study was not found"),
     )
 )]
-#[delete("")]
-async fn delete(path: Path<(i64, i64)>, db_pool: Data<DbConnectionPoolV2>) -> Result<HttpResponse> {
-    let (project_id, study_id) = path.into_inner();
+async fn delete(
+    Path((project_id, study_id)): Path<(i64, i64)>,
+    State(db_pool): State<DbConnectionPoolV2>,
+) -> Result<impl IntoResponse> {
     // Check if project exists
     let conn = &mut db_pool.get().await?;
     let mut project =
@@ -214,11 +206,12 @@ async fn delete(path: Path<(i64, i64)>, db_pool: Data<DbConnectionPoolV2>) -> Re
     // Update project last_modification field
     project.update_last_modified(conn).await?;
 
-    Ok(HttpResponse::NoContent().finish())
+    Ok(axum::http::StatusCode::NO_CONTENT)
 }
 
 /// Return a specific study
 #[utoipa::path(
+    get, path = "",
     tag = "studies",
     params(ProjectIdParam, StudyIdParam),
     responses(
@@ -226,13 +219,10 @@ async fn delete(path: Path<(i64, i64)>, db_pool: Data<DbConnectionPoolV2>) -> Re
         (status = 404, body = InternalError, description = "The requested study was not found"),
     )
 )]
-#[get("")]
 async fn get(
-    db_pool: Data<DbConnectionPoolV2>,
-    path: Path<(i64, i64)>,
+    State(db_pool): State<DbConnectionPoolV2>,
+    Path((project_id, study_id)): Path<(i64, i64)>,
 ) -> Result<Json<StudyResponse>> {
-    let (project_id, study_id) = path.into_inner();
-
     // Check if project exists
     let conn = &mut db_pool.get().await?;
     use crate::modelsv2::Retrieve;
@@ -292,6 +282,7 @@ impl StudyPatchForm {
 
 /// Update a study
 #[utoipa::path(
+    patch, path = "",
     tag = "studies",
     params(ProjectIdParam, StudyIdParam),
     request_body(
@@ -303,13 +294,11 @@ impl StudyPatchForm {
         (status = 404, body = InternalError, description = "The requested study was not found"),
     )
 )]
-#[patch("")]
 async fn patch(
-    data: Json<StudyPatchForm>,
-    path: Path<(i64, i64)>,
-    db_pool: Data<DbConnectionPoolV2>,
+    Path((project_id, study_id)): Path<(i64, i64)>,
+    State(db_pool): State<DbConnectionPoolV2>,
+    Json(data): Json<StudyPatchForm>,
 ) -> Result<Json<StudyResponse>> {
-    let (project_id, study_id) = path.into_inner();
     let conn = &mut db_pool.get().await?;
     let (study_scenarios, project) = conn
         .transaction::<_, InternalError, _>(|conn| {
@@ -322,7 +311,6 @@ async fn patch(
 
                 // Update study
                 let study = data
-                    .into_inner()
                     .into_study_changeset()?
                     .last_modification(Utc::now().naive_utc())
                     .update_or_fail(conn, study_id, || StudyError::NotFound { study_id })
@@ -370,21 +358,20 @@ struct StudyListResponse {
 
 /// Return a list of studies
 #[utoipa::path(
+    get, path = "",
     tag = "studies",
     params(ProjectIdParam, PaginationQueryParam, OperationalStudiesOrderingParam),
     responses(
         (status = 200, body = inline(StudyListResponse), description = "The list of studies"),
     )
 )]
-#[get("")]
 async fn list(
-    db_pool: Data<DbConnectionPoolV2>,
-    project: Path<i64>,
+    State(db_pool): State<DbConnectionPoolV2>,
+    Path(project_id): Path<i64>,
     Query(pagination_params): Query<PaginationQueryParam>,
     Query(ordering_params): Query<OperationalStudiesOrderingParam>,
 ) -> Result<Json<StudyListResponse>> {
     let ordering = ordering_params.ordering;
-    let project_id = project.into_inner();
     if !Project::exists(db_pool.get().await?.deref_mut(), project_id).await? {
         return Err(ProjectError::NotFound { project_id }.into());
     }
@@ -400,7 +387,7 @@ async fn list(
         Study::list_paginated(db_pool.get().await?.deref_mut(), settings).await?;
     let results = studies
         .into_iter()
-        .zip(std::iter::repeat(&db_pool).map(|p| p.get()))
+        .zip(db_pool.iter_conn())
         .map(|(project, conn)| async move {
             StudyWithScenarioCount::try_fetch(conn.await?.deref_mut(), project).await
         });
@@ -411,8 +398,7 @@ async fn list(
 
 #[cfg(test)]
 pub mod test {
-    use actix_web::http::StatusCode;
-    use actix_web::test::TestRequest;
+    use axum::http::StatusCode;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
     use serde_json::json;
@@ -431,18 +417,16 @@ pub mod test {
         let created_project =
             create_project(db_pool.get_ok().deref_mut(), "test_project_name").await;
 
-        let request = TestRequest::post()
-            .uri(&format!("/projects/{}/studies/", created_project.id))
-            .set_json(json!({
+        let request = app
+            .post(&format!("/projects/{}/studies/", created_project.id))
+            .json(&json!({
                 "name": "study_test",
                 "description": "Study description",
                 "state": "Starting",
                 "business_code": "",
                 "service_code": "",
                 "study_type": "",
-            }))
-            .to_request();
-
+            }));
         let response: StudyResponse = app.fetch(request).assert_status(StatusCode::OK).json_into();
 
         let study = Study::retrieve(db_pool.get_ok().deref_mut(), response.study.id)
@@ -469,9 +453,7 @@ pub mod test {
         )
         .await;
 
-        let request = TestRequest::get()
-            .uri(&format!("/projects/{}/studies/", created_project.id))
-            .to_request();
+        let request = app.get(&format!("/projects/{}/studies/", created_project.id));
 
         let response: StudyListResponse =
             app.fetch(request).assert_status(StatusCode::OK).json_into();
@@ -500,12 +482,10 @@ pub mod test {
         )
         .await;
 
-        let request = TestRequest::get()
-            .uri(&format!(
-                "/projects/{}/studies/{}",
-                created_project.id, created_study.id
-            ))
-            .to_request();
+        let request = app.get(&format!(
+            "/projects/{}/studies/{}",
+            created_project.id, created_study.id
+        ));
 
         let response: StudyResponse = app.fetch(request).assert_status(StatusCode::OK).json_into();
 
@@ -529,13 +509,11 @@ pub mod test {
         )
         .await;
 
-        let request = TestRequest::get()
-            .uri(&format!(
-                "/projects/{}/studies/{}",
-                created_project.id,
-                created_study.id + 1000
-            ))
-            .to_request();
+        let request = app.get(&format!(
+            "/projects/{}/studies/{}",
+            created_project.id,
+            created_study.id + 1000
+        ));
 
         app.fetch(request).assert_status(StatusCode::NOT_FOUND);
     }
@@ -555,12 +533,10 @@ pub mod test {
         )
         .await;
 
-        let request = TestRequest::delete()
-            .uri(&format!(
-                "/projects/{}/studies/{}",
-                created_project.id, created_study.id
-            ))
-            .to_request();
+        let request = app.delete(&format!(
+            "/projects/{}/studies/{}",
+            created_project.id, created_study.id
+        ));
 
         app.fetch(request).assert_status(StatusCode::NO_CONTENT);
 
@@ -589,16 +565,15 @@ pub mod test {
         let study_name = "rename_test";
         let study_budget = 20000;
 
-        let request = TestRequest::patch()
-            .uri(&format!(
+        let request = app
+            .patch(&format!(
                 "/projects/{}/studies/{}",
                 created_project.id, created_study.id
             ))
-            .set_json(json!({
+            .json(&json!({
                 "name": study_name,
                 "budget": study_budget,
-            }))
-            .to_request();
+            }));
 
         app.fetch(request).assert_status(StatusCode::OK);
 

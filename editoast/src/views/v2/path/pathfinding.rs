@@ -4,10 +4,9 @@ use std::hash::Hash;
 use std::hash::Hasher;
 use std::sync::Arc;
 
-use actix_web::post;
-use actix_web::web::Data;
-use actix_web::web::Json;
-use actix_web::web::Path;
+use axum::extract::Json;
+use axum::extract::Path;
+use axum::extract::State;
 use editoast_schemas::rolling_stock::LoadingGaugeType;
 use editoast_schemas::train_schedule::PathItemLocation;
 use serde::Deserialize;
@@ -24,18 +23,15 @@ use crate::modelsv2::train_schedule::TrainSchedule;
 use crate::modelsv2::Infra;
 use crate::modelsv2::Retrieve;
 use crate::modelsv2::RollingStockModel;
-use crate::redis_utils::RedisClient;
 use crate::redis_utils::RedisConnection;
 use crate::views::get_app_version;
 use crate::views::v2::path::path_item_cache::PathItemCache;
 use crate::views::v2::path::PathfindingError;
+use crate::AppState;
 use editoast_models::DbConnection;
-use editoast_models::DbConnectionPoolV2;
 
 crate::routes! {
-    "/v2/infra/{infra_id}/pathfinding/blocks" => {
-       post,
-    },
+    "/v2/infra/{infra_id}/pathfinding/blocks" => post,
 }
 
 editoast_common::schemas! {
@@ -62,6 +58,7 @@ struct PathfindingInput {
 
 /// Compute a pathfinding
 #[utoipa::path(
+    post, path = "",
     tag = "pathfindingv2",
     params(
         ("infra_id" = i64, Path, description = "The infra id"),
@@ -71,25 +68,25 @@ struct PathfindingInput {
         (status = 200, description = "Pathfinding Result", body = PathfindingResult),
     ),
 )]
-#[post("")]
-pub async fn post(
-    db_pool: Data<DbConnectionPoolV2>,
-    redis_client: Data<RedisClient>,
-    core: Data<CoreClient>,
-    infra_id: Path<i64>,
-    data: Json<PathfindingInput>,
+async fn post(
+    State(AppState {
+        db_pool_v2: db_pool,
+        redis,
+        core_client,
+        ..
+    }): State<AppState>,
+    Path(infra_id): Path<i64>,
+    Json(path_input): Json<PathfindingInput>,
 ) -> Result<Json<PathfindingResult>> {
-    let path_input = data.into_inner();
     let conn = &mut db_pool.get().await?;
-    let mut redis_conn = redis_client.get_connection().await?;
-    let core = core.into_inner();
-    let infra = Infra::retrieve_or_fail(conn, *infra_id, || PathfindingError::InfraNotFound {
-        infra_id: *infra_id,
+    let mut redis_conn = redis.get_connection().await?;
+    let infra = Infra::retrieve_or_fail(conn, infra_id, || PathfindingError::InfraNotFound {
+        infra_id,
     })
     .await?;
 
     Ok(Json(
-        pathfinding_blocks(conn, &mut redis_conn, core, &infra, path_input).await?,
+        pathfinding_blocks(conn, &mut redis_conn, core_client, &infra, path_input).await?,
     ))
 }
 

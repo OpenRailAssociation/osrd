@@ -1,13 +1,10 @@
-use actix_http::StatusCode;
-use actix_web::delete;
-use actix_web::get;
-use actix_web::http::header::ContentType;
-use actix_web::post;
-use actix_web::web::Bytes;
-use actix_web::web::Data;
-use actix_web::web::Header;
-use actix_web::web::Path;
-use actix_web::HttpResponse;
+use axum::body::Bytes;
+use axum::extract::Path;
+use axum::extract::State;
+use axum::http::header::CONTENT_TYPE;
+use axum::http::StatusCode;
+use axum::response::IntoResponse;
+use axum::Json;
 use editoast_derive::EditoastError;
 use serde_derive::Serialize;
 use thiserror::Error;
@@ -19,10 +16,12 @@ use editoast_models::DbConnectionPoolV2;
 
 crate::routes! {
     "/documents" => {
-        get,
         post,
-        delete,
-    }
+        "/{document_key}" => {
+            get,
+            delete,
+        },
+    },
 }
 
 editoast_common::schemas! {
@@ -39,6 +38,7 @@ pub enum DocumentErrors {
 
 /// Returns a document of any type
 #[utoipa::path(
+    get, path = "",
     tag = "documents",
     params(
         ("document_key" = i64, Path, description = "The document's key"),
@@ -48,17 +48,16 @@ pub enum DocumentErrors {
         (status = 404, description = "Document not found", body = InternalError),
     )
 )]
-#[get("/{document_key}")]
-async fn get(db_pool: Data<DbConnectionPoolV2>, document_key: Path<i64>) -> Result<HttpResponse> {
-    let document_key = document_key.into_inner();
+async fn get(
+    State(db_pool): State<DbConnectionPoolV2>,
+    Path(document_id): Path<i64>,
+) -> Result<impl IntoResponse> {
     let conn = &mut db_pool.get().await?;
-    let doc = Document::retrieve_or_fail(conn, document_key, || DocumentErrors::NotFound {
-        document_key,
+    let doc = Document::retrieve_or_fail(conn, document_id, || DocumentErrors::NotFound {
+        document_key: document_id,
     })
     .await?;
-    Ok(HttpResponse::build(StatusCode::OK)
-        .content_type(doc.content_type)
-        .body(doc.data))
+    Ok((StatusCode::OK, [(CONTENT_TYPE, doc.content_type)], doc.data))
 }
 
 #[derive(Serialize, ToSchema)]
@@ -68,6 +67,7 @@ struct NewDocumentResponse {
 
 /// Post a new document (content_type by header + binary data)
 #[utoipa::path(
+    post, path = "",
     tag = "documents",
     params(
         ("content_type" = String, Header, description = "The document's content type"),
@@ -77,14 +77,12 @@ struct NewDocumentResponse {
         (status = 201, description = "The document was created", body = NewDocumentResponse),
     )
 )]
-#[post("")]
 async fn post(
-    db_pool: Data<DbConnectionPoolV2>,
-    content_type: Header<ContentType>,
+    State(db_pool): State<DbConnectionPoolV2>,
+    axum_extra::TypedHeader(content_type): axum_extra::TypedHeader<headers::ContentType>,
     bytes: Bytes,
-) -> Result<HttpResponse> {
-    let content_type = content_type.into_inner();
-    let content_type = content_type.essence_str();
+) -> Result<impl IntoResponse> {
+    let content_type = content_type.to_string();
 
     // Create document
     let conn = &mut db_pool.get().await?;
@@ -95,13 +93,17 @@ async fn post(
         .await?;
 
     // Response
-    Ok(HttpResponse::Created().json(NewDocumentResponse {
-        document_key: doc.id,
-    }))
+    Ok((
+        StatusCode::CREATED,
+        Json(NewDocumentResponse {
+            document_key: doc.id,
+        }),
+    ))
 }
 
 /// Delete an existing document
 #[utoipa::path(
+    delete, path = "",
     tag = "documents",
     params(
         ("document_key" = i64, Path, description = "The document's key"),
@@ -111,23 +113,22 @@ async fn post(
         (status = 404, description = "Document not found", body = InternalError),
     )
 )]
-#[delete("/{document_key}")]
 async fn delete(
-    db_pool: Data<DbConnectionPoolV2>,
-    document_key: Path<i64>,
-) -> Result<HttpResponse> {
-    let document_key = document_key.into_inner();
+    State(db_pool): State<DbConnectionPoolV2>,
+    Path(document_id): Path<i64>,
+) -> Result<impl IntoResponse> {
     let conn = &mut db_pool.get().await?;
-    Document::delete_static_or_fail(conn, document_key, || DocumentErrors::NotFound {
-        document_key,
+    Document::delete_static_or_fail(conn, document_id, || DocumentErrors::NotFound {
+        document_key: document_id,
     })
     .await?;
-    Ok(HttpResponse::NoContent().finish())
+    Ok(StatusCode::NO_CONTENT)
 }
 
 #[cfg(test)]
 mod tests {
-    use actix_web::test::TestRequest;
+    use axum::http::header;
+    use axum::http::StatusCode;
     use rstest::rstest;
     use serde::Deserialize;
     use std::ops::DerefMut;
@@ -145,18 +146,18 @@ mod tests {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
 
-        let request = TestRequest::post()
-            .uri("/documents")
-            .insert_header(ContentType::plaintext())
-            .set_payload("Document post test data".as_bytes().to_vec())
-            .to_request();
+        let request = app
+            .post("/documents")
+            .add_header(
+                header::CONTENT_TYPE,
+                header::HeaderValue::from_str("text/plain").unwrap(),
+            )
+            .bytes("Document post test data".into());
 
         // Insert document
-        let new_doc = app
-            .fetch(request)
-            .assert_status(StatusCode::CREATED)
-            .json_into::<PostDocumentResponse>()
-            .document_key;
+        let response = request.await;
+        response.assert_status(StatusCode::CREATED);
+        let new_doc = response.json::<PostDocumentResponse>().document_key;
 
         // Get create document
         let document = Document::retrieve(pool.get_ok().deref_mut(), new_doc)
@@ -181,12 +182,11 @@ mod tests {
             .expect("Failed to create document");
 
         // Get document test
-        let request = TestRequest::get()
-            .uri(&format!("/documents/{}", document.id))
-            .to_request();
-        let response = app.fetch(request).assert_status(StatusCode::OK).bytes();
+        let response = app.get(&format!("/documents/{}", document.id)).await;
+        response.assert_status(StatusCode::OK);
+        let response = response.as_bytes();
 
-        assert_eq!(response.to_vec(), b"Document post test data".to_vec());
+        assert_eq!(response.as_ref(), b"Document post test data");
     }
 
     #[rstest]
@@ -203,10 +203,10 @@ mod tests {
             .expect("Failed to create document");
 
         // Delete document request
-        let request = TestRequest::delete()
-            .uri(format!("/documents/{}", document.id).as_str())
-            .to_request();
-        app.fetch(request).assert_status(StatusCode::NO_CONTENT);
+        let response = app
+            .delete(format!("/documents/{}", document.id).as_str())
+            .await;
+        response.assert_status(StatusCode::NO_CONTENT);
 
         // Get create document
         let document = Document::exists(pool.get_ok().deref_mut(), document.id)

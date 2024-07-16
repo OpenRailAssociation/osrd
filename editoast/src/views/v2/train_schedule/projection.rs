@@ -1,6 +1,5 @@
-use actix_web::post;
-use actix_web::web::Data;
-use actix_web::web::Json;
+use axum::extract::Json;
+use axum::extract::State;
 use chrono::DateTime;
 use chrono::Utc;
 use editoast_schemas::primitives::Identifier;
@@ -40,9 +39,7 @@ use crate::views::v2::train_schedule::CompleteReportTrain;
 use crate::views::v2::train_schedule::ReportTrain;
 use crate::views::v2::train_schedule::SignalSighting;
 use crate::views::v2::train_schedule::ZoneUpdate;
-use editoast_models::DbConnectionPoolV2;
-
-use crate::RedisClient;
+use crate::AppState;
 use crate::RollingStockModel;
 
 editoast_common::schemas! {
@@ -50,7 +47,7 @@ editoast_common::schemas! {
     ProjectPathForm,
 }
 crate::routes! {
-    project_path,
+    "/project_path" => project_path,
 }
 
 #[derive(Debug, Deserialize, ToSchema)]
@@ -116,34 +113,33 @@ struct CachedProjectPathTrainResult {
 ///
 /// Train schedules that are invalid (pathfinding or simulation failed) are not included in the result
 #[utoipa::path(
+    post, path = "",
     tag = "train_schedulev2",
     request_body = ProjectPathForm,
     responses(
         (status = 200, description = "Project Path Output", body = HashMap<i64, ProjectPathTrainResult>),
     ),
 )]
-#[post("/project_path")]
 async fn project_path(
-    db_pool: Data<DbConnectionPoolV2>,
-    redis_client: Data<RedisClient>,
-    core_client: Data<CoreClient>,
-    data: Json<ProjectPathForm>,
+    app_state: State<AppState>,
+    Json(data): Json<ProjectPathForm>,
 ) -> Result<Json<HashMap<i64, ProjectPathTrainResult>>> {
+    let db_pool = app_state.db_pool_v2.clone();
+    let redis_client = app_state.redis.clone();
+    let core_client = app_state.core_client.clone();
+
     let ProjectPathForm {
         infra_id,
         ids: train_ids,
         path,
-    } = data.into_inner();
+    } = data;
     let ProjectPathInput {
         track_section_ranges: path_track_ranges,
         routes: path_routes,
         blocks: path_blocks,
     } = path;
     let path_projection = PathProjection::new(&path_track_ranges);
-    let db_pool = db_pool.into_inner();
-    let redis_client = redis_client.into_inner();
     let mut redis_conn = redis_client.get_connection().await?;
-    let core = core_client.into_inner();
 
     let infra = Infra::retrieve_or_fail(db_pool.get().await?.deref_mut(), infra_id, || {
         TrainScheduleError::InfraNotFound { infra_id }
@@ -170,7 +166,7 @@ async fn project_path(
     let simulations = train_simulation_batch(
         db_pool.get().await?.deref_mut(),
         redis_client.clone(),
-        core.clone(),
+        core_client.clone(),
         &trains,
         &infra,
     )
@@ -247,7 +243,7 @@ async fn project_path(
     let (space_time_curves, signal_updates) = join!(
         compute_batch_space_time_curves(&miss_cache, &path_projection),
         compute_batch_signal_updates(
-            core.clone(),
+            core_client.clone(),
             &infra,
             &path_track_ranges,
             &path_routes,

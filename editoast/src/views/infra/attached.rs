@@ -1,10 +1,8 @@
 use std::collections::HashMap;
 
-use actix_web::get;
-use actix_web::web::Data;
-use actix_web::web::Json;
-use actix_web::web::Path;
-use chashmap::CHashMap;
+use axum::extract::Json;
+use axum::extract::Path;
+use axum::extract::State;
 use editoast_derive::EditoastError;
 use serde_derive::Deserialize;
 use thiserror::Error;
@@ -14,10 +12,12 @@ use crate::infra_cache::InfraCache;
 use crate::modelsv2::prelude::*;
 use crate::modelsv2::Infra;
 use crate::views::infra::InfraApiError;
-use editoast_models::DbConnectionPoolV2;
+use crate::AppState;
 use editoast_schemas::primitives::ObjectType;
 
-crate::routes! { attached }
+crate::routes! {
+    "/attached/{track_id}" => attached,
+}
 
 /// Objects types that can be attached to a track
 const ATTACHED_OBJECTS_TYPES: &[ObjectType] = &[
@@ -48,6 +48,7 @@ struct InfraAttachedParams {
 
 /// Retrieve all objects attached to a given track
 #[utoipa::path(
+    get, path = "",
     tag = "infra",
     params(InfraAttachedParams),
     responses(
@@ -58,13 +59,14 @@ struct InfraAttachedParams {
         ),
     ),
 )]
-#[get("/attached/{track_id}")]
 async fn attached(
-    params: Path<InfraAttachedParams>,
-    infra_caches: Data<CHashMap<i64, InfraCache>>,
-    db_pool: Data<DbConnectionPoolV2>,
+    Path(InfraAttachedParams { infra_id, track_id }): Path<InfraAttachedParams>,
+    State(AppState {
+        infra_caches,
+        db_pool_v2: db_pool,
+        ..
+    }): State<AppState>,
 ) -> Result<Json<HashMap<ObjectType, Vec<String>>>> {
-    let InfraAttachedParams { infra_id, track_id } = params.into_inner();
     let mut conn = db_pool.get().await?;
     // TODO: lock for share
     let infra =
@@ -99,8 +101,6 @@ async fn attached(
 mod tests {
     use std::collections::HashMap;
 
-    use actix_web::test::call_and_read_body_json;
-    use actix_web::test::TestRequest;
     use rstest::rstest;
     use std::ops::DerefMut;
 
@@ -141,12 +141,10 @@ mod tests {
             .await
             .expect("Failed to create detector object");
 
-        let req = TestRequest::get()
-            .uri(format!("/infra/{}/attached/{}/", empty_infra.id, track.get_id()).as_str())
-            .to_request();
+        let req =
+            app.get(format!("/infra/{}/attached/{}/", empty_infra.id, track.get_id()).as_str());
 
-        let response: HashMap<ObjectType, Vec<String>> =
-            call_and_read_body_json(&app.service, req).await;
+        let response: HashMap<ObjectType, Vec<String>> = app.fetch(req).json_into();
         assert_eq!(response.get(&ObjectType::Detector).unwrap().len(), 1);
     }
 }

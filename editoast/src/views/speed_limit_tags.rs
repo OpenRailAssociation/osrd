@@ -1,33 +1,33 @@
-use actix_web::get;
-use actix_web::web::Data;
-use actix_web::web::Json;
+use axum::extract::State;
+use axum::Json;
 
 use crate::error::Result;
 use crate::generated_data::speed_limit_tags_config::SpeedLimitTagIds;
+use crate::AppState;
 
 crate::routes! {
-    "/speed_limit_tags" => {
-        speed_limit_tags,
-    },
+    "/speed_limit_tags" => speed_limit_tags,
 }
 
 #[utoipa::path(
+    get, path = "",
     tag = "speed_limit_tags",
     responses(
         (status = 200, description = "List of configured speed-limit tags", body = Vec<String>, example = json!(["V200", "MA80"])),
     ),
 )]
-#[get("")]
 async fn speed_limit_tags(
-    speed_limit_tag_ids_data: Data<SpeedLimitTagIds>,
+    State(AppState {
+        speed_limit_tag_ids,
+        ..
+    }): State<AppState>,
 ) -> Result<Json<SpeedLimitTagIds>> {
-    Ok(Json(speed_limit_tag_ids_data.get_ref().clone()))
+    Ok(Json(speed_limit_tag_ids.as_ref().clone()))
 }
 
 #[cfg(test)]
 mod tests {
-    use actix_http::StatusCode;
-    use actix_web::test::TestRequest;
+    use axum::http::StatusCode;
     use rstest::rstest;
 
     use crate::views::test_app::TestAppBuilder;
@@ -36,7 +36,7 @@ mod tests {
     async fn get_speed_limit_list() {
         let app = TestAppBuilder::default_app();
 
-        let request = TestRequest::get().uri("/speed_limit_tags").to_request();
+        let request = app.get("/speed_limit_tags");
 
         let response: Vec<String> = app.fetch(request).assert_status(StatusCode::OK).json_into();
 

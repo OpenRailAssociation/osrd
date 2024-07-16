@@ -1,8 +1,6 @@
-use actix_web::get;
-use actix_web::web::Data;
-use actix_web::web::Json;
-use actix_web::web::Path;
-use chashmap::CHashMap;
+use axum::extract::Json;
+use axum::extract::Path;
+use axum::extract::State;
 use editoast_derive::EditoastError;
 use editoast_schemas::primitives::BoundingBox;
 use thiserror::Error;
@@ -14,12 +12,10 @@ use crate::modelsv2::prelude::*;
 use crate::modelsv2::Infra;
 use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraIdParam;
-use editoast_models::DbConnectionPoolV2;
+use crate::AppState;
 
 crate::routes! {
-    "/lines/{line_code}/bbox" => {
-        get_line_bbox,
-    },
+    "/lines/{line_code}/bbox" => get_line_bbox,
 }
 
 #[derive(Debug, Error, EditoastError)]
@@ -31,6 +27,7 @@ enum LinesErrors {
 
 /// Returns the BBoxes of a line
 #[utoipa::path(
+    get, path = "",
     tag = "infra",
     params(
         InfraIdParam,
@@ -40,20 +37,21 @@ enum LinesErrors {
         (status = 200, body = BoundingBox, description = "The BBox of the line"),
     )
 )]
-#[get("")]
 async fn get_line_bbox(
-    path: Path<(i64, i64)>,
-    infra_caches: Data<CHashMap<i64, InfraCache>>,
-    db_pool: Data<DbConnectionPoolV2>,
+    Path((infra_id, line_code)): Path<(i64, i64)>,
+    State(AppState {
+        infra_caches,
+        db_pool_v2: db_pool,
+        ..
+    }): State<AppState>,
 ) -> Result<Json<BoundingBox>> {
-    let (infra_id, line_code) = path.into_inner();
     let line_code: i32 = line_code.try_into().unwrap();
 
     let conn = &mut db_pool.get().await?;
     let infra =
         Infra::retrieve_or_fail(conn, infra_id, || InfraApiError::NotFound { infra_id }).await?;
     let infra_cache = InfraCache::get_or_load(conn, &infra_caches, &infra).await?;
-    let mut zone = BoundingBox::default();
+    let mut bbox = BoundingBox::default();
     let mut tracksections = infra_cache
         .track_sections()
         .values()
@@ -64,16 +62,15 @@ async fn get_line_bbox(
         return Err(LinesErrors::LineNotFound { line_code }.into());
     }
     tracksections.for_each(|track| {
-        zone.union(&track.bbox_geo);
+        bbox.union(&track.bbox_geo);
     });
 
-    Ok(Json(zone))
+    Ok(Json(bbox))
 }
 
 #[cfg(test)]
 mod test {
-    use actix_web::http::StatusCode;
-    use actix_web::test::TestRequest;
+    use axum::http::StatusCode;
     use editoast_schemas::infra::TrackSectionSncfExtension;
     use editoast_schemas::primitives::Identifier;
     use geos::geojson::Geometry;
@@ -119,9 +116,8 @@ mod test {
             .await
             .expect("Failed to create track section object");
 
-        let request = TestRequest::get()
-            .uri(format!("/infra/{}/lines/{line_code}/bbox/", empty_infra.id).as_str())
-            .to_request();
+        let request =
+            app.get(format!("/infra/{}/lines/{line_code}/bbox/", empty_infra.id).as_str());
         let bounding_box: BoundingBox =
             app.fetch(request).assert_status(StatusCode::OK).json_into();
         assert_eq!(bounding_box, BoundingBox((1., 2.), (3., 4.)));
@@ -134,15 +130,13 @@ mod test {
         let empty_infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
 
         let not_existing_line_code = 123456789;
-        let request = TestRequest::get()
-            .uri(
-                format!(
-                    "/infra/{}/lines/{not_existing_line_code}/bbox/",
-                    empty_infra.id
-                )
-                .as_str(),
+        let request = app.get(
+            format!(
+                "/infra/{}/lines/{not_existing_line_code}/bbox/",
+                empty_infra.id
             )
-            .to_request();
+            .as_str(),
+        );
         app.fetch(request).assert_status(StatusCode::BAD_REQUEST);
     }
 }

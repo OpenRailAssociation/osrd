@@ -73,9 +73,9 @@ def test_editoast_bulk_delete(west_to_south_east_simulations: Sequence[int]):
         f"{EDITOAST_URL}train_schedule/results/",
         json={"path_id": None, "train_ids": west_to_south_east_simulations[0]},
     )
-    assert r.status_code == 400
+    assert r.status_code == 422
     r = requests.post(
         f"{EDITOAST_URL}train_schedule/results/",
         json={"path_id": None, "train_ids": west_to_south_east_simulations[1]},
     )
-    assert r.status_code == 400
+    assert r.status_code == 422

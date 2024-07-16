@@ -1,11 +1,9 @@
 use std::collections::HashMap;
 
-use actix_web::post;
-use actix_web::web::Data;
-use actix_web::web::Json;
-use actix_web::web::Path;
-use actix_web::web::Query;
-use chashmap::CHashMap;
+use axum::extract::Json;
+use axum::extract::Path;
+use axum::extract::Query;
+use axum::extract::State;
 use derivative::Derivative;
 use editoast_derive::EditoastError;
 use pathfinding::prelude::yen;
@@ -23,7 +21,7 @@ use crate::modelsv2::prelude::*;
 use crate::modelsv2::Infra;
 use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraIdParam;
-use editoast_models::DbConnectionPoolV2;
+use crate::AppState;
 use editoast_schemas::infra::Direction;
 use editoast_schemas::infra::DirectionalTrackRange;
 use editoast_schemas::infra::Endpoint;
@@ -32,9 +30,7 @@ use editoast_schemas::primitives::Identifier;
 use editoast_schemas::primitives::ObjectType;
 
 crate::routes! {
-    "/pathfinding" => {
-        pathfinding_view,
-    },
+    "/pathfinding" => pathfinding_view,
 }
 
 editoast_common::schemas! {
@@ -81,12 +77,14 @@ struct PathfindingOutput {
 }
 
 #[derive(Debug, Clone, IntoParams, Deserialize)]
+#[into_params(parameter_in = Query)]
 struct QueryParam {
     number: Option<u8>,
 }
 
 /// This endpoint search path between starting and ending track locations
 #[utoipa::path(
+    post, path = "",
     tag = "infra,pathfinding",
     params(InfraIdParam, QueryParam),
     request_body = PathfindingInput,
@@ -94,16 +92,17 @@ struct QueryParam {
         (status = 200, description = "A list of shortest paths between starting and ending track locations", body = Vec<PathfindingOutput>)
     )
 )]
-#[post("")]
 async fn pathfinding_view(
-    infra: Path<InfraIdParam>,
-    params: Query<QueryParam>,
-    input: Json<PathfindingInput>,
-    infra_caches: Data<CHashMap<i64, InfraCache>>,
-    db_pool: Data<DbConnectionPoolV2>,
+    app_state: State<AppState>,
+    Path(infra): Path<InfraIdParam>,
+    Query(params): Query<QueryParam>,
+    Json(input): Json<PathfindingInput>,
 ) -> Result<Json<Vec<PathfindingOutput>>> {
+    let db_pool = app_state.db_pool_v2.clone();
+    let infra_caches = app_state.infra_caches.clone();
+
     // Parse and check input
-    let infra_id = infra.into_inner().infra_id;
+    let infra_id = infra.infra_id;
     let number = params.number.unwrap_or(DEFAULT_NUMBER_OF_PATHS);
     if !(1..=MAX_NUMBER_OF_PATHS).contains(&number) {
         return Err(PathfindingViewErrors::InvalidNumberOfPaths {

@@ -197,12 +197,12 @@
 
 // TODO: the documentation of this file needs to be updated (no more search.yml)
 
-use actix_web::post;
-use actix_web::web::Data;
-use actix_web::web::Json;
-use actix_web::web::Query;
-use actix_web::HttpResponse;
-use actix_web::Responder;
+use axum::extract::Json;
+use axum::extract::Query;
+use axum::extract::State;
+use axum::http::header::CONTENT_TYPE;
+use axum::http::StatusCode;
+use axum::response::IntoResponse;
 use chrono::NaiveDateTime;
 use diesel::pg::Pg;
 use diesel::sql_query;
@@ -228,7 +228,7 @@ use crate::views::pagination::PaginationQueryParam;
 use editoast_models::DbConnectionPoolV2;
 
 crate::routes! {
-    search
+    "/search" => search,
 }
 
 editoast_common::schemas! {
@@ -324,6 +324,7 @@ struct SearchDBResult {
 ///
 /// See [editoast_search::SearchAst] for a more detailed view of the query language.
 #[utoipa::path(
+    post, path = "",
     tag = "search",
     params(PaginationQueryParam),
     request_body = SearchPayload,
@@ -331,14 +332,12 @@ struct SearchDBResult {
         (status = 200, body = Vec<SearchResultItem>, description = "The search results"),
     )
 )]
-#[post("/search")]
-pub async fn search(
-    query_params: Query<PaginationQueryParam>,
-    payload: Json<SearchPayload>,
-    db_pool: Data<DbConnectionPoolV2>,
-) -> Result<impl Responder> {
+async fn search(
+    Query(query_params): Query<PaginationQueryParam>,
+    State(db_pool): State<DbConnectionPoolV2>,
+    Json(SearchPayload { object, query, dry }): Json<SearchPayload>,
+) -> Result<impl IntoResponse> {
     let (page, per_page) = query_params.validate(1000)?.warn_page_size(100).unpack();
-    let Json(SearchPayload { object, query, dry }) = payload;
     let search_config =
         SearchConfigFinder::find(&object).ok_or_else(|| SearchApiError::ObjectType {
             object_type: object.to_owned(),
@@ -354,14 +353,23 @@ pub async fn search(
 
     if dry {
         let query = diesel::debug_query::<Pg, _>(&query).to_string();
-        return Ok(HttpResponse::Ok().body(query));
+        return Ok(axum::response::Response::builder()
+            .status(StatusCode::OK)
+            .body(axum::body::Body::from(query))
+            .unwrap());
     }
 
     let objects = query
         .load::<SearchDBResult>(db_pool.get().await?.deref_mut())
         .await?;
     let results: Vec<_> = objects.into_iter().map(|r| r.result).collect();
-    Ok(HttpResponse::Ok().json(results))
+    Ok(axum::response::Response::builder()
+        .status(StatusCode::OK)
+        .header(CONTENT_TYPE, "application/json")
+        .body(axum::body::Body::from(
+            serde_json::to_string(&results).expect("serde error"),
+        ))
+        .expect("response builder error"))
 }
 
 // NOTE: every structure deriving `Search` here might have to `#[allow(unused)]`

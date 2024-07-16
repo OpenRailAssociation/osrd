@@ -1,6 +1,5 @@
-use actix_web::post;
-use actix_web::web::Data;
-use actix_web::web::Json;
+use axum::extract::Json;
+use axum::extract::State;
 use chrono::NaiveDateTime;
 use chrono::Utc;
 use derivative::Derivative;
@@ -21,13 +20,11 @@ use crate::modelsv2::Changeset;
 use crate::modelsv2::Create;
 use crate::modelsv2::CreateBatch;
 use crate::modelsv2::Model;
-use editoast_models::DbConnectionPoolV2;
+use crate::AppState;
 use editoast_schemas::infra::TrackRange;
 
 crate::routes! {
-    "/work_schedules" => {
-        create,
-    }
+    "/work_schedules" => create,
 }
 
 editoast_common::schemas! {
@@ -129,20 +126,21 @@ struct WorkScheduleCreateResponse {
 }
 
 #[utoipa::path(
+    post, path = "",
     tag = "work_schedules",
     request_body = WorkScheduleCreateForm,
     responses(
         (status = 201, body = WorkScheduleCreateResponse, description = "The id of the created work schedule group"),
     )
 )]
-#[post("")]
 async fn create(
-    db_pool: Data<DbConnectionPoolV2>,
-    data: Json<WorkScheduleCreateForm>,
+    State(app_state): State<AppState>,
+    Json(data): Json<WorkScheduleCreateForm>,
 ) -> Result<Json<WorkScheduleCreateResponse>> {
+    let db_pool = app_state.db_pool_v2.clone();
     let conn = &mut db_pool.get().await?;
 
-    let work_schedule_create_form = data.into_inner();
+    let work_schedule_create_form = data;
 
     // Create the work_schedule_group
     let work_schedule_group = WorkScheduleGroup::changeset()
@@ -169,8 +167,7 @@ async fn create(
 
 #[cfg(test)]
 pub mod test {
-    use actix_web::http::StatusCode;
-    use actix_web::test::TestRequest;
+    use axum::http::StatusCode;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
     use serde_json::json;
@@ -186,19 +183,16 @@ pub mod test {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
 
-        let request = TestRequest::post()
-            .uri("/work_schedules")
-            .set_json(json!({
-                "work_schedule_group_name": "work schedule group name",
-                "work_schedules": [{
-                    "start_date_time": "2024-01-01T08:00:00",
-                    "end_date_time": "2024-01-01T09:00:00",
-                    "track_ranges": [],
-                    "obj_id": "work_schedule_obj_id",
-                    "work_schedule_type": "CATENARY"
-                }]
-            }))
-            .to_request();
+        let request = app.post("/work_schedules").json(&json!({
+            "work_schedule_group_name": "work schedule group name",
+            "work_schedules": [{
+                "start_date_time": "2024-01-01T08:00:00",
+                "end_date_time": "2024-01-01T09:00:00",
+                "track_ranges": [],
+                "obj_id": "work_schedule_obj_id",
+                "work_schedule_type": "CATENARY"
+            }]
+        }));
 
         // WHEN
         let work_schedule_response = app
@@ -220,21 +214,19 @@ pub mod test {
     async fn work_schedule_create_fail_start_date_after_end_date() {
         let app = TestAppBuilder::default_app();
 
-        let request = TestRequest::post()
-            .uri("/work_schedules")
-            .set_json(json!({
-                "work_schedule_group_name": "work schedule group name",
-                "work_schedules": [{
-                    "start_date_time": "2024-01-01T08:00:00",
-                    "end_date_time": "2024-01-01T07:00:00",
-                    "track_ranges": [],
-                    "obj_id": "work_schedule_obj_id",
-                    "work_schedule_type": "CATENARY"
-                }]
-            }))
-            .to_request();
+        let request = app.post("/work_schedules").json(&json!({
+            "work_schedule_group_name": "work schedule group name",
+            "work_schedules": [{
+                "start_date_time": "2024-01-01T08:00:00",
+                "end_date_time": "2024-01-01T07:00:00",
+                "track_ranges": [],
+                "obj_id": "work_schedule_obj_id",
+                "work_schedule_type": "CATENARY"
+            }]
+        }));
 
-        app.fetch(request).assert_status(StatusCode::BAD_REQUEST);
+        app.fetch(request)
+            .assert_status(StatusCode::UNPROCESSABLE_ENTITY);
     }
 
     #[rstest]
@@ -250,19 +242,16 @@ pub mod test {
             .await
             .expect("Failed to create work schedule group");
 
-        let request = TestRequest::post()
-            .uri("/work_schedules")
-            .set_json(json!({
-                "work_schedule_group_name": "duplicated work schedule group name",
-                "work_schedules": [{
-                    "start_date_time": "2024-01-01T08:00:00",
-                    "end_date_time": "2024-01-01T09:00:00",
-                    "track_ranges": [],
-                    "obj_id": "work_schedule_obj_id",
-                    "work_schedule_type": "CATENARY"
-                }]
-            }))
-            .to_request();
+        let request = app.post("/work_schedules").json(&json!({
+            "work_schedule_group_name": "duplicated work schedule group name",
+            "work_schedules": [{
+                "start_date_time": "2024-01-01T08:00:00",
+                "end_date_time": "2024-01-01T09:00:00",
+                "track_ranges": [],
+                "obj_id": "work_schedule_obj_id",
+                "work_schedule_type": "CATENARY"
+            }]
+        }));
 
         let work_schedule_response = app
             .fetch(request)

@@ -1,14 +1,10 @@
 use std::ops::DerefMut as _;
 
-use actix_web::delete;
-use actix_web::get;
-use actix_web::patch;
-use actix_web::post;
-use actix_web::web::Data;
-use actix_web::web::Json;
-use actix_web::web::Path;
-use actix_web::web::Query;
-use actix_web::HttpResponse;
+use axum::extract::Json;
+use axum::extract::Path;
+use axum::extract::Query;
+use axum::extract::State;
+use axum::response::IntoResponse;
 use chrono::Utc;
 use derivative::Derivative;
 use diesel_async::scoped_futures::ScopedFutureExt;
@@ -50,8 +46,8 @@ crate::routes! {
             get,
             delete,
             patch,
-        }
-    }
+        },
+    },
 }
 
 editoast_common::schemas! {
@@ -183,6 +179,7 @@ impl ScenarioResponse {
 
 /// Create a scenario
 #[utoipa::path(
+    post, path = "",
     tag = "scenariosv2",
     params(ProjectIdParam, StudyIdParam),
     request_body = ScenarioCreateFormV2,
@@ -190,16 +187,14 @@ impl ScenarioResponse {
         (status = 201, body = ScenarioResponseV2, description = "The created scenario"),
     )
 )]
-#[post("")]
 async fn create(
-    db_pool: Data<DbConnectionPoolV2>,
-    data: Json<ScenarioCreateForm>,
-    path: Path<(i64, i64)>,
+    State(db_pool): State<DbConnectionPoolV2>,
+    Path((project_id, study_id)): Path<(i64, i64)>,
+    Json(data): Json<ScenarioCreateForm>,
 ) -> Result<Json<ScenarioResponse>> {
-    let (project_id, study_id) = path.into_inner();
     let timetable_id = data.timetable_id;
     let infra_id = data.infra_id;
-    let scenario: Changeset<Scenario> = data.into_inner().into();
+    let scenario: Changeset<Scenario> = data.into();
 
     let scenarios_response = db_pool
         .get()
@@ -246,6 +241,7 @@ async fn create(
 
 /// Delete a scenario
 #[utoipa::path(
+    delete, path = "",
     tag = "scenariosv2",
     params(ProjectIdParam, StudyIdParam, ScenarioIdParam),
     responses(
@@ -253,17 +249,14 @@ async fn create(
         (status = 404, body = InternalError, description = "The requested scenario was not found"),
     )
 )]
-#[delete("")]
 async fn delete(
-    path: Path<ScenarioPathParam>,
-    db_pool: Data<DbConnectionPoolV2>,
-) -> Result<HttpResponse> {
-    let ScenarioPathParam {
+    Path(ScenarioPathParam {
         project_id,
         study_id,
         scenario_id,
-    } = path.into_inner();
-
+    }): Path<ScenarioPathParam>,
+    State(db_pool): State<DbConnectionPoolV2>,
+) -> Result<impl IntoResponse> {
     db_pool
         .get()
         .await?
@@ -292,7 +285,7 @@ async fn delete(
         })
         .await?;
 
-    Ok(HttpResponse::NoContent().finish())
+    Ok(axum::http::StatusCode::NO_CONTENT)
 }
 
 /// This structure is used by the patch endpoint to patch a scenario
@@ -319,6 +312,7 @@ impl From<ScenarioPatchForm> for <Scenario as crate::modelsv2::Model>::Changeset
 
 /// Update a scenario
 #[utoipa::path(
+    patch, path = "",
     tag = "scenariosv2",
     params(ProjectIdParam, StudyIdParam, ScenarioIdParam),
     request_body = ScenarioPatchFormV2,
@@ -327,18 +321,15 @@ impl From<ScenarioPatchForm> for <Scenario as crate::modelsv2::Model>::Changeset
         (status = 404, body = InternalError, description = "The requested scenario was not found"),
     )
 )]
-#[patch("")]
 async fn patch(
-    data: Json<ScenarioPatchForm>,
-    path: Path<ScenarioPathParam>,
-    db_pool: Data<DbConnectionPoolV2>,
-) -> Result<Json<ScenarioResponse>> {
-    let ScenarioPathParam {
+    Path(ScenarioPathParam {
         project_id,
         study_id,
         scenario_id,
-    } = path.into_inner();
-
+    }): Path<ScenarioPathParam>,
+    State(db_pool): State<DbConnectionPoolV2>,
+    Json(form): Json<ScenarioPatchForm>,
+) -> Result<Json<ScenarioResponse>> {
     let scenarios_response = db_pool
         .get()
         .await?
@@ -348,14 +339,14 @@ async fn patch(
                 let (mut project, study) = check_project_study(conn, project_id, study_id).await?;
 
                 // Check if the infra exists
-                if let Some(infra_id) = data.0.infra_id {
+                if let Some(infra_id) = form.infra_id {
                     if !Infra::exists(conn, infra_id).await? {
                         return Err(ScenarioError::InfraNotFound { infra_id }.into());
                     }
                 }
 
                 // Update the scenario
-                let scenario: Changeset<Scenario> = data.into_inner().into();
+                let scenario: Changeset<Scenario> = form.into();
                 let scenario = scenario
                     .update_or_fail(conn, scenario_id, || ScenarioError::NotFound {
                         scenario_id,
@@ -385,6 +376,7 @@ async fn patch(
 
 /// Return a specific scenario
 #[utoipa::path(
+    get, path = "",
     tag = "scenariosv2",
     params(ProjectIdParam, StudyIdParam, ScenarioIdParam),
     responses(
@@ -392,17 +384,14 @@ async fn patch(
         (status = 404, body = InternalError, description = "The requested scenario was not found"),
     )
 )]
-#[get("")]
 async fn get(
-    db_pool: Data<DbConnectionPoolV2>,
-    path: Path<ScenarioPathParam>,
-) -> Result<Json<ScenarioResponse>> {
-    let ScenarioPathParam {
+    State(db_pool): State<DbConnectionPoolV2>,
+    Path(ScenarioPathParam {
         project_id,
         study_id,
         scenario_id,
-    } = path.into_inner();
-
+    }): Path<ScenarioPathParam>,
+) -> Result<Json<ScenarioResponse>> {
     let conn = &mut db_pool.get().await?;
 
     let (project, study) = check_project_study(conn, project_id, study_id).await?;
@@ -432,6 +421,7 @@ struct ListScenariosResponse {
 
 /// Return a list of scenarios
 #[utoipa::path(
+    get, path = "",
     tag = "scenariosv2",
     params(ProjectIdParam, StudyIdParam, PaginationQueryParam, OperationalStudiesOrderingParam),
     responses(
@@ -439,14 +429,12 @@ struct ListScenariosResponse {
         (status = 404, description = "Project or study doesn't exist")
     )
 )]
-#[get("")]
 async fn list(
-    db_pool: Data<DbConnectionPoolV2>,
-    path: Path<(i64, i64)>,
+    State(db_pool): State<DbConnectionPoolV2>,
+    Path((project_id, study_id)): Path<(i64, i64)>,
     Query(pagination_params): Query<PaginationQueryParam>,
     Query(OperationalStudiesOrderingParam { ordering }): Query<OperationalStudiesOrderingParam>,
 ) -> Result<Json<ListScenariosResponse>> {
-    let (project_id, study_id) = path.into_inner();
     let _ = check_project_study(db_pool.get().await?.deref_mut(), project_id, study_id).await?;
 
     let settings = pagination_params
@@ -471,8 +459,7 @@ async fn list(
 
 #[cfg(test)]
 mod tests {
-    use actix_web::http::StatusCode;
-    use actix_web::test::TestRequest;
+    use axum::http::StatusCode;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
     use serde_json::json;
@@ -507,7 +494,7 @@ mod tests {
             fixtures.study.id,
             Some(fixtures.scenario.id),
         );
-        let request = TestRequest::get().uri(&url).to_request();
+        let request = app.get(&url);
 
         let response: ScenarioResponse =
             app.fetch(request).assert_status(StatusCode::OK).json_into();
@@ -524,7 +511,7 @@ mod tests {
             create_scenario_fixtures_set(pool.get_ok().deref_mut(), "test_scenario_name").await;
 
         let url = scenario_url(fixtures.project.id, fixtures.study.id, None);
-        let request = TestRequest::get().uri(&url).to_request();
+        let request = app.get(&url);
 
         let mut response: ListScenariosResponse =
             app.fetch(request).assert_status(StatusCode::OK).json_into();
@@ -550,7 +537,7 @@ mod tests {
 
         let url = scenario_url(fixtures.project.id, 99999999, Some(fixtures.scenario.id));
 
-        let request = TestRequest::get().uri(&url).to_request();
+        let request = app.get(&url);
 
         app.fetch(request).assert_status(StatusCode::NOT_FOUND);
     }
@@ -574,16 +561,13 @@ mod tests {
         let study_tags = Tags::new(vec!["tag1".to_string(), "tag2".to_string()]);
 
         // Insert scenario
-        let request = TestRequest::post()
-            .uri(&url)
-            .set_json(json!({
-                "name": study_name,
-                "description": study_description,
-                "infra_id": study_infra_id,
-                "timetable_id": study_timetable_id,
-                "tags": study_tags
-            }))
-            .to_request();
+        let request = app.post(&url).json(&json!({
+            "name": study_name,
+            "description": study_description,
+            "infra_id": study_infra_id,
+            "timetable_id": study_timetable_id,
+            "tags": study_tags
+        }));
 
         let response: ScenarioResponse =
             app.fetch(request).assert_status(StatusCode::OK).json_into();
@@ -625,14 +609,11 @@ mod tests {
         let study_tags = Tags::new(vec!["patched_tag1".to_string(), "patched_tag2".to_string()]);
 
         // Update scenario
-        let request = TestRequest::patch()
-            .uri(&url)
-            .set_json(json!({
-                "name": study_name,
-                "description": study_description,
-                "tags": study_tags
-            }))
-            .to_request();
+        let request = app.patch(&url).json(&json!({
+            "name": study_name,
+            "description": study_description,
+            "tags": study_tags
+        }));
         let response: ScenarioResponse =
             app.fetch(request).assert_status(StatusCode::OK).json_into();
 
@@ -657,12 +638,9 @@ mod tests {
         );
 
         // Update scenario
-        let request = TestRequest::patch()
-            .uri(&url)
-            .set_json(json!({
-                "infra_id": 999999999,
-            }))
-            .to_request();
+        let request = app.patch(&url).json(&json!({
+            "infra_id": 999999999,
+        }));
 
         app.fetch(request).assert_status(StatusCode::NOT_FOUND);
     }
@@ -688,13 +666,10 @@ mod tests {
         let study_name = "new patched scenario V2";
         let study_other_infra_id = other_infra.id;
 
-        let request = TestRequest::patch()
-            .uri(&url)
-            .set_json(json!({
-                "name": study_name,
-                "infra_id": study_other_infra_id,
-            }))
-            .to_request();
+        let request = app.patch(&url).json(&json!({
+            "name": study_name,
+            "infra_id": study_other_infra_id,
+        }));
         let response: ScenarioResponse =
             app.fetch(request).assert_status(StatusCode::OK).json_into();
 
@@ -715,7 +690,7 @@ mod tests {
             fixtures.study.id,
             Some(fixtures.scenario.id),
         );
-        let request = TestRequest::delete().uri(&url).to_request();
+        let request = app.delete(&url);
 
         app.fetch(request).assert_status(StatusCode::NO_CONTENT);
 

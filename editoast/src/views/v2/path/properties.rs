@@ -5,16 +5,15 @@
 //! - If a user requests only the slopes, the core will only compute the slopes and editoast will cache the result.
 //! - Then if the user requests the curves and slopes, editoast will retrieve the slopes from the cache and ask the core to compute the curves.
 
-use actix_web::post;
-use actix_web::web::Data;
-use actix_web::web::Json;
-use actix_web::web::Path;
+use axum::extract::Json;
+use axum::extract::Path;
+use axum::extract::State;
 use enumset::EnumSet;
 use enumset::EnumSetType;
 use itertools::Itertools;
 use serde::Deserialize;
 use serde::Serialize;
-use serde_qs::actix::QsQuery;
+use serde_qs::axum::QsQuery;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::Hash;
 use std::hash::Hasher;
@@ -28,18 +27,16 @@ use crate::core::v2::path_properties::PropertyElectrificationValues;
 use crate::core::v2::path_properties::PropertyValuesF64;
 use crate::core::v2::pathfinding::TrackRange;
 use crate::core::AsCoreRequest;
-use crate::core::CoreClient;
 use crate::error::Result;
 use crate::views::v2::path::retrieve_infra_version;
-use crate::RedisClient;
+use crate::AppState;
 use crate::RedisConnection;
 use editoast_common::geometry::GeoJsonLineString;
-use editoast_models::DbConnectionPoolV2;
 use editoast_schemas::infra::OperationalPointExtensions;
 use editoast_schemas::infra::OperationalPointPart;
 
 crate::routes! {
-    "/v2/infra/{infra_id}/path_properties" => {post},
+    "/v2/infra/{infra_id}/path_properties" => post,
 }
 
 editoast_common::schemas! {
@@ -144,6 +141,7 @@ type Properties = EnumSet<Property>;
 
 /// Compute path properties
 #[utoipa::path(
+    post, path = "",
     tag = "pathfindingv2",
     request_body = PathPropertiesInput,
     params(
@@ -154,22 +152,22 @@ type Properties = EnumSet<Property>;
         (status = 200, description = "Path properties", body = PathProperties),
     ),
 )]
-#[post("")]
-pub async fn post(
-    db_pool: Data<DbConnectionPoolV2>,
-    redis_client: Data<RedisClient>,
-    core_client: Data<CoreClient>,
-    infra_id: Path<i64>,
-    params: QsQuery<Props>,
-    data: Json<PathPropertiesInput>,
+async fn post(
+    State(AppState {
+        db_pool_v2: db_pool,
+        redis,
+        core_client,
+        ..
+    }): State<AppState>,
+    Path(infra_id): Path<i64>,
+    QsQuery(props): QsQuery<Props>,
+    Json(path_properties_input): Json<PathPropertiesInput>,
 ) -> Result<Json<PathProperties>> {
     // Extract information from parameters
     let conn = &mut db_pool.get().await?;
-    let infra_id = infra_id.into_inner();
     let infra_version = retrieve_infra_version(conn, infra_id).await?;
-    let path_properties_input = data.into_inner();
-    let query_props: Properties = params.into_inner().into();
-    let mut redis_conn = redis_client.get_connection().await?;
+    let query_props: Properties = props.into();
+    let mut redis_conn = redis.get_connection().await?;
 
     // 1) Try to retrieve all the informations from Redis
     let mut path_properties = retrieve_path_properties(
@@ -267,8 +265,7 @@ fn path_properties_input_hash(
 
 #[cfg(test)]
 mod tests {
-    use actix_web::test::call_and_read_body_json;
-    use actix_web::test::TestRequest;
+    use axum::http::StatusCode;
     use rstest::rstest;
     use serde_json::json;
 
@@ -276,20 +273,20 @@ mod tests {
     use crate::fixtures::tests::small_infra;
     use crate::fixtures::tests::TestFixture;
     use crate::modelsv2::infra::Infra;
-    use crate::views::tests::create_test_service;
+    use crate::views::test_app::TestAppBuilder;
 
     #[rstest]
     #[ignore] // TODO: Need to mock the core response to fix this test
     async fn path_properties_small_infra(#[future] small_infra: TestFixture<Infra>) {
-        let service = create_test_service().await;
+        let app = TestAppBuilder::default_app();
         let infra = small_infra.await;
         let url = format!("/v2/infra/{}/path_properties?props[]=slopes&props[]=curves&props[]=electrifications&props[]=geometry&props[]=operational_points", infra.id());
 
         // Should succeed
-        let request = TestRequest::post().uri(&url).set_json(json!(
+        let request = app.post(&url).json(&json!(
             {"track_ranges": [{ "track_section": "TD0", "begin": 0, "end": 20000, "direction": "START_TO_STOP" }]})
-        ).to_request();
-        let response: PathProperties = call_and_read_body_json(&service, request).await;
+        );
+        let response: PathProperties = app.fetch(request).assert_status(StatusCode::OK).json_into();
         assert!(response.slopes.is_some());
         assert!(response.curves.is_some());
         assert!(response.electrifications.is_some());

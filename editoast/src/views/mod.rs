@@ -32,9 +32,8 @@ use std::time::Duration;
 use futures::TryFutureExt;
 pub use openapi::OpenApiRoot;
 
-use actix_web::get;
-use actix_web::web::Data;
-use actix_web::web::Json;
+use axum::extract::Json;
+use axum::extract::State;
 use editoast_derive::EditoastError;
 use editoast_models::db_connection_pool::ping_database;
 use editoast_models::DbConnectionPoolV2;
@@ -47,7 +46,6 @@ use utoipa::ToSchema;
 use crate::client::get_app_version;
 use crate::core::version::CoreVersionRequest;
 use crate::core::AsCoreRequest;
-use crate::core::CoreClient;
 use crate::core::{self};
 use crate::error::Result;
 use crate::error::{self};
@@ -55,20 +53,34 @@ use crate::generated_data;
 use crate::infra_cache::operation;
 use crate::models;
 use crate::modelsv2;
+use crate::AppState;
 use crate::RedisClient;
 
 crate::routes! {
-    (health, version, core_version),
-    (rolling_stocks::routes(), light_rolling_stocks::routes()),
-    (pathfinding::routes(), stdcm::routes(), train_schedule::routes()),
-    (projects::routes(),timetable::routes(), work_schedules::routes()),
-    (documents::routes(), sprites::routes(), speed_limit_tags::routes()),
-    search::routes(),
-    electrical_profiles::routes(),
-    layers::routes(),
-    infra::routes(),
-    single_simulation::routes(),
-    v2::routes()
+    pub fn router();
+    fn openapi_paths();
+
+    "/health" => health,
+    "/version" => version,
+    "/version/core" => core_version,
+
+    &documents,
+    &electrical_profiles,
+    &infra,
+    &layers,
+    &light_rolling_stocks,
+    &pathfinding,
+    &projects,
+    &rolling_stocks,
+    &search,
+    &single_simulation,
+    &speed_limit_tags,
+    &sprites,
+    &stdcm,
+    &timetable,
+    &train_schedule,
+    &v2,
+    &work_schedules,
 }
 
 editoast_common::schemas! {
@@ -112,21 +124,21 @@ pub enum AppHealthError {
 }
 
 #[utoipa::path(
+    get, path = "",
     responses(
         (status = 200, description = "Check if Editoast is running correctly", body = String)
     )
 )]
-#[get("/health")]
 async fn health(
-    db_pool: Data<DbConnectionPoolV2>,
-    redis_client: Data<RedisClient>,
+    State(AppState {
+        db_pool_v2: db_pool,
+        redis,
+        ..
+    }): State<AppState>,
 ) -> Result<&'static str> {
-    timeout(
-        Duration::from_millis(500),
-        check_health(db_pool.into_inner(), redis_client.into_inner()),
-    )
-    .await
-    .map_err(|_| AppHealthError::Timeout)??;
+    timeout(Duration::from_millis(500), check_health(db_pool, redis))
+        .await
+        .map_err(|_| AppHealthError::Timeout)??;
     Ok("ok")
 }
 
@@ -149,11 +161,11 @@ pub struct Version {
 }
 
 #[utoipa::path(
+    get, path = "",
     responses(
         (status = 200, description = "Return the service version", body = Version),
     ),
 )]
-#[get("/version")]
 async fn version() -> Json<Version> {
     Json(Version {
         git_describe: get_app_version(),
@@ -161,12 +173,13 @@ async fn version() -> Json<Version> {
 }
 
 #[utoipa::path(
+    get, path = "",
     responses(
         (status = 200, description = "Return the core service version", body = Version),
     ),
 )]
-#[get("/version/core")]
-async fn core_version(core: Data<CoreClient>) -> Json<Version> {
+async fn core_version(app_state: State<AppState>) -> Json<Version> {
+    let core = app_state.core_client.clone();
     let response = CoreVersionRequest {}.fetch(&core).await;
     let response = response.unwrap_or(Version { git_describe: None });
     Json(response)
@@ -176,106 +189,29 @@ async fn core_version(core: Data<CoreClient>) -> Json<Version> {
 mod tests {
     use std::collections::HashMap;
 
-    use actix_http::body::BoxBody;
-    use actix_http::Request;
-    use actix_http::StatusCode;
-    use actix_web::dev::Service;
-    use actix_web::dev::ServiceResponse;
-    use actix_web::test as actix_test;
-    use actix_web::test::call_and_read_body_json;
-    use actix_web::test::TestRequest;
-    use actix_web::Error;
+    use axum::http::StatusCode;
+    use editoast_models::DbConnectionPoolV2;
     use rstest::rstest;
 
     use super::test_app::TestAppBuilder;
     use crate::core::mocking::MockingClient;
-    use crate::core::CoreClient;
-
-    /// Asserts the status code of a simulated response and deserializes its body,
-    /// with a nice failure message should the something fail
-    #[macro_export]
-    macro_rules! assert_status_and_read {
-        ($response: ident, $status: expr) => {{
-            let (status, body): (_, std::result::Result<serde_json::Value, _>) = (
-                $response.status(),
-                actix_web::test::try_read_body_json($response).await,
-            );
-            if let std::result::Result::Ok(body) = body {
-                let fmt_body = format!("{}", body);
-                assert_eq!(
-                    status.as_u16(),
-                    $status.as_u16(),
-                    "unexpected error response: {}",
-                    fmt_body
-                );
-                match serde_json::from_value(body) {
-                    Ok(response) => response,
-                    Err(err) => panic!(
-                        "cannot deserialize response because '{}': {}",
-                        err, fmt_body
-                    ),
-                }
-            } else {
-                panic!(
-                    "Cannot read response body: {:?}\nGot status code {}",
-                    body.unwrap_err(),
-                    status
-                )
-            }
-        }};
-    }
-
-    /// Checks if the field "type" of the response matches the `type` field of
-    /// the `InternalError` derived from the provided error
-    ///
-    /// The other error fields (message, status_code and context) are ignored.
-    #[macro_export]
-    macro_rules! assert_response_error_type_match {
-        ($response: ident, $error: expr) => {{
-            let expected_error: $crate::error::InternalError = $error.into();
-            let payload: serde_json::Value = actix_web::test::try_read_body_json($response)
-                .await
-                .expect("cannot read response body");
-            let error_type = payload.get("type").expect("invalid error format");
-            assert_eq!(error_type, expected_error.get_type(), "error type mismatch");
-        }};
-    }
-
-    /// Creates a test client with 1 pg connection and a given [CoreClient]
-    pub async fn create_test_service_with_core_client<C: Into<CoreClient>>(
-        core: C,
-    ) -> impl Service<Request, Response = ServiceResponse<BoxBody>, Error = Error> {
-        TestAppBuilder::new()
-            .db_pool_v1()
-            .core_client(core.into())
-            .build()
-            .service
-    }
-
-    /// Create a test editoast client
-    /// This client create a single new connection to the database
-    pub async fn create_test_service(
-    ) -> impl Service<Request, Response = ServiceResponse<BoxBody>, Error = Error> {
-        create_test_service_with_core_client(CoreClient::default()).await
-    }
 
     #[rstest]
     async fn health() {
         let app = TestAppBuilder::default_app();
-        let request = TestRequest::get().uri("/health").to_request();
+        let request = app.get("/health");
         app.fetch(request).assert_status(StatusCode::OK);
     }
 
-    #[actix_test]
+    #[rstest]
     async fn version() {
-        let service = create_test_service().await;
-        let request = TestRequest::get().uri("/version").to_request();
-        let response: HashMap<String, Option<String>> =
-            call_and_read_body_json(&service, request).await;
+        let app = TestAppBuilder::default_app();
+        let request = app.get("/version");
+        let response: HashMap<String, Option<String>> = app.fetch(request).json_into();
         assert!(response.contains_key("git_describe"));
     }
 
-    #[actix_test]
+    #[rstest]
     async fn core_version() {
         let mut core = MockingClient::new();
         core.stub("/version")
@@ -283,10 +219,12 @@ mod tests {
             .response(StatusCode::OK)
             .body(r#"{"git_describe": ""}"#)
             .finish();
-        let app = create_test_service_with_core_client(core).await;
-        let request = TestRequest::get().uri("/version/core").to_request();
-        let response: HashMap<String, Option<String>> =
-            call_and_read_body_json(&app, request).await;
+        let app = TestAppBuilder::new()
+            .core_client(core.into())
+            .db_pool(DbConnectionPoolV2::for_tests())
+            .build();
+        let request = app.get("/version/core");
+        let response: HashMap<String, Option<String>> = app.fetch(request).json_into();
         assert!(response.contains_key("git_describe"));
     }
 }

@@ -1,13 +1,10 @@
-use actix_web::get;
-use actix_web::http::header::ContentType;
-use actix_web::post;
-use actix_web::web::Data;
-use actix_web::web::Json;
-use actix_web::web::Path;
-use actix_web::web::Query;
-use actix_web::HttpResponse;
-use actix_web::Responder;
-use chashmap::CHashMap;
+use axum::extract::Json;
+use axum::extract::Path;
+use axum::extract::Query;
+use axum::extract::State;
+use axum::http::header;
+use axum::http::StatusCode;
+use axum::response::IntoResponse;
 use editoast_derive::EditoastError;
 use editoast_schemas::infra::RailJson;
 use editoast_schemas::infra::RAILJSON_VERSION;
@@ -27,12 +24,13 @@ use crate::modelsv2::prelude::*;
 use crate::modelsv2::Infra;
 use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraIdParam;
+use crate::AppState;
 use editoast_models::DbConnectionPoolV2;
 use editoast_schemas::primitives::ObjectType;
 
 crate::routes! {
-    get_railjson,
-    post_railjson,
+    "/{infra_id}/railjson" => get_railjson,
+    "/railjson" => post_railjson,
 }
 
 #[derive(Debug, Error, EditoastError)]
@@ -44,6 +42,7 @@ enum ListErrorsRailjson {
 
 /// Serialize an infra
 #[utoipa::path(
+    get, path = "",
     tag = "infra",
     params(InfraIdParam),
     responses(
@@ -51,11 +50,10 @@ enum ListErrorsRailjson {
         (status = 404, description = "The infra was not found"),
     )
 )]
-#[get("/{infra_id}/railjson")]
 async fn get_railjson(
-    infra: Path<InfraIdParam>,
-    db_pool: Data<DbConnectionPoolV2>,
-) -> Result<impl Responder> {
+    Path(infra): Path<InfraIdParam>,
+    db_pool: State<DbConnectionPoolV2>,
+) -> Result<impl IntoResponse> {
     let infra_id = infra.infra_id;
     let infra_meta = Infra::retrieve_or_fail(db_pool.get().await?.deref_mut(), infra_id, || {
         InfraApiError::NotFound { infra_id }
@@ -117,14 +115,22 @@ async fn get_railjson(
         neutral_sections = res[ObjectType::NeutralSection]
     );
 
-    Ok(HttpResponse::Ok()
-        .content_type(ContentType::json())
-        .append_header(("x-infra-version", infra_meta.version))
-        .body(railjson))
+    Ok((
+        StatusCode::OK,
+        [
+            (
+                header::CONTENT_TYPE.as_str(),
+                headers::ContentType::json().to_string(),
+            ),
+            ("x-infra-version", infra_meta.version),
+        ],
+        railjson,
+    ))
 }
 
 /// Represents the query parameters for a `POST /infra/railjson` request
 #[derive(Debug, Clone, Deserialize, IntoParams)]
+#[into_params(parameter_in = Query)]
 struct PostRailjsonQueryParams {
     /// The name of the infrastructure.
     name: String,
@@ -140,6 +146,7 @@ struct PostRailjsonResponse {
 
 /// Import an infra from railjson
 #[utoipa::path(
+    post, path = "",
     tag = "infra",
     params(PostRailjsonQueryParams),
     request_body = RailJson,
@@ -148,19 +155,16 @@ struct PostRailjsonResponse {
         (status = 404, description = "The infra was not found"),
     )
 )]
-#[post("/railjson")]
 async fn post_railjson(
-    params: Query<PostRailjsonQueryParams>,
-    railjson: Json<RailJson>,
-    db_pool: Data<DbConnectionPoolV2>,
-    infra_caches: Data<CHashMap<i64, InfraCache>>,
+    app_state: State<AppState>,
+    Query(params): Query<PostRailjsonQueryParams>,
+    Json(railjson): Json<RailJson>,
 ) -> Result<Json<PostRailjsonResponse>> {
+    let db_pool = app_state.db_pool_v2.clone();
+    let infra_caches = app_state.infra_caches.clone();
     if railjson.version != RAILJSON_VERSION {
         return Err(ListErrorsRailjson::WrongRailjsonVersionProvided.into());
     }
-    let railjson = railjson.into_inner();
-
-    let db_pool = db_pool.into_inner();
     let mut infra = Infra::changeset()
         .name(params.name.clone())
         .last_railjson_version()
@@ -184,8 +188,7 @@ async fn post_railjson(
 
 #[cfg(test)]
 mod tests {
-    use actix_http::StatusCode;
-    use actix_web::test as actix_test;
+    use axum::http::StatusCode;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
 
@@ -211,9 +214,7 @@ mod tests {
         .await
         .expect("Failed to create SwitchType object");
 
-        let request = actix_test::TestRequest::get()
-            .uri(&format!("/infra/{}/railjson", empty_infra.id))
-            .to_request();
+        let request = app.get(&format!("/infra/{}/railjson", empty_infra.id));
 
         let railjson: RailJson = app.fetch(request).assert_status(StatusCode::OK).json_into();
 
@@ -242,10 +243,9 @@ mod tests {
             ..Default::default()
         };
 
-        let req = actix_test::TestRequest::post()
-            .uri("/infra/railjson?name=post_railjson_test")
-            .set_json(&railjson)
-            .to_request();
+        let req = app
+            .post("/infra/railjson?name=post_railjson_test")
+            .json(&railjson);
 
         let res: PostRailjsonResponse = app.fetch(req).assert_status(StatusCode::OK).json_into();
 

@@ -2,10 +2,9 @@ use std::collections::HashMap;
 use std::ops::DerefMut;
 use std::sync::Arc;
 
-use actix_web::get;
-use actix_web::web::Data;
-use actix_web::web::Json;
-use actix_web::web::Path;
+use axum::extract::Json;
+use axum::extract::Path;
+use axum::extract::State;
 use editoast_derive::EditoastError;
 use serde::Deserialize;
 use serde::Serialize;
@@ -16,7 +15,6 @@ use crate::core::conflicts::ConflicDetectionRequest;
 use crate::core::conflicts::TrainRequirements;
 use crate::core::v2::conflict_detection::ConflictType;
 use crate::core::AsCoreRequest;
-use crate::core::CoreClient;
 use crate::error::Result;
 use crate::models::Retrieve;
 use crate::models::SimulationOutput;
@@ -24,6 +22,7 @@ use crate::models::Timetable;
 use crate::models::TimetableWithSchedulesDetails;
 use crate::models::TrainSchedule;
 use crate::views::train_schedule::TrainScheduleError;
+use crate::AppState;
 use editoast_models::DbConnectionPoolV2;
 
 mod import;
@@ -31,8 +30,8 @@ mod import;
 crate::routes! {
     "/timetable/{id}" => {
         get,
-        get_conflicts,
-        import::routes(),
+        "/conflicts" => get_conflicts,
+        &import,
     },
 }
 
@@ -55,6 +54,7 @@ enum TimetableError {
 
 /// Return a specific timetable with its associated schedules
 #[utoipa::path(
+    get, path = "",
     tag = "timetable",
     params(
         ("id" = u64, Path, description = "Timetable id"),
@@ -64,15 +64,12 @@ enum TimetableError {
         (status = 404, description = "Timetable not found"),
     ),
 )]
-#[get("")]
 async fn get(
-    db_pool: Data<DbConnectionPoolV2>,
-    timetable_id: Path<i64>,
+    app_state: State<AppState>,
+    Path(timetable_id): Path<i64>,
 ) -> Result<Json<TimetableWithSchedulesDetails>> {
-    let timetable_id = timetable_id.into_inner();
-
+    let db_pool = app_state.db_pool_v2.clone();
     // Return the timetable
-    let db_pool = db_pool.into_inner();
     let timetable =
         match Timetable::retrieve_conn(db_pool.get().await?.deref_mut(), timetable_id).await? {
             Some(timetable) => timetable,
@@ -132,6 +129,7 @@ pub async fn get_simulated_schedules_from_timetable(
 /// Compute spacing conflicts for a given timetable
 /// TODO: This should compute itinary conflicts too
 #[utoipa::path(
+    get, path = "",
     tag = "timetable",
     params(
         ("id" = u64, Path, description = "Timetable id"),
@@ -140,16 +138,16 @@ pub async fn get_simulated_schedules_from_timetable(
         (status = 200, description = "Spacing conflicts", body = Vec<Conflict>),
     ),
 )]
-#[get("conflicts")]
 async fn get_conflicts(
-    db_pool: Data<DbConnectionPoolV2>,
-    timetable_id: Path<i64>,
-    core_client: Data<CoreClient>,
+    Path(timetable_id): Path<i64>,
+    State(AppState {
+        db_pool_v2: db_pool,
+        core_client,
+        ..
+    }): State<AppState>,
 ) -> Result<Json<Vec<Conflict>>> {
-    let timetable_id = timetable_id.into_inner();
-
     let (schedules, simulations) =
-        get_simulated_schedules_from_timetable(timetable_id, db_pool.into_inner()).await?;
+        get_simulated_schedules_from_timetable(timetable_id, db_pool).await?;
 
     let mut id_to_name = HashMap::new();
     let mut trains_requirements = Vec::new();
@@ -227,84 +225,7 @@ async fn get_conflicts(
 
 #[cfg(test)]
 pub mod test {
-    use actix_http::StatusCode;
-    use actix_web::test::TestRequest;
-    use rstest::rstest;
-    use std::ops::DerefMut;
-
-    use crate::models::train_schedule::TrainScheduleValidation;
-    use crate::models::Identifiable;
-    use crate::models::TimetableWithSchedulesDetails;
-    use crate::modelsv2::fixtures::create_empty_infra;
-    use crate::modelsv2::fixtures::create_fast_rolling_stock;
-    use crate::modelsv2::fixtures::create_pathfinding;
-    use crate::modelsv2::fixtures::create_project;
-    use crate::modelsv2::fixtures::create_scenario_v1;
-    use crate::modelsv2::fixtures::create_simulation_output;
-    use crate::modelsv2::fixtures::create_study;
-    use crate::modelsv2::fixtures::create_timetable_v1;
-    use crate::modelsv2::fixtures::create_train_schedule_v1;
-    use crate::modelsv2::fixtures::rolling_stock_with_energy_sources_form;
-    use crate::views::test_app::TestAppBuilder;
-
-    #[rstest]
-    async fn newer_rolling_stock_version() {
-        // GIVEN
-        let app = TestAppBuilder::default_app();
-        let db_pool = app.db_pool();
-
-        let test_name = "newer_rolling_stock_version";
-        let project = create_project(db_pool.get_ok().deref_mut(), test_name).await;
-        let study = create_study(db_pool.get_ok().deref_mut(), test_name, project.id).await;
-        let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
-        let timetable = create_timetable_v1(db_pool.get_ok().deref_mut(), test_name).await;
-        let _ = create_scenario_v1(
-            db_pool.get_ok().deref_mut(),
-            test_name,
-            study.id,
-            timetable.get_id(),
-            infra.id,
-        )
-        .await;
-        let rolling_stock =
-            create_fast_rolling_stock(db_pool.get_ok().deref_mut(), test_name).await;
-        let pathfinding = create_pathfinding(db_pool.get_ok().deref_mut(), infra.id).await;
-        let train_schedule = create_train_schedule_v1(
-            db_pool.get_ok().deref_mut(),
-            pathfinding.id,
-            timetable.get_id(),
-            rolling_stock.id,
-        )
-        .await;
-        let _ = create_simulation_output(db_pool.get_ok().deref_mut(), train_schedule.id).await;
-
-        // patch rolling_stock
-        let patch_rolling_stock_form = rolling_stock_with_energy_sources_form(
-            format!("{test_name}_newer_rolling_stock_version").as_str(),
-        );
-
-        // WHEN
-        let request = TestRequest::patch()
-            .uri(format!("/rolling_stock/{}", rolling_stock.id).as_str())
-            .set_json(patch_rolling_stock_form)
-            .to_request();
-        app.fetch(request).assert_status(StatusCode::OK);
-
-        // get the timetable
-        let request = TestRequest::get()
-            .uri(format!("/timetable/{}", timetable.get_id()).as_str())
-            .to_request();
-
-        // THEN
-        let response: TimetableWithSchedulesDetails =
-            app.fetch(request).assert_status(StatusCode::OK).json_into();
-        let invalid_reasons = &response
-            .train_schedule_summaries
-            .first()
-            .unwrap()
-            .invalid_reasons;
-        assert!(invalid_reasons
-            .iter()
-            .any(|i| i == &TrainScheduleValidation::NewerRollingStock))
-    }
+    // There used to be tests here. They were removed because this TSV1 module will be removed soon.
+    // These tests were using actix's test API, but we switched to axum, so they were removed instead
+    // of being ported.
 }

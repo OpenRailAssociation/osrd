@@ -2,32 +2,26 @@
 //! test actix server, database connection pool, and different mocking
 //! components.
 
-use std::{ops::Deref, sync::Arc};
+use std::sync::Arc;
 
-use actix_http::Request;
-use actix_web::{
-    body::{BoxBody, MessageBody},
-    dev::{Service, ServiceResponse},
-    middleware::NormalizePath,
-    test::init_service,
-    web::{Data, JsonConfig},
-    App, Error,
-};
+use axum::Router;
+use axum_tracing_opentelemetry::middleware::{OtelAxumLayer, OtelInResponseLayer};
 use chashmap::CHashMap;
 use editoast_models::db_connection_pool::create_connection_pool;
 use editoast_models::DbConnectionPoolV2;
 use serde::de::DeserializeOwned;
-use tracing::Instrument as _;
+use tower_http::trace::TraceLayer;
 
 use crate::{
     client::{MapLayersConfig, PostgresConfig, RedisConfig},
     core::CoreClient,
-    error::InternalError,
     generated_data::speed_limit_tags_config::SpeedLimitTagIds,
     infra_cache::InfraCache,
     map::MapLayers,
-    RedisClient,
+    AppState, RedisClient,
 };
+use axum_test::TestRequest;
+use axum_test::TestServer;
 
 /// A builder interface for [TestApp]
 ///
@@ -60,21 +54,13 @@ impl TestAppBuilder {
         self
     }
 
-    /// For migration purposes, it will be removed when all tests use the V2 version.
-    pub fn db_pool_v1(mut self) -> Self {
-        assert!(self.db_pool.is_none());
-        self.db_pool_v1 = true;
-        self
-    }
-
     pub fn core_client(mut self, core_client: CoreClient) -> Self {
         assert!(self.core_client.is_none());
         self.core_client = Some(core_client);
         self
     }
 
-    pub fn default_app(
-    ) -> TestApp<impl Service<Request, Response = ServiceResponse<BoxBody>, Error = Error>> {
+    pub fn default_app() -> TestApp {
         let pool = DbConnectionPoolV2::for_tests();
         let core_client = CoreClient::default();
         TestAppBuilder::new()
@@ -83,9 +69,7 @@ impl TestAppBuilder {
             .build()
     }
 
-    pub fn build(
-        self,
-    ) -> TestApp<impl Service<Request, Response = ServiceResponse<BoxBody>, Error = Error>> {
+    pub fn build(self) -> TestApp {
         let sub = tracing_subscriber::fmt()
             .pretty()
             .with_env_filter(
@@ -97,50 +81,65 @@ impl TestAppBuilder {
             .finish();
         let tracing_guard = tracing::subscriber::set_default(sub);
 
-        let speed_limit_tag_ids = Data::new(SpeedLimitTagIds::load());
+        // Config redis
+        let redis = RedisClient::new(RedisConfig::default())
+            .expect("Could not build Redis client")
+            .into();
 
-        let json_cfg = JsonConfig::default()
-            .limit(250 * 1024 * 1024) // 250MB
-            .error_handler(|err, _| InternalError::from(err).into());
-
-        let redis = RedisClient::new(RedisConfig::default()).expect("cannot get redis client");
-
-        let core_client = Data::new(self.core_client.expect(
-            "No core client provided to TestAppBuilder, use Default or provide a core client",
-        ));
-        let ref_core_client = core_client.clone().into_inner();
-
-        let mut app = App::new()
-            .wrap(NormalizePath::trim())
-            .app_data(speed_limit_tag_ids.clone())
-            .app_data(json_cfg)
-            .app_data(Data::new(redis))
-            .app_data(Data::new(CHashMap::<i64, InfraCache>::default()))
-            .app_data(Data::new(MapLayers::parse()))
-            .app_data(Data::new(MapLayersConfig::default()))
-            .app_data(core_client);
-
-        let ref_db_pool = if self.db_pool_v1 {
+        // Create both database pools
+        let (db_pool_v2, db_pool_v1) = if self.db_pool_v1 {
             let config = PostgresConfig::default();
             let pg_config_url = config.url().expect("cannot get postgres config url");
             let pool = create_connection_pool(pg_config_url, config.pool_size)
                 .expect("could not create connection pool for tests");
-            app = app.app_data(Data::new(pool));
-            None
+            let v1 = Arc::new(pool);
+            let v2 = futures::executor::block_on(DbConnectionPoolV2::from_pool(v1.clone()));
+            (Arc::new(v2), v1)
         } else {
-            let pool = self.db_pool.expect("No database connection pool provided to TestAppBuilder, use Default or provide a connection pool");
-            let pool = Data::new(pool);
-            let ref_db_pool = pool.clone().into_inner();
-            app = app.app_data(pool);
-            Some(ref_db_pool)
+            let db_pool_v2 = self.db_pool.expect(
+                "No database pool provided to TestAppBuilder, use Default or provide a database pool"
+            );
+            let db_pool_v1 = db_pool_v2.pool_v1();
+            (Arc::new(db_pool_v2), db_pool_v1)
         };
 
-        let service =
-            futures::executor::block_on(init_service(app.service(crate::views::routes())));
+        // Setup infra cache map
+        let infra_caches = CHashMap::<i64, InfraCache>::default().into();
+
+        // Load speed limit tag config
+        let speed_limit_tag_ids = Arc::new(SpeedLimitTagIds::load());
+
+        // Build Core client
+        let core_client = Arc::new(self.core_client.expect(
+            "No core client provided to TestAppBuilder, use Default or provide a core client",
+        ));
+
+        let app_state = AppState {
+            db_pool_v1,
+            db_pool_v2: db_pool_v2.clone(),
+            core_client: core_client.clone(),
+            redis,
+            infra_caches,
+            map_layers: MapLayers::parse().into(),
+            map_layers_config: MapLayersConfig::default().into(),
+            speed_limit_tag_ids,
+        };
+
+        // Configure the axum router
+        let router: Router<()> = axum::Router::<AppState>::new()
+            .merge(crate::views::router())
+            .layer(OtelInResponseLayer)
+            .layer(OtelAxumLayer::default())
+            .layer(TraceLayer::new_for_http())
+            .with_state(app_state);
+
+        // Run server
+        let server = TestServer::new(router).expect("test server should build properly");
+
         TestApp {
-            service,
-            db_pool: ref_db_pool,
-            core_client: ref_core_client,
+            server,
+            db_pool: db_pool_v2,
+            core_client,
             tracing_guard,
         }
     }
@@ -150,81 +149,70 @@ impl TestAppBuilder {
 ///
 /// It also holds a reference to the database connection pool and the core client,
 /// which can be accessed through the [TestApp] methods.
-pub(crate) struct TestApp<S>
-where
-    S: Service<Request, Response = ServiceResponse<BoxBody>, Error = Error>,
-{
-    pub(crate) service: S,
-    /// A reference to the database connection pool
-    ///
-    /// The Option<> lasts while the pool V1 is still around.
-    db_pool: Option<Arc<DbConnectionPoolV2>>,
+pub(crate) struct TestApp {
+    server: TestServer,
+    db_pool: Arc<DbConnectionPoolV2>,
     core_client: Arc<CoreClient>,
     #[allow(unused)] // included here to extend its lifetime, not meant to be used in any way
     tracing_guard: tracing::subscriber::DefaultGuard,
 }
 
-impl<S> TestApp<S>
-where
-    S: Service<Request, Response = ServiceResponse<BoxBody>, Error = Error>,
-{
+impl TestApp {
     #[allow(dead_code)] // while the pool migration is ongoing
     pub fn core_client(&self) -> Arc<CoreClient> {
         self.core_client.clone()
     }
 
     pub fn db_pool(&self) -> Arc<DbConnectionPoolV2> {
-        self.db_pool
-            .as_ref()
-            .expect("no DbConnectionPoolV2 setup")
-            .clone()
+        self.db_pool.clone()
     }
 
-    pub fn fetch(&self, req: Request) -> TestResponse {
-        let (method, uri) = (req.method().clone(), req.uri().clone());
-        let span = tracing::debug_span!("Request", %method, %uri);
-        futures::executor::block_on(
-            async move {
-                tracing::trace!(request = ?req);
-                let response = self.service.call(req).await.unwrap_or_else(|err| {
-                    tracing::error!(error = ?err, "Error fetching test request");
-                    panic!("could not fetch test request");
-                });
-                TestResponse::new(response)
-            }
-            .instrument(span),
-        )
+    pub fn fetch(&self, req: TestRequest) -> TestResponse {
+        futures::executor::block_on(async move {
+            tracing::trace!(request = ?req);
+            let response = req.await;
+            TestResponse::new(response)
+        })
     }
-}
 
-impl<S> Deref for TestApp<S>
-where
-    S: Service<Request, Response = ServiceResponse<BoxBody>, Error = Error>,
-{
-    type Target = S;
-
-    fn deref(&self) -> &Self::Target {
-        &self.service
+    pub fn get(&self, path: &str) -> TestRequest {
+        self.server.get(&trim_path(path))
+    }
+    pub fn post(&self, path: &str) -> TestRequest {
+        self.server.post(&trim_path(path))
+    }
+    pub fn put(&self, path: &str) -> TestRequest {
+        self.server.put(&trim_path(path))
+    }
+    pub fn patch(&self, path: &str) -> TestRequest {
+        self.server.patch(&trim_path(path))
+    }
+    pub fn delete(&self, path: &str) -> TestRequest {
+        self.server.delete(&trim_path(path))
     }
 }
 
-impl<S> AsRef<S> for TestApp<S>
-where
-    S: Service<Request, Response = ServiceResponse<BoxBody>, Error = Error>,
-{
-    fn as_ref(&self) -> &S {
-        &self.service
+// For technical reasons, we had a hard time trying to configure the normalizing layer
+// in the test server. Since we have control over the paths configured in our unit tests,
+// doing this manually is probably a good enough solution for now.
+fn trim_path(path: &str) -> String {
+    if let Some(path) = path.strip_suffix('/') {
+        path.to_owned()
+    } else if path.contains("/?") {
+        path.replace("/?", "?")
+    } else {
+        path.to_owned()
     }
 }
 
 pub struct TestResponse {
-    inner: ServiceResponse<BoxBody>,
+    inner: axum_test::TestResponse,
     log_payload: bool,
 }
 
 impl TestResponse {
-    #[tracing::instrument(name = "Response", level = "debug", skip(inner), fields(status = ?inner.status()))]
-    fn new(inner: ServiceResponse<BoxBody>) -> Self {
+    #[tracing::instrument(name = "Response", level = "debug", skip(inner), fields(status = ?inner.status_code()))]
+    fn new(inner: axum_test::TestResponse) -> Self {
         tracing::trace!(response = ?inner);
         Self {
             inner,
@@ -242,17 +230,15 @@ impl TestResponse {
         if !self.log_payload {
             return "payload logging disabled".to_string();
         }
-        self.inner
-            .into_body()
-            .try_into_bytes()
+        let bytes = self.inner.into_bytes();
+        serde_json::from_slice::<serde_json::Value>(&bytes)
             .ok()
-            .and_then(|bytes| serde_json::from_slice::<serde_json::Value>(&bytes).ok())
             .and_then(|json| serde_json::to_string_pretty(&json).ok())
             .unwrap_or_else(|| "cannot render response body".to_string())
     }
 
-    pub fn assert_status(self, expected_status: actix_http::StatusCode) -> Self {
-        let actual_status = self.inner.status();
+    pub fn assert_status(self, expected_status: axum::http::StatusCode) -> Self {
+        let actual_status = self.inner.status_code();
         if actual_status != expected_status {
             let body = self.render_response_lossy();
             pretty_assertions::assert_eq!(
@@ -267,18 +253,22 @@ impl TestResponse {
     }
 
     pub fn bytes(self) -> Vec<u8> {
+        self.inner.into_bytes().into()
+    }
+
+    pub fn content_type(&self) -> String {
         self.inner
-            .into_body()
-            .try_into_bytes()
-            .expect("cannot extract body out of test response")
-            .into()
+            .header("Content-Type")
+            .to_str()
+            .expect("Content-Type header should be valid UTF-8")
+            .to_string()
     }
 
     #[tracing::instrument(
         name = "Deserialization",
         level = "debug",
         skip(self),
-        fields(response_status = ?self.inner.status())
+        fields(response_status = ?self.inner.status_code())
     )]
     pub fn json_into<T: DeserializeOwned>(self) -> T {
         let body = self.bytes();

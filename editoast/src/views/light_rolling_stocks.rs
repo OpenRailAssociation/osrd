@@ -1,8 +1,7 @@
-use actix_web::get;
-use actix_web::web::Data;
-use actix_web::web::Json;
-use actix_web::web::Path;
-use actix_web::web::Query;
+use axum::extract::Json;
+use axum::extract::Path;
+use axum::extract::Query;
+use axum::extract::State;
 
 use crate::decl_paginated_response;
 use crate::error::Result;
@@ -21,12 +20,8 @@ use super::rolling_stocks::light_rolling_stock::LightRollingStockWithLiveries;
 crate::routes! {
     "/light_rolling_stock" => {
         list,
-        "/name/{rolling_stock_name}" => {
-            get_by_name,
-        },
-        "/{rolling_stock_id}" => {
-            get,
-        },
+        "/name/{rolling_stock_name}" => get_by_name,
+        "/{rolling_stock_id}" => get,
     },
 }
 
@@ -42,16 +37,16 @@ editoast_common::schemas! {
 
 /// Paginated list of rolling stock with a lighter response
 #[utoipa::path(
+    get, path = "",
     tag = "rolling_stock",
     params(PaginationQueryParam),
     responses(
         (status = 200, body = PaginatedResponseOfLightRollingStockWithLiveries),
     )
 )]
-#[get("")]
 async fn list(
-    db_pool: Data<DbConnectionPoolV2>,
-    page_settings: Query<PaginationQueryParam>,
+    State(db_pool): State<DbConnectionPoolV2>,
+    Query(page_settings): Query<PaginationQueryParam>,
 ) -> Result<Json<PaginatedResponse<LightRollingStockWithLiveries>>> {
     let conn = &mut db_pool.get().await?;
     let (page, per_page) = page_settings.validate(1000)?.warn_page_size(100).unpack();
@@ -72,18 +67,17 @@ async fn list(
 
 /// Retrieve a rolling stock's light representation by its id
 #[utoipa::path(
+    get, path = "",
     tag = "rolling_stock",
     params(RollingStockIdParam),
     responses(
         (status = 200, body = LightRollingStockWithLiveries, description = "The rolling stock with their simplified effort curves"),
     )
 )]
-#[get("")]
 async fn get(
-    db_pool: Data<DbConnectionPoolV2>,
-    rolling_stock_id: Path<i64>,
+    State(db_pool): State<DbConnectionPoolV2>,
+    Path(rolling_stock_id): Path<i64>,
 ) -> Result<Json<LightRollingStockWithLiveries>> {
-    let rolling_stock_id = rolling_stock_id.into_inner();
     let conn = &mut db_pool.get().await?;
     let rolling_stock = LightRollingStockModel::retrieve_or_fail(conn, rolling_stock_id, || {
         RollingStockError::KeyNotFound {
@@ -98,18 +92,17 @@ async fn get(
 
 /// Retrieve a rolling stock's light representation by its name
 #[utoipa::path(
+    get, path = "",
     tag = "rolling_stock",
     params(RollingStockNameParam),
     responses(
         (status = 200, body = LightRollingStockWithLiveries, description = "The rolling stock with their simplified effort curves"),
     )
 )]
-#[get("")]
 async fn get_by_name(
-    db_pool: Data<DbConnectionPoolV2>,
-    rolling_stock_name: Path<String>,
+    State(db_pool): State<DbConnectionPoolV2>,
+    Path(rolling_stock_name): Path<String>,
 ) -> Result<Json<LightRollingStockWithLiveries>> {
-    let rolling_stock_name = rolling_stock_name.into_inner();
     let conn = &mut db_pool.get().await?;
     let rolling_stock =
         LightRollingStockModel::retrieve_or_fail(conn, rolling_stock_name.clone(), || {
@@ -128,8 +121,7 @@ mod tests {
     use std::collections::HashSet;
     use std::ops::DerefMut;
 
-    use actix_http::StatusCode;
-    use actix_web::test::TestRequest;
+    use axum::http::StatusCode;
     use pretty_assertions::assert_eq;
     use rstest::*;
 
@@ -152,7 +144,7 @@ mod tests {
     #[rstest]
     async fn list_light_rolling_stock() {
         let app = TestAppBuilder::default_app();
-        let request = TestRequest::get().uri("/light_rolling_stock").to_request();
+        let request = app.get("/light_rolling_stock");
         app.fetch(request).assert_status(StatusCode::OK);
     }
 
@@ -166,9 +158,7 @@ mod tests {
         let fast_rolling_stock =
             create_fast_rolling_stock(db_pool.get_ok().deref_mut(), rs_name).await;
 
-        let request = TestRequest::get()
-            .uri(format!("/light_rolling_stock/{}", fast_rolling_stock.id).as_str())
-            .to_request();
+        let request = app.get(format!("/light_rolling_stock/{}", fast_rolling_stock.id).as_str());
 
         // WHEN
         let response: LightRollingStockWithLiveries =
@@ -188,9 +178,7 @@ mod tests {
         let fast_rolling_stock =
             create_fast_rolling_stock(db_pool.get_ok().deref_mut(), rs_name).await;
 
-        let request = TestRequest::get()
-            .uri(format!("/light_rolling_stock/name/{}", rs_name).as_str())
-            .to_request();
+        let request = app.get(format!("/light_rolling_stock/name/{}", rs_name).as_str());
 
         // WHEN
         let response: LightRollingStockWithLiveries =
@@ -205,9 +193,7 @@ mod tests {
     async fn get_unexisting_light_rolling_stock() {
         let app = TestAppBuilder::default_app();
 
-        let request = TestRequest::get()
-            .uri(format!("/light_rolling_stock/{}", -1).as_str())
-            .to_request();
+        let request = app.get(format!("/light_rolling_stock/{}", -1).as_str());
 
         app.fetch(request).assert_status(StatusCode::NOT_FOUND);
     }
@@ -238,12 +224,12 @@ mod tests {
             .map(|(_, rs, _)| rs.id)
             .collect::<HashSet<_>>();
 
-        let request = TestRequest::get().uri("/light_rolling_stock/").to_request();
+        let request = app.get("/light_rolling_stock/");
         let response: PaginatedResponse<LightRollingStockWithLiveries> =
             app.fetch(request).assert_status(StatusCode::OK).json_into();
         let count = response.count;
         let uri = format!("/light_rolling_stock/?page_size={count}");
-        let request = TestRequest::get().uri(&uri).to_request();
+        let request = app.get(&uri);
         let response: PaginatedResponse<LightRollingStockWithLiveries> =
             app.fetch(request).assert_status(StatusCode::OK).json_into();
 
@@ -264,9 +250,7 @@ mod tests {
     async fn light_rolling_stock_max_page_size() {
         let app = TestAppBuilder::default_app();
 
-        let request = TestRequest::get()
-            .uri("/light_rolling_stock/?page_size=1010")
-            .to_request();
+        let request = app.get("/light_rolling_stock/?page_size=1010");
 
         let response: InternalError = app
             .fetch(request)

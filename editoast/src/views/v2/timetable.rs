@@ -3,15 +3,12 @@ pub mod stdcm;
 use std::collections::HashMap;
 use std::ops::DerefMut as _;
 
-use actix_web::delete;
-use actix_web::get;
-use actix_web::post;
-use actix_web::put;
-use actix_web::web::Data;
-use actix_web::web::Json;
-use actix_web::web::Path;
-use actix_web::web::Query;
-use actix_web::HttpResponse;
+use axum::extract::Json;
+use axum::extract::Path;
+use axum::extract::Query;
+use axum::extract::State;
+use axum::http::StatusCode;
+use axum::response::IntoResponse;
 use derivative::Derivative;
 use editoast_derive::EditoastError;
 use editoast_schemas::train_schedule::TrainScheduleBase;
@@ -40,8 +37,7 @@ use crate::views::pagination::PaginationStats;
 use crate::views::v2::train_schedule::train_simulation_batch;
 use crate::views::v2::train_schedule::TrainScheduleForm;
 use crate::views::v2::train_schedule::TrainScheduleResult;
-use crate::CoreClient;
-use crate::RedisClient;
+use crate::AppState;
 use crate::RetrieveBatch;
 use editoast_models::DbConnectionPoolV2;
 
@@ -53,10 +49,10 @@ crate::routes! {
             delete,
             get,
             put,
-            conflicts,
-            train_schedule,
-            stdcm::routes(),
-        }
+            "/conflicts" => conflicts,
+            "/train_schedule" => train_schedule,
+            &stdcm,
+        },
     },
 }
 
@@ -131,6 +127,7 @@ struct TimetableIdParam {
 
 /// Return a specific timetable with its associated schedules
 #[utoipa::path(
+    get, path = "",
     tag = "timetablev2",
     params(TimetableIdParam),
     responses(
@@ -138,10 +135,9 @@ struct TimetableIdParam {
         (status = 404, description = "Timetable not found"),
     ),
 )]
-#[get("")]
 async fn get(
-    db_pool: Data<DbConnectionPoolV2>,
-    timetable_id: Path<TimetableIdParam>,
+    db_pool: State<DbConnectionPoolV2>,
+    Path(timetable_id): Path<TimetableIdParam>,
 ) -> Result<Json<TimetableDetailedResult>> {
     let timetable_id = timetable_id.id;
     // Return the timetable
@@ -164,16 +160,16 @@ struct ListTimetablesResponse {
 
 /// Retrieve paginated timetables
 #[utoipa::path(
+    get, path = "",
     tag = "timetablev2",
     params(PaginationQueryParam),
     responses(
         (status = 200, description = "List timetables", body = inline(ListTimetablesResponse)),
     ),
 )]
-#[get("")]
 async fn list(
-    db_pool: Data<DbConnectionPoolV2>,
-    pagination_params: Query<PaginationQueryParam>,
+    db_pool: State<DbConnectionPoolV2>,
+    Query(pagination_params): Query<PaginationQueryParam>,
 ) -> Result<Json<ListTimetablesResponse>> {
     let settings = pagination_params
         .validate(1000)?
@@ -189,6 +185,7 @@ async fn list(
 
 /// Create a timetable
 #[utoipa::path(
+    post, path = "",
     tag = "timetablev2",
     request_body = TimetableForm,
     responses(
@@ -196,14 +193,13 @@ async fn list(
         (status = 404, description = "Timetable not found"),
     ),
 )]
-#[post("")]
 async fn post(
-    db_pool: Data<DbConnectionPoolV2>,
-    data: Json<TimetableForm>,
+    db_pool: State<DbConnectionPoolV2>,
+    Json(data): Json<TimetableForm>,
 ) -> Result<Json<TimetableResult>> {
     let conn = &mut db_pool.get().await?;
 
-    let elec_profile_set = data.into_inner().electrical_profile_set_id;
+    let elec_profile_set = data.electrical_profile_set_id;
     let changeset = Timetable::changeset().electrical_profile_set_id(elec_profile_set);
     let timetable = changeset.create(conn).await?;
 
@@ -212,23 +208,24 @@ async fn post(
 
 /// Update a specific timetable
 #[utoipa::path(
+    put, path = "",
     tag = "timetablev2",
     params(TimetableIdParam),
+    request_body = TimetableForm,
     responses(
         (status = 200, description = "Timetable with train schedules ids", body = TimetableDetailedResult),
         (status = 404, description = "Timetable not found"),
     ),
 )]
-#[put("")]
 async fn put(
-    db_pool: Data<DbConnectionPoolV2>,
+    db_pool: State<DbConnectionPoolV2>,
     timetable_id: Path<TimetableIdParam>,
     data: Json<TimetableForm>,
 ) -> Result<Json<TimetableDetailedResult>> {
     let timetable_id = timetable_id.id;
     let conn = &mut db_pool.get().await?;
 
-    let elec_profile_set = data.into_inner().electrical_profile_set_id;
+    let elec_profile_set = data.electrical_profile_set_id;
     let changeset = Timetable::changeset().electrical_profile_set_id(elec_profile_set);
     changeset
         .update_or_fail(conn, timetable_id, || TimetableError::NotFound {
@@ -245,6 +242,7 @@ async fn put(
 
 /// Delete a timetable
 #[utoipa::path(
+    delete, path = "",
     tag = "timetablev2",
     params(TimetableIdParam),
     responses(
@@ -252,22 +250,22 @@ async fn put(
         (status = 404, description = "Timetable not found"),
     ),
 )]
-#[delete("")]
 async fn delete(
-    db_pool: Data<DbConnectionPoolV2>,
+    db_pool: State<DbConnectionPoolV2>,
     timetable_id: Path<TimetableIdParam>,
-) -> Result<HttpResponse> {
+) -> Result<impl IntoResponse> {
     let timetable_id = timetable_id.id;
     let conn = &mut db_pool.get().await?;
     Timetable::delete_static_or_fail(conn, timetable_id, || TimetableError::NotFound {
         timetable_id,
     })
     .await?;
-    Ok(HttpResponse::NoContent().finish())
+    Ok(StatusCode::NO_CONTENT)
 }
 
 /// Create train schedule by batch
 #[utoipa::path(
+    post, path = "",
     tag = "timetablev2,train_schedulev2",
     params(TimetableIdParam),
     request_body = Vec<TrainScheduleBase>,
@@ -275,11 +273,10 @@ async fn delete(
         (status = 200, description = "The created train schedules", body = Vec<TrainScheduleResult>)
     )
 )]
-#[post("train_schedule")]
 async fn train_schedule(
-    db_pool: Data<DbConnectionPoolV2>,
-    timetable_id: Path<TimetableIdParam>,
-    data: Json<Vec<TrainScheduleBase>>,
+    db_pool: State<DbConnectionPoolV2>,
+    Path(timetable_id): Path<TimetableIdParam>,
+    Json(data): Json<Vec<TrainScheduleBase>>,
 ) -> Result<Json<Vec<TrainScheduleResult>>> {
     let conn = &mut db_pool.get().await?;
 
@@ -290,7 +287,6 @@ async fn train_schedule(
     .await?;
 
     let changesets: Vec<TrainScheduleChangeset> = data
-        .into_inner()
         .into_iter()
         .map(|ts| TrainScheduleForm {
             timetable_id: Some(timetable_id),
@@ -305,31 +301,31 @@ async fn train_schedule(
 }
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize, IntoParams, ToSchema)]
+#[into_params(parameter_in = Query)]
 pub struct InfraIdQueryParam {
     infra_id: i64,
 }
 
 /// Retrieve the list of conflict of the timetable (invalid trains are ignored)
 #[utoipa::path(
+    get, path = "",
     tag = "timetablev2",
     params(TimetableIdParam, InfraIdQueryParam),
     responses(
         (status = 200, description = "List of conflict", body = Vec<ConflictV2>),
     ),
 )]
-#[get("/conflicts")]
-pub async fn conflicts(
-    db_pool: Data<DbConnectionPoolV2>,
-    redis_client: Data<RedisClient>,
-    core_client: Data<CoreClient>,
-    timetable_id: Path<TimetableIdParam>,
-    query: Query<InfraIdQueryParam>,
+async fn conflicts(
+    app_state: State<AppState>,
+    Path(timetable_id): Path<TimetableIdParam>,
+    Query(query): Query<InfraIdQueryParam>,
 ) -> Result<Json<Vec<Conflict>>> {
-    let db_pool = db_pool.into_inner();
-    let redis_client = redis_client.into_inner();
-    let core_client = core_client.into_inner();
-    let timetable_id = timetable_id.into_inner().id;
-    let infra_id = query.into_inner().infra_id;
+    let db_pool = app_state.db_pool_v2.clone();
+    let redis_client = app_state.redis.clone();
+    let core_client = app_state.core_client.clone();
+
+    let timetable_id = timetable_id.id;
+    let infra_id = query.infra_id;
 
     // 1. Retrieve Timetable / Infra / Trains / Simultion
     let timetable_trains = TimetableWithTrains::retrieve_or_fail(
@@ -386,9 +382,8 @@ pub async fn conflicts(
 
 #[cfg(test)]
 mod tests {
-    use actix_web::test::TestRequest;
+    use axum::http::StatusCode;
     use pretty_assertions::assert_eq;
-    use reqwest::StatusCode;
     use rstest::rstest;
     use serde_json::json;
 
@@ -403,9 +398,7 @@ mod tests {
 
         let timetable = create_timetable(pool.get_ok().deref_mut()).await;
 
-        let request = TestRequest::get()
-            .uri(&format!("/v2/timetable/{}", timetable.id))
-            .to_request();
+        let request = app.get(&format!("/v2/timetable/{}", timetable.id));
 
         let timetable_from_response: Timetable =
             app.fetch(request).assert_status(StatusCode::OK).json_into();
@@ -416,9 +409,7 @@ mod tests {
     #[rstest]
     async fn get_unexisting_timetable() {
         let app = TestAppBuilder::default_app();
-        let request = TestRequest::get()
-            .uri(&format!("/v2/timetable/{}", 0))
-            .to_request();
+        let request = app.get(&format!("/v2/timetable/{}", 0));
         app.fetch(request).assert_status(StatusCode::NOT_FOUND);
     }
 
@@ -429,7 +420,7 @@ mod tests {
 
         create_timetable(pool.get_ok().deref_mut()).await;
 
-        let request = TestRequest::get().uri("/v2/timetable/").to_request();
+        let request = app.get("/v2/timetable/");
 
         app.fetch(request).assert_status(StatusCode::OK);
     }
@@ -440,10 +431,9 @@ mod tests {
         let pool = app.db_pool();
 
         // Insert timetable
-        let request = TestRequest::post()
-            .uri("/v2/timetable")
-            .set_json(json!({ "electrical_profil_set_id": None::<i64>}))
-            .to_request();
+        let request = app
+            .post("/v2/timetable")
+            .json(&json!({ "electrical_profil_set_id": None::<i64>}));
 
         let created_timetable: Timetable =
             app.fetch(request).assert_status(StatusCode::OK).json_into();
@@ -464,9 +454,7 @@ mod tests {
 
         let timetable = create_timetable(pool.get_ok().deref_mut()).await;
 
-        let request = TestRequest::delete()
-            .uri(format!("/v2/timetable/{}", timetable.id).as_str())
-            .to_request();
+        let request = app.delete(format!("/v2/timetable/{}", timetable.id).as_str());
 
         app.fetch(request).assert_status(StatusCode::NO_CONTENT);
 

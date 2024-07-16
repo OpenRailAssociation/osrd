@@ -2,11 +2,9 @@ use std::collections::hash_map::Entry;
 use std::collections::hash_map::HashMap;
 use std::ops::DerefMut;
 
-use actix_web::get;
-use actix_web::web::Data;
-use actix_web::web::Json as WebJson;
-use actix_web::web::Path;
-use chashmap::CHashMap;
+use axum::extract::Json;
+use axum::extract::Path;
+use axum::extract::State;
 use editoast_derive::EditoastError;
 use itertools::Itertools as _;
 use thiserror::Error;
@@ -28,7 +26,7 @@ use crate::modelsv2::prelude::*;
 use crate::modelsv2::Infra;
 use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraIdParam;
-use editoast_models::DbConnectionPoolV2;
+use crate::AppState;
 use editoast_schemas::infra::InfraObject;
 use editoast_schemas::primitives::OSRDIdentified as _;
 use editoast_schemas::primitives::OSRDObject;
@@ -70,26 +68,26 @@ pub enum OrderedOperation {
 
 // Return `/infra/<infra_id>/auto_fixes` routes
 crate::routes! {
-    "/auto_fixes" => {
-        list_auto_fixes,
-    },
+    "/auto_fixes" => list_auto_fixes,
 }
 
 /// Retrieve a list of operations to fix infra issues
 #[utoipa::path(
+    get, path = "",
     tag = "infra",
     params(InfraIdParam),
     responses(
         (status = 200, description = "The list of suggested operations", body = Vec<Operation>)
     )
 )]
-#[get("")]
 async fn list_auto_fixes(
-    infra: Path<i64>,
-    infra_caches: Data<CHashMap<i64, InfraCache>>,
-    db_pool: Data<DbConnectionPoolV2>,
-) -> Result<WebJson<Vec<Operation>>> {
-    let infra_id = infra.into_inner();
+    Path(infra_id): Path<i64>,
+    State(AppState {
+        infra_caches,
+        db_pool_v2: db_pool,
+        ..
+    }): State<AppState>,
+) -> Result<Json<Vec<Operation>>> {
     let infra = Infra::retrieve_or_fail(db_pool.get().await?.deref_mut(), infra_id, || {
         InfraApiError::NotFound { infra_id }
     })
@@ -107,7 +105,7 @@ async fn list_auto_fixes(
         let new_fixes = fix_infra(&mut infra_cache_clone, infra_errors)?;
         if new_fixes.is_empty() {
             // Every possible error is fixed
-            return Ok(WebJson(fixes));
+            return Ok(Json(fixes));
         }
         fixes.extend(new_fixes);
     }
@@ -320,9 +318,7 @@ pub enum AutoFixesEditoastError {
 mod tests {
     use std::collections::HashMap;
 
-    use actix_http::Request;
-    use actix_http::StatusCode;
-    use actix_web::test::TestRequest;
+    use axum::http::StatusCode;
     use editoast_schemas::infra::BufferStop;
     use editoast_schemas::infra::BufferStopExtension;
     use pretty_assertions::assert_eq;
@@ -340,6 +336,7 @@ mod tests {
     use crate::modelsv2::fixtures::create_empty_infra;
     use crate::modelsv2::fixtures::create_small_infra;
     use crate::views::infra::errors::query_errors;
+    use crate::views::test_app::TestApp;
     use crate::views::test_app::TestAppBuilder;
     use editoast_schemas::infra::ApplicableDirectionsTrackRange;
     use editoast_schemas::infra::Detector;
@@ -360,10 +357,10 @@ mod tests {
     use editoast_schemas::primitives::ObjectRef;
     use editoast_schemas::primitives::ObjectType;
 
-    fn auto_fixes_request(infra_id: i64) -> Request {
-        TestRequest::get()
-            .uri(format!("/infra/{infra_id}/auto_fixes").as_str())
-            .to_request()
+    impl TestApp {
+        fn auto_fixes_request(&self, infra_id: i64) -> axum_test::TestRequest {
+            self.get(format!("/infra/{infra_id}/auto_fixes").as_str())
+        }
     }
 
     #[rstest::rstest]
@@ -374,7 +371,7 @@ mod tests {
         let small_infra_id = small_infra.id;
 
         let operations: Vec<Operation> = app
-            .fetch(auto_fixes_request(small_infra_id))
+            .fetch(app.auto_fixes_request(small_infra_id))
             .assert_status(StatusCode::OK)
             .json_into();
 
@@ -428,7 +425,7 @@ mod tests {
 
         // WHEN
         let operations: Vec<Operation> = app
-            .fetch(auto_fixes_request(small_infra_id))
+            .fetch(app.auto_fixes_request(small_infra_id))
             .assert_status(StatusCode::OK)
             .json_into();
 
@@ -472,7 +469,7 @@ mod tests {
             .expect("Failed to delete BufferStop");
 
         let operations: Vec<Operation> = app
-            .fetch(auto_fixes_request(small_infra_id))
+            .fetch(app.auto_fixes_request(small_infra_id))
             .assert_status(StatusCode::OK)
             .json_into();
 
@@ -715,7 +712,7 @@ mod tests {
         .expect("Failed to create invalid_switch object");
 
         let operations: Vec<Operation> = app
-            .fetch(auto_fixes_request(small_infra_id))
+            .fetch(app.auto_fixes_request(small_infra_id))
             .assert_status(StatusCode::OK)
             .json_into();
 
@@ -767,7 +764,7 @@ mod tests {
         }
 
         let operations: Vec<Operation> = app
-            .fetch(auto_fixes_request(empty_infra_id))
+            .fetch(app.auto_fixes_request(empty_infra_id))
             .assert_status(StatusCode::OK)
             .json_into();
 
@@ -795,7 +792,7 @@ mod tests {
         }
 
         let operations: Vec<Operation> = app
-            .fetch(auto_fixes_request(empty_infra_id))
+            .fetch(app.auto_fixes_request(empty_infra_id))
             .assert_status(StatusCode::OK)
             .json_into();
 
@@ -865,7 +862,7 @@ mod tests {
         }
 
         let operations: Vec<Operation> = app
-            .fetch(auto_fixes_request(empty_infra_id))
+            .fetch(app.auto_fixes_request(empty_infra_id))
             .assert_status(StatusCode::OK)
             .json_into();
 
@@ -925,7 +922,7 @@ mod tests {
         }
 
         let operations: Vec<Operation> = app
-            .fetch(auto_fixes_request(empty_infra_id))
+            .fetch(app.auto_fixes_request(empty_infra_id))
             .assert_status(StatusCode::OK)
             .json_into();
 
@@ -961,7 +958,7 @@ mod tests {
 
         // WHEN
         let operations: Vec<Operation> = app
-            .fetch(auto_fixes_request(empty_infra_id))
+            .fetch(app.auto_fixes_request(empty_infra_id))
             .assert_status(StatusCode::OK)
             .json_into();
 

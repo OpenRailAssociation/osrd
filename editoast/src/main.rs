@@ -15,23 +15,21 @@ mod tables;
 mod views;
 
 use crate::core::CoreClient;
-use crate::error::InternalError;
 use crate::modelsv2::Infra;
 use crate::views::OpenApiRoot;
-use actix_cors::Cors;
-use actix_web::dev::{Service, ServiceRequest};
-use actix_web::middleware::{Logger, NormalizePath};
-use actix_web::web::{scope, Data, JsonConfig, PayloadConfig};
-use actix_web::{App, HttpServer};
+use axum::extract::FromRef;
+use axum::{Router, ServiceExt};
+use axum_tracing_opentelemetry::middleware::{OtelAxumLayer, OtelInResponseLayer};
 use chashmap::CHashMap;
 use clap::Parser;
-use client::PostgresConfig;
 use client::{
     ClearArgs, Client, Color, Commands, DeleteProfileSetArgs, ElectricalProfilesCommands,
     ExportTimetableArgs, GenerateArgs, ImportProfileSetArgs, ImportRailjsonArgs,
     ImportRollingStockArgs, ImportTimetableArgs, InfraCloneArgs, InfraCommands, ListProfileSetArgs,
     MakeMigrationArgs, RedisConfig, RefreshArgs, RunserverArgs, SearchCommands, TimetablesCommands,
 };
+use client::{MapLayersConfig, PostgresConfig};
+use editoast_models::DbConnectionPool;
 use editoast_models::DbConnectionPoolV2;
 use editoast_schemas::infra::ElectricalProfileSetData;
 use editoast_schemas::rolling_stock::RollingStock;
@@ -44,6 +42,11 @@ use modelsv2::{
 use modelsv2::{Changeset, RollingStockModel};
 use opentelemetry_datadog::DatadogPropagator;
 use opentelemetry_sdk::propagation::TraceContextPropagator;
+use tower::Layer as _;
+use tower_http::cors::{Any, CorsLayer};
+use tower_http::limit::RequestBodyLimitLayer;
+use tower_http::normalize_path::NormalizePathLayer;
+use tower_http::trace::TraceLayer;
 use views::v2::train_schedule::{TrainScheduleForm, TrainScheduleResult};
 
 use colored::*;
@@ -324,19 +327,69 @@ async fn trains_import(
     Ok(())
 }
 
-fn log_received_request(req: &ServiceRequest) {
-    let request_line = if req.query_string().is_empty() {
-        format!("{} {} {:?}", req.method(), req.path(), req.version())
-    } else {
-        format!(
-            "{} {}?{} {:?}",
-            req.method(),
-            req.path(),
-            req.query_string(),
-            req.version()
+/// The state of the whole Editoast service, available to all handlers
+///
+/// If only the database is needed, use `State<editoast_models::DbConnectionPoolV2>`.
+#[derive(Clone)]
+pub struct AppState {
+    pub db_pool_v1: Arc<DbConnectionPool>,
+    pub db_pool_v2: Arc<DbConnectionPoolV2>,
+    pub redis: Arc<RedisClient>,
+    pub infra_caches: Arc<CHashMap<i64, InfraCache>>,
+    pub map_layers: Arc<MapLayers>,
+    pub map_layers_config: Arc<MapLayersConfig>,
+    pub speed_limit_tag_ids: Arc<SpeedLimitTagIds>,
+    pub core_client: Arc<CoreClient>,
+}
+
+impl AppState {
+    async fn init(
+        args: &RunserverArgs,
+        postgres_config: PostgresConfig,
+        redis_config: RedisConfig,
+    ) -> Result<Self, Box<dyn Error + Send + Sync>> {
+        info!("Building application state...");
+
+        // Config database
+        let redis = RedisClient::new(redis_config)?.into();
+
+        // Create both database pools
+        let db_pool_v2 =
+            DbConnectionPoolV2::try_initialize(postgres_config.url()?, postgres_config.pool_size)
+                .await?;
+        let db_pool_v1 = db_pool_v2.pool_v1();
+        let db_pool_v2 = Arc::new(db_pool_v2);
+
+        // Setup infra cache map
+        let infra_caches = CHashMap::<i64, InfraCache>::default().into();
+
+        // Static list of configured speed-limit tag ids
+        let speed_limit_tag_ids = Arc::new(SpeedLimitTagIds::load());
+
+        // Build Core client
+        let core_client = CoreClient::new_direct(
+            args.backend_url.parse().expect("invalid backend_url value"),
+            args.backend_token.clone(),
         )
-    };
-    info!(target: "actix_logger", "{} RECEIVED", request_line);
+        .into();
+
+        Ok(Self {
+            redis,
+            db_pool_v1,
+            db_pool_v2,
+            infra_caches,
+            core_client,
+            map_layers: Arc::new(MapLayers::parse()),
+            map_layers_config: Arc::new(args.map_layers_config.clone()),
+            speed_limit_tag_ids,
+        })
+    }
+}
+
+impl FromRef<AppState> for DbConnectionPoolV2 {
+    fn from_ref(input: &AppState) -> Self {
+        (*input.db_pool_v2).clone()
+    }
 }
 
 /// Create and run the server
@@ -346,102 +399,46 @@ async fn runserver(
     redis_config: RedisConfig,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
     info!("Building server...");
-    // Config database
-    let redis = RedisClient::new(redis_config)?;
-
-    // Create both database pools
-    // NOTE: Okay, this is a bit convoluted because we need both versions
-    // but we don't want to duplicate the underlying connection pool.
-    // 1. We defer the creation of the pool to DbConnectionPoolV2 to avoid code duplication.
-    // 2. We extract a reference to the underlying pool == DbConnectionPoolV1
-    // 3. We drop the DbConnectionPoolV2 so its Arc reference is dropped as well
-    // 4. Since DbConnectionPoolV2 went out of scope, the refcount of the Arc is 1
-    //    and we can extract its inner value.
-    // 5. We wrap it again in an actix_web::web::Data.
-    // 6. Since this new wrapper re-creates an Arc, we can use it to re-create a DbConnectionPoolV2.
-    // 7. All this spaghetti will be removed once we fully migrate to pool v2 :D
-    let db_pool_v1_arc = {
-        let db_pool =
-            DbConnectionPoolV2::try_initialize(postgres_config.url()?, postgres_config.pool_size)
-                .await?;
-        db_pool.pool_v1()
-    };
-    let db_pool_v1 = Arc::into_inner(db_pool_v1_arc).unwrap();
-    let db_pool_v1 = Data::new(db_pool_v1);
-    let db_pool_v2 = DbConnectionPoolV2::from_pool(db_pool_v1.clone().into_inner()).await;
-    let db_pool_v2 = Data::new(db_pool_v2);
-
-    // Static list of configured speed-limit tag ids
-    let speed_limit_tag_ids = Data::new(SpeedLimitTagIds::load());
-
-    // Custom Json extractor configuration
-    let json_cfg = JsonConfig::default()
-        .limit(250 * 1024 * 1024) // 250MiB
-        .error_handler(|err, _| InternalError::from(err).into());
-
     // Custom Bytes and String extractor configuration
-    let payload_config = PayloadConfig::new(64 * 1024 * 1024); // 64MiB
+    let request_payload_limit = RequestBodyLimitLayer::new(250 * 1024 * 1024); // 250MiB
 
-    // Setup shared states
-    let infra_caches = Data::new(CHashMap::<i64, InfraCache>::default());
-
-    let server = HttpServer::new(move || {
-        // Build CORS
-        let cors = {
-            let allowed_origin = env::var("OSRD_ALLOWED_ORIGIN").ok();
-            match allowed_origin {
-                Some(origin) => Cors::default()
-                    .allowed_origin(origin.as_str())
-                    .allow_any_method()
-                    .allow_any_header(),
-                None => Cors::default()
-                    .allow_any_origin()
-                    .allow_any_method()
-                    .allow_any_header(),
-            }
-        };
-
-        // Build Core client
-        let core_client = CoreClient::new_direct(
-            args.backend_url.parse().expect("invalid backend_url value"),
-            args.backend_token.clone(),
-        );
-
-        let actix_logger_format = r#"%r STATUS: %s in %T s ("%{Referer}i" "%{User-Agent}i")"#;
-
-        App::new()
-            .wrap(actix_web_opentelemetry::RequestTracing::new())
-            .wrap(cors)
-            .wrap(NormalizePath::trim())
-            .wrap_fn(|req, srv| {
-                log_received_request(&req);
-                srv.call(req)
-            })
-            .wrap(Logger::new(actix_logger_format).log_target("actix_logger"))
-            .app_data(speed_limit_tag_ids.clone())
-            .app_data(json_cfg.clone())
-            .app_data(payload_config.clone())
-            .app_data(db_pool_v1.clone())
-            .app_data(db_pool_v2.clone())
-            .app_data(Data::new(redis.clone()))
-            .app_data(infra_caches.clone())
-            .app_data(Data::new(MapLayers::parse()))
-            .app_data(Data::new(args.map_layers_config.clone()))
-            .app_data(Data::new(core_client))
-            .service(scope(&args.root_path).service(views::routes()))
-    });
-
-    let server = match args.workers {
-        Some(workers) => server.workers(workers),
-        None => server,
+    // Build CORS layer
+    let cors = {
+        let allowed_origin = env::var("OSRD_ALLOWED_ORIGIN").ok();
+        match allowed_origin {
+            Some(origin) => CorsLayer::new()
+                .allow_methods(Any)
+                .allow_headers(Any)
+                .allow_origin(
+                    origin
+                        .parse::<axum::http::header::HeaderValue>()
+                        .expect("invalid allowed origin"),
+                ),
+            None => CorsLayer::new()
+                .allow_methods(Any)
+                .allow_headers(Any)
+                .allow_origin(Any),
+        }
     };
+
+    let app_state = AppState::init(&args, postgres_config, redis_config).await?;
+
+    // Configure the axum router
+    let router: Router<()> = axum::Router::<AppState>::new()
+        .merge(views::router())
+        .layer(OtelInResponseLayer)
+        .layer(OtelAxumLayer::default())
+        .layer(request_payload_limit)
+        .layer(cors)
+        .layer(TraceLayer::new_for_http())
+        .with_state(app_state);
+    let normalizing_router = NormalizePathLayer::trim_trailing_slash().layer(router);
 
     // Run server
     info!("Running server...");
-    server
-        .bind((args.address.clone(), args.port))?
-        .run()
-        .await?;
+    let service = ServiceExt::<axum::extract::Request>::into_make_service(normalizing_router);
+    let listener = tokio::net::TcpListener::bind((args.address.clone(), args.port)).await?;
+    axum::serve(listener, service).await.expect("unreachable");
     Ok(())
 }
 

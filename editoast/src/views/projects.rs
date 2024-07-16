@@ -1,17 +1,14 @@
 use std::ops::DerefMut;
 
-use actix_web::delete;
-use actix_web::get;
-use actix_web::patch;
-use actix_web::post;
-use actix_web::web::Data;
-use actix_web::web::Json;
-use actix_web::web::Path;
-use actix_web::web::Query;
-use actix_web::HttpResponse;
+use axum::extract::Json;
+use axum::extract::Path;
+use axum::extract::Query;
+use axum::extract::State;
+use axum::response::IntoResponse;
 use chrono::Utc;
 use derivative::Derivative;
 use editoast_derive::EditoastError;
+use editoast_models::DbConnectionPoolV2;
 use serde::Deserialize;
 use serde::Serialize;
 use thiserror::Error;
@@ -32,7 +29,6 @@ use crate::modelsv2::Project;
 use crate::modelsv2::Retrieve;
 use crate::views::pagination::PaginationQueryParam;
 use editoast_models::DbConnection;
-use editoast_models::DbConnectionPoolV2;
 
 crate::routes! {
     "/projects" => {
@@ -42,9 +38,9 @@ crate::routes! {
             get,
             delete,
             patch,
-            study::routes()
+            &study,
         },
-    }
+    },
 }
 
 editoast_common::schemas! {
@@ -140,19 +136,18 @@ impl ProjectWithStudyCount {
 
 /// Create a new project
 #[utoipa::path(
+    post, path = "",
     tag = "projects",
     request_body = ProjectCreateForm,
     responses(
         (status = 201, body = ProjectWithStudies, description = "The created project"),
     )
 )]
-#[post("")]
 async fn create(
-    db_pool: Data<DbConnectionPoolV2>,
-    data: Json<ProjectCreateForm>,
+    State(db_pool): State<DbConnectionPoolV2>,
+    Json(project_create_form): Json<ProjectCreateForm>,
 ) -> Result<Json<ProjectWithStudyCount>> {
     let conn = &mut db_pool.get().await?;
-    let project_create_form = data.into_inner();
     if let Some(image) = project_create_form.image {
         check_image_content(conn, image).await?;
     }
@@ -174,16 +169,16 @@ struct ProjectWithStudyCountList {
 
 /// Returns a paginated list of projects
 #[utoipa::path(
+    get, path = "",
     tag = "projects",
     params(PaginationQueryParam, OperationalStudiesOrderingParam),
     responses(
         (status = 200, body = inline(ProjectWithStudyCountList), description = "The list of projects"),
     )
 )]
-#[get("")]
 async fn list(
-    db_pool: Data<DbConnectionPoolV2>,
-    pagination_params: Query<PaginationQueryParam>,
+    State(db_pool): State<DbConnectionPoolV2>,
+    Query(pagination_params): Query<PaginationQueryParam>,
     Query(ordering_params): Query<OperationalStudiesOrderingParam>,
 ) -> Result<Json<ProjectWithStudyCountList>> {
     let ordering = ordering_params.ordering;
@@ -216,6 +211,7 @@ pub struct ProjectIdParam {
 
 /// Retrieve a project
 #[utoipa::path(
+    get, path = "",
     tag = "projects",
     params(ProjectIdParam),
     responses(
@@ -223,12 +219,10 @@ pub struct ProjectIdParam {
         (status = 404, body = InternalError, description = "The requested project was not found"),
     )
 )]
-#[get("")]
 async fn get(
-    db_pool: Data<DbConnectionPoolV2>,
-    project: Path<i64>,
+    State(db_pool): State<DbConnectionPoolV2>,
+    Path(project_id): Path<i64>,
 ) -> Result<Json<ProjectWithStudyCount>> {
-    let project_id = project.into_inner();
     let conn = &mut db_pool.get().await?;
     let project =
         Project::retrieve_or_fail(conn, project_id, || ProjectError::NotFound { project_id })
@@ -238,6 +232,7 @@ async fn get(
 
 /// Delete a project
 #[utoipa::path(
+    delete, path = "",
     tag = "projects",
     params(ProjectIdParam),
     responses(
@@ -245,12 +240,13 @@ async fn get(
         (status = 404, body = InternalError, description = "The requested project was not found"),
     )
 )]
-#[delete("")]
-async fn delete(project: Path<i64>, db_pool: Data<DbConnectionPoolV2>) -> Result<HttpResponse> {
-    let project_id = project.into_inner();
+async fn delete(
+    Path(project_id): Path<i64>,
+    State(db_pool): State<DbConnectionPoolV2>,
+) -> Result<impl IntoResponse> {
     let conn = &mut db_pool.get().await?;
     if Project::delete_and_prune_document(conn, project_id).await? {
-        Ok(HttpResponse::NoContent().finish())
+        Ok(axum::http::StatusCode::NO_CONTENT)
     } else {
         Err(ProjectError::NotFound { project_id }.into())
     }
@@ -290,6 +286,7 @@ impl From<ProjectPatchForm> for Changeset<Project> {
 
 /// Update a project
 #[utoipa::path(
+    patch, path = "",
     tag = "projects",
     params(ProjectIdParam),
     request_body(
@@ -301,19 +298,16 @@ impl From<ProjectPatchForm> for Changeset<Project> {
         (status = 404, body = InternalError, description = "The requested project was not found"),
     )
 )]
-#[patch("")]
 async fn patch(
-    data: Json<ProjectPatchForm>,
-    project_id: Path<i64>,
-    db_pool: Data<DbConnectionPoolV2>,
+    Path(project_id): Path<i64>,
+    State(db_pool): State<DbConnectionPoolV2>,
+    Json(form): Json<ProjectPatchForm>,
 ) -> Result<Json<ProjectWithStudyCount>> {
     let conn = &mut db_pool.get().await?;
-    let data = data.into_inner();
-    let project_id = project_id.into_inner();
-    if let Some(image) = data.image {
+    if let Some(image) = form.image {
         check_image_content(conn, image).await?;
     }
-    let project_changeset: Changeset<Project> = data.into();
+    let project_changeset: Changeset<Project> = form.into();
     let project = Project::update_and_prune_document(conn, project_changeset, project_id).await?;
     Ok(Json(ProjectWithStudyCount::try_fetch(conn, project).await?))
 }
@@ -322,8 +316,7 @@ async fn patch(
 pub mod test {
     use std::ops::DerefMut;
 
-    use actix_web::http::StatusCode;
-    use actix_web::test::TestRequest;
+    use axum::http::StatusCode;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
     use serde_json::json;
@@ -340,15 +333,12 @@ pub mod test {
 
         let project_name = "test_project";
 
-        let request = TestRequest::post()
-            .uri("/projects")
-            .set_json(json!({
-                "name": project_name,
-                "description": "",
-                "objectives": "",
-                "funders": "",
-            }))
-            .to_request();
+        let request = app.post("/projects").json(&json!({
+            "name": project_name,
+            "description": "",
+            "objectives": "",
+            "funders": "",
+        }));
 
         let response: ProjectWithStudyCount =
             app.fetch(request).assert_status(StatusCode::OK).json_into();
@@ -369,7 +359,7 @@ pub mod test {
         let created_project =
             create_project(db_pool.get_ok().deref_mut(), "test_project_name").await;
 
-        let request = TestRequest::get().uri("/projects/").to_request();
+        let request = app.get("/projects/");
 
         let response: ProjectWithStudyCountList =
             app.fetch(request).assert_status(StatusCode::OK).json_into();
@@ -391,9 +381,7 @@ pub mod test {
         let created_project =
             create_project(db_pool.get_ok().deref_mut(), "test_project_name").await;
 
-        let request = TestRequest::get()
-            .uri(format!("/projects/{}", created_project.id).as_str())
-            .to_request();
+        let request = app.get(format!("/projects/{}", created_project.id).as_str());
 
         let response: ProjectWithStudyCount =
             app.fetch(request).assert_status(StatusCode::OK).json_into();
@@ -409,9 +397,7 @@ pub mod test {
         let created_project =
             create_project(db_pool.get_ok().deref_mut(), "test_project_name").await;
 
-        let request = TestRequest::delete()
-            .uri(format!("/projects/{}", created_project.id).as_str())
-            .to_request();
+        let request = app.delete(format!("/projects/{}", created_project.id).as_str());
 
         app.fetch(request).assert_status(StatusCode::NO_CONTENT);
 
@@ -433,13 +419,12 @@ pub mod test {
         let updated_name = "rename_test";
         let updated_budget = 20000;
 
-        let request = TestRequest::patch()
-            .uri(format!("/projects/{}", created_project.id).as_str())
-            .set_json(json!({
+        let request = app
+            .patch(format!("/projects/{}", created_project.id).as_str())
+            .json(&json!({
                 "name": updated_name,
                 "budget": updated_budget
-            }))
-            .to_request();
+            }));
 
         let response: ProjectWithStudyCount =
             app.fetch(request).assert_status(StatusCode::OK).json_into();

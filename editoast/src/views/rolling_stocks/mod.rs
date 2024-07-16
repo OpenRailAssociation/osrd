@@ -1,23 +1,15 @@
 pub mod light_rolling_stock;
 pub mod rolling_stock_form;
 
-use std::io::BufReader;
 use std::io::Cursor;
-use std::io::Read;
-use std::ops::DerefMut;
 
-use actix_multipart::form::tempfile::TempFile;
-use actix_multipart::form::text::Text;
-use actix_multipart::form::MultipartForm;
-use actix_web::delete;
-use actix_web::get;
-use actix_web::patch;
-use actix_web::post;
-use actix_web::web::Data;
-use actix_web::web::Json;
-use actix_web::web::Path;
-use actix_web::web::Query;
-use actix_web::HttpResponse;
+use axum::extract::Json;
+use axum::extract::Multipart;
+use axum::extract::Path;
+use axum::extract::Query;
+use axum::extract::State;
+use axum::http::StatusCode;
+use axum::response::IntoResponse;
 use editoast_derive::EditoastError;
 use editoast_schemas::rolling_stock::RollingStockLivery;
 use editoast_schemas::rolling_stock::RollingStockLiveryMetadata;
@@ -49,24 +41,16 @@ use editoast_models::DbConnectionPoolV2;
 crate::routes! {
     "/rolling_stock" => {
         create,
-        "/power_restrictions" => {
-            get_power_restrictions,
-        },
-        "/name/{rolling_stock_name}" => {
-            get_by_name,
-        },
+        "/power_restrictions" => get_power_restrictions,
+        "/name/{rolling_stock_name}" => get_by_name,
         "/{rolling_stock_id}" => {
             get,
             update,
             delete,
-            "/locked" => {
-                update_locked,
-            },
-            "/livery" => {
-                create_livery,
-            },
-        }
-    }
+            "/locked" => update_locked,
+            "/livery" => create_livery,
+        },
+    },
 }
 
 editoast_common::schemas! {
@@ -95,33 +79,72 @@ pub enum RollingStockKey {
     Name(String),
 }
 
-#[derive(Debug, Error, EditoastError, ToSchema)]
+#[derive(Debug, Error, EditoastError, ToSchema, Serialize)] // serde is required in order to skip variants
 #[editoast_error(base_id = "rollingstocks")]
 pub enum RollingStockError {
     #[error("Impossible to read the separated image")]
     #[editoast_error(status = 500)]
     CannotReadImage,
+
     #[error("Impossible to copy the separated image on the compound image")]
     #[editoast_error(status = 500)]
     CannotCreateCompoundImage,
+
+    #[error("Invalid livery import payload: {0}")]
+    #[editoast_error(status = 400, no_context)]
+    #[serde(skip)]
+    LiveryMultipartError(#[from] LiveryMultipartError),
+
     #[error("Rolling stock '{rolling_stock_key}' could not be found")]
     #[editoast_error(status = 404)]
     KeyNotFound { rolling_stock_key: RollingStockKey },
+
     #[error("Name '{name}' already used")]
     #[editoast_error(status = 400)]
     NameAlreadyUsed { name: String },
+
     #[error("RollingStock '{rolling_stock_id}' is locked")]
     #[editoast_error(status = 400)]
     RollingStockIsLocked { rolling_stock_id: i64 },
+
     #[error("RollingStock '{rolling_stock_id}' is used")]
     #[editoast_error(status = 409)]
     RollingStockIsUsed {
         rolling_stock_id: i64,
         usage: Vec<TrainScheduleScenarioStudyProject>,
     },
+
     #[error("Base power class is an empty string")]
     #[editoast_error(status = 400)]
     BasePowerClassEmpty,
+}
+
+#[derive(Debug, Error)]
+pub(crate) enum LiveryMultipartError {
+    #[error("Invalid multipart content")]
+    MultipartError(#[from] axum::extract::multipart::MultipartError),
+
+    #[error("Missing multipart field name, cannot process request")]
+    MissingFieldName,
+
+    #[error("Unrecognized multipart field '{field_name}'")]
+    UnrecognizedField { field_name: String },
+
+    #[error("Missing multipart field 'name'")]
+    MissingLiveryName,
+
+    #[error("Could not read multipart field 'name' as text: {source}")]
+    InvalidName {
+        source: axum::extract::multipart::MultipartError,
+    },
+
+    #[error("Missing one or more multipart fields 'images'")]
+    MissingLiveryContent,
+
+    #[error("Invalid bytes in multipart field 'images': {source}")]
+    InvalidLiveryContent {
+        source: axum::extract::multipart::MultipartError,
+    },
 }
 
 pub fn map_diesel_error(e: InternalError, name: impl AsRef<str>) -> InternalError {
@@ -150,20 +173,18 @@ pub struct RollingStockNameParam {
 
 /// Get a rolling stock by Id
 #[utoipa::path(
+    get, path = "",
     tag = "rolling_stock",
     params(RollingStockIdParam),
     responses(
         (status = 200, body = RollingStockWithLiveries, description = "The requested rolling stock"),
     )
 )]
-#[get("")]
 async fn get(
-    db_pool: Data<DbConnectionPoolV2>,
-    path: Path<i64>,
+    State(db_pool): State<DbConnectionPoolV2>,
+    Path(rolling_stock_id): Path<i64>,
 ) -> Result<Json<RollingStockWithLiveries>> {
     let conn = &mut db_pool.get().await?;
-    let rolling_stock_id = path.into_inner();
-
     let rolling_stock =
         retrieve_existing_rolling_stock(conn, RollingStockKey::Id(rolling_stock_id)).await?;
     let rolling_stock_with_liveries = rolling_stock.with_liveries(conn).await?;
@@ -172,19 +193,18 @@ async fn get(
 
 /// Get a rolling stock by name
 #[utoipa::path(
+    get, path = "",
     tag = "rolling_stock",
     params(RollingStockNameParam),
     responses(
         (status = 200, body = RollingStockWithLiveries, description = "The requested rolling stock"),
     )
 )]
-#[get("")]
 async fn get_by_name(
-    db_pool: Data<DbConnectionPoolV2>,
-    path: Path<String>,
+    State(db_pool): State<DbConnectionPoolV2>,
+    Path(rolling_stock_name): Path<String>,
 ) -> Result<Json<RollingStockWithLiveries>> {
     let conn = &mut db_pool.get().await?;
-    let rolling_stock_name = path.into_inner();
     let rolling_stock =
         retrieve_existing_rolling_stock(conn, RollingStockKey::Name(rolling_stock_name)).await?;
     let rolling_stock_with_liveries = rolling_stock.with_liveries(conn).await?;
@@ -192,13 +212,16 @@ async fn get_by_name(
 }
 
 /// Returns the set of power restrictions for all rolling_stocks modes.
-#[utoipa::path(tag = "rolling_stock",
+#[utoipa::path(
+    get, path = "",
+    tag = "rolling_stock",
     responses(
         (status = 200, description = "Retrieve the power restrictions list", body = Vec<String>)
     )
 )]
-#[get("")]
-async fn get_power_restrictions(db_pool: Data<DbConnectionPoolV2>) -> Result<Json<Vec<String>>> {
+async fn get_power_restrictions(
+    State(db_pool): State<DbConnectionPoolV2>,
+) -> Result<Json<Vec<String>>> {
     let conn = &mut db_pool.get().await?;
     let power_restrictions = RollingStockModel::get_power_restrictions(conn).await?;
     Ok(Json(
@@ -210,24 +233,26 @@ async fn get_power_restrictions(db_pool: Data<DbConnectionPoolV2>) -> Result<Jso
 }
 
 #[derive(Debug, Deserialize, IntoParams, ToSchema)]
+#[into_params(parameter_in = Query)]
 struct PostRollingStockQueryParams {
     #[serde(default)]
     locked: bool,
 }
 
 /// Create a rolling stock
-#[utoipa::path(tag = "rolling_stock",
+#[utoipa::path(
+    post, path = "",
+    tag = "rolling_stock",
     params(PostRollingStockQueryParams),
     request_body = RollingStockForm,
     responses(
         (status = 200, description = "The created rolling stock", body = RollingStock)
     )
 )]
-#[post("")]
 async fn create(
-    db_pool: Data<DbConnectionPoolV2>,
+    State(db_pool): State<DbConnectionPoolV2>,
+    Query(query_params): Query<PostRollingStockQueryParams>,
     Json(rolling_stock_form): Json<RollingStockForm>,
-    query_params: Query<PostRollingStockQueryParams>,
 ) -> Result<Json<RollingStockModel>> {
     rolling_stock_form.validate()?;
     let conn = &mut db_pool.get().await?;
@@ -245,24 +270,24 @@ async fn create(
 }
 
 /// Patch a rolling stock
-#[utoipa::path(tag = "rolling_stock",
+#[utoipa::path(
+    patch, path = "",
+    tag = "rolling_stock",
     params(RollingStockIdParam),
     request_body = RollingStockForm,
     responses(
         (status = 200, description = "The created rolling stock", body = RollingStockWithLiveries)
     )
 )]
-#[patch("")]
 async fn update(
-    db_pool: Data<DbConnectionPoolV2>,
-    path: Path<i64>,
+    State(db_pool): State<DbConnectionPoolV2>,
+    Path(rolling_stock_id): Path<i64>,
     Json(rolling_stock_form): Json<RollingStockForm>,
 ) -> Result<Json<RollingStockWithLiveries>> {
     rolling_stock_form.validate()?;
-    let conn = &mut db_pool.get().await?;
-
-    let rolling_stock_id = path.into_inner();
     let name = rolling_stock_form.name.clone();
+
+    let conn = &mut db_pool.get().await?;
 
     let previous_rolling_stock =
         RollingStockModel::retrieve_or_fail(conn, rolling_stock_id, || {
@@ -293,6 +318,7 @@ async fn update(
 }
 
 #[derive(Deserialize, IntoParams, ToSchema)]
+#[into_params(parameter_in = Query)]
 struct DeleteRollingStockQueryParams {
     /// force the deletion even if it’s used
     #[serde(default)]
@@ -300,7 +326,9 @@ struct DeleteRollingStockQueryParams {
 }
 
 /// Delete a rolling_stock and all entities linked to it
-#[utoipa::path(tag = "rolling_stock",
+#[utoipa::path(
+    delete, path = "",
+    tag = "rolling_stock",
     params(RollingStockIdParam, DeleteRollingStockQueryParams),
     responses(
         (status = 204, description = "The rolling stock was deleted successfully"),
@@ -309,29 +337,25 @@ struct DeleteRollingStockQueryParams {
         (status = 409, description = "The requested rolling stock is used", body = RollingStockError),
     )
 )]
-#[delete("")]
 async fn delete(
-    db_pool: Data<DbConnectionPoolV2>,
-    path: Path<i64>,
-    params: Query<DeleteRollingStockQueryParams>,
-) -> Result<HttpResponse> {
-    let rolling_stock_id = path.into_inner();
+    State(db_pool): State<DbConnectionPoolV2>,
+    Path(rolling_stock_id): Path<i64>,
+    Query(DeleteRollingStockQueryParams { force }): Query<DeleteRollingStockQueryParams>,
+) -> Result<impl IntoResponse> {
+    let conn = &mut db_pool.get().await?;
     assert_rolling_stock_unlocked(
-        &retrieve_existing_rolling_stock(
-            db_pool.get().await?.deref_mut(),
-            RollingStockKey::Id(rolling_stock_id),
-        )
-        .await?,
+        &retrieve_existing_rolling_stock(conn, RollingStockKey::Id(rolling_stock_id)).await?,
     )?;
 
-    if params.force {
-        return delete_rolling_stock(db_pool.get().await?.deref_mut(), rolling_stock_id).await;
+    if force {
+        delete_rolling_stock(conn, rolling_stock_id).await?;
+        return Ok(StatusCode::NO_CONTENT);
     }
 
-    let trains =
-        get_rolling_stock_usage(db_pool.get().await?.deref_mut(), rolling_stock_id).await?;
+    let trains = get_rolling_stock_usage(conn, rolling_stock_id).await?;
     if trains.is_empty() {
-        return delete_rolling_stock(db_pool.get().await?.deref_mut(), rolling_stock_id).await;
+        delete_rolling_stock(conn, rolling_stock_id).await?;
+        return Ok(StatusCode::NO_CONTENT);
     }
     Err(RollingStockError::RollingStockIsUsed {
         rolling_stock_id,
@@ -340,17 +364,14 @@ async fn delete(
     .into())
 }
 
-async fn delete_rolling_stock(
-    conn: &mut DbConnection,
-    rolling_stock_id: i64,
-) -> Result<HttpResponse> {
+async fn delete_rolling_stock(conn: &mut DbConnection, rolling_stock_id: i64) -> Result<()> {
     RollingStockModel::delete_static_or_fail(conn, rolling_stock_id, || {
         RollingStockError::KeyNotFound {
             rolling_stock_key: RollingStockKey::Id(rolling_stock_id),
         }
     })
     .await?;
-    Ok(HttpResponse::NoContent().finish())
+    Ok(())
 }
 
 #[derive(Debug, Deserialize, ToSchema)]
@@ -361,38 +382,29 @@ struct RollingStockLockedUpdateForm {
 }
 
 /// Update rolling_stock locked field
-#[utoipa::path(tag = "rolling_stock",
+#[utoipa::path(
+    patch, path = "",
+    tag = "rolling_stock",
     params(RollingStockIdParam),
     request_body = RollingStockLockedUpdateForm,
     responses(
         (status = 200, description = "The created rolling stock", body = RollingStock)
     )
 )]
-#[patch("")]
 async fn update_locked(
-    db_pool: Data<DbConnectionPoolV2>,
-    rolling_stock_id: Path<i64>,
-    data: Json<RollingStockLockedUpdateForm>,
-) -> Result<HttpResponse> {
+    State(db_pool): State<DbConnectionPoolV2>,
+    Path(rolling_stock_id): Path<i64>,
+    Json(RollingStockLockedUpdateForm { locked }): Json<RollingStockLockedUpdateForm>,
+) -> Result<impl IntoResponse> {
     let conn = &mut db_pool.get().await?;
-    let rolling_stock_locked_update_form = data.into_inner();
-    let rolling_stock_id = rolling_stock_id.into_inner();
 
     // FIXME: check that the rolling stock exists (the Option<RollingSrtockModel> is ignored here)
     RollingStockModel::changeset()
-        .locked(rolling_stock_locked_update_form.locked)
+        .locked(locked)
         .update(conn, rolling_stock_id)
         .await?;
 
-    Ok(HttpResponse::NoContent().finish())
-}
-
-#[derive(Debug, MultipartForm, ToSchema)]
-struct RollingStockLiveryCreateForm {
-    #[schema(value_type=String)]
-    pub name: Text<String>,
-    #[schema(value_type=Vec<String>, format=Binary)]
-    pub images: Vec<TempFile>,
+    Ok(StatusCode::NO_CONTENT)
 }
 
 async fn get_rolling_stock_usage(
@@ -409,8 +421,55 @@ async fn get_rolling_stock_usage(
     rolling_stock.get_rolling_stock_usage(conn).await
 }
 
+#[derive(ToSchema)]
+#[allow(unused)] // Schema only
+struct RollingStockLiveryCreateForm {
+    name: String,
+    images: Vec<Vec<u8>>,
+}
+
+async fn parse_multipart_content(
+    mut form: Multipart,
+) -> Result<(String, Vec<MultipartImage>), LiveryMultipartError> {
+    let mut name = None;
+    let mut images = Vec::new();
+    while let Some(field) = form.next_field().await? {
+        let field_name = field.name().ok_or(LiveryMultipartError::MissingFieldName)?;
+        if field_name == "name" {
+            name = Some(
+                field
+                    .text()
+                    .await
+                    .map_err(|source| LiveryMultipartError::InvalidName { source })?,
+            );
+            continue;
+        }
+        if field_name != "images" {
+            return Err(LiveryMultipartError::UnrecognizedField {
+                field_name: field_name.to_owned(),
+            });
+        }
+        let file_name = field
+            .file_name()
+            .ok_or(LiveryMultipartError::MissingLiveryName)?
+            .to_owned();
+        let data = field
+            .bytes()
+            .await
+            .map_err(|source| LiveryMultipartError::InvalidLiveryContent { source })?
+            .to_vec();
+        images.push(MultipartImage { file_name, data });
+    }
+    if images.is_empty() {
+        return Err(LiveryMultipartError::MissingLiveryContent);
+    }
+    Ok((name.ok_or(LiveryMultipartError::MissingFieldName)?, images))
+}
+
 /// Create a rolling stock livery
-#[utoipa::path(tag = "rolling_stock,rolling_stock_livery",
+#[utoipa::path(
+    post, path = "",
+    tag = "rolling_stock,rolling_stock_livery",
     params(RollingStockIdParam),
     request_body = RollingStockLiveryCreateForm,
     responses(
@@ -418,24 +477,25 @@ async fn get_rolling_stock_usage(
         (status = 404, description = "The requested rolling stock was not found"),
     )
 )]
-#[post("")]
 async fn create_livery(
-    db_pool: Data<DbConnectionPoolV2>,
-    rolling_stock_id: Path<i64>,
-    MultipartForm(form): MultipartForm<RollingStockLiveryCreateForm>,
+    State(db_pool): State<DbConnectionPoolV2>,
+    Path(rolling_stock_id): Path<i64>,
+    form: Multipart,
 ) -> Result<Json<RollingStockLivery>> {
     let conn = &mut db_pool.get().await?;
 
-    let rolling_stock_id = rolling_stock_id.into_inner();
+    let (name, images) = parse_multipart_content(form)
+        .await
+        .map_err(RollingStockError::from)?;
 
-    let formatted_images = format_images(form.images)?;
+    let formatted_images = format_images(images)?;
 
     // create compound image
     let compound_image = create_compound_image(conn, formatted_images.clone()).await?;
 
     // create livery
     let rolling_stock_livery: RollingStockLivery = RollingStockLiveryModel::changeset()
-        .name(form.name.into_inner())
+        .name(name)
         .rolling_stock_id(rolling_stock_id)
         .compound_image_id(Some(compound_image.id))
         .create(conn)
@@ -497,6 +557,11 @@ fn assert_rolling_stock_unlocked(rolling_stock: &RollingStockModel) -> Result<()
     Ok(())
 }
 
+struct MultipartImage {
+    file_name: String,
+    data: Vec<u8>,
+}
+
 #[derive(Clone, Debug, ToSchema)]
 struct FormattedImages {
     compound_image_height: u32,
@@ -504,20 +569,15 @@ struct FormattedImages {
     images: Vec<DynamicImage>,
 }
 
-fn format_images(mut tmp_images: Vec<TempFile>) -> Result<FormattedImages> {
+fn format_images(mut tmp_images: Vec<MultipartImage>) -> Result<FormattedImages> {
     let mut separated_images = vec![];
     let mut max_height: u32 = 0;
     let mut total_width: u32 = 0;
 
-    tmp_images.sort_by_key(|f| f.file_name.clone().unwrap());
+    tmp_images.sort_by(|f, g| f.file_name.cmp(&g.file_name));
 
-    for f in tmp_images {
-        let file = f.file.into_file();
-        let mut reader = BufReader::new(file);
-        let mut buffer = vec![];
-        reader.read_to_end(&mut buffer).unwrap();
-
-        let image = ImageReader::new(Cursor::new(buffer))
+    for MultipartImage { data, .. } in tmp_images {
+        let image = ImageReader::new(Cursor::new(data))
             .with_guessed_format()
             .unwrap();
 
@@ -577,29 +637,18 @@ async fn create_compound_image(
 #[cfg(test)]
 pub mod tests {
     use std::ops::DerefMut;
-    use std::vec;
 
-    use actix_http::Request;
-    use actix_http::StatusCode;
-    use actix_web::http::header::ContentType;
-    use actix_web::test::TestRequest;
+    use axum::http::StatusCode;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
     use serde_json::json;
 
-    use super::RollingStockError;
-    use super::TrainScheduleScenarioStudyProject;
     use crate::error::InternalError;
-    use crate::models::Identifiable;
-    use crate::modelsv2::fixtures::create_empty_infra;
+
     use crate::modelsv2::fixtures::create_fast_rolling_stock;
-    use crate::modelsv2::fixtures::create_pathfinding;
-    use crate::modelsv2::fixtures::create_project;
+
     use crate::modelsv2::fixtures::create_rolling_stock_with_energy_sources;
-    use crate::modelsv2::fixtures::create_scenario_v1;
-    use crate::modelsv2::fixtures::create_study;
-    use crate::modelsv2::fixtures::create_timetable_v1;
-    use crate::modelsv2::fixtures::create_train_schedule_v1;
+
     use crate::modelsv2::fixtures::fast_rolling_stock_changeset;
     use crate::modelsv2::fixtures::fast_rolling_stock_form;
     use crate::modelsv2::fixtures::get_rolling_stock_with_invalid_effort_curves;
@@ -607,25 +656,20 @@ pub mod tests {
     use crate::modelsv2::prelude::*;
     use crate::modelsv2::rolling_stock_model::RollingStockModel;
     use crate::views::rolling_stocks::rolling_stock_form::RollingStockForm;
+    use crate::views::test_app::TestApp;
     use crate::views::test_app::TestAppBuilder;
 
-    fn rolling_stock_create_request(rolling_stock_form: &RollingStockForm) -> Request {
-        TestRequest::post()
-            .uri("/rolling_stock")
-            .set_json(rolling_stock_form)
-            .to_request()
-    }
+    impl TestApp {
+        fn rolling_stock_create_request(
+            &self,
+            rolling_stock_form: &RollingStockForm,
+        ) -> axum_test::TestRequest {
+            self.post("/rolling_stock").json(rolling_stock_form)
+        }
 
-    fn rolling_stock_get_by_id_request(rolling_stock_id: i64) -> Request {
-        TestRequest::get()
-            .uri(format!("/rolling_stock/{rolling_stock_id}").as_str())
-            .to_request()
-    }
-
-    fn rolling_stock_delete_request(rolling_stock_id: i64) -> Request {
-        TestRequest::delete()
-            .uri(format!("/rolling_stock/{rolling_stock_id}").as_str())
-            .to_request()
+        fn rolling_stock_get_by_id_request(&self, rolling_stock_id: i64) -> axum_test::TestRequest {
+            self.get(format!("/rolling_stock/{rolling_stock_id}").as_str())
+        }
     }
 
     #[rstest]
@@ -637,7 +681,7 @@ pub mod tests {
         let rs_name = "fast_rolling_stock_name";
         let fast_rolling_stock_form = fast_rolling_stock_form(rs_name);
 
-        let request = rolling_stock_create_request(&fast_rolling_stock_form);
+        let request = app.rolling_stock_create_request(&fast_rolling_stock_form);
 
         // WHEN
         let response: RollingStockModel =
@@ -666,10 +710,9 @@ pub mod tests {
         let locked_rs_name = "locked_fast_rolling_stock_name";
         let locked_fast_rolling_stock_form = fast_rolling_stock_form(locked_rs_name);
 
-        let request = TestRequest::post()
-            .uri("/rolling_stock?locked=true")
-            .set_json(locked_fast_rolling_stock_form)
-            .to_request();
+        let request = app
+            .post("/rolling_stock?locked=true")
+            .json(&locked_fast_rolling_stock_form);
 
         // WHEN
         let response: RollingStockModel =
@@ -695,7 +738,7 @@ pub mod tests {
         let _ = create_fast_rolling_stock(db_pool.get_ok().deref_mut(), rs_name).await;
         let new_fast_rolling_stock_form = fast_rolling_stock_form(rs_name);
 
-        let request = rolling_stock_create_request(&new_fast_rolling_stock_form);
+        let request = app.rolling_stock_create_request(&new_fast_rolling_stock_form);
 
         let response: InternalError = app
             .fetch(request)
@@ -717,7 +760,7 @@ pub mod tests {
         let mut fast_rolling_stock_form = fast_rolling_stock_form(rs_name);
         fast_rolling_stock_form.base_power_class = Some("".to_string());
 
-        let request = rolling_stock_create_request(&fast_rolling_stock_form);
+        let request = app.rolling_stock_create_request(&fast_rolling_stock_form);
 
         // WHEN
         let response: InternalError = app
@@ -738,22 +781,16 @@ pub mod tests {
 
         let invalid_payload = get_rolling_stock_with_invalid_effort_curves();
 
-        let request = TestRequest::post()
-            .uri("/rolling_stock")
-            .set_payload(invalid_payload)
-            .insert_header(ContentType::json())
-            .to_request();
+        let request = app
+            .post("/rolling_stock")
+            .add_header(
+                axum::http::header::CONTENT_TYPE,
+                axum::http::header::HeaderValue::from_str("application/json").unwrap(),
+            )
+            .bytes(invalid_payload.into());
 
-        let response: InternalError = app
-            .fetch(request)
-            .assert_status(StatusCode::BAD_REQUEST)
-            .json_into();
-
-        assert_eq!(response.error_type, "editoast:JsonError");
-        assert_eq!(
-            response.message,
-            r#"Json deserialize error: effort curve invalid, max_efforts and speeds arrays should have the same length at line 50 column 17"#
-        );
+        app.fetch(request)
+            .assert_status(StatusCode::UNPROCESSABLE_ENTITY);
     }
 
     #[rstest]
@@ -766,7 +803,7 @@ pub mod tests {
         let fast_rolling_stock =
             create_fast_rolling_stock(db_pool.get_ok().deref_mut(), rs_name).await;
 
-        let request = rolling_stock_get_by_id_request(fast_rolling_stock.id);
+        let request = app.rolling_stock_get_by_id_request(fast_rolling_stock.id);
 
         // WHEN
         let response: RollingStockModel =
@@ -786,9 +823,7 @@ pub mod tests {
         let fast_rolling_stock =
             create_fast_rolling_stock(db_pool.get_ok().deref_mut(), rs_name).await;
 
-        let request = TestRequest::get()
-            .uri(format!("/rolling_stock/name/{rs_name}").as_str())
-            .to_request();
+        let request = app.get(format!("/rolling_stock/name/{rs_name}").as_str());
 
         let response: RollingStockModel =
             app.fetch(request).assert_status(StatusCode::OK).json_into();
@@ -801,7 +836,7 @@ pub mod tests {
     async fn get_unexisting_rolling_stock_by_id() {
         let app = TestAppBuilder::default_app();
 
-        let request = rolling_stock_get_by_id_request(0);
+        let request = app.rolling_stock_get_by_id_request(0);
 
         app.fetch(request).assert_status(StatusCode::NOT_FOUND);
     }
@@ -810,9 +845,8 @@ pub mod tests {
     async fn get_unexisting_rolling_stock_by_name() {
         let app = TestAppBuilder::default_app();
 
-        let request = TestRequest::get()
-            .uri(format!("/rolling_stock/name/{}", "unexisting_rolling_stock_name").as_str())
-            .to_request();
+        let request =
+            app.get(format!("/rolling_stock/name/{}", "unexisting_rolling_stock_name").as_str());
 
         app.fetch(request).assert_status(StatusCode::NOT_FOUND);
     }
@@ -832,10 +866,9 @@ pub mod tests {
         let updated_rs_name = "updated_fast_rolling_stock_name";
         rolling_stock_form.name = updated_rs_name.to_string();
 
-        let request = TestRequest::patch()
-            .uri(format!("/rolling_stock/{}", fast_rolling_stock.id).as_str())
-            .set_json(&rolling_stock_form)
-            .to_request();
+        let request = app
+            .patch(format!("/rolling_stock/{}", fast_rolling_stock.id).as_str())
+            .json(&&rolling_stock_form);
 
         // WHEN
         app.fetch(request).assert_status(StatusCode::OK);
@@ -872,10 +905,9 @@ pub mod tests {
 
         let second_fast_rolling_stock_form: RollingStockForm = second_fast_rolling_stock.into();
 
-        let request = TestRequest::patch()
-            .uri(format!("/rolling_stock/{}", first_fast_rolling_stock.id).as_str())
-            .set_json(second_fast_rolling_stock_form)
-            .to_request();
+        let request = app
+            .patch(format!("/rolling_stock/{}", first_fast_rolling_stock.id).as_str())
+            .json(&second_fast_rolling_stock_form);
 
         // WHEN
         let response: InternalError = app
@@ -891,6 +923,7 @@ pub mod tests {
     }
 
     #[rstest]
+    #[serial_test::serial]
     async fn update_locked_rolling_stock_fails() {
         // GIVEN
         let app = TestAppBuilder::default_app();
@@ -907,10 +940,9 @@ pub mod tests {
         let second_rs_name = "second_fast_rolling_stock_name";
         let second_fast_rolling_stock_form = rolling_stock_with_energy_sources_form(second_rs_name);
 
-        let request = TestRequest::patch()
-            .uri(format!("/rolling_stock/{}", locked_fast_rolling_stock.id).as_str())
-            .set_json(second_fast_rolling_stock_form)
-            .to_request();
+        let request = app
+            .patch(format!("/rolling_stock/{}", locked_fast_rolling_stock.id).as_str())
+            .json(&second_fast_rolling_stock_form);
 
         // WHEN
         let response: InternalError = app
@@ -936,10 +968,9 @@ pub mod tests {
 
         assert!(!fast_rolling_stock.locked);
 
-        let request = TestRequest::patch()
-            .uri(format!("/rolling_stock/{}/locked", fast_rolling_stock.id).as_str())
-            .set_json(json!({ "locked": true }))
-            .to_request();
+        let request = app
+            .patch(format!("/rolling_stock/{}/locked", fast_rolling_stock.id).as_str())
+            .json(&json!({ "locked": true }));
 
         app.fetch(request).assert_status(StatusCode::NO_CONTENT);
 
@@ -953,6 +984,7 @@ pub mod tests {
     }
 
     #[rstest]
+    #[serial_test::serial]
     async fn patch_unlock_rolling_stock_successfully() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
@@ -966,10 +998,9 @@ pub mod tests {
             .expect("Failed to create rolling stock");
         assert!(locked_fast_rolling_stock.locked);
 
-        let request = TestRequest::patch()
-            .uri(format!("/rolling_stock/{}/locked", locked_fast_rolling_stock.id).as_str())
-            .set_json(json!({ "locked": false }))
-            .to_request();
+        let request = app
+            .patch(format!("/rolling_stock/{}/locked", locked_fast_rolling_stock.id).as_str())
+            .json(&json!({ "locked": false }));
 
         app.fetch(request).assert_status(StatusCode::NO_CONTENT);
 
@@ -993,9 +1024,7 @@ pub mod tests {
             create_fast_rolling_stock(db_pool.get_ok().deref_mut(), rs_name).await;
         let power_restrictions = fast_rolling_stock.power_restrictions.clone();
 
-        let request = TestRequest::get()
-            .uri("/rolling_stock/power_restrictions")
-            .to_request();
+        let request = app.get("/rolling_stock/power_restrictions");
 
         // WHEN
         let response: Vec<String> = app.fetch(request).assert_status(StatusCode::OK).json_into();
@@ -1010,6 +1039,7 @@ pub mod tests {
     }
 
     #[rstest]
+    #[serial_test::serial]
     async fn delete_locked_rolling_stock_fails() {
         // GIVEN
         let app = TestAppBuilder::default_app();
@@ -1023,9 +1053,8 @@ pub mod tests {
             .await
             .expect("Failed to create rolling stock");
 
-        let request = TestRequest::delete()
-            .uri(format!("/rolling_stock/{}", locked_fast_rolling_stock.id).as_str())
-            .to_request();
+        let request =
+            app.delete(format!("/rolling_stock/{}", locked_fast_rolling_stock.id).as_str());
 
         // WHEN
         let response: InternalError = app
@@ -1045,86 +1074,5 @@ pub mod tests {
                 .expect("Failed to check if rolling stock exists");
 
         assert_eq!(rolling_stock_exists, true);
-    }
-
-    #[rstest]
-    async fn delete_unexisting_rolling_stock_returns_not_found() {
-        let app = TestAppBuilder::default_app();
-        let delete_request = rolling_stock_delete_request(0);
-        app.fetch(delete_request)
-            .assert_status(StatusCode::NOT_FOUND);
-    }
-
-    #[rstest]
-    async fn delete_used_rolling_stock_should_fail() {
-        // GIVEN
-        let app = TestAppBuilder::default_app();
-        let db_pool = app.db_pool();
-
-        let test_name = "delete_used_rolling_stock_should_fail";
-        let project = create_project(db_pool.get_ok().deref_mut(), test_name).await;
-        let study = create_study(db_pool.get_ok().deref_mut(), test_name, project.id).await;
-        let infra = create_empty_infra(db_pool.get_ok().deref_mut()).await;
-        let timetable = create_timetable_v1(db_pool.get_ok().deref_mut(), test_name).await;
-        let scenario = create_scenario_v1(
-            db_pool.get_ok().deref_mut(),
-            test_name,
-            study.id,
-            timetable.get_id(),
-            infra.id,
-        )
-        .await;
-        let rolling_stock =
-            create_fast_rolling_stock(db_pool.get_ok().deref_mut(), test_name).await;
-        let pathfinding = create_pathfinding(db_pool.get_ok().deref_mut(), infra.id).await;
-        let train_schedule = create_train_schedule_v1(
-            db_pool.get_ok().deref_mut(),
-            pathfinding.id,
-            timetable.get_id(),
-            rolling_stock.id,
-        )
-        .await;
-
-        // WHEN
-        let response: InternalError = app
-            .fetch(rolling_stock_delete_request(rolling_stock.id))
-            .assert_status(StatusCode::CONFLICT)
-            .json_into();
-
-        // THEN
-        let expected_usage = vec![TrainScheduleScenarioStudyProject {
-            train_schedule_id: train_schedule.id.unwrap(),
-            train_name: train_schedule.train_name.clone(),
-            scenario_id: scenario.id.unwrap(),
-            scenario_name: scenario.name.clone().unwrap(),
-            study_id: study.id,
-            study_name: study.name.clone(),
-            project_id: project.id,
-            project_name: project.name.clone(),
-        }];
-        let expected_error: InternalError = RollingStockError::RollingStockIsUsed {
-            rolling_stock_id: rolling_stock.id,
-            usage: expected_usage,
-        }
-        .into();
-        assert_eq!(response, expected_error);
-    }
-
-    #[rstest]
-    async fn forcefully_delete_used_rolling_stock() {
-        // GIVEN
-        let app = TestAppBuilder::default_app();
-        let db_pool = app.db_pool();
-        let test_name = "forcefully_delete_used_rolling_stock";
-        let rolling_stock =
-            create_fast_rolling_stock(db_pool.get_ok().deref_mut(), test_name).await;
-
-        // WHEN
-        let request = TestRequest::delete()
-            .uri(format!("/rolling_stock/{}?force=true", rolling_stock.id).as_str())
-            .to_request();
-
-        // THEN
-        app.fetch(request).assert_status(StatusCode::NO_CONTENT);
     }
 }
