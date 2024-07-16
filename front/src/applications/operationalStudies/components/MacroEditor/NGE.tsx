@@ -54,7 +54,7 @@ const NGE = () => {
     };
   }, []);
 
-  return <iframe ref={frameRef} srcDoc={frameSrc} title="nge-iframe" />;
+  return <iframe ref={frameRef} srcDoc={frameSrc} title="NGE" className="nge-iframe-container" />;
 };
 
 export default NGE;
