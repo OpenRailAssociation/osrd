@@ -31,7 +31,7 @@
 
         pythonPackages = ps: (import ./nix/python_env.nix {inherit ps;});
 
-        fixedNode = pkgs.nodejs-18_x;
+        fixedNode = pkgs.nodejs_20;
         fixedNodePackages = pkgs.nodePackages.override {
           nodejs = fixedNode;
         };
