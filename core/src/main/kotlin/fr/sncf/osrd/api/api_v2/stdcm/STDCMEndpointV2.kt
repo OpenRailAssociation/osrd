@@ -25,6 +25,7 @@ import fr.sncf.osrd.standalone_sim.makeElectricalProfiles
 import fr.sncf.osrd.standalone_sim.makeMRSPResponse
 import fr.sncf.osrd.standalone_sim.result.ElectrificationRange
 import fr.sncf.osrd.standalone_sim.runScheduleMetadataExtractor
+import fr.sncf.osrd.stdcm.PlannedTimingData
 import fr.sncf.osrd.stdcm.STDCMResult
 import fr.sncf.osrd.stdcm.STDCMStep
 import fr.sncf.osrd.stdcm.graph.findPath
@@ -33,9 +34,12 @@ import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.TrainStop
 import fr.sncf.osrd.utils.Direction
 import fr.sncf.osrd.utils.units.Offset
+import fr.sncf.osrd.utils.units.TimeDelta
 import fr.sncf.osrd.utils.units.meters
 import fr.sncf.osrd.utils.units.seconds
+import java.time.Duration.between
 import java.time.Duration.ofMillis
+import java.time.ZonedDateTime
 import org.takes.Request
 import org.takes.Response
 import org.takes.Take
@@ -67,6 +71,7 @@ class STDCMEndpointV2(private val infraManager: InfraManager) : Take {
             val trainsRequirements =
                 parseRawTrainsRequirements(request.trainsRequirements, request.startTime)
             val spacingRequirements = trainsRequirements.flatMap { it.spacingRequirements }
+            val steps = parseSteps(infra, request.pathItems, request.startTime)
 
             // Run the STDCM pathfinding
             val path =
@@ -75,11 +80,12 @@ class STDCMEndpointV2(private val infraManager: InfraManager) : Take {
                     rollingStock,
                     request.comfort,
                     0.0,
-                    parseSteps(infra, request.pathItems),
+                    steps,
                     makeBlockAvailability(
                         infra,
                         spacingRequirements,
                         workSchedules = request.workSchedules,
+                        steps,
                         gridMarginBeforeTrain = request.timeGapBefore.seconds,
                         gridMarginAfterTrain = request.timeGapAfter.seconds
                     ),
@@ -173,7 +179,11 @@ class STDCMEndpointV2(private val infraManager: InfraManager) : Take {
     }
 }
 
-private fun parseSteps(infra: FullInfra, pathItems: List<STDCMPathItem>): List<STDCMStep> {
+private fun parseSteps(
+    infra: FullInfra,
+    pathItems: List<STDCMPathItem>,
+    startTime: ZonedDateTime
+): List<STDCMStep> {
     if (pathItems.last().stopDuration == null) {
         throw OSRDError(ErrorType.MissingLastSTDCMStop)
     }
@@ -182,7 +192,14 @@ private fun parseSteps(infra: FullInfra, pathItems: List<STDCMPathItem>): List<S
             STDCMStep(
                 findWaypointBlocks(infra, it.locations),
                 it.stopDuration?.seconds,
-                it.stopDuration != null
+                it.stopDuration != null,
+                if (it.stepTimingData != null)
+                    PlannedTimingData(
+                        TimeDelta(between(startTime, it.stepTimingData.arrivalTime).toMillis()),
+                        it.stepTimingData.arrivalTimeToleranceBefore,
+                        it.stepTimingData.arrivalTimeToleranceAfter
+                    )
+                else null
             )
         }
         .toList()
