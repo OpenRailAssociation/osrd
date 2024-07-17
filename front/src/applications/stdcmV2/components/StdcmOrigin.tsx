@@ -9,6 +9,7 @@ import { useOsrdConfSelectors, useOsrdConfActions } from 'common/osrdContext';
 import type { StdcmConfSliceActions } from 'reducers/osrdconf/stdcmConf';
 import type { PathStep } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
+import { replaceElementAtIndex } from 'utils/array';
 
 import StdcmCard from './StdcmCard';
 import StdcmOperationalPoint from './StdcmOperationalPoint';
@@ -31,11 +32,19 @@ const StdcmOrigin = ({ setCurrentSimulationInputs, disabled = false }: StdcmConf
   useEffect(() => {
     setCurrentSimulationInputs((prevState) => ({
       ...prevState,
-      origin,
+      pathSteps: replaceElementAtIndex(prevState?.pathSteps, 0, origin),
       departureDate: originDate,
       departureTime: originTime,
     }));
   }, [origin, originDate, originTime]);
+
+  const onOriginDateInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    dispatch(updateOriginDate(e.target.value));
+  };
+
+  const onOriginTimeInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    dispatch(updateOriginTime(e.target.value));
+  };
 
   return (
     <StdcmCard
@@ -57,7 +66,7 @@ const StdcmOrigin = ({ setCurrentSimulationInputs, disabled = false }: StdcmConf
               label={t('trainPath.date')}
               type="date"
               name="dateOrigin"
-              onChange={(e) => dispatch(updateOriginDate(e.target.value))}
+              onChange={onOriginDateInputChange}
               value={originDate}
               disabled={disabled}
             />
@@ -67,9 +76,7 @@ const StdcmOrigin = ({ setCurrentSimulationInputs, disabled = false }: StdcmConf
               type="time"
               label={t('trainPath.time')}
               id="originTime"
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                dispatch(updateOriginTime(e.target.value))
-              }
+              onChange={onOriginTimeInputChange}
               value={originTime}
               disabled={disabled}
             />

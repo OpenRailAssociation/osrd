@@ -44,6 +44,15 @@ const StdcmVias = ({ disabled = false, setCurrentSimulationInputs }: StdcmConfig
     );
   };
 
+  const onClickDeleteVia = (index: number) => {
+    dispatch(deleteViaV2(index));
+  };
+
+  const onClickOnCard = () => {
+    const newPathSteps = addElementAtIndex(pathSteps, pathSteps.length - 1, null);
+    dispatch(updatePathSteps({ pathSteps: newPathSteps }));
+  };
+
   useEffect(() => {
     setCurrentSimulationInputs((prevState) => ({
       ...prevState,
@@ -65,7 +74,7 @@ const StdcmVias = ({ disabled = false, setCurrentSimulationInputs }: StdcmConfig
                   <span>
                     <img src={IntermediatePointIcon} alt="intermediate-point" />
                   </span>
-                  <button type="button" onClick={() => dispatch(deleteViaV2(index))}>
+                  <button type="button" onClick={() => onClickDeleteVia(index)}>
                     {t('translation:common.delete')}
                   </button>
                 </div>
@@ -93,10 +102,8 @@ const StdcmVias = ({ disabled = false, setCurrentSimulationInputs }: StdcmConfig
         hasTip
         text={t('trainPath.addVia')}
         Icon={<Location size="lg" variant="base" />}
-        onClick={() => {
-          const newPathSteps = addElementAtIndex(pathSteps, pathSteps.length - 1, null);
-          dispatch(updatePathSteps({ pathSteps: newPathSteps }));
-        }}
+        onClick={onClickOnCard}
+        disabled={disabled}
       />
     </div>
   );

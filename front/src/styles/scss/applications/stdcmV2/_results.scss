@@ -1,0 +1,347 @@
+.stdcm-v2-results {
+  background-color: rgb(233, 239, 242);
+  padding: 1.25rem 2rem 10rem 2rem;
+  position: relative;
+
+  .error-message {
+    display: flex;
+    width: 34.125rem;
+    margin: 1.375rem 0 3.438rem 21.125rem;
+    color: rgba(49, 46, 43, 1);
+    font-size: 1rem;
+    font-weight: 400;
+    letter-spacing: 0;
+    text-align: left;
+    line-height: 1.5rem;
+  }
+
+  .simulation-navigator {
+    position: relative;
+    color: rgb(0, 0, 0);
+    font-weight: 600;
+    font-size: 1.125rem;
+    line-height: 1.5rem;
+    margin-bottom: 2.25rem;
+    margin-top: 4.063rem;
+
+    &.with-error-status {
+      margin-top: 10rem;
+    }
+
+    .simulation-list-wrapper {
+      display: flex;
+      overflow: hidden;
+
+      .scroll-btn {
+        position: absolute;
+        border-radius: 0.375rem;
+        box-shadow: 0px 0px 0px 2px rgba(255, 255, 255, 1) inset;
+        background-color: rgba(246, 248, 249, 1);
+        width: 3rem;
+        height: 3rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1;
+
+        span {
+          color: rgb(24, 68, 239);
+        }
+
+        &.left {
+          left: -0.75rem;
+        }
+
+        &.right {
+          right: -0.75rem;
+        }
+      }
+
+      .simulation-list {
+        mask-image: linear-gradient(to right, black 90%, transparent);
+        display: flex;
+        width: 100%;
+        overflow-x: hidden;
+
+        .simulation-item {
+          width: 7.813rem;
+          display: inline-block;
+          margin: 0.563rem 4rem 0 0;
+          cursor: pointer;
+
+          .creation-date {
+            color: rgba(182, 178, 175, 1);
+            font-weight: 400;
+            font-size: 0.875rem;
+            line-height: 1.25rem;
+            letter-spacing: 0;
+            text-align: left;
+            padding-top: 0.25rem;
+            padding-bottom: 0.688rem;
+          }
+
+          .simulation-name {
+            display: flex;
+            color: rgba(121, 118, 113, 1);
+            letter-spacing: 0;
+            text-align: left;
+            white-space: nowrap;
+
+            .check-circle {
+              color: rgb(60, 202, 128);
+              padding-left: 0.5rem;
+            }
+          }
+
+          &.selected {
+            .creation-date {
+              color: rgb(121, 118, 113);
+            }
+
+            .simulation-name {
+              color: rgba(0, 0, 0, 1);
+            }
+
+            .selected-simulation-indicator {
+              width: 100%;
+              background-color: rgba(92, 89, 85, 1);
+              height: 0.25rem;
+            }
+          }
+
+          &.retained {
+            .simulation-name {
+              color: rgb(11, 114, 60);
+            }
+          }
+
+          &.anyRetained {
+            cursor: default;
+          }
+
+          &.selected.retained {
+            .selected-simulation-indicator {
+              background-color: rgba(11, 114, 60, 1);
+            }
+          }
+        }
+      }
+    }
+
+    .separator {
+      width: 100%;
+      position: absolute;
+      bottom: 0.25rem;
+      border-bottom: 0.063rem solid rgb(182, 178, 175);
+    }
+  }
+
+  .simulation-results {
+    display: flex;
+    justify-content: space-between;
+
+    .results-and-sheet {
+      display: flex;
+      flex-direction: column;
+      width: 70%;
+
+      .table-container {
+        margin: 0 2rem;
+
+        .table-results {
+          border-radius: 0.375rem;
+          background-color: rgba(0, 0, 0, 0.05);
+
+          th {
+            height: 2rem;
+            font-size: 0.875rem;
+            font-weight: 400;
+            text-transform: capitalize;
+            color: rgb(121, 118, 113);
+            padding-top: 0.313rem;
+            padding-bottom: 0.313rem;
+            vertical-align: middle;
+          }
+          tbody tr:nth-child(odd) {
+            background-color: rgb(239, 243, 245);
+          }
+          tbody tr:nth-child(even) {
+            background-color: rgb(246, 248, 249);
+          }
+          td {
+            height: 2rem;
+            font-size: 0.875;
+            font-weight: 400;
+            color: rgb(49, 46, 43);
+            line-height: 1.25rem;
+            vertical-align: middle;
+          }
+          .index {
+            padding-left: 2rem;
+          }
+          .pr {
+            padding-right: 12.438rem;
+          }
+          .ch {
+            padding-right: 2.25rem;
+          }
+          .stop {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: rgb(0, 0, 0);
+            line-height: 1.25rem;
+            width: 4.688rem;
+          }
+          .stop-with-duration {
+            font-size: 0.875rem;
+            color: rgb(255, 255, 255);
+            background-color: rgb(33, 100, 130);
+            border-radius: 0.625rem;
+            margin-top: 0.375rem;
+            margin-bottom: 0.375rem;
+            margin-right: 1.813rem;
+            text-align: center;
+          }
+          .weight {
+            padding-left: 2.063rem;
+            color: '#312E2B';
+
+            &.lastStep {
+              color: '#797671';
+            }
+          }
+          .semi-bold-output {
+            font-weight: 600;
+          }
+        }
+        .results-buttons {
+          height: 6.5rem;
+          background-color: rgba(0, 0, 0, 0.05);
+          display: flex;
+          justify-content: space-between;
+          border-bottom-left-radius: 0.375rem;
+          border-bottom-right-radius: 0.375rem;
+
+          &.simulation-retained {
+            border-radius: 0;
+          }
+          .button-display-all-PR {
+            padding-top: 2rem;
+            padding-left: 2.25rem;
+          }
+          .button-get-simulation {
+            padding-top: 2rem;
+            padding-right: 2.25rem;
+          }
+          .selected-simulation {
+            padding-top: 0.6rem;
+          }
+        }
+      }
+
+      .upgrade {
+        display: flex;
+        flex-direction: column;
+        margin: 0 2rem;
+        margin-top: 3.5rem;
+        border-top: 0.313rem solid rgb(211, 209, 207);
+        .text {
+          color: rgb(0, 0, 0);
+          margin-left: 0.5rem;
+          .title {
+            font-weight: 600;
+            font-size: 1.125rem;
+            padding-top: 1.563rem;
+            display: flex;
+            flex-direction: row;
+            .comment-icon {
+              color: #b6b2af;
+              margin-left: 0.625rem;
+              display: flex;
+            }
+          }
+        }
+        .buttons-list {
+          display: flex;
+          flex-direction: row;
+          justify-content: flex-start;
+          flex-wrap: wrap;
+          margin-top: 1.375rem;
+          button {
+            height: 2rem;
+            font-size: 1rem;
+            padding-top: 0.313rem;
+            padding-bottom: 0.438rem;
+            margin-right: 1.438rem;
+            margin-bottom: 1.438rem;
+          }
+        }
+      }
+
+      .get-simulation {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        margin: 0 2rem;
+        background-color: rgb(255, 255, 255);
+        border-bottom-left-radius: 0.375rem;
+        border-bottom-right-radius: 0.375rem;
+        .download-simulation {
+          margin-top: 2.813rem;
+          margin-bottom: 1.313rem;
+        }
+        .gesico-text {
+          font-weight: 400;
+          font-size: 1rem;
+          color: rgb(49, 46, 43);
+          margin-bottom: 2.625rem;
+        }
+      }
+
+      .start-new-query {
+        margin-top: 4.75rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+    }
+
+    .simulation-failure {
+      text-align: left;
+      letter-spacing: 0;
+      display: flex;
+      flex-direction: column;
+      min-height: 10.5rem;
+
+      .title {
+        color: rgba(33, 100, 130, 1);
+        font-size: 1.5rem;
+        font-weight: 600;
+        font-style: SemiBold;
+        line-height: 2rem;
+        margin-bottom: 0.438rem;
+      }
+
+      .change-criteria {
+        opacity: 1;
+        color: rgba(49, 46, 43, 1);
+        font-size: 1rem;
+        font-weight: 400;
+        font-style: Regular;
+        line-height: 1.5rem;
+      }
+    }
+
+    .map-results {
+      width: 40%;
+      height: 33.75rem;
+      margin-right: 2rem;
+      border-radius: 0.5rem;
+      border: 0.063rem solid rgba(255, 255, 255, 1);
+      box-shadow:
+        0rem 0rem 0rem 0.125rem rgba(255, 255, 255, 0.75) inset,
+        0rem 0rem 0rem 0.063rem rgba(0, 0, 0, 0.25) inset;
+    }
+  }
+}

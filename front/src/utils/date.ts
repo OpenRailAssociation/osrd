@@ -32,11 +32,7 @@ export function formatIsoDate(date: Date) {
   return date.toISOString().substring(0, 10);
 }
 
-export function dateTimeFormatting(
-  date: Date,
-  withoutTime: boolean = false,
-  formatType: string = 'default'
-) {
+export function dateTimeFormatting(date: Date, withoutTime: boolean = false) {
   let locale;
   switch (i18n.language) {
     case 'fr':
@@ -47,17 +43,7 @@ export function dateTimeFormatting(
   }
   // Force interpreting the date in UTC
   const dateToUTC = dayjs(date).utc(true);
-  let dateFormat;
-  switch (formatType) {
-    case 'default':
-      dateFormat = withoutTime ? 'D MMM YYYY' : 'D MMM YYYY HH:mm';
-      break;
-    case 'alternate':
-      dateFormat = withoutTime ? 'DD/MM/YY' : 'DD/MM/YY HH:mm';
-      break;
-    default:
-      throw new Error('Invalid format type');
-  }
+  const dateFormat = withoutTime ? 'D MMM YYYY' : 'D MMM YYYY HH:mm';
   const tz = dayjs.tz.guess();
   return dateToUTC.locale(locale).tz(tz).format(dateFormat).replace(/\./gi, '');
 }
@@ -128,17 +114,18 @@ export function formatDayV2(dateString: string, locale: string = 'fr'): string {
   return date.format('dddd D MMMM YYYY');
 }
 
-export const formatDateToString = (date: Date) => {
+export const formatDateToString = (date: Date, shortYear: boolean = false) => {
   const day = String(date.getDate()).padStart(2, '0');
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const year = date.getFullYear();
+  const shortYearFormat = String(year).slice(-2);
   const hours = String(date.getHours()).padStart(2, '0');
   const minutes = String(date.getMinutes()).padStart(2, '0');
 
   return {
     day,
     month,
-    year,
+    year: shortYear ? shortYearFormat : year,
     hours,
     minutes,
   };

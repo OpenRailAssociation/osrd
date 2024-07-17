@@ -3,8 +3,8 @@ import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 // import { Input } from '@osrd-project/ui-core';
 
-import { type LightRollingStockWithLiveries } from 'common/api/osrdEditoastApi';
-import { type SelectOptionObject } from 'common/BootstrapSNCF/SelectSNCF';
+import type { LightRollingStockWithLiveries } from 'common/api/osrdEditoastApi';
+import type { SelectOptionObject } from 'common/BootstrapSNCF/SelectSNCF';
 import { useOsrdConfActions } from 'common/osrdContext';
 import SpeedLimitByTagSelector from 'common/SpeedLimitByTagSelector/SpeedLimitByTagSelector';
 import { useStoreDataForSpeedLimitByTagSelector } from 'common/SpeedLimitByTagSelector/useStoreDataForSpeedLimitByTagSelector';
@@ -102,6 +102,18 @@ const StdcmConsist = ({ setCurrentSimulationInputs, disabled = false }: StdcmCon
       },
     }));
   }, [rollingStock]);
+
+  useEffect(() => {
+    if (speedLimitByTag) {
+      setCurrentSimulationInputs((prevState) => ({
+        ...prevState,
+        consist: {
+          ...prevState?.consist,
+          speedLimitByTag,
+        },
+      }));
+    }
+  }, [speedLimitByTag]);
 
   return (
     <StdcmCard

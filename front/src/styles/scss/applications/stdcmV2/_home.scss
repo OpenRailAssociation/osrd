@@ -1,12 +1,33 @@
 .stdcm-v2 {
+  /* 
+  We set the cursor to default to avoid the pointer cursor that appears due to role="button" on the div.
+  The role="button" makes the div appear clickable, which causes the cursor to change to a pointer on hover.
+  Using !important ensures that the cursor remains in its default state.
+*/
+  cursor: default !important;
   .stdcm-v2__body {
-    padding: 32px;
+    padding: 2rem;
     background-color: rgb(239, 243, 245);
     display: flex;
 
     .stdcm-v2-simulation-settings {
       display: flex;
-      gap: 13px;
+      gap: 0.813rem;
+      width: 55%;
+
+      .stdcm-v2-consist-container {
+        width: 45%;
+
+        .stdcm-v2-consist-img {
+          overflow: hidden;
+          img {
+            transform: scaleX(-1);
+            max-width: 100%;
+            height: 1.25rem;
+          }
+        }
+      }
+
       .stdcm-v2__separator {
         border-radius: 4px;
         background-color: rgba(0, 0, 0, 0.05);
@@ -18,7 +39,13 @@
         display: flex;
         flex-direction: column;
         gap: 32px;
-        width: 450px;
+        width: 55%;
+        position: relative;
+        align-items: center;
+
+        > div {
+          width: 100%;
+        }
 
         .stdcm-v2-vias-list {
           display: flex;
@@ -28,8 +55,6 @@
 
         /*TODO Waiting to fix the button in ui-core...*/
         .stdcm-v2-launch-request {
-          padding-bottom: 0.15rem;
-
           button {
             justify-content: center;
             width: 100%;
@@ -92,6 +117,52 @@
             transform: rotate(0deg);
           }
         }
+
+        .simulation-status-banner {
+          position: absolute;
+          bottom: -4.5rem;
+          z-index: 1;
+          width: 34.125rem;
+
+          .status {
+            display: flex;
+            font-weight: 400;
+            letter-spacing: 0px;
+            text-align: center;
+            justify-content: center;
+            color: rgb(11, 114, 60);
+            padding-top: 1.438rem;
+            font-size: 1.5rem;
+            line-height: 2rem;
+            height: 5rem;
+            border-radius: 0.5rem;
+            background-color: rgb(230, 247, 238);
+            box-shadow:
+              0px 0px 0px 4px rgba(255, 255, 255, 1) inset,
+              0px 0px 0px 5px rgb(60, 202, 128) inset,
+              0px 3px 7px -3px rgba(11, 114, 60, 0.4);
+
+            &.failed {
+              background-color: rgba(255, 238, 237, 1);
+              color: rgba(217, 28, 28);
+              box-shadow:
+                0px 0px 0px 4px rgba(255, 255, 255, 1) inset,
+                0px 0px 0px 5px rgba(255, 104, 104, 1) inset,
+                0px 3px 7px -3px rgba(217, 28, 28, 0.4);
+            }
+          }
+
+          .error-message {
+            bottom: -5.875rem;
+            position: absolute;
+            color: rgba(49, 46, 43, 1);
+            font-size: 1rem;
+            font-weight: 400;
+            letter-spacing: 0;
+            text-align: left;
+            line-height: 1.5rem;
+          }
+        }
       }
     }
 
@@ -101,235 +172,9 @@
       box-shadow:
         0px 0px 0px 2px rgba(255, 255, 255, 0.75) inset,
         0px 0px 0px 1px rgba(0, 0, 0, 0.25) inset;
-      height: auto;
-      min-height: 540px;
-      margin-left: 0.85rem;
-      width: 100%;
-      height: calc(100vh - 64px);
-    }
-  }
-  .stdcm-container {
-    position: relative;
-  }
-
-  .simulation-available {
-    position: absolute;
-    z-index: 10;
-    height: 5rem;
-    width: 34.125rem;
-    display: flex;
-    flex-direction: column;
-    margin-top: -2.5rem;
-    margin-left: 21.125rem;
-    border-radius: 0.5rem;
-    background-color: rgb(230, 247, 238);
-    box-shadow:
-      0px 0px 0px 4px rgba(255, 255, 255, 1) inset,
-      0px 0px 0px 5px rgb(60, 202, 128) inset,
-      0px 3px 7px -3px rgba(11, 114, 60, 0.4);
-
-    span {
-      color: rgb(11, 114, 60);
-      align-self: center;
-      padding-top: 1.438rem;
-      font-size: 1.5rem;
-      line-height: 2rem;
-    }
-  }
-
-  .stdcm-container.simulation-visible > *:not(.simulation-available) {
-    padding-top: 3rem;
-    padding-bottom: 3rem;
-  }
-
-  .stdcm-v2-results {
-    background-color: rgb(233, 239, 242);
-    .simuation-banner {
-      color: rgb(0, 0, 0);
-      font-weight: 600;
-      font-size: 1.125rem;
-      line-height: 1.5rem;
-      padding-top: 1.813rem;
       margin-left: 2rem;
-      margin-right: 2rem;
-      border-bottom: 0.063rem solid rgb(182, 178, 175);
-      .creation-date {
-        color: rgb(121, 118, 113);
-        font-weight: 400;
-        font-size: 0.875rem;
-        line-height: 1.25rem;
-        padding-top: 0.25rem;
-        padding-bottom: 0.688rem;
-      }
-      .simulation-validated {
-        display: flex;
-        .check-circle {
-          color: rgb(60, 202, 128);
-          padding-left: 0.5rem;
-        }
-      }
-    }
-    .simuation-results {
-      display: flex;
-      justify-content: space-between;
-      .results-and-sheet {
-        display: flex;
-        flex-direction: column;
-      }
-      .table-container {
-        margin-top: 2.125rem;
-        margin: 0 2rem;
-        width: 50.25rem;
-        padding-bottom: 2.125rem;
-        border-bottom: 0.313rem solid rgb(182, 178, 175);
-
-        .table-results {
-          border-radius: 0.375rem;
-          background-color: rgba(0, 0, 0, 0.05);
-
-          th {
-            height: 2rem;
-            font-size: 0.875rem;
-            font-weight: 400;
-            text-transform: capitalize;
-            color: rgb(121, 118, 113);
-            padding-top: 0.313rem;
-            padding-bottom: 0.313rem;
-            vertical-align: middle;
-          }
-          tbody tr:nth-child(odd) {
-            background-color: rgb(239, 243, 245);
-          }
-          tbody tr:nth-child(even) {
-            background-color: rgb(246, 248, 249);
-          }
-          td {
-            height: 2rem;
-            font-size: 0.875;
-            font-weight: 400;
-            color: rgb(49, 46, 43);
-            line-height: 1.25rem;
-            vertical-align: middle;
-          }
-          .index {
-            padding-left: 2rem;
-          }
-          .pr {
-            padding-right: 12.438rem;
-          }
-          .ch {
-            padding-right: 2.25rem;
-          }
-          .stop {
-            font-size: 0.875rem;
-            font-weight: 600;
-            color: rgb(0, 0, 0);
-            line-height: 1.25rem;
-            width: 4.688rem;
-          }
-          .stop-with-duration {
-            font-size: 0.875rem;
-            color: rgb(255, 255, 255);
-            background-color: rgb(33, 100, 130);
-            border-radius: 0.625rem;
-            margin-top: 0.375rem;
-            margin-bottom: 0.375rem;
-            margin-right: 1.813rem;
-            text-align: center;
-          }
-          .weight {
-            padding-left: 2.063rem;
-          }
-          .semi-bold-output {
-            font-weight: 600;
-          }
-        }
-        .display-all {
-          height: 6.5rem;
-          background-color: rgba(0, 0, 0, 0.05);
-          display: flex;
-          justify-content: space-between;
-          border-bottom-left-radius: 0.375rem;
-          border-bottom-right-radius: 0.375rem;
-          .button-display-all-PR {
-            padding-top: 2rem;
-            padding-left: 2.25rem;
-          }
-          .button-get-simulation {
-            padding-top: 2rem;
-            padding-right: 2.25rem;
-          }
-          .selected-simulation {
-            padding-top: 0.6rem;
-          }
-        }
-      }
-    }
-    .upgrade {
-      display: flex;
-      flex-direction: column;
-      margin: 0 2rem;
-      .text {
-        color: rgb(0, 0, 0);
-        margin-left: 0.5rem;
-        .title {
-          font-weight: 600;
-          font-size: 1.125rem;
-          padding-top: 1.563rem;
-          display: flex;
-          flex-direction: row;
-          .comment-icon {
-            color: #b6b2af;
-            margin-left: 0.625rem;
-            display: flex;
-          }
-        }
-      }
-      .buttons-list {
-        display: flex;
-        flex-direction: row;
-        justify-content: flex-start;
-        flex-wrap: wrap;
-        margin-top: 1.375rem;
-        button {
-          height: 2rem;
-          font-size: 1rem;
-          padding-top: 0.313rem;
-          padding-bottom: 0.438rem;
-          margin-right: 1.438rem;
-          margin-bottom: 1.438rem;
-        }
-      }
-    }
-
-    .get-simulation {
-      margin-left: 2rem;
-      height: 10.75rem;
-      background-color: rgb(255, 255, 255);
-      border-bottom-left-radius: 0.375rem;
-      border-bottom-right-radius: 0.375rem;
-      .download-simulation {
-        padding-top: 2.813rem;
-        padding-left: 16.438rem;
-      }
-      .gesico-text {
-        font-weight: 400;
-        font-size: 1rem;
-        color: rgb(49, 46, 43);
-        padding-top: 1.313rem;
-        padding-left: 12.938rem;
-      }
-    }
-    .map-results {
-      width: 33.75rem;
-      height: 33.75rem;
-      margin-top: 2.313rem;
-      margin-right: 2rem;
-      border-radius: 0.5rem;
-      border: 0.063rem solid rgba(255, 255, 255, 1);
-      box-shadow:
-        0rem 0rem 0rem 0.125rem rgba(255, 255, 255, 0.75) inset,
-        0rem 0rem 0rem 0.063rem rgba(0, 0, 0, 0.25) inset;
+      width: 55%;
+      height: 48.5rem;
     }
   }
 }

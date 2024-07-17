@@ -143,7 +143,6 @@ const StdcmOperationalPoint = ({ updatePoint, point, disabled }: StdcmOperationa
           value={searchTerm}
           onChange={onInputChange}
           onBlur={onInputOnblur}
-          autoComplete="off"
           options={operationalPointsSuggestions}
           onSelectSuggestion={onSelectSuggestion}
           disabled={disabled}

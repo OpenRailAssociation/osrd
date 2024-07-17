@@ -46,11 +46,18 @@ test.describe('Home page OSRD', () => {
     await expect(homePage.page).toHaveURL(/.*\/editor\/*/);
   });
 
-  test('should be correctly redirected to the  "STDCM" page after clicking on the link', async () => {
+  test('should be correctly redirected to the  "STDCM" page after clicking on the link', async ({
+    context,
+  }) => {
+    // Start waiting for new page before clicking. Note no await.
+    const pagePromise = context.waitForEvent('page');
+
     // Navigate to the "STDCM" page
     await homePage.goToSTDCMPage();
 
+    const newPage = await pagePromise;
+
     // Check that the URL of the page matches the expected pattern
-    await expect(homePage.page).toHaveURL(/.*\/stdcm/);
+    await expect(newPage).toHaveURL(/.*\/stdcm/);
   });
 });

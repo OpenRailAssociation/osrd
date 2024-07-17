@@ -10,19 +10,31 @@
   "pathfindingFailed": "No path have been found for these waypoints.",
   "pleaseWait": "Please wait…",
   "simulation": {
-    "available": "Simulation available",
     "averageRequestTime": "For your request, the time required is generally 90 seconds.",
     "calculatingSimulation": "Calculation in progress...",
     "getSimulation": "Get the simulation",
+    "modifySearchCriteria": "You can modify your search criteria to find a solution.",
     "pendingSimulation": "Simulation in progress",
     "results": {
+      "changeCriteria": "You can modify your search criterias to find a solution.",
       "displayAll": "Display all operational points",
       "displayMain": "Display main operational points",
       "downloadSimulationSheet": "Download simulation report sheet",
+      "formatCreationDate": "{{month}}/{{day}}/{{year}} {{hours}}:{{minutes}}",
       "gesicoRequest": "and attach this document to your GESICO DSDM request.",
-      "selectThisSimulation": "Select this simulation",
-      "simulationNumber": "Simulation n°1",
+      "notFound": "No solution has been found for this configuration.",
+      "retainThisSimulation": "Retain this simulation",
+      "simulationName": {
+        "withOutputs": "Simulation n°{{id}}",
+        "withoutOutputs": "Without result"
+      },
       "simulationSelected": "You have selected this simulation",
+      "startNewQuery": "Start a new query",
+      "status": {
+        "completed": "Calculation completed",
+        "errorMessage": "We are sorry that we could not process your request. The STDCM team has been notified and will be aware of the situation soon.",
+        "failed": "Calculation failed"
+      },
       "upgrade": {
         "arrivalIncompatible": "Arrival time incompatible",
         "helpUs": "Help us improve ST DCM",
@@ -34,8 +46,8 @@
     },
     "stopCalculation": "Stop calculation"
   },
-  "speedSpaceChart": "Speed Space Chart",
   "spaceTimeGraphic": "Space-Time graph",
+  "speedSpaceChart": "Speed Space Chart",
   "stdcmComputation": "Search for a train path",
   "stdcmError": "Calculation error for last minute train path.",
   "stdcmErrorNoPaths": "Incompatibility with other train paths.",
