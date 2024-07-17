@@ -63,7 +63,7 @@ spotbugs-annotations = { module = 'com.github.spotbugs:spotbugs-annotations', ve
 geodesy = { module = 'org.gavaghan:geodesy', version = '1.1.+' } # Apache 2.0
 
 opentelemetry-api = { module = 'io.opentelemetry:opentelemetry-api', version.ref = 'otel' }
-opentelemetry-instrumentation-annotations = { module = 'io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations', version = '2.3.0' }
+opentelemetry-instrumentation-annotations = { module = 'io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations', version = '2.6.0' }
 
 opentracing-util = { module = 'io.opentracing:opentracing-util', version = '0.33.0' }
 dd-trace-api = { module = 'com.datadoghq:dd-trace-api', version = '1.37.0' }
