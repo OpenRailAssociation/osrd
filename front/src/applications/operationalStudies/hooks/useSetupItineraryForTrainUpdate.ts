@@ -119,7 +119,7 @@ const useSetupItineraryForTrainUpdate = (
                   arrival: arrival
                     ? addDurationToIsoDate(trainSchedule.start_time, arrival).substring(11, 19)
                     : arrival,
-                  stopFor: stopFor ? ISO8601Duration2sec(stopFor) : stopFor,
+                  stopFor: stopFor ? ISO8601Duration2sec(stopFor).toString() : stopFor,
                   locked,
                   onStopSignal,
                   coordinates: stepsCoordinates[i],
