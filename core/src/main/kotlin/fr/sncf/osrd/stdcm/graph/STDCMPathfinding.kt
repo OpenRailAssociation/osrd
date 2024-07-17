@@ -28,6 +28,12 @@ data class Result(
     val waypoints: List<EdgeLocation>
 )
 
+/**
+ * Find a path for a new train that exclusively uses tracks at times when they're available.
+ *
+ * For a detailed explanation of how this module works, there is some general documentation on the
+ * OSRD website: https://osrd.fr/en/docs/reference/design-docs/stdcm/
+ */
 fun findPath(
     fullInfra: FullInfra,
     rollingStock: RollingStock,
