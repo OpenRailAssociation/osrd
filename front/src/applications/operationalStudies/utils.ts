@@ -205,3 +205,6 @@ export const convertDepartureTimeIntoSec = (departureTime: string) => {
   const isoDateInSec = ms2sec(isoDateToMs(departureTime));
   return convertUTCDateToLocalDate(isoDateInSec);
 };
+export const checkNameInvalidity = (name?: string | null) => (name && name.length > 128) || !name;
+export const checkFieldInvalidity = (length: number, field?: string | null) =>
+  field ? field.length > length : false;
