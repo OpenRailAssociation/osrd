@@ -1,12 +1,19 @@
 use std::io::Cursor;
 
 use chrono::Utc;
+use editoast_models::DbConnection;
+use editoast_models::DbConnectionPool;
+use editoast_models::DbConnectionPoolV2;
 use editoast_schemas::infra::InfraObject;
 use editoast_schemas::infra::RailJson;
 use editoast_schemas::primitives::OSRDObject;
 use editoast_schemas::train_schedule::TrainScheduleBase;
+use postgis_diesel::types::LineString;
 
 use crate::infra_cache::operation::create::apply_create_operation;
+use crate::models::Create as _;
+use crate::models::Pathfinding;
+use crate::models::PathfindingChangeset;
 use crate::modelsv2::prelude::*;
 use crate::modelsv2::rolling_stock_livery::RollingStockLiveryModel;
 use crate::modelsv2::timetable::Timetable;
@@ -21,9 +28,6 @@ use crate::modelsv2::Study;
 use crate::modelsv2::Tags;
 use crate::views::rolling_stocks::rolling_stock_form::RollingStockForm;
 use crate::views::v2::train_schedule::TrainScheduleForm;
-use editoast_models::DbConnection;
-use editoast_models::DbConnectionPool;
-use editoast_models::DbConnectionPoolV2;
 
 pub fn project_changeset(name: &str) -> Changeset<Project> {
     Project::changeset()
@@ -297,4 +301,28 @@ pub async fn create_small_infra(conn: &mut DbConnection) -> Infra {
         .persist(railjson, conn)
         .await
         .unwrap()
+}
+
+pub async fn create_pathfinding_v1(conn: &mut DbConnection, infra_id: i64) -> Pathfinding {
+    let pathfinding_changeset = PathfindingChangeset {
+        infra_id: Some(infra_id),
+        payload: Some(
+            serde_json::from_str(include_str!(
+                "../tests/small_infra/pathfinding_fixture_payload.json"
+            ))
+            .unwrap(),
+        ),
+        length: Some(46776.),
+        slopes: Some(diesel_json::Json(vec![])),
+        curves: Some(diesel_json::Json(vec![])),
+        geographic: Some(LineString::new(None)),
+        owner: Some(Default::default()),
+        created: Some(Default::default()),
+        ..Default::default()
+    };
+    pathfinding_changeset
+        .create_conn(conn)
+        .await
+        .expect("Failed to create pathfinding")
+        .into()
 }
