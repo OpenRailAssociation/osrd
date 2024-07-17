@@ -20,7 +20,7 @@ use utoipa::IntoParams;
 use utoipa::ToSchema;
 
 use crate::core::v2::pathfinding::PathfindingResult;
-use crate::core::v2::simulation::SimulationResponse;
+use crate::core::v2::simulation::{RoutingRequirement, SimulationResponse, SpacingRequirement};
 use crate::core::v2::stdcm::STDCMResponse;
 use crate::core::v2::stdcm::TrainRequirement;
 use crate::core::v2::stdcm::{STDCMPathItem, STDCMWorkSchedule, UndirectedTrackRange};
@@ -198,24 +198,7 @@ async fn stdcm(
     )
     .await?;
 
-    // 2. Build core request
-    let mut trains_requirements = HashMap::new();
-    for (train, sim) in trains.iter().zip(simulations) {
-        let (sim, _) = sim;
-        let final_output = match sim {
-            SimulationResponse::Success { final_output, .. } => final_output,
-            _ => continue,
-        };
-        trains_requirements.insert(
-            train.id,
-            TrainRequirement {
-                start_time: train.start_time,
-                spacing_requirements: final_output.spacing_requirements,
-                routing_requirements: final_output.routing_requirements,
-            },
-        );
-    }
-
+    // 2. Compute the earliest start time and maximum running time
     let maximum_run_time_result = get_maximum_run_time(
         db_pool.clone(),
         redis_client_inner.clone(),
@@ -236,11 +219,17 @@ async fn stdcm(
     };
 
     let departure_time = get_earliest_departure_time(&data, maximum_run_time);
+    let latest_simulation_end = departure_time
+        + Duration::milliseconds((maximum_run_time + data.maximum_departure_delay) as i64);
 
-    // 3. Parse stdcm path items
+    // 3. Get scheduled train requirements
+    let trains_requirements =
+        build_train_requirements(trains, simulations, departure_time, latest_simulation_end);
+
+    // 4. Parse stdcm path items
     let path_items = parse_stdcm_steps(db_pool.get().await?.deref_mut(), &data, &infra).await?;
 
-    // 4. Build STDCM request
+    // 5. Build STDCM request
     let stdcm_response = STDCMRequest {
         infra: infra.id,
         expected_version: infra.version,
@@ -272,6 +261,90 @@ async fn stdcm(
     .await?;
 
     Ok(Json(stdcm_response))
+}
+
+/// Build the list of scheduled train requirements, only including requirements
+/// that overlap with the possible simulation times.
+fn build_train_requirements(
+    trains: Vec<TrainSchedule>,
+    simulations: Vec<(SimulationResponse, PathfindingResult)>,
+    departure_time: DateTime<Utc>,
+    latest_simulation_end: DateTime<Utc>,
+) -> HashMap<i64, TrainRequirement> {
+    let mut trains_requirements = HashMap::new();
+    for (train, (sim, _)) in trains.iter().zip(simulations) {
+        let final_output = match sim {
+            SimulationResponse::Success { final_output, .. } => final_output,
+            _ => continue,
+        };
+
+        // First check that the train overlaps with the simulation range
+        let start_time = train.start_time;
+        let train_duration_ms = *final_output.report_train.times.last().unwrap_or(&0);
+        if !is_resource_in_range(
+            departure_time,
+            latest_simulation_end,
+            start_time,
+            0,
+            train_duration_ms,
+        ) {
+            continue;
+        }
+
+        let spacing_requirements: Vec<SpacingRequirement> = final_output
+            .spacing_requirements
+            .into_iter()
+            .filter(|req| {
+                is_resource_in_range(
+                    departure_time,
+                    latest_simulation_end,
+                    start_time,
+                    req.begin_time,
+                    req.end_time,
+                )
+            })
+            .collect();
+        let routing_requirements: Vec<RoutingRequirement> = final_output
+            .routing_requirements
+            .into_iter()
+            .filter(|req| {
+                is_resource_in_range(
+                    departure_time,
+                    latest_simulation_end,
+                    start_time,
+                    req.begin_time,
+                    req.zones
+                        .iter()
+                        .map(|zone_req| zone_req.end_time)
+                        .max()
+                        .unwrap_or(req.begin_time),
+                )
+            })
+            .collect();
+        trains_requirements.insert(
+            train.id,
+            TrainRequirement {
+                start_time,
+                spacing_requirements,
+                routing_requirements,
+            },
+        );
+    }
+    trains_requirements
+}
+
+/// Returns true if the resource use is at least partially in the simulation time range
+fn is_resource_in_range(
+    earliest_sim_time: DateTime<Utc>,
+    latest_sim_time: DateTime<Utc>,
+    train_start_time: DateTime<Utc>,
+    resource_start_time: u64,
+    resource_end_time: u64,
+) -> bool {
+    let abs_resource_start_time =
+        train_start_time + Duration::milliseconds(resource_start_time as i64);
+    let abs_resource_end_time = train_start_time + Duration::milliseconds(resource_end_time as i64);
+    abs_resource_start_time <= latest_sim_time && abs_resource_end_time >= earliest_sim_time
 }
 
 /// Returns the earliest time at which the train may start
