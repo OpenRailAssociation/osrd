@@ -191,7 +191,9 @@ fun makeMRSPResponse(speedLimits: Envelope): MRSPResponse {
 
 /**
  * Build the final envelope from the max effort / provisional envelopes. The final envelope modifies
- * the margin ranges to match the scheduled points.
+ * the margin ranges to match the scheduled points. The added time is distributed over the different
+ * margin ranges, following a logic described in details on the OSRD website:
+ * https://osrd.fr/en/docs/reference/design-docs/timetable/#combining-margins-and-schedule
  */
 fun buildFinalEnvelope(
     maxEffortEnvelope: Envelope,
@@ -203,6 +205,9 @@ fun buildFinalEnvelope(
 ): Envelope {
     fun getEnvelopeTimeAt(offset: Offset<TravelledPath>): Double {
         return provisionalEnvelope.interpolateDepartureFromClamp(offset.distance.meters)
+    }
+    fun getMaxEffortEnvelopeTimeAt(offset: Offset<TravelledPath>): Double {
+        return maxEffortEnvelope.interpolateDepartureFromClamp(offset.distance.meters)
     }
     var prevFixedPointOffset = Offset<TravelledPath>(0.meters)
     var prevFixedPointDepartureTime = 0.0
@@ -217,24 +222,51 @@ fun buildFinalEnvelope(
         val sectionTime =
             getEnvelopeTimeAt(point.pathOffset) - getEnvelopeTimeAt(prevFixedPointOffset)
         val arrivalTime = prevFixedPointDepartureTime + sectionTime
-        var extraTime = point.arrival.seconds - arrivalTime
-        if (extraTime < 0.0) {
-            // TODO: raise a warning
-            standaloneSimLogger.warn("impossible scheduled point")
-            extraTime = 0.0
-        }
-        marginRanges.addAll(
-            distributeAllowance(
-                maxEffortEnvelope,
-                provisionalEnvelope,
-                extraTime,
-                margins,
-                prevFixedPointOffset,
-                point.pathOffset
+        val extraTime = point.arrival.seconds - arrivalTime
+        if (extraTime >= 0.0) {
+            marginRanges.addAll(
+                distributeAllowance(
+                    maxEffortEnvelope,
+                    provisionalEnvelope,
+                    extraTime,
+                    margins,
+                    prevFixedPointOffset,
+                    point.pathOffset
+                )
             )
-        )
+            prevFixedPointDepartureTime = arrivalTime + extraTime + (point.stopFor?.seconds ?: 0.0)
+        } else {
+            // We need to *remove* time compared to the provisional envelope.
+            // Ideally we would distribute the (negative) extra time following the same logic as
+            // when it's positive. But this is tricky: as we get closer to max effort envelope (hard
+            // limit), we need to redistribute the time in some cases.
+            // We currently handle this by ignoring the distribution over different margin ranges,
+            // we just set the time for the scheduled point without more details. It will be easier
+            // to handle it properly when we'll have migrated to standalone sim v3.
+            val maxEffortSectionTime =
+                getMaxEffortEnvelopeTimeAt(point.pathOffset) -
+                    getMaxEffortEnvelopeTimeAt(prevFixedPointOffset)
+            val earliestPossibleArrival = prevFixedPointDepartureTime + maxEffortSectionTime
+            var maxEffortExtraTime = point.arrival.seconds - earliestPossibleArrival
+            if (maxEffortExtraTime < 0.0) {
+                standaloneSimLogger.warn("impossible scheduled point")
+                // TODO: raise warning: scheduled point isn't possible
+                maxEffortExtraTime = 0.0
+            } else {
+                standaloneSimLogger.warn("scheduled point doesn't follow standard allowance")
+                // TODO: raise warning: scheduled point doesn't follow standard allowance
+            }
+            marginRanges.add(
+                AllowanceRange(
+                    prevFixedPointOffset.distance.meters,
+                    point.pathOffset.distance.meters,
+                    FixedTime(maxEffortExtraTime)
+                )
+            )
+            prevFixedPointDepartureTime =
+                earliestPossibleArrival + maxEffortExtraTime + (point.stopFor?.seconds ?: 0.0)
+        }
         prevFixedPointOffset = point.pathOffset
-        prevFixedPointDepartureTime = arrivalTime + extraTime + (point.stopFor?.seconds ?: 0.0)
     }
     val pathEnd = Offset<TravelledPath>(maxEffortEnvelope.endPos.meters)
     if (prevFixedPointOffset < pathEnd) {

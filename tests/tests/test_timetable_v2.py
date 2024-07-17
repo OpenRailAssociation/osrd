@@ -93,3 +93,52 @@ def test_conflicts(
     assert response.status_code == 200
     actual_conflicts = {conflict["conflict_type"] for conflict in response.json()}
     assert actual_conflicts == expected_conflict_types
+
+
+def test_scheduled_points_with_incompatible_margins(
+    small_infra: Infra,
+    timetable_v2: TimetableV2,
+    fast_rolling_stock: int,
+):
+    requests.post(f"{EDITOAST_URL}infra/{small_infra.id}/load").raise_for_status()
+    train_schedule_payload = [
+        {
+            "comfort": "STANDARD",
+            "constraint_distribution": "STANDARD",
+            "initial_speed": 0,
+            "labels": [],
+            "options": {"use_electrical_profiles": False},
+            "path": [
+                {"id": "start", "track": "TC0", "offset": 185000},
+                {"id": "end", "track": "TD0", "offset": 24820000},
+            ],
+            "power_restrictions": [],
+            "rolling_stock_name": "fast_rolling_stock",
+            "schedule": [
+                {
+                    "at": "start",
+                },
+                {
+                    "at": "end",
+                    "arrival": "PT4000S",
+                },
+            ],
+            "margins": {"boundaries": [], "values": ["100%"]},
+            "speed_limit_tag": "MA100",
+            "start_time": "2024-05-22T08:00:00.000Z",
+            "train_name": "name",
+        }
+    ]
+    response = requests.post(
+        f"{EDITOAST_URL}/v2/timetable/{timetable_v2.id}/train_schedule", json=train_schedule_payload
+    )
+    response.raise_for_status()
+    train_id = response.json()[0]["id"]
+    response = requests.get(f"{EDITOAST_URL}/v2/train_schedule/{train_id}/simulation/?infra_id={small_infra.id}")
+    response.raise_for_status()
+    content = response.json()
+    sim_output = content["final_output"]
+    travel_time_seconds = sim_output["times"][-1] / 1_000
+
+    # Should arrive roughly 4000s after departure, even if that doesn't fit the margins
+    assert abs(travel_time_seconds - 4_000) < 2
