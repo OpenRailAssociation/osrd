@@ -42,7 +42,7 @@
             }
         ],
         "comfort": "STANDARD",
-        "margin": "None",
+        "margin": "0%",
         "standard_allowance": "14%"
     },
     "prelude": [
@@ -96,9 +96,9 @@
                             "4"
                         ],
                         "values": [
-                            "None",
+                            "0%",
                             "7min/100km",
-                            "None"
+                            "0%"
                         ]
                     },
                     "options": {
@@ -151,7 +151,7 @@
                             "2"
                         ],
                         "values": [
-                            "None",
+                            "0%",
                             "5%"
                         ]
                     },
@@ -195,12 +195,6 @@
                     "initial_speed": 0,
                     "labels": [],
                     "constraint_distribution": "MARECO",
-                    "margins": {
-                        "boundaries": [],
-                        "values": [
-                            "None"
-                        ]
-                    },
                     "options": {
                         "use_electrical_profiles": false
                     },
@@ -236,12 +230,6 @@
                     "initial_speed": 0,
                     "labels": [],
                     "constraint_distribution": "STANDARD",
-                    "margins": {
-                        "boundaries": [],
-                        "values": [
-                            "None"
-                        ]
-                    },
                     "options": {
                         "use_electrical_profiles": false
                     },
@@ -292,8 +280,8 @@
                             "2"
                         ],
                         "values": [
-                            "None",
-                            "None"
+                            "0%",
+                            "0%"
                         ]
                     },
                     "options": {

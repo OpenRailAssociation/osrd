@@ -144,7 +144,7 @@ def test_work_schedules(small_scenario_v2: Scenario, fast_rolling_stock: int):
             {"duration": 1, "location": _STOP_V2},
         ],
         "comfort": "STANDARD",
-        "margin": "None",
+        "margin": "0%",
     }
     url = f"{EDITOAST_URL}v2/timetable/{small_scenario_v2.timetable}/stdcm/?infra={small_scenario_v2.infra}"
     r = requests.post(url, json=payload)

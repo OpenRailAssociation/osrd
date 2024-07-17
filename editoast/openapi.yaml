@@ -3025,9 +3025,8 @@ paths:
                   $ref: '#/components/schemas/Comfort'
                 margin:
                   type: string
-                  description: Can be a percentage `X%`, a time in minutes per 100 kilometer `Xmin/100km` or `None`
+                  description: Can be a percentage `X%`, a time in minutes per 100 kilometer `Xmin/100km`
                   example:
-                  - None
                   - 5%
                   - 2min/100km
                   nullable: true
@@ -7272,9 +7271,8 @@ components:
             type: string
           description: |-
             The values of the margins. Must contains one more element than the boundaries
-            Can be a percentage `X%`, a time in minutes per 100 kilometer `Xmin/100km` or `none`
+            Can be a percentage `X%` or a time in minutes per 100 kilometer `Xmin/100km`
           example:
-          - none
           - 5%
           - 2min/100km
       additionalProperties: false
@@ -9773,9 +9771,8 @@ components:
           $ref: '#/components/schemas/Comfort'
         margin:
           type: string
-          description: Can be a percentage `X%`, a time in minutes per 100 kilometer `Xmin/100km` or `None`
+          description: Can be a percentage `X%`, a time in minutes per 100 kilometer `Xmin/100km`
           example:
-          - None
           - 5%
           - 2min/100km
           nullable: true
@@ -11864,9 +11861,8 @@ components:
                 type: string
               description: |-
                 The values of the margins. Must contains one more element than the boundaries
-                Can be a percentage `X%`, a time in minutes per 100 kilometer `Xmin/100km` or `none`
+                Can be a percentage `X%` or a time in minutes per 100 kilometer `Xmin/100km`
               example:
-              - none
               - 5%
               - 2min/100km
           additionalProperties: false
