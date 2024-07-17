@@ -49,7 +49,7 @@
             }
         ],
         "comfort": "STANDARD",
-        "margin": "None"
+        "margin": "0%"
     },
     "prelude": [
         {
@@ -132,7 +132,7 @@
                             "2"
                         ],
                         "values": [
-                            "None",
+                            "0%",
                             "7%"
                         ]
                     },
@@ -171,12 +171,6 @@
                     "initial_speed": 0,
                     "labels": [],
                     "constraint_distribution": "MARECO",
-                    "margins": {
-                        "boundaries": [],
-                        "values": [
-                            "None"
-                        ]
-                    },
                     "options": {
                         "use_electrical_profiles": false
                     },
@@ -207,12 +201,6 @@
                     "initial_speed": 0,
                     "labels": [],
                     "constraint_distribution": "STANDARD",
-                    "margins": {
-                        "boundaries": [],
-                        "values": [
-                            "None"
-                        ]
-                    },
                     "options": {
                         "use_electrical_profiles": false
                     },
@@ -243,12 +231,6 @@
                     "initial_speed": 0,
                     "labels": [],
                     "constraint_distribution": "STANDARD",
-                    "margins": {
-                        "boundaries": [],
-                        "values": [
-                            "None"
-                        ]
-                    },
                     "options": {
                         "use_electrical_profiles": false
                     },
@@ -299,7 +281,7 @@
                             "2"
                         ],
                         "values": [
-                            "None",
+                            "0%",
                             "8%"
                         ]
                     },

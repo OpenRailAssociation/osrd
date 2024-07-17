@@ -15,10 +15,10 @@ editoast_common::schemas! {
 pub struct Margins {
     #[schema(inline)]
     pub boundaries: Vec<NonBlankString>,
-    #[derivative(Default(value = "vec![MarginValue::None]"))]
+    #[derivative(Default(value = "vec![MarginValue::default()]"))]
     /// The values of the margins. Must contains one more element than the boundaries
-    /// Can be a percentage `X%`, a time in minutes per 100 kilometer `Xmin/100km` or `none`
-    #[schema(value_type = Vec<String>, example = json!(["none", "5%", "2min/100km"]))]
+    /// Can be a percentage `X%` or a time in minutes per 100 kilometer `Xmin/100km`
+    #[schema(value_type = Vec<String>, example = json!(["5%", "2min/100km"]))]
     pub values: Vec<MarginValue>,
 }
 
@@ -43,11 +43,10 @@ impl<'de> Deserialize<'de> for Margins {
     }
 }
 
-#[derive(Debug, Copy, Clone, Default, PartialEq, Derivative)]
-#[derivative(Hash)]
+#[derive(Debug, Copy, Clone, PartialEq, Derivative)]
+#[derivative(Hash, Default)]
 pub enum MarginValue {
-    #[default]
-    None,
+    #[derivative(Default)]
     Percentage(#[derivative(Hash(hash_with = "editoast_common::hash_float::<3,_>"))] f64),
     MinPer100Km(#[derivative(Hash(hash_with = "editoast_common::hash_float::<3,_>"))] f64),
 }
@@ -58,9 +57,6 @@ impl<'de> Deserialize<'de> for MarginValue {
         D: serde::Deserializer<'de>,
     {
         let value = String::deserialize(deserializer)?;
-        if value.to_lowercase() == "none" {
-            return Ok(Self::None);
-        }
         if value.ends_with('%') {
             let float_value = f64::from_str(value[0..value.len() - 1].trim()).map_err(|_| {
                 serde::de::Error::invalid_value(
@@ -68,10 +64,10 @@ impl<'de> Deserialize<'de> for MarginValue {
                     &"a valid float",
                 )
             })?;
-            if float_value <= 0.0 {
+            if float_value < 0.0 {
                 return Err(serde::de::Error::invalid_value(
                     serde::de::Unexpected::Str(&value),
-                    &"a strictly positive number",
+                    &"a positive number",
                 ));
             }
             return Ok(Self::Percentage(float_value));
@@ -84,10 +80,10 @@ impl<'de> Deserialize<'de> for MarginValue {
                         &"a valid float",
                     )
                 })?;
-            if float_value <= 0.0 {
+            if float_value < 0.0 {
                 return Err(serde::de::Error::invalid_value(
                     serde::de::Unexpected::Str(&value),
-                    &"a strictly positive float",
+                    &"a positive number",
                 ));
             }
             return Ok(Self::MinPer100Km(float_value));
@@ -102,7 +98,6 @@ impl Serialize for MarginValue {
         S: serde::Serializer,
     {
         match self {
-            MarginValue::None => serializer.serialize_str("none"),
             MarginValue::Percentage(value) => serializer.serialize_str(&format!("{}%", value)),
             MarginValue::MinPer100Km(value) => {
                 serializer.serialize_str(&format!("{}min/100km", value))
@@ -122,9 +117,6 @@ mod tests {
     /// Test that the `MarginValue` enum can be deserialized from a string
     #[test]
     fn deserialize_margin_value() {
-        let none: MarginValue = from_str(r#""none""#).unwrap();
-        assert_eq!(none, MarginValue::None);
-
         let percentage: MarginValue = from_str(r#""10%""#).unwrap();
         assert_eq!(percentage, MarginValue::Percentage(10.0));
 
@@ -143,9 +135,6 @@ mod tests {
     /// Test that the `MarginValue` enum can be serialized to a string
     #[test]
     fn serialize_margin_value() {
-        let none = to_string(&MarginValue::None).unwrap();
-        assert_eq!(none, r#""none""#);
-
         let percentage = to_string(&MarginValue::Percentage(10.0)).unwrap();
         assert_eq!(percentage, r#""10%""#);
 
@@ -156,11 +145,11 @@ mod tests {
     /// Test that Margins deserialization checks works
     #[test]
     fn deserialize_margins() {
-        let valid_margins = r#"{"boundaries":["a", "b"],"values":["none","10%","20min/100km"]}"#;
+        let valid_margins = r#"{"boundaries":["a", "b"],"values":["0%","10%","20min/100km"]}"#;
         assert!(from_str::<Margins>(valid_margins).is_ok());
-        let invalid_margins = r#"{"boundaries":["a"],"values":["none","10%","20min/100km"]}"#;
+        let invalid_margins = r#"{"boundaries":["a"],"values":["0min/100km","10%","20min/100km"]}"#;
         assert!(from_str::<Margins>(invalid_margins).is_err());
-        let invalid_margins = r#"{"boundaries":["a", "b"],"values":["none","10%"]}"#;
+        let invalid_margins = r#"{"boundaries":["a", "b"],"values":["0%","10%"]}"#;
         assert!(from_str::<Margins>(invalid_margins).is_err());
     }
 }

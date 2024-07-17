@@ -42,7 +42,7 @@
             }
         ],
         "comfort": "STANDARD",
-        "margin": "None"
+        "margin": "0%"
     },
     "prelude": [
         {
@@ -120,8 +120,8 @@
                             "2"
                         ],
                         "values": [
-                            "None",
-                            "None"
+                            "0%",
+                            "0%"
                         ]
                     },
                     "options": {
@@ -215,8 +215,8 @@
                             "2"
                         ],
                         "values": [
-                            "None",
-                            "None"
+                            "0%",
+                            "0%"
                         ]
                     },
                     "options": {

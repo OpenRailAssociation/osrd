@@ -1748,7 +1748,7 @@ export type PostV2TimetableByIdStdcmApiArg = {
   id: number;
   body: {
     comfort: Comfort;
-    /** Can be a percentage `X%`, a time in minutes per 100 kilometer `Xmin/100km` or `None` */
+    /** Can be a percentage `X%`, a time in minutes per 100 kilometer `Xmin/100km` */
     margin?: string | null;
     /** By how long we can shift the departure time in milliseconds
         Deprecated, first step data should be used instead */
@@ -3673,7 +3673,7 @@ export type TrainScheduleBase = {
   margins?: {
     boundaries: string[];
     /** The values of the margins. Must contains one more element than the boundaries
-        Can be a percentage `X%`, a time in minutes per 100 kilometer `Xmin/100km` or `none` */
+        Can be a percentage `X%` or a time in minutes per 100 kilometer `Xmin/100km` */
     values: string[];
   };
   options?: {

@@ -292,7 +292,7 @@ def _make_stdcm_payload(path: List[Tuple[str, float]], rolling_stock: int) -> Di
         "time_gap_after": random.randint(0, 600_000),
         "steps": [_convert_stop_stdcm(stop) for stop in path],
         "comfort": "STANDARD",
-        "margin": "None",
+        "margin": "0%",
     }
     res["steps"][-1]["duration"] = 1  # Force a stop at the end
     allowance_value = _make_random_margin_value()
