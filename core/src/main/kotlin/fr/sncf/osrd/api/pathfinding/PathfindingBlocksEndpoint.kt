@@ -227,49 +227,11 @@ fun runPathfinding(
     // The heuristic is temporarily disabled, its implementation
     // is currently too slow and the requests are actually slower.
     // See https://github.com/OpenRailAssociation/osrd/issues/7200
-    // val remainingDistanceEstimators = makeHeuristics(infra, waypoints)
     val nullHeuristic: AStarHeuristicId<Block> = AStarHeuristic() { _, _ -> 0.0 }
     val remainingDistanceEstimators = List(waypoints.size - 1) { nullHeuristic }
 
     // Compute the paths from the entry waypoint to the exit waypoint
     return computePaths(infra, waypoints, constraints, remainingDistanceEstimators, timeout)
-}
-
-/** Initialize the heuristics */
-fun makeHeuristics(
-    infra: FullInfra,
-    waypoints: List<Collection<PathfindingEdgeLocationId<Block>>>
-): ArrayList<AStarHeuristicId<Block>> {
-    // Compute the minimum distance between steps
-    val stepMinDistance = DoubleArray(waypoints.size - 1)
-    for (i in 0 until waypoints.size - 2) {
-        stepMinDistance[i] =
-            RemainingDistanceEstimator.minDistanceBetweenSteps(
-                infra.blockInfra,
-                infra.rawInfra,
-                waypoints[i + 1],
-                waypoints[i + 2]
-            )
-    }
-
-    // Reversed cumulative sum
-    for (i in stepMinDistance.size - 2 downTo 0) {
-        stepMinDistance[i] += stepMinDistance[i + 1]
-    }
-
-    // Setup estimators foreach intermediate steps
-    val remainingDistanceEstimators = ArrayList<AStarHeuristicId<Block>>()
-    for (i in 0 until waypoints.size - 1) {
-        remainingDistanceEstimators.add(
-            RemainingDistanceEstimator(
-                infra.blockInfra,
-                infra.rawInfra,
-                waypoints[i + 1],
-                stepMinDistance[i]
-            )
-        )
-    }
-    return remainingDistanceEstimators
 }
 
 @Throws(OSRDError::class)
