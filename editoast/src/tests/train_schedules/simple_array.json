@@ -58,7 +58,7 @@
           "values": [
             "5%",
             "3min/100km",
-            "none"
+            "0%"
           ]
         },
         "initial_speed": 2.5,
