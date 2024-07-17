@@ -12,11 +12,9 @@ import fr.sncf.osrd.api.api_v2.standalone_sim.MarginValueAdapter
 import fr.sncf.osrd.api.api_v2.standalone_sim.PhysicsRollingStockModel
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingResistance
-import fr.sncf.osrd.sim_infra.api.TrackSection
 import fr.sncf.osrd.train.RollingStock.Comfort
 import fr.sncf.osrd.utils.json.UnitAdapterFactory
 import fr.sncf.osrd.utils.units.Duration
-import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.TimeDelta
 import fr.sncf.osrd.utils.units.seconds
 import java.time.ZonedDateTime
@@ -68,8 +66,6 @@ data class StepTimingData(
     @Json(name = "arrival_time_tolerance_before") val arrivalTimeToleranceBefore: Duration,
     @Json(name = "arrival_time_tolerance_after") val arrivalTimeToleranceAfter: Duration,
 )
-
-class TrackOffset(val track: String, val offset: Offset<TrackSection>)
 
 data class WorkSchedule(
     /** List of affected track ranges */
