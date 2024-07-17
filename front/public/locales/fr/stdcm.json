@@ -10,19 +10,31 @@
   "pathfindingFailed": "Aucun chemin n'a été trouvé pour ces points de jalonnement.",
   "pleaseWait": "Veuillez patientez…",
   "simulation": {
-    "available": "Simulation disponible",
     "averageRequestTime": "Pour votre demande, le temps nécessaire est généralement de 90 secondes.",
     "calculatingSimulation": "Calcul en cours...",
     "getSimulation": "Obtenir la simulation",
+    "modifySearchCriteria": "Vous pouvez modifier vos critères de recherche pour trouver une solution.",
     "pendingSimulation": "simulation en cours",
     "results": {
+      "changeCriteria": "Vous pouvez modifier vos critères de recherche pour trouver une solution.",
       "displayAll": "Afficher tous les jalons",
       "displayMain": "Afficher les jalons principaux",
       "downloadSimulationSheet": "Télécharger la fiche de simulation",
+      "formatCreationDate": "{{day}}/{{month}}/{{year}} {{hours}}:{{minutes}}",
       "gesicoRequest": "et joignez ce document à votre demande GESICO DSDM",
-      "selectThisSimulation": "Retenir cette simulation",
-      "simulationNumber": "Simulation n°1",
+      "notFound": "Aucune solution n’a été trouvée pour cette configuration",
+      "retainThisSimulation": "Retenir cette simulation",
+      "simulationName": {
+        "withOutputs": "Simulation n°{{id}}",
+        "withoutOutputs": "Sans résultat"
+      },
       "simulationSelected": "Vous avez retenu cette simulation",
+      "startNewQuery": "Démarrez une nouvelle requête",
+      "status": {
+        "completed": "Calcul terminé",
+        "errorMessage": "Nous sommes désolé de ne pas avoir pu traiter votre demande. L’équipe STDCM a été notifiée et prendra connaissance de la situation prochainement.",
+        "failed": "Le calcul n'a pas abouti"
+      },
       "upgrade": {
         "arrivalIncompatible": "Heure arrivée incompatible",
         "helpUs": "Aidez-nous à améliorer ST DCM",
@@ -34,8 +46,8 @@
     },
     "stopCalculation": "Arrêter le calcul"
   },
-  "speedSpaceChart": "Graphique Espace Vitesse",
   "spaceTimeGraphic": "Graphique Espace-Temps",
+  "speedSpaceChart": "Graphique Espace Vitesse",
   "stdcmComputation": "Recherche de sillon",
   "stdcmError": "Erreur de calcul Sillon de dernière minute",
   "stdcmErrorNoPaths": "Incompatibilité avec d'autres sillons.",

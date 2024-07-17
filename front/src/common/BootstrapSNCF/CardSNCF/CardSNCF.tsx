@@ -8,9 +8,18 @@ interface CardProps {
   img: string;
   title: string;
   disabledLink: boolean;
+  openInNewTab?: boolean;
 }
-const Card: FC<CardProps> = ({ link, img, title, disabledLink = false }) => (
-  <Link to={link} className={cx('card overflow-hidden mb-2', disabledLink && 'disabled-link')}>
+const Card: FC<CardProps> = ({ link, img, title, disabledLink = false, openInNewTab = false }) => (
+  <Link
+    to={link}
+    {...(openInNewTab
+      ? {
+          target: '_blank',
+        }
+      : {})}
+    className={cx('card overflow-hidden mb-2', disabledLink && 'disabled-link')}
+  >
     <img className="card-img-top" alt={title} src={img} />
     <div className="card-body text-center">
       <h5 className="card-title mb-0 text-base font-weight-normal">{title}</h5>

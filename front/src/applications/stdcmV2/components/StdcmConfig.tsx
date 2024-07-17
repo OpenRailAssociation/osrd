@@ -16,24 +16,37 @@ import StdcmConsist from './StdcmConsist';
 import StdcmDestination from './StdcmDestination';
 import StdcmLoader from './StdcmLoader';
 import StdcmOrigin from './StdcmOrigin';
+import StdcmStatusBanner from './StdcmStatusBanner';
 import StdcmVias from './StdcmVias';
-import type { StdcmSimulationResult } from '../types';
+import type { StdcmSimulation, StdcmSimulationInputs } from '../types';
 
+/**
+ * Inputs in different cards inside the StdcmConfig component come from the stdcm redux store.
+ * CurrentSimulationInputs is the current simulation inputs which are not yet launched.
+ * SelectedSimulation is the simulation that is currently selected from the list of simulations.
+ */
 type StdcmConfigProps = {
-  currentSimulationInputs: StdcmSimulationResult['input'] | undefined;
+  currentSimulationInputs?: StdcmSimulationInputs;
+  selectedSimulation?: StdcmSimulation;
   pathProperties?: ManageTrainSchedulePathProperties;
   isPending: boolean;
+  retainedSimulationIndex: number;
+  showBtnToLaunchSimulation: boolean;
+  showStatusBanner: boolean;
+  isCalculationFailed: boolean;
   launchStdcmRequest: () => Promise<void>;
   cancelStdcmRequest: () => void;
-  setCurrentSimulationInputs: React.Dispatch<
-    React.SetStateAction<StdcmSimulationResult['input'] | undefined>
-  >;
+  setCurrentSimulationInputs: React.Dispatch<React.SetStateAction<StdcmSimulationInputs>>;
 };
 
 const StdcmConfig = ({
-  currentSimulationInputs,
+  selectedSimulation,
   pathProperties,
   isPending,
+  retainedSimulationIndex,
+  showBtnToLaunchSimulation,
+  showStatusBanner,
+  isCalculationFailed,
   launchStdcmRequest,
   cancelStdcmRequest,
   setCurrentSimulationInputs,
@@ -47,10 +60,15 @@ const StdcmConfig = ({
 
   const { pathfindingState } = usePathfindingV2(undefined, pathProperties);
 
-  const clickOnSimulation = () => {
+  const inputsProps = {
+    disabled: isPending || retainedSimulationIndex > -1,
+    selectedSimulation,
+    setCurrentSimulationInputs,
+  };
+
+  const startSimulation = () => {
     if (pathfindingState.done) {
       launchStdcmRequest();
-      setCurrentSimulationInputs(undefined);
     }
   };
 
@@ -71,24 +89,15 @@ const StdcmConfig = ({
     <div className="stdcm-v2__body">
       <div className="stdcm-v2-simulation-settings">
         <div className="stdcm-v2-consist-container">
-          <StdcmConsist
-            disabled={isPending}
-            setCurrentSimulationInputs={setCurrentSimulationInputs}
-          />
+          <StdcmConsist {...inputsProps} />
         </div>
         <div className="stdcm-v2__separator" />
         <div className="stdcm-v2-simulation-itinerary">
           {/* //TODO: use them when we implement this feature #403 */}
           {/* <StdcmDefaultCard text="Indiquer le sillon antérieur" Icon={<ArrowUp size="lg" />} /> */}
-          <StdcmOrigin
-            disabled={isPending}
-            setCurrentSimulationInputs={setCurrentSimulationInputs}
-          />
-          <StdcmVias disabled={isPending} setCurrentSimulationInputs={setCurrentSimulationInputs} />
-          <StdcmDestination
-            disabled={isPending}
-            setCurrentSimulationInputs={setCurrentSimulationInputs}
-          />
+          <StdcmOrigin {...inputsProps} />
+          <StdcmVias {...inputsProps} />
+          <StdcmDestination {...inputsProps} />
           {/* <StdcmDefaultCard text="Indiquer le sillon postérieur" Icon={<ArrowDown size="lg" />} /> */}
           {/* //TODO: replace .wizz-effect once we have the definitive one */}
           <div
@@ -97,8 +106,8 @@ const StdcmConfig = ({
               'pb-5': !pathfindingState.error,
             })}
           >
-            {currentSimulationInputs && (
-              <Button label={t('simulation.getSimulation')} onClick={clickOnSimulation} />
+            {showBtnToLaunchSimulation && (
+              <Button label={t('simulation.getSimulation')} onClick={startSimulation} />
             )}
             {pathfindingState.error && (
               <div className="warning-box">
@@ -110,6 +119,7 @@ const StdcmConfig = ({
             )}
           </div>
           {isPending && <StdcmLoader cancelStdcmRequest={cancelStdcmRequest} ref={loaderRef} />}
+          {showStatusBanner && <StdcmStatusBanner isFailed={isCalculationFailed} />}
         </div>
       </div>
       <div className="osrd-config-item-container osrd-config-item-container-map stdcm-v2-map">

@@ -20,13 +20,22 @@ import { castErrorToFailure } from 'utils/error';
 import useStdcmResults from './useStdcmResults';
 import { checkStdcmConf, formatStdcmPayload } from '../utils/formatStdcmConfV2';
 
-const useStdcm = () => {
+/**
+ * Hook to manage the stdcm request
+ * @param showFailureNotification boolean to show or not the failure notification.
+ * Sometimes we don't want to handle failure using the default behaviour by display the snackbar.
+ * We want to keep the component which call the stdcm hook to handle the failure.
+ *
+ * @returns object with all the necessary information to manage the stdcm request/response
+ */
+const useStdcm = (showFailureNotification: boolean = true) => {
   const [stdcmTrainResult, setStdcmTrainResult] = useState<TrainScheduleResult>();
   const [stdcmV2Response, setStdcmV2Response] = useState<StdcmV2SuccessResponse>();
   const [currentStdcmRequestStatus, setCurrentStdcmRequestStatus] = useState<StdcmRequestStatus>(
     STDCM_REQUEST_STATUS.idle
   );
   const [pathProperties, setPathProperties] = useState<ManageTrainSchedulePathProperties>();
+  const [isStdcmResultsEmpty, setIsStdcmResultsEmpty] = useState(false);
 
   const dispatch = useAppDispatch();
   const { t } = useTranslation(['translation', 'stdcm']);
@@ -52,8 +61,16 @@ const useStdcm = () => {
 
   const { speedLimitByTag } = useStoreDataForSpeedLimitByTagSelector();
 
+  const triggerShowFailureNotification = (error: Error) => {
+    if (showFailureNotification) {
+      dispatch(setFailure(error));
+    }
+  };
+
   const launchStdcmRequest = async () => {
     setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.pending);
+    setIsStdcmResultsEmpty(false);
+    setStdcmV2Response(undefined);
 
     const validConfig = checkStdcmConf(dispatch, t, osrdconf as OsrdStdcmConfState);
     if (validConfig) {
@@ -86,17 +103,17 @@ const useStdcm = () => {
           setStdcmTrainResult(stdcmTrain);
           dispatch(updateSelectedTrainId(STDCM_TRAIN_ID));
         } else {
+          // When the back-end send back result with status 'path_not_found' we consider that the result is empty
+          setIsStdcmResultsEmpty(response.status === 'path_not_found');
           setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.rejected);
-          dispatch(
-            setFailure({
-              name: t('stdcm:stdcmError'),
-              message: t('translation:common.error'),
-            })
-          );
+          triggerShowFailureNotification({
+            name: t('stdcm:stdcmError'),
+            message: t('translation:common.error'),
+          });
         }
       } catch (e) {
         setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.rejected);
-        dispatch(setFailure(castErrorToFailure(e, { name: t('stdcm:stdcmError') })));
+        triggerShowFailureNotification(castErrorToFailure(e, { name: t('stdcm:stdcmError') }));
       }
     } else {
       setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.rejected);
@@ -111,6 +128,8 @@ const useStdcm = () => {
   };
 
   const isPending = currentStdcmRequestStatus === STDCM_REQUEST_STATUS.pending;
+  const isSuccessful = currentStdcmRequestStatus === STDCM_REQUEST_STATUS.success;
+  const isRejected = currentStdcmRequestStatus === STDCM_REQUEST_STATUS.rejected;
 
   return {
     stdcmV2Results,
@@ -120,6 +139,9 @@ const useStdcm = () => {
     pathProperties,
     setPathProperties,
     isPending,
+    isSuccessful,
+    isRejected,
+    isStdcmResultsEmpty,
   };
 };
 

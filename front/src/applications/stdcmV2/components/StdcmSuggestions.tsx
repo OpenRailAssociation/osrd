@@ -51,6 +51,7 @@ const StdcmSuggestions = <T extends string | SelectOptionObject>({
             onBlur(e);
           }
         }}
+        autoComplete="off"
         disabled={disabled}
       />
       {isSelectVisible && (

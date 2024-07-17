@@ -15,6 +15,28 @@ export const stdcmConfSlice = createSlice({
   initialState: stdcmConfInitialState,
   reducers: {
     ...buildCommonConfReducers<OsrdStdcmConfState>(),
+    resetStdcmConfig(state: Draft<OsrdStdcmConfState>) {
+      state.rollingStockID = stdcmConfInitialState.rollingStockID;
+      state.pathSteps = stdcmConfInitialState.pathSteps;
+      state.originDate = stdcmConfInitialState.originDate;
+      state.originTime = stdcmConfInitialState.originTime;
+      state.speedLimitByTag = stdcmConfInitialState.speedLimitByTag;
+    },
+    updateStdcmConfigWithData(
+      state: Draft<OsrdStdcmConfState>,
+      action: PayloadAction<
+        Pick<
+          OsrdStdcmConfState,
+          'rollingStockID' | 'pathSteps' | 'originDate' | 'originTime' | 'speedLimitByTag'
+        >
+      >
+    ) {
+      state.rollingStockID = action.payload.rollingStockID;
+      state.pathSteps = action.payload.pathSteps;
+      state.originDate = action.payload.originDate;
+      state.originTime = action.payload.originTime;
+      state.speedLimitByTag = action.payload.speedLimitByTag;
+    },
     updateMaximumRunTime(
       state: Draft<OsrdStdcmConfState>,
       action: PayloadAction<OsrdStdcmConfState['maximumRunTime']>

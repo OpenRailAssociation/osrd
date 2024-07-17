@@ -8,6 +8,7 @@ import { useOsrdConfSelectors, useOsrdConfActions } from 'common/osrdContext';
 import type { StdcmConfSliceActions } from 'reducers/osrdconf/stdcmConf';
 import type { PathStep } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
+import { replaceElementAtIndex } from 'utils/array';
 
 import StdcmCard from './StdcmCard';
 import StdcmOperationalPoint from './StdcmOperationalPoint';
@@ -27,9 +28,18 @@ const StdcmDestination = ({
     dispatch(updateDestinationV2(pathStep));
   };
 
+  const onUpdatePoint = (pathStep: PathStep | null) => {
+    updateDestinationV2Point(pathStep);
+  };
+
   useEffect(() => {
     setCurrentSimulationInputs((prevState) => ({
       ...prevState,
+      pathSteps: replaceElementAtIndex(
+        prevState?.pathSteps,
+        prevState?.pathSteps.length - 1,
+        destination
+      ),
       destination,
     }));
   }, [destination]);
@@ -42,7 +52,7 @@ const StdcmDestination = ({
     >
       <div className="stdcm-v2-destination">
         <StdcmOperationalPoint
-          updatePoint={updateDestinationV2Point}
+          updatePoint={onUpdatePoint}
           point={destination}
           disabled={disabled}
         />

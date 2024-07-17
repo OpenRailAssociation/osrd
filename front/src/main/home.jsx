@@ -30,7 +30,7 @@ export default function Home() {
               />
             </div>
             <div className="col-6 col-md-5 col-lg-4 col-xl-3">
-              <Card img={stdcmImg} title={t('stdcm')} link="/stdcm" />
+              <Card img={stdcmImg} title={t('stdcm')} link="/stdcm" openInNewTab />
             </div>
           </div>
           <div className="row justify-content-center">

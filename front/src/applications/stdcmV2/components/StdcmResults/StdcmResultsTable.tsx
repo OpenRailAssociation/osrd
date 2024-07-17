@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 
 import { Button } from '@osrd-project/ui-core';
+import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
 import type {
@@ -11,49 +12,36 @@ import { getStopDurationTime } from 'applications/stdcm/utils/formatSimulationRe
 
 type SimulationTableProps = {
   stdcmData: StdcmV2SuccessResponse;
+  isSimulationRetained: boolean;
   operationalPointsList: StdcmResultsOperationalPointsList;
-  isSimulationSelected: boolean;
-  setIsSimulationSelected: (simulationSelected: boolean) => void;
-  setInteractedResultsElements: (interactedResultsElements: boolean) => void;
+  onRetainSimulation: () => void;
 };
 
 const StcdmResultsTable = ({
   stdcmData,
+  onRetainSimulation,
+  isSimulationRetained,
   operationalPointsList,
-  isSimulationSelected,
-  setIsSimulationSelected,
-  setInteractedResultsElements,
 }: SimulationTableProps) => {
   const { t } = useTranslation(['stdcm-simulation-report-sheet', 'stdcm']);
 
   const [showAllOP, setShowAllOP] = useState(false);
-
-  const selectSimulation = () => {
-    setIsSimulationSelected(true);
-    setInteractedResultsElements(true);
-  };
-
-  const handleShowAllClick = () => {
-    setShowAllOP((prevState) => !prevState);
-    setInteractedResultsElements(true);
-  };
-
-  useEffect(() => {
-    setIsSimulationSelected(false);
-  }, [stdcmData]);
+  const toggleShowAllOP = () => setShowAllOP((prevState) => !prevState);
 
   return (
     <div className="table-container">
       <table className="table-results">
         <thead>
-          <th aria-label="line-count" />
-          <th>{t('operationalPoint')}</th>
-          <th>{t('code')}</th>
-          <th>{t('endStop')}</th>
-          <th>{t('passageStop')}</th>
-          <th>{t('startStop')}</th>
-          <th className="weight">{t('weight')}</th>
-          <th>{t('refEngine')}</th>
+          <tr>
+            <th aria-label="line-count" />
+            <th>{t('operationalPoint')}</th>
+            <th>{t('code')}</th>
+            <th>{t('endStop')}</th>
+            <th>{t('passageStop')}</th>
+            <th>{t('startStop')}</th>
+            <th className="weight">{t('weight')}</th>
+            <th>{t('refEngine')}</th>
+          </tr>
         </thead>
         <tbody className="table-results">
           {operationalPointsList.map((step, index) => {
@@ -120,7 +108,7 @@ const StcdmResultsTable = ({
           })}
         </tbody>
       </table>
-      <div className="display-all" style={!isSimulationSelected ? {} : { borderRadius: '0' }}>
+      <div className={cx('results-buttons', { 'simulation-retained': isSimulationRetained })}>
         <div className="button-display-all-PR">
           <Button
             variant="Normal"
@@ -129,15 +117,14 @@ const StcdmResultsTable = ({
                 ? t('stdcm:simulation.results.displayMain')
                 : t('stdcm:simulation.results.displayAll')
             }
-            onClick={handleShowAllClick}
+            onClick={toggleShowAllOP}
           />
         </div>
         <div className="button-get-simulation">
-          {!isSimulationSelected ? (
+          {!isSimulationRetained ? (
             <Button
-              label={t('stdcm:simulation.results.selectThisSimulation')}
-              onClick={selectSimulation}
-              isDisabled={isSimulationSelected}
+              label={t('stdcm:simulation.results.retainThisSimulation')}
+              onClick={onRetainSimulation}
             />
           ) : (
             <div className="selected-simulation">

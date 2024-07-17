@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 
 import { Input } from '@osrd-project/ui-core';
+import { debounce } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
 import type { PathStep } from 'reducers/osrdconf/types';
@@ -19,6 +20,11 @@ const StdcmInputVia = ({
     pathStep.stopFor ? `${ISO8601Duration2sec(pathStep.stopFor) / 60}` : ''
   );
 
+  const debounceUpdatePathStepStopTime = useMemo(
+    () => debounce((value) => updatePathStepStopTime(value), 500),
+    []
+  );
+
   return (
     <div className="stdcm-v2-via-stop-for pl-2">
       <Input
@@ -29,8 +35,8 @@ const StdcmInputVia = ({
           // TODO: Find a better way to prevent user from entering decimal values
           const value = e.target.value.replace(/[\D.,]/g, '');
           setPathStepStopTime(value);
+          debounceUpdatePathStepStopTime(value);
         }}
-        onBlur={() => updatePathStepStopTime(pathStepStopTime)}
         value={pathStepStopTime}
         trailingContent="minutes"
       />
