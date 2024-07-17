@@ -1,3 +1,5 @@
+import { checkFieldInvalidity, checkNameInvalidity } from 'applications/operationalStudies/utils';
+
 import type { ScenarioForm } from './components/AddOrEditScenarioModal';
 
 const checkScenarioFields = (
@@ -6,8 +8,8 @@ const checkScenarioFields = (
   name: boolean;
   description: boolean;
 } => ({
-  name: !scenario.name || scenario.name.length > 128,
-  description: (scenario.description ?? '').length > 1024,
+  name: checkNameInvalidity(scenario.name),
+  description: checkFieldInvalidity(1024, scenario.description),
 });
 
 export default checkScenarioFields;

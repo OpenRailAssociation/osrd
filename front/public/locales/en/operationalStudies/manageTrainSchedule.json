@@ -34,6 +34,7 @@
     "noTrainStepInput": "Must be > 0",
     "softErrorInfra": "The application is unavailable, a server error has occurred, please try again later.",
     "The requested train couldn't reach its destination": "The train cannot reach its destination",
+    "trainScheduleNameInvalid": "Required field. The name must not exceed 128 characters",
     "trainScheduleTitle": "An error has occurred",
     "unableToDeleteTrain": "Impossible to delete the train",
     "unableToDuplicateTrain": "Impossible to duplicate the train",

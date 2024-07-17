@@ -1,3 +1,5 @@
+import { checkFieldInvalidity, checkNameInvalidity } from 'applications/operationalStudies/utils';
+
 import type { ProjectForm } from './components/AddOrEditProjectModal';
 
 const checkProjectFields = (
@@ -9,10 +11,10 @@ const checkProjectFields = (
   funders: boolean;
   budget: boolean;
 } => ({
-  name: !project.name || project.name.length > 128,
-  objectives: (project.objectives ?? '').length > 4096,
-  description: (project.description ?? '').length > 1024,
-  funders: (project.funders ?? '').length > 255,
+  name: checkNameInvalidity(project.name),
+  objectives: checkFieldInvalidity(4096, project.objectives),
+  description: checkFieldInvalidity(1024, project.description),
+  funders: checkFieldInvalidity(255, project.funders),
   budget: (project.budget ?? 0) > 2147483647,
 });
 

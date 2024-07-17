@@ -36,6 +36,8 @@ import useOutsideClick from 'utils/hooks/useOutsideClick';
 
 import checkScenarioFields from '../utils';
 
+// TODO: use ScenarioCreateForm from osrdEditoastApi to harmonize with study and project
+// and then change checkNameInvalidity
 export type ScenarioForm = ScenarioPatchForm & {
   id?: number;
   infra_id?: number;

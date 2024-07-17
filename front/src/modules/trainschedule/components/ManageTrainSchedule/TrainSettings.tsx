@@ -6,6 +6,7 @@ import { MdOutlineAccessTime, MdOutlineDriveFileRenameOutline } from 'react-icon
 import { SlSpeedometer } from 'react-icons/sl';
 import { useSelector } from 'react-redux';
 
+import { checkNameInvalidity } from 'applications/operationalStudies/utils';
 import ChipsSNCF from 'common/BootstrapSNCF/ChipsSNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { useOsrdConfActions, useOsrdConfSelectors } from 'common/osrdContext';
@@ -77,6 +78,8 @@ export default function TrainSettings() {
     setStartTime(startTimeFromStore.substring(0, 19));
   }, [nameFromStore, departureTimeFromStore, initialSpeedFromStore]);
 
+  const invalidName = checkNameInvalidity(name);
+
   return (
     <div className="row no-gutters">
       <div className="col-xl-2 col-lg-4 pr-2">
@@ -91,8 +94,8 @@ export default function TrainSettings() {
           id="trainSchedule-name"
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => setName(e.target.value)}
           value={name}
-          isInvalid={!name}
-          errorMsg={t('errorMessages.mandatoryField')}
+          isInvalid={invalidName}
+          errorMsg={t('errorMessages.trainScheduleNameInvalid')}
           noMargin
         />
       </div>

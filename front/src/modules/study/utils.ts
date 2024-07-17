@@ -2,6 +2,7 @@ import { isEmpty, sortBy } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
 import type { StudyState } from 'applications/operationalStudies/consts';
+import { checkFieldInvalidity, checkNameInvalidity } from 'applications/operationalStudies/utils';
 import type { SelectOptionObject } from 'common/BootstrapSNCF/SelectImprovedSNCF';
 
 import type { StudyForm } from './components/AddOrEditStudyModal';
@@ -29,9 +30,9 @@ export const checkStudyFields = (
   service_code: boolean;
   budget: boolean;
 } => ({
-  name: !study.name || study.name.length > 128,
-  description: (study.description ?? '').length > 1024,
-  business_code: (study.business_code ?? '').length > 128,
-  service_code: (study.service_code ?? '').length > 128,
+  name: checkNameInvalidity(study.name),
+  description: checkFieldInvalidity(1024, study.description),
+  business_code: checkFieldInvalidity(128, study.business_code),
+  service_code: checkFieldInvalidity(128, study.service_code),
   budget: (study.budget ?? 0) > 2147483647,
 });
