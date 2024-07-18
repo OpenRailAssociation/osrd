@@ -42,11 +42,12 @@ const useSimulationResults = () => {
   );
 
   return {
-    selectedTrain: selectedTrainSchedule,
+    selectedTrainSchedule,
     selectedTrainRollingStock: speedSpaceChart?.rollingStock,
     selectedTrainPowerRestrictions: speedSpaceChart?.formattedPowerRestrictions || [],
     trainSimulation: speedSpaceChart?.simulation,
     pathProperties: speedSpaceChart?.formattedPathProperties,
+    pathLength: pathfindingResultSuccess?.length,
   };
 };
 

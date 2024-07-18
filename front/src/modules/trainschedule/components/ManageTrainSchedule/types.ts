@@ -21,10 +21,16 @@ export type SuggestedOP = {
         It's useful for soft deleting the point (waiting to fix / remove all references)
         If true, the train schedule is consider as invalid and must be edited */
   deleted?: boolean;
-  arrival?: string | null;
+  arrival?: string | null; // value asked by user
+  departure?: string | null; // value asked by user
   locked?: boolean;
-  stopFor?: string | null;
-  theoreticalMargin?: string;
+  stopFor?: string | null; // value asked by user
+  theoreticalMargin?: string; // value asked by user
+  theoreticalMarginSeconds?: string;
+  calculatedMargin?: string;
+  diffMargins?: string;
+  calculatedArrival?: string | null;
+  calculatedDeparture?: string | null;
   onStopSignal?: boolean;
   // Metadatas given by ManageTrainScheduleMap click event to add origin/destination/via
   metadata?: {

@@ -49,7 +49,7 @@ export function isFloat(n: number) {
  * @returns stripped number
  */
 export function stripDecimalDigits(value: number, decimalPlaces: number): number {
-  if (!isFloat(value) || !Number.isInteger(decimalPlaces) || decimalPlaces <= 0) {
+  if (!isFloat(value) || !Number.isInteger(decimalPlaces) || decimalPlaces < 0) {
     return value;
   }
 

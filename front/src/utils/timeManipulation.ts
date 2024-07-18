@@ -87,6 +87,15 @@ export function ISO8601Duration2sec(isoDuration: string) {
   return durationDictionnary.asSeconds();
 }
 
-export function getStopTime(sec: number) {
-  return new Date(sec * 1000).toISOString().substr(11, 5);
+/**
+ * converts a value in seconds to a timeString "HH:MM"
+ *
+ * using the param withSeconds returns the longer format "HH:MM:SS"
+ */
+export function secToHoursString(sec: number | null, withSeconds = false): TimeString {
+  if (!sec) {
+    return '';
+  }
+  const format = withSeconds ? '%H:%M:%S' : '%H:%M';
+  return d3.timeFormat(format)(new Date(sec * 1000));
 }

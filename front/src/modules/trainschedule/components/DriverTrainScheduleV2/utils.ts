@@ -173,7 +173,7 @@ export const isEco = (train: TrainScheduleBase) => {
  * doesn't match any report train position
  */
 export const interpolateValue = (
-  reportTrain: ReportTrainV2,
+  reportTrain: { positions: number[]; speeds: number[]; times: number[] },
   opPosition: number,
   value: 'speeds' | 'times'
 ) => {

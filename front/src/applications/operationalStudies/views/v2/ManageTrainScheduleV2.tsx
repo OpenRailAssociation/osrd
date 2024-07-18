@@ -21,7 +21,7 @@ import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import { RollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
 import { isElectric } from 'modules/rollingStock/helpers/electric';
-import TimesStops from 'modules/timesStops/TimesStops';
+import TimesStopsInput from 'modules/timesStops/TimesStopsInput';
 import { Map } from 'modules/trainschedule/components/ManageTrainSchedule';
 import SimulationSettings from 'modules/trainschedule/components/ManageTrainSchedule/SimulationSettings';
 import TrainSettings from 'modules/trainschedule/components/ManageTrainSchedule/TrainSettings';
@@ -134,10 +134,10 @@ const ManageTrainScheduleV2 = ({ trainIdToEdit }: ManageTrainScheduleV2Props) =>
     label: t('tabs.timesStops'),
     // If pathProperties is defined we know that pathSteps won't have any null values
     content: (
-      <TimesStops
-        pathProperties={pathProperties}
-        pathSteps={compact(pathSteps)}
+      <TimesStopsInput
+        allWaypoints={pathProperties?.allWaypoints}
         startTime={startTime}
+        pathSteps={compact(pathSteps)}
       />
     ),
   };

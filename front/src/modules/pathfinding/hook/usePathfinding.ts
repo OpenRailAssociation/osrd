@@ -175,7 +175,7 @@ export const usePathfindingV2 = (
   const { updatePathSteps } = useOsrdConfActions();
 
   const generatePathfindingParams = (): PostV2InfraByInfraIdPathfindingBlocksApiArg | null => {
-    if (setPathProperties) setPathProperties(undefined);
+    setPathProperties?.(undefined);
     return getPathfindingQuery({ infraId, rollingStock, origin, destination, pathSteps });
   };
 

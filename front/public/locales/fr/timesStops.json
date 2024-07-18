@@ -1,10 +1,16 @@
 {
+  "arrivalTime": "Arrivée demandée",
+  "calculatedArrivalTime": "Arrivée calculée",
+  "calculatedDepartureTime": "Départ calculé",
+  "departureTime": "Départ demandé",
+  "diffMargins": "Diff. marges",
   "name": "Nom",
-  "stopTime": "Temps d'arrêt (s)",
-  "arrivalTime": "Heure d'arrivée",
+  "noPathLoaded": "Aucun chemin chargé",
+  "realMargin": "Marge réelle",
   "receptionOnClosedSignal": "Réception sur signal fermé",
+  "stopTime": "Temps d'arrêt (s)",
   "theoreticalMargin": "Marge théorique",
   "theoreticalMarginPlaceholder": "% ou min/100km",
-  "waypoint": "Via {{id}}",
-  "noPathLoaded": "Aucun chemin chargé"
+  "theoreticalMarginSeconds": "Marge théorique (s)",
+  "waypoint": "Via {{id}}"
 }

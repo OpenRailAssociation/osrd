@@ -31,6 +31,20 @@ export function mmToKm(length: number) {
   return length / 1000000;
 }
 
+/** converts any unit to milli
+ *  for example seconds to milliseconds
+ */
+export function sToMs(value: number) {
+  return value * 1000;
+}
+
+/** converts any unit to base
+ *  for example milliseconds to seconds
+ */
+export function msToS(value: number) {
+  return value * 0.001;
+}
+
 /** Convert km/h to m/s */
 export function kmhToMs(v: number) {
   return Math.abs(v / 3.6);
@@ -45,4 +59,36 @@ export function mToKmOneDecimal(m: number) {
   return Math.round(m / 100) / 10;
 }
 
-export const marginRegExValidation = /^\d+(\.\d+)?%$|^\d+(\.\d+)?min\/100km$/;
+/**
+ * @return the margin in min/100km
+ * @param timeLost in seconds
+ * @param distance in meters
+ */
+export function minutePer100km(timeLost: number, distance: number) {
+  return (100 * 1000 * timeLost) / (distance * 60) || 0;
+}
+
+/**
+ * @return the time lost in seconds
+ * @param margin in min/100km
+ * @param distance in meters
+ */
+export function timeLostFromMin100KmMargin(margin: number, distance: number) {
+  return (60 * margin * distance) / (100 * 1000);
+}
+
+/**
+ * ex: converts 25 to 0.25
+ * @param value in percentage
+ */
+export function percentageToDecimal(value: number) {
+  return value * 0.01;
+}
+
+/**
+ * ex: converts 0.25 to 25
+ * @param value in decimal
+ */
+export function decimalToPercentage(value: number) {
+  return value * 100;
+}
