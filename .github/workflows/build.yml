@@ -25,7 +25,7 @@ jobs:
         targets:
           - [core-build, core]
           - [editoast, editoast-test]
-          - [gateway-test, gateway-standalone]
+          - [gateway-test, gateway-standalone, gateway-front]
           - [front-build, front-tests, front-devel, front-nginx]
     steps:
       - name: Checkout
