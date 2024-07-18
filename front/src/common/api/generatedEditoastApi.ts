@@ -925,7 +925,7 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['timetablev2', 'train_schedulev2'],
       }),
-      postV2TrainScheduleProjectPath: build.mutation<
+      postV2TrainScheduleProjectPath: build.query<
         PostV2TrainScheduleProjectPathApiResponse,
         PostV2TrainScheduleProjectPathApiArg
       >({
@@ -934,7 +934,7 @@ const injectedRtkApi = api
           method: 'POST',
           body: queryArg.projectPathForm,
         }),
-        invalidatesTags: ['train_schedulev2'],
+        providesTags: ['train_schedulev2'],
       }),
       postV2TrainScheduleSimulationSummary: build.query<
         PostV2TrainScheduleSimulationSummaryApiResponse,
