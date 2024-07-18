@@ -5,7 +5,7 @@ use actix_web::web::Path;
 use editoast_derive::EditoastError;
 use thiserror::Error;
 
-use crate::client::get_assets_path;
+use crate::client::get_dynamic_assets_path;
 use crate::error::Result;
 use crate::generated_data::sprite_config::SpriteConfig;
 
@@ -60,7 +60,8 @@ async fn sprites(path: Path<(String, String)>) -> Result<NamedFile> {
     if !sprite_configs.contains_key(&signaling_system) {
         return Err(SpriteErrors::UnknownSignalingSystem { signaling_system }.into());
     }
-    let path = get_assets_path().join(format!("signal_sprites/{signaling_system}/{file_name}"));
+    let path =
+        get_dynamic_assets_path().join(format!("signal_sprites/{signaling_system}/{file_name}"));
     if !path.is_file() {
         return Err(SpriteErrors::FileNotFound { file: file_name }.into());
     }
