@@ -225,11 +225,7 @@ pub async fn split_track_section<'a>(
             .filter(|e| e.end >= distance)
             .map(|e| {
                 let mut item = e.clone();
-                if item.begin < distance {
-                    item.begin = distance;
-                } else {
-                    item.begin -= distance;
-                }
+                item.begin = (item.begin - distance).max(0.0);
                 item.end -= distance;
                 item
             })
@@ -240,11 +236,7 @@ pub async fn split_track_section<'a>(
             .filter(|e| e.end >= distance)
             .map(|e| {
                 let mut item = e.clone();
-                if item.begin < distance {
-                    item.begin = 0.0;
-                } else {
-                    item.begin -= distance;
-                }
+                item.begin = (item.begin - distance).max(0.0);
                 item.end -= distance;
                 item
             })
@@ -255,11 +247,7 @@ pub async fn split_track_section<'a>(
             .filter(|e| e.end >= distance)
             .map(|e| {
                 let mut item = e.clone();
-                if item.begin < distance {
-                    item.begin = distance;
-                } else {
-                    item.begin -= distance;
-                }
+                item.begin = (item.begin - distance).max(0.0);
                 item.end -= distance;
                 item
             })
@@ -980,7 +968,9 @@ pub mod tests {
     }
 
     #[rstest]
-    async fn split_track_section_should_work() {
+    #[case("TA0", 1000000)]
+    #[case("TD1", 15500000)]
+    async fn split_track_section_should_work(#[case] track: &str, #[case] offset: u64) {
         // Init
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
@@ -999,8 +989,8 @@ pub mod tests {
         let request = TestRequest::post()
             .uri(format!("/infra/{}/split_track_section", small_infra.id).as_str())
             .set_json(json!({
-                "track": "TA0",
-                "offset": 1000000,
+                "track": track,
+                "offset": offset,
             }))
             .to_request();
         let res: Vec<String> = app.fetch(request).assert_status(StatusCode::OK).json_into();
