@@ -3,25 +3,25 @@ import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import type { SimulationResponseSuccess } from 'applications/operationalStudies/types';
+import type { ReportTrainV2 } from 'common/api/generatedEditoastApi';
 import type { PositionSpeedTime } from 'reducers/osrdsimulation/types';
 import { mmToM } from 'utils/physics';
 
 import DriverTrainScheduleStopV2 from './DriverTrainScheduleStopV2';
 import type { OperationalPointWithTimeAndSpeed } from './types';
-import { isEco } from './utils';
 
 type DriverTrainScheduleStopListV2Props = {
-  simulatedTrain: SimulationResponseSuccess;
+  trainRegime: ReportTrainV2 | SimulationResponseSuccess['final_output'];
+  mrsp: SimulationResponseSuccess['mrsp'];
   operationalPoints: OperationalPointWithTimeAndSpeed[];
 };
 
 const DriverTrainScheduleStopListV2 = ({
-  simulatedTrain,
+  trainRegime,
+  mrsp,
   operationalPoints,
 }: DriverTrainScheduleStopListV2Props) => {
   const { t } = useTranslation(['operationalStudies/drivertrainschedule']);
-
-  const trainRegime = isEco(simulatedTrain) ? simulatedTrain.final_output : simulatedTrain.base;
 
   const formattedTrainRegimeReports: PositionSpeedTime[] = useMemo(
     () =>
@@ -35,11 +35,11 @@ const DriverTrainScheduleStopListV2 = ({
 
   const formattedMrsp = useMemo(
     () =>
-      simulatedTrain.mrsp.positions.map((_position, index) => ({
+      mrsp.positions.map((_position, index) => ({
         position: _position,
-        speed: simulatedTrain.mrsp.speeds[index],
+        speed: mrsp.speeds[index],
       })),
-    [simulatedTrain.mrsp]
+    [mrsp]
   );
 
   return (

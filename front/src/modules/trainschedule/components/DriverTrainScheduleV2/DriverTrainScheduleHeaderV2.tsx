@@ -46,7 +46,7 @@ const DriverTrainScheduleHeaderV2 = ({
     <>
       <div className="d-flex align-items-center">
         <h1 className="text-blue flex-grow-1">{train.train_name}</h1>
-        {isEco(simulatedTrain) && (
+        {isEco(train) && (
           <div className="text-uppercase">
             <OptionsSNCF
               name="driver-train-schedule-base-or-eco"

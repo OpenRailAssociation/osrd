@@ -2,10 +2,7 @@ import * as d3 from 'd3';
 import { uniq } from 'lodash';
 
 import type { TrackSectionEntity } from 'applications/editor/tools/trackEdition/types';
-import type {
-  PathPropertiesFormatted,
-  SimulationResponseSuccess,
-} from 'applications/operationalStudies/types';
+import type { PathPropertiesFormatted } from 'applications/operationalStudies/types';
 import { convertDepartureTimeIntoSec } from 'applications/operationalStudies/utils';
 import {
   osrdEditoastApi,
@@ -163,8 +160,13 @@ export function getAverageSpeed(posA: number, posB: number, speedList: PositionS
   return Math.round(averageSpeed * 3.6 * 10) / 10;
 }
 
-export const isEco = (simulatedTrain: SimulationResponseSuccess) =>
-  simulatedTrain.base.energy_consumption !== simulatedTrain.final_output.energy_consumption;
+export const isEco = (train: TrainScheduleBase) => {
+  const { schedule, margins } = train;
+  return (
+    (schedule && schedule.some((item) => item.arrival !== null)) ||
+    (margins && margins.values.some((value) => value !== '0%' && value !== '0min/100km'))
+  );
+};
 
 /**
  * Interpolate a speed or time value at a given position when the operational point's position
