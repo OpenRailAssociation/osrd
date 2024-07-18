@@ -7,6 +7,7 @@ pub(crate) struct DeleteBatchImpl {
     pub(super) model: syn::Ident,
     pub(super) table_name: syn::Ident,
     pub(super) table_mod: syn::Path,
+    pub(super) chunk_size_limit: usize,
     pub(super) identifier: Identifier,
 }
 
@@ -16,6 +17,7 @@ impl ToTokens for DeleteBatchImpl {
             model,
             table_name,
             table_mod,
+            chunk_size_limit,
             identifier,
         } = self;
         let ty = identifier.get_type();
@@ -40,6 +42,7 @@ impl ToTokens for DeleteBatchImpl {
                     tracing::Span::current().record("query_ids", tracing::field::debug(&ids));
                     let counts = crate::chunked_for_libpq! {
                         #params_per_row,
+                        #chunk_size_limit,
                         ids,
                         chunk => {
                             let mut query = diesel::delete(dsl::#table_name).into_boxed();

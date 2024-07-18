@@ -122,13 +122,13 @@ impl<M, T, Column> ModelField<M, T, Column> {
 #[macro_export]
 macro_rules! chunked_for_libpq {
     // Collects every chunk result into a vec
-    ($parameters_per_row:expr, $values:expr, $chunk:ident => $query:tt) => {{
+    ($parameters_per_row:expr, $limit:literal, $values:expr, $chunk:ident => $query:tt) => {{
         const LIBPQ_MAX_PARAMETERS: usize = 2_usize.pow(16) - 1;
         // We need to divide further because of AsyncPgConnection, maybe it is related to connection pipelining
         const ASYNC_SUBDIVISION: usize = 2_usize;
         const CHUNK_SIZE: usize = LIBPQ_MAX_PARAMETERS / ASYNC_SUBDIVISION / $parameters_per_row;
         let mut result = Vec::new();
-        let chunks = $values.chunks(CHUNK_SIZE);
+        let chunks = $values.chunks(CHUNK_SIZE.min($limit));
         for $chunk in chunks {
             let chunk_result = $query;
             result.push(chunk_result);
@@ -136,13 +136,13 @@ macro_rules! chunked_for_libpq {
         result
     }};
     // Extends the result structure with every chunked query result
-    ($parameters_per_row:expr, $values:expr, $result:expr, $chunk:ident => $query:tt) => {{
+    ($parameters_per_row:expr, $limit:literal, $values:expr, $result:expr, $chunk:ident => $query:tt) => {{
         const LIBPQ_MAX_PARAMETERS: usize = 2_usize.pow(16) - 1;
         // We need to divide further because of AsyncPgConnection, maybe it is related to connection pipelining
         const ASYNC_SUBDIVISION: usize = 2_usize;
         const CHUNK_SIZE: usize = LIBPQ_MAX_PARAMETERS / ASYNC_SUBDIVISION / $parameters_per_row;
         let mut result = $result;
-        let chunks = $values.chunks(CHUNK_SIZE);
+        let chunks = $values.chunks(CHUNK_SIZE.min($limit));
         for $chunk in chunks {
             let chunk_result = $query;
             result.extend(chunk_result);
