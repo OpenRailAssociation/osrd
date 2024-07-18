@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
 import type {
   PathPropertiesFormatted,
@@ -29,19 +29,24 @@ const DriverTrainScheduleV2 = ({
   infraId,
 }: DriverTrainScheduleV2Props) => {
   const [baseOrEco, setBaseOrEco] = useState<BaseOrEcoType>(
-    isEco(simulatedTrain) ? BaseOrEco.eco : BaseOrEco.base
+    isEco(train) ? BaseOrEco.eco : BaseOrEco.base
   );
   const [operationalPoints, setOperationalPoints] = useState<OperationalPointWithTimeAndSpeed[]>(
     []
   );
   const [loading, setLoading] = useState(false);
 
+  const selectedTrainRegime = useMemo(
+    () => (baseOrEco === BaseOrEco.eco ? simulatedTrain.final_output : simulatedTrain.base),
+    [baseOrEco, simulatedTrain]
+  );
+
   useEffect(() => {
     const fetchOperationalPoints = async () => {
       setLoading(true);
       const formattedOperationalPoints = await formatOperationalPoints(
         pathProperties.operationalPoints,
-        baseOrEco === BaseOrEco.eco ? simulatedTrain.final_output : simulatedTrain.base,
+        selectedTrainRegime,
         train,
         infraId
       );
@@ -52,7 +57,7 @@ const DriverTrainScheduleV2 = ({
   }, [pathProperties, simulatedTrain, train, infraId, baseOrEco]);
 
   useEffect(() => {
-    setBaseOrEco(isEco(simulatedTrain) ? BaseOrEco.eco : BaseOrEco.base);
+    setBaseOrEco(isEco(train) ? BaseOrEco.eco : BaseOrEco.base);
   }, [simulatedTrain]);
 
   return (
@@ -75,7 +80,8 @@ const DriverTrainScheduleV2 = ({
             </div>
           ) : (
             <DriverTrainScheduleStopListV2
-              simulatedTrain={simulatedTrain}
+              trainRegime={selectedTrainRegime}
+              mrsp={simulatedTrain.mrsp}
               operationalPoints={operationalPoints}
             />
           )}
