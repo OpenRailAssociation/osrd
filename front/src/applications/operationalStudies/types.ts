@@ -87,6 +87,7 @@ export type TrainScheduleImportConfig = {
 
 // Extraction of some required and non nullable properties from osrdEditoastApi's PathProperties type
 export type ManageTrainSchedulePathProperties = {
+  manchetteOperationalPoints?: NonNullable<PathProperties['operational_points']>;
   electrifications: NonNullable<PathProperties['electrifications']>;
   geometry: NonNullable<PathProperties['geometry']>;
   suggestedOperationalPoints: SuggestedOP[];
@@ -102,8 +103,7 @@ export type ManageTrainSchedulePathProperties = {
 export type TrainSpaceTimeData = {
   id: number;
   trainName: string;
-  spaceTimeCurves: { time: number; headPosition: number; tailPosition: number }[][];
-} & Omit<ProjectPathTrainResult, 'space_time_curves'>;
+} & ProjectPathTrainResult;
 
 export type PositionData<T extends 'gradient' | 'radius'> = {
   [key in T]: number;

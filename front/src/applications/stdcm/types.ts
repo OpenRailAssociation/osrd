@@ -9,7 +9,6 @@ import type {
   RollingStockWithLiveries,
   SimulationPowerRestrictionRange,
   SimulationResponse,
-  TrainScheduleResult,
 } from 'common/api/osrdEditoastApi';
 import type { ValueOf } from 'utils/types';
 
@@ -56,8 +55,4 @@ export type StdcmV2Results = {
     departureTime: string;
   } | null;
   spaceTimeData: TrainSpaceTimeData[];
-  selectedTrainSchedule: TrainScheduleResult;
-  infraId: number;
-  dispatchUpdateSelectedTrainId: (selectedTrainId: number) => void;
-  setSpaceTimeData: React.Dispatch<React.SetStateAction<TrainSpaceTimeData[]>>;
 };

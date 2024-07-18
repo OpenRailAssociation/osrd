@@ -3,7 +3,7 @@
 // https://github.com/tailwindlabs/tailwindcss/issues/942
 svg,
 img {
-  display: inline-block;
+  display: inline-block !important;
   max-width: none;
 }
 

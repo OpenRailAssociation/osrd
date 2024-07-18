@@ -1,5 +1,4 @@
 import type { TrainSpaceTimeData } from 'applications/operationalStudies/types';
-import { formatSpaceTimeData } from 'applications/operationalStudies/utils';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import i18n from 'i18n';
 import { setFailure } from 'reducers/main';
@@ -85,11 +84,11 @@ export const getSpaceTimeChartData = async (
 
             const matchingTrain = trainSchedules.find((train) => train.id === +trainId);
 
-            const formattedProjectedPathTrainResult = formatSpaceTimeData(
-              trainId,
-              currentProjectedTrain,
-              matchingTrain?.train_name
-            );
+            const formattedProjectedPathTrainResult = {
+              ...currentProjectedTrain,
+              id: +trainId,
+              trainName: matchingTrain?.train_name || 'Train name not found',
+            };
 
             const foundTrainIndex = newSpaceTimeData.findIndex(
               (train) => train.id.toString() === trainId
