@@ -203,6 +203,7 @@ export default function commonConfBuilder() {
     ],
 
     buildPathProperties: (): ManageTrainSchedulePathProperties => ({
+      manchetteOperationalPoints: [],
       electrifications: {
         boundaries: [84015000],
         values: [

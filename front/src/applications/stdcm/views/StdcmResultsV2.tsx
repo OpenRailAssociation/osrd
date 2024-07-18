@@ -1,16 +1,16 @@
 import React, { useMemo, useState } from 'react';
 
+import { Manchette as SpaceTimeChartWithManchette } from '@osrd-project/ui-manchette';
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import { useTranslation } from 'react-i18next';
 
 import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
+import type { ProjectPathTrainResult } from 'common/api/generatedEditoastApi';
 import { LoaderFill } from 'common/Loaders';
-import SpaceTimeChartV2 from 'modules/simulationResult/components/SpaceTimeChart/SpaceTimeChartV2';
 import SpeedSpaceChartV2 from 'modules/simulationResult/components/SpeedSpaceChart/SpeedSpaceChartV2';
-import type { TimeScaleDomain } from 'modules/simulationResult/types';
+import { convertIsoUtcToLocalTime } from 'utils/date';
 
 import SimulationReportSheetV2 from '../components/SimulationReportSheetV2';
-import { STDCM_TRAIN_ID } from '../consts';
 import type { StdcmV2Results } from '../types';
 import {
   generateCodeNumber,
@@ -29,23 +29,9 @@ const codeNumber = generateCodeNumber();
 
 const StcdmResultsV2 = ({ mapCanvas, stdcmV2Results, pathProperties }: StcdmResultsProps) => {
   const { t } = useTranslation(['stdcm']);
-  const [spaceTimeChartHeight, setSpaceTimeChartHeight] = useState(450);
   const [speedSpaceChartHeight, setSpeedSpaceChartHeight] = useState(250);
 
-  const [timeScaleDomain, setTimeScaleDomain] = useState<TimeScaleDomain>({
-    range: undefined,
-    source: undefined,
-  });
-
-  const {
-    stdcmResponse,
-    speedSpaceChartData,
-    spaceTimeData,
-    infraId,
-    selectedTrainSchedule,
-    dispatchUpdateSelectedTrainId,
-    setSpaceTimeData,
-  } = stdcmV2Results;
+  const { stdcmResponse, speedSpaceChartData, spaceTimeData } = stdcmV2Results;
 
   const operationalPointsList = useMemo(
     () =>
@@ -57,25 +43,28 @@ const StcdmResultsV2 = ({ mapCanvas, stdcmV2Results, pathProperties }: StcdmResu
     [pathProperties, stdcmV2Results]
   );
 
+  const manchetteSpaceTimeData: ProjectPathTrainResult[] = useMemo(
+    () =>
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      spaceTimeData.map(({ id, trainName, departure_time, ...rest }) => ({
+        ...rest,
+        departure_time: `${convertIsoUtcToLocalTime(departure_time).slice(0, -6)}Z` || '',
+      })),
+    [spaceTimeData]
+  );
+
   return (
     <main className="osrd-config-mastcontainer" style={{ height: '115vh' }}>
       <div className="osrd-simulation-container mb-2 simulation-results">
         <div className="osrd-simulation-container mb-2">
           <p className="mt-2 mb-3 ml-4 font-weight-bold">{t('spaceTimeGraphic')}</p>
-          <div className="chart-container mt-2" style={{ height: `${spaceTimeChartHeight}px` }}>
-            {spaceTimeData.length ? (
-              <SpaceTimeChartV2
-                infraId={infraId}
-                inputSelectedTrain={selectedTrainSchedule}
-                trainIdUsedForProjection={STDCM_TRAIN_ID}
-                simulation={spaceTimeData}
-                initialHeight={spaceTimeChartHeight}
-                onSetBaseHeight={setSpaceTimeChartHeight}
-                dispatchUpdateSelectedTrainId={dispatchUpdateSelectedTrainId}
-                setTrainSpaceTimeData={setSpaceTimeData}
-                timeScaleDomain={timeScaleDomain}
-                setTimeScaleDomain={setTimeScaleDomain}
-                deactivateChartSynchronization={selectedTrainSchedule.id !== STDCM_TRAIN_ID}
+          <div className="chart-container mt-2">
+            {manchetteSpaceTimeData.length > 0 &&
+            pathProperties &&
+            pathProperties.manchetteOperationalPoints ? (
+              <SpaceTimeChartWithManchette
+                operationalPoints={pathProperties.manchetteOperationalPoints}
+                projectPathTrainResult={manchetteSpaceTimeData}
               />
             ) : (
               <LoaderFill />

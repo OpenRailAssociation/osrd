@@ -19,9 +19,7 @@ import { formatSuggestedOperationalPoints, upsertPathStepsInOPs } from 'modules/
 import formatTrainsIntoSpaceTimeData from 'modules/simulationResult/components/SpaceTimeChart/formatSpaceTimeData';
 import useSpeedSpaceChart from 'modules/simulationResult/components/SpeedSpaceChart/useSpeedSpaceChart';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
-import { updateSelectedTrainId } from 'reducers/osrdsimulation/actions';
 import { getSelectedTrainId } from 'reducers/osrdsimulation/selectors';
-import { useAppDispatch } from 'store';
 
 import { STDCM_TRAIN_ID } from '../consts';
 import formatStdcmTrainIntoSpaceTimeData from '../utils/formatStdcmIntoSpaceTimeData';
@@ -31,7 +29,6 @@ const useStdcmResults = (
   stdcmTrainResult: TrainScheduleResult | undefined,
   setPathProperties: (pathProperties?: ManageTrainSchedulePathProperties) => void
 ): StdcmV2Results | null => {
-  const dispatch = useAppDispatch();
   const infraId = useInfraID();
   const { getPathSteps, getTimetableID } = useOsrdConfSelectors();
   const pathSteps = useSelector(getPathSteps);
@@ -116,6 +113,7 @@ const useStdcmResults = (
         );
 
         setPathProperties({
+          manchetteOperationalPoints: operational_points,
           electrifications,
           geometry,
           suggestedOperationalPoints: updatedSuggestedOPs,
@@ -183,12 +181,6 @@ const useStdcmResults = (
   return {
     stdcmResponse,
     spaceTimeData,
-    selectedTrainSchedule,
-    infraId,
-    dispatchUpdateSelectedTrainId: (_selectedTrainId: number) => {
-      dispatch(updateSelectedTrainId(_selectedTrainId));
-    },
-    setSpaceTimeData,
     speedSpaceChartData,
   };
 };
