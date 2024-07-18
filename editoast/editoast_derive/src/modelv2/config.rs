@@ -15,6 +15,7 @@ pub(crate) struct ModelConfig {
     pub(crate) model: syn::Ident,
     pub(crate) visibility: syn::Visibility,
     pub(crate) table: syn::Path,
+    pub(crate) batch_chunk_size_limit: usize,
     pub(crate) fields: Fields,
     pub(crate) row: GeneratedTypeArgs,
     pub(crate) changeset: GeneratedTypeArgs,

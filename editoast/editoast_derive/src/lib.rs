@@ -237,6 +237,10 @@ pub fn search_config_store(input: proc_macro::TokenStream) -> proc_macro::TokenS
 /// * `#[model(preferred = PREFERRED)]`: just like `#[model(preferred)]` for fields, but at the struct level.
 ///     Compound identifier syntax is supported. This option can be specified only once, including at field level.
 ///     It is NOT NECESSARY to also specify `#[model(identifier = PREFERRED)]`.
+/// * `#[model(batch_chunk_size_limit = usize)]` (default: [modelv2::DEFAULT_BATCH_CHUNK_SIZE_LIMIT]): there seem to be a bug from either diesel or libpq that causes
+///     a stack overflow for large batch chunk sizes. Until a better solution is found, this option allows to limit the
+///     size of each chunk on a per-model basis. Increasing this value could lead to stack overflows, decreasing it
+///     might degrade the performance of batch operations.
 ///
 /// ### Field-level options
 ///

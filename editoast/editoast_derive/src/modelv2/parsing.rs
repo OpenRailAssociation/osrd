@@ -6,7 +6,7 @@ use proc_macro2::Span;
 use super::{
     args::{GeneratedTypeArgs, ModelArgs, ModelFieldArgs},
     identifier::{Identifier, RawIdentifier},
-    FieldTransformation, Fields, ModelConfig, ModelField,
+    FieldTransformation, Fields, ModelConfig, ModelField, DEFAULT_BATCH_CHUNK_SIZE_LIMIT,
 };
 
 impl ModelConfig {
@@ -118,6 +118,9 @@ impl ModelConfig {
             model: model_name,
             visibility,
             table: options.table,
+            batch_chunk_size_limit: options
+                .batch_chunk_size_limit
+                .unwrap_or(DEFAULT_BATCH_CHUNK_SIZE_LIMIT),
             fields,
             row,
             changeset,

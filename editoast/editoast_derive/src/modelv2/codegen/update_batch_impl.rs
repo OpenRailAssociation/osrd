@@ -7,6 +7,7 @@ pub(crate) struct UpdateBatchImpl {
     pub(super) model: syn::Ident,
     pub(super) table_name: syn::Ident,
     pub(super) table_mod: syn::Path,
+    pub(super) chunk_size_limit: usize,
     pub(super) row: syn::Ident,
     pub(super) changeset: syn::Ident,
     pub(super) identifier: Identifier,
@@ -19,6 +20,7 @@ impl ToTokens for UpdateBatchImpl {
             model,
             table_name,
             table_mod,
+            chunk_size_limit,
             row,
             identifier,
             changeset,
@@ -55,6 +57,7 @@ impl ToTokens for UpdateBatchImpl {
                         // FIXME: that count is correct for each row, but the maximum buffer size
                         // should be libpq's max MINUS the size of the changeset
                         #params_per_row,
+                        #chunk_size_limit,
                         ids,
                         C::default(),
                         chunk => {
@@ -95,6 +98,7 @@ impl ToTokens for UpdateBatchImpl {
                         // FIXME: that count is correct for each row, but the maximum buffer size
                         // should be libpq's max MINUS the size of the changeset
                         #params_per_row,
+                        #chunk_size_limit,
                         ids,
                         C::default(),
                         chunk => {

@@ -15,6 +15,9 @@ use args::ModelArgs;
 use config::*;
 use identifier::RawIdentifier;
 
+// completely pulled from the hat, seems to work for 16Gb machines
+pub(super) const DEFAULT_BATCH_CHUNK_SIZE_LIMIT: usize = 2048;
+
 pub fn model(input: &DeriveInput) -> Result<TokenStream> {
     let model_name = &input.ident;
     let model_vis = &input.vis;

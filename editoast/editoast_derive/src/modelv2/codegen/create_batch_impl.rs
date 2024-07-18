@@ -5,6 +5,7 @@ pub(crate) struct CreateBatchImpl {
     pub(super) model: syn::Ident,
     pub(super) table_name: syn::Ident,
     pub(super) table_mod: syn::Path,
+    pub(super) chunk_size_limit: usize,
     pub(super) row: syn::Ident,
     pub(super) changeset: syn::Ident,
     pub(super) field_count: usize,
@@ -16,6 +17,7 @@ impl ToTokens for CreateBatchImpl {
             model,
             table_name,
             table_mod,
+            chunk_size_limit,
             row,
             changeset,
             field_count,
@@ -42,6 +44,7 @@ impl ToTokens for CreateBatchImpl {
                     let values = values.into_iter().collect::<Vec<_>>();
                     Ok(crate::chunked_for_libpq! {
                         #field_count,
+                        #chunk_size_limit,
                         values,
                         C::default(),
                         chunk => {

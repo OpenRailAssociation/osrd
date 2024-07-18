@@ -317,6 +317,7 @@ impl ModelConfig {
             model: self.model.clone(),
             table_name: self.table_name(),
             table_mod: self.table.clone(),
+            chunk_size_limit: self.batch_chunk_size_limit,
             row: self.row.ident(),
             changeset: self.changeset.ident(),
             field_count: self.changeset_fields().count(),
@@ -330,6 +331,7 @@ impl ModelConfig {
                 model: self.model.clone(),
                 table_name: self.table_name(),
                 table_mod: self.table.clone(),
+                chunk_size_limit: self.batch_chunk_size_limit,
                 row: self.row.ident(),
                 changeset: self.changeset.ident(),
                 identifier: identifier.clone(),
@@ -345,6 +347,7 @@ impl ModelConfig {
                 model: self.model.clone(),
                 table_name: self.table_name(),
                 table_mod: self.table.clone(),
+                chunk_size_limit: self.batch_chunk_size_limit,
                 row: self.row.ident(),
                 identifier: identifier.clone(),
             })
@@ -358,6 +361,7 @@ impl ModelConfig {
                 model: self.model.clone(),
                 table_name: self.table_name(),
                 table_mod: self.table.clone(),
+                chunk_size_limit: self.batch_chunk_size_limit,
                 row: self.row.ident(),
                 changeset: self.changeset.ident(),
                 identifier: identifier.clone(),
@@ -373,6 +377,7 @@ impl ModelConfig {
                 model: self.model.clone(),
                 table_name: self.table_name(),
                 table_mod: self.table.clone(),
+                chunk_size_limit: self.batch_chunk_size_limit,
                 identifier: identifier.clone(),
             })
             .collect()

@@ -7,6 +7,7 @@ pub(crate) struct RetrieveBatchImpl {
     pub(super) model: syn::Ident,
     pub(super) table_name: syn::Ident,
     pub(super) table_mod: syn::Path,
+    pub(super) chunk_size_limit: usize,
     pub(super) row: syn::Ident,
     pub(super) identifier: Identifier,
 }
@@ -17,6 +18,7 @@ impl ToTokens for RetrieveBatchImpl {
             model,
             table_name,
             table_mod,
+            chunk_size_limit,
             row,
             identifier,
         } = self;
@@ -48,6 +50,7 @@ impl ToTokens for RetrieveBatchImpl {
                     tracing::Span::current().record("query_ids", tracing::field::debug(&ids));
                     Ok(crate::chunked_for_libpq! {
                         #params_per_row,
+                        #chunk_size_limit,
                         ids,
                         C::default(),
                         chunk => {
@@ -85,6 +88,7 @@ impl ToTokens for RetrieveBatchImpl {
                     tracing::Span::current().record("query_ids", tracing::field::debug(&ids));
                     Ok(crate::chunked_for_libpq! {
                         #params_per_row,
+                        #chunk_size_limit,
                         ids,
                         C::default(),
                         chunk => {

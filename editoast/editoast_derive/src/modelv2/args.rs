@@ -24,6 +24,9 @@ pub(super) struct ModelArgs {
     pub(super) identifiers: Vec<RawIdentifier>,
     #[darling(default)]
     pub(super) preferred: Option<RawIdentifier>,
+    #[darling(default)]
+    pub(super) batch_chunk_size_limit: Option<usize>,
+
     pub(super) data: ast::Data<util::Ignored, ModelFieldArgs>,
 }
 
