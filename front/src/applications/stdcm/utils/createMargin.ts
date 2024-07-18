@@ -2,7 +2,7 @@ import type { StandardAllowance } from 'reducers/osrdconf/types';
 
 export default function createMargin(margin: StandardAllowance | undefined): string {
   if (!margin || !margin.value) {
-    return 'None';
+    return '0%';
   }
   switch (margin.type) {
     case 'time_per_distance':
