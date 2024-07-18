@@ -50,7 +50,7 @@ const useStdcmResults = (
   const [postPathProperties] =
     osrdEditoastApi.endpoints.postV2InfraByInfraIdPathProperties.useMutation();
   const [projectTrainSchedules] =
-    osrdEditoastApi.endpoints.postV2TrainScheduleProjectPath.useMutation();
+    osrdEditoastApi.endpoints.postV2TrainScheduleProjectPath.useLazyQuery();
 
   const { data: otherSelectedTrainSchedule } =
     osrdEditoastApi.endpoints.getV2TrainScheduleById.useQuery(
@@ -176,7 +176,7 @@ const useStdcmResults = (
         stdcmResponse.rollingStock.length
       );
     }
-  }, [stdcmResponse]);
+  }, [stdcmResponse, infraId, timetable, projectTrainSchedules]);
 
   if (!infraId || !stdcmResponse || !selectedTrainSchedule) return null;
 

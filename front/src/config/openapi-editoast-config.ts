@@ -10,7 +10,11 @@ const config: ConfigFile = {
   tag: true,
   endpointOverrides: [
     {
-      pattern: ['postV2TrainSchedule', 'postV2TrainScheduleSimulationSummary'],
+      pattern: [
+        'postV2TrainSchedule',
+        'postV2TrainScheduleSimulationSummary',
+        'postV2TrainScheduleProjectPath',
+      ],
       type: 'query',
     },
   ],
