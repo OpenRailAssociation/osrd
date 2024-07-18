@@ -1,63 +1,45 @@
 import React, { useState, useEffect } from 'react';
 
-import { DynamicDataSheetGrid } from 'react-datasheet-grid';
+import cx from 'classnames';
+import { DynamicDataSheetGrid, type DataSheetGridProps } from 'react-datasheet-grid';
 import { useTranslation } from 'react-i18next';
 
-import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
 import { useOsrdConfActions } from 'common/osrdContext';
 import { isVia } from 'modules/pathfinding/utils';
 import type { SuggestedOP } from 'modules/trainschedule/components/ManageTrainSchedule/types';
 import type { PathStep } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
-import { removeElementAtIndex } from 'utils/array';
-import { marginRegExValidation } from 'utils/physics';
 
-import { useInputColumns } from './TimeStopsColumns';
-import type { PathWaypointColumn } from './types';
-import { formatSuggestedViasToRowVias } from './utils';
+import { marginRegExValidation } from './consts';
+import { formatSuggestedViasToRowVias } from './helpers/utils';
+import { useTimeStopsColumns } from './hooks/useTimeStopsColumns';
+import { TableType } from './types';
+import type { PathWaypointRow } from './types';
 
-const WITH_KP = true;
+export const WITH_KP = true;
 
 type TimesStopsProps = {
-  pathProperties: ManageTrainSchedulePathProperties | undefined;
+  allWaypoints?: SuggestedOP[];
   pathSteps?: PathStep[];
   startTime?: string;
+  tableType: TableType;
+  cellClassName?: DataSheetGridProps['cellClassName'];
+  stickyRightColumn?: DataSheetGridProps['stickyRightColumn'];
+  headerRowHeight?: number;
 };
 
-type DeleteButtonProps = {
-  removeVia: () => void;
-  rowIndex: number;
-  rowData: PathWaypointColumn;
-  pathProperties: ManageTrainSchedulePathProperties;
-  pathSteps: PathStep[];
-};
-
-const createDeleteViaButton = ({
-  removeVia,
-  rowIndex,
-  rowData,
-  pathProperties,
-  pathSteps,
-}: DeleteButtonProps) => {
-  const isRowVia =
-    rowIndex !== 0 &&
-    rowIndex !== pathProperties.allWaypoints?.length - 1 &&
-    isVia(pathSteps, rowData, WITH_KP);
-  if (isRowVia) {
-    return (
-      <button type="button" onClick={removeVia}>
-        ❌
-      </button>
-    );
-  }
-  // eslint-disable-next-line react/jsx-no-useless-fragment
-  return <></>;
-};
-
-const TimesStops = ({ pathProperties, pathSteps = [], startTime }: TimesStopsProps) => {
+const TimesStops = ({
+  allWaypoints,
+  pathSteps = [],
+  startTime,
+  tableType,
+  cellClassName,
+  stickyRightColumn,
+  headerRowHeight,
+}: TimesStopsProps) => {
+  const isInputTable = tableType === TableType.Input;
   const { t } = useTranslation('timesStops');
-
-  if (!pathProperties) {
+  if (!allWaypoints) {
     return (
       <div className="d-flex justify-content-center align-items-center h-100">
         <p className="pt-1 px-5">{t('noPathLoaded')}</p>
@@ -66,49 +48,39 @@ const TimesStops = ({ pathProperties, pathSteps = [], startTime }: TimesStopsPro
   }
 
   const dispatch = useAppDispatch();
-  const { upsertViaFromSuggestedOP, updatePathSteps } = useOsrdConfActions();
+  const { upsertViaFromSuggestedOP } = useOsrdConfActions();
 
-  const [timesStopsSteps, setTimesStopsSteps] = useState<PathWaypointColumn[]>([]);
+  const [rows, setRows] = useState<PathWaypointRow[]>([]);
 
   useEffect(() => {
     const suggestedOPs = formatSuggestedViasToRowVias(
-      pathProperties.allWaypoints,
+      allWaypoints,
       pathSteps,
       t,
-      startTime
+      startTime,
+      tableType
     );
-    setTimesStopsSteps(suggestedOPs);
-  }, [t, pathProperties.allWaypoints, startTime, pathSteps]);
+    setRows(suggestedOPs);
+  }, [allWaypoints, pathSteps, startTime]);
 
-  const columns = useInputColumns(pathProperties);
-
-  const removeVia = (rowData: PathWaypointColumn) => {
-    const index = pathSteps.findIndex((step) => {
-      if ('uic' in step) {
-        return step.uic === rowData.uic && step.ch === rowData.ch && step.name === rowData.name;
-      }
-      if ('track' in step) {
-        return step.track === rowData.track;
-      }
-      return false;
-    });
-    const updatedPathSteps = removeElementAtIndex(pathSteps, index);
-
-    dispatch(updatePathSteps({ pathSteps: updatedPathSteps }));
-  };
+  const columns = useTimeStopsColumns(tableType, allWaypoints);
 
   return (
     <DynamicDataSheetGrid
+      className="time-stops-datasheet"
       columns={columns}
-      value={timesStopsSteps}
+      value={rows}
       onChange={(row, [op]) => {
-        const rowData = row[`${op.fromRowIndex}`];
-        if (!rowData.stopFor && op.fromRowIndex !== pathProperties.allWaypoints.length - 1) {
+        if (!isInputTable) {
+          return;
+        }
+        const rowData = row[op.fromRowIndex];
+        if (!rowData.stopFor && op.fromRowIndex !== allWaypoints.length - 1) {
           rowData.onStopSignal = false;
         }
         if (rowData.theoreticalMargin && !marginRegExValidation.test(rowData.theoreticalMargin!)) {
           rowData.isMarginValid = false;
-          setTimesStopsSteps(row);
+          setRows(row);
         } else {
           rowData.isMarginValid = true;
           if (op.fromRowIndex === 0) {
@@ -120,25 +92,19 @@ const TimesStops = ({ pathProperties, pathSteps = [], startTime }: TimesStopsPro
           dispatch(upsertViaFromSuggestedOP(rowData as SuggestedOP));
         }
       }}
-      stickyRightColumn={{
-        component: ({ rowData, rowIndex }) =>
-          createDeleteViaButton({
-            removeVia: () => removeVia(rowData),
-            rowIndex,
-            rowData,
-            pathProperties,
-            pathSteps,
-          }),
-      }}
+      stickyRightColumn={stickyRightColumn}
       lockRows
       height={600}
+      headerRowHeight={headerRowHeight}
       rowClassName={({ rowData, rowIndex }) =>
-        rowIndex === 0 ||
-        rowIndex === pathProperties.allWaypoints.length - 1 ||
-        isVia(pathSteps, rowData, WITH_KP)
-          ? 'activeRow'
-          : ''
+        cx({
+          activeRow:
+            rowIndex === 0 ||
+            rowIndex === allWaypoints.length - 1 ||
+            isVia(pathSteps, rowData, WITH_KP),
+        })
       }
+      cellClassName={cellClassName}
     />
   );
 };

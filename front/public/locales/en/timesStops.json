@@ -1,10 +1,16 @@
 {
+  "arrivalTime": "Requested arrival Time",
+  "calculatedArrivalTime": "Calculated arrival time",
+  "calculatedDepartureTime": "Calculated departure time",
+  "departureTime": "Requested departure Time",
+  "diffMargins": "Margins diff.",
   "name": "Name",
-  "stopTime": "Stopping Time (s)",
-  "arrivalTime": "Arrival Time",
+  "noPathLoaded": "No path loaded",
+  "realMargin": "Real margin",
   "receptionOnClosedSignal": "Reception on Closed Signal",
+  "stopTime": "Stopping Time (s)",
   "theoreticalMargin": "Theoretical Margin",
   "theoreticalMarginPlaceholder": "% or min/100km",
-  "waypoint": "Waypoint {{id}}",
-  "noPathLoaded": "No path loaded"
+  "theoreticalMarginSeconds": "Theoretical Margin (s)",
+  "waypoint": "Waypoint {{id}}"
 }

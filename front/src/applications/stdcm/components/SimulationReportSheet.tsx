@@ -8,7 +8,7 @@ import iconAlert from 'assets/simulationReportSheet/icon_alert_fill.png';
 import logoSNCF from 'assets/simulationReportSheet/logo_sncf_reseau.png';
 import type { PostStdcmApiResponse, RollingStockWithLiveries } from 'common/api/osrdEditoastApi';
 import { formatDay } from 'utils/date';
-import { getStopTime } from 'utils/timeManipulation';
+import { secToHoursString } from 'utils/timeManipulation';
 
 import styles from './SimulationReportStyleSheet';
 import {
@@ -182,7 +182,7 @@ const SimulationReportSheet = ({
                         </View>
                         <View style={styles.convoyAndRoute.stopTableStartWidth}>
                           <TD style={styles.convoyAndRoute.stopTableStartColumn}>
-                            {isFirstStep ? getStopTime(step.time) : ''}
+                            {isFirstStep ? secToHoursString(step.time) : ''}
                           </TD>
                         </View>
                         <View style={styles.convoyAndRoute.stopTableMotifWidth}>
@@ -293,7 +293,7 @@ const SimulationReportSheet = ({
                     </View>
                     <View style={styles.simulation.endWidth}>
                       <TD style={styles.simulation.stopColumn}>
-                        {isLastStep || step.duration !== 0 ? getStopTime(step.time) : ''}
+                        {isLastStep || step.duration !== 0 ? secToHoursString(step.time) : ''}
                       </TD>
                     </View>
                     <View style={styles.simulation.passageWidth}>
@@ -312,7 +312,7 @@ const SimulationReportSheet = ({
                           !isFirstStep && !isLastStep
                             ? step.duration !== 0
                               ? getStopDurationTime(step.duration)
-                              : getStopTime(step.time)
+                              : secToHoursString(step.time)
                             : ''
                         }
                       </TD>
@@ -320,7 +320,7 @@ const SimulationReportSheet = ({
                     <View style={styles.simulation.startWidth}>
                       <TD style={styles.simulation.stopColumn}>
                         {isFirstStep || (step.duration !== 0 && !isLastStep)
-                          ? getStopTime(step.time + step.duration)
+                          ? secToHoursString(step.time + step.duration)
                           : ''}
                       </TD>
                     </View>

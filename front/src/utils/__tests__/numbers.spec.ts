@@ -10,8 +10,8 @@ describe('budgetFormat', () => {
 });
 
 describe('stripDecimalDigits', () => {
-  it('should return the same number when decimalPlaces is 0', () => {
-    expect(stripDecimalDigits(123.456, 0)).toBe(123.456);
+  it('should return the integer part of the number when decimalPlaces is 0', () => {
+    expect(stripDecimalDigits(123.456, 0)).toBe(123);
   });
 
   it('should return the same number when decimalPlaces is negative', () => {

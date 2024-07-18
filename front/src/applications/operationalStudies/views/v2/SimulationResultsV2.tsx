@@ -3,6 +3,7 @@ import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { ChevronLeft, ChevronRight } from '@osrd-project/ui-icons';
 import { Manchette as SpaceTimeChartWithManchette } from '@osrd-project/ui-manchette';
 import cx from 'classnames';
+import { compact } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { Rnd } from 'react-rnd';
@@ -11,6 +12,7 @@ import useSimulationResults from 'applications/operationalStudies/hooks/useSimul
 import type { TrainSpaceTimeData } from 'applications/operationalStudies/types';
 import type { ProjectPathTrainResult } from 'common/api/osrdEditoastApi';
 import SimulationWarpedMap from 'common/Map/WarpedMap/SimulationWarpedMap';
+import { useOsrdConfSelectors } from 'common/osrdContext';
 import { getScaleDomainFromValuesV2 } from 'modules/simulationResult/components/ChartHelpers/getScaleDomainFromValues';
 import SimulationResultsMapV2 from 'modules/simulationResult/components/SimulationResultsMapV2';
 import SpaceCurvesSlopesV2 from 'modules/simulationResult/components/SpaceCurvesSlopes/SpaceCurvesSlopesV2';
@@ -19,7 +21,9 @@ import SpeedSpaceChartV2 from 'modules/simulationResult/components/SpeedSpaceCha
 import TimeButtons from 'modules/simulationResult/components/TimeButtons';
 import TrainDetailsV2 from 'modules/simulationResult/components/TrainDetailsV2';
 import type { PositionScaleDomain } from 'modules/simulationResult/types';
+import TimesStopsOutput from 'modules/timesStops/TimesStopsOutput';
 import DriverTrainScheduleV2 from 'modules/trainschedule/components/DriverTrainScheduleV2/DriverTrainScheduleV2';
+import { useFormattedOperationalPoints } from 'modules/trainschedule/useFormattedOperationalPoints';
 import { updateViewport, type Viewport } from 'reducers/map';
 import { getIsUpdating } from 'reducers/osrdsimulation/selectors';
 // TIMELINE DISABLED // import TimeLine from 'modules/simulationResult/components/TimeLine/TimeLine';
@@ -37,6 +41,8 @@ type SimulationResultsV2Props = {
 
 const SimulationResultsV2 = ({ collapsedTimetable, spaceTimeData }: SimulationResultsV2Props) => {
   const { t } = useTranslation('simulation');
+  const { getPathSteps } = useOsrdConfSelectors();
+  const pathSteps = useSelector(getPathSteps);
   const dispatch = useAppDispatch();
   // TIMELINE DISABLED // const { chart } = useSelector(getOsrdSimulation);
   const isUpdating = useSelector(getIsUpdating);
@@ -61,12 +67,19 @@ const SimulationResultsV2 = ({ collapsedTimetable, spaceTimeData }: SimulationRe
   });
 
   const {
-    selectedTrain,
+    selectedTrainSchedule,
     selectedTrainRollingStock,
     selectedTrainPowerRestrictions,
     trainSimulation,
     pathProperties,
+    pathLength,
   } = useSimulationResults();
+  const { operationalPoints, loading: formattedOpPointsLoading } = useFormattedOperationalPoints(
+    selectedTrainSchedule,
+    trainSimulation,
+    pathProperties,
+    infraId
+  );
 
   const manchetteSpaceTimeData: ProjectPathTrainResult[] = useMemo(
     () =>
@@ -80,8 +93,10 @@ const SimulationResultsV2 = ({ collapsedTimetable, spaceTimeData }: SimulationRe
 
   const trainUsedForProjectionSpaceTimeData = useMemo(
     () =>
-      selectedTrain ? spaceTimeData.find((_train) => _train.id === selectedTrain.id) : undefined,
-    [selectedTrain, spaceTimeData]
+      selectedTrainSchedule
+        ? spaceTimeData.find((_train) => _train.id === selectedTrainSchedule.id)
+        : undefined,
+    [selectedTrainSchedule, spaceTimeData]
   );
 
   useEffect(() => {
@@ -112,7 +127,7 @@ const SimulationResultsV2 = ({ collapsedTimetable, spaceTimeData }: SimulationRe
   return (
     <div className="simulation-results">
       {/* SIMULATION : STICKY BAR */}
-      {selectedTrain && (
+      {selectedTrainSchedule && (
         <div
           className={cx('osrd-simulation-sticky-bar', {
             'with-collapsed-timetable': collapsedTimetable,
@@ -120,7 +135,7 @@ const SimulationResultsV2 = ({ collapsedTimetable, spaceTimeData }: SimulationRe
         >
           <div className="row">
             <div className="col-xl-4">
-              <TimeButtons departureTime={selectedTrain.start_time} />
+              <TimeButtons departureTime={selectedTrainSchedule.start_time} />
             </div>
             {trainUsedForProjectionSpaceTimeData && (
               <TrainDetailsV2 projectedTrain={trainUsedForProjectionSpaceTimeData} />
@@ -166,7 +181,7 @@ const SimulationResultsV2 = ({ collapsedTimetable, spaceTimeData }: SimulationRe
       )}
 
       {/* TRAIN : SPACE SPEED CHART */}
-      {selectedTrainRollingStock && trainSimulation && pathProperties && selectedTrain && (
+      {selectedTrainRollingStock && trainSimulation && pathProperties && selectedTrainSchedule && (
         <div className="osrd-simulation-container d-flex mb-2 speedspacechart-container">
           <div
             className="chart-container"
@@ -185,8 +200,26 @@ const SimulationResultsV2 = ({ collapsedTimetable, spaceTimeData }: SimulationRe
         </div>
       )}
 
+      {/* TIME STOPS TABLE */}
+      {selectedTrainSchedule &&
+        trainSimulation.status === 'success' &&
+        pathProperties &&
+        infraId && (
+          <div className="osrd-simulation-container mb-2">
+            <TimesStopsOutput
+              simulatedTrain={trainSimulation}
+              pathProperties={pathProperties}
+              operationalPoints={operationalPoints}
+              selectedTrainSchedule={selectedTrainSchedule}
+              pathSteps={compact(pathSteps)}
+              pathLength={pathLength}
+              dataIsLoading={formattedOpPointsLoading}
+            />
+          </div>
+        )}
+
       {/* TRAIN : CURVES & SLOPES */}
-      {trainSimulation.status === 'success' && pathProperties && selectedTrain && (
+      {trainSimulation.status === 'success' && pathProperties && selectedTrainSchedule && (
         <div className="osrd-simulation-container d-flex mb-2">
           <div
             className="chart-container"
@@ -218,7 +251,7 @@ const SimulationResultsV2 = ({ collapsedTimetable, spaceTimeData }: SimulationRe
                 pathProperties={pathProperties}
                 sharedXScaleDomain={positionScaleDomain}
                 setSharedXScaleDomain={setPositionScaleDomain}
-                departureTime={selectedTrain.start_time}
+                departureTime={selectedTrainSchedule.start_time}
               />
             </Rnd>
           </div>
@@ -233,11 +266,11 @@ const SimulationResultsV2 = ({ collapsedTimetable, spaceTimeData }: SimulationRe
               setExtViewport={setExtViewport}
               geometry={pathProperties?.geometry}
               trainSimulation={
-                selectedTrain && trainSimulation
+                selectedTrainSchedule && trainSimulation
                   ? {
                       ...trainSimulation,
-                      trainId: selectedTrain.id,
-                      startTime: selectedTrain.start_time,
+                      trainId: selectedTrainSchedule.id,
+                      startTime: selectedTrainSchedule.start_time,
                     }
                   : undefined
               }
@@ -247,18 +280,19 @@ const SimulationResultsV2 = ({ collapsedTimetable, spaceTimeData }: SimulationRe
       </div>
 
       {/* TRAIN : DRIVER TRAIN SCHEDULE */}
-      {selectedTrain &&
+      {selectedTrainSchedule &&
         trainSimulation &&
         pathProperties &&
         selectedTrainRollingStock &&
         infraId && (
           <div className="osrd-simulation-container mb-2">
             <DriverTrainScheduleV2
-              train={selectedTrain}
+              train={selectedTrainSchedule}
               simulatedTrain={trainSimulation}
               pathProperties={pathProperties}
               rollingStock={selectedTrainRollingStock}
-              infraId={infraId}
+              operationalPoints={operationalPoints}
+              formattedOpPointsLoading={formattedOpPointsLoading}
             />
           </div>
         )}

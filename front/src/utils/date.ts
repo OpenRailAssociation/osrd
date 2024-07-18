@@ -12,9 +12,20 @@ dayjs.extend(utc);
 dayjs.extend(timezone);
 dayjs.extend(customParseFormat);
 
+/**
+ * @param dateTimeString date string in ISO format
+ * @returns string "HH:MM:SS"
+ */
+export function extractHHMMSS(dateTimeString?: string) {
+  if (!dateTimeString) {
+    return '';
+  }
+  return dateTimeString.substring(11, 19);
+}
+
 export function timestampToHHMMSS(timestamp: number) {
   const date = new Date(timestamp * 1000);
-  return date.toISOString().substring(11, 19);
+  return extractHHMMSS(date.toISOString());
 }
 
 export function formatIsoDate(date: Date) {
@@ -185,3 +196,6 @@ export function serializeDateTimeWithoutYear(date: Date): string {
   const dayjsDate = dayjs(date);
   return dayjsDate.format('DD/MM HH:mm:ss');
 }
+
+export const isoUtcStringToLocaleDateString = (isoUtcString: string) =>
+  dayjs(isoUtcString).local().format();

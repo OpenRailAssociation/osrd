@@ -1,19 +1,31 @@
-.activeRow {
-  font-weight: bold;
-  background-color: var(--coolgray1);
-  --dsg-cell-background-color: var(--coolgray1);
-  --dsg-cell-disabled-background-color: var(--coolgray1);
-  .dsg-cell {
+.time-stops-datasheet {
+  .activeRow {
     font-weight: bold;
+    background-color: var(--coolgray1);
+    --dsg-cell-background-color: var(--coolgray1);
+    --dsg-cell-disabled-background-color: var(--coolgray1);
+    .dsg-cell {
+      font-weight: bold;
+    }
   }
-}
 
-.invalidCell {
-  color: red !important;
-}
+  .invalidCell {
+    color: red !important;
+  }
 
-.dsg-cell-sticky-right {
-  button {
-    margin: auto;
+  .dsg-cell-sticky-right {
+    button {
+      margin: auto;
+    }
+  }
+
+  .warning-schedule {
+    // warning-30
+    background: #eaa72b !important;
+  }
+
+  .warning-margin {
+    // warning-30
+    background: rgba(#eaa72b, 0.3) !important;
   }
 }

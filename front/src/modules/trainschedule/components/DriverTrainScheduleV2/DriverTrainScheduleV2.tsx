@@ -10,7 +10,7 @@ import { Loader } from 'common/Loaders';
 import DriverTrainScheduleHeaderV2 from './DriverTrainScheduleHeaderV2';
 import DriverTrainScheduleStopListV2 from './DriverTrainScheduleStopListV2';
 import type { OperationalPointWithTimeAndSpeed } from './types';
-import { formatOperationalPoints, isEco } from './utils';
+import { isEco } from './utils';
 import { BaseOrEco, type BaseOrEcoType } from '../DriverTrainSchedule/consts';
 
 type DriverTrainScheduleV2Props = {
@@ -18,7 +18,8 @@ type DriverTrainScheduleV2Props = {
   simulatedTrain: SimulationResponseSuccess;
   pathProperties: PathPropertiesFormatted;
   rollingStock: LightRollingStock;
-  infraId: number;
+  operationalPoints: OperationalPointWithTimeAndSpeed[];
+  formattedOpPointsLoading: boolean;
 };
 
 const DriverTrainScheduleV2 = ({
@@ -26,39 +27,21 @@ const DriverTrainScheduleV2 = ({
   simulatedTrain,
   pathProperties,
   rollingStock,
-  infraId,
+  operationalPoints,
+  formattedOpPointsLoading,
 }: DriverTrainScheduleV2Props) => {
   const [baseOrEco, setBaseOrEco] = useState<BaseOrEcoType>(
     isEco(train) ? BaseOrEco.eco : BaseOrEco.base
   );
-  const [operationalPoints, setOperationalPoints] = useState<OperationalPointWithTimeAndSpeed[]>(
-    []
-  );
-  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    setBaseOrEco(isEco(train) ? BaseOrEco.eco : BaseOrEco.base);
+  }, [simulatedTrain]);
 
   const selectedTrainRegime = useMemo(
     () => (baseOrEco === BaseOrEco.eco ? simulatedTrain.final_output : simulatedTrain.base),
     [baseOrEco, simulatedTrain]
   );
-
-  useEffect(() => {
-    const fetchOperationalPoints = async () => {
-      setLoading(true);
-      const formattedOperationalPoints = await formatOperationalPoints(
-        pathProperties.operationalPoints,
-        selectedTrainRegime,
-        train,
-        infraId
-      );
-      setOperationalPoints(formattedOperationalPoints);
-      setLoading(false);
-    };
-    fetchOperationalPoints();
-  }, [pathProperties, simulatedTrain, train, infraId, baseOrEco]);
-
-  useEffect(() => {
-    setBaseOrEco(isEco(train) ? BaseOrEco.eco : BaseOrEco.base);
-  }, [simulatedTrain]);
 
   return (
     <div className="simulation-driver-train-schedule">
@@ -73,7 +56,7 @@ const DriverTrainScheduleV2 = ({
             baseOrEco={baseOrEco}
             setBaseOrEco={setBaseOrEco}
           />
-          {loading ? (
+          {formattedOpPointsLoading ? (
             // Prevent the screen from resizing during loading
             <div style={{ height: '50vh' }}>
               <Loader />
