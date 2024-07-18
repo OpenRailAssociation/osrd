@@ -272,8 +272,8 @@ pub fn get_app_version() -> Option<String> {
 }
 
 /// Retrieve the assets path
-pub fn get_assets_path() -> PathBuf {
-    env::var("ASSETS_PATH")
+pub fn get_dynamic_assets_path() -> PathBuf {
+    env::var("DYNAMIC_ASSETS_PATH")
         .unwrap_or(String::from("./assets"))
         .into()
 }
