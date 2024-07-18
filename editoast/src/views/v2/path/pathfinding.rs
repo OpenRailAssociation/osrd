@@ -11,6 +11,7 @@ use actix_web::web::Path;
 use editoast_schemas::rolling_stock::LoadingGaugeType;
 use editoast_schemas::train_schedule::PathItemLocation;
 use serde::Deserialize;
+use tracing::debug;
 use tracing::info;
 use utoipa::ToSchema;
 
@@ -131,7 +132,7 @@ async fn pathfinding_blocks_batch(
     );
 
     // Handle miss cache:
-    // 1) extract locations from path items
+    debug!("Extracting locations from path items");
     let path_items: Vec<_> = pathfinding_results
         .iter()
         .zip(pathfinding_inputs)
@@ -140,6 +141,10 @@ async fn pathfinding_blocks_batch(
         .collect();
     let path_item_cache = PathItemCache::load(conn, infra.id, &path_items).await?;
 
+    debug!(
+        nb_path_items = path_items.len(),
+        "Preparing pathfinding requests"
+    );
     let mut to_cache = vec![];
     let mut pathfinding_requests = vec![];
     let mut pathfinding_requests_index = vec![];
@@ -164,7 +169,10 @@ async fn pathfinding_blocks_batch(
         }
     }
 
-    // 2) Send pathfinding requests to core
+    debug!(
+        nb_requests = pathfinding_requests.len(),
+        "Sending pathfinding requests to core"
+    );
     let mut futures = vec![];
     for request in &pathfinding_requests {
         futures.push(Box::pin(request.fetch(core.as_ref())));
@@ -180,7 +188,7 @@ async fn pathfinding_blocks_batch(
         pathfinding_results[path_index] = Some(computed_path);
     }
 
-    // 3) Put in cache
+    debug!(nb_results = to_cache.len(), "Caching pathfinding response");
     redis_conn.json_set_bulk(&to_cache).await?;
 
     Ok(pathfinding_results.into_iter().flatten().collect())
