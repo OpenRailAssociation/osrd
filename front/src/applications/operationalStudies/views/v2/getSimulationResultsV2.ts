@@ -45,36 +45,41 @@ export const getSpaceTimeChartData = async (
   trainSchedulesIDs: number[],
   trainIdUsedForProjection: number,
   infraId: number,
-  setSpaceTimeData: React.Dispatch<React.SetStateAction<TrainSpaceTimeData[]>>
+  setSpaceTimeData: React.Dispatch<React.SetStateAction<TrainSpaceTimeData[]>>,
+  setTrainResultsToFetch: (trainSchedulesIDs?: number[]) => void
 ) => {
   if (trainSchedulesIDs.length > 0) {
     store.dispatch(updateIsUpdating(true));
     try {
       // We fetch the pathfinding result from the train with the selected projection
-      const { data: pathfindingResult } = await store.dispatch(
+      const trainSchedulePathResult = store.dispatch(
         osrdEditoastApi.endpoints.getV2TrainScheduleByIdPath.initiate({
           id: trainIdUsedForProjection,
           infraId,
         })
       );
+      const { data: pathfindingResult } = await trainSchedulePathResult;
+      trainSchedulePathResult.unsubscribe();
 
-      const { data: trainSchedules } = await store.dispatch(
+      const trainSchedulesResult = store.dispatch(
         osrdEditoastApi.endpoints.postV2TrainSchedule.initiate({ body: { ids: trainSchedulesIDs } })
       );
+      const { data: trainSchedules } = await trainSchedulesResult;
+      trainSchedulesResult.unsubscribe();
 
       if (pathfindingResult && pathfindingResult.status === 'success' && trainSchedules) {
         const { blocks, routes, track_section_ranges } = pathfindingResult;
-        const projectPathTrainResult = await store
-          .dispatch(
-            osrdEditoastApi.endpoints.postV2TrainScheduleProjectPath.initiate({
-              projectPathForm: {
-                infra_id: infraId,
-                ids: trainSchedulesIDs,
-                path: { blocks, routes, track_section_ranges },
-              },
-            })
-          )
-          .unwrap();
+        const projectPathResult = store.dispatch(
+          osrdEditoastApi.endpoints.postV2TrainScheduleProjectPath.initiate({
+            projectPathForm: {
+              infra_id: infraId,
+              ids: trainSchedulesIDs,
+              path: { blocks, routes, track_section_ranges },
+            },
+          })
+        );
+
+        const projectPathTrainResult = await projectPathResult.unwrap();
 
         setSpaceTimeData((prevTrains) => {
           let newSpaceTimeData = [...prevTrains];
@@ -105,6 +110,8 @@ export const getSpaceTimeChartData = async (
             }
           });
 
+          projectPathResult.unsubscribe();
+
           return newSpaceTimeData;
         });
       }
@@ -118,6 +125,7 @@ export const getSpaceTimeChartData = async (
       );
     } finally {
       store.dispatch(updateIsUpdating(false));
+      setTrainResultsToFetch([]);
     }
   }
 };

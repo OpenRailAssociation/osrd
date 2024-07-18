@@ -127,10 +127,11 @@ const ScenarioV2 = () => {
         trainResultsToFetch ?? timetable.train_ids,
         trainIdUsedForProjection,
         infraId,
-        setTrainSpaceTimeData
+        setTrainSpaceTimeData,
+        setTrainResultsToFetch
       );
     }
-  }, [timetable, trainIdUsedForProjection, infra]);
+  }, [timetable, trainIdUsedForProjection, infra, trainResultsToFetch]);
 
   useEffect(() => {
     if (!projectId || !studyId || !scenarioId) {

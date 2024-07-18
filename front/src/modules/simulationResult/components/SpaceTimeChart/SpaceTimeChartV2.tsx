@@ -139,7 +139,8 @@ const SpaceTimeChartV2 = ({
               [selectedTrain.id],
               trainIdUsedForProjection!,
               infraId!,
-              setTrainSpaceTimeData
+              setTrainSpaceTimeData,
+              setTrainResultsToFetch
             );
           }
         );

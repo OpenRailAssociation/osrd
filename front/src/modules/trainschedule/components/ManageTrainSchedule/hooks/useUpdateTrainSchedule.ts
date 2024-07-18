@@ -20,6 +20,7 @@ const useUpdateTrainSchedule = (
   setDisplayTrainScheduleManagement: (type: string) => void,
   setTrainResultsToFetch: (trainSchedulesIDs?: number[]) => void,
   setTrainIdToEdit: (trainIdToEdit?: number) => void,
+
   trainIdToEdit?: number
 ) => {
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
