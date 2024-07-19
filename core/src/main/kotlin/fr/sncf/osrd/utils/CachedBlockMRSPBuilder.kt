@@ -19,8 +19,7 @@ data class CachedBlockMRSPBuilder(
 ) {
     private val mrspCache = mutableMapOf<BlockId, Envelope>()
 
-    // 320km/h as default value (global max speed in France)
-    private val rsMaxSpeed = rollingStock?.maxSpeed ?: (320.0 / 3.6)
+    private val rsMaxSpeed = rollingStock?.maxSpeed ?: DEFAULT_MAX_ROLLING_STOCK_SPEED
     private val rsLength = rollingStock?.length ?: 0.0
 
     /** Returns the speed limits for the given block (cached). */
@@ -40,5 +39,10 @@ data class CachedBlockMRSPBuilder(
         val actualLength = endOffset ?: blockInfra.getBlockLength(block)
         val mrsp = getMRSP(block)
         return mrsp.interpolateArrivalAtClamp(actualLength.distance.meters)
+    }
+
+    companion object {
+        // 320km/h as default value (global max speed in France)
+        const val DEFAULT_MAX_ROLLING_STOCK_SPEED = (320.0 / 3.6)
     }
 }

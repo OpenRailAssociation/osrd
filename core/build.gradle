@@ -78,9 +78,6 @@ dependencies {
     implementation libs.opentracing.util
     implementation libs.dd.trace.api
 
-    // Geographic computations
-    implementation libs.geodesy
-
     // Use JUnit Jupiter API for testing.
     testImplementation libs.junit.jupiter.api
     testImplementation libs.junit.jupiter.params

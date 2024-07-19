@@ -22,6 +22,7 @@ import fr.sncf.osrd.sim_infra.utils.getNextTrackSections
 import fr.sncf.osrd.toDirection
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.utils.CachedBlockMRSPBuilder
+import fr.sncf.osrd.utils.CachedBlockMRSPBuilder.Companion.DEFAULT_MAX_ROLLING_STOCK_SPEED
 import fr.sncf.osrd.utils.indexing.*
 import fr.sncf.osrd.utils.units.Distance.Companion.fromMeters
 import fr.sncf.osrd.utils.units.Offset
@@ -224,14 +225,55 @@ fun runPathfinding(
     }
     val constraints = initConstraints(infra, rollingStocks!!)
 
-    // The heuristic is temporarily disabled, its implementation
-    // is currently too slow and the requests are actually slower.
-    // See https://github.com/OpenRailAssociation/osrd/issues/7200
-    val nullHeuristic: AStarHeuristicId<Block> = AStarHeuristic() { _, _ -> 0.0 }
-    val remainingDistanceEstimators = List(waypoints.size - 1) { nullHeuristic }
+    // TODO: add the rolling stock global speed limit to the request
+    val remainingDistanceEstimators =
+        makeHeuristics(infra, waypoints, DEFAULT_MAX_ROLLING_STOCK_SPEED)
 
     // Compute the paths from the entry waypoint to the exit waypoint
     return computePaths(infra, waypoints, constraints, remainingDistanceEstimators, timeout)
+}
+
+/** Initialize the heuristics */
+fun makeHeuristics(
+    infra: FullInfra,
+    waypoints: List<Collection<PathfindingEdgeLocationId<Block>>>,
+    rollingStockMaxSpeed: Double,
+): ArrayList<AStarHeuristicId<Block>> {
+    // Compute the minimum distance between steps
+    val stepMinDistance = Array(waypoints.size - 1) { 0.meters }
+    for (i in 0 until waypoints.size - 2) {
+        stepMinDistance[i] =
+            minDistanceBetweenSteps(
+                infra.blockInfra,
+                infra.rawInfra,
+                waypoints[i + 1],
+                waypoints[i + 2]
+            )
+    }
+
+    // Reversed cumulative sum
+    for (i in stepMinDistance.size - 2 downTo 0) {
+        stepMinDistance[i] += stepMinDistance[i + 1]
+    }
+
+    // Setup estimators foreach intermediate steps
+    val remainingDistanceEstimators = ArrayList<AStarHeuristicId<Block>>()
+    for (i in 0 until waypoints.size - 1) {
+        val remainingDistanceEstimator =
+            RemainingDistanceEstimator(
+                infra.blockInfra,
+                infra.rawInfra,
+                waypoints[i + 1],
+                stepMinDistance[i]
+            )
+
+        // Now that the cost function is an approximation of the remaining time,
+        // we need to return the smallest possible remaining time here
+        remainingDistanceEstimators.add { index, element ->
+            remainingDistanceEstimator.apply(index, element).meters / rollingStockMaxSpeed
+        }
+    }
+    return remainingDistanceEstimators
 }
 
 @Throws(OSRDError::class)
