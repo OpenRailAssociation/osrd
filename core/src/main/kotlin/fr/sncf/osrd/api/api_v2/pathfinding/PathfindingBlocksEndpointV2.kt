@@ -5,6 +5,7 @@ import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.api.InfraManager
 import fr.sncf.osrd.api.api_v2.TrackLocation
 import fr.sncf.osrd.api.pathfinding.constraints.*
+import fr.sncf.osrd.api.pathfinding.makeHeuristics
 import fr.sncf.osrd.graph.*
 import fr.sncf.osrd.graph.Pathfinding.EdgeLocation
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType
@@ -13,6 +14,7 @@ import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.utils.CachedBlockMRSPBuilder
+import fr.sncf.osrd.utils.CachedBlockMRSPBuilder.Companion.DEFAULT_MAX_ROLLING_STOCK_SPEED
 import fr.sncf.osrd.utils.Direction
 import fr.sncf.osrd.utils.indexing.*
 import fr.sncf.osrd.utils.units.Length
@@ -89,8 +91,12 @@ fun runPathfinding(
             request.rollingStockSupportedElectrifications,
             request.rollingStockSupportedSignalingSystems,
         )
+
+    // TODO: add the rolling stock global speed limit to the request
+    val heuristics = makeHeuristics(infra, waypoints, DEFAULT_MAX_ROLLING_STOCK_SPEED)
+
     // Compute the paths from the entry waypoint to the exit waypoint
-    return computePaths(infra, waypoints, constraints, listOf(), request.timeout)
+    return computePaths(infra, waypoints, constraints, heuristics, request.timeout)
 }
 
 private fun initConstraintsFromRSProps(

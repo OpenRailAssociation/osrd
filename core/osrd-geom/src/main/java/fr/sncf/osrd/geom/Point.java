@@ -1,6 +1,6 @@
 package fr.sncf.osrd.geom;
 
-import org.gavaghan.geodesy.*;
+import static java.lang.Math.*;
 
 public record Point(
         // Longitude
@@ -10,15 +10,17 @@ public record Point(
 
     /**
      * Returns the distance between this point and another in meters, assuming x = longitude and y =
-     * latitude
+     * latitude. Uses equirectangular distance approximation (very fast but not 100% accurate)
      */
     public double distanceAsMeters(Point other) {
-        GeodeticCalculator geoCalc = new GeodeticCalculator();
-        Ellipsoid reference = Ellipsoid.WGS84;
-        GlobalPosition thisPosition = new GlobalPosition(y, x, 0.0);
-        GlobalPosition otherPosition = new GlobalPosition(other.y, other.x, 0.0);
-        return geoCalc.calculateGeodeticCurve(reference, thisPosition, otherPosition)
-                .getEllipsoidalDistance();
+        final var earthRadius = 6_378_160;
+        var lon1 = toRadians(x);
+        var lon2 = toRadians(other.x);
+        var lat1 = toRadians(y);
+        var lat2 = toRadians(other.y);
+        var xDiff = (lon1 - lon2) * cos(0.5 * (lat1 + lat2));
+        var yDiff = lat1 - lat2;
+        return earthRadius * sqrt(xDiff * xDiff + yDiff * yDiff);
     }
 
     @Override

@@ -16,9 +16,6 @@ java {
 dependencies {
     // PLEASE ADD AND UPDATE DEPENDENCIES USING libs.versions.toml
 
-    // Geographic computations
-    implementation libs.geodesy
-
     // fast primitive collections
     implementation libs.hppc
 
