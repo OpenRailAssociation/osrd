@@ -127,7 +127,7 @@ class STDCMEndpointV2(private val infraManager: InfraManager) : Take {
         path: STDCMResult,
         rollingStock: RollingStock,
         speedLimitTag: String?,
-        comfort: RollingStock.Comfort
+        comfort: RollingStock.Comfort,
     ): SimulationSuccess {
         val reportTrain =
             runScheduleMetadataExtractor(
@@ -138,6 +138,7 @@ class STDCMEndpointV2(private val infraManager: InfraManager) : Take {
                 infra.blockInfra.chunksToRoutes(infra.rawInfra, path.chunkPath.chunks),
                 rollingStock,
                 parseSimulationScheduleItems(path.stopResults),
+                listOf(),
             )
 
         // Lighter description of the same simulation result
@@ -147,7 +148,7 @@ class STDCMEndpointV2(private val infraManager: InfraManager) : Take {
                 reportTrain.times,
                 reportTrain.speeds,
                 reportTrain.energyConsumption,
-                reportTrain.scheduledPointsHonored
+                reportTrain.pathItemTimes
             )
         val speedLimits = MRSP.computeMRSP(path.trainPath, rollingStock, false, speedLimitTag)
 

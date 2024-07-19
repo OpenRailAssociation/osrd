@@ -69,6 +69,7 @@ class SimulationEndpoint(
                     parseRawSimulationScheduleItems(request.schedule),
                     request.initialSpeed,
                     request.margins,
+                    request.path.pathItemPositions,
                 )
             return RsJson(RsWithBody(simulationResponseAdapter.toJson(res)))
         } catch (error: OSRDError) {

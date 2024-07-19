@@ -17,7 +17,6 @@ import fr.sncf.osrd.utils.indexing.StaticIdxList
 import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
 import fr.sncf.osrd.utils.units.*
 import kotlin.math.abs
-import kotlin.math.absoluteValue
 
 /** Use an already computed envelope to extract various metadata about a trip. */
 fun runScheduleMetadataExtractor(
@@ -28,6 +27,7 @@ fun runScheduleMetadataExtractor(
     routePath: StaticIdxList<Route>,
     rollingStock: RollingStock,
     schedule: List<SimulationScheduleItem>,
+    pathItemPositions: List<Offset<Path>>,
 ): CompleteReportTrain {
     assert(envelope.continuous)
 
@@ -157,13 +157,21 @@ fun runScheduleMetadataExtractor(
             rawInfra,
             rollingStock,
         )
-    val reportTrain = makeSimpleReportTrain(fullInfra, envelope, trainPath, rollingStock, schedule)
+    val reportTrain =
+        makeSimpleReportTrain(
+            fullInfra,
+            envelope,
+            trainPath,
+            rollingStock,
+            schedule,
+            pathItemPositions
+        )
     return CompleteReportTrain(
         reportTrain.positions,
         reportTrain.times,
         reportTrain.speeds,
         reportTrain.energyConsumption,
-        reportTrain.scheduledPointsHonored,
+        reportTrain.pathItemTimes,
         signalSightings,
         zoneUpdates,
         spacingRequirements.requirements.map {
@@ -187,29 +195,13 @@ fun runScheduleMetadataExtractor(
     )
 }
 
-/** This function checks if the scheduled points were respected */
-fun isScheduledPointsHonored(
-    schedule: List<SimulationScheduleItem>,
-    envelopeStopWrapper: EnvelopeStopWrapper
-): Boolean {
-    for (e in schedule) {
-        if (e.arrival == null) continue
-        val computed = envelopeStopWrapper.interpolateArrivalAt(e.pathOffset.distance.meters)
-        val expected = e.arrival.seconds
-        // Check that the expected arrival time and the simulated one match ~1s
-        if ((computed - expected).absoluteValue > 1.0) {
-            return false
-        }
-    }
-    return true
-}
-
 fun makeSimpleReportTrain(
     fullInfra: FullInfra,
     envelope: Envelope,
     trainPath: PathProperties,
     rollingStock: RollingStock,
     schedule: List<SimulationScheduleItem>,
+    pathItemPositions: List<Offset<Path>>,
 ): ReportTrain {
     // Compute energy consumed
     val envelopePath = EnvelopeTrainPath.from(fullInfra.rawInfra, trainPath)
@@ -222,6 +214,13 @@ fun makeSimpleReportTrain(
             .filter { it.stopFor != null }
             .map { TrainStop(it.pathOffset.distance.meters, it.stopFor!!.seconds, it.onStopSignal) }
     val envelopeStopWrapper = EnvelopeStopWrapper(envelope, stops)
+
+    val pathItemTimes =
+        pathItemPositions.map { position: Offset<Path> ->
+            TimeDelta.fromSeconds(
+                envelopeStopWrapper.interpolateArrivalAt(position.distance.meters)
+            )
+        }
 
     // Iterate over the points and simplify the results
     val points = envelopeStopWrapper.iteratePoints()
@@ -246,13 +245,11 @@ fun makeSimpleReportTrain(
         }
     assert(simplified.isNotEmpty()) { "simulation result shouldn't be empty" }
 
-    val scheduledPointsHonored = isScheduledPointsHonored(schedule, envelopeStopWrapper)
-
     return ReportTrain(
         simplified.map { Offset(it.position.meters) },
         simplified.map { it.time.seconds },
         simplified.map { it.speed },
         mechanicalEnergyConsumed,
-        scheduledPointsHonored,
+        pathItemTimes,
     )
 }

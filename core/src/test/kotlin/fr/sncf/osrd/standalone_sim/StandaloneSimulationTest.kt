@@ -84,7 +84,8 @@ class StandaloneSimulationTest {
                 2.0,
                 listOf(),
                 0.0,
-                RangeValues(listOf(), listOf())
+                RangeValues(listOf(), listOf()),
+                listOf(),
             )
         println(res)
     }
@@ -201,6 +202,7 @@ class StandaloneSimulationTest {
                 testCase.schedule,
                 testCase.startSpeed,
                 testCase.margins,
+                listOf(),
             )
 
         // Test scheduled points

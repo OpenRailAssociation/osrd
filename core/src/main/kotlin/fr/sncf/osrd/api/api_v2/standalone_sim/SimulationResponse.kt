@@ -44,19 +44,19 @@ class CompleteReportTrain(
     times: List<TimeDelta>, // Times are compared to the departure time
     speeds: List<Double>,
     @Json(name = "energy_consumption") energyConsumption: Double,
-    @Json(name = "scheduled_points_honored") scheduledPointsHonored: Boolean,
+    @Json(name = "path_item_times") pathItemTimes: List<TimeDelta>,
     @Json(name = "signal_sightings") val signalSightings: List<SignalSighting>,
     @Json(name = "zone_updates") val zoneUpdates: List<ZoneUpdate>,
     @Json(name = "spacing_requirements") val spacingRequirements: List<SpacingRequirement>,
     @Json(name = "routing_requirements") val routingRequirements: List<RoutingRequirement>
-) : ReportTrain(positions, times, speeds, energyConsumption, scheduledPointsHonored)
+) : ReportTrain(positions, times, speeds, energyConsumption, pathItemTimes)
 
 open class ReportTrain(
     val positions: List<Offset<TravelledPath>>,
     val times: List<TimeDelta>, // Times are compared to the departure time
     val speeds: List<Double>,
     @Json(name = "energy_consumption") val energyConsumption: Double,
-    @Json(name = "scheduled_points_honored") val scheduledPointsHonored: Boolean,
+    @Json(name = "path_item_times") val pathItemTimes: List<TimeDelta>,
 )
 
 class SimulationFailed(
