@@ -3603,11 +3603,12 @@ export type ConflictV2 = {
 export type ReportTrainV2 = {
   /** Total energy consumption */
   energy_consumption: number;
+  /** Time in ms of each path item given as input of the pathfinding
+    The first value is always `0` (beginning of the path) and the last one, the total time of the simulation (end of the path) */
+  path_item_times: number[];
   /** List of positions of a train
     Both positions (in mm) and times (in ms) must have the same length */
   positions: number[];
-  /** Whether the train has reached all its scheduled points on time */
-  scheduled_points_honored: boolean;
   /** List of speeds associated to a position */
   speeds: number[];
   times: number[];
@@ -3771,8 +3772,15 @@ export type SimulationSummaryResult =
       energy_consumption: number;
       /** Length of a path in mm */
       length: number;
-      /** Whether the train has reached all its scheduled points on time */
-      scheduled_points_honored: boolean;
+      /** Base simulation time for each train schedule path item.
+    The first value is always `0` (beginning of the path) and the last one, the total time of the simulation (end of the path) */
+      path_item_times_base: number[];
+      /** Final simulation time for each train schedule path item.
+    The first value is always `0` (beginning of the path) and the last one, the total time of the simulation (end of the path) */
+      path_item_times_final: number[];
+      /** Provisional simulation time for each train schedule path item.
+    The first value is always `0` (beginning of the path) and the last one, the total time of the simulation (end of the path) */
+      path_item_times_provisional: number[];
       status: 'success';
       /** Travel time in ms */
       time: number;

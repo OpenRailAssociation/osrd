@@ -409,6 +409,7 @@ pub async fn train_simulation_batch(
                     blocks: blocks.clone(),
                     routes: routes.clone(),
                     track_section_ranges: track_section_ranges.clone(),
+                    path_item_positions: path_item_positions.clone(),
                 },
                 path_item_positions,
             ),
@@ -589,8 +590,15 @@ enum SimulationSummaryResult {
         time: u64,
         /// Total energy consumption of a train in kWh
         energy_consumption: f64,
-        /// Whether the train has reached all its scheduled points on time
-        scheduled_points_honored: bool,
+        /// Final simulation time for each train schedule path item.
+        /// The first value is always `0` (beginning of the path) and the last one, the total time of the simulation (end of the path)
+        path_item_times_final: Vec<u64>,
+        /// Provisional simulation time for each train schedule path item.
+        /// The first value is always `0` (beginning of the path) and the last one, the total time of the simulation (end of the path)
+        path_item_times_provisional: Vec<u64>,
+        /// Base simulation time for each train schedule path item.
+        /// The first value is always `0` (beginning of the path) and the last one, the total time of the simulation (end of the path)
+        path_item_times_base: Vec<u64>,
     },
     /// Pathfinding not found
     PathfindingNotFound,
@@ -654,13 +662,20 @@ async fn simulation_summary(
     for (train_schedule, sim) in train_schedules.iter().zip(simulations) {
         let (sim, _) = sim;
         let simulation_summary_result = match sim {
-            SimulationResponse::Success { final_output, .. } => {
+            SimulationResponse::Success {
+                final_output,
+                provisional,
+                base,
+                ..
+            } => {
                 let report = final_output.report_train;
                 SimulationSummaryResult::Success {
                     length: *report.positions.last().unwrap(),
                     time: *report.times.last().unwrap(),
                     energy_consumption: report.energy_consumption,
-                    scheduled_points_honored: report.scheduled_points_honored,
+                    path_item_times_final: report.path_item_times.clone(),
+                    path_item_times_provisional: provisional.path_item_times.clone(),
+                    path_item_times_base: base.path_item_times.clone(),
                 }
             }
             SimulationResponse::PathfindingFailed { pathfinding_result } => {
@@ -885,21 +900,21 @@ mod tests {
                         "times": [],
                         "speeds": [],
                         "energy_consumption": 0.0,
-                        "scheduled_points_honored": true
+                        "path_item_times": [0, 1000, 2000, 3000]
                     },
                     "provisional": {
                         "positions": [],
                         "times": [],
                         "speeds": [],
                         "energy_consumption": 0.0,
-                        "scheduled_points_honored": false
+                        "path_item_times": [0, 1000, 2000, 3000]
                     },
                     "final_output": {
                         "positions": [0],
                         "times": [0],
                         "speeds": [],
                         "energy_consumption": 0.0,
-                        "scheduled_points_honored": false,
+                        "path_item_times": [0, 1000, 2000, 3000],
                         "signal_sightings": [],
                         "zone_updates": [],
                         "spacing_requirements": [],

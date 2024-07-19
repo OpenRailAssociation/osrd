@@ -135,6 +135,8 @@ pub struct SimulationPath {
     pub blocks: Vec<Identifier>,
     pub routes: Vec<Identifier>,
     pub track_section_ranges: Vec<TrackRange>,
+    /// The path offset in mm of each path item given as input of the pathfinding
+    pub path_item_positions: Vec<u64>,
 }
 
 #[derive(Deserialize, Default, Serialize, Clone, Debug, ToSchema)]
@@ -148,8 +150,9 @@ pub struct ReportTrain {
     pub speeds: Vec<f64>,
     /// Total energy consumption
     pub energy_consumption: f64,
-    /// Whether the train has reached all its scheduled points on time
-    pub scheduled_points_honored: bool,
+    /// Time in ms of each path item given as input of the pathfinding
+    /// The first value is always `0` (beginning of the path) and the last one, the total time of the simulation (end of the path)
+    pub path_item_times: Vec<u64>,
 }
 
 #[derive(Deserialize, Default, Serialize, Clone, Debug, ToSchema)]
