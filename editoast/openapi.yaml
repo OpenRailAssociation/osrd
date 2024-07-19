@@ -9016,12 +9016,21 @@ components:
       - times
       - speeds
       - energy_consumption
-      - scheduled_points_honored
+      - path_item_times
       properties:
         energy_consumption:
           type: number
           format: double
           description: Total energy consumption
+        path_item_times:
+          type: array
+          items:
+            type: integer
+            format: int64
+            minimum: 0
+          description: |-
+            Time in ms of each path item given as input of the pathfinding
+            The first value is always `0` (beginning of the path) and the last one, the total time of the simulation (end of the path)
         positions:
           type: array
           items:
@@ -9031,9 +9040,6 @@ components:
           description: |-
             List of positions of a train
             Both positions (in mm) and times (in ms) must have the same length
-        scheduled_points_honored:
-          type: boolean
-          description: Whether the train has reached all its scheduled points on time
         speeds:
           type: array
           items:
@@ -10810,7 +10816,9 @@ components:
         - length
         - time
         - energy_consumption
-        - scheduled_points_honored
+        - path_item_times_final
+        - path_item_times_provisional
+        - path_item_times_base
         - status
         properties:
           energy_consumption:
@@ -10822,9 +10830,33 @@ components:
             format: int64
             description: Length of a path in mm
             minimum: 0
-          scheduled_points_honored:
-            type: boolean
-            description: Whether the train has reached all its scheduled points on time
+          path_item_times_base:
+            type: array
+            items:
+              type: integer
+              format: int64
+              minimum: 0
+            description: |-
+              Base simulation time for each train schedule path item.
+              The first value is always `0` (beginning of the path) and the last one, the total time of the simulation (end of the path)
+          path_item_times_final:
+            type: array
+            items:
+              type: integer
+              format: int64
+              minimum: 0
+            description: |-
+              Final simulation time for each train schedule path item.
+              The first value is always `0` (beginning of the path) and the last one, the total time of the simulation (end of the path)
+          path_item_times_provisional:
+            type: array
+            items:
+              type: integer
+              format: int64
+              minimum: 0
+            description: |-
+              Provisional simulation time for each train schedule path item.
+              The first value is always `0` (beginning of the path) and the last one, the total time of the simulation (end of the path)
           status:
             type: string
             enum:

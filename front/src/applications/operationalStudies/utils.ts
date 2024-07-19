@@ -209,3 +209,77 @@ export const convertDepartureTimeIntoSec = (departureTime: string) => {
 
 export const isInvalidName = (name?: string | null) =>
   !name || name.length > SMALL_INPUT_MAX_LENGTH;
+
+/**
+ * Check if the scheduled points are honored with a trainSchedule and a trainSummary
+ * @param trainResult
+ * @param trainSummary
+ * @returns true if the scheduled points are not honored
+ */
+export const isScheduledPointsNotHonored = (
+  trainSchedule: TrainScheduleResult,
+  trainSummary: Extract<SimulationSummaryResult, { status: 'success' }>
+): boolean => {
+  if (trainSummary.path_item_times_final.length !== trainSchedule.path.length) {
+    console.error(
+      'The number of path_item_times_final does not match the number of paths in the schedule'
+    );
+    throw new Error('Assertion failed');
+  }
+
+  if (!trainSchedule.schedule) return false;
+  return trainSchedule.schedule.some((schedule, index) => {
+    if (!schedule.arrival) return false;
+    // need to add +1 because origin will never be in schedules
+    const arrivalTimeInMs = sToMs(ISO8601Duration2sec(schedule.arrival));
+    return (
+      Math.abs(arrivalTimeInMs - trainSummary.path_item_times_final[index + 1]) >=
+      ARRIVAL_TIME_ACCEPTABLE_ERROR_MS
+    );
+  });
+};
+
+export const getPathItemByIndexDict = (trainResult: TrainScheduleResult) =>
+  trainResult.path.reduce((acc, pathItem, index) => {
+    acc[pathItem.id] = index;
+    return acc;
+  }, {} as Dictionary<number>);
+
+/**
+ * Check if the train is too fast with a trainSchedule and a trainSummary
+ * @param trainResult
+ * @param trainSummary
+ * @returns true if the train is too fast
+ */
+export const isTooFast = (
+  trainSchedule: TrainScheduleResult,
+  trainSummary: Extract<SimulationSummaryResult, { status: 'success' }>
+): boolean => {
+  if (
+    trainSummary.path_item_times_final.length !== trainSummary.path_item_times_provisional.length
+  ) {
+    throw new Error('Assertion failed');
+  }
+
+  const toCheckPathItemIds = new Set(trainSchedule.margins?.boundaries);
+  trainSchedule.schedule?.forEach((schedule) => {
+    if (schedule.arrival || schedule.stop_for) {
+      toCheckPathItemIds.add(schedule.at);
+    }
+  });
+  toCheckPathItemIds.add(trainSchedule.path[trainSchedule.path.length - 1].id);
+
+  if (toCheckPathItemIds.size === 0) return false;
+
+  const pathItemMap = getPathItemByIndexDict(trainSchedule);
+
+  // eslint-disable-next-line no-restricted-syntax
+  for (const pathItemId of toCheckPathItemIds) {
+    const pathItemIndex = pathItemMap[pathItemId];
+    const pathItemTimeFinal = trainSummary.path_item_times_final[pathItemIndex];
+    const pathItemTimeProvisional = trainSummary.path_item_times_provisional[pathItemIndex];
+
+    if (pathItemTimeProvisional > pathItemTimeFinal + ARRIVAL_TIME_ACCEPTABLE_ERROR_MS) return true;
+  }
+  return false;
+};
