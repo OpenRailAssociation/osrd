@@ -10,6 +10,7 @@ import fr.sncf.osrd.api.pathfinding.makePathProps
 import fr.sncf.osrd.graph.*
 import fr.sncf.osrd.graph.Pathfinding.EdgeLocation
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType
+import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl
 import fr.sncf.osrd.sim_infra.api.*
@@ -155,18 +156,25 @@ private fun computePaths(
     // Handling errors
     // Check if pathfinding failed due to incompatible constraints
     val elapsedSeconds = Duration.between(start, Instant.now()).toSeconds()
-    val incompatibleConstraintsResponse =
-        buildIncompatibleConstraintsResponse(
-            infra,
-            waypoints,
-            constraints,
-            remainingDistanceEstimators,
-            mrspBuilder,
-            initialRequest,
-            timeout?.minus(elapsedSeconds)
-        )
-    if (incompatibleConstraintsResponse != null) {
-        throw NoPathFoundException(incompatibleConstraintsResponse)
+    try {
+        val incompatibleConstraintsResponse =
+            buildIncompatibleConstraintsResponse(
+                infra,
+                waypoints,
+                constraints,
+                remainingDistanceEstimators,
+                mrspBuilder,
+                initialRequest,
+                timeout?.minus(elapsedSeconds)
+            )
+        if (incompatibleConstraintsResponse != null) {
+            throw NoPathFoundException(incompatibleConstraintsResponse)
+        }
+    } catch (error: OSRDError) {
+        if (error.osrdErrorType == ErrorType.PathfindingTimeoutError) {
+            throw OSRDError(ErrorType.PathfindingRelaxedPathTimeoutError)
+        }
+        throw error
     }
     // It didn’t fail due to an incompatible constraint, no path exists
     throw NoPathFoundException(NotFoundInBlocks(listOf(), Length(0.meters)))

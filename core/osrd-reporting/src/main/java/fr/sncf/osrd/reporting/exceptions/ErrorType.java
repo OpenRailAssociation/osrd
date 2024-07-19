@@ -44,6 +44,10 @@ public enum ErrorType {
             ErrorCause.USER),
     PathfindingTimeoutError(
             "no_path_found:timeout", "Pathfinding timed out: no path could be found", ErrorCause.INTERNAL),
+    PathfindingRelaxedPathTimeoutError(
+            "no_path_found:relaxed_path_timeout",
+            "Relaxed pathfinding timed out: no path could be found, then relaxed path search timed out",
+            ErrorCause.INTERNAL),
     InvalidInfraDiscontinuousRoute(
             "invalid_infra:discontinuous_route", "Route track path isn't contiguous", ErrorCause.USER),
     InvalidInfraMissingDetectorsRoute(
