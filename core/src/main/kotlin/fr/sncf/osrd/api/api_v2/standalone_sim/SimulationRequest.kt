@@ -88,6 +88,7 @@ class SimulationPath(
     val blocks: List<String>,
     val routes: List<String>,
     @Json(name = "track_section_ranges") val trackSectionRanges: List<TrackRange>,
+    @Json(name = "path_item_positions") val pathItemPositions: List<Offset<Path>>
 )
 
 class SimulationScheduleItem(

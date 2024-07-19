@@ -55,6 +55,7 @@ fun runStandaloneSimulation(
     schedule: List<SimulationScheduleItem>,
     initialSpeed: Double,
     margins: RangeValues<MarginValue>,
+    pathItemPositions: List<Offset<Path>>
 ): SimulationSuccess {
     // MRSP & SpeedLimits
     val mrsp = MRSP.computeMRSP(pathProps, rollingStock, true, speedLimitTag)
@@ -105,7 +106,7 @@ fun runStandaloneSimulation(
             context,
             margins,
             constraintDistribution,
-            schedule
+            schedule,
         )
 
     // Extract all kinds of metadata from the simulation,
@@ -117,6 +118,7 @@ fun runStandaloneSimulation(
             pathProps,
             rollingStock,
             schedule,
+            pathItemPositions,
         )
     val provisionalResult =
         makeSimpleReportTrain(
@@ -125,6 +127,7 @@ fun runStandaloneSimulation(
             pathProps,
             rollingStock,
             schedule,
+            pathItemPositions,
         )
     val finalEnvelopeResult =
         runScheduleMetadataExtractor(
@@ -134,7 +137,8 @@ fun runStandaloneSimulation(
             infra,
             routes,
             rollingStock,
-            schedule
+            schedule,
+            pathItemPositions,
         )
 
     return SimulationSuccess(
