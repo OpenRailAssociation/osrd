@@ -10,7 +10,6 @@ import fr.sncf.osrd.api.pathfinding.makePathProps
 import fr.sncf.osrd.graph.*
 import fr.sncf.osrd.graph.Pathfinding.EdgeLocation
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType
-import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl
 import fr.sncf.osrd.sim_infra.api.*
@@ -50,9 +49,7 @@ class PathfindingBlocksEndpointV2(private val infraManager: InfraManager) : Take
                     ?: return RsWithStatus(RsText("missing request body"), 400)
             // Load infra
             val infra = infraManager.getInfra(request.infra, request.expectedVersion, recorder)
-            val path = runPathfinding(infra, request)
-            val res = runPathfindingPostProcessing(infra, path)
-            validatePathfindingResponse(infra, request, res)
+            val res = runPathfinding(infra, request)
             RsJson(RsWithBody(pathfindingResponseAdapter.toJson(res)))
         } catch (error: NoPathFoundException) {
             RsJson(RsWithBody(pathfindingResponseAdapter.toJson(error.response)))
@@ -75,7 +72,7 @@ class PathfindingBlocksEndpointV2(private val infraManager: InfraManager) : Take
 fun runPathfinding(
     infra: FullInfra,
     request: PathfindingBlockRequest,
-): PathfindingResultId<Block> {
+): PathfindingBlockResponse {
     // Parse the waypoints
     val waypoints = ArrayList<Collection<PathfindingEdgeLocationId<Block>>>()
     for (step in request.pathItems) {
@@ -99,7 +96,8 @@ fun runPathfinding(
     val heuristics = makeHeuristics(infra, waypoints, DEFAULT_MAX_ROLLING_STOCK_SPEED)
 
     // Compute the paths from the entry waypoint to the exit waypoint
-    return computePaths(infra, waypoints, constraints, heuristics, request.timeout)
+    val path = computePaths(infra, waypoints, constraints, heuristics, request, request.timeout)
+    return runPathfindingPostProcessing(infra, request, path)
 }
 
 private fun initConstraintsFromRSProps(
@@ -134,7 +132,8 @@ private fun computePaths(
     waypoints: ArrayList<Collection<PathfindingEdgeLocationId<Block>>>,
     constraints: List<PathfindingConstraint<Block>>,
     remainingDistanceEstimators: List<AStarHeuristicId<Block>>,
-    timeout: Double?
+    initialRequest: PathfindingBlockRequest,
+    timeout: Double?,
 ): PathfindingResultId<Block> {
     val start = Instant.now()
     val mrspBuilder = CachedBlockMRSPBuilder(infra.rawInfra, infra.blockInfra, null)
@@ -163,6 +162,7 @@ private fun computePaths(
             constraints,
             remainingDistanceEstimators,
             mrspBuilder,
+            initialRequest,
             timeout?.minus(elapsedSeconds)
         )
     if (incompatibleConstraintsResponse != null) {
@@ -178,6 +178,7 @@ private fun buildIncompatibleConstraintsResponse(
     constraints: List<PathfindingConstraint<Block>>,
     remainingDistanceEstimators: List<AStarHeuristicId<Block>>,
     mrspBuilder: CachedBlockMRSPBuilder,
+    initialRequest: PathfindingBlockRequest,
     timeout: Double?
 ): IncompatibleConstraintsPathResponse? {
     val possiblePathWithoutErrorNoConstraints =
@@ -246,7 +247,7 @@ private fun buildIncompatibleConstraintsResponse(
     }
 
     return IncompatibleConstraintsPathResponse(
-        runPathfindingPostProcessing(infra, possiblePathWithoutErrorNoConstraints),
+        runPathfindingPostProcessing(infra, initialRequest, possiblePathWithoutErrorNoConstraints),
         IncompatibleConstraints(
             elecBlockedRangeValues,
             gaugeBlockedRanges,
@@ -406,40 +407,4 @@ private fun getBlockOffset(
     throw AssertionError(
         String.format("getBlockOffset: Track chunk %s not in block %s", trackChunkId, blockId)
     )
-}
-
-fun validatePathfindingResponse(
-    infra: FullInfra,
-    req: PathfindingBlockRequest,
-    res: PathfindingBlockResponse
-) {
-    if (res !is PathfindingBlockSuccess) return
-
-    for ((i, blockName) in res.blocks.withIndex()) {
-        val block = infra.blockInfra.getBlockFromName(blockName)!!
-        val stopAtBufferStop = infra.blockInfra.blockStopAtBufferStop(block)
-        val isLastBlock = i == res.blocks.size - 1
-        if (stopAtBufferStop && !isLastBlock) {
-            val zonePath = infra.blockInfra.getBlockPath(block).last()
-            val detector = infra.rawInfra.getZonePathExit(zonePath)
-            val detectorName = infra.rawInfra.getDetectorName(detector.value)
-            val err = OSRDError(ErrorType.MissingSignalOnRouteTransition)
-            err.context["detector"] = "detector=$detectorName, dir=${detector.direction}"
-            throw err
-        }
-    }
-
-    val trackSet = HashSet<String>()
-    for (track in res.trackSectionRanges) trackSet.add(track.trackSection)
-    if (trackSet.size != res.trackSectionRanges.size)
-        throw OSRDError(ErrorType.PathWithRepeatedTracks)
-
-    if (res.pathItemPositions.size != req.pathItems.size)
-        throw OSRDError(ErrorType.PathHasInvalidItemPositions)
-
-    if (res.pathItemPositions[0].distance.millimeters != 0L)
-        throw OSRDError(ErrorType.PathHasInvalidItemPositions)
-
-    if (res.pathItemPositions[res.pathItemPositions.size - 1] != res.length)
-        throw OSRDError(ErrorType.PathHasInvalidItemPositions)
 }
