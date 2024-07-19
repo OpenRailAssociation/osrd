@@ -105,12 +105,11 @@ const REQUIRES_PATH_ENCODING: &AsciiSet = &percent_encoding::CONTROLS
     .add(b'?');
 
 fn get_tracer() -> BoxedTracer {
-    global::tracer_provider().versioned_tracer(
-        "actix_proxy",
-        Some(env!("CARGO_PKG_VERSION")),
-        Some("https://opentelemetry.io/schemas/1.17.0"),
-        None,
-    )
+    global::tracer_provider()
+        .tracer_builder("actix_proxy")
+        .with_version(env!("CARGO_PKG_VERSION"))
+        .with_schema_url("https://opentelemetry.io/schemas/1.17.0")
+        .build()
 }
 
 impl Proxy {

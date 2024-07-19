@@ -12,28 +12,28 @@ default-members = [".", "actix_auth", "actix_proxy"]
 
 [workspace.dependencies]
 # common utils
-dyn-clone = "1.0.10"
+dyn-clone = "1.0.17"
 either = "1"
-env_logger = "0.10"
+env_logger = "0.11"
 futures = "0.3"
-futures-util = "0.3.17"
+futures-util = "0.3.30"
 log = "0.4.22"
-smallvec = "1.10.0"
+smallvec = "1.13.2"
 thiserror = "1.0.63"
 
 # main crate
 actix-files = "0.6"
-actix-session = "0.8"
-actix-web = "4.2"
-actix-web-opentelemetry = { version = "0.16.0", features = ["awc", "metrics"] }
-base64ct = "1.4"
-figment = "0.10.1"
+actix-session = "0.9"
+actix-web = "4.8"
+actix-web-opentelemetry = { version = "0.18.0", features = ["awc", "metrics"] }
+base64ct = "1.6"
+figment = "0.10.19"
 humantime = "2"
 humantime-serde = "1"
-opentelemetry = "0.21"
-opentelemetry-datadog = { version = "0.9.0", features = ["reqwest-client"] }
-opentelemetry-otlp = "0.14.0"
-opentelemetry_sdk = { version = "0.21.2", features = [
+opentelemetry = "0.23.0"
+opentelemetry-datadog = { version = "0.11.0", features = ["reqwest-client"] }
+opentelemetry-otlp = "0.16.0"
+opentelemetry_sdk = { version = "0.23.0", features = [
   "metrics",
   "rt-tokio-current-thread",
 ] }
@@ -42,10 +42,10 @@ serde_json = "1"
 
 # reverse proxy dependencies
 actix = "0.13"
-actix-web-actors = "4.1"
+actix-web-actors = "4.3"
 awc = { version = "3", features = ["rustls"] } # the http / ws client
 bytestring = "1"
-ipnet = "2.3"
+ipnet = "2.9"
 percent-encoding = "2.3"
 phf = "0.11"
 
