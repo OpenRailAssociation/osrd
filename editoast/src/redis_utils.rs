@@ -26,19 +26,40 @@ pub enum RedisConnection {
     NoCache,
 }
 
+fn no_cache_cmd_handler(cmd: &redis::Cmd) -> std::result::Result<redis::Value, RedisError> {
+    let cmd_name = cmd.args_iter().next().ok_or((
+        redis::ErrorKind::ClientError,
+        "missing a command instruction",
+    ))?;
+    let nb_keys = cmd.args_iter().skip(1).count();
+    match cmd_name {
+        redis::Arg::Simple(cmd_name_bytes)
+            if cmd_name_bytes == "MGET".as_bytes()
+                || cmd_name_bytes == "MSET".as_bytes()
+                || nb_keys > 1 =>
+        {
+            Ok(redis::Value::Bulk(vec![redis::Value::Nil; nb_keys]))
+        },
+        redis::Arg::Simple(_)
+            if nb_keys == 1 =>
+        {
+            Ok(redis::Value::Nil)
+        },
+        redis::Arg::Simple(cmd_name_bytes) => unimplemented!(
+            "redis command '{}' is not supported by editoast::redis_utils::RedisConnection with '--no-cache'", String::from_utf8(cmd_name_bytes.to_vec())?
+        ),
+        redis::Arg::Cursor => unimplemented!(
+            "redis cursor mode is not supported by editoast::redis_utils::RedisConnection with '--no-cache'"
+        ),
+    }
+}
+
 impl ConnectionLike for RedisConnection {
     fn req_packed_command<'a>(&'a mut self, cmd: &'a redis::Cmd) -> RedisFuture<'a, redis::Value> {
         match self {
             RedisConnection::Cluster(connection) => connection.req_packed_command(cmd),
             RedisConnection::Tokio(connection) => connection.req_packed_command(cmd),
-            RedisConnection::NoCache => {
-                let nb_keys = cmd.args_iter().count() - 1;
-                if nb_keys == 1 {
-                    future::ok(redis::Value::Nil).boxed()
-                } else {
-                    future::ok(redis::Value::Bulk(vec![redis::Value::Nil; nb_keys])).boxed()
-                }
-            }
+            RedisConnection::NoCache => future::ready(no_cache_cmd_handler(cmd)).boxed(),
         }
     }
 
@@ -55,7 +76,15 @@ impl ConnectionLike for RedisConnection {
             RedisConnection::Tokio(connection) => {
                 connection.req_packed_commands(cmd, offset, count)
             }
-            RedisConnection::NoCache => future::ok(vec![]).boxed(),
+            RedisConnection::NoCache => {
+                let responses = cmd
+                    .cmd_iter()
+                    .skip(offset)
+                    .take(count)
+                    .map(no_cache_cmd_handler)
+                    .collect::<std::result::Result<_, redis::RedisError>>();
+                future::ready(responses).boxed()
+            }
         }
     }
 
