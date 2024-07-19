@@ -60,6 +60,8 @@
   "maximumRunTime": "Maximum running time",
   "maximumRunTimeError": "Travel time must not exceed 12h",
   "No path could be found": "No path found",
+  "Pathfinding timed out: no path could be found": "Time limit exceeded, no path found",
+  "Relaxed pathfinding timed out: no path could be found, then relaxed path search timed out": "No path found, then exceeded time limit while searching unconstrained path",
   "No path could be found after loading Electrification constraints": "No path found for a rolling stock with this type of electrification",
   "No path could be found after loading Gauge constraints": "No path for this rolling stock gauge",
   "noPlaceChosen": "No stop/waypoint defined",

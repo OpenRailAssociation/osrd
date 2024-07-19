@@ -60,6 +60,8 @@
   "maximumRunTime": "Temps de parcours maximum",
   "maximumRunTimeError": "Le temps de parcours ne doit pas excéder 12h",
   "No path could be found": "Aucun itinéraire trouvé",
+  "Pathfinding timed out: no path could be found": "Limite de temps dépassée, aucun itinéraire trouvé",
+  "Relaxed pathfinding timed out: no path could be found, then relaxed path search timed out": "Aucun itinéraire trouvé, puis limite de temps dépassée lors de la recherche d'itinéraire sans contrainte",
   "No path could be found after loading Electrification constraints": "Aucun itinéraire trouvé pour un matériel avec ce type d’électrification",
   "No path could be found after loading Gauge constraints": "Aucun itinéraire trouvé avec ce gabarit de matériel",
   "noPlaceChosen": "Aucun point de passage/arrêt défini",
