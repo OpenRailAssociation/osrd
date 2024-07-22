@@ -2,6 +2,7 @@ import type { PathProperties } from 'common/api/osrdEditoastApi';
 import getPathVoltages from 'modules/pathfinding/helpers/getPathVoltages';
 import { convertUTCDateToLocalDate, isoDateToMs } from 'utils/date';
 import { mmToM } from 'utils/physics';
+import { SMALL_INPUT_MAX_LENGTH } from 'utils/strings';
 import { ms2sec } from 'utils/timeManipulation';
 
 import type {
@@ -205,6 +206,6 @@ export const convertDepartureTimeIntoSec = (departureTime: string) => {
   const isoDateInSec = ms2sec(isoDateToMs(departureTime));
   return convertUTCDateToLocalDate(isoDateInSec);
 };
-export const checkNameInvalidity = (name?: string | null) => (name && name.length > 128) || !name;
-export const checkFieldInvalidity = (length: number, field?: string | null) =>
-  field ? field.length > length : false;
+
+export const isInvalidName = (name?: string | null) =>
+  !name || name.length > SMALL_INPUT_MAX_LENGTH;

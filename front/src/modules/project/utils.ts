@@ -1,4 +1,10 @@
-import { checkFieldInvalidity, checkNameInvalidity } from 'applications/operationalStudies/utils';
+import { isInvalidName } from 'applications/operationalStudies/utils';
+import {
+  SMALL_TEXT_AREA_MAX_LENGTH,
+  TEXT_AREA_MAX_LENGTH,
+  TEXT_INPUT_MAX_LENGTH,
+  isInvalidString,
+} from 'utils/strings';
 
 import type { ProjectForm } from './components/AddOrEditProjectModal';
 
@@ -11,10 +17,10 @@ const checkProjectFields = (
   funders: boolean;
   budget: boolean;
 } => ({
-  name: checkNameInvalidity(project.name),
-  objectives: checkFieldInvalidity(4096, project.objectives),
-  description: checkFieldInvalidity(1024, project.description),
-  funders: checkFieldInvalidity(255, project.funders),
+  name: isInvalidName(project.name),
+  objectives: isInvalidString(TEXT_AREA_MAX_LENGTH, project.objectives),
+  description: isInvalidString(SMALL_TEXT_AREA_MAX_LENGTH, project.description),
+  funders: isInvalidString(TEXT_INPUT_MAX_LENGTH, project.funders),
   budget: (project.budget ?? 0) > 2147483647,
 });
 
