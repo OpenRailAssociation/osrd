@@ -27,6 +27,8 @@ import { useAppDispatch } from 'store';
 import { convertIsoUtcToLocalTime } from 'utils/date';
 
 const MAP_MIN_HEIGHT = 450;
+const SPEED_SPACE_CHART_HEIGHT = 521.5;
+const HANDLE_TAB_RESIZE_HEIGHT = 20;
 
 type SimulationResultsV2Props = {
   collapsedTimetable: boolean;
@@ -44,7 +46,8 @@ const SimulationResultsV2 = ({ collapsedTimetable, spaceTimeData }: SimulationRe
   const [extViewport, setExtViewport] = useState<Viewport | undefined>(undefined);
   const [showWarpedMap, setShowWarpedMap] = useState(false);
 
-  const [heightOfSpeedSpaceChart, setHeightOfSpeedSpaceChart] = useState(250);
+  const [speedSpaceChartContainerHeight, setSpeedSpaceChartContainerHeight] =
+    useState(SPEED_SPACE_CHART_HEIGHT);
   const [heightOfSimulationMap] = useState(MAP_MIN_HEIGHT);
   const [heightOfSpaceCurvesSlopesChart, setHeightOfSpaceCurvesSlopesChart] = useState(150);
   const [initialHeightOfSpaceCurvesSlopesChart, setInitialHeightOfSpaceCurvesSlopesChart] =
@@ -164,18 +167,19 @@ const SimulationResultsV2 = ({ collapsedTimetable, spaceTimeData }: SimulationRe
 
       {/* TRAIN : SPACE SPEED CHART */}
       {selectedTrainRollingStock && trainSimulation && pathProperties && selectedTrain && (
-        <div className="osrd-simulation-container d-flex mb-2">
-          <div className="chart-container" style={{ height: `${heightOfSpeedSpaceChart}px` }}>
+        <div className="osrd-simulation-container d-flex mb-2 speedspacechart-container">
+          <div
+            className="chart-container"
+            style={{
+              height: `${speedSpaceChartContainerHeight + HANDLE_TAB_RESIZE_HEIGHT}px`,
+            }}
+          >
             <SpeedSpaceChartV2
-              initialHeight={heightOfSpeedSpaceChart}
-              onSetChartBaseHeight={setHeightOfSpeedSpaceChart}
-              trainRollingStock={selectedTrainRollingStock}
               trainSimulation={trainSimulation}
               selectedTrainPowerRestrictions={selectedTrainPowerRestrictions}
               pathProperties={pathProperties}
-              sharedXScaleDomain={positionScaleDomain}
-              setSharedXScaleDomain={setPositionScaleDomain}
-              departureTime={selectedTrain.start_time}
+              heightOfSpeedSpaceChartContainer={speedSpaceChartContainerHeight}
+              setHeightOfSpeedSpaceChartContainer={setSpeedSpaceChartContainerHeight}
             />
           </div>
         </div>

@@ -101,7 +101,7 @@ const StcdmResults = ({
               className="btn d-flex align-items-center mb-1 font-weight-bold"
               onClick={() => setShowSpeedSpaceChart(!showSpeedSpaceChart)}
             >
-              {t('stdcm:spaceSpeedGraphic')}
+              {t('stdcm:speedSpaceChart')}
               <span className="ml-auto">
                 {showSpeedSpaceChart ? <ChevronUp /> : <ChevronDown />}
               </span>

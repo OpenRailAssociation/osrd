@@ -10,8 +10,15 @@
   transition: 0.2s;
 }
 
-// utiliser un mixin ?
+// use a mixin ?
 .chart {
+  .chart-title {
+    color: rgb(0, 0, 0);
+    height: 1.25rem;
+    font-size: 0.875rem;
+    font-weight: 400;
+  }
+
   .handle-tab-resize {
     width: 100%;
     text-align: center;

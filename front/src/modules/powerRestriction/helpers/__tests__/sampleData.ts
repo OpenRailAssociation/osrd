@@ -1,8 +1,12 @@
 import type {
+  LayerData,
+  PowerRestrictionValues,
+} from '@osrd-project/ui-speedspacechart/dist/types/chartTypes';
+
+import type {
   EffortCurves,
   RangedValue,
   RollingStock,
-  SimulationPowerRestrictionRange,
   TrainScheduleBase,
 } from 'common/api/osrdEditoastApi';
 
@@ -435,38 +439,34 @@ export const stepPath: TrainScheduleBase['path'] = [
 
 export const stepPathPositions = [0, 1000, 2000, 3000];
 
-export const formattedPowerRestrictionRanges: Omit<SimulationPowerRestrictionRange, 'handled'>[] = [
-  {
-    start: 0,
-    stop: 1,
-    code: 'code1',
-  },
-  {
-    start: 2,
-    stop: 3,
-    code: 'code2',
-  },
-];
+export const formattedPowerRestrictionRanges: LayerData<Omit<PowerRestrictionValues, 'handled'>>[] =
+  [
+    {
+      position: { start: 0, end: 1000 },
+      value: { powerRestriction: 'code1' },
+    },
+    {
+      position: { start: 2000, end: 3000 },
+      value: { powerRestriction: 'code2' },
+    },
+  ];
 
 /**
  * Data for addHandledToPowerRestrictions
  */
 
-export const powerRestrictionRanges: Omit<SimulationPowerRestrictionRange, 'handled'>[] = [
+export const powerRestrictionRanges: LayerData<Omit<PowerRestrictionValues, 'handled'>>[] = [
   {
-    start: 0,
-    stop: 1,
-    code: 'code1',
+    position: { start: 0, end: 1000000 },
+    value: { powerRestriction: 'code1' },
   },
   {
-    start: 2,
-    stop: 3,
-    code: 'code2',
+    position: { start: 2000000, end: 3000000 },
+    value: { powerRestriction: 'code2' },
   },
   {
-    start: 3,
-    stop: 4,
-    code: 'code1',
+    position: { start: 3000000, end: 4000000 },
+    value: { powerRestriction: 'code1' },
   },
 ];
 
@@ -568,23 +568,17 @@ export const effortCurves: EffortCurves['modes'] = {
 /**
  * Data for addHandledToPowerRestrictions and getRollingStockPowerRestrictionsByMode
  */
-export const powerRestrictionRangesWithHandled: SimulationPowerRestrictionRange[] = [
+export const powerRestrictionRangesWithHandled: LayerData<PowerRestrictionValues>[] = [
   {
-    start: 0,
-    stop: 1,
-    code: 'code1',
-    handled: true,
+    position: { start: 0, end: 1 },
+    value: { powerRestriction: 'code1', handled: true },
   },
   {
-    start: 2,
-    stop: 3,
-    code: 'code2',
-    handled: false,
+    position: { start: 2, end: 3 },
+    value: { powerRestriction: 'code2', handled: false },
   },
   {
-    start: 3,
-    stop: 4,
-    code: 'code1',
-    handled: false,
+    position: { start: 3, end: 4 },
+    value: { powerRestriction: 'code1', handled: false },
   },
 ];

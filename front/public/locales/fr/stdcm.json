@@ -34,7 +34,7 @@
     },
     "stopCalculation": "Arrêter le calcul"
   },
-  "spaceSpeedGraphic": "Graphique Espace-Vitesse",
+  "speedSpaceChart": "Graphique Espace Vitesse",
   "spaceTimeGraphic": "Graphique Espace-Temps",
   "stdcmComputation": "Recherche de sillon",
   "stdcmError": "Erreur de calcul Sillon de dernière minute",

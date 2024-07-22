@@ -1,8 +1,4 @@
-import type {
-  ElectrificationRangeV2,
-  ElectrificationUsageV2,
-  PositionData,
-} from 'applications/operationalStudies/types';
+import type { ElectrificationUsageV2 } from 'applications/operationalStudies/types';
 import type {
   ElectrificationRange,
   SimulationPowerRestrictionRange,
@@ -80,20 +76,6 @@ export type GevPreparedData = {
   slopesHistogram: GradientPosition[];
   speed: PositionSpeedTime[];
   vmax: SpeedPosition[];
-};
-
-export type GevPreparedDataV2 = {
-  areaBlock: AreaBlock[];
-  areaSlopesHistogram: AreaBlock[];
-  curvesHistogram: RadiusPosition[];
-  electrificationRanges: ElectrificationRangeV2[];
-  powerRestrictionRanges: SimulationPowerRestrictionRange[];
-  speed: ReportTrainData[];
-  standardMarginSpeedData: ReportTrainData[];
-  schedulePointsMarginSpeedData: ReportTrainData[];
-  mrspData: MrspData[];
-  slopesCurve: HeightPosition[];
-  slopesHistogram: PositionData<'gradient'>[];
 };
 
 // TODO DROP V1: remove this

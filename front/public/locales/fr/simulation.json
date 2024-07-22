@@ -2,19 +2,19 @@
   "allowances": "Marges",
   "departureTime": "Départ",
   "electricalProfiles": {
-    "thermal": "Thermique",
-    "used": "utilisé",
-    "unused": "non utilisé",
     "incompatible": "incompatible",
     "incompatibleMode": "Mode incompatible",
     "incompatibleProfile": "profil incompatible",
-    "missingProfile": "Profil manquant",
     "legend": "Légende",
-    "notElectrified": "Non électrifié"
+    "missingProfile": "Profil manquant",
+    "notElectrified": "Non électrifié",
+    "thermal": "Thermique",
+    "unused": "non utilisé",
+    "used": "utilisé"
   },
   "errorMessages": {
-    "unableToRetrieveTrainSchedule": "Impossible de réaliser le calcul de marche",
-    "errorLoadingInfra": "Erreur de chargement de l'infrastructure"
+    "errorLoadingInfra": "Erreur de chargement de l'infrastructure",
+    "unableToRetrieveTrainSchedule": "Impossible de réaliser le calcul de marche"
   },
   "infraLoading": "Infrastructure en cours de chargement",
   "isUpdating": "Mise à jour...",
@@ -22,6 +22,7 @@
   "labels": "Étiquettes",
   "loadingTrain": "Chargement du train",
   "ManualOffset": "Ajout de secondes au train",
+  "map": "Carte",
   "ModalEdit": "Édition d'un train",
   "name": "Nom",
   "noData": "Aucune donnée disponible",
@@ -30,44 +31,53 @@
   "placeholderlabel": "Filtrer les étiquettes",
   "playSimulation": "Lancer la simulation",
   "powerRestriction": {
-    "used": "utilisée",
-    "incompatible": "Restriction de puissance incompatible"
+    "incompatible": "Restriction de puissance incompatible",
+    "used": "utilisée"
   },
   "reset": "Réinitialiser le graphique",
   "resetTimer": "Réinitialiser le compteur",
   "rotate": "Pivoter le graphique",
   "simplify": "Simplification des données",
+  "speedLimitComposition": "Composition",
+  "speedSpaceChart": "Graphique Espace Vitesse",
   "speedSpaceSettings": {
-    "display": "Affichage",
     "altitude": "Altitude",
+    "context": "Contexte",
     "curves": "Courbes",
+    "display": "Affichage",
+    "electricalProfiles": "Profils électrique",
+    "energySource": "Source d'énergie",
     "maxSpeed": "Vitesse ligne",
+    "powerRestriction": "Restriction de puissance",
+    "powerRestrictions": "Restrictions de puissance",
+    "reticleInfos": "Infos réticule",
     "slopes": "Déclivités",
-    "electricalProfiles": "Traction électrique",
-    "powerRestriction": "Restriction de puissance"
+    "speedLimits": "Limites de vitesse",
+    "speedLimitTags": "Codes de composition",
+    "steps": "Points remarquables",
+    "temporarySpeedLimits": "Limites temporaires de vit.",
+    "tractionStatus": "Statut de la traction"
   },
   "start": "Départ",
   "stop": "Arrivée",
   "stopPlace": "Lieu",
-  "stopTime": "Arrivée",
   "stopStopTime": "Arrêt",
+  "stopTime": "Arrivée",
   "timetable": "Table horaire",
-  "train": "Train",
-  "trainDeleted": "Train supprimé",
-  "trainDetails": {
-    "headPosition": "Tête",
-    "tailPosition": "Queue",
-    "routeEndOccupancy": "Fin canton",
-    "routeBeginOccupancy": "Début canton",
-    "routeSizeOccupancy": "Taille canton",
-    "speed": "Vitesse"
-  },
-  "trainList": "Liste des trains",
   "toggleElectricalProfileLegend": "Basculer l'affichage de la légende des tractions électriques",
   "toggleRewind": "Basculer le rembobinage de la simulation",
   "toggleSpeedSpaceSettings": "Basculer l'affichage des paramètres du graphique",
   "toggleWarpedMap": "Basculer l'affichage de la carte déformée",
-  "speedLimitComposition": "Composition",
-  "waiting": "Chargement en cours…",
-  "map": "Carte"
+  "train": "Train",
+  "trainDeleted": "Train supprimé",
+  "trainDetails": {
+    "headPosition": "Tête",
+    "routeBeginOccupancy": "Début canton",
+    "routeEndOccupancy": "Fin canton",
+    "routeSizeOccupancy": "Taille canton",
+    "speed": "Vitesse",
+    "tailPosition": "Queue"
+  },
+  "trainList": "Liste des trains",
+  "waiting": "Chargement en cours…"
 }

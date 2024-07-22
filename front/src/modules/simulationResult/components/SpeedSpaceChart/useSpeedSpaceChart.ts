@@ -1,11 +1,15 @@
 import { useEffect, useState } from 'react';
 
+import type {
+  LayerData,
+  PowerRestrictionValues,
+} from '@osrd-project/ui-speedspacechart/dist/types/chartTypes';
+
 import type { PathPropertiesFormatted } from 'applications/operationalStudies/types';
 import { preparePathPropertiesData } from 'applications/operationalStudies/utils';
 import {
   osrdEditoastApi,
   type PathfindingResultSuccess,
-  type SimulationPowerRestrictionRange,
   type SimulationResponse,
   type TrainScheduleResult,
 } from 'common/api/osrdEditoastApi';
@@ -25,9 +29,8 @@ const useSpeedSpaceChart = (
   const infraId = useInfraID();
 
   const [formattedPathProperties, setFormattedPathProperties] = useState<PathPropertiesFormatted>();
-  const [formattedPowerRestrictions, setFormattedPowerRestrictions] = useState<
-    SimulationPowerRestrictionRange[]
-  >([]);
+  const [formattedPowerRestrictions, setFormattedPowerRestrictions] =
+    useState<LayerData<PowerRestrictionValues>[]>();
 
   const { data: rollingStock } =
     osrdEditoastApi.endpoints.getRollingStockNameByRollingStockName.useQuery(
@@ -70,9 +73,7 @@ const useSpeedSpaceChart = (
           pathfindingResult,
           pathProperties: formattedPathProps,
         });
-        if (powerRestrictions) {
-          setFormattedPowerRestrictions(powerRestrictions);
-        }
+        setFormattedPowerRestrictions(powerRestrictions);
       }
     };
 
@@ -88,7 +89,6 @@ const useSpeedSpaceChart = (
 
   return trainScheduleResult &&
     rollingStock &&
-    formattedPowerRestrictions &&
     simulation?.status === 'success' &&
     formattedPathProperties &&
     departureTime
