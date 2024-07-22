@@ -1,0 +1,23 @@
+name: Export workflow to Honeycomb
+
+on:
+  workflow_run:
+    workflows:
+      # The name of the workflow(s) that triggers the export
+      - "build"
+    types: [completed]
+
+jobs:
+  otel-export-honeycomb:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Export workflow to Honeycomb
+        uses: corentinmusard/otel-cicd-action@v1
+        with:
+          otlpEndpoint: grpc://api.honeycomb.io:443/
+          # Example value for HONEYCOMB_OTLP_HEADERS:
+          # x-honeycomb-team=YOUR_API_KEY,x-honeycomb-dataset=YOUR_DATASET
+          otlpHeaders: ${{ secrets.HONEYCOMB_OTLP_HEADERS }}
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          runId: ${{ github.event.workflow_run.id }}
