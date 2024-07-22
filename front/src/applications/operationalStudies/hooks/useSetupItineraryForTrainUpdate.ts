@@ -132,8 +132,10 @@ const useSetupItineraryForTrainUpdate = (
                 margins: { boundaries: string[]; values: string[] }
               ) => {
                 // The first pathStep will never have its id in boundaries
-                if (stepIndex === 0)
-                  return margins.values[0] === 'none' ? undefined : margins.values[0];
+                if (stepIndex === 0) return margins.values[0];
+
+                // We don't display any margin for the destination
+                if (stepIndex === updatedPathSteps.length - 1) return undefined;
 
                 const marginIndex = margins.boundaries.findIndex(
                   (boundaryId) => boundaryId === stepId
