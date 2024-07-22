@@ -2077,37 +2077,49 @@
   resolved "https://registry.yarnpkg.com/@osrd-project/netzgrafik-frontend/-/netzgrafik-frontend-0.0.0-snapshot.23b18bb8c907e3d6d88637617df86829eef7d5b9.tgz#4ae4fd971b28494f053a17316189e5d43342afff"
   integrity sha512-ChE0Mbx8eKdCnpduEqwFW8yqPxPqL+2u4anBXik3Q4v9Q1+otWAfdV0CfBpjxZZztI5DZpI8oPr6x9ScfUNjrA==
 
-"@osrd-project/ui-core@^0.0.27":
-  version "0.0.27"
-  resolved "https://registry.yarnpkg.com/@osrd-project/ui-core/-/ui-core-0.0.27.tgz#ba36652b9e9b1b73ee0d2ca4c5217476c92c147c"
-  integrity sha512-wE5g4pB9kHJQsQoePls4GE08hJTPgEMysBiN802gA7eW3uhImE6IPAXsMJIFo8fzQLEAwBkfnvS4JLf4imD86g==
+"@osrd-project/ui-core@^0.0.30":
+  version "0.0.30"
+  resolved "https://registry.yarnpkg.com/@osrd-project/ui-core/-/ui-core-0.0.30.tgz#ea3d89bc47f2f1de57200b4bd2333d6beb231dfb"
+  integrity sha512-19TzttJfAqQkadwTlYibWkuBKiEvyEDIP5PDRVDzVPUeefbbNfZS0oQ7jFu1J3rD7sztvnC5Hk6EBesTy1tQ9Q==
   dependencies:
     classnames "^2.5.1"
     tailwindcss "^3.4.1"
 
-"@osrd-project/ui-icons@^0.0.27":
-  version "0.0.27"
-  resolved "https://registry.yarnpkg.com/@osrd-project/ui-icons/-/ui-icons-0.0.27.tgz#f52a913f6214a7cb2b1bbf8c711e737190a219fc"
-  integrity sha512-G56dJAJouT2YNUUSTKNuCahxNtZPpRhB+BTD1LRdJ3JtAcNnaEPvmFD4MPSOEVLaOzhgtTyTw+NdEWPZe+gHZg==
+"@osrd-project/ui-icons@^0.0.30":
+  version "0.0.30"
+  resolved "https://registry.yarnpkg.com/@osrd-project/ui-icons/-/ui-icons-0.0.30.tgz#1d49c95fb2ec48dde51f4802b13534e6df06535c"
+  integrity sha512-AbTkjnQeaCv4cTfIZQFG5MwCWoo7eRtKRKDc3rTzYS7p00aAC4lE+/BG1yS96RY4jtJ/9SZ9HebZk1w2+IrKGA==
 
-"@osrd-project/ui-manchette@^0.0.28":
-  version "0.0.28"
-  resolved "https://registry.yarnpkg.com/@osrd-project/ui-manchette/-/ui-manchette-0.0.28.tgz#936a8c49c09ee2558f28723fd29b383695b2cc92"
-  integrity sha512-ZlutIzHPFCv7CxkWLN2qY4TXwD2UsQ5v/Cy/7FTBRmxu9EePWcN7Irn13iI/akt1V25xN53yOr/KSX5iqfJywQ==
+"@osrd-project/ui-manchette@^0.0.30":
+  version "0.0.30"
+  resolved "https://registry.yarnpkg.com/@osrd-project/ui-manchette/-/ui-manchette-0.0.30.tgz#5327b428a18878680b94053639c5b1ec121ee7a7"
+  integrity sha512-FJxVX9Fof0WdUgRkO2ChWxY23UTamHcO8dcSxvBXra+xG2MvnRapRHuqWLRdX1lCOevz5tsy61pYp+3d4u+aaQ==
   dependencies:
-    "@osrd-project/ui-spacetimechart" "^0.0.28"
+    "@osrd-project/ui-spacetimechart" "^0.0.30"
     classnames "^2.5.1"
     lodash.isequal "^4.5.0"
 
-"@osrd-project/ui-spacetimechart@^0.0.28":
-  version "0.0.28"
-  resolved "https://registry.yarnpkg.com/@osrd-project/ui-spacetimechart/-/ui-spacetimechart-0.0.28.tgz#9c78dfe0b5b6da75b8fede4d85df23e55eb9c3e8"
-  integrity sha512-bowLajK6sXGUtxFMPKXjgFCNC6febNBQu6Y2p7N7WzK3d7OQ95yrNdU9R9RNEt2OqUi19oAfWM81doUcin23wg==
+"@osrd-project/ui-spacetimechart@^0.0.30":
+  version "0.0.30"
+  resolved "https://registry.yarnpkg.com/@osrd-project/ui-spacetimechart/-/ui-spacetimechart-0.0.30.tgz#1883ab355eed0d6f666a84f49501ce605e0bc157"
+  integrity sha512-W9IiLCVyFPpK47Mj2NOpjGmABb6Zm1jw87bLQvu4SfPHXVfvPFYhVc6GX+RnBzc+aZv6dbiKx2+kO/YjsEcxEw==
   dependencies:
     "@types/chroma-js" "^2.4.4"
     chroma-js "^2.4.2"
     lodash "^4.17.21"
     vitest "^1.5.0"
+
+"@osrd-project/ui-speedspacechart@^0.0.30":
+  version "0.0.30"
+  resolved "https://registry.yarnpkg.com/@osrd-project/ui-speedspacechart/-/ui-speedspacechart-0.0.30.tgz#a56ea75743e71b1a3bd61f4bceee572bf57564dc"
+  integrity sha512-+Iwk+bY/MwHgxDdXKlAOcu8DQPvcu0UODqkF70FzVtw7VCBkVipilcjZsQXh8E4tgl0xq9Ad0Y1tJ85g7aWlOQ==
+  dependencies:
+    "@osrd-project/ui-core" "^0.0.30"
+    "@osrd-project/ui-icons" "^0.0.30"
+    "@types/d3" "^7.4.3"
+    classnames "^2.5.1"
+    d3 "^7.9.0"
+    tailwindcss "^3.4.1"
 
 "@pkgjs/parseargs@^0.11.0":
   version "0.11.0"
@@ -6802,7 +6814,7 @@ d3-zoom@3, d3-zoom@^3.0.0:
     d3-selection "2 - 3"
     d3-transition "2 - 3"
 
-d3@^7.8.5:
+d3@^7.8.5, d3@^7.9.0:
   version "7.9.0"
   resolved "https://registry.yarnpkg.com/d3/-/d3-7.9.0.tgz#579e7acb3d749caf8860bd1741ae8d371070cd5d"
   integrity sha512-e1U46jVP+w7Iut8Jt8ri1YsPOvFpg46k+K8TpCb0P+zjCkjkPnV7WzfDJzMHy1LnA+wj5pLT1wjO901gLXeEhA==

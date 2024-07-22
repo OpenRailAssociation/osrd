@@ -17,6 +17,9 @@ import {
   getOperationalPointsWithTimes,
 } from '../utils/formatSimulationReportSheet';
 
+const SPEED_SPACE_CHART_HEIGHT = 521.5;
+const HANDLE_TAB_RESIZE_HEIGHT = 20;
+
 type StcdmResultsProps = {
   mapCanvas?: string;
   stdcmV2Results: StdcmV2Results;
@@ -29,7 +32,8 @@ const codeNumber = generateCodeNumber();
 
 const StcdmResultsV2 = ({ mapCanvas, stdcmV2Results, pathProperties }: StcdmResultsProps) => {
   const { t } = useTranslation(['stdcm']);
-  const [speedSpaceChartHeight, setSpeedSpaceChartHeight] = useState(250);
+  const [speedSpaceChartContainerHeight, setSpeedSpaceChartContainerHeight] =
+    useState(SPEED_SPACE_CHART_HEIGHT);
 
   const { stdcmResponse, speedSpaceChartData, spaceTimeData } = stdcmV2Results;
 
@@ -71,18 +75,20 @@ const StcdmResultsV2 = ({ mapCanvas, stdcmV2Results, pathProperties }: StcdmResu
             )}
           </div>
         </div>
-        <div className="osrd-simulation-container mb-2">
-          <p className="mt-2 mb-3 ml-4 font-weight-bold">{t('spaceSpeedGraphic')}</p>
-          <div className="chart-container mt-2" style={{ height: `${speedSpaceChartHeight}px` }}>
+        <div className="osrd-simulation-container mb-2 speedspacechart-container">
+          <div
+            className="chart-container"
+            style={{
+              height: `${speedSpaceChartContainerHeight + HANDLE_TAB_RESIZE_HEIGHT}px`,
+            }}
+          >
             {speedSpaceChartData ? (
               <SpeedSpaceChartV2
-                initialHeight={speedSpaceChartHeight}
-                onSetChartBaseHeight={setSpeedSpaceChartHeight}
-                trainRollingStock={speedSpaceChartData.rollingStock}
                 trainSimulation={stdcmResponse.simulation}
                 selectedTrainPowerRestrictions={speedSpaceChartData.formattedPowerRestrictions}
                 pathProperties={speedSpaceChartData.formattedPathProperties}
-                departureTime={speedSpaceChartData.departureTime}
+                heightOfSpeedSpaceChartContainer={speedSpaceChartContainerHeight}
+                setHeightOfSpeedSpaceChartContainer={setSpeedSpaceChartContainerHeight}
               />
             ) : (
               <LoaderFill />

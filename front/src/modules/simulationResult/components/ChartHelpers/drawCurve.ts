@@ -5,12 +5,11 @@ import type { Chart, ConsolidatedPosition } from 'reducers/osrdsimulation/types'
 import type { ArrayElement } from 'utils/types';
 
 import { getAxis } from './ChartHelpers';
-import type { GevPreparedData, GevPreparedDataV2 } from '../SpeedSpaceChart/types';
+import type { GevPreparedData } from '../SpeedSpaceChart/types';
 
 const drawCurve = <
   T extends
     | ArrayElement<GevPreparedData[keyof GevPreparedData]> // TODO DROP V1: remove this line
-    | ArrayElement<GevPreparedDataV2[keyof GevPreparedDataV2]>
     | ConsolidatedPosition,
 >(
   chart: Chart,

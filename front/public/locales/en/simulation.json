@@ -2,19 +2,19 @@
   "allowances": "Allowances",
   "departureTime": "Departure",
   "electricalProfiles": {
-    "thermal": "Combustion engine",
-    "used": "used",
-    "unused": "unused",
     "incompatible": "incompatible",
     "incompatibleMode": "Incompatible mode",
     "incompatibleProfile": "incompatible profile",
-    "missingProfile": "Missing profile",
     "legend": "Legend",
-    "notElectrified": "Non-electrified"
+    "missingProfile": "Missing profile",
+    "notElectrified": "Non-electrified",
+    "thermal": "Combustion engine",
+    "unused": "unused",
+    "used": "used"
   },
   "errorMessages": {
-    "unableToRetrieveTrainSchedule": "Impossible to compute running time",
-    "errorLoadingInfra": "Infrastructure loading error"
+    "errorLoadingInfra": "Infrastructure loading error",
+    "unableToRetrieveTrainSchedule": "Impossible to compute running time"
   },
   "infraLoading": "Infrastructure is loading",
   "isUpdating": "Updating...",
@@ -22,6 +22,7 @@
   "labels": "Tags",
   "loadingTrain": "Loading train",
   "ManualOffset": "Add seconds to the train",
+  "map": "Map",
   "ModalEdit": "Train edition",
   "name": "Name",
   "noData": "No available data",
@@ -30,44 +31,53 @@
   "placeholderlabel": "Tag filtering",
   "playSimulation": "Play simulation",
   "powerRestriction": {
-    "used": "used",
-    "incompatible": "Incompatible power restriction "
+    "incompatible": "Incompatible power restriction ",
+    "used": "used"
   },
   "reset": "Reset the chart",
   "resetTimer": "Reset timer",
   "rotate": "Rotate the chart",
   "simplify": "Data simplification",
+  "speedLimitComposition": "Composition",
+  "speedSpaceChart": "Speed Space Chart",
   "speedSpaceSettings": {
-    "display": "Display",
     "altitude": "Altitude",
+    "context": "Context",
     "curves": "Curves",
+    "display": "Display",
+    "electricalProfiles": "Electrical profiles",
+    "energySource": "Energy source",
     "maxSpeed": "Line speed",
+    "powerRestriction": "Power restriction",
+    "powerRestrictions": "Power restrictions",
+    "reticleInfos": "Reticle infos",
     "slopes": "Slopes",
-    "electricalProfiles": "Electric traction",
-    "powerRestriction": "Power restriction"
+    "speedLimits": "Speed limits",
+    "speedLimitTags": "Speed limit tags",
+    "steps": "operational points",
+    "temporarySpeedLimits": "Temporary speed limits",
+    "tractionStatus": "Traction status"
   },
   "start": "Departure",
   "stop": "Arrival",
   "stopPlace": "Place",
-  "stopTime": "Arrival",
   "stopStopTime": "Stop",
+  "stopTime": "Arrival",
   "timetable": "Timetable",
-  "train": "Train",
-  "trainDeleted": "Train deleted",
-  "trainDetails": {
-    "headPosition": "Head",
-    "tailPosition": "Tail",
-    "routeEndOccupancy": "Block end",
-    "routeBeginOccupancy": "Block start",
-    "routeSizeOccupancy": "Block size",
-    "speed": "Speed"
-  },
-  "trainList": "Train list",
   "toggleElectricalProfileLegend": "Toggle electrical profiles legend",
   "toggleRewind": "Toggle simulation rewind",
   "toggleSpeedSpaceSettings": "Toggle chart settings",
   "toggleWarpedMap": "Toggle the warped map",
-  "speedLimitComposition": "Composition",
-  "waiting": "Loading...",
-  "map": "Map"
+  "train": "Train",
+  "trainDeleted": "Train deleted",
+  "trainDetails": {
+    "headPosition": "Head",
+    "routeBeginOccupancy": "Block start",
+    "routeEndOccupancy": "Block end",
+    "routeSizeOccupancy": "Block size",
+    "speed": "Speed",
+    "tailPosition": "Tail"
+  },
+  "trainList": "Train list",
+  "waiting": "Loading..."
 }

@@ -6,15 +6,13 @@ import { defineLinear } from 'modules/simulationResult/components/ChartHelpers/C
 import defineChart from 'modules/simulationResult/components/ChartHelpers/defineChart';
 import drawArea from 'modules/simulationResult/components/ChartHelpers/drawArea';
 import drawCurve from 'modules/simulationResult/components/ChartHelpers/drawCurve';
-import drawElectricalProfile, {
-  drawElectricalProfileV2,
-} from 'modules/simulationResult/components/ChartHelpers/drawElectricalProfile';
+import drawElectricalProfile from 'modules/simulationResult/components/ChartHelpers/drawElectricalProfile';
 import drawPowerRestriction from 'modules/simulationResult/components/ChartHelpers/drawPowerRestriction';
 import { CHART_AXES } from 'modules/simulationResult/consts';
 import type { Chart, SpeedSpaceChart, SpeedSpaceSettingsType } from 'reducers/osrdsimulation/types';
 
-import type { GevPreparedData, GevPreparedDataV2 } from './types';
-import { createPowerRestrictionSegment, createProfileSegmentV2 } from './utils';
+import type { GevPreparedData } from './types';
+import { createPowerRestrictionSegment } from './utils';
 
 /**
  * Typeguard to check if a selector is of type "Element"
@@ -204,7 +202,7 @@ function drawTrain(
 export const createSpeedSpaceChart = (
   CHART_ID: string,
   resetChart: boolean,
-  trainSimulation: GevPreparedDataV2 | GevPreparedData, // TODO DROP V1 : remove GevPreparedData type
+  trainSimulation: GevPreparedData, // TODO DROP V1 : remove GevPreparedData type
   initialHeight: number,
   ref: React.RefObject<HTMLDivElement>,
   chart?: SpeedSpaceChart
@@ -259,153 +257,6 @@ export const createSpeedSpaceChart = (
     CHART_ID,
     scaleY2
   );
-};
-
-export const drawSpeedSpaceTrain = (
-  dataSimulation: GevPreparedDataV2,
-  speedSpaceSettings: SpeedSpaceSettingsType,
-  chart: Chart
-) => {
-  if (chart) {
-    const chartLocal = chart;
-    chartLocal.drawZone.select('g').remove();
-    chartLocal.drawZone.append('g').attr('id', 'speedSpaceChart').attr('class', 'chartTrain');
-    drawAxisTitle(chartLocal);
-
-    drawArea(chartLocal, 'area speed', dataSimulation.areaBlock, 'speedSpaceChart', 'curveLinear');
-
-    drawCurve(
-      chartLocal,
-      'speed',
-      dataSimulation.speed,
-      'speedSpaceChart',
-      'curveLinear',
-      CHART_AXES.SPACE_SPEED,
-      'speed'
-    );
-    // TODO: Add the function to draw the provisional curve when the Gev v2 is implemented
-    if (dataSimulation.schedulePointsMarginSpeedData) {
-      drawCurve(
-        chartLocal,
-        'speed eco',
-        dataSimulation.schedulePointsMarginSpeedData,
-        'speedSpaceChart',
-        'curveLinear',
-        CHART_AXES.SPACE_SPEED,
-        'eco_speed'
-      );
-    }
-    if (dataSimulation.mrspData && speedSpaceSettings.maxSpeed) {
-      drawCurve(
-        chartLocal,
-        'speed vmax',
-        dataSimulation.mrspData,
-        'speedSpaceChart',
-        'curveLinear',
-        CHART_AXES.SPACE_SPEED,
-        'vmax'
-      );
-    }
-    if (dataSimulation.slopesCurve && speedSpaceSettings.altitude) {
-      drawCurve(
-        chartLocal,
-        'speed slopes',
-        dataSimulation.slopesCurve,
-        'speedSpaceChart',
-        'curveLinear',
-        CHART_AXES.SPACE_HEIGHT,
-        'slopes'
-      );
-    }
-    if (dataSimulation.slopesHistogram && speedSpaceSettings.slopes) {
-      drawCurve(
-        chartLocal,
-        'speed slopesHistogram',
-        dataSimulation.slopesHistogram,
-        'speedSpaceChart',
-        'curveMonotoneX',
-        CHART_AXES.SPACE_GRADIENT,
-        'slopesHistogram'
-      );
-      drawArea(
-        chartLocal,
-        'area slopes',
-        dataSimulation.areaSlopesHistogram,
-        'speedSpaceChart',
-        'curveMonotoneX'
-      );
-    }
-    if (dataSimulation.curvesHistogram && speedSpaceSettings.curves) {
-      drawCurve(
-        chartLocal,
-        'speed curvesHistogram',
-        dataSimulation.curvesHistogram,
-        'speedSpaceChart',
-        'curveLinear',
-        CHART_AXES.SPACE_RADIUS,
-        'curvesHistogram'
-      );
-    }
-
-    const { electrificationRanges, powerRestrictionRanges } = dataSimulation;
-
-    if (!isEmpty(electrificationRanges) && speedSpaceSettings.electricalProfiles) {
-      electrificationRanges.forEach((source, index) => {
-        const segment = createProfileSegmentV2(electrificationRanges, source);
-        drawElectricalProfileV2(
-          chartLocal,
-          `electricalProfiles_${index}`,
-          segment,
-          'speedSpaceChart',
-          ['position', 'height'],
-          segment.isStriped,
-          segment.isIncompatibleElectricalProfile,
-          `electricalProfiles_${index}`
-        );
-      });
-    }
-    if (!isEmpty(powerRestrictionRanges) && speedSpaceSettings.powerRestriction) {
-      const restrictionSegments = [];
-      let currentRestrictionSegment = createPowerRestrictionSegment(
-        powerRestrictionRanges,
-        powerRestrictionRanges[0]
-      );
-      powerRestrictionRanges.forEach((powerRestrictionRange, index) => {
-        if (index === 0) return;
-        if (
-          powerRestrictionRange.code === currentRestrictionSegment.seenRestriction &&
-          powerRestrictionRange.handled === currentRestrictionSegment.usedRestriction
-        ) {
-          const powerRestrictionRangeLength =
-            powerRestrictionRange.stop - powerRestrictionRange.start;
-          currentRestrictionSegment.position_middle += powerRestrictionRangeLength / 2;
-          currentRestrictionSegment.position_end += powerRestrictionRangeLength;
-        } else {
-          restrictionSegments.push(currentRestrictionSegment);
-          currentRestrictionSegment = createPowerRestrictionSegment(
-            powerRestrictionRanges,
-            powerRestrictionRange
-          );
-        }
-      });
-      restrictionSegments.push(currentRestrictionSegment);
-
-      restrictionSegments.forEach((source, index) => {
-        drawPowerRestriction(
-          chartLocal,
-          `powerRestrictions_${index}`,
-          source,
-          'speedSpaceChart',
-          DRAWING_KEYS,
-          source.isStriped,
-          source.isIncompatiblePowerRestriction,
-          source.isRestriction,
-          `powerRestrictions_${index}`,
-          speedSpaceSettings.electricalProfiles
-        );
-      });
-    }
-  }
 };
 
 export { drawTrain };

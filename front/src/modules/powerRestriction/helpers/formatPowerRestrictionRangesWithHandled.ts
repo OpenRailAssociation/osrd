@@ -1,3 +1,7 @@
+import type {
+  LayerData,
+  PowerRestrictionValues,
+} from '@osrd-project/ui-speedspacechart/dist/types/chartTypes';
 import { compact } from 'lodash';
 
 import type { PathPropertiesFormatted } from 'applications/operationalStudies/types';
@@ -5,12 +9,11 @@ import type {
   PathfindingResultSuccess,
   RangedValue,
   RollingStock,
-  SimulationPowerRestrictionRange,
   TrainScheduleBase,
   TrainScheduleResult,
 } from 'common/api/osrdEditoastApi';
 import { getRollingStockPowerRestrictionsByMode } from 'modules/rollingStock/helpers/powerRestrictions';
-import { mToMm, mmToM } from 'utils/physics';
+import { mmToKm, mToMm } from 'utils/physics';
 
 /**
  * Format power restrictions data to ranges data base on path steps position
@@ -19,7 +22,7 @@ export const formatPowerRestrictionRanges = (
   powerRestrictions: NonNullable<TrainScheduleBase['power_restrictions']>,
   path: TrainScheduleBase['path'],
   stepsPathPositions: PathfindingResultSuccess['path_item_positions']
-): Omit<SimulationPowerRestrictionRange, 'handled'>[] =>
+): LayerData<Omit<PowerRestrictionValues, 'handled'>>[] =>
   compact(
     powerRestrictions.map((powerRestriction) => {
       const startStep = path.findIndex((step) => step.id === powerRestriction.from);
@@ -29,49 +32,43 @@ export const formatPowerRestrictionRanges = (
         return null;
       }
       return {
-        start: mmToM(stepsPathPositions[startStep]),
-        stop: mmToM(stepsPathPositions[stopStep]),
-        code: powerRestriction.value,
+        position: {
+          start: stepsPathPositions[startStep],
+          end: stepsPathPositions[stopStep],
+        },
+        value: { powerRestriction: powerRestriction.value },
       };
     })
   );
 
 /** Format power restrictions data to be used in simulation results charts */
-export const addHandledToPowerRestrictions = (
-  powerRestrictionRanges: Omit<SimulationPowerRestrictionRange, 'handled'>[],
+export const convertPowerRestrictionsAndCheckCompatibility = (
+  powerRestrictionRanges: LayerData<Omit<PowerRestrictionValues, 'handled'>>[],
   voltageRanges: RangedValue[],
   rollingStockEffortCurves: RollingStock['effort_curves']['modes']
-): SimulationPowerRestrictionRange[] => {
+): LayerData<PowerRestrictionValues>[] => {
   const powerRestrictionsByMode = getRollingStockPowerRestrictionsByMode(rollingStockEffortCurves);
 
-  const restrictionsWithHandled: SimulationPowerRestrictionRange[] = [];
+  const restrictionsWithHandled: LayerData<PowerRestrictionValues>[] = [];
 
-  powerRestrictionRanges.forEach((powerRestrictionRange) => {
-    const powerRestrictionBeginInMm = mToMm(powerRestrictionRange.start);
-    const powerRestrictionEndInMm = mToMm(powerRestrictionRange.stop);
-
+  powerRestrictionRanges.forEach(({ position: { start, end }, value: { powerRestriction } }) => {
     // find all the voltage ranges which overlap the powerRestrictionRange
-    voltageRanges.forEach((voltageRange) => {
-      const restrictionBeginIsInRange =
-        voltageRange.begin <= powerRestrictionBeginInMm &&
-        powerRestrictionBeginInMm < voltageRange.end;
-      const restrictionEndIsInRange =
-        voltageRange.begin < powerRestrictionEndInMm && powerRestrictionEndInMm <= voltageRange.end;
+    voltageRanges.forEach(({ begin, end: voltageRangeEnd, value }) => {
+      const beginInMm = mToMm(begin);
+      const endInMm = mToMm(voltageRangeEnd);
+
+      const restrictionBeginIsInRange = beginInMm <= start && start < endInMm;
+      const restrictionEndIsInRange = beginInMm < end! && end! <= endInMm;
 
       if (restrictionBeginIsInRange || restrictionEndIsInRange) {
-        const powerRestrictionForVoltage = powerRestrictionsByMode[voltageRange.value];
+        const powerRestrictionForVoltage = powerRestrictionsByMode[value];
         const isHandled =
-          !!powerRestrictionForVoltage &&
-          powerRestrictionForVoltage.includes(powerRestrictionRange.code);
+          !!powerRestrictionForVoltage && powerRestrictionForVoltage.includes(powerRestriction);
 
-        // add the restriction corresponding to the voltage range
+        // add the restriction corresponding to the voltage range, format the position to km
         restrictionsWithHandled.push({
-          start: restrictionBeginIsInRange
-            ? powerRestrictionRange.start
-            : mmToM(voltageRange.begin),
-          stop: restrictionEndIsInRange ? powerRestrictionRange.stop : mmToM(voltageRange.end),
-          code: powerRestrictionRange.code,
-          handled: isHandled,
+          position: { start: mmToKm(start), end: mmToKm(end!) },
+          value: { powerRestriction, handled: isHandled },
         });
       }
     });
@@ -100,7 +97,7 @@ const formatPowerRestrictionRangesWithHandled = ({
       selectedTrainSchedule.path,
       pathfindingResult.path_item_positions
     );
-    const powerRestrictionsWithHandled = addHandledToPowerRestrictions(
+    const powerRestrictionsWithHandled = convertPowerRestrictionsAndCheckCompatibility(
       powerRestrictionsRanges,
       pathProperties.voltages,
       selectedTrainRollingStock.effort_curves.modes
@@ -108,7 +105,7 @@ const formatPowerRestrictionRangesWithHandled = ({
 
     return powerRestrictionsWithHandled;
   }
-  return null;
+  return undefined;
 };
 
 export default formatPowerRestrictionRangesWithHandled;

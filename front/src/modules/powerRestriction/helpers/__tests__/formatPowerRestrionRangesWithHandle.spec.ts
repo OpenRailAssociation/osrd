@@ -9,7 +9,7 @@ import {
   stepPathPositions,
 } from './sampleData';
 import {
-  addHandledToPowerRestrictions,
+  convertPowerRestrictionsAndCheckCompatibility,
   formatPowerRestrictionRanges,
 } from '../formatPowerRestrictionRangesWithHandled';
 
@@ -23,7 +23,7 @@ describe('formatPowerRestrictionRanges', () => {
 
 describe('addHandledToPowerRestrictions', () => {
   it('should properly format power restrictions ranges with handled property', () => {
-    const result = addHandledToPowerRestrictions(
+    const result = convertPowerRestrictionsAndCheckCompatibility(
       powerRestrictionRanges,
       voltageRangesForPowerRestrictions,
       effortCurves

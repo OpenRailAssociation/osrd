@@ -1,23 +1,14 @@
 import * as d3 from 'd3';
 
-import type {
-  ElectrificationRangeV2,
-  PathPropertiesFormatted,
-  PositionData,
-} from 'applications/operationalStudies/types';
+import type { PathPropertiesFormatted, PositionData } from 'applications/operationalStudies/types';
 import type { SimulationPowerRestrictionRange } from 'common/api/osrdEditoastApi';
-import i18n from 'i18n';
 import type {
   GradientPosition,
   HeightPosition,
   RadiusPosition,
 } from 'reducers/osrdsimulation/types';
 
-import {
-  electricalProfileColorsWithProfile,
-  electricalProfileColorsWithoutProfile,
-} from './consts';
-import type { AC, DC, ElectricalConditionSegmentV2, PowerRestrictionSegment } from './types';
+import type { PowerRestrictionSegment } from './types';
 
 const calculateReferentialHeight = (data: number[]) => {
   const maxRef = d3.max(data);
@@ -77,77 +68,6 @@ export const createSlopeCurve = (
     ...step,
     height: (step.height * referentialHeight) / dataHeight,
   }));
-};
-
-export const createProfileSegmentV2 = (
-  fullElectrificationRange: ElectrificationRangeV2[],
-  electrificationRange: ElectrificationRangeV2
-) => {
-  const electrification = electrificationRange.electrificationUsage;
-  const segment: ElectricalConditionSegmentV2 = {
-    position_start: electrificationRange.start,
-    position_end: electrificationRange.stop,
-    position_middle: (electrificationRange.start + electrificationRange.stop) / 2,
-    lastPosition: fullElectrificationRange.slice(-1)[0].stop,
-    height_start: 4,
-    height_end: 24,
-    height_middle: 14,
-    electrification,
-    color: '',
-    textColor: '',
-    text: '',
-    isStriped: false,
-    isIncompatibleElectricalProfile: false,
-    isRestriction: false,
-    isIncompatiblePowerRestriction: false,
-  };
-
-  // add colors to object depending of the type of electrification
-  if (electrification.type === 'electrification') {
-    const { voltage } = electrification;
-
-    if (electrification.electrical_profile_type === 'profile' && electrification.profile) {
-      const { profile, handled } = electrification;
-      segment.color =
-        electricalProfileColorsWithProfile[voltage as keyof unknown][
-          profile as string | keyof AC | keyof DC
-        ];
-      if (handled) {
-        segment.text = `${voltage} ${profile}`;
-      } else {
-        // compatible electric mode, with uncompatible profile
-        segment.isIncompatibleElectricalProfile = true;
-        segment.isStriped = true;
-        segment.text = `${voltage}, ${i18n.t('electricalProfiles.incompatibleProfile', {
-          ns: 'simulation',
-        })}`;
-      }
-    } else {
-      segment.color =
-        electricalProfileColorsWithoutProfile[
-          voltage as keyof typeof electricalProfileColorsWithoutProfile
-        ];
-
-      // compatible electric mode, but missing profile
-      segment.text = voltage;
-      segment.isStriped = true;
-    }
-
-    segment.textColor =
-      electricalProfileColorsWithoutProfile[
-        voltage as keyof typeof electricalProfileColorsWithoutProfile
-      ];
-  } else if (electrification.type === 'neutral_section') {
-    segment.text = 'Neutral';
-    segment.color = '#000000';
-    segment.textColor = '#000000';
-  } else {
-    segment.text = 'NonElectrified';
-    segment.color = '#000000';
-    segment.textColor = '#000';
-  }
-
-  return segment;
 };
 
 export const createPowerRestrictionSegment = (

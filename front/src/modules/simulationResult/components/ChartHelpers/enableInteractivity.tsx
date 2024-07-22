@@ -18,7 +18,6 @@ import type { SpaceCurvesSlopesData } from 'modules/simulationResult/components/
 import type {
   AreaBlock,
   GevPreparedData,
-  GevPreparedDataV2,
 } from 'modules/simulationResult/components/SpeedSpaceChart/types';
 import { CHART_AXES, LIST_VALUES, type ChartAxes } from 'modules/simulationResult/consts';
 import type { PositionScaleDomain, SpaceCurvesSlopesDataV2 } from 'modules/simulationResult/types';
@@ -401,7 +400,7 @@ export const enableInteractivity = <
 
 export const enableInteractivityV2 = <
   T extends Chart | SpeedSpaceChart,
-  Data extends SimulationTrain<Date> | GevPreparedDataV2 | SpaceCurvesSlopesDataV2,
+  Data extends SimulationTrain<Date> | SpaceCurvesSlopesDataV2,
 >(
   chart: T | undefined,
   selectedTrainData: Data,

@@ -1,4 +1,9 @@
 import type {
+  LayerData,
+  PowerRestrictionValues,
+} from '@osrd-project/ui-speedspacechart/dist/types/chartTypes';
+
+import type {
   PathPropertiesFormatted,
   TrainSpaceTimeData,
 } from 'applications/operationalStudies/types';
@@ -7,7 +12,6 @@ import type {
   LightRollingStock,
   PostV2TimetableByIdStdcmApiResponse,
   RollingStockWithLiveries,
-  SimulationPowerRestrictionRange,
   SimulationResponse,
 } from 'common/api/osrdEditoastApi';
 import type { ValueOf } from 'utils/types';
@@ -50,7 +54,7 @@ export type StdcmV2Results = {
   stdcmResponse: StdcmV2SuccessResponse;
   speedSpaceChartData: {
     rollingStock: RollingStockWithLiveries;
-    formattedPowerRestrictions: SimulationPowerRestrictionRange[];
+    formattedPowerRestrictions?: LayerData<PowerRestrictionValues>[];
     formattedPathProperties: PathPropertiesFormatted;
     departureTime: string;
   } | null;
