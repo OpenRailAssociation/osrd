@@ -2,8 +2,9 @@ import { isEmpty, sortBy } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
 import type { StudyState } from 'applications/operationalStudies/consts';
-import { checkFieldInvalidity, checkNameInvalidity } from 'applications/operationalStudies/utils';
+import { isInvalidName } from 'applications/operationalStudies/utils';
 import type { SelectOptionObject } from 'common/BootstrapSNCF/SelectImprovedSNCF';
+import { SMALL_INPUT_MAX_LENGTH, SMALL_TEXT_AREA_MAX_LENGTH, isInvalidString } from 'utils/strings';
 
 import type { StudyForm } from './components/AddOrEditStudyModal';
 
@@ -30,9 +31,9 @@ export const checkStudyFields = (
   service_code: boolean;
   budget: boolean;
 } => ({
-  name: checkNameInvalidity(study.name),
-  description: checkFieldInvalidity(1024, study.description),
-  business_code: checkFieldInvalidity(128, study.business_code),
-  service_code: checkFieldInvalidity(128, study.service_code),
+  name: isInvalidName(study.name),
+  description: isInvalidString(SMALL_TEXT_AREA_MAX_LENGTH, study.description),
+  business_code: isInvalidString(SMALL_INPUT_MAX_LENGTH, study.business_code),
+  service_code: isInvalidString(SMALL_INPUT_MAX_LENGTH, study.service_code),
   budget: (study.budget ?? 0) > 2147483647,
 });

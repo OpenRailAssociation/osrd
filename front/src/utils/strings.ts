@@ -66,3 +66,11 @@ export function convertInputStringToNumber(str: string) {
 export function formatUicToCi(uic: number) {
   return uic.toString().replace(/^87/, '');
 }
+
+export const TEXT_AREA_MAX_LENGTH = 4096;
+export const SMALL_TEXT_AREA_MAX_LENGTH = 1024;
+export const TEXT_INPUT_MAX_LENGTH = 255;
+export const SMALL_INPUT_MAX_LENGTH = 128;
+
+export const isInvalidString = (maxLengthAuthorized: number, field?: string | null): boolean =>
+  !!field && field.length > maxLengthAuthorized;
