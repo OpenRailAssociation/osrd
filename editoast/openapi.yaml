@@ -1240,7 +1240,16 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedResponseOfLightRollingStockWithLiveries'
+                allOf:
+                - $ref: '#/components/schemas/PaginationStats'
+                - type: object
+                  required:
+                  - results
+                  properties:
+                    results:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/LightRollingStockWithLiveries'
   /light_rolling_stock/name/{rolling_stock_name}:
     get:
       tags:
@@ -7239,7 +7248,7 @@ components:
           liveries:
             type: array
             items:
-              $ref: '#/components/schemas/RollingStockLiveryMetadata'
+              $ref: '#/components/schemas/RollingStockLivery'
     LightTrainSchedule:
       type: object
       description: Returns the timetable with the main information about a train
@@ -7663,34 +7672,6 @@ components:
       - CreationDateDesc
       - LastModifiedDesc
       - LastModifiedAsc
-    PaginatedResponseOfLightRollingStockWithLiveries:
-      type: object
-      description: A paginated response
-      required:
-      - count
-      - previous
-      - next
-      - results
-      properties:
-        count:
-          type: integer
-          format: int64
-          description: The total number of items
-        next:
-          type: integer
-          format: int64
-          description: The next page number
-          nullable: true
-        previous:
-          type: integer
-          format: int64
-          description: The previous page number
-          nullable: true
-        results:
-          type: array
-          items:
-            $ref: '#/components/schemas/LightRollingStockWithLiveries'
-          description: The list of results
     PaginatedResponseOfScenarioWithCountTrains:
       type: object
       description: A paginated response
@@ -9703,7 +9684,7 @@ components:
           liveries:
             type: array
             items:
-              $ref: '#/components/schemas/RollingStockLiveryMetadata'
+              $ref: '#/components/schemas/RollingStockLivery'
     Route:
       type: object
       required:

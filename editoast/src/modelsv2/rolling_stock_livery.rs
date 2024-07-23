@@ -1,16 +1,13 @@
 use derivative::Derivative;
-use diesel::sql_types::BigInt;
-use diesel::sql_types::Text;
 use editoast_derive::ModelV2;
 use editoast_schemas::rolling_stock::RollingStockLivery;
-use editoast_schemas::rolling_stock::RollingStockLiveryMetadata;
-use serde::Deserialize;
-use serde::Serialize;
 
 use super::Document;
 use crate::error::Result;
-use crate::tables::rolling_stock_livery;
 use editoast_models::DbConnection;
+
+#[cfg(test)]
+use serde::Deserialize;
 
 /// Rolling Stock Livery
 ///
@@ -26,6 +23,7 @@ use editoast_models::DbConnection;
 #[derive(Debug, Clone, Derivative, ModelV2)]
 #[derivative(Default)]
 #[model(table = crate::tables::rolling_stock_livery)]
+#[cfg_attr(test, derive(Deserialize))]
 pub struct RollingStockLiveryModel {
     pub id: i64,
     pub name: String,
@@ -53,30 +51,6 @@ impl RollingStockLiveryModel {
             return Ok(doc_delete_result);
         }
         Ok(livery)
-    }
-}
-
-#[derive(Debug, Queryable, QueryableByName, Selectable, Serialize, Deserialize)]
-#[diesel(table_name = rolling_stock_livery)]
-pub struct RollingStockLiveryMetadataModel {
-    #[diesel(sql_type = BigInt)]
-    #[diesel(deserialize_as = i64)]
-    pub id: i64,
-    #[diesel(sql_type = Text)]
-    #[diesel(deserialize_as = String)]
-    pub name: String,
-    #[diesel(sql_type = BigInt)]
-    #[diesel(deserialize_as = Option<i64>)]
-    pub compound_image_id: Option<i64>,
-}
-
-impl From<RollingStockLiveryMetadataModel> for RollingStockLiveryMetadata {
-    fn from(livery_metadata_model: RollingStockLiveryMetadataModel) -> Self {
-        RollingStockLiveryMetadata {
-            id: livery_metadata_model.id,
-            name: livery_metadata_model.name,
-            compound_image_id: livery_metadata_model.compound_image_id,
-        }
     }
 }
 

@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 
-use editoast_schemas::rolling_stock::RollingStockLiveryMetadata;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
@@ -12,7 +11,7 @@ use editoast_schemas::rolling_stock::RollingResistance;
 use editoast_schemas::rolling_stock::RollingStockMetadata;
 use editoast_schemas::rolling_stock::RollingStockSupportedSignalingSystems;
 
-use crate::modelsv2::light_rolling_stock::LightRollingStockWithLiveriesModel;
+use crate::modelsv2::light_rolling_stock::LightRollingStockModel;
 
 editoast_common::schemas! {
     LightRollingStock,
@@ -42,9 +41,34 @@ pub struct LightRollingStock {
     #[schema(required)]
     pub power_restrictions: HashMap<String, String>,
     pub energy_sources: Vec<EnergySource>,
-    #[serde(skip)]
-    pub version: i64,
     pub supported_signaling_systems: RollingStockSupportedSignalingSystems,
+}
+
+impl From<LightRollingStockModel> for LightRollingStock {
+    fn from(rolling_stock_model: LightRollingStockModel) -> Self {
+        LightRollingStock {
+            id: rolling_stock_model.id,
+            name: rolling_stock_model.name,
+            railjson_version: rolling_stock_model.railjson_version,
+            locked: rolling_stock_model.locked,
+            effort_curves: rolling_stock_model.effort_curves,
+            base_power_class: rolling_stock_model.base_power_class,
+            length: rolling_stock_model.length,
+            max_speed: rolling_stock_model.max_speed,
+            startup_time: rolling_stock_model.startup_time,
+            startup_acceleration: rolling_stock_model.startup_acceleration,
+            comfort_acceleration: rolling_stock_model.comfort_acceleration,
+            gamma: rolling_stock_model.gamma,
+            inertia_coefficient: rolling_stock_model.inertia_coefficient,
+            mass: rolling_stock_model.mass,
+            rolling_resistance: rolling_stock_model.rolling_resistance,
+            loading_gauge: rolling_stock_model.loading_gauge,
+            metadata: rolling_stock_model.metadata,
+            power_restrictions: rolling_stock_model.power_restrictions,
+            energy_sources: rolling_stock_model.energy_sources,
+            supported_signaling_systems: rolling_stock_model.supported_signaling_systems,
+        }
+    }
 }
 
 // Light effort curves schema for LightRollingStock
@@ -58,24 +82,4 @@ pub struct LightModeEffortCurves {
 pub struct LightEffortCurves {
     modes: HashMap<String, LightModeEffortCurves>,
     default_mode: String,
-}
-
-#[derive(Debug, Serialize, Deserialize, ToSchema)]
-pub struct LightRollingStockWithLiveries {
-    #[serde(flatten)]
-    pub rolling_stock: LightRollingStock,
-    pub liveries: Vec<RollingStockLiveryMetadata>,
-}
-
-impl From<LightRollingStockWithLiveriesModel> for LightRollingStockWithLiveries {
-    fn from(rolling_stock_with_liveries: LightRollingStockWithLiveriesModel) -> Self {
-        LightRollingStockWithLiveries {
-            rolling_stock: rolling_stock_with_liveries.rolling_stock,
-            liveries: rolling_stock_with_liveries
-                .liveries
-                .into_iter()
-                .map(|livery| livery.into())
-                .collect(),
-        }
-    }
 }

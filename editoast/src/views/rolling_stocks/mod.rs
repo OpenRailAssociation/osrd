@@ -2,6 +2,7 @@ pub mod light_rolling_stock;
 pub mod rolling_stock_form;
 
 use std::io::Cursor;
+use std::ops::DerefMut;
 
 use axum::extract::Json;
 use axum::extract::Multipart;
@@ -12,7 +13,6 @@ use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use editoast_derive::EditoastError;
 use editoast_schemas::rolling_stock::RollingStockLivery;
-use editoast_schemas::rolling_stock::RollingStockLiveryMetadata;
 use image::DynamicImage;
 use image::GenericImage;
 use image::ImageBuffer;
@@ -69,7 +69,26 @@ pub struct RollingStockWithLiveries {
     #[serde(flatten)]
     #[schema(value_type = RollingStock)]
     pub rolling_stock: RollingStockModel,
-    pub liveries: Vec<RollingStockLiveryMetadata>,
+    pub liveries: Vec<RollingStockLivery>,
+}
+
+impl RollingStockWithLiveries {
+    async fn try_fetch(conn: &mut DbConnection, rolling_stock: RollingStockModel) -> Result<Self> {
+        let rolling_stock_id = rolling_stock.id;
+        let liveries = RollingStockLiveryModel::list(
+            conn,
+            SelectionSettings::new()
+                .filter(move || RollingStockLiveryModel::ROLLING_STOCK_ID.eq(rolling_stock_id)),
+        )
+        .await?
+        .into_iter()
+        .map(Into::into)
+        .collect();
+        Ok(Self {
+            rolling_stock,
+            liveries,
+        })
+    }
 }
 
 #[derive(Debug, Clone, Serialize, PartialEq, Display, ToSchema)]
@@ -184,10 +203,14 @@ async fn get(
     State(db_pool): State<DbConnectionPoolV2>,
     Path(rolling_stock_id): Path<i64>,
 ) -> Result<Json<RollingStockWithLiveries>> {
-    let conn = &mut db_pool.get().await?;
-    let rolling_stock =
-        retrieve_existing_rolling_stock(conn, RollingStockKey::Id(rolling_stock_id)).await?;
-    let rolling_stock_with_liveries = rolling_stock.with_liveries(conn).await?;
+    let rolling_stock = retrieve_existing_rolling_stock(
+        db_pool.get().await?.deref_mut(),
+        RollingStockKey::Id(rolling_stock_id),
+    )
+    .await?;
+    let rolling_stock_with_liveries =
+        RollingStockWithLiveries::try_fetch(db_pool.get().await?.deref_mut(), rolling_stock)
+            .await?;
     Ok(Json(rolling_stock_with_liveries))
 }
 
@@ -204,10 +227,14 @@ async fn get_by_name(
     State(db_pool): State<DbConnectionPoolV2>,
     Path(rolling_stock_name): Path<String>,
 ) -> Result<Json<RollingStockWithLiveries>> {
-    let conn = &mut db_pool.get().await?;
-    let rolling_stock =
-        retrieve_existing_rolling_stock(conn, RollingStockKey::Name(rolling_stock_name)).await?;
-    let rolling_stock_with_liveries = rolling_stock.with_liveries(conn).await?;
+    let rolling_stock = retrieve_existing_rolling_stock(
+        db_pool.get().await?.deref_mut(),
+        RollingStockKey::Name(rolling_stock_name),
+    )
+    .await?;
+    let rolling_stock_with_liveries =
+        RollingStockWithLiveries::try_fetch(db_pool.get().await?.deref_mut(), rolling_stock)
+            .await?;
     Ok(Json(rolling_stock_with_liveries))
 }
 
@@ -287,19 +314,18 @@ async fn update(
     rolling_stock_form.validate()?;
     let name = rolling_stock_form.name.clone();
 
-    let conn = &mut db_pool.get().await?;
-
-    let previous_rolling_stock =
-        RollingStockModel::retrieve_or_fail(conn, rolling_stock_id, || {
-            RollingStockError::KeyNotFound {
-                rolling_stock_key: RollingStockKey::Id(rolling_stock_id),
-            }
-        })
-        .await?;
+    let previous_rolling_stock = RollingStockModel::retrieve_or_fail(
+        db_pool.get().await?.deref_mut(),
+        rolling_stock_id,
+        || RollingStockError::KeyNotFound {
+            rolling_stock_key: RollingStockKey::Id(rolling_stock_id),
+        },
+    )
+    .await?;
     assert_rolling_stock_unlocked(&previous_rolling_stock)?;
 
     let mut new_rolling_stock = Into::<Changeset<RollingStockModel>>::into(rolling_stock_form)
-        .update(conn, rolling_stock_id)
+        .update(db_pool.get().await?.deref_mut(), rolling_stock_id)
         .await
         .map_err(|e| map_diesel_error(e, name.clone()))?
         .ok_or(RollingStockError::KeyNotFound {
@@ -309,12 +335,16 @@ async fn update(
     if new_rolling_stock != previous_rolling_stock {
         new_rolling_stock.version += 1;
         new_rolling_stock
-            .save(conn)
+            .save(db_pool.get().await?.deref_mut())
             .await
             .map_err(|err| map_diesel_error(err, name))?;
     }
 
-    Ok(Json(new_rolling_stock.with_liveries(conn).await?))
+    let new_rolling_stock_with_liveries =
+        RollingStockWithLiveries::try_fetch(db_pool.get().await?.deref_mut(), new_rolling_stock)
+            .await?;
+
+    Ok(Json(new_rolling_stock_with_liveries))
 }
 
 #[derive(Deserialize, IntoParams, ToSchema)]
