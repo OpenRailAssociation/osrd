@@ -10,6 +10,7 @@ import fr.sncf.osrd.api.api_v2.pathfinding.polymorphicPathfindingResponseAdapter
 import fr.sncf.osrd.api.api_v2.standalone_sim.SimulationResponse
 import fr.sncf.osrd.api.api_v2.standalone_sim.polymorphicElectricalProfileAdapter
 import fr.sncf.osrd.api.api_v2.standalone_sim.polymorphicSimulationResponseAdapter
+import fr.sncf.osrd.api.api_v2.standalone_sim.polymorphicSpeedLimitSourceAdapter
 import fr.sncf.osrd.utils.json.UnitAdapterFactory
 import java.time.ZonedDateTime
 
@@ -33,6 +34,7 @@ val stdcmResponseAdapter: JsonAdapter<STDCMResponseV2> =
         .addLast(polymorphicSTDCMResponseAdapter)
         .addLast(polymorphicSimulationResponseAdapter)
         .addLast(polymorphicElectricalProfileAdapter)
+        .addLast(polymorphicSpeedLimitSourceAdapter)
         .addLast(polymorphicPathfindingResponseAdapter)
         .addLast(UnitAdapterFactory())
         .addLast(KotlinJsonAdapterFactory())

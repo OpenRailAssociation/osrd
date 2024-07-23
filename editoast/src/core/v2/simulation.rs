@@ -99,13 +99,6 @@ pub struct ZoneUpdate {
     pub is_entry: bool,
 }
 
-/// A MRSP computation result (Most Restrictive Speed Profile)
-#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, ToSchema)]
-pub struct Mrsp {
-    positions: Vec<u64>,
-    speeds: Vec<f64>,
-}
-
 #[derive(Debug, Serialize, Hash)]
 pub struct SimulationScheduleItem {
     /// Position on the path in mm
@@ -210,7 +203,7 @@ pub struct RoutingZoneRequirement {
 
 #[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
 pub struct ElectricalProfiles {
-    /// List of `n` boundaries of the ranges.
+    /// List of `n` boundaries of the ranges (block path).
     /// A boundary is a distance from the beginning of the path in mm.
     pub boundaries: Vec<u64>,
     /// List of `n+1` values associated to the ranges
@@ -226,6 +219,35 @@ pub enum ElectricalProfileValue {
         profile: Option<String>,
         handled: bool,
     },
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
+#[serde(tag = "speed_limit_source_type", rename_all = "snake_case")]
+#[allow(clippy::enum_variant_names)]
+pub enum SpeedLimitSource {
+    GivenTrainTag { tag: String },
+    FallbackTag { tag: String },
+    UnknownTag,
+}
+
+#[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
+pub struct SpeedLimitProperty {
+    /// in meters per second
+    pub speed: f64,
+    /// source of the speed-limit if relevant (tag used)
+    #[schema(inline)]
+    pub source: Option<SpeedLimitSource>,
+}
+
+/// A MRSP computation result (Most Restrictive Speed Profile)
+#[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
+pub struct SpeedLimitProperties {
+    /// List of `n` boundaries of the ranges (block path).
+    /// A boundary is a distance from the beginning of the path in mm.
+    pub boundaries: Vec<u64>,
+    /// List of `n+1` values associated to the ranges
+    #[schema(inline)]
+    pub values: Vec<SpeedLimitProperty>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
@@ -275,7 +297,7 @@ pub enum SimulationResponse {
         /// User-selected simulation: can be base or provisional
         final_output: CompleteReportTrain,
         #[schema(inline)]
-        mrsp: Mrsp,
+        mrsp: SpeedLimitProperties,
         #[schema(inline)]
         electrical_profiles: ElectricalProfiles,
     },

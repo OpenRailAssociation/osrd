@@ -20,9 +20,12 @@ data class UndirectedTrackRange(
     var end: Offset<TrackSection>,
 )
 
-data class RangeValues<T>(
-    val boundaries: List<Offset<TravelledPath>> = listOf(),
-    val values: List<T> = listOf()
+data class RangeValues<valueT>(
+    // List of `n` internal boundaries of the ranges along the path (excluding start and end
+    // bounds).
+    @Json(name = "boundaries") val internalBoundaries: List<Offset<TravelledPath>> = listOf(),
+    // List of `n+1` values associated to the bounded intervals
+    val values: List<valueT> = listOf()
 )
 
 class TrackLocation(val track: String, val offset: Offset<TrackSection>)

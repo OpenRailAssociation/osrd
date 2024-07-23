@@ -9,8 +9,6 @@ import fr.sncf.osrd.utils.indexing.DirStaticIdxList
 import fr.sncf.osrd.utils.indexing.StaticIdx
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Offset
-import fr.sncf.osrd.utils.units.Speed
-import java.lang.RuntimeException
 
 data class IdxWithOffset<T, U>(
     val value: StaticIdx<T>,
@@ -44,7 +42,8 @@ interface PathProperties {
 
     fun getNeutralSections(): DistanceRangeMap<NeutralSection>
 
-    @JvmName("getSpeedLimits") fun getSpeedLimits(trainTag: String?): DistanceRangeMap<Speed>
+    @JvmName("getSpeedLimitProperties")
+    fun getSpeedLimitProperties(trainTag: String?): DistanceRangeMap<SpeedLimitProperty>
 
     @JvmName("getLength") fun getLength(): Distance
 

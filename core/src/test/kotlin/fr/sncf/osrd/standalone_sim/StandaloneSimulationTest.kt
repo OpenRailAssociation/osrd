@@ -22,7 +22,10 @@ import fr.sncf.osrd.utils.Helpers
 import fr.sncf.osrd.utils.distanceRangeMapOf
 import fr.sncf.osrd.utils.pathFromRoutes
 import fr.sncf.osrd.utils.toIdxList
-import fr.sncf.osrd.utils.units.*
+import fr.sncf.osrd.utils.units.Distance
+import fr.sncf.osrd.utils.units.Offset
+import fr.sncf.osrd.utils.units.TimeDelta
+import fr.sncf.osrd.utils.units.seconds
 import java.util.stream.Stream
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.Test
@@ -230,7 +233,7 @@ class StandaloneSimulationTest {
         // Test margin values
         val boundaries = mutableListOf<Offset<TravelledPath>>()
         boundaries.add(Offset(Distance.ZERO))
-        boundaries.addAll(testCase.margins.boundaries)
+        boundaries.addAll(testCase.margins.internalBoundaries)
         boundaries.add(Offset(testCase.pathLength))
         for (i in 0 until testCase.margins.values.size) {
             val entryOffset = boundaries[i]

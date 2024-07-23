@@ -57,8 +57,25 @@ export const simulation: SimulationResponseSuccess = {
     ],
   },
   mrsp: {
-    positions: [0, 1000000, 2000000, 3000000],
-    speeds: [0, 10, 20],
+    boundaries: [1000000, 2000000, 2500000],
+    values: [
+      {
+        speed: 0,
+        source: { speed_limit_source_type: 'given_train_tag', tag: 'MA90' },
+      },
+      {
+        speed: 10,
+        source: { speed_limit_source_type: 'fallback_tag', tag: 'MA80' },
+      },
+      {
+        speed: 10,
+        source: null,
+      },
+      {
+        speed: 20,
+        source: { speed_limit_source_type: 'unknown_tag' },
+      },
+    ],
   },
   provisional: {
     positions: [0, 1000000, 2000000, 3000000],
