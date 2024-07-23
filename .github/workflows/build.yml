@@ -482,6 +482,85 @@ jobs:
         with:
           path: "./output/reports/spotbugs/*.xml"
 
+  check_train_sim_bindings_sync:
+    runs-on: ubuntu-latest
+    needs:
+      - build
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build kotlin bindings
+        run: |
+          docker run --name=train-sim-sync -v $PWD/output:/output \
+            -e RUSTDOCFLAGS="-D warnings" \
+            ${{ fromJSON(needs.build.outputs.stable_tags).train-sim-rust-test }} \
+            cargo run -r -p uniffi-bindgen -- generate --library target/release/libtrain_sim.so --language kotlin --out-dir /output/kotlin_bindings_temp
+
+          exit $(docker wait train-sim-sync)
+      
+      - name: Check for unexpected changes
+        run: |
+          diff -r -u $PWD/train-sim/kotlin_bindings/src/main/kotlin $PWD/output/kotlin_bindings_temp
+
+  check_train_sim:
+    runs-on: ubuntu-latest
+    needs:
+      - build
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Format check
+        run: |
+          docker run --name=train-sim-format -v $PWD/output:/output \
+            ${{ fromJSON(needs.build.outputs.stable_tags).train-sim-rust-test }} \
+            cargo fmt --check
+
+          exit $(docker wait train-sim-format)
+
+      - name: Clippy check
+        run: |
+          docker run --name=train-sim-clippy -v $PWD/output:/output \
+            ${{ fromJSON(needs.build.outputs.stable_tags).train-sim-rust-test }} \
+            cargo clippy --all-features --all-targets -- -D warnings
+
+          exit $(docker wait train-sim-clippy)
+
+      - name: Execute tests within container
+        run: |
+          docker run --name=train-sim-test -v $PWD/output:/output \
+            ${{ fromJSON(needs.build.outputs.stable_tags).train-sim-rust-test }} \
+            /bin/bash -c "cargo test --verbose && grcov . --binary-path ./target/debug/ -s . -t lcov --branch --ignore-not-existing --ignore "/*" -o /output/lcov.info"
+
+          exit $(docker wait train-sim-test)
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
+        with:
+          name: codecov
+          flags: editoast
+          fail_ci_if_error: true
+          verbose: true
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./output/lcov.info  
+
+  check_train_sim_bindings_tests:
+    runs-on: ubuntu-latest
+    needs:
+      - build
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Execute tests within container
+        run: |
+          docker run --name core-test \
+            -v $PWD/kotlin_bindings/build:/output ${{ fromJSON(needs.build.outputs.stable_tags).train-sim-bindings-test }} \
+            /bin/bash -c 'gradle test'
+          exit $(docker wait core-test)
+
+
   check_editoast_tests:
     runs-on: ubuntu-latest
 

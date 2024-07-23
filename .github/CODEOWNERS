@@ -28,6 +28,7 @@
 
 # --- CORE ---
 /core                                                    @openrailassociation/OSRD-Core
+/train-sim                                               @openrailassociation/OSRD-Core
 
 # --- CORE PHYSICS ---
 /core/*Physics*.java                                     @openrailassociation/OSRD-Physics

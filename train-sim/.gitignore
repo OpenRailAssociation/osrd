@@ -1,0 +1,6 @@
+target
+build
+gradle
+.vscode
+.idea
+.gradle
