@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 
 import type { SimulationResponseSuccess } from 'applications/operationalStudies/types';
 import type { ReportTrainV2 } from 'common/api/osrdEditoastApi';
-import type { PositionSpeedTime } from 'reducers/osrdsimulation/types';
+import type { PositionSpeedTime, SpeedRanges } from 'reducers/osrdsimulation/types';
 import { mmToM } from 'utils/physics';
 
 import DriverTrainScheduleStopV2 from './DriverTrainScheduleStopV2';
@@ -33,12 +33,11 @@ const DriverTrainScheduleStopListV2 = ({
     [trainRegime]
   );
 
-  const formattedMrsp = useMemo(
-    () =>
-      mrsp.positions.map((_position, index) => ({
-        position: _position,
-        speed: mrsp.speeds[index],
-      })),
+  const formattedMrsp: SpeedRanges = useMemo(
+    () => ({
+      internalBoundaries: mrsp.boundaries.map((boundary) => mmToM(boundary)),
+      speeds: mrsp.values.map(({ speed }) => speed),
+    }),
     [mrsp]
   );
 

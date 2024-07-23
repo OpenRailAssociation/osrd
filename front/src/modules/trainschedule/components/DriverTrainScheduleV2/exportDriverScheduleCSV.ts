@@ -1,19 +1,17 @@
-import * as d3 from 'd3';
-
 import type {
   ElectrificationRangeV2,
   SimulationResponseSuccess,
 } from 'applications/operationalStudies/types';
 import { convertDepartureTimeIntoSec } from 'applications/operationalStudies/utils';
 import type { ReportTrainV2, TrainScheduleBase } from 'common/api/osrdEditoastApi';
-import type { PositionSpeedTime, SpeedPosition, Train } from 'reducers/osrdsimulation/types';
+import type { PositionSpeedTime, SpeedRanges } from 'reducers/osrdsimulation/types';
 import { timestampToHHMMSS } from 'utils/date';
-import { mmToM } from 'utils/physics';
+import { mmToM, mToMm } from 'utils/physics';
 import { ms2sec } from 'utils/timeManipulation';
 
 import { BaseOrEco, type BaseOrEcoType } from './consts';
 import type { OperationalPointWithTimeAndSpeed } from './types';
-import { interpolateValue } from './utils';
+import { getActualVmax, interpolateValue } from './utils';
 
 /**
  * CSV Export of trainschedule
@@ -56,20 +54,12 @@ const pointToComma = (number: number) => number.toString().replace('.', ',');
 const compareOldActualValues = (old?: string, actual?: string) =>
   old !== undefined && actual === undefined ? old : actual;
 
-const getStepSpeedLimit = (_position: number, speedLimitList: Train['vmax']) => {
-  const bisector = d3.bisectLeft(
-    speedLimitList.map((d: SpeedPosition) => d.position),
-    _position
-  );
-  return speedLimitList[bisector].speed || 0;
-};
-
 // Add OPs inside speedsteps array, gather speedlimit with stop position, add electrification ranges,
 // and sort the array along position before return
 const overloadSteps = (
   trainRegime: ReportTrainV2,
   operationalPoints: OperationalPointWithTimeAndSpeed[],
-  speedLimits: SpeedPosition[],
+  speedLimits: SpeedRanges,
   electrificationRanges: ElectrificationRangeV2[]
 ): PositionSpeedTimeOP[] => {
   const speedsAtOps = operationalPoints.map((op) => ({
@@ -81,12 +71,14 @@ const overloadSteps = (
     lineCode: op.line_code,
     trackName: op.track_name,
   }));
-  const speedsAtSpeedLimitChange = speedLimits.map((speedLimit) => ({
-    position: mmToM(speedLimit.position),
-    speed: interpolateValue(trainRegime, speedLimit.position, 'speeds'),
-    speedLimit: speedLimit.speed,
-    time: interpolateValue(trainRegime, speedLimit.position, 'times'),
-  }));
+  const speedsAtSpeedLimitChange = speedLimits.speeds.map((_speed, index) => {
+    const boundary = index > 0 ? speedLimits.internalBoundaries[index - 1] : 0;
+    return {
+      position: boundary,
+      speed: interpolateValue(trainRegime, mToMm(boundary), 'speeds'),
+      time: interpolateValue(trainRegime, mToMm(boundary), 'times'),
+    };
+  });
   const speedsAtElectrificationRanges: PositionSpeedTimeOP[] = [];
   electrificationRanges.forEach((electrification, idx) => {
     const electrificationType = electrification.electrificationUsage.type;
@@ -213,10 +205,11 @@ export default function driverTrainScheduleV2ExportCSV(
       (time) => convertDepartureTimeIntoSec(train.start_time) + ms2sec(time)
     ),
   };
-  const formattedMrsp = simulatedTrain.mrsp.positions.map((_position, index) => ({
-    position: _position,
-    speed: simulatedTrain.mrsp.speeds[index],
-  }));
+
+  const formattedMrsp: SpeedRanges = {
+    internalBoundaries: simulatedTrain.mrsp.boundaries.map((d) => mmToM(d)),
+    speeds: simulatedTrain.mrsp.values.map((value) => value.speed),
+  };
 
   const speedsWithOPsAndSpeedLimits = overloadSteps(
     trainRegimeWithAccurateTime,
@@ -233,9 +226,7 @@ export default function driverTrainScheduleV2ExportCSV(
     seconds: pointToComma(+speed.time.toFixed(1)),
     position: pointToComma(+(speed.position / 1000).toFixed(3)),
     speed: pointToComma(+(speed.speed * 3.6).toFixed(3)),
-    speedLimit: pointToComma(
-      Math.round((speed.speedLimit ?? getStepSpeedLimit(speed.position, formattedMrsp)) * 3.6)
-    ),
+    speedLimit: pointToComma(getActualVmax(speed.position, formattedMrsp)),
     lineCode: speed.lineCode,
     electrificationType: speed.electrificationType,
     electrificationMode: speed.electrificationMode,

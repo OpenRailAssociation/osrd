@@ -5,6 +5,7 @@ import fr.sncf.osrd.api.pathfinding.makePathProps
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope.EnvelopeTestUtils
 import fr.sncf.osrd.envelope.MRSPEnvelopeBuilder.LimitKind
+import fr.sncf.osrd.envelope_sim.EnvelopeProfile
 import fr.sncf.osrd.railjson.schema.common.RJSWaypointRef
 import fr.sncf.osrd.railjson.schema.common.graph.ApplicableDirection
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection
@@ -13,6 +14,8 @@ import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSApplicableDirectionsTra
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSSpeedSection
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.sim_infra.api.PathProperties
+import fr.sncf.osrd.sim_infra.api.SpeedLimitSource.GivenTrainTag
+import fr.sncf.osrd.sim_infra.api.SpeedLimitSource.UnknownTag
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.TestTrains
 import fr.sncf.osrd.utils.Helpers
@@ -247,14 +250,18 @@ class MRSPTest {
                     ),
                     // Speed section with incorrect train tag => speed 1
                     EnvelopeTestUtils.makeFlatPart(
-                        LimitKind.SPEED_LIMIT,
+                        listOf(LimitKind.SPEED_LIMIT, EnvelopeProfile.CONSTANT_SPEED, UnknownTag()),
                         POSITION1,
                         POSITION2,
                         SPEED1
                     ),
                     // Speed section with correct train tag => speed 3
                     EnvelopeTestUtils.makeFlatPart(
-                        LimitKind.SPEED_LIMIT,
+                        listOf(
+                            LimitKind.SPEED_LIMIT,
+                            EnvelopeProfile.CONSTANT_SPEED,
+                            GivenTrainTag(TRAIN_TAG2)
+                        ),
                         POSITION2,
                         POSITION3,
                         SPEED3

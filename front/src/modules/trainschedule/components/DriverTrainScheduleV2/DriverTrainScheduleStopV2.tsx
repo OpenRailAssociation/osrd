@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 
 import cx from 'classnames';
 
-import type { PositionSpeedTime, SpeedPosition } from 'reducers/osrdsimulation/types';
+import type { PositionSpeedTime, SpeedRanges } from 'reducers/osrdsimulation/types';
 
 import type { OperationalPointWithTimeAndSpeed } from './types';
 import { getActualSpeed, getActualVmax, getAverageSpeed, getTime } from './utils';
@@ -12,7 +12,7 @@ type DriverTrainScheduleStopV2Props = {
   operationalPoints: OperationalPointWithTimeAndSpeed[];
   idx: number;
   trainRegimeReports: PositionSpeedTime[];
-  speedLimits: SpeedPosition[];
+  speedLimits: SpeedRanges;
 };
 
 const DriverTrainScheduleStopV2 = ({

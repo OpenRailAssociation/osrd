@@ -988,8 +988,8 @@ mod tests {
                         "routing_requirements": []
                     },
                     "mrsp": {
-                        "positions": [],
-                        "speeds": []
+                        "boundaries": [],
+                        "values": []
                     },
                     "electrical_profiles": {
                         "boundaries": [],

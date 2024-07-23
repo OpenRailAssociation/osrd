@@ -2,6 +2,7 @@ package fr.sncf.osrd.sim_infra.api
 
 import fr.sncf.osrd.geom.LineString
 import fr.sncf.osrd.utils.DistanceRangeMap
+import fr.sncf.osrd.utils.SelfTypeHolder
 import fr.sncf.osrd.utils.indexing.StaticIdx
 import fr.sncf.osrd.utils.indexing.StaticIdxList
 import fr.sncf.osrd.utils.units.Length
@@ -12,6 +13,38 @@ data class NeutralSection(
     val lowerPantograph: Boolean,
     val isAnnouncement: Boolean,
 )
+
+@JvmRecord
+data class SpeedLimitProperty(
+    val speed: Speed,
+    val source: SpeedLimitSource? // if train-tag used, source of the speed-limit
+)
+
+sealed class SpeedLimitSource : SelfTypeHolder {
+    override val selfType: Class<out SelfTypeHolder>
+        get() = SpeedLimitSource::class.java
+
+    /** Given train-tag was found on the track and used */
+    data class GivenTrainTag(val tag: String) : SpeedLimitSource()
+
+    /** Given train-tag is unknown on the track, using one of its configured fallbacks */
+    data class FallbackTag(val tag: String) : SpeedLimitSource()
+
+    /**
+     * Given train-tag and its configured fallbacks (if configured) are unknown on the track: no
+     * speed-limit applied from tag
+     */
+    class UnknownTag : SpeedLimitSource() {
+        override fun equals(other: Any?): Boolean {
+            if (other is UnknownTag) return true
+            return super.equals(other)
+        }
+
+        override fun hashCode(): Int {
+            return 1
+        }
+    }
+}
 
 /**
  * An operational point is a special location (such as a station). It has an ID and a set of
@@ -46,11 +79,11 @@ interface TrackProperties {
 
     fun getTrackChunkNeutralSections(trackChunk: DirTrackChunkId): DistanceRangeMap<NeutralSection>
 
-    fun getTrackChunkSpeedSections(
+    fun getTrackChunkSpeedLimitProperties(
         trackChunk: DirTrackChunkId,
         trainTag: String?,
         route: String?
-    ): DistanceRangeMap<Speed>
+    ): DistanceRangeMap<SpeedLimitProperty>
 
     fun getTrackChunkGeom(trackChunk: TrackChunkId): LineString
 

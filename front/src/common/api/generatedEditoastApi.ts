@@ -3621,7 +3621,7 @@ export type SimulationResponse =
   | {
       base: ReportTrainV2;
       electrical_profiles: {
-        /** List of `n` boundaries of the ranges.
+        /** List of `n` boundaries of the ranges (block path).
         A boundary is a distance from the beginning of the path in mm. */
         boundaries: number[];
         /** List of `n+1` values associated to the ranges */
@@ -3644,8 +3644,29 @@ export type SimulationResponse =
       };
       /** A MRSP computation result (Most Restrictive Speed Profile) */
       mrsp: {
-        positions: number[];
-        speeds: number[];
+        /** List of `n` boundaries of the ranges (block path).
+        A boundary is a distance from the beginning of the path in mm. */
+        boundaries: number[];
+        /** List of `n+1` values associated to the ranges */
+        values: {
+          source?:
+            | (
+                | {
+                    speed_limit_source_type: 'given_train_tag';
+                    tag: string;
+                  }
+                | {
+                    speed_limit_source_type: 'fallback_tag';
+                    tag: string;
+                  }
+                | {
+                    speed_limit_source_type: 'unknown_tag';
+                  }
+              )
+            | null;
+          /** in meters per second */
+          speed: number;
+        }[];
       };
       provisional: ReportTrainV2;
       status: 'success';

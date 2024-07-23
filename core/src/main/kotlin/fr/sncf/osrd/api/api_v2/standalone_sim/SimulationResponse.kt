@@ -8,7 +8,8 @@ import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import fr.sncf.osrd.api.api_v2.*
 import fr.sncf.osrd.conflicts.TravelledPath
 import fr.sncf.osrd.reporting.exceptions.OSRDError
-import fr.sncf.osrd.sim_infra.api.Path
+import fr.sncf.osrd.sim_infra.api.SpeedLimitProperty
+import fr.sncf.osrd.sim_infra.api.SpeedLimitSource
 import fr.sncf.osrd.utils.json.UnitAdapterFactory
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.TimeDelta
@@ -19,7 +20,7 @@ class SimulationSuccess(
     val base: ReportTrain,
     val provisional: ReportTrain,
     @Json(name = "final_output") val finalOutput: CompleteReportTrain,
-    val mrsp: MRSPResponse,
+    val mrsp: RangeValues<SpeedLimitProperty>,
     @Json(name = "electrical_profiles") val electricalProfiles: RangeValues<ElectricalProfileValue>,
 ) : SimulationResponse
 
@@ -31,13 +32,12 @@ sealed class ElectricalProfileValue {
             if (other is NoProfile) return true
             return super.equals(other)
         }
+
+        override fun hashCode(): Int {
+            return 1
+        }
     }
 }
-
-class MRSPResponse(
-    val positions: List<Offset<Path>>,
-    val speeds: List<Double>,
-)
 
 class CompleteReportTrain(
     positions: List<Offset<TravelledPath>>,
@@ -73,10 +73,17 @@ val polymorphicElectricalProfileAdapter: PolymorphicJsonAdapterFactory<Electrica
         .withSubtype(ElectricalProfileValue.NoProfile::class.java, "no_profile")
         .withSubtype(ElectricalProfileValue.Profile::class.java, "profile")
 
+val polymorphicSpeedLimitSourceAdapter: PolymorphicJsonAdapterFactory<SpeedLimitSource> =
+    PolymorphicJsonAdapterFactory.of(SpeedLimitSource::class.java, "speed_limit_source_type")
+        .withSubtype(SpeedLimitSource.GivenTrainTag::class.java, "given_train_tag")
+        .withSubtype(SpeedLimitSource.FallbackTag::class.java, "fallback_tag")
+        .withSubtype(SpeedLimitSource.UnknownTag::class.java, "unknown_tag")
+
 val simulationResponseAdapter: JsonAdapter<SimulationResponse> =
     Moshi.Builder()
         .add(polymorphicSimulationResponseAdapter)
         .add(polymorphicElectricalProfileAdapter)
+        .add(polymorphicSpeedLimitSourceAdapter)
         .addLast(UnitAdapterFactory())
         .addLast(KotlinJsonAdapterFactory())
         .build()

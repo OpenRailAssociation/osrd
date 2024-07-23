@@ -1,5 +1,6 @@
 import datetime
 import json
+from typing import Any, Dict
 
 import requests
 
@@ -158,3 +159,57 @@ def test_work_schedules(small_scenario_v2: Scenario, fast_rolling_stock: int):
     response = r.json()
     departure_time = datetime.datetime.fromisoformat(response["departure_time"].replace("Z", "+00:00"))
     assert departure_time >= end_time.astimezone(departure_time.tzinfo)
+
+
+def test_mrsp_sources(
+    small_infra: Infra,
+    timetable_v2_id: int,
+    fast_rolling_stock: int,
+):
+    requests.post(f"{EDITOAST_URL}infra/{small_infra.id}/load").raise_for_status()
+    stdcm_payload = {
+        "start_time": "2024-05-22T10:00:00.000Z",
+        "rolling_stock_id": fast_rolling_stock,
+        "comfort": "STANDARD",
+        "maximum_departure_delay": 86400000,
+        "maximum_run_time": 86400000,
+        "steps": [
+            {"location": {"track": "TH0", "offset": 820000}},
+            {"duration": 1, "location": {"track": "TH1", "offset": 5000000}},
+        ],
+        "speed_limit_tags": "E32C",
+        "time_gap_before": 3600000,
+        "time_gap_after": 3600000,
+        "margin": "0%",
+        "standard_allowance": "3%",
+    }
+
+    content = _get_stdcm_response(small_infra, timetable_v2_id, stdcm_payload)
+    assert content["simulation"]["mrsp"] == {
+        "boundaries": [4180000, 4580000],
+        "values": [
+            {"speed": 27.778, "source": {"speed_limit_source_type": "given_train_tag", "tag": "E32C"}},
+            {"speed": 22.222, "source": {"speed_limit_source_type": "fallback_tag", "tag": "MA100"}},
+            {"speed": 80, "source": None},
+        ],
+    }
+
+    stdcm_payload["speed_limit_tags"] = "MA80"
+    content = _get_stdcm_response(small_infra, timetable_v2_id, stdcm_payload)
+    assert content["simulation"]["mrsp"] == {
+        "boundaries": [3680000, 4580000],
+        "values": [
+            {"speed": 39.444, "source": {"speed_limit_source_type": "unknown_tag"}},
+            {"speed": 31.111, "source": {"speed_limit_source_type": "unknown_tag"}},
+            {"speed": 80, "source": None},
+        ],
+    }
+
+
+def _get_stdcm_response(infra: Infra, timetable_v2_id: int, stdcm_payload: Dict[str, Any]):
+    stdcm_response = requests.post(
+        f"{EDITOAST_URL}/v2/timetable/{timetable_v2_id}/stdcm/?infra={infra.id}", json=stdcm_payload
+    )
+    stdcm_response.raise_for_status()
+    content = stdcm_response.json()
+    return content

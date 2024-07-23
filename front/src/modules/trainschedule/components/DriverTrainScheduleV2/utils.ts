@@ -13,9 +13,9 @@ import {
   type TrackSection,
   type TrainScheduleBase,
 } from 'common/api/osrdEditoastApi';
-import type { PositionSpeedTime, SpeedPosition } from 'reducers/osrdsimulation/types';
+import type { PositionSpeedTime, SpeedRanges } from 'reducers/osrdsimulation/types';
 import { store } from 'store';
-import { mmToM } from 'utils/physics';
+import { mmToM, msToKmhRounded } from 'utils/physics';
 import { ISO8601Duration2sec, ms2sec } from 'utils/timeManipulation';
 
 import type { OperationalPointWithTimeAndSpeed } from './types';
@@ -58,15 +58,6 @@ export function getTime(sec: number) {
 
 // On the next 3 functions, we need to check if the found index is included in the array
 // to prevent a white screen when datas are computing and synchronizing when switching the selected train
-export function getActualVmax(givenPosition: number, vmax: SpeedPosition[]) {
-  const vmaxPosition = d3.bisectLeft(
-    vmax.map((d) => mmToM(d.position)),
-    givenPosition
-  );
-  if (vmaxPosition >= vmax.length - 1) return Math.round(vmax[vmax.length - 1].speed * 3.6);
-  return Math.round(vmax[vmaxPosition].speed * 3.6);
-}
-
 export function getActualSpeedLeft(givenPosition: number, speed: PositionSpeedTime[]) {
   const speedPosition = d3.bisectLeft(
     speed.map((d) => d.position),
@@ -85,6 +76,34 @@ export function getActualPositionLeft(givenPosition: number, speed: PositionSpee
   );
   if (speedPosition >= speed.length - 1) return speed[speed.length - 1].position / 1000;
   return speed[speedPosition].position / 1000;
+}
+
+/**
+ * Get the Vmax at a givenPosition (in meters), using vmax (MRSP in m/s)
+ * Returns the current Vmax if in the middle of an interval, or
+ * the min of the Vmax before and after if exactly at a bound.
+ */
+export function findActualVmax(givenPosition: number, vmax: SpeedRanges): number {
+  // givenPosition is in meters
+  const vmaxUpperBoundIndex = d3.bisectRight(vmax.internalBoundaries, givenPosition);
+  // Error case: vmax doesn't respect the SpeedRanges specifications on the lists' lengths
+  if (vmaxUpperBoundIndex > vmax.speeds.length - 1) return 0;
+  // If exactly on a speed-limit change, use the minimal value of both side
+  const actualVmaxMetersPerSecond =
+    vmaxUpperBoundIndex > 0 && vmax.internalBoundaries[vmaxUpperBoundIndex - 1] === givenPosition
+      ? Math.min(vmax.speeds[vmaxUpperBoundIndex], vmax.speeds[vmaxUpperBoundIndex - 1])
+      : vmax.speeds[vmaxUpperBoundIndex];
+
+  return actualVmaxMetersPerSecond;
+}
+
+/**
+ * Given the position in m and the vmax in m/s (boundaries in m too),
+ * return the actual vmax at the givenPosition in km/h
+ */
+export function getActualVmax(givenPosition: number, vmax: SpeedRanges) {
+  const actualVMax = findActualVmax(givenPosition, vmax);
+  return msToKmhRounded(actualVMax);
 }
 
 export function getActualSpeedRight(givenPosition: number, speed: PositionSpeedTime[]) {

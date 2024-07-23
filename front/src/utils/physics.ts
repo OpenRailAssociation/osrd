@@ -55,6 +55,11 @@ export function msToKmh(v: number) {
   return v * 3.6;
 }
 
+/** Convert m/s to km/h and round the result */
+export function msToKmhRounded(v: number) {
+  return Math.round(msToKmh(v));
+}
+
 /**
  * @return the margin in min/100km
  * @param timeLost in seconds

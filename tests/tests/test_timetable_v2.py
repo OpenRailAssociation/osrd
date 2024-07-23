@@ -1,3 +1,5 @@
+from typing import Any, Dict, List
+
 import pytest
 import requests
 
@@ -139,3 +141,72 @@ def test_scheduled_points_with_incompatible_margins(
 
     # Should arrive roughly 4000s after departure, even if that doesn't fit the margins
     assert abs(travel_time_seconds - 4_000) < 2
+
+
+def test_mrsp_sources(
+    small_infra: Infra,
+    timetable_v2_id: int,
+    fast_rolling_stock: int,
+):
+    requests.post(f"{EDITOAST_URL}infra/{small_infra.id}/load").raise_for_status()
+    train_schedule_payload = [
+        {
+            "comfort": "STANDARD",
+            "constraint_distribution": "STANDARD",
+            "initial_speed": 0,
+            "labels": [],
+            "options": {"use_electrical_profiles": False},
+            "path": [
+                {"id": "start", "track": "TH0", "offset": 820000},
+                {"id": "end", "track": "TH1", "offset": 5000000},
+            ],
+            "power_restrictions": [],
+            "rolling_stock_name": "fast_rolling_stock",
+            "schedule": [
+                {
+                    "at": "start",
+                },
+                {
+                    "at": "end",
+                },
+            ],
+            "margins": {"boundaries": [], "values": ["3%"]},
+            "speed_limit_tag": "E32C",
+            "start_time": "2024-05-22T08:00:00.000Z",
+            "train_name": "name",
+        }
+    ]
+    content = _get_train_schedule_simulation_response(small_infra, timetable_v2_id, train_schedule_payload)
+    assert content["mrsp"] == {
+        "boundaries": [4180000, 4580000],
+        "values": [
+            {"speed": 27.778, "source": {"speed_limit_source_type": "given_train_tag", "tag": "E32C"}},
+            {"speed": 22.222, "source": {"speed_limit_source_type": "fallback_tag", "tag": "MA100"}},
+            {"speed": 80, "source": None},
+        ],
+    }
+
+    train_schedule_payload[0]["speed_limit_tag"] = "MA80"
+    content = _get_train_schedule_simulation_response(small_infra, timetable_v2_id, train_schedule_payload)
+    assert content["mrsp"] == {
+        "boundaries": [3680000, 4580000],
+        "values": [
+            {"speed": 39.444, "source": {"speed_limit_source_type": "unknown_tag"}},
+            {"speed": 31.111, "source": {"speed_limit_source_type": "unknown_tag"}},
+            {"speed": 80, "source": None},
+        ],
+    }
+
+
+def _get_train_schedule_simulation_response(
+    infra: Infra, timetable_v2_id: int, train_schedules_payload: List[Dict[str, Any]]
+):
+    ts_response = requests.post(
+        f"{EDITOAST_URL}/v2/timetable/{timetable_v2_id}/train_schedule", json=train_schedules_payload
+    )
+    ts_response.raise_for_status()
+    train_id = ts_response.json()[0]["id"]
+    sim_response = requests.get(f"{EDITOAST_URL}/v2/train_schedule/{train_id}/simulation/?infra_id={infra.id}")
+    sim_response.raise_for_status()
+    content = sim_response.json()
+    return content

@@ -1,9 +1,7 @@
 package fr.sncf.osrd.utils.json
 
 import com.squareup.moshi.*
-import fr.sncf.osrd.utils.units.Distance
-import fr.sncf.osrd.utils.units.Duration
-import fr.sncf.osrd.utils.units.Offset
+import fr.sncf.osrd.utils.units.*
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
 import java.time.ZonedDateTime
@@ -46,6 +44,26 @@ class OffsetAdapter<T> : JsonAdapter<Offset<T>?>() {
     @ToJson
     override fun toJson(writer: JsonWriter, value: Offset<T>?) {
         writer.value(value?.distance?.millimeters)
+    }
+}
+
+/**
+ * Utility class, used to put Speeds directly in json-adaptable classes. A value of type `double`
+ * will be expected, representing meters per second.
+ */
+class SpeedAdapter : JsonAdapter<Speed?>() {
+    @FromJson
+    override fun fromJson(reader: JsonReader): Speed? {
+        if (reader.peek() == JsonReader.Token.NULL) {
+            reader.skipValue()
+            return null
+        }
+        return reader.nextDouble().metersPerSecond
+    }
+
+    @ToJson
+    override fun toJson(writer: JsonWriter, value: Speed?) {
+        writer.value(value?.metersPerSecond)
     }
 }
 
@@ -96,6 +114,7 @@ class UnitAdapterFactory : JsonAdapter.Factory {
         if (type === Duration::class.java) return DurationAdapter()
         if (type === Distance::class.java) return DistanceAdapter()
         if (type === ZonedDateTime::class.java) return DateAdapter()
+        if (type === Speed::class.java) return SpeedAdapter()
         val rawType = Types.getRawType(type)
         if (rawType == Offset::class.java && type is ParameterizedType) {
             return OffsetAdapter<Any>()

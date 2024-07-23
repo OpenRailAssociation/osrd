@@ -524,12 +524,12 @@ class RawInfraImpl(
         return trackChunkPool[trackChunk.value].neutralSections.get(trackChunk.direction)
     }
 
-    override fun getTrackChunkSpeedSections(
+    override fun getTrackChunkSpeedLimitProperties(
         trackChunk: DirTrackChunkId,
         trainTag: String?,
         route: String?,
-    ): DistanceRangeMap<Speed> {
-        val res = distanceRangeMapOf<Speed>()
+    ): DistanceRangeMap<SpeedLimitProperty> {
+        val res = distanceRangeMapOf<SpeedLimitProperty>()
 
         var trainTagId = trainTag
         // TODO remove once long names are unused
@@ -543,14 +543,13 @@ class RawInfraImpl(
 
         for (entry in trackChunkPool[trackChunk.value].speedSections.get(trackChunk.direction)) {
             val speedSection = entry.value
-            var infraTagSpeed =
-                getInfraTagSpeedAndId(
-                        speedSection,
-                        trainTagId,
-                        trainTagName,
-                        trainSpeedLimitTagDescriptor
-                    )
-                    .first
+            val infraTagSpeedAndSource =
+                getInfraTagSpeedAndSource(
+                    speedSection,
+                    trainTagId,
+                    trainTagName,
+                    trainSpeedLimitTagDescriptor
+                )
 
             /* Route handling */
             val speedFromRoute = speedSection.speedByRoute[route]
@@ -561,19 +560,38 @@ class RawInfraImpl(
             // The same thing applies to speed limits by train tag.
             // TODO: as stated for SpeedSection class, a refactor is required to respect
             //       specifications
-            assert(infraTagSpeed == null || speedFromRoute == null) { "checked at parsing" }
-            val allowedSpeed = speedFromRoute ?: infraTagSpeed ?: speedSection.default
-            res.put(entry.lower, entry.upper, allowedSpeed)
+            assert(infraTagSpeedAndSource.first == null || speedFromRoute == null) {
+                "checked at parsing"
+            }
+            val allowedSpeedAndTag =
+                if (speedFromRoute != null) {
+                    SpeedLimitProperty(speedFromRoute, null)
+                } else if (infraTagSpeedAndSource.first != null) {
+                    SpeedLimitProperty(
+                        infraTagSpeedAndSource.first!!,
+                        infraTagSpeedAndSource.second
+                    )
+                } else {
+                    SpeedLimitProperty(
+                        speedSection.default,
+                        if (trainTag != null) SpeedLimitSource.UnknownTag() else null
+                    )
+                }
+            res.put(entry.lower, entry.upper, allowedSpeedAndTag)
         }
         return res
     }
 
-    private fun getInfraTagSpeedAndId(
+    private fun getInfraTagSpeedAndSource(
         speedSection: SpeedSection,
         trainTagId: String?,
         trainTagName: String?,
         trainSpeedLimitTagDescriptor: SpeedLimitTagDescriptor?
-    ): Pair<Speed?, String?> {
+    ): Pair<Speed?, SpeedLimitSource?> {
+        if (trainTagId == null) {
+            return Pair(null, null)
+        }
+
         /* SpeedLimitTag handling */
         var infraTagSpeed = speedSection.speedByTrainTag[trainTagId]
         // TODO remove once long names are unused
@@ -581,7 +599,8 @@ class RawInfraImpl(
             infraTagSpeed = speedSection.speedByTrainTag[trainTagName]
         }
 
-        var infraTagId = if (infraTagSpeed != null) trainTagId else null
+        var infraSpeedSource: SpeedLimitSource? =
+            if (infraTagSpeed != null) SpeedLimitSource.GivenTrainTag(trainTagId) else null
 
         if (infraTagSpeed == null && trainSpeedLimitTagDescriptor != null) {
             for (fallbackTagId in trainSpeedLimitTagDescriptor.fallbackList) {
@@ -594,12 +613,12 @@ class RawInfraImpl(
                 if (fallbackSpeed != null) {
                     if (infraTagSpeed == null || fallbackSpeed > infraTagSpeed) {
                         infraTagSpeed = fallbackSpeed
-                        infraTagId = fallbackTagId
+                        infraSpeedSource = SpeedLimitSource.FallbackTag(fallbackTagId)
                     }
                 }
             }
         }
-        return Pair(infraTagSpeed, infraTagId)
+        return Pair(infraTagSpeed, infraSpeedSource)
     }
 
     override fun getRoutesOnTrackChunk(trackChunk: DirTrackChunkId): StaticIdxList<Route> {

@@ -6,23 +6,27 @@ import com.google.common.collect.RangeMap
 import com.google.common.collect.TreeRangeMap
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.api.api_v2.RangeValues
-import fr.sncf.osrd.api.api_v2.standalone_sim.*
+import fr.sncf.osrd.api.api_v2.standalone_sim.ElectricalProfileValue
+import fr.sncf.osrd.api.api_v2.standalone_sim.MarginValue
+import fr.sncf.osrd.api.api_v2.standalone_sim.SimulationScheduleItem
+import fr.sncf.osrd.api.api_v2.standalone_sim.SimulationSuccess
 import fr.sncf.osrd.conflicts.TravelledPath
 import fr.sncf.osrd.envelope.Envelope
+import fr.sncf.osrd.envelope_sim.EnvelopeProfile
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext
 import fr.sncf.osrd.envelope_sim.allowances.LinearAllowance
 import fr.sncf.osrd.envelope_sim.allowances.MarecoAllowance
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceRange
-import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue.*
+import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue.FixedTime
+import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue.Percentage
+import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue.TimePerDistance
 import fr.sncf.osrd.envelope_sim.pipelines.MaxEffortEnvelope
 import fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath
 import fr.sncf.osrd.envelope_sim_infra.MRSP
 import fr.sncf.osrd.external_generated_inputs.ElectricalProfileMapping
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowanceDistribution
-import fr.sncf.osrd.sim_infra.api.Path
-import fr.sncf.osrd.sim_infra.api.PathProperties
-import fr.sncf.osrd.sim_infra.api.Route
+import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.impl.ChunkPath
 import fr.sncf.osrd.standalone_sim.result.ElectrificationRange
 import fr.sncf.osrd.standalone_sim.result.ElectrificationRange.ElectrificationUsage
@@ -33,6 +37,7 @@ import fr.sncf.osrd.utils.indexing.StaticIdxList
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
+import fr.sncf.osrd.utils.units.metersPerSecond
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -180,17 +185,31 @@ fun makeElectricalProfiles(
             .dropLast(1)
     val values = profileMap.asMapOfRanges().map { it.value }
 
-    return RangeValues(boundaries = boundaries, values = values)
+    return RangeValues(internalBoundaries = boundaries, values = values)
 }
 
-fun makeMRSPResponse(speedLimits: Envelope): MRSPResponse {
-    val positions = mutableListOf<Offset<Path>>()
-    val speeds = mutableListOf<Double>()
-    for (point in speedLimits.iteratePoints()) {
-        positions.add(Offset(point.position.meters))
-        speeds.add(point.speed)
+fun makeMRSPResponse(speedLimits: Envelope): RangeValues<SpeedLimitProperty> {
+    val internalBoundaries = mutableListOf<Offset<TravelledPath>>()
+    val sources = mutableListOf<SpeedLimitProperty>()
+    for (part in speedLimits.stream()) {
+        internalBoundaries.add(Offset(part.endPos.meters))
+        // Check that the part only holds one constant speed-limit (as source is unique per part)
+        assert(
+            part.getAttr(EnvelopeProfile::class.java) == EnvelopeProfile.CONSTANT_SPEED &&
+                part.pointCount() == 2 &&
+                part.minSpeed == part.maxSpeed
+        ) {
+            "Each MRSP envelope-part can contain only one speed-limit range"
+        }
+        sources.add(
+            SpeedLimitProperty(
+                part.beginSpeed.metersPerSecond,
+                part.getAttr(SpeedLimitSource::class.java)
+            )
+        )
     }
-    return MRSPResponse(positions, speeds)
+    internalBoundaries.removeLast()
+    return RangeValues(internalBoundaries, sources)
 }
 
 /**
@@ -328,7 +347,8 @@ fun distributeAllowance(
         val end = envelope.interpolateDepartureFromClamp(to.distance.meters)
         return end - start
     }
-    val rangeEnds = margins.boundaries.filter { it > startOffset && it < endOffset }.toMutableList()
+    val rangeEnds =
+        margins.internalBoundaries.filter { it > startOffset && it < endOffset }.toMutableList()
     rangeEnds.add(endOffset)
     val res = mutableListOf<AllowanceRange>()
     val baseTotalTime = rangeTime(startOffset, endOffset)
@@ -364,7 +384,7 @@ fun buildProvisionalEnvelope(
     // Add path extremities to boundaries
     val boundaries = mutableListOf<Offset<TravelledPath>>()
     boundaries.add(Offset(Distance.ZERO))
-    boundaries.addAll(rawMargins.boundaries)
+    boundaries.addAll(rawMargins.internalBoundaries)
     boundaries.add(Offset(Distance.fromMeters(context.path.length)))
     for (i in 0 until rawMargins.values.size) {
         val start = boundaries[i]

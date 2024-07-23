@@ -72,6 +72,13 @@ export type PositionSpeedTime<Time = number> = Position<Time> & {
 };
 export type ConsolidatedPositionSpeedTime = PositionSpeedTime<Date>;
 
+export type SpeedRanges = {
+  // List of `n` internal boundaries of the ranges along the path in m (excluding start and end bounds).
+  internalBoundaries: number[];
+  // List of `n+1` speeds associated to the bounded intervals in m/s
+  speeds: number[];
+};
+
 export interface Stop {
   id: string | null;
   name: string | null;
