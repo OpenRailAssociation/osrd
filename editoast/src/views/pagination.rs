@@ -6,7 +6,6 @@ use diesel::QueryResult;
 use diesel::QueryableByName;
 use diesel_async::methods::LoadQuery;
 use editoast_derive::EditoastError;
-use itertools::Itertools;
 use serde::Deserialize;
 use serde::Serialize;
 use thiserror::Error;
@@ -347,17 +346,6 @@ where
 
 impl<T: Query> Query for Paginated<T> {
     type SqlType = Untyped;
-}
-
-impl<T> PaginatedResponse<T> {
-    pub fn into<A: From<T>>(self) -> PaginatedResponse<A> {
-        PaginatedResponse {
-            count: self.count,
-            previous: self.previous,
-            next: self.next,
-            results: self.results.into_iter().map_into().collect(),
-        }
-    }
 }
 
 #[cfg(test)]

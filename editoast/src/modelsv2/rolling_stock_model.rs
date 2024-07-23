@@ -4,10 +4,6 @@ pub use rolling_stock_usage::TrainScheduleScenarioStudyProject;
 
 use std::collections::HashMap;
 
-use diesel::ExpressionMethods;
-use diesel::QueryDsl;
-use diesel::SelectableHelper;
-use diesel_async::RunQueryDsl;
 use editoast_derive::ModelV2;
 use editoast_schemas::rolling_stock::EffortCurves;
 use editoast_schemas::rolling_stock::EnergySource;
@@ -25,11 +21,7 @@ use validator::Validate;
 use validator::ValidationError;
 use validator::ValidationErrors;
 
-use crate::error::Result;
 use crate::modelsv2::prelude::*;
-use crate::modelsv2::rolling_stock_livery::RollingStockLiveryMetadataModel;
-use crate::views::rolling_stocks::RollingStockWithLiveries;
-use editoast_models::DbConnection;
 
 editoast_common::schemas! {
     RollingStockModel,
@@ -82,19 +74,6 @@ pub struct RollingStockModel {
 }
 
 impl RollingStockModel {
-    pub async fn with_liveries(self, conn: &mut DbConnection) -> Result<RollingStockWithLiveries> {
-        use crate::tables::rolling_stock_livery::dsl as livery_dsl;
-        let liveries = livery_dsl::rolling_stock_livery
-            .filter(livery_dsl::rolling_stock_id.eq(self.id))
-            .select(RollingStockLiveryMetadataModel::as_select())
-            .load(conn)
-            .await?;
-        Ok(RollingStockWithLiveries {
-            rolling_stock: self,
-            liveries: liveries.into_iter().map(|livery| livery.into()).collect(),
-        })
-    }
-
     pub fn has_thermal_curves(&self) -> bool {
         self.effort_curves
             .modes

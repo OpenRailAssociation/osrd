@@ -2,20 +2,31 @@ use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::Query;
 use axum::extract::State;
+use editoast_models::DbConnection;
+use editoast_models::DbConnectionPoolV2;
+use editoast_schemas::rolling_stock::RollingStockLivery;
+use itertools::Itertools;
+use serde::Serialize;
+use std::ops::DerefMut;
+use utoipa::ToSchema;
 
-use crate::decl_paginated_response;
 use crate::error::Result;
+use crate::modelsv2::rolling_stock_livery::RollingStockLiveryModel;
 use crate::modelsv2::LightRollingStockModel;
 use crate::modelsv2::Retrieve;
-use crate::views::pagination::PaginatedResponse;
+use crate::views::pagination::PaginatedList;
 use crate::views::pagination::PaginationQueryParam;
+use crate::views::pagination::PaginationStats;
+use crate::views::rolling_stocks::light_rolling_stock::LightRollingStock;
 use crate::views::rolling_stocks::RollingStockError;
 use crate::views::rolling_stocks::RollingStockIdParam;
 use crate::views::rolling_stocks::RollingStockKey;
 use crate::views::rolling_stocks::RollingStockNameParam;
-use editoast_models::DbConnectionPoolV2;
+use crate::List;
+use crate::SelectionSettings;
 
-use super::rolling_stocks::light_rolling_stock::LightRollingStockWithLiveries;
+#[cfg(test)]
+use serde::Deserialize;
 
 crate::routes! {
     "/light_rolling_stock" => {
@@ -25,14 +36,48 @@ crate::routes! {
     },
 }
 
-decl_paginated_response!(
-    PaginatedResponseOfLightRollingStockWithLiveries,
-    LightRollingStockWithLiveries
-);
-
 editoast_common::schemas! {
-    PaginatedResponseOfLightRollingStockWithLiveries,
     LightRollingStockWithLiveries,
+}
+
+#[derive(Debug, Serialize, ToSchema)]
+#[cfg_attr(test, derive(Deserialize))]
+pub struct LightRollingStockWithLiveries {
+    #[serde(flatten)]
+    pub rolling_stock: LightRollingStock,
+    pub liveries: Vec<RollingStockLivery>,
+}
+
+impl LightRollingStockWithLiveries {
+    async fn try_fetch(
+        conn: &mut DbConnection,
+        light_rolling_stock: LightRollingStockModel,
+    ) -> Result<Self> {
+        let light_rolling_stock_id = light_rolling_stock.id;
+        let liveries = RollingStockLiveryModel::list(
+            conn,
+            SelectionSettings::new().filter(move || {
+                RollingStockLiveryModel::ROLLING_STOCK_ID.eq(light_rolling_stock_id)
+            }),
+        )
+        .await?
+        .into_iter()
+        .map_into()
+        .collect();
+        Ok(Self {
+            rolling_stock: light_rolling_stock.into(),
+            liveries,
+        })
+    }
+}
+
+#[derive(Serialize, ToSchema)]
+#[cfg_attr(test, derive(Deserialize))]
+struct LightRollingStockWithLiveriesCountList {
+    #[schema(value_type = Vec<LightRollingStockWithLiveries>)]
+    results: Vec<LightRollingStockWithLiveries>,
+    #[serde(flatten)]
+    stats: PaginationStats,
 }
 
 /// Paginated list of rolling stock with a lighter response
@@ -41,28 +86,35 @@ editoast_common::schemas! {
     tag = "rolling_stock",
     params(PaginationQueryParam),
     responses(
-        (status = 200, body = PaginatedResponseOfLightRollingStockWithLiveries),
+        (status = 200, body = inline(LightRollingStockWithLiveriesCountList)),
     )
 )]
 async fn list(
     State(db_pool): State<DbConnectionPoolV2>,
     Query(page_settings): Query<PaginationQueryParam>,
-) -> Result<Json<PaginatedResponse<LightRollingStockWithLiveries>>> {
-    let conn = &mut db_pool.get().await?;
-    let (page, per_page) = page_settings.validate(1000)?.warn_page_size(100).unpack();
-    let result = LightRollingStockModel::list(conn, page, per_page).await?;
+) -> Result<Json<LightRollingStockWithLiveriesCountList>> {
+    let settings = page_settings
+        .validate(1000)?
+        .warn_page_size(100)
+        .into_selection_settings()
+        .order_by(|| LightRollingStockModel::ID.asc());
+    let (light_rolling_stocks, stats) =
+        LightRollingStockModel::list_paginated(db_pool.get().await?.deref_mut(), settings).await?;
 
-    let results: Vec<LightRollingStockWithLiveries> =
-        result.results.into_iter().map(|l| l.into()).collect();
+    let results = light_rolling_stocks
+        .into_iter()
+        .zip(db_pool.iter_conn())
+        .map(|(light_rolling_stock, conn)| async move {
+            LightRollingStockWithLiveries::try_fetch(conn.await?.deref_mut(), light_rolling_stock)
+                .await
+        });
 
-    let result = PaginatedResponse {
-        count: result.count,
-        previous: result.previous,
-        next: result.next,
+    let results = futures::future::try_join_all(results).await?;
+
+    Ok(Json(LightRollingStockWithLiveriesCountList {
         results,
-    };
-
-    Ok(Json(result))
+        stats,
+    }))
 }
 
 /// Retrieve a rolling stock's light representation by its id
@@ -76,18 +128,22 @@ async fn list(
 )]
 async fn get(
     State(db_pool): State<DbConnectionPoolV2>,
-    Path(rolling_stock_id): Path<i64>,
+    Path(light_rolling_stock_id): Path<i64>,
 ) -> Result<Json<LightRollingStockWithLiveries>> {
-    let conn = &mut db_pool.get().await?;
-    let rolling_stock = LightRollingStockModel::retrieve_or_fail(conn, rolling_stock_id, || {
-        RollingStockError::KeyNotFound {
-            rolling_stock_key: RollingStockKey::Id(rolling_stock_id),
-        }
-    })
+    let light_rolling_stock = LightRollingStockModel::retrieve_or_fail(
+        db_pool.get().await?.deref_mut(),
+        light_rolling_stock_id,
+        || RollingStockError::KeyNotFound {
+            rolling_stock_key: RollingStockKey::Id(light_rolling_stock_id),
+        },
+    )
     .await?;
-    let rollig_stock_with_liveries: LightRollingStockWithLiveries =
-        rolling_stock.with_liveries(conn).await?.into();
-    Ok(Json(rollig_stock_with_liveries))
+    let light_rolling_stock_with_liveries = LightRollingStockWithLiveries::try_fetch(
+        db_pool.get().await?.deref_mut(),
+        light_rolling_stock,
+    )
+    .await?;
+    Ok(Json(light_rolling_stock_with_liveries))
 }
 
 /// Retrieve a rolling stock's light representation by its name
@@ -101,19 +157,22 @@ async fn get(
 )]
 async fn get_by_name(
     State(db_pool): State<DbConnectionPoolV2>,
-    Path(rolling_stock_name): Path<String>,
+    Path(light_rolling_stock_name): Path<String>,
 ) -> Result<Json<LightRollingStockWithLiveries>> {
-    let conn = &mut db_pool.get().await?;
-    let rolling_stock =
-        LightRollingStockModel::retrieve_or_fail(conn, rolling_stock_name.clone(), || {
-            RollingStockError::KeyNotFound {
-                rolling_stock_key: RollingStockKey::Name(rolling_stock_name),
-            }
-        })
-        .await?;
-    let rollig_stock_with_liveries: LightRollingStockWithLiveries =
-        rolling_stock.with_liveries(conn).await?.into();
-    Ok(Json(rollig_stock_with_liveries))
+    let light_rolling_stock = LightRollingStockModel::retrieve_or_fail(
+        db_pool.get().await?.deref_mut(),
+        light_rolling_stock_name.clone(),
+        || RollingStockError::KeyNotFound {
+            rolling_stock_key: RollingStockKey::Name(light_rolling_stock_name),
+        },
+    )
+    .await?;
+    let light_rolling_stock_with_liveries = LightRollingStockWithLiveries::try_fetch(
+        db_pool.get().await?.deref_mut(),
+        light_rolling_stock,
+    )
+    .await?;
+    Ok(Json(light_rolling_stock_with_liveries))
 }
 
 #[cfg(test)]

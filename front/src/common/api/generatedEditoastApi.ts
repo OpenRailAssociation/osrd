@@ -1300,8 +1300,9 @@ export type GetLayersTileByLayerSlugAndViewSlugZXYApiArg = {
   y: number;
   z: number;
 };
-export type GetLightRollingStockApiResponse =
-  /** status 200  */ PaginatedResponseOfLightRollingStockWithLiveries;
+export type GetLightRollingStockApiResponse = /** status 200  */ PaginationStats & {
+  results: LightRollingStockWithLiveries[];
+};
 export type GetLightRollingStockApiArg = {
   page?: number;
   pageSize?: number | null;
@@ -2569,23 +2570,14 @@ export type LightRollingStock = {
   startup_time: number;
   supported_signaling_systems: RollingStockSupportedSignalingSystems;
 };
-export type RollingStockLiveryMetadata = {
+export type RollingStockLivery = {
   compound_image_id?: number | null;
   id: number;
   name: string;
+  rolling_stock_id: number;
 };
 export type LightRollingStockWithLiveries = LightRollingStock & {
-  liveries: RollingStockLiveryMetadata[];
-};
-export type PaginatedResponseOfLightRollingStockWithLiveries = {
-  /** The total number of items */
-  count: number;
-  /** The next page number */
-  next: number | null;
-  /** The previous page number */
-  previous: number | null;
-  /** The list of results */
-  results: LightRollingStockWithLiveries[];
+  liveries: RollingStockLivery[];
 };
 export type TrackLocation = {
   /** The offset on the track section in meters */
@@ -2860,7 +2852,7 @@ export type RollingStockForm = {
   supported_signaling_systems: RollingStockSupportedSignalingSystems;
 };
 export type RollingStockWithLiveries = RollingStock & {
-  liveries: RollingStockLiveryMetadata[];
+  liveries: RollingStockLivery[];
 };
 export type RollingStockKey =
   | {
@@ -2906,12 +2898,6 @@ export type RollingStockError =
       };
     }
   | 'BasePowerClassEmpty';
-export type RollingStockLivery = {
-  compound_image_id?: number | null;
-  id: number;
-  name: string;
-  rolling_stock_id: number;
-};
 export type RollingStockLiveryCreateForm = {
   images: Blob[];
   name: string;

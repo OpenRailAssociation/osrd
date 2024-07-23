@@ -83,6 +83,7 @@ const ROLLING_STOCK_SAMPLE_DATA: RollingStockWithLiveries = {
     {
       id: 312,
       name: 'default',
+      rolling_stock_id: 9,
       compound_image_id: 1908,
     },
   ],
