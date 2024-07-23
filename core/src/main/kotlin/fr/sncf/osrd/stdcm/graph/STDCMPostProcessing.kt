@@ -1,5 +1,6 @@
 package fr.sncf.osrd.stdcm.graph
 
+import datadog.trace.api.Trace
 import fr.sncf.osrd.api.pathfinding.makeOperationalPoints
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope_sim.EnvelopeSimPath
@@ -22,6 +23,8 @@ import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.RollingStock.Comfort
 import fr.sncf.osrd.train.TrainStop
 import fr.sncf.osrd.utils.units.meters
+import io.opentelemetry.api.trace.SpanKind
+import io.opentelemetry.instrumentation.annotations.WithSpan
 import java.util.*
 
 /**
@@ -33,6 +36,8 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
      * Builds the STDCM result object from the raw pathfinding result. This is the only non-private
      * method of this class, the rest is implementation detail.
      */
+    @WithSpan(value = "STDCM post processing", kind = SpanKind.SERVER)
+    @Trace(operationName = "STDCM post processing")
     fun makeResult(
         infra: RawSignalingInfra,
         path: Result,
