@@ -22,7 +22,15 @@
       "gesicoRequest": "and attach this document to your GESICO DSDM request.",
       "selectThisSimulation": "Select this simulation",
       "simulationNumber": "Simulation n°1",
-      "simulationSelected": "You have selected this simulation"
+      "simulationSelected": "You have selected this simulation",
+      "upgrade": {
+        "arrivalIncompatible": "Arrival time incompatible",
+        "helpUs": "Help us improve ST DCM",
+        "other": "Other",
+        "reason": "This simulation does not meet your needs because ...",
+        "startIncompatible": "Departure time incompatible",
+        "unqualifiedDriver": "Unqualified driver"
+      }
     },
     "stopCalculation": "Stop calculation"
   },

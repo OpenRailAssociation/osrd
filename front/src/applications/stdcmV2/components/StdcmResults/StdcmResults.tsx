@@ -16,6 +16,7 @@ import { Map } from 'modules/trainschedule/components/ManageTrainSchedule';
 import { dateTimeFormatting } from 'utils/date';
 
 import StcdmResultsTable from './StdcmResultsTable';
+import StdcmUpgrade from './StdcmUpgrade';
 
 type StcdmResultsV2Props = {
   stdcmData: StdcmV2SuccessResponse;
@@ -73,6 +74,7 @@ const StcdmResults = ({
             setIsSimulationSelected={setIsSimulationSelected}
             setInteractedResultsElements={setInteractedResultsElements}
           />
+          <StdcmUpgrade />
           {isSimulationSelected && (
             <div className="get-simulation">
               <div className="download-simulation">
