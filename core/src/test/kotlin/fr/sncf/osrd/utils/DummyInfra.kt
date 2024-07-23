@@ -428,6 +428,7 @@ class DummyInfra : RawInfra, BlockInfra {
 
     override fun getTrackChunkSpeedSections(
         trackChunk: DirTrackChunkId,
+        tagPolicy: SpeedLimitTagHandlingPolicy,
         trainTag: String?,
         route: String?
     ): DistanceRangeMap<Speed> {

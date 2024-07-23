@@ -8,7 +8,10 @@ import fr.sncf.osrd.utils.distanceRangeMapOf
 import fr.sncf.osrd.utils.indexing.DirStaticIdxList
 import fr.sncf.osrd.utils.indexing.mutableDirStaticIdxArrayListOf
 import fr.sncf.osrd.utils.mergeDistanceRangeMaps
-import fr.sncf.osrd.utils.units.*
+import fr.sncf.osrd.utils.units.Distance
+import fr.sncf.osrd.utils.units.Offset
+import fr.sncf.osrd.utils.units.Speed
+import fr.sncf.osrd.utils.units.meters
 
 /**
  * A ChunkPath is a list of directional track chunks which form a path, with beginOffset being the
@@ -84,7 +87,12 @@ data class PathPropertiesImpl(
             //           \
             // - start - - - commonChunk - ->
             val route = routeOnChunk.firstOrNull()?.let { routeId -> infra.getRouteName(routeId) }
-            infra.getTrackChunkSpeedSections(dirChunkId, trainTag, route)
+            infra.getTrackChunkSpeedSections(
+                dirChunkId,
+                SpeedLimitTagHandlingPolicy.GIVEN_TAG_AND_FALLBACK_TAGS,
+                trainTag,
+                route
+            )
         }
     }
 

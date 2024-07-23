@@ -13,6 +13,50 @@ data class NeutralSection(
     val isAnnouncement: Boolean,
 )
 
+enum class SpeedLimitTagHandlingPolicy {
+    /** Ignore provided train-tag */
+    NONE,
+    /** Only use train-tag to apply speedLimitTag from infra (no fallback tags, no default-speed) */
+    ONLY_GIVEN_TAG,
+    /**
+     * Use train-tag, then fallback tags specified for the train-tag to apply speedLimitTag from
+     * infra (no default speed)
+     */
+    GIVEN_TAG_AND_FALLBACK_TAGS,
+    /**
+     * Use train-tag, then fallback tags specified for the train-tag to apply speedLimitTag from
+     * infra, then use default-speed specified for the train-tag
+     */
+    ALL;
+
+    fun useGivenTag(): Boolean {
+        return when (this) {
+            NONE -> false
+            ONLY_GIVEN_TAG -> true
+            GIVEN_TAG_AND_FALLBACK_TAGS -> true
+            ALL -> true
+        }
+    }
+
+    fun useFallbackTags(): Boolean {
+        return when (this) {
+            NONE -> false
+            ONLY_GIVEN_TAG -> false
+            GIVEN_TAG_AND_FALLBACK_TAGS -> true
+            ALL -> true
+        }
+    }
+
+    fun useDefaultSpeed(): Boolean {
+        return when (this) {
+            NONE -> false
+            ONLY_GIVEN_TAG -> false
+            GIVEN_TAG_AND_FALLBACK_TAGS -> false
+            ALL -> true
+        }
+    }
+}
+
 /**
  * An operational point is a special location (such as a station). It has an ID and a set of
  * locations (parts). In the current internal infra representation, we only consider the operational
@@ -48,6 +92,7 @@ interface TrackProperties {
 
     fun getTrackChunkSpeedSections(
         trackChunk: DirTrackChunkId,
+        tagPolicy: SpeedLimitTagHandlingPolicy,
         trainTag: String?,
         route: String?
     ): DistanceRangeMap<Speed>

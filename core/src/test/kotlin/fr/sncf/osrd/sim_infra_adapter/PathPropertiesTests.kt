@@ -9,20 +9,12 @@ import fr.sncf.osrd.railjson.schema.geom.RJSLineString
 import fr.sncf.osrd.railjson.schema.infra.RJSOperationalPoint
 import fr.sncf.osrd.railjson.schema.infra.RJSOperationalPointExtensions
 import fr.sncf.osrd.railjson.schema.infra.RJSOperationalPointSncfExtension
-import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSApplicableDirectionsTrackRange
-import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSCurve
-import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSElectrification
-import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSLoadingGaugeLimit
-import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSOperationalPointPart
-import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSOperationalPointPartExtensions
-import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSOperationalPointPartSncfExtension
-import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSSlope
-import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSSpeedSection
+import fr.sncf.osrd.railjson.schema.infra.trackranges.*
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.train.TestTrains.MAX_SPEED
 import fr.sncf.osrd.utils.Direction
-import fr.sncf.osrd.utils.DistanceRangeMap
+import fr.sncf.osrd.utils.DistanceRangeMap.RangeMapEntry
 import fr.sncf.osrd.utils.Helpers
 import fr.sncf.osrd.utils.indexing.StaticIdx
 import fr.sncf.osrd.utils.pathFromTracks
@@ -75,10 +67,10 @@ class PathPropertiesTests {
         val slopes = path.getSlopes()
         assertEquals(
             listOf(
-                DistanceRangeMap.RangeMapEntry(0.meters, 500.meters, 10.0),
-                DistanceRangeMap.RangeMapEntry(500.meters, 1_500.meters, 15.0),
-                DistanceRangeMap.RangeMapEntry(1_500.meters, 2_500.meters, .0),
-                DistanceRangeMap.RangeMapEntry(2_500.meters, 3_000.meters, -5.0),
+                RangeMapEntry(0.meters, 500.meters, 10.0),
+                RangeMapEntry(500.meters, 1_500.meters, 15.0),
+                RangeMapEntry(1_500.meters, 2_500.meters, .0),
+                RangeMapEntry(2_500.meters, 3_000.meters, -5.0),
             ),
             slopes.asList()
         )
@@ -94,8 +86,8 @@ class PathPropertiesTests {
         val slopesBackward = pathBackward.getSlopes()
         assertEquals(
             listOf(
-                DistanceRangeMap.RangeMapEntry(0.meters, 1_000.meters, .0),
-                DistanceRangeMap.RangeMapEntry(1_000.meters, 2_000.meters, -15.0),
+                RangeMapEntry(0.meters, 1_000.meters, .0),
+                RangeMapEntry(1_000.meters, 2_000.meters, -15.0),
             ),
             slopesBackward.asList()
         )
@@ -226,8 +218,8 @@ class PathPropertiesTests {
         val slopesBackward = pathBackward.getCurves()
         assertEquals(
             listOf(
-                DistanceRangeMap.RangeMapEntry(0.meters, 500.meters, -10_000.0),
-                DistanceRangeMap.RangeMapEntry(500.meters, 1_000.meters, -5_000.0),
+                RangeMapEntry(0.meters, 500.meters, -10_000.0),
+                RangeMapEntry(500.meters, 1_000.meters, -5_000.0),
             ),
             slopesBackward.asList()
         )
@@ -266,8 +258,8 @@ class PathPropertiesTests {
         val slopesBackward = pathBackward.getGradients()
         assertEquals(
             listOf(
-                DistanceRangeMap.RangeMapEntry(0.meters, 500.meters, -15.0),
-                DistanceRangeMap.RangeMapEntry(500.meters, 1_000.meters, -5.0 + 800.0 / 5_000.0),
+                RangeMapEntry(0.meters, 500.meters, -15.0),
+                RangeMapEntry(500.meters, 1_000.meters, -5.0 + 800.0 / 5_000.0),
             ),
             slopesBackward.asList()
         )
@@ -385,8 +377,8 @@ class PathPropertiesTests {
         val electrificationForward = path.getElectrification()
         assertEquals(
             listOf(
-                DistanceRangeMap.RangeMapEntry(0.meters, 2_500.meters, "1500V"),
-                DistanceRangeMap.RangeMapEntry(2_500.meters, 3_000.meters, "25000V"),
+                RangeMapEntry(0.meters, 2_500.meters, "1500V"),
+                RangeMapEntry(2_500.meters, 3_000.meters, "25000V"),
             ),
             electrificationForward.asList(),
         )
@@ -402,8 +394,8 @@ class PathPropertiesTests {
         val electrificationBackward = pathBackward.getElectrification()
         assertEquals(
             listOf(
-                DistanceRangeMap.RangeMapEntry(0.meters, 500.meters, "25000V"),
-                DistanceRangeMap.RangeMapEntry(500.meters, 2_500.meters, "1500V"),
+                RangeMapEntry(0.meters, 500.meters, "25000V"),
+                RangeMapEntry(500.meters, 2_500.meters, "1500V"),
             ),
             electrificationBackward.asList(),
         )
@@ -475,12 +467,8 @@ class PathPropertiesTests {
         assertThat(speedLimits.asList())
             .containsExactlyElementsOf(
                 listOf(
-                    DistanceRangeMap.RangeMapEntry(0.meters, 400.meters, 42.42.metersPerSecond),
-                    DistanceRangeMap.RangeMapEntry(
-                        400.meters,
-                        1_820.meters,
-                        MAX_SPEED.metersPerSecond
-                    )
+                    RangeMapEntry(0.meters, 400.meters, 42.42.metersPerSecond),
+                    RangeMapEntry(400.meters, 1_820.meters, MAX_SPEED.metersPerSecond)
                 )
             )
     }
@@ -524,18 +512,16 @@ class PathPropertiesTests {
         |                     69.444                      |     HLP
         |      27.778       |-----------------------------|     E32C
         |---------|      22.222       |-------------------|     MA100
+
+        Default speed for all known tags (unused currently): 8.333
         */
 
         val expectedSpeedLimitsMA100 =
             listOf(
-                DistanceRangeMap.RangeMapEntry(
-                    0.meters,
-                    100.meters,
-                    8.333.metersPerSecond // default speed all known tags
-                ),
-                DistanceRangeMap.RangeMapEntry(100.meters, 1000.meters, 22.222.metersPerSecond),
-                DistanceRangeMap.RangeMapEntry(1000.meters, 1500.meters, 8.333.metersPerSecond),
-                DistanceRangeMap.RangeMapEntry(1500.meters, 1600.meters, 3.0.metersPerSecond)
+                RangeMapEntry(0.meters, 100.meters, 39.444.metersPerSecond),
+                RangeMapEntry(100.meters, 1000.meters, 22.222.metersPerSecond),
+                RangeMapEntry(1000.meters, 1500.meters, 83.333.metersPerSecond),
+                RangeMapEntry(1500.meters, 1600.meters, 3.0.metersPerSecond)
             )
         val speedLimitsMA100 = path.getSpeedLimits("MA100")
         assertThat(speedLimitsMA100.asList()).containsExactlyElementsOf(expectedSpeedLimitsMA100)
@@ -547,10 +533,10 @@ class PathPropertiesTests {
         assertThat(speedLimitsE32C.asList())
             .containsExactlyElementsOf(
                 listOf(
-                    DistanceRangeMap.RangeMapEntry(0.meters, 600.meters, 27.778.metersPerSecond),
-                    DistanceRangeMap.RangeMapEntry(600.meters, 1000.meters, 22.222.metersPerSecond),
-                    DistanceRangeMap.RangeMapEntry(1000.meters, 1500.meters, 8.333.metersPerSecond),
-                    DistanceRangeMap.RangeMapEntry(1500.meters, 1600.meters, 3.0.metersPerSecond)
+                    RangeMapEntry(0.meters, 600.meters, 27.778.metersPerSecond),
+                    RangeMapEntry(600.meters, 1000.meters, 22.222.metersPerSecond),
+                    RangeMapEntry(1000.meters, 1500.meters, 83.333.metersPerSecond),
+                    RangeMapEntry(1500.meters, 1600.meters, 3.0.metersPerSecond)
                 )
             )
 
@@ -558,14 +544,10 @@ class PathPropertiesTests {
         assertThat(speedLimitsHLP.asList())
             .containsExactlyElementsOf(
                 listOf(
-                    DistanceRangeMap.RangeMapEntry(0.meters, 100.meters, 39.444.metersPerSecond),
-                    DistanceRangeMap.RangeMapEntry(100.meters, 1000.meters, 31.111.metersPerSecond),
-                    DistanceRangeMap.RangeMapEntry(
-                        1000.meters,
-                        1500.meters,
-                        69.444.metersPerSecond
-                    ),
-                    DistanceRangeMap.RangeMapEntry(1500.meters, 1600.meters, 3.0.metersPerSecond)
+                    RangeMapEntry(0.meters, 100.meters, 39.444.metersPerSecond),
+                    RangeMapEntry(100.meters, 1000.meters, 31.111.metersPerSecond),
+                    RangeMapEntry(1000.meters, 1500.meters, 69.444.metersPerSecond),
+                    RangeMapEntry(1500.meters, 1600.meters, 3.0.metersPerSecond)
                 )
             )
 
@@ -573,34 +555,25 @@ class PathPropertiesTests {
         assertThat(speedLimitsNull.asList())
             .containsExactlyElementsOf(
                 listOf(
-                    DistanceRangeMap.RangeMapEntry(0.meters, 100.meters, 39.444.metersPerSecond),
-                    DistanceRangeMap.RangeMapEntry(100.meters, 1000.meters, 31.111.metersPerSecond),
-                    DistanceRangeMap.RangeMapEntry(
-                        1000.meters,
-                        1500.meters,
-                        83.333.metersPerSecond
-                    ),
-                    DistanceRangeMap.RangeMapEntry(1500.meters, 1600.meters, 3.0.metersPerSecond)
+                    RangeMapEntry(0.meters, 100.meters, 39.444.metersPerSecond),
+                    RangeMapEntry(100.meters, 1000.meters, 31.111.metersPerSecond),
+                    RangeMapEntry(1000.meters, 1500.meters, 83.333.metersPerSecond),
+                    RangeMapEntry(1500.meters, 1600.meters, 3.0.metersPerSecond)
                 )
             )
 
-        val speedLimitsMA90 = path.getSpeedLimits("MA90")
-        assertThat(speedLimitsMA90.asList())
-            .containsExactlyElementsOf(
-                listOf(
-                    DistanceRangeMap.RangeMapEntry(0.meters, 1500.meters, 8.333.metersPerSecond),
-                    DistanceRangeMap.RangeMapEntry(1500.meters, 1600.meters, 3.0.metersPerSecond)
-                )
+        val expectedSpeedLimitsMA90 =
+            listOf(
+                RangeMapEntry(0.meters, 100.meters, 39.444.metersPerSecond),
+                RangeMapEntry(100.meters, 1000.meters, 31.111.metersPerSecond),
+                RangeMapEntry(1000.meters, 1500.meters, 83.333.metersPerSecond),
+                RangeMapEntry(1500.meters, 1600.meters, 3.0.metersPerSecond)
             )
+        val speedLimitsMA90 = path.getSpeedLimits("MA90")
+        assertThat(speedLimitsMA90.asList()).containsExactlyElementsOf(expectedSpeedLimitsMA90)
 
         val speedLimitsMA80 = path.getSpeedLimits("MA80")
-        assertThat(speedLimitsMA80.asList())
-            .containsExactlyElementsOf(
-                listOf(
-                    DistanceRangeMap.RangeMapEntry(0.meters, 1500.meters, 8.333.metersPerSecond),
-                    DistanceRangeMap.RangeMapEntry(1500.meters, 1600.meters, 3.0.metersPerSecond)
-                )
-            )
+        assertThat(speedLimitsMA80.asList()).containsExactlyElementsOf(expectedSpeedLimitsMA90)
     }
 
     /** Assert that line strings are equal, with a certain tolerance for double values */
