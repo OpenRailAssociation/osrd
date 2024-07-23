@@ -1,5 +1,6 @@
 package fr.sncf.osrd.stdcm.graph
 
+import datadog.trace.api.Trace
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.api.pathfinding.constraints.ConstraintCombiner
 import fr.sncf.osrd.api.pathfinding.constraints.initConstraints
@@ -16,6 +17,8 @@ import fr.sncf.osrd.stdcm.infra_exploration.initInfraExplorerWithEnvelope
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.utils.units.Offset
+import io.opentelemetry.api.trace.SpanKind
+import io.opentelemetry.instrumentation.annotations.WithSpan
 import java.time.Duration
 import java.time.Instant
 import java.util.*
@@ -96,6 +99,8 @@ class STDCMPathfinding(
             standardAllowance
         )
 
+    @WithSpan(value = "STDCM pathfinding", kind = SpanKind.SERVER)
+    @Trace(operationName = "STDCM pathfinding")
     fun findPath(): STDCMResult? {
         assert(steps.size >= 2) { "Not enough steps have been set to find a path" }
 

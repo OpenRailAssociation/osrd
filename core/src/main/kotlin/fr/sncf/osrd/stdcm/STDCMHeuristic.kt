@@ -1,5 +1,6 @@
 package fr.sncf.osrd.stdcm
 
+import datadog.trace.api.Trace
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
@@ -11,6 +12,8 @@ import fr.sncf.osrd.utils.CachedBlockMRSPBuilder
 import fr.sncf.osrd.utils.indexing.StaticIdx
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
+import io.opentelemetry.api.trace.SpanKind
+import io.opentelemetry.instrumentation.annotations.WithSpan
 import java.util.*
 import kotlin.math.max
 import kotlin.math.min
@@ -44,6 +47,8 @@ class STDCMHeuristicBuilder(
     private val mrspBuilder = CachedBlockMRSPBuilder(rawInfra, blockInfra, rollingStock)
 
     /** Runs all the pre-processing and initialize the STDCM A* heuristic. */
+    @WithSpan(value = "Initializing STDCM heuristic", kind = SpanKind.SERVER)
+    @Trace(operationName = "Initializing STDCM heuristic")
     fun build(): STDCMAStarHeuristic {
         logger.info("Start building STDCM heuristic...")
         // One map per number of reached pathfinding step
