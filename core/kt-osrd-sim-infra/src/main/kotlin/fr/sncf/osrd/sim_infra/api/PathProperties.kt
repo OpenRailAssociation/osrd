@@ -44,7 +44,11 @@ interface PathProperties {
 
     fun getNeutralSections(): DistanceRangeMap<NeutralSection>
 
-    @JvmName("getSpeedLimits") fun getSpeedLimits(trainTag: String?): DistanceRangeMap<Speed>
+    @JvmName("getSpeedLimits")
+    fun getSpeedLimits(
+        trainTag: String?,
+        tagPolicy: SpeedLimitTagHandlingPolicy
+    ): DistanceRangeMap<Speed>
 
     @JvmName("getLength") fun getLength(): Distance
 

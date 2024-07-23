@@ -10,6 +10,7 @@ import fr.sncf.osrd.envelope.part.EnvelopePart;
 import fr.sncf.osrd.envelope_sim.EnvelopeProfile;
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock;
 import fr.sncf.osrd.sim_infra.api.PathProperties;
+import fr.sncf.osrd.sim_infra.api.SpeedLimitTagHandlingPolicy;
 import java.util.List;
 
 /** MRSP = most restrictive speed profile: maximum speed allowed at any given point. */
@@ -23,11 +24,17 @@ public class MRSP {
      * @param addRollingStockLength whether the rolling stock length should be taken into account in
      *     the computation.
      * @param trainTag corresponding train.
+     * @param tagPolicy the policy to be applied when processing speed-limits from trainTag.
      * @return the corresponding MRSP as an Envelope.
      */
     public static Envelope computeMRSP(
-            PathProperties path, PhysicsRollingStock rollingStock, boolean addRollingStockLength, String trainTag) {
-        return computeMRSP(path, rollingStock.getMaxSpeed(), rollingStock.getLength(), addRollingStockLength, trainTag);
+            PathProperties path,
+            PhysicsRollingStock rollingStock,
+            boolean addRollingStockLength,
+            String trainTag,
+            SpeedLimitTagHandlingPolicy tagPolicy) {
+        return computeMRSP(
+                path, rollingStock.getMaxSpeed(), rollingStock.getLength(), addRollingStockLength, trainTag, tagPolicy);
     }
 
     /**
@@ -42,7 +49,12 @@ public class MRSP {
      * @return the corresponding MRSP as an Envelope.
      */
     public static Envelope computeMRSP(
-            PathProperties path, double rsMaxSpeed, double rsLength, boolean addRollingStockLength, String trainTag) {
+            PathProperties path,
+            double rsMaxSpeed,
+            double rsLength,
+            boolean addRollingStockLength,
+            String trainTag,
+            SpeedLimitTagHandlingPolicy tagPolicy) {
         var builder = new MRSPEnvelopeBuilder();
         var pathLength = toMeters(path.getLength());
 
@@ -53,7 +65,7 @@ public class MRSP {
                 new double[] {rsMaxSpeed, rsMaxSpeed}));
 
         var offset = addRollingStockLength ? rsLength : 0.;
-        var speedLimits = path.getSpeedLimits(trainTag);
+        var speedLimits = path.getSpeedLimits(trainTag, tagPolicy);
         for (var speedLimit : speedLimits) {
             // Compute where this limit is active from and to
             var start = toMeters(speedLimit.getLower());

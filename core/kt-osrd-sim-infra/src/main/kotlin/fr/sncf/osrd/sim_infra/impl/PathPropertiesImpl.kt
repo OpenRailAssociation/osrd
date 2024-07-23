@@ -68,7 +68,10 @@ data class PathPropertiesImpl(
         return getRangeMap { dirChunkId -> infra.getTrackChunkNeutralSections(dirChunkId) }
     }
 
-    override fun getSpeedLimits(trainTag: String?): DistanceRangeMap<Speed> {
+    override fun getSpeedLimits(
+        trainTag: String?,
+        tagPolicy: SpeedLimitTagHandlingPolicy
+    ): DistanceRangeMap<Speed> {
         assert(pathRoutes != null) {
             "the routes on a path should be set when attempting to compute a speed limit"
         }
@@ -87,12 +90,7 @@ data class PathPropertiesImpl(
             //           \
             // - start - - - commonChunk - ->
             val route = routeOnChunk.firstOrNull()?.let { routeId -> infra.getRouteName(routeId) }
-            infra.getTrackChunkSpeedSections(
-                dirChunkId,
-                SpeedLimitTagHandlingPolicy.GIVEN_TAG_AND_FALLBACK_TAGS,
-                trainTag,
-                route
-            )
+            infra.getTrackChunkSpeedSections(dirChunkId, tagPolicy, trainTag, route)
         }
     }
 

@@ -12,6 +12,7 @@ import fr.sncf.osrd.railjson.schema.infra.RJSOperationalPointSncfExtension
 import fr.sncf.osrd.railjson.schema.infra.trackranges.*
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType
 import fr.sncf.osrd.sim_infra.api.BlockId
+import fr.sncf.osrd.sim_infra.api.SpeedLimitTagHandlingPolicy.GIVEN_TAG_AND_FALLBACK_TAGS
 import fr.sncf.osrd.train.TestTrains.MAX_SPEED
 import fr.sncf.osrd.utils.Direction
 import fr.sncf.osrd.utils.DistanceRangeMap.RangeMapEntry
@@ -21,10 +22,10 @@ import fr.sncf.osrd.utils.pathFromTracks
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import fr.sncf.osrd.utils.units.metersPerSecond
-import kotlin.math.absoluteValue
-import kotlin.test.assertEquals
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import kotlin.math.absoluteValue
+import kotlin.test.assertEquals
 
 class PathPropertiesTests {
 
@@ -463,7 +464,7 @@ class PathPropertiesTests {
         rjsInfra.speedSections.add(speedSection)
         val infra = Helpers.fullInfraFromRJS(rjsInfra)
         val path = makePathProps(infra.blockInfra, infra.rawInfra, BlockId(0U), routes = listOf())
-        val speedLimits = path.getSpeedLimits("trainTag")
+        val speedLimits = path.getSpeedLimits("trainTag", GIVEN_TAG_AND_FALLBACK_TAGS)
         assertThat(speedLimits.asList())
             .containsExactlyElementsOf(
                 listOf(
@@ -523,13 +524,13 @@ class PathPropertiesTests {
                 RangeMapEntry(1000.meters, 1500.meters, 83.333.metersPerSecond),
                 RangeMapEntry(1500.meters, 1600.meters, 3.0.metersPerSecond)
             )
-        val speedLimitsMA100 = path.getSpeedLimits("MA100")
+        val speedLimitsMA100 = path.getSpeedLimits("MA100", GIVEN_TAG_AND_FALLBACK_TAGS)
         assertThat(speedLimitsMA100.asList()).containsExactlyElementsOf(expectedSpeedLimitsMA100)
 
-        val speedLimitsME100 = path.getSpeedLimits("ME100")
+        val speedLimitsME100 = path.getSpeedLimits("ME100", GIVEN_TAG_AND_FALLBACK_TAGS)
         assertThat(speedLimitsME100.asList()).containsExactlyElementsOf(expectedSpeedLimitsMA100)
 
-        val speedLimitsE32C = path.getSpeedLimits("E32C")
+        val speedLimitsE32C = path.getSpeedLimits("E32C", GIVEN_TAG_AND_FALLBACK_TAGS)
         assertThat(speedLimitsE32C.asList())
             .containsExactlyElementsOf(
                 listOf(
@@ -540,7 +541,7 @@ class PathPropertiesTests {
                 )
             )
 
-        val speedLimitsHLP = path.getSpeedLimits("HLP")
+        val speedLimitsHLP = path.getSpeedLimits("HLP", GIVEN_TAG_AND_FALLBACK_TAGS)
         assertThat(speedLimitsHLP.asList())
             .containsExactlyElementsOf(
                 listOf(
@@ -551,7 +552,7 @@ class PathPropertiesTests {
                 )
             )
 
-        val speedLimitsNull = path.getSpeedLimits(null)
+        val speedLimitsNull = path.getSpeedLimits(null, GIVEN_TAG_AND_FALLBACK_TAGS)
         assertThat(speedLimitsNull.asList())
             .containsExactlyElementsOf(
                 listOf(
@@ -569,10 +570,10 @@ class PathPropertiesTests {
                 RangeMapEntry(1000.meters, 1500.meters, 83.333.metersPerSecond),
                 RangeMapEntry(1500.meters, 1600.meters, 3.0.metersPerSecond)
             )
-        val speedLimitsMA90 = path.getSpeedLimits("MA90")
+        val speedLimitsMA90 = path.getSpeedLimits("MA90", GIVEN_TAG_AND_FALLBACK_TAGS)
         assertThat(speedLimitsMA90.asList()).containsExactlyElementsOf(expectedSpeedLimitsMA90)
 
-        val speedLimitsMA80 = path.getSpeedLimits("MA80")
+        val speedLimitsMA80 = path.getSpeedLimits("MA80", GIVEN_TAG_AND_FALLBACK_TAGS)
         assertThat(speedLimitsMA80.asList()).containsExactlyElementsOf(expectedSpeedLimitsMA90)
     }
 
