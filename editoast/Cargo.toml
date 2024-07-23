@@ -74,7 +74,7 @@ actix-web-opentelemetry = { version = "0.18.0", features = ["awc"] }
 async-trait = "0.1.81"
 chashmap = "2.2.2"
 chrono.workspace = true
-clap = { version = "4.5.9", features = ["derive", "env"] }
+clap = { version = "4.5.10", features = ["derive", "env"] }
 colored = "2.1.0"
 derivative.workspace = true
 diesel.workspace = true
