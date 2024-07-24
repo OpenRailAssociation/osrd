@@ -512,17 +512,15 @@ class PathPropertiesTests {
         |                     69.444                      |     HLP
         |      27.778       |-----------------------------|     E32C
         |---------|      22.222       |-------------------|     MA100
+
+        Default speed for all known tags (unused currently): 8.333
         */
 
         val expectedSpeedLimitsMA100 =
             listOf(
-                RangeMapEntry(
-                    0.meters,
-                    100.meters,
-                    8.333.metersPerSecond // default speed all known tags
-                ),
+                RangeMapEntry(0.meters, 100.meters, 39.444.metersPerSecond),
                 RangeMapEntry(100.meters, 1000.meters, 22.222.metersPerSecond),
-                RangeMapEntry(1000.meters, 1500.meters, 8.333.metersPerSecond),
+                RangeMapEntry(1000.meters, 1500.meters, 83.333.metersPerSecond),
                 RangeMapEntry(1500.meters, 1600.meters, 3.0.metersPerSecond)
             )
         val speedLimitsMA100 = path.getSpeedLimits("MA100")
@@ -537,7 +535,7 @@ class PathPropertiesTests {
                 listOf(
                     RangeMapEntry(0.meters, 600.meters, 27.778.metersPerSecond),
                     RangeMapEntry(600.meters, 1000.meters, 22.222.metersPerSecond),
-                    RangeMapEntry(1000.meters, 1500.meters, 8.333.metersPerSecond),
+                    RangeMapEntry(1000.meters, 1500.meters, 83.333.metersPerSecond),
                     RangeMapEntry(1500.meters, 1600.meters, 3.0.metersPerSecond)
                 )
             )
@@ -564,23 +562,18 @@ class PathPropertiesTests {
                 )
             )
 
-        val speedLimitsMA90 = path.getSpeedLimits("MA90")
-        assertThat(speedLimitsMA90.asList())
-            .containsExactlyElementsOf(
-                listOf(
-                    RangeMapEntry(0.meters, 1500.meters, 8.333.metersPerSecond),
-                    RangeMapEntry(1500.meters, 1600.meters, 3.0.metersPerSecond)
-                )
+        val expectedSpeedLimitsMA90 =
+            listOf(
+                RangeMapEntry(0.meters, 100.meters, 39.444.metersPerSecond),
+                RangeMapEntry(100.meters, 1000.meters, 31.111.metersPerSecond),
+                RangeMapEntry(1000.meters, 1500.meters, 83.333.metersPerSecond),
+                RangeMapEntry(1500.meters, 1600.meters, 3.0.metersPerSecond)
             )
+        val speedLimitsMA90 = path.getSpeedLimits("MA90")
+        assertThat(speedLimitsMA90.asList()).containsExactlyElementsOf(expectedSpeedLimitsMA90)
 
         val speedLimitsMA80 = path.getSpeedLimits("MA80")
-        assertThat(speedLimitsMA80.asList())
-            .containsExactlyElementsOf(
-                listOf(
-                    RangeMapEntry(0.meters, 1500.meters, 8.333.metersPerSecond),
-                    RangeMapEntry(1500.meters, 1600.meters, 3.0.metersPerSecond)
-                )
-            )
+        assertThat(speedLimitsMA80.asList()).containsExactlyElementsOf(expectedSpeedLimitsMA90)
     }
 
     /** Assert that line strings are equal, with a certain tolerance for double values */
