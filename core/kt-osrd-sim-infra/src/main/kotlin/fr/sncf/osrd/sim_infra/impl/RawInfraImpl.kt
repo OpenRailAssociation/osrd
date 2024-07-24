@@ -562,19 +562,7 @@ class RawInfraImpl(
             // TODO: as stated for SpeedSection class, a refactor is required to respect
             //       specifications
             assert(infraTagSpeed == null || speedFromRoute == null) { "checked at parsing" }
-            val allowedSpeed =
-                if (speedFromRoute != null) {
-                    speedFromRoute
-                } else if (infraTagSpeed != null) {
-                    infraTagSpeed
-                } else if (
-                    trainSpeedLimitTagDescriptor?.defaultSpeed != null &&
-                        trainSpeedLimitTagDescriptor.defaultSpeed < speedSection.default
-                ) {
-                    trainSpeedLimitTagDescriptor.defaultSpeed
-                } else {
-                    speedSection.default
-                }
+            val allowedSpeed = speedFromRoute ?: infraTagSpeed ?: speedSection.default
             res.put(entry.lower, entry.upper, allowedSpeed)
         }
         return res
