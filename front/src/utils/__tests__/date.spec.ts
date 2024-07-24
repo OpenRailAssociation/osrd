@@ -1,4 +1,10 @@
-import { dateTimeToIso, isoDateToMs, formatToIsoDate } from 'utils/date';
+import {
+  dateTimeToIso,
+  isoDateToMs,
+  formatToIsoDate,
+  serializeDateTimeWithoutYear,
+  parseDateTime,
+} from 'utils/date';
 
 describe('dateTimeToIso', () => {
   it('should return an iso date by passing a date without milliseconds', () => {
@@ -39,5 +45,33 @@ describe('formatToIsoDate', () => {
     const msDate = 1714156215000;
     const isoDate = formatToIsoDate(msDate);
     expect(isoDate).toEqual('2024-04-26T18:30:15Z'); // Ends by Z because CI seems to be in UTC timezone
+  });
+});
+
+describe('parseDateTime', () => {
+  it('should parse a valid date-time string', () => {
+    const input = '18/07/2024 03:16:30';
+    const result = parseDateTime(input);
+    expect(result).toBeInstanceOf(Date);
+  });
+
+  it('should return null for an invalid date-time string', () => {
+    const input = 'invalid date';
+    const result = parseDateTime(input);
+    expect(result).toBeNull();
+  });
+});
+
+describe('serializeDateTimeWithoutYear', () => {
+  it('should return the date without the year for a valid Date object', () => {
+    const inputDate = new Date('2024-07-18T03:16:30Z');
+    const result = serializeDateTimeWithoutYear(inputDate);
+    expect(result).toEqual('18/07 03:16:30');
+  });
+
+  it('should return an empty string for an invalid Date object', () => {
+    const inputDate = new Date(NaN);
+    const result = serializeDateTimeWithoutYear(inputDate);
+    expect(result).toEqual('Invalid Date');
   });
 });

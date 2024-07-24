@@ -22,12 +22,16 @@ import {
   updateSelectedTrainId,
 } from 'reducers/osrdsimulation/actions';
 import { useAppDispatch } from 'store';
-import { formatToIsoDate, isoDateToMs } from 'utils/date';
+import {
+  formatToIsoDate,
+  isoDateToMs,
+  serializeDateTimeWithoutYear,
+  parseDateTime,
+} from 'utils/date';
 import { castErrorToFailure } from 'utils/error';
 import { sec2time } from 'utils/timeManipulation';
 
 import type { InvalidReason, TrainScheduleWithDetails } from './types';
-import { transformDateWithoutYear } from './utils';
 
 type TimetableTrainCardProps = {
   isSelectable: boolean;
@@ -163,6 +167,11 @@ const TimetableTrainCardV2 = ({
     }
   };
 
+  function formatDateTimeWithoutYear(dateTimeStr: string) {
+    const parsedDate = parseDateTime(dateTimeStr);
+    return parsedDate ? serializeDateTimeWithoutYear(parsedDate) : '';
+  }
+
   return (
     <div className="scenario-timetable-train-with-right-bar">
       <div
@@ -229,10 +238,10 @@ const TimetableTrainCardV2 = ({
               )}
               <div>
                 <div className="scenario-timetable-train-departure">
-                  {transformDateWithoutYear(train.startTime)}
+                  {formatDateTimeWithoutYear(train.startTime)}
                 </div>
                 <div className="scenario-timetable-train-arrival" title={train.arrivalTime}>
-                  {transformDateWithoutYear(train.arrivalTime)}
+                  {formatDateTimeWithoutYear(train.arrivalTime)}
                 </div>
               </div>
             </div>
