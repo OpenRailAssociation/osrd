@@ -187,6 +187,9 @@ private fun parseSteps(
     if (pathItems.last().stopDuration == null) {
         throw OSRDError(ErrorType.MissingLastSTDCMStop)
     }
+    if (pathItems.any { it.stopDuration == null && it.stepTimingData != null }) {
+        throw OSRDError(ErrorType.InvalidSTDCMStepWithTimingData)
+    }
     return pathItems
         .map {
             STDCMStep(
