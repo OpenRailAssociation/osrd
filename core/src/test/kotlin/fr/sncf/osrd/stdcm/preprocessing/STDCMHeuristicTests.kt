@@ -7,6 +7,7 @@ import fr.sncf.osrd.stdcm.STDCMAStarHeuristic
 import fr.sncf.osrd.stdcm.STDCMHeuristicBuilder
 import fr.sncf.osrd.stdcm.STDCMStep
 import fr.sncf.osrd.stdcm.graph.STDCMEdge
+import fr.sncf.osrd.stdcm.graph.STDCMNode
 import fr.sncf.osrd.stdcm.infra_exploration.initInfraExplorerWithEnvelope
 import fr.sncf.osrd.utils.DummyInfra
 import fr.sncf.osrd.utils.units.Distance
@@ -212,6 +213,21 @@ class STDCMHeuristicTests {
                     newExplorer.getLookahead().all { lookahead.contains(it) }
                 }
         }
+        val defaultNode =
+            STDCMNode(
+                0.0,
+                0.0,
+                explorer,
+                0.0,
+                0.0,
+                null,
+                0,
+                Offset(0.meters),
+                null,
+                null,
+                null,
+                0.0
+            )
         val defaultEdge =
             STDCMEdge(
                 explorer,
@@ -221,7 +237,7 @@ class STDCMHeuristicTests {
                 0.0,
                 0.0,
                 0.0,
-                null,
+                defaultNode,
                 Offset(0.meters),
                 0,
                 false,

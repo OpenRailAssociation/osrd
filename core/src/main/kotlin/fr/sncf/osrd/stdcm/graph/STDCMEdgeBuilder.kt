@@ -21,6 +21,8 @@ internal constructor(
     private val infraExplorer: InfraExplorerWithEnvelope,
     /** STDCM Graph, needed for most operations */
     private val graph: STDCMGraph,
+    /** Previous node, used to compute the final path */
+    private var prevNode: STDCMNode,
     /** Start time of the edge */
     private var startTime: Double = 0.0,
 
@@ -40,9 +42,6 @@ internal constructor(
      * Sum of all the delay that has been added in the previous edges by shifting the departure time
      */
     private var prevAddedDelay: Double = 0.0,
-
-    /** Previous node, used to compute the final path */
-    private var prevNode: STDCMNode? = null,
 
     /** Envelope to use on the edge, if unspecified we try to go at maximum allowed speed */
     private var envelope: Envelope? = null,
@@ -89,12 +88,6 @@ internal constructor(
      */
     fun setPrevAddedDelay(prevAddedDelay: Double): STDCMEdgeBuilder {
         this.prevAddedDelay = prevAddedDelay
-        return this
-    }
-
-    /** Sets the previous node, used to compute the final path */
-    fun setPrevNode(prevNode: STDCMNode?): STDCMEdgeBuilder {
-        this.prevNode = prevNode
         return this
     }
 
@@ -294,15 +287,12 @@ internal constructor(
     /** Returns true if the current block is already present in the path to this edge */
     private fun hasDuplicateBlocks(): Boolean {
         var node = prevNode
-        while (node != null) {
-            if (
-                !node.previousEdge.endAtStop &&
-                    node.previousEdge.block == infraExplorer.getCurrentBlock()
-            )
+        while (true) {
+            val prevEdge = node.previousEdge ?: return false
+            if (!prevEdge.endAtStop && prevEdge.block == infraExplorer.getCurrentBlock())
                 return true
-            node = node.previousEdge.previousNode
+            node = prevEdge.previousNode
         }
-        return false
     } // endregion UTILITIES
 
     companion object {
@@ -311,7 +301,7 @@ internal constructor(
             node: STDCMNode,
             infraExplorer: InfraExplorerWithEnvelope
         ): STDCMEdgeBuilder {
-            val builder = STDCMEdgeBuilder(infraExplorer, graph)
+            val builder = STDCMEdgeBuilder(infraExplorer, graph, node)
             if (node.locationOnEdge != null) {
                 builder.startOffset = node.locationOnEdge
             }

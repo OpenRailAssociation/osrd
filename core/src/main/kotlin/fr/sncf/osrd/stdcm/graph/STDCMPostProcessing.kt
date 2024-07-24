@@ -4,7 +4,6 @@ import datadog.trace.api.Trace
 import fr.sncf.osrd.api.pathfinding.makeOperationalPoints
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope_sim.EnvelopeSimPath
-import fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator
 import fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.*
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue
 import fr.sncf.osrd.envelope_sim.pipelines.MaxEffortEnvelope
@@ -146,7 +145,12 @@ private fun makeStops(edges: List<STDCMEdge>): List<TrainStop> {
     var offset = 0.meters
     for (edge in edges) {
         val prevNode = edge.previousNode
-        if (prevNode?.stopDuration != null && prevNode.stopDuration >= 0)
+        // Ignore first path node and last node (we aren't checking lastEdge.getEdgeEnd())
+        if (
+            prevNode.previousEdge != null &&
+                prevNode.stopDuration != null &&
+                prevNode.stopDuration >= 0
+        )
             res.add(
                 TrainStop(
                     offset.meters,
@@ -197,7 +201,7 @@ private fun sortAndMergeStopsDuplicates(stops: List<TrainStop>): List<TrainStop>
     val res = ArrayList<TrainStop>()
     var last: TrainStop? = null
     for (stop in sorted) {
-        if (last != null && TrainPhysicsIntegrator.arePositionsEqual(last.position, stop.position))
+        if (last != null && arePositionsEqual(last.position, stop.position))
             last.position = stop.position
         else {
             last = stop

@@ -20,15 +20,16 @@ data class STDCMNode(
     val totalPrevAddedDelay: Double,
     // Maximum delay we can add by delaying the start time without causing conflicts
     val maximumAddedDelay: Double,
-    // Edge that lead to this node
-    val previousEdge: STDCMEdge,
+    // Edge that lead to this node, null if this is the first node
+    val previousEdge: STDCMEdge?,
     // Index of the last waypoint passed by the train
     val waypointIndex: Int,
     // Position on a block, if this node isn't on the transition between blocks (stop)
     val locationOnEdge: Offset<Block>?,
     // When the node is a stop, how long the train remains here
     val stopDuration: Double?,
-    // Planned arrival time at node, with its tolerance
+    // Planned arrival time at node, with its tolerance. Is null at least when the node is not a
+    // stop
     val plannedTimingData: PlannedTimingData?,
     // Previous node with non-null PlannedTimingDelta: time difference between arrival time on node
     // and planned arrival time, divided by the total duration of the time window
