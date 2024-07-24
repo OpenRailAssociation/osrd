@@ -54,6 +54,7 @@ data class STDCMEdge(
     /** Returns the node at the end of this edge */
     fun getEdgeEnd(graph: STDCMGraph): STDCMNode {
         var newWaypointIndex = waypointIndex
+        val previousPlannedNodeRelativeTimeDiff = getPreviousPlannedNodeRelativeTimeDiff()
         while (newWaypointIndex + 1 < graph.steps.size) {
             val nextStep = graph.steps[newWaypointIndex + 1]
             val endOffset = envelopeStartOffset + length.distance
@@ -78,12 +79,15 @@ data class STDCMEdge(
                 newWaypointIndex,
                 null,
                 null,
+                graph.steps[newWaypointIndex].plannedTimingData,
+                previousPlannedNodeRelativeTimeDiff,
                 timeSinceDeparture,
                 graph.remainingTimeEstimator.invoke(this, null, newWaypointIndex),
             )
         } else {
             // New edge on the same block, after a stop
-            val stopDuration = graph.getFirstStopAfterIndex(waypointIndex)!!.duration!!
+            val firstStopAfterIndex = graph.getFirstStopAfterIndex(waypointIndex)!!
+            val stopDuration = firstStopAfterIndex.duration!!
             val locationOnEdge = envelopeStartOffset + length.distance
             STDCMNode(
                 totalTime + timeStart + stopDuration,
@@ -95,9 +99,26 @@ data class STDCMEdge(
                 newWaypointIndex,
                 envelopeStartOffset + length.distance,
                 stopDuration,
+                firstStopAfterIndex.plannedTimingData,
+                previousPlannedNodeRelativeTimeDiff,
                 graph.remainingTimeEstimator.invoke(this, locationOnEdge, newWaypointIndex)
             )
         }
+    }
+
+    /**
+     * Computes the last planned node's previousPlannedNodeRelativeTimeDiff, taking the potentially
+     * new total departure time shift into account.
+     */
+    private fun getPreviousPlannedNodeRelativeTimeDiff(): Double? {
+        var previousPlannedNode = this.previousNode
+        while (previousPlannedNode != null) {
+            if (previousPlannedNode.plannedTimingData != null) {
+                return previousPlannedNode.getRelativeTimeDiff(totalDepartureTimeShift)
+            }
+            previousPlannedNode = previousPlannedNode.previousEdge.previousNode
+        }
+        return null
     }
 
     /**

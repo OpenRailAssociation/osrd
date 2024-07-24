@@ -61,9 +61,10 @@ class STDCMPathfindingBuilder {
      * intermediate steps
      */
     fun setStartLocations(
-        startLocations: Set<PathfindingEdgeLocationId<Block>>
+        startLocations: Set<PathfindingEdgeLocationId<Block>>,
+        plannedTimingData: PlannedTimingData? = null
     ): STDCMPathfindingBuilder {
-        steps.add(0, STDCMStep(startLocations, 0.0, true))
+        steps.add(0, STDCMStep(startLocations, 0.0, true, plannedTimingData))
         return this
     }
 
@@ -72,9 +73,10 @@ class STDCMPathfindingBuilder {
      * intermediate steps
      */
     fun setEndLocations(
-        endLocations: Set<PathfindingEdgeLocationId<Block>>
+        endLocations: Set<PathfindingEdgeLocationId<Block>>,
+        plannedTimingData: PlannedTimingData? = null
     ): STDCMPathfindingBuilder {
-        steps.add(STDCMStep(endLocations, 0.0, true))
+        steps.add(STDCMStep(endLocations, 0.0, true, plannedTimingData))
         return this
     }
 
