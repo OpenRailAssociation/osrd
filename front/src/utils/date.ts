@@ -1,5 +1,6 @@
 import dayjs from 'dayjs';
 import 'dayjs/locale/fr';
+import customParseFormat from 'dayjs/plugin/customParseFormat';
 import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
 
@@ -9,6 +10,7 @@ import { ISO8601Duration2sec } from './timeManipulation';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
+dayjs.extend(customParseFormat);
 
 export function timestampToHHMMSS(timestamp: number) {
   const date = new Date(timestamp * 1000);
@@ -161,4 +163,25 @@ export function convertIsoUtcToLocalTime(isoUtcString: string): string {
 
 export function addDurationToIsoDate(startTime: string, duration: string) {
   return dayjs(startTime).add(ISO8601Duration2sec(duration), 'second').format();
+}
+
+/**
+ * Parses a date string in 'DD/MM/YYYY HH:mm:ss' format to a Date object.
+ * @param {string} dateTime - The date-time string to be parsed.
+ * @returns {Date | null} The parsed Date object, or null if the input is invalid.
+ */
+export function parseDateTime(dateTime: string): Date | null {
+  const date = dayjs(dateTime, 'DD/MM/YYYY HH:mm:ss');
+  if (!date.isValid()) return null;
+  return date.toDate();
+}
+
+/**
+ * Serializes a Date object to a string format 'DD/MM HH:mm:ss' without the year.
+ * @param {Date} date - The Date object to be serialized.
+ * @returns {string} The formatted date-time string without the year.
+ */
+export function serializeDateTimeWithoutYear(date: Date): string {
+  const dayjsDate = dayjs(date);
+  return dayjsDate.format('DD/MM HH:mm:ss');
 }
