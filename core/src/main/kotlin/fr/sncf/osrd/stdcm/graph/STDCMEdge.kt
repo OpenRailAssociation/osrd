@@ -27,8 +27,8 @@ data class STDCMEdge(
     // Total delay we have added by shifting the departure time since the start of the
     // path
     val totalDepartureTimeShift: Double,
-    // Node located at the start of this edge, null if this is the first edge
-    val previousNode: STDCMNode?,
+    // Node located at the start of this edge
+    val previousNode: STDCMNode,
     // Offset of the envelope if it doesn't start at the beginning of the edge
     val envelopeStartOffset: Offset<Block>,
     // Index of the last waypoint passed by this train
@@ -79,7 +79,7 @@ data class STDCMEdge(
                 newWaypointIndex,
                 null,
                 null,
-                graph.steps[newWaypointIndex].plannedTimingData,
+                null,
                 previousPlannedNodeRelativeTimeDiff,
                 timeSinceDeparture,
                 graph.remainingTimeEstimator.invoke(this, null, newWaypointIndex),
@@ -111,12 +111,13 @@ data class STDCMEdge(
      * new total departure time shift into account.
      */
     private fun getPreviousPlannedNodeRelativeTimeDiff(): Double? {
-        var previousPlannedNode = this.previousNode
-        while (previousPlannedNode != null) {
+        var currentEdge: STDCMEdge? = this
+        while (currentEdge != null) {
+            val previousPlannedNode = currentEdge.previousNode
             if (previousPlannedNode.plannedTimingData != null) {
                 return previousPlannedNode.getRelativeTimeDiff(totalDepartureTimeShift)
             }
-            previousPlannedNode = previousPlannedNode.previousEdge.previousNode
+            currentEdge = previousPlannedNode.previousEdge
         }
         return null
     }

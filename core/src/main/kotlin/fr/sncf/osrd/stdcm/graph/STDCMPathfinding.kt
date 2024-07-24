@@ -10,7 +10,6 @@ import fr.sncf.osrd.graph.PathfindingEdgeLocationId
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.sim_infra.api.Block
-import fr.sncf.osrd.stdcm.*
 import fr.sncf.osrd.stdcm.STDCMResult
 import fr.sncf.osrd.stdcm.STDCMStep
 import fr.sncf.osrd.stdcm.infra_exploration.initInfraExplorerWithEnvelope
@@ -110,16 +109,7 @@ class STDCMPathfinding(
         assert(steps.last().stop) { "The last stop is supposed to be an actual stop" }
         val stops = steps.filter { it.stop }.map { it.locations }
         assert(stops.isNotEmpty())
-        starts =
-            convertLocations(
-                graph,
-                steps[0].locations,
-                startTime,
-                maxDepartureDelay,
-                rollingStock,
-                stops,
-                listOf(constraints)
-            )
+        starts = getStartNodes(stops, listOf(constraints))
         val path = findPathImpl()
         if (path == null) {
             graph.logger.info("Failed to find a path")
@@ -171,7 +161,7 @@ class STDCMPathfinding(
 
         while (mutLastEdge != null) {
             edges.addFirst(mutLastEdge)
-            mutLastEdge = mutLastEdge.previousNode?.previousEdge
+            mutLastEdge = mutLastEdge.previousNode.previousEdge
             if (mutLastEdge == null) {
                 break
             }
@@ -206,32 +196,34 @@ class STDCMPathfinding(
         return res
     }
 
-    /** Converts locations on a block id into a location on a STDCMGraph.Edge. */
-    private fun convertLocations(
-        graph: STDCMGraph,
-        locations: Collection<PathfindingEdgeLocationId<Block>>,
-        startTime: Double,
-        maxDepartureDelay: Double,
-        rollingStock: RollingStock,
+    /** Converts start locations into starting nodes. */
+    private fun getStartNodes(
         stops: List<Collection<PathfindingEdgeLocationId<Block>>> = listOf(),
         constraints: List<PathfindingConstraint<Block>>
     ): Set<STDCMNode> {
         val res = HashSet<STDCMNode>()
-
-        for (location in locations) {
+        val firstStep = steps[0]
+        for (location in firstStep.locations) {
             val infraExplorers =
                 initInfraExplorerWithEnvelope(fullInfra, location, rollingStock, stops, constraints)
             val extended = infraExplorers.flatMap { extendLookaheadUntil(it, 3) }
             for (explorer in extended) {
-                val edges =
-                    STDCMEdgeBuilder(explorer, graph)
-                        .setStartTime(startTime)
-                        .setStartOffset(location.offset)
-                        .setPrevMaximumAddedDelay(maxDepartureDelay)
-                        .makeAllEdges()
-                for (edge in edges) {
-                    res.add(edge.getEdgeEnd(graph))
-                }
+                val node =
+                    STDCMNode(
+                        startTime,
+                        0.0,
+                        explorer,
+                        0.0,
+                        maxDepartureDelay,
+                        null,
+                        0,
+                        location.offset,
+                        firstStep.duration,
+                        firstStep.plannedTimingData,
+                        null,
+                        0.0
+                    )
+                res.add(node)
             }
         }
         return res

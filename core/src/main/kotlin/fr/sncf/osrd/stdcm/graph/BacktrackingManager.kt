@@ -20,7 +20,7 @@ class BacktrackingManager(private val graph: STDCMGraph) {
      * the new edge is invalid (for example if it would cause conflicts), returns null.
      */
     fun backtrack(edge: STDCMEdge, envelope: Envelope): STDCMEdge? {
-        if (edge.previousNode == null) {
+        if (edge.previousNode.previousEdge == null) {
             // First edge of the path
             assert(edge.beginSpeed == 0.0)
             return edge
@@ -78,12 +78,11 @@ class BacktrackingManager(private val graph: STDCMGraph) {
                 graph
             )
         val prevNode = old.previousNode
-        return STDCMEdgeBuilder(old.infraExplorer, graph)
+        return STDCMEdgeBuilder(old.infraExplorer, graph, prevNode)
             .setStartTime(old.timeStart - old.addedDelay)
             .setStartOffset(old.envelopeStartOffset)
             .setPrevMaximumAddedDelay(old.maximumAddedDelayAfter + old.addedDelay)
             .setPrevAddedDelay(old.totalDepartureTimeShift - old.addedDelay)
-            .setPrevNode(prevNode)
             .setEnvelope(newEnvelope)
             .setWaypointIndex(old.waypointIndex)
             .findEdgeSameNextOccupancy(old.timeNextOccupancy)

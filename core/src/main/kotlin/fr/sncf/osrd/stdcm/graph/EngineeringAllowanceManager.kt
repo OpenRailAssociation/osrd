@@ -30,8 +30,8 @@ class EngineeringAllowanceManager(private val graph: STDCMGraph) {
      * Check whether an engineering allowance can be used in this context to be at the expected
      * start time at the node location.
      */
-    fun checkEngineeringAllowance(prevNode: STDCMNode?, expectedStartTime: Double): Boolean {
-        if (prevNode == null)
+    fun checkEngineeringAllowance(prevNode: STDCMNode, expectedStartTime: Double): Boolean {
+        if (prevNode.previousEdge == null)
             return false // The conflict happens on the first block, we can't add delay here
         val affectedEdges =
             findAffectedEdges(prevNode.previousEdge, expectedStartTime - prevNode.time)
@@ -150,13 +150,13 @@ class EngineeringAllowanceManager(private val graph: STDCMGraph) {
                 return ArrayList(res)
             }
             res.addFirst(mutEdge)
-            if (mutEdge.previousNode == null) {
+            if (mutEdge.previousNode.previousEdge == null) {
                 // We've reached the start of the path, this should only happen because of the max
                 // delay parameter
                 return ArrayList(res)
             }
             mutDelayNeeded += mutEdge.addedDelay
-            mutEdge = mutEdge.previousNode!!.previousEdge
+            mutEdge = mutEdge.previousNode.previousEdge!!
         }
     }
 }
