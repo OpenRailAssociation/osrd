@@ -17,12 +17,12 @@ const StdcmUpgrade = () => {
         </div>
         <div>{t('reason')}</div>
       </div>
-
+      {/* TODO: remove the disabling on buttons when functional */}
       <div className="buttons-list">
-        <Button variant="Cancel" label={t('startIncompatible')} />
-        <Button variant="Cancel" label={t('arrivalIncompatible')} />
-        <Button variant="Cancel" label={t('unqualifiedDriver')} />
-        <Button variant="Cancel" label={t('other')} />
+        <Button variant="Cancel" label={t('startIncompatible')} isDisabled />
+        <Button variant="Cancel" label={t('arrivalIncompatible')} isDisabled />
+        <Button variant="Cancel" label={t('unqualifiedDriver')} isDisabled />
+        <Button variant="Cancel" label={t('other')} isDisabled />
       </div>
     </div>
   );
