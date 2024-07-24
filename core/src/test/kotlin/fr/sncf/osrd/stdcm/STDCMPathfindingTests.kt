@@ -7,9 +7,11 @@ import fr.sncf.osrd.stdcm.preprocessing.OccupancySegment
 import fr.sncf.osrd.utils.DummyInfra
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
-import org.junit.jupiter.api.Assertions
+import fr.sncf.osrd.utils.units.seconds
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 
 class STDCMPathfindingTests {
     /** Look for a path in an empty timetable */
@@ -43,7 +45,7 @@ class STDCMPathfindingTests {
                 .setStartLocations(setOf(EdgeLocation(firstBlock, Offset(30.meters))))
                 .setEndLocations(setOf(EdgeLocation(secondBlock, Offset(30.meters))))
                 .run()!!
-        Assertions.assertEquals(100.meters, res.trainPath.getLength())
+        assertEquals(100.meters, res.trainPath.getLength())
     }
 
     /** Look for a path where the blocks are occupied before and after */
@@ -95,7 +97,7 @@ class STDCMPathfindingTests {
                 .setStartLocations(setOf(EdgeLocation(firstBlock, Offset(0.meters))))
                 .setEndLocations(setOf(EdgeLocation(secondBlock, Offset(0.meters))))
                 .run()
-        Assertions.assertNull(res)
+        assertNull(res)
     }
 
     /** Test that no path is found if the first block is free for a very short interval */
@@ -126,7 +128,7 @@ class STDCMPathfindingTests {
                 .setEndLocations(setOf(EdgeLocation(secondBlock, Offset(50.meters))))
                 .setUnavailableTimes(occupancyGraph)
                 .run()
-        Assertions.assertNull(res)
+        assertNull(res)
     }
 
     /** Test that we can find a path even if the last block is occupied when the train starts */
@@ -276,7 +278,7 @@ class STDCMPathfindingTests {
                 .setStartLocations(setOf(EdgeLocation(firstLoop, Offset(0.meters))))
                 .setEndLocations(setOf(EdgeLocation(disconnectedBlock, Offset(0.meters))))
                 .run()
-        Assertions.assertNull(res)
+        assertNull(res)
     }
 
     /**
@@ -297,7 +299,7 @@ class STDCMPathfindingTests {
                 .setEndLocations(setOf(EdgeLocation(block, Offset(10000.meters))))
                 .setMaxRunTime(100.0)
                 .run()
-        Assertions.assertNull(res)
+        assertNull(res)
     }
 
     /**
@@ -320,7 +322,7 @@ class STDCMPathfindingTests {
                 .setEndLocations(setOf(EdgeLocation(blocks[9], Offset(1000.meters))))
                 .setMaxRunTime(100.0)
                 .run()
-        Assertions.assertNull(res)
+        assertNull(res)
     }
 
     /** Test that the start delay isn't included in the total run time */
@@ -496,7 +498,7 @@ class STDCMPathfindingTests {
                     )
                 )
                 .run()
-        Assertions.assertNull(res)
+        assertNull(res)
     }
     /** Start and end are on the same block, but reversed */
     @Test
@@ -537,5 +539,137 @@ class STDCMPathfindingTests {
             )
             .setEndLocations(setOf(EdgeLocation(secondBlock, Offset(50.meters))))
             .run()!!
+    }
+
+    /**
+     * Path arrives at end at either 28s (before occupancy) with a departure time at 0.0 and a
+     * maximum delay of 6s, or 47s (after occupancy) with a departure time of 19.0. End has planned
+     * timing data working for both ends. Three test cases:
+     * - arrival closer to first path end -> first path
+     * - arrival closer to second path end -> second path
+     * - arrival closer to second path end, but even closer to first path end + maximum delay = 34s
+     *   -> first path
+     */
+    @ParameterizedTest
+    @CsvSource("30, 20, 20, 0.0", "45, 20, 20, 19.0", "40, 20, 20, 0.0")
+    fun testReturnPathClosestToPlannedStepWithSameLeftRightTolerances(
+        arrivalTime: Double,
+        toleranceBefore: Double,
+        toleranceAfter: Double,
+        departureTime: Double
+    ) {
+        /*
+        a --> b
+
+        space
+          ^     end     end
+          |    /       /
+        b |   /       /
+          |  / ##### /
+        a |_/_ #####/________> time
+         */
+        val infra = DummyInfra()
+        val blocks = listOf(infra.addBlock("a", "b"))
+        val occupancyGraph =
+            ImmutableMultimap.of(blocks[0], OccupancySegment(10.0, 15.0, 0.meters, 1.meters))
+        val res =
+            STDCMPathfindingBuilder()
+                .setInfra(infra.fullInfra())
+                .setStartLocations(setOf(EdgeLocation(blocks[0], Offset(0.meters))))
+                .setEndLocations(
+                    setOf(EdgeLocation(blocks[0], Offset(100.meters))),
+                    PlannedTimingData(
+                        arrivalTime.seconds,
+                        toleranceBefore.seconds,
+                        toleranceAfter.seconds
+                    )
+                )
+                .setUnavailableTimes(occupancyGraph)
+                .run()!!
+        assertEquals(departureTime, res.departureTime)
+    }
+
+    /**
+     * Same set up as previous test: first path ends at 28s, with a maximum delay of 6s, second path
+     * ends at 47s. First path ends before and farther from planned arrival ; second path ends after
+     * and closer to planned arrival ; however, tolerance before is much higher than tolerance after
+     * -> resulting closest path is the first one.
+     */
+    @Test
+    fun testReturnPathClosestToPlannedStepWithDifferentLeftRightTolerances() {
+        /*
+        a --> b
+
+        space
+          ^     end     end
+          |    /       /
+        b |   /       /
+          |  / ##### /
+        a |_/_ #####/________> time
+         */
+        val infra = DummyInfra()
+        val blocks = listOf(infra.addBlock("a", "b"))
+        val occupancyGraph =
+            ImmutableMultimap.of(blocks[0], OccupancySegment(10.0, 15.0, 0.meters, 1.meters))
+        val res =
+            STDCMPathfindingBuilder()
+                .setInfra(infra.fullInfra())
+                .setStartLocations(setOf(EdgeLocation(blocks[0], Offset(0.meters))))
+                .setEndLocations(
+                    setOf(EdgeLocation(blocks[0], Offset(100.meters))),
+                    PlannedTimingData(
+                        45.seconds,
+                        // Purely theoretical tolerance here, shouldn't happen in real use case
+                        10_000.seconds,
+                        5.seconds
+                    )
+                )
+                .setUnavailableTimes(occupancyGraph)
+                .run()!!
+        assertEquals(0.0, res.departureTime)
+    }
+
+    /**
+     * Path arrives at end before occupancy with a departure time at 0.0, or after occupancy with a
+     * departure time of 19.0. Start has planned timing data working for both starts. Tweak its
+     * values to show the closest path to previous planned time is taken.
+     */
+    @ParameterizedTest
+    @CsvSource("0.0, 0.0, 20.0, 0.0", "15.0, 15.0, 15.0, 19.0")
+    fun testReturnThePathClosestToPreviousPlannedStep(
+        arrivalTime: Double,
+        toleranceBefore: Double,
+        toleranceAfter: Double,
+        departureTime: Double
+    ) {
+        /*
+        a --> b
+
+        space
+          ^     end     end
+          |    /       /
+        b |   /       /
+          |  / ##### /
+        a |_/_ #####/________> time
+         */
+        val infra = DummyInfra()
+        val blocks = listOf(infra.addBlock("a", "b"))
+        val occupancyGraph =
+            ImmutableMultimap.of(blocks[0], OccupancySegment(10.0, 15.0, 0.meters, 1.meters))
+        val res =
+            STDCMPathfindingBuilder()
+                .setInfra(infra.fullInfra())
+                .setStartLocations(
+                    setOf(EdgeLocation(blocks[0], Offset(0.meters))),
+                    PlannedTimingData(
+                        arrivalTime.seconds,
+                        toleranceBefore.seconds,
+                        toleranceAfter.seconds
+                    )
+                )
+                .setEndLocations(setOf(EdgeLocation(blocks[0], Offset(100.meters))))
+                .setUnavailableTimes(occupancyGraph)
+                .run()!!
+        assertEquals(departureTime, res.departureTime)
     }
 }
