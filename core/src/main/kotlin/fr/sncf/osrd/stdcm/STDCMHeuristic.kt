@@ -49,7 +49,7 @@ class STDCMHeuristicBuilder(
     /** Runs all the pre-processing and initialize the STDCM A* heuristic. */
     @WithSpan(value = "Initializing STDCM heuristic", kind = SpanKind.SERVER)
     @Trace(operationName = "Initializing STDCM heuristic")
-    fun build(): STDCMAStarHeuristic {
+    fun build(): Pair<STDCMAStarHeuristic, Double> {
         logger.info("Start building STDCM heuristic...")
         // One map per number of reached pathfinding step
         // maps[n][block] = min time it takes to go from the start of the block to the destination,
@@ -86,7 +86,7 @@ class STDCMHeuristicBuilder(
             } ?: Double.POSITIVE_INFINITY
         logger.info("STDCM heuristic built, best theoretical travel time = $bestTravelTime seconds")
 
-        return res@{ edge, offset, nPassedSteps ->
+        val heuristic: STDCMAStarHeuristic = res@{ edge, offset, nPassedSteps ->
             if (nPassedSteps >= steps.size - 1) return@res 0.0
             val lookahead = edge.infraExplorer.getLookahead()
             val currentBlock = edge.block
@@ -121,6 +121,7 @@ class STDCMHeuristicBuilder(
 
             return@res remainingTime
         }
+        return Pair(heuristic, bestTravelTime)
     }
 
     /** Describes a pending block, ready to be added to the cached blocks. */

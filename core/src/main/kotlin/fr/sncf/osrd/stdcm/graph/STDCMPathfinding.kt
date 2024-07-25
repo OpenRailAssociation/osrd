@@ -221,7 +221,8 @@ class STDCMPathfinding(
                         firstStep.duration,
                         firstStep.plannedTimingData,
                         null,
-                        0.0
+                        0.0,
+                        graph.bestPossibleTime
                     )
                 res.add(node)
             }
