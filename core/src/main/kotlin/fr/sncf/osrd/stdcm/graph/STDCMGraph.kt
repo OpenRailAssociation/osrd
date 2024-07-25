@@ -15,8 +15,6 @@ import fr.sncf.osrd.train.RollingStock.Comfort
 import fr.sncf.osrd.utils.units.meters
 import java.lang.Double.isFinite
 import java.lang.Double.isNaN
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
 /**
  * This is the class that encodes the STDCM problem as a graph on which we can run our pathfinding
@@ -47,7 +45,6 @@ class STDCMGraph(
     val backtrackingManager: BacktrackingManager
     val tag: String?
     val standardAllowance: AllowanceValue?
-    val logger: Logger = LoggerFactory.getLogger("STDCM")
 
     // min 4 minutes between two edges, determined empirically
     private val visitedNodes = VisitedNodes(4 * 60.0)

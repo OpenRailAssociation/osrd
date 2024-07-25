@@ -25,6 +25,6 @@ public record Point(
 
     @Override
     public String toString() {
-        return String.format("{x=%f, y=%f}", x, y);
+        return String.format("{lat=%f, lon=%f}", y, x);
     }
 }
