@@ -38,7 +38,7 @@ data class STDCMNode(
     // departure time.
     val timeSinceDeparture: Double,
     // Estimation of the min time it takes to reach the end from this node
-    var remainingTimeEstimation: Double = 0.0,
+    var remainingTimeEstimation: Double,
 ) : Comparable<STDCMNode> {
 
     /**

@@ -101,7 +101,8 @@ data class STDCMEdge(
                 stopDuration,
                 firstStopAfterIndex.plannedTimingData,
                 previousPlannedNodeRelativeTimeDiff,
-                graph.remainingTimeEstimator.invoke(this, locationOnEdge, newWaypointIndex)
+                timeSinceDeparture,
+                graph.remainingTimeEstimator.invoke(this, locationOnEdge, newWaypointIndex),
             )
         }
     }

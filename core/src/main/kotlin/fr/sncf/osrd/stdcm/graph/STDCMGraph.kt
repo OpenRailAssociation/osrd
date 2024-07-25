@@ -6,6 +6,7 @@ import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue.FixedTime
 import fr.sncf.osrd.graph.Graph
+import fr.sncf.osrd.stdcm.STDCMAStarHeuristic
 import fr.sncf.osrd.stdcm.STDCMHeuristicBuilder
 import fr.sncf.osrd.stdcm.STDCMStep
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
@@ -51,16 +52,9 @@ class STDCMGraph(
     // min 4 minutes between two edges, determined empirically
     private val visitedNodes = VisitedNodes(4 * 60.0)
 
-    // Initialize the A* heuristic
-    val remainingTimeEstimator =
-        STDCMHeuristicBuilder(
-                fullInfra.blockInfra,
-                fullInfra.rawInfra,
-                steps,
-                maxRunTime,
-                rollingStock
-            )
-            .build()
+    // A* heuristic
+    val remainingTimeEstimator: STDCMAStarHeuristic
+    val bestPossibleTime: Double
 
     /** Constructor */
     init {
@@ -74,6 +68,17 @@ class STDCMGraph(
         assert(standardAllowance !is FixedTime) {
             "Standard allowance cannot be a flat time for STDCM trains"
         }
+        val heuristicBuilderResult =
+            STDCMHeuristicBuilder(
+                    fullInfra.blockInfra,
+                    fullInfra.rawInfra,
+                    steps,
+                    maxRunTime,
+                    rollingStock
+                )
+                .build()
+        remainingTimeEstimator = heuristicBuilderResult.first
+        bestPossibleTime = heuristicBuilderResult.second
     }
 
     /**
