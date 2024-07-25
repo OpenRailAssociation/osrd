@@ -8,9 +8,9 @@
   "noPathLoaded": "Aucun chemin chargé",
   "realMargin": "Marge réelle",
   "receptionOnClosedSignal": "Réception sur signal fermé",
-  "stopTime": "Temps d'arrêt (s)",
-  "theoreticalMargin": "Marge théorique",
+  "stopTime": "Temps d'arrêt (s)",
+  "theoreticalMargin": "Marge théorique demandée",
   "theoreticalMarginPlaceholder": "% ou min/100km",
-  "theoreticalMarginSeconds": "Marge théorique (s)",
+  "theoreticalMarginSeconds": "Marge théorique",
   "waypoint": "Via {{id}}"
 }
