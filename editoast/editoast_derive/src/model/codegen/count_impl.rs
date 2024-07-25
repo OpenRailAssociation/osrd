@@ -9,7 +9,7 @@ pub(crate) struct CountImpl {
 impl ToTokens for CountImpl {
     fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
         let Self { model, table_mod } = self;
-        let span_name = format!("model:list<{}>", model);
+        let span_name = format!("model:count<{}>", model);
 
         tokens.extend(quote! {
             #[automatically_derived]

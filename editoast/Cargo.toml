@@ -27,13 +27,13 @@ license = "LGPL-3.0"
 [workspace.dependencies]
 chrono = { version = "0.4.38", default-features = false, features = ["serde"] }
 derivative = "2.2.0"
-diesel = { version = "2.1.6", default-features = false, features = [
+diesel = { version = "2.2", default-features = false, features = [
   "chrono",
   "postgres",
   "serde_json",
   "uuid",
 ] }
-diesel-async = { version = "0.4.1", default-features = false, features = [
+diesel-async = { version = "0.5", default-features = false, features = [
   "deadpool",
   "postgres",
 ] }
@@ -53,6 +53,7 @@ hostname = "0.4.0"
 itertools = "0.13.0"
 mvt = "0.9.3"
 openssl = "0.10.66"
+opentelemetry-semantic-conventions = "0.15.0"
 paste = "1.0.15"
 postgis_diesel = { version = "2.3.1", features = ["serde"] }
 postgres-openssl = "0.5.0"
@@ -141,7 +142,7 @@ opentelemetry-otlp = { version = "0.16.0", default-features = false, features = 
   "grpc-tonic",
   "trace",
 ] }
-opentelemetry-semantic-conventions = "0.15.0"
+opentelemetry-semantic-conventions.workspace = true
 opentelemetry_sdk = { version = "0.23.0", features = ["rt-tokio", "trace"] }
 ordered-float = { version = "4.3.0", features = ["serde"] }
 osm_to_railjson = { path = "./osm_to_railjson" }
