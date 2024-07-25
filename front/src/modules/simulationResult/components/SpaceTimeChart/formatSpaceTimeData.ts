@@ -7,6 +7,7 @@ const formatTrainsIntoSpaceTimeData = (
 ) =>
   Object.keys(projectedTrains).reduce((result, trainId) => {
     const currentProjectedTrain = projectedTrains[trainId];
+    if (currentProjectedTrain.space_time_curves.length === 0) return result;
 
     const matchingTrain = trainSchedulesById[trainId];
 

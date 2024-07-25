@@ -5,10 +5,8 @@ import { PDFDownloadLink } from '@react-pdf/renderer';
 import { useTranslation } from 'react-i18next';
 
 import type { ManageTrainSchedulePathProperties } from 'applications/operationalStudies/types';
-import type { ProjectPathTrainResult } from 'common/api/generatedEditoastApi';
 import { LoaderFill } from 'common/Loaders';
 import SpeedSpaceChartV2 from 'modules/simulationResult/components/SpeedSpaceChart/SpeedSpaceChartV2';
-import { convertIsoUtcToLocalTime } from 'utils/date';
 
 import SimulationReportSheetV2 from '../components/SimulationReportSheetV2';
 import type { StdcmV2Results } from '../types';
@@ -47,28 +45,18 @@ const StcdmResultsV2 = ({ mapCanvas, stdcmV2Results, pathProperties }: StcdmResu
     [pathProperties, stdcmV2Results]
   );
 
-  const manchetteSpaceTimeData: ProjectPathTrainResult[] = useMemo(
-    () =>
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      spaceTimeData.map(({ id, trainName, departure_time, ...rest }) => ({
-        ...rest,
-        departure_time: `${convertIsoUtcToLocalTime(departure_time).slice(0, -6)}Z` || '',
-      })),
-    [spaceTimeData]
-  );
-
   return (
     <main className="osrd-config-mastcontainer" style={{ height: '115vh' }}>
       <div className="osrd-simulation-container mb-2 simulation-results">
         <div className="osrd-simulation-container mb-2">
           <p className="mt-2 mb-3 ml-4 font-weight-bold">{t('spaceTimeGraphic')}</p>
           <div className="chart-container mt-2">
-            {manchetteSpaceTimeData.length > 0 &&
+            {spaceTimeData.length > 0 &&
             pathProperties &&
             pathProperties.manchetteOperationalPoints ? (
               <SpaceTimeChartWithManchette
                 operationalPoints={pathProperties.manchetteOperationalPoints}
-                projectPathTrainResult={manchetteSpaceTimeData}
+                projectPathTrainResult={spaceTimeData}
               />
             ) : (
               <LoaderFill />
