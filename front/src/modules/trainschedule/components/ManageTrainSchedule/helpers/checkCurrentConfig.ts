@@ -5,7 +5,7 @@ import type { Dispatch } from 'redux';
 import type { ValidConfig } from 'modules/trainschedule/components/ManageTrainSchedule/types';
 import { setFailure } from 'reducers/main';
 import type { OsrdConfState } from 'reducers/osrdconf/types';
-import { kmhToMs } from 'utils/physics';
+import { kmhToMs, mToMm } from 'utils/physics';
 
 import formatMargin from './formatMargin';
 import formatSchedule from './formatSchedule';
@@ -147,9 +147,17 @@ const checkCurrentConfig = (
         kp,
         onStopSignal,
         theoreticalMargin,
-        ...path
+        ...stepLocation
       } = step;
-      return { ...path, secondary_code: ch };
+
+      if ('track' in stepLocation) {
+        return {
+          ...stepLocation,
+          // TODO drop V1: we should store the offset in mm in the store
+          offset: mToMm(stepLocation.offset),
+        };
+      }
+      return { ...stepLocation, secondary_code: ch };
     }),
 
     margins: formatMargin(compact(pathSteps)),

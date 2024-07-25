@@ -12,6 +12,7 @@ import type { InfraState } from 'reducers/infra';
 import { setFailure } from 'reducers/main';
 import type { OsrdStdcmConfState, StandardAllowance } from 'reducers/osrdconf/types';
 import { dateTimeToIso } from 'utils/date';
+import { mToMm } from 'utils/physics';
 import { ISO8601Duration2sec, sec2ms, time2sec } from 'utils/timeManipulation';
 
 import createMargin from './createMargin';
@@ -128,6 +129,7 @@ export const checkStdcmConf = (
       const {
         id,
         arrival,
+        deleted,
         locked,
         stopFor,
         positionOnPath,
@@ -141,10 +143,19 @@ export const checkStdcmConf = (
         ...stepLocation
       } = step;
 
-      const secondary_code = 'trigram' in stepLocation || 'uic' in stepLocation ? ch : undefined;
+      const duration = stopFor ? sec2ms(ISO8601Duration2sec(stopFor) || Number(stopFor)) : 0;
 
+      if ('track' in stepLocation) {
+        return {
+          duration,
+          location: { track: stepLocation.track, offset: mToMm(stepLocation.offset) },
+        };
+      }
+
+      const secondary_code = 'trigram' in stepLocation || 'uic' in stepLocation ? ch : undefined;
       return {
-        duration: stopFor ? sec2ms(ISO8601Duration2sec(stopFor) || Number(stopFor)) : 0,
+        duration,
+        // TODO DROP V1: we should store the offset in mm in the store
         location: { ...stepLocation, secondary_code },
       };
     }),
