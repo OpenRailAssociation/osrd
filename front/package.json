@@ -200,7 +200,6 @@
     "test": "import-meta-env-prepare -x .env.example && vitest",
     "lint": "eslint --ext .ts,.tsx,.js,.jsx src --max-warnings 0",
     "lint-fix": "eslint --ext .ts,.tsx,.js,.jsx src --fix",
-    "lint-group-type": "eslint --ext .ts,.tsx,.js,.jsx src -f scripts/lint-formatter.js",
     "test-coverage": "import-meta-env-prepare -x .env.example && vitest run --coverage",
     "generate-types": "exec scripts/generate-types.sh",
     "storybook": "storybook dev -p 6006",
