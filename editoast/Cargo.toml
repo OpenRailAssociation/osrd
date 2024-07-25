@@ -134,7 +134,7 @@ tower-http = { version = "0.5.2", features = [
   "trace",
 ] }
 tracing.workspace = true
-tracing-opentelemetry = "0.24.0"
+tracing-opentelemetry = "0.25.0"
 tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
 url.workspace = true
 utoipa.workspace = true
